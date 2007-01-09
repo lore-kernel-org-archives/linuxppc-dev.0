@@ -1,18 +1,16 @@
-Return-Path: <m.kozlowski@tuxland.pl>
-Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id 77F2FDDE21
-	for <linuxppc-dev@ozlabs.org>; Tue,  9 Jan 2007 21:33:35 +1100 (EST)
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: paulus@samba.org
-Subject: Re: [PATCH] ppc: i8259 of_node_get cleanup
-Date: Tue, 9 Jan 2007 11:33:52 +0100
-References: <200701021247.42035.m.kozlowski@tuxland.pl>
-In-Reply-To: <200701021247.42035.m.kozlowski@tuxland.pl>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200701091133.52438.m.kozlowski@tuxland.pl>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17827.34062.767521.135272@cargo.ozlabs.ibm.com>
+Date: Tue, 9 Jan 2007 23:05:34 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Sylvain Munaut <tnt@246tNt.com>
+Subject: Re: [PATCH 1/4] powerpc/serial: Dispose irq mapping when done in
+	mpc52xx_serial.c
+In-Reply-To: <116777699771-git-send-email-tnt@246tNt.com>
+References: <1167776995690-git-send-email-tnt@246tNt.com>
+	<116777699771-git-send-email-tnt@246tNt.com>
+Cc: Linux PPC DEV <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +20,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Sylvain Munaut writes:
 
-> 	This patch removes redundant argument check for of_node_get().
+> Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+> ---
+>  drivers/serial/mpc52xx_uart.c |    3 +++
+>  1 files changed, 3 insertions(+), 0 deletions(-)
 > 
-> Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-> 
->  arch/powerpc/sysdev/i8259.c |    3 +--
->  1 file changed, 1 insertion(+), 2 deletions(-)
-> 
-> diff -upr linux-2.6.20-rc2-mm1-a/arch/powerpc/sysdev/i8259.c linux-2.6.20-rc2-mm1-b/arch/powerpc/sysdev/i8259.c
-> --- linux-2.6.20-rc2-mm1-a/arch/powerpc/sysdev/i8259.c	2006-12-24 05:00:32.000000000 +0100
-> +++ linux-2.6.20-rc2-mm1-b/arch/powerpc/sysdev/i8259.c	2007-01-02 02:03:57.000000000 +0100
-> @@ -276,8 +276,7 @@ void i8259_init(struct device_node *node
->  	spin_unlock_irqrestore(&i8259_lock, flags);
+> diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+> index 9d11a75..eef3b02 100644
+> --- a/drivers/serial/mpc52xx_uart.c
+> +++ b/drivers/serial/mpc52xx_uart.c
+> @@ -997,6 +997,9 @@ mpc52xx_uart_of_remove(struct of_device 
+>  	if (port)
+>  		uart_remove_one_port(&mpc52xx_uart_driver, port);
 >  
->  	/* create a legacy host */
-> -	if (node)
-> -		i8259_node = of_node_get(node);
-> +	i8259_node = of_node_get(node);
->  	i8259_host = irq_alloc_host(IRQ_HOST_MAP_LEGACY, 0, &i8259_host_ops, 0);
->  	if (i8259_host == NULL) {
->  		printk(KERN_ERR "i8259: failed to allocate irq host !\n");
+> +	if (port->irq != NO_IRQ)
+> +		irq_dispose_mapping(port->irq);
+> +
 
-Paul, this patch is invalid as I overlooked the code comment that says it must allow node
-be NULL. On the other hand it's never called with node == NULL. So either the comment
-should change or do not apply this patch.
+I didn't put this one in for 2.6.20, because it doesn't solve any
+actual problem, and Ben H tells me it might trigger a bug in the
+generic irq code.
 
--- 
-Regards,
-
-	Mariusz Kozlowski
+Paul.
