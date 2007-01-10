@@ -1,21 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 500E5DDE2D
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 07:59:58 +1100 (EST)
-Date: Wed, 10 Jan 2007 23:58:26 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] [POWERPC] cpm2: Updates for CPM2 pic
-Message-ID: <20070110235826.2ac91a41@localhost.localdomain>
-In-Reply-To: <21AA3C6D-75E2-4A5D-852A-5D745CA2C5FF@kernel.crashing.org>
-References: <20070110011124.20342.38130.stgit@localhost.localdomain>
-	<B1664D59-5C48-45DF-8C53-5E1AE6AEDAF4@kernel.crashing.org>
-	<20070110231322.12c8add7@localhost.localdomain>
-	<21AA3C6D-75E2-4A5D-852A-5D745CA2C5FF@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 07887DDE24
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 08:29:59 +1100 (EST)
+Subject: Re: Problems with devices that use PCI shared memory on 2nd PCI
+	bus (6 slot powermac)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Bob Brose <linuxppcdev@qbjnet.com>
+In-Reply-To: <20070110150511.31047.qmail@kunk.qbjnet.com>
+References: <20070110150511.31047.qmail@kunk.qbjnet.com>
+Content-Type: text/plain
+Date: Thu, 11 Jan 2007 08:29:53 +1100
+Message-Id: <1168464593.22458.352.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_sBhBue5=648RXnV4937cMH3";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,87 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_sBhBue5=648RXnV4937cMH3
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2007-01-10 at 15:05 +0000, Bob Brose wrote:
+> Since Ben fixed the irq routing on 32 bit powermacs with changes to pci_32.c
+> and prom_parse.c I've been able to use all 6 slots with interrupt
+> driven devices however there appears to be a problem with devices that use
+> memory mapping. (this is on a S900 w/ 21052 second PCI controller)
+> 
+> A couple of examples:
+> When using a 21143 tulip ethernet card on the second PCI bus and with the 
+> "Use PCI shared mem for NIC registers" option turned on the driver
+> fails with incorrect status register reads. If I compile a kernel without
+> this option it works fine.
+> 
+> Also, if I put a rage 128 video board in one of the slots on the
+> second bus it cannot do DRM. If I turn DRM off it works ok or if I move the
+> card to the first bus it works fine with DRM.
 
-On Wed, 10 Jan 2007 14:55:04 -0600
-Kumar Gala wrote:
+In lspci -vv, do you see the BusMaster bit enabled on the PCI-2-PCI
+bridge ?
 
->=20
-> On Jan 10, 2007, at 2:13 PM, Vitaly Bordug wrote:
->=20
-> > On Wed, 10 Jan 2007 11:02:52 -0600
-> > Kumar Gala wrote:
-> >
-> >>
-> >> On Jan 9, 2007, at 7:11 PM, Vitaly Bordug wrote:
-> >>
-> >>>
-> >>> This contains important fixes for the CPM2 PIC code. Eliminated
-> >>> CPM_IRQ_OFFSET, pulling the respective interrupt numbers from the
-> >>> interrupt
-> >>> mapping. Updated devicetree files to reflect that. Changed direct
-> >>> IC-related IO accesses to the IO accessors.
-> >>>
-> >>> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-> >>> ---
-> >>
-> >> [snip]
-> >>
-> >>> diff --git a/include/asm-powerpc/mpc8260.h b/include/asm-powerpc/
-> >>> mpc8260.h
-> >>> new file mode 100644
-> >>> index 0000000..c2adcb0
-> >>> --- /dev/null
-> >>> +++ b/include/asm-powerpc/mpc8260.h
-> >>> @@ -0,0 +1,32 @@
-> >>> +/*
-> >>> + * Since there are many different boards and no standard
-> >>> configuration,
-> >>> + * we have a unique include file for each.  Rather than change
-> >>> every
-> >>> + * file that has to include MPC8260 configuration, they all
-> >>> include
-> >>> + * this one and the configuration switching is done here.
-> >>> + */
-> >>> +#ifdef __KERNEL__
-> >>> +#ifndef __ASM_PPC_MPC8260_H__
-> >>> +#define __ASM_PPC_MPC8260_H__
-> >>> +
-> >>> +
-> >>> +#ifdef CONFIG_8260
-> >>> +
-> >>> +#if defined(CONFIG_PQ2ADS) || defined (CONFIG_PQ2FADS)
-> >>> +#include <platforms/82xx/pq2ads.h>
-> >>> +#endif
-> >>
-> >> What's defined in pq2ads.h that is needed by other code?
-> >>
-> > holding CPM_MAP_ADDR -- not everywhere in the current code it
-> > could be pulled from the devtree.
-> > Actually, I have it addressed, but that is pretty big mod that =20
-> > could not be called bugfix and will hopefully be merged in next =20
-> > window.
->=20
-> Ok, do you mind adding a comment about that so we make sure it gets =20
-> cleaned up for 2.6.21
->=20
-Will do, not a big deal since I have the actual patch already :)
-
---
--Vitaly
-
---Sig_sBhBue5=648RXnV4937cMH3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFFpVNyuOg9JvQhSEsRAkb9AJ9FCfhPq4OhteLHqW4LK9Z1V9PlPQCgn6tA
-4aYIEpwLXCXpOKHn3jmBuzU=
-=rS7H
------END PGP SIGNATURE-----
-
---Sig_sBhBue5=648RXnV4937cMH3--
+Ben.
