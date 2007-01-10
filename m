@@ -1,20 +1,19 @@
-Return-Path: <tieuphongit@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.238])
-	by ozlabs.org (Postfix) with ESMTP id 0EDF8DDE20
+Return-Path: <andrea.galbusera@teamware.it>
+Received: from smtp5.aruba.it (smtpd3.aruba.it [62.149.128.208])
+	by ozlabs.org (Postfix) with SMTP id 6D4B4DDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Jan 2007 02:33:52 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 57so76530wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Jan 2007 07:33:51 -0800 (PST)
-Message-ID: <f2042b870701100733v20d7a052kca11f2ef0d108849@mail.gmail.com>
-Date: Wed, 10 Jan 2007 22:33:50 +0700
-From: "An Le Thien" <tieuphongit@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Can't start snmpd when adding notification handler to the
-	configuration file
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_8056_9149514.1168443230652"
+	Thu, 11 Jan 2007 02:40:58 +1100 (EST)
+Subject: Re: Ethernet fails on MPC5200 based target
+From: Andrea Galbusera <andrea.galbusera@teamware.it>
+To: Sylvain Munaut <tnt@246tNt.com>
+In-Reply-To: <45A4FDAF.8020909@246tNt.com>
+References: <1168439212.5271.70.camel@localhost.localdomain>
+	<45A4FDAF.8020909@246tNt.com>
+Content-Type: text/plain
+Date: Wed, 10 Jan 2007 16:41:51 +0100
+Message-Id: <1168443711.5271.87.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,64 +24,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_8056_9149514.1168443230652
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi Sylvain! Thanks for quick reply!
+I'll try go give you more details.
 
-Hi,
+> Could you tell me exactly what kernel you use from me ? (a commit id
+> would do)
 
-I have a problem when starting snmpd as following:
+Sorry but I have very poor git knowledge. Hope the following "git log"
+output answers your question. Otherwise please tell me how to get the
+correct commit id you need.
 
-1. I have just downloaded net-snmp-5.0.6-17_2.src.rpm from
-ftp://ftp.sunet.se/pub/Linux/distributions/eldk/3.1.1/ppc-linux-x86/sources/target/SRPMS/
+commit 7cdaf877678d49e9f8a79d102a12eae7d9772f4b
+Merge: a7e235cba9aa805aab4614f2029924ee2d1a1cb7 380c897f96e9084082e538f34623ce4e78935915
+Author: Andrea Galbusera <gizero@andreagal.localdomain>
+Date:   Tue Dec 12 10:41:21 2006 +0100
 
-2. I used ELDK3.1.1 to build it and install to ramdisk that is used for
-TQM8xxL (Using kernel 2.6.11)
+    Merge branch 'bestcomm' of http://gitbits.246tNt.com/gitbits/linux-2.6-mpc52xx
 
-3. I used the default configuration (EXAMPLE.conf). When I started snmpd,
-the snmpd was started normally.
+commit a7e235cba9aa805aab4614f2029924ee2d1a1cb7
+Merge: f0aca16fba1f102dd2c33ff8b8bb66ec7f830ee2 af4f75fd6c64917cd3e21f28b17ed49aeac06075
+Author: Sylvain Munaut <tnt@246tNt.com>
+Date:   Sun Feb 5 17:13:29 2006 +0100
 
-4. But when I add "trapsink 192.168.1.15 public" to the configuration file.
-I can't start snmpd. The following is the configuration file and a log file:
+    Merge with git+ssh://gitbits.246tNt.com/home/users/tnt/gitbits/linux-2.6-mpc52xx.git
 
-a.  /etc/snmp/snmpd.conf
-
-trapsink 192.168.1.15 public
-com2sec local     localhost       public
-com2sec mynetwork 192.168.1.0/24      public
-......
-
-b. /var/log/snmpd.log
-
-.....
-snmp_clean_persistent:  removing old config file: /var/net-snmp/snmpd.0.conf
-trace: snmp_call_callbacks(): callback.c, 99
-callback: START calling callbacks for maj=1 min=7
-trace: snmp_call_callbacks(): callback.c, 107
-callback: calling a callback for maj=1 min=7
-trace: send_notifications(): notification/snmpNotifyTable.c, 95
-send_notifications: starting: pdu=1009abe8, vars=7fffe37c
-segmentation faults
+    (to bring recent cpu init changes into the ide branch)
 
 
-Could you give some comments to fix this problem?
+> And did you write your own platform file ?
+> Maybe some things (like xlb pipelining, cache snooping, ...) is not properly
+> setup in you platform support code ?
 
-Thanks in advance.
+No, I did not. I use the original platform file
+in ./arch/ppc/platforms/lite5200.c. At moment I only had to add
+initialization code for a few more UARTs: no other changes from
+original. In fact this is one of the file showing differences between
+Denx tree and yours. I'll experiment a while reverting those changes.
 
-An Le.
+> 
+> Or maybe since the ethernet code currently only "knows" about the intel phy,
+> something is wrong in the "generic" phy code included in the driver itself.
 
-------=_Part_8056_9149514.1168443230652
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Could you please clarify this concept a little more? I still have an
+incomplete undertanding of the many source components needed to make eth
+work. I'm focusing on understanding why Denx code works while yours/ltib
+fails, but this may not be the best way to walk on...
 
-Hi,<br><br>I have a problem when starting snmpd as following:<br><br>1. I have just downloaded net-snmp-5.0.6-17_2.src.rpm from <a href="ftp://ftp.sunet.se/pub/Linux/distributions/eldk/3.1.1/ppc-linux-x86/sources/target/SRPMS/">
-ftp://ftp.sunet.se/pub/Linux/distributions/eldk/3.1.1/ppc-linux-x86/sources/target/SRPMS/</a><br><br>2. I used ELDK3.1.1 to build it and install to ramdisk that is used for TQM8xxL (Using kernel 2.6.11)<br><br>3. I used the default configuration (
-EXAMPLE.conf). When I started snmpd, the snmpd was started normally.<br><br>4. But when I add &quot;trapsink <a href="http://192.168.1.15">192.168.1.15</a> public&quot; to the configuration file. I can&#39;t start snmpd. The following is the configuration file and a log file:
-<br><br>a.&nbsp; /etc/snmp/snmpd.conf<br><br>trapsink <a href="http://192.168.1.15">192.168.1.15</a> public<br>com2sec local&nbsp;&nbsp;&nbsp;&nbsp; localhost&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public<br>com2sec mynetwork <a href="http://192.168.1.0/24">192.168.1.0/24</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; public
-<br>......<br><br>b. /var/log/snmpd.log<br><br>.....<br>snmp_clean_persistent:&nbsp; removing old config file: /var/net-snmp/snmpd.0.conf<br>trace: snmp_call_callbacks(): callback.c, 99<br>callback: START calling callbacks for maj=1 min=7
-<br>trace: snmp_call_callbacks(): callback.c, 107<br>callback: calling a callback for maj=1 min=7<br>trace: send_notifications(): notification/snmpNotifyTable.c, 95<br>send_notifications: starting: pdu=1009abe8, vars=7fffe37c
-<br>segmentation faults<br><br><br>Could you give some comments to fix this problem?<br><br>Thanks in advance.<br><br>An Le.<br>
-
-------=_Part_8056_9149514.1168443230652--
+Andrea
