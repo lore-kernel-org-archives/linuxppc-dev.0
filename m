@@ -1,27 +1,19 @@
-Return-Path: <Haiying.Wang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 8B707DDE37
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 04:43:00 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l0AHgwOe022960
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 10:42:58 -0700 (MST)
-Received: from az33exm23.fsl.freescale.net (az33exm23.am.freescale.net
-	[10.64.32.8])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0AHgvCb005149
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 11:42:58 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH] powerpc: Fix irq routing on some PowerMac 32 bits
-Date: Wed, 10 Jan 2007 10:42:56 -0700
-Message-ID: <DDEDA444F5BF0E41AC8649FB40392C2901CD92E0@az33exm23.fsl.freescale.net>
-In-Reply-To: <1168431197.22458.336.camel@localhost.localdomain>
-From: "Wang Haiying-r54964" <Haiying.Wang@freescale.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Zang Roy-r61911" <tie-fei.zang@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 5A5E5DDDF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 07:52:33 +1100 (EST)
+Date: Wed, 10 Jan 2007 23:13:22 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] [POWERPC] cpm2: Updates for CPM2 pic
+Message-ID: <20070110231322.12c8add7@localhost.localdomain>
+In-Reply-To: <B1664D59-5C48-45DF-8C53-5E1AE6AEDAF4@kernel.crashing.org>
+References: <20070110011124.20342.38130.stgit@localhost.localdomain>
+	<B1664D59-5C48-45DF-8C53-5E1AE6AEDAF4@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_ozx6f6VP2Q/pvlP6_Rze07s";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,23 +23,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
->While I agree that we should definitely test for NULL and properly fail
->instead of crashing, there is still the question of why do you fail at
->this point. Do you have PCI devices that don't have=20
->corresponding device
->nodes ? That is not a problem per-se, I'm just wondering if you have a
->device that is supposed to have a node but it's not matching due to a
->problem with the "reg" property...
+--Sig_ozx6f6VP2Q/pvlP6_Rze07s
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-The reason that it failed at this point is that there is a PCI bridge
-connected to the PCI controller of the silicon. We defined this PCI
-bridge as a pci node, but all the devices behind the bridge are not
-defined as PCI node individually, thus they don't have "reg" property
-except the bridge itself. Also, they are not on the same bus as which
-the pci bridge is on. Please refer the
-arch/powerpc/boot/dts/mpc8641_hpcn.dts or mpc8548cds.dts.
+On Wed, 10 Jan 2007 11:02:52 -0600
+Kumar Gala wrote:
 
-So we should definitely test for NULL here.=20
+>=20
+> On Jan 9, 2007, at 7:11 PM, Vitaly Bordug wrote:
+>=20
+> >
+> > This contains important fixes for the CPM2 PIC code. Eliminated
+> > CPM_IRQ_OFFSET, pulling the respective interrupt numbers from the =20
+> > interrupt
+> > mapping. Updated devicetree files to reflect that. Changed direct
+> > IC-related IO accesses to the IO accessors.
+> >
+> > Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+> > ---
+>=20
+> [snip]
+>=20
+> > diff --git a/include/asm-powerpc/mpc8260.h b/include/asm-powerpc/=20
+> > mpc8260.h
+> > new file mode 100644
+> > index 0000000..c2adcb0
+> > --- /dev/null
+> > +++ b/include/asm-powerpc/mpc8260.h
+> > @@ -0,0 +1,32 @@
+> > +/*
+> > + * Since there are many different boards and no standard =20
+> > configuration,
+> > + * we have a unique include file for each.  Rather than change
+> > every
+> > + * file that has to include MPC8260 configuration, they all include
+> > + * this one and the configuration switching is done here.
+> > + */
+> > +#ifdef __KERNEL__
+> > +#ifndef __ASM_PPC_MPC8260_H__
+> > +#define __ASM_PPC_MPC8260_H__
+> > +
+> > +
+> > +#ifdef CONFIG_8260
+> > +
+> > +#if defined(CONFIG_PQ2ADS) || defined (CONFIG_PQ2FADS)
+> > +#include <platforms/82xx/pq2ads.h>
+> > +#endif
+>=20
+> What's defined in pq2ads.h that is needed by other code?
+>=20
+holding CPM_MAP_ADDR -- not everywhere in the current code it could be pull=
+ed from the devtree.
+Actually, I have it addressed, but that is pretty big mod that could not be=
+ called bugfix and will hopefully be merged in next window.
 
-Haiying
+> > +
+> > +#ifdef CONFIG_PCI_8260
+> > +#include <platforms/82xx/m82xx_pci.h>
+> > +#endif
+> > +
+> > +#ifndef _ISA_MEM_BASE
+> > +#define _ISA_MEM_BASE   0
+> > +#endif
+> > +
+> > +#ifndef PCI_DRAM_OFFSET
+> > +#define PCI_DRAM_OFFSET 0
+> > +#endif
+> > +
+> > +#endif /* CONFIG_8260 */
+> > +#endif /* !__ASM_PPC_MPC8260_H__ */
+> > +#endif /* __KERNEL__ */
+> > _______________________________________________
+> > Linuxppc-dev mailing list
+> > Linuxppc-dev@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>=20
+
+--Sig_ozx6f6VP2Q/pvlP6_Rze07s
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFFpUjjuOg9JvQhSEsRAqGpAJ4y6WeiAwui59yjG84kE1LQsctQDgCfQCL5
+Mq2DCoZbNSdIwjvJs/X1iI4=
+=iC6X
+-----END PGP SIGNATURE-----
+
+--Sig_ozx6f6VP2Q/pvlP6_Rze07s--
