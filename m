@@ -3,13 +3,13 @@ Received: from localhost.localdomain (cdma-45-248.msk.skylink.ru
 	[83.217.45.248])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6DFBDDDE2B
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 12:25:22 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A5515DDEED
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 12:25:28 +1100 (EST)
 To: Paul Mackerras <paulus@samba.org>
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 3/5] [FS_ENET] OF-related update for FEC and SCC MAC's
-Date: Wed, 10 Jan 2007 04:11:54 +0300
-Message-ID: <20070110011154.20342.12189.stgit@localhost.localdomain>
+Subject: [PATCH 2/5] [POWERPC] cpm_uart: OF-related updates
+Date: Wed, 10 Jan 2007 04:11:48 +0300
+Message-ID: <20070110011147.20342.18565.stgit@localhost.localdomain>
 In-Reply-To: <20070110011124.20342.38130.stgit@localhost.localdomain>
 References: <20070110011124.20342.38130.stgit@localhost.localdomain>
 MIME-Version: 1.0
@@ -25,113 +25,91 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Updated direct resource pass with ioremap call, make it grant proper IRQ
-mapping, stuff incompatible with the new approach were respectively put  under
-#ifndef CONFIG_PPC_MERGE.
+This makes cpm uart able to work using OF-passed parameters
+in case of CPM1 stuff (found on most mpc8xx reference and custom
+boards).
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 ---
 
- drivers/net/fs_enet/mac-fec.c |   13 +++++++++----
- drivers/net/fs_enet/mac-scc.c |    6 ++++--
- drivers/net/phy/fixed.c       |    2 +-
- 3 files changed, 14 insertions(+), 7 deletions(-)
+ drivers/serial/cpm_uart/cpm_uart_cpm1.c |   17 +++++++++++------
+ 1 files changed, 11 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
-index c2c5fd4..474d6d7 100644
---- a/drivers/net/fs_enet/mac-fec.c
-+++ b/drivers/net/fs_enet/mac-fec.c
-@@ -104,9 +104,9 @@ static int do_pd_setup(struct fs_enet_private *fep)
- 	fep->interrupt = platform_get_irq_byname(pdev,"interrupt");
- 	if (fep->interrupt < 0)
- 		return -EINVAL;
--	
-+
- 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
--	fep->fec.fecp =(void*)r->start;
-+	fep->fec.fecp = (void *)ioremap(r->start, r->end - r->start + 1);
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index 08e55fd..3ed4622 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -40,6 +40,7 @@
  
- 	if(fep->fec.fecp == NULL)
- 		return -EINVAL;
-@@ -319,11 +319,14 @@ static void restart(struct net_device *dev)
- 	 * Clear any outstanding interrupt.
- 	 */
- 	FW(fecp, ievent, 0xffc0);
-+#ifndef CONFIG_PPC_MERGE
- 	FW(fecp, ivec, (fep->interrupt / 2) << 29);
--	
+ #include <asm/io.h>
+ #include <asm/irq.h>
++#include <asm/fs_pd.h>
+ 
+ #include <linux/serial_core.h>
+ #include <linux/kernel.h>
+@@ -145,7 +146,11 @@ int cpm_uart_allocbuf(struct uart_cpm_port *pinfo, unsigned int is_con)
+ 		/* was hostalloc but changed cause it blows away the */
+ 		/* large tlb mapping when pinning the kernel area    */
+ 		mem_addr = (u8 *) cpm_dpram_addr(cpm_dpalloc(memsz, 8));
++#ifdef CONFIG_PPC_MERGE
++		dma_addr = (u32)cpm_dpram_phys(mem_addr);
 +#else
-+	FW(fecp, ivec, (irq_map[fep->interrupt].hwirq / 2) << 29);
+ 		dma_addr = (u32)mem_addr;
 +#endif
- 
- 	/*
--	 * adjust to speed (only for DUET & RMII) 
-+	 * adjust to speed (only for DUET & RMII)
- 	 */
- #ifdef CONFIG_DUET
- 	if (fpi->use_rmii) {
-@@ -418,6 +421,7 @@ static void stop(struct net_device *dev)
- 
- static void pre_request_irq(struct net_device *dev, int irq)
- {
-+#ifndef CONFIG_PPC_MERGE
- 	immap_t *immap = fs_enet_immap;
- 	u32 siel;
- 
-@@ -431,6 +435,7 @@ static void pre_request_irq(struct net_device *dev, int irq)
- 			siel &= ~(0x80000000 >> (irq & ~1));
- 		out_be32(&immap->im_siu_conf.sc_siel, siel);
- 	}
-+#endif
- }
- 
- static void post_free_irq(struct net_device *dev, int irq)
-diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
-index 95ec587..62057f4 100644
---- a/drivers/net/fs_enet/mac-scc.c
-+++ b/drivers/net/fs_enet/mac-scc.c
-@@ -121,13 +121,13 @@ static int do_pd_setup(struct fs_enet_private *fep)
- 		return -EINVAL;
- 
- 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
--	fep->scc.sccp = (void *)r->start;
-+	fep->scc.sccp = (void *)ioremap(r->start, r->end - r->start + 1);
- 
- 	if (fep->scc.sccp == NULL)
- 		return -EINVAL;
- 
- 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram");
--	fep->scc.ep = (void *)r->start;
-+	fep->scc.ep = (void *)ioremap(r->start, r->end - r->start + 1);
- 
- 	if (fep->scc.ep == NULL)
- 		return -EINVAL;
-@@ -397,6 +397,7 @@ static void stop(struct net_device *dev)
- 
- static void pre_request_irq(struct net_device *dev, int irq)
- {
-+#ifndef CONFIG_PPC_MERGE
- 	immap_t *immap = fs_enet_immap;
- 	u32 siel;
- 
-@@ -410,6 +411,7 @@ static void pre_request_irq(struct net_device *dev, int irq)
- 			siel &= ~(0x80000000 >> (irq & ~1));
- 		out_be32(&immap->im_siu_conf.sc_siel, siel);
- 	}
-+#endif
- }
- 
- static void post_free_irq(struct net_device *dev, int irq)
-diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
-index 096d4a1..8613539 100644
---- a/drivers/net/phy/fixed.c
-+++ b/drivers/net/phy/fixed.c
-@@ -349,7 +349,7 @@ static int __init fixed_init(void)
- 	fixed_mdio_register_device(0, 100, 1);
+ 	} else
+ 		mem_addr = dma_alloc_coherent(NULL, memsz, &dma_addr,
+ 					      GFP_KERNEL);
+@@ -205,7 +210,7 @@ int __init cpm_uart_init_portdesc(void)
+ 	    (unsigned long)&cpmp->cp_smc[0];
+ 	cpm_uart_ports[UART_SMC1].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
+ 	cpm_uart_ports[UART_SMC1].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
+-	cpm_uart_ports[UART_SMC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SMC1].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC1;
  #endif
  
--#ifdef CONFIX_FIXED_MII_10_FDX
-+#ifdef CONFIG_FIXED_MII_10_FDX
- 	fixed_mdio_register_device(0, 10, 1);
+@@ -217,7 +222,7 @@ int __init cpm_uart_init_portdesc(void)
+ 	    (unsigned long)&cpmp->cp_smc[1];
+ 	cpm_uart_ports[UART_SMC2].smcp->smc_smcm |= (SMCM_RX | SMCM_TX);
+ 	cpm_uart_ports[UART_SMC2].smcp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
+-	cpm_uart_ports[UART_SMC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SMC2].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SMC2;
+ #endif
+ 
+@@ -231,7 +236,7 @@ int __init cpm_uart_init_portdesc(void)
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC1].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC1].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC1].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC1;
+ #endif
+ 
+@@ -245,7 +250,7 @@ int __init cpm_uart_init_portdesc(void)
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC2].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC2].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC2].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC2;
+ #endif
+ 
+@@ -259,7 +264,7 @@ int __init cpm_uart_init_portdesc(void)
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC3].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC3].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC3].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC3;
+ #endif
+ 
+@@ -273,7 +278,7 @@ int __init cpm_uart_init_portdesc(void)
+ 	    ~(UART_SCCM_TX | UART_SCCM_RX);
+ 	cpm_uart_ports[UART_SCC4].sccp->scc_gsmrl &=
+ 	    ~(SCC_GSMRL_ENR | SCC_GSMRL_ENT);
+-	cpm_uart_ports[UART_SCC4].port.uartclk = (((bd_t *) __res)->bi_intfreq);
++	cpm_uart_ports[UART_SCC4].port.uartclk = uart_clock();
+ 	cpm_uart_port_map[cpm_uart_nr++] = UART_SCC4;
  #endif
  	return 0;
