@@ -1,20 +1,21 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 23898DE0E0
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 07:53:07 +1100 (EST)
-Date: Wed, 10 Jan 2007 23:50:51 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 4/5] [POWERPC] Fix kernel build errors for mpc8272ads
-	and mpc8560ads
-Message-ID: <20070110235051.256b5794@localhost.localdomain>
-In-Reply-To: <628EF2F5-2700-4CB9-B1E4-3DB225232AE1@kernel.crashing.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C446EDDE22
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 07:56:07 +1100 (EST)
+In-Reply-To: <20070110231322.12c8add7@localhost.localdomain>
 References: <20070110011124.20342.38130.stgit@localhost.localdomain>
-	<20070110011200.20342.5712.stgit@localhost.localdomain>
-	<628EF2F5-2700-4CB9-B1E4-3DB225232AE1@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_BnOP51E+pKAz.gkJuol2M3L;
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
+	<B1664D59-5C48-45DF-8C53-5E1AE6AEDAF4@kernel.crashing.org>
+	<20070110231322.12c8add7@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <21AA3C6D-75E2-4A5D-852A-5D745CA2C5FF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] [POWERPC] cpm2: Updates for CPM2 pic
+Date: Wed, 10 Jan 2007 14:55:04 -0600
+To: Vitaly Bordug <vbordug@ru.mvista.com>
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,92 +26,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_BnOP51E+pKAz.gkJuol2M3L
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-On Wed, 10 Jan 2007 11:11:05 -0600
-Kumar Gala wrote:
+On Jan 10, 2007, at 2:13 PM, Vitaly Bordug wrote:
 
->=20
-> On Jan 9, 2007, at 7:12 PM, Vitaly Bordug wrote:
->=20
-> >
-> > Recent update of asm-powerpc/io.h caused cpm-related stuff to
-> > break in the
-> > current kernel. Current patch fixes it, and includes other
-> > overhaul and
-> > improvements (incomplete list is below). Required for proper =20
-> > functioning of
-> > the 8xx stuff as well.
-> >
-> > - Updated dts with a chosen node with interrupt controller,
-> > - fixed messed device IDs among CPM2 SoC devices,
-> > - corrected odd header name and fixed type in defines,
-> > - Added 82xx subdir to the powerpc/platforms Makefile, new
-> >   solely-powerpc header for 8260 family (was using one from arch/=20
-> > ppc, this
-> >   one cleaned up from the extra stuff).
-> >
-> > Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
-> > ---
-> >
-> >  arch/powerpc/platforms/82xx/mpc82xx.c     |    2 +-
-> >  arch/powerpc/platforms/82xx/mpc82xx_ads.c |    2 +-
-> >  arch/powerpc/platforms/82xx/pq2ads.h      |    5 +++--
-> >  arch/powerpc/platforms/Makefile           |    1 +
-> >  drivers/net/fs_enet/fs_enet.h             |    1 +
-> >  drivers/serial/cpm_uart/cpm_uart_cpm1.h   |    3 ---
-> >  drivers/serial/cpm_uart/cpm_uart_cpm2.h   |    3 ---
-> >  include/asm-powerpc/fs_pd.h               |    6 ++++++
-> >  include/asm-powerpc/io.h                  |    6 ++++++
-> >  9 files changed, 19 insertions(+), 10 deletions(-)
->=20
-> > diff --git a/include/asm-powerpc/fs_pd.h
-> > b/include/asm-powerpc/fs_pd.h index 3d0e819..2ba51b9 100644
-> > --- a/include/asm-powerpc/fs_pd.h
-> > +++ b/include/asm-powerpc/fs_pd.h
-> > @@ -25,6 +25,12 @@ static inline int uart_clock(void)
-> >          return ppc_proc_freq;
-> >  }
-> >
-> > +#if defined(CONFIG_8260)
-> > +#include <asm/mpc8260.h>
-> > +#elif defined(CONFIG_85xx)
-> > +#include <asm/mpc85xx.h>
-> > +#endif
-> > +
->=20
-> what do we need these includes for?
->=20
+> On Wed, 10 Jan 2007 11:02:52 -0600
+> Kumar Gala wrote:
+>
+>>
+>> On Jan 9, 2007, at 7:11 PM, Vitaly Bordug wrote:
+>>
+>>>
+>>> This contains important fixes for the CPM2 PIC code. Eliminated
+>>> CPM_IRQ_OFFSET, pulling the respective interrupt numbers from the
+>>> interrupt
+>>> mapping. Updated devicetree files to reflect that. Changed direct
+>>> IC-related IO accesses to the IO accessors.
+>>>
+>>> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+>>> ---
+>>
+>> [snip]
+>>
+>>> diff --git a/include/asm-powerpc/mpc8260.h b/include/asm-powerpc/
+>>> mpc8260.h
+>>> new file mode 100644
+>>> index 0000000..c2adcb0
+>>> --- /dev/null
+>>> +++ b/include/asm-powerpc/mpc8260.h
+>>> @@ -0,0 +1,32 @@
+>>> +/*
+>>> + * Since there are many different boards and no standard
+>>> configuration,
+>>> + * we have a unique include file for each.  Rather than change
+>>> every
+>>> + * file that has to include MPC8260 configuration, they all include
+>>> + * this one and the configuration switching is done here.
+>>> + */
+>>> +#ifdef __KERNEL__
+>>> +#ifndef __ASM_PPC_MPC8260_H__
+>>> +#define __ASM_PPC_MPC8260_H__
+>>> +
+>>> +
+>>> +#ifdef CONFIG_8260
+>>> +
+>>> +#if defined(CONFIG_PQ2ADS) || defined (CONFIG_PQ2FADS)
+>>> +#include <platforms/82xx/pq2ads.h>
+>>> +#endif
+>>
+>> What's defined in pq2ads.h that is needed by other code?
+>>
+> holding CPM_MAP_ADDR -- not everywhere in the current code it could  
+> be pulled from the devtree.
+> Actually, I have it addressed, but that is pretty big mod that  
+> could not be called bugfix and will hopefully be merged in next  
+> window.
 
-This is to keep ppc stuff still working mostly. Basically, whole this
-header is for such aim.
-To be specific, both fs_enet and cpm_uart will bail the compilation out
-failing to find CPM_MAP_ADDR:
+Ok, do you mind adding a comment about that so we make sure it gets  
+cleaned up for 2.6.21
 
-drivers/net/fs_enet/fs_enet-main.c:1144: error: 'CPM_MAP_ADDR'
-undeclared (first use in this function)
-
-and so forth.
-> >  #define
-> > cpm2_map(member)						\
-> > ({
-> > \ u32 offset =3D offsetof(cpm2_map_t, member);
-> > \
->=20
-> - k
-
---Sig_BnOP51E+pKAz.gkJuol2M3L
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFFpVGsuOg9JvQhSEsRArMwAJ9bQ/G6r0k+rFMIpeIPRdi8/Jem5gCcDacA
-2OZRvkpMW35WeOxR8LFjTg8=
-=pS+e
------END PGP SIGNATURE-----
-
---Sig_BnOP51E+pKAz.gkJuol2M3L--
+- k
