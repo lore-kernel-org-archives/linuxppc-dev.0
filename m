@@ -1,19 +1,30 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 4A40DDDDFD
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 16:11:11 +1100 (EST)
-Date: Wed, 10 Jan 2007 08:09:49 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 1/5] [POWERPC] cpm2: Updates for CPM2 pic
-Message-ID: <20070110080949.5a0bf1a7@localhost.localdomain>
-In-Reply-To: <17828.19395.906600.586578@cargo.ozlabs.ibm.com>
-References: <20070110011124.20342.38130.stgit@localhost.localdomain>
-	<17828.19395.906600.586578@cargo.ozlabs.ibm.com>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 182B0DDE24
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 19:56:25 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l0A8uNPi020294
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 01:56:23 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0A8uKSa008173
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 02:56:22 -0600 (CST)
+Subject: Re: [PATCH] powerpc: Fix irq routing on some PowerMac 32 bits
+From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1168401489.22458.332.camel@localhost.localdomain>
+References: <1165806548.7260.0.camel@localhost.localdomain>
+	<1168398002.571.3.camel@localhost.localdomain>
+	<1168399012.22458.328.camel@localhost.localdomain>
+	<1168400086.700.12.camel@localhost.localdomain>
+	<1168401489.22458.332.camel@localhost.localdomain>
+Content-Type: text/plain
+Message-Id: <1168419440.1704.16.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_+8loV_rfyKRvHwbA=RbPfjZ";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Date: 10 Jan 2007 16:57:20 +0800
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,72 +34,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_+8loV_rfyKRvHwbA=RbPfjZ
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Wed, 2007-01-10 at 11:58, Benjamin Herrenschmidt wrote:
+> > Stop here.
+> 
+> Probably the log is just the last console output you got from the
+> early
+> console before it switched to the main one. Do you use udbg on these
+> boards for early boot messages ? If yes, have you tried the
+> udbg-immortal option ? (Or just prevent udbg from unregistering).
+> 
+> Do you have access to a HW debugging tool maybe to trace what's going
+> on ?
+> 
+> I have no idea what's wrong at this point, though it's likely to be a
+> problem with your device-tree, I can't verify it without a bit more
+> debug data. Have you tried adding some debug infos to the new
+> implementation of pci_device_to_OF_node(), check how it's called and
+> what it returns ? That might give you a clue about the problem.
 
-On Wed, 10 Jan 2007 13:13:23 +1100
-Paul Mackerras wrote:
+Thanks for all your suggestions. I had thought you could point out where
+was wrong :-). Now, I have to trace it myself. I do not have HW
+debugging tools, I only have printk().
 
-> Vitaly Bordug writes:
-> >=20
-> > This contains important fixes for the CPM2 PIC code. Eliminated
-> > CPM_IRQ_OFFSET, pulling the respective interrupt numbers from the
-> > interrupt mapping. Updated devicetree files to reflect that.
-> > Changed direct IC-related IO accesses to the IO accessors.
->=20
-> I can't put these patches in for 2.6.20 with the titles and
-> descriptions you have given.
->=20
-well that is to say, mpc8272 is utterly broken without patch 1, as interrup=
-t controller will not work at all.
-8560's cpm2-related will be hosed too (hence no uart, heh)
+I catch the bug. In your patch:
 
-> At this stage, for stuff to go into 2.6.20, you need to clearly
-> identify what the problem is that you're fixing and give at least some
-> indication of why it needs to be fixed for 2.6.20.  If the code
-> currently won't compile at all for some config, or is now completely
-> wrong because of changes elsewhere, or could cause an oops, then we
-> can fix it, but I need something better than just "Updates" in the
-> title and a list of what changes you made in the description.  At the
-> moment I look at your patch titles and descriptions and think "that's
-> nice, but why should it go in 2.6.20?"
->=20
++       /* not a root bus, we need to get our parent */
++       parent = scan_OF_for_pci_bus(bus->parent);
++       if (parent == NULL)
++               return NULL;
++
++       /* now iterate for children for a match */
++       np = scan_OF_for_pci_dev(parent, bus->self->devfn);
++       of_node_put(parent);
++
++       /* sanity check */
++       if (strcmp(np->type, "pci") != 0)
++               printk(KERN_WARNING "pci: wrong type \"%s\" for bridge %s\n",
++                      np->type, np->full_name);
 
-OK. I'll update descriptions and resubmit
-
-> If you're fixing up something that worked in 2.6.19 but now doesn't
-> work, that helps justify the change, but you need to say that.
->=20
-> These comments apply particularly to patches 1 to 3 in your series.
-> For patch 4/5 you at least told us that changes to io.h caused the
-> breakage, but even there a bit more detail about what changes caused
-> what breakage would be useful.  However, at this stage, you need to
-> resist the temptation to do other "overhaul and improvements" while
-> you are there; just fix the bugs or breakages that you have identified
-> in the description.
->=20
-All above is quite right, however  patch 4 does not contain extra code iirc=
- (that do not address breakages),
-I just kept same description it used to have at initial revision, submitted=
- during merge window.=20
-
-> Patch 5/5 is OK since it doesn't touch any actual code
->=20
-Thanks for looking over this stuff such promptly...
-
-> Paul.
-
---Sig_+8loV_rfyKRvHwbA=RbPfjZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFFpHUeuOg9JvQhSEsRAgHcAJsF4I7ALje+3i5skQv51yqZVVFV3QCfR3vn
-W5IqH/f25kkUWhw9Vb1Hx+4=
-=77Ms
------END PGP SIGNATURE-----
-
---Sig_+8loV_rfyKRvHwbA=RbPfjZ--
+I think you should judge np != NULL before using it.  If np == NULL,
+np->type will cause memory access error. On CDS and some other Freescle
+board, such as 8641HPCN, there is pci bridge, np = NULL , this will
+cause error.
+If you agree, you or I will provide a patch to fix it:-).
+Thanks.
+Roy 
