@@ -3,17 +3,18 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C52EEDDE45
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 04:08:46 +1100 (EST)
-In-Reply-To: <20070110011154.20342.12189.stgit@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 1987EDDEB7
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 04:11:54 +1100 (EST)
+In-Reply-To: <20070110011200.20342.5712.stgit@localhost.localdomain>
 References: <20070110011124.20342.38130.stgit@localhost.localdomain>
-	<20070110011154.20342.12189.stgit@localhost.localdomain>
+	<20070110011200.20342.5712.stgit@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CE5804BC-675C-474A-B74B-62E6B8E0D9F2@kernel.crashing.org>
+Message-Id: <628EF2F5-2700-4CB9-B1E4-3DB225232AE1@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/5] [FS_ENET] OF-related update for FEC and SCC MAC's
-Date: Wed, 10 Jan 2007 11:07:58 -0600
+Subject: Re: [PATCH 4/5] [POWERPC] Fix kernel build errors for mpc8272ads and
+	mpc8560ads
+Date: Wed, 10 Jan 2007 11:11:05 -0600
 To: Vitaly Bordug <vbordug@ru.mvista.com>
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,135 +27,58 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 9, 2007, at 7:11 PM, Vitaly Bordug wrote:
+On Jan 9, 2007, at 7:12 PM, Vitaly Bordug wrote:
 
 >
-> Updated direct resource pass with ioremap call, make it grant  
-> proper IRQ
-> mapping, stuff incompatible with the new approach were respectively  
-> put  under
-> #ifndef CONFIG_PPC_MERGE.
+> Recent update of asm-powerpc/io.h caused cpm-related stuff to break  
+> in the
+> current kernel. Current patch fixes it, and includes other overhaul  
+> and
+> improvements (incomplete list is below). Required for proper  
+> functioning of
+> the 8xx stuff as well.
+>
+> - Updated dts with a chosen node with interrupt controller,
+> - fixed messed device IDs among CPM2 SoC devices,
+> - corrected odd header name and fixed type in defines,
+> - Added 82xx subdir to the powerpc/platforms Makefile, new
+>   solely-powerpc header for 8260 family (was using one from arch/ 
+> ppc, this
+>   one cleaned up from the extra stuff).
 >
 > Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 > ---
 >
->  drivers/net/fs_enet/mac-fec.c |   13 +++++++++----
->  drivers/net/fs_enet/mac-scc.c |    6 ++++--
->  drivers/net/phy/fixed.c       |    2 +-
->  3 files changed, 14 insertions(+), 7 deletions(-)
+>  arch/powerpc/platforms/82xx/mpc82xx.c     |    2 +-
+>  arch/powerpc/platforms/82xx/mpc82xx_ads.c |    2 +-
+>  arch/powerpc/platforms/82xx/pq2ads.h      |    5 +++--
+>  arch/powerpc/platforms/Makefile           |    1 +
+>  drivers/net/fs_enet/fs_enet.h             |    1 +
+>  drivers/serial/cpm_uart/cpm_uart_cpm1.h   |    3 ---
+>  drivers/serial/cpm_uart/cpm_uart_cpm2.h   |    3 ---
+>  include/asm-powerpc/fs_pd.h               |    6 ++++++
+>  include/asm-powerpc/io.h                  |    6 ++++++
+>  9 files changed, 19 insertions(+), 10 deletions(-)
+
+> diff --git a/include/asm-powerpc/fs_pd.h b/include/asm-powerpc/fs_pd.h
+> index 3d0e819..2ba51b9 100644
+> --- a/include/asm-powerpc/fs_pd.h
+> +++ b/include/asm-powerpc/fs_pd.h
+> @@ -25,6 +25,12 @@ static inline int uart_clock(void)
+>          return ppc_proc_freq;
+>  }
 >
-> diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/ 
-> mac-fec.c
-> index c2c5fd4..474d6d7 100644
-> --- a/drivers/net/fs_enet/mac-fec.c
-> +++ b/drivers/net/fs_enet/mac-fec.c
-> @@ -104,9 +104,9 @@ static int do_pd_setup(struct fs_enet_private  
-> *fep)
->  	fep->interrupt = platform_get_irq_byname(pdev,"interrupt");
->  	if (fep->interrupt < 0)
->  		return -EINVAL;
-> -	
+> +#if defined(CONFIG_8260)
+> +#include <asm/mpc8260.h>
+> +#elif defined(CONFIG_85xx)
+> +#include <asm/mpc85xx.h>
+> +#endif
 > +
->  	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
-> -	fep->fec.fecp =(void*)r->start;
-> +	fep->fec.fecp = (void *)ioremap(r->start, r->end - r->start + 1);
 
-you should get rid of the (void *) cast
+what do we need these includes for?
 
->  	if(fep->fec.fecp == NULL)
->  		return -EINVAL;
-> @@ -319,11 +319,14 @@ static void restart(struct net_device *dev)
->  	 * Clear any outstanding interrupt.
->  	 */
->  	FW(fecp, ievent, 0xffc0);
-> +#ifndef CONFIG_PPC_MERGE
->  	FW(fecp, ivec, (fep->interrupt / 2) << 29);
-> -	
-> +#else
-> +	FW(fecp, ivec, (irq_map[fep->interrupt].hwirq / 2) << 29);
-> +#endif
->
->  	/*
-> -	 * adjust to speed (only for DUET & RMII)
-> +	 * adjust to speed (only for DUET & RMII)
->  	 */
->  #ifdef CONFIG_DUET
->  	if (fpi->use_rmii) {
-> @@ -418,6 +421,7 @@ static void stop(struct net_device *dev)
->
->  static void pre_request_irq(struct net_device *dev, int irq)
->  {
-> +#ifndef CONFIG_PPC_MERGE
->  	immap_t *immap = fs_enet_immap;
->  	u32 siel;
->
-> @@ -431,6 +435,7 @@ static void pre_request_irq(struct net_device  
-> *dev, int irq)
->  			siel &= ~(0x80000000 >> (irq & ~1));
->  		out_be32(&immap->im_siu_conf.sc_siel, siel);
->  	}
-> +#endif
->  }
->
->  static void post_free_irq(struct net_device *dev, int irq)
-> diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/ 
-> mac-scc.c
-> index 95ec587..62057f4 100644
-> --- a/drivers/net/fs_enet/mac-scc.c
-> +++ b/drivers/net/fs_enet/mac-scc.c
-> @@ -121,13 +121,13 @@ static int do_pd_setup(struct fs_enet_private  
-> *fep)
->  		return -EINVAL;
->
->  	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
-> -	fep->scc.sccp = (void *)r->start;
-> +	fep->scc.sccp = (void *)ioremap(r->start, r->end - r->start + 1);
+>  #define cpm2_map(member)						\
+>  ({									\
+>  	u32 offset = offsetof(cpm2_map_t, member);			\
 
-Get rid of void * cast
-
->
->  	if (fep->scc.sccp == NULL)
->  		return -EINVAL;
->
->  	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram");
-> -	fep->scc.ep = (void *)r->start;
-> +	fep->scc.ep = (void *)ioremap(r->start, r->end - r->start + 1);
-
-Get rid of void * cast
-
->  	if (fep->scc.ep == NULL)
->  		return -EINVAL;
-> @@ -397,6 +397,7 @@ static void stop(struct net_device *dev)
->
->  static void pre_request_irq(struct net_device *dev, int irq)
->  {
-> +#ifndef CONFIG_PPC_MERGE
->  	immap_t *immap = fs_enet_immap;
->  	u32 siel;
->
-> @@ -410,6 +411,7 @@ static void pre_request_irq(struct net_device  
-> *dev, int irq)
->  			siel &= ~(0x80000000 >> (irq & ~1));
->  		out_be32(&immap->im_siu_conf.sc_siel, siel);
->  	}
-> +#endif
->  }
->
->  static void post_free_irq(struct net_device *dev, int irq)
-> diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
-> index 096d4a1..8613539 100644
-> --- a/drivers/net/phy/fixed.c
-> +++ b/drivers/net/phy/fixed.c
-> @@ -349,7 +349,7 @@ static int __init fixed_init(void)
->  	fixed_mdio_register_device(0, 100, 1);
->  #endif
->
-> -#ifdef CONFIX_FIXED_MII_10_FDX
-> +#ifdef CONFIG_FIXED_MII_10_FDX
->  	fixed_mdio_register_device(0, 10, 1);
->  #endif
->  	return 0;
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+- k
