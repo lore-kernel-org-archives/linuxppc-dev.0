@@ -1,35 +1,24 @@
-Return-Path: <ahuja@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 61136DDE2A
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 07:58:46 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e31.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0AKwgqp001086
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 15:58:42 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	l0AKwgRW519300
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 13:58:42 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l0AKwgOp012489
-	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 13:58:42 -0700
-Message-ID: <45A55380.9020402@austin.ibm.com>
-Date: Wed, 10 Jan 2007 14:58:40 -0600
-From: Manish Ahuja <ahuja@austin.ibm.com>
-MIME-Version: 1.0
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH]Enabling Auto poweron after power is restored.
-References: <45707469.9060604@austin.ibm.com> <4575E76C.7030300@austin.ibm.com>
-	<17785.415.574041.518517@cargo.ozlabs.ibm.com>
-	<458EBE02.3010401@austin.ibm.com>
-	<17827.5922.667200.166153@cargo.ozlabs.ibm.com>
-	<20070109150519.GD8122@localdomain>
-In-Reply-To: <20070109150519.GD8122@localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A5300DDE3E
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 07:59:19 +1100 (EST)
+In-Reply-To: <20070110235051.256b5794@localhost.localdomain>
+References: <20070110011124.20342.38130.stgit@localhost.localdomain>
+	<20070110011200.20342.5712.stgit@localhost.localdomain>
+	<628EF2F5-2700-4CB9-B1E4-3DB225232AE1@kernel.crashing.org>
+	<20070110235051.256b5794@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7F484F5C-4814-4721-90A8-F8D98DF10823@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 4/5] [POWERPC] Fix kernel build errors for mpc8272ads and
+	mpc8560ads
+Date: Wed, 10 Jan 2007 14:58:31 -0600
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,39 +28,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Nathan Lynch wrote:
-> Paul Mackerras wrote:
->   
->> Manish Ahuja writes:
->>
->>     
->>> During power outages, the ups notifies the system for a shutdown. In the 
->>> current setup, it isn't possible to power on when power is restored. 
->>> This patch fixes the issue by calling the right ibm,power-off-ups token 
->>> during such events. It also adds a proc interface so that rc.powerfail 
->>> can parse the epow events and modify the power-off behavior accordingly 
->>> to enable the right token to be called.
->>>       
->> Creating new non-process-related files in /proc is frowned upon these
->> days, so we'll have to find somewhere in /sys for this.  Anybody got a
->> suggestion?
->>     
+
+On Jan 10, 2007, at 2:50 PM, Vitaly Bordug wrote:
+
+> On Wed, 10 Jan 2007 11:11:05 -0600
+> Kumar Gala wrote:
 >
-> Maybe a sysctl instead?
->   
-Wouldn't sysctl be /proc/sys/something again.
+>>
+>> On Jan 9, 2007, at 7:12 PM, Vitaly Bordug wrote:
+>>
+>>>
+>>> Recent update of asm-powerpc/io.h caused cpm-related stuff to
+>>> break in the
+>>> current kernel. Current patch fixes it, and includes other
+>>> overhaul and
+>>> improvements (incomplete list is below). Required for proper
+>>> functioning of
+>>> the 8xx stuff as well.
+>>>
+>>> - Updated dts with a chosen node with interrupt controller,
+>>> - fixed messed device IDs among CPM2 SoC devices,
+>>> - corrected odd header name and fixed type in defines,
+>>> - Added 82xx subdir to the powerpc/platforms Makefile, new
+>>>   solely-powerpc header for 8260 family (was using one from arch/
+>>> ppc, this
+>>>   one cleaned up from the extra stuff).
+>>>
+>>> Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+>>> ---
+>>>
+>>>  arch/powerpc/platforms/82xx/mpc82xx.c     |    2 +-
+>>>  arch/powerpc/platforms/82xx/mpc82xx_ads.c |    2 +-
+>>>  arch/powerpc/platforms/82xx/pq2ads.h      |    5 +++--
+>>>  arch/powerpc/platforms/Makefile           |    1 +
+>>>  drivers/net/fs_enet/fs_enet.h             |    1 +
+>>>  drivers/serial/cpm_uart/cpm_uart_cpm1.h   |    3 ---
+>>>  drivers/serial/cpm_uart/cpm_uart_cpm2.h   |    3 ---
+>>>  include/asm-powerpc/fs_pd.h               |    6 ++++++
+>>>  include/asm-powerpc/io.h                  |    6 ++++++
+>>>  9 files changed, 19 insertions(+), 10 deletions(-)
+>>
+>>> diff --git a/include/asm-powerpc/fs_pd.h
+>>> b/include/asm-powerpc/fs_pd.h index 3d0e819..2ba51b9 100644
+>>> --- a/include/asm-powerpc/fs_pd.h
+>>> +++ b/include/asm-powerpc/fs_pd.h
+>>> @@ -25,6 +25,12 @@ static inline int uart_clock(void)
+>>>          return ppc_proc_freq;
+>>>  }
+>>>
+>>> +#if defined(CONFIG_8260)
+>>> +#include <asm/mpc8260.h>
+>>> +#elif defined(CONFIG_85xx)
+>>> +#include <asm/mpc85xx.h>
+>>> +#endif
+>>> +
+>>
+>> what do we need these includes for?
+>>
+>
+> This is to keep ppc stuff still working mostly. Basically, whole this
+> header is for such aim.
+> To be specific, both fs_enet and cpm_uart will bail the compilation  
+> out
+> failing to find CPM_MAP_ADDR:
+>
+> drivers/net/fs_enet/fs_enet-main.c:1144: error: 'CPM_MAP_ADDR'
+> undeclared (first use in this function)
+>
+> and so forth.
 
-I did look under /sys but couldn't come up with a location to create 
-this new file.
+How about wrapping it a ifndef CONFIG_PPC_MERGE so we know its just  
+for that and can get ride of it in the future.
 
-Although creating new files under /proc is frowned upon, the subset of 
-files in the directory
-seemed similar in functionality and connected to the new file I was 
-creating and hence this new file in
-/proc/ppc64/rtas.
-
-linux:/proc/ppc64/rtas # ls -x
-.         ..          clock    error_log  frequency  poweron  poweron_auto
-progress  rmo_buffer  sensors  volume
-
-I don't mind creating a /sys entry if anyone has a good suggestion.
+>>>  #define
+>>> cpm2_map(member)						\
+>>> ({
+>>> \ u32 offset = offsetof(cpm2_map_t, member);
+>>> \
+>>
+>> - k
