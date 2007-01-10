@@ -1,18 +1,19 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 87AD2DDDF6
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 07:52:53 +1100 (EST)
-Date: Wed, 10 Jan 2007 23:14:21 +0300
+	by ozlabs.org (Postfix) with ESMTP id 23898DE0E0
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 07:53:07 +1100 (EST)
+Date: Wed, 10 Jan 2007 23:50:51 +0300
 From: Vitaly Bordug <vbordug@ru.mvista.com>
 To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 3/5] [FS_ENET] OF-related update for FEC and SCC MAC's
-Message-ID: <20070110231421.6c6ec86c@localhost.localdomain>
-In-Reply-To: <CE5804BC-675C-474A-B74B-62E6B8E0D9F2@kernel.crashing.org>
+Subject: Re: [PATCH 4/5] [POWERPC] Fix kernel build errors for mpc8272ads
+	and mpc8560ads
+Message-ID: <20070110235051.256b5794@localhost.localdomain>
+In-Reply-To: <628EF2F5-2700-4CB9-B1E4-3DB225232AE1@kernel.crashing.org>
 References: <20070110011124.20342.38130.stgit@localhost.localdomain>
-	<20070110011154.20342.12189.stgit@localhost.localdomain>
-	<CE5804BC-675C-474A-B74B-62E6B8E0D9F2@kernel.crashing.org>
+	<20070110011200.20342.5712.stgit@localhost.localdomain>
+	<628EF2F5-2700-4CB9-B1E4-3DB225232AE1@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_=_BY7qeWeCL7RIbFVhDt+m8";
+Content-Type: multipart/signed; boundary=Sig_BnOP51E+pKAz.gkJuol2M3L;
 	protocol="application/pgp-signature"; micalg=PGP-SHA1
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,69 +25,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_=_BY7qeWeCL7RIbFVhDt+m8
+--Sig_BnOP51E+pKAz.gkJuol2M3L
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 10 Jan 2007 11:07:58 -0600
+On Wed, 10 Jan 2007 11:11:05 -0600
 Kumar Gala wrote:
 
 >=20
-> On Jan 9, 2007, at 7:11 PM, Vitaly Bordug wrote:
+> On Jan 9, 2007, at 7:12 PM, Vitaly Bordug wrote:
 >=20
 > >
-> > Updated direct resource pass with ioremap call, make it grant =20
-> > proper IRQ
-> > mapping, stuff incompatible with the new approach were
-> > respectively put  under
-> > #ifndef CONFIG_PPC_MERGE.
+> > Recent update of asm-powerpc/io.h caused cpm-related stuff to
+> > break in the
+> > current kernel. Current patch fixes it, and includes other
+> > overhaul and
+> > improvements (incomplete list is below). Required for proper =20
+> > functioning of
+> > the 8xx stuff as well.
+> >
+> > - Updated dts with a chosen node with interrupt controller,
+> > - fixed messed device IDs among CPM2 SoC devices,
+> > - corrected odd header name and fixed type in defines,
+> > - Added 82xx subdir to the powerpc/platforms Makefile, new
+> >   solely-powerpc header for 8260 family (was using one from arch/=20
+> > ppc, this
+> >   one cleaned up from the extra stuff).
 > >
 > > Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 > > ---
 > >
-> >  drivers/net/fs_enet/mac-fec.c |   13 +++++++++----
-> >  drivers/net/fs_enet/mac-scc.c |    6 ++++--
-> >  drivers/net/phy/fixed.c       |    2 +-
-> >  3 files changed, 14 insertions(+), 7 deletions(-)
+> >  arch/powerpc/platforms/82xx/mpc82xx.c     |    2 +-
+> >  arch/powerpc/platforms/82xx/mpc82xx_ads.c |    2 +-
+> >  arch/powerpc/platforms/82xx/pq2ads.h      |    5 +++--
+> >  arch/powerpc/platforms/Makefile           |    1 +
+> >  drivers/net/fs_enet/fs_enet.h             |    1 +
+> >  drivers/serial/cpm_uart/cpm_uart_cpm1.h   |    3 ---
+> >  drivers/serial/cpm_uart/cpm_uart_cpm2.h   |    3 ---
+> >  include/asm-powerpc/fs_pd.h               |    6 ++++++
+> >  include/asm-powerpc/io.h                  |    6 ++++++
+> >  9 files changed, 19 insertions(+), 10 deletions(-)
+>=20
+> > diff --git a/include/asm-powerpc/fs_pd.h
+> > b/include/asm-powerpc/fs_pd.h index 3d0e819..2ba51b9 100644
+> > --- a/include/asm-powerpc/fs_pd.h
+> > +++ b/include/asm-powerpc/fs_pd.h
+> > @@ -25,6 +25,12 @@ static inline int uart_clock(void)
+> >          return ppc_proc_freq;
+> >  }
 > >
-> > diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/=20
-> > mac-fec.c
-> > index c2c5fd4..474d6d7 100644
-> > --- a/drivers/net/fs_enet/mac-fec.c
-> > +++ b/drivers/net/fs_enet/mac-fec.c
-> > @@ -104,9 +104,9 @@ static int do_pd_setup(struct fs_enet_private =20
-> > *fep)
-> >  	fep->interrupt =3D platform_get_irq_byname(pdev,"interrupt");
-> >  	if (fep->interrupt < 0)
-> >  		return -EINVAL;
-> > -=09
+> > +#if defined(CONFIG_8260)
+> > +#include <asm/mpc8260.h>
+> > +#elif defined(CONFIG_85xx)
+> > +#include <asm/mpc85xx.h>
+> > +#endif
 > > +
-> >  	r =3D platform_get_resource_byname(pdev, IORESOURCE_MEM,
-> > "regs");
-> > -	fep->fec.fecp =3D(void*)r->start;
-> > +	fep->fec.fecp =3D (void *)ioremap(r->start, r->end -
-> > r->start + 1);
 >=20
-> you should get rid of the (void *) cast
+> what do we need these includes for?
 >=20
 
-Here and below:=20
-Agreed; will fix and respin.
+This is to keep ppc stuff still working mostly. Basically, whole this
+header is for such aim.
+To be specific, both fs_enet and cpm_uart will bail the compilation out
+failing to find CPM_MAP_ADDR:
 
+drivers/net/fs_enet/fs_enet-main.c:1144: error: 'CPM_MAP_ADDR'
+undeclared (first use in this function)
 
-Thanks,=20
-Vitaly
+and so forth.
+> >  #define
+> > cpm2_map(member)						\
+> > ({
+> > \ u32 offset =3D offsetof(cpm2_map_t, member);
+> > \
+>=20
+> - k
 
---Sig_=_BY7qeWeCL7RIbFVhDt+m8
+--Sig_BnOP51E+pKAz.gkJuol2M3L
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFFpUkduOg9JvQhSEsRAr9LAJ4/igwnLP5HvNAXFHvyw9zScuMMzgCfQRlA
-oNUQAnwLZZlsBYOJhgyCTdQ=
-=v3CZ
+iD8DBQFFpVGsuOg9JvQhSEsRArMwAJ9bQ/G6r0k+rFMIpeIPRdi8/Jem5gCcDacA
+2OZRvkpMW35WeOxR8LFjTg8=
+=pS+e
 -----END PGP SIGNATURE-----
 
---Sig_=_BY7qeWeCL7RIbFVhDt+m8--
+--Sig_BnOP51E+pKAz.gkJuol2M3L--
