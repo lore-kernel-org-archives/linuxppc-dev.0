@@ -3,16 +3,17 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0D2E7DDE0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 04:03:44 +1100 (EST)
-In-Reply-To: <20070110011124.20342.38130.stgit@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id C52EEDDE45
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 04:08:46 +1100 (EST)
+In-Reply-To: <20070110011154.20342.12189.stgit@localhost.localdomain>
 References: <20070110011124.20342.38130.stgit@localhost.localdomain>
+	<20070110011154.20342.12189.stgit@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B1664D59-5C48-45DF-8C53-5E1AE6AEDAF4@kernel.crashing.org>
+Message-Id: <CE5804BC-675C-474A-B74B-62E6B8E0D9F2@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/5] [POWERPC] cpm2: Updates for CPM2 pic
-Date: Wed, 10 Jan 2007 11:02:52 -0600
+Subject: Re: [PATCH 3/5] [FS_ENET] OF-related update for FEC and SCC MAC's
+Date: Wed, 10 Jan 2007 11:07:58 -0600
 To: Vitaly Bordug <vbordug@ru.mvista.com>
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,60 +29,131 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 On Jan 9, 2007, at 7:11 PM, Vitaly Bordug wrote:
 
 >
-> This contains important fixes for the CPM2 PIC code. Eliminated
-> CPM_IRQ_OFFSET, pulling the respective interrupt numbers from the  
-> interrupt
-> mapping. Updated devicetree files to reflect that. Changed direct
-> IC-related IO accesses to the IO accessors.
+> Updated direct resource pass with ioremap call, make it grant  
+> proper IRQ
+> mapping, stuff incompatible with the new approach were respectively  
+> put  under
+> #ifndef CONFIG_PPC_MERGE.
 >
 > Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 > ---
+>
+>  drivers/net/fs_enet/mac-fec.c |   13 +++++++++----
+>  drivers/net/fs_enet/mac-scc.c |    6 ++++--
+>  drivers/net/phy/fixed.c       |    2 +-
+>  3 files changed, 14 insertions(+), 7 deletions(-)
+>
+> diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/ 
+> mac-fec.c
+> index c2c5fd4..474d6d7 100644
+> --- a/drivers/net/fs_enet/mac-fec.c
+> +++ b/drivers/net/fs_enet/mac-fec.c
+> @@ -104,9 +104,9 @@ static int do_pd_setup(struct fs_enet_private  
+> *fep)
+>  	fep->interrupt = platform_get_irq_byname(pdev,"interrupt");
+>  	if (fep->interrupt < 0)
+>  		return -EINVAL;
+> -	
+> +
+>  	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+> -	fep->fec.fecp =(void*)r->start;
+> +	fep->fec.fecp = (void *)ioremap(r->start, r->end - r->start + 1);
 
-[snip]
+you should get rid of the (void *) cast
 
-> diff --git a/include/asm-powerpc/mpc8260.h b/include/asm-powerpc/ 
-> mpc8260.h
-> new file mode 100644
-> index 0000000..c2adcb0
-> --- /dev/null
-> +++ b/include/asm-powerpc/mpc8260.h
-> @@ -0,0 +1,32 @@
-> +/*
-> + * Since there are many different boards and no standard  
-> configuration,
-> + * we have a unique include file for each.  Rather than change every
-> + * file that has to include MPC8260 configuration, they all include
-> + * this one and the configuration switching is done here.
-> + */
-> +#ifdef __KERNEL__
-> +#ifndef __ASM_PPC_MPC8260_H__
-> +#define __ASM_PPC_MPC8260_H__
-> +
-> +
-> +#ifdef CONFIG_8260
-> +
-> +#if defined(CONFIG_PQ2ADS) || defined (CONFIG_PQ2FADS)
-> +#include <platforms/82xx/pq2ads.h>
+>  	if(fep->fec.fecp == NULL)
+>  		return -EINVAL;
+> @@ -319,11 +319,14 @@ static void restart(struct net_device *dev)
+>  	 * Clear any outstanding interrupt.
+>  	 */
+>  	FW(fecp, ievent, 0xffc0);
+> +#ifndef CONFIG_PPC_MERGE
+>  	FW(fecp, ivec, (fep->interrupt / 2) << 29);
+> -	
+> +#else
+> +	FW(fecp, ivec, (irq_map[fep->interrupt].hwirq / 2) << 29);
 > +#endif
+>
+>  	/*
+> -	 * adjust to speed (only for DUET & RMII)
+> +	 * adjust to speed (only for DUET & RMII)
+>  	 */
+>  #ifdef CONFIG_DUET
+>  	if (fpi->use_rmii) {
+> @@ -418,6 +421,7 @@ static void stop(struct net_device *dev)
+>
+>  static void pre_request_irq(struct net_device *dev, int irq)
+>  {
+> +#ifndef CONFIG_PPC_MERGE
+>  	immap_t *immap = fs_enet_immap;
+>  	u32 siel;
+>
+> @@ -431,6 +435,7 @@ static void pre_request_irq(struct net_device  
+> *dev, int irq)
+>  			siel &= ~(0x80000000 >> (irq & ~1));
+>  		out_be32(&immap->im_siu_conf.sc_siel, siel);
+>  	}
+> +#endif
+>  }
+>
+>  static void post_free_irq(struct net_device *dev, int irq)
+> diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/ 
+> mac-scc.c
+> index 95ec587..62057f4 100644
+> --- a/drivers/net/fs_enet/mac-scc.c
+> +++ b/drivers/net/fs_enet/mac-scc.c
+> @@ -121,13 +121,13 @@ static int do_pd_setup(struct fs_enet_private  
+> *fep)
+>  		return -EINVAL;
+>
+>  	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+> -	fep->scc.sccp = (void *)r->start;
+> +	fep->scc.sccp = (void *)ioremap(r->start, r->end - r->start + 1);
 
-What's defined in pq2ads.h that is needed by other code?
+Get rid of void * cast
 
-> +
-> +#ifdef CONFIG_PCI_8260
-> +#include <platforms/82xx/m82xx_pci.h>
+>
+>  	if (fep->scc.sccp == NULL)
+>  		return -EINVAL;
+>
+>  	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram");
+> -	fep->scc.ep = (void *)r->start;
+> +	fep->scc.ep = (void *)ioremap(r->start, r->end - r->start + 1);
+
+Get rid of void * cast
+
+>  	if (fep->scc.ep == NULL)
+>  		return -EINVAL;
+> @@ -397,6 +397,7 @@ static void stop(struct net_device *dev)
+>
+>  static void pre_request_irq(struct net_device *dev, int irq)
+>  {
+> +#ifndef CONFIG_PPC_MERGE
+>  	immap_t *immap = fs_enet_immap;
+>  	u32 siel;
+>
+> @@ -410,6 +411,7 @@ static void pre_request_irq(struct net_device  
+> *dev, int irq)
+>  			siel &= ~(0x80000000 >> (irq & ~1));
+>  		out_be32(&immap->im_siu_conf.sc_siel, siel);
+>  	}
 > +#endif
-> +
-> +#ifndef _ISA_MEM_BASE
-> +#define _ISA_MEM_BASE   0
-> +#endif
-> +
-> +#ifndef PCI_DRAM_OFFSET
-> +#define PCI_DRAM_OFFSET 0
-> +#endif
-> +
-> +#endif /* CONFIG_8260 */
-> +#endif /* !__ASM_PPC_MPC8260_H__ */
-> +#endif /* __KERNEL__ */
+>  }
+>
+>  static void post_free_irq(struct net_device *dev, int irq)
+> diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
+> index 096d4a1..8613539 100644
+> --- a/drivers/net/phy/fixed.c
+> +++ b/drivers/net/phy/fixed.c
+> @@ -349,7 +349,7 @@ static int __init fixed_init(void)
+>  	fixed_mdio_register_device(0, 100, 1);
+>  #endif
+>
+> -#ifdef CONFIX_FIXED_MII_10_FDX
+> +#ifdef CONFIG_FIXED_MII_10_FDX
+>  	fixed_mdio_register_device(0, 10, 1);
+>  #endif
+>  	return 0;
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
