@@ -1,16 +1,31 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id 69437DDF19
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CF296DDEE3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Jan 2007 09:28:00 +1100 (EST)
-To: mporter@kernel.crashing.org, paulus@samba.org
-Subject: [PATCH] [POWERPC] Add cputable entry for PowerPC 440SPe Rev. B
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 11 Jan 2007 14:18:13 -0800
-Message-ID: <adalkk9dx7e.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 12 Jan 2007 10:53:42 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0BNraBc001002
+	for <linuxppc-embedded@ozlabs.org>; Thu, 11 Jan 2007 18:53:36 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	l0BNrabL273594
+	for <linuxppc-embedded@ozlabs.org>; Thu, 11 Jan 2007 18:53:36 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0BNrZwH019743
+	for <linuxppc-embedded@ozlabs.org>; Thu, 11 Jan 2007 18:53:35 -0500
+Subject: Re: [PATCH] [POWERPC] Add cputable entry for PowerPC 440SPe Rev. B
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+In-Reply-To: <adalkk9dx7e.fsf@cisco.com>
+References: <adalkk9dx7e.fsf@cisco.com>
+Content-Type: text/plain
+Date: Thu, 11 Jan 2007 17:53:54 -0600
+Message-Id: <1168559634.4217.8.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: paulus@samba.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,62 +36,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Add a cputable entry for revision B of the AMCC 440SPe.  When adding
-this entry, we need to adjust the entry for 440SP Rev. A so that it
-matches more bits of the PVR, since the 440SPe Rev. B has PVR
-53421891, which would match the old 440SP PVR pattern of 53xxx891.
+On Thu, 2007-01-11 at 14:18 -0800, Roland Dreier wrote:
+> Add a cputable entry for revision B of the AMCC 440SPe.  When adding
+> this entry, we need to adjust the entry for 440SP Rev. A so that it
+> matches more bits of the PVR, since the 440SPe Rev. B has PVR
+> 53421891, which would match the old 440SP PVR pattern of 53xxx891.
 
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
----
-I'm still working on cleaning up the PCI Express changes for 440SPe
-Rev. B support but I think we might as well queue this up at least.
+Is Rev. B the one found on the AMCC Katmai board?
 
-I haven't heard from Matt in a while so maybe you could pick this up
-directly Paul?
-
-Thanks,
-  Roland
-
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index b742013..869d5fe 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -1123,8 +1123,8 @@ static struct cpu_spec cpu_specs[] = {
- 		.platform		= "ppc440",
- 	},
- 	{ /* 440SP Rev. A */
--		.pvr_mask		= 0xff000fff,
--		.pvr_value		= 0x53000891,
-+		.pvr_mask		= 0xfff00fff,
-+		.pvr_value		= 0x53200891,
- 		.cpu_name		= "440SP Rev. A",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-@@ -1133,8 +1133,8 @@ static struct cpu_spec cpu_specs[] = {
- 		.platform		= "ppc440",
- 	},
- 	{ /* 440SPe Rev. A */
--		.pvr_mask		= 0xff000fff,
--		.pvr_value		= 0x53000890,
-+		.pvr_mask		= 0xfff00fff,
-+		.pvr_value		= 0x53400890,
- 		.cpu_name		= "440SPe Rev. A",
- 		.cpu_features		= CPU_FTRS_44X,
- 		.cpu_user_features	= COMMON_USER_BOOKE,
-@@ -1142,6 +1142,16 @@ static struct cpu_spec cpu_specs[] = {
- 		.dcache_bsize		= 32,
- 		.platform		= "ppc440",
- 	},
-+	{ /* 440SPe Rev. B */
-+		.pvr_mask		= 0xfff00fff,
-+		.pvr_value		= 0x53400891,
-+		.cpu_name		= "440SPe Rev. B",
-+		.cpu_features		= CPU_FTRS_44X,
-+		.cpu_user_features	= COMMON_USER_BOOKE,
-+		.icache_bsize		= 32,
-+		.dcache_bsize		= 32,
-+		.platform		= "ppc440",
-+	},
- #endif /* CONFIG_44x */
- #ifdef CONFIG_FSL_BOOKE
- 	{	/* e200z5 */
+josh
