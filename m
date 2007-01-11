@@ -1,23 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B4F05DDF10
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 08:55:17 +1100 (EST)
-Subject: Re: [PATCH 2/7] Powerpc MSI implementation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>
-In-Reply-To: <1168550403.22458.414.camel@localhost.localdomain>
-References: <1168514716.63474.857278133999.qpush@cradle>
-	<20070111112503.0CC1BDDF13@ozlabs.org>
-	<20070111194427.GA20450@kroah.com>
-	<1168550403.22458.414.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 12 Jan 2007 08:54:57 +1100
-Message-Id: <1168552498.22458.428.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Olof Johannsson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 99DDEDDF0A
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 09:26:07 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0BMQ3Ee002233
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 17:26:03 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	l0BMQ3F3519472
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 15:26:03 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0BMQ2uC005629
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 15:26:03 -0700
+Date: Thu, 11 Jan 2007 16:26:02 -0600
+To: Bino.Sebastian@Emulex.Com
+Subject: Re: lpfc PCIe error recovey
+Message-ID: <20070111222602.GA25183@austin.ibm.com>
+References: <332A49C36DB0F64198D1A011FB1AA79135B2BA@xbl3.emulex.com>
+	<20070110225939.GB6177@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070110225939.GB6177@austin.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linux-scsi@vger.kernel.org, James.Smart@Emulex.Com, Laurie.Barry@Emulex.Com,
+	vaios.papadimitriou@Emulex.Com, linuxppc-dev@ozlabs.org,
+	rlary@us.ibm.com, linux-pci@atrey.karlin.mff.cuni.cz, strosake@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,42 +38,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-01-12 at 08:20 +1100, Benjamin Herrenschmidt wrote:
-> > So, no, I don't agree with this implementation and don't want to see it
-> > go through anyone's tree into mainline just yet.
+On Wed, Jan 10, 2007 at 04:59:39PM -0600, linas wrote:
 > 
-> So why, when we posted it earlier, you said the exact opposite ? That
-> you actually liked it and wanted to see it as a replacement of the
-> current cruft ?
+> > However, on a Power4 architecture there are errors reported
+> > in upper layer (we discussed this in one of earlier emails) followed 
+> > by SCSI errors.
 > 
-> That's been the logic from day one. We implement a generic MSI support
-> that supports multiple backends, we do it as a powerpc version at first
-> since that's what we can actively test and provide backends for, then as
-> a second step, we work with the intel folks to port their stuff over to
-> our implementation and replace the current crappy generic one.
+> I'm trying to investigate now.
 
-/me calms down a bit ... :-)
+I found two distinct power4 bugs. I posted a patch for one yesterday,
+under the subject heading 
 
-Ok, so what about we do:
+  [PATCH] Urgent: powerpc 2.6.20-rc4 dma broken on non-LPAR pseries
 
- - Move that new implementation to drivers/pci
- - Have a CONFIG_NEW_MSI or something like that to select between
-the old and the new implementation
- - Have the change to pci_dev be based on that config option
+This affects only recent mainline kernels; it would not affect
+older or distro kernels.   
 
-Note: There should be no impact on drivers nor anything out of
-drivers/pci and associated arch support code, the API exposed to drivers
-should be identical.
+The other patch is attached below.  After some more testing,
+I'll submit to mainline.
 
-That way, it will be easier for Intel/Altix folks to port over to the
-new code as it will be accessible to all archs via a config option. Once
-Intel & Altix have ported over, the old code can be removed and
-CONFIG_NEW_MSI too.
+--linas
 
-I know that other archs have actually been waiting for that new
-infrastructure (well, according to some feedback we got when Michael
-first posted it) so that's probably a better approach than having it in
-arch/powerpc indeed.
 
-Cheers,
-Ben.
+Subject: [PATCH] pSeries: EEH improperly enabled for some Power4 systems
+
+It appears that EEH is improperly enabled for some Power4 systems.
+On these systems, the ibm,set-eeh-option returns a value of success
+even when EEH is not supported on the given node. Thus, an explicit
+check for support is required.
+
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com> 
+
+----
+ arch/powerpc/platforms/pseries/eeh.c |   19 ++++++++++++++++---
+ 1 file changed, 16 insertions(+), 3 deletions(-)
+
+Index: linux-2.6.20-rc4/arch/powerpc/platforms/pseries/eeh.c
+===================================================================
+--- linux-2.6.20-rc4.orig/arch/powerpc/platforms/pseries/eeh.c	2007-01-11 14:15:02.000000000 -0600
++++ linux-2.6.20-rc4/arch/powerpc/platforms/pseries/eeh.c	2007-01-11 15:14:39.000000000 -0600
+@@ -748,6 +748,7 @@ struct eeh_early_enable_info {
+ /* Enable eeh for the given device node. */
+ static void *early_enable_eeh(struct device_node *dn, void *data)
+ {
++	unsigned int rets[3];
+ 	struct eeh_early_enable_info *info = data;
+ 	int ret;
+ 	const char *status = get_property(dn, "status", NULL);
+@@ -804,16 +805,14 @@ static void *early_enable_eeh(struct dev
+ 		                regs[0], info->buid_hi, info->buid_lo,
+ 		                EEH_ENABLE);
+ 
++		enable = 0;
+ 		if (ret == 0) {
+-			eeh_subsystem_enabled = 1;
+-			pdn->eeh_mode |= EEH_MODE_SUPPORTED;
+ 			pdn->eeh_config_addr = regs[0];
+ 
+ 			/* If the newer, better, ibm,get-config-addr-info is supported, 
+ 			 * then use that instead. */
+ 			pdn->eeh_pe_config_addr = 0;
+ 			if (ibm_get_config_addr_info != RTAS_UNKNOWN_SERVICE) {
+-				unsigned int rets[2];
+ 				ret = rtas_call (ibm_get_config_addr_info, 4, 2, rets, 
+ 					pdn->eeh_config_addr, 
+ 					info->buid_hi, info->buid_lo,
+@@ -821,6 +820,20 @@ static void *early_enable_eeh(struct dev
+ 				if (ret == 0)
+ 					pdn->eeh_pe_config_addr = rets[0];
+ 			}
++
++			/* Some older systems (Power4) allow the
++			 * ibm,set-eeh-option call to succeed even on nodes
++			 * where EEH is not supported. Verify support
++			 * explicitly. */
++			ret = read_slot_reset_state(pdn, rets);
++			if ((ret == 0) && (rets[1] == 1))
++				enable = 1;
++		}
++
++		if (enable) {
++			eeh_subsystem_enabled = 1;
++			pdn->eeh_mode |= EEH_MODE_SUPPORTED;
++
+ #ifdef DEBUG
+ 			printk(KERN_DEBUG "EEH: %s: eeh enabled, config=%x pe_config=%x\n",
+ 			       dn->full_name, pdn->eeh_config_addr, pdn->eeh_pe_config_addr);
