@@ -1,22 +1,21 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7B5EFDE0DA
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 06:45:28 +1100 (EST)
-Date: Thu, 11 Jan 2007 11:44:27 -0800
-From: Greg KH <greg@kroah.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/7] Powerpc MSI implementation
-Message-ID: <20070111194427.GA20450@kroah.com>
-References: <1168514716.63474.857278133999.qpush@cradle>
-	<20070111112503.0CC1BDDF13@ozlabs.org>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id 2C05ADDE07
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 06:55:00 +1100 (EST)
+To: Christoph Hellwig <hch@infradead.org>
+Subject: Re: [PATCH/RFC 2.6.21 2/5] ehca: ehca_uverbs.c: "proper" use of mmap
+References: <200701112008.15841.hnguyen@linux.vnet.ibm.com>
+	<20070111194000.GE24623@infradead.org>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 11 Jan 2007 11:54:58 -0800
+In-Reply-To: <20070111194000.GE24623@infradead.org> (Christoph Hellwig's
+	message of "Thu, 11 Jan 2007 19:40:00 +0000")
+Message-ID: <adaslehibjh.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070111112503.0CC1BDDF13@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Olof Johannsson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	openfabrics-ewg@openib.org, linuxppc-dev@ozlabs.org,
+	raisch@de.ibm.com, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,41 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 11, 2007 at 10:25:19PM +1100, Michael Ellerman wrote:
-> Powerpc MSI implementation, based on a collection of "ops" callbacks.
-> We have to take the ops approach to accomodate RTAS, where firmware
-> handles almost all details of MSI setup/teardown. Bare-metal MSI
-> can be accomodated also.
-> 
-> See the comments in include/asm-powerpc/msi.h for more info.
-> 
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
-> 
->  arch/powerpc/kernel/msi.c     |  320 ++++++++++++++++++++++++++++++++++++++++++
->  include/asm-powerpc/machdep.h |    6 
->  include/asm-powerpc/msi.h     |  173 ++++++++++++++++++++++
->  include/linux/pci.h           |    7 
->  4 files changed, 506 insertions(+)
-> 
-> Index: msi/arch/powerpc/kernel/msi.c
+ > >  int ehca_mmap(struct ib_ucontext *context, struct vm_area_struct *vma)
+ > >  {
+ > 
+ > Can you split this monster routine into individual functions for
+ > each type of mmap please?  With two helpers to get and verify the cq/qp
+ > shared by the individual sub-variants, that would also help to get rid
+ > of all those magic offsets.
+ > 
+ > Actually, this routine directly comes from ib_device.mmap - Roland,
+ > can you shed some light on what's going on here?
 
-Why isn't all of this in the drivers/pci/msi.c file instead?  You are
-creating a new API here that is only availble to the PPC platform, which
-is not acceptable.
+Each userspace-accessible IB device gets a single device node like
+/dev/infiniband/uverbsX.  Opening that gives userspace a "context".
+One of the things userspace can do with that fd is mmap() on it --
+that was originally envisioned as a way to map a page of hardware
+registers directly in to the userspace process.
 
-Please work with the current MSI core code to work properly for PPC,
-instead of reinventing the whole thing.
+It seems ehca needs to allocate lots of different things in the kernel
+via mmap().  What you're saying I guess is that ideally each of these
+would be mmap() on a different fd rather than using different
+offsets.  It's a little awkward to open multiple device nodes to get
+multiple fds, since there's not a good way to attach them all to the
+same context.  I guess we could create some hack to return more file
+handles, but I think that cure is worse than the disease of using
+magic offsets...
 
-> +#if defined(CONFIG_PCI_MSI) && defined(CONFIG_PPC_MERGE)
-> +struct msi_info;
-> +#endif
+Maybe longer term we need to look at a scheme like cell's spufs but
+I'm still not confident we have the RDMA interface quite ready to
+freeze at the system call level.
 
-CONFIG_PPC_MERGE?  What is that option for?
-
-So, no, I don't agree with this implementation and don't want to see it
-go through anyone's tree into mainline just yet.
-
-thanks,
-
-greg k-h
+ - R.
