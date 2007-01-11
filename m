@@ -1,21 +1,21 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 09C97DDEC4
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 23:57:17 +1100 (EST)
-Received: from leda.ptxnet.pengutronix.de ([10.1.0.71])
-	by metis.extern.pengutronix.de with esmtp (Exim 3.36 #1 (Debian))
-	id 1H4z3D-0001ph-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 13:28:59 +0100
-Received: from sha by leda.ptxnet.pengutronix.de with local (Exim 4.63)
-	(envelope-from <sha@localhost.localdomain>) id 1H4z39-00048N-KV
-	for linuxppc-dev@ozlabs.org; Thu, 11 Jan 2007 13:28:55 +0100
-Date: Thu, 11 Jan 2007 13:28:55 +0100
-From: Sascha Hauer <s.hauer@pengutronix.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 66C0DDDECC
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 00:06:05 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] add restart function for mpc52xx
-Message-ID: <20070111122855.GF11226@localhost.localdomain>
+Subject: Re: [PATCH 2/2] drivers/ata: export some static functions in
+	libata-core.c
+Date: Thu, 11 Jan 2007 14:05:56 +0100
+References: <200701110853.l0B8rtGK009404@toshiba.co.jp>
+	<200701111008.34866.arnd@arndb.de>
+	<200701110928.l0B9SUri015056@toshiba.co.jp>
+In-Reply-To: <200701110928.l0B9SUri015056@toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200701111405.56575.arnd@arndb.de>
+Cc: linux-ide@vger.kernel.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,72 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds restart support for mpx52xx systems.
+On Thursday 11 January 2007 10:30, Akira Iguchi wrote:
+> >Exporting new symbols needs some explanation here about why they
+> >should now be global for ata_scc while the existing drivers
+> >did not need them. Since the patch otherwise only moves stuff
+> >around as needed, I assume it's good.
+> 
+> I thought it was better to use common functions as far as possible.
+> But if it is preferable to copy them in ata_scc.c, I will do so.
 
-Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+To clarify my words here:
 
----
- arch/powerpc/platforms/52xx/lite5200.c       |    1 +
- arch/powerpc/platforms/52xx/mpc52xx_common.c |   15 +++++++++++++++
- include/asm-powerpc/mpc52xx.h                |    2 ++
- 3 files changed, 18 insertions(+)
+It is definitely better to use common functions or to modify the common
+code rather than copy it.
 
-Index: linux-2.6/arch/powerpc/platforms/52xx/lite5200.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/52xx/lite5200.c
-+++ linux-2.6/arch/powerpc/platforms/52xx/lite5200.c
-@@ -153,6 +153,7 @@ define_machine(lite52xx) {
- 	.name 		= "lite52xx",
- 	.probe 		= lite52xx_probe,
- 	.setup_arch 	= lite52xx_setup_arch,
-+	.restart	= mpc52xx_restart,
- 	.init		= mpc52xx_declare_of_platform_devices,
- 	.init_IRQ 	= mpc52xx_init_irq,
- 	.get_irq 	= mpc52xx_get_irq,
-Index: linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c
-+++ linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c
-@@ -75,6 +75,21 @@ mpc52xx_find_ipb_freq(struct device_node
- }
- EXPORT_SYMBOL(mpc52xx_find_ipb_freq);
- 
-+void
-+mpc52xx_restart(char *cmd)
-+{
-+	struct mpc52xx_gpt *gpt = mpc52xx_find_and_map("mpc52xx-gpt");
-+
-+	local_irq_disable();
-+
-+	/* Turn on the watchdog and wait for it to expire. It effectively
-+	  does a reset */
-+	out_be32(&gpt->mode, 0x00000000);
-+	out_be32(&gpt->count, 0x0000000ff);
-+	out_be32(&gpt->mode, 0x00009004);
-+
-+	while (1);
-+}
- 
- void __init
- mpc52xx_setup_cpu(void)
-Index: linux-2.6/include/asm-powerpc/mpc52xx.h
-===================================================================
---- linux-2.6.orig/include/asm-powerpc/mpc52xx.h
-+++ linux-2.6/include/asm-powerpc/mpc52xx.h
-@@ -249,6 +249,8 @@ extern void mpc52xx_declare_of_platform_
- extern void mpc52xx_init_irq(void);
- extern unsigned int mpc52xx_get_irq(void);
- 
-+extern void mpc52xx_restart(char *cmd);
-+
- #endif /* __ASSEMBLY__ */
- 
- #endif /* __ASM_POWERPC_MPC52xx_H__ */
+This particular patch (2/2) only moves code around, so what I meant is
+that I'm confident that it does not introduce bugs.
 
-
--- 
- Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
-  Pengutronix - Linux Solutions for Science and Industry
-    Handelsregister: Amtsgericht Hildesheim, HRA 2686
-      Hannoversche Str. 2, 31134 Hildesheim, Germany
-    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+	Arnd <><
