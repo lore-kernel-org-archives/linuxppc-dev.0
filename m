@@ -1,21 +1,22 @@
 Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id EC8DEDDEE1
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 02:50:04 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so459495ugf
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 07:50:02 -0800 (PST)
-Message-ID: <528646bc0701110750m15cd0f01xe014f75a2c9db625@mail.gmail.com>
-Date: Thu, 11 Jan 2007 08:50:02 -0700
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 653DCDDEF8
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 03:20:42 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so468876ugf
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 08:20:40 -0800 (PST)
+Message-ID: <528646bc0701110820r77aa7bb6oe44904da3f6841e8@mail.gmail.com>
+Date: Thu, 11 Jan 2007 09:20:40 -0700
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@gmail.com
 To: "Sascha Hauer" <s.hauer@pengutronix.de>
 Subject: Re: [PATCH] add restart function for mpc52xx
-In-Reply-To: <20070111152137.GG11226@localhost.localdomain>
+In-Reply-To: <528646bc0701110750m15cd0f01xe014f75a2c9db625@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <20070111122855.GF11226@localhost.localdomain>
 	<37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>
 	<20070111152137.GG11226@localhost.localdomain>
+	<528646bc0701110750m15cd0f01xe014f75a2c9db625@mail.gmail.com>
 Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,14 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/11/07, Sascha Hauer <s.hauer@pengutronix.de> wrote:
-> BTW the watchdog timer is only implemented for gpt0. Is it guaranteed
-> that I get gpt0 with mpc52xx_find_and_map("mpc52xx-gpt")? As long as
-> all flat trees start with gpt0 I guess yes.
+On 1/11/07, Grant Likely <grant.likely@secretlab.ca> wrote:
+> On 1/11/07, Sascha Hauer <s.hauer@pengutronix.de> wrote:
+> > BTW the watchdog timer is only implemented for gpt0. Is it guaranteed
+> > that I get gpt0 with mpc52xx_find_and_map("mpc52xx-gpt")? As long as
+> > all flat trees start with gpt0 I guess yes.
+>
+> No, you cannot make this assumption.  There are no guarantees on order
+> that nodes are found.
 
-No, you cannot make this assumption.  There are no guarantees on order
-that nodes are found.
+Sylvain and I just discussed this a bit.  Since gpt0 is different (has
+the watchdog bits) it should have a compatible property that reflects
+it.  We're thinking about adding "mpc52xx-wdt" to the compatible list
+for gpt0.
 
+Cheers,
 g.
 
 -- 
