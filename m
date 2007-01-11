@@ -1,29 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <benh@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 232D0DDE24
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 16:40:12 +1100 (EST)
-Subject: Re: [PATCH] powerpc: Fix irq routing on some PowerMac 32 bits
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-In-Reply-To: <1168493777.6545.3.camel@localhost.localdomain>
-References: <1165806548.7260.0.camel@localhost.localdomain>
-	<1168398002.571.3.camel@localhost.localdomain>
-	<1168399012.22458.328.camel@localhost.localdomain>
-	<1168400086.700.12.camel@localhost.localdomain>
-	<1168401489.22458.332.camel@localhost.localdomain>
-	<1168419440.1704.16.camel@localhost.localdomain>
-	<1168431197.22458.336.camel@localhost.localdomain>
-	<1168493104.6411.10.camel@localhost.localdomain>
-	<1168493297.22458.394.camel@localhost.localdomain>
-	<1168493777.6545.3.camel@localhost.localdomain>
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2EF50DDE24
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 16:40:42 +1100 (EST)
+Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.5) with ESMTP id l0B5rmOa165294
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 16:53:50 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
+	by sd0208e0.au.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	l0B5fqYE156834
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 16:42:04 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0B5cN8g017226
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 16:38:23 +1100
+Subject: [PATCH] powerpc: Remove bogus sanity check in pci -> OF node code
+From: Benjamin Herrenschmidt <benh@au1.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
 Content-Type: text/plain
-Date: Thu, 11 Jan 2007 16:40:05 +1100
-Message-Id: <1168494005.22458.401.camel@localhost.localdomain>
+Date: Thu, 11 Jan 2007 16:38:22 +1100
+Message-Id: <1168493902.22458.399.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,11 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+The new implementation of pci_device_to_OF_node() on ppc32 has a bogus
+sanity check in it that can cause oopses at boot when no device node is
+present, and might hit correct cases with older/weird apple device-trees
+where they have the type "vci" for the chaos bridge.
 
-> urgent for me too. I'll do it now. Let's see ...
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
 
-I beat you at it :-) Besides, I think that "sanity check" was bogus for
-other reasons anyway. It would break support for the chaos brige on
-older Apple powermacs which used the device-type "vci" instead of PCI.
+Zang, please confirm that this fixes your problem. If it does, paulus,
+this should go in 2.6.20
 
-Ben
+
+Index: linux-work/arch/powerpc/kernel/pci_32.c
+===================================================================
+--- linux-work.orig/arch/powerpc/kernel/pci_32.c	2007-01-11 16:30:09.000000000 +1100
++++ linux-work/arch/powerpc/kernel/pci_32.c	2007-01-11 16:30:31.000000000 +1100
+@@ -775,11 +775,6 @@ static struct device_node *scan_OF_for_p
+ 	np = scan_OF_for_pci_dev(parent, bus->self->devfn);
+ 	of_node_put(parent);
+ 
+-	/* sanity check */
+-	if (strcmp(np->type, "pci") != 0)
+-		printk(KERN_WARNING "pci: wrong type \"%s\" for bridge %s\n",
+-		       np->type, np->full_name);
+-
+ 	return np;
+ }
+ 
