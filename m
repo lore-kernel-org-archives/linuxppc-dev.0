@@ -3,17 +3,18 @@ Received: from pentafluge.infradead.org (pentafluge.infradead.org
 	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E3D50DE024
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 06:14:36 +1100 (EST)
-Date: Thu, 11 Jan 2007 19:14:25 +0000
+	by ozlabs.org (Postfix) with ESMTP id DCD53DE0DD
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 06:21:04 +1100 (EST)
+Date: Thu, 11 Jan 2007 19:20:56 +0000
 From: Christoph Hellwig <hch@infradead.org>
 To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH/RFC 2.6.21 1/5] ehca: declaration of queue structures
-Message-ID: <20070111191425.GA24623@infradead.org>
-References: <200701112007.49620.hnguyen@linux.vnet.ibm.com>
+Subject: Re: [PATCH/RFC 2.6.21 3/5] ehca: completion queue: remove use of
+	do_mmap()
+Message-ID: <20070111192056.GB24623@infradead.org>
+References: <200701112008.37236.hnguyen@linux.vnet.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200701112007.49620.hnguyen@linux.vnet.ibm.com>
+In-Reply-To: <200701112008.37236.hnguyen@linux.vnet.ibm.com>
 Cc: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
 	openib-general@openib.org, openfabrics-ewg@openib.org,
 	hch@infradead.org, linuxppc-dev@ozlabs.org, raisch@de.ibm.com
@@ -26,10 +27,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 11, 2007 at 08:07:49PM +0100, Hoang-Nam Nguyen wrote:
-> -#define ehca_alloc_fw_ctrlblock(flags) ((void *) get_zeroed_page(flags))
-> +#define ehca_alloc_fw_ctrlblock(flags) ((void*) get_zeroed_page(flags))
+On Thu, Jan 11, 2007 at 08:08:36PM +0100, Hoang-Nam Nguyen wrote:
+> Hello Roland and Christoph H.!
+> This is a patch for ehca_cq.c. It removes all direct calls of do_mmap()/munmap()
+> when creating and destroying a completion queue respectively. 
+> Thanks
+> Nam
 
-This indentation changes moves away from the preffered form.
+This patch looks good, but there are some issues with the surrounding code:
 
-Except for that the patch looks fine.
+> +		if (my_cq->ownpid != cur_pid) {
+> +			ehca_err(device, "Invalid caller pid=%x ownpid=%x "
+> +				 "cq_num=%x",
+> +				 cur_pid, my_cq->ownpid, my_cq->cq_number);
+> +			return -EINVAL;
+> +		}
+
+(for other reviewers: this is not new code, just moved around)
+
+Owner tracking by pid is really dangerous.  File descriptors can be
+passed around by unix sockets, a single process can have files open
+more than once, etc..
+
+It seems ehca wants to prevent threads other than the creating one
+from performing most operations.  Can you explain the reason for this?
+
+>  	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
+>  	while (my_cq->nr_callbacks)
+>  		yield();
+
+Calling yield is a very bad idea in general.  You should probably
+add a waitqueue that gets woken when nr_callbacks reaches zero to
+sleep effectively here.
