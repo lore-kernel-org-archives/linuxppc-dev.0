@@ -1,12 +1,25 @@
-Return-Path: <boardbringup@gmail.com>
-Message-ID: <ad260f380701110013i4be29dd3hd3b281a91b517bd3@mail.gmail.com>
-Date: Thu, 11 Jan 2007 13:43:23 +0530
-From: "Suresh Chandra Mannava" <boardbringup@gmail.com>
-To: Linuxppc-dev@ozlabs.org
-Subject: Oops: kernel access of bad area
+Return-Path: <akira2.iguchi@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BD499DDDE9
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 19:53:51 +1100 (EST)
+Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
+	by inet-tsb5.toshiba.co.jp  with ESMTP id l0B8rkA2021680
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 17:53:46 +0900 (JST)
+Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id l0B8rkFE023186
+	for linuxppc-dev@ozlabs.org; Thu, 11 Jan 2007 17:53:46 +0900 (JST)
+Received: from mx12.toshiba.co.jp (localhost [127.0.0.1])
+	by ovp1.toshiba.co.jp  with ESMTP id l0B8rkZw024854
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 17:53:46 +0900 (JST)
+Message-Id: <200701110853.l0B8rjXU025003@toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_114922_7941168.1168503203861"
+Date: Thu, 11 Jan 2007 17:56:10 +0900
+From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+To: linux-ide@vger.kernel.org
+Subject: [PATCH 0/2] drivers/ata: PATA driver
+	for Celleb
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,112 +29,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------=_Part_114922_7941168.1168503203861
-Content-Type: multipart/alternative;
-	boundary="----=_Part_114923_21237988.1168503203861"
+Dear everyone,
 
-------=_Part_114923_21237988.1168503203861
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+This is the patchset (based on 2.6.20-rc4) for PATA controller of
+Toshiba Cell reference set(Celleb). I hope this patchset will be
+merged to 2.6.21, so please give me any comments.
 
-Hi,
-
-I am working on porting Linux 2.6.19 on a custom board with MPC7410 and
-CPC700 system controller.
-I am using u-boot-1.1.6 for booting Linux. I found IBM spruce is also having
-CPC700, I followed spruce related files and made modifications accordingly.
-Board supports external 2MB L2 cache and 128MB SDRAM.
-
-I am encountering kernel panic(serial console messages attached with this
-mail). I traced the code by putting printk and found that kernel is crashing
-after executing all functions in start_kernel.
-Is this problem related to L2 cache?
-I didn't enabled L2 cache in Linux as well as in u-boot.
-I request you to provide me some pointers and suggestions for finding out
-this problem. I am going to try with L2 cache enabled.
-
-Thanks a lot.
-
-Suresh Chandra Mannava
-
-------=_Part_114923_21237988.1168503203861
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,<br><br>I am working on porting Linux 2.6.19 on a custom board with MPC7410 and CPC700 system controller.<br>I am using u-boot-1.1.6 for booting Linux. I found IBM spruce is also having CPC700, I followed spruce related files and made modifications accordingly.
-<br>Board supports external 2MB L2 cache and 128MB SDRAM.<br><br>I am encountering kernel panic(serial console messages attached with this mail). I traced the code by putting printk and found that kernel is crashing after executing all functions in start_kernel.
-<br>Is this problem related to L2 cache?<br>I didn&#39;t enabled L2 cache in Linux as well as in u-boot.<br>I request you to provide me some pointers and suggestions for finding out this problem. I am going to try with L2 cache enabled.
-<br><br>Thanks a lot.<br><br>Suresh Chandra Mannava<br>
-
-------=_Part_114923_21237988.1168503203861--
-
-------=_Part_114922_7941168.1168503203861
-Content-Type: text/plain; name=CAPTURE.TXT; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ewswp25w
-Content-Disposition: attachment; filename="CAPTURE.TXT"
-
-Ym9vdG0gMjAwMDAwMA0KIyMgQm9vdGluZyBpbWFnZSBhdCAwMjAwMDAwMCAuLi4KICAgSW1hZ2Ug
-TmFtZTogICBMaW51eC0yLjYuMTkKICAgSW1hZ2UgVHlwZTogICBQb3dlclBDIExpbnV4IEtlcm5l
-bCBJbWFnZSAoZ3ppcCBjb21wcmVzc2VkKQogICBEYXRhIFNpemU6ICAgIDcwNTA2NyBCeXRlcyA9
-IDY4OC41IGtCCiAgIExvYWQgQWRkcmVzczogMDAwMDAwMDAKICAgRW50cnkgUG9pbnQ6ICAwMDAw
-MDAwMAogICBWZXJpZnlpbmcgQ2hlY2tzdW0gLi4uIE9LCiAgIFVuY29tcHJlc3NpbmcgS2VybmVs
-IEltYWdlIC4uLiBPSwojIyBDdXJyZW50IHN0YWNrIGVuZHMgYXQgMHgwN0ZCNENGMCA9PiBzZXQg
-dXBwZXIgbGltaXQgdG8gMHgwMDgwMDAwMAojIyBjbWRsaW5lIGF0IDB4MDA3RkZGMDAgLi4uIDB4
-MDA3RkZGMTMKbWVtc3RhcnQgICAgPSAweDAwMDAwMDAwCm1lbXNpemUgICAgID0gMHgwODAwMDAw
-MApmbGFzaHN0YXJ0ICA9IDB4RkZFMDAwMDAKZmxhc2hzaXplICAgPSAweDAwMjAwMDAwCmZsYXNo
-b2Zmc2V0ID0gMHgwMDAwMDAwMApzcmFtc3RhcnQgICA9IDB4MDAwMDAwMDAKc3JhbXNpemUgICAg
-PSAweDAwMDAwMDAwCmJvb3RmbGFncyAgID0gMHgwMDAwMDAwMQppbnRmcmVxICAgICA9ICAgIDM2
-MyBNSHoKYnVzZnJlcSAgICAgPSAgICAgNjYgTUh6CmV0aGFkZHIgICAgID0gNjQ6MzY6MDA6MDA6
-MDA6MDEKZXRoMWFkZHIgICAgPSA2NDozNjowMDowMDowMDowMgpJUCBhZGRyICAgICA9IDE5Mi4x
-NjguMC4xMDAKYmF1ZHJhdGUgICAgPSAgNTc2MDAgYnBzCk5vIGluaXRyZAojIyBUcmFuc2ZlcnJp
-bmcgY29udHJvbCB0byBMaW51eCAoYXQgYWRkcmVzcyAwMDAwMDAwMCkgLi4uClRvdGFsIG1lbW9y
-eSA9IDEyOE1COyB1c2luZyAyNTZrQiBmb3IgaGFzaCB0YWJsZSAoYXQgYzAxODAwMDApCkxpbnV4
-IHZlcnNpb24gMi42LjE5IChzdXJlc2hAbWFubmF2YSkgKGdjYyB2ZXJzaW9uIDQuMC4wIChERU5Y
-IEVMREsgNC4wIDQuMC4wKSkgIzE4IFRodSBKYW4gMTEgMTA6MzQ6MzYgSVNUIDIwMDcKU3lzdGVt
-IElkZW50aWZpY2F0aW9uOiBDb3JuZXQgQ1NWRzQgTGludXggQm9vdApab25lIFBGTiByYW5nZXM6
-CiAgRE1BICAgICAgICAgICAgIDAgLT4gICAgMzI3NjgKICBOb3JtYWwgICAgICAzMjc2OCAtPiAg
-ICAzMjc2OAplYXJseV9ub2RlX21hcFsxXSBhY3RpdmUgUEZOIHJhbmdlcwogICAgMDogICAgICAg
-IDAgLT4gICAgMzI3NjgKQnVpbHQgMSB6b25lbGlzdHMuICBUb3RhbCBwYWdlczogMzI1MTIKS2Vy
-bmVsIGNvbW1hbmQgbGluZTogY29uc29sZT10dHlTMCw1NzYwMApQSUQgaGFzaCB0YWJsZSBlbnRy
-aWVzOiA1MTIgKG9yZGVyOiA5LCAyMDQ4IGJ5dGVzKQpDb25zb2xlOiBjb2xvdXIgZHVtbXkgZGV2
-aWNlIDgweDI1CkRlbnRyeSBjYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDE2Mzg0IChvcmRlcjog
-NCwgNjU1MzYgYnl0ZXMpCklub2RlLWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogODE5MiAob3Jk
-ZXI6IDMsIDMyNzY4IGJ5dGVzKQpNZW1vcnk6IDEyODEyOGsgYXZhaWxhYmxlICgxMDY4ayBrZXJu
-ZWwgY29kZSwgMzM2ayBkYXRhLCA5MmsgaW5pdCwgMGsgaGlnaG1lbSkKTW91bnQtY2FjaGUgaGFz
-aCB0YWJsZSBlbnRyaWVzOiA1MTIKT29wczoga2VybmVsIGFjY2VzcyBvZiBiYWQgYXJlYSwgc2ln
-OiAxMSBbIzFdCk5JUDogQzAwMTFBREMgTFI6IEMwMDExQjc4IENUUjogMDAwMDAwMDUKUkVHUzog
-YzAyZWRmYjAgVFJBUDogMDMwMCAgIE5vdCB0YWludGVkICAoMi42LjE5KQpNU1I6IDAwMDAxMDMy
-IDxNRSxJUixEUj4gIENSOiAyNDAyODAyMiAgWEVSOiAyMDAwMDAwMApEQVI6IDAwMDAwMDdELCBE
-U0lTUjogNDIwMDAwMDAKVEFTSyA9IGMwMmU5YjM4WzBdICcnIFRIUkVBRDogMDJkYzU5MTUKR1BS
-MDA6IDAwMjAwMjAwIEMwMkVFMDYwIEMwMkU5QjM4IEMwMkU5QjM4IEMwMTY5REI0IDAwMDAwMDAw
-IEMwMkVGRkZDIDAwMDAwMDQ0IApHUFIwODogMDFDMDkwMDAgMDAwMDAwNzggQzAyRTlCNjAgMDAw
-MDAwN0QgMDAwMDAwMDAgMDQwMDhDMDAgMDgwMDNDMDAgMDA3RkZGMTMgCkdQUjE2OiAwMDAwMDAw
-MSBDMDE2ODRDOCBDMDE3MDAwMCBDMDE3MDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAwMDg4MDM4MSBD
-MDE2OTk4MCAKR1BSMjQ6IEMwMkVFMDAwIEMwMTY5OTgwIEMwMkU5QkY0IEMwMkU5QzQ4IDAwMDAw
-MDAwIEMwMkU5QjM4IEMwMkU5QjM4IEMwMENFODE4IApOSVAgW0MwMDExQURDXSBkZXF1ZXVlX3Rh
-c2srMHgyMC8weDg0CkxSIFtDMDAxMUI3OF0gZGVhY3RpdmF0ZV90YXNrKzB4MzgvMHg1NApDYWxs
-IFRyYWNlOgpJbnN0cnVjdGlvbiBkdW1wOgo5MDgzMDAyOCA5MTY5MDAwNCA5MTJiMDAwMCA0ZTgw
-MDAyMCA4MTI0MDAwMCAzOTQzMDAyOCAzYzAwMDAyMCAzOTI5ZmZmZiAKNjAwMDAyMDAgOTEyNDAw
-MDAgODE2YTAwMDQgODEyMzAwMjggPDkxMmIwMDAwPiA5MTY5MDAwNCAzOTI0MDAxOCA5MDBhMDAw
-NCAKT29wczoga2VybmVsIGFjY2VzcyBvZiBiYWQgYXJlYSwgc2lnOiAxMSBbIzJdCk5JUDogQzAw
-MTI5MzQgTFI6IEMwMDEyOEIwIENUUjogMDAwMDAwMDAKUkVHUzogYzAyZWRkOTAgVFJBUDogMDYw
-MCAgIE5vdCB0YWludGVkICAoMi42LjE5KQpNU1I6IDAwMDAxMDMyIDxNRSxJUixEUj4gIENSOiA0
-NDAyODAyNCAgWEVSOiAwMDAwMDAwMApEQVI6IDAyREM1OTNELCBEU0lTUjogMDAwMDAxNDAKVEFT
-SyA9IGMwMmU5YjM4WzBdICcnIFRIUkVBRDogMDJkYzU5MTUKR1BSMDA6IDAyREM1OTNEIEMwMkVE
-RTQwIEMwMkU5QjM4IDAwMDAwMDAwIDE5RUVENTQwIDAwMDAwMDAxIEMwMTY5NTQwIDAwMDAwMDAw
-IApHUFIwODogMDhGOUM2QTAgMDAwMDAwMDggMDAwMDAwMDAgMDJEQzU5MTUgMDhGOUM2QTAgMDQw
-MDhDMDAgMDgwMDNDMDAgMDA3RkZGMTMgCkdQUjE2OiAwMDAwMDAwMSBDMDE2ODRDOCBDMDE3MDAw
-MCBDMDE3MDAwMCAwMDAwMDAwMCBDMDE3MDAwMCBDMDE2NzJDMCAwMDAwMDAwMCAKR1BSMjQ6IEMw
-MTYwMDAwIEMwMTcwMDAwIEMwMTYwMDAwIEMwMkVERUMwIEMwMTcwMDAwIEMwMTY5REI0IEMwMTY5
-OTgwIEMwMkU5QjM4IApOSVAgW0MwMDEyOTM0XSBzY2hlZHVsZXJfdGljaysweDljLzB4MzUwCkxS
-IFtDMDAxMjhCMF0gc2NoZWR1bGVyX3RpY2srMHgxOC8weDM1MApDYWxsIFRyYWNlOgpJbnN0cnVj
-dGlvbiBkdW1wOgo4MDFlMDAyNCA5MDdlMDAxOCA3ZjlmMDAwMCA5MDllMDAxYyA0MTllMDAzMCA4
-M2JmMDAzMCA4MDFlMDAyYyA3ZjlkMDAwMCAKNDE5ZTAwNDggODE3ZjAwMDQgMzkyMDAwMDggMzgw
-YjAwMjggPDdkNDAwMDI4PiA3ZDRhNGI3OCA3ZDQwMDEyZCA0MGEyZmZmNCAKQmFkbmVzcyBpbiBk
-b19leGl0IGF0IGtlcm5lbC9leGl0LmM6ODU5CkNhbGwgVHJhY2U6Cktlcm5lbCBwYW5pYyAtIG5v
-dCBzeW5jaW5nOiBBaWVlLCBraWxsaW5nIGludGVycnVwdCBoYW5kbGVyIQogPDA+UmVib290aW5n
-IGluIDE4MCBzZWNvbmRzLi4K
-------=_Part_114922_7941168.1168503203861--
+Best regards,
+Akira Iguchi
