@@ -1,19 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com (unknown [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C3E1CDDDF4
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 01:22:12 +1100 (EST)
-In-Reply-To: <200701110627.l0B6RGn1001140@jupiter.etinsys.com>
-References: <200701110627.l0B6RGn1001140@jupiter.etinsys.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6EAF2EA8-8414-4A4A-9A9A-44AA2FDC8B9D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] kvme080 board support patch
-Date: Thu, 11 Jan 2007 08:21:23 -0600
-To: Sangmoon Kim <dogoil@etinsys.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id 0E24DDDED0
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 01:34:10 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so435502ugf
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 06:34:08 -0800 (PST)
+Message-ID: <528646bc0701110634v5eccd80aue030fcd25807a644@mail.gmail.com>
+Date: Thu, 11 Jan 2007 07:34:08 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Andrew Morton" <akpm@osdl.org>
+Subject: Re: Fw: [Bugme-new] [Bug 7808] New: Xilinx ML403 does not boot
+In-Reply-To: <20070111010358.851692fb.akpm@osdl.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070111010358.851692fb.akpm@osdl.org>
+Cc: linuxppc-dev@ozlabs.org, BSowislo@gmx.de,
+	"bugme-daemon@kernel-bugs.osdl.org" <bugme-daemon@bugzilla.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,45 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Jan 11, 2007, at 12:26 AM, Sangmoon Kim wrote:
-
-> Hi,
+On 1/11/07, Andrew Morton <akpm@osdl.org> wrote:
 >
-> This patch add supports for kvme080 board to linux-2.6.20-rc4 kernel.
-> kvme080 is a VME board with PowerPC MPC8245 processor.
-> It has 128MB memory, 2 Ethernets, 4 UARTs and a VME interface.
+> Begin forwarded message:
 >
-> Regards,
-> Sangmoon Kim
->
-> Signed-off-by: Sangmoon Kim <dogoil@etinsys.com>
->
+> Date: Thu, 11 Jan 2007 00:52:43 -0800
+> From: bugme-daemon@bugzilla.kernel.org
+> To: bugme-new@lists.osdl.org
+> Subject: [Bugme-new] [Bug 7808] New: Xilinx ML403 does not boot
 
->
-> +static void
-> +kvme080_restart(char *cmd)
-> +{
-> +	unsigned long srr;
-> +
-> +	local_irq_disable();
-> +	asm volatile(
-> +	" lis %0,0xfff0\n \
-> +	  ori %0,%0,0x0100\n \
-> +	  mtspr 26,%0\n \
-> +	  sync\n \
-> +	  lis %0,0x0000\n \
-> +	  ori %0,%0,0x0000\n \
-> +	  mtspr 27,%0\n \
-> +	  sync\n \
-> +	  rfi "
-> +	  : "=r" (srr));
-> +}
+okay, I will investigate today
 
-Does this restart actually work for you?  Do you not have any issues  
-with devices being in a funny state and not actually being restated?
+g.
 
-Also, you can do mtspr(SPRN_SRR0, val); mtspr(SPRN_SRR1, val); and  
-then the asm for the "rfi".
-
-- k
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
