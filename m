@@ -1,21 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 66C0DDDECC
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 00:06:05 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/2] drivers/ata: export some static functions in
-	libata-core.c
-Date: Thu, 11 Jan 2007 14:05:56 +0100
-References: <200701110853.l0B8rtGK009404@toshiba.co.jp>
-	<200701111008.34866.arnd@arndb.de>
-	<200701110928.l0B9SUri015056@toshiba.co.jp>
-In-Reply-To: <200701110928.l0B9SUri015056@toshiba.co.jp>
+Return-Path: <tnt@246tNt.com>
+Received: from outmx013.isp.belgacom.be (outmx013.isp.belgacom.be
+	[195.238.5.64])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 628A1DDE47
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 00:18:13 +1100 (EST)
+Received: from outmx013.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx013.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l0BDHwGt002007
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 14:17:59 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45A63883.2070800@246tNt.com>
+Date: Thu, 11 Jan 2007 14:15:47 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701111405.56575.arnd@arndb.de>
-Cc: linux-ide@vger.kernel.org, paulus@samba.org
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH] add restart function for mpc52xx
+References: <20070111122855.GF11226@localhost.localdomain>
+In-Reply-To: <20070111122855.GF11226@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +29,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 11 January 2007 10:30, Akira Iguchi wrote:
-> >Exporting new symbols needs some explanation here about why they
-> >should now be global for ata_scc while the existing drivers
-> >did not need them. Since the patch otherwise only moves stuff
-> >around as needed, I assume it's good.
-> 
-> I thought it was better to use common functions as far as possible.
-> But if it is preferable to copy them in ata_scc.c, I will do so.
-
-To clarify my words here:
-
-It is definitely better to use common functions or to modify the common
-code rather than copy it.
-
-This particular patch (2/2) only moves code around, so what I meant is
-that I'm confident that it does not introduce bugs.
-
-	Arnd <><
+Sascha Hauer wrote:
+> This patch adds restart support for mpx52xx systems.
+>
+> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+>   
+Thanks, I'll test and include this to my 2.6.21 patch set.
+> ---
+>  arch/powerpc/platforms/52xx/lite5200.c       |    1 +
+>  arch/powerpc/platforms/52xx/mpc52xx_common.c |   15 +++++++++++++++
+>  include/asm-powerpc/mpc52xx.h                |    2 ++
+>  3 files changed, 18 insertions(+)
+>
+> Index: linux-2.6/arch/powerpc/platforms/52xx/lite5200.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/platforms/52xx/lite5200.c
+> +++ linux-2.6/arch/powerpc/platforms/52xx/lite5200.c
+> @@ -153,6 +153,7 @@ define_machine(lite52xx) {
+>  	.name 		= "lite52xx",
+>  	.probe 		= lite52xx_probe,
+>  	.setup_arch 	= lite52xx_setup_arch,
+> +	.restart	= mpc52xx_restart,
+>  	.init		= mpc52xx_declare_of_platform_devices,
+>  	.init_IRQ 	= mpc52xx_init_irq,
+>  	.get_irq 	= mpc52xx_get_irq,
+> Index: linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c
+> +++ linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c
+> @@ -75,6 +75,21 @@ mpc52xx_find_ipb_freq(struct device_node
+>  }
+>  EXPORT_SYMBOL(mpc52xx_find_ipb_freq);
+>  
+> +void
+> +mpc52xx_restart(char *cmd)
+> +{
+> +	struct mpc52xx_gpt *gpt = mpc52xx_find_and_map("mpc52xx-gpt");
+>   
+missing __iomem here, will most trigger a sparse warning.
+It's ok I'll fix that up when applying to my internal tree and before fw
+this upstream.
+> +
+> +	local_irq_disable();
+> +
+> +	/* Turn on the watchdog and wait for it to expire. It effectively
+> +	  does a reset */
+> +	out_be32(&gpt->mode, 0x00000000);
+> +	out_be32(&gpt->count, 0x0000000ff);
+> +	out_be32(&gpt->mode, 0x00009004);
+> +
+> +	while (1);
+> +}
+>  
+>  void __init
+>  mpc52xx_setup_cpu(void)
+> Index: linux-2.6/include/asm-powerpc/mpc52xx.h
+> ===================================================================
+> --- linux-2.6.orig/include/asm-powerpc/mpc52xx.h
+> +++ linux-2.6/include/asm-powerpc/mpc52xx.h
+> @@ -249,6 +249,8 @@ extern void mpc52xx_declare_of_platform_
+>  extern void mpc52xx_init_irq(void);
+>  extern unsigned int mpc52xx_get_irq(void);
+>  
+> +extern void mpc52xx_restart(char *cmd);
+> +
+>  #endif /* __ASSEMBLY__ */
+>  
+>  #endif /* __ASM_POWERPC_MPC52xx_H__ */
+>
+>
+>   
