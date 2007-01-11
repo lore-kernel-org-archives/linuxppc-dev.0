@@ -1,23 +1,20 @@
-Return-Path: <tieuphongit@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.227])
-	by ozlabs.org (Postfix) with ESMTP id 3260BDDDEF
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CA1FFDDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Jan 2007 13:04:05 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id i31so274067wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 10 Jan 2007 18:04:04 -0800 (PST)
-Message-ID: <f2042b870701101804o65db510ct146eab5892e1db1d@mail.gmail.com>
-Date: Thu, 11 Jan 2007 09:04:04 +0700
-From: "An Le Thien" <tieuphongit@gmail.com>
-To: "Wolfgang Denk" <wd@denx.de>
-Subject: Re: Can't start snmpd when adding notification handler to the
-	configuration file
-In-Reply-To: <20070111011937.C0C9A35264F@atlas.denx.de>
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_17563_10762752.1168481044757"
-References: <f2042b870701100733v20d7a052kca11f2ef0d108849@mail.gmail.com>
-	<20070111011937.C0C9A35264F@atlas.denx.de>
+	Thu, 11 Jan 2007 15:43:33 +1100 (EST)
+In-Reply-To: <783456.20220.qm@web301.biz.mail.mud.yahoo.com>
+References: <783456.20220.qm@web301.biz.mail.mud.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B8F78696-B937-4C7F-BDCC-694A2F13F61A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: External interrupts in 2.6.19
+Date: Wed, 10 Jan 2007 22:42:46 -0600
+To: Ben Warren <bwarren@qstreams.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,54 +26,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_17563_10762752.1168481044757
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-I tried to download
-net-snmp-5.2.1.2-1_1.src.rpm<ftp://ftp.sunet.se/pub/Linux/distributions/eldk/4.0/ppc-linux-x86/sources/target/SRPMS/net-snmp-5.2.1.2-1_1.src.rpm>of
-ELDK4.0 and  used ELDK4.0  to build. But the same error happens :(. Then I
-tried to build net-snmp-5.0.6-17_2.src.rpm with ELDK4.0. The error still
-happens.
+On Jan 10, 2007, at 4:25 PM, Ben Warren wrote:
 
-Best Regards,
-An Le.
+> Hello,
+>
+> I'm porting my board from 2.6.17 to 2.6.19 kernel, and
+> now external interrupts aren't working any more.  I'm
+> using ARCH=powerpc on an MPC8349-based custom board.
+> With the old code, we called ipic_init() from board
+> init code with a table of IRQ senses.  In the newer
+> kernel, ipic_init() takes only an OF node as a
+> parameter.  Looking at the PIC registers, the external
+> IRQs are all being set to level-triggered, when they
+> used to be edge-triggered.
+>
+> I guess I haven't been following all of the
+> discussions on changes to the IPIC code, and my little
+> brain can't figure out the right way to do this.  Can
+> somebody please give a quick dump of how the new
+> methodology is supposed to work?
 
-On 1/11/07, Wolfgang Denk <wd@denx.de> wrote:
->
-> In message <f2042b870701100733v20d7a052kca11f2ef0d108849@mail.gmail.com>
-> you wrote:
-> >
-> > 2. I used ELDK3.1.1 to build it and install to ramdisk that is used for
-> > TQM8xxL (Using kernel 2.6.11)
->
-> ELDK 3.x has been tested with  2.4  kernel  trees  only.  For  a  2.6
-> kernel, you should use ELDK 4.x.
->
-> Best regards,
->
-> Wolfgang Denk
->
-> --
-> Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-> Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-> Hiring experienced unix people is  like  a  built-in  filter  against
-> idiots. Hiring experienced NT people provides no such guarantee.
->             -- Miguel Cruz in WgL96.349$CC.122704@typhoon2.ba-dsg.net
->
+I think what you want is something like the following:
 
-------=_Part_17563_10762752.1168481044757
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+struct device_node *np = of_find_node_by_type(NULL, "ipic");
+struct irq_host *host = irq_find_host(np);
 
-I tried to download <a href="ftp://ftp.sunet.se/pub/Linux/distributions/eldk/4.0/ppc-linux-x86/sources/target/SRPMS/net-snmp-5.2.1.2-1_1.src.rpm">net-snmp-5.2.1.2-1_1.src.rpm</a> of ELDK4.0 and&nbsp; used ELDK4.0&nbsp; to build. But the same error happens :(. Then I tried to build 
-net-snmp-5.0.6-17_2.src.rpm with ELDK4.0. The error still happens.<br><br>Best Regards,<br>An Le.<br><br><div><span class="gmail_quote">On 1/11/07, <b class="gmail_sendername">Wolfgang Denk</b> &lt;<a href="mailto:wd@denx.de">
-wd@denx.de</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">In message &lt;<a href="mailto:f2042b870701100733v20d7a052kca11f2ef0d108849@mail.gmail.com">
-f2042b870701100733v20d7a052kca11f2ef0d108849@mail.gmail.com</a>&gt; you wrote:<br>&gt;<br>&gt; 2. I used ELDK3.1.1 to build it and install to ramdisk that is used for<br>&gt; TQM8xxL (Using kernel 2.6.11)<br><br>ELDK 3.x has been tested with&nbsp;&nbsp;
-2.4&nbsp;&nbsp;kernel&nbsp;&nbsp;trees&nbsp;&nbsp;only.&nbsp;&nbsp;For&nbsp;&nbsp;a&nbsp;&nbsp;2.6<br>kernel, you should use ELDK 4.x.<br><br>Best regards,<br><br>Wolfgang Denk<br><br>--<br>Software Engineering:&nbsp;&nbsp;Embedded and Realtime Systems,&nbsp;&nbsp;Embedded Linux<br>Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: 
-<a href="mailto:wd@denx.de">wd@denx.de</a><br>Hiring experienced unix people is&nbsp;&nbsp;like&nbsp;&nbsp;a&nbsp;&nbsp;built-in&nbsp;&nbsp;filter&nbsp;&nbsp;against<br>idiots. Hiring experienced NT people provides no such guarantee.<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;-- Miguel Cruz in <a href="mailto:WgL96.349$CC.122704@typhoon2.ba-dsg.net">
-WgL96.349$CC.122704@typhoon2.ba-dsg.net</a><br></blockquote></div><br>
+unsigned int virq = irq_find_mapping(host, HW_IRQ);
+set_irq_type(virq, IRQ_TYPE_EDGE_FALLING);
 
-------=_Part_17563_10762752.1168481044757--
+
+where HW_IRQ is the IRQ # of the external IRQ.  Let me know if this  
+works out.  I need to do the same update at some point and this is  
+one thing I know I'd have to see if it worked out properly.
+
+(we should also have ipic_init return the struct ipic*) so you can  
+get irq_host directly right after you call ipic_init().
+
+- k
