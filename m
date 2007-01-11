@@ -1,29 +1,11 @@
-Return-Path: <akira2.iguchi@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 791B8DDE20
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 20:28:35 +1100 (EST)
-Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
-	by inet-tsb5.toshiba.co.jp  with ESMTP id l0B9SVqg003899
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 18:28:31 +0900 (JST)
-Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id l0B9SWxi019839
-	for linuxppc-dev@ozlabs.org; Thu, 11 Jan 2007 18:28:32 +0900 (JST)
-Received: from mx12.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp1.toshiba.co.jp  with ESMTP id l0B9SVND001429
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 18:28:31 +0900 (JST)
-Message-Id: <200701110928.l0B9SUri015056@toshiba.co.jp>
-MIME-Version: 1.0
-Date: Thu, 11 Jan 2007 18:30:55 +0900
-From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: (Your message of "Thu, 11 Jan 2007 10:08:34 +0100")
-	<200701111008.34866.arnd@arndb.de>
-References: <200701110853.l0B8rtGK009404@toshiba.co.jp>
-	<200701111008.34866.arnd@arndb.de>
-Subject: Re: [PATCH 2/2] drivers/ata: export some static functions in
-	libata-core.c
-Cc: linux-ide@vger.kernel.org, paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: Greg Kroah-Hartman <greg@kroah.com>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 11 Jan 2007 22:25:16 +1100
+Subject: [PATCH 0/7] Powerpc MSI Implementation
+Message-Id: <1168514716.63474.857278133999.qpush@cradle>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Olof Johannsson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,21 +15,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, Arnd-san.
+This series implements infrastructure for PCI MSI on Powerpc.
 
-Thank you for checking our patches.
+It also includes a "backend" for MSI via HT on the MPIC, and supporting
+patches. Other backends are in the works.
 
->On Thursday 11 January 2007 09:56, Akira Iguchi wrote:
->> This patch modifies some static functions in libata-core.c
->> and libata.h to use them in ata_scc.c.
->
->Exporting new symbols needs some explanation here about why they
->should now be global for ata_scc while the existing drivers
->did not need them. Since the patch otherwise only moves stuff
->around as needed, I assume it's good.
+I think this is ready to merge for 2.6.21, let me know if you disagree ..
+unless your name is Segher :D
 
-I thought it was better to use common functions as far as possible.
-But if it is preferable to copy them in ata_scc.c, I will do so.
+Greg, assuming you agree this is OK to merge, is this something you'd
+want to take in your tree, or are you happy ack it and have it go into
+Paul's tree?
 
-Best regards,
-Akira Iguchi
+cheers
