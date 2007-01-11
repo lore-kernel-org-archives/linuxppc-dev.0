@@ -1,34 +1,34 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+Return-Path: <linas@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E0890DDEE0
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 04:10:57 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id l0BHAq9U186156
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 17:10:52 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with
-	ESMTP id l0BHAqNI2498754
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 18:10:52 +0100
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l0BHApkl008923
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 18:10:51 +0100
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>, hch@infradead.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	openfabrics-ewg@openib.org, openib-general@openib.org
-Subject: [PATCH 2.6.21 0/8] ehca: remove use of do_mmap() from kernel space
-	and minor cleanup
-Date: Thu, 11 Jan 2007 18:07:08 +0100
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 72930DDFC8
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 04:17:19 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0BHH927026191
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 12:17:09 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	l0BHH98A289674
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 12:17:09 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0BHH8WJ018470
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 12:17:08 -0500
+Date: Thu, 11 Jan 2007 11:17:06 -0600
+To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+Subject: Re: [PATCH 2/2] drivers/ata: export some static functions in
+	libata-core.c
+Message-ID: <20070111171706.GG6177@austin.ibm.com>
+References: <200701110853.l0B8rtGK009404@toshiba.co.jp>
+	<200701111008.34866.arnd@arndb.de>
+	<200701110928.l0B9SUri015056@toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200701111807.08593.hnguyen@linux.vnet.ibm.com>
-Cc: raisch@de.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200701110928.l0B9SUri015056@toshiba.co.jp>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linux-ide@vger.kernel.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,27 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Roland and Christoph H.!
-Here is a set of patches for ehca, whose main purpose is to remove unproper use of
-do_mmap() in ehca kernel space as suggested by Christoph H. Other "small" changes
-are:
-* Remove "dead" prototype declarations (those without code implementation)
-* Use SLAB_ defines instead GFP_ ones when allocating memory from slab cache
+On Thu, Jan 11, 2007 at 06:30:55PM +0900, Akira Iguchi wrote:
+> Hi, Arnd-san.
+> 
+> Thank you for checking our patches.
+> 
+> >On Thursday 11 January 2007 09:56, Akira Iguchi wrote:
+> >> This patch modifies some static functions in libata-core.c
+> >> and libata.h to use them in ata_scc.c.
+> >
+> >Exporting new symbols needs some explanation here about why they
+> >should now be global for ata_scc while the existing drivers
+> >did not need them. Since the patch otherwise only moves stuff
+> >around as needed, I assume it's good.
+> 
+> I thought it was better to use common functions as far as possible.
 
-Actually I should separate those patches for more clarity. Unfortunately that
-code cleanup above has been incorporated much earlier in our repository, and
-I had not paid attention on when I started to rework the mmap() stuff. Sorry
-for this inconvenience!
+Yes, I agree that it is better to use common functions when possible.
 
-Now more detail on mmap() rework:
-- For eHCA hardware register block we use remap_pfn_range() as previously.
-- For queue pages we call pattern vm_insert_page() to register each allocated
-kernel page.
-- For each mmap-ed resource (hardware register block, send/recv and completion
-queue) we introduce a use counter that is incremented and decremented by
-the call-backs open()/close(). Destroying a completion queue or queue pair
-will succeed only if all associated counters are zero. That means those resources
-must be mmap-ed resp. munmap-ed properly by user space.
+Why is it that other drivers did not need this functions? Did they
+copy them?  Or maybe they don't need them?
 
-Thanks
-Nam
+--linas
