@@ -1,26 +1,22 @@
-Return-Path: <SRS0+9585c4e39412ddbfd682+1236+infradead.org+hch@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <gregkh@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 77FC4DE0C4
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 06:44:00 +1100 (EST)
-Date: Thu, 11 Jan 2007 19:43:46 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH/RFC 2.6.21 3/5] ehca: completion queue: remove use of
-	do_mmap()
-Message-ID: <20070111194346.GA29607@infradead.org>
-References: <200701112008.37236.hnguyen@linux.vnet.ibm.com>
-	<20070111192056.GB24623@infradead.org>
-	<20070111194054.GA11770@localdomain>
-Mime-Version: 1.0
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7B5EFDE0DA
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 06:45:28 +1100 (EST)
+Date: Thu, 11 Jan 2007 11:44:27 -0800
+From: Greg KH <greg@kroah.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 2/7] Powerpc MSI implementation
+Message-ID: <20070111194427.GA20450@kroah.com>
+References: <1168514716.63474.857278133999.qpush@cradle>
+	<20070111112503.0CC1BDDF13@ozlabs.org>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070111194054.GA11770@localdomain>
-Cc: Roland Dreier <rdreier@cisco.com>, openfabrics-ewg@openib.org,
-	openib-general@openib.org, linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	raisch@de.ibm.com, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+In-Reply-To: <20070111112503.0CC1BDDF13@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Olof Johannsson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,19 +26,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 11, 2007 at 01:40:54PM -0600, Nathan Lynch wrote:
-> Christoph Hellwig wrote:
-> > On Thu, Jan 11, 2007 at 08:08:36PM +0100, Hoang-Nam Nguyen wrote:
-> > 
-> > >  	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
-> > >  	while (my_cq->nr_callbacks)
-> > >  		yield();
-> > 
-> > Calling yield is a very bad idea in general.  You should probably
-> > add a waitqueue that gets woken when nr_callbacks reaches zero to
-> > sleep effectively here.
+On Thu, Jan 11, 2007 at 10:25:19PM +1100, Michael Ellerman wrote:
+> Powerpc MSI implementation, based on a collection of "ops" callbacks.
+> We have to take the ops approach to accomodate RTAS, where firmware
+> handles almost all details of MSI setup/teardown. Bare-metal MSI
+> can be accomodated also.
 > 
-> Isn't that code outright buggy?  Calling into the scheduler with a
-> spinlock held and local interrupts disabled...
+> See the comments in include/asm-powerpc/msi.h for more info.
+> 
+> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> ---
+> 
+>  arch/powerpc/kernel/msi.c     |  320 ++++++++++++++++++++++++++++++++++++++++++
+>  include/asm-powerpc/machdep.h |    6 
+>  include/asm-powerpc/msi.h     |  173 ++++++++++++++++++++++
+>  include/linux/pci.h           |    7 
+>  4 files changed, 506 insertions(+)
+> 
+> Index: msi/arch/powerpc/kernel/msi.c
 
-Umm, yes - of course.  I missed the spin_lock_irqsave line just above.
+Why isn't all of this in the drivers/pci/msi.c file instead?  You are
+creating a new API here that is only availble to the PPC platform, which
+is not acceptable.
+
+Please work with the current MSI core code to work properly for PPC,
+instead of reinventing the whole thing.
+
+> +#if defined(CONFIG_PCI_MSI) && defined(CONFIG_PPC_MERGE)
+> +struct msi_info;
+> +#endif
+
+CONFIG_PPC_MERGE?  What is that option for?
+
+So, no, I don't agree with this implementation and don't want to see it
+go through anyone's tree into mainline just yet.
+
+thanks,
+
+greg k-h
