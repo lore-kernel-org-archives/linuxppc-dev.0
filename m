@@ -2,19 +2,18 @@ Return-Path: <galak@kernel.crashing.org>
 Received: from nommos.sslcatacombnetworking.com (unknown [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E2B3DDDEA2
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 01:00:00 +1100 (EST)
-In-Reply-To: <20070111122855.GF11226@localhost.localdomain>
-References: <20070111122855.GF11226@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id C3E1CDDDF4
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 01:22:12 +1100 (EST)
+In-Reply-To: <200701110627.l0B6RGn1001140@jupiter.etinsys.com>
+References: <200701110627.l0B6RGn1001140@jupiter.etinsys.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>
+Message-Id: <6EAF2EA8-8414-4A4A-9A9A-44AA2FDC8B9D@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] add restart function for mpc52xx
-Date: Thu, 11 Jan 2007 07:59:12 -0600
-To: Sascha Hauer <s.hauer@pengutronix.de>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Sylvain Munaut <tnt@246tNt.com>
+Subject: Re: [PATCH] kvme080 board support patch
+Date: Thu, 11 Jan 2007 08:21:23 -0600
+To: Sangmoon Kim <dogoil@etinsys.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,60 +24,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 11, 2007, at 6:28 AM, Sascha Hauer wrote:
+On Jan 11, 2007, at 12:26 AM, Sangmoon Kim wrote:
 
-> This patch adds restart support for mpx52xx systems.
+> Hi,
 >
-> Signed-off-by: Sascha Hauer <s.hauer@pengutronix.de>
+> This patch add supports for kvme080 board to linux-2.6.20-rc4 kernel.
+> kvme080 is a VME board with PowerPC MPC8245 processor.
+> It has 128MB memory, 2 Ethernets, 4 UARTs and a VME interface.
 >
-> ---
->  arch/powerpc/platforms/52xx/lite5200.c       |    1 +
->  arch/powerpc/platforms/52xx/mpc52xx_common.c |   15 +++++++++++++++
->  include/asm-powerpc/mpc52xx.h                |    2 ++
->  3 files changed, 18 insertions(+)
+> Regards,
+> Sangmoon Kim
 >
-> Index: linux-2.6/arch/powerpc/platforms/52xx/lite5200.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/52xx/lite5200.c
-> +++ linux-2.6/arch/powerpc/platforms/52xx/lite5200.c
-> @@ -153,6 +153,7 @@ define_machine(lite52xx) {
->  	.name 		= "lite52xx",
->  	.probe 		= lite52xx_probe,
->  	.setup_arch 	= lite52xx_setup_arch,
-> +	.restart	= mpc52xx_restart,
->  	.init		= mpc52xx_declare_of_platform_devices,
->  	.init_IRQ 	= mpc52xx_init_irq,
->  	.get_irq 	= mpc52xx_get_irq,
-> Index: linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> +++ linux-2.6/arch/powerpc/platforms/52xx/mpc52xx_common.c
-> @@ -75,6 +75,21 @@ mpc52xx_find_ipb_freq(struct device_node
->  }
->  EXPORT_SYMBOL(mpc52xx_find_ipb_freq);
+> Signed-off-by: Sangmoon Kim <dogoil@etinsys.com>
 >
-> +void
-> +mpc52xx_restart(char *cmd)
+
+>
+> +static void
+> +kvme080_restart(char *cmd)
 > +{
-> +	struct mpc52xx_gpt *gpt = mpc52xx_find_and_map("mpc52xx-gpt");
+> +	unsigned long srr;
 > +
-
-This suffers from the same bug mpc83xx_restart has.  We can NOT do an  
-ioremap inside the restart function.  We may get called from  
-interrupt context on a panic and will not be able to do the ioremap 
-().  The simplest thing is to do the mapping earlier in an init call  
-and save the pointer, its not perfect, but better.
-
 > +	local_irq_disable();
-> +
-> +	/* Turn on the watchdog and wait for it to expire. It effectively
-> +	  does a reset */
-> +	out_be32(&gpt->mode, 0x00000000);
-> +	out_be32(&gpt->count, 0x0000000ff);
-> +	out_be32(&gpt->mode, 0x00009004);
-> +
-> +	while (1);
+> +	asm volatile(
+> +	" lis %0,0xfff0\n \
+> +	  ori %0,%0,0x0100\n \
+> +	  mtspr 26,%0\n \
+> +	  sync\n \
+> +	  lis %0,0x0000\n \
+> +	  ori %0,%0,0x0000\n \
+> +	  mtspr 27,%0\n \
+> +	  sync\n \
+> +	  rfi "
+> +	  : "=r" (srr));
 > +}
->
->  void __init
->  mpc52xx_setup_cpu(void)
+
+Does this restart actually work for you?  Do you not have any issues  
+with devices being in a funny state and not actually being restated?
+
+Also, you can do mtspr(SPRN_SRR0, val); mtspr(SPRN_SRR1, val); and  
+then the asm for the "rfi".
+
+- k
