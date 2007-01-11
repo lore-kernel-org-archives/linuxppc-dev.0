@@ -1,16 +1,28 @@
-Return-Path: <mgreer@mvista.com>
-Date: Wed, 10 Jan 2007 17:40:48 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: jdl@jdl.com, jwboyer@jdub.homelinux.org, msm@freescale.com
-Subject: Re: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
-Message-ID: <20070111004048.GA27351@mag.az.mvista.com>
-References: <20061019002635.GA2356@mag.az.mvista.com>
-	<E1GaYUQ-0001jb-20@jdl.com>
-	<20061019195156.GB6586@mag.az.mvista.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 561BBDDE25
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 12:16:35 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0B1H40b015355
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 20:17:04 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	l0B1GUes303218
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 20:16:30 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0B1GUDb021006
+	for <linuxppc-dev@ozlabs.org>; Wed, 10 Jan 2007 20:16:30 -0500
+Date: Wed, 10 Jan 2007 19:16:29 -0600
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] Urgent: powerpc 2.6.20-rc4 dma broken on non-LPAR pseries
+Message-ID: <20070111011629.GF6177@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061019195156.GB6586@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,80 +32,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Oct 19, 2006 at 12:51:56PM -0700, Mark A. Greer wrote:
-> On Thu, Oct 19, 2006 at 09:03:18AM -0500, Jon Loeliger wrote:
-> > So, like, the other day "Mark A. Greer" mumbled:
-> > > 
-> > > This would be used by the sandpoint, say, by adding the following rules
-> > > to the Makefile in the appropriate places:
-> > > 
-> > > 	$(obj)/zImage.sandpoint: vmlinux $(wrapperbits)
-> > > 		$(call cmd,wrap_dts,sandpoint)
-> > > 
-> > > 	$(obj)/zImage.initrd.sandpoint: vmlinux $(wrapperbits)
-> > > 		$(call cmd,wrap_dts_initrd,sandpoint)
-> > > 
-> > > and:
-> > > 
-> > > 	image-$(CONFIG_SANDPOINT)               += zImage.sandpoint
-> > > 
-> > > Comments?
-> > 
-> > Isn't there a way to do this without hardcoding the
-> > platform name in the makefiles directly?  I fear for
-> > the one-per-platform effect that is yet to come with
-> > the conversion of many of the legacy boards.
 
-Okay, its been a while so let's see if anyone remembers and/or cares
-anymore.  :)
+Paul, please review, apply and send upstream. 
 
-How about something like the patch below?
+I marked the subject line as urgent, as I think 2.6.20-rc4 is
+broken for all pSeries non-LPAR systems.
 
-Basically, if you want a dtb wrapped up in your zImage, set
-CONFIG_DEFAULT_DTB=y and also define CONFIG_DTS to point where your dts
-file is.
+It appears that the iommu table address is never stored, and thus
+never found, on non-lpar systems. Thus, for example, during boot:
 
-Does that meet everyones requirements?
+<7>[   93.067916] PCI: Scanning bus 0001:41
+<7>[   93.068542] PCI: Found 0001:41:01.0 [8086/100f] 000200 00
+<7>[   93.068550] PCI: Calling quirk c0000000007822e0 for 0001:41:01.0
+<7>[   93.069815] PCI: Fixups for bus 0001:41
+<4>[   93.070167] iommu: Device 0001:41:01.0 has no iommu table
+<7>[   93.070251] PCI: Bus scan for 0001:41 returning with max=41
 
-Mark
----
+No iommu table? How can that be? Well, circa line 471 of 
+arch/powerpc/platforms/pseries/iommu.c we see the code:
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 98392fb..848d1e4 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -118,6 +118,13 @@ quiet_cmd_wrap	= WRAP    $@
- quiet_cmd_wrap_initrd = WRAP    $@
-       cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
- 				-i $(obj)/ramdisk.image.gz vmlinux
-+quiet_cmd_wrap_dts = WRAP_DTS    $@
-+      cmd_wrap_dts =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-+				-s $(CONFIG_DTS) vmlinux
-+quiet_cmd_wrap_dts_initrd = WRAP_DTS    $@
-+      cmd_wrap_dts_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 \
-+				$(CROSSWRAP) -s $(CONFIG_DTS) \
-+				-i $(obj)/ramdisk.image.gz vmlinux
+   while (dn && PCI_DN(dn) && PCI_DN(dn)->iommu_table == NULL)
+      dn = dn->parent;
+
+and a few lines later is the surprising print statement about
+the missing table.  Seems that this loop ran unto the end, never 
+once finding a non-null PCI_DN(dn)->iommu_table. 
+
+The problem can be found a few lines earlier: it sems that the
+value of PCI_DN(dn)->iommu_table is never ever set. Thus, the 
+patch sets it.
+
+The patch was tested on a Power4 system running in full system 
+partition mode, which is where I saw the problem. It works; I've
+not done any wider testing. Had a breif discussion on this on irc.
+
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+
+----
+ arch/powerpc/platforms/pseries/iommu.c |    3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
+
+Index: linux-2.6.20-rc4/arch/powerpc/platforms/pseries/iommu.c
+===================================================================
+--- linux-2.6.20-rc4.orig/arch/powerpc/platforms/pseries/iommu.c	2007-01-10 18:38:37.000000000 -0600
++++ linux-2.6.20-rc4/arch/powerpc/platforms/pseries/iommu.c	2007-01-10 18:40:14.000000000 -0600
+@@ -459,7 +459,8 @@ static void pci_dma_dev_setup_pSeries(st
+ 		tbl = kmalloc_node(sizeof(struct iommu_table), GFP_KERNEL,
+ 				   phb->node);
+ 		iommu_table_setparms(phb, dn, tbl);
+-		dev->dev.archdata.dma_data = iommu_init_table(tbl, phb->node);
++		PCI_DN(dn)->iommu_table = iommu_init_table(tbl, phb->node);
++		dev->dev.archdata.dma_data = PCI_DN(dn)->iommu_table;
+ 		return;
+ 	}
  
- $(obj)/zImage.chrp: vmlinux $(wrapperbits)
- 	$(call cmd,wrap,chrp)
-@@ -155,6 +162,12 @@ $(obj)/zImage.ps3: vmlinux
- $(obj)/zImage.initrd.ps3: vmlinux
- 	@echo "  WARNING zImage.initrd.ps3 not supported (yet)"
- 
-+$(obj)/zImage.dtb: vmlinux $(wrapperbits)
-+	$(call cmd,wrap_dts,dtb)
-+
-+$(obj)/zImage.initrd.dtb: vmlinux $(wrapperbits)
-+	$(call cmd,wrap_dts_initrd,dtb)
-+
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call cmd,wrap,uboot)
- 
-@@ -165,6 +178,7 @@ image-$(CONFIG_PPC_PS3)			+= zImage.ps3
- image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
- image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
-+image-$(CONFIG_DEFAULT_DTB)		+= zImage.dtb
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
- 
- # For 32-bit powermacs, build the COFF and miboot images
