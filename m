@@ -1,22 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D7B77DDEF7
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 08:20:27 +1100 (EST)
-Subject: Re: [PATCH 2/7] Powerpc MSI implementation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Greg KH <greg@kroah.com>
-In-Reply-To: <20070111194427.GA20450@kroah.com>
+	by ozlabs.org (Postfix) with ESMTP id DBC4DDDFB6
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 08:31:39 +1100 (EST)
+Date: Thu, 11 Jan 2007 22:31:16 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/7] Rip out the existing powerpc msi stubs
+Message-ID: <20070111213116.GA23237@lst.de>
 References: <1168514716.63474.857278133999.qpush@cradle>
-	<20070111112503.0CC1BDDF13@ozlabs.org>
-	<20070111194427.GA20450@kroah.com>
-Content-Type: text/plain
-Date: Fri, 12 Jan 2007 08:20:02 +1100
-Message-Id: <1168550403.22458.414.camel@localhost.localdomain>
+	<20070111112502.5825CDDEFF@ozlabs.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Olof Johannsson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070111112502.5825CDDEFF@ozlabs.org>
+Cc: Olof Johannsson <olof@lixom.net>, Greg Kroah-Hartman <greg@kroah.com>,
+	linux-pci@atrey.karlin.mff.cuni.cz,
+	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +26,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Jan 11, 2007 at 10:25:16PM +1100, Michael Ellerman wrote:
+> Rip out the existing powerpc msi stubs. These were the start of an
+> implementation based on ppc_md calls, but were never used in mainline.
 
-> So, no, I don't agree with this implementation and don't want to see it
-> go through anyone's tree into mainline just yet.
-
-So why, when we posted it earlier, you said the exact opposite ? That
-you actually liked it and wanted to see it as a replacement of the
-current cruft ?
-
-That's been the logic from day one. We implement a generic MSI support
-that supports multiple backends, we do it as a powerpc version at first
-since that's what we can actively test and provide backends for, then as
-a second step, we work with the intel folks to port their stuff over to
-our implementation and replace the current crappy generic one.
-
-Ben.
+Looks good.
