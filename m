@@ -1,22 +1,20 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 26741DDF99
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 08:36:19 +1100 (EST)
-Date: Thu, 11 Jan 2007 22:36:03 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/7] Powerpc MSI implementation
-Message-ID: <20070111213603.GB23237@lst.de>
-References: <1168514716.63474.857278133999.qpush@cradle>
-	<20070111112503.0CC1BDDF13@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id C2A4EDDF9D
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 08:36:50 +1100 (EST)
+Subject: Re: [PATCH 1/2] drivers/ata: PATA driver for Celleb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200701111025.04927.arnd@arndb.de>
+References: <200701110853.l0B8roEl018444@toshiba.co.jp>
+	<200701111025.04927.arnd@arndb.de>
+Content-Type: text/plain
+Date: Fri, 12 Jan 2007 08:36:39 +1100
+Message-Id: <1168551400.22458.419.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070111112503.0CC1BDDF13@ozlabs.org>
-Cc: Olof Johannsson <olof@lixom.net>, Greg Kroah-Hartman <greg@kroah.com>,
-	linux-pci@atrey.karlin.mff.cuni.cz,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Cc: linux-ide@vger.kernel.org, paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,50 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 11, 2007 at 10:25:19PM +1100, Michael Ellerman wrote:
-> Powerpc MSI implementation, based on a collection of "ops" callbacks.
-> We have to take the ops approach to accomodate RTAS, where firmware
-> handles almost all details of MSI setup/teardown. Bare-metal MSI
-> can be accomodated also.
+
+> Actually, an even stronger reason to use an abstraction is the
+> fact that this is not really a PCI device and you therefore
+> don't use readl/writel, but rather in_be32/out_be32.
 > 
-> See the comments in include/asm-powerpc/msi.h for more info.
+> If you think the code gets better by using the low-level calls,
+> then it would be good if you also do the patch to implement them.
+> 
+> My feeling about your driver is that the amount of code duplication
+> is far too much, and it should better be based on generalizing the
+> existing libata code to deal with whatever you need to handle
+> differently.
 
-Most of this shouldn't live in arch/powerpc as it's generic code except
-for tiny little bits.
+I've been having a quick look at it since at least another driver has a
+similar issue (needing to replace the taskfile accessors for individual
+register accesses). Right now, you can only re-implement the whole reset
+handling, you can't have it just use different register accessors. I
+think that's a waste.
 
-> +static struct ppc_msi_ops *get_msi_ops(struct pci_dev *pdev)
-> +{
-> +	if (ppc_md.get_msi_ops)
-> +		return ppc_md.get_msi_ops(pdev);
-> +
-> +	return NULL;
-> +}
+Best way might be to have a hook for individual register access... the
+reset code basically needs the control register and the LBA for the
+signature (and status but there's already a hook for it).
 
-struct ppc_msi_ops should become msi_ops, and this function should
-be an arch hook in asm/msi.h
-
-> +static struct msi_info *get_msi_info(struct pci_dev *pdev)
-> +{
-> +	return pdev->msi_info;
-> +}
-
-This wrapper looks rather useless :)
-
-> +#if defined(CONFIG_PCI_MSI) && defined(CONFIG_PPC_MERGE)
-> +struct msi_info;
-> +#endif
-
-Unconditional, please.
-
->  /*
->   * The pci_dev structure is used to describe PCI devices.
->   */
-> @@ -174,6 +178,9 @@ struct pci_dev {
->  	struct bin_attribute *rom_attr; /* attribute descriptor for sysfs ROM entry */
->  	int rom_attr_enabled;		/* has display of the rom attribute been enabled? */
->  	struct bin_attribute *res_attr[DEVICE_COUNT_RESOURCE]; /* sysfs file for resources */
-> +#if defined(CONFIG_PCI_MSI) && defined(CONFIG_PPC_MERGE)
-> +	struct	msi_info *msi_info;
-> +#endif
-
-and only #ifdef CONFIG_PCI_MSI here please.
+Ben.
