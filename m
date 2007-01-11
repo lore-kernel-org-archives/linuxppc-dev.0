@@ -1,24 +1,22 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id 6A1D0DDEA0
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 06:56:24 +1100 (EST)
-To: Nathan Lynch <ntl@pobox.com>
-Subject: Re: [PATCH/RFC 2.6.21 3/5] ehca: completion queue: remove use of
-	do_mmap()
-References: <200701112008.37236.hnguyen@linux.vnet.ibm.com>
-	<20070111192056.GB24623@infradead.org>
-	<20070111194054.GA11770@localdomain>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 11 Jan 2007 11:56:18 -0800
-In-Reply-To: <20070111194054.GA11770@localdomain> (Nathan Lynch's message of
-	"Thu, 11 Jan 2007 13:40:54 -0600")
-Message-ID: <adaodp5ibh9.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	openfabrics-ewg@openib.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	raisch@de.ibm.com, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D7B77DDEF7
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 08:20:27 +1100 (EST)
+Subject: Re: [PATCH 2/7] Powerpc MSI implementation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Greg KH <greg@kroah.com>
+In-Reply-To: <20070111194427.GA20450@kroah.com>
+References: <1168514716.63474.857278133999.qpush@cradle>
+	<20070111112503.0CC1BDDF13@ozlabs.org>
+	<20070111194427.GA20450@kroah.com>
+Content-Type: text/plain
+Date: Fri, 12 Jan 2007 08:20:02 +1100
+Message-Id: <1168550403.22458.414.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Olof Johannsson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > >  	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
- > >  	while (my_cq->nr_callbacks)
- > >  		yield();
 
- > Isn't that code outright buggy?  Calling into the scheduler with a
- > spinlock held and local interrupts disabled...
+> So, no, I don't agree with this implementation and don't want to see it
+> go through anyone's tree into mainline just yet.
 
-Yes, absolutely -- if nr_callbacks is ever nonzero then this will
-obviously crash instantly.
+So why, when we posted it earlier, you said the exact opposite ? That
+you actually liked it and wanted to see it as a replacement of the
+current cruft ?
 
- - R.
+That's been the logic from day one. We implement a generic MSI support
+that supports multiple backends, we do it as a powerpc version at first
+since that's what we can actively test and provide backends for, then as
+a second step, we work with the intel folks to port their stuff over to
+our implementation and replace the current crappy generic one.
+
+Ben.
