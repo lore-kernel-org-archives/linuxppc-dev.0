@@ -1,21 +1,18 @@
-Return-Path: <nvbolhuis@aimsys.nl>
-Received: from smtp-vbr14.xs4all.nl (smtp-vbr14.xs4all.nl [194.109.24.34])
-	by ozlabs.org (Postfix) with ESMTP id 267C1DDE47
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 0EF00DDE26
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Jan 2007 21:22:18 +1100 (EST)
-Received: from mail3.aimsys.nl (a80-127-156-242.adsl.xs4all.nl
-	[80.127.156.242])
-	by smtp-vbr14.xs4all.nl (8.13.8/8.13.8) with ESMTP id l0CACllL082467
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Jan 2007 11:12:48 +0100 (CET)
-	(envelope-from nvbolhuis@aimsys.nl)
-Message-ID: <45A75F1B.2090506@aimsys.nl>
-Date: Fri, 12 Jan 2007 11:12:43 +0100
-From: Norbert van Bolhuis <nvbolhuis@aimsys.nl>
+	Fri, 12 Jan 2007 23:36:38 +1100 (EST)
+Message-ID: <45A780D3.3020602@ru.mvista.com>
+Date: Fri, 12 Jan 2007 15:36:35 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: status "Ingo's Real-Time" patch
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Norbert van Bolhuis <nvbolhuis@aimsys.nl>
+Subject: Re: status "Ingo's Real-Time" patch
+References: <45A75F1B.2090506@aimsys.nl>
+In-Reply-To: <45A75F1B.2090506@aimsys.nl>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,17 +23,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello.
 
-Does anybody already (successfully) use "Ingo's Real-Time" patch
-for PPC.
-It can be found here:
-http://people.redhat.com/mingo/realtime-preempt/
+Norbert van Bolhuis wrote:
 
-We tried applying an older patch for the 2.6.19 kernel on a
-MPC870 board, but it failed to compile.
+> Does anybody already (successfully) use "Ingo's Real-Time" patch
+> for PPC.
+> It can be found here:
+> http://people.redhat.com/mingo/realtime-preempt/
 
-Thanks,
-N.
+> We tried applying an older patch for the 2.6.19 kernel on a
+> MPC870 board, but it failed to compile.
 
--- 
-This message has been scanned for viruses and is believed to be clean
+    I don't know about the status of 2.6.19 RT patch, but we're successfulyl 
+using earlier patches with some add-on -- for example, timeofday syscalls 
+calls are broken in the stock RT patch causing glibc to return imprecise / 
+incorrect time... Look in the linuxppc-dev archives for the extra patches I 
+posted that hadn't gotten into RT patch still...
+
+> Thanks,
+> N.
+		
+WBR, Sergei
