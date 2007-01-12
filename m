@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02090DE0CB
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:11:15 +1100 (EST)
-Date: Fri, 12 Jan 2007 10:11:10 +0900 (JST)
-Message-Id: <200701120111.l0C1BBBI005513@toshiba.co.jp>
-Subject: [PATCH 11/19] powerpc: setup usb host controller in SCC for Celleb
+	by ozlabs.org (Postfix) with ESMTP id 943F9DDF3C
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:12:13 +1100 (EST)
+Date: Fri, 12 Jan 2007 10:12:06 +0900 (JST)
+Message-Id: <200701120112.l0C1C7vp006378@toshiba.co.jp>
+Subject: [PATCH 12/19] powerpc: setup sio in SCC for Celleb
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,19 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-USB host controller in SCC requires enable sequence. It should be done
-before USB host drivers start.
+This patch setup serial interfaces in SCC to work with serial_txx9
+driver.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c:1.4
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c:1.5
 --- /dev/null	Thu Jan 11 22:03:27 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c	Thu Jan 11 22:02:21 2007
-@@ -0,0 +1,90 @@
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c	Wed Jan 10 17:48:12 2007
+@@ -0,0 +1,101 @@
 +/*
-+ * SCC (Super Companion Chip) UHC setup
++ * setup serial port in SCC
 + *
 + * (C) Copyright 2006 TOSHIBA CORPORATION
 + *
@@ -52,73 +52,84 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c:1.4
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/pci.h>
++#include <linux/tty.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
++#include <linux/console.h>
 +
-+#include <asm/delay.h>
 +#include <asm/io.h>
++#include <asm/prom.h>
 +
-+#include "scc.h"
++/* sio irq0=0xb00010022 irq0=0xb00010023 irq2=0xb00010024
++    mmio=0xfff000-0x1000,0xff2000-0x1000 */
++static int txx9_serial_bitmap = 0;
 +
-+#define UHC_RESET_WAIT_MAX 10000
++static struct {
++	uint32_t offset;
++	uint32_t index;
++} txx9_scc_tab[3] = {
++	{ 0x300, 0 },	/* 0xFFF300 */
++	{ 0x400, 0 },	/* 0xFFF400 */
++	{ 0x800, 1 }	/* 0xFF2800 */
++};
 +
-+static inline int uhc_clkctrl_ready(u32 val)
++static int txx9_serial_init(void)
 +{
-+	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
-+	return((val & mask) == mask);
++	extern int early_serial_txx9_setup(struct uart_port *port);
++	struct device_node *node;
++	int i;
++	struct uart_port req;
++	struct of_irq irq;
++	struct resource res;
++
++	node = of_find_node_by_path("/ioif1/sio");
++	if (!node)
++		return 0;
++
++	for(i = 0; i < sizeof(txx9_scc_tab)/sizeof(txx9_scc_tab[0]); i++) {
++		if (!(txx9_serial_bitmap & (1<<i)))
++			continue;
++
++		if (of_irq_map_one(node, i, &irq))
++			continue;
++		if (of_address_to_resource(node, txx9_scc_tab[i].index, &res))
++			continue;
++
++		memset(&req, 0, sizeof(req));
++		req.line = i;
++		req.iotype = UPIO_MEM;
++		req.mapbase = res.start + txx9_scc_tab[i].offset;
++#ifdef CONFIG_SERIAL_TXX9_CONSOLE
++		req.membase = ioremap(req.mapbase, 0x24);
++#endif
++		req.irq = irq_create_of_mapping(irq.controller,
++			irq.specifier, irq.size);
++		req.flags |= UPF_IOREMAP | UPF_BUGGY_UART /*HAVE_CTS_LINE*/;
++		req.uartclk = 83300000;
++		early_serial_txx9_setup(&req);
++	}
++
++	of_node_put(node);
++	return 0;
 +}
 +
-+/*
-+ * UHC(usb host controler) enable function.
-+ * affect to both of OHCI and EHCI core module.
-+ */
-+static void enable_scc_uhc(struct pci_dev *dev)
++static int txx9_serial_config(char *ptr)
 +{
-+	void __iomem *uhc_base;
-+	u32 __iomem *uhc_clkctrl;
-+	u32 __iomem *uhc_ecmode;
-+	u32 val = 0;
-+	int i;
++	int	i;
 +
-+	uhc_base = ioremap(pci_resource_start(dev, 0),
-+			   pci_resource_len(dev, 0));
-+	if (!uhc_base) {
-+		printk(KERN_ERR "failed to map UHC register base.\n");
-+		return;
-+	}
-+	uhc_clkctrl = uhc_base + SCC_UHC_CKRCTRL; 
-+	uhc_ecmode  = uhc_base + SCC_UHC_ECMODE; 
-+
-+	/* setup for normal mode */
-+	val |= SCC_UHC_F48MCKLEN;
-+	out_be32(uhc_clkctrl, val);
-+	val |= SCC_UHC_PHY_SUSPEND_SEL;
-+	out_be32(uhc_clkctrl, val);
-+	udelay(10);
-+	val |= SCC_UHC_PHYEN;
-+	out_be32(uhc_clkctrl, val);
-+	udelay(50);
-+
-+	/* disable reset */
-+	val |= SCC_UHC_HCLKEN;
-+	out_be32(uhc_clkctrl, val);
-+	val |= (SCC_UHC_USBCEN | SCC_UHC_USBEN);
-+	out_be32(uhc_clkctrl, val);
-+	i = 0;
-+	while (!uhc_clkctrl_ready(in_be32(uhc_clkctrl))) {
-+		udelay(10);
-+		if (i++ > UHC_RESET_WAIT_MAX) {
-+			printk(KERN_ERR "Failed to disable UHC reset %x\n",
-+			       in_be32(uhc_clkctrl));
++	for (;;) {
++		switch(get_option(&ptr, &i)) {
++		default:
++			return 0;
++		case 2:
++			txx9_serial_bitmap |= 1 << i;
 +			break;
++		case 1:
++			txx9_serial_bitmap |= 1 << i;
++			return 0;
 +		}
 +	}
-+
-+	/* Endian Conversion Mode for Master ALL area */
-+	out_be32(uhc_ecmode, SCC_UHC_ECMODE_BY_BYTE);
-+
-+	iounmap(uhc_base);
 +}
++__setup("txx9_serial=", txx9_serial_config);
 +
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TOSHIBA_2,
-+		 PCI_DEVICE_ID_TOSHIBA_SCC_USB, enable_scc_uhc);
++console_initcall(txx9_serial_init);
