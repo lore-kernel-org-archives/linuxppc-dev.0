@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EB0FBDDF6D
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:02:41 +1100 (EST)
-Date: Fri, 12 Jan 2007 10:02:36 +0900 (JST)
-Message-Id: <200701120102.l0C12big021133@toshiba.co.jp>
-Subject: [PATCH 09/19] powerpc: Cell SCC definitions for Celleb
+	by ozlabs.org (Postfix) with ESMTP id 212C0DE14D
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:03:44 +1100 (EST)
+Date: Fri, 12 Jan 2007 10:03:28 +0900 (JST)
+Message-Id: <200701120103.l0C13Ukc021906@toshiba.co.jp>
+Subject: [PATCH 10/19] powerpc: Supporting PCI bus and base of I/O for Celleb
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,20 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adds Cell SCC(Super Companion Chip) definitions.
+This patch includes support for pci buses, base of Celleb specific
+devices, and etc. It works on of_platform bus.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc.h
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc.h:1.7
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/pci.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/pci.c:1.17
 --- /dev/null	Thu Jan 11 22:03:26 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc.h	Wed Dec 13 19:39:59 2006
-@@ -0,0 +1,145 @@
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/pci.c	Thu Jan 11 21:55:23 2007
+@@ -0,0 +1,481 @@
 +/*
-+ * SCC (Super Companion Chip) definitions
++ * Support for PCI on Celleb platform.
 + *
-+ * (C) Copyright 2004-2006 TOSHIBA CORPORATION
++ * (C) Copyright 2006-2007 TOSHIBA CORPORATION
++ *
++ * This code is based on arch/powerpc/kernel/rtas_pci.c:
++ *  Copyright (C) 2001 Dave Engebretsen, IBM Corporation
++ *  Copyright (C) 2003 Anton Blanchard <anton@au.ibm.com>, IBM
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -51,128 +56,914 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc.h:1.7
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#ifndef _CELLEB_SCC_H
-+#define _CELLEB_SCC_H
++#undef DEBUG
 +
-+#define PCI_VENDOR_ID_TOSHIBA_2                 0x102f
-+#define PCI_DEVICE_ID_TOSHIBA_SCC_PCIEXC_BRIDGE 0x01b0
-+#define PCI_DEVICE_ID_TOSHIBA_SCC_EPCI_BRIDGE   0x01b1
-+#define PCI_DEVICE_ID_TOSHIBA_SCC_BRIDGE        0x01b2
-+#define PCI_DEVICE_ID_TOSHIBA_SCC_GBE           0x01b3
-+#define PCI_DEVICE_ID_TOSHIBA_SCC_ATA           0x01b4
-+#define PCI_DEVICE_ID_TOSHIBA_SCC_USB2          0x01b5
-+#define PCI_DEVICE_ID_TOSHIBA_SCC_USB           0x01b6
-+#define PCI_DEVICE_ID_TOSHIBA_SCC_ENCDEC        0x01b7
++#include <linux/kernel.h>
++#include <linux/threads.h>
++#include <linux/pci.h>
++#include <linux/string.h>
++#include <linux/init.h>
++#include <linux/bootmem.h>
++#include <linux/pci_regs.h>
 +
-+#define SCC_EPCI_REG            0x0000d000
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/pci-bridge.h>
++#include <asm/ppc-pci.h>
 +
-+/* EPCI registers */
-+#define SCC_EPCI_CNF10_REG      0x010
-+#define SCC_EPCI_CNF14_REG      0x014
-+#define SCC_EPCI_CNF18_REG      0x018
-+#define SCC_EPCI_PVBAT          0x100
-+#define SCC_EPCI_VPMBAT         0x104
-+#define SCC_EPCI_VPIBAT         0x108
-+#define SCC_EPCI_VCSR           0x110
-+#define SCC_EPCI_VIENAB         0x114
-+#define SCC_EPCI_VISTAT         0x118
-+#define SCC_EPCI_VRDCOUNT       0x124
-+#define SCC_EPCI_BAM0           0x12c
-+#define SCC_EPCI_BAM1           0x134
-+#define SCC_EPCI_BAM2           0x13c
-+#define SCC_EPCI_IADR           0x164
-+#define SCC_EPCI_CLKRST         0x800
-+#define SCC_EPCI_INTSET         0x804
-+#define SCC_EPCI_STATUS         0x808
-+#define SCC_EPCI_ABTSET         0x80c
-+#define SCC_EPCI_WATRP          0x810
-+#define SCC_EPCI_DUMMYRADR      0x814
-+#define SCC_EPCI_SWRESP         0x818
-+#define SCC_EPCI_CNTOPT         0x81c
-+#define SCC_EPCI_ECMODE         0xf00
-+#define SCC_EPCI_IOM_AC_NUM     5
-+#define SCC_EPCI_IOM_ACTE(n)    (0xf10 + (n) * 4)
-+#define SCC_EPCI_IOT_AC_NUM     4
-+#define SCC_EPCI_IOT_ACTE(n)    (0xf30 + (n) * 4)
-+#define SCC_EPCI_MAEA           0xf50
-+#define SCC_EPCI_MAEC           0xf54
-+#define SCC_EPCI_CKCTRL         0xff0
++#include "pci.h"
++#include "interrupt.h"
 +
-+/* bits for SCC_EPCI_VCSR */
-+#define SCC_EPCI_VCSR_FRE       0x00020000
-+#define SCC_EPCI_VCSR_FWE       0x00010000
-+#define SCC_EPCI_VCSR_DR        0x00000400
-+#define SCC_EPCI_VCSR_SR        0x00000008
-+#define SCC_EPCI_VCSR_AT        0x00000004
++#define MAX_PCI_DEVICES    32
++#define MAX_PCI_FUNCTIONS   8
++#define MAX_PCI_BASE_ADDRS  3 /* use 64 bit address */
 +
-+/* bits for SCC_EPCI_VIENAB/SCC_EPCI_VISTAT */
-+#define SCC_EPCI_VISTAT_PMPE    0x00000008
-+#define SCC_EPCI_VISTAT_PMFE    0x00000004
-+#define SCC_EPCI_VISTAT_PRA     0x00000002
-+#define SCC_EPCI_VISTAT_PRD     0x00000001
-+#define SCC_EPCI_VISTAT_ALL     0x0000000f
++/* definition for fake pci configuration area for GbE, .... ,and etc. */
 +
-+#define SCC_EPCI_VIENAB_PMPEE   0x00000008
-+#define SCC_EPCI_VIENAB_PMFEE   0x00000004
-+#define SCC_EPCI_VIENAB_PRA     0x00000002
-+#define SCC_EPCI_VIENAB_PRD     0x00000001
-+#define SCC_EPCI_VIENAB_ALL     0x0000000f
++struct celleb_pci_resource {
++	struct resource r[MAX_PCI_BASE_ADDRS];
++};
 +
-+/* bits for SCC_EPCI_CLKRST */
-+#define SCC_EPCI_CLKRST_CKS_MASK 0x00030000
-+#define SCC_EPCI_CLKRST_CKS_2   0x00000000
-+#define SCC_EPCI_CLKRST_CKS_4   0x00010000
-+#define SCC_EPCI_CLKRST_CKS_8   0x00020000
-+#define SCC_EPCI_CLKRST_PCICRST 0x00000400
-+#define SCC_EPCI_CLKRST_BC      0x00000200
-+#define SCC_EPCI_CLKRST_PCIRST  0x00000100
-+#define SCC_EPCI_CLKRST_PCKEN   0x00000001
++struct celleb_pci_private {
++	unsigned char *fake_config[MAX_PCI_DEVICES][MAX_PCI_FUNCTIONS];
++	struct celleb_pci_resource *res[MAX_PCI_DEVICES][MAX_PCI_FUNCTIONS];
++};
 +
-+/* bits for SCC_EPCI_INTSET/SCC_EPCI_STATUS */
-+#define SCC_EPCI_INT_2M         0x01000000
-+#define SCC_EPCI_INT_RERR       0x00200000
-+#define SCC_EPCI_INT_SERR       0x00100000
-+#define SCC_EPCI_INT_PRTER      0x00080000
-+#define SCC_EPCI_INT_SER        0x00040000
-+#define SCC_EPCI_INT_PER        0x00020000
-+#define SCC_EPCI_INT_PAI        0x00010000
-+#define SCC_EPCI_INT_1M         0x00000100
-+#define SCC_EPCI_INT_PME        0x00000010
-+#define SCC_EPCI_INT_INTD       0x00000008
-+#define SCC_EPCI_INT_INTC       0x00000004
-+#define SCC_EPCI_INT_INTB       0x00000002
-+#define SCC_EPCI_INT_INTA       0x00000001
-+#define SCC_EPCI_INT_DEVINT     0x0000000f
-+#define SCC_EPCI_INT_ALL        0x003f001f
-+#define SCC_EPCI_INT_ALLERR     0x003f0000
++static inline u8 celleb_fake_config_readb(void *addr)
++{
++	u8 *p = addr;
++	return *p;
++}
 +
-+/* bits for SCC_EPCI_CKCTRL */
-+#define SCC_EPCI_CKCTRL_CRST0   0x00010000
-+#define SCC_EPCI_CKCTRL_CRST1   0x00020000
-+#define SCC_EPCI_CKCTRL_OCLKEN  0x00000100
-+#define SCC_EPCI_CKCTRL_LCLKEN  0x00000001
++static inline u16 celleb_fake_config_readw(void *addr)
++{
++	u16 *p = addr;
++	return le16_to_cpu(*p);
++}
 +
-+#define SCC_EPCI_IDSEL_AD_TO_SLOT(ad)       ((ad) - 10)
-+#define SCC_EPCI_MAX_DEVNU      SCC_EPCI_IDSEL_AD_TO_SLOT(32)
++static inline u32 celleb_fake_config_readl(void *addr)
++{
++	u32 *p = addr;
++	return le32_to_cpu(*p);
++}
 +
-+/* bits for SCC_EPCI_CNTOPT */
-+#define SCC_EPCI_CNTOPT_O2PMB   0x00000002
++static inline void celleb_fake_config_writeb(u32 val, void *addr)
++{
++	u8 *p = addr;
++	*p = val;
++}
 +
-+/* UHC registers */
-+#define SCC_UHC_CKRCTRL         0xff0
-+#define SCC_UHC_ECMODE          0xf00
++static inline void celleb_fake_config_writew(u32 val, void *addr)
++{
++	u16 val16;
++	u16 *p = addr;
++	val16 = cpu_to_le16(val);
++	*p = val16;
++}
 +
-+/* bits for SCC_UHC_CKRCTRL */
-+#define SCC_UHC_F48MCKLEN       0x00000001
-+#define SCC_UHC_P_SUSPEND       0x00000002
-+#define SCC_UHC_PHY_SUSPEND_SEL 0x00000004
-+#define SCC_UHC_HCLKEN          0x00000100
-+#define SCC_UHC_USBEN           0x00010000
-+#define SCC_UHC_USBCEN          0x00020000
-+#define SCC_UHC_PHYEN           0x00040000
++static inline void celleb_fake_config_writel(u32 val, void *addr)
++{
++	u32 val32;
++	u32 *p = addr;
++	val32 = cpu_to_le32(val);
++	*p = val32;
++}
 +
-+/* bits for SCC_UHC_ECMODE */
-+#define SCC_UHC_ECMODE_BY_BYTE  0x00000555
-+#define SCC_UHC_ECMODE_BY_WORD  0x00000aaa
++static unsigned char *get_fake_config_start(struct pci_controller *hose,
++					    int devno, int fn)
++{
++	struct celleb_pci_private *private = hose->private_data;
 +
-+#endif /* _CELLEB_SCC_H */
++	if (private == NULL)
++		return NULL;
++
++	return private->fake_config[devno][fn];
++}
++
++static struct celleb_pci_resource *get_resource_start(
++				struct pci_controller *hose,
++				int devno, int fn)
++{
++	struct celleb_pci_private *private = hose->private_data;
++
++	if (private == NULL)
++		return NULL;
++
++	return private->res[devno][fn];
++}
++
++
++static void celleb_config_read_fake(unsigned char *config, int where,
++				    int size, u32 *val)
++{
++	char *p = config + where;
++
++	switch (size) {
++	case 1:
++		*val = celleb_fake_config_readb(p);
++		break;
++	case 2:
++		*val = celleb_fake_config_readw(p);
++		break;
++	case 4:
++		*val = celleb_fake_config_readl(p);
++		break;
++	}
++
++	return;
++}
++
++static void celleb_config_write_fake(unsigned char *config, int where,
++				     int size, u32 val)
++{
++	char *p = config + where;
++
++	switch (size) {
++	case 1:
++		celleb_fake_config_writeb(val, p);
++		break;
++	case 2:
++		celleb_fake_config_writew(val, p);
++		break;
++	case 4:
++		celleb_fake_config_writel(val, p);
++		break;
++	}
++	return;
++}
++
++static int celleb_fake_pci_read_config(struct pci_bus *bus,
++		unsigned int devfn, int where, int size, u32 *val)
++{
++	char *config;
++	struct device_node *node;
++	struct pci_controller *hose;
++	unsigned int devno = devfn >> 3;
++	unsigned int fn = devfn & 0x7;
++
++	/* allignment check */
++	BUG_ON(where % size);
++
++	pr_debug("    fake read: bus=0x%x, ", bus->number);
++	node = (struct device_node *)bus->sysdata;
++	hose = pci_find_hose_for_OF_device(node);
++	config = get_fake_config_start(hose, devno, fn);
++
++	pr_debug("devno=0x%x, where=0x%x, size=0x%x, ", devno, where, size);
++	if (!config) {
++		pr_debug("failed\n");
++		return PCIBIOS_DEVICE_NOT_FOUND;
++	}
++
++	celleb_config_read_fake(config, where, size, val);
++	pr_debug("val=0x%x\n", *val);
++
++	return PCIBIOS_SUCCESSFUL;
++}
++
++
++static int celleb_fake_pci_write_config(struct pci_bus *bus,
++		 unsigned int devfn, int where, int size, u32 val)
++{
++	char *config;
++	struct device_node *node;
++	struct pci_controller *hose;
++	struct celleb_pci_resource *res;
++	unsigned int devno = devfn >> 3;
++	unsigned int fn = devfn & 0x7;
++
++	/* allignment check */
++	BUG_ON(where % size);
++
++	node = (struct device_node *)bus->sysdata;
++	hose = pci_find_hose_for_OF_device(node);
++	config = get_fake_config_start(hose, devno, fn);
++
++	if (!config)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	if (val == ~0) {
++		int i = (where - PCI_BASE_ADDRESS_0) >> 3;
++
++		switch (where) {
++		case PCI_BASE_ADDRESS_0:
++		case PCI_BASE_ADDRESS_2:
++			if (size != 4)
++				return PCIBIOS_DEVICE_NOT_FOUND;
++			res = get_resource_start(hose, devno, fn);
++			if (!res)
++				return PCIBIOS_DEVICE_NOT_FOUND;
++			celleb_config_write_fake(config, where, size,
++					(res->r[i].end - res->r[i].start));
++			return PCIBIOS_SUCCESSFUL;
++		case PCI_BASE_ADDRESS_1:
++		case PCI_BASE_ADDRESS_3:
++		case PCI_BASE_ADDRESS_4:
++		case PCI_BASE_ADDRESS_5:
++			break;
++		default:
++			break;
++		}
++	}
++
++	celleb_config_write_fake(config, where, size, val);
++	pr_debug("    fake write: where=%x, size=%d, val=%x\n",
++		 where, size, val);
++
++	return PCIBIOS_SUCCESSFUL;
++}
++
++static struct pci_ops celleb_fake_pci_ops = {
++	celleb_fake_pci_read_config,
++	celleb_fake_pci_write_config
++};
++
++static inline void celleb_setup_pci_base_addrs(struct pci_controller *hose,
++					unsigned int devno, unsigned int fn,
++					unsigned int num_base_addr)
++{
++	u32 val;
++	unsigned char *config;
++	struct celleb_pci_resource *res;
++
++	config = get_fake_config_start(hose, devno, fn);
++	res = get_resource_start(hose, devno, fn);
++
++	if (!config || !res)
++		return;
++
++	switch (num_base_addr) {
++	case 3:
++		val = (res->r[2].start & 0xfffffff0)
++		    | PCI_BASE_ADDRESS_MEM_TYPE_64;
++		celleb_config_write_fake(config, PCI_BASE_ADDRESS_4, 4, val);
++		val = res->r[2].start >> 32;
++		celleb_config_write_fake(config, PCI_BASE_ADDRESS_5, 4, val);
++		/* FALLTHROUGH */
++	case 2:
++		val = (res->r[1].start & 0xfffffff0)
++		    | PCI_BASE_ADDRESS_MEM_TYPE_64;
++		celleb_config_write_fake(config, PCI_BASE_ADDRESS_2, 4, val);
++		val = res->r[1].start >> 32;
++		celleb_config_write_fake(config, PCI_BASE_ADDRESS_3, 4, val);
++		/* FALLTHROUGH */
++	case 1:
++		val = (res->r[0].start & 0xfffffff0)
++		    | PCI_BASE_ADDRESS_MEM_TYPE_64;
++		celleb_config_write_fake(config, PCI_BASE_ADDRESS_0, 4, val);
++		val = res->r[0].start >> 32;
++		celleb_config_write_fake(config, PCI_BASE_ADDRESS_1, 4, val);
++		break;
++	}
++
++	val = PCI_COMMAND_IO | PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER;
++	celleb_config_write_fake(config, PCI_COMMAND, 2, val);
++}
++
++static int __devinit celleb_setup_fake_pci_device(struct device_node *node,
++						  struct pci_controller *hose)
++{
++	unsigned int rlen;
++	int num_base_addr = 0;
++	u32 val;
++	const u32 *wi0, *wi1, *wi2, *wi3, *wi4;
++	unsigned int devno, fn;
++	struct celleb_pci_private *private = hose->private_data;
++	unsigned char **config = NULL;
++	struct celleb_pci_resource **res = NULL;
++	const char *name;
++	const unsigned long *li;
++	int size, result;
++
++	if (private == NULL) {
++		printk(KERN_ERR "PCI: "
++		       "memory space for pci controller is not assigned\n");
++		goto error;
++	}
++
++	name = get_property(node, "model", &rlen);
++	if (!name) {
++		printk(KERN_ERR "PCI: model property not found.\n");
++		goto error;
++	}
++
++	wi4 = get_property(node, "reg", &rlen);
++	if (wi4 == NULL)
++		goto error;
++
++	devno = ((wi4[0] >> 8) & 0xff) >> 3;
++	fn = (wi4[0] >> 8) & 0x7;
++
++	pr_debug("PCI: celleb_setup_fake_pci() %s devno=%x fn=%x\n", name,
++		 devno, fn);
++
++	size = 256;
++	config = &private->fake_config[devno][fn];
++	if (mem_init_done)
++		*config = kzalloc(size, GFP_KERNEL);
++	else
++		*config = alloc_bootmem(size);
++	if (*config == NULL) {
++		printk(KERN_ERR "PCI: "
++		       "not enough memory for fake configuration space\n");
++		goto error;
++	}
++	pr_debug("PCI: fake config area assigned 0x%016lx\n",
++		 (unsigned long)*config);
++
++	size = sizeof(struct celleb_pci_resource);
++	res = &private->res[devno][fn];
++	if (mem_init_done)
++		*res = kzalloc(size, GFP_KERNEL);
++	else
++		*res = alloc_bootmem(size);
++	if (*res == NULL) {
++		printk(KERN_ERR
++		       "PCI: not enough memory for resource data space\n");
++		goto error;
++	}
++	pr_debug("PCI: res assigned 0x%016lx\n", (unsigned long)*res);
++
++	wi0 = get_property(node, "device-id", NULL);
++	wi1 = get_property(node, "vendor-id", NULL);
++	wi2 = get_property(node, "class-code", NULL);
++	wi3 = get_property(node, "revision-id", NULL);
++
++	celleb_config_write_fake(*config, PCI_DEVICE_ID, 2, wi0[0] & 0xffff);
++	celleb_config_write_fake(*config, PCI_VENDOR_ID, 2, wi1[0] & 0xffff);
++	pr_debug("class-code = 0x%08x\n", wi2[0]);
++
++	celleb_config_write_fake(*config, PCI_CLASS_PROG, 1, wi2[0] & 0xff);
++	celleb_config_write_fake(*config, PCI_CLASS_DEVICE, 2,
++				 (wi2[0] >> 8) & 0xffff);
++	celleb_config_write_fake(*config, PCI_REVISION_ID, 1, wi3[0]);
++
++	while (num_base_addr < MAX_PCI_BASE_ADDRS) {
++		result = of_address_to_resource(node, 
++				num_base_addr, &(*res)->r[num_base_addr]);
++		if (result)
++			break;
++		num_base_addr++;
++	}
++
++	celleb_setup_pci_base_addrs(hose, devno, fn, num_base_addr);
++
++	li = get_property(node, "interrupts", &rlen);
++	val = li[0];
++	celleb_config_write_fake(*config, PCI_INTERRUPT_PIN, 1, 1);
++	celleb_config_write_fake(*config, PCI_INTERRUPT_LINE, 1, val);
++
++#ifdef DEBUG
++	pr_debug("PCI: %s irq=%ld\n", name, li[0]);
++	for (i = 0; i < 6; i++) {
++		celleb_config_read_fake(*config,
++					PCI_BASE_ADDRESS_0 + 0x4 * i, 4,
++					&val);
++		pr_debug("PCI: %s fn=%d base_address_%d=0x%x\n",
++			 name, fn, i, val);
++	}
++#endif
++
++	celleb_config_write_fake(*config, PCI_HEADER_TYPE, 1,
++				 PCI_HEADER_TYPE_NORMAL);
++
++	return 0;
++
++error:
++	if (mem_init_done) {
++		if (config && *config)
++			kfree(*config);
++		if (res && *res)
++			kfree(*res);
++
++	} else {
++		if (config && *config) {
++			size = 256;
++			free_bootmem((unsigned long)(*config), size);
++		}
++		if (res && *res) {
++			size = sizeof(struct celleb_pci_resource);
++			free_bootmem((unsigned long)(*res), size);
++		}
++	}
++
++	return 1;
++}
++
++static int __devinit phb_set_bus_ranges(struct device_node *dev,
++					struct pci_controller *phb)
++{
++	const int *bus_range;
++	unsigned int len;
++
++	bus_range = get_property(dev, "bus-range", &len);
++	if (bus_range == NULL || len < 2 * sizeof(int))
++		return 1;
++
++	phb->first_busno = bus_range[0];
++	phb->last_busno = bus_range[1];
++
++	return 0;
++}
++
++static void __devinit celleb_alloc_private_mem(struct pci_controller *hose)
++{
++	if (mem_init_done)
++		hose->private_data =
++			kzalloc(sizeof(struct celleb_pci_private), GFP_KERNEL);
++	else
++		hose->private_data =
++			alloc_bootmem(sizeof(struct celleb_pci_private));
++}
++
++int __devinit celleb_setup_phb(struct pci_controller *phb)
++{
++	const char *name;
++	struct device_node *dev = phb->arch_data;
++	struct device_node *node;
++	unsigned int rlen;
++	
++	name = get_property(dev, "name", &rlen);
++	if (!name)
++		return 1;
++
++	pr_debug("PCI: celleb_setup_phb() %s\n", name);
++	phb_set_bus_ranges(dev, phb);
++
++	if (strcmp(name, "epci") == 0) {
++		phb->ops = &celleb_epci_ops;
++		return celleb_setup_epci(dev, phb);
++
++	} else if (strcmp(name, "pci-pseudo") == 0) {
++		phb->ops = &celleb_fake_pci_ops;
++		celleb_alloc_private_mem(phb);
++		for (node = of_get_next_child(dev, NULL);
++		     node != NULL; node = of_get_next_child(dev, node))
++			celleb_setup_fake_pci_device(node, phb);
++
++	} else
++		return 1;
++
++	return 0;
++}
++
++int celleb_pci_probe_mode(struct pci_bus *bus)
++{
++	return PCI_PROBE_DEVTREE;
++}
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/pci.h
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/pci.h:1.6
+--- /dev/null	Thu Jan 11 22:03:26 2007
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/pci.h	Thu Jan 11 21:55:23 2007
+@@ -0,0 +1,35 @@
++/*
++ * pci prototypes for Celleb platform
++ *
++ * (C) Copyright 2006-2007 TOSHIBA CORPORATION
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++#ifndef _CELLEB_PCI_H
++#define _CELLEB_PCI_H
++
++#include <linux/pci.h>
++
++#include <asm/pci-bridge.h>
++#include <asm/prom.h>
++
++extern int celleb_setup_phb(struct pci_controller *);
++extern int celleb_pci_probe_mode(struct pci_bus *);
++
++extern struct pci_ops celleb_epci_ops;
++extern int celleb_setup_epci(struct device_node *, struct pci_controller *);
++
++#endif /* _CELLEB_PCI_H */
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_epci.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_epci.c:1.16
+--- /dev/null	Thu Jan 11 22:03:26 2007
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_epci.c	Thu Jan 11 22:03:11 2007
+@@ -0,0 +1,409 @@
++/*
++ * Support for SCC external PCI
++ *
++ * (C) Copyright 2004-2007 TOSHIBA CORPORATION
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++#undef DEBUG
++
++#include <linux/kernel.h>
++#include <linux/threads.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/pci_regs.h>
++#include <linux/bootmem.h>
++
++#include <asm/io.h>
++#include <asm/irq.h>
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/pci-bridge.h>
++#include <asm/ppc-pci.h>
++
++#include "scc.h"
++#include "pci.h"
++#include "interrupt.h"
++
++#define MAX_PCI_DEVICES   32
++#define MAX_PCI_FUNCTIONS  8
++
++#define iob()  __asm__ __volatile__("eieio; sync":::"memory")
++
++
++#if 0 /* test code for epci dummy read */
++static void celleb_epci_dummy_read(struct pci_dev *dev)
++{
++	void *epci_base;
++	struct device_node *node;
++	struct pci_controller *hose;
++	u32 val;
++
++	node = (struct device_node *)dev->bus->sysdata;
++	hose = pci_find_hose_for_OF_device(node);
++
++	if (!hose)
++		return;
++
++	epci_base = (void *)hose->cfg_addr;
++
++	val = in_be32(epci_base + SCC_EPCI_WATRP);
++	iosync();
++
++	return;
++}
++#endif
++
++static inline void clear_and_disable_master_abort_interrupt(
++					struct pci_controller *hose)
++{
++	void __iomem *addr;
++	addr = (void *)hose->cfg_addr + PCI_COMMAND;
++	out_be32(addr, in_be32(addr) | (PCI_STATUS_REC_MASTER_ABORT << 16));
++}
++
++static int celleb_epci_check_abort(struct pci_controller *hose,
++				   unsigned long addr)
++{
++	void __iomem *reg, *epci_base;
++	u32 val;
++
++	iob();
++	epci_base = (void *)hose->cfg_addr;
++
++	reg = epci_base + PCI_COMMAND;
++	val = in_be32(reg);
++
++	if (val & (PCI_STATUS_REC_MASTER_ABORT << 16)) {
++		out_be32(reg,
++			 (val & 0xffff) | (PCI_STATUS_REC_MASTER_ABORT << 16));
++
++		/* clear PCI Controller error, FRE, PMFE */
++		reg = epci_base + SCC_EPCI_STATUS;
++		out_be32(reg, SCC_EPCI_INT_PAI);
++
++		reg = epci_base + SCC_EPCI_VCSR;
++		val = in_be32(reg) & 0xffff;
++		val |= SCC_EPCI_VCSR_FRE;
++		out_be32(reg, val);
++
++		reg = epci_base + SCC_EPCI_VISTAT;
++		out_be32(reg, SCC_EPCI_VISTAT_PMFE);
++		return PCIBIOS_DEVICE_NOT_FOUND;
++	}
++
++	return PCIBIOS_SUCCESSFUL;
++}
++
++static unsigned long celleb_epci_make_config_addr(struct pci_controller *hose,
++					unsigned int devfn, int where)
++{
++	unsigned long addr;
++	struct pci_bus *bus = hose->bus;
++
++	if (bus->self)
++		addr = (unsigned long)hose->cfg_data +
++		       (((bus->number & 0xff) << 16)
++		        | ((devfn & 0xff) << 8)
++		        | (where & 0xff)
++		        | 0x01000000);
++	else
++		addr = (unsigned long)hose->cfg_data +
++		       (((devfn & 0xff) << 8) | (where & 0xff));
++
++	pr_debug("EPCI: config_addr = 0x%016lx\n", addr);
++
++	return addr;
++}
++
++static int celleb_epci_read_config(struct pci_bus *bus,
++			unsigned int devfn, int where, int size, u32 * val)
++{
++	unsigned long addr;
++	struct device_node *node;
++	struct pci_controller *hose;
++
++	/* allignment check */
++	BUG_ON(where % size);
++
++	node = (struct device_node *)bus->sysdata;
++	hose = pci_find_hose_for_OF_device(node);
++
++	if (!hose->cfg_data)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	if (bus->number == hose->first_busno && devfn == 0) {
++		/* EPCI controller self */
++
++		addr = (unsigned long)hose->cfg_addr + where;
++
++		switch (size) {
++		case 1:
++			*val = in_8((u8 *)addr);
++			break;
++		case 2:
++			*val = in_be16((u16 *)addr);
++			break;
++		case 4:
++			*val = in_be32((u32 *)addr);
++			break;
++		default:
++			return PCIBIOS_DEVICE_NOT_FOUND;
++		}
++
++	} else {
++
++		clear_and_disable_master_abort_interrupt(hose);
++		addr = celleb_epci_make_config_addr(hose, devfn, where);
++
++		switch (size) {
++		case 1:
++			*val = in_8((u8 *)addr);
++			break;
++		case 2:
++			*val = in_le16((u16 *)addr);
++			break;
++		case 4:
++			*val = in_le32((u32 *)addr);
++			break;
++		default:
++			return PCIBIOS_DEVICE_NOT_FOUND;
++		}
++	}
++
++	pr_debug("EPCI: "
++		 "addr=0x%lx, devfn=0x%x, where=0x%x, size=0x%x, val=0x%x\n",
++		 addr, devfn, where, size, *val);
++
++	return celleb_epci_check_abort(hose, 0);
++}
++
++static int celleb_epci_write_config(struct pci_bus *bus,
++			unsigned int devfn, int where, int size, u32 val)
++{
++	unsigned long addr;
++	struct device_node *node;
++	struct pci_controller *hose;
++
++	/* allignment check */
++	BUG_ON(where % size);
++
++	node = (struct device_node *)bus->sysdata;
++	hose = pci_find_hose_for_OF_device(node);
++
++	if (!hose->cfg_data)
++		return PCIBIOS_DEVICE_NOT_FOUND;
++
++	if (bus->number == hose->first_busno && devfn == 0) {
++		/* EPCI controller self */
++
++		addr = (unsigned long)hose->cfg_addr + where;
++
++		switch (size) {
++		case 1:
++			out_8((u8 *)addr, val);
++			break;
++		case 2:
++			out_be16((u16 *)addr, val);
++			break;
++		case 4:
++			out_be32((u32 *)addr, val);
++			break;
++		default:
++			return PCIBIOS_DEVICE_NOT_FOUND;
++		}
++
++	} else {
++
++		clear_and_disable_master_abort_interrupt(hose);
++		addr = celleb_epci_make_config_addr(hose, devfn, where);
++
++		switch (size) {
++		case 1:
++			out_8((u8 *)addr, val);
++			break;
++		case 2:
++			out_le16((u16 *)addr, val);
++			break;
++		case 4:
++			out_le32((u32 *)addr, val);
++			break;
++		default:
++			return PCIBIOS_DEVICE_NOT_FOUND;
++		}
++	}
++
++	return celleb_epci_check_abort(hose, addr);
++}
++
++struct pci_ops celleb_epci_ops = {
++	celleb_epci_read_config,
++	celleb_epci_write_config,
++};
++
++/* to be moved in FW */
++static int __devinit celleb_epci_init(struct pci_controller *hose)
++{
++	u32 val;
++	void __iomem *reg, *epci_base;
++	int hwres = 0;
++
++	epci_base = (void *)hose->cfg_addr;
++
++	/* PCI core reset(Internal bus and PCI clock) */
++	reg = epci_base + SCC_EPCI_CKCTRL;
++	val = in_be32(reg);
++	if (val == 0x00030101)
++		hwres = 1;
++	else {
++		val &= ~(SCC_EPCI_CKCTRL_CRST0 | SCC_EPCI_CKCTRL_CRST1);
++		out_be32(reg, val);
++
++		/* set PCI core clock */
++		val = in_be32(reg);
++		val |= (SCC_EPCI_CKCTRL_OCLKEN | SCC_EPCI_CKCTRL_LCLKEN);
++		out_be32(reg, val);
++
++		/* release PCI core reset (internal bus) */
++		val = in_be32(reg);
++		val |= SCC_EPCI_CKCTRL_CRST0;
++		out_be32(reg, val);
++
++		/* set PCI clock select */
++		reg = epci_base + SCC_EPCI_CLKRST;
++		val = in_be32(reg);
++		val &= ~SCC_EPCI_CLKRST_CKS_MASK;
++		val |= SCC_EPCI_CLKRST_CKS_2;
++		out_be32(reg, val);
++
++		/* set arbiter */
++		reg = epci_base + SCC_EPCI_ABTSET;
++		out_be32(reg, 0x0f1f001f);	/* temporary value */
++
++		/* buffer on */
++		reg = epci_base + SCC_EPCI_CLKRST;
++		val = in_be32(reg);
++		val |= SCC_EPCI_CLKRST_BC;
++		out_be32(reg, val);
++
++		/* PCI clock enable */
++		val = in_be32(reg);
++		val |= SCC_EPCI_CLKRST_PCKEN;
++		out_be32(reg, val);
++
++		/* release PCI core reset (all) */
++		reg = epci_base + SCC_EPCI_CKCTRL;
++		val = in_be32(reg);
++		val |= (SCC_EPCI_CKCTRL_CRST0 | SCC_EPCI_CKCTRL_CRST1);
++		out_be32(reg, val);
++
++		/* set base translation registers. (already set by Beat) */
++
++		/* set base address masks. (already set by Beat) */
++	}
++
++	/* release interrupt masks and clear all interrupts */
++	reg = epci_base + SCC_EPCI_INTSET;
++	out_be32(reg, 0x013f011f);	/* all interrupts enable */
++	reg = epci_base + SCC_EPCI_VIENAB;
++	val = SCC_EPCI_VIENAB_PMPEE | SCC_EPCI_VIENAB_PMFEE;
++	out_be32(reg, val);
++	reg = epci_base + SCC_EPCI_STATUS;
++	out_be32(reg, 0xffffffff);
++	reg = epci_base + SCC_EPCI_VISTAT;
++	out_be32(reg, 0xffffffff);
++
++	/* disable PCI->IB address translation */
++	reg = epci_base + SCC_EPCI_VCSR;
++	val = in_be32(reg);
++	val &= ~(SCC_EPCI_VCSR_DR | SCC_EPCI_VCSR_AT);
++	out_be32(reg, val);
++
++	/* set base addresses. (no need to set?) */
++
++	/* memory space, bus master enable */
++	reg = epci_base + PCI_COMMAND;
++	val = PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER;
++	out_be32(reg, val);
++
++	/* endian mode setup */
++	reg = epci_base + SCC_EPCI_ECMODE;
++	val = 0x00550155;
++	out_be32(reg, val);
++
++	/* set control option */
++	reg = epci_base + SCC_EPCI_CNTOPT;
++	val = in_be32(reg);
++	val |= SCC_EPCI_CNTOPT_O2PMB;
++	out_be32(reg, val);
++
++	/* XXX: temporay: set registers for address conversion setup */
++	reg = epci_base + SCC_EPCI_CNF10_REG;
++	out_be32(reg, 0x80000008);
++	reg = epci_base + SCC_EPCI_CNF14_REG;
++	out_be32(reg, 0x40000008);
++
++	reg = epci_base + SCC_EPCI_BAM0;
++	out_be32(reg, 0x80000000);
++	reg = epci_base + SCC_EPCI_BAM1;
++	out_be32(reg, 0xe0000000);
++
++	reg = epci_base + SCC_EPCI_PVBAT;
++	out_be32(reg, 0x80000000);
++
++	if (!hwres) {
++		/* release external PCI reset */
++		reg = epci_base + SCC_EPCI_CLKRST;
++		val = in_be32(reg);
++		val |= SCC_EPCI_CLKRST_PCIRST;
++		out_be32(reg, val);
++	}
++
++	return 0;
++}
++
++int __devinit celleb_setup_epci(struct device_node *node,
++				struct pci_controller *hose)
++{
++	struct resource r;
++
++	pr_debug("PCI: celleb_setup_epci()\n");
++	
++	if (of_address_to_resource(node, 0, &r))
++		goto error;
++	hose->cfg_addr = ioremap(r.start, (r.end - r.start + 1));
++	if (!hose->cfg_addr)
++		goto error;
++	pr_debug("EPCI: cfg_addr map 0x%016lx->0x%016lx + 0x%016lx\n",
++		 r.start, (unsigned long)hose->cfg_addr, 
++		(r.end - r.start + 1));
++
++	if (of_address_to_resource(node, 2, &r))
++		goto error;
++	hose->cfg_data = ioremap(r.start, (r.end - r.start + 1));
++	if (!hose->cfg_data)
++		goto error;
++	pr_debug("EPCI: cfg_data map 0x%016lx->0x%016lx + 0x%016lx\n",
++		 r.start, (unsigned long)hose->cfg_data, 
++		(r.end - r.start + 1));
++
++	celleb_epci_init(hose);
++
++	return 0;
++
++error:
++	return 1;
++}
