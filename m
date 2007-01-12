@@ -1,24 +1,18 @@
-Return-Path: <>
-Received: from asclepius.site5.com (asclepius.site5.com [70.47.36.37])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 73BEDDDEB9
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 08:32:02 +1100 (EST)
-Date: Fri, 12 Jan 2007 16:28:45 -0500
-From: Sonny Rao <sonny@burdell.org>
-To: Nishanth Aravamudan <nacc@us.ibm.com>
-Subject: Re: 2.6.19: kernel BUG in hugepd_page at
-	arch/powerpc/mm/hugetlbpage.c:58!
-Message-ID: <20070112212845.GA2501@kevlar.boston.burdell.org>
-References: <20070112195703.GA1826@kevlar.boston.burdell.org>
-	<1168632510.12413.62.camel@localhost.localdomain>
-	<20070112203017.GA2215@kevlar.boston.burdell.org>
-	<20070112211159.GC4982@us.ibm.com>
-Mime-Version: 1.0
+Return-Path: <mgreer@mvista.com>
+Date: Fri, 12 Jan 2007 14:48:35 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
+Message-ID: <20070112214835.GA5366@mag.az.mvista.com>
+References: <20061019002635.GA2356@mag.az.mvista.com>
+	<E1GaYUQ-0001jb-20@jdl.com>
+	<20061019195156.GB6586@mag.az.mvista.com>
+	<20070111004048.GA27351@mag.az.mvista.com>
+	<1168631458.19605.34.camel@cashmere.sps.mot.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070112211159.GC4982@us.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, dwg@au1.ibm.com,
-	libhugetlbfs-devel@lists.sourceforge.net
+In-Reply-To: <1168631458.19605.34.camel@cashmere.sps.mot.com>
+Cc: Jon Loeliger <jdl@jdl.com>, linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 12, 2007 at 01:11:59PM -0800, Nishanth Aravamudan wrote:
-> On 12.01.2007 [15:30:17 -0500], Sonny Rao wrote:
-> > On Fri, Jan 12, 2007 at 02:08:30PM -0600, Adam Litke wrote:
-> > > On Fri, 2007-01-12 at 14:57 -0500, Sonny Rao wrote:
-> > > > (Apologies if this is a re-post)
-> > > >
-> > > > Hi, I was running 2.6.19 and running some benchmarks using
-> > > > libhugetlbfs (1.0.1) and I can fairly reliably trigger this bug:
-> > >
-> > > Is this triggered by a libhugetlbfs test case?  If so, which one?
+On Fri, Jan 12, 2007 at 01:50:59PM -0600, Jon Loeliger wrote:
+> On Wed, 2007-01-10 at 18:40, Mark A. Greer wrote:
+> > On Thu, Oct 19, 2006 at 12:51:56PM -0700, Mark A. Greer wrote:
+> > > On Thu, Oct 19, 2006 at 09:03:18AM -0500, Jon Loeliger wrote:
+> > > > So, like, the other day "Mark A. Greer" mumbled:
+> > > > > 
+> > > > > This would be used by the sandpoint, say, by adding the following rules
+> > > > > to the Makefile in the appropriate places:
+> > > > > 
+> > > > > 	$(obj)/zImage.sandpoint: vmlinux $(wrapperbits)
+> > > > > 		$(call cmd,wrap_dts,sandpoint)
+> > > > > 
+> > > > > 	$(obj)/zImage.initrd.sandpoint: vmlinux $(wrapperbits)
+> > > > > 		$(call cmd,wrap_dts_initrd,sandpoint)
+> > > > > 
+> > > > > and:
+> > > > > 
+> > > > > 	image-$(CONFIG_SANDPOINT)               += zImage.sandpoint
+> > > > > 
+> > > > > Comments?
+> > > > 
+> > > > Isn't there a way to do this without hardcoding the
+> > > > platform name in the makefiles directly?  I fear for
+> > > > the one-per-platform effect that is yet to come with
+> > > > the conversion of many of the legacy boards.
 > > 
-> > Nope, this was an application/benchmark, but I'm running the testsuite
-> > on the machine now to see if I can trigger it.
+> > Okay, its been a while so let's see if anyone remembers and/or cares
+> > anymore.  :)
 > 
-> Any idea what the application/benchmark was trying to do? Does it happen
-> to be open-source? :)
+> We care.  We care deeply.  We've just all been on vacation. :-)
+> 
+> Scott Wood (here) has recently pushed around a patch
+> internally that is very similar and much more comprehensive,
+> though I confess I've not really studied it.  He mumbled
+> something about prepping it to send out when he gets back.
+> And I think that will be Monday.
 
-Unfortunately not, I haven't had any time to analyze what's going on.
-It doesn't seem to happen all the time either, so it may take a while
-before I know anything more.
+Okay, that would be great.  Thanks for the heads up.
 
-Sonny
+Mark
