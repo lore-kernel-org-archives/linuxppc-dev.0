@@ -1,22 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8387ADDE44
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 05:58:20 +1100 (EST)
-In-Reply-To: <20070112095213.GA24536@lst.de>
-References: <ZCH01EXM20D0kWSxlXp000006f8@zch01exm20.fsl.freescale.net>
-	<20070112095213.GA24536@lst.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <048A2BB9-66FF-494F-8A6B-2649D8B96DBD@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch][5/5] powerpc: Add the general support for Embedded
-	Floating-Point instructions
-Date: Fri, 12 Jan 2007 12:57:36 -0600
-To: Christoph Hellwig <hch@lst.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <jdl@freescale.com>
+Subject: Re: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
+From: Jon Loeliger <jdl@freescale.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20070111004048.GA27351@mag.az.mvista.com>
+References: <20061019002635.GA2356@mag.az.mvista.com>
+	<E1GaYUQ-0001jb-20@jdl.com> <20061019195156.GB6586@mag.az.mvista.com>
+	<20070111004048.GA27351@mag.az.mvista.com>
+Content-Type: text/plain
+Message-Id: <1168631458.19605.34.camel@cashmere.sps.mot.com>
+Mime-Version: 1.0
+Date: Fri, 12 Jan 2007 13:50:59 -0600
+Cc: Jon Loeliger <jdl@jdl.com>, linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,31 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2007-01-10 at 18:40, Mark A. Greer wrote:
+> On Thu, Oct 19, 2006 at 12:51:56PM -0700, Mark A. Greer wrote:
+> > On Thu, Oct 19, 2006 at 09:03:18AM -0500, Jon Loeliger wrote:
+> > > So, like, the other day "Mark A. Greer" mumbled:
+> > > > 
+> > > > This would be used by the sandpoint, say, by adding the following rules
+> > > > to the Makefile in the appropriate places:
+> > > > 
+> > > > 	$(obj)/zImage.sandpoint: vmlinux $(wrapperbits)
+> > > > 		$(call cmd,wrap_dts,sandpoint)
+> > > > 
+> > > > 	$(obj)/zImage.initrd.sandpoint: vmlinux $(wrapperbits)
+> > > > 		$(call cmd,wrap_dts_initrd,sandpoint)
+> > > > 
+> > > > and:
+> > > > 
+> > > > 	image-$(CONFIG_SANDPOINT)               += zImage.sandpoint
+> > > > 
+> > > > Comments?
+> > > 
+> > > Isn't there a way to do this without hardcoding the
+> > > platform name in the makefiles directly?  I fear for
+> > > the one-per-platform effect that is yet to come with
+> > > the conversion of many of the legacy boards.
+> 
+> Okay, its been a while so let's see if anyone remembers and/or cares
+> anymore.  :)
 
-On Jan 12, 2007, at 3:52 AM, Christoph Hellwig wrote:
+We care.  We care deeply.  We've just all been on vacation. :-)
 
-> On Fri, Jan 12, 2007 at 01:31:02PM +0800, ebony.zhu@freescale.com  
-> wrote:
->> +ifeq ($(CONFIG_SPE),y)
->> +ifneq ($(CONFIG_MATH_EMULATION),y)
->> +core-y				+= arch/powerpc/math-emu/
->> +endif
->> +endif
->>  core-$(CONFIG_MATH_EMULATION)	+= arch/powerpc/math-emu/
->
-> This statement doesn't make any sense.  I guess you always want to
-> build arch/powerpc/math-emu if CONFIG_SPE is set, right?  The proper
-> way to do that is to force CONFIG_MATH_EMULATION in the Kconfig.
->
-> Then again we need a really good explanation why CONFIG_SPE should
-> force the math emulation to be built.
+Scott Wood (here) has recently pushed around a patch
+internally that is very similar and much more comprehensive,
+though I confess I've not really studied it.  He mumbled
+something about prepping it to send out when he gets back.
+And I think that will be Monday.
 
-I'm a little confused if there is a question about the approach  
-taken?  Are you asking is there some way of doing the exception  
-handling w/o fully emulating the instruction?
-
-Agree that the build system modifications in this patch set need some  
-fixing, just trying to understand if there is a larger design query  
-here or not?
-
-- k
+jdl
