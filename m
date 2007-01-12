@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6D35DDE132
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:01:39 +1100 (EST)
-Date: Fri, 12 Jan 2007 10:01:31 +0900 (JST)
-Message-Id: <200701120101.l0C11V4J026479@toshiba.co.jp>
-Subject: [PATCH 8/19] powerpc: supporting interrupts for Celleb
+	by ozlabs.org (Postfix) with ESMTP id EB0FBDDF6D
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:02:41 +1100 (EST)
+Date: Fri, 12 Jan 2007 10:02:36 +0900 (JST)
+Message-Id: <200701120102.l0C12big021133@toshiba.co.jp>
+Subject: [PATCH 09/19] powerpc: Cell SCC definitions for Celleb
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,21 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch creates Celleb platform dependent files to support interrupts.
+Adds Cell SCC(Super Companion Chip) definitions.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c:1.6
---- /dev/null	Thu Jan 11 22:03:25 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c	Tue Jan  9 16:56:57 2007
-@@ -0,0 +1,284 @@
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc.h
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc.h:1.7
+--- /dev/null	Thu Jan 11 22:03:26 2007
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc.h	Wed Dec 13 19:39:59 2006
+@@ -0,0 +1,145 @@
 +/*
-+ * Celleb/Beat Interrupt controller
++ * SCC (Super Companion Chip) definitions
 + *
-+ * (C) Copyright 2006-2007 TOSHIBA CORPORATION
++ * (C) Copyright 2004-2006 TOSHIBA CORPORATION
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -52,305 +51,128 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c:1.
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/percpu.h>
-+#include <linux/types.h>
++#ifndef _CELLEB_SCC_H
++#define _CELLEB_SCC_H
 +
-+#include <asm/machdep.h>
++#define PCI_VENDOR_ID_TOSHIBA_2                 0x102f
++#define PCI_DEVICE_ID_TOSHIBA_SCC_PCIEXC_BRIDGE 0x01b0
++#define PCI_DEVICE_ID_TOSHIBA_SCC_EPCI_BRIDGE   0x01b1
++#define PCI_DEVICE_ID_TOSHIBA_SCC_BRIDGE        0x01b2
++#define PCI_DEVICE_ID_TOSHIBA_SCC_GBE           0x01b3
++#define PCI_DEVICE_ID_TOSHIBA_SCC_ATA           0x01b4
++#define PCI_DEVICE_ID_TOSHIBA_SCC_USB2          0x01b5
++#define PCI_DEVICE_ID_TOSHIBA_SCC_USB           0x01b6
++#define PCI_DEVICE_ID_TOSHIBA_SCC_ENCDEC        0x01b7
 +
-+#include "interrupt.h"
-+#include "beat_wrapper.h"
++#define SCC_EPCI_REG            0x0000d000
 +
-+#define	MAX_IRQS	NR_IRQS
-+static spinlock_t beatic_irq_mask_lock;
-+static uint64_t	beatic_irq_mask_enable[(MAX_IRQS+255)/64];
-+static uint64_t	beatic_irq_mask_ack[(MAX_IRQS+255)/64];
++/* EPCI registers */
++#define SCC_EPCI_CNF10_REG      0x010
++#define SCC_EPCI_CNF14_REG      0x014
++#define SCC_EPCI_CNF18_REG      0x018
++#define SCC_EPCI_PVBAT          0x100
++#define SCC_EPCI_VPMBAT         0x104
++#define SCC_EPCI_VPIBAT         0x108
++#define SCC_EPCI_VCSR           0x110
++#define SCC_EPCI_VIENAB         0x114
++#define SCC_EPCI_VISTAT         0x118
++#define SCC_EPCI_VRDCOUNT       0x124
++#define SCC_EPCI_BAM0           0x12c
++#define SCC_EPCI_BAM1           0x134
++#define SCC_EPCI_BAM2           0x13c
++#define SCC_EPCI_IADR           0x164
++#define SCC_EPCI_CLKRST         0x800
++#define SCC_EPCI_INTSET         0x804
++#define SCC_EPCI_STATUS         0x808
++#define SCC_EPCI_ABTSET         0x80c
++#define SCC_EPCI_WATRP          0x810
++#define SCC_EPCI_DUMMYRADR      0x814
++#define SCC_EPCI_SWRESP         0x818
++#define SCC_EPCI_CNTOPT         0x81c
++#define SCC_EPCI_ECMODE         0xf00
++#define SCC_EPCI_IOM_AC_NUM     5
++#define SCC_EPCI_IOM_ACTE(n)    (0xf10 + (n) * 4)
++#define SCC_EPCI_IOT_AC_NUM     4
++#define SCC_EPCI_IOT_ACTE(n)    (0xf30 + (n) * 4)
++#define SCC_EPCI_MAEA           0xf50
++#define SCC_EPCI_MAEC           0xf54
++#define SCC_EPCI_CKCTRL         0xff0
 +
-+static struct irq_host *beatic_host = NULL;
++/* bits for SCC_EPCI_VCSR */
++#define SCC_EPCI_VCSR_FRE       0x00020000
++#define SCC_EPCI_VCSR_FWE       0x00010000
++#define SCC_EPCI_VCSR_DR        0x00000400
++#define SCC_EPCI_VCSR_SR        0x00000008
++#define SCC_EPCI_VCSR_AT        0x00000004
 +
-+/*
-+ * In this implementation, "virq" == "IRQ plug number",
-+ * "(irq_hw_number_t)hwirq" == "IRQ outlet number".
-+ */
++/* bits for SCC_EPCI_VIENAB/SCC_EPCI_VISTAT */
++#define SCC_EPCI_VISTAT_PMPE    0x00000008
++#define SCC_EPCI_VISTAT_PMFE    0x00000004
++#define SCC_EPCI_VISTAT_PRA     0x00000002
++#define SCC_EPCI_VISTAT_PRD     0x00000001
++#define SCC_EPCI_VISTAT_ALL     0x0000000f
 +
-+/* assumption: locked */
-+static inline void beatic_update_irq_mask(unsigned int irq_plug)
-+{
-+	int off;
-+	unsigned long masks[4];
++#define SCC_EPCI_VIENAB_PMPEE   0x00000008
++#define SCC_EPCI_VIENAB_PMFEE   0x00000004
++#define SCC_EPCI_VIENAB_PRA     0x00000002
++#define SCC_EPCI_VIENAB_PRD     0x00000001
++#define SCC_EPCI_VIENAB_ALL     0x0000000f
 +
-+	off = (irq_plug / 256) * 4;
-+	masks[0] = beatic_irq_mask_enable[off + 0]
-+	           & beatic_irq_mask_ack[off + 0];
-+	masks[1] = beatic_irq_mask_enable[off + 1]
-+	           & beatic_irq_mask_ack[off + 1];
-+	masks[2] = beatic_irq_mask_enable[off + 2]
-+	           & beatic_irq_mask_ack[off + 2];
-+	masks[3] = beatic_irq_mask_enable[off + 3]
-+	           & beatic_irq_mask_ack[off + 3];
-+	if (beat_set_interrupt_mask(irq_plug&~255UL,
-+		masks[0], masks[1], masks[2], masks[3]) != 0)
-+		panic("Failed to set mask IRQ!");
-+}
++/* bits for SCC_EPCI_CLKRST */
++#define SCC_EPCI_CLKRST_CKS_MASK 0x00030000
++#define SCC_EPCI_CLKRST_CKS_2   0x00000000
++#define SCC_EPCI_CLKRST_CKS_4   0x00010000
++#define SCC_EPCI_CLKRST_CKS_8   0x00020000
++#define SCC_EPCI_CLKRST_PCICRST 0x00000400
++#define SCC_EPCI_CLKRST_BC      0x00000200
++#define SCC_EPCI_CLKRST_PCIRST  0x00000100
++#define SCC_EPCI_CLKRST_PCKEN   0x00000001
 +
-+static void beatic_mask_irq(unsigned int irq_plug)
-+{
-+	int off;
-+	unsigned long flags;
++/* bits for SCC_EPCI_INTSET/SCC_EPCI_STATUS */
++#define SCC_EPCI_INT_2M         0x01000000
++#define SCC_EPCI_INT_RERR       0x00200000
++#define SCC_EPCI_INT_SERR       0x00100000
++#define SCC_EPCI_INT_PRTER      0x00080000
++#define SCC_EPCI_INT_SER        0x00040000
++#define SCC_EPCI_INT_PER        0x00020000
++#define SCC_EPCI_INT_PAI        0x00010000
++#define SCC_EPCI_INT_1M         0x00000100
++#define SCC_EPCI_INT_PME        0x00000010
++#define SCC_EPCI_INT_INTD       0x00000008
++#define SCC_EPCI_INT_INTC       0x00000004
++#define SCC_EPCI_INT_INTB       0x00000002
++#define SCC_EPCI_INT_INTA       0x00000001
++#define SCC_EPCI_INT_DEVINT     0x0000000f
++#define SCC_EPCI_INT_ALL        0x003f001f
++#define SCC_EPCI_INT_ALLERR     0x003f0000
 +
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	off = (irq_plug / 256) * 4;
-+	beatic_irq_mask_enable[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
++/* bits for SCC_EPCI_CKCTRL */
++#define SCC_EPCI_CKCTRL_CRST0   0x00010000
++#define SCC_EPCI_CKCTRL_CRST1   0x00020000
++#define SCC_EPCI_CKCTRL_OCLKEN  0x00000100
++#define SCC_EPCI_CKCTRL_LCLKEN  0x00000001
 +
-+static void beatic_unmask_irq(unsigned int irq_plug)
-+{
-+	int off;
-+	unsigned long flags;
++#define SCC_EPCI_IDSEL_AD_TO_SLOT(ad)       ((ad) - 10)
++#define SCC_EPCI_MAX_DEVNU      SCC_EPCI_IDSEL_AD_TO_SLOT(32)
 +
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	off = (irq_plug / 256) * 4;
-+	beatic_irq_mask_enable[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
++/* bits for SCC_EPCI_CNTOPT */
++#define SCC_EPCI_CNTOPT_O2PMB   0x00000002
 +
-+static void beatic_ack_irq(unsigned int irq_plug)
-+{
-+	int off;
-+	unsigned long flags;
++/* UHC registers */
++#define SCC_UHC_CKRCTRL         0xff0
++#define SCC_UHC_ECMODE          0xf00
 +
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	off = (irq_plug / 256) * 4;
-+	beatic_irq_mask_ack[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
++/* bits for SCC_UHC_CKRCTRL */
++#define SCC_UHC_F48MCKLEN       0x00000001
++#define SCC_UHC_P_SUSPEND       0x00000002
++#define SCC_UHC_PHY_SUSPEND_SEL 0x00000004
++#define SCC_UHC_HCLKEN          0x00000100
++#define SCC_UHC_USBEN           0x00010000
++#define SCC_UHC_USBCEN          0x00020000
++#define SCC_UHC_PHYEN           0x00040000
 +
-+static void beatic_end_irq(unsigned int irq_plug)
-+{
-+	s64 err;
-+	int off;
-+	unsigned long flags;
++/* bits for SCC_UHC_ECMODE */
++#define SCC_UHC_ECMODE_BY_BYTE  0x00000555
++#define SCC_UHC_ECMODE_BY_WORD  0x00000aaa
 +
-+	if ((err = beat_downcount_of_interrupt(irq_plug)) != 0) {
-+		if ((err & 0xFFFFFFFF) != 0xFFFFFFF5) /* -11: wrong state */
-+			panic("Failed to downcount IRQ! Error = %16lx", err);
-+
-+		printk(KERN_ERR "IRQ over-downcounted, plug %d\n", irq_plug);
-+	}
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	off = (irq_plug / 256) * 4;
-+	beatic_irq_mask_ack[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
-+
-+static struct irq_chip beatic_pic = {
-+	.typename = " CELL-BEAT ",
-+	.unmask = beatic_unmask_irq,
-+	.mask = beatic_mask_irq,
-+	.eoi = beatic_end_irq,
-+};
-+
-+/*
-+ * Dispose binding hardware IRQ number (hw) and Virtuql IRQ number (virq),
-+ * update flags.
-+ *
-+ * Note that the number (virq) is already assigned at upper layer.
-+ */
-+static void beatic_pic_host_unmap(struct irq_host *h, unsigned int virq)
-+{
-+	beat_destruct_irq_plug(virq);
-+}
-+
-+/*
-+ * Create or update binding hardware IRQ number (hw) and Virtuql
-+ * IRQ number (virq). This is called only once for a given mapping.
-+ *
-+ * Note that the number (virq) is already assigned at upper layer.
-+ */
-+static int beatic_pic_host_map(struct irq_host *h, unsigned int virq,
-+			       irq_hw_number_t hw)
-+{
-+	struct irq_desc *desc = get_irq_desc(virq);
-+	int64_t	err;
-+
-+	if ((err = beat_construct_and_connect_irq_plug(virq, hw)) < 0)
-+		return -EIO;
-+
-+	desc->status |= IRQ_LEVEL;
-+	set_irq_chip_and_handler(virq, &beatic_pic, handle_fasteoi_irq);
-+	return 0;
-+}
-+
-+/*
-+ * Update binding hardware IRQ number (hw) and Virtuql
-+ * IRQ number (virq). This is called only once for a given mapping.
-+ */
-+static void beatic_pic_host_remap(struct irq_host *h, unsigned int virq,
-+			       irq_hw_number_t hw)
-+{
-+	beat_construct_and_connect_irq_plug(virq, hw);
-+}
-+
-+/*
-+ * Translate device-tree interrupt spec to irq_hw_number_t style (ulong),
-+ * to pass away to irq_create_mapping().
-+ *
-+ * Called from irq_create_of_mapping() only.
-+ * Note: We have only 1 entry to translate.
-+ */
-+static int beatic_pic_host_xlate(struct irq_host *h, struct device_node *ct,
-+				 u32 *intspec, unsigned int intsize,
-+				 irq_hw_number_t *out_hwirq,
-+				 unsigned int *out_flags)
-+{
-+	u64 *intspec2 = (u64 *)intspec;
-+
-+	*out_hwirq = *intspec2;
-+	*out_flags |= IRQ_TYPE_LEVEL_LOW;
-+	return 0;
-+}
-+
-+static struct irq_host_ops beatic_pic_host_ops = {
-+	.map = beatic_pic_host_map,
-+	.remap = beatic_pic_host_remap,
-+	.unmap = beatic_pic_host_unmap,
-+	.xlate = beatic_pic_host_xlate,
-+};
-+
-+/*
-+ * Get an IRQ number
-+ * Note: returns VIRQ
-+ */
-+static inline unsigned int beatic_get_irq_plug(void)
-+{
-+	int i;
-+	uint64_t	pending[4], ub;
-+
-+	for (i = 0; i < MAX_IRQS; i += 256) {
-+		beat_detect_pending_interrupts(i, pending);
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[0] & beatic_irq_mask_enable[i/64+0]
-+			               & beatic_irq_mask_ack[i/64+0]));
-+		if (ub != 64)
-+			return i + ub + 0;
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[1] & beatic_irq_mask_enable[i/64+1]
-+			               & beatic_irq_mask_ack[i/64+1]));
-+		if (ub != 64)
-+			return i + ub + 64;
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[2] & beatic_irq_mask_enable[i/64+2]
-+			               & beatic_irq_mask_ack[i/64+2]));
-+		if (ub != 64)
-+			return i + ub + 128;
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[3] & beatic_irq_mask_enable[i/64+3]
-+			               & beatic_irq_mask_ack[i/64+3]));
-+		if (ub != 64)
-+			return i + ub + 192;
-+	}
-+
-+	return NO_IRQ;
-+}
-+unsigned int beatic_get_irq(void)
-+{
-+	unsigned int ret;
-+
-+	ret = beatic_get_irq_plug();
-+	if (ret != NO_IRQ)
-+		beatic_ack_irq(ret);
-+	return ret;
-+}
-+
-+/*
-+ */
-+void __init beatic_init_IRQ(void)
-+{
-+	int	i;
-+
-+	spin_lock_init(&beatic_irq_mask_lock);
-+	memset(beatic_irq_mask_enable, 0, sizeof(beatic_irq_mask_enable));
-+	memset(beatic_irq_mask_ack, 255, sizeof(beatic_irq_mask_ack));
-+	for (i = 0; i < MAX_IRQS; i += 256)
-+		beat_set_interrupt_mask(i, 0L, 0L, 0L, 0L);
-+
-+	/* Set out get_irq function */
-+	ppc_md.get_irq = beatic_get_irq;
-+
-+	/* Allocate an irq host */
-+	beatic_host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, 0,
-+					 &beatic_pic_host_ops,
-+					 0);
-+	BUG_ON(beatic_host == NULL);
-+	irq_set_default_host(beatic_host);
-+	spin_lock_init(&beatic_irq_mask_lock);
-+}
-+
-+#ifdef CONFIG_SMP
-+
-+/* Nullified to compile with SMP mode */
-+void beatic_setup_cpu(int cpu)
-+{
-+}
-+
-+void beatic_cause_IPI(int cpu, int mesg)
-+{
-+}
-+
-+void beatic_request_IPIs(void)
-+{
-+}
-+#endif /* CONFIG_SMP */
-+
-+void beatic_deinit_IRQ(void)
-+{
-+	int	i;
-+
-+	for (i = 1; i < NR_IRQS; i++)
-+		beat_destruct_irq_plug(i);
-+}
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.h
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.h:1.2
---- /dev/null	Thu Jan 11 22:03:25 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.h	Wed Dec 13 17:06:47 2006
-@@ -0,0 +1,33 @@
-+/*
-+ * Celleb/Beat Interrupt controller
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#ifndef ASM_BEAT_PIC_H
-+#define ASM_BEAT_PIC_H
-+#ifdef __KERNEL__
-+
-+extern void beatic_init_IRQ(void);
-+extern unsigned int beatic_get_irq(void);
-+extern void beatic_cause_IPI(int cpu, int mesg);
-+extern void beatic_request_IPIs(void);
-+extern void beatic_setup_cpu(int);
-+extern void beatic_deinit_IRQ(void);
-+
-+#endif
-+#endif /* ASM_BEAT_PIC_H */
++#endif /* _CELLEB_SCC_H */
