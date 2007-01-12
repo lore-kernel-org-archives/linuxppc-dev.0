@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4BBF3DDFD9
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:15:31 +1100 (EST)
-Date: Fri, 12 Jan 2007 10:15:25 +0900 (JST)
-Message-Id: <200701120115.l0C1FPHJ002416@toshiba.co.jp>
-Subject: [PATCH 15/19] powerpc: htab routines for Celleb
+	by ozlabs.org (Postfix) with ESMTP id 454C8DE0EB
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:16:32 +1100 (EST)
+Date: Fri, 12 Jan 2007 10:16:26 +0900 (JST)
+Message-Id: <200701120116.l0C1GRLg009802@toshiba.co.jp>
+Subject: [PATCH 16/19] powerpc: udbg supports for Celleb
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,23 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adds htab routines for Celleb platform.
+This patch adds udbg support for Celleb platform.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c:1.5
---- /dev/null	Thu Jan 11 22:03:28 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c	Tue Jan  9 16:56:57 2007
-@@ -0,0 +1,293 @@
+Index: linux-powerpc-git/arch/powerpc/kernel/udbg.c
+diff -u linux-powerpc-git/arch/powerpc/kernel/udbg.c:1.1.1.1 linux-powerpc-git/arch/powerpc/kernel/udbg.c:1.2
+--- linux-powerpc-git/arch/powerpc/kernel/udbg.c:1.1.1.1	Wed Dec  6 08:25:43 2006
++++ linux-powerpc-git/arch/powerpc/kernel/udbg.c	Wed Dec  6 08:43:15 2006
+@@ -45,6 +45,8 @@
+ #elif defined(CONFIG_PPC_EARLY_DEBUG_ISERIES)
+ 	/* For iSeries - hit Ctrl-x Ctrl-x to see the output */
+ 	udbg_init_iseries();
++#elif defined(CONFIG_PPC_EARLY_DEBUG_BEAT)
++	udbg_init_debug_beat();
+ #endif
+ }
+ 
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/udbg_beat.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/udbg_beat.c:1.4
+--- /dev/null	Thu Jan 11 22:03:29 2007
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/udbg_beat.c	Wed Dec 13 18:19:14 2006
+@@ -0,0 +1,98 @@
 +/*
-+ * "Cell Reference Set" HTAB support.
++ * udbg function for Beat
 + *
-+ * (C) Copyright 2006-2007 TOSHIBA CORPORATION
-+ *
-+ * This code is based on arch/powerpc/platforms/pseries/lpar.c:
-+ *  Copyright (C) 2001 Todd Inglett, IBM Corporation
++ * (C) Copyright 2006 TOSHIBA CORPORATION
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -54,285 +64,93 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c:1.5
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#undef DEBUG_LOW
-+
 +#include <linux/kernel.h>
++#include <linux/console.h>
 +
-+#include <asm/mmu.h>
-+#include <asm/page.h>
-+#include <asm/pgtable.h>
 +#include <asm/machdep.h>
++#include <asm/prom.h>
 +#include <asm/udbg.h>
 +
-+#include "beat_wrapper.h"
++#include "beat.h"
 +
-+#ifdef DEBUG_LOW
-+#define DBG_LOW(fmt...) do { udbg_printf(fmt); } while(0)
-+#else
-+#define DBG_LOW(fmt...) do { } while(0)
-+#endif
++int	celleb_vtermno;
 +
-+static inline unsigned int beat_read_mask(unsigned hpte_group)
++static void udbg_putc_beat(char c)
 +{
-+	unsigned long hpte_v[5];
-+	unsigned long rmask = 0;
++	unsigned long rc;
 +
-+	beat_read_htab_entries(0, hpte_group + 0, hpte_v);
-+	if (!(hpte_v[0] & HPTE_V_BOLTED))
-+		rmask |= 0x8000;
-+	if (!(hpte_v[1] & HPTE_V_BOLTED))
-+		rmask |= 0x4000;
-+	if (!(hpte_v[2] & HPTE_V_BOLTED))
-+		rmask |= 0x2000;
-+	if (!(hpte_v[3] & HPTE_V_BOLTED))
-+		rmask |= 0x1000;
-+	beat_read_htab_entries(0, hpte_group + 4, hpte_v);
-+	if (!(hpte_v[0] & HPTE_V_BOLTED))
-+		rmask |= 0x0800;
-+	if (!(hpte_v[1] & HPTE_V_BOLTED))
-+		rmask |= 0x0400;
-+	if (!(hpte_v[2] & HPTE_V_BOLTED))
-+		rmask |= 0x0200;
-+	if (!(hpte_v[3] & HPTE_V_BOLTED))
-+		rmask |= 0x0100;
-+	hpte_group = ~hpte_group & (htab_hash_mask * HPTES_PER_GROUP);
-+	beat_read_htab_entries(0, hpte_group + 0, hpte_v);
-+	if (!(hpte_v[0] & HPTE_V_BOLTED))
-+		rmask |= 0x80;
-+	if (!(hpte_v[1] & HPTE_V_BOLTED))
-+		rmask |= 0x40;
-+	if (!(hpte_v[2] & HPTE_V_BOLTED))
-+		rmask |= 0x20;
-+	if (!(hpte_v[3] & HPTE_V_BOLTED))
-+		rmask |= 0x10;
-+	beat_read_htab_entries(0, hpte_group + 4, hpte_v);
-+	if (!(hpte_v[0] & HPTE_V_BOLTED))
-+		rmask |= 0x08;
-+	if (!(hpte_v[1] & HPTE_V_BOLTED))
-+		rmask |= 0x04;
-+	if (!(hpte_v[2] & HPTE_V_BOLTED))
-+		rmask |= 0x02;
-+	if (!(hpte_v[3] & HPTE_V_BOLTED))
-+		rmask |= 0x01;
-+	return rmask;
++	if (c == '\n')
++		udbg_putc_beat('\r');
++
++	rc = beat_put_term_char(celleb_vtermno, 1, (uint64_t)c << 56, 0);
 +}
 +
-+static long beat_lpar_hpte_insert(unsigned long hpte_group,
-+				  unsigned long va, unsigned long pa,
-+				  unsigned long rflags, unsigned long vflags,
-+				  int psize)
++/* Buffered chars getc */
++static long inbuflen;
++static long inbuf[2];	/* must be 2 longs */
++
++static int udbg_getc_poll_beat(void)
 +{
-+	unsigned long lpar_rc;
-+	unsigned long slot;
-+	unsigned long hpte_v, hpte_r;
-+
-+	/* same as iseries */
-+	if (vflags & HPTE_V_SECONDARY)
-+		return -1;
-+
-+	if (!(vflags & HPTE_V_BOLTED))
-+		DBG_LOW("hpte_insert(group=%lx, va=%016lx, pa=%016lx, "
-+			"rflags=%lx, vflags=%lx, psize=%d)\n",
-+		hpte_group, va, pa, rflags, vflags, psize);
-+
-+	hpte_v = hpte_encode_v(va, psize) | vflags | HPTE_V_VALID;
-+	hpte_r = hpte_encode_r(pa, psize) | rflags;
-+
-+	if (!(vflags & HPTE_V_BOLTED))
-+		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
-+
-+	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
-+		hpte_r &= ~_PAGE_COHERENT;
-+
-+	if ((lpar_rc = beat_read_mask(hpte_group)) == 0) {
-+		if (!(vflags & HPTE_V_BOLTED))
-+			DBG_LOW(" full\n");
-+		return -1;
-+	}
-+
-+	lpar_rc = beat_insert_htab_entry(0, hpte_group, lpar_rc << 48,
-+		hpte_v, hpte_r, &slot);
-+
-+	/*
-+	 * Since we try and ioremap PHBs we don't own, the pte insert
-+	 * will fail. However we must catch the failure in hash_page
-+	 * or we will loop forever, so return -2 in this case.
++	/* The interface is tricky because it may return up to 16 chars.
++	 * We save them statically for future calls to udbg_getc().
 +	 */
-+	if (unlikely(lpar_rc != 0)) {
-+		if (!(vflags & HPTE_V_BOLTED))
-+			DBG_LOW(" lpar err %lx\n", lpar_rc);
-+		return -2;
-+	}
-+	if (!(vflags & HPTE_V_BOLTED))
-+		DBG_LOW(" -> slot: %lx\n", slot);
-+
-+	/* We have to pass down the secondary bucket bit here as well */
-+	return (slot ^ hpte_group) & 15;
-+}
-+
-+static long beat_lpar_hpte_remove(unsigned long hpte_group)
-+{
-+	DBG_LOW("hpte_remove(group=%lx)\n", hpte_group);
-+	return -1;
-+}
-+
-+static unsigned long beat_lpar_hpte_getword0(unsigned long slot)
-+{
-+	unsigned long dword0, dword[5];
-+	unsigned long lpar_rc;
-+
-+	lpar_rc = beat_read_htab_entries(0, slot & ~3UL, dword);
-+
-+	dword0 = dword[slot&3];
-+
-+	BUG_ON(lpar_rc != 0);
-+
-+	return dword0;
-+}
-+
-+static void beat_lpar_hptab_clear(void)
-+{
-+	unsigned long size_bytes = 1UL << ppc64_pft_size;
-+	unsigned long hpte_count = size_bytes >> 4;
++	char ch, *buf = (char *)inbuf;
 +	int i;
-+	unsigned long dummy0, dummy1;
-+
-+	/* TODO: Use bulk call */
-+	for (i = 0; i < hpte_count; i++)
-+		beat_write_htab_entry(0, i, 0, 0, -1UL, -1UL, &dummy0, &dummy1);
-+}
-+
-+/*
-+ * NOTE: for updatepp ops we are fortunate that the linux "newpp" bits and
-+ * the low 3 bits of flags happen to line up.  So no transform is needed.
-+ * We can probably optimize here and assume the high bits of newpp are
-+ * already zero.  For now I am paranoid.
-+ */
-+static long beat_lpar_hpte_updatepp(unsigned long slot,
-+				    unsigned long newpp,
-+				    unsigned long va,
-+				    int psize, int local)
-+{
-+	unsigned long lpar_rc;
-+	unsigned long dummy0, dummy1, want_v;
-+
-+	want_v = hpte_encode_v(va, psize);
-+
-+	DBG_LOW("    update: "
-+		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
-+		want_v & HPTE_V_AVPN, slot, psize, newpp);
-+
-+	dummy0 = beat_lpar_hpte_getword0(slot);
-+	if ((dummy0 & ~0x7FUL) != (want_v & ~0x7FUL)) {
-+		DBG_LOW("not found !\n");
++	long rc;
++	if (inbuflen == 0) {
++		/* get some more chars. */
++		inbuflen = 0;
++		rc = beat_get_term_char(celleb_vtermno, &inbuflen, inbuf+0, inbuf+1);
++		if (rc != 0)
++			inbuflen = 0;	/* otherwise inbuflen is garbage */
++	}
++	if (inbuflen <= 0 || inbuflen > 16) {
++		/* Catch error case as well as other oddities (corruption) */
++		inbuflen = 0;
 +		return -1;
 +	}
-+
-+	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7, &dummy0,
-+					&dummy1);
-+	if (lpar_rc != 0 || dummy0 == 0) {
-+		DBG_LOW("not found !\n");
-+		return -1;
-+	}
-+
-+	DBG_LOW("ok %lx %lx\n", dummy0, dummy1);
-+
-+	BUG_ON(lpar_rc != 0);
-+
-+	return 0;
++	ch = buf[0];
++	for (i = 1; i < inbuflen; i++)	/* shuffle them down. */
++		buf[i-1] = buf[i];
++	inbuflen--;
++	return ch;
 +}
 +
-+static long beat_lpar_hpte_find(unsigned long va, int psize)
++static int udbg_getc_beat(void)
 +{
-+	unsigned long hash;
-+	unsigned long i, j;
-+	long slot;
-+	unsigned long want_v, hpte_v;
-+
-+	hash = hpt_hash(va, mmu_psize_defs[psize].shift);
-+	want_v = hpte_encode_v(va, psize);
-+
-+	for (j = 0; j < 2; j++) {
-+		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
-+		for (i = 0; i < HPTES_PER_GROUP; i++) {
-+			hpte_v = beat_lpar_hpte_getword0(slot);
-+
-+			if (HPTE_V_COMPARE(hpte_v, want_v)
-+			    && (hpte_v & HPTE_V_VALID)
-+			    && (!!(hpte_v & HPTE_V_SECONDARY) == j)) {
-+				/* HPTE matches */
-+				if (j)
-+					slot = -slot;
-+				return slot;
-+			}
-+			++slot;
++	int ch;
++	for (;;) {
++		ch = udbg_getc_poll_beat();
++		if (ch == -1) {
++			/* This shouldn't be needed...but... */
++			volatile unsigned long delay;
++			for (delay=0; delay < 2000000; delay++)
++				;
++		} else {
++			return ch;
 +		}
-+		hash = ~hash;
 +	}
-+
-+	return -1;
 +}
 +
-+static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
-+					  unsigned long ea,
-+					  int psize)
++/* call this from early_init() for a working debug console on
++ * vterm capable LPAR machines
++ */
++void __init udbg_init_debug_beat(void)
 +{
-+	unsigned long lpar_rc, slot, vsid, va, dummy0, dummy1;
-+
-+	vsid = get_kernel_vsid(ea);
-+	va = (vsid << 28) | (ea & 0x0fffffff);
-+
-+	slot = beat_lpar_hpte_find(va, psize);
-+	BUG_ON(slot == -1);
-+
-+	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7,
-+		&dummy0, &dummy1);
-+
-+	BUG_ON(lpar_rc != 0);
++	celleb_vtermno = 0;
++	udbg_putc = udbg_putc_beat;
++	udbg_getc = udbg_getc_beat;
++	udbg_getc_poll = udbg_getc_poll_beat;
 +}
-+
-+static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long va,
-+					 int psize, int local)
-+{
-+	unsigned long want_v;
-+	unsigned long lpar_rc;
-+	unsigned long dummy1, dummy2;
-+
-+	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
-+		slot, va, psize, local);
-+	want_v = hpte_encode_v(va, psize);
-+
-+	dummy1 = beat_lpar_hpte_getword0(slot);
-+
-+	if ((dummy1 & ~0x7FUL) != (want_v & ~0x7FUL)) {
-+		DBG_LOW("not found !\n");
-+		return;
-+	}
-+
-+	lpar_rc = beat_write_htab_entry(0, slot, 0, 0, HPTE_V_VALID, 0,
-+		&dummy1, &dummy2);
-+
-+	BUG_ON(lpar_rc != 0);
-+}
-+
-+void __init hpte_init_beat(void)
-+{
-+	ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate;
-+	ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp;
-+	ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
-+	ppc_md.hpte_insert	= beat_lpar_hpte_insert;
-+	ppc_md.hpte_remove	= beat_lpar_hpte_remove;
-+	ppc_md.hpte_clear_all	= beat_lpar_hptab_clear;
-+}
-Index: linux-powerpc-git/include/asm-powerpc/mmu.h
-diff -u linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/mmu.h:1.2
---- linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1	Wed Dec  6 08:24:04 2006
-+++ linux-powerpc-git/include/asm-powerpc/mmu.h	Wed Dec  6 08:43:16 2006
-@@ -247,6 +247,7 @@
- extern void hpte_init_native(void);
- extern void hpte_init_lpar(void);
- extern void hpte_init_iSeries(void);
-+extern void hpte_init_beat(void);
+Index: linux-powerpc-git/include/asm-powerpc/udbg.h
+diff -u linux-powerpc-git/include/asm-powerpc/udbg.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/udbg.h:1.2
+--- linux-powerpc-git/include/asm-powerpc/udbg.h:1.1.1.1	Wed Dec  6 08:24:04 2006
++++ linux-powerpc-git/include/asm-powerpc/udbg.h	Wed Dec  6 08:43:16 2006
+@@ -44,6 +44,7 @@
+ extern void __init udbg_init_iseries(void);
+ extern void __init udbg_init_rtas_panel(void);
+ extern void __init udbg_init_rtas_console(void);
++extern void __init udbg_init_debug_beat(void);
  
- extern void stabs_alloc(void);
- extern void slb_initialize(void);
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_UDBG_H */
