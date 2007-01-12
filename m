@@ -1,20 +1,29 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tnt@246tNt.com>
+Received: from outmx024.isp.belgacom.be (outmx024.isp.belgacom.be
+	[195.238.4.128])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A8215DDDFE
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 23:36:10 +1100 (EST)
-In-Reply-To: <32F3CC26D4DAC44E8ECD07155727A46E816A9D@zch01exm20.fsl.freescale.net>
-References: <32F3CC26D4DAC44E8ECD07155727A46E816A9D@zch01exm20.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <89913836fb5b7a4de773ee13c27977c8@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch][5/5] powerpc: Add the general support for Embedded
-	Floating-Point instructions
-Date: Fri, 12 Jan 2007 13:36:40 +0100
-To: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id 92D8EDE190
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 23:41:56 +1100 (EST)
+Received: from outmx024.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx024.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l0CCfaY4021220
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 13:41:41 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45A7817B.2040504@246tNt.com>
+Date: Fri, 12 Jan 2007 13:39:23 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] add restart function for mpc52xx
+References: <20070111122855.GF11226@localhost.localdomain>	<37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>	<20070111152137.GG11226@localhost.localdomain>	<17831.627.162751.166002@cargo.ozlabs.ibm.com>
+	<20070112084612.GJ11226@localhost.localdomain>
+	<45A74E2F.2000901@246tNt.com>
+	<5b4c7248d9ed3c7a6fc4fe6ecf4ad7f9@kernel.crashing.org>
+In-Reply-To: <5b4c7248d9ed3c7a6fc4fe6ecf4ad7f9@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +33,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> CONFIG_SPE doesn't force the whole math emulation to be built. If 
-> CONFIG_SPE is set,
-> only the new SPFP/DPFP/VSPFP instructions in arch/powerpc/math-emu 
-> will be built,
-> while the previous FPU instructions won't.
+Segher Boessenkool wrote:
+>> I'm not saying the system is perfect but this issue is more related to
+>> recent
+>> bindings that the of thing as a whole. That's more the problem with of
+>> is that
+>> when you need to define bindings for something that has none, you may
+>> not
+>> anticipate everything ....
+>
+> ... which is why it is so important that you don't "define"
+> "bindings" "in-house".  (Sorry for all those quotes ;-) )
+>
+Well, those were posted on the ml for everyone to read ;)
 
-And the other way around I suppose.
 
-> Therefore, what I'm trying to do is to build directory 
-> arch/powerpc/math-emu if
-> CONFIG_MATH_EMULATION or CONFIG_SPE is set. Do you have any idea?
-
-Maybe you should really have a separate CONFIG_SPE_MATH_EMU?
-Or that might complicate things more than it solves, dunno.
-
-
-Segher
+    Sylvain
