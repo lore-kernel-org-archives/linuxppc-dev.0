@@ -2,11 +2,11 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7C8B2DDF64
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 11:52:49 +1100 (EST)
-Date: Fri, 12 Jan 2007 09:52:41 +0900 (JST)
-Message-Id: <200701120052.l0C0qfgB011998@toshiba.co.jp>
-Subject: [PATCH 1/19] spufs: add SPU register lock
+	by ozlabs.org (Postfix) with ESMTP id D5464DDF6C
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 11:54:46 +1100 (EST)
+Date: Fri, 12 Jan 2007 09:54:39 +0900 (JST)
+Message-Id: <200701120054.l0C0seP3020314@toshiba.co.jp>
+Subject: [PATCH 2/19] powerpc: TLB insertion cleanup
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,33 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-spu->register_lock should be held before accessing registers.
+This patch changes handling return value of ppc_md.hpte_insert() into
+the same way as __hash_page_*().
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c
-diff -u linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c:1.1.1.1 linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c:1.2
---- linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c:1.1.1.1	Wed Dec  6 08:25:44 2006
-+++ linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c	Thu Dec  7 16:24:53 2006
-@@ -170,9 +170,11 @@
- spu_irq_class_0_bottom(struct spu *spu)
- {
- 	unsigned long stat, mask;
-+	unsigned long flags;
+Index: linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c
+diff -u linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c:1.1.1.3 linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c:1.4
+--- linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c:1.1.1.3	Thu Jan 11 11:16:30 2007
++++ linux-powerpc-git/arch/powerpc/mm/hugetlbpage.c	Thu Jan 11 13:50:43 2007
+@@ -1014,7 +1014,6 @@
  
- 	spu->class_0_pending = 0;
+ 		/* Primary is full, try the secondary */
+ 		if (unlikely(slot == -1)) {
+-			new_pte |= _PAGE_F_SECOND;
+ 			hpte_group = ((~hash & htab_hash_mask) *
+ 				      HPTES_PER_GROUP) & ~0x7UL; 
+ 			slot = ppc_md.hpte_insert(hpte_group, va, pa, rflags,
+@@ -1033,7 +1032,7 @@
+ 		if (unlikely(slot == -2))
+ 			panic("hash_huge_page: pte_insert failed\n");
  
-+	spin_lock_irqsave(&spu->register_lock, flags);
- 	mask = spu_int_mask_get(spu, 0);
- 	stat = spu_int_stat_get(spu, 0);
+-		new_pte |= (slot << 12) & _PAGE_F_GIX;
++		new_pte |= (slot << 12) & (_PAGE_F_SECOND | _PAGE_F_GIX);
+ 	}
  
-@@ -188,6 +190,7 @@
- 		__spu_trap_error(spu);
- 
- 	spu_int_stat_clear(spu, 0, stat);
-+	spin_unlock_irqrestore(&spu->register_lock, flags);
- 
- 	return (stat & 0x7) ? -EIO : 0;
- }
+ 	/*
