@@ -1,21 +1,32 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <tnt@246tNt.com>
+Received: from outmx004.isp.belgacom.be (outmx004.isp.belgacom.be
+	[195.238.4.101])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D87CADDF08
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 21:43:17 +1100 (EST)
-Subject: Re: [PATCH 0/4] drivers/ata: add low-level I/O calls
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Alan <alan@lxorguk.ukuu.org.uk>
-In-Reply-To: <20070112102406.6eb9374f@localhost.localdomain>
-References: <200701120958.l0C9wICB019343@toshiba.co.jp>
-	<20070112102406.6eb9374f@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 12 Jan 2007 21:41:06 +1100
-Message-Id: <1168598466.5011.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
-	paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id 1E35ADDF61
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 21:46:19 +1100 (EST)
+Received: from outmx004.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx004.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l0CAk2QL005264
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 11:46:02 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45A76663.4030705@246tNt.com>
+Date: Fri, 12 Jan 2007 11:43:47 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH] add restart function for mpc52xx
+References: <20070111122855.GF11226@localhost.localdomain>
+	<37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>
+	<20070111152137.GG11226@localhost.localdomain>
+	<17831.627.162751.166002@cargo.ozlabs.ibm.com>
+	<20070112084612.GJ11226@localhost.localdomain>
+	<45A74E2F.2000901@246tNt.com>
+	<20070112104211.GQ11226@localhost.localdomain>
+In-Reply-To: <20070112104211.GQ11226@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +36,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-01-12 at 10:24 +0000, Alan wrote:
-> On Fri, 12 Jan 2007 19:00:45 +0900
-> Akira Iguchi <akira2.iguchi@toshiba.co.jp> wrote:
-> 
-> > Dear everyone,
-> > 
-> > This is the patchset (based on 2.6.20-rc4) to add low-level I/O calls
-> > which access the taskfile registers. The idea comes from drivers/ide
-> > IN*/OUT* calls.
-> 
-> I think this is the wrong approach. The existing code provides methods
-> for things like "read the status", "write a taskfile" and this is the
-> style that should be kept.
+Sascha Hauer wrote:
+> On Fri, Jan 12, 2007 at 10:00:31AM +0100, Sylvain Munaut wrote:
+>   
+>> I'm not saying the system is perfect but this issue is more related to
+>> recent
+>> bindings that the of thing as a whole. That's more the problem with of
+>> is that
+>> when you need to define bindings for something that has none, you may not
+>> anticipate everything ....
+>>     
+>
+> No, you can never do that. Lets hope there will never be incompatible
+> changes in the device tree so that we have to use this device tree for this
+> kernel version and another one for other kernel versions.
+>   
+I would *not* base anything (production) on the current bindings, because
+the changes we consider now are pretty "basic" and not compatible.
 
-I agree (Sorry Akira-san for the added work !), I've looked a bit and I
-think that what we need is mainly an accessor for the control register
-and for the LBA, and an ack for dmdma. It's unclear to me wether the
-full taskfile access would be a good way to do the later though, I'm a
-bit worried some HW might get upset if not accessing strictly only the
-right registers (we all know how "touchy" those IDE controllers can be).
+But it's clear that it's probably the last opportunity we have to do
+such changes,
+afterwards we'll be bound to whatever we decide in the next few weeks.
 
-That would give us something like:
 
- - bmdma_irq_ack
- - dev_ctrl_read/write (unless we want to split that but there are
-   quite a few different accesses so maybe not)
- - dev_sig read/write (read/write nsect/lbal, or maybe we want to let
-drivers do their own post_reset)
-
-I think that's it, unless I missd something. 'special' drivers can still
-replace bmdma_start/stop etc..
-
-That's just a very quick look, I might have missed something.
-
-Ben.
- 
+    Sylvain
