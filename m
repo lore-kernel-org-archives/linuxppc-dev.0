@@ -1,34 +1,24 @@
-Return-Path: <nacc@us.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AD14DDDFAB
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 08:12:13 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0CLCg6O005726
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 16:12:42 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	l0CLC89I216050
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 16:12:08 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l0CLC7Ac023073
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 16:12:08 -0500
-Date: Fri, 12 Jan 2007 13:12:06 -0800
-From: Nishanth Aravamudan <nacc@us.ibm.com>
-To: Sonny Rao <sonny@burdell.org>
-Subject: Re: 2.6.19: kernel BUG in hugepd_page at
-	arch/powerpc/mm/hugetlbpage.c:58!
-Message-ID: <20070112211206.GD4982@us.ibm.com>
-References: <20070112195703.GA1826@kevlar.boston.burdell.org>
-	<1168632510.12413.62.camel@localhost.localdomain>
-	<20070112204250.GA2290@kevlar.boston.burdell.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070112204250.GA2290@kevlar.boston.burdell.org>
-Cc: linuxppc-dev@ozlabs.org, dwg@au1.ibm.com,
-	libhugetlbfs-devel@lists.sourceforge.net
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4EA66DDEF7
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 08:19:01 +1100 (EST)
+In-Reply-To: <1168635154.5011.31.camel@localhost.localdomain>
+References: <32F3CC26D4DAC44E8ECD07155727A46E816A47@zch01exm20.fsl.freescale.net>
+	<1168599942.5011.21.camel@localhost.localdomain>
+	<BDC705EB-9078-44FD-800E-D9ADD18B9471@kernel.crashing.org>
+	<1168635154.5011.31.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <615F9884-6695-485A-A4B4-A53BD98F969E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch][5/5] powerpc: Add the general support for Embedded
+	Floating-Point instructions
+Date: Fri, 12 Jan 2007 15:18:15 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,24 +28,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 12.01.2007 [15:42:50 -0500], Sonny Rao wrote:
-> On Fri, Jan 12, 2007 at 02:08:30PM -0600, Adam Litke wrote:
-> > On Fri, 2007-01-12 at 14:57 -0500, Sonny Rao wrote:
-> > > (Apologies if this is a re-post)
-> > >
-> > > Hi, I was running 2.6.19 and running some benchmarks using
-> > > libhugetlbfs (1.0.1) and I can fairly reliably trigger this bug:
-> >
-> > Is this triggered by a libhugetlbfs test case?  If so, which one?
-> 
-> Ok so the testsuite all passed except for "slbpacaflush" which said
-> "PASS (inconclusive)" ... not sure if that is expected or not.
 
-Should be fine.
+On Jan 12, 2007, at 2:52 PM, Benjamin Herrenschmidt wrote:
 
-Thanks,
-Nish
+> On Fri, 2007-01-12 at 12:39 -0600, Kumar Gala wrote:
+>> On Jan 12, 2007, at 5:05 AM, Benjamin Herrenschmidt wrote:
+>>
+>>>
+>>>>> Why do we need a separate ret_from_except_spe_full?
+>>>>
+>>>> I'm not sure if the kernel will return from exception in a multi-
+>>>> thread
+>>>> way, but the truth is if restoring EVRs in exsiting
+>>>> ret_from_except_full,
+>>>> some non-SPE exception will try to retore EVR. At that time, the
+>>>> MSR[SPE] may not be enabled, which will cause error.
+>>>
+>>> Hrm... you can restore them before returning from the exception  
+>>> if you
+>>> are careful about doing that with preempt/irqs off I suppose.
+>>
+>> Which is what I thought having the exception be EXC_XFER_EE and
+>> flush_spe_to_thread should get you.
+>>
+>> I dont see any reason to dirty up the 'exception' path for stuff we
+>> can do in C code.
+>
+> Well, doing that means that you will flush the SPE to the thread  
+> struct
+> and disable it, return to userland with SPE disabled, and right away
+> take a new exception as soon as the next SPE instruction is reached.
+> Maybe not optimal...
 
--- 
-Nishanth Aravamudan <nacc@us.ibm.com>
-IBM Linux Technology Center
+Well we could reload the registers on exit if wanted to.  Also, if  
+want to be more efficient, we should only flush the registers we need.
+
+I think its a fair assumption that nothing is going to interrupt the  
+handling of the exception, so its safe to assume the process causing  
+the interrupt will be the same one we return to.
+
+- k
