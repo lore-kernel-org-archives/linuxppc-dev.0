@@ -1,20 +1,21 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound8-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BD02BDDF0C
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 03:58:45 +1100 (EST)
-Message-ID: <45A7BE3A.40508@garzik.org>
-Date: Fri, 12 Jan 2007 11:58:34 -0500
-From: Jeff Garzik <jeff@garzik.org>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 01677DDE3D
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 04:16:25 +1100 (EST)
+Message-ID: <45A7C260.3010101@am.sony.com>
+Date: Fri, 12 Jan 2007 09:16:16 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-Subject: Re: [PATCH 0/4] drivers/ata: add low-level I/O calls
-References: <200701120958.l0C9wICB019343@toshiba.co.jp>
-In-Reply-To: <200701120958.l0C9wICB019343@toshiba.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
-	paulus@samba.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] ps3_free_io_irq: inverted error check
+References: <Pine.LNX.4.62.0612211355150.20731@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0612211355150.20731@pademelon.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Akira Iguchi wrote:
-> Dear everyone,
+Geert Uytterhoeven wrote:
+> ps3_free_io_irq: Fix inverted error check after calling
+> lv1_destruct_io_irq_outlet()
 > 
-> This is the patchset (based on 2.6.20-rc4) to add low-level I/O calls
-> which access the taskfile registers. The idea comes from drivers/ide
-> IN*/OUT* calls.
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 > 
-> As you know, these calls are unnecessary for most libata drivers.
-> But the Celleb PATA driver needs them to use the libata common code.
-> And using these calls, it is possible to remove similar code
-> about PIO/MMIO access.
+> ---
+>  arch/powerpc/platforms/ps3/interrupt.c |    2 +-
+>  1 files changed, 1 insertion(+), 1 deletion(-)
+> 
+> --- ps3-linux-src.orig/arch/powerpc/platforms/ps3/interrupt.c
+> +++ ps3-linux-src/arch/powerpc/platforms/ps3/interrupt.c
+> @@ -71,7 +71,7 @@ int ps3_free_io_irq(unsigned int virq)
+>  
+>  	result = lv1_destruct_io_irq_outlet(virq_to_hw(virq));
+>  
+> -	if (!result)
+> +	if (result)
+>  		pr_debug("%s:%d: lv1_destruct_io_irq_outlet failed: %s\n",
+>  			__func__, __LINE__, ps3_result(result));
+>  
+> 
 
-Sorry, but NAK.
+Paul,
 
-libata intentionally provides higher level hooks than just I/O accessors.
+If you don't see any trouble, it would be nice for this to go in
+for 2.6.20, as it fixes a problem currently in Linus' tree.
 
-A low level I/O hook approach makes it difficult to take into account 
-platform-specific details like mmiowb(), especially on embedded platforms.
+Sorry it took so long to merge in and test.
 
-The high level hook approach also enables greater efficiency.  For 
-example, an embedded platform could do
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-	__raw_writeb(datum, mmio_address + ATA_REG_FOO);
-	__raw_writeb(datum, mmio_address + ATA_REG_BAR);
-	eieio();
-
-to optimize an entire taskfile-read or taskfile-write operation.
-
-	Jeff
+-Geoff
