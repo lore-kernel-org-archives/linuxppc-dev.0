@@ -1,18 +1,26 @@
-Return-Path: <mgreer@mvista.com>
-Date: Fri, 12 Jan 2007 14:48:35 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
-Message-ID: <20070112214835.GA5366@mag.az.mvista.com>
-References: <20061019002635.GA2356@mag.az.mvista.com>
-	<E1GaYUQ-0001jb-20@jdl.com>
-	<20061019195156.GB6586@mag.az.mvista.com>
-	<20070111004048.GA27351@mag.az.mvista.com>
-	<1168631458.19605.34.camel@cashmere.sps.mot.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1168631458.19605.34.camel@cashmere.sps.mot.com>
-Cc: Jon Loeliger <jdl@jdl.com>, linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 24901DDECC
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 08:50:02 +1100 (EST)
+In-Reply-To: <1168637277.5011.36.camel@localhost.localdomain>
+References: <32F3CC26D4DAC44E8ECD07155727A46E816A47@zch01exm20.fsl.freescale.net>
+	<1168599942.5011.21.camel@localhost.localdomain>
+	<BDC705EB-9078-44FD-800E-D9ADD18B9471@kernel.crashing.org>
+	<1168635154.5011.31.camel@localhost.localdomain>
+	<615F9884-6695-485A-A4B4-A53BD98F969E@kernel.crashing.org>
+	<1168637277.5011.36.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9F9680DA-DDAD-4DF2-B5FE-6E00CF8A06E2@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch][5/5] powerpc: Add the general support for Embedded
+	Floating-Point instructions
+Date: Fri, 12 Jan 2007 15:49:14 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,43 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 12, 2007 at 01:50:59PM -0600, Jon Loeliger wrote:
-> On Wed, 2007-01-10 at 18:40, Mark A. Greer wrote:
-> > On Thu, Oct 19, 2006 at 12:51:56PM -0700, Mark A. Greer wrote:
-> > > On Thu, Oct 19, 2006 at 09:03:18AM -0500, Jon Loeliger wrote:
-> > > > So, like, the other day "Mark A. Greer" mumbled:
-> > > > > 
-> > > > > This would be used by the sandpoint, say, by adding the following rules
-> > > > > to the Makefile in the appropriate places:
-> > > > > 
-> > > > > 	$(obj)/zImage.sandpoint: vmlinux $(wrapperbits)
-> > > > > 		$(call cmd,wrap_dts,sandpoint)
-> > > > > 
-> > > > > 	$(obj)/zImage.initrd.sandpoint: vmlinux $(wrapperbits)
-> > > > > 		$(call cmd,wrap_dts_initrd,sandpoint)
-> > > > > 
-> > > > > and:
-> > > > > 
-> > > > > 	image-$(CONFIG_SANDPOINT)               += zImage.sandpoint
-> > > > > 
-> > > > > Comments?
-> > > > 
-> > > > Isn't there a way to do this without hardcoding the
-> > > > platform name in the makefiles directly?  I fear for
-> > > > the one-per-platform effect that is yet to come with
-> > > > the conversion of many of the legacy boards.
-> > 
-> > Okay, its been a while so let's see if anyone remembers and/or cares
-> > anymore.  :)
-> 
-> We care.  We care deeply.  We've just all been on vacation. :-)
-> 
-> Scott Wood (here) has recently pushed around a patch
-> internally that is very similar and much more comprehensive,
-> though I confess I've not really studied it.  He mumbled
-> something about prepping it to send out when he gets back.
-> And I think that will be Monday.
 
-Okay, that would be great.  Thanks for the heads up.
+On Jan 12, 2007, at 3:27 PM, Benjamin Herrenschmidt wrote:
 
-Mark
+>> I think its a fair assumption that nothing is going to interrupt the
+>> handling of the exception, so its safe to assume the process causing
+>> the interrupt will be the same one we return to.
+>
+> What about the get_user to get to the faulting instruction ? I suppose
+> if those processors are UP only and we use an exception with EE
+> disabled, there should be no way the page has been evicted since the
+> access, so that should work, but will that ever be true ?
+
+For UP we are ok, since nothing else can cause an invalidate.
+
+How do we handle getting a fault when we are emulating any other  
+instruction?
+
+- k
