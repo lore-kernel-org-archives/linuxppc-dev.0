@@ -1,36 +1,31 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <akira2.iguchi@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7A6B4DDE02
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 11:38:47 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0C0cfVU023914
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 19:38:41 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	l0C0cgP0303884
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 19:38:42 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l0C0cfeD025784
-	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 19:38:41 -0500
-Date: Thu, 11 Jan 2007 18:38:41 -0600
-To: Manish Ahuja <ahuja@austin.ibm.com>
-Subject: Re: [PATCH]Enabling Auto poweron after power is restored.
-Message-ID: <20070112003841.GM6177@austin.ibm.com>
-References: <45707469.9060604@austin.ibm.com> <4575E76C.7030300@austin.ibm.com>
-	<17785.415.574041.518517@cargo.ozlabs.ibm.com>
-	<458EBE02.3010401@austin.ibm.com>
-	<17827.5922.667200.166153@cargo.ozlabs.ibm.com>
-	<20070109150519.GD8122@localdomain>
-	<45A55380.9020402@austin.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B9FB7DDF2D
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 11:45:59 +1100 (EST)
+Received: from wall11.toshiba.co.jp (wall11 [133.199.90.149])
+	by imx12.toshiba.co.jp  with ESMTP id l0C0jtY7015575
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 09:45:55 +0900 (JST)
+Received: (from root@localhost) by wall11.toshiba.co.jp  id l0C0jshj020937
+	for linuxppc-dev@ozlabs.org; Fri, 12 Jan 2007 09:45:54 +0900 (JST)
+Received: from mx12.toshiba.co.jp (localhost [127.0.0.1])
+	by ovp11.toshiba.co.jp  with ESMTP id l0C0jrqZ002175
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 09:45:53 +0900 (JST)
+Message-Id: <200701120045.l0C0jqHV012168@toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45A55380.9020402@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Nathan Lynch <ntl@pobox.com>,
-	Paul Mackerras <paulus@samba.org>
+Date: Fri, 12 Jan 2007 09:48:19 +0900
+From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+To: linas@austin.ibm.com, Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: (Your message of "Thu, 11 Jan 2007 11:17:06 -0600")
+	<20070111171706.GG6177@austin.ibm.com>
+References: <200701110853.l0B8rtGK009404@toshiba.co.jp>
+	<200701111008.34866.arnd@arndb.de>
+	<200701110928.l0B9SUri015056@toshiba.co.jp>
+	<20070111171706.GG6177@austin.ibm.com>
+Subject: Re: [PATCH 2/2] drivers/ata: export some static functions in
+	libata-core.c
+Cc: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,51 +35,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 10, 2007 at 02:58:40PM -0600, Manish Ahuja wrote:
-> Nathan Lynch wrote:
-> > Paul Mackerras wrote:
-> >   
-> >> Manish Ahuja writes:
-> >>
-> >>> During power outages, the ups notifies the system for a shutdown. In the 
-> >>> current setup, it isn't possible to power on when power is restored. 
-> >>> This patch fixes the issue by calling the right ibm,power-off-ups token 
-> >>> during such events. It also adds a proc interface so that rc.powerfail 
-> >>> can parse the epow events and modify the power-off behavior accordingly 
-> >>> to enable the right token to be called.
-> >>>       
-> >> Creating new non-process-related files in /proc is frowned upon these
-> >> days, so we'll have to find somewhere in /sys for this.  Anybody got a
-> >> suggestion?
-> >>     
-> >
-> > Maybe a sysctl instead?
-> >   
-> Wouldn't sysctl be /proc/sys/something again.
+Hi, Linas-san, Arnd-san.
 
-?? where?
+>Why is it that other drivers did not need this functions? Did they
+>copy them?  Or maybe they don't need them?
 
-> I did look under /sys but couldn't come up with a location to create 
-> this new file.
+As I mentioned in PATCH 1/2, main reason is that this PATA controller
+supports only 32bit accesses and that I need to copy all functions
+which have low-level access in ata_scc.c.
+In these functions, static functions I exported are used.
+I thought exporting them was better than copying them.
 
-Candidates are /sys/class/rtas  or /sys/devices/system/rtas 
-or /sys/devices/system/of_platform or /sys/firmware 
-or /sys/platform
+But other drivers can use functions which have low-level access as it is.
+Therefore they don't need to export static functions.
 
-I'd have to do some study & research to figure out which location
-would be appropriate.
+Now, I am trying to implement low-level calls in struct ata_port_operations
+to deal with this problem. Please wait a moment.
 
-> Although creating new files under /proc is frowned upon, the subset of 
-> files in the directory
-> seemed similar in functionality and connected to the new file I was 
-> creating and hence this new file in
-> /proc/ppc64/rtas.
-> 
-> linux:/proc/ppc64/rtas # ls -x
-> .         ..          clock    error_log  frequency  poweron  poweron_auto
-> progress  rmo_buffer  sensors  volume
 
-It would make sense to move some or all of these over to the new
-location as well.
+>-static unsigned int
+>+unsigned int
+> ata_dev_try_classify(struct ata_port *ap, unsigned int device, u8 *r_err)
 
---linas
+I use this in scc_std_softreset(), which is almost same as
+ata_std_softreset(). But I cannot use it because ata_devchk() and
+ata_bus_softreset() called by it use low-level access.
+
+
+>-static void ata_pio_sectors(struct ata_queued_cmd *qc)
+>+void ata_pio_sectors(struct ata_queued_cmd *qc)
+..
+>-static void atapi_send_cdb(struct ata_port *ap, struct ata_queued_cmd *qc)
+>+void atapi_send_cdb(struct ata_port *ap, struct ata_queued_cmd *qc)
+..
+>-static void atapi_pio_bytes(struct ata_queued_cmd *qc)
+>+void atapi_pio_bytes(struct ata_queued_cmd *qc)
+
+I use them in scc_hsm_move(), which is almost same as ata_hsm_move().
+ata_hsm_move() calls ata_hsm_qc_complete() and it calls ata_irq_on().
+There is a low-level access in ata_irq_on(), so I cannot use it.
+
+
+Best regards,
+Akira Iguchi
