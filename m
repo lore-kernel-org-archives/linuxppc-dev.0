@@ -1,17 +1,17 @@
-Return-Path: <dogoil@etinsys.com>
-Received: from jupiter.etinsys.com (unknown [220.76.45.3])
-	by ozlabs.org (Postfix) with ESMTP id 9F14FDDF28
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:45:31 +1100 (EST)
-Message-Id: <200701120145.l0C1jc1x019343@jupiter.etinsys.com>
-From: "Sangmoon Kim" <dogoil@etinsys.com>
-To: "'Kumar Gala'" <galak@kernel.crashing.org>
-Subject: RE: [PATCH] kvme080 board support patch
-Date: Fri, 12 Jan 2007 10:45:15 +0900
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <6EAF2EA8-8414-4A4A-9A9A-44AA2FDC8B9D@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17831.627.162751.166002@cargo.ozlabs.ibm.com>
+Date: Fri, 12 Jan 2007 14:37:23 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Subject: Re: [PATCH] add restart function for mpc52xx
+In-Reply-To: <20070111152137.GG11226@localhost.localdomain>
+References: <20070111122855.GF11226@localhost.localdomain>
+	<37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>
+	<20070111152137.GG11226@localhost.localdomain>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,73 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Sascha Hauer writes:
 
-> >
-> > +static void
-> > +kvme080_restart(char *cmd)
-> > +{
-> > +	unsigned long srr;
-> > +
-> > +	local_irq_disable();
-> > +	asm volatile(
-> > +	" lis %0,0xfff0\n \
-> > +	  ori %0,%0,0x0100\n \
-> > +	  mtspr 26,%0\n \
-> > +	  sync\n \
-> > +	  lis %0,0x0000\n \
-> > +	  ori %0,%0,0x0000\n \
-> > +	  mtspr 27,%0\n \
-> > +	  sync\n \
-> > +	  rfi "
-> > +	  : "=r" (srr));
-> > +}
+> > This suffers from the same bug mpc83xx_restart has.  We can NOT do an  
+> > ioremap inside the restart function.  We may get called from  
+> > interrupt context on a panic and will not be able to do the ioremap 
+> > ().  The simplest thing is to do the mapping earlier in an init call  
+> > and save the pointer, its not perfect, but better.
+> > 
 > 
-> Does this restart actually work for you?  Do you not have any issues with
-devices being in a funny state and not actually being restated?
+> I'm beginning to hate this whole pseudo OF thing for embedded systems.
 
-Actually we have some issues with some pci devices not properly initialized
-when restarting.
-Although it causes some delay, the board eventually boot.
-I am considering to put a hardware reset function here.
+Not being able to ioremap at interrupt time has absolutely _nothing_
+to do with the device tree.
 
-> Also, you can do mtspr(SPRN_SRR0, val); mtspr(SPRN_SRR1, val); and then
-the asm for the "rfi".
+> All we need to know is that we have a mpc52xx processor.
 
-Thank you for the good comment.
-I made the incremental patch.
+... until we get a system with a mpc52xx and some extra stuff.  Then
+you say "OK, we just need a boardinfo_t" and then we get 57 different
+variants of boardinfo_t and then we're back in the mess that arch/ppc
+got into.
 
-Signed-off-by: Sangmoon Kim <dogoil@etinsys.com>
-
-diff --git a/arch/powerpc/platforms/embedded6xx/kvme080.c
-b/arch/powerpc/platforms/embedded6xx/kvme080.c
-index 6f904ca..8da3464 100644
---- a/arch/powerpc/platforms/embedded6xx/kvme080.c
-+++ b/arch/powerpc/platforms/embedded6xx/kvme080.c
-@@ -130,20 +130,10 @@ kvme080_init_IRQ(void)
- static void
- kvme080_restart(char *cmd)
- {
--	unsigned long srr;
--
- 	local_irq_disable();
--	asm volatile(
--	" lis %0,0xfff0\n \
--	  ori %0,%0,0x0100\n \
--	  mtspr 26,%0\n \
--	  sync\n \
--	  lis %0,0x0000\n \
--	  ori %0,%0,0x0000\n \
--	  mtspr 27,%0\n \
--	  sync\n \
--	  rfi "
--	  : "=r" (srr));
-+	mtspr(SPRN_SRR0, 0xfff00100);
-+	mtspr(SPRN_SRR1, 0x00000000);
-+	asm volatile("rfi");
- }
- 
- static void
-
-Regards,
-Sangmoon Kim
+Paul.
