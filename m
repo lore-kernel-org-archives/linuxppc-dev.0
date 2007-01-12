@@ -2,11 +2,11 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6406EDDF65
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:00:52 +1100 (EST)
-Date: Fri, 12 Jan 2007 10:00:34 +0900 (JST)
-Message-Id: <200701120100.l0C10ktW025821@toshiba.co.jp>
-Subject: [PATCH 7/19] powerpc: interfaces to the hypervisor of Celleb
+	by ozlabs.org (Postfix) with ESMTP id 6D35DDE132
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:01:39 +1100 (EST)
+Date: Fri, 12 Jan 2007 10:01:31 +0900 (JST)
+Message-Id: <200701120101.l0C11V4J026479@toshiba.co.jp>
+Subject: [PATCH 8/19] powerpc: supporting interrupts for Celleb
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,23 +21,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch creates Celleb platform dependent files which add
-interfaces to call hypervisor.
+This patch creates Celleb platform dependent files to support interrupts.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/hvCall.S
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/hvCall.S:1.5
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c:1.6
 --- /dev/null	Thu Jan 11 22:03:25 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/hvCall.S	Wed Jan 10 21:14:43 2007
-@@ -0,0 +1,294 @@
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c	Tue Jan  9 16:56:57 2007
+@@ -0,0 +1,284 @@
 +/*
-+ * Beat hypervisor call I/F
++ * Celleb/Beat Interrupt controller
 + *
-+ * (C) Copyright 2007 TOSHIBA CORPORATION
-+ *
-+ * This code is based on arch/powerpc/platforms/pseries/hvCall.S.
++ * (C) Copyright 2006-2007 TOSHIBA CORPORATION
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -54,289 +52,279 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/hvCall.S:1.5
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#include <asm/ppc_asm.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/irq.h>
++#include <linux/percpu.h>
++#include <linux/types.h>
 +
-+#define	STK_PARM(i)	(48 + ((i)-3)*8)
++#include <asm/machdep.h>
 +
-+/* Not implemented on Beat, now */
-+#define	HCALL_INST_PRECALL
-+#define	HCALL_INST_POSTCALL
++#include "interrupt.h"
++#include "beat_wrapper.h"
 +
-+	.text
++#define	MAX_IRQS	NR_IRQS
++static spinlock_t beatic_irq_mask_lock;
++static uint64_t	beatic_irq_mask_enable[(MAX_IRQS+255)/64];
++static uint64_t	beatic_irq_mask_ack[(MAX_IRQS+255)/64];
 +
-+#define	HCALL_MEDIUM	or 	2,2,2
-+#define	HVSC	.long	0x44000022
-+#define	LOAD_CONST64(r, const)					\
-+	lis	r, ((const)>>48)&0xFFFF;			\
-+	ori	r, r, ((const)>>32)&0xFFFF;			\
-+	rldicr	r, r, 32, 31;					\
-+	oris	r, r, ((const)>>16)&0xFFFF;			\
-+	ori	r, r, ((const)>>0)&0xFFFF
++static struct irq_host *beatic_host = NULL;
 +
-+/* Note: takes only 7 input parameters at maximum */
-+_GLOBAL(beat_hcall_norets)
-+	HMT_MEDIUM
-+
-+	mfcr	r0
-+	stw	r0,8(r1)
-+
-+	HCALL_INST_PRECALL
-+
-+	mr	r11,r3
-+	mr	r3,r4
-+	mr	r4,r5
-+	mr	r5,r6
-+	mr	r6,r7
-+	mr	r7,r8
-+	mr	r8,r9
-+
-+	HVSC				/* invoke the hypervisor */
-+
-+	HCALL_INST_POSTCALL
-+
-+	lwz	r0,8(r1)
-+	mtcrf	0xff,r0
-+
-+	blr				/* return r3 = status */
-+
-+/* Note: takes 8 input parameters at maximum */
-+_GLOBAL(beat_hcall_norets8)
-+	HMT_MEDIUM
-+
-+	mfcr	r0
-+	stw	r0,8(r1)
-+
-+	HCALL_INST_PRECALL
-+
-+	mr	r11,r3
-+	mr	r3,r4
-+	mr	r4,r5
-+	mr	r5,r6
-+	mr	r6,r7
-+	mr	r7,r8
-+	mr	r8,r9
-+	ld	r10,STK_PARM(r10)(r1)
-+
-+	HVSC				/* invoke the hypervisor */
-+
-+	HCALL_INST_POSTCALL
-+
-+	lwz	r0,8(r1)
-+	mtcrf	0xff,r0
-+
-+	blr				/* return r3 = status */
-+
-+/* Note: takes only 6 input parameters, 1 output parameters at maximum */
-+_GLOBAL(beat_hcall1)
-+	HMT_MEDIUM
-+
-+	mfcr	r0
-+	stw	r0,8(r1)
-+
-+	HCALL_INST_PRECALL
-+
-+	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
-+
-+	mr	r11,r3
-+	mr	r3,r5
-+	mr	r4,r6
-+	mr	r5,r7
-+	mr	r6,r8
-+	mr	r7,r9
-+	mr	r8,r10
-+
-+	HVSC				/* invoke the hypervisor */
-+
-+	HCALL_INST_POSTCALL
-+
-+	ld	r12,STK_PARM(r4)(r1)
-+	std	r4,  0(r12)
-+
-+	lwz	r0,8(r1)
-+	mtcrf	0xff,r0
-+
-+	blr				/* return r3 = status */
-+
-+/* Note: takes only 6 input parameters, 2 output parameters at maximum */
-+_GLOBAL(beat_hcall2)
-+	HMT_MEDIUM
-+
-+	mfcr	r0
-+	stw	r0,8(r1)
-+
-+	HCALL_INST_PRECALL
-+
-+	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
-+
-+	mr	r11,r3
-+	mr	r3,r5
-+	mr	r4,r6
-+	mr	r5,r7
-+	mr	r6,r8
-+	mr	r7,r9
-+	mr	r8,r10
-+
-+	HVSC				/* invoke the hypervisor */
-+
-+	HCALL_INST_POSTCALL
-+
-+	ld	r12,STK_PARM(r4)(r1)
-+	std	r4,  0(r12)
-+	std	r5,  8(r12)
-+
-+	lwz	r0,8(r1)
-+	mtcrf	0xff,r0
-+
-+	blr				/* return r3 = status */
-+
-+/* Note: takes only 6 input parameters, 3 output parameters at maximum */
-+_GLOBAL(beat_hcall3)
-+	HMT_MEDIUM
-+
-+	mfcr	r0
-+	stw	r0,8(r1)
-+
-+	HCALL_INST_PRECALL
-+
-+	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
-+
-+	mr	r11,r3
-+	mr	r3,r5
-+	mr	r4,r6
-+	mr	r5,r7
-+	mr	r6,r8
-+	mr	r7,r9
-+	mr	r8,r10
-+
-+	HVSC				/* invoke the hypervisor */
-+
-+	HCALL_INST_POSTCALL
-+
-+	ld	r12,STK_PARM(r4)(r1)
-+	std	r4,  0(r12)
-+	std	r5,  8(r12)
-+	std	r6, 16(r12)
-+
-+	lwz	r0,8(r1)
-+	mtcrf	0xff,r0
-+
-+	blr				/* return r3 = status */
-+
-+/* Note: takes only 6 input parameters, 4 output parameters at maximum */
-+_GLOBAL(beat_hcall4)
-+	HMT_MEDIUM
-+
-+	mfcr	r0
-+	stw	r0,8(r1)
-+
-+	HCALL_INST_PRECALL
-+
-+	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
-+
-+	mr	r11,r3
-+	mr	r3,r5
-+	mr	r4,r6
-+	mr	r5,r7
-+	mr	r6,r8
-+	mr	r7,r9
-+	mr	r8,r10
-+
-+	HVSC				/* invoke the hypervisor */
-+
-+	HCALL_INST_POSTCALL
-+
-+	ld	r12,STK_PARM(r4)(r1)
-+	std	r4,  0(r12)
-+	std	r5,  8(r12)
-+	std	r6, 16(r12)
-+	std	r7, 24(r12)
-+
-+	lwz	r0,8(r1)
-+	mtcrf	0xff,r0
-+
-+	blr				/* return r3 = status */
-+
-+/* Note: takes only 6 input parameters, 5 output parameters at maximum */
-+_GLOBAL(beat_hcall5)
-+	HMT_MEDIUM
-+
-+	mfcr	r0
-+	stw	r0,8(r1)
-+
-+	HCALL_INST_PRECALL
-+
-+	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
-+
-+	mr	r11,r3
-+	mr	r3,r5
-+	mr	r4,r6
-+	mr	r5,r7
-+	mr	r6,r8
-+	mr	r7,r9
-+	mr	r8,r10
-+
-+	HVSC				/* invoke the hypervisor */
-+
-+	HCALL_INST_POSTCALL
-+
-+	ld	r12,STK_PARM(r4)(r1)
-+	std	r4,  0(r12)
-+	std	r5,  8(r12)
-+	std	r6, 16(r12)
-+	std	r7, 24(r12)
-+	std	r8, 32(r12)
-+
-+	lwz	r0,8(r1)
-+	mtcrf	0xff,r0
-+
-+	blr				/* return r3 = status */
-+
-+/* Note: takes only 6 input parameters, 6 output parameters at maximum */
-+_GLOBAL(beat_hcall6)
-+	HMT_MEDIUM
-+
-+	mfcr	r0
-+	stw	r0,8(r1)
-+
-+	HCALL_INST_PRECALL
-+
-+	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
-+
-+	mr	r11,r3
-+	mr	r3,r5
-+	mr	r4,r6
-+	mr	r5,r7
-+	mr	r6,r8
-+	mr	r7,r9
-+	mr	r8,r10
-+
-+	HVSC				/* invoke the hypervisor */
-+
-+	HCALL_INST_POSTCALL
-+
-+	ld	r12,STK_PARM(r4)(r1)
-+	std	r4,  0(r12)
-+	std	r5,  8(r12)
-+	std	r6, 16(r12)
-+	std	r7, 24(r12)
-+	std	r8, 32(r12)
-+	std	r9, 40(r12)
-+
-+	lwz	r0,8(r1)
-+	mtcrf	0xff,r0
-+
-+	blr				/* return r3 = status */
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h:1.4
---- /dev/null	Thu Jan 11 22:03:25 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h	Tue Jan  9 16:56:57 2007
-@@ -0,0 +1,220 @@
 +/*
-+ * Beat hypervisor call I/F
++ * In this implementation, "virq" == "IRQ plug number",
++ * "(irq_hw_number_t)hwirq" == "IRQ outlet number".
++ */
++
++/* assumption: locked */
++static inline void beatic_update_irq_mask(unsigned int irq_plug)
++{
++	int off;
++	unsigned long masks[4];
++
++	off = (irq_plug / 256) * 4;
++	masks[0] = beatic_irq_mask_enable[off + 0]
++	           & beatic_irq_mask_ack[off + 0];
++	masks[1] = beatic_irq_mask_enable[off + 1]
++	           & beatic_irq_mask_ack[off + 1];
++	masks[2] = beatic_irq_mask_enable[off + 2]
++	           & beatic_irq_mask_ack[off + 2];
++	masks[3] = beatic_irq_mask_enable[off + 3]
++	           & beatic_irq_mask_ack[off + 3];
++	if (beat_set_interrupt_mask(irq_plug&~255UL,
++		masks[0], masks[1], masks[2], masks[3]) != 0)
++		panic("Failed to set mask IRQ!");
++}
++
++static void beatic_mask_irq(unsigned int irq_plug)
++{
++	int off;
++	unsigned long flags;
++
++	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	off = (irq_plug / 256) * 4;
++	beatic_irq_mask_enable[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
++	beatic_update_irq_mask(irq_plug);
++	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
++}
++
++static void beatic_unmask_irq(unsigned int irq_plug)
++{
++	int off;
++	unsigned long flags;
++
++	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	off = (irq_plug / 256) * 4;
++	beatic_irq_mask_enable[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
++	beatic_update_irq_mask(irq_plug);
++	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
++}
++
++static void beatic_ack_irq(unsigned int irq_plug)
++{
++	int off;
++	unsigned long flags;
++
++	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	off = (irq_plug / 256) * 4;
++	beatic_irq_mask_ack[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
++	beatic_update_irq_mask(irq_plug);
++	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
++}
++
++static void beatic_end_irq(unsigned int irq_plug)
++{
++	s64 err;
++	int off;
++	unsigned long flags;
++
++	if ((err = beat_downcount_of_interrupt(irq_plug)) != 0) {
++		if ((err & 0xFFFFFFFF) != 0xFFFFFFF5) /* -11: wrong state */
++			panic("Failed to downcount IRQ! Error = %16lx", err);
++
++		printk(KERN_ERR "IRQ over-downcounted, plug %d\n", irq_plug);
++	}
++	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
++	off = (irq_plug / 256) * 4;
++	beatic_irq_mask_ack[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
++	beatic_update_irq_mask(irq_plug);
++	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
++}
++
++static struct irq_chip beatic_pic = {
++	.typename = " CELL-BEAT ",
++	.unmask = beatic_unmask_irq,
++	.mask = beatic_mask_irq,
++	.eoi = beatic_end_irq,
++};
++
++/*
++ * Dispose binding hardware IRQ number (hw) and Virtuql IRQ number (virq),
++ * update flags.
 + *
-+ * (C) Copyright 2007 TOSHIBA CORPORATION
++ * Note that the number (virq) is already assigned at upper layer.
++ */
++static void beatic_pic_host_unmap(struct irq_host *h, unsigned int virq)
++{
++	beat_destruct_irq_plug(virq);
++}
++
++/*
++ * Create or update binding hardware IRQ number (hw) and Virtuql
++ * IRQ number (virq). This is called only once for a given mapping.
 + *
-+ * This code is based on arch/powerpc/platforms/pseries/plpar_wrapper.h.
++ * Note that the number (virq) is already assigned at upper layer.
++ */
++static int beatic_pic_host_map(struct irq_host *h, unsigned int virq,
++			       irq_hw_number_t hw)
++{
++	struct irq_desc *desc = get_irq_desc(virq);
++	int64_t	err;
++
++	if ((err = beat_construct_and_connect_irq_plug(virq, hw)) < 0)
++		return -EIO;
++
++	desc->status |= IRQ_LEVEL;
++	set_irq_chip_and_handler(virq, &beatic_pic, handle_fasteoi_irq);
++	return 0;
++}
++
++/*
++ * Update binding hardware IRQ number (hw) and Virtuql
++ * IRQ number (virq). This is called only once for a given mapping.
++ */
++static void beatic_pic_host_remap(struct irq_host *h, unsigned int virq,
++			       irq_hw_number_t hw)
++{
++	beat_construct_and_connect_irq_plug(virq, hw);
++}
++
++/*
++ * Translate device-tree interrupt spec to irq_hw_number_t style (ulong),
++ * to pass away to irq_create_mapping().
++ *
++ * Called from irq_create_of_mapping() only.
++ * Note: We have only 1 entry to translate.
++ */
++static int beatic_pic_host_xlate(struct irq_host *h, struct device_node *ct,
++				 u32 *intspec, unsigned int intsize,
++				 irq_hw_number_t *out_hwirq,
++				 unsigned int *out_flags)
++{
++	u64 *intspec2 = (u64 *)intspec;
++
++	*out_hwirq = *intspec2;
++	*out_flags |= IRQ_TYPE_LEVEL_LOW;
++	return 0;
++}
++
++static struct irq_host_ops beatic_pic_host_ops = {
++	.map = beatic_pic_host_map,
++	.remap = beatic_pic_host_remap,
++	.unmap = beatic_pic_host_unmap,
++	.xlate = beatic_pic_host_xlate,
++};
++
++/*
++ * Get an IRQ number
++ * Note: returns VIRQ
++ */
++static inline unsigned int beatic_get_irq_plug(void)
++{
++	int i;
++	uint64_t	pending[4], ub;
++
++	for (i = 0; i < MAX_IRQS; i += 256) {
++		beat_detect_pending_interrupts(i, pending);
++		__asm__ ("cntlzd %0,%1":"=r"(ub):
++			"r"(pending[0] & beatic_irq_mask_enable[i/64+0]
++			               & beatic_irq_mask_ack[i/64+0]));
++		if (ub != 64)
++			return i + ub + 0;
++		__asm__ ("cntlzd %0,%1":"=r"(ub):
++			"r"(pending[1] & beatic_irq_mask_enable[i/64+1]
++			               & beatic_irq_mask_ack[i/64+1]));
++		if (ub != 64)
++			return i + ub + 64;
++		__asm__ ("cntlzd %0,%1":"=r"(ub):
++			"r"(pending[2] & beatic_irq_mask_enable[i/64+2]
++			               & beatic_irq_mask_ack[i/64+2]));
++		if (ub != 64)
++			return i + ub + 128;
++		__asm__ ("cntlzd %0,%1":"=r"(ub):
++			"r"(pending[3] & beatic_irq_mask_enable[i/64+3]
++			               & beatic_irq_mask_ack[i/64+3]));
++		if (ub != 64)
++			return i + ub + 192;
++	}
++
++	return NO_IRQ;
++}
++unsigned int beatic_get_irq(void)
++{
++	unsigned int ret;
++
++	ret = beatic_get_irq_plug();
++	if (ret != NO_IRQ)
++		beatic_ack_irq(ret);
++	return ret;
++}
++
++/*
++ */
++void __init beatic_init_IRQ(void)
++{
++	int	i;
++
++	spin_lock_init(&beatic_irq_mask_lock);
++	memset(beatic_irq_mask_enable, 0, sizeof(beatic_irq_mask_enable));
++	memset(beatic_irq_mask_ack, 255, sizeof(beatic_irq_mask_ack));
++	for (i = 0; i < MAX_IRQS; i += 256)
++		beat_set_interrupt_mask(i, 0L, 0L, 0L, 0L);
++
++	/* Set out get_irq function */
++	ppc_md.get_irq = beatic_get_irq;
++
++	/* Allocate an irq host */
++	beatic_host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, 0,
++					 &beatic_pic_host_ops,
++					 0);
++	BUG_ON(beatic_host == NULL);
++	irq_set_default_host(beatic_host);
++	spin_lock_init(&beatic_irq_mask_lock);
++}
++
++#ifdef CONFIG_SMP
++
++/* Nullified to compile with SMP mode */
++void beatic_setup_cpu(int cpu)
++{
++}
++
++void beatic_cause_IPI(int cpu, int mesg)
++{
++}
++
++void beatic_request_IPIs(void)
++{
++}
++#endif /* CONFIG_SMP */
++
++void beatic_deinit_IRQ(void)
++{
++	int	i;
++
++	for (i = 1; i < NR_IRQS; i++)
++		beat_destruct_irq_plug(i);
++}
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.h
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.h:1.2
+--- /dev/null	Thu Jan 11 22:03:25 2007
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.h	Wed Dec 13 17:06:47 2006
+@@ -0,0 +1,33 @@
++/*
++ * Celleb/Beat Interrupt controller
++ *
++ * (C) Copyright 2006 TOSHIBA CORPORATION
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -352,202 +340,17 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h
 + * with this program; if not, write to the Free Software Foundation, Inc.,
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
-+#ifndef BEAT_HCALL
-+#include "beat_syscall.h"
 +
-+/* defined in hvCall.S */
-+extern s64 beat_hcall_norets(u64 opcode, ...);
-+extern s64 beat_hcall_norets8(u64 opcode, u64 arg1, u64 arg2, u64 arg3,
-+	u64 arg4, u64 arg5, u64 arg6, u64 arg7, u64 arg8);
-+extern s64 beat_hcall1(u64 opcode, u64 retbuf[1], ...);
-+extern s64 beat_hcall2(u64 opcode, u64 retbuf[2], ...);
-+extern s64 beat_hcall3(u64 opcode, u64 retbuf[3], ...);
-+extern s64 beat_hcall4(u64 opcode, u64 retbuf[4], ...);
-+extern s64 beat_hcall5(u64 opcode, u64 retbuf[5], ...);
-+extern s64 beat_hcall6(u64 opcode, u64 retbuf[6], ...);
++#ifndef ASM_BEAT_PIC_H
++#define ASM_BEAT_PIC_H
++#ifdef __KERNEL__
 +
-+static inline s64 beat_downcount_of_interrupt(u64 plug_id)
-+{
-+	return beat_hcall_norets(HV_downcount_of_interrupt, plug_id);
-+}
-+
-+static inline s64 beat_set_interrupt_mask(u64 index,
-+	u64 val0, u64 val1, u64 val2, u64 val3)
-+{
-+	return beat_hcall_norets(HV_set_interrupt_mask, index,
-+	       val0, val1, val2, val3);
-+}
-+
-+static inline s64 beat_destruct_irq_plug(u64 plug_id)
-+{
-+	return beat_hcall_norets(HV_destruct_irq_plug, plug_id);
-+}
-+
-+static inline s64 beat_construct_and_connect_irq_plug(u64 plug_id,
-+	u64 outlet_id)
-+{
-+	return beat_hcall_norets(HV_construct_and_connect_irq_plug, plug_id,
-+	       outlet_id);
-+}
-+
-+static inline s64 beat_detect_pending_interrupts(u64 index, u64 *retbuf)
-+{
-+	return beat_hcall4(HV_detect_pending_interrupts, retbuf, index);
-+}
-+
-+static inline s64 beat_pause(u64 style)
-+{
-+	return beat_hcall_norets(HV_pause, style);
-+}
-+
-+static inline s64 beat_read_htab_entries(u64 htab_id, u64 index, u64 *retbuf)
-+{
-+	return beat_hcall5(HV_read_htab_entries, retbuf, htab_id, index);
-+}
-+
-+static inline s64 beat_insert_htab_entry(u64 htab_id, u64 group,
-+	u64 bitmask, u64 hpte_v, u64 hpte_r, u64 *slot)
-+{
-+	u64 dummy[3];
-+	s64 ret;
-+
-+	ret = beat_hcall3(HV_insert_htab_entry, dummy, htab_id, group,
-+		bitmask, hpte_v, hpte_r);
-+	*slot = dummy[0];
-+	return ret;
-+}
-+
-+static inline s64 beat_write_htab_entry(u64 htab_id, u64 slot,
-+	u64 hpte_v, u64 hpte_r, u64 mask_v, u64 mask_r,
-+	u64 *ret_v, u64 *ret_r)
-+{
-+	u64 dummy[2];
-+	s64 ret;
-+
-+	ret = beat_hcall2(HV_write_htab_entry, dummy, htab_id, slot,
-+		hpte_v, hpte_r, mask_v, mask_r);
-+	*ret_v = dummy[0];
-+	*ret_r = dummy[1];
-+	return ret;
-+}
-+
-+static inline void beat_shutdown_logical_partition(u64 code)
-+{
-+	(void)beat_hcall_norets(HV_shutdown_logical_partition, code);
-+}
-+
-+static inline s64 beat_rtc_write(u64 time_from_epoch)
-+{
-+	return beat_hcall_norets(HV_rtc_write, time_from_epoch);
-+}
-+
-+static inline s64 beat_rtc_read(u64 *time_from_epoch)
-+{
-+	u64 dummy[1];
-+	s64 ret;
-+
-+	ret = beat_hcall1(HV_rtc_read, dummy);
-+	*time_from_epoch = dummy[0];
-+	return ret;
-+}
-+
-+#define	BEAT_NVRW_CNT	(sizeof(u64) * 6)
-+
-+static inline s64 beat_eeprom_write(u64 index, u64 length, u8 *buffer)
-+{
-+	u64	b[6];
-+
-+	if (length > BEAT_NVRW_CNT)
-+		return -1;
-+	memcpy(b, buffer, sizeof(b));
-+	return beat_hcall_norets8(HV_eeprom_write, index, length,
-+		b[0], b[1], b[2], b[3], b[4], b[5]);
-+}
-+
-+static inline s64 beat_eeprom_read(u64 index, u64 length, u8 *buffer)
-+{
-+	u64	b[6];
-+	s64	ret;
-+
-+	if (length > BEAT_NVRW_CNT)
-+		return -1;
-+	ret = beat_hcall6(HV_eeprom_read, b, index, length);
-+	memcpy(buffer, b, length);
-+	return ret;
-+}
-+
-+static inline s64 beat_set_dabr(u64 value, u64 style)
-+{
-+	return beat_hcall_norets(HV_set_dabr, value, style);
-+}
-+
-+static inline s64 beat_get_characters_from_console(u64 termno, u64 *len,
-+	u8 *buffer)
-+{
-+	u64 dummy[3];
-+	s64 ret;
-+
-+	ret = beat_hcall3(HV_get_characters_from_console, dummy, termno, len);
-+	*len = dummy[0];
-+	memcpy(buffer, dummy + 1, *len);
-+	return ret;
-+}
-+
-+static inline s64 beat_put_characters_to_console(u64 termno, u64 len,
-+	u8 *buffer)
-+{
-+	u64 b[2];
-+
-+	memcpy(b, buffer, len);
-+	return beat_hcall_norets(HV_put_characters_to_console, termno, len,					 b[0], b[1]);
-+}
-+
-+static inline s64 beat_get_spe_privileged_state_1_registers(
-+		u64 id, u64 offsetof, u64 *value)
-+{
-+	u64 dummy[1];
-+	s64 ret;
-+
-+	ret = beat_hcall1(HV_get_spe_privileged_state_1_registers, dummy, id,
-+		offsetof);
-+	*value = dummy[0];
-+	return ret;
-+}
-+
-+static inline s64 beat_set_irq_mask_for_spe(u64 id, u64 class, u64 mask)
-+{
-+	return beat_hcall_norets(HV_set_irq_mask_for_spe, id, class, mask);
-+}
-+
-+static inline s64 beat_clear_interrupt_status_of_spe(u64 id, u64 class,
-+	u64 mask)
-+{
-+	return beat_hcall_norets(HV_clear_interrupt_status_of_spe,
-+		id, class, mask);
-+}
-+
-+static inline s64 beat_set_spe_privileged_state_1_registers(
-+		u64 id, u64 offsetof, u64 value)
-+{
-+	return beat_hcall_norets(HV_set_spe_privileged_state_1_registers,
-+		id, offsetof, value);
-+}
-+
-+static inline s64 beat_get_interrupt_status_of_spe(u64 id, u64 class, u64 *val)
-+{
-+	u64 dummy[1];
-+	s64 ret;
-+
-+	ret = beat_hcall1(HV_get_interrupt_status_of_spe, dummy, id, class);
-+	*val = dummy[0];
-+	return ret;
-+}
-+
-+static inline s64 beat_put_iopte(u64 ioas_id, u64 io_addr, u64 real_addr,
-+	u64 ioid, u64 flags)
-+{
-+	return beat_hcall_norets(HV_put_iopte, ioas_id, io_addr, real_addr,
-+		ioid, flags);
-+}
++extern void beatic_init_IRQ(void);
++extern unsigned int beatic_get_irq(void);
++extern void beatic_cause_IPI(int cpu, int mesg);
++extern void beatic_request_IPIs(void);
++extern void beatic_setup_cpu(int);
++extern void beatic_deinit_IRQ(void);
 +
 +#endif
++#endif /* ASM_BEAT_PIC_H */
