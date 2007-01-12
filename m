@@ -1,33 +1,16 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A1271DDEB6
+Return-Path: <onetarget@sina.com>
+Received: from r3-101.sinamail.sina.com.cn (r3-101.sinamail.sina.com.cn
+	[202.108.3.101]) by ozlabs.org (Postfix) with SMTP id 09683DDDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Jan 2007 11:14:26 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0C0ENXb027677
-	for <linuxppc-embedded@ozlabs.org>; Thu, 11 Jan 2007 19:14:23 -0500
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
-	l0C0ENRF287064
-	for <linuxppc-embedded@ozlabs.org>; Thu, 11 Jan 2007 19:14:23 -0500
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l0C0ENYb028001
-	for <linuxppc-embedded@ozlabs.org>; Thu, 11 Jan 2007 19:14:23 -0500
-Subject: Re: [PATCH] [POWERPC] Add cputable entry for PowerPC 440SPe Rev. B
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>
-In-Reply-To: <adalkk99kvm.fsf@cisco.com>
-References: <adalkk9dx7e.fsf@cisco.com>
-	<1168559634.4217.8.camel@zod.rchland.ibm.com>
-	<adalkk99kvm.fsf@cisco.com>
-Content-Type: text/plain
-Date: Thu, 11 Jan 2007 18:14:44 -0600
-Message-Id: <1168560884.4217.16.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: paulus@samba.org, linuxppc-embedded@ozlabs.org
+	Fri, 12 Jan 2007 15:00:20 +1100 (EST)
+Message-ID: <20070112040015.72172.qmail@mail3-101.sinamail.sina.com.cn>
+To: linuxppc-embedded@ozlabs.org
+Subject: Boot Linux 2.4.25 on MPC8270 board errors.
+Date: Fri, 12 Jan 2007 12:00:15 +0800 
+From: onetarget@sina.com
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=-sina_alt_2c60da8a90a3f690e3447512f8b56b45"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,19 +21,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-01-11 at 15:58 -0800, Roland Dreier wrote:
->  > > Add a cputable entry for revision B of the AMCC 440SPe.  When adding
->  > > this entry, we need to adjust the entry for 440SP Rev. A so that it
->  > > matches more bits of the PVR, since the 440SPe Rev. B has PVR
->  > > 53421891, which would match the old 440SP PVR pattern of 53xxx891.
->  >
->  > Is Rev. B the one found on the AMCC Katmai board?
-> 
-> I would guess so -- it's the current rev.
-> 
-> I don't have a katmai board (just a yucca reworked with a rev. b chip)
+--=-sina_alt_2c60da8a90a3f690e3447512f8b56b45
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-Ok.  I'm supposedly getting a 440SPe board soon, so I guess I'll find
-out soon enough.
+DURlYXIgYWxsLA0gICAgSSBhbSBub3cgdXNpbmcgRUxESyAzLjEuMSB0byBidWlsZCBMaW51eC0y
+LjQuMjUgZm9yDWFuIE1QQzgyNzAgYm9hcmQuIFRoZSBib2FyZCBoYXMgMTI4TUIgU0RSQU0sIGFu
+ZCBpbiBmY2NfZW5ldC5jDSAgICBJIGNvbmZpZ3VyZWQgdGhlIGZvbGxvd2luZ3MsDSNkZWZpbmUg
+RkNDX0VORVRfUlhfUEFHRVMgICAgMzIgLyoxNiAqLw0jZGVmaW5lIEZDQ19FTkVUX1JYX0ZSU0la
+RSAgICAyMDQ4DSNkZWZpbmUgRkNDX0VORVRfUlhfRlJQUEcgICAgKFBBR0VfU0laRSAvIEZDQ19F
+TkVUX1JYX0ZSU0laRSkNI2RlZmluZSBSWF9SSU5HX1NJWkUgICAgICAgIChGQ0NfRU5FVF9SWF9G
+UlBQRyAqIEZDQ19FTkVUX1JYX1BBR0VTKQ0jZGVmaW5lIFRYX1JJTkdfU0laRSAgICAgICAgMTI4
+IC8qMTYgICAgLyogTXVzdCBiZSBwb3dlciBvZiB0d28gKi8NI2RlZmluZSBUWF9SSU5HX01PRF9N
+QVNLICAgIDEyNyAvKjE1ICAgIC8qICAgZm9yIHRoaXMgdG8gd29yayAqLw0gICAgYnV0IHdoZW4g
+Ym9vdCB0aGUgaW1hZ2UsIEkgZ290IGZvbGxvd2luZyBlcnJvcnMuDSAgIA1SZWdpc3RlciBydGMg
+ZHJpdmVyIDEuMCBzdWNjZXNzZnVsbHkhDWV0aDA6IEZDQzEgRU5FVCBWZXJzaW9uIDAuNCwgMDA6
+MDg6MDI6MDY6MDA6MDANZXRoMDogUGh5IEAgMHgxMCwgdHlwZSBMWFQ5NzEgKDB4MDAxMzc4ZTIp
+DU9vcHM6IGtlcm5lbCBhY2Nlc3Mgb2YgYmFkIGFyZWEsIHNpZzogMTENTklQOiBDMDFFOTNCOCBY
+RVI6IDAwMDAwMDAwIExSOiBDMDFFOTI4OCBTUDogQzAzQkRFRDAgUkVHUzogYzAzYmRlMjAgVFJB
+UDogMDMwMCAgICBOb3QgdGFpbnRlZA1NU1I6IDAwMDA5MDMyIEVFOiAxIFBSOiAwIEZQOiAwIE1F
+OiAxIElSL0RSOiAxMQ1EQVI6IDAwMDAwMDAwLCBEU0lTUjogMjIwMDAwMDANVEFTSyA9IGMwM2Jj
+MDAwWzFdICdzd2FwcGVyJyBMYXN0IHN5c2NhbGw6IDEyMA1sYXN0IG1hdGggMDAwMDAwMDAgbGFz
+dCBhbHRpdmVjIDAwMDAwMDAwDUdQUjAwOiAwMDAwMDAwMCBDMDNCREVEMCBDMDNCQzAwMCBGMDAw
+QjBDMCA4ODg4ODg4OCAwMDAwMDAwMCBGMDAwQjBEQyAwMDAwMDAwMA1HUFIwODogMDAwMDAyMDAg
+MDAwMDAwMDAgMDAwMDAwMDAgMDAwMDA1RjAgODQwMDQwNDQgMTAwNTIyMTAgMDdGRTIwMDAgMDA3
+RkZGMTANR1BSMTY6IDAwMDAwMDAxIDAwMDAwMDAwIDAwN0ZGRjAwIEZGRkZGRkZGIDAwM0ZGMDAw
+IDAwMDAwMDAwIDA3RjdGQkY4IEMwMEExQkEwDUdQUjI0OiBDMDFGMkMyQyBDMDFEMEI1QyBGMDAx
+MTlDMCBDN0ZDQjAwMCBDMDNCRTYwMCAwMDAwMDAwMCBGRkZGRkZGRiBGMDAwODUwMA1DYWxsIGJh
+Y2t0cmFjZToNQzAxQTc4QzAgQzAxRThERDggQzAxRTc3RTggQzAxRTc4MjQgQzAxRTlCQzQgQzAx
+RTczQTQgQzAxRTA2MjQNQzAwMDM5RDAgQzAwMDgxQjgNS2VybmVsIHBhbmljOiBBdHRlbXB0ZWQg
+dG8ga2lsbCBpbml0IQ0gICAgTXkgcXVlc3Rpb24gaXMsIHdoYXQgc2hvdWxkIEkgc2V0IHRoZSBh
+Ym92ZSB2YWx1ZXM/Pw0gICAgVGhhbmsgeW91IGFuZCByZWdhcmRzLA0gICAgVy5UYXJnZXQNCgot
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tCrvdxtXJzNPDzKjKvbv6ZGM1NzUwLLjf0NTE3KOstc25prrEo6EoIGh0dHA6Ly9h
+ZDQuc2luYS5jb20uY24vc2luYS9saW1lbmczL21haWxfemh1aXl1LzIwMDYvbWFpbF96aHVpeXVf
+MjAwNjEyMjUuaHRtbCApCgo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09CteisuHQwsDLMkfD4rfR08rP5KOoIGh0dHA6Ly9t
+YWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRtbCCjqQ==
 
-josh
+
+--=-sina_alt_2c60da8a90a3f690e3447512f8b56b45
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
+
+PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+DQo8Zm9udCBzdHlsZT0nZm9u
+dC1zaXplOjEycHgnPkRlYXIgYWxsLDxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBJIGFtIG5vdyB1
+c2luZyBFTERLIDMuMS4xIHRvIGJ1aWxkIExpbnV4LTIuNC4yNSBmb3INCmFuIE1QQzgyNzAgYm9h
+cmQuIFRoZSBib2FyZCBoYXMgMTI4TUIgU0RSQU0sIGFuZCBpbiBmY2NfZW5ldC5jPGJyPg0KJm5i
+c3A7Jm5ic3A7Jm5ic3A7IEkgY29uZmlndXJlZCB0aGUgZm9sbG93aW5ncyw8YnI+DQojZGVmaW5l
+IEZDQ19FTkVUX1JYX1BBR0VTJm5ic3A7Jm5ic3A7Jm5ic3A7IDMyIC8qMTYgKi88YnI+DQojZGVm
+aW5lIEZDQ19FTkVUX1JYX0ZSU0laRSZuYnNwOyZuYnNwOyZuYnNwOyAyMDQ4PGJyPg0KI2RlZmlu
+ZSBGQ0NfRU5FVF9SWF9GUlBQRyZuYnNwOyZuYnNwOyZuYnNwOyAoUEFHRV9TSVpFIC8gRkNDX0VO
+RVRfUlhfRlJTSVpFKTxicj4NCiNkZWZpbmUgUlhfUklOR19TSVpFJm5ic3A7Jm5ic3A7Jm5ic3A7
+ICZuYnNwOyZuYnNwOyZuYnNwOyAoRkNDX0VORVRfUlhfRlJQUEcgKiBGQ0NfRU5FVF9SWF9QQUdF
+Uyk8YnI+DQojZGVmaW5lIFRYX1JJTkdfU0laRSZuYnNwOyZuYnNwOyZuYnNwOyAmbmJzcDsmbmJz
+cDsmbmJzcDsgMTI4IC8qMTYmbmJzcDsmbmJzcDsmbmJzcDsgLyogTXVzdCBiZSBwb3dlciBvZiB0
+d28gKi88YnI+DQojZGVmaW5lIFRYX1JJTkdfTU9EX01BU0smbmJzcDsmbmJzcDsmbmJzcDsgMTI3
+IC8qMTUmbmJzcDsmbmJzcDsmbmJzcDsgLyombmJzcDsmbmJzcDsgZm9yIHRoaXMgdG8gd29yayAq
+Lzxicj4NCjxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBidXQgd2hlbiBib290IHRoZSBpbWFnZSwg
+SSBnb3QgZm9sbG93aW5nIGVycm9ycy48YnI+DQombmJzcDsmbmJzcDsgPGJyPg0KPGJyPg0KPGJy
+Pg0KUmVnaXN0ZXIgcnRjIGRyaXZlciAxLjAgc3VjY2Vzc2Z1bGx5ITxicj4NCmV0aDA6IEZDQzEg
+RU5FVCBWZXJzaW9uIDAuNCwgMDA6MDg6MDI6MDY6MDA6MDA8YnI+DQpldGgwOiBQaHkgQCAweDEw
+LCB0eXBlIExYVDk3MSAoMHgwMDEzNzhlMik8YnI+DQpPb3BzOiBrZXJuZWwgYWNjZXNzIG9mIGJh
+ZCBhcmVhLCBzaWc6IDExPGJyPg0KTklQOiBDMDFFOTNCOCBYRVI6IDAwMDAwMDAwIExSOiBDMDFF
+OTI4OCBTUDogQzAzQkRFRDAgUkVHUzogYzAzYmRlMjAgVFJBUDogMDMwMCZuYnNwOyZuYnNwOyZu
+YnNwOyBOb3QgdGFpbnRlZDxicj4NCk1TUjogMDAwMDkwMzIgRUU6IDEgUFI6IDAgRlA6IDAgTUU6
+IDEgSVIvRFI6IDExPGJyPg0KREFSOiAwMDAwMDAwMCwgRFNJU1I6IDIyMDAwMDAwPGJyPg0KVEFT
+SyA9IGMwM2JjMDAwWzFdICdzd2FwcGVyJyBMYXN0IHN5c2NhbGw6IDEyMDxicj4NCmxhc3QgbWF0
+aCAwMDAwMDAwMCBsYXN0IGFsdGl2ZWMgMDAwMDAwMDA8YnI+DQpHUFIwMDogMDAwMDAwMDAgQzAz
+QkRFRDAgQzAzQkMwMDAgRjAwMEIwQzAgODg4ODg4ODggMDAwMDAwMDAgRjAwMEIwREMgMDAwMDAw
+MDA8YnI+DQpHUFIwODogMDAwMDAyMDAgMDAwMDAwMDAgMDAwMDAwMDAgMDAwMDA1RjAgODQwMDQw
+NDQgMTAwNTIyMTAgMDdGRTIwMDAgMDA3RkZGMTA8YnI+DQpHUFIxNjogMDAwMDAwMDEgMDAwMDAw
+MDAgMDA3RkZGMDAgRkZGRkZGRkYgMDAzRkYwMDAgMDAwMDAwMDAgMDdGN0ZCRjggQzAwQTFCQTA8
+YnI+DQpHUFIyNDogQzAxRjJDMkMgQzAxRDBCNUMgRjAwMTE5QzAgQzdGQ0IwMDAgQzAzQkU2MDAg
+MDAwMDAwMDAgRkZGRkZGRkYgRjAwMDg1MDA8YnI+DQpDYWxsIGJhY2t0cmFjZTo8YnI+DQpDMDFB
+NzhDMCBDMDFFOEREOCBDMDFFNzdFOCBDMDFFNzgyNCBDMDFFOUJDNCBDMDFFNzNBNCBDMDFFMDYy
+NDxicj4NCkMwMDAzOUQwIEMwMDA4MUI4PGJyPg0KS2VybmVsIHBhbmljOiBBdHRlbXB0ZWQgdG8g
+a2lsbCBpbml0ITxicj4NCjxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBNeSBxdWVzdGlvbiBpcywg
+d2hhdCBzaG91bGQgSSBzZXQgdGhlIGFib3ZlIHZhbHVlcz8/PGJyPg0KJm5ic3A7Jm5ic3A7Jm5i
+c3A7IFRoYW5rIHlvdSBhbmQgcmVnYXJkcyw8YnI+DQo8YnI+DQombmJzcDsmbmJzcDsmbmJzcDsg
+Vy5UYXJnZXQ8YnI+DQo8c3R5bGU+cHttYXJnaW46MH1pbWd7Ym9yZGVyOjB9PC9zdHlsZT48L2Zv
+bnQ+PGJyIC8+CjxiciAvPgotLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPGJyIC8+CrvdxtXJzNPDzKjKvbv6ZGM1NzUwLLjf
+0NTE3KOstc25prrEo6EoIDxhIGhyZWY9aHR0cDovL2FkNC5zaW5hLmNvbS5jbi9zaW5hL2xpbWVu
+ZzMvbWFpbF96aHVpeXUvMjAwNi9tYWlsX3podWl5dV8yMDA2MTIyNS5odG1sIHRhcmdldD1fYmxh
+bms+aHR0cDovL2FkNC5zaW5hLmNvbS5jbi9zaW5hL2xpbWVuZzMvbWFpbF96aHVpeXUvMjAwNi9t
+YWlsX3podWl5dV8yMDA2MTIyNS5odG1sPC9hPiApPGJyIC8+CjxiciAvPgo9PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PGJy
+IC8+CteisuHQwsDLMkfD4rfR08rP5KOoIDxhIGhyZWY9aHR0cDovL21haWwuc2luYS5jb20uY24v
+Y2hvb3NlTW9kZS5odG1sIHRhcmdldD1fYmxhbms+aHR0cDovL21haWwuc2luYS5jb20uY24vY2hv
+b3NlTW9kZS5odG1sPC9hPiCjqQ==
+
+
+--=-sina_alt_2c60da8a90a3f690e3447512f8b56b45--
