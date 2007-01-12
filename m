@@ -1,26 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6A7B0DDE41
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 09:02:06 +1100 (EST)
-Subject: Re: [patch][5/5] powerpc: Add the general support for Embedded
-	Floating-Point instructions
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <9F9680DA-DDAD-4DF2-B5FE-6E00CF8A06E2@kernel.crashing.org>
-References: <32F3CC26D4DAC44E8ECD07155727A46E816A47@zch01exm20.fsl.freescale.net>
-	<1168599942.5011.21.camel@localhost.localdomain>
-	<BDC705EB-9078-44FD-800E-D9ADD18B9471@kernel.crashing.org>
-	<1168635154.5011.31.camel@localhost.localdomain>
-	<615F9884-6695-485A-A4B4-A53BD98F969E@kernel.crashing.org>
-	<1168637277.5011.36.camel@localhost.localdomain>
-	<9F9680DA-DDAD-4DF2-B5FE-6E00CF8A06E2@kernel.crashing.org>
-Content-Type: text/plain
-Date: Sat, 13 Jan 2007 09:02:14 +1100
-Message-Id: <1168639334.5011.38.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <maynardj@us.ibm.com>
+Message-ID: <45A805A0.2080000@us.ibm.com>
+Date: Fri, 12 Jan 2007 16:03:12 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+MIME-Version: 1.0
+To: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: [PATCH] Cell SPU task notification
+Content-Type: multipart/mixed; boundary="------------040508030100030202060105"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,24 +16,154 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-01-12 at 15:49 -0600, Kumar Gala wrote:
-> On Jan 12, 2007, at 3:27 PM, Benjamin Herrenschmidt wrote:
-> 
-> >> I think its a fair assumption that nothing is going to interrupt the
-> >> handling of the exception, so its safe to assume the process causing
-> >> the interrupt will be the same one we return to.
-> >
-> > What about the get_user to get to the faulting instruction ? I suppose
-> > if those processors are UP only and we use an exception with EE
-> > disabled, there should be no way the page has been evicted since the
-> > access, so that should work, but will that ever be true ?
-> 
-> For UP we are ok, since nothing else can cause an invalidate.
-> 
-> How do we handle getting a fault when we are emulating any other  
-> instruction?
+This is a multi-part message in MIME format.
+--------------040508030100030202060105
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Well, that's the reason why we had this discussion recently about moving
-the local_irq_enable to before the emulation code :-)
 
-Ben.
+
+--------------040508030100030202060105
+Content-Type: text/x-diff;
+ name="spu-notifier.patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="spu-notifier.patch"
+
+Subject: Enable SPU switch notification to detect currently active SPU tasks.
+
+From: Maynard Johnson <maynardj@us.ibm.com>
+
+This patch adds to the capability of spu_switch_event_register so that the
+caller is also notified of currently active SPU tasks.  It also exports
+spu_switch_event_register and spu_switch_event_unregister.
+
+Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+
+
+Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c
+===================================================================
+--- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/sched.c	2006-12-04 10:56:04.730698720 -0600
++++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-11 09:45:37.918333128 -0600
+@@ -46,6 +46,8 @@
+ 
+ #define SPU_MIN_TIMESLICE 	(100 * HZ / 1000)
+ 
++int notify_active[MAX_NUMNODES];
++
+ #define SPU_BITMAP_SIZE (((MAX_PRIO+BITS_PER_LONG)/BITS_PER_LONG)+1)
+ struct spu_prio_array {
+ 	unsigned long bitmap[SPU_BITMAP_SIZE];
+@@ -81,18 +83,45 @@
+ static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
+ {
+ 	blocking_notifier_call_chain(&spu_switch_notifier,
+-			    ctx ? ctx->object_id : 0, spu);
++				     ctx ? ctx->object_id : 0, spu);
++}
++
++static void notify_spus_active(void)
++{
++	int node;
++	/* Wake up the active spu_contexts. When the awakened processes 
++	 * sees their notify_active flag is set, they will call
++	 * spu_notify_already_active().
++	 */
++	for (node = 0; node < MAX_NUMNODES; node++) {
++		struct spu *spu;
++		mutex_lock(&spu_prio->active_mutex[node]);
++                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
++			struct spu_context *ctx = spu->ctx;
++			wake_up_all(&ctx->stop_wq);
++			notify_active[ctx->spu->number] = 1;
++			smp_mb();
++		}
++                mutex_unlock(&spu_prio->active_mutex[node]);
++	}
++	yield();
+ }
+ 
+ int spu_switch_event_register(struct notifier_block * n)
+ {
+-	return blocking_notifier_chain_register(&spu_switch_notifier, n);
++	int ret;
++	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
++	if (!ret)
++		notify_spus_active();
++	return ret;
+ }
++EXPORT_SYMBOL_GPL(spu_switch_event_register);
+ 
+ int spu_switch_event_unregister(struct notifier_block * n)
+ {
+ 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
+ }
++EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
+ 
+ 
+ static inline void bind_context(struct spu *spu, struct spu_context *ctx)
+@@ -250,6 +279,14 @@
+ 	return spu_get_idle(ctx, flags);
+ }
+ 
++void spu_notify_already_active(struct spu_context *ctx)
++{
++	struct spu *spu = ctx->spu;
++	if (!spu)
++		return;
++	spu_switch_notify(spu, ctx);
++}
++
+ /* The three externally callable interfaces
+  * for the scheduler begin here.
+  *
+Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/spufs.h
+===================================================================
+--- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-08 18:18:40.093354608 -0600
++++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-08 18:31:03.610345792 -0600
+@@ -183,6 +183,7 @@
+ void spu_yield(struct spu_context *ctx);
+ int __init spu_sched_init(void);
+ void __exit spu_sched_exit(void);
++void spu_notify_already_active(struct spu_context *ctx);
+ 
+ extern char *isolated_loader;
+ 
+Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/run.c
+===================================================================
+--- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/run.c	2007-01-08 18:33:51.979311680 -0600
++++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/run.c	2007-01-11 10:17:20.777344984 -0600
+@@ -10,6 +10,8 @@
+ 
+ #include "spufs.h"
+ 
++extern int notify_active[MAX_NUMNODES];
++
+ /* interrupt-level stop callback function. */
+ void spufs_stop_callback(struct spu *spu)
+ {
+@@ -45,7 +47,9 @@
+ 	u64 pte_fault;
+ 
+ 	*stat = ctx->ops->status_read(ctx);
+-	if (ctx->state != SPU_STATE_RUNNABLE)
++	smp_mb();
++
++	if (ctx->state != SPU_STATE_RUNNABLE || notify_active[ctx->spu->number])
+ 		return 1;
+ 	spu = ctx->spu;
+ 	pte_fault = spu->dsisr &
+@@ -319,6 +323,11 @@
+ 		ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
+ 		if (unlikely(ret))
+ 			break;
++		if (unlikely(notify_active[ctx->spu->number])) {
++			notify_active[ctx->spu->number] = 0;
++			if (!(status & SPU_STATUS_STOPPED_BY_STOP))
++				spu_notify_already_active(ctx);
++		}
+ 		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
+ 		    (status >> SPU_STOP_STATUS_SHIFT == 0x2104)) {
+ 			ret = spu_process_callback(ctx);
+
+--------------040508030100030202060105--
