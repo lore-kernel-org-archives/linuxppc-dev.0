@@ -1,20 +1,36 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 4/7] MPIC MSI allocator
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070112002712.GA15117@lixom.net>
-References: <1168514716.63474.857278133999.qpush@cradle>
-	<20070111112504.37999DDF3E@ozlabs.org>
-	<20070112002712.GA15117@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-uYk1qTasWQrEB879d3S0"
-Date: Fri, 12 Jan 2007 11:33:46 +1100
-Message-Id: <1168562026.4647.8.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Greg Kroah-Hartman <greg@kroah.com>, linux-pci@atrey.karlin.mff.cuni.cz,
-	Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <linas@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7A6B4DDE02
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 11:38:47 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0C0cfVU023914
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 19:38:41 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.6/8.13.6/NCO v8.1.1) with ESMTP id
+	l0C0cgP0303884
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 19:38:42 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0C0cfeD025784
+	for <linuxppc-dev@ozlabs.org>; Thu, 11 Jan 2007 19:38:41 -0500
+Date: Thu, 11 Jan 2007 18:38:41 -0600
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH]Enabling Auto poweron after power is restored.
+Message-ID: <20070112003841.GM6177@austin.ibm.com>
+References: <45707469.9060604@austin.ibm.com> <4575E76C.7030300@austin.ibm.com>
+	<17785.415.574041.518517@cargo.ozlabs.ibm.com>
+	<458EBE02.3010401@austin.ibm.com>
+	<17827.5922.667200.166153@cargo.ozlabs.ibm.com>
+	<20070109150519.GD8122@localdomain>
+	<45A55380.9020402@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45A55380.9020402@austin.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Nathan Lynch <ntl@pobox.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,53 +40,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Jan 10, 2007 at 02:58:40PM -0600, Manish Ahuja wrote:
+> Nathan Lynch wrote:
+> > Paul Mackerras wrote:
+> >   
+> >> Manish Ahuja writes:
+> >>
+> >>> During power outages, the ups notifies the system for a shutdown. In the 
+> >>> current setup, it isn't possible to power on when power is restored. 
+> >>> This patch fixes the issue by calling the right ibm,power-off-ups token 
+> >>> during such events. It also adds a proc interface so that rc.powerfail 
+> >>> can parse the epow events and modify the power-off behavior accordingly 
+> >>> to enable the right token to be called.
+> >>>       
+> >> Creating new non-process-related files in /proc is frowned upon these
+> >> days, so we'll have to find somewhere in /sys for this.  Anybody got a
+> >> suggestion?
+> >>     
+> >
+> > Maybe a sysctl instead?
+> >   
+> Wouldn't sysctl be /proc/sys/something again.
 
---=-uYk1qTasWQrEB879d3S0
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+?? where?
 
-On Thu, 2007-01-11 at 18:27 -0600, Olof Johansson wrote:
-> On Thu, Jan 11, 2007 at 10:25:21PM +1100, Michael Ellerman wrote:
-> > To support MSI on MPIC we need a way to reserve and allocate hardware i=
-rq
-> > numbers, this patch implements an allocator for that.
-> >=20
-> > Updated to only do dogy-U3-fallback-hacks on U3, all other platforms mu=
-st
-> > define a "msi-ranges" property on their MPIC node for MSI to work.
->=20
-> The msi-ranges spec isn't documented anywhere besides the code where it's
-> used. Please add it to Documentation/powerpc/booting-without-of.txt too.
+> I did look under /sys but couldn't come up with a location to create 
+> this new file.
 
-OK, will do.
+Candidates are /sys/class/rtas  or /sys/devices/system/rtas 
+or /sys/devices/system/of_platform or /sys/firmware 
+or /sys/platform
 
-I'm going to rename it to "msi-available-ranges" while I'm at it, PAPR
-defines an "ibm,msi-ranges" property which has a very different meaning,
-so I think the longer name is less confusing - even if there's never
-going to be any machine with both.
+I'd have to do some study & research to figure out which location
+would be appropriate.
 
-cheers
+> Although creating new files under /proc is frowned upon, the subset of 
+> files in the directory
+> seemed similar in functionality and connected to the new file I was 
+> creating and hence this new file in
+> /proc/ppc64/rtas.
+> 
+> linux:/proc/ppc64/rtas # ls -x
+> .         ..          clock    error_log  frequency  poweron  poweron_auto
+> progress  rmo_buffer  sensors  volume
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+It would make sense to move some or all of these over to the new
+location as well.
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-uYk1qTasWQrEB879d3S0
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFptdqdSjSd0sB4dIRAoCTAJ9iSZKOu0Gty45JB2DNJhqP7K+MPACgm4du
-x4D3j6MDffGl05QjCAeo7c4=
-=sbkf
------END PGP SIGNATURE-----
-
---=-uYk1qTasWQrEB879d3S0--
+--linas
