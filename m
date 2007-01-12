@@ -1,26 +1,21 @@
-Return-Path: <ebony.zhu@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id E3724DDE22
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 19:27:35 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l0C8RYZE009187
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 01:27:34 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0C8RWif026446
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 02:27:33 -0600 (CST)
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 20F7DDDE35
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 19:46:28 +1100 (EST)
+Date: Fri, 12 Jan 2007 09:46:12 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] add restart function for mpc52xx
+Message-ID: <20070112084612.GJ11226@localhost.localdomain>
+References: <20070111122855.GF11226@localhost.localdomain>
+	<37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>
+	<20070111152137.GG11226@localhost.localdomain>
+	<17831.627.162751.166002@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="GB2312"
-Subject: RE: [patch][0/5] powerpc: Add support to fully comply with IEEE-754
-	standard
-Date: Fri, 12 Jan 2007 16:27:30 +0800
-Message-ID: <32F3CC26D4DAC44E8ECD07155727A46E816A6B@zch01exm20.fsl.freescale.net>
-In-Reply-To: <5B8622DA-17D0-4232-954F-B72C1FCC0300@kernel.crashing.org>
-From: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17831.627.162751.166002@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,48 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Kumar,
+On Fri, Jan 12, 2007 at 02:37:23PM +1100, Paul Mackerras wrote:
+> Sascha Hauer writes:
+> 
+> > > This suffers from the same bug mpc83xx_restart has.  We can NOT do an  
+> > > ioremap inside the restart function.  We may get called from  
+> > > interrupt context on a panic and will not be able to do the ioremap 
+> > > ().  The simplest thing is to do the mapping earlier in an init call  
+> > > and save the pointer, its not perfect, but better.
+> > > 
+> > 
+> > I'm beginning to hate this whole pseudo OF thing for embedded systems.
+> 
+> Not being able to ioremap at interrupt time has absolutely _nothing_
+> to do with the device tree.
 
-I wrote some cases for testing. For SPFP and DPFP exception testing,
-the test cases included plus, minus, multiply, divide, comparisons, =
-conversions,
-DBZ... for Nan/Denorm/Inf numbers. I also tested the cases that=20
-the operation result would generate Nan/Denorm/Inf/overflow/underflow
-numbers. For Vector SPFP exception testing, I wrote inline asm based =
-testing
-program to test the instructions directly.
+No, not directly..
 
-Ebony
+> 
+> > All we need to know is that we have a mpc52xx processor.
+> 
+> ... until we get a system with a mpc52xx and some extra stuff.  Then
+> you say "OK, we just need a boardinfo_t" and then we get 57 different
+> variants of boardinfo_t and then we're back in the mess that arch/ppc
+> got into.
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: 2007=C4=EA1=D4=C212=C8=D5 13:46
-> To: Paul Mackerras
-> Cc: Zhu Ebony-r57400; linuxppc-dev@ozlabs.org
-> Subject: Re: [patch][0/5] powerpc: Add support to fully=20
-> comply with IEEE-754 standard
->=20
->=20
-> On Jan 11, 2007, at 11:29 PM, Paul Mackerras wrote:
->=20
-> > Zhu Ebony-r57400 writes:
-> >
-> >> This series of patch add support to fully comply with IEEE-754=20
-> >> standard for E500/E500v2 core when hardware floating point=20
-> compiling=20
-> >> is used.
-> >
-> > Your patch descriptions need to explain in detail in what way the=20
-> > current code doesn't comply with the IEEE-754 standard, and what=20
-> > approach you have taken to make it comply.  If there are=20
-> alternative=20
-> > approaches, explain why the approach you have taken is the best.
-> >
-> > Thanks,
-> > Paul.
->=20
-> In addition, this is something that we need to know how it=20
-> was tested for IEEE-754 compliance.
->=20
-> - k
->=20
+OK, nobody wants that. I can only compare to arm where we have one
+single number per board (not per SoC, I misrepresented that). This
+number is perfectly enough to know what SoC we are on (to map the
+register space and select timing/irq code and the like). The rest of a
+particular board is described in one single board file.
+On system with real open firmware it's surely the way to go to use it,
+but on systems without OF it's just painful. Not being able to implement
+a restart function without changing the device tree shows that.
+
+Sascha
+
+-- 
+ Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
+  Pengutronix - Linux Solutions for Science and Industry
+    Handelsregister: Amtsgericht Hildesheim, HRA 2686
+      Hannoversche Str. 2, 31134 Hildesheim, Germany
+    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
