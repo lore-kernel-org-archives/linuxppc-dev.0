@@ -1,17 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 13 Jan 2007 10:00:47 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH/RFC] Add cmd_wrap_dts rules to arch/powerpc/boot/Makefile
-Message-ID: <20070112230047.GC18201@localhost.localdomain>
-References: <20061019002635.GA2356@mag.az.mvista.com>
-	<E1GaYUQ-0001jb-20@jdl.com>
-	<20061019195156.GB6586@mag.az.mvista.com>
-	<20070111004048.GA27351@mag.az.mvista.com>
+Return-Path: <gregkh@suse.de>
+Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 556D0DDE21
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 10:12:41 +1100 (EST)
+Date: Fri, 12 Jan 2007 15:11:46 -0800
+From: Greg KH <greg@kroah.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/7] Powerpc MSI implementation
+Message-ID: <20070112231146.GB665@kroah.com>
+References: <1168514716.63474.857278133999.qpush@cradle>
+	<20070111112503.0CC1BDDF13@ozlabs.org>
+	<20070111194427.GA20450@kroah.com>
+	<1168550403.22458.414.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070111004048.GA27351@mag.az.mvista.com>
-Cc: jdl@jdl.com, linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <1168550403.22458.414.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Olof Johannsson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +28,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 10, 2007 at 05:40:48PM -0700, Mark A. Greer wrote:
-> On Thu, Oct 19, 2006 at 12:51:56PM -0700, Mark A. Greer wrote:
-> > On Thu, Oct 19, 2006 at 09:03:18AM -0500, Jon Loeliger wrote:
-> > > So, like, the other day "Mark A. Greer" mumbled:
-> > > > 
-> > > > This would be used by the sandpoint, say, by adding the following rules
-> > > > to the Makefile in the appropriate places:
-> > > > 
-> > > > 	$(obj)/zImage.sandpoint: vmlinux $(wrapperbits)
-> > > > 		$(call cmd,wrap_dts,sandpoint)
-> > > > 
-> > > > 	$(obj)/zImage.initrd.sandpoint: vmlinux $(wrapperbits)
-> > > > 		$(call cmd,wrap_dts_initrd,sandpoint)
-> > > > 
-> > > > and:
-> > > > 
-> > > > 	image-$(CONFIG_SANDPOINT)               += zImage.sandpoint
-> > > > 
-> > > > Comments?
-> > > 
-> > > Isn't there a way to do this without hardcoding the
-> > > platform name in the makefiles directly?  I fear for
-> > > the one-per-platform effect that is yet to come with
-> > > the conversion of many of the legacy boards.
+On Fri, Jan 12, 2007 at 08:20:02AM +1100, Benjamin Herrenschmidt wrote:
 > 
-> Okay, its been a while so let's see if anyone remembers and/or cares
-> anymore.  :)
+> > So, no, I don't agree with this implementation and don't want to see it
+> > go through anyone's tree into mainline just yet.
 > 
-> How about something like the patch below?
-> 
-> Basically, if you want a dtb wrapped up in your zImage, set
-> CONFIG_DEFAULT_DTB=y and also define CONFIG_DTS to point where your dts
-> file is.
-> 
-> Does that meet everyones requirements?
+> So why, when we posted it earlier, you said the exact opposite ? That
+> you actually liked it and wanted to see it as a replacement of the
+> current cruft ?
 
-Erm.. actually from what I could tell, the way the wrapper script
-invokes dtc will make a mess if you're building with a different
-object tree from the source tree.  I think the other suggested patches
-which have a cmd_wrap_dtb and a spearate make rule to invoke dtc are a
-better shot, and it might be a good idea to rip the dtc invocation out
-of wrapper entirely.
+Well, I didn't realize at that time that this was ppc only code.  I
+missed the location of those function calls, assuming that no one would
+put generic PCI calls down in a arch-specific tree only.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+thanks,
+
+greg k-h
