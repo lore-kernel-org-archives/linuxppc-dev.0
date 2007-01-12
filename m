@@ -1,26 +1,23 @@
-Return-Path: <ebony.zhu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id B9417DDE42
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 21:23:16 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l0CANFsB007500
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 03:23:15 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l0CANDPU003248
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 04:23:14 -0600 (CST)
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id C60F9DDEE9
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 21:42:14 +1100 (EST)
+Date: Fri, 12 Jan 2007 11:42:11 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Sylvain Munaut <tnt@246tNt.com>
+Subject: Re: [PATCH] add restart function for mpc52xx
+Message-ID: <20070112104211.GQ11226@localhost.localdomain>
+References: <20070111122855.GF11226@localhost.localdomain>
+	<37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>
+	<20070111152137.GG11226@localhost.localdomain>
+	<17831.627.162751.166002@cargo.ozlabs.ibm.com>
+	<20070112084612.GJ11226@localhost.localdomain>
+	<45A74E2F.2000901@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="GB2312"
-Subject: RE: [patch][5/5] powerpc: Add the general support for Embedded
-	Floating-Point instructions
-Date: Fri, 12 Jan 2007 18:23:11 +0800
-Message-ID: <32F3CC26D4DAC44E8ECD07155727A46E816A9D@zch01exm20.fsl.freescale.net>
-In-Reply-To: <20070112095213.GA24536@lst.de>
-From: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
-To: "Christoph Hellwig" <hch@lst.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45A74E2F.2000901@246tNt.com>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,52 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+On Fri, Jan 12, 2007 at 10:00:31AM +0100, Sylvain Munaut wrote:
+> 
+> I'm not saying the system is perfect but this issue is more related to
+> recent
+> bindings that the of thing as a whole. That's more the problem with of
+> is that
+> when you need to define bindings for something that has none, you may not
+> anticipate everything ....
 
-> -----Original Message-----
-> From: Christoph Hellwig [mailto:hch@lst.de]=20
-> Sent: 2007=C4=EA1=D4=C212=C8=D5 17:52
-> To: Zhu Ebony-r57400
-> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [patch][5/5] powerpc: Add the general support=20
-> for Embedded Floating-Point instructions
->=20
-> On Fri, Jan 12, 2007 at 01:31:02PM +0800,=20
-> ebony.zhu@freescale.com wrote:
-> > +ifeq ($(CONFIG_SPE),y)
-> > +ifneq ($(CONFIG_MATH_EMULATION),y)
-> > +core-y				+=3D arch/powerpc/math-emu/
-> > +endif
-> > +endif
-> >  core-$(CONFIG_MATH_EMULATION)	+=3D arch/powerpc/math-emu/
->=20
-> This statement doesn't make any sense.  I guess you always=20
-> want to build arch/powerpc/math-emu if CONFIG_SPE is set,=20
-> right?  The proper way to do that is to force=20
-> CONFIG_MATH_EMULATION in the Kconfig.
->=20
-> Then again we need a really good explanation why CONFIG_SPE=20
-> should force the math emulation to be built.
->=20
->=20
+No, you can never do that. Lets hope there will never be incompatible
+changes in the device tree so that we have to use this device tree for this
+kernel version and another one for other kernel versions.
 
-Yes, you are. If CONFIG_SPE is set, I want some files in =
-arch/powerpc/math-emu be built.
-The original kernel will build math emulation only if =
-CONFIG_MATH_EMULATION
-is set. I don't want to break it.
+Sascha
 
-CONFIG_SPE doesn't force the whole math emulation to be built. If =
-CONFIG_SPE is set,
-only the new SPFP/DPFP/VSPFP instructions in arch/powerpc/math-emu will =
-be built,
-while the previous FPU instructions won't. This is controlled by =
-Makefile in
-arch/powerpc/math-emu
 
-Therefore, what I'm trying to do is to build directory =
-arch/powerpc/math-emu if
-CONFIG_MATH_EMULATION or CONFIG_SPE is set. Do you have any idea?=20
-
-Thanks.
-Ebony
+-- 
+ Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
+  Pengutronix - Linux Solutions for Science and Industry
+    Handelsregister: Amtsgericht Hildesheim, HRA 2686
+      Hannoversche Str. 2, 31134 Hildesheim, Germany
+    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
