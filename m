@@ -2,11 +2,11 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 943F9DDF3C
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:12:13 +1100 (EST)
-Date: Fri, 12 Jan 2007 10:12:06 +0900 (JST)
-Message-Id: <200701120112.l0C1C7vp006378@toshiba.co.jp>
-Subject: [PATCH 12/19] powerpc: setup sio in SCC for Celleb
+	by ozlabs.org (Postfix) with ESMTP id 766C6DDF40
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 12:13:11 +1100 (EST)
+Date: Fri, 12 Jan 2007 10:13:04 +0900 (JST)
+Message-Id: <200701120113.l0C1D5WP000520@toshiba.co.jp>
+Subject: [PATCH 13/19] powerpc: Supporting iommu for Celleb
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,21 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch setup serial interfaces in SCC to work with serial_txx9
-driver.
+This patch creates Celleb platform dependent file to support iommu.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c:1.5
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c:1.16
 --- /dev/null	Thu Jan 11 22:03:27 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c	Wed Jan 10 17:48:12 2007
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c	Wed Jan 10 13:00:18 2007
 @@ -0,0 +1,101 @@
 +/*
-+ * setup serial port in SCC
++ * Support for IOMMU on Celleb platform.
 + *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
++ * (C) Copyright 2006-2007 TOSHIBA CORPORATION
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -52,84 +51,84 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_sio.c:1.5
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#include <linux/tty.h>
-+#include <linux/serial.h>
-+#include <linux/serial_core.h>
-+#include <linux/console.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/dma-mapping.h>
++#include <linux/pci.h>
 +
-+#include <asm/io.h>
-+#include <asm/prom.h>
++#include <asm/of_platform.h>
 +
-+/* sio irq0=0xb00010022 irq0=0xb00010023 irq2=0xb00010024
-+    mmio=0xfff000-0x1000,0xff2000-0x1000 */
-+static int txx9_serial_bitmap = 0;
++#include "beat_wrapper.h"
 +
-+static struct {
-+	uint32_t offset;
-+	uint32_t index;
-+} txx9_scc_tab[3] = {
-+	{ 0x300, 0 },	/* 0xFFF300 */
-+	{ 0x400, 0 },	/* 0xFFF400 */
-+	{ 0x800, 1 }	/* 0xFF2800 */
-+};
++#define DMA_FLAGS 0xf800000000000000UL	/* r/w permitted, coherency required,
++					   strongest order */
 +
-+static int txx9_serial_init(void)
++static int __init find_dma_window(u64 *io_space_id, u64 *ioid,
++				  u64 *base, u64 *size, u64 *io_page_size)
 +{
-+	extern int early_serial_txx9_setup(struct uart_port *port);
-+	struct device_node *node;
-+	int i;
-+	struct uart_port req;
-+	struct of_irq irq;
-+	struct resource res;
++	struct device_node *dn;
++	const unsigned long *dma_window;
 +
-+	node = of_find_node_by_path("/ioif1/sio");
-+	if (!node)
-+		return 0;
-+
-+	for(i = 0; i < sizeof(txx9_scc_tab)/sizeof(txx9_scc_tab[0]); i++) {
-+		if (!(txx9_serial_bitmap & (1<<i)))
-+			continue;
-+
-+		if (of_irq_map_one(node, i, &irq))
-+			continue;
-+		if (of_address_to_resource(node, txx9_scc_tab[i].index, &res))
-+			continue;
-+
-+		memset(&req, 0, sizeof(req));
-+		req.line = i;
-+		req.iotype = UPIO_MEM;
-+		req.mapbase = res.start + txx9_scc_tab[i].offset;
-+#ifdef CONFIG_SERIAL_TXX9_CONSOLE
-+		req.membase = ioremap(req.mapbase, 0x24);
-+#endif
-+		req.irq = irq_create_of_mapping(irq.controller,
-+			irq.specifier, irq.size);
-+		req.flags |= UPF_IOREMAP | UPF_BUGGY_UART /*HAVE_CTS_LINE*/;
-+		req.uartclk = 83300000;
-+		early_serial_txx9_setup(&req);
++	for_each_node_by_type(dn, "ioif") {
++		dma_window = get_property(dn, "toshiba,dma-window", NULL);
++		if (dma_window) {
++			*io_space_id = (dma_window[0] >> 32) & 0xffffffffUL;
++			*ioid = dma_window[0] & 0x7ffUL;
++			*base = dma_window[1];
++			*size = dma_window[2];
++			*io_page_size = 1 << dma_window[3];
++			of_node_put(dn);
++			return 1;
++		}
 +	}
-+
-+	of_node_put(node);
 +	return 0;
 +}
 +
-+static int txx9_serial_config(char *ptr)
++static void __init celleb_init_direct_mapping(void)
 +{
-+	int	i;
++	u64 lpar_addr, io_addr;
++	u64 io_space_id, ioid, dma_base, dma_size, io_page_size;
 +
-+	for (;;) {
-+		switch(get_option(&ptr, &i)) {
-+		default:
-+			return 0;
-+		case 2:
-+			txx9_serial_bitmap |= 1 << i;
-+			break;
-+		case 1:
-+			txx9_serial_bitmap |= 1 << i;
-+			return 0;
-+		}
++	if (!find_dma_window(&io_space_id, &ioid, &dma_base, &dma_size,
++			     &io_page_size)) {
++		pr_info("No dma window found !\n");
++		return;
 +	}
-+}
-+__setup("txx9_serial=", txx9_serial_config);
 +
-+console_initcall(txx9_serial_init);
++	for (lpar_addr = 0; lpar_addr < dma_size; lpar_addr += io_page_size) {
++		io_addr = lpar_addr + dma_base;
++		(void)beat_put_iopte(io_space_id, io_addr, lpar_addr,
++				     ioid, DMA_FLAGS);
++	}
++
++	dma_direct_offset = dma_base;
++}
++
++static int celleb_of_bus_notify(struct notifier_block *nb,
++				unsigned long action, void *data)
++{
++	struct device *dev = data;
++
++	/* We are only intereted in device addition */
++	if (action != BUS_NOTIFY_ADD_DEVICE)
++		return 0;
++
++	dev->archdata.dma_ops = pci_dma_ops;
++
++	return 0;
++}
++
++static struct notifier_block celleb_of_bus_notifier = {
++	.notifier_call = celleb_of_bus_notify
++};
++
++static int __init celleb_init_iommu(void)
++{
++	celleb_init_direct_mapping();
++	pci_dma_ops = &dma_direct_ops;
++	bus_register_notifier(&of_platform_bus_type, &celleb_of_bus_notifier);
++
++	return 0;
++}
++
++arch_initcall(celleb_init_iommu);
