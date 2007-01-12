@@ -1,19 +1,21 @@
-Return-Path: <boardbringup@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.184])
-	by ozlabs.org (Postfix) with ESMTP id BE2B5DDDF9
+Return-Path: <nvbolhuis@aimsys.nl>
+Received: from smtp-vbr14.xs4all.nl (smtp-vbr14.xs4all.nl [194.109.24.34])
+	by ozlabs.org (Postfix) with ESMTP id 267C1DDE47
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 12 Jan 2007 16:09:08 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id n15so1048240nfc
+	Fri, 12 Jan 2007 21:22:18 +1100 (EST)
+Received: from mail3.aimsys.nl (a80-127-156-242.adsl.xs4all.nl
+	[80.127.156.242])
+	by smtp-vbr14.xs4all.nl (8.13.8/8.13.8) with ESMTP id l0CACllL082467
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 11 Jan 2007 21:09:06 -0800 (PST)
-Message-ID: <ad260f380701112108q24d170cbj7f658edd61a9201d@mail.gmail.com>
-Date: Fri, 12 Jan 2007 10:38:52 +0530
-From: "Suresh Chandra Mannava" <boardbringup@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Oops: kernel access of bad area
+	Fri, 12 Jan 2007 11:12:48 +0100 (CET)
+	(envelope-from nvbolhuis@aimsys.nl)
+Message-ID: <45A75F1B.2090506@aimsys.nl>
+Date: Fri, 12 Jan 2007 11:12:43 +0100
+From: Norbert van Bolhuis <nvbolhuis@aimsys.nl>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_136552_12100178.1168578532724"
+To: linuxppc-embedded@ozlabs.org
+Subject: status "Ingo's Real-Time" patch
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,116 +26,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_136552_12100178.1168578532724
-Content-Type: multipart/alternative;
-	boundary="----=_Part_136553_27841436.1168578532724"
 
-------=_Part_136553_27841436.1168578532724
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Does anybody already (successfully) use "Ingo's Real-Time" patch
+for PPC.
+It can be found here:
+http://people.redhat.com/mingo/realtime-preempt/
 
-Hi,
+We tried applying an older patch for the 2.6.19 kernel on a
+MPC870 board, but it failed to compile.
 
-I am working on porting Linux 2.6.19 on a custom board with MPC7410 and
-CPC700 system controller.
-I am using u-boot-1.1.6 for booting Linux. I found IBM spruce is also having
-CPC700, I followed spruce related files and made modifications accordingly.
-Board supports external 2MB L2 cache and 128MB SDRAM.
+Thanks,
+N.
 
-I am encountering kernel panic(serial console messages attached with this
-mail). I traced the code by putting printk and found that kernel is crashing
-after executing all functions in start_kernel.
-Is this problem related to L2 cache?
-I didn't enabled L2 cache in Linux as well as in u-boot.
-I request you to provide me some pointers and suggestions for finding out
-this problem. I am going to try with L2 cache enabled.
-
-Thanks a lot.
-
-------=_Part_136553_27841436.1168578532724
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,<br><br>I am working on porting Linux 2.6.19 on a custom board with MPC7410 and CPC700 system controller.<br>I
-am using u-boot-1.1.6 for booting Linux. I found IBM spruce is also
-having CPC700, I followed spruce related files and made modifications
-accordingly.
-<br>Board supports external 2MB L2 cache and 128MB SDRAM.<br><br>I am
-encountering kernel panic(serial console messages attached with this
-mail). I traced the code by putting printk and found that kernel is
-crashing after executing all functions in start_kernel.
-<br>Is this problem related to L2 cache?<br>I didn&#39;t enabled L2 cache in Linux as well as in u-boot.<br>I request you to provide me some pointers and suggestions for finding out this problem. I am going to try with L2 cache enabled.
-<br><br>Thanks a lot.
-
-------=_Part_136553_27841436.1168578532724--
-
-------=_Part_136552_12100178.1168578532724
-Content-Type: text/plain; name=CAPTURE.TXT; charset=ANSI_X3.4-1968
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_ewu5ui4c
-Content-Disposition: attachment; filename="CAPTURE.TXT"
-
-Ym9vdG0gMjAwMDAwMA0KIyMgQm9vdGluZyBpbWFnZSBhdCAwMjAwMDAwMCAuLi4KICAgSW1hZ2Ug
-TmFtZTogICBMaW51eC0yLjYuMTkKICAgSW1hZ2UgVHlwZTogICBQb3dlclBDIExpbnV4IEtlcm5l
-bCBJbWFnZSAoZ3ppcCBjb21wcmVzc2VkKQogICBEYXRhIFNpemU6ICAgIDcwNTA2NyBCeXRlcyA9
-IDY4OC41IGtCCiAgIExvYWQgQWRkcmVzczogMDAwMDAwMDAKICAgRW50cnkgUG9pbnQ6ICAwMDAw
-MDAwMAogICBWZXJpZnlpbmcgQ2hlY2tzdW0gLi4uIE9LCiAgIFVuY29tcHJlc3NpbmcgS2VybmVs
-IEltYWdlIC4uLiBPSwojIyBDdXJyZW50IHN0YWNrIGVuZHMgYXQgMHgwN0ZCNENGMCA9PiBzZXQg
-dXBwZXIgbGltaXQgdG8gMHgwMDgwMDAwMAojIyBjbWRsaW5lIGF0IDB4MDA3RkZGMDAgLi4uIDB4
-MDA3RkZGMTMKbWVtc3RhcnQgICAgPSAweDAwMDAwMDAwCm1lbXNpemUgICAgID0gMHgwODAwMDAw
-MApmbGFzaHN0YXJ0ICA9IDB4RkZFMDAwMDAKZmxhc2hzaXplICAgPSAweDAwMjAwMDAwCmZsYXNo
-b2Zmc2V0ID0gMHgwMDAwMDAwMApzcmFtc3RhcnQgICA9IDB4MDAwMDAwMDAKc3JhbXNpemUgICAg
-PSAweDAwMDAwMDAwCmJvb3RmbGFncyAgID0gMHgwMDAwMDAwMQppbnRmcmVxICAgICA9ICAgIDM2
-MyBNSHoKYnVzZnJlcSAgICAgPSAgICAgNjYgTUh6CmV0aGFkZHIgICAgID0gNjQ6MzY6MDA6MDA6
-MDA6MDEKZXRoMWFkZHIgICAgPSA2NDozNjowMDowMDowMDowMgpJUCBhZGRyICAgICA9IDE5Mi4x
-NjguMC4xMDAKYmF1ZHJhdGUgICAgPSAgNTc2MDAgYnBzCk5vIGluaXRyZAojIyBUcmFuc2ZlcnJp
-bmcgY29udHJvbCB0byBMaW51eCAoYXQgYWRkcmVzcyAwMDAwMDAwMCkgLi4uClRvdGFsIG1lbW9y
-eSA9IDEyOE1COyB1c2luZyAyNTZrQiBmb3IgaGFzaCB0YWJsZSAoYXQgYzAxODAwMDApCkxpbnV4
-IHZlcnNpb24gMi42LjE5IChzdXJlc2hAbWFubmF2YSkgKGdjYyB2ZXJzaW9uIDQuMC4wIChERU5Y
-IEVMREsgNC4wIDQuMC4wKSkgIzE4IFRodSBKYW4gMTEgMTA6MzQ6MzYgSVNUIDIwMDcKU3lzdGVt
-IElkZW50aWZpY2F0aW9uOiBDb3JuZXQgQ1NWRzQgTGludXggQm9vdApab25lIFBGTiByYW5nZXM6
-CiAgRE1BICAgICAgICAgICAgIDAgLT4gICAgMzI3NjgKICBOb3JtYWwgICAgICAzMjc2OCAtPiAg
-ICAzMjc2OAplYXJseV9ub2RlX21hcFsxXSBhY3RpdmUgUEZOIHJhbmdlcwogICAgMDogICAgICAg
-IDAgLT4gICAgMzI3NjgKQnVpbHQgMSB6b25lbGlzdHMuICBUb3RhbCBwYWdlczogMzI1MTIKS2Vy
-bmVsIGNvbW1hbmQgbGluZTogY29uc29sZT10dHlTMCw1NzYwMApQSUQgaGFzaCB0YWJsZSBlbnRy
-aWVzOiA1MTIgKG9yZGVyOiA5LCAyMDQ4IGJ5dGVzKQpDb25zb2xlOiBjb2xvdXIgZHVtbXkgZGV2
-aWNlIDgweDI1CkRlbnRyeSBjYWNoZSBoYXNoIHRhYmxlIGVudHJpZXM6IDE2Mzg0IChvcmRlcjog
-NCwgNjU1MzYgYnl0ZXMpCklub2RlLWNhY2hlIGhhc2ggdGFibGUgZW50cmllczogODE5MiAob3Jk
-ZXI6IDMsIDMyNzY4IGJ5dGVzKQpNZW1vcnk6IDEyODEyOGsgYXZhaWxhYmxlICgxMDY4ayBrZXJu
-ZWwgY29kZSwgMzM2ayBkYXRhLCA5MmsgaW5pdCwgMGsgaGlnaG1lbSkKTW91bnQtY2FjaGUgaGFz
-aCB0YWJsZSBlbnRyaWVzOiA1MTIKT29wczoga2VybmVsIGFjY2VzcyBvZiBiYWQgYXJlYSwgc2ln
-OiAxMSBbIzFdCk5JUDogQzAwMTFBREMgTFI6IEMwMDExQjc4IENUUjogMDAwMDAwMDUKUkVHUzog
-YzAyZWRmYjAgVFJBUDogMDMwMCAgIE5vdCB0YWludGVkICAoMi42LjE5KQpNU1I6IDAwMDAxMDMy
-IDxNRSxJUixEUj4gIENSOiAyNDAyODAyMiAgWEVSOiAyMDAwMDAwMApEQVI6IDAwMDAwMDdELCBE
-U0lTUjogNDIwMDAwMDAKVEFTSyA9IGMwMmU5YjM4WzBdICcnIFRIUkVBRDogMDJkYzU5MTUKR1BS
-MDA6IDAwMjAwMjAwIEMwMkVFMDYwIEMwMkU5QjM4IEMwMkU5QjM4IEMwMTY5REI0IDAwMDAwMDAw
-IEMwMkVGRkZDIDAwMDAwMDQ0IApHUFIwODogMDFDMDkwMDAgMDAwMDAwNzggQzAyRTlCNjAgMDAw
-MDAwN0QgMDAwMDAwMDAgMDQwMDhDMDAgMDgwMDNDMDAgMDA3RkZGMTMgCkdQUjE2OiAwMDAwMDAw
-MSBDMDE2ODRDOCBDMDE3MDAwMCBDMDE3MDAwMCAwMDAwMDAwMCAwMDAwMDAwMCAwMDg4MDM4MSBD
-MDE2OTk4MCAKR1BSMjQ6IEMwMkVFMDAwIEMwMTY5OTgwIEMwMkU5QkY0IEMwMkU5QzQ4IDAwMDAw
-MDAwIEMwMkU5QjM4IEMwMkU5QjM4IEMwMENFODE4IApOSVAgW0MwMDExQURDXSBkZXF1ZXVlX3Rh
-c2srMHgyMC8weDg0CkxSIFtDMDAxMUI3OF0gZGVhY3RpdmF0ZV90YXNrKzB4MzgvMHg1NApDYWxs
-IFRyYWNlOgpJbnN0cnVjdGlvbiBkdW1wOgo5MDgzMDAyOCA5MTY5MDAwNCA5MTJiMDAwMCA0ZTgw
-MDAyMCA4MTI0MDAwMCAzOTQzMDAyOCAzYzAwMDAyMCAzOTI5ZmZmZiAKNjAwMDAyMDAgOTEyNDAw
-MDAgODE2YTAwMDQgODEyMzAwMjggPDkxMmIwMDAwPiA5MTY5MDAwNCAzOTI0MDAxOCA5MDBhMDAw
-NCAKT29wczoga2VybmVsIGFjY2VzcyBvZiBiYWQgYXJlYSwgc2lnOiAxMSBbIzJdCk5JUDogQzAw
-MTI5MzQgTFI6IEMwMDEyOEIwIENUUjogMDAwMDAwMDAKUkVHUzogYzAyZWRkOTAgVFJBUDogMDYw
-MCAgIE5vdCB0YWludGVkICAoMi42LjE5KQpNU1I6IDAwMDAxMDMyIDxNRSxJUixEUj4gIENSOiA0
-NDAyODAyNCAgWEVSOiAwMDAwMDAwMApEQVI6IDAyREM1OTNELCBEU0lTUjogMDAwMDAxNDAKVEFT
-SyA9IGMwMmU5YjM4WzBdICcnIFRIUkVBRDogMDJkYzU5MTUKR1BSMDA6IDAyREM1OTNEIEMwMkVE
-RTQwIEMwMkU5QjM4IDAwMDAwMDAwIDE5RUVENTQwIDAwMDAwMDAxIEMwMTY5NTQwIDAwMDAwMDAw
-IApHUFIwODogMDhGOUM2QTAgMDAwMDAwMDggMDAwMDAwMDAgMDJEQzU5MTUgMDhGOUM2QTAgMDQw
-MDhDMDAgMDgwMDNDMDAgMDA3RkZGMTMgCkdQUjE2OiAwMDAwMDAwMSBDMDE2ODRDOCBDMDE3MDAw
-MCBDMDE3MDAwMCAwMDAwMDAwMCBDMDE3MDAwMCBDMDE2NzJDMCAwMDAwMDAwMCAKR1BSMjQ6IEMw
-MTYwMDAwIEMwMTcwMDAwIEMwMTYwMDAwIEMwMkVERUMwIEMwMTcwMDAwIEMwMTY5REI0IEMwMTY5
-OTgwIEMwMkU5QjM4IApOSVAgW0MwMDEyOTM0XSBzY2hlZHVsZXJfdGljaysweDljLzB4MzUwCkxS
-IFtDMDAxMjhCMF0gc2NoZWR1bGVyX3RpY2srMHgxOC8weDM1MApDYWxsIFRyYWNlOgpJbnN0cnVj
-dGlvbiBkdW1wOgo4MDFlMDAyNCA5MDdlMDAxOCA3ZjlmMDAwMCA5MDllMDAxYyA0MTllMDAzMCA4
-M2JmMDAzMCA4MDFlMDAyYyA3ZjlkMDAwMCAKNDE5ZTAwNDggODE3ZjAwMDQgMzkyMDAwMDggMzgw
-YjAwMjggPDdkNDAwMDI4PiA3ZDRhNGI3OCA3ZDQwMDEyZCA0MGEyZmZmNCAKQmFkbmVzcyBpbiBk
-b19leGl0IGF0IGtlcm5lbC9leGl0LmM6ODU5CkNhbGwgVHJhY2U6Cktlcm5lbCBwYW5pYyAtIG5v
-dCBzeW5jaW5nOiBBaWVlLCBraWxsaW5nIGludGVycnVwdCBoYW5kbGVyIQogPDA+UmVib290aW5n
-IGluIDE4MCBzZWNvbmRzLi4K
-------=_Part_136552_12100178.1168578532724--
+-- 
+This message has been scanned for viruses and is believed to be clean
