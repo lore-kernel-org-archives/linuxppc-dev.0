@@ -1,13 +1,13 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4F1CFDDF4D
-	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 11:51:08 +1100 (EST)
-Date: Fri, 12 Jan 2007 09:51:03 +0900 (JST)
-Message-Id: <200701120051.l0C0p3Xu017082@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 7C8B2DDF64
+	for <linuxppc-dev@ozlabs.org>; Fri, 12 Jan 2007 11:52:49 +1100 (EST)
+Date: Fri, 12 Jan 2007 09:52:41 +0900 (JST)
+Message-Id: <200701120052.l0C0qfgB011998@toshiba.co.jp>
+Subject: [PATCH 1/19] spufs: add SPU register lock
 To: paulus@samba.org
-Subject: [PATCH 0/19] Patches for Toshiba Cell reference set
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -21,18 +21,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul-san,
+spu->register_lock should be held before accessing registers.
 
-This is a revised version of the patch set for Toshiba Cell reference
-set (aka Celleb).
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+---
 
-Patch 1-3 are generic for Cell and not dependent on any other patches.
-I think that they are useful for other platforms. Patch 4-19 are to
-support for Celleb.
-
-This patch set is intended to be merged to 2.6.21.
-If you have any comment, please write to me.
-
-Best regards,
-Kou Ishizaki
-Toshiba
+Index: linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c
+diff -u linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c:1.1.1.1 linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c:1.2
+--- linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c:1.1.1.1	Wed Dec  6 08:25:44 2006
++++ linux-powerpc-git/arch/powerpc/platforms/cell/spu_base.c	Thu Dec  7 16:24:53 2006
+@@ -170,9 +170,11 @@
+ spu_irq_class_0_bottom(struct spu *spu)
+ {
+ 	unsigned long stat, mask;
++	unsigned long flags;
+ 
+ 	spu->class_0_pending = 0;
+ 
++	spin_lock_irqsave(&spu->register_lock, flags);
+ 	mask = spu_int_mask_get(spu, 0);
+ 	stat = spu_int_stat_get(spu, 0);
+ 
+@@ -188,6 +190,7 @@
+ 		__spu_trap_error(spu);
+ 
+ 	spu_int_stat_clear(spu, 0, stat);
++	spin_unlock_irqrestore(&spu->register_lock, flags);
+ 
+ 	return (stat & 0x7) ? -EIO : 0;
+ }
