@@ -1,17 +1,22 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 20A6DDDE07
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 03:51:19 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'Kumar Gala'" <galak@kernel.crashing.org>
-Subject: RE: latest linux git doesn't compile ucc_geth_phy.c and ucc_geth.c
-Date: Sat, 13 Jan 2007 17:51:13 +0100
-Message-ID: <020e01c73733$0932c350$020120ac@Jocke>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 19ADEDDE27
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 04:53:31 +1100 (EST)
+Message-ID: <45A91C92.4030504@am.sony.com>
+Date: Sat, 13 Jan 2007 09:53:22 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <00a601c730cc$2c3aef70$1e67a8c0@Jocke>
-Cc: 'linuxppc-dev' <linuxppc-dev@ozlabs.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 7/19] powerpc: interfaces to the hypervisor of Celleb
+References: <200701120100.l0C10ktW025821@toshiba.co.jp>	<20070113124638.GA13493@krispykreme>
+	<06ebc2a1b06cafb9aaa3bcf8407db1fe@kernel.crashing.org>
+In-Reply-To: <06ebc2a1b06cafb9aaa3bcf8407db1fe@kernel.crashing.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Anton Blanchard <anton@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,65 +26,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: 
-> linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
-> [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
-> abs.org] On Behalf Of Joakim Tjernlund
-> Sent: den 5 januari 2007 14:20
-> To: 'Kumar Gala'
-> Cc: 'linuxppc-dev'
-> Subject: RE: latest linux git doesn't compile ucc_geth_phy.c 
-> and ucc_geth.c
+Segher Boessenkool wrote:
+>>> +#define	HVSC	.long	0x44000022
+>>
+>> Could you pick this up from the define in include/asm-powerpc instead?
 > 
-> > -----Original Message-----
-> > From: Kumar Gala [mailto:galak@kernel.crashing.org] 
-> > Sent: den 18 december 2006 19:44
-> > To: Timur Tabi
-> > Cc: Joakim Tjernlund; 'linuxppc-dev'
-> > Subject: Re: latest linux git doesn't compile ucc_geth_phy.c 
-> > and ucc_geth.c
-> > 
-> > 
-> > On Dec 18, 2006, at 9:56 AM, Timur Tabi wrote:
-> > 
-> > > Joakim Tjernlund wrote:
-> > >
-> > >>> I've tested these on an 8360EMDS, and Kumar has reviewed and
-> > >>> signed off on the
-> > >>> code, so I think they're good.  Please let me know if 
-> they're not.
-> > >>
-> > >> Has these been sent upstream yet? Didn't se them in 
-> linux tree as  
-> > >> of now.
-> > >
-> > > I posted the patches to the linuxppc-dev and netdev mailing 
-> > lists.   
-> > > At this
-> > > point, these patches are at the whim of Paul M. and/or 
-> Jeff G. for  
-> > > merging.
-> > > Since the holidays are upon us, I'm not surprised that 
-> things are  
-> > > taking longer
-> > > than normal.
-> > 
-> > There really at the whim of Jeff G. since they are 
-> completely driver  
-> > related.  I pinged Jeff G. to hopefully pick them up and push them  
-> > for 2.6.20.
-> 
-> I do think these has been forgotten.
-> 
->  Jocke
+> Or just write "sc 1", everyone should have new enough binutils
+> by now.
 
-These are still not in linus tree. Tried to ping Jeff/netdev a couple of times
-but nothing yet. Can't you push these via Paulus tree instead as Jeff seems to
-be doing other things?
+The option to 'sc' came in binutils-2.17, but I from what I understand, debian
+stable doesn't have it, so I used a similar construction for ps3.
 
-The actual patches are here:
-http://ozlabs.org/pipermail/linuxppc-dev/2006-December/029247.html
-http://ozlabs.org/pipermail/linuxppc-dev/2006-December/029248.html
-
- Jocke
+-Geoff
