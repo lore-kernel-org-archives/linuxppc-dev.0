@@ -1,18 +1,15 @@
-Return-Path: <amodra@bigpond.net.au>
-Received: from omta04sl.mx.bigpond.com (omta04sl.mx.bigpond.com
-	[144.140.93.156]) by ozlabs.org (Postfix) with ESMTP id 99C14DDE16
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 10:09:20 +1100 (EST)
-Date: Sun, 14 Jan 2007 09:39:18 +1030
-From: Alan Modra <amodra@bigpond.net.au>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17833.28593.835578.560151@cargo.ozlabs.ibm.com>
+Date: Sun, 14 Jan 2007 10:48:01 +1100
+From: Paul Mackerras <paulus@samba.org>
 To: yuraxa <ygeorgie@gmail.com>
 Subject: Re: ppc inline asm syntax
-Message-ID: <20070113230918.GA20583@bubble.grove.modra.org>
+In-Reply-To: <7cc53cfa0701131028y42ed2b9age0fccf29c35fd708@mail.gmail.com>
 References: <7cc53cfa0701130341x2dfdc8f1s9cb70ffa741fafb6@mail.gmail.com>
 	<je64bb6p2j.fsf@sykes.suse.de>
 	<7cc53cfa0701131028y42ed2b9age0fccf29c35fd708@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7cc53cfa0701131028y42ed2b9age0fccf29c35fd708@mail.gmail.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,12 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jan 13, 2007 at 07:28:39PM +0100, yuraxa wrote:
+yuraxa writes:
+
+> Thanks a'lot, It helps! But may be you'll be so graceful to explain
+> more precisely?
+> I don't quite understand how the final string will look like...
+> For 'U' operand modifier the comment is:
+> /* Print `u' if this has an auto-increment or auto-decrement.  */
 > But for 'X' operand modifier there is no comment at all.
 
-Are you afraid to look at code?  Three lines!  It prints an 'x' if the
-operand is an indexed address.
+'X' turns into "x" if gcc wants to use indexed addressing mode, or
+nothing if gcc wants to use base + offset mode.
 
--- 
-Alan Modra
-IBM OzLabs - Linux Technology Centre
+I agree that the gcc documentation of the details of inline assembly
+for each specific architecture is woeful.  I have found it useful in
+the past to get hold of the gcc source code and look in rs6000.md for
+examples of what can be done.
+
+Paul.
