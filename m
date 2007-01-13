@@ -1,18 +1,15 @@
-Return-Path: <rajeshn@vrindatech.com>
-Received: from xsmtp05.mail2web.com (xsmtp05.mail2web.com [168.144.250.245])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1E794DDDF7
+Return-Path: <boardbringup@hotmail.com>
+Received: from bay0-omc3-s5.bay0.hotmail.com (bay0-omc3-s5.bay0.hotmail.com
+	[65.54.246.205]) by ozlabs.org (Postfix) with ESMTP id A1CE3DDE0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 13 Jan 2007 19:34:12 +1100 (EST)
-Message-ID: <380-2200716136398785@M2W011.mail2web.com>
-From: "rajeshn@vrindatech.com" <rajeshn@vrindatech.com>
+	Sun, 14 Jan 2007 04:51:28 +1100 (EST)
+Message-ID: <BAY112-F80277342503476CD046CFC0B70@phx.gbl>
+From: "Suresh Chandra Mannava" <boardbringup@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
-Date: Sat, 13 Jan 2007 01:39:08 -0500
-MIME-Version: 1.0
-Content-type: text/plain; charset=iso-8859-1
-Subject: Need refrence software for Booting board of MPC8540
-Reply-To: rajeshn@vrindatech.com
+Subject: kernel porting problem for new board 
+Date: Sat, 13 Jan 2007 23:09:22 +0530
+Mime-Version: 1.0
+Content-Type: multipart/mixed; boundary="----=_NextPart_000_237_65c0_6e9c"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,20 +20,129 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear All,
-This is Rajesh from VRINDATECHNOLOGIES, I have a quiery where i am
-expecting a reply from all of you in this group, Presently we are trying t=
-o
-build a board on MPC 8540 processor, And can you please send me some
-Refrence Drivers where and how to initialize my board ,
-And would be very thankfull if you could reply soon please,
-Thanks and regards
-Rajesh N
-9885203007
-Vrinda Technologies,
-Hyderabad
+This is a multi-part message in MIME format.
+
+------=_NextPart_000_237_65c0_6e9c
+Content-Type: text/plain; format=flowed
+
+Hi,
+
+I am working on porting Linux 2.6.19 on a custom board with MPC7410 and
+CPC700 system controller.
+I am using u-boot-1.1.6 for booting Linux. I found IBM spruce is also having
+CPC700, I followed spruce related files and made modifications accordingly.
+Board supports external 2MB L2 cache and 128MB SDRAM.
+
+I am encountering kernel panic(serial console messages attached with this
+mail). I traced the code by putting printk and found that kernel is crashing
+after executing all functions in start_kernel.
+Is this problem related to L2 cache?
+I didn't enabled L2 cache in Linux as well as in u-boot.
+I request you to provide me some pointers and suggestions for finding out
+this problem. I am going to try with L2 cache enabled.
+
+Thanks a lot.
+
+Suresh Chandra Mannava
+
+_________________________________________________________________
+Spice up your IM conversations. New, colorful and animated emoticons. Get 
+chatting! http://server1.msn.co.in/SP05/emoticons/
+
+------=_NextPart_000_237_65c0_6e9c
+Content-Type: text/plain; name="CAPTURE.TXT"; format=flowed
+Content-Transfer-Encoding: 8bit
+Content-Disposition: attachment; filename="CAPTURE.TXT"
+
+bootm 2000000
+## Booting image at 02000000 ...
+   Image Name:   Linux-2.6.19
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    705067 Bytes = 688.5 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Current stack ends at 0x07FB4CF0 => set upper limit to 0x00800000
+## cmdline at 0x007FFF00 ... 0x007FFF13
+memstart    = 0x00000000
+memsize     = 0x08000000
+flashstart  = 0xFFE00000
+flashsize   = 0x00200000
+flashoffset = 0x00000000
+sramstart   = 0x00000000
+sramsize    = 0x00000000
+bootflags   = 0x00000001
+intfreq     =    363 MHz
+busfreq     =     66 MHz
+ethaddr     = 64:36:00:00:00:01
+eth1addr    = 64:36:00:00:00:02
+IP addr     = 192.168.0.100
+baudrate    =  57600 bps
+No initrd
+## Transferring control to Linux (at address 00000000) ...
+Total memory = 128MB; using 256kB for hash table (at c0180000)
+Linux version 2.6.19 (suresh@mannava) (gcc version 4.0.0 (DENX ELDK 4.0 
+4.0.0)) #18 Thu Jan 11 10:34:36 IST 2007
+System Identification: Cornet CSVG4 Linux Boot
+Zone PFN ranges:
+  DMA             0 ->    32768
+  Normal      32768 ->    32768
+early_node_map[1] active PFN ranges
+    0:        0 ->    32768
+Built 1 zonelists.  Total pages: 32512
+Kernel command line: console=ttyS0,57600
+PID hash table entries: 512 (order: 9, 2048 bytes)
+Console: colour dummy device 80x25
+Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Memory: 128128k available (1068k kernel code, 336k data, 92k init, 0k 
+highmem)
+Mount-cache hash table entries: 512
+Oops: kernel access of bad area, sig: 11 [#1]
+NIP: C0011ADC LR: C0011B78 CTR: 00000005
+REGS: c02edfb0 TRAP: 0300   Not tainted  (2.6.19)
+MSR: 00001032 <ME,IR,DR>  CR: 24028022  XER: 20000000
+DAR: 0000007D, DSISR: 42000000
+TASK = c02e9b38[0] '' THREAD: 02dc5915
+GPR00: 00200200 C02EE060 C02E9B38 C02E9B38 C0169DB4 00000000 C02EFFFC 
+00000044
+GPR08: 01C09000 00000078 C02E9B60 0000007D 00000000 04008C00 08003C00 
+007FFF13
+GPR16: 00000001 C01684C8 C0170000 C0170000 00000000 00000000 00880381 
+C0169980
+GPR24: C02EE000 C0169980 C02E9BF4 C02E9C48 00000000 C02E9B38 C02E9B38 
+C00CE818
+NIP [C0011ADC] dequeue_task+0x20/0x84
+LR [C0011B78] deactivate_task+0x38/0x54
+Call Trace:
+Instruction dump:
+90830028 91690004 912b0000 4e800020 81240000 39430028 3c000020 3929ffff
+60000200 91240000 816a0004 81230028 <912b0000> 91690004 39240018 900a0004
+Oops: kernel access of bad area, sig: 11 [#2]
+NIP: C0012934 LR: C00128B0 CTR: 00000000
+REGS: c02edd90 TRAP: 0600   Not tainted  (2.6.19)
+MSR: 00001032 <ME,IR,DR>  CR: 44028024  XER: 00000000
+DAR: 02DC593D, DSISR: 00000140
+TASK = c02e9b38[0] '' THREAD: 02dc5915
+GPR00: 02DC593D C02EDE40 C02E9B38 00000000 19EED540 00000001 C0169540 
+00000000
+GPR08: 08F9C6A0 00000008 00000000 02DC5915 08F9C6A0 04008C00 08003C00 
+007FFF13
+GPR16: 00000001 C01684C8 C0170000 C0170000 00000000 C0170000 C01672C0 
+00000000
+GPR24: C0160000 C0170000 C0160000 C02EDEC0 C0170000 C0169DB4 C0169980 
+C02E9B38
+NIP [C0012934] scheduler_tick+0x9c/0x350
+LR [C00128B0] scheduler_tick+0x18/0x350
+Call Trace:
+Instruction dump:
+801e0024 907e0018 7f9f0000 909e001c 419e0030 83bf0030 801e002c 7f9d0000
+419e0048 817f0004 39200008 380b0028 <7d400028> 7d4a4b78 7d40012d 40a2fff4
+Badness in do_exit at kernel/exit.c:859
+Call Trace:
+Kernel panic - not syncing: Aiee, killing interrupt handler!
+<0>Rebooting in 180 seconds..
 
 
---------------------------------------------------------------------
-mail2web - Check your email from the web at
-http://mail2web=2Ecom/ =2E
+------=_NextPart_000_237_65c0_6e9c--
