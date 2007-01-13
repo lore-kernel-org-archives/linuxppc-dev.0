@@ -1,16 +1,14 @@
-Return-Path: <ygeorgie@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 413EADDDFF
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 22:41:42 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so918785ugf
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 03:41:40 -0800 (PST)
-Message-ID: <7cc53cfa0701130341x2dfdc8f1s9cb70ffa741fafb6@mail.gmail.com>
-Date: Sat, 13 Jan 2007 12:41:39 +0100
-From: yuraxa <ygeorgie@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: ppc inline asm syntax
+Return-Path: <anton@ozlabs.org>
+Date: Sat, 13 Jan 2007 23:46:38 +1100
+From: Anton Blanchard <anton@samba.org>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Subject: Re: [PATCH 7/19] powerpc: interfaces to the hypervisor of Celleb
+Message-ID: <20070113124638.GA13493@krispykreme>
+References: <200701120100.l0C10ktW025821@toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200701120100.l0C10ktW025821@toshiba.co.jp>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,20 +18,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi, i'm writing some inline assembly for ppc.
-Grepping linux src code for examples i found syntax that i can't
-understand, but as i can see it's frequently used.  For example:
 
-__asm__ __volatile__("lwz%U1%X1 %0,%1;\n"
-                              "twi 0,%0,0;\n"
-                              "isync" : "=r" (ret) : "m" (*addr));
+Hi,
 
-Can you explain me please  howto interpret 'lwz%U1%X1'  format string
-in the assembler template line? Some other of them are:
+Just a few suggestions.
 
-'stw%U0%X0'   etc...
+> +#define	HCALL_MEDIUM	or 	2,2,2
 
-I can't find any help on this topic on the web.
+Doesnt look like this is used.
 
-Thanks a'lot,
-Yury.
+> +#define	HVSC	.long	0x44000022
+
+Could you pick this up from the define in include/asm-powerpc instead?
+
+> +#define	LOAD_CONST64(r, const)					\
+> +	lis	r, ((const)>>48)&0xFFFF;			\
+> +	ori	r, r, ((const)>>32)&0xFFFF;			\
+> +	rldicr	r, r, 32, 31;					\
+> +	oris	r, r, ((const)>>16)&0xFFFF;			\
+> +	ori	r, r, ((const)>>0)&0xFFFF
+
+It doesnt look like this is used either.
+
+Anton
