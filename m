@@ -1,20 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 67AE8DDDF3
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 02:52:29 +1100 (EST)
-In-Reply-To: <20070113124638.GA13493@krispykreme>
-References: <200701120100.l0C10ktW025821@toshiba.co.jp>
-	<20070113124638.GA13493@krispykreme>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <06ebc2a1b06cafb9aaa3bcf8407db1fe@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 7/19] powerpc: interfaces to the hypervisor of Celleb
-Date: Sat, 13 Jan 2007 16:53:04 +0100
-To: Anton Blanchard <anton@samba.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <joakim.tjernlund@transmode.se>
+Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
+	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 20A6DDDE07
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 03:51:19 +1100 (EST)
+From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+To: "'Kumar Gala'" <galak@kernel.crashing.org>
+Subject: RE: latest linux git doesn't compile ucc_geth_phy.c and ucc_geth.c
+Date: Sat, 13 Jan 2007 17:51:13 +0100
+Message-ID: <020e01c73733$0932c350$020120ac@Jocke>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <00a601c730cc$2c3aef70$1e67a8c0@Jocke>
+Cc: 'linuxppc-dev' <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +21,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> +#define	HVSC	.long	0x44000022
->
-> Could you pick this up from the define in include/asm-powerpc instead?
+> -----Original Message-----
+> From: 
+> linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozlabs.org 
+> [mailto:linuxppc-dev-bounces+joakim.tjernlund=transmode.se@ozl
+> abs.org] On Behalf Of Joakim Tjernlund
+> Sent: den 5 januari 2007 14:20
+> To: 'Kumar Gala'
+> Cc: 'linuxppc-dev'
+> Subject: RE: latest linux git doesn't compile ucc_geth_phy.c 
+> and ucc_geth.c
+> 
+> > -----Original Message-----
+> > From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+> > Sent: den 18 december 2006 19:44
+> > To: Timur Tabi
+> > Cc: Joakim Tjernlund; 'linuxppc-dev'
+> > Subject: Re: latest linux git doesn't compile ucc_geth_phy.c 
+> > and ucc_geth.c
+> > 
+> > 
+> > On Dec 18, 2006, at 9:56 AM, Timur Tabi wrote:
+> > 
+> > > Joakim Tjernlund wrote:
+> > >
+> > >>> I've tested these on an 8360EMDS, and Kumar has reviewed and
+> > >>> signed off on the
+> > >>> code, so I think they're good.  Please let me know if 
+> they're not.
+> > >>
+> > >> Has these been sent upstream yet? Didn't se them in 
+> linux tree as  
+> > >> of now.
+> > >
+> > > I posted the patches to the linuxppc-dev and netdev mailing 
+> > lists.   
+> > > At this
+> > > point, these patches are at the whim of Paul M. and/or 
+> Jeff G. for  
+> > > merging.
+> > > Since the holidays are upon us, I'm not surprised that 
+> things are  
+> > > taking longer
+> > > than normal.
+> > 
+> > There really at the whim of Jeff G. since they are 
+> completely driver  
+> > related.  I pinged Jeff G. to hopefully pick them up and push them  
+> > for 2.6.20.
+> 
+> I do think these has been forgotten.
+> 
+>  Jocke
 
-Or just write "sc 1", everyone should have new enough binutils
-by now.
+These are still not in linus tree. Tried to ping Jeff/netdev a couple of times
+but nothing yet. Can't you push these via Paulus tree instead as Jeff seems to
+be doing other things?
 
+The actual patches are here:
+http://ozlabs.org/pipermail/linuxppc-dev/2006-December/029247.html
+http://ozlabs.org/pipermail/linuxppc-dev/2006-December/029248.html
 
-Segher
+ Jocke
