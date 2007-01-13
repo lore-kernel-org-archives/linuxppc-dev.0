@@ -1,22 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 73463DDE49
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 07:56:36 +1100 (EST)
-In-Reply-To: <45A91C92.4030504@am.sony.com>
-References: <200701120100.l0C10ktW025821@toshiba.co.jp>	<20070113124638.GA13493@krispykreme>
-	<06ebc2a1b06cafb9aaa3bcf8407db1fe@kernel.crashing.org>
-	<45A91C92.4030504@am.sony.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <87ad2655e255adfd416e6b4f5f7dd0ac@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 7/19] powerpc: interfaces to the hypervisor of Celleb
-Date: Sat, 13 Jan 2007 21:57:04 +0100
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Anton Blanchard <anton@samba.org>
+Return-Path: <amodra@bigpond.net.au>
+Received: from omta04sl.mx.bigpond.com (omta04sl.mx.bigpond.com
+	[144.140.93.156]) by ozlabs.org (Postfix) with ESMTP id 99C14DDE16
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 10:09:20 +1100 (EST)
+Date: Sun, 14 Jan 2007 09:39:18 +1030
+From: Alan Modra <amodra@bigpond.net.au>
+To: yuraxa <ygeorgie@gmail.com>
+Subject: Re: ppc inline asm syntax
+Message-ID: <20070113230918.GA20583@bubble.grove.modra.org>
+References: <7cc53cfa0701130341x2dfdc8f1s9cb70ffa741fafb6@mail.gmail.com>
+	<je64bb6p2j.fsf@sykes.suse.de>
+	<7cc53cfa0701131028y42ed2b9age0fccf29c35fd708@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <7cc53cfa0701131028y42ed2b9age0fccf29c35fd708@mail.gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Or just write "sc 1", everyone should have new enough binutils
->> by now.
->
-> The option to 'sc' came in binutils-2.17, but I from what I 
-> understand, debian
-> stable doesn't have it, so I used a similar construction for ps3.
+On Sat, Jan 13, 2007 at 07:28:39PM +0100, yuraxa wrote:
+> But for 'X' operand modifier there is no comment at all.
 
-Oh sorry, I thought it was in 2.16 for a long time already.  If
-Debian doesn't have it, well sigh, let's use .long 0x44000022
-for a bit longer :-(
+Are you afraid to look at code?  Three lines!  It prints an 'x' if the
+operand is an indexed address.
 
-
-Segher
+-- 
+Alan Modra
+IBM OzLabs - Linux Technology Centre
