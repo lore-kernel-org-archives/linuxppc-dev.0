@@ -3,16 +3,13 @@ Received: from localhost.localdomain (cdma-41-245.msk.skylink.ru
 	[83.217.41.245])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6B663DDFD5
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 12:12:38 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id B4B93DDEC5
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 12:12:48 +1100 (EST)
 To: Paul Mackerras <paulus@samba.org>
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH 4/5] [POWERPC] Fix kernel build errors for mpc8272ads and
-	mpc8560ads
-Date: Sat, 13 Jan 2007 03:42:20 +0300
-Message-ID: <20070113004220.1224.80646.stgit@localhost.localdomain>
-In-Reply-To: <20070113004150.1224.58427.stgit@localhost.localdomain>
-References: <20070113004150.1224.58427.stgit@localhost.localdomain>
+Subject: [PATCH 1/5] [POWERPC] cpm2: CPM2 interrupt controller fix
+Date: Sat, 13 Jan 2007 03:41:52 +0300
+Message-ID: <20070113004150.1224.58427.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
@@ -26,167 +23,493 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Recent update of asm-powerpc/io.h caused cpm-related stuff to break in the
-current kernel. Current patch fixes it, as well as other inconsistencies
-expressed, that do not permit targets from working properly:
- 
-- Updated dts with a chosen node with interrupt controller,
-- fixed messed device IDs among CPM2 SoC devices,
-- corrected odd header name and fixed type in defines,
-- Added 82xx subdir to the powerpc/platforms Makefile, new
-  solely-powerpc header file for 8260 family (was using one from arch/ppc, this
-  one cleaned up from the extra stuff).
+This contains important fixes for the CPM2 PIC code. Eliminated
+CPM_IRQ_OFFSET, pulling the respective interrupt numbers from the interrupt
+mapping. Updated devicetree files to reflect that. Changed direct
+IC-related IO accesses to the IO accessors. Fixed all the sense values to
+keep coherency with ipic. In the current code, CPM2 stuff will have no IRQs
+and hence could be hardly usable.
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 ---
 
- arch/powerpc/platforms/82xx/mpc82xx.c     |    2 +-
- arch/powerpc/platforms/82xx/mpc82xx_ads.c |    2 +-
- arch/powerpc/platforms/82xx/pq2ads.h      |    5 +++--
- arch/powerpc/platforms/Makefile           |    1 +
- drivers/net/fs_enet/fs_enet.h             |    1 +
- drivers/serial/cpm_uart/cpm_uart_cpm1.h   |    3 ---
- drivers/serial/cpm_uart/cpm_uart_cpm2.h   |    3 ---
- include/asm-powerpc/fs_pd.h               |    6 ++++++
- include/asm-powerpc/io.h                  |    6 ++++++
- 9 files changed, 19 insertions(+), 10 deletions(-)
+ arch/powerpc/boot/dts/mpc8272ads.dts |   47 +++++++-----
+ arch/powerpc/boot/dts/mpc8560ads.dts |    8 +-
+ arch/powerpc/sysdev/cpm2_pic.c       |  138 +++++++++++++++++++---------------
+ arch/powerpc/sysdev/cpm2_pic.h       |    9 ++
+ include/asm-powerpc/mpc8260.h        |   32 ++++++++
+ 5 files changed, 149 insertions(+), 85 deletions(-)
 
-diff --git a/arch/powerpc/platforms/82xx/mpc82xx.c b/arch/powerpc/platforms/82xx/mpc82xx.c
-index 0f5b30d..74e7892 100644
---- a/arch/powerpc/platforms/82xx/mpc82xx.c
-+++ b/arch/powerpc/platforms/82xx/mpc82xx.c
-@@ -50,7 +50,7 @@
- #include <sysdev/fsl_soc.h>
- #include <sysdev/cpm2_pic.h>
+diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+index 34efdd0..286638e 100644
+--- a/arch/powerpc/boot/dts/mpc8272ads.dts
++++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+@@ -53,6 +53,13 @@
+                reg = <00000000 4000000 f4500000 00000020>;
+        };
  
--#include "pq2ads_pd.h"
-+#include "pq2ads.h"
++       chosen {
++               name = "chosen";
++               linux,platform = <0>;
++               interrupt-controller = <10c00>;
++               linux,phandle = <400>;
++       };
++
+        soc8272@f0000000 {
+                #address-cells = <1>;
+                #size-cells = <1>;
+@@ -71,7 +78,7 @@
+                        ethernet-phy@0 {
+                                linux,phandle = <2452000>;
+                                interrupt-parent = <10c00>;
+-                               interrupts = <19 1>;
++                               interrupts = <17 4>;
+                                reg = <0>;
+                                bitbang = [ 12 12 13 02 02 01 ];
+                                device_type = "ethernet-phy";
+@@ -79,7 +86,7 @@
+                        ethernet-phy@1 {
+                                linux,phandle = <2452001>;
+                                interrupt-parent = <10c00>;
+-                               interrupts = <19 1>;
++                               interrupts = <17 4>;
+                                bitbang = [ 12 12 13 02 02 01 ];
+                                reg = <3>;
+                                device_type = "ethernet-phy";
+@@ -90,7 +97,7 @@
+                        #address-cells = <1>;
+                        #size-cells = <0>;
+                        device_type = "network";
+-                       device-id = <2>;
++                       device-id = <1>;
+                        compatible = "fs_enet";
+                        model = "FCC";
+                        reg = <11300 20 8400 100 11380 30>;
+@@ -104,7 +111,7 @@
  
- static int __init get_freq(char *name, unsigned long *val)
- {
-diff --git a/arch/powerpc/platforms/82xx/mpc82xx_ads.c b/arch/powerpc/platforms/82xx/mpc82xx_ads.c
-index ea880f1..7334c1a 100644
---- a/arch/powerpc/platforms/82xx/mpc82xx_ads.c
-+++ b/arch/powerpc/platforms/82xx/mpc82xx_ads.c
-@@ -51,7 +51,7 @@
- #include <sysdev/fsl_soc.h>
- #include <../sysdev/cpm2_pic.h>
+                ethernet@25000 {
+                        device_type = "network";
+-                       device-id = <3>;
++                       device-id = <2>;
+                        compatible = "fs_enet";
+                        model = "FCC";
+                        reg = <11320 20 8500 100 113b0 30>;
+@@ -133,7 +140,7 @@
+                                device_type = "serial";
+                                compatible = "cpm_uart";
+                                model = "SCC";
+-                               device-id = <2>;
++                               device-id = <1>;
+                                reg = <11a00 20 8000 100>;
+                                current-speed = <1c200>;
+                                interrupts = <28 2>;
+@@ -147,7 +154,7 @@
+                                device_type = "serial";
+                                compatible = "cpm_uart";
+                                model = "SCC";
+-                               device-id = <5>;
++                               device-id = <4>;
+                                reg = <11a60 20 8300 100>;
+                                current-speed = <1c200>;
+                                interrupts = <2b 2>;
+@@ -181,24 +188,24 @@
+                        interrupt-map = <
  
--#include "pq2ads_pd.h"
-+#include "pq2ads.h"
+                                        /* IDSEL 0x16 */
+-                                        b000 0 0 1 f8200000 40 0
+-                                        b000 0 0 2 f8200000 41 0
+-                                        b000 0 0 3 f8200000 42 0
+-                                        b000 0 0 4 f8200000 43 0
++                                        b000 0 0 1 f8200000 40 8
++                                        b000 0 0 2 f8200000 41 8
++                                        b000 0 0 3 f8200000 42 8
++                                        b000 0 0 4 f8200000 43 8
  
- #ifdef CONFIG_PCI
- static uint pci_clk_frq;
-diff --git a/arch/powerpc/platforms/82xx/pq2ads.h b/arch/powerpc/platforms/82xx/pq2ads.h
-index fb2f92b..5b5cca6 100644
---- a/arch/powerpc/platforms/82xx/pq2ads.h
-+++ b/arch/powerpc/platforms/82xx/pq2ads.h
-@@ -22,6 +22,7 @@
- #ifndef __MACH_ADS8260_DEFS
- #define __MACH_ADS8260_DEFS
+                                        /* IDSEL 0x17 */
+-                                        b800 0 0 1 f8200000 43 0
+-                                        b800 0 0 2 f8200000 40 0
+-                                        b800 0 0 3 f8200000 41 0
+-                                        b800 0 0 4 f8200000 42 0
++                                        b800 0 0 1 f8200000 43 8
++                                        b800 0 0 2 f8200000 40 8
++                                        b800 0 0 3 f8200000 41 8
++                                        b800 0 0 4 f8200000 42 8
  
-+#include <linux/seq_file.h>
- #include <asm/ppcboot.h>
+                                        /* IDSEL 0x18 */
+-                                        c000 0 0 1 f8200000 42 0
+-                                        c000 0 0 2 f8200000 43 0
+-                                        c000 0 0 3 f8200000 40 0
+-                                        c000 0 0 4 f8200000 41 0>;
++                                        c000 0 0 1 f8200000 42 8
++                                        c000 0 0 2 f8200000 43 8
++                                        c000 0 0 3 f8200000 40 8
++                                        c000 0 0 4 f8200000 41 8>;
+                        interrupt-parent = <10c00>;
+-                       interrupts = <14 3>;
++                       interrupts = <14 8>;
+                        bus-range = <0 0>;
+                        ranges = <02000000 0 80000000 80000000 0 40000000
+                                  01000000 0 00000000 f6000000 0 02000000>;
+@@ -210,7 +217,7 @@
+                        model = "SEC2";
+                        compatible = "talitos";
+                        reg = <30000 10000>;
+-                       interrupts = <b 0>;
++                       interrupts = <b 2>;
+                        interrupt-parent = <10c00>;
+                        num-channels = <4>;
+                        channel-fifo-len = <18>;
+diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
+index 2b16848..bec1d68 100644
+--- a/arch/powerpc/boot/dts/mpc8560ads.dts
++++ b/arch/powerpc/boot/dts/mpc8560ads.dts
+@@ -250,7 +250,7 @@
+ 				rx-clock = <1>;
+ 				tx-clock = <1>;
+ 				current-speed = <1c200>;
+-				interrupts = <64 1>;
++				interrupts = <28 8>;
+ 				interrupt-parent = <90c00>;
+ 			};
  
- /* For our show_cpuinfo hooks. */
-@@ -46,12 +47,12 @@
- #define BCSR1_RS232_EN1		((uint)0x02000000)      /* 0 ==enable */
- #define BCSR1_RS232_EN2		((uint)0x01000000)      /* 0 ==enable */
- #define BCSR3_FETHIEN2		((uint)0x10000000)      /* 0 == enable*/
--#define BCSR3_FETH2_RS		((uint)0x80000000)      /* 0 == reset */
-+#define BCSR3_FETH2_RST		((uint)0x80000000)      /* 0 == reset */
+@@ -264,7 +264,7 @@
+ 				rx-clock = <2>;
+ 				tx-clock = <2>;
+ 				current-speed = <1c200>;
+-				interrupts = <65 1>;
++				interrupts = <29 8>;
+ 				interrupt-parent = <90c00>;
+ 			};
  
- /* cpm serial driver works with constants below */
- 
- #define SIU_INT_SMC1		((uint)0x04+CPM_IRQ_OFFSET)
--#define SIU_INT_SMC2i		((uint)0x05+CPM_IRQ_OFFSET)
-+#define SIU_INT_SMC2		((uint)0x05+CPM_IRQ_OFFSET)
- #define SIU_INT_SCC1		((uint)0x28+CPM_IRQ_OFFSET)
- #define SIU_INT_SCC2		((uint)0x29+CPM_IRQ_OFFSET)
- #define SIU_INT_SCC3		((uint)0x2a+CPM_IRQ_OFFSET)
-diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makefile
-index 507d1b9..f750212 100644
---- a/arch/powerpc/platforms/Makefile
-+++ b/arch/powerpc/platforms/Makefile
-@@ -8,6 +8,7 @@ endif
- obj-$(CONFIG_PPC_MPC52xx)	+= 52xx/
- obj-$(CONFIG_PPC_CHRP)		+= chrp/
- obj-$(CONFIG_4xx)		+= 4xx/
-+obj-$(CONFIG_PPC_82xx)		+= 82xx/
- obj-$(CONFIG_PPC_83xx)		+= 83xx/
- obj-$(CONFIG_PPC_85xx)		+= 85xx/
- obj-$(CONFIG_PPC_86xx)		+= 86xx/
-diff --git a/drivers/net/fs_enet/fs_enet.h b/drivers/net/fs_enet/fs_enet.h
-index 92590d8..569be22 100644
---- a/drivers/net/fs_enet/fs_enet.h
-+++ b/drivers/net/fs_enet/fs_enet.h
-@@ -9,6 +9,7 @@
- #include <linux/dma-mapping.h>
- 
- #include <linux/fs_enet_pd.h>
+@@ -278,7 +278,7 @@
+ 				clock-setup = <ff00ffff 250000>;
+ 				rx-clock = <15>;
+ 				tx-clock = <16>;
+-				interrupts = <5d 1>;
++				interrupts = <21 8>;
+ 				interrupt-parent = <90c00>;
+ 				phy-handle = <2452002>;
+ 			};
+@@ -293,7 +293,7 @@
+ 				clock-setup = <ffff00ff 3700>;
+ 				rx-clock = <17>;
+ 				tx-clock = <18>;
+-				interrupts = <5e 1>;
++				interrupts = <22 8>;
+ 				interrupt-parent = <90c00>;
+ 				phy-handle = <2452003>;
+ 			};
+diff --git a/arch/powerpc/sysdev/cpm2_pic.c b/arch/powerpc/sysdev/cpm2_pic.c
+index 767ee66..e082167 100644
+--- a/arch/powerpc/sysdev/cpm2_pic.c
++++ b/arch/powerpc/sysdev/cpm2_pic.c
+@@ -36,6 +36,7 @@
+ #include <asm/mpc8260.h>
+ #include <asm/io.h>
+ #include <asm/prom.h>
 +#include <asm/fs_pd.h>
  
- #ifdef CONFIG_CPM1
- #include <asm/commproc.h>
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.h b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-index 5eb49ea..a99e45e 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
-@@ -20,9 +20,6 @@
- #define SCC3_IRQ	(CPM_IRQ_OFFSET + CPMVEC_SCC3)
- #define SCC4_IRQ	(CPM_IRQ_OFFSET + CPMVEC_SCC4)
+ #include "cpm2_pic.h"
  
--/* the CPM address */
--#define CPM_ADDR	IMAP_ADDR
--
- static inline void cpm_set_brg(int brg, int baud)
- {
- 	cpm_setbrg(brg, baud);
-diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.h b/drivers/serial/cpm_uart/cpm_uart_cpm2.h
-index 4b77911..1b3219f 100644
---- a/drivers/serial/cpm_uart/cpm_uart_cpm2.h
-+++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.h
-@@ -20,9 +20,6 @@
- #define SCC3_IRQ	SIU_INT_SCC3
- #define SCC4_IRQ	SIU_INT_SCC4
+@@ -68,68 +69,55 @@ static const u_char irq_to_siubit[] = {
+ 	24, 25, 26, 27, 28, 29, 30, 31,
+ };
  
--/* the CPM address */
--#define CPM_ADDR	CPM_MAP_ADDR
--
- static inline void cpm_set_brg(int brg, int baud)
+-static void cpm2_mask_irq(unsigned int irq_nr)
++static void cpm2_mask_irq(unsigned int irq)
  {
- 	cpm_setbrg(brg, baud);
-diff --git a/include/asm-powerpc/fs_pd.h b/include/asm-powerpc/fs_pd.h
-index 3d0e819..2ba51b9 100644
---- a/include/asm-powerpc/fs_pd.h
-+++ b/include/asm-powerpc/fs_pd.h
-@@ -25,6 +25,12 @@ static inline int uart_clock(void)
-         return ppc_proc_freq;
+ 	int	bit, word;
+-	volatile uint	*simr;
+-
+-	irq_nr -= CPM_IRQ_OFFSET;
++	unsigned int irq_nr = (unsigned int)irq_map[irq].hwirq;
+ 
+ 	bit = irq_to_siubit[irq_nr];
+ 	word = irq_to_siureg[irq_nr];
+ 
+-	simr = &(cpm2_intctl->ic_simrh);
+ 	ppc_cached_irq_mask[word] &= ~(1 << bit);
+-	simr[word] = ppc_cached_irq_mask[word];
++	out_be32(&cpm2_intctl->ic_simrh + word, ppc_cached_irq_mask[word]);
  }
  
-+#if defined(CONFIG_8260)
-+#include <asm/mpc8260.h>
-+#elif defined(CONFIG_85xx)
-+#include <asm/mpc85xx.h>
+-static void cpm2_unmask_irq(unsigned int irq_nr)
++static void cpm2_unmask_irq(unsigned int irq)
+ {
+ 	int	bit, word;
+-	volatile uint	*simr;
+-
+-	irq_nr -= CPM_IRQ_OFFSET;
++	unsigned int irq_nr = (unsigned int)irq_map[irq].hwirq;
+ 
+ 	bit = irq_to_siubit[irq_nr];
+ 	word = irq_to_siureg[irq_nr];
+ 
+-	simr = &(cpm2_intctl->ic_simrh);
+ 	ppc_cached_irq_mask[word] |= 1 << bit;
+-	simr[word] = ppc_cached_irq_mask[word];
++	out_be32(&cpm2_intctl->ic_simrh + word, ppc_cached_irq_mask[word]);
+ }
+ 
+-static void cpm2_mask_and_ack(unsigned int irq_nr)
++static void cpm2_ack(unsigned int irq)
+ {
+ 	int	bit, word;
+-	volatile uint	*simr, *sipnr;
+-
+-	irq_nr -= CPM_IRQ_OFFSET;
++	unsigned int irq_nr = (unsigned int)irq_map[irq].hwirq;
+ 
+ 	bit = irq_to_siubit[irq_nr];
+ 	word = irq_to_siureg[irq_nr];
+ 
+-	simr = &(cpm2_intctl->ic_simrh);
+-	sipnr = &(cpm2_intctl->ic_sipnrh);
+-	ppc_cached_irq_mask[word] &= ~(1 << bit);
+-	simr[word] = ppc_cached_irq_mask[word];
+-	sipnr[word] = 1 << bit;
++	out_be32(&cpm2_intctl->ic_sipnrh + word, 1 << bit);
+ }
+ 
+-static void cpm2_end_irq(unsigned int irq_nr)
++static void cpm2_end_irq(unsigned int irq)
+ {
+ 	int	bit, word;
+-	volatile uint	*simr;
++	unsigned int irq_nr = (unsigned int)irq_map[irq].hwirq;
+ 
+ 	if (!(irq_desc[irq_nr].status & (IRQ_DISABLED|IRQ_INPROGRESS))
+ 			&& irq_desc[irq_nr].action) {
+ 
+-		irq_nr -= CPM_IRQ_OFFSET;
+ 		bit = irq_to_siubit[irq_nr];
+ 		word = irq_to_siureg[irq_nr];
+ 
+-		simr = &(cpm2_intctl->ic_simrh);
+ 		ppc_cached_irq_mask[word] |= 1 << bit;
+-		simr[word] = ppc_cached_irq_mask[word];
++		out_be32(&cpm2_intctl->ic_simrh + word, ppc_cached_irq_mask[word]);
++
+ 		/*
+ 		 * Work around large numbers of spurious IRQs on PowerPC 82xx
+ 		 * systems.
+@@ -138,13 +126,59 @@ static void cpm2_end_irq(unsigned int irq_nr)
+ 	}
+ }
+ 
++static int cpm2_set_irq_type(unsigned int virq, unsigned int flow_type)
++{
++	unsigned int src = (unsigned int)irq_map[virq].hwirq;
++	struct irq_desc *desc = get_irq_desc(virq);
++	unsigned int vold, vnew, edibit;
++
++	if (flow_type == IRQ_TYPE_NONE)
++		flow_type = IRQ_TYPE_LEVEL_LOW;
++
++	if (flow_type & IRQ_TYPE_EDGE_RISING) {
++		printk(KERN_ERR "CPM2 PIC: sense type 0x%x not supported\n",
++			flow_type);
++		return -EINVAL;
++	}
++
++	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
++	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
++	if (flow_type & IRQ_TYPE_LEVEL_LOW)  {
++		desc->status |= IRQ_LEVEL;
++		desc->handle_irq = handle_level_irq;
++	} else
++		desc->handle_irq = handle_edge_irq;
++
++	/* internal IRQ senses are LEVEL_LOW
++	 * EXT IRQ and Port C IRQ senses are programmable
++	 */
++	if (src >= CPM2_IRQ_EXT1 && src <= CPM2_IRQ_EXT7)
++			edibit = (14 - (src - CPM2_IRQ_EXT1));
++	else
++		if (src >= CPM2_IRQ_PORTC15 && src <= CPM2_IRQ_PORTC0)
++			edibit = (31 - (src - CPM2_IRQ_PORTC15));
++		else
++			return (flow_type & IRQ_TYPE_LEVEL_LOW) ? 0 : -EINVAL;
++
++	vold = in_be32(&cpm2_intctl->ic_siexr);
++
++	if ((flow_type & IRQ_TYPE_SENSE_MASK) == IRQ_TYPE_EDGE_FALLING)
++		vnew = vold | (1 << edibit);
++	else
++		vnew = vold & ~(1 << edibit);
++
++	if (vold != vnew)
++		out_be32(&cpm2_intctl->ic_siexr, vnew);
++	return 0;
++}
++
+ static struct irq_chip cpm2_pic = {
+ 	.typename = " CPM2 SIU ",
+-	.enable = cpm2_unmask_irq,
+-	.disable = cpm2_mask_irq,
++	.mask = cpm2_mask_irq,
+ 	.unmask = cpm2_unmask_irq,
+-	.mask_ack = cpm2_mask_and_ack,
+-	.end = cpm2_end_irq,
++	.ack = cpm2_ack,
++	.eoi = cpm2_end_irq,
++	.set_type = cpm2_set_irq_type,
+ };
+ 
+ unsigned int cpm2_get_irq(void)
+@@ -154,17 +188,17 @@ unsigned int cpm2_get_irq(void)
+ 
+        /* For CPM2, read the SIVEC register and shift the bits down
+          * to get the irq number.         */
+-        bits = cpm2_intctl->ic_sivec;
++        bits = in_be32(&cpm2_intctl->ic_sivec);
+         irq = bits >> 26;
+ 
+ 	if (irq == 0)
+ 		return(-1);
+-	return irq+CPM_IRQ_OFFSET;
++	return irq_linear_revmap(cpm2_pic_host, irq);
+ }
+ 
+ static int cpm2_pic_host_match(struct irq_host *h, struct device_node *node)
+ {
+-	return cpm2_pic_node == NULL || cpm2_pic_node == node;
++	return cpm2_pic_node == node;
+ }
+ 
+ static int cpm2_pic_host_map(struct irq_host *h, unsigned int virq,
+@@ -177,39 +211,21 @@ static int cpm2_pic_host_map(struct irq_host *h, unsigned int virq,
+ 	return 0;
+ }
+ 
+-static void cpm2_host_unmap(struct irq_host *h, unsigned int virq)
+-{
+-	/* Make sure irq is masked in hardware */
+-	cpm2_mask_irq(virq);
+-
+-	/* remove chip and handler */
+-	set_irq_chip_and_handler(virq, NULL, NULL);
+-}
+-
+ static int cpm2_pic_host_xlate(struct irq_host *h, struct device_node *ct,
+ 			    u32 *intspec, unsigned int intsize,
+ 			    irq_hw_number_t *out_hwirq, unsigned int *out_flags)
+ {
+-	static const unsigned char map_cpm2_senses[4] = {
+-		IRQ_TYPE_LEVEL_LOW,
+-		IRQ_TYPE_LEVEL_HIGH,
+-		IRQ_TYPE_EDGE_FALLING,
+-		IRQ_TYPE_EDGE_RISING,
+-	};
+-
+ 	*out_hwirq = intspec[0];
+-	if (intsize > 1 && intspec[1] < 4)
+-		*out_flags = map_cpm2_senses[intspec[1]];
++	if (intsize > 1)
++		*out_flags = intspec[1];
+ 	else
+ 		*out_flags = IRQ_TYPE_NONE;
+-
+ 	return 0;
+ }
+ 
+ static struct irq_host_ops cpm2_pic_host_ops = {
+ 	.match = cpm2_pic_host_match,
+ 	.map = cpm2_pic_host_map,
+-	.unmap = cpm2_host_unmap,
+ 	.xlate = cpm2_pic_host_xlate,
+ };
+ 
+@@ -223,26 +239,26 @@ void cpm2_pic_init(struct device_node *node)
+ 
+ 	/* Mask out everything */
+ 
+-	cpm2_intctl->ic_simrh = 0x00000000;
+-	cpm2_intctl->ic_simrl = 0x00000000;
++	out_be32(&cpm2_intctl->ic_simrh, 0x00000000);
++	out_be32(&cpm2_intctl->ic_simrl, 0x00000000);
+ 
+ 	wmb();
+ 
+ 	/* Ack everything */
+-	cpm2_intctl->ic_sipnrh = 0xffffffff;
+-	cpm2_intctl->ic_sipnrl = 0xffffffff;
++	out_be32(&cpm2_intctl->ic_sipnrh, 0xffffffff);
++	out_be32(&cpm2_intctl->ic_sipnrl, 0xffffffff);
+ 	wmb();
+ 
+ 	/* Dummy read of the vector */
+-	i = cpm2_intctl->ic_sivec;
++	i = in_be32(&cpm2_intctl->ic_sivec);
+ 	rmb();
+ 
+ 	/* Initialize the default interrupt mapping priorities,
+ 	 * in case the boot rom changed something on us.
+ 	 */
+-	cpm2_intctl->ic_sicr = 0;
+-	cpm2_intctl->ic_scprrh = 0x05309770;
+-	cpm2_intctl->ic_scprrl = 0x05309770;
++	out_be16(&cpm2_intctl->ic_sicr, 0);
++	out_be32(&cpm2_intctl->ic_scprrh, 0x05309770);
++	out_be32(&cpm2_intctl->ic_scprrl, 0x05309770);
+ 
+ 	/* create a legacy host */
+ 	if (node)
+diff --git a/arch/powerpc/sysdev/cpm2_pic.h b/arch/powerpc/sysdev/cpm2_pic.h
+index 2840616..643a857 100644
+--- a/arch/powerpc/sysdev/cpm2_pic.h
++++ b/arch/powerpc/sysdev/cpm2_pic.h
+@@ -1,6 +1,15 @@
+ #ifndef _PPC_KERNEL_CPM2_H
+ #define _PPC_KERNEL_CPM2_H
+ 
++
++/* External IRQS */
++#define CPM2_IRQ_EXT1		19
++#define CPM2_IRQ_EXT7		25
++
++/* Port C IRQS */
++#define CPM2_IRQ_PORTC15	48
++#define CPM2_IRQ_PORTC0		63
++
+ extern intctl_cpm2_t *cpm2_intctl;
+ 
+ extern unsigned int cpm2_get_irq(void);
+diff --git a/include/asm-powerpc/mpc8260.h b/include/asm-powerpc/mpc8260.h
+new file mode 100644
+index 0000000..c2adcb0
+--- /dev/null
++++ b/include/asm-powerpc/mpc8260.h
+@@ -0,0 +1,32 @@
++/*
++ * Since there are many different boards and no standard configuration,
++ * we have a unique include file for each.  Rather than change every
++ * file that has to include MPC8260 configuration, they all include
++ * this one and the configuration switching is done here.
++ */
++#ifdef __KERNEL__
++#ifndef __ASM_PPC_MPC8260_H__
++#define __ASM_PPC_MPC8260_H__
++
++
++#ifdef CONFIG_8260
++
++#if defined(CONFIG_PQ2ADS) || defined (CONFIG_PQ2FADS)
++#include <platforms/82xx/pq2ads.h>
 +#endif
 +
- #define cpm2_map(member)						\
- ({									\
- 	u32 offset = offsetof(cpm2_map_t, member);			\
-diff --git a/include/asm-powerpc/io.h b/include/asm-powerpc/io.h
-index 1cd5323..301c9bb 100644
---- a/include/asm-powerpc/io.h
-+++ b/include/asm-powerpc/io.h
-@@ -732,6 +732,12 @@ static inline void * bus_to_virt(unsigned long address)
- 
- #endif /* CONFIG_PPC32 */
- 
-+/* access ports */
-+#define setbits32(_addr, _v) out_be32((_addr), in_be32(_addr) |  (_v))
-+#define clrbits32(_addr, _v) out_be32((_addr), in_be32(_addr) & ~(_v))
++#ifdef CONFIG_PCI_8260
++#include <platforms/82xx/m82xx_pci.h>
++#endif
 +
-+#define setbits16(_addr, _v) out_be16((_addr), in_be16(_addr) |  (_v))
-+#define clrbits16(_addr, _v) out_be16((_addr), in_be16(_addr) & ~(_v))
- 
- #endif /* __KERNEL__ */
- 
++#ifndef _ISA_MEM_BASE
++#define _ISA_MEM_BASE   0
++#endif
++
++#ifndef PCI_DRAM_OFFSET
++#define PCI_DRAM_OFFSET 0
++#endif
++
++#endif /* CONFIG_8260 */
++#endif /* !__ASM_PPC_MPC8260_H__ */
++#endif /* __KERNEL__ */
