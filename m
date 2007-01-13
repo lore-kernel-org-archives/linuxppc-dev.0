@@ -1,25 +1,20 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+Return-Path: <vbordug@ru.mvista.com>
+Received: from localhost.localdomain (cdma-41-245.msk.skylink.ru
+	[83.217.41.245])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 32F4DDDEC0
-	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 10:14:01 +1100 (EST)
-Date: Fri, 12 Jan 2007 15:13:17 -0800
-From: Greg KH <greg@kroah.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/7] Powerpc MSI implementation
-Message-ID: <20070112231317.GC665@kroah.com>
-References: <1168514716.63474.857278133999.qpush@cradle>
-	<20070111112503.0CC1BDDF13@ozlabs.org>
-	<20070111194427.GA20450@kroah.com>
-	<1168550403.22458.414.camel@localhost.localdomain>
-	<1168552498.22458.428.camel@localhost.localdomain>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B39C0DDDF8
+	for <linuxppc-dev@ozlabs.org>; Sat, 13 Jan 2007 12:12:26 +1100 (EST)
+To: Paul Mackerras <paulus@samba.org>
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: [PATCH 3/5] [FS_ENET] OF-related fixup for FEC and SCC MAC's
+Date: Sat, 13 Jan 2007 03:42:14 +0300
+Message-ID: <20070113004213.1224.39653.stgit@localhost.localdomain>
+In-Reply-To: <20070113004150.1224.58427.stgit@localhost.localdomain>
+References: <20070113004150.1224.58427.stgit@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1168552498.22458.428.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Olof Johannsson <olof@lixom.net>, linux-pci@atrey.karlin.mff.cuni.cz
+Content-Type: text/plain; charset="utf-8"
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,38 +24,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 12, 2007 at 08:54:57AM +1100, Benjamin Herrenschmidt wrote:
-> On Fri, 2007-01-12 at 08:20 +1100, Benjamin Herrenschmidt wrote:
-> > > So, no, I don't agree with this implementation and don't want to see it
-> > > go through anyone's tree into mainline just yet.
-> > 
-> > So why, when we posted it earlier, you said the exact opposite ? That
-> > you actually liked it and wanted to see it as a replacement of the
-> > current cruft ?
-> > 
-> > That's been the logic from day one. We implement a generic MSI support
-> > that supports multiple backends, we do it as a powerpc version at first
-> > since that's what we can actively test and provide backends for, then as
-> > a second step, we work with the intel folks to port their stuff over to
-> > our implementation and replace the current crappy generic one.
-> 
-> /me calms down a bit ... :-)
-> 
-> Ok, so what about we do:
-> 
->  - Move that new implementation to drivers/pci
->  - Have a CONFIG_NEW_MSI or something like that to select between
-> the old and the new implementation
->  - Have the change to pci_dev be based on that config option
 
-No, what's wrong with just fixing everything up to work properly all at
-once?  The Altix code should have been a step forward in making this
-"abstracted" into something that other arches could use.  If that's not
-true, then please work everything so that it all works nicely together.
+Updated direct resource pass with ioremap call, make it grant proper IRQ
+mapping, stuff incompatible with the new approach were respectively put  under
+#ifndef CONFIG_PPC_MERGE. It is required so that both ppc and powerpc
+could utilize fs_enet effectively.
 
-In short, I don't want to see two different implementations in the tree
-at the same time, that's not acceptable, sorry.
+Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
+---
 
-thanks,
+ drivers/net/fs_enet/mac-fec.c |   13 +++++++++----
+ drivers/net/fs_enet/mac-scc.c |    6 ++++--
+ drivers/net/phy/fixed.c       |    2 +-
+ 3 files changed, 14 insertions(+), 7 deletions(-)
 
-greg k-h
+diff --git a/drivers/net/fs_enet/mac-fec.c b/drivers/net/fs_enet/mac-fec.c
+index c2c5fd4..bc422dc 100644
+--- a/drivers/net/fs_enet/mac-fec.c
++++ b/drivers/net/fs_enet/mac-fec.c
+@@ -104,9 +104,9 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ 	fep->interrupt = platform_get_irq_byname(pdev,"interrupt");
+ 	if (fep->interrupt < 0)
+ 		return -EINVAL;
+-	
++
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->fec.fecp =(void*)r->start;
++	fep->fec.fecp = ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if(fep->fec.fecp == NULL)
+ 		return -EINVAL;
+@@ -319,11 +319,14 @@ static void restart(struct net_device *dev)
+ 	 * Clear any outstanding interrupt.
+ 	 */
+ 	FW(fecp, ievent, 0xffc0);
++#ifndef CONFIG_PPC_MERGE
+ 	FW(fecp, ivec, (fep->interrupt / 2) << 29);
+-	
++#else
++	FW(fecp, ivec, (irq_map[fep->interrupt].hwirq / 2) << 29);
++#endif
+ 
+ 	/*
+-	 * adjust to speed (only for DUET & RMII) 
++	 * adjust to speed (only for DUET & RMII)
+ 	 */
+ #ifdef CONFIG_DUET
+ 	if (fpi->use_rmii) {
+@@ -418,6 +421,7 @@ static void stop(struct net_device *dev)
+ 
+ static void pre_request_irq(struct net_device *dev, int irq)
+ {
++#ifndef CONFIG_PPC_MERGE
+ 	immap_t *immap = fs_enet_immap;
+ 	u32 siel;
+ 
+@@ -431,6 +435,7 @@ static void pre_request_irq(struct net_device *dev, int irq)
+ 			siel &= ~(0x80000000 >> (irq & ~1));
+ 		out_be32(&immap->im_siu_conf.sc_siel, siel);
+ 	}
++#endif
+ }
+ 
+ static void post_free_irq(struct net_device *dev, int irq)
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 95ec587..afd7fca 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -121,13 +121,13 @@ static int do_pd_setup(struct fs_enet_private *fep)
+ 		return -EINVAL;
+ 
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "regs");
+-	fep->scc.sccp = (void *)r->start;
++	fep->scc.sccp = ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if (fep->scc.sccp == NULL)
+ 		return -EINVAL;
+ 
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram");
+-	fep->scc.ep = (void *)r->start;
++	fep->scc.ep = ioremap(r->start, r->end - r->start + 1);
+ 
+ 	if (fep->scc.ep == NULL)
+ 		return -EINVAL;
+@@ -397,6 +397,7 @@ static void stop(struct net_device *dev)
+ 
+ static void pre_request_irq(struct net_device *dev, int irq)
+ {
++#ifndef CONFIG_PPC_MERGE
+ 	immap_t *immap = fs_enet_immap;
+ 	u32 siel;
+ 
+@@ -410,6 +411,7 @@ static void pre_request_irq(struct net_device *dev, int irq)
+ 			siel &= ~(0x80000000 >> (irq & ~1));
+ 		out_be32(&immap->im_siu_conf.sc_siel, siel);
+ 	}
++#endif
+ }
+ 
+ static void post_free_irq(struct net_device *dev, int irq)
+diff --git a/drivers/net/phy/fixed.c b/drivers/net/phy/fixed.c
+index 096d4a1..8613539 100644
+--- a/drivers/net/phy/fixed.c
++++ b/drivers/net/phy/fixed.c
+@@ -349,7 +349,7 @@ static int __init fixed_init(void)
+ 	fixed_mdio_register_device(0, 100, 1);
+ #endif
+ 
+-#ifdef CONFIX_FIXED_MII_10_FDX
++#ifdef CONFIG_FIXED_MII_10_FDX
+ 	fixed_mdio_register_device(0, 10, 1);
+ #endif
+ 	return 0;
