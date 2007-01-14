@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
+Return-Path: <segher@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 77F00DDE35
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 11:29:00 +1100 (EST)
-Subject: Re: [PATCH] Fix performance monitor exception in 2.6.20-series
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Livio Soares <livio@eecg.toronto.edu>
-In-Reply-To: <20070113154029.GA32292@eecg.toronto.edu>
-References: <20070113154029.GA32292@eecg.toronto.edu>
-Content-Type: text/plain
-Date: Sun, 14 Jan 2007 11:29:04 +1100
-Message-Id: <1168734544.5011.78.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 2A26ADDE3B
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 11:30:24 +1100 (EST)
+In-Reply-To: <11687326992407-git-send-email-grant.likely@secretlab.ca>
+References: <11687326992407-git-send-email-grant.likely@secretlab.ca>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <84dba8e3e19d453c2961c4022ddb77de@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [POWERPC] Make it blatently clear;
+	5200 device tree is not yet stable
+Date: Sun, 14 Jan 2007 01:31:00 +0100
+To: grant.likely@secretlab.ca
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Please apply for 2.6.20.  This is documentation only, but I don't want
+> to give people false assumptions about the stability of the 5200 device
+> tree bindings
 
->   IMHO, option  #1 is very  nice, as long  as the PMU interrupt  handler behaves
-> itself.  One reason option #1 is desirable is, with PC-sampling, we are now able
-> to  sample  regions _inside_  interrupt-disabled  sections  (assuming an  actual
-> external interrupt  hasn't really occured yet). Before,  with hardware disabling
-> of  interrupts,  the  PMU  exceptions  were  necessarily  delivered  outside  of
-> interrupt disabled sections. 
-> 
->   Anyways, does anyone see a problem with the following patch? 
+Good idea.
 
-Well, are you absolutely sure that nothing will break as a result of
-having a PMU interrupt happening right when it's not expected to ?
+> +********** DRAFT ***********
+> +* WARNING: Do not depend on definiton remaining static between
+> +* kernel versions.  The 5200 device tree conventions are still in flux
+> +* and could change without notice.  Keep an eye on the linuxppc-dev
+> +* mailing list for more details
+> +*
+> +* Hopefully by 2.6.21 it will be stable.  ---gcl, Jan 13, 2007
+> +********** DRAFT ***********
 
-You are basically turning the PMU interrupt into an NMI... I'm not sure
-how safe that is.
+But could you please rephrase in a way that doesn't suggest
+the *kernel* defines what the device bindings are?  They are
+only documented in the kernel tree right now, sure, but that's
+not the same thing ;-)
 
-Ben.
+
+Segher
