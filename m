@@ -1,21 +1,27 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 1F448DDE28
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 09:29:26 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1141874ugf
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 14:29:25 -0800 (PST)
-Message-ID: <528646bc0701141429q577f87f1oe65aa7033c09b62b@mail.gmail.com>
-Date: Sun, 14 Jan 2007 15:29:24 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Matt Sealey" <matt@genesi-usa.com>, "Sylvain Munaut" <tnt@246tnt.com>,
-	"Sven Luther" <sven@genesi-usa.com>, "Nicolas DET" <nd@bplan-gmbh.de>
-Subject: Re: Discussion on SOC device tree bindings
-In-Reply-To: <528646bc0701131555n3249b503i3b6e8c37db41dd52@mail.gmail.com>
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6FB51DDE3D
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 09:54:03 +1100 (EST)
+Date: Sun, 14 Jan 2007 23:53:58 +0100
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] More SMU commands
+Message-ID: <20070114225358.GA27834@hansmi.ch>
+References: <20061224130531.GA28635@hansmi.ch>
+	<1167082402.3522.8.camel@localhost.localdomain>
+	<20070105001014.GA28410@hansmi.ch>
+	<20070106024242.GA18395@hansmi.ch>
+	<1168218731.22458.109.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <528646bc0701131555n3249b503i3b6e8c37db41dd52@mail.gmail.com>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="zYM0uCDKw75PZbzx"
+In-Reply-To: <1168218731.22458.109.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@killerfox.forkbomb.ch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,117 +31,216 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Bah!  I forgot to CC the mailing list on this email; so this is a resend.
 
-On 1/13/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> A number of us spent a bit of time discussing this Thursday and today
-> on IRC; here is a summary for everyone else's benefit.
->
-> Most of this conversation centered around the mpc5200, but there are
-> implications for other soc's too.
->
-> The issue discussed was whether or not the description of the
-> compatible field in
-> Documentation/powerpc/mpc5200-device-tree-bindings.txt is the best way
-> to describe the hardware.  At the moment, it recommends something like
-> "mpc5200b-psc-uart\0mpc52xx-psc-uart" to describe a PSC in UART mode.
-> This isn't the first time these issues have come up; but it is the
-> first time we've discussed it in any depth.
->
-> The problems with this are:
-> 1. it's a bit premature to define mpc52xx when there are only 2
-> devices in the family and the primary reason they are named
-> differently is that the 5200b has bug fixes that are not 100%
-> backwards compatible with the 5200.
-> 2. It still doesn't give enough information; ie. it doesn't give any
-> information about silicon revision for a particular board.  ie. If
-> there is a bug in M08A but not in M62C, then driver doesn't get that
-> from the current scheme.
->
-> When I wrote the document, I based it on the assumption that the
-> driver would have all the information it needs based on the compatible
-> property (which is naive).  'compatible' is supposed to be a
-> description of the interface; not a full description of the hardware
-> revision.
->
-> It also makes the assumption that names matter.  They don't.  If we
-> call an fec on the 5200 "mpc5200-fec", it will always be
-> "mpc5200-fec", even if it shows up on a mpc5233 or a mpc5400, or any
-> other chip.  All that matters is that two incompatible device are not
-> named the same thing.  So, using 52xx-* in compatible lists is
-> premature as we have no idea how many other 52xx parts will arrive
-> using the same device, and a future 52xx could use an incompatible FEC
-> that would have to be called something different (because 52xx-fec is
-> already taken)
->
-> The main value of the bindings document is so we do have a list of
-> already assigned device names to be used in the compatible property.
->
-> What *is* interesting is to know exactly which silicon version of the
-> device it is.  In a perfect world, device drivers shall never need
-> this information.  However, if a bug is found in the future, this
-> information is needed to enable/disable bug fix code.
->
-> It's also interesting to know about extra features and quirks of a
-> device.  ie. gpt0 has a watchdog timer feature.  The device interface
-> is mostly the same; but probably not different enough to warrant a
-> separate device driver.  (things get hazy here; more of an art than
-> science to decide whether this information is encoded in 'compatible'
-> or with an extra property)  ie. The gpt0 node could have an empty
-> property called 'has-wdt'.
->
-> So, the following changes are proposed:
-> 1. "mpc52xx-*" items will be dropped from the compatible property
-> because they are premature.  Unless the 5200B device is incompatible
-> with the 5200, then the 5200B will specify "mpc5200b-*\0mpc5200-*".
-> (strong recommendation, but not required; if a 5200b board just has
-> "mpc5200-*", in most cases it won't cause breakage).
-> 2. known quirks/extra features will be reported with additional
-> properties to the device.  ie. gpt0 will add a 'has-wdt' empty
-> property
-> 3. an /soc5200/model property will be added for last resort
-> determination of chip version (The soc5200 node is called 'builtin' on
-> the efika)
-> 4. most of the 5200 drivers will be changed to bind on 5200-* instead
-> of 52xx-*.  Drivers will not bind on 5200b-* unless truly incompatible
-> with the 5200.
-> 5. new 5200-ish devices, like a fictional 5300 or a 5437 (random
-> numbers out of my head) will use something like
-> "mpc5300-psc-uart\0mpc5200-psc-uart" (strong recommendation)
-> 6. A /soc5200/model property shall be added to describe the chip type
-> (ie model="mpc5200b").
-> 7. A /soc5200/version property shall be added to describe the silicon
-> revision (ie. version="M62C")
->
-> Note: the presence of the soc node is important, but I don't think the
-> name of it matters much.  It should be sufficient to define it as the
-> parent of the device node.  What matters is that device drivers know
-> how to reach it.
->
-> Implications:
-> 1. Encoding /soc/model and /soc/version is probably a good idea for
-> *all* SOCs.  If everyone agrees, then I'll add it to
-> booting_without_of.txt.
-> 2. It means the Efika compatible properties match without fixups.  I'm
-> still not happy with using "mpc5200-xxx" instead of "mpc5200-psc-xxx"
-> for PSC functions because it means there is a collision between the
-> two different SPI devices.  However, if names don't matter then I
-> shouldn't get my nickers in a knot over this one.  It's more important
-> to document what is done.
->
-> Comments?
-> g.
->
-> --
-> Grant Likely, B.Sc. P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
->
+--zYM0uCDKw75PZbzx
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, Jan 08, 2007 at 12:12:10PM +1100, Benjamin Herrenschmidt wrote:
+> Meaning and use are known :-) This defines events related to powering or
+> waking the machine up :-)
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+You were right, now it makes sense.
+
+> (There might be others above 5 but that's the one I know about, they are
+> the same on the SMU).
+
+Yes, there are.
+
+Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+
+---
+diff -Nrup --exclude-from linux-exclude-from linux-2.6.19.1.orig/include/as=
+m-powerpc/smu.h linux-2.6.19.1/include/asm-powerpc/smu.h
+--- linux-2.6.19.1.orig/include/asm-powerpc/smu.h	2007-01-14 12:58:26.00000=
+0000 +0100
++++ linux-2.6.19.1/include/asm-powerpc/smu.h	2007-01-14 23:33:05.000000000 =
++0100
+@@ -173,7 +173,7 @@
+  * Power supply control
+  *
+  * The "sub" command is an ASCII string in the data, the
+- * data lenght is that of the string.
++ * data length is that of the string.
+  *
+  * The VSLEW command can be used to get or set the voltage slewing.
+  *  - lenght 5 (only "VSLEW") : it returns "DONE" and 3 bytes of
+@@ -201,20 +201,90 @@
+  */
+ #define SMU_CMD_READ_ADC			0xd8
+=20
++
+ /* Misc commands
+  *
+  * This command seem to be a grab bag of various things
++ *
++ * Parameters:
++ *   1: subcommand
+  */
+ #define SMU_CMD_MISC_df_COMMAND			0xdf
+-#define   SMU_CMD_MISC_df_SET_DISPLAY_LIT	0x02 /* i: 1 byte */
++
++/*
++ * Sets "system ready" status
++ *
++ * I did not yet understand how it exactly works or what it does.
++ *
++ * Guessing from OF code, 0x02 activates the display backlight. Apple uses=
+/used
++ * the same codebase for all OF versions. On PowerBooks, this command would
++ * enable the backlight. For the G5s, it only activates the front LED. How=
+ever,
++ * don't take this for granted.
++ *
++ * Parameters:
++ *   2: status [0x00, 0x01 or 0x02]
++ */
++#define   SMU_CMD_MISC_df_SET_DISPLAY_LIT	0x02
++
++/*
++ * Sets mode of power switch.
++ *
++ * What this actually does is not yet known. Maybe it enables some interru=
+pt.
++ *
++ * Parameters:
++ *   2: enable power switch? [0x00 or 0x01]
++ *   3 (optional): enable nmi? [0x00 or 0x01]
++ *
++ * Returns:
++ *   If parameter 2 is 0x00 and parameter 3 is not specified, returns weth=
+er
++ *   NMI is enabled. Otherwise unknown.
++ */
+ #define   SMU_CMD_MISC_df_NMI_OPTION		0x04
+=20
++/* Sets LED dimm offset.
++ *
++ * The front LED dimms itself during sleep. Its brightness (or, well, the =
+PWM
++ * frequency) depends on current time. Therefore, the SMU needs to know the
++ * timezone.
++ *
++ * Parameters:
++ *   2-8: unknown (BCD coding)
++ */
++#define   SMU_CMD_MISC_df_DIMM_OFFSET		0x99
++
++
+ /*
+  * Version info commands
+  *
+- * I haven't quite tried to figure out how these work
++ * Parameters:
++ *   1 (optional): Specifies version part to retrieve
++ *
++ * Returns:
++ *   Version value
+  */
+ #define SMU_CMD_VERSION_COMMAND			0xea
++#define   SMU_VERSION_RUNNING			0x00
++#define   SMU_VERSION_BASE			0x01
++#define   SMU_VERSION_UPDATE			0x02
++
++
++/*
++ * Switches
++ *
++ * These are switches whose status seems to be known to the SMU.
++ *
++ * Parameters:
++ *   none
++ *
++ * Result:
++ *   Switch bits (ORed, see below)
++ */
++#define SMU_CMD_SWITCHES			0xdc
++
++/* Switches bits */
++#define SMU_SWITCH_CASE_CLOSED			0x01
++#define SMU_SWITCH_AC_POWER			0x04
++#define SMU_SWITCH_POWER_SWITCH			0x08
+=20
+=20
+ /*
+@@ -243,10 +313,64 @@
+  */
+ #define SMU_CMD_MISC_ee_COMMAND			0xee
+ #define   SMU_CMD_MISC_ee_GET_DATABLOCK_REC	0x02
+-#define	  SMU_CMD_MISC_ee_LEDS_CTRL		0x04 /* i: 00 (00,01) [00] */
++
++/* Retrieves currently used watts.
++ *
++ * Parameters:
++ *   1: 0x03 (Meaning unknown)
++ */
++#define   SMU_CMD_MISC_ee_GET_WATTS		0x03
++
++#define   SMU_CMD_MISC_ee_LEDS_CTRL		0x04 /* i: 00 (00,01) [00] */
+ #define   SMU_CMD_MISC_ee_GET_DATA		0x05 /* i: 00 , o: ?? */
+=20
+=20
++/*
++ * Power related commands
++ *
++ * Parameters:
++ *   1: subcommand
++ */
++#define SMU_CMD_POWER_EVENTS_COMMAND		0x8f
++
++/* SMU_POWER_EVENTS subcommands */
++enum {
++	SMU_PWR_GET_POWERUP_EVENTS      =3D 0x00,
++	SMU_PWR_SET_POWERUP_EVENTS      =3D 0x01,
++	SMU_PWR_CLR_POWERUP_EVENTS      =3D 0x02,
++	SMU_PWR_GET_WAKEUP_EVENTS       =3D 0x03,
++	SMU_PWR_SET_WAKEUP_EVENTS       =3D 0x04,
++	SMU_PWR_CLR_WAKEUP_EVENTS       =3D 0x05,
++
++	/*
++	 * Get last shutdown cause
++	 *
++	 * Returns:
++	 *   1 byte (signed char): Last shutdown cause. Exact meaning unknown.
++	 */
++	SMU_PWR_LAST_SHUTDOWN_CAUSE	=3D 0x07,
++
++	/*
++	 * Sets or gets server ID. Meaning or use is unknown.
++	 *
++	 * Parameters:
++	 *   2 (optional): Set server ID (1 byte)
++	 *
++	 * Returns:
++	 *   1 byte (server ID?)
++	 */
++	SMU_PWR_SERVER_ID		=3D 0x08,
++};
++
++/* Power events wakeup bits */
++enum { =20
++	SMU_PWR_WAKEUP_KEY              =3D 0x01, /* Wake on key press */
++	SMU_PWR_WAKEUP_AC_INSERT        =3D 0x02, /* Wake on AC adapter plug */
++	SMU_PWR_WAKEUP_AC_CHANGE        =3D 0x04,
++	SMU_PWR_WAKEUP_LID_OPEN         =3D 0x08,
++	SMU_PWR_WAKEUP_RING             =3D 0x10,
++};
++
+=20
+ /*
+  * - Kernel side interface -
+
+--zYM0uCDKw75PZbzx
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFFqrSG6J0saEpRu+oRAhQSAJ9cu26FC2teBMF80snOCRxRinGEGwCdHPuK
+eCVKpjzRiu6hFti9d0X8VoU=
+=H32f
+-----END PGP SIGNATURE-----
+
+--zYM0uCDKw75PZbzx--
