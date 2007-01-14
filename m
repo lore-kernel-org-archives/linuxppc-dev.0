@@ -1,15 +1,19 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 022E1DDE4A
-	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 10:58:48 +1100 (EST)
-From: grant.likely@secretlab.ca
-To: linuxppc-dev@ozlabs.org,
-	paulus@samba.org,
-	tnt@246tnt.com
-Subject: [PATCH] [POWERPC] Make it blatently clear;
-	5200 device tree is not yet stable
-Date: Sat, 13 Jan 2007 16:58:19 -0700
-Message-Id: <11687326992407-git-send-email-grant.likely@secretlab.ca>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 77F00DDE35
+	for <linuxppc-dev@ozlabs.org>; Sun, 14 Jan 2007 11:29:00 +1100 (EST)
+Subject: Re: [PATCH] Fix performance monitor exception in 2.6.20-series
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Livio Soares <livio@eecg.toronto.edu>
+In-Reply-To: <20070113154029.GA32292@eecg.toronto.edu>
+References: <20070113154029.GA32292@eecg.toronto.edu>
+Content-Type: text/plain
+Date: Sun, 14 Jan 2007 11:29:04 +1100
+Message-Id: <1168734544.5011.78.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,77 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
 
----
-Paulus,
+>   IMHO, option  #1 is very  nice, as long  as the PMU interrupt  handler behaves
+> itself.  One reason option #1 is desirable is, with PC-sampling, we are now able
+> to  sample  regions _inside_  interrupt-disabled  sections  (assuming an  actual
+> external interrupt  hasn't really occured yet). Before,  with hardware disabling
+> of  interrupts,  the  PMU  exceptions  were  necessarily  delivered  outside  of
+> interrupt disabled sections. 
+> 
+>   Anyways, does anyone see a problem with the following patch? 
 
-Please apply for 2.6.20.  This is documentation only, but I don't want
-to give people false assumptions about the stability of the 5200 device
-tree bindings
+Well, are you absolutely sure that nothing will break as a result of
+having a PMU interrupt happening right when it's not expected to ?
 
- .../powerpc/mpc52xx-device-tree-bindings.txt       |    9 +++++++++
- arch/powerpc/boot/dts/lite5200.dts                 |    8 ++++++++
- arch/powerpc/boot/dts/lite5200b.dts                |    8 ++++++++
- 3 files changed, 25 insertions(+), 0 deletions(-)
+You are basically turning the PMU interrupt into an NMI... I'm not sure
+how safe that is.
 
-diff --git a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-index 7fb3b8a..e90efe3 100644
---- a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-+++ b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-@@ -4,6 +4,15 @@ MPC52xx Device Tree Bindings
- (c) 2006 Secret Lab Technologies Ltd
- Grant Likely <grant.likely at secretlab.ca>
- 
-+********** DRAFT ***********
-+* WARNING: Do not depend on definiton remaining static between
-+* kernel versions.  The 5200 device tree conventions are still in flux
-+* and could change without notice.  Keep an eye on the linuxppc-dev
-+* mailing list for more details
-+*
-+* Hopefully by 2.6.21 it will be stable.  ---gcl, Jan 13, 2007
-+********** DRAFT ***********
-+
- I - Introduction
- ================
- Boards supported by the arch/powerpc architecture require device tree be
-diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
-index a8efb59..e953568 100644
---- a/arch/powerpc/boot/dts/lite5200.dts
-+++ b/arch/powerpc/boot/dts/lite5200.dts
-@@ -10,6 +10,14 @@
-  * option) any later version.
-  */
- 
-+/*
-+ * WARNING: Do not depend on this tree remaining static between
-+ * kernel versions.  The 5200 device tree conventions are still in flux
-+ * and could change without notice.
-+ *
-+ * Hopefully by 2.6.21 it will be stable.  ---gcl, Jan 13, 2007
-+ */
-+
- / {
- 	model = "Lite5200";
- 	compatible = "lite5200\0lite52xx\0mpc5200\0mpc52xx";
-diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
-index 1aabee4..c3123be 100644
---- a/arch/powerpc/boot/dts/lite5200b.dts
-+++ b/arch/powerpc/boot/dts/lite5200b.dts
-@@ -10,6 +10,14 @@
-  * option) any later version.
-  */
- 
-+/*
-+ * WARNING: Do not depend on this tree remaining static between
-+ * kernel versions.  The 5200 device tree conventions are still in flux
-+ * and could change without notice.
-+ *
-+ * Hopefully by 2.6.21 it will be stable.  ---gcl, Jan 13, 2007
-+ */
-+
- / {
- 	model = "Lite5200b";
- 	compatible = "lite5200b\0lite52xx\0mpc5200b\0mpc52xx";
--- 
-1.4.3.rc2.g0503
+Ben.
