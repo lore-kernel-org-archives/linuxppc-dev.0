@@ -1,22 +1,24 @@
-Return-Path: <livio@eecg.toronto.edu>
-Received: from picton.eecg.toronto.edu (picton.eecg.toronto.edu
-	[128.100.10.141])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "picton.eecg.toronto.edu",
-	Issuer "picton.eecg.toronto.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id EA2D7DDE09
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 04:56:43 +1100 (EST)
-Date: Sun, 14 Jan 2007 12:56:34 -0500
-From: Livio Soares <livio@eecg.toronto.edu>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Fix performance monitor exception in 2.6.20-series
-Message-ID: <20070114175634.GA8444@eecg.toronto.edu>
-References: <20070113154029.GA32292@eecg.toronto.edu>
-	<1168734544.5011.78.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1168734544.5011.78.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1B175DDE02
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 08:48:53 +1100 (EST)
+Subject: Re: [PATCH] SMU LED driver
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Michael Hanselmann <linux-kernel@hansmi.ch>
+In-Reply-To: <20070114133119.GA22354@hansmi.ch>
+References: <20061224112351.GA27260@hansmi.ch>
+	<1167081952.3522.0.camel@localhost.localdomain>
+	<20070106211939.GB29846@hansmi.ch>
+	<1168218165.22458.100.camel@localhost.localdomain>
+	<20070114133119.GA22354@hansmi.ch>
+Content-Type: text/plain
+Date: Mon, 15 Jan 2007 08:48:59 +1100
+Message-Id: <1168811339.4803.23.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net,
+	linux-kernel@killerfox.forkbomb.ch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-  Hi Ben,
-
-  First,  I'd  like to  state  that  I have,  since  writting  my first  e-mail,
-experimented with Oprofile on 2.6.20-rc4, and it _is_ affected as I theorized. I
-get  something around  5  to  7 PMU  exceptions,  and no  more.  With my  patch,
-exceptions keep coming as before the lazy IRQ patch.
-
-Benjamin Herrenschmidt writes:
+On Sun, 2007-01-14 at 14:31 +0100, Michael Hanselmann wrote:
+> On Mon, Jan 08, 2007 at 12:02:45PM +1100, Benjamin Herrenschmidt wrote:
+> > Just have 1 request allocated once for all. Then, have a global set to
+> > what status you want the LED at. Once the completion of any request
+> > arrives, if the new status is different from what you want, send a new
+> > one to fix it up :-)
 > 
-> >   IMHO, option  #1 is very  nice, as long  as the PMU interrupt  handler behaves
-> > itself.  One reason option #1 is desirable is, with PC-sampling, we are now able
-> > to  sample  regions _inside_  interrupt-disabled  sections  (assuming an  actual
-> > external interrupt  hasn't really occured yet). Before,  with hardware disabling
-> > of  interrupts,  the  PMU  exceptions  were  necessarily  delivered  outside  of
-> > interrupt disabled sections. 
-> > 
-> >   Anyways, does anyone see a problem with the following patch? 
+> Implemented that. See below.
 > 
-> Well, are you absolutely sure that nothing will break as a result of
-> having a PMU interrupt happening right when it's not expected to ?
-> 
-> You are basically turning the PMU interrupt into an NMI... I'm not sure
-> how safe that is.
+> There's a race condition between setting the LED value and unloading the
+> module. smu_led_exit can't return an error. Is it possible to prevent
+> unloading the module while an SMU request is still running, and if yes,
+> how?
 
-  Yes, it is turning the PMU exception into an NMI. And, you are correct, it has
-potential  for  problems. However,  if  you  look  closely through  the  current
-Oprofile code it doesn't seem to execute anything dangerous. We have:
+No, you have to deal with it in the unload. You can for example wait for
+the SMU request to complete after setting wanted to -1, that sort of
+thing.
 
-a) Looking at local CPU registers
+Also, use spin_lock_irqsave/restore or you'll deadlock if the SMU
+completion interrupt happens to interrupt your request function.
 
-b) Looking at current stack (when logging backtrace is enabled)
-
-c) Writting information to a  per-CPU pre-allocated buffer. This is done without
-   any form of locking. 
-
-d) PMU  exception nesting cannot  occur (at least  on the PowerPC  machines I've
-   looked  at).  Handling  must  'rfid'  before  the  PMU  can  deliver  another
-   exception. 
-
-
-  So, unless I missed something, the current code seems to be safe. 
-
-  Another thing I tried was stress testing 2.6.20-rc4 with my patch and Oprofile
-turned on. I  used an Apache2 benchmark for about  30 minutes. Everything worked
-as  usual. I realize  this test  does not  guarantee the  safeness of  the code,
-however, it served as a sanity check for obvious, easy to trigger bugs. 
-
-  Thanks,
-
-			Livio
+Ben.
