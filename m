@@ -1,28 +1,18 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 171F1DDE2B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 11:26:21 +1100 (EST)
-Date: Mon, 15 Jan 2007 01:26:17 +0100
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] SMU LED driver
-Message-ID: <20070115002617.GA29698@hansmi.ch>
-References: <20061224112351.GA27260@hansmi.ch>
-	<1167081952.3522.0.camel@localhost.localdomain>
-	<20070106211939.GB29846@hansmi.ch>
-	<1168218165.22458.100.camel@localhost.localdomain>
-	<20070114133119.GA22354@hansmi.ch>
-	<1168811339.4803.23.camel@localhost.localdomain>
-MIME-Version: 1.0
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Cell SPU task notification
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Maynard Johnson <maynardj@us.ibm.com>
+In-Reply-To: <45A805A0.2080000@us.ibm.com>
+References: <45A805A0.2080000@us.ibm.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="tKW2IUtsqtDRztdT"
-In-Reply-To: <1168811339.4803.23.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, johannes@sipsolutions.net,
-	linux-kernel@killerfox.forkbomb.ch
+	protocol="application/pgp-signature";
+	boundary="=-AVX79Qe2LogecPhSuc8P"
+Date: Mon, 15 Jan 2007 13:07:51 +1100
+Message-Id: <1168826871.4622.32.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,229 +23,217 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---tKW2IUtsqtDRztdT
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-AVX79Qe2LogecPhSuc8P
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Jan 15, 2007 at 08:48:59AM +1100, Benjamin Herrenschmidt wrote:
-> No, you have to deal with it in the unload. You can for example wait for
-> the SMU request to complete after setting wanted to -1, that sort of
-> thing.
+> Subject: Enable SPU switch notification to detect currently active SPU ta=
+sks.
+>=20
+> From: Maynard Johnson <maynardj@us.ibm.com>
+>=20
+> This patch adds to the capability of spu_switch_event_register so that th=
+e
+> caller is also notified of currently active SPU tasks.  It also exports
+> spu_switch_event_register and spu_switch_event_unregister.
 
-Done in the patch below.
+Hi Maynard,
 
-> Also, use spin_lock_irqsave/restore or you'll deadlock if the SMU
-> completion interrupt happens to interrupt your request function.
+It'd be really good if you could convince your mailer to send patches inlin=
+e :)
 
-Okay, didn't notice the done function is called in interrupt context.
+> Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/s=
+ched.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs=
+/sched.c	2006-12-04 10:56:04.730698720 -0600
+> +++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sche=
+d.c	2007-01-11 09:45:37.918333128 -0600
+> @@ -46,6 +46,8 @@
+> =20
+>  #define SPU_MIN_TIMESLICE 	(100 * HZ / 1000)
+> =20
+> +int notify_active[MAX_NUMNODES];
 
-Signed-off-by: Michael Hanselmann <linux-kernel@hansmi.ch>
+You're basing the size of the array on MAX_NUMNODES
+(1 << CONFIG_NODES_SHIFT), but then indexing it by spu->number.
 
----
-diff -Nrup --exclude-from linux-exclude-from linux-2.6.19.1.orig/drivers/ma=
-cintosh/Kconfig linux-2.6.19.1/drivers/macintosh/Kconfig
---- linux-2.6.19.1.orig/drivers/macintosh/Kconfig	2007-01-14 12:58:25.00000=
-0000 +0100
-+++ linux-2.6.19.1/drivers/macintosh/Kconfig	2007-01-15 00:57:16.000000000 =
-+0100
-@@ -107,6 +107,15 @@ config PMAC_SMU
- 	  on the "SMU" system control chip which replaces the old PMU.
- 	  If you don't know, say Y.
-=20
-+config PMAC_SMU_LED
-+	tristate "Support for the PowerMac front LED"
-+	depends on PMAC_SMU
-+	select NEW_LEDS
-+	select LEDS_CLASS
-+	help
-+	  Support the front LED on PowerMacs as a generic LED that can be
-+	  triggered by any of the supported triggers.
-+
- config PMAC_APM_EMU
- 	tristate "APM emulation"
- 	depends on PPC_PMAC && PPC32 && PM && ADB_PMU
-diff -Nrup --exclude-from linux-exclude-from linux-2.6.19.1.orig/drivers/ma=
-cintosh/Makefile linux-2.6.19.1/drivers/macintosh/Makefile
---- linux-2.6.19.1.orig/drivers/macintosh/Makefile	2007-01-14 12:58:25.0000=
-00000 +0100
-+++ linux-2.6.19.1/drivers/macintosh/Makefile	2007-01-15 00:57:16.000000000=
- +0100
-@@ -17,6 +17,7 @@ obj-$(CONFIG_PMAC_BACKLIGHT)	+=3D via-pmu-
- obj-$(CONFIG_ADB_CUDA)		+=3D via-cuda.o
- obj-$(CONFIG_PMAC_APM_EMU)	+=3D apm_emu.o
- obj-$(CONFIG_PMAC_SMU)		+=3D smu.o
-+obj-$(CONFIG_PMAC_SMU_LED)	+=3D smu-led.o
-=20
- obj-$(CONFIG_ADB)		+=3D adb.o
- obj-$(CONFIG_ADB_MACII)		+=3D via-macii.o
-diff -Nrup --exclude-from linux-exclude-from linux-2.6.19.1.orig/drivers/ma=
-cintosh/smu-led.c linux-2.6.19.1/drivers/macintosh/smu-led.c
---- linux-2.6.19.1.orig/drivers/macintosh/smu-led.c	1970-01-01 01:00:00.000=
-000000 +0100
-+++ linux-2.6.19.1/drivers/macintosh/smu-led.c	2007-01-15 01:19:11.00000000=
-0 +0100
-@@ -0,0 +1,147 @@
-+/*
-+ * smu LED class device
-+ *
-+ * Copyright 2006, 2007 Michael Hanselmann <linux-kernel@hansmi.ch>
-+ *
-+ * This code is based upon via-pmu-led, written by Johannes Berg, and a sa=
-mple
-+ * program written by Benjamin Herrenschmidt.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful, but
-+ * WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
-+ * NON INFRINGEMENT.  See the GNU General Public License for more
-+ * details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 U=
-SA
-+ */
-+
-+#include <linux/types.h>
-+#include <linux/kernel.h>
-+#include <linux/device.h>
-+#include <linux/leds.h>
-+#include <linux/spinlock.h>
-+#include <asm/smu.h>
-+
-+static DEFINE_SPINLOCK(lock);
-+static struct smu_simple_cmd cmd;
-+static unsigned char cmd_value;
-+static int wanted =3D -1;
-+
-+static void __smu_led_set(struct led_classdev*, unsigned char);
-+
-+static void smu_led_done(struct smu_cmd *cmd, void *misc)
-+{
-+	struct led_classdev *led_cdev =3D misc;
-+	unsigned long flags;
-+
-+	if (cmd->status) {
-+		printk(KERN_ERR "smu-led: SMU command failed\n");
-+	}
-+
-+	spin_lock_irqsave(&lock, flags);
-+
-+	if (wanted !=3D -1) {
-+		if (cmd_value =3D=3D wanted)
-+			wanted =3D -1;
-+		else
-+			__smu_led_set(led_cdev, wanted);
-+	}
-+
-+	spin_unlock_irqrestore(&lock, flags);
-+}
-+
-+/* Call with lock held */
-+static void __smu_led_set(struct led_classdev *led_cdev,
-+		unsigned char value)
-+{
-+	int rc;
-+
-+	cmd_value =3D value;
-+	rc =3D smu_queue_simple(&cmd, SMU_CMD_MISC_ee_COMMAND, 3,
-+		smu_led_done, led_cdev,
-+		SMU_CMD_MISC_ee_LEDS_CTRL, 0x00, value);
-+	if (rc) {
-+		printk(KERN_ERR "smu-led: "
-+			"Command queueing failed, error %d\n", rc);
-+	}
-+}
-+
-+static void smu_led_set(struct led_classdev *led_cdev,
-+		enum led_brightness brightness)
-+{
-+	unsigned long flags;
-+	unsigned char value;
-+
-+	/* Setting the LED to its default half bright status isn't possible
-+	 * yet. Reason is that we don't know for sure how to do it.
-+	 */
-+
-+	switch (brightness) {
-+	case LED_OFF:
-+		value =3D 0x00;
-+		break;
-+
-+	case LED_FULL:
-+		value =3D 0x01;
-+		break;
-+
-+	default:
-+		/* Unknown brightness, do nothing */
-+		return;
-+	}
-+
-+	spin_lock_irqsave(&lock, flags);
-+
-+	if (wanted =3D=3D -1) {
-+		wanted =3D value;
-+		__smu_led_set(led_cdev, value);
-+	} else
-+		wanted =3D value;
-+
-+	spin_unlock_irqrestore(&lock, flags);
-+}
-+
-+static struct led_classdev smu_led =3D {
-+	.name =3D "smu-front-led",
-+	.brightness_set =3D smu_led_set,
-+};
-+
-+static int __init smu_led_init(void)
-+{
-+	if (!smu_present())
-+		return -ENODEV;
-+
-+	return led_classdev_register(NULL, &smu_led);
-+}
-+
-+static void __exit smu_led_exit(void)
-+{
-+	unsigned long flags;
-+
-+	led_classdev_unregister(&smu_led);
-+
-+	spin_lock_irqsave(&lock, flags);
-+	while (wanted !=3D -1) {
-+		spin_unlock_irqrestore(&lock, flags);
-+
-+		/* Wait for pending request */
-+		smu_spinwait_cmd(&cmd.cmd);
-+
-+		spin_lock_irqsave(&lock, flags);
-+	}
-+	spin_unlock_irqrestore(&lock, flags);
-+}
-+
-+module_init(smu_led_init);
-+module_exit(smu_led_exit);
-+
-+MODULE_AUTHOR("Michael Hanselmann <linux-kernel@hansmi.ch>");
-+MODULE_DESCRIPTION("Front LED support for SMU based PowerMacs");
-+MODULE_LICENSE("GPL");
+It's quite possible we'll have a system with MAX_NUMNODES =3D=3D 1, but > 1
+spus, in which case this code is going to break. The PS3 is one such
+system.
 
---tKW2IUtsqtDRztdT
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+Instead I think you should have a flag in the spu struct.
+
+>  #define SPU_BITMAP_SIZE (((MAX_PRIO+BITS_PER_LONG)/BITS_PER_LONG)+1)
+>  struct spu_prio_array {
+>  	unsigned long bitmap[SPU_BITMAP_SIZE];
+> @@ -81,18 +83,45 @@
+>  static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
+>  {
+>  	blocking_notifier_call_chain(&spu_switch_notifier,
+> -			    ctx ? ctx->object_id : 0, spu);
+> +				     ctx ? ctx->object_id : 0, spu);
+> +}
+
+Try not to make whitespace only changes in the same patch as actual code ch=
+anges.
+
+> +
+> +static void notify_spus_active(void)
+> +{
+> +	int node;
+> +	/* Wake up the active spu_contexts. When the awakened processes=20
+> +	 * sees their notify_active flag is set, they will call
+> +	 * spu_notify_already_active().
+> +	 */
+> +	for (node =3D 0; node < MAX_NUMNODES; node++) {
+> +		struct spu *spu;
+> +		mutex_lock(&spu_prio->active_mutex[node]);
+> +                list_for_each_entry(spu, &spu_prio->active_list[node], l=
+ist) {
+> +			struct spu_context *ctx =3D spu->ctx;
+> +			wake_up_all(&ctx->stop_wq);
+> +			notify_active[ctx->spu->number] =3D 1;
+> +			smp_mb();
+> +		}
+
+I don't understand why you're setting the notify flag after you do the
+wake_up_all() ?
+
+You only need a smp_wmb() here.
+
+Does the scheduler guarantee that ctxs won't swap nodes? Otherwise
+between releasing the lock on one node and getting the lock on the next,
+a ctx could migrate between them - which would cause either spurious
+wake ups, or missing a ctx altogether. Although I'm not sure if it's
+that important.
+
+> +                mutex_unlock(&spu_prio->active_mutex[node]);
+> +	}
+> +	yield();
+>  }
+> =20
+>  int spu_switch_event_register(struct notifier_block * n)
+>  {
+> -	return blocking_notifier_chain_register(&spu_switch_notifier, n);
+> +	int ret;
+> +	ret =3D blocking_notifier_chain_register(&spu_switch_notifier, n);
+> +	if (!ret)
+> +		notify_spus_active();
+> +	return ret;
+>  }
+> +EXPORT_SYMBOL_GPL(spu_switch_event_register);
+> =20
+>  int spu_switch_event_unregister(struct notifier_block * n)
+>  {
+>  	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
+>  }
+> +EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
+> =20
+> =20
+>  static inline void bind_context(struct spu *spu, struct spu_context *ctx=
+)
+> @@ -250,6 +279,14 @@
+>  	return spu_get_idle(ctx, flags);
+>  }
+> =20
+> +void spu_notify_already_active(struct spu_context *ctx)
+> +{
+> +	struct spu *spu =3D ctx->spu;
+> +	if (!spu)
+> +		return;
+> +	spu_switch_notify(spu, ctx);
+> +}
+> +
+>  /* The three externally callable interfaces
+>   * for the scheduler begin here.
+>   *
+> Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/s=
+pufs.h
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs=
+/spufs.h	2007-01-08 18:18:40.093354608 -0600
+> +++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/spuf=
+s.h	2007-01-08 18:31:03.610345792 -0600
+> @@ -183,6 +183,7 @@
+>  void spu_yield(struct spu_context *ctx);
+>  int __init spu_sched_init(void);
+>  void __exit spu_sched_exit(void);
+> +void spu_notify_already_active(struct spu_context *ctx);
+> =20
+>  extern char *isolated_loader;
+> =20
+> Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/r=
+un.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs=
+/run.c	2007-01-08 18:33:51.979311680 -0600
+> +++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/run.=
+c	2007-01-11 10:17:20.777344984 -0600
+> @@ -10,6 +10,8 @@
+> =20
+>  #include "spufs.h"
+> =20
+> +extern int notify_active[MAX_NUMNODES];
+> +
+>  /* interrupt-level stop callback function. */
+>  void spufs_stop_callback(struct spu *spu)
+>  {
+> @@ -45,7 +47,9 @@
+>  	u64 pte_fault;
+> =20
+>  	*stat =3D ctx->ops->status_read(ctx);
+> -	if (ctx->state !=3D SPU_STATE_RUNNABLE)
+> +	smp_mb();
+
+And smp_rmb() should be sufficient here.
+
+> +	if (ctx->state !=3D SPU_STATE_RUNNABLE || notify_active[ctx->spu->numbe=
+r])
+>  		return 1;
+>  	spu =3D ctx->spu;
+>  	pte_fault =3D spu->dsisr &
+> @@ -319,6 +323,11 @@
+>  		ret =3D spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
+>  		if (unlikely(ret))
+>  			break;
+> +		if (unlikely(notify_active[ctx->spu->number])) {
+> +			notify_active[ctx->spu->number] =3D 0;
+> +			if (!(status & SPU_STATUS_STOPPED_BY_STOP))
+> +				spu_notify_already_active(ctx);
+> +		}
+>  		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
+>  		    (status >> SPU_STOP_STATUS_SHIFT =3D=3D 0x2104)) {
+>  			ret =3D spu_process_callback(ctx);
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-AVX79Qe2LogecPhSuc8P
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQFFqsop6J0saEpRu+oRApAeAJ9L1RY/ULUoovMkYNb7gQmeHIfJLgCgiErm
-LO2cJwE8UOAqlPHt8T3hem8=
-=oZBH
+iD8DBQBFquH3dSjSd0sB4dIRAhuVAJ4jb8hKSWR1Bz2doF2Sl0j41tNISACfRMcx
+i8WBYYqUa7mwYmJPfpUpYg8=
+=kQfD
 -----END PGP SIGNATURE-----
 
---tKW2IUtsqtDRztdT--
+--=-AVX79Qe2LogecPhSuc8P--
