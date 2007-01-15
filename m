@@ -1,23 +1,19 @@
-Return-Path: <SRS0+50d345c2253f972c5556+1240+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 19301DDE2B
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 14:14:03 +1100 (EST)
-Subject: Re: [PATCH] Fix performance monitor exception in 2.6.20-series
-From: David Woodhouse <dwmw2@infradead.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17834.60612.793025.590958@cargo.ozlabs.ibm.com>
-References: <20070113154029.GA32292@eecg.toronto.edu>
-	<1168734544.5011.78.camel@localhost.localdomain>
-	<1168828808.9415.278.camel@shinybook.infradead.org>
-	<17834.60612.793025.590958@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Mon, 15 Jan 2007 11:14:20 +0800
-Message-Id: <1168830860.9415.284.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: Livio Soares <livio@eecg.toronto.edu>, linuxppc-dev@ozlabs.org
+Return-Path: <dogoil@etinsys.com>
+Received: from jupiter.etinsys.com (unknown [220.76.45.3])
+	by ozlabs.org (Postfix) with ESMTP id 17CC0DDE02
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 16:31:23 +1100 (EST)
+Received: from smkim (dogoil.etinsys.com [220.76.45.33])
+	by jupiter.etinsys.com (8.13.8/8.13.8) with ESMTP id l0F5VWXJ004760
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 14:31:32 +0900 (KST)
+Message-Id: <200701150531.l0F5VWXJ004760@jupiter.etinsys.com>
+From: "Sangmoon Kim" <dogoil@etinsys.com>
+To: <linuxppc-dev@ozlabs.org>
+Subject: RE: [PATCH] kvme080 board support patch
+Date: Mon, 15 Jan 2007 14:31:08 +0900
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <200701120145.l0C1jc1x019343@jupiter.etinsys.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +23,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-01-15 at 13:53 +1100, Paul Mackerras wrote:
-> Different PMU, I think; they are talking about the Performance Monitor
-> Unit in POWERx cpus. 
+Hi,
 
-Ah, OK. That makes the "doesn't do anything you can't do in an NMI"
-assessment make a little more sense to me.
+This patch makes kvme080 board use hardware watchdog timer to restart.
+This is an incremental patch of
+http://patchwork.ozlabs.org/linuxppc/patch?id=8898
+and http://patchwork.ozlabs.org/linuxppc/patch?id=8937.
 
-Still, might be worth thinking about whether we can make the Apple PMU
-into an NMI to help prevent the error case I mentioned.
+Regards,
+Sangmoon Kim
 
--- 
-dwmw2
+Signed-off-by: Sangmoon Kim <dogoil@etinsys.com>
+
+diff --git a/arch/powerpc/boot/dts/kvme080.dts
+b/arch/powerpc/boot/dts/kvme080.dts
+index 8628421..6c02f2d 100644
+--- a/arch/powerpc/boot/dts/kvme080.dts
++++ b/arch/powerpc/boot/dts/kvme080.dts
+@@ -162,6 +162,12 @@
+ 		reg = <ff000000 7fff0>;
+ 	};
+ 
++	watchdog@ff07fff7 {
++		device_type = "watchdog";
++		compatible = "ds155x_wdt";
++		reg = <ff07fff7 1>;
++	};
++
+ 	rtc@ff07fff8 {
+ 		device_type = "rtc";
+ 		reg = <ff07fff8 8>;
+diff --git a/arch/powerpc/platforms/embedded6xx/kvme080.c
+b/arch/powerpc/platforms/embedded6xx/kvme080.c
+index 8da3464..fe06f03 100644
+--- a/arch/powerpc/platforms/embedded6xx/kvme080.c
++++ b/arch/powerpc/platforms/embedded6xx/kvme080.c
+@@ -23,6 +23,7 @@ #include <asm/mpic.h>
+ 
+ static unsigned char *nvram_base = (unsigned char *)NULL;
+ static ssize_t nvram_size = 0;
++static unsigned char *watchdog_base = (unsigned char *)NULL;
+ 
+ static int __init
+ kvme080_probe(void)
+@@ -96,6 +97,15 @@ #endif
+ 		}
+ 	}
+ 
++	dnp = of_find_compatible_node(NULL, "watchdog", "ds155x_wdt");
++	if (dnp) {
++		prop = of_get_address(dnp, 0, &size, NULL);
++		paddr = (phys_addr_t)of_translate_address(dnp, prop);
++		if (paddr != (phys_addr_t)OF_BAD_ADDR) {
++			watchdog_base = ioremap(paddr, (ssize_t)
+nvram_size);
++		}
++	}
++
+ 	printk(KERN_INFO "Etin Systems KVME080 Board\n");
+ 	printk(KERN_INFO "Port by Sangmoon Kim (dogoil@etinsys.com)\n");
+ }
+@@ -131,9 +141,10 @@ static void
+ kvme080_restart(char *cmd)
+ {
+ 	local_irq_disable();
+-	mtspr(SPRN_SRR0, 0xfff00100);
+-	mtspr(SPRN_SRR1, 0x00000000);
+-	asm volatile("rfi");
++	if (watchdog_base)
++		writeb(0x84, watchdog_base);
++	for(;;);
++	/* NOTREACHED */
+ }
+ 
+ static void
