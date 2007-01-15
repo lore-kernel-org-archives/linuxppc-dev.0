@@ -1,16 +1,19 @@
-Return-Path: <onetarget@sina.com>
-Received: from r3-101.sinamail.sina.com.cn (r3-101.sinamail.sina.com.cn
-	[202.108.3.101]) by ozlabs.org (Postfix) with SMTP id D26D4DDE23
+Return-Path: <dgalari@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.231])
+	by ozlabs.org (Postfix) with ESMTP id 37CFDDDE2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 15 Jan 2007 20:49:30 +1100 (EST)
-Message-ID: <20070115090236.93444.qmail@mail3-101.sinamail.sina.com.cn>
+	Mon, 15 Jan 2007 21:49:11 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id 57so993317wri
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 15 Jan 2007 02:49:10 -0800 (PST)
+Message-ID: <3184691b0701150249g55d2472ax583acca96f0efb30@mail.gmail.com>
+Date: Mon, 15 Jan 2007 11:49:01 +0100
+From: "David Gamez" <dgalari@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: fcc_enet.c and set_multicast_list
-Date: Mon, 15 Jan 2007 17:02:36 +0800 
-From: onetarget@sina.com
+Subject: flash problem in a LITE5200B
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="=-sina_alt_cb5b2d2914538272bfceedd9aae6396d"
+	boundary="----=_Part_60611_18155127.1168858141931"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,49 +24,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=-sina_alt_cb5b2d2914538272bfceedd9aae6396d
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+------=_Part_60611_18155127.1168858141931
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-DURlYXIgYWxsLA0gICAgSSBhbSBqdXN0IHVzaW5nIEVMREszLjEuMSwgYW5kIE1QQzgyNzAgYm9h
-cmQsIGFuZCBJDWZvdW5kIHRoZXJlIGlzIGEgInJldHVybjsiIGluDWFyY2gvcHBjLzgyNjBfaW8v
-ZmNjX2VuZXQuYzpzZXRfbXVsdGljYXN0X2xpc3QoKSwgd2hhdCBpdCBtZWFucz8gRG9lcw1pdCBt
-ZWFuIHRoYXQgd2UgY2FuIG5vdCB1c2Ugc2V0X211bHRpY2FzdF9saXN0KCkgYXMgd2Ugd2FudD8N
-ICAgIFRoYW5rIHlvdSwNICAgIFcudGFyZ2V0DSAgICBKYW4tMTUtMjAwNw0KCi0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K
-u93G1cnM08PMqMq9u/pkYzU3NTAsuN/Q1MTco6y1zbmmusSjoSggaHR0cDovL2FkNC5zaW5hLmNv
-bS5jbi9zaW5hL2xpbWVuZzMvbWFpbF96aHVpeXUvMjAwNi9tYWlsX3podWl5dV8yMDA2MTIyNS5o
-dG1sICkKCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT0K16Ky4dDCwMsyR8Pit9HTys/ko6ggaHR0cDovL21haWwuc2luYS5j
-b20uY24vY2hvb3NlTW9kZS5odG1sIKOp
+Hi all,
 
+I work with a Freescale LITE5200B, but I have a problem, when I download a
+rootfs image to a flash memory in the board, hi have one error:
 
---=-sina_alt_cb5b2d2914538272bfceedd9aae6396d
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
+=3D> Copy To Flash ............. Outside available Flash
+
+The size of the image is of 3285336 bytes, but the flash memory capacity is
+32 MBytes, and I load the image in the first sector on the flash memory.
+
+Thanks in advance
+
+David G=E0mez
+
+------=_Part_60611_18155127.1168858141931
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
 Content-Disposition: inline
 
-PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+DQo8Zm9udCBzdHlsZT0nZm9u
-dC1zaXplOjEycHgnPkRlYXIgYWxsLDxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBJIGFtIGp1c3Qg
-dXNpbmcgRUxESzMuMS4xLCBhbmQgTVBDODI3MCBib2FyZCwgYW5kIEkNCmZvdW5kIHRoZXJlIGlz
-IGEgInJldHVybjsiIGluDQphcmNoL3BwYy84MjYwX2lvL2ZjY19lbmV0LmM6c2V0X211bHRpY2Fz
-dF9saXN0KCksIHdoYXQgaXQgbWVhbnM/IERvZXMNCml0IG1lYW4gdGhhdCB3ZSBjYW4gbm90IHVz
-ZSBzZXRfbXVsdGljYXN0X2xpc3QoKSBhcyB3ZSB3YW50Pzxicj4NCiZuYnNwOyZuYnNwOyZuYnNw
-OyBUaGFuayB5b3UsPGJyPg0KPGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7IFcudGFyZ2V0PGJyPg0K
-Jm5ic3A7Jm5ic3A7Jm5ic3A7IEphbi0xNS0yMDA3PGJyPg0KPHN0eWxlPnB7bWFyZ2luOjB9aW1n
-e2JvcmRlcjowfTwvc3R5bGU+PC9mb250PjxiciAvPgo8YnIgLz4KLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLTxiciAvPgq7
-3cbVyczTw8yoyr27+mRjNTc1MCy439DUxNyjrLXNuaa6xKOhKCA8YSBocmVmPWh0dHA6Ly9hZDQu
-c2luYS5jb20uY24vc2luYS9saW1lbmczL21haWxfemh1aXl1LzIwMDYvbWFpbF96aHVpeXVfMjAw
-NjEyMjUuaHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6Ly9hZDQuc2luYS5jb20uY24vc2luYS9saW1l
-bmczL21haWxfemh1aXl1LzIwMDYvbWFpbF96aHVpeXVfMjAwNjEyMjUuaHRtbDwvYT4gKTxiciAv
-Pgo8YnIgLz4KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PTxiciAvPgrXorLh0MLAyzJHw+K30dPKz+SjqCA8YSBocmVmPWh0
-dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6
-Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRtbDwvYT4go6k=
+Hi all,<br><br>I work with a Freescale LITE5200B, but I have a problem, whe=
+n I download a rootfs image to a flash memory in the board, hi have one err=
+or:<br><br>=3D&gt; Copy To Flash ............. Outside available Flash<br>
+<br>The size of the image is of 3285336 bytes, but the flash memory capacit=
+y is 32 MBytes, and I load the image in the first sector on the flash memor=
+y.<br><br>Thanks in advance <br><br>David G=E0mez<br><br>
 
-
---=-sina_alt_cb5b2d2914538272bfceedd9aae6396d--
+------=_Part_60611_18155127.1168858141931--
