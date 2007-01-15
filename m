@@ -1,19 +1,19 @@
 Return-Path: <dogoil@etinsys.com>
 Received: from jupiter.etinsys.com (unknown [220.76.45.3])
-	by ozlabs.org (Postfix) with ESMTP id 17CC0DDE02
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 16:31:23 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 95C64DDE21
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 17:04:23 +1100 (EST)
 Received: from smkim (dogoil.etinsys.com [220.76.45.33])
-	by jupiter.etinsys.com (8.13.8/8.13.8) with ESMTP id l0F5VWXJ004760
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 14:31:32 +0900 (KST)
-Message-Id: <200701150531.l0F5VWXJ004760@jupiter.etinsys.com>
+	by jupiter.etinsys.com (8.13.8/8.13.8) with ESMTP id l0F64SWL006151
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 15:04:28 +0900 (KST)
+Message-Id: <200701150604.l0F64SWL006151@jupiter.etinsys.com>
 From: "Sangmoon Kim" <dogoil@etinsys.com>
 To: <linuxppc-dev@ozlabs.org>
 Subject: RE: [PATCH] kvme080 board support patch
-Date: Mon, 15 Jan 2007 14:31:08 +0900
+Date: Mon, 15 Jan 2007 15:04:05 +0900
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-In-Reply-To: <200701120145.l0C1jc1x019343@jupiter.etinsys.com>
+In-Reply-To: <200701150531.l0F5VWXJ004760@jupiter.etinsys.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,6 +25,8 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Hi,
 
+Please drop the last patch for kvme080 and aply this one.
+I corrected some mistakes
 This patch makes kvme080 board use hardware watchdog timer to restart.
 This is an incremental patch of
 http://patchwork.ozlabs.org/linuxppc/patch?id=8898
@@ -55,7 +57,7 @@ index 8628421..6c02f2d 100644
  		reg = <ff07fff8 8>;
 diff --git a/arch/powerpc/platforms/embedded6xx/kvme080.c
 b/arch/powerpc/platforms/embedded6xx/kvme080.c
-index 8da3464..fe06f03 100644
+index 8da3464..2e6feec 100644
 --- a/arch/powerpc/platforms/embedded6xx/kvme080.c
 +++ b/arch/powerpc/platforms/embedded6xx/kvme080.c
 @@ -23,6 +23,7 @@ #include <asm/mpic.h>
@@ -75,8 +77,7 @@ index 8da3464..fe06f03 100644
 +		prop = of_get_address(dnp, 0, &size, NULL);
 +		paddr = (phys_addr_t)of_translate_address(dnp, prop);
 +		if (paddr != (phys_addr_t)OF_BAD_ADDR) {
-+			watchdog_base = ioremap(paddr, (ssize_t)
-nvram_size);
++			watchdog_base = ioremap(paddr, (ssize_t)size);
 +		}
 +	}
 +
