@@ -1,18 +1,19 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 3E5E2DDE2C
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 19:56:09 +1100 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Mon, 15 Jan 2007 09:55:57 +0100
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] atomic_dec_if_positive sign extension fix
-Message-ID: <20070115085557.GA4943@iram.es>
-References: <20070114225502.GA21471@austin.ibm.com>
-	<17834.47158.581922.62728@cargo.ozlabs.ibm.com>
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 63144DDECF
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 22:05:18 +1100 (EST)
+Date: Mon, 15 Jan 2007 12:05:09 +0100
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Discussion on SOC device tree bindings
+Message-ID: <20070115110509.GA25974@localhost.localdomain>
+References: <528646bc0701131555n3249b503i3b6e8c37db41dd52@mail.gmail.com>
+	<528646bc0701141429q577f87f1oe65aa7033c09b62b@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17834.47158.581922.62728@cargo.ozlabs.ibm.com>
-Cc: olof@lixom.net, linuxppc-dev@ozlabs.org
+In-Reply-To: <528646bc0701141429q577f87f1oe65aa7033c09b62b@mail.gmail.com>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Sven Luther <sven@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 15, 2007 at 10:09:42AM +1100, Paul Mackerras wrote:
-> Robert Jennings writes:
-> 
-> > Please apply for 2.6.20.  If an atomic counter is explicitly set to a
-> > negative value the atomic_dec_if_positive function will decrement and
-> > store the next smallest value in the atomic counter contrary to it's
-> > intended operation.  
-> 
-> [snip]
-> 
-> >  	__asm__ __volatile__(
-> >  	LWSYNC_ON_SMP
-> >  "1:	lwarx	%0,0,%1		# atomic_dec_if_positive\n\
-> > +	extsw	%0,%0\n\
-> >  	addic.	%0,%0,-1\n\
-> >  	blt-	2f\n"
-> >  	PPC405_ERR77(0,%1)
-> 
-> NAK: Good fix for 64-bit, but it will break 32-bit.  I think a better
-> fix would be to use a cmpwi after the lwarx, and use addi rather than
-> addic..
-> 
+Hi,
 
-Indeed, this will also fix the bug that 0x8000000 is considered 
-positive since the test was done after the decrement, at the cost
-of one additional instrucction in 32 bit mode.
+On Sun, Jan 14, 2007 at 03:29:24PM -0700, Grant Likely wrote:
+> >
+> > So, the following changes are proposed:
+> > 1. "mpc52xx-*" items will be dropped from the compatible property
+> > because they are premature.  Unless the 5200B device is incompatible
+> > with the 5200, then the 5200B will specify "mpc5200b-*\0mpc5200-*".
+> > (strong recommendation, but not required; if a 5200b board just has
+> > "mpc5200-*", in most cases it won't cause breakage).
 
-It also avoids clobbering the carry, you don't know whether a future
-version of GCC will require explicit clobbers for the carry. For now
-they are useless: you can specify "xer" in the clobber list AFAIR but 
-no pattern can be split between setters and users of the carry in the
-machine description.
+How about always specifying the exact name and only the exact name
+in the device tree, i.e. mpc5200-fec on mpc5200, mpc5200b-fec on
+mpc5200b and so on. This way the driver can decide whether or not it's
+compatible to a device and we can be sure not to overlook any
+incompatibilities. We could even decide in later kernel versions that
+two devices are too incompatible and split the driver into two.
 
-	Gabriel
+> > 2. known quirks/extra features will be reported with additional
+> > properties to the device.  ie. gpt0 will add a 'has-wdt' empty
+> > property
+> > 3. an /soc5200/model property will be added for last resort
+> > determination of chip version (The soc5200 node is called 'builtin' on
+> > the efika)
+> > 4. most of the 5200 drivers will be changed to bind on 5200-* instead
+> > of 52xx-*.  Drivers will not bind on 5200b-* unless truly incompatible
+> > with the 5200.
+
+There may be incompatibilities between 5200 and 5200b which we simply did
+not discover yet. 
+
+
+  Sascha
+
+-- 
+ Dipl.-Ing. Sascha Hauer | http://www.pengutronix.de
+  Pengutronix - Linux Solutions for Science and Industry
+    Handelsregister: Amtsgericht Hildesheim, HRA 2686
+      Hannoversche Str. 2, 31134 Hildesheim, Germany
+    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
