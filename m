@@ -1,25 +1,25 @@
 Return-Path: <ebony.zhu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 6F16EDDE41
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 18:59:00 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l0F7ww5Y009427
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 00:58:58 -0700 (MST)
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 04303DDE24
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 19:06:53 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l0F86qfq029872
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 01:06:52 -0700 (MST)
 Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
 	[10.192.129.204])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l0F7wufj027793
-	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 01:58:57 -0600 (CST)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0F86oMx021517
+	for <linuxppc-dev@ozlabs.org>; Mon, 15 Jan 2007 02:06:51 -0600 (CST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="GB2312"
-Subject: RE: [patch][5/5] powerpc: Add the general support for Embedded
-	Floating-Point instructions
-Date: Mon, 15 Jan 2007 15:58:55 +0800
-Message-ID: <32F3CC26D4DAC44E8ECD07155727A46E816BDF@zch01exm20.fsl.freescale.net>
-In-Reply-To: <89913836fb5b7a4de773ee13c27977c8@kernel.crashing.org>
+Subject: RE: [patch][5/5] powerpc: Add the general support for
+	EmbeddedFloating-Point instructions
+Date: Mon, 15 Jan 2007 16:06:49 +0800
+Message-ID: <32F3CC26D4DAC44E8ECD07155727A46E816BE7@zch01exm20.fsl.freescale.net>
+In-Reply-To: <1168599942.5011.21.camel@localhost.localdomain>
 From: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -33,34 +33,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 =20
 
 > -----Original Message-----
-> From: Segher Boessenkool [mailto:segher@kernel.crashing.org]=20
-> Sent: 2007=C4=EA1=D4=C212=C8=D5 20:37
+> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]=20
+> Sent: 2007=C4=EA1=D4=C212=C8=D5 19:06
 > To: Zhu Ebony-r57400
-> Cc: Christoph Hellwig; paulus@samba.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [patch][5/5] powerpc: Add the general support=20
-> for Embedded Floating-Point instructions
->=20
-> > CONFIG_SPE doesn't force the whole math emulation to be built. If=20
-> > CONFIG_SPE is set, only the new SPFP/DPFP/VSPFP instructions in=20
-> > arch/powerpc/math-emu will be built, while the previous FPU=20
-> > instructions won't.
->=20
-> And the other way around I suppose.
->=20
-> > Therefore, what I'm trying to do is to build directory=20
-> > arch/powerpc/math-emu if CONFIG_MATH_EMULATION or=20
-> CONFIG_SPE is set.=20
-> > Do you have any idea?
->=20
-> Maybe you should really have a separate CONFIG_SPE_MATH_EMU?
-> Or that might complicate things more than it solves, dunno.
+> Cc: Kumar Gala; linuxppc-dev@ozlabs.org; paulus@samba.org
+> Subject: RE: [patch][5/5] powerpc: Add the general support=20
+> for EmbeddedFloating-Point instructions
 >=20
 >=20
-> Segher
+> > > Why do we need a separate ret_from_except_spe_full?
+> >=20
+> > I'm not sure if the kernel will return from exception in a=20
+> > multi-thread way, but the truth is if restoring EVRs in exsiting=20
+> > ret_from_except_full, some non-SPE exception will try to=20
+> retore EVR.=20
+> > At that time, the MSR[SPE] may not be enabled, which will=20
+> cause error.
 >=20
+> Hrm... you can restore them before returning from the=20
+> exception if you are careful about doing that with=20
+> preempt/irqs off I suppose.
 >=20
+> Ben.
 
-If there is an statement that can express "CONFIG_MATH_EMULATION or
-CONFIG_SPE", things would become simpler.
+If so, the existing ret_from_except_full needs to be modified
+since it only restores 32bit GPRs, and I'm afraid the instructions to =
+operate
+32bit GPRs will break the hi-words of 64bit GPRs.
 
 Ebony
