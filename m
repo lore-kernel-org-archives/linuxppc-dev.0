@@ -1,21 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4EC8DDE3B
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2007 01:37:49 +1100 (EST)
-In-Reply-To: <32F3CC26D4DAC44E8ECD07155727A46E816B9C@zch01exm20.fsl.freescale.net>
-References: <32F3CC26D4DAC44E8ECD07155727A46E816B9C@zch01exm20.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=GB2312; delsp=yes; format=flowed
-Message-Id: <2C8EB4AF-97B2-40F5-8112-0CEE6E3D4D42@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch][0/5] powerpc: Add support to fully comply with IEEE-754
-	standard
-Date: Mon, 15 Jan 2007 08:37:09 -0600
-To: Zhu Ebony-r57400 <ebony.zhu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id 8351ADDE2C
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2007 02:41:40 +1100 (EST)
+In-Reply-To: <20070115110509.GA25974@localhost.localdomain>
+References: <528646bc0701131555n3249b503i3b6e8c37db41dd52@mail.gmail.com>
+	<528646bc0701141429q577f87f1oe65aa7033c09b62b@mail.gmail.com>
+	<20070115110509.GA25974@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5378f4dcd28423047dc3cfb1404f08e1@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Discussion on SOC device tree bindings
+Date: Mon, 15 Jan 2007 16:42:18 +0100
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Sven Luther <sven@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,137 +26,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> How about always specifying the exact name and only the exact name
+> in the device tree, i.e. mpc5200-fec on mpc5200, mpc5200b-fec on
+> mpc5200b and so on.
 
-On Jan 15, 2007, at 12:37 AM, Zhu Ebony-r57400 wrote:
+No :-)
 
->
->
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: 2007=C4=EA1=D4=C213=C8=D5 02:36
->> To: Zhu Ebony-r57400
->> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
->> Subject: Re: [patch][0/5] powerpc: Add support to fully
->> comply with IEEE-754 standard
->>
->>
->> On Jan 12, 2007, at 2:09 AM, Zhu Ebony-r57400 wrote:
->>
->>>  Hi Kumar,
->>>
->>>> -----Original Message-----
->>>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->>>> Sent: 2007=C4=EA1=D4=C212=C8=D5 14:42
->>>> To: Zhu Ebony-r57400
->>>> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
->>>> Subject: Re: [patch][0/5] powerpc: Add support to fully
->> comply with
->>>> IEEE-754 standard
->>>>
->>>>
->>>> On Jan 11, 2007, at 11:19 PM, Zhu Ebony-r57400 wrote:
->>>>
->>>>> Hi Paul,
->>>>>
->>>>> This series of patch add support to fully comply with IEEE-754
->>>>> standard for E500/E500v2 core when hardware floating point
->>>> compiling
->>>>> is used.
->>>>>
->>>>> Ebony
->>>>
->>>> Here are some general comments:
->>>> * We should be able to support math-emu (as it stands) and
->> the fixup
->>>> handling [you break math-emu]
->>>
->>> I don't think I break the math-emu. I think the codes I
->> added have no
->>> impact to the existing math-emu.
->>
->> This snippet of code breaks it from math-emu/sfp-machine.h
->>
->>>> +#ifdef CONFIG_SPE
->>>> +#define __FPU_FPSCR	(current->thread.spefscr)
->>>> +#else
->>>>  #define __FPU_FPSCR	(current->thread.fpscr.val)
->>>> +#endif
->>
->> By doing this if I want 'classic FP' emulation as well as the
->> IEEE fixup my fpscr for classic emu will not be updated properly.
->
-> Logically, user can choose "SPE Support" and "Math emulation" at the
-> same time on menuconfig. But from my understanding, it is not =20
-> necessary
-> to select math-emu on a SPE available system, since SPE can do math =20=
+> This way the driver can decide whether or not it's
+> compatible to a device
 
-> operation.
+It already can.
 
-This is not true.  If I want to run a "classic" PPC binary with FP I =20
-need "Math emulation" and if I want to run an SPE one I enable "SPE =20
-Support".  I could want to run both of these types of binaries on the =20=
+> and we can be sure not to overlook any
+> incompatibilities. We could even decide in later kernel versions that
+> two devices are too incompatible and split the driver into two.
 
-same system at the same time.
+You can already; say you have a driver that will only work
+on 5200b, is will match on that, and the "plain" 5200 driver
+won't get a chance to grab the device.  You have to match
+for the most specific first, of course.
 
->>>> * Copyrights / header comments should give credit to the orig
->>>> math- emu code
->>> I'd like to do this, but in most handler codes, I can't find
->>> copyright information
->>> of the orig authors. I think the math-emu code comes from
->> glibc. In
->>> the
->>> sigfpe_handler.c, I gave credit to the orig author.
->>
->> I think a comment is sufficient stating this is take from the math-
->> emu code.
->>
->>>> * Why isn't there any handling of SPEFloatingPointRound exceptions?
->>>
->>> I think the SPEFloatingPointRound exception is not necessary to
->>> handle if we
->>> handle floating point exception this way.
->>
->> I dont believe this, you'll have to explain if this is really true.
->> But, I'm almost sure that if the RND mode is set to +/-inf and we do
->> an operation that is within the normal bounds that should round we
->> will NOT get one of the other exceptions.
->>
->> - k
->>
->>
->
-> I looked into the manual again, and found what you are saying is =20
-> correct. The reason
-> for developing IEEE-754 fixup came from customer's complain, which =20
-> is about denormalized
-> computation can't generate the correct result as the same as on =20
-> x86. So what I was
-> concentrating on is floating-point data interrupt. The truth is, FP =20=
+> There may be incompatibilities between 5200 and 5200b which we simply 
+> did
+> not discover yet.
 
-> round interrupt may
-> be taken on some circumstance that FP data interrupt doesn't take =20
-> place.
->
-> As you said, if RND mode is set to +/- inf, FP round interrupt will =20=
+If that is so, than such a 5200b-specific driver can be
+created (possibly just as some special cases in the
+existing 5200 driver).
 
-> generate if we
-> do an operation within the normal bounds. Do you think we use the =20
-> same way to
-> handle FP round interrupt as FP data interrupt is reasonable? How =20
-> would you suggest?
+Listing something in the "compatible" property doesn't mean
+the device is 100% compatible, just that it's mostly compatible.
+Earlier entries in there are "more compatible" ;-)
 
-No, I think the round handler should try to do the rounding by hand.  =20=
 
-Since you have the non rounded information provided by HW, its much =20
-simpler to just do the rounding step.
-
-- k
-
->
-> Thanks.
->
-> Ebony
->
->
->
->
+Segher
