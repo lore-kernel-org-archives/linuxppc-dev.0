@@ -1,16 +1,16 @@
-Return-Path: <fabioestevam@yahoo.com>
-Received: from web51002.mail.yahoo.com (web51002.mail.yahoo.com
-	[206.190.38.133]) by ozlabs.org (Postfix) with SMTP id 90985DDE25
+Return-Path: <onetarget@sina.com>
+Received: from r3-101.sinamail.sina.com.cn (r3-101.sinamail.sina.com.cn
+	[202.108.3.101]) by ozlabs.org (Postfix) with SMTP id D26D4DDE23
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 15 Jan 2007 03:59:59 +1100 (EST)
-Date: Sun, 14 Jan 2007 08:53:14 -0800 (PST)
-From: Fabio Estevam <fabioestevam@yahoo.com>
-Subject: Re: Need refrence software for Booting board of MPC8540
-To: rajeshn@vrindatech.com, linuxppc-embedded@ozlabs.org
-In-Reply-To: <380-2200716136398785@M2W011.mail2web.com>
+	Mon, 15 Jan 2007 20:49:30 +1100 (EST)
+Message-ID: <20070115090236.93444.qmail@mail3-101.sinamail.sina.com.cn>
+To: linuxppc-embedded@ozlabs.org
+Subject: fcc_enet.c and set_multicast_list
+Date: Mon, 15 Jan 2007 17:02:36 +0800 
+From: onetarget@sina.com
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <112922.15407.qm@web51002.mail.yahoo.com>
+Content-Type: multipart/alternative;
+	boundary="=-sina_alt_cb5b2d2914538272bfceedd9aae6396d"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,57 +21,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Rajesh,
+--=-sina_alt_cb5b2d2914538272bfceedd9aae6396d
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-There is a Linux BSP available for the 8540QuiccStart
-Board at:
-http://www.freescale.com/webapp/sps/site/overview.jsp?nodeId=0127260061033202A5
-
-Look for "Linux BSP for Freescale MPC8540 EVAL 2.6
-Kernel "
-
-Best regards,
-
-Fabio Estevam
-
---- "rajeshn@vrindatech.com" <rajeshn@vrindatech.com>
-wrote:
-
-> Dear All,
-> This is Rajesh from VRINDATECHNOLOGIES, I have a
-> quiery where i am
-> expecting a reply from all of you in this group,
-> Presently we are trying to
-> build a board on MPC 8540 processor, And can you
-> please send me some
-> Refrence Drivers where and how to initialize my
-> board ,
-> And would be very thankfull if you could reply soon
-> please,
-> Thanks and regards
-> Rajesh N
-> 9885203007
-> Vrinda Technologies,
-> Hyderabad
-> 
-> 
->
---------------------------------------------------------------------
-> mail2web - Check your email from the web at
-> http://mail2web.com/ .
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
->
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+DURlYXIgYWxsLA0gICAgSSBhbSBqdXN0IHVzaW5nIEVMREszLjEuMSwgYW5kIE1QQzgyNzAgYm9h
+cmQsIGFuZCBJDWZvdW5kIHRoZXJlIGlzIGEgInJldHVybjsiIGluDWFyY2gvcHBjLzgyNjBfaW8v
+ZmNjX2VuZXQuYzpzZXRfbXVsdGljYXN0X2xpc3QoKSwgd2hhdCBpdCBtZWFucz8gRG9lcw1pdCBt
+ZWFuIHRoYXQgd2UgY2FuIG5vdCB1c2Ugc2V0X211bHRpY2FzdF9saXN0KCkgYXMgd2Ugd2FudD8N
+ICAgIFRoYW5rIHlvdSwNICAgIFcudGFyZ2V0DSAgICBKYW4tMTUtMjAwNw0KCi0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0K
+u93G1cnM08PMqMq9u/pkYzU3NTAsuN/Q1MTco6y1zbmmusSjoSggaHR0cDovL2FkNC5zaW5hLmNv
+bS5jbi9zaW5hL2xpbWVuZzMvbWFpbF96aHVpeXUvMjAwNi9tYWlsX3podWl5dV8yMDA2MTIyNS5o
+dG1sICkKCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT0K16Ky4dDCwMsyR8Pit9HTys/ko6ggaHR0cDovL21haWwuc2luYS5j
+b20uY24vY2hvb3NlTW9kZS5odG1sIKOp
 
 
+--=-sina_alt_cb5b2d2914538272bfceedd9aae6396d
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
- 
-____________________________________________________________________________________
-Get your own web address.  
-Have a HUGE year through Yahoo! Small Business.
-http://smallbusiness.yahoo.com/domains/?p=BESTDEAL
+PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+DQo8Zm9udCBzdHlsZT0nZm9u
+dC1zaXplOjEycHgnPkRlYXIgYWxsLDxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBJIGFtIGp1c3Qg
+dXNpbmcgRUxESzMuMS4xLCBhbmQgTVBDODI3MCBib2FyZCwgYW5kIEkNCmZvdW5kIHRoZXJlIGlz
+IGEgInJldHVybjsiIGluDQphcmNoL3BwYy84MjYwX2lvL2ZjY19lbmV0LmM6c2V0X211bHRpY2Fz
+dF9saXN0KCksIHdoYXQgaXQgbWVhbnM/IERvZXMNCml0IG1lYW4gdGhhdCB3ZSBjYW4gbm90IHVz
+ZSBzZXRfbXVsdGljYXN0X2xpc3QoKSBhcyB3ZSB3YW50Pzxicj4NCiZuYnNwOyZuYnNwOyZuYnNw
+OyBUaGFuayB5b3UsPGJyPg0KPGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7IFcudGFyZ2V0PGJyPg0K
+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEphbi0xNS0yMDA3PGJyPg0KPHN0eWxlPnB7bWFyZ2luOjB9aW1n
+e2JvcmRlcjowfTwvc3R5bGU+PC9mb250PjxiciAvPgo8YnIgLz4KLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLTxiciAvPgq7
+3cbVyczTw8yoyr27+mRjNTc1MCy439DUxNyjrLXNuaa6xKOhKCA8YSBocmVmPWh0dHA6Ly9hZDQu
+c2luYS5jb20uY24vc2luYS9saW1lbmczL21haWxfemh1aXl1LzIwMDYvbWFpbF96aHVpeXVfMjAw
+NjEyMjUuaHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6Ly9hZDQuc2luYS5jb20uY24vc2luYS9saW1l
+bmczL21haWxfemh1aXl1LzIwMDYvbWFpbF96aHVpeXVfMjAwNjEyMjUuaHRtbDwvYT4gKTxiciAv
+Pgo8YnIgLz4KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PTxiciAvPgrXorLh0MLAyzJHw+K30dPKz+SjqCA8YSBocmVmPWh0
+dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6
+Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRtbDwvYT4go6k=
+
+
+--=-sina_alt_cb5b2d2914538272bfceedd9aae6396d--
