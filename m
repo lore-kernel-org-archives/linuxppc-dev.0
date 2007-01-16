@@ -1,29 +1,32 @@
-Return-Path: <rcjenn@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6FCFADDEBF
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 05:16:12 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0GIG7vM030957
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2007 13:16:07 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l0GIG7SB276556
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2007 13:16:07 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l0GIG5F5019524
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2007 13:16:07 -0500
-Date: Tue, 16 Jan 2007 12:16:05 -0600
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, olof@lixom.net, paulus@samba.org
-Subject: Re: [PATCH][v2] atomic_dec_if_positive sign extension fix
-Message-ID: <20070116181604.GA24756@austin.ibm.com>
-References: <20070114225502.GA21471@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070114225502.GA21471@austin.ibm.com>
+Return-Path: <James.Bottomley@SteelEye.com>
+Received: from hancock.sc.steeleye.com (hancock.steeleye.com [71.30.118.248])
+	by ozlabs.org (Postfix) with ESMTP id D8557DE263
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 05:26:21 +1100 (EST)
+Subject: Re: [PATCH 20/59] sysctl: cdrom Don't set de->owner
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <11689656373737-git-send-email-ebiederm@xmission.com>
+References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
+	<11689656373737-git-send-email-ebiederm@xmission.com>
+Content-Type: text/plain
+Date: Tue, 16 Jan 2007 12:19:34 -0600
+Message-Id: <1168971574.2789.14.camel@mulgrave.il.steeleye.com>
+Mime-Version: 1.0
+Cc: "<Andrew Morton" <akpm@osdl.org>, linux-mips@linux-mips.org,
+	linux-parport@lists.infradead.org, heiko.carstens@de.ibm.com,
+	ak@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	aharkes@cs.cmu.edu, schwidefsky@de.ibm.com, tim@cyberelk.net,
+	rtc-linux@googlegroups.com, linux-scsi@vger.kernel.org,
+	kurt.hackel@oracle.com, coda@cs.cmu.edu, vojtech@suse.cz,
+	linuxsh-shmedia-dev@lists.sourceforge.net, clemens@ladisch.de,
+	xfs@oss.sgi.com, xfs-masters@oss.sgi.com, andrea@suse.de,
+	openipmi-developer@lists.sourceforge.net,
+	linux-390@vm.marist.edu, codalist@TELEMANN.coda.cs.cmu.edu,
+	a.zummo@towertech.it, tony.luck@intel.com,
+	linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
+	aia21@cantab.net, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, lethal@linux-sh.org,
+	containers@lists.osdl.org, linux390@de.ibm.com, philb@gnu.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,61 +36,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+On Tue, 2007-01-16 at 09:39 -0700, Eric W. Biederman wrote:
+> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-Here is v.2 for the patch. 
-Please apply for 2.6.20.  If an atomic counter is explicitly set to a
-negative value the atomic_dec_if_positive function will decrement and
-store the next smallest value in the atomic counter contrary to it's
-intended operation.
+These three look OK:
 
-The comparison to determine if the decrement will make the result
-negative is done by the "addic." operation which operates on a 64-bit
-value.  I've changed the addic to an addi (changing "=&r" to "=&g" in
-the process so that r0 isn't used, and addi doesn't become li) and 
-done a cmpwi prior to the add.  By comparing prior to the add I can 
-pick up the case for 0x80000000, so that it is considered positive.
+[PATCH 15/59] sysctl: scsi remove unnecessary insert_at_head flag
+[PATCH 19/59] sysctl: cdrom remove unnecessary insert_at_head flag
+[PATCH 20/59] sysctl: cdrom Don't set de->owner
 
-Also, I clarify the return value in the comments just to make it clear
-that the value returned is always the decremented value, even if that
-value is not stored back to the atomic counter.
+So you can add an ACK from me.
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
----
+It would have been nice not to have 56 other irrelevant patches sprayed
+over the list and into my inbox, though ...
 
- atomic.h |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
-
-
-diff --git a/include/asm-powerpc/atomic.h b/include/asm-powerpc/atomic.h
-index 53283e2..f6f7e5f 100644
---- a/include/asm-powerpc/atomic.h
-+++ b/include/asm-powerpc/atomic.h
-@@ -207,7 +207,8 @@ #define atomic_dec_and_test(v)		(atomic_
- 
- /*
-  * Atomically test *v and decrement if it is greater than 0.
-- * The function returns the old value of *v minus 1.
-+ * The function returns the old value of *v minus 1, even if
-+ * the atomic variable, v, was not decremented.
-  */
- static __inline__ int atomic_dec_if_positive(atomic_t *v)
- {
-@@ -216,14 +217,15 @@ static __inline__ int atomic_dec_if_posi
- 	__asm__ __volatile__(
- 	LWSYNC_ON_SMP
- "1:	lwarx	%0,0,%1		# atomic_dec_if_positive\n\
--	addic.	%0,%0,-1\n\
-+	cmpwi	%0,1\n\
-+	addi	%0,%0,-1\n\
- 	blt-	2f\n"
- 	PPC405_ERR77(0,%1)
- "	stwcx.	%0,0,%1\n\
- 	bne-	1b"
- 	ISYNC_ON_SMP
- 	"\n\
--2:"	: "=&r" (t)
-+2:"	: "=&g" (t)
- 	: "r" (&v->counter)
- 	: "cc", "memory");
- 
+James
