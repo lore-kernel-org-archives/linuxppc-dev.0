@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 561F5DDFDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:12:32 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id B0036DDFF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:13:01 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 16/59] sysctl: md Remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:21 -0700
-Message-Id: <1168965633112-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 5/59] sysctl: rose remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:10 -0700
+Message-Id: <11689656191854-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,26 +40,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-The sysctls used by the md driver are have unique binary numbers
-so remove the insert_at_head flag as it serves no useful purpose.
+The sysctl numbers used are unique so setting the insert_at_head
+flag serves no semantic purpose.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/md/md.c |    2 +-
+ net/rose/sysctl_net_rose.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/md/md.c b/drivers/md/md.c
-index d1cb45f..966e8be 100644
---- a/drivers/md/md.c
-+++ b/drivers/md/md.c
-@@ -5551,7 +5551,7 @@ static int __init md_init(void)
- 			    md_probe, NULL, NULL);
+diff --git a/net/rose/sysctl_net_rose.c b/net/rose/sysctl_net_rose.c
+index 8548c7c..0190a07 100644
+--- a/net/rose/sysctl_net_rose.c
++++ b/net/rose/sysctl_net_rose.c
+@@ -160,7 +160,7 @@ static ctl_table rose_root_table[] = {
  
- 	register_reboot_notifier(&md_notifier);
--	raid_table_header = register_sysctl_table(raid_root_table, 1);
-+	raid_table_header = register_sysctl_table(raid_root_table, 0);
+ void __init rose_register_sysctl(void)
+ {
+-	rose_table_header = register_sysctl_table(rose_root_table, 1);
++	rose_table_header = register_sysctl_table(rose_root_table, 0);
+ }
  
- 	md_geninit();
- 	return (0);
+ void rose_unregister_sysctl(void)
 -- 
 1.4.4.1.g278f
