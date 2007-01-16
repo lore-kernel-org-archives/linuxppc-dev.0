@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AFD19DDF74
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:06:19 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D8E63DDF89
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:09:19 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 12/59] sysctl: atalk remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:17 -0700
-Message-Id: <11689656281139-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 22/59] sysctl: frv pm remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:27 -0700
+Message-Id: <1168965639241-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,23 +40,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
+With unique binary numbers setting insert_at_head to
+insert yourself at the head of sysctl list and thus override
+existing sysctl entries serves no point.
+
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/appletalk/sysctl_net_atalk.c |    2 +-
+ arch/frv/kernel/pm.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/appletalk/sysctl_net_atalk.c b/net/appletalk/sysctl_net_atalk.c
-index 40b0af7..4f806b6 100644
---- a/net/appletalk/sysctl_net_atalk.c
-+++ b/net/appletalk/sysctl_net_atalk.c
-@@ -73,7 +73,7 @@ static struct ctl_table_header *atalk_table_header;
- 
- void atalk_register_sysctl(void)
+diff --git a/arch/frv/kernel/pm.c b/arch/frv/kernel/pm.c
+index 6b76466..c1840d6 100644
+--- a/arch/frv/kernel/pm.c
++++ b/arch/frv/kernel/pm.c
+@@ -419,7 +419,7 @@ static struct ctl_table pm_dir_table[] =
+  */
+ static int __init pm_init(void)
  {
--	atalk_table_header = register_sysctl_table(atalk_root_table, 1);
-+	atalk_table_header = register_sysctl_table(atalk_root_table, 0);
+-	register_sysctl_table(pm_dir_table, 1);
++	register_sysctl_table(pm_dir_table, 0);
+ 	return 0;
  }
  
- void atalk_unregister_sysctl(void)
 -- 
 1.4.4.1.g278f
