@@ -1,17 +1,20 @@
-Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45AC02A4.8080301@us.ibm.com>
-Date: Mon, 15 Jan 2007 16:39:32 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 90B4CDDDEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2007 15:28:36 +1100 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Tue, 16 Jan 2007 05:28:29 +0100
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] atomic_dec_if_positive sign extension fix
+Message-ID: <20070116042829.GA24654@iram.es>
+References: <20070114225502.GA21471@austin.ibm.com>
+	<17834.47158.581922.62728@cargo.ozlabs.ibm.com>
+	<20070115085557.GA4943@iram.es>
+	<4391e3fc8335446ddeedecb5670d4a00@kernel.crashing.org>
 MIME-Version: 1.0
-To: michael@ellerman.id.au
-Subject: Re: [PATCH] Cell SPU task notification -- updated patch: #1
-References: <45A805A0.2080000@us.ibm.com>
-	<1168826871.4622.32.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1168826871.4622.32.camel@concordia.ozlabs.ibm.com>
-Content-Type: multipart/mixed; boundary="------------060808080906030204090802"
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Reply-To: maynardj@us.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4391e3fc8335446ddeedecb5670d4a00@kernel.crashing.org>
+Cc: olof@lixom.net, linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,161 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060808080906030204090802
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+On Mon, Jan 15, 2007 at 05:01:12PM +0100, Segher Boessenkool wrote:
+> >It also avoids clobbering the carry, you don't know whether a future
+> >version of GCC will require explicit clobbers for the carry. For now
+> >they are useless: you can specify "xer" in the clobber list AFAIR but
+> >no pattern can be split between setters and users of the carry in the
+> >machine description.
+> 
+> You can specify "cc" in the clobber list already, don't use
+> "xer" unless you're clobbering something else in the XER.
+> 
 
-Attached is an updated patch that addresses Michael Ellerman's comments.
+Hmm, I believed "cc" was an alias for cr0.
 
-One comment made by Michael has not yet been addressed:
-The comment was in regard to the for-loop in 
-spufs/sched.c:notify_spus_active().  He wondered if the scheduler can 
-swap a context from one node to another.  If so, there's a small window 
-in this loop (where we switch the lock from one node's active list to 
-the next) where it may be possible we might miss waking up a context and 
-send a spurious wakeup to another.
-	Arnd . . . can you comment on this question?
+[Looking at gcc sources]
 
-Thanks.
--Maynard
+Ths snippet of gcc/config/rs6000.h confirms this:
 
+  {"cr0",  68}, {"cr1",  69}, {"cr2",  70}, {"cr3",  71},       \
+  {"cr4",  72}, {"cr5",  73}, {"cr6",  74}, {"cr7",  75},       \
+  {"cc",   68}, {"sp",    1}, {"toc",   2} }
 
---------------060808080906030204090802
-Content-Type: text/x-diff;
- name="spu-notifier.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="spu-notifier.patch"
+In this file, xer has number 76. So "cc" does not indicate a carry
+clobber. There is currently no way to specify a carry clobber, but 
+also gcc will never insert an inline asm between settings and uses
+of the carry. 
 
-Subject: Enable SPU switch notification to detect currently active SPU tasks.
+The following comment:
 
-From: Maynard Johnson <maynardj@us.ibm.com>
+/* PSImode is used for the XER register.  The XER register
+   is not used for anything; perhaps it should be deleted,
+   except that that would change register numbers.  */
+PARTIAL_INT_MODE (SI);
 
-This patch adds to the capability of spu_switch_event_register so that the
-caller is also notified of currently active SPU tasks.  It also exports
-spu_switch_event_register and spu_switch_event_unregister.
+in gcc/config/rs6000-modes.def is actually a bit misleading since the
+XER is often clobbered by instructions. But the XER is actually never
+exposed to the instruction scheduler: all the patterns that set and use 
+the carry are simple lists of machine instructions which will be put in
+the final object without modifications (only register number and possibly
+immediate value substitution).
 
-Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
-
-
-Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c
-===================================================================
---- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/sched.c	2006-12-04 10:56:04.730698720 -0600
-+++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-15 16:22:31.808461448 -0600
-@@ -84,15 +84,42 @@
- 			    ctx ? ctx->object_id : 0, spu);
- }
- 
-+static void notify_spus_active(void)
-+{
-+       int node;
-+	/* Wake up the active spu_contexts. When the awakened processes 
-+	 * sees their notify_active flag is set, they will call
-+	 * spu_notify_already_active().
-+	 */
-+	for (node = 0; node < MAX_NUMNODES; node++) {
-+		struct spu *spu;
-+		mutex_lock(&spu_prio->active_mutex[node]);
-+                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
-+			struct spu_context *ctx = spu->ctx;
-+			spu->notify_active = 1;
-+			wake_up_all(&ctx->stop_wq);
-+			smp_wmb();
-+		}
-+                mutex_unlock(&spu_prio->active_mutex[node]);
-+	}
-+	yield();
-+}
-+
- int spu_switch_event_register(struct notifier_block * n)
- {
--	return blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	int ret;
-+	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	if (!ret)
-+		notify_spus_active();
-+	return ret;
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_register);
- 
- int spu_switch_event_unregister(struct notifier_block * n)
- {
- 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
- 
- 
- static inline void bind_context(struct spu *spu, struct spu_context *ctx)
-@@ -250,6 +277,14 @@
- 	return spu_get_idle(ctx, flags);
- }
- 
-+void spu_notify_already_active(struct spu_context *ctx)
-+{
-+	struct spu *spu = ctx->spu;
-+	if (!spu)
-+		return;
-+	spu_switch_notify(spu, ctx);
-+}
-+
- /* The three externally callable interfaces
-  * for the scheduler begin here.
-  *
-Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-08 18:18:40.093354608 -0600
-+++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-08 18:31:03.610345792 -0600
-@@ -183,6 +183,7 @@
- void spu_yield(struct spu_context *ctx);
- int __init spu_sched_init(void);
- void __exit spu_sched_exit(void);
-+void spu_notify_already_active(struct spu_context *ctx);
- 
- extern char *isolated_loader;
- 
-Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/run.c
-===================================================================
---- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/run.c	2007-01-08 18:33:51.979311680 -0600
-+++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/run.c	2007-01-15 16:31:30.104499992 -0600
-@@ -45,9 +45,11 @@
- 	u64 pte_fault;
- 
- 	*stat = ctx->ops->status_read(ctx);
--	if (ctx->state != SPU_STATE_RUNNABLE)
--		return 1;
-+	smp_rmb();
-+
- 	spu = ctx->spu;
-+	if (ctx->state != SPU_STATE_RUNNABLE || spu->notify_active)
-+		return 1;
- 	pte_fault = spu->dsisr &
- 	    (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED);
- 	return (!(*stat & 0x1) || pte_fault || spu->class_0_pending) ? 1 : 0;
-@@ -304,6 +306,7 @@
- 		   u32 *npc, u32 *event)
- {
- 	int ret;
-+	struct * spu;
- 	u32 status;
- 
- 	if (down_interruptible(&ctx->run_sema))
-@@ -317,8 +320,16 @@
- 
- 	do {
- 		ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
-+		spu = ctx->spu;
- 		if (unlikely(ret))
- 			break;
-+		if (unlikely(spu->notify_active)) {
-+			spu->notify_active = 0;
-+			if (!(status & SPU_STATUS_STOPPED_BY_STOP)) {
-+				spu_notify_already_active(ctx);
-+				continue;
-+			}
-+		}
- 		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
- 		    (status >> SPU_STOP_STATUS_SHIFT == 0x2104)) {
- 			ret = spu_process_callback(ctx);
-
---------------060808080906030204090802--
+	Gabriel
