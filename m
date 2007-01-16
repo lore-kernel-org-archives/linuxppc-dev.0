@@ -1,18 +1,20 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from lxorguk.ukuu.org.uk (unknown [81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B8C5DDE40
-	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2007 22:28:34 +1100 (EST)
-Date: Tue, 16 Jan 2007 20:28:27 +0900 (JST)
-Message-Id: <200701161128.l0GBSSq4014709@toshiba.co.jp>
-Subject: Re: [PATCH 7/19] powerpc: interfaces to the hypervisor of Celleb
-To: anton@samba.org, will_schmidt@vnet.ibm.com
-In-Reply-To: <1168877276.11068.14.camel@localhost>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id A0C17DDDFF
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2007 22:57:11 +1100 (EST)
+Date: Tue, 16 Jan 2007 12:03:35 +0000
+From: Alan <alan@lxorguk.ukuu.org.uk>
+To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+Subject: Re: [PATCH 2/4] libata-core.c: add another IRQ calls
+Message-ID: <20070116120335.59b4491d@localhost.localdomain>
+In-Reply-To: <200701161046.l0GAk5Go019691@toshiba.co.jp>
+References: <200701161046.l0GAk5Go019691@toshiba.co.jp>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: jeff@garzik.org, arnd@arndb.de, linuxppc-dev@ozlabs.org,
+	linux-ide@vger.kernel.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,51 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello everyone,
+On Tue, 16 Jan 2007 19:46:14 +0900
+Akira Iguchi <akira2.iguchi@toshiba.co.jp> wrote:
 
-> > Just a few suggestions.
-
-Thank you for your comments.
-
-
-> > > +#define	   HCALL_MEDIUM	or	2,2,2
-> > 
-> > Doesnt look like this is used.
-> 
-> seconded.  that #define is identical to HMT_MEDIUM out of ppc_asm.h.  I
-> notice that HMT_MEDIUM is actually used throughout this patch, so most
-> of the way there already.
-
-We'll remove it.
-
-<asm/ppc_asm.h> is already included so we don't have to have
-HMT_MEDIUM or HCALL_MEDIUM defintion in that file.
+> When enabling IRQ, ap->ops->irq_on is checked.
+> Because most drivers can use ata_irq_on() as is, this
+> patch allows ap->ops->irq_on to be NULL.
+> If it is NULL, ata_irq_on() are used.
 
 
-> > > +#define		   HVSC	     .long   0x44000022
-> > 
-> > Could you pick this up from the define in include/asm-powerpc instead?
-> 
-> "#include <asm/hvcall.h>" should do it.
-
-As Geoff-san said, "sc 1" is not supported in Debian or our own assembler,
-so we have to keep it.
-
-We think <asm/hvcall.h> is only for IBM's hypervisor, so we don't want
-to include <asm/hvcall.h> only to get HVSC definition in our hvCall.S;
-so we will keep HVSC definition here.
+Acked-by: Alan Cox <alan@redhat.com>
 
 
-> > > +#define	LOAD_CONST64(r, const)					\
-> > > +		lis		r, ((const)>>48)&0xFFFF;				\
-> > > +		ori		r, r, ((const)>>32)&0xFFFF;						\
-> > > +		rldicr		r, r, 32, 31;										  \
-> > > +		oris		r, r, ((const)>>16)&0xFFFF;								    \
-> > > +		ori		r, r, ((const)>>0)&0xFFFF
-> > 
-> > It doesnt look like this is used either.
+Jeff - at some point we could eliminate a lot of the NULL checks like
+these by having the registration code fill in the defaults where
+appropriate ?
 
-We'll remove it.
-
-Best regards,
-Kou Ishizaki
+Alan
