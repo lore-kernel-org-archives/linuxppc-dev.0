@@ -3,19 +3,17 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6DFC8DDE10
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 07:52:05 +1100 (EST)
-In-Reply-To: <B63F38A9-0DD0-4DA7-8D9A-67E0829CDF37@kernel.crashing.org>
-References: <1168968034.31963.11.camel@gentoo-jocke.transmode.se>
-	<20070116201110.GA4332@localdomain>
-	<B63F38A9-0DD0-4DA7-8D9A-67E0829CDF37@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id D05B9DDDFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 08:20:10 +1100 (EST)
+In-Reply-To: <8746466a0701161246wbe4268esab51bc07a7efb2a3@mail.gmail.com>
+References: <8746466a0701161246wbe4268esab51bc07a7efb2a3@mail.gmail.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <69C9B328-FA91-448B-BD47-49CC7D2FC6A1@kernel.crashing.org>
+Message-Id: <F5C9484B-93D7-4B08-813A-8B14D3F0F878@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Warnings when booting rc5 on a mpc83xx based board
-Date: Tue, 16 Jan 2007 14:51:06 -0600
-To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: EDAC platform devices for fsl_soc
+Date: Tue, 16 Jan 2007 15:17:20 -0600
+To: Dave <dave.jiang@gmail.com>
 Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,60 +25,97 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 16, 2007, at 2:36 PM, Kumar Gala wrote:
+On Jan 16, 2007, at 2:46 PM, Dave wrote:
+
+> I'm trying to write an EDAC driver for the mpc8560 board. I will need
+> to access the DDR error management registers, the L2 error management
+> registers, the PCI management registers, and also the related IRQs
+> (internal 0, 2, and 8). So I would like to insert some entries into
+> the 8560 fdt in order to parse them and map the hw irq to virq in
+> order to setup the platform device resources.
+>
+> Below is what I was thinking the fdt should look like. Is that  
+> reasonable?
+
+I dont see the reason to introduce nodes that are specific to EDAC.   
+You should add nodes for the full device (which includes the error  
+mgmt).  In the case of PCI the node should be there and fixing the  
+dts to report the proper irq is all that is needed.
 
 >
-> On Jan 16, 2007, at 2:11 PM, Nathan Lynch wrote:
+>     soc8560@e0000000 {
+>        #address-cells = <1>;
+>        #size-cells = <1>;
+>        #interrupt-cells = <2>;
+>        device_type = "soc";
+>        ranges = <0 e0000000 00100000>;
+>        reg = <e0000000 00000200>;
+>        bus-frequency = <13ab6680>;
 >
->> Joakim Tjernlund wrote:
->>> after upgrading to rc5 I get this:
->>>
->>> IPIC (128 IRQ sources) at fdefd700
->>> QEIC (64 IRQ sources) at fdefc080
->>> PID hash table entries: 512 (order: 9, 2048 bytes)
->>> ------------[ cut here ]------------
->>> Badness at c00f4278 [verbose debug info unavailable]
->>> Call Trace:
->>> [C0249DC0] [C00085BC] show_stack+0x48/0x194 (unreliable)
->>> [C0249DF0] [C00F2158] report_bug+0x84/0xac
->>> [C0249E00] [C000DD28] program_check_exception+0xe0/0x538
->>> [C0249E40] [C000F78C] ret_from_except_full+0x0/0x4c
->>> --- Exception: 700 at kref_get+0xc/0x24
->>>     LR = of_node_get+0x20/0x38
->>> [C0249F00] [FFFFFFFF] 0xffffffff (unreliable)
->>> [C0249F10] [C000CCA0] of_find_node_by_type+0x8c/0xd0
->>> [C0249F30] [C02198A0] get_freq+0x2c/0x80
->>> [C0249F50] [C021992C] generic_calibrate_decr+0x38/0xdc
->>> [C0249F70] [C0219E5C] time_init+0x48c/0x530
->>> [C0249FD0] [C02135F4] start_kernel+0x120/0x250
->>> [C0249FF0] [00003438] 0x3438
->>
->> Looks like it could be an unbalanced of_node_put causing a node's
->> refcount to underflow, probably the root node.  The warning in
->> kref_get has unearthed a couple of these recently, see
->>
->> http://patchwork.ozlabs.org/linuxppc/patch?id=8840
->>
->> for example.
->
-> Joakim,
->
-> In your board code do you having something like:
->
->          np = of_find_node_by_type(NULL, "qeic");
->          if (!np)
->                  return;
->
->          qe_ic_init(np, 0);
->          of_node_put(np);
->
-> in _init_IRQ?
->
-> if so remove the of_node_put() after qe_ic_init() and see if the
-> issue still exists.
+>        dram_control@2000 {
+>            device_type = "edac";
+>            compatible = "85xx";
+>            reg = <2000 e5c>;
 
-If this ends up being the issue we'll change qe_ic_init to stop doing  
-the of_node_put() and change ipic_init() as well.  But lets first  
-validate that this is the cause.
+expand to cover the full 4k allocated to ddr controller
+
+>            linux,phandle = <2000>;
+>            interrupt-parent = <40000>;
+>            interrupts = <2 1>;
+
+should be <2 2>
+
+>        };
+
+maybe something more generic like
+
+memory-controller@2000 {
+
+...
+
+}
+
+>        l2_error@20e00 {
+>            device_type = "edac";
+>            compatible = "85xx";
+>            reg = <20e00 5c>;
+>            linux,phandle = <20e00>;
+>            interrupt-parent = <40000>;
+>            interrupts = <0 1>;
+
+should be <0 2>
+
+>        };
+
+Let's mimic the CPU cache node for this:
+
+l2-cache@20000 {
+	device_type = "cache";
+	...  (various cache properties, size, line size, etc.)
+
+         compatible = "85xx";
+(Not sure if 85xx is the best for compatible)
+
+         reg = <20000 100>;
+         interrupt-parent = <40000>;
+         interrupts = <0 1>;
+};
+
+>
+>        pci_error@8e00 {
+>            device_type = "edac";
+>            compatible = "85xx";
+>            reg = <8e00 20>;
+>            linux,phandle = <8e00>;
+>            interrupt-parent = <40000>;
+>            interrupts = <8 0>;
+>        };
+
+Use the existing pci node as I mentioned above.
 
 - k
+
+> .....
+>
+> -- 
+> -= Dave =-
