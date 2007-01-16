@@ -3,13 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AD1A7DE356
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:15:39 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 212B4DDFF9
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:16:07 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 8/59] sysctl: ipx remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:13 -0700
-Message-Id: <11689656232449-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 1/59] sysctl x25: Remove unnecessary insert_at_head from
+	register_sysctl_table.
+Date: Tue, 16 Jan 2007 09:39:06 -0700
+Message-Id: <11689656044103-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -38,28 +39,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
-
-The sysctl numbers used are unique so setting the insert_at_head
-flag servers no semantic purpose and is just confusing.
+Since x25 uses unique binary numbers inserting yourself at the
+head of the search list for sysctls so you can override already
+registered sysctls is pointless.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/ipx/sysctl_net_ipx.c |    2 +-
+ net/x25/sysctl_net_x25.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/ipx/sysctl_net_ipx.c b/net/ipx/sysctl_net_ipx.c
-index fa57473..0442f44 100644
---- a/net/ipx/sysctl_net_ipx.c
-+++ b/net/ipx/sysctl_net_ipx.c
-@@ -52,7 +52,7 @@ static struct ctl_table_header *ipx_table_header;
+diff --git a/net/x25/sysctl_net_x25.c b/net/x25/sysctl_net_x25.c
+index aabda59..94aff67 100644
+--- a/net/x25/sysctl_net_x25.c
++++ b/net/x25/sysctl_net_x25.c
+@@ -98,7 +98,7 @@ static struct ctl_table x25_root_table[] = {
  
- void ipx_register_sysctl(void)
+ void __init x25_register_sysctl(void)
  {
--	ipx_table_header = register_sysctl_table(ipx_root_table, 1);
-+	ipx_table_header = register_sysctl_table(ipx_root_table, 0);
+-	x25_table_header = register_sysctl_table(x25_root_table, 1);
++	x25_table_header = register_sysctl_table(x25_root_table, 0);
  }
  
- void ipx_unregister_sysctl(void)
+ void x25_unregister_sysctl(void)
 -- 
 1.4.4.1.g278f
