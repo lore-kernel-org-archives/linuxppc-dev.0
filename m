@@ -1,18 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id DB79DDDE02
+Return-Path: <andrea.galbusera@teamware.it>
+Received: from smtp3.aruba.it (smtpd3.aruba.it [62.149.128.208])
+	by ozlabs.org (Postfix) with SMTP id 16059DDDF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Jan 2007 08:30:03 +1100 (EST)
-To: "David Gamez" <dgalari@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: flash problem in a LITE5200B 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 15 Jan 2007 11:49:01 +0100."
-	<3184691b0701150249g55d2472ax583acca96f0efb30@mail.gmail.com>
-Date: Mon, 15 Jan 2007 22:30:00 +0100
-Sender: wd@denx.de
-Message-Id: <20070115213000.F1DC735264F@atlas.denx.de>
+	Tue, 16 Jan 2007 20:37:20 +1100 (EST)
+Subject: Re: Ethernet fails on MPC5200 based target
+From: Andrea Galbusera <andrea.galbusera@teamware.it>
+To: Sylvain Munaut <tnt@246tNt.com>
+In-Reply-To: <45A4FDAF.8020909@246tNt.com>
+References: <1168439212.5271.70.camel@localhost.localdomain>
+	<45A4FDAF.8020909@246tNt.com>
+Content-Type: text/plain
+Date: Tue, 16 Jan 2007 09:20:15 +0100
+Message-Id: <1168935615.22089.31.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,37 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <3184691b0701150249g55d2472ax583acca96f0efb30@mail.gmail.com> you wrote:
->
-> I work with a Freescale LITE5200B, but I have a problem, when I download a
-> rootfs image to a flash memory in the board, hi have one error:
+Hi Sylvain,
+some new elements in trying to solve my ethernet issue...
 
-You don't provide much information (like which software you use to do
-the copying - U-Boot, Linux, ... ?), but let me guess...
+On Wed, 2007-01-10 at 15:52 +0100, Sylvain Munaut wrote:
 
-> => Copy To Flash ............. Outside available Flash
-> 
-> The size of the image is of 3285336 bytes, but the flash memory capacity is
-> 32 MBytes, and I load the image in the first sector on the flash memory.
+> Maybe some things (like xlb pipelining, cache snooping, ...) is not properly
+> setup in you platform support code ?
 
-Let me guess: you do this in U-Boot, and forget
+Following your suggestion, I started from here... Comparing the
+unaffected kernel (from DENX) with yours I tryed commenting out the
+following in mpc52xx_setup_cpu() :
 
-* that U-Boot commands take are usually interpreted in hex, i. e.  if
-  you  enter  a byte count of '3285336' than this is 52974390 decimal
-  or 50+ MB which definitely *is* outside the available flash
+  /* Disable XLB pipelining */
+  /* (cfr errate 292. We could do this only just before ATA PIO
+     transaction and re-enable it after ...) */
+  out_be32(&xlb->config, in_be32(&xlb->config) | MPC52xx_XLB_CFG_PLDIS);
 
-and/or
+In fact this gives much better results, but does not completely solve
+the problem. Network packets corruption seems to be gone, but, after
+massive pinging (about 1k ping packets) it comes back with about the
+same frequency as before the change.
 
-* that the U-Boot "cp" command operates on 32 bit words (= 4  bytes),
-  so when you want to specify a byte count you have to use the "cp.b"
-  variant of this command
+Not tested yet the impact of this change on ATA/IDE
+functionality/performance, but, if I'm not wrong, disabling the XLB
+pipelining was due to a hardware bug of the CPU (errata 292), which
+should be solved in 5200B, the version that I use.
 
-Best regards,
+I can't figure out what is the impact of keeping XLB pipelining enabled
+on the eth behavior. I'm sharing this results in the hope someone have
+any other valuable suggestion
 
-Wolfgang Denk
+Regards,
 
 -- 
-Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"Just think, with VLSI we can have 100 ENIACS on a chip!"
-- Alan Perlis
+  Andrea
