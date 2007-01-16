@@ -3,14 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9875BDE077
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:23:17 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2A1F8DE8CA
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:23:21 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 39/59] sysctl: C99 convert ctl_tables in
-	arch/x86_64/ia32/ia32_binfmt.c
-Date: Tue, 16 Jan 2007 09:39:44 -0700
-Message-Id: <1168965664873-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 43/59] sysctl: Remove sys_sysctl support from
+	drivers/char/rtc.c
+Date: Tue, 16 Jan 2007 09:39:48 -0700
+Message-Id: <1168965669760-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,51 +41,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
+The real time clock driver was using the binary number reserved
+for cdroms in the sysctl binary number interface, which is a no-no.
+So since the sysctl binary interface is wrong remove it.
+
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/x86_64/ia32/ia32_binfmt.c |   30 ++++++++++++++++++++----------
- 1 files changed, 20 insertions(+), 10 deletions(-)
+ drivers/char/rtc.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86_64/ia32/ia32_binfmt.c b/arch/x86_64/ia32/ia32_binfmt.c
-index 75677ad..644b203 100644
---- a/arch/x86_64/ia32/ia32_binfmt.c
-+++ b/arch/x86_64/ia32/ia32_binfmt.c
-@@ -395,16 +395,26 @@ EXPORT_SYMBOL(ia32_setup_arg_pages);
- #include <linux/sysctl.h>
+diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
+index 664f36c..df11289 100644
+--- a/drivers/char/rtc.c
++++ b/drivers/char/rtc.c
+@@ -282,7 +282,7 @@ irqreturn_t rtc_interrupt(int irq, void *dev_id)
+  */
+ static ctl_table rtc_table[] = {
+ 	{
+-		.ctl_name	= 1,
++		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "max-user-freq",
+ 		.data		= &rtc_max_user_freq,
+ 		.maxlen		= sizeof(int),
+@@ -294,9 +294,8 @@ static ctl_table rtc_table[] = {
  
- static ctl_table abi_table2[] = {
--	{ 99, "vsyscall32", &sysctl_vsyscall32, sizeof(int), 0644, NULL,
--	  proc_dointvec },
--	{ 0, }
--}; 
--
--static ctl_table abi_root_table2[] = { 
--	{ .ctl_name = CTL_ABI, .procname = "abi", .mode = 0555, 
--	  .child = abi_table2 }, 
--	{ 0 }, 
--}; 
-+	{
-+		.ctl_name	= 99,
-+		.procname	= "vsyscall32",
-+		.data		= &sysctl_vsyscall32,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_dointvec
-+	},
-+	{}
-+};
-+
-+static ctl_table abi_root_table2[] = {
-+	{
-+		.ctl_name = CTL_ABI,
-+		.procname = "abi",
-+		.mode = 0555,
-+		.child = abi_table2
-+	},
-+	{}
-+};
- 
- static __init int ia32_binfmt_init(void)
- { 
+ static ctl_table rtc_root[] = {
+ 	{
+-		.ctl_name	= 1,
++		.ctl_name	= CTL_UNNUMBERED,
+ 		.procname	= "rtc",
+-		.maxlen		= 0,
+ 		.mode		= 0555,
+ 		.child		= rtc_table,
+ 	},
+@@ -307,7 +306,6 @@ static ctl_table dev_root[] = {
+ 	{
+ 		.ctl_name	= CTL_DEV,
+ 		.procname	= "dev",
+-		.maxlen		= 0,
+ 		.mode		= 0555,
+ 		.child		= rtc_root,
+ 	},
 -- 
 1.4.4.1.g278f
