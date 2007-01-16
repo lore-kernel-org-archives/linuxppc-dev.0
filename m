@@ -3,14 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 35BE9DFCD1
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:19:42 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id E1F27DFFB2
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:20:15 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 49/59] sysctl: Move init_irq_proc into init/main where it
-	belongs
-Date: Tue, 16 Jan 2007 09:39:54 -0700
-Message-Id: <1168965684147-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 23/59] sysctl: Move CTL_FRV into sysctl.h where it belongs
+Date: Tue, 16 Jan 2007 09:39:28 -0700
+Message-Id: <1168965640807-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -43,44 +42,33 @@ From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- init/main.c     |    3 +++
- kernel/sysctl.c |    3 ---
- 2 files changed, 3 insertions(+), 3 deletions(-)
+ arch/frv/kernel/sysctl.c |    1 -
+ include/linux/sysctl.h   |    1 +
+ 2 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/init/main.c b/init/main.c
-index 8b4a7d7..8af5c6e 100644
---- a/init/main.c
-+++ b/init/main.c
-@@ -691,6 +691,9 @@ static void __init do_basic_setup(void)
- #ifdef CONFIG_SYSCTL
- 	sysctl_init();
- #endif
-+#ifdef CONFIG_PROC_FS
-+	init_irq_proc();
-+#endif
- 
- 	do_initcalls();
- }
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 600b333..7420761 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1172,8 +1172,6 @@ static ctl_table dev_table[] = {
- 	{ .ctl_name = 0 }
+diff --git a/arch/frv/kernel/sysctl.c b/arch/frv/kernel/sysctl.c
+index ce67680..2f4da32 100644
+--- a/arch/frv/kernel/sysctl.c
++++ b/arch/frv/kernel/sysctl.c
+@@ -186,7 +186,6 @@ static struct ctl_table frv_table[] =
+  * Use a temporary sysctl number. Horrid, but will be cleaned up in 2.6
+  * when all the PM interfaces exist nicely.
+  */
+-#define CTL_FRV 9898
+ static struct ctl_table frv_dir_table[] =
+ {
+ 	{CTL_FRV, "frv", NULL, 0, 0555, frv_table},
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index e7c40b6..71c16b4 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -72,6 +72,7 @@ enum
+ 	CTL_CPU=10,		/* CPU stuff (speed scaling, etc) */
+ 	CTL_SUNRPC=7249,	/* sunrpc debug */
+ 	CTL_PM=9899,		/* frv power management */
++	CTL_FRV=9898,		/* frv specific sysctls */
  };
  
--extern void init_irq_proc (void);
--
- static DEFINE_SPINLOCK(sysctl_lock);
- 
- /* called under sysctl_lock */
-@@ -1219,7 +1217,6 @@ void __init sysctl_init(void)
- {
- #ifdef CONFIG_PROC_SYSCTL
- 	register_proc_table(root_table, proc_sys_root, &root_table_header);
--	init_irq_proc();
- #endif
- }
- 
+ /* CTL_BUS names: */
 -- 
 1.4.4.1.g278f
