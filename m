@@ -3,14 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7F6A9484BA
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:29:08 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 8480F48674
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:29:21 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 32/59] sysctl: C99 convert arch/mips/lasat/sysctl.c and remove
-	ABI breakage.
-Date: Tue, 16 Jan 2007 09:39:37 -0700
-Message-Id: <11689656574092-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 45/59] sysctl: C99 convert ctl_tables in
+	drivers/parport/procfs.c
+Date: Tue, 16 Jan 2007 09:39:50 -0700
+Message-Id: <11689656733768-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,182 +41,316 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-While C99 converting the ctl_table initializers I realized
-that the binary sysctl numbers were in conflict with the binary
-values under CTL_KERN.   Including CTL_KERN KERN_VERSION as used
-by glibc.  So I just removed the sysctl binary interface for these
-values, as it was unsupportable.
-
-Luckily these sysctl were inserted at the end of the
-sysctl list so this bug was not visible to userspace.
-
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/mips/lasat/sysctl.c |  145 ++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 116 insertions(+), 29 deletions(-)
+ drivers/parport/procfs.c |  264 +++++++++++++++++++++++++++++++++-------------
+ 1 files changed, 189 insertions(+), 75 deletions(-)
 
-diff --git a/arch/mips/lasat/sysctl.c b/arch/mips/lasat/sysctl.c
-index 1287835..c04e82f 100644
---- a/arch/mips/lasat/sysctl.c
-+++ b/arch/mips/lasat/sysctl.c
-@@ -302,42 +302,129 @@ extern int lasat_boot_to_service;
- #ifdef CONFIG_SYSCTL
+diff --git a/drivers/parport/procfs.c b/drivers/parport/procfs.c
+index 2e744a2..5337789 100644
+--- a/drivers/parport/procfs.c
++++ b/drivers/parport/procfs.c
+@@ -233,12 +233,12 @@ static int do_hardware_modes (ctl_table *table, int write,
+ 	return copy_to_user(result, buffer, len) ? -EFAULT : 0;
+ }
  
- static ctl_table lasat_table[] = {
--	{LASAT_CPU_HZ, "cpu-hz", &lasat_board_info.li_cpu_hz, sizeof(int),
--	 0444, NULL, &proc_dointvec, &sysctl_intvec},
--	{LASAT_BUS_HZ, "bus-hz", &lasat_board_info.li_bus_hz, sizeof(int),
--	 0444, NULL, &proc_dointvec, &sysctl_intvec},
--	{LASAT_MODEL, "bmid", &lasat_board_info.li_bmid, sizeof(int),
--	 0444, NULL, &proc_dointvec, &sysctl_intvec},
--	{LASAT_PRID, "prid", &lasat_board_info.li_prid, sizeof(int),
--	 0644, NULL, &proc_lasat_eeprom_value, &sysctl_lasat_eeprom_value},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "cpu-hz",
-+		.data		= &lasat_board_info.li_cpu_hz,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0444,
-+		.proc_handler	= &proc_dointvec,
-+		.strategy	= &sysctl_intvec
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "bus-hz",
-+		.data		= &lasat_board_info.li_bus_hz,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0444,
-+		.proc_handler	= &proc_dointvec,
-+		.strategy	= &sysctl_intvec
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "bmid",
-+		.data		= &lasat_board_info.li_bmid,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0444,
-+		.proc_handler	= &proc_dointvec,
-+		.strategy	= &sysctl_intvec
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "prid",
-+		.data		= &lasat_board_info.li_prid,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_lasat_eeprom_value,
-+		.strategy	= &sysctl_lasat_eeprom_value
-+	},
- #ifdef CONFIG_INET
--	{LASAT_IPADDR, "ipaddr", &lasat_board_info.li_eeprom_info.ipaddr, sizeof(int),
--	 0644, NULL, &proc_lasat_ip, &sysctl_lasat_intvec},
--	{LASAT_NETMASK, "netmask", &lasat_board_info.li_eeprom_info.netmask, sizeof(int),
--	 0644, NULL, &proc_lasat_ip, &sysctl_lasat_intvec},
--	{LASAT_BCAST, "bcastaddr", &lasat_bcastaddr,
--		sizeof(lasat_bcastaddr), 0600, NULL,
--		&proc_dostring, &sysctl_string},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "ipaddr",
-+		.data		= &lasat_board_info.li_eeprom_info.ipaddr,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_lasat_ip,
-+		.strategy	= &sysctl_lasat_intvec
-+	},
-+	{
-+		.ctl_name	= LASAT_NETMASK,
-+		.procname	= "netmask",
-+		.data		= &lasat_board_info.li_eeprom_info.netmask,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_lasat_ip,
-+		.strategy	= &sysctl_lasat_intvec
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "bcastaddr",
-+		.data		= &lasat_bcastaddr,
-+		.maxlen		= sizeof(lasat_bcastaddr),
-+		.mode		= 0600,
-+		.proc_handler	= &proc_dostring,
-+		.strategy	= &sysctl_string
-+	},
- #endif
--	{LASAT_PASSWORD, "passwd_hash", &lasat_board_info.li_eeprom_info.passwd_hash, sizeof(lasat_board_info.li_eeprom_info.passwd_hash),
--	 0600, NULL, &proc_dolasatstring, &sysctl_lasatstring},
--	{LASAT_SBOOT, "boot-service", &lasat_boot_to_service, sizeof(int),
--	 0644, NULL, &proc_dointvec, &sysctl_intvec},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "passwd_hash",
-+		.data		= &lasat_board_info.li_eeprom_info.passwd_hash,
-+		.maxlen		= sizeof(lasat_board_info.li_eeprom_info.passwd_hash),
-+		.mode		= 0600,
-+		.proc_handler	= &proc_dolasatstring,
-+		.strategy	= &sysctl_lasatstring
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "boot-service",
-+		.data		= &lasat_boot_to_service,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec,
-+		.strategy	= &sysctl_intvec
-+	},
- #ifdef CONFIG_DS1603
--	{LASAT_RTC, "rtc", &rtctmp, sizeof(int),
--	 0644, NULL, &proc_dolasatrtc, &sysctl_lasat_rtc},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "rtc",
-+		.data		= &rtctmp,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dolasatrtc,
-+		.strategy	= &sysctl_lasat_rtc
-+	},
- #endif
--	{LASAT_NAMESTR, "namestr", &lasat_board_info.li_namestr, sizeof(lasat_board_info.li_namestr),
--	 0444, NULL, &proc_dostring, &sysctl_string},
--	{LASAT_TYPESTR, "typestr", &lasat_board_info.li_typestr, sizeof(lasat_board_info.li_typestr),
--	 0444, NULL, &proc_dostring, &sysctl_string},
--	{0}
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "namestr",
-+		.data		= &lasat_board_info.li_namestr,
-+		.maxlen		= sizeof(lasat_board_info.li_namestr),
-+		.mode		= 0444,
-+		.proc_handler	=  &proc_dostring,
-+		.strategy	= &sysctl_string
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "typestr",
-+		.data		= &lasat_board_info.li_typestr,
-+		.maxlen		= sizeof(lasat_board_info.li_typestr),
-+		.mode		= 0444,
-+		.proc_handler	= &proc_dostring,
-+		.strategy	= &sysctl_string
-+	},
-+	{}
+-#define PARPORT_PORT_DIR(child) { 0, NULL, NULL, 0, 0555, child }
+-#define PARPORT_PARPORT_DIR(child) { DEV_PARPORT, "parport", \
+-                                     NULL, 0, 0555, child }
+-#define PARPORT_DEV_DIR(child) { CTL_DEV, "dev", NULL, 0, 0555, child }
+-#define PARPORT_DEVICES_ROOT_DIR  { DEV_PARPORT_DEVICES, "devices", \
+-                                    NULL, 0, 0555, NULL }
++#define PARPORT_PORT_DIR(CHILD) { .ctl_name = 0, .procname = NULL, .mode = 0555, .child = CHILD }
++#define PARPORT_PARPORT_DIR(CHILD) { .ctl_name = DEV_PARPORT, .procname = "parport", \
++                                     .mode = 0555, .child = CHILD }
++#define PARPORT_DEV_DIR(CHILD) { .ctl_name = CTL_DEV, .procname = "dev", .mode = 0555, .child = CHILD }
++#define PARPORT_DEVICES_ROOT_DIR  { .ctl_name = DEV_PARPORT_DEVICES, .procname = "devices", \
++                                    .mode = 0555, .child = NULL }
+ 
+ static const unsigned long parport_min_timeslice_value =
+ PARPORT_MIN_TIMESLICE_VALUE;
+@@ -263,50 +263,118 @@ struct parport_sysctl_table {
  };
  
--#define CTL_LASAT 1	// CTL_ANY ???
- static ctl_table lasat_root_table[] = {
--	{ CTL_LASAT, "lasat", NULL, 0, 0555, lasat_table },
--	{ 0 }
+ static const struct parport_sysctl_table parport_sysctl_template = {
+-	NULL,
++	.sysctl_header = NULL,
+         {
+-		{ DEV_PARPORT_SPINTIME, "spintime",
+-		  NULL, sizeof(int), 0644, NULL,
+-		  &proc_dointvec_minmax, NULL, NULL,
+-		  (void*) &parport_min_spintime_value,
+-		  (void*) &parport_max_spintime_value },
+-		{ DEV_PARPORT_BASE_ADDR, "base-addr",
+-		  NULL, 0, 0444, NULL,
+-		  &do_hardware_base_addr },
+-		{ DEV_PARPORT_IRQ, "irq",
+-		  NULL, 0, 0444, NULL,
+-		  &do_hardware_irq },
+-		{ DEV_PARPORT_DMA, "dma",
+-		  NULL, 0, 0444, NULL,
+-		  &do_hardware_dma },
+-		{ DEV_PARPORT_MODES, "modes",
+-		  NULL, 0, 0444, NULL,
+-		  &do_hardware_modes },
++		{
++			.ctl_name	= DEV_PARPORT_SPINTIME,
++			.procname	= "spintime",
++			.data		= NULL,
++			.maxlen		= sizeof(int),
++			.mode		= 0644,
++			.proc_handler	= &proc_dointvec_minmax,
++			.extra1		= (void*) &parport_min_spintime_value,
++			.extra2		= (void*) &parport_max_spintime_value
++		},
++		{
++			.ctl_name	= DEV_PARPORT_BASE_ADDR,
++			.procname	= "base-addr",
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0444,
++			.proc_handler	= &do_hardware_base_addr
++		},
++		{
++			.ctl_name	= DEV_PARPORT_IRQ,
++			.procname	= "irq",
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0444,
++			.proc_handler	= &do_hardware_irq
++		},
++		{
++			.ctl_name	= DEV_PARPORT_DMA,
++			.procname	= "dma",
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0444,
++			.proc_handler	= &do_hardware_dma
++		},
++		{
++			.ctl_name	= DEV_PARPORT_MODES,
++			.procname	= "modes",
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0444,
++			.proc_handler	= &do_hardware_modes
++		},
+ 		PARPORT_DEVICES_ROOT_DIR,
+ #ifdef CONFIG_PARPORT_1284
+-		{ DEV_PARPORT_AUTOPROBE, "autoprobe",
+-		  NULL, 0, 0444, NULL,
+-		  &do_autoprobe },
+-		{ DEV_PARPORT_AUTOPROBE + 1, "autoprobe0",
+-		 NULL, 0, 0444, NULL,
+-		 &do_autoprobe },
+-		{ DEV_PARPORT_AUTOPROBE + 2, "autoprobe1",
+-		  NULL, 0, 0444, NULL,
+-		  &do_autoprobe },
+-		{ DEV_PARPORT_AUTOPROBE + 3, "autoprobe2",
+-		  NULL, 0, 0444, NULL,
+-		  &do_autoprobe },
+-		{ DEV_PARPORT_AUTOPROBE + 4, "autoprobe3",
+-		  NULL, 0, 0444, NULL,
+-		  &do_autoprobe },
++		{
++			.ctl_name	= DEV_PARPORT_AUTOPROBE,
++			.procname	= "autoprobe",
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0444,
++			.proc_handler	= &do_autoprobe
++		},
++		{
++			.ctl_name	= DEV_PARPORT_AUTOPROBE + 1,
++			.procname	= "autoprobe0",
++			.data		= NULL,
++			.maxlen		= 0,
++			.maxlen		= 0444,
++			.proc_handler	=  &do_autoprobe
++		},
++		{
++			.ctl_name	= DEV_PARPORT_AUTOPROBE + 2,
++			.procname	= "autoprobe1",
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0444,
++			.proc_handler	= &do_autoprobe
++		},
++		{
++			.ctl_name	= DEV_PARPORT_AUTOPROBE + 3,
++			.procname	= "autoprobe2",
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0444,
++			.proc_handler	= &do_autoprobe
++		},
++		{
++			.ctl_name	= DEV_PARPORT_AUTOPROBE + 4,
++			.procname	= "autoprobe3",
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0444,
++			.proc_handler	= &do_autoprobe
++		},
+ #endif /* IEEE 1284 support */
+-		{0}
++		{}
+ 	},
+-	{ {DEV_PARPORT_DEVICES_ACTIVE, "active", NULL, 0, 0444, NULL,
+-	  &do_active_device }, {0}},
+-	{ PARPORT_PORT_DIR(NULL), {0}},
+-	{ PARPORT_PARPORT_DIR(NULL), {0}},
+-	{ PARPORT_DEV_DIR(NULL), {0}}
 +	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "lasat",
-+		.mode		=  0555,
-+		.child		= lasat_table
++		{
++			.ctl_name	= DEV_PARPORT_DEVICES_ACTIVE,
++			.procname	= "active",
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0444,
++			.proc_handler	= &do_active_device
++		},
++		{}
 +	},
-+	{}
++	{
++		PARPORT_PORT_DIR(NULL),
++		{}
++	},
++	{
++		PARPORT_PARPORT_DIR(NULL),
++		{}
++	},
++	{
++		PARPORT_DEV_DIR(NULL),
++		{}
++	}
  };
  
- static int __init lasat_register_sysctl(void)
+ struct parport_device_sysctl_table
+@@ -322,19 +390,46 @@ struct parport_device_sysctl_table
+ 
+ static const struct parport_device_sysctl_table
+ parport_device_sysctl_template = {
+-	NULL,
++	.sysctl_header = NULL,
++	{
++		{
++			.ctl_name 	= DEV_PARPORT_DEVICE_TIMESLICE,
++			.procname 	= "timeslice",
++			.data		= NULL,
++			.maxlen		= sizeof(int),
++			.mode		= 0644,
++			.proc_handler	= &proc_doulongvec_ms_jiffies_minmax,
++			.extra1		= (void*) &parport_min_timeslice_value,
++			.extra2		= (void*) &parport_max_timeslice_value
++		},
++	},
++	{
++		{
++			.ctl_name	= 0,
++			.procname	= NULL,
++			.data		= NULL,
++			.maxlen		= 0,
++			.mode		= 0555,
++			.child		= NULL
++		},
++		{}
++	},
+ 	{
+-		{ DEV_PARPORT_DEVICE_TIMESLICE, "timeslice",
+-		  NULL, sizeof(int), 0644, NULL,
+-		  &proc_doulongvec_ms_jiffies_minmax, NULL, NULL,
+-		  (void*) &parport_min_timeslice_value,
+-		  (void*) &parport_max_timeslice_value },
++		PARPORT_DEVICES_ROOT_DIR,
++		{}
++	},
++	{
++		PARPORT_PORT_DIR(NULL),
++		{}
+ 	},
+-	{ {0, NULL, NULL, 0, 0555, NULL}, {0}},
+-	{ PARPORT_DEVICES_ROOT_DIR, {0}},
+-	{ PARPORT_PORT_DIR(NULL), {0}},
+-	{ PARPORT_PARPORT_DIR(NULL), {0}},
+-	{ PARPORT_DEV_DIR(NULL), {0}}
++	{
++		PARPORT_PARPORT_DIR(NULL),
++		{}
++	},
++	{
++		PARPORT_DEV_DIR(NULL),
++		{}
++	}
+ };
+ 
+ struct parport_default_sysctl_table
+@@ -351,28 +446,47 @@ extern int parport_default_spintime;
+ 
+ static struct parport_default_sysctl_table
+ parport_default_sysctl_table = {
+-	NULL,
++	.sysctl_header	= NULL,
++	{
++		{
++			.ctl_name	= DEV_PARPORT_DEFAULT_TIMESLICE,
++			.procname	= "timeslice",
++			.data		= &parport_default_timeslice,
++			.maxlen		= sizeof(parport_default_timeslice),
++			.mode		= 0644,
++			.proc_handler	= &proc_doulongvec_ms_jiffies_minmax,
++			.extra1		= (void*) &parport_min_timeslice_value,
++			.extra2		= (void*) &parport_max_timeslice_value
++		},
++		{
++			.ctl_name	= DEV_PARPORT_DEFAULT_SPINTIME,
++			.procname	= "spintime",
++			.data		= &parport_default_spintime,
++			.maxlen		= sizeof(parport_default_spintime),
++			.mode		= 0644,
++			.proc_handler	= &proc_dointvec_minmax,
++			.extra1		= (void*) &parport_min_spintime_value,
++			.extra2		= (void*) &parport_max_spintime_value
++		},
++		{}
++	},
+ 	{
+-		{ DEV_PARPORT_DEFAULT_TIMESLICE, "timeslice",
+-		  &parport_default_timeslice,
+-		  sizeof(parport_default_timeslice), 0644, NULL,
+-		  &proc_doulongvec_ms_jiffies_minmax, NULL, NULL,
+-		  (void*) &parport_min_timeslice_value,
+-		  (void*) &parport_max_timeslice_value },
+-		{ DEV_PARPORT_DEFAULT_SPINTIME, "spintime",
+-		  &parport_default_spintime,
+-		  sizeof(parport_default_spintime), 0644, NULL,
+-		  &proc_dointvec_minmax, NULL, NULL,
+-		  (void*) &parport_min_spintime_value,
+-		  (void*) &parport_max_spintime_value },
+-		{0}
++		{
++			.ctl_name	= DEV_PARPORT_DEFAULT,
++			.procname	= "default",
++			.mode		= 0555,
++			.child		= parport_default_sysctl_table.vars
++		},
++		{}
+ 	},
+-	{ { DEV_PARPORT_DEFAULT, "default", NULL, 0, 0555,
+-	    parport_default_sysctl_table.vars },{0}},
+ 	{
+-	PARPORT_PARPORT_DIR(parport_default_sysctl_table.default_dir), 
+-	{0}},
+-	{ PARPORT_DEV_DIR(parport_default_sysctl_table.parport_dir), {0}}
++		PARPORT_PARPORT_DIR(parport_default_sysctl_table.default_dir), 
++		{}
++	},
++	{
++		PARPORT_DEV_DIR(parport_default_sysctl_table.parport_dir), 
++		{}
++	}
+ };
+ 
+ 
 -- 
 1.4.4.1.g278f
