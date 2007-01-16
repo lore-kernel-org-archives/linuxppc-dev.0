@@ -3,18 +3,19 @@ Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
 	[217.204.121.83])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 99B10DDDF6
+	by ozlabs.org (Postfix) with ESMTP id 45253DDDF6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Jan 2007 00:07:15 +1100 (EST)
-Message-ID: <45ACC1B4.4050904@cambridgebroadband.com>
-Date: Tue, 16 Jan 2007 12:14:44 +0000
+	Wed, 17 Jan 2007 00:07:17 +1100 (EST)
+Message-ID: <45ACC0E6.5020607@cambridgebroadband.com>
+Date: Tue, 16 Jan 2007 12:11:18 +0000
 From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-To: onetarget@sina.com, linuxppc-embedded@ozlabs.org
-Subject: Re: fcc_enet.c and set_multicast_list
-References: <20070115090236.93444.qmail@mail3-101.sinamail.sina.com.cn>
-In-Reply-To: <20070115090236.93444.qmail@mail3-101.sinamail.sina.com.cn>
+To: onetarget@sina.com
+Subject: Re: Boot Linux 2.4.25 on MPC8270 board errors.
+References: <20070112040015.72172.qmail@mail3-101.sinamail.sina.com.cn>
+In-Reply-To: <20070112040015.72172.qmail@mail3-101.sinamail.sina.com.cn>
 Content-Type: text/plain; charset=GB2312
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,38 +26,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This has been discussed several times before on this list:
-
- http://www.google.co.uk/search?q=set_multicast_list+linuxppc-embedded
-
-I know that commenting out the return makes promiscuous mode work.  Not
-sure about multicast addresses though.
-
-Alex
-
 onetarget@sina.com wrote:
 > Dear all,
->     I am just using ELDK3.1.1, and MPC8270 board, and I found there is a 
-> "return;" in arch/ppc/8260_io/fcc_enet.c:set_multicast_list(), what it 
-> means? Does it mean that we can not use set_multicast_list() as we want?
->     Thank you,
+>     I am now using ELDK 3.1.1 to build Linux-2.4.25 for an MPC8270 
+> board. The board has 128MB SDRAM, and in fcc_enet.c
+>     I configured the followings,
+> #define FCC_ENET_RX_PAGES    32 /*16 */
+> #define FCC_ENET_RX_FRSIZE    2048
+> #define FCC_ENET_RX_FRPPG    (PAGE_SIZE / FCC_ENET_RX_FRSIZE)
+> #define RX_RING_SIZE        (FCC_ENET_RX_FRPPG * FCC_ENET_RX_PAGES)
+> #define TX_RING_SIZE        128 /*16    /* Must be power of two */
+> #define TX_RING_MOD_MASK    127 /*15    /*   for this to work */
 > 
->     W.target
->     Jan-15-2007
-> 
-> 
-> -------------------------------------------------------------------
-> 惠普商用台式机dc5750,高性能，低功耗！( 
-> http://ad4.sina.com.cn/sina/limeng3/mail_zhuiyu/2006/mail_zhuiyu_20061225.html 
-> )
-> 
-> ===================================================================
-> 注册新浪2G免费邮箱（ http://mail.sina.com.cn/chooseMode.html ）
+>     but when boot the image, I got following errors.
+>   
 > 
 > 
-> ------------------------------------------------------------------------
+> Register rtc driver 1.0 successfully!
+> eth0: FCC1 ENET Version 0.4, 00:08:02:06:00:00
+> eth0: Phy @ 0x10, type LXT971 (0x001378e2)
+> Oops: kernel access of bad area, sig: 11
+> NIP: C01E93B8 XER: 00000000 LR: C01E9288 SP: C03BDED0 REGS: c03bde20 
+> TRAP: 0300    Not tainted
+> MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
+> DAR: 00000000, DSISR: 22000000
+> TASK = c03bc000[1] 'swapper' Last syscall: 120
+> last math 00000000 last altivec 00000000
+> GPR00: 00000000 C03BDED0 C03BC000 F000B0C0 88888888 00000000 F000B0DC 
+> 00000000
+> GPR08: 00000200 00000000 00000000 000005F0 84004044 10052210 07FE2000 
+> 007FFF10
+> GPR16: 00000001 00000000 007FFF00 FFFFFFFF 003FF000 00000000 07F7FBF8 
+> C00A1BA0
+> GPR24: C01F2C2C C01D0B5C F00119C0 C7FCB000 C03BE600 00000000 FFFFFFFF 
+> F0008500
+> Call backtrace:
+> C01A78C0 C01E8DD8 C01E77E8 C01E7824 C01E9BC4 C01E73A4 C01E0624
+> C00039D0 C00081B8
+> Kernel panic: Attempted to kill init!
 > 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>     My question is, what should I set the above values??
+>     Thank you and regards,
+> 
+>     W.Target
+
+Leave these defines at the values in the original source code.  Use ksymoops to
+examine the oops text and determine where the bad access occurred.
+
+Alex
