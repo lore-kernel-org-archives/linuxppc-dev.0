@@ -1,17 +1,17 @@
-Return-Path: <ebiederm@xmission.com>
+Return-Path: <eric@ebiederm.dsl.xmission.com>
 Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3D279DDE27
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 03:51:08 +1100 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Andrew Morton <akpm@osdl.org>
-Subject: [PATCH 0/59] Cleanup sysctl 
-Date: Tue, 16 Jan 2007 09:33:47 -0700
-Message-ID: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	by ozlabs.org (Postfix) with ESMTP id 14D15DDE00
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 03:54:14 +1100 (EST)
+From: "Eric W. Biederman" <ebiederm@xmission.com>
+To: "<Andrew Morton" <akpm@osdl.org>
+Subject: [PATCH 13/59] sysctl: xfs remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:18 -0700
+Message-Id: <11689656291632-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
+References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
 	heiko.carstens@de.ibm.com, ak@suse.de, linuxppc-dev@ozlabs.org,
 	paulus@samba.org, aharkes@cs.cmu.edu, schwidefsky@de.ibm.com,
@@ -27,8 +27,8 @@ Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
 	linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
 	aia21@cantab.net, linux-kernel@vger.kernel.org,
 	ralf@linux-mips.org, lethal@linux-sh.org,
-	Linux Containers <containers@lists.osdl.org>,
-	linux390@de.ibm.com, philb@gnu.org
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	containers@lists.osdl.org, linux390@de.ibm.com, philb@gnu.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,31 +38,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-There has not been much maintenance on sysctl in years, and as a result is
-there is a lot to do to allow future interesting work to happen, and being
-ambitious I'm trying to do it all at once :)
+Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
+---
+ fs/xfs/linux-2.6/xfs_sysctl.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-The patches in this series fall into several general categories.
-
-- Removal of useless attempts to override the standard sysctls
-
-- Registers of sysctl numbers in sysctl.h so someone else does not use
-  the magic number and conflict.
-
-- C99 conversions so it becomes possible to change the layout of 
-  struct ctl_table without breaking everything.
-
-- Removal of useless claims of module ownership, in the proc dir entries
-
-- Removal of sys_sysctl support where people had used conflicting sysctl
-  numbers. Trying to break glibc or other applications by changing the
-  ABI is not cool.  9 instances of this in the kernel seems a little
-  extreme.
-
-- General enhancements when I got the junk I could see out.
-
-Odds are I missed something, most of the cleanups are simply a result of
-me working on the sysctl core and glancing at the users and going: What?
-
-Eric
+diff --git a/fs/xfs/linux-2.6/xfs_sysctl.c b/fs/xfs/linux-2.6/xfs_sysctl.c
+index af24653..af777e9 100644
+--- a/fs/xfs/linux-2.6/xfs_sysctl.c
++++ b/fs/xfs/linux-2.6/xfs_sysctl.c
+@@ -149,7 +149,7 @@ STATIC ctl_table xfs_root_table[] = {
+ void
+ xfs_sysctl_register(void)
+ {
+-	xfs_table_header = register_sysctl_table(xfs_root_table, 1);
++	xfs_table_header = register_sysctl_table(xfs_root_table, 0);
+ }
+ 
+ void
+-- 
+1.4.4.1.g278f
