@@ -1,15 +1,36 @@
-Return-Path: <hch@lst.de>
-Date: Wed, 17 Jan 2007 01:30:18 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Maynard Johnson <maynardj@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [PATCH] Cell SPU task notification
-Message-ID: <20070117003018.GA17955@lst.de>
-References: <45A805A0.2080000@us.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45A805A0.2080000@us.ibm.com>
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <ioe-lkml@rameria.de>
+Received: from smtprelay01.ispgateway.de (smtprelay01.ispgateway.de
+	[80.67.18.13]) by ozlabs.org (Postfix) with ESMTP id 30CB0DE02A
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 09:22:44 +1100 (EST)
+From: Ingo Oeser <ioe-lkml@rameria.de>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 45/59] sysctl: C99 convert ctl_tables in
+	drivers/parport/procfs.c
+Date: Tue, 16 Jan 2007 23:15:43 +0100
+References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
+	<11689656733768-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <11689656733768-git-send-email-ebiederm@xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200701162315.56454.ioe-lkml@rameria.de>
+Cc: "<Andrew Morton" <akpm@osdl.org>, linux-mips@linux-mips.org,
+	linux-parport@lists.infradead.org, heiko.carstens@de.ibm.com,
+	ak@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	aharkes@cs.cmu.edu, schwidefsky@de.ibm.com, tim@cyberelk.net,
+	codalist@telemann.coda.cs.cmu.edu, rtc-linux@googlegroups.com,
+	linux-scsi@vger.kernel.org, kurt.hackel@oracle.com,
+	coda@cs.cmu.edu, vojtech@suse.cz,
+	linuxsh-shmedia-dev@lists.sourceforge.net,
+	James.Bottomley@steeleye.com, clemens@ladisch.de,
+	xfs@oss.sgi.com, xfs-masters@oss.sgi.com, andrea@suse.de,
+	openipmi-developer@lists.sourceforge.net,
+	linux-390@vm.marist.edu, a.zummo@towertech.it,
+	tony.luck@intel.com, linux-ntfs-dev@lists.sourceforge.net,
+	netdev@vger.kernel.org, aia21@cantab.net,
+	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
+	lethal@linux-sh.org, containers@lists.osdl.org,
+	linux390@de.ibm.com, philb@gnu.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,64 +40,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c
-===================================================================
---- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/sched.c	2006-12-04 10:56:04.730698720 -0600
-+++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-15 16:22:31.808461448 -0600
-@@ -84,15 +84,42 @@
- 			    ctx ? ctx->object_id : 0, spu);
- }
- 
-+static void notify_spus_active(void)
-+{
-+       int node;
-+	/* Wake up the active spu_contexts. When the awakened processes 
-+	 * sees their notify_active flag is set, they will call
-+	 * spu_notify_already_active().
-+	 */
-+	for (node = 0; node < MAX_NUMNODES; node++) {
-+		struct spu *spu;
-+		mutex_lock(&spu_prio->active_mutex[node]);
-+                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
+Hi Eric,
 
-	You seem to have some issues with tabs vs spaces for indentation
-	here.
+On Tuesday, 16. January 2007 17:39, Eric W. Biederman wrote:
+> diff --git a/drivers/parport/procfs.c b/drivers/parport/procfs.c
+> index 2e744a2..5337789 100644
+> --- a/drivers/parport/procfs.c
+> +++ b/drivers/parport/procfs.c
+> @@ -263,50 +263,118 @@ struct parport_sysctl_table {
+> +		{
+> +			.ctl_name	= DEV_PARPORT_BASE_ADDR,
+> +			.procname	= "base-addr",
+> +			.data		= NULL,
+> +			.maxlen		= 0,
+> +			.mode		= 0444,
+> +			.proc_handler	= &do_hardware_base_addr
+> +		},
 
-+			struct spu_context *ctx = spu->ctx;
-+			spu->notify_active = 1;
+No need to initialize to zero or NULL. Just list any variable, which is NOT zero or NULL.
 
+> +		{
+> +			.ctl_name	= DEV_PARPORT_AUTOPROBE + 1,
+> +			.procname	= "autoprobe0",
+> +			.data		= NULL,
+> +			.maxlen		= 0,
+> +			.maxlen		= 0444,
+> +			.proc_handler	=  &do_autoprobe
+> +		},
 
-	Please make this a bit in the sched_flags field that's added in
-	the scheduler patch series I sent out.
+Typo here? .mode = 0444 makes mor sense.
 
-+			wake_up_all(&ctx->stop_wq);
-+			smp_wmb();
-+		}
-+                mutex_unlock(&spu_prio->active_mutex[node]);
-+	}
-+	yield();
-+}
+Regards
 
-	Why do you add the yield() here?  yield is pretty much a sign
-	for a bug
-
-+void spu_notify_already_active(struct spu_context *ctx)
-+{
-+	struct spu *spu = ctx->spu;
-+	if (!spu)
-+		return;
-+	spu_switch_notify(spu, ctx);
-+}
-
-	Please just call spu_switch_notify directly from the only
-	caller.  Also the check for ctx->spu beeing there is not
-	required if you look a the caller.
-
-
- 	*stat = ctx->ops->status_read(ctx);
--	if (ctx->state != SPU_STATE_RUNNABLE)
--		return 1;
-+	smp_rmb();
-
-
-	What do you need the barrier for here?
+Ingo Oeser
