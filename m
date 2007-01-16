@@ -3,13 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4833248280
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:28:51 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 7F6A9484BA
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:29:08 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 56/59] sysctl: factor out sysctl_head_next from do_sysctl
-Date: Tue, 16 Jan 2007 09:40:01 -0700
-Message-Id: <11689657011683-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 32/59] sysctl: C99 convert arch/mips/lasat/sysctl.c and remove
+	ABI breakage.
+Date: Tue, 16 Jan 2007 09:39:37 -0700
+Message-Id: <11689656574092-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,124 +41,182 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-The current logic to walk through the list of sysctl table
-headers is slightly painful and implement in a way it cannot
-be used by code outside sysctl.c
+While C99 converting the ctl_table initializers I realized
+that the binary sysctl numbers were in conflict with the binary
+values under CTL_KERN.   Including CTL_KERN KERN_VERSION as used
+by glibc.  So I just removed the sysctl binary interface for these
+values, as it was unsupportable.
 
-I am in the process of implementing a version of the sysctl
-proc support that instead of using the proc generic non-caching
-monster, just uses the existing sysctl data structure as
-backing store for building the dcache entries and for doing
-directory reads.   To use the existing data structures however
-I need a way to get at them.
+Luckily these sysctl were inserted at the end of the
+sysctl list so this bug was not visible to userspace.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- include/linux/sysctl.h |    4 +++
- kernel/sysctl.c        |   57 +++++++++++++++++++++++++++++++++++------------
- 2 files changed, 46 insertions(+), 15 deletions(-)
+ arch/mips/lasat/sysctl.c |  145 ++++++++++++++++++++++++++++++++++++---------
+ 1 files changed, 116 insertions(+), 29 deletions(-)
 
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 6113f3b..81ee9ea 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -923,6 +923,10 @@ enum
- #ifdef __KERNEL__
- #include <linux/list.h>
+diff --git a/arch/mips/lasat/sysctl.c b/arch/mips/lasat/sysctl.c
+index 1287835..c04e82f 100644
+--- a/arch/mips/lasat/sysctl.c
++++ b/arch/mips/lasat/sysctl.c
+@@ -302,42 +302,129 @@ extern int lasat_boot_to_service;
+ #ifdef CONFIG_SYSCTL
  
-+/* For the /proc/sys support */
-+extern struct ctl_table_header *sysctl_head_next(struct ctl_table_header *prev);
-+extern void sysctl_head_finish(struct ctl_table_header *prev);
-+
- extern void sysctl_init(void);
+ static ctl_table lasat_table[] = {
+-	{LASAT_CPU_HZ, "cpu-hz", &lasat_board_info.li_cpu_hz, sizeof(int),
+-	 0444, NULL, &proc_dointvec, &sysctl_intvec},
+-	{LASAT_BUS_HZ, "bus-hz", &lasat_board_info.li_bus_hz, sizeof(int),
+-	 0444, NULL, &proc_dointvec, &sysctl_intvec},
+-	{LASAT_MODEL, "bmid", &lasat_board_info.li_bmid, sizeof(int),
+-	 0444, NULL, &proc_dointvec, &sysctl_intvec},
+-	{LASAT_PRID, "prid", &lasat_board_info.li_prid, sizeof(int),
+-	 0644, NULL, &proc_lasat_eeprom_value, &sysctl_lasat_eeprom_value},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "cpu-hz",
++		.data		= &lasat_board_info.li_cpu_hz,
++		.maxlen		= sizeof(int),
++		.mode		= 0444,
++		.proc_handler	= &proc_dointvec,
++		.strategy	= &sysctl_intvec
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "bus-hz",
++		.data		= &lasat_board_info.li_bus_hz,
++		.maxlen		= sizeof(int),
++		.mode		= 0444,
++		.proc_handler	= &proc_dointvec,
++		.strategy	= &sysctl_intvec
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "bmid",
++		.data		= &lasat_board_info.li_bmid,
++		.maxlen		= sizeof(int),
++		.mode		= 0444,
++		.proc_handler	= &proc_dointvec,
++		.strategy	= &sysctl_intvec
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "prid",
++		.data		= &lasat_board_info.li_prid,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_lasat_eeprom_value,
++		.strategy	= &sysctl_lasat_eeprom_value
++	},
+ #ifdef CONFIG_INET
+-	{LASAT_IPADDR, "ipaddr", &lasat_board_info.li_eeprom_info.ipaddr, sizeof(int),
+-	 0644, NULL, &proc_lasat_ip, &sysctl_lasat_intvec},
+-	{LASAT_NETMASK, "netmask", &lasat_board_info.li_eeprom_info.netmask, sizeof(int),
+-	 0644, NULL, &proc_lasat_ip, &sysctl_lasat_intvec},
+-	{LASAT_BCAST, "bcastaddr", &lasat_bcastaddr,
+-		sizeof(lasat_bcastaddr), 0600, NULL,
+-		&proc_dostring, &sysctl_string},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "ipaddr",
++		.data		= &lasat_board_info.li_eeprom_info.ipaddr,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_lasat_ip,
++		.strategy	= &sysctl_lasat_intvec
++	},
++	{
++		.ctl_name	= LASAT_NETMASK,
++		.procname	= "netmask",
++		.data		= &lasat_board_info.li_eeprom_info.netmask,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_lasat_ip,
++		.strategy	= &sysctl_lasat_intvec
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "bcastaddr",
++		.data		= &lasat_bcastaddr,
++		.maxlen		= sizeof(lasat_bcastaddr),
++		.mode		= 0600,
++		.proc_handler	= &proc_dostring,
++		.strategy	= &sysctl_string
++	},
+ #endif
+-	{LASAT_PASSWORD, "passwd_hash", &lasat_board_info.li_eeprom_info.passwd_hash, sizeof(lasat_board_info.li_eeprom_info.passwd_hash),
+-	 0600, NULL, &proc_dolasatstring, &sysctl_lasatstring},
+-	{LASAT_SBOOT, "boot-service", &lasat_boot_to_service, sizeof(int),
+-	 0644, NULL, &proc_dointvec, &sysctl_intvec},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "passwd_hash",
++		.data		= &lasat_board_info.li_eeprom_info.passwd_hash,
++		.maxlen		= sizeof(lasat_board_info.li_eeprom_info.passwd_hash),
++		.mode		= 0600,
++		.proc_handler	= &proc_dolasatstring,
++		.strategy	= &sysctl_lasatstring
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "boot-service",
++		.data		= &lasat_boot_to_service,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec,
++		.strategy	= &sysctl_intvec
++	},
+ #ifdef CONFIG_DS1603
+-	{LASAT_RTC, "rtc", &rtctmp, sizeof(int),
+-	 0644, NULL, &proc_dolasatrtc, &sysctl_lasat_rtc},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "rtc",
++		.data		= &rtctmp,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dolasatrtc,
++		.strategy	= &sysctl_lasat_rtc
++	},
+ #endif
+-	{LASAT_NAMESTR, "namestr", &lasat_board_info.li_namestr, sizeof(lasat_board_info.li_namestr),
+-	 0444, NULL, &proc_dostring, &sysctl_string},
+-	{LASAT_TYPESTR, "typestr", &lasat_board_info.li_typestr, sizeof(lasat_board_info.li_typestr),
+-	 0444, NULL, &proc_dostring, &sysctl_string},
+-	{0}
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "namestr",
++		.data		= &lasat_board_info.li_namestr,
++		.maxlen		= sizeof(lasat_board_info.li_namestr),
++		.mode		= 0444,
++		.proc_handler	=  &proc_dostring,
++		.strategy	= &sysctl_string
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "typestr",
++		.data		= &lasat_board_info.li_typestr,
++		.maxlen		= sizeof(lasat_board_info.li_typestr),
++		.mode		= 0444,
++		.proc_handler	= &proc_dostring,
++		.strategy	= &sysctl_string
++	},
++	{}
+ };
  
- typedef struct ctl_table ctl_table;
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 5beee1f..ca2831a 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1066,6 +1066,42 @@ static void start_unregistering(struct ctl_table_header *p)
- 	list_del_init(&p->ctl_entry);
- }
+-#define CTL_LASAT 1	// CTL_ANY ???
+ static ctl_table lasat_root_table[] = {
+-	{ CTL_LASAT, "lasat", NULL, 0, 0555, lasat_table },
+-	{ 0 }
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "lasat",
++		.mode		=  0555,
++		.child		= lasat_table
++	},
++	{}
+ };
  
-+void sysctl_head_finish(struct ctl_table_header *head)
-+{
-+	if (!head)
-+		return;
-+	spin_lock(&sysctl_lock);
-+	unuse_table(head);
-+	spin_unlock(&sysctl_lock);
-+}
-+
-+struct ctl_table_header *sysctl_head_next(struct ctl_table_header *prev)
-+{
-+	struct ctl_table_header *head;
-+	struct list_head *tmp;
-+	spin_lock(&sysctl_lock);
-+	if (prev) {
-+		tmp = &prev->ctl_entry;
-+		unuse_table(prev);
-+		goto next;
-+	}
-+	tmp = &root_table_header.ctl_entry;
-+	for (;;) {
-+		head = list_entry(tmp, struct ctl_table_header, ctl_entry);
-+
-+		if (!use_table(head))
-+			goto next;
-+		spin_unlock(&sysctl_lock);
-+		return head;
-+	next:
-+		tmp = tmp->next;
-+		if (tmp == &root_table_header.ctl_entry)
-+			break;
-+	}
-+	spin_unlock(&sysctl_lock);
-+	return NULL;
-+}
-+
- void __init sysctl_init(void)
- {
- #ifdef CONFIG_PROC_SYSCTL
-@@ -1077,6 +1113,7 @@ void __init sysctl_init(void)
- int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *oldlenp,
- 	       void __user *newval, size_t newlen)
- {
-+	struct ctl_table_header *head;
- 	struct list_head *tmp;
- 	int error = -ENOTDIR;
- 
-@@ -1087,26 +1124,16 @@ int do_sysctl(int __user *name, int nlen, void __user *oldval, size_t __user *ol
- 		if (!oldlenp || get_user(old_len, oldlenp))
- 			return -EFAULT;
- 	}
--	spin_lock(&sysctl_lock);
--	tmp = &root_table_header.ctl_entry;
--	do {
--		struct ctl_table_header *head =
--			list_entry(tmp, struct ctl_table_header, ctl_entry);
- 
--		if (!use_table(head))
--			continue;
--
--		spin_unlock(&sysctl_lock);
-+	for (head = sysctl_head_next(NULL); head; head = sysctl_head_next(head)) {
- 
- 		error = parse_table(name, nlen, oldval, oldlenp, 
- 					newval, newlen, head->ctl_table);
--
--		spin_lock(&sysctl_lock);
--		unuse_table(head);
--		if (error != -ENOTDIR)
-+		if (error != -ENOTDIR) {
-+			sysctl_head_finish(head);
- 			break;
--	} while ((tmp = tmp->next) != &root_table_header.ctl_entry);
--	spin_unlock(&sysctl_lock);
-+		}
-+	}
- 	return error;
- }
- 
+ static int __init lasat_register_sysctl(void)
 -- 
 1.4.4.1.g278f
