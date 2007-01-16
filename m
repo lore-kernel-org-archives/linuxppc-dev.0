@@ -1,22 +1,19 @@
-Return-Path: <ralf@linux-mips.org>
-Received: from ftp.linux-mips.org (ftp.linux-mips.org [194.74.144.162])
-	by ozlabs.org (Postfix) with ESMTP id 2BFFBDF7D0
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:36:13 +1100 (EST)
-Received: from localhost.localdomain ([127.0.0.1]:19661 "EHLO
-	dl5rb.ham-radio-op.net") by ftp.linux-mips.org with ESMTP
-	id S20046841AbXAPRgM (ORCPT <rfc822;linuxppc-dev@ozlabs.org>);
-	Tue, 16 Jan 2007 17:36:12 +0000
-Date: Tue, 16 Jan 2007 17:36:51 +0000
-From: Ralf Baechle <ralf@linux-mips.org>
+Return-Path: <hpa@zytor.com>
+Received: from terminus.zytor.com (terminus.zytor.com [192.83.249.54])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3318ADDF58
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:44:12 +1100 (EST)
+Message-ID: <45AD02FF.605@zytor.com>
+Date: Tue, 16 Jan 2007 08:53:19 -0800
+From: "H. Peter Anvin" <hpa@zytor.com>
+MIME-Version: 1.0
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 5/59] sysctl: rose remove unnecessary insert_at_head flag
-Message-ID: <20070116173651.GA9184@linux-mips.org>
+Subject: Re: [PATCH 0/59] Cleanup sysctl
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
-	<11689656191854-git-send-email-ebiederm@xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11689656191854-git-send-email-ebiederm@xmission.com>
-Cc: "<Andrew Morton" <akpm@osdl.org>, linux-mips@linux-mips.org,
+In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
 	linux-parport@lists.infradead.org, heiko.carstens@de.ibm.com,
 	ak@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
 	aharkes@cs.cmu.edu, schwidefsky@de.ibm.com, tim@cyberelk.net,
@@ -30,7 +27,8 @@ Cc: "<Andrew Morton" <akpm@osdl.org>, linux-mips@linux-mips.org,
 	a.zummo@towertech.it, tony.luck@intel.com,
 	linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
 	aia21@cantab.net, linux-kernel@vger.kernel.org,
-	lethal@linux-sh.org, containers@lists.osdl.org,
+	ralf@linux-mips.org, lethal@linux-sh.org,
+	Linux Containers <containers@lists.osdl.org>,
 	linux390@de.ibm.com, philb@gnu.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -41,19 +39,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 16, 2007 at 09:39:10AM -0700, Eric W. Biederman wrote:
+Eric W. Biederman wrote:
+> 
+> - Removal of sys_sysctl support where people had used conflicting sysctl
+>   numbers. Trying to break glibc or other applications by changing the
+>   ABI is not cool.  9 instances of this in the kernel seems a little
+>   extreme.
+> 
 
-Looks ok, for these:
+It would be highly advantageous if we could have a file that acts as a 
+central registry of architectural sysctl numbers *and have the numbers 
+in the kernel derived from there*.  As I've said before, I don't really 
+think sys_sysctl is any worse than ad hoc system calls (sys_mips and the 
+like), but the real problem is that there are architectural and 
+non-archtectural numbers, and they're mixed in all over the place.
 
-Subject: [PATCH 5/59] sysctl: rose remove unnecessary insert_at_head flag
-Subject: [PATCH 6/59] sysctl: netrom remove unnecessary insert_at_head flag
-Subject: [PATCH 11/59] sysctl: ax25 remove unnecessary insert_at_head flag
-Subject: [PATCH 30/59] sysctl: mips/au1000 Remove sys_sysctl support
-Subject: [PATCH 31/59] sysctl: C99 convert the ctl_tables in arch/mips/au1000/common/power.c
-Subject: [PATCH 32/59] sysctl: C99 convert arch/mips/lasat/sysctl.c and remove ABI breakage.
-Subject: [PATCH 43/59] sysctl: Remove sys_sysctl support from drivers/char/rtc.c
-Subject: [PATCH 55/59] sysctl: Remove insert_at_head from register_sysctl
+I think it would be fair to say that if they're not in <linux/sysctl.h> 
+they're not architectural, but that doesn't resolve the counterpositive 
+(are there sysctls in <linux/sysctl.h> which aren't architectural?  From 
+the looks of it, I would say yes.)  Non-architectural sysctl numbers 
+should not be exported to userspace, and should eventually be rejected 
+by sys_sysctl.
 
-Acked-by: Ralf Baechle <ralf@linux-mips.org>
-
-  Ralf
+	-hpa
