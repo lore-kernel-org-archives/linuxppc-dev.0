@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B0036DDFF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:13:01 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id CEDCCDDFC2
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:14:57 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 5/59] sysctl: rose remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:10 -0700
-Message-Id: <11689656191854-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 24/59] sysctl: frv remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:29 -0700
+Message-Id: <1168965642471-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,26 +40,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-The sysctl numbers used are unique so setting the insert_at_head
-flag serves no semantic purpose.
+Since the binary sysctl numbers are unique putting the registered
+sysctls at the head of the sysctl list where they can override
+existing sysctls serves no useful purpose.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/rose/sysctl_net_rose.c |    2 +-
+ arch/frv/kernel/sysctl.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/rose/sysctl_net_rose.c b/net/rose/sysctl_net_rose.c
-index 8548c7c..0190a07 100644
---- a/net/rose/sysctl_net_rose.c
-+++ b/net/rose/sysctl_net_rose.c
-@@ -160,7 +160,7 @@ static ctl_table rose_root_table[] = {
- 
- void __init rose_register_sysctl(void)
+diff --git a/arch/frv/kernel/sysctl.c b/arch/frv/kernel/sysctl.c
+index 2f4da32..37528eb 100644
+--- a/arch/frv/kernel/sysctl.c
++++ b/arch/frv/kernel/sysctl.c
+@@ -197,7 +197,7 @@ static struct ctl_table frv_dir_table[] =
+  */
+ static int __init frv_sysctl_init(void)
  {
--	rose_table_header = register_sysctl_table(rose_root_table, 1);
-+	rose_table_header = register_sysctl_table(rose_root_table, 0);
+-	register_sysctl_table(frv_dir_table, 1);
++	register_sysctl_table(frv_dir_table, 0);
+ 	return 0;
  }
  
- void rose_unregister_sysctl(void)
 -- 
 1.4.4.1.g278f
