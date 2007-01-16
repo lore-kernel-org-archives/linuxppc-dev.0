@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6BB5947956
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:27:37 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D414B47BA4
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:27:57 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 33/59] sysctl: s390 move sysctl definitions to sysctl.h
-Date: Tue, 16 Jan 2007 09:39:38 -0700
-Message-Id: <11689656572714-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 34/59] sysctl: s390 Remove unnecessary use of insert_at_head
+Date: Tue, 16 Jan 2007 09:39:39 -0700
+Message-Id: <11689656581195-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,83 +40,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-We need to have the the definition of all top level sysctl
-directories registers in sysctl.h so we don't conflict by
-accident and cause abi problems.
-
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/s390/appldata/appldata.h |    3 +--
- arch/s390/kernel/debug.c      |    1 -
- arch/s390/mm/cmm.c            |    4 ----
- include/linux/sysctl.h        |    7 +++++++
- 4 files changed, 8 insertions(+), 7 deletions(-)
+ arch/s390/appldata/appldata_base.c |    4 ++--
+ arch/s390/kernel/debug.c           |    2 +-
+ arch/s390/mm/cmm.c                 |    2 +-
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/s390/appldata/appldata.h b/arch/s390/appldata/appldata.h
-index 0429481..4069b81 100644
---- a/arch/s390/appldata/appldata.h
-+++ b/arch/s390/appldata/appldata.h
-@@ -21,8 +21,7 @@
- #define APPLDATA_RECORD_NET_SUM_ID	0x03	/* must be < 256 !     */
- #define APPLDATA_RECORD_PROC_ID		0x04
+diff --git a/arch/s390/appldata/appldata_base.c b/arch/s390/appldata/appldata_base.c
+index b8c2372..cdc4109 100644
+--- a/arch/s390/appldata/appldata_base.c
++++ b/arch/s390/appldata/appldata_base.c
+@@ -506,7 +506,7 @@ int appldata_register_ops(struct appldata_ops *ops)
  
--#define CTL_APPLDATA 		2120	/* sysctl IDs, must be unique */
--#define CTL_APPLDATA_TIMER 	2121
-+#define CTL_APPLDATA_TIMER 	2121	/* sysctl IDs, must be unique */
- #define CTL_APPLDATA_INTERVAL 	2122
- #define CTL_APPLDATA_MEM	2123
- #define CTL_APPLDATA_OS		2124
+ 	ops->ctl_table[3].ctl_name = 0;
+ 
+-	ops->sysctl_header = register_sysctl_table(ops->ctl_table,1);
++	ops->sysctl_header = register_sysctl_table(ops->ctl_table,0);
+ 
+ 	P_INFO("%s-ops registered!\n", ops->name);
+ 	return 0;
+@@ -606,7 +606,7 @@ static int __init appldata_init(void)
+ 	/* Register cpu hotplug notifier */
+ 	register_hotcpu_notifier(&appldata_nb);
+ 
+-	appldata_sysctl_header = register_sysctl_table(appldata_dir_table, 1);
++	appldata_sysctl_header = register_sysctl_table(appldata_dir_table, 0);
+ #ifdef MODULE
+ 	appldata_dir_table[0].de->owner = THIS_MODULE;
+ 	appldata_table[0].de->owner = THIS_MODULE;
 diff --git a/arch/s390/kernel/debug.c b/arch/s390/kernel/debug.c
-index bb57bc0..c81f8e5 100644
+index c81f8e5..d38cb27 100644
 --- a/arch/s390/kernel/debug.c
 +++ b/arch/s390/kernel/debug.c
-@@ -852,7 +852,6 @@ debug_finish_entry(debug_info_t * id, debug_entry_t* active, int level,
- static int debug_stoppable=1;
- static int debug_active=1;
+@@ -1053,7 +1053,7 @@ __init debug_init(void)
+ {
+ 	int rc = 0;
  
--#define CTL_S390DBF 5677
- #define CTL_S390DBF_STOPPABLE 5678
- #define CTL_S390DBF_ACTIVE 5679
- 
+-	s390dbf_sysctl_header = register_sysctl_table(s390dbf_dir_table, 1);
++	s390dbf_sysctl_header = register_sysctl_table(s390dbf_dir_table, 0);
+ 	down(&debug_lock);
+ 	debug_debugfs_root_entry = debugfs_create_dir(DEBUG_DIR_ROOT,NULL);
+ 	printk(KERN_INFO "debug: Initialization complete\n");
 diff --git a/arch/s390/mm/cmm.c b/arch/s390/mm/cmm.c
-index 607f50e..df733d5 100644
+index df733d5..5f83a3f 100644
 --- a/arch/s390/mm/cmm.c
 +++ b/arch/s390/mm/cmm.c
-@@ -256,10 +256,6 @@ cmm_skip_blanks(char *cp, char **endp)
- }
+@@ -418,7 +418,7 @@ cmm_init (void)
+ 	int rc = -ENOMEM;
  
  #ifdef CONFIG_CMM_PROC
--/* These will someday get removed. */
--#define VM_CMM_PAGES		1111
--#define VM_CMM_TIMED_PAGES	1112
--#define VM_CMM_TIMEOUT		1113
- 
- static struct ctl_table cmm_table[];
- 
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 71c16b4..56d0161 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -73,6 +73,8 @@ enum
- 	CTL_SUNRPC=7249,	/* sunrpc debug */
- 	CTL_PM=9899,		/* frv power management */
- 	CTL_FRV=9898,		/* frv specific sysctls */
-+	CTL_S390DBF=5677,	/* s390 debug */
-+	CTL_APPLDATA=2120,	/* s390 appldata */
- };
- 
- /* CTL_BUS names: */
-@@ -205,6 +207,11 @@ enum
- 	VM_PANIC_ON_OOM=33,	/* panic at out-of-memory */
- 	VM_VDSO_ENABLED=34,	/* map VDSO into new processes? */
- 	VM_MIN_SLAB=35,		 /* Percent pages ignored by zone reclaim */
-+
-+	/* s390 vm cmm sysctls */
-+	VM_CMM_PAGES=1111,
-+	VM_CMM_TIMED_PAGES=1112,
-+	VM_CMM_TIMEOUT=1113,
- };
- 
- 
+-	cmm_sysctl_header = register_sysctl_table(cmm_dir_table, 1);
++	cmm_sysctl_header = register_sysctl_table(cmm_dir_table, 0);
+ 	if (!cmm_sysctl_header)
+ 		goto out;
+ #endif
 -- 
 1.4.4.1.g278f
