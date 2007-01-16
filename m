@@ -3,14 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29D7E47C0F
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:28:00 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A86CB47FC4
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:28:27 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 46/59] sysctl: C99 convert coda ctl_tables and remove binary
-	sysctls.
-Date: Tue, 16 Jan 2007 09:39:51 -0700
-Message-Id: <11689656751225-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 28/59] sysctl: C99 Convert arch/ia64/sn/kernel/xpc_main.c
+Date: Tue, 16 Jan 2007 09:39:33 -0700
+Message-Id: <11689656481444-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,94 +40,120 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-Will converting the coda sysctl initializers I discovered that
-it is yet another user of sysctl that was stomping CTL_KERN.
-So off with it's sys_sysctl support since it wasn't done
-in a supportable way.
-
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/coda/sysctl.c |   58 ++++++++++++++++++++++++++++++++++++++++++++---------
- 1 files changed, 48 insertions(+), 10 deletions(-)
+ arch/ia64/sn/kernel/xpc_main.c |   86 +++++++++++++++++----------------------
+ 1 files changed, 38 insertions(+), 48 deletions(-)
 
-diff --git a/fs/coda/sysctl.c b/fs/coda/sysctl.c
-index 1c82e9a..df682e2 100644
---- a/fs/coda/sysctl.c
-+++ b/fs/coda/sysctl.c
-@@ -32,8 +32,6 @@
+diff --git a/arch/ia64/sn/kernel/xpc_main.c b/arch/ia64/sn/kernel/xpc_main.c
+index 24adb75..e04f7b5 100644
+--- a/arch/ia64/sn/kernel/xpc_main.c
++++ b/arch/ia64/sn/kernel/xpc_main.c
+@@ -101,67 +101,57 @@ static int xpc_disengage_request_max_timelimit = 120;
  
- static struct ctl_table_header *fs_table_header;
- 
--#define FS_CODA         1       /* Coda file system */
--
- #define CODA_TIMEOUT    3       /* timeout on upcalls to become intrble */
- #define CODA_HARD       5       /* mount type "hard" or "soft" */
- #define CODA_VFS 	 6       /* vfs statistics */
-@@ -184,17 +182,57 @@ static int coda_cache_inv_stats_get_info( char * buffer, char ** start,
- }
- 
- static ctl_table coda_table[] = {
-- 	{CODA_TIMEOUT, "timeout", &coda_timeout, sizeof(int), 0644, NULL, &proc_dointvec},
-- 	{CODA_HARD, "hard", &coda_hard, sizeof(int), 0644, NULL, &proc_dointvec},
-- 	{CODA_VFS, "vfs_stats", NULL, 0, 0644, NULL, &do_reset_coda_vfs_stats},
-- 	{CODA_CACHE_INV, "cache_inv_stats", NULL, 0, 0644, NULL, &do_reset_coda_cache_inv_stats},
-- 	{CODA_FAKE_STATFS, "fake_statfs", &coda_fake_statfs, sizeof(int), 0600, NULL, &proc_dointvec},
--	{ 0 }
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "timeout",
-+		.data		= &coda_timeout,
+ static ctl_table xpc_sys_xpc_hb_dir[] = {
+ 	{
+-		CTL_UNNUMBERED,
+-		"hb_interval",
+-		&xpc_hb_interval,
+-		sizeof(int),
+-		0644,
+-		NULL,
+-		&proc_dointvec_minmax,
+-		&sysctl_intvec,
+-		NULL,
+-		&xpc_hb_min_interval,
+-		&xpc_hb_max_interval
++		.ctl_name 	= CTL_UNNUMBERED,
++		.procname	= "hb_interval",
++		.data		= &xpc_hb_interval,
 +		.maxlen		= sizeof(int),
 +		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec
-+	},
-+	{
++		.proc_handler	= &proc_dointvec_minmax,
++		.strategy	= &sysctl_intvec,
++		.extra1		= &xpc_hb_min_interval,
++		.extra2		= &xpc_hb_max_interval
+ 	},
+ 	{
+-		CTL_UNNUMBERED,
+-		"hb_check_interval",
+-		&xpc_hb_check_interval,
+-		sizeof(int),
+-		0644,
+-		NULL,
+-		&proc_dointvec_minmax,
+-		&sysctl_intvec,
+-		NULL,
+-		&xpc_hb_check_min_interval,
+-		&xpc_hb_check_max_interval
 +		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "hard",
-+		.data		= &coda_hard,
++		.procname	= "hb_check_interval",
++		.data		= &xpc_hb_check_interval,
 +		.maxlen		= sizeof(int),
 +		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "vfs_stats",
-+		.data		= NULL,
-+		.maxlen		= 0,
-+		.mode		= 0644,
-+		.proc_handler	= &do_reset_coda_vfs_stats
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "cache_inv_stats",
-+		.data		= NULL,
-+		.maxlen		= 0,
-+		.mode		= 0644,
-+		.proc_handler	= &do_reset_coda_cache_inv_stats
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "fake_statfs",
-+		.data		= &coda_fake_statfs,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0600,
-+		.proc_handler	= &proc_dointvec
-+	},
++		.proc_handler	= &proc_dointvec_minmax,
++		.strategy	= &sysctl_intvec,
++		.extra1		= &xpc_hb_check_min_interval,
++		.extra2		= &xpc_hb_check_max_interval
+ 	},
+-	{0}
 +	{}
  };
- 
- static ctl_table fs_table[] = {
--       {FS_CODA, "coda",    NULL, 0, 0555, coda_table},
--       {0}
-+	{
+ static ctl_table xpc_sys_xpc_dir[] = {
+ 	{
+-		CTL_UNNUMBERED,
+-		"hb",
+-		NULL,
+-		0,
+-		0555,
+-		xpc_sys_xpc_hb_dir
 +		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "coda",
++		.procname	= "hb",
 +		.mode		= 0555,
-+		.child		= coda_table
-+	},
++		.child		= xpc_sys_xpc_hb_dir
+ 	},
+ 	{
+-		CTL_UNNUMBERED,
+-		"disengage_request_timelimit",
+-		&xpc_disengage_request_timelimit,
+-		sizeof(int),
+-		0644,
+-		NULL,
+-		&proc_dointvec_minmax,
+-		&sysctl_intvec,
+-		NULL,
+-		&xpc_disengage_request_min_timelimit,
+-		&xpc_disengage_request_max_timelimit
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "disengage_request_timelimit",
++		.data		= &xpc_disengage_request_timelimit,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &proc_dointvec_minmax,
++		.strategy	= &sysctl_intvec,
++		.extra1		= &xpc_disengage_request_min_timelimit,
++		.extra2		= &xpc_disengage_request_max_timelimit
+ 	},
+-	{0}
 +	{}
  };
- 
+ static ctl_table xpc_sys_dir[] = {
+ 	{
+-		CTL_UNNUMBERED,
+-		"xpc",
+-		NULL,
+-		0,
+-		0555,
+-		xpc_sys_xpc_dir
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "xpc",
++		.mode		= 0555,
++		.child		= xpc_sys_xpc_dir
+ 	},
+-	{0}
++	{}
+ };
+ static struct ctl_table_header *xpc_sysctl;
  
 -- 
 1.4.4.1.g278f
