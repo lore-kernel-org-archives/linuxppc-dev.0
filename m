@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D8E63DDF89
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:09:19 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id C2AF3DDFE1
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:10:05 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 22/59] sysctl: frv pm remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:27 -0700
-Message-Id: <1168965639241-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 17/59] sysctl: mac_hid remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:22 -0700
+Message-Id: <11689656343467-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,27 +40,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-With unique binary numbers setting insert_at_head to
-insert yourself at the head of sysctl list and thus override
-existing sysctl entries serves no point.
+With unique sysctl binary numbers setting insert_at_head is pointless.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/frv/kernel/pm.c |    2 +-
+ drivers/macintosh/mac_hid.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/frv/kernel/pm.c b/arch/frv/kernel/pm.c
-index 6b76466..c1840d6 100644
---- a/arch/frv/kernel/pm.c
-+++ b/arch/frv/kernel/pm.c
-@@ -419,7 +419,7 @@ static struct ctl_table pm_dir_table[] =
-  */
- static int __init pm_init(void)
- {
--	register_sysctl_table(pm_dir_table, 1);
-+	register_sysctl_table(pm_dir_table, 0);
- 	return 0;
- }
+diff --git a/drivers/macintosh/mac_hid.c b/drivers/macintosh/mac_hid.c
+index ee6b4ca..c676740 100644
+--- a/drivers/macintosh/mac_hid.c
++++ b/drivers/macintosh/mac_hid.c
+@@ -138,7 +138,7 @@ int __init mac_hid_init(void)
+ 		return err;
  
+ #if defined(CONFIG_SYSCTL)
+-	mac_hid_sysctl_header = register_sysctl_table(mac_hid_root_dir, 1);
++	mac_hid_sysctl_header = register_sysctl_table(mac_hid_root_dir, 0);
+ #endif /* CONFIG_SYSCTL */
+ 
+ 	return 0;
 -- 
 1.4.4.1.g278f
