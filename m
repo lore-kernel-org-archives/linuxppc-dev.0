@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 64FCBE0BC7
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:24:05 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id A0833DEA17
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:24:22 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 3/59] sysctl: sunrpc Remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:08 -0700
-Message-Id: <11689656133336-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 4/59] sysctl: sunrpc Don't unnecessarily set ctl_table->de
+Date: Tue, 16 Jan 2007 09:39:09 -0700
+Message-Id: <11689656151751-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,41 +40,53 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-Because the sunrpc sysctls don't conflict with any other
-sysctls the setting the insert at head flag to register_sysctl
-has no semantic meaning.
+We don't need this to prevent module unload races so remove
+the unnecessary code.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/sunrpc/sysctl.c   |    2 +-
- net/sunrpc/xprtsock.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+ net/sunrpc/sysctl.c   |    8 +-------
+ net/sunrpc/xprtsock.c |    7 +------
+ 2 files changed, 2 insertions(+), 13 deletions(-)
 
 diff --git a/net/sunrpc/sysctl.c b/net/sunrpc/sysctl.c
-index 82b2752..3852689 100644
+index 3852689..6a82ed2 100644
 --- a/net/sunrpc/sysctl.c
 +++ b/net/sunrpc/sysctl.c
-@@ -36,7 +36,7 @@ void
+@@ -35,14 +35,8 @@ static ctl_table		sunrpc_table[];
+ void
  rpc_register_sysctl(void)
  {
- 	if (!sunrpc_table_header) {
--		sunrpc_table_header = register_sysctl_table(sunrpc_table, 1);
-+		sunrpc_table_header = register_sysctl_table(sunrpc_table, 0);
- #ifdef CONFIG_PROC_FS
- 		if (sunrpc_table[0].de)
- 			sunrpc_table[0].de->owner = THIS_MODULE;
+-	if (!sunrpc_table_header) {
++	if (!sunrpc_table_header)
+ 		sunrpc_table_header = register_sysctl_table(sunrpc_table, 0);
+-#ifdef CONFIG_PROC_FS
+-		if (sunrpc_table[0].de)
+-			sunrpc_table[0].de->owner = THIS_MODULE;
+-#endif
+-	}
+-			
+ }
+ 
+ void
 diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
-index 49cabff..98d1af9 100644
+index 98d1af9..51964cf 100644
 --- a/net/sunrpc/xprtsock.c
 +++ b/net/sunrpc/xprtsock.c
-@@ -1630,7 +1630,7 @@ int init_socket_xprt(void)
+@@ -1629,13 +1629,8 @@ struct rpc_xprt *xs_setup_tcp(struct sockaddr *addr, size_t addrlen, struct rpc_
+ int init_socket_xprt(void)
  {
  #ifdef RPC_DEBUG
- 	if (!sunrpc_table_header) {
--		sunrpc_table_header = register_sysctl_table(sunrpc_table, 1);
-+		sunrpc_table_header = register_sysctl_table(sunrpc_table, 0);
- #ifdef CONFIG_PROC_FS
- 		if (sunrpc_table[0].de)
- 			sunrpc_table[0].de->owner = THIS_MODULE;
+-	if (!sunrpc_table_header) {
++	if (!sunrpc_table_header)
+ 		sunrpc_table_header = register_sysctl_table(sunrpc_table, 0);
+-#ifdef CONFIG_PROC_FS
+-		if (sunrpc_table[0].de)
+-			sunrpc_table[0].de->owner = THIS_MODULE;
+-#endif
+-	}
+ #endif
+ 
+ 	return 0;
 -- 
 1.4.4.1.g278f
