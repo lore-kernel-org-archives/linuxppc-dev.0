@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4C17DE150
+	by ozlabs.org (Postfix) with ESMTP id 44400DE181
 	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:26:00 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 48/59] sysctl: Register the ocfs2 sysctl numbers
-Date: Tue, 16 Jan 2007 09:39:53 -0700
-Message-Id: <11689656823041-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 25/59] sysctl: C99 convert arch/frv/kernel/pm.c
+Date: Tue, 16 Jan 2007 09:39:30 -0700
+Message-Id: <11689656443582-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,65 +40,75 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-ocfs2 was did not have the binary number it uses under CTL_FS
-registered in sysctl.h.  Register it to avoid future conflicts,
-and change the name of the definition to be in line with the
-rest of the sysctl numbers.
-
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/ocfs2/cluster/nodemanager.c |    4 ++--
- fs/ocfs2/cluster/nodemanager.h |    3 +--
- include/linux/sysctl.h         |    1 +
- 3 files changed, 4 insertions(+), 4 deletions(-)
+ arch/frv/kernel/pm.c |   50 +++++++++++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 43 insertions(+), 7 deletions(-)
 
-diff --git a/fs/ocfs2/cluster/nodemanager.c b/fs/ocfs2/cluster/nodemanager.c
-index b17333a..df763c7 100644
---- a/fs/ocfs2/cluster/nodemanager.c
-+++ b/fs/ocfs2/cluster/nodemanager.c
-@@ -55,7 +55,7 @@ static ctl_table ocfs2_nm_table[] = {
+diff --git a/arch/frv/kernel/pm.c b/arch/frv/kernel/pm.c
+index c1840d6..aa50333 100644
+--- a/arch/frv/kernel/pm.c
++++ b/arch/frv/kernel/pm.c
+@@ -401,17 +401,53 @@ static int cm_sysctl(ctl_table *table, int __user *name, int nlen,
  
- static ctl_table ocfs2_mod_table[] = {
- 	{
--		.ctl_name	= KERN_OCFS2_NM,
-+		.ctl_name	= FS_OCFS2_NM,
- 		.procname	= "nm",
- 		.data		= NULL,
- 		.maxlen		= 0,
-@@ -67,7 +67,7 @@ static ctl_table ocfs2_mod_table[] = {
- 
- static ctl_table ocfs2_kern_table[] = {
- 	{
--		.ctl_name	= KERN_OCFS2,
-+		.ctl_name	= FS_OCFS2,
- 		.procname	= "ocfs2",
- 		.data		= NULL,
- 		.maxlen		= 0,
-diff --git a/fs/ocfs2/cluster/nodemanager.h b/fs/ocfs2/cluster/nodemanager.h
-index 8fb23ca..0705221 100644
---- a/fs/ocfs2/cluster/nodemanager.h
-+++ b/fs/ocfs2/cluster/nodemanager.h
-@@ -33,8 +33,7 @@
- #include <linux/configfs.h>
- #include <linux/rbtree.h>
- 
--#define KERN_OCFS2		988
--#define KERN_OCFS2_NM		1
-+#define FS_OCFS2_NM		1
- 
- const char *o2nm_get_hb_ctl_path(void);
- 
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index f4ba72e..63e1bac 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -813,6 +813,7 @@ enum
- 	FS_AIO_NR=18,	/* current system-wide number of aio requests */
- 	FS_AIO_MAX_NR=19,	/* system-wide maximum number of aio requests */
- 	FS_INOTIFY=20,	/* inotify submenu */
-+	FS_OCFS2=988,	/* ocfs2 */
+ static struct ctl_table pm_table[] =
+ {
+-	{CTL_PM_SUSPEND, "suspend", NULL, 0, 0200, NULL, &sysctl_pm_do_suspend},
+-	{CTL_PM_CMODE, "cmode", &clock_cmode_current, sizeof(int), 0644, NULL, &cmode_procctl, &cmode_sysctl, NULL},
+-	{CTL_PM_P0, "p0", &clock_p0_current, sizeof(int), 0644, NULL, &p0_procctl, &p0_sysctl, NULL},
+-	{CTL_PM_CM, "cm", &clock_cm_current, sizeof(int), 0644, NULL, &cm_procctl, &cm_sysctl, NULL},
+-	{0}
++	{
++		.ctl_name	= CTL_PM_SUSPEND,
++		.procname	= "suspend",
++		.data		= NULL,
++		.maxlen		= 0,
++		.mode		= 0200,
++		.proc_handler	= &sysctl_pm_do_suspend,
++	},
++	{
++		.ctl_name	= CTL_PM_CMODE,
++		.procname	= "cmode",
++		.data		= &clock_cmode_current,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &cmode_procctl,
++		.strategy	= &cmode_sysctl,
++	},
++	{
++		.ctl_name	= CTL_PM_P0,
++		.procname	= "p0",
++		.data		= &clock_p0_current,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &p0_procctl,
++		.strategy	= &p0_sysctl,
++	},
++	{
++		.ctl_name	= CTL_PM_CM,
++		.procname	= "cm",
++		.data		= &clock_cm_current,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= &cm_procctl,
++		.strategy	= &cm_sysctl,
++	},
++	{ .ctl_name = 0}
  };
  
- /* /proc/sys/fs/quota/ */
+ static struct ctl_table pm_dir_table[] =
+ {
+-	{CTL_PM, "pm", NULL, 0, 0555, pm_table},
+-	{0}
++	{
++		.ctl_name	= CTL_PM,
++		.procname	= "pm",
++		.mode		= 0555,
++		.child		= pm_table,
++	},
++	{ .ctl_name = 0}
+ };
+ 
+ /*
 -- 
 1.4.4.1.g278f
