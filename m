@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E5E2CDE15D
+	by ozlabs.org (Postfix) with ESMTP id E4C17DE150
 	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:26:00 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 30/59] sysctl: mips/au1000 Remove sys_sysctl support
-Date: Tue, 16 Jan 2007 09:39:35 -0700
-Message-Id: <11689656521540-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 48/59] sysctl: Register the ocfs2 sysctl numbers
+Date: Tue, 16 Jan 2007 09:39:53 -0700
+Message-Id: <11689656823041-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,62 +40,65 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-The assignment of binary numbers for sys_sysctl use was in
-shambles and despite requiring methods.  Nothing was implemented
-on the sys_sysctl side.
-
-So this patch gives a mercy killing to the sys_sysctl support for
-powermanagment on mips/au1000.
+ocfs2 was did not have the binary number it uses under CTL_FS
+registered in sysctl.h.  Register it to avoid future conflicts,
+and change the name of the definition to be in line with the
+rest of the sysctl numbers.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/mips/au1000/common/power.c |   16 +++++-----------
- 1 files changed, 5 insertions(+), 11 deletions(-)
+ fs/ocfs2/cluster/nodemanager.c |    4 ++--
+ fs/ocfs2/cluster/nodemanager.h |    3 +--
+ include/linux/sysctl.h         |    1 +
+ 3 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/mips/au1000/common/power.c b/arch/mips/au1000/common/power.c
-index 7504a63..b531ab7 100644
---- a/arch/mips/au1000/common/power.c
-+++ b/arch/mips/au1000/common/power.c
-@@ -62,12 +62,6 @@ extern unsigned long save_local_and_disable(int controller);
- extern void restore_local_and_enable(int controller, unsigned long mask);
- extern void local_enable_irq(unsigned int irq_nr);
+diff --git a/fs/ocfs2/cluster/nodemanager.c b/fs/ocfs2/cluster/nodemanager.c
+index b17333a..df763c7 100644
+--- a/fs/ocfs2/cluster/nodemanager.c
++++ b/fs/ocfs2/cluster/nodemanager.c
+@@ -55,7 +55,7 @@ static ctl_table ocfs2_nm_table[] = {
  
--/* Quick acpi hack. This will have to change! */
--#define	CTL_ACPI 9999
--#define	ACPI_S1_SLP_TYP 19
--#define	ACPI_SLEEP 21
--
--
- static DEFINE_SPINLOCK(pm_lock);
+ static ctl_table ocfs2_mod_table[] = {
+ 	{
+-		.ctl_name	= KERN_OCFS2_NM,
++		.ctl_name	= FS_OCFS2_NM,
+ 		.procname	= "nm",
+ 		.data		= NULL,
+ 		.maxlen		= 0,
+@@ -67,7 +67,7 @@ static ctl_table ocfs2_mod_table[] = {
  
- /* We need to save/restore a bunch of core registers that are
-@@ -425,14 +419,14 @@ static int pm_do_freq(ctl_table * ctl, int write, struct file *file,
+ static ctl_table ocfs2_kern_table[] = {
+ 	{
+-		.ctl_name	= KERN_OCFS2,
++		.ctl_name	= FS_OCFS2,
+ 		.procname	= "ocfs2",
+ 		.data		= NULL,
+ 		.maxlen		= 0,
+diff --git a/fs/ocfs2/cluster/nodemanager.h b/fs/ocfs2/cluster/nodemanager.h
+index 8fb23ca..0705221 100644
+--- a/fs/ocfs2/cluster/nodemanager.h
++++ b/fs/ocfs2/cluster/nodemanager.h
+@@ -33,8 +33,7 @@
+ #include <linux/configfs.h>
+ #include <linux/rbtree.h>
  
+-#define KERN_OCFS2		988
+-#define KERN_OCFS2_NM		1
++#define FS_OCFS2_NM		1
  
- static struct ctl_table pm_table[] = {
--	{ACPI_S1_SLP_TYP, "suspend", NULL, 0, 0600, NULL, &pm_do_suspend},
--	{ACPI_SLEEP, "sleep", NULL, 0, 0600, NULL, &pm_do_sleep},
--	{CTL_ACPI, "freq", NULL, 0, 0600, NULL, &pm_do_freq},
-+	{CTL_UNNUMBERED, "suspend", NULL, 0, 0600, NULL, &pm_do_suspend},
-+	{CTL_UNNUMBERED, "sleep", NULL, 0, 0600, NULL, &pm_do_sleep},
-+	{CTL_UNNUMBERED, "freq", NULL, 0, 0600, NULL, &pm_do_freq},
- 	{0}
+ const char *o2nm_get_hb_ctl_path(void);
+ 
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index f4ba72e..63e1bac 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -813,6 +813,7 @@ enum
+ 	FS_AIO_NR=18,	/* current system-wide number of aio requests */
+ 	FS_AIO_MAX_NR=19,	/* system-wide maximum number of aio requests */
+ 	FS_INOTIFY=20,	/* inotify submenu */
++	FS_OCFS2=988,	/* ocfs2 */
  };
  
- static struct ctl_table pm_dir_table[] = {
--	{CTL_ACPI, "pm", NULL, 0, 0555, pm_table},
-+	{CTL_UNNUMBERED, "pm", NULL, 0, 0555, pm_table},
- 	{0}
- };
- 
-@@ -441,7 +435,7 @@ static struct ctl_table pm_dir_table[] = {
-  */
- static int __init pm_init(void)
- {
--	register_sysctl_table(pm_dir_table, 1);
-+	register_sysctl_table(pm_dir_table, 0);
- 	return 0;
- }
- 
+ /* /proc/sys/fs/quota/ */
 -- 
 1.4.4.1.g278f
