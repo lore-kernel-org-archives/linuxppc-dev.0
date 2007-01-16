@@ -1,18 +1,17 @@
-Return-Path: <eric@ebiederm.dsl.xmission.com>
+Return-Path: <ebiederm@xmission.com>
 Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F359BDDDFC
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 03:50:30 +1100 (EST)
-From: "Eric W. Biederman" <ebiederm@xmission.com>
-To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 44/59] sysctl: Register the sysctl number used by the arlan
-	driver.
-Date: Tue, 16 Jan 2007 09:39:49 -0700
-Message-Id: <1168965670476-git-send-email-ebiederm@xmission.com>
-In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
-References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
+	by ozlabs.org (Postfix) with ESMTP id 3D279DDE27
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 03:51:08 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Andrew Morton <akpm@osdl.org>
+Subject: [PATCH 0/59] Cleanup sysctl 
+Date: Tue, 16 Jan 2007 09:33:47 -0700
+Message-ID: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
 	heiko.carstens@de.ibm.com, ak@suse.de, linuxppc-dev@ozlabs.org,
 	paulus@samba.org, aharkes@cs.cmu.edu, schwidefsky@de.ibm.com,
@@ -28,8 +27,8 @@ Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
 	linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
 	aia21@cantab.net, linux-kernel@vger.kernel.org,
 	ralf@linux-mips.org, lethal@linux-sh.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	containers@lists.osdl.org, linux390@de.ibm.com, philb@gnu.org
+	Linux Containers <containers@lists.osdl.org>,
+	linux390@de.ibm.com, philb@gnu.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,38 +38,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
----
- drivers/net/wireless/arlan-proc.c |    2 +-
- include/linux/sysctl.h            |    1 +
- 2 files changed, 2 insertions(+), 1 deletions(-)
+There has not been much maintenance on sysctl in years, and as a result is
+there is a lot to do to allow future interesting work to happen, and being
+ambitious I'm trying to do it all at once :)
 
-diff --git a/drivers/net/wireless/arlan-proc.c b/drivers/net/wireless/arlan-proc.c
-index 5fa9854..20499a6 100644
---- a/drivers/net/wireless/arlan-proc.c
-+++ b/drivers/net/wireless/arlan-proc.c
-@@ -1216,7 +1216,7 @@ static ctl_table arlan_table[MAX_ARLANS + 1] =
- static ctl_table arlan_root_table[] =
- {
- 	{
--		.ctl_name	= 254,
-+		.ctl_name	= CTL_ARLAN,
- 		.procname	= "arlan",
- 		.maxlen		= 0,
- 		.mode		= 0555,
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 56d0161..f4ba72e 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -70,6 +70,7 @@ enum
- 	CTL_BUS=8,		/* Busses */
- 	CTL_ABI=9,		/* Binary emulation */
- 	CTL_CPU=10,		/* CPU stuff (speed scaling, etc) */
-+	CTL_ARLAN=254,		/* arlan wireless driver */
- 	CTL_SUNRPC=7249,	/* sunrpc debug */
- 	CTL_PM=9899,		/* frv power management */
- 	CTL_FRV=9898,		/* frv specific sysctls */
--- 
-1.4.4.1.g278f
+The patches in this series fall into several general categories.
+
+- Removal of useless attempts to override the standard sysctls
+
+- Registers of sysctl numbers in sysctl.h so someone else does not use
+  the magic number and conflict.
+
+- C99 conversions so it becomes possible to change the layout of 
+  struct ctl_table without breaking everything.
+
+- Removal of useless claims of module ownership, in the proc dir entries
+
+- Removal of sys_sysctl support where people had used conflicting sysctl
+  numbers. Trying to break glibc or other applications by changing the
+  ABI is not cool.  9 instances of this in the kernel seems a little
+  extreme.
+
+- General enhancements when I got the junk I could see out.
+
+Odds are I missed something, most of the cleanups are simply a result of
+me working on the sysctl core and glancing at the users and going: What?
+
+Eric
