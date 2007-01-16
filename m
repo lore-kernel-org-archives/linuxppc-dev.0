@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 58C49DE92A
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:23:26 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 341FDE06AF
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:23:29 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 53/59] sysctl: Remove support for CTL_ANY
-Date: Tue, 16 Jan 2007 09:39:58 -0700
-Message-Id: <11689656972739-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 20/59] sysctl: cdrom Don't set de->owner
+Date: Tue, 16 Jan 2007 09:39:25 -0700
+Message-Id: <11689656373737-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,42 +40,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-There are currently no users in the kernel for CTL_ANY and it
-only has effect on the binary interface which is practically
-unused.
+There is no need for open files in /proc/sys/XXX to hold
+a reference count on the module that provides the file
+to prevent module unload races.  While there is code active
+in the module p->used in the sysctl_table_header is incremented,
+preventing the sysctl from being unregisted.  Once the
+sysctl is unregistered it cannot be found.  Open files
+are also not a problem as they revalidate the sysctl information
+and bump p->used before accessing module code.
 
-So this complicates sysctl lookups for no good reason so just remove it.
+So setting de->owner is unnecessary, makes for a bad example
+and gets in my way of removing ctl_table->de.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- include/linux/sysctl.h |    1 -
- kernel/sysctl.c        |    2 +-
- 2 files changed, 1 insertions(+), 2 deletions(-)
+ drivers/cdrom/cdrom.c |    2 --
+ 1 files changed, 0 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 63e1bac..c99e4bb 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -53,7 +53,6 @@ struct __sysctl_args {
+diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
+index f0a6801..14f72c4 100644
+--- a/drivers/cdrom/cdrom.c
++++ b/drivers/cdrom/cdrom.c
+@@ -3554,8 +3554,6 @@ static void cdrom_sysctl_register(void)
+ 		return;
  
- /* For internal pattern-matching use only: */
- #ifdef __KERNEL__
--#define CTL_ANY		-1	/* Matches any name */
- #define CTL_NONE	0
- #define CTL_UNNUMBERED	CTL_NONE	/* sysctl without a binary number */
- #endif
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 8da6647..e655b11 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -1166,7 +1166,7 @@ repeat:
- 	for ( ; table->ctl_name || table->procname; table++) {
- 		if (!table->ctl_name)
- 			continue;
--		if (n == table->ctl_name || table->ctl_name == CTL_ANY) {
-+		if (n == table->ctl_name) {
- 			int error;
- 			if (table->child) {
- 				if (ctl_perm(table, 001))
+ 	cdrom_sysctl_header = register_sysctl_table(cdrom_root_table, 0);
+-	if (cdrom_root_table->ctl_name && cdrom_root_table->child->de)
+-		cdrom_root_table->child->de->owner = THIS_MODULE;
+ 
+ 	/* set the defaults */
+ 	cdrom_sysctl_settings.autoclose = autoclose;
 -- 
 1.4.4.1.g278f
