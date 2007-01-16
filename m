@@ -1,20 +1,41 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <mark.fasheh@oracle.com>
+Received: from rgminet02.oracle.com (rgminet02.oracle.com [148.87.113.119])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D05B9DDDFD
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 08:20:10 +1100 (EST)
-In-Reply-To: <8746466a0701161246wbe4268esab51bc07a7efb2a3@mail.gmail.com>
-References: <8746466a0701161246wbe4268esab51bc07a7efb2a3@mail.gmail.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F5C9484B-93D7-4B08-813A-8B14D3F0F878@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: EDAC platform devices for fsl_soc
-Date: Tue, 16 Jan 2007 15:17:20 -0600
-To: Dave <dave.jiang@gmail.com>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id BB8A3DDF40
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 08:37:33 +1100 (EST)
+Received: from rgminet01.oracle.com (rgminet01.oracle.com [148.87.113.118])
+	by rgminet02.oracle.com (Switch-3.2.4/Switch-3.1.7) with ESMTP id
+	l0GKfYp1020164
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Tue, 16 Jan 2007 13:41:39 -0700
+Date: Tue, 16 Jan 2007 12:37:10 -0800
+From: Mark Fasheh <mark.fasheh@oracle.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [PATCH 48/59] sysctl: Register the ocfs2 sysctl numbers
+Message-ID: <20070116203710.GB6831@ca-server1.us.oracle.com>
+References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
+	<11689656823041-git-send-email-ebiederm@xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <11689656823041-git-send-email-ebiederm@xmission.com>
+Cc: "<Andrew Morton" <akpm@osdl.org>, linux-mips@linux-mips.org,
+	linux-parport@lists.infradead.org, heiko.carstens@de.ibm.com,
+	ak@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	aharkes@cs.cmu.edu, schwidefsky@de.ibm.com, tim@cyberelk.net,
+	rtc-linux@googlegroups.com, linux-scsi@vger.kernel.org,
+	kurt.hackel@oracle.com, coda@cs.cmu.edu, vojtech@suse.cz,
+	linuxsh-shmedia-dev@lists.sourceforge.net,
+	James.Bottomley@SteelEye.com, clemens@ladisch.de,
+	xfs@oss.sgi.com, xfs-masters@oss.sgi.com, andrea@suse.de,
+	openipmi-developer@lists.sourceforge.net,
+	linux-390@vm.marist.edu, codalist@TELEMANN.coda.cs.cmu.edu,
+	a.zummo@towertech.it, tony.luck@intel.com,
+	linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
+	aia21@cantab.net, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, lethal@linux-sh.org,
+	containers@lists.osdl.org, linux390@de.ibm.com, philb@gnu.org
+Reply-To: Mark Fasheh <mark.fasheh@oracle.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,98 +45,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Jan 16, 2007 at 09:39:53AM -0700, Eric W. Biederman wrote:
+> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
+> 
+> ocfs2 was did not have the binary number it uses under CTL_FS
+> registered in sysctl.h.  Register it to avoid future conflicts,
+> and change the name of the definition to be in line with the
+> rest of the sysctl numbers.
 
-On Jan 16, 2007, at 2:46 PM, Dave wrote:
+This looks good - ACK.
+	--Mark
 
-> I'm trying to write an EDAC driver for the mpc8560 board. I will need
-> to access the DDR error management registers, the L2 error management
-> registers, the PCI management registers, and also the related IRQs
-> (internal 0, 2, and 8). So I would like to insert some entries into
-> the 8560 fdt in order to parse them and map the hw irq to virq in
-> order to setup the platform device resources.
->
-> Below is what I was thinking the fdt should look like. Is that  
-> reasonable?
-
-I dont see the reason to introduce nodes that are specific to EDAC.   
-You should add nodes for the full device (which includes the error  
-mgmt).  In the case of PCI the node should be there and fixing the  
-dts to report the proper irq is all that is needed.
-
->
->     soc8560@e0000000 {
->        #address-cells = <1>;
->        #size-cells = <1>;
->        #interrupt-cells = <2>;
->        device_type = "soc";
->        ranges = <0 e0000000 00100000>;
->        reg = <e0000000 00000200>;
->        bus-frequency = <13ab6680>;
->
->        dram_control@2000 {
->            device_type = "edac";
->            compatible = "85xx";
->            reg = <2000 e5c>;
-
-expand to cover the full 4k allocated to ddr controller
-
->            linux,phandle = <2000>;
->            interrupt-parent = <40000>;
->            interrupts = <2 1>;
-
-should be <2 2>
-
->        };
-
-maybe something more generic like
-
-memory-controller@2000 {
-
-...
-
-}
-
->        l2_error@20e00 {
->            device_type = "edac";
->            compatible = "85xx";
->            reg = <20e00 5c>;
->            linux,phandle = <20e00>;
->            interrupt-parent = <40000>;
->            interrupts = <0 1>;
-
-should be <0 2>
-
->        };
-
-Let's mimic the CPU cache node for this:
-
-l2-cache@20000 {
-	device_type = "cache";
-	...  (various cache properties, size, line size, etc.)
-
-         compatible = "85xx";
-(Not sure if 85xx is the best for compatible)
-
-         reg = <20000 100>;
-         interrupt-parent = <40000>;
-         interrupts = <0 1>;
-};
-
->
->        pci_error@8e00 {
->            device_type = "edac";
->            compatible = "85xx";
->            reg = <8e00 20>;
->            linux,phandle = <8e00>;
->            interrupt-parent = <40000>;
->            interrupts = <8 0>;
->        };
-
-Use the existing pci node as I mentioned above.
-
-- k
-
-> .....
->
-> -- 
-> -= Dave =-
+--
+Mark Fasheh
+Senior Software Developer, Oracle
+mark.fasheh@oracle.com
