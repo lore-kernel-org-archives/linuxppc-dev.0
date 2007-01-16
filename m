@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 79CACDDFF2
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:15:36 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id AD1A7DE356
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:15:39 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 7/59] sysctl: llc remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:12 -0700
-Message-Id: <1168965622720-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 8/59] sysctl: ipx remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:13 -0700
+Message-Id: <11689656232449-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,25 +41,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
 The sysctl numbers used are unique so setting the insert_at_head
-flag serves no semantis purpose, and is just confusing.
+flag servers no semantic purpose and is just confusing.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/llc/sysctl_net_llc.c |    2 +-
+ net/ipx/sysctl_net_ipx.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/llc/sysctl_net_llc.c b/net/llc/sysctl_net_llc.c
-index 45d7dd9..4aab676 100644
---- a/net/llc/sysctl_net_llc.c
-+++ b/net/llc/sysctl_net_llc.c
-@@ -116,7 +116,7 @@ static struct ctl_table_header *llc_table_header;
+diff --git a/net/ipx/sysctl_net_ipx.c b/net/ipx/sysctl_net_ipx.c
+index fa57473..0442f44 100644
+--- a/net/ipx/sysctl_net_ipx.c
++++ b/net/ipx/sysctl_net_ipx.c
+@@ -52,7 +52,7 @@ static struct ctl_table_header *ipx_table_header;
  
- int __init llc_sysctl_init(void)
+ void ipx_register_sysctl(void)
  {
--	llc_table_header = register_sysctl_table(llc_root_table, 1);
-+	llc_table_header = register_sysctl_table(llc_root_table, 0);
- 
- 	return llc_table_header ? 0 : -ENOMEM;
+-	ipx_table_header = register_sysctl_table(ipx_root_table, 1);
++	ipx_table_header = register_sysctl_table(ipx_root_table, 0);
  }
+ 
+ void ipx_unregister_sysctl(void)
 -- 
 1.4.4.1.g278f
