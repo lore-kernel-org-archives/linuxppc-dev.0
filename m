@@ -3,14 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 19268E1257
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:25:03 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id E5E2CDE15D
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:26:00 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 31/59] sysctl: C99 convert the ctl_tables in
-	arch/mips/au1000/common/power.c
-Date: Tue, 16 Jan 2007 09:39:36 -0700
-Message-Id: <11689656551180-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 30/59] sysctl: mips/au1000 Remove sys_sysctl support
+Date: Tue, 16 Jan 2007 09:39:35 -0700
+Message-Id: <11689656521540-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,62 +40,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
+The assignment of binary numbers for sys_sysctl use was in
+shambles and despite requiring methods.  Nothing was implemented
+on the sys_sysctl side.
+
+So this patch gives a mercy killing to the sys_sysctl support for
+powermanagment on mips/au1000.
+
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/mips/au1000/common/power.c |   38 ++++++++++++++++++++++++++++++++------
- 1 files changed, 32 insertions(+), 6 deletions(-)
+ arch/mips/au1000/common/power.c |   16 +++++-----------
+ 1 files changed, 5 insertions(+), 11 deletions(-)
 
 diff --git a/arch/mips/au1000/common/power.c b/arch/mips/au1000/common/power.c
-index b531ab7..31256b8 100644
+index 7504a63..b531ab7 100644
 --- a/arch/mips/au1000/common/power.c
 +++ b/arch/mips/au1000/common/power.c
-@@ -419,15 +419,41 @@ static int pm_do_freq(ctl_table * ctl, int write, struct file *file,
+@@ -62,12 +62,6 @@ extern unsigned long save_local_and_disable(int controller);
+ extern void restore_local_and_enable(int controller, unsigned long mask);
+ extern void local_enable_irq(unsigned int irq_nr);
+ 
+-/* Quick acpi hack. This will have to change! */
+-#define	CTL_ACPI 9999
+-#define	ACPI_S1_SLP_TYP 19
+-#define	ACPI_SLEEP 21
+-
+-
+ static DEFINE_SPINLOCK(pm_lock);
+ 
+ /* We need to save/restore a bunch of core registers that are
+@@ -425,14 +419,14 @@ static int pm_do_freq(ctl_table * ctl, int write, struct file *file,
  
  
  static struct ctl_table pm_table[] = {
--	{CTL_UNNUMBERED, "suspend", NULL, 0, 0600, NULL, &pm_do_suspend},
--	{CTL_UNNUMBERED, "sleep", NULL, 0, 0600, NULL, &pm_do_sleep},
--	{CTL_UNNUMBERED, "freq", NULL, 0, 0600, NULL, &pm_do_freq},
--	{0}
-+	{
-+		.ctl_name 	= CTL_UNNUMBERED,
-+		.procname	= "suspend",
-+		.data		= NULL,
-+		.maxlen		= 0,
-+		.mode		= 0600,
-+		.proc_handler	= &pm_do_suspend
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "sleep",
-+		.data		= NULL,
-+		.maxlen		= 0,
-+		.mode		= 0600,
-+		.proc_handler	= &pm_do_sleep
-+	},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "freq",
-+		.data		= NULL,
-+		.maxlen		= 0,
-+		.mode		= 0600,
-+		.proc_handler	= &pm_do_freq
-+	},
-+	{}
+-	{ACPI_S1_SLP_TYP, "suspend", NULL, 0, 0600, NULL, &pm_do_suspend},
+-	{ACPI_SLEEP, "sleep", NULL, 0, 0600, NULL, &pm_do_sleep},
+-	{CTL_ACPI, "freq", NULL, 0, 0600, NULL, &pm_do_freq},
++	{CTL_UNNUMBERED, "suspend", NULL, 0, 0600, NULL, &pm_do_suspend},
++	{CTL_UNNUMBERED, "sleep", NULL, 0, 0600, NULL, &pm_do_sleep},
++	{CTL_UNNUMBERED, "freq", NULL, 0, 0600, NULL, &pm_do_freq},
+ 	{0}
  };
  
  static struct ctl_table pm_dir_table[] = {
--	{CTL_UNNUMBERED, "pm", NULL, 0, 0555, pm_table},
--	{0}
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "pm",
-+		.mode		= 0555,
-+		.child		= pm_table
-+	},
-+	{}
+-	{CTL_ACPI, "pm", NULL, 0, 0555, pm_table},
++	{CTL_UNNUMBERED, "pm", NULL, 0, 0555, pm_table},
+ 	{0}
  };
  
- /*
+@@ -441,7 +435,7 @@ static struct ctl_table pm_dir_table[] = {
+  */
+ static int __init pm_init(void)
+ {
+-	register_sysctl_table(pm_dir_table, 1);
++	register_sysctl_table(pm_dir_table, 0);
+ 	return 0;
+ }
+ 
 -- 
 1.4.4.1.g278f
