@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0ECC7DDF34
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:05:54 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id AFD19DDF74
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:06:19 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 15/59] sysctl: scsi remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:20 -0700
-Message-Id: <11689656323486-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 12/59] sysctl: atalk remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:17 -0700
+Message-Id: <11689656281139-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -42,21 +42,21 @@ From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/scsi/scsi_sysctl.c |    2 +-
+ net/appletalk/sysctl_net_atalk.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/scsi/scsi_sysctl.c b/drivers/scsi/scsi_sysctl.c
-index 04d06c2..b16b775 100644
---- a/drivers/scsi/scsi_sysctl.c
-+++ b/drivers/scsi/scsi_sysctl.c
-@@ -41,7 +41,7 @@ static struct ctl_table_header *scsi_table_header;
+diff --git a/net/appletalk/sysctl_net_atalk.c b/net/appletalk/sysctl_net_atalk.c
+index 40b0af7..4f806b6 100644
+--- a/net/appletalk/sysctl_net_atalk.c
++++ b/net/appletalk/sysctl_net_atalk.c
+@@ -73,7 +73,7 @@ static struct ctl_table_header *atalk_table_header;
  
- int __init scsi_init_sysctl(void)
+ void atalk_register_sysctl(void)
  {
--	scsi_table_header = register_sysctl_table(scsi_root_table, 1);
-+	scsi_table_header = register_sysctl_table(scsi_root_table, 0);
- 	if (!scsi_table_header)
- 		return -ENOMEM;
- 	return 0;
+-	atalk_table_header = register_sysctl_table(atalk_root_table, 1);
++	atalk_table_header = register_sysctl_table(atalk_root_table, 0);
+ }
+ 
+ void atalk_unregister_sysctl(void)
 -- 
 1.4.4.1.g278f
