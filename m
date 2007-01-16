@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B09A6DE0BE
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:21:18 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 770CDDE019
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:22:33 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 2/59] sysctl: Move CTL_SUNRPC to sysctl.h where it belongs
-Date: Tue, 16 Jan 2007 09:39:07 -0700
-Message-Id: <116896561018-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 38/59] sysctl: x86_64 Remove unnecessary use of insert_at_head
+Date: Tue, 16 Jan 2007 09:39:43 -0700
+Message-Id: <1168965663675-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,37 +40,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
+The only sysctl x86_64 provides are not provided elsewhere,
+so insert_at_head is unnecessary.
+
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- include/linux/sunrpc/debug.h |    1 -
- include/linux/sysctl.h       |    3 ++-
+ arch/x86_64/ia32/ia32_binfmt.c |    2 +-
+ arch/x86_64/mm/init.c          |    2 +-
  2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/include/linux/sunrpc/debug.h b/include/linux/sunrpc/debug.h
-index 60fce3c..b7c7307 100644
---- a/include/linux/sunrpc/debug.h
-+++ b/include/linux/sunrpc/debug.h
-@@ -78,7 +78,6 @@ void		rpc_unregister_sysctl(void);
-  * module currently registers its sysctl table dynamically, the sysctl path
-  * for module FOO is <CTL_SUNRPC, CTL_FOODEBUG>.
-  */
--#define CTL_SUNRPC	7249	/* arbitrary and hopefully unused */
+diff --git a/arch/x86_64/ia32/ia32_binfmt.c b/arch/x86_64/ia32/ia32_binfmt.c
+index 543ef4f..75677ad 100644
+--- a/arch/x86_64/ia32/ia32_binfmt.c
++++ b/arch/x86_64/ia32/ia32_binfmt.c
+@@ -408,7 +408,7 @@ static ctl_table abi_root_table2[] = {
  
- enum {
- 	CTL_RPCDEBUG = 1,
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 81480e6..54a9cf5 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -69,7 +69,8 @@ enum
- 	CTL_DEV=7,		/* Devices */
- 	CTL_BUS=8,		/* Busses */
- 	CTL_ABI=9,		/* Binary emulation */
--	CTL_CPU=10		/* CPU stuff (speed scaling, etc) */
-+	CTL_CPU=10,		/* CPU stuff (speed scaling, etc) */
-+	CTL_SUNRPC=7249,	/* sunrpc debug */
- };
+ static __init int ia32_binfmt_init(void)
+ { 
+-	register_sysctl_table(abi_root_table2, 1);
++	register_sysctl_table(abi_root_table2, 0);
+ 	return 0;
+ }
+ __initcall(ia32_binfmt_init);
+diff --git a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
+index 2968b90..65aa66c 100644
+--- a/arch/x86_64/mm/init.c
++++ b/arch/x86_64/mm/init.c
+@@ -724,7 +724,7 @@ static ctl_table debug_root_table2[] = {
  
- /* CTL_BUS names: */
+ static __init int x8664_sysctl_init(void)
+ { 
+-	register_sysctl_table(debug_root_table2, 1);
++	register_sysctl_table(debug_root_table2, 0);
+ 	return 0;
+ }
+ __initcall(x8664_sysctl_init);
 -- 
 1.4.4.1.g278f
