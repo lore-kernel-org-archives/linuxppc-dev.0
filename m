@@ -3,13 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4DE9BDEDCD
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:16:59 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9AD4BDE24B
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:17:05 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 18/59] sysctl: ipmi remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:23 -0700
-Message-Id: <1168965635875-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 36/59] sysctl: C99 convert ctl_tables entries in
+	arch/ppc/kernel/ppc_htab.c
+Date: Tue, 16 Jan 2007 09:39:41 -0700
+Message-Id: <11689656602523-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,25 +41,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-With unique sysctl binary numbers setting insert_at_head is pointless.
+And make the mode of the kernel directory 0555 no one is allowed
+to write to sysctl directories.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/char/ipmi/ipmi_poweroff.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+ arch/ppc/kernel/ppc_htab.c |   11 ++++++++---
+ 1 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/char/ipmi/ipmi_poweroff.c b/drivers/char/ipmi/ipmi_poweroff.c
-index 9d23136..b3ae65e 100644
---- a/drivers/char/ipmi/ipmi_poweroff.c
-+++ b/drivers/char/ipmi/ipmi_poweroff.c
-@@ -686,7 +686,7 @@ static int ipmi_poweroff_init (void)
- 		printk(KERN_INFO PFX "Power cycle is enabled.\n");
+diff --git a/arch/ppc/kernel/ppc_htab.c b/arch/ppc/kernel/ppc_htab.c
+index bd129d3..77b20ff 100644
+--- a/arch/ppc/kernel/ppc_htab.c
++++ b/arch/ppc/kernel/ppc_htab.c
+@@ -442,11 +442,16 @@ static ctl_table htab_ctl_table[]={
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dol2crvec,
+ 	},
+-	{ 0, },
++	{}
+ };
+ static ctl_table htab_sysctl_root[] = {
+-	{ 1, "kernel", NULL, 0, 0755, htab_ctl_table, },
+- 	{ 0,},
++	{
++		.ctl_name	= CTL_KERN,
++		.procname	= "kernel",
++		.mode		= 0555,
++		.child		= htab_ctl_table,
++	},
++	{}
+ };
  
- #ifdef CONFIG_PROC_FS
--	ipmi_table_header = register_sysctl_table(ipmi_root_table, 1);
-+	ipmi_table_header = register_sysctl_table(ipmi_root_table, 0);
- 	if (!ipmi_table_header) {
- 		printk(KERN_ERR PFX "Unable to register powercycle sysctl\n");
- 		rv = -ENOMEM;
+ static int __init
 -- 
 1.4.4.1.g278f
