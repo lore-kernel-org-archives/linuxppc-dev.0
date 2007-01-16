@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5239DDE8D0
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:16:19 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 864ECDE8F7
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:16:20 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 6/59] sysctl: netrom remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:11 -0700
-Message-Id: <11689656204073-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 19/59] sysctl: cdrom remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:24 -0700
+Message-Id: <11689656363765-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,26 +40,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-The sysctl numbers used are unique so setting the insert_at_head
-flag serves no semantic purpose, so it is just confusing.
+With unique binary sysctl numbers setting insert_at_head to
+override other sysctl entries is pointless.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/netrom/sysctl_net_netrom.c |    2 +-
+ drivers/cdrom/cdrom.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/netrom/sysctl_net_netrom.c b/net/netrom/sysctl_net_netrom.c
-index 6bb8dda..09f4246 100644
---- a/net/netrom/sysctl_net_netrom.c
-+++ b/net/netrom/sysctl_net_netrom.c
-@@ -192,7 +192,7 @@ static ctl_table nr_root_table[] = {
+diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
+index 3105ddd..f0a6801 100644
+--- a/drivers/cdrom/cdrom.c
++++ b/drivers/cdrom/cdrom.c
+@@ -3553,7 +3553,7 @@ static void cdrom_sysctl_register(void)
+ 	if (initialized == 1)
+ 		return;
  
- void __init nr_register_sysctl(void)
- {
--	nr_table_header = register_sysctl_table(nr_root_table, 1);
-+	nr_table_header = register_sysctl_table(nr_root_table, 0);
- }
+-	cdrom_sysctl_header = register_sysctl_table(cdrom_root_table, 1);
++	cdrom_sysctl_header = register_sysctl_table(cdrom_root_table, 0);
+ 	if (cdrom_root_table->ctl_name && cdrom_root_table->child->de)
+ 		cdrom_root_table->child->de->owner = THIS_MODULE;
  
- void nr_unregister_sysctl(void)
 -- 
 1.4.4.1.g278f
