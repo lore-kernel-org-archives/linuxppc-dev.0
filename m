@@ -3,13 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A0833DEA17
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:24:22 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D5967E0E33
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:24:24 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 4/59] sysctl: sunrpc Don't unnecessarily set ctl_table->de
-Date: Tue, 16 Jan 2007 09:39:09 -0700
-Message-Id: <11689656151751-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 47/59] sysctl: C99 convert ctl_tables in NTFS and remove
+	sys_sysctl support
+Date: Tue, 16 Jan 2007 09:39:52 -0700
+Message-Id: <11689656793474-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,53 +41,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-We don't need this to prevent module unload races so remove
-the unnecessary code.
+Putting ntfs-debug under FS_NRINODE was not a kosher thing to do
+so don't give it any binary number.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/sunrpc/sysctl.c   |    8 +-------
- net/sunrpc/xprtsock.c |    7 +------
- 2 files changed, 2 insertions(+), 13 deletions(-)
+ fs/ntfs/sysctl.c |   24 ++++++++++++++++--------
+ 1 files changed, 16 insertions(+), 8 deletions(-)
 
-diff --git a/net/sunrpc/sysctl.c b/net/sunrpc/sysctl.c
-index 3852689..6a82ed2 100644
---- a/net/sunrpc/sysctl.c
-+++ b/net/sunrpc/sysctl.c
-@@ -35,14 +35,8 @@ static ctl_table		sunrpc_table[];
- void
- rpc_register_sysctl(void)
- {
--	if (!sunrpc_table_header) {
-+	if (!sunrpc_table_header)
- 		sunrpc_table_header = register_sysctl_table(sunrpc_table, 0);
--#ifdef CONFIG_PROC_FS
--		if (sunrpc_table[0].de)
--			sunrpc_table[0].de->owner = THIS_MODULE;
--#endif
--	}
--			
- }
+diff --git a/fs/ntfs/sysctl.c b/fs/ntfs/sysctl.c
+index 1c23138..bc217de 100644
+--- a/fs/ntfs/sysctl.c
++++ b/fs/ntfs/sysctl.c
+@@ -33,20 +33,28 @@
+ #include "sysctl.h"
+ #include "debug.h"
  
- void
-diff --git a/net/sunrpc/xprtsock.c b/net/sunrpc/xprtsock.c
-index 98d1af9..51964cf 100644
---- a/net/sunrpc/xprtsock.c
-+++ b/net/sunrpc/xprtsock.c
-@@ -1629,13 +1629,8 @@ struct rpc_xprt *xs_setup_tcp(struct sockaddr *addr, size_t addrlen, struct rpc_
- int init_socket_xprt(void)
- {
- #ifdef RPC_DEBUG
--	if (!sunrpc_table_header) {
-+	if (!sunrpc_table_header)
- 		sunrpc_table_header = register_sysctl_table(sunrpc_table, 0);
--#ifdef CONFIG_PROC_FS
--		if (sunrpc_table[0].de)
--			sunrpc_table[0].de->owner = THIS_MODULE;
--#endif
--	}
- #endif
+-#define FS_NTFS	1
+-
+ /* Definition of the ntfs sysctl. */
+ static ctl_table ntfs_sysctls[] = {
+-	{ FS_NTFS, "ntfs-debug",		/* Binary and text IDs. */
+-	  &debug_msgs,sizeof(debug_msgs),	/* Data pointer and size. */
+-	  0644,	NULL, &proc_dointvec },		/* Mode, child, proc handler. */
+-	{ 0 }
++	{
++		.ctl_name	= CTL_UNUMBERED,	/* Binary and text IDs. */
++		.procname	= "ntfs-debug",
++		.data		= &debug_msgs,		/* Data pointer and size. */
++		.maxlen		= sizeof(debug_msgs),
++		.mode		= 0644,			/* Mode, proc handler. */
++		.proc_handler	= &proc_dointvec
++	},
++	{}
+ };
  
- 	return 0;
+ /* Define the parent directory /proc/sys/fs. */
+ static ctl_table sysctls_root[] = {
+-	{ CTL_FS, "fs", NULL, 0, 0555, ntfs_sysctls },
+-	{ 0 }
++	{
++		.ctl_name	= CTL_FS,
++		.procname	= "fs",
++		.mode		= 0555,
++		.child		= ntfs_sysctls
++	},
++	{}
+ };
+ 
+ /* Storage for the sysctls header. */
 -- 
 1.4.4.1.g278f
