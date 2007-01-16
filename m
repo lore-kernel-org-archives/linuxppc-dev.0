@@ -3,14 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8B60547619
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:27:11 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D468747940
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:27:36 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 37/59] sysctl: C99 convert arch/sh64/kernel/traps.c and remove
-	ABI breakage.
-Date: Tue, 16 Jan 2007 09:39:42 -0700
-Message-Id: <11689656622749-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 29/59] sysctl: C99 convert arch/ia64/kernel/perfmon and remove
+	ABI breakage
+Date: Tue, 16 Jan 2007 09:39:34 -0700
+Message-Id: <1168965650735-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,86 +41,87 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-While doing the C99 conversion I notices that the top level sh64
-directory was using the binary number for CTL_KERN.  That is a
-no-no so I removed the support for the sysctl binary interface
-only leaving sysctl /proc support.
-
-At least the sysctl tables were placed at the end of
-the list so user space did not see this mistake.
+This convers the sysctl ctl_tables to use C99 initializers.
+While I was looking at it I discovered it was using a portion of
+the sysctl binary addresses space under CTL_KERN KERN_OSTYPE
+which was completely inappropriate.  So I completely removed
+all of the sysctl binary names, to remove and avoid the ABI conflict.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/sh64/kernel/traps.c |   49 +++++++++++++++++++++++++++++++++++----------
- 1 files changed, 38 insertions(+), 11 deletions(-)
+ arch/ia64/kernel/perfmon.c |   56 ++++++++++++++++++++++++++++++++++++-------
+ 1 files changed, 47 insertions(+), 9 deletions(-)
 
-diff --git a/arch/sh64/kernel/traps.c b/arch/sh64/kernel/traps.c
-index 224b7f5..02cca74 100644
---- a/arch/sh64/kernel/traps.c
-+++ b/arch/sh64/kernel/traps.c
-@@ -910,25 +910,52 @@ static int misaligned_fixup(struct pt_regs *regs)
- }
+diff --git a/arch/ia64/kernel/perfmon.c b/arch/ia64/kernel/perfmon.c
+index aa94f60..8c679ab 100644
+--- a/arch/ia64/kernel/perfmon.c
++++ b/arch/ia64/kernel/perfmon.c
+@@ -521,19 +521,57 @@ pfm_sysctl_t pfm_sysctl;
+ EXPORT_SYMBOL(pfm_sysctl);
  
- static ctl_table unaligned_table[] = {
--	{1, "kernel_reports", &kernel_mode_unaligned_fixup_count,
--		sizeof(int), 0644, NULL, &proc_dointvec},
+ static ctl_table pfm_ctl_table[]={
+-	{1, "debug", &pfm_sysctl.debug, sizeof(int), 0666, NULL, &proc_dointvec, NULL,},
+-	{2, "debug_ovfl", &pfm_sysctl.debug_ovfl, sizeof(int), 0666, NULL, &proc_dointvec, NULL,},
+-	{3, "fastctxsw", &pfm_sysctl.fastctxsw, sizeof(int), 0600, NULL, &proc_dointvec, NULL,},
+-	{4, "expert_mode", &pfm_sysctl.expert_mode, sizeof(int), 0600, NULL, &proc_dointvec, NULL,},
+-	{ 0, },
 +	{
 +		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "kernel_reports",
-+		.data		= &kernel_mode_unaligned_fixup_count,
++		.procname	= "debug",
++		.data		= &pfm_sysctl.debug,
 +		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec
-+	},
- #if defined(CONFIG_SH64_USER_MISALIGNED_FIXUP)
--	{2, "user_reports", &user_mode_unaligned_fixup_count,
--		sizeof(int), 0644, NULL, &proc_dointvec},
--	{3, "user_enable", &user_mode_unaligned_fixup_enable,
--		sizeof(int), 0644, NULL, &proc_dointvec},
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "user_reports",
-+		.data		= &user_mode_unaligned_fixup_count,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec
++		.mode		= 0666,
++		.proc_handler	= &proc_dointvec,
 +	},
 +	{
 +		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "user_enable",
-+		.data		= &user_mode_unaligned_fixup_enable,
++		.procname	= "debug_ovfl",
++		.data		= &pfm_sysctl.debug_ovfl,
 +		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &proc_dointvec},
- #endif
--	{0}
-+	{}
- };
- 
- static ctl_table unaligned_root[] = {
--	{1, "unaligned_fixup", NULL, 0, 0555, unaligned_table},
--	{0}
++		.mode		= 0666,
++		.proc_handler	= &proc_dointvec,
++	},
 +	{
 +		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "unaligned_fixup",
-+		.mode		= 0555,
-+		unaligned_table
++		.procname	= "fastctxsw",
++		.data		= &pfm_sysctl.fastctxsw,
++		.maxlen		= sizeof(int),
++		.mode		= 0600,
++		.proc_handler	=  &proc_dointvec,
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "expert_mode",
++		.data		= &pfm_sysctl.expert_mode,
++		.maxlen		= sizeof(int),
++		.mode		= 0600,
++		.proc_handler	= &proc_dointvec,
 +	},
 +	{}
  };
- 
- static ctl_table sh64_root[] = {
--	{1, "sh64", NULL, 0, 0555, unaligned_root},
--	{0}
+ static ctl_table pfm_sysctl_dir[] = {
+-	{1, "perfmon", NULL, 0, 0755, pfm_ctl_table, },
+- 	{0,},
 +	{
 +		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "sh64",
-+		.mode		= 0555,
-+		.child		= unaligned_root
++		.procname	= "perfmon",
++		.mode		= 0755,
++		.child		= pfm_ctl_table,
 +	},
-+	{}
++ 	{}
  };
- static struct ctl_table_header *sysctl_header;
- static int __init init_sysctl(void)
+ static ctl_table pfm_sysctl_root[] = {
+-	{1, "kernel", NULL, 0, 0755, pfm_sysctl_dir, },
+- 	{0,},
++	{
++		.ctl_name	= CTL_KERN,
++		.procname	= "kernel",
++		.mode		= 0755,
++		.child		= pfm_sysctl_dir,
++	},
++ 	{}
+ };
+ static struct ctl_table_header *pfm_sysctl_header;
+ 
 -- 
 1.4.4.1.g278f
