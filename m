@@ -3,13 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7EF9DDE0E1
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:19:35 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 35BE9DFCD1
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:19:42 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 41/59] sysctl: C99 convert ctl_tables in arch/x86_64/mm/init.c
-Date: Tue, 16 Jan 2007 09:39:46 -0700
-Message-Id: <11689656673646-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 49/59] sysctl: Move init_irq_proc into init/main where it
+	belongs
+Date: Tue, 16 Jan 2007 09:39:54 -0700
+Message-Id: <1168965684147-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -42,44 +43,44 @@ From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/x86_64/mm/init.c |   22 ++++++++++++++++------
- 1 files changed, 16 insertions(+), 6 deletions(-)
+ init/main.c     |    3 +++
+ kernel/sysctl.c |    3 ---
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-diff --git a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
-index 65aa66c..a04535d 100644
---- a/arch/x86_64/mm/init.c
-+++ b/arch/x86_64/mm/init.c
-@@ -711,15 +711,25 @@ int kern_addr_valid(unsigned long addr)
- extern int exception_trace, page_fault_trace;
+diff --git a/init/main.c b/init/main.c
+index 8b4a7d7..8af5c6e 100644
+--- a/init/main.c
++++ b/init/main.c
+@@ -691,6 +691,9 @@ static void __init do_basic_setup(void)
+ #ifdef CONFIG_SYSCTL
+ 	sysctl_init();
+ #endif
++#ifdef CONFIG_PROC_FS
++	init_irq_proc();
++#endif
  
- static ctl_table debug_table2[] = {
--	{ 99, "exception-trace", &exception_trace, sizeof(int), 0644, NULL,
--	  proc_dointvec },
--	{ 0, }
-+	{
-+		.ctl_name	= 99,
-+		.procname	= "exception-trace",
-+		.data		= &exception_trace,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= proc_dointvec
-+	},
-+	{}
- }; 
+ 	do_initcalls();
+ }
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 600b333..7420761 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1172,8 +1172,6 @@ static ctl_table dev_table[] = {
+ 	{ .ctl_name = 0 }
+ };
  
- static ctl_table debug_root_table2[] = { 
--	{ .ctl_name = CTL_DEBUG, .procname = "debug", .mode = 0555, 
--	   .child = debug_table2 }, 
--	{ 0 }, 
-+	{
-+		.ctl_name = CTL_DEBUG,
-+		.procname = "debug",
-+		.mode = 0555,
-+		.child = debug_table2
-+	}, 
-+	{}
- }; 
+-extern void init_irq_proc (void);
+-
+ static DEFINE_SPINLOCK(sysctl_lock);
  
- static __init int x8664_sysctl_init(void)
+ /* called under sysctl_lock */
+@@ -1219,7 +1217,6 @@ void __init sysctl_init(void)
+ {
+ #ifdef CONFIG_PROC_SYSCTL
+ 	register_proc_table(root_table, proc_sys_root, &root_table_header);
+-	init_irq_proc();
+ #endif
+ }
+ 
 -- 
 1.4.4.1.g278f
