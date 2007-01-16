@@ -3,14 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9AD4BDE24B
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:17:05 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id E9260DE346
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:17:38 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 36/59] sysctl: C99 convert ctl_tables entries in
-	arch/ppc/kernel/ppc_htab.c
-Date: Tue, 16 Jan 2007 09:39:41 -0700
-Message-Id: <11689656602523-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 35/59] sysctl: C99 convert ctl_tables in
+	arch/powerpc/kernel/idle.c
+Date: Tue, 16 Jan 2007 09:39:40 -0700
+Message-Id: <11689656593247-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,33 +41,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-And make the mode of the kernel directory 0555 no one is allowed
-to write to sysctl directories.
+This was partially done already and there was no ABI breakage what
+a relief.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/ppc/kernel/ppc_htab.c |   11 ++++++++---
+ arch/powerpc/kernel/idle.c |   11 ++++++++---
  1 files changed, 8 insertions(+), 3 deletions(-)
 
-diff --git a/arch/ppc/kernel/ppc_htab.c b/arch/ppc/kernel/ppc_htab.c
-index bd129d3..77b20ff 100644
---- a/arch/ppc/kernel/ppc_htab.c
-+++ b/arch/ppc/kernel/ppc_htab.c
-@@ -442,11 +442,16 @@ static ctl_table htab_ctl_table[]={
+diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+index 8994af3..8b27bb1 100644
+--- a/arch/powerpc/kernel/idle.c
++++ b/arch/powerpc/kernel/idle.c
+@@ -110,11 +110,16 @@ static ctl_table powersave_nap_ctl_table[]={
  		.mode		= 0644,
- 		.proc_handler	= &proc_dol2crvec,
+ 		.proc_handler	= &proc_dointvec,
  	},
 -	{ 0, },
 +	{}
  };
- static ctl_table htab_sysctl_root[] = {
--	{ 1, "kernel", NULL, 0, 0755, htab_ctl_table, },
+ static ctl_table powersave_nap_sysctl_root[] = {
+-	{ 1, "kernel", NULL, 0, 0755, powersave_nap_ctl_table, },
 - 	{ 0,},
 +	{
 +		.ctl_name	= CTL_KERN,
 +		.procname	= "kernel",
-+		.mode		= 0555,
-+		.child		= htab_ctl_table,
++		.mode		= 0755,
++		.child		= powersave_nap_ctl_table,
 +	},
 +	{}
  };
