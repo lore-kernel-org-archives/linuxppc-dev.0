@@ -3,14 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 19D53E192C
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:26:37 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D8447E1AF9
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:26:51 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 52/59] sysctl: Create sys/fs/binfmt_misc as an ordinary sysctl
-	entry
-Date: Tue, 16 Jan 2007 09:39:57 -0700
-Message-Id: <11689656932416-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 27/59] sysctl: sn Remove sysctl ABI BREAKAGE
+Date: Tue, 16 Jan 2007 09:39:32 -0700
+Message-Id: <1168965647511-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,65 +40,82 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-binfmt_misc has a mount point in the middle of the sysctl and
-that mount point is created as a proc_generic directory.
+By not using the enumeration in sysctl.h (or even understanding it)
+the SN platform placed their arch specific xpc directory on top of
+CTL_KERN and only because they didn't have 4 entries in their xpc
+directory got lucky and didn't break glibc.
 
-Doing it that way gets in the way of cleaning up the sysctl
-proc support as it continues the existence of a horrible hack.
-So instead simply create the directory as an ordinary sysctl
-directory.   At least that removes the magic special case.
+This is totally irresponsible.  So this patch entirely removes
+sys_sysctl support from their sysctl code.  Hopefully they
+don't have ascii name conflicts as well.
 
+And now that they have no ABI numbers add them to the end
+instead of the sysctl list instead of the head so nothing
+else will be overridden.
+
+Cc: Tony Luck <tony.luck@intel.com>
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/proc/root.c  |    4 ----
- kernel/sysctl.c |   13 +++++++++++++
- 2 files changed, 13 insertions(+), 4 deletions(-)
+ arch/ia64/sn/kernel/xpc_main.c |   12 ++++++------
+ 1 files changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/fs/proc/root.c b/fs/proc/root.c
-index 64d242b..8059e92 100644
---- a/fs/proc/root.c
-+++ b/fs/proc/root.c
-@@ -74,10 +74,6 @@ void __init proc_root_init(void)
- #ifdef CONFIG_SYSCTL
- 	proc_sys_root = proc_mkdir("sys", NULL);
- #endif
--#if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
--	proc_mkdir("sys/fs", NULL);
--	proc_mkdir("sys/fs/binfmt_misc", NULL);
--#endif
- 	proc_root_fs = proc_mkdir("fs", NULL);
- 	proc_root_driver = proc_mkdir("driver", NULL);
- 	proc_mkdir("fs/nfsd", NULL); /* somewhere for the nfsd filesystem to be mounted */
-diff --git a/kernel/sysctl.c b/kernel/sysctl.c
-index 6e2e608..8da6647 100644
---- a/kernel/sysctl.c
-+++ b/kernel/sysctl.c
-@@ -142,6 +142,7 @@ static struct ctl_table_header root_table_header =
- static ctl_table kern_table[];
- static ctl_table vm_table[];
- static ctl_table fs_table[];
-+static ctl_table binfmt_misc_table[];
- static ctl_table debug_table[];
- static ctl_table dev_table[];
- extern ctl_table random_table[];
-@@ -1001,6 +1002,18 @@ static ctl_table fs_table[] = {
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
-+#if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
-+	{
-+		.ctl_name	= CTL_UNNUMBERED,
-+		.procname	= "binfmt_misc",
-+		.mode		= 0555,
-+		.child		= binfmt_misc_table,
-+	},
-+#endif
-+	{ .ctl_name = 0 }
-+};
-+
-+static ctl_table binfmt_misc_table[] = {
- 	{ .ctl_name = 0 }
- };
+diff --git a/arch/ia64/sn/kernel/xpc_main.c b/arch/ia64/sn/kernel/xpc_main.c
+index 7a387d2..24adb75 100644
+--- a/arch/ia64/sn/kernel/xpc_main.c
++++ b/arch/ia64/sn/kernel/xpc_main.c
+@@ -101,7 +101,7 @@ static int xpc_disengage_request_max_timelimit = 120;
  
+ static ctl_table xpc_sys_xpc_hb_dir[] = {
+ 	{
+-		1,
++		CTL_UNNUMBERED,
+ 		"hb_interval",
+ 		&xpc_hb_interval,
+ 		sizeof(int),
+@@ -114,7 +114,7 @@ static ctl_table xpc_sys_xpc_hb_dir[] = {
+ 		&xpc_hb_max_interval
+ 	},
+ 	{
+-		2,
++		CTL_UNNUMBERED,
+ 		"hb_check_interval",
+ 		&xpc_hb_check_interval,
+ 		sizeof(int),
+@@ -130,7 +130,7 @@ static ctl_table xpc_sys_xpc_hb_dir[] = {
+ };
+ static ctl_table xpc_sys_xpc_dir[] = {
+ 	{
+-		1,
++		CTL_UNNUMBERED,
+ 		"hb",
+ 		NULL,
+ 		0,
+@@ -138,7 +138,7 @@ static ctl_table xpc_sys_xpc_dir[] = {
+ 		xpc_sys_xpc_hb_dir
+ 	},
+ 	{
+-		2,
++		CTL_UNNUMBERED,
+ 		"disengage_request_timelimit",
+ 		&xpc_disengage_request_timelimit,
+ 		sizeof(int),
+@@ -154,7 +154,7 @@ static ctl_table xpc_sys_xpc_dir[] = {
+ };
+ static ctl_table xpc_sys_dir[] = {
+ 	{
+-		1,
++		CTL_UNNUMBERED,
+ 		"xpc",
+ 		NULL,
+ 		0,
+@@ -1251,7 +1251,7 @@ xpc_init(void)
+ 	snprintf(xpc_part->bus_id, BUS_ID_SIZE, "part");
+ 	snprintf(xpc_chan->bus_id, BUS_ID_SIZE, "chan");
+ 
+-	xpc_sysctl = register_sysctl_table(xpc_sys_dir, 1);
++	xpc_sysctl = register_sysctl_table(xpc_sys_dir, 0);
+ 
+ 	/*
+ 	 * The first few fields of each entry of xpc_partitions[] need to
 -- 
 1.4.4.1.g278f
