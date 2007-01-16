@@ -1,20 +1,20 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 45253DDDF6
+Return-Path: <andrea.galbusera@teamware.it>
+Received: from smtp3.aruba.it (smtpd3.aruba.it [62.149.128.208])
+	by ozlabs.org (Postfix) with SMTP id 52302DDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Jan 2007 00:07:17 +1100 (EST)
-Message-ID: <45ACC0E6.5020607@cambridgebroadband.com>
-Date: Tue, 16 Jan 2007 12:11:18 +0000
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-MIME-Version: 1.0
-To: onetarget@sina.com
-Subject: Re: Boot Linux 2.4.25 on MPC8270 board errors.
-References: <20070112040015.72172.qmail@mail3-101.sinamail.sina.com.cn>
-In-Reply-To: <20070112040015.72172.qmail@mail3-101.sinamail.sina.com.cn>
-Content-Type: text/plain; charset=GB2312
+	Wed, 17 Jan 2007 01:45:44 +1100 (EST)
+Subject: Re: Ethernet fails on MPC5200 based target
+From: Andrea Galbusera <andrea.galbusera@teamware.it>
+To: Sylvain Munaut <tnt@246tNt.com>
+In-Reply-To: <45ACBE65.6050602@246tNt.com>
+References: <1168439212.5271.70.camel@localhost.localdomain>
+	<45A4FDAF.8020909@246tNt.com>
+	<1168935615.22089.31.camel@localhost.localdomain>
+	<45ACBE65.6050602@246tNt.com>
+Content-Type: text/plain
+Date: Tue, 16 Jan 2007 15:46:50 +0100
+Message-Id: <1168958810.22089.80.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,51 +26,70 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-onetarget@sina.com wrote:
-> Dear all,
->     I am now using ELDK 3.1.1 to build Linux-2.4.25 for an MPC8270 
-> board. The board has 128MB SDRAM, and in fcc_enet.c
->     I configured the followings,
-> #define FCC_ENET_RX_PAGES    32 /*16 */
-> #define FCC_ENET_RX_FRSIZE    2048
-> #define FCC_ENET_RX_FRPPG    (PAGE_SIZE / FCC_ENET_RX_FRSIZE)
-> #define RX_RING_SIZE        (FCC_ENET_RX_FRPPG * FCC_ENET_RX_PAGES)
-> #define TX_RING_SIZE        128 /*16    /* Must be power of two */
-> #define TX_RING_MOD_MASK    127 /*15    /*   for this to work */
-> 
->     but when boot the image, I got following errors.
->   
-> 
-> 
-> Register rtc driver 1.0 successfully!
-> eth0: FCC1 ENET Version 0.4, 00:08:02:06:00:00
-> eth0: Phy @ 0x10, type LXT971 (0x001378e2)
-> Oops: kernel access of bad area, sig: 11
-> NIP: C01E93B8 XER: 00000000 LR: C01E9288 SP: C03BDED0 REGS: c03bde20 
-> TRAP: 0300    Not tainted
-> MSR: 00009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> DAR: 00000000, DSISR: 22000000
-> TASK = c03bc000[1] 'swapper' Last syscall: 120
-> last math 00000000 last altivec 00000000
-> GPR00: 00000000 C03BDED0 C03BC000 F000B0C0 88888888 00000000 F000B0DC 
-> 00000000
-> GPR08: 00000200 00000000 00000000 000005F0 84004044 10052210 07FE2000 
-> 007FFF10
-> GPR16: 00000001 00000000 007FFF00 FFFFFFFF 003FF000 00000000 07F7FBF8 
-> C00A1BA0
-> GPR24: C01F2C2C C01D0B5C F00119C0 C7FCB000 C03BE600 00000000 FFFFFFFF 
-> F0008500
-> Call backtrace:
-> C01A78C0 C01E8DD8 C01E77E8 C01E7824 C01E9BC4 C01E73A4 C01E0624
-> C00039D0 C00081B8
-> Kernel panic: Attempted to kill init!
-> 
->     My question is, what should I set the above values??
->     Thank you and regards,
-> 
->     W.Target
+Hi Sylvain,
 
-Leave these defines at the values in the original source code.  Use ksymoops to
-examine the oops text and determine where the bad access occurred.
+On Tue, 2007-01-16 at 13:00 +0100, Sylvain Munaut wrote:
 
-Alex
+> And does the problem also appears on the denx kernel after 1k ping packets ?
+
+I never did a long run test before on the denx kernel... seemed quite
+robust even on intense root over NFS usage... But I did it today and...
+I also see some corrupted packets :-(. They are a lot less frequent than
+with your kernel: I see just about 5/6 corruptions over 2000 pkts. On
+the opposite, the kernel from you (with XLB pipelining enabled) goes
+smootly till about 1k packets and then starts behaving very bad with a
+lot of corrupted ping packets in sequence. I repeated both tests a few
+times with similar results.
+
+I tend to exclude any other network source of corruption because I can't
+see anything similar by pinging other hosts.
+
+> 
+> Are the fec driver the same ?
+> Are the fec task code the same ? (in bestcomm/fec.c )
+
+Still understanding what files exactly are involved, but, diffing the
+following among the two source trees I found no differences:
+
+arch/ppc/syslib/bestcomm/fec.c
+arch/ppc/syslib/bestcomm/sdma_fec_rx_task.c
+arch/ppc/syslib/bestcomm/sdma_fec_tx_task.c
+drivers/net/fec_mpc52xx/fec.c
+drivers/net/fec_mpc52xx/fec_phy.c
+arch/ppc/syslib/bestcomm/bestcomm.c
+
+If you think it may help, I can attach a full arch/ppc/syslib/bestcomm/*
+diff result. There are some changes (apart from ATA code that is missing
+in denx tree), mainly in inline code included in header files
+(bestcomm.h).
+
+I also noticed that corruption always affects 20th or 52nd data byte
+which, expected to be repectively 0x14 and 0x52 sometimes turns out to
+be one of 0x0, 0x0c, 0x14. This sounds very repetitive over hundreds of
+corrupted packets. I paste some examples in case the could help:
+
+> wrong data byte #52 should be 0x34 but was 0x0
+> #8      8 9 a b c d e f 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f 20 21 22 23 24 25 26 27
+> #40     28 29 2a 2b 2c 2d 2e 2f 30 31 32 33 0 35 36 37
+> 
+> wrong data byte #52 should be 0x34 but was 0xc0
+> #8      8 9 a b c d e f 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f 20 21 22 23 24 25 26 27
+> #40     28 29 2a 2b 2c 2d 2e 2f 30 31 32 33 c0 35 36 37
+> 
+> wrong data byte #52 should be 0x34 but was 0x14
+> #8      8 9 a b c d e f 10 11 12 13 14 15 16 17 18 19 1a 1b 1c 1d 1e 1f 20 21 22 23 24 25 26 27
+> #40     28 29 2a 2b 2c 2d 2e 2f 30 31 32 33 14 35 36 37
+> 
+> wrong data byte #20 should be 0x14 but was 0xc0
+> #8      8 9 a b c d e f 10 11 12 13 c0 15 16 17 18 19 1a 1b 1c 1d 1e 1f 20 21 22 23 24 25 26 27
+> #40     28 29 2a 2b 2c 2d 2e 2f 30 31 32 33 34 35 36 37
+
+Doing some more tests in the while...
+
+One more aspects that may help. Looking at MPC5200B errata from
+http://www.freescale.com/files/32bit/doc/errata/MPC5200BE.pdf?fsrch=1 ,
+I noticed that issues 353 and 463 are ethernet related and where not
+present in the previous errata. Do you think they can be related with my
+problem?
+
+Andrea
