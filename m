@@ -3,14 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2A1F8DE8CA
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:23:21 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 58C49DE92A
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:23:26 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 43/59] sysctl: Remove sys_sysctl support from
-	drivers/char/rtc.c
-Date: Tue, 16 Jan 2007 09:39:48 -0700
-Message-Id: <1168965669760-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 53/59] sysctl: Remove support for CTL_ANY
+Date: Tue, 16 Jan 2007 09:39:58 -0700
+Message-Id: <11689656972739-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,46 +40,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-The real time clock driver was using the binary number reserved
-for cdroms in the sysctl binary number interface, which is a no-no.
-So since the sysctl binary interface is wrong remove it.
+There are currently no users in the kernel for CTL_ANY and it
+only has effect on the binary interface which is practically
+unused.
+
+So this complicates sysctl lookups for no good reason so just remove it.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/char/rtc.c |    6 ++----
- 1 files changed, 2 insertions(+), 4 deletions(-)
+ include/linux/sysctl.h |    1 -
+ kernel/sysctl.c        |    2 +-
+ 2 files changed, 1 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/char/rtc.c b/drivers/char/rtc.c
-index 664f36c..df11289 100644
---- a/drivers/char/rtc.c
-+++ b/drivers/char/rtc.c
-@@ -282,7 +282,7 @@ irqreturn_t rtc_interrupt(int irq, void *dev_id)
-  */
- static ctl_table rtc_table[] = {
- 	{
--		.ctl_name	= 1,
-+		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "max-user-freq",
- 		.data		= &rtc_max_user_freq,
- 		.maxlen		= sizeof(int),
-@@ -294,9 +294,8 @@ static ctl_table rtc_table[] = {
+diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
+index 63e1bac..c99e4bb 100644
+--- a/include/linux/sysctl.h
++++ b/include/linux/sysctl.h
+@@ -53,7 +53,6 @@ struct __sysctl_args {
  
- static ctl_table rtc_root[] = {
- 	{
--		.ctl_name	= 1,
-+		.ctl_name	= CTL_UNNUMBERED,
- 		.procname	= "rtc",
--		.maxlen		= 0,
- 		.mode		= 0555,
- 		.child		= rtc_table,
- 	},
-@@ -307,7 +306,6 @@ static ctl_table dev_root[] = {
- 	{
- 		.ctl_name	= CTL_DEV,
- 		.procname	= "dev",
--		.maxlen		= 0,
- 		.mode		= 0555,
- 		.child		= rtc_root,
- 	},
+ /* For internal pattern-matching use only: */
+ #ifdef __KERNEL__
+-#define CTL_ANY		-1	/* Matches any name */
+ #define CTL_NONE	0
+ #define CTL_UNNUMBERED	CTL_NONE	/* sysctl without a binary number */
+ #endif
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 8da6647..e655b11 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1166,7 +1166,7 @@ repeat:
+ 	for ( ; table->ctl_name || table->procname; table++) {
+ 		if (!table->ctl_name)
+ 			continue;
+-		if (n == table->ctl_name || table->ctl_name == CTL_ANY) {
++		if (n == table->ctl_name) {
+ 			int error;
+ 			if (table->child) {
+ 				if (ctl_perm(table, 001))
 -- 
 1.4.4.1.g278f
