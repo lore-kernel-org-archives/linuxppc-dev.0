@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E1824DE3E7
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:18:48 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 7EF9DDE0E1
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:19:35 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 21/59] sysctl: Move CTL_PM into sysctl.h where it belongs.
-Date: Tue, 16 Jan 2007 09:39:26 -0700
-Message-Id: <11689656383210-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 41/59] sysctl: C99 convert ctl_tables in arch/x86_64/mm/init.c
+Date: Tue, 16 Jan 2007 09:39:46 -0700
+Message-Id: <11689656673646-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -42,33 +42,44 @@ From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/frv/kernel/pm.c   |    1 -
- include/linux/sysctl.h |    1 +
- 2 files changed, 1 insertions(+), 1 deletions(-)
+ arch/x86_64/mm/init.c |   22 ++++++++++++++++------
+ 1 files changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/arch/frv/kernel/pm.c b/arch/frv/kernel/pm.c
-index ee677ce..6b76466 100644
---- a/arch/frv/kernel/pm.c
-+++ b/arch/frv/kernel/pm.c
-@@ -125,7 +125,6 @@ unsigned long sleep_phys_sp(void *sp)
-  * Use a temporary sysctl number. Horrid, but will be cleaned up in 2.6
-  * when all the PM interfaces exist nicely.
-  */
--#define CTL_PM 9899
- #define CTL_PM_SUSPEND 1
- #define CTL_PM_CMODE 2
- #define CTL_PM_P0 4
-diff --git a/include/linux/sysctl.h b/include/linux/sysctl.h
-index 54a9cf5..e7c40b6 100644
---- a/include/linux/sysctl.h
-+++ b/include/linux/sysctl.h
-@@ -71,6 +71,7 @@ enum
- 	CTL_ABI=9,		/* Binary emulation */
- 	CTL_CPU=10,		/* CPU stuff (speed scaling, etc) */
- 	CTL_SUNRPC=7249,	/* sunrpc debug */
-+	CTL_PM=9899,		/* frv power management */
- };
+diff --git a/arch/x86_64/mm/init.c b/arch/x86_64/mm/init.c
+index 65aa66c..a04535d 100644
+--- a/arch/x86_64/mm/init.c
++++ b/arch/x86_64/mm/init.c
+@@ -711,15 +711,25 @@ int kern_addr_valid(unsigned long addr)
+ extern int exception_trace, page_fault_trace;
  
- /* CTL_BUS names: */
+ static ctl_table debug_table2[] = {
+-	{ 99, "exception-trace", &exception_trace, sizeof(int), 0644, NULL,
+-	  proc_dointvec },
+-	{ 0, }
++	{
++		.ctl_name	= 99,
++		.procname	= "exception-trace",
++		.data		= &exception_trace,
++		.maxlen		= sizeof(int),
++		.mode		= 0644,
++		.proc_handler	= proc_dointvec
++	},
++	{}
+ }; 
+ 
+ static ctl_table debug_root_table2[] = { 
+-	{ .ctl_name = CTL_DEBUG, .procname = "debug", .mode = 0555, 
+-	   .child = debug_table2 }, 
+-	{ 0 }, 
++	{
++		.ctl_name = CTL_DEBUG,
++		.procname = "debug",
++		.mode = 0555,
++		.child = debug_table2
++	}, 
++	{}
+ }; 
+ 
+ static __init int x8664_sysctl_init(void)
 -- 
 1.4.4.1.g278f
