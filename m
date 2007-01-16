@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 14D15DDE00
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 03:54:14 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id B396FDDED7
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:00:27 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 13/59] sysctl: xfs remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:18 -0700
-Message-Id: <11689656291632-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 10/59] sysctl: dccp remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:15 -0700
+Message-Id: <1168965624939-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -42,21 +42,21 @@ From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/xfs/linux-2.6/xfs_sysctl.c |    2 +-
+ net/dccp/sysctl.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/fs/xfs/linux-2.6/xfs_sysctl.c b/fs/xfs/linux-2.6/xfs_sysctl.c
-index af24653..af777e9 100644
---- a/fs/xfs/linux-2.6/xfs_sysctl.c
-+++ b/fs/xfs/linux-2.6/xfs_sysctl.c
-@@ -149,7 +149,7 @@ STATIC ctl_table xfs_root_table[] = {
- void
- xfs_sysctl_register(void)
- {
--	xfs_table_header = register_sysctl_table(xfs_root_table, 1);
-+	xfs_table_header = register_sysctl_table(xfs_root_table, 0);
- }
+diff --git a/net/dccp/sysctl.c b/net/dccp/sysctl.c
+index fdcfca3..3391631 100644
+--- a/net/dccp/sysctl.c
++++ b/net/dccp/sysctl.c
+@@ -127,7 +127,7 @@ static struct ctl_table_header *dccp_table_header;
  
- void
+ int __init dccp_sysctl_init(void)
+ {
+-	dccp_table_header = register_sysctl_table(dccp_root_table, 1);
++	dccp_table_header = register_sysctl_table(dccp_root_table, 0);
+ 
+ 	return dccp_table_header != NULL ? 0 : -ENOMEM;
+ }
 -- 
 1.4.4.1.g278f
