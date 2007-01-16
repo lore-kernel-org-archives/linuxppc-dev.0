@@ -3,14 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 212B4DDFF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:16:07 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 5239DDE8D0
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:16:19 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 1/59] sysctl x25: Remove unnecessary insert_at_head from
-	register_sysctl_table.
-Date: Tue, 16 Jan 2007 09:39:06 -0700
-Message-Id: <11689656044103-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 6/59] sysctl: netrom remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:11 -0700
+Message-Id: <11689656204073-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -39,27 +38,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since x25 uses unique binary numbers inserting yourself at the
-head of the search list for sysctls so you can override already
-registered sysctls is pointless.
+From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
+
+The sysctl numbers used are unique so setting the insert_at_head
+flag serves no semantic purpose, so it is just confusing.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- net/x25/sysctl_net_x25.c |    2 +-
+ net/netrom/sysctl_net_netrom.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/net/x25/sysctl_net_x25.c b/net/x25/sysctl_net_x25.c
-index aabda59..94aff67 100644
---- a/net/x25/sysctl_net_x25.c
-+++ b/net/x25/sysctl_net_x25.c
-@@ -98,7 +98,7 @@ static struct ctl_table x25_root_table[] = {
+diff --git a/net/netrom/sysctl_net_netrom.c b/net/netrom/sysctl_net_netrom.c
+index 6bb8dda..09f4246 100644
+--- a/net/netrom/sysctl_net_netrom.c
++++ b/net/netrom/sysctl_net_netrom.c
+@@ -192,7 +192,7 @@ static ctl_table nr_root_table[] = {
  
- void __init x25_register_sysctl(void)
+ void __init nr_register_sysctl(void)
  {
--	x25_table_header = register_sysctl_table(x25_root_table, 1);
-+	x25_table_header = register_sysctl_table(x25_root_table, 0);
+-	nr_table_header = register_sysctl_table(nr_root_table, 1);
++	nr_table_header = register_sysctl_table(nr_root_table, 0);
  }
  
- void x25_unregister_sysctl(void)
+ void nr_unregister_sysctl(void)
 -- 
 1.4.4.1.g278f
