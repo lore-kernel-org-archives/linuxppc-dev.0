@@ -3,14 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E9260DE346
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:17:38 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id AAACCDF430
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:17:49 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 35/59] sysctl: C99 convert ctl_tables in
-	arch/powerpc/kernel/idle.c
-Date: Tue, 16 Jan 2007 09:39:40 -0700
-Message-Id: <11689656593247-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 54/59] sysctl: Remove support for directory strategy routines.
+Date: Tue, 16 Jan 2007 09:39:59 -0700
+Message-Id: <11689656993630-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,37 +40,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-This was partially done already and there was no ABI breakage what
-a relief.
+parse_table has support for calling a strategy routine
+when descending into a directory.  To date no one has
+used this functionality and the /proc/sys interface has
+no analog to it.
+
+So no one is using this functionality kill it and make
+the binary sysctl code easier to follow.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/powerpc/kernel/idle.c |   11 ++++++++---
- 1 files changed, 8 insertions(+), 3 deletions(-)
+ kernel/sysctl.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
-index 8994af3..8b27bb1 100644
---- a/arch/powerpc/kernel/idle.c
-+++ b/arch/powerpc/kernel/idle.c
-@@ -110,11 +110,16 @@ static ctl_table powersave_nap_ctl_table[]={
- 		.mode		= 0644,
- 		.proc_handler	= &proc_dointvec,
- 	},
--	{ 0, },
-+	{}
- };
- static ctl_table powersave_nap_sysctl_root[] = {
--	{ 1, "kernel", NULL, 0, 0755, powersave_nap_ctl_table, },
-- 	{ 0,},
-+	{
-+		.ctl_name	= CTL_KERN,
-+		.procname	= "kernel",
-+		.mode		= 0755,
-+		.child		= powersave_nap_ctl_table,
-+	},
-+	{}
- };
- 
- static int __init
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index e655b11..2c3703d 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -1171,14 +1171,6 @@ repeat:
+ 			if (table->child) {
+ 				if (ctl_perm(table, 001))
+ 					return -EPERM;
+-				if (table->strategy) {
+-					error = table->strategy(
+-						table, name, nlen,
+-						oldval, oldlenp,
+-						newval, newlen);
+-					if (error)
+-						return error;
+-				}
+ 				name++;
+ 				nlen--;
+ 				table = table->child;
 -- 
 1.4.4.1.g278f
