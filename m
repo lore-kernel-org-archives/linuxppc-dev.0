@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 341FDE06AF
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:23:29 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 74207E0BAC
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:24:04 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 20/59] sysctl: cdrom Don't set de->owner
-Date: Tue, 16 Jan 2007 09:39:25 -0700
-Message-Id: <11689656373737-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 26/59] sysctl: C99 convert arch/frv/kernel/sysctl.c
+Date: Tue, 16 Jan 2007 09:39:31 -0700
+Message-Id: <11689656454112-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,35 +40,59 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-There is no need for open files in /proc/sys/XXX to hold
-a reference count on the module that provides the file
-to prevent module unload races.  While there is code active
-in the module p->used in the sysctl_table_header is incremented,
-preventing the sysctl from being unregisted.  Once the
-sysctl is unregistered it cannot be found.  Open files
-are also not a problem as they revalidate the sysctl information
-and bump p->used before accessing module code.
-
-So setting de->owner is unnecessary, makes for a bad example
-and gets in my way of removing ctl_table->de.
-
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/cdrom/cdrom.c |    2 --
- 1 files changed, 0 insertions(+), 2 deletions(-)
+ arch/frv/kernel/sysctl.c |   29 ++++++++++++++++++++++++-----
+ 1 files changed, 24 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/cdrom/cdrom.c b/drivers/cdrom/cdrom.c
-index f0a6801..14f72c4 100644
---- a/drivers/cdrom/cdrom.c
-+++ b/drivers/cdrom/cdrom.c
-@@ -3554,8 +3554,6 @@ static void cdrom_sysctl_register(void)
- 		return;
+diff --git a/arch/frv/kernel/sysctl.c b/arch/frv/kernel/sysctl.c
+index 37528eb..577ad16 100644
+--- a/arch/frv/kernel/sysctl.c
++++ b/arch/frv/kernel/sysctl.c
+@@ -175,11 +175,25 @@ static int procctl_frv_pin_cxnr(ctl_table *table, int write, struct file *filp,
+  */
+ static struct ctl_table frv_table[] =
+ {
+-	{ 1, "cache-mode",	NULL, 0, 0644, NULL, &procctl_frv_cachemode },
++	{
++		.ctl_name 	= 1,
++		.procname 	= "cache-mode",
++		.data		= NULL,
++		.maxlen		= 0,
++		.mode		= 0644,
++		.proc_handler	= &procctl_frv_cachemode,
++	},
+ #ifdef CONFIG_MMU
+-	{ 2, "pin-cxnr",	NULL, 0, 0644, NULL, &procctl_frv_pin_cxnr },
++	{
++		.ctl_name	= 2,
++		.procname	= "pin-cxnr",
++		.data		= NULL,
++		.maxlen		= 0,
++		.mode		= 0644,
++		.proc_handler	= &procctl_frv_pin_cxnr
++	},
+ #endif
+-	{ 0 }
++	{}
+ };
  
- 	cdrom_sysctl_header = register_sysctl_table(cdrom_root_table, 0);
--	if (cdrom_root_table->ctl_name && cdrom_root_table->child->de)
--		cdrom_root_table->child->de->owner = THIS_MODULE;
+ /*
+@@ -188,8 +202,13 @@ static struct ctl_table frv_table[] =
+  */
+ static struct ctl_table frv_dir_table[] =
+ {
+-	{CTL_FRV, "frv", NULL, 0, 0555, frv_table},
+-	{0}
++	{
++		.ctl_name	= CTL_FRV,
++		.procname	= "frv",
++		.mode 		= 0555,
++		.child		= frv_table
++	},
++	{}
+ };
  
- 	/* set the defaults */
- 	cdrom_sysctl_settings.autoclose = autoclose;
+ /*
 -- 
 1.4.4.1.g278f
