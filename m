@@ -3,13 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 44400DE181
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:26:00 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 19D53E192C
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:26:37 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 25/59] sysctl: C99 convert arch/frv/kernel/pm.c
-Date: Tue, 16 Jan 2007 09:39:30 -0700
-Message-Id: <11689656443582-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 52/59] sysctl: Create sys/fs/binfmt_misc as an ordinary sysctl
+	entry
+Date: Tue, 16 Jan 2007 09:39:57 -0700
+Message-Id: <11689656932416-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,75 +41,65 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
+binfmt_misc has a mount point in the middle of the sysctl and
+that mount point is created as a proc_generic directory.
+
+Doing it that way gets in the way of cleaning up the sysctl
+proc support as it continues the existence of a horrible hack.
+So instead simply create the directory as an ordinary sysctl
+directory.   At least that removes the magic special case.
+
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/frv/kernel/pm.c |   50 +++++++++++++++++++++++++++++++++++++++++++-------
- 1 files changed, 43 insertions(+), 7 deletions(-)
+ fs/proc/root.c  |    4 ----
+ kernel/sysctl.c |   13 +++++++++++++
+ 2 files changed, 13 insertions(+), 4 deletions(-)
 
-diff --git a/arch/frv/kernel/pm.c b/arch/frv/kernel/pm.c
-index c1840d6..aa50333 100644
---- a/arch/frv/kernel/pm.c
-+++ b/arch/frv/kernel/pm.c
-@@ -401,17 +401,53 @@ static int cm_sysctl(ctl_table *table, int __user *name, int nlen,
- 
- static struct ctl_table pm_table[] =
- {
--	{CTL_PM_SUSPEND, "suspend", NULL, 0, 0200, NULL, &sysctl_pm_do_suspend},
--	{CTL_PM_CMODE, "cmode", &clock_cmode_current, sizeof(int), 0644, NULL, &cmode_procctl, &cmode_sysctl, NULL},
--	{CTL_PM_P0, "p0", &clock_p0_current, sizeof(int), 0644, NULL, &p0_procctl, &p0_sysctl, NULL},
--	{CTL_PM_CM, "cm", &clock_cm_current, sizeof(int), 0644, NULL, &cm_procctl, &cm_sysctl, NULL},
--	{0}
+diff --git a/fs/proc/root.c b/fs/proc/root.c
+index 64d242b..8059e92 100644
+--- a/fs/proc/root.c
++++ b/fs/proc/root.c
+@@ -74,10 +74,6 @@ void __init proc_root_init(void)
+ #ifdef CONFIG_SYSCTL
+ 	proc_sys_root = proc_mkdir("sys", NULL);
+ #endif
+-#if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
+-	proc_mkdir("sys/fs", NULL);
+-	proc_mkdir("sys/fs/binfmt_misc", NULL);
+-#endif
+ 	proc_root_fs = proc_mkdir("fs", NULL);
+ 	proc_root_driver = proc_mkdir("driver", NULL);
+ 	proc_mkdir("fs/nfsd", NULL); /* somewhere for the nfsd filesystem to be mounted */
+diff --git a/kernel/sysctl.c b/kernel/sysctl.c
+index 6e2e608..8da6647 100644
+--- a/kernel/sysctl.c
++++ b/kernel/sysctl.c
+@@ -142,6 +142,7 @@ static struct ctl_table_header root_table_header =
+ static ctl_table kern_table[];
+ static ctl_table vm_table[];
+ static ctl_table fs_table[];
++static ctl_table binfmt_misc_table[];
+ static ctl_table debug_table[];
+ static ctl_table dev_table[];
+ extern ctl_table random_table[];
+@@ -1001,6 +1002,18 @@ static ctl_table fs_table[] = {
+ 		.mode		= 0644,
+ 		.proc_handler	= &proc_dointvec,
+ 	},
++#if defined(CONFIG_BINFMT_MISC) || defined(CONFIG_BINFMT_MISC_MODULE)
 +	{
-+		.ctl_name	= CTL_PM_SUSPEND,
-+		.procname	= "suspend",
-+		.data		= NULL,
-+		.maxlen		= 0,
-+		.mode		= 0200,
-+		.proc_handler	= &sysctl_pm_do_suspend,
-+	},
-+	{
-+		.ctl_name	= CTL_PM_CMODE,
-+		.procname	= "cmode",
-+		.data		= &clock_cmode_current,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &cmode_procctl,
-+		.strategy	= &cmode_sysctl,
-+	},
-+	{
-+		.ctl_name	= CTL_PM_P0,
-+		.procname	= "p0",
-+		.data		= &clock_p0_current,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &p0_procctl,
-+		.strategy	= &p0_sysctl,
-+	},
-+	{
-+		.ctl_name	= CTL_PM_CM,
-+		.procname	= "cm",
-+		.data		= &clock_cm_current,
-+		.maxlen		= sizeof(int),
-+		.mode		= 0644,
-+		.proc_handler	= &cm_procctl,
-+		.strategy	= &cm_sysctl,
-+	},
-+	{ .ctl_name = 0}
- };
- 
- static struct ctl_table pm_dir_table[] =
- {
--	{CTL_PM, "pm", NULL, 0, 0555, pm_table},
--	{0}
-+	{
-+		.ctl_name	= CTL_PM,
-+		.procname	= "pm",
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "binfmt_misc",
 +		.mode		= 0555,
-+		.child		= pm_table,
++		.child		= binfmt_misc_table,
 +	},
-+	{ .ctl_name = 0}
++#endif
++	{ .ctl_name = 0 }
++};
++
++static ctl_table binfmt_misc_table[] = {
+ 	{ .ctl_name = 0 }
  };
  
- /*
 -- 
 1.4.4.1.g278f
