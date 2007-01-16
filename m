@@ -3,13 +3,13 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CEDCCDDFC2
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:14:57 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 79CACDDFF2
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:15:36 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 24/59] sysctl: frv remove unnecessary insert_at_head flag
-Date: Tue, 16 Jan 2007 09:39:29 -0700
-Message-Id: <1168965642471-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 7/59] sysctl: llc remove unnecessary insert_at_head flag
+Date: Tue, 16 Jan 2007 09:39:12 -0700
+Message-Id: <1168965622720-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -40,27 +40,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-Since the binary sysctl numbers are unique putting the registered
-sysctls at the head of the sysctl list where they can override
-existing sysctls serves no useful purpose.
+The sysctl numbers used are unique so setting the insert_at_head
+flag serves no semantis purpose, and is just confusing.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- arch/frv/kernel/sysctl.c |    2 +-
+ net/llc/sysctl_net_llc.c |    2 +-
  1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/frv/kernel/sysctl.c b/arch/frv/kernel/sysctl.c
-index 2f4da32..37528eb 100644
---- a/arch/frv/kernel/sysctl.c
-+++ b/arch/frv/kernel/sysctl.c
-@@ -197,7 +197,7 @@ static struct ctl_table frv_dir_table[] =
-  */
- static int __init frv_sysctl_init(void)
- {
--	register_sysctl_table(frv_dir_table, 1);
-+	register_sysctl_table(frv_dir_table, 0);
- 	return 0;
- }
+diff --git a/net/llc/sysctl_net_llc.c b/net/llc/sysctl_net_llc.c
+index 45d7dd9..4aab676 100644
+--- a/net/llc/sysctl_net_llc.c
++++ b/net/llc/sysctl_net_llc.c
+@@ -116,7 +116,7 @@ static struct ctl_table_header *llc_table_header;
  
+ int __init llc_sysctl_init(void)
+ {
+-	llc_table_header = register_sysctl_table(llc_root_table, 1);
++	llc_table_header = register_sysctl_table(llc_root_table, 0);
+ 
+ 	return llc_table_header ? 0 : -ENOMEM;
+ }
 -- 
 1.4.4.1.g278f
