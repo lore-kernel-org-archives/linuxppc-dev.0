@@ -1,35 +1,33 @@
-Return-Path: <ioe-lkml@rameria.de>
-Received: from smtprelay01.ispgateway.de (smtprelay01.ispgateway.de
-	[80.67.18.13]) by ozlabs.org (Postfix) with ESMTP id 30CB0DE02A
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 09:22:44 +1100 (EST)
-From: Ingo Oeser <ioe-lkml@rameria.de>
+Return-Path: <lethal@linux-sh.org>
+Received: from smtp.ocgnet.org (smtp.ocgnet.org [64.20.243.3])
+	by ozlabs.org (Postfix) with ESMTP id C9C99DDDEA
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 09:42:59 +1100 (EST)
+Date: Wed, 17 Jan 2007 07:07:08 +0900
+From: Paul Mundt <lethal@linux-sh.org>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 45/59] sysctl: C99 convert ctl_tables in
-	drivers/parport/procfs.c
-Date: Tue, 16 Jan 2007 23:15:43 +0100
+Subject: Re: [PATCH 37/59] sysctl: C99 convert arch/sh64/kernel/traps.c and
+	remove ABI breakage.
+Message-ID: <20070116220708.GA10821@linux-sh.org>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
-	<11689656733768-git-send-email-ebiederm@xmission.com>
-In-Reply-To: <11689656733768-git-send-email-ebiederm@xmission.com>
+	<11689656622749-git-send-email-ebiederm@xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200701162315.56454.ioe-lkml@rameria.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <11689656622749-git-send-email-ebiederm@xmission.com>
 Cc: "<Andrew Morton" <akpm@osdl.org>, linux-mips@linux-mips.org,
 	linux-parport@lists.infradead.org, heiko.carstens@de.ibm.com,
 	ak@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
 	aharkes@cs.cmu.edu, schwidefsky@de.ibm.com, tim@cyberelk.net,
-	codalist@telemann.coda.cs.cmu.edu, rtc-linux@googlegroups.com,
-	linux-scsi@vger.kernel.org, kurt.hackel@oracle.com,
-	coda@cs.cmu.edu, vojtech@suse.cz,
+	rtc-linux@googlegroups.com, linux-scsi@vger.kernel.org,
+	kurt.hackel@oracle.com, coda@cs.cmu.edu, vojtech@suse.cz,
 	linuxsh-shmedia-dev@lists.sourceforge.net,
-	James.Bottomley@steeleye.com, clemens@ladisch.de,
+	James.Bottomley@SteelEye.com, clemens@ladisch.de,
 	xfs@oss.sgi.com, xfs-masters@oss.sgi.com, andrea@suse.de,
 	openipmi-developer@lists.sourceforge.net,
-	linux-390@vm.marist.edu, a.zummo@towertech.it,
-	tony.luck@intel.com, linux-ntfs-dev@lists.sourceforge.net,
-	netdev@vger.kernel.org, aia21@cantab.net,
-	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-	lethal@linux-sh.org, containers@lists.osdl.org,
+	linux-390@vm.marist.edu, codalist@TELEMANN.coda.cs.cmu.edu,
+	a.zummo@towertech.it, tony.luck@intel.com,
+	linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
+	aia21@cantab.net, linux-kernel@vger.kernel.org,
+	ralf@linux-mips.org, containers@lists.osdl.org,
 	linux390@de.ibm.com, philb@gnu.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -40,36 +38,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Eric,
+On Tue, Jan 16, 2007 at 09:39:42AM -0700, Eric W. Biederman wrote:
+> From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
+> 
+> While doing the C99 conversion I notices that the top level sh64
+> directory was using the binary number for CTL_KERN.  That is a
+> no-no so I removed the support for the sysctl binary interface
+> only leaving sysctl /proc support.
+> 
+> At least the sysctl tables were placed at the end of
+> the list so user space did not see this mistake.
+> 
+> Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
-On Tuesday, 16. January 2007 17:39, Eric W. Biederman wrote:
-> diff --git a/drivers/parport/procfs.c b/drivers/parport/procfs.c
-> index 2e744a2..5337789 100644
-> --- a/drivers/parport/procfs.c
-> +++ b/drivers/parport/procfs.c
-> @@ -263,50 +263,118 @@ struct parport_sysctl_table {
-> +		{
-> +			.ctl_name	= DEV_PARPORT_BASE_ADDR,
-> +			.procname	= "base-addr",
-> +			.data		= NULL,
-> +			.maxlen		= 0,
-> +			.mode		= 0444,
-> +			.proc_handler	= &do_hardware_base_addr
-> +		},
+Looks good, thanks Eric.
 
-No need to initialize to zero or NULL. Just list any variable, which is NOT zero or NULL.
-
-> +		{
-> +			.ctl_name	= DEV_PARPORT_AUTOPROBE + 1,
-> +			.procname	= "autoprobe0",
-> +			.data		= NULL,
-> +			.maxlen		= 0,
-> +			.maxlen		= 0444,
-> +			.proc_handler	=  &do_autoprobe
-> +		},
-
-Typo here? .mode = 0444 makes mor sense.
-
-Regards
-
-Ingo Oeser
+Acked-by: Paul Mundt <lethal@linux-sh.org>
