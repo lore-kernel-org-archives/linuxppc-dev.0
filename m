@@ -3,14 +3,14 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D5967E0E33
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:24:24 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 19268E1257
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 04:25:03 +1100 (EST)
 From: "Eric W. Biederman" <ebiederm@xmission.com>
 To: "<Andrew Morton" <akpm@osdl.org>
-Subject: [PATCH 47/59] sysctl: C99 convert ctl_tables in NTFS and remove
-	sys_sysctl support
-Date: Tue, 16 Jan 2007 09:39:52 -0700
-Message-Id: <11689656793474-git-send-email-ebiederm@xmission.com>
+Subject: [PATCH 31/59] sysctl: C99 convert the ctl_tables in
+	arch/mips/au1000/common/power.c
+Date: Tue, 16 Jan 2007 09:39:36 -0700
+Message-Id: <11689656551180-git-send-email-ebiederm@xmission.com>
 In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
 Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
@@ -41,54 +41,62 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 
-Putting ntfs-debug under FS_NRINODE was not a kosher thing to do
-so don't give it any binary number.
-
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- fs/ntfs/sysctl.c |   24 ++++++++++++++++--------
- 1 files changed, 16 insertions(+), 8 deletions(-)
+ arch/mips/au1000/common/power.c |   38 ++++++++++++++++++++++++++++++++------
+ 1 files changed, 32 insertions(+), 6 deletions(-)
 
-diff --git a/fs/ntfs/sysctl.c b/fs/ntfs/sysctl.c
-index 1c23138..bc217de 100644
---- a/fs/ntfs/sysctl.c
-+++ b/fs/ntfs/sysctl.c
-@@ -33,20 +33,28 @@
- #include "sysctl.h"
- #include "debug.h"
+diff --git a/arch/mips/au1000/common/power.c b/arch/mips/au1000/common/power.c
+index b531ab7..31256b8 100644
+--- a/arch/mips/au1000/common/power.c
++++ b/arch/mips/au1000/common/power.c
+@@ -419,15 +419,41 @@ static int pm_do_freq(ctl_table * ctl, int write, struct file *file,
  
--#define FS_NTFS	1
--
- /* Definition of the ntfs sysctl. */
- static ctl_table ntfs_sysctls[] = {
--	{ FS_NTFS, "ntfs-debug",		/* Binary and text IDs. */
--	  &debug_msgs,sizeof(debug_msgs),	/* Data pointer and size. */
--	  0644,	NULL, &proc_dointvec },		/* Mode, child, proc handler. */
--	{ 0 }
+ 
+ static struct ctl_table pm_table[] = {
+-	{CTL_UNNUMBERED, "suspend", NULL, 0, 0600, NULL, &pm_do_suspend},
+-	{CTL_UNNUMBERED, "sleep", NULL, 0, 0600, NULL, &pm_do_sleep},
+-	{CTL_UNNUMBERED, "freq", NULL, 0, 0600, NULL, &pm_do_freq},
+-	{0}
 +	{
-+		.ctl_name	= CTL_UNUMBERED,	/* Binary and text IDs. */
-+		.procname	= "ntfs-debug",
-+		.data		= &debug_msgs,		/* Data pointer and size. */
-+		.maxlen		= sizeof(debug_msgs),
-+		.mode		= 0644,			/* Mode, proc handler. */
-+		.proc_handler	= &proc_dointvec
++		.ctl_name 	= CTL_UNNUMBERED,
++		.procname	= "suspend",
++		.data		= NULL,
++		.maxlen		= 0,
++		.mode		= 0600,
++		.proc_handler	= &pm_do_suspend
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "sleep",
++		.data		= NULL,
++		.maxlen		= 0,
++		.mode		= 0600,
++		.proc_handler	= &pm_do_sleep
++	},
++	{
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "freq",
++		.data		= NULL,
++		.maxlen		= 0,
++		.mode		= 0600,
++		.proc_handler	= &pm_do_freq
 +	},
 +	{}
  };
  
- /* Define the parent directory /proc/sys/fs. */
- static ctl_table sysctls_root[] = {
--	{ CTL_FS, "fs", NULL, 0, 0555, ntfs_sysctls },
--	{ 0 }
+ static struct ctl_table pm_dir_table[] = {
+-	{CTL_UNNUMBERED, "pm", NULL, 0, 0555, pm_table},
+-	{0}
 +	{
-+		.ctl_name	= CTL_FS,
-+		.procname	= "fs",
++		.ctl_name	= CTL_UNNUMBERED,
++		.procname	= "pm",
 +		.mode		= 0555,
-+		.child		= ntfs_sysctls
++		.child		= pm_table
 +	},
 +	{}
  };
  
- /* Storage for the sysctls header. */
+ /*
 -- 
 1.4.4.1.g278f
