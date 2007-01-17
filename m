@@ -1,15 +1,20 @@
-Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45AE471C.8040909@us.ibm.com>
-Date: Wed, 17 Jan 2007 09:56:12 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D6297DDEEA
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 03:49:56 +1100 (EST)
+Message-ID: <45AE539E.2040600@garzik.org>
+Date: Wed, 17 Jan 2007 11:49:34 -0500
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [Cbe-oss-dev] [PATCH] Cell SPU task notification
-References: <45A805A0.2080000@us.ibm.com> <20070117003018.GA17955@lst.de>
-In-Reply-To: <20070117003018.GA17955@lst.de>
+To: Mikael Pettersson <mikpe@it.uu.se>
+Subject: Re: [PATCH 2/4] libata-core.c: add another IRQ calls
+References: <200701170924.l0H9OsdG002754@harpo.it.uu.se>
+In-Reply-To: <200701170924.l0H9OsdG002754@harpo.it.uu.se>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+	paulus@samba.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,91 +24,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig wrote:
+Mikael Pettersson wrote:
+> If there is a highly common case, the code for that case
+> is available, and the code is cheap to execute (doesn't
+> require too many additional variables), then having an
+> explicit test + inline code is preferred. If any of these
+> conditions isn't met, then I wouldn't bother converting
+> the call to the if/inline/call combo.
 
->Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c
->===================================================================
->--- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/sched.c	2006-12-04 10:56:04.730698720 -0600
->+++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-15 16:22:31.808461448 -0600
->@@ -84,15 +84,42 @@
-> 			    ctx ? ctx->object_id : 0, spu);
-> }
->
->+static void notify_spus_active(void)
->+{
->+       int node;
->+	/* Wake up the active spu_contexts. When the awakened processes
->+	 * sees their notify_active flag is set, they will call
->+	 * spu_notify_already_active().
->+	 */
->+	for (node = 0; node < MAX_NUMNODES; node++) {
->+		struct spu *spu;
->+		mutex_lock(&spu_prio->active_mutex[node]);
->+                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
->
->	You seem to have some issues with tabs vs spaces for indentation
->	here.
->  
->
-fixed
 
->+			struct spu_context *ctx = spu->ctx;
->+			spu->notify_active = 1;
->
->
->	Please make this a bit in the sched_flags field that's added in
->	the scheduler patch series I sent out.
->  
->
-I haven't seen that the scheduler patch series got applied yet.  This 
-Cell spu task notification patch is a pre-req for OProfile development 
-to support profiling SPUs.   When the scheduler patch gets applied to a 
-kernel version that fits our needs for our OProfile development, I don't 
-see any problem in using the sched_flags field instead of notify_active.
+To be a bit more specific, the branch being taken, or not, depends on 
+the system setup.  For example, in sata_promise's case, with no other 
+SATA controllers in use,
 
->+			wake_up_all(&ctx->stop_wq);
->+			smp_wmb();
->+		}
->+                mutex_unlock(&spu_prio->active_mutex[node]);
->+	}
->+	yield();
->+}
->
->	Why do you add the yield() here?  yield is pretty much a sign
->	for a bug
->  
->
-Yes, the yield() and the memory barriers were leftovers from an earlier 
-ill-conceived attempt at solving this problem.  They should have been 
-removed.  They're gone now.
+	if (ap->ops->irq_on)
+		ap->ops->irq_on(ap);
+	else
+		ata_irq_on(ap);
 
->+void spu_notify_already_active(struct spu_context *ctx)
->+{
->+	struct spu *spu = ctx->spu;
->+	if (!spu)
->+		return;
->+	spu_switch_notify(spu, ctx);
->+}
->
->	Please just call spu_switch_notify directly from the only
->  
->
-I hesitated doing this since it would entail changing spu_switch_notify 
-from being static to non-static.  I'd like to get Arnd's opinion on this 
-question before going ahead and making such a change.
+the direct function call will ALWAYS be called.  But if you had a weird 
+system with both Cell and Promise PDC203xx, then the branch is dependent 
+on whether the activity comes from the Cell SATA or Promise SATA.
 
->	caller.  Also the check for ctx->spu beeing there is not
->	required if you look a the caller.
->
->
-> 	*stat = ctx->ops->status_read(ctx);
->-	if (ctx->state != SPU_STATE_RUNNABLE)
->-		return 1;
->+	smp_rmb();
->  
->
->
->	What do you need the barrier for here?
->  
->
-Removed.
+So it's highly predictable in a great many cases.
+
+And it should be noted that it is a direct function call not inline, 
+thus its if/indirect/direct not if/indirect/inline.
+
+Does that change the answer at all?
+
+	Jeff
