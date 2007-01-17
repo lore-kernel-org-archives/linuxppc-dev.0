@@ -1,21 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BAF81DDDFF
+Return-Path: <netstv@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.235])
+	by ozlabs.org (Postfix) with ESMTP id 502E9DDEE1
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Jan 2007 02:43:07 +1100 (EST)
-In-Reply-To: <OFF988DBDB.9E50EDE1-ON88257266.0023381C-88257266.00237CB3@selinc.com>
-References: <OFF988DBDB.9E50EDE1-ON88257266.0023381C-88257266.00237CB3@selinc.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <71718296-E8FC-48B0-9A8E-F2F54373C94E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Who's the maintainer for the freescale MPC8349ITX board?
-Date: Wed, 17 Jan 2007 09:42:09 -0600
-To: Bruce_Leonard@selinc.com
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 18 Jan 2007 03:47:05 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id i31so2241121wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 17 Jan 2007 08:47:02 -0800 (PST)
+Message-ID: <b4b98b690701170847m622c9080yc493793d00908088@mail.gmail.com>
+Date: Wed, 17 Jan 2007 08:47:01 -0800
+From: "Steve Iribarne (GMail)" <netstv@gmail.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: 8541E and RNG
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,18 +23,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Anyone ever tried to use the Random Number Generator on the MPC8541E?
+I can't get it to behave, so if you've used it and there were any
+tricks, I'd appreciate some insite.
 
-On Jan 17, 2007, at 12:27 AM, Bruce_Leonard@selinc.com wrote:
+I'm using in Linux 2.4.xx.
 
-> I'm sorry if this is a stupid question, but I can't figure it out from
-> anything in the source.  I don't want to clutter up the mailing  
-> list with
-> newbie questions so I'd like to get in touch with the person who  
-> did the
-> linux/u-boot port for the MPC8349ITX board and take the discussion off
-> line.
+Thanks.
+-stv
 
-Ask the questions on the list, thus they are around for others to  
-learn from if need by.
-
-- kumar
+-- 
+/*
+ * Steve Iribarne
+ * Software Engineer
+ * (aka Grunt)
+ */
