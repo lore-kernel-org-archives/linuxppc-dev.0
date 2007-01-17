@@ -1,20 +1,20 @@
-Return-Path: <netstv@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.233])
-	by ozlabs.org (Postfix) with ESMTP id 2A31EDDF53
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1EE67DDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Jan 2007 11:29:59 +1100 (EST)
-Received: by wr-out-0506.google.com with SMTP id 67so1761497wri
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 16 Jan 2007 16:29:58 -0800 (PST)
-Message-ID: <b4b98b690701161629q73b7a4c8j10bf842805cf299f@mail.gmail.com>
-Date: Tue, 16 Jan 2007 16:29:58 -0800
-From: "Steve Iribarne (GMail)" <netstv@gmail.com>
-To: "agnel juni" <junijoseph@yahoo.co.in>
-Subject: Re: PCI IRQ -MPC8540
+	Wed, 17 Jan 2007 12:30:00 +1100 (EST)
 In-Reply-To: <20070116232034.40662.qmail@web8414.mail.in.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <20070116232034.40662.qmail@web8414.mail.in.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
+Message-Id: <FC01A61F-56F4-4185-A199-1D3F05FAC470@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: PCI IRQ -MPC8540
+Date: Tue, 16 Jan 2007 19:29:01 -0600
+To: agnel juni <junijoseph@yahoo.co.in>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,28 +26,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Is this the pin used for the external messaging?
 
+On Jan 16, 2007, at 5:20 PM, agnel juni wrote:
 
-On 1/16/07, agnel juni <junijoseph@yahoo.co.in> wrote:
->
 > Hello all:
 >
-> I would like to understand if there is a way to program the PCI interrupt
-> pin register of MPC8540. I did look for this in the datasheet, but couldn't
-> find any positive answer.
+> I would like to understand if there is a way to program the PCI =20
+> interrupt pin register of MPC8540. I did look for this in the =20
+> datasheet, but couldn't find any positive answer.
 >
-> Currently, I am working in a set-up where MPC8540 is an agent, plugged into
-> the PC host.
-> I couldn't get an IRQ for the card when plugged in some PCI slots, whereas
-> in one of the slots I do see a non-zero value.
+> Currently, I am working in a set-up where MPC8540 is an agent, =20
+> plugged into the PC host.
+> I couldn't get an IRQ for the card when plugged in some PCI slots, =20
+> whereas in one of the slots I do see a non-zero value.
 >
 > It would be great if you could help me understand the issue.
 >
-> I am sorry if the question is inapporpriate in the group. I am desperate to
-> solve the issue.
+> I am sorry if the question is inapporpriate in the group. I am =20
+> desperate to solve the issue.
 >
 > Thanks for any help.
+
+You need to find out how the PCI edge interrupts are wired on you =20
+board than we can talk about how to generate an interrupt based on =20
+that.  I'd guess IRQ_OUT is wired to INTA, but it would be good to =20
+verify that.
+
+- k
+
 > J.Joseph
 >
 > ----- Original Message ----
@@ -107,19 +113,4 @@ On 1/16/07, agnel juni <junijoseph@yahoo.co.in> wrote:
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 >
 >
->  ________________________________
->  Here's a new way to find what you're looking for - Yahoo! Answers
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
-
-
--- 
-/*
- * Steve Iribarne
- * Software Engineer
- * (aka Grunt)
- */
+> Here=92s a new way to find what you're looking for - Yahoo! Answers
