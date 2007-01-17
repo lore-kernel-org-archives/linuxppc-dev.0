@@ -1,31 +1,25 @@
-Return-Path: <rcjenn@austin.ibm.com>
-Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+Return-Path: <redhatter@gentoo.org>
+Received: from longlandclan.hopto.org (202-47-55-78.adsl.gil.com.au
+	[202.47.55.78])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DA799DDEEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 03:50:28 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0HGoLhS025221
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 11:50:21 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l0HGoLUh261376
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 11:50:21 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l0HGoLvH003333
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 11:50:21 -0500
-Date: Wed, 17 Jan 2007 10:50:20 -0600
-From: Robert Jennings <rcj@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org, olof@lixom.net
-Subject: Re: [PATCH][v3] atomic_dec_if_positive sign extension fix
-Message-ID: <20070117165020.GA26387@austin.ibm.com>
-References: <20070114225502.GA21471@austin.ibm.com>
-	<20070116181604.GA24756@austin.ibm.com>
-	<20070116200838.GA22381@iram.es>
+	(Client CN "www.longlandclan.hopto.org",
+	Issuer "www.longlandclan.hopto.org" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A5FCADDED2
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 01:12:12 +1100 (EST)
+Message-ID: <45AE2D06.10201@gentoo.org>
+Date: Thu, 18 Jan 2007 00:04:54 +1000
+From: Stuart Longland <redhatter@gentoo.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070116200838.GA22381@iram.es>
+To: "Naik, Sachidananda" <sachidananda.naik@ap.sony.com>
+Subject: Re: OSK ARM board automatic rebooting procedure...
+References: <7CC0A4CCB789A841944E316301AD1538399C24@insardxms01.ap.sony.com>
+In-Reply-To: <7CC0A4CCB789A841944E316301AD1538399C24@insardxms01.ap.sony.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="------------enig0D2609B2C957B8C491D1202A"
+Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
+	heiko.carstens@de.ibm.com, ak@suse.de, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, aharkes@cs.cmu.edu
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,63 +29,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Thank you Gabriel for pointing out the correct constraint.
+This is an OpenPGP/MIME signed message (RFC 2440 and 3156)
+--------------enig0D2609B2C957B8C491D1202A
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: quoted-printable
 
-Paul, 
+Ohh, wrong email address and HTML email to boot... Lovely.
 
-Here is v3 of the patch.  Please apply for 2.6.20.
+Naik, Sachidananda wrote:
+> Hi all,
+> =20
+> I'm trying to achieve automatic restarting of ARM Board : OMAP 5012
+> OSK board. For that I found a link and I went through it.
 
-If an atomic counter is explicitly set to a negative value the
-atomic_dec_if_positive function will decrement and store the next smallest
-value in the atomic counter contrary to it's intended operation.
+For ARM, you've come to the wrong place.  You'd be wanting to talk with
+the Linux/ARM people, who have their website at
+<http://www.arm.linux.org.uk/>.  The mailing list info page for their
+list is at <http://lists.arm.linux.org.uk/mailman/listinfo/linux-arm/>.
 
-The comparison to determine if the decrement will make the result negative
-is done by the "addic." operation which operates on a 64-bit value.
-I've changed the addic to an addi (changing "=&r" to "=&b" in the
-process so that r0 isn't used, and addi doesn't become li) and done a
-cmpwi prior to the add.  By comparing prior to the add I can pick up
-the case for 0x80000000, so that it is considered positive.
+> -----------------------------------------------------------------------=
+-
+>=20
+> This email is confidential and intended only for the use of the
+> individual or entity named above and may contain information that is
+> privileged. If you are not the intended recipient, you are notified tha=
+t
+> any dissemination, distribution or copying of this email is strictly
+> prohibited. If you have received this email in error, please notify us
+> immediately by return email or telephone and destroy the original
+> message. - This mail is sent via Sony Asia Pacific Mail Gateway.
+> -----------------------------------------------------------------------=
+-
 
-Also, I clarify the return value in the comments just to make it clear
-that the value returned is always the decremented value, even if that
-value is not stored back to the atomic counter.
+Errm... hate to tell you... this is a publicly archived mailing list.
+So any confidential info in your post has just hit the public mailing
+list archives of several sites, many of which are not under the control
+of the mailing list owner, and are trawled by search engines on a
+regular basis.
+--=20
+Stuart Longland (aka Redhatter)              .'''.
+Gentoo Linux/MIPS Cobalt and Docs Developer  '.'` :
+=2E . . . . . . . . . . . . . . . . . . . . .   .'.'
+http://dev.gentoo.org/~redhatter             :.'
 
-Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
----
-
- atomic.h |    8 +++++---
- 1 file changed, 5 insertions(+), 3 deletions(-)
+I haven't lost my mind...
+  ...it's backed up on a tape somewhere.
 
 
-Index: a/include/asm-powerpc/atomic.h
-===================================================================
---- a/include/asm-powerpc/atomic.h	2006-11-30 08:57:21.000000000 -0600
-+++ b/include/asm-powerpc/atomic.h	2007-01-16 15:10:03.000000000 -0600
-@@ -207,7 +207,8 @@
- 
- /*
-  * Atomically test *v and decrement if it is greater than 0.
-- * The function returns the old value of *v minus 1.
-+ * The function returns the old value of *v minus 1, even if
-+ * the atomic variable, v, was not decremented.
-  */
- static __inline__ int atomic_dec_if_positive(atomic_t *v)
- {
-@@ -216,14 +217,15 @@
- 	__asm__ __volatile__(
- 	LWSYNC_ON_SMP
- "1:	lwarx	%0,0,%1		# atomic_dec_if_positive\n\
--	addic.	%0,%0,-1\n\
-+	cmpwi	%0,1\n\
-+	addi	%0,%0,-1\n\
- 	blt-	2f\n"
- 	PPC405_ERR77(0,%1)
- "	stwcx.	%0,0,%1\n\
- 	bne-	1b"
- 	ISYNC_ON_SMP
- 	"\n\
--2:"	: "=&r" (t)
-+2:"	: "=&b" (t)
- 	: "r" (&v->counter)
- 	: "cc", "memory");
- 
+--------------enig0D2609B2C957B8C491D1202A
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.5-ecc0.1.6 (GNU/Linux)
+Comment: Using GnuPG with Mozilla - http://enigmail.mozdev.org
+
+iD8DBQFFri0JuarJ1mMmSrkRAi+GAJ4puNfq5F1dzc5QeBoRFy5R2rYyDACfdPLh
+ui2W9b/Umr/H2wESPxJ6QyI=
+=c94U
+-----END PGP SIGNATURE-----
+
+--------------enig0D2609B2C957B8C491D1202A--
