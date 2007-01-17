@@ -1,20 +1,31 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <rcjenn@austin.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D6297DDEEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 03:49:56 +1100 (EST)
-Message-ID: <45AE539E.2040600@garzik.org>
-Date: Wed, 17 Jan 2007 11:49:34 -0500
-From: Jeff Garzik <jeff@garzik.org>
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DA799DDEEA
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 03:50:28 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0HGoLhS025221
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 11:50:21 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l0HGoLUh261376
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 11:50:21 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0HGoLvH003333
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 11:50:21 -0500
+Date: Wed, 17 Jan 2007 10:50:20 -0600
+From: Robert Jennings <rcj@linux.vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org, olof@lixom.net
+Subject: Re: [PATCH][v3] atomic_dec_if_positive sign extension fix
+Message-ID: <20070117165020.GA26387@austin.ibm.com>
+References: <20070114225502.GA21471@austin.ibm.com>
+	<20070116181604.GA24756@austin.ibm.com>
+	<20070116200838.GA22381@iram.es>
 MIME-Version: 1.0
-To: Mikael Pettersson <mikpe@it.uu.se>
-Subject: Re: [PATCH 2/4] libata-core.c: add another IRQ calls
-References: <200701170924.l0H9OsdG002754@harpo.it.uu.se>
-In-Reply-To: <200701170924.l0H9OsdG002754@harpo.it.uu.se>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
-	paulus@samba.org, alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070116200838.GA22381@iram.es>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +35,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mikael Pettersson wrote:
-> If there is a highly common case, the code for that case
-> is available, and the code is cheap to execute (doesn't
-> require too many additional variables), then having an
-> explicit test + inline code is preferred. If any of these
-> conditions isn't met, then I wouldn't bother converting
-> the call to the if/inline/call combo.
+Thank you Gabriel for pointing out the correct constraint.
+
+Paul, 
+
+Here is v3 of the patch.  Please apply for 2.6.20.
+
+If an atomic counter is explicitly set to a negative value the
+atomic_dec_if_positive function will decrement and store the next smallest
+value in the atomic counter contrary to it's intended operation.
+
+The comparison to determine if the decrement will make the result negative
+is done by the "addic." operation which operates on a 64-bit value.
+I've changed the addic to an addi (changing "=&r" to "=&b" in the
+process so that r0 isn't used, and addi doesn't become li) and done a
+cmpwi prior to the add.  By comparing prior to the add I can pick up
+the case for 0x80000000, so that it is considered positive.
+
+Also, I clarify the return value in the comments just to make it clear
+that the value returned is always the decremented value, even if that
+value is not stored back to the atomic counter.
+
+Signed-off-by: Robert Jennings <rcj@linux.vnet.ibm.com>
+---
+
+ atomic.h |    8 +++++---
+ 1 file changed, 5 insertions(+), 3 deletions(-)
 
 
-To be a bit more specific, the branch being taken, or not, depends on 
-the system setup.  For example, in sata_promise's case, with no other 
-SATA controllers in use,
-
-	if (ap->ops->irq_on)
-		ap->ops->irq_on(ap);
-	else
-		ata_irq_on(ap);
-
-the direct function call will ALWAYS be called.  But if you had a weird 
-system with both Cell and Promise PDC203xx, then the branch is dependent 
-on whether the activity comes from the Cell SATA or Promise SATA.
-
-So it's highly predictable in a great many cases.
-
-And it should be noted that it is a direct function call not inline, 
-thus its if/indirect/direct not if/indirect/inline.
-
-Does that change the answer at all?
-
-	Jeff
+Index: a/include/asm-powerpc/atomic.h
+===================================================================
+--- a/include/asm-powerpc/atomic.h	2006-11-30 08:57:21.000000000 -0600
++++ b/include/asm-powerpc/atomic.h	2007-01-16 15:10:03.000000000 -0600
+@@ -207,7 +207,8 @@
+ 
+ /*
+  * Atomically test *v and decrement if it is greater than 0.
+- * The function returns the old value of *v minus 1.
++ * The function returns the old value of *v minus 1, even if
++ * the atomic variable, v, was not decremented.
+  */
+ static __inline__ int atomic_dec_if_positive(atomic_t *v)
+ {
+@@ -216,14 +217,15 @@
+ 	__asm__ __volatile__(
+ 	LWSYNC_ON_SMP
+ "1:	lwarx	%0,0,%1		# atomic_dec_if_positive\n\
+-	addic.	%0,%0,-1\n\
++	cmpwi	%0,1\n\
++	addi	%0,%0,-1\n\
+ 	blt-	2f\n"
+ 	PPC405_ERR77(0,%1)
+ "	stwcx.	%0,0,%1\n\
+ 	bne-	1b"
+ 	ISYNC_ON_SMP
+ 	"\n\
+-2:"	: "=&r" (t)
++2:"	: "=&b" (t)
+ 	: "r" (&v->counter)
+ 	: "cc", "memory");
+ 
