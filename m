@@ -1,38 +1,22 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
+Return-Path: <mikpe@it.uu.se>
+Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BF308DDE41
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 06:33:15 +1100 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Kirill Korotaev <dev@sw.ru>
-Subject: Re: [PATCH 50/59] sysctl: Move utsname sysctls to their own file
-References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
-	<11689656853154-git-send-email-ebiederm@xmission.com>
-	<45AE5FDC.5050603@sw.ru>
-Date: Wed, 17 Jan 2007 12:31:22 -0700
-In-Reply-To: <45AE5FDC.5050603@sw.ru> (Kirill Korotaev's message of "Wed, 17
-	Jan 2007 20:41:48 +0300")
-Message-ID: <m1ps9d8n79.fsf@ebiederm.dsl.xmission.com>
+	(Client CN "aun.it.uu.se",
+	Issuer "Uppsala University CA" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 27632DDEF6
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 07:45:49 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: "<Andrew Morton" <akpm@osdl.org>, linux-mips@linux-mips.org,
-	linux-parport@lists.infradead.org, heiko.carstens@de.ibm.com,
-	ak@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	aharkes@cs.cmu.edu, tim@cyberelk.net, linux-scsi@vger.kernel.org,
-	kurt.hackel@oracle.com, coda@cs.cmu.edu, vojtech@suse.cz,
-	linuxsh-shmedia-dev@lists.sourceforge.net,
-	James.Bottomley@SteelEye.com, rtc-linux@googlegroups.com,
-	clemens@ladisch.de, xfs@oss.sgi.com, xfs-masters@oss.sgi.com,
-	andrea@suse.de, linux390@de.ibm.com,
-	openipmi-developer@lists.sourceforge.net,
-	linux-390@vm.marist.edu, codalist@TELEMANN.coda.cs.cmu.edu,
-	a.zummo@towertech.it, tony.luck@intel.com,
-	linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org, ralf@linux-mips.org,
-	containers@lists.osdl.org, lethal@linux-sh.org,
-	schwidefsky@de.ibm.com, aia21@cantab.net, philb@gnu.org
+Message-ID: <17838.34747.222649.93821@alkaid.it.uu.se>
+Date: Wed, 17 Jan 2007 21:31:55 +0100
+From: Mikael Pettersson <mikpe@it.uu.se>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 2/4] libata-core.c: add another IRQ calls
+In-Reply-To: <45AE539E.2040600@garzik.org>
+References: <200701170924.l0H9OsdG002754@harpo.it.uu.se>
+	<45AE539E.2040600@garzik.org>
+Cc: Mikael Pettersson <mikpe@it.uu.se>, arnd@arndb.de, linuxppc-dev@ozlabs.org,
+	linux-ide@vger.kernel.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,43 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kirill Korotaev <dev@sw.ru> writes:
+Jeff Garzik writes:
+ > Mikael Pettersson wrote:
+ > > If there is a highly common case, the code for that case
+ > > is available, and the code is cheap to execute (doesn't
+ > > require too many additional variables), then having an
+ > > explicit test + inline code is preferred. If any of these
+ > > conditions isn't met, then I wouldn't bother converting
+ > > the call to the if/inline/call combo.
+ > 
+ > 
+ > To be a bit more specific, the branch being taken, or not, depends on 
+ > the system setup.  For example, in sata_promise's case, with no other 
+ > SATA controllers in use,
+ > 
+ > 	if (ap->ops->irq_on)
+ > 		ap->ops->irq_on(ap);
+ > 	else
+ > 		ata_irq_on(ap);
+ > 
+ > the direct function call will ALWAYS be called.  But if you had a weird 
+ > system with both Cell and Promise PDC203xx, then the branch is dependent 
+ > on whether the activity comes from the Cell SATA or Promise SATA.
+ > 
+ > So it's highly predictable in a great many cases.
+ > 
+ > And it should be noted that it is a direct function call not inline, 
+ > thus its if/indirect/direct not if/indirect/inline.
+ > 
+ > Does that change the answer at all?
 
-> Eric, though I personally don't care much:
-> 1. I ask for not setting your authorship/copyright on the code which you just
-> copied
->   from other places. Just doesn't look polite IMHO.
+The real benefits from identifying a common case is to inline
+the code for it. So the fact that the common case is still a
+full-blown function call here and not inline code means that
+there's much less benefit from rewriting an indirect call as
+an if/indirect/direct sequence.
 
-I can't claim complete ownership of the code, there was plenty of feed back
-and contributions from others but the final form without a big switch
-statement is mine.  I certainly can't claim the table, it has been in
-that form for years.
+There is some branch prediction benefit from having
+if/call-indirect/call-direct-to-common-case instead of a
+single call-indirect, but only if the common case really is
+much more common than other cases, or if the other cases
+are limited to just one (so there's two common cases).
 
-If you notice I actually didn't say whose copyright it was :)  just
-that I wrote the file.
-
-If there are copyright claims I should include I will be happy to do that.
-Mostly I was just trying to find some stupid boiler plate that would work.
-
-> 2. I would propose to not introduce utsname_sysctl.c.
->   both files are too small and minor that I can't see much reasons splitting
-> them.
-
-The impact of moving this code out of sysctl.c is a major
-simplification, to sysctl.c.  Putting them in their own file means we
-can cleanly restrict the code to only be compiled CONFIG_SYSCTL is set.
-
-It is a necessary first step to implementing a per process /proc/sys.
-
-It reorganizes the ipc and utsname sysctl from a terribly fragile
-structure to something that is robust and easy to follow.  Code
-scattered all throughout sysctl.c was just a disaster.  We had
-several instances of having to fix bugs with odd combinations of
-CONFIG options, simply because the other spot that needed to be touched
-wasn't obvious.
-
-So from my perspective this is an extremely worthwhile change that
-will make maintenance easier and is a small first step towards
-some nice future functionality.
-
-Eric
+I wouldn't change a call-indirect to if/call-indirect/call-direct
+unless it's on a very hot path with a known dominant common case.
