@@ -1,34 +1,25 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [195.212.29.135])
+Return-Path: <livio@eecg.toronto.edu>
+Received: from picton.eecg.toronto.edu (picton.eecg.toronto.edu
+	[128.100.10.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0B9BCDDE34
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 09:16:00 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate2.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l0HMFue8192036
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 22:15:56 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l0HMFuJS1736758
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 22:15:56 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l0HMFtCU030005
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 22:15:56 GMT
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: hch@infradead.org, Roland Dreier <rdreier@cisco.com>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	openfabrics-ewg@openib.org, openib-general@openib.org
-Subject: [PATCH/RFC 2.6.21] ehca: ehca_uverbs.c: refactor ehca_mmap() for
-	better readability
-Date: Wed, 17 Jan 2007 23:12:13 +0100
+	(Client CN "picton.eecg.toronto.edu",
+	Issuer "picton.eecg.toronto.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 10D41DDE49
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 10:03:01 +1100 (EST)
+Received: from ouch.eecg.toronto.edu (ouch.eecg.toronto.edu [128.100.24.67])
+	by picton.eecg.toronto.edu (8.13.6/8.13.6) with ESMTP id l0HN2tft009861
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 18:02:56 -0500 (EST)
+Received: (from livio@localhost)
+	by ouch.eecg.toronto.edu (8.13.6/8.13.6/Submit) id l0HN2teC031981
+	for linuxppc-dev@ozlabs.org; Wed, 17 Jan 2007 18:02:55 -0500
+Date: Wed, 17 Jan 2007 18:02:55 -0500
+From: Livio Soares <livio@eecg.toronto.edu>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH][PowerPC] Remove ineffective CONFIG_IRQ_ALL_CPUS option
+Message-ID: <20070117230255.GA31478@eecg.toronto.edu>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200701172312.14840.hnguyen@linux.vnet.ibm.com>
-Cc: raisch@de.ibm.com
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,356 +29,143 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
-here is a patch for ehca_uverbs.c with the following changes:
-- Rename mm_open/close() to ehca_mm_open/close() respectively
-- Refactor ehca_mmap() into sub-functions ehca_mmap_cq/qp(),
-which then call the new common sub-functions ehca_mmap_fw()
-and ehca_mmap_queue() to register firmware memory block and
-queue pages respectively
-Roland, please note that I applied the previous patches to
-your git tree for-2.6.21 before creating this patch. I also
-realized a compile issue with the patch from Michael T. in
-ehca_reqs.c regarding "return qp pointer in ib_wc". For this
-I'll send another patch.
-Thanks!
-Nam
+  Hi all,
+
+  Anton Blanchard a couple of years  ago made a patch to enable IRQ distribution
+as   a  boot   option,  as   opposed  to   static  kernel   compile   option  on
+PPC64. [http://ozlabs.org/pipermail/linuxppc64-dev/2005-January/003045.html]. 
+
+  Apparently, when  'ppc64' was  renamed to 'powerpc',  the Kconfig  option came
+back  (just the  option, not  the code).  Well, the  option confused  me,  as it
+currently has no effect (grep shows no users on PowerPC code, except for mpic.c,
+but that one is guarded with #ifdef CONFIG_PPC32). 
+
+  So, I think it would be best to remove it, no? 
+
+  Patch below. 
+
+PS: I am not a member of this list. 
+
+  regards,
+
+			Livio
 
 
-Signed-off-by Hoang-Nam Nguyen <hnguyen@de.ibm.com>
----
-
-
- ehca_uverbs.c |  266 +++++++++++++++++++++++++++++++---------------------------
- 1 file changed, 146 insertions(+), 120 deletions(-)
-
-
-diff -Nurp infiniband/drivers/infiniband/hw/ehca/ehca_uverbs.c infiniband_work/drivers/infiniband/hw/ehca/ehca_uverbs.c
---- infiniband/drivers/infiniband/hw/ehca/ehca_uverbs.c	2007-01-17 21:39:01.000000000 +0100
-+++ infiniband_work/drivers/infiniband/hw/ehca/ehca_uverbs.c	2007-01-17 21:17:00.000000000 +0100
-@@ -68,7 +68,7 @@ int ehca_dealloc_ucontext(struct ib_ucon
- 	return 0;
- }
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/configs/cell_defconfig linux-2.6.20-rc4.pmu/arch/powerpc/configs/cell_defconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/configs/cell_defconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/configs/cell_defconfig	2007-01-17 17:50:43.375814695 -0500
+@@ -204,7 +204,6 @@ CONFIG_FORCE_MAX_ZONEORDER=9
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ # CONFIG_KEXEC is not set
+ # CONFIG_CRASH_DUMP is not set
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_NUMA=y
+ CONFIG_NODES_SHIFT=4
+ CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/configs/chrp32_defconfig linux-2.6.20-rc4.pmu/arch/powerpc/configs/chrp32_defconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/configs/chrp32_defconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/configs/chrp32_defconfig	2007-01-17 17:55:06.877092205 -0500
+@@ -159,7 +159,6 @@ CONFIG_BINFMT_ELF=y
+ CONFIG_BINFMT_MISC=y
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ # CONFIG_KEXEC is not set
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_ARCH_FLATMEM_ENABLE=y
+ CONFIG_SELECT_MEMORY_MODEL=y
+ CONFIG_FLATMEM_MANUAL=y
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/configs/g5_defconfig linux-2.6.20-rc4.pmu/arch/powerpc/configs/g5_defconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/configs/g5_defconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/configs/g5_defconfig	2007-01-17 17:57:50.693841420 -0500
+@@ -166,7 +166,6 @@ CONFIG_IOMMU_VMERGE=y
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ CONFIG_KEXEC=y
+ # CONFIG_CRASH_DUMP is not set
+-CONFIG_IRQ_ALL_CPUS=y
+ # CONFIG_NUMA is not set
+ CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+ CONFIG_ARCH_FLATMEM_ENABLE=y
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/configs/iseries_defconfig linux-2.6.20-rc4.pmu/arch/powerpc/configs/iseries_defconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/configs/iseries_defconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/configs/iseries_defconfig	2007-01-17 17:57:57.350140227 -0500
+@@ -159,7 +159,6 @@ CONFIG_IOMMU_VMERGE=y
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ # CONFIG_KEXEC is not set
+ # CONFIG_CRASH_DUMP is not set
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_LPARCFG=y
+ # CONFIG_NUMA is not set
+ CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/configs/maple_defconfig linux-2.6.20-rc4.pmu/arch/powerpc/configs/maple_defconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/configs/maple_defconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/configs/maple_defconfig	2007-01-17 17:58:04.111427956 -0500
+@@ -157,7 +157,6 @@ CONFIG_IOMMU_VMERGE=y
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ CONFIG_KEXEC=y
+ # CONFIG_CRASH_DUMP is not set
+-CONFIG_IRQ_ALL_CPUS=y
+ # CONFIG_NUMA is not set
+ CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+ CONFIG_ARCH_FLATMEM_ENABLE=y
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/configs/mpc8641_hpcn_defconfig linux-2.6.20-rc4.pmu/arch/powerpc/configs/mpc8641_hpcn_defconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/configs/mpc8641_hpcn_defconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/configs/mpc8641_hpcn_defconfig	2007-01-17 17:58:19.534803095 -0500
+@@ -138,7 +138,6 @@ CONFIG_PREEMPT_BKL=y
+ CONFIG_BINFMT_ELF=y
+ # CONFIG_BINFMT_MISC is not set
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+-# CONFIG_IRQ_ALL_CPUS is not set
+ CONFIG_ARCH_FLATMEM_ENABLE=y
+ CONFIG_SELECT_MEMORY_MODEL=y
+ CONFIG_FLATMEM_MANUAL=y
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/configs/ppc64_defconfig linux-2.6.20-rc4.pmu/arch/powerpc/configs/ppc64_defconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/configs/ppc64_defconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/configs/ppc64_defconfig	2007-01-17 17:58:25.804142587 -0500
+@@ -182,7 +182,6 @@ CONFIG_HOTPLUG_CPU=y
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ CONFIG_KEXEC=y
+ # CONFIG_CRASH_DUMP is not set
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_PPC_SPLPAR=y
+ CONFIG_EEH=y
+ CONFIG_SCANLOG=m
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/configs/ps3_defconfig linux-2.6.20-rc4.pmu/arch/powerpc/configs/ps3_defconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/configs/ps3_defconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/configs/ps3_defconfig	2007-01-17 17:58:32.825402840 -0500
+@@ -177,7 +177,6 @@ CONFIG_FORCE_MAX_ZONEORDER=9
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ # CONFIG_KEXEC is not set
+ # CONFIG_CRASH_DUMP is not set
+-# CONFIG_IRQ_ALL_CPUS is not set
+ # CONFIG_NUMA is not set
+ CONFIG_ARCH_SELECT_MEMORY_MODEL=y
+ CONFIG_ARCH_FLATMEM_ENABLE=y
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/configs/pseries_defconfig linux-2.6.20-rc4.pmu/arch/powerpc/configs/pseries_defconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/configs/pseries_defconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/configs/pseries_defconfig	2007-01-17 17:58:39.077744089 -0500
+@@ -160,7 +160,6 @@ CONFIG_HOTPLUG_CPU=y
+ CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
+ CONFIG_KEXEC=y
+ # CONFIG_CRASH_DUMP is not set
+-CONFIG_IRQ_ALL_CPUS=y
+ CONFIG_PPC_SPLPAR=y
+ CONFIG_EEH=y
+ CONFIG_SCANLOG=m
+diff -pru linux-2.6.20-rc4.vanilla/arch/powerpc/Kconfig linux-2.6.20-rc4.pmu/arch/powerpc/Kconfig
+--- linux-2.6.20-rc4.vanilla/arch/powerpc/Kconfig	2007-01-07 00:45:51.000000000 -0500
++++ linux-2.6.20-rc4.pmu/arch/powerpc/Kconfig	2007-01-17 17:42:47.000000000 -0500
+@@ -793,15 +793,6 @@ config PPCBUG_NVRAM
+ 	bool "Enable reading PPCBUG NVRAM during boot" if PPLUS || LOPEC
+ 	default y if PPC_PREP
  
--static void mm_open(struct vm_area_struct *vma)
-+static void ehca_mm_open(struct vm_area_struct *vma)
- {
- 	u32 *count = (u32*)vma->vm_private_data;
- 	if (!count) {
-@@ -84,7 +84,7 @@ static void mm_open(struct vm_area_struc
- 		     vma->vm_start, vma->vm_end, *count);
- }
+-config IRQ_ALL_CPUS
+-	bool "Distribute interrupts on all CPUs by default"
+-	depends on SMP && !MV64360
+-	help
+-	  This option gives the kernel permission to distribute IRQs across
+-	  multiple CPUs.  Saying N here will route all IRQs to the first
+-	  CPU.  Generally saying Y is safe, although some problems have been
+-	  reported with SMP Power Macintoshes with this option enabled.
+-
+ source "arch/powerpc/platforms/pseries/Kconfig"
  
--static void mm_close(struct vm_area_struct *vma)
-+static void ehca_mm_close(struct vm_area_struct *vma)
- {
- 	u32 *count = (u32*)vma->vm_private_data;
- 	if (!count) {
-@@ -98,26 +98,150 @@ static void mm_close(struct vm_area_stru
- }
- 
- static struct vm_operations_struct vm_ops = {
--	.open =	mm_open,
--	.close = mm_close,
-+	.open =	ehca_mm_open,
-+	.close = ehca_mm_close,
- };
- 
--static int ehca_mmap_qpages(struct vm_area_struct *vma, struct ipz_queue *queue)
-+static int ehca_mmap_fw(struct vm_area_struct *vma, struct h_galpas *galpas,
-+			u32 *mm_count)
- {
-+	int ret;
-+	u64 vsize, physical;
-+
-+	vsize = vma->vm_end - vma->vm_start;
-+	if (vsize != EHCA_PAGESIZE) {
-+		ehca_gen_err("invalid vsize=%lx", vma->vm_end - vma->vm_start);
-+		return -EINVAL;
-+	}
-+
-+	physical = galpas->user.fw_handle;
-+	vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
-+	ehca_gen_dbg("vsize=%lx physical=%lx", vsize, physical);
-+	/* VM_IO | VM_RESERVED are set by remap_pfn_range() */
-+	ret = remap_pfn_range(vma, vma->vm_start, physical >> PAGE_SHIFT,
-+			      vsize, vma->vm_page_prot);
-+	if (unlikely(ret)) {
-+		ehca_gen_err("remap_pfn_range() failed ret=%x", ret);
-+		return -ENOMEM;
-+	}
-+
-+	vma->vm_private_data = mm_count;
-+	(*mm_count)++;
-+	vma->vm_ops = &vm_ops;
-+
-+	return 0;
-+}
-+
-+static int ehca_mmap_queue(struct vm_area_struct *vma, struct ipz_queue *queue,
-+			   u32 *mm_count)
-+{
-+	int ret;
- 	u64 start, ofs;
- 	struct page *page;
--	int  rc = 0;
-+
-+	vma->vm_flags |= VM_RESERVED;
- 	start = vma->vm_start;
- 	for (ofs = 0; ofs < queue->queue_length; ofs += PAGE_SIZE) {
- 		u64 virt_addr = (u64)ipz_qeit_calc(queue, ofs);
- 		page = virt_to_page(virt_addr);
--		rc = vm_insert_page(vma, start, page);
--		if (unlikely(rc)) {
--			ehca_gen_err("vm_insert_page() failed rc=%x", rc);
--			return rc;
-+		ret = vm_insert_page(vma, start, page);
-+		if (unlikely(ret)) {
-+			ehca_gen_err("vm_insert_page() failed rc=%x", ret);
-+			return ret;
- 		}
- 		start +=  PAGE_SIZE;
- 	}
-+	vma->vm_private_data = mm_count;
-+	(*mm_count)++;
-+	vma->vm_ops = &vm_ops;
-+
-+	return 0;
-+}
-+
-+static int ehca_mmap_cq(struct vm_area_struct *vma, struct ehca_cq *cq,
-+			u32 rsrc_type)
-+{
-+	int ret;
-+
-+	switch (rsrc_type) {
-+	case 1: /* galpa fw handle */
-+		ehca_dbg(cq->ib_cq.device, "cq_num=%x fw", cq->cq_number);
-+		ret = ehca_mmap_fw(vma, &cq->galpas, &cq->mm_count_galpa);
-+		if (unlikely(ret)) {
-+			ehca_err(cq->ib_cq.device,
-+				 "ehca_mmap_fw() failed rc=%x cq_num=%x",
-+				 ret, cq->cq_number);
-+			return ret;
-+		}
-+		break;
-+
-+	case 2: /* cq queue_addr */
-+		ehca_dbg(cq->ib_cq.device, "cq_num=%x queue", cq->cq_number);
-+		ret = ehca_mmap_queue(vma, &cq->ipz_queue, &cq->mm_count_queue);
-+		if (unlikely(ret)) {
-+			ehca_err(cq->ib_cq.device,
-+				 "ehca_mmap_queue() failed rc=%x cq_num=%x",
-+				 ret, cq->cq_number);
-+			return ret;
-+		}
-+		break;
-+
-+	default:
-+		ehca_err(cq->ib_cq.device, "bad resource type=%x cq_num=%x",
-+			 rsrc_type, cq->cq_number);
-+		return -EINVAL;
-+	}
-+
-+	return 0;
-+}
-+
-+static int ehca_mmap_qp(struct vm_area_struct *vma, struct ehca_qp *qp,
-+			u32 rsrc_type)
-+{
-+	int ret;
-+
-+	switch (rsrc_type) {
-+	case 1: /* galpa fw handle */
-+		ehca_dbg(qp->ib_qp.device, "qp_num=%x fw", qp->ib_qp.qp_num);
-+		ret = ehca_mmap_fw(vma, &qp->galpas, &qp->mm_count_galpa);
-+		if (unlikely(ret)) {
-+			ehca_err(qp->ib_qp.device,
-+				 "remap_pfn_range() failed ret=%x qp_num=%x",
-+				 ret, qp->ib_qp.qp_num);
-+			return -ENOMEM;
-+		}
-+		break;
-+
-+	case 2: /* qp rqueue_addr */
-+		ehca_dbg(qp->ib_qp.device, "qp_num=%x rqueue",
-+			 qp->ib_qp.qp_num);
-+		ret = ehca_mmap_queue(vma, &qp->ipz_rqueue, &qp->mm_count_rqueue);
-+		if (unlikely(ret)) {
-+			ehca_err(qp->ib_qp.device,
-+				 "ehca_mmap_queue(rq) failed rc=%x qp_num=%x",
-+				 ret, qp->ib_qp.qp_num);
-+			return ret;
-+		}
-+		break;
-+
-+	case 3: /* qp squeue_addr */
-+		ehca_dbg(qp->ib_qp.device, "qp_num=%x squeue",
-+			 qp->ib_qp.qp_num);
-+		ret = ehca_mmap_queue(vma, &qp->ipz_squeue, &qp->mm_count_squeue);
-+		if (unlikely(ret)) {
-+			ehca_err(qp->ib_qp.device,
-+				 "ehca_mmap_queue(sq) failed rc=%x qp_num=%x",
-+				 ret, qp->ib_qp.qp_num);
-+			return ret;
-+		}
-+		break;
-+
-+	default:
-+		ehca_err(qp->ib_qp.device, "bad resource type=%x qp=num=%x",
-+			 rsrc_type, qp->ib_qp.qp_num);
-+		return -EINVAL;
-+	}
-+
- 	return 0;
- }
- 
-@@ -129,7 +253,6 @@ int ehca_mmap(struct ib_ucontext *contex
- 	u32 rsrc_type = (fileoffset >> 24) & 0xF; /* sq,rq,cmnd_window */
- 	u32 cur_pid = current->tgid;
- 	u32 ret;
--	u64 vsize, physical;
- 	unsigned long flags;
- 	struct ehca_cq *cq;
- 	struct ehca_qp *qp;
-@@ -155,52 +278,12 @@ int ehca_mmap(struct ib_ucontext *contex
- 		if (!cq->ib_cq.uobject || cq->ib_cq.uobject->context != context)
- 			return -EINVAL;
- 
--		switch (rsrc_type) {
--		case 1: /* galpa fw handle */
--			ehca_dbg(cq->ib_cq.device, "cq=%p cq triggerarea", cq);
--			vsize = vma->vm_end - vma->vm_start;
--			if (vsize != EHCA_PAGESIZE) {
--				ehca_err(cq->ib_cq.device, "invalid vsize=%lx",
--					 vma->vm_end - vma->vm_start);
--				return -EINVAL;
--			}
--
--			physical = cq->galpas.user.fw_handle;
--			vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--
--			ehca_dbg(cq->ib_cq.device,
--				 "vsize=%lx physical=%lx", vsize, physical);
--			/* VM_IO | VM_RESERVED are set by remap_pfn_range() */
--			ret = remap_pfn_range(vma, vma->vm_start,
--					      physical >> PAGE_SHIFT, vsize,
--					      vma->vm_page_prot);
--			if (unlikely(ret)) {
--				ehca_err(cq->ib_cq.device,
--					 "remap_pfn_range() failed ret=%x",
--					 ret);
--				return -ENOMEM;
--			}
--			vma->vm_private_data = &cq->mm_count_galpa;
--			cq->mm_count_galpa++;
--			break;
--
--		case 2: /* cq queue_addr */
--			ehca_dbg(cq->ib_cq.device, "cq=%p cq q_addr", cq);
--			vma->vm_flags |= VM_RESERVED;
--			ret = ehca_mmap_qpages(vma, &cq->ipz_queue);
--			if (unlikely(ret)) {
--				ehca_gen_err("ehca_mmap_qpages() failed rc=%x "
--					     "cq_num=%x", ret, cq->cq_number);
--				return ret;
--			}
--			vma->vm_private_data = &cq->mm_count_queue;
--			cq->mm_count_queue++;
--			break;
--
--		default:
--			ehca_err(cq->ib_cq.device, "bad resource type %x",
--				 rsrc_type);
--			return -EINVAL;
-+		ret = ehca_mmap_cq(vma, cq, rsrc_type);
-+		if (unlikely(ret)) {
-+			ehca_err(cq->ib_cq.device,
-+				 "ehca_mmap_cq() failed rc=%x cq_num=%x",
-+				 ret, cq->cq_number);
-+			return ret;
- 		}
- 		break;
- 
-@@ -224,67 +307,12 @@ int ehca_mmap(struct ib_ucontext *contex
- 		if (!qp->ib_qp.uobject || qp->ib_qp.uobject->context != context)
- 			return -EINVAL;
- 
--		switch (rsrc_type) {
--		case 1: /* galpa fw handle */
--			ehca_dbg(qp->ib_qp.device, "qp=%p qp triggerarea", qp);
--			vsize = vma->vm_end - vma->vm_start;
--			if (vsize != EHCA_PAGESIZE) {
--				ehca_err(qp->ib_qp.device, "invalid vsize=%lx",
--					 vma->vm_end - vma->vm_start);
--				return -EINVAL;
--			}
--
--			physical = qp->galpas.user.fw_handle;
--			vma->vm_page_prot = pgprot_noncached(vma->vm_page_prot);
--
--			ehca_dbg(qp->ib_qp.device, "vsize=%lx physical=%lx",
--				 vsize, physical);
--			/* VM_IO | VM_RESERVED are set by remap_pfn_range() */
--			ret = remap_pfn_range(vma, vma->vm_start,
--					      physical >> PAGE_SHIFT, vsize,
--					      vma->vm_page_prot);
--			if (unlikely(ret)) {
--				ehca_err(qp->ib_qp.device,
--					 "remap_pfn_range() failed ret=%x",
--					 ret);
--				return -ENOMEM;
--			}
--			vma->vm_private_data = &qp->mm_count_galpa;
--			qp->mm_count_galpa++;
--			break;
--
--		case 2: /* qp rqueue_addr */
--			ehca_dbg(qp->ib_qp.device, "qp=%p qp rqueue_addr", qp);
--			vma->vm_flags |= VM_RESERVED;
--			ret = ehca_mmap_qpages(vma, &qp->ipz_rqueue);
--			if (unlikely(ret)) {
--				ehca_gen_err("ehca_mmap_qpages(rq) failed "
--					     "rc=%x qp_num=%x",
--					     ret, qp->ib_qp.qp_num);
--				return ret;
--			}
--			vma->vm_private_data = &qp->mm_count_rqueue;
--			qp->mm_count_rqueue++;
--			break;
--
--		case 3: /* qp squeue_addr */
--			ehca_dbg(qp->ib_qp.device, "qp=%p qp squeue_addr", qp);
--			vma->vm_flags |= VM_RESERVED;
--			ret = ehca_mmap_qpages(vma, &qp->ipz_squeue);
--			if (unlikely(ret)) {
--				ehca_gen_err("ehca_mmap_qpages(sq) failed "
--					     "rc=%x qp_num=%x",
--					     ret, qp->ib_qp.qp_num);
--				return ret;
--			}
--			vma->vm_private_data = &qp->mm_count_squeue;
--			qp->mm_count_squeue++;
--			break;
--
--		default:
--			ehca_err(qp->ib_qp.device, "bad resource type %x",
--				 rsrc_type);
--			return -EINVAL;
-+		ret = ehca_mmap_qp(vma, qp, rsrc_type);
-+		if (unlikely(ret)) {
-+			ehca_err(qp->ib_qp.device,
-+				 "ehca_mmap_qp() failed rc=%x qp_num=%x",
-+				 ret, qp->ib_qp.qp_num);
-+			return ret;
- 		}
- 		break;
- 
-@@ -293,7 +321,5 @@ int ehca_mmap(struct ib_ucontext *contex
- 		return -EINVAL;
- 	}
- 
--	vma->vm_ops = &vm_ops;
--
- 	return 0;
- }
+ config NUMA
