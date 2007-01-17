@@ -1,21 +1,21 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 466A1DDECC
+Return-Path: <dhlii@dlasys.net>
+Received: from 24.152.213.223.res-cmts.eph.ptd.net
+	(24.152.213.223.res-cmts.eph.ptd.net [24.152.213.223])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A3B07DDE3B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Jan 2007 17:59:35 +1100 (EST)
-Received: from hopper.selinc.com (hopper.selinc.com [12.110.71.10])
-	by tesla.selinc.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l0H6RgSG028700
-	for <linuxppc-embedded@ozlabs.org>; Tue, 16 Jan 2007 22:27:42 -0800
-To: linuxppc-embedded@ozlabs.org
-Subject: Who's the maintainer for the freescale MPC8349ITX board?
+	Wed, 17 Jan 2007 18:56:08 +1100 (EST)
+Message-ID: <45ADD61A.7020005@dlasys.net>
+Date: Wed, 17 Jan 2007 02:54:02 -0500
+From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
-Message-ID: <OFF988DBDB.9E50EDE1-ON88257266.0023381C-88257266.00237CB3@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Tue, 16 Jan 2007 22:27:36 -0800
-Content-Type: text/plain; charset="US-ASCII"
+To: Dan Wilson <dwilson@dslextreme.com>
+Subject: Re: ram-disk root file system
+References: <200701162102050578.1213ACC0@smtp.dslextreme.com>
+In-Reply-To: <200701162102050578.1213ACC0@smtp.dslextreme.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,14 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm sorry if this is a stupid question, but I can't figure it out from 
-anything in the source.  I don't want to clutter up the mailing list with 
-newbie questions so I'd like to get in touch with the person who did the 
-linux/u-boot port for the MPC8349ITX board and take the discussion off 
-line.
+Dan Wilson wrote:
+> We are attempting to use an initrd ram-disk as the permanent root file system for a MPC8541-based system.
+>
+> We are using ELDK 4 to cross-compile, and are running linux 2.6.15 kernel, with u-boot 1.1.6 as our bootloader.
+>
+> I built an initrd file system, compressed it, then ran mkimage against it, and it seems to be successfully loaded by u-boot, and linux sees the initrd file and claims to have mounted it.  However, it then reports that it is unable to find any files on the mounted root file system, as shown in the log below.  I added some additional diagnostics to show what the error codes were, and what was happening, but do not understand what I might have done wrong.  If I boot linux from an NFS system or from compact flash, I am able to mount the image and see all the files, so I believe the initrd file system was created correctly.
+    I had similar problems with a permanent initramfs filesystem. It is
+possible your problem has nothing to do with your filesystem.
 
-Thanks for the help.
+    First, I presume the debugging you added was in init/main.c.
+          Before you attempt to exec init, you can add code to open
+anyfile that you want on the ramdisk. opening a file requires less
+things to be right than exec'ing and that may isolate your problem
+further. I beleive you can enable system call tracing and find out more
+about where things are going off the rails.
+          You can also write a trivial hello world - one that does not
+use any libraries and very little code, and see if you can exec that.
 
-Bruce Leonard
-Schweitzer Engineering Labs
-Pullman, WA USA
+    When you boot Linux NFS - are you using the same linux kernel ?
+         
+   
+
+
+-- 
+Dave Lynch 					  	    DLA Systems
+Software Development:  				         Embedded Linux
+717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
+fax: 1.253.369.9244 			           Cell: 1.717.587.7774
+Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+
+"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
+Albert Einstein
