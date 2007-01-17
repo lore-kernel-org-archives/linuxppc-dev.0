@@ -1,21 +1,25 @@
-Return-Path: <dhlii@dlasys.net>
-Received: from 24.152.213.223.res-cmts.eph.ptd.net
-	(24.152.213.223.res-cmts.eph.ptd.net [24.152.213.223])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A3B07DDE3B
+Return-Path: <christophe.alayrac@cresitt.com>
+Received: from postfix2-g20.free.fr (postfix2-g20.free.fr [212.27.60.43])
+	by ozlabs.org (Postfix) with ESMTP id DB221DDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 17 Jan 2007 18:56:08 +1100 (EST)
-Message-ID: <45ADD61A.7020005@dlasys.net>
-Date: Wed, 17 Jan 2007 02:54:02 -0500
-From: "David H. Lynch Jr." <dhlii@dlasys.net>
+	Thu, 18 Jan 2007 01:02:58 +1100 (EST)
+Received: from smtp6-g19.free.fr (smtp6-g19.free.fr [212.27.42.36])
+	by postfix2-g20.free.fr (Postfix) with ESMTP id 795C6921850
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 17 Jan 2007 14:03:04 +0100 (CET)
+Received: from CRESITTLAB (sou45-1-82-229-118-71.fbx.proxad.net
+	[82.229.118.71])
+	by smtp6-g19.free.fr (Postfix) with ESMTP id A65324395A
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 17 Jan 2007 15:02:52 +0100 (CET)
+From: "alayrac" <christophe.alayrac@cresitt.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Temac and Sysace for ML403
+Date: Wed, 17 Jan 2007 15:02:51 +0100
+Message-ID: <000001c73a40$2df61b50$c900a8c0@CRESITTLAB>
 MIME-Version: 1.0
-To: Dan Wilson <dwilson@dslextreme.com>
-Subject: Re: ram-disk root file system
-References: <200701162102050578.1213ACC0@smtp.dslextreme.com>
-In-Reply-To: <200701162102050578.1213ACC0@smtp.dslextreme.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,35 +30,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan Wilson wrote:
-> We are attempting to use an initrd ram-disk as the permanent root file system for a MPC8541-based system.
->
-> We are using ELDK 4 to cross-compile, and are running linux 2.6.15 kernel, with u-boot 1.1.6 as our bootloader.
->
-> I built an initrd file system, compressed it, then ran mkimage against it, and it seems to be successfully loaded by u-boot, and linux sees the initrd file and claims to have mounted it.  However, it then reports that it is unable to find any files on the mounted root file system, as shown in the log below.  I added some additional diagnostics to show what the error codes were, and what was happening, but do not understand what I might have done wrong.  If I boot linux from an NFS system or from compact flash, I am able to mount the image and see all the files, so I believe the initrd file system was created correctly.
-    I had similar problems with a permanent initramfs filesystem. It is
-possible your problem has nothing to do with your filesystem.
+Ameet,
 
-    First, I presume the debugging you added was in init/main.c.
-          Before you attempt to exec init, you can add code to open
-anyfile that you want on the ramdisk. opening a file requires less
-things to be right than exec'ing and that may isolate your problem
-further. I beleive you can enable system call tracing and find out more
-about where things are going off the rails.
-          You can also write a trivial hello world - one that does not
-use any libraries and very little code, and see if you can exec that.
+I've a few problems to run Linux 2.6.17.1 on ML403 board following your
+tutoarial instrcutions.
 
-    When you boot Linux NFS - are you using the same linux kernel ?
-         
-   
+I've downloaded Linux 2.6.17.1 Kernel source from kernel.org, apply
+MVITSA TEMAC patches from PAULUS and then apply the sysace_after_temac
+patch.
+The Kernel compile properly if I do not include TEMAC and SYSACE. This
+kernel boot properly and ends with a kernel panic due to root file
+system not detected.
+
+Then If I try to include only SYSACE and EXT3 file support the kernel
+did not compile (XST_ASSERT functions not found.... in
+xilinx_sysace/adapter.c file)
+To compile without source code modification I need to include TEMAC in
+the kernel configuration.
+
+This Kernel boot properly, detect sysaxe (xsa: xsa1 xsa2) with a compact
+flash with two partitions but hangs just after 
+
+[    3.631175]  xsa: xsa1 xsa2
+[    3.682436] tun: Universal TUN/TAP device driver, 1.6
+[    3.743219] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+[    3.820309] Data machine check in kernel mode.
+
+If I try to add more kernel configurations based on BYU instructions
+(refered on your tutorial) then I only succeed to obtain a :
+
+Oops : Kernel access bad area sig : 11
+
+Error message
 
 
--- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
+The hardware is a design from scratch using EDK 8.2 SP2.
+TEMAC version is plb_temac v3.00a, hard-temac v3.00b
 
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+I suspect the hardware but I'm not sure about that. Hardware compilation
+took a while on my computer so I would appreciate if you could tell me
+the temac version you have used to port Linux 2.6.17.1 with TEMAC and
+SYSACE.
+
+Furthermore if you have a .config file available for Kernel
+configuration it would help me, beacause I'm not familiar with kernel
+configuration.
+
+Regards
+
+
+CRESITT INDUSTRIE
+12 Rue de Blois, BP6744
+45067 ORLEANS Cedex 2
+Tel : 02.38.49.45.59
+Fax :02.38.49.45.55
+Email : christophe.alayrac@cresitt.com 
+Web : http://www.cresitt.com
