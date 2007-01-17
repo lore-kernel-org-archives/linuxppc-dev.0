@@ -1,49 +1,15 @@
-Return-Path: <schwidefsky@de.ibm.com>
-Received: from mtagate2.uk.ibm.com (mtagate2.uk.ibm.com [195.212.29.135])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D5E92DDDF9
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 23:10:19 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate2.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l0HCADsY150662
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 12:10:13 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
-	[9.149.37.228])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l0HCADAn839816
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 12:10:13 GMT
-Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l0HCAAxE027104
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 12:10:13 GMT
-Subject: Re: [PATCH 0/59] Cleanup sysctl
-From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
-References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Wed, 17 Jan 2007 13:10:13 +0100
-Message-Id: <1169035813.7711.7.camel@localhost>
-Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linux-mips@linux-mips.org,
-	linux-parport@lists.infradead.org, heiko.carstens@de.ibm.com,
-	ak@suse.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	aharkes@cs.cmu.edu, tim@cyberelk.net, rtc-linux@googlegroups.com,
-	linux-scsi@vger.kernel.org, kurt.hackel@oracle.com,
-	coda@cs.cmu.edu, vojtech@suse.cz,
-	linuxsh-shmedia-dev@lists.sourceforge.net,
-	James.Bottomley@SteelEye.com, clemens@ladisch.de,
-	xfs@oss.sgi.com, xfs-masters@oss.sgi.com, andrea@suse.de,
-	openipmi-developer@lists.sourceforge.net,
-	linux-390@vm.marist.edu, codalist@TELEMANN.coda.cs.cmu.edu,
-	a.zummo@towertech.it, tony.luck@intel.com,
-	linux-ntfs-dev@lists.sourceforge.net, netdev@vger.kernel.org,
-	aia21@cantab.net, linux-kernel@vger.kernel.org,
-	ralf@linux-mips.org, lethal@linux-sh.org,
-	Linux Containers <containers@lists.osdl.org>,
-	linux390@de.ibm.com, philb@gnu.org
-Reply-To: schwidefsky@de.ibm.com
+Return-Path: <maynardj@us.ibm.com>
+Message-ID: <45AE471C.8040909@us.ibm.com>
+Date: Wed, 17 Jan 2007 09:56:12 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+MIME-Version: 1.0
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [Cbe-oss-dev] [PATCH] Cell SPU task notification
+References: <45A805A0.2080000@us.ibm.com> <20070117003018.GA17955@lst.de>
+In-Reply-To: <20070117003018.GA17955@lst.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -53,28 +19,91 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-01-16 at 09:33 -0700, Eric W. Biederman wrote:
-> There has not been much maintenance on sysctl in years, and as a result is
-> there is a lot to do to allow future interesting work to happen, and being
-> ambitious I'm trying to do it all at once :)
+Christoph Hellwig wrote:
 
-s390 parts look good. Kernels boots and the system controls are still
-working. I had to add an #include <linux/uaccess.h> to ipc/ipc_sysctl.c
-to get the kernel compiled. That include should be added to patch #51.
+>Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c
+>===================================================================
+>--- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/sched.c	2006-12-04 10:56:04.730698720 -0600
+>+++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-15 16:22:31.808461448 -0600
+>@@ -84,15 +84,42 @@
+> 			    ctx ? ctx->object_id : 0, spu);
+> }
+>
+>+static void notify_spus_active(void)
+>+{
+>+       int node;
+>+	/* Wake up the active spu_contexts. When the awakened processes
+>+	 * sees their notify_active flag is set, they will call
+>+	 * spu_notify_already_active().
+>+	 */
+>+	for (node = 0; node < MAX_NUMNODES; node++) {
+>+		struct spu *spu;
+>+		mutex_lock(&spu_prio->active_mutex[node]);
+>+                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
+>
+>	You seem to have some issues with tabs vs spaces for indentation
+>	here.
+>  
+>
+fixed
 
-Acked-by: Martin Schwidefsky <schwidefsky@de.ibm.com> for:
-[PATCH 33/59] sysctl: s390 move sysctl definitions to sysctl.h
-[PATCH 34/59] sysctl: s390 Remove unnecessary use of insert_at_head
+>+			struct spu_context *ctx = spu->ctx;
+>+			spu->notify_active = 1;
+>
+>
+>	Please make this a bit in the sched_flags field that's added in
+>	the scheduler patch series I sent out.
+>  
+>
+I haven't seen that the scheduler patch series got applied yet.  This 
+Cell spu task notification patch is a pre-req for OProfile development 
+to support profiling SPUs.   When the scheduler patch gets applied to a 
+kernel version that fits our needs for our OProfile development, I don't 
+see any problem in using the sched_flags field instead of notify_active.
 
-and the s390 parts of 
-[PATCH 55/59] sysctl: Remove insert_at_head from register_sysctl
+>+			wake_up_all(&ctx->stop_wq);
+>+			smp_wmb();
+>+		}
+>+                mutex_unlock(&spu_prio->active_mutex[node]);
+>+	}
+>+	yield();
+>+}
+>
+>	Why do you add the yield() here?  yield is pretty much a sign
+>	for a bug
+>  
+>
+Yes, the yield() and the memory barriers were leftovers from an earlier 
+ill-conceived attempt at solving this problem.  They should have been 
+removed.  They're gone now.
 
--- 
-blue skies,
-  Martin.
+>+void spu_notify_already_active(struct spu_context *ctx)
+>+{
+>+	struct spu *spu = ctx->spu;
+>+	if (!spu)
+>+		return;
+>+	spu_switch_notify(spu, ctx);
+>+}
+>
+>	Please just call spu_switch_notify directly from the only
+>  
+>
+I hesitated doing this since it would entail changing spu_switch_notify 
+from being static to non-static.  I'd like to get Arnd's opinion on this 
+question before going ahead and making such a change.
 
-Martin Schwidefsky
-Linux for zSeries Development & Services
-IBM Deutschland Entwicklung GmbH
-
-"Reality continues to ruin my life." - Calvin.
+>	caller.  Also the check for ctx->spu beeing there is not
+>	required if you look a the caller.
+>
+>
+> 	*stat = ctx->ops->status_read(ctx);
+>-	if (ctx->state != SPU_STATE_RUNNABLE)
+>-		return 1;
+>+	smp_rmb();
+>  
+>
+>
+>	What do you need the barrier for here?
+>  
+>
+Removed.
