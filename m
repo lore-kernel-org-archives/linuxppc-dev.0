@@ -1,16 +1,21 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 7A5D0DDF08
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BAF81DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Jan 2007 02:27:04 +1100 (EST)
-Subject: I2C Warning on a 405GPr based board with actual 2.6.20-rc5 Kernel
-From: Heiko Schocher <hs@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 17 Jan 2007 16:10:09 +0100
-Message-Id: <1169046609.5543.73.camel@Apollo>
-Mime-Version: 1.0
-Reply-To: hs@denx.de
+	Thu, 18 Jan 2007 02:43:07 +1100 (EST)
+In-Reply-To: <OFF988DBDB.9E50EDE1-ON88257266.0023381C-88257266.00237CB3@selinc.com>
+References: <OFF988DBDB.9E50EDE1-ON88257266.0023381C-88257266.00237CB3@selinc.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <71718296-E8FC-48B0-9A8E-F2F54373C94E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Who's the maintainer for the freescale MPC8349ITX board?
+Date: Wed, 17 Jan 2007 09:42:09 -0600
+To: Bruce_Leonard@selinc.com
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,44 +26,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
 
-I have a 405Gpr based Board and use the I2C Bus. Today I tried the Linux
-Kernel version 2.6.20-rc5, and get the following Warning:
+On Jan 17, 2007, at 12:27 AM, Bruce_Leonard@selinc.com wrote:
 
-i2c /dev entries driver
-IBM IIC driver v2.1
-**WARNING** I2C adapter driver [IBM IIC] forgot to specify physical
-device; fix it!
-ibm-iic0: using standard (100 kHz) mode
+> I'm sorry if this is a stupid question, but I can't figure it out from
+> anything in the source.  I don't want to clutter up the mailing  
+> list with
+> newbie questions so I'd like to get in touch with the person who  
+> did the
+> linux/u-boot port for the MPC8349ITX board and take the discussion off
+> line.
 
-Hmm.. I solved it with the following patch, but I don t know if this is
-the right way.
+Ask the questions on the list, thus they are around for others to  
+learn from if need by.
 
-diff --git a/drivers/i2c/busses/i2c-ibm_iic.c
-b/drivers/i2c/busses/i2c-ibm_iic.c
-index 1898e99..140d7fe 100644
---- a/drivers/i2c/busses/i2c-ibm_iic.c
-+++ b/drivers/i2c/busses/i2c-ibm_iic.c
-@@ -35,6 +35,7 @@
- #include <linux/slab.h>
- #include <linux/init.h>
- #include <linux/interrupt.h>
-+#include <linux/platform_device.h>
- #include <asm/irq.h>
- #include <asm/io.h>
- #include <linux/i2c.h>
-@@ -737,6 +738,9 @@ static int __devinit iic_probe(struct ocp_device
-*ocp){
- 	adap->timeout = 1;
- 	adap->retries = 1;
- 
-+	if (adap->dev.parent == NULL) {
-+		adap->dev.parent = &platform_bus;
-+	}
- 	if ((ret = i2c_add_adapter(adap)) != 0){
- 		printk(KERN_CRIT "ibm-iic%d: failed to register i2c adapter\n",
- 			dev->idx);
-
-thanks
-Heiko
+- kumar
