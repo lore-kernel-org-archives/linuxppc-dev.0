@@ -2,17 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ACC4CDDEEA
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 14:17:40 +1100 (EST)
-Subject: Re: [PATCH 18/59] sysctl: ipmi remove unnecessary insert_at_head flag
+	by ozlabs.org (Postfix) with ESMTP id 2DF61DDEEA
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 14:18:31 +1100 (EST)
+Subject: Re: [PATCH 35/59] sysctl: C99 convert ctl_tables in
+	arch/powerpc/kernel/idle.c
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <1168965635875-git-send-email-ebiederm@xmission.com>
+In-Reply-To: <11689656593247-git-send-email-ebiederm@xmission.com>
 References: <m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
-	<1168965635875-git-send-email-ebiederm@xmission.com>
+	<11689656593247-git-send-email-ebiederm@xmission.com>
 Content-Type: text/plain
-Date: Wed, 17 Jan 2007 14:14:54 +1100
-Message-Id: <1169003694.4778.15.camel@localhost.localdomain>
+Date: Wed, 17 Jan 2007 14:16:27 +1100
+Message-Id: <1169003787.4778.17.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: "<Andrew Morton" <akpm@osdl.org>, linux-mips@linux-mips.org,
 	linux-parport@lists.infradead.org, heiko.carstens@de.ibm.com,
@@ -43,26 +44,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 On Tue, 2007-01-16 at 09:39 -0700, Eric W. Biederman wrote:
 > From: Eric W. Biederman <ebiederm@xmission.com> - unquoted
 > 
-> With unique sysctl binary numbers setting insert_at_head is pointless.
+> This was partially done already and there was no ABI breakage what
+> a relief.
 > 
 > Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
->  drivers/char/ipmi/ipmi_poweroff.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+>  arch/powerpc/kernel/idle.c |   11 ++++++++---
+>  1 files changed, 8 insertions(+), 3 deletions(-)
 > 
-> diff --git a/drivers/char/ipmi/ipmi_poweroff.c b/drivers/char/ipmi/ipmi_poweroff.c
-> index 9d23136..b3ae65e 100644
-> --- a/drivers/char/ipmi/ipmi_poweroff.c
-> +++ b/drivers/char/ipmi/ipmi_poweroff.c
-> @@ -686,7 +686,7 @@ static int ipmi_poweroff_init (void)
->  		printk(KERN_INFO PFX "Power cycle is enabled.\n");
+> diff --git a/arch/powerpc/kernel/idle.c b/arch/powerpc/kernel/idle.c
+> index 8994af3..8b27bb1 100644
+> --- a/arch/powerpc/kernel/idle.c
+> +++ b/arch/powerpc/kernel/idle.c
+> @@ -110,11 +110,16 @@ static ctl_table powersave_nap_ctl_table[]={
+>  		.mode		= 0644,
+>  		.proc_handler	= &proc_dointvec,
+>  	},
+> -	{ 0, },
+> +	{}
+>  };
+>  static ctl_table powersave_nap_sysctl_root[] = {
+> -	{ 1, "kernel", NULL, 0, 0755, powersave_nap_ctl_table, },
+> - 	{ 0,},
+> +	{
+> +		.ctl_name	= CTL_KERN,
+> +		.procname	= "kernel",
+> +		.mode		= 0755,
+> +		.child		= powersave_nap_ctl_table,
+> +	},
+> +	{}
+>  };
 >  
->  #ifdef CONFIG_PROC_FS
-> -	ipmi_table_header = register_sysctl_table(ipmi_root_table, 1);
-> +	ipmi_table_header = register_sysctl_table(ipmi_root_table, 0);
->  	if (!ipmi_table_header) {
->  		printk(KERN_ERR PFX "Unable to register powercycle sysctl\n");
->  		rv = -ENOMEM;
+>  static int __init
