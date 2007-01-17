@@ -1,21 +1,15 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AB1E3DE009
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 09:05:51 +1100 (EST)
-Message-ID: <45AD4C39.3050202@garzik.org>
-Date: Tue, 16 Jan 2007 17:05:45 -0500
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCH 3/4] libata-sff.c: add another IRQ calls
-References: <200701161046.l0GAkE5u029367@toshiba.co.jp>
-	<20070116120450.1bb44ebb@localhost.localdomain>
-In-Reply-To: <20070116120450.1bb44ebb@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
-	paulus@samba.org
+Return-Path: <hch@lst.de>
+Date: Wed, 17 Jan 2007 01:30:18 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Maynard Johnson <maynardj@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] [PATCH] Cell SPU task notification
+Message-ID: <20070117003018.GA17955@lst.de>
+References: <45A805A0.2080000@us.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45A805A0.2080000@us.ibm.com>
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +19,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Alan wrote:
-> On Tue, 16 Jan 2007 19:46:23 +0900
-> Akira Iguchi <akira2.iguchi@toshiba.co.jp> wrote:
-> 
->> When enabling IRQ, ap->ops->irq_on is checked.
->> Because most drivers can use ata_irq_on() as is, this
->> patch allows ap->ops->irq_on to be NULL.
->> If it is NULL, ata_irq_on() are used.
-> 
-> 
-> I believe you can now remove the if(ap->ioaddr.ctl_addr) check as any
-> device lacking a ctl_addr can now provide an irq_on() method using your
-> changes.
-> 
-> You've fixed the FIXME 
+Index: linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c
+===================================================================
+--- linux-2.6.19-rc6-arnd1+patches.orig/arch/powerpc/platforms/cell/spufs/sched.c	2006-12-04 10:56:04.730698720 -0600
++++ linux-2.6.19-rc6-arnd1+patches/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-15 16:22:31.808461448 -0600
+@@ -84,15 +84,42 @@
+ 			    ctx ? ctx->object_id : 0, spu);
+ }
+ 
++static void notify_spus_active(void)
++{
++       int node;
++	/* Wake up the active spu_contexts. When the awakened processes 
++	 * sees their notify_active flag is set, they will call
++	 * spu_notify_already_active().
++	 */
++	for (node = 0; node < MAX_NUMNODES; node++) {
++		struct spu *spu;
++		mutex_lock(&spu_prio->active_mutex[node]);
++                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
 
-Agreed.
+	You seem to have some issues with tabs vs spaces for indentation
+	here.
 
-Abstracting out the Control/Alt-Status register block operations has 
-been a long-standing TODO that I knew would be required, sometime down 
-the line.  I certainly support adding such abstractions, as they are 
-required for several non-x86 IDE drivers, not just Cell.
++			struct spu_context *ctx = spu->ctx;
++			spu->notify_active = 1;
 
-	Jeff
+
+	Please make this a bit in the sched_flags field that's added in
+	the scheduler patch series I sent out.
+
++			wake_up_all(&ctx->stop_wq);
++			smp_wmb();
++		}
++                mutex_unlock(&spu_prio->active_mutex[node]);
++	}
++	yield();
++}
+
+	Why do you add the yield() here?  yield is pretty much a sign
+	for a bug
+
++void spu_notify_already_active(struct spu_context *ctx)
++{
++	struct spu *spu = ctx->spu;
++	if (!spu)
++		return;
++	spu_switch_notify(spu, ctx);
++}
+
+	Please just call spu_switch_notify directly from the only
+	caller.  Also the check for ctx->spu beeing there is not
+	required if you look a the caller.
+
+
+ 	*stat = ctx->ops->status_read(ctx);
+-	if (ctx->state != SPU_STATE_RUNNABLE)
+-		return 1;
++	smp_rmb();
+
+
+	What do you need the barrier for here?
