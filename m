@@ -1,17 +1,17 @@
-Return-Path: <mikpe@user.it.uu.se>
-Received: from aun.it.uu.se (aun.it.uu.se [130.238.12.36])
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "aun.it.uu.se",
-	Issuer "Uppsala University CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 018EFDDE10
-	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 20:45:54 +1100 (EST)
-Date: Wed, 17 Jan 2007 10:24:54 +0100 (MET)
-Message-Id: <200701170924.l0H9OsdG002754@harpo.it.uu.se>
-From: Mikael Pettersson <mikpe@it.uu.se>
-To: alan@lxorguk.ukuu.org.uk, benh@kernel.crashing.org, jeff@garzik.org
-Subject: Re: [PATCH 2/4] libata-core.c: add another IRQ calls
-Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
-	paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6F6F2DDEBE
+	for <linuxppc-dev@ozlabs.org>; Wed, 17 Jan 2007 21:00:50 +1100 (EST)
+Date: Wed, 17 Jan 2007 19:00:44 +0900 (JST)
+Message-Id: <200701171000.l0HA0jnD021501@toshiba.co.jp>
+Subject: [PATCH 0/4] spidernet: add support for Celleb
+To: netdev@vger.kernel.org
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,50 +21,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 16 Jan 2007 17:04:27 -0500, Jeff Garzik wrote:
->Alan wrote:
->> Jeff - at some point we could eliminate a lot of the NULL checks like
->> these by having the registration code fill in the defaults where
->> appropriate ?
->
->libata policy up until this point has been to require all drivers fill 
->in the hook, either with the commonly-used default, or with their own 
->variant.  Thus, no NULL checks for required hooks, and you get an oops 
->if you fail this requirement.  I like that better than defaults buried 
->inside libata-core, where it is easier for programmers to forget them.
->
->But actually, it's an open question for the compiler guys whether this 
->case is preferred:
->
->	if (ap->ops->hook)
->		ap->ops->hook(foo, bar);
->	else
->		commonly_used_default(foo, bar);
->
->or this:
->
->	ap->ops->hook(foo, bar);
->
->With advanced branch prediction in modern CPUs, ISTR the first case may 
->be worth considering, even with the branch.
+Dear everyone,
 
-Indirect function calls incur at least two main costs:
-- the 'call *' instruction itself suffers from poor branch
-  prediction unless the HW is clever and the call patterns
-  are highly biased -- most machines have worse branch
-  predictors for indirect jumps than for direct jumps
-- the compiler must generate code for setting up parameters
-  and spilling the caller's registers, and for reloading the
-  caller's registers after the call
+This is a revised version of the patch set for spider_net driver
+that works on Toshiba Cell Refererence Set (aka Celleb).
 
-If there is a highly common case, the code for that case
-is available, and the code is cheap to execute (doesn't
-require too many additional variables), then having an
-explicit test + inline code is preferred. If any of these
-conditions isn't met, then I wouldn't bother converting
-the call to the if/inline/call combo.
+This patch set is based on netdev-2.6.git#upstream.
 
-There are compilers for OOP languages that routinely use
-rewrites like the one above in order to optimise method calls.
-
-/Mikael
+Best regards,
+Kou Ishizaki
+Toshiba
