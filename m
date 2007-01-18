@@ -2,13 +2,13 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 98BA7DDE23
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 18:53:07 +1100 (EST)
-Date: Thu, 18 Jan 2007 16:52:37 +0900 (JST)
-Message-Id: <200701180752.l0I7qcUX010248@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 6314DDDE25
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 18:53:56 +1100 (EST)
+Date: Thu, 18 Jan 2007 16:53:48 +0900 (JST)
+Message-Id: <200701180753.l0I7rn3i000973@toshiba.co.jp>
 To: benh@kernel.crashing.org
-Subject: Re: [PATCH 15/19] powerpc: htab routines for Celleb
-In-Reply-To: <1169080589.4965.25.camel@localhost.localdomain>
+Subject: Re: [PATCH 17/19] powerpc: hypervisor console driver for Celleb
+In-Reply-To: <1169080804.4965.31.camel@localhost.localdomain>
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -24,49 +24,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Ben-san,
 
-Thank you for you comment.
-
+> > +/* temp */
+> > +static int hvc_beat_init(void)
+> > +{
+> > +	struct hvc_struct *hp;
 > > +
-> > +	dummy0 = beat_lpar_hpte_getword0(slot);
-> > +	if ((dummy0 & ~0x7FUL) != (want_v & ~0x7FUL)) {
-> > +	   DBG_LOW("not found !\n");
-> > +			return -1;
-> > +			}
-> > +
-> > +	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7, &dummy0,
-> > +						 &dummy1);
-> > +						 if (lpar_rc != 0 || dummy0 == 0) {
-> > +						    DBG_LOW("not found !\n");
-> > +								 return -1;
-> > +								 }
-> > +
-> > +	DBG_LOW("ok %lx %lx\n", dummy0, dummy1);
-> > +
+> > +	hp = hvc_alloc(0, NO_IRQ, &hvc_beat_get_put_ops, 16);
+> > +	if (IS_ERR(hp))
+> > +	   return PTR_ERR(hp);
+> > +	   hvc_beat_dev = hp;
+> > +	   return 0;
+> > +}
 
-> I just noticed... isn't there a race condition if the HPTE gets evicted
-> between those two calls and/or replaced by another one ?
+> Please test your are running on beat before initializing your stuff as
+> your driver might be built as part of a kernel that can boot other
+> machines. 
 
-> That would be generally harmless unless the one replacing it is bolted,
-> in which case you might override a bolted entry. Fortunately we don't
-> currently insert much bolted entries after boot, but I still see a
-> potential for trouble there.
-
-> The best solution here is to actually add a function to the hypervisor,
-> along the line of what I described in my document a while ago, which
-> atomically compares AVPN and replaces the PP and N bits if it didn't
-> change.
-> 
-> Another possible issue is that two processors or threads might
-> continuously evict each other that way I think.
-> 
-> Since the bug only affect your platform and might actually not trigger
-> at all in the current system since we don't play much with bolted
-> entries, I'm acking it, but you should look into fixing it.
-
-We understand your opinion and we should fix by locking all
-table handlers by spinlock. We are now trying to add new functions
-for our hypervisor to solve this problem, but we must support current
-hypervisor, so we have to have a fix on current implementation.
+I see. I'll fix it by using "firmware_has_feature()" macro.
 
 Best regards,
 Kou Ishizaki
