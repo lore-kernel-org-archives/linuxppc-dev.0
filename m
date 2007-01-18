@@ -1,14 +1,14 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D6CE7DDE45
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 23:08:35 +1100 (EST)
-Date: Thu, 18 Jan 2007 21:08:28 +0900 (JST)
-Message-Id: <200701181208.l0IC8TF3017043@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 7EFE8DDE9F
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 23:10:22 +1100 (EST)
+Date: Thu, 18 Jan 2007 21:10:06 +0900 (JST)
+Message-Id: <200701181210.l0ICA69c008115@toshiba.co.jp>
 To: benh@kernel.crashing.org
-Subject: Re: [PATCH 11/19] powerpc: setup usb host controller in SCC for Celleb
-In-Reply-To: <1169080166.4965.17.camel@localhost.localdomain>
+Subject: Re: [PATCH 13/19] powerpc: Supporting iommu for Celleb
+In-Reply-To: <1169080280.4965.21.camel@localhost.localdomain>
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -24,30 +24,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Ben-san,
 
-Thank you for your suggestion.
+Thank you for your comment.
 
-> On Fri, 2007-01-12 at 10:11 +0900, Ishizaki Kou wrote:
-> > USB host controller in SCC requires enable sequence. It should be done
-> > before USB host drivers start.
-> > 
-> > Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> > +static int __init celleb_init_iommu(void)
+> > +{
 > 
-> Just a small nit here: Either you want that code to kick on any platform
-> that has a Toshiba SCC with that controller, in which case, put it in a
-> more generic place, like arch/powerpc/kernel/pci_64.c or
-> drivers/usb/host/pci_quirk.c, or you want that to run only on celleb (at
-> least for now) in which case, add a
+> This needs a:
 > 
 >	if (!machine_is(celleb))
->	   return;
+>	   return 0;
 > 
-> At the beginning, since if one builds a kernel with more than one
-> platform in, your quirk will be run regardless of the platform selected
-> at boot.
-> 
-> Ben.
+> Since the initcall will always be called wether your platform was
+> selected at boot or not as long as it's built into the kernel.
 
-Because it depends on platform, we will add platform check code.
+We will fix it.
 
 Best regards,
 Kou Ishizaki
