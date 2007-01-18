@@ -1,16 +1,15 @@
-Return-Path: <onetarget@sina.com>
-Received: from r3-101.sinamail.sina.com.cn (r3-101.sinamail.sina.com.cn
-	[202.108.3.101]) by ozlabs.org (Postfix) with SMTP id E27D3DDDE6
+Return-Path: <indianirav@yahoo.com>
+Received: from web30001.mail.mud.yahoo.com (web30001.mail.mud.yahoo.com
+	[209.191.69.18]) by ozlabs.org (Postfix) with SMTP id D5A57DDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Jan 2007 21:24:46 +1100 (EST)
-Message-ID: <20070118093027.86049.qmail@mail3-101.sinamail.sina.com.cn>
-To: linuxppc-embedded@ozlabs.org
-Subject: va_list on PowerPC linux.
-Date: Thu, 18 Jan 2007 17:30:27 +0800 
-From: onetarget@sina.com
+	Fri, 19 Jan 2007 00:36:15 +1100 (EST)
+Date: Thu, 18 Jan 2007 05:29:34 -0800 (PST)
+From: patel nirav <indianirav@yahoo.com>
+Subject: how to cross compile 2.4.18
+To: linux ppc <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=-sina_alt_9f48066069a7cbe5cdfd7fb873e1b3d2"
+Content-Type: multipart/alternative; boundary="0-371888007-1169126974=:73541"
+Message-ID: <627126.73541.qm@web30001.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,68 +20,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=-sina_alt_9f48066069a7cbe5cdfd7fb873e1b3d2
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+--0-371888007-1169126974=:73541
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-DURlYXIgYWxsLA0gICAgSSBhbSBub3cgdXNpbmcgRUxESzMuMS4xIGFuZCBsaW51eC0yLjQuMjUg
-b24gTVBDODI3MA1ib2FyZC4gSSBtZXQgYSBwcm9ibGVtLCB0aGF0IGlzIGFuIGFwcGxpY2F0aW9u
-IHdpbGwgZ2V0IHZhcmlvdXMNc2VnbWVudGF0aW9uIGZhdWx0cywgYnV0IHRoZSBhcHBsaWNhdGlv
-biB3aWxsIHdvcmsgcHJvcGVybHkgb24NQVJNL1g4Ni9NSVBTLCB0aGUgZm9sbG93aW5ncyBpcyB0
-aGUgY29kZXMgc2VnbWVudCwNdm9pZA1mb29sb2coaW50IHByaSwgY29uc3QgY2hhciAqZnVuYywg
-c3RydWN0IG15dGVzdCAqdGEsIGNvbnN0IGNoYXIgKmZtdCwgLi4uKQ17DSAgICB2YV9saXN0IGFw
-Ow0gICAgdmFfc3RhcnQoYXAsIGZtdCk7DSAgICBmb29sb2d2KHByaSwgZnVuYywgdGEsIGZtdCwg
-YXApOw0gICAgdmFfZW5kKGFwKTsNfQ12b2lkDWZvb2xvZ3YoaW50IHByaSwgY29uc3QgY2hhciAq
-ZnVuYywgc3RydWN0IG15dGVzdCAqdGEsDSAgICBjb25zdCBjaGFyICpmbXQsIHZhX2xpc3QgYXAp
-DXsNICAgIGNoYXIgKm5ld2ZtdD1mbXQ7DSAgICBpZiAocHJpID4gbG9nbGV2ZWwpDSAgICAgICAg
-cmV0dXJuOw0gDSAgICB2c3lzbG9nKExPR19BTEVSVCwgbmV3Zm10LCBhcCk7DX0NWy4uLi4uLi4u
-Li4uLi4uXQ1UaGFuayB5b3UgYW5kIHJlZ2FyZHMsDSAgICAgICAgVy5UYXJnZXQNICAgIEphbi0x
-OC0yMDA3DQoKLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLQq73cbVyczTw8yoyr27+mRjNTc1MCy439DUxNyjrLXNuaa6xKOh
-KCBodHRwOi8vYWQ0LnNpbmEuY29tLmNuL3NpbmEvbGltZW5nMy9tYWlsX3podWl5dS8yMDA2L21h
-aWxfemh1aXl1XzIwMDYxMjI1Lmh0bWwgKQoKPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PQrXorLh0MLAyzJHw+K30dPKz+Sj
-qCBodHRwOi8vbWFpbC5zaW5hLmNvbS5jbi9jaG9vc2VNb2RlLmh0bWwgo6k=
+Hello friends 
+  I have installed crosstool-0.42 for the powerpc 604 in the
+  /opt/crosstool.
+  Now At the time of Installation I use gcc-3.4.1, glibc-2.3.3 and linux kernel 2.4.18,
+  Now my question is how to use the crosstool to cross compile the linux kernel 2.4.18 for power pc.
+   
+  Thanks.
 
 
---=-sina_alt_9f48066069a7cbe5cdfd7fb873e1b3d2
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+Nirav J Patel
+M.Tech(CSE),
+Nirma University,
+Ahmedabad-382481.
+9925138959
+ 
+---------------------------------
+Sucker-punch spam with award-winning protection.
+ Try the free Yahoo! Mail Beta.
+--0-371888007-1169126974=:73541
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+DQo8Zm9udCBzdHlsZT0nZm9u
-dC1zaXplOjEycHgnPkRlYXIgYWxsLDxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBJIGFtIG5vdyB1
-c2luZyBFTERLMy4xLjEgYW5kIGxpbnV4LTIuNC4yNSBvbiBNUEM4MjcwDQpib2FyZC4gSSBtZXQg
-YSBwcm9ibGVtLCB0aGF0IGlzIGFuIGFwcGxpY2F0aW9uIHdpbGwgZ2V0IHZhcmlvdXMNCnNlZ21l
-bnRhdGlvbiBmYXVsdHMsIGJ1dCB0aGUgYXBwbGljYXRpb24gd2lsbCB3b3JrIHByb3Blcmx5IG9u
-DQpBUk0vWDg2L01JUFMsIHRoZSBmb2xsb3dpbmdzIGlzIHRoZSBjb2RlcyBzZWdtZW50LDxicj4N
-CnZvaWQ8YnI+DQpmb29sb2coaW50IHByaSwgY29uc3QgY2hhciAqZnVuYywgc3RydWN0IG15dGVz
-dCAqdGEsIGNvbnN0IGNoYXIgKmZtdCwgLi4uKTxicj4NCns8YnI+DQombmJzcDsmbmJzcDsmbmJz
-cDsgdmFfbGlzdCBhcDs8YnI+DQo8YnI+DQombmJzcDsmbmJzcDsmbmJzcDsgdmFfc3RhcnQoYXAs
-IGZtdCk7PGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7IGZvb2xvZ3YocHJpLCBmdW5jLCB0YSwgZm10
-LCBhcCk7PGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7IHZhX2VuZChhcCk7PGJyPg0KfTxicj4NCjxi
-cj4NCnZvaWQ8YnI+DQpmb29sb2d2KGludCBwcmksIGNvbnN0IGNoYXIgKmZ1bmMsIHN0cnVjdCBt
-eXRlc3QgKnRhLDxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBjb25zdCBjaGFyICpmbXQsIHZhX2xp
-c3QgYXApPGJyPg0Kezxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBjaGFyICpuZXdmbXQ9Zm10Ozxi
-cj4NCjxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBpZiAocHJpICZndDsgbG9nbGV2ZWwpPGJyPg0K
-Jm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwOyZuYnNwOyZuYnNwOyByZXR1cm47PGJyPg0KJm5ic3A7
-PGJyPg0KICZuYnNwOyZuYnNwOyZuYnNwOyB2c3lzbG9nKExPR19BTEVSVCwgbmV3Zm10LCBhcCk7
-PGJyPg0KfTxicj4NClsuLi4uLi4uLi4uLi4uLl08YnI+DQpUaGFuayB5b3UgYW5kIHJlZ2FyZHMs
-PGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwOyZuYnNwOyAgVy5UYXJnZXQ8YnI+DQombmJz
-cDsmbmJzcDsmbmJzcDsgSmFuLTE4LTIwMDc8YnI+DQo8c3R5bGU+cHttYXJnaW46MH1pbWd7Ym9y
-ZGVyOjB9PC9zdHlsZT48L2ZvbnQ+PGJyIC8+CjxiciAvPgotLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tPGJyIC8+CrvdxtXJ
-zNPDzKjKvbv6ZGM1NzUwLLjf0NTE3KOstc25prrEo6EoIDxhIGhyZWY9aHR0cDovL2FkNC5zaW5h
-LmNvbS5jbi9zaW5hL2xpbWVuZzMvbWFpbF96aHVpeXUvMjAwNi9tYWlsX3podWl5dV8yMDA2MTIy
-NS5odG1sIHRhcmdldD1fYmxhbms+aHR0cDovL2FkNC5zaW5hLmNvbS5jbi9zaW5hL2xpbWVuZzMv
-bWFpbF96aHVpeXUvMjAwNi9tYWlsX3podWl5dV8yMDA2MTIyNS5odG1sPC9hPiApPGJyIC8+Cjxi
-ciAvPgo9PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PGJyIC8+CteisuHQwsDLMkfD4rfR08rP5KOoIDxhIGhyZWY9aHR0cDov
-L21haWwuc2luYS5jb20uY24vY2hvb3NlTW9kZS5odG1sIHRhcmdldD1fYmxhbms+aHR0cDovL21h
-aWwuc2luYS5jb20uY24vY2hvb3NlTW9kZS5odG1sPC9hPiCjqQ==
+<div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>Hello friends </FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>I have installed crosstool-0.42 for the powerpc 604 in the</FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>/opt/crosstool.</FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>Now At the time of Installation I use gcc-3.4.1, glibc-2.3.3 and linux kernel 2.4.18,</FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>Now my question is how to use the crosstool to cross compile the linux kernel 2.4.18 for power pc.</FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><?xml:namespace prefix = o ns = "urn:schemas-microsoft-com:office:office" /><o:p><FONT face="Times New Roman" size=3>&nbsp;</FONT></o:p></div>  <div class=MsoNormal
+ style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>Thanks.</FONT></div><BR><BR>Nirav J Patel<br>M.Tech(CSE),<br>Nirma University,<br>Ahmedabad-382481.<br>9925138959<p>&#32;
 
-
---=-sina_alt_9f48066069a7cbe5cdfd7fb873e1b3d2--
+<hr size=1><a href="
+http://us.rd.yahoo.com/evt=49981/*http://advision.webevents.yahoo.com/mailbeta/features_spam.html">Sucker-punch spam</a> with award-winning protection.<br> Try the <a href="
+http://us.rd.yahoo.com/evt=49981/*http://advision.webevents.yahoo.com/mailbeta/features_spam.html">free Yahoo! Mail Beta.</a>
+--0-371888007-1169126974=:73541--
