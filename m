@@ -1,18 +1,20 @@
-Return-Path: <dwilson@dslextreme.com>
-Received: from mail9.dslextreme.com (mail9.dslextreme.com [66.51.199.94])
-	by ozlabs.org (Postfix) with SMTP id 40202DDE33
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id B82BEDDE2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Jan 2007 13:22:48 +1100 (EST)
-Message-ID: <200701171822470347.16A8224A@smtp.dslextreme.com>
-In-Reply-To: <45ADD61A.7020005@dlasys.net>
-References: <200701162102050578.1213ACC0@smtp.dslextreme.com>
-	<45ADD61A.7020005@dlasys.net>
-Date: Wed, 17 Jan 2007 18:22:47 -0800
-From: "Dan Wilson" <dwilson@dslextreme.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: ram-disk root file system
-Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+	Thu, 18 Jan 2007 14:55:21 +1100 (EST)
+In-Reply-To: <71718296-E8FC-48B0-9A8E-F2F54373C94E@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Who's the maintainer for the freescale MPC8349ITX board?
+MIME-Version: 1.0
+Message-ID: <OF27AFB204.D453295B-ON88257267.0011100B-88257267.00158710@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Wed, 17 Jan 2007 19:55:08 -0800
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,27 +25,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/17/2007 at 2:54 AM David H. Lynch Jr. wrote:
+linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org wrote on 01/17/2007 
+07:42:09 AM:
 
->           Before you attempt to exec init, you can add code to open
-> anyfile that you want on the ramdisk. opening a file requires less
-> things to be right than exec'ing and that may isolate your problem
-> further. I beleive you can enable system call tracing and find out more
-> about where things are going off the rails.
->           You can also write a trivial hello world - one that does not
-> use any libraries and very little code, and see if you can exec that.
 > 
+> On Jan 17, 2007, at 12:27 AM, Bruce_Leonard@selinc.com wrote:
+> 
+> > anything in the source.  I don't want to clutter up the mailing 
+> > list with
+> > newbie questions so I'd like to get in touch with the person who 
+> 
+> Ask the questions on the list, thus they are around for others to 
+> learn from if need by.
+> 
+> - kumar
+> 
+Well, okay.  I hate taking up bandwidth for something that's no doubt 
+trivial to most of you, but here goes.  I'm trying to bring up the 
+2.6.19.1 kernel using u-boot 1.1.6 on the MPC8349ITX board and I'm having 
+problems with the open firmware part of it (which I am TOTALLY new to). 
+Short version, I don't think the *.dts file for this board is correct and 
+I'm wondering if anyone might have a newer version or good documentation 
+as to the formatting of the *.dts files?
 
-Hello world executed, which proved that the initramfs was mounted=
- correctly.
+Long version: While booting the kernel it seems to hang in the do_div() 
+call on line 933 of .../arch/powerpc/kernel/time.c (yes I know it's not 
+really a call but inline assembly) because ppc_tb_freq is zero.  The 
+get_freq() calls in generic_calibrate_decr() find the 'timebase-frequency' 
+and 'clock-frequency' entries in the device tree, but the value is zero 
+and thus ppc_tb_freq is zero.
 
-I then rebuilt busybox as a static executable, and now it runs and I get an
-ash prompt.  I've still got some problems, but at least I'm moving forward
-again!
+Digging through the u-boot code, I found ft_setup() which is supposed to 
+add some stuff to the device tree passed in on the bootm command line. One 
+of the things it's supposed to do is fill in the 'timebase-frequency' 
+portion of the device tree.  When it calls ft_get_prop() to find the 
+'timebase-frequency' node it passes in the path 
+'/cpus/PowerPC,8349@0/timebase-frequency' as what it's searching for, but 
+what ft_get_prop() finds is 
+'///cpus//cpus/PowerPC,8349@0/timebase-frequency', which of course doesn't 
+match, so it returns NULL to ft_setup() and the 'timebase-frequency' never 
+gets updated before being passed to the kernel.
 
-Thanks for the pointer - simplifying back a hello world program was the
-right move...
+So I'm guessing the my problem is either the *.dts file or dtc, but I'm 
+not sure which since I'm so new to this and I'm not sure if the *.dts file 
+I've got is properly formatted.  I suppose it's possible that 
+ft_get_prop() in u-boot is wrong, but for now I'm betting it's right and 
+my *.dts file is formatted wrong.  (FYI, I'm using 
+.../arch/powerpc/boot/dts/mpc8349emitx.dts from the 2.6.19.1 kernel tree.)
 
-Best regards,
+Thanks for listening and for your feedback.
 
-Dan.
+Bruce
