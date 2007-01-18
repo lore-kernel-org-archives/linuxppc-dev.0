@@ -1,15 +1,16 @@
-Return-Path: <indianirav@yahoo.com>
-Received: from web30001.mail.mud.yahoo.com (web30001.mail.mud.yahoo.com
-	[209.191.69.18]) by ozlabs.org (Postfix) with SMTP id D5A57DDE25
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc3-s4.bay0.hotmail.com (bay0-omc3-s4.bay0.hotmail.com
+	[65.54.246.204]) by ozlabs.org (Postfix) with ESMTP id AE589DDEC2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Jan 2007 00:36:15 +1100 (EST)
-Date: Thu, 18 Jan 2007 05:29:34 -0800 (PST)
-From: patel nirav <indianirav@yahoo.com>
-Subject: how to cross compile 2.4.18
-To: linux ppc <linuxppc-embedded@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-371888007-1169126974=:73541"
-Message-ID: <627126.73541.qm@web30001.mail.mud.yahoo.com>
+	Fri, 19 Jan 2007 01:05:29 +1100 (EST)
+Message-ID: <BAY110-F3842A05869014111B3DC36B2AA0@phx.gbl>
+In-Reply-To: <627126.73541.qm@web30001.mail.mud.yahoo.com>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: indianirav@yahoo.com, linuxppc-embedded@ozlabs.org
+Subject: RE: how to cross compile 2.4.18
+Date: Thu, 18 Jan 2007 14:05:26 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,36 +21,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-371888007-1169126974=:73541
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+Hi,
+Check the cmds provided by the installed cross-compiler. The cross-compiler 
+cmd may looks like powerpc-...-gcc. Use this one instead of the normal gcc. 
+Then the binary file is for your target platform.
 
-Hello friends 
-  I have installed crosstool-0.42 for the powerpc 604 in the
-  /opt/crosstool.
-  Now At the time of Installation I use gcc-3.4.1, glibc-2.3.3 and linux kernel 2.4.18,
-  Now my question is how to use the crosstool to cross compile the linux kernel 2.4.18 for power pc.
-   
-  Thanks.
+BR
+Ming
 
 
-Nirav J Patel
-M.Tech(CSE),
-Nirma University,
-Ahmedabad-382481.
-9925138959
- 
----------------------------------
-Sucker-punch spam with award-winning protection.
- Try the free Yahoo! Mail Beta.
---0-371888007-1169126974=:73541
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+>From: patel nirav <indianirav@yahoo.com>
+>To: linux ppc <linuxppc-embedded@ozlabs.org>
+>Subject: how to cross compile 2.4.18
+>Date: Thu, 18 Jan 2007 05:29:34 -0800 (PST)
+>
+>Hello friends
+>   I have installed crosstool-0.42 for the powerpc 604 in the
+>   /opt/crosstool.
+>   Now At the time of Installation I use gcc-3.4.1, glibc-2.3.3 and linux 
+kernel 2.4.18,
+>   Now my question is how to use the crosstool to cross compile the linux 
+kernel 2.4.18 for power pc.
+>
+>   Thanks.
+>
+>
+>Nirav J Patel
+>M.Tech(CSE),
+>Nirma University,
+>Ahmedabad-382481.
+>9925138959
+>
+>---------------------------------
+>Sucker-punch spam with award-winning protection.
+>  Try the free Yahoo! Mail Beta.
 
-<div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>Hello friends </FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>I have installed crosstool-0.42 for the powerpc 604 in the</FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>/opt/crosstool.</FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>Now At the time of Installation I use gcc-3.4.1, glibc-2.3.3 and linux kernel 2.4.18,</FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>Now my question is how to use the crosstool to cross compile the linux kernel 2.4.18 for power pc.</FONT></div>  <div class=MsoNormal style="MARGIN: 0in 0in 0pt"><?xml:namespace prefix = o ns = "urn:schemas-microsoft-com:office:office" /><o:p><FONT face="Times New Roman" size=3>&nbsp;</FONT></o:p></div>  <div class=MsoNormal
- style="MARGIN: 0in 0in 0pt"><FONT face="Times New Roman" size=3>Thanks.</FONT></div><BR><BR>Nirav J Patel<br>M.Tech(CSE),<br>Nirma University,<br>Ahmedabad-382481.<br>9925138959<p>&#32;
 
-<hr size=1><a href="
-http://us.rd.yahoo.com/evt=49981/*http://advision.webevents.yahoo.com/mailbeta/features_spam.html">Sucker-punch spam</a> with award-winning protection.<br> Try the <a href="
-http://us.rd.yahoo.com/evt=49981/*http://advision.webevents.yahoo.com/mailbeta/features_spam.html">free Yahoo! Mail Beta.</a>
---0-371888007-1169126974=:73541--
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+_________________________________________________________________
+享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
