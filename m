@@ -1,18 +1,26 @@
-Return-Path: <christophe.alayrac@cresitt.com>
-Received: from smtp8-g19.free.fr (smtp8-g19.free.fr [212.27.42.65])
-	by ozlabs.org (Postfix) with ESMTP id 6A47ADDDF7
+Return-Path: <Haiying.Wang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 3E7C4DDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Jan 2007 01:25:10 +1100 (EST)
-From: "alayrac" <christophe.alayrac@cresitt.com>
-To: "'patel nirav'" <indianirav@yahoo.com>,
-	"'linux ppc'" <linuxppc-embedded@ozlabs.org>
-Subject: RE : how to cross compile 2.4.18
-Date: Thu, 18 Jan 2007 15:25:10 +0100
-Message-ID: <001301c73b0c$762b8b40$c900a8c0@CRESITTLAB>
+	Fri, 19 Jan 2007 02:46:22 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l0IFkJug019235 for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 Jan 2007 08:46:19 -0700 (MST)
+Received: from az33exm23.fsl.freescale.net (az33exm23.am.freescale.net
+	[10.64.32.8])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l0IFkIwG024844
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 Jan 2007 09:46:18 -0600 (CST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <627126.73541.qm@web30001.mail.mud.yahoo.com>
+	charset="us-ascii"
+Subject: RE: uboot-1.1.6 with mpc8572
+Date: Thu, 18 Jan 2007 08:46:16 -0700
+Message-ID: <DDEDA444F5BF0E41AC8649FB40392C2901D2CE49@az33exm23.fsl.freescale.net>
+In-Reply-To: <312150.59779.qm@web8413.mail.in.yahoo.com>
+From: "Wang Haiying-r54964" <Haiying.Wang@freescale.com>
+To: "vinay hegde" <thisismevinay@yahoo.co.in>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,45 +31,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Nirav,
+=20
 
-First you can add the path to your brown new cross compiler in your PATH
-(export PATH=3D$PATH:/opt/crosstool/...).=20
-    To add it permanently to your PATH just add this export line at the
-end of your /home/YOURACCOUNT/.bashrc file, it will be take in account
-on next open of a shell.
+>-----Original Message-----
+>From:=20
+>linuxppc-embedded-bounces+haiying.wang=3Dfreescale.com@ozlabs.org
+>=20
+>[mailto:linuxppc-embedded-bounces+haiying.wang=3Dfreescale.com@oz
+>labs.org] On Behalf Of vinay hegde
+>Sent: Thursday, January 18, 2007 4:04 AM
+>To: linuxppc-embedded@ozlabs.org
+>Subject: uboot-1.1.6 with mpc8572
+>
+>Hi,
+>
+>I am looking for U-Boot source which supports MPC8572
+>(Freescale). I looked at the u-boot-1.1.6 (Nov, 06
+>release), it has support for cpu/mpc85xx series as
+>expected.
+>
+>Freescale MPC8572 was released in July 06, so, can
+>somebody please confirm whether u-boot-1.1.6 supports
+>mpc8572 or not?=20
 
-Then to compile the kernel you can do
-   make ARCH=3Dppc menuconfig=20
-   make ARCH=3Dppc CROSS_COMPILE=3Dpowerxxx- dep zImage
-       with powerxxx- the prefix of your cross compiler (in my case it
-is powerpc-405-linux-gnu- dont forget the last =96 of the prefix)
-or=20
-   you can modify the Makefile in the roort directory of your kernel
-source and change ARCH and CROSS_COMPILE and then just type
-   make menuconfig
-   make dep zImage
+Are you sure you're looking for MPC8572? It has not been released yet.
+So I don't think you can find any code about it right now.
 
-NOTE : I=92m not sure if ARCH is ppc or powerpc in your case.
+Regards.
 
-Regards
-
-Chris
-
------Message d'origine-----
-De=A0: =
-linuxppc-embedded-bounces+christophe.alayrac=3Dcresitt.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+christophe.alayrac=3Dcresitt.com@ozlabs=
-.
-org] De la part de patel nirav
-Envoy=E9=A0: jeudi 18 janvier 2007 14:30
-=C0=A0: linux ppc
-Objet=A0: how to cross compile 2.4.18
-
-Hello friends=20
-I have installed crosstool-0.42 for the powerpc 604 in the
-/opt/crosstool.
-Now At the time of Installation I use gcc-3.4.1, glibc-2.3.3 and linux
-kernel 2.4.18,
-Now my question is how to use the crosstool to cross compile the linux
-kernel 2.4.18 for power pc.
+Haiying
