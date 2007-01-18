@@ -1,19 +1,27 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id A9DDADDE02
+Return-Path: <Tom.Ziomek@motorola.com>
+Received: from mail125.messagelabs.com (mail125.messagelabs.com
+	[85.158.136.35]) by ozlabs.org (Postfix) with SMTP id 61995DDEE2
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Jan 2007 09:17:35 +1100 (EST)
-In-Reply-To: <20070118124031.3d5e0079.kim.phillips@freescale.com>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: Who's the maintainer for the freescale MPC8349ITX board?
+	Fri, 19 Jan 2007 09:25:26 +1100 (EST)
+Received: from il06exr01.mot.com (il06exr01.mot.com [129.188.137.131])
+	by motgate8.mot.com (8.12.11/Motorola) with ESMTP id l0IMPMca008396
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 Jan 2007 15:25:22 -0700 (MST)
+Received: from de01exm60.ds.mot.com (de01exm60.am.mot.com [10.176.8.105])
+	by il06exr01.mot.com (8.13.5/8.13.0) with ESMTP id l0IMPLqP015955
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 18 Jan 2007 16:25:21 -0600 (CST)
+Date: Thu, 18 Jan 2007 16:25:21 -0600 (Central Standard Time)
+From: T Ziomek <ctz001@email.mot.com>
+To: Wade Maxfield <wmaxfield@gmail.com>
+Subject: Re: General fx60 notes, Question regarding forcing EDK to locate
+	program code at an address
+In-Reply-To: <45a1b53e0701181416p20e597aarb5a32efbdfcf0a6f@mail.gmail.com>
+Message-ID: <Pine.WNT.4.61.0701181621290.2536@holyoke.labs.mot.com>
+References: <45a1b53e0701181416p20e597aarb5a32efbdfcf0a6f@mail.gmail.com>
 MIME-Version: 1.0
-Message-ID: <OFFF3222ED.48527A84-ON88257267.00787606-88257267.007A6E89@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Thu, 18 Jan 2007 14:17:16 -0800
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: ppc <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,41 +32,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Kim Phillips <kim.phillips@freescale.com> wrote on 01/18/2007 10:40:31 AM:
+On Thu, 18 Jan 2007, Wade Maxfield wrote:
+  . . .
+> The memtest.elf file is stuck in the ppc405_0 directory because that is
+> where it started, and the gui won't let us change it without rebuilding the
+> project.
+> We are loading two .elf files so that we have the program counter set to
+> the internal (Block Ram) memory test/boot loader after the .elf files are
+> finished loading.  This lets us look at our ddr ram memory and prove the
+> linux load made it there.  The first .elf file loads, then the second one,
+> then the pc is set to the start address of the second .elf file.  Since the
+> second .elf file loads into block ram, it is doing nothing, as that is
+> determined by the bitstream in the fpga fabric.  There may be easier ways to
+> do this.
 
-> > Per Grant's suggestion I changed it to:
-> > 'dtc -I dts -O dtb -V 0x10 mpc8349emitx.dts > 8349.blob'
-> > 
-> I get a 0 length 8349.blob file using the above.  Have you tried -f?
-> 
-> Kim
+I'm not sure how the above relates to your question...
 
-Hummmmm, interesting.  I get a blob of about 4K when I do it.  Oh, ooops. 
-Sorry.  I did have to modify the *.dts file to get it to compile.  There 
-was an error because there wasn't a 'linux,boot-cpu' entry in the cpu 
-node.
+> MY QUESTION:
+>
+> What I would like to do is create a .elf file with the Xilinx EDK and
+> force it to be located at a particular address (0x400000 for example).
+> I've looked and looked, but obviously I've not looked at the right
+> places.
+> Does anyone know how to do this with the Xilinx EDK?
 
-Adding the '-V 0x10' changed the behavior and I now seem to be hanging in 
-__delay() in serial8250_console_putchar().  Seems maybe the kernel is (at 
-least partially) up but I've got no console port.  There may have been a 
-version issue.  The DTC I'm using defaluted to a version 3 of the device 
-tree.  I think I'm getting further in the kernel booting process (haven't 
-had a chance to really debug it yet) than I was now that I'm telling DCT 
-to generate a version 0x10 device tree.
+You should be able to just use a custom linker script (a.k.a. linker com-
+mand file) rather than the default.  You can base this custom file on the
+default version and just specify the address you want.
 
-I'm thinking this is a u-boot/*.dts file problem.  The *.dts files isn't 
-complete and/or u-boot 1.1.6. isn't finishing filling in the device tree 
-as expected.  I think now my problem is that the *.dts file expects u-boot 
-to fill in the 'clock-frequency' node in the serial ports and it's not 
-doing so.  Timur indicates 1.1.6 doesn't support this board and I should 
-move to 1.2.  Kumar also suggested this (even though I thought he was 
-suggesting I go backwards ;) sorry for the confusion Kumar) so I think 
-I'll give it a try.  I appreciate all the help from here, but since it 
-seems more u-boot-ish than kernel I'm going to switch this to the u-boot 
-list.  Seems more appropriate.  If I find there are problems with the 
-*.dts file, I'll push that back here since they're part of the kernel 
-tree.
+The linker script syntax is not all that obvious, but the GNU 'ld' docu-
+mentation it pretty well.
 
-Thanks again for the help.
+N.B.  My personal preference is to not use the EDK; I find it just makes
+       it difficult to understand what is actually happening.  But then I
+       like the command line...
 
-Bruce
+Tom
+-- 
+   /"\  ASCII Ribbon Campaign   |
+   \ /                          |   Email to user 'CTZ001'
+    X        Against HTML       |             at 'email.mot.com'
+   / \     in e-mail & news     |
