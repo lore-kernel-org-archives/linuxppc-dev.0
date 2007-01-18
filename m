@@ -1,21 +1,17 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id D6F57DDE35
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 05:56:08 +1100 (EST)
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH/RFC 2.6.21] ehca: ehca_uverbs.c: refactor ehca_mmap() for
-	better readability
-References: <200701172312.14840.hnguyen@linux.vnet.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 18 Jan 2007 10:56:01 -0800
-In-Reply-To: <200701172312.14840.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
-	Nguyen's message of "Wed, 17 Jan 2007 23:12:13 +0100")
-Message-ID: <adavej4b1vi.fsf@cisco.com>
+Return-Path: <BSowislo@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 56CC4DDE07
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 05:18:41 +1100 (EST)
+From: "Bernd Sowislo" <BSowislo@gmx.de>
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Subject: AW: Fw: [Bugme-new] [Bug 7808] New: Xilinx ML403 does not boot
+Date: Thu, 18 Jan 2007 19:18:24 +0100
+Message-ID: <EJEFJPEGEFDHNKNCEDPOAEJPCEAA.BSowislo@gmx.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	openfabrics-ewg@openib.org, hch@infradead.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
+Content-Type: text/plain;
+	charset="iso-8859-1"
+In-Reply-To: <EJEFJPEGEFDHNKNCEDPOEEJOCEAA.BSowislo@gmx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +21,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I've kind of lost the plot here.  How does this patch fit in with the
-previous series of patches you posted?  Does it replace them or go on
-top of them?
+>
+> -----Ursprüngliche Nachricht-----
+> Von: Bernd Sowislo [mailto:BSowislo@gmx.de]
+> Gesendet: Donnerstag, 18. Januar 2007 17:21
+> An: Grant Likely
+> Betreff: AW: Fw: [Bugme-new] [Bug 7808] New: Xilinx ML403 does not boot
+>
+> Hi glikely,
 
-Can please you resend me the full series of patch that remove the use
-of do_mmap(), with all cleanups and bug fixes included?  And please
-roll up the fixes, I don't want one patch that adds a yield() inside a
-spinlock and then a later patch to fix it -- there's no sense in
-adding landmines for people potentially doing git bisect in the
-future.
-
-And also please try to split the patches so that they don't mix
-together two things -- please try to make the "remove obsolete
-prototypes" patch separate from the mmap fixes.
-
-Thanks...
+> > -----Ursprüngliche Nachricht-----
+> > Von: glikely@gmail.com [mailto:glikely@gmail.com]Im Auftrag von Grant
+> > Likely
+> > Gesendet: Donnerstag, 18. Januar 2007 07:28
+> > An: Bernd Sowislo; linuxppc-embedded list
+> > Betreff: Re: Fw: [Bugme-new] [Bug 7808] New: Xilinx ML403 does not boot
+>
+>
+> > > On 1/17/07, Bernd Sowislo <BSowislo@gmx.de> wrote:
+> > > Hi,
+> > > I have seen your name in the header of
+> > > the files for the temac implementation
+> > > of the ml403 board.
+> > > Meanwhile I know what is the reason
+> > > for the hangup of my kernel at boot time
+> > > when I insert the patches for the temac
+> > > into the xilinx_ml403.c code (two places)
+> > >
+> > >  1.) increment ther number of devices scanned at early boot
+> > >  2.) insert the temac routines in ml403_setup_arch()
+> > >
+> > > the systems stops execution.
+> >
+> > Do you get any log output at all?  Post it here if you do.
+> >
+> loaded at:     00400000 0063913C
+> board data at: 00637120 00637138
+> relocated to:  00404060 00404078
+> zimage at:     00404E31 004D2397
+> initrd at:     004D3000 00636284
+> avail ram:     0063A000 04000000
+>
+> Linux/PPC load: console=ttyS0,9600 ramdisk_size=8192 root=/dev/ram
+> Uncompressing Linux...done.
+> Now booting the kernel
+>
+> that's all
+>
+> > >
+> > > First I thought it was my fault because I use temac 2.0
+> > > with DMA 3.0 and your driver obviously uses DMA 2.0 and temac 1.0
+> >
+> > It's not my driver; I've haven't got the temac driver working on my
+> > board yet.  But there are folks on this list who can help you out.
+> >
+> >
+> > > then I changed the code (adapter.c) for use of DMA 3.0 and temac 2.0
+> > > as described in the xilinx example for DMA test but
+> > > even if I use fifo 2.0 mode I have this hangup.
+> > >
+> > > Do you have a driver patch for temac 2.0 with DMA 3.0
+> > > or are you interested in my try to change the code?
+> >
+> > The Xilinx drivers are a bit of a disaster at the moment in that it
+> > takes a lot of work to get them right.  Go ahead and change the code.
+> > Fill it with debug output; whatever you need to figure out what's
+> > going on.
+> > >
+> > >
+> > > how can I debug the booting kernel.
+> > >
+> > Best way is with some kind of JTAG debugger.  I personally use a
+> > BDI-2000 from Abatron.  I think others have had good luck with the
+> > Xilinx JTAG pod.
+> >
+> >
+> > >  my experience in linux is 8 weeks, OVMS 15 years
+> >
+> > OVMS?
+> >
+> developed from digital for VAX (32bit, later 64bit for Alpha)
+> >
+> > --
+> > Grant Likely, B.Sc. P.Eng.
+> > Secret Lab Technologies Ltd.
+> > grant.likely@secretlab.ca
+> > (403) 399-0195
