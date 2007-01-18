@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E6DAEDDEE1
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 11:36:05 +1100 (EST)
-Subject: Re: [PATCH 15/19] powerpc: htab routines for Celleb
+	by ozlabs.org (Postfix) with ESMTP id 5DA9CDDEEF
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 11:38:07 +1100 (EST)
+Subject: Re: [PATCH 16/19] powerpc: udbg supports for Celleb
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <200701120115.l0C1FPHJ002416@toshiba.co.jp>
-References: <200701120115.l0C1FPHJ002416@toshiba.co.jp>
+In-Reply-To: <200701120116.l0C1GRLg009802@toshiba.co.jp>
+References: <200701120116.l0C1GRLg009802@toshiba.co.jp>
 Content-Type: text/plain
-Date: Thu, 18 Jan 2007 11:36:29 +1100
-Message-Id: <1169080589.4965.25.camel@localhost.localdomain>
+Date: Thu, 18 Jan 2007 11:38:31 +1100
+Message-Id: <1169080711.4965.28.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,44 +24,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> +
-> +	dummy0 = beat_lpar_hpte_getword0(slot);
-> +	if ((dummy0 & ~0x7FUL) != (want_v & ~0x7FUL)) {
-> +		DBG_LOW("not found !\n");
-> +		return -1;
-> +	}
-> +
-> +	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7, &dummy0,
-> +					&dummy1);
-> +	if (lpar_rc != 0 || dummy0 == 0) {
-> +		DBG_LOW("not found !\n");
-> +		return -1;
-> +	}
-> +
-> +	DBG_LOW("ok %lx %lx\n", dummy0, dummy1);
-> +
+> +void __init udbg_init_debug_beat(void)
+> +{
+> +	celleb_vtermno = 0;
+> +	udbg_putc = udbg_putc_beat;
+> +	udbg_getc = udbg_getc_beat;
+> +	udbg_getc_poll = udbg_getc_poll_beat;
+> +}
 
-I just noticed... isn't there a race condition if the HPTE gets evicted
-between those two calls and/or replaced by another one ?
+Is celleb_vtermno ever != 0 ? I don't see that happening in your
+patch...
 
-That would be generally harmless unless the one replacing it is bolted,
-in which case you might override a bolted entry. Fortunately we don't
-currently insert much bolted entries after boot, but I still see a
-potential for trouble there.
+If not, I would just remove it and just pass 0 directly :-) Or make it a
+constant instead of a variable. Note that early debug is really just
+that: optional early debugging which, when enabled, is likely to prevent
+booting on any other platform, so only for use with debug builds. If you
+ever need another value in here, thus, it's perfectly fine to make it a
+Kconfig option that can be set at build time.
 
-The best solution here is to actually add a function to the hypervisor,
-along the line of what I described in my document a while ago, which
-atomically compares AVPN and replaces the PP and N bits if it didn't
-change.
-
-Another possible issue is that two processors or threads might
-continuously evict each other that way I think.
-
-Since the bug only affect your platform and might actually not trigger
-at all in the current system since we don't play much with bolted
-entries, I'm acking it, but you should look into fixing it.
-
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-Cheers,
 Ben.
