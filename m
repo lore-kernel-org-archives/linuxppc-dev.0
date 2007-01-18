@@ -1,27 +1,25 @@
-Return-Path: <Tom.Ziomek@motorola.com>
-Received: from mail125.messagelabs.com (mail125.messagelabs.com
-	[85.158.136.35]) by ozlabs.org (Postfix) with SMTP id 61995DDEE2
+Return-Path: <niklaus.giger@member.fsf.org>
+Received: from smtp.hispeed.ch (mxout.hispeed.ch [62.2.95.247])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6E3D5DDEE0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Jan 2007 09:25:26 +1100 (EST)
-Received: from il06exr01.mot.com (il06exr01.mot.com [129.188.137.131])
-	by motgate8.mot.com (8.12.11/Motorola) with ESMTP id l0IMPMca008396
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Jan 2007 15:25:22 -0700 (MST)
-Received: from de01exm60.ds.mot.com (de01exm60.am.mot.com [10.176.8.105])
-	by il06exr01.mot.com (8.13.5/8.13.0) with ESMTP id l0IMPLqP015955
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 18 Jan 2007 16:25:21 -0600 (CST)
-Date: Thu, 18 Jan 2007 16:25:21 -0600 (Central Standard Time)
-From: T Ziomek <ctz001@email.mot.com>
-To: Wade Maxfield <wmaxfield@gmail.com>
-Subject: Re: General fx60 notes, Question regarding forcing EDK to locate
-	program code at an address
-In-Reply-To: <45a1b53e0701181416p20e597aarb5a32efbdfcf0a6f@mail.gmail.com>
-Message-ID: <Pine.WNT.4.61.0701181621290.2536@holyoke.labs.mot.com>
-References: <45a1b53e0701181416p20e597aarb5a32efbdfcf0a6f@mail.gmail.com>
+	Fri, 19 Jan 2007 09:23:25 +1100 (EST)
+Received: from ng (84-73-191-27.dclient.hispeed.ch [84.73.191.27])
+	(authenticated bits=0)
+	by smtp.hispeed.ch (8.12.11.20060308/8.12.11/taifun-1.0) with ESMTP id
+	l0IMGapC004183
+	(version=TLSv1/SSLv3 cipher=RC4-SHA bits=128 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Thu, 18 Jan 2007 23:16:37 +0100
+From: Niklaus Giger <niklaus.giger@member.fsf.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Howto use PPC4xx memory to memory DMA
+Date: Thu, 18 Jan 2007 23:16:36 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: ppc <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200701182316.36296.niklaus.giger@member.fsf.org>
+Reply-To: niklaus.giger@member.fsf.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,44 +30,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 18 Jan 2007, Wade Maxfield wrote:
-  . . .
-> The memtest.elf file is stuck in the ppc405_0 directory because that is
-> where it started, and the gui won't let us change it without rebuilding the
-> project.
-> We are loading two .elf files so that we have the program counter set to
-> the internal (Block Ram) memory test/boot loader after the .elf files are
-> finished loading.  This lets us look at our ddr ram memory and prove the
-> linux load made it there.  The first .elf file loads, then the second one,
-> then the pc is set to the start address of the second .elf file.  Since the
-> second .elf file loads into block ram, it is doing nothing, as that is
-> determined by the bitstream in the fpga fabric.  There may be easier ways to
-> do this.
+Hi
 
-I'm not sure how the above relates to your question...
+I ported successfully the Linux 2.6.19 kernel to our PPC405GPr based board and 
+mostly everything just works as it should.
 
-> MY QUESTION:
->
-> What I would like to do is create a .elf file with the Xilinx EDK and
-> force it to be located at a particular address (0x400000 for example).
-> I've looked and looked, but obviously I've not looked at the right
-> places.
-> Does anyone know how to do this with the Xilinx EDK?
+As an example I tried to make a small example program to use memory to memory 
+DMA and failed miserably. I used the ppc4xx_*dma function, which are not 
+referenced anywhere in a stock 2.6.19.1 kernel in the following function:
 
-You should be able to just use a custom linker script (a.k.a. linker com-
-mand file) rather than the default.  You can base this custom file on the
-default version and just specify the address you want.
+void dma_mem_to_mem(void *src, void *dst, unsigned int length,
+			unsigned int use_interrupt)
+{
+	int res = 0;
+	memset((char *)&p_init, sizeof(p_init), 0);
+	p_init.polarity = 0;
+	p_init.pwidth   = PW_8;
+ 	res = ppc4xx_init_dma_channel(DMA_NR, &p_init);
+	if (res) {
+		printk("%32s: nit_dma_channel return %d %d bytes dest %p\n",
+			__FUNCTION__, res, length, dst);
+	}
+	res = ppc4xx_clr_dma_status(DMA_NR);
+	if (res) { 
+		printk("%32s: ppc4xx_clr_dma_status %d\n", __FUNCTION__, res);
+	}
 
-The linker script syntax is not all that obvious, but the GNU 'ld' docu-
-mentation it pretty well.
+	ppc4xx_set_dma_mode(DMA_NR, DMA_MODE_MM);
+	ppc4xx_set_src_addr(DMA_NR, src);
+	ppc4xx_set_dst_addr(DMA_NR, dst);
+	ppc4xx_set_dma_count(DMA_NR, length);
+	ppc4xx_enable_dma(DMA_NR);
+	if (use_interrupt) {
+		res = ppc4xx_enable_dma_interrupt(DMA_NR);
+	} else {
+		res = ppc4xx_disable_dma_interrupt(DMA_NR);
+	}
+	if (res) { 
+		printk("%32s: en/disable_dma_interrupt %d return %d per %d\n",
+		__FUNCTION__, use_interrupt, res, 
+		ppc4xx_get_peripheral_width(DMA_NR));
+	}
+}
 
-N.B.  My personal preference is to not use the EDK; I find it just makes
-       it difficult to understand what is actually happening.  But then I
-       like the command line...
+However the destination memory never changed, even when calling repeatedly 
+ppc4xx_get_dma_residu function correctly return first something between 
+length and 0 and finally 0.
 
-Tom
+Any hints would be appreciated. As googleing around didn't allow me to find an 
+answer.
+
+Also I am a little confused as I cannot see how something dma_alloc_coherent 
+should work on a PPC4xx board.
+
+Best regards
+
 -- 
-   /"\  ASCII Ribbon Campaign   |
-   \ /                          |   Email to user 'CTZ001'
-    X        Against HTML       |             at 'email.mot.com'
-   / \     in e-mail & news     |
+Niklaus Giger
