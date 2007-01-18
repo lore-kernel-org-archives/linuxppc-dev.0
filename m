@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A2490DDF1F
-	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 11:40:55 +1100 (EST)
-Subject: Re: [PATCH 0/19] Patches for Toshiba Cell reference set
+	by ozlabs.org (Postfix) with ESMTP id CE555DDF77
+	for <linuxppc-dev@ozlabs.org>; Thu, 18 Jan 2007 11:47:12 +1100 (EST)
+Subject: Re: [PATCH 0/4] spidernet: add support for Celleb
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <200701120051.l0C0p3Xu017082@toshiba.co.jp>
-References: <200701120051.l0C0p3Xu017082@toshiba.co.jp>
+In-Reply-To: <200701171000.l0HA0jnD021501@toshiba.co.jp>
+References: <200701171000.l0HA0jnD021501@toshiba.co.jp>
 Content-Type: text/plain
-Date: Thu, 18 Jan 2007 11:41:13 +1100
-Message-Id: <1169080873.4965.33.camel@localhost.localdomain>
+Date: Thu, 18 Jan 2007 11:47:32 +1100
+Message-Id: <1169081253.4965.35.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
+Cc: netdev@vger.kernel.org, Jens Osterkamp <Jens.Osterkamp@de.ibm.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,20 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-01-12 at 09:51 +0900, Ishizaki Kou wrote:
-> Paul-san,
+On Wed, 2007-01-17 at 19:00 +0900, Ishizaki Kou wrote:
+> Dear everyone,
 > 
-> This is a revised version of the patch set for Toshiba Cell reference
-> set (aka Celleb).
+> This is a revised version of the patch set for spider_net driver
+> that works on Toshiba Cell Refererence Set (aka Celleb).
 > 
-> Patch 1-3 are generic for Cell and not dependent on any other patches.
-> I think that they are useful for other platforms. Patch 4-19 are to
-> support for Celleb.
-> 
-> This patch set is intended to be merged to 2.6.21.
-> If you have any comment, please write to me.
+> This patch set is based on netdev-2.6.git#upstream.
 
-Looks good. I did a few fairly minor comments. I'll let Arnd ack (or
-not) the SPU related bits though.
+Jens, can you give that a go on our blades see if it doesn't break
+anything ? We are all at LCA here so it's a bit hard to test !
 
+Cheers,
 Ben.
