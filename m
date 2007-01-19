@@ -1,25 +1,22 @@
-Return-Path: <SRS0+ee4438df35e8a0bfe086+1243+infradead.org+hch@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <livio@eecg.toronto.edu>
+Received: from picton.eecg.toronto.edu (picton.eecg.toronto.edu
+	[128.100.10.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 523EEDDEE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 09:27:30 +1100 (EST)
-Date: Thu, 18 Jan 2007 22:27:20 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Roland Dreier <rdreier@cisco.com>
-Subject: Re: [PATCH/RFC 2.6.21] ehca: ehca_uverbs.c: refactor ehca_mmap() for
-	better readability
-Message-ID: <20070118222720.GA5385@infradead.org>
-References: <200701172312.14840.hnguyen@linux.vnet.ibm.com>
-	<adavej4b1vi.fsf@cisco.com>
-Mime-Version: 1.0
+	(Client CN "picton.eecg.toronto.edu",
+	Issuer "picton.eecg.toronto.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 82E5BDDDF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 12:06:21 +1100 (EST)
+Date: Thu, 18 Jan 2007 20:06:05 -0500
+From: Livio Soares <livio@eecg.toronto.edu>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH][PowerPC] Remove ineffective CONFIG_IRQ_ALL_CPUS option
+Message-ID: <20070119010605.GA3259@eecg.toronto.edu>
+References: <20070117230255.GA31478@eecg.toronto.edu>
+	<1169079378.4965.3.camel@localhost.localdomain>
+	<20070118182152.GA11204@eecg.toronto.edu>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <adavej4b1vi.fsf@cisco.com>
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
-	openfabrics-ewg@openib.org, hch@infradead.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com,
-	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+In-Reply-To: <20070118182152.GA11204@eecg.toronto.edu>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,9 +26,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 18, 2007 at 10:56:01AM -0800, Roland Dreier wrote:
-> I've kind of lost the plot here.  How does this patch fit in with the
-> previous series of patches you posted?  Does it replace them or go on
-> top of them?
+  Sorry to reply to myself, but...
 
-It's a cleanup ontop of the actual fix.
+Livio Soares writes:
+>   Hello Ben,
+> 
+> Benjamin Herrenschmidt writes:
+> > On Wed, 2007-01-17 at 18:02 -0500, Livio Soares wrote:
+> 
+> [...]
+
+>   On  a side  note, I  probably need  to make  IRQ distribution  configurable at
+> run-time (for  my personal work).  I  was thinking of exporting  a bit-mask type
+> structure  through sysfs,  to enable  run-time configuration  of CPUs  which can
+> receive interrupts (and possibly priorities). Would people be interested in such
+> a patch?
+
+  Looking at  the code, I found out  that this is _already_  being done; through
+setting  affinities  of  interrupts.  If  you  can  get  the  bitmask  right  in
+/proc/irq/[IRQ#]/smp_affinity,  you can  change the  distribution  of interrupts
+(furthermore,  potentially  disable a  particular  IRQ  altogether a  particular
+CPU). 
+
+  Sorry for the noise,
+
+			Livio
