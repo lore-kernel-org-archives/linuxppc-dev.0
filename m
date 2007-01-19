@@ -1,21 +1,25 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id DC447DDE41
+Return-Path: <niklaus.giger@member.fsf.org>
+Received: from smtp.hispeed.ch (mxout.hispeed.ch [62.2.95.247])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 40595DDEBD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Jan 2007 07:37:45 +1100 (EST)
-Date: Fri, 19 Jan 2007 23:34:54 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: "Russell McGuire" <rmcguire@uwbt.com>
-Subject: Re: MPC83xx:  ns16550.c - 'SERIAL_PORT_DFNS' undeclared?
-Message-ID: <20070119233454.6c096bb3@localhost.localdomain>
-In-Reply-To: <001001c73c06$5fbf2060$6405a8c0@absolut>
-References: <000801c73c00$01d6cf30$6405a8c0@absolut>
-	<1169236694.3029.49.camel@saruman.qstreams.net>
-	<001001c73c06$5fbf2060$6405a8c0@absolut>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_.qi8RkdCrsK=Sia=BNSgDaO";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 20 Jan 2007 07:40:41 +1100 (EST)
+Received: from ng (84-73-191-27.dclient.hispeed.ch [84.73.191.27])
+	(authenticated bits=0)
+	by smtp.hispeed.ch (8.12.11.20060308/8.12.11/taifun-1.0) with ESMTP id
+	l0JKeaWD004102
+	(version=TLSv1/SSLv3 cipher=RC4-SHA bits=128 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Fri, 19 Jan 2007 21:40:36 +0100
+From: Niklaus Giger <niklaus.giger@member.fsf.org>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] ppc: fix memory-to-memory DMA on PPC4xx
+Date: Fri, 19 Jan 2007 21:40:35 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200701192140.35760.niklaus.giger@member.fsf.org>
+Reply-To: niklaus.giger@member.fsf.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,75 +30,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Sig_.qi8RkdCrsK=Sia=BNSgDaO
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+[PATCH] pcc: fix memory-to-memory DMA on PPC4xx
 
-On Fri, 19 Jan 2007 12:14:04 -0800
-Russell McGuire wrote:
+During a memory-to-memory DMA transfers using the PPC4xx internal DMA 
+controllers the source and destination addresses were not incremented after 
+each data transfer.
 
-> Ben,
->=20
-> That could be the problem
->=20
-> I am building using ARCH=3Dppc
->=20
-> What is the difference between the two?
-Newer targets appear within arch/powerpc... Concerning your question,=20
-you seem to add new board hence you'll have to do those SERIAL_PORT_DFNS
-in board-specific header file - grep for them inside arch/ppc for reference=
- (if
-that code is still there of course).
+Signed-off-by: Niklaus Giger <niklaus.giger at member.fsf.org>
+---
+c97d534851539b5ac18a90761bba9ea261545972
+ arch/ppc/syslib/ppc4xx_dma.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-OTOH, if you are able to replace/update your firmware, I'd follow powerpc w=
-ay.
-Difference is FAQ I guess, please look around this list.
-
->=20
-> -----Original Message-----
-And, uhm, top quoting is not good. I know telling that fact to Lookout DIst=
-ress is a challenge but anyway :)
-
---
-Thanks, Vitaly
-> From: Ben Warren [mailto:bwarren@qstreams.com]=20
-> Sent: Friday, January 19, 2007 11:58 AM
-> To: Russell McGuire
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: MPC83xx: ns16550.c - 'SERIAL_PORT_DFNS' undeclared?
->=20
->=20
-> Russell,
->=20
-> On Fri, 2007-01-19 at 11:28 -0800, Russell McGuire wrote:
->=20
-> >=20
-> > arch/ppc/boot/common/ns16550.c  error: 'SERIAL_PORT_DFNS' undeclared
-> > here ..
-> >=20
->=20
-> I don't think you should be building any code there...  Are you using
-> ARCH=3Dpowerpc (you should be)
->=20
-> regards,
-> Ben
->=20
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
---Sig_.qi8RkdCrsK=Sia=BNSgDaO
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFFsStuuOg9JvQhSEsRAp6cAJ9kz1uJfqSLQ7FX7TkKBqYA8D6JtwCfaFY3
-iBJz6qqQ46cC/RoYVSAAVsY=
-=knNs
------END PGP SIGNATURE-----
-
---Sig_.qi8RkdCrsK=Sia=BNSgDaO--
+diff --git a/arch/ppc/syslib/ppc4xx_dma.c b/arch/ppc/syslib/ppc4xx_dma.c
+index 1eef4ff..1cb68a6 100644
+--- a/arch/ppc/syslib/ppc4xx_dma.c
++++ b/arch/ppc/syslib/ppc4xx_dma.c
+@@ -104,7 +104,8 @@ ppc4xx_enable_dma(unsigned int dmanr)
+ 	control &= ~(DMA_TM_MASK | DMA_TD);	/* clear all mode bits */
+ 	if (p_dma_ch->mode == DMA_MODE_MM) {
+ 		/* software initiated memory to memory */
+-		control |= DMA_ETD_OUTPUT | DMA_TCE_ENABLE;
++		control |= DMA_ETD_OUTPUT | DMA_TCE_ENABLE |
++			   DMA_SAI | DMA_DAI ;
+ 	}
+ 
+ 	mtdcr(DCRN_DMACR0 + (dmanr * 0x8), control);
