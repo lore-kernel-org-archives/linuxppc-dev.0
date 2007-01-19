@@ -1,26 +1,32 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx009.isp.belgacom.be (outmx009.isp.belgacom.be
-	[195.238.5.4])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 808A3DDE9F
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 19:15:03 +1100 (EST)
-Received: from outmx009.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx009.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l0J8Emtt025822
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 09:14:51 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <45B07DF1.6020301@246tNt.com>
-Date: Fri, 19 Jan 2007 09:14:41 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: grant.likely@secretlab.ca
-Subject: Re: [POWERPC] Make it blatantly clear;	mpc5200 device tree is not
-	yet stable
-References: <1169190014769-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <1169190014769-git-send-email-grant.likely@secretlab.ca>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 70B0FDDE3C
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 21:58:50 +1100 (EST)
+In-Reply-To: <528646bc0701170040y21cbecbeq55e0d1eb7c28ff01@mail.gmail.com>
+References: <528646bc0701131555n3249b503i3b6e8c37db41dd52@mail.gmail.com>
+	<45AA098C.70101@246tNt.com>
+	<6189b01379f62aa4516484872f4ef86f@kernel.crashing.org>
+	<1168810790.4803.11.camel@localhost.localdomain>
+	<ccc8fbc935d8f8d3e30870d43959f6c7@kernel.crashing.org>
+	<1168817449.4803.28.camel@localhost.localdomain>
+	<ef64a4198a02929a00c28abb5f0934b5@kernel.crashing.org>
+	<1168818533.4803.37.camel@localhost.localdomain>
+	<a1af25147ea7308c394d243511b96f69@kernel.crashing.org>
+	<1168928567.4803.55.camel@localhost.localdomain>
+	<528646bc0701170040y21cbecbeq55e0d1eb7c28ff01@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <CB20EEEE-9C3D-4FFC-869E-D331F8CA264A@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Discussion on SOC device tree bindings
+Date: Fri, 19 Jan 2007 11:58:23 +0100
+To: "Grant Likely" <grant.likely@secretlab.ca>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Sven Luther <sven@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,91 +36,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Acked-by: Sylvain Munaut <tnt@246tNt.com>
+> I don't think the argument that the data should not be scattered about
+> in various device nodes holds a whole lot of water.
+
+It's one of the main design principles behind the device
+tree at all, how can it _not_ make sense.  If you just put
+random pieces of data wherever you feel like putting them
+you end up with ACPI instead.
+
+> There is already
+> precedence for this with the interrupt binding.
+
+With interrupts it is unavoidable, since you often have cascaded
+controllers.
+
+> Putting the linkage in the device nodes does not bloat the tree, and
+> it does not duplicate information.  The device tree is just as
+> expressive either way around,
+
+Except you have to parse the whole tree to determine the function
+of the one controller node.
+
+> so typical usage becomes the tie
+> breaker.  Typical usage is for the device driver to "call" the system
+> node; therefore put the linkage information in the device node where
+> it's most easily retrieved when needed.
+
+You don't normally use the device tree at runtime; typical usage
+is to parse it at startup and initialise some internal kernel
+data structures from that.  The device tree needs to express the
+system in a clear, extensible way; it is not its purpose to "make
+things easy" for the Linux kernel (although that can happen as a
+side effect).
+
+> Looking at the larger scope; we're talking about an SoC here.  While
+> most of the SoC device drivers don't need to know anything about the
+> SoC as a whole, the platform code should really know what SoC part it
+> is on.  SoC designers love to toss in special cases which don't really
+> slide nicely into our pretty device tree, and the OS almost always
+> needs chip specific support code to handle it.
+
+Yep.  Which is why IMHO the OF binding shouldn't even try to
+model the functionality of such a SoC controller node.  It has
+to show what it is that is controlled though.
+
+> I'm inclined to say
+> that the bindings from device node to shared soc registers may be
+> *recommended*, but not *required*.
+
+If they aren't required, you obviously have some other way to
+get that information, so it shouldn't be recommended either.
+
+>   As long as there is some form of
+> linkage between the soc and device nodes, and as long as the SoC node
+> describes exactly which SoC it is, then the OS has all the information
+> it needs to figure out which devices are connected to which bits of
+> which shared registers (based on register address).
+
+Yes exactly.  And if we can express all this in a simple
+self-contained way, like for example put this all in one
+device node, why do something terribly complex and kludgy
+instead?
+
+> Now, this might
+> be a bad precedence, but I'm hesitant to go down the path of trying to
+> describe something in the device tree which is inherent to the SoC
+> design.
+
+You shouldn't try to.  Since the "controlled" devices are in
+the device tree however, you have to list them in the "controller"
+node so you can figure out what is what.
 
 
-It's purely documentation so quite unlikely to break stuff ;) And it's
-real important people know it.
-
-
-
-PS: Grant, it's 246 in my email not 346 ;)
-
-grant.likely@secretlab.ca wrote:
-> From: Grant Likely <grant.likely@secretlab.ca>
->
-> Documentation-only change.  The 5200 device tree layout has not yet
-> stablized, so nobody should depend on the layout of the tree.
->
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> Paul,
->
-> (minor rework from comments received)
->
-> I know it's *very* late in the .20 release cycle, but I don't want to
-> allow false assumptions about the stability of the 5200 device tree
-> bindings.
->
-> Please apply for 2.6.20 If you think it is appropriate.
->
-> Thanks,
-> g.
->
->  .../powerpc/mpc52xx-device-tree-bindings.txt       |    6 ++++++
->  arch/powerpc/boot/dts/lite5200.dts                 |    6 ++++++
->  arch/powerpc/boot/dts/lite5200b.dts                |    6 ++++++
->  3 files changed, 18 insertions(+), 0 deletions(-)
->
-> diff --git a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-> index 7fb3b8a..69f016f 100644
-> --- a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-> +++ b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-> @@ -4,6 +4,12 @@ MPC52xx Device Tree Bindings
->  (c) 2006 Secret Lab Technologies Ltd
->  Grant Likely <grant.likely at secretlab.ca>
->  
-> +********** DRAFT ***********
-> +* WARNING: Do not depend on the stability of these bindings just yet.
-> +* The MPC5200 device tree conventions are still in flux
-> +* Keep an eye on the linuxppc-dev mailing list for more details
-> +********** DRAFT ***********
-> +
->  I - Introduction
->  ================
->  Boards supported by the arch/powerpc architecture require device tree be
-> diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
-> index a8efb59..1868707 100644
-> --- a/arch/powerpc/boot/dts/lite5200.dts
-> +++ b/arch/powerpc/boot/dts/lite5200.dts
-> @@ -10,6 +10,12 @@
->   * option) any later version.
->   */
->  
-> +/*
-> + * WARNING: Do not depend on this tree layout remaining static just yet.
-> + * The MPC5200 device tree conventions are still in flux
-> + * Keep an eye on the linuxppc-dev mailing list for more details
-> + */
-> +
->  / {
->  	model = "Lite5200";
->  	compatible = "lite5200\0lite52xx\0mpc5200\0mpc52xx";
-> diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
-> index 1aabee4..5bb2760 100644
-> --- a/arch/powerpc/boot/dts/lite5200b.dts
-> +++ b/arch/powerpc/boot/dts/lite5200b.dts
-> @@ -10,6 +10,12 @@
->   * option) any later version.
->   */
->  
-> +/*
-> + * WARNING: Do not depend on this tree layout remaining static just yet.
-> + * The MPC5200 device tree conventions are still in flux
-> + * Keep an eye on the linuxppc-dev mailing list for more details
-> + */
-> +
->  / {
->  	model = "Lite5200b";
->  	compatible = "lite5200b\0lite52xx\0mpc5200b\0mpc52xx";
->   
+Segher
