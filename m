@@ -1,19 +1,25 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 210EBDDE3F
+Return-Path: <niklaus.giger@member.fsf.org>
+Received: from smtp.hispeed.ch (mxout.hispeed.ch [62.2.95.247])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B0B2BDDE31
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Jan 2007 08:07:11 +1100 (EST)
-Message-ID: <45B132FC.9070208@freescale.com>
-Date: Fri, 19 Jan 2007 15:07:08 -0600
-From: Timur Tabi <timur@freescale.com>
+	Sat, 20 Jan 2007 10:02:37 +1100 (EST)
+Received: from ng (84-73-191-27.dclient.hispeed.ch [84.73.191.27])
+	(authenticated bits=0)
+	by smtp.hispeed.ch (8.12.11.20060308/8.12.11/taifun-1.0) with ESMTP id
+	l0JN2WZv027964
+	(version=TLSv1/SSLv3 cipher=RC4-SHA bits=128 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Sat, 20 Jan 2007 00:02:32 +0100
+From: Niklaus Giger <niklaus.giger@member.fsf.org>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: [PATCH] # ppc: ppc4xx_set_src/dst_addr were only correct for DMA0
+Date: Sat, 20 Jan 2007 00:02:31 +0100
 MIME-Version: 1.0
-To: Russell McGuire <rmcguire@uwbt.com>
-Subject: Re: MPC83xx:  ns16550.c - 'SERIAL_PORT_DFNS' undeclared?
-References: <000801c73c00$01d6cf30$6405a8c0@absolut>	<1169236694.3029.49.camel@saruman.qstreams.net>
-	<001001c73c06$5fbf2060$6405a8c0@absolut>
-In-Reply-To: <001001c73c06$5fbf2060$6405a8c0@absolut>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200701200002.32078.niklaus.giger@member.fsf.org>
+Reply-To: niklaus.giger@member.fsf.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +30,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Russell McGuire wrote:
-> Ben,
-> 
-> That could be the problem
-> 
-> I am building using ARCH=ppc
-> 
-> What is the difference between the two?
+[PATCH] # ppc: ppc4xx_set_src/dst_addr were only correct for DMA0
 
-Short answer: ppc is deprecated in favor of powerpc.
+The DCR-register numbers for DMA1-DMA3 were wrongly corrected.
 
-Eventually, ppc will go away altogether.
+Signed-off-by: Niklaus Giger <niklaus.giger@member.fsf.org>
+---
+ arch/ppc/syslib/ppc4xx_dma.c |    8 ++++----
+ 1 files changed, 4 insertions(+), 4 deletions(-)
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+diff --git a/arch/ppc/syslib/ppc4xx_dma.c b/arch/ppc/syslib/ppc4xx_dma.c
+index 1cb68a6..26b2ddf 100644
+--- a/arch/ppc/syslib/ppc4xx_dma.c
++++ b/arch/ppc/syslib/ppc4xx_dma.c
+@@ -47,9 +47,9 @@ ppc4xx_set_src_addr(int dmanr, phys_addr_t src_addr)
+ 	}
+ 
+ #ifdef PPC4xx_DMA_64BIT
+-	mtdcr(DCRN_DMASAH0 + dmanr*2, (u32)(src_addr >> 32));
++	mtdcr(DCRN_DMASAH0 + dmanr * 0x8, (u32)(src_addr >> 32));
+ #else
+-	mtdcr(DCRN_DMASA0 + dmanr*2, (u32)src_addr);
++	mtdcr(DCRN_DMASA0 + dmanr * 0x8, (u32)src_addr);
+ #endif
+ }
+ 
+@@ -62,9 +62,9 @@ ppc4xx_set_dst_addr(int dmanr, phys_addr_t dst_addr)
+ 	}
+ 
+ #ifdef PPC4xx_DMA_64BIT
+-	mtdcr(DCRN_DMADAH0 + dmanr*2, (u32)(dst_addr >> 32));
++	mtdcr(DCRN_DMADAH0 + dmanr * 0x8, (u32)(dst_addr >> 32));
+ #else
+-	mtdcr(DCRN_DMADA0 + dmanr*2, (u32)dst_addr);
++	mtdcr(DCRN_DMADA0 + dmanr * 0x8, (u32)dst_addr);
+ #endif
+ }
