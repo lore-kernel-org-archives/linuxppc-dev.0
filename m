@@ -1,20 +1,20 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 1190BDDE25
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jan 2007 03:38:38 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so480667ugf
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 08:38:36 -0800 (PST)
-Message-ID: <528646bc0701190838w106d6407h9516ccc37349111a@mail.gmail.com>
-Date: Fri, 19 Jan 2007 09:38:36 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-Subject: Re: Discussion on SOC device tree bindings
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2EB3ADDEC1
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jan 2007 03:50:55 +1100 (EST)
 In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA3023612F8@az33exm25.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <CB20EEEE-9C3D-4FFC-869E-D331F8CA264A@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3023612F8@az33exm25.fsl.freescale.net>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA3023612F8@az33exm25.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <FE40A29F-24D1-4DDA-81F0-3F87AF30F4F9@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: Discussion on SOC device tree bindings
+Date: Fri, 19 Jan 2007 17:50:32 +0100
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
 Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
 	Sven Luther <sven@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,25 +26,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 1/19/07, Yoder Stuart-B08248 <stuart.yoder@freescale.com> wrote:
->
-> Back in Grant's original summary of the problem he wrote:
-> >
-> > 5. The contentious issue is which direction those links should be
-> > constructed.  Does the device node describe where to find it's SoC
-> > parent node and what the device index is?  Or does the SoC node
-> > describe which device nodes it provides shared register service for?
->
 > How about linking in _both_ directions?
+>
+> -The SOC node describes the shared register with links to the
+>  the device nodes it is associated with
 
-I think that's a bad precedence.  Either representation can be
-generated from the other.  Linking it in both directions means
-duplicate information with no real benefit.
+This provides all the information you need.
 
-g.
+> -The device nodes link to the SOC parent shared register node
+> (_but_ don't necessarily specify the device index, since that
+>  could be determined by looking at the SOC node)
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+This information, if handy for the kernel to have, can
+be trivially constructed at initialisation time by the
+kernel itself.
+
+> Doing both provides flexibility in the way the device tree
+> is used.
+
+That flexibility is already there if you describe
+everything in the controller node.
+
+> The SOC node in a single place describes the
+> shared register which conceptually makes sense.
+
+Exactly.
+
+
+Segher
