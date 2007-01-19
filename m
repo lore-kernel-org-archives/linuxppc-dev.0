@@ -1,31 +1,33 @@
 Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
+Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D73ABDDDF9
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jan 2007 12:11:52 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id l0JLrDAh080860
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 21:53:13 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l0JLrDKY1568810
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 22:53:13 +0100
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l0JLrCAI030599
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 22:53:12 +0100
+	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 54EB9DDE47
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jan 2007 12:20:51 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate5.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l0JLto7S120636
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 21:55:50 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
+	ESMTP id l0JLrouo1872124
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 21:53:50 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l0JLrnBD003789
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 21:53:50 GMT
 From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
 To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, openib-general@openib.org
-Subject: [PATCH 2.6.20 0/2] ehca: fix yield and spinlock conflicts
-Date: Fri, 19 Jan 2007 22:49:32 +0100
+	linuxppc-dev@ozlabs.org, openfabrics-ewg@openib.org,
+	openib-general@openib.org
+Subject: [PATCH 2.6.20 1/2] ehca: ehca_cq.c: fix unproper use of yield within
+	spinlock context
+Date: Fri, 19 Jan 2007 22:50:10 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200701192249.33587.hnguyen@linux.vnet.ibm.com>
+Message-Id: <200701192250.10765.hnguyen@linux.vnet.ibm.com>
 Cc: raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -37,13 +39,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Hello Roland!
-Here is patch set for ehca with the following bug fixes:
-* Fix unproper use of yield within spinlock context
-* Fix mismatched spin_unlock in irq handler
+This is a patch for ehca_cq.c that fixes unproper use of yield within
+spinlock context.
 Thanks
 Nam
 
 
- ehca_cq.c  |    5 ++++-
- ehca_irq.c |    2 +-
- 2 files changed, 5 insertions(+), 2 deletions(-)
+Signed-off-by Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+---
+
+
+ ehca_cq.c |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletion(-)
+
+
+diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
+index 93995b6..6074c89 100644
+--- a/drivers/infiniband/hw/ehca/ehca_cq.c
++++ b/drivers/infiniband/hw/ehca/ehca_cq.c
+@@ -344,8 +344,11 @@ int ehca_destroy_cq(struct ib_cq *cq)
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
+-	while (my_cq->nr_callbacks)
++	while (my_cq->nr_callbacks) {
++		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
+ 		yield();
++		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++	}
+ 
+ 	idr_remove(&ehca_cq_idr, my_cq->token);
+ 	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
