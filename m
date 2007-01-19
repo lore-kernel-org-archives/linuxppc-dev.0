@@ -1,15 +1,23 @@
-Return-Path: <indianirav@yahoo.com>
-Received: from web30004.mail.mud.yahoo.com (web30004.mail.mud.yahoo.com
-	[209.191.69.21]) by ozlabs.org (Postfix) with SMTP id 27310DDE29
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 20E9FDDE32
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Jan 2007 00:59:50 +1100 (EST)
-Date: Fri, 19 Jan 2007 05:59:48 -0800 (PST)
-From: patel nirav <indianirav@yahoo.com>
-Subject: any idea for RTAI and powerpc(ppc604)
-To: linux ppc <linuxppc-embedded@ozlabs.org>
+	Sat, 20 Jan 2007 02:06:22 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so461027ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 19 Jan 2007 07:06:20 -0800 (PST)
+Message-ID: <528646bc0701190706l752835a1ta17814ce4ff78794@mail.gmail.com>
+Date: Fri, 19 Jan 2007 08:06:19 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Bruce_Leonard@selinc.com" <Bruce_Leonard@selinc.com>
+Subject: Re: Who's the maintainer for the freescale MPC8349ITX board?
+In-Reply-To: <OFFF3222ED.48527A84-ON88257267.00787606-88257267.007A6E89@selinc.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1594070327-1169215188=:35299"
-Message-ID: <808741.35299.qm@web30004.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070118124031.3d5e0079.kim.phillips@freescale.com>
+	<OFFF3222ED.48527A84-ON88257267.00787606-88257267.007A6E89@selinc.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,34 +28,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1594070327-1169215188=:35299
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+On 1/18/07, Bruce_Leonard@selinc.com <Bruce_Leonard@selinc.com> wrote:
+> Kim Phillips <kim.phillips@freescale.com> wrote on 01/18/2007 10:40:31 AM:
+>
+> > > Per Grant's suggestion I changed it to:
+> > > 'dtc -I dts -O dtb -V 0x10 mpc8349emitx.dts > 8349.blob'
+> > >
+> > I get a 0 length 8349.blob file using the above.  Have you tried -f?
+> >
+> > Kim
+>
+> Hummmmm, interesting.  I get a blob of about 4K when I do it.  Oh, ooops.
+> Sorry.  I did have to modify the *.dts file to get it to compile.  There
+> was an error because there wasn't a 'linux,boot-cpu' entry in the cpu
+> node.
 
-hi all,
- can any one have any idea How to crosss-compile the linux kernel (which support the RTAI) for powerPC ?
- In short I want to run RTAI on ppc604 (board i am using is VME)
- Any help is appriciated.
- thanks,
- regards.
- 
- 
+BTW, you don't need to add a linux,boot-cpu node to your .dts file.
+In fact you don't need anything in the /chosen node at all.  Just pass
+the -f flag to your version of dtc.  (This is also something fixed in
+the latest dtc code from www.jdl.com)
 
-Nirav J Patel
-M.Tech(CSE),
-Nirma University,
-Ahmedabad-382481.
-9925138959
- 
----------------------------------
-Finding fabulous fares is fun.
-Let Yahoo! FareChase search your favorite travel sites to find flight and hotel bargains.
---0-1594070327-1169215188=:35299
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+g.
 
-hi all,<br> can any one have any idea <span style="font-weight: bold;">How to crosss-compile the linux kernel (which support the RTAI) for powerPC ?<br> In short I want to run RTAI on ppc604 (board i am using is VME)<br> Any help is appriciated.<br> thanks,<br> regards.<br> <br> </span><BR><BR>Nirav J Patel<br>M.Tech(CSE),<br>Nirma University,<br>Ahmedabad-382481.<br>9925138959<p>&#32;
-
-<hr size=1>Finding fabulous fares is fun.<br><a href="http://farechase.yahoo.com/promo-generic-14795097;_ylc=X3oDMTFtNW45amVpBF9TAzk3NDA3NTg5BF9zAzI3MTk0ODEEcG9zAzEEc2VjA21haWx0YWdsaW5lBHNsawNxMS0wNw--
-">Let Yahoo! FareChase search your favorite travel sites</a> to find flight and hotel bargains.
---0-1594070327-1169215188=:35299--
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
