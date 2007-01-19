@@ -1,14 +1,12 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id 1F057DDE2C
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 18:00:47 +1100 (EST)
-From: grant.likely@secretlab.ca
-To: linuxppc-dev@ozlabs.org, paulus@samba.org, tnt@346tnt.com,
-	segher@kernel.crashing.org
-Subject: [POWERPC] Make it blatantly clear;
-	mpc5200 device tree is not yet stable
-Date: Fri, 19 Jan 2007 00:00:14 -0700
-Message-Id: <1169190014769-git-send-email-grant.likely@secretlab.ca>
+Return-Path: <sr@denx.de>
+Date: Fri, 19 Jan 2007 09:05:47 +0100 (MET)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc: ioremap() on PPC44x platforms now accepts 64bit addresses
+MIME-Version: 1.0
+Content-Type: text/plain;  charset="us-ascii"
+Message-Id: <200701190906.09112.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,81 +16,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Grant Likely <grant.likely@secretlab.ca>
+[PATCH] ppc: ioremap() on PPC44x platforms now accepts 64bit addresses
 
-Documentation-only change.  The 5200 device tree layout has not yet
-stablized, so nobody should depend on the layout of the tree.
+On systems that supply a real 64bit address (with
+CONFIG_RESOURCES_64BIT enabled), don't use the fixup function. This
+allows us to use the fixup function when no ERPN is specified and use
+the 64 bit address when the ERPN is supplied.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+Signed-off-by: Stefan Roese <sr@denx.de>
+
 ---
-Paul,
+commit d615194752d1729211296a3afbf5adb94f2b8444
+tree 11f5db07bce1cb3adc4d4be8b4d5b09076221656
+parent c32ef45a856a08df6942c5efa1e8abc6e4b9ee0e
+author Stefan Roese <sr@denx.de> Fri, 19 Jan 2007 09:02:28 +0100
+committer Stefan Roese <sr@denx.de> Fri, 19 Jan 2007 09:02:28 +0100
 
-(minor rework from comments received)
+ arch/ppc/mm/pgtable.c |   16 +++++++++++++---
+ 1 files changed, 13 insertions(+), 3 deletions(-)
 
-I know it's *very* late in the .20 release cycle, but I don't want to
-allow false assumptions about the stability of the 5200 device tree
-bindings.
-
-Please apply for 2.6.20 If you think it is appropriate.
-
-Thanks,
-g.
-
- .../powerpc/mpc52xx-device-tree-bindings.txt       |    6 ++++++
- arch/powerpc/boot/dts/lite5200.dts                 |    6 ++++++
- arch/powerpc/boot/dts/lite5200b.dts                |    6 ++++++
- 3 files changed, 18 insertions(+), 0 deletions(-)
-
-diff --git a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-index 7fb3b8a..69f016f 100644
---- a/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-+++ b/Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-@@ -4,6 +4,12 @@ MPC52xx Device Tree Bindings
- (c) 2006 Secret Lab Technologies Ltd
- Grant Likely <grant.likely at secretlab.ca>
+diff --git a/arch/ppc/mm/pgtable.c b/arch/ppc/mm/pgtable.c
+index 354a940..1ef63da 100644
+--- a/arch/ppc/mm/pgtable.c
++++ b/arch/ppc/mm/pgtable.c
+@@ -156,9 +156,19 @@ ioremap64(unsigned long long addr, unsigned long size)
+ void __iomem *
+ ioremap(phys_addr_t addr, unsigned long size)
+ {
+-	phys_addr_t addr64 = fixup_bigphys_addr(addr, size);
+-
+-	return ioremap64(addr64, size);
++	/*
++	 * On systems that supply a real 64bit address
++	 * (with CONFIG_RESOURCES_64BIT enabled), don't use the
++	 * fixup function.
++	 * This allows us to use the fixup function when no ERPN
++	 * is specified and use the 64 bit address when the ERPN
++	 * is suppied.
++	 */
++	if ((unsigned long long)addr && 0xffffffff00000000ULL)
++		return ioremap64(addr, size);
++	else
++		return ioremap64(fixup_bigphys_addr(addr, size),
++				 size);
+ }
+ #endif /* CONFIG_PHYS_64BIT */
  
-+********** DRAFT ***********
-+* WARNING: Do not depend on the stability of these bindings just yet.
-+* The MPC5200 device tree conventions are still in flux
-+* Keep an eye on the linuxppc-dev mailing list for more details
-+********** DRAFT ***********
-+
- I - Introduction
- ================
- Boards supported by the arch/powerpc architecture require device tree be
-diff --git a/arch/powerpc/boot/dts/lite5200.dts b/arch/powerpc/boot/dts/lite5200.dts
-index a8efb59..1868707 100644
---- a/arch/powerpc/boot/dts/lite5200.dts
-+++ b/arch/powerpc/boot/dts/lite5200.dts
-@@ -10,6 +10,12 @@
-  * option) any later version.
-  */
- 
-+/*
-+ * WARNING: Do not depend on this tree layout remaining static just yet.
-+ * The MPC5200 device tree conventions are still in flux
-+ * Keep an eye on the linuxppc-dev mailing list for more details
-+ */
-+
- / {
- 	model = "Lite5200";
- 	compatible = "lite5200\0lite52xx\0mpc5200\0mpc52xx";
-diff --git a/arch/powerpc/boot/dts/lite5200b.dts b/arch/powerpc/boot/dts/lite5200b.dts
-index 1aabee4..5bb2760 100644
---- a/arch/powerpc/boot/dts/lite5200b.dts
-+++ b/arch/powerpc/boot/dts/lite5200b.dts
-@@ -10,6 +10,12 @@
-  * option) any later version.
-  */
- 
-+/*
-+ * WARNING: Do not depend on this tree layout remaining static just yet.
-+ * The MPC5200 device tree conventions are still in flux
-+ * Keep an eye on the linuxppc-dev mailing list for more details
-+ */
-+
- / {
- 	model = "Lite5200b";
- 	compatible = "lite5200b\0lite52xx\0mpc5200b\0mpc52xx";
--- 
-1.4.3.rc2.g0503
