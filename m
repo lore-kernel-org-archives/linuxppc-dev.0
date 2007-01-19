@@ -1,23 +1,20 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 20E9FDDE32
+Return-Path: <rmcguire@uwbt.com>
+Received: from mail19k.g19.rapidsite.net (mail19k.g19.rapidsite.net
+	[204.202.242.122]) by ozlabs.org (Postfix) with SMTP id 92D92DDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 20 Jan 2007 02:06:22 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so461027ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 19 Jan 2007 07:06:20 -0800 (PST)
-Message-ID: <528646bc0701190706l752835a1ta17814ce4ff78794@mail.gmail.com>
-Date: Fri, 19 Jan 2007 08:06:19 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Bruce_Leonard@selinc.com" <Bruce_Leonard@selinc.com>
-Subject: Re: Who's the maintainer for the freescale MPC8349ITX board?
-In-Reply-To: <OFFF3222ED.48527A84-ON88257267.00787606-88257267.007A6E89@selinc.com>
+	Sat, 20 Jan 2007 06:28:37 +1100 (EST)
+Received: from mx65.stngva01.us.mxservers.net (204.202.242.135)
+	by mail19k.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
+	0-0510734900 for <linuxppc-embedded@ozlabs.org>;
+	Fri, 19 Jan 2007 14:28:35 -0500 (EST)
+From: "Russell McGuire" <rmcguire@uwbt.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: MPC83xx:  ns16550.c - 'SERIAL_PORT_DFNS' undeclared?
+Date: Fri, 19 Jan 2007 11:28:17 -0800
+Message-ID: <000801c73c00$01d6cf30$6405a8c0@absolut>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070118124031.3d5e0079.kim.phillips@freescale.com>
-	<OFFF3222ED.48527A84-ON88257267.00787606-88257267.007A6E89@selinc.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0009_01C73BBC.F3B38F30"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,30 +25,220 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 1/18/07, Bruce_Leonard@selinc.com <Bruce_Leonard@selinc.com> wrote:
-> Kim Phillips <kim.phillips@freescale.com> wrote on 01/18/2007 10:40:31 AM:
->
-> > > Per Grant's suggestion I changed it to:
-> > > 'dtc -I dts -O dtb -V 0x10 mpc8349emitx.dts > 8349.blob'
-> > >
-> > I get a 0 length 8349.blob file using the above.  Have you tried -f?
-> >
-> > Kim
->
-> Hummmmm, interesting.  I get a blob of about 4K when I do it.  Oh, ooops.
-> Sorry.  I did have to modify the *.dts file to get it to compile.  There
-> was an error because there wasn't a 'linux,boot-cpu' entry in the cpu
-> node.
+This is a multi-part message in MIME format.
 
-BTW, you don't need to add a linux,boot-cpu node to your .dts file.
-In fact you don't need anything in the /chosen node at all.  Just pass
-the -f flag to your version of dtc.  (This is also something fixed in
-the latest dtc code from www.jdl.com)
+------=_NextPart_000_0009_01C73BBC.F3B38F30
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-g.
+All,
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+ 
+
+Attempting to compile the kernel with that latest DENX-2.6 tree from git.
+
+I have started with the MPC834x_defconfig and added a few options, but now
+when I compile
+
+ 
+
+arch/ppc/boot/common/ns16550.c  error: 'SERIAL_PORT_DFNS' undeclared here ..
+
+ 
+
+I can see clearly this is defined in /include/asm-ppc/serial.h
+
+ 
+
+But why isn't this being included?
+
+ 
+
+I am more inclined to think this is an option I have not included in my
+.config file, does anyone have idea what this might be?
+
+I do have defined 8250/16550 char/serial devices selected in the menuconfig.
+
+
+ 
+
+Or is this something that changed with the newest patches?
+
+ 
+
+I don't seem to recall having this problem with 2.6.15 that shipped with
+ELDK_4.0, but then again I might have had different compile options defined.
+
+
+ 
+
+Has anyone else seen his error?
+
+ 
+
+-Russ
+
+
+------=_NextPart_000_0009_01C73BBC.F3B38F30
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+p
+	{mso-margin-top-alt:auto;
+	margin-right:0in;
+	mso-margin-bottom-alt:auto;
+	margin-left:0in;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>All,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Attempting to compile the kernel with that latest =
+DENX-2.6
+tree from git.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I have started with the MPC834x_defconfig and added a =
+few
+options, but now when I compile<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>arch/ppc/boot/common/ns16550.c &nbsp;error: =
+&#8216;SERIAL_PORT_DFNS&#8217;
+undeclared here &#8230;&#8230;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I can see clearly this is defined in
+/include/asm-ppc/serial.h<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>But why isn&#8217;t this being =
+included?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am more inclined to think this is an option I have =
+not
+included in my .config file, does anyone have idea what this might =
+be?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I do have defined 8250/16550 char/serial devices =
+selected in
+the menuconfig. <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Or is this something that changed with the newest =
+patches?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I don&#8217;t seem to recall having this problem with =
+2.6.15
+that shipped with ELDK_4.0, but then again I might have had different =
+compile
+options defined&#8230; <o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Has anyone else seen his =
+error?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-Russ<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_0009_01C73BBC.F3B38F30--
