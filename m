@@ -1,15 +1,22 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH] ppc: ioremap() on PPC44x platforms now accepts 64bit
-	addresses
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200701190906.09112.sr@denx.de>
-References: <200701190906.09112.sr@denx.de>
-Content-Type: text/plain
-Date: Fri, 19 Jan 2007 05:57:25 -0600
-Message-Id: <1169207845.28708.2.camel@crusty.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 1190BDDE25
+	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jan 2007 03:38:38 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so480667ugf
+	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 08:38:36 -0800 (PST)
+Message-ID: <528646bc0701190838w106d6407h9516ccc37349111a@mail.gmail.com>
+Date: Fri, 19 Jan 2007 09:38:36 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Subject: Re: Discussion on SOC device tree bindings
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA3023612F8@az33exm25.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <CB20EEEE-9C3D-4FFC-869E-D331F8CA264A@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3023612F8@az33exm25.fsl.freescale.net>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Sven Luther <sven@genesi-usa.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,40 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-01-19 at 09:05 +0100, Stefan Roese wrote:
-> [PATCH] ppc: ioremap() on PPC44x platforms now accepts 64bit addresses
-> 
-> On systems that supply a real 64bit address (with
-> CONFIG_RESOURCES_64BIT enabled), don't use the fixup function. This
-> allows us to use the fixup function when no ERPN is specified and use
-> the 64 bit address when the ERPN is supplied.
+On 1/19/07, Yoder Stuart-B08248 <stuart.yoder@freescale.com> wrote:
+>
+> Back in Grant's original summary of the problem he wrote:
+> >
+> > 5. The contentious issue is which direction those links should be
+> > constructed.  Does the device node describe where to find it's SoC
+> > parent node and what the device index is?  Or does the SoC node
+> > describe which device nodes it provides shared register service for?
+>
+> How about linking in _both_ directions?
 
-Good idea.
+I think that's a bad precedence.  Either representation can be
+generated from the other.  Linking it in both directions means
+duplicate information with no real benefit.
 
+g.
 
-
->  void __iomem *
->  ioremap(phys_addr_t addr, unsigned long size)
->  {
-> -	phys_addr_t addr64 = fixup_bigphys_addr(addr, size);
-> -
-> -	return ioremap64(addr64, size);
-> +	/*
-> +	 * On systems that supply a real 64bit address
-> +	 * (with CONFIG_RESOURCES_64BIT enabled), don't use the
-> +	 * fixup function.
-> +	 * This allows us to use the fixup function when no ERPN
-> +	 * is specified and use the 64 bit address when the ERPN
-> +	 * is suppied.
-> +	 */
-> +	if ((unsigned long long)addr && 0xffffffff00000000ULL)
-> +		return ioremap64(addr, size);
-
-Erm... don't you want:
-
-addr & 0xffffffff00000000ULL
-
-What you have now is a logical and that will likely result in it always
-being true...
-
-josh
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
