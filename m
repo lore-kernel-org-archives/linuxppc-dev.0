@@ -1,34 +1,15 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 54EB9DDE47
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jan 2007 12:20:51 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate5.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l0JLto7S120636
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 21:55:50 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l0JLrouo1872124
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 21:53:50 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l0JLrnBD003789
-	for <linuxppc-dev@ozlabs.org>; Fri, 19 Jan 2007 21:53:50 GMT
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, openfabrics-ewg@openib.org,
-	openib-general@openib.org
-Subject: [PATCH 2.6.20 1/2] ehca: ehca_cq.c: fix unproper use of yield within
-	spinlock context
-Date: Fri, 19 Jan 2007 22:50:10 +0100
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 20 Jan 2007 14:22:54 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: EDAC platform devices for fsl_soc
+Message-ID: <20070120032254.GA7727@localhost.localdomain>
+References: <8746466a0701161246wbe4268esab51bc07a7efb2a3@mail.gmail.com>
+	<F5C9484B-93D7-4B08-813A-8B14D3F0F878@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200701192250.10765.hnguyen@linux.vnet.ibm.com>
-Cc: raisch@de.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <F5C9484B-93D7-4B08-813A-8B14D3F0F878@kernel.crashing.org>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,35 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello Roland!
-This is a patch for ehca_cq.c that fixes unproper use of yield within
-spinlock context.
-Thanks
-Nam
 
+On Tue, Jan 16, 2007 at 03:17:20PM -0600, Kumar Gala wrote:
+> 
+> On Jan 16, 2007, at 2:46 PM, Dave wrote:
+> 
+> > I'm trying to write an EDAC driver for the mpc8560 board. I will need
+> > to access the DDR error management registers, the L2 error management
+> > registers, the PCI management registers, and also the related IRQs
+> > (internal 0, 2, and 8). So I would like to insert some entries into
+> > the 8560 fdt in order to parse them and map the hw irq to virq in
+> > order to setup the platform device resources.
+> >
+> > Below is what I was thinking the fdt should look like. Is that  
+> > reasonable?
+> 
+> I dont see the reason to introduce nodes that are specific to EDAC.   
+> You should add nodes for the full device (which includes the error  
+> mgmt).  In the case of PCI the node should be there and fixing the  
+> dts to report the proper irq is all that is needed.
+> 
+> >
+> >     soc8560@e0000000 {
+> >        #address-cells = <1>;
+> >        #size-cells = <1>;
+> >        #interrupt-cells = <2>;
+> >        device_type = "soc";
+> >        ranges = <0 e0000000 00100000>;
+> >        reg = <e0000000 00000200>;
+> >        bus-frequency = <13ab6680>;
+> >
+> >        dram_control@2000 {
+> >            device_type = "edac";
+> >            compatible = "85xx";
+> >            reg = <2000 e5c>;
+> 
+> expand to cover the full 4k allocated to ddr controller
+> 
+> >            linux,phandle = <2000>;
+> >            interrupt-parent = <40000>;
 
-Signed-off-by Hoang-Nam Nguyen <hnguyen@de.ibm.com>
----
+Probably best to have dtc assign the phandles, rather than doing them
+explicitly, too.  Less fragile if things move about.
 
-
- ehca_cq.c |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletion(-)
-
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_cq.c b/drivers/infiniband/hw/ehca/ehca_cq.c
-index 93995b6..6074c89 100644
---- a/drivers/infiniband/hw/ehca/ehca_cq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_cq.c
-@@ -344,8 +344,11 @@ int ehca_destroy_cq(struct ib_cq *cq)
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&ehca_cq_idr_lock, flags);
--	while (my_cq->nr_callbacks)
-+	while (my_cq->nr_callbacks) {
-+		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
- 		yield();
-+		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
-+	}
- 
- 	idr_remove(&ehca_cq_idr, my_cq->token);
- 	spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
