@@ -1,34 +1,14 @@
-Return-Path: <jens@de.ibm.com>
-Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4DA9FDDE04
-	for <linuxppc-dev@ozlabs.org>; Sun, 21 Jan 2007 08:10:48 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l0KLAhQI100856
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jan 2007 21:10:43 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l0KLAhv3606364
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jan 2007 21:10:43 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l0KLAhIZ031377
-	for <linuxppc-dev@ozlabs.org>; Sat, 20 Jan 2007 21:10:43 GMT
-From: Jens Osterkamp <jens@de.ibm.com>
+Return-Path: <boardbringup@hotmail.com>
+Received: from bay0-omc1-s5.bay0.hotmail.com (unknown [65.54.246.77])
+	by ozlabs.org (Postfix) with ESMTP id 35A1EDDE2B
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 03:50:52 +1100 (EST)
+Message-ID: <BAY112-F343E40D8DEF46C97D4C645C0AF0@phx.gbl>
+From: "Suresh Chandra Mannava" <boardbringup@hotmail.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/4] spidernet: add support for Celleb
-Date: Sat, 20 Jan 2007 22:10:36 +0100
-References: <200701171000.l0HA0jnD021501@toshiba.co.jp>
-	<1169081253.4965.35.camel@localhost.localdomain>
-In-Reply-To: <1169081253.4965.35.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701202210.36953.jens@de.ibm.com>
-Cc: netdev@vger.kernel.org
+Subject: please: linux-2.5-20 -rc2 16550 serial console problem
+Date: Sun, 21 Jan 2007 22:20:50 +0530
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,18 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi All,
+I am working on porting linux-2.6.20-rc2 (DENX) kernel to our board. It 
+consists of powerpc MPC7410, IBM CPC700 system controller and couple of AMD 
+79C972 network chips.
+I am using gcc version 4.0.0 (DENX ELDK 4.0 4.0.0) cross compiler for this 
+task.
+I followed IBM spruce which consists of CPC700. CPC700 serial port is 16550 
+compatible.
+I can see printk's  on serial console till "Freeing unused kernel memory", 
+this happens before starting of init.
+I enabled debug statements in 8250.c and found some messages "like 
+serial8250_interrupt(3)...end" and kernel freezes ( I attached serial 
+console messages). ttyS0 is using interrupt 3.
 
-> > This is a revised version of the patch set for spider_net driver
-> > that works on Toshiba Cell Refererence Set (aka Celleb).
-> >
-> > This patch set is based on netdev-2.6.git#upstream.
->
-> Jens, can you give that a go on our blades see if it doesn't break
-> anything ? We are all at LCA here so it's a bit hard to test !
+I assume it is not a tool chain or ramdisk image problem because I ported 
+linux-2.4 (DENX) with the same tool chain and ramdisk image.
+Serial console is working fine in linux-2.4.
 
-Nope, doesn't work for us...
+I request you to provide some pointers for the same.
 
-I have a patch based on Ishizaki's previous patch which I think will work
-on Celleb. Will post it here when I have adapted it to the new version.
+Thanks,
+Suresh
 
-Jens
+_________________________________________________________________
+Do women make better employees? Join the debate 
+http://msnspecials.in/debate/topicdetails.aspx?TID=64
