@@ -2,30 +2,30 @@ Return-Path: <osstklei@de.ibm.com>
 Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 800ACDDE38
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 22:53:27 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id E4EC1DDE39
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 22:54:03 +1100 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id l0MBrMWd110494
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 11:53:22 GMT
-Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
-	[9.149.165.212])
+	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id l0MBrpBj016852
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 11:53:52 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l0MBrLIl721008
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 12:53:21 +0100
-Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l0MBrLv5007697
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 12:53:21 +0100
+	ESMTP id l0MBrpiS2662448
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 12:53:51 +0100
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l0MBro0U020501
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 12:53:51 +0100
 From: Thomas Klein <osstklei@de.ibm.com>
-Subject: [PATCH 2.6.20-rc5 3/7] ehea: Modified initial autoneg state
-	determination
-Date: Mon, 22 Jan 2007 12:53:20 +0100
+Subject: [PATCH 2.6.20-rc5 4/7] ehea: New method to determine number of
+	available ports
+Date: Mon, 22 Jan 2007 12:53:50 +0100
 MIME-Version: 1.0
 To: Jeff Garzik <jeff@garzik.org>
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200701221253.20959.osstklei@de.ibm.com>
+Message-Id: <200701221253.50709.osstklei@de.ibm.com>
 Cc: Thomas Klein <tklein@de.ibm.com>, Stefan Roscher <roscher@de.ibm.com>,
 	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
@@ -40,35 +40,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Logical partitions are not allowed to (try to) set the autonegotiation status.
-This patch removes the respective function call from the port setup function.
+Count OFDT nodes to determine the number of available ports
+instead of using the possibly outdated value from the hypervisor
 
 Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 ---
 
 
- drivers/net/ehea/ehea_main.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/net/ehea/ehea_main.c |   15 ++++++++++++++-
+ 1 files changed, 14 insertions(+), 1 deletion(-)
 
 
 diff -Nurp -X dontdiff linux-2.6.20-rc5/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.20-rc5/drivers/net/ehea/ehea_main.c	2007-01-19 14:02:20.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-01-19 14:11:30.000000000 +0100
-@@ -642,6 +642,8 @@ int ehea_sense_port_attr(struct ehea_por
- 		break;
+--- linux-2.6.20-rc5/drivers/net/ehea/ehea_main.c	2007-01-19 14:12:31.000000000 +0100
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-01-19 14:15:53.000000000 +0100
+@@ -2269,6 +2269,8 @@ static void ehea_tx_watchdog(struct net_
+ int ehea_sense_adapter_attr(struct ehea_adapter *adapter)
+ {
+ 	struct hcp_query_ehea *cb;
++	struct device_node *lhea_dn = NULL;
++	struct device_node *eth_dn = NULL;
+ 	u64 hret;
+ 	int ret;
+ 
+@@ -2285,7 +2287,18 @@ int ehea_sense_adapter_attr(struct ehea_
+ 		goto out_herr;
  	}
  
-+	port->autoneg = 1;
+-	adapter->num_ports = cb->num_ports;
++	/* Determine the number of available logical ports
++	 * by counting the child nodes of the lhea OFDT entry
++	 */
++	adapter->num_ports = 0;
++	lhea_dn = of_find_node_by_name(lhea_dn, "lhea");
++	do {
++		eth_dn = of_get_next_child(lhea_dn, eth_dn);
++		if (eth_dn)
++			adapter->num_ports++;
++	} while ( eth_dn );
++	of_node_put(lhea_dn);
 +
- 	/* Number of default QPs */
- 	port->num_def_qps = cb0->num_default_qps;
+ 	adapter->max_mc_mac = cb->max_mc_mac - 1;
+ 	ret = 0;
  
-@@ -2334,8 +2336,6 @@ static int ehea_setup_single_port(struct
- 
- 	INIT_LIST_HEAD(&port->mc_list->list);
- 
--	ehea_set_portspeed(port, EHEA_SPEED_AUTONEG);
--
- 	ret = ehea_sense_port_attr(port);
- 	if (ret)
- 		goto out;
