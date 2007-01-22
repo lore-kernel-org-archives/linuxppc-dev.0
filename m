@@ -1,23 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 60ADDDDEC7
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jan 2007 08:13:15 +1100 (EST)
-Subject: Re: [PATCH 1/5] [POWERPC] cpm2: CPM2 interrupt controller fix
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-In-Reply-To: <20070122235533.6f9f8d09@localhost.localdomain>
-References: <20070113004150.1224.58427.stgit@localhost.localdomain>
-	<17844.35471.554647.189851@cargo.ozlabs.ibm.com>
-	<20070122164316.79569af9@localhost.localdomain>
-	<1169495737.1582.7.camel@localhost.localdomain>
-	<20070122235533.6f9f8d09@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 23 Jan 2007 08:13:08 +1100
-Message-Id: <1169500388.1582.14.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-2.cisco.com (sj-iport-2-in.cisco.com [171.71.176.71])
+	by ozlabs.org (Postfix) with ESMTP id 4ADD6DDEC4
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jan 2007 08:14:11 +1100 (EST)
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2.6.20 2/2] ehca: ehca_irq.c: fix mismatched spin_unlock
+	in irq handler
+References: <200701192251.01888.hnguyen@linux.vnet.ibm.com>
+	<200701201620.16097.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 22 Jan 2007 13:14:06 -0800
+In-Reply-To: <200701201620.16097.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
+	Nguyen's message of "Sat, 20 Jan 2007 16:20:15 +0100")
+Message-ID: <adaps96n4rl.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, raisch@de.ibm.com, linux-kernel@vger.kernel.org,
+	openib-general@openib.org, openfabrics-ewg@openib.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,15 +25,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Thanks, queued for 2.6.20 (although I left the line a little longer).
 
-> Compilation fails on locating various CPM-related defines, that used to be in ppc/io.h. So, not to mangle new io.h I've added 
-> mpc8260.h to have them defined there. This is not that beautiful, but stuff that is claimed to be supported should work
-> and at least not bail out the compiler :).
-> 
-> I have appropriate fix in the queue, that gets rid of global IMMAP pointer yet keeping ppc happy,
-> but the patch is to significant to get into the current kernel.
+I think the right thing to do is restructure this function so you
+don't have lines starting 6 tab stops to the right.
 
-What about an fsl_cpm.h instead if that CPM exists on more than just
-8260 ? (If not, that's ok then)
-
-Ben
+ - R.
