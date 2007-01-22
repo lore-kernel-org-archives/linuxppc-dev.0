@@ -1,35 +1,19 @@
-Return-Path: <osstklei@de.ibm.com>
-Received: from mtagate4.de.ibm.com (mtagate4.de.ibm.com [195.212.29.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate4.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 22328DDE4A
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 22:58:06 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate4.de.ibm.com (8.13.8/8.13.8) with ESMTP id l0MBvwbU157244
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 11:58:00 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l0MBtPQn2379986
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 12:55:25 +0100
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l0MBtMS4003670
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 12:55:24 +0100
-From: Thomas Klein <osstklei@de.ibm.com>
-Subject: [PATCH 2.6.20-rc5 7/7] ehea: Fixed possible nullpointer access
-Date: Mon, 22 Jan 2007 12:55:20 +0100
-MIME-Version: 1.0
-To: Jeff Garzik <jeff@garzik.org>
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200701221255.20768.osstklei@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Stefan Roscher <roscher@de.ibm.com>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>, linux-ppc <linuxppc-dev@ozlabs.org>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <ossrosch@de.ibm.com>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A2F17DDE31
+	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jan 2007 01:05:26 +1100 (EST)
+Date: Mon, 22 Jan 2007 16:43:16 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/5] [POWERPC] cpm2: CPM2 interrupt controller fix
+Message-ID: <20070122164316.79569af9@localhost.localdomain>
+In-Reply-To: <17844.35471.554647.189851@cargo.ozlabs.ibm.com>
+References: <20070113004150.1224.58427.stgit@localhost.localdomain>
+	<17844.35471.554647.189851@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary="Sig_edSiHX8P=JF3+RwdHD1.MzJ";
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,28 +23,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fixed possible nullpointer access in event queue processing
+--Sig_edSiHX8P=JF3+RwdHD1.MzJ
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
----
+On Mon, 22 Jan 2007 20:57:35 +1100
+Paul Mackerras wrote:
 
+> Vitaly Bordug writes:
+>=20
+> > This contains important fixes for the CPM2 PIC code. Eliminated
+> > CPM_IRQ_OFFSET, pulling the respective interrupt numbers from the
+> > interrupt mapping. Updated devicetree files to reflect that.
+> > Changed direct IC-related IO accesses to the IO accessors. Fixed
+> > all the sense values to keep coherency with ipic. In the current
+> > code, CPM2 stuff will have no IRQs and hence could be hardly usable.
+>=20
+> You seem to be adding significant stuff; include/asm-powerpc/mpc8260.h
+> is new, and there is this hunk in your patch 4/5:
+As I said, new io.h in powerpc broke compilation for both 8272 and 8560 tha=
+t were committted.
 
- drivers/net/ehea/ehea_main.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+>=20
+> > diff --git a/arch/powerpc/platforms/Makefile
+> > b/arch/powerpc/platforms/Makefile index 507d1b9..f750212 100644
+> > --- a/arch/powerpc/platforms/Makefile
+> > +++ b/arch/powerpc/platforms/Makefile
+> > @@ -8,6 +8,7 @@ endif
+> >  obj-$(CONFIG_PPC_MPC52xx)	+=3D 52xx/
+> >  obj-$(CONFIG_PPC_CHRP)		+=3D chrp/
+> >  obj-$(CONFIG_4xx)		+=3D 4xx/
+> > +obj-$(CONFIG_PPC_82xx)		+=3D 82xx/
+yes, as it was missed from the original primer 82xx commit. All the stuff i=
+s already there so this is nothing
+but a fix for (a silly) miss.=20
 
+>=20
+> Also, this stuff seems to be used on 85xx, and I have not heard from
+> Kumar or anyone else working on 85xx as to how these changes are going
+> to affect 85xx.  So I'm sorry, but I'm not pushing these changes in
+> for 2.6.20.
+>=20
+Hmm? I did the IRQ senses generalisation as per Kumar's request - this in f=
+act is resubmit of the same.
 
-diff -Nurp -X dontdiff linux-2.6.20-rc5/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.20-rc5/drivers/net/ehea/ehea_main.c	2007-01-19 14:33:04.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-01-19 14:36:05.000000000 +0100
-@@ -575,8 +575,9 @@ static struct ehea_port *ehea_get_port(s
- 	int i;
- 
- 	for (i = 0; i < adapter->num_ports; i++)
--		if (adapter->port[i]->logical_port_id == logical_port)
--			return adapter->port[i];
-+		if (adapter->port[i])
-+	                if (adapter->port[i]->logical_port_id == logical_port)
-+				return adapter->port[i];
- 	return NULL;
- }
- 
+> Also, with the changes like this one:
+>=20
+> > -	irq_nr -=3D CPM_IRQ_OFFSET;
+> > +	unsigned int irq_nr =3D (unsigned int)irq_map[irq].hwirq;
+>=20
+> you should probably use the virq_to_hw() function defined in
+> include/asm-powerpc/irq.h, and you should definitely lose the
+> unnecessary (unsigned int) cast.
+>=20
+OK, I'll try to use virq...() stuff instead.
+
+> > +#ifndef _ISA_MEM_BASE
+> > +#define _ISA_MEM_BASE   0
+> > +#endif
+> > +
+> > +#ifndef PCI_DRAM_OFFSET
+> > +#define PCI_DRAM_OFFSET 0
+> > +#endif
+>=20
+> Why do we need to have these things defined in mpc8260.h?  Shouldn't
+> we get the correct definition from io.h?
+>=20
+Will check and clean if it is not required.
+
+Thanks,=20
+-Vitaly
+
+--Sig_edSiHX8P=JF3+RwdHD1.MzJ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFFtL91uOg9JvQhSEsRAnxSAJ9oCyctXJ6TebsIQtniqX2eESBiXgCeK8MD
+Trr0QaSUx/o8USCPZ2bu5zM=
+=tNRL
+-----END PGP SIGNATURE-----
+
+--Sig_edSiHX8P=JF3+RwdHD1.MzJ--
