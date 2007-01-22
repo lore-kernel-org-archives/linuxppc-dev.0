@@ -1,30 +1,30 @@
 Return-Path: <osstklei@de.ibm.com>
-Received: from mtagate1.uk.ibm.com (mtagate1.uk.ibm.com [195.212.29.134])
+Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate1.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 50538DDE36
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 22:52:27 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate1.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l0MBqMh8082670
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 11:52:22 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l0MBqLPa1532030
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 11:52:22 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l0MBqLNQ015148
-	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 11:52:21 GMT
+	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 01C13DDE37
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 22:53:02 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate2.de.ibm.com (8.13.8/8.13.8) with ESMTP id l0MBqptM119804
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 11:52:52 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
+	ESMTP id l0MBqpws2867304
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 12:52:51 +0100
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l0MBqorS018669
+	for <linuxppc-dev@ozlabs.org>; Mon, 22 Jan 2007 12:52:51 +0100
 From: Thomas Klein <osstklei@de.ibm.com>
-Subject: [PATCH 2.6.20-rc5 1/7] ehea: Fixed wrong dereferencation
-Date: Mon, 22 Jan 2007 12:52:20 +0100
+Subject: [PATCH 2.6.20-rc5 2/7] ehea: Fixing firmware queue config issue
+Date: Mon, 22 Jan 2007 12:52:50 +0100
 MIME-Version: 1.0
 To: Jeff Garzik <jeff@garzik.org>
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200701221252.20814.osstklei@de.ibm.com>
+Message-Id: <200701221252.50724.osstklei@de.ibm.com>
 Cc: Thomas Klein <tklein@de.ibm.com>, Stefan Roscher <roscher@de.ibm.com>,
 	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
 	linux-kernel <linux-kernel@vger.kernel.org>,
@@ -39,48 +39,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Not only check the pointer against 0 but also the dereferenced value
+Fix to use exactly one queue for incoming packets in all
+firmware configurations
 
 Signed-off-by: Thomas Klein <tklein@de.ibm.com>
 ---
 
 
- drivers/net/ehea/ehea.h      |    2 +-
- drivers/net/ehea/ehea_main.c |    6 ++++--
- 2 files changed, 5 insertions(+), 3 deletions(-)
+ drivers/net/ehea/ehea_main.c |    2 +-
+ 1 files changed, 1 insertion(+), 1 deletion(-)
 
 
-diff -Nurp -X dontdiff linux-2.6.20-rc5/drivers/net/ehea/ehea.h patched_kernel/drivers/net/ehea/ehea.h
---- linux-2.6.20-rc5/drivers/net/ehea/ehea.h	2007-01-12 19:54:26.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea.h	2007-01-19 13:56:41.000000000 +0100
-@@ -39,7 +39,7 @@
- #include <asm/io.h>
- 
- #define DRV_NAME	"ehea"
--#define DRV_VERSION	"EHEA_0043"
-+#define DRV_VERSION	"EHEA_0044"
- 
- #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
- 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
 diff -Nurp -X dontdiff linux-2.6.20-rc5/drivers/net/ehea/ehea_main.c patched_kernel/drivers/net/ehea/ehea_main.c
---- linux-2.6.20-rc5/drivers/net/ehea/ehea_main.c	2007-01-12 19:54:26.000000000 +0100
-+++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-01-19 13:58:01.000000000 +0100
-@@ -2471,14 +2471,16 @@ static int __devinit ehea_probe(struct i
+--- linux-2.6.20-rc5/drivers/net/ehea/ehea_main.c	2007-01-19 13:59:07.000000000 +0100
++++ patched_kernel/drivers/net/ehea/ehea_main.c	2007-01-19 14:01:38.000000000 +0100
+@@ -998,7 +998,7 @@ static int ehea_configure_port(struct eh
+ 		     | EHEA_BMASK_SET(PXLY_RC_JUMBO_FRAME, 1);
  
- 	adapter_handle = (u64*)get_property(dev->ofdev.node, "ibm,hea-handle",
- 					    NULL);
--	if (!adapter_handle) {
-+	if (adapter_handle)
-+		adapter->handle = *adapter_handle;
-+
-+	if (!adapter->handle) {
- 		dev_err(&dev->ofdev.dev, "failed getting handle for adapter"
- 			" '%s'\n", dev->ofdev.node->full_name);
- 		ret = -ENODEV;
- 		goto out_free_ad;
- 	}
+ 	for (i = 0; i < port->num_def_qps; i++)
+-		cb0->default_qpn_arr[i] = port->port_res[i].qp->init_attr.qp_nr;
++		cb0->default_qpn_arr[i] = port->port_res[0].qp->init_attr.qp_nr;
  
--	adapter->handle = *adapter_handle;
- 	adapter->pd = EHEA_PD_ID;
- 
- 	dev->ofdev.dev.driver_data = adapter;
+ 	if (netif_msg_ifup(port))
+ 		ehea_dump(cb0, sizeof(*cb0), "ehea_configure_port");
