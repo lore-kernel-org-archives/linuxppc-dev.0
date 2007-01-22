@@ -1,21 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <muditg@alcatel-lucent.com>
+Received: from ihemail1.lucent.com (ihemail1.lucent.com [135.245.0.33])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2AB28DDE0D
+	(Client CN "ihemail1.lucent.com",
+	Issuer "Lucent Technologies Certificate Services 1" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C1AB3DDE33
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Jan 2007 09:20:08 +1100 (EST)
-In-Reply-To: <20070122181027.89187533.benjamin.zores@alcatel-lucent.fr>
-References: <20070122181027.89187533.benjamin.zores@alcatel-lucent.fr>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3B008FD0-DF55-492B-A60A-EF0F9F8F75AB@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [MPC8349ITX] USB Init with PPC arch
-Date: Mon, 22 Jan 2007 16:19:06 -0600
-To: Benjamin Zores <benjamin.zores@alcatel-lucent.fr>
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 22 Jan 2007 17:27:27 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C73DEB.218EB71E"
+Subject: RE: want list of patch file for kernel 2.4.18 
+Date: Mon, 22 Jan 2007 11:34:08 +0530
+Message-ID: <D20D0F13EFB0DB408A7E6C10C316ACA0310721@INEXC1U01.in.lucent.com>
+In-Reply-To: <509460.3484.qm@web30002.mail.mud.yahoo.com>
+From: "Goel, Mudit \(Mudit\)" <muditg@alcatel-lucent.com>
+To: "patel nirav" <indianirav@yahoo.com>,
+	"linux ppc" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,80 +26,91 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Jan 22, 2007, at 11:10 AM, Benjamin Zores wrote:
+This is a multi-part message in MIME format.
 
->
-> Hi,
->
-> This question is mainly intended to Freescale's MPC8349ITX board  
-> maintainer
-> but the issue/resolution is probably the same for other boards.
->
-> I'm trying to boot the MPC8349ITX card with Linux 2.6.19 using old PPC
-> architecture (and not the new PowerPC one).
-> I've ported patches from Freescale's BSP from 2.6.13 to 2.6.19 and
-> it works pretty well but USB doesn't init properly.
->
-> Switching to PowerPC arch of course works fine and USB is well inited
-> but due to other feature i use that only exist on PPC right now, I  
-> can't
-> make use of it.
+------_=_NextPart_001_01C73DEB.218EB71E
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-What are these features?
+which ppc are u targeting ?=20
 
-> So I've added the attached patched to my PPC kernel in order to  
-> initialize
-> the USB controller the same way it is done in DTS file for PowerPC  
-> arch.
-> The goal is of course to use the regular EHCI-FSL driver.
->
-> I've noticed that PowerPC arch starts by initing the DR controller  
-> than MPH one.
-> On PPC it's the opposite way. Although I have to not initialize the  
-> DR one, which
-> seems to completely hang the card at USB controller probe.
->
-> Initializing the MPH controller seems to work fine but then
-> USB stack has a lot of errors which seem to come from bad EHCI-FSL  
-> init.
-> (see below)
->
-> fsl-ehci fsl-ehci.1: No platform data for fsl-ehci.1.
-> fsl-ehci fsl-ehci.2: Freescale On-Chip EHCI Host Controller
-> fsl-ehci fsl-ehci.2: new USB bus registered, assigned bus number 1
-> fsl-ehci fsl-ehci.2: irq 39, io base 0xe0022000
-> fsl-ehci fsl-ehci.2: USB 2.0 started, EHCI 1.00, driver 10 Dec 2004
-> usb usb1: Product: Freescale On-Chip EHCI Host Controller
-> usb usb1: Manufacturer: Linux 2.6.19.2-fsl ehci_hcd
-> usb usb1: SerialNumber: fsl-ehci.2
-> usb usb1: configuration #1 chosen from 1 choice
-> hub 1-0:1.0: USB hub found
-> hub 1-0:1.0: 2 ports detected
-> USB Universal Host Controller Interface driver v3.0
-> Initializing USB Mass Storage driver...
-> usb 1-1: new high speed USB device using fsl-ehci and address 2
-> usb 1-1: device descriptor read/64, error -32
-> usb 1-1: device descriptor read/64, error -32
-> usb 1-1: new high speed USB device using fsl-ehci and address 3
-> usb 1-1: device descriptor read/64, error -32
-> usb 1-1: device descriptor read/64, error -32
-> usb 1-1: new high speed USB device using fsl-ehci and address 4
-> usb 1-1: device not accepting address 4, error -32
-> usb 1-1: new high speed USB device using fsl-ehci and address 5
-> usb 1-1: device not accepting address 5, error -32
-> usbcore: registered new interface driver usb-storage
-> USB Mass Storage support registered.
->
-> Of course, the USB controller isn't working afterwards
-> and no USB device can be used.
->
-> Does anyone has an idea where the problem might come from and how  
-> to solve it
-> (once again, switching to PowerPC arch is ok but i don't want to).
 
-If you are forward porting the Freescale patches and not using the in  
-kernel driver that would explain the issue.  There are bugs in the  
-Freescale driver that have been fixed in the driver that is in the  
-kernel.
+________________________________
 
-- kumar
+	From: linuxppc-embedded-bounces+muditg=3Dlucent.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+muditg=3Dlucent.com@ozlabs.org] On
+Behalf Of patel nirav
+	Sent: Saturday, January 20, 2007 10:27 PM
+	To: linux ppc
+	Subject: want list of patch file for kernel 2.4.18=20
+=09
+=09
+	hello all.
+	I want to cross compile the linux kernel 2.4.18 for power PC
+(Cross tool  is available with me)
+	which are the patch files required for patching.
+	any help will be appriciated.
+	thanks
+	regards
+=09
+=09
+=09
+	Nirav J Patel
+	M.Tech(CSE),
+	Nirma University,
+	Ahmedabad-382481.
+	9925138959=20
+
+=09
+________________________________
+
+	Everyone is raving about the all-new Yahoo! Mail beta.
+<http://us.rd.yahoo.com/evt=3D42297/*http://advision.webevents.yahoo.com/=
+m
+ailbeta>=20
+
+
+------_=_NextPart_001_01C73DEB.218EB71E
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3020" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D363330306-22012007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>which ppc are u targeting ? =
+</FONT></SPAN></DIV><BR>
+<BLOCKQUOTE style=3D"MARGIN-RIGHT: 0px">
+  <DIV class=3DOutlookMessageHeader lang=3Den-us dir=3Dltr align=3Dleft>
+  <HR tabIndex=3D-1>
+  <FONT face=3DTahoma size=3D2><B>From:</B>=20
+  linuxppc-embedded-bounces+muditg=3Dlucent.com@ozlabs.org=20
+  [mailto:linuxppc-embedded-bounces+muditg=3Dlucent.com@ozlabs.org] =
+<B>On Behalf=20
+  Of </B>patel nirav<BR><B>Sent:</B> Saturday, January 20, 2007 10:27=20
+  PM<BR><B>To:</B> linux ppc<BR><B>Subject:</B> want list of patch file =
+for=20
+  kernel 2.4.18 <BR></FONT><BR></DIV>
+  <DIV></DIV>hello all.<BR>I want to cross compile the linux kernel =
+2.4.18 for=20
+  power PC (Cross tool&nbsp; is available with me)<BR>which are the =
+patch files=20
+  required for patching.<BR>any help will be=20
+  appriciated.<BR>thanks<BR>regards<BR><BR><BR><BR>Nirav J=20
+  Patel<BR>M.Tech(CSE),<BR>Nirma =
+University,<BR>Ahmedabad-382481.<BR>9925138959
+  <P>
+  <HR SIZE=3D1>
+  Everyone is raving about <A=20
+  =
+href=3D"http://us.rd.yahoo.com/evt=3D42297/*http://advision.webevents.yah=
+oo.com/mailbeta">the=20
+  all-new Yahoo! Mail beta.</A></BLOCKQUOTE></BODY></HTML>
+
+------_=_NextPart_001_01C73DEB.218EB71E--
