@@ -1,16 +1,18 @@
-Return-Path: <reynekejunk@hotmail.com>
-Received: from bay0-omc3-s32.bay0.hotmail.com (bay0-omc3-s32.bay0.hotmail.com
-	[65.54.246.232]) by ozlabs.org (Postfix) with ESMTP id 5922CDDDE5
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 166FDDDDE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Jan 2007 08:30:00 +1100 (EST)
-Message-ID: <BAY7-F10867A8D2E772EBEFA6A8CBEAF0@phx.gbl>
-In-Reply-To: <Pine.WNT.4.61.0701191344190.2536@holyoke.labs.mot.com>
-From: "- Reyneke" <reynekejunk@hotmail.com>
-To: ctz001@email.mot.com
-Subject: Re: Howto use PPC4xx memory to memory DMA
-Date: Sun, 21 Jan 2007 21:28:34 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
+	Mon, 22 Jan 2007 14:12:38 +1100 (EST)
+In-Reply-To: <000001c73c40$0cbaf120$6405a8c0@absolut>
+To: "Russell McGuire" <rmcguire@uwbt.com>
+Subject: Re: Who's the maintainer for the freescale MPC8349ITX board?
+MIME-Version: 1.0
+Message-ID: <OF26054860.9E484967-ON8825726B.00111F6F-8825726B.00119DA9@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Sun, 21 Jan 2007 19:12:33 -0800
+Content-Type: text/plain; charset="US-ASCII"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,33 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Yes, I know - that email is in response to a question I posted.  :)
+"Russell McGuire" <rmcguire@uwbt.com> wrote on 01/19/2007 07:06:56 PM:
 
-This seems to be one of those ongoing uncertainties. It seems commonly 
-advocated that you shouldn't use it, but as yet I've found no suitable 
-alternative.
+> Bruce,
+> 
+> Did you ever get linux to boot up?
+> 
+> I am wondering if I am having similar problems on my system, though it 
+is
+> based on the MPC8360E. Serial port code and clocking is the same between
+> these systems, at least it should be.
+> 
+> 
+Russ (and anyone else who may be watching this thread),
 
-Some more reading on why you *should* use it:
+I did finally get the 2.6.19 kernel to boot using u-boot 1.2.0/open 
+firmware device tree, but I had to do some hacking on a *.dts file that 
+Timur sent me.  There may also be issues with assumptions that u-boot 
+makes versus the assumptions the kernel makes versus assumptions that DTC 
+make.  But, I haven't had a chance to work this issue for the last few 
+days and before I put out a final word I want to have all my ducks in a 
+row.  I'm going to get back to this on Monday, so stand by for more 
+tomorrow evening.
 
-http://ozlabs.org/pipermail/linuxppc64-dev/2004-March/001276.html
-
-It would be nice if we could get a definitive answer to this. Anyone out 
-there who knows?
-
-Cheers
-   Jan Reyneke
-
-
->From: T Ziomek <ctz001@email.mot.com>
->>
->>source = virt_to_bus((u32 *)mem);
->
->The above contradicts an email by Ben H back on 22 Dec:
-><http://ozlabs.org/pipermail/linuxppc-embedded/2006-December/025546.html>
->But I don't know enough to resolve the conflict...
->
->Tom
-
-_________________________________________________________________
-Get Hotmail, News, Sport and Entertainment from MSN on your mobile.  
-http://www.msn.txt4content.com/
+Bruce
