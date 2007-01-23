@@ -1,20 +1,18 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19e.g19.rapidsite.net (mail19e.g19.rapidsite.net
-	[204.202.242.20]) by ozlabs.org (Postfix) with SMTP id F38A5DDECB
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 5183EDDED8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Jan 2007 23:49:41 +1100 (EST)
-Received: from mx86.stngva01.us.mxservers.net (198.173.112.3)
-	by mail19e.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
-	3-0156926578 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Jan 2007 07:49:38 -0500 (EST)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: MPC8360E Linux and 2.6.19.2
-Date: Tue, 23 Jan 2007 04:49:25 -0800
-Message-ID: <000301c73eec$ea489de0$6405a8c0@absolut>
+	Tue, 23 Jan 2007 23:50:49 +1100 (EST)
+Message-ID: <45B603C1.2070601@ru.mvista.com>
+Date: Tue, 23 Jan 2007 15:46:57 +0300
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0004_01C73EA9.DC255DE0"
+To: christophe.alayrac@cresitt.com
+Subject: Re: ML403, 2.6.17.1 kernel panic
+References: <1169556195.16144.3.camel@localhost.localdomain>
+In-Reply-To: <1169556195.16144.3.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,198 +23,122 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi Chris,
 
-------=_NextPart_000_0004_01C73EA9.DC255DE0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+ From you log it seems like the kernel tries to initialize the TEMAC's FIFO but fails.
+Do you have TEMAC configured in FIFO mode in your design?
 
-All,
+Thanks,
+Andrei
 
- 
-
-Trying to boot up / debug my board with a Rev 1.2 MPC8360E. 
-
-After the kernel launches from U-boot I receive no serial debug, and the
-system hangs.
-
- 
-
-I am running U-boot 1.1.6. Dirty <which does contains support for the 8360>,
-
-
- 
-
-I have walked through the DTS/blob file, after U-boot modifies it, <I turned
-on all the debug info>, and can clearly see that the /chosen node, etc.. is
-getting entered. My original DTS file already has all of the clock speeds
-entered <modeled after the MPC8360xx.dts file that was already in the
-DENX-2.6.19.2 kernel release>.
-
- 
-
-I have limited debug ability via some GPIO leds on our board, I can see that
-the kernel starts to run and at least gets to the point where it clears all
-the BATs <powerpc/boot/head_32.S and setup_32.c>, at which point I lose
-access to the IO space and can no longer write out to the debug lights.
-Unfortunately I do not have access to a COP debugger at this point. It
-doesn't seem to get to the platform files, or at least I can get the GPIO
-access inside the IMMR space to work correctly.
-
- 
-
-Does anyone have any suggestion per software only debug method that might be
-enabled? Or a way to temporarily hack the early serial output so I can see
-what is going on?
-
--Russ
-
- 
-
-
-------=_NextPart_000_0004_01C73EA9.DC255DE0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p
-	{mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>All,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Trying to boot up / debug my board with a Rev 1.2 =
-MPC8360E. <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>After the kernel launches from U-boot I receive no =
-serial
-debug, and the system hangs.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I am running U-boot 1.1.6. Dirty &lt;which does =
-contains
-support for the 8360&gt;, <o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I have walked through the DTS/blob file, after U-boot
-modifies it, &lt;I turned on all the debug info&gt;, and can clearly see =
-that
-the /chosen node, etc.. is getting entered. My original DTS file already =
-has
-all of the clock speeds entered &lt;modeled after the MPC8360xx.dts file =
-that
-was already in the DENX-2.6.19.2 kernel =
-release&gt;.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I have limited debug ability via some GPIO leds on =
-our
-board, I can see that the kernel starts to run and at least gets to the =
-point
-where it clears all the BATs &lt;powerpc/boot/head_32.S and =
-setup_32.c&gt;, at
-which point I lose access to the IO space and can no longer write out to =
-the
-debug lights. Unfortunately I do not have access to a COP debugger at =
-this
-point. It doesn&#8217;t seem to get to the platform files, or at least I =
-can
-get the GPIO access inside the IMMR space to work =
-correctly.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Does anyone have any suggestion per software only =
-debug
-method that might be enabled? Or a way to temporarily hack the early =
-serial output
-so I can see what is going on?<o:p></o:p></span></font></p>
-
-<p><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;font-family:Arial'>-Russ</span></font><o:p></o:=
-p></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0004_01C73EA9.DC255DE0--
+alayrac christophe wrote:
+> Hi all,
+> 
+> I did not succeed to start kernel 2.6.17.1 on ML403 platform.
+> 
+> Any help would be appreciated.
+> 
+> Please foind log message here after
+> 
+> <--------------------------------------------->
+> loaded at:     00400000 0051313C
+> board data at: 00511124 0051113C
+> relocated to:  004050F0 00405108
+> zimage at:     00405805 00510151
+> avail ram:     00514000 10000000
+> 
+> Linux/PPC load: console=ttyS0,9600 ip=off root=/dev/xsa2 rw
+> Uncompressing Linux...done.
+> Now booting the kernel
+> [    0.000000] Linux version 2.6.17.1 (alayrac@debian-ca) (gcc version
+> 3.4.4) #6 Tue Jan 23 13:02:07 CET 2007
+> [    0.000000] Xilinx ML403 Reference System (Virtex-4 FX)
+> [    0.000000] Built 1 zonelists
+> [    0.000000] Kernel command line: console=ttyS0,9600 ip=off
+> root=/dev/xsa2 rw
+> [    0.000000] Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFE000
+> [    0.000000] PID hash table entries: 2048 (order: 11, 8192 bytes)
+> [    0.000447] Console: colour dummy device 80x25
+> [    0.004755] Dentry cache hash table entries: 32768 (order: 5, 131072
+> bytes)
+> [    0.012362] Inode-cache hash table entries: 16384 (order: 4, 65536
+> bytes)
+> [    0.150082] Memory: 257408k available (1720k kernel code, 604k data,
+> 92k init, 0k highmem)
+> [    0.233054] Mount-cache hash table entries: 512
+> [    0.248273] NET: Registered protocol family 16
+> [    0.269541] NET: Registered protocol family 2
+> [    0.309165] IP route cache hash table entries: 2048 (order: 1, 8192
+> bytes)
+> [    0.311470] TCP established hash table entries: 8192 (order: 3, 32768
+> bytes)
+> [    0.313095] TCP bind hash table entries: 4096 (order: 2, 16384 bytes)
+> [    0.313868] TCP: Hash tables configured (established 8192 bind 4096)
+> [    0.313969] TCP reno registered
+> [    0.340676] NTFS driver 2.1.27 [Flags: R/O].
+> [    0.341618] io scheduler noop registered
+> [    0.341905] io scheduler anticipatory registered (default)
+> [    0.342144] io scheduler deadline registered
+> [    0.342556] io scheduler cfq registered
+> [    0.445374] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ
+> sharing disabled
+> [    0.456887] serial8250.0: ttyS0 at MMIO 0x40401003 (irq = 3) is a
+> 16550A
+> [    2.198859] RAMDISK driver initialized: 16 RAM disks of 8192K size
+> 1024 blocksize
+> [    2.302352] loop: loaded (max 8 devices)
+> [    2.352351] nbd: registered device at major 43
+> [    2.441661]  xsa: xsa1 xsa2
+> [    2.494925] Data machine check in kernel mode.
+> [    2.548283] Oops: machine check, sig: 7 [#1]
+> [    2.599427] NIP: C013C8D8 LR: C012C5E8 CTR: 00000000
+> [    2.658911] REGS: c023cf50 TRAP: 0202   Not tainted  (2.6.17.1)
+> [    2.729919] MSR: 00029030 <EE,ME,IR,DR>  CR: 84000048  XER: 20000030
+> [    2.806810] TASK = c04a9b40[1] 'swapper' THREAD: c04b0000
+> [    2.869491] GPR00: 0000000A C04B1E10 C04A9B40 C01CD6A8 00000068
+> D1042200 C057942C C056A418 
+> [    2.970525] GPR08: C056A260 C0579304 D1042010 11111111 00000000
+> FFFFFFFF FFFFFFFF FFFFFFFF 
+> [    3.071561] GPR16: FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF FFFFFFFF
+> 00510FFC FFFFEFFF FFFFFFFF 
+> [    3.172597] GPR24: FFFFFFFF C01EF708 C05792D8 C01EF858 C01EF820
+> C01EF700 C0579260 C0240000 
+> [    3.275823] NIP [C013C8D8] XPacketFifoV200a_Initialize+0x60/0x7c
+> [    3.348007] LR [C012C5E8] XTemac_ConfigureFifoAccess+0x28/0x9c
+> [    3.418100] Call Trace:
+> [    3.447386] [C04B1E10] [C000ACE8] __ioremap+0xe8/0x14c (unreliable)
+> [    3.522798] [C04B1E20] [C012C5E8] XTemac_ConfigureFifoAccess
+> +0x28/0x9c
+> [    3.601334] [C04B1E30] [C012ACF0] Initialize+0x3c/0xd0
+> [    3.663101] [C04B1E40] [C012A35C] xtenet_probe+0x14c/0x608
+> [    3.729033] [C04B1EB0] [C011E964] driver_probe_device+0x90/0x108
+> [    3.801321] [C04B1ED0] [C011EB18] __driver_attach+0x88/0xf4
+> [    3.868296] [C04B1EF0] [C011DC68] bus_for_each_dev+0x54/0x94
+> [    3.936313] [C04B1F20] [C011EBA8] driver_attach+0x24/0x34
+> [    4.001204] [C04B1F30] [C011E274] bus_add_driver+0x74/0x148
+> [    4.068180] [C04B1F50] [C011F150] driver_register+0xa4/0xb8
+> [    4.135153] [C04B1F80] [C0233D58] xtenet_init+0x18/0x28
+> [    4.198066] [C04B1F90] [C0002454] init+0xa4/0x27c
+> [    4.254624] [C04B1FF0] [C000509C] kernel_thread+0x44/0x60
+> [    4.319606] Instruction dump:
+> [    4.355234] 40a20014 4bffff79 38000001 901fb758 48000024 38000000
+> 901fb758 91690004 
+> [    4.448871] 90a90008 91490000 3800000a 900a0000 <7c0006ac> 80010014
+> 38600000 83e1000c 
+> [    4.548246] Kernel panic - not syncing: Attempted to kill init!
+> [    4.619432]  <0>Rebooting in 180 seconds..
+> <--------------------------------------------->
+> 
+> Regards
+> 
+> Chris
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+> 
+> 
+> 
+> 
