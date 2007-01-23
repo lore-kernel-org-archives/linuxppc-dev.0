@@ -1,16 +1,22 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 4FA3ADDF10
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id 021DFDDEDD
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 04:13:40 +1100 (EST)
+	Wed, 24 Jan 2007 04:56:07 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1224812ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 23 Jan 2007 09:56:05 -0800 (PST)
+Message-ID: <528646bc0701230956v26e34c5bx7d3fc082fe1d20c9@mail.gmail.com>
+Date: Tue, 23 Jan 2007 10:56:05 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Subject: Re: JTAG emulator for MPC8548E (v2)
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901062D1E42@EMPBEDEX.empirix.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C73F10.EEA0C89C"
-Subject: JTAG emulator for MPC8548E (v2)
-Date: Tue, 23 Jan 2007 12:07:15 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901062D1E42@EMPBEDEX.empirix.com>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <BD261180E6D35F4D9D32F3E44FD3D901062D1E42@EMPBEDEX.empirix.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,326 +27,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On 1/23/07, Morrison, Tom <tmorrison@empirix.com> wrote:
+>
+> What do people recommend for a JTAG emulator for the MPC8548E
+>
+> (version 2 silicon).
 
-------_=_NextPart_001_01C73F10.EEA0C89C
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Check out the BDI-2000 from Abatron
 
-What do people recommend for a JTAG emulator for the MPC8548E=20
+g.
 
-(version 2 silicon).
-
-=20
-
-We are not built (or want to) to work with Code Warrior=20
-
-environment - thus we can't use the ones that came with=20
-
-our CDS.
-
-=20
-
-Important (or nice to have) features:
-
-=20
-
-  network capable (easy remote debug)
-
-  kgdb compatible (easy kernel remote debug)
-
-  gdb server compatible (for user level remote debug)...
-
-=20
-
-Ideas?
-
-=20
-
-Thanks in advance.
-
-=20
-
-Sincerely,
-
-=20
-
-Tom Morrison
-Principal Software Engineer
-
-EMPIRIX=20
-20 Crosby Drive - Bedford, MA  01730
-p: 781.266.3567 f: 781.266.3670=20
-email: tmorrison@empirix.com <mailto:tmorrison@empirix.com> =20
-www.empirix.com <http://www.empirix.com/>=20
-
-
-
-
-=20
-
-
-------_=_NextPart_001_01C73F10.EEA0C89C
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns:st1=3D"urn:schemas-microsoft-com:office:smarttags" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"PostalCode"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"State"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"address"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"Street"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"place"/>
-<o:SmartTagType =
-namespaceuri=3D"urn:schemas-microsoft-com:office:smarttags"
- name=3D"City"/>
-<!--[if !mso]>
-<style>
-st1\:*{behavior:url(#default#ieooui) }
-</style>
-<![endif]-->
-<style>
-<!--
- /* Font Definitions */
- @font-face
-	{font-family:Verdana;
-	panose-1:2 11 6 4 3 5 4 4 2 4;}
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p.MsoPlainText, li.MsoPlainText, div.MsoPlainText
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:10.0pt;
-	font-family:"Courier New";}
-p
-	{mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>What do people recommend for a JTAG emulator for the MPC8548E =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>(version 2 silicon).<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>We are not built (or want to) to work with Code Warrior =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>environment &#8211; thus we can't use the ones that came with =
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>our CDS.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>Important (or nice to have) =
-features:<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; network capable (easy remote =
-debug)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; kgdb compatible (easy kernel remote =
-debug)<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>&nbsp; gdb server compatible (for user level remote =
-debug)...<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>Ideas?<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>Thanks in advance.<o:p></o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoPlainText><font size=3D2 face=3D"Courier New"><span =
-style=3D'font-size:
-10.0pt'>Sincerely,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p style=3D'margin-bottom:12.0pt'><strong><b><font size=3D2 color=3Dnavy
-face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>Tom
-Morrison</span></font></b></strong><font size=3D2 color=3Dnavy =
-face=3DVerdana><span
-style=3D'font-size:10.0pt;font-family:Verdana;color:navy'><br>
-</span></font><font color=3Dnavy><span style=3D'color:navy'>Principal =
-Software
-Engineer</span></font><o:p></o:p></p>
-
-<p style=3D'margin-bottom:12.0pt'><strong><b><font size=3D2 color=3Dnavy
-face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>EMPIRIX</span><=
-/font></b></strong><font
-size=3D2 color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'> </span></font><font color=3Dnavy><span =
-style=3D'color:navy'><br>
-<u1:Street u2:st=3D"on"><u1:address u2:st=3D"on"><st1:Street =
-w:st=3D"on"><st1:address
- w:st=3D"on">20 Crosby =
-Drive</u1:address></u1:Street></st1:address></st1:Street> =
-</span></font><b><font
-color=3D"#ff6600"><span =
-style=3D'color:#FF6600;font-weight:bold'>-</span></font></b><font
-size=3D2 color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'> <u1:place u2:st=3D"on"><u1:City u2:st=3D"on"><st1:place =
-w:st=3D"on"><st1:City
- w:st=3D"on">Bedford</u1:City></st1:City>, <u1:State =
-u2:st=3D"on"><st1:State w:st=3D"on">MA</u1:State></st1:State><b><font
- size=3D3 color=3Dblack face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;
- font-family:"Times New =
-Roman";color:black;font-weight:bold'>&nbsp;</span></font></b><font
- size=3D3 color=3Dblack face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;
- font-family:"Times New Roman";color:black'>&nbsp;<u1:PostalCode =
-u2:st=3D"on"></span></font><st1:PostalCode
- =
-w:st=3D"on">01730</u1:PostalCode></u1:place></st1:PostalCode></st1:place>=
-</span></font><br>
-<b><font color=3D"#ff6600"><span =
-style=3D'color:#FF6600;font-weight:bold'>p:</span></font></b><font
-color=3D"#ff6600"><span style=3D'color:#FF6600'> </span></font><font =
-size=3D2
-color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'>781.266.3567 </span></font><b><font size=3D2 =
-color=3D"#ff6600"
-face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;color:#FF6600;
-font-weight:bold'>f:</span></font></b> <font size=3D2 color=3Dnavy =
-face=3DVerdana><span
-style=3D'font-size:10.0pt;font-family:Verdana;color:navy'>781.266.3670 =
-</span></font><b><span
-style=3D'font-weight:bold'><br>
-</span></b><b><font size=3D2 color=3D"#ff6600" face=3DVerdana><span =
-style=3D'font-size:
-10.0pt;font-family:Verdana;color:#FF6600;font-weight:bold'>email:</span><=
-/font></b>
-<u><font size=3D2 color=3Dblue face=3DVerdana><span =
-style=3D'font-size:10.0pt;
-font-family:Verdana;color:blue'><a =
-href=3D"mailto:tmorrison@empirix.com"><font
-size=3D3><span =
-style=3D'font-size:12.0pt'>tmorrison@empirix.com</span></font></a></span>=
-</font></u><font
-size=3D2 color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'> </span></font><font size=3D2 color=3D"#ff6600" =
-face=3DVerdana><span
-style=3D'font-size:10.0pt;font-family:Verdana;color:#FF6600'><br>
-<a href=3D"http://www.empirix.com/"><font size=3D3><span =
-style=3D'font-size:12.0pt'>www.empirix.com</span></font></a></span></font=
-><font
-size=3D2 color=3Dnavy face=3DVerdana><span =
-style=3D'font-size:10.0pt;font-family:Verdana;
-color:navy'><br>
-<br>
-<br>
-<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D3 face=3D"Times New Roman"><span =
-style=3D'font-size:
-12.0pt'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C73F10.EEA0C89C--
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
