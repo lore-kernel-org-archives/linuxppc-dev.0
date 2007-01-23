@@ -1,21 +1,20 @@
-Return-Path: <muditg@alcatel-lucent.com>
-Received: from ihemail1.lucent.com (ihemail1.lucent.com [135.245.0.33])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ihemail1.lucent.com",
-	Issuer "Lucent Technologies Certificate Services 1" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id C1AB3DDE33
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 91FDADDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 22 Jan 2007 17:27:27 +1100 (EST)
+	Tue, 23 Jan 2007 15:17:47 +1100 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1H9D6C-0000zR-BI
+	for linuxppc-embedded@ozlabs.org; Mon, 22 Jan 2007 20:17:32 -0800
+Message-ID: <8515241.post@talk.nabble.com>
+Date: Mon, 22 Jan 2007 20:17:32 -0800 (PST)
+From: Nethra <nethra_gmit@yahoo.co.in>
+To: linuxppc-embedded@ozlabs.org
+Subject: linux booting using ramdisk
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C73DEB.218EB71E"
-Subject: RE: want list of patch file for kernel 2.4.18 
-Date: Mon, 22 Jan 2007 11:34:08 +0530
-Message-ID: <D20D0F13EFB0DB408A7E6C10C316ACA0310721@INEXC1U01.in.lucent.com>
-In-Reply-To: <509460.3484.qm@web30002.mail.mud.yahoo.com>
-From: "Goel, Mudit \(Mudit\)" <muditg@alcatel-lucent.com>
-To: "patel nirav" <indianirav@yahoo.com>,
-	"linux ppc" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,91 +25,125 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C73DEB.218EB71E
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+hi,
+ I am using MPC8272ADS board.I am getting fallowing error for kernel
+booting...
+=> printenv
+bootdelay=5
+baudrate=115200
+ethact=FCC2 ETHERNET
+filesize=23a19c
+fileaddr=300000
+ipaddr=192.168.174.231
+serverip=192.168.178.110
+ethaddr=00:99:23:44:ad:de
+stdin=serial
+stdout=serial
+stderr=serial
+bootargs=root=/dev/ram
 
-which ppc are u targeting ?=20
+Environment size: 219/262140 bytes
+=> tftpboot 0x400000 8272ADS_ramdisk_img
+Using FCC2 ETHERNET device
+TFTP from server 192.168.178.110; our IP address is 192.168.174.231
+Filename '8272ADS_ramdisk_img'.
+Load address: 0x400000
+Loading: #################################################################
+         #################################################################
+         #######################################################
+done
+Bytes transferred = 942521 (e61b9 hex)
+=> tftpboot 0x500000 ramdisk.new
+Using FCC2 ETHERNET device
+TFTP from server 192.168.178.110; our IP address is 192.168.174.231
+Filename 'ramdisk.new'.
+Load address: 0x500000
+Loading: #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         #################################################################
+         ###################
+done
+Bytes transferred = 2758997 (2a1955 hex)
+=> bootm 0x400000 0x500000
+## Booting image at 00400000 ...
+   Image Name:   Linux-2.6.10_mvl401-8272ads
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    942457 Bytes = 920.4 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Loading RAMDisk Image at 00500000 ...
+   Image Name:   uImage.ramdisk
+   Image Type:   PowerPC Linux RAMDisk Image (gzip compressed)
+   Data Size:    2758933 Bytes =  2.6 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Loading Ramdisk to 038e6000, end 03b87915 ... OK
+Linux version 2.6.10_mvl401-8272ads (root@em178110) (gcc version 3.4.3
+(MontaVi7
+Motorola PQ2 ADS PowerPC port
+Built 1 zonelists
+Kernel command line: root=/dev/ram
+PID hash table entries: 512 (order: 9, 8192 bytes)
+hr_time_init: arch_to_nsec = 83886080, nsec_to_arch = 107374182
+Warning: real time clock seems stuck!
+Dentry cache hash table entries: 16384 (order: 4, 65536 bytes)
+Inode-cache hash table entries: 8192 (order: 3, 32768 bytes)
+Memory: 59888k available (1684k kernel code, 468k data, 88k init, 0k
+highmem)
+Mount-cache hash table entries: 512 (order: 0, 4096 bytes)
+spawn_desched_task(00000000)
+desched cpu_callback 3/00000000
+ksoftirqd started up.
+desched cpu_callback 2/00000000
+checking if image is initramfs...desched thread 0 started up.
+it isn't (no cpio magic); looks like an initrd
+Freeing initrd memory: 2694k freed
+NET: Registered protocol family 16
+mpc8272ads: Init
+Installing knfsd (copyright (C) 1996 okir@monad.swb.de).
+Initializing Cryptographic API
+Serial: CPM driver $Revision: 0.01 $
+ttyCPM0 at MMIO 0xf0011a00 (irq = 40) is a CPM UART
+ttyCPM1 at MMIO 0xf0011a60 (irq = 43) is a CPM UART
+io scheduler noop registered
+io scheduler anticipatory registered
+io scheduler deadline registered
+io scheduler cfq registered
+RAMDISK driver initialized: 16 RAM disks of 8192K size 1024 blocksize
+loop: loaded (max 8 devices)
+fs_enet.c:v1.0 (Aug 8, 2005)
+fs_enet: eth0 Phy @ 0x0, type DM9161 (0x0181b881)
+fs_enet: eth1 Phy @ 0x3, type DM9161 (0x0181b881)
+Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+ide: Assuming 50MHz system bus speed for PIO modes; override with idebus=xx
+eth2: FCC ENET Version 0.3, 00:99:23:c4:ad:de
+eth3: FCC ENET Version 0.3, 00:99:23:44:ad:de
+eth4: FCC ENET Version 0.3, 00:99:23:64:ad:de
+NET: Registered protocol family 2
+IP: routing cache hash table of 512 buckets, 4Kbytes
+TCP: Hash tables configured (established 4096 bind 8192)
+NET: Registered protocol family 1
+NET: Registered protocol family 17
+RAMDISK: Compressed image found at block 0
+RAMDISK: incomplete write (-28 != 32768) 8388608
+Kernel panic - not syncing: VFS: Unable to mount root fs on
+unknown-block(1,0)
+ <0>Rebooting in 180 seconds..
+
+what may be the problem?
+I have root file system then..can i create fresh ramdisk image..if yes then
+how to create it?
 
 
-________________________________
-
-	From: linuxppc-embedded-bounces+muditg=3Dlucent.com@ozlabs.org
-[mailto:linuxppc-embedded-bounces+muditg=3Dlucent.com@ozlabs.org] On
-Behalf Of patel nirav
-	Sent: Saturday, January 20, 2007 10:27 PM
-	To: linux ppc
-	Subject: want list of patch file for kernel 2.4.18=20
-=09
-=09
-	hello all.
-	I want to cross compile the linux kernel 2.4.18 for power PC
-(Cross tool  is available with me)
-	which are the patch files required for patching.
-	any help will be appriciated.
-	thanks
-	regards
-=09
-=09
-=09
-	Nirav J Patel
-	M.Tech(CSE),
-	Nirma University,
-	Ahmedabad-382481.
-	9925138959=20
-
-=09
-________________________________
-
-	Everyone is raving about the all-new Yahoo! Mail beta.
-<http://us.rd.yahoo.com/evt=3D42297/*http://advision.webevents.yahoo.com/=
-m
-ailbeta>=20
-
-
-------_=_NextPart_001_01C73DEB.218EB71E
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.3020" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV dir=3Dltr align=3Dleft><SPAN class=3D363330306-22012007><FONT =
-face=3DArial=20
-color=3D#0000ff size=3D2>which ppc are u targeting ? =
-</FONT></SPAN></DIV><BR>
-<BLOCKQUOTE style=3D"MARGIN-RIGHT: 0px">
-  <DIV class=3DOutlookMessageHeader lang=3Den-us dir=3Dltr align=3Dleft>
-  <HR tabIndex=3D-1>
-  <FONT face=3DTahoma size=3D2><B>From:</B>=20
-  linuxppc-embedded-bounces+muditg=3Dlucent.com@ozlabs.org=20
-  [mailto:linuxppc-embedded-bounces+muditg=3Dlucent.com@ozlabs.org] =
-<B>On Behalf=20
-  Of </B>patel nirav<BR><B>Sent:</B> Saturday, January 20, 2007 10:27=20
-  PM<BR><B>To:</B> linux ppc<BR><B>Subject:</B> want list of patch file =
-for=20
-  kernel 2.4.18 <BR></FONT><BR></DIV>
-  <DIV></DIV>hello all.<BR>I want to cross compile the linux kernel =
-2.4.18 for=20
-  power PC (Cross tool&nbsp; is available with me)<BR>which are the =
-patch files=20
-  required for patching.<BR>any help will be=20
-  appriciated.<BR>thanks<BR>regards<BR><BR><BR><BR>Nirav J=20
-  Patel<BR>M.Tech(CSE),<BR>Nirma =
-University,<BR>Ahmedabad-382481.<BR>9925138959
-  <P>
-  <HR SIZE=3D1>
-  Everyone is raving about <A=20
-  =
-href=3D"http://us.rd.yahoo.com/evt=3D42297/*http://advision.webevents.yah=
-oo.com/mailbeta">the=20
-  all-new Yahoo! Mail beta.</A></BLOCKQUOTE></BODY></HTML>
-
-------_=_NextPart_001_01C73DEB.218EB71E--
+-- 
+View this message in context: http://www.nabble.com/linux-booting-using-ramdisk-tf3062233.html#a8515241
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
