@@ -1,20 +1,23 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 735FFDDE02
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B75BDDDF27
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 02:33:33 +1100 (EST)
-Message-ID: <45B62AA7.4020306@freescale.com>
-Date: Tue, 23 Jan 2007 09:32:55 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Andre Haupt <haupt.andre@gmx.de>
-Subject: Re: nfs mounting problem
-References: <OFEEBC95A7.C19B5826-ON6525726C.004962C8-6525726C.00497146@lntemsys.com>
-	<45B61459.1030507@gmx.de>
-In-Reply-To: <45B61459.1030507@gmx.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: kernelnewbies@nl.linux.org, linuxppc-embedded@ozlabs.org,
-	Manjunath AM <Manjunath.AM@Lntemsys.com>
+	Wed, 24 Jan 2007 03:19:31 +1100 (EST)
+In-Reply-To: <20070123091802.95605193.benjamin.zores@alcatel-lucent.fr>
+References: <20070122181027.89187533.benjamin.zores@alcatel-lucent.fr>
+	<3B008FD0-DF55-492B-A60A-EF0F9F8F75AB@kernel.crashing.org>
+	<20070123091802.95605193.benjamin.zores@alcatel-lucent.fr>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E856EB0C-D2B9-41CA-8F75-3B1A0F60AC7B@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [MPC8349ITX] USB Init with PPC arch
+Date: Tue, 23 Jan 2007 10:18:34 -0600
+To: Benjamin Zores <benjamin.zores@alcatel-lucent.fr>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,27 +28,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andre Haupt wrote:
-> Also what seems a bit odd to me is that your dmesg shows no rootpath
-> 
->  IP-Config: Complete:
->       device=eth1, addr=192.168.178.234, mask=255.255.255.0, 
-> gw=192.168.178.47,
->      host=cashel, domain=, nis-domain=(none),
->      bootserver=192.168.178.110, rootserver=192.168.178.110, rootpath=
-> 
-> On my system the complete root path is printed here.
 
-I don't think I've ever seen the root path printed there (with nfsroot 
-otherwise working), so I don't think that's the problem...  From looking 
-at the code, it seems that the root path received from BOOTP is stored 
-in a different variable than the path from the nfsroot boot option, and 
-it's the former that gets printed there.
+On Jan 23, 2007, at 2:18 AM, Benjamin Zores wrote:
 
-To Manjunath AM: does the ethernet work from U-Boot?  Can you verify 
-that packets are being successfully sent and received under Linux?  If 
-the only variable is the board, then the problem is probably not with 
-NFS itself; there's probably something different in how the ethernet is 
-hooked up on your board, or in how the board is being initialized.
+> On Mon, 22 Jan 2007 16:19:06 -0600
+> Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+>> What are these features?
+>
+> External RT patch that only supports PPC arch atm.
+> Also I've encountered some stability issues with PowerPC branch
+> (card hangs after some time for undetermined reason).
 
--Scott
+Do you get an oops on the hang?  would be useful to know if we have  
+an issue in arch/powerpc
+
+>> If you are forward porting the Freescale patches and not using the in
+>> kernel driver that would explain the issue.  There are bugs in the
+>> Freescale driver that have been fixed in the driver that is in the
+>> kernel.
+>
+> I only ported what needs to be i.e. the platform initialization part.
+> I'm using the regular USB drivers (EHCI-FSL) from vanilla 2.6.19,  
+> this part
+> hasn't be ported from old 2.6.13 BSP code (which would have been  
+> useless).
+>
+> The goal of the patch i've sent early is to init the USB bus the  
+> same way
+> it is done by OF device tree in arch/powerpc/sysdev/fsl_soc.c (but  
+> for PPC).
+>
+> Does it sounds ok to you ?
+
+that sounds reasonable.
+
+Take a look at this patch from Randy Vinson that adds support to arch/ 
+ppc for USB.
+
+http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021773.html
+
+- k
