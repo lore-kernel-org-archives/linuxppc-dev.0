@@ -1,17 +1,19 @@
-Return-Path: <MGalassi@c-cor.com>
-Received: from ns1.c-cor.com (ns1.c-cor.com [12.17.0.130])
-	by ozlabs.org (Postfix) with ESMTP id A8B30DDF3E
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 52FCFDDF7D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 05:46:36 +1100 (EST)
-Message-Id: <200701231839.l0NId8x2024324@penguin.ncube.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: JTAG emulator for MPC8548E (v2) 
-In-reply-to: <528646bc0701230956v26e34c5bx7d3fc082fe1d20c9@mail.gmail.com> 
-References: <BD261180E6D35F4D9D32F3E44FD3D901062D1E42@EMPBEDEX.empirix.com>
-	<528646bc0701230956v26e34c5bx7d3fc082fe1d20c9@mail.gmail.com>
-Date: Tue, 23 Jan 2007 10:39:08 -0800
-From: Michael Galassi <mgalassi@c-cor.com>
-Cc: linuxppc-embedded@ozlabs.org, "Morrison, Tom" <tmorrison@empirix.com>
+	Wed, 24 Jan 2007 05:49:29 +1100 (EST)
+To: emre kara <emrekara2002@yahoo.co.uk>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: linux booting using ramdisk 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Tue, 23 Jan 2007 07:33:27 GMT."
+	<20070123073327.7386.qmail@web25606.mail.ukl.yahoo.com>
+Date: Tue, 23 Jan 2007 19:49:26 +0100
+Sender: wd@denx.de
+Message-Id: <20070123184926.D8DC7353C3A@atlas.denx.de>
+Cc: Nethra <nethra_gmit@yahoo.co.in>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,30 +24,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
->On 1/23/07, Morrison, Tom <tmorrison@empirix.com> wrote:
->>
->> What do people recommend for a JTAG emulator for the MPC8548E
->>
->> (version 2 silicon).
+In message <20070123073327.7386.qmail@web25606.mail.ukl.yahoo.com> you wrote:
 >
->Check out the BDI-2000 from Abatron
+> Try to increase default ramdisk size on kernel
+> configuration.
 
-The BDI has some shortcomings for *my* use (in no particular order):
+...or pass a ramdisksize boot argument.
 
-1) you can't program cplds
-2) the ethernet interface is slow
-3) the configuration is arcane
-4) using the serial port for console use is an iffy proposition at best
-5) it is expensive
-6) it's configuration relies on having a PC with a serial port
 
-Note that these are shortcomings relative to using a PC with the Xilinx
-USB platform cable, and working with ppc405s on Virtex4 FPGAs.  These
-may not apply to the MPC8548E, or if they do, the BDI may none-the-less
-be your best option.
+Best regards,
 
-As an aside, I believe that the term emulator is being used in error in
-this context.
+Wolfgang Denk
 
--michael
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+An armed society is a polite society.
