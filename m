@@ -1,16 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 096F0DE01D
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 9B7D4DDF64
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 03:33:00 +1100 (EST)
-Message-ID: <45B638B5.70901@freescale.com>
-Date: Tue, 23 Jan 2007 10:32:53 -0600
-From: Timur Tabi <timur@freescale.com>
+	Wed, 24 Jan 2007 04:08:26 +1100 (EST)
+Message-ID: <45B641B0.8050005@ru.mvista.com>
+Date: Tue, 23 Jan 2007 20:11:12 +0300
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-To: Benjamin Zores <benjamin.zores@alcatel-lucent.fr>
-Subject: Re: [MPC8349ITX] USB Init with PPC arch
-References: <20070122181027.89187533.benjamin.zores@alcatel-lucent.fr>
-In-Reply-To: <20070122181027.89187533.benjamin.zores@alcatel-lucent.fr>
+To: christophe.alayrac@cresitt.com
+Subject: Re: ML403, 2.6.17.1 kernel panic
+References: <1169556195.16144.3.camel@localhost.localdomain>	
+	<45B603C1.2070601@ru.mvista.com>
+	<1169573127.5166.5.camel@localhost.localdomain>
+In-Reply-To: <1169573127.5166.5.camel@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,28 +25,47 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Benjamin Zores wrote:
-> Hi,
+Hi Chris,
+
+alayrac christophe wrote:
+> Hi Andrei,
 > 
-> This question is mainly intended to Freescale's MPC8349ITX board maintainer
-> but the issue/resolution is probably the same for other boards.
-
-I'm the maintainer, although I don't think I can help you with this specific 
-problem.
-
-> I'm trying to boot the MPC8349ITX card with Linux 2.6.19 using old PPC
-> architecture (and not the new PowerPC one).
-> I've ported patches from Freescale's BSP from 2.6.13 to 2.6.19 and
-> it works pretty well but USB doesn't init properly.
+> Thanks for your help.
 > 
-> Switching to PowerPC arch of course works fine and USB is well inited
-> but due to other feature i use that only exist on PPC right now, I can't
-> make use of it.
+> I've had a quick look in hardware design and as SGDMA is activated the
+> packet fifo is no accessible.
+> 
+> Do you think that some declarations are missing in xparameters_ml403.h
+> to properly declare SGDMA or is it coming from drivers code?
 
-What feature is that?  I would think it would be easier to port that feature to 
-the powerpc architecture, then it would be to port ITX support to the ppc 
-architecture.
+I would recommend to double check the xparameters_ml403.h and the code
+to fill the platform data for TEMAC.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+> Note : 
+>  I use plb-temac v3.00a and hard_temac v3.00b, with EDK 8.2.02
+>  Kernel source from kernel.org (also tested with git linux-xilinx-26
+> from mvista)
+>  temac patch from mvista (PAULUS)
+>  
+> Regards
+> 
+> Chris
+> 
+> Le mardi 23 janvier 2007 à 15:46 +0300, Andrei Konovalov a écrit :
+>> Hi Chris,
+>>
+>>  From you log it seems like the kernel tries to initialize the TEMAC's FIFO but fails.
+>> Do you have TEMAC configured in FIFO mode in your design?
+>>
+>> Thanks,
+>> Andrei
+>>
+>> alayrac christophe wrote:
+>>> Hi all,
+>>>
+>>> I did not succeed to start kernel 2.6.17.1 on ML403 platform.
+>>>
+>>> Any help would be appreciated.
+>>>
+>>> Please foind log message here after
+> 
