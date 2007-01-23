@@ -1,23 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B75BDDDF27
+Return-Path: <christophe.alayrac@cresitt.com>
+Received: from smtp5-g19.free.fr (smtp5-g19.free.fr [212.27.42.35])
+	by ozlabs.org (Postfix) with ESMTP id 6A684DDF29
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 03:19:31 +1100 (EST)
-In-Reply-To: <20070123091802.95605193.benjamin.zores@alcatel-lucent.fr>
-References: <20070122181027.89187533.benjamin.zores@alcatel-lucent.fr>
-	<3B008FD0-DF55-492B-A60A-EF0F9F8F75AB@kernel.crashing.org>
-	<20070123091802.95605193.benjamin.zores@alcatel-lucent.fr>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E856EB0C-D2B9-41CA-8F75-3B1A0F60AC7B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [MPC8349ITX] USB Init with PPC arch
-Date: Tue, 23 Jan 2007 10:18:34 -0600
-To: Benjamin Zores <benjamin.zores@alcatel-lucent.fr>
+	Wed, 24 Jan 2007 03:25:42 +1100 (EST)
+Subject: Re: ML403, 2.6.17.1 kernel panic
+From: alayrac christophe <christophe.alayrac@cresitt.com>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+In-Reply-To: <45B603C1.2070601@ru.mvista.com>
+References: <1169556195.16144.3.camel@localhost.localdomain>
+	<45B603C1.2070601@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Tue, 23 Jan 2007 18:25:27 +0100
+Message-Id: <1169573127.5166.5.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: christophe.alayrac@cresitt.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,44 +25,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Andrei,
 
-On Jan 23, 2007, at 2:18 AM, Benjamin Zores wrote:
+Thanks for your help.
 
-> On Mon, 22 Jan 2007 16:19:06 -0600
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->
->> What are these features?
->
-> External RT patch that only supports PPC arch atm.
-> Also I've encountered some stability issues with PowerPC branch
-> (card hangs after some time for undetermined reason).
+I've had a quick look in hardware design and as SGDMA is activated the
+packet fifo is no accessible.
 
-Do you get an oops on the hang?  would be useful to know if we have  
-an issue in arch/powerpc
+Do you think that some declarations are missing in xparameters_ml403.h
+to properly declare SGDMA or is it coming from drivers code?
 
->> If you are forward porting the Freescale patches and not using the in
->> kernel driver that would explain the issue.  There are bugs in the
->> Freescale driver that have been fixed in the driver that is in the
->> kernel.
->
-> I only ported what needs to be i.e. the platform initialization part.
-> I'm using the regular USB drivers (EHCI-FSL) from vanilla 2.6.19,  
-> this part
-> hasn't be ported from old 2.6.13 BSP code (which would have been  
-> useless).
->
-> The goal of the patch i've sent early is to init the USB bus the  
-> same way
-> it is done by OF device tree in arch/powerpc/sysdev/fsl_soc.c (but  
-> for PPC).
->
-> Does it sounds ok to you ?
 
-that sounds reasonable.
+Note : 
+ I use plb-temac v3.00a and hard_temac v3.00b, with EDK 8.2.02
+ Kernel source from kernel.org (also tested with git linux-xilinx-26
+from mvista)
+ temac patch from mvista (PAULUS)
+ 
+Regards
 
-Take a look at this patch from Randy Vinson that adds support to arch/ 
-ppc for USB.
+Chris
 
-http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021773.html
-
-- k
+Le mardi 23 janvier 2007 à 15:46 +0300, Andrei Konovalov a écrit :
+> Hi Chris,
+> 
+>  From you log it seems like the kernel tries to initialize the TEMAC's FIFO but fails.
+> Do you have TEMAC configured in FIFO mode in your design?
+> 
+> Thanks,
+> Andrei
+> 
+> alayrac christophe wrote:
+> > Hi all,
+> > 
+> > I did not succeed to start kernel 2.6.17.1 on ML403 platform.
+> > 
+> > Any help would be appreciated.
+> > 
+> > Please foind log message here after
