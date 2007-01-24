@@ -2,19 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 62E96DDEFD
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 17:32:31 +1100 (EST)
-Subject: Re: [PATCH 1/3] windfarm: dont die on suspend thread signal
+	by ozlabs.org (Postfix) with ESMTP id AF42EDDF41
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 17:32:35 +1100 (EST)
+Subject: Re: [RFC 2/3] windfarm: dont die on suspend thread signal
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <20061213123944.747406000@sipsolutions.net>>
-References: <20061213123819.403286000@sipsolutions.net> >
-	<20061213123944.747406000@sipsolutions.net>>
+In-Reply-To: <20061211230754.679589000@sipsolutions.net>>
+References: <20061211230208.526233000@sipsolutions.net> >
+	<20061211230754.679589000@sipsolutions.net>>
 Content-Type: text/plain
-Date: Wed, 24 Jan 2007 17:32:24 +1100
-Message-Id: <1169620344.18754.64.camel@localhost.localdomain>
+Date: Wed, 24 Jan 2007 17:32:04 +1100
+Message-Id: <1169620324.18754.62.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org,
+	Michael Buesch <mb@bu3sch.de>, Torrance <torrance123@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,7 +25,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2006-12-13 at 13:38 +0100, Johannes Berg wrote:
+On Tue, 2006-12-12 at 00:02 +0100, Johannes Berg wrote:
 > plain text document attachment (windfarm-dont-die-on-signals.patch)
 > When the windfarm thread gets a suspend signal it will die instead of
 > freezing. This fixes it.
