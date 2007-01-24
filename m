@@ -1,21 +1,15 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
-	[151.189.21.46])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 40B6EDE014
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 08:53:49 +1100 (EST)
-In-Reply-To: <20070124210726.GN10527@ld0162-tx32.am.freescale.net>
-References: <20070124210726.GN10527@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5D427A59-060E-4B09-9274-E654346E0C26@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 14/18] Make flatdevtree_misc's cxt global.
-Date: Wed, 24 Jan 2007 22:53:37 +0100
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id ACE23DE060
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 08:57:19 +1100 (EST)
+Date: Wed, 24 Jan 2007 15:57:06 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] maple: don't override bus-range supplied by firmware
+Message-ID: <20070124215706.GE16486@localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +19,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This allows platform code to use flatdevtree functions directly.
+This workaround was copy-pasted from the powermac code.  It's not
+necessary for maple.
 
-> -static struct ft_cxt cxt;
-> +struct ft_cxt fdtm_cxt;
+Signed-off-by: Nathan Lynch <ntl@pobox.com>
+---
+ arch/powerpc/platforms/maple/pci.c |    8 --------
+ 1 files changed, 0 insertions(+), 8 deletions(-)
 
-If I understand the code correctly, you should put this
-in a header file (that this file includes itself) too?
-
-
-Segher
+diff --git a/arch/powerpc/platforms/maple/pci.c b/arch/powerpc/platforms/maple/pci.c
+index 011f0f1..73c5990 100644
+--- a/arch/powerpc/platforms/maple/pci.c
++++ b/arch/powerpc/platforms/maple/pci.c
+@@ -425,14 +425,6 @@ static void __init setup_u4_pcie(struct pci_controller* hose)
+         hose->cfg_addr = ioremap(0xf0000000 + 0x800000, 0x1000);
+         hose->cfg_data = ioremap(0xf0000000 + 0xc00000, 0x1000);
+ 
+-        /* The bus contains a bridge from root -> device, we need to
+-         * make it visible on bus 0 so that we pick the right type
+-         * of config cycles. If we didn't, we would have to force all
+-         * config cycles to be type 1. So we override the "bus-range"
+-         * property here
+-         */
+-        hose->first_busno = 0x00;
+-        hose->last_busno = 0xff;
+         u4_pcie = hose;
+ }
+ 
+-- 
+1.4.4.3
