@@ -1,31 +1,20 @@
-Return-Path: <benjamin.zores@alcatel-lucent.fr>
-Received: from smail4.alcatel.fr (smail4.alcatel.fr [62.23.212.167])
-	by ozlabs.org (Postfix) with ESMTP id B30EBDDF43
+Return-Path: <christophe.alayrac@cresitt.com>
+Received: from smtp5-g19.free.fr (smtp5-g19.free.fr [212.27.42.35])
+	by ozlabs.org (Postfix) with ESMTP id B6B49DDEC9
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Jan 2007 00:00:43 +1100 (EST)
-Received: from bsf.alcatel.fr (mail205.sxb.bsf.alcatel.fr [155.132.205.115])
-	by smail4.alcatel.fr (ALCANET/NETFR) with ESMTP id l0OD0Y4O002317
-	for <linuxppc-embedded@ozlabs.org>; Wed, 24 Jan 2007 14:00:34 +0100
-Received: from mail (mail-bsf-alcatel-fr.sxb.bsf.alcatel.fr [155.132.205.91])
-	by bsf.alcatel.fr (8.8.8p2+Sun/8.9.3) with ESMTP id OAA23396
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 14:00:33 +0100 (MET)
-Received: from frilld0063506 (frilld0063506 [172.25.48.83])
-	by mail (8.8.8p2+Sun/) with SMTP id OAA23390
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 14:00:33 +0100 (MET)
-Date: Wed, 24 Jan 2007 13:56:22 +0100
-From: Benjamin Zores <benjamin.zores@alcatel-lucent.fr>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [MPC8349ITX] USB Init with PPC arch
-Message-Id: <20070124135622.edd0206a.benjamin.zores@alcatel-lucent.fr>
-In-Reply-To: <E856EB0C-D2B9-41CA-8F75-3B1A0F60AC7B@kernel.crashing.org>
-References: <20070122181027.89187533.benjamin.zores@alcatel-lucent.fr>
-	<3B008FD0-DF55-492B-A60A-EF0F9F8F75AB@kernel.crashing.org>
-	<20070123091802.95605193.benjamin.zores@alcatel-lucent.fr>
-	<E856EB0C-D2B9-41CA-8F75-3B1A0F60AC7B@kernel.crashing.org>
+	Thu, 25 Jan 2007 03:04:51 +1100 (EST)
+Subject: Re: ML403, 2.6.17.1 kernel panic
+From: alayrac christophe <christophe.alayrac@cresitt.com>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+In-Reply-To: <45B603C1.2070601@ru.mvista.com>
+References: <1169556195.16144.3.camel@localhost.localdomain>
+	<45B603C1.2070601@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Date: Wed, 24 Jan 2007 18:04:46 +0100
+Message-Id: <1169658286.21182.8.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: christophe.alayrac@cresitt.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,15 +25,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 23 Jan 2007 10:18:34 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
+Hi Andrei,
 
-> Take a look at this patch from Randy Vinson that adds support to arch/ 
-> ppc for USB.
+Firts aff all thank you very much for your help. I finally succed to
+start the kernel. The problem was as SGDMA is activated then there is no
+FIFO support on the TEMAC.
+
+The kernel start properly now on NFS root file system but hangs with :
+Unable to open initial console.
+
+The root file system is just a copy of the MVISTA rootfs delivered with
+ML403 eval kit.
+
+A quick look in /dev show that there is no ttyS0 and that is why the
+kernel did not succeed to open /dev/ttyS0.
+
+My question is : 
+
+1) Is their any config in the Kernel 2.6.17.1 to select, in order to
+have an auto initialisation of /dev (like withe CONFIG_DEVFS_FS in
+previous verions)?
+
+Or should I create ttyS0 node in the root file system?
+
+2) Is there someone in the community that succeed to use TEMAC with
+SGDMA? If yes could you tell me wich kernel version and what TEMAC patch
+you are using.
+
+One more time thanks to Andrei.
+
+Kinds regards
+
+Le mardi 23 janvier 2007 à 15:46 +0300, Andrei Konovalov a écrit :
+> Hi Chris,
 > 
-> http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021773.html
-
-Thanks for the hint.
-I've seen the part that was missing in my own patch and now the MPH is well detected (though the DR one still hangs the card but it's useless to me atm).
-
-Ben
+>  From you log it seems like the kernel tries to initialize the TEMAC's FIFO but fails.
+> Do you have TEMAC configured in FIFO mode in your design?
+> 
+> Thanks,
+> Andrei
+> 
