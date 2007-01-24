@@ -1,31 +1,38 @@
-Return-Path: <brking@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E8300DDF53
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 10:28:48 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0NNTLGt013784
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jan 2007 18:29:21 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l0NNSiNS277824
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jan 2007 18:28:44 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l0NNSinD014901
-	for <linuxppc-dev@ozlabs.org>; Tue, 23 Jan 2007 18:28:44 -0500
-Message-ID: <45B69A2A.9060207@linux.vnet.ibm.com>
-Date: Tue, 23 Jan 2007 17:28:42 -0600
-From: Brian King <brking@linux.vnet.ibm.com>
+	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DDD9ADDF1D
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 11:48:36 +1100 (EST)
+Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
+	by ausmtp05.au.ibm.com (8.13.8/8.13.8) with ESMTP id l0OCoDWW7205026
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 11:50:13 -0100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
+	by sd0208e0.au.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l0O0q4pb218010
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 11:52:04 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0O0mY9a001313
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 11:48:35 +1100
+Date: Wed, 24 Jan 2007 11:35:56 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: Adam Litke <agl@us.ibm.com>
+Subject: Re: [Libhugetlbfs-devel] 2.6.19: kernel BUG in hugepd_page
+	at	arch/powerpc/mm/hugetlbpage.c:58!
+Message-ID: <20070124003556.GA2218@localhost.localdomain>
+References: <20070112195703.GA1826@kevlar.boston.burdell.org>
+	<1168632510.12413.62.camel@localhost.localdomain>
+	<20070112204250.GA2290@kevlar.boston.burdell.org>
+	<20070112224348.GA18201@localhost.localdomain>
+	<20070123051040.GA17272@kevlar.boston.burdell.org>
+	<20070123061812.GE32019@localhost.localdomain>
+	<1169569203.14914.36.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/1] powerpc: Export PCI slot reset API
-References: <11686349711123-patch-mail.ibm.com>
-In-Reply-To: <11686349711123-patch-mail.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: paulus@samba.org, linas@boardhead.austin.ibm.com, linuxppc-dev@ozlabs.org
-Reply-To: brking@linux.vnet.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1169569203.14914.36.camel@localhost.localdomain>
+Cc: sonnyrao@us.ibm.com, linuxppc-dev@ozlabs.org, anton@au1.ibm.com,
+	libhugetlbfs-devel@lists.sourceforge.net, nacc@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,93 +42,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Any comments on this?
+On Tue, Jan 23, 2007 at 10:20:03AM -0600, Adam Litke wrote:
+> On Tue, 2007-01-23 at 17:18 +1100, David Gibson wrote:
+> > Second, there's the fact that we never demote hugepage segments back
+> > to normal pages.  That was a deliberate decision to keep things
+> > simple, incidentally, not simply an oversight.  I guess it would help
+> > in this case and shouldn't be that hard.  It would mean a find_vma()
+> > on each unmap to see if the region is now clear, but that's probably
+> > not too bad.  Plus a bunch of on_each_cpu()ed slbies as when we open a
+> > new hugepage segment.  Oh.. and making sure we get rid of any empty
+> > hugepage directories, which might be a bit fiddly.
+> 
+> Could we also try lazy conversion of huge segments to normal ones?  When
+> is_hugepage_only_range() detects overlapping hugepage ranges, it could
+> attempt to "close" those ranges for huge pages first.  Then the heavy
+> lifting only needs to happen when a small page mapping needs the space.
 
-Thanks,
-
-Brian
-
-Brian King wrote:
-> Adds two new APIs to assert/deassert PCI reset to a given
-> device. This is needed for an ipr PCI-E adapter which does not
-> properly implement either BIST nor PCI-E hot reset, requiring
-> a PCI-E warm reset, which is what this implements.
-> 
-> Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
-> ---
-> 
->  linux-2.6-bjking1/arch/powerpc/platforms/pseries/eeh.c |   41 +++++++++++++++++
->  linux-2.6-bjking1/include/asm-powerpc/ppc-pci.h        |    3 +
->  2 files changed, 44 insertions(+)
-> 
-> diff -puN arch/powerpc/platforms/pseries/eeh.c~powerpc_slot_reset_api2 arch/powerpc/platforms/pseries/eeh.c
-> --- linux-2.6/arch/powerpc/platforms/pseries/eeh.c~powerpc_slot_reset_api2	2007-01-11 15:52:57.000000000 -0600
-> +++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/eeh.c	2007-01-11 15:52:57.000000000 -0600
-> @@ -591,6 +591,47 @@ static void __rtas_set_slot_reset(struct
->  	msleep (PCI_BUS_SETTLE_TIME_MSEC);
->  }
-> 
-> +/**
-> + * pci_set_slot_reset - Assert PCI reset to the PCI slot
-> + * @dev:	pci device struct
-> + *
-> + * After asserting PCI reset, the caller should wait for
-> + * 100 milliseconds or longer.
-> + *
-> + * Return value:
-> + * 	0 if success
-> + **/
-> +int pci_set_slot_reset(struct pci_dev *dev)
-> +{
-> +	struct device_node *dn = pci_device_to_OF_node(dev);
-> +	struct pci_dn *pdn = PCI_DN(dn);
-> +
-> +	rtas_pci_slot_reset(pdn, 3);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(pci_set_slot_reset);
-> +
-> +/**
-> + * pci_clear_slot_reset - Clear PCI reset to the PCI slot
-> + * @dev:	pci device struct
-> + *
-> + * After clearing PCI reset, the caller should wait 1.8 seconds
-> + * or longer for the bus to stabilize and the device to come
-> + * ready.
-> + *
-> + * Return value:
-> + * 	0 if success
-> + **/
-> +int pci_clear_slot_reset(struct pci_dev *dev)
-> +{
-> +	struct device_node *dn = pci_device_to_OF_node(dev);
-> +	struct pci_dn *pdn = PCI_DN(dn);
-> +
-> +	rtas_pci_slot_reset (pdn, 0);
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(pci_clear_slot_reset);
-> +
->  int rtas_set_slot_reset(struct pci_dn *pdn)
->  {
->  	int i, rc;
-> diff -puN include/asm-powerpc/ppc-pci.h~powerpc_slot_reset_api2 include/asm-powerpc/ppc-pci.h
-> --- linux-2.6/include/asm-powerpc/ppc-pci.h~powerpc_slot_reset_api2	2007-01-11 15:52:57.000000000 -0600
-> +++ linux-2.6-bjking1/include/asm-powerpc/ppc-pci.h	2007-01-11 15:52:57.000000000 -0600
-> @@ -124,6 +124,9 @@ void eeh_clear_slot (struct device_node
->  /* Find the associated "Partiationable Endpoint" PE */
->  struct device_node * find_device_pe(struct device_node *dn);
-> 
-> +int pci_set_slot_reset(struct pci_dev *dev);
-> +int pci_clear_slot_reset(struct pci_dev *dev);
-> +
->  #endif
-> 
->  #endif /* __KERNEL__ */
-> _
-
+We could, but I think it's both easier and less operations to do the
+check on unmap.  The lifting isn't that heavy.
 
 -- 
-Brian King
-eServer Storage I/O
-IBM Linux Technology Center
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
