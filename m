@@ -1,23 +1,31 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id B5C21DDF24
+Return-Path: <benjamin.zores@alcatel-lucent.fr>
+Received: from smail4.alcatel.fr (smail4.alcatel.fr [62.23.212.167])
+	by ozlabs.org (Postfix) with ESMTP id B30EBDDF43
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 23:29:21 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: JTAG emulator for MPC8548E (v2)
-Date: Wed, 24 Jan 2007 07:29:11 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901062D25B2@EMPBEDEX.empirix.com>
-In-Reply-To: <200701241206.18167.laurent.pinchart@technotrade.biz>
-References: <BD261180E6D35F4D9D32F3E44FD3D901062D1E42@EMPBEDEX.empirix.com>
-	<200701240857.19428.laurent.pinchart@technotrade.biz>
-	<20070124103548.GA31703@gate.ebshome.net>
-	<200701241206.18167.laurent.pinchart@technotrade.biz>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Laurent Pinchart" <laurent.pinchart@technotrade.biz>,
-	"Eugene Surovegin" <ebs@ebshome.net>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 25 Jan 2007 00:00:43 +1100 (EST)
+Received: from bsf.alcatel.fr (mail205.sxb.bsf.alcatel.fr [155.132.205.115])
+	by smail4.alcatel.fr (ALCANET/NETFR) with ESMTP id l0OD0Y4O002317
+	for <linuxppc-embedded@ozlabs.org>; Wed, 24 Jan 2007 14:00:34 +0100
+Received: from mail (mail-bsf-alcatel-fr.sxb.bsf.alcatel.fr [155.132.205.91])
+	by bsf.alcatel.fr (8.8.8p2+Sun/8.9.3) with ESMTP id OAA23396
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 Jan 2007 14:00:33 +0100 (MET)
+Received: from frilld0063506 (frilld0063506 [172.25.48.83])
+	by mail (8.8.8p2+Sun/) with SMTP id OAA23390
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 24 Jan 2007 14:00:33 +0100 (MET)
+Date: Wed, 24 Jan 2007 13:56:22 +0100
+From: Benjamin Zores <benjamin.zores@alcatel-lucent.fr>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [MPC8349ITX] USB Init with PPC arch
+Message-Id: <20070124135622.edd0206a.benjamin.zores@alcatel-lucent.fr>
+In-Reply-To: <E856EB0C-D2B9-41CA-8F75-3B1A0F60AC7B@kernel.crashing.org>
+References: <20070122181027.89187533.benjamin.zores@alcatel-lucent.fr>
+	<3B008FD0-DF55-492B-A60A-EF0F9F8F75AB@kernel.crashing.org>
+	<20070123091802.95605193.benjamin.zores@alcatel-lucent.fr>
+	<E856EB0C-D2B9-41CA-8F75-3B1A0F60AC7B@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,21 +36,15 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Some of the stability problems have been resolved (it was actually a=20
-h/w problem - a debug pin was shorted (setting break points was OK,
-but single step caused some issues).
+On Tue, 23 Jan 2007 10:18:34 -0600
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
-It's the lowest cost one that I've found so far, and in fact, I've had
-some positive reviews of one of the distributors in the US (local to
-me in the Boston area - I could go over and knock on their door if I=20
-really had a problem with it)...
+> Take a look at this patch from Randy Vinson that adds support to arch/ 
+> ppc for USB.
+> 
+> http://ozlabs.org/pipermail/linuxppc-embedded/2006-January/021773.html
 
-We need at least 2 more - so we might just have to go this route and
-work a little harder at getting the debug environment right.
+Thanks for the hint.
+I've seen the part that was missing in my own patch and now the MPH is well detected (though the DR one still hangs the card but it's useless to me atm).
 
-Thanks for everyone's input!
-
-Tom Morrison
-
------Original Message-----
-<snip all responses good/bad about the BDI-2000 for brevity sake!>
+Ben
