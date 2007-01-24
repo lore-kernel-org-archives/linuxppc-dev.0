@@ -1,25 +1,24 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 699DFDE09C
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 10:53:13 +1100 (EST)
-In-Reply-To: <45B7EEB6.8060607@freescale.com>
-References: <20070124210709.GF10527@ld0162-tx32.am.freescale.net>
-	<4EF444AA-B7C0-460D-BA0A-EEDC9E2E4812@kernel.crashing.org>
-	<45B7D78E.5020704@freescale.com>
-	<C498DBDF-5413-46CA-9A11-B625B009B53A@kernel.crashing.org>
-	<45B7EEB6.8060607@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <BD5D96E5-18E0-4533-85E3-D23556E0ABA3@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 06/18] Make ft_node_add() accept and return NULL.
-Date: Thu, 25 Jan 2007 00:53:05 +0100
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9A074DE111
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 10:57:55 +1100 (EST)
+Subject: Re: [patch 1/1] updated version, fixed the compiler warning
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Christian Krafft <krafft@de.ibm.com>
+In-Reply-To: <20070125104540.65a1f557@localhost>
+References: <20061218163846.337fed65@localhost> <45882913.2000609@acm.org>
+	<20061220154517.6341fce6@localhost> <200612210111.28186.arnd@arndb.de>
+	<20070125104540.65a1f557@localhost>
+Content-Type: text/plain
+Date: Thu, 25 Jan 2007 10:56:36 +1100
+Message-Id: <1169682996.24996.11.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Christian@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	openipmi-developer@lists.sourceforge.net,
+	Krafft <krafft@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,16 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> But doesn't ft_add_node() add a node to the tree?  If so,
->> a NULL is most likely a program error. If not, some name
->> change is in order /me thinks ;-)
->
-> No, it adds the node to the phandle->internal pointer lookup table  
-> (or returns the existing phandle if it's already there).  And yes,  
-> it could use a better name -- how about ft_node_to_phandle()?
 
-Well a node _is_ a phandle (at some abstraction level).  How
-about ft_node_get()?
+> +
+> +static int __devexit ipmi_of_remove(struct of_device *dev)
+> +{
+> +	/* should call
+> +	 * cleanup_one_si(dev->dev.driver_data); */
+> +	return 0;
+> +}
 
+If your remove doesn't work, don't implement one. Though since you don't
+have the choice in having a module_exit or not, you should really
+implement one that works :-)
 
-Segher
+Ben.
