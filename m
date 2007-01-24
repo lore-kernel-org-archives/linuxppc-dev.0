@@ -1,20 +1,20 @@
-Return-Path: <m.vegni@it-systems.it>
-Received: from mail.it-systems.it (net203-143-073.mclink.it [213.203.143.73])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 80942DDDCA
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 13:55:30 +1100 (EST)
-Received: from [85.18.14.0] (helo=[23.237.68.34])
-	by mail.it-systems.it with esmtpsa (TLSv1:AES256-SHA:256) (Exim 4.63)
-	(envelope-from <m.vegni@it-systems.it>) id 1H9XLu-0007Xg-Vm
-	for linuxppc-dev@ozlabs.org; Wed, 24 Jan 2007 02:55:15 +0100
-Message-ID: <45B6BC79.5060904@it-systems.it>
-Date: Wed, 24 Jan 2007 02:55:05 +0100
-From: Massimiliano Vegni <m.vegni@it-systems.it>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Xserve G5 doesn't reboot or restart properly with SMU compiled in
-Content-Type: text/plain; charset=ISO-8859-15
+	by ozlabs.org (Postfix) with ESMTP id 62E96DDEFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 17:32:31 +1100 (EST)
+Subject: Re: [PATCH 1/3] windfarm: dont die on suspend thread signal
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <20061213123944.747406000@sipsolutions.net>>
+References: <20061213123819.403286000@sipsolutions.net> >
+	<20061213123944.747406000@sipsolutions.net>>
+Content-Type: text/plain
+Date: Wed, 24 Jan 2007 17:32:24 +1100
+Message-Id: <1169620344.18754.64.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Wed, 2006-12-13 at 13:38 +0100, Johannes Berg wrote:
+> plain text document attachment (windfarm-dont-die-on-signals.patch)
+> When the windfarm thread gets a suspend signal it will die instead of
+> freezing. This fixes it.
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-We are experiencing a problem with Apple Xserve G5 (2.3G/Dual Proc.).
-After successfully booting the linux  kernel ( tried 2.6.18, 2.6.19 or
-2.6.20-rc5 )  the machine  fails to boot again.
-It goes thru normal led flashing and fan spinning sequence, like the
-first  time it booted,  but stops before  actually reading from the boot
-disk.  It refuses to enter OF and the only way to make it boot again is
-to reset internal PMU via a PMU reset button located inside  the chassis.
-We found experimentally that disabling the SMU (leaving PMU on) in the
-kernel configuration leads to clean reboot with no problems.... but no
-/dev/rtc of course and this is a BIG problem!
-Enabling I2C driver for Dallas RTC or the new RTC Class driver for RTC
-also locks up the machine on reboot, so I think it's i2c related.
-We also tried with different models of Xserve (2.0Ghz/DP) with same
-results....
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Any help would be appreciated.
-
-Massimiliano (Max) Vegni
-IT SYSTEMS srl - Rome - Italy
+> --- linux-2.6-git.orig/drivers/macintosh/windfarm_core.c	2006-12-11 23:34:47.082716759 +0100
+> +++ linux-2.6-git/drivers/macintosh/windfarm_core.c	2006-12-11 23:37:58.181716759 +0100
+> @@ -93,8 +93,6 @@ static int wf_thread_func(void *data)
+>  	DBG("wf: thread started\n");
+>  
+>  	while(!kthread_should_stop()) {
+> -		try_to_freeze();
+> -
+>  		if (time_after_eq(jiffies, next)) {
+>  			wf_notify(WF_EVENT_TICK, NULL);
+>  			if (wf_overtemp) {
+> @@ -117,8 +115,8 @@ static int wf_thread_func(void *data)
+>  		if (delay <= HZ)
+>  			schedule_timeout_interruptible(delay);
+>  
+> -		/* there should be no signal, but oh well */
+> -		if (signal_pending(current)) {
+> +		/* there should be no non-suspend signal, but oh well */
+> +		if (signal_pending(current) && !try_to_freeze()) {
+>  			printk(KERN_WARNING "windfarm: thread got sigl !\n");
+>  			break;
+>  		}
+> 
+> --
