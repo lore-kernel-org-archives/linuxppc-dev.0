@@ -1,22 +1,20 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from smtp2.mtco.com (smtp2.mtco.com [207.179.226.205])
-	by ozlabs.org (Postfix) with ESMTP id EFCC6DDF9B
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id CFD09DDF36
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Jan 2007 06:53:56 +1100 (EST)
-Received: from [192.168.2.10] (ghillsrb1-pool1-14.mtco.com [207.179.227.14])
-	by smtp2.mtco.com (Spam Firewall) with ESMTP id 4434F1928C8
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 13:38:05 -0600 (CST)
-Message-ID: <45B7B5AA.40304@billgatliff.com>
-Date: Wed, 24 Jan 2007 13:38:18 -0600
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: JTAG emulator for MPC8548E (v2)
-References: <BD261180E6D35F4D9D32F3E44FD3D901062D1E42@EMPBEDEX.empirix.com>	<200701240857.19428.laurent.pinchart@technotrade.biz>	<20070124103548.GA31703@gate.ebshome.net>	<200701241206.18167.laurent.pinchart@technotrade.biz>	<20070124171917.GB31703@gate.ebshome.net>
-	<20070124182824.GA7686@mag.az.mvista.com>
-In-Reply-To: <20070124182824.GA7686@mag.az.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 25 Jan 2007 07:49:46 +1100 (EST)
+To: Laurent Pinchart <laurent.pinchart@technotrade.biz>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: JTAG emulator for MPC8548E (v2) 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 24 Jan 2007 08:57:19 +0100."
+	<200701240857.19428.laurent.pinchart@technotrade.biz>
+Date: Wed, 24 Jan 2007 21:49:44 +0100
+Sender: wd@denx.de
+Message-Id: <20070124204944.172BB353BC5@atlas.denx.de>
+Cc: "Morrison,
+    Tom" <tmorrison@empirix.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,45 +25,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Guys:
-
-Mark A. Greer wrote:
-
->FWIW, I've had top-notch support from Abatron.  Also, back when my
->company bought a bunch of BDI's they were around half the price of the
->nearest competitor and less cumbersome to use.  Maybe there are cheaper
->alternatives now, I don't know.  Obviously, YMMV.
->  
+In message <200701240857.19428.laurent.pinchart@technotrade.biz> you wrote:
 >
+> The new unit works *mostly* fine. No debugging issue (not that I use it that 
+> much anyway, now that the board boots Linux), but still a flash programming 
+> issue. Programming the target parallel NOR flash works in slow JTAG mode, but 
+> not in faster mode using the internal workspace. I reported the problem 
 
+This may as well be a misconfiguration in your config file, like
+setting wrong flash timings.
 
-I've had excellent support from Abatron as well.  I've owned one of 
-their units for several years, bought it with my own money (which says a 
-lot, since I'm a freelancer!).  And I've brought a few obscure issues to 
-them over the years, all of which were addressed to my satisfaction.  
-The BDI2000 has been solid, significantly easier to setup and more 
-reliable in use than several other systems I've tried.
+> several months ago and still haven't received any solution. It might not be 
+> Abatron's fault, the French distributor might not have reported the problem 
+> to them. Abatron people speak German only, and will not respond to e-mails 
+> written in English (nor will they talk to you on the phone, they just hang 
+> up).
 
-One thing to keep in mind is that they're really constrained by not 
-having intimate knowledge of _your_ platform.  If your memory bus 
-configuration is wrong, for example, there isn't a whole lot that they 
-can do to rule that out from their end since they don't have your hardware.
+I cannot confirm this. On contrary. Abatron's support is one  of  the
+best  I've  ever  seen,  and I have seen a few. And of course you can
+send messages in  English  to  support@abatron.ch,  and  you  do  get
+replies.  And  they  do  answer  the phone (in German and in English,
+too).
 
-JTAG in general gets easily tripped up with power problems, etc. that 
-are a natural part of untested circuits.  If this stuff was easy, we'd 
-have to find work elsewhere!
+> The BDI-2000 is a nice product, but has a few bugs, is IMHO overprized and has 
+> one of the worst support service I've had to deal with.
 
+Hm... we have about 15 such devices in daily use. I don't doubt  your
+report, but you must have had really bad luck. This is NOT the normal
+situation with Abatron or the BDI.
 
->And no, I don't get a kickback from them... :)
->  
->
+Best regards,
 
-Me neither.  But if someone from Abatron has an unused unit sitting 
-around, I sure could use one!  :)
-
-
-b.g.
+Wolfgang Denk
 
 -- 
-Bill Gatliff
-bgat@billgatliff.com
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+In Nature there are neither rewards nor punishments, there are conse-
+quences.                                            -- R.G. Ingersoll
