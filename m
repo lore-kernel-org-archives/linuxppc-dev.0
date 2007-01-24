@@ -1,19 +1,20 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17847.8700.118329.777644@cargo.ozlabs.ibm.com>
-Date: Wed, 24 Jan 2007 20:08:12 +1100
+Message-ID: <17847.12237.166954.453166@cargo.ozlabs.ibm.com>
+Date: Wed, 24 Jan 2007 21:07:09 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Subject: Re: [PATCH 7/10] local_t : powerpc
-In-Reply-To: <20061221002705.GW28643@Krystal>
-References: <20061221001545.GP28643@Krystal> <20061221002705.GW28643@Krystal>
-Cc: Andrew Morton <akpm@osdl.org>, Greg Kroah-Hartman <gregkh@suse.de>,
-	linux-kernel@vger.kernel.org, "Martin J. Bligh" <mbligh@mbligh.org>,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Douglas Niehaus <niehaus@eecs.ku.edu>,
-	Ingo Molnar <mingo@redhat.com>, ltt-dev@shafik.org,
-	systemtap@sources.redhat.com, Thomas Gleixner <tglx@linutronix.de>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: Re: [PATCH 1/5] [POWERPC] cpm2: CPM2 interrupt controller fix
+In-Reply-To: <20070123004203.5a3007fa@localhost.localdomain>
+References: <20070113004150.1224.58427.stgit@localhost.localdomain>
+	<17844.35471.554647.189851@cargo.ozlabs.ibm.com>
+	<20070122164316.79569af9@localhost.localdomain>
+	<1169495737.1582.7.camel@localhost.localdomain>
+	<20070122235533.6f9f8d09@localhost.localdomain>
+	<1169500388.1582.14.camel@localhost.localdomain>
+	<20070123004203.5a3007fa@localhost.localdomain>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mathieu Desnoyers writes:
+I just tried to compile up the ads8272_defconfig with ARCH=ppc, since
+that was the only obviously 8272-based config in arch/ppc/configs.
+However, arch/ppc/platforms/mpc8272ads_setup.c fails to compile
+because of things like this in it (line 106):
 
-> +static __inline__ int local_dec_if_positive(local_t *l)
-> +{
-> +	int t;
-> +
-> +	__asm__ __volatile__(
-> +"1:	lwarx	%0,0,%1		# local_dec_if_positive\n\
-> +	addic.	%0,%0,-1\n\
-> +	blt-	2f\n"
-> +	PPC405_ERR77(0,%1)
-> +"	stwcx.	%0,0,%1\n\
-> +	bne-	1b"
+static void init_fcc1_ioports(struct fs_platform_info*)
+{
+...
+}
 
-This has the same bugs that we fixed recently in atomic_dec_if_positive;
-first, on 64-bit machines, the lwarx will zero-extend the word loaded
-from memory, and so the result of the addic will be negative only if
-the word was originally 0.  Secondly, even on 32-bit machines,
-0x80000000 will be considered positive since decrementing it gives
-0x7fffffff, which is positive.
+That is, it's a function definition (not declaration) with the
+parameter name missing, which gcc rejects with an error.  Gitk tells
+me it's been like this since September.
 
-> +/* Use these for per-cpu local_t variables: on some archs they are
-> + * much more efficient than these naive implementations.  Note they take
-> + * a variable, not an address.
-> + *
-> + * This could be done better if we moved the per cpu data directly
-> + * after GS.
-> + */
-
-What's "GS"?  Does this comment really apply on powerpc?
+Is there any 8272-based config that actually still compiles with
+ARCH=ppc?
 
 Paul.
