@@ -1,27 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6528CDE10E
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 09:35:44 +1100 (EST)
-Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <A030796C-8E88-4F26-A18A-AFA31010B510@kernel.crashing.org>
-References: <20061213123819.403286000@sipsolutions.net>
-	<20061213123945.386891000@sipsolutions.net>
-	<1169620444.18754.66.camel@localhost.localdomain>
-	<20070124085420.GA19810@iram.es>
-	<1169631177.18754.82.camel@localhost.localdomain>
-	<20070124103621.GA22579@iram.es>
-	<2435847C-A9FC-4430-A122-416B9B347038@kernel.crashing.org>
-	<1169675091.18754.84.camel@localhost.localdomain>
-	<A030796C-8E88-4F26-A18A-AFA31010B510@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 25 Jan 2007 09:35:38 +1100
-Message-Id: <1169678138.24996.5.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 93B6BDDEBA
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 09:46:11 +1100 (EST)
+In-Reply-To: <45B7DB47.4070400@freescale.com>
+References: <20070124210704.GC10527@ld0162-tx32.am.freescale.net>
+	<52B7EC8B-85EB-408C-97B7-806F8822B7A3@kernel.crashing.org>
+	<45B7DB47.4070400@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <74B54E3F-5436-4D9E-85E2-563CA7F22D94@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 03/18] Set -msoft-float and assembler target options in
+	the bootwrapper.
+Date: Wed, 24 Jan 2007 23:45:46 +0100
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,22 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-01-24 at 23:24 +0100, Segher Boessenkool wrote:
-> >>> The best solution may require informing the user space ntp code of
-> >>> such events. This requires very likely modifications to ntp itself
-> >>> (I may be wrong, I've not looked at NTP code for 5 years or so).
-> >>
-> >> Doesn't the kernel send signals to init on suspend/resume
-> >> events, just like with power fail events?  You can hook on
-> >> that.
-> >
-> > I don't think it does... at least not on powerbooks.
-> 
-> <Cpt. Picard voice>  Make it so.
-> 
-> :-)
+>>> Without -msoft-float, floating point state saving code can be  
+>>> executed
+>>> (at least with certain buggy versions of GCC, which don't clear  
+>>> bit  6 of
+>>> CR before calling a varargs function with no varargs parameters).
+>> I have a hard time understanding what this means.  Can you
+>> elaborate please?
+>
+> The PowerPC ABI uses bit 6 of CR to indicate to a varargs function  
+> whether one (or more) of the varargs parameters is floating point.   
+> This is used (among other things) by the varargs function to  
+> determine whether to save a floating point context.  Normally, GCC  
+> will clear the bit when calling a vararg function with integer-only  
+> parameters, but at least some versions (I saw it on 3.4.3) will not  
+> touch the bit at all when the varargs list is empty.
 
-Do you know of any timer that is still running while the box is asleep ?
-I doubt KL timer is and MPIC timers are long gone on Apple HW ...
+Gotcha.  Now, should a varargs function that doesn't get passed
+any actual varargs use that bit at all?  If not, the Linux printf()
+(or some support function) is broken; if so, is this fixed in later
+GCC versions?  If not, please report it (http://gcc.gnu.org/bugzilla).
 
-Ben.
+>>>  AFLAGS += $(cpu-as-y)
+>>>  CFLAGS += $(cpu-as-y)
+>>> +export cpu-as-y
+>> Maybe it would be better to export CFLAGS instead (on the
+>> other hand, you might have to cut out some options from it
+>> for 32-bit compiles, dunno).
+>
+> That'd also bring in the normal Linux headers, which the  
+> bootwrapper appears to be trying to avoid.
+
+Right.  cpu-as-y is an ugly name to export though, let's use a
+better name (that explains what it's for -- PLATFORM-AFLAGS or
+something like that).
+
+
+Segher
