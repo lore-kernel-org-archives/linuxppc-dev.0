@@ -1,32 +1,33 @@
-Return-Path: <lsorense@csclub.uwaterloo.ca>
-Received: from caffeine.csclub.uwaterloo.ca (caffeine.uwaterloo.ca
-	[129.97.134.17]) by ozlabs.org (Postfix) with ESMTP id 26440DDE31
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 03:39:01 +1100 (EST)
-Date: Wed, 24 Jan 2007 11:06:31 -0500
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.20-rc5: known unfixed regressions (v3) (part 2)
-Message-ID: <20070124160631.GE7582@csclub.uwaterloo.ca>
-References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
-	<20070124154725.GK17836@stusta.de>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id CFD2DDDF25
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 08:06:58 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l0OL6vGQ029163
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 14:06:57 -0700 (MST)
+Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
+	[10.82.65.62])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0OL6u7j029127
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 15:06:56 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
+	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
+	l0OKnIVK008091
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 14:49:19 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 231054B926
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 15:06:55 -0600 (CST)
+Received: (from b07421@localhost)
+	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
+	l0OL6sco010544
+	for linuxppc-dev@ozlabs.org; Wed, 24 Jan 2007 15:06:54 -0600
+Date: Wed, 24 Jan 2007 15:06:54 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 01/18] Include autoconf.h from the bootwrapper.
+Message-ID: <20070124210654.GA10527@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070124154725.GK17836@stusta.de>
-From: lsorense@csclub.uwaterloo.ca (Lennart Sorensen)
-Cc: Andrew Morton <akpm@osdl.org>, Livio Soares <livio@eecg.toronto.edu>,
-	Uwe Bugla <uwe.bugla@gmx.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, alan@lxorguk.ukuu.org.uk,
-	takada <takada@mbf.nifty.com>, ttb@tentacle.dhs.org,
-	jgarzik@pobox.com, Nick Piggin <nickpiggin@yahoo.com.au>,
-	Malte Schr??der <MalteSch@gmx.de>, David Chinner <dgc@sgi.com>,
-	xfs-masters@oss.sgi.com, Linus Torvalds <torvalds@osdl.org>,
-	rml@novell.com, Sami Farin <7atbggg02@sneakemail.com>,
-	Andrew Clayton <andrew@digital-domain.net>,
-	"Vladimir V. Saveliev" <vs@namesys.com>,
-	linux-ide@vger.kernel.org, petero2@telia.com,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Trond Myklebust <trond.myklebust@fys.uio.no>,
-	Jordan Crouse <jordan.crouse@amd.com>, gd@spherenet.de,
-	Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>, reiserfs-dev@namesys.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,19 +37,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 24, 2007 at 04:47:25PM +0100, Adrian Bunk wrote:
-> Subject    : fix geode_configure()
-> References : http://lkml.org/lkml/2007/1/9/216
-> Submitter  : Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> Caused-By  : takada <takada@mbf.nifty.com>
->              commit e4f0ae0ea63caceff37a13f281a72652b7ea71ba
-> Handled-By : takada <takada@mbf.nifty.com>
->              Lennart Sorensen <lsorense@csclub.uwaterloo.ca>
-> Status     : patches are being discussed
+This will be required by the u-boot compatibility code to obtain a
+compatible bd_t layout, to determine how to calculate the timebase, and
+to know what soc fields need to be modified.
 
-I wouldn't call this a regression.  It appears to go way back.  I also
-didn't find it, I just commented on it since it does affect the platform
-I work on.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/Makefile |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
---
-Len Sorensen
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 98392fb..906b166 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -31,7 +31,8 @@ ifeq ($(call cc-option-yn, -fstack-prote
+ BOOTCFLAGS	+= -fno-stack-protector
+ endif
+ 
+-BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
++BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj) \
++                   -include $(srctree)/include/linux/autoconf.h
+ 
+ zlib       := inffast.c inflate.c inftrees.c
+ zlibheader := inffast.h inffixed.h inflate.h inftrees.h infutil.h
+-- 
+1.4.4
