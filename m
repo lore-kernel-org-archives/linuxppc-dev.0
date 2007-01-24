@@ -1,11 +1,25 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17847.18482.465113.686036@cargo.ozlabs.ibm.com>
-Date: Wed, 24 Jan 2007 22:51:14 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: Patches pushed to powerpc.git for-2.6.21 branch
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id D89CFDDF50
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 00:05:56 +1100 (EST)
+Date: Wed, 24 Jan 2007 16:05:44 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/5] [POWERPC] cpm2: CPM2 interrupt controller fix
+Message-ID: <20070124160544.4bad687c@localhost.localdomain>
+In-Reply-To: <17847.12237.166954.453166@cargo.ozlabs.ibm.com>
+References: <20070113004150.1224.58427.stgit@localhost.localdomain>
+	<17844.35471.554647.189851@cargo.ozlabs.ibm.com>
+	<20070122164316.79569af9@localhost.localdomain>
+	<1169495737.1582.7.camel@localhost.localdomain>
+	<20070122235533.6f9f8d09@localhost.localdomain>
+	<1169500388.1582.14.camel@localhost.localdomain>
+	<20070123004203.5a3007fa@localhost.localdomain>
+	<17847.12237.166954.453166@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_RYj58.zqRW7aVm833Jfnd.Y;
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,60 +29,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I just pushed the following patches to the for-2.6.21 (and master)
-branches of the powerpc.git repository.  If anyone has sent any other
-patches in the past that they think should go in 2.6.21 (or 2.6.20,
-for that matter), they should resend them.  I also have two small
-bug-fix patches from Geert that I will try to get Linus to take before
-2.6.20.
+--Sig_RYj58.zqRW7aVm833Jfnd.Y
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Paul.
+On Wed, 24 Jan 2007 21:07:09 +1100
+Paul Mackerras wrote:
 
-Adrian Bunk (1):
-      [POWERPC] Remove the broken Gemini support
+> I just tried to compile up the ads8272_defconfig with ARCH=3Dppc, since
+> that was the only obviously 8272-based config in arch/ppc/configs.
+> However, arch/ppc/platforms/mpc8272ads_setup.c fails to compile
+> because of things like this in it (line 106):
+That default config is just odd, as I have noticed while testing.
+It still configured to use obsoleted stuff in 8260_io/ for network.=20
 
-Akinobu Mita (1):
-      [POWERPC] Use is_init() instead of pid==1
+Yet that does not address the problem below.
 
-Anton Blanchard (1):
-      [POWERPC] Move ELF_ET_DYN_BASE up to 512MB point
+>=20
+> static void init_fcc1_ioports(struct fs_platform_info*)
+> {
+> ...
+> }
+>=20
+> That is, it's a function definition (not declaration) with the
+> parameter name missing, which gcc rejects with an error.  Gitk tells
+> me it's been like this since September.
+>=20
+> Is there any 8272-based config that actually still compiles with
+> ARCH=3Dppc?
+>
 
-David Woodhouse (1):
-      [POWERPC] Mask 32-bit system call arguments to 32 bits on PPC64 in audit code
+No, there are not. 8272 haven't got a lot of attention in ppc realm. There =
+are also some additional issues caused by say
+PHY layer update, etc. The patch that fixes all is ready though - I'll give=
+ it a try today and send to the list later today.
 
-Ishizaki Kou (9):
-      [POWERPC] spufs: Add SPU register lock
-      [POWERPC] TLB insertion cleanup
-      [POWERPC] Fix oprofile support on Cell LPAR
-      [POWERPC] Add a field for each specific bus to struct pci_controller
-      [POWERPC] Add IRQ remapping hook
-      [POWERPC] Celleb: hypervisor call numbers
-      [POWERPC] Celleb: Cell SCC definitions
-      [POWERPC] Celleb: Support PCI bus and base of I/O
-      [POWERPC] Celleb: setup sio in SCC
+--
+Thanks,=20
+Vitaly=20
 
-Linas Vepstas (1):
-      [POWERPC] Clarify EEH error message
+--Sig_RYj58.zqRW7aVm833Jfnd.Y
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-Mariusz Kozlowski (6):
-      [POWERPC] arch/ppc/kernel/prom.c of_node_(get|put) cleanup
-      [POWERPC] arch/powerpc/kernel/vio.c of_node_put cleanup
-      [POWERPC] arch/powerpc/sysdev/ipic.c of_node_get cleanup
-      [POWERPC] arch/powerpc/sysdev/mpic.c of_node_get cleanup
-      [POWERPC] arch/powerpc/sysdev/qe_lib of_node_get cleanup
-      [POWERPC] arch/powerpc/sysdev/cpm2_pic.c of_node_get cleanup
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
-Michal Ostrowski (1):
-      [POWERPC] Do not write virq back to PCI config space
+iD8DBQFFt1mpuOg9JvQhSEsRAtVmAJ4n/szm10nUY5AF0xF0Q2H8XkfiCgCfSC/B
+QDRScQGflh8tilaXPFLeDO8=
+=inib
+-----END PGP SIGNATURE-----
 
-Nathan Lynch (1):
-      [POWERPC] maple: improve CPC9x5 host bridge detection
-
-Olaf Hering (1):
-      [POWERPC] Update fixup_winbond_82c105 comment
-
-Paul Gortmaker (1):
-      [POWERPC] Select DEFAULT_UIMAGE for HPC-NET/8641
-
-Simon Vallet (1):
-      [POWERPC] Add support for R_PPC_ADDR16_HI relocations
+--Sig_RYj58.zqRW7aVm833Jfnd.Y--
