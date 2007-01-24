@@ -1,19 +1,34 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 7CC51DDEA3
-	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 19:54:29 +1100 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Wed, 24 Jan 2007 09:54:20 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
-Message-ID: <20070124085420.GA19810@iram.es>
-References: <20061213123819.403286000@sipsolutions.net>
-	<20061213123945.386891000@sipsolutions.net>>
-	<1169620444.18754.66.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1169620444.18754.66.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <dhowells@redhat.com>
+Received: from mx1.redhat.com (mx1.redhat.com [66.187.233.31])
+	by ozlabs.org (Postfix) with ESMTP id B4103DDEE6
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 20:04:49 +1100 (EST)
+From: David Howells <dhowells@redhat.com>
+In-Reply-To: <20070122222115.GC11128@MAIL.13thfloor.at> 
+References: <20070122222115.GC11128@MAIL.13thfloor.at>
+	<m1ac0jc4no.fsf@ebiederm.dsl.xmission.com>
+	<11689656443582-git-send-email-ebiederm@xmission.com>
+	<45AE5969.8030603@sw.ru>
+To: Herbert Poetzl <herbert@13thfloor.at>
+Subject: Re: [PATCH 25/59] sysctl: C99 convert arch/frv/kernel/pm.c 
+Date: Wed, 24 Jan 2007 09:00:16 +0000
+Message-ID: <27474.1169629216@redhat.com>
+Sender: dhowells@redhat.com
+Cc: linux-mips@linux-mips.org, linux-parport@lists.infradead.org,
+	clemens@ladisch.de, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, aharkes@cs.cmu.edu,
+	tim@cyberelk.net, linux-scsi@vger.kernel.org,
+	kurt.hackel@oracle.com, coda@cs.cmu.edu, vojtech@suse.cz,
+	linux-390@vm.marist.edu, linuxsh-shmedia-dev@lists.sourceforge.net,
+	James.Bottomley@SteelEye.com, rtc-linux@googlegroups.com,
+	heiko.carstens@de.ibm.com, Kirill Korotaev <dev@sw.ru>,
+	xfs-masters@oss.sgi.com, andrea@suse.de, linux390@de.ibm.com,
+	openipmi-developer@lists.sourceforge.net, xfs@oss.sgi.com,
+	codalist@TELEMANN.coda.cs.cmu.edu, a.zummo@towertech.it,
+	tony.luck@intel.com, linux-ntfs-dev@lists.sourceforge.net,
+	netdev@vger.kernel.org, ak@suse.de, ralf@linux-mips.org,
+	containers@lists.osdl.org, lethal@linux-sh.org,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	schwidefsky@de.ibm.com, aia21@cantab.net, philb@gnu.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +38,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 24, 2007 at 05:34:04PM +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2006-12-13 at 13:38 +0100, Johannes Berg wrote:
-> > plain text document attachment (time-resume.patch)
-> > This patch converts the time restore code from a PMU notifier to a regular
-> > sys device so I can profit from it even when I don't suspend through the
-> > PMU, i.e. suspend to disk.
-> > 
-> > Also another step towards dropping pmu_sleep_notifier completely.
-> 
-> I'd rather do it differently: On suspend, read the RTC and save the
-> value. On resume, read it again, diff the values, and add that to the
-> current time.
-> 
 
-Isn't there a way to obtain a better resolution? 
+Fine by me.
 
-The RTC has a resolution on 1 second AFAIR. This means that there will
-be an error of up to 1 second after resume. If you run NTP, it will
-ultimately be corrected (I believe) but it may take a fairly long time
-given the loop bandwidth of NTP, which will also probably write for a
-while crap values into its drift file (/var/lib/ntp/ntp.drift on Debian 
-but location varies with distribution).
-
-	Regards,
-	Gabriel
+Acked-By: David Howells <dhowells@redhat.com>
