@@ -1,20 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 63C82DDF32
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 21:36:26 +1100 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Wed, 24 Jan 2007 11:36:21 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
+Message-ID: <20070124103621.GA22579@iram.es>
+References: <20061213123819.403286000@sipsolutions.net>
+	<20061213123945.386891000@sipsolutions.net>
+	<1169620444.18754.66.camel@localhost.localdomain>
+	<20070124085420.GA19810@iram.es>
+	<1169631177.18754.82.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17847.12237.166954.453166@cargo.ozlabs.ibm.com>
-Date: Wed, 24 Jan 2007 21:07:09 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: [PATCH 1/5] [POWERPC] cpm2: CPM2 interrupt controller fix
-In-Reply-To: <20070123004203.5a3007fa@localhost.localdomain>
-References: <20070113004150.1224.58427.stgit@localhost.localdomain>
-	<17844.35471.554647.189851@cargo.ozlabs.ibm.com>
-	<20070122164316.79569af9@localhost.localdomain>
-	<1169495737.1582.7.camel@localhost.localdomain>
-	<20070122235533.6f9f8d09@localhost.localdomain>
-	<1169500388.1582.14.camel@localhost.localdomain>
-	<20070123004203.5a3007fa@localhost.localdomain>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1169631177.18754.82.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I just tried to compile up the ads8272_defconfig with ARCH=ppc, since
-that was the only obviously 8272-based config in arch/ppc/configs.
-However, arch/ppc/platforms/mpc8272ads_setup.c fails to compile
-because of things like this in it (line 106):
+On Wed, Jan 24, 2007 at 08:32:57PM +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2007-01-24 at 09:54 +0100, Gabriel Paubert wrote:
+> 
+> > Isn't there a way to obtain a better resolution? 
+> 
+> Not that I know.
+> 
+> > The RTC has a resolution on 1 second AFAIR. This means that there will
+> > be an error of up to 1 second after resume. If you run NTP, it will
+> > ultimately be corrected (I believe) but it may take a fairly long time
+> > given the loop bandwidth of NTP, which will also probably write for a
+> > while crap values into its drift file (/var/lib/ntp/ntp.drift on Debian 
+> > but location varies with distribution).
+> 
+> But then, people suspending/resuming laptops know what to (or not to)
+> expect I suppose :-)
+> 
 
-static void init_fcc1_ioports(struct fs_platform_info*)
-{
-...
-}
+I believed that the patch also worked on desktops. Of course, one
+solution is to try to reset time from an NTP server on resume if you
+are connected (if you are not, then an error of a fraction of a second
+is less serious).
 
-That is, it's a function definition (not declaration) with the
-parameter name missing, which gcc rejects with an error.  Gitk tells
-me it's been like this since September.
+The best solution may require informing the user space ntp code of
+such events. This requires very likely modifications to ntp itself
+(I may be wrong, I've not looked at NTP code for 5 years or so).
 
-Is there any 8272-based config that actually still compiles with
-ARCH=ppc?
-
-Paul.
+	Gabriel
