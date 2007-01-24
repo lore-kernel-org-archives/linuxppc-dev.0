@@ -1,16 +1,17 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 7963DDE0DB
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 09:02:08 +1100 (EST)
-Message-ID: <45B7D044.7020007@smiths-aerospace.com>
-Date: Wed, 24 Jan 2007 16:31:48 -0500
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 3CAE0DE37B
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 09:02:59 +1100 (EST)
+Message-ID: <45B7D78E.5020704@freescale.com>
+Date: Wed, 24 Jan 2007 16:02:54 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 05/18] Add ft_first_node().
-References: <20070124210707.GE10527@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20070124210707.GE10527@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 06/18] Make ft_node_add() accept and return NULL.
+References: <20070124210709.GF10527@ld0162-tx32.am.freescale.net>
+	<4EF444AA-B7C0-460D-BA0A-EEDC9E2E4812@kernel.crashing.org>
+In-Reply-To: <4EF444AA-B7C0-460D-BA0A-EEDC9E2E4812@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,23 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
-> Clean up some of the open-coded data structure references by providing a
-> function to return a pointer to the first node in the tree.  This is only
-> used in high-level functions trying to access the beginning of the tree,
-> not in low-level code that is actually manipulating the data structure.
+Segher Boessenkool wrote:
+>> Currently, if ft_node_add() is passed NULL it will allocate an  entry for
+>> it and return a non-NULL phandle.  This patch makes it simply pass the
+>> NULL through.
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/boot/flatdevtree.c |   13 +++++++++----
->  1 files changed, 9 insertions(+), 4 deletions(-)
+> 
+> Hrm, is this a good thing?  Shouldn't you just BUG_ON()
+> instead?
 
-Hi Scott,
+There are times where NULL is normal -- such as at the end of an 
+iteration to find every instance of a certain type of node, or to follow 
+parentage to the root node.  Having ft_node_add() pass the NULL through 
+keeps it from being a special case in all of the wrapper code that turns 
+the internal node into a phandle before returning.
 
-Have you considered replacing flatdevtree.c with David Gibson's fdtlib? 
-  The interface is a lot cleaner, which likely carries through to the 
-underlying code.
-<http://thread.gmane.org/gmane.linux.ports.ppc64.devel/12771/focus=12877>
-
-Best regards,
-gvb
+-Scott
