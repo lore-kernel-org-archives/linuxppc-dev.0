@@ -1,19 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 0676EDE213
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 09:18:56 +1100 (EST)
-Message-ID: <45B7DB47.4070400@freescale.com>
-Date: Wed, 24 Jan 2007 16:18:47 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 03/18] Set -msoft-float and assembler target options in
-	the bootwrapper.
-References: <20070124210704.GC10527@ld0162-tx32.am.freescale.net>
-	<52B7EC8B-85EB-408C-97B7-806F8822B7A3@kernel.crashing.org>
-In-Reply-To: <52B7EC8B-85EB-408C-97B7-806F8822B7A3@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D208EDE0AC
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 09:25:40 +1100 (EST)
+In-Reply-To: <1169675091.18754.84.camel@localhost.localdomain>
+References: <20061213123819.403286000@sipsolutions.net>
+	<20061213123945.386891000@sipsolutions.net>
+	<1169620444.18754.66.camel@localhost.localdomain>
+	<20070124085420.GA19810@iram.es>
+	<1169631177.18754.82.camel@localhost.localdomain>
+	<20070124103621.GA22579@iram.es>
+	<2435847C-A9FC-4430-A122-416B9B347038@kernel.crashing.org>
+	<1169675091.18754.84.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <A030796C-8E88-4F26-A18A-AFA31010B510@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
+Date: Wed, 24 Jan 2007 23:24:29 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> Without -msoft-float, floating point state saving code can be executed
->> (at least with certain buggy versions of GCC, which don't clear bit  6 of
->> CR before calling a varargs function with no varargs parameters).
-> 
-> 
-> I have a hard time understanding what this means.  Can you
-> elaborate please?
+>>> The best solution may require informing the user space ntp code of
+>>> such events. This requires very likely modifications to ntp itself
+>>> (I may be wrong, I've not looked at NTP code for 5 years or so).
+>>
+>> Doesn't the kernel send signals to init on suspend/resume
+>> events, just like with power fail events?  You can hook on
+>> that.
+>
+> I don't think it does... at least not on powerbooks.
 
-The PowerPC ABI uses bit 6 of CR to indicate to a varargs function 
-whether one (or more) of the varargs parameters is floating point.  This 
-is used (among other things) by the varargs function to determine 
-whether to save a floating point context.  Normally, GCC will clear the 
-bit when calling a vararg function with integer-only parameters, but at 
-least some versions (I saw it on 3.4.3) will not touch the bit at all 
-when the varargs list is empty.
+<Cpt. Picard voice>  Make it so.
 
-Since the functions in string.S use cr1 (which contains bit 6), this 
-caused a fault on e500 (which doesn't have a normal floating point unit) 
-when I called strcmp() followed by printf() of a bare string with no 
-other arguments.
+:-)
 
->>  AFLAGS += $(cpu-as-y)
->>  CFLAGS += $(cpu-as-y)
->> +export cpu-as-y
-> 
-> 
-> Maybe it would be better to export CFLAGS instead (on the
-> other hand, you might have to cut out some options from it
-> for 32-bit compiles, dunno).
 
-That'd also bring in the normal Linux headers, which the bootwrapper 
-appears to be trying to avoid.
-
--Scott
+Segher
