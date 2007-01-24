@@ -1,18 +1,28 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 3CAE0DE37B
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 09:02:59 +1100 (EST)
-Message-ID: <45B7D78E.5020704@freescale.com>
-Date: Wed, 24 Jan 2007 16:02:54 -0600
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 06/18] Make ft_node_add() accept and return NULL.
-References: <20070124210709.GF10527@ld0162-tx32.am.freescale.net>
-	<4EF444AA-B7C0-460D-BA0A-EEDC9E2E4812@kernel.crashing.org>
-In-Reply-To: <4EF444AA-B7C0-460D-BA0A-EEDC9E2E4812@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D1F89DE4CC
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 09:03:08 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0OM35B8028600
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 17:03:05 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l0OM358n549080
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 15:03:05 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0OM35YE002078
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 15:03:05 -0700
+Subject: [PATCH 1/1] powerpc: Export PCI slot reset API
+To: paulus@samba.org
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Wed, 24 Jan 2007 16:03:03 -0600
+Message-Id: <11696761831719-patch-mail.ibm.com>
+Cc: brking@linux.vnet.ibm.com, linuxppc-dev@ozlabs.org,
+	brazilnut@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +32,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> Currently, if ft_node_add() is passed NULL it will allocate an  entry for
->> it and return a non-NULL phandle.  This patch makes it simply pass the
->> NULL through.
-> 
-> 
-> Hrm, is this a good thing?  Shouldn't you just BUG_ON()
-> instead?
 
-There are times where NULL is normal -- such as at the end of an 
-iteration to find every instance of a certain type of node, or to follow 
-parentage to the root node.  Having ft_node_add() pass the NULL through 
-keeps it from being a special case in all of the wrapper code that turns 
-the internal node into a phandle before returning.
+Adds two new APIs to assert/deassert PCI reset to a given
+device. This is needed for an ipr PCI-E adapter which does not
+properly implement either BIST nor PCI-E hot reset, requiring
+a PCI-E warm reset, which is what this implements.
 
--Scott
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
+
+ linux-2.6-bjking1/arch/powerpc/platforms/pseries/eeh.c |   41 +++++++++++++++++
+ linux-2.6-bjking1/include/asm-powerpc/ppc-pci.h        |    3 +
+ 2 files changed, 44 insertions(+)
+
+diff -puN arch/powerpc/platforms/pseries/eeh.c~powerpc_slot_reset_api2 arch/powerpc/platforms/pseries/eeh.c
+--- linux-2.6/arch/powerpc/platforms/pseries/eeh.c~powerpc_slot_reset_api2	2007-01-11 15:52:57.000000000 -0600
++++ linux-2.6-bjking1/arch/powerpc/platforms/pseries/eeh.c	2007-01-11 15:52:57.000000000 -0600
+@@ -591,6 +591,47 @@ static void __rtas_set_slot_reset(struct
+ 	msleep (PCI_BUS_SETTLE_TIME_MSEC);
+ }
+ 
++/**
++ * pci_set_slot_reset - Assert PCI reset to the PCI slot
++ * @dev:	pci device struct
++ *
++ * After asserting PCI reset, the caller should wait for
++ * 100 milliseconds or longer.
++ *
++ * Return value:
++ * 	0 if success
++ **/
++int pci_set_slot_reset(struct pci_dev *dev)
++{
++	struct device_node *dn = pci_device_to_OF_node(dev);
++	struct pci_dn *pdn = PCI_DN(dn);
++
++	rtas_pci_slot_reset(pdn, 3);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pci_set_slot_reset);
++
++/**
++ * pci_clear_slot_reset - Clear PCI reset to the PCI slot
++ * @dev:	pci device struct
++ *
++ * After clearing PCI reset, the caller should wait 1.8 seconds
++ * or longer for the bus to stabilize and the device to come
++ * ready.
++ *
++ * Return value:
++ * 	0 if success
++ **/
++int pci_clear_slot_reset(struct pci_dev *dev)
++{
++	struct device_node *dn = pci_device_to_OF_node(dev);
++	struct pci_dn *pdn = PCI_DN(dn);
++
++	rtas_pci_slot_reset (pdn, 0);
++	return 0;
++}
++EXPORT_SYMBOL_GPL(pci_clear_slot_reset);
++
+ int rtas_set_slot_reset(struct pci_dn *pdn)
+ {
+ 	int i, rc;
+diff -puN include/asm-powerpc/ppc-pci.h~powerpc_slot_reset_api2 include/asm-powerpc/ppc-pci.h
+--- linux-2.6/include/asm-powerpc/ppc-pci.h~powerpc_slot_reset_api2	2007-01-11 15:52:57.000000000 -0600
++++ linux-2.6-bjking1/include/asm-powerpc/ppc-pci.h	2007-01-11 15:52:57.000000000 -0600
+@@ -124,6 +124,9 @@ void eeh_clear_slot (struct device_node 
+ /* Find the associated "Partiationable Endpoint" PE */
+ struct device_node * find_device_pe(struct device_node *dn);
+ 
++int pci_set_slot_reset(struct pci_dev *dev);
++int pci_clear_slot_reset(struct pci_dev *dev);
++
+ #endif
+ 
+ #endif /* __KERNEL__ */
+_
