@@ -1,20 +1,23 @@
-Return-Path: <christophe.alayrac@cresitt.com>
-Received: from smtp5-g19.free.fr (smtp5-g19.free.fr [212.27.42.35])
-	by ozlabs.org (Postfix) with ESMTP id B6B49DDEC9
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EED98DDF18
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Jan 2007 03:04:51 +1100 (EST)
-Subject: Re: ML403, 2.6.17.1 kernel panic
-From: alayrac christophe <christophe.alayrac@cresitt.com>
-To: Andrei Konovalov <akonovalov@ru.mvista.com>
-In-Reply-To: <45B603C1.2070601@ru.mvista.com>
-References: <1169556195.16144.3.camel@localhost.localdomain>
-	<45B603C1.2070601@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Date: Wed, 24 Jan 2007 18:04:46 +0100
-Message-Id: <1169658286.21182.8.camel@localhost.localdomain>
+	Thu, 25 Jan 2007 04:19:19 +1100 (EST)
+Date: Wed, 24 Jan 2007 09:19:17 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Laurent Pinchart <laurent.pinchart@technotrade.biz>
+Subject: Re: JTAG emulator for MPC8548E (v2)
+Message-ID: <20070124171917.GB31703@gate.ebshome.net>
+References: <BD261180E6D35F4D9D32F3E44FD3D901062D1E42@EMPBEDEX.empirix.com>
+	<200701240857.19428.laurent.pinchart@technotrade.biz>
+	<20070124103548.GA31703@gate.ebshome.net>
+	<200701241206.18167.laurent.pinchart@technotrade.biz>
 Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: christophe.alayrac@cresitt.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200701241206.18167.laurent.pinchart@technotrade.biz>
+Cc: "Morrison, Tom" <tmorrison@empirix.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,43 +28,54 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Andrei,
-
-Firts aff all thank you very much for your help. I finally succed to
-start the kernel. The problem was as SGDMA is activated then there is no
-FIFO support on the TEMAC.
-
-The kernel start properly now on NFS root file system but hangs with :
-Unable to open initial console.
-
-The root file system is just a copy of the MVISTA rootfs delivered with
-ML403 eval kit.
-
-A quick look in /dev show that there is no ttyS0 and that is why the
-kernel did not succeed to open /dev/ttyS0.
-
-My question is : 
-
-1) Is their any config in the Kernel 2.6.17.1 to select, in order to
-have an auto initialisation of /dev (like withe CONFIG_DEVFS_FS in
-previous verions)?
-
-Or should I create ttyS0 node in the root file system?
-
-2) Is there someone in the community that succeed to use TEMAC with
-SGDMA? If yes could you tell me wich kernel version and what TEMAC patch
-you are using.
-
-One more time thanks to Andrei.
-
-Kinds regards
-
-Le mardi 23 janvier 2007 à 15:46 +0300, Andrei Konovalov a écrit :
-> Hi Chris,
+On Wed, Jan 24, 2007 at 12:06:17PM +0100, Laurent Pinchart wrote:
+> Hi Eugene,
 > 
->  From you log it seems like the kernel tries to initialize the TEMAC's FIFO but fails.
-> Do you have TEMAC configured in FIFO mode in your design?
+> > > The new unit works *mostly* fine. No debugging issue (not that I use it
+> > > that much anyway, now that the board boots Linux), but still a flash
+> > > programming issue. Programming the target parallel NOR flash works in
+> > > slow JTAG mode, but not in faster mode using the internal workspace. I
+> > > reported the problem several months ago and still haven't received any
+> > > solution.
+> >
+> > Most likely problem isn't in BDI but in your setup. Depending on
+> > the particular chip model, to be able use workspace you must have
+> > initialized memory first. In fact, I'm pretty sure you haven't
+> > configured chip correctly to make workspace usable. I've been using
+> > BDI with various PowerPC and MIPS SoCs for many years. It's an excellent
+> > tool, you just have to use it correctly.
 > 
-> Thanks,
-> Andrei
+> I wish it was that simple.
+
+Sorry, but it is. It's a low level tool which requires deep knowledge 
+of the chip.
+
+>  It is probably a target processor configuration 
+> issue, as I can use the workspace if
 > 
+> a) the target flash has already been programmed with U-Boot
+> b) the BDI-2000 is misconfigured and fails to stop the target processor at 
+> startup.
+> 
+> I can thus use the workspace when U-Boot initializes the processor.
+
+Wow, so you knew it wasn't BDI but a configuration problem from the 
+start. So it all was just a FUD, how low.  
+
+> 
+> I had a look at U-Boot code and tried to initialize the processor registers 
+> with the same values, without luck. I asked Abatron's French distributor for 
+> technical support, and they haven't been able to help me. They made me try 
+> lots of different initialization sequences. Several people online sent me 
+> their configuration file, and none of them worked for me.
+> 
+> So, there must be a configuration problem somewhere, but even Abatron's 
+> technical support haven't been able to find it. That's why I complained about 
+> their support in my e-mail.
+
+In your original e-mail you made it look like BDI has a bug in it, 
+which in fact isn't true. Bad support might be a concern, I agree, but 
+this doesn't make a tool bad, IMHO.
+
+-- 
+Eugene
