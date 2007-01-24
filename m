@@ -1,22 +1,15 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19l.g19.rapidsite.net (mail19l.g19.rapidsite.net
-	[204.202.242.137]) by ozlabs.org (Postfix) with SMTP id DA8A9DDEEA
+Return-Path: <robers97@yahoo.com>
+Received: from web56902.mail.re3.yahoo.com (web56902.mail.re3.yahoo.com
+	[66.196.97.91]) by ozlabs.org (Postfix) with SMTP id CC566DDE06
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 24 Jan 2007 09:34:10 +1100 (EST)
-Received: from mx87.stngva01.us.mxservers.net (198.173.112.4)
-	by mail19l.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
-	0-0988751645 for <linuxppc-embedded@ozlabs.org>;
-	Tue, 23 Jan 2007 17:34:06 -0500 (EST)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.993.1169563649.9285.linuxppc-embedded@ozlabs.org>
-Subject: Re: MPC8360E Linux and 2.6.19.2
-Date: Tue, 23 Jan 2007 14:33:51 -0800
-Message-ID: <000301c73f3e$8fceb780$6405a8c0@absolut>
+	Wed, 24 Jan 2007 16:35:58 +1100 (EST)
+Date: Tue, 23 Jan 2007 21:35:56 -0800 (PST)
+From: Steven Roberts <robers97@yahoo.com>
+Subject: PCMCIA on 860T FADS  - correct approach?
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-In-Reply-To: <mailman.993.1169563649.9285.linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <332899.90834.qm@web56902.mail.re3.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,57 +20,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-I have tracked my 'lockup' to a specific line in /powerpc/kernel/prom.c
-
-In the function: __init unflatten_device_tree(void)
-On line:
-
-mem = lab_alloc(size + 4, __alignof__(struct device_node));
-mem = (unsigned long) __va(mem);
-
-((u32 *)mem[size / 4] = 0xdeadbeef;
-
-
-This is causing a lockup when 0xdeadbeef is written. I have no idea why...
-
-My assumption would be that somehow the memory is not ready? Or BATS are not
-setup correctly? Perhaps a LAW register?
-
-Is this line dependent on having the DTS tree setup correctly? If so, how
-big can the 'memory' node be in the DTS file? I have mine tried a single
-bank of 256MB, and of 512MB <I have a single 512MB DIMM at the moment>
-
--Russ
-
-----------------------------------------------------------------------
-Original Message:
-
-All,
-
-Trying to boot up / debug my board with a Rev 1.2 MPC8360E. 
-
-After the kernel launches from U-boot I receive no serial debug, and the
-system hangs. 
-
-I am running U-boot 1.1.6. Dirty <which does contains support for the 8360>,
-
-I have walked through the DTS/blob file, after U-boot modifies it, <I turned
-on all the debug info>, and can clearly see that the /chosen node, etc.. is
-getting entered. My original DTS file already has all of the clock speeds
-entered <modeled after the MPC8360xx.dts file that was already in the
-DENX-2.6.19.2 kernel release>.
-
-I have limited debug ability via some GPIO leds on our board, I can see that
-the kernel starts to run and at least gets to the point where it clears all
-the BATs <powerpc/boot/head_32.S and setup_32.c>, at which point I lose
-access to the IO space and can no longer write out to the debug lights.
-Unfortunately I do not have access to a COP debugger at this point. It
-doesn't seem to get to the platform files, or at least I can get the GPIO
-access inside the IMMR space to work correctly.
-
-Does anyone have any suggestion per software only debug method that might be
-enabled? Or a way to temporarily hack the early serial output so I can see
-what is going on?
-
--Russ
+=0AI am trying to configure a 2.4.25 kernel for an 860TFADS board with PCMC=
+IA support.  I set the  kernel flag CONFIG_PCMCIA_M8XX which pulls in drive=
+rs/pcmcia/m8xx_pcmcia.c (cvs 1.17).  I'm getting a machine check during err=
+ors when the voltage_set() function is called on m8xx_init() when the BSCR1=
+ is being set:=0A=0Am8xx_pcmcia: Voltage set 0=0Am8xx_pcmcia: First, turn o=
+ff all power.=0Am8xx_pcmcia: BCSR1 &=3D 0xffbeffff=0Am8xx_pcmcia: BCSR1 &=
+=3D 0x00300000=0A=0AIn looking at the newsgroups, it seems like support for=
+ this might be pulled into module package after 2000 or so.  Before I figur=
+e out all the correct register settings, could someone tell me if I should =
+continue on this path?  Perhaps there is a more up-to-date file that contai=
+n these functions and I should not include the m8xx_pcmcia flag?=0A=0AThank=
+s for any guidance!=0A=0A=0A=0A=0A =0A_____________________________________=
+_______________________________________________=0ATV dinner still cooling? =
+=0ACheck out "Tonight's Picks" on Yahoo! TV.=0Ahttp://tv.yahoo.com/
