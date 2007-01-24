@@ -1,15 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 25 Jan 2007 10:37:22 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 24E81DDF84
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 10:39:25 +1100 (EST)
+In-Reply-To: <20070124210704.GC10527@ld0162-tx32.am.freescale.net>
+References: <20070124210704.GC10527@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <52B7EC8B-85EB-408C-97B7-806F8822B7A3@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 03/18] Set -msoft-float and assembler target options in
+	the bootwrapper.
+Date: Wed, 24 Jan 2007 22:31:06 +0100
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 05/18] Add ft_first_node().
-Message-ID: <20070124233722.GA10736@localhost.localdomain>
-References: <20070124210707.GE10527@ld0162-tx32.am.freescale.net>
-	<45B7D044.7020007@smiths-aerospace.com>
-	<45B7D6B6.2010308@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45B7D6B6.2010308@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,33 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 24, 2007 at 03:59:18PM -0600, Scott Wood wrote:
-> Jerry Van Baren wrote:
-> > Have you considered replacing flatdevtree.c with David Gibson's fdtlib? 
-> >  The interface is a lot cleaner, which likely carries through to the 
-> > underlying code.
+> Without -msoft-float, floating point state saving code can be executed
+> (at least with certain buggy versions of GCC, which don't clear bit  
+> 6 of
+> CR before calling a varargs function with no varargs parameters).
 
-In any case I intend to replace the flatdevtree.c code with libfdt at
-some point in the future (not too far away, I hope).  I'm delaying on
-a couple of things at present: first, sorting out IBM-internal
-bureaucratic hurdles, second letting the API settle a bit so that I'm
-pretty confident it won't want changing.
+I have a hard time understanding what this means.  Can you
+elaborate please?
 
-> > <http://thread.gmane.org/gmane.linux.ports.ppc64.devel/12771/focus=12877>
-> 
-> I tried pulling from the git tree, but since I'm using the http protocol 
-> (our firewall unfortunately won't allow the git protocol to go through), 
-> all I get is:
-> 
-> Cannot get remote repository information.
-> Perhaps git-update-server-info needs to be run there?
+>  AFLAGS += $(cpu-as-y)
+>  CFLAGS += $(cpu-as-y)
+> +export cpu-as-y
 
-Um.. I'm running git-update-server-info, but the repository wasn't
-anywhere http visible.  Just moved things around, now try:
-	git clone http://ozlabs.org/~dgibson/libfdt.git
+Maybe it would be better to export CFLAGS instead (on the
+other hand, you might have to cut out some options from it
+for 32-bit compiles, dunno).
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+Segher
