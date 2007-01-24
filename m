@@ -1,21 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 24E81DDF84
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 10:39:25 +1100 (EST)
-In-Reply-To: <20070124210704.GC10527@ld0162-tx32.am.freescale.net>
-References: <20070124210704.GC10527@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <52B7EC8B-85EB-408C-97B7-806F8822B7A3@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 03/18] Set -msoft-float and assembler target options in
-	the bootwrapper.
-Date: Wed, 24 Jan 2007 22:31:06 +0100
-To: Scott Wood <scottwood@freescale.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 9A61FDDF8F
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 10:41:49 +1100 (EST)
+Message-ID: <45B7EEB6.8060607@freescale.com>
+Date: Wed, 24 Jan 2007 17:41:42 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 06/18] Make ft_node_add() accept and return NULL.
+References: <20070124210709.GF10527@ld0162-tx32.am.freescale.net>
+	<4EF444AA-B7C0-460D-BA0A-EEDC9E2E4812@kernel.crashing.org>
+	<45B7D78E.5020704@freescale.com>
+	<C498DBDF-5413-46CA-9A11-B625B009B53A@kernel.crashing.org>
+In-Reply-To: <C498DBDF-5413-46CA-9A11-B625B009B53A@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,21 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Without -msoft-float, floating point state saving code can be executed
-> (at least with certain buggy versions of GCC, which don't clear bit  
-> 6 of
-> CR before calling a varargs function with no varargs parameters).
+Segher Boessenkool wrote:
+> But doesn't ft_add_node() add a node to the tree?  If so,
+> a NULL is most likely a program error. If not, some name
+> change is in order /me thinks ;-)
 
-I have a hard time understanding what this means.  Can you
-elaborate please?
+No, it adds the node to the phandle->internal pointer lookup table (or 
+returns the existing phandle if it's already there).  And yes, it could 
+use a better name -- how about ft_node_to_phandle()?
 
->  AFLAGS += $(cpu-as-y)
->  CFLAGS += $(cpu-as-y)
-> +export cpu-as-y
-
-Maybe it would be better to export CFLAGS instead (on the
-other hand, you might have to cut out some options from it
-for 32-bit compiles, dunno).
-
-
-Segher
+-Scott
