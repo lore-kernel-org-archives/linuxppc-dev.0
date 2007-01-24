@@ -1,30 +1,16 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B471ADDF93
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 10:21:17 +1100 (EST)
-In-Reply-To: <1169678138.24996.5.camel@localhost.localdomain>
-References: <20061213123819.403286000@sipsolutions.net>
-	<20061213123945.386891000@sipsolutions.net>
-	<1169620444.18754.66.camel@localhost.localdomain>
-	<20070124085420.GA19810@iram.es>
-	<1169631177.18754.82.camel@localhost.localdomain>
-	<20070124103621.GA22579@iram.es>
-	<2435847C-A9FC-4430-A122-416B9B347038@kernel.crashing.org>
-	<1169675091.18754.84.camel@localhost.localdomain>
-	<A030796C-8E88-4F26-A18A-AFA31010B510@kernel.crashing.org>
-	<1169678138.24996.5.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <52AC1EDB-6AF7-4763-9734-2BE8CE8CE6D0@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
-Date: Thu, 25 Jan 2007 00:21:09 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 25 Jan 2007 10:37:22 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 05/18] Add ft_first_node().
+Message-ID: <20070124233722.GA10736@localhost.localdomain>
+References: <20070124210707.GE10527@ld0162-tx32.am.freescale.net>
+	<45B7D044.7020007@smiths-aerospace.com>
+	<45B7D6B6.2010308@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45B7D6B6.2010308@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,16 +20,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> <Cpt. Picard voice>  Make it so.
->>
->> :-)
->
-> Do you know of any timer that is still running while the box is  
-> asleep ?
-> I doubt KL timer is and MPIC timers are long gone on Apple HW ...
+On Wed, Jan 24, 2007 at 03:59:18PM -0600, Scott Wood wrote:
+> Jerry Van Baren wrote:
+> > Have you considered replacing flatdevtree.c with David Gibson's fdtlib? 
+> >  The interface is a lot cleaner, which likely carries through to the 
+> > underlying code.
 
-Only the PMU (SMU) timers run while the box is asleep (i.e.,
-the RTC clock this patch is about).
+In any case I intend to replace the flatdevtree.c code with libfdt at
+some point in the future (not too far away, I hope).  I'm delaying on
+a couple of things at present: first, sorting out IBM-internal
+bureaucratic hurdles, second letting the API settle a bit so that I'm
+pretty confident it won't want changing.
 
+> > <http://thread.gmane.org/gmane.linux.ports.ppc64.devel/12771/focus=12877>
+> 
+> I tried pulling from the git tree, but since I'm using the http protocol 
+> (our firewall unfortunately won't allow the git protocol to go through), 
+> all I get is:
+> 
+> Cannot get remote repository information.
+> Perhaps git-update-server-info needs to be run there?
 
-Segher
+Um.. I'm running git-update-server-info, but the repository wasn't
+anywhere http visible.  Just moved things around, now try:
+	git clone http://ozlabs.org/~dgibson/libfdt.git
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
