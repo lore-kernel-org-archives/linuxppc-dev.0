@@ -1,30 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CE77BDE1CE
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 12:05:42 +1100 (EST)
-In-Reply-To: <1169685931.24996.16.camel@localhost.localdomain>
-References: <20061218163846.337fed65@localhost> <45882913.2000609@acm.org>
-	<20061220154517.6341fce6@localhost>
-	<200612210111.28186.arnd@arndb.de>
-	<20070125104540.65a1f557@localhost>
-	<1169682996.24996.11.camel@localhost.localdomain>
-	<523FF36A-46DF-40CA-BFFE-EDE95EFA3EFE@kernel.crashing.org>
-	<1169685931.24996.16.camel@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AE517204-60B4-4C88-B363-FD11B9912E7C@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 1/1] updated version, fixed the compiler warning
-Date: Thu, 25 Jan 2007 02:05:22 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Christian Krafft <krafft@de.ibm.com>,
-	openipmi-developer@lists.sourceforge.net,
-	Krafft <krafft@linux.vnet.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CD036DDFE5
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 12:11:01 +1100 (EST)
+Message-ID: <45B80395.50302@garzik.org>
+Date: Wed, 24 Jan 2007 20:10:45 -0500
+From: Jeff Garzik <jeff@garzik.org>
+MIME-Version: 1.0
+To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+Subject: Re: [PATCH 1/4] libata.h: add another IRQ calls
+References: <200701161045.l0GAjwJ0029209@toshiba.co.jp>
+In-Reply-To: <200701161045.l0GAjwJ0029209@toshiba.co.jp>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+	paulus@samba.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,30 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> +static int __devexit ipmi_of_remove(struct of_device *dev)
->>>> +{
->>>> +	/* should call
->>>> +	 * cleanup_one_si(dev->dev.driver_data); */
->>>> +	return 0;
->>>> +}
->>>
->>> If your remove doesn't work, don't implement one.
->>
->> As explained before, it's the underlying thing that doesn't
->> work.  Yeah someone should fix it one day.  Still it's better
->> to have this comment than to not have anything at all.  An
->> XXX FIXME: tag wouldn't be out of place of course.
->
-> If the underlying ipmi stuff cannot cleanup, then the driver should  
-> not
-> have a module_exit() so the module cannot be removed.
+Akira Iguchi wrote:
+> Two IRQ calls are added in ata_port_operations.
+> - irq_on() is used to enable interrupts. 
+> - irq_ack() is used to acknowledge a device interrupt.
+> 
+> And there are additional function declarations which are
+> used in pata_scc.c.
+> 
+> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
 
-Well the "base" IPMI code has this same FIXME.  Also, it seems
-to be safe to just exit in this particular case )not a clean
-way to go about things, of course).
-
-Anyway, it sounds like Christian has a fix, let's see what he
-comes up with :-)
+After this round of comments, please resend the entire patchset, so that 
+I have everything straight.
 
 
-Segher
+> @@ -761,6 +763,9 @@ extern void ata_port_queue_task(struct a
+>  extern u32 ata_wait_register(void __iomem *reg, u32 mask, u32 val,
+>  			     unsigned long interval_msec,
+>  			     unsigned long timeout_msec);
+> +unsigned int ata_dev_try_classify(struct ata_port *, unsigned int, u8 *);
+> +struct ata_probe_ent *ata_probe_ent_alloc(struct device *,
+> +					  const struct ata_port_info *);
+>  
+
+
+To properly export these functions, (a) remove their declarations from 
+drivers/ata/libata.h and (b) add EXPORT_SYMBOL_GPL() declarations.
+
+	Jeff
