@@ -1,14 +1,14 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 56A16DDDEE
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 04:51:15 +1100 (EST)
-Date: Thu, 25 Jan 2007 18:51:13 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTP id AD690DE45B
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 04:51:52 +1100 (EST)
+Date: Thu, 25 Jan 2007 18:51:50 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
 To: James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 7/9] ps3: disable display flipping during mode changes
+Subject: [PATCH 8/9] ps3: cleanup ps3fb before clearing HPTE
 In-Reply-To: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0701251850470.24610@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0701251851160.24610@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -24,46 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If ps3fb is available, we have to disable display flipping while changing the
-audio or video mode.
+PS3: Cleanup the frame buffer device before clearing the HPTE mapping
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/ps3/ps3av_cmd.c |   10 +++++++++-
- 1 files changed, 9 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/ps3/htab.c |    5 +++++
+ 1 files changed, 5 insertions(+)
 
---- ps3-linux.orig/drivers/ps3/ps3av_cmd.c
-+++ ps3-linux/drivers/ps3/ps3av_cmd.c
-@@ -33,6 +33,12 @@
- #define DPRINTK(fmt, args...) do { } while (0)
- #endif
+--- ps3-linux.orig/arch/powerpc/platforms/ps3/htab.c
++++ ps3-linux/arch/powerpc/platforms/ps3/htab.c
+@@ -234,6 +234,11 @@ static void ps3_hpte_invalidate(unsigned
  
-+#ifdef CONFIG_FB_PS3
-+extern int ps3fb_flip_ctl(int);
-+#else
-+#define ps3fb_flip_ctl(x)
-+#endif
-+
- static const struct video_fmt {
- 	u32 format;
- 	u32 order;
-@@ -884,8 +890,9 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ static void ps3_hpte_clear(void)
  {
- 	int res;
- 
--	/* avb packet */
-+	ps3fb_flip_ctl(0);	/* flip off */
- 
-+	/* avb packet */
- 	res = ps3av_do_pkt(PS3AV_CID_AVB_PARAM, send_len, sizeof(*avb),
- 			   &avb->send_hdr);
- 	if (res < 0)
-@@ -896,6 +903,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
- 		DPRINTK("PS3AV_CID_AVB_PARAM: failed %x\n", res);
- 
-       out:
-+	ps3fb_flip_ctl(1);	/* flip on */
- 	return res;
++	extern void ps3fb_cleanup(void);
++
++#ifdef CONFIG_FB_PS3
++	ps3fb_cleanup();
++#endif
+ 	lv1_unmap_htab(htab_addr);
  }
  
 
