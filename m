@@ -1,18 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id 78685DE2D3
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 09:53:22 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17849.11246.51329.645604@cargo.ozlabs.ibm.com>
-Date: Fri, 26 Jan 2007 09:15:10 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 01/18] Include autoconf.h from the bootwrapper.
-In-Reply-To: <20070125173915.GA18889@ld0162-tx32.am.freescale.net>
-References: <20070124210654.GA10527@ld0162-tx32.am.freescale.net>
-	<20070124235150.GA26212@localhost.localdomain>
-	<56B86A8F-4E40-4C58-A774-0DE3C7AA8CE2@kernel.crashing.org>
-	<17848.6331.164992.951431@cargo.ozlabs.ibm.com>
-	<20070125173915.GA18889@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: MPC8548E w/ 4 Gig of DDR SDRAM 
+Date: Thu, 25 Jan 2007 17:53:13 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90106334E77@EMPBEDEX.empirix.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,34 +19,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood writes:
+Firstly, excuse my ignorance, I have looked at the archives to see=20
+if there was any mention of a subject like this - but I could NOT=20
+find a relevant one - so I ask forgiveness if I missed a thread=20
+discussing this - and/or if this is a real newbie question!
+=20
+I have MPC8548E with 4 Gig of DDR SDRAM.
 
-> So basically, there'd be several lines in the arch/powerpc/boot/Makefile
-> like this?
-> 
-> cflags-$(CONFIG_6xx) += -DCONFIG_6xx
-> cflags-$(CONFIG_8xx) += -DCONFIG_8xx
-> cflags-$(CONFIG_E500) += -DCONFIG_E500
-> BOOTCFLAGS += $(cflags-y)
+I am trying to figure out how to configure the MPC8548 & its=20
+Local Access Windows (and ?? what else) for 4 Gig of DDR SDRAM.=20
 
-No no no.  I said the Makefile could pass different flags to wrapper
-depending on the config, that is, to the *invocation* of wrapper, not
-the building of wrapper.  As it does already - if you have
-CONFIG_PPC_PMAC, it runs wrapper with "-p pmac"; if you have
-CONFIG_PPC_PSERIES, it runs wrapper with "-p pseries".  In your case
-you would be using "-p myboard_uboot_bd_t_variant_59" or something
-(hopefully more concise than that, of course :).
+I know traditionally, SDRAM starts at '0', and I believe that=20
+Linux is expecting some of the physical memory at this a low=20
+memory location?
 
-> I don't really see the point (a simple grep will show you all the config
-> dependencies in the bootwrapper, to verify that it's only platform stuff
-> and not actual options), but I can do it that way if you really want. 
-> One way or another, the information has to be there, and it has to be
-> compile-time or else the bd_info struct layout will be wrong.
+So, I am in a dilemma - I don't want to waste some DDR RAM by=20
+also overlapping internal MPC8548 configuration registers=20
+that are located near the top of the lowest 4 GIG memory area...
 
-So you will end up with a bunch of .o files, one for each possible
-bd_t variant.  They will all get built and the appropriate one will
-get selected by wrapper based on the value you give with the -p
-option.  The line in arch/powerpc/boot/Makefile that defines src-plat
-will list all of them.
+So Can I:
 
-Paul.
+ 1) Split the definition for the DDR Local Access Windows into 2 pieces
+     a) 2 GIG (starting at 0x0)=20
+     b) 2 Gig above (starting at 0x1_0000_0000)?
+
+                   Or
+
+2) Configure the LAW/MMU in a fashion before I load/boot Linux
+    to use DDR at (a Local Access Window of) 0x1_0000_0000?
+
+Thank you for your patience and suggestions on this subject.
+
+Tom Morrison
+Principal Software Engineer
+
+
+EMPIRIX=20
+20 Crosby Drive - Bedford, MA  01730
+p: 781.266.3567 f: 781.266.3670=20
+email: tmorrison@empirix.com=20
+www.empirix.com
