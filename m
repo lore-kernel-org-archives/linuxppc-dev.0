@@ -1,25 +1,27 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BCBBEDE008
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 11:24:25 +1100 (EST)
-In-Reply-To: <20070125104540.65a1f557@localhost>
+	by ozlabs.org (Postfix) with ESMTP id 485A4DE04B
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 11:31:01 +1100 (EST)
+In-Reply-To: <1169682996.24996.11.camel@localhost.localdomain>
 References: <20061218163846.337fed65@localhost> <45882913.2000609@acm.org>
 	<20061220154517.6341fce6@localhost>
 	<200612210111.28186.arnd@arndb.de>
 	<20070125104540.65a1f557@localhost>
+	<1169682996.24996.11.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DA5708FC-F9AB-4782-A48D-40B26990A24F@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <523FF36A-46DF-40CA-BFFE-EDE95EFA3EFE@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [patch 1/1] updated version, fixed the compiler warning
-Date: Thu, 25 Jan 2007 01:24:01 +0100
-To: Christian Krafft <krafft@de.ibm.com>
+Date: Thu, 25 Jan 2007 01:29:48 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Cc: Christian@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
 	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Christian Krafft <krafft@de.ibm.com>,
 	openipmi-developer@lists.sourceforge.net,
 	Krafft <krafft@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -31,56 +33,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> This patch adds support for of_platform_driver to the ipmi_si module.
-> When loading the module, the driver will be registered to of_platform.
-> The driver will be probed for all devices with the type ipmi. It's  
-> supporting
-> devices with compatible settings ipmi-kcs, ipmi-smic and ipmi-bt.
-> Only ipmi-kcs could be tested.
+>> +static int __devexit ipmi_of_remove(struct of_device *dev)
+>> +{
+>> +	/* should call
+>> +	 * cleanup_one_si(dev->dev.driver_data); */
+>> +	return 0;
+>> +}
+>
+> If your remove doesn't work, don't implement one.
 
-I'm still saying that because of this, and because they might
-never be used and as such be unnecessary baggage, you shouldn't
-add SMIC and BT support.
+As explained before, it's the underlying thing that doesn't
+work.  Yeah someone should fix it one day.  Still it's better
+to have this comment than to not have anything at all.  An
+XXX FIXME: tag wouldn't be out of place of course.
 
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-> Acked-by: Heiko J Schick <schihei@de.ibm.com>
+> Though since you don't
+> have the choice in having a module_exit or not, you should really
+> implement one that works :-)
 
->  #define DEFAULT_REGSPACING	1
-> +#define DEFAULT_REGSIZE		DEFAULT_REGSPACING
-
-Just #define it as 1 I'd say.  Esp. for KCS interfaces, it can't
-ever be anything else there.
-
-> +	if (regsize && proplen!=4) {
-
-Whitespace problem (a few times in this file).
-
-> +	info->si_type		= (enum si_type) match->data;
-
-Do you need the cast here?  Oh I suppose you do, why else
-did you add it (and it teaches the world as a whole once
-again that enums in C are bloody useless almost always).
-
-> +static int __devexit ipmi_of_remove(struct of_device *dev)
-> +{
-> +	/* should call
-> +	 * cleanup_one_si(dev->dev.driver_data); */
-> +	return 0;
-> +}
-
-While I know this isn't really your problem, no one who
-isn't touching the IPMI code will ever fix it, so...  nudge
-nudge, wink wink.
-
-> (void *)(unsigned long) SI_KCS
-
-Yes I do hate enums.
-
-> +	.name		= "ipmi",
-
-Shouldn't this name be "ipmi-kcs" etc.?  Just asking :-)
-
-Cheers,
+Genau.
 
 
 Segher
