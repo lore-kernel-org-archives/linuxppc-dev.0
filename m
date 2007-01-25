@@ -1,30 +1,18 @@
-Return-Path: <Jorge.Ramirez-Ortiz@xerox.com>
-Received: from wvmler1.mail.xerox.com (wvmler1.mail.xerox.com [13.8.138.216])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "wvmler1.mail.xerox.com",
-	Issuer "wvmler1.mail.xerox.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 4CB7DDE024
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp107.biz.mail.mud.yahoo.com (smtp107.biz.mail.mud.yahoo.com
+	[68.142.200.255]) by ozlabs.org (Postfix) with SMTP id 28916DE01C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Jan 2007 09:04:04 +1100 (EST)
-Received: from wvmlir3.mail.xerox.com (wvmlir3.mail.xerox.com [13.147.8.223])
-	by wvmler1.mail.xerox.com (8.13.8/8.13.6) with ESMTP id
-	l0PLuLL3012166
-	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Jan 2007 13:56:21 -0800
-Received: from wvmlir3.mail.xerox.com (localhost.localdomain [127.0.0.1])
-	by wvmlir3.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l0PLuCb3004868
-	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Jan 2007 13:56:12 -0800
-Received: from usa0300gw02.na.xerox.net (usa0300gw02.na.xerox.net
-	[13.129.0.42])
-	by wvmlir3.mail.xerox.com (8.13.8/8.13.6) with ESMTP id l0PLuCS4004860
-	for <linuxppc-embedded@ozlabs.org>; Thu, 25 Jan 2007 13:56:12 -0800
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
+	Fri, 26 Jan 2007 09:38:39 +1100 (EST)
+In-Reply-To: <35786B99AB3FDC45A821572461791973B1E2FE@gbrwgceumf01.eu.xerox.net>
+References: <35786B99AB3FDC45A821572461791973B1E2FE@gbrwgceumf01.eu.xerox.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6AF3F0CB-B947-4C80-BE8F-2DFCA73172B3@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
 Subject: Re: JTAG emulator for MPC8548E (v2) 
-Date: Thu, 25 Jan 2007 21:56:08 -0000
-Message-ID: <35786B99AB3FDC45A821572461791973B1E2FE@gbrwgceumf01.eu.xerox.net>
-From: "Ramirez-Ortiz, Jorge" <Jorge.Ramirez-Ortiz@xerox.com>
-To: <linuxppc-embedded@ozlabs.org>
+Date: Thu, 25 Jan 2007 14:31:59 -0800
+To: "Ramirez-Ortiz, Jorge" <Jorge.Ramirez-Ortiz@xerox.com>
+Cc: ppc embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,9 +23,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi=20
-We are currently using two BDI-2000s to debug 2.6.18 kernels on the =
-ppc8545 rev(2) devices with no problems reported so far (apart from a =
-minor patch required in the kernel to set up breakpoints).
-I just thought I'd let you people know.
-Jorge
+
+On Jan 25, 2007, at 1:56 PM, Ramirez-Ortiz, Jorge wrote:
+
+> We are currently using two BDI-2000s to debug 2.6.18 kernels on the  
+> ppc8545 rev(2) devices with no problems reported so far (apart from  
+> a minor patch required in the kernel to set up breakpoints).
+
+I'm working on a proper patch to add all of this
+formally to the sources.  It's been irritating me for
+a long time, so I'm reworking some of these jtag
+debugger options.  Unfortunately, it touches more
+than just 85xx to get it right.
+
+Thanks.
+
+	-- Dan
