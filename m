@@ -1,28 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D32EEDDEEA
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 23:55:14 +1100 (EST)
-Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Gabriel Paubert <paubert@iram.es>
-In-Reply-To: <20070125110951.GA31911@iram.es>
-References: <20061213123819.403286000@sipsolutions.net>
-	<20061213123945.386891000@sipsolutions.net>
-	<1169620444.18754.66.camel@localhost.localdomain>
-	<20070124085420.GA19810@iram.es>
-	<1169631177.18754.82.camel@localhost.localdomain>
-	<20070124103621.GA22579@iram.es>
-	<2435847C-A9FC-4430-A122-416B9B347038@kernel.crashing.org>
-	<20070125110951.GA31911@iram.es>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-gR9Ky+dfdn1oaGGdsl6N"
-Date: Thu, 25 Jan 2007 13:54:05 +0100
-Message-Id: <1169729645.19614.1.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 61949DDF93
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 00:32:20 +1100 (EST)
+Date: Thu, 25 Jan 2007 14:32:13 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH 8/14] ps3: bind interrupt to cpu
+In-Reply-To: <45B8188A.5070900@am.sony.com>
+Message-ID: <Pine.LNX.4.62.0701251430000.31896@pademelon.sonytel.be>
+References: <45B8188A.5070900@am.sony.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,40 +22,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 24 Jan 2007, Geoff Levand wrote:
+> +struct ps3_bmp {
+> +	struct {
+> +		unsigned long status;
+> +		unsigned long unused_1[3];
+> +		unsigned long mask;
+> +		unsigned long unused_2[3];
+> +	} __attribute__ ((aligned (64)));
+> +
+> +	spinlock_t lock;
+> +	unsigned long ipi_debug_brk_mask;
+> +};
 
---=-gR9Ky+dfdn1oaGGdsl6N
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I know we support 64-bit kernels only, but as hypervisor calls are always
+64-bit, perhaps you want to explicitly use u64 instead of unsigned long?
 
-On Thu, 2007-01-25 at 12:09 +0100, Gabriel Paubert wrote:
+Gr{oetje,eeting}s,
 
-> If we did suspend the machines to save power, the only solution=20
-> would be to tell NTP to synchronize with the master clock by=20
-> stepping the time (not slewing) at resume time.
+						Geert
 
-You also know that you have such a requirement, and obviously also know
-what you could do to fix it.
-
-I see this as a non-issue. Even if we *try* to sync with the second
-transition (which is likely rather hard to do) then we won't have the
-required precision for a bunch of applications, so it's futile to try it
-anyway.
-
-Besides, if we don't do it at all the time just keeps running where it
-was before suspend...
-
-johannes
-
---=-gR9Ky+dfdn1oaGGdsl6N
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFuKht/ETPhpq3jKURArY4AJ9esAwmO3sFj733WBpReyjvLY/93QCgmBa/
-1s6bO1KapntvDYiQOrbg4UQ=
-=YGlX
------END PGP SIGNATURE-----
-
---=-gR9Ky+dfdn1oaGGdsl6N--
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
