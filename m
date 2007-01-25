@@ -3,17 +3,18 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2E700DE024
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 13:08:06 +1100 (EST)
-In-Reply-To: <200701242313.l0OND1jL018460@pogo.cesa.opbu.xerox.com>
-References: <200701242313.l0OND1jL018460@pogo.cesa.opbu.xerox.com>
+	by ozlabs.org (Postfix) with ESMTP id 62C03DE047
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 13:08:09 +1100 (EST)
+In-Reply-To: <20070124235150.GA26212@localhost.localdomain>
+References: <20070124210654.GA10527@ld0162-tx32.am.freescale.net>
+	<20070124235150.GA26212@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B8D6B359-8BDD-45D5-B61C-0022B8BBADF8@kernel.crashing.org>
+Message-Id: <56B86A8F-4E40-4C58-A774-0DE3C7AA8CE2@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: PCI Express support on 8548?
-Date: Wed, 24 Jan 2007 20:07:03 -0600
-To: Andrew Klossner <andrew@cesa.opbu.xerox.com>
+Subject: Re: [PATCH 01/18] Include autoconf.h from the bootwrapper.
+Date: Wed, 24 Jan 2007 20:08:02 -0600
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,12 +26,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 24, 2007, at 5:13 PM, Andrew Klossner wrote:
+On Jan 24, 2007, at 5:51 PM, David Gibson wrote:
 
-> I can't find any code to support PCIe on an 8548.  Have I overlooked
-> something, or should I start implementing it myself?
+> On Wed, Jan 24, 2007 at 03:06:54PM -0600, Scott Wood wrote:
+>> This will be required by the u-boot compatibility code to obtain a
+>> compatible bd_t layout, to determine how to calculate the  
+>> timebase, and
+>> to know what soc fields need to be modified.
+>
+> Erm.. I believe the omission of *all* kernel header files from the
+> boot wrapper code, including the config, is a deliberate decision.
+> The idea is that the wrapping can, if necessary, be done independent
+> of the kernel build.
 
-Take a look at the PCIe support for 8641, it should almost be  
-identical for what's needed on 8548.
+I think the problem is how to resolve the variations of the u-boot/ 
+ppcboot bd_t that changes from board to board and based on config.
 
 - k
