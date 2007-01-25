@@ -2,24 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1E0E7DDFDE
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 14:46:32 +1100 (EST)
-Subject: Re: [PATCH] driver/ata: PATA driver	for Celleb
+	by ozlabs.org (Postfix) with ESMTP id C0D89DE073
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 14:50:22 +1100 (EST)
+Subject: Re: [PATCH 5/14] ps3: rename interrupt symbols
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeff Garzik <jeff@garzik.org>
-In-Reply-To: <45B805E1.1030906@garzik.org>
-References: <200701170924.l0H9OsdG002754@harpo.it.uu.se>
-	<45AE539E.2040600@garzik.org>
-	<17838.34747.222649.93821@alkaid.it.uu.se>
-	<200701180055.l0I0tl6M021051@toshiba.co.jp>
-	<200701180129.l0I1TL48013407@toshiba.co.jp>
-	<45B805E1.1030906@garzik.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <45B8187F.5060007@am.sony.com>
+References: <45B8187F.5060007@am.sony.com>
 Content-Type: text/plain
-Date: Thu, 25 Jan 2007 14:45:23 +1100
-Message-Id: <1169696724.24996.45.camel@localhost.localdomain>
+Date: Thu, 25 Jan 2007 14:50:11 +1100
+Message-Id: <1169697011.24996.47.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Mikael Pettersson <mikpe@it.uu.se>, arnd@arndb.de, linuxppc-dev@ozlabs.org,
-	linux-ide@vger.kernel.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,39 +23,235 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-01-24 at 20:20 -0500, Jeff Garzik wrote:
-> Akira Iguchi wrote:
-> > This is the patch for PATA controller of Celleb.
-> > It depends on the previous "add another IRQ calls" patch.
-> > 
-> > Because this driver needs special taskfile accesses, there is
-> > a copy of ata_std_softreset(). ata_dev_try_classify() is exported
-> > so that it can be used in this function.
-> > 
-> > Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-> > Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+On Wed, 2007-01-24 at 18:39 -0800, Geoff Levand wrote:
+> Rename some PS3 interrupt symbols to avoid name clashes and aid debugging.
+> No change to code.
 > 
-> The driver looks OK, the only thing I wonder is:  can you use the iomap 
-> interface to eliminate the rest of the duplicated code?
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+
+Might be even better to do
+
+struct ps3_irq_bitmap
+struct ps3_irq_priv
+
+But that's already better than what was there before. Nice to see you
+seem to agree with my initial rant about those names :-)
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> ---
+>  arch/powerpc/platforms/ps3/interrupt.c |   66 ++++++++++++++++-----------------
+>  1 files changed, 33 insertions(+), 33 deletions(-)
 > 
-> See Tejun's latest patchset "[PATCHSET] Managed device resources, take 
-> #3" which completes the conversion of libata to using the lib/iomap.c 
-> interface.
-
-That would be a bit nasty :-) The powerpc kernel can have any number of
-platforms compiled into the same kernel. Some of the base things, like
-PCI IOs, iomap, etc... are common to all platforms. In this case, what
-they want is hook only accesses on one given device, one one given
-platform (or rather, on all platforms using that device, which is even
-worse, it's not even platform specific, at least not in theory).
-
-While we do now provide a mecanism to add hooks to all PCI MMIO and IO
-accessors (to workaround HW bugs on some chipsets), again, it would be a
-a serious abuse to have a driver hook on that to change the access
-method on a given device :-)
-
-How much copied code remains ? I wonder if the accesses to nsect/lba for
-example can be done using the taskfile accessors, possibly with a new
-flag indicating to only read/write those 2 registers ?
-
-Ben.
+> --- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/interrupt.c
+> +++ ps3-linux-dev/arch/powerpc/platforms/ps3/interrupt.c
+> @@ -288,7 +288,7 @@ int ps3_free_spe_irq(unsigned int virq)
+>  #define PS3_PLUG_MAX 63
+>  
+>  /**
+> - * struct bmp - a per cpu irq status and mask bitmap structure
+> + * struct ps3_bmp - a per cpu irq status and mask bitmap structure
+>   * @status: 256 bit status bitmap indexed by plug
+>   * @unused_1:
+>   * @mask: 256 bit mask bitmap indexed by plug
+> @@ -311,7 +311,7 @@ int ps3_free_spe_irq(unsigned int virq)
+>   * can aquire.
+>   */
+>  
+> -struct bmp {
+> +struct ps3_bmp {
+>  	struct {
+>  		unsigned long status;
+>  		unsigned long unused_1[3];
+> @@ -323,16 +323,16 @@ struct bmp {
+>  };
+>  
+>  /**
+> - * struct private - a per cpu data structure
+> + * struct ps3_private - a per cpu data structure
+>   * @node: HV node id
+>   * @cpu: HV thread id
+> - * @bmp: an HV bmp structure
+> + * @bmp: an HV ps3_bmp structure
+>   */
+>  
+> -struct private {
+> +struct ps3_private {
+>  	unsigned long node;
+>  	unsigned int cpu;
+> -	struct bmp bmp;
+> +	struct ps3_bmp bmp;
+>  };
+>  
+>  #if defined(DEBUG)
+> @@ -353,7 +353,7 @@ static void __attribute__ ((unused)) _du
+>  }
+>  
+>  #define dump_bmp(_x) _dump_bmp(_x, __func__, __LINE__)
+> -static void _dump_bmp(struct private* pd, const char* func, int line)
+> +static void _dump_bmp(struct ps3_private* pd, const char* func, int line)
+>  {
+>  	unsigned long flags;
+>  
+> @@ -364,7 +364,7 @@ static void _dump_bmp(struct private* pd
+>  }
+>  
+>  #define dump_mask(_x) _dump_mask(_x, __func__, __LINE__)
+> -static void __attribute__ ((unused)) _dump_mask(struct private* pd,
+> +static void __attribute__ ((unused)) _dump_mask(struct ps3_private* pd,
+>  	const char* func, int line)
+>  {
+>  	unsigned long flags;
+> @@ -374,13 +374,13 @@ static void __attribute__ ((unused)) _du
+>  	spin_unlock_irqrestore(&pd->bmp.lock, flags);
+>  }
+>  #else
+> -static void dump_bmp(struct private* pd) {};
+> +static void dump_bmp(struct ps3_private* pd) {};
+>  #endif /* defined(DEBUG) */
+>  
+> -static void chip_mask(unsigned int virq)
+> +static void ps3_chip_mask(unsigned int virq)
+>  {
+>  	unsigned long flags;
+> -	struct private *pd = get_irq_chip_data(virq);
+> +	struct ps3_private *pd = get_irq_chip_data(virq);
+>  
+>  	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
+>  
+> @@ -394,10 +394,10 @@ static void chip_mask(unsigned int virq)
+>  	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
+>  }
+>  
+> -static void chip_unmask(unsigned int virq)
+> +static void ps3_chip_unmask(unsigned int virq)
+>  {
+>  	unsigned long flags;
+> -	struct private *pd = get_irq_chip_data(virq);
+> +	struct ps3_private *pd = get_irq_chip_data(virq);
+>  
+>  	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
+>  
+> @@ -411,19 +411,19 @@ static void chip_unmask(unsigned int vir
+>  	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
+>  }
+>  
+> -static void chip_eoi(unsigned int virq)
+> +static void ps3_chip_eoi(unsigned int virq)
+>  {
+>  	lv1_end_of_interrupt(virq);
+>  }
+>  
+>  static struct irq_chip irq_chip = {
+>  	.typename = "ps3",
+> -	.mask = chip_mask,
+> -	.unmask = chip_unmask,
+> -	.eoi = chip_eoi,
+> +	.mask = ps3_chip_mask,
+> +	.unmask = ps3_chip_unmask,
+> +	.eoi = ps3_chip_eoi,
+>  };
+>  
+> -static void host_unmap(struct irq_host *h, unsigned int virq)
+> +static void ps3_host_unmap(struct irq_host *h, unsigned int virq)
+>  {
+>  	int result;
+>  
+> @@ -435,9 +435,9 @@ static void host_unmap(struct irq_host *
+>  	BUG_ON(result);
+>  }
+>  
+> -static DEFINE_PER_CPU(struct private, private);
+> +static DEFINE_PER_CPU(struct ps3_private, ps3_private);
+>  
+> -static int host_map(struct irq_host *h, unsigned int virq,
+> +static int ps3_host_map(struct irq_host *h, unsigned int virq,
+>  	irq_hw_number_t hwirq)
+>  {
+>  	int result;
+> @@ -460,7 +460,7 @@ static int host_map(struct irq_host *h, 
+>  		return -EPERM;
+>  	}
+>  
+> -	result = set_irq_chip_data(virq, &per_cpu(private, cpu));
+> +	result = set_irq_chip_data(virq, &per_cpu(ps3_private, cpu));
+>  	BUG_ON(result);
+>  
+>  	set_irq_chip_and_handler(virq, &irq_chip, handle_fasteoi_irq);
+> @@ -469,14 +469,14 @@ static int host_map(struct irq_host *h, 
+>  	return result;
+>  }
+>  
+> -static struct irq_host_ops host_ops = {
+> -	.map = host_map,
+> -	.unmap = host_unmap,
+> +static struct irq_host_ops ps3_host_ops = {
+> +	.map = ps3_host_map,
+> +	.unmap = ps3_host_unmap,
+>  };
+>  
+>  void __init ps3_register_ipi_debug_brk(unsigned int cpu, unsigned int virq)
+>  {
+> -	struct private *pd = &per_cpu(private, cpu);
+> +	struct ps3_private *pd = &per_cpu(ps3_private, cpu);
+>  
+>  	pd->bmp.ipi_debug_brk_mask = 0x8000000000000000UL >> virq;
+>  
+> @@ -484,7 +484,7 @@ void __init ps3_register_ipi_debug_brk(u
+>  		cpu, virq, pd->bmp.ipi_debug_brk_mask);
+>  }
+>  
+> -static int bmp_get_and_clear_status_bit(struct bmp *m)
+> +static int bmp_get_and_clear_status_bit(struct ps3_bmp *m)
+>  {
+>  	unsigned long flags;
+>  	unsigned int bit;
+> @@ -519,22 +519,22 @@ unsigned int ps3_get_irq(void)
+>  {
+>  	int plug;
+>  
+> -	struct private *pd = &__get_cpu_var(private);
+> +	struct ps3_private *pd = &__get_cpu_var(ps3_private);
+>  
+>  	plug = bmp_get_and_clear_status_bit(&pd->bmp);
+>  
+>  	if (plug < 1) {
+>  		pr_debug("%s:%d: no plug found: cpu %u\n", __func__, __LINE__,
+>  			pd->cpu);
+> -		dump_bmp(&per_cpu(private, 0));
+> -		dump_bmp(&per_cpu(private, 1));
+> +		dump_bmp(&per_cpu(ps3_private, 0));
+> +		dump_bmp(&per_cpu(ps3_private, 1));
+>  		return NO_IRQ;
+>  	}
+>  
+>  #if defined(DEBUG)
+>  	if (plug < NUM_ISA_INTERRUPTS || plug > PS3_PLUG_MAX) {
+> -		dump_bmp(&per_cpu(private, 0));
+> -		dump_bmp(&per_cpu(private, 1));
+> +		dump_bmp(&per_cpu(ps3_private, 0));
+> +		dump_bmp(&per_cpu(ps3_private, 1));
+>  		BUG();
+>  	}
+>  #endif
+> @@ -550,13 +550,13 @@ void __init ps3_init_IRQ(void)
+>  
+>  	lv1_get_logical_ppe_id(&node);
+>  
+> -	host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, 0, &host_ops,
+> +	host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, 0, &ps3_host_ops,
+>  		PS3_INVALID_OUTLET);
+>  	irq_set_default_host(host);
+>  	irq_set_virq_count(PS3_PLUG_MAX + 1);
+>  
+>  	for_each_possible_cpu(cpu) {
+> -		struct private *pd = &per_cpu(private, cpu);
+> +		struct ps3_private *pd = &per_cpu(ps3_private, cpu);
+>  
+>  		pd->node = node;
+>  		pd->cpu = cpu;
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
