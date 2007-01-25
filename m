@@ -1,18 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 6D4C3DE024
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 17:28:57 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 14/14] ps3: ps3_defconfig updates
-Date: Thu, 25 Jan 2007 07:28:46 +0100
-References: <45B818A0.9010604@am.sony.com>
-In-Reply-To: <45B818A0.9010604@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701250728.46447.arnd@arndb.de>
-Cc: paulus@samba.org
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 50E4BDDFAC
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 18:11:32 +1100 (EST)
+Date: Thu, 25 Jan 2007 16:11:13 +0900 (JST)
+Message-Id: <200701250711.l0P7BExX010484@toshiba.co.jp>
+To: jens@de.ibm.com
+Subject: Re: [PATCH 0/4] spidernet: add support for Celleb
+In-Reply-To: <200701202210.36953.jens@de.ibm.com>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 25 January 2007 03:40, Geoff Levand wrote:
-> Updates for ps3_defconfig.
+Jens-san,
+
+> > > This is a revised version of the patch set for spider_net driver
+> > > that works on Toshiba Cell Refererence Set (aka Celleb).
+> > >
+> > > This patch set is based on netdev-2.6.git#upstream.
+> >
+> > Jens, can you give that a go on our blades see if it doesn't break
+> > anything ? We are all at LCA here so it's a bit hard to test !
 > 
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> Nope, doesn't work for us...
+> 
+> I have a patch based on Ishizaki's previous patch which I think will work
+> on Celleb. Will post it here when I have adapted it to the new version.
 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Thank you for testing our patch and we are sorry that our patch does
+not work on Cell Blade.
 
-> +# CONFIG_USB_USBNET_MII is not set
-> +# CONFIG_USB_USBNET is not set
+We will test your modified patch on celleb when you post it.
 
-Do you mind switching on usbnet and mcs7830 in defconfig for me?
-It might make life easier for me if I have to do something on
-the gelic_net driver ;-)
-
-	Arnd <><
+Best regards,
+Kou Ishizaki
