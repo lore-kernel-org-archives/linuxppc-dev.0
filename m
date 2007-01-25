@@ -1,15 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 25 Jan 2007 13:21:11 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 01/18] Include autoconf.h from the bootwrapper.
-Message-ID: <20070125022111.GD26212@localhost.localdomain>
-References: <20070124210654.GA10527@ld0162-tx32.am.freescale.net>
-	<20070124235150.GA26212@localhost.localdomain>
-	<56B86A8F-4E40-4C58-A774-0DE3C7AA8CE2@kernel.crashing.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound6-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 21BD7DE047
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 13:39:36 +1100 (EST)
+Message-ID: <45B81862.1030800@am.sony.com>
+Date: Wed, 24 Jan 2007 18:39:30 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <56B86A8F-4E40-4C58-A774-0DE3C7AA8CE2@kernel.crashing.org>
+To: paulus@samba.org
+Subject: [PATCH 0/14] patches for 2.6.21
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,30 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 24, 2007 at 08:08:02PM -0600, Kumar Gala wrote:
-> 
-> On Jan 24, 2007, at 5:51 PM, David Gibson wrote:
-> 
-> > On Wed, Jan 24, 2007 at 03:06:54PM -0600, Scott Wood wrote:
-> >> This will be required by the u-boot compatibility code to obtain a
-> >> compatible bd_t layout, to determine how to calculate the  
-> >> timebase, and
-> >> to know what soc fields need to be modified.
-> >
-> > Erm.. I believe the omission of *all* kernel header files from the
-> > boot wrapper code, including the config, is a deliberate decision.
-> > The idea is that the wrapping can, if necessary, be done independent
-> > of the kernel build.
-> 
-> I think the problem is how to resolve the variations of the u-boot/ 
-> ppcboot bd_t that changes from board to board and based on config.
+Paul,
 
-Don't do that.  We're trying to get rid of this config dependant crap
-that means the kernel must be built for a single board.  Instead make
-the different bd_t options different options to the wrapper script.
+These are all the ps3 patches I have queued for 2.6.21.  Please apply.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+[PATCH 1/14] ps3: repository misc fixes
+[PATCH 2/14] ps3: repository storage support
+[PATCH 3/14] ps3: system bus minor mmio fix
+[PATCH 4/14] ps3: fix struct alignment attributes
+[PATCH 5/14] ps3: rename interrupt symbols
+[PATCH 6/14] ps3: smp interrupt fixes
+[PATCH 7/14] ps3: cleanup interrupt bmp routines
+[PATCH 8/14] ps3: bind interrupt to cpu
+[PATCH 9/14] ps3: add interrupt alloc for outlets
+[PATCH 10/14] ps3: get firmware version
+[PATCH 11/14] ps3: get av_multi_out params
+[PATCH 12/14] ps3: fix gpu_context_allocate hcall
+[PATCH 13/14] ps3: remove unneeded header include
+[PATCH 14/14] ps3: ps3_defconfig updates
