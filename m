@@ -1,18 +1,22 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id B9523DDEDD
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 08:25:50 +1100 (EST)
-Date: Thu, 25 Jan 2007 15:31:38 -0600
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH] [2/4] powerpc: Add PMC type to cputable
-Message-ID: <20070125213138.GA21704@lixom.net>
-References: <20070125081951.GC10716@lixom.net>
-	<1F2EE0A0-2A1D-4ADE-8081-C7C635C443D3@freescale.com>
+Return-Path: <m.vegni@it-systems.it>
+Received: from mail.it-systems.it (net203-143-073.mclink.it [213.203.143.73])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7018CDE081
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 08:30:14 +1100 (EST)
+Message-ID: <45B92155.8020808@it-systems.it>
+Date: Thu, 25 Jan 2007 22:29:57 +0100
+From: Massimiliano Vegni <m.vegni@it-systems.it>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1F2EE0A0-2A1D-4ADE-8081-C7C635C443D3@freescale.com>
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: Xserve G5 doesn't reboot or restart properly with SMU compiled in
+References: <45B6BC79.5060904@it-systems.it>	
+	<1169620786.18754.72.camel@localhost.localdomain>	
+	<45B7E2C4.4050303@it-systems.it>
+	<1169679856.24996.9.camel@localhost.localdomain>
+In-Reply-To: <1169679856.24996.9.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Jan 25, 2007 at 03:00:51PM -0600, Andy Fleming wrote:
-> 
-> On Jan 25, 2007, at 02:19, Olof Johansson wrote:
-> 
-> >@@ -207,6 +216,8 @@ static struct cpu_spec cpu_specs[] = {
-> > 		.icache_bsize		= 128,
-> > 		.dcache_bsize		= 128,
-> > 		.num_pmcs		= 8,
-> >+		.pmc_type		= PPC_PMC_IBM,
-> >+		.pmc_type		= PPC_PMC_IBM,
-> > 		.cpu_setup		= __setup_cpu_ppc970,
-> > 		.cpu_restore		= __restore_cpu_ppc970,
-> > 		.oprofile_cpu_type	= "ppc64/970",
-> 
-> 
-> My guess is you only really wanted one of those pmc_types.  :)
+Yes, tried with defconfig for g5 and disabled lots of things there, ant
+it works flawslessly... rtc too!!!
+Of course I've left PREEMPT disabled, because we use this machine as a
+server.
 
-Grmbl, yes. I took it out of one version of the patch, it snuck in
-again. Thanks!
+Many thanks....
+
+Ciao.
+
+Massimiliano Vegni
 
 
--Olof
+Benjamin Herrenschmidt wrote:
+> Also have you tried without CONFIG_PREEMPT ? Might be a bug there...
+> 
+> Ben.
+> 
+> 
