@@ -1,12 +1,13 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 63B9FDDDFB
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 22:09:57 +1100 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Thu, 25 Jan 2007 12:09:51 +0100
-To: Segher Boessenkool <segher@kernel.crashing.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D32EEDDEEA
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 23:55:14 +1100 (EST)
 Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
-Message-ID: <20070125110951.GA31911@iram.es>
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Gabriel Paubert <paubert@iram.es>
+In-Reply-To: <20070125110951.GA31911@iram.es>
 References: <20061213123819.403286000@sipsolutions.net>
 	<20061213123945.386891000@sipsolutions.net>
 	<1169620444.18754.66.camel@localhost.localdomain>
@@ -14,10 +15,14 @@ References: <20061213123819.403286000@sipsolutions.net>
 	<1169631177.18754.82.camel@localhost.localdomain>
 	<20070124103621.GA22579@iram.es>
 	<2435847C-A9FC-4430-A122-416B9B347038@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2435847C-A9FC-4430-A122-416B9B347038@kernel.crashing.org>
-Cc: Johannes Berg <johannes@sipsolutions.net>, linuxppc-dev@ozlabs.org
+	<20070125110951.GA31911@iram.es>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-gR9Ky+dfdn1oaGGdsl6N"
+Date: Thu, 25 Jan 2007 13:54:05 +0100
+Message-Id: <1169729645.19614.1.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,30 +32,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Jan 24, 2007 at 03:23:47PM +0100, Segher Boessenkool wrote:
-> >I believed that the patch also worked on desktops. Of course, one
-> >solution is to try to reset time from an NTP server on resume if you
-> >are connected (if you are not, then an error of a fraction of a second
-> >is less serious).
-> 
-> A fraction of a second is *never* serious, except with
-> broken apps ;-)
-> 
 
-You've obviously never met people doing VLBI (Very Long Baseline 
-Interferometry) ;-) 
+--=-gR9Ky+dfdn1oaGGdsl6N
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Seriously, here we have a bunch of machines doing data acquisition
-which are synchronized through timestamps taken at interrupt time.
-They need an accuracy ot 5-10ms, which NTP easily provides (we have
-our own redundant NTP servers connected to reference clocks: GPS
-receivers and high precision clocks including an hydrogen maser).
-Fortunately they never perform a suspend/resume cycle, because this
-precision is not achievable even when trying to synchronize with the
-second transition from the RTC.
+On Thu, 2007-01-25 at 12:09 +0100, Gabriel Paubert wrote:
 
-If we did suspend the machines to save power, the only solution 
-would be to tell NTP to synchronize with the master clock by 
-stepping the time (not slewing) at resume time.
+> If we did suspend the machines to save power, the only solution=20
+> would be to tell NTP to synchronize with the master clock by=20
+> stepping the time (not slewing) at resume time.
 
-	Gabriel
+You also know that you have such a requirement, and obviously also know
+what you could do to fix it.
+
+I see this as a non-issue. Even if we *try* to sync with the second
+transition (which is likely rather hard to do) then we won't have the
+required precision for a bunch of applications, so it's futile to try it
+anyway.
+
+Besides, if we don't do it at all the time just keeps running where it
+was before suspend...
+
+johannes
+
+--=-gR9Ky+dfdn1oaGGdsl6N
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFuKht/ETPhpq3jKURArY4AJ9esAwmO3sFj733WBpReyjvLY/93QCgmBa/
+1s6bO1KapntvDYiQOrbg4UQ=
+=YGlX
+-----END PGP SIGNATURE-----
+
+--=-gR9Ky+dfdn1oaGGdsl6N--
