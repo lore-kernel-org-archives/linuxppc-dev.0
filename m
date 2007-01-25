@@ -1,19 +1,21 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	by ozlabs.org (Postfix) with ESMTP id E4C14DE084
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 09:05:27 +1100 (EST)
-To: Greg KH <greg@kroah.com>
+Return-Path: <gregkh@suse.de>
+Received: from mx1.suse.de (cantor.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F2ED9DE147
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 09:10:58 +1100 (EST)
+Date: Thu, 25 Jan 2007 14:10:01 -0800
+From: Greg KH <greg@kroah.com>
+To: Roland Dreier <rdreier@cisco.com>
 Subject: Re: [RFC/PATCH 5/16] Ops based MSI implementation
+Message-ID: <20070125221001.GA5946@kroah.com>
 References: <1169714047.65693.647693675533.qpush@cradle>
 	<20070125083411.5D935DE2FD@ozlabs.org>
-	<20070125215209.GA3126@kroah.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 25 Jan 2007 14:05:11 -0800
-In-Reply-To: <20070125215209.GA3126@kroah.com> (Greg KH's message of "Thu,
-	25 Jan 2007 13:52:09 -0800")
-Message-ID: <adahcueoj8o.fsf@cisco.com>
+	<20070125215209.GA3126@kroah.com> <adahcueoj8o.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <adahcueoj8o.fsf@cisco.com>
 Cc: Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
 	Brice Goglin <brice@myri.com>, shaohua.li@intel.com,
 	linux-pci@atrey.karlin.mff.cuni.cz,
@@ -28,14 +30,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > Are you sure of the "any later version" part?
+On Thu, Jan 25, 2007 at 02:05:11PM -0800, Roland Dreier wrote:
+>  > Are you sure of the "any later version" part?
+> 
+> The command
+> 
+>     git grep "at your option) any later version"
+> 
+> finds more than 3000 matching files in my kernel source tree, so I
+> think existing practice shows it's fine if someone wants to license
+> a file for kernel inclusion that way.
 
-The command
+Oh, I'm not saying that it isn't acceptable, just pointing it out so
+that the poster thinks about it, instead of just cut-and-pasting it from
+somewhere else.  Most companies today have policies about this wording
+that the developer probably needs to be aware of.
 
-    git grep "at your option) any later version"
+Especially given the state of the current GPLv3 license wording, but
+that's another email thread for another time :)
 
-finds more than 3000 matching files in my kernel source tree, so I
-think existing practice shows it's fine if someone wants to license
-a file for kernel inclusion that way.
+thanks,
 
- - R.
+greg k-h
