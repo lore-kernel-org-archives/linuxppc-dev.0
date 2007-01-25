@@ -1,26 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1F1D6DE397
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 11:47:41 +1100 (EST)
-Subject: Re: [patch 1/1] updated version, fixed the compiler warning
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <523FF36A-46DF-40CA-BFFE-EDE95EFA3EFE@kernel.crashing.org>
-References: <20061218163846.337fed65@localhost> <45882913.2000609@acm.org>
-	<20061220154517.6341fce6@localhost> <200612210111.28186.arnd@arndb.de>
-	<20070125104540.65a1f557@localhost>
-	<1169682996.24996.11.camel@localhost.localdomain>
-	<523FF36A-46DF-40CA-BFFE-EDE95EFA3EFE@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 25 Jan 2007 11:45:31 +1100
-Message-Id: <1169685931.24996.16.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Christian Krafft <krafft@de.ibm.com>,
-	openipmi-developer@lists.sourceforge.net,
-	Krafft <krafft@linux.vnet.ibm.com>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 849A0DE18D
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 11:57:43 +1100 (EST)
+In-Reply-To: <20070125001843.GI16486@localdomain>
+References: <20070125001843.GI16486@localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5FE26120-8464-4431-8F0D-EEBB4B896419@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] move pSeries nvram code to neutral location
+Date: Thu, 25 Jan 2007 01:57:27 +0100
+To: Nathan Lynch <ntl@pobox.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,22 +25,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-01-25 at 01:29 +0100, Segher Boessenkool wrote:
-> >> +static int __devexit ipmi_of_remove(struct of_device *dev)
-> >> +{
-> >> +	/* should call
-> >> +	 * cleanup_one_si(dev->dev.driver_data); */
-> >> +	return 0;
-> >> +}
-> >
-> > If your remove doesn't work, don't implement one.
-> 
-> As explained before, it's the underlying thing that doesn't
-> work.  Yeah someone should fix it one day.  Still it's better
-> to have this comment than to not have anything at all.  An
-> XXX FIXME: tag wouldn't be out of place of course.
+> Move arch/powerpc/platforms/pseries/nvram.c to
+> arch/powerpc/sysdev/rtas_nvram.c so other platforms with RTAS support
+> for manipulating nvram can use it.
+>
+> Add a RTAS_NVRAM Kconfig option which triggers the build of
+> arch/powerpc/sysdev/rtas_nvram.o.
+>
+> Select RTAS_NVRAM for pSeries and Maple platforms.
 
-If the underlying ipmi stuff cannot cleanup, then the driver should not
-have a module_exit() so the module cannot be removed.
+The patch seems to select it for pSeries and iSeries, instead?
 
-Ben.
+> Signed-off-by: Nathan Lynch <ntl@pobox.com>
+
+> +config RTAS_NVRAM
+> +	bool
+> +	default n
+
+No need for "default n", all defaults are "n" by default ;-)
+
+> --- a/arch/powerpc/platforms/pseries/nvram.c
+> +++ /dev/null
+
+> --- /dev/null
+> +++ b/arch/powerpc/sysdev/rtas_nvram.c
+
+You can do a "git diff -M" -- that way, we can see that you're
+not trying to sneak in any changes ;-) (and it makes you patch
+much more legible and smaller, too).
+
+
+Looks good otherwise, thanks!
+
+
+Segher
