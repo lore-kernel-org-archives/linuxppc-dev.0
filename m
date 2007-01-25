@@ -1,15 +1,22 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 78685DE2D3
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 09:53:22 +1100 (EST)
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound5-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 404D6DE00C
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 10:56:43 +1100 (EST)
+Message-ID: <45B943B4.5090204@am.sony.com>
+Date: Thu, 25 Jan 2007 15:56:36 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: MPC8548E w/ 4 Gig of DDR SDRAM 
-Date: Thu, 25 Jan 2007 17:53:13 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90106334E77@EMPBEDEX.empirix.com>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: <linuxppc-dev@ozlabs.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 9/14] ps3: add interrupt alloc for outlets
+References: <45B8188E.7020602@am.sony.com>
+	<1169697334.24996.54.camel@localhost.localdomain>
+	<Pine.LNX.4.62.0701251433330.31896@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0701251433330.31896@pademelon.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,43 +26,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Firstly, excuse my ignorance, I have looked at the archives to see=20
-if there was any mention of a subject like this - but I could NOT=20
-find a relevant one - so I ask forgiveness if I missed a thread=20
-discussing this - and/or if this is a real newbie question!
-=20
-I have MPC8548E with 4 Gig of DDR SDRAM.
+Geert Uytterhoeven wrote:
+> On Thu, 25 Jan 2007, Benjamin Herrenschmidt wrote:
+>> > +int ps3_alloc_irq(enum ps3_cpu_binding cpu, unsigned long outlet,
+>> > +	unsigned int *virq)
+>> > +{
+>> > +	return ps3_connect_irq(cpu, outlet, virq);
+>> > +}
+>> > +
+>> > +int ps3_free_irq(unsigned int virq)
+>> > +{
+>> > +	ps3_disconnect_irq(virq);
+>> > +	return 0;
+>> > +}
+>> > +
+>> >  #define PS3_INVALID_OUTLET ((irq_hw_number_t)-1)
+>> >  #define PS3_PLUG_MAX 63
+>> 
+>> I'm not too fan of this... those 2 functions do strictly -nothing- other
+>> than export the ones they call (not even changing arguments).
+>> 
+>> So why not export ps3_connect_irq / ps3_disconnect_irq directly ?
+> 
+> You're right. Originally they were all but trivial wrappers, but the recent
+> interrupt improvements have changed this.
+> 
+> Do you have a preference which names to keep?
+> 
+>  1. ps3_connect_irq() and ps3_disconnect_irq() resemble the LV1 calls they
+>     make,
+>  2. ps3_alloc_irq() and ps3_free_irq() resemble the other
+>     ps3_{alloc,free}_*_irq() names.
 
-I am trying to figure out how to configure the MPC8548 & its=20
-Local Access Windows (and ?? what else) for 4 Gig of DDR SDRAM.=20
+I think ps3_connect_irq() and ps3_disconnect_irq() are not consistent with
+the existing routines, so I would perfer not to use those.  I'll post a new
+patch that makes this change.
 
-I know traditionally, SDRAM starts at '0', and I believe that=20
-Linux is expecting some of the physical memory at this a low=20
-memory location?
-
-So, I am in a dilemma - I don't want to waste some DDR RAM by=20
-also overlapping internal MPC8548 configuration registers=20
-that are located near the top of the lowest 4 GIG memory area...
-
-So Can I:
-
- 1) Split the definition for the DDR Local Access Windows into 2 pieces
-     a) 2 GIG (starting at 0x0)=20
-     b) 2 Gig above (starting at 0x1_0000_0000)?
-
-                   Or
-
-2) Configure the LAW/MMU in a fashion before I load/boot Linux
-    to use DDR at (a Local Access Window of) 0x1_0000_0000?
-
-Thank you for your patience and suggestions on this subject.
-
-Tom Morrison
-Principal Software Engineer
-
-
-EMPIRIX=20
-20 Crosby Drive - Bedford, MA  01730
-p: 781.266.3567 f: 781.266.3670=20
-email: tmorrison@empirix.com=20
-www.empirix.com
+-Geoff 
