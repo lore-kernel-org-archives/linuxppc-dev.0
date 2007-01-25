@@ -1,13 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: EMAC "powerpc" port update
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 25 Jan 2007 18:00:02 +1100
-Message-Id: <1169708402.24996.82.camel@localhost.localdomain>
+Return-Path: <michel@tungstengraphics.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 0D3D4DE0D6
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 18:39:17 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so369251ugf
+	for <linuxppc-dev@ozlabs.org>; Wed, 24 Jan 2007 23:39:15 -0800 (PST)
+Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
+From: Michel =?ISO-8859-1?Q?D=E4nzer?= <michel@tungstengraphics.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1169675091.18754.84.camel@localhost.localdomain>
+References: <20061213123819.403286000@sipsolutions.net>
+	<20061213123945.386891000@sipsolutions.net>
+	<1169620444.18754.66.camel@localhost.localdomain>
+	<20070124085420.GA19810@iram.es>
+	<1169631177.18754.82.camel@localhost.localdomain>
+	<20070124103621.GA22579@iram.es>
+	<2435847C-A9FC-4430-A122-416B9B347038@kernel.crashing.org>
+	<1169675091.18754.84.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Date: Thu, 25 Jan 2007 08:39:14 +0100
+Message-Id: <1169710754.24087.36.camel@thor.sulgenrain.local>
 Mime-Version: 1.0
-Cc: Josh Boyer <jdub@us.ibm.com>, Murali N Iyer <mniyer@us.ibm.com>,
-	linuxppc-embedded@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,42 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-There's a new drop at:
+On Thu, 2007-01-25 at 08:44 +1100, Benjamin Herrenschmidt wrote:
+> > > The best solution may require informing the user space ntp code of
+> > > such events. This requires very likely modifications to ntp itself
+> > > (I may be wrong, I've not looked at NTP code for 5 years or so).
+> > 
+> > Doesn't the kernel send signals to init on suspend/resume
+> > events, just like with power fail events?  You can hook on
+> > that.
+> 
+> I don't think it does... at least not on powerbooks.
 
-http://gate.crashing.org/~benh/powerpc-emac-new-20070125.diff
+It could be handled by scripts invoked from pbbuttonsd or pmud on wakeup
+though, couldn't it? I thought there used to be one for that
+in /etc/apm/, but I can't find it now...
 
-No much differences from the previous one, most of my previous comments
-about things to do still apply. The updates are mostly to make it work
-for a customer :-)
 
- - Fix build without debug
- - Fix build when sungem or spidernet are built-in (name conflict of
-exported functions in the PHY stuff)
- - Fix STACR bits since it seems the HW folks had the great idea of
-changing their meaning, so the PHY is now properly setup and flow
-control works (yeah !)
-
-I've decided to delay the port to the common phy layer due to the
-locking issues I mentioned to after I merge it. Already too many things
-going on at the same time in there :-)
-
-I also haven't brought back the mecanism for dealing with Rx clock loss
-as I need to verify wether we can do that differently using loopback, or
-else, use some different way of implementing it for locking reasons
-(probably pushing the clock control to the platform/cpu code and have
-emac call it so the locking for access to those clock registers can be
-centralized).
-
-In fact, most of my other comments in my initial submission still
-appply :-) It's however good enough to use with the Axon chip on cell
-and thus could probably be merged as it co-exists fine with the old
-driver in arch/ppc. Now that David Gibson is porting 4xx over to
-arch/powerpc, I'll soon be able to start beating it up on 4xx too and
-fix the remaining issues on these.
-
-Murali: Note that I still don't unmap DMA pages, so it works fine as
-long as the IOMMU is disabled, which should be the default on all HW we
-are interested in at the moment, except some stuff you might know about
-that has more than 2GB of RAM... I'll fix that in a later drop.
-
-Ben.
+-- 
+Earthling Michel Dänzer           |          http://tungstengraphics.com
+Libre software enthusiast         |          Debian, X and DRI developer
