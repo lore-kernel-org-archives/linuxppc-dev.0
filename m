@@ -1,23 +1,13 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DC122DE1F1
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 19:28:43 +1100 (EST)
-In-Reply-To: <32F3CC26D4DAC44E8ECD07155727A46E85D6E4@zch01exm20.fsl.freescale.net>
-References: <32F3CC26D4DAC44E8ECD07155727A46E816B9C@zch01exm20.fsl.freescale.net>
-	<2C8EB4AF-97B2-40F5-8112-0CEE6E3D4D42@kernel.crashing.org>
-	<32F3CC26D4DAC44E8ECD07155727A46E85D6E4@zch01exm20.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <A85281E5-1E9C-4938-8940-CF696C3C5174@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch][0/5] powerpc: Add support to fully comply with IEEE-754
-	standard
-Date: Thu, 25 Jan 2007 02:28:30 -0600
-To: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <michael@ozlabs.org>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 25 Jan 2007 19:34:07 +1100
+Subject: [RFC/PATCH 0/16] Ops based MSI Implementation
+Message-Id: <1169714047.65693.647693675533.qpush@cradle>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+	shaohua.li@intel.com, "David S. Miller" <davem@davemloft.net>,
+	"Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +17,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+OK, here's a first cut at moving ops based MSI into the generic code. I'm
+posting this now to make sure I'm not heading off into the weeds.
 
-On Jan 25, 2007, at 2:25 AM, Zhu Ebony-r57400 wrote:
+The fifth patch contain the guts of it, I've included the MPIC and
+RTAS backends as examples. In fact they actually work.
 
->
->> No, I think the round handler should try to do the rounding
->> by hand.
->> Since you have the non rounded information provided by HW,
->> its much simpler to just do the rounding step.
->
-> Hi Kumar,
->
-> I have some new thoughts about rounding handler.
-> Suppose we set SPEFSCR[FRMC]=0b10 (rounding towards +Inf) and
-> a normal "efsmul" may generate rounding interrupt. At this time,
-> according
-> to manual, unrounded (truncated) result is placed in the target
-> register. Please
-> note the target register contains a hexadecimal representation of a
-> floating point number. Since it represents a floating point number
-> exactly
-> so we can not round it anymore.
+In order to smoothly merge this with the old MSI code, the two will need to
+coexist in the tree for at least a few commits, so I've added (invisible)
+Kconfig symbols to allow that.
 
-I don't follow what you mean by not being able to round it anymore.
+I plan to merge the Intel code by:
+ * copying it into drivers/pci/msi/intel.c with zero changes.
+ * providing a minimal shim to connect the ops code to the intel code.
+ * at this point the code should be functional but ugly as hell.
+ * via a longish series of patches, adapt the intel code to better match
+   the new ops code.
+ * this should allow us to bisect through to find any mistakes.
 
-> Maybe we still need to emulate the whole "efsmul" instruction by
-> software.
+If people think that's crazy and or stupid please let me know :)
 
-You can't always do that.  Think about the following instruction:
+TBD are:
+ * suspend / resume hooks in the ops - this shouldn't be too tricky with
+   the power management API cleaned up a touch.
+ * working out why the hell msi_remove_pci_irq_vectors() is a special case ?
 
-	efsmul	r3, r3, r3
-
-You'll have lost the original value of r3 when the exception occurs.
-
-- k
+cheers
