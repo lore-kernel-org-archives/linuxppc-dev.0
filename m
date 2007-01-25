@@ -1,15 +1,13 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 1ABC6DE06E
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 18:32:09 +1100 (EST)
-Date: Thu, 25 Jan 2007 01:37:54 -0600
-To: paulus@samba.org
-Subject: [PATCH] generic RTC support for PPC
-Message-ID: <20070125073754.GA10004@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, kimphill@freescale.com
+Return-Path: <benh@kernel.crashing.org>
+Subject: EMAC "powerpc" port update
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Thu, 25 Jan 2007 18:00:02 +1100
+Message-Id: <1169708402.24996.82.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Josh Boyer <jdub@us.ibm.com>, Murali N Iyer <mniyer@us.ibm.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,120 +17,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Make the PPC RTC functions use the generic RTC infrastructure if they
-are not already defined (and an RTC is registered in the system).
+There's a new drop at:
 
-This should make it possible to remove the hideous direct access used
-in some of the 83xx platforms.
+http://gate.crashing.org/~benh/powerpc-emac-new-20070125.diff
 
+No much differences from the previous one, most of my previous comments
+about things to do still apply. The updates are mostly to make it work
+for a customer :-)
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+ - Fix build without debug
+ - Fix build when sungem or spidernet are built-in (name conflict of
+exported functions in the PHY stuff)
+ - Fix STACR bits since it seems the HW folks had the great idea of
+changing their meaning, so the PHY is now properly setup and flow
+control works (yeah !)
 
-Index: powerpc/arch/powerpc/Kconfig
-===================================================================
---- powerpc.orig/arch/powerpc/Kconfig
-+++ powerpc/arch/powerpc/Kconfig
-@@ -687,6 +687,12 @@ config TAU_AVERAGE
- 
- 	  If in doubt, say N here.
- 
-+config PPC_GENRTC
-+	bool "Generic RTC support"
-+	help
-+	  Support for using regular RTC registered with the RTC framework
-+	  as the main hardware clock on powerpc.
-+
- endmenu
- 
- source arch/powerpc/platforms/embedded6xx/Kconfig
-Index: powerpc/arch/powerpc/sysdev/Makefile
-===================================================================
---- powerpc.orig/arch/powerpc/sysdev/Makefile
-+++ powerpc/arch/powerpc/sysdev/Makefile
-@@ -22,4 +22,5 @@ endif
- ifeq ($(ARCH),powerpc)
- obj-$(CONFIG_MTD)		+= rom.o
- obj-$(CONFIG_CPM2)		+= cpm2_common.o cpm2_pic.o
-+obj-$(CONFIG_PPC_GENRTC)	+= genrtc.o
- endif
-Index: powerpc/arch/powerpc/sysdev/genrtc.c
-===================================================================
---- /dev/null
-+++ powerpc/arch/powerpc/sysdev/genrtc.c
-@@ -0,0 +1,76 @@
-+/*
-+ * Copyright (C) Olof Johansson <olof@lixom.net>
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <linux/time.h>
-+#include <linux/device.h>
-+#include <linux/rtc.h>
-+
-+#include <asm/machdep.h>
-+#include <asm/time.h>
-+
-+static struct class_device *rtc_dev;
-+
-+static void genrtc_set_rtc_time_work(struct work_struct *work);
-+
-+static struct rtc_time delayed_tm;
-+static struct workqueue_struct *rtc_workqueue;
-+static DECLARE_WORK(rtc_work, genrtc_set_rtc_time_work);
-+
-+static void genrtc_set_rtc_time_work(struct work_struct *work)
-+{
-+	rtc_set_time(rtc_dev, &delayed_tm);
-+}
-+
-+static int genrtc_set_rtc_time(struct rtc_time *tm)
-+{
-+	if (in_interrupt()) {
-+		/* Can't access RTC with interrupts off, since some of
-+		 * the drivers might sleep. Delay the setting with a
-+		 * work queue.
-+		 */
-+		memcpy(&delayed_tm, tm, sizeof(struct rtc_time));
-+		queue_work(rtc_workqueue, &rtc_work);
-+		return 0;
-+	} else
-+		return rtc_set_time(rtc_dev, tm);
-+}
-+
-+static void genrtc_get_rtc_time(struct rtc_time *tm)
-+{
-+	rtc_read_time(rtc_dev, tm);
-+}
-+
-+static int __init genrtc_rtc_hookup(void)
-+{
-+	/* Don't init if the platform has already set up rtc functions. */
-+	if (ppc_md.get_rtc_time || ppc_md.set_rtc_time)
-+		return -1;
-+
-+	rtc_dev = rtc_class_open("rtc0");
-+
-+	if (!rtc_dev) {
-+		printk("genrtc_rtc_hookup: Failed to open rtc0\n");
-+		return -1;
-+	}
-+
-+	ppc_md.get_rtc_time = genrtc_get_rtc_time;
-+	ppc_md.set_rtc_time = genrtc_set_rtc_time;
-+
-+	return 0;
-+}
-+late_initcall(genrtc_rtc_hookup);
-+
+I've decided to delay the port to the common phy layer due to the
+locking issues I mentioned to after I merge it. Already too many things
+going on at the same time in there :-)
+
+I also haven't brought back the mecanism for dealing with Rx clock loss
+as I need to verify wether we can do that differently using loopback, or
+else, use some different way of implementing it for locking reasons
+(probably pushing the clock control to the platform/cpu code and have
+emac call it so the locking for access to those clock registers can be
+centralized).
+
+In fact, most of my other comments in my initial submission still
+appply :-) It's however good enough to use with the Axon chip on cell
+and thus could probably be merged as it co-exists fine with the old
+driver in arch/ppc. Now that David Gibson is porting 4xx over to
+arch/powerpc, I'll soon be able to start beating it up on 4xx too and
+fix the remaining issues on these.
+
+Murali: Note that I still don't unmap DMA pages, so it works fine as
+long as the IOMMU is disabled, which should be the default on all HW we
+are interested in at the moment, except some stuff you might know about
+that has more than 2GB of RAM... I'll fix that in a later drop.
+
+Ben.
