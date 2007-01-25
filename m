@@ -1,18 +1,17 @@
 Return-Path: <ntl@pobox.com>
 Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id 6DDF3DE1C8
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 12:00:18 +1100 (EST)
-Date: Wed, 24 Jan 2007 19:00:11 -0600
+	by ozlabs.org (Postfix) with ESMTP id ECF4DDE1C4
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 12:04:58 +1100 (EST)
+Date: Wed, 24 Jan 2007 19:04:53 -0600
 From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] rename pSeries nvram functions
-Message-ID: <20070125010010.GM16486@localdomain>
-References: <20070125001628.GH16486@localdomain>
-	<1169686011.24996.18.camel@localhost.localdomain>
-	<1169686046.24996.20.camel@localhost.localdomain>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] move pSeries nvram code to neutral location
+Message-ID: <20070125010453.GN16486@localdomain>
+References: <20070125001843.GI16486@localdomain>
+	<5FE26120-8464-4431-8F0D-EEBB4B896419@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1169686046.24996.20.camel@localhost.localdomain>
+In-Reply-To: <5FE26120-8464-4431-8F0D-EEBB4B896419@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,23 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Thu, 2007-01-25 at 11:46 +1100, Benjamin Herrenschmidt wrote:
-> > On Wed, 2007-01-24 at 18:16 -0600, Nathan Lynch wrote:
-> > > The nvram support in the pSeries platform code is not really tied to
-> > > the pSeries platform.  This code is useful on other platforms that
-> > > have the necessary firmware support.
-> > > 
-> > > Change the "pSeries" prefixes on the nvram function names to "rtas" in
-> > > preparation for moving this code to a platform-neutral location.
-> > > 
-> > > Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> > 
-> > Please, move them out of platform/pseries while at it, so you can also
-> > merge with chrp nvram.c which is pretty much the same.
+Segher Boessenkool wrote:
+> >Move arch/powerpc/platforms/pseries/nvram.c to
+> >arch/powerpc/sysdev/rtas_nvram.c so other platforms with RTAS support
+> >for manipulating nvram can use it.
+> >
+> >Add a RTAS_NVRAM Kconfig option which triggers the build of
+> >arch/powerpc/sysdev/rtas_nvram.o.
+> >
+> >Select RTAS_NVRAM for pSeries and Maple platforms.
 > 
-> Oh, missed that second patch of yours... good :-) Now we should see if
-> we can fixup chrp too..
+> The patch seems to select it for pSeries and iSeries, instead?
 
-I'll look into it, though I might be hard-pressed to find a chrp
-machine with which to test.
+Aw crap, evidently damage introduced when rebasing (Kconfig files seem
+so fragile in this regard).
+
+> >+config RTAS_NVRAM
+> >+	bool
+> >+	default n
+> 
+> No need for "default n", all defaults are "n" by default ;-)
+
+Duh, will fix.
+
+
+> >--- a/arch/powerpc/platforms/pseries/nvram.c
+> >+++ /dev/null
+> 
+> >--- /dev/null
+> >+++ b/arch/powerpc/sysdev/rtas_nvram.c
+> 
+> You can do a "git diff -M" -- that way, we can see that you're
+> not trying to sneak in any changes ;-) (and it makes you patch
+> much more legible and smaller, too).
+
+Thanks for the tip, I'll try it that way.
