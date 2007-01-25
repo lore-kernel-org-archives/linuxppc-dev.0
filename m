@@ -1,26 +1,16 @@
-Return-Path: <mh@omnisys.se>
-Received: from mail.omnisys.se (static-213-115-84-26.sme.bredbandsbolaget.se
-	[213.115.84.26]) by ozlabs.org (Postfix) with ESMTP id 49B45DE087
+Return-Path: <jimmyzhmliu@yahoo.com>
+Received: from web53111.mail.yahoo.com (web53111.mail.yahoo.com
+	[206.190.49.61]) by ozlabs.org (Postfix) with SMTP id 28F95DE063
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Jan 2007 02:58:06 +1100 (EST)
-Received: from mail.omnisys.se (localhost.localdomain [127.0.0.1])
-	by local.omnisys.se (Postfix) with ESMTP id 3B5342C41F
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Jan 2007 16:57:59 +0100 (CET)
-Received: from [192.168.168.19] (dynamic019.omnisys.se [192.168.168.19])
-	by mail.omnisys.se (Postfix) with ESMTP id 33CAD2C3A5
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 25 Jan 2007 16:57:59 +0100 (CET)
-Message-ID: <45B8D387.8030402@omnisys.se>
-Date: Thu, 25 Jan 2007 16:57:59 +0100
-From: Magnus Hjorth <mh@omnisys.se>
+	Fri, 26 Jan 2007 04:06:29 +1100 (EST)
+Date: Thu, 25 Jan 2007 09:06:27 -0800 (PST)
+From: jimmy liu <jimmyzhmliu@yahoo.com>
+Subject: RE: MPC8260 I2C Problem
+To: embedded linuxppc <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <989B956029373F45A0B8AF029708189008734F@zch01exm26.fsl.freescale.net>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: ML403 hard Ethernet under Linux 2.6.18
-References: <45B8A64C.4050505@omnisys.se>
-	<Pine.LNX.4.61.0701251429270.30482@strawberry.dnsalias.org>
-In-Reply-To: <Pine.LNX.4.61.0701251429270.30482@strawberry.dnsalias.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <799271.50055.qm@web53111.mail.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,99 +21,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-jozsef imrek wrote:
-> On Thu, 25 Jan 2007, Magnus Hjorth wrote:
+In the arch\ppc\syslib\pq2_devices.c, there has the
+device descriptions.
+Do I still need manually create the plateform bus
+tree?
+
+--- Li Yang-r58472 <LeoLi@freescale.com> wrote:
+
+> > -----Original Message-----
+> > From:
 >
->   
->> Hi,
->>
->> I'm trying to get Linux 2.6.18.6 working on an ML403 board with a basic
->> EDK design with a hard_temac and uart. I've generated the BSP for
->> linux_2_6, copied the drivers and twiddled a little to make it all compile.
->>
->> The TEMAC driver seems to find the hardware, but the speed negotiation
->> seems not to work. I can see the speed LEDs first go to 100 Mbit, then
->> ...
->>     
+linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org
+> >
 >
-> i suppose you are using plb_temac 3.00, with the corresponding driver.
->   
+[mailto:linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org]
+> On
+> Behalf Of
+> > jimmy liu
+> > Sent: Thursday, January 25, 2007 11:22 AM
+> > To: embedded linuxppc
+> > Subject: MPC8260 I2C Problem
+> > 
+> > I download the linux kernel 2.6.19 from
+> > ftp://ftp.denx.de/pub/linux/ site.
+> > 
+> > When I add mpc8260 I2C driver to Linux kernel
+> 2.6.19,
+> > the init function looks like that
+> > static int __init fsl_i2c_init(void)
+> > {
+> > 	return driver_register(&fsl_i2c_driver);
+> > }
+> > I set the debug on, and found that the
+> fsl_i2c_probe()
+> > function is never called, so there is not I2C
+> device
+> > enabled, and the user space function
+> > open("/dev/i2c-0",O_RDWR) always return error. I
+> set
+> > something wrong? Could somebody help me?
+> 
+> Do you have an fsl-i2c node in your device tree?
+> 
+> - Leo
+> 
 
-plb_temac 3.00.a and hard_temac 3.00.b. The driver is the one that was 
-generated in the BSP using Xilinx EDK 8.2, adapter.c says v2.00b.
 
-The only code that I have added myself is a header file xio.h containing:
-#include <asm/io.h>
-#define XIo_In32(p) in_be32((volatile void *)p)
-#define XIo_Out32(p,v) out_be32((volatile void *)p,v)
-#define XIo_Out8(p,v) out_8((volatile void *)p,v)
 
-> did you try to uncomment #define XILINX_PLB_TEMAC_3_00A_ML403_PHY_SUPPORT
-> in adapter.c ?
->
->   
-I did try that, and it seems to work even worse. It claims the speed is 
-set to 10Mbit but the LEDs show it's still in 100Mbit operation as it is 
-directly after programming the FPGA... The transmit LED is on for a 
-short while before the Link carrier lost message. Startup messages shown 
-below.
-
-loaded at:     00400000 004B613C
-board data at: 004B4124 004B413C
-relocated to:  00404094 004040AC
-zimage at:     00404EA7 004B3CFC
-avail ram:     004B7000 03D09000
-
-Linux/PPC load: console=ttyS0,9600 ip=on
-Uncompressing Linux...done.
-Now booting the kernel
-Linux version 2.6.18.6mh1 (labb@dynamic035.omnisys.se) (gcc version 
-3.4.1) #14 7
-Xilinx ML403 Reference System (Virtex-4 FX)
-Built 1 zonelists.  Total pages: 15625
-Kernel command line: console=ttyS0,9600 ip=on
-Xilinx INTC #0 at 0x41200000 mapped to 0xFDFFE000
-PID hash table entries: 256 (order: 8, 1024 bytes)
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 8192 (order: 3, 32768 bytes)
-Inode-cache hash table entries: 4096 (order: 2, 16384 bytes)
-Memory: 60184k available (1148k kernel code, 448k data, 68k init, 0k 
-highmem)
-Mount-cache hash table entries: 512
-NET: Registered protocol family 16
-NET: Registered protocol family 2
-IP route cache hash table entries: 512 (order: -1, 2048 bytes)
-TCP established hash table entries: 2048 (order: 1, 8192 bytes)
-TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
-TCP: Hash tables configured (established 2048 bind 1024)
-TCP reno registered
-Initializing Cryptographic API
-io scheduler noop registered
-io scheduler anticipatory registered (default)
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-serial8250.0: ttyS0 at MMIO 0x40401003 (irq = 1) is a 16550A
-XTemac: using FIFO direct interrupt driven mode.
-eth0: Xilinx TEMAC #0 at 0x81200000 mapped to 0xC4000000, irq=0
-eth0: XTemac id 1.0f, block id 5, type 8
-TCP bic registered
-NET: Registered protocol family 1
-eth0: XTemac: Options: 0xb8f2
-eth0: XTemac: speed set to 10Mb/s
-Sending DHCP requests .<6>eth0: XTemac: PHY Link carrier lost.
-..... timed out!
-IP-Config: Reopening network devices...
-eth0: XTemac: Options: 0xb8f2
-eth0: XTemac: speed set to 10Mb/s
-Sending DHCP requests ...... timed out!
-IP-Config: Reopening network devices...
-eth0: XTemac: Options: 0xb8f2
-
--- 
-
-Magnus Hjorth, M.Sc.
-Omnisys Instruments AB
-Gruvgatan 8
-SE-421 30  Västra Frölunda, SWEDEN
-Phone: +46 31 734 34 09
-Fax: +46 31 734 34 29
-http://www.omnisys.se 
+ 
+____________________________________________________________________________________
+Don't pick lemons.
+See all the new 2007 cars at Yahoo! Autos.
+http://autos.yahoo.com/new_cars.html 
