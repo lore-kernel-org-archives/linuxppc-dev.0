@@ -1,16 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound8-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 44975DEA83
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 13:41:11 +1100 (EST)
+Message-ID: <45B8188E.7020602@am.sony.com>
+Date: Wed, 24 Jan 2007 18:40:14 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17848.6331.164992.951431@cargo.ozlabs.ibm.com>
-Date: Thu, 25 Jan 2007 13:40:59 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 01/18] Include autoconf.h from the bootwrapper.
-In-Reply-To: <56B86A8F-4E40-4C58-A774-0DE3C7AA8CE2@kernel.crashing.org>
-References: <20070124210654.GA10527@ld0162-tx32.am.freescale.net>
-	<20070124235150.GA26212@localhost.localdomain>
-	<56B86A8F-4E40-4C58-A774-0DE3C7AA8CE2@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+To: paulus@samba.org
+Subject: [PATCH 9/14] ps3: add interrupt alloc for outlets
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,17 +23,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala writes:
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-> I think the problem is how to resolve the variations of the u-boot/ 
-> ppcboot bd_t that changes from board to board and based on config.
+PS3 interrupt core update:
+  - Add ps3_alloc_irq() and ps3_free_irq(), to allocate a virtual interrupt
+    number for an interrupt outlet, which is needed by the PS3 GPU frame
+    buffer device and audio drivers
 
-The wrapper should be able to build bootable images for any of the
-boards, that is, for any given bd_t variant, there should be a flag to
-wrapper that tells it to build an image that understands that variant.
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-It's reasonable for arch/powerpc/boot/Makefile to pass different flags
-to wrapper depending on the kernel config.  I don't want wrapper
-itself, or anything it uses, to be config-dependent.
+---
+ arch/powerpc/platforms/ps3/interrupt.c |   12 ++++++++++++
+ include/asm-powerpc/ps3.h              |    3 +++
+ 2 files changed, 15 insertions(+)
 
-Paul.
+--- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/interrupt.c
++++ ps3-linux-dev/arch/powerpc/platforms/ps3/interrupt.c
+@@ -412,6 +412,18 @@ int ps3_free_spe_irq(unsigned int virq)
+ 	return 0;
+ }
+ 
++int ps3_alloc_irq(enum ps3_cpu_binding cpu, unsigned long outlet,
++	unsigned int *virq)
++{
++	return ps3_connect_irq(cpu, outlet, virq);
++}
++
++int ps3_free_irq(unsigned int virq)
++{
++	ps3_disconnect_irq(virq);
++	return 0;
++}
++
+ #define PS3_INVALID_OUTLET ((irq_hw_number_t)-1)
+ #define PS3_PLUG_MAX 63
+ 
+--- ps3-linux-dev.orig/include/asm-powerpc/ps3.h
++++ ps3-linux-dev/include/asm-powerpc/ps3.h
+@@ -163,6 +163,9 @@ int ps3_free_vuart_irq(unsigned int virq
+ int ps3_alloc_spe_irq(enum ps3_cpu_binding cpu, unsigned long spe_id,
+ 	unsigned int class, unsigned int *virq);
+ int ps3_free_spe_irq(unsigned int virq);
++int ps3_alloc_irq(enum ps3_cpu_binding cpu, unsigned long outlet,
++	unsigned int *virq);
++int ps3_free_irq(unsigned int virq);
+ 
+ /* lv1 result codes */
+ 
