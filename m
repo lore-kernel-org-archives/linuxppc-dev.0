@@ -1,11 +1,11 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 62B54DE0E5
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 19:13:44 +1100 (EST)
-Date: Thu, 25 Jan 2007 02:19:24 -0600
-To: paulus@samba.org, gregkh@suse.de
-Subject: [PATCH] [0/4] PMC-related cleanups
-Message-ID: <20070125081923.GA10716@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id C8CA3DE1E1
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 19:13:48 +1100 (EST)
+Date: Thu, 25 Jan 2007 02:19:37 -0600
+To: paulus@samba.org
+Subject: [PATCH] [1/4] powerpc: Oprofile cleanup
+Message-ID: <20070125081937.GB10716@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: Olof Johansson <olof@lixom.net>
@@ -19,15 +19,318 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following short series contains a few patches to abstract and clean
-up some of the PMC handling on powerpc, followed by the introduction of
-the sysfs support for PMCs on PA6T.
+Clean up the ctr_read/write a bit. It's currently defined in the
+include but only used in one C file each. The only exception is the
+classic version, so keep that in the include and define in the C file
+as appropriate.
 
-Greg, patch 3 in this series (the sysdev attribute one) is a prerequisite
-for the one after. Would you mind ACKing it so Paul can feed it via his
-tree so we can resolve this dependency?
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-
-Thanks,
-
-Olof
+Index: powerpc/arch/powerpc/oprofile/op_model_7450.c
+===================================================================
+--- powerpc.orig/arch/powerpc/oprofile/op_model_7450.c
++++ powerpc/arch/powerpc/oprofile/op_model_7450.c
+@@ -137,9 +137,9 @@ static void fsl7450_start(struct op_coun
+ 
+ 	for (i = 0; i < NUM_CTRS; ++i) {
+ 		if (ctr[i].enabled)
+-			ctr_write(i, reset_value[i]);
++			classic_ctr_write(i, reset_value[i]);
+ 		else
+-			ctr_write(i, 0);
++			classic_ctr_write(i, 0);
+ 	}
+ 
+ 	/* Clear the freeze bit, and enable the interrupt.
+@@ -179,13 +179,13 @@ static void fsl7450_handle_interrupt(str
+ 	is_kernel = is_kernel_addr(pc);
+ 
+ 	for (i = 0; i < NUM_CTRS; ++i) {
+-		val = ctr_read(i);
++		val = classic_ctr_read(i);
+ 		if (val < 0) {
+ 			if (oprofile_running && ctr[i].enabled) {
+ 				oprofile_add_ext_sample(pc, regs, i, is_kernel);
+-				ctr_write(i, reset_value[i]);
++				classic_ctr_write(i, reset_value[i]);
+ 			} else {
+-				ctr_write(i, 0);
++				classic_ctr_write(i, 0);
+ 			}
+ 		}
+ 	}
+Index: powerpc/arch/powerpc/oprofile/op_model_fsl_booke.c
+===================================================================
+--- powerpc.orig/arch/powerpc/oprofile/op_model_fsl_booke.c
++++ powerpc/arch/powerpc/oprofile/op_model_fsl_booke.c
+@@ -32,6 +32,87 @@ static unsigned long reset_value[OP_MAX_
+ static int num_counters;
+ static int oprofile_running;
+ 
++static inline u32 get_pmlca(int ctr)
++{
++	u32 pmlca;
++
++	switch (ctr) {
++		case 0:
++			pmlca = mfpmr(PMRN_PMLCA0);
++			break;
++		case 1:
++			pmlca = mfpmr(PMRN_PMLCA1);
++			break;
++		case 2:
++			pmlca = mfpmr(PMRN_PMLCA2);
++			break;
++		case 3:
++			pmlca = mfpmr(PMRN_PMLCA3);
++			break;
++		default:
++			panic("Bad ctr number\n");
++	}
++
++	return pmlca;
++}
++
++static inline void set_pmlca(int ctr, u32 pmlca)
++{
++	switch (ctr) {
++		case 0:
++			mtpmr(PMRN_PMLCA0, pmlca);
++			break;
++		case 1:
++			mtpmr(PMRN_PMLCA1, pmlca);
++			break;
++		case 2:
++			mtpmr(PMRN_PMLCA2, pmlca);
++			break;
++		case 3:
++			mtpmr(PMRN_PMLCA3, pmlca);
++			break;
++		default:
++			panic("Bad ctr number\n");
++	}
++}
++
++static inline unsigned int ctr_read(unsigned int i)
++{
++	switch(i) {
++		case 0:
++			return mfpmr(PMRN_PMC0);
++		case 1:
++			return mfpmr(PMRN_PMC1);
++		case 2:
++			return mfpmr(PMRN_PMC2);
++		case 3:
++			return mfpmr(PMRN_PMC3);
++		default:
++			return 0;
++	}
++}
++
++static inline void ctr_write(unsigned int i, unsigned int val)
++{
++	switch(i) {
++		case 0:
++			mtpmr(PMRN_PMC0, val);
++			break;
++		case 1:
++			mtpmr(PMRN_PMC1, val);
++			break;
++		case 2:
++			mtpmr(PMRN_PMC2, val);
++			break;
++		case 3:
++			mtpmr(PMRN_PMC3, val);
++			break;
++		default:
++			break;
++	}
++}
++
++
+ static void init_pmc_stop(int ctr)
+ {
+ 	u32 pmlca = (PMLCA_FC | PMLCA_FCS | PMLCA_FCU |
+Index: powerpc/arch/powerpc/oprofile/op_model_power4.c
+===================================================================
+--- powerpc.orig/arch/powerpc/oprofile/op_model_power4.c
++++ powerpc/arch/powerpc/oprofile/op_model_power4.c
+@@ -121,9 +121,9 @@ static void power4_start(struct op_count
+ 
+ 	for (i = 0; i < cur_cpu_spec->num_pmcs; ++i) {
+ 		if (ctr[i].enabled) {
+-			ctr_write(i, reset_value[i]);
++			classic_ctr_write(i, reset_value[i]);
+ 		} else {
+-			ctr_write(i, 0);
++			classic_ctr_write(i, 0);
+ 		}
+ 	}
+ 
+@@ -254,13 +254,13 @@ static void power4_handle_interrupt(stru
+ 	mtmsrd(mfmsr() | MSR_PMM);
+ 
+ 	for (i = 0; i < cur_cpu_spec->num_pmcs; ++i) {
+-		val = ctr_read(i);
++		val = classic_ctr_read(i);
+ 		if (val < 0) {
+ 			if (oprofile_running && ctr[i].enabled) {
+ 				oprofile_add_ext_sample(pc, regs, i, is_kernel);
+-				ctr_write(i, reset_value[i]);
++				classic_ctr_write(i, reset_value[i]);
+ 			} else {
+-				ctr_write(i, 0);
++				classic_ctr_write(i, 0);
+ 			}
+ 		}
+ 	}
+Index: powerpc/arch/powerpc/oprofile/op_model_rs64.c
+===================================================================
+--- powerpc.orig/arch/powerpc/oprofile/op_model_rs64.c
++++ powerpc/arch/powerpc/oprofile/op_model_rs64.c
+@@ -137,10 +137,10 @@ static void rs64_start(struct op_counter
+ 
+ 	for (i = 0; i < num_counters; ++i) {
+ 		if (ctr[i].enabled) {
+-			ctr_write(i, reset_value[i]);
++			classic_ctr_write(i, reset_value[i]);
+ 			ctrl_write(i, ctr[i].event);
+ 		} else {
+-			ctr_write(i, 0);
++			classic_ctr_write(i, 0);
+ 		}
+ 	}
+ 
+@@ -186,13 +186,13 @@ static void rs64_handle_interrupt(struct
+ 	mtmsrd(mfmsr() | MSR_PMM);
+ 
+ 	for (i = 0; i < num_counters; ++i) {
+-		val = ctr_read(i);
++		val = classic_ctr_read(i);
+ 		if (val < 0) {
+ 			if (ctr[i].enabled) {
+ 				oprofile_add_ext_sample(pc, regs, i, is_kernel);
+-				ctr_write(i, reset_value[i]);
++				classic_ctr_write(i, reset_value[i]);
+ 			} else {
+-				ctr_write(i, 0);
++				classic_ctr_write(i, 0);
+ 			}
+ 		}
+ 	}
+Index: powerpc/include/asm-powerpc/oprofile_impl.h
+===================================================================
+--- powerpc.orig/include/asm-powerpc/oprofile_impl.h
++++ powerpc/include/asm-powerpc/oprofile_impl.h
+@@ -57,11 +57,9 @@ extern struct op_powerpc_model op_model_
+ extern struct op_powerpc_model op_model_power4;
+ extern struct op_powerpc_model op_model_7450;
+ extern struct op_powerpc_model op_model_cell;
+-
+-#ifndef CONFIG_FSL_BOOKE
+ 
+ /* All the classic PPC parts use these */
+-static inline unsigned int ctr_read(unsigned int i)
++static inline unsigned int classic_ctr_read(unsigned int i)
+ {
+ 	switch(i) {
+ 	case 0:
+@@ -89,7 +88,7 @@ static inline unsigned int ctr_read(unsi
+ 	}
+ }
+ 
+-static inline void ctr_write(unsigned int i, unsigned int val)
++static inline void classic_ctr_write(unsigned int i, unsigned int val)
+ {
+ 	switch(i) {
+ 	case 0:
+@@ -124,89 +123,6 @@ static inline void ctr_write(unsigned in
+ 		break;
+ 	}
+ }
+-#else /* CONFIG_FSL_BOOKE */
+-static inline u32 get_pmlca(int ctr)
+-{
+-	u32 pmlca;
+-
+-	switch (ctr) {
+-		case 0:
+-			pmlca = mfpmr(PMRN_PMLCA0);
+-			break;
+-		case 1:
+-			pmlca = mfpmr(PMRN_PMLCA1);
+-			break;
+-		case 2:
+-			pmlca = mfpmr(PMRN_PMLCA2);
+-			break;
+-		case 3:
+-			pmlca = mfpmr(PMRN_PMLCA3);
+-			break;
+-		default:
+-			panic("Bad ctr number\n");
+-	}
+-
+-	return pmlca;
+-}
+-
+-static inline void set_pmlca(int ctr, u32 pmlca)
+-{
+-	switch (ctr) {
+-		case 0:
+-			mtpmr(PMRN_PMLCA0, pmlca);
+-			break;
+-		case 1:
+-			mtpmr(PMRN_PMLCA1, pmlca);
+-			break;
+-		case 2:
+-			mtpmr(PMRN_PMLCA2, pmlca);
+-			break;
+-		case 3:
+-			mtpmr(PMRN_PMLCA3, pmlca);
+-			break;
+-		default:
+-			panic("Bad ctr number\n");
+-	}
+-}
+-
+-static inline unsigned int ctr_read(unsigned int i)
+-{
+-	switch(i) {
+-		case 0:
+-			return mfpmr(PMRN_PMC0);
+-		case 1:
+-			return mfpmr(PMRN_PMC1);
+-		case 2:
+-			return mfpmr(PMRN_PMC2);
+-		case 3:
+-			return mfpmr(PMRN_PMC3);
+-		default:
+-			return 0;
+-	}
+-}
+-
+-static inline void ctr_write(unsigned int i, unsigned int val)
+-{
+-	switch(i) {
+-		case 0:
+-			mtpmr(PMRN_PMC0, val);
+-			break;
+-		case 1:
+-			mtpmr(PMRN_PMC1, val);
+-			break;
+-		case 2:
+-			mtpmr(PMRN_PMC2, val);
+-			break;
+-		case 3:
+-			mtpmr(PMRN_PMC3, val);
+-			break;
+-		default:
+-			break;
+-	}
+-}
+-
+-
+-#endif /* CONFIG_FSL_BOOKE */
+ 
+ 
+ extern void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth);
