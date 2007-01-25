@@ -2,19 +2,25 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 68670DE0AE
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 11:47:33 +1100 (EST)
-Subject: Re: [PATCH 1/2] rename pSeries nvram functions
+	by ozlabs.org (Postfix) with ESMTP id 1F1D6DE397
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 11:47:41 +1100 (EST)
+Subject: Re: [patch 1/1] updated version, fixed the compiler warning
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <1169686011.24996.18.camel@localhost.localdomain>
-References: <20070125001628.GH16486@localdomain>
-	<1169686011.24996.18.camel@localhost.localdomain>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <523FF36A-46DF-40CA-BFFE-EDE95EFA3EFE@kernel.crashing.org>
+References: <20061218163846.337fed65@localhost> <45882913.2000609@acm.org>
+	<20061220154517.6341fce6@localhost> <200612210111.28186.arnd@arndb.de>
+	<20070125104540.65a1f557@localhost>
+	<1169682996.24996.11.camel@localhost.localdomain>
+	<523FF36A-46DF-40CA-BFFE-EDE95EFA3EFE@kernel.crashing.org>
 Content-Type: text/plain
-Date: Thu, 25 Jan 2007 11:47:26 +1100
-Message-Id: <1169686046.24996.20.camel@localhost.localdomain>
+Date: Thu, 25 Jan 2007 11:45:31 +1100
+Message-Id: <1169685931.24996.16.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Christian Krafft <krafft@de.ibm.com>,
+	openipmi-developer@lists.sourceforge.net,
+	Krafft <krafft@linux.vnet.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,21 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-01-25 at 11:46 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2007-01-24 at 18:16 -0600, Nathan Lynch wrote:
-> > The nvram support in the pSeries platform code is not really tied to
-> > the pSeries platform.  This code is useful on other platforms that
-> > have the necessary firmware support.
-> > 
-> > Change the "pSeries" prefixes on the nvram function names to "rtas" in
-> > preparation for moving this code to a platform-neutral location.
-> > 
-> > Signed-off-by: Nathan Lynch <ntl@pobox.com>
+On Thu, 2007-01-25 at 01:29 +0100, Segher Boessenkool wrote:
+> >> +static int __devexit ipmi_of_remove(struct of_device *dev)
+> >> +{
+> >> +	/* should call
+> >> +	 * cleanup_one_si(dev->dev.driver_data); */
+> >> +	return 0;
+> >> +}
+> >
+> > If your remove doesn't work, don't implement one.
 > 
-> Please, move them out of platform/pseries while at it, so you can also
-> merge with chrp nvram.c which is pretty much the same.
+> As explained before, it's the underlying thing that doesn't
+> work.  Yeah someone should fix it one day.  Still it's better
+> to have this comment than to not have anything at all.  An
+> XXX FIXME: tag wouldn't be out of place of course.
 
-Oh, missed that second patch of yours... good :-) Now we should see if
-we can fixup chrp too..
+If the underlying ipmi stuff cannot cleanup, then the driver should not
+have a module_exit() so the module cannot be removed.
 
 Ben.
