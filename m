@@ -1,18 +1,18 @@
 Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (mx1.suse.de [195.135.220.2])
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx1.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 627CBDE333
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 09:34:11 +1100 (EST)
-Subject: patch msi-combine-pci__msi-msix_state.patch added to gregkh-2.6 tree
+	by ozlabs.org (Postfix) with ESMTP id 4DC8ADE05B
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 09:34:16 +1100 (EST)
+Subject: patch msi-remove-pci_scan_msi_device.patch added to gregkh-2.6 tree
 To: michael@ellerman.id.au, brice@myri.com, davem@davemloft.net,
 	ebiederm@xmission.com, greg@kroah.com, gregkh@suse.de,
 	kyle@parisc-linux.org, linuxppc-dev@ozlabs.org, shaohua.li@intel.com
 From: <gregkh@suse.de>
-Date: Thu, 25 Jan 2007 14:33:14 -0800
-In-Reply-To: <20070125083409.D4EBADE25B@ozlabs.org>
-Message-Id: <20070125223405.DD836B785C7@imap.suse.de>
+Date: Thu, 25 Jan 2007 14:33:20 -0800
+In-Reply-To: <20070125083409.5E9F0DE257@ozlabs.org>
+Message-Id: <20070125223411.665E9B79237@imap.suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,150 +25,91 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 This is a note to let you know that I've just added the patch titled
 
-     Subject: MSI: Combine pci_(save|restore)_msi/msix_state
+     Subject: MSI: Remove pci_scan_msi_device()
 
 to my gregkh-2.6 tree.  Its filename is
 
-     msi-combine-pci__msi-msix_state.patch
+     msi-remove-pci_scan_msi_device.patch
 
 This tree can be found at 
     http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
 
 
->From michael@ozlabs.org  Thu Jan 25 14:13:06 2007
+>From owner-linux-pci@atrey.karlin.mff.cuni.cz  Thu Jan 25 14:12:48 2007
 From: Michael Ellerman <michael@ellerman.id.au>
 Date: Thu, 25 Jan 2007 19:34:08 +1100
-Subject: MSI: Combine pci_(save|restore)_msi/msix_state
+Subject: MSI: Remove pci_scan_msi_device()
 To: linux-pci@atrey.karlin.mff.cuni.cz
-Cc: Greg Kroah-Hartman <greg@kroah.com>, Eric W. Biederman <ebiederm@xmission.com>, David S. Miller <davem@davemloft.net>, Kyle McMartin <kyle@parisc-linux.org>, <linuxppc-dev@ozlabs.org>, Brice Goglin <brice@myri.com>, <shaohua.li@intel.com>
-Message-ID: <20070125083409.D4EBADE25B@ozlabs.org>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Eric W.Biederman <ebiederm@xmission.com>, David S.Miller <davem@davemloft.net>, Kyle McMartin <kyle@parisc-linux.org>, <linuxppc-dev@ozlabs.org>, Brice Goglin <brice@myri.com>, <shaohua.li@intel.com>
+Message-ID: <20070125083409.5E9F0DE257@ozlabs.org>
 
 
-The PCI save/restore code doesn't need to care about MSI vs MSI-X, all
-it really wants is to say "save/restore all MSI(-X) info for this device".
-
-This is borne out in the code, we call the MSI and MSI-X save routines
-side by side, and similarly with the restore routines.
-
-So combine the MSI/MSI-X routines into pci_save_msi_state() and
-pci_restore_msi_state(). It is up to those routines to decide what state
-needs to be saved.
+pci_scan_msi_device() doesn't do anything anymore, so remove it.
 
 Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
 Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
 
 ---
- drivers/pci/msi.c |   27 +++++++++++++++++++++++----
- drivers/pci/pci.c |    4 +---
- drivers/pci/pci.h |    6 ++----
- 3 files changed, 26 insertions(+), 11 deletions(-)
+ arch/powerpc/kernel/pci_64.c |    2 --
+ drivers/pci/msi.c            |    6 ------
+ drivers/pci/probe.c          |    1 -
+ include/linux/pci.h          |    2 --
+ 4 files changed, 11 deletions(-)
 
+--- gregkh-2.6.orig/arch/powerpc/kernel/pci_64.c
++++ gregkh-2.6/arch/powerpc/kernel/pci_64.c
+@@ -381,8 +381,6 @@ struct pci_dev *of_create_pci_dev(struct
+ 
+ 	pci_device_add(dev, bus);
+ 
+-	/* XXX pci_scan_msi_device(dev); */
+-
+ 	return dev;
+ }
+ EXPORT_SYMBOL(of_create_pci_dev);
 --- gregkh-2.6.orig/drivers/pci/msi.c
 +++ gregkh-2.6/drivers/pci/msi.c
-@@ -295,7 +295,7 @@ static int msi_lookup_irq(struct pci_dev
+@@ -294,12 +294,6 @@ static int msi_lookup_irq(struct pci_dev
+ 	return -EACCES;
  }
  
+-void pci_scan_msi_device(struct pci_dev *dev)
+-{
+-	if (!dev)
+-		return;
+-}
+-
  #ifdef CONFIG_PM
--int pci_save_msi_state(struct pci_dev *dev)
-+static int __pci_save_msi_state(struct pci_dev *dev)
+ int pci_save_msi_state(struct pci_dev *dev)
  {
- 	int pos, i = 0;
- 	u16 control;
-@@ -333,7 +333,7 @@ int pci_save_msi_state(struct pci_dev *d
- 	return 0;
- }
+--- gregkh-2.6.orig/drivers/pci/probe.c
++++ gregkh-2.6/drivers/pci/probe.c
+@@ -946,7 +946,6 @@ pci_scan_single_device(struct pci_bus *b
+ 		return NULL;
  
--void pci_restore_msi_state(struct pci_dev *dev)
-+static void __pci_restore_msi_state(struct pci_dev *dev)
- {
- 	int i = 0, pos;
- 	u16 control;
-@@ -361,7 +361,7 @@ void pci_restore_msi_state(struct pci_de
- 	kfree(save_state);
- }
+ 	pci_device_add(dev, bus);
+-	pci_scan_msi_device(dev);
  
--int pci_save_msix_state(struct pci_dev *dev)
-+static int __pci_save_msix_state(struct pci_dev *dev)
- {
- 	int pos;
- 	int temp;
-@@ -409,7 +409,20 @@ int pci_save_msix_state(struct pci_dev *
- 	return 0;
+ 	return dev;
  }
+--- gregkh-2.6.orig/include/linux/pci.h
++++ gregkh-2.6/include/linux/pci.h
+@@ -626,7 +626,6 @@ struct msix_entry {
  
--void pci_restore_msix_state(struct pci_dev *dev)
-+int pci_save_msi_state(struct pci_dev *dev)
-+{
-+	int rc;
-+
-+	rc = __pci_save_msi_state(dev);
-+	if (rc)
-+		return rc;
-+
-+	rc = __pci_save_msix_state(dev);
-+
-+	return rc;
-+}
-+
-+static void __pci_restore_msix_state(struct pci_dev *dev)
- {
- 	u16 save;
- 	int pos;
-@@ -446,6 +459,12 @@ void pci_restore_msix_state(struct pci_d
- 	pci_write_config_word(dev, msi_control_reg(pos), save);
- 	enable_msi_mode(dev, pos, PCI_CAP_ID_MSIX);
- }
-+
-+void pci_restore_msi_state(struct pci_dev *dev)
-+{
-+	__pci_restore_msi_state(dev);
-+	__pci_restore_msix_state(dev);
-+}
- #endif	/* CONFIG_PM */
  
- /**
---- gregkh-2.6.orig/drivers/pci/pci.c
-+++ gregkh-2.6/drivers/pci/pci.c
-@@ -634,8 +634,6 @@ pci_save_state(struct pci_dev *dev)
- 		pci_read_config_dword(dev, i * 4,&dev->saved_config_space[i]);
- 	if ((i = pci_save_msi_state(dev)) != 0)
- 		return i;
--	if ((i = pci_save_msix_state(dev)) != 0)
--		return i;
- 	if ((i = pci_save_pcie_state(dev)) != 0)
- 		return i;
- 	if ((i = pci_save_pcix_state(dev)) != 0)
-@@ -673,7 +671,7 @@ pci_restore_state(struct pci_dev *dev)
- 	}
- 	pci_restore_pcix_state(dev);
- 	pci_restore_msi_state(dev);
--	pci_restore_msix_state(dev);
-+
- 	return 0;
- }
- 
---- gregkh-2.6.orig/drivers/pci/pci.h
-+++ gregkh-2.6/drivers/pci/pci.h
-@@ -52,17 +52,15 @@ void pci_no_msi(void);
- static inline void disable_msi_mode(struct pci_dev *dev, int pos, int type) { }
- static inline void pci_no_msi(void) { }
- #endif
-+
- #if defined(CONFIG_PCI_MSI) && defined(CONFIG_PM)
- int pci_save_msi_state(struct pci_dev *dev);
--int pci_save_msix_state(struct pci_dev *dev);
- void pci_restore_msi_state(struct pci_dev *dev);
--void pci_restore_msix_state(struct pci_dev *dev);
+ #ifndef CONFIG_PCI_MSI
+-static inline void pci_scan_msi_device(struct pci_dev *dev) {}
+ static inline int pci_enable_msi(struct pci_dev *dev) {return -1;}
+ static inline void pci_disable_msi(struct pci_dev *dev) {}
+ static inline int pci_enable_msix(struct pci_dev* dev,
+@@ -634,7 +633,6 @@ static inline int pci_enable_msix(struct
+ static inline void pci_disable_msix(struct pci_dev *dev) {}
+ static inline void msi_remove_pci_irq_vectors(struct pci_dev *dev) {}
  #else
- static inline int pci_save_msi_state(struct pci_dev *dev) { return 0; }
--static inline int pci_save_msix_state(struct pci_dev *dev) { return 0; }
- static inline void pci_restore_msi_state(struct pci_dev *dev) {}
--static inline void pci_restore_msix_state(struct pci_dev *dev) {}
- #endif
-+
- static inline int pci_no_d1d2(struct pci_dev *dev)
- {
- 	unsigned int parent_dstates = 0;
+-extern void pci_scan_msi_device(struct pci_dev *dev);
+ extern int pci_enable_msi(struct pci_dev *dev);
+ extern void pci_disable_msi(struct pci_dev *dev);
+ extern int pci_enable_msix(struct pci_dev* dev,
 
 
 Patches currently in gregkh-2.6 which might be from michael@ellerman.id.au are
