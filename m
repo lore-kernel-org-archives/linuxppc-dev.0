@@ -1,17 +1,18 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 642F5DE027
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 16:58:42 +1100 (EST)
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 2D2E0DE031
+	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 16:59:12 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 2/14] ps3: repository storage support
-Date: Thu, 25 Jan 2007 06:58:36 +0100
-References: <45B81870.4010302@am.sony.com>
-In-Reply-To: <45B81870.4010302@am.sony.com>
+Subject: Re: [PATCH 3/14] ps3: system bus minor mmio fix
+Date: Thu, 25 Jan 2007 06:59:05 +0100
+References: <45B81877.3020600@am.sony.com>
+In-Reply-To: <45B81877.3020600@am.sony.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200701250658.36299.arnd@arndb.de>
+Message-Id: <200701250659.05829.arnd@arndb.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,18 +23,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thursday 25 January 2007 03:39, Geoff Levand wrote:
-> From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 >=20
-> Handle storage-related repository data:
-> =A0 - Add missing implementations of ps3_repository_read_stor_*() reposit=
-ory
-> =A0 =A0 accessors.
-> =A0 - Dump storage properties in debug mode
-> =A0 - Add PS3_DEV_TYPE_STOR_PDISK,ROM,FLASH} device types (which are iden=
-tical to
-> =A0 =A0 the corresponding SCSI device types) to enum ps3_dev_type
+> Fix two minor bugs in the PS3 system bus mmio region code. =A0First, on e=
+rror or
+> when freeing a region, retain the bus_addr and len fields to allow subseq=
+uent
+> calls to create the region. =A0Second, correct the region address argumen=
+t to the
+> lv1_unmap_device_mmio_region() call.
 >=20
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+> Fixes modprobe/rmmod of some drivers.
+>=20
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 >=20
 Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
