@@ -1,23 +1,23 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4B788DE098
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 01:36:06 +1100 (EST)
-Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1169620444.18754.66.camel@localhost.localdomain>
-References: <20061213123819.403286000@sipsolutions.net> >
-	<20061213123945.386891000@sipsolutions.net> >
-	<1169620444.18754.66.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-f8ylI10ilHbuXU/fKURL"
-Date: Fri, 26 Jan 2007 15:35:04 +0100
-Message-Id: <1169822104.15413.13.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id DFF04DE092
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 01:57:04 +1100 (EST)
+Date: Fri, 26 Jan 2007 15:56:58 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
+In-Reply-To: <200701260513.24010.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.62.0701261535180.30062@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
+	<200701260513.24010.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, James Simmons <jsimmons@infradead.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,173 +27,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 26 Jan 2007, Arnd Bergmann wrote:
+> > +} video_mode_table[] = {
+> > +	{     0, }, /* auto */
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480I,       A_N,  720,  480, 1, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_480P,       A_N,  720,  480, 0, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_60HZ,  A_N, 1280,  720, 0, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_60HZ, A_W, 1920, 1080, 1, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_60HZ, A_W, 1920, 1080, 0, 60},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576I,       A_N,  720,  576, 1, 50},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_576P,       A_N,  720,  576, 0, 50},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_720P_50HZ,  A_N, 1280,  720, 0, 50},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080I_50HZ, A_W, 1920, 1080, 1, 50},
+> > +	{YUV444, XRGB, PS3AV_CMD_VIDEO_VID_1080P_50HZ, A_W, 1920, 1080, 0, 50},
+> > +	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WXGA,       A_W, 1280,  768, 0, 60},
+> > +	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_SXGA,       A_N, 1280, 1024, 0, 60},
+> > +	{  RGB8, XRGB, PS3AV_CMD_VIDEO_VID_WUXGA,      A_W, 1920, 1200, 0, 60},
+> > +};
+> 
+> Is there a fundamental reason why 1280x768 is not supported as YUV? That is
+> the resolution that my TV set at home has natively, and I'd like to use it.
 
---=-f8ylI10ilHbuXU/fKURL
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Analog YUV (Component and composite/S-video) video timings are dictated by
+broadcast standards.
 
-On Wed, 2007-01-24 at 17:34 +1100, Benjamin Herrenschmidt wrote:
-> On Wed, 2006-12-13 at 13:38 +0100, Johannes Berg wrote:
-> > plain text document attachment (time-resume.patch)
-> > This patch converts the time restore code from a PMU notifier to a regu=
-lar
-> > sys device so I can profit from it even when I don't suspend through th=
-e
-> > PMU, i.e. suspend to disk.
-> >=20
-> > Also another step towards dropping pmu_sleep_notifier completely.
->=20
-> I'd rather do it differently: On suspend, read the RTC and save the
-> value. On resume, read it again, diff the values, and add that to the
-> current time.
+The last 3 resolutions are supported through the HDMI output only. Hence if
+your TV has HDMI or DVI-D (_with_ HDCP, else you get a black screen) inputs,
+you can use 1280x768.
 
-Alright, how about something like this? I still need to fill in the
-actual calculations of course :)
+If your TV doesn't have HDMI or DVI-D with HDCP, but it has component inputs,
+you can use analog 720p.
 
---- mb-wireless.orig/arch/powerpc/platforms/powermac/time.c	2007-01-25 14:0=
-9:12.288927117 +0100
-+++ mb-wireless/arch/powerpc/platforms/powermac/time.c	2007-01-26 14:16:18.=
-598954773 +0100
-@@ -297,49 +297,11 @@ int __init via_calibrate_decr(void)
- }
- #endif
-=20
--#ifdef CONFIG_PM
--/*
-- * Reset the time after a sleep.
-- */
--static int
--time_sleep_notify(struct pmu_sleep_notifier *self, int when)
--{
--	static unsigned long time_diff;
--	unsigned long flags;
--	unsigned long seq;
--	struct timespec tv;
--
--	switch (when) {
--	case PBOOK_SLEEP_NOW:
--		do {
--			seq =3D read_seqbegin_irqsave(&xtime_lock, flags);
--			time_diff =3D xtime.tv_sec - pmac_get_boot_time();
--		} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--		break;
--	case PBOOK_WAKE:
--		tv.tv_sec =3D pmac_get_boot_time() + time_diff;
--		tv.tv_nsec =3D 0;
--		do_settimeofday(&tv);
--		break;
--	}
--	return PBOOK_SLEEP_OK;
--}
--
--static struct pmu_sleep_notifier time_sleep_notifier =3D {
--	time_sleep_notify, SLEEP_LEVEL_MISC,
--};
--#endif /* CONFIG_PM */
--
- /*
-  * Query the OF and get the decr frequency.
-  */
- void __init pmac_calibrate_decr(void)
- {
--#if defined(CONFIG_PM) && defined(CONFIG_ADB_PMU)
--	/* XXX why here? */
--	pmu_register_sleep_notifier(&time_sleep_notifier);
--#endif
--
- 	generic_calibrate_decr();
-=20
- #ifdef CONFIG_PPC32
---- mb-wireless.orig/arch/powerpc/kernel/Makefile	2007-01-26 14:16:35.83895=
-4773 +0100
-+++ mb-wireless/arch/powerpc/kernel/Makefile	2007-01-26 14:16:47.918954773 =
-+0100
-@@ -50,6 +50,7 @@ extra-y				+=3D vmlinux.lds
-=20
- obj-y				+=3D time.o prom.o traps.o setup-common.o \
- 				   udbg.o misc.o io.o
-+obj-$(CONFIG_PM)		+=3D time_suspend.o
- obj-$(CONFIG_PPC32)		+=3D entry_32.o setup_32.o misc_32.o
- obj-$(CONFIG_PPC64)		+=3D misc_64.o dma_64.o iommu.o
- obj-$(CONFIG_PPC_MULTIPLATFORM)	+=3D prom_init.o
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ mb-wireless/arch/powerpc/kernel/time_suspend.c	2007-01-26 15:33:55.8790=
-25345 +0100
-@@ -0,0 +1,62 @@
-+/*
-+ * Common code to keep time when machine suspends.
-+ *
-+ * Copyright 2007	Johannes Berg <johannes@sipsolutions.net>
-+ *
-+ * GPLv2
-+ */
-+
-+#include <linux/time.h>
-+#include <asm/rtc.h>
-+
-+static struct rtc_time suspend_rtc_time;
-+
-+/*
-+ * Reset the time after a sleep.
-+ */
-+static int timer_resume(struct sys_device *dev)
-+{
-+	struct timespec tv;
-+	struct rtc_time cur_rtc_time;
-+
-+
-+	get_rtc_time(&suspend_rtc_time);
-+
-+	do_gettimeofday(&tv);
-+
-+	/* FIXME: do something with tv here */
-+
-+	do_settimeofday(&tv);
-+
-+	return 0;
-+}
-+
-+static int timer_suspend(struct sys_device *dev, pm_message_t state)
-+{
-+	WARN_ON(!ppc_md.get_rtc_time);
-+
-+	get_rtc_time(&suspend_rtc_time);
-+
-+	return 0;
-+}
-+
-+static struct sysdev_class timer_sysclass =3D {
-+	.resume =3D timer_resume,
-+	.suspend =3D timer_suspend,
-+	set_kset_name("timer"),
-+};
-+
-+static struct sys_device device_timer =3D {
-+	.id =3D 0,
-+	.cls =3D &timer_sysclass,
-+};
-+
-+static int time_init_device(void)
-+{
-+	int error =3D sysdev_class_register(&timer_sysclass);
-+	if (!error)
-+		error =3D sysdev_register(&device_timer);
-+	return error;
-+}
-+
-+device_initcall(time_init_device);
+> > +	msleep(100);
+> > +
+> > +	/* video mute on */
+> > +	for (i = 0; i < num_of_av_port; i++) {
+> > +		res = ps3av_cmd_av_video_disable_sig(ps3av.av_port[i]);
+> > +		if (res < 0)
+> > +			return -1;
+> > +		if (i < num_of_hdmi_port) {
+> > +			res = ps3av_cmd_av_tv_mute(ps3av.av_port[i],
+> > +						   PS3AV_CMD_MUTE_OFF);
+> > +			if (res < 0)
+> > +				return -1;
+> > +		}
+> > +	}
+> > +	msleep(300);
+> 
+> 400 ms total wait time is very noticeable to the user. Is it possible to
+> reduce that time?
+> 
+> > +
+> > +	msleep(1500);
+> > +	/* av video mute */
+> > +	ps3av_set_av_video_mute(PS3AV_CMD_MUTE_OFF);
+> 
+> This is an even longer time to wait for. What about this one?
 
+Reducing these values may cause video noise to be seen when changing video
+modes.
 
---=-f8ylI10ilHbuXU/fKURL
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+Gr{oetje,eeting}s,
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+						Geert
 
-iD8DBQBFuhGY/ETPhpq3jKURAjr3AJ0az/liLwgjTr+B0YEa4aJ20KDiQgCgii2G
-G+B7SqG6d3GYtlsbo5Iiw4w=
-=q+xz
------END PGP SIGNATURE-----
-
---=-f8ylI10ilHbuXU/fKURL--
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
