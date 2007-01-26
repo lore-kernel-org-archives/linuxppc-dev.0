@@ -1,23 +1,24 @@
 Return-Path: <akira2.iguchi@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F0BB0DE028
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 18:27:38 +1100 (EST)
-Received: from wall11.toshiba.co.jp (wall11 [133.199.90.149])
-	by imx12.toshiba.co.jp  with ESMTP id l0Q7RYCh019809
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 16:27:34 +0900 (JST)
-Received: (from root@localhost) by wall11.toshiba.co.jp  id l0Q7RXQr001266
-	for linuxppc-dev@ozlabs.org; Fri, 26 Jan 2007 16:27:33 +0900 (JST)
-Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp11.toshiba.co.jp  with ESMTP id l0Q7RWUS013492
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 16:27:32 +0900 (JST)
-Message-Id: <200701260727.l0Q7RVww019397@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 8E1CADE128
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 18:27:57 +1100 (EST)
+Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
+	by inet-tsb5.toshiba.co.jp  with ESMTP id l0Q7RrlK002256
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 16:27:53 +0900 (JST)
+Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id l0Q7Rrs0000517
+	for linuxppc-dev@ozlabs.org; Fri, 26 Jan 2007 16:27:53 +0900 (JST)
+Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
+	by ovp1.toshiba.co.jp  with ESMTP id l0Q7Rqar019793
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 16:27:52 +0900 (JST)
+Message-Id: <200701260727.l0Q7Road005768@toshiba.co.jp>
 MIME-Version: 1.0
-Date: Fri, 26 Jan 2007 16:27:58 +0900
+Date: Fri, 26 Jan 2007 16:28:18 +0900
 From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
 To: linux-ide@vger.kernel.org
-Subject: [PATCH 2/3] libata: add another IRQ calls (libata drivers)
+Subject: [PATCH 3/3] libata: PATA driver
+	for Celleb
 Cc: jeff@garzik.org, arnd@arndb.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
 	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -29,1126 +30,1305 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch is against each libata driver.
+This is the patch for PATA controller of Celleb.
 
-Two IRQ calls are added in ata_port_operations.
-- irq_on() is used to enable interrupts. 
-- irq_ack() is used to acknowledge a device interrupt.
+This driver uses the managed iomap (devres).
 
-In most drivers, ata_irq_on() and ata_irq_ack() are used for
-irq_on and irq_ack respectively. 
-
-In some drivers (ex: ahci, sata_sil24) which cannot use them
-as is, ata_dummy_irq_on() and ata_dummy_irq_ack() are used.
+Because this driver needs special taskfile accesses, there is
+a copy of ata_std_softreset(). ata_dev_try_classify() is exported
+so that it can be used in this function.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
 ---
 
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/ahci.c libata-tj.git.mod/drivers/ata/ahci.c
---- libata-tj.git/drivers/ata/ahci.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/ahci.c	2007-01-26 21:10:15.000000000 +0900
-@@ -255,6 +255,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ahci_interrupt,
- 	.irq_clear		= ahci_irq_clear,
-+	.irq_on			= ata_dummy_irq_on,
-+	.irq_ack		= ata_dummy_irq_ack,
- 
- 	.scr_read		= ahci_scr_read,
- 	.scr_write		= ahci_scr_write,
-@@ -286,6 +288,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ahci_interrupt,
- 	.irq_clear		= ahci_irq_clear,
-+	.irq_on			= ata_dummy_irq_on,
-+	.irq_ack		= ata_dummy_irq_ack,
- 
- 	.scr_read		= ahci_scr_read,
- 	.scr_write		= ahci_scr_write,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/ata_generic.c libata-tj.git.mod/drivers/ata/ata_generic.c
---- libata-tj.git/drivers/ata/ata_generic.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/ata_generic.c	2007-01-26 21:10:15.000000000 +0900
-@@ -148,6 +148,8 @@ static struct ata_port_operations generi
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/ata_piix.c libata-tj.git.mod/drivers/ata/ata_piix.c
---- libata-tj.git/drivers/ata/ata_piix.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/ata_piix.c	2007-01-26 21:10:15.000000000 +0900
-@@ -308,6 +308,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-@@ -339,6 +341,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-@@ -367,6 +371,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_ali.c libata-tj.git.mod/drivers/ata/pata_ali.c
---- libata-tj.git/drivers/ata/pata_ali.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_ali.c	2007-01-26 21:10:15.000000000 +0900
-@@ -374,6 +374,8 @@ static struct ata_port_operations ali_ea
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -413,6 +415,8 @@ static struct ata_port_operations ali_20
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -449,6 +453,8 @@ static struct ata_port_operations ali_c2
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -484,6 +490,8 @@ static struct ata_port_operations ali_c5
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_amd.c libata-tj.git.mod/drivers/ata/pata_amd.c
---- libata-tj.git/drivers/ata/pata_amd.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_amd.c	2007-01-26 21:10:15.000000000 +0900
-@@ -366,6 +366,8 @@ static struct ata_port_operations amd33_
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -398,6 +400,8 @@ static struct ata_port_operations amd66_
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -430,6 +434,8 @@ static struct ata_port_operations amd100
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -462,6 +468,8 @@ static struct ata_port_operations amd133
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -494,6 +502,8 @@ static struct ata_port_operations nv100_
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -526,6 +536,8 @@ static struct ata_port_operations nv133_
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_artop.c libata-tj.git.mod/drivers/ata/pata_artop.c
---- libata-tj.git/drivers/ata/pata_artop.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_artop.c	2007-01-26 21:10:15.000000000 +0900
-@@ -345,6 +345,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-@@ -375,6 +377,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_atiixp.c libata-tj.git.mod/drivers/ata/pata_atiixp.c
---- libata-tj.git/drivers/ata/pata_atiixp.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_atiixp.c	2007-01-26 21:10:15.000000000 +0900
-@@ -249,6 +249,8 @@ static struct ata_port_operations atiixp
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_cmd64x.c libata-tj.git.mod/drivers/ata/pata_cmd64x.c
---- libata-tj.git/drivers/ata/pata_cmd64x.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_cmd64x.c	2007-01-26 21:10:15.000000000 +0900
-@@ -308,6 +308,8 @@ static struct ata_port_operations cmd64x
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -340,6 +342,8 @@ static struct ata_port_operations cmd646
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -372,6 +376,8 @@ static struct ata_port_operations cmd648
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_cs5520.c libata-tj.git.mod/drivers/ata/pata_cs5520.c
---- libata-tj.git/drivers/ata/pata_cs5520.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_cs5520.c	2007-01-26 21:10:15.000000000 +0900
-@@ -197,6 +197,8 @@ static struct ata_port_operations cs5520
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_cs5530.c libata-tj.git.mod/drivers/ata/pata_cs5530.c
---- libata-tj.git/drivers/ata/pata_cs5530.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_cs5530.c	2007-01-26 21:10:15.000000000 +0900
-@@ -221,6 +221,8 @@ static struct ata_port_operations cs5530
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_cs5535.c libata-tj.git.mod/drivers/ata/pata_cs5535.c
---- libata-tj.git/drivers/ata/pata_cs5535.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_cs5535.c	2007-01-26 21:10:15.000000000 +0900
-@@ -218,6 +218,8 @@ static struct ata_port_operations cs5535
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_cypress.c libata-tj.git.mod/drivers/ata/pata_cypress.c
---- libata-tj.git/drivers/ata/pata_cypress.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_cypress.c	2007-01-26 21:10:15.000000000 +0900
-@@ -169,6 +169,8 @@ static struct ata_port_operations cy82c6
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_efar.c libata-tj.git.mod/drivers/ata/pata_efar.c
---- libata-tj.git/drivers/ata/pata_efar.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_efar.c	2007-01-26 21:10:15.000000000 +0900
-@@ -265,6 +265,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_hpt366.c libata-tj.git.mod/drivers/ata/pata_hpt366.c
---- libata-tj.git/drivers/ata/pata_hpt366.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_hpt366.c	2007-01-26 21:10:15.000000000 +0900
-@@ -365,6 +365,8 @@ static struct ata_port_operations hpt366
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_hpt37x.c libata-tj.git.mod/drivers/ata/pata_hpt37x.c
---- libata-tj.git/drivers/ata/pata_hpt37x.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_hpt37x.c	2007-01-26 21:10:15.000000000 +0900
-@@ -800,6 +800,8 @@ static struct ata_port_operations hpt370
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -837,6 +839,8 @@ static struct ata_port_operations hpt370
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -875,6 +879,8 @@ static struct ata_port_operations hpt372
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -913,6 +919,8 @@ static struct ata_port_operations hpt374
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_hpt3x2n.c libata-tj.git.mod/drivers/ata/pata_hpt3x2n.c
---- libata-tj.git/drivers/ata/pata_hpt3x2n.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_hpt3x2n.c	2007-01-26 21:10:15.000000000 +0900
-@@ -377,6 +377,8 @@ static struct ata_port_operations hpt3x2
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_hpt3x3.c libata-tj.git.mod/drivers/ata/pata_hpt3x3.c
---- libata-tj.git/drivers/ata/pata_hpt3x3.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_hpt3x3.c	2007-01-26 21:10:15.000000000 +0900
-@@ -152,6 +152,8 @@ static struct ata_port_operations hpt3x3
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_isapnp.c libata-tj.git.mod/drivers/ata/pata_isapnp.c
---- libata-tj.git/drivers/ata/pata_isapnp.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_isapnp.c	2007-01-26 21:10:15.000000000 +0900
-@@ -57,6 +57,8 @@ static struct ata_port_operations isapnp
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_it8213.c libata-tj.git.mod/drivers/ata/pata_it8213.c
---- libata-tj.git/drivers/ata/pata_it8213.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_it8213.c	2007-01-26 21:10:15.000000000 +0900
-@@ -277,6 +277,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_it821x.c libata-tj.git.mod/drivers/ata/pata_it821x.c
---- libata-tj.git/drivers/ata/pata_it821x.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_it821x.c	2007-01-26 21:10:15.000000000 +0900
-@@ -676,6 +676,8 @@ static struct ata_port_operations it821x
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= it821x_port_start,
- };
-@@ -710,6 +712,8 @@ static struct ata_port_operations it821x
- 
- 	.irq_clear	= ata_bmdma_irq_clear,
- 	.irq_handler	= ata_interrupt,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= it821x_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_ixp4xx_cf.c libata-tj.git.mod/drivers/ata/pata_ixp4xx_cf.c
---- libata-tj.git/drivers/ata/pata_ixp4xx_cf.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_ixp4xx_cf.c	2007-01-26 21:10:15.000000000 +0900
-@@ -130,6 +130,8 @@ static struct ata_port_operations ixp4xx
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ixp4xx_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- 
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_jmicron.c libata-tj.git.mod/drivers/ata/pata_jmicron.c
---- libata-tj.git/drivers/ata/pata_jmicron.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_jmicron.c	2007-01-26 21:10:15.000000000 +0900
-@@ -166,6 +166,8 @@ static const struct ata_port_operations 
- 	/* IRQ-related hooks */
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	/* Generic PATA PCI ATA helpers */
- 	.port_start		= ata_port_start,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_legacy.c libata-tj.git.mod/drivers/ata/pata_legacy.c
---- libata-tj.git/drivers/ata/pata_legacy.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_legacy.c	2007-01-26 21:10:15.000000000 +0900
-@@ -166,6 +166,8 @@ static struct ata_port_operations simple
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -189,6 +191,8 @@ static struct ata_port_operations legacy
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -299,6 +303,8 @@ static struct ata_port_operations pdc202
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -349,6 +355,8 @@ static struct ata_port_operations ht6560
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -410,6 +418,8 @@ static struct ata_port_operations ht6560
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -526,6 +536,8 @@ static struct ata_port_operations opti82
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -654,6 +666,8 @@ static struct ata_port_operations opti82
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_marvell.c libata-tj.git.mod/drivers/ata/pata_marvell.c
---- libata-tj.git/drivers/ata/pata_marvell.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_marvell.c	2007-01-26 21:10:15.000000000 +0900
-@@ -134,6 +134,8 @@ static const struct ata_port_operations 
- 	/* Timeout handling */
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	/* Generic PATA PCI ATA helpers */
- 	.port_start		= ata_port_start,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_mpc52xx.c libata-tj.git.mod/drivers/ata/pata_mpc52xx.c
---- libata-tj.git/drivers/ata/pata_mpc52xx.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_mpc52xx.c	2007-01-26 21:10:15.000000000 +0900
-@@ -298,6 +298,8 @@ static struct ata_port_operations mpc52x
- 	.data_xfer		= ata_data_xfer,
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.port_start		= ata_port_start,
- };
- 
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_mpiix.c libata-tj.git.mod/drivers/ata/pata_mpiix.c
---- libata-tj.git/drivers/ata/pata_mpiix.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_mpiix.c	2007-01-26 21:10:15.000000000 +0900
-@@ -192,6 +192,8 @@ static struct ata_port_operations mpiix_
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_netcell.c libata-tj.git.mod/drivers/ata/pata_netcell.c
---- libata-tj.git/drivers/ata/pata_netcell.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_netcell.c	2007-01-26 21:10:15.000000000 +0900
-@@ -94,6 +94,8 @@ static const struct ata_port_operations 
- 	/* IRQ-related hooks */
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	/* Generic PATA PCI ATA helpers */
- 	.port_start		= ata_port_start,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_ns87410.c libata-tj.git.mod/drivers/ata/pata_ns87410.c
---- libata-tj.git/drivers/ata/pata_ns87410.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_ns87410.c	2007-01-26 21:10:15.000000000 +0900
-@@ -183,6 +183,8 @@ static struct ata_port_operations ns8741
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_oldpiix.c libata-tj.git.mod/drivers/ata/pata_oldpiix.c
---- libata-tj.git/drivers/ata/pata_oldpiix.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_oldpiix.c	2007-01-26 21:10:15.000000000 +0900
-@@ -263,6 +263,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_opti.c libata-tj.git.mod/drivers/ata/pata_opti.c
---- libata-tj.git/drivers/ata/pata_opti.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_opti.c	2007-01-26 21:10:15.000000000 +0900
-@@ -209,6 +209,8 @@ static struct ata_port_operations opti_p
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_optidma.c libata-tj.git.mod/drivers/ata/pata_optidma.c
---- libata-tj.git/drivers/ata/pata_optidma.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_optidma.c	2007-01-26 21:10:15.000000000 +0900
-@@ -393,6 +393,8 @@ static struct ata_port_operations optidm
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -426,6 +428,8 @@ static struct ata_port_operations optipl
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_pcmcia.c libata-tj.git.mod/drivers/ata/pata_pcmcia.c
---- libata-tj.git/drivers/ata/pata_pcmcia.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_pcmcia.c	2007-01-26 21:10:15.000000000 +0900
-@@ -92,6 +92,8 @@ static struct ata_port_operations pcmcia
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_pdc2027x.c libata-tj.git.mod/drivers/ata/pata_pdc2027x.c
---- libata-tj.git/drivers/ata/pata_pdc2027x.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_pdc2027x.c	2007-01-26 21:10:15.000000000 +0900
-@@ -169,6 +169,8 @@ static struct ata_port_operations pdc202
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-@@ -201,6 +203,8 @@ static struct ata_port_operations pdc202
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_pdc202xx_old.c libata-tj.git.mod/drivers/ata/pata_pdc202xx_old.c
---- libata-tj.git/drivers/ata/pata_pdc202xx_old.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_pdc202xx_old.c	2007-01-26 21:10:15.000000000 +0900
-@@ -298,6 +298,8 @@ static struct ata_port_operations pdc202
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -330,6 +332,8 @@ static struct ata_port_operations pdc202
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_platform.c libata-tj.git.mod/drivers/ata/pata_platform.c
---- libata-tj.git/drivers/ata/pata_platform.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_platform.c	2007-01-26 21:10:15.000000000 +0900
-@@ -86,6 +86,8 @@ static struct ata_port_operations pata_p
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_qdi.c libata-tj.git.mod/drivers/ata/pata_qdi.c
---- libata-tj.git/drivers/ata/pata_qdi.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_qdi.c	2007-01-26 21:10:15.000000000 +0900
-@@ -191,6 +191,8 @@ static struct ata_port_operations qdi650
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -217,6 +219,8 @@ static struct ata_port_operations qdi658
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_radisys.c libata-tj.git.mod/drivers/ata/pata_radisys.c
---- libata-tj.git/drivers/ata/pata_radisys.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_radisys.c	2007-01-26 21:10:15.000000000 +0900
-@@ -259,6 +259,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_rz1000.c libata-tj.git.mod/drivers/ata/pata_rz1000.c
---- libata-tj.git/drivers/ata/pata_rz1000.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_rz1000.c	2007-01-26 21:10:15.000000000 +0900
-@@ -122,6 +122,8 @@ static struct ata_port_operations rz1000
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_sc1200.c libata-tj.git.mod/drivers/ata/pata_sc1200.c
---- libata-tj.git/drivers/ata/pata_sc1200.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_sc1200.c	2007-01-26 21:10:15.000000000 +0900
-@@ -224,6 +224,8 @@ static struct ata_port_operations sc1200
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_serverworks.c libata-tj.git.mod/drivers/ata/pata_serverworks.c
---- libata-tj.git/drivers/ata/pata_serverworks.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_serverworks.c	2007-01-26 21:10:15.000000000 +0900
-@@ -352,6 +352,8 @@ static struct ata_port_operations server
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -385,6 +387,8 @@ static struct ata_port_operations server
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_sil680.c libata-tj.git.mod/drivers/ata/pata_sil680.c
---- libata-tj.git/drivers/ata/pata_sil680.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_sil680.c	2007-01-26 21:10:15.000000000 +0900
-@@ -256,6 +256,8 @@ static struct ata_port_operations sil680
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_sis.c libata-tj.git.mod/drivers/ata/pata_sis.c
---- libata-tj.git/drivers/ata/pata_sis.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_sis.c	2007-01-26 21:10:15.000000000 +0900
-@@ -605,6 +605,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-@@ -636,6 +638,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-@@ -668,6 +672,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-@@ -699,6 +705,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-@@ -730,6 +738,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_sl82c105.c libata-tj.git.mod/drivers/ata/pata_sl82c105.c
---- libata-tj.git/drivers/ata/pata_sl82c105.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_sl82c105.c	2007-01-26 21:10:15.000000000 +0900
-@@ -266,6 +266,8 @@ static struct ata_port_operations sl82c1
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_triflex.c libata-tj.git.mod/drivers/ata/pata_triflex.c
---- libata-tj.git/drivers/ata/pata_triflex.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_triflex.c	2007-01-26 21:10:15.000000000 +0900
-@@ -225,6 +225,8 @@ static struct ata_port_operations trifle
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_via.c libata-tj.git.mod/drivers/ata/pata_via.c
---- libata-tj.git/drivers/ata/pata_via.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_via.c	2007-01-26 21:10:15.000000000 +0900
-@@ -336,6 +336,8 @@ static struct ata_port_operations via_po
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-@@ -369,6 +371,8 @@ static struct ata_port_operations via_po
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_winbond.c libata-tj.git.mod/drivers/ata/pata_winbond.c
---- libata-tj.git/drivers/ata/pata_winbond.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pata_winbond.c	2007-01-26 21:10:15.000000000 +0900
-@@ -160,6 +160,8 @@ static struct ata_port_operations winbon
- 
- 	.irq_handler	= ata_interrupt,
- 	.irq_clear	= ata_bmdma_irq_clear,
-+	.irq_on		= ata_irq_on,
-+	.irq_ack	= ata_irq_ack,
- 
- 	.port_start	= ata_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pdc_adma.c libata-tj.git.mod/drivers/ata/pdc_adma.c
---- libata-tj.git/drivers/ata/pdc_adma.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/pdc_adma.c	2007-01-26 21:10:15.000000000 +0900
-@@ -175,6 +175,8 @@ static const struct ata_port_operations 
- 	.data_xfer		= ata_data_xfer,
- 	.irq_handler		= adma_intr,
- 	.irq_clear		= adma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.port_start		= adma_port_start,
- 	.port_stop		= adma_port_stop,
- 	.host_stop		= adma_host_stop,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_inic162x.c libata-tj.git.mod/drivers/ata/sata_inic162x.c
---- libata-tj.git/drivers/ata/sata_inic162x.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_inic162x.c	2007-01-26 21:10:15.000000000 +0900
-@@ -563,6 +563,8 @@ static struct ata_port_operations inic_p
- 
- 	.irq_handler		= inic_interrupt,
- 	.irq_clear		= inic_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.qc_prep	 	= ata_qc_prep,
- 	.qc_issue		= inic_qc_issue,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_mv.c libata-tj.git.mod/drivers/ata/sata_mv.c
---- libata-tj.git/drivers/ata/sata_mv.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_mv.c	2007-01-26 21:10:15.000000000 +0900
-@@ -410,6 +410,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= mv_interrupt,
- 	.irq_clear		= mv_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.scr_read		= mv5_scr_read,
- 	.scr_write		= mv5_scr_write,
-@@ -437,6 +439,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= mv_interrupt,
- 	.irq_clear		= mv_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.scr_read		= mv_scr_read,
- 	.scr_write		= mv_scr_write,
-@@ -464,6 +468,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= mv_interrupt,
- 	.irq_clear		= mv_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.scr_read		= mv_scr_read,
- 	.scr_write		= mv_scr_write,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_nv.c libata-tj.git.mod/drivers/ata/sata_nv.c
---- libata-tj.git/drivers/ata/sata_nv.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_nv.c	2007-01-26 21:10:15.000000000 +0900
-@@ -362,6 +362,8 @@ static const struct ata_port_operations 
- 	.data_xfer		= ata_data_xfer,
- 	.irq_handler		= nv_generic_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.scr_read		= nv_scr_read,
- 	.scr_write		= nv_scr_write,
- 	.port_start		= ata_port_start,
-@@ -387,6 +389,8 @@ static const struct ata_port_operations 
- 	.data_xfer		= ata_data_xfer,
- 	.irq_handler		= nv_nf2_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.scr_read		= nv_scr_read,
- 	.scr_write		= nv_scr_write,
- 	.port_start		= ata_port_start,
-@@ -412,6 +416,8 @@ static const struct ata_port_operations 
- 	.data_xfer		= ata_data_xfer,
- 	.irq_handler		= nv_ck804_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.scr_read		= nv_scr_read,
- 	.scr_write		= nv_scr_write,
- 	.port_start		= ata_port_start,
-@@ -439,6 +445,8 @@ static const struct ata_port_operations 
- 	.data_xfer		= ata_data_xfer,
- 	.irq_handler		= nv_adma_interrupt,
- 	.irq_clear		= nv_adma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.scr_read		= nv_scr_read,
- 	.scr_write		= nv_scr_write,
- 	.port_start		= nv_adma_port_start,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_promise.c libata-tj.git.mod/drivers/ata/sata_promise.c
---- libata-tj.git/drivers/ata/sata_promise.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_promise.c	2007-01-26 21:10:15.000000000 +0900
-@@ -172,6 +172,8 @@ static const struct ata_port_operations 
- 	.data_xfer		= ata_data_xfer,
- 	.irq_handler		= pdc_interrupt,
- 	.irq_clear		= pdc_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.scr_read		= pdc_sata_scr_read,
- 	.scr_write		= pdc_sata_scr_write,
-@@ -197,6 +199,8 @@ static const struct ata_port_operations 
- 	.data_xfer		= ata_data_xfer,
- 	.irq_handler		= pdc_interrupt,
- 	.irq_clear		= pdc_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.scr_read		= pdc_sata_scr_read,
- 	.scr_write		= pdc_sata_scr_write,
-@@ -220,6 +224,8 @@ static const struct ata_port_operations 
- 	.eng_timeout		= pdc_eng_timeout,
- 	.irq_handler		= pdc_interrupt,
- 	.irq_clear		= pdc_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= pdc_port_start,
- };
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_qstor.c libata-tj.git.mod/drivers/ata/sata_qstor.c
---- libata-tj.git/drivers/ata/sata_qstor.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_qstor.c	2007-01-26 21:10:15.000000000 +0900
-@@ -161,6 +161,8 @@ static const struct ata_port_operations 
- 	.eng_timeout		= qs_eng_timeout,
- 	.irq_handler		= qs_intr,
- 	.irq_clear		= qs_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.scr_read		= qs_scr_read,
- 	.scr_write		= qs_scr_write,
- 	.port_start		= qs_port_start,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_sil.c libata-tj.git.mod/drivers/ata/sata_sil.c
---- libata-tj.git/drivers/ata/sata_sil.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_sil.c	2007-01-26 21:10:15.000000000 +0900
-@@ -209,6 +209,8 @@ static const struct ata_port_operations 
- 	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
- 	.irq_handler		= sil_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.scr_read		= sil_scr_read,
- 	.scr_write		= sil_scr_write,
- 	.port_start		= ata_port_start,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_sil24.c libata-tj.git.mod/drivers/ata/sata_sil24.c
---- libata-tj.git/drivers/ata/sata_sil24.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_sil24.c	2007-01-26 21:10:15.000000000 +0900
-@@ -400,6 +400,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= sil24_interrupt,
- 	.irq_clear		= sil24_irq_clear,
-+	.irq_on			= ata_dummy_irq_on,
-+	.irq_ack		= ata_dummy_irq_ack,
- 
- 	.scr_read		= sil24_scr_read,
- 	.scr_write		= sil24_scr_write,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_sis.c libata-tj.git.mod/drivers/ata/sata_sis.c
---- libata-tj.git/drivers/ata/sata_sis.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_sis.c	2007-01-26 21:10:15.000000000 +0900
-@@ -122,6 +122,8 @@ static const struct ata_port_operations 
- 	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.scr_read		= sis_scr_read,
- 	.scr_write		= sis_scr_write,
- 	.port_start		= ata_port_start,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_svw.c libata-tj.git.mod/drivers/ata/sata_svw.c
---- libata-tj.git/drivers/ata/sata_svw.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_svw.c	2007-01-26 21:10:15.000000000 +0900
-@@ -356,6 +356,8 @@ static const struct ata_port_operations 
- 	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.scr_read		= k2_sata_scr_read,
- 	.scr_write		= k2_sata_scr_write,
- 	.port_start		= ata_port_start,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_sx4.c libata-tj.git.mod/drivers/ata/sata_sx4.c
---- libata-tj.git/drivers/ata/sata_sx4.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_sx4.c	2007-01-26 21:10:15.000000000 +0900
-@@ -207,6 +207,8 @@ static const struct ata_port_operations 
- 	.eng_timeout		= pdc_eng_timeout,
- 	.irq_handler		= pdc20621_interrupt,
- 	.irq_clear		= pdc20621_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.port_start		= pdc_port_start,
- };
- 
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_uli.c libata-tj.git.mod/drivers/ata/sata_uli.c
---- libata-tj.git/drivers/ata/sata_uli.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_uli.c	2007-01-26 21:10:15.000000000 +0900
-@@ -117,6 +117,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.scr_read		= uli_scr_read,
- 	.scr_write		= uli_scr_write,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_via.c libata-tj.git.mod/drivers/ata/sata_via.c
---- libata-tj.git/drivers/ata/sata_via.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_via.c	2007-01-26 21:10:15.000000000 +0900
-@@ -142,6 +142,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= ata_port_start,
- };
-@@ -174,6 +176,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.port_start		= vt6421_port_start,
- };
-@@ -203,6 +207,8 @@ static const struct ata_port_operations 
- 
- 	.irq_handler		= ata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 
- 	.scr_read		= svia_scr_read,
- 	.scr_write		= svia_scr_write,
-diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/sata_vsc.c libata-tj.git.mod/drivers/ata/sata_vsc.c
---- libata-tj.git/drivers/ata/sata_vsc.c	2007-01-20 15:49:09.000000000 +0900
-+++ libata-tj.git.mod/drivers/ata/sata_vsc.c	2007-01-26 21:10:15.000000000 +0900
-@@ -310,6 +310,8 @@ static const struct ata_port_operations 
- 	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
- 	.irq_handler		= vsc_sata_interrupt,
- 	.irq_clear		= ata_bmdma_irq_clear,
-+	.irq_on			= ata_irq_on,
-+	.irq_ack		= ata_irq_ack,
- 	.scr_read		= vsc_sata_scr_read,
- 	.scr_write		= vsc_sata_scr_write,
- 	.port_start		= ata_port_start,
+diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/Kconfig libata-tj.git.mod/drivers/ata/Kconfig
+--- libata-tj.git/drivers/ata/Kconfig	2007-01-20 15:49:09.000000000 +0900
++++ libata-tj.git.mod/drivers/ata/Kconfig	2007-01-26 21:11:43.000000000 +0900
+@@ -542,6 +542,15 @@ config PATA_IXP4XX_CF
+ 
+ 	  If unsure, say N.
+ 
++config PATA_SCC
++	tristate "Toshiba's Cell Reference Set IDE support"
++	depends on PCI
++	help
++	  This option enables support for the built-in IDE controller on
++	  Toshiba Cell Reference Board.
++
++	  If unsure, say N.
++
+ endif
+ endmenu
+ 
+diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/Makefile libata-tj.git.mod/drivers/ata/Makefile
+--- libata-tj.git/drivers/ata/Makefile	2007-01-20 15:49:09.000000000 +0900
++++ libata-tj.git.mod/drivers/ata/Makefile	2007-01-26 21:11:43.000000000 +0900
+@@ -59,6 +59,7 @@ obj-$(CONFIG_PATA_WINBOND_VLB)	+= pata_w
+ obj-$(CONFIG_PATA_SIS)		+= pata_sis.o
+ obj-$(CONFIG_PATA_TRIFLEX)	+= pata_triflex.o
+ obj-$(CONFIG_PATA_IXP4XX_CF)	+= pata_ixp4xx_cf.o
++obj-$(CONFIG_PATA_SCC)		+= pata_scc.o
+ obj-$(CONFIG_PATA_PLATFORM)	+= pata_platform.o
+ # Should be last but one libata driver
+ obj-$(CONFIG_ATA_GENERIC)	+= ata_generic.o
+diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/libata-core.c libata-tj.git.mod/drivers/ata/libata-core.c
+--- libata-tj.git/drivers/ata/libata-core.c	2007-01-26 21:11:21.000000000 +0900
++++ libata-tj.git.mod/drivers/ata/libata-core.c	2007-01-27 00:53:25.000000000 +0900
+@@ -701,7 +701,7 @@ unsigned int ata_dev_classify(const stru
+  *	Device type - %ATA_DEV_ATA, %ATA_DEV_ATAPI or %ATA_DEV_NONE.
+  */
+ 
+-static unsigned int
++unsigned int
+ ata_dev_try_classify(struct ata_port *ap, unsigned int device, u8 *r_err)
+ {
+ 	struct ata_taskfile tf;
+@@ -6278,3 +6278,4 @@ EXPORT_SYMBOL_GPL(ata_irq_on);
+ EXPORT_SYMBOL_GPL(ata_dummy_irq_on);
+ EXPORT_SYMBOL_GPL(ata_irq_ack);
+ EXPORT_SYMBOL_GPL(ata_dummy_irq_ack);
++EXPORT_SYMBOL_GPL(ata_dev_try_classify);
+diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/drivers/ata/pata_scc.c libata-tj.git.mod/drivers/ata/pata_scc.c
+--- libata-tj.git/drivers/ata/pata_scc.c	1970-01-01 09:00:00.000000000 +0900
++++ libata-tj.git.mod/drivers/ata/pata_scc.c	2007-01-27 00:22:53.000000000 +0900
+@@ -0,0 +1,1228 @@
++/*
++ * Support for IDE interfaces on Celleb platform
++ *
++ * (C) Copyright 2006 TOSHIBA CORPORATION
++ *
++ * This code is based on drivers/ata/ata_piix.c:
++ *  Copyright 2003-2005 Red Hat Inc
++ *  Copyright 2003-2005 Jeff Garzik
++ *  Copyright (C) 1998-1999 Andrzej Krzysztofowicz, Author and Maintainer
++ *  Copyright (C) 1998-2000 Andre Hedrick <andre@linux-ide.org>
++ *  Copyright (C) 2003 Red Hat Inc <alan@redhat.com>
++ *
++ * and drivers/ata/ahci.c:
++ *  Copyright 2004-2005 Red Hat, Inc.
++ *
++ * and drivers/ata/libata-core.c:
++ *  Copyright 2003-2004 Red Hat, Inc.  All rights reserved.
++ *  Copyright 2003-2004 Jeff Garzik
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/blkdev.h>
++#include <linux/delay.h>
++#include <linux/device.h>
++#include <scsi/scsi_host.h>
++#include <linux/libata.h>
++
++#define DRV_NAME		"pata_scc"
++#define DRV_VERSION		"0.1"
++
++#define PCI_DEVICE_ID_TOSHIBA_SCC_ATA		0x01b4
++
++/* PCI BARs */
++#define SCC_CTRL_BAR		0
++#define SCC_BMID_BAR		1
++
++/* offset of CTRL registers */
++#define SCC_CTL_PIOSHT		0x000
++#define SCC_CTL_PIOCT		0x004
++#define SCC_CTL_MDMACT		0x008
++#define SCC_CTL_MCRCST		0x00C
++#define SCC_CTL_SDMACT		0x010
++#define SCC_CTL_SCRCST		0x014
++#define SCC_CTL_UDENVT		0x018
++#define SCC_CTL_TDVHSEL 	0x020
++#define SCC_CTL_MODEREG 	0x024
++#define SCC_CTL_ECMODE		0xF00
++#define SCC_CTL_MAEA0		0xF50
++#define SCC_CTL_MAEC0		0xF54
++#define SCC_CTL_CCKCTRL 	0xFF0
++
++/* offset of BMID registers */
++#define SCC_DMA_CMD		0x000
++#define SCC_DMA_STATUS		0x004
++#define SCC_DMA_TABLE_OFS	0x008
++#define SCC_DMA_INTMASK 	0x010
++#define SCC_DMA_INTST		0x014
++#define SCC_DMA_PTERADD 	0x018
++#define SCC_REG_CMD_ADDR	0x020
++#define SCC_REG_DATA		0x000
++#define SCC_REG_ERR		0x004
++#define SCC_REG_FEATURE 	0x004
++#define SCC_REG_NSECT		0x008
++#define SCC_REG_LBAL		0x00C
++#define SCC_REG_LBAM		0x010
++#define SCC_REG_LBAH		0x014
++#define SCC_REG_DEVICE		0x018
++#define SCC_REG_STATUS		0x01C
++#define SCC_REG_CMD		0x01C
++#define SCC_REG_ALTSTATUS	0x020
++
++/* register value */
++#define TDVHSEL_MASTER		0x00000001
++#define TDVHSEL_SLAVE		0x00000004
++
++#define MODE_JCUSFEN		0x00000080
++
++#define ECMODE_VALUE		0x01
++
++#define CCKCTRL_ATARESET	0x00040000
++#define CCKCTRL_BUFCNT		0x00020000
++#define CCKCTRL_CRST		0x00010000
++#define CCKCTRL_OCLKEN		0x00000100
++#define CCKCTRL_ATACLKOEN	0x00000002
++#define CCKCTRL_LCLKEN		0x00000001
++
++#define QCHCD_IOS_SS		0x00000001
++
++#define QCHSD_STPDIAG		0x00020000
++
++#define INTMASK_MSK		0xD1000012
++#define INTSTS_SERROR		0x80000000
++#define INTSTS_PRERR		0x40000000
++#define INTSTS_RERR		0x10000000
++#define INTSTS_ICERR		0x01000000
++#define INTSTS_BMSINT		0x00000010
++#define INTSTS_BMHE		0x00000008
++#define INTSTS_IOIRQS		0x00000004
++#define INTSTS_INTRQ		0x00000002
++#define INTSTS_ACTEINT		0x00000001
++
++
++/* PIO transfer mode table */
++/* JCHST */
++static const unsigned long JCHSTtbl[2][7] = {
++	{0x0E, 0x05, 0x02, 0x03, 0x02, 0x00, 0x00},	/* 100MHz */
++	{0x13, 0x07, 0x04, 0x04, 0x03, 0x00, 0x00}	/* 133MHz */
++};
++
++/* JCHHT */
++static const unsigned long JCHHTtbl[2][7] = {
++	{0x0E, 0x02, 0x02, 0x02, 0x02, 0x00, 0x00},	/* 100MHz */
++	{0x13, 0x03, 0x03, 0x03, 0x03, 0x00, 0x00}	/* 133MHz */
++};
++
++/* JCHCT */
++static const unsigned long JCHCTtbl[2][7] = {
++	{0x1D, 0x1D, 0x1C, 0x0B, 0x06, 0x00, 0x00},	/* 100MHz */
++	{0x27, 0x26, 0x26, 0x0E, 0x09, 0x00, 0x00}	/* 133MHz */
++};
++
++/* DMA transfer mode  table */
++/* JCHDCTM/JCHDCTS */
++static const unsigned long JCHDCTxtbl[2][7] = {
++	{0x0A, 0x06, 0x04, 0x03, 0x01, 0x00, 0x00},	/* 100MHz */
++	{0x0E, 0x09, 0x06, 0x04, 0x02, 0x01, 0x00}	/* 133MHz */
++};
++
++/* JCSTWTM/JCSTWTS  */
++static const unsigned long JCSTWTxtbl[2][7] = {
++	{0x06, 0x04, 0x03, 0x02, 0x02, 0x02, 0x00},	/* 100MHz */
++	{0x09, 0x06, 0x04, 0x02, 0x02, 0x02, 0x02}	/* 133MHz */
++};
++
++/* JCTSS */
++static const unsigned long JCTSStbl[2][7] = {
++	{0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x00},	/* 100MHz */
++	{0x05, 0x05, 0x05, 0x05, 0x05, 0x05, 0x05}	/* 133MHz */
++};
++
++/* JCENVT */
++static const unsigned long JCENVTtbl[2][7] = {
++	{0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00},	/* 100MHz */
++	{0x02, 0x02, 0x02, 0x02, 0x02, 0x02, 0x02}	/* 133MHz */
++};
++
++/* JCACTSELS/JCACTSELM */
++static const unsigned long JCACTSELtbl[2][7] = {
++	{0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00},	/* 100MHz */
++	{0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01}	/* 133MHz */
++};
++
++static const struct pci_device_id scc_pci_tbl[] = {
++	{PCI_VENDOR_ID_TOSHIBA_2, PCI_DEVICE_ID_TOSHIBA_SCC_ATA,
++	 PCI_ANY_ID, PCI_ANY_ID, 0, 0, 0},
++	{ }	/* terminate list */
++};
++
++/**
++ *	scc_set_piomode - Initialize host controller PATA PIO timings
++ *	@ap: Port whose timings we are configuring
++ *	@adev: um
++ *
++ *	Set PIO mode for device.
++ *
++ *	LOCKING:
++ *	None (inherited from caller).
++ */
++
++static void scc_set_piomode (struct ata_port *ap, struct ata_device *adev)
++{
++	unsigned int pio = adev->pio_mode - XFER_PIO_0;
++	void __iomem *ctrl_base = ap->host->iomap[SCC_CTRL_BAR];
++	void __iomem *cckctrl_port = ctrl_base + SCC_CTL_CCKCTRL;
++	void __iomem *piosht_port = ctrl_base + SCC_CTL_PIOSHT;
++	void __iomem *pioct_port = ctrl_base + SCC_CTL_PIOCT;
++	unsigned long reg;
++	int offset;
++
++	reg = in_be32(cckctrl_port);
++	if (reg & CCKCTRL_ATACLKOEN)
++		offset = 1;	/* 133MHz */
++	else
++		offset = 0;	/* 100MHz */
++
++	reg = JCHSTtbl[offset][pio] << 16 | JCHHTtbl[offset][pio];
++	out_be32(piosht_port, reg);
++	reg = JCHCTtbl[offset][pio];
++	out_be32(pioct_port, reg);
++}
++
++/**
++ *	scc_set_dmamode - Initialize host controller PATA DMA timings
++ *	@ap: Port whose timings we are configuring
++ *	@adev: um
++ *	@udma: udma mode, 0 - 6
++ *
++ *	Set UDMA mode for device.
++ *
++ *	LOCKING:
++ *	None (inherited from caller).
++ */
++
++static void scc_set_dmamode (struct ata_port *ap, struct ata_device *adev)
++{
++	unsigned int udma = adev->dma_mode;
++	unsigned int is_slave = (adev->devno != 0);
++	u8 speed = udma;
++	void __iomem *ctrl_base = ap->host->iomap[SCC_CTRL_BAR];
++	void __iomem *cckctrl_port = ctrl_base + SCC_CTL_CCKCTRL;
++	void __iomem *mdmact_port = ctrl_base + SCC_CTL_MDMACT;
++	void __iomem *mcrcst_port = ctrl_base + SCC_CTL_MCRCST;
++	void __iomem *sdmact_port = ctrl_base + SCC_CTL_SDMACT;
++	void __iomem *scrcst_port = ctrl_base + SCC_CTL_SCRCST;
++	void __iomem *udenvt_port = ctrl_base + SCC_CTL_UDENVT;
++	void __iomem *tdvhsel_port = ctrl_base + SCC_CTL_TDVHSEL;
++	int offset, idx;
++
++	if (in_be32(cckctrl_port) & CCKCTRL_ATACLKOEN) 
++		offset = 1;	/* 133MHz */
++	else
++		offset = 0;	/* 100MHz */
++
++	if (speed >= XFER_UDMA_0)
++		idx = speed - XFER_UDMA_0;
++	else
++		return;
++
++	if (is_slave) {
++		out_be32(sdmact_port, JCHDCTxtbl[offset][idx]);
++		out_be32(scrcst_port, JCSTWTxtbl[offset][idx]);
++		out_be32(tdvhsel_port,
++			 (in_be32(tdvhsel_port) & ~TDVHSEL_SLAVE) | (JCACTSELtbl[offset][idx] << 2));
++	} else {
++		out_be32(mdmact_port, JCHDCTxtbl[offset][idx]);
++		out_be32(mcrcst_port, JCSTWTxtbl[offset][idx]);
++		out_be32(tdvhsel_port,
++			 (in_be32(tdvhsel_port) & ~TDVHSEL_MASTER) | JCACTSELtbl[offset][idx]);
++	}
++	out_be32(udenvt_port,
++		 JCTSStbl[offset][idx] << 16 | JCENVTtbl[offset][idx]);
++}
++
++/**
++ *	scc_tf_load - send taskfile registers to host controller
++ *	@ap: Port to which output is sent
++ *	@tf: ATA taskfile register set
++ *
++ *	Note: Original code is ata_tf_load().
++ */
++
++static void scc_tf_load (struct ata_port *ap, const struct ata_taskfile *tf)
++{
++	struct ata_ioports *ioaddr = &ap->ioaddr;
++	unsigned int is_addr = tf->flags & ATA_TFLAG_ISADDR;
++
++	if (tf->ctl != ap->last_ctl) {
++		out_be32(ioaddr->ctl_addr, tf->ctl);
++		ap->last_ctl = tf->ctl;
++		ata_wait_idle(ap);
++	}
++
++	if (is_addr && (tf->flags & ATA_TFLAG_LBA48)) {
++		out_be32(ioaddr->feature_addr, tf->hob_feature);
++		out_be32(ioaddr->nsect_addr, tf->hob_nsect);
++		out_be32(ioaddr->lbal_addr, tf->hob_lbal);
++		out_be32(ioaddr->lbam_addr, tf->hob_lbam);
++		out_be32(ioaddr->lbah_addr, tf->hob_lbah);
++		VPRINTK("hob: feat 0x%X nsect 0x%X, lba 0x%X 0x%X 0x%X\n",
++			tf->hob_feature,
++			tf->hob_nsect,
++			tf->hob_lbal,
++			tf->hob_lbam,
++			tf->hob_lbah);
++	}
++
++	if (is_addr) {
++		out_be32(ioaddr->feature_addr, tf->feature);
++		out_be32(ioaddr->nsect_addr, tf->nsect);
++		out_be32(ioaddr->lbal_addr, tf->lbal);
++		out_be32(ioaddr->lbam_addr, tf->lbam);
++		out_be32(ioaddr->lbah_addr, tf->lbah);
++		VPRINTK("feat 0x%X nsect 0x%X lba 0x%X 0x%X 0x%X\n",
++			tf->feature,
++			tf->nsect,
++			tf->lbal,
++			tf->lbam,
++			tf->lbah);
++	}
++
++	if (tf->flags & ATA_TFLAG_DEVICE) {
++		out_be32(ioaddr->device_addr, tf->device);
++		VPRINTK("device 0x%X\n", tf->device);
++	}
++
++	ata_wait_idle(ap);
++}
++
++/**
++ *	scc_check_status - Read device status reg & clear interrupt
++ *	@ap: port where the device is
++ *
++ *	Note: Original code is ata_check_status().
++ */
++
++static u8 scc_check_status (struct ata_port *ap)
++{
++	return in_be32(ap->ioaddr.status_addr);
++}
++
++/**
++ *	scc_tf_read - input device's ATA taskfile shadow registers
++ *	@ap: Port from which input is read
++ *	@tf: ATA taskfile register set for storing input
++ *
++ *	Note: Original code is ata_tf_read().
++ */
++
++static void scc_tf_read (struct ata_port *ap, struct ata_taskfile *tf)
++{
++	struct ata_ioports *ioaddr = &ap->ioaddr;
++
++	tf->command = scc_check_status(ap);
++	tf->feature = in_be32(ioaddr->error_addr);
++	tf->nsect = in_be32(ioaddr->nsect_addr);
++	tf->lbal = in_be32(ioaddr->lbal_addr);
++	tf->lbam = in_be32(ioaddr->lbam_addr);
++	tf->lbah = in_be32(ioaddr->lbah_addr);
++	tf->device = in_be32(ioaddr->device_addr);
++
++	if (tf->flags & ATA_TFLAG_LBA48) {
++		out_be32(ioaddr->ctl_addr, tf->ctl | ATA_HOB);
++		tf->hob_feature = in_be32(ioaddr->error_addr);
++		tf->hob_nsect = in_be32(ioaddr->nsect_addr);
++		tf->hob_lbal = in_be32(ioaddr->lbal_addr);
++		tf->hob_lbam = in_be32(ioaddr->lbam_addr);
++		tf->hob_lbah = in_be32(ioaddr->lbah_addr);
++	}
++}
++
++/**
++ *	scc_exec_command - issue ATA command to host controller
++ *	@ap: port to which command is being issued
++ *	@tf: ATA taskfile register set
++ *
++ *	Note: Original code is ata_exec_command().
++ */
++
++static void scc_exec_command (struct ata_port *ap,
++			      const struct ata_taskfile *tf)
++{
++	DPRINTK("ata%u: cmd 0x%X\n", ap->id, tf->command);
++
++	out_be32(ap->ioaddr.command_addr, tf->command);
++	ata_pause(ap);
++}
++
++/**
++ *	scc_check_altstatus - Read device alternate status reg
++ *	@ap: port where the device is
++ */
++
++static u8 scc_check_altstatus (struct ata_port *ap)
++{
++	return in_be32(ap->ioaddr.altstatus_addr);
++}
++
++/**
++ *	scc_std_dev_select - Select device 0/1 on ATA bus
++ *	@ap: ATA channel to manipulate
++ *	@device: ATA device (numbered from zero) to select
++ *
++ *	Note: Original code is ata_std_dev_select().
++ */
++
++static void scc_std_dev_select (struct ata_port *ap, unsigned int device)
++{
++	u8 tmp;
++
++	if (device == 0)
++		tmp = ATA_DEVICE_OBS;
++	else
++		tmp = ATA_DEVICE_OBS | ATA_DEV1;
++
++	out_be32(ap->ioaddr.device_addr, tmp);
++	ata_pause(ap);
++}
++
++/**
++ *	scc_bmdma_setup - Set up PCI IDE BMDMA transaction
++ *	@qc: Info associated with this ATA transaction.
++ *
++ *	Note: Original code is ata_bmdma_setup().
++ */
++
++static void scc_bmdma_setup (struct ata_queued_cmd *qc)
++{
++	struct ata_port *ap = qc->ap;
++	unsigned int rw = (qc->tf.flags & ATA_TFLAG_WRITE);
++	u8 dmactl;
++	void __iomem *mmio = ap->ioaddr.bmdma_addr;
++
++	/* load PRD table addr */
++	out_be32(mmio + SCC_DMA_TABLE_OFS, ap->prd_dma);
++
++	/* specify data direction, triple-check start bit is clear */
++	dmactl = in_be32(mmio + SCC_DMA_CMD);
++	dmactl &= ~(ATA_DMA_WR | ATA_DMA_START);
++	if (!rw)
++		dmactl |= ATA_DMA_WR;
++	out_be32(mmio + SCC_DMA_CMD, dmactl);
++
++	/* issue r/w command */
++	ap->ops->exec_command(ap, &qc->tf);
++}
++
++/**
++ *	scc_bmdma_start - Start a PCI IDE BMDMA transaction
++ *	@qc: Info associated with this ATA transaction.
++ *
++ *	Note: Original code is ata_bmdma_start().
++ */
++
++static void scc_bmdma_start (struct ata_queued_cmd *qc)
++{
++	struct ata_port *ap = qc->ap;
++	u8 dmactl;
++	void __iomem *mmio = ap->ioaddr.bmdma_addr;
++
++	/* start host DMA transaction */
++	dmactl = in_be32(mmio + SCC_DMA_CMD);
++	out_be32(mmio + SCC_DMA_CMD, dmactl | ATA_DMA_START);
++}
++
++/**
++ *	scc_devchk - PATA device presence detection
++ *	@ap: ATA channel to examine
++ *	@device: Device to examine (starting at zero)
++ *
++ *	Note: Original code is ata_devchk().
++ */
++
++static unsigned int scc_devchk (struct ata_port *ap,
++				unsigned int device)
++{
++	struct ata_ioports *ioaddr = &ap->ioaddr;
++	u8 nsect, lbal;
++
++	ap->ops->dev_select(ap, device);
++
++	out_be32(ioaddr->nsect_addr, 0x55);
++	out_be32(ioaddr->lbal_addr, 0xaa);
++
++	out_be32(ioaddr->nsect_addr, 0xaa);
++	out_be32(ioaddr->lbal_addr, 0x55);
++
++	out_be32(ioaddr->nsect_addr, 0x55);
++	out_be32(ioaddr->lbal_addr, 0xaa);
++
++	nsect = in_be32(ioaddr->nsect_addr);
++	lbal = in_be32(ioaddr->lbal_addr);
++
++	if ((nsect == 0x55) && (lbal == 0xaa))
++		return 1;	/* we found a device */
++
++	return 0;		/* nothing found */
++}
++
++/**
++ *	scc_bus_post_reset - PATA device post reset
++ *
++ *	Note: Original code is ata_bus_post_reset().
++ */
++
++static void scc_bus_post_reset (struct ata_port *ap, unsigned int devmask)
++{
++	struct ata_ioports *ioaddr = &ap->ioaddr;
++	unsigned int dev0 = devmask & (1 << 0);
++	unsigned int dev1 = devmask & (1 << 1);
++	unsigned long timeout;
++
++	/* if device 0 was found in ata_devchk, wait for its
++	 * BSY bit to clear
++	 */
++	if (dev0)
++		ata_busy_sleep(ap, ATA_TMOUT_BOOT_QUICK, ATA_TMOUT_BOOT);
++
++	/* if device 1 was found in ata_devchk, wait for
++	 * register access, then wait for BSY to clear
++	 */
++	timeout = jiffies + ATA_TMOUT_BOOT;
++	while (dev1) {
++		u8 nsect, lbal;
++
++		ap->ops->dev_select(ap, 1);
++		nsect = in_be32(ioaddr->nsect_addr);
++		lbal = in_be32(ioaddr->lbal_addr);
++		if ((nsect == 1) && (lbal == 1))
++			break;
++		if (time_after(jiffies, timeout)) {
++			dev1 = 0;
++			break;
++		}
++		msleep(50);	/* give drive a breather */
++	}
++	if (dev1)
++		ata_busy_sleep(ap, ATA_TMOUT_BOOT_QUICK, ATA_TMOUT_BOOT);
++
++	/* is all this really necessary? */
++	ap->ops->dev_select(ap, 0);
++	if (dev1)
++		ap->ops->dev_select(ap, 1);
++	if (dev0)
++		ap->ops->dev_select(ap, 0);
++}
++
++/**
++ *	scc_bus_softreset - PATA device software reset
++ *
++ *	Note: Original code is ata_bus_softreset().
++ */
++
++static unsigned int scc_bus_softreset (struct ata_port *ap,
++				       unsigned int devmask)
++{
++	struct ata_ioports *ioaddr = &ap->ioaddr;
++
++	DPRINTK("ata%u: bus reset via SRST\n", ap->id);
++
++	/* software reset.  causes dev0 to be selected */
++	out_be32(ioaddr->ctl_addr, ap->ctl);
++	udelay(20);
++	out_be32(ioaddr->ctl_addr, ap->ctl | ATA_SRST);
++	udelay(20);
++	out_be32(ioaddr->ctl_addr, ap->ctl);
++
++	/* spec mandates ">= 2ms" before checking status.
++	 * We wait 150ms, because that was the magic delay used for
++	 * ATAPI devices in Hale Landis's ATADRVR, for the period of time
++	 * between when the ATA command register is written, and then
++	 * status is checked.  Because waiting for "a while" before
++	 * checking status is fine, post SRST, we perform this magic
++	 * delay here as well.
++	 *
++	 * Old drivers/ide uses the 2mS rule and then waits for ready
++	 */
++	msleep(150);
++
++	/* Before we perform post reset processing we want to see if
++	 * the bus shows 0xFF because the odd clown forgets the D7
++	 * pulldown resistor.
++	 */
++	if (scc_check_status(ap) == 0xFF)
++		return 0;
++
++	scc_bus_post_reset(ap, devmask);
++
++	return 0;
++}
++
++/**
++ *	scc_std_softreset - reset host port via ATA SRST
++ *	@ap: port to reset
++ *	@classes: resulting classes of attached devices
++ *
++ *	Note: Original code is ata_std_softreset().
++ */
++
++static int scc_std_softreset (struct ata_port *ap, unsigned int *classes)
++{
++	unsigned int slave_possible = ap->flags & ATA_FLAG_SLAVE_POSS;
++	unsigned int devmask = 0, err_mask;
++	u8 err;
++
++	DPRINTK("ENTER\n");
++
++	if (ata_port_offline(ap)) {
++		classes[0] = ATA_DEV_NONE;
++		goto out;
++	}
++
++	/* determine if device 0/1 are present */
++	if (scc_devchk(ap, 0))
++		devmask |= (1 << 0);
++	if (slave_possible && scc_devchk(ap, 1))
++		devmask |= (1 << 1);
++
++	/* select device 0 again */
++	ap->ops->dev_select(ap, 0);
++
++	/* issue bus reset */
++	DPRINTK("about to softreset, devmask=%x\n", devmask);
++	err_mask = scc_bus_softreset(ap, devmask);
++	if (err_mask) {
++		ata_port_printk(ap, KERN_ERR, "SRST failed (err_mask=0x%x)\n",
++				err_mask);
++		return -EIO;
++	}
++
++	/* determine by signature whether we have ATA or ATAPI devices */
++	classes[0] = ata_dev_try_classify(ap, 0, &err);
++	if (slave_possible && err != 0x81)
++		classes[1] = ata_dev_try_classify(ap, 1, &err);
++
++ out:
++	DPRINTK("EXIT, classes[0]=%u [1]=%u\n", classes[0], classes[1]);
++	return 0;
++}
++
++/**
++ *	scc_bmdma_stop - Stop PCI IDE BMDMA transfer
++ *	@qc: Command we are ending DMA for
++ */
++
++static void scc_bmdma_stop (struct ata_queued_cmd *qc)
++{
++	struct ata_port *ap = qc->ap;
++	void __iomem *ctrl_base = ap->host->iomap[SCC_CTRL_BAR];
++	void __iomem *bmid_base = ap->host->iomap[SCC_BMID_BAR];
++	u32 reg;
++
++	while (1) {
++		reg = in_be32(bmid_base + SCC_DMA_INTST);
++
++		if (reg & INTSTS_SERROR) {
++			printk(KERN_WARNING "%s: SERROR\n", DRV_NAME);
++			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_SERROR|INTSTS_BMSINT);
++			out_be32(bmid_base + SCC_DMA_CMD,
++				 in_be32(bmid_base + SCC_DMA_CMD) & ~ATA_DMA_START);
++			continue;
++		}
++
++		if (reg & INTSTS_PRERR) {
++			u32 maea0, maec0;
++			maea0 = in_be32(ctrl_base + SCC_CTL_MAEA0);
++			maec0 = in_be32(ctrl_base + SCC_CTL_MAEC0);
++			printk(KERN_WARNING "%s: PRERR [addr:%x cmd:%x]\n", DRV_NAME, maea0, maec0);
++			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_PRERR|INTSTS_BMSINT);
++			out_be32(bmid_base + SCC_DMA_CMD,
++				 in_be32(bmid_base + SCC_DMA_CMD) & ~ATA_DMA_START);
++			continue;
++		}
++
++		if (reg & INTSTS_RERR) {
++			printk(KERN_WARNING "%s: Response Error\n", DRV_NAME);
++			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_RERR|INTSTS_BMSINT);
++			out_be32(bmid_base + SCC_DMA_CMD,
++				 in_be32(bmid_base + SCC_DMA_CMD) & ~ATA_DMA_START);
++			continue;
++		}
++
++		if (reg & INTSTS_ICERR) {
++			out_be32(bmid_base + SCC_DMA_CMD,
++				 in_be32(bmid_base + SCC_DMA_CMD) & ~ATA_DMA_START);
++			printk(KERN_WARNING "%s: Illegal Configuration\n", DRV_NAME);
++			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_ICERR|INTSTS_BMSINT);
++			continue;
++		}
++
++		if (reg & INTSTS_BMSINT) {
++			unsigned int classes;
++			printk(KERN_WARNING "%s: Internal Bus Error\n", DRV_NAME);
++			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_BMSINT);
++			/* TBD: SW reset */
++			scc_std_softreset(ap, &classes);
++			continue;
++		}
++
++		if (reg & INTSTS_BMHE) {
++			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_BMHE);
++			continue;
++		}
++
++		if (reg & INTSTS_ACTEINT) {
++			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_ACTEINT);
++			continue;
++		}
++
++		if (reg & INTSTS_IOIRQS) {
++			out_be32(bmid_base + SCC_DMA_INTST, INTSTS_IOIRQS);
++			continue;
++		}
++		break;
++	}
++
++	/* clear start/stop bit */
++	out_be32(bmid_base + SCC_DMA_CMD,
++		 in_be32(bmid_base + SCC_DMA_CMD) & ~ATA_DMA_START);
++
++	/* one-PIO-cycle guaranteed wait, per spec, for HDMA1:0 transition */
++	ata_altstatus(ap);	/* dummy read */
++}
++
++/**
++ *	scc_bmdma_status - Read PCI IDE BMDMA status
++ *	@ap: Port associated with this ATA transaction.
++ */
++
++static u8 scc_bmdma_status (struct ata_port *ap)
++{
++	u8 host_stat;
++	void __iomem *mmio = ap->ioaddr.bmdma_addr;
++
++	host_stat = in_be32(mmio + SCC_DMA_STATUS);
++
++	/* Workaround for PTERADD: emulate DMA_INTR when 
++	 * - IDE_STATUS[ERR] = 1
++	 * - INT_STATUS[INTRQ] = 1
++	 * - DMA_STATUS[IORACTA] = 1
++	 */
++	if (!(host_stat & ATA_DMA_INTR)) {
++		u32 int_status = in_be32(mmio + SCC_DMA_INTST);
++		if (ata_altstatus(ap) & ATA_ERR &&
++		    int_status & INTSTS_INTRQ &&
++		    host_stat & ATA_DMA_ACTIVE)
++			host_stat |= ATA_DMA_INTR;
++	}
++
++	return host_stat;
++}
++
++/**
++ *	scc_data_xfer - Transfer data by PIO
++ *	@adev: device for this I/O
++ *	@buf: data buffer
++ *	@buflen: buffer length
++ *	@write_data: read/write
++ *
++ *	Note: Original code is ata_data_xfer().
++ */
++
++static void scc_data_xfer (struct ata_device *adev, unsigned char *buf,
++			   unsigned int buflen, int write_data)
++{
++	struct ata_port *ap = adev->ap;
++	unsigned int words = buflen >> 1;
++	unsigned int i;
++	u16 *buf16 = (u16 *) buf;
++	void __iomem *mmio = ap->ioaddr.data_addr;
++
++	/* Transfer multiple of 2 bytes */
++	if (write_data) {
++		for (i = 0; i < words; i++)
++			out_be32(mmio, cpu_to_le16(buf16[i]));
++	} else {
++		for (i = 0; i < words; i++)
++			buf16[i] = le16_to_cpu(in_be32(mmio));
++	}
++
++	/* Transfer trailing 1 byte, if any. */
++	if (unlikely(buflen & 0x01)) {
++		u16 align_buf[1] = { 0 };
++		unsigned char *trailing_buf = buf + buflen - 1;
++
++		if (write_data) {
++			memcpy(align_buf, trailing_buf, 1);
++			out_be32(mmio, cpu_to_le16(align_buf[0]));
++		} else {
++			align_buf[0] = le16_to_cpu(in_be32(mmio));
++			memcpy(trailing_buf, align_buf, 1);
++		}
++	}
++}
++
++/**
++ *	scc_irq_on - Enable interrupts on a port.
++ *	@ap: Port on which interrupts are enabled.
++ *
++ *	Note: Original code is ata_irq_on().
++ */
++
++static u8 scc_irq_on (struct ata_port *ap)
++{
++	struct ata_ioports *ioaddr = &ap->ioaddr;
++	u8 tmp;
++
++	ap->ctl &= ~ATA_NIEN;
++	ap->last_ctl = ap->ctl;
++
++	out_be32(ioaddr->ctl_addr, ap->ctl);
++	tmp = ata_wait_idle(ap);
++
++	ap->ops->irq_clear(ap);
++
++	return tmp;
++}
++
++/**
++ *	scc_irq_ack - Acknowledge a device interrupt.
++ *	@ap: Port on which interrupts are enabled.
++ *
++ *	Note: Original code is ata_irq_ack().
++ */
++
++static u8 scc_irq_ack (struct ata_port *ap, unsigned int chk_drq)
++{
++	unsigned int bits = chk_drq ? ATA_BUSY | ATA_DRQ : ATA_BUSY;
++	u8 host_stat, post_stat, status;
++
++	status = ata_busy_wait(ap, bits, 1000);
++	if (status & bits)
++		if (ata_msg_err(ap))
++			printk(KERN_ERR "abnormal status 0x%X\n", status);
++
++	/* get controller status; clear intr, err bits */
++	host_stat = in_be32(ap->ioaddr.bmdma_addr + SCC_DMA_STATUS);
++	out_be32(ap->ioaddr.bmdma_addr + SCC_DMA_STATUS,
++		 host_stat | ATA_DMA_INTR | ATA_DMA_ERR);
++
++	post_stat = in_be32(ap->ioaddr.bmdma_addr + SCC_DMA_STATUS);
++
++	if (ata_msg_intr(ap))
++		printk(KERN_INFO "%s: irq ack: host_stat 0x%X, new host_stat 0x%X, drv_stat 0x%X\n",
++		       __FUNCTION__,
++		       host_stat, post_stat, status);
++
++	return status;
++}
++
++/**
++ *	scc_bmdma_freeze - Freeze BMDMA controller port
++ *	@ap: port to freeze
++ *
++ *	Note: Original code is ata_bmdma_freeze().
++ */
++
++static void scc_bmdma_freeze (struct ata_port *ap)
++{
++	struct ata_ioports *ioaddr = &ap->ioaddr;
++
++	ap->ctl |= ATA_NIEN;
++	ap->last_ctl = ap->ctl;
++
++	out_be32(ioaddr->ctl_addr, ap->ctl);
++
++	/* Under certain circumstances, some controllers raise IRQ on
++	 * ATA_NIEN manipulation.  Also, many controllers fail to mask
++	 * previously pending IRQ on ATA_NIEN assertion.  Clear it.
++	 */
++	ata_chk_status(ap);
++
++	ap->ops->irq_clear(ap);
++}
++
++/**
++ *	scc_pata_prereset - prepare for reset
++ *	@ap: ATA port to be reset
++ */
++
++static int scc_pata_prereset (struct ata_port *ap)
++{
++	ap->cbl = ATA_CBL_PATA80;
++	return ata_std_prereset(ap);
++}
++
++/**
++ *	scc_std_postreset - standard postreset callback
++ *	@ap: the target ata_port
++ *	@classes: classes of attached devices
++ *
++ *	Note: Original code is ata_std_postreset().
++ */
++
++static void scc_std_postreset (struct ata_port *ap, unsigned int *classes)
++{
++	DPRINTK("ENTER\n");
++
++	/* re-enable interrupts */
++	if (!ap->ops->error_handler)
++		ap->ops->irq_on(ap);
++
++	/* is double-select really necessary? */
++	if (classes[0] != ATA_DEV_NONE)
++		ap->ops->dev_select(ap, 1);
++	if (classes[1] != ATA_DEV_NONE)
++		ap->ops->dev_select(ap, 0);
++
++	/* bail out if no device is present */
++	if (classes[0] == ATA_DEV_NONE && classes[1] == ATA_DEV_NONE) {
++		DPRINTK("EXIT, no device\n");
++		return;
++	}
++
++	/* set up device control */
++	if (ap->ioaddr.ctl_addr)
++		out_be32(ap->ioaddr.ctl_addr, ap->ctl);
++
++	DPRINTK("EXIT\n");
++}
++
++/**
++ *	scc_error_handler - Stock error handler for BMDMA controller
++ *	@ap: port to handle error for
++ */
++
++static void scc_error_handler (struct ata_port *ap)
++{
++	ata_bmdma_drive_eh(ap, scc_pata_prereset, scc_std_softreset, NULL,
++			   scc_std_postreset);
++}
++
++/**
++ *	scc_bmdma_irq_clear - Clear PCI IDE BMDMA interrupt.
++ *	@ap: Port associated with this ATA transaction.
++ *
++ *	Note: Original code is ata_bmdma_irq_clear().
++ */
++
++static void scc_bmdma_irq_clear (struct ata_port *ap)
++{
++	void __iomem *mmio = ap->ioaddr.bmdma_addr;
++
++	if (!mmio)
++		return;
++
++	out_be32(mmio + SCC_DMA_STATUS, in_be32(mmio + SCC_DMA_STATUS));
++}
++
++/**
++ *	scc_port_start - Set port up for dma.
++ *	@ap: Port to initialize
++ *
++ *	Allocate space for PRD table using ata_port_start().
++ *	Set PRD table address for PTERADD. (PRD Transfer End Read)
++ */
++
++static int scc_port_start (struct ata_port *ap)
++{
++	void __iomem *mmio = ap->ioaddr.bmdma_addr;
++	int rc;
++
++	rc = ata_port_start(ap);
++	if (rc)
++		return rc;
++
++	out_be32(mmio + SCC_DMA_PTERADD, ap->prd_dma);
++	return 0;
++}
++
++/**
++ *	scc_port_stop - Undo scc_port_start()
++ *	@ap: Port to shut down
++ *
++ *	Reset PTERADD.
++ */
++
++static void scc_port_stop (struct ata_port *ap)
++{
++	void __iomem *mmio = ap->ioaddr.bmdma_addr;
++
++	out_be32(mmio + SCC_DMA_PTERADD, 0);
++}
++
++static struct scsi_host_template scc_sht = {
++	.module			= THIS_MODULE,
++	.name			= DRV_NAME,
++	.ioctl			= ata_scsi_ioctl,
++	.queuecommand		= ata_scsi_queuecmd,
++	.can_queue		= ATA_DEF_QUEUE,
++	.this_id		= ATA_SHT_THIS_ID,
++	.sg_tablesize		= LIBATA_MAX_PRD,
++	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
++	.emulated		= ATA_SHT_EMULATED,
++	.use_clustering		= ATA_SHT_USE_CLUSTERING,
++	.proc_name		= DRV_NAME,
++	.dma_boundary		= ATA_DMA_BOUNDARY,
++	.slave_configure	= ata_scsi_slave_config,
++	.slave_destroy		= ata_scsi_slave_destroy,
++	.bios_param		= ata_std_bios_param,
++	.resume			= ata_scsi_device_resume,
++	.suspend		= ata_scsi_device_suspend,
++};
++
++static const struct ata_port_operations scc_pata_ops = {
++	.port_disable		= ata_port_disable,
++	.set_piomode		= scc_set_piomode,
++	.set_dmamode		= scc_set_dmamode,
++	.mode_filter		= ata_pci_default_filter,
++
++	.tf_load		= scc_tf_load,
++	.tf_read		= scc_tf_read,
++	.exec_command		= scc_exec_command,
++	.check_status		= scc_check_status,
++	.check_altstatus	= scc_check_altstatus,
++	.dev_select		= scc_std_dev_select,
++
++	.bmdma_setup		= scc_bmdma_setup,
++	.bmdma_start		= scc_bmdma_start,
++	.bmdma_stop		= scc_bmdma_stop,
++	.bmdma_status		= scc_bmdma_status,
++	.data_xfer		= scc_data_xfer,
++
++	.qc_prep		= ata_qc_prep,
++	.qc_issue		= ata_qc_issue_prot,
++
++	.freeze			= scc_bmdma_freeze,
++	.error_handler		= scc_error_handler,
++	.post_internal_cmd	= scc_bmdma_stop,
++
++	.irq_handler		= ata_interrupt,
++	.irq_clear		= scc_bmdma_irq_clear,
++	.irq_on			= scc_irq_on,
++	.irq_ack		= scc_irq_ack,
++
++	.port_start		= scc_port_start,
++	.port_stop		= scc_port_stop,
++};
++
++static struct ata_port_info scc_port_info[] = {
++	{
++		.sht		= &scc_sht,
++		.flags		= ATA_FLAG_SLAVE_POSS | ATA_FLAG_MMIO | ATA_FLAG_NO_LEGACY,
++		.pio_mask	= 0x1f,	/* pio0-4 */
++		.mwdma_mask	= 0x00,
++		.udma_mask	= ATA_UDMA6,
++		.port_ops	= &scc_pata_ops,
++	},
++};
++
++/**
++ *	scc_reset_controller - initialize SCC PATA controller.
++ */
++
++static int scc_reset_controller(struct ata_probe_ent *probe_ent)
++{
++	void __iomem *ctrl_base = probe_ent->iomap[SCC_CTRL_BAR];
++	void __iomem *bmid_base = probe_ent->iomap[SCC_BMID_BAR];
++	void __iomem *cckctrl_port = ctrl_base + SCC_CTL_CCKCTRL;
++	void __iomem *mode_port = ctrl_base + SCC_CTL_MODEREG;
++	void __iomem *ecmode_port = ctrl_base + SCC_CTL_ECMODE;
++	void __iomem *intmask_port = bmid_base + SCC_DMA_INTMASK;
++	void __iomem *dmastatus_port = bmid_base + SCC_DMA_STATUS;
++	u32 reg = 0;
++
++	out_be32(cckctrl_port, reg);
++	reg |= CCKCTRL_ATACLKOEN;
++	out_be32(cckctrl_port, reg);
++	reg |= CCKCTRL_LCLKEN | CCKCTRL_OCLKEN;
++	out_be32(cckctrl_port, reg);
++	reg |= CCKCTRL_CRST;
++	out_be32(cckctrl_port, reg);
++
++	for (;;) {
++		reg = in_be32(cckctrl_port);
++		if (reg & CCKCTRL_CRST)
++			break;
++		udelay(5000);
++	}
++
++	reg |= CCKCTRL_ATARESET;
++	out_be32(cckctrl_port, reg);
++	out_be32(ecmode_port, ECMODE_VALUE);
++	out_be32(mode_port, MODE_JCUSFEN);
++	out_be32(intmask_port, INTMASK_MSK);
++
++	if (in_be32(dmastatus_port) & QCHSD_STPDIAG) {
++		printk(KERN_WARNING "%s: failed to detect 80c cable. (PDIAG# is high)\n", DRV_NAME);
++		return -EIO;
++	}
++
++	return 0;
++}
++
++/**
++ *	scc_setup_ports - initialize ioaddr with SCC PATA port offsets.
++ *	@ioaddr: IO address structure to be initialized
++ *	@base: base address of BMID region
++ */
++
++static void scc_setup_ports (struct ata_ioports *ioaddr, void __iomem *base)
++{
++	ioaddr->cmd_addr = base + SCC_REG_CMD_ADDR;
++	ioaddr->altstatus_addr = ioaddr->cmd_addr + SCC_REG_ALTSTATUS;
++	ioaddr->ctl_addr = ioaddr->cmd_addr + SCC_REG_ALTSTATUS;
++	ioaddr->bmdma_addr = base;
++	ioaddr->data_addr = ioaddr->cmd_addr + SCC_REG_DATA;
++	ioaddr->error_addr = ioaddr->cmd_addr + SCC_REG_ERR;
++	ioaddr->feature_addr = ioaddr->cmd_addr + SCC_REG_FEATURE;
++	ioaddr->nsect_addr = ioaddr->cmd_addr + SCC_REG_NSECT;
++	ioaddr->lbal_addr = ioaddr->cmd_addr + SCC_REG_LBAL;
++	ioaddr->lbam_addr = ioaddr->cmd_addr + SCC_REG_LBAM;
++	ioaddr->lbah_addr = ioaddr->cmd_addr + SCC_REG_LBAH;
++	ioaddr->device_addr = ioaddr->cmd_addr + SCC_REG_DEVICE;
++	ioaddr->status_addr = ioaddr->cmd_addr + SCC_REG_STATUS;
++	ioaddr->command_addr = ioaddr->cmd_addr + SCC_REG_CMD;
++}
++
++static int scc_host_init(struct ata_probe_ent *probe_ent)
++{
++	struct pci_dev *pdev = to_pci_dev(probe_ent->dev);
++	int rc;
++
++	rc = scc_reset_controller(probe_ent);
++	if (rc)
++		return rc;
++
++	probe_ent->n_ports = 1;
++
++	rc = pci_set_dma_mask(pdev, ATA_DMA_MASK);
++	if (rc)
++		return rc;
++	rc = pci_set_consistent_dma_mask(pdev, ATA_DMA_MASK);
++	if (rc)
++		return rc;
++
++	scc_setup_ports(&probe_ent->port[0], probe_ent->iomap[SCC_BMID_BAR]);
++
++	pci_set_master(pdev);
++
++	return 0;
++}
++
++/**
++ *	scc_init_one - Register SCC PATA device with kernel services
++ *	@pdev: PCI device to register
++ *	@ent: Entry in scc_pci_tbl matching with @pdev
++ *
++ *	LOCKING:
++ *	Inherited from PCI layer (may sleep).
++ *
++ *	RETURNS:
++ *	Zero on success, or -ERRNO value.
++ */
++
++static int scc_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
++{
++	static int printed_version;
++	unsigned int board_idx = (unsigned int) ent->driver_data;
++	struct device *dev = &pdev->dev;
++	struct ata_probe_ent *probe_ent;
++	int rc;
++
++	if (!printed_version++)
++		dev_printk(KERN_DEBUG, &pdev->dev,
++			   "version " DRV_VERSION "\n");
++
++	rc = pcim_enable_device(pdev);
++	if (rc)
++		return rc;
++
++	rc = pcim_iomap_regions(pdev, (1 << SCC_CTRL_BAR) | (1 << SCC_BMID_BAR), DRV_NAME);
++	if (rc == -EBUSY)
++		pcim_pin_device(pdev);
++	if (rc)
++		return rc;
++
++	probe_ent = devm_kzalloc(dev, sizeof(*probe_ent), GFP_KERNEL);
++	if (!probe_ent)
++		return -ENOMEM;
++
++	probe_ent->dev = dev;
++	INIT_LIST_HEAD(&probe_ent->node);
++
++	probe_ent->sht 		= scc_port_info[board_idx].sht;
++	probe_ent->port_flags 	= scc_port_info[board_idx].flags;
++	probe_ent->pio_mask 	= scc_port_info[board_idx].pio_mask;
++	probe_ent->udma_mask 	= scc_port_info[board_idx].udma_mask;
++	probe_ent->port_ops 	= scc_port_info[board_idx].port_ops;
++
++	probe_ent->irq = pdev->irq;
++	probe_ent->irq_flags = IRQF_SHARED;
++	probe_ent->iomap = pcim_iomap_table(pdev);
++
++	rc = scc_host_init(probe_ent);
++	if (rc)
++		return rc;
++
++	if (!ata_device_add(probe_ent))
++		return -ENODEV;
++
++	devm_kfree(dev, probe_ent);
++	return 0;
++}
++
++static struct pci_driver scc_pci_driver = {
++	.name			= DRV_NAME,
++	.id_table		= scc_pci_tbl,
++	.probe			= scc_init_one,
++	.remove			= ata_pci_remove_one,
++#ifdef CONFIG_PM
++	.suspend		= ata_pci_device_suspend,
++	.resume			= ata_pci_device_resume,
++#endif
++};
++
++static int __init scc_init (void)
++{
++	int rc;
++
++	DPRINTK("pci_register_driver\n");
++	rc = pci_register_driver(&scc_pci_driver);
++	if (rc)
++		return rc;
++
++	DPRINTK("done\n");
++	return 0;
++}
++
++static void __exit scc_exit (void)
++{
++	pci_unregister_driver(&scc_pci_driver);
++}
++
++module_init(scc_init);
++module_exit(scc_exit);
++
++MODULE_AUTHOR("Toshiba corp");
++MODULE_DESCRIPTION("SCSI low-level driver for Toshiba SCC PATA controller");
++MODULE_LICENSE("GPL");
++MODULE_DEVICE_TABLE(pci, scc_pci_tbl);
++MODULE_VERSION(DRV_VERSION);
+diff -uprN -X libata-tj.git/Documentation/dontdiff libata-tj.git/include/linux/libata.h libata-tj.git.mod/include/linux/libata.h
+--- libata-tj.git/include/linux/libata.h	2007-01-26 21:11:21.000000000 +0900
++++ libata-tj.git.mod/include/linux/libata.h	2007-01-27 00:53:43.000000000 +0900
+@@ -754,6 +754,7 @@ extern void ata_port_queue_task(struct a
+ extern u32 ata_wait_register(void __iomem *reg, u32 mask, u32 val,
+ 			     unsigned long interval_msec,
+ 			     unsigned long timeout_msec);
++extern unsigned int ata_dev_try_classify(struct ata_port *, unsigned int, u8 *);
+ 
+ /*
+  * Default driver ops implementations
