@@ -1,32 +1,24 @@
-Return-Path: <ebony.zhu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 8B406DE03C
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 17:17:01 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l0Q6H0TA004333
-	for <linuxppc-dev@ozlabs.org>; Thu, 25 Jan 2007 23:17:00 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0Q6Gv8r007820
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 00:16:58 -0600 (CST)
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 456EADE04C
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 17:18:54 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
+References: <1169714047.65693.647693675533.qpush@cradle>
+Date: Thu, 25 Jan 2007 23:18:20 -0700
+In-Reply-To: <1169714047.65693.647693675533.qpush@cradle> (Michael Ellerman's
+	message of "Thu, 25 Jan 2007 19:34:07 +1100")
+Message-ID: <m1wt3awbtf.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="GB2312"
-Subject: RE: [patch][0/5] powerpc: Add support to fully comply with IEEE-754
-	standard
-Date: Fri, 26 Jan 2007 14:16:55 +0800
-Message-ID: <32F3CC26D4DAC44E8ECD07155727A46E85D7DF@zch01exm20.fsl.freescale.net>
-In-Reply-To: <F8DCDEDE-C060-458D-8E04-EA4C1EE2B2EE@kernel.crashing.org>
-References: <32F3CC26D4DAC44E8ECD07155727A46E816B9C@zch01exm20.fsl.freescale.net>
-	<2C8EB4AF-97B2-40F5-8112-0CEE6E3D4D42@kernel.crashing.org>
-	<32F3CC26D4DAC44E8ECD07155727A46E85D6E4@zch01exm20.fsl.freescale.net>
-	<A85281E5-1E9C-4938-8940-CF696C3C5174@kernel.crashing.org>
-	<32F3CC26D4DAC44E8ECD07155727A46E85D6EF@zch01exm20.fsl.freescale.net>
-	<F8DCDEDE-C060-458D-8E04-EA4C1EE2B2EE@kernel.crashing.org>
-From: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,111 +28,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: 2007=C4=EA1=D4=C225=C8=D5 23:11
-> To: Zhu Ebony-r57400
-> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [patch][0/5] powerpc: Add support to fully=20
-> comply with IEEE-754 standard
->=20
->=20
-> On Jan 25, 2007, at 2:53 AM, Zhu Ebony-r57400 wrote:
->=20
-> >
-> >
-> >> -----Original Message-----
-> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> >> Sent: 2007=C4=EA1=D4=C225=C8=D5 16:29
-> >> To: Zhu Ebony-r57400
-> >> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
-> >> Subject: Re: [patch][0/5] powerpc: Add support to fully=20
-> comply with=20
-> >> IEEE-754 standard
-> >>
-> >>
-> >> On Jan 25, 2007, at 2:25 AM, Zhu Ebony-r57400 wrote:
-> >>
-> >>>
-> >>>> No, I think the round handler should try to do the
-> >> rounding by hand.
-> >>>> Since you have the non rounded information provided by HW,
-> >> its much
-> >>>> simpler to just do the rounding step.
-> >>>
-> >>> Hi Kumar,
-> >>>
-> >>> I have some new thoughts about rounding handler.
-> >>> Suppose we set SPEFSCR[FRMC]=3D0b10 (rounding towards +Inf)
-> >> and a normal
-> >>> "efsmul" may generate rounding interrupt. At this time,
-> >> according to
-> >>> manual, unrounded (truncated) result is placed in the
-> >> target register.
-> >>> Please note the target register contains a hexadecimal
-> >> representation
-> >>> of a floating point number. Since it represents a floating point=20
-> >>> number exactly so we can not round it anymore.
-> >>
-> >> I don't follow what you mean by not being able to round it anymore.
-> >
-> > I try to make myself clear:
-> >> From my understanding, rounding is from a floating point number to=20
-> >> another
-> > which can be represented by IEEE-754 complied hexadecimal, but not=20
-> > from a hexadecimal to another. For example:
-> >
-> > Assume the result we got from efsmul is 3.29305125103e-44=20
-> It will be=20
-> > stored in target register as 0x00000017. However,
-> > 0x00000017
-> > Represents 3.2229864679470793e-44 accurately. Can we round  =20
-> > 3.2229864679470793e-44?
-> > I'm afraid not. I mean, we must round the result before it being=20
-> > stored in target register as hexadecimal, not after.
->=20
-> I still don't follow what you are getting at.  The HW stores=20
-> the non- rounded result.  You seem to imply there is some=20
-> format change or something that is going on between the=20
-> computed result and what's stored in the register.  If the=20
-> result is such that it doesn't need rounding than you don't=20
-> round (I forget if you can an exception or not if G|X are not set).
+> OK, here's a first cut at moving ops based MSI into the generic code. I'm
+> posting this now to make sure I'm not heading off into the weeds.
 
-I'm now confused on this point. If I get round interrupt and the target
-register is 0x00000017, what the round result should be for 0x00000017?
-What is it if round to zero? If round to nearest? If round to +Inf? If =
-round to -Inf?
->From the only info that 0x00000017 is a non-rounded result, we still =
-don't know
-how to round it. 0x00000017 is an inexact value itself.
+First thanks for copying me on this.  I really appreciate it.
 
-Actually, in existing code of math-emu, rounding takes place when =
-packing the bits
-back into native fp result.
-
-> >>> Maybe we still need to emulate the whole "efsmul" instruction by=20
-> >>> software.
-> >>
-> >> You can't always do that.  Think about the following instruction:
-> >>
-> >> 	efsmul	r3, r3, r3
-> >>
-> >> You'll have lost the original value of r3 when the=20
-> exception occurs.
-> >
-> > If this operation causes FP data interrupt, just let data interrupt=20
-> > handler to do the simulation. I think there's no chance that we get=20
-> > data and round interrupts simultaneously.
->=20
-> Agreed, and I think FP data will take precedence, however the=20
-> example I use can still cause a round exception and no data=20
-> exception given the right input values.
-OK, and I think I need to do some more tests to prove this.
+> The fifth patch contain the guts of it, I've included the MPIC and
+> RTAS backends as examples. In fact they actually work.
+>
+> In order to smoothly merge this with the old MSI code, the two will need to
+> coexist in the tree for at least a few commits, so I've added (invisible)
+> Kconfig symbols to allow that.
+>
+> I plan to merge the Intel code by:
+>  * copying it into drivers/pci/msi/intel.c with zero changes.
+>  * providing a minimal shim to connect the ops code to the intel code.
+>  * at this point the code should be functional but ugly as hell.
+>  * via a longish series of patches, adapt the intel code to better match
+>    the new ops code.
+>  * this should allow us to bisect through to find any mistakes.
+>
+> If people think that's crazy and or stupid please let me know :)
+>
+> TBD are:
+>  * suspend / resume hooks in the ops - this shouldn't be too tricky with
+>    the power management API cleaned up a touch.
+>  * working out why the hell msi_remove_pci_irq_vectors() is a special case ?
 
 
-Thanks for your feedback!
+I haven't done more than skim the patches yet but I am distressed.
 
-B.R.
-Ebony
+You code appears to be nice simple clean and to not support MSI in
+a useful way.  I may be reading too quickly but at the moment your infrastructure
+appears useless if you are on a platform that doesn't enforce MSI's get filtered
+with a legacy interrupt controller.
+
+You don't have MSI-X support (which is the interesting case) and you don't have
+suspend/resume support.
+
+You don't support the MSI mask bit.
+
+Looking at your msi_ops it does not map to what I am doing on x86.  There
+is the implicit assumption that the msi_message is fixed for the lifetime
+of the msi.  Which is wrong.
+
+So in short summary I cannot use your msi_ops they are inappropriate for
+i386, x86_64 and ia64.
+
+So at the moment I am opposed to this code because as it sits it appears to
+be a serious regression.
+
+The additional bits that feel like this code was primarily targeted at supporting
+the RTAS with real hardware support thrown in as an after thought just seem
+to add insult to injury.  To date I have no information that indicates to me
+that the RTAS model is at all sane or makes any sense to duplicate elsewhere.
+If supporting the RTAS is what is obscuring your vision of what is really
+needed to support MSI I don't want to see RTAS support in a patch set
+until we get a good multiple platform architecture, merged into the kernel.
+
+Supporting the RTAS first and breaking everyone who actually has real
+hardware seems like very much the wrong approach to get a good
+multiple platform solution.
+
+After I get some sleep I will see if I can up with some constructive
+criticism on how we can make things work.
+
+Eric
