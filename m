@@ -1,26 +1,20 @@
-Return-Path: <akira2.iguchi@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2C27EDE0B3
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 18:24:24 +1100 (EST)
-Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
-	by inet-tsb5.toshiba.co.jp  with ESMTP id l0Q7OK0T000713
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 16:24:20 +0900 (JST)
-Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id l0Q7OKNt027594
-	for linuxppc-dev@ozlabs.org; Fri, 26 Jan 2007 16:24:20 +0900 (JST)
-Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp1.toshiba.co.jp  with ESMTP id l0Q7OKeG016905
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 16:24:20 +0900 (JST)
-Message-Id: <200701260724.l0Q7OIBB016333@toshiba.co.jp>
-MIME-Version: 1.0
-Date: Fri, 26 Jan 2007 16:24:46 +0900
-From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-To: linux-ide@vger.kernel.org
-Subject: [PATCHSET] libata: PATA driver
-	for Celleb
-Cc: jeff@garzik.org, arnd@arndb.de, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	alan@lxorguk.ukuu.org.uk
+	by ozlabs.org (Postfix) with ESMTP id 8A109DE014
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 18:25:40 +1100 (EST)
+In-Reply-To: <Pine.LNX.4.60.0701252333210.13557@poirot.grange>
+References: <Pine.LNX.4.60.0701252333210.13557@poirot.grange>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <EB5DC4AE-E872-432E-A078-79A4385D6D52@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: 82xx CPU features
+Date: Fri, 26 Jan 2007 01:24:43 -0600
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,23 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear everyone.
 
-Thank you for many useful comments.
-This is the latest patchset for the PATA controller of Celleb. 
+On Jan 25, 2007, at 4:39 PM, Guennadi Liakhovetski wrote:
 
-This patchset consists of
-[1] add another IRQ calls (core and headers)
-[2] add another IRQ calls (libata drivers)
-[3] PATA driver for Celleb
+> Hi all
+>
+> wandering around the idle code, noticed the following:
+>
+> #define CPU_FTRS_603	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
+> 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | \
+> 	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_PPC_LE)
+>
+> ...
+>
+> #define CPU_FTRS_82XX	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
+> 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB)
+>
+> Whereas even in
+>
+> static struct cpu_spec cpu_specs[] = {
+> ...
+> 	{	/* 82xx (8240, 8245, 8260 are all 603e cores) */
+> ...
+>
+> So, wanted to ask - is there a specific reason why  
+> CPU_FTR_MAYBE_CAN_NAP
+> is not set for 82xx (as well as CPU_FTR_PPC_LE for that matter...)
 
-And patch[3] depends on patch[1,2].
+For _CAN_NAP, I'm guessing its historic, maybe Dan knows why it  
+wasn't set.  What happens if you try to set it?  Are there  
+implications at the system level with regards to _CAN_NAP?
 
-This patchset is based on the Tejun's "devres" git tree, which is
-available at the followin URL.
+I'm looking at the CPU_FTR_PPC_LE it varies if we should use _PPC_LE  
+vs _TRUE_LE (or whatever the other one is called).
 
-http://htj.dyndns.org/git/?p=libata-tj.git;a=commit;h=efc6607aefe728b2721f6a0126bc527bc23eb46f
-
-
-Best regards,
-Akira Iguchi
+- k
