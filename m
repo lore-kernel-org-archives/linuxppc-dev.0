@@ -1,37 +1,17 @@
-Return-Path: <michal.k.k.piotrowski@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
-	by ozlabs.org (Postfix) with ESMTP id BF6D9DDFFD
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 06:04:41 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so759244ugf
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 11:04:39 -0800 (PST)
-Message-ID: <45BA50B7.1070205@googlemail.com>
-Date: Fri, 26 Jan 2007 20:04:23 +0100
+Return-Path: <jens@de.ibm.com>
+From: Jens Osterkamp <jens@de.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: spidernet: add improved phy support in sungem_phy.c
+Date: Fri, 26 Jan 2007 23:31:58 +0100
+References: <200701261407.48237.jens@de.ibm.com>
+	<1169842847.24996.106.camel@localhost.localdomain>
+In-Reply-To: <1169842847.24996.106.camel@localhost.localdomain>
 MIME-Version: 1.0
-To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.20-rc6: known unfixed regressions (part 2)
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	<20070126181132.GN17836@stusta.de>
-In-Reply-To: <20070126181132.GN17836@stusta.de>
-Content-Type: text/plain; charset=UTF-8
-From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, Livio Soares <livio@eecg.toronto.edu>,
-	Uwe Bugla <uwe.bugla@gmx.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, reiserfs-dev@namesys.com,
-	alan@lxorguk.ukuu.org.uk, jmorris@namei.org,
-	ttb@tentacle.dhs.org, sds@tycho.nsa.gov,
-	Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
-	=?UTF-8?B?TWFsdGUgU2NocsO2ZGVy?= <MalteSch@gmx.de>,
-	Venkat Yekkirala <vyekkirala@TrustedCS.com>,
-	xfs-masters@oss.sgi.com, rml@novell.com,
-	Sami Farin <7atbggg02@sneakemail.com>,
-	"Vladimir V. Saveliev" <vs@namesys.com>,
-	linux-ide@vger.kernel.org, petero2@telia.com, netdev@vger.kernel.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	B.Zolnierkiewicz@elka.pw.edu.pl, Gerhard Dirschl <gd@spherenet.de>,
-	Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	David Miller <davem@davemloft.net>
+Content-Type: Multipart/Mixed;
+  boundary="Boundary-00=_eFouF0yKGUx7dKX"
+Message-Id: <200701262331.58491.jens@de.ibm.com>
+Cc: netdev@vger.kernel.org, James K Lewis <jim@jklewis.com>,
+	linuxppc-dev@ozlabs.org, jgarzik@pobox.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,38 +21,530 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+--Boundary-00=_eFouF0yKGUx7dKX
+Content-Type: text/plain;
+  charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Adrian Bunk napisał(a):
-> This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
-> that are not yet fixed in Linus' tree.
-> 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you caused a breakage or I'm considering you in any other way possibly
-> involved with one or more of these issues.
-> 
-> Due to the huge amount of recipients, please trim the Cc when answering.
-> 
-> 
-> Subject    : SELinux compile error with CONFIG_XFRM=n
-> References : http://lkml.org/lkml/2007/1/25/233
-> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
-> Caused-By  : Venkat Yekkirala <vyekkirala@TrustedCS.com>
->              commit 334c85569b8adeaa820c0f2fab3c8f0a9dc8b92e
-> Handled-By : Venkat Yekkirala <vyekkirala@TrustedCS.com>
->              David Miller <davem@davemloft.net>
-> Status     : problem is being discussed
-> 
+> Patch is whitespace damaged...
 
-Venkat Yekkirala has sent me a patch that fixed this build problem.
+sending it again as attachment...
 
-Thanks!
+Jens
 
-Regards,
-Michal
+--Boundary-00=_eFouF0yKGUx7dKX
+Content-Type: text/x-diff;
+  charset="utf-8";
+  name="spidernet-sungem-update-2.diff"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+	filename="spidernet-sungem-update-2.diff"
 
--- 
-Michal K. K. Piotrowski
-LTG - Linux Testers Group
-(http://www.stardust.webpages.pl/ltg/)
+Subject: spidernet: add improved phy support
+
+This patch adds improved version of enable_fiber for both the 5421 and
+the 5461 phy. It is now possible to specify with these wether you want
+autonegotiation or not. This is needed for bladecenter switches where
+some expect autonegotiation and some dont seem to like this at all.
+Depending on this flag it sets phy->autoneg accordingly for the fiber mode.
+
+More importantly it implements proper read_link and poll_link functions
+for both phys which can handle both copper and fiber mode by determining
+the medium first and then branching to the required functions. For fiber
+they all work fine, for copper they are not tested but return the result
+of the genmii_* function anyway which is supposed to work.
+
+A "medium" variable in the phy struct is introduced to save the medium
+with which the phy is currently used.
+
+The patch moves the genmii_* functions around to avoid foreward declarations.
+
+Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+
+Index: linux-2.6.20-rc5/drivers/net/sungem_phy.c
+===================================================================
+--- linux-2.6.20-rc5.orig/drivers/net/sungem_phy.c
++++ linux-2.6.20-rc5/drivers/net/sungem_phy.c
+@@ -311,6 +311,107 @@ static int bcm5411_init(struct mii_phy* 
+ 	return 0;
+ }
+ 
++static int genmii_setup_aneg(struct mii_phy *phy, u32 advertise)
++{
++	u16 ctl, adv;
++
++	phy->autoneg = 1;
++	phy->speed = SPEED_10;
++	phy->duplex = DUPLEX_HALF;
++	phy->pause = 0;
++	phy->advertising = advertise;
++
++	/* Setup standard advertise */
++	adv = phy_read(phy, MII_ADVERTISE);
++	adv &= ~(ADVERTISE_ALL | ADVERTISE_100BASE4);
++	if (advertise & ADVERTISED_10baseT_Half)
++		adv |= ADVERTISE_10HALF;
++	if (advertise & ADVERTISED_10baseT_Full)
++		adv |= ADVERTISE_10FULL;
++	if (advertise & ADVERTISED_100baseT_Half)
++		adv |= ADVERTISE_100HALF;
++	if (advertise & ADVERTISED_100baseT_Full)
++		adv |= ADVERTISE_100FULL;
++	phy_write(phy, MII_ADVERTISE, adv);
++
++	/* Start/Restart aneg */
++	ctl = phy_read(phy, MII_BMCR);
++	ctl |= (BMCR_ANENABLE | BMCR_ANRESTART);
++	phy_write(phy, MII_BMCR, ctl);
++
++	return 0;
++}
++
++static int genmii_setup_forced(struct mii_phy *phy, int speed, int fd)
++{
++	u16 ctl;
++
++	phy->autoneg = 0;
++	phy->speed = speed;
++	phy->duplex = fd;
++	phy->pause = 0;
++
++	ctl = phy_read(phy, MII_BMCR);
++	ctl &= ~(BMCR_FULLDPLX|BMCR_SPEED100|BMCR_ANENABLE);
++
++	/* First reset the PHY */
++	phy_write(phy, MII_BMCR, ctl | BMCR_RESET);
++
++	/* Select speed & duplex */
++	switch(speed) {
++	case SPEED_10:
++		break;
++	case SPEED_100:
++		ctl |= BMCR_SPEED100;
++		break;
++	case SPEED_1000:
++	default:
++		return -EINVAL;
++	}
++	if (fd == DUPLEX_FULL)
++		ctl |= BMCR_FULLDPLX;
++	phy_write(phy, MII_BMCR, ctl);
++
++	return 0;
++}
++
++static int genmii_poll_link(struct mii_phy *phy)
++{
++	u16 status;
++
++	(void)phy_read(phy, MII_BMSR);
++	status = phy_read(phy, MII_BMSR);
++	if ((status & BMSR_LSTATUS) == 0)
++		return 0;
++	if (phy->autoneg && !(status & BMSR_ANEGCOMPLETE))
++		return 0;
++	return 1;
++}
++
++static int genmii_read_link(struct mii_phy *phy)
++{
++	u16 lpa;
++
++	if (phy->autoneg) {
++		lpa = phy_read(phy, MII_LPA);
++
++		if (lpa & (LPA_10FULL | LPA_100FULL))
++			phy->duplex = DUPLEX_FULL;
++		else
++			phy->duplex = DUPLEX_HALF;
++		if (lpa & (LPA_100FULL | LPA_100HALF))
++			phy->speed = SPEED_100;
++		else
++			phy->speed = SPEED_10;
++		phy->pause = 0;
++	}
++	/* On non-aneg, we assume what we put in BMCR is the speed,
++	 * though magic-aneg shouldn't prevent this case from occurring
++	 */
++
++	 return 0;
++}
++
+ static int generic_suspend(struct mii_phy* phy)
+ {
+ 	phy_write(phy, MII_BMCR, BMCR_PDOWN);
+@@ -365,30 +466,6 @@ static int bcm5421_init(struct mii_phy* 
+ 	return 0;
+ }
+ 
+-static int bcm5421_enable_fiber(struct mii_phy* phy)
+-{
+-	/* enable fiber mode */
+-	phy_write(phy, MII_NCONFIG, 0x9020);
+-	/* LEDs active in both modes, autosense prio = fiber */
+-	phy_write(phy, MII_NCONFIG, 0x945f);
+-
+-	/* switch off fibre autoneg */
+-	phy_write(phy, MII_NCONFIG, 0xfc01);
+-	phy_write(phy, 0x0b, 0x0004);
+-
+-	return 0;
+-}
+-
+-static int bcm5461_enable_fiber(struct mii_phy* phy)
+-{
+-	phy_write(phy, MII_NCONFIG, 0xfc0c);
+-	phy_write(phy, MII_BMCR, 0x4140);
+-	phy_write(phy, MII_NCONFIG, 0xfc0b);
+-	phy_write(phy, MII_BMCR, 0x0140);
+-
+-	return 0;
+-}
+-
+ static int bcm54xx_setup_aneg(struct mii_phy *phy, u32 advertise)
+ {
+ 	u16 ctl, adv;
+@@ -516,6 +593,166 @@ static int marvell88e1111_init(struct mi
+ 	return 0;
+ }
+ 
++#define BCM5421_MODE_MASK	1 << 5
++
++static int bcm5421_poll_link(struct mii_phy* phy)
++{
++	u32 phy_reg;
++	int mode;
++
++	/* find out in what mode we are */
++        phy_write(phy, MII_NCONFIG, 0x1000);
++	phy_reg = phy_read(phy, MII_NCONFIG);
++
++	mode = (phy_reg & BCM5421_MODE_MASK ) >> 5;
++
++	if ( mode == GMII_COPPER) {
++		return genmii_poll_link(phy);
++	}
++
++	/* try to find out wether we have a link */
++        phy_write(phy, MII_NCONFIG, 0x2000);
++	phy_reg = phy_read(phy, MII_NCONFIG);
++
++	if ( (phy_reg & 0x0020) >> 5 ) {
++		return 0;
++	} else {
++		return 1;
++	}
++
++}
++
++static int bcm5421_read_link(struct mii_phy* phy)
++{
++	u32 phy_reg;
++	int mode;
++
++	/* find out in what mode we are */
++        phy_write(phy, MII_NCONFIG, 0x1000);
++	phy_reg = phy_read(phy, MII_NCONFIG);
++
++	mode = (phy_reg & BCM5421_MODE_MASK ) >> 5;
++
++	if ( mode == GMII_COPPER) {
++		return bcm54xx_read_link(phy);
++	}
++
++	phy->speed = SPEED_1000;
++
++	/* find out wether we are running half- or full duplex */
++        phy_write(phy, MII_NCONFIG, 0x2000);
++	phy_reg = phy_read(phy, MII_NCONFIG);
++
++	if ( (phy_reg & 0x0020) >> 7 ) {
++		phy->duplex |=  DUPLEX_HALF;
++	} else {
++		phy->duplex |=  DUPLEX_FULL;
++	}
++
++	return 0;
++}
++
++static int bcm5421_enable_fiber(struct mii_phy* phy, int autoneg)
++{
++	/* enable fiber mode */
++	phy_write(phy, MII_NCONFIG, 0x9020);
++	/* LEDs active in both modes, autosense prio = fiber */
++	phy_write(phy, MII_NCONFIG, 0x945f);
++
++	if (!autoneg) {
++		/* switch off fibre autoneg */
++		phy_write(phy, MII_NCONFIG, 0xfc01);
++		phy_write(phy, 0x0b, 0x0004);
++	}
++
++	phy->autoneg = autoneg;
++
++	return 0;
++}
++
++#define BCM5461_FIBER_LINK	1 << 2
++#define BCM5461_MODE_MASK	3 << 1
++
++static int bcm5461_poll_link(struct mii_phy* phy)
++{
++	u32 phy_reg;
++	int mode;
++
++	/* find out in what mode we are */
++        phy_write(phy, MII_NCONFIG, 0x7c00);
++	phy_reg = phy_read(phy, MII_NCONFIG);
++
++	mode = (phy_reg & BCM5461_MODE_MASK ) >> 1;
++
++	if ( mode == GMII_COPPER) {
++		return genmii_poll_link(phy);
++	}
++
++	/* find out wether we have a link */
++        phy_write(phy, MII_NCONFIG, 0x7000);
++	phy_reg = phy_read(phy, MII_NCONFIG);
++	if (phy_reg & BCM5461_FIBER_LINK) {
++		return 1;
++	} else {
++		return 0;
++	}
++}
++
++#define BCM5461_FIBER_DUPLEX	1 << 3
++
++static int bcm5461_read_link(struct mii_phy* phy)
++{
++	u32 phy_reg;
++	int mode;
++
++	/* find out in what mode we are */
++        phy_write(phy, MII_NCONFIG, 0x7c00);
++	phy_reg = phy_read(phy, MII_NCONFIG);
++
++	mode = (phy_reg & BCM5461_MODE_MASK ) >> 1;
++
++	if ( mode == GMII_COPPER) {
++		return bcm54xx_read_link(phy);
++	}
++
++	phy->speed = SPEED_1000;
++
++	/* find out wether we are running half- or full duplex */
++        phy_write(phy, MII_NCONFIG, 0x7000);
++	phy_reg = phy_read(phy, MII_NCONFIG);
++	if (phy_reg & BCM5461_FIBER_DUPLEX) {
++		phy->duplex |=  DUPLEX_FULL;
++	} else {
++		phy->duplex |=  DUPLEX_HALF;
++	}
++
++	return 0;
++}
++
++static int bcm5461_enable_fiber(struct mii_phy* phy, int autoneg)
++{
++	/*
++	phy_write(phy, MII_NCONFIG, 0xfc0c);
++	phy_write(phy, MII_BMCR, 0x4140);
++	*/
++
++	/* select fiber mode, enable 1000 base-X registers */
++	phy_write(phy, MII_NCONFIG, 0xfc0b);
++
++	if (autoneg) {
++		/* enable fiber with no autonegotiation */
++		phy_write(phy, MII_ADVERTISE, 0x01e0);
++		phy_write(phy, MII_BMCR, 0x1140);
++	} else {
++		/* enable fiber with autonegotiation */
++		phy_write(phy, MII_BMCR, 0x0140);
++	}
++
++	phy->autoneg = autoneg;
++
++	return 0;
++}
++
+ static int marvell_setup_aneg(struct mii_phy *phy, u32 advertise)
+ {
+ 	u16 ctl, adv;
+@@ -646,113 +883,6 @@ static int marvell_read_link(struct mii_
+ 	return 0;
+ }
+ 
+-static int genmii_setup_aneg(struct mii_phy *phy, u32 advertise)
+-{
+-	u16 ctl, adv;
+-
+-	phy->autoneg = 1;
+-	phy->speed = SPEED_10;
+-	phy->duplex = DUPLEX_HALF;
+-	phy->pause = 0;
+-	phy->advertising = advertise;
+-
+-	/* Setup standard advertise */
+-	adv = phy_read(phy, MII_ADVERTISE);
+-	adv &= ~(ADVERTISE_ALL | ADVERTISE_100BASE4);
+-	if (advertise & ADVERTISED_10baseT_Half)
+-		adv |= ADVERTISE_10HALF;
+-	if (advertise & ADVERTISED_10baseT_Full)
+-		adv |= ADVERTISE_10FULL;
+-	if (advertise & ADVERTISED_100baseT_Half)
+-		adv |= ADVERTISE_100HALF;
+-	if (advertise & ADVERTISED_100baseT_Full)
+-		adv |= ADVERTISE_100FULL;
+-	if (advertise & ADVERTISED_Pause)
+-		adv |= ADVERTISE_PAUSE_CAP;
+-	if (advertise & ADVERTISED_Asym_Pause)
+-		adv |= ADVERTISE_PAUSE_ASYM;
+-	phy_write(phy, MII_ADVERTISE, adv);
+-
+-	/* Start/Restart aneg */
+-	ctl = phy_read(phy, MII_BMCR);
+-	ctl |= (BMCR_ANENABLE | BMCR_ANRESTART);
+-	phy_write(phy, MII_BMCR, ctl);
+-
+-	return 0;
+-}
+-
+-static int genmii_setup_forced(struct mii_phy *phy, int speed, int fd)
+-{
+-	u16 ctl;
+-
+-	phy->autoneg = 0;
+-	phy->speed = speed;
+-	phy->duplex = fd;
+-	phy->pause = 0;
+-
+-	ctl = phy_read(phy, MII_BMCR);
+-	ctl &= ~(BMCR_FULLDPLX|BMCR_SPEED100|BMCR_ANENABLE);
+-
+-	/* First reset the PHY */
+-	phy_write(phy, MII_BMCR, ctl | BMCR_RESET);
+-
+-	/* Select speed & duplex */
+-	switch(speed) {
+-	case SPEED_10:
+-		break;
+-	case SPEED_100:
+-		ctl |= BMCR_SPEED100;
+-		break;
+-	case SPEED_1000:
+-	default:
+-		return -EINVAL;
+-	}
+-	if (fd == DUPLEX_FULL)
+-		ctl |= BMCR_FULLDPLX;
+-	phy_write(phy, MII_BMCR, ctl);
+-
+-	return 0;
+-}
+-
+-static int genmii_poll_link(struct mii_phy *phy)
+-{
+-	u16 status;
+-
+-	(void)phy_read(phy, MII_BMSR);
+-	status = phy_read(phy, MII_BMSR);
+-	if ((status & BMSR_LSTATUS) == 0)
+-		return 0;
+-	if (phy->autoneg && !(status & BMSR_ANEGCOMPLETE))
+-		return 0;
+-	return 1;
+-}
+-
+-static int genmii_read_link(struct mii_phy *phy)
+-{
+-	u16 lpa;
+-
+-	if (phy->autoneg) {
+-		lpa = phy_read(phy, MII_LPA);
+-
+-		if (lpa & (LPA_10FULL | LPA_100FULL))
+-			phy->duplex = DUPLEX_FULL;
+-		else
+-			phy->duplex = DUPLEX_HALF;
+-		if (lpa & (LPA_100FULL | LPA_100HALF))
+-			phy->speed = SPEED_100;
+-		else
+-			phy->speed = SPEED_10;
+-		phy->pause = (phy->duplex == DUPLEX_FULL) &&
+-			((lpa & LPA_PAUSE) != 0);
+-	}
+-	/* On non-aneg, we assume what we put in BMCR is the speed,
+-	 * though magic-aneg shouldn't prevent this case from occurring
+-	 */
+-
+-	 return 0;
+-}
+-
+-
+ #define MII_BASIC_FEATURES \
+ 	(SUPPORTED_10baseT_Half | SUPPORTED_10baseT_Full |	\
+ 	 SUPPORTED_100baseT_Half | SUPPORTED_100baseT_Full |	\
+@@ -886,8 +1016,8 @@ static struct mii_phy_ops bcm5421_phy_op
+ 	.suspend	= generic_suspend,
+ 	.setup_aneg	= bcm54xx_setup_aneg,
+ 	.setup_forced	= bcm54xx_setup_forced,
+-	.poll_link	= genmii_poll_link,
+-	.read_link	= bcm54xx_read_link,
++	.poll_link	= bcm5421_poll_link,
++	.read_link	= bcm5421_read_link,
+ 	.enable_fiber   = bcm5421_enable_fiber,
+ };
+ 
+@@ -924,8 +1054,8 @@ static struct mii_phy_ops bcm5461_phy_op
+ 	.suspend	= generic_suspend,
+ 	.setup_aneg	= bcm54xx_setup_aneg,
+ 	.setup_forced	= bcm54xx_setup_forced,
+-	.poll_link	= genmii_poll_link,
+-	.read_link	= bcm54xx_read_link,
++	.poll_link	= bcm5461_poll_link,
++	.read_link	= bcm5461_read_link,
+ 	.enable_fiber   = bcm5461_enable_fiber,
+ };
+ 
+Index: linux-2.6.20-rc5/drivers/net/sungem_phy.h
+===================================================================
+--- linux-2.6.20-rc5.orig/drivers/net/sungem_phy.h
++++ linux-2.6.20-rc5/drivers/net/sungem_phy.h
+@@ -12,7 +12,7 @@ struct mii_phy_ops
+ 	int		(*setup_forced)(struct mii_phy *phy, int speed, int fd);
+ 	int		(*poll_link)(struct mii_phy *phy);
+ 	int		(*read_link)(struct mii_phy *phy);
+-	int		(*enable_fiber)(struct mii_phy *phy);
++	int		(*enable_fiber)(struct mii_phy *phy, int autoneg);
+ };
+ 
+ /* Structure used to statically define an mii/gii based PHY */
+@@ -26,6 +26,14 @@ struct mii_phy_def
+ 	const struct mii_phy_ops*	ops;
+ };
+ 
++enum {
++	GMII_COPPER,
++	GMII_FIBER,
++	GMII_GBIC,
++	GMII_SGMII,
++	GMII_UNKNOWN,
++};
++
+ /* An instance of a PHY, partially borrowed from mii_if_info */
+ struct mii_phy
+ {
+@@ -36,6 +44,8 @@ struct mii_phy
+ 	/* 1: autoneg enabled, 0: disabled */
+ 	int			autoneg;
+ 
++	int			medium;
++
+ 	/* forced speed & duplex (no autoneg)
+ 	 * partner speed & duplex & pause (autoneg)
+ 	 */
+
+--Boundary-00=_eFouF0yKGUx7dKX--
