@@ -1,22 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id A6FB6DDFF1
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 15:23:11 +1100 (EST)
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id D50FEDE03D
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 15:28:34 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 1/1] updated version, fixed the compiler warning
-Date: Fri, 26 Jan 2007 05:23:02 +0100
-References: <20061218163846.337fed65@localhost>
-	<20070125104540.65a1f557@localhost> <20070126025431.GC18537@lst.de>
-In-Reply-To: <20070126025431.GC18537@lst.de>
+Subject: Re: [PATCH 6/14] ps3: smp interrupt fixes
+Date: Fri, 26 Jan 2007 05:28:26 +0100
+References: <45B81883.2010508@am.sony.com> <200701250707.07626.arnd@arndb.de>
+	<45B96BC5.3090308@am.sony.com>
+In-Reply-To: <45B96BC5.3090308@am.sony.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701260523.04229.arnd@arndb.de>
-Cc: Christian@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Christian Krafft <krafft@de.ibm.com>,
-	openipmi-developer@lists.sourceforge.net,
-	Krafft <krafft@linux.vnet.ibm.com>
+  charset="utf-8"
+Message-Id: <200701260528.27438.arnd@arndb.de>
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 26 January 2007 03:54, Christoph Hellwig wrote:
-> > =A0
-> > +#ifdef CONFIG_PPC_OF
-> > +#include <asm/of_device.h>
-> > +#include <asm/of_platform.h>
-> > +#endif
->=20
-> Adding this OF-specific code to the generic file doesn't look exactly
-> nice. =A0Is it possible to separate the code out to a separate ipmi_of.c
-> file?
-
-This file already contains the same code for a number of other bus
-layers, it might be possible to split out the of part, but then we
-should also have separate files for ACPI, PCI and all the others.
-
-I think that reworking the ipmi layer is outside of the scope of
-what we want right now, that can be another patch if there is
-a consensus that it would be a good idea.
-
-> > +static int __devexit ipmi_of_remove(struct of_device *dev)
-> > +{
-> > +=A0=A0=A0=A0=A0/* should call
-> > +=A0=A0=A0=A0=A0 * cleanup_one_si(dev->dev.driver_data); */
->=20
-> Wo why doesn't it do that currently?=20
-
-This mimics the pci driver that also doesn't do it. The comment
-is a hint that when it the ipmi driver gets cleaned up so
-that _pci gets it right, _of should do the same. That should
-also be a separate patch.
-
-	Arnd <><
+T24gRnJpZGF5IDI2IEphbnVhcnkgMjAwNyAwMzo0NywgR2VvZmYgTGV2YW5kIHdyb3RlOgo+IFNv
+cnJ5LCBJIGRvbid0IHF1aXRlIHVuZGVyc3RhbmQgd2hhdCB5b3UgbWVhbiBieSAndXNpbmcgYSBj
+b25zdGFudCBkZWZpbml0aW9uCj4gZm9yIGl0Jy4gwqBDb3VsZCB5b3UgZWxhYm9yYXRlPwoKSSBh
+c3N1bWVkIHRoYXQgJzY0JyBoYWQgYSBzcGVjaWFsIG1lYW5pbmcgaW4gdGhpcywgd2hpY2ggd291
+bGQgYmUgaWRlYWxseQpleHByZXNzZWQgYnkgc29tZXRoaW5nIGxpa2UKCiNkZWZpbmUgUFMzX0JJ
+VE1BUF9NSU5BTElHTiA2NAoKd2hpY2ggaXQgb25seSBoYXMgaW5kaXJlY3RseSwgaW5zdGVhZAoK
+PiBBcyB5b3Ugc3VnZ2VzdGVkIEkgaGF2ZSBhbHJlYWR5IGNoYW5nZWQgdGhpcyB0bzoKPiAKPiBz
+dHJ1Y3QgcHMzX2JtcCB7Cj4gwqDCoMKgwqDCoMKgwqDCoHN0cnVjdCB7Cj4gwqDCoMKgwqDCoMKg
+wqDCoMKgwqDCoMKgwqDCoMKgwqB1NjQgc3RhdHVzOwo+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgwqDCoMKgdTY0IHVudXNlZF8xWzNdOwo+IMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDC
+oMKgdTY0IG1hc2s7Cj4gwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqDCoMKgwqB1NjQgdW51c2Vk
+XzJbM107Cj4gwqDCoMKgwqDCoMKgwqDCoH07Cj4gwqDCoMKgwqDCoMKgwqDCoHU2NCBpcGlfZGVi
+dWdfYnJrX21hc2s7Cj4gwqDCoMKgwqDCoMKgwqDCoHNwaW5sb2NrX3QgbG9jazsKPiB9Owo+IAo+
+IHN0cnVjdCBwczNfcHJpdmF0ZSB7Cj4gwqDCoMKgwqDCoMKgwqDCoHN0cnVjdCBwczNfYm1wIGJt
+cCBfX2F0dHJpYnV0ZV9fICgoYWxpZ25lZCAoNjQpKSk7Cj4gwqDCoMKgwqDCoMKgwqDCoHU2NCBu
+b2RlOwo+IMKgwqDCoMKgwqDCoMKgwqB1bnNpZ25lZCBpbnQgY3B1Owo+IH07CgppdCB3b3VsZCBi
+ZSBldmVuIGJldHRlciB0byBhZGQgYSBjb21tZW50IHRvIHRoaXMgc3RydWN0IGxpa2UKCi8qIGFs
+aWduZWQoNjQpIGJlY2F1c2UgcHMzX2JtcCBtdXN0IG5vdCBjcm9zcyBwYWdlIGJvdW5kYXJpZXMg
+Ki8KCglBcm5kIDw+PAo=
