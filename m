@@ -1,15 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: spidernet: add improved phy support in sungem_phy.c
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jens Osterkamp <jens@de.ibm.com>
-In-Reply-To: <200701261407.48237.jens@de.ibm.com>
-References: <200701261407.48237.jens@de.ibm.com>
-Content-Type: text/plain
-Date: Sat, 27 Jan 2007 07:20:47 +1100
-Message-Id: <1169842847.24996.106.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, James K Lewis <jim@jklewis.com>,
-	linuxppc-dev@ozlabs.org, jgarzik@pobox.com, cbe-oss-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
+	by ozlabs.org (Postfix) with ESMTP id 274AFDE014
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 07:38:11 +1100 (EST)
+Date: Fri, 26 Jan 2007 14:37:58 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 10/14] ps3: get firmware version
+Message-ID: <20070126203758.GC17317@localdomain>
+References: <45B81891.1010309@am.sony.com> <20070126025955.GE18537@lst.de>
+	<45BA4DD5.2030106@am.sony.com>
+	<1169843138.24996.114.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1169843138.24996.114.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,27 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-01-26 at 14:07 +0100, Jens Osterkamp wrote:
-> This patch adds improved version of enable_fiber for both the 5421 and
-> the 5461 phy. It is now possible to specify with these wether you want
-> autonegotiation or not. This is needed for bladecenter switches where
-> some expect autonegotiation and some dont seem to like this at all.
-> Depending on this flag it sets phy->autoneg accordingly for the fiber mode.
-> 
-> More importantly it implements proper read_link and poll_link functions
-> for both phys which can handle both copper and fiber mode by determining
-> the medium first and then branching to the required functions. For fiber
-> they all work fine, for copper they are not tested but return the result
-> of the genmii_* function anyway which is supposed to work.
-> 
-> A "medium" variable in the phy struct is introduced to save the medium
-> with which the phy is currently used.
-> 
-> The patch moves the genmii_* functions around to avoid foreward declarations.
-> 
-> Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Benjamin Herrenschmidt wrote:
 
-Patch is whitespace damaged...
+> > Anyway, that is the need, the question is where to make it
+> > available.  I thought /proc/cpuinfo already has the platform type
+> > (coming from the generic powerpc code), so it would be convenient
+> > for utilities to have the firmware version there too.  I don't
+> > think parsing the dmsg is an option for minimal configs like
+> > bootloaders and distro installers, as they may not keep the boot
+> > messages around, and in general doesn't seem a reliable way.  If
+> > you can make a suggestion, I'd like to hear it.
+>
+> Yeah, /proc/cpuinfo is actually a fairly convenient place for that...
 
-Ben.
+Other firmwares provide a property in the device tree with version
+information, for example on Power5:
+
+$ lsprop /proc/device-tree/openprom/ibm,fw-vernum_encoded
+/proc/device-tree/openprom/ibm,fw-vernum_encoded "SF225_096"
