@@ -1,27 +1,24 @@
-Return-Path: <grundler@lackof.org>
-Received: from colo.lackof.org (colo.lackof.org [198.49.126.79])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.lackof.org",
-	Issuer "CAcert Class 3 Root" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C1EEADE094
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 18:48:43 +1100 (EST)
-Date: Fri, 26 Jan 2007 00:48:33 -0700
-From: Grant Grundler <grundler@parisc-linux.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
-Message-ID: <20070126074833.GF328@colo.lackof.org>
-References: <1169714047.65693.647693675533.qpush@cradle>
-	<m1wt3awbtf.fsf@ebiederm.dsl.xmission.com>
-	<20070126065613.GB328@colo.lackof.org>
-	<m18xfqw95v.fsf@ebiederm.dsl.xmission.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <m18xfqw95v.fsf@ebiederm.dsl.xmission.com>
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-	Greg Kroah-Hartman <greg@kroah.com>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Brice Goglin <brice@myri.com>, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
+Return-Path: <Tony.Li@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C1F6FDE039
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 19:00:13 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l0Q80CiO028909
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 01:00:12 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l0Q809nA023338
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 02:00:10 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7411F.FF806127"
+Subject: [PATCH]Disable early console in default to avoid printing boot
+	message twice
+Date: Fri, 26 Jan 2007 16:00:08 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D26356C26C3@zch01exm21.fsl.freescale.net>
+From: "Li Tony-r64360" <Tony.Li@freescale.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,91 +28,133 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Jan 26, 2007 at 12:15:40AM -0700, Eric W. Biederman wrote:
-> > Isn't the point of MSI to avoid any sort of interrupt controller?
-> 
-> That is how the supported platforms were designed.  But something needs
-> to translate a pci message to a cpu interrupt and on PPC apparently
-> they implemented this in their interrupt controller.
-> 
-> To be fair there are also ioapic on x86 which can do this as well
-> they just haven't been sufficiently interesting to support.
+This is a multi-part message in MIME format.
 
-Sorry, I'm not understanding your point...it's past my bedtime now
-and maybe tomorrow it will make more sense.
+------_=_NextPart_001_01C7411F.FF806127
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I get the impression you are confusing Local-APIC with IO-APIC.
-The former catches MSI's on behalf of the CPU and
-the latter generates the equivalent of MSI's for IRQ lines.
-Any CPU that can support MSI's has either a Local-APIC or it's equivalent.
-(e.g. parisc or alpha)
+The early console is default enable in powerpc 32 now.
+This cause the boot message from beginning to console_init() printed
+twice.
+The early console is useful only when the kernel dead before
+console_init.
+The patch make the early console optional and disable the early console
+in default.
+The patch has been tested on mpc8313erdb board
+=20
+Signed-off-by: Li Tony <tony.li@freescale.com>
 
-> 
-> The interesting case will be when there is the equivalent of an
-> iommu for msi interrupts (and quite possibly it will be the iommu)
-> that filters iommu for hardware isolation purposes.
+---
+ arch/powerpc/Kconfig           |    2 +-
+ arch/powerpc/kernel/setup_32.c |    2 ++
+ 2 files changed, 3 insertions(+), 1 deletions(-)
+=20
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 0673dbe..0c18951 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -59,7 +59,7 @@ config PPC
+=20
+ config EARLY_PRINTK
+  bool
+- default y
++ default t
+=20
+ config COMPAT
+  bool
+diff --git a/arch/powerpc/kernel/setup_32.c
+b/arch/powerpc/kernel/setup_32.c
+index a4c2964..71eb320 100644
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -242,8 +242,10 @@ void __init setup_arch(char **cmdline_p)
+=20
+  smp_setup_cpu_maps();
+=20
++#ifdef CONFIG_EARLY_PRINTK
+  /* Register early console */
+  register_early_udbg_console();
++#endif
+=20
+  xmon_setup();
+=20
+--=20
+1.4.2
+=20
+=20
 
-IOMMU might give us better control over devices can write as long
-as it's always used and not bypassed (e.g. ZX1 chipset).
-Also, not all IOMMU can direct MSI transactions to a CPU.
-I thought some IOMMU implementation can only deal with cacheline
-sized transactions and I never had the impression MSI filled out
-a full cacheline. Anyway, I expect the "Virtual Machine Monitor"
-will own the IOMMU and expect that's the case in the IBM machines (RTAS
-boxen).
+------_=_NextPart_001_01C7411F.FF806127
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> >> You don't have MSI-X support (which is the interesting case) and you
-> >> don't have suspend/resume support.
-> >
-> > I saw save/restore entry points.
-> > I expected suspend/resume code would use those.
-> > Do you agree (or not)?
-> 
-> Mostly for that bit I was relying on the documented part that said
-> they don't work yet.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3020" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D309414009-25012007>The =
+early console is=20
+default enable in powerpc 32 now.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D309414009-25012007>This =
+cause the boot=20
+message from beginning to console_init() printed =
+twice.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D309414009-25012007>The =
+early console is=20
+useful only when the kernel dead before =
+console_init.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D309414009-25012007>The =
+patch&nbsp;<SPAN=20
+class=3D525140007-26012007>make the early console optional and =
+</SPAN>disable the=20
+early console<SPAN class=3D525140007-26012007> in=20
+default.</SPAN></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D309414009-25012007><SPAN=20
+class=3D525140007-26012007>The patch has been tested on mpc8313erdb=20
+board</SPAN></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D309414009-25012007><SPAN=20
+class=3D525140007-26012007></SPAN></SPAN></FONT><FONT face=3DArial =
+size=3D2><SPAN=20
+class=3D309414009-25012007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D309414009-25012007>Signed-off-by:=20
+Li&nbsp;Tony &lt;<A title=3Dmailto:tony.li@freescale.com=20
+href=3D"mailto:tony.li@freescale.com">tony.li@freescale.com</A>&gt;<BR></=
+SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D309414009-25012007>---<BR></SPAN></FONT><FONT face=3DArial =
+size=3D2><SPAN=20
+class=3D309414009-25012007>&nbsp;arch/powerpc/Kconfig&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=20
+|&nbsp;&nbsp;&nbsp; 2 +-<BR>&nbsp;arch/powerpc/kernel/setup_32.c=20
+|&nbsp;&nbsp;&nbsp; 2 ++<BR>&nbsp;2 files changed, 3 insertions(+), 1=20
+deletions(-)</SPAN></FONT></DIV>
+<DIV>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D309414009-25012007>diff =
+--git=20
+a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig<BR>index 0673dbe..0c18951=20
+100644<BR>--- a/arch/powerpc/Kconfig<BR>+++ b/arch/powerpc/Kconfig<BR>@@ =
+-59,7=20
++59,7 @@ config PPC<BR>&nbsp;<BR>&nbsp;config=20
+EARLY_PRINTK<BR>&nbsp;&nbsp;bool<BR>-&nbsp;default y<BR>+&nbsp;default=20
+t<BR>&nbsp;<BR>&nbsp;config COMPAT<BR>&nbsp;&nbsp;bool<BR>diff --git=20
+a/arch/powerpc/kernel/setup_32.c =
+b/arch/powerpc/kernel/setup_32.c<BR>index=20
+a4c2964..71eb320 100644<BR>--- a/arch/powerpc/kernel/setup_32.c<BR>+++=20
+b/arch/powerpc/kernel/setup_32.c<BR>@@ -242,8 +242,10 @@ void __init=20
+setup_arch(char=20
+**cmdline_p)<BR>&nbsp;<BR>&nbsp;&nbsp;smp_setup_cpu_maps();<BR>&nbsp;<BR>=
++#ifdef=20
+CONFIG_EARLY_PRINTK<BR>&nbsp;&nbsp;/* Register early console=20
+*/<BR>&nbsp;&nbsp;register_early_udbg_console();<BR>+#endif<BR>&nbsp;<BR>=
+&nbsp;&nbsp;xmon_setup();<BR>&nbsp;<BR>--=20
+<BR>1.4.2</SPAN></FONT></DIV>
+<DIV>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D309414009-25012007></SPAN></FONT>&nbsp;</DIV></BODY></HTML>
 
-ok.
-
-> 
-> >> You don't support the MSI mask bit.
-> >> 
-> >> Looking at your msi_ops it does not map to what I am doing on x86.  There
-> >> is the implicit assumption that the msi_message is fixed for the lifetime
-> >> of the msi.  Which is wrong.
-> >
-> > Erm...wouldn't changing the message also effectively change which handler
-> > ends up catching the interrupt?
-> > I always understood the addr/msg were a pair that HW would map to a handler.
-> > Can you explain what you mean by "lifetime" and "fixed"?
-> > What event would change the message? system Suspend/resume?
-> 
-> Suspend/resume and irq migration.
-
-Hrm ok. IRQ migration shouldn't surprise anyone.
-I expect the "virq" (linux IRQ #) would hide the values changing
-in a Suspend/resume event. If the code isn't doing that for platforms
-that support suspend/resume, then I agree it's broken.
-
-> Currently the architecture code pushes
-> what it thinks best at the controller, instead of the pull model in
-> Micheal Ellerman's patch.
-
-I need to look at the code more to get this. thanks for the observation.
-
-thanks,
-grant
-
-> 
-> > ...
-> >> After I get some sleep I will see if I can up with some constructive
-> >> criticism on how we can make things work.
-> >
-> > Well, I hope the questions I pose above help lead the discussion in
-> > that direction.
-> 
-> We will see.  My current observation seems to be that problems that are
-> currently solved and the problems that Michael needed to solve to support
-> ppc are almost disjoint.  Making it a challenge to understand what the
-> other architecture is doing.
-> 
-> Eric
+------_=_NextPart_001_01C7411F.FF806127--
