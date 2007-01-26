@@ -1,36 +1,37 @@
-Return-Path: <andrew@digital-domain.net>
-Received: from smtp.aaisp.net.uk (smtp.aaisp.net.uk [81.187.81.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5FB5FDE06B
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 22:49:12 +1100 (EST)
-Date: Fri, 26 Jan 2007 11:13:09 +0000
-From: Andrew Clayton <andrew@digital-domain.net>
+Return-Path: <michal.k.k.piotrowski@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id BF6D9DDFFD
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 06:04:41 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so759244ugf
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 11:04:39 -0800 (PST)
+Message-ID: <45BA50B7.1070205@googlemail.com>
+Date: Fri, 26 Jan 2007 20:04:23 +0100
+MIME-Version: 1.0
 To: Adrian Bunk <bunk@stusta.de>
-Subject: Re: 2.6.20-rc5: known unfixed regressions (v3) (part 2)
-Message-ID: <20070126111309.1732d727@zeus.pccl.info>
-In-Reply-To: <20070124154725.GK17836@stusta.de>
-References: <Pine.LNX.4.64.0701121424520.11200@woody.osdl.org>
-	<20070124154725.GK17836@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, Sami, Trond,
-	Livio Soares <livio@eecg.toronto.edu>,
+Subject: Re: 2.6.20-rc6: known unfixed regressions (part 2)
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+	<20070126181132.GN17836@stusta.de>
+In-Reply-To: <20070126181132.GN17836@stusta.de>
+Content-Type: text/plain; charset=UTF-8
+From: Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Livio Soares <livio@eecg.toronto.edu>,
 	Uwe Bugla <uwe.bugla@gmx.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, alan@lxorguk.ukuu.org.uk,
-	takada <takada@mbf.nifty.com>,
-	Lennart Sorensen <lsorense@csclub.uwaterloo.ca>,
-	ttb@tentacle.dhs.org, jgarzik@pobox.com,
+	Paul Mackerras <paulus@samba.org>, reiserfs-dev@namesys.com,
+	alan@lxorguk.ukuu.org.uk, jmorris@namei.org,
+	ttb@tentacle.dhs.org, sds@tycho.nsa.gov,
 	Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
-	Malte =?UTF-8?B?U2NocsO2ZGVy?= <MalteSch@gmx.de>,
-	gd@spherenet.de, xfs-masters@oss.sgi.com,
-	Linus Torvalds <torvalds@osdl.org>, rml@novell.com,
-	Farin <7atbggg02@sneakemail.com>, "Vladimir V. Saveliev" <vs@namesys.com>,
-	linux-ide@vger.kernel.org, petero2@telia.com,
-	Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	Myklebust <trond.myklebust@fys.uio.no>,
-	Jordan Crouse <jordan.crouse@amd.com>, Linux,
-	Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>, reiserfs-dev@namesys.com
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	=?UTF-8?B?TWFsdGUgU2NocsO2ZGVy?= <MalteSch@gmx.de>,
+	Venkat Yekkirala <vyekkirala@TrustedCS.com>,
+	xfs-masters@oss.sgi.com, rml@novell.com,
+	Sami Farin <7atbggg02@sneakemail.com>,
+	"Vladimir V. Saveliev" <vs@namesys.com>,
+	linux-ide@vger.kernel.org, petero2@telia.com, netdev@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	B.Zolnierkiewicz@elka.pw.edu.pl, Gerhard Dirschl <gd@spherenet.de>,
+	Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,17 +41,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 24 Jan 2007 16:47:25 +0100, Adrian Bunk wrote:
+Hi,
 
+Adrian Bunk napisał(a):
+> This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
+> that are not yet fixed in Linus' tree.
+> 
+> If you find your name in the Cc header, you are either submitter of one
+> of the bugs, maintainer of an affectected subsystem or driver, a patch
+> of you caused a breakage or I'm considering you in any other way possibly
+> involved with one or more of these issues.
+> 
+> Due to the huge amount of recipients, please trim the Cc when answering.
 > 
 > 
-> Subject    : NFS triggers WARN_ON() in invalidate_inode_pages2_range()
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=7826
-> Submitter  : Andrew Clayton <andrew@digital-domain.net>
-> Caused-By  : Andrew Morton <akpm@osdl.org>
->              commit 8258d4a574d3a8c01f0ef68aa26b969398a0e140
-> Handled-By : Trond Myklebust <trond.myklebust@fys.uio.no>
-> Status     : Trond: the WARN_ON() needs to be thrown out
+> Subject    : SELinux compile error with CONFIG_XFRM=n
+> References : http://lkml.org/lkml/2007/1/25/233
+> Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+> Caused-By  : Venkat Yekkirala <vyekkirala@TrustedCS.com>
+>              commit 334c85569b8adeaa820c0f2fab3c8f0a9dc8b92e
+> Handled-By : Venkat Yekkirala <vyekkirala@TrustedCS.com>
+>              David Miller <davem@davemloft.net>
+> Status     : problem is being discussed
 > 
 
-Still present in -rc6
+Venkat Yekkirala has sent me a patch that fixed this build problem.
+
+Thanks!
+
+Regards,
+Michal
+
+-- 
+Michal K. K. Piotrowski
+LTG - Linux Testers Group
+(http://www.stardust.webpages.pl/ltg/)
