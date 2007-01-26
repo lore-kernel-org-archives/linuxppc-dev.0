@@ -1,18 +1,29 @@
-Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45BA8310.6020809@us.ibm.com>
-Date: Fri, 26 Jan 2007 16:39:12 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
-MIME-Version: 1.0
-To: Maynard Johnson <maynardj@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [PATCH] Cell SPU task notification - repost of
-	patch with updates
-References: <45A805A0.2080000@us.ibm.com> <20070117003018.GA17955@lst.de>
-	<45AE471C.8040909@us.ibm.com>
-In-Reply-To: <45AE471C.8040909@us.ibm.com>
-Content-Type: multipart/mixed; boundary="------------010206080901080700090209"
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>, cbe-oss-dev@ozlabs.org
-Reply-To: maynardj@us.ibm.com
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5F9ADDE409
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 09:41:11 +1100 (EST)
+Subject: Re: [RFC/PATCH 14/16] MPIC MSI backend
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Grant Grundler <grundler@parisc-linux.org>
+In-Reply-To: <20070126171928.GA22275@colo.lackof.org>
+References: <1169714047.65693.647693675533.qpush@cradle>
+	<20070125083417.69895DE3C5@ozlabs.org>
+	<20070126064352.GA328@colo.lackof.org>
+	<m1ejpiw9s8.fsf@ebiederm.dsl.xmission.com>
+	<5A6F70E0-A8AB-4636-8F41-2EC82A3B13B7@kernel.crashing.org>
+	<m1r6thvjdq.fsf@ebiederm.dsl.xmission.com>
+	<20070126171928.GA22275@colo.lackof.org>
+Content-Type: text/plain
+Date: Sat, 27 Jan 2007 09:40:57 +1100
+Message-Id: <1169851257.24996.185.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S.Miller" <davem@davemloft.net>,
+	"Eric W. Biederman" <ebiederm@xmission.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,158 +33,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010206080901080700090209
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
 
-This patch makes all the changes suggested by Christopher, with the 
-exception of the suggestion to use the sched_flags field versus a new 
-member to the spu_context struct to signal the need to "notify already 
-active".  I don't have the sched_flags change in my 2.6.20-rc1 tree.  I 
-can send another patch later if/when the sched_flags changes appears in 
-the kernel version we end up picking for final oprofile-spu development.
+> What?!!! The whole point of the abstraction ("flat space") is
+> to be able to do reverse lookups for additional information.
 
-Comments welcome.  Thanks.
+You may want to look at the virtual irq scheme we implemented for
+powerpc, I think it could be useful for other architectures as well in
+fact... One mistake I did was to put the documentation in the .h instead
+of near the code though :-) asm-powerpc/irq.h is a good start to read.
 
--Maynard
+The main reasons we did it in the first place are two fold:
 
---------------010206080901080700090209
-Content-Type: text/x-diff;
- name="spu-notifier.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="spu-notifier.patch"
+ - On pSeries and to some extent with other hypervisors, IRQ numbers can
+be pretty big, from encoding the geographical informations about the
+slot/irq to just being an opaque 64 bits "token" from the hypervisor. So
+we need the ability to map that to/from linux smaller and flatter space.
 
-Subject: Enable SPU switch notification to detect currently active SPU tasks.
+ - On a lot of machines, especially embedded (but not limited to), we
+have all sort of crazy setups of cascaded controllers on cascaded
+controllers. Maintaining a flat irq model covering all cases is
+basically hopeless. So our remapper is designed such that each irq
+"host" (or domain) defines it's own HW irq space and linux irqs can be
+dynamically assigned to a pair host/hw_number.
 
-From: Maynard Johnson <maynardj@us.ibm.com>
+The core provides the direct mapping linux irq (or virq) - > host/hw via
+a simple array. It also provides 4 different types of reverse mapping
+that the controller code can choose from for each controller:
 
-This patch adds to the capability of spu_switch_event_register so that the
-caller is also notified of currently active SPU tasks.  It also exports
-spu_switch_event_register and spu_switch_event_unregister.
+ - Legacy: Since we decided to avoid problems that linux irq 0 is always
+illegal and 1...15 area always "reserved" for a 8259 if any is present
+in the machine, that's the option that the 8259 uses :-) It provides a
+direct 1:1 mapping of 1...15 (enables them for use basically).
 
-Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+ - No reverse mapping: Some hypervisors are nice enough to let you
+provide your virq numbers and they return them to you, so you can ask
+for nothing
 
+ - Linear reverse maping: for use by things like mpic where a simple
+table is good enough
 
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/sched.c
-===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-18 16:43:14.324526032 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-26 16:16:35.219668640 -0600
-@@ -78,21 +78,46 @@
- 
- static BLOCKING_NOTIFIER_HEAD(spu_switch_notifier);
- 
--static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
- {
- 	blocking_notifier_call_chain(&spu_switch_notifier,
- 			    ctx ? ctx->object_id : 0, spu);
- }
- 
-+static void notify_spus_active(void)
-+{
-+       int node;
-+	/* Wake up the active spu_contexts. When the awakened processes 
-+	 * sees their notify_active flag is set, they will call
-+	 * spu_switch_notify();
-+	 */
-+	for (node = 0; node < MAX_NUMNODES; node++) {
-+		struct spu *spu;
-+		mutex_lock(&spu_prio->active_mutex[node]);
-+                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
-+			struct spu_context *ctx = spu->ctx;
-+			spu->notify_active = 1;
-+			wake_up_all(&ctx->stop_wq);
-+		}
-+                mutex_unlock(&spu_prio->active_mutex[node]);
-+	}
-+}
-+
- int spu_switch_event_register(struct notifier_block * n)
- {
--	return blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	int ret;
-+	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	if (!ret)
-+		notify_spus_active();
-+	return ret;
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_register);
- 
- int spu_switch_event_unregister(struct notifier_block * n)
- {
- 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
- 
- 
- static inline void bind_context(struct spu *spu, struct spu_context *ctx)
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-18 16:43:14.340523600 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-26 16:26:49.733703448 -0600
-@@ -180,6 +180,7 @@
- int spu_activate(struct spu_context *ctx, u64 flags);
- void spu_deactivate(struct spu_context *ctx);
- void spu_yield(struct spu_context *ctx);
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx);
- int __init spu_sched_init(void);
- void __exit spu_sched_exit(void);
- 
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/run.c
-===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/run.c	2007-01-18 16:43:14.340523600 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/run.c	2007-01-26 16:24:38.979744856 -0600
-@@ -45,9 +45,10 @@
- 	u64 pte_fault;
- 
- 	*stat = ctx->ops->status_read(ctx);
--	if (ctx->state != SPU_STATE_RUNNABLE)
--		return 1;
-+
- 	spu = ctx->spu;
-+	if (ctx->state != SPU_STATE_RUNNABLE || spu->notify_active)
-+		return 1;
- 	pte_fault = spu->dsisr &
- 	    (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED);
- 	return (!(*stat & 0x1) || pte_fault || spu->class_0_pending) ? 1 : 0;
-@@ -305,6 +306,7 @@
- 		   u32 *npc, u32 *event)
- {
- 	int ret;
-+	struct spu * spu;
- 	u32 status;
- 
- 	if (down_interruptible(&ctx->run_sema))
-@@ -318,8 +320,16 @@
- 
- 	do {
- 		ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
-+		spu = ctx->spu;
- 		if (unlikely(ret))
- 			break;
-+		if (unlikely(spu->notify_active)) {
-+			spu->notify_active = 0;
-+			if (!(status & SPU_STATUS_STOPPED_BY_STOP)) {
-+				spu_switch_notify(spu, ctx);
-+				continue;
-+			}
-+		}
- 		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
- 		    (status >> SPU_STOP_STATUS_SHIFT == 0x2104)) {
- 			ret = spu_process_callback(ctx);
-Index: linux-2.6.20-rc1/include/asm-powerpc/spu.h
-===================================================================
---- linux-2.6.20-rc1.orig/include/asm-powerpc/spu.h	2007-01-18 16:43:19.932605072 -0600
-+++ linux-2.6.20-rc1/include/asm-powerpc/spu.h	2007-01-24 12:17:30.209676992 -0600
-@@ -144,6 +144,7 @@
- 
- 	void* pdata; /* platform private data */
- 	struct sys_device sysdev;
-+	int notify_active;
- };
- 
- struct spu *spu_alloc(void);
+ - Radix tree reverse mapping: for things like pSeries with a very large
+HW number space.
 
---------------010206080901080700090209--
+> > ia64 is the strong culprit
+> > in this regard, and simply picks the next free number it can use
+> > when a device asks for an irq.
+> 
+> I think this is the only viable aproach to support MSI migration.
+> Basing the "virq" value on bits in the addr/data pair can't migrate.
+
+Yes. On PowerPC, the virq will stay the same, though we can change
+everything underneath (HW number, addr/data pair, etc...).
+
+> It doesn't matter how many systems "do things closer to how x86"
+> works since 95% (or more) of the systems running linux are x86.
+> Linux MSI support must work on x86.
+
+Most certainly :-)
+
+> Helping Michael make it work would be a constructive way forward.
+> I think Michael has the abstraction correct so it's NOT x86 centric
+> but still works optimally on x86.
+
+I think too.
+
+> > On x86 the only hardware we have to deal with is the 8 bit number
+> > delivered to the cpu at interrupt time and the MSI registers.
+> 
+> 8 bit number? That's the Intel Interrupt architecture definition.
+> The PCI spec defines 16-bit messages for MSI. The chipsets
+> can implement any number of bits they want up to that limits.
+
+Indeed and we have MSI controllers that can deal with the full 16 bits
+(the Cell Axon one for example).
+
+> > All of
+> > the rest of the x86 logic needed to translate MSI interrupts to
+> > processor bus messages and the like has no registers we can set
+> 
+> Are the EID and ID fields defined in Intel adrresses not programmable?
+> Those are part of the MSI address.
+
+And thus the logic for doing that is platform specific and in the
+backend with Michael's code, I don't see where the problem is there. I
+agree Michael's code is missing a few things, mostly helpers for use by
+the backend for masking/unmasking via config space and "updating" the
+message/address, mostly things to add to the "raw" helpers. Oh, and
+MSI-X of course need to be finished.
+
+Ben.
