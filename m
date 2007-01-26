@@ -1,21 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E7668DE099
+Return-Path: <onetarget@sina.com>
+Received: from r3-101.sinamail.sina.com.cn (r3-101.sinamail.sina.com.cn
+	[202.108.3.101]) by ozlabs.org (Postfix) with SMTP id 49A69DE077
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Jan 2007 18:41:08 +1100 (EST)
-In-Reply-To: <989B956029373F45A0B8AF0297081890087479@zch01exm26.fsl.freescale.net>
-References: <989B956029373F45A0B8AF0297081890087479@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <315BEE09-4826-47F5-9E85-D268A4EA3022@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: 8360 UCC_GETH INIT_WORK compile error
-Date: Fri, 26 Jan 2007 01:40:12 -0600
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: Russell McGuire <rmcguire@uwbt.com>, linuxppc-embedded@ozlabs.org
+	Fri, 26 Jan 2007 19:54:39 +1100 (EST)
+Message-ID: <20070126085425.60886.qmail@mail3-101.sinamail.sina.com.cn>
+To: linuxppc-embedded@ozlabs.org
+Subject: Segmentation Fault of application using va_list
+Date: Fri, 26 Jan 2007 16:54:25 +0800 
+From: onetarget@sina.com
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="=-sina_alt_6b1d896ed2ca05125a2c9b66ebfec156"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,44 +21,110 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--=-sina_alt_6b1d896ed2ca05125a2c9b66ebfec156
+Content-Type: text/plain;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-On Jan 26, 2007, at 12:18 AM, Li Yang-r58472 wrote:
+DURlYXIgYWxsLA0gICAgSSBhbSBub3cgdXNpbmcgRUxESy0zLjEuMSB3aXRoIE1QQzgyNzAgYm9h
+cmQsIHRoZQ1rZXJuZWwgaXMgMi40LjI1LiBUaGVyZSBpcyAgYW4gYXBwbGljYXRpb24gd2hpY2gg
+d2lsbCBvdXRwdXQgc29tZQ1sb2cgbWVzc2FnZXMsIHRoZSBjb2RlIHNlZ21lbnQgaXMgYXMgZm9s
+bG93czoNdm9pZCBtbG9ndihpbnQgcHJpLCBjb25zdCBjaGFyICpmbXQsIHZhX2xpc3QgYXApDXsN
+ICAgICAgICBjaGFyICpteWZtdDsNICAgICAgICBpbnQgbG9nZmlsZSA9IDA7DSAgICAgICAgIGlu
+dCBmZyA9IDE7DSAgICAgICAgbXlmbXQgPSBtbG9nX2NvbW1vbiggZm10KTsNICAgICAgICBpZiAo
+ZmcpDSAgICAgICAgICAgICAgIA12cHJpbnRmKG15Zm10LCBhcCk7ICAvKiBTZWdtZW50IEZhdWx0
+IG9jY3VycyBoZXJlICovDSAgICAgICAgaWYgKGxvZ2ZpbGUpDSAgICAgICAgICAgICAgICBsb2df
+dmFwcmludCggbmV3Zm10LCBhcCk7DSAgICAgICAgZWxzZQ0gICAgICAgICAgICAgICAgdnN5c2xv
+ZyhMT0dfQUxFUlQsIG5ld2ZtdCwgYXApOw19DXZvaWQNdm9pZCBtbG9nKGNvbnN0IGNoYXIgKmZt
+dCwgLi4uKQ17DSAgICAgICAgdmFfbGlzdCBhcDsNICAgICAgICB2YV9zdGFydChhcCwgZm10KTsN
+ICAgICAgICBtbG9ndihmbXQsIGFwKTsNICAgICAgICB2YV9lbmQoYXApOw19DU5vcm1hbGx5IHdo
+ZW4gbWxvZygpIGNhbGxzIG1sb2d2KCksIHRoZSBhcHBsaWNhdGlvbiB3aWxsIGdldCBhDVNlZ21l
+bnRhdGlvbiBGYXVsdC4gV2l0aCBHREIgYW5kIGNvcmUgZHVtcCwgSSBnb3QgdGhhdCB0aGUgcHJv
+YmxlbSBpcw1pbiBsaWJjLnNvLCBzdHJsZW4oKSBjYW4gbm90IGdldCB0aGUgc3RyaW5nJ3MgbGVu
+Z3RoLg1CdXQsIHdoZW4gSSBjb21tZW50ZWQgb3V0IHRoZXNlIDIgbGluZXM6DWlmIChmZykgICAg
+ICAgIHZwcmludGYobXlmbXQsIGFwKTsNVGhlcmUgaXMgbm90IFNlZ21lbnRhdGlvbiBGYXVsdCwg
+YW5kIHRoZSBhcHBsaWNhdGlvbiBjYW4gcnVuIG5vcm1hbGx5Lg1JIGFsc28gdHJhY2tlZCB0aGUg
+dnByaW50ZiwgYW5kIGZvdW5kIHRoYXQgaXQgaXMgaW4NL29wdC9lbGRrL3BwY182eHgvdXNyL2lu
+Y2x1ZGUvYml0cy9zdGRpby5oLCANX19TVERJT19JTkxJTkUgaW50DXZwcmludGYgKF9fY29uc3Qg
+Y2hhciAqX19yZXN0cmljdCBfX2ZtdCwgX0dfdmFfbGlzdCBfX2FyZykgX19USFJPVw17DSAgcmV0
+dXJuIHZmcHJpbnRmIChzdGRvdXQsIF9fZm10LCBfX2FyZyk7DX0NICAgIEkgYW0gbm90IGZhbWls
+aWFyIHdpdGggbGliYywgc28gSSBkb24ndCBrbm93IHdoYXQgaXMNdGhlIHByb2JsZW0sIGFuZCBJ
+IGFsc28gc2VhcmNoIHRoZSB2YV9saXN0KCkgdXNhZ2Ugb24gZGlmZmVyZW50DWFyY2h0ZWN0dXJl
+cywgYnV0IEkgY2FuIG5vdCBzb2x2ZSB0aGUgcHJvYmxlbS4NICAgIFdvdWxkIHlvdSBsaWtlIHRv
+IGhlbHAgbWUgd2l0aCBpdD8NICAgIFRoYW5rIHlvdSBhbmQgcmVnYXJkcywNICAgICAgICAgICAg
+Vy5UYXJnZXQNICAgICAgICBKYW4tMjYtMjAwNw0KCi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0Ku93G1cnM08PMqMq9u/pk
+YzU3NTAsuN/Q1MTco6y1zbmmusSjoSggaHR0cDovL2FkNC5zaW5hLmNvbS5jbi9zaW5hL2xpbWVu
+ZzMvbWFpbF96aHVpeXUvMjAwNi9tYWlsX3podWl5dV8yMDA2MTIyNS5odG1sICkKCj09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT0K16Ky4dDCwMsyR8Pit9HTys/ko6ggaHR0cDovL21haWwuc2luYS5jb20uY24vY2hvb3NlTW9k
+ZS5odG1sIKOp
 
-> Russ,
->
-> Please use the latest git tree.  The fix has been merged.
->
-> - Leo
->
-> From: linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org =20
-> [mailto:linuxppc-embedded-bounces+leoli=3Dfreescale.com@ozlabs.org] =20=
 
-> On Behalf Of Russell McGuire
-> Sent: Friday, January 26, 2007 2:07 PM
-> To: linuxppc-embedded@ozlabs.org
-> Subject: 8360 UCC_GETH INIT_WORK compile error
->
-> Kumar / ALL,
->
-> I was having problems compiling the UCC_GETH driver for 8360.
->
-> INIT_WORK declared with 2 parameters instead of 3.
->
-> Googling around, I noticed that somebody posted a temporary patch =20
-> back in December 14, 2006.
->
-> Has this been resolved?
->
-> I am not able to boot the 2.6.19.2 Kernel the moment since the =20
-> Ethernet/UCCF driver won=92t compile.
+--=-sina_alt_6b1d896ed2ca05125a2c9b66ebfec156
+Content-Type: text/html;
+	charset="gb2312"
+Content-Transfer-Encoding: base64
+Content-Disposition: inline
 
-As Leo said, 2.6.20-rc6 has the fixes from myself/Timur that address =20
-this:
-http://master.kernel.org/git/?p=3Dlinux/kernel/git/torvalds/=20
-linux-2.6.git;a=3Dcommit;h=3Ddf19b6b020791b4c42e7cf2e4f582454cbc49251
-http://master.kernel.org/git/?p=3Dlinux/kernel/git/torvalds/=20
-linux-2.6.git;a=3Dcommit;h=3D6bf446522b246194551cf167f0168792080d6118
+PHN0eWxlPnB7bWFyZ2luOjB9aW1ne2JvcmRlcjowfTwvc3R5bGU+DQo8Zm9udCBzdHlsZT0nZm9u
+dC1zaXplOjEycHgnPjxmb250IHNpemU9IjMiPkRlYXIgYWxsLDxicj4NCiZuYnNwOyZuYnNwOyZu
+YnNwOyBJIGFtIG5vdyB1c2luZyBFTERLLTMuMS4xIHdpdGggTVBDODI3MCBib2FyZCwgdGhlDQpr
+ZXJuZWwgaXMgMi40LjI1LiBUaGVyZSBpcyZuYnNwOyBhbiBhcHBsaWNhdGlvbiB3aGljaCB3aWxs
+IG91dHB1dCBzb21lDQpsb2cgbWVzc2FnZXMsIHRoZSBjb2RlIHNlZ21lbnQgaXMgYXMgZm9sbG93
+czo8YnI+DQo8YnI+DQp2b2lkIG1sb2d2KGludCBwcmksIGNvbnN0IGNoYXIgKmZtdCwgdmFfbGlz
+dCBhcCk8YnI+DQp7PGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7IGNoYXIgKm15Zm10Ozxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyBpbnQgbG9nZmlsZSA9IDA7PGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwOyZu
+YnNwOyZuYnNwOyAgaW50IGZnID0gMTs8YnI+DQombmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsgbXlmbXQgPSBtbG9nX2NvbW1vbiggZm10KTs8YnI+DQo8YnI+DQombmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgaWYgKGZnKTxicj4NCiZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOw0KdnByaW50ZihteWZtdCwgYXApOyZuYnNwOyAv
+KiBTZWdtZW50IEZhdWx0IG9jY3VycyBoZXJlICovPGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IGlmIChsb2dmaWxlKTxicj4NCiZuYnNwOyZuYnNwOyZuYnNw
+OyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyBsb2dfdmFwcmludCggbmV3Zm10LCBhcCk7PGJyPg0KJm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IGVsc2U8YnI+DQombmJzcDsmbmJzcDsm
+bmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJz
+cDsmbmJzcDsmbmJzcDsmbmJzcDsgdnN5c2xvZyhMT0dfQUxFUlQsIG5ld2ZtdCwgYXApOzxicj4N
+Cn08YnI+DQo8YnI+DQp2b2lkPGJyPg0Kdm9pZCBtbG9nKGNvbnN0IGNoYXIgKmZtdCwgLi4uKTxi
+cj4NCns8YnI+DQombmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsgdmFf
+bGlzdCBhcDs8YnI+DQo8YnI+DQombmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsmbmJzcDsm
+bmJzcDsgdmFfc3RhcnQoYXAsIGZtdCk7PGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7IG1sb2d2KGZtdCwgYXApOzxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyZu
+YnNwOyZuYnNwOyZuYnNwOyZuYnNwOyB2YV9lbmQoYXApOzxicj4NCn08YnI+DQo8YnI+DQpOb3Jt
+YWxseSB3aGVuIG1sb2coKSBjYWxscyBtbG9ndigpLCB0aGUgYXBwbGljYXRpb24gd2lsbCBnZXQg
+YQ0KU2VnbWVudGF0aW9uIEZhdWx0LiBXaXRoIEdEQiBhbmQgY29yZSBkdW1wLCBJIGdvdCB0aGF0
+IHRoZSBwcm9ibGVtIGlzDQppbiBsaWJjLnNvLCBzdHJsZW4oKSBjYW4gbm90IGdldCB0aGUgc3Ry
+aW5nJ3MgbGVuZ3RoLjxicj4NCjxicj4NCkJ1dCwgd2hlbiBJIGNvbW1lbnRlZCBvdXQgdGhlc2Ug
+MiBsaW5lczo8YnI+DQo8L2ZvbnQ+PGZvbnQgc2l6ZT0iMyI+IGlmIChmZyk8YnI+Jm5ic3A7Jm5i
+c3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7IHZwcmludGYobXlmbXQsIGFwKTs8YnI+
+DQpUaGVyZSBpcyBub3QgU2VnbWVudGF0aW9uIEZhdWx0LCBhbmQgdGhlIGFwcGxpY2F0aW9uIGNh
+biBydW4gbm9ybWFsbHkuDQpJIGFsc28gdHJhY2tlZCB0aGUgdnByaW50ZiwgYW5kIGZvdW5kIHRo
+YXQgaXQgaXMgaW4NCi9vcHQvZWxkay9wcGNfNnh4L3Vzci9pbmNsdWRlL2JpdHMvc3RkaW8uaCwg
+PGJyPg0KX19TVERJT19JTkxJTkUgaW50PGJyPg0KdnByaW50ZiAoX19jb25zdCBjaGFyICpfX3Jl
+c3RyaWN0IF9fZm10LCBfR192YV9saXN0IF9fYXJnKSBfX1RIUk9XPGJyPg0Kezxicj4NCiZuYnNw
+OyByZXR1cm4gdmZwcmludGYgKHN0ZG91dCwgX19mbXQsIF9fYXJnKTs8YnI+DQp9PGJyPg0KJm5i
+c3A7Jm5ic3A7Jm5ic3A7IEkgYW0gbm90IGZhbWlsaWFyIHdpdGggbGliYywgc28gSSBkb24ndCBr
+bm93IHdoYXQgaXMNCnRoZSBwcm9ibGVtLCBhbmQgSSBhbHNvIHNlYXJjaCB0aGUgdmFfbGlzdCgp
+IHVzYWdlIG9uIGRpZmZlcmVudA0KYXJjaHRlY3R1cmVzLCBidXQgSSBjYW4gbm90IHNvbHZlIHRo
+ZSBwcm9ibGVtLjxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBXb3VsZCB5b3UgbGlrZSB0byBoZWxw
+IG1lIHdpdGggaXQ/PGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7IFRoYW5rIHlvdSBhbmQgcmVnYXJk
+cyw8YnI+DQombmJzcDsmbmJzcDsmbmJzcDsgJm5ic3A7Jm5ic3A7ICAmbmJzcDsmbmJzcDsgIFcu
+VGFyZ2V0PGJyPg0KJm5ic3A7Jm5ic3A7Jm5ic3A7ICZuYnNwOyZuYnNwOyAgSmFuLTI2LTIwMDc8
+YnI+DQo8L2ZvbnQ+PGZvbnQgc2l6ZT0iMyI+PGJyPg0KPGJyPg0KPC9mb250PjxzdHlsZT5we21h
+cmdpbjowfWltZ3tib3JkZXI6MH08L3N0eWxlPjwvZm9udD48YnIgLz4KPGJyIC8+Ci0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS08YnIgLz4Ku93G1cnM08PMqMq9u/pkYzU3NTAsuN/Q1MTco6y1zbmmusSjoSggPGEgaHJlZj1o
+dHRwOi8vYWQ0LnNpbmEuY29tLmNuL3NpbmEvbGltZW5nMy9tYWlsX3podWl5dS8yMDA2L21haWxf
+emh1aXl1XzIwMDYxMjI1Lmh0bWwgdGFyZ2V0PV9ibGFuaz5odHRwOi8vYWQ0LnNpbmEuY29tLmNu
+L3NpbmEvbGltZW5nMy9tYWlsX3podWl5dS8yMDA2L21haWxfemh1aXl1XzIwMDYxMjI1Lmh0bWw8
+L2E+ICk8YnIgLz4KPGJyIC8+Cj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
+PT09PT09PT09PT09PT09PT09PT09PT09PT09PT08YnIgLz4K16Ky4dDCwMsyR8Pit9HTys/ko6gg
+PGEgaHJlZj1odHRwOi8vbWFpbC5zaW5hLmNvbS5jbi9jaG9vc2VNb2RlLmh0bWwgdGFyZ2V0PV9i
+bGFuaz5odHRwOi8vbWFpbC5zaW5hLmNvbS5jbi9jaG9vc2VNb2RlLmh0bWw8L2E+IKOp
 
-(not sure if you need the second or not on 2.6.19).
 
-- k=
+--=-sina_alt_6b1d896ed2ca05125a2c9b66ebfec156--
