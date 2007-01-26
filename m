@@ -1,25 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <grundler@lackof.org>
+Received: from colo.lackof.org (colo.lackof.org [198.49.126.79])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 48B50DE06C
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 17:49:07 +1100 (EST)
-In-Reply-To: <Pine.LNX.4.64.0612080205420.16331@gate.crashing.org>
-References: <20061206215042.GA13675@ld0162-tx32.am.freescale.net>
-	<17783.16290.783728.708434@cargo.ozlabs.ibm.com>
-	<4CF47E53-356C-49B7-9F8B-9C61CF8103E5@kernel.crashing.org>
-	<17784.59774.968517.908414@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0612080205420.16331@gate.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7D8FF101-743F-4058-B390-D214C88BAA29@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH/RFC] Change the program check exception from EXC_XFER_STD
-	to EXC_XFER_EE.
-Date: Fri, 26 Jan 2007 00:48:08 -0600
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+	(Client CN "mail.lackof.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4244DDE058
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 17:56:24 +1100 (EST)
+Date: Thu, 25 Jan 2007 23:56:13 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
+Message-ID: <20070126065613.GB328@colo.lackof.org>
+References: <1169714047.65693.647693675533.qpush@cradle>
+	<m1wt3awbtf.fsf@ebiederm.dsl.xmission.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <m1wt3awbtf.fsf@ebiederm.dsl.xmission.com>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,62 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Jan 25, 2007 at 11:18:20PM -0700, Eric W. Biederman wrote:
+> You code appears to be nice simple clean and to not support MSI in
+> a useful way.  I may be reading too quickly but at the moment your
+> infrastructure appears useless if you are on a platform that doesn't
+> enforce MSI's get filtered with a legacy interrupt controller.
 
-On Dec 8, 2006, at 2:07 AM, Kumar Gala wrote:
+Hrm?
+Isn't the point of MSI to avoid any sort of interrupt controller?
 
->
->
-> On Fri, 8 Dec 2006, Paul Mackerras wrote:
->
->> Kumar Gala writes:
->>
->>> We don't need to rearrange anything, just put the local_irq_enable()
->>> call in do_mathemu().  If we are a debugger than REASON_TRAP will
->>> have to be set and we dont bother with do_mathemu() than.
->>>
->>> Do you think we should also move the local_irq_enable() that exists
->>> in the handler into emulate_instruction().
->>
->> I'd rather have the local_irq_enable() calls in
->> program_check_exception() so they're all in one place, preferably  
->> with
->> a comment explaining why they're there.  Having an unpaired
->> local_irq_enable in do_mathemu() would seem a bit weird to me.
->
-> Ok, how about something like this, I'm a bit concerned about what  
-> effect
-> moving the do_mathemu call will have on things like the 405.
->
-> I'll put this in my tree with some other cleanup patches if it  
-> looks ok.
->
-> - k
+> You don't have MSI-X support (which is the interesting case) and you
+> don't have suspend/resume support.
 
-We never closed on this.
+I saw save/restore entry points.
+I expected suspend/resume code would use those.
+Do you agree (or not)?
 
-- k
+> You don't support the MSI mask bit.
+> 
+> Looking at your msi_ops it does not map to what I am doing on x86.  There
+> is the implicit assumption that the msi_message is fixed for the lifetime
+> of the msi.  Which is wrong.
 
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index fde820e..63073f9 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -792,9 +792,12 @@ #ifdef CONFIG_MATH_EMULATION
->   	 * hardware people - not sure if it can happen on any illegal
->   	 * instruction or only on FP instructions, whether there is a
->   	 * pattern to occurences etc. -dgibson 31/Mar/2003 */
-> -	if (!(reason & REASON_TRAP) && do_mathemu(regs) == 0) {
-> -		emulate_single_step(regs);
-> -		return;
-> +	if (!(reason & REASON_TRAP)) {
-> +		local_irq_enable();
-> +		if (do_mathemu(regs) == 0) {
-> +			emulate_single_step(regs);
-> +			return;
-> +		}
->   	}
->   #endif /* CONFIG_MATH_EMULATION */
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Erm...wouldn't changing the message also effectively change which handler
+ends up catching the interrupt?
+I always understood the addr/msg were a pair that HW would map to a handler.
+Can you explain what you mean by "lifetime" and "fixed"?
+What event would change the message? system Suspend/resume?
+
+...
+> After I get some sleep I will see if I can up with some constructive
+> criticism on how we can make things work.
+
+Well, I hope the questions I pose above help lead the discussion in
+that direction.
+
+thanks,
+grant
