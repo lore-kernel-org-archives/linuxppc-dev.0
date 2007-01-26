@@ -3,18 +3,23 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2DDD3DE054
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 17:20:29 +1100 (EST)
-In-Reply-To: <11691560171514-git-send-email-timur@freescale.com>
-References: <11691560171514-git-send-email-timur@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 48B50DE06C
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 17:49:07 +1100 (EST)
+In-Reply-To: <Pine.LNX.4.64.0612080205420.16331@gate.crashing.org>
+References: <20061206215042.GA13675@ld0162-tx32.am.freescale.net>
+	<17783.16290.783728.708434@cargo.ozlabs.ibm.com>
+	<4CF47E53-356C-49B7-9F8B-9C61CF8103E5@kernel.crashing.org>
+	<17784.59774.968517.908414@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.64.0612080205420.16331@gate.crashing.org>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <309FC1DE-9724-4172-BB13-D301D4A783F8@kernel.crashing.org>
+Message-Id: <7D8FF101-743F-4058-B390-D214C88BAA29@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add support for the MPC8349E-mITX-GP
-Date: Fri, 26 Jan 2007 00:19:26 -0600
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH/RFC] Change the program check exception from EXC_XFER_STD
+	to EXC_XFER_EE.
+Date: Fri, 26 Jan 2007 00:48:08 -0600
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,22 +30,61 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 18, 2007, at 3:33 PM, Timur Tabi wrote:
+On Dec 8, 2006, at 2:07 AM, Kumar Gala wrote:
 
-> Adds support for the MPC8349E-mITX-GP, which is a stripped-down  
-> version
-> of the MPC8349E-mITX reference board from Freescale.
 >
-> Signed-off-by: Timur Tabi <timur@freescale.com>
-> ---
->  arch/powerpc/boot/dts/mpc8349emitx-gp.dts     |  190 ++++
->  arch/powerpc/configs/mpc834x_itx_gp_defconfig | 1422 ++++++++++++++ 
-> +++++++++++
->  2 files changed, 1612 insertions(+), 0 deletions(-)
+>
+> On Fri, 8 Dec 2006, Paul Mackerras wrote:
+>
+>> Kumar Gala writes:
+>>
+>>> We don't need to rearrange anything, just put the local_irq_enable()
+>>> call in do_mathemu().  If we are a debugger than REASON_TRAP will
+>>> have to be set and we dont bother with do_mathemu() than.
+>>>
+>>> Do you think we should also move the local_irq_enable() that exists
+>>> in the handler into emulate_instruction().
+>>
+>> I'd rather have the local_irq_enable() calls in
+>> program_check_exception() so they're all in one place, preferably  
+>> with
+>> a comment explaining why they're there.  Having an unpaired
+>> local_irq_enable in do_mathemu() would seem a bit weird to me.
+>
+> Ok, how about something like this, I'm a bit concerned about what  
+> effect
+> moving the do_mathemu call will have on things like the 405.
+>
+> I'll put this in my tree with some other cleanup patches if it  
+> looks ok.
+>
+> - k
 
-Why does the defconfig differ so much from the mpc834x_itx_defconfig?
-
-I understand not having ATA/SATA, disk support.  But I'd expect USB  
-and that whatever debug settings would match between these two boards.
+We never closed on this.
 
 - k
+
+> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+> index fde820e..63073f9 100644
+> --- a/arch/powerpc/kernel/traps.c
+> +++ b/arch/powerpc/kernel/traps.c
+> @@ -792,9 +792,12 @@ #ifdef CONFIG_MATH_EMULATION
+>   	 * hardware people - not sure if it can happen on any illegal
+>   	 * instruction or only on FP instructions, whether there is a
+>   	 * pattern to occurences etc. -dgibson 31/Mar/2003 */
+> -	if (!(reason & REASON_TRAP) && do_mathemu(regs) == 0) {
+> -		emulate_single_step(regs);
+> -		return;
+> +	if (!(reason & REASON_TRAP)) {
+> +		local_irq_enable();
+> +		if (do_mathemu(regs) == 0) {
+> +			emulate_single_step(regs);
+> +			return;
+> +		}
+>   	}
+>   #endif /* CONFIG_MATH_EMULATION */
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
