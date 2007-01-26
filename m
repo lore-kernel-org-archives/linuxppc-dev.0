@@ -1,20 +1,33 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound6-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B4EE5DDFE6
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 05:56:32 +1100 (EST)
-Message-ID: <45BA4DD5.2030106@am.sony.com>
-Date: Fri, 26 Jan 2007 10:52:05 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <bunk@stusta.de>
+Received: from mailhub.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
+	by ozlabs.org (Postfix) with ESMTP id 44208DE003
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 06:06:26 +1100 (EST)
+Date: Fri, 26 Jan 2007 19:11:32 +0100
+From: Adrian Bunk <bunk@stusta.de>
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@osdl.org>
+Subject: 2.6.20-rc6: known unfixed regressions (part 2)
+Message-ID: <20070126181132.GN17836@stusta.de>
+References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 10/14] ps3: get firmware version
-References: <45B81891.1010309@am.sony.com> <20070126025955.GE18537@lst.de>
-In-Reply-To: <20070126025955.GE18537@lst.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
+Cc: Livio Soares <livio@eecg.toronto.edu>, Uwe Bugla <uwe.bugla@gmx.de>,
+	linux-ide@vger.kernel.org, Paul Mackerras <paulus@samba.org>,
+	alan@lxorguk.ukuu.org.uk, jmorris@namei.org,
+	ttb@tentacle.dhs.org, sds@tycho.nsa.gov,
+	Nick Piggin <nickpiggin@yahoo.com.au>, David Chinner <dgc@sgi.com>,
+	Michal Piotrowski <michal.k.k.piotrowski@gmail.com>,
+	Malte =?utf-8?B?U2NocsO2ZGVy?= <MalteSch@gmx.de>,
+	Venkat Yekkirala <vyekkirala@TrustedCS.com>,
+	xfs-masters@oss.sgi.com, rml@novell.com,
+	Sami Farin <7atbggg02@sneakemail.com>,
+	"Vladimir V. Saveliev" <vs@namesys.com>, linuxppc-dev@ozlabs.org,
+	petero2@telia.com, netdev@vger.kernel.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	B.Zolnierkiewicz@elka.pw.edu.pl, Gerhard Dirschl <gd@spherenet.de>,
+	Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>,
+	reiserfs-dev@namesys.com, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +37,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig wrote:
-> On Wed, Jan 24, 2007 at 06:40:17PM -0800, Geoff Levand wrote:
->> Output the PS3 firmware version to dmesg and /proc/cpuinfo.
-> 
-> Do we really need to bloat /proc/cpuinfo with more information that's
-> totally platform-specific?  The file is enough of a mess already..
+This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
+that are not yet fixed in Linus' tree.
 
-I wanted to make the firmware version available to user space utilities, so
-for example, I plan to make a utility to write the kernel to flash.  If the
-utility can query the firmware version, it can prompt the user that a firmware
-update would allow the kernel to take advantage of some new or updated feature.
-Without this, the only way to notify the user is with a message to the system
-log when the new kernel is running.
+If you find your name in the Cc header, you are either submitter of one
+of the bugs, maintainer of an affectected subsystem or driver, a patch
+of you caused a breakage or I'm considering you in any other way possibly
+involved with one or more of these issues.
 
-Anyway, that is the need, the question is where to make it available.  I thought
-/proc/cpuinfo already has the platform type (coming from the generic powerpc
-code), so it would be convenient for utilities to have the firmware version
-there too.  I don't think parsing the dmsg is an option for minimal
-configs like bootloaders and distro installers, as they may not keep the boot
-messages around, and in general doesn't seem a reliable way.  If you can make
-a suggestion, I'd like to hear it.
+Due to the huge amount of recipients, please trim the Cc when answering.
 
--Geoff
+
+Subject    : problems with CD burning
+References : http://www.spinics.net/lists/linux-ide/msg06545.html
+Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
+Status     : unknown
+
+
+Subject    : pktcdvd fails with pata_amd
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7810
+             http://lkml.org/lkml/2007/1/25/128
+Submitter  : Gerhard Dirschl <gd@spherenet.de>
+Caused-By  : Christoph Hellwig <hch@lst.de>
+             commit 406c9b605cbc45151c03ac9a3f95e9acf050808c
+             commit 3b00315799d78f76531b71435fbc2643cd71ae4c
+Status     : problem is being debugged
+
+
+Subject    : SELinux compile error with CONFIG_XFRM=n
+References : http://lkml.org/lkml/2007/1/25/233
+Submitter  : Michal Piotrowski <michal.k.k.piotrowski@gmail.com>
+Caused-By  : Venkat Yekkirala <vyekkirala@TrustedCS.com>
+             commit 334c85569b8adeaa820c0f2fab3c8f0a9dc8b92e
+Handled-By : Venkat Yekkirala <vyekkirala@TrustedCS.com>
+             David Miller <davem@davemloft.net>
+Status     : problem is being discussed
+
+
+Subject    : powerpc64: performance monitor exception
+References : http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030045.html
+Submitter  : Livio Soares <livio@eecg.toronto.edu>
+Caused-By  : Paul Mackerras <paulus@samba.org>
+             commit d04c56f73c30a5e593202ecfcf25ed43d42363a2
+Status     : problem is being discussed
+
+
+Subject    : BUG: at fs/inotify.c:172 set_dentry_child_flags()
+References : http://bugzilla.kernel.org/show_bug.cgi?id=7785
+Submitter  : Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
+Handled-By : Nick Piggin <nickpiggin@yahoo.com.au>
+Status     : problem is being debugged
+
+
+Subject    : BUG: at mm/truncate.c:60 cancel_dirty_page()  (reiserfs)
+References : http://lkml.org/lkml/2007/1/7/117
+             http://lkml.org/lkml/2007/1/10/202
+Submitter  : Malte Schröder <MalteSch@gmx.de>
+Handled-By : Vladimir V. Saveliev <vs@namesys.com>
+             Nick Piggin <nickpiggin@yahoo.com.au>
+Patch      : http://lkml.org/lkml/2007/1/10/202
+Status     : problem is being discussed
+
+
+Subject    : BUG: at mm/truncate.c:60 cancel_dirty_page()  (XFS)
+References : http://lkml.org/lkml/2007/1/5/308
+             http://lkml.org/lkml/2007/1/23/190
+             http://lkml.org/lkml/2007/1/23/192
+Submitter  : Sami Farin <7atbggg02@sneakemail.com>
+Handled-By : David Chinner <dgc@sgi.com>
+Status     : patches are being discussed
