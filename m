@@ -1,19 +1,20 @@
-Return-Path: <sonic_amiga@rambler.ru>
-Received: from gw2.leta.ru (gw2.leta.ru [88.210.57.116])
-	by ozlabs.org (Postfix) with ESMTP id 581B6DE03B
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 18:30:25 +1100 (EST)
-Date: Fri, 26 Jan 2007 10:08:26 +0300
-From: Pavel Fedin <sonic_amiga@rambler.ru>
-Message-ID: <406146427.20070126100826@rambler.ru>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Virtual DMA support for floppy driver for new powerpc
-	architecture
-MIME-Version: 1.0
-Content-Type: multipart/mixed;
- boundary="----------10B626B1602F87"
-Errors-To: sonic_amiga@rambler.ru
-Cc: paulus@samba.org
-Reply-To: Pavel Fedin <sonic_amiga@rambler.ru>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 89A84DE056
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 18:37:32 +1100 (EST)
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90106334E77@EMPBEDEX.empirix.com>
+References: <BD261180E6D35F4D9D32F3E44FD3D90106334E77@EMPBEDEX.empirix.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <17DE1287-B02B-4724-A7DF-5C6704ACDC80@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: MPC8548E w/ 4 Gig of DDR SDRAM 
+Date: Fri, 26 Jan 2007 01:36:32 -0600
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,114 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-------------10B626B1602F87
-Content-Type: text/plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
 
- Hello!
+On Jan 25, 2007, at 4:53 PM, Morrison, Tom wrote:
 
- During ppc64+ppc merge virtual DMA code for floppy driver was not
-ported. This patch restores virtual DMA support for floppy in new
-powerpc target.
- It is necessary at least on Pegasos and AmigaOne machines for the
-floppy drive to function. ISA DMA controller works incorrectly there
-due to its addressing limitations.
- Virtual DMA mode is activated by floppy=nodma option passed to the
-kernel (or module). There's no automatic switch like on i386.
+> Firstly, excuse my ignorance, I have looked at the archives to see
+> if there was any mention of a subject like this - but I could NOT
+> find a relevant one - so I ask forgiveness if I missed a thread
+> discussing this - and/or if this is a real newbie question!
 
--- 
-Best regards,
- Pavel                          mailto:sonic_amiga@rambler.ru
-------------10B626B1602F87
-Content-Type: application/octet-stream; name="powerpc_floppy-vdma-2.6.19.2.diff"
-Content-transfer-encoding: base64
-Content-Disposition: attachment; filename="powerpc_floppy-vdma-2.6.19.2.diff"
+It's what the list is for.  I do say I think you're the first person  
+to post asking about 4G if memory on an 85xx.
 
-LS0tIGxpbnV4LTIuNi4xOS4yL2luY2x1ZGUvYXNtLXBvd2VycGMvZmxvcHB5Lmgub3JpZwky
-MDA3LTAxLTEwIDIyOjEwOjM3LjAwMDAwMDAwMCArMDMwMAorKysgbGludXgtMi42LjE5LjIv
-aW5jbHVkZS9hc20tcG93ZXJwYy9mbG9wcHkuaAkyMDA3LTAxLTI1IDAyOjE0OjU0LjAwMDAw
-MDAwMCArMDMwMApAQCAtMTcsMjggKzE3LDExNSBAQAogI2RlZmluZSBmZF9vdXRiKHZhbHVl
-LHBvcnQpCW91dGJfcCh2YWx1ZSxwb3J0KQogCiAjZGVmaW5lIGZkX2VuYWJsZV9kbWEoKSAg
-ICAgICAgIGVuYWJsZV9kbWEoRkxPUFBZX0RNQSkKLSNkZWZpbmUgZmRfZGlzYWJsZV9kbWEo
-KSAgICAgICAgZGlzYWJsZV9kbWEoRkxPUFBZX0RNQSkKLSNkZWZpbmUgZmRfcmVxdWVzdF9k
-bWEoKSAgICAgICAgcmVxdWVzdF9kbWEoRkxPUFBZX0RNQSwgImZsb3BweSIpCi0jZGVmaW5l
-IGZkX2ZyZWVfZG1hKCkgICAgICAgICAgIGZyZWVfZG1hKEZMT1BQWV9ETUEpCisjZGVmaW5l
-IGZkX2Rpc2FibGVfZG1hKCkJIGZkX29wcy0+X2Rpc2FibGVfZG1hKEZMT1BQWV9ETUEpCisj
-ZGVmaW5lIGZkX2ZyZWVfZG1hKCkgICAgICAgICAgIGZkX29wcy0+X2ZyZWVfZG1hKEZMT1BQ
-WV9ETUEpCiAjZGVmaW5lIGZkX2NsZWFyX2RtYV9mZigpICAgICAgIGNsZWFyX2RtYV9mZihG
-TE9QUFlfRE1BKQogI2RlZmluZSBmZF9zZXRfZG1hX21vZGUobW9kZSkgICBzZXRfZG1hX21v
-ZGUoRkxPUFBZX0RNQSwgbW9kZSkKICNkZWZpbmUgZmRfc2V0X2RtYV9jb3VudChjb3VudCkg
-c2V0X2RtYV9jb3VudChGTE9QUFlfRE1BLCBjb3VudCkKKyNkZWZpbmUgZmRfZ2V0X2RtYV9y
-ZXNpZHVlKCkgICAgZmRfb3BzLT5fZ2V0X2RtYV9yZXNpZHVlKEZMT1BQWV9ETUEpCiAjZGVm
-aW5lIGZkX2VuYWJsZV9pcnEoKSAgICAgICAgIGVuYWJsZV9pcnEoRkxPUFBZX0lSUSkKICNk
-ZWZpbmUgZmRfZGlzYWJsZV9pcnEoKSAgICAgICAgZGlzYWJsZV9pcnEoRkxPUFBZX0lSUSkK
-ICNkZWZpbmUgZmRfY2FjaGVmbHVzaChhZGRyLHNpemUpIC8qIG5vdGhpbmcgKi8KLSNkZWZp
-bmUgZmRfcmVxdWVzdF9pcnEoKSAgICAgICAgcmVxdWVzdF9pcnEoRkxPUFBZX0lSUSwgZmxv
-cHB5X2ludGVycnVwdCwgXAotCQkJCQkgICAgSVJRRl9ESVNBQkxFRCwgImZsb3BweSIsIE5V
-TEwpCiAjZGVmaW5lIGZkX2ZyZWVfaXJxKCkgICAgICAgICAgIGZyZWVfaXJxKEZMT1BQWV9J
-UlEsIE5VTEwpOwogCi0jaWZkZWYgQ09ORklHX1BDSQotCiAjaW5jbHVkZSA8bGludXgvcGNp
-Lmg+CiAjaW5jbHVkZSA8YXNtL3BwYy1wY2kuaD4JLyogZm9yIHBwYzY0X2lzYWJyaWRnZV9k
-ZXYgKi8KIAotI2RlZmluZSBmZF9kbWFfc2V0dXAoYWRkcixzaXplLG1vZGUsaW8pIHBvd2Vy
-cGNfZmRfZG1hX3NldHVwKGFkZHIsc2l6ZSxtb2RlLGlvKQorI2RlZmluZSBmZF9kbWFfc2V0
-dXAoYWRkcixzaXplLG1vZGUsaW8pIGZkX29wcy0+X2RtYV9zZXR1cChhZGRyLHNpemUsbW9k
-ZSxpbykKKworc3RhdGljIGludCBmZF9yZXF1ZXN0X2RtYSh2b2lkKTsKKworc3RydWN0IGZk
-X2RtYV9vcHMgeworCXZvaWQgKCpfZGlzYWJsZV9kbWEpKHVuc2lnbmVkIGludCBkbWFucik7
-CisJdm9pZCAoKl9mcmVlX2RtYSkodW5zaWduZWQgaW50IGRtYW5yKTsKKwlpbnQgKCpfZ2V0
-X2RtYV9yZXNpZHVlKSh1bnNpZ25lZCBpbnQgZHVtbXkpOworCWludCAoKl9kbWFfc2V0dXAp
-KGNoYXIgKmFkZHIsIHVuc2lnbmVkIGxvbmcgc2l6ZSwgaW50IG1vZGUsIGludCBpbyk7Cit9
-OworCitzdGF0aWMgaW50IHZpcnR1YWxfZG1hX2NvdW50Oworc3RhdGljIGludCB2aXJ0dWFs
-X2RtYV9yZXNpZHVlOworc3RhdGljIGNoYXIgKnZpcnR1YWxfZG1hX2FkZHI7CitzdGF0aWMg
-aW50IHZpcnR1YWxfZG1hX21vZGU7CitzdGF0aWMgaW50IGRvaW5nX3ZkbWE7CitzdGF0aWMg
-c3RydWN0IGZkX2RtYV9vcHMgKmZkX29wczsKKworc3RhdGljIGlycXJldHVybl90IGZsb3Bw
-eV9oYXJkaW50KGludCBpcnEsIHZvaWQgKmRldl9pZCkKK3sKKwl1bnNpZ25lZCBjaGFyIHN0
-OworCWludCBsY291bnQ7CisJY2hhciAqbHB0cjsKKworCWlmICghZG9pbmdfdmRtYSkKKwkJ
-cmV0dXJuIGZsb3BweV9pbnRlcnJ1cHQoaXJxLCBkZXZfaWQpOworCisKKwlzdCA9IDE7CisJ
-Zm9yIChsY291bnQ9dmlydHVhbF9kbWFfY291bnQsIGxwdHI9dmlydHVhbF9kbWFfYWRkcjsK
-KwkgICAgIGxjb3VudDsgbGNvdW50LS0sIGxwdHIrKykgeworCQlzdD1pbmIodmlydHVhbF9k
-bWFfcG9ydCs0KSAmIDB4YTAgOworCQlpZiAoc3QgIT0gMHhhMCkKKwkJCWJyZWFrOworCQlp
-ZiAodmlydHVhbF9kbWFfbW9kZSkKKwkJCW91dGJfcCgqbHB0ciwgdmlydHVhbF9kbWFfcG9y
-dCs1KTsKKwkJZWxzZQorCQkJKmxwdHIgPSBpbmJfcCh2aXJ0dWFsX2RtYV9wb3J0KzUpOwor
-CX0KKwl2aXJ0dWFsX2RtYV9jb3VudCA9IGxjb3VudDsKKwl2aXJ0dWFsX2RtYV9hZGRyID0g
-bHB0cjsKKwlzdCA9IGluYih2aXJ0dWFsX2RtYV9wb3J0KzQpOworCisJaWYgKHN0ID09IDB4
-MjApCisJCXJldHVybiBJUlFfSEFORExFRDsKKwlpZiAoIShzdCAmIDB4MjApKSB7CisJCXZp
-cnR1YWxfZG1hX3Jlc2lkdWUgKz0gdmlydHVhbF9kbWFfY291bnQ7CisJCXZpcnR1YWxfZG1h
-X2NvdW50PTA7CisJCWRvaW5nX3ZkbWEgPSAwOworCQlmbG9wcHlfaW50ZXJydXB0KGlycSwg
-ZGV2X2lkKTsKKwkJcmV0dXJuIElSUV9IQU5ETEVEOworCX0KKwlyZXR1cm4gSVJRX0hBTkRM
-RUQ7Cit9CisKK3N0YXRpYyB2b2lkIHZkbWFfZGlzYWJsZV9kbWEodW5zaWduZWQgaW50IGR1
-bW15KQoreworCWRvaW5nX3ZkbWEgPSAwOworCXZpcnR1YWxfZG1hX3Jlc2lkdWUgKz0gdmly
-dHVhbF9kbWFfY291bnQ7CisJdmlydHVhbF9kbWFfY291bnQ9MDsKK30KKworc3RhdGljIHZv
-aWQgdmRtYV9ub3AodW5zaWduZWQgaW50IGR1bW15KQoreworfQorCisKK3N0YXRpYyBpbnQg
-dmRtYV9nZXRfZG1hX3Jlc2lkdWUodW5zaWduZWQgaW50IGR1bW15KQoreworCXJldHVybiB2
-aXJ0dWFsX2RtYV9jb3VudCArIHZpcnR1YWxfZG1hX3Jlc2lkdWU7Cit9CisKKworc3RhdGlj
-IGludCBmZF9yZXF1ZXN0X2lycSh2b2lkKQoreworCWlmIChjYW5fdXNlX3ZpcnR1YWxfZG1h
-KQorCQlyZXR1cm4gcmVxdWVzdF9pcnEoRkxPUFBZX0lSUSwgZmxvcHB5X2hhcmRpbnQsCisJ
-CQkJICAgSVJRRl9ESVNBQkxFRCwgImZsb3BweSIsIE5VTEwpOworCWVsc2UKKwkJcmV0dXJu
-IHJlcXVlc3RfaXJxKEZMT1BQWV9JUlEsIGZsb3BweV9pbnRlcnJ1cHQsCisJCQkJICAgSVJR
-Rl9ESVNBQkxFRCwgImZsb3BweSIsIE5VTEwpOworfQorCitzdGF0aWMgaW50IHZkbWFfZG1h
-X3NldHVwKGNoYXIgKmFkZHIsIHVuc2lnbmVkIGxvbmcgc2l6ZSwgaW50IG1vZGUsIGludCBp
-bykKK3sKKwlkb2luZ192ZG1hID0gMTsKKwl2aXJ0dWFsX2RtYV9wb3J0ID0gaW87CisJdmly
-dHVhbF9kbWFfbW9kZSA9IChtb2RlICA9PSBETUFfTU9ERV9XUklURSk7CisJdmlydHVhbF9k
-bWFfYWRkciA9IGFkZHI7CisJdmlydHVhbF9kbWFfY291bnQgPSBzaXplOworCXZpcnR1YWxf
-ZG1hX3Jlc2lkdWUgPSAwOworCXJldHVybiAwOworfQogCi1zdGF0aWMgX19pbmxpbmVfXyBp
-bnQgcG93ZXJwY19mZF9kbWFfc2V0dXAoY2hhciAqYWRkciwgdW5zaWduZWQgbG9uZyBzaXpl
-LAotCQkJCQkgICBpbnQgbW9kZSwgaW50IGlvKQorc3RhdGljIGludCBoYXJkX2RtYV9zZXR1
-cChjaGFyICphZGRyLCB1bnNpZ25lZCBsb25nIHNpemUsIGludCBtb2RlLCBpbnQgaW8pCiB7
-CiAJc3RhdGljIHVuc2lnbmVkIGxvbmcgcHJldl9zaXplOwogCXN0YXRpYyBkbWFfYWRkcl90
-IGJ1c19hZGRyID0gMDsKQEAgLTQ2LDYgKzEzMyw3IEBACiAJc3RhdGljIGludCBwcmV2X2Rp
-cjsKIAlpbnQgZGlyOwogCisJZG9pbmdfdmRtYSA9IDA7CiAJZGlyID0gKG1vZGUgPT0gRE1B
-X01PREVfUkVBRCkgPyBQQ0lfRE1BX0ZST01ERVZJQ0UgOiBQQ0lfRE1BX1RPREVWSUNFOwog
-CiAJaWYgKGJ1c19hZGRyIApAQCAtNzQsMTEgKzE2MiwzMiBAQAogCXJldHVybiAwOwogfQog
-Ci0jZW5kaWYgLyogQ09ORklHX1BDSSAqLworc3RhdGljIHN0cnVjdCBmZF9kbWFfb3BzIHJl
-YWxfZG1hX29wcyA9Cit7CisJLl9kaXNhYmxlX2RtYSA9IGRpc2FibGVfZG1hLAorCS5fZnJl
-ZV9kbWEgPSBmcmVlX2RtYSwKKwkuX2dldF9kbWFfcmVzaWR1ZSA9IGdldF9kbWFfcmVzaWR1
-ZSwKKwkuX2RtYV9zZXR1cCA9IGhhcmRfZG1hX3NldHVwCit9OworCitzdGF0aWMgc3RydWN0
-IGZkX2RtYV9vcHMgdmlydF9kbWFfb3BzID0KK3sKKwkuX2Rpc2FibGVfZG1hID0gdmRtYV9k
-aXNhYmxlX2RtYSwKKwkuX2ZyZWVfZG1hID0gdmRtYV9ub3AsCisJLl9nZXRfZG1hX3Jlc2lk
-dWUgPSB2ZG1hX2dldF9kbWFfcmVzaWR1ZSwKKwkuX2RtYV9zZXR1cCA9IHZkbWFfZG1hX3Nl
-dHVwCit9OwogCi1fX2lubGluZV9fIHZvaWQgdmlydHVhbF9kbWFfaW5pdCh2b2lkKQorc3Rh
-dGljIGludCBmZF9yZXF1ZXN0X2RtYSgpCiB7Ci0JLyogTm90aGluZyB0byBkbyBvbiBQb3dl
-clBDICovCisJaWYgKGNhbl91c2VfdmlydHVhbF9kbWEgJiAxKSB7CisJCWZkX29wcyA9ICZ2
-aXJ0X2RtYV9vcHM7CisJCXJldHVybiAwOworCX0KKwllbHNlIHsKKwkJZmRfb3BzID0gJnJl
-YWxfZG1hX29wczsKKwkJcmV0dXJuIHJlcXVlc3RfZG1hKEZMT1BQWV9ETUEsICJmbG9wcHki
-KTsKKwl9CiB9CiAKIHN0YXRpYyBpbnQgRkRDMSA9IDB4M2YwOwo=
-------------10B626B1602F87--
+> I have MPC8548E with 4 Gig of DDR SDRAM.
+>
+> I am trying to figure out how to configure the MPC8548 & its
+> Local Access Windows (and ?? what else) for 4 Gig of DDR SDRAM.
+>
+> I know traditionally, SDRAM starts at '0', and I believe that
+> Linux is expecting some of the physical memory at this a low
+> memory location?
+
+That's correct, we expect at least 64M (maybe less) at 0.
+
+> So, I am in a dilemma - I don't want to waste some DDR RAM by
+> also overlapping internal MPC8548 configuration registers
+> that are located near the top of the lowest 4 GIG memory area...
+>
+> So Can I:
+>
+>  1) Split the definition for the DDR Local Access Windows into 2  
+> pieces
+>      a) 2 GIG (starting at 0x0)
+>      b) 2 Gig above (starting at 0x1_0000_0000)?
+>
+>                    Or
+>
+> 2) Configure the LAW/MMU in a fashion before I load/boot Linux
+>     to use DDR at (a Local Access Window of) 0x1_0000_0000?
+
+In theory you could do either, however in practice I think #1 is your  
+best bet.  This way the 2G @ 0x0 looks to linux like normal memory  
+and you don't have to play any tricks (or find assumptions we have  
+about being at 0).
+
+However, by splitting memory like this you will probably need to look  
+at getting SPARSEMEM on 85xx.  I don't really have any idea on what's  
+involved here.
+
+How do you plan on using the 4G of memory?
+
+- k
