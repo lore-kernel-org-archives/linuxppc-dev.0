@@ -1,15 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: spidernet: dynamic phy setup code
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E7984DE026
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 07:26:06 +1100 (EST)
+Subject: Re: [PATCH 10/14] ps3: get firmware version
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jens Osterkamp <jens@de.ibm.com>
-In-Reply-To: <200701261409.29537.jens@de.ibm.com>
-References: <200701261409.29537.jens@de.ibm.com>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <45BA4DD5.2030106@am.sony.com>
+References: <45B81891.1010309@am.sony.com> <20070126025955.GE18537@lst.de>
+	<45BA4DD5.2030106@am.sony.com>
 Content-Type: text/plain
-Date: Sat, 27 Jan 2007 07:21:42 +1100
-Message-Id: <1169842902.24996.108.camel@localhost.localdomain>
+Date: Sat, 27 Jan 2007 07:25:38 +1100
+Message-Id: <1169843138.24996.114.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, James K Lewis <jim@jklewis.com>,
-	linuxppc-dev@ozlabs.org, jgarzik@pobox.com, cbe-oss-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-01-26 at 14:09 +0100, Jens Osterkamp wrote:
-> This patch modifies the patch submitted by Kou Ishizaki to make it work on the
-> blade (http://marc.theaimsgroup.com/?l=linux-netdev&m=116593424505539&w=2).
-> Unfortunately I dont have access to a Celleb so I cannot test it there.
-> 
-> The basic logic behind this is simple : when the interface first comes up
-> it tries to detect the phy. When the phy is detected, it is initially set up
-> to use copper. A timer is set to check the link status in spidernet_link_phy
-> using poll_link. If link check fails more than SPIDER_NET_ANEG_TIMEOUT
-> times, it switches to fiber link with autonegotiation. If that fails more
-> than SPIDER_NET_ANEG_TIMEOUT times, it switches to fiber link with no
-> autonegotiation. If that also fails, it goes back to copper, and so forth.
-> If the link comes up, it prints the link abilites and we are done.
-> 
-> The name of the phy found attached to the spider chip is reported to the
-> user. Hardcoded values for the timeout are moved to #defines. I put in a
-> few comments to make the code more readable.
 
-Can't we have a device-tree property indicating wether to use fiber or
-copper ?
+> Anyway, that is the need, the question is where to make it available.  I thought
+> /proc/cpuinfo already has the platform type (coming from the generic powerpc
+> code), so it would be convenient for utilities to have the firmware version
+> there too.  I don't think parsing the dmsg is an option for minimal
+> configs like bootloaders and distro installers, as they may not keep the boot
+> messages around, and in general doesn't seem a reliable way.  If you can make
+> a suggestion, I'd like to hear it.
+
+Yeah, /proc/cpuinfo is actually a fairly convenient place for that...
 
 Ben.
