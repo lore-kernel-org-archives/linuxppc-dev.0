@@ -1,25 +1,21 @@
-Return-Path: <tfeller@badgateway.de>
-Received: from mail.badgateway.de (mail.badgateway.de [88.198.18.180])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ABC57DE009
+	by ozlabs.org (Postfix) with ESMTP id 488EADE0AB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Jan 2007 06:53:36 +1100 (EST)
-Received: from [192.168.1.168] (pD9E02EE9.dip0.t-ipconnect.de [217.224.46.233])
-	(using SSLv3 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(No client certificate requested)
-	by mail.badgateway.de (Postfix) with ESMTP id 8A0623489F5
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Jan 2007 20:27:50 +0100 (CET)
-Message-ID: <45BA5635.2000001@badgateway.de>
-Date: Fri, 26 Jan 2007 20:27:49 +0100
-From: Thomas Feller <tfeller@badgateway.de>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: MVME3100 and linux-2.6.10
-References: <6386542.1169804641943.SLOX.WebMail.wwwrun@mailserver.gemrad.com>
-In-Reply-To: <6386542.1169804641943.SLOX.WebMail.wwwrun@mailserver.gemrad.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Sat, 27 Jan 2007 10:49:39 +1100 (EST)
+In-Reply-To: <404123.77350.qm@web58801.mail.re1.yahoo.com>
+References: <404123.77350.qm@web58801.mail.re1.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <A2F6DE21-4303-41A5-AA2E-AC854981976C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: MPC8248 poor performance
+Date: Fri, 26 Jan 2007 17:48:37 -0600
+To: Paul Eaton <recon_pje@yahoo.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,36 +26,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-vittorio barulli wrote:
-> I have a PowerPc Motorola, I install on it a kernel image (2.6.10) that
-> use a ramdisk as root filesystem.
-> The original version issued with kernel 2.6.10 is working even if I
-> recompile it.
->
-> Now I want to modify the original ramdisk to insert some file that I
-> need. If I insert in the ramdisk some little file the kernel continue
-> to start, but if i insert a great file (4 Mb) the kernel don't boot.
-> the result on video is:
->
-> loaded at:     01864400 0253356C
-> relocated to:  00400000 010CF16C
-> board data at: 010CD124 010CD16C
-> relocated to:  00405238 00405280
-> zimage at:     00405A05 005BA5C2
-> initrd at:     005BB000 010CC420
-> avail ram:     010D0000 AACC8A8B
->   
-The last line here looks wrong. It should be someting like 10000000 (256
-MB) or 20000000 (512 MB). Not AACC8A8B which is ~ 2732,783 MB.
-I've noticed that this only works right with gcc < 4.1. It seemed like
-they did change some things in ld.
-> Linux/PPC load: console=ttyS0,9600 root=/dev/ram0 ramdisk_size=64000
-> ramdisk_blocksize=1024
-> Uncompressing Linux...done.
-> Now booting the kernel
->   
-That is where my kernel stops to boot too!!!
-Is there someone out there who can tell us, what we did wrong?
 
-Regards,
-    Thomas
+On Jan 26, 2007, at 1:42 PM, Paul Eaton wrote:
+
+> Hi,
+>
+> We have a custom 8248 card that we are testing.
+> The core is running at 400MHz and the system bus is 80Mhz (measured  
+> and verified), 32 bit wide memory interface.
+> There is nothing connected to the CPM except 1 RS232 port which is  
+> not used in our test loop.
+>
+> We are running a small test C loop (with approx. 60 assembly  
+> language instructions) at the end of u-boot as in the Hello World  
+> example. The loop runs fine but upon closer analisis I found that  
+> each loop takes 6uS. This averages out to 100nS/instruction =  
+> 10MIPS = sad performance. I would have expected at least 100MIPS or  
+> more.
+>
+> I've checked the HID0 SPR register to verify that the instruction  
+> cache is enabled.
+>
+> I've also stepped thru the code to verify that the code stays  
+> within the loop (no async branches or irqs). Looking at the adr and  
+> data lines with an analyzer the loop appears to do the correct  
+> amount of I/O to SDRAM but the amount of time of between SDRAM  
+> accesses seem longer than I would expect if caching, pipelining,  
+> snooping, etc are enabled.
+>
+> Any ideas on what could be slowing the CPU down are greatly  
+> appreciated.
+>
+
+Is the code doing any d-side access? is the d-cache enabled?  How are  
+the BATs setup for memory locations you are accessing.
+
+- k
