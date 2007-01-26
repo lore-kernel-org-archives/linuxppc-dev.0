@@ -1,25 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02173DE00F
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 06:50:30 +1100 (EST)
-In-Reply-To: <Pine.LNX.4.64.0612080205420.16331@gate.crashing.org>
-References: <20061206215042.GA13675@ld0162-tx32.am.freescale.net>
-	<17783.16290.783728.708434@cargo.ozlabs.ibm.com>
-	<4CF47E53-356C-49B7-9F8B-9C61CF8103E5@kernel.crashing.org>
-	<17784.59774.968517.908414@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.64.0612080205420.16331@gate.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <814DD34A-38B9-4C16-9153-55A663422D65@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH/RFC] Change the program check exception from EXC_XFER_STD
-	to EXC_XFER_EE.
-Date: Fri, 26 Jan 2007 13:49:18 -0600
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: spidernet: dynamic phy setup code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jens Osterkamp <jens@de.ibm.com>
+In-Reply-To: <200701261409.29537.jens@de.ibm.com>
+References: <200701261409.29537.jens@de.ibm.com>
+Content-Type: text/plain
+Date: Sat, 27 Jan 2007 07:21:42 +1100
+Message-Id: <1169842902.24996.108.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org, James K Lewis <jim@jklewis.com>,
+	linuxppc-dev@ozlabs.org, jgarzik@pobox.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,60 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2007-01-26 at 14:09 +0100, Jens Osterkamp wrote:
+> This patch modifies the patch submitted by Kou Ishizaki to make it work on the
+> blade (http://marc.theaimsgroup.com/?l=linux-netdev&m=116593424505539&w=2).
+> Unfortunately I dont have access to a Celleb so I cannot test it there.
+> 
+> The basic logic behind this is simple : when the interface first comes up
+> it tries to detect the phy. When the phy is detected, it is initially set up
+> to use copper. A timer is set to check the link status in spidernet_link_phy
+> using poll_link. If link check fails more than SPIDER_NET_ANEG_TIMEOUT
+> times, it switches to fiber link with autonegotiation. If that fails more
+> than SPIDER_NET_ANEG_TIMEOUT times, it switches to fiber link with no
+> autonegotiation. If that also fails, it goes back to copper, and so forth.
+> If the link comes up, it prints the link abilites and we are done.
+> 
+> The name of the phy found attached to the spider chip is reported to the
+> user. Hardcoded values for the timeout are moved to #defines. I put in a
+> few comments to make the code more readable.
 
-On Dec 8, 2006, at 2:07 AM, Kumar Gala wrote:
+Can't we have a device-tree property indicating wether to use fiber or
+copper ?
 
-> On Fri, 8 Dec 2006, Paul Mackerras wrote:
->
->> Kumar Gala writes:
->>
->>> We don't need to rearrange anything, just put the local_irq_enable()
->>> call in do_mathemu().  If we are a debugger than REASON_TRAP will
->>> have to be set and we dont bother with do_mathemu() than.
->>>
->>> Do you think we should also move the local_irq_enable() that exists
->>> in the handler into emulate_instruction().
->>
->> I'd rather have the local_irq_enable() calls in
->> program_check_exception() so they're all in one place, preferably  
->> with
->> a comment explaining why they're there.  Having an unpaired
->> local_irq_enable in do_mathemu() would seem a bit weird to me.
->
-> Ok, how about something like this, I'm a bit concerned about what  
-> effect
-> moving the do_mathemu call will have on things like the 405.
->
-> I'll put this in my tree with some other cleanup patches if it  
-> looks ok.
->
-> - k
-
-We never closed on this.
-
-- k
-
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index fde820e..63073f9 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -792,9 +792,12 @@ #ifdef CONFIG_MATH_EMULATION
->   	 * hardware people - not sure if it can happen on any illegal
->   	 * instruction or only on FP instructions, whether there is a
->   	 * pattern to occurences etc. -dgibson 31/Mar/2003 */
-> -	if (!(reason & REASON_TRAP) && do_mathemu(regs) == 0) {
-> -		emulate_single_step(regs);
-> -		return;
-> +	if (!(reason & REASON_TRAP)) {
-> +		local_irq_enable();
-> +		if (do_mathemu(regs) == 0) {
-> +			emulate_single_step(regs);
-> +			return;
-> +		}
->   	}
->   #endif /* CONFIG_MATH_EMULATION */
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+Ben.
