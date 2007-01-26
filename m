@@ -1,15 +1,25 @@
-Return-Path: <recon_pje@yahoo.com>
-Received: from web58801.mail.re1.yahoo.com (web58801.mail.re1.yahoo.com
-	[66.196.100.215]) by ozlabs.org (Postfix) with SMTP id 6F5F9DDFF9
+Return-Path: <tfeller@badgateway.de>
+Received: from mail.badgateway.de (mail.badgateway.de [88.198.18.180])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id ABC57DE009
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Jan 2007 06:48:42 +1100 (EST)
-Date: Fri, 26 Jan 2007 11:42:01 -0800 (PST)
-From: Paul Eaton <recon_pje@yahoo.com>
-Subject: MPC8248 poor performance
-To: linuxppc-embedded@ozlabs.org
+	Sat, 27 Jan 2007 06:53:36 +1100 (EST)
+Received: from [192.168.1.168] (pD9E02EE9.dip0.t-ipconnect.de [217.224.46.233])
+	(using SSLv3 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mail.badgateway.de (Postfix) with ESMTP id 8A0623489F5
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 26 Jan 2007 20:27:50 +0100 (CET)
+Message-ID: <45BA5635.2000001@badgateway.de>
+Date: Fri, 26 Jan 2007 20:27:49 +0100
+From: Thomas Feller <tfeller@badgateway.de>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1329231078-1169840521=:77350"
-Message-ID: <404123.77350.qm@web58801.mail.re1.yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: MVME3100 and linux-2.6.10
+References: <6386542.1169804641943.SLOX.WebMail.wwwrun@mailserver.gemrad.com>
+In-Reply-To: <6386542.1169804641943.SLOX.WebMail.wwwrun@mailserver.gemrad.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,37 +30,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1329231078-1169840521=:77350
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+vittorio barulli wrote:
+> I have a PowerPc Motorola, I install on it a kernel image (2.6.10) that
+> use a ramdisk as root filesystem.
+> The original version issued with kernel 2.6.10 is working even if I
+> recompile it.
+>
+> Now I want to modify the original ramdisk to insert some file that I
+> need. If I insert in the ramdisk some little file the kernel continue
+> to start, but if i insert a great file (4 Mb) the kernel don't boot.
+> the result on video is:
+>
+> loaded at:     01864400 0253356C
+> relocated to:  00400000 010CF16C
+> board data at: 010CD124 010CD16C
+> relocated to:  00405238 00405280
+> zimage at:     00405A05 005BA5C2
+> initrd at:     005BB000 010CC420
+> avail ram:     010D0000 AACC8A8B
+>   
+The last line here looks wrong. It should be someting like 10000000 (256
+MB) or 20000000 (512 MB). Not AACC8A8B which is ~ 2732,783 MB.
+I've noticed that this only works right with gcc < 4.1. It seemed like
+they did change some things in ld.
+> Linux/PPC load: console=ttyS0,9600 root=/dev/ram0 ramdisk_size=64000
+> ramdisk_blocksize=1024
+> Uncompressing Linux...done.
+> Now booting the kernel
+>   
+That is where my kernel stops to boot too!!!
+Is there someone out there who can tell us, what we did wrong?
 
-Hi,
-   
-  We have a custom 8248 card that we are testing. 
-  The core is running at 400MHz and the system bus is 80Mhz (measured and verified), 32 bit wide memory interface.
-  There is nothing connected to the CPM except 1 RS232 port which is not used in our test loop.
-   
-  We are running a small test C loop (with approx. 60 assembly language instructions) at the end of u-boot as in the Hello World example. The loop runs fine but upon closer analisis I found that each loop takes 6uS. This averages out to 100nS/instruction = 10MIPS = sad performance. I would have expected at least 100MIPS or more.
-   
-  I've checked the HID0 SPR register to verify that the instruction cache is enabled.
-   
-  I've also stepped thru the code to verify that the code stays within the loop (no async branches or irqs). Looking at the adr and data lines with an analyzer the loop appears to do the correct amount of I/O to SDRAM but the amount of time of between SDRAM accesses seem longer than I would expect if caching, pipelining, snooping, etc are enabled.
-   
-  Any ideas on what could be slowing the CPU down are greatly appreciated.
-   
-  Paul
-
- 
----------------------------------
-Don't pick lemons.
-See all the new 2007 cars at Yahoo! Autos.
---0-1329231078-1169840521=:77350
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<div>Hi,</div>  <div>&nbsp;</div>  <div>We have a custom 8248 card that we are testing. </div>  <div>The core is running at 400MHz and the system bus is 80Mhz (measured and verified), 32 bit wide memory interface.</div>  <div>There is nothing connected to the CPM except 1 RS232 port which is not used in our test loop.</div>  <div>&nbsp;</div>  <div>We are running a small test C loop (with approx. 60 assembly language instructions) at the end of u-boot as in the Hello World example. The loop runs fine but upon closer analisis I found that each loop takes 6uS. This averages out to 100nS/instruction = 10MIPS = sad performance. I would have expected&nbsp;at least&nbsp;100MIPS or more.</div>  <div>&nbsp;</div>  <div>I've checked the HID0 SPR register to verify that the instruction cache is enabled.</div>  <div>&nbsp;</div>  <div>I've also stepped thru the code to verify that the code stays within the loop (no async branches or irqs). Looking at the adr and data lines with an
- analyzer the loop appears to do the correct amount of I/O to SDRAM but the amount of time of between SDRAM accesses seem longer than&nbsp;I would expect if&nbsp;caching, pipelining, snooping, etc are enabled.</div>  <div>&nbsp;</div>  <div>Any ideas on what could be slowing the CPU down are greatly appreciated.</div>  <div>&nbsp;</div>  <div>Paul</div><p>&#32;
-
-<hr size=1>Don't pick lemons.<br>
-See all the <a href="http://autos.yahoo.com/new_cars.html;_ylc=X3oDMTE0OGRsc3F2BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDbmV3Y2Fycw--">new 2007 cars</a> at <a href="http://autos.yahoo.com/new_cars.html;_ylc=X3oDMTE0OGRsc3F2BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDbmV3Y2Fycw--">Yahoo! Autos.</a>
---0-1329231078-1169840521=:77350--
+Regards,
+    Thomas
