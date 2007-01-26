@@ -1,20 +1,25 @@
-Return-Path: <mh@omnisys.se>
-Received: from mail.omnisys.se (static-213-115-84-26.sme.bredbandsbolaget.se
-	[213.115.84.26]) by ozlabs.org (Postfix) with ESMTP id BC3F5DE0D2
+Return-Path: <mlist@neutronstar.de>
+Received: from mail.badgateway.de (mail.badgateway.de [88.198.18.180])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A8B48DE008
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Jan 2007 03:11:46 +1100 (EST)
-Message-ID: <45BA283F.3040903@omnisys.se>
-Date: Fri, 26 Jan 2007 17:11:43 +0100
-From: Magnus Hjorth <mh@omnisys.se>
+	Sat, 27 Jan 2007 06:53:36 +1100 (EST)
+Received: from [192.168.1.168] (pD9E02EE9.dip0.t-ipconnect.de [217.224.46.233])
+	(using SSLv3 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by mail.badgateway.de (Postfix) with ESMTP id 026AC348B48
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 26 Jan 2007 20:31:24 +0100 (CET)
+Message-ID: <45BA5704.1040700@neutronstar.de>
+Date: Fri, 26 Jan 2007 20:31:16 +0100
+From: Thomas Feller <mlist@neutronstar.de>
 MIME-Version: 1.0
-To: Silken Tiger <st@iss.tu-darmstadt.de>
-Subject: Re: ML403 hard Ethernet under Linux 2.6.18
-References: <689CB232690D8D4E97DA6C76DA098E6C03A7A14D@XCO-EXCHVS1.xlnx.xilinx.com>
-	<45B9EBC8.9080509@omnisys.se>
-	<200701261341.25914.st@iss.tu-darmstadt.de>
-In-Reply-To: <200701261341.25914.st@iss.tu-darmstadt.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: MVME3100 and linux-2.6.10
+References: <6386542.1169804641943.SLOX.WebMail.wwwrun@mailserver.gemrad.com>
+In-Reply-To: <6386542.1169804641943.SLOX.WebMail.wwwrun@mailserver.gemrad.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,36 +30,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-Emailed you a large and ugly patch privately..
-
-One thing I discovered while getting this to work is that enabling the 
-"Early serial boot texts" feature causes the kernel to crash. That could 
-be causing problems for someone else out there...
+vittorio barulli wrote:
+> I have a PowerPc Motorola, I install on it a kernel image (2.6.10) that
+> use a ramdisk as root filesystem.
+> The original version issued with kernel 2.6.10 is working even if I
+> recompile it.
+>
+> Now I want to modify the original ramdisk to insert some file that I
+> need. If I insert in the ramdisk some little file the kernel continue
+> to start, but if i insert a great file (4 Mb) the kernel don't boot.
+> the result on video is:
+>
+> loaded at:     01864400 0253356C
+> relocated to:  00400000 010CF16C
+> board data at: 010CD124 010CD16C
+> relocated to:  00405238 00405280
+> zimage at:     00405A05 005BA5C2
+> initrd at:     005BB000 010CC420
+> avail ram:     010D0000 AACC8A8B
+>   
+The last line here looks wrong. It should be someting like 10000000 (256
+MB) or 20000000 (512 MB). Not AACC8A8B which is ~ 2732,783 MB.
+I've noticed that this only works right with gcc < 4.1. It seemed like
+they did change some things in ld.
+> Linux/PPC load: console=ttyS0,9600 root=/dev/ram0 ramdisk_size=64000
+> ramdisk_blocksize=1024
+> Uncompressing Linux...done.
+> Now booting the kernel
+>   
+That is where my kernel stops to boot too!!!
+Is there someone out there who can tell us, what we did wrong?
 
 Regards,
-Magnus
-
-
-Silken Tiger wrote:
-> Hi Magnus
->
-> It would be really nice if you could send a patch of the changes to make to 
-> get 2.6.18 working. I am currently fiddling with an XUP board, and i haven't 
-> been really successfull with the edk 8.2.
->
-> I would really appreciate it.
-> ST
->   
-
-
--- 
-
-Magnus Hjorth, M.Sc.
-Omnisys Instruments AB
-Gruvgatan 8
-SE-421 30  Västra Frölunda, SWEDEN
-Phone: +46 31 734 34 09
-Fax: +46 31 734 34 29
-http://www.omnisys.se 
+    Thomas
