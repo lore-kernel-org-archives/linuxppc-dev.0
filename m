@@ -1,22 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 475B9DDE2C
-	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 13:14:06 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 7/9] ps3: disable display flipping during mode changes
-Date: Fri, 26 Jan 2007 03:13:36 +0100
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251850470.24610@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0701251850470.24610@pademelon.sonytel.be>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 94920DE010
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 13:47:43 +1100 (EST)
+Message-ID: <45B96BC5.3090308@am.sony.com>
+Date: Thu, 25 Jan 2007 18:47:33 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701260313.36700.arnd@arndb.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 6/14] ps3: smp interrupt fixes
+References: <45B81883.2010508@am.sony.com> <200701250707.07626.arnd@arndb.de>
+In-Reply-To: <200701250707.07626.arnd@arndb.de>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 25 January 2007 18:51, Geert Uytterhoeven wrote:
-> @@ -33,6 +33,12 @@
->  #define DPRINTK(fmt, args...) do { } while (0)
->  #endif
->  
-> +#ifdef CONFIG_FB_PS3
-> +extern int ps3fb_flip_ctl(int);
-> +#else
-> +#define ps3fb_flip_ctl(x)
-> +#endif
+Arnd Bergmann wrote:
+> On Thursday 25 January 2007 03:40, Geoff Levand wrote:
+>> --- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/interrupt.c
+>> +++ ps3-linux-dev/arch/powerpc/platforms/ps3/interrupt.c
+>> @@ -317,22 +317,23 @@ struct ps3_bmp {
+>> =EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BDu=
+nsigned long unused_1[3];
+>> =EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BDu=
+nsigned long mask;
+>> =EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=
+=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BDu=
+nsigned long unused_2[3];
+>> -=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD} __at=
+tribute__ ((packed));
+>> +=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD} __at=
+tribute__ ((aligned (64)));
+>=20
+> Is that meant to be a 64 _byte_ alignment? By default, it is
+> already aligned to 64 bit.
+> If 64 byte is some magic requirement by the hypervisor, you
+> might want to make that explicit by using a constant definition
+> for it.
 
-The empty function should by convention be defined as
-'do { } while (0)', like the DPRINTK above.
-Even better might be an empty inline function
 
-static inline int ps3fb_flip_ctl(int arg)
-{
-	return 0;
-}
+The status + mask (512 bits) can't cross a page boundary, as required
+by the HV.  That is the intent of the aligned (64) attribute.
 
-that enables type checking in gcc.
+Sorry, I don't quite understand what you mean by 'using a constant defini=
+tion
+for it'.  Could you elaborate?
 
-	Arnd <><
+As you suggested I have already changed this to:
+
+struct ps3_bmp {
+	struct {
+		u64 status;
+		u64 unused_1[3];
+		u64 mask;
+		u64 unused_2[3];
+	};
+	u64 ipi_debug_brk_mask;
+	spinlock_t lock;
+};
+
+struct ps3_private {
+	struct ps3_bmp bmp __attribute__ ((aligned (64)));
+	u64 node;
+	unsigned int cpu;
+};
+
+
+>> +=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BD=EF=BF=BDcur_cp=
+u_spec->cpu_features |=3D CPU_FTR_SMT;
+>>=20
+> CPU_FTRS_CELL already contains CPU_FTR_SMT, why do you need to enable
+> it explicitly?
+
+
+Yes, I questioned whether that was needed or not.  I'll remove it.
+
+-Geoff
