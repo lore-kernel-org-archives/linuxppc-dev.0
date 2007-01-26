@@ -1,30 +1,31 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <linas@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF132DE43D
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 09:49:03 +1100 (EST)
-Subject: Re: [RFC/PATCH 14/16] MPIC MSI backend
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <m1ejphvfho.fsf@ebiederm.dsl.xmission.com>
-References: <1169714047.65693.647693675533.qpush@cradle>
-	<20070125083417.69895DE3C5@ozlabs.org>
-	<20070126064352.GA328@colo.lackof.org>
-	<m1ejpiw9s8.fsf@ebiederm.dsl.xmission.com>
-	<5A6F70E0-A8AB-4636-8F41-2EC82A3B13B7@kernel.crashing.org>
-	<m1r6thvjdq.fsf@ebiederm.dsl.xmission.com>
-	<20070126171928.GA22275@colo.lackof.org>
-	<m1ejphvfho.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Sat, 27 Jan 2007 09:48:47 +1100
-Message-Id: <1169851728.24996.194.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Grant Grundler <grundler@parisc-linux.org>,
-	Greg Kroah-Hartman <greg@kroah.com>,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Brice Goglin <brice@myri.com>, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S.Miller" <davem@davemloft.net>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B7C45DE470
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 09:53:16 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.12.11) with ESMTP id l0QMrBQC016810
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 17:53:11 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l0QMrBha185512
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 17:53:11 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l0QMrBtx007888
+	for <linuxppc-dev@ozlabs.org>; Fri, 26 Jan 2007 17:53:11 -0500
+Date: Fri, 26 Jan 2007 16:53:11 -0600
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] pSeries: EEH improperly enabled for some Power4 systems
+Message-ID: <20070126225311.GD11220@austin.ibm.com>
+References: <20070126205503.GA11220@austin.ibm.com>
+	<17850.33057.686491.685870@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17850.33057.686491.685870@cargo.ozlabs.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,93 +35,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> > I think this is the only viable aproach to support MSI migration.
-> > Basing the "virq" value on bits in the addr/data pair can't migrate.
+On Sat, Jan 27, 2007 at 09:30:57AM +1100, Paul Mackerras wrote:
+> Linas Vepstas writes:
 > 
-> Thus my initial surprise at people not liking create_irq().
-
-The main reason _I_ don't like it is because I think I have something
-better already :-) And thus I'm annoyed if something else starts
-becoming a "generic" API. But I agree on the principle.
-
-I'd be happy to help having the remapping core of arch/powerpc become
-generic code though :-)
-
-> If the irq controller the msi arrives at can redirect the irq the
-> bits in the msi message could have some connection to the irq number.
-> Likewise if some of those bits have nothing to do with migration.
+> > It appears that EEH is improperly enabled for some Power4 systems.
+> > On these systems, the ibm,set-eeh-option returns a value of success
+> > even when EEH is not supported on the given node. Thus, an explicit
+> > check for support is required.
 > 
-> For irqs going across traces on a motherboard and into interrupt pins
-> you can embed a lot of that knowledge into the irq number.  For MSI
-> with arbitrary programmable connections the numbers have less meaning
-> and less need of meaning in that sense.
-
-Sure, but that is totally local to the backend anyway, and thus pretty
-much irrelevant to whether Michael model fits or not as it's totally
-agnostic to what your backend choses to put in, or what HW vectors it
-uses underneath. That's why I defined alloc() as returning a linux IRQ
-number with a pre-initialized irq_desc/irq_chip. That's how the backend
-does it's arch specific salad of allocating a linux irq, possibly a
-vector too, and picking up the appropriate irq_chip for MSIs.
-
-I don't see how x86 wouldn't fit nicely in that model.
-
-> > Helping Michael make it work would be a constructive way forward.
-> > I think Michael has the abstraction correct so it's NOT x86 centric
-> > but still works optimally on x86.
+> What happens on the power4 systems when EEH is improperly enabled?
 > 
-> NO NO NO NO Michaels abstraction does not work on x86.
-> Which is a big part of the my problem.
-> Michaels abstraction does not allow me to migrate irqs on x86.
+> What systems has the patch been tested on?
 
-How so ? It's certainly missing a raw_msi_update() to allow you to
-change the addr/data but appart from that, what is the problem ?
+Sorry, I should have said more from the get-go.
 
-> setup_msi_msg only gets called when you enable the msi.  Nothing
-> gets called when irqbalaced changes the cpu mask, and there is no
-> support that would allow that with Michael's msi ops.
+During boot, on power4, without this patch, one sees messages 
+similar to:
 
-irq_chip->set_affinity() which, along the rest of irq_chip callbacks, is
-setup by your backend at alloc() time, and can do what it wants. There
-is absolutely no point in doing it differently as the migration mecanism
-is totally implementation dependant.
+EEH: event on unsupported device, rc=0 dn=/pci@400000000110/IBM,sp@1
+EEH: event on unsupported device, rc=0 dn=/pci@400000000110/pci@2
+EEH: event on unsupported device, rc=0 dn=/pci@400000000110/pci@2,2
+etc.
 
-As I said, there is no design problem with the ops, only an small
-implementation issue in that it lacks a raw_msi_udpate() to let you
-udpate the addr/data from within your set_affinity() callback.
+The patch makes these go away.
 
-> I can't use Michaels msi_ops as they stand.
+Without this patch, EEH recovery does seem to work correctly for 
+at least some devices (I tested ethernet e1000), but fails to 
+recover others (the Emulex LightPulse LPFC, most notably). 
+Off the top of my head, I don't remember why some devices are 
+affected, but not others.
 
-You can use the ops, you just need a few more helpers that aren't there
-yet because we haven't needed them yet on powerpc.
+The PAPR indicates that the correct way to test for EEH is as 
+done in this patch; its not clear to me if this was in the PAPR 
+all along, or recently added; if it was there all along, its not
+clear to me why this hadn't been fixed long ago. I suspect only
+certain firmware levels are affected.
 
-> They also have the problem of trying to exist at two different levels
-> of the interrupt hierarchy setup hierarchy simultaneously which is
-> another part of the problem.
+I've tested on one power4 and one power5; both have "old" 
+firmware (firmware dating back to not long after product 
+announce). It sure would be nice to test on more machines, huh? 
+I don't know how to quickly test on a broad spectrum of machines.
 
-I don't understand the above.
+If this makes you nervous, I suppose this patch can wait for
+the 2.6.21 series.
 
-> Micaheal's code is simple beautiful and doesn't work on x86, because
-> he has not implemented what needs to be there.
-
-We certainly haven't implemented everything that is needed for x86, that
-is true, and that is why we aren't aiming at replacing x86 code just
-yet, but again, I don't see what in the -model- prevents that and what
-prevents x86 from fitting nicely in the model.
- 
-> That is why I have asked for an evolutionary approach and not this
-> stupid drop and replace attempt.
-
-Because while I think our model can fit x86 nicely, the current code
-doesn't fit out needs at all and I strongly beleive it's the wrong
-abstraction.
-
-> Sorry for the rant I'm just a little annoyed that you hadn't hurd that
-> what Micahel is doing does not work on x86.
-
-It does not work out of the box, but you haven't yet convinced me that
-there is anything fundamental in Michael's design that prevents it from
-working.
-
-Ben.
+--linas
