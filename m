@@ -1,14 +1,23 @@
-Return-Path: <jens@de.ibm.com>
-From: Jens Osterkamp <jens@de.ibm.com>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Subject: spidernet: dynamic phy setup code
-Date: Fri, 26 Jan 2007 14:09:29 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200701261409.29537.jens@de.ibm.com>
-Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	jgarzik@pobox.com, James K Lewis <jim@jklewis.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4B788DE098
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 01:36:06 +1100 (EST)
+Subject: Re: [PATCH 2/3] powermac: proper time of day after resume
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1169620444.18754.66.camel@localhost.localdomain>
+References: <20061213123819.403286000@sipsolutions.net> >
+	<20061213123945.386891000@sipsolutions.net> >
+	<1169620444.18754.66.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-f8ylI10ilHbuXU/fKURL"
+Date: Fri, 26 Jan 2007 15:35:04 +0100
+Message-Id: <1169822104.15413.13.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,176 +27,173 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch modifies the patch submitted by Kou Ishizaki to make it work on the
-blade (http://marc.theaimsgroup.com/?l=linux-netdev&m=116593424505539&w=2).
-Unfortunately I dont have access to a Celleb so I cannot test it there.
 
-The basic logic behind this is simple : when the interface first comes up
-it tries to detect the phy. When the phy is detected, it is initially set up
-to use copper. A timer is set to check the link status in spidernet_link_phy
-using poll_link. If link check fails more than SPIDER_NET_ANEG_TIMEOUT
-times, it switches to fiber link with autonegotiation. If that fails more
-than SPIDER_NET_ANEG_TIMEOUT times, it switches to fiber link with no
-autonegotiation. If that also fails, it goes back to copper, and so forth.
-If the link comes up, it prints the link abilites and we are done.
+--=-f8ylI10ilHbuXU/fKURL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The name of the phy found attached to the spider chip is reported to the
-user. Hardcoded values for the timeout are moved to #defines. I put in a
-few comments to make the code more readable.
+On Wed, 2007-01-24 at 17:34 +1100, Benjamin Herrenschmidt wrote:
+> On Wed, 2006-12-13 at 13:38 +0100, Johannes Berg wrote:
+> > plain text document attachment (time-resume.patch)
+> > This patch converts the time restore code from a PMU notifier to a regu=
+lar
+> > sys device so I can profit from it even when I don't suspend through th=
+e
+> > PMU, i.e. suspend to disk.
+> >=20
+> > Also another step towards dropping pmu_sleep_notifier completely.
+>=20
+> I'd rather do it differently: On suspend, read the RTC and save the
+> value. On resume, read it again, diff the values, and add that to the
+> current time.
 
-Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Alright, how about something like this? I still need to fill in the
+actual calculations of course :)
 
-Index: linux-2.6/drivers/net/spider_net.c
-===================================================================
---- linux-2.6.orig/drivers/net/spider_net.c
-+++ linux-2.6/drivers/net/spider_net.c
-@@ -1280,19 +1280,23 @@ spider_net_set_mac(struct net_device *ne
-  * spider_net_link_reset
-  * @netdev: net device structure
-  *
-+ * This is called when the PHY_LINK signal is asserted. For the blade this is
-+ * not connected so we should never get here.
-+ *
-  */
- static void
- spider_net_link_reset(struct net_device *netdev)
- {
--
-  struct spider_net_card *card=netdev_priv(netdev);
- 
-  del_timer_sync(&card->aneg_timer);
- 
-+ /* clear interrupt, block further interrupts */
-  spider_net_write_reg(card, SPIDER_NET_GMACST,
-         spider_net_read_reg(card, SPIDER_NET_GMACST));
-  spider_net_write_reg(card, SPIDER_NET_GMACINTEN, 0);
- 
-+ /* reset phy and setup aneg */
-  mii_phy_probe(&card->phy, card->phy.mii_id);
-  spider_net_setup_aneg(card, is1000);
-  if (card->phy.def->phy_id)
-@@ -1616,6 +1620,7 @@ spider_net_init_card(struct spider_net_c
-  spider_net_write_reg(card, SPIDER_NET_CKRCTRL,
-         SPIDER_NET_CKRCTRL_RUN_VALUE);
- 
-+ /* trigger ETOMOD signal */
-  spider_net_write_reg(card, SPIDER_NET_GMACOPEMD,
-                       spider_net_read_reg(card, SPIDER_NET_GMACOPEMD) | 0x4);
- 
-@@ -1739,6 +1744,8 @@ spider_net_open(struct net_device *netde
-  if (spider_net_init_firmware(card))
-   goto init_firmware_failed;
- 
-+ /* start probing with copper */
-+ card->phy.medium = GMII_COPPER;
-  spider_net_setup_aneg(card, is1000);
-  if (card->phy.def->phy_id)
-   mod_timer(&card->aneg_timer, jiffies + SPIDER_NET_ANEG_TIMER);
-@@ -1805,43 +1812,54 @@ static void spider_net_link_phy(unsigned
-  struct spider_net_card *card = (struct spider_net_card *)data;
-  struct mii_phy *phy = &card->phy;
- 
-- if (card->aneg_count > 10) {
--  /* timeout */
--  card->aneg_count = 0;
--  is1000 = !is1000;
--  goto re_setup;
-+ /* if link didn't come up after SPIDER_NET_ANEG_TIMEOUT tries, setup phy 
-again */
-+ if (card->aneg_count > SPIDER_NET_ANEG_TIMEOUT) {
-+
-+  pr_info("%s: link is down, trying to bring it up\n", card->netdev->name);
-+
-+  switch(phy->medium) {
-+  case GMII_COPPER:
-+   /* enable fiber with autonegotiation first */
-+   if (phy->def->ops->enable_fiber)
-+    phy->def->ops->enable_fiber(phy, 1);
-+   phy->medium = GMII_FIBER;
-+   break;
-+
-+  case GMII_FIBER:
-+   /* fiber didn't come up, try to disable fiber autoneg */
-+   if (phy->def->ops->enable_fiber)
-+    phy->def->ops->enable_fiber(phy, 0);
-+   phy->medium = GMII_UNKNOWN;
-+   break;
-+
-+  case GMII_UNKNOWN:
-+   /* copper, fiber with and without autoneg failed,
-+    * retry from beginning */
-+   spider_net_setup_aneg(card, is1000);
-+   phy->medium = GMII_COPPER;
-+   break;
-+  }
-+
-+ card->aneg_count = 0;
-+ mod_timer(&card->aneg_timer, jiffies + SPIDER_NET_ANEG_TIMER);
-+ return;
-  }
- 
-+ /* link still not up, try again later */
-  if (!(phy->def->ops->poll_link(phy))) {
-   card->aneg_count++;
-   mod_timer(&card->aneg_timer, jiffies + SPIDER_NET_ANEG_TIMER);
-   return;
-  }
- 
-+ /* link came up, get abilities */
-  phy->def->ops->read_link(phy);
- 
-- if (phy->speed == 1000 && !is1000) {
--  is1000 = 1;
--  goto re_setup;
-- } else if(phy->speed != 1000 && is1000) {
--  is1000 = 0;
--  goto re_setup;
-- }
--
-- spider_net_write_reg(card, SPIDER_NET_GMACST,
--        spider_net_read_reg(card, SPIDER_NET_GMACST));
-- spider_net_write_reg(card, SPIDER_NET_GMACINTEN, 0x4);
--
-- pr_info("Found %s with %i Mbps, %s-duplex.\n",
--  phy->def->name, phy->speed, phy->duplex==1 ? "Full" : "Half");
-+ pr_info("%s: link is up with %i Mbps, %s-duplex, %sautoneg.\n",
-+  card->netdev->name, phy->speed, phy->duplex==1 ? "Full" : "Half",
-+  phy->autoneg==1 ? "" : "no ");
- 
-  return;
--
--re_setup:
-- mii_phy_probe(phy, phy->mii_id);
-- spider_net_setup_aneg(card, is1000);
-- card->aneg_count = 0;
-- mod_timer(&card->aneg_timer, jiffies + SPIDER_NET_ANEG_TIMER);
+--- mb-wireless.orig/arch/powerpc/platforms/powermac/time.c	2007-01-25 14:0=
+9:12.288927117 +0100
++++ mb-wireless/arch/powerpc/platforms/powermac/time.c	2007-01-26 14:16:18.=
+598954773 +0100
+@@ -297,49 +297,11 @@ int __init via_calibrate_decr(void)
  }
- 
- /**
-@@ -1871,8 +1889,10 @@ spider_net_setup_phy(struct spider_net_c
-   unsigned short id;
-   id = spider_net_read_phy(card->netdev, phy->mii_id, MII_BMSR);
-   if (id != 0x0000 && id != 0xffff) {
--   mii_phy_probe(phy, phy->mii_id);
-+   if (!mii_phy_probe(phy, phy->mii_id)) {
-+    pr_info("Found %s.\n", phy->def->name);
-    break;
-+   }
-   }
-  }
- 
-Index: linux-2.6/drivers/net/spider_net.h
-===================================================================
---- linux-2.6.orig/drivers/net/spider_net.h
-+++ linux-2.6/drivers/net/spider_net.h
-@@ -51,7 +51,8 @@ extern char spider_net_driver_name[];
- #define SPIDER_NET_TX_DESCRIPTORS_MAX  512
- 
- #define SPIDER_NET_TX_TIMER   (HZ/5)
--#define SPIDER_NET_ANEG_TIMER   (HZ*2)
-+#define SPIDER_NET_ANEG_TIMER   (HZ)
-+#define SPIDER_NET_ANEG_TIMEOUT   2
- 
- #define SPIDER_NET_RX_CSUM_DEFAULT  1
- 
+ #endif
+=20
+-#ifdef CONFIG_PM
+-/*
+- * Reset the time after a sleep.
+- */
+-static int
+-time_sleep_notify(struct pmu_sleep_notifier *self, int when)
+-{
+-	static unsigned long time_diff;
+-	unsigned long flags;
+-	unsigned long seq;
+-	struct timespec tv;
+-
+-	switch (when) {
+-	case PBOOK_SLEEP_NOW:
+-		do {
+-			seq =3D read_seqbegin_irqsave(&xtime_lock, flags);
+-			time_diff =3D xtime.tv_sec - pmac_get_boot_time();
+-		} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
+-		break;
+-	case PBOOK_WAKE:
+-		tv.tv_sec =3D pmac_get_boot_time() + time_diff;
+-		tv.tv_nsec =3D 0;
+-		do_settimeofday(&tv);
+-		break;
+-	}
+-	return PBOOK_SLEEP_OK;
+-}
+-
+-static struct pmu_sleep_notifier time_sleep_notifier =3D {
+-	time_sleep_notify, SLEEP_LEVEL_MISC,
+-};
+-#endif /* CONFIG_PM */
+-
+ /*
+  * Query the OF and get the decr frequency.
+  */
+ void __init pmac_calibrate_decr(void)
+ {
+-#if defined(CONFIG_PM) && defined(CONFIG_ADB_PMU)
+-	/* XXX why here? */
+-	pmu_register_sleep_notifier(&time_sleep_notifier);
+-#endif
+-
+ 	generic_calibrate_decr();
+=20
+ #ifdef CONFIG_PPC32
+--- mb-wireless.orig/arch/powerpc/kernel/Makefile	2007-01-26 14:16:35.83895=
+4773 +0100
++++ mb-wireless/arch/powerpc/kernel/Makefile	2007-01-26 14:16:47.918954773 =
++0100
+@@ -50,6 +50,7 @@ extra-y				+=3D vmlinux.lds
+=20
+ obj-y				+=3D time.o prom.o traps.o setup-common.o \
+ 				   udbg.o misc.o io.o
++obj-$(CONFIG_PM)		+=3D time_suspend.o
+ obj-$(CONFIG_PPC32)		+=3D entry_32.o setup_32.o misc_32.o
+ obj-$(CONFIG_PPC64)		+=3D misc_64.o dma_64.o iommu.o
+ obj-$(CONFIG_PPC_MULTIPLATFORM)	+=3D prom_init.o
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ mb-wireless/arch/powerpc/kernel/time_suspend.c	2007-01-26 15:33:55.8790=
+25345 +0100
+@@ -0,0 +1,62 @@
++/*
++ * Common code to keep time when machine suspends.
++ *
++ * Copyright 2007	Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPLv2
++ */
++
++#include <linux/time.h>
++#include <asm/rtc.h>
++
++static struct rtc_time suspend_rtc_time;
++
++/*
++ * Reset the time after a sleep.
++ */
++static int timer_resume(struct sys_device *dev)
++{
++	struct timespec tv;
++	struct rtc_time cur_rtc_time;
++
++
++	get_rtc_time(&suspend_rtc_time);
++
++	do_gettimeofday(&tv);
++
++	/* FIXME: do something with tv here */
++
++	do_settimeofday(&tv);
++
++	return 0;
++}
++
++static int timer_suspend(struct sys_device *dev, pm_message_t state)
++{
++	WARN_ON(!ppc_md.get_rtc_time);
++
++	get_rtc_time(&suspend_rtc_time);
++
++	return 0;
++}
++
++static struct sysdev_class timer_sysclass =3D {
++	.resume =3D timer_resume,
++	.suspend =3D timer_suspend,
++	set_kset_name("timer"),
++};
++
++static struct sys_device device_timer =3D {
++	.id =3D 0,
++	.cls =3D &timer_sysclass,
++};
++
++static int time_init_device(void)
++{
++	int error =3D sysdev_class_register(&timer_sysclass);
++	if (!error)
++		error =3D sysdev_register(&device_timer);
++	return error;
++}
++
++device_initcall(time_init_device);
+
+
+--=-f8ylI10ilHbuXU/fKURL
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFuhGY/ETPhpq3jKURAjr3AJ0az/liLwgjTr+B0YEa4aJ20KDiQgCgii2G
+G+B7SqG6d3GYtlsbo5Iiw4w=
+=q+xz
+-----END PGP SIGNATURE-----
+
+--=-f8ylI10ilHbuXU/fKURL--
