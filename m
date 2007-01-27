@@ -1,18 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-dub-R.bigfish.com (outbound-dub.frontbridge.com
+Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
 	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id AFFBDDDF58
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 14:07:47 +1100 (EST)
-Message-ID: <45BAC1FC.9030108@am.sony.com>
-Date: Fri, 26 Jan 2007 19:07:40 -0800
+	by ozlabs.org (Postfix) with ESMTP id 2B457DE3BC
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 14:08:04 +1100 (EST)
+Message-ID: <45BAC20C.5000708@am.sony.com>
+Date: Fri, 26 Jan 2007 19:07:56 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: paulus@samba.org
-Subject: [PATCH 0/16] ps3 patches for 2.6.21 v2
-References: <45B81862.1030800@am.sony.com>
-In-Reply-To: <45B81862.1030800@am.sony.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 5/16] ps3: fix struct alignment attributes
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,26 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+Remove incorrect alignment attributes in PS3 platform code for
+struct spe_shadow, struct os_area_header, and struct os_area_params.
 
-This is second posting of the ps3 patch series I have for 2.6.21.
-I tried to address all concerns.  Please apply if acceptable.
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-[PATCH 1/16] ps3: inform incomplete
-[PATCH 2/16] ps3: repository misc fixes
-[PATCH 3/16] ps3: repository storage support
-[PATCH 4/16] ps3: system bus minor mmio fix
-[PATCH 5/16] ps3: fix struct alignment attributes
-[PATCH 6/16] ps3: rename interrupt symbols
-[PATCH 7/16] ps3: smp interrupt fixes
-[PATCH 8/16] ps3: cleanup interrupt bmp routines
-[PATCH 9/16] ps3: bind interrupt to cpu
-[PATCH 10/16] ps3: add interrupt alloc for outlets
-[PATCH 11/16] ps3: fix interrupt bmp
-[PATCH 12/16] ps3: remove cpuinfo
-[PATCH 13/16] ps3: get firmware version
-[PATCH 14/16] ps3: get av_multi_out params
-[PATCH 15/16] ps3: remove unneeded header include
-[PATCH 16/16] ps3: ps3_defconfig updates
+---
+ arch/powerpc/platforms/ps3/os-area.c |    4 ++--
+ arch/powerpc/platforms/ps3/spu.c     |    5 ++---
+ 2 files changed, 4 insertions(+), 5 deletions(-)
 
--Geoff
+--- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/os-area.c
++++ ps3-linux-dev/arch/powerpc/platforms/ps3/os-area.c
+@@ -59,7 +59,7 @@ struct os_area_header {
+ 	u32 ldr_format;
+ 	u32 ldr_size;
+ 	u32 _reserved_2[6];
+-} __attribute__ ((packed));
++};
+ 
+ enum {
+ 	PARAM_BOOT_FLAG_GAME_OS = 0,
+@@ -114,7 +114,7 @@ struct os_area_params {
+ 	u8 dns_primary[4];
+ 	u8 dns_secondary[4];
+ 	u8 _reserved_5[8];
+-} __attribute__ ((packed));
++};
+ 
+ /**
+  * struct saved_params - Static working copies of data from the 'Other OS' area.
+--- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/spu.c
++++ ps3-linux-dev/arch/powerpc/platforms/ps3/spu.c
+@@ -50,7 +50,7 @@ enum spe_type {
+  */
+ 
+ struct spe_shadow {
+-	u8 padding_0000[0x0140];
++	u8 padding_0140[0x0140];
+ 	u64 int_status_class0_RW;       /* 0x0140 */
+ 	u64 int_status_class1_RW;       /* 0x0148 */
+ 	u64 int_status_class2_RW;       /* 0x0150 */
+@@ -67,8 +67,7 @@ struct spe_shadow {
+ 	u8 padding_0c08[0x0f00-0x0c08];
+ 	u64 spe_execution_status;       /* 0x0f00 */
+ 	u8 padding_0f08[0x1000-0x0f08];
+-} __attribute__ ((packed));
+-
++};
+ 
+ /**
+  * enum spe_ex_state - Logical spe execution state.
