@@ -2,27 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4C552DE227
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jan 2007 07:03:36 +1100 (EST)
-Subject: Re: [RFC/PATCH 14/16] MPIC MSI backend
+	by ozlabs.org (Postfix) with ESMTP id BCC42DE22C
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jan 2007 07:07:12 +1100 (EST)
+Subject: Re: [PATCH 4/16] ps3: system bus minor mmio fix
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Grant Grundler <grundler@parisc-linux.org>
-In-Reply-To: <20070127183028.GA18523@colo.lackof.org>
-References: <1169714047.65693.647693675533.qpush@cradle>
-	<20070125083417.69895DE3C5@ozlabs.org>
-	<20070126064352.GA328@colo.lackof.org>
-	<m1ejpiw9s8.fsf@ebiederm.dsl.xmission.com>
-	<17850.33971.762011.194195@cargo.ozlabs.ibm.com>
-	<20070127183028.GA18523@colo.lackof.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <45BAC20A.8040107@am.sony.com>
+References: <45BAC20A.8040107@am.sony.com>
 Content-Type: text/plain
-Date: Sun, 28 Jan 2007 07:02:55 +1100
-Message-Id: <1169928175.24996.203.camel@localhost.localdomain>
+Date: Sun, 28 Jan 2007 07:06:57 +1100
+Message-Id: <1169928417.24996.205.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Brice Goglin <brice@myri.com>, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S.Miller" <davem@davemloft.net>,
-	"Eric W. Biederman" <ebiederm@xmission.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,26 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> My impression was any CPU that uses an IO-SAPIC (or -xAPIC) is
-> using bus transactions to communicate interrupts even if they
-> aren't using MSI. BIOS typically hides all the setup.
+On Fri, 2007-01-26 at 19:07 -0800, Geoff Levand wrote:
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > 
-> Alpha also uses bus transactions for IO interrupts. But I've read
-> through my ancient alpha reference manual and don't understand
-> exactly if the vector is part of the "DMA" transaction or is read
-> by the CPU off the I/O Bridge ("hose").
-> 
-> > Or do you mean there is some piece of hardware in the northbridge (or
-> > elsewhere) that accepts the MSI message writes and asserts an
-> > interrupt line to the CPU?  That is basically what we have on PPC.
-> 
-> *grin* PPC in this case looks more like "legacy x86" than x86 does today.
-> /me hides
+> Fix two minor bugs in the PS3 system bus mmio region code.  First, on error or
+> when freeing a region, retain the bus_addr and len fields to allow subsequent
+> calls to create the region.  Second, correct the region address argument to the
+> lv1_unmap_device_mmio_region() call.
 
-Well, actually, Cell also has interrupts as packets on the bus :-)
-
-(Though the way it's done on cell, you typically still need an external
-interrupt controller for anything that's not on-chip unfortunately).
+Note that I personally think that drivers/ps3 is a very wrong place for
+the ps3 system bus. It should stay in arch/powerpc/platform/ps3
 
 Ben.
+
+> Fixes modprobe/rmmod of some drivers.
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> 
+> ---
+>  drivers/ps3/system-bus.c |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> --- ps3-linux-dev.orig/drivers/ps3/system-bus.c
+> +++ ps3-linux-dev/drivers/ps3/system-bus.c
+> @@ -50,7 +50,7 @@ int ps3_mmio_region_create(struct ps3_mm
+>  	if (result) {
+>  		pr_debug("%s:%d: lv1_map_device_mmio_region failed: %s\n",
+>  			__func__, __LINE__, ps3_result(result));
+> -		r->lpar_addr = r->len = r->bus_addr = 0;
+> +		r->lpar_addr = 0;
+>  	}
+>  
+>  	dump_mmio_region(r);
+> @@ -62,13 +62,13 @@ int ps3_free_mmio_region(struct ps3_mmio
+>  	int result;
+>  
+>  	result = lv1_unmap_device_mmio_region(r->did.bus_id, r->did.dev_id,
+> -		r->bus_addr);
+> +		r->lpar_addr);
+>  
+>  	if (result)
+>  		pr_debug("%s:%d: lv1_unmap_device_mmio_region failed: %s\n",
+>  			__func__, __LINE__, ps3_result(result));
+>  
+> -	r->lpar_addr = r->len = r->bus_addr = 0;
+> +	r->lpar_addr = 0;
+>  	return result;
+>  }
+>  
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
