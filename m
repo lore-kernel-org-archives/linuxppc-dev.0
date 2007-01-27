@@ -1,21 +1,29 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id C1944DE0FF
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 13:11:41 +1100 (EST)
-Date: Fri, 26 Jan 2007 18:11:39 -0800 (PST)
-Message-Id: <20070126.181139.45511900.davem@davemloft.net>
-To: benh@kernel.crashing.org
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 64BDADE174
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 13:47:00 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Paul Mackerras <paulus@samba.org>
 Subject: Re: [RFC/PATCH 14/16] MPIC MSI backend
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1169851257.24996.185.camel@localhost.localdomain>
-References: <m1r6thvjdq.fsf@ebiederm.dsl.xmission.com>
-	<20070126171928.GA22275@colo.lackof.org>
-	<1169851257.24996.185.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: grundler@parisc-linux.org, greg@kroah.com, kyle@parisc-linux.org,
-	linuxppc-dev@ozlabs.org, brice@myri.com, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, ebiederm@xmission.com
+References: <1169714047.65693.647693675533.qpush@cradle>
+	<20070125083417.69895DE3C5@ozlabs.org>
+	<20070126064352.GA328@colo.lackof.org>
+	<m1ejpiw9s8.fsf@ebiederm.dsl.xmission.com>
+	<17850.33971.762011.194195@cargo.ozlabs.ibm.com>
+Date: Fri, 26 Jan 2007 19:46:22 -0700
+In-Reply-To: <17850.33971.762011.194195@cargo.ozlabs.ibm.com> (Paul
+	Mackerras's message of "Sat, 27 Jan 2007 09:46:11 +1100")
+Message-ID: <m18xfpuqyp.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Grant Grundler <grundler@parisc-linux.org>,
+	Greg Kroah-Hartman <greg@kroah.com>,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Brice Goglin <brice@myri.com>, shaohua.li@intel.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, "David S.Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,25 +33,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Sat, 27 Jan 2007 09:40:57 +1100
+Paul Mackerras <paulus@samba.org> writes:
 
-> 
-> > What?!!! The whole point of the abstraction ("flat space") is
-> > to be able to do reverse lookups for additional information.
-> 
-> You may want to look at the virtual irq scheme we implemented for
-> powerpc, I think it could be useful for other architectures as well in
-> fact... One mistake I did was to put the documentation in the .h instead
-> of near the code though :-) asm-powerpc/irq.h is a good start to read.
-> 
-> The main reasons we did it in the first place are two fold:
-> 
->  - On pSeries and to some extent with other hypervisors, IRQ numbers can
-> be pretty big, from encoding the geographical informations about the
-> slot/irq to just being an opaque 64 bits "token" from the hypervisor. So
-> we need the ability to map that to/from linux smaller and flatter space.
+> Eric W. Biederman writes:
+>
+>> I believe the ppc model is to allocate an interrupt source on their
+>> existing interrupt controller and use that instead of the normal x86
+>> case of having the MSI interrupt go transparently to the cpu.
+>
+> Do you mean that x86 cpus themselves can actually be the target of a
+> write on the bus?  That's the first time I've heard of the CPU itself
+> being a target for a bus operation.
 
-We do the same thing on sparc64 btw, for the same reasons.  The
-hypervisor on Niagara specifies IRQ numbers as opaque 64-bit
-quantities.
+Yes.  The cpu front side bus is packet based on all modern x86 processors,
+and an irq message is one type of packet. 
+
+> Or do you mean there is some piece of hardware in the northbridge (or
+> elsewhere) that accepts the MSI message writes and asserts an
+> interrupt line to the CPU?  That is basically what we have on PPC.
+
+Nope, modern x86 cpus do not use external interrupt lines for normal
+interrupts.
+
+AMD cpus directly consume hypertransport and Intel cpus have a
+proprietary but similarly capable protocol.
+
+Eric
