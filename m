@@ -1,26 +1,23 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1C114DDEEA
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 15:29:28 +1100 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: David Miller <davem@davemloft.net>
-Subject: Re: [RFC/PATCH 14/16] MPIC MSI backend
-References: <m1ejpiw9s8.fsf@ebiederm.dsl.xmission.com>
-	<17850.33971.762011.194195@cargo.ozlabs.ibm.com>
-	<m18xfpuqyp.fsf@ebiederm.dsl.xmission.com>
-	<20070126.190216.95060896.davem@davemloft.net>
-Date: Fri, 26 Jan 2007 21:28:52 -0700
-In-Reply-To: <20070126.190216.95060896.davem@davemloft.net> (David Miller's
-	message of "Fri, 26 Jan 2007 19:02:16 -0800 (PST)")
-Message-ID: <m1tzydt7nf.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: grundler@parisc-linux.org, greg@kroah.com, kyle@parisc-linux.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, brice@myri.com,
-	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz
+	by ozlabs.org (Postfix) with ESMTP id 47BBEDDEED
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 15:34:44 +1100 (EST)
+Subject: Re: [PATCH 10/14] ps3: get firmware version
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <45BA8E7B.6010503@am.sony.com>
+References: <45B81891.1010309@am.sony.com> <20070126025955.GE18537@lst.de>
+	<45BA4DD5.2030106@am.sony.com>
+	<1169843138.24996.114.camel@localhost.localdomain>
+	<20070126203758.GC17317@localdomain> <45BA8ADA.8000108@am.sony.com>
+	<45BA8E7B.6010503@am.sony.com>
+Content-Type: text/plain
+Date: Sat, 27 Jan 2007 15:34:30 +1100
+Message-Id: <1169872471.24996.196.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,17 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller <davem@davemloft.net> writes:
 
->
-> Interesting.
->
-> This is exactly how all sparc64 chips have always worked too.  On
-> sparc64 the cpu can actually read in the packets and process them.
-> Can the x86 interrupt handler get at the full packet data?
+> Actually, now that I think about it, your suggestion seems like the best
+> way to do it :-) 
+> 
+> Since /proc/device-tree/model gives the model, and I can arrange for
+> /proc/device-tree/firmware to give a firmware version.  I'll just need to
+> add a property to the tree after bootup.
 
-I wish.  All it can get is a single byte of the packet, for selecting
-what to do.  The rest of the information encodes irq type and which cpu
-to send interrupt to.
+In fact, the most logical place to do that is in the kboot wrapper, when
+the tree is created initially. That way, it will be naturally passed
+from kernel to kernel via kexec.
 
-Eric
+The zImage is built with a library to hack at the device-tree so it
+should be trivial to do it there.
+
+Ben.
