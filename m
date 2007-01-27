@@ -1,23 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 47BBEDDEED
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 15:34:44 +1100 (EST)
-Subject: Re: [PATCH 10/14] ps3: get firmware version
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <45BA8E7B.6010503@am.sony.com>
-References: <45B81891.1010309@am.sony.com> <20070126025955.GE18537@lst.de>
-	<45BA4DD5.2030106@am.sony.com>
-	<1169843138.24996.114.camel@localhost.localdomain>
-	<20070126203758.GC17317@localdomain> <45BA8ADA.8000108@am.sony.com>
-	<45BA8E7B.6010503@am.sony.com>
-Content-Type: text/plain
-Date: Sat, 27 Jan 2007 15:34:30 +1100
-Message-Id: <1169872471.24996.196.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
+From: Michael Ellerman <michael@ellerman.id.au>
+To: linux-pci@atrey.karlin.mff.cuni.cz
+In-Reply-To: <1169714047.65693.647693675533.qpush@cradle>
+References: <1169714047.65693.647693675533.qpush@cradle>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-HTuchxJcH6soTNs88NrL"
+Date: Sat, 27 Jan 2007 15:59:59 +1100
+Message-Id: <1169873999.2294.8.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>, paulus@samba.org
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+	shaohua.li@intel.com, "David S.Miller" <davem@davemloft.net>,
+	"Eric W.Biederman" <ebiederm@xmission.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +25,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Actually, now that I think about it, your suggestion seems like the best
-> way to do it :-) 
-> 
-> Since /proc/device-tree/model gives the model, and I can arrange for
-> /proc/device-tree/firmware to give a firmware version.  I'll just need to
-> add a property to the tree after bootup.
+--=-HTuchxJcH6soTNs88NrL
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-In fact, the most logical place to do that is in the kboot wrapper, when
-the tree is created initially. That way, it will be naturally passed
-from kernel to kernel via kexec.
+On Thu, 2007-01-25 at 19:34 +1100, Michael Ellerman wrote:
+> OK, here's a first cut at moving ops based MSI into the generic code. I'm
+> posting this now to make sure I'm not heading off into the weeds.
 
-The zImage is built with a library to hack at the device-tree so it
-should be trivial to do it there.
+Perhaps I wasn't clear enough here, by "first cut" I mean "work in
+progress", "not finished yet", "preliminary", "doesn't work yet" .. etc.
+It even says "RFC" in the subject line!
 
-Ben.
+:)
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-HTuchxJcH6soTNs88NrL
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFutxOdSjSd0sB4dIRAtoAAJ0Q8DHvvewzCKN5qzG/+uRfCFew1gCgqkBs
+wAaCAQb/lUoh2bfTdrs597E=
+=pSjt
+-----END PGP SIGNATURE-----
+
+--=-HTuchxJcH6soTNs88NrL--
