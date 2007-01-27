@@ -1,18 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 3EEC5DE216
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 22:31:18 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 16/16] ps3: ps3_defconfig updates
-Date: Sat, 27 Jan 2007 12:31:03 +0100
-References: <45BAC22D.7060800@am.sony.com>
-In-Reply-To: <45BAC22D.7060800@am.sony.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id 4EFC7DE1E0
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jan 2007 04:35:58 +1100 (EST)
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2.6.21 4/4] ehca: remove obsolete prototypes
+References: <200701240014.19439.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Sat, 27 Jan 2007 09:35:52 -0800
+In-Reply-To: <200701240014.19439.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
+	Nguyen's message of "Wed, 24 Jan 2007 00:14:18 +0100")
+Message-ID: <adafy9w8j9j.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701271231.04165.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, openib-general@openib.org,
+	openfabrics-ewg@openib.org, hch@infradead.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,9 +24,4 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 27 January 2007 04:08, Geoff Levand wrote:
-> Updates for ps3_defconfig.
-> 
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Thanks, merged patches 3-4 for 2.6.21.
