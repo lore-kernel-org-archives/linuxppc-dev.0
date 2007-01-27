@@ -1,16 +1,15 @@
-Return-Path: <jrocnuck@hotmail.com>
-Received: from bay0-omc1-s18.bay0.hotmail.com (bay0-omc1-s18.bay0.hotmail.com
-	[65.54.246.90]) by ozlabs.org (Postfix) with ESMTP id EEF27DE158
+Return-Path: <vantranbk@yahoo.com.au>
+Received: from web33008.mail.mud.yahoo.com (web33008.mail.mud.yahoo.com
+	[209.191.69.123]) by ozlabs.org (Postfix) with SMTP id CD6A3DE0C1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Jan 2007 19:48:36 +1100 (EST)
-Message-ID: <BAY117-F357AAA4A4F722329BBA628C8A10@phx.gbl>
-In-Reply-To: <315BEE09-4826-47F5-9E85-D268A4EA3022@kernel.crashing.org>
-From: "Eric Nuckols" <jrocnuck@hotmail.com>
+	Sat, 27 Jan 2007 21:39:52 +1100 (EST)
+Date: Sat, 27 Jan 2007 21:39:51 +1100 (EST)
+From: tran vanle <vantranbk@yahoo.com.au>
+Subject: Segmentation fault when start net-snmp
 To: linuxppc-embedded@ozlabs.org
-Subject: mem=XXXM  ioremap DMA 
-Date: Sat, 27 Jan 2007 03:48:30 -0500
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-259917520-1169894391=:70768"
+Message-ID: <511175.70768.qm@web33008.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,50 +20,74 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I've seen a couple posts out there about issuing a kernel boot parameter of 
-mem=XXXM, say for example mem=504M on a 512 MiB system followed by issuing 
-an ioremap function call from a module/driver such as: ioremap( 0x1F800000, 
-0x800000 ) where an attempt is made to remap the unclaimed (by the kernel) 
-physical memory from 504MiB up to 512MiB.
+--0-259917520-1169894391=:70768
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-I've tried this route which looks to make great logical sense and I've tried 
-to actually use the remapped range for DMA with no luck.  I've seen posts 
-from all the way back in 2003 where folks are doing the same thing and have 
-the same bad results... and no replies to the posts.
+Hi all
+I use board TQM8xxL , kernel 2.6.11.7 with Marcelo Tosatti  patch and Ramdisk in ELDK 4.0.
+I only rebuild net-snmp-5.2.1.2-1_1.src.rpm package (rebuild , not edit any thing)
+If I run snmpd with basic configuration
+//smnpd.conf
+####################
+syslocation TQM8xxL  
+sysservices 79
+syscontact VCS
+####################
+It run OK
 
-Can this ram really be used for DMA?
+But when I want to use trapsink like (edit snmpd.conf):
+//snmpd.conf
+####################################
+syslocation TQM8xxL  
+ sysservices 79
+ syscontact VCS
+# authtrapenable: Should we send traps when authentication failures occur
+#   arguments: 1 | 2   (1 = yes, 2 = no)
+authtrapenable 1
+# trapcommunity: Default trap sink community to use
+#   arguments: community-string
+trapcommunity abc
+# trapsink: A SNMPv1 trap receiver
+#   arguments: host [community] [portnum]
+trapsink 192.168.1.7
+# informsink: A SNMPv2c inform  (acknowledged trap) receiver
+#   arguments: host [community] [portnum]
+informsink 192.168.1.15
+# trap2sink: A SNMPv2c trap receiver
+#   arguments: host [community] [portnum]
+trap2sink 192.168.1.7
 
-I'm afraid that since I'm using a PCI device (PLX) with device specific 
-hardware address decoding on the LOCAL bus side of the PLX, that by taking 
-this approach, the kernel comes back with virtual addresses that, after 
-being mapped back to bus addresses still won't allow for DMA to work 
-properly.   Can anyone give some insight into this?
+####################################
+I run snmpd with debug , I receive
 
-I'm basically trying the following:
-  boot kernel (2.4.xx) with mem=504M
+.......
+......
+snmp_clean_persistent:  removing old config file: /var/net-snmp/snmpd.0.conf
+trace: netsnmp_send_traps(): agent_trap.c, 616:
+trap: send_trap 0 0 NET-SNMP-MIB::netSnmpAgentOIDs.10trace: netsnmp_send_traps(): agent_trap.c, 618:
+trap: 
+trace: snmp_call_callbacks(): callback.c, 209:
+callback: START calling callbacks for maj=1 min=6
+trace: snmp_call_callbacks(): callback.c, 223:
+callback: calling a callback for maj=1 min=6
+trace: send_notifications(): notification/snmpNotifyTable.c, 95:
+send_notifications: starting: pdu=8086740, vars=0
+Segmentation fault
 
-in my driver, I'm calling
-my_virt_address =   ioremap( 0x1F800000, 0x800000  );
-my_bus_address = virt_to_bus( my_virt_address );
 
-Then, I'm telling my FPGA bus master device (across a PLX chip) that it's 
-starting DMA address is my_bus_address.
+What error I had and How can I fix it?
+Is
+ net-snmp-5.2.1.2-1_1 package in ELDK 4.0 do not support trapsink?
+Does anyone have a patch?
+Thanks for all
 
-I get interrupts, but no data in my_virt_address.  I've seen several posts 
-exactly like this and have yet to see any answers to these posts...
+ Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-259917520-1169894391=:70768
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-I've tried an alternative approach of calling one of the alloc_bootmem_xxx 
-functions early in start_kernel and have had positivie results ONLY on the 
-montavista 3.1 pro kernel with preemption enabled.  On the Denx 2.4.25 
-Kernel from ELDK 3.1 I just get a locked up/frozen kernel when I trie to use 
-the alloc_bootmem_xx approach and when I use the mem=504M / ioremap 
-approach, I don't get any DMA data from either kernel...
-
-Please help!!
-Thanks,
-Eric
-
-_________________________________________________________________
-FREE online classifieds from Windows Live Expo – buy and sell with people 
-you know 
-http://clk.atdmt.com/MSN/go/msnnkwex0010000001msn/direct/01/?href=http://expo.live.com?s_cid=Hotmail_tagline_12/06
+Hi all<br>I use board TQM8xxL , kernel 2.6.11.7 with Marcelo Tosatti&nbsp; patch and Ramdisk in ELDK 4.0.<br>I only rebuild net-snmp-5.2.1.2-1_1.src.rpm package (rebuild , not edit any thing)<br>If I run snmpd with basic configuration<br>//smnpd.conf<br>####################<br>syslocation TQM8xxL  <br>sysservices 79<br>syscontact VCS<br>####################<br>It run OK<br><br>But when I want to use trapsink like (edit snmpd.conf):<br>//snmpd.conf<br>####################################<br>syslocation TQM8xxL  <br> sysservices 79<br> syscontact VCS<br># authtrapenable: Should we send traps when authentication failures occur<br>#&nbsp;&nbsp; arguments: 1 | 2&nbsp;&nbsp; (1 = yes, 2 = no)<br>authtrapenable 1<br># trapcommunity: Default trap sink community to use<br>#&nbsp;&nbsp; arguments: community-string<br>trapcommunity abc<br># trapsink: A SNMPv1 trap receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>trapsink 192.168.1.7<br># informsink: A SNMPv2c inform 
+ (acknowledged trap) receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>informsink 192.168.1.15<br># trap2sink: A SNMPv2c trap receiver<br>#&nbsp;&nbsp; arguments: host [community] [portnum]<br>trap2sink 192.168.1.7<br><br>####################################<br>I run snmpd with debug , I receive<br><pre>.......<br>......<br>snmp_clean_persistent:  removing old config file: /var/net-snmp/snmpd.0.conf<br>trace: netsnmp_send_traps(): agent_trap.c, 616:<br>trap: send_trap 0 0 NET-SNMP-MIB::netSnmpAgentOIDs.10trace: netsnmp_send_traps(): agent_trap.c, 618:<br>trap: <br>trace: snmp_call_callbacks(): callback.c, 209:<br>callback: START calling callbacks for maj=1 min=6<br>trace: snmp_call_callbacks(): callback.c, 223:<br>callback: calling a callback for maj=1 min=6<br>trace: send_notifications(): notification/snmpNotifyTable.c, 95:<br>send_notifications: starting: pdu=8086740, vars=0<br>Segmentation fault<br><br><br>What error I had and How can I fix it?<br>Is<br>
+ net-snmp-5.2.1.2-1_1 package in ELDK 4.0 do not support trapsink?<br>Does anyone have a patch?<br>Thanks for all</pre><p>&#32;Send instant messages to your online friends http://au.messenger.yahoo.com 
+--0-259917520-1169894391=:70768--
