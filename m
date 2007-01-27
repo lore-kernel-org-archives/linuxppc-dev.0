@@ -1,17 +1,16 @@
-Return-Path: <jimmyzhmliu@yahoo.com>
-Received: from web53111.mail.yahoo.com (web53111.mail.yahoo.com
-	[206.190.49.61]) by ozlabs.org (Postfix) with SMTP id 8F169DDEEA
+Return-Path: <jrocnuck@hotmail.com>
+Received: from bay0-omc1-s18.bay0.hotmail.com (bay0-omc1-s18.bay0.hotmail.com
+	[65.54.246.90]) by ozlabs.org (Postfix) with ESMTP id EEF27DE158
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Jan 2007 15:31:04 +1100 (EST)
-Date: Fri, 26 Jan 2007 20:31:02 -0800 (PST)
-From: jimmy liu <jimmyzhmliu@yahoo.com>
-Subject: RE: MPC8260 I2C Problem
-To: Li Yang-r58472 <LeoLi@freescale.com>,
-	embedded linuxppc <linuxppc-embedded@ozlabs.org>
-In-Reply-To: <989B956029373F45A0B8AF0297081890087468@zch01exm26.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <453204.70143.qm@web53111.mail.yahoo.com>
+	Sat, 27 Jan 2007 19:48:36 +1100 (EST)
+Message-ID: <BAY117-F357AAA4A4F722329BBA628C8A10@phx.gbl>
+In-Reply-To: <315BEE09-4826-47F5-9E85-D268A4EA3022@kernel.crashing.org>
+From: "Eric Nuckols" <jrocnuck@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: mem=XXXM  ioremap DMA 
+Date: Sat, 27 Jan 2007 03:48:30 -0500
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,108 +21,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I got it.
+I've seen a couple posts out there about issuing a kernel boot parameter of 
+mem=XXXM, say for example mem=504M on a 512 MiB system followed by issuing 
+an ioremap function call from a module/driver such as: ioremap( 0x1F800000, 
+0x800000 ) where an attempt is made to remap the unclaimed (by the kernel) 
+physical memory from 504MiB up to 512MiB.
 
-In the board environment, we have to define the
-BOARD_CHIP_NAME. It looks like:
-#define BOARD_CHIP_NAME "8260"
+I've tried this route which looks to make great logical sense and I've tried 
+to actually use the remapped range for DMA with no luck.  I've seen posts 
+from all the way back in 2003 where folks are doing the same thing and have 
+the same bad results... and no replies to the posts.
 
---- Li Yang-r58472 <LeoLi@freescale.com> wrote:
+Can this ram really be used for DMA?
 
-> You are talking about the wrong i2c driver.  For
-> 8260, you need a cpm
-> i2c driver, not the i2c-mpc driver.
-> 
-> - Leo
-> 
-> > -----Original Message-----
-> > From:
->
-linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org
-> >
->
-[mailto:linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org]
-> On
-> Behalf Of
-> > jimmy liu
-> > Sent: Friday, January 26, 2007 1:06 AM
-> > To: embedded linuxppc
-> > Subject: RE: MPC8260 I2C Problem
-> > 
-> > In the arch\ppc\syslib\pq2_devices.c, there has
-> the
-> > device descriptions.
-> > Do I still need manually create the plateform bus
-> > tree?
-> > 
-> > --- Li Yang-r58472 <LeoLi@freescale.com> wrote:
-> > 
-> > > > -----Original Message-----
-> > > > From:
-> > >
-> >
->
-linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org
-> > > >
-> > >
-> >
->
-[mailto:linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org]
-> > > On
-> > > Behalf Of
-> > > > jimmy liu
-> > > > Sent: Thursday, January 25, 2007 11:22 AM
-> > > > To: embedded linuxppc
-> > > > Subject: MPC8260 I2C Problem
-> > > >
-> > > > I download the linux kernel 2.6.19 from
-> > > > ftp://ftp.denx.de/pub/linux/ site.
-> > > >
-> > > > When I add mpc8260 I2C driver to Linux kernel
-> > > 2.6.19,
-> > > > the init function looks like that
-> > > > static int __init fsl_i2c_init(void)
-> > > > {
-> > > > 	return driver_register(&fsl_i2c_driver);
-> > > > }
-> > > > I set the debug on, and found that the
-> > > fsl_i2c_probe()
-> > > > function is never called, so there is not I2C
-> > > device
-> > > > enabled, and the user space function
-> > > > open("/dev/i2c-0",O_RDWR) always return error.
-> I
-> > > set
-> > > > something wrong? Could somebody help me?
-> > >
-> > > Do you have an fsl-i2c node in your device tree?
-> > >
-> > > - Leo
-> > >
-> > 
-> > 
-> > 
-> > 
-> >
->
-________________________________________________________________________
-> ______
-> > ______
-> > Don't pick lemons.
-> > See all the new 2007 cars at Yahoo! Autos.
-> > http://autos.yahoo.com/new_cars.html
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> >
->
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+I'm afraid that since I'm using a PCI device (PLX) with device specific 
+hardware address decoding on the LOCAL bus side of the PLX, that by taking 
+this approach, the kernel comes back with virtual addresses that, after 
+being mapped back to bus addresses still won't allow for DMA to work 
+properly.   Can anyone give some insight into this?
 
+I'm basically trying the following:
+  boot kernel (2.4.xx) with mem=504M
 
+in my driver, I'm calling
+my_virt_address =   ioremap( 0x1F800000, 0x800000  );
+my_bus_address = virt_to_bus( my_virt_address );
 
- 
-____________________________________________________________________________________
-Looking for earth-friendly autos? 
-Browse Top Cars by "Green Rating" at Yahoo! Autos' Green Center.
-http://autos.yahoo.com/green_center/
+Then, I'm telling my FPGA bus master device (across a PLX chip) that it's 
+starting DMA address is my_bus_address.
+
+I get interrupts, but no data in my_virt_address.  I've seen several posts 
+exactly like this and have yet to see any answers to these posts...
+
+I've tried an alternative approach of calling one of the alloc_bootmem_xxx 
+functions early in start_kernel and have had positivie results ONLY on the 
+montavista 3.1 pro kernel with preemption enabled.  On the Denx 2.4.25 
+Kernel from ELDK 3.1 I just get a locked up/frozen kernel when I trie to use 
+the alloc_bootmem_xx approach and when I use the mem=504M / ioremap 
+approach, I don't get any DMA data from either kernel...
+
+Please help!!
+Thanks,
+Eric
+
+_________________________________________________________________
+FREE online classifieds from Windows Live Expo – buy and sell with people 
+you know 
+http://clk.atdmt.com/MSN/go/msnnkwex0010000001msn/direct/01/?href=http://expo.live.com?s_cid=Hotmail_tagline_12/06
