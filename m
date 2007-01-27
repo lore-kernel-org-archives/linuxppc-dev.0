@@ -1,16 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-fra-R.bigfish.com (outbound-fra.frontbridge.com
+Received: from outbound2-fra-R.bigfish.com (outbound-fra.frontbridge.com
 	[62.209.45.174])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 27F3ADE060
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 14:08:41 +1100 (EST)
-Message-ID: <45BAC212.1080200@am.sony.com>
-Date: Fri, 26 Jan 2007 19:08:02 -0800
+	by ozlabs.org (Postfix) with ESMTP id 51DB3DE0D7
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 14:08:43 +1100 (EST)
+Message-ID: <45BAC215.9000104@am.sony.com>
+Date: Fri, 26 Jan 2007 19:08:05 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 7/16] ps3: smp interrupt fixes
+Subject: [PATCH 8/16] ps3: cleanup interrupt bmp routines
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,167 +22,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PS3 fixups for interrups on SMP.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Fixes the alignment of the interrupt status bitmap, changes the hypervisor
-interrupt calls to the '_ext' versions that take an explicit processor
-thread ID.
+Change the PS3 interrupt bitmask routines to be lockless.
 
-
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
- arch/powerpc/platforms/ps3/interrupt.c |   64 +++++++++++++++------------------
- 1 files changed, 31 insertions(+), 33 deletions(-)
+ arch/powerpc/platforms/ps3/interrupt.c |   85 ++++++++++++++-------------------
+ 1 files changed, 38 insertions(+), 47 deletions(-)
 
 --- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/interrupt.c
 +++ ps3-linux-dev/arch/powerpc/platforms/ps3/interrupt.c
-@@ -317,22 +317,23 @@ struct ps3_bmp {
- 		unsigned long unused_1[3];
- 		unsigned long mask;
- 		unsigned long unused_2[3];
--	} __attribute__ ((packed));
-+	} __attribute__ ((aligned (64)));
-+
- 	spinlock_t lock;
- 	unsigned long ipi_debug_brk_mask;
- };
+@@ -380,34 +380,50 @@ static void dump_bmp(struct ps3_private*
  
- /**
-  * struct ps3_private - a per cpu data structure
-- * @node: HV node id
-- * @cpu: HV thread id
-- * @bmp: an HV ps3_bmp structure
-+ * @bmp: ps3_bmp structure
-+ * @node: HV logical_ppe_id
-+ * @cpu: HV thread_id
-  */
+ static void ps3_chip_mask(unsigned int virq)
+ {
+-	unsigned long flags;
+ 	struct ps3_private *pd = get_irq_chip_data(virq);
++	unsigned long bit = 0x8000000000000000UL >> virq;
++	unsigned long *p = &pd->bmp.mask;
++	unsigned long old;
++	unsigned long flags;
  
- struct ps3_private {
-+	struct ps3_bmp bmp;
- 	unsigned long node;
- 	unsigned int cpu;
--	struct ps3_bmp bmp;
- };
+ 	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
  
- #if defined(DEBUG)
-@@ -389,9 +390,8 @@ static void ps3_chip_mask(unsigned int v
+-	BUG_ON(virq < NUM_ISA_INTERRUPTS);
+-	BUG_ON(virq > PS3_PLUG_MAX);
++	local_irq_save(flags);
++	asm volatile(
++		     "1:	ldarx %0,0,%3\n"
++		     "andc	%0,%0,%2\n"
++		     "stdcx.	%0,0,%3\n"
++		     "bne-	1b"
++		     : "=&r" (old), "+m" (*p)
++		     : "r" (bit), "r" (p)
++		     : "cc" );
  
- 	spin_lock_irqsave(&pd->bmp.lock, flags);
- 	pd->bmp.mask &= ~(0x8000000000000000UL >> virq);
--	spin_unlock_irqrestore(&pd->bmp.lock, flags);
--
+-	spin_lock_irqsave(&pd->bmp.lock, flags);
+-	pd->bmp.mask &= ~(0x8000000000000000UL >> virq);
  	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
-+	spin_unlock_irqrestore(&pd->bmp.lock, flags);
+-	spin_unlock_irqrestore(&pd->bmp.lock, flags);
++	local_irq_restore(flags);
  }
  
  static void ps3_chip_unmask(unsigned int virq)
-@@ -406,14 +406,14 @@ static void ps3_chip_unmask(unsigned int
+ {
+-	unsigned long flags;
+ 	struct ps3_private *pd = get_irq_chip_data(virq);
++	unsigned long bit = 0x8000000000000000UL >> virq;
++	unsigned long *p = &pd->bmp.mask;
++	unsigned long old;
++	unsigned long flags;
  
- 	spin_lock_irqsave(&pd->bmp.lock, flags);
- 	pd->bmp.mask |= (0x8000000000000000UL >> virq);
--	spin_unlock_irqrestore(&pd->bmp.lock, flags);
--
+ 	pr_debug("%s:%d: cpu %u, virq %d\n", __func__, __LINE__, pd->cpu, virq);
+ 
+-	BUG_ON(virq < NUM_ISA_INTERRUPTS);
+-	BUG_ON(virq > PS3_PLUG_MAX);
++	local_irq_save(flags);
++	asm volatile(
++		     "1:	ldarx %0,0,%3\n"
++		     "or	%0,%0,%2\n"
++		     "stdcx.	%0,0,%3\n"
++		     "bne-	1b"
++		     : "=&r" (old), "+m" (*p)
++		     : "r" (bit), "r" (p)
++		     : "cc" );
+ 
+-	spin_lock_irqsave(&pd->bmp.lock, flags);
+-	pd->bmp.mask |= (0x8000000000000000UL >> virq);
  	lv1_did_update_interrupt_mask(pd->node, pd->cpu);
-+	spin_unlock_irqrestore(&pd->bmp.lock, flags);
+-	spin_unlock_irqrestore(&pd->bmp.lock, flags);
++	local_irq_restore(flags);
  }
  
  static void ps3_chip_eoi(unsigned int virq)
- {
--	lv1_end_of_interrupt(virq);
-+	const struct ps3_private *pd = get_irq_chip_data(virq);
-+	lv1_end_of_interrupt_ext(pd->node, pd->cpu, virq);
+@@ -481,46 +497,21 @@ void __init ps3_register_ipi_debug_brk(u
+ 		cpu, virq, pd->bmp.ipi_debug_brk_mask);
  }
  
- static struct irq_chip irq_chip = {
-@@ -426,10 +426,12 @@ static struct irq_chip irq_chip = {
- static void ps3_host_unmap(struct irq_host *h, unsigned int virq)
+-static int bmp_get_and_clear_status_bit(struct ps3_bmp *m)
++unsigned int ps3_get_irq(void)
  {
- 	int result;
-+	const struct ps3_private *pd = get_irq_chip_data(virq);
- 
--	pr_debug("%s:%d: virq %d\n", __func__, __LINE__, virq);
-+	pr_debug("%s:%d: node %lu, cpu %d, virq %u\n", __func__, __LINE__,
-+		pd->node, pd->cpu, virq);
- 
--	lv1_disconnect_irq_plug(virq);
-+	lv1_disconnect_irq_plug_ext(pd->node, pd->cpu, virq);
- 
- 	result = set_irq_chip_data(virq, NULL);
- 	BUG_ON(result);
-@@ -441,31 +443,26 @@ static int ps3_host_map(struct irq_host 
- 	irq_hw_number_t hwirq)
- {
- 	int result;
--	unsigned int cpu;
+-	unsigned long flags;
+-	unsigned int bit;
+-	unsigned long x;
+-
+-	spin_lock_irqsave(&m->lock, flags);
 +	struct ps3_private *pd = &__get_cpu_var(ps3_private);
-+
-+	pr_debug("%s:%d: node %lu, cpu %d, hwirq %lu => virq %u\n", __func__,
-+		__LINE__, pd->node, pd->cpu, hwirq, virq);
++	unsigned long x = (pd->bmp.status & pd->bmp.mask);
++	unsigned int plug;
  
--	pr_debug(" -> %s:%d\n", __func__, __LINE__);
--	pr_debug("%s:%d: hwirq %lu => virq %u\n", __func__, __LINE__, hwirq,
--		virq);
--
--	/* bind this virq to a cpu */
--
--	preempt_disable();
--	cpu = smp_processor_id();
--	result = lv1_connect_irq_plug(virq, hwirq);
--	preempt_enable();
-+	/* Binds this virq to pd->cpu (current cpu) */
-+
-+	result = lv1_connect_irq_plug_ext(pd->node, pd->cpu, virq, hwirq, 0);
+ 	/* check for ipi break first to stop this cpu ASAP */
  
- 	if (result) {
--		pr_info("%s:%d: lv1_connect_irq_plug failed:"
-+		pr_info("%s:%d: lv1_connect_irq_plug_ext failed:"
- 			" %s\n", __func__, __LINE__, ps3_result(result));
- 		return -EPERM;
+-	if (m->status & m->ipi_debug_brk_mask) {
+-		m->status &= ~m->ipi_debug_brk_mask;
+-		spin_unlock_irqrestore(&m->lock, flags);
+-		return __ilog2(m->ipi_debug_brk_mask);
+-	}
+-
+-	x = (m->status & m->mask);
+-
+-	for (bit = NUM_ISA_INTERRUPTS, x <<= bit; x; bit++, x <<= 1)
+-		if (x & 0x8000000000000000UL) {
+-			m->status &= ~(0x8000000000000000UL >> bit);
+-			spin_unlock_irqrestore(&m->lock, flags);
+-			return bit;
+-		}
+-
+-	spin_unlock_irqrestore(&m->lock, flags);
+-
+-	pr_debug("%s:%d: not found\n", __func__, __LINE__);
+-	return -1;
+-}
+-
+-unsigned int ps3_get_irq(void)
+-{
+-	int plug;
+-
+-	struct ps3_private *pd = &__get_cpu_var(ps3_private);
++	if (x & pd->bmp.ipi_debug_brk_mask)
++		x &= pd->bmp.ipi_debug_brk_mask;
+ 
+-	plug = bmp_get_and_clear_status_bit(&pd->bmp);
++	asm volatile("cntlzd %0,%1" : "=r" (plug) : "r" (x));
++	plug &= 0x3f;
+ 
+-	if (plug < 1) {
++	if (unlikely(plug) == NO_IRQ) {
+ 		pr_debug("%s:%d: no plug found: cpu %u\n", __func__, __LINE__,
+ 			pd->cpu);
+ 		dump_bmp(&per_cpu(ps3_private, 0));
+@@ -529,7 +520,7 @@ unsigned int ps3_get_irq(void)
  	}
  
--	result = set_irq_chip_data(virq, &per_cpu(ps3_private, cpu));
-+	result = set_irq_chip_data(virq, pd);
- 	BUG_ON(result);
- 
- 	set_irq_chip_and_handler(virq, &irq_chip, handle_fasteoi_irq);
- 
--	pr_debug(" <- %s:%d\n", __func__, __LINE__);
- 	return result;
- }
- 
-@@ -544,12 +541,9 @@ unsigned int ps3_get_irq(void)
- void __init ps3_init_IRQ(void)
- {
- 	int result;
--	unsigned long node;
- 	unsigned cpu;
- 	struct irq_host *host;
- 
--	lv1_get_logical_ppe_id(&node);
--
- 	host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, 0, &ps3_host_ops,
- 		PS3_INVALID_OUTLET);
- 	irq_set_default_host(host);
-@@ -558,12 +552,16 @@ void __init ps3_init_IRQ(void)
- 	for_each_possible_cpu(cpu) {
- 		struct ps3_private *pd = &per_cpu(ps3_private, cpu);
- 
--		pd->node = node;
--		pd->cpu = cpu;
-+		lv1_get_logical_ppe_id(&pd->node);
-+		pd->cpu = get_hard_smp_processor_id(cpu);
- 		spin_lock_init(&pd->bmp.lock);
- 
--		result = lv1_configure_irq_state_bitmap(node, cpu,
--			ps3_mm_phys_to_lpar(__pa(&pd->bmp.status)));
-+		pr_debug("%s:%d: node %lu, cpu %d, bmp %lxh\n", __func__,
-+			__LINE__, pd->node, pd->cpu,
-+			ps3_mm_phys_to_lpar(__pa(&pd->bmp)));
-+
-+		result = lv1_configure_irq_state_bitmap(pd->node, pd->cpu,
-+			ps3_mm_phys_to_lpar(__pa(&pd->bmp)));
- 
- 		if (result)
- 			pr_debug("%s:%d: lv1_configure_irq_state_bitmap failed:"
+ #if defined(DEBUG)
+-	if (plug < NUM_ISA_INTERRUPTS || plug > PS3_PLUG_MAX) {
++	if (unlikely(plug < NUM_ISA_INTERRUPTS || plug > PS3_PLUG_MAX)) {
+ 		dump_bmp(&per_cpu(ps3_private, 0));
+ 		dump_bmp(&per_cpu(ps3_private, 1));
+ 		BUG();
