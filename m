@@ -1,16 +1,16 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound8-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
+Received: from outbound4-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B8139DE822
-	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 14:09:06 +1100 (EST)
-Message-ID: <45BAC22D.7060800@am.sony.com>
-Date: Fri, 26 Jan 2007 19:08:29 -0800
+	by ozlabs.org (Postfix) with ESMTP id E3606DE0CE
+	for <linuxppc-dev@ozlabs.org>; Sat, 27 Jan 2007 14:11:54 +1100 (EST)
+Message-ID: <45BAC207.9030101@am.sony.com>
+Date: Fri, 26 Jan 2007 19:07:51 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 16/16] ps3: ps3_defconfig updates
+Subject: [PATCH 3/16] ps3: repository storage support
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,377 +22,294 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Updates for ps3_defconfig.
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
+Handle storage-related repository data:
+  - Add missing implementations of ps3_repository_read_stor_*() repository
+    accessors.
+  - Dump storage properties in debug mode
+  - Add PS3_DEV_TYPE_STOR_{DISK,ROM,FLASH} device types (which are identical to
+    the corresponding SCSI device types) to enum ps3_dev_type
+
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
+ arch/powerpc/platforms/ps3/repository.c |  185 +++++++++++++++++++++++++++++++-
+ include/asm-powerpc/ps3.h               |   24 ++--
+ 2 files changed, 200 insertions(+), 9 deletions(-)
 
-Enabled some USB_NET options as requested by Arnd.
-
- arch/powerpc/configs/ps3_defconfig |  225 ++++++++++++++++++++++++++++++++-----
- 1 files changed, 200 insertions(+), 25 deletions(-)
-
---- ps3-linux-dev.orig/arch/powerpc/configs/ps3_defconfig
-+++ ps3-linux-dev/arch/powerpc/configs/ps3_defconfig
-@@ -1,7 +1,7 @@
- #
- # Automatically generated make config: don't edit
--# Linux kernel version: 2.6.20-rc5
--# Mon Jan 22 22:29:11 2007
-+# Linux kernel version: 2.6.20-rc6
-+# Thu Jan 25 13:35:34 2007
- #
- CONFIG_PPC64=y
- CONFIG_64BIT=y
-@@ -70,10 +70,10 @@ CONFIG_SYSVIPC=y
- CONFIG_SYSFS_DEPRECATED=y
- # CONFIG_RELAY is not set
- CONFIG_INITRAMFS_SOURCE=""
--# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_CC_OPTIMIZE_FOR_SIZE=y
- CONFIG_SYSCTL=y
--CONFIG_EMBEDDED=y
--# CONFIG_SYSCTL_SYSCALL is not set
-+# CONFIG_EMBEDDED is not set
-+CONFIG_SYSCTL_SYSCALL=y
- CONFIG_KALLSYMS=y
- CONFIG_KALLSYMS_ALL=y
- CONFIG_KALLSYMS_EXTRA_PASS=y
-@@ -160,7 +160,7 @@ CONFIG_SPU_BASE=y
- # PS3 Platform Options
- #
- CONFIG_PS3_HTAB_SIZE=20
--CONFIG_PS3_DYNAMIC_DMA=y
-+# CONFIG_PS3_DYNAMIC_DMA is not set
- CONFIG_PS3_USE_LPAR_ADDR=y
- CONFIG_PS3_VUART=y
+--- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/repository.c
++++ ps3-linux-dev/arch/powerpc/platforms/ps3/repository.c
+@@ -368,7 +368,55 @@ int ps3_repository_dump_resource_info(un
+ 	return result;
+ }
  
-@@ -207,7 +207,7 @@ CONFIG_PPC_64K_PAGES=y
- # CONFIG_SCHED_SMT is not set
- CONFIG_PROC_DEVICETREE=y
- CONFIG_CMDLINE_BOOL=y
--CONFIG_CMDLINE="root=/dev/nfs rw ip=dhcp"
-+CONFIG_CMDLINE="root=/dev/sda1 ip=dhcp"
- # CONFIG_PM is not set
- # CONFIG_SECCOMP is not set
- CONFIG_ISA_DMA_API=y
-@@ -240,7 +240,8 @@ CONFIG_NET=y
- # Networking options
- #
- # CONFIG_NETDEBUG is not set
--# CONFIG_PACKET is not set
-+CONFIG_PACKET=y
-+CONFIG_PACKET_MMAP=y
- CONFIG_UNIX=y
- # CONFIG_NET_KEY is not set
- CONFIG_INET=y
-@@ -353,6 +354,7 @@ CONFIG_PREVENT_FIRMWARE_BUILD=y
- # CONFIG_BLK_DEV_COW_COMMON is not set
- # CONFIG_BLK_DEV_LOOP is not set
- # CONFIG_BLK_DEV_NBD is not set
-+# CONFIG_BLK_DEV_UB is not set
- # CONFIG_BLK_DEV_RAM is not set
- # CONFIG_BLK_DEV_INITRD is not set
- # CONFIG_CDROM_PKTCDVD is not set
-@@ -380,10 +382,11 @@ CONFIG_SCSI_PROC_FS=y
- #
- # SCSI support type (disk, tape, CD-ROM)
- #
--# CONFIG_BLK_DEV_SD is not set
-+CONFIG_BLK_DEV_SD=y
- # CONFIG_CHR_DEV_ST is not set
- # CONFIG_CHR_DEV_OSST is not set
--# CONFIG_BLK_DEV_SR is not set
-+CONFIG_BLK_DEV_SR=y
-+# CONFIG_BLK_DEV_SR_VENDOR is not set
- # CONFIG_CHR_DEV_SG is not set
- # CONFIG_CHR_DEV_SCH is not set
+-static int dump_device_info(unsigned int bus_index, unsigned int num_dev)
++static int dump_stor_dev_info(unsigned int bus_index, unsigned int dev_index)
++{
++	int result = 0;
++	unsigned int num_regions, region_index;
++	u64 port, blk_size, num_blocks;
++
++	pr_debug(" -> %s:%d: (%u:%u)\n", __func__, __LINE__,
++		bus_index, dev_index);
++
++	result = ps3_repository_read_stor_dev_info(bus_index, dev_index, &port,
++		&blk_size, &num_blocks, &num_regions);
++	if (result) {
++		pr_debug("%s:%d ps3_repository_read_stor_dev_info"
++			" (%u:%u) failed\n", __func__, __LINE__,
++			bus_index, dev_index);
++		goto out;
++	}
++
++	pr_debug("%s:%d  (%u:%u): port %lu, blk_size %lu, num_blocks "
++		 "%lu, num_regions %u\n",
++		 __func__, __LINE__, bus_index, dev_index, port,
++		 blk_size, num_blocks, num_regions);
++
++	for (region_index = 0; region_index < num_regions; region_index++) {
++		unsigned int region_id;
++		u64 region_start, region_size;
++
++		result = ps3_repository_read_stor_dev_region(bus_index,
++			dev_index, region_index, &region_id, &region_start,
++			&region_size);
++		if (result) {
++			 pr_debug("%s:%d ps3_repository_read_stor_dev_region"
++				  " (%u:%u) failed\n", __func__, __LINE__,
++				  bus_index, dev_index);
++			break;
++		}
++
++		pr_debug("%s:%d (%u:%u) region_id %u, start %lxh, size %lxh\n",
++			 __func__, __LINE__, bus_index, dev_index, region_id,
++			 region_start, region_size);
++	}
++
++out:
++	pr_debug(" <- %s:%d\n", __func__, __LINE__);
++	return result;
++}
++
++static int dump_device_info(unsigned int bus_index, enum ps3_bus_type bus_type,
++			    unsigned int num_dev)
+ {
+ 	int result = 0;
+ 	unsigned int dev_index;
+@@ -403,6 +451,9 @@ static int dump_device_info(unsigned int
+ 			__LINE__, bus_index, dev_index, dev_type, dev_id);
  
-@@ -456,6 +459,7 @@ CONFIG_NETDEVICES=y
- # Ethernet (10 or 100Mbit)
- #
- # CONFIG_NET_ETHERNET is not set
-+CONFIG_MII=y
+ 		ps3_repository_dump_resource_info(bus_index, dev_index);
++
++		if (bus_type == PS3_BUS_TYPE_STORAGE)
++			dump_stor_dev_info(bus_index, dev_index);
+ 	}
  
- #
- # Ethernet (1000 Mbit)
-@@ -504,10 +508,13 @@ CONFIG_INPUT=y
- #
- # Userland interfaces
- #
--# CONFIG_INPUT_MOUSEDEV is not set
-+CONFIG_INPUT_MOUSEDEV=y
-+# CONFIG_INPUT_MOUSEDEV_PSAUX is not set
-+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
- # CONFIG_INPUT_JOYDEV is not set
- # CONFIG_INPUT_TSDEV is not set
--CONFIG_INPUT_EVDEV=y
-+# CONFIG_INPUT_EVDEV is not set
- # CONFIG_INPUT_EVBUG is not set
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+@@ -453,7 +504,7 @@ int ps3_repository_dump_bus_info(void)
+ 			__func__, __LINE__, bus_index, bus_type, bus_id,
+ 			num_dev);
  
- #
-@@ -598,6 +605,7 @@ CONFIG_GEN_RTC=y
- # Digital Video Broadcasting Devices
- #
- # CONFIG_DVB is not set
-+# CONFIG_USB_DABUSB is not set
+-		dump_device_info(bus_index, num_dev);
++		dump_device_info(bus_index, bus_type, num_dev);
+ 	}
  
- #
- # Graphics support
-@@ -626,15 +634,132 @@ CONFIG_HID=y
- #
- # USB support
- #
--# CONFIG_USB_ARCH_HAS_HCD is not set
--# CONFIG_USB_ARCH_HAS_OHCI is not set
--# CONFIG_USB_ARCH_HAS_EHCI is not set
-+CONFIG_USB_ARCH_HAS_HCD=y
-+CONFIG_USB_ARCH_HAS_OHCI=y
-+CONFIG_USB_ARCH_HAS_EHCI=y
-+CONFIG_USB=y
-+CONFIG_USB_DEBUG=y
-+
-+#
-+# Miscellaneous USB options
-+#
-+# CONFIG_USB_DEVICEFS is not set
-+# CONFIG_USB_BANDWIDTH is not set
-+# CONFIG_USB_DYNAMIC_MINORS is not set
-+# CONFIG_USB_OTG is not set
-+
-+#
-+# USB Host Controller Drivers
-+#
-+CONFIG_USB_EHCI_HCD=y
-+# CONFIG_USB_EHCI_SPLIT_ISO is not set
-+# CONFIG_USB_EHCI_ROOT_HUB_TT is not set
-+# CONFIG_USB_EHCI_TT_NEWSCHED is not set
-+CONFIG_USB_EHCI_BIG_ENDIAN_MMIO=y
-+# CONFIG_USB_ISP116X_HCD is not set
-+CONFIG_USB_OHCI_HCD=y
-+# CONFIG_USB_OHCI_HCD_PPC_OF is not set
-+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
-+CONFIG_USB_OHCI_BIG_ENDIAN_MMIO=y
-+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-+# CONFIG_USB_SL811_HCD is not set
-+
-+#
-+# USB Device Class drivers
-+#
-+# CONFIG_USB_ACM is not set
-+# CONFIG_USB_PRINTER is not set
+ 	pr_debug(" <- %s:%d\n", __func__, __LINE__);
+@@ -657,6 +708,136 @@ int ps3_repository_find_reg(const struct
+ 	return result;
+ }
  
- #
- # NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
- #
++int ps3_repository_read_stor_dev_port(unsigned int bus_index,
++	unsigned int dev_index, u64 *port)
++{
++	return read_node(PS3_LPAR_ID_PME,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("port", 0),
++		0, port, 0);
++}
++
++int ps3_repository_read_stor_dev_blk_size(unsigned int bus_index,
++	unsigned int dev_index, u64 *blk_size)
++{
++	return read_node(PS3_LPAR_ID_PME,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("blk_size", 0),
++		0, blk_size, 0);
++}
++
++int ps3_repository_read_stor_dev_num_blocks(unsigned int bus_index,
++	unsigned int dev_index, u64 *num_blocks)
++{
++	return read_node(PS3_LPAR_ID_PME,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("n_blocks", 0),
++		0, num_blocks, 0);
++}
++
++int ps3_repository_read_stor_dev_num_regions(unsigned int bus_index,
++	unsigned int dev_index, unsigned int *num_regions)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(PS3_LPAR_ID_PME,
++		make_first_field("bus", bus_index),
++		make_field("dev", dev_index),
++		make_field("n_regs", 0),
++		0, &v1, 0);
++	*num_regions = v1;
++	return result;
++}
++
++int ps3_repository_read_stor_dev_region_id(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index,
++	unsigned int *region_id)
++{
++	int result;
++	u64 v1;
++
++	result = read_node(PS3_LPAR_ID_PME,
++	    make_first_field("bus", bus_index),
++	    make_field("dev", dev_index),
++	    make_field("region", region_index),
++	    make_field("id", 0),
++	    &v1, 0);
++	*region_id = v1;
++	return result;
++}
++
++int ps3_repository_read_stor_dev_region_size(unsigned int bus_index,
++	unsigned int dev_index,	unsigned int region_index, u64 *region_size)
++{
++	return read_node(PS3_LPAR_ID_PME,
++	    make_first_field("bus", bus_index),
++	    make_field("dev", dev_index),
++	    make_field("region", region_index),
++	    make_field("size", 0),
++	    region_size, 0);
++}
++
++int ps3_repository_read_stor_dev_region_start(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index, u64 *region_start)
++{
++	return read_node(PS3_LPAR_ID_PME,
++	    make_first_field("bus", bus_index),
++	    make_field("dev", dev_index),
++	    make_field("region", region_index),
++	    make_field("start", 0),
++	    region_start, 0);
++}
++
++int ps3_repository_read_stor_dev_info(unsigned int bus_index,
++	unsigned int dev_index, u64 *port, u64 *blk_size,
++	u64 *num_blocks, unsigned int *num_regions)
++{
++	int result;
++
++	result = ps3_repository_read_stor_dev_port(bus_index, dev_index, port);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_blk_size(bus_index, dev_index,
++		blk_size);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_num_blocks(bus_index, dev_index,
++		num_blocks);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_num_regions(bus_index, dev_index,
++		num_regions);
++	return result;
++}
++
++int ps3_repository_read_stor_dev_region(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index,
++	unsigned int *region_id, u64 *region_start, u64 *region_size)
++{
++	int result;
++
++	result = ps3_repository_read_stor_dev_region_id(bus_index, dev_index,
++		region_index, region_id);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_region_start(bus_index, dev_index,
++		region_index, region_start);
++	if (result)
++	    return result;
++
++	result = ps3_repository_read_stor_dev_region_size(bus_index, dev_index,
++		region_index, region_size);
++	return result;
++}
++
+ int ps3_repository_read_rm_size(unsigned int ppe_id, u64 *rm_size)
+ {
+ 	return read_node(PS3_LPAR_ID_CURRENT,
+--- ps3-linux-dev.orig/include/asm-powerpc/ps3.h
++++ ps3-linux-dev/include/asm-powerpc/ps3.h
+@@ -25,6 +25,7 @@
+ #include <linux/init.h>
+ #include <linux/types.h>
+ #include <linux/device.h>
++#include <scsi/scsi.h>
  
- #
-+# may also be needed; see USB_STORAGE Help for more information
-+#
-+# CONFIG_USB_STORAGE is not set
-+# CONFIG_USB_LIBUSUAL is not set
-+
-+#
-+# USB Input Devices
-+#
-+CONFIG_USB_HID=y
-+# CONFIG_USB_HIDINPUT_POWERBOOK is not set
-+# CONFIG_HID_FF is not set
-+# CONFIG_USB_HIDDEV is not set
-+# CONFIG_USB_AIPTEK is not set
-+# CONFIG_USB_WACOM is not set
-+# CONFIG_USB_ACECAD is not set
-+# CONFIG_USB_KBTAB is not set
-+# CONFIG_USB_POWERMATE is not set
-+# CONFIG_USB_TOUCHSCREEN is not set
-+# CONFIG_USB_YEALINK is not set
-+# CONFIG_USB_XPAD is not set
-+# CONFIG_USB_ATI_REMOTE is not set
-+# CONFIG_USB_ATI_REMOTE2 is not set
-+# CONFIG_USB_KEYSPAN_REMOTE is not set
-+# CONFIG_USB_APPLETOUCH is not set
-+
-+#
-+# USB Imaging devices
-+#
-+# CONFIG_USB_MDC800 is not set
-+# CONFIG_USB_MICROTEK is not set
-+
-+#
-+# USB Network Adapters
-+#
-+# CONFIG_USB_CATC is not set
-+# CONFIG_USB_KAWETH is not set
-+# CONFIG_USB_PEGASUS is not set
-+# CONFIG_USB_RTL8150 is not set
-+CONFIG_USB_USBNET_MII=y
-+CONFIG_USB_USBNET=y
-+CONFIG_USB_NET_CDCETHER=y
-+# CONFIG_USB_NET_GL620A is not set
-+# CONFIG_USB_NET_NET1080 is not set
-+# CONFIG_USB_NET_PLUSB is not set
-+CONFIG_USB_NET_MCS7830=y
-+# CONFIG_USB_NET_RNDIS_HOST is not set
-+# CONFIG_USB_NET_CDC_SUBSET is not set
-+# CONFIG_USB_NET_ZAURUS is not set
-+CONFIG_USB_MON=y
-+
-+#
-+# USB port drivers
-+#
-+
-+#
-+# USB Serial Converter support
-+#
-+# CONFIG_USB_SERIAL is not set
-+
-+#
-+# USB Miscellaneous drivers
-+#
-+# CONFIG_USB_EMI62 is not set
-+# CONFIG_USB_EMI26 is not set
-+# CONFIG_USB_ADUTUX is not set
-+# CONFIG_USB_AUERSWALD is not set
-+# CONFIG_USB_RIO500 is not set
-+# CONFIG_USB_LEGOTOWER is not set
-+# CONFIG_USB_LCD is not set
-+# CONFIG_USB_LED is not set
-+# CONFIG_USB_CYPRESS_CY7C63 is not set
-+# CONFIG_USB_CYTHERM is not set
-+# CONFIG_USB_PHIDGET is not set
-+# CONFIG_USB_IDMOUSE is not set
-+# CONFIG_USB_FTDI_ELAN is not set
-+# CONFIG_USB_APPLEDISPLAY is not set
-+# CONFIG_USB_SISUSBVGA is not set
-+# CONFIG_USB_LD is not set
-+# CONFIG_USB_TRANCEVIBRATOR is not set
-+
-+#
-+# USB DSL modem support
-+#
-+
-+#
- # USB Gadget Support
- #
- # CONFIG_USB_GADGET is not set
-@@ -691,8 +816,14 @@ CONFIG_HID=y
- # File systems
- #
- # CONFIG_EXT2_FS is not set
--# CONFIG_EXT3_FS is not set
-+CONFIG_EXT3_FS=y
-+CONFIG_EXT3_FS_XATTR=y
-+# CONFIG_EXT3_FS_POSIX_ACL is not set
-+# CONFIG_EXT3_FS_SECURITY is not set
- # CONFIG_EXT4DEV_FS is not set
-+CONFIG_JBD=y
-+# CONFIG_JBD_DEBUG is not set
-+CONFIG_FS_MBCACHE=y
- # CONFIG_REISERFS_FS is not set
- # CONFIG_JFS_FS is not set
- # CONFIG_FS_POSIX_ACL is not set
-@@ -712,8 +843,11 @@ CONFIG_DNOTIFY=y
- #
- # CD-ROM/DVD Filesystems
- #
--# CONFIG_ISO9660_FS is not set
--# CONFIG_UDF_FS is not set
-+CONFIG_ISO9660_FS=y
-+CONFIG_JOLIET=y
-+# CONFIG_ZISOFS is not set
-+CONFIG_UDF_FS=y
-+CONFIG_UDF_NLS=y
+ /**
+  * struct ps3_device_id - HV bus device identifier from the system repository
+@@ -255,9 +256,12 @@ enum ps3_bus_type {
+ };
  
- #
- # DOS/FAT/NT Filesystems
-@@ -785,7 +919,46 @@ CONFIG_MSDOS_PARTITION=y
- #
- # Native Language Support
- #
--# CONFIG_NLS is not set
-+CONFIG_NLS=y
-+CONFIG_NLS_DEFAULT="iso8859-1"
-+# CONFIG_NLS_CODEPAGE_437 is not set
-+# CONFIG_NLS_CODEPAGE_737 is not set
-+# CONFIG_NLS_CODEPAGE_775 is not set
-+# CONFIG_NLS_CODEPAGE_850 is not set
-+# CONFIG_NLS_CODEPAGE_852 is not set
-+# CONFIG_NLS_CODEPAGE_855 is not set
-+# CONFIG_NLS_CODEPAGE_857 is not set
-+# CONFIG_NLS_CODEPAGE_860 is not set
-+# CONFIG_NLS_CODEPAGE_861 is not set
-+# CONFIG_NLS_CODEPAGE_862 is not set
-+# CONFIG_NLS_CODEPAGE_863 is not set
-+# CONFIG_NLS_CODEPAGE_864 is not set
-+# CONFIG_NLS_CODEPAGE_865 is not set
-+# CONFIG_NLS_CODEPAGE_866 is not set
-+# CONFIG_NLS_CODEPAGE_869 is not set
-+# CONFIG_NLS_CODEPAGE_936 is not set
-+# CONFIG_NLS_CODEPAGE_950 is not set
-+# CONFIG_NLS_CODEPAGE_932 is not set
-+# CONFIG_NLS_CODEPAGE_949 is not set
-+# CONFIG_NLS_CODEPAGE_874 is not set
-+# CONFIG_NLS_ISO8859_8 is not set
-+# CONFIG_NLS_CODEPAGE_1250 is not set
-+# CONFIG_NLS_CODEPAGE_1251 is not set
-+# CONFIG_NLS_ASCII is not set
-+# CONFIG_NLS_ISO8859_1 is not set
-+# CONFIG_NLS_ISO8859_2 is not set
-+# CONFIG_NLS_ISO8859_3 is not set
-+# CONFIG_NLS_ISO8859_4 is not set
-+# CONFIG_NLS_ISO8859_5 is not set
-+# CONFIG_NLS_ISO8859_6 is not set
-+# CONFIG_NLS_ISO8859_7 is not set
-+# CONFIG_NLS_ISO8859_9 is not set
-+# CONFIG_NLS_ISO8859_13 is not set
-+# CONFIG_NLS_ISO8859_14 is not set
-+# CONFIG_NLS_ISO8859_15 is not set
-+# CONFIG_NLS_KOI8_R is not set
-+# CONFIG_NLS_KOI8_U is not set
-+# CONFIG_NLS_UTF8 is not set
+ enum ps3_dev_type {
++	PS3_DEV_TYPE_STOR_DISK = TYPE_DISK,	/* 0 */
+ 	PS3_DEV_TYPE_SB_GELIC = 3,
+ 	PS3_DEV_TYPE_SB_USB = 4,
++	PS3_DEV_TYPE_STOR_ROM = TYPE_ROM,	/* 5 */
+ 	PS3_DEV_TYPE_SB_GPIO = 6,
++	PS3_DEV_TYPE_STOR_FLASH = TYPE_RBC,	/* 14 */
+ };
  
- #
- # Distributed Lock Manager
-@@ -795,9 +968,10 @@ CONFIG_MSDOS_PARTITION=y
- #
- # Library routines
- #
-+CONFIG_BITREVERSE=y
- # CONFIG_CRC_CCITT is not set
- # CONFIG_CRC16 is not set
--# CONFIG_CRC32 is not set
-+CONFIG_CRC32=y
- # CONFIG_LIBCRC32C is not set
- CONFIG_PLIST=y
- CONFIG_IOMAP_COPY=y
-@@ -821,22 +995,23 @@ CONFIG_DEBUG_KERNEL=y
- CONFIG_LOG_BUF_SHIFT=17
- CONFIG_DETECT_SOFTLOCKUP=y
- # CONFIG_SCHEDSTATS is not set
--# CONFIG_DEBUG_SLAB is not set
-+CONFIG_DEBUG_SLAB=y
-+# CONFIG_DEBUG_SLAB_LEAK is not set
- # CONFIG_DEBUG_RT_MUTEXES is not set
- # CONFIG_RT_MUTEX_TESTER is not set
- CONFIG_DEBUG_SPINLOCK=y
--# CONFIG_DEBUG_MUTEXES is not set
--# CONFIG_DEBUG_RWSEMS is not set
-+CONFIG_DEBUG_MUTEXES=y
-+CONFIG_DEBUG_RWSEMS=y
- CONFIG_DEBUG_SPINLOCK_SLEEP=y
- # CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
- # CONFIG_DEBUG_KOBJECT is not set
--# CONFIG_DEBUG_BUGVERBOSE is not set
-+CONFIG_DEBUG_BUGVERBOSE=y
- CONFIG_DEBUG_INFO=y
- # CONFIG_DEBUG_VM is not set
- CONFIG_DEBUG_LIST=y
- CONFIG_FORCED_INLINING=y
- # CONFIG_RCU_TORTURE_TEST is not set
--# CONFIG_DEBUG_STACKOVERFLOW is not set
-+CONFIG_DEBUG_STACKOVERFLOW=y
- # CONFIG_DEBUG_STACK_USAGE is not set
- # CONFIG_DEBUGGER is not set
- CONFIG_IRQSTACKS=y
+ int ps3_repository_read_bus_str(unsigned int bus_index, const char *bus_str,
+@@ -327,21 +331,27 @@ int ps3_repository_find_reg(const struct
+ 
+ /* repository block device info */
+ 
+-int ps3_repository_read_dev_port(unsigned int bus_index,
++int ps3_repository_read_stor_dev_port(unsigned int bus_index,
+ 	unsigned int dev_index, u64 *port);
+-int ps3_repository_read_dev_blk_size(unsigned int bus_index,
++int ps3_repository_read_stor_dev_blk_size(unsigned int bus_index,
+ 	unsigned int dev_index, u64 *blk_size);
+-int ps3_repository_read_dev_num_blocks(unsigned int bus_index,
++int ps3_repository_read_stor_dev_num_blocks(unsigned int bus_index,
+ 	unsigned int dev_index, u64 *num_blocks);
+-int ps3_repository_read_dev_num_regions(unsigned int bus_index,
++int ps3_repository_read_stor_dev_num_regions(unsigned int bus_index,
+ 	unsigned int dev_index, unsigned int *num_regions);
+-int ps3_repository_read_dev_region_id(unsigned int bus_index,
++int ps3_repository_read_stor_dev_region_id(unsigned int bus_index,
+ 	unsigned int dev_index, unsigned int region_index,
+ 	unsigned int *region_id);
+-int ps3_repository_read_dev_region_size(unsigned int bus_index,
++int ps3_repository_read_stor_dev_region_size(unsigned int bus_index,
+ 	unsigned int dev_index,	unsigned int region_index, u64 *region_size);
+-int ps3_repository_read_dev_region_start(unsigned int bus_index,
++int ps3_repository_read_stor_dev_region_start(unsigned int bus_index,
+ 	unsigned int dev_index, unsigned int region_index, u64 *region_start);
++int ps3_repository_read_stor_dev_info(unsigned int bus_index,
++	unsigned int dev_index, u64 *port, u64 *blk_size,
++	u64 *num_blocks, unsigned int *num_regions);
++int ps3_repository_read_stor_dev_region(unsigned int bus_index,
++	unsigned int dev_index, unsigned int region_index,
++	unsigned int *region_id, u64 *region_start, u64 *region_size);
+ 
+ /* repository pu and memory info */
+ 
