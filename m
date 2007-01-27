@@ -1,20 +1,17 @@
-Return-Path: <rmcguire@uwbt.com>
-Received: from mail19d.g19.rapidsite.net (mail19d.g19.rapidsite.net
-	[204.202.242.120]) by ozlabs.org (Postfix) with SMTP id 9F70CDE198
+Return-Path: <jimmyzhmliu@yahoo.com>
+Received: from web53111.mail.yahoo.com (web53111.mail.yahoo.com
+	[206.190.49.61]) by ozlabs.org (Postfix) with SMTP id 8F169DDEEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 27 Jan 2007 12:05:14 +1100 (EST)
-Received: from mx11.stngva01.us.mxservers.net (204.202.242.100)
-	by mail19d.g19.rapidsite.net (RS ver 1.0.95vs) with SMTP id
-	2-0782859912 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 26 Jan 2007 20:05:12 -0500 (EST)
-From: "Russell McGuire" <rmcguire@uwbt.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: FW: Boot w/ VGA console - PCI nvidia
-Date: Fri, 26 Jan 2007 17:05:09 -0800
-Message-ID: <000001c741af$310ff4c0$6405a8c0@absolut>
+	Sat, 27 Jan 2007 15:31:04 +1100 (EST)
+Date: Fri, 26 Jan 2007 20:31:02 -0800 (PST)
+From: jimmy liu <jimmyzhmliu@yahoo.com>
+Subject: RE: MPC8260 I2C Problem
+To: Li Yang-r58472 <LeoLi@freescale.com>,
+	embedded linuxppc <linuxppc-embedded@ozlabs.org>
+In-Reply-To: <989B956029373F45A0B8AF0297081890087468@zch01exm26.fsl.freescale.net>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_0001_01C7416C.22ECB4C0"
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <453204.70143.qm@web53111.mail.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,205 +22,108 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+I got it.
 
-------=_NextPart_000_0001_01C7416C.22ECB4C0
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: 7bit
+In the board environment, we have to define the
+BOARD_CHIP_NAME. It looks like:
+#define BOARD_CHIP_NAME "8260"
 
-All,
+--- Li Yang-r58472 <LeoLi@freescale.com> wrote:
+
+> You are talking about the wrong i2c driver.  For
+> 8260, you need a cpm
+> i2c driver, not the i2c-mpc driver.
+> 
+> - Leo
+> 
+> > -----Original Message-----
+> > From:
+>
+linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org
+> >
+>
+[mailto:linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org]
+> On
+> Behalf Of
+> > jimmy liu
+> > Sent: Friday, January 26, 2007 1:06 AM
+> > To: embedded linuxppc
+> > Subject: RE: MPC8260 I2C Problem
+> > 
+> > In the arch\ppc\syslib\pq2_devices.c, there has
+> the
+> > device descriptions.
+> > Do I still need manually create the plateform bus
+> > tree?
+> > 
+> > --- Li Yang-r58472 <LeoLi@freescale.com> wrote:
+> > 
+> > > > -----Original Message-----
+> > > > From:
+> > >
+> >
+>
+linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org
+> > > >
+> > >
+> >
+>
+[mailto:linuxppc-embedded-bounces+leoli=freescale.com@ozlabs.org]
+> > > On
+> > > Behalf Of
+> > > > jimmy liu
+> > > > Sent: Thursday, January 25, 2007 11:22 AM
+> > > > To: embedded linuxppc
+> > > > Subject: MPC8260 I2C Problem
+> > > >
+> > > > I download the linux kernel 2.6.19 from
+> > > > ftp://ftp.denx.de/pub/linux/ site.
+> > > >
+> > > > When I add mpc8260 I2C driver to Linux kernel
+> > > 2.6.19,
+> > > > the init function looks like that
+> > > > static int __init fsl_i2c_init(void)
+> > > > {
+> > > > 	return driver_register(&fsl_i2c_driver);
+> > > > }
+> > > > I set the debug on, and found that the
+> > > fsl_i2c_probe()
+> > > > function is never called, so there is not I2C
+> > > device
+> > > > enabled, and the user space function
+> > > > open("/dev/i2c-0",O_RDWR) always return error.
+> I
+> > > set
+> > > > something wrong? Could somebody help me?
+> > >
+> > > Do you have an fsl-i2c node in your device tree?
+> > >
+> > > - Leo
+> > >
+> > 
+> > 
+> > 
+> > 
+> >
+>
+________________________________________________________________________
+> ______
+> > ______
+> > Don't pick lemons.
+> > See all the new 2007 cars at Yahoo! Autos.
+> > http://autos.yahoo.com/new_cars.html
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> >
+>
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> 
+
+
 
  
-
-I have finally got my linux kernel up and working and was able to log in via
-the serial port, i.e. console=/dev/ttyS0, Using root file system over NFS.
-Everything seems to work fine, thanks to Leo and Kumar for pointing me to
-the right /git/ tree.
-
- 
-
-Next I have plugged in a nVidia GeForce FX5200 PCI card, and compiled in the
-nvidafb driver.
-
-I can see clearly the PCI card is being detected and the nvidiafb driver is
-being registerd, it can even detect the monitor I have connected.
-
- 
-
-However, when I enabled the kernel to use the framer buffer console, by
-compiling in that feature, it just 'seems' to hang after the console_init
-call.
-
- 
-
-I know I am missing something with either a 'bootargs' variable, or perhaps
-a mis-configured set of compile options, i.e. perhaps to many frame buffer
-drivers inside the kernel that may conflict???
-
- 
-
-Does anyone have a 101 on how to enable basic 640x480 or 800x600 using
-either the nvidiafb or perhaps a more rudimentary driver, vga only?
-
- 
-
-Thanks,
-
- 
-
--Russ
-
-
-------=_NextPart_000_0001_01C7416C.22ECB4C0
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-p
-	{mso-margin-top-alt:auto;
-	margin-right:0in;
-	mso-margin-bottom-alt:auto;
-	margin-left:0in;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-span.EmailStyle18
-	{mso-style-type:personal;
-	font-family:Arial;
-	color:windowtext;}
-span.EmailStyle19
-	{mso-style-type:personal-reply;
-	font-family:Arial;
-	color:navy;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>All,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I have finally got my linux kernel up and working and =
-was
-able to log in via the serial port, i.e. console=3D/dev/ttyS0, Using =
-root file
-system over NFS. Everything seems to work fine, thanks to Leo and Kumar =
-for
-pointing me to the right /git/ tree.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Next I have plugged in a nVidia GeForce FX5200 PCI =
-card, and
-compiled in the nvidafb driver.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I can see clearly the PCI card is being detected and =
-the
-nvidiafb driver is being registerd, it can even detect the monitor I =
-have
-connected.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>However, when I enabled the kernel to use the framer =
-buffer
-console, by compiling in that feature, it just &#8216;seems&#8217; to =
-hang
-after the console_init call.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I know I am missing something with either a
-&#8216;bootargs&#8217; variable, or perhaps a mis-configured set of =
-compile
-options, i.e. perhaps to many frame buffer drivers inside the kernel =
-that may
-conflict???<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Does anyone have a 101 on how to enable basic 640x480 =
-or
-800x600 using either the nvidiafb or perhaps a more rudimentary driver, =
-vga
-only?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>-Russ<o:p></o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_0001_01C7416C.22ECB4C0--
+____________________________________________________________________________________
+Looking for earth-friendly autos? 
+Browse Top Cars by "Green Rating" at Yahoo! Autos' Green Center.
+http://autos.yahoo.com/green_center/
