@@ -3,26 +3,26 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0DBB6DE151
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 09:12:23 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 495ABDE42B
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 09:19:44 +1100 (EST)
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 0/6] MSI portability cleanups
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 1/6] msi: Kill msi_lookup_irq
 References: <1169714047.65693.647693675533.qpush@cradle>
 	<m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
-	<1170015805.26655.15.camel@localhost.localdomain>
-	<45BD0BDC.40205@garzik.org>
-Date: Sun, 28 Jan 2007 15:11:34 -0700
-In-Reply-To: <45BD0BDC.40205@garzik.org> (Jeff Garzik's message of "Sun, 28
-	Jan 2007 15:47:24 -0500")
-Message-ID: <m1y7nmol7t.fsf@ebiederm.dsl.xmission.com>
+	<m1d54zq6o3.fsf_-_@ebiederm.dsl.xmission.com>
+	<17853.7463.911235.324340@cargo.ozlabs.ibm.com>
+Date: Sun, 28 Jan 2007 15:18:55 -0700
+In-Reply-To: <17853.7463.911235.324340@cargo.ozlabs.ibm.com> (Paul Mackerras's
+	message of "Mon, 29 Jan 2007 09:01:11 +1100")
+Message-ID: <m1slduokvk.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: Tony Luck <tony.luck@intel.com>, Grant Grundler <grundler@parisc-linux.org>,
-	"David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+	"David S. Miller" <davem@davemloft.net>,
+	Greg Kroah-Hartman <greg@kroah.com>, linux-kernel@vger.kernel.org,
 	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Brice Goglin <brice@myri.com>,
-	Greg Kroah-Hartman <greg@kroah.com>, shaohua.li@intel.com,
+	Brice Goglin <brice@myri.com>, shaohua.li@intel.com,
 	Ingo Molnar <mingo@elte.hu>, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -33,45 +33,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jeff Garzik <jeff@garzik.org> writes:
+Paul Mackerras <paulus@samba.org> writes:
 
-> I think the high-level ops approach makes more sense.  It's more future proof,
-> in addition to covering all existing implementations.
+> Eric W. Biederman writes:
+>
+>> @@ -693,15 +664,14 @@ int pci_enable_msi(struct pci_dev* dev)
+>>  	if (!pos)
+>>  		return -EINVAL;
+>>  
+>> -	WARN_ON(!msi_lookup_irq(dev, PCI_CAP_ID_MSI));
+>> +	WARN_ON(!!dev->msi_enabled);
+>
+> Minor nit: what's wrong with just WARN_ON(dev->msi_enabled) ?
 
-To be precise in Michaels implementation one of the parameters passed is
-a type parameter so that the architecture has to know about each different
-type of msi implementation.   In my implementation that field does not exist,
-because it is unnecessary.  So as long as the message on the bus is a msi
-message my implementation can be adapted to support it without any architecture
-changes.
+It's a bitfield so gcc complains when something in WARN_ON calls
+typeof on it.  So it is easier to just say !! than to dig into
+WARN_ON and see if it made any sense to fix WARN_ON, or to see if gcc
+needed the bug fix.
 
-Being future proof is about getting the abstraction correct, and exposing
-those details that matter, and removing those detail that don't.
-
-It is a minor nit, not a fundamental flaw in the operations concept.  But
-one of the reasons I am opposed to throwing out the current working code.
-Evolutionary change ensures that things only the code remembers don't get
-left behind.
-
-I guess that is the other part of the discussion that shows up here
-is, as long as the change is an evolutionary change from what is
-working today.  I don't have any fundamental problems with it, but I
-am completely against a revolutionary change.
-
-Meanwhile because Michael has proposed operations my position has been
-perceived as against operations.  While I have a lot of technical nits
-to pick with the Michaels operations approach, I'm not fundamentally
-against it.  I just don't want to loose the information that only
-the code remembers.
-
-Most of my technical objections have been formed by looking at what
-the code does today, looking at what Michaels code is doing and seeing
-details he missed.  If we just start with the current code base and
-fix it the whole approach is much easier.
-
-Anyway last I heard Michael was working on starting with the current
-msi.c and making his patch set work, and I am hoping that my work
-will make that patchset cleaner, and easier to do.  Even if we do
-conflict at the moment :)
-
-Eric
+> Also here:
+>
+>> @@ -836,16 +811,14 @@ int pci_enable_msix(struct pci_dev* dev, struct
+> msix_entry *entries, int nvec)
+>>  				return -EINVAL;	/* duplicate entry */
+>>  		}
+>>  	}
+>> -	temp = dev->irq;
+>> -	WARN_ON(!msi_lookup_irq(dev, PCI_CAP_ID_MSIX));
+>> +	WARN_ON(!!dev->msix_enabled);
+>
+> Paul.
