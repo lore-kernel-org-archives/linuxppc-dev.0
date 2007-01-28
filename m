@@ -3,18 +3,19 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BE36CDDF67
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 06:45:00 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9ABA6DDFB8
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 06:46:36 +1100 (EST)
 From: ebiederm@xmission.com (Eric W. Biederman)
 To: Greg Kroah-Hartman <greg@kroah.com>
-Subject: [PATCH 2/6] msi: Remove msi_lock.
+Subject: [PATCH 3/6] msi: Fix msi_remove_pci_irq_vectors.
 References: <1169714047.65693.647693675533.qpush@cradle>
 	<m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
 	<m1d54zq6o3.fsf_-_@ebiederm.dsl.xmission.com>
-Date: Sun, 28 Jan 2007 12:44:21 -0700
-In-Reply-To: <m1d54zq6o3.fsf_-_@ebiederm.dsl.xmission.com> (Eric
-	W. Biederman's message of "Sun, 28 Jan 2007 12:42:52 -0700")
-Message-ID: <m18xfnq6lm.fsf_-_@ebiederm.dsl.xmission.com>
+	<m18xfnq6lm.fsf_-_@ebiederm.dsl.xmission.com>
+Date: Sun, 28 Jan 2007 12:45:54 -0700
+In-Reply-To: <m18xfnq6lm.fsf_-_@ebiederm.dsl.xmission.com> (Eric
+	W. Biederman's message of "Sun, 28 Jan 2007 12:44:21 -0700")
+Message-ID: <m14pqbq6j1.fsf_-_@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: Tony Luck <tony.luck@intel.com>, Grant Grundler <grundler@parisc-linux.org>,
@@ -32,132 +33,47 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-With the removal of msi_lookup_irq all of the functions using msi_lock
-operated on a single device and none of them could reasonably be
-called on that device at the same time. 
+Since msi_remove_pci_irq_vectors is designed to be called during
+hotplug remove it is actively wrong to query the hardware and expect
+meaningful results back. 
 
-Since what little synchronization that needs to happen needs to happen
-outside of the msi functions, msi_lock could never be contended and as
-such is useless and just complicates the code.
+To that end remove the pci_find_capability calls.  Testing
+dev->msi_enabled and dev->msix_enabled gives us all of the information
+we need.
 
 Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
 ---
- drivers/pci/msi.c |   20 --------------------
- 1 files changed, 0 insertions(+), 20 deletions(-)
+ drivers/pci/msi.c |    8 ++------
+ 1 files changed, 2 insertions(+), 6 deletions(-)
 
 diff --git a/drivers/pci/msi.c b/drivers/pci/msi.c
-index 71080c9..5e7a187 100644
+index 5e7a187..db9c1d7 100644
 --- a/drivers/pci/msi.c
 +++ b/drivers/pci/msi.c
-@@ -24,7 +24,6 @@
- #include "pci.h"
- #include "msi.h"
- 
--static DEFINE_SPINLOCK(msi_lock);
- static struct msi_desc* msi_desc[NR_IRQS] = { [0 ... NR_IRQS-1] = NULL };
- static struct kmem_cache* msi_cachep;
- 
-@@ -196,11 +195,7 @@ static struct msi_desc* alloc_msi_entry(void)
- 
- static void attach_msi_entry(struct msi_desc *entry, int irq)
- {
--	unsigned long flags;
--
--	spin_lock_irqsave(&msi_lock, flags);
- 	msi_desc[irq] = entry;
--	spin_unlock_irqrestore(&msi_lock, flags);
- }
- 
- static int create_msi_irq(void)
-@@ -683,7 +678,6 @@ void pci_disable_msi(struct pci_dev* dev)
- 	struct msi_desc *entry;
- 	int pos, default_irq;
- 	u16 control;
--	unsigned long flags;
- 
- 	if (!pci_msi_enable)
- 		return;
-@@ -704,21 +698,17 @@ void pci_disable_msi(struct pci_dev* dev)
- 
- 	disable_msi_mode(dev, pos, PCI_CAP_ID_MSI);
- 
--	spin_lock_irqsave(&msi_lock, flags);
- 	entry = msi_desc[dev->first_msi_irq];
- 	if (!entry || !entry->dev || entry->msi_attrib.type != PCI_CAP_ID_MSI) {
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		return;
- 	}
- 	if (irq_has_action(dev->first_msi_irq)) {
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		printk(KERN_WARNING "PCI: %s: pci_disable_msi() called without "
- 		       "free_irq() on MSI irq %d\n",
- 		       pci_name(dev), dev->first_msi_irq);
- 		BUG_ON(irq_has_action(dev->first_msi_irq));
- 	} else {
- 		default_irq = entry->msi_attrib.default_irq;
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		msi_free_irq(dev, dev->first_msi_irq);
- 
- 		/* Restore dev->irq to its default pin-assertion irq */
-@@ -732,14 +722,11 @@ static int msi_free_irq(struct pci_dev* dev, int irq)
- 	struct msi_desc *entry;
- 	int head, entry_nr, type;
- 	void __iomem *base;
--	unsigned long flags;
- 
- 	arch_teardown_msi_irq(irq);
- 
--	spin_lock_irqsave(&msi_lock, flags);
- 	entry = msi_desc[irq];
- 	if (!entry || entry->dev != dev) {
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		return -EINVAL;
- 	}
- 	type = entry->msi_attrib.type;
-@@ -750,7 +737,6 @@ static int msi_free_irq(struct pci_dev* dev, int irq)
- 	msi_desc[entry->link.tail]->link.head = entry->link.head;
- 	entry->dev = NULL;
- 	msi_desc[irq] = NULL;
--	spin_unlock_irqrestore(&msi_lock, flags);
- 
- 	destroy_msi_irq(irq);
- 
-@@ -828,7 +814,6 @@ int pci_enable_msix(struct pci_dev* dev, struct msix_entry *entries, int nvec)
- void pci_disable_msix(struct pci_dev* dev)
- {
- 	int irq, head, tail = 0, warning = 0;
--	unsigned long flags;
- 	int pos;
- 	u16 control;
- 
-@@ -852,9 +837,7 @@ void pci_disable_msix(struct pci_dev* dev)
- 
- 	irq = head = dev->first_msi_irq;
- 	while (head != tail) {
--		spin_lock_irqsave(&msi_lock, flags);
- 		tail = msi_desc[irq]->link.tail;
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		if (irq_has_action(irq))
- 			warning = 1;
- 		else if (irq != head)	/* Release MSI-X irq */
-@@ -883,7 +866,6 @@ void pci_disable_msix(struct pci_dev* dev)
+@@ -865,13 +865,10 @@ void pci_disable_msix(struct pci_dev* dev)
+  **/
  void msi_remove_pci_irq_vectors(struct pci_dev* dev)
  {
- 	int pos;
--	unsigned long flags;
- 
+-	int pos;
+-
  	if (!pci_msi_enable || !dev)
   		return;
-@@ -905,10 +887,8 @@ void msi_remove_pci_irq_vectors(struct pci_dev* dev)
  
- 		irq = head = dev->first_msi_irq;
- 		while (head != tail) {
--			spin_lock_irqsave(&msi_lock, flags);
- 			tail = msi_desc[irq]->link.tail;
- 			base = msi_desc[irq]->mask_base;
--			spin_unlock_irqrestore(&msi_lock, flags);
- 			if (irq_has_action(irq))
- 				warning = 1;
- 			else if (irq != head) /* Release MSI-X irq */
+-	pos = pci_find_capability(dev, PCI_CAP_ID_MSI);
+-	if (pos > 0 && dev->msi_enabled) {
++	if (dev->msi_enabled) {
+ 		if (irq_has_action(dev->first_msi_irq)) {
+ 			printk(KERN_WARNING "PCI: %s: msi_remove_pci_irq_vectors() "
+ 			       "called without free_irq() on MSI irq %d\n",
+@@ -880,8 +877,7 @@ void msi_remove_pci_irq_vectors(struct pci_dev* dev)
+ 		} else /* Release MSI irq assigned to this device */
+ 			msi_free_irq(dev, dev->first_msi_irq);
+ 	}
+-	pos = pci_find_capability(dev, PCI_CAP_ID_MSIX);
+-	if (pos > 0 && dev->msix_enabled) {
++	if (dev->msix_enabled) {
+ 		int irq, head, tail = 0, warning = 0;
+ 		void __iomem *base = NULL;
+ 
 -- 
 1.4.4.1.g278f
