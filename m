@@ -1,29 +1,19 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id ED9BBDE13F
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 08:21:26 +1100 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-References: <1169714047.65693.647693675533.qpush@cradle>
-	<m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
-	<1170015805.26655.15.camel@localhost.localdomain>
-	<45BD0BDC.40205@garzik.org>
-Date: Sun, 28 Jan 2007 14:20:12 -0700
-In-Reply-To: <45BD0BDC.40205@garzik.org> (Jeff Garzik's message of "Sun, 28
-	Jan 2007 15:47:24 -0500")
-Message-ID: <m1bqkiq25v.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Tony Luck <tony.luck@intel.com>, Grant Grundler <grundler@parisc-linux.org>,
-	"David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Brice Goglin <brice@myri.com>,
-	Greg Kroah-Hartman <greg@kroah.com>, shaohua.li@intel.com,
-	Ingo Molnar <mingo@elte.hu>, linux-pci@atrey.karlin.mff.cuni.cz
+	by ozlabs.org (Postfix) with ESMTP id 07B57DE171
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 08:30:38 +1100 (EST)
+Subject: Re: [PATCH 3/11] Celleb: setup usb host controller in SCC
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+In-Reply-To: <200701261149.l0QBnB8j027731@toshiba.co.jp>
+References: <200701261149.l0QBnB8j027731@toshiba.co.jp>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 08:30:26 +1100
+Message-Id: <1170019826.26655.29.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,181 +23,116 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jeff Garzik <jeff@garzik.org> writes:
+On Fri, 2007-01-26 at 20:49 +0900, Ishizaki Kou wrote:
+> USB host controller in SCC requires enable sequence. It should be done
+> before USB host drivers start.
+> 
+> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 
-> Benjamin Herrenschmidt wrote:
->>> The only architecture problem that isn't solvable in this context is
->>> the problem of supporting the crazy hypervisor on the ppc RTAS, which
->>> asks us to drive the hardware but does not give us access to the
->>> hardware registers.
->>
->> So you are saying that we should use your model while admitting that it
->> can't solve our problems...
->>
->> I really don't understand why you seem so totally opposed to Michael's
->> approach which definitely looks to me like the sane thing to do. Note
->> that in the end, Michael's approach isn't -that- different from yours,
->> just a bit more abstracted.
->
->
-> I think the high-level ops approach makes more sense.  It's more future proof,
-> in addition to covering all existing implementations.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I'm not arguing against an operations based approach.  I'm arguing for simple
-obviously correct steps, and not throwing the baby out with the bath
-water.
-
-My patches should be a precursor to an operations based approach
-because they are simple step from where we are now.
-
-Every keeps telling me the operations approach is the right thing to
-do and I see code that doesn't work, and can't work without extreme
-difficulty on the architectures currently supported.  That makes me
-irritated, and unfortunately much less accepting.
-
-I see people pushing ridiculous interfaces like the RTAS hypervisor
-interface at me, and saying we must support running firmware drivers
-in the msi code.
-
-I just ask for simple evolutionary change as I presented, so we don't
-break things or loose requirements along the way.
-
-Please argue with me on the details of what the ops based approach does
-better, which specific problems does it solve. 
-
-The proposed ops base approach mixes different kinds of operations
-in the same structure:
-
-We have the hardware operations:
-+	/* enable - Enable the MSIs on the given device.
-+	 *
-+	 * @pdev:	PCI device structure.
-+	 * @num:	The number of MSIs being requested.
-+	 * @entries:	An array of @num msix_entry structures.
-+	 * @type:	The type, MSI or MSI-X.
-+	 *
-+	 * This routine enables the MSIs on the given PCI device.
-+	 *
-+	 * If the enable completes succesfully this routine must return 0.
-+	 *
-+	 * This callback is optional.
-+	 */
-+	int (*enable) (struct pci_dev *pdev, int num,
-+				struct msix_entry *entries, int type);
-+
-+	/* disable - disable the MSI for the given device.
-+	 *
-+	 * @pdev:	PCI device structure.
-+	 * @num:	The number of MSIs to disable.
-+	 * @entries:	An array of @num msix_entry structures.
-+	 * @type:	The type, MSI or MSI-X.
-+	 *
-+         * This routine should perform the inverse of enable.
-+	 */
-+	void (*disable) (struct pci_dev *pdev, int num,
-+				struct msix_entry *entries, int type);
-+
-
-Which are either talking directly to the hardware, or are talking
-to the hypervisor, which is using hardware isolation so it is safe to
-talk directly to the hardware but isn't leting us?  If we could use
-things to work around errata in card implementation details it would
-make some sense to me (although we don't seem to have any cards with
-that got the MSI registers wrong at this point).  Regardless these
-operations clearly have a different granularity than the other
-operations, and should have a different lookup method.
-
-
-We have the irq operations.
-+	/* check - Check that the requested MSI allocation is OK.
-+	 *
-+	 * @pdev:	PCI device structure.
-+	 * @num:	The number of MSIs being requested.
-+	 * @entries:	An array of @num msix_entry structures.
-+	 * @type:	The type, MSI or MSI-X.
-+	 *
-+	 * This routine is responsible for checking that the given PCI device
-+	 * can be allocated the requested type and number of MSIs.
-+	 *
-+	 * It is up to this routine to determine if the requested number of
-+	 * MSIs is valid for the device in question. If the number of MSIs,
-+	 * or the particular MSI entries, can not be supported for any
-+	 * reason this routine must return non-zero.
-+	 *
-+	 * If the check is succesful this routine must return 0.
-+	 */
-+	int (*check) (struct pci_dev *pdev, int num,
-+				struct msix_entry *entries, int type);
-+
-+	/* alloc - Allocate MSIs for the given device.
-+	 *
-+	 * @pdev:	PCI device structure.
-+	 * @num:	The number of MSIs being requested.
-+	 * @entries:	An array of @num msix_entry structures.
-+	 * @type:	The type, MSI or MSI-X.
-+	 *
-+	 * This routine is responsible for allocating the number of
-+	 * MSIs to the given PCI device.
-+	 *
-+	 * Upon completion there must be @num MSIs assigned to this device,
-+	 * the "vector" member of each struct msix_entry must be filled in
-+	 * with the Linux irq number allocated to it. The corresponding
-+	 * irq_descs must also be setup with an appropriate handler if
-+	 * required.
-+	 *
-+	 * If the allocation completes succesfully this routine must return 0.
-+	 */
-+	int (*alloc) (struct pci_dev *pdev, int num,
-+				struct msix_entry *entries, int type);
-+
-+	/* free - free the MSIs assigned to the device.
-+	 *
-+	 * @pdev:	PCI device structure.
-+	 * @num:	The number of MSIs.
-+	 * @entries:	An array of @num msix_entry structures.
-+	 * @type:	The type, MSI or MSI-X.
-+	 *
-+	 * Free all MSIs and associated resources for the device. If any
-+	 * MSIs have been enabled they will have been disabled already by
-+	 * the generic code.
-+	 */
-+	void (*free) (struct pci_dev *pdev, int num,
-+				struct msix_entry *entries, int type);
-
-These because they are per irq make sense as per bus operations unless
-you have a good architecture definition like x86 has.  Roughly those
-operations are what we currently have except the current operations
-are a little simpler and easier to deal with for the architecture
-code.
-
-And then there are the operations that are going in the wrong
-direction.
-+	/* setup_msi_msg - Setup an MSI message for the given device.
-+	 *
-+	 * @pdev:	PCI device structure.
-+	 * @entry:	The MSI entry to create a msi_msg for.
-+	 * @msg:	Written with the magic address and data.
-+	 * @type:	The type, MSI or MSI-X.
-+	 *
-+	 * Returns the "magic address and data" used to trigger the msi.
-+	 * If the setup is succesful this routine must return 0.
-+	 *
-+	 * This callback is optional.
-+	 */
-+	int (*setup_msi_msg) (struct pci_dev *pdev, struct msix_entry *entry,
-+				struct msi_msg *msg, int type);
-
-Much to much of the operations base approach as proposed looks like
-when you have a hammer every problem looks like a nail, given how much
-confusion about what was put into the operations structure.
-
-I don't mind taking a small step and making the alloc/free primitives
-per bus in a generic fashion.
-
-I don't mind supporting poorly designed hypervisor interfaces, if it
-is easy.
-
-I do strongly mind code that doesn't work, or we can't git-bisect
-through to find where bugs were introduced.
-
-Eric
+> ---
+> 
+> Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c
+> diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c:1.6
+> --- /dev/null	Fri Jan 26 19:47:00 2007
+> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c	Fri Jan 26 18:27:15 2007
+> @@ -0,0 +1,94 @@
+> +/*
+> + * SCC (Super Companion Chip) UHC setup
+> + *
+> + * (C) Copyright 2006-2007 TOSHIBA CORPORATION
+> + *
+> + * This program is free software; you can redistribute it and/or modify
+> + * it under the terms of the GNU General Public License as published by
+> + * the Free Software Foundation; either version 2 of the License, or
+> + * (at your option) any later version.
+> + *
+> + * This program is distributed in the hope that it will be useful,
+> + * but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + * GNU General Public License for more details.
+> + *
+> + * You should have received a copy of the GNU General Public License along
+> + * with this program; if not, write to the Free Software Foundation, Inc.,
+> + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/pci.h>
+> +
+> +#include <asm/delay.h>
+> +#include <asm/io.h>
+> +#include <asm/machdep.h>
+> +
+> +#include "scc.h"
+> +
+> +#define UHC_RESET_WAIT_MAX 10000
+> +
+> +static inline int uhc_clkctrl_ready(u32 val)
+> +{
+> +	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
+> +	return((val & mask) == mask);
+> +}
+> +
+> +/*
+> + * UHC(usb host controler) enable function.
+> + * affect to both of OHCI and EHCI core module.
+> + */
+> +static void enable_scc_uhc(struct pci_dev *dev)
+> +{
+> +	void __iomem *uhc_base;
+> +	u32 __iomem *uhc_clkctrl;
+> +	u32 __iomem *uhc_ecmode;
+> +	u32 val = 0;
+> +	int i;
+> +
+> +	if (!machine_is(celleb))
+> +		return;
+> +
+> +	uhc_base = ioremap(pci_resource_start(dev, 0),
+> +			   pci_resource_len(dev, 0));
+> +	if (!uhc_base) {
+> +		printk(KERN_ERR "failed to map UHC register base.\n");
+> +		return;
+> +	}
+> +	uhc_clkctrl = uhc_base + SCC_UHC_CKRCTRL; 
+> +	uhc_ecmode  = uhc_base + SCC_UHC_ECMODE; 
+> +
+> +	/* setup for normal mode */
+> +	val |= SCC_UHC_F48MCKLEN;
+> +	out_be32(uhc_clkctrl, val);
+> +	val |= SCC_UHC_PHY_SUSPEND_SEL;
+> +	out_be32(uhc_clkctrl, val);
+> +	udelay(10);
+> +	val |= SCC_UHC_PHYEN;
+> +	out_be32(uhc_clkctrl, val);
+> +	udelay(50);
+> +
+> +	/* disable reset */
+> +	val |= SCC_UHC_HCLKEN;
+> +	out_be32(uhc_clkctrl, val);
+> +	val |= (SCC_UHC_USBCEN | SCC_UHC_USBEN);
+> +	out_be32(uhc_clkctrl, val);
+> +	i = 0;
+> +	while (!uhc_clkctrl_ready(in_be32(uhc_clkctrl))) {
+> +		udelay(10);
+> +		if (i++ > UHC_RESET_WAIT_MAX) {
+> +			printk(KERN_ERR "Failed to disable UHC reset %x\n",
+> +			       in_be32(uhc_clkctrl));
+> +			break;
+> +		}
+> +	}
+> +
+> +	/* Endian Conversion Mode for Master ALL area */
+> +	out_be32(uhc_ecmode, SCC_UHC_ECMODE_BY_BYTE);
+> +
+> +	iounmap(uhc_base);
+> +}
+> +
+> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TOSHIBA_2,
+> +		 PCI_DEVICE_ID_TOSHIBA_SCC_USB, enable_scc_uhc);
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
