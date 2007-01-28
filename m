@@ -1,24 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 29 Jan 2007 10:56:29 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] add restart function for mpc52xx
-Message-ID: <20070128235629.GB14060@localhost.localdomain>
-References: <20070111122855.GF11226@localhost.localdomain>
-	<37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>
-	<20070111152137.GG11226@localhost.localdomain>
-	<17831.627.162751.166002@cargo.ozlabs.ibm.com>
-	<20070112084612.GJ11226@localhost.localdomain>
-	<45A74E2F.2000901@246tNt.com>
-	<20070112104211.GQ11226@localhost.localdomain>
-	<64469e5c846c386f30ae618752697ed6@kernel.crashing.org>
-	<20070128180900.GL28808@pengutronix.de>
-	<1170020910.26655.45.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1170020910.26655.45.camel@localhost.localdomain>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Sylvain Munaut <tnt@246tNt.com>, Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1EDA0DDFF3
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 10:59:55 +1100 (EST)
+Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20070128.153156.63125702.davem@davemloft.net>
+References: <m1fy9uq3et.fsf@ebiederm.dsl.xmission.com>
+	<1170019048.26655.27.camel@localhost.localdomain>
+	<m1lkjmok2j.fsf@ebiederm.dsl.xmission.com>
+	<20070128.153156.63125702.davem@davemloft.net>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 10:59:38 +1100
+Message-Id: <1170028778.26655.134.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: greg@kroah.com, kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
+	brice@myri.com, shaohua.li@intel.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, ebiederm@xmission.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,58 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 29, 2007 at 08:48:30AM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > Look how rmk has solved it for ARM - Sascha has already described it.
-> > The code that gets the information "this is an xyz board" knows
-> > _everything_, starting from the CPU type, up to which peripherals are
-> > there. So it simply can spawn the right platform devices, apply bugfixes
-> > to everything a board vendor has never thought of and is even unwilling
-> > to change in the future, because he simply doesn't care.
-> > 
-> > It's not that ARM is different than today's SoC PowerPC processors. It's
-> > just that the arm-linux people solved the problems you are describing
-> > here years ago.
-> 
-> Can we setup a filter on this mailing list rejecting anybody comparing
-> ARM to PowerPC -again- ? I'm tired of those useless rants.
-> 
-> Of course, the device-tree isn't there to solve world hunger and we
-> don't require people to constantly change their firmwares. Yes, a few
-> people on this list are probably attempting to "abuse" it and do some
-> kind of magic uber-board support that does everything and more and I
-> don't agree with that approach.
-> 
-> However it's actually quite nice and useful to have a well defined
-> firmware binding for common devices and things like interrupt routing. 
-> 
-> You might notice that the minimum device-tree as defined by the spec is
-> actually fairly small... only a couple of nodes & properties. One of
-> these is ... a board name. Which in a way is equivalent to your ARM
-> board number (except that we prefer ASCII strings to magic numbers here
-> is ppc land). From that is generally derived the board support data
-> structure.
-> 
-> The board code is then in total control, just like ARM or whoever else
-> you seem to like much better. Then, for various "services", like PCI,
-> interrupt routing, etc... we provide a way to easily define the whole
-> thing via the device-tree and the code "just works". Cool no ? Well, of
-> course, you -STILL- have the possibility of not using that for most
-> things, and to fix it up when it's wrong. You don't =have= to update the
-> firmware (heh, like if I had any chance to get Apple to fix their
-> firmwares when they have bugs).
-> 
-> So we are providing something that is a superset of the board number you
-> seem to like that much, adding more flexibility...
+> Look, I have no idea where all this resistence come from to abstract
+> this stuff behind enough levels to support things like RTAS et al.
+> properly.  Please stop it now.
 
-And in any case the "magic board number" model can be supported within
-the flat device tree model: there's no reason you can't have a
-platform boot wrapper, built with the kernel, that reads the magic
-board id and picks the appropriate flat device tree from its library
-accordingly.
+Note that to be totally fair, in some aspects (mostly simplicity gained
+from not handling the RTAS-type setup), Eric code is nicer than our
+proposal.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+What annoys me is that Eric wants to completely separate the handling of
+RTAS-type via a separate abstraction than the "classic" case.
+
+The main thing here is that with Eric code, the backend really only
+cares about one interrupt at a time, via the alloc/free hook, and thus
+can totally ignore wether it's an MSI or one of multiple MSI-X (or even
+one of multiple MSIs if we ever support that).
+
+Michael's code makes it a little bit less transparent... alloc() /
+free() has to operate on a level that matches the HV interfaces, thus
+are called for either a single MSI or a set of MSI-X, though we made
+that interface nice enough so we really only deal with an array and a
+count (with the count being 1 for a single MSI).
+
+One thing we could do, is remove our enable/disable hooks. The
+functionality can be kept into the core, as is with Eric's code,
+provided we have a way for alloc/free to say "job done, nothing else
+needed", via either a special result code or maybe an ops "member"
+variable set to 1 statically in the definition of the RTAS ops.
+
+Another thing is we still need to have the addr/data returned for the
+non-RTAS case. Eric doesn't like the setup_msi_msg() callback through
+the ops because it operates at a different layer than alloc/free. The
+option there would have to have alloc/free return the setup infos and
+store them in the msi data on platforms where that is useful.
+
+At this point I don't really have a firm preference of either taking
+Michael's code and changing it in some areas to please Eric or try to
+evolve from Eric's code, though I do feel that the later would still
+have strong resistance in the area where alloc/free are concerned, that
+is the whole idea of allocating the whole set at once or per-MSI, the
+later being unsuitable for RTAS-like implementations.
+
+Ben.
