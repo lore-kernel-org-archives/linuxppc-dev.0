@@ -1,23 +1,25 @@
-Return-Path: <uwe.bugla@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 1AF5DDE1B7
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 00:33:46 +1100 (EST)
-Content-Type: text/plain; charset="utf-8"
-Date: Sun, 28 Jan 2007 14:33:44 +0100
-From: "Uwe Bugla" <uwe.bugla@gmx.de>
-In-Reply-To: <20070127174230.GN6017@stusta.de>
-Message-ID: <20070128133344.214070@gmx.net>
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id A76DCDDF4D
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 05:35:25 +1100 (EST)
+Date: Sun, 28 Jan 2007 19:09:00 +0100
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] add restart function for mpc52xx
+Message-ID: <20070128180900.GL28808@pengutronix.de>
+References: <20070111122855.GF11226@localhost.localdomain>
+	<37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>
+	<20070111152137.GG11226@localhost.localdomain>
+	<17831.627.162751.166002@cargo.ozlabs.ibm.com>
+	<20070112084612.GJ11226@localhost.localdomain>
+	<45A74E2F.2000901@246tNt.com>
+	<20070112104211.GQ11226@localhost.localdomain>
+	<64469e5c846c386f30ae618752697ed6@kernel.crashing.org>
 MIME-Version: 1.0
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	<20070127174230.GN6017@stusta.de>
-Subject: Re: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
-To: Adrian Bunk <bunk@stusta.de>, akpm@osdl.org, torvalds@linux-foundation.org
-Cc: nickpiggin@yahoo.com.au, linux-ide@vger.kernel.org, petero2@telia.com,
-	linux-kernel@vger.kernel.org, livio@eecg.toronto.edu,
-	B.Zolnierkiewicz@elka.pw.edu.pl, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, anton@samba.org, gd@spherenet.de,
-	cijoml@volny.cz, ttb@tentacle.dhs.org, rml@novell.com,
-	alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <64469e5c846c386f30ae618752697ed6@kernel.crashing.org>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Sylvain Munaut <tnt@246tNt.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,74 +29,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Jan 12, 2007 at 01:27:14PM +0100, Segher Boessenkool wrote:
+> It is perfectly possible to create a binding for a single
+> device without making any omissions/errors.
 
--------- Original-Nachricht --------
-Datum: Sat, 27 Jan 2007 18:42:30 +0100
-Von: Adrian Bunk <bunk@stusta.de>
-An: Linus Torvalds <torvalds@linux-foundation.org>, Andrew Morton <akpm@osdl.org>
-Betreff: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
+Come on, come back to _this_ universe. People make mistakes, there is
+even information unavailable when the firmware is delivered, firmwares
+are being set in stone and may never be changed any more once an
+embedded device has hit the street. For SoC devices, anything that
+requires firmware changes to make Linux behave properly is simply plain
+crap.
 
-> This email lists some known regressions in 2.6.20-rc6 compared to 2.6.19
-> that are not yet fixed in Linus' tree.
-> 
-> If you find your name in the Cc header, you are either submitter of one
-> of the bugs, maintainer of an affectected subsystem or driver, a patch
-> of you caused a breakage or I'm considering you in any other way possibly
-> involved with one or more of these issues.
-> 
-> Due to the huge amount of recipients, please trim the Cc when answering.
-> 
-> 
-> Subject    : problems with CD burning
-> References : http://www.spinics.net/lists/linux-ide/msg06545.html
-> Submitter  : Uwe Bugla <uwe.bugla@gmx.de>
-> Status     : unknown
-> 
-> 
-> Subject    : pktcdvd fails with pata_amd
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=7810
->              http://lkml.org/lkml/2007/1/25/128
-> Submitter  : Gerhard Dirschl <gd@spherenet.de>
-> Caused-By  : Christoph Hellwig <hch@lst.de>
->              commit 3b00315799d78f76531b71435fbc2643cd71ae4c
->              commit 406c9b605cbc45151c03ac9a3f95e9acf050808c
-> Status     : problem is being debugged
-> 
-> 
-> Subject    : powerpc64: performance monitor exception
-> References :
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030045.html
-> Submitter  : Livio Soares <livio@eecg.toronto.edu>
-> Caused-By  : Paul Mackerras <paulus@samba.org>
->              commit d04c56f73c30a5e593202ecfcf25ed43d42363a2
-> Status     : problem is being discussed
-> 
-> 
-> Subject    : BUG: at fs/inotify.c:172 set_dentry_child_flags()
-> References : http://bugzilla.kernel.org/show_bug.cgi?id=7785
-> Submitter  : Cijoml Cijomlovic Cijomlov <cijoml@volny.cz>
-> Handled-By : Nick Piggin <nickpiggin@yahoo.com.au>
-> Status     : problem is being debugged
-> 
+Look how rmk has solved it for ARM - Sascha has already described it.
+The code that gets the information "this is an xyz board" knows
+_everything_, starting from the CPU type, up to which peripherals are
+there. So it simply can spawn the right platform devices, apply bugfixes
+to everything a board vendor has never thought of and is even unwilling
+to change in the future, because he simply doesn't care.
 
-Hi everybody,
-the problem I already reported for earlier release candidates of kernel 2.6.20
-(rc1 – 5) unfortunately stills persists.
+It's not that ARM is different than today's SoC PowerPC processors. It's
+just that the arm-linux people solved the problems you are describing
+here years ago.
 
-The regression has become more extreme: While in earlier release candidates nerolinux recognized my burning devices at least after the first start and then never again after all following starts the situation in rc6 is different from that:
-
-The CD and DVD burning devices aren´t recognized even once and the drive seek errors I already reported are still there.
-
-nerolinux runs excellently with kernel 2.6.19.2, but only shows an “image recorder” (i. e. no burning device at all) in kernel 2.6.20-rc6.
-
-Still hope that this terrible bug will not be part of the final version of 2.6.20!
-
-Regards
-
-Uwe
-
-P. S.: I already reported that 2.6.20-rc4-mm1 is not bootable at all.
-
+Robert
 -- 
-Der GMX SmartSurfer hilft bis zu 70% Ihrer Onlinekosten zu sparen! 
-Ideal für Modem und ISDN: http://www.gmx.net/de/go/smartsurfer
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
