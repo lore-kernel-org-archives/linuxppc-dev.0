@@ -2,24 +2,27 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6CC36DE1F2
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 08:39:35 +1100 (EST)
-Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
+	by ozlabs.org (Postfix) with ESMTP id 28206DE42B
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 08:48:36 +1100 (EST)
+Subject: Re: [PATCH] add restart function for mpc52xx
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.62.0701261535180.30062@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
-	<200701260513.24010.arnd@arndb.de>
-	<Pine.LNX.4.62.0701261535180.30062@pademelon.sonytel.be>
+To: Robert Schwebel <r.schwebel@pengutronix.de>
+In-Reply-To: <20070128180900.GL28808@pengutronix.de>
+References: <20070111122855.GF11226@localhost.localdomain>
+	<37B2A6BB-4F36-4765-A1C2-A4F8D30D4503@kernel.crashing.org>
+	<20070111152137.GG11226@localhost.localdomain>
+	<17831.627.162751.166002@cargo.ozlabs.ibm.com>
+	<20070112084612.GJ11226@localhost.localdomain>
+	<45A74E2F.2000901@246tNt.com>
+	<20070112104211.GQ11226@localhost.localdomain>
+	<64469e5c846c386f30ae618752697ed6@kernel.crashing.org>
+	<20070128180900.GL28808@pengutronix.de>
 Content-Type: text/plain
-Date: Mon, 29 Jan 2007 08:37:00 +1100
-Message-Id: <1170020220.26655.35.camel@localhost.localdomain>
+Date: Mon, 29 Jan 2007 08:48:30 +1100
+Message-Id: <1170020910.26655.45.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	James Simmons <jsimmons@infradead.org>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>, Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
+	Sylvain Munaut <tnt@246tNt.com>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +32,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Analog YUV (Component and composite/S-video) video timings are dictated by
-> broadcast standards.
+
+> Look how rmk has solved it for ARM - Sascha has already described it.
+> The code that gets the information "this is an xyz board" knows
+> _everything_, starting from the CPU type, up to which peripherals are
+> there. So it simply can spawn the right platform devices, apply bugfixes
+> to everything a board vendor has never thought of and is even unwilling
+> to change in the future, because he simply doesn't care.
 > 
-> The last 3 resolutions are supported through the HDMI output only. Hence if
-> your TV has HDMI or DVI-D (_with_ HDCP, else you get a black screen) inputs,
-> you can use 1280x768.
-> 
-> If your TV doesn't have HDMI or DVI-D with HDCP, but it has component inputs,
-> you can use analog 720p.
+> It's not that ARM is different than today's SoC PowerPC processors. It's
+> just that the arm-linux people solved the problems you are describing
+> here years ago.
 
-Please, still try to get the HV folks to add more VESA modes for use by
-linux :-) 1600x1200 would be nice for example, as would 1440x900 (lots
-of cheap flat panels do that nowadays.... they can demote to 720p which
-is good enough for games, but for linux, we want native resolution).
+Can we setup a filter on this mailing list rejecting anybody comparing
+ARM to PowerPC -again- ? I'm tired of those useless rants.
 
-> Reducing these values may cause video noise to be seen when changing video
-> modes.
+Of course, the device-tree isn't there to solve world hunger and we
+don't require people to constantly change their firmwares. Yes, a few
+people on this list are probably attempting to "abuse" it and do some
+kind of magic uber-board support that does everything and more and I
+don't agree with that approach.
 
-So the whole thing should be turned into a state machine on a timer or a
-kthread no ? So at least, whatever issues the mode change can start
-drawing while the kernel waits to actually enable the outputs...
+However it's actually quite nice and useful to have a well defined
+firmware binding for common devices and things like interrupt routing. 
+
+You might notice that the minimum device-tree as defined by the spec is
+actually fairly small... only a couple of nodes & properties. One of
+these is ... a board name. Which in a way is equivalent to your ARM
+board number (except that we prefer ASCII strings to magic numbers here
+is ppc land). From that is generally derived the board support data
+structure.
+
+The board code is then in total control, just like ARM or whoever else
+you seem to like much better. Then, for various "services", like PCI,
+interrupt routing, etc... we provide a way to easily define the whole
+thing via the device-tree and the code "just works". Cool no ? Well, of
+course, you -STILL- have the possibility of not using that for most
+things, and to fix it up when it's wrong. You don't =have= to update the
+firmware (heh, like if I had any chance to get Apple to fix their
+firmwares when they have bugs).
+
+So we are providing something that is a superset of the board number you
+seem to like that much, adding more flexibility...
+
+Anyway, enough of that. Either be constructive or return to
+linuxppc-embeded.
 
 Ben.
