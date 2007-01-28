@@ -2,16 +2,16 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 07B57DE171
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 08:30:38 +1100 (EST)
-Subject: Re: [PATCH 3/11] Celleb: setup usb host controller in SCC
+	by ozlabs.org (Postfix) with ESMTP id EF195DE17A
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 08:32:07 +1100 (EST)
+Subject: Re: [PATCH 4/11] Celleb: support iommu
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <200701261149.l0QBnB8j027731@toshiba.co.jp>
-References: <200701261149.l0QBnB8j027731@toshiba.co.jp>
+In-Reply-To: <200701261152.l0QBqAb5012882@toshiba.co.jp>
+References: <200701261152.l0QBqAb5012882@toshiba.co.jp>
 Content-Type: text/plain
-Date: Mon, 29 Jan 2007 08:30:26 +1100
-Message-Id: <1170019826.26655.29.camel@localhost.localdomain>
+Date: Mon, 29 Jan 2007 08:32:04 +1100
+Message-Id: <1170019925.26655.31.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,9 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-01-26 at 20:49 +0900, Ishizaki Kou wrote:
-> USB host controller in SCC requires enable sequence. It should be done
-> before USB host drivers start.
+On Fri, 2007-01-26 at 20:52 +0900, Ishizaki Kou wrote:
+> This patch creates Celleb platform dependent file to support iommu.
 > 
 > Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 
@@ -33,13 +32,13 @@ Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 > ---
 > 
-> Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c
-> diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c:1.6
+> Index: linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c
+> diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c:1.19
 > --- /dev/null	Fri Jan 26 19:47:00 2007
-> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c	Fri Jan 26 18:27:15 2007
-> @@ -0,0 +1,94 @@
+> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c	Fri Jan 26 17:45:04 2007
+> @@ -0,0 +1,104 @@
 > +/*
-> + * SCC (Super Companion Chip) UHC setup
+> + * Support for IOMMU on Celleb platform.
 > + *
 > + * (C) Copyright 2006-2007 TOSHIBA CORPORATION
 > + *
@@ -59,79 +58,89 @@ Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 > + */
 > +
 > +#include <linux/kernel.h>
+> +#include <linux/init.h>
+> +#include <linux/dma-mapping.h>
 > +#include <linux/pci.h>
 > +
-> +#include <asm/delay.h>
-> +#include <asm/io.h>
-> +#include <asm/machdep.h>
+> +#include <asm/of_platform.h>
 > +
-> +#include "scc.h"
+> +#include "beat_wrapper.h"
 > +
-> +#define UHC_RESET_WAIT_MAX 10000
+> +#define DMA_FLAGS 0xf800000000000000UL	/* r/w permitted, coherency required,
+> +					   strongest order */
 > +
-> +static inline int uhc_clkctrl_ready(u32 val)
+> +static int __init find_dma_window(u64 *io_space_id, u64 *ioid,
+> +				  u64 *base, u64 *size, u64 *io_page_size)
 > +{
-> +	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
-> +	return((val & mask) == mask);
-> +}
+> +	struct device_node *dn;
+> +	const unsigned long *dma_window;
 > +
-> +/*
-> + * UHC(usb host controler) enable function.
-> + * affect to both of OHCI and EHCI core module.
-> + */
-> +static void enable_scc_uhc(struct pci_dev *dev)
-> +{
-> +	void __iomem *uhc_base;
-> +	u32 __iomem *uhc_clkctrl;
-> +	u32 __iomem *uhc_ecmode;
-> +	u32 val = 0;
-> +	int i;
-> +
-> +	if (!machine_is(celleb))
-> +		return;
-> +
-> +	uhc_base = ioremap(pci_resource_start(dev, 0),
-> +			   pci_resource_len(dev, 0));
-> +	if (!uhc_base) {
-> +		printk(KERN_ERR "failed to map UHC register base.\n");
-> +		return;
-> +	}
-> +	uhc_clkctrl = uhc_base + SCC_UHC_CKRCTRL; 
-> +	uhc_ecmode  = uhc_base + SCC_UHC_ECMODE; 
-> +
-> +	/* setup for normal mode */
-> +	val |= SCC_UHC_F48MCKLEN;
-> +	out_be32(uhc_clkctrl, val);
-> +	val |= SCC_UHC_PHY_SUSPEND_SEL;
-> +	out_be32(uhc_clkctrl, val);
-> +	udelay(10);
-> +	val |= SCC_UHC_PHYEN;
-> +	out_be32(uhc_clkctrl, val);
-> +	udelay(50);
-> +
-> +	/* disable reset */
-> +	val |= SCC_UHC_HCLKEN;
-> +	out_be32(uhc_clkctrl, val);
-> +	val |= (SCC_UHC_USBCEN | SCC_UHC_USBEN);
-> +	out_be32(uhc_clkctrl, val);
-> +	i = 0;
-> +	while (!uhc_clkctrl_ready(in_be32(uhc_clkctrl))) {
-> +		udelay(10);
-> +		if (i++ > UHC_RESET_WAIT_MAX) {
-> +			printk(KERN_ERR "Failed to disable UHC reset %x\n",
-> +			       in_be32(uhc_clkctrl));
-> +			break;
+> +	for_each_node_by_type(dn, "ioif") {
+> +		dma_window = get_property(dn, "toshiba,dma-window", NULL);
+> +		if (dma_window) {
+> +			*io_space_id = (dma_window[0] >> 32) & 0xffffffffUL;
+> +			*ioid = dma_window[0] & 0x7ffUL;
+> +			*base = dma_window[1];
+> +			*size = dma_window[2];
+> +			*io_page_size = 1 << dma_window[3];
+> +			of_node_put(dn);
+> +			return 1;
 > +		}
 > +	}
-> +
-> +	/* Endian Conversion Mode for Master ALL area */
-> +	out_be32(uhc_ecmode, SCC_UHC_ECMODE_BY_BYTE);
-> +
-> +	iounmap(uhc_base);
+> +	return 0;
 > +}
 > +
-> +DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TOSHIBA_2,
-> +		 PCI_DEVICE_ID_TOSHIBA_SCC_USB, enable_scc_uhc);
+> +static void __init celleb_init_direct_mapping(void)
+> +{
+> +	u64 lpar_addr, io_addr;
+> +	u64 io_space_id, ioid, dma_base, dma_size, io_page_size;
+> +
+> +	if (!find_dma_window(&io_space_id, &ioid, &dma_base, &dma_size,
+> +			     &io_page_size)) {
+> +		pr_info("No dma window found !\n");
+> +		return;
+> +	}
+> +
+> +	for (lpar_addr = 0; lpar_addr < dma_size; lpar_addr += io_page_size) {
+> +		io_addr = lpar_addr + dma_base;
+> +		(void)beat_put_iopte(io_space_id, io_addr, lpar_addr,
+> +				     ioid, DMA_FLAGS);
+> +	}
+> +
+> +	dma_direct_offset = dma_base;
+> +}
+> +
+> +static int celleb_of_bus_notify(struct notifier_block *nb,
+> +				unsigned long action, void *data)
+> +{
+> +	struct device *dev = data;
+> +
+> +	/* We are only intereted in device addition */
+> +	if (action != BUS_NOTIFY_ADD_DEVICE)
+> +		return 0;
+> +
+> +	dev->archdata.dma_ops = pci_dma_ops;
+> +
+> +	return 0;
+> +}
+> +
+> +static struct notifier_block celleb_of_bus_notifier = {
+> +	.notifier_call = celleb_of_bus_notify
+> +};
+> +
+> +static int __init celleb_init_iommu(void)
+> +{
+> +	if (!machine_is(celleb))
+> +		return -ENODEV;
+> +
+> +	celleb_init_direct_mapping();
+> +	pci_dma_ops = &dma_direct_ops;
+> +	bus_register_notifier(&of_platform_bus_type, &celleb_of_bus_notifier);
+> +
+> +	return 0;
+> +}
+> +
+> +arch_initcall(celleb_init_iommu);
 > _______________________________________________
 > Linuxppc-dev mailing list
 > Linuxppc-dev@ozlabs.org
