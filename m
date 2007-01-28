@@ -1,29 +1,29 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 485A7DE137
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 08:17:50 +1100 (EST)
-Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <m1fy9uq3et.fsf@ebiederm.dsl.xmission.com>
+	by ozlabs.org (Postfix) with ESMTP id ED9BBDE13F
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 08:21:26 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Jeff Garzik <jeff@garzik.org>
+Subject: Re: [PATCH 0/6] MSI portability cleanups
 References: <1169714047.65693.647693675533.qpush@cradle>
-	<m1wt3awbtf.fsf@ebiederm.dsl.xmission.com>
-	<1169876504.2294.23.camel@concordia.ozlabs.ibm.com>
-	<m1k5z7smkj.fsf@ebiederm.dsl.xmission.com>
-	<1169971963.19887.15.camel@concordia.ozlabs.ibm.com>
-	<m14pqbsg2j.fsf@ebiederm.dsl.xmission.com>
-	<1170015292.26655.6.camel@localhost.localdomain>
-	<m1fy9uq3et.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Mon, 29 Jan 2007 08:17:28 +1100
-Message-Id: <1170019048.26655.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
-	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
-	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
-	"David S. Miller" <davem@davemloft.net>
+	<m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
+	<1170015805.26655.15.camel@localhost.localdomain>
+	<45BD0BDC.40205@garzik.org>
+Date: Sun, 28 Jan 2007 14:20:12 -0700
+In-Reply-To: <45BD0BDC.40205@garzik.org> (Jeff Garzik's message of "Sun, 28
+	Jan 2007 15:47:24 -0500")
+Message-ID: <m1bqkiq25v.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Tony Luck <tony.luck@intel.com>, Grant Grundler <grundler@parisc-linux.org>,
+	"David S. Miller" <davem@davemloft.net>, linux-kernel@vger.kernel.org,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Brice Goglin <brice@myri.com>,
+	Greg Kroah-Hartman <greg@kroah.com>, shaohua.li@intel.com,
+	Ingo Molnar <mingo@elte.hu>, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,78 +33,181 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Jeff Garzik <jeff@garzik.org> writes:
 
-> Yes of some form.  Although only needing 2 ops instead of 6 is still
-> simpler.  Until we can agree on a point where the ops lookup is
-> generic I don't see the point in placing it in generic code.
-
-At least 4 actually, since we would need suspend/resume as well.
- 
-> In addition I am extremely uncomfortable with making the interface to
-> the architecture any wider than we need it to be, as refactoring code
-> across multiple architectures is hard as usually the developer does
-> not have the hardware to touch all of the code that is touched.
-
-The interface to the arch in our model is the function to get ops :-)
-Most "normal" backends would just "plug" those ops with the provided
-raw_ functions.
-
-> The argument that we need to support what the RTAS is doing to support
-> other hypervisors seems to be a fallacy.  What the RTAS is doing is
-> not sane from a hardware standpoint, so I do not expect it from other
-> virtualized/hypervisor style environments. 
+> Benjamin Herrenschmidt wrote:
+>>> The only architecture problem that isn't solvable in this context is
+>>> the problem of supporting the crazy hypervisor on the ppc RTAS, which
+>>> asks us to drive the hardware but does not give us access to the
+>>> hardware registers.
+>>
+>> So you are saying that we should use your model while admitting that it
+>> can't solve our problems...
+>>
+>> I really don't understand why you seem so totally opposed to Michael's
+>> approach which definitely looks to me like the sane thing to do. Note
+>> that in the end, Michael's approach isn't -that- different from yours,
+>> just a bit more abstracted.
 >
-> If the hardware provides capabilities to isolate the MSI messages
-> properly it does not need to prevent us from touching the msi setup
-> registers. 
+>
+> I think the high-level ops approach makes more sense.  It's more future proof,
+> in addition to covering all existing implementations.
 
-It does isolate and it doesn't -prevent- config space access. However,
-in order to enable MSIs, we have to configure the device -and- the IRQ
-controller on the bus on which the device sits on, that is, to obtain
-vectors from the HV, configure the controller to receive MSIs from that
-device and route them to us, etc...., and the only API the HV provides
-for doing so is that RTAS function that configures both in one call.
+I'm not arguing against an operations based approach.  I'm arguing for simple
+obviously correct steps, and not throwing the baby out with the bath
+water.
 
-I don't see what's fundamentally wrong with that approach.
+My patches should be a precursor to an operations based approach
+because they are simple step from where we are now.
 
->  If the hardware does not isolate the MSI messages properly
-> there is another problem.  Especially in the context of MSI-X where
-> the registers can be in the middle of any mmio bar I do not see a sane
-> way of keeping us from touching the hardware directly in the first
-> place.
+Every keeps telling me the operations approach is the right thing to
+do and I see code that doesn't work, and can't work without extreme
+difficulty on the architectures currently supported.  That makes me
+irritated, and unfortunately much less accepting.
 
-They are not blocked as I said above, at least not for most devices,
-(though the controller/receiver side is). However, we don't have an API
-to get the address/value to write into the device, nor to
-configure/enable MSIs in the PIC. The only API we have is basically
-called "change-msi" which can be use to enable MSI, MSI-X or disable
-them (though we can provide how many we want to enable out of what is
-requested by the device... we can't enable sparse MSI-X though, we can
-only enable the N first ones).
+I see people pushing ridiculous interfaces like the RTAS hypervisor
+interface at me, and saying we must support running firmware drivers
+in the msi code.
 
-> However it is quite likely that supporting the RTAS is not going to 
-> require much code to support.  So I don't see an argument against not
-> supporting the RTAS.
+I just ask for simple evolutionary change as I presented, so we don't
+break things or loose requirements along the way.
 
-It would imply 2 or 3 more hooks at the toplevel... so we are going from
-your 2 initial hooks to 4 (bcs we need to hook suspend/resume), now to 6
-or 7.... 
+Please argue with me on the details of what the ops based approach does
+better, which specific problems does it solve. 
 
-> There is the additional problem in all of this that our interface for
-> MSI-X to the drivers is quite likely the wrong interface.  I believe
-> we will want to incrementally allocate more irqs at run time as there
-> are work queues or the like which can be attached to them.  We can get
-> there with the current vector allocator by freeing and reallocating
-> all of the msi-x irqs when the driver wants more so the current
-> interface will suffice but it is far from optimal.
+The proposed ops base approach mixes different kinds of operations
+in the same structure:
 
-Our hypervisor will not unfortunately let us do that. We can only use
-RTAS "change-msi" to allocate more/less MSIs and that is disruptive of
-the device function (we might lose pending interrupts when doing so, in
-fact, in the initial HV interface definition, we could only do that with
-the device actually disabled in the command register !).
+We have the hardware operations:
++	/* enable - Enable the MSIs on the given device.
++	 *
++	 * @pdev:	PCI device structure.
++	 * @num:	The number of MSIs being requested.
++	 * @entries:	An array of @num msix_entry structures.
++	 * @type:	The type, MSI or MSI-X.
++	 *
++	 * This routine enables the MSIs on the given PCI device.
++	 *
++	 * If the enable completes succesfully this routine must return 0.
++	 *
++	 * This callback is optional.
++	 */
++	int (*enable) (struct pci_dev *pdev, int num,
++				struct msix_entry *entries, int type);
++
++	/* disable - disable the MSI for the given device.
++	 *
++	 * @pdev:	PCI device structure.
++	 * @num:	The number of MSIs to disable.
++	 * @entries:	An array of @num msix_entry structures.
++	 * @type:	The type, MSI or MSI-X.
++	 *
++         * This routine should perform the inverse of enable.
++	 */
++	void (*disable) (struct pci_dev *pdev, int num,
++				struct msix_entry *entries, int type);
++
 
-In general, I'd rather have the device pre-allocate the MSI-X it needs,
-though it can later on decide to use more or less.
+Which are either talking directly to the hardware, or are talking
+to the hypervisor, which is using hardware isolation so it is safe to
+talk directly to the hardware but isn't leting us?  If we could use
+things to work around errata in card implementation details it would
+make some sense to me (although we don't seem to have any cards with
+that got the MSI registers wrong at this point).  Regardless these
+operations clearly have a different granularity than the other
+operations, and should have a different lookup method.
 
-Ben.
+
+We have the irq operations.
++	/* check - Check that the requested MSI allocation is OK.
++	 *
++	 * @pdev:	PCI device structure.
++	 * @num:	The number of MSIs being requested.
++	 * @entries:	An array of @num msix_entry structures.
++	 * @type:	The type, MSI or MSI-X.
++	 *
++	 * This routine is responsible for checking that the given PCI device
++	 * can be allocated the requested type and number of MSIs.
++	 *
++	 * It is up to this routine to determine if the requested number of
++	 * MSIs is valid for the device in question. If the number of MSIs,
++	 * or the particular MSI entries, can not be supported for any
++	 * reason this routine must return non-zero.
++	 *
++	 * If the check is succesful this routine must return 0.
++	 */
++	int (*check) (struct pci_dev *pdev, int num,
++				struct msix_entry *entries, int type);
++
++	/* alloc - Allocate MSIs for the given device.
++	 *
++	 * @pdev:	PCI device structure.
++	 * @num:	The number of MSIs being requested.
++	 * @entries:	An array of @num msix_entry structures.
++	 * @type:	The type, MSI or MSI-X.
++	 *
++	 * This routine is responsible for allocating the number of
++	 * MSIs to the given PCI device.
++	 *
++	 * Upon completion there must be @num MSIs assigned to this device,
++	 * the "vector" member of each struct msix_entry must be filled in
++	 * with the Linux irq number allocated to it. The corresponding
++	 * irq_descs must also be setup with an appropriate handler if
++	 * required.
++	 *
++	 * If the allocation completes succesfully this routine must return 0.
++	 */
++	int (*alloc) (struct pci_dev *pdev, int num,
++				struct msix_entry *entries, int type);
++
++	/* free - free the MSIs assigned to the device.
++	 *
++	 * @pdev:	PCI device structure.
++	 * @num:	The number of MSIs.
++	 * @entries:	An array of @num msix_entry structures.
++	 * @type:	The type, MSI or MSI-X.
++	 *
++	 * Free all MSIs and associated resources for the device. If any
++	 * MSIs have been enabled they will have been disabled already by
++	 * the generic code.
++	 */
++	void (*free) (struct pci_dev *pdev, int num,
++				struct msix_entry *entries, int type);
+
+These because they are per irq make sense as per bus operations unless
+you have a good architecture definition like x86 has.  Roughly those
+operations are what we currently have except the current operations
+are a little simpler and easier to deal with for the architecture
+code.
+
+And then there are the operations that are going in the wrong
+direction.
++	/* setup_msi_msg - Setup an MSI message for the given device.
++	 *
++	 * @pdev:	PCI device structure.
++	 * @entry:	The MSI entry to create a msi_msg for.
++	 * @msg:	Written with the magic address and data.
++	 * @type:	The type, MSI or MSI-X.
++	 *
++	 * Returns the "magic address and data" used to trigger the msi.
++	 * If the setup is succesful this routine must return 0.
++	 *
++	 * This callback is optional.
++	 */
++	int (*setup_msi_msg) (struct pci_dev *pdev, struct msix_entry *entry,
++				struct msi_msg *msg, int type);
+
+Much to much of the operations base approach as proposed looks like
+when you have a hammer every problem looks like a nail, given how much
+confusion about what was put into the operations structure.
+
+I don't mind taking a small step and making the alloc/free primitives
+per bus in a generic fashion.
+
+I don't mind supporting poorly designed hypervisor interfaces, if it
+is easy.
+
+I do strongly mind code that doesn't work, or we can't git-bisect
+through to find where bugs were introduced.
+
+Eric
