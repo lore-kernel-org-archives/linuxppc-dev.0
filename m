@@ -1,13 +1,26 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id BB4E0DE1B1
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jan 2007 10:41:53 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix array indexing error in rheap grow()
-Date: Sat, 27 Jan 2007 17:41:49 -0600
-Message-Id: <1169941309366-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>, Ionut Nicu <ionut.nicu@freescale.com>
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0B535DDF16
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jan 2007 17:17:14 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: michael@ellerman.id.au
+Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
+References: <1169714047.65693.647693675533.qpush@cradle>
+	<m1wt3awbtf.fsf@ebiederm.dsl.xmission.com>
+	<1169876504.2294.23.camel@concordia.ozlabs.ibm.com>
+Date: Sat, 27 Jan 2007 23:16:28 -0700
+In-Reply-To: <1169876504.2294.23.camel@concordia.ozlabs.ibm.com> (Michael
+	Ellerman's message of "Sat, 27 Jan 2007 16:41:44 +1100")
+Message-ID: <m1k5z7smkj.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,33 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The grow() function in the rheap library allocates a larger array of blocks, 
-copies the contents of the old blocks array to the newly allocated array and
-fixes the list_head pointers after the copy.  At the end, the new blocks must 
-be enqueued to the empty_list of the rh_info_t structure.  This patch fixes
-a bug where the code was indexing past the end of the array when enqueueing 
-blocks.  The UCC ethernet driver, which uses the rheap allocator, experiences
-kernel panics because of this bug.
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-Signed-off-by: Ionut Nicu <ionut.nicu@freescale.com>
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/lib/rheap.c |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+> I guess I wasn't clear enough in my original post, but I fully expect
+> that I'll need to tweak parts of the core to make Intel fit. That's
+> still a work in progress.
 
-diff --git a/arch/powerpc/lib/rheap.c b/arch/powerpc/lib/rheap.c
-index 57bf991..4bbda6b 100644
---- a/arch/powerpc/lib/rheap.c
-+++ b/arch/powerpc/lib/rheap.c
-@@ -85,7 +85,8 @@ static int grow(rh_info_t * info, int ma
- 	info->flags &= ~RHIF_STATIC_BLOCK;
- 
- 	/* add all new blocks to the free list */
--	for (i = 0, blk = block + info->max_blocks; i < new_blocks; i++, blk++)
-+	blk = block + info->max_blocks - new_blocks;
-+	for (i = 0; i < new_blocks; i++, blk++)
- 		list_add(&blk->list, &info->empty_list);
- 
- 	return 0;
--- 
-1.4.4
+Ok.  To be very clear.
+
+Any plan that does not involve using drivers/pci/msi.c for the
+raw hardware operations is flawed.  Yes that code is a mess
+but it works today, and appears to capture all of the requirements.
+Where there are issues that code should be fixed not ignored.
+
+The architecture specific bits of the current msi code roughly
+correspond to your alloc and free routines.  All that is
+needed going from generic code to architecture specific code
+is the ability to allocate and free an msi irq.  You have
+a lot more operations than that and it is overkill.
+
+As a practical measure you current operations are such a bad fit
+for the architectures a port would be very difficult.  Basically
+setup_msi_message is simply a bad idea.  You need to use a
+write_msi_message call from the architecture to the generic code
+instead.
+
+I have some patches cooking to cleanup msi.c so it can be used
+as is.  I'm pretty much their but it looks like I need to slay
+msi_lock to make things sane.
+
+Eric
