@@ -3,16 +3,20 @@ Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
 	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 264B8DE005
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jan 2007 19:28:13 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 55752DE0B4
+	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jan 2007 19:37:30 +1100 (EST)
 From: ebiederm@xmission.com (Eric W. Biederman)
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [RFC/PATCH 4/16] Abstract MSI suspend
-References: <20070125083410.631EEDE277@ozlabs.org>
-Date: Sun, 28 Jan 2007 01:27:30 -0700
-In-Reply-To: <20070125083410.631EEDE277@ozlabs.org> (Michael Ellerman's
-	message of "Thu, 25 Jan 2007 19:34:09 +1100")
-Message-ID: <m1ac03sgi5.fsf@ebiederm.dsl.xmission.com>
+To: michael@ellerman.id.au
+Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
+References: <1169714047.65693.647693675533.qpush@cradle>
+	<m1wt3awbtf.fsf@ebiederm.dsl.xmission.com>
+	<1169876504.2294.23.camel@concordia.ozlabs.ibm.com>
+	<m1k5z7smkj.fsf@ebiederm.dsl.xmission.com>
+	<1169971963.19887.15.camel@concordia.ozlabs.ibm.com>
+Date: Sun, 28 Jan 2007 01:36:52 -0700
+In-Reply-To: <1169971963.19887.15.camel@concordia.ozlabs.ibm.com> (Michael
+	Ellerman's message of "Sun, 28 Jan 2007 19:12:43 +1100")
+Message-ID: <m14pqbsg2j.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
@@ -30,41 +34,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Michael Ellerman <michael@ellerman.id.au> writes:
 
-> Currently pci_disable_device() disables MSI on a device by twiddling
-> bits in config space via disable_msi_mode().
->
-> On some platforms that may not be appropriate, so abstract the MSI
-> suspend logic into pci_disable_device_msi().
+> We should probably just stop talking until I've got that series worked
+> out and posted, and then you can tell me what you think of it :)
 
->
-> Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> ---
->
->  drivers/pci/msi.c |   11 +++++++++++
->  drivers/pci/pci.c |    7 +------
->  drivers/pci/pci.h |    2 ++
->  3 files changed, 14 insertions(+), 6 deletions(-)
->
-> Index: msi/drivers/pci/msi.c
-> ===================================================================
-> --- msi.orig/drivers/pci/msi.c
-> +++ msi/drivers/pci/msi.c
-> @@ -271,6 +271,17 @@ void disable_msi_mode(struct pci_dev *de
->  	pci_intx(dev, 1);  /* enable intx */
->  }
->  
-> +void pci_disable_device_msi(struct pci_dev *dev)
-> +{
-> +	if (dev->msi_enabled)
-> +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
-> +			PCI_CAP_ID_MSI);
-> +
-> +	if (dev->msix_enabled)
-> +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
-> +			PCI_CAP_ID_MSIX);
+Sounds like a plan.  A series that kills the worst of the current code
+as far as multiple architecture stuff, which should make your series
+prettier.  I just finished testing and I'm heading for bed now.
 
-Just a quick note. This is wrong.  It should be PCI_CAP_ID_MSIX.
-The code that is being moved is buggy.  So the patch itself doesn't
-make the situation any worse.
+When I'm alert enough to rebase my changes onto Greg's tree 
+instead of linus-current.  I'll submit it.
+
+I don't think there are going to be any conflicts with your first
+4 patches that Greg sucked up but I figure it is best to check.
+
+Anyway for architecture hooks I have it down to just:
+/*
+ * The arch hook for setup up msi irqs
+ */
+int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
+void arch_teardown_msi_irq(unsigned int irq);
+
+Which should be good enough to handle everything but RTAS.
 
 Eric
