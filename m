@@ -1,20 +1,22 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 2CAE3DE190
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 10:31:58 +1100 (EST)
-Date: Sun, 28 Jan 2007 15:31:56 -0800 (PST)
-Message-Id: <20070128.153156.63125702.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id 9A06EDE133
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 10:37:09 +1100 (EST)
+Date: Sun, 28 Jan 2007 15:37:07 -0800 (PST)
+Message-Id: <20070128.153707.30184351.davem@davemloft.net>
 To: ebiederm@xmission.com
-Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
+Subject: Re: [PATCH 0/6] MSI portability cleanups
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <m1lkjmok2j.fsf@ebiederm.dsl.xmission.com>
-References: <m1fy9uq3et.fsf@ebiederm.dsl.xmission.com>
-	<1170019048.26655.27.camel@localhost.localdomain>
-	<m1lkjmok2j.fsf@ebiederm.dsl.xmission.com>
+In-Reply-To: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
+References: <m1bqkiq25v.fsf@ebiederm.dsl.xmission.com>
+	<1170022154.26655.63.camel@localhost.localdomain>
+	<m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: kyle@parisc-linux.org, linuxppc-dev@ozlabs.org, brice@myri.com,
-	greg@kroah.com, shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz
+Cc: tony.luck@intel.com, grundler@parisc-linux.org, jeff@garzik.org,
+	linux-kernel@vger.kernel.org, kyle@parisc-linux.org,
+	linuxppc-dev@ozlabs.org, brice@myri.com, greg@kroah.com,
+	shaohua.li@intel.com, mingo@elte.hu, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +27,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 28 Jan 2007 15:36:20 -0700
+Date: Sun, 28 Jan 2007 16:26:44 -0700
 
-> That might be the right solution.  I don't know.  But that is one
-> among several that your HV interface is wrong and probably should be
-> fixed at the HV.  I definitely have no intentions of encouraging
-> another HV to emulate the brittleness of your solution.
-> 
-> Nor do I want to ask device drivers to preallocate 4096 interrupts
-> just in case they need them.  Even if batch allocation makes sense
-> always asking for the maximum possible that you might use is overkill.
+> Yes.  In general the mainline linux kernel does not support certain
+> classes of stupidity.  TCP offload engines, firmware drivers for
+> hardware we care about, a fixed ABI to binary only modules, etc.
+> It is the responsibility of the OS to setup MSI so we do it, not
+> the firmware so we do it.
 
-Other platforms do this and I think it is totally reasonable
-to protect the defined PCI config register writes for MSI
-and MSI-X behind the hypervisor calls.
+I absolutely disagree with you Eric, and I think you're being
+rediculious.
 
-It is one of several legitimate ways to keep a PCI device from
-transmitting random junk to other devices which are on behind the same
-PCI controller yet belong to another virtual domain.
+If the hypervisor doesn't control the MSI PCI config space
+register writes, this allows the device to spam PCI devices
+which belong to other domains.
 
-Another solution is to have a PCI-E bridges define the unit of
-splitability between virtual domains, and have those PCI-E bridges
-protect each other from inter-domain MSI message writes.
+It's a freakin' reasonable design trade off decision, get over
+it! :-)
 
-Both solutions are valid, and each platform and hypervisor may make
-either decision and it is reasonable.
-
-About your argument of a MSI-Y, these platforms simply don't support
-such devices and the people who design these systems and hypervisors
-absolutely accept that limitation as a design trade off.  It's not a
-bad thing.
-
-Look, I have no idea where all this resistence come from to abstract
-this stuff behind enough levels to support things like RTAS et al.
-properly.  Please stop it now.
+Yes it can be done at the hardware level, and many hypervisor
+based systems do that, but it's not the one-and-only true
+way to implment inter-domain protection behind a single
+PCI host controller.
