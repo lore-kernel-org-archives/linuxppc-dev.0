@@ -1,18 +1,25 @@
-Return-Path: <paubert@iram.es>
-Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
-	by ozlabs.org (Postfix) with ESMTP id 99877DE1A3
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 06:23:41 +1100 (EST)
-From: Gabriel Paubert <paubert@iram.es>
-Date: Sun, 28 Jan 2007 20:23:31 +0100
-To: Brad Boyer <flar@allandria.com>
-Subject: Re: Mac devices on PREP
-Message-ID: <20070128192331.GA17989@iram.es>
-References: <20070128120126.GA21984@wavehammer.waldi.eu.org>
-	<20070127222403.GA24831@cynthia.pants.nu>
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9485DDDF59
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 06:42:00 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Greg Kroah-Hartman <greg@kroah.com>
+Subject: [PATCH 0/6] MSI portability cleanups
+References: <1169714047.65693.647693675533.qpush@cradle>
+Date: Sun, 28 Jan 2007 12:40:53 -0700
+In-Reply-To: <1169714047.65693.647693675533.qpush@cradle> (Michael Ellerman's
+	message of "Thu, 25 Jan 2007 19:34:07 +1100")
+Message-ID: <m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070127222403.GA24831@cynthia.pants.nu>
-Cc: linuxppc-dev@ozlabs.org, debian-kernel@lists.debian.org
+Cc: Tony Luck <tony.luck@intel.com>, Grant Grundler <grundler@parisc-linux.org>,
+	Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Brice Goglin <brice@myri.com>, shaohua.li@intel.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Jan 27, 2007 at 02:24:03PM -0800, Brad Boyer wrote:
-> On Sun, Jan 28, 2007 at 01:01:26PM +0100, Bastian Blank wrote:
-> > Currently, the whole bunch of macintosh devices (drivers/macintosh) are
-> > listed to be available on all ppc variants. Some of them does not build
-> > for prep.
-> > 
-> > The attached patch restricts the whole bunch to PPC_PMAC. I'm not sure
-> > if this is the correct fix.
-> 
-> I don't know if it still works, but there used to be support for
-> ADB on CHRP hardware. I don't have any such hardware to check, so
-> someone else will have to comment on that. This is one reason I
-> suggested moving ADB out of drivers/macintosh, but at the time
-> there was disagreement on that and I never finished the patch I
-> was work on anyway.
-> 
-> Perhaps it should be (PPC_PMAC || PPC_CHRP || MAC) instead as a
-> simple fix to prevent it from building on prep.
-> 
 
-I don't know what the situation is now, but I'm almost certain that,
-once upon a time it was possible to build a kernel that would boot 
-on Mac, CHRP and PReP. To be precise, it was the same kernel image
-included in different boot wrappers.
+This patchset is against gregkh-pci but except for the context around
+msi_lookup_irq being completely different it applies cleanly to 2.6.20-rc6
+as well.
 
-	Gabriel
+When I first looked at this problem I thought no big deal it will one
+or two simple patches and that is it.
+
+When I looked more closely I discovered that to be certain of not introducing
+bugs I would have to kill msi_lock, which made the problem a little more
+difficult.
+
+The result of this patchset is that architecture hooks become:
+
+int arch_setup_msi_irq(struct pci_dev *dev, struct msi_desc *desc);
+void arch_teardown_msi_irq(unsigned int irq);
+
+and are responsible for allocating and freeing the irq as well
+as setting it up.
+
+This touches the architecture code for i386, x86_64, and ia64 to
+accomplish this.
+
+Since I couldn't test ia64 I reviewed the code closely, and compile
+tested it.
+
+The other big change is that I added a field to irq_desc to point
+at the msi_desc.  This removes the conflicts with the existing pointer
+fields and makes the irq -> msi_desc mapping useable outside of msi.c
+
+The only architecture problem that isn't solvable in this context is
+the problem of supporting the crazy hypervisor on the ppc RTAS, which
+asks us to drive the hardware but does not give us access to the
+hardware registers.
+
+Eric
