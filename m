@@ -1,32 +1,33 @@
-Return-Path: <mingo@elte.hu>
-Received: from fallback.mail.elte.hu (fallback.mail.elte.hu [157.181.151.13])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 77F69DE046
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 11:04:15 +1100 (EST)
-Received: from mx2.mail.elte.hu ([157.181.151.9])
-	by fallback.mail.elte.hu with esmtp (Exim) id 1HBHaY-0001gN-Ns
-	from <mingo@elte.hu>
-	for <linuxppc-dev@ozlabs.org>; Sun, 28 Jan 2007 22:29:26 +0100
-Date: Sun, 28 Jan 2007 22:26:18 +0100
-From: Ingo Molnar <mingo@elte.hu>
+	by ozlabs.org (Postfix) with ESMTP id A4E0DDDFFE
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 11:27:11 +1100 (EST)
+Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: "Eric W. Biederman" <ebiederm@xmission.com>
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-Message-ID: <20070128212618.GA11547@elte.hu>
+In-Reply-To: <m1bqkioh6z.fsf@ebiederm.dsl.xmission.com>
 References: <1169714047.65693.647693675533.qpush@cradle>
-	<m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
-	<1170015805.26655.15.camel@localhost.localdomain>
-	<45BD0BDC.40205@garzik.org>
-	<m1bqkiq25v.fsf@ebiederm.dsl.xmission.com>
+	<m1wt3awbtf.fsf@ebiederm.dsl.xmission.com>
+	<1169876504.2294.23.camel@concordia.ozlabs.ibm.com>
+	<m1k5z7smkj.fsf@ebiederm.dsl.xmission.com>
+	<1169971963.19887.15.camel@concordia.ozlabs.ibm.com>
+	<m14pqbsg2j.fsf@ebiederm.dsl.xmission.com>
+	<1170015292.26655.6.camel@localhost.localdomain>
+	<m1fy9uq3et.fsf@ebiederm.dsl.xmission.com>
+	<1170019048.26655.27.camel@localhost.localdomain>
+	<m1lkjmok2j.fsf@ebiederm.dsl.xmission.com>
+	<1170026259.26655.114.camel@localhost.localdomain>
+	<m1bqkioh6z.fsf@ebiederm.dsl.xmission.com>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 11:26:48 +1100
+Message-Id: <1170030408.26655.137.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <m1bqkiq25v.fsf@ebiederm.dsl.xmission.com>
-Cc: Tony Luck <tony.luck@intel.com>, Grant Grundler <grundler@parisc-linux.org>,
-	Jeff Garzik <jeff@garzik.org>, linux-kernel@vger.kernel.org,
-	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Brice Goglin <brice@myri.com>,
-	Greg Kroah-Hartman <greg@kroah.com>, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,29 +38,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-* Eric W. Biederman <ebiederm@xmission.com> wrote:
+> That isn't even the reason it is that way.  It is because allocating
+> 4096 irqs in a single vector is a bad idea
 
-> I'm not arguing against an operations based approach.  I'm arguing for 
-> simple obviously correct steps, and not throwing the baby out with the 
-> bath water.
-> 
-> My patches should be a precursor to an operations based approach
-> because they are simple step from where we are now.
+Why ?
 
-yeah. I'd say your approach is to go from A to B:
+> and because it requires you to pass type information of what kind of
+> msi you are dealing with to the lower levels in an allocation routine 
+> that make it bad idea.  
+> Because if you don't consider the IBM HV it provides not benefit and 
+> just puts unnecessary loops, and type information in architecture 
+> code.
 
-  [A] -----------------------------------------------------> [B]
-                                                              |
-                                                             [C]
+The only difference in practice is loop vs. no loop in fact. That is
 
-while there might be some other arguments that "no, lets go to C 
-instead", i say lets not throw away the already implemented and already 
-working and nicely layered [A]->[B] transition, just because there's an 
-argument whether the end result should be 'B' or 'C'. Unless someone who 
-wants to see 'C' produces a patchset that walks the whole way i dont see 
-any reason to not go with your patchset. It clearly removes alot of 
-cruft.
+alloc_irq (one MSI) for your version and
+alloc_irqs (an array of MSIs) for our version.
 
-Acked-by: Ingo Molnar <mingo@elte.hu>
+Sure, the later, we also pass the type, but you don't use it for the
+"raw" case, we only use it for the hypervisor case.
 
-	Ingo
+The difference is that one version (yours) cannot handle the HV case
+while the other can. Makes a big difference to me.
+
+> Face it.  Trying to make the allocation routine serve for both the
+> raw and the HV case unmodified is a layering violation.
+
+So you want two separate abstractions and I think that's gross.
+
+Ben.
