@@ -1,26 +1,29 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-From: Michael Ellerman <michael@ellerman.id.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
-References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
-	<20070128.153707.30184351.davem@davemloft.net>
-	<m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
-	<20070128.212554.23015561.davem@davemloft.net>
-	<1170050737.26655.233.camel@localhost.localdomain>
-	<m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-rR6ZmTxUxIaoiYSFGFD2"
-Date: Mon, 29 Jan 2007 21:11:27 +1100
-Message-Id: <1170065487.19887.91.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: tony.luck@intel.com, grundler@parisc-linux.org, jeff@garzik.org,
-	linux-kernel@vger.kernel.org, kyle@parisc-linux.org,
-	linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	brice@myri.com, greg@kroah.com, shaohua.li@intel.com,
-	mingo@elte.hu, David Miller <davem@davemloft.net>
-Reply-To: michael@ellerman.id.au
+Return-Path: <sonic_amiga@rambler.ru>
+Received: from gw2.leta.ru (gw2.leta.ru [88.210.57.116])
+	by ozlabs.org (Postfix) with ESMTP id 167D5DE014
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 23:15:58 +1100 (EST)
+Received: from gw2.leta.ru (localhost [127.0.0.1])
+	by gw.leta.sw (Postfix) with ESMTP id 8F6421055C
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 15:15:48 +0300 (MSK)
+Received: from antispam.localhost (localhost [127.0.0.1])
+	by gw2.leta.ru (Postfix) with SMTP id 65B3410636
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 15:15:48 +0300 (MSK)
+Received: from freemm.leta.sw (freemm.leta.sw [192.168.1.187])
+	by gw2.leta.ru (Postfix) with ESMTP id 3B5D51055C
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 15:15:48 +0300 (MSK)
+Received: from programmer-dvk.leta.sw (programmer-dvk.leta.sw [192.168.1.224])
+	by freemm.leta.sw (Postfix) with ESMTP id AAP000841C000745BDE337
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 15:06:15 +0300 (MSK)
+Date: Mon, 29 Jan 2007 15:13:03 +0300
+From: Pavel Fedin <sonic_amiga@rambler.ru>
+Message-ID: <54654522.20070129151303@rambler.ru>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Virtual DMA support for floppy driver for new powerpc
+	architecture
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Errors-To: sonic_amiga@rambler.ru
+Reply-To: Pavel Fedin <sonic_amiga@rambler.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,175 +33,190 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ Hello!
 
---=-rR6ZmTxUxIaoiYSFGFD2
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+ During ppc64+ppc merge virtual DMA code for floppy driver was not
+ported. This patch restores virtual DMA support for floppy in new
+powerpc target.
+ It is necessary at least on Pegasos and AmigaOne machines for the
+floppy drive to function. ISA DMA controller works incorrectly there
+due to its addressing limitations.
+ Virtual DMA mode is activated by floppy=nodma option passed to the
+kernel (or module). There's no automatic switch like on i386.
 
-On Mon, 2007-01-29 at 02:03 -0700, Eric W. Biederman wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->=20
-> > On Sun, 2007-01-28 at 21:25 -0800, David Miller wrote:
-> >> From: ebiederm@xmission.com (Eric W. Biederman)
-> >> Date: Sun, 28 Jan 2007 22:18:59 -0700
-> >>=20
-> >> > Regardless of my opinion on the sanity of the hypervisor architects.
-> >> > I have not seen anything that indicates it will be hard to support
-> >> > the hypervisor doing everything or most of everything for us, so
-> >> > I see no valid technical objection to it.  Nor have I ever.
-> >> >=20
-> >> > So I have no problem with additional patches in that direction.
-> >>=20
-> >> Ok, that's great to hear.
-> >>=20
-> >> I know your bi-directional approach isn't exactly what Ben
-> >> wants but he can support his machines with it.  Maybe after
-> >> some time we can agree to move from that more towards the
-> >> totally abstracted scheme.
-> >
-> > It can support my machines without HV with trivial changes I reckon: I
-> > need an ops struct to indirect eric's 2 remaining arch hooks
-> > (setup/teardown) but that can be done inline within asm-powerpc. I need
-> > to double check of course and probably actually port the MPIC backend
-> > and possibly go write the Cell Axon one while at it to verify everythin=
-g
-> > is allright, but the base design seems sound enough.
-> >
-> > For the ones with HV (RTAS stuff), we still need to agree on how to
-> > approach it. We can either:
-> >
-> > Option 1
-> > --------
-> >
-> > Do a hook -above- Eric stuff, by having the toplevel APIs themselves be
-> > arch hooks that can either go toward the RTAS implementation or toward
-> > Eric's code. That is, eric code would define those (pick better names i=
-f
-> > you are good at it):
-> >
-> > 	pci_generic_enable_msi
-> > 	pci_generic_disable_msi
-> > 	pci_generic_enable_msix
-> > 	pci_generic_disable_msix
-> > 	pci_generic_save_msi_state
-> > 	pci_generic_restore_msi_state
-> >
-> > Then we can have asm-i386/msi.h & friends do something like
-> >
-> > #define pci_enable_msi	pci_generic_enable_msi
-> > #define pci_disable_msi	pci_generic_disable_msi
-> >    etc...
-> >
-> > And we can have asm-powerpc/msi.h hook then via ppc_md:
-> >
-> > static inline int pci_enable_msi(xxx...)
-> > {
-> > 	return ppc_md.pci_enable_msi(xxx...);
-> > }
-> > etc...
-> >
-> > (ppc_md is our per-platform global hook structure filled at boot when w=
-e
-> > discover on what machine type we are running on) so that pSeries can us=
-e
-> > it's own RTAS callbacks, and others can just re-hook those to Eric's
-> > code.
->=20
-> This is the most straight forward and handles machines with really
-> weird msi setups, so I lean in this direction.
->=20
-> The question is there anything at all we can do generically?
->=20
-> I can't see a case where ppc_md would not wind up with the hooks
-> that decide if it is a hypervisor or not.  Even if we came up
-> with a better set of functions you need to hook.
->=20
-> > Option 2
-> > --------
-> >
-> > That is to make Eric's code itself cope with the HV case. I'm a bit at
-> > loss right now as how precisely to do it. I need to spend more time
-> > staring at the code after Eric latest patches rather than the patches
-> > themselves I suppose :-) (Eric, they don't apply out of the box on
-> > current git, they are against -mm ?).
-> >
-> > Some of the main issues here, more/less following the order in which
-> > Eric code calls things:
-> >
-> >  - The number of vectors for MSI-X is obtained from config space (at
-> > least for sanity checking the requested argument). On RTAS, it should
-> > come from an OF property (we are really not supposed to go read the
-> > config space even if we can). I -suppose- we can survive for now with
-> > just reading it, but we might well run into trouble with some "special"
-> > devices shared accross partitions or if the IBM magic bridges themselve=
-s
-> > ever start sending MSI-X on their own (unlikely but who knows...).
-> > Michael's code handled that by having a callback ->check() do the sanit=
-y
-> > checking of the nvec, and then just use the nvec passed in as an
-> > argument once it's sane.
->=20
-> Ok. I think I get the point of check.  I believe I need to look at your
-> code a little more and see what you are doing to see if there is anything
-> generic worth doing, that we can always do outside of architecture code
-> no matter how much of the job the Hypervisor wants to do for us.
->=20
-> I'd hate to hit a different Hypervisor that did something close but
-> not quite the same and have the code fail then.  So definitely
-> avoiding touching pci config space at all in the calls seems to make a
-> lot of sense.  This includes avoiding pci_find_capability right?
+Signed-off-by: Pavel Fedin <sonic_amiga@rambler.ru>  
 
-You can read config space, but it's not clear to me if the HV is allowed
-to filter it and hide things. It's also possible that the device
-supports MSI, but for some reason the HV doesn't allow it on that device
-etc. so you really have to ask the HV if it's enabled. So pci_find_cap()
-shouldn't crash or anything, but it may lie to you.
+---
 
-> Off the top of my head the only things we can do generically are
-> some data structure things and flags like dev->msi_enabled or
-> dev->msix_enabled.
-
-It would be good to have a common data structure if possible. My
-thinking was that most of the information is per pci_dev, so that's
-where I put it. I realise the Intel code stores some info that's
-per-irq, but most of it is per-device. I hadn't got anywhere near coding
-it, but my vague idea was to add a arch_data (or whatever) pointer to my
-msi_info struct, which would allow backends to stash stuff.
-
-I think the pci_intx() calls can be in the core.
-
-Munging dev->irq could be in the core, assuming it's left in some known
-location by the code. On the other hand we might want to decide it's a
-bad idea altogether.
-
-One thing I did like about my code, is that pci_enable_msi() and
-pci_enable_msix() are just small wrappers around generic_enable_msi() -
-which does all the work, and is the same regardless of whether it's an
-MSI or MSI-X. Although that's facilitated by the type arg which you
-don't like.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-rR6ZmTxUxIaoiYSFGFD2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFvchPdSjSd0sB4dIRAmccAJ9V/nA7YELwpq0TNmSaUtOvHYulRwCgpiIe
-NWnL5z2VgVkk6buuGVtRIWs=
-=jiUZ
------END PGP SIGNATURE-----
-
---=-rR6ZmTxUxIaoiYSFGFD2--
+--- linux-2.6.19.2/include/asm-powerpc/floppy.h.orig    2007-01-10 22:10:37.000000000 +0300
++++ linux-2.6.19.2/include/asm-powerpc/floppy.h 2007-01-25 02:14:54.000000000 +0300
+@@ -17,28 +17,115 @@
+ #define fd_outb(value,port)    outb_p(value,port)
+ 
+ #define fd_enable_dma()         enable_dma(FLOPPY_DMA)
+-#define fd_disable_dma()        disable_dma(FLOPPY_DMA)
+-#define fd_request_dma()        request_dma(FLOPPY_DMA, "floppy")
+-#define fd_free_dma()           free_dma(FLOPPY_DMA)
++#define fd_disable_dma()        fd_ops->_disable_dma(FLOPPY_DMA)
++#define fd_free_dma()           fd_ops->_free_dma(FLOPPY_DMA)
+ #define fd_clear_dma_ff()       clear_dma_ff(FLOPPY_DMA)
+ #define fd_set_dma_mode(mode)   set_dma_mode(FLOPPY_DMA, mode)
+ #define fd_set_dma_count(count) set_dma_count(FLOPPY_DMA, count)
++#define fd_get_dma_residue()    fd_ops->_get_dma_residue(FLOPPY_DMA)
+ #define fd_enable_irq()         enable_irq(FLOPPY_IRQ)
+ #define fd_disable_irq()        disable_irq(FLOPPY_IRQ)
+ #define fd_cacheflush(addr,size) /* nothing */
+-#define fd_request_irq()        request_irq(FLOPPY_IRQ, floppy_interrupt, \
+-                                           IRQF_DISABLED, "floppy", NULL)
+ #define fd_free_irq()           free_irq(FLOPPY_IRQ, NULL);
+ 
+-#ifdef CONFIG_PCI
+-
+ #include <linux/pci.h>
+ #include <asm/ppc-pci.h>       /* for ppc64_isabridge_dev */
+ 
+-#define fd_dma_setup(addr,size,mode,io) powerpc_fd_dma_setup(addr,size,mode,io)
++#define fd_dma_setup(addr,size,mode,io) fd_ops->_dma_setup(addr,size,mode,io)
++
++static int fd_request_dma(void);
++
++struct fd_dma_ops {
++       void (*_disable_dma)(unsigned int dmanr);
++       void (*_free_dma)(unsigned int dmanr);
++       int (*_get_dma_residue)(unsigned int dummy);
++       int (*_dma_setup)(char *addr, unsigned long size, int mode, int io);
++};
++
++static int virtual_dma_count;
++static int virtual_dma_residue;
++static char *virtual_dma_addr;
++static int virtual_dma_mode;
++static int doing_vdma;
++static struct fd_dma_ops *fd_ops;
++
++static irqreturn_t floppy_hardint(int irq, void *dev_id)
++{
++       unsigned char st;
++       int lcount;
++       char *lptr;
++
++       if (!doing_vdma)
++               return floppy_interrupt(irq, dev_id);
++
++
++       st = 1;
++       for (lcount=virtual_dma_count, lptr=virtual_dma_addr;
++            lcount; lcount--, lptr++) {
++               st=inb(virtual_dma_port+4) & 0xa0 ;
++               if (st != 0xa0)
++                       break;
++               if (virtual_dma_mode)
++                       outb_p(*lptr, virtual_dma_port+5);
++               else
++                       *lptr = inb_p(virtual_dma_port+5);
++       }
++       virtual_dma_count = lcount;
++       virtual_dma_addr = lptr;
++       st = inb(virtual_dma_port+4);
++
++       if (st == 0x20)
++               return IRQ_HANDLED;
++       if (!(st & 0x20)) {
++               virtual_dma_residue += virtual_dma_count;
++               virtual_dma_count=0;
++               doing_vdma = 0;
++               floppy_interrupt(irq, dev_id);
++               return IRQ_HANDLED;
++       }
++       return IRQ_HANDLED;
++}
++
++static void vdma_disable_dma(unsigned int dummy)
++{
++       doing_vdma = 0;
++       virtual_dma_residue += virtual_dma_count;
++       virtual_dma_count=0;
++}
++
++static void vdma_nop(unsigned int dummy)
++{
++}
++
++
++static int vdma_get_dma_residue(unsigned int dummy)
++{
++       return virtual_dma_count + virtual_dma_residue;
++}
++
++
++static int fd_request_irq(void)
++{
++       if (can_use_virtual_dma)
++               return request_irq(FLOPPY_IRQ, floppy_hardint,
++                                  IRQF_DISABLED, "floppy", NULL);
++       else
++               return request_irq(FLOPPY_IRQ, floppy_interrupt,
++                                  IRQF_DISABLED, "floppy", NULL);
++}
++
++static int vdma_dma_setup(char *addr, unsigned long size, int mode, int io)
++{
++       doing_vdma = 1;
++       virtual_dma_port = io;
++       virtual_dma_mode = (mode  == DMA_MODE_WRITE);
++       virtual_dma_addr = addr;
++       virtual_dma_count = size;
++       virtual_dma_residue = 0;
++       return 0;
++}
+ 
+-static __inline__ int powerpc_fd_dma_setup(char *addr, unsigned long size,
+-                                          int mode, int io)
++static int hard_dma_setup(char *addr, unsigned long size, int mode, int io)
+ {
+        static unsigned long prev_size;
+        static dma_addr_t bus_addr = 0;
+@@ -46,6 +133,7 @@
+        static int prev_dir;
+        int dir;
+ 
++       doing_vdma = 0;
+        dir = (mode == DMA_MODE_READ) ? PCI_DMA_FROMDEVICE : PCI_DMA_TODEVICE;
+ 
+        if (bus_addr 
+@@ -74,11 +162,32 @@
+        return 0;
+ }
+ 
+-#endif /* CONFIG_PCI */
++static struct fd_dma_ops real_dma_ops =
++{
++       ._disable_dma = disable_dma,
++       ._free_dma = free_dma,
++       ._get_dma_residue = get_dma_residue,
++       ._dma_setup = hard_dma_setup
++};
++
++static struct fd_dma_ops virt_dma_ops =
++{
++       ._disable_dma = vdma_disable_dma,
++       ._free_dma = vdma_nop,
++       ._get_dma_residue = vdma_get_dma_residue,
++       ._dma_setup = vdma_dma_setup
++};
+ 
+-__inline__ void virtual_dma_init(void)
++static int fd_request_dma()
+ {
+-       /* Nothing to do on PowerPC */
++       if (can_use_virtual_dma & 1) {
++               fd_ops = &virt_dma_ops;
++               return 0;
++       }
++       else {
++               fd_ops = &real_dma_ops;
++               return request_dma(FLOPPY_DMA, "floppy");
++       }
+ }
+ 
+ static int FDC1 = 0x3f0;
