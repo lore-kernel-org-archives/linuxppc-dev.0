@@ -1,22 +1,27 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <grundler@lackof.org>
+Received: from colo.lackof.org (colo.lackof.org [198.49.126.79])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8B68BDE02A
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 03:38:54 +1100 (EST)
-In-Reply-To: <45BE2276.5010303@freescale.com>
-References: <11691560171514-git-send-email-timur@freescale.com>	<309FC1DE-9724-4172-BB13-D301D4A783F8@kernel.crashing.org>	<45BA1952.80206@freescale.com>
-	<EC5E5BA9-F865-40AC-8CA8-9B152AAC0908@kernel.crashing.org>
-	<45BE2276.5010303@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <2B16AB83-7726-4C84-B48E-254E8FEF734C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add support for the MPC8349E-mITX-GP
-Date: Mon, 29 Jan 2007 10:37:52 -0600
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "mail.lackof.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F227ADE01A
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 03:52:35 +1100 (EST)
+Date: Mon, 29 Jan 2007 09:52:17 -0700
+From: Grant Grundler <grundler@parisc-linux.org>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH 4/16] Abstract MSI suspend
+Message-ID: <20070129165217.GA10992@colo.lackof.org>
+References: <20070125083410.631EEDE277@ozlabs.org>
+	<m1ac03sgi5.fsf@ebiederm.dsl.xmission.com>
+	<1170055377.19887.60.camel@concordia.ozlabs.ibm.com>
+	<m1wt36kyqh.fsf@ebiederm.dsl.xmission.com>
+	<1170064058.19887.78.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1170064058.19887.78.camel@concordia.ozlabs.ibm.com>
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>, Brice Goglin <brice@myri.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +31,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Jan 29, 2007 at 08:47:38PM +1100, Michael Ellerman wrote:
+...
+> > The mthca IB driver was one of the early adopters of MSI, and it uses
+> > MSI-X.  So it isn't that no one is using MSI-X and the MSI-X code
+> > paths don't get exercised.
+> 
+> I meant the MSI-X suspend/resume path specifically, I'm guessing most
+> laptops don't come with IB cards yet ;)
 
-On Jan 29, 2007, at 10:36 AM, Timur Tabi wrote:
+laptops now come with 1000BT chips that _do_ support MSI-X.
 
-> Kumar Gala wrote:
->
->> I did this as well, I'm talking about the debug options being   
->> different and USB support.  (Not simple diffs handled by make   
->> menuconfig).
->
-> I can't explain those.  I didn't touch the USB or debug options  
-> when I changed the config for the ITX-GP.  I just changed the flash  
-> configuration.  Now that I think about it, I should probably have  
-> disabled SATA and a few other things that the ITX-GP is missing.
->
-> What do you suggest I do?  Should I just try it again?
-
-Well, I'd suggest trying it again based on the latest ITX defconfing  
-and see what happens.  If you need to update both defconfigs to make  
-them consistent I'm fine with that.  Just figured they should be  
-insync (except the removed functionality for ITX-GP).
-
-- k
+grant
