@@ -1,16 +1,22 @@
-Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45BE4F78.6080705@us.ibm.com>
-Date: Mon, 29 Jan 2007 13:48:08 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
-MIME-Version: 1.0
-To: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net
-Subject: [RFC, PATCH 3/4] Add support to OProfile for profiling Cell BE SPUs
-	-- update
-References: <45BE4ED0.5030808@us.ibm.com>
-In-Reply-To: <45BE4ED0.5030808@us.ibm.com>
-Content-Type: multipart/mixed; boundary="------------010102080307090306040800"
-Reply-To: maynardj@us.ibm.com
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9EA70DE041
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 06:56:29 +1100 (EST)
+In-Reply-To: <45BE4BC0.5050402@freescale.com>
+References: <11691560171514-git-send-email-timur@freescale.com>	<309FC1DE-9724-4172-BB13-D301D4A783F8@kernel.crashing.org>	<45BA1952.80206@freescale.com>	<EC5E5BA9-F865-40AC-8CA8-9B152AAC0908@kernel.crashing.org>	<45BE2276.5010303@freescale.com>
+	<2B16AB83-7726-4C84-B48E-254E8FEF734C@kernel.crashing.org>
+	<45BE4BC0.5050402@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5899C4E3-6AFE-4B04-AF4E-BF0AA382AA71@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add support for the MPC8349E-mITX-GP
+Date: Mon, 29 Jan 2007 13:55:26 -0600
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,149 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010102080307090306040800
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
 
+On Jan 29, 2007, at 1:32 PM, Timur Tabi wrote:
 
+> Kumar Gala wrote:
+>
+>> Well, I'd suggest trying it again based on the latest ITX  
+>> defconfing  and see what happens.  If you need to update both  
+>> defconfigs to make  them consistent I'm fine with that.  Just  
+>> figured they should be  insync (except the removed functionality  
+>> for ITX-GP).
+>
+> Ok, I'll make new patch that updates the ITX config file and makes  
+> an ITX-GP config file and keeps the diffs to a minimum.  I'll  
+> submit it when the window for 2.6.21 opens.
 
---------------010102080307090306040800
-Content-Type: text/x-diff;
- name="spu-notifier.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="spu-notifier.patch"
+Please don't wait for the window.  I've already got a branch for 83xx  
+2.6.21 patches going.
 
-Subject: Enable SPU switch notification to detect currently active SPU tasks.
-
-From: Maynard Johnson <maynardj@us.ibm.com>
-
-This patch adds to the capability of spu_switch_event_register so that the
-caller is also notified of currently active SPU tasks.  It also exports
-spu_switch_event_register and spu_switch_event_unregister.
-
-Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
-
-
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/sched.c
-===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-18 16:43:14.324526032 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/sched.c	2007-01-26 16:16:35.219668640 -0600
-@@ -78,21 +78,46 @@
- 
- static BLOCKING_NOTIFIER_HEAD(spu_switch_notifier);
- 
--static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
- {
- 	blocking_notifier_call_chain(&spu_switch_notifier,
- 			    ctx ? ctx->object_id : 0, spu);
- }
- 
-+static void notify_spus_active(void)
-+{
-+       int node;
-+	/* Wake up the active spu_contexts. When the awakened processes 
-+	 * sees their notify_active flag is set, they will call
-+	 * spu_switch_notify();
-+	 */
-+	for (node = 0; node < MAX_NUMNODES; node++) {
-+		struct spu *spu;
-+		mutex_lock(&spu_prio->active_mutex[node]);
-+                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
-+			struct spu_context *ctx = spu->ctx;
-+			spu->notify_active = 1;
-+			wake_up_all(&ctx->stop_wq);
-+		}
-+                mutex_unlock(&spu_prio->active_mutex[node]);
-+	}
-+}
-+
- int spu_switch_event_register(struct notifier_block * n)
- {
--	return blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	int ret;
-+	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	if (!ret)
-+		notify_spus_active();
-+	return ret;
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_register);
- 
- int spu_switch_event_unregister(struct notifier_block * n)
- {
- 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
- 
- 
- static inline void bind_context(struct spu *spu, struct spu_context *ctx)
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-18 16:43:14.340523600 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/spufs.h	2007-01-26 16:26:49.733703448 -0600
-@@ -180,6 +180,7 @@
- int spu_activate(struct spu_context *ctx, u64 flags);
- void spu_deactivate(struct spu_context *ctx);
- void spu_yield(struct spu_context *ctx);
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx);
- int __init spu_sched_init(void);
- void __exit spu_sched_exit(void);
- 
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/run.c
-===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/run.c	2007-01-18 16:43:14.340523600 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/run.c	2007-01-26 16:24:38.979744856 -0600
-@@ -45,9 +45,10 @@
- 	u64 pte_fault;
- 
- 	*stat = ctx->ops->status_read(ctx);
--	if (ctx->state != SPU_STATE_RUNNABLE)
--		return 1;
-+
- 	spu = ctx->spu;
-+	if (ctx->state != SPU_STATE_RUNNABLE || spu->notify_active)
-+		return 1;
- 	pte_fault = spu->dsisr &
- 	    (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED);
- 	return (!(*stat & 0x1) || pte_fault || spu->class_0_pending) ? 1 : 0;
-@@ -305,6 +306,7 @@
- 		   u32 *npc, u32 *event)
- {
- 	int ret;
-+	struct spu * spu;
- 	u32 status;
- 
- 	if (down_interruptible(&ctx->run_sema))
-@@ -318,8 +320,16 @@
- 
- 	do {
- 		ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
-+		spu = ctx->spu;
- 		if (unlikely(ret))
- 			break;
-+		if (unlikely(spu->notify_active)) {
-+			spu->notify_active = 0;
-+			if (!(status & SPU_STATUS_STOPPED_BY_STOP)) {
-+				spu_switch_notify(spu, ctx);
-+				continue;
-+			}
-+		}
- 		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
- 		    (status >> SPU_STOP_STATUS_SHIFT == 0x2104)) {
- 			ret = spu_process_callback(ctx);
-Index: linux-2.6.20-rc1/include/asm-powerpc/spu.h
-===================================================================
---- linux-2.6.20-rc1.orig/include/asm-powerpc/spu.h	2007-01-18 16:43:19.932605072 -0600
-+++ linux-2.6.20-rc1/include/asm-powerpc/spu.h	2007-01-24 12:17:30.209676992 -0600
-@@ -144,6 +144,7 @@
- 
- 	void* pdata; /* platform private data */
- 	struct sys_device sysdev;
-+	int notify_active;
- };
- 
- struct spu *spu_alloc(void);
-
---------------010102080307090306040800--
+- k
