@@ -1,26 +1,28 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id CEF8CDE025
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 04:02:25 +1100 (EST)
-To: Grant Grundler <grundler@parisc-linux.org>
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3B711DE061
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 04:21:05 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: michael@ellerman.id.au
 Subject: Re: [RFC/PATCH 4/16] Abstract MSI suspend
 References: <20070125083410.631EEDE277@ozlabs.org>
 	<m1ac03sgi5.fsf@ebiederm.dsl.xmission.com>
 	<1170055377.19887.60.camel@concordia.ozlabs.ibm.com>
 	<m1wt36kyqh.fsf@ebiederm.dsl.xmission.com>
 	<1170064058.19887.78.camel@concordia.ozlabs.ibm.com>
-	<20070129165217.GA10992@colo.lackof.org> <adabqkh22jy.fsf@cisco.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 29 Jan 2007 09:02:18 -0800
-In-Reply-To: <adabqkh22jy.fsf@cisco.com> (Roland Dreier's message of "Mon,
-	29 Jan 2007 08:57:53 -0800")
-Message-ID: <ada7iv522cl.fsf@cisco.com>
+Date: Mon, 29 Jan 2007 10:20:12 -0700
+In-Reply-To: <1170064058.19887.78.camel@concordia.ozlabs.ibm.com> (Michael
+	Ellerman's message of "Mon, 29 Jan 2007 20:47:38 +1100")
+Message-ID: <m1mz41lpgz.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
-	linuxppc-dev@ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
 	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
-	"David S. Miller" <davem@davemloft.net>, Brice Goglin <brice@myri.com>
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,14 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > Really?  Which gigE chips are using MSI-X (as opposed to MSI)?
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-OK, I should look before I post.  But anyway a quick grep shows that
-the forcedeth driver does enable MSI-X for at least some devices.  And
-a quick look at the nv_suspend() function makes me think that suspend
-probably won't work if MSI-X is used, since it doesn't save the MSI-X
-state anywhere that I can see (unless the device is magic enough to
-keep the MSI-X table in some sort of persistent storage, which I
-highly doubt).
+> That was my suspicion as well, I was hoping someone who knew the code
+> better than me would pipe up and let me know why it was a special case.
+> Have the original MSI authors vanished without a trace?
 
- - R.
+I have never gotten any useable feedback from that direction anyway.
+
+> It seems to date from the initial MSI submission, and has only ever been
+> called from pci_free_resources(). The rest of the pci hotunplug code
+> paths are not clear to me though, so I don't know whether we can rely on
+> pci_disable_msi() already being called for us.
+
+Good question.  I do know I have always been a little suspicions of
+the suspend/resume path, because I haven't read them.
+
+There may be a point in the hot-unplug where the code actually makes
+sense in the don't touch the hardware kind of way.
+
+Eric
