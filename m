@@ -1,24 +1,27 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 81189DE1F7
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 15:44:34 +1100 (EST)
-Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 9E183DDE9F
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 16:20:07 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
 To: David Miller <davem@davemloft.net>
-In-Reply-To: <20070128.201938.102578509.davem@davemloft.net>
-References: <1170032301.26655.140.camel@localhost.localdomain>
-	<20070128.171309.11624572.davem@davemloft.net>
-	<1170040622.26655.187.camel@localhost.localdomain>
-	<20070128.201938.102578509.davem@davemloft.net>
-Content-Type: text/plain
-Date: Mon, 29 Jan 2007 15:44:07 +1100
-Message-Id: <1170045847.26655.200.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: greg@kroah.com, kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
-	brice@myri.com, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, ebiederm@xmission.com
+Subject: Re: [PATCH 0/6] MSI portability cleanups
+References: <m1bqkiq25v.fsf@ebiederm.dsl.xmission.com>
+	<1170022154.26655.63.camel@localhost.localdomain>
+	<m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
+	<20070128.153707.30184351.davem@davemloft.net>
+Date: Sun, 28 Jan 2007 22:18:59 -0700
+In-Reply-To: <20070128.153707.30184351.davem@davemloft.net> (David Miller's
+	message of "Sun, 28 Jan 2007 15:37:07 -0800 (PST)")
+Message-ID: <m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: tony.luck@intel.com, grundler@parisc-linux.org, jeff@garzik.org,
+	linux-kernel@vger.kernel.org, kyle@parisc-linux.org,
+	linuxppc-dev@ozlabs.org, brice@myri.com, greg@kroah.com,
+	shaohua.li@intel.com, mingo@elte.hu, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,42 +31,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Miller <davem@davemloft.net> writes:
 
-> You can't implement isolation unless you 1) strictly control what
-> devices can do to other devices on the PCI domain or 2) filter
-> transactions in the PCI bridges so that PCI devices cannot send
-> arbitrary junk to each other.
-> 
-> #2 is prohibitively expensive and complicated because it requires
-> specialized hardware.  #1 is low cost in that all you need to do is
-> make PCI config space accesses and MSI setup go through the
-> hypervisor.  That's why systems implement #1 to give full isolation.
+> From: ebiederm@xmission.com (Eric W. Biederman)
+> Date: Sun, 28 Jan 2007 16:26:44 -0700
+>
+>> Yes.  In general the mainline linux kernel does not support certain
+>> classes of stupidity.  TCP offload engines, firmware drivers for
+>> hardware we care about, a fixed ABI to binary only modules, etc.
+>> It is the responsibility of the OS to setup MSI so we do it, not
+>> the firmware so we do it.
+>
+> I absolutely disagree with you Eric, and I think you're being
+> rediculious.
+>
+> If the hypervisor doesn't control the MSI PCI config space
+> register writes, this allows the device to spam PCI devices
+> which belong to other domains.
+>
+> It's a freakin' reasonable design trade off decision, get over
+> it! :-)
 
-Well, on IBM machines, they do #2 :-) Or rather, they have a P2P bridge
-for every slot pretty much ... but then, those are expensive
-machinces :-)
+I completely agree with you in the case you have described, it does
+mean that the hypervisor needs to trust all of the MSI capable
+hardware in the system but it if that is the best your hardware can
+support it is a reasonable trade-off.
 
-Now, #1 is an acceptable solution up to a certain point... MSIs being
-just normal upstream stores, while you can try to prevent the OS from
-programming the config space for a device to use somebody else MSI
-target address or values, you can't prevent the OS to program some
-random device DMA engine to issue those same bogus cycles, unless you
-have an iommu per slot, which is what IBM has :-)
+With the MSI-X registers in a random part of some memory mapped bar
+and not guaranteed to be page aligned, things are more difficult to
+isolate purely in a software based hypervisor.
 
-So yes, #1 is probably the "easy" solution but is definitely not 100%
-robust.
+> Yes it can be done at the hardware level, and many hypervisor
+> based systems do that, but it's not the one-and-only true
+> way to implment inter-domain protection behind a single
+> PCI host controller.
 
-> That's why I think the whole MSI hypervisor thing done by RTAS is
-> absolutely reasonable and something we should support.  It's NOT like
-> TCP Offload Engines and the like, not at all, and it's quite upsetting
-> to see Eric characterize it in that way.  It's a protection and
-> isolation facility, not a way to hide hardware behind binary blobs.
+The reason I consider the case crazy is that every example I have
+been given is where the hardware is doing the filtering above the
+PCI device.  So the hypervisor has no need to filter the pci config
+traffic or to write to the msi config registers for us.  Yet the
+defined hypervisor interface is.  Given the reduction in flexibility
+of an interface where the hypervisor writes to the config registers
+for the OS as compared to an interface where the hypervisor provides
+a destination for MSI messages from a particular device upon request,
+I think it is silly to design an interface when you full hardware
+support to act like an interface built for a hypervisor that had
+to do everything in software.
 
-I tend myself to go for a simpler reason which is that unlike TOE which
-is a supposed performance improvement on already working hardware with a
-huge impact on the linux TCP stack, MSIs "a-la-rtas" are a fairly low
-impact on an overall small piece of code to support, and not doing so
-means basically totally unuseable machines as soon as MSI-only PCIe
-stuff shows up (and it does exist already).
+Regardless of my opinion on the sanity of the hypervisor architects.
+I have not seen anything that indicates it will be hard to support
+the hypervisor doing everything or most of everything for us, so
+I see no valid technical objection to it.  Nor have I ever.
 
-Ben. 
+So I have no problem with additional patches in that direction.
+
+Eric
