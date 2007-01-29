@@ -1,26 +1,22 @@
-Return-Path: <Tony.Li@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 47FF6DDDEE
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 18:18:05 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l0T7I2R0015789
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 00:18:02 -0700 (MST)
-Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
-	[10.192.129.205])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l0T7I0t5003993
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 01:18:01 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="utf-8"
-Subject: RE: [PATCH]Disable early console in default to avoid printing boot
-	message twice
-Date: Mon, 29 Jan 2007 15:17:58 +0800
-Message-ID: <995B09A8299C2C44B59866F6391D26356C2869@zch01exm21.fsl.freescale.net>
-In-Reply-To: <828f5d9417b425c0b17236bf9d748b05@penguinppc.org>
-From: "Li Tony-r64360" <Tony.Li@freescale.com>
-To: "Hollis Blanchard" <hollis@penguinppc.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH 4/16] Abstract MSI suspend
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Greg Kroah-Hartman <greg@kroah.com>
+In-Reply-To: <m1ac03sgi5.fsf@ebiederm.dsl.xmission.com>
+References: <20070125083410.631EEDE277@ozlabs.org>
+	<m1ac03sgi5.fsf@ebiederm.dsl.xmission.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-vWCCqvALZbmsHH6UibJf"
+Date: Mon, 29 Jan 2007 18:22:57 +1100
+Message-Id: <1170055377.19887.60.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	Brice Goglin <brice@myri.com>, shaohua.li@intel.com,
+	linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>,
+	"EricW.Biederman" <ebiederm@xmission.com>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,46 +26,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-SGkgaG9sbGlzLA0KDQpJIGRvIG5vdCBoYXZlIGFueSBwcGM2NCBib2FyZCBpbiBoYW5kIGFuZCBt
-dWNoIGV4cGVyaWVuY2Ugb24gcHBjNjQuDQpGb3IgcHBjNjQsIG1heWJlIHRyeSB0aGUgbW9kaWZp
-Y2F0aW9uIG9uIGFyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuYyBhcyBJIGRvIHRvIGFyY2gv
-cG93ZXJwYy9rZXJuZWwvc2V0dXBfMzIuYy4NCkVtYnJhY2luZyB0aGUgInJlZ2lzdGVyX2Vhcmx5
-X3VkYmdfY29uc29sZSgpIiB3aXRoICIjaWZkZWYgQ09ORklHX0VBUkxZX1BSSU5USyIgbWFjcm8u
-DQpBZnRlciBhbGwsIHRoZSBlYXJseSBjb25zb2xlIG1lY2hhbmlzbSBpcyB0aGUgc2FtZSBmb3Ig
-cHBjMzIgYW5kIHBwYzY0Lg0KQXJlIHlvdSBjb252ZW5pZW50IHRvIGRvIGEgdGVzdD8NCklmIGl0
-IGlzIHdvcmssIEkgbGlrZSB0byBpbmNsdWRlIHBwYzY0IGludG8gdGhpcyBwYXRjaC4NCg0KVG9u
-eSBMaQ0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogSG9sbGlzIEJsYW5jaGFy
-ZCBbbWFpbHRvOmhvbGxpc0BwZW5ndWlucHBjLm9yZ10gDQpTZW50OiAyMDA35bm0MeaciDI55pel
-IDc6MzQNClRvOiBMaSBUb255LXI2NDM2MA0KQ2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3JnDQpT
-dWJqZWN0OiBSZTogW1BBVENIXURpc2FibGUgZWFybHkgY29uc29sZSBpbiBkZWZhdWx0IHRvIGF2
-b2lkIHByaW50aW5nIGJvb3QgbWVzc2FnZSB0d2ljZQ0KDQpJdCBpcyBhbHNvIHZlcnkgYW5ub3lp
-bmcgdGhhdCB0aGUgZWFybHkgYm9vdCBtZXNzYWdlcyBhcmUgcHJpbnRlZCB0d2ljZSBvbiBwcGM2
-NC4gQ2FuIHlvdSBpbmNsdWRlIHBwYzY0IGluIHRoaXMgcGF0Y2g/DQoNCi1Ib2xsaXMNCg0KT24g
-SmFuIDI2LCAyMDA3LCBhdCAyOjAwIEFNLCBMaSBUb255LXI2NDM2MCB3cm90ZToNCg0KPiBUaGUg
-ZWFybHkgY29uc29sZSBpcyBkZWZhdWx0IGVuYWJsZSBpbiBwb3dlcnBjIDMyIG5vdy4NCj4gVGhp
-cyBjYXVzZSB0aGUgYm9vdCBtZXNzYWdlIGZyb20gYmVnaW5uaW5nIHRvIGNvbnNvbGVfaW5pdCgp
-IHByaW50ZWQgDQo+IHR3aWNlLg0KPiBUaGUgZWFybHkgY29uc29sZSBpcyB1c2VmdWwgb25seSB3
-aGVuIHRoZSBrZXJuZWwgZGVhZCBiZWZvcmUgDQo+IGNvbnNvbGVfaW5pdC4NCj4gVGhlIHBhdGNo
-wqBtYWtlIHRoZSBlYXJseSBjb25zb2xlIG9wdGlvbmFsIGFuZCBkaXNhYmxlIHRoZSBlYXJseSAN
-Cj4gY29uc29sZSBpbiBkZWZhdWx0Lg0KPiBUaGUgcGF0Y2ggaGFzIGJlZW4gdGVzdGVkIG9uIG1w
-YzgzMTNlcmRiIGJvYXJkDQo+IMKgDQo+IFNpZ25lZC1vZmYtYnk6IExpwqBUb255IDx0b255Lmxp
-QGZyZWVzY2FsZS5jb20+DQo+IC0tLQ0KPiDCoGFyY2gvcG93ZXJwYy9LY29uZmlnwqDCoMKgwqDC
-oMKgwqDCoMKgwqAgfMKgwqDCoCAyICstDQo+IMKgYXJjaC9wb3dlcnBjL2tlcm5lbC9zZXR1cF8z
-Mi5jIHzCoMKgwqAgMiArKw0KPiDCoDIgZmlsZXMgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAx
-IGRlbGV0aW9ucygtKQ0KPiDCoA0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL0tjb25maWcg
-Yi9hcmNoL3Bvd2VycGMvS2NvbmZpZyBpbmRleCANCj4gMDY3M2RiZS4uMGMxODk1MSAxMDA2NDQN
-Cj4gLS0tIGEvYXJjaC9wb3dlcnBjL0tjb25maWcNCj4gKysrIGIvYXJjaC9wb3dlcnBjL0tjb25m
-aWcNCj4gQEAgLTU5LDcgKzU5LDcgQEAgY29uZmlnIFBQQw0KPiDCoA0KPiDCoGNvbmZpZyBFQVJM
-WV9QUklOVEsNCj4gwqDCoGJvb2wNCj4gLcKgZGVmYXVsdCB5DQo+ICvCoGRlZmF1bHQgdA0KPiDC
-oA0KPiDCoGNvbmZpZyBDT01QQVQNCj4gwqDCoGJvb2wNCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93
-ZXJwYy9rZXJuZWwvc2V0dXBfMzIuYyANCj4gYi9hcmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzMy
-LmMgaW5kZXggYTRjMjk2NC4uNzFlYjMyMCAxMDA2NDQNCj4gLS0tIGEvYXJjaC9wb3dlcnBjL2tl
-cm5lbC9zZXR1cF8zMi5jDQo+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfMzIuYw0K
-PiBAQCAtMjQyLDggKzI0MiwxMCBAQCB2b2lkIF9faW5pdCBzZXR1cF9hcmNoKGNoYXIgKipjbWRs
-aW5lX3ApDQo+IMKgDQo+IMKgwqBzbXBfc2V0dXBfY3B1X21hcHMoKTsNCj4gwqANCj4gKyNpZmRl
-ZiBDT05GSUdfRUFSTFlfUFJJTlRLDQo+IMKgwqAvKiBSZWdpc3RlciBlYXJseSBjb25zb2xlICov
-DQo+IMKgwqByZWdpc3Rlcl9lYXJseV91ZGJnX2NvbnNvbGUoKTsNCj4gKyNlbmRpZg0KPiDCoA0K
-PiDCoMKgeG1vbl9zZXR1cCgpOw0KPiDCoA0KPiAtLQ0KPiAxLjQuMg0KPiDCoA0KPiDCoF9fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+IExpbnV4cHBjLWRl
-diBtYWlsaW5nIGxpc3QNCj4gTGludXhwcGMtZGV2QG96bGFicy5vcmcNCj4gaHR0cHM6Ly9vemxh
-YnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZGV2DQo=
+
+--=-vWCCqvALZbmsHH6UibJf
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Sun, 2007-01-28 at 01:27 -0700, Eric W. Biederman wrote:
+> Michael Ellerman <michael@ellerman.id.au> writes:
+>=20
+> > Currently pci_disable_device() disables MSI on a device by twiddling
+> > bits in config space via disable_msi_mode().
+> >
+> > On some platforms that may not be appropriate, so abstract the MSI
+> > suspend logic into pci_disable_device_msi().
+>=20
+> >
+> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> > ---
+> >
+> >  drivers/pci/msi.c |   11 +++++++++++
+> >  drivers/pci/pci.c |    7 +------
+> >  drivers/pci/pci.h |    2 ++
+> >  3 files changed, 14 insertions(+), 6 deletions(-)
+> >
+> > Index: msi/drivers/pci/msi.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- msi.orig/drivers/pci/msi.c
+> > +++ msi/drivers/pci/msi.c
+> > @@ -271,6 +271,17 @@ void disable_msi_mode(struct pci_dev *de
+> >  	pci_intx(dev, 1);  /* enable intx */
+> >  }
+> > =20
+> > +void pci_disable_device_msi(struct pci_dev *dev)
+> > +{
+> > +	if (dev->msi_enabled)
+> > +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
+> > +			PCI_CAP_ID_MSI);
+> > +
+> > +	if (dev->msix_enabled)
+> > +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
+> > +			PCI_CAP_ID_MSIX);
+>=20
+> Just a quick note. This is wrong.  It should be PCI_CAP_ID_MSIX.
+> The code that is being moved is buggy.  So the patch itself doesn't
+> make the situation any worse.
+
+Greg, if you want to drop that patch I'll prepare two patches to fix it
+and then move it. I don't have any hardware to test, although I'm
+guessing no one does given that it's been broken since its inception.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-vWCCqvALZbmsHH6UibJf
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFvaDRdSjSd0sB4dIRAu5QAJ4j5Z3qUNaefgWbFpCslKW3USWhFQCfZ/Ke
+sYer+YdUNnds4BGfhtB/KvM=
+=6pBd
+-----END PGP SIGNATURE-----
+
+--=-vWCCqvALZbmsHH6UibJf--
