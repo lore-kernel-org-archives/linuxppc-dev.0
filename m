@@ -1,15 +1,26 @@
-Return-Path: <sr@denx.de>
-Date: Mon, 29 Jan 2007 09:42:23 +0100 (MET)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc: ioremap() on PPC44x platforms now accepts 64bit addresses
-References: <200701190906.09112.sr@denx.de>
-	<1169207845.28708.2.camel@crusty.rchland.ibm.com>
-In-Reply-To: <1169207845.28708.2.camel@crusty.rchland.ibm.com>
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C4627DE047
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 19:46:06 +1100 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: michael@ellerman.id.au
+Subject: Re: [RFC/PATCH 4/16] Abstract MSI suspend
+References: <20070125083410.631EEDE277@ozlabs.org>
+	<m1ac03sgi5.fsf@ebiederm.dsl.xmission.com>
+	<1170055377.19887.60.camel@concordia.ozlabs.ibm.com>
+Date: Mon, 29 Jan 2007 01:45:26 -0700
+In-Reply-To: <1170055377.19887.60.camel@concordia.ozlabs.ibm.com> (Michael
+	Ellerman's message of "Mon, 29 Jan 2007 18:22:57 +1100")
+Message-ID: <m1wt36kyqh.fsf@ebiederm.dsl.xmission.com>
 MIME-Version: 1.0
-Content-Type: text/plain;  charset="iso-8859-1"
-Message-Id: <200701290942.10515.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,49 +30,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[PATCH] ppc: ioremap() on PPC44x platforms now accepts 64bit addresses
+Michael Ellerman <michael@ellerman.id.au> writes:
 
-On systems that supply a real 64bit address (with
-CONFIG_RESOURCES_64BIT enabled), don't use the fixup function. This
-allows us to use the fixup function when no ERPN is specified and use
-the 64 bit address when the ERPN is supplied.
+> On Sun, 2007-01-28 at 01:27 -0700, Eric W. Biederman wrote:
+>> Michael Ellerman <michael@ellerman.id.au> writes:
+>> 
+>> > Currently pci_disable_device() disables MSI on a device by twiddling
+>> > bits in config space via disable_msi_mode().
+>> >
+>> > On some platforms that may not be appropriate, so abstract the MSI
+>> > suspend logic into pci_disable_device_msi().
+>> 
+>> >
+>> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+>> > ---
+>> >
+>> >  drivers/pci/msi.c |   11 +++++++++++
+>> >  drivers/pci/pci.c |    7 +------
+>> >  drivers/pci/pci.h |    2 ++
+>> >  3 files changed, 14 insertions(+), 6 deletions(-)
+>> >
+>> > Index: msi/drivers/pci/msi.c
+>> > ===================================================================
+>> > --- msi.orig/drivers/pci/msi.c
+>> > +++ msi/drivers/pci/msi.c
+>> > @@ -271,6 +271,17 @@ void disable_msi_mode(struct pci_dev *de
+>> >  	pci_intx(dev, 1);  /* enable intx */
+>> >  }
+>> >  
+>> > +void pci_disable_device_msi(struct pci_dev *dev)
+>> > +{
+>> > +	if (dev->msi_enabled)
+>> > +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
+>> > +			PCI_CAP_ID_MSI);
+>> > +
+>> > +	if (dev->msix_enabled)
+>> > +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
+>> > +			PCI_CAP_ID_MSIX);
+>> 
+>> Just a quick note. This is wrong.  It should be PCI_CAP_ID_MSIX.
+>> The code that is being moved is buggy.  So the patch itself doesn't
+>> make the situation any worse.
+>
+> Greg, if you want to drop that patch I'll prepare two patches to fix it
+> and then move it. I don't have any hardware to test, although I'm
+> guessing no one does given that it's been broken since its inception.
 
-Signed-off-by: Stefan Roese <sr@denx.de>
+The mthca IB driver was one of the early adopters of MSI, and it uses
+MSI-X.  So it isn't that no one is using MSI-X and the MSI-X code
+paths don't get exercised.
 
----
-commit 1d49664db83cbf3a982846745eaaa4a1eb2e429f
-tree 596eb295efef6c996f140778491111dfd90fc968
-parent 5263bf65d6342e12ab716db8e529501670979321
-author Stefan Roese <sr@denx.de> Mon, 29 Jan 2007 09:37:37 +0100
-committer Stefan Roese <sr@denx.de> Mon, 29 Jan 2007 09:37:37 +0100
+I expect what is closer to the truth is that the code authors have so
+far simply disabled msi separately instead of assuming pci_disable_device
+will do it magically for them.  So it may be the case that we can
+just kill this code path altogether.
 
- arch/ppc/mm/pgtable.c |   16 +++++++++++++---
- 1 files changed, 13 insertions(+), 3 deletions(-)
+Possibly we can just reduce it to WARN_ON(dev->msi_enabled || dev->msix_enabled);
 
-diff --git a/arch/ppc/mm/pgtable.c b/arch/ppc/mm/pgtable.c
-index 354a940..2f9a311 100644
---- a/arch/ppc/mm/pgtable.c
-+++ b/arch/ppc/mm/pgtable.c
-@@ -156,9 +156,19 @@ ioremap64(unsigned long long addr, unsigned long size)
- void __iomem *
- ioremap(phys_addr_t addr, unsigned long size)
- {
--	phys_addr_t addr64 = fixup_bigphys_addr(addr, size);
--
--	return ioremap64(addr64, size);
-+	/*
-+	 * On systems that supply a real 64bit address
-+	 * (with CONFIG_RESOURCES_64BIT enabled), don't use the
-+	 * fixup function.
-+	 * This allows us to use the fixup function when no ERPN
-+	 * is specified and use the 64 bit address when the ERPN
-+	 * is suppied.
-+	 */
-+	if ((unsigned long long)addr & 0xffffffff00000000ULL)
-+		return ioremap64(addr, size);
-+	else
-+		return ioremap64(fixup_bigphys_addr(addr, size),
-+				 size);
- }
- #endif /* CONFIG_PHYS_64BIT */
- 
+I suspect msi_remove_pci_irq_vectors may similarly not actually make a
+difference.   I think the function dates from a time when the code
+attempted to cache the irq number so if you removed and re-added a module
+or at least disabled and enabled msi you would get the same linux irq
+number.  I remember killing that caching because it made the code
+unmaintainable and wasn't really useful.
+
+In summary I think there is still room for cleanup in msi.c, but it
+think it is at least reaching the point where you just don't stumble
+over opportunities.
+
+Eric
