@@ -1,31 +1,35 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E5F6DDE07E
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 07:33:00 +1100 (EST)
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1170065487.19887.91.camel@concordia.ozlabs.ibm.com>
-References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
-	<20070128.153707.30184351.davem@davemloft.net>
-	<m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
-	<20070128.212554.23015561.davem@davemloft.net>
-	<1170050737.26655.233.camel@localhost.localdomain>
-	<m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
-	<1170065487.19887.91.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Tue, 30 Jan 2007 07:32:10 +1100
-Message-Id: <1170102731.26655.277.camel@localhost.localdomain>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id BC088DE242
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 07:40:41 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l0TKedAA013108
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 13:40:39 -0700 (MST)
+Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
+	[10.82.65.62])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0TKecND000867
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:40:38 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
+	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
+	l0TKMmkn020278
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:22:48 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id A2AE74B92B
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:40:37 -0600 (CST)
+Received: (from b07421@localhost)
+	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
+	l0TKeb86014111
+	for linuxppc-dev@ozlabs.org; Mon, 29 Jan 2007 14:40:37 -0600
+Date: Mon, 29 Jan 2007 14:40:37 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 02/18] bootwrapper: Set -msoft-float and assembler target
+	options.
+Message-ID: <20070129204037.GA14087@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
-Cc: tony.luck@intel.com, grundler@parisc-linux.org, jeff@garzik.org,
-	greg@kroah.com, linux-kernel@vger.kernel.org,
-	kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
-	linux-pci@atrey.karlin.mff.cuni.cz,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	shaohua.li@intel.com, mingo@elte.hu,
-	David Miller <davem@davemloft.net>, brice@myri.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070129201154.GB13485@ld0162-tx32.am.freescale.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,28 +39,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Without -msoft-float, floating point state saving code can be executed
+(at least with certain buggy versions of GCC, which don't clear bit 6 of
+CR before calling a varargs function with no varargs parameters).
 
-> You can read config space, but it's not clear to me if the HV is allowed
-> to filter it and hide things. 
+Without the assembler target option, the assembler will use the old
+dedicated mftb/mftbu instructions, rather than mfspr.  This causes the
+boot to hang on e500, which doesn't have the dedicated instructions.
 
-I've seen it do it for example with EADS bridges. I haven't seen doing
-it with devices (other than hiding entire functions) but I wouldn't
-exclude it...
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+Oops, I accidentally had -msoft-float in there twice for the bootwrapper
+(once from PLATFORM_CFLAGS, and once directly specified).  This fixes it.
 
-> It's also possible that the device
-> supports MSI, but for some reason the HV doesn't allow it on that device
-> etc. so you really have to ask the HV if it's enabled. So pci_find_cap()
-> shouldn't crash or anything, but it may lie to you.
+ arch/powerpc/Makefile      |   10 +++++++---
+ arch/powerpc/boot/Makefile |    6 ++++--
+ 2 files changed, 11 insertions(+), 5 deletions(-)
 
-Yup.
-
-> One thing I did like about my code, is that pci_enable_msi() and
-> pci_enable_msix() are just small wrappers around generic_enable_msi() -
-> which does all the work, and is the same regardless of whether it's an
-> MSI or MSI-X. Although that's facilitated by the type arg which you
-> don't like.
-
-Part of the reason is you make MSI look like MSI-X (a vector of 1 entry)
-while Eric does the opposite.
-
-Ben.
+diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
+index a00fe72..8e93565 100644
+--- a/arch/powerpc/Makefile
++++ b/arch/powerpc/Makefile
+@@ -69,7 +69,7 @@ CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc
+ CFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH) -ffixed-r2 -mmultiple
+ CPPFLAGS	+= $(CPPFLAGS-y)
+ AFLAGS		+= $(AFLAGS-y)
+-CFLAGS		+= -msoft-float -pipe $(CFLAGS-y)
++CFLAGS		+= -pipe $(CFLAGS-y)
+ CPP		= $(CC) -E $(CFLAGS)
+ # Temporary hack until we have migrated to asm-powerpc
+ LINUXINCLUDE-$(CONFIG_PPC32)	:= -Iarch/$(ARCH)/include
+@@ -116,8 +116,12 @@ cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltive
+ cpu-as-$(CONFIG_E500)		+= -Wa,-me500
+ cpu-as-$(CONFIG_E200)		+= -Wa,-me200
+ 
+-AFLAGS += $(cpu-as-y)
+-CFLAGS += $(cpu-as-y)
++PLATFORM_AFLAGS += $(cpu-as-y)
++PLATFORM_CFLAGS += $(cpu-as-y) -msoft-float
++export PLATFORM_AFLAGS PLATFORM_CFLAGS
++
++AFLAGS += $(PLATFORM_AFLAGS)
++CFLAGS += $(PLATFORM_CFLAGS)
+ 
+ head-y				:= arch/powerpc/kernel/head_32.o
+ head-$(CONFIG_PPC64)		:= arch/powerpc/kernel/head_64.o
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 98392fb..df92f06 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -24,8 +24,10 @@ all: $(obj)/zImage
+ 
+ HOSTCC		:= gcc
+ BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem \
+-		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
+-BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
++		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC \
++		   $(PLATFORM_CFLAGS)
++BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc \
++		   $(PLATFORM_AFLAGS)
+ 
+ ifeq ($(call cc-option-yn, -fstack-protector),y)
+ BOOTCFLAGS	+= -fno-stack-protector
+-- 
+1.4.4
