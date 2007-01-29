@@ -1,25 +1,18 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C54CBDDDF9
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 03:15:47 +1100 (EST)
-Date: Mon, 29 Jan 2007 17:15:02 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
-Message-ID: <20070129161502.GA32313@lst.de>
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
-	<20070126031236.GG18537@lst.de>
-	<Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
-Cc: Paul Mackerras <paulus@samba.org>, Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>,
-	James Simmons <jsimmons@infradead.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 02550DDF85
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 03:36:12 +1100 (EST)
+Message-ID: <45BE2276.5010303@freescale.com>
+Date: Mon, 29 Jan 2007 10:36:06 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add support for the MPC8349E-mITX-GP
+References: <11691560171514-git-send-email-timur@freescale.com>	<309FC1DE-9724-4172-BB13-D301D4A783F8@kernel.crashing.org>	<45BA1952.80206@freescale.com>
+	<EC5E5BA9-F865-40AC-8CA8-9B152AAC0908@kernel.crashing.org>
+In-Reply-To: <EC5E5BA9-F865-40AC-8CA8-9B152AAC0908@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 29, 2007 at 03:10:16PM +0100, Geert Uytterhoeven wrote:
-> On Fri, 26 Jan 2007, Christoph Hellwig wrote:
-> > Btw, the Kconfig and/or top of file comment really needs a better
-> > explanation what this "driver" is for.  I also wonder why it's
-> 
-> What about `PS3 AV settings driver library' instead of `PS3 AV controller
-> support'?
+Kumar Gala wrote:
 
-Makes a little more sense, yes.
+> I did this as well, I'm talking about the debug options being  
+> different and USB support.  (Not simple diffs handled by make  
+> menuconfig).
 
-> We can make FB_PS3 (and SND_PS3 later) select PS3_PS3AV. Is that better?
-> I prefer not to make it unconditional, as people who want to run their PS3s
-> headless don't need it.
+I can't explain those.  I didn't touch the USB or debug options when I changed 
+the config for the ITX-GP.  I just changed the flash configuration.  Now that I 
+think about it, I should probably have disabled SATA and a few other things that 
+the ITX-GP is missing.
 
-Ok.  Even better would be handling it on the makefile level, by doing
+What do you suggest I do?  Should I just try it again?
 
-obj-$(CONFIG_FB_PS3)	+= ps3_av.o
-obj-$(CONFIG_SND_PS3)	+= ps3_av.o
-
-> I guess you want us to do the same for the virtual uart, i.e. let PS3_PS3AV and
-> PS3_SYS_MANAGER select PS3_VUART?
-
-Yes, that probably makes sense aswell.
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
