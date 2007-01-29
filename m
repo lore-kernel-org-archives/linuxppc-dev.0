@@ -1,18 +1,26 @@
-Return-Path: <BillF@optiscan.com>
-Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
-	by ozlabs.org (Postfix) with ESMTP id 0115EDE092
+Return-Path: <tnt@246tNt.com>
+Received: from outmx016.isp.belgacom.be (outmx016.isp.belgacom.be
+	[195.238.4.115])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C4272DDE28
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 29 Jan 2007 18:37:12 +1100 (EST)
+	Mon, 29 Jan 2007 19:07:31 +1100 (EST)
+Received: from outmx016.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx016.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l0T87L9G026408
+	for <linuxppc-embedded@ozlabs.org>; Mon, 29 Jan 2007 09:07:22 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45BDAB22.30908@246tNt.com>
+Date: Mon, 29 Jan 2007 09:06:58 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Boot w/ VGA console - PCI nvidia
-Date: Mon, 29 Jan 2007 18:20:11 +1100
-Message-ID: <34E73CC1202BF246B7DE3463BEBC0689303D81@postie.optiscan.com>
-In-Reply-To: <000001c741af$310ff4c0$6405a8c0@absolut>
-References: <000001c741af$310ff4c0$6405a8c0@absolut>
-From: "Bill Farrow" <BillF@optiscan.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: Eric Nuckols <jrocnuck@hotmail.com>
+Subject: Re: mem=XXXM  ioremap DMA
+References: <BAY117-F357AAA4A4F722329BBA628C8A10@phx.gbl>
+In-Reply-To: <BAY117-F357AAA4A4F722329BBA628C8A10@phx.gbl>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,39 +31,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Russell McGuire wrote:
-> Next I have plugged in a nVidia GeForce FX5200 PCI card,
-> and compiled in the nvidafb driver.
+Eric Nuckols wrote:
+> in my driver, I'm calling
+> my_virt_address =   ioremap( 0x1F800000, 0x800000  );
+> my_bus_address = virt_to_bus( my_virt_address );
 >
-> I can see clearly the PCI card is being detected and the
-> nvidiafb driver is being registerd, it can even detect
-> the monitor I have connected.
->
-> However, when I enabled the kernel to use the framer
-> buffer console, by compiling in that feature, it just=20
-> 'seems' to hang after the console_init call.
+You can't use virt_to_bus on address returned by ioremap AFAIK.
 
-Hi Russ,
-I got to the same point last year with an ATI PCI card on a MPC8560
-system. At this stage, I believe that to get the card displaying
-graphics you will need to run the card's Video BIOS to initialise the
-card correctly.
+I think you could do
+my_bus_address = virt_to_bus(phys_to_virt(0x1f800000));
 
-I'm guessing that you are running a PPC cpu :-) and that the FX5200 is a
-consumer x86 graphics card.  If so, the Video BIOS will be x86
-instructions and you will need to run it with an emulator.
-
-A company called SciTech is maintaining an x86emu project for doing
-this:
-  http://www.scitechsoft.com/products/dev/x86_emulator.html
-
-I believe that Xorg also has a x86emu module, so I was going to see if I
-could get an Xorg installation going and let it do it's magic.
-
-For us, getting Xorg running would prove the graphics capability of our
-platform and we can start writing a GUI.  Then it would be just a matter
-of getting uBoot to display something during boot to keep the customers
-happy...
+Altough it slightly misuse the functions ... but that should work.
 
 
-Bill
+        Sylvain
