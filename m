@@ -1,24 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DE69ADE239
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:17:24 +1100 (EST)
-Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20070128.171309.11624572.davem@davemloft.net>
-References: <m1bqkioh6z.fsf@ebiederm.dsl.xmission.com>
-	<20070128.155155.51857352.davem@davemloft.net>
-	<1170032301.26655.140.camel@localhost.localdomain>
-	<20070128.171309.11624572.davem@davemloft.net>
-Content-Type: text/plain
-Date: Mon, 29 Jan 2007 14:17:02 +1100
-Message-Id: <1170040622.26655.187.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: greg@kroah.com, kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
-	brice@myri.com, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, ebiederm@xmission.com
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 61D23DE4D8
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:17:31 +1100 (EST)
+Date: Sun, 28 Jan 2007 21:23:54 -0600
+To: paulus@samba.org
+Subject: [PATCH] [2/4] powerpc: Add PMC type to cputable [v2]
+Message-ID: <20070129032354.GE6412@lixom.net>
+References: <20070129032143.GC6412@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070129032143.GC6412@lixom.net>
+From: Olof Johansson <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,66 +21,234 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Add cputable entries for which type of PMC implementation the processor
+has.
 
-> That being said, it looks like the hypervisor calls just setup
-> the MSI config inside of the PCI host controller, you still have
-> to do the PCI config space writes.  So in this regard it's not
-> like RTAS.
+I've only filled in the current 64-bit processors, the unfilled default
+value will have same behaviour as before so it can be done over time
+as needed.
 
-Ok, between the spec and your email, I think I sort-of understand it :-)
-(damn, the Sun spec is a bit obscure...). 
+Also tidy up the dummy_perf implementation a bit, aggregating it into
+one function with ifdefs instead of several.
 
-So basically, from a kernel MSI backend perspective, I think you would
-mostly use the "raw" implementation and locally implement your own
-vector allocation.
 
-However, your vector space is per-bus (which is good), so you do need to
-allocate linux virtual irqs and map them to the actual MSI vectors like
-we do on powerpc.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-I think Eric's framework would work for you. As long as you don't need
-to do something special for MSI-X, which I don't think you do...
 
-Of course, Michael's stuff would work too, though it needs some
-additions as you probably need to use config space (or MSI-X MMIO) for
-masking & unmasking which we haven't implemented yet.
-
-You are probably better off starting from Eric's stuff with his latest
-patches I suppose...
-
-At this point, I feel like Eric and use will not find a common ground,
-which leaves us to those options:
-
- - Just give up and keep our current powerpc hooks at the toplevel. That
-is, powerpc does it's own pci_enable_msi/x etc... (we need to fix those
-hooks a bit but basically that's the idea). Internally, those go through
-function pointers on which the RTAS implementation hooks directly, and
-for non-RTAS powerpc archs, those point back to Eric's code which is
-useable for these. In addition, I still want to have Eric's two "arch"
-callbacks be themselves ops derived from the PCI device but that too can
-be done in arch specific ways.
-
- - Give up in a different way and on powerpc, use Michael's
-infrastructure and not use Eric's code at all (that means moving
-Michael's stuff back to arch/powerpc which was Greg's original objection
-to it).
-
- - Try to force our stuff in by implementing x86 completely (and Altix)
-under Michael's infrastructure and then try to convince
-Andrew/Greg/Linus to take it. Fairly unlikely. We do have a somewhat
-"gradual" approach to it which consist of having Michael's code at the
-toplevel, Eric's code hooked in as if it was a hypervisor, and then
-gradually "merge" the raw backend with the x86 code, but it doesn't seem
-very sexy (to me neither).
-
-The main problem that I see that prevents us from an approach where
-either we fix Michael's code to please Eric or change Eric's code to fit
-our needs is that the way Eric code is evolving (based on his latest
-patches), it's moving into a direction that is fundamentally unuseable
-for our RTAS backend.
-
-So unless Eric agrees to change his mind on that issue, we simply cannot
-find a common abstraction. Which means that the only way we'll ever be
-able to implement RTAS is by having separate hooks above Eric's code.
-
-Ben.
+Index: powerpc/arch/powerpc/kernel/pmc.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/pmc.c
++++ powerpc/arch/powerpc/kernel/pmc.c
+@@ -19,38 +19,21 @@
+ #include <asm/processor.h>
+ #include <asm/pmc.h>
+ 
+-#if defined(CONFIG_FSL_BOOKE) && !defined(CONFIG_E200)
+-static void dummy_perf(struct pt_regs *regs)
+-{
+-	unsigned int pmgc0 = mfpmr(PMRN_PMGC0);
+-
+-	pmgc0 &= ~PMGC0_PMIE;
+-	mtpmr(PMRN_PMGC0, pmgc0);
+-}
+-#elif defined(CONFIG_PPC64) || defined(CONFIG_6xx)
+-
+-#ifndef MMCR0_PMAO
+-#define MMCR0_PMAO	0
++#ifndef MMCR0_PMA0
++#define MMCR0_PMA0	0
+ #endif
+ 
+-/* Ensure exceptions are disabled */
+ static void dummy_perf(struct pt_regs *regs)
+ {
+-	unsigned int mmcr0 = mfspr(SPRN_MMCR0);
+-
+-	mmcr0 &= ~(MMCR0_PMXE|MMCR0_PMAO);
+-	mtspr(SPRN_MMCR0, mmcr0);
+-}
++#if defined(CONFIG_FSL_BOOKE) && !defined(CONFIG_E200)
++	mtpmr(PMRN_PMGC0, mfpmr(PMRN_PMGC0) & ~PMGC0_PMIE);
++#elif defined(CONFIG_PPC64) || defined(CONFIG_6xx)
++	mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~(MMCR0_PMXE|MMCR0_PMA0));
+ #else
+-/* Ensure exceptions are disabled */
+-static void dummy_perf(struct pt_regs *regs)
+-{
+-	unsigned int mmcr0 = mfspr(SPRN_MMCR0);
+-
+-	mmcr0 &= ~(MMCR0_PMXE);
+-	mtspr(SPRN_MMCR0, mmcr0);
+-}
++	mtspr(SPRN_MMCR0, mfspr(SPRN_MMCR0) & ~MMCR0_PMXE);
+ #endif
++}
++
+ 
+ static DEFINE_SPINLOCK(pmc_owner_lock);
+ static void *pmc_owner_caller; /* mostly for debugging */
+Index: powerpc/include/asm-powerpc/cputable.h
+===================================================================
+--- powerpc.orig/include/asm-powerpc/cputable.h
++++ powerpc/include/asm-powerpc/cputable.h
+@@ -50,6 +50,12 @@ enum powerpc_oprofile_type {
+ 	PPC_OPROFILE_CELL = 5,
+ };
+ 
++enum powerpc_pmc_type {
++	PPC_PMC_DEFAULT = 0,
++	PPC_PMC_IBM = 1,
++	PPC_PMC_PA6T = 2,
++};
++
+ struct cpu_spec {
+ 	/* CPU is matched via (PVR & pvr_mask) == pvr_value */
+ 	unsigned int	pvr_mask;
+@@ -65,6 +71,7 @@ struct cpu_spec {
+ 
+ 	/* number of performance monitor counters */
+ 	unsigned int	num_pmcs;
++	enum powerpc_pmc_type pmc_type;
+ 
+ 	/* this is called to initialize various CPU bits like L1 cache,
+ 	 * BHT, SPD, etc... from head.S before branching to identify_machine
+Index: powerpc/arch/powerpc/kernel/cputable.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/cputable.c
++++ powerpc/arch/powerpc/kernel/cputable.c
+@@ -86,6 +86,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/power3",
+ 		.oprofile_type		= PPC_OPROFILE_RS64,
+ 		.platform		= "power3",
+@@ -99,6 +100,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/power3",
+ 		.oprofile_type		= PPC_OPROFILE_RS64,
+ 		.platform		= "power3",
+@@ -112,6 +114,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/rs64",
+ 		.oprofile_type		= PPC_OPROFILE_RS64,
+ 		.platform		= "rs64",
+@@ -125,6 +128,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/rs64",
+ 		.oprofile_type		= PPC_OPROFILE_RS64,
+ 		.platform		= "rs64",
+@@ -138,6 +142,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/rs64",
+ 		.oprofile_type		= PPC_OPROFILE_RS64,
+ 		.platform		= "rs64",
+@@ -151,6 +156,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/rs64",
+ 		.oprofile_type		= PPC_OPROFILE_RS64,
+ 		.platform		= "rs64",
+@@ -164,6 +170,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/power4",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.platform		= "power4",
+@@ -177,6 +184,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/power4",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.platform		= "power4",
+@@ -191,6 +199,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.cpu_setup		= __setup_cpu_ppc970,
+ 		.cpu_restore		= __restore_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+@@ -207,6 +216,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.cpu_setup		= __setup_cpu_ppc970,
+ 		.cpu_restore		= __restore_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+@@ -239,6 +250,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 8,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.cpu_setup		= __setup_cpu_ppc970,
+ 		.oprofile_cpu_type	= "ppc64/970",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+@@ -253,6 +265,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/power5",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		/* SIHV / SIPR bits are implemented on POWER4+ (GQ)
+@@ -271,6 +284,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/power5+",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+ 		.oprofile_mmcra_sihv	= MMCRA_SIHV,
+@@ -321,6 +335,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/power6",
+ 		.oprofile_type		= PPC_OPROFILE_POWER4,
+  		.oprofile_mmcra_sihv	= POWER6_MMCRA_SIHV,
+@@ -340,6 +355,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 4,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.oprofile_cpu_type	= "ppc64/cell-be",
+ 		.oprofile_type		= PPC_OPROFILE_CELL,
+ 		.platform		= "ppc-cell-be",
+@@ -353,6 +369,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 64,
+ 		.dcache_bsize		= 64,
+ 		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_PA6T,
+ 		.platform		= "pa6t",
+ 	},
+ 	{	/* default match */
+@@ -364,6 +381,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.icache_bsize		= 128,
+ 		.dcache_bsize		= 128,
+ 		.num_pmcs		= 6,
++		.pmc_type		= PPC_PMC_IBM,
+ 		.platform		= "power4",
+ 	}
+ #endif	/* CONFIG_PPC64 */
