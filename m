@@ -1,27 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 470CDDE030
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 01:31:52 +1100 (EST)
-In-Reply-To: <32F3CC26D4DAC44E8ECD07155727A46E85D9D7@zch01exm20.fsl.freescale.net>
-References: <32F3CC26D4DAC44E8ECD07155727A46E816B9C@zch01exm20.fsl.freescale.net>
-	<2C8EB4AF-97B2-40F5-8112-0CEE6E3D4D42@kernel.crashing.org>
-	<32F3CC26D4DAC44E8ECD07155727A46E85D6E4@zch01exm20.fsl.freescale.net>
-	<A85281E5-1E9C-4938-8940-CF696C3C5174@kernel.crashing.org>
-	<32F3CC26D4DAC44E8ECD07155727A46E85D6EF@zch01exm20.fsl.freescale.net>
-	<F8DCDEDE-C060-458D-8E04-EA4C1EE2B2EE@kernel.crashing.org>
-	<32F3CC26D4DAC44E8ECD07155727A46E85D9D7@zch01exm20.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FC3C8B30-CD7C-4BE0-82AE-16E708B36374@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch][0/5] powerpc: Add support to fully comply with IEEE-754
-	standard
-Date: Mon, 29 Jan 2007 08:30:32 -0600
-To: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 90180DE026
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 02:14:45 +1100 (EST)
+Date: Mon, 29 Jan 2007 16:14:43 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
+In-Reply-To: <200701260513.24010.arnd@arndb.de>
+Message-ID: <Pine.LNX.4.62.0701291611300.19906@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
+	<200701260513.24010.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, James Simmons <jsimmons@infradead.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,19 +27,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 26 Jan 2007, Arnd Bergmann wrote:
+> On Thursday 25 January 2007 18:48, Geert Uytterhoeven wrote:
+> > +#ifdef PS3AV_DEBUG
+> > +#define DPRINTK(fmt, args...) \
+> > +	do { printk("ps3av " fmt, ## args); } while (0)
+> > +#else
+> > +#define DPRINTK(fmt, args...) do { } while (0)
+> > +#endif
+> 
+> You should probably use the provided pr_debug or (better) dev_dbg
+> macros to do that now.
 
-On Jan 29, 2007, at 4:00 AM, Zhu Ebony-r57400 wrote:
+Except that it's difficult to get a struct device * in drivers/ps3/ps3av_cmd.c.
+And I prefer not to make ps3av_dev (which is currently static) global.
 
-> Hi Kumar,
->
-> I think enabling SPEFSCR[FINXE] or SPEFSCR[FRMC]=0b10/0b11 to  
-> enable FP
-> round interrupt will cause the exception occurring very often, which
-> will dramatically decrease the performance of SPE instructions. Do you
-> think putting an option in menuconfig to let user choose whether to
-> enable FP round simulation is a reasonable idea?
+Gr{oetje,eeting}s,
 
-I don't see any issue with it, but I have to believe if you want full  
-IEEE results, you want full IEEE results for everything.
+						Geert
 
-- k
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
