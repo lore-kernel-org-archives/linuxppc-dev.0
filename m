@@ -1,29 +1,23 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 167D1DDF0D
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 20:04:21 +1100 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 0/6] MSI portability cleanups
-References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
-	<20070128.153707.30184351.davem@davemloft.net>
-	<m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
-	<20070128.212554.23015561.davem@davemloft.net>
-	<1170050737.26655.233.camel@localhost.localdomain>
-Date: Mon, 29 Jan 2007 02:03:21 -0700
-In-Reply-To: <1170050737.26655.233.camel@localhost.localdomain> (Benjamin
-	Herrenschmidt's message of "Mon, 29 Jan 2007 17:05:37 +1100")
-Message-ID: <m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: tony.luck@intel.com, grundler@parisc-linux.org, jeff@garzik.org,
-	greg@kroah.com, linux-kernel@vger.kernel.org,
-	kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, brice@myri.com,
-	shaohua.li@intel.com, mingo@elte.hu, David Miller <davem@davemloft.net>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [RFC/PATCH 4/16] Abstract MSI suspend
+From: Michael Ellerman <michael@ellerman.id.au>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <m1wt36kyqh.fsf@ebiederm.dsl.xmission.com>
+References: <20070125083410.631EEDE277@ozlabs.org>
+	<m1ac03sgi5.fsf@ebiederm.dsl.xmission.com>
+	<1170055377.19887.60.camel@concordia.ozlabs.ibm.com>
+	<m1wt36kyqh.fsf@ebiederm.dsl.xmission.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-1rIFzXMllK+LL9809EPl"
+Date: Mon, 29 Jan 2007 20:47:38 +1100
+Message-Id: <1170064058.19887.78.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: Greg Kroah-Hartman <greg@kroah.com>, Kyle McMartin <kyle@parisc-linux.org>,
+	linuxppc-dev@ozlabs.org, Brice Goglin <brice@myri.com>,
+	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	"David S. Miller" <davem@davemloft.net>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,117 +27,117 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> On Sun, 2007-01-28 at 21:25 -0800, David Miller wrote:
->> From: ebiederm@xmission.com (Eric W. Biederman)
->> Date: Sun, 28 Jan 2007 22:18:59 -0700
->> 
->> > Regardless of my opinion on the sanity of the hypervisor architects.
->> > I have not seen anything that indicates it will be hard to support
->> > the hypervisor doing everything or most of everything for us, so
->> > I see no valid technical objection to it.  Nor have I ever.
->> > 
->> > So I have no problem with additional patches in that direction.
->> 
->> Ok, that's great to hear.
->> 
->> I know your bi-directional approach isn't exactly what Ben
->> wants but he can support his machines with it.  Maybe after
->> some time we can agree to move from that more towards the
->> totally abstracted scheme.
->
-> It can support my machines without HV with trivial changes I reckon: I
-> need an ops struct to indirect eric's 2 remaining arch hooks
-> (setup/teardown) but that can be done inline within asm-powerpc. I need
-> to double check of course and probably actually port the MPIC backend
-> and possibly go write the Cell Axon one while at it to verify everything
-> is allright, but the base design seems sound enough.
->
-> For the ones with HV (RTAS stuff), we still need to agree on how to
-> approach it. We can either:
->
-> Option 1
-> --------
->
-> Do a hook -above- Eric stuff, by having the toplevel APIs themselves be
-> arch hooks that can either go toward the RTAS implementation or toward
-> Eric's code. That is, eric code would define those (pick better names if
-> you are good at it):
->
-> 	pci_generic_enable_msi
-> 	pci_generic_disable_msi
-> 	pci_generic_enable_msix
-> 	pci_generic_disable_msix
-> 	pci_generic_save_msi_state
-> 	pci_generic_restore_msi_state
->
-> Then we can have asm-i386/msi.h & friends do something like
->
-> #define pci_enable_msi	pci_generic_enable_msi
-> #define pci_disable_msi	pci_generic_disable_msi
->    etc...
->
-> And we can have asm-powerpc/msi.h hook then via ppc_md:
->
-> static inline int pci_enable_msi(xxx...)
-> {
-> 	return ppc_md.pci_enable_msi(xxx...);
-> }
-> etc...
->
-> (ppc_md is our per-platform global hook structure filled at boot when we
-> discover on what machine type we are running on) so that pSeries can use
-> it's own RTAS callbacks, and others can just re-hook those to Eric's
-> code.
+--=-1rIFzXMllK+LL9809EPl
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-This is the most straight forward and handles machines with really
-weird msi setups, so I lean in this direction.
+On Mon, 2007-01-29 at 01:45 -0700, Eric W. Biederman wrote:
+> Michael Ellerman <michael@ellerman.id.au> writes:
+>=20
+> > On Sun, 2007-01-28 at 01:27 -0700, Eric W. Biederman wrote:
+> >> Michael Ellerman <michael@ellerman.id.au> writes:
+> >>=20
+> >> > Currently pci_disable_device() disables MSI on a device by twiddling
+> >> > bits in config space via disable_msi_mode().
+> >> >
+> >> > On some platforms that may not be appropriate, so abstract the MSI
+> >> > suspend logic into pci_disable_device_msi().
+> >>=20
+> >> >
+> >> > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+> >> > ---
+> >> >
+> >> >  drivers/pci/msi.c |   11 +++++++++++
+> >> >  drivers/pci/pci.c |    7 +------
+> >> >  drivers/pci/pci.h |    2 ++
+> >> >  3 files changed, 14 insertions(+), 6 deletions(-)
+> >> >
+> >> > Index: msi/drivers/pci/msi.c
+> >> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> >> > --- msi.orig/drivers/pci/msi.c
+> >> > +++ msi/drivers/pci/msi.c
+> >> > @@ -271,6 +271,17 @@ void disable_msi_mode(struct pci_dev *de
+> >> >  	pci_intx(dev, 1);  /* enable intx */
+> >> >  }
+> >> > =20
+> >> > +void pci_disable_device_msi(struct pci_dev *dev)
+> >> > +{
+> >> > +	if (dev->msi_enabled)
+> >> > +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
+> >> > +			PCI_CAP_ID_MSI);
+> >> > +
+> >> > +	if (dev->msix_enabled)
+> >> > +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
+> >> > +			PCI_CAP_ID_MSIX);
+> >>=20
+> >> Just a quick note. This is wrong.  It should be PCI_CAP_ID_MSIX.
+> >> The code that is being moved is buggy.  So the patch itself doesn't
+> >> make the situation any worse.
+> >
+> > Greg, if you want to drop that patch I'll prepare two patches to fix it
+> > and then move it. I don't have any hardware to test, although I'm
+> > guessing no one does given that it's been broken since its inception.
+>=20
+> The mthca IB driver was one of the early adopters of MSI, and it uses
+> MSI-X.  So it isn't that no one is using MSI-X and the MSI-X code
+> paths don't get exercised.
 
-The question is there anything at all we can do generically?
+I meant the MSI-X suspend/resume path specifically, I'm guessing most
+laptops don't come with IB cards yet ;)
 
-I can't see a case where ppc_md would not wind up with the hooks
-that decide if it is a hypervisor or not.  Even if we came up
-with a better set of functions you need to hook.
+> I expect what is closer to the truth is that the code authors have so
+> far simply disabled msi separately instead of assuming pci_disable_device
+> will do it magically for them.  So it may be the case that we can
+> just kill this code path altogether.
 
-> Option 2
-> --------
->
-> That is to make Eric's code itself cope with the HV case. I'm a bit at
-> loss right now as how precisely to do it. I need to spend more time
-> staring at the code after Eric latest patches rather than the patches
-> themselves I suppose :-) (Eric, they don't apply out of the box on
-> current git, they are against -mm ?).
->
-> Some of the main issues here, more/less following the order in which
-> Eric code calls things:
->
->  - The number of vectors for MSI-X is obtained from config space (at
-> least for sanity checking the requested argument). On RTAS, it should
-> come from an OF property (we are really not supposed to go read the
-> config space even if we can). I -suppose- we can survive for now with
-> just reading it, but we might well run into trouble with some "special"
-> devices shared accross partitions or if the IBM magic bridges themselves
-> ever start sending MSI-X on their own (unlikely but who knows...).
-> Michael's code handled that by having a callback ->check() do the sanity
-> checking of the nvec, and then just use the nvec passed in as an
-> argument once it's sane.
+I recall reading comments to that effect in one driver, although it
+wasn't obvious exactly what the problem was - but it's probably worth
+doing a thorough review while the number of MSI/MSI-X drivers is small.
 
-Ok. I think I get the point of check.  I believe I need to look at your
-code a little more and see what you are doing to see if there is anything
-generic worth doing, that we can always do outside of architecture code
-no matter how much of the job the Hypervisor wants to do for us.
+> Possibly we can just reduce it to WARN_ON(dev->msi_enabled || dev->msix_e=
+nabled);
+>=20
+> I suspect msi_remove_pci_irq_vectors may similarly not actually make a
+> difference.   I think the function dates from a time when the code
+> attempted to cache the irq number so if you removed and re-added a module
+> or at least disabled and enabled msi you would get the same linux irq
+> number.  I remember killing that caching because it made the code
+> unmaintainable and wasn't really useful.
 
-I'd hate to hit a different Hypervisor that did something close but
-not quite the same and have the code fail then.  So definitely
-avoiding touching pci config space at all in the calls seems to make a
-lot of sense.  This includes avoiding pci_find_capability right?
+That was my suspicion as well, I was hoping someone who knew the code
+better than me would pipe up and let me know why it was a special case.
+Have the original MSI authors vanished without a trace?
 
-Off the top of my head the only things we can do generically are
-some data structure things and flags like dev->msi_enabled or
-dev->msix_enabled.
+It seems to date from the initial MSI submission, and has only ever been
+called from pci_free_resources(). The rest of the pci hotunplug code
+paths are not clear to me though, so I don't know whether we can rely on
+pci_disable_msi() already being called for us.
 
-Anyway have a nice night and more in the morning.
+cheers
 
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Eric
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-1rIFzXMllK+LL9809EPl
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFvcK6dSjSd0sB4dIRAm3YAJ45094h85++UmaGfPL1ItYKt6tSZACeJvA2
+IazpGjmS/Ppc+TckXQDf8yY=
+=9TOv
+-----END PGP SIGNATURE-----
+
+--=-1rIFzXMllK+LL9809EPl--
