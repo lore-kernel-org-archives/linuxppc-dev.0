@@ -1,22 +1,14 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound5-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id EAF4ADE18E
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 06:32:46 +1100 (EST)
-Message-ID: <45BE4BD8.4050701@am.sony.com>
-Date: Mon, 29 Jan 2007 11:32:40 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <maynardj@us.ibm.com>
+Message-ID: <45BE4ED0.5030808@us.ibm.com>
+Date: Mon, 29 Jan 2007 13:45:20 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 4/16] ps3: system bus minor mmio fix
-References: <45BAC20A.8040107@am.sony.com>
-	<1169928417.24996.205.camel@localhost.localdomain>
-	<20070128084239.GA6311@lst.de>
-In-Reply-To: <20070128084239.GA6311@lst.de>
-Content-Type: text/plain; charset=us-ascii
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+To: cbe-oss-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net
+Subject: [RFC, PATCH 0/4] Add support to OProfile for profiling Cell BE SPUs
+	-- update
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Reply-To: maynardj@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +18,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig wrote:
-> On Sun, Jan 28, 2007 at 07:06:57AM +1100, Benjamin Herrenschmidt wrote:
->> Note that I personally think that drivers/ps3 is a very wrong place for
->> the ps3 system bus. It should stay in arch/powerpc/platform/ps3
-> 
-> Yes, absolutely.  We should not spreads things all over the tree do
-> make understanding the code even more difficult than all the lv1
-> braindamage already makes it.
+On December 14, 2006, I posted a patch that added support to the 
+OProfile kernel driver for profiling Cell SPUs.  There have been some 
+changes/fixes to this patch since the original posting (including 
+forward porting from 2.6.18-based kernel to 2.6.20-rc1), so I am 
+reposting the patch for review now.  This patch relies upon the 
+following patches that have not been accepted yet:
+   1. oprofile cleanup patch (submitted on Nov 27)
+   2. Fix for PPU profiling (not submitted yet, since it depends on #1)
+   3. SPU task notification patch (last submitted on Jan 26)
 
-I'm really disappointed that you both feel that way.  Why didn't you say so several
-months ago when I first posted that?  I also don't think it is a good place, since
-I need to expose a bunch of platform specifics in asm-powerpc/ps3.h, which would
-better stay in my platform/ps3/platform.h.  When I had that stuff in the platform
-directory there was criticism that it shouldn't go there, so I moved it out.  I'll
-make a patch for RFC and see what happens.
+For those who may want to apply and build the oprofile SPU support 
+patch, it would be necessary to first apply the above patches.  For 
+convenience, I will post all three of the above patches, along with the 
+oprofile SPU support patch.
 
--Geoff
+Comments appreciated.
+
+Thank you.
+
+Maynard Johnson
+IBM LTC Toolchain
