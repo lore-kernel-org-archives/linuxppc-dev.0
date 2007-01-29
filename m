@@ -2,20 +2,27 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC088DDED7
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 07:26:03 +1100 (EST)
-Subject: Re: [PATCH 4/16] ps3: system bus minor mmio fix
+	by ozlabs.org (Postfix) with ESMTP id A0E73DE182
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 07:27:00 +1100 (EST)
+Subject: Re: [PATCH 0/6] MSI portability cleanups
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <45BE4BD8.4050701@am.sony.com>
-References: <45BAC20A.8040107@am.sony.com>
-	<1169928417.24996.205.camel@localhost.localdomain>
-	<20070128084239.GA6311@lst.de>  <45BE4BD8.4050701@am.sony.com>
+To: "Eric W. Biederman" <ebiederm@xmission.com>
+In-Reply-To: <m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
+References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
+	<20070128.153707.30184351.davem@davemloft.net>
+	<m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
+	<20070128.212554.23015561.davem@davemloft.net>
+	<1170050737.26655.233.camel@localhost.localdomain>
+	<m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
 Content-Type: text/plain
-Date: Tue, 30 Jan 2007 07:16:01 +1100
-Message-Id: <1170101761.26655.266.camel@localhost.localdomain>
+Date: Tue, 30 Jan 2007 07:22:38 +1100
+Message-Id: <1170102158.26655.273.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: tony.luck@intel.com, grundler@parisc-linux.org, jeff@garzik.org,
+	greg@kroah.com, linux-kernel@vger.kernel.org,
+	kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, brice@myri.com,
+	shaohua.li@intel.com, mingo@elte.hu, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-01-29 at 11:32 -0800, Geoff Levand wrote:
-> Christoph Hellwig wrote:
-> > On Sun, Jan 28, 2007 at 07:06:57AM +1100, Benjamin Herrenschmidt wrote:
-> >> Note that I personally think that drivers/ps3 is a very wrong place for
-> >> the ps3 system bus. It should stay in arch/powerpc/platform/ps3
-> > 
-> > Yes, absolutely.  We should not spreads things all over the tree do
-> > make understanding the code even more difficult than all the lv1
-> > braindamage already makes it.
+
+> This is the most straight forward and handles machines with really
+> weird msi setups, so I lean in this direction.
 > 
-> I'm really disappointed that you both feel that way.  Why didn't you say so several
-> months ago when I first posted that?  
+> The question is there anything at all we can do generically?
+> 
+> I can't see a case where ppc_md would not wind up with the hooks
+> that decide if it is a hypervisor or not.  Even if we came up
+> with a better set of functions you need to hook.
 
-I overlooked it. It's not the end of the world, easy enough to move
-them. Sorry about that.
+Sure, but with Michael's approach, the only hook was get_msi_ops(pdev) 
 
-> I also don't think it is a good place, since
-> I need to expose a bunch of platform specifics in asm-powerpc/ps3.h, which would
-> better stay in my platform/ps3/platform.h.  When I had that stuff in the platform
-> directory there was criticism that it shouldn't go there, so I moved it out.  I'll
-> make a patch for RFC and see what happens.
+Anyway, there isn't -that- much that can be done generically in the HV
+case. Mostly some argument sanity checking, the logic for saving &
+restoring pdev->irq for MSIs, that sort of thing.
+
+> Ok. I think I get the point of check.  I believe I need to look at your
+> code a little more and see what you are doing to see if there is anything
+> generic worth doing, that we can always do outside of architecture code
+> no matter how much of the job the Hypervisor wants to do for us.
+
+I understand.
+
+> I'd hate to hit a different Hypervisor that did something close but
+> not quite the same and have the code fail then.  So definitely
+> avoiding touching pci config space at all in the calls seems to make a
+> lot of sense.  This includes avoiding pci_find_capability right?
+
+Quite possibly yes. I'm pretty sure it will work on IBM HV but we aren't
+really supposed to use it...
+
+> Off the top of my head the only things we can do generically are
+> some data structure things and flags like dev->msi_enabled or
+> dev->msix_enabled.
+
+That and the saving & restoring of pdev->irq. That is not very much.
+
+> Anyway have a nice night and more in the morning.
 
 Ben.
