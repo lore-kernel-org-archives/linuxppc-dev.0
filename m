@@ -1,31 +1,21 @@
-Return-Path: <michael@ellerman.id.au>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 2DB71DE134
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 12:13:10 +1100 (EST)
+Date: Sun, 28 Jan 2007 17:13:09 -0800 (PST)
+Message-Id: <20070128.171309.11624572.davem@davemloft.net>
+To: benh@kernel.crashing.org
 Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
-From: Michael Ellerman <michael@ellerman.id.au>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <m1bqkioh6z.fsf@ebiederm.dsl.xmission.com>
-References: <1169714047.65693.647693675533.qpush@cradle>
-	<m1wt3awbtf.fsf@ebiederm.dsl.xmission.com>
-	<1169876504.2294.23.camel@concordia.ozlabs.ibm.com>
-	<m1k5z7smkj.fsf@ebiederm.dsl.xmission.com>
-	<1169971963.19887.15.camel@concordia.ozlabs.ibm.com>
-	<m14pqbsg2j.fsf@ebiederm.dsl.xmission.com>
-	<1170015292.26655.6.camel@localhost.localdomain>
-	<m1fy9uq3et.fsf@ebiederm.dsl.xmission.com>
-	<1170019048.26655.27.camel@localhost.localdomain>
-	<m1lkjmok2j.fsf@ebiederm.dsl.xmission.com>
-	<1170026259.26655.114.camel@localhost.localdomain>
-	<m1bqkioh6z.fsf@ebiederm.dsl.xmission.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-TS2Zh4VQlWZNVr2rTRLy"
-Date: Mon, 29 Jan 2007 11:59:03 +1100
-Message-Id: <1170032343.19887.41.camel@concordia.ozlabs.ibm.com>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1170032301.26655.140.camel@localhost.localdomain>
+References: <m1bqkioh6z.fsf@ebiederm.dsl.xmission.com>
+	<20070128.155155.51857352.davem@davemloft.net>
+	<1170032301.26655.140.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Brice Goglin <brice@myri.com>,
-	Greg Kroah-Hartman <greg@kroah.com>, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, "David S. Miller" <davem@davemloft.net>
-Reply-To: michael@ellerman.id.au
+Content-Type: Text/Plain; charset=us-ascii
+Cc: greg@kroah.com, kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
+	brice@myri.com, shaohua.li@intel.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, ebiederm@xmission.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,130 +25,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Mon, 29 Jan 2007 11:58:21 +1100
 
---=-TS2Zh4VQlWZNVr2rTRLy
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> 
+> > There are specific calls into the sparc64 hypervisor for MSI vs. MSI-X
+> > configuration operations.  So a type is necessary.
+> 
+> BTW. Do you have some pointers to documentation on those sparc64
+> interfaces ? I'd like to have a look as we might still try to change
+> some of our approach to match some of Eric's whishes, I want to make
+> sure I'm not going somewhere that will not work for sparc...
+> 
+> For example, I'd like to know if sparc64 HV is indeed like IBM, that is
+> a single HV call does the complete setup, or if you still have some
+> level of manual config space access to do.
 
-On Sun, 2007-01-28 at 16:38 -0700, Eric W. Biederman wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
->=20
-> >> Because it mixes concerns that do not need to be mixed, and it complic=
-ates
-> >> the code.  The hypervisor has no need to understand how a hardware
-> >> device is built, and how it's registers operate.  It just needs to
-> >> know that the given hardware device will generate an msi message on
-> >> the bus.
-> >
-> > I'd be happy for you to go explain your view of what an hypervisor
-> > should or should not do to IBM HV architects :-)=20
->=20
-> Sure think you can setup a meeting, or give me an email introduction to t=
-hem.
->=20
-> > But in the meantime,
-> > that's how they have defined it and how it's been implemented and how w=
-e
-> > have to support it. And I have a strong feeling that they won't be the
-> > only ones to do it that way (I'd like to be proven wrong tho).
->=20
-> No the general linux kernel does not have to support it, and if we don't
-> I suspect that message would get back fairly clearly to the IBM HV archit=
-ects.
+I just started reading those docs right now in fact :-)
 
-OT, but: No, it wouldn't. It would just play into the hands of people
-who think Linux is immature, unpredictable and risky. IBM has another
-UNIX remember.
+The sparc64 hypervisor manual is at:
 
-> I haven't been watching closely but I haven heard any rumors on the x86
-> side that they are looking in that direction.
->=20
-> >> Right, so some way needs to be found to cope with that situation.
-> >> Likely that involves bypassing all of the code that talks directly to
-> >> the hardware for MSI.
-> >
-> > Which can be done by having the alloc() and free() hooks do all the wor=
-k
-> > provide they aren't done per-msi but per-call like in Michael's
-> > approach. That is, in the MSI-X case, alloc is called once for all of
-> > the MSI-X requested.
-> >
-> > I understand that this conflicts with your idea of requesting new MSI-X
-> > on the fly but I don't think that trying to add/remove MSI-X that way i=
-s
-> > a sane approach anyway. If you are concerned about HW problems, I think
-> > by doing so, you'll indeed hit them hard.
->=20
-> That isn't even the reason it is that way.  It is because allocating
-> 4096 irqs in a single vector is a bad idea, and because it requires you
-> to pass type information of what kind of msi you are dealing with to the
-> lower levels in an allocation routine that make it bad idea.  Because
-> if you don't consider the IBM HV it provides not benefit and just puts
-> unnecessary loops, and type information in architecture code.
+	http://opensparc-t2.sunsource.net/index.html
 
-I'm not sure what the issue with 4096 irqs is.
+Click on "UltraSPARC T1 Hypervisor API Specification" near
+the bottom of the page.  The MSI bits are in section 21.4 on
+page 105.
 
-As far as passing type information to the alloc routine, it's only there
-_if_ the alloc routine needs it.
+BTW, I like how Banjamin is being constructive by expressing
+interest in how sparc64's hypervisor works instead of Eric's
+seeming non-interest in how or why RTAS or sparc64 work the
+way that they do :-)
 
-If you'd prefer we could not pass the type explicitly to the alloc
-routine, but rather just have it sitting in the msi_info ... which is
-exactly what the current code does, the type is stored in the msi_desc.
+That being said, it looks like the hypervisor calls just setup
+the MSI config inside of the PCI host controller, you still have
+to do the PCI config space writes.  So in this regard it's not
+like RTAS.
 
-What we could do is move the msi_msg into the msix_entry struct, then we
-could do alloc like below and remove the need for setup_msi_msg:
+The PCI controller defines a 32-bit and a 64-bit MSI address range
+the PCI controller will respond to as MSI.  Then there are queues
+where received MSI interrupt information is stored, you subsequently
+assosciate a MSI (which they call "msi") or a MSI-X (which they call
+a "msg") with one of these queues.  Each queue generates a unique
+interrupt to the system, and therefore this is the granularity at
+which CPU targetting is done.
 
-int arch_setup_msi_irqs(struct pci_dev *pdev, int num,
-                       struct msix_entry *entries)
-{
-        int i;
+All of this stuff is defined via various OFW properties in the PCI
+controller root bus node.
 
-        for (i =3D 0; i < num; i++) {
-       		int irq, ret;
-       		irq =3D create_irq();
-       		if (irq < 0)
-               		return irq;
+Example:
 
-       		set_irq_msi(irq, desc);
-       		ret =3D msi_compose_msg(dev, irq, &entries[i].msg);
-       		if (ret < 0) {
-               		destroy_irq(irq);
-               		return ret;
-       		}
+    Node 0xf02762a0
+        .node:  f02762a0
+        available:  81000000.00000000.00000000.00000000.00010000.82000000.00000000.00120000.00000000.000e0000.82000000.00000000.00300000.00000000.7fcf0000
+        reg:  c0000780.00000000.00000000.00000000
+        ranges:  01000000.00000000.00000000.000000e8.10000000.00000000.10000000.02000000.00000000.00000000.000000ea.00000000.00000000.7fff0000.03000000.00000000.00000000.000000ec.00000000.00000003.ffff0000
+        msi-eq-to-devino:  00000000.00000024.00000018
+        #msi-eqs:  00000024
+        msix-data-width:  00000020
+        msi-eq-size:  00000080
+        msi-ranges:  00000000.00000100
+        msi-data-mask:  000000ff
+        #msi:  00000100
+        msi-address-ranges:  00000000.7fff0000.00010000.00000003.ffff0000.00010000
+        bus-range:  00000002.00000007
+        no-probe-list: '0'
+        bus-parity-generated:  
+        #address-cells:  00000003
+        #size-cells:  00000002
+        name: 'pci'
+        compatible: 'SUNW,sun4v-pci'
+        device_type: 'pciex'
+        virtual-dma:  80000000.80000000
+        interrupt-map:  00020000.00000000.00000000.00000001.f02762a0.00000014.00020000.00000000.00000000.00000002.f02762a0.00000015.00020000.00000000.00000000.00000003.f02762a0.00000016.00020000.00000000.00000000.00000004.f02762a0.00000017
+        interrupt-map-mask:  00fff000.00000000.00000000.00000007
+        #interrupt-cells:  00000001
+        interrupts:  0000003f.0000003e
 
-                entries[i].vector =3D irq;
+The "devino" is the "system interrupt", each of which you can
+enable/disable/cpu-target.  The above states that there are
+36 MSI queues, to which msis and msgs can be assosciated.
+So this would encompass devinos 0x18 --> 0x18 + 0x24 because
+the msi-eq-to-devino property specifies the triplet
+"first msiQ, num msiQs, first devino".
 
-       		set_irq_chip_and_handler_name(irq, &msi_chip, handle_edge_irq, "ed=
-ge");
-        }
-}
-
-Which is almost exactly the same as the current code, except it's inside
-a for loop - and it saves the msg and vector to be written later by the
-enable hook - which will basically be write_msi_msg() in a loop.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-TS2Zh4VQlWZNVr2rTRLy
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFvUbXdSjSd0sB4dIRAh4TAJ4y0l2sA7OCbBnGZ/5fJhXehee+tACcCiI0
-hkjoO5eGkPWPWu2P7zRQYEc=
-=oD7U
------END PGP SIGNATURE-----
-
---=-TS2Zh4VQlWZNVr2rTRLy--
+I'm working out all of this stuff myself and will try to cut as much
+of an implementation as possible over the next few evenings.
