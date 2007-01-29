@@ -1,17 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id F26B5DE24C
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:16:52 +1100 (EST)
-Date: Sun, 28 Jan 2007 21:23:14 -0600
-To: paulus@samba.org
-Subject: [PATCH] [1/4] powerpc: Oprofile cleanup [v2]
-Message-ID: <20070129032314.GD6412@lixom.net>
-References: <20070129032143.GC6412@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070129032143.GC6412@lixom.net>
-From: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DE69ADE239
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:17:24 +1100 (EST)
+Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20070128.171309.11624572.davem@davemloft.net>
+References: <m1bqkioh6z.fsf@ebiederm.dsl.xmission.com>
+	<20070128.155155.51857352.davem@davemloft.net>
+	<1170032301.26655.140.camel@localhost.localdomain>
+	<20070128.171309.11624572.davem@davemloft.net>
+Content-Type: text/plain
+Date: Mon, 29 Jan 2007 14:17:02 +1100
+Message-Id: <1170040622.26655.187.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: greg@kroah.com, kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
+	brice@myri.com, shaohua.li@intel.com,
+	linux-pci@atrey.karlin.mff.cuni.cz, ebiederm@xmission.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,317 +28,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Clean up the ctr_read/write a bit. It's currently defined in the
-include but only used in one C file each. The only exception is the
-classic version, so keep that in the include and define in the C file
-as appropriate.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+> That being said, it looks like the hypervisor calls just setup
+> the MSI config inside of the PCI host controller, you still have
+> to do the PCI config space writes.  So in this regard it's not
+> like RTAS.
 
-Index: merge/arch/powerpc/oprofile/op_model_7450.c
-===================================================================
---- merge.orig/arch/powerpc/oprofile/op_model_7450.c
-+++ merge/arch/powerpc/oprofile/op_model_7450.c
-@@ -137,9 +137,9 @@ static void fsl7450_start(struct op_coun
- 
- 	for (i = 0; i < NUM_CTRS; ++i) {
- 		if (ctr[i].enabled)
--			ctr_write(i, reset_value[i]);
-+			classic_ctr_write(i, reset_value[i]);
- 		else
--			ctr_write(i, 0);
-+			classic_ctr_write(i, 0);
- 	}
- 
- 	/* Clear the freeze bit, and enable the interrupt.
-@@ -179,13 +179,13 @@ static void fsl7450_handle_interrupt(str
- 	is_kernel = is_kernel_addr(pc);
- 
- 	for (i = 0; i < NUM_CTRS; ++i) {
--		val = ctr_read(i);
-+		val = classic_ctr_read(i);
- 		if (val < 0) {
- 			if (oprofile_running && ctr[i].enabled) {
- 				oprofile_add_ext_sample(pc, regs, i, is_kernel);
--				ctr_write(i, reset_value[i]);
-+				classic_ctr_write(i, reset_value[i]);
- 			} else {
--				ctr_write(i, 0);
-+				classic_ctr_write(i, 0);
- 			}
- 		}
- 	}
-Index: merge/arch/powerpc/oprofile/op_model_fsl_booke.c
-===================================================================
---- merge.orig/arch/powerpc/oprofile/op_model_fsl_booke.c
-+++ merge/arch/powerpc/oprofile/op_model_fsl_booke.c
-@@ -32,6 +32,87 @@ static unsigned long reset_value[OP_MAX_
- static int num_counters;
- static int oprofile_running;
- 
-+static inline u32 get_pmlca(int ctr)
-+{
-+	u32 pmlca;
-+
-+	switch (ctr) {
-+		case 0:
-+			pmlca = mfpmr(PMRN_PMLCA0);
-+			break;
-+		case 1:
-+			pmlca = mfpmr(PMRN_PMLCA1);
-+			break;
-+		case 2:
-+			pmlca = mfpmr(PMRN_PMLCA2);
-+			break;
-+		case 3:
-+			pmlca = mfpmr(PMRN_PMLCA3);
-+			break;
-+		default:
-+			panic("Bad ctr number\n");
-+	}
-+
-+	return pmlca;
-+}
-+
-+static inline void set_pmlca(int ctr, u32 pmlca)
-+{
-+	switch (ctr) {
-+		case 0:
-+			mtpmr(PMRN_PMLCA0, pmlca);
-+			break;
-+		case 1:
-+			mtpmr(PMRN_PMLCA1, pmlca);
-+			break;
-+		case 2:
-+			mtpmr(PMRN_PMLCA2, pmlca);
-+			break;
-+		case 3:
-+			mtpmr(PMRN_PMLCA3, pmlca);
-+			break;
-+		default:
-+			panic("Bad ctr number\n");
-+	}
-+}
-+
-+static inline unsigned int ctr_read(unsigned int i)
-+{
-+	switch(i) {
-+		case 0:
-+			return mfpmr(PMRN_PMC0);
-+		case 1:
-+			return mfpmr(PMRN_PMC1);
-+		case 2:
-+			return mfpmr(PMRN_PMC2);
-+		case 3:
-+			return mfpmr(PMRN_PMC3);
-+		default:
-+			return 0;
-+	}
-+}
-+
-+static inline void ctr_write(unsigned int i, unsigned int val)
-+{
-+	switch(i) {
-+		case 0:
-+			mtpmr(PMRN_PMC0, val);
-+			break;
-+		case 1:
-+			mtpmr(PMRN_PMC1, val);
-+			break;
-+		case 2:
-+			mtpmr(PMRN_PMC2, val);
-+			break;
-+		case 3:
-+			mtpmr(PMRN_PMC3, val);
-+			break;
-+		default:
-+			break;
-+	}
-+}
-+
-+
- static void init_pmc_stop(int ctr)
- {
- 	u32 pmlca = (PMLCA_FC | PMLCA_FCS | PMLCA_FCU |
-Index: merge/arch/powerpc/oprofile/op_model_power4.c
-===================================================================
---- merge.orig/arch/powerpc/oprofile/op_model_power4.c
-+++ merge/arch/powerpc/oprofile/op_model_power4.c
-@@ -121,9 +121,9 @@ static void power4_start(struct op_count
- 
- 	for (i = 0; i < cur_cpu_spec->num_pmcs; ++i) {
- 		if (ctr[i].enabled) {
--			ctr_write(i, reset_value[i]);
-+			classic_ctr_write(i, reset_value[i]);
- 		} else {
--			ctr_write(i, 0);
-+			classic_ctr_write(i, 0);
- 		}
- 	}
- 
-@@ -254,13 +254,13 @@ static void power4_handle_interrupt(stru
- 	mtmsrd(mfmsr() | MSR_PMM);
- 
- 	for (i = 0; i < cur_cpu_spec->num_pmcs; ++i) {
--		val = ctr_read(i);
-+		val = classic_ctr_read(i);
- 		if (val < 0) {
- 			if (oprofile_running && ctr[i].enabled) {
- 				oprofile_add_ext_sample(pc, regs, i, is_kernel);
--				ctr_write(i, reset_value[i]);
-+				classic_ctr_write(i, reset_value[i]);
- 			} else {
--				ctr_write(i, 0);
-+				classic_ctr_write(i, 0);
- 			}
- 		}
- 	}
-Index: merge/arch/powerpc/oprofile/op_model_rs64.c
-===================================================================
---- merge.orig/arch/powerpc/oprofile/op_model_rs64.c
-+++ merge/arch/powerpc/oprofile/op_model_rs64.c
-@@ -137,10 +137,10 @@ static void rs64_start(struct op_counter
- 
- 	for (i = 0; i < num_counters; ++i) {
- 		if (ctr[i].enabled) {
--			ctr_write(i, reset_value[i]);
-+			classic_ctr_write(i, reset_value[i]);
- 			ctrl_write(i, ctr[i].event);
- 		} else {
--			ctr_write(i, 0);
-+			classic_ctr_write(i, 0);
- 		}
- 	}
- 
-@@ -186,13 +186,13 @@ static void rs64_handle_interrupt(struct
- 	mtmsrd(mfmsr() | MSR_PMM);
- 
- 	for (i = 0; i < num_counters; ++i) {
--		val = ctr_read(i);
-+		val = classic_ctr_read(i);
- 		if (val < 0) {
- 			if (ctr[i].enabled) {
- 				oprofile_add_ext_sample(pc, regs, i, is_kernel);
--				ctr_write(i, reset_value[i]);
-+				classic_ctr_write(i, reset_value[i]);
- 			} else {
--				ctr_write(i, 0);
-+				classic_ctr_write(i, 0);
- 			}
- 		}
- 	}
-Index: merge/include/asm-powerpc/oprofile_impl.h
-===================================================================
---- merge.orig/include/asm-powerpc/oprofile_impl.h
-+++ merge/include/asm-powerpc/oprofile_impl.h
-@@ -58,10 +58,8 @@ extern struct op_powerpc_model op_model_
- extern struct op_powerpc_model op_model_7450;
- extern struct op_powerpc_model op_model_cell;
- 
--#ifndef CONFIG_FSL_BOOKE
--
- /* All the classic PPC parts use these */
--static inline unsigned int ctr_read(unsigned int i)
-+static inline unsigned int classic_ctr_read(unsigned int i)
- {
- 	switch(i) {
- 	case 0:
-@@ -89,7 +87,7 @@ static inline unsigned int ctr_read(unsi
- 	}
- }
- 
--static inline void ctr_write(unsigned int i, unsigned int val)
-+static inline void classic_ctr_write(unsigned int i, unsigned int val)
- {
- 	switch(i) {
- 	case 0:
-@@ -124,89 +122,6 @@ static inline void ctr_write(unsigned in
- 		break;
- 	}
- }
--#else /* CONFIG_FSL_BOOKE */
--static inline u32 get_pmlca(int ctr)
--{
--	u32 pmlca;
--
--	switch (ctr) {
--		case 0:
--			pmlca = mfpmr(PMRN_PMLCA0);
--			break;
--		case 1:
--			pmlca = mfpmr(PMRN_PMLCA1);
--			break;
--		case 2:
--			pmlca = mfpmr(PMRN_PMLCA2);
--			break;
--		case 3:
--			pmlca = mfpmr(PMRN_PMLCA3);
--			break;
--		default:
--			panic("Bad ctr number\n");
--	}
--
--	return pmlca;
--}
--
--static inline void set_pmlca(int ctr, u32 pmlca)
--{
--	switch (ctr) {
--		case 0:
--			mtpmr(PMRN_PMLCA0, pmlca);
--			break;
--		case 1:
--			mtpmr(PMRN_PMLCA1, pmlca);
--			break;
--		case 2:
--			mtpmr(PMRN_PMLCA2, pmlca);
--			break;
--		case 3:
--			mtpmr(PMRN_PMLCA3, pmlca);
--			break;
--		default:
--			panic("Bad ctr number\n");
--	}
--}
--
--static inline unsigned int ctr_read(unsigned int i)
--{
--	switch(i) {
--		case 0:
--			return mfpmr(PMRN_PMC0);
--		case 1:
--			return mfpmr(PMRN_PMC1);
--		case 2:
--			return mfpmr(PMRN_PMC2);
--		case 3:
--			return mfpmr(PMRN_PMC3);
--		default:
--			return 0;
--	}
--}
--
--static inline void ctr_write(unsigned int i, unsigned int val)
--{
--	switch(i) {
--		case 0:
--			mtpmr(PMRN_PMC0, val);
--			break;
--		case 1:
--			mtpmr(PMRN_PMC1, val);
--			break;
--		case 2:
--			mtpmr(PMRN_PMC2, val);
--			break;
--		case 3:
--			mtpmr(PMRN_PMC3, val);
--			break;
--		default:
--			break;
--	}
--}
--
--
--#endif /* CONFIG_FSL_BOOKE */
- 
- 
- extern void op_powerpc_backtrace(struct pt_regs * const regs, unsigned int depth);
+Ok, between the spec and your email, I think I sort-of understand it :-)
+(damn, the Sun spec is a bit obscure...). 
+
+So basically, from a kernel MSI backend perspective, I think you would
+mostly use the "raw" implementation and locally implement your own
+vector allocation.
+
+However, your vector space is per-bus (which is good), so you do need to
+allocate linux virtual irqs and map them to the actual MSI vectors like
+we do on powerpc.
+
+I think Eric's framework would work for you. As long as you don't need
+to do something special for MSI-X, which I don't think you do...
+
+Of course, Michael's stuff would work too, though it needs some
+additions as you probably need to use config space (or MSI-X MMIO) for
+masking & unmasking which we haven't implemented yet.
+
+You are probably better off starting from Eric's stuff with his latest
+patches I suppose...
+
+At this point, I feel like Eric and use will not find a common ground,
+which leaves us to those options:
+
+ - Just give up and keep our current powerpc hooks at the toplevel. That
+is, powerpc does it's own pci_enable_msi/x etc... (we need to fix those
+hooks a bit but basically that's the idea). Internally, those go through
+function pointers on which the RTAS implementation hooks directly, and
+for non-RTAS powerpc archs, those point back to Eric's code which is
+useable for these. In addition, I still want to have Eric's two "arch"
+callbacks be themselves ops derived from the PCI device but that too can
+be done in arch specific ways.
+
+ - Give up in a different way and on powerpc, use Michael's
+infrastructure and not use Eric's code at all (that means moving
+Michael's stuff back to arch/powerpc which was Greg's original objection
+to it).
+
+ - Try to force our stuff in by implementing x86 completely (and Altix)
+under Michael's infrastructure and then try to convince
+Andrew/Greg/Linus to take it. Fairly unlikely. We do have a somewhat
+"gradual" approach to it which consist of having Michael's code at the
+toplevel, Eric's code hooked in as if it was a hypervisor, and then
+gradually "merge" the raw backend with the x86 code, but it doesn't seem
+very sexy (to me neither).
+
+The main problem that I see that prevents us from an approach where
+either we fix Michael's code to please Eric or change Eric's code to fit
+our needs is that the way Eric code is evolving (based on his latest
+patches), it's moving into a direction that is fundamentally unuseable
+for our RTAS backend.
+
+So unless Eric agrees to change his mind on that issue, we simply cannot
+find a common abstraction. Which means that the only way we'll ever be
+able to implement RTAS is by having separate hooks above Eric's code.
+
+Ben.
