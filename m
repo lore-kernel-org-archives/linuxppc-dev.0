@@ -1,31 +1,32 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id EB182DE8B8
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 07:13:11 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l0TKDAOQ005778
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 13:13:10 -0700 (MST)
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id E40E5DE147
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 07:13:13 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l0TKDCI7019385
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 13:13:12 -0700 (MST)
 Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
 	[10.82.65.62])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0TKD9hP023213
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:13:09 -0600 (CST)
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l0TKDAT2010724
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:13:10 -0600 (CST)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
 	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	l0TJtIi1014956
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 13:55:19 -0600 (CST)
+	l0TJtKND014962
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 13:55:20 -0600 (CST)
 Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id EE03F4B92B
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:13:07 -0600 (CST)
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 73FF24B92B
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:13:09 -0600 (CST)
 Received: (from b07421@localhost)
 	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	l0TKD7S2013571
-	for linuxppc-dev@ozlabs.org; Mon, 29 Jan 2007 14:13:07 -0600
-Date: Mon, 29 Jan 2007 14:13:07 -0600
+	l0TKD9qC013575
+	for linuxppc-dev@ozlabs.org; Mon, 29 Jan 2007 14:13:09 -0600
+Date: Mon, 29 Jan 2007 14:13:09 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 16/18] bootwrapper: Add dt_ops methods.
-Message-ID: <20070129201307.GP13485@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 17/18] bootwrapper: Add xlate_reg(),
+	and use it to find serial registers.
+Message-ID: <20070129201309.GQ13485@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <ca1ac163-f732-45ce-9629-e6f4a8c3a880@ld0162-tx32.am.freescale.net>
@@ -38,150 +39,279 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add finddevice_rel, get_parent, create_node, and find_prop to dt_ops.
-Currently only implemented by flatdevtree_misc.
+xlate_reg() uses the ranges properties of a node's parentage to find the
+absolute physical address of the node's registers.
 
-Also, add a _str convenience wrapper for setprop.
+The ns16550 driver uses this when no virtual-reg property is found.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/flatdevtree_misc.c |   25 +++++++++++++++++
- arch/powerpc/boot/ops.h              |   49 ++++++++++++++++++++++++++++++++++
- 2 files changed, 74 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/Makefile  |    3 +-
+ arch/powerpc/boot/devtree.c |  207 +++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/ns16550.c |    9 ++-
+ arch/powerpc/boot/ops.h     |    1 +
+ 4 files changed, 217 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
-index 39fa010..2ec12eb 100644
---- a/arch/powerpc/boot/flatdevtree_misc.c
-+++ b/arch/powerpc/boot/flatdevtree_misc.c
-@@ -21,6 +21,11 @@ static void *ft_finddevice(const char *n
- 	return ft_find_device(&cxt, name);
- }
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index df92f06..f6ae81a 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -43,7 +43,8 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
+ 		$(addprefix $(obj)/,$(zlibheader))
  
-+static void *ft_finddevice_rel(const void *phandle, const char *name)
-+{
-+	return ft_find_device_rel(&cxt, phandle, name);
-+}
-+
- static int ft_getprop(const void *phandle, const char *propname, void *buf,
- 		const int buflen)
- {
-@@ -51,12 +56,32 @@ unsigned long ft_finalize(void)
- 	return (unsigned long)cxt.bph;
- }
+ src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+-		ns16550.c serial.c simple_alloc.c div64.S util.S $(zlib)
++		ns16550.c serial.c simple_alloc.c div64.S util.S $(zlib) \
++		devtree.c
+ src-plat := of.c
+ src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
  
-+void *fdtm_get_parent(const void *phandle)
-+{
-+	return ft_get_parent(&cxt, phandle);
-+}
+diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
+new file mode 100644
+index 0000000..9fee6fb
+--- /dev/null
++++ b/arch/powerpc/boot/devtree.c
+@@ -0,0 +1,207 @@
++/*
++ * Device Tree functions that are semantic, not structural
++ *
++ * Author: Scott Wood <scottwood@freescale.com>
++ *
++ * Copyright (c) 2007 Freescale Semiconductor, Inc.
++ *
++ * This program is free software; you can redistribute it and/or modify it
++ * under the terms of the GNU General Public License version 2 as published
++ * by the Free Software Foundation.
++ */
 +
-+void *fdtm_create_node(const void *phandle, const char *name)
-+{
-+	return ft_create_node(&cxt, phandle, name);
-+}
-+
-+void *fdtm_find_prop(const void *prev, const char *propname,
-+                     const char *propval, int proplen)
-+{
-+	return ft_find_prop(&cxt, prev, propname, propval, proplen);
-+}
-+
- int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device)
- {
- 	dt_ops.finddevice = ft_finddevice;
-+	dt_ops.finddevice_rel = ft_finddevice_rel;
- 	dt_ops.getprop = ft_getprop;
- 	dt_ops.setprop = ft_setprop;
- 	dt_ops.finalize = ft_finalize;
-+	dt_ops.get_parent = fdtm_get_parent;
-+	dt_ops.create_node = fdtm_create_node;
-+	dt_ops.find_prop = fdtm_find_prop;
- 
- 	return ft_open(&cxt, dt_blob, max_size, max_find_device,
- 			platform_ops.realloc);
-diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
-index 0bc4a68..522b7c8 100644
---- a/arch/powerpc/boot/ops.h
-+++ b/arch/powerpc/boot/ops.h
-@@ -13,6 +13,7 @@
- 
- #include <stddef.h>
- #include "types.h"
++#include "ops.h"
 +#include "string.h"
- 
- #define	COMMAND_LINE_SIZE	512
- #define	MAX_PATH_LEN		256
-@@ -32,10 +33,16 @@ extern struct platform_ops platform_ops;
- /* Device Tree operations */
- struct dt_ops {
- 	void *	(*finddevice)(const char *name);
-+	void *	(*finddevice_rel)(const void *phandle, const char *name);
- 	int	(*getprop)(const void *phandle, const char *name, void *buf,
- 			const int buflen);
- 	int	(*setprop)(const void *phandle, const char *name,
- 			const void *buf, const int buflen);
-+	void *(*get_parent)(const void *phandle);
-+	/* The node must not already exist. */
-+	void *(*create_node)(const void *parent, const char *name);
-+	void *(*find_prop)(const void *prev, const char *propname,
-+	                   const char *propval, int proplen);
- 	unsigned long (*finalize)(void);
- };
- extern struct dt_ops dt_ops;
-@@ -75,6 +82,14 @@ static inline void *finddevice(const cha
- 	return (dt_ops.finddevice) ? dt_ops.finddevice(name) : NULL;
- }
- 
-+static inline void *finddevice_rel(const void *phandle, const char *name)
-+{
-+	if (dt_ops.finddevice_rel)
-+		return dt_ops.finddevice_rel(phandle, name);
 +
-+	return NULL;
++#define MAX_ADDR_CELLS 4
++#define MAX_RANGES 8
++
++static int get_reg_format(void *node, u32 *naddr, u32 *nsize)
++{
++	int got_addr = 0, got_size = 0;
++
++	while (node && !(got_addr && got_size)) {
++		if (!got_addr && getprop(node, "#address-cells",
++		                         naddr, 4) == 4)
++			got_addr = 1;
++		if (!got_size && getprop(node, "#size-cells",
++		                         nsize, 4) == 4)
++			got_size = 1;
++
++		node = get_parent(node);
++	}
++
++	if (*naddr <= 0 || *naddr > MAX_ADDR_CELLS ||
++	    *nsize <= 0 || *nsize > *naddr)
++		return 0;
++
++	return got_addr && got_size;
 +}
 +
- static inline int getprop(void *devp, const char *name, void *buf, int buflen)
- {
- 	return (dt_ops.getprop) ? dt_ops.getprop(devp, name, buf, buflen) : -1;
-@@ -85,6 +100,40 @@ static inline int setprop(void *devp, co
- 	return (dt_ops.setprop) ? dt_ops.setprop(devp, name, buf, buflen) : -1;
- }
- 
-+static inline int setprop_str(void *devp, const char *name, const char *buf)
++static int sub_reg(u32 *reg, u32 *sub, u32 naddr)
 +{
-+	if (dt_ops.setprop)
-+		return dt_ops.setprop(devp, name, buf, strlen(buf));
++	int i, borrow = 0;
++
++	for (i = 0; i < naddr; i++) {
++		int prev_borrow = borrow;
++		borrow = reg[i] < sub[i] + prev_borrow;
++		reg[i] -= sub[i] + prev_borrow;
++	}
++
++	return !borrow;
++}
++
++static int add_reg(u32 *reg, u32 *add, u32 naddr, u32 naddr_add)
++{
++	int i, carry = 0;
++	int diff = naddr - naddr_add;
++
++	if (diff < 0) {
++		for (i = 0; i < -diff; i++)
++			if (*add++ != 0)
++				return 0;
++
++		diff = 0;
++	}
++
++	for (i = diff; i < naddr; i++) {
++		u64 tmp = (u64)reg[i] + add[i - diff] + carry;
++		carry = tmp >> 32;
++		reg[i] = (u32)tmp;
++	}
++
++	return !carry;
++}
++
++/* It is assumed that if the first byte of reg fits in a
++ * range, then the whole reg block fits.  It is also assumed
++ * that #size-cells <= #address-cells.
++ */
++static int compare_reg(u32 *reg, u32 *range, u32 *rangesize,
++                       u32 naddr, u32 nsize)
++{
++	int i, sizeoff = naddr - nsize;
++
++	for (i = 0; i < naddr; i++) {
++		if (reg[i] < range[i])
++			return 0;
++		if (reg[i] > range[i])
++			break;
++	}
++
++	for (i = sizeoff; i < naddr; i++) {
++		u32 end = range[i] + rangesize[i - sizeoff];
++
++		if (reg[i] < end)
++			break;
++		if (reg[i] > end)
++			return 0;
++		if (i == naddr && reg[i] == end)
++			return 0;
++	}
++
++	return 1;
++}
++
++static int find_range(u32 *reg, u32 *ranges, int naddr,
++                      int nsize, int nparentaddr, int buflen)
++{
++	int nrange = naddr + nparentaddr + nsize;
++	int i;
++
++	for (i = 0; i + nrange <= buflen; i += nrange) {
++		if (compare_reg(reg, ranges + i,
++		                ranges + i + naddr + nparentaddr,
++		                naddr, nsize))
++			return i;
++	}
 +
 +	return -1;
 +}
 +
-+static inline void *get_parent(const char *devp)
++/* Currently only generic buses without special encodings are supported.
++ * In particular, PCI is not supported.  Also, only the beginning of the
++ * reg block is tracked; size is ignored except in ranges.
++ */
++int xlate_reg(void *node, int res, unsigned long *addr,
++              unsigned long *size)
 +{
-+	return dt_ops.get_parent ? dt_ops.get_parent(devp) : NULL;
++	u32 last_addr[MAX_ADDR_CELLS];
++	u32 buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
++	void *parent;
++	u64 ret_addr, ret_size;
++	u32 naddr, nsize, prev_naddr, prev_nsize;
++	int buflen, offset;
++
++	parent = get_parent(node);
++	if (!parent)
++		return 0;
++
++	if (!get_reg_format(parent, &naddr, &nsize))
++		return 0;
++
++	if (nsize > 2)
++		return 0;
++
++	buflen = getprop(node, "reg", buf, sizeof(buf)) / 4;
++	offset = (naddr + nsize) * res;
++
++	if (buflen < offset + naddr + nsize)
++		return 0;
++
++	memcpy(last_addr, buf + offset, 4 * naddr);
++
++	ret_size = buf[offset + naddr];
++	if (nsize == 2) {
++		ret_size <<= 32;
++		ret_size |= buf[offset + naddr + 1];
++	}
++
++	while ((node = get_parent(node))) {
++		prev_naddr = naddr;
++		prev_nsize = nsize;
++
++		if (!get_reg_format(node, &naddr, &nsize))
++			return 0;
++
++		buflen = getprop(node, "ranges",
++		                        buf, sizeof(buf));
++		if (buflen < 0)
++			continue;
++		if (buflen > sizeof(buf))
++			return 0;
++
++		offset = find_range(last_addr, buf, prev_naddr,
++		                    prev_nsize, naddr, buflen / 4);
++
++		if (offset < 0)
++			return 0;
++
++		if (!sub_reg(last_addr, buf + offset, prev_naddr) ||
++		    !add_reg(buf + offset + prev_naddr, last_addr,
++		             naddr, prev_naddr))
++			return 0;
++
++		memcpy(last_addr, buf + offset + prev_naddr, 4 * naddr);
++	}
++
++	if (naddr > 2)
++		return 0;
++
++	ret_addr = last_addr[0];
++	if (naddr == 2) {
++		ret_addr <<= 32;
++		ret_addr |= last_addr[1];
++	}
++
++	if (sizeof(void *) == 4 &&
++	    (ret_addr >= 0x100000000ULL || ret_size > 0x100000000ULL ||
++	     ret_addr + ret_size > 0x100000000ULL))
++		return 0;
++
++	*addr = ret_addr;
++	if (size)
++		*size = ret_size;
++
++	return 1;
 +}
-+
-+static inline void *create_node(const void *parent, const char *name)
-+{
-+	return dt_ops.create_node ? dt_ops.create_node(parent, name) : NULL;
-+}
-+
-+
-+static inline void *find_prop(const void *prev, const char *propname,
-+	                      const char *propval, int proplen)
-+{
-+	if (dt_ops.find_prop)
-+		return dt_ops.find_prop(prev, propname, propval, proplen);
-+
-+	return NULL;
-+}
-+
-+static inline void *find_prop_str(const void *prev, const char *propname,
-+	                          const char *propval)
-+{
-+	return find_prop(prev, propname, propval, strlen(propval) + 1);
-+}
-+
- static inline void *malloc(u32 size)
+diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
+index 1ffe72e..cce7a11 100644
+--- a/arch/powerpc/boot/ns16550.c
++++ b/arch/powerpc/boot/ns16550.c
+@@ -55,10 +55,15 @@ static u8 ns16550_tstc(void)
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
  {
- 	return (platform_ops.malloc) ? platform_ops.malloc(size) : NULL;
+ 	int n;
++	unsigned long reg_phys;
+ 
+ 	n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
+-	if (n != sizeof(reg_base))
+-		return -1;
++	if (n != sizeof(reg_base)) {
++		if (!xlate_reg(devp, 0, &reg_phys, NULL))
++			return -1;
++
++		reg_base = (void *)reg_phys;
++	}
+ 
+ 	n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
+ 	if (n != sizeof(reg_shift))
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 522b7c8..8027060 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -75,6 +75,7 @@ int serial_console_init(void);
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp);
+ void *simple_alloc_init(char *base, u32 heap_size, u32 granularity,
+ 		u32 max_allocs);
++int xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
+ 
+ 
+ static inline void *finddevice(const char *name)
 -- 
 1.4.4
