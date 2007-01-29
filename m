@@ -1,27 +1,26 @@
-Return-Path: <akpm@osdl.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 45653DDDF5
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 17:57:03 +1100 (EST)
-Date: Sun, 28 Jan 2007 22:48:34 -0800
-From: Andrew Morton <akpm@osdl.org>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
-Message-Id: <20070128224834.37482553.akpm@osdl.org>
-In-Reply-To: <1170051963.6454.7.camel@Homer.simpson.net>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	<20070127174230.GN6017@stusta.de> <20070128133344.214070@gmx.net>
-	<1170051963.6454.7.camel@Homer.simpson.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: nickpiggin@yahoo.com.au, linux-ide@vger.kernel.org, petero2@telia.com,
-	linux-kernel@vger.kernel.org, livio@eecg.toronto.edu,
-	Adrian Bunk <bunk@stusta.de>, B.Zolnierkiewicz@elka.pw.edu.pl,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org,
-	gd@spherenet.de, cijoml@volny.cz, ttb@tentacle.dhs.org,
-	rml@novell.com, Uwe Bugla <uwe.bugla@gmx.de>,
-	torvalds@linux-foundation.org, alan@lxorguk.ukuu.org.uk
+Return-Path: <Tony.Li@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 47FF6DDDEE
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 18:18:05 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l0T7I2R0015789
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 00:18:02 -0700 (MST)
+Received: from zch01exm21.fsl.freescale.net (zch01exm21.ap.freescale.net
+	[10.192.129.205])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l0T7I0t5003993
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 01:18:01 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="utf-8"
+Subject: RE: [PATCH]Disable early console in default to avoid printing boot
+	message twice
+Date: Mon, 29 Jan 2007 15:17:58 +0800
+Message-ID: <995B09A8299C2C44B59866F6391D26356C2869@zch01exm21.fsl.freescale.net>
+In-Reply-To: <828f5d9417b425c0b17236bf9d748b05@penguinppc.org>
+From: "Li Tony-r64360" <Tony.Li@freescale.com>
+To: "Hollis Blanchard" <hollis@penguinppc.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,18 +30,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 29 Jan 2007 07:26:03 +0100
-Mike Galbraith <efault@gmx.de> wrote:
-
-> FWIW, I just tried it with 2.6.20-rc6, and can confirm.  Once nero is
-> run, the kernel never gives up retrying whatever command failed, so I
-> get...
-> 
-> [ 4362.972995] hdd: status error: status=0x58 { DriveReady SeekComplete
-> DataRequest }
-> [ 4362.981475] ide: failed opcode was: unknown
-> [ 4362.986183] hdd: drive not ready for command
-> 
-> endlessly.
-
-Do you have time to bisect it?
+SGkgaG9sbGlzLA0KDQpJIGRvIG5vdCBoYXZlIGFueSBwcGM2NCBib2FyZCBpbiBoYW5kIGFuZCBt
+dWNoIGV4cGVyaWVuY2Ugb24gcHBjNjQuDQpGb3IgcHBjNjQsIG1heWJlIHRyeSB0aGUgbW9kaWZp
+Y2F0aW9uIG9uIGFyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfNjQuYyBhcyBJIGRvIHRvIGFyY2gv
+cG93ZXJwYy9rZXJuZWwvc2V0dXBfMzIuYy4NCkVtYnJhY2luZyB0aGUgInJlZ2lzdGVyX2Vhcmx5
+X3VkYmdfY29uc29sZSgpIiB3aXRoICIjaWZkZWYgQ09ORklHX0VBUkxZX1BSSU5USyIgbWFjcm8u
+DQpBZnRlciBhbGwsIHRoZSBlYXJseSBjb25zb2xlIG1lY2hhbmlzbSBpcyB0aGUgc2FtZSBmb3Ig
+cHBjMzIgYW5kIHBwYzY0Lg0KQXJlIHlvdSBjb252ZW5pZW50IHRvIGRvIGEgdGVzdD8NCklmIGl0
+IGlzIHdvcmssIEkgbGlrZSB0byBpbmNsdWRlIHBwYzY0IGludG8gdGhpcyBwYXRjaC4NCg0KVG9u
+eSBMaQ0KDQotLS0tLU9yaWdpbmFsIE1lc3NhZ2UtLS0tLQ0KRnJvbTogSG9sbGlzIEJsYW5jaGFy
+ZCBbbWFpbHRvOmhvbGxpc0BwZW5ndWlucHBjLm9yZ10gDQpTZW50OiAyMDA35bm0MeaciDI55pel
+IDc6MzQNClRvOiBMaSBUb255LXI2NDM2MA0KQ2M6IGxpbnV4cHBjLWRldkBvemxhYnMub3JnDQpT
+dWJqZWN0OiBSZTogW1BBVENIXURpc2FibGUgZWFybHkgY29uc29sZSBpbiBkZWZhdWx0IHRvIGF2
+b2lkIHByaW50aW5nIGJvb3QgbWVzc2FnZSB0d2ljZQ0KDQpJdCBpcyBhbHNvIHZlcnkgYW5ub3lp
+bmcgdGhhdCB0aGUgZWFybHkgYm9vdCBtZXNzYWdlcyBhcmUgcHJpbnRlZCB0d2ljZSBvbiBwcGM2
+NC4gQ2FuIHlvdSBpbmNsdWRlIHBwYzY0IGluIHRoaXMgcGF0Y2g/DQoNCi1Ib2xsaXMNCg0KT24g
+SmFuIDI2LCAyMDA3LCBhdCAyOjAwIEFNLCBMaSBUb255LXI2NDM2MCB3cm90ZToNCg0KPiBUaGUg
+ZWFybHkgY29uc29sZSBpcyBkZWZhdWx0IGVuYWJsZSBpbiBwb3dlcnBjIDMyIG5vdy4NCj4gVGhp
+cyBjYXVzZSB0aGUgYm9vdCBtZXNzYWdlIGZyb20gYmVnaW5uaW5nIHRvIGNvbnNvbGVfaW5pdCgp
+IHByaW50ZWQgDQo+IHR3aWNlLg0KPiBUaGUgZWFybHkgY29uc29sZSBpcyB1c2VmdWwgb25seSB3
+aGVuIHRoZSBrZXJuZWwgZGVhZCBiZWZvcmUgDQo+IGNvbnNvbGVfaW5pdC4NCj4gVGhlIHBhdGNo
+wqBtYWtlIHRoZSBlYXJseSBjb25zb2xlIG9wdGlvbmFsIGFuZCBkaXNhYmxlIHRoZSBlYXJseSAN
+Cj4gY29uc29sZSBpbiBkZWZhdWx0Lg0KPiBUaGUgcGF0Y2ggaGFzIGJlZW4gdGVzdGVkIG9uIG1w
+YzgzMTNlcmRiIGJvYXJkDQo+IMKgDQo+IFNpZ25lZC1vZmYtYnk6IExpwqBUb255IDx0b255Lmxp
+QGZyZWVzY2FsZS5jb20+DQo+IC0tLQ0KPiDCoGFyY2gvcG93ZXJwYy9LY29uZmlnwqDCoMKgwqDC
+oMKgwqDCoMKgwqAgfMKgwqDCoCAyICstDQo+IMKgYXJjaC9wb3dlcnBjL2tlcm5lbC9zZXR1cF8z
+Mi5jIHzCoMKgwqAgMiArKw0KPiDCoDIgZmlsZXMgY2hhbmdlZCwgMyBpbnNlcnRpb25zKCspLCAx
+IGRlbGV0aW9ucygtKQ0KPiDCoA0KPiBkaWZmIC0tZ2l0IGEvYXJjaC9wb3dlcnBjL0tjb25maWcg
+Yi9hcmNoL3Bvd2VycGMvS2NvbmZpZyBpbmRleCANCj4gMDY3M2RiZS4uMGMxODk1MSAxMDA2NDQN
+Cj4gLS0tIGEvYXJjaC9wb3dlcnBjL0tjb25maWcNCj4gKysrIGIvYXJjaC9wb3dlcnBjL0tjb25m
+aWcNCj4gQEAgLTU5LDcgKzU5LDcgQEAgY29uZmlnIFBQQw0KPiDCoA0KPiDCoGNvbmZpZyBFQVJM
+WV9QUklOVEsNCj4gwqDCoGJvb2wNCj4gLcKgZGVmYXVsdCB5DQo+ICvCoGRlZmF1bHQgdA0KPiDC
+oA0KPiDCoGNvbmZpZyBDT01QQVQNCj4gwqDCoGJvb2wNCj4gZGlmZiAtLWdpdCBhL2FyY2gvcG93
+ZXJwYy9rZXJuZWwvc2V0dXBfMzIuYyANCj4gYi9hcmNoL3Bvd2VycGMva2VybmVsL3NldHVwXzMy
+LmMgaW5kZXggYTRjMjk2NC4uNzFlYjMyMCAxMDA2NDQNCj4gLS0tIGEvYXJjaC9wb3dlcnBjL2tl
+cm5lbC9zZXR1cF8zMi5jDQo+ICsrKyBiL2FyY2gvcG93ZXJwYy9rZXJuZWwvc2V0dXBfMzIuYw0K
+PiBAQCAtMjQyLDggKzI0MiwxMCBAQCB2b2lkIF9faW5pdCBzZXR1cF9hcmNoKGNoYXIgKipjbWRs
+aW5lX3ApDQo+IMKgDQo+IMKgwqBzbXBfc2V0dXBfY3B1X21hcHMoKTsNCj4gwqANCj4gKyNpZmRl
+ZiBDT05GSUdfRUFSTFlfUFJJTlRLDQo+IMKgwqAvKiBSZWdpc3RlciBlYXJseSBjb25zb2xlICov
+DQo+IMKgwqByZWdpc3Rlcl9lYXJseV91ZGJnX2NvbnNvbGUoKTsNCj4gKyNlbmRpZg0KPiDCoA0K
+PiDCoMKgeG1vbl9zZXR1cCgpOw0KPiDCoA0KPiAtLQ0KPiAxLjQuMg0KPiDCoA0KPiDCoF9fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fDQo+IExpbnV4cHBjLWRl
+diBtYWlsaW5nIGxpc3QNCj4gTGludXhwcGMtZGV2QG96bGFicy5vcmcNCj4gaHR0cHM6Ly9vemxh
+YnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZGV2DQo=
