@@ -1,25 +1,18 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound8-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7C49EDE031
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 06:24:58 +1100 (EST)
-Message-ID: <45BE4A02.3070206@am.sony.com>
-Date: Mon, 29 Jan 2007 11:24:50 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id D4CA4DE046
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 06:32:21 +1100 (EST)
+Message-ID: <45BE4BC0.5050402@freescale.com>
+Date: Mon, 29 Jan 2007 13:32:16 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>	<20070126031236.GG18537@lst.de>	<Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
-	<20070129161502.GA32313@lst.de>
-In-Reply-To: <20070129161502.GA32313@lst.de>
-Content-Type: text/plain; charset=us-ascii
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>,
-	Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add support for the MPC8349E-mITX-GP
+References: <11691560171514-git-send-email-timur@freescale.com>	<309FC1DE-9724-4172-BB13-D301D4A783F8@kernel.crashing.org>	<45BA1952.80206@freescale.com>	<EC5E5BA9-F865-40AC-8CA8-9B152AAC0908@kernel.crashing.org>	<45BE2276.5010303@freescale.com>
+	<2B16AB83-7726-4C84-B48E-254E8FEF734C@kernel.crashing.org>
+In-Reply-To: <2B16AB83-7726-4C84-B48E-254E8FEF734C@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,10 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig wrote:
->> I guess you want us to do the same for the virtual uart, i.e. let PS3_PS3AV and
->> PS3_SYS_MANAGER select PS3_VUART?
-> 
-> Yes, that probably makes sense aswell.
+Kumar Gala wrote:
 
-I'll start work on sys-manager soon, so I'll set this up.
+> Well, I'd suggest trying it again based on the latest ITX defconfing  
+> and see what happens.  If you need to update both defconfigs to make  
+> them consistent I'm fine with that.  Just figured they should be  
+> insync (except the removed functionality for ITX-GP).
+
+Ok, I'll make new patch that updates the ITX config file and makes an ITX-GP 
+config file and keeps the diffs to a minimum.  I'll submit it when the window 
+for 2.6.21 opens.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
