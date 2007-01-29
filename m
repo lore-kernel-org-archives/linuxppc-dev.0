@@ -1,20 +1,25 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17854.32798.804960.609192@cargo.ozlabs.ibm.com>
-Date: Tue, 30 Jan 2007 10:15:42 +1100
+Message-ID: <17854.33603.655565.110084@cargo.ozlabs.ibm.com>
+Date: Tue, 30 Jan 2007 10:29:07 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] Add support for the MPC8349E-mITX-GP
-In-Reply-To: <45BE4BC0.5050402@freescale.com>
-References: <11691560171514-git-send-email-timur@freescale.com>
-	<309FC1DE-9724-4172-BB13-D301D4A783F8@kernel.crashing.org>
-	<45BA1952.80206@freescale.com>
-	<EC5E5BA9-F865-40AC-8CA8-9B152AAC0908@kernel.crashing.org>
-	<45BE2276.5010303@freescale.com>
-	<2B16AB83-7726-4C84-B48E-254E8FEF734C@kernel.crashing.org>
-	<45BE4BC0.5050402@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 0/6] MSI portability cleanups
+In-Reply-To: <1170065487.19887.91.camel@concordia.ozlabs.ibm.com>
+References: <m1hcuaohqj.fsf@ebiederm.dsl.xmission.com>
+	<20070128.153707.30184351.davem@davemloft.net>
+	<m1tzyammv0.fsf@ebiederm.dsl.xmission.com>
+	<20070128.212554.23015561.davem@davemloft.net>
+	<1170050737.26655.233.camel@localhost.localdomain>
+	<m1sldukxwm.fsf@ebiederm.dsl.xmission.com>
+	<1170065487.19887.91.camel@concordia.ozlabs.ibm.com>
+Cc: tony.luck@intel.com, grundler@parisc-linux.org, jeff@garzik.org,
+	David Miller <davem@davemloft.net>, greg@kroah.com,
+	linux-kernel@vger.kernel.org, kyle@parisc-linux.org,
+	linuxppc-dev@ozlabs.org, "Eric W. Biederman" <ebiederm@xmission.com>,
+	shaohua.li@intel.com, linux-pci@atrey.karlin.mff.cuni.cz,
+	mingo@elte.hu, brice@myri.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,14 +29,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi writes:
+Michael Ellerman writes:
 
-> Ok, I'll make new patch that updates the ITX config file and makes an ITX-GP 
-> config file and keeps the diffs to a minimum.  I'll submit it when the window 
-> for 2.6.21 opens.
+> You can read config space, but it's not clear to me if the HV is allowed
+> to filter it and hide things. It's also possible that the device
 
-That window is the window for me to get stuff to Linus, not the window
-for you to get stuff to Kumar.  Submit it as soon as it's ready,
-please.
+It appears that the HV does not prevent us from reading or writing any
+config space registers for functions that are assigned to us.
+
+> supports MSI, but for some reason the HV doesn't allow it on that device
+> etc. so you really have to ask the HV if it's enabled. So pci_find_cap()
+> shouldn't crash or anything, but it may lie to you.
+
+It's possible that the device can do MSI(X), but that using MSI(X)
+requires other platform resources (e.g. interrupt source numbers) and
+there are none free.  I believe the platform guarantees a minimum
+number of MSI(X) interrupts per function, but a pci_enable_msix() call
+may not be able to give the driver as many MSI-X interrupts as it is
+requesting even if the function can handle that many.
 
 Paul.
