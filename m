@@ -1,29 +1,20 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 84792DDDEE
-	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 18:20:01 +1100 (EST)
-Date: Sun, 28 Jan 2007 23:13:09 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Mike Galbraith <efault@gmx.de>
-Subject: Re: 2.6.20-rc6: known unfixed regressions (v2) (part 2)
-In-Reply-To: <1170054495.6521.1.camel@Homer.simpson.net>
-Message-ID: <Pine.LNX.4.64.0701282310120.3611@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0701241847360.25027@woody.linux-foundation.org>
-	<20070127174230.GN6017@stusta.de> <20070128133344.214070@gmx.net>
-	<1170051963.6454.7.camel@Homer.simpson.net>
-	<20070128224834.37482553.akpm@osdl.org>
-	<1170054495.6521.1.camel@Homer.simpson.net>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 8F882DDFFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 06:13:50 +1100 (EST)
+Message-ID: <45BE476A.3010407@am.sony.com>
+Date: Mon, 29 Jan 2007 11:13:46 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, nickpiggin@yahoo.com.au,
-	linux-ide@vger.kernel.org, petero2@telia.com,
-	linux-kernel@vger.kernel.org, livio@eecg.toronto.edu,
-	Adrian Bunk <bunk@stusta.de>, B.Zolnierkiewicz@elka.pw.edu.pl,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org,
-	gd@spherenet.de, cijoml@volny.cz, ttb@tentacle.dhs.org,
-	rml@novell.com, Uwe Bugla <uwe.bugla@gmx.de>, alan@lxorguk.ukuu.org.uk
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 13/16] ps3: get firmware version
+References: <45BAC225.7020209@am.sony.com> <200701271230.06534.arnd@arndb.de>
+In-Reply-To: <200701271230.06534.arnd@arndb.de>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,28 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-On Mon, 29 Jan 2007, Mike Galbraith wrote:
+Arnd Bergmann wrote:
+>> Changed from a struct to a union and got rid of the output to /proc/cpuinfo.
+>> I'll look into arranging something in /proc/device-tree that userspace utils
+>> can query.
 > 
-> Unfortunately, I'm git impaired.  I am rummaging as we speak though.
+> What's the current plan for the creating the device tree anyway? I think
+> this should be part of the boot wrapper for the kernel in the ps3 flash,
+> which can write the version into the flattened device tree. The second
+> kernel then gets a copy of that through kboot.
 
-Ok, I'm personally heading to bed, but it rally should be as simple as
+Yes, that's hopefully ppossible, start with the static tree from ps3.dts then
+add some properties in the first stage (romboot) wrapper entry.  kboot then
+passes that to the second stage wrapper entry, which passes it to the
+second stage kernel.  I suppose the second stage wrapper could do some
+processing on it if needed.  Backward compatibility with the 2.6.16 bootloader
+will probably need that.
 
- - get the git tree in the first place
- - do
+To make it work, I need to arrange to do 64 bit HV calls from the 32 bit
+wrapper.  I'm not yet entirely sure how to set that up.  Any suggestions
+would be welcome.
 
-	git bisect good v2.6.19
-	git bisect bad v2.6.20-rc2
-	.. it will pick a point for you to try ..
-	.. compile, boot, test ..
-
-	"git bisect {good|bad}" depending on results
-
- - until (found)
-
-(Of course, you should check that -rc2 really is bad to make sure. I think 
-that's what Uwe reported, though. And I don't think we've done anything 
-after -rc2 that could impact this, so I don't doubt it).
-
-		Linus
+-Geoff 
