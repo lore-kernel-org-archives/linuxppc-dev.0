@@ -1,22 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9EA70DE041
-	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 06:56:29 +1100 (EST)
-In-Reply-To: <45BE4BC0.5050402@freescale.com>
-References: <11691560171514-git-send-email-timur@freescale.com>	<309FC1DE-9724-4172-BB13-D301D4A783F8@kernel.crashing.org>	<45BA1952.80206@freescale.com>	<EC5E5BA9-F865-40AC-8CA8-9B152AAC0908@kernel.crashing.org>	<45BE2276.5010303@freescale.com>
-	<2B16AB83-7726-4C84-B48E-254E8FEF734C@kernel.crashing.org>
-	<45BE4BC0.5050402@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5899C4E3-6AFE-4B04-AF4E-BF0AA382AA71@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add support for the MPC8349E-mITX-GP
-Date: Mon, 29 Jan 2007 13:55:26 -0600
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <b07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 0503CDE05F
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 07:11:55 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l0TKBsX7003498
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 13:11:54 -0700 (MST)
+Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
+	[10.82.65.62])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0TKBrsB014667
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:11:53 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
+	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
+	l0TJs3RR014696
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 13:54:03 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 5F31C4B92B
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 14:11:52 -0600 (CST)
+Received: (from b07421@localhost)
+	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
+	l0TKBqYq013496
+	for linuxppc-dev@ozlabs.org; Mon, 29 Jan 2007 14:11:52 -0600
+Date: Mon, 29 Jan 2007 14:11:52 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 01/18] bootwrapper: Add stddef.h to ops.h
+Message-ID: <20070129201152.GA13485@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +37,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ops.h references NULL, so include stddef.h, so files including ops.h
+don't have to.
 
-On Jan 29, 2007, at 1:32 PM, Timur Tabi wrote:
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/ops.h |    1 +
+ 1 files changed, 1 insertions(+), 0 deletions(-)
 
-> Kumar Gala wrote:
->
->> Well, I'd suggest trying it again based on the latest ITX  
->> defconfing  and see what happens.  If you need to update both  
->> defconfigs to make  them consistent I'm fine with that.  Just  
->> figured they should be  insync (except the removed functionality  
->> for ITX-GP).
->
-> Ok, I'll make new patch that updates the ITX config file and makes  
-> an ITX-GP config file and keeps the diffs to a minimum.  I'll  
-> submit it when the window for 2.6.21 opens.
-
-Please don't wait for the window.  I've already got a branch for 83xx  
-2.6.21 patches going.
-
-- k
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 8abb651..4ac7b02 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -11,6 +11,7 @@
+ #ifndef _PPC_BOOT_OPS_H_
+ #define _PPC_BOOT_OPS_H_
+ 
++#include <stddef.h>
+ #include "types.h"
+ 
+ #define	COMMAND_LINE_SIZE	512
+-- 
+1.4.4
