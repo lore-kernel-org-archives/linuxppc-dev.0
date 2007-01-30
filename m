@@ -1,19 +1,17 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 762B5DE097
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 09:42:22 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: options for root file system for MPC8548
-Date: Tue, 30 Jan 2007 17:42:08 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90106443362@EMPBEDEX.empirix.com>
-In-Reply-To: <2B407BB2-BBA6-4B13-BF34-DABFB3F8ADEF@kernel.crashing.org>
-References: <BD261180E6D35F4D9D32F3E44FD3D901064432D9@EMPBEDEX.empirix.com>
-	<2B407BB2-BBA6-4B13-BF34-DABFB3F8ADEF@kernel.crashing.org>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <cel@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH 1/4] Add support to OProfile for
+	profiling Cell BE SPUs -- update
+From: Carl Love <cel@us.ibm.com>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20070130103924.GA14571@lst.de>
+References: <45BE4ED0.5030808@us.ibm.com> <45BE4F2A.5040702@us.ibm.com>
+	<20070130103924.GA14571@lst.de>
+Content-Type: text/plain
+Date: Tue, 30 Jan 2007 14:49:57 -0800
+Message-Id: <1170197398.5235.12.camel@dyn9047021078.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-You are quick with the questions...:-)
+Christoph:
 
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-Subject: Re: options for root file system for MPC8548
+In our earlier work on the PPU profiling patch, Benjamin Herrenschmidt
+said that we should remove macros that are only used once and just put
+the actual code in.  That is why the macros were removed. 
+
+            Carl Love
 
 
-On Jan 30, 2007, at 4:19 PM, Morrison, Tom wrote:
-<snip intro>
-> We do NOT want to use LTIB (supplied by Freescale) to create one
-> (for multiple reasons - including the same as ELDK).
-
-Can you elaborate on what issues you have with ELDK/LTIB, is it just =20
-package support?  If so it might be useful for the developers to know =20
-what packages you're interested in.  Or if there are other issues =20
-with them.
-
-LTIB uses busybox and in general seems very limited in its support
-(as well as currently backdated in terms of kernel support).=20
-ELDK has an incredible set of packages that it supports, but=20
-things like many of the scripting languages support (e.g.: PERL),
-additional security libraries(e.g.: ipsec), general network=20
-libraries (e.g.: libpcap), and some network utilities (e.g.: wget).
-
-Individually, none of these are serious, but altogether it's a lot
-to manage - if I had 1 stop shopping, I might go there instead of=20
-with the ever incredible ELDK!
-
-<snip rest>
+On Tue, 2007-01-30 at 11:39 +0100, Christoph Hellwig wrote:
+> On Mon, Jan 29, 2007 at 01:46:50PM -0600, Maynard Johnson wrote:
+> > 
+> > 
+> 
+> I don't think the macro removal is helpful, getting rid of the names
+> makes the code less readable to me.
+> _______________________________________________
+> cbe-oss-dev mailing list
+> cbe-oss-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/cbe-oss-dev
