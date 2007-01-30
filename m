@@ -1,18 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 6B82DDDFDE
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 07:25:50 +1100 (EST)
-Message-ID: <45BFA9CA.3010002@freescale.com>
-Date: Tue, 30 Jan 2007 14:25:46 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound7-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id F3E4CDDFE4
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 07:28:18 +1100 (EST)
+Message-ID: <45BFAA59.1030306@am.sony.com>
+Date: Tue, 30 Jan 2007 12:28:09 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 10/18] bootwrapper: Add ft_find_device_rel().
-References: <20070129201208.GJ13485@ld0162-tx32.am.freescale.net>
-	<EBA70DCA-527B-4804-848D-11EB56E907F9@kernel.crashing.org>
-In-Reply-To: <EBA70DCA-527B-4804-848D-11EB56E907F9@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 1/10] ps3: Add shutdown to virtual uart port driver
+	framework
+References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701301757280.29487@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0701301757280.29487@pademelon.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +29,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> +void *ft_find_device_rel(struct ft_cxt *cxt, const void *top,
->> +                         const char *srch_path)
->> +{
->> +    char *node;
->> +
->> +    node = ft_node_ph2node(cxt, top);
+Geert Uytterhoeven wrote:
+> PS3: Add a shutdown method to the PS3's virtual uart port driver framework
 > 
-> 
-> Huh -- are phandles a pointer?  Why not just a u32?
+> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-I can't speak for whoever designed the interface, but I'd rather keep it 
-as a pointer -- it provides more flexibility to the implementation.  For 
-example, if the device tree were to be maintained as a normal 
-pointer-based tree, and flattened only when finalize() is called, then a 
-pointer would be a natural handle to export (which wouldn't fit into a 
-u32 on 64-bit platforms, unless you make assumptions about where 
-bootwrapper data is located).
-
-The downside, of course, is that it's easier to get phandles and 
-internal pointers mixed up.
-
--Scott
+Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
