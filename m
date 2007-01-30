@@ -1,19 +1,25 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org,
- maynardj@us.ibm.com
-Subject: Re: [RFC,
-	PATCH 0/4] Add support to OProfile for profiling Cell BE SPUs --
-	update
-Date: Tue, 30 Jan 2007 09:37:07 +0100
-References: <45BE4ED0.5030808@us.ibm.com>
-In-Reply-To: <45BE4ED0.5030808@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701300937.07335.arnd@arndb.de>
-Cc: cbe-oss-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D0686DDF44
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 20:11:12 +1100 (EST)
+Subject: Re: [PATCH 5/9] ps3: Preallocate bootmem memory for ps3fb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.62.0701300934270.4728@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
+	<1170124157.19887.116.camel@concordia.ozlabs.ibm.com>
+	<Pine.LNX.4.62.0701300914580.4728@pademelon.sonytel.be>
+	<200701300927.52087.arnd@arndb.de>
+	<Pine.LNX.4.62.0701300934270.4728@pademelon.sonytel.be>
+Content-Type: text/plain
+Date: Tue, 30 Jan 2007 20:08:36 +1100
+Message-Id: <1170148116.26655.328.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: James Simmons <jsimmons@infradead.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +29,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 29 January 2007 20:45, Maynard Johnson wrote:
-> On December 14, 2006, I posted a patch that added support to the=20
-> OProfile kernel driver for profiling Cell SPUs. =A0There have been some=20
-> changes/fixes to this patch since the original posting (including=20
-> forward porting from 2.6.18-based kernel to 2.6.20-rc1), so I am=20
-> reposting the patch for review now. =A0This patch relies upon the=20
-> following patches that have not been accepted yet:
-> =A0 =A01. oprofile cleanup patch (submitted on Nov 27)
-> =A0 =A02. Fix for PPU profiling (not submitted yet, since it depends on #=
-1)
-> =A0 =A03. SPU task notification patch (last submitted on Jan 26)
->=20
+On Tue, 2007-01-30 at 09:36 +0100, Geert Uytterhoeven wrote:
+> On Tue, 30 Jan 2007, Arnd Bergmann wrote:
+> > On Tuesday 30 January 2007 09:16, Geert Uytterhoeven wrote:
+> > > We have a similar problem with the storage driver, which needs a block of 256
+> > > KiB of contiguous memory.
+> > 
+> > I guess at least that one should be solveable. If the 256kb is only
+> > internal flash access, it is should not be part of the storage driver
+> > but of whatever else is used to drive this.
+> 
+> If we convert the FLASH part to a character device driver, the 256 KiB will be
+> internal to the character device driver.
+> 
+> > Assuming the module gets loaded shortly after boot, you can still allocate
+> > 256kb practically always, using get_free_pages().
+> 
+> I'm afraid that assumption is usually false, as you only need to access the
+> FLASH when you want to change boot flags or update the boot loader.
 
-Sorry for taking so much time before reviewing this. I knew it would
-be a long patch that requires time to go through in detail (though
-certainly not nearly as much time as it took you to write it), so I
-kept procrastinating.
+At the same time, flash doesn't have to be fast... can't we use a
+smaller bounce buffer (a page) and divide the transfer ?
 
-	Arnd <><
+Ben.
