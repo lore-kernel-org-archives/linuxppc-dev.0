@@ -1,19 +1,19 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 094ECDE00C
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 06:57:55 +1100 (EST)
-In-Reply-To: <20070129201303.GM13485@ld0162-tx32.am.freescale.net>
-References: <20070129201303.GM13485@ld0162-tx32.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 825D8DDE9F
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 07:02:31 +1100 (EST)
+In-Reply-To: <20070129201307.GP13485@ld0162-tx32.am.freescale.net>
+References: <20070129201307.GP13485@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4490E049-CDB0-4F75-AE40-8860D3A8FFAF@kernel.crashing.org>
+Message-Id: <E87F75BF-81BC-4440-AFFD-10CD9DF783C7@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 13/18] bootwrapper: Add ft_find_prop().
-Date: Tue, 30 Jan 2007 20:57:45 +0100
+Subject: Re: [PATCH 16/18] bootwrapper: Add dt_ops methods.
+Date: Tue, 30 Jan 2007 21:01:17 +0100
 To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,10 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> ft_find_prop() finds nodes with the specified property/value pair.
+> +static void *ft_finddevice_rel(const void *phandle, const char *name)
+> +{
+> +	return ft_find_device_rel(&cxt, phandle, name);
+> +}
 
-Please invent a better name for this (find_prop_with_name_and_value()
-or such?)
+Seeing all these...  wouldn't it be better to make "cxt"
+an implicit parameter to all the ft_ functions?  It's not
+like you'll ever be dealing with more than one tree ;-)
 
 
 Segher
