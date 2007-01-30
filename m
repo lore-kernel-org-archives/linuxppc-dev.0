@@ -1,22 +1,16 @@
-Return-Path: <sunil.ayyapureddy@semindia.in>
-Received: from almach.lunarpages.com (almach.lunarpages.com [209.200.240.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 54236DDF27
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id DC059DDF8F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Jan 2007 00:20:50 +1100 (EST)
-Received: from [164.164.160.11] (helo=SunilA)
-	by almach.lunarpages.com with esmtpa (Exim 4.63)
-	(envelope-from <sunil.ayyapureddy@semindia.in>) id 1HBsCD-0007oB-4r
-	for linuxppc-embedded@ozlabs.org; Tue, 30 Jan 2007 04:34:47 -0800
-From: "Sunil A" <sunil.ayyapureddy@semindia.in>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Make too old---How to upgrade ???
-Date: Tue, 30 Jan 2007 18:00:53 +0530
-Message-ID: <KLECJOHKIJNMEKLBDEGEGENNCDAA.sunil.ayyapureddy@semindia.in>
+	Tue, 30 Jan 2007 19:43:01 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_00D9_01C74498.95732EA0"
+	boundary="----_=_NextPart_001_01C74448.F26A2A03"
+Subject: cpm_uart: WARNING: no UART devices found
+Date: Tue, 30 Jan 2007 09:30:49 +0100
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E5F5EB8@aquib01a>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,160 +23,54 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------=_NextPart_000_00D9_01C74498.95732EA0
+------_=_NextPart_001_01C74448.F26A2A03
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: 8bit
-
-Hi,All
-Iam using the buildroot utility and during “make” I got an error message,
-“Your make is too old 3.79.1. Go get at least 3.80”.
-How do I upgrade the “make” of this buildroot package exclusively, without
-tampering the OS files. Please let me know the solution.
-
-
-Thanks.
-
-
-
-------=_NextPart_000_00D9_01C74498.95732EA0
-Content-Type: text/html;
-	charset="iso-8859-1"
+	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
+My board has an MPC880 and it is named TL880 with a linux 2.6.19, I
+copied kernel configurations from the very similar board mpc885ads.
+I filled in platform data in file TL880_setup.c but I see that function
+TL880_fixup_uart_pdata is never called and, as a consequence, I see the
+message cpm_uart: WARNING: no UART devices found. Also I receive
+message: IP-Config: No network devices available.=20
+=20
+=20
+Bye,
+Antonio.
 
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<meta name=3DProgId content=3DWord.Document>
-<meta name=3DGenerator content=3D"Microsoft Word 9">
-<meta name=3DOriginator content=3D"Microsoft Word 9">
-<link rel=3DFile-List href=3D"cid:filelist.xml@01C74498.92CCC6C0">
-<!--[if gte mso 9]><xml>
- <o:OfficeDocumentSettings>
-  <o:DoNotRelyOnCSS/>
- </o:OfficeDocumentSettings>
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <w:WordDocument>
-  <w:View>Normal</w:View>
-  <w:Zoom>0</w:Zoom>
-  <w:DocumentKind>DocumentEmail</w:DocumentKind>
-  <w:EnvelopeVis/>
- </w:WordDocument>
-</xml><![endif]-->
-<style>
-<!--
- /* Style Definitions */
-p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{mso-style-parent:"";
-	margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"Times New Roman";
-	mso-bidi-font-family:Arial;
-	color:blue;}
-p.MsoAutoSig, li.MsoAutoSig, div.MsoAutoSig
-	{margin:0in;
-	margin-bottom:.0001pt;
-	mso-pagination:widow-orphan;
-	font-size:12.0pt;
-	font-family:"Times New Roman";
-	mso-fareast-font-family:"Times New Roman";
-	mso-bidi-font-family:Arial;
-	color:blue;}
-span.EmailStyle15
-	{mso-style-type:personal-compose;
-	mso-ansi-font-size:12.0pt;
-	mso-ascii-font-family:"Times New Roman";
-	mso-hansi-font-family:"Times New Roman";
-	mso-bidi-font-family:Arial;
-	color:blue;}
-span.EmailStyle17
-	{mso-style-type:personal;
-	mso-ansi-font-size:12.0pt;
-	mso-ascii-font-family:"Times New Roman";
-	mso-hansi-font-family:"Times New Roman";
-	mso-bidi-font-family:Arial;
-	color:blue;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;
-	mso-header-margin:.5in;
-	mso-footer-margin:.5in;
-	mso-paper-source:0;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-</head>
+------_=_NextPart_001_01C74448.F26A2A03
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-<body lang=3DEN-US style=3D'tab-interval:.5in'>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D009462608-30012007>My =
+board has an=20
+MPC880 and it is named TL880 with a linux 2.6.19, I copied kernel =
+configurations=20
+from the very similar board mpc885ads.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D009462608-30012007>I =
+filled in platform=20
+data in file TL880_setup.c but I see that function =
+TL880_fixup_uart_pdata is=20
+never called and, as a consequence, I see the message cpm_uart: WARNING: =
+no UART=20
+devices found. Also I receive message: IP-Config: No network devices =
+available.=20
+</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D009462608-30012007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D009462608-30012007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D009462608-30012007>Bye,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D009462608-30012007>Antonio.</SPAN></FONT></DIV></BODY></HTML>
 
-<div class=3DSection1>
-
-<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
-color=3Dblue
-face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New =
-Roman"'>Hi,All<o:p></o:p></span></font></span></p>
-
-<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
-color=3Dblue
-face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New Roman"'>Iam
-using the buildroot utility and during &#8220;make&#8221; I got an error =
-message, <b><span
-style=3D'font-weight:bold'>&#8220;Your make is too old 3.79.1. Go get at =
-least 3.80&#8221;.</span></b><o:p></o:p></span></font></span></p>
-
-<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
-color=3Dblue
-face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New Roman"'>How
-do I upgrade the &#8220;make&#8221; of this buildroot package <b><span =
-style=3D'font-weight:
-bold'>exclusively</span></b>, without tampering the OS files. Please let =
-me
-know the solution.<o:p></o:p></span></font></span></p>
-
-<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
-color=3Dblue
-face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New =
-Roman"'>&nbsp;<o:p></o:p></span></font></span></p>
-
-<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
-color=3Dblue
-face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New Roman"'><![if =
-!supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></font></span></p>
-
-<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
-color=3Dblue
-face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New =
-Roman"'>Thanks.<o:p></o:p></span></font></span></p>
-
-<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
-color=3Dblue
-face=3D"Times New Roman"><span =
-style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New =
-Roman"'>&nbsp;<o:p></o:p></span></font></span></p>
-
-<p class=3DMsoNormal><span class=3DEmailStyle15><font size=3D3 =
-color=3Dblue
-face=3D"Times New Roman"><span style=3D'font-size:12.0pt'><![if =
-!supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></font></span></p>
-
-</div>
-
-</body>
-
-</html>
-
-------=_NextPart_000_00D9_01C74498.95732EA0--
+------_=_NextPart_001_01C74448.F26A2A03--
