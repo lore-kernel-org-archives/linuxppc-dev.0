@@ -1,21 +1,18 @@
-Return-Path: <ntl@pobox.com>
-Received: from rune.pobox.com (rune.pobox.com [208.210.124.79])
-	by ozlabs.org (Postfix) with ESMTP id 70C1ADE05C
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 07:16:55 +1100 (EST)
-Date: Tue, 30 Jan 2007 14:16:42 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 1/2] rename pSeries nvram functions
-Message-ID: <20070130201642.GJ9045@localdomain>
-References: <20070125001628.GH16486@localdomain>
-	<1169686011.24996.18.camel@localhost.localdomain>
-	<1169686046.24996.20.camel@localhost.localdomain>
-	<20070125010010.GM16486@localdomain>
-	<1169696480.24996.40.camel@localhost.localdomain>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 6B82DDDFDE
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 07:25:50 +1100 (EST)
+Message-ID: <45BFA9CA.3010002@freescale.com>
+Date: Tue, 30 Jan 2007 14:25:46 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1169696480.24996.40.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 10/18] bootwrapper: Add ft_find_device_rel().
+References: <20070129201208.GJ13485@ld0162-tx32.am.freescale.net>
+	<EBA70DCA-527B-4804-848D-11EB56E907F9@kernel.crashing.org>
+In-Reply-To: <EBA70DCA-527B-4804-848D-11EB56E907F9@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
-> On Wed, 2007-01-24 at 19:00 -0600, Nathan Lynch wrote:
-> > Benjamin Herrenschmidt wrote:
-> > > On Thu, 2007-01-25 at 11:46 +1100, Benjamin Herrenschmidt wrote:
-> > > > On Wed, 2007-01-24 at 18:16 -0600, Nathan Lynch wrote:
-> > > > > The nvram support in the pSeries platform code is not really tied to
-> > > > > the pSeries platform.  This code is useful on other platforms that
-> > > > > have the necessary firmware support.
-> > > > > 
-> > > > > Change the "pSeries" prefixes on the nvram function names to "rtas" in
-> > > > > preparation for moving this code to a platform-neutral location.
-> > > > > 
-> > > > > Signed-off-by: Nathan Lynch <ntl@pobox.com>
-> > > > 
-> > > > Please, move them out of platform/pseries while at it, so you can also
-> > > > merge with chrp nvram.c which is pretty much the same.
-> > > 
-> > > Oh, missed that second patch of yours... good :-) Now we should see if
-> > > we can fixup chrp too..
-> > 
-> > I'll look into it, though I might be hard-pressed to find a chrp
-> > machine with which to test.
+Segher Boessenkool wrote:
+>> +void *ft_find_device_rel(struct ft_cxt *cxt, const void *top,
+>> +                         const char *srch_path)
+>> +{
+>> +    char *node;
+>> +
+>> +    node = ft_node_ph2node(cxt, top);
 > 
-> I haev a couple, If you don't beat me, I'll have a look at doing the
-> chrp bits next week.
+> 
+> Huh -- are phandles a pointer?  Why not just a u32?
 
-Actually... it turns out we can use the mmio nvram backend on maple
-(at least on systems with SLOF).  It seems to be quite a bit faster
-than RTAS.
+I can't speak for whoever designed the interface, but I'd rather keep it 
+as a pointer -- it provides more flexibility to the implementation.  For 
+example, if the device tree were to be maintained as a normal 
+pointer-based tree, and flattened only when finalize() is called, then a 
+pointer would be a natural handle to export (which wouldn't fit into a 
+u32 on 64-bit platforms, unless you make assumptions about where 
+bootwrapper data is located).
 
-So I think I'll submit a patch enabling MMIO_NVRAM for maple and leave
-the consolidation of the pseries and chrp nvram code as a separate
-matter.
+The downside, of course, is that it's easier to get phandles and 
+internal pointers mixed up.
+
+-Scott
