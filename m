@@ -1,26 +1,22 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 5D0F1DDF8C
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 06:39:32 +1100 (EST)
-Date: Tue, 30 Jan 2007 20:39:30 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
-In-Reply-To: <E674F9E5-3FFC-4291-A03B-0C3BF0F833A6@kernel.crashing.org>
-Message-ID: <Pine.LNX.4.62.0701302039090.7678@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
-	<20070126031236.GG18537@lst.de>
-	<Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
-	<20070129161502.GA32313@lst.de>
-	<E674F9E5-3FFC-4291-A03B-0C3BF0F833A6@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B358BDDFC7
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 06:43:06 +1100 (EST)
+In-Reply-To: <20070129201154.GB13485@ld0162-tx32.am.freescale.net>
+References: <20070129201154.GB13485@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <391BF096-51F2-48B8-9BE2-D49F6B61B0E5@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 02/18] bootwrapper: Set -msoft-float and assembler target
+	options.
+Date: Tue, 30 Jan 2007 20:42:42 +0100
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,28 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 30 Jan 2007, Segher Boessenkool wrote:
-> >> We can make FB_PS3 (and SND_PS3 later) select PS3_PS3AV. Is that  
-> >> better?
-> >> I prefer not to make it unconditional, as people who want to run  
-> >> their PS3s
-> >> headless don't need it.
-> >
-> > Ok.  Even better would be handling it on the makefile level, by doing
-> >
-> > obj-$(CONFIG_FB_PS3)	+= ps3_av.o
-> > obj-$(CONFIG_SND_PS3)	+= ps3_av.o
-> 
-> I don't think Kbuild will be too happy with that.  Or does
-> it filter out duplicate files everywhere (dep, build, link)?
+> Without -msoft-float, floating point state saving code can be executed
+> (at least with certain buggy versions of GCC, which don't clear bit  
+> 6 of
+> CR before calling a varargs function with no varargs parameters).
 
-Yes, it filters out duplicates. But I went for `select' instead.
+Even: without -msoft-float, GCC is allowed to use any
+floating-point resources it wants (whether you like that
+or not, and/or think it is a bug in GCC, is moot).
 
-Gr{oetje,eeting}s,
+> Without the assembler target option, the assembler will use the old
+> dedicated mftb/mftbu instructions, rather than mfspr.  This causes the
+> boot to hang on e500, which doesn't have the dedicated instructions.
+>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Acked-by: Segher Boessenkool <segher@kernel.crashing.org>
