@@ -1,22 +1,20 @@
-Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45BFD016.5050302@us.ibm.com>
-Date: Tue, 30 Jan 2007 17:09:10 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id 05633DE063
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 10:18:13 +1100 (EST)
 MIME-Version: 1.0
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH 4/4] Add support to OProfile for	profiling
-	Cell BE SPUs -- update
-References: <45BE4ED0.5030808@us.ibm.com> <45BE4FA4.9020105@us.ibm.com>
-	<200701300839.05144.arnd@arndb.de>
-	<1170143630.26655.326.camel@localhost.localdomain>
-	<20070130104120.GB14571@lst.de>
-In-Reply-To: <20070130104120.GB14571@lst.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cbe-oss-dev@ozlabs.org
-Reply-To: maynardj@us.ibm.com
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: options for root file system for MPC8548
+Date: Tue, 30 Jan 2007 18:14:02 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901053E8497@EMPBEDEX.empirix.com>
+References: <BD261180E6D35F4D9D32F3E44FD3D901064432D9@EMPBEDEX.empirix.com>
+	<2B407BB2-BBA6-4B13-BF34-DABFB3F8ADEF@kernel.crashing.org>
+	<BD261180E6D35F4D9D32F3E44FD3D90106443362@EMPBEDEX.empirix.com>
+	<21F08FBD-6702-46A2-9592-329D8CF04073@kernel.crashing.org>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +24,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig wrote:
 
-> On Tue, Jan 30, 2007 at 06:53:50PM +1100, Benjamin Herrenschmidt wrote:
-> 
->>>>+/* Defines used for sync_start */
->>>>+#define SKIP_GENERIC_SYNC 0
->>>>+#define SYNC_START_ERROR -1
->>>>+#define DO_GENERIC_SYNC 1
->>>>+
->>>>+typedef struct vma_map
->>>>+{
->>>>+       struct vma_map *next;
->>>>+       unsigned int vma;
->>>>+       unsigned int size;
->>>>+       unsigned int offset;
->>>>+       unsigned int guard_ptr;
->>>>+       unsigned int guard_val;
->>>>+} vma_map_t;
->>
->>I haven't had time to look in details yet but in that context, what does
->>"vma" stands for ? There's already an important vm data structure in
->>linux routinely called "vma" and thus I suspect this is a poor naming
->>choice as it will cause confusion.
-> 
-> 
-> It looks like it actually is dealing with vma to me.  But then again:
-> 
->  - please don't use typedefs for structures
->  - there might be a more descriptive name for this than just vma_map
-Yes, I'll come up with some (hopefully) better name.
-> 
-> -------------------------------------------------------------------------
-> Take Surveys. Earn Cash. Influence the Future of IT
-> Join SourceForge.net's Techsay panel and you'll get the chance to share your
-> opinions on IT & business topics through brief surveys - and earn cash
-> http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
-> _______________________________________________
-> oprofile-list mailing list
-> oprofile-list@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/oprofile-list
+they have full MPC8548 support...and fwiw, the
+standard fedora & debian ppc is incompatible=20
+with the e500 core (throws floating point=20
+exceptions - due to different FP instruction set)...
+
+I like their update support...
+
+and fyi, freescale already turns on software emulation
+in their kernel CDS support package by default. We=20
+intend to turn that OFF very soon!
+
+t
+
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org]
+Sent: Tue 1/30/2007 5:50 PM
+To: Morrison, Tom
+Cc: linuxppc-dev@ozlabs.org
+Subject: Re: options for root file system for MPC8548
+=20
+
+On Jan 30, 2007, at 4:42 PM, Morrison, Tom wrote:
+
+> You are quick with the questions...:-)
+
+I know :)
+
+I think the timesys solution maybe what you're looking for since they =20
+seem to handle security updates to the packages and such.  My concern =20
+would be how the handle the e500 platform from a packing point of view.
+
+Do they have just 'ppc' packages, or are they targeted to specific =20
+families.
+
+I mean if you're not concerned about FP performance, use debian/=20
+fedora/ etc and turn on FP emulation in the kernel.
+
+- k
+
+<snip original describing some deficiencies of some distros>
