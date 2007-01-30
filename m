@@ -1,15 +1,18 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 8946FDDF7D
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 09:19:27 +1100 (EST)
+Return-Path: <linas@austin.ibm.com>
+Date: Tue, 30 Jan 2007 16:30:50 -0600
+To: Francois Romieu <romieu@fr.zoreil.com>
+Subject: Re: spidernet: add improved phy support in sungem_phy.c
+Message-ID: <20070130223050.GE5616@austin.ibm.com>
+References: <200701261407.48237.jens@de.ibm.com>
+	<1169842847.24996.106.camel@localhost.localdomain>
+	<200701262331.58491.jens@de.ibm.com>
+	<20070126233809.GA16660@electric-eye.fr.zoreil.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: options for root file system for MPC8548
-Date: Tue, 30 Jan 2007 17:19:15 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901064432D9@EMPBEDEX.empirix.com>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070126233809.GA16660@electric-eye.fr.zoreil.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: James K Lewis <jim@jklewis.com>, linuxppc-dev@ozlabs.org,
+	netdev@vger.kernel.org, jgarzik@pobox.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,36 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Sat, Jan 27, 2007 at 12:38:09AM +0100, Francois Romieu wrote:
+> Jens Osterkamp <jens@de.ibm.com> :
+> > 
+> Index: linux-2.6.20-rc5/drivers/net/sungem_phy.c
+> ===================================================================
+> --- linux-2.6.20-rc5.orig/drivers/net/sungem_phy.c
+> +++ linux-2.6.20-rc5/drivers/net/sungem_phy.c
+> @@ -311,6 +311,107 @@ static int bcm5411_init(struct mii_phy* 
+> [...]
+> +	if ( (phy_reg & 0x0020) >> 5 ) {
 
-I've seen a couple threads about root file systems and such,=20
-but I am hoping this is slightly more detailed in what I am=20
-looking for!
+Shifting to the right by 5 bits has no effect on the result
+of this conditional. Either the bit is set, or its not.
+There is no need to shift.
 
-What is the best means to generate/use/support a root file system?
+> +	if ( (phy_reg & 0x0020) >> 7 ) {
 
-I can download and use ELDK to generate one, but it doesn't look
-like it has all the library / utility package support required by
-my application (e.g.: perl).
+The result here will always be zero, since the bit,
+if set, will be shifted off the end. Bits on the lef
+are padded with zero.  Ergo, this is a bug.
 
-We do NOT want to use LTIB (supplied by Freescale) to create one=20
-(for multiple reasons - including the same as ELDK).
-
-I could purchase one via RedHat or MontaVista (but they are=20
-expensive and their kernel support is behind).
-=20
-Has anyone any experience with LinuxLink (TimeSys)
-http://lldn.timesys.com.
-It looks promising - but I'd like to hear if others have used them?
-
-Thanks in advance!
-
-Tom Morrison
-Principal Software Engineer
-
-
-EMPIRIX=20
-20 Crosby Drive - Bedford, MA  01730
-p: 781.266.3567 f: 781.266.3670=20
-email: tmorrison@empirix.com=20
-www.empirix.com
+--linas
