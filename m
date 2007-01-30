@@ -1,16 +1,22 @@
-Return-Path: <TMJohnson@fyldemicro.com>
-Received: from fyldemicro.co.uk (www.fyldemicro.co.uk [213.48.132.32])
-	by ozlabs.org (Postfix) with ESMTP id 14884DDED6
+Return-Path: <sunil.ayyapureddy@semindia.in>
+Received: from almach.lunarpages.com (almach.lunarpages.com [209.200.240.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 54236DDF27
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Jan 2007 20:46:42 +1100 (EST)
+	Wed, 31 Jan 2007 00:20:50 +1100 (EST)
+Received: from [164.164.160.11] (helo=SunilA)
+	by almach.lunarpages.com with esmtpa (Exim 4.63)
+	(envelope-from <sunil.ayyapureddy@semindia.in>) id 1HBsCD-0007oB-4r
+	for linuxppc-embedded@ozlabs.org; Tue, 30 Jan 2007 04:34:47 -0800
+From: "Sunil A" <sunil.ayyapureddy@semindia.in>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Make too old---How to upgrade ???
+Date: Tue, 30 Jan 2007 18:00:53 +0530
+Message-ID: <KLECJOHKIJNMEKLBDEGEGENNCDAA.sunil.ayyapureddy@semindia.in>
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C74451.D7ED91C6"
-Subject: AC97 driver on MontaVista Linx for Xilinx ML403 board
-Date: Tue, 30 Jan 2007 09:34:30 -0000
-Message-ID: <02296E583CC11C4D9365985B761F1DDE20269C@W2003SERVER.fyldemicro.local>
-From: "Thomas Johnson" <TMJohnson@fyldemicro.com>
-To: <linuxppc-embedded@ozlabs.org>
+	boundary="----=_NextPart_000_00D9_01C74498.95732EA0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,57 +29,160 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C74451.D7ED91C6
+------=_NextPart_000_00D9_01C74498.95732EA0
 Content-Type: text/plain;
-	charset="US-ASCII"
-Content-Transfer-Encoding: quoted-printable
+	charset="iso-8859-1"
+Content-Transfer-Encoding: 8bit
 
-Hi,
-=20
-Can anyone help me with a driver for the AC97 codec on the ML403 board,
-running Montavista Pro V4.0.1 ?.
-=20
-Thanks
+Hi,All
+Iam using the buildroot utility and during “make” I got an error message,
+“Your make is too old 3.79.1. Go get at least 3.80”.
+How do I upgrade the “make” of this buildroot package exclusively, without
+tampering the OS files. Please let me know the solution.
 
-Tom Johnson
 
-=20
+Thanks.
 
-=20
 
-------_=_NextPart_001_01C74451.D7ED91C6
+
+------=_NextPart_000_00D9_01C74498.95732EA0
 Content-Type: text/html;
-	charset="US-ASCII"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.5730.11" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D561473209-30012007>Hi,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D561473209-30012007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D561473209-30012007>Can =
-anyone help me=20
-with a driver for the AC97 codec on the ML403 board, running Montavista =
-Pro=20
-V4.0.1 ?.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D561473209-30012007></SPAN></FONT>&nbsp;</DIV>
-<DIV><SPAN class=3D561473209-30012007><FONT face=3DArial=20
-size=3D2>Thanks</FONT></SPAN></DIV>
-<DIV class=3DSection1>
-<P class=3DMsoAutoSig align=3Dleft><SPAN lang=3DEN-GB=20
-style=3D"mso-ansi-language: EN-GB"><FONT face=3D"Arabic Transparent" =
-size=3D2>Tom=20
-Johnson</FONT></SPAN></P>
-<P class=3DMsoAutoSig><SPAN lang=3DEN-GB=20
-style=3D"mso-ansi-language: EN-GB"><?xml:namespace prefix =3D o ns =3D=20
-"urn:schemas-microsoft-com:office:office" =
-/><o:p>&nbsp;</o:p></SPAN></P></DIV>
-<DIV>&nbsp;</DIV></BODY></HTML>
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
 
-------_=_NextPart_001_01C74451.D7ED91C6--
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<meta name=3DProgId content=3DWord.Document>
+<meta name=3DGenerator content=3D"Microsoft Word 9">
+<meta name=3DOriginator content=3D"Microsoft Word 9">
+<link rel=3DFile-List href=3D"cid:filelist.xml@01C74498.92CCC6C0">
+<!--[if gte mso 9]><xml>
+ <o:OfficeDocumentSettings>
+  <o:DoNotRelyOnCSS/>
+ </o:OfficeDocumentSettings>
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <w:WordDocument>
+  <w:View>Normal</w:View>
+  <w:Zoom>0</w:Zoom>
+  <w:DocumentKind>DocumentEmail</w:DocumentKind>
+  <w:EnvelopeVis/>
+ </w:WordDocument>
+</xml><![endif]-->
+<style>
+<!--
+ /* Style Definitions */
+p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{mso-style-parent:"";
+	margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:Arial;
+	color:blue;}
+p.MsoAutoSig, li.MsoAutoSig, div.MsoAutoSig
+	{margin:0in;
+	margin-bottom:.0001pt;
+	mso-pagination:widow-orphan;
+	font-size:12.0pt;
+	font-family:"Times New Roman";
+	mso-fareast-font-family:"Times New Roman";
+	mso-bidi-font-family:Arial;
+	color:blue;}
+span.EmailStyle15
+	{mso-style-type:personal-compose;
+	mso-ansi-font-size:12.0pt;
+	mso-ascii-font-family:"Times New Roman";
+	mso-hansi-font-family:"Times New Roman";
+	mso-bidi-font-family:Arial;
+	color:blue;}
+span.EmailStyle17
+	{mso-style-type:personal;
+	mso-ansi-font-size:12.0pt;
+	mso-ascii-font-family:"Times New Roman";
+	mso-hansi-font-family:"Times New Roman";
+	mso-bidi-font-family:Arial;
+	color:blue;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;
+	mso-header-margin:.5in;
+	mso-footer-margin:.5in;
+	mso-paper-source:0;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+</head>
+
+<body lang=3DEN-US style=3D'tab-interval:.5in'>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
+color=3Dblue
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New =
+Roman"'>Hi,All<o:p></o:p></span></font></span></p>
+
+<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
+color=3Dblue
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New Roman"'>Iam
+using the buildroot utility and during &#8220;make&#8221; I got an error =
+message, <b><span
+style=3D'font-weight:bold'>&#8220;Your make is too old 3.79.1. Go get at =
+least 3.80&#8221;.</span></b><o:p></o:p></span></font></span></p>
+
+<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
+color=3Dblue
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New Roman"'>How
+do I upgrade the &#8220;make&#8221; of this buildroot package <b><span =
+style=3D'font-weight:
+bold'>exclusively</span></b>, without tampering the OS files. Please let =
+me
+know the solution.<o:p></o:p></span></font></span></p>
+
+<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
+color=3Dblue
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New =
+Roman"'>&nbsp;<o:p></o:p></span></font></span></p>
+
+<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
+color=3Dblue
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New Roman"'><![if =
+!supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></font></span></p>
+
+<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
+color=3Dblue
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New =
+Roman"'>Thanks.<o:p></o:p></span></font></span></p>
+
+<p class=3DMsoNormal><span class=3DEmailStyle17><font size=3D3 =
+color=3Dblue
+face=3D"Times New Roman"><span =
+style=3D'font-size:12.0pt;mso-bidi-font-family:"Times New =
+Roman"'>&nbsp;<o:p></o:p></span></font></span></p>
+
+<p class=3DMsoNormal><span class=3DEmailStyle15><font size=3D3 =
+color=3Dblue
+face=3D"Times New Roman"><span style=3D'font-size:12.0pt'><![if =
+!supportEmptyParas]>&nbsp;<![endif]><o:p></o:p></span></font></span></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_00D9_01C74498.95732EA0--
