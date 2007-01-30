@@ -1,19 +1,19 @@
-Return-Path: <BillF@optiscan.com>
-Received: from mail.optiscan.com (mail.optiscan.com [203.26.112.1])
-	by ozlabs.org (Postfix) with ESMTP id 48E63DDDFA
+Return-Path: <joe-worker@anti-paladin.com>
+Received: from mail.hier.us (adsl-66-218-62-12.dslextreme.com [66.218.62.12])
+	by ozlabs.org (Postfix) with ESMTP id 1C9B7DDEBE
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Jan 2007 14:46:30 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Boot w/ VGA console - PCI nvidia
-Date: Tue, 30 Jan 2007 14:46:29 +1100
-Message-ID: <34E73CC1202BF246B7DE3463BEBC0689303D84@postie.optiscan.com>
-In-Reply-To: <000c01c74417$913d51c0$6405a8c0@absolut>
-References: <mailman.1354.1170085533.9285.linuxppc-embedded@ozlabs.org>
-	<000c01c74417$913d51c0$6405a8c0@absolut>
-From: "Bill Farrow" <BillF@optiscan.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Tue, 30 Jan 2007 16:14:24 +1100 (EST)
+Received: from localhost (fillmore [127.0.0.1])
+	by mail.hier.us (Postfix) with ESMTP id 29DDF20192
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 29 Jan 2007 20:51:47 -0800 (PST)
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Message-Id: <89CE61D4-C939-4788-A0AE-30EF410E9628@anti-paladin.com>
+Content-Type: multipart/alternative; boundary=Apple-Mail-1-699457625
+To: linuxppc-embedded@ozlabs.org
+Subject: Led astray? Xilinx ml410 + u-boot + Linux?
+From: Joe <joe-worker@anti-paladin.com>
+Date: Mon, 29 Jan 2007 20:51:42 -0800
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,45 +24,125 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Russell McGuire wrote:
-> Thanks for the info. Looking around I see that there
-> is some aged code in the U-boot tree under the MIA
-> board that is a BIOS emulator. Seems like a huge mess
-> to get a video card to turn on.
 
-Yes, I came across that code in my investigation as well. As Xiao points
-out in his email, this code is an earlier version of the SciTech code.
-I didn't get around to comparing it with the Xorg code either.
+--Apple-Mail-1-699457625
+Content-Transfer-Encoding: 7bit
+Content-Type: text/plain;
+	charset=US-ASCII;
+	delsp=yes;
+	format=flowed
 
-> I am using a Freescale MPC8360 so yes, ppc
-> architecture and thus the problems with BIOS emulation
-> with PCI.
->
-> Do we still need a BIOS emulator if we don't want to
-> run the VGA console during bootup, but only for post
-> boot?
+I was told (by Xilinx reps!) that the Xilinx ML410 "supported" Linux.
 
-I'm pretty sure that you don't need uboot to do the emulation if you
-don't need graphics at this point. As long as you are happy to wait
-until Xorg has started before you can display anything.
+My goal is to have something "load" Linux and then execute it --  
+preferably over NFS / Ethernet (for development purposes).
 
-> I.e. does the NVIDIA driver have enough smarts to
-> initialize the card after Linux is 100% booted up?
-> I really only need to be able to use the graphics card
-> for user applications, and booting with it is not a
-> requirement. If somehow I could boot with the serial
-> console, and then run a user mode application that
-> initiated the card?
+As far as I can tell from searching the 'Net the ML403 is fairly well  
+supported but I have yet to see any level of confirmation that the  
+ML410 fully supports u-boot, Linux and Ethernet.
 
-I think you will find that the Xorg driver will use it's own x86emu to
-initialise the card properly when X starts.  I haven't confirmed this
-myself yet, I guess I need to look at the Xorg code and then actually
-try it out.  This was the impression that I got from talking to one of
-the video driver hackers at Linux.Conf.au a couple of weeks back,
-specifically about running x86 graphics cards on PPC.
+When I download the u-boot file(s) from Xilinx they basically don't  
+work:
 
-Are you able to get your kernel to mount a PPC distro via NFS so that
-you have a full Xorg installation to test with, without having to build
-it yourself ?
+   0)  I get a u-boot command prompt via the serial port!! ;)
+   1)  The u-boot loadb command fails to accept any data via the  
+kermit protocol
+   2)  The u-boot 'dhcp' command fails to obtain an address -- either  
+by simply crashing or by sitting there indicating that it is re- 
+trying (in which case an Ethernet sniffer shows no activity from the  
+Ethernet ports).
 
-Bill
+Linux 2.6.19 shows arc/ppc/configs/ml[403|300]_defconfig, but I see  
+*zero* indication that the 410 is supported.  Has anyone seen the  
+ML410 fully functional with Linux + a patch to enable the Ethernet  
+ports?
+(I also note that on the mvi$ta site they list support for:  ML300  
+and ML40x -- but NOT the ML410.)  My searches also seem to indicate  
+that the IP included for the 410 Ethernet MAC's is distinctly  
+different from the 403...
+
+My current project has a *very* short fuse -- I should have been  
+"running" (e.g. past init into a shell w/filesystem) two weeks ago.
+
+If someone could confirm that this platform *is* supported (and I'm  
+just missing this on my searches) I'd be quite grateful for some  
+pointers on where to re-direct my searches.
+
+OTOH, if someone could confirm that this platform is NOT currently  
+supported that would be just as useful -- decisions can be made and  
+actions taken.
+
+TIA.
+
+-- 
+Joe
+
+
+
+
+
+--Apple-Mail-1-699457625
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html;
+	charset=ISO-8859-1
+
+<HTML><BODY style=3D"word-wrap: break-word; -khtml-nbsp-mode: space; =
+-khtml-line-break: after-white-space; ">I was told (by Xilinx reps!) =
+that the Xilinx ML410 "supported" Linux.<DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>My goal is to have =
+something "load" Linux and then execute it -- preferably over NFS / =
+Ethernet (for development purposes).</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>As=A0far as I can tell from =
+searching the 'Net the ML403 is fairly well supported but I have yet to =
+see any level of confirmation that the ML410 fully supports u-boot, =
+Linux and Ethernet.</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>When I download the u-boot =
+file(s) from Xilinx they basically don't work:</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>=A0 0)=A0 I get a u-boot =
+command prompt via the serial port!! ;)</DIV><DIV>=A0 1)=A0 The u-boot =
+loadb command fails to accept any data via the kermit =
+protocol</DIV><DIV>=A0 2)=A0 The u-boot 'dhcp' command fails to obtain =
+an address -- either by simply crashing or by sitting there indicating =
+that it is re-trying (in which case an Ethernet sniffer shows no =
+activity from the Ethernet ports).</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>Linux 2.6.19 shows =
+arc/ppc/configs/ml[403|300]_defconfig, but I see *zero* indication that =
+the 410 is supported.=A0 Has anyone seen the ML410 fully functional with =
+Linux + a patch to enable the Ethernet ports?</DIV><DIV>(I also note =
+that on the mvi$ta site they list support for:=A0 ML300 and ML40x -- but =
+NOT the ML410.)=A0 My searches also seem to indicate that the IP =
+included for the 410 Ethernet MAC's is distinctly different from the =
+403...</DIV><DIV><BR class=3D"khtml-block-placeholder"></DIV><DIV>My =
+current project has a *very* short fuse -- I should have been "running" =
+(e.g. past init into a shell w/filesystem) two weeks ago.</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>If someone could confirm =
+that this platform *is* supported (and I'm just missing this on my =
+searches) I'd be quite grateful for some pointers on where to re-direct =
+my searches.</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>OTOH, if someone could =
+confirm that this platform is NOT currently supported that would be just =
+as useful -- decisions can be made and actions taken.</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV>TIA.</DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV><DIV> <SPAN =
+class=3D"Apple-style-span" style=3D"border-collapse: separate; =
+border-spacing: 0px 0px; color: rgb(0, 0, 0); font-family: Helvetica; =
+font-size: 14px; font-style: normal; font-variant: normal; font-weight: =
+normal; letter-spacing: normal; line-height: normal; text-align: auto; =
+-khtml-text-decorations-in-effect: none; text-indent: 0px; =
+-apple-text-size-adjust: auto; text-transform: none; orphans: 2; =
+white-space: normal; widows: 2; word-spacing: 0px; "><DIV =
+style=3D"margin-top: 0px; margin-right: 0px; margin-bottom: 0px; =
+margin-left: 0px; "><FONT class=3D"Apple-style-span" size=3D"3"><SPAN =
+class=3D"Apple-style-span" style=3D"font-size: 12px;"><SPAN =
+class=3D"Apple-style-span" style=3D"font-size: 12px; =
+">--=A0</SPAN></SPAN></FONT></DIV><DIV style=3D"margin-top: 0px; =
+margin-right: 0px; margin-bottom: 0px; margin-left: 0px; "><FONT =
+class=3D"Apple-style-span" size=3D"3"><SPAN class=3D"Apple-style-span" =
+style=3D"font-size: 12px;"><SPAN class=3D"Apple-style-span" =
+style=3D"font-size: 12px; ">Joe</SPAN></SPAN></FONT></DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><DIV><BR =
+class=3D"khtml-block-placeholder"></DIV><BR =
+class=3D"Apple-interchange-newline"></SPAN> =
+</DIV><BR></DIV></BODY></HTML>=
+
+--Apple-Mail-1-699457625--
