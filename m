@@ -1,19 +1,23 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org,
- maynardj@us.ibm.com
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH 3/4] Add support to OProfile for profiling Cell BE SPUs --
-	update
-Date: Tue, 30 Jan 2007 05:24:32 +0100
-References: <45BE4ED0.5030808@us.ibm.com> <45BE4F78.6080705@us.ibm.com>
-In-Reply-To: <45BE4F78.6080705@us.ibm.com>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 31345DDEF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 16:32:02 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l0U5Vv7D004374
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 22:31:57 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0U5Vo7W001893
+	for <linuxppc-dev@ozlabs.org>; Mon, 29 Jan 2007 23:31:52 -0600 (CST)
+Message-ID: <45BED88D.2050908@freescale.com>
+Date: Tue, 30 Jan 2007 13:33:01 +0800
+From: Li Yang <leoli@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200701300524.32556.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	oprofile-list@lists.sourceforge.net
+To: Paul <paulus@samba.org>
+Subject: [PATCH] powerpc: include new of_platform.h for 836x and 832x
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,81 +27,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 29 January 2007 20:48, Maynard Johnson wrote:
-> Subject: Enable SPU switch notification to detect currently active SPU tasks.
-> 
-> From: Maynard Johnson <maynardj@us.ibm.com>
-> 
-> This patch adds to the capability of spu_switch_event_register so that the
-> caller is also notified of currently active SPU tasks.  It also exports
-> spu_switch_event_register and spu_switch_event_unregister.
-> 
-> Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+Some prototypes are separated from of_device.h into of_platform.h.  Add
+the new include to fix warning. 
 
-I looked through it again, and think I found a serious bug, but that
-should be easy enough to solve:
+Signed-off-by: Li Yang <leoli@freescale.com> 
+---
+ arch/powerpc/platforms/83xx/mpc832x_mds.c |    1 +
+ arch/powerpc/platforms/83xx/mpc8360e_pb.c |    1 +
+ 2 files changed, 2 insertions(+), 0 deletions(-)
 
-> +static void notify_spus_active(void)
-> +{
-> +       int node;
-> +       /* Wake up the active spu_contexts. When the awakened processes 
-> +        * sees their notify_active flag is set, they will call
-> +        * spu_switch_notify();
-> +        */
-> +       for (node = 0; node < MAX_NUMNODES; node++) {
-> +               struct spu *spu;
-> +               mutex_lock(&spu_prio->active_mutex[node]);
-> +                list_for_each_entry(spu, &spu_prio->active_list[node], list) {
-> +                       struct spu_context *ctx = spu->ctx;
-
-[side note]
-There is a small whitespace breakage in here, please make sure you always
-use tabs for indenting, not space characters.
-[/side note]
-
-> @@ -45,9 +45,10 @@
->         u64 pte_fault;
->  
->         *stat = ctx->ops->status_read(ctx);
-> -       if (ctx->state != SPU_STATE_RUNNABLE)
-> -               return 1;
-> +
->         spu = ctx->spu;
-> +       if (ctx->state != SPU_STATE_RUNNABLE || spu->notify_active)
-> +               return 1;
->         pte_fault = spu->dsisr &
->             (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED);
->         return (!(*stat & 0x1) || pte_fault || spu->class_0_pending) ? 1 : 0;
-> @@ -305,6 +306,7 @@
->                    u32 *npc, u32 *event)
->  {
->         int ret;
-> +       struct spu * spu;
->         u32 status;
->  
->         if (down_interruptible(&ctx->run_sema))
-> @@ -318,8 +320,16 @@
->  
->         do {
->                 ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
-> +               spu = ctx->spu;
->                 if (unlikely(ret))
->                         break;
-> +               if (unlikely(spu->notify_active)) {
-> +                       spu->notify_active = 0;
-> +                       if (!(status & SPU_STATUS_STOPPED_BY_STOP)) {
-> +                               spu_switch_notify(spu, ctx);
-> +                               continue;
-> +                       }
-> +               }
-
-This is before spu_reacquire_runnable, so in case the spu got
-preempted at the same time when oprofile was enabled, ctx->spu
-is NULL, and you can't load the notify_active flag from it.
-
-On solution would be to move the notify_active flag from ctx->spu
-into ctx itself, but maybe there are other ways to solve this.
-
-Thanks,
-
-	Arnd <><
+diff --git a/arch/powerpc/platforms/83xx/mpc832x_mds.c b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+index 4d47119..2c7a1e9 100644
+--- a/arch/powerpc/platforms/83xx/mpc832x_mds.c
++++ b/arch/powerpc/platforms/83xx/mpc832x_mds.c
+@@ -25,6 +25,7 @@
+ #include <linux/initrd.h>
+ 
+ #include <asm/of_device.h>
++#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/time.h>
+diff --git a/arch/powerpc/platforms/83xx/mpc8360e_pb.c b/arch/powerpc/platforms/83xx/mpc8360e_pb.c
+index 53b92a9..a1e23f0 100644
+--- a/arch/powerpc/platforms/83xx/mpc8360e_pb.c
++++ b/arch/powerpc/platforms/83xx/mpc8360e_pb.c
+@@ -31,6 +31,7 @@
+ #include <linux/initrd.h>
+ 
+ #include <asm/of_device.h>
++#include <asm/of_platform.h>
+ #include <asm/system.h>
+ #include <asm/atomic.h>
+ #include <asm/time.h>
