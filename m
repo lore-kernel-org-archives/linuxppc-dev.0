@@ -1,19 +1,17 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 05633DE063
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 10:18:13 +1100 (EST)
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound5-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DE296DE09C
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 10:20:31 +1100 (EST)
+Message-ID: <45BFD2B8.8070404@am.sony.com>
+Date: Tue, 30 Jan 2007 15:20:24 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: options for root file system for MPC8548
-Date: Tue, 30 Jan 2007 18:14:02 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901053E8497@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D901064432D9@EMPBEDEX.empirix.com>
-	<2B407BB2-BBA6-4B13-BF34-DABFB3F8ADEF@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90106443362@EMPBEDEX.empirix.com>
-	<21F08FBD-6702-46A2-9592-329D8CF04073@kernel.crashing.org>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 0/4] PS3 system bus patches for 2.6.21
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,44 +22,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Paul,
 
-they have full MPC8548 support...and fwiw, the
-standard fedora & debian ppc is incompatible=20
-with the e500 core (throws floating point=20
-exceptions - due to different FP instruction set)...
+This is an additional small set of patches for 2.6.21 that should apply
+on top of my previous set of 16.
 
-I like their update support...
+Patches 1 & 2 mainly just move code to the ps3 platform directory as requested
+by Ben and Christoph.  Patches 3 & 4 fix USB mass storage.
 
-and fyi, freescale already turns on software emulation
-in their kernel CDS support package by default. We=20
-intend to turn that OFF very soon!
+[PATCH 1/4] PS3: Move system bus to platform directory
+[PATCH 2/4] PS3: Move vuart declarations to ps3.h
+[PATCH 3/4] PS3: Fix DMA scatter-gather
+[PATCH 4/4] PS3: Enable USB mass storage
 
-t
-
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org]
-Sent: Tue 1/30/2007 5:50 PM
-To: Morrison, Tom
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: options for root file system for MPC8548
-=20
-
-On Jan 30, 2007, at 4:42 PM, Morrison, Tom wrote:
-
-> You are quick with the questions...:-)
-
-I know :)
-
-I think the timesys solution maybe what you're looking for since they =20
-seem to handle security updates to the packages and such.  My concern =20
-would be how the handle the e500 platform from a packing point of view.
-
-Do they have just 'ppc' packages, or are they targeted to specific =20
-families.
-
-I mean if you're not concerned about FP performance, use debian/=20
-fedora/ etc and turn on FP emulation in the kernel.
-
-- k
-
-<snip original describing some deficiencies of some distros>
+-Geoff
