@@ -1,29 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 62DF0DDFB0
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 05:40:51 +1100 (EST)
-In-Reply-To: <20070129161502.GA32313@lst.de>
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
-	<20070126031236.GG18537@lst.de>
-	<Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
-	<20070129161502.GA32313@lst.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E674F9E5-3FFC-4291-A03B-0C3BF0F833A6@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
-Date: Tue, 30 Jan 2007 19:39:40 +0100
-To: Christoph Hellwig <hch@lst.de>
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>,
-	Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <trini@kernel.crashing.org>
+Received: from fed1rmmtao02.cox.net (fed1rmmtao02.cox.net [68.230.241.37])
+	by ozlabs.org (Postfix) with ESMTP id 7F7C8DDFCC
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 05:53:39 +1100 (EST)
+Date: Tue, 30 Jan 2007 11:53:36 -0700
+From: Tom Rini <trini@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] generic RTC support for PPC
+Message-ID: <20070130185336.GA10776@smtp.west.cox.net>
+References: <20070125073754.GA10004@lixom.net>
+	<20070130051736.GH28746@smtp.west.cox.net>
+	<0747B3CD-F875-4A28-8199-1A7FF3666301@kernel.crashing.org>
+	<20070130160340.GA25443@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070130160340.GA25443@lixom.net>
+Cc: kimphill@freescale.com, paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,19 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> We can make FB_PS3 (and SND_PS3 later) select PS3_PS3AV. Is that  
->> better?
->> I prefer not to make it unconditional, as people who want to run  
->> their PS3s
->> headless don't need it.
->
-> Ok.  Even better would be handling it on the makefile level, by doing
->
-> obj-$(CONFIG_FB_PS3)	+= ps3_av.o
-> obj-$(CONFIG_SND_PS3)	+= ps3_av.o
+On Tue, Jan 30, 2007 at 10:03:40AM -0600, Olof Johansson wrote:
+> On Tue, Jan 30, 2007 at 12:37:12AM -0600, Kumar Gala wrote:
+> > 
+> > On Jan 29, 2007, at 11:17 PM, Tom Rini wrote:
+> > 
+> > >On Thu, Jan 25, 2007 at 01:37:54AM -0600, Olof Johansson wrote:
+> > >
+> > >>Make the PPC RTC functions use the generic RTC infrastructure if they
+> > >>are not already defined (and an RTC is registered in the system).
+> > >>
+> > >>This should make it possible to remove the hideous direct access used
+> > >>in some of the 83xx platforms.
+> > >
+> > >Now, I know I'm a bit late, and I've been quiet of late, but, um,  
+> > >why is
+> > >there anything other than the RTC class stuff being used?  I know
+> > >drivers/char/genrtc.c isn't gone yet, but really, it should be in the
+> > >process of being phased out.  IMHO, it should depend on !POWERPC (or
+> > >whatever the magic is to allow arch/ppc && !arch/powerpc).
+> > 
+> > I think the problem was calling the RTC class code from the place's  
+> > we use rtc in ppc had locking issues or something like that.
 
-I don't think Kbuild will be too happy with that.  Or does
-it filter out duplicate files everywhere (dep, build, link)?
+Sounds like the RTC class code needs to be fixed up then.  There's
+really no good reason for drivers/char/genrtc.c to live anymore, a
+better 'generic rtc' driver set exists now.
 
+> Yes, and it does a direct call into the driver instead of using the
+> subsystem, exporting the symbol from the driver. Not a very pretty
+> solution but it's possible that the genrtc stuff wasn't available when
+> it was first implemented.
 
-Segher
+genrtc is quite old, really :)
+
+-- 
+Tom Rini
