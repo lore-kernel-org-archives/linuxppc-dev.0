@@ -1,14 +1,14 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 39049DDF42
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 04:03:31 +1100 (EST)
-Date: Tue, 30 Jan 2007 18:03:29 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTP id E204EDE025
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 04:06:06 +1100 (EST)
+Date: Tue, 30 Jan 2007 18:06:05 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
 To: James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 10/10] ps3: ps3av/fb defconfig updates
+Subject: [PATCH 3/10] fbdev modedb: allow refresh rates for named video modes
 In-Reply-To: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0701301803100.29487@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0701301805480.29487@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -24,65 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PS3: defconfig updates for ps3av and ps3fb
+fbdev modedb: Take into account the specified refresh rates for video modes
+specified by name, so e.g. all of `720p', `720p@60', and `720p@50' work.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- arch/powerpc/configs/ps3_defconfig |   29 ++++++++++++++++++++++++++++-
- 1 files changed, 28 insertions(+), 1 deletion(-)
+ drivers/video/modedb.c |    6 ++----
+ 1 files changed, 2 insertions(+), 4 deletions(-)
 
---- ps3-linux-2.6.20-rc6.orig/arch/powerpc/configs/ps3_defconfig
-+++ ps3-linux-2.6.20-rc6/arch/powerpc/configs/ps3_defconfig
-@@ -163,6 +163,7 @@ CONFIG_PS3_HTAB_SIZE=20
- # CONFIG_PS3_DYNAMIC_DMA is not set
- CONFIG_PS3_USE_LPAR_ADDR=y
- CONFIG_PS3_VUART=y
-+CONFIG_PS3_PS3AV=y
- 
- #
- # Kernel options
-@@ -611,14 +612,40 @@ CONFIG_GEN_RTC=y
- # Graphics support
- #
- # CONFIG_FIRMWARE_EDID is not set
--# CONFIG_FB is not set
-+CONFIG_FB=y
-+CONFIG_FB_CFB_FILLRECT=y
-+CONFIG_FB_CFB_COPYAREA=y
-+CONFIG_FB_CFB_IMAGEBLIT=y
-+# CONFIG_FB_MACMODES is not set
-+# CONFIG_FB_BACKLIGHT is not set
-+# CONFIG_FB_MODE_HELPERS is not set
-+# CONFIG_FB_TILEBLITTING is not set
-+# CONFIG_FB_OF is not set
-+# CONFIG_FB_VGA16 is not set
-+# CONFIG_FB_S1D13XXX is not set
- # CONFIG_FB_IBM_GXT4500 is not set
-+CONFIG_FB_PS3=y
-+CONFIG_FB_PS3_DEFAULT_SIZE_M=18
-+# CONFIG_FB_VIRTUAL is not set
- 
- #
- # Console display driver support
- #
- # CONFIG_VGA_CONSOLE is not set
- CONFIG_DUMMY_CONSOLE=y
-+CONFIG_FRAMEBUFFER_CONSOLE=y
-+# CONFIG_FRAMEBUFFER_CONSOLE_ROTATION is not set
-+# CONFIG_FONTS is not set
-+CONFIG_FONT_8x8=y
-+CONFIG_FONT_8x16=y
-+
-+#
-+# Logo configuration
-+#
-+CONFIG_LOGO=y
-+# CONFIG_LOGO_LINUX_MONO is not set
-+# CONFIG_LOGO_LINUX_VGA16 is not set
-+CONFIG_LOGO_LINUX_CLUT224=y
- # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
- 
- #
+--- ps3-linux-2.6.20-rc6.orig/drivers/video/modedb.c
++++ ps3-linux-2.6.20-rc6/drivers/video/modedb.c
+@@ -610,10 +610,8 @@ done:
+ 	diff = refresh;
+ 	best = -1;
+ 	for (i = 0; i < dbsize; i++) {
+-		if ((name_matches(db[i], name, namelen) &&
+-			!fb_try_mode(var, info, &db[i], bpp)))
+-			return 1;
+-		if (res_specified && res_matches(db[i], xres, yres)) {
++		if (name_matches(db[i], name, namelen) ||
++		    (res_specified && res_matches(db[i], xres, yres))) {
+ 			if(!fb_try_mode(var, info, &db[i], bpp)) {
+ 				if(!refresh_specified || db[i].refresh == refresh)
+ 					return 1;
 
 Gr{oetje,eeting}s,
 
