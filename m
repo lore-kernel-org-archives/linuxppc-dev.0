@@ -1,22 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 64799DDFD5
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 10:42:16 +1100 (EST)
-In-Reply-To: <20070130230859.21111.39370.stgit@localhost.localdomain>
-References: <20070130230711.21111.52924.stgit@localhost.localdomain>
-	<20070130230859.21111.39370.stgit@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F739E1EE-3BA6-428D-8C96-AB09E1B9773B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] [POWERPC] Fix kernel build errors for mpc8272ads and
-	mpc8560ads
-Date: Tue, 30 Jan 2007 17:41:14 -0600
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <cel@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH 2/4] Add support to OProfile for
+	profiling Cell BE SPUs -- update
+From: Carl Love <cel@us.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200701300508.56467.arnd@arndb.de>
+References: <45BE4ED0.5030808@us.ibm.com> <45BE4F55.8070801@us.ibm.com>
+	<200701300508.56467.arnd@arndb.de>
+Content-Type: text/plain
+Date: Tue, 30 Jan 2007 15:51:05 -0800
+Message-Id: <1170201065.5235.43.camel@dyn9047021078.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Arnd:
 
-On Jan 30, 2007, at 5:09 PM, Vitaly Bordug wrote:
+Well most of the patch is simply cleaning up the
+pm_rtas_activate_signals() routine.  I would be think
+"pm_rtas_activat_signals routine cleanup" would be good.
 
->
-> Recent update of asm-powerpc/io.h caused cpm-related stuff to break  
-> in the
-> current kernel. Current patch fixes it, as well as other  
-> inconsistencies
-> expressed, that do not permit targets from working properly:
->
-> - Updated dts with a chosen node with interrupt controller,
+                   Carl Love
 
-Why do we need this?  I'm not aware of any other boards having to set  
-this?
 
-- k
+On Tue, 2007-01-30 at 05:08 +0100, Arnd Bergmann wrote:
+> On Monday 29 January 2007 20:47, Maynard Johnson wrote:
+> >   The code was setting up the debug bus for group 21 when profiling on the 
+> > event PPU CYCLES.  The debug bus is not actually used by the hardware 
+> > performance counters when counting PPU CYCLES.  Setting up the debug bus
+> > for PPU CYCLES causes signal routing conflicts on the debug bus when 
+> > profiling PPU cycles and another PPU event.  This patch fixes the code to 
+> > only setup the debug bus to route the performance signals for the non
+> > PPU CYCLE events.
+> > 
+> > Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+> > Signed-off-by: Carl Love <carll@us.ibm.com>
+> 
+> Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> 
+> Any suggestion for a one-line patch title?
+> _______________________________________________
+> cbe-oss-dev mailing list
+> cbe-oss-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/cbe-oss-dev
