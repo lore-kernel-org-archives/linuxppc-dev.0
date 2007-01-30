@@ -1,21 +1,26 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 5/9] ps3: Preallocate bootmem memory for ps3fb
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-In-Reply-To: <Pine.LNX.4.62.0701251849550.24610@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0701251849550.24610@pademelon.sonytel.be>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-mgCt+0uGL4wdtvkDOC7B"
-Date: Tue, 30 Jan 2007 13:29:17 +1100
-Message-Id: <1170124157.19887.116.camel@concordia.ozlabs.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 708B9DDE31
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 13:49:38 +1100 (EST)
+Subject: Re: EMAC OF binding....
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <1170121832.26655.301.camel@localhost.localdomain>
+References: <OF7EF2F643.75F7008B-ON8625725D.00157658-8625725D.00167CB4@au1.ibm.com>
+	<1168236558.22458.187.camel@localhost.localdomain>
+	<8ee3d13b73a511a785ac4744c268943e@kernel.crashing.org>
+	<1170116712.26655.293.camel@localhost.localdomain>
+	<7BADAAC7-D139-4C1A-A799-93F46508880E@kernel.crashing.org>
+	<1170121832.26655.301.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 30 Jan 2007 13:49:26 +1100
+Message-Id: <1170125366.26655.313.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
-Reply-To: michael@ellerman.id.au
+Cc: Christian Rund <Christian.Rund@de.ibm.com>,
+	Murali N Iyer <mniyer@us.ibm.com>, Hartmut Penner <HPENNER@de.ibm.com>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,52 +30,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2007-01-30 at 12:50 +1100, Benjamin Herrenschmidt wrote:
+> > Does emac really vary that much between the chips its in?  I know  
+> > chatting with Ben that axon did some evil things, but how much  
+> > difference exists on 4xx implementations?
+> 
+> They all seem to have subtle differences, which is why I want the actual
+> chip to be the first entry in the compatible property.
 
---=-mgCt+0uGL4wdtvkDOC7B
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Note that the goal here is not to have different drivers bind on it, but
+more to allow to use device_is_compatible() and/or use the void * data
+of the probe list as a feature bits field.
 
-On Thu, 2007-01-25 at 18:50 +0100, Geert Uytterhoeven wrote:
-> Preallocate bootmem memory for the PS3 frame buffer device, which needs a
-> large block of physically-contiguous memory. The size of this memory bloc=
-k is
-> configurable:
->   - The config option CONFIG_FB_PS3_DEFAULT_SIZE_M allows to specify the
->     default amount of memory (in MiB) allocated to the virtual frame buff=
-er.
->   - The early boot parameter `ps3fb=3Dxxx' allows to override the default=
- value.
->     It will be rounded up to a multiple of 1 MiB, if needed.
->=20
-> Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-
-Rather than doing the alloc in setup.c, defining a structure to the hold
-the params, and then exporting the structure - why don't you just do the
-alloc in the ps3 fb driver code, and have it all private in there?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-mgCt+0uGL4wdtvkDOC7B
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFvq19dSjSd0sB4dIRAvtvAKCcMGFlUACDbMwG8Zve6uNY7MWvdACfWocn
-ZhfV5G0TXXLLxMorvMAJ/h0=
-=8EgF
------END PGP SIGNATURE-----
-
---=-mgCt+0uGL4wdtvkDOC7B--
+Ben.
