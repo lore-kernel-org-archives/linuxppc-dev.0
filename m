@@ -1,22 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3EB10DDFBA
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 09:51:44 +1100 (EST)
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D90106443362@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D901064432D9@EMPBEDEX.empirix.com>
-	<2B407BB2-BBA6-4B13-BF34-DABFB3F8ADEF@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90106443362@EMPBEDEX.empirix.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <21F08FBD-6702-46A2-9592-329D8CF04073@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: options for root file system for MPC8548
-Date: Tue, 30 Jan 2007 16:50:46 -0600
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <maynardj@us.ibm.com>
+Message-ID: <45BFCC8E.4000008@us.ibm.com>
+Date: Tue, 30 Jan 2007 16:54:06 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+MIME-Version: 1.0
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH 4/4] Add support to OProfile for profiling
+	Cell BE SPUs -- update
+References: <45BE4ED0.5030808@us.ibm.com> <45BE4FA4.9020105@us.ibm.com>
+	<200701300839.05144.arnd@arndb.de> <45BFBB78.7060907@us.ibm.com>
+In-Reply-To: <45BFBB78.7060907@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	linux-kernel@vger.kernel.org
+Reply-To: maynardj@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +23,120 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Maynard Johnson wrote:
 
-On Jan 30, 2007, at 4:42 PM, Morrison, Tom wrote:
+> Arnd Bergmann wrote:
+> 
+> 
+>>On Monday 29 January 2007 20:48, Maynard Johnson wrote:
+>>
+>>
+>>>Subject: Add support to OProfile for profiling Cell BE SPUs
+>>>
+>>>From: Maynard Johnson <maynardj@us.ibm.com>
+>>>
+>>>This patch updates the existing arch/powerpc/oprofile/op_model_cell.c
+>>>to add in the SPU profiling capabilities.  In addition, a 'cell' subdirectory
+>>>was added to arch/powerpc/oprofile to hold Cell-specific SPU profiling
+>>>code.
+>>>
+>>>Signed-off-by: Carl Love <carll@us.ibm.com>
+>>>Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+>>
+[snip]
+>>
+>>>+ * 
+>>>+ * Ideally, we would like to be able to create the cached_info for
+>>>+ * an SPU task just one time -- when libspe first loads the SPU 
+>>>+ * binary file.  We would store the cached_info in a list.  Then, as
+>>>+ * SPU tasks are switched out and new ones switched in, the cached_info
+>>>+ * for inactive tasks would be kept, and the active one would be placed
+>>>+ * at the head of the list.  But this technique may not with
+>>>+ * current spufs functionality since the spu used in bind_context may
+>>>+ * be a different spu than was used in a previous bind_context for a
+>>>+ * reactivated SPU task.  Additionally, a reactivated SPU task may be
+>>>+ * assigned to run on a different physical SPE.  We will investigate
+>>>+ * further if this can be done.
+>>>+ *
+>>>+ */
+>>
+>>
+>>You should stuff a pointer to cached_info into struct spu_context,
+>>e.g. 'void *profile_private'.
+>>
+>>
+>>
+>>>+struct cached_info {
+>>>+       vma_map_t * map;
+>>>+       struct spu * the_spu;
+>>>+       struct kref cache_ref;
+>>>+       struct list_head list;
+>>>+};
+>>
+>>
+>>And replace the 'the_spu' member with a back pointer to the
+>>spu_context if you need it.
+>>
+>>
+>>
+>>>+
+>>>+/* A data structure for cached information about active SPU tasks.
+>>>+ * Storage is dynamically allocated, sized as
+>>>+ * "number of active nodes multplied by 8". 
+>>>+ * The info_list[n] member holds 0 or more 
+>>>+ * 'struct cached_info' objects for SPU#=n. 
+>>>+ *
+>>>+ * As currently implemented, there will only ever be one cached_info 
+>>>+ * in the list for a given SPU.  If we can devise a way to maintain
+>>>+ * multiple cached_infos in our list, then it would make sense
+>>>+ * to also cache the dcookie representing the PPU task application.
+>>>+ * See above description of struct cached_info for more details.
+>>>+ */
+>>>+struct spu_info_stacks {
+>>>+       struct list_head * info_list;
+>>>+};
+>>
+>>
+>>Why do you store pointers to list_head structures? If you want to store
+>>lists, you should have a lists_head itself in here.
+> 
+> info_list is an array of n lists, where n is the number of SPUs.
+> 
+>>Why do you store them per spu in the first place? The physical spu
+>>doesn't have any relevance to this at all, the only data that is
+>>per spu is the sample data collected on a profiling interrupt,
+>>which you can then copy in the per-context data on a context switch.
+> 
+> The sample data is written out to the event buffer on every profiling 
+> interrupt.  But we don't write out the SPU program counter samples 
+> directly to the event buffer.  First, we have to find the cached_info 
+> for the appropriate SPU context to retrieve the cached vma-to-fileoffset 
+> map.  Then we do the vma_map_lookup to find the fileoffset corresponding 
+> to the SPU PC sample, which we then write out to the event buffer.  This 
+> is one of the most time-critical pieces of the SPU profiling code, so I 
+> used an array to hold the cached_info for fast random access.  But as I 
+> stated in a code comment above, the negative implication of this current 
+> implementation is that the array can only hold the cached_info for 
+> currently running SPU tasks.  I need to give this some more thought.
 
-> You are quick with the questions...:-)
+I've given this some more thought, and I'm coming to the conclusion that 
+a pure array-based implementation for holding cached_info (getting rid 
+of the lists) would work well for the vast majority of cases in which 
+OProfile will be used.  Yes, it is true that the mapping of an SPU 
+context to a phsyical spu-numbered array location cannot be guaranteed 
+to stay valid, and that's why I discard the cached_info at that array 
+location when the SPU task is switched out.  Yes, it would be terribly 
+inefficient if the same SPU task gets switched back in later and we 
+would have to recreate the cached_info.  However, I contend that 
+OProfile users are interested in profiling one application at a time. 
+They are not going to want to muddy the waters with multiple SPU apps 
+running at the same time.  I can't think of any reason why someone would 
+conscisouly choose to do that.
 
-I know :)
+Any thoughts from the general community, especially OProfile users?
 
-I think the timesys solution maybe what you're looking for since they  
-seem to handle security updates to the packages and such.  My concern  
-would be how the handle the e500 platform from a packing point of view.
-
-Do they have just 'ppc' packages, or are they targeted to specific  
-families.
-
-I mean if you're not concerned about FP performance, use debian/ 
-fedora/ etc and turn on FP emulation in the kernel.
-
-- k
-
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> Subject: Re: options for root file system for MPC8548
->
->
-> On Jan 30, 2007, at 4:19 PM, Morrison, Tom wrote:
-> <snip intro>
->> We do NOT want to use LTIB (supplied by Freescale) to create one
->> (for multiple reasons - including the same as ELDK).
->
-> Can you elaborate on what issues you have with ELDK/LTIB, is it just
-> package support?  If so it might be useful for the developers to know
-> what packages you're interested in.  Or if there are other issues
-> with them.
->
-> LTIB uses busybox and in general seems very limited in its support
-> (as well as currently backdated in terms of kernel support).
-> ELDK has an incredible set of packages that it supports, but
-> things like many of the scripting languages support (e.g.: PERL),
-> additional security libraries(e.g.: ipsec), general network
-> libraries (e.g.: libpcap), and some network utilities (e.g.: wget).
->
-> Individually, none of these are serious, but altogether it's a lot
-> to manage - if I had 1 stop shopping, I might go there instead of
-> with the ever incredible ELDK!
->
-> <snip rest>
+Thanks.
+-Maynard
+> 
+>>
+[snip]
