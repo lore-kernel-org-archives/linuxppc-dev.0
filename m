@@ -1,31 +1,16 @@
-Return-Path: <st@iss.tu-darmstadt.de>
-Received: from lnx130.hrz.tu-darmstadt.de (lnx130.hrz.tu-darmstadt.de
-	[130.83.174.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4E178DDDE4
+Return-Path: <TMJohnson@fyldemicro.com>
+Received: from fyldemicro.co.uk (www.fyldemicro.co.uk [213.48.132.32])
+	by ozlabs.org (Postfix) with ESMTP id 14884DDED6
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 30 Jan 2007 20:38:46 +1100 (EST)
-Received: from mailserver3.hrz.tu-darmstadt.de (lnx116.hrz.tu-darmstadt.de
-	[130.83.174.28])
-	by lnx130.hrz.tu-darmstadt.de (8.13.4/8.12.10) with ESMTP id
-	l0U9cecZ001772
-	for <linuxppc-embedded@ozlabs.org>; Tue, 30 Jan 2007 10:38:40 +0100
-Received: from [130.83.164.10] (helo=iss10.vlsi.informatik.tu-darmstadt.de)
-	by mailserver3.hrz.tu-darmstadt.de with esmtpsa
-	(TLS-1.0:DHE_RSA_AES_128_CBC_SHA:16) (Exim 4.50) id 1HBpRo-0000BY-Pc
-	for linuxppc-embedded@ozlabs.org; Tue, 30 Jan 2007 10:38:40 +0100
-From: ST <st@iss.tu-darmstadt.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: MVME3100 and linux-2.6.10
-Date: Tue, 30 Jan 2007 10:38:36 +0100
-References: <6386542.1169804641943.SLOX.WebMail.wwwrun@mailserver.gemrad.com>
-	<45BA5635.2000001@badgateway.de>
-In-Reply-To: <45BA5635.2000001@badgateway.de>
+	Tue, 30 Jan 2007 20:46:42 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701301038.37207.st@iss.tu-darmstadt.de>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C74451.D7ED91C6"
+Subject: AC97 driver on MontaVista Linx for Xilinx ML403 board
+Date: Tue, 30 Jan 2007 09:34:30 -0000
+Message-ID: <02296E583CC11C4D9365985B761F1DDE20269C@W2003SERVER.fyldemicro.local>
+From: "Thomas Johnson" <TMJohnson@fyldemicro.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,9 +21,59 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi
-> That is where my kernel stops to boot too!!!
-> Is there someone out there who can tell us, what we did wrong?
-Magnus Hjorth told us that "Early serial boot msgs" lead to a kernel crash.
-Probably switch these of and give it a try?
-ST
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C74451.D7ED91C6
+Content-Type: text/plain;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+=20
+Can anyone help me with a driver for the AC97 codec on the ML403 board,
+running Montavista Pro V4.0.1 ?.
+=20
+Thanks
+
+Tom Johnson
+
+=20
+
+=20
+
+------_=_NextPart_001_01C74451.D7ED91C6
+Content-Type: text/html;
+	charset="US-ASCII"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.5730.11" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D561473209-30012007>Hi,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D561473209-30012007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D561473209-30012007>Can =
+anyone help me=20
+with a driver for the AC97 codec on the ML403 board, running Montavista =
+Pro=20
+V4.0.1 ?.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D561473209-30012007></SPAN></FONT>&nbsp;</DIV>
+<DIV><SPAN class=3D561473209-30012007><FONT face=3DArial=20
+size=3D2>Thanks</FONT></SPAN></DIV>
+<DIV class=3DSection1>
+<P class=3DMsoAutoSig align=3Dleft><SPAN lang=3DEN-GB=20
+style=3D"mso-ansi-language: EN-GB"><FONT face=3D"Arabic Transparent" =
+size=3D2>Tom=20
+Johnson</FONT></SPAN></P>
+<P class=3DMsoAutoSig><SPAN lang=3DEN-GB=20
+style=3D"mso-ansi-language: EN-GB"><?xml:namespace prefix =3D o ns =3D=20
+"urn:schemas-microsoft-com:office:office" =
+/><o:p>&nbsp;</o:p></SPAN></P></DIV>
+<DIV>&nbsp;</DIV></BODY></HTML>
+
+------_=_NextPart_001_01C74451.D7ED91C6--
