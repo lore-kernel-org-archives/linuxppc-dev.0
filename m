@@ -1,20 +1,23 @@
-Return-Path: <hch@lst.de>
-Date: Tue, 30 Jan 2007 11:41:20 +0100
-From: Christoph Hellwig <hch@lst.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id D1727DDF75
+	for <linuxppc-dev@ozlabs.org>; Tue, 30 Jan 2007 21:45:12 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH 4/4] Add support to OProfile for	profiling Cell BE SPUs --
-	update
-Message-ID: <20070130104120.GB14571@lst.de>
-References: <45BE4ED0.5030808@us.ibm.com> <45BE4FA4.9020105@us.ibm.com>
-	<200701300839.05144.arnd@arndb.de>
-	<1170143630.26655.326.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1170143630.26655.326.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH 5/9] ps3: Preallocate bootmem memory for ps3fb
+Date: Tue, 30 Jan 2007 11:44:41 +0100
+References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701300934270.4728@pademelon.sonytel.be>
+	<1170148116.26655.328.camel@localhost.localdomain>
+In-Reply-To: <1170148116.26655.328.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200701301144.42120.arnd@arndb.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Jan 30, 2007 at 06:53:50PM +1100, Benjamin Herrenschmidt wrote:
+On Tuesday 30 January 2007 10:08, Benjamin Herrenschmidt wrote:
 > 
-> > > +/* Defines used for sync_start */
-> > > +#define SKIP_GENERIC_SYNC 0
-> > > +#define SYNC_START_ERROR -1
-> > > +#define DO_GENERIC_SYNC 1
-> > > +
-> > > +typedef struct vma_map
-> > > +{
-> > > +       struct vma_map *next;
-> > > +       unsigned int vma;
-> > > +       unsigned int size;
-> > > +       unsigned int offset;
-> > > +       unsigned int guard_ptr;
-> > > +       unsigned int guard_val;
-> > > +} vma_map_t;
+> > I'm afraid that assumption is usually false, as you only need to access the
+> > FLASH when you want to change boot flags or update the boot loader.
 > 
-> I haven't had time to look in details yet but in that context, what does
-> "vma" stands for ? There's already an important vm data structure in
-> linux routinely called "vma" and thus I suspect this is a poor naming
-> choice as it will cause confusion.
+> At the same time, flash doesn't have to be fast... can't we use a
+> smaller bounce buffer (a page) and divide the transfer ?
 
-It looks like it actually is dealing with vma to me.  But then again:
+No, the problem is that the flash interface only supports an hcall
+for 'erase+write', but not separately, so the writes need to do
+in erase block size, even if the physical medium can probably
+handle smaller writes after a block was erased.
 
- - please don't use typedefs for structures
- - there might be a more descriptive name for this than just vma_map
+	Arnd <><
