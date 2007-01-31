@@ -1,18 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E2A09DE204
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CAC49DDFB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Jan 2007 16:01:02 +1100 (EST)
-Date: Wed, 31 Jan 2007 08:01:00 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-Subject: Re: cpm_uart: WARNING: no UART devices found
-Message-ID: <20070131080100.7b521527@localhost.localdomain>
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E5F5EB8@aquib01a>
-References: <F1F6EC0C8B75034F9E3A79FC85122E8E5F5EB8@aquib01a>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_9lKLRDThc+f.vAn.dZ_.RVb;
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
+	Wed, 31 Jan 2007 17:46:50 +1100 (EST)
+In-Reply-To: <266006.37029.qm@web8410.mail.in.yahoo.com>
+References: <266006.37029.qm@web8410.mail.in.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <42D831B8-9452-48E1-B996-2E970EB9DC27@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Differentiate between two e500 core (in mult-core e500)
+Date: Wed, 31 Jan 2007 00:45:50 -0600
+To: vinay hegde <thisismevinay@yahoo.co.in>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,38 +26,72 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---Sig_9lKLRDThc+f.vAn.dZ_.RVb
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, 30 Jan 2007 09:30:49 +0100
-DI BACCO ANTONIO - technolabs wrote:
+On Jan 30, 2007, at 10:58 PM, vinay hegde wrote:
 
-> My board has an MPC880 and it is named TL880 with a linux 2.6.19, I
-> copied kernel configurations from the very similar board mpc885ads.
-> I filled in platform data in file TL880_setup.c but I see that
-> function TL880_fixup_uart_pdata is never called and, as a
-> consequence, I see the message cpm_uart: WARNING: no UART devices
-> found. Also I receive message: IP-Config: No network devices
-> available.=20
+> Hi,
+>
+> Sorry for the repeat mail on this, I forgot to ask the
+> question;-)
+>
+> If anybody knows how to differentiate one e500 core
+> from another (in multi-core proc's), please post a
+> message.
 
-You seem to miss the board ppc_sys_identify_by_name() (or alike) call - so =
-BOARD_CHIP_NAME is=20
-not defined for your board in BSP file. There is no other way to properly i=
-dentify SoC with 8xx...
---
-Sincerely, Vitaly
+Do you mean some software ID to know which core you are running on?
 
---Sig_9lKLRDThc+f.vAn.dZ_.RVb
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+If so the PIR should be used for this purpose.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+- k
 
-iD8DBQFFwCKMuOg9JvQhSEsRAuVhAJ4l/ZnfvxlyXX8oqqmup72d8Wm6CQCfZnkk
-A80x5wEozP50hgL5jGGYf98=
-=fBi2
------END PGP SIGNATURE-----
-
---Sig_9lKLRDThc+f.vAn.dZ_.RVb--
+> --- vinay hegde <thisismevinay@yahoo.co.in> wrote:
+>
+>> Hi,
+>>
+>> I have a need to write a POST sort of a test to test
+>> L1 data/inst cache residing on each of the e500 v2
+>> multi-core seperately (for a network hardware). This
+>> is because multicore e500 has seperate L1 caches and
+>> shared L2 cache.
+>>
+>> This is for mpc8572. I learnt from this list that
+>> mpc8572 isn't out yet, but thought that
+>> differentiating between e500 mult-cores has nothing
+>> to
+>> do with mpc8572.
+>>
+>> Please let me know if you have any inputs.
+>>
+>> Thanks,
+>> Vinay.
+>>
+>>
+>>
+>>
+> ______________________________________________________________________ 
+> ______________
+>> Expecting? Get great news right away with email
+>> Auto-Check.
+>> Try the Yahoo! Mail Beta.
+>>
+> http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html
+>>
+>> _______________________________________________
+>> Linuxppc-embedded mailing list
+>> Linuxppc-embedded@ozlabs.org
+>>
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>
+>
+>
+>
+> ______________________________________________________________________ 
+> ______________
+> Don't get soaked.  Take a quick peak at the forecast
+> with the Yahoo! Search weather shortcut.
+> http://tools.search.yahoo.com/shortcuts/#loc_weather
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
