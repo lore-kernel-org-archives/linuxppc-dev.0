@@ -1,27 +1,21 @@
-Return-Path: <rmcguire@videopresence.com>
-Received: from smtpauth01.prod.mesa1.secureserver.net
-	(smtpauth01.prod.mesa1.secureserver.net [64.202.165.181])
-	by ozlabs.org (Postfix) with SMTP id B2779DDE3F
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3133EDDEC0
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Feb 2007 09:28:22 +1100 (EST)
-From: "Russell McGuire" <rmcguire@videopresence.com>
-To: "'Kumar Gala'" <galak@kernel.crashing.org>
-References: <mailman.1454.1170226011.9285.linuxppc-embedded@ozlabs.org>
-	<000601c74531$62220820$6405a8c0@absolut>
-	<0ACC0A3E-9DF3-4927-8F67-E525BA0E6C13@kernel.crashing.org>
-	<000001c7454b$69a25ae0$6405a8c0@absolut>
-	<0A655A39-4101-48B4-BE9C-50A30163679C@kernel.crashing.org>
-	<000701c7457a$d180e300$6405a8c0@absolut>
-	<183E66A5-E983-4D17-96E9-2EEAE6FDF7B6@kernel.crashing.org>
-Subject: RE: Audigy SE / ca0106 driver for PowerPC?
-Date: Wed, 31 Jan 2007 14:27:59 -0800
-Message-ID: <000f01c74587$10bc5cf0$6405a8c0@absolut>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <183E66A5-E983-4D17-96E9-2EEAE6FDF7B6@kernel.crashing.org>
+	Thu,  1 Feb 2007 09:30:32 +1100 (EST)
+In-Reply-To: <000b01c74583$7166e6f0$3a0d10ac@Radstone.Local>
+References: <000b01c74583$7166e6f0$3a0d10ac@Radstone.Local>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
+Message-Id: <9445098E-3EA5-485D-86AC-DDDBA664821F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Huge page support for PowerPC 32 bit and WIMG flexibility
+Date: Wed, 31 Jan 2007 16:29:25 -0600
+To: Ilya Lipovsky <lipovsky@cs.bu.edu>
 Cc: linuxppc-embedded@ozlabs.org
-Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,101 +26,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This makes sense...
 
-So if I have setup in U-boot the PCI IO space to be at 0xf0300000 and PCI
-MOM space at 0x80000000 then the inl() command should be accessing the
-0xf0300000 space? And the frame buffer is accessing the 0x80000000. 
+On Jan 31, 2007, at 4:01 PM, Ilya Lipovsky wrote:
 
-The lock I experience, is when I compile the driver into the kernel. During
-the PCI Probing, I have turned on ALL of the debug output, as well as placed
-a ton of extra debug <printk> inside the ca0106 driver. I can see clearly
-the kernel detects I have a sound card, as does it detect the video card.
-Though I haven't gotten any PCI cards to function yet... The machine
-literally just halts the boot cycle inside the first inl() command, and just
-sits here until the reset button is pressed. It feels much like an illegal
-access to a non-existant memory space <maybe that should be my clue = bus
-hang?>
-
-Perhaps then my problem lies in the OF_BLOB I am passing in to Linux? Could
-this cause the problem? Is there a document someplace that describes the
-<reg structure> passed into the kernel on the OF_BLOB for the PCI setup? I
-made a good guess estimating this from other BLOB/dts files, but it is
-possible I have some incorrect values.
-
--Russ
------Original Message-----
-From: Kumar Gala [mailto:galak@kernel.crashing.org] 
-Sent: Wednesday, January 31, 2007 1:55 PM
-To: rmcguire@videopresence.com
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Audigy SE / ca0106 driver for PowerPC?
-
-
-On Jan 31, 2007, at 3:00 PM, Russell McGuire wrote:
-
-> I am using the Freescale MPC8360E, with U-boot 1.2.0.
-> When I compile the kernel <2.6.20-rc6> I select the MPC8360E-MDS  
-> board.
-> ARCH = PowerPC.
+> Hi,
 >
-> Well I might be all confused on the IO Remap, but if I look through  
-> the
-> nvidafb driver and the ati frame buffer driver I can see the
-> resource_start() and pci_resource_len() function being called,  
-> followed by
-> the ioremap() before any configuration is done with the PCI boards.
-
-The difference is the nvidafb driver isn't doing PCI IO but PCI mem  
-accesses (note, I didn't see any inl/outl references in the nvida  
-driver).
-
-> The ca0106 driver seems to miss this <ioremap> function, and it is  
-> the only
-> one that 100% locks the system up during the PCI probing <that I have
-> tried>, and it happens after/during the very first inl() or outl()  
-> command.
-
-This may be because IO space is setup properly.
-
-When you say locks the system, what exactly happens?
-
-> I read a thread someplace that says that pci_resource_start() is not
-> intended to return an actual address, but rather a token that is to  
-> be used
-> by the ioremap() function? It just happens that on some systems  
-> this value
-> is the same and so for some it will not fail with a missing ioremap 
-> (), but
-> others it will not be. To be safe it must be passed through ioremap 
-> ()? This
-> is the deprecated part, <right term? Perhaps just bad assumption is  
-> a better
-> one> that this driver makes.
+> I am not experienced in kernel development, so please be patient.
 >
-> After looking through more drivers, this ioremap seems 100% in  
-> place on my
-> drivers. Maybe nobody has tested this with PowerPC in the past?
-
-ioremap() is intended for use with PCI MEM accesses not PCI IO.  If  
-you think about the fact that PCI IO is based on the x86 port IO  
-concept this makes sense.
-
-> See this thread as an example:
-> http://linux.derkeiler.com/Mailing-Lists/Kernel/2003-09/1187.html
+> After exploring the latest (2.19.2) sources it appears that there =20
+> is no huge page support for the 32 bit powerpc platform. I deduced =20
+> it by starting from 0x300 in head_32.S and comparing notes with =20
+> head_64.S. It appears that the only sensible path for hashing in a =20
+> huge page (on 64bit ppc) is via:
 >
-> Or see:
-> /drivers/video/nvidia/nvidia.c lines 1239->1243
+> 0x300: data_access -> do_hash_page -> hash_page -> hash_huge_page
 >
-> Verses
->
-> /sound/pci/ca0106/ca0106_main.c
-> lines 1279 till the interrupt request
-> then lines 1069->1089 at which it locks on inl()
->
-> I don't mean to argue, I am just confused at this point.
+> Unfortunately, on the 32bit, all paths that do anything useful end =20
+> up in create_hpte() found in hash_low_32.S. I noticed someone on =20
+> this mailing list claiming huge page support for IBM 44x core=85 Is =20=
 
-Its ok.  I don't thinking you're arguing, just trying to figure out  
-what's going on.
+> it possible to make it general enough to encompass ppc32 in general?
+>
+> Another issue I have is the absence of control over hardware =20
+> specific attributes of memory such as WIMG. More concretely, I am =20
+> interested in having the ability to allocate off the heap in such a =20=
 
-- k
+> way so as to explicitly set the M (coherency) bit off =20
+> (independently of SMP or non-SMP mode). This is needed because some =20=
+
+> multicore PowerPC platforms (e.g. 745x) perform an extra address =20
+> broadcast to guarantee cache coherency per each store miss on a =20
+> cacheline. This degrades performance for store-bound programs.
+>
+> I understand that hashing pages as non-cache-coherent makes data =20
+> contained therein a potential victim to cache coherency paradoxes. =20
+> Nevertheless, since I am working on high performance library, I am =20
+> prepared to shift coherency guarantees to the library, which is =20
+> supposed the one managing the data flow between memory and CPU =20
+> caches intelligently.
+>
+> So, I have 2 main questions:
+>
+> 1)       What=92s so special about ppc32 that it didn=92t get the =20
+> matching feature of huge page support that ppc64 has? Who is =20
+> responsible/willing to fix it?
+The ppc32 HW doesn't support the same MMU features that ppc64 does.  =20
+There's a possibility for something like tlbfs support using BATs, =20
+but the normal MMU path doesn't have any HW capable of doing large =20
+pages.
+
+> 2)       Is it appropriate to provide a syscall mechanism (parallel =20=
+
+> to sys_brk, sys_mmap, and sys_shmget) to add WIMG settings?
+You can do some of this via mmap today.  I think O_SYNC is the flag =20
+you need (well at least for mmap'ing /dev/mem).
+
+> Overall, the vision here is to be able (from user-side, on =20
+> powerpc32) to call:
+>
+>
+>
+> shmid =3D shmget(2, LENGTH, SHM_HUGETLB | IPC_CREAT | SHM_R | SHM_W | =20=
+
+> POWERPC_NONCOHERENT);
+>
+> shmaddr =3D shmat(shmid, ADDR, SHMAT_FLAGS);
+>
+>
+>
+> And get a segment mapped with wimg=3D0bxx0x (actually, I assume all =20=
+
+> x=92s are 0). This would be very nice!
+>
+>
+>
+>
+>
+> Thank you,
+>
+> -Ilya
+>
+>
+>
+> P.S. As a side note, it is pretty difficult to read kernel sources =20
+> (especially assembly ones) because of the lack of comments for =20
+> people who are not in the kernel hacker =93circle.=94 For example, =
+what =20
+> in the whole world is =93paca??=94
+"paca" has to deal with the IBM HV interface.
+
+- k=
