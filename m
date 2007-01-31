@@ -1,12 +1,21 @@
-Return-Path: <cel@us.ibm.com>
-Subject: [PATCH] CELL SPU task notification
-From: Carl Love <cel@us.ibm.com>
-To: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-Content-Type: text/plain
-Date: Wed, 31 Jan 2007 12:36:24 -0800
-Message-Id: <1170275784.5204.10.camel@dyn9047021078.beaverton.ibm.com>
-Mime-Version: 1.0
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 2FAC3DDE37
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 07:53:20 +1100 (EST)
+In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901053E8497@EMPBEDEX.empirix.com>
+References: <BD261180E6D35F4D9D32F3E44FD3D901064432D9@EMPBEDEX.empirix.com>
+	<2B407BB2-BBA6-4B13-BF34-DABFB3F8ADEF@kernel.crashing.org>
+	<BD261180E6D35F4D9D32F3E44FD3D90106443362@EMPBEDEX.empirix.com>
+	<21F08FBD-6702-46A2-9592-329D8CF04073@kernel.crashing.org>
+	<BD261180E6D35F4D9D32F3E44FD3D901053E8497@EMPBEDEX.empirix.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <F1952BE4-7FE4-4432-8B39-D3D6EF7081D0@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: options for root file system for MPC8548
+Date: Wed, 31 Jan 2007 14:52:54 -0600
+To: "Morrison, Tom" <tmorrison@empirix.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,151 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is the updates to the patch previously posted by Maynard Johnson as
-"PATCH 3/4 Add support to OProfile for profiling CELL".  All concerns
-have been addressed.  The only open issue is the movement of the
-notify_active flag to sched_flag in a future patch by Christoph
-Hellwig's for SPU scheduling.
 
-Subject: Enable SPU switch notification to detect currently active SPU
-tasks.
+On Jan 30, 2007, at 17:14, Morrison, Tom wrote:
 
-From: Maynard Johnson <maynardj@us.ibm.com>, Carl Love
-<carll@us.ibm.com>
-
-This patch adds to the capability of spu_switch_event_register so that
-the
-caller is also notified of currently active SPU tasks.  It also exports
-spu_switch_event_register and spu_switch_event_unregister.
-
-Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+>
+> they have full MPC8548 support...and fwiw, the
+> standard fedora & debian ppc is incompatible
+> with the e500 core (throws floating point
+> exceptions - due to different FP instruction set)...
+>
+> I like their update support...
+>
+> and fyi, freescale already turns on software emulation
+> in their kernel CDS support package by default. We
+> intend to turn that OFF very soon!
 
 
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/sched.c
-===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/sched.c
-2007-01-18 16:43:14.324526032 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/sched.c
-2007-01-30 09:35:03.237837184 -0600
-@@ -78,21 +78,46 @@
- 
- static BLOCKING_NOTIFIER_HEAD(spu_switch_notifier);
- 
--static void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx)
- {
- 	blocking_notifier_call_chain(&spu_switch_notifier,
- 			    ctx ? ctx->object_id : 0, spu);
- }
- 
-+static void notify_spus_active(void)
-+{
-+	int node;
-+	/* Wake up the active spu_contexts. When the awakened processes 
-+	 * sees their notify_active flag is set, they will call
-+	 * spu_switch_notify();
-+	 */
-+	for (node = 0; node < MAX_NUMNODES; node++) {
-+		struct spu *spu;
-+		mutex_lock(&spu_prio->active_mutex[node]);
-+		list_for_each_entry(spu, &spu_prio->active_list[node], list) {
-+			struct spu_context *ctx = spu->ctx;
-+			spu->notify_active = 1;
-+			wake_up_all(&ctx->stop_wq);
-+		}
-+		mutex_unlock(&spu_prio->active_mutex[node]);
-+	}
-+}
-+
- int spu_switch_event_register(struct notifier_block * n)
- {
--	return blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	int ret;
-+	ret = blocking_notifier_chain_register(&spu_switch_notifier, n);
-+	if (!ret)
-+		notify_spus_active();
-+	return ret;
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_register);
- 
- int spu_switch_event_unregister(struct notifier_block * n)
- {
- 	return blocking_notifier_chain_unregister(&spu_switch_notifier, n);
- }
-+EXPORT_SYMBOL_GPL(spu_switch_event_unregister);
- 
- 
- static inline void bind_context(struct spu *spu, struct spu_context
-*ctx)
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/spufs.h
-2007-01-18 16:43:14.340523600 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/spufs.h
-2007-01-26 16:26:49.733703448 -0600
-@@ -180,6 +180,7 @@
- int spu_activate(struct spu_context *ctx, u64 flags);
- void spu_deactivate(struct spu_context *ctx);
- void spu_yield(struct spu_context *ctx);
-+void spu_switch_notify(struct spu *spu, struct spu_context *ctx);
- int __init spu_sched_init(void);
- void __exit spu_sched_exit(void);
- 
-Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/run.c
-===================================================================
---- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/spufs/run.c
-2007-01-18 16:43:14.340523600 -0600
-+++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/spufs/run.c	2007-01-26
-16:24:38.979744856 -0600
-@@ -45,9 +45,10 @@
- 	u64 pte_fault;
- 
- 	*stat = ctx->ops->status_read(ctx);
--	if (ctx->state != SPU_STATE_RUNNABLE)
--		return 1;
-+
- 	spu = ctx->spu;
-+	if (ctx->state != SPU_STATE_RUNNABLE || spu->notify_active)
-+		return 1;
- 	pte_fault = spu->dsisr &
- 	    (MFC_DSISR_PTE_NOT_FOUND | MFC_DSISR_ACCESS_DENIED);
- 	return (!(*stat & 0x1) || pte_fault || spu->class_0_pending) ? 1 : 0;
-@@ -305,6 +306,7 @@
- 		   u32 *npc, u32 *event)
- {
- 	int ret;
-+	struct spu * spu;
- 	u32 status;
- 
- 	if (down_interruptible(&ctx->run_sema))
-@@ -318,8 +320,16 @@
- 
- 	do {
- 		ret = spufs_wait(ctx->stop_wq, spu_stopped(ctx, &status));
-+		spu = ctx->spu;
- 		if (unlikely(ret))
- 			break;
-+		if (unlikely(spu->notify_active)) {
-+			spu->notify_active = 0;
-+			if (!(status & SPU_STATUS_STOPPED_BY_STOP)) {
-+				spu_switch_notify(spu, ctx);
-+				continue;
-+			}
-+		}
- 		if ((status & SPU_STATUS_STOPPED_BY_STOP) &&
- 		    (status >> SPU_STOP_STATUS_SHIFT == 0x2104)) {
- 			ret = spu_process_callback(ctx);
-Index: linux-2.6.20-rc1/include/asm-powerpc/spu.h
-===================================================================
---- linux-2.6.20-rc1.orig/include/asm-powerpc/spu.h	2007-01-18
-16:43:19.932605072 -0600
-+++ linux-2.6.20-rc1/include/asm-powerpc/spu.h	2007-01-24
-12:17:30.209676992 -0600
-@@ -144,6 +144,7 @@
- 
- 	void* pdata; /* platform private data */
- 	struct sys_device sysdev;
-+	int notify_active;
- };
- 
- struct spu *spu_alloc(void);
+Why?  Maybe I'm blanking on something obvious, here, but the code  
+doesn't hurt you if it's on.  But the slightest mistake in building  
+an application could lead to a crash if it's off.  We try to make  
+sure our toolchains don't produce classic fp instructions, but you  
+can easily use the wrong compiler, or grab a library that left in a  
+mtfpscr or something.  If FP emulation is on, that won't really  
+affect performance, and it will mean your program doesn't crash at  
+random.
+
+And I'd like to reaffirm Stuart's points that you don't have to use  
+Busy Box, or the built-in kernel.  The kernel and Root FS should be  
+almost entirely independent (breaking user-space is considered a bug).
+
+Andy
