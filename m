@@ -1,22 +1,19 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 32DCDDDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 15:55:17 +1100 (EST)
-Date: Wed, 31 Jan 2007 07:55:13 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: 82xx CPU features
-Message-ID: <20070131075513.55302696@localhost.localdomain>
-In-Reply-To: <8E9D9D0A-80B5-4861-8612-7ABAF4815C4D@kernel.crashing.org>
-References: <Pine.LNX.4.60.0701252333210.13557@poirot.grange>
-	<EB5DC4AE-E872-432E-A078-79A4385D6D52@kernel.crashing.org>
-	<Pine.LNX.4.60.0701302301250.15262@poirot.grange>
-	<8E9D9D0A-80B5-4861-8612-7ABAF4815C4D@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_J0hmZ97BVKSMDM5ddRBW.62;
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 31 Jan 2007 15:57:59 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Subject: Re: [PATCH 2/3] [POWERPC] Fix kernel build errors for mpc8272ads and
+	mpc8560ads
+Message-ID: <20070131045759.GB25231@localhost.localdomain>
+References: <20070130230711.21111.52924.stgit@localhost.localdomain>
+	<20070130230859.21111.39370.stgit@localhost.localdomain>
+	<F739E1EE-3BA6-428D-8C96-AB09E1B9773B@kernel.crashing.org>
+	<20070131073947.67520c16@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="liOOAslEiF7prFVr"
+In-Reply-To: <20070131073947.67520c16@localhost.localdomain>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,51 +23,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_J0hmZ97BVKSMDM5ddRBW.62
-Content-Type: text/plain; charset=US-ASCII
+
+--liOOAslEiF7prFVr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 30 Jan 2007 16:35:03 -0600
-Kumar Gala wrote:
-
+On Wed, Jan 31, 2007 at 07:39:47AM +0300, Vitaly Bordug wrote:
+> On Tue, 30 Jan 2007 17:41:14 -0600
+> Kumar Gala wrote:
 >=20
-> On Jan 30, 2007, at 4:31 PM, Guennadi Liakhovetski wrote:
+> >=20
+> > On Jan 30, 2007, at 5:09 PM, Vitaly Bordug wrote:
+> >=20
+> > >
+> > > Recent update of asm-powerpc/io.h caused cpm-related stuff to
+> > > break in the
+> > > current kernel. Current patch fixes it, as well as other =20
+> > > inconsistencies
+> > > expressed, that do not permit targets from working properly:
+> > >
+> > > - Updated dts with a chosen node with interrupt controller,
+> >=20
+> > Why do we need this?  I'm not aware of any other boards having to
+> > set this?
 >=20
-> > On Fri, 26 Jan 2007, Kumar Gala wrote:
-> >
-> >> For _CAN_NAP, I'm guessing its historic, maybe Dan knows why it =20
-> >> wasn't set.
-> >> What happens if you try to set it?  Are there implications at the =20
-> >> system level
-> >> with regards to _CAN_NAP?
-> >
-> > Just tested: set CPU_FTR_MAYBE_CAN_DOZE for 82xx,
-> > CONFIG_BDI_SWITCH is not
-> > defined, echoed 1 to /proc/sys/kernel/powersave-nap - and a 8241
-> > still runs... I'll try to measure if there's any difference in power
-> > consumption:-))
-> >
-> >> I'm looking at the CPU_FTR_PPC_LE it varies if we should use =20
-> >> _PPC_LE vs
-> >> _TRUE_LE (or whatever the other one is called).
->=20
-> It would be good for someone to test an 8260 class (826x, 8272, =20
-> etc..) to see if they have any issues.
+> Correct. In fact I dropped that change, after "dtc -f" discussion
+> but forgot to clear this line from desc. Will resend in a few
+> minutes, thanks for pointing it out.
 
-I can see with 8272 if that makes any difference.
---
-Thanks, Vitaly
+Oh.. if this is no longer needed we should just remove the check from
+dtc.
 
---Sig_J0hmZ97BVKSMDM5ddRBW.62
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+--=20
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
+
+--liOOAslEiF7prFVr
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: Digital signature
+Content-Disposition: inline
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQFFwCEyuOg9JvQhSEsRAiA8AKCFrZmOIQaCxP//gQ+p6YypIPosLQCeIJr5
-Re+Pyto+cvucnz97otlwFs8=
-=9Bny
+iD8DBQFFwCHXaILKxv3ab8YRAi8zAJ9ZuaTVanJCADMobjmJJz4/nT99ywCfRaic
+QyzwGouIFNJzsd+Mk1msLbk=
+=BwSv
 -----END PGP SIGNATURE-----
 
---Sig_J0hmZ97BVKSMDM5ddRBW.62--
+--liOOAslEiF7prFVr--
