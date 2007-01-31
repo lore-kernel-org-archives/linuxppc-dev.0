@@ -1,30 +1,21 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id F2116DDF83
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2F525DDDE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Feb 2007 00:53:14 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.sysgo.com (Postfix) with ESMTP id A94B1CC144
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Jan 2007 14:34:16 +0100 (CET)
-Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id 7F925CC03D
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Jan 2007 14:34:16 +0100 (CET)
-Received: from gja.ulm.sysgo.com (unknown [172.30.1.130])
-	by donald.sysgo.com (Postfix) with ESMTP id 803EB2E42C2
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Jan 2007 14:34:11 +0100 (CET)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: mmap bug (all archs) w/ fix
-Date: Wed, 31 Jan 2007 14:34:10 +0100
-References: <200701310254.l0V2sh3L053534@penguin.ncube.com>
-In-Reply-To: <200701310254.l0V2sh3L053534@penguin.ncube.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701311434.10906.g.jaeger@sysgo.com>
+	Thu,  1 Feb 2007 01:38:35 +1100 (EST)
+In-Reply-To: <90010.28006.qm@web8411.mail.in.yahoo.com>
+References: <90010.28006.qm@web8411.mail.in.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9B19C2EE-5476-4091-B4FF-76C197B3BB53@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Differentiate between two e500 core (in mult-core e500)
+Date: Wed, 31 Jan 2007 08:37:20 -0600
+To: vinay hegde <thisismevinay@yahoo.co.in>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,29 +26,127 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mittwoch, 31. Januar 2007, Michael Galassi wrote:
-[SNIPSNAP]
-> This clearly applies to all architectures and all versions (at least 2.4
-> onward), could someone point me at some document which describes how to
-> submit patches to "the right place" please?  I really do not want to
-> support any fixes myself so getting fixes to obvious bugs merged into
-> the mailine code would be a good thing (tm).
-> 
-IIRC, the problem is not the code that you try to fix, the problem is
-the mmap call, which uses a signed 32 bit integer value for the offset
-argument. And this one bites you when having addresses to map > 
-0x80000000 (I assume that you try to mmap an area somewhere @
-0xF8000000-0xFFFFFFFF).
 
-Try to use mmap2 call which overcomes this problem by using the page
-size as unit of the offset argument instead of bytes.
+On Jan 31, 2007, at 2:02 AM, vinay hegde wrote:
 
-So no patch is needed and you should be able ti map the flash.
+> Hi,
+>
+> Actually, what I mean is, there are two independent L1
+> caches (one in first e500 core and other in second
+> e500 core) in mpc8572. Now, if I am running cache
+> test(POST) on mpc8572, I must somehow make sure that
+> it tests both the L1 caches. Generally, earlier there
+> used to be one e500 core, one L1 cache and hence cache
+> test does not need to query whether it is testing L1
+> of first core or L1 of second.
+>
+> So, how to make sure that I am testing L1 caches on
+> _both_ the e500 cores?
 
-HTH
-Gerhard
+Ok, will it sounds like just want to run your tests on both cores.   
+It depends on how you are invoking your tests today.  Is it from  
+bootcode? or a Linux app or driver?
 
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+- k
+
+>> On Jan 30, 2007, at 10:58 PM, vinay hegde wrote:
+>>
+>>> Hi,
+>>>
+>>> Sorry for the repeat mail on this, I forgot to ask
+>> the
+>>> question;-)
+>>>
+>>> If anybody knows how to differentiate one e500
+>> core
+>>> from another (in multi-core proc's), please post a
+>>> message.
+>>
+>> Do you mean some software ID to know which core you
+>> are running on?
+>>
+>> If so the PIR should be used for this purpose.
+>>
+>> - k
+>>
+>>> --- vinay hegde <thisismevinay@yahoo.co.in> wrote:
+>>>
+>>>> Hi,
+>>>>
+>>>> I have a need to write a POST sort of a test to
+>> test
+>>>> L1 data/inst cache residing on each of the e500
+>> v2
+>>>> multi-core seperately (for a network hardware).
+>> This
+>>>> is because multicore e500 has seperate L1 caches
+>> and
+>>>> shared L2 cache.
+>>>>
+>>>> This is for mpc8572. I learnt from this list that
+>>>> mpc8572 isn't out yet, but thought that
+>>>> differentiating between e500 mult-cores has
+>> nothing
+>>>> to
+>>>> do with mpc8572.
+>>>>
+>>>> Please let me know if you have any inputs.
+>>>>
+>>>> Thanks,
+>>>> Vinay.
+>>>>
+>>>>
+>>>>
+>>>>
+>>>
+>>
+> ______________________________________________________________________
+>>
+>>> ______________
+>>>> Expecting? Get great news right away with email
+>>>> Auto-Check.
+>>>> Try the Yahoo! Mail Beta.
+>>>>
+>>>
+>>
+> http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html
+>>>>
+>>>> _______________________________________________
+>>>> Linuxppc-embedded mailing list
+>>>> Linuxppc-embedded@ozlabs.org
+>>>>
+>>>
+>>
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>>>
+>>>
+>>>
+>>>
+>>>
+>>>
+>>
+> ______________________________________________________________________
+>>
+>>> ______________
+>>> Don't get soaked.  Take a quick peak at the
+>> forecast
+>>> with the Yahoo! Search weather shortcut.
+>>>
+>> http://tools.search.yahoo.com/shortcuts/#loc_weather
+>>> _______________________________________________
+>>> Linuxppc-embedded mailing list
+>>> Linuxppc-embedded@ozlabs.org
+>>>
+>>
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>>
+>>
+>
+>
+>
+>
+> ______________________________________________________________________ 
+> ______________
+> 8:00? 8:25? 8:40? Find a flick in no time
+> with the Yahoo! Search movie showtime shortcut.
+> http://tools.search.yahoo.com/shortcuts/#news
