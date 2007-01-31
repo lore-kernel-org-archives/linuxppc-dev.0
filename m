@@ -3,18 +3,19 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2F525DDDE4
+	by ozlabs.org (Postfix) with ESMTP id 6939CDDF05
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Feb 2007 01:38:35 +1100 (EST)
-In-Reply-To: <90010.28006.qm@web8411.mail.in.yahoo.com>
-References: <90010.28006.qm@web8411.mail.in.yahoo.com>
+	Thu,  1 Feb 2007 01:53:49 +1100 (EST)
+In-Reply-To: <000601c74531$62220820$6405a8c0@absolut>
+References: <mailman.1454.1170226011.9285.linuxppc-embedded@ozlabs.org>
+	<000601c74531$62220820$6405a8c0@absolut>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9B19C2EE-5476-4091-B4FF-76C197B3BB53@kernel.crashing.org>
+Message-Id: <0ACC0A3E-9DF3-4927-8F67-E525BA0E6C13@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Differentiate between two e500 core (in mult-core e500)
-Date: Wed, 31 Jan 2007 08:37:20 -0600
-To: vinay hegde <thisismevinay@yahoo.co.in>
+Subject: Re: Audigy SE / ca0106 driver for PowerPC?
+Date: Wed, 31 Jan 2007 08:52:47 -0600
+To: rmcguire@videopresence.com
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,126 +28,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Jan 31, 2007, at 2:02 AM, vinay hegde wrote:
+On Jan 31, 2007, at 6:14 AM, Russell McGuire wrote:
 
-> Hi,
+> All,
 >
-> Actually, what I mean is, there are two independent L1
-> caches (one in first e500 core and other in second
-> e500 core) in mpc8572. Now, if I am running cache
-> test(POST) on mpc8572, I must somehow make sure that
-> it tests both the L1 caches. Generally, earlier there
-> used to be one e500 core, one L1 cache and hence cache
-> test does not need to query whether it is testing L1
-> of first core or L1 of second.
+> I recently tried to plugin and use an Audigy SE PCI card with  
+> 2.6.20 and
+> noticed that it would lock up during driver registration.
 >
-> So, how to make sure that I am testing L1 caches on
-> _both_ the e500 cores?
+> After a little digging, I found that the interrupt routine and a  
+> few other
+> functions are relying on the x86 inl() / outl() to read from the  
+> sound card.
+>
+> Is anyone aware of a PPC port for this driver? Or if it would be  
+> feasible? I
+> haven't ported a driver between architectures before.
+>
+> Or does the inl() / outl() already have PPC equivalent functions  
+> and I need
+> to be looking for a PCI configuration problem with my system?
 
-Ok, will it sounds like just want to run your tests on both cores.   
-It depends on how you are invoking your tests today.  Is it from  
-bootcode? or a Linux app or driver?
+We implement these on PPC.  Clearly we don't have x86 style port IO,  
+usually its handled by memory mapped access to a special region of  
+memory that will be converted into a PCI IO space access.
 
 - k
-
->> On Jan 30, 2007, at 10:58 PM, vinay hegde wrote:
->>
->>> Hi,
->>>
->>> Sorry for the repeat mail on this, I forgot to ask
->> the
->>> question;-)
->>>
->>> If anybody knows how to differentiate one e500
->> core
->>> from another (in multi-core proc's), please post a
->>> message.
->>
->> Do you mean some software ID to know which core you
->> are running on?
->>
->> If so the PIR should be used for this purpose.
->>
->> - k
->>
->>> --- vinay hegde <thisismevinay@yahoo.co.in> wrote:
->>>
->>>> Hi,
->>>>
->>>> I have a need to write a POST sort of a test to
->> test
->>>> L1 data/inst cache residing on each of the e500
->> v2
->>>> multi-core seperately (for a network hardware).
->> This
->>>> is because multicore e500 has seperate L1 caches
->> and
->>>> shared L2 cache.
->>>>
->>>> This is for mpc8572. I learnt from this list that
->>>> mpc8572 isn't out yet, but thought that
->>>> differentiating between e500 mult-cores has
->> nothing
->>>> to
->>>> do with mpc8572.
->>>>
->>>> Please let me know if you have any inputs.
->>>>
->>>> Thanks,
->>>> Vinay.
->>>>
->>>>
->>>>
->>>>
->>>
->>
-> ______________________________________________________________________
->>
->>> ______________
->>>> Expecting? Get great news right away with email
->>>> Auto-Check.
->>>> Try the Yahoo! Mail Beta.
->>>>
->>>
->>
-> http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html
->>>>
->>>> _______________________________________________
->>>> Linuxppc-embedded mailing list
->>>> Linuxppc-embedded@ozlabs.org
->>>>
->>>
->>
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>>>
->>>
->>>
->>>
->>>
->>>
->>
-> ______________________________________________________________________
->>
->>> ______________
->>> Don't get soaked.  Take a quick peak at the
->> forecast
->>> with the Yahoo! Search weather shortcut.
->>>
->> http://tools.search.yahoo.com/shortcuts/#loc_weather
->>> _______________________________________________
->>> Linuxppc-embedded mailing list
->>> Linuxppc-embedded@ozlabs.org
->>>
->>
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>
->>
->
->
->
->
-> ______________________________________________________________________ 
-> ______________
-> 8:00? 8:25? 8:40? Find a flick in no time
-> with the Yahoo! Search movie showtime shortcut.
-> http://tools.search.yahoo.com/shortcuts/#news
