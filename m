@@ -1,18 +1,16 @@
 Return-Path: <Antonio.DiBacco@technolabs.it>
 Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id CDA59DE00C
+	by ozlabs.org (Postfix) with ESMTP id F09ADDE060
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Jan 2007 18:38:59 +1100 (EST)
+	Wed, 31 Jan 2007 18:41:26 +1100 (EST)
 MIME-Version: 1.0
-Subject: RE: reprogramming boot flash from live kernel
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 31 Jan 2007 08:38:57 +0100
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E622D4A@aquib01a>
-In-Reply-To: <BAY117-F2788BF76C2EAE39F2FDB99C8A50@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C7450B.358C0C2E"
+Subject: Any SPI driver for mpc8xx spi controller?
+Date: Wed, 31 Jan 2007 08:41:24 +0100
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E622D4C@aquib01a>
 From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: "Eric Nuckols" <jrocnuck@hotmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,12 +21,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Has anybody reprogrammed their bootup flash image while running a live
-linux=20
-> kernel?
-I think that's not a good thing to do. The kernel could decide to load
-something from the flash filesystem that you've overwritten and BOOM!!
-Let me know if you find a safe way to do it.
+This is a multi-part message in MIME format.
 
+------_=_NextPart_001_01C7450B.358C0C2E
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+I'm going to write an SPI controller driver for kernel 2.6 using the new
+driver model. My controller is that of an MPC880. Is there already a
+driver to do this? I don't want to reinvent the wheel.
+=20
 Bye,
 Antonio.
+
+------_=_NextPart_001_01C7450B.358C0C2E
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D029083907-31012007>I'm =
+going to write=20
+an SPI controller driver for kernel 2.6&nbsp;using the new driver model. =
+My=20
+controller is that of an MPC880. Is there already a driver to do this? I =
+don't=20
+want to reinvent the wheel.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D029083907-31012007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D029083907-31012007>Bye,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D029083907-31012007>Antonio.</SPAN></FONT></DIV></BODY></HTML>
+
+------_=_NextPart_001_01C7450B.358C0C2E--
