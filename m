@@ -1,19 +1,26 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH 4/4] Add support to OProfile for profiling Cell BE SPUs --
-	update
-Date: Wed, 31 Jan 2007 16:42:41 +0100
-References: <45BE4FA4.9020105@us.ibm.com>
-	<f00c5b64177eafd5445b9da2c8432aa8@bga.com>
-In-Reply-To: <f00c5b64177eafd5445b9da2c8432aa8@bga.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200701311642.42397.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Milton Miller <miltonm@bga.com>,
-	Carl Love <carll@us.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E7963DDF45
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 03:31:01 +1100 (EST)
+In-Reply-To: <20070131081519.6af307ce@localhost.localdomain>
+References: <20070130230711.21111.52924.stgit@localhost.localdomain>
+	<20070130230859.21111.39370.stgit@localhost.localdomain>
+	<F739E1EE-3BA6-428D-8C96-AB09E1B9773B@kernel.crashing.org>
+	<20070131073947.67520c16@localhost.localdomain>
+	<20C6E81C-CB34-461A-B1CD-FF302D83E2AB@kernel.crashing.org>
+	<20070131081519.6af307ce@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9DA72E8D-CB20-4EE5-8AE0-61BCB97F6C9E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] [POWERPC] Fix kernel build errors for mpc8272ads and
+	mpc8560ads
+Date: Wed, 31 Jan 2007 10:29:57 -0600
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +30,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 31 January 2007 10:24, Milton Miller wrote:
-> > +/* The three functions below are for maintaining and accessing
-> > + * the vma-to-file offset map.
-> > + */
-> > +vma_map_t * create_vma_map(const struct spu * spu, u64 objectid);
-> > +unsigned int vma_map_lookup(vma_map_t *map, unsigned int vma,
-> > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =A0 =
-=A0const struct spu * aSpu);
-> > +void vma_map_free(struct vma_map *map);
-> > +
->=20
-> Why would the SPU to cookie translation need to be different
-> than the standard vm one? =A0 Is it that spufs takes refs on the
-> pages but doesn't have the standard vma? =A0 Maybe an approach
-> of creating them would reuse the oprofile code.
+>> I think the 8272 dts still had the node in it.
+>>
+> No it does not, in the latest resubmit series at least - just have  
+> checked.
 
-It's a two stage process for SPUs:
+Yeah I noticed, I meant from the patchset earlier in the day :)
 
-* samples are relative to the local store, and for each sample
-  we need to know what context was running. The context is
-  identified over a pointer to user space effective addresses.
-* The effective address identifies the SPU ELF binary mapped
-  at that address. It may however be in the middle of a VMA,
-  so you get another offset into the mapped file.
-
-=46or each sample, you then get an offset into the ls, an offset
-into the file to identify the ELF object, and the dcookie
-for the file containing that object.
-
-As a consequence, you only need dcookies for the case where
-a context switch happens (the executable changes), but not
-for each of the samples during the a time slice, they all
-point to the same object.
-
-	Arnd <><
+- k
