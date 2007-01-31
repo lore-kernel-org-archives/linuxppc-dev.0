@@ -1,26 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E7963DDF45
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 03:31:01 +1100 (EST)
-In-Reply-To: <20070131081519.6af307ce@localhost.localdomain>
-References: <20070130230711.21111.52924.stgit@localhost.localdomain>
-	<20070130230859.21111.39370.stgit@localhost.localdomain>
-	<F739E1EE-3BA6-428D-8C96-AB09E1B9773B@kernel.crashing.org>
-	<20070131073947.67520c16@localhost.localdomain>
-	<20C6E81C-CB34-461A-B1CD-FF302D83E2AB@kernel.crashing.org>
-	<20070131081519.6af307ce@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9DA72E8D-CB20-4EE5-8AE0-61BCB97F6C9E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] [POWERPC] Fix kernel build errors for mpc8272ads and
-	mpc8560ads
-Date: Wed, 31 Jan 2007 10:29:57 -0600
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-cpk-R.bigfish.com (outbound-cpk.frontbridge.com
+	[207.46.163.16])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 6232EDDF5F
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 03:35:01 +1100 (EST)
+Message-ID: <45C0C530.4040407@am.sony.com>
+Date: Wed, 31 Jan 2007 08:34:56 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 2/10] ps3: AV Settings Driver Library
+References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701301800020.29487@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0701301800020.29487@pademelon.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,11 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> I think the 8272 dts still had the node in it.
->>
-> No it does not, in the latest resubmit series at least - just have  
-> checked.
+Geert Uytterhoeven wrote:
+> Add the PS3 AV Settings Driver Library.
+> 
+> The AV Settings driver is used to control Audio and Video settings.
+> It communicates with the policy manager through the virtual uart.
+> 
+...  
+> +config PS3_PS3AV
+> +	tristate "PS3 AV settings driver library"
+> +	select PS3_VUART
+> +	default y
+> +	help
+> +	  Include support for the PS3 Platform AV Settings driver library.
 
-Yeah I noticed, I meant from the patchset earlier in the day :)
+Sorry for not saying something before, but I really don't like calling this
+a library.  It is modeled as a driver, shows up as a device/driver pair under
+/sys/bus/ps3_vuart/, and services a vuart port device.  It should also be fixed
+to work as a lodable module.  I think calling it a driver much better
+communicates how it fits into the device model.
 
-- k
+-Geoff
