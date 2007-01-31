@@ -1,20 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CAC49DDFB8
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id B1BB5DDF6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Jan 2007 17:46:50 +1100 (EST)
-In-Reply-To: <266006.37029.qm@web8410.mail.in.yahoo.com>
-References: <266006.37029.qm@web8410.mail.in.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <42D831B8-9452-48E1-B996-2E970EB9DC27@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Differentiate between two e500 core (in mult-core e500)
-Date: Wed, 31 Jan 2007 00:45:50 -0600
-To: vinay hegde <thisismevinay@yahoo.co.in>
+	Wed, 31 Jan 2007 18:31:30 +1100 (EST)
+MIME-Version: 1.0
+Subject: RE: cpm_uart: WARNING: no UART devices found
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 31 Jan 2007 08:31:26 +0100
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E622D47@aquib01a>
+In-Reply-To: <45BF8790.80905@cofsky.com>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: "Evan Cofsky" <evan@cofsky.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,72 +23,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Thank you, it did work perfectly.=20
 
-On Jan 30, 2007, at 10:58 PM, vinay hegde wrote:
+-----Original Message-----
+From: Evan Cofsky [mailto:evan@cofsky.com]=20
+Sent: marted=EC 30 gennaio 2007 19.00
+To: DI BACCO ANTONIO - technolabs
+Subject: Re: cpm_uart: WARNING: no UART devices found
 
-> Hi,
->
-> Sorry for the repeat mail on this, I forgot to ask the
-> question;-)
->
-> If anybody knows how to differentiate one e500 core
-> from another (in multi-core proc's), please post a
-> message.
+DI BACCO ANTONIO - technolabs wrote:
+> My board has an MPC880 and it is named TL880 with a linux 2.6.19, I
+> copied kernel configurations from the very similar board mpc885ads.
+> I filled in platform data in file TL880_setup.c but I see that =
+function
+> TL880_fixup_uart_pdata is never called and, as a consequence, I see =
+the
+> message cpm_uart: WARNING: no UART devices found. Also I receive
+> message: IP-Config: No network devices available.=20
 
-Do you mean some software ID to know which core you are running on?
-
-If so the PIR should be used for this purpose.
-
-- k
-
-> --- vinay hegde <thisismevinay@yahoo.co.in> wrote:
->
->> Hi,
->>
->> I have a need to write a POST sort of a test to test
->> L1 data/inst cache residing on each of the e500 v2
->> multi-core seperately (for a network hardware). This
->> is because multicore e500 has seperate L1 caches and
->> shared L2 cache.
->>
->> This is for mpc8572. I learnt from this list that
->> mpc8572 isn't out yet, but thought that
->> differentiating between e500 mult-cores has nothing
->> to
->> do with mpc8572.
->>
->> Please let me know if you have any inputs.
->>
->> Thanks,
->> Vinay.
->>
->>
->>
->>
-> ______________________________________________________________________ 
-> ______________
->> Expecting? Get great news right away with email
->> Auto-Check.
->> Try the Yahoo! Mail Beta.
->>
-> http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html
->>
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->>
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>
->
->
->
->
-> ______________________________________________________________________ 
-> ______________
-> Don't get soaked.  Take a quick peak at the forecast
-> with the Yahoo! Search weather shortcut.
-> http://tools.search.yahoo.com/shortcuts/#loc_weather
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+Funny, I just had this problem myself.  After going through and reading
+a lot of code, I found out that the macro BOARD_CHIP_NAME must match the
+CPU spec in arch/ppc/syslib/mpc8xx_sys.c for the CPU model.  It looks
+like trying MPC885 might work.
