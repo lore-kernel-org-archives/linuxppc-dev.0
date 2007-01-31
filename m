@@ -1,15 +1,26 @@
-Return-Path: <stuarth@freescale.com>
-Received: from n064.sc1.he.tucows.com (unknown [64.97.136.162])
-	by ozlabs.org (Postfix) with ESMTP id E199BDDFA5
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 20:41:55 +1100 (EST)
-Subject: Re: options for root file system for MPC8548
-From: Stuart Hughes <stuarth@freescale.com>
-To: tmorrison@empirix.com
-Content-Type: text/plain
-Date: Wed, 31 Jan 2007 09:11:37 +0000
-Message-Id: <1170234697.25841.90.camel@m20>
-Mime-Version: 1.0
-Cc: linuxppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <ebony.zhu@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 2696FDDF96
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 20:45:57 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l0V9jtFO006682
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 02:45:55 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l0V9jrYX003670
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 03:45:54 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [patch][0/5] powerpc: Add support to fully comply with IEEE-754
+	standard
+Date: Wed, 31 Jan 2007 17:45:52 +0800
+Message-ID: <32F3CC26D4DAC44E8ECD07155727A46E85DCAD@zch01exm20.fsl.freescale.net>
+In-Reply-To: <FC3C8B30-CD7C-4BE0-82AE-16E708B36374@kernel.crashing.org>
+From: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,55 +30,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> On Jan 30, 2007, at 4:19 PM, Morrison, Tom wrote:
-> <snip intro>
-> > We do NOT want to use LTIB (supplied by Freescale) to create one
-> > (for multiple reasons - including the same as ELDK).
-> 
-> Can you elaborate on what issues you have with ELDK/LTIB, is it just  
-> package support?  If so it might be useful for the developers to know  
-> what packages you're interested in.  Or if there are other issues  
-> with them.
-> 
-> LTIB uses busybox and in general seems very limited in its support
-> (as well as currently backdated in terms of kernel support). 
-> ELDK has an incredible set of packages that it supports, but 
-> things like many of the scripting languages support (e.g.: PERL),
-> additional security libraries(e.g.: ipsec), general network 
-> libraries (e.g.: libpcap), and some network utilities (e.g.: wget).
-> 
-> Individually, none of these are serious, but altogether it's a lot
-> to manage - if I had 1 stop shopping, I might go there instead of 
-> with the ever incredible ELDK!
-> 
+=20
 
-Hi Tom,
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> Sent: Monday, January 29, 2007 10:31 PM
+> To: Zhu Ebony-r57400
+> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
+> Subject: Re: [patch][0/5] powerpc: Add support to fully=20
+> comply with IEEE-754 standard
+>=20
+>=20
+> On Jan 29, 2007, at 4:00 AM, Zhu Ebony-r57400 wrote:
+>=20
+> > Hi Kumar,
+> >
+> > I think enabling SPEFSCR[FINXE] or SPEFSCR[FRMC]=3D0b10/0b11=20
+> to enable=20
+> > FP round interrupt will cause the exception occurring very often,=20
+> > which will dramatically decrease the performance of SPE=20
+> instructions.=20
+> > Do you think putting an option in menuconfig to let user choose=20
+> > whether to enable FP round simulation is a reasonable idea?
+>=20
+> I don't see any issue with it, but I have to believe if you=20
+> want full IEEE results, you want full IEEE results for everything.
+>=20
+> - k
+>=20
 
-I just wanted to clear up some points about LTIB:
+Agreed, we need to fully comply with IEEE754. So let's talk something
+about the handler.
 
-* If you want support for LTIB go here: http://www.bitshrine.org/ and
-there is a mailing list here:
-http://lists.nongnu.org/mailman/listinfo/ltib
+The round exceptions can be put into 2 categories:
 
-* Busybox is the default for most platforms, but you don't have to use
-it.  Also note that as you scale up the size of the root filesystem it
-will replace the busybox utilities with the full ones (and manage
-dependencies).
+1. SPEFSCR[FRMC] =3D 0b10 or 0b11 (rounding toward +Inf and -Inf)
+We need to handle this exception to comply with IEEE
 
-* The kernels as supplied for BSPs represent things that are tested and
-are known to work.  If you're a kernel developer, or just want to use a
-later kernel, simply choose the 'Local Linux directory build' option.
-This will build any kernel (with KBUILD_OUTPUT support).  So you can use
-git/cvs/tarballs whatever.  All you need is the unpacked source
-somewhere on your local machine.
+2. SPEFSCR[FINXE] =3D 1
+If we enable this, round exception will occurs when inaccurate results
+are
+generated. However, I think we don't need to do so. With FINXE=3D0, if =
+SPE
+data
+exception occurs, we can handle the exception by existing handler, which
+is fully IEEE complied, including rounding. If no data exception occurs,
+HW
+can implement "round to nearest" and "round toward zero" with IEEE
+complied,
+and "round toward +Inf/-Inf" can be handled by the handler of point 1.
+So all
+the situations are covered, we do have to enable FINXE.
 
-* LTIB does have all the packages you mention.  Any that are not there
-are easy to add.
+Could you make some comments on this? Thanks!
 
-* LTIB should not be used if: you want a full desktop root filesystem
-(e.g. graphics, multi-media, office apps).  Instead I'd recommend using
-Debian or some other destktop distro.  However for something like the
-8548, you'd need to re-built it with the appropriate DPFP aware
-toolchain.
-
-Regards Stuart
+B.R.
+Ebony
