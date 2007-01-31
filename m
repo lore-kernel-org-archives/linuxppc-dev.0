@@ -1,26 +1,29 @@
-Return-Path: <ebiederm@xmission.com>
-Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
-	[166.70.28.69])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 10145DE14C
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 18:41:43 +1100 (EST)
-From: ebiederm@xmission.com (Eric W. Biederman)
-To: David Miller <davem@davemloft.net>
-Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
-References: <m1bqkioh6z.fsf@ebiederm.dsl.xmission.com>
-	<20070128.155155.51857352.davem@davemloft.net>
-	<1170032301.26655.140.camel@localhost.localdomain>
-	<20070130.225232.112422538.davem@davemloft.net>
-Date: Wed, 31 Jan 2007 00:40:34 -0700
-In-Reply-To: <20070130.225232.112422538.davem@davemloft.net> (David Miller's
-	message of "Tue, 30 Jan 2007 22:52:32 -0800 (PST)")
-Message-ID: <m1fy9rbq4t.fsf@ebiederm.dsl.xmission.com>
-MIME-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTP id 98BE5DDF4D
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 19:45:43 +1100 (EST)
+Date: Wed, 31 Jan 2007 09:45:13 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/9] ps3: AV Settings Driver
+Message-ID: <20070131084513.GB5596@lst.de>
+References: <Pine.LNX.4.62.0701251825390.14799@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0701251846460.24610@pademelon.sonytel.be>
+	<20070126031236.GG18537@lst.de>
+	<Pine.LNX.4.62.0701291442530.19906@pademelon.sonytel.be>
+	<20070129161502.GA32313@lst.de>
+	<E674F9E5-3FFC-4291-A03B-0C3BF0F833A6@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: kyle@parisc-linux.org, linuxppc-dev@ozlabs.org, ebiederm@xmission.com,
-	greg@kroah.com, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, brice@myri.com
+In-Reply-To: <E674F9E5-3FFC-4291-A03B-0C3BF0F833A6@kernel.crashing.org>
+Cc: Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	James Simmons <jsimmons@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,44 +33,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Miller <davem@davemloft.net> writes:
+On Tue, Jan 30, 2007 at 07:39:40PM +0100, Segher Boessenkool wrote:
+> >obj-$(CONFIG_FB_PS3)	+= ps3_av.o
+> >obj-$(CONFIG_SND_PS3)	+= ps3_av.o
+> 
+> I don't think Kbuild will be too happy with that.  Or does
+> it filter out duplicate files everywhere (dep, build, link)?
 
-> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> Date: Mon, 29 Jan 2007 11:58:21 +1100
->
->> Do you have some pointers to documentation on those sparc64
->> interfaces ?
->
-> So I got things working on sparc64 with a one-liner to the current
-> upstream vanilla 2.6.20-rc7 :-)  It's not the best, but it works.
->
-> You can see it all at:
->
-> 	kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git
->
-> Basically, I changed arch_teardown_msi_irq() to pass in the
-> PCI device pointer, that's it.
-
-Neat. 
-
-I think you could have omitted your one liner if you had done:
-struct msi_desc *entry = get_irq_data(irq);
-struct pci_dev *dev = entry->dev;
-
-> The rest is sparc64 specific stuff.
->
-> One thing that's disappointing is that this "MSI Queue" framework
-> sparc64 has really suggests a two-tiered interrupt handling scheme.
-> As I previously explained, on sparc64 you assosciated each MSI with a
-> queue, and you can attach multiple MSIs to a single queue.
-
-Interesting.
-
-> I've tested tg3 with MSI on my Niagara, it seems to work well.
-> Unfortunately I don't have any MSI-X capable devices here, but
-> eventually I am sure I will.  I glanced over the MSI-X code and I see
-> no reason why it wouldn't work.
-
-Congratulations!
-
-Eric
+Yes, it's a feature stamming from the first predecessor of the current
+kbuild system (drivers/sound/Makefile in late 2.2.x).
