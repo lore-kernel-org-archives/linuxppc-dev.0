@@ -1,24 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 51F26DDF0E
+Return-Path: <dy_wang@yahoo.com>
+Received: from web51908.mail.yahoo.com (web51908.mail.yahoo.com
+	[206.190.48.71]) by ozlabs.org (Postfix) with SMTP id 23D55DDF4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Feb 2007 02:35:27 +1100 (EST)
-In-Reply-To: <000001c7454b$69a25ae0$6405a8c0@absolut>
-References: <mailman.1454.1170226011.9285.linuxppc-embedded@ozlabs.org>
-	<000601c74531$62220820$6405a8c0@absolut>
-	<0ACC0A3E-9DF3-4927-8F67-E525BA0E6C13@kernel.crashing.org>
-	<000001c7454b$69a25ae0$6405a8c0@absolut>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <0A655A39-4101-48B4-BE9C-50A30163679C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Audigy SE / ca0106 driver for PowerPC?
-Date: Wed, 31 Jan 2007 09:34:16 -0600
-To: <rmcguire@videopresence.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu,  1 Feb 2007 04:31:54 +1100 (EST)
+Date: Wed, 31 Jan 2007 09:24:10 -0800 (PST)
+From: wang dengyi <dy_wang@yahoo.com>
+Subject: lite5200b ethernet statistics always is 0
+To: linuxppc-embedded@ozlabs.org
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <291223.31248.qm@web51908.mail.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,40 +20,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Jan 31, 2007, at 9:20 AM, Russell McGuire wrote:
+On my development board:lite5200b, All value from the
+ethernet statistics is 0. Please see the ifconfig
+output at the end of my email.
 
-> After comparing the driver methods to a couple of other PCI drivers  
-> that do
-> work on PowerPC <like the nvidia and ati stuff>, it looks like the  
-> methods
-> for accessing the PCI IO space are very depreciated in this driver..
+The CPU is MPC5200b and the kernel is 2.4.14. 
 
-Not sure I follow that comment, in*/out* have been the mechanisms to  
-access PCI IO space for as long as I've know.
+I checked the driver code:
+linux/drivers/net/fec_mpc52xx/fec.c. The get_stats()
+function looks fine. The function read the statistics
+register using in_be32() function. But it always
+returns 0. The following line is my code to print the
+value from the register. The output is 0 for the
+register. 
+printk(KERN_ERR "%s:%d: rmon_r_octest: %x\n",
+__FUNCTION__, __LINE__, in_be32(&fec->rmon_r_octets));
 
-> Would it be safe to assume that if I were to modify the existing
->
-> chip->port = pci_resource_start(pcidev,0);
-> chip->res_port = request_region(chip->port, size);
->
-> outl(chip->port+MyReg, data);
->
-> To something like:
->
-> chip->port = pci_resource_start(pcidev,0);
-> snd_length = pci_resource_len(pcidev, 0);
-> snd_port = ioremap(chip->port, length);
->
-> outl(port+MyReg, data);
->
-> I am not sure if I want to leave the outl in there, perhaps a  
-> different
-> function, or just a direct assignment?
+Any idea, how do I fix it?
 
-You shouldn't have to do the ioremap, the PCI platform code should  
-have already handled all of this.
+# ifconfig eth0
+eth0      Link encap:Ethernet  HWaddr
+CA:2A:AA:AB:EA:2A
+          UP BROADCAST RUNNING MULTICAST  MTU:1500 
+Metric:1
+          RX packets:0 errors:0 dropped:0 overruns:0
+frame:0
+          TX packets:0 errors:0 dropped:0 overruns:0
+carrier:0
+          collisions:0 txqueuelen:1000
+          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
+          Interrupt:43
 
-What PPC platform are you on?
+Thanks in advance.
 
-- k
+
+Regards,
+
+Dengyi Wang
+
+
+ 
+____________________________________________________________________________________
+Need a quick answer? Get one in minutes from people who know.
+Ask your question on www.Answers.yahoo.com
