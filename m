@@ -1,21 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id D2CDBDDEF8
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 17:52:34 +1100 (EST)
-Date: Tue, 30 Jan 2007 22:52:32 -0800 (PST)
-Message-Id: <20070130.225232.112422538.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [RFC/PATCH 0/16] Ops based MSI Implementation
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1170032301.26655.140.camel@localhost.localdomain>
-References: <m1bqkioh6z.fsf@ebiederm.dsl.xmission.com>
-	<20070128.155155.51857352.davem@davemloft.net>
-	<1170032301.26655.140.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: greg@kroah.com, kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
-	brice@myri.com, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz, ebiederm@xmission.com
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org,
+ maynardj@us.ibm.com
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH 4/4] Add support to OProfile for profiling Cell BE SPUs --
+	update
+Date: Wed, 31 Jan 2007 07:52:48 +0100
+References: <45BE4ED0.5030808@us.ibm.com> <45BFBB78.7060907@us.ibm.com>
+	<45BFCC8E.4000008@us.ibm.com>
+In-Reply-To: <45BFCC8E.4000008@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200701310752.48632.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	oprofile-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +24,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Mon, 29 Jan 2007 11:58:21 +1100
+On Tuesday 30 January 2007 23:54, Maynard Johnson wrote:
 
-> Do you have some pointers to documentation on those sparc64
-> interfaces ?
+> >>Why do you store them per spu in the first place? The physical spu
+> >>doesn't have any relevance to this at all, the only data that is
+> >>per spu is the sample data collected on a profiling interrupt,
+> >>which you can then copy in the per-context data on a context switch.
+> >=20
+> > The sample data is written out to the event buffer on every profiling=20
+> > interrupt. =A0But we don't write out the SPU program counter samples=20
+> > directly to the event buffer. =A0First, we have to find the cached_info=
+=20
+> > for the appropriate SPU context to retrieve the cached vma-to-fileoffse=
+t=20
+> > map. =A0Then we do the vma_map_lookup to find the fileoffset correspond=
+ing=20
+> > to the SPU PC sample, which we then write out to the event buffer. =A0T=
+his=20
+> > is one of the most time-critical pieces of the SPU profiling code, so I=
+=20
+> > used an array to hold the cached_info for fast random access. =A0But as=
+ I=20
+> > stated in a code comment above, the negative implication of this curren=
+t=20
+> > implementation is that the array can only hold the cached_info for=20
+> > currently running SPU tasks. =A0I need to give this some more thought.
+>=20
+> I've given this some more thought, and I'm coming to the conclusion that=
+=20
+> a pure array-based implementation for holding cached_info (getting rid=20
+> of the lists) would work well for the vast majority of cases in which=20
+> OProfile will be used. =A0Yes, it is true that the mapping of an SPU=20
+> context to a phsyical spu-numbered array location cannot be guaranteed=20
+> to stay valid, and that's why I discard the cached_info at that array=20
+> location when the SPU task is switched out. =A0Yes, it would be terribly=
+=20
+> inefficient if the same SPU task gets switched back in later and we=20
+> would have to recreate the cached_info. =A0However, I contend that=20
+> OProfile users are interested in profiling one application at a time.=20
+> They are not going to want to muddy the waters with multiple SPU apps=20
+> running at the same time. =A0I can't think of any reason why someone woul=
+d=20
+> conscisouly choose to do that.
+>=20
+> Any thoughts from the general community, especially OProfile users?
+>=20
+Please assume that in the near future we will be scheduling SPU contexts
+in and out multiple times a second. Even in a single application, you
+can easily have more contexts than you have physical SPUs.
 
-So I got things working on sparc64 with a one-liner to the current
-upstream vanilla 2.6.20-rc7 :-)  It's not the best, but it works.
+The event buffer by definition needs to be per context. If you for some
+reason want to collect the samples per physical SPU during an event
+interrupt, you should at least make sure that they are copied into the
+per-context event buffer on a context switch.
 
-You can see it all at:
+At the context switch point, you probably also want to drain the
+hw event counters, so that you account all events correctly.
 
-	kernel.org:/pub/scm/linux/kernel/git/davem/sparc-2.6.git
+We also want to be able to profile the context switch code itself, which
+means that we also need one event buffer associated with the kernel to
+collect events that for a zero context_id.
 
-Basically, I changed arch_teardown_msi_irq() to pass in the
-PCI device pointer, that's it.
+Of course, the recording of raw samples in the per-context buffer does
+not need to have the dcookies along with it, you can still resolve
+the pointers when the SPU context gets destroyed (or an object gets
+unmapped).
 
-The rest is sparc64 specific stuff.
-
-One thing that's disappointing is that this "MSI Queue" framework
-sparc64 has really suggests a two-tiered interrupt handling scheme.
-As I previously explained, on sparc64 you assosciated each MSI with a
-queue, and you can attach multiple MSIs to a single queue.
-
-The queue is what generates the interrupt, and in response to that
-interrupt you process a ring of MSI descriptors in the queue.  The
-descriptors have a bunch of very useful information which we have no
-way to make use of currently, and in particular it has the MSI number
-in each entry.
-
-So what would be cool would be to be able to attach the IRQ
-action entries to a list inside of the MSI queue.
-
-Instead, what happens right now is that each queue has a single
-MSI assosciated with it, and that's the interrupt.
-
-The MSI descriptors have all sorts of useful information, such as a
-system TICK timestamp (for profiling), the exact bus/dev/fn that
-generated the MSI (for debugging), as well as the full MSI address,
-data, and code values (for IRQ dispatch and PCI-E error message
-processing).
-
-I've tested tg3 with MSI on my Niagara, it seems to work well.
-Unfortunately I don't have any MSI-X capable devices here, but
-eventually I am sure I will.  I glanced over the MSI-X code and I see
-no reason why it wouldn't work.
+	Arnd <><
