@@ -1,15 +1,22 @@
-Return-Path: <dy_wang@yahoo.com>
-Received: from web51908.mail.yahoo.com (web51908.mail.yahoo.com
-	[206.190.48.71]) by ozlabs.org (Postfix) with SMTP id 23D55DDF4A
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id DE992DDF26
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Feb 2007 04:31:54 +1100 (EST)
-Date: Wed, 31 Jan 2007 09:24:10 -0800 (PST)
-From: wang dengyi <dy_wang@yahoo.com>
-Subject: lite5200b ethernet statistics always is 0
-To: linuxppc-embedded@ozlabs.org
+	Thu,  1 Feb 2007 05:46:46 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so225828ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 31 Jan 2007 10:46:41 -0800 (PST)
+Message-ID: <528646bc0701311046p7d65a5d2v885dff361a2b9297@mail.gmail.com>
+Date: Wed, 31 Jan 2007 11:46:41 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: Joe <joe-worker@anti-paladin.com>
+Subject: Re: Led astray? Xilinx ml410 + u-boot + Linux?
+In-Reply-To: <89CE61D4-C939-4788-A0AE-30EF410E9628@anti-paladin.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <291223.31248.qm@web51908.mail.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <89CE61D4-C939-4788-A0AE-30EF410E9628@anti-paladin.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,48 +27,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On 1/29/07, Joe <joe-worker@anti-paladin.com> wrote:
+> Linux 2.6.19 shows arc/ppc/configs/ml[403|300]_defconfig,
+> but I see *zero* indication that the 410 is supported.  Has anyone seen the
+> ML410 fully functional with Linux + a patch to enable the Ethernet ports?
+> (I also note that on the mvi$ta site they list support for:  ML300 and ML40x
+> -- but NOT the ML410.)  My searches also seem to indicate that the IP
+> included for the 410 Ethernet MAC's is distinctly different from the 403...
 
-On my development board:lite5200b, All value from the
-ethernet statistics is 0. Please see the ifconfig
-output at the end of my email.
+Correct, no patches to support 410 have been submitted to either the
+u-boot or linuxppc mailing lists as far as I know.  You'll need to get
+the patches directly from Xilinx.  I do know that they exist, but I
+have not worked with them at all as I don't have access to an ML410.
 
-The CPU is MPC5200b and the kernel is 2.4.14. 
+> OTOH, if someone could confirm that this platform is NOT currently supported
+> that would be just as useful -- decisions can be made and actions taken.
 
-I checked the driver code:
-linux/drivers/net/fec_mpc52xx/fec.c. The get_stats()
-function looks fine. The function read the statistics
-register using in_be32() function. But it always
-returns 0. The following line is my code to print the
-value from the register. The output is 0 for the
-register. 
-printk(KERN_ERR "%s:%d: rmon_r_octest: %x\n",
-__FUNCTION__, __LINE__, in_be32(&fec->rmon_r_octets));
+There are a number of Xilinx folks who hang out on this list,
+hopefully one of them will see your question and reply.
 
-Any idea, how do I fix it?
+Cheers,
+g.
 
-# ifconfig eth0
-eth0      Link encap:Ethernet  HWaddr
-CA:2A:AA:AB:EA:2A
-          UP BROADCAST RUNNING MULTICAST  MTU:1500 
-Metric:1
-          RX packets:0 errors:0 dropped:0 overruns:0
-frame:0
-          TX packets:0 errors:0 dropped:0 overruns:0
-carrier:0
-          collisions:0 txqueuelen:1000
-          RX bytes:0 (0.0 B)  TX bytes:0 (0.0 B)
-          Interrupt:43
-
-Thanks in advance.
-
-
-Regards,
-
-Dengyi Wang
-
-
- 
-____________________________________________________________________________________
-Need a quick answer? Get one in minutes from people who know.
-Ask your question on www.Answers.yahoo.com
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
