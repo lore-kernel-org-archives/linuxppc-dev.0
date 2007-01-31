@@ -1,16 +1,19 @@
-Return-Path: <thisismevinay@yahoo.co.in>
-Received: from web8410.mail.in.yahoo.com (web8410.mail.in.yahoo.com
-	[202.43.219.158]) by ozlabs.org (Postfix) with SMTP id 84D6FDE1E3
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id E2A09DE204
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 31 Jan 2007 15:58:16 +1100 (EST)
-Date: Tue, 30 Jan 2007 20:58:14 -0800 (PST)
-From: vinay hegde <thisismevinay@yahoo.co.in>
-Subject: Re: Differentiate between two e500 core (in mult-core e500)
-To: linuxppc-embedded@ozlabs.org
-In-Reply-To: <11163.68650.qm@web8405.mail.in.yahoo.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <266006.37029.qm@web8410.mail.in.yahoo.com>
+	Wed, 31 Jan 2007 16:01:02 +1100 (EST)
+Date: Wed, 31 Jan 2007 08:01:00 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+Subject: Re: cpm_uart: WARNING: no UART devices found
+Message-ID: <20070131080100.7b521527@localhost.localdomain>
+In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E5F5EB8@aquib01a>
+References: <F1F6EC0C8B75034F9E3A79FC85122E8E5F5EB8@aquib01a>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_9lKLRDThc+f.vAn.dZ_.RVb;
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,60 +24,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+--Sig_9lKLRDThc+f.vAn.dZ_.RVb
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-Sorry for the repeat mail on this, I forgot to ask the
-question;-)
+On Tue, 30 Jan 2007 09:30:49 +0100
+DI BACCO ANTONIO - technolabs wrote:
 
-If anybody knows how to differentiate one e500 core
-from another (in multi-core proc's), please post a
-message.
+> My board has an MPC880 and it is named TL880 with a linux 2.6.19, I
+> copied kernel configurations from the very similar board mpc885ads.
+> I filled in platform data in file TL880_setup.c but I see that
+> function TL880_fixup_uart_pdata is never called and, as a
+> consequence, I see the message cpm_uart: WARNING: no UART devices
+> found. Also I receive message: IP-Config: No network devices
+> available.=20
 
-Thanks,
-Vinay.
+You seem to miss the board ppc_sys_identify_by_name() (or alike) call - so =
+BOARD_CHIP_NAME is=20
+not defined for your board in BSP file. There is no other way to properly i=
+dentify SoC with 8xx...
+--
+Sincerely, Vitaly
 
---- vinay hegde <thisismevinay@yahoo.co.in> wrote:
+--Sig_9lKLRDThc+f.vAn.dZ_.RVb
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
 
-> Hi,
-> 
-> I have a need to write a POST sort of a test to test
-> L1 data/inst cache residing on each of the e500 v2
-> multi-core seperately (for a network hardware). This
-> is because multicore e500 has seperate L1 caches and
-> shared L2 cache.
-> 
-> This is for mpc8572. I learnt from this list that
-> mpc8572 isn't out yet, but thought that
-> differentiating between e500 mult-cores has nothing
-> to
-> do with mpc8572.
-> 
-> Please let me know if you have any inputs.
-> 
-> Thanks,
-> Vinay.
-> 
-> 
->  
->
-____________________________________________________________________________________
-> Expecting? Get great news right away with email
-> Auto-Check. 
-> Try the Yahoo! Mail Beta.
->
-http://advision.webevents.yahoo.com/mailbeta/newmail_tools.html
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
->
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-> 
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
+iD8DBQFFwCKMuOg9JvQhSEsRAuVhAJ4l/ZnfvxlyXX8oqqmup72d8Wm6CQCfZnkk
+A80x5wEozP50hgL5jGGYf98=
+=fBi2
+-----END PGP SIGNATURE-----
 
-
- 
-____________________________________________________________________________________
-Don't get soaked.  Take a quick peak at the forecast
-with the Yahoo! Search weather shortcut.
-http://tools.search.yahoo.com/shortcuts/#loc_weather
+--Sig_9lKLRDThc+f.vAn.dZ_.RVb--
