@@ -1,12 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BE0EEDDF30
+Return-Path: <rmcguire@videopresence.com>
+Received: from smtpauth02.prod.mesa1.secureserver.net
+	(smtpauth02.prod.mesa1.secureserver.net [64.202.165.182])
+	by ozlabs.org (Postfix) with SMTP id 69D11DDE49
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Feb 2007 09:41:07 +1100 (EST)
-In-Reply-To: <000f01c74587$10bc5cf0$6405a8c0@absolut>
+	Thu,  1 Feb 2007 10:01:45 +1100 (EST)
+From: "Russell McGuire" <rmcguire@videopresence.com>
+To: "'Kumar Gala'" <galak@kernel.crashing.org>
 References: <mailman.1454.1170226011.9285.linuxppc-embedded@ozlabs.org>
 	<000601c74531$62220820$6405a8c0@absolut>
 	<0ACC0A3E-9DF3-4927-8F67-E525BA0E6C13@kernel.crashing.org>
@@ -15,14 +14,16 @@ References: <mailman.1454.1170226011.9285.linuxppc-embedded@ozlabs.org>
 	<000701c7457a$d180e300$6405a8c0@absolut>
 	<183E66A5-E983-4D17-96E9-2EEAE6FDF7B6@kernel.crashing.org>
 	<000f01c74587$10bc5cf0$6405a8c0@absolut>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <1546691E-0CCF-41C9-8B8A-7C6326CEEF7E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Audigy SE / ca0106 driver for PowerPC?
-Date: Wed, 31 Jan 2007 16:40:04 -0600
-To: <rmcguire@videopresence.com>
+	<1546691E-0CCF-41C9-8B8A-7C6326CEEF7E@kernel.crashing.org>
+Subject: RE: Audigy SE / ca0106 driver for PowerPC?
+Date: Wed, 31 Jan 2007 15:01:21 -0800
+Message-ID: <000301c7458b$b9eb1330$6405a8c0@absolut>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+In-Reply-To: <1546691E-0CCF-41C9-8B8A-7C6326CEEF7E@kernel.crashing.org>
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,6 +33,55 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+
+What I really don't know is what the first column in the ranges field does.
+I.e. the <42000000>, <02000000>, and <01000000>.
+
+Here is part of current blob I am using:
+
+pci@8500 {
+	linux,phandle = <8500>;
+	interrupt-map-mask = <f800 0 0 7>;
+	interrupt-map= <
+ 		/* IDSEL 0x19 AD25*/
+		 c800 0 0 1 700 14 8
+		 c800 0 0 2 700 15 8
+		 c800 0 0 3 700 16 8
+		 c800 0 0 4 700 17 8>; > //and a lot more like this
+	bus-range = <0 0>; //U-boot modifies this to be <0 2> I think
+	ranges = <42000000 0 80000000 80000000 0 10000000
+		  02000000 0 90000000 90000000 0 10000000
+		  01000000 0 00000000 f0300000 0 00100000>;
+	clock-frequency = <3f940aa>;
+	#interrupt-cells = <1>;
+	#size-cells = <2>;
+	#address-cells = <3>;
+	reg = <8500 100>;
+	compatible = "83xx";
+	device_type = "pci";
+}
+
+Here are the U-boot #defines I am using at the moment.
+
+#define CFG_PCI_MEM_BASE	0x80000000
+#define CFG_PCI_MEM_PHYS	CFG_PCI_MEM_BASE
+#define CFG_PCI_MEM_SIZE	0x10000000 /* 256M */
+#define CFG_PCI_MMIO_BASE	0x90000000
+#define CFG_PCI_MMIO_PHYS	CFG_PCI_MMIO_BASE
+#define CFG_PCI_MMIO_SIZE	0x10000000 /* 256M */
+#define CFG_PCI_IO_BASE		0x00000000
+#define CFG_PCI_IO_PHYS		0xF0300000
+#define CFG_PCI_IO_SIZE		0x00100000 /* 1M */
+Might need to change PCI_IO_BASE to match PCI_IO_PHYS as well?
+
+-Russ
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+Sent: Wednesday, January 31, 2007 2:40 PM
+To: rmcguire@videopresence.com
+Cc: linuxppc-embedded@ozlabs.org
+Subject: Re: Audigy SE / ca0106 driver for PowerPC?
 
 
 On Jan 31, 2007, at 4:27 PM, Russell McGuire wrote:
