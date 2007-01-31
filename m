@@ -1,24 +1,12 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C5177DDF06
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 15:42:57 +1100 (EST)
-In-Reply-To: <20070131073947.67520c16@localhost.localdomain>
-References: <20070130230711.21111.52924.stgit@localhost.localdomain>
-	<20070130230859.21111.39370.stgit@localhost.localdomain>
-	<F739E1EE-3BA6-428D-8C96-AB09E1B9773B@kernel.crashing.org>
-	<20070131073947.67520c16@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <20C6E81C-CB34-461A-B1CD-FF302D83E2AB@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] [POWERPC] Fix kernel build errors for mpc8272ads and
-	mpc8560ads
-Date: Tue, 30 Jan 2007 22:41:57 -0600
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 31 Jan 2007 15:45:26 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: [dtc] Bugfix for CHECK_HAVE_WARN_PHANDLE()
+Message-ID: <20070131044525.GA25231@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,32 +16,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+At present, the tree checking code in dtc will die with an assertion
+failure if given a tree which has the invalid value 0 or -1 in a
+property which should contain a phandle.  This patch fixes the check
+to die more gracefully with an error message indicating the invalid
+phandle value.
 
-On Jan 30, 2007, at 10:39 PM, Vitaly Bordug wrote:
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
 
-> On Tue, 30 Jan 2007 17:41:14 -0600
-> Kumar Gala wrote:
->
->>
->> On Jan 30, 2007, at 5:09 PM, Vitaly Bordug wrote:
->>
->>>
->>> Recent update of asm-powerpc/io.h caused cpm-related stuff to
->>> break in the
->>> current kernel. Current patch fixes it, as well as other
->>> inconsistencies
->>> expressed, that do not permit targets from working properly:
->>>
->>> - Updated dts with a chosen node with interrupt controller,
->>
->> Why do we need this?  I'm not aware of any other boards having to
->> set this?
->
-> Correct. In fact I dropped that change, after "dtc -f"  discussion  
-> but forgot
-> to clear this line from desc. Will resend in a few minutes, thanks  
-> for pointing it out.
+Index: dtc/livetree.c
+===================================================================
+--- dtc.orig/livetree.c	2007-01-31 15:40:34.000000000 +1100
++++ dtc/livetree.c	2007-01-31 15:41:39.000000000 +1100
+@@ -427,9 +427,14 @@ static int check_structure(struct node *
+ 		struct node *ref; \
+ 		CHECK_HAVE_WARN_ONECELL((xnode), (propname)); \
+ 		if (prop) {\
+-			ref = get_node_by_phandle((root), propval_cell(prop)); \
+-			if (! ref) \
+-				DO_ERR("\"%s\" property in %s refers to non-existant phandle %x\n", (propname), (xnode)->fullpath, propval_cell(prop)); \
++			cell_t phandle = propval_cell(prop); \
++			if ((phandle == 0) || (phandle == -1)) { \
++				DO_ERR("\"%s\" property in %s contains an invalid phandle %x\n", (propname), (xnode)->fullpath, phandle); \
++			} else { \
++				ref = get_node_by_phandle((root), propval_cell(prop)); \
++				if (! ref) \
++					DO_ERR("\"%s\" property in %s refers to non-existant phandle %x\n", (propname), (xnode)->fullpath, propval_cell(prop)); \
++			} \
+ 		} \
+ 	} while (0)
+ 
 
-I think the 8272 dts still had the node in it.
-
-- k
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
