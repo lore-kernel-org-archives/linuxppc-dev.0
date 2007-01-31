@@ -1,23 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id A75F4DDF6E
-	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 16:15:22 +1100 (EST)
-Date: Wed, 31 Jan 2007 08:15:19 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/3] [POWERPC] Fix kernel build errors for mpc8272ads
-	and mpc8560ads
-Message-ID: <20070131081519.6af307ce@localhost.localdomain>
-In-Reply-To: <20C6E81C-CB34-461A-B1CD-FF302D83E2AB@kernel.crashing.org>
-References: <20070130230711.21111.52924.stgit@localhost.localdomain>
-	<20070130230859.21111.39370.stgit@localhost.localdomain>
-	<F739E1EE-3BA6-428D-8C96-AB09E1B9773B@kernel.crashing.org>
-	<20070131073947.67520c16@localhost.localdomain>
-	<20C6E81C-CB34-461A-B1CD-FF302D83E2AB@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_8wqpg31hvS9scqa/yQpp+P6";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: maynardj@us.ibm.com
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH 4/4] Add support to OProfile for profiling Cell BE SPUs --
+	update
+Date: Wed, 31 Jan 2007 06:57:40 +0100
+References: <45BE4ED0.5030808@us.ibm.com> <200701300839.05144.arnd@arndb.de>
+	<45BFBB78.7060907@us.ibm.com>
+In-Reply-To: <45BFBB78.7060907@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200701310657.41317.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
+	cbe-oss-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,56 +24,155 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_8wqpg31hvS9scqa/yQpp+P6
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+On Tuesday 30 January 2007 22:41, Maynard Johnson wrote:
+> Arnd Bergmann wrote:
 
-On Tue, 30 Jan 2007 22:41:57 -0600
-Kumar Gala wrote:
+> >>+       kt = ktime_set(0, profiling_interval);
+> >>+       if (!spu_prof_running)
+> >>+               goto STOP;
+> >>+       hrtimer_forward(timer, timer->base->get_time(), kt);
+> >>+       return HRTIMER_RESTART;
+> > 
+> > 
+> > is hrtimer_forward really the right interface here? You are ignoring
+> > the number of overruns anyway, so hrtimer_start(,,) sounds more
+> > correct to me.
+> According to Tom Gleixner, "hrtimer_forward is a convenience function to 
+> move the expiry time of a timer forward in multiples of the interval, so 
+> it is in the future.  After setting the expiry time you restart the 
+> timer either with [sic] a return HRTIMER_RESTART (if you are in the 
+> timer callback function)."
+> > 
 
->=20
-> On Jan 30, 2007, at 10:39 PM, Vitaly Bordug wrote:
->=20
-> > On Tue, 30 Jan 2007 17:41:14 -0600
-> > Kumar Gala wrote:
-> >
-> >>
-> >> On Jan 30, 2007, at 5:09 PM, Vitaly Bordug wrote:
-> >>
-> >>>
-> >>> Recent update of asm-powerpc/io.h caused cpm-related stuff to
-> >>> break in the
-> >>> current kernel. Current patch fixes it, as well as other
-> >>> inconsistencies
-> >>> expressed, that do not permit targets from working properly:
-> >>>
-> >>> - Updated dts with a chosen node with interrupt controller,
-> >>
-> >> Why do we need this?  I'm not aware of any other boards having to
-> >> set this?
-> >
-> > Correct. In fact I dropped that change, after "dtc -f"  discussion =20
-> > but forgot
-> > to clear this line from desc. Will resend in a few minutes, thanks =20
-> > for pointing it out.
->=20
-> I think the 8272 dts still had the node in it.
->=20
-No it does not, in the latest resubmit series at least - just have checked.
+Ok, I see. Have you seen the timer actually coming in late, resulting
+in hrtimer_forward returning non-zero? I guess it's not a big problem
+for statistic data collection if that happens, but you might still want
+to be able to see it.
 
---
-Sincerely, Vitaly
+> >>+       /* Since cpufreq_quick_get returns frequency in kHz, we use
+> >>+        * USEC_PER_SEC here vs NSEC_PER_SEC.
+> >>+        */
+> >>+       unsigned long nsPerCyc = (USEC_PER_SEC << SCALE_SHIFT)/khzfreq;
+> >>+       profiling_interval = (nsPerCyc * cycles_reset) >> SCALE_SHIFT;
+> >>+       
+> >>+       pr_debug("timer resolution: %lu\n", 
+> >>+                TICK_NSEC);
+> > 
+> > 
+> > Don't you need to adapt the profiling_interval at run time, when cpufreq
+> > changes the core frequency? You should probably use
+> > cpufreq_register_notifier() to update this.
+> Since OProfile is a statistical profiler, the exact frequency is not 
+> critical.  The user is going to be looking for hot spots in their code, 
+> so it's all relative.  With that said,  I don't imagine using the 
+> cpufreq notiication would be a big deal.  We'll look at it.
+>
+> >>@@ -480,7 +491,22 @@
+> >>               struct op_system_config *sys, int num_ctrs)
+> >> {
+> >>        int i, j, cpu;
+> >>+       spu_cycle_reset = 0;
+> >> 
+> >>+       /* The cpufreq_quick_get function requires that cbe_cpufreq module
+> >>+        * be loaded.  This function is not actually provided and exported
+> >>+        * by cbe_cpufreq, but it relies on cbe_cpufreq initialize kernel
+> >>+        * data structures.  Since there's no way for depmod to realize
+> >>+        * that our OProfile module depends on cbe_cpufreq, we currently
+> >>+        * are letting the userspace tool, opcontrol, ensure that the
+> >>+        * cbe_cpufreq module is loaded.
+> >>+        */
+> >>+       khzfreq = cpufreq_quick_get(smp_processor_id());
+> > 
+> > 
+> > You should probably have a fallback in here in case the cpufreq module
+> > is not loaded. There is a global variable ppc_proc_freq (in Hz) that
+> > you can access.
+>
+> Our userspace tool ensures the cpufreq module is loaded.
 
---Sig_8wqpg31hvS9scqa/yQpp+P6
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
+You should not rely on user space tools to do the right thing in the kernel.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Moreover, if the exact frequency is not that important, as you mentioned
+above, you can probably just hardcode a compile-time constant here.
 
-iD8DBQFFwCXouOg9JvQhSEsRAjNxAJ483LKwcIU7bHwzogdW0A2fZzRKtgCeLjQK
-+5lkwY2nbX80MwmDDiq+5aM=
-=Umx7
------END PGP SIGNATURE-----
+> >>+ * 
+> >>+ * Ideally, we would like to be able to create the cached_info for
+> >>+ * an SPU task just one time -- when libspe first loads the SPU 
+> >>+ * binary file.  We would store the cached_info in a list.  Then, as
+> >>+ * SPU tasks are switched out and new ones switched in, the cached_info
+> >>+ * for inactive tasks would be kept, and the active one would be placed
+> >>+ * at the head of the list.  But this technique may not with
+> >>+ * current spufs functionality since the spu used in bind_context may
+> >>+ * be a different spu than was used in a previous bind_context for a
+> >>+ * reactivated SPU task.  Additionally, a reactivated SPU task may be
+> >>+ * assigned to run on a different physical SPE.  We will investigate
+> >>+ * further if this can be done.
+> >>+ *
+> >>+ */
+> > 
+> > 
+> > You should stuff a pointer to cached_info into struct spu_context,
+> > e.g. 'void *profile_private'.
+> > 
+> > 
+> >>+struct cached_info {
+> >>+       vma_map_t * map;
+> >>+       struct spu * the_spu;
+> >>+       struct kref cache_ref;
+> >>+       struct list_head list;
+> >>+};
+> > 
+> > 
+> > And replace the 'the_spu' member with a back pointer to the
+> > spu_context if you need it.
+> > 
+> > 
+> >>+
+> >>+/* A data structure for cached information about active SPU tasks.
+> >>+ * Storage is dynamically allocated, sized as
+> >>+ * "number of active nodes multplied by 8". 
+> >>+ * The info_list[n] member holds 0 or more 
+> >>+ * 'struct cached_info' objects for SPU#=n. 
+> >>+ *
+> >>+ * As currently implemented, there will only ever be one cached_info 
+> >>+ * in the list for a given SPU.  If we can devise a way to maintain
+> >>+ * multiple cached_infos in our list, then it would make sense
+> >>+ * to also cache the dcookie representing the PPU task application.
+> >>+ * See above description of struct cached_info for more details.
+> >>+ */
+> >>+struct spu_info_stacks {
+> >>+       struct list_head * info_list;
+> >>+};
+> > 
+> > 
+> > Why do you store pointers to list_head structures? If you want to store
+> > lists, you should have a lists_head itself in here.
+> info_list is an array of n lists, where n is the number of SPUs.
 
---Sig_8wqpg31hvS9scqa/yQpp+P6--
+My point was that it's not an array of lists, but an array of pointers
+to lists. The way that include/list.h works is by having a struct list_head
+as the anchor and then add nodes to it. By simply pointing to a list_head,
+you won't be able to use the list_for_each_entry() macro the way it is meant.
+
+> > 
+> > I don't get it. What is the app_dcookie used for? If the spu binary is
+> > embedded into a library, you are still missing the dcookie to that .so file,
+> > because you return only an offset.
+> For embedded SPU app, the post-processing tool opens the PPE binary app 
+> file and obtains the SPU ELF embedded thereine, and from that, we obtain 
+> the name of the SPU binary.  Also, the app name is included in the 
+> report, along with the SPU binary filename, if the report contains 
+> samples from more than one application.
+
+That's not what I meant. If you have an embedded spu ELF file in a shared
+library object, you end up recording the file of the main PPE binary, and
+the offset of the SPU ELF inside of the .so file, but not the name of the
+.so file itself.
+
+You also say that the you record the name of the application on purpose for
+separate SPU ELF files. My assumption was that this is not necessary, but
+I don't know much about that aspect of oprofile. My feeling is that the
+samples for an external SPU ELF file should be handled the same way that
+oprofile handles events in shared libraries on the PPU (e.g. in libc.so).
+
+	Arnd <><
