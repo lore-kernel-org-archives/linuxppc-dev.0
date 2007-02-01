@@ -1,26 +1,31 @@
 Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
+Received: from mx2.suse.de (cantor2.suse.de [195.135.220.15])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx2.suse.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 73462DDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 15:25:44 +1100 (EST)
-Date: Wed, 31 Jan 2007 20:24:22 -0800
+	by ozlabs.org (Postfix) with ESMTP id 400B3DDDF8
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 15:30:30 +1100 (EST)
+Date: Wed, 31 Jan 2007 20:29:09 -0800
 From: Greg KH <greg@kroah.com>
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [RFC/PATCH 4/16] Abstract MSI suspend
-Message-ID: <20070201042422.GC3648@kroah.com>
-References: <20070125083410.631EEDE277@ozlabs.org>
-	<m1ac03sgi5.fsf@ebiederm.dsl.xmission.com>
-	<1170055377.19887.60.camel@concordia.ozlabs.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/6] MSI portability cleanups
+Message-ID: <20070201042909.GD3648@kroah.com>
+References: <1169714047.65693.647693675533.qpush@cradle>
+	<m1hcubq6re.fsf@ebiederm.dsl.xmission.com>
+	<1170015805.26655.15.camel@localhost.localdomain>
+	<45BD0BDC.40205@garzik.org>
+	<m1bqkiq25v.fsf@ebiederm.dsl.xmission.com>
+	<1170022154.26655.63.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1170055377.19887.60.camel@concordia.ozlabs.ibm.com>
-Cc: Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
-	Brice Goglin <brice@myri.com>, shaohua.li@intel.com,
-	linux-pci@atrey.karlin.mff.cuni.cz,
-	"David S. Miller" <davem@davemloft.net>,
-	"EricW.Biederman" <ebiederm@xmission.com>
+In-Reply-To: <1170022154.26655.63.camel@localhost.localdomain>
+Cc: Tony Luck <tony.luck@intel.com>, Grant Grundler <grundler@parisc-linux.org>,
+	Jeff Garzik <jeff@garzik.org>, "David S. Miller" <davem@davemloft.net>,
+	linux-kernel@vger.kernel.org,
+	Kyle McMartin <kyle@parisc-linux.org>, linuxppc-dev@ozlabs.org,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	shaohua.li@intel.com, Ingo Molnar <mingo@elte.hu>,
+	linux-pci@atrey.karlin.mff.cuni.cz, Brice Goglin <brice@myri.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,52 +35,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Jan 29, 2007 at 06:22:57PM +1100, Michael Ellerman wrote:
-> On Sun, 2007-01-28 at 01:27 -0700, Eric W. Biederman wrote:
-> > Michael Ellerman <michael@ellerman.id.au> writes:
-> > 
-> > > Currently pci_disable_device() disables MSI on a device by twiddling
-> > > bits in config space via disable_msi_mode().
-> > >
-> > > On some platforms that may not be appropriate, so abstract the MSI
-> > > suspend logic into pci_disable_device_msi().
-> > 
-> > >
-> > > Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
-> > > ---
-> > >
-> > >  drivers/pci/msi.c |   11 +++++++++++
-> > >  drivers/pci/pci.c |    7 +------
-> > >  drivers/pci/pci.h |    2 ++
-> > >  3 files changed, 14 insertions(+), 6 deletions(-)
-> > >
-> > > Index: msi/drivers/pci/msi.c
-> > > ===================================================================
-> > > --- msi.orig/drivers/pci/msi.c
-> > > +++ msi/drivers/pci/msi.c
-> > > @@ -271,6 +271,17 @@ void disable_msi_mode(struct pci_dev *de
-> > >  	pci_intx(dev, 1);  /* enable intx */
-> > >  }
-> > >  
-> > > +void pci_disable_device_msi(struct pci_dev *dev)
-> > > +{
-> > > +	if (dev->msi_enabled)
-> > > +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
-> > > +			PCI_CAP_ID_MSI);
-> > > +
-> > > +	if (dev->msix_enabled)
-> > > +		disable_msi_mode(dev, pci_find_capability(dev, PCI_CAP_ID_MSI),
-> > > +			PCI_CAP_ID_MSIX);
-> > 
-> > Just a quick note. This is wrong.  It should be PCI_CAP_ID_MSIX.
-> > The code that is being moved is buggy.  So the patch itself doesn't
-> > make the situation any worse.
+On Mon, Jan 29, 2007 at 09:09:14AM +1100, Benjamin Herrenschmidt wrote:
 > 
-> Greg, if you want to drop that patch I'll prepare two patches to fix it
-> and then move it. I don't have any hardware to test, although I'm
-> guessing no one does given that it's been broken since its inception.
+> If we followed that "only do incrementental changes" rule all the time,
+> imagine in what state would be our USB stack today since we couldn't
+> have dropped in Linus replacement one ...
 
-Ok, I've now dropped it.
+Bad example, that is not what happened at all.  There was not an
+in-kernel USB stack when Linus wrote his.  Inaky had his
+all-singing-all-dancing stack outside of the tree, and no one was really
+helping out with it.
+
+Only when Linus added his code to mainline did we all jump on it and
+_incrementally_ improve it to what we have today.
+
+So, in a way, you just proved that we need to do this in an incremental
+fashion, which is what I was also saying all along :)
 
 thanks,
 
