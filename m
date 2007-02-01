@@ -1,14 +1,14 @@
-Return-Path: <jens@de.ibm.com>
-From: Jens Osterkamp <jens@de.ibm.com>
-To: Linas Vepstas <linas@austin.ibm.com>, James K Lewis <jim@jklewis.com>,
-	linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-	cbe-oss-dev@ozlabs.org, Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Subject: [PATCH] spidernet : fix memory leak in spider_net_stop
-Date: Thu, 1 Feb 2007 12:07:47 +0100
+Return-Path: <gun_raj@yahoo.com>
+Received: from web52408.mail.yahoo.com (web52408.mail.yahoo.com
+	[206.190.48.171]) by ozlabs.org (Postfix) with SMTP id 6CA7FDDE05
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 01:14:12 +1100 (EST)
+Date: Thu, 1 Feb 2007 06:07:27 -0800 (PST)
+From: ganesh subramonian <gun_raj@yahoo.com>
+Subject: micro-sd driver in linux-2.4
+To: linuxppc-mailing-list <linuxppc-dev@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200702011207.47421.jens@de.ibm.com>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <840161.42451.qm@web52408.mail.yahoo.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,25 +18,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-We forget to call spider_net_free_rx_chain_contents which does the
-actual dev_kfree_skb. New skbs are allocated from skbuff_head_cache
-on each "ifconfig up" letting the cache grow infinitely.
-
-This patch fixes it.
-
-Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
-
-Index: linux-2.6.20-rc6/drivers/net/spider_net.c
-===================================================================
---- linux-2.6.20-rc6.orig/drivers/net/spider_net.c
-+++ linux-2.6.20-rc6/drivers/net/spider_net.c
-@@ -1925,6 +1925,8 @@ spider_net_stop(struct net_device *netde
- 	/* release chains */
- 	spider_net_release_tx_chain(card, 1);
- 
-+	spider_net_free_rx_chain_contents(card);
-+
- 	spider_net_free_chain(card, &card->tx_chain);
- 	spider_net_free_chain(card, &card->rx_chain);
- 
+=0A=0AHi=0A=0AAre there any drivers in linux-2.4 to access a microsd card u=
+sing the spi interface ( of mpc8360) ?=0ACan someone please explain how the=
+ sd drivers are layered in linux. Would the filesystem be interfaced with t=
+he sd layer and this over spi driver? I am just trying to understand if  i =
+would be able to use the sd layer from some stock kernel and the spi module=
+ from linuxppc - how difficult would this be?=0APlease help.=0A=0AThanks=0A=
+Ganesh=0A=0A=0A=0A=0A=0A =0A_______________________________________________=
+_____________________________________=0AAny questions? Get answers on any t=
+opic at www.Answers.yahoo.com.  Try it now.
