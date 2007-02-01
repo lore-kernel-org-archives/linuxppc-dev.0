@@ -1,15 +1,29 @@
-Return-Path: <dwilson@dslextreme.com>
-Received: from mail9.dslextreme.com (mail9.dslextreme.com [66.51.199.94])
-	by ozlabs.org (Postfix) with SMTP id 43004DDDEC
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A9D0ADDE07
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Feb 2007 09:08:41 +1100 (EST)
-Message-ID: <200702011408330875.0BD61D69@smtp.dslextreme.com>
-Date: Thu, 01 Feb 2007 14:08:33 -0800
-From: "Dan Wilson" <dwilson@dslextreme.com>
+	Fri,  2 Feb 2007 10:08:25 +1100 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1HCkfu-0001zX-4j
+	for linuxppc-embedded@ozlabs.org; Thu, 01 Feb 2007 23:45:02 +0100
+Received: from dsl-202-45-109-210-static.VIC.netspace.net.au ([202.45.109.210])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 01 Feb 2007 23:45:02 +0100
+Received: from daniel_ng11 by dsl-202-45-109-210-static.VIC.netspace.net.au
+	with local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 01 Feb 2007 23:45:02 +0100
 To: linuxppc-embedded@ozlabs.org
-Subject: PPC 85xx serial port error
+From: Daniel Ng <daniel_ng11@lycos.com>
+Subject: ELDK glibc fcntl(socketFd,
+	=?utf-8?b?Rl9TRVRGTCw=?= flags) causes Seg Fault
+Date: Thu, 1 Feb 2007 06:56:43 +0000 (UTC)
+Message-ID: <loom.20070201T073939-302@post.gmane.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="ISO-8859-1"
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,26 +34,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-We are using an 8541 processor with ELDK 4.0 and 2.6.15 kernel.
+Hi,
 
-Frequently, if we dump large amounts of output to the console port (for=
- example, if we use 'tar' with the verbose option), we see an error message=
- that starts and scrolls until we reboot the unit:
-    serial8250: too much work for irq90
+My application Seg Faults when I try to set flags for my socket fd.
 
-We see this at 9600 baud and also at 115200 baud, although it seems to=
- happen less often at 115k.
+First, I get the fd by calling socket():
+fd = socket(PF_INET, SOCK_STREAM, IPPROTO_TCP);
 
-This message comes from serial8250_interrupt, which appears to trigger it=
- if the interrupt handler has looped 256 times through the list?
+Then I try getting the fd flags:
+fcntl(fd, F_GETFL, flags)
 
-How is this possible?  If the interrupt routine is running, does that not=
- prevent user threads from running and adding more data to the list?  Or am=
- I not understanding this code correctly?
+Then I try setting the flags:
+flags |= O_NONBLOCK;
+fcntl( fd, F_SETFL, flags );
 
-Any light that anyone can shed on the expected behavior of this driver and=
- any ideas on how to work around this are greatly appreciated!
+-I get consistent Seg Faults on the last line above.
 
-Best regards,
+-I also checked fd, which is a sensible value. 
+I can even successfully connect() with it.
 
-Dan.
+-The problem happens regardless of what value 'flags' is set to
+
+
+My embedded target details-
+
+-powerpc8272
+-ELDK v4
+-the application uses glibc
+
+
+Any ideas why I'm getting these Seg Faults?
+
+Cheers,
+Daniel
