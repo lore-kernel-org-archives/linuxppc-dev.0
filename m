@@ -1,27 +1,28 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 7161BDDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 02:08:35 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l11F8XGX020776
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Feb 2007 08:08:33 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l11F8WtC010361
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Feb 2007 09:08:33 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: I don't understand #size-cells = <0>
-Date: Thu, 1 Feb 2007 08:08:31 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA30262A1AA@az33exm25.fsl.freescale.net>
-In-Reply-To: <20070201002534.GD29213@localhost.localdomain>
-References: <200702010022.l110MCan009105@pogo.cesa.opbu.xerox.com>
-	<20070201002534.GD29213@localhost.localdomain>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Andrew Klossner" <andrew@cesa.opbu.xerox.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C844BDDE38
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 04:30:32 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l11HUNmi028094
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Feb 2007 12:30:23 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l11HUNaQ281894
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Feb 2007 12:30:23 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l11HUMFl021571
+	for <linuxppc-dev@ozlabs.org>; Thu, 1 Feb 2007 12:30:23 -0500
+Subject: [PATCH 1/3] pci: New PCI-E reset API
+To: gregkh@suse.de
+From: Brian King <brking@linux.vnet.ibm.com>
+Date: Thu, 01 Feb 2007 11:30:21 -0600
+Message-Id: <11703510202911-patch-mail.ibm.com>
+Cc: James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	brking@linux.vnet.ibm.com, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,76 +33,97 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-A specific example of #size-cells =3D <0> would be for=20
-the cpus node:
+Adds a new API which can be used to issue various types
+of PCI-E reset, including PCI-E warm reset and PCI-E hot reset.
+This is needed for an ipr PCI-E adapter which does not properly
+implement BIST. Running BIST on this adapter results in PCI-E
+errors. The only reliable reset mechanism that exists on this
+hardware is PCI Fundamental reset (warm reset). Since driving
+this type of reset is architecture unique, this provides the
+necessary hooks for architectures to add this support.
 
-    cpus {
-       #address-cells =3D <1>;
-       #size-cells =3D <0>;
+Signed-off-by: Brian King <brking@linux.vnet.ibm.com>
+---
 
-       PowerPC,7447A@0 {
-          device_type =3D "cpu";
-          reg =3D <0>;
-       }
-=20
-       PowerPC,7447A@1 {
-          device_type =3D "cpu";
-          reg =3D <1>;
-       }
-    }
+ linux-2.6-bjking1/drivers/pci/pci.c   |   29 +++++++++++++++++++++++++++++
+ linux-2.6-bjking1/include/linux/pci.h |   14 ++++++++++++++
+ 2 files changed, 43 insertions(+)
 
-The "reg" field for a cpu node does not have a size
-field.
-
-Stuart
-
-> -----Original Message-----
-> From: linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org]=20
-> On Behalf Of David Gibson
-> Sent: Wednesday, January 31, 2007 6:26 PM
-> To: Andrew Klossner
-> Cc: linuxppc-dev@ozlabs.org
-> Subject: Re: I don't understand #size-cells =3D <0>
->=20
-> On Wed, Jan 31, 2007 at 04:22:12PM -0800, Andrew Klossner wrote:
-> > I'm porting the kernel to an 8548-based board whose boot loader does
-> > not provide a device tree, so I'm rolling my own.
-> >=20
-> > Rev 0.5 of booting-without-of.txt says:
-> >=20
-> > 	"reg" properties are always a tuple of the type "address size"
-> > 	where the number of cells of address and size is specified by
-> > 	the bus #address-cells and #size-cells.
-> >=20
-> > but in the examples, we see
-> >=20
-> > 		reg =3D <22000 1000>;
-> > 		#address-cells =3D <1>;
-> > 		#size-cells =3D <0>;
-> >=20
-> > The number of cells of address is 1.  The number of cells=20
-> of size is 0.
-> > 1+0=3D1, so how can the reg property have a tuple of size 2?
->=20
-> The #address-cells and #size-cells properties apply to children of the
-> node they appear in, but not in the node itself.  So the "reg" here
-> uses the #address-cells and #size-cells values from its parent.
->=20
-> This is so that a bridge to a different bus (say, PCI<->USB) can have
-> a reg property in the format of its parent bus for the control
-> registers, but define a new address format for things on the
-> subordinate bus.
->=20
-> --=20
-> David Gibson			| I'll have my music baroque,=20
-> and my code
-> david AT gibson.dropbear.id.au	| minimalist, thank=20
-> you.  NOT _the_ _other_
-> 				| _way_ _around_!
-> http://www.ozlabs.org/~dgibson
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->=20
+diff -puN drivers/pci/pci.c~pci_pci_reset_api drivers/pci/pci.c
+--- linux-2.6/drivers/pci/pci.c~pci_pci_reset_api	2007-01-30 12:48:54.000000000 -0600
++++ linux-2.6-bjking1/drivers/pci/pci.c	2007-01-30 12:48:54.000000000 -0600
+@@ -791,6 +791,34 @@ pci_disable_device(struct pci_dev *dev)
+ }
+ 
+ /**
++ * pcibios_set_pcie_reset_state - set reset state for device dev
++ * @dev: the PCI-E device reset
++ * @state: Reset state to enter into
++ *
++ *
++ * Sets the PCI-E reset state for the device. This is the default
++ * implementation. Architecture implementations can override this.
++ */
++int __attribute__ ((weak)) pcibios_set_pcie_reset_state(struct pci_dev *dev,
++							enum pcie_reset_state state)
++{
++	return -EINVAL;
++}
++
++/**
++ * pci_set_pcie_reset_state - set reset state for device dev
++ * @dev: the PCI-E device reset
++ * @state: Reset state to enter into
++ *
++ *
++ * Sets the PCI reset state for the device.
++ */
++int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state)
++{
++	return pcibios_set_pcie_reset_state(dev, state);
++}
++
++/**
+  * pci_enable_wake - enable device to generate PME# when suspended
+  * @dev: - PCI device to operate on
+  * @state: - Current state of device.
+@@ -1210,6 +1238,7 @@ EXPORT_SYMBOL(pci_set_power_state);
+ EXPORT_SYMBOL(pci_save_state);
+ EXPORT_SYMBOL(pci_restore_state);
+ EXPORT_SYMBOL(pci_enable_wake);
++EXPORT_SYMBOL_GPL(pci_set_pcie_reset_state);
+ 
+ /* Quirk info */
+ 
+diff -puN include/linux/pci.h~pci_pci_reset_api include/linux/pci.h
+--- linux-2.6/include/linux/pci.h~pci_pci_reset_api	2007-01-30 12:48:54.000000000 -0600
++++ linux-2.6-bjking1/include/linux/pci.h	2007-01-30 12:48:54.000000000 -0600
+@@ -96,6 +96,19 @@ enum pci_channel_state {
+ 	pci_channel_io_perm_failure = (__force pci_channel_state_t) 3,
+ };
+ 
++typedef unsigned int __bitwise pcie_reset_state_t;
++
++enum pcie_reset_state {
++	/* Reset is NOT asserted (Use to deassert reset) */
++	pci_reset_normal = (__force pcie_reset_state_t) 1,
++
++	/* Use #PERST to reset PCI-E device */
++	pci_reset_pcie_warm_reset = (__force pcie_reset_state_t) 2,
++
++	/* Use PCI-E Hot Reset to reset device */
++	pci_reset_pcie_hot_reset = (__force pcie_reset_state_t) 3
++};
++
+ typedef unsigned short __bitwise pci_bus_flags_t;
+ enum pci_bus_flags {
+ 	PCI_BUS_FLAGS_NO_MSI = (__force pci_bus_flags_t) 1,
+@@ -523,6 +536,7 @@ int __must_check pci_enable_device(struc
+ int __must_check pci_enable_device_bars(struct pci_dev *dev, int mask);
+ void pci_disable_device(struct pci_dev *dev);
+ void pci_set_master(struct pci_dev *dev);
++int pci_set_pcie_reset_state(struct pci_dev *dev, enum pcie_reset_state state);
+ #define HAVE_PCI_SET_MWI
+ int __must_check pci_set_mwi(struct pci_dev *dev);
+ void pci_clear_mwi(struct pci_dev *dev);
+_
