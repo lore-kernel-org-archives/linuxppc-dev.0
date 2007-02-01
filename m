@@ -1,34 +1,42 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <peter.ryser@xilinx.com>
+Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 34692DDDF9
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 1B3FCDDE36
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Feb 2007 01:33:58 +1100 (EST)
-In-Reply-To: <000801c7460d$211e46e0$6405a8c0@absolut>
-References: <mailman.1454.1170226011.9285.linuxppc-embedded@ozlabs.org>
-	<000601c74531$62220820$6405a8c0@absolut>
-	<0ACC0A3E-9DF3-4927-8F67-E525BA0E6C13@kernel.crashing.org>
-	<000001c7454b$69a25ae0$6405a8c0@absolut>
-	<0A655A39-4101-48B4-BE9C-50A30163679C@kernel.crashing.org>
-	<000701c7457a$d180e300$6405a8c0@absolut>
-	<183E66A5-E983-4D17-96E9-2EEAE6FDF7B6@kernel.crashing.org>
-	<000f01c74587$10bc5cf0$6405a8c0@absolut>
-	<1546691E-0CCF-41C9-8B8A-7C6326CEEF7E@kernel.crashing.org>
-	<000301c7458b$b9eb1330$6405a8c0@absolut>
-	<829261C6-F534-4B85-A04D-8D280E46B2CF@kernel.crashing.org>
-	<000401c74591$8a3a4ec0$6405a8c0@absolut>
-	<BC5846DA-A217-43B7-8060-6EA05CC62913@kernel.crashing.org>
-	<000801c7460d$211e46e0$6405a8c0@absolut>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <974C77BD-19A0-4843-8E7B-3B430DB4ADE9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: 8360E - PCI / DTC Blob Setup
-Date: Thu, 1 Feb 2007 08:33:00 -0600
-To: rmcguire@videopresence.com
-Cc: linuxppc-embedded@ozlabs.org
+	Fri,  2 Feb 2007 01:59:21 +1100 (EST)
+Received: from outbound2-blu.bigfish.com (localhost.localdomain [127.0.0.1])
+	by outbound2-blu-R.bigfish.com (Postfix) with ESMTP id 41C991A29643
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Feb 2007 14:59:18 +0000 (UTC)
+Received: from mail80-blu-R.bigfish.com (unknown [10.1.252.3])
+	by outbound2-blu.bigfish.com (Postfix) with ESMTP id 09E3330043
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Feb 2007 14:59:17 +0000 (UTC)
+Received: from mail80-blu (localhost.localdomain [127.0.0.1])
+	by mail80-blu-R.bigfish.com (Postfix) with ESMTP id 1EB5F18882A7
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Feb 2007 14:59:17 +0000 (UTC)
+Received: from newsgate.xilinx.com (gateway4.xilinx.com [149.199.60.204])
+	by mail80-blu.bigfish.com (Postfix) with ESMTP id A00B1DA008B
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Feb 2007 14:59:14 +0000 (UTC)
+Received: from cliff.xilinx.com (cliff [149.199.38.103])
+	by newsgate.xilinx.com (8.11.6p2/8.11.6) with ESMTP id l11ExDi13413
+	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Feb 2007 06:59:13 -0800 (PST)
+Received: from xsj-exchfesmtp2.xlnx.xilinx.com (localhost [127.0.0.1])
+	by cliff.xilinx.com (8.12.9/8.11.6) with ESMTP id l11ExCC2002457
+	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Feb 2007 06:59:13 -0800 (PST)
+Message-ID: <45C1FFEE.9020500@xilinx.com>
+Date: Thu, 01 Feb 2007 06:57:50 -0800
+From: Peter Ryser <peter.ryser@xilinx.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Led astray? Xilinx ml410 + u-boot + Linux?
+References: <89CE61D4-C939-4788-A0AE-30EF410E9628@anti-paladin.com>
+In-Reply-To: <89CE61D4-C939-4788-A0AE-30EF410E9628@anti-paladin.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -39,38 +47,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Joe,
 
-On Feb 1, 2007, at 8:27 AM, Russell McGuire wrote:
+please have a look at http://www.xilinx.com/ml410-p. The pages do 
+contain information, documentation, and examples on how to use U-Boot 
+and Linux 2.4 on the ML410.
+There are Linux 2.6 solutions for the ML40x boards (ML403 and ML405) 
+from MontaVista and Wind River. Since the ML40x boards are in key parts 
+identical to the ML410 you can use those ports as a starting point for a 
+port to the ML410.
 
-> Since I am hip deep in debugging the PCI system.
+- Peter
+
+
+Joe wrote:
+> I was told (by Xilinx reps!) that the Xilinx ML410 "supported" Linux.
 >
-> In the .dts files there is the section for the PCI setup.
+> My goal is to have something "load" Linux and then execute it -- 
+> preferably over NFS / Ethernet (for development purposes).
 >
-> The interrupt-map = < >
+> As far as I can tell from searching the 'Net the ML403 is fairly well 
+> supported but I have yet to see any level of confirmation that the 
+> ML410 fully supports u-boot, Linux and Ethernet.
 >
-> Does this need to include:
-> 1) A mapping for every IDSEL line in the system?
-> 2) Only those IDSELs that are used on the slots on the motherboard?
-
-I'm not sure I follow the difference between 1/2. The map needs to  
-cover every IDSEL that has an IRQ line wired to it.
-
-> 3) A custom entry for every card we want to support?
-
-See above.
-
-> 4) How does a bridge chip and slave busses affect the entries, if  
-> at all?
-
-Uugh, I'm not sure how bridges are handled at this point.
-
-> Looking at the mpc8360 / 8349 setups that are part of the latest  
-> kernel
-> trees, some are place many and some are placing just a single entry?
+> When I download the u-boot file(s) from Xilinx they basically don't work:
 >
-> Which should be the preferred method?
-
-It depends on your HW setup, the 8360/49 boards have some 'odd' IDSEL  
-irq mapping.
-
-- k
+>   0)  I get a u-boot command prompt via the serial port!! ;)
+>   1)  The u-boot loadb command fails to accept any data via the kermit 
+> protocol
+>   2)  The u-boot 'dhcp' command fails to obtain an address -- either 
+> by simply crashing or by sitting there indicating that it is re-trying 
+> (in which case an Ethernet sniffer shows no activity from the Ethernet 
+> ports).
+>
+> Linux 2.6.19 shows arc/ppc/configs/ml[403|300]_defconfig, but I see 
+> *zero* indication that the 410 is supported.  Has anyone seen the 
+> ML410 fully functional with Linux + a patch to enable the Ethernet ports?
+> (I also note that on the mvi$ta site they list support for:  ML300 and 
+> ML40x -- but NOT the ML410.)  My searches also seem to indicate that 
+> the IP included for the 410 Ethernet MAC's is distinctly different 
+> from the 403...
+>
+> My current project has a *very* short fuse -- I should have been 
+> "running" (e.g. past init into a shell w/filesystem) two weeks ago.
+>
+> If someone could confirm that this platform *is* supported (and I'm 
+> just missing this on my searches) I'd be quite grateful for some 
+> pointers on where to re-direct my searches.
+>
+> OTOH, if someone could confirm that this platform is NOT currently 
+> supported that would be just as useful -- decisions can be made and 
+> actions taken.
+>
+> TIA.
+>
+> -- 
+> Joe
+>
+>
+>
+>
+> ------------------------------------------------------------------------
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
