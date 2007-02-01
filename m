@@ -1,20 +1,14 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx1.suse.de (mx1.suse.de [195.135.220.2])
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx1.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3E12EDDEA2
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 17:09:22 +1100 (EST)
-Subject: patch msi-remove-msi_lock.patch added to gregkh-2.6 tree
-To: greg@kroah.com, brice@myri.com, davem@davemloft.net,
-	ebiederm@xmission.com, gregkh@suse.de, grundler@parisc-linux.org,
-	kyle@parisc-linux.org, linuxppc-dev@ozlabs.org,
-	michael@ellerman.id.au, mingo@elte.hu, shaohua.li@intel.com,
-	tony.luck@intel.com
-From: <gregkh@suse.de>
-Date: Wed, 31 Jan 2007 22:08:19 -0800
-In-Reply-To: <m18xfnq6lm.fsf_-_@ebiederm.dsl.xmission.com>
-Message-Id: <20070201060916.C0D2CB9DC74@imap.suse.de>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A1080DDDF6
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 18:54:40 +1100 (EST)
+From: kou.ishizaki@toshiba.co.jp
+Date: Thu, 01 Feb 2007 16:54:02 +0900 (JST)
+Message-Id: <200702010754.l117s2T8003383@toshiba.co.jp>
+To: jens@de.ibm.com
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,157 +18,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+jgarzik@pobox.com, jim@jklewis.com
+Subject: Re: [Cbe-oss-dev] spidernet: dynamic phy setup code
+In-Reply-To: <200701261409.29537.jens@de.ibm.com>
+From: Ishizaki Kou <kouish@swc.toshiba.co.jp>
+X-Mailer: Mew version 4.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-This is a note to let you know that I've just added the patch titled
+Jens-san
 
-     Subject: msi: Remove msi_lock.
+> This patch modifies the patch submitted by Kou Ishizaki to make it
+work on the
+> blade
+(http://marc.theaimsgroup.com/?l=linux-netdev&m=116593424505539&w=2).
+> Unfortunately I dont have access to a Celleb so I cannot test it
+there.
 
-to my gregkh-2.6 tree.  Its filename is
+Thanks for arranging our patch to work on Cell Blade.
 
-     msi-remove-msi_lock.patch
+This patch partially works on celleb but remains 
+following several problems.
+1. It doesn't recover once an ethernet cable which is
+   connected to a spider_net card is unpluged. 
+2. It doesn't work when the spider_net card is connected to 
+   a 100Mbps ethernet switch.
 
-This tree can be found at 
-    http://www.kernel.org/pub/linux/kernel/people/gregkh/gregkh-2.6/patches/
+To solve these problems, we need to restore some codes
+you removed from your patch.
 
+(1)
+>- if (card->aneg_count > 10) {
+>-  /* timeout */
+>-  card->aneg_count = 0;
+>-  is1000 = !is1000;
+>-  goto re_setup;
 
->From owner-linux-pci@atrey.karlin.mff.cuni.cz  Wed Jan 31 21:59:53 2007
-From: ebiederm@xmission.com (Eric W. Biederman)
-Date: Sun, 28 Jan 2007 12:44:21 -0700
-Subject: msi: Remove msi_lock.
-To: Greg Kroah-Hartman <greg@kroah.com>
-Cc: "David S. Miller" <davem@davemloft.net>, Kyle McMartin <kyle@parisc-linux.org>, <linuxppc-dev@ozlabs.org>, Brice Goglin <brice@myri.com>, <shaohua.li@intel.com>, Michael Ellerman <michael@ellerman.id.au>, Grant Grundler <grundler@parisc-linux.org>, Tony Luck <tony.luck@intel.com>, Ingo Molnar <mingo@elte.hu>
-Message-ID: <m18xfnq6lm.fsf_-_@ebiederm.dsl.xmission.com>
+>- if (phy->speed == 1000 && !is1000) {
+>-  is1000 = 1;
+>-  goto re_setup;
+>- } else if(phy->speed != 1000 && is1000) {
+>-  is1000 = 0;
+>-  goto re_setup;
+>- }
 
+We need to use different auto-neg initial settings between
+for 10/100Mbps ethernet switches and for Gbps ethernet switches.
+Driver don't know which type of network switch is connected to
+network card, so we try both settings alternately in auto negtiation
+sequences by using a variable "is1000".
+Furthermore, we have a problem that poll_link() may succeed even when
+the auto-neg initial setting is for different network switch type,
+and the network card does not work on this case. We retry auto-neg
+with the another initial setting on this case.
 
+#We are commented that "is1000" should be in spider_net_card.
+#We fixed it in another patch. Please refer the following.
+#http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030203.html
 
-With the removal of msi_lookup_irq all of the functions using msi_lock
-operated on a single device and none of them could reasonably be
-called on that device at the same time. 
+But we don't think this is the best solution, and we are still
+developing 
+our spidernet driver. If you have a good alternative idea, please tell
+us.
 
-Since what little synchronization that needs to happen needs to happen
-outside of the msi functions, msi_lock could never be contended and as
-such is useless and just complicates the code.
+(2)
+>- spider_net_write_reg(card, SPIDER_NET_GMACST,
+>-        spider_net_read_reg(card, SPIDER_NET_GMACST));
+>- spider_net_write_reg(card, SPIDER_NET_GMACINTEN, 0x4);
 
-Signed-off-by: Eric W. Biederman <ebiederm@xmission.com>
-Acked-by: Ingo Molnar <mingo@elte.hu>
-Signed-off-by: Greg Kroah-Hartman <gregkh@suse.de>
+These codes are enabling LINK status interrupt which is disabled
+at the beginning of auto-neg.
+Without this operation, auto negotiation works only when a connection
+detected for the first time, and auto negotiation will not work 
+when an ethernet cable is unpluged or pluged.
 
----
- drivers/pci/msi.c |   20 --------------------
- 1 file changed, 20 deletions(-)
+(3)
+>- mii_phy_probe(phy, phy->mii_id);
+It seems that PHY reset is necessary before auto negotiation,
+after a link once went down.
+We can't call directly reset routine from driver, so we call
+mii_phy_probe().
+We are still developping the patch as we noted, and we are considering
+to call mii_phy_probe() from spider_net_setup_aneg(), or to call
+reset_one_mii_phy() from bcm54xx_setup_aneg().
 
---- gregkh-2.6.orig/drivers/pci/msi.c
-+++ gregkh-2.6/drivers/pci/msi.c
-@@ -24,7 +24,6 @@
- #include "pci.h"
- #include "msi.h"
- 
--static DEFINE_SPINLOCK(msi_lock);
- static struct msi_desc* msi_desc[NR_IRQS] = { [0 ... NR_IRQS-1] = NULL };
- static struct kmem_cache* msi_cachep;
- 
-@@ -196,11 +195,7 @@ static struct msi_desc* alloc_msi_entry(
- 
- static void attach_msi_entry(struct msi_desc *entry, int irq)
- {
--	unsigned long flags;
--
--	spin_lock_irqsave(&msi_lock, flags);
- 	msi_desc[irq] = entry;
--	spin_unlock_irqrestore(&msi_lock, flags);
- }
- 
- static int create_msi_irq(void)
-@@ -672,7 +667,6 @@ void pci_disable_msi(struct pci_dev* dev
- 	struct msi_desc *entry;
- 	int pos, default_irq;
- 	u16 control;
--	unsigned long flags;
- 
- 	if (!pci_msi_enable)
- 		return;
-@@ -693,21 +687,17 @@ void pci_disable_msi(struct pci_dev* dev
- 
- 	disable_msi_mode(dev, pos, PCI_CAP_ID_MSI);
- 
--	spin_lock_irqsave(&msi_lock, flags);
- 	entry = msi_desc[dev->first_msi_irq];
- 	if (!entry || !entry->dev || entry->msi_attrib.type != PCI_CAP_ID_MSI) {
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		return;
- 	}
- 	if (irq_has_action(dev->first_msi_irq)) {
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		printk(KERN_WARNING "PCI: %s: pci_disable_msi() called without "
- 		       "free_irq() on MSI irq %d\n",
- 		       pci_name(dev), dev->first_msi_irq);
- 		BUG_ON(irq_has_action(dev->first_msi_irq));
- 	} else {
- 		default_irq = entry->msi_attrib.default_irq;
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		msi_free_irq(dev, dev->first_msi_irq);
- 
- 		/* Restore dev->irq to its default pin-assertion irq */
-@@ -721,14 +711,11 @@ static int msi_free_irq(struct pci_dev* 
- 	struct msi_desc *entry;
- 	int head, entry_nr, type;
- 	void __iomem *base;
--	unsigned long flags;
- 
- 	arch_teardown_msi_irq(irq);
- 
--	spin_lock_irqsave(&msi_lock, flags);
- 	entry = msi_desc[irq];
- 	if (!entry || entry->dev != dev) {
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		return -EINVAL;
- 	}
- 	type = entry->msi_attrib.type;
-@@ -739,7 +726,6 @@ static int msi_free_irq(struct pci_dev* 
- 	msi_desc[entry->link.tail]->link.head = entry->link.head;
- 	entry->dev = NULL;
- 	msi_desc[irq] = NULL;
--	spin_unlock_irqrestore(&msi_lock, flags);
- 
- 	destroy_msi_irq(irq);
- 
-@@ -817,7 +803,6 @@ int pci_enable_msix(struct pci_dev* dev,
- void pci_disable_msix(struct pci_dev* dev)
- {
- 	int irq, head, tail = 0, warning = 0;
--	unsigned long flags;
- 	int pos;
- 	u16 control;
- 
-@@ -841,9 +826,7 @@ void pci_disable_msix(struct pci_dev* de
- 
- 	irq = head = dev->first_msi_irq;
- 	while (head != tail) {
--		spin_lock_irqsave(&msi_lock, flags);
- 		tail = msi_desc[irq]->link.tail;
--		spin_unlock_irqrestore(&msi_lock, flags);
- 		if (irq_has_action(irq))
- 			warning = 1;
- 		else if (irq != head)	/* Release MSI-X irq */
-@@ -872,7 +855,6 @@ void pci_disable_msix(struct pci_dev* de
- void msi_remove_pci_irq_vectors(struct pci_dev* dev)
- {
- 	int pos;
--	unsigned long flags;
- 
- 	if (!pci_msi_enable || !dev)
-  		return;
-@@ -894,10 +876,8 @@ void msi_remove_pci_irq_vectors(struct p
- 
- 		irq = head = dev->first_msi_irq;
- 		while (head != tail) {
--			spin_lock_irqsave(&msi_lock, flags);
- 			tail = msi_desc[irq]->link.tail;
- 			base = msi_desc[irq]->mask_base;
--			spin_unlock_irqrestore(&msi_lock, flags);
- 			if (irq_has_action(irq))
- 				warning = 1;
- 			else if (irq != head) /* Release MSI-X irq */
+We think these (1)-(3) are necessary, but we are afraid that you removed
+them
+by a reason that they causes some trouble in Cell Blade. If so please
+tell us.
 
 
-Patches currently in gregkh-2.6 which might be from greg@kroah.com are
+Best regards,
+Kou Ishizaki
