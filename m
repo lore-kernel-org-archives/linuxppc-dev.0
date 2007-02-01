@@ -2,13 +2,18 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A1080DDDF6
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 18:54:40 +1100 (EST)
-From: kou.ishizaki@toshiba.co.jp
-Date: Thu, 01 Feb 2007 16:54:02 +0900 (JST)
-Message-Id: <200702010754.l117s2T8003383@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 059BADDE09
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 19:06:25 +1100 (EST)
+Date: Thu, 01 Feb 2007 17:05:01 +0900 (JST)
+Message-Id: <200702010805.l11853LX014768@toshiba.co.jp>
 To: jens@de.ibm.com
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Subject: Re: [Cbe-oss-dev] spidernet: dynamic phy setup code
+In-Reply-To: <200701261409.29537.jens@de.ibm.com>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: jim@jklewis.com, linuxppc-dev@ozlabs.org, jgarzik@pobox.com,
+	netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,14 +23,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-jgarzik@pobox.com, jim@jklewis.com
-Subject: Re: [Cbe-oss-dev] spidernet: dynamic phy setup code
-In-Reply-To: <200701261409.29537.jens@de.ibm.com>
-From: Ishizaki Kou <kouish@swc.toshiba.co.jp>
-X-Mailer: Mew version 4.2 on Emacs 21.3 / Mule 5.0 (SAKAKI)
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Content-Transfer-Encoding: 7bit
+I apologize if you received this mail many times.
+
 
 Jens-san
 
