@@ -1,21 +1,24 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 2FAC3DDE37
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 07:53:20 +1100 (EST)
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901053E8497@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D901064432D9@EMPBEDEX.empirix.com>
-	<2B407BB2-BBA6-4B13-BF34-DABFB3F8ADEF@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D90106443362@EMPBEDEX.empirix.com>
-	<21F08FBD-6702-46A2-9592-329D8CF04073@kernel.crashing.org>
-	<BD261180E6D35F4D9D32F3E44FD3D901053E8497@EMPBEDEX.empirix.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <F1952BE4-7FE4-4432-8B39-D3D6EF7081D0@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: options for root file system for MPC8548
-Date: Wed, 31 Jan 2007 14:52:54 -0600
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <andrew@cesa.opbu.xerox.com>
+Received: from fw7.opbu.xerox.com (fw7.opbu.xerox.com [192.65.17.10])
+	by ozlabs.org (Postfix) with ESMTP id 10942DDDDB
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Feb 2007 11:22:16 +1100 (EST)
+Received: from hermes.opbu.xerox.com (hermes.opbu.xerox.com [13.62.6.81])
+	by fw7-6050.opbu.xerox.com with ESMTP id l110MEhK002236
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 16:22:14 -0800 (PST)
+Received: from pogo.cesa.opbu.xerox.com (pogo.cesa.opbu.xerox.com
+	[13.62.33.31])
+	by hermes.opbu.xerox.com (8.13.7+Sun/8.13.4) with ESMTP id
+	l110MCTg015650
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 16:22:12 -0800 (PST)
+Received: from cesa.opbu.xerox.com (gto.cesa.opbu.xerox.com [13.62.136.98])
+	by pogo.cesa.opbu.xerox.com (8.13.6+Sun/8.13.6) with ESMTP id
+	l110MCan009105
+	for <linuxppc-dev@ozlabs.org>; Wed, 31 Jan 2007 16:22:12 -0800 (PST)
+Message-Id: <200702010022.l110MCan009105@pogo.cesa.opbu.xerox.com>
+To: linuxppc-dev@ozlabs.org
+Subject: I don't understand #size-cells = <0>
+Date: Wed, 31 Jan 2007 16:22:12 -0800
+From: Andrew Klossner <andrew@cesa.opbu.xerox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +28,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I'm porting the kernel to an 8548-based board whose boot loader does
+not provide a device tree, so I'm rolling my own.
 
-On Jan 30, 2007, at 17:14, Morrison, Tom wrote:
+Rev 0.5 of booting-without-of.txt says:
 
->
-> they have full MPC8548 support...and fwiw, the
-> standard fedora & debian ppc is incompatible
-> with the e500 core (throws floating point
-> exceptions - due to different FP instruction set)...
->
-> I like their update support...
->
-> and fyi, freescale already turns on software emulation
-> in their kernel CDS support package by default. We
-> intend to turn that OFF very soon!
+	"reg" properties are always a tuple of the type "address size"
+	where the number of cells of address and size is specified by
+	the bus #address-cells and #size-cells.
 
+but in the examples, we see
 
-Why?  Maybe I'm blanking on something obvious, here, but the code  
-doesn't hurt you if it's on.  But the slightest mistake in building  
-an application could lead to a crash if it's off.  We try to make  
-sure our toolchains don't produce classic fp instructions, but you  
-can easily use the wrong compiler, or grab a library that left in a  
-mtfpscr or something.  If FP emulation is on, that won't really  
-affect performance, and it will mean your program doesn't crash at  
-random.
+		reg = <22000 1000>;
+		#address-cells = <1>;
+		#size-cells = <0>;
 
-And I'd like to reaffirm Stuart's points that you don't have to use  
-Busy Box, or the built-in kernel.  The kernel and Root FS should be  
-almost entirely independent (breaking user-space is considered a bug).
+The number of cells of address is 1.  The number of cells of size is 0.
+1+0=1, so how can the reg property have a tuple of size 2?
 
-Andy
+I saw Ben's mention last June of a "degenerate range", but I can't
+find that term used anywhere else.
+
+What are the real semantics of #size-cells = <0> ?
+
+Thanks,
+Andrew Klossner
