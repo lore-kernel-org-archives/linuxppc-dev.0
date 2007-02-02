@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6D023DDEC0
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 18:39:42 +1100 (EST)
-Date: Fri, 02 Feb 2007 16:39:34 +0900 (JST)
-Message-Id: <200702020739.l127dZWV019995@toshiba.co.jp>
-Subject: [PATCH 4/11] Celleb: support iommu
+	by ozlabs.org (Postfix) with ESMTP id 80960DDF15
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 18:42:35 +1100 (EST)
+Date: Fri, 02 Feb 2007 16:42:28 +0900 (JST)
+Message-Id: <200702020742.l127gUbQ022687@toshiba.co.jp>
+Subject: [PATCH 5/11] Celleb: htab routines
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,21 +21,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch creates Celleb platform dependent file to support iommu.
+Adds htab routines for Celleb platform.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c:1.19
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c:1.7
 --- /dev/null	Fri Feb  2 13:38:04 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c	Fri Jan 26 17:45:04 2007
-@@ -0,0 +1,104 @@
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c	Wed Jan 31 13:15:46 2007
+@@ -0,0 +1,311 @@
 +/*
-+ * Support for IOMMU on Celleb platform.
++ * "Cell Reference Set" HTAB support.
 + *
 + * (C) Copyright 2006-2007 TOSHIBA CORPORATION
++ *
++ * This code is based on arch/powerpc/platforms/pseries/lpar.c:
++ *  Copyright (C) 2001 Todd Inglett, IBM Corporation
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
@@ -52,87 +55,303 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/iommu.c:1.19
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/pci.h>
++#undef DEBUG_LOW
 +
-+#include <asm/of_platform.h>
++#include <linux/kernel.h>
++#include <linux/spinlock.h>
++
++#include <asm/mmu.h>
++#include <asm/page.h>
++#include <asm/pgtable.h>
++#include <asm/machdep.h>
++#include <asm/udbg.h>
 +
 +#include "beat_wrapper.h"
 +
-+#define DMA_FLAGS 0xf800000000000000UL	/* r/w permitted, coherency required,
-+					   strongest order */
++#ifdef DEBUG_LOW
++#define DBG_LOW(fmt...) do { udbg_printf(fmt); } while(0)
++#else
++#define DBG_LOW(fmt...) do { } while(0)
++#endif
 +
-+static int __init find_dma_window(u64 *io_space_id, u64 *ioid,
-+				  u64 *base, u64 *size, u64 *io_page_size)
++static DEFINE_SPINLOCK(beat_htab_lock);
++
++static inline unsigned int beat_read_mask(unsigned hpte_group)
 +{
-+	struct device_node *dn;
-+	const unsigned long *dma_window;
++	unsigned long hpte_v[5];
++	unsigned long rmask = 0;
 +
-+	for_each_node_by_type(dn, "ioif") {
-+		dma_window = get_property(dn, "toshiba,dma-window", NULL);
-+		if (dma_window) {
-+			*io_space_id = (dma_window[0] >> 32) & 0xffffffffUL;
-+			*ioid = dma_window[0] & 0x7ffUL;
-+			*base = dma_window[1];
-+			*size = dma_window[2];
-+			*io_page_size = 1 << dma_window[3];
-+			of_node_put(dn);
-+			return 1;
-+		}
++	beat_read_htab_entries(0, hpte_group + 0, hpte_v);
++	if (!(hpte_v[0] & HPTE_V_BOLTED))
++		rmask |= 0x8000;
++	if (!(hpte_v[1] & HPTE_V_BOLTED))
++		rmask |= 0x4000;
++	if (!(hpte_v[2] & HPTE_V_BOLTED))
++		rmask |= 0x2000;
++	if (!(hpte_v[3] & HPTE_V_BOLTED))
++		rmask |= 0x1000;
++	beat_read_htab_entries(0, hpte_group + 4, hpte_v);
++	if (!(hpte_v[0] & HPTE_V_BOLTED))
++		rmask |= 0x0800;
++	if (!(hpte_v[1] & HPTE_V_BOLTED))
++		rmask |= 0x0400;
++	if (!(hpte_v[2] & HPTE_V_BOLTED))
++		rmask |= 0x0200;
++	if (!(hpte_v[3] & HPTE_V_BOLTED))
++		rmask |= 0x0100;
++	hpte_group = ~hpte_group & (htab_hash_mask * HPTES_PER_GROUP);
++	beat_read_htab_entries(0, hpte_group + 0, hpte_v);
++	if (!(hpte_v[0] & HPTE_V_BOLTED))
++		rmask |= 0x80;
++	if (!(hpte_v[1] & HPTE_V_BOLTED))
++		rmask |= 0x40;
++	if (!(hpte_v[2] & HPTE_V_BOLTED))
++		rmask |= 0x20;
++	if (!(hpte_v[3] & HPTE_V_BOLTED))
++		rmask |= 0x10;
++	beat_read_htab_entries(0, hpte_group + 4, hpte_v);
++	if (!(hpte_v[0] & HPTE_V_BOLTED))
++		rmask |= 0x08;
++	if (!(hpte_v[1] & HPTE_V_BOLTED))
++		rmask |= 0x04;
++	if (!(hpte_v[2] & HPTE_V_BOLTED))
++		rmask |= 0x02;
++	if (!(hpte_v[3] & HPTE_V_BOLTED))
++		rmask |= 0x01;
++	return rmask;
++}
++
++static long beat_lpar_hpte_insert(unsigned long hpte_group,
++				  unsigned long va, unsigned long pa,
++				  unsigned long rflags, unsigned long vflags,
++				  int psize)
++{
++	unsigned long lpar_rc;
++	unsigned long slot;
++	unsigned long hpte_v, hpte_r;
++	unsigned long flags;
++
++	/* same as iseries */
++	if (vflags & HPTE_V_SECONDARY)
++		return -1;
++
++	if (!(vflags & HPTE_V_BOLTED))
++		DBG_LOW("hpte_insert(group=%lx, va=%016lx, pa=%016lx, "
++			"rflags=%lx, vflags=%lx, psize=%d)\n",
++		hpte_group, va, pa, rflags, vflags, psize);
++
++	hpte_v = hpte_encode_v(va, psize) | vflags | HPTE_V_VALID;
++	hpte_r = hpte_encode_r(pa, psize) | rflags;
++
++	if (!(vflags & HPTE_V_BOLTED))
++		DBG_LOW(" hpte_v=%016lx, hpte_r=%016lx\n", hpte_v, hpte_r);
++
++	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
++		hpte_r &= ~_PAGE_COHERENT;
++
++	spin_lock_irqsave(&beat_htab_lock, flags);
++	if ((lpar_rc = beat_read_mask(hpte_group)) == 0) {
++		if (!(vflags & HPTE_V_BOLTED))
++			DBG_LOW(" full\n");
++		spin_unlock_irqrestore(&beat_htab_lock, flags);
++		return -1;
 +	}
++
++	lpar_rc = beat_insert_htab_entry(0, hpte_group, lpar_rc << 48,
++		hpte_v, hpte_r, &slot);
++	spin_unlock_irqrestore(&beat_htab_lock, flags);
++
++	/*
++	 * Since we try and ioremap PHBs we don't own, the pte insert
++	 * will fail. However we must catch the failure in hash_page
++	 * or we will loop forever, so return -2 in this case.
++	 */
++	if (unlikely(lpar_rc != 0)) {
++		if (!(vflags & HPTE_V_BOLTED))
++			DBG_LOW(" lpar err %lx\n", lpar_rc);
++		return -2;
++	}
++	if (!(vflags & HPTE_V_BOLTED))
++		DBG_LOW(" -> slot: %lx\n", slot);
++
++	/* We have to pass down the secondary bucket bit here as well */
++	return (slot ^ hpte_group) & 15;
++}
++
++static long beat_lpar_hpte_remove(unsigned long hpte_group)
++{
++	DBG_LOW("hpte_remove(group=%lx)\n", hpte_group);
++	return -1;
++}
++
++static unsigned long beat_lpar_hpte_getword0(unsigned long slot)
++{
++	unsigned long dword0, dword[5];
++	unsigned long lpar_rc;
++
++	lpar_rc = beat_read_htab_entries(0, slot & ~3UL, dword);
++
++	dword0 = dword[slot&3];
++
++	BUG_ON(lpar_rc != 0);
++
++	return dword0;
++}
++
++static void beat_lpar_hptab_clear(void)
++{
++	unsigned long size_bytes = 1UL << ppc64_pft_size;
++	unsigned long hpte_count = size_bytes >> 4;
++	int i;
++	unsigned long dummy0, dummy1;
++
++	/* TODO: Use bulk call */
++	for (i = 0; i < hpte_count; i++)
++		beat_write_htab_entry(0, i, 0, 0, -1UL, -1UL, &dummy0, &dummy1);
++}
++
++/*
++ * NOTE: for updatepp ops we are fortunate that the linux "newpp" bits and
++ * the low 3 bits of flags happen to line up.  So no transform is needed.
++ * We can probably optimize here and assume the high bits of newpp are
++ * already zero.  For now I am paranoid.
++ */
++static long beat_lpar_hpte_updatepp(unsigned long slot,
++				    unsigned long newpp,
++				    unsigned long va,
++				    int psize, int local)
++{
++	unsigned long lpar_rc;
++	unsigned long dummy0, dummy1, want_v;
++	unsigned long flags;
++
++	want_v = hpte_encode_v(va, psize);
++
++	DBG_LOW("    update: "
++		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
++		want_v & HPTE_V_AVPN, slot, psize, newpp);
++
++	spin_lock_irqsave(&beat_htab_lock, flags);
++	dummy0 = beat_lpar_hpte_getword0(slot);
++	if ((dummy0 & ~0x7FUL) != (want_v & ~0x7FUL)) {
++		DBG_LOW("not found !\n");
++		spin_unlock_irqrestore(&beat_htab_lock, flags);
++		return -1;
++	}
++
++	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7, &dummy0,
++					&dummy1);
++	spin_unlock_irqrestore(&beat_htab_lock, flags);
++	if (lpar_rc != 0 || dummy0 == 0) {
++		DBG_LOW("not found !\n");
++		return -1;
++	}
++
++	DBG_LOW("ok %lx %lx\n", dummy0, dummy1);
++
++	BUG_ON(lpar_rc != 0);
++
 +	return 0;
 +}
 +
-+static void __init celleb_init_direct_mapping(void)
++static long beat_lpar_hpte_find(unsigned long va, int psize)
 +{
-+	u64 lpar_addr, io_addr;
-+	u64 io_space_id, ioid, dma_base, dma_size, io_page_size;
++	unsigned long hash;
++	unsigned long i, j;
++	long slot;
++	unsigned long want_v, hpte_v;
 +
-+	if (!find_dma_window(&io_space_id, &ioid, &dma_base, &dma_size,
-+			     &io_page_size)) {
-+		pr_info("No dma window found !\n");
++	hash = hpt_hash(va, mmu_psize_defs[psize].shift);
++	want_v = hpte_encode_v(va, psize);
++
++	for (j = 0; j < 2; j++) {
++		slot = (hash & htab_hash_mask) * HPTES_PER_GROUP;
++		for (i = 0; i < HPTES_PER_GROUP; i++) {
++			hpte_v = beat_lpar_hpte_getword0(slot);
++
++			if (HPTE_V_COMPARE(hpte_v, want_v)
++			    && (hpte_v & HPTE_V_VALID)
++			    && (!!(hpte_v & HPTE_V_SECONDARY) == j)) {
++				/* HPTE matches */
++				if (j)
++					slot = -slot;
++				return slot;
++			}
++			++slot;
++		}
++		hash = ~hash;
++	}
++
++	return -1;
++}
++
++static void beat_lpar_hpte_updateboltedpp(unsigned long newpp,
++					  unsigned long ea,
++					  int psize)
++{
++	unsigned long lpar_rc, slot, vsid, va, dummy0, dummy1;
++	unsigned long flags;
++
++	vsid = get_kernel_vsid(ea);
++	va = (vsid << 28) | (ea & 0x0fffffff);
++
++	spin_lock_irqsave(&beat_htab_lock, flags);
++	slot = beat_lpar_hpte_find(va, psize);
++	BUG_ON(slot == -1);
++
++	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7,
++		&dummy0, &dummy1);
++	spin_unlock_irqrestore(&beat_htab_lock, flags);
++
++	BUG_ON(lpar_rc != 0);
++}
++
++static void beat_lpar_hpte_invalidate(unsigned long slot, unsigned long va,
++					 int psize, int local)
++{
++	unsigned long want_v;
++	unsigned long lpar_rc;
++	unsigned long dummy1, dummy2;
++	unsigned long flags;
++
++	DBG_LOW("    inval : slot=%lx, va=%016lx, psize: %d, local: %d\n",
++		slot, va, psize, local);
++	want_v = hpte_encode_v(va, psize);
++
++	spin_lock_irqsave(&beat_htab_lock, flags);
++	dummy1 = beat_lpar_hpte_getword0(slot);
++
++	if ((dummy1 & ~0x7FUL) != (want_v & ~0x7FUL)) {
++		DBG_LOW("not found !\n");
++		spin_unlock_irqrestore(&beat_htab_lock, flags);
 +		return;
 +	}
 +
-+	for (lpar_addr = 0; lpar_addr < dma_size; lpar_addr += io_page_size) {
-+		io_addr = lpar_addr + dma_base;
-+		(void)beat_put_iopte(io_space_id, io_addr, lpar_addr,
-+				     ioid, DMA_FLAGS);
-+	}
++	lpar_rc = beat_write_htab_entry(0, slot, 0, 0, HPTE_V_VALID, 0,
++		&dummy1, &dummy2);
++	spin_unlock_irqrestore(&beat_htab_lock, flags);
 +
-+	dma_direct_offset = dma_base;
++	BUG_ON(lpar_rc != 0);
 +}
 +
-+static int celleb_of_bus_notify(struct notifier_block *nb,
-+				unsigned long action, void *data)
++void __init hpte_init_beat(void)
 +{
-+	struct device *dev = data;
-+
-+	/* We are only intereted in device addition */
-+	if (action != BUS_NOTIFY_ADD_DEVICE)
-+		return 0;
-+
-+	dev->archdata.dma_ops = pci_dma_ops;
-+
-+	return 0;
++	ppc_md.hpte_invalidate	= beat_lpar_hpte_invalidate;
++	ppc_md.hpte_updatepp	= beat_lpar_hpte_updatepp;
++	ppc_md.hpte_updateboltedpp = beat_lpar_hpte_updateboltedpp;
++	ppc_md.hpte_insert	= beat_lpar_hpte_insert;
++	ppc_md.hpte_remove	= beat_lpar_hpte_remove;
++	ppc_md.hpte_clear_all	= beat_lpar_hptab_clear;
 +}
-+
-+static struct notifier_block celleb_of_bus_notifier = {
-+	.notifier_call = celleb_of_bus_notify
-+};
-+
-+static int __init celleb_init_iommu(void)
-+{
-+	if (!machine_is(celleb))
-+		return -ENODEV;
-+
-+	celleb_init_direct_mapping();
-+	pci_dma_ops = &dma_direct_ops;
-+	bus_register_notifier(&of_platform_bus_type, &celleb_of_bus_notifier);
-+
-+	return 0;
-+}
-+
-+arch_initcall(celleb_init_iommu);
+Index: linux-powerpc-git/include/asm-powerpc/mmu.h
+diff -u linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/mmu.h:1.2
+--- linux-powerpc-git/include/asm-powerpc/mmu.h:1.1.1.1	Wed Dec  6 08:24:04 2006
++++ linux-powerpc-git/include/asm-powerpc/mmu.h	Wed Dec  6 08:43:16 2006
+@@ -247,6 +247,7 @@
+ extern void hpte_init_native(void);
+ extern void hpte_init_lpar(void);
+ extern void hpte_init_iSeries(void);
++extern void hpte_init_beat(void);
+ 
+ extern void stabs_alloc(void);
+ extern void slb_initialize(void);
