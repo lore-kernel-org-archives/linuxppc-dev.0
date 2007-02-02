@@ -2,11 +2,11 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F291BDDF23
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 18:44:16 +1100 (EST)
-Date: Fri, 02 Feb 2007 16:44:08 +0900 (JST)
-Message-Id: <200702020744.l127iBLx024280@toshiba.co.jp>
-Subject: [PATCH 7/11] Celleb: hypervisor console driver
+	by ozlabs.org (Postfix) with ESMTP id 3303DDDF36
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 18:45:38 +1100 (EST)
+Date: Fri, 02 Feb 2007 16:45:33 +0900 (JST)
+Message-Id: <200702020745.l127jYX1025474@toshiba.co.jp>
+Subject: [PATCH 8/11] Celleb: consolidate spu management ops
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,59 +21,591 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds hypervisor console driver for Celleb platform.
+Spu management ops in arch/platforms/cell/spu_priv1_mmio.h can be used
+commonly in of based platform. This patch separates spu management ops
+from native cell code and uses on celleb platform.
 
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 ---
 
-Index: linux-powerpc-git/drivers/char/Kconfig
-diff -u linux-powerpc-git/drivers/char/Kconfig:1.1.1.2 linux-powerpc-git/drivers/char/Kconfig:1.3
---- linux-powerpc-git/drivers/char/Kconfig:1.1.1.2	Tue Dec 26 18:06:45 2006
-+++ linux-powerpc-git/drivers/char/Kconfig	Tue Dec 26 19:56:46 2006
-@@ -610,6 +610,13 @@
- 	help
- 	  IBM Console device driver which makes use of RTAS
+Index: linux-powerpc-git/include/asm-powerpc/spu.h
+diff -u linux-powerpc-git/include/asm-powerpc/spu.h:1.1.1.2 linux-powerpc-git/include/asm-powerpc/spu.h:1.2
+--- linux-powerpc-git/include/asm-powerpc/spu.h:1.1.1.2	Thu Jan 11 11:22:23 2007
++++ linux-powerpc-git/include/asm-powerpc/spu.h	Fri Jan 26 18:20:35 2007
+@@ -104,6 +104,7 @@
  
-+config HVC_BEAT
-+	bool "Toshiba's Beat Hypervisor Console support"
-+	depends on PPC_CELLEB
-+	select HVC_DRIVER
-+	help
-+	  Toshiba's Cell Reference Set Beat Console device driver
+ struct spu_context;
+ struct spu_runqueue;
++struct device_node;
+ 
+ struct spu {
+ 	const char *name;
+@@ -142,7 +143,19 @@
+ 	char irq_c1[8];
+ 	char irq_c2[8];
+ 
++	u64 spe_id;
 +
- config HVCS
- 	tristate "IBM Hypervisor Virtual Console Server support"
- 	depends on PPC_PSERIES
-Index: linux-powerpc-git/drivers/char/Makefile
-diff -u linux-powerpc-git/drivers/char/Makefile:1.1.1.2 linux-powerpc-git/drivers/char/Makefile:1.3
---- linux-powerpc-git/drivers/char/Makefile:1.1.1.2	Tue Dec 26 18:06:45 2006
-+++ linux-powerpc-git/drivers/char/Makefile	Tue Dec 26 19:56:46 2006
-@@ -45,6 +45,7 @@
- obj-$(CONFIG_HVC_CONSOLE)	+= hvc_vio.o hvsi.o
- obj-$(CONFIG_HVC_ISERIES)	+= hvc_iseries.o
- obj-$(CONFIG_HVC_RTAS)		+= hvc_rtas.o
-+obj-$(CONFIG_HVC_BEAT)		+= hvc_beat.o
- obj-$(CONFIG_HVC_DRIVER)	+= hvc_console.o
- obj-$(CONFIG_RAW_DRIVER)	+= raw.o
- obj-$(CONFIG_SGI_SNSC)		+= snsc.o snsc_event.o
-Index: linux-powerpc-git/drivers/char/hvc_beat.c
-diff -u /dev/null linux-powerpc-git/drivers/char/hvc_beat.c:1.3
+ 	void* pdata; /* platform private data */
++
++	/* of based platforms only */
++	struct device_node *devnode;
++
++	/* native only */
++	struct spu_priv1 __iomem *priv1;
++
++	/* beat only */
++	u64 shadow_int_mask_RW[3];
++
+ 	struct sys_device sysdev;
+ };
+ 
+Index: linux-powerpc-git/include/asm-powerpc/spu_priv1.h
+diff -u linux-powerpc-git/include/asm-powerpc/spu_priv1.h:1.1.1.1 linux-powerpc-git/include/asm-powerpc/spu_priv1.h:1.3
+--- linux-powerpc-git/include/asm-powerpc/spu_priv1.h:1.1.1.1	Wed Dec  6 08:24:04 2006
++++ linux-powerpc-git/include/asm-powerpc/spu_priv1.h	Fri Jan 26 18:20:35 2007
+@@ -206,6 +206,8 @@
+  */
+ 
+ extern const struct spu_priv1_ops spu_priv1_mmio_ops;
++extern const struct spu_priv1_ops spu_priv1_beat_ops;
++
+ extern const struct spu_management_ops spu_management_of_ops;
+ 
+ #endif /* __KERNEL__ */
+Index: linux-powerpc-git/arch/powerpc/platforms/cell/spu_priv1_mmio.c
+diff -u linux-powerpc-git/arch/powerpc/platforms/cell/spu_priv1_mmio.c:1.1.1.2 linux-powerpc-git/arch/powerpc/platforms/cell/spu_priv1_mmio.c:1.3
+--- linux-powerpc-git/arch/powerpc/platforms/cell/spu_priv1_mmio.c:1.1.1.2	Thu Jan 11 11:16:33 2007
++++ linux-powerpc-git/arch/powerpc/platforms/cell/spu_priv1_mmio.c	Tue Jan 30 17:15:39 2007
+@@ -37,490 +37,112 @@
+ #include "interrupt.h"
+ #include "spu_priv1_mmio.h"
+ 
+-static DEFINE_MUTEX(add_spumem_mutex);
+-
+-struct spu_pdata {
+-	struct device_node *devnode;
+-	struct spu_priv1 __iomem *priv1;
+-};
+-
+-static struct spu_pdata *spu_get_pdata(struct spu *spu)
+-{
+-	BUG_ON(!spu->pdata);
+-	return spu->pdata;
+-}
+-
+-struct device_node *spu_devnode(struct spu *spu)
+-{
+-	return spu_get_pdata(spu)->devnode;
+-}
+-
+-EXPORT_SYMBOL_GPL(spu_devnode);
+-
+-static int __init cell_spuprop_present(struct spu *spu, struct device_node *spe,
+-		const char *prop)
+-{
+-	const struct address_prop {
+-		unsigned long address;
+-		unsigned int len;
+-	} __attribute__((packed)) *p;
+-	int proplen;
+-
+-	unsigned long start_pfn, nr_pages;
+-	struct pglist_data *pgdata;
+-	struct zone *zone;
+-	int ret;
+-
+-	p = get_property(spe, prop, &proplen);
+-	WARN_ON(proplen != sizeof (*p));
+-
+-	start_pfn = p->address >> PAGE_SHIFT;
+-	nr_pages = ((unsigned long)p->len + PAGE_SIZE - 1) >> PAGE_SHIFT;
+-
+-	pgdata = NODE_DATA(spu->node);
+-	zone = pgdata->node_zones;
+-
+-	/* XXX rethink locking here */
+-	mutex_lock(&add_spumem_mutex);
+-	ret = __add_pages(zone, start_pfn, nr_pages);
+-	mutex_unlock(&add_spumem_mutex);
+-
+-	return ret;
+-}
+-
+-static void __iomem * __init map_spe_prop(struct spu *spu,
+-		struct device_node *n, const char *name)
+-{
+-	const struct address_prop {
+-		unsigned long address;
+-		unsigned int len;
+-	} __attribute__((packed)) *prop;
+-
+-	const void *p;
+-	int proplen;
+-	void __iomem *ret = NULL;
+-	int err = 0;
+-
+-	p = get_property(n, name, &proplen);
+-	if (proplen != sizeof (struct address_prop))
+-		return NULL;
+-
+-	prop = p;
+-
+-	err = cell_spuprop_present(spu, n, name);
+-	if (err && (err != -EEXIST))
+-		goto out;
+-
+-	ret = ioremap(prop->address, prop->len);
+-
+- out:
+-	return ret;
+-}
+-
+-static void spu_unmap(struct spu *spu)
+-{
+-	iounmap(spu->priv2);
+-	iounmap(spu_get_pdata(spu)->priv1);
+-	iounmap(spu->problem);
+-	iounmap((__force u8 __iomem *)spu->local_store);
+-}
+-
+-static int __init spu_map_interrupts_old(struct spu *spu,
+-	struct device_node *np)
+-{
+-	unsigned int isrc;
+-	const u32 *tmp;
+-	int nid;
+-
+-	/* Get the interrupt source unit from the device-tree */
+-	tmp = get_property(np, "isrc", NULL);
+-	if (!tmp)
+-		return -ENODEV;
+-	isrc = tmp[0];
+-
+-	tmp = get_property(np->parent->parent, "node-id", NULL);
+-	if (!tmp) {
+-		printk(KERN_WARNING "%s: can't find node-id\n", __FUNCTION__);
+-		nid = spu->node;
+-	} else
+-		nid = tmp[0];
+-
+-	/* Add the node number */
+-	isrc |= nid << IIC_IRQ_NODE_SHIFT;
+-
+-	/* Now map interrupts of all 3 classes */
+-	spu->irqs[0] = irq_create_mapping(NULL, IIC_IRQ_CLASS_0 | isrc);
+-	spu->irqs[1] = irq_create_mapping(NULL, IIC_IRQ_CLASS_1 | isrc);
+-	spu->irqs[2] = irq_create_mapping(NULL, IIC_IRQ_CLASS_2 | isrc);
+-
+-	/* Right now, we only fail if class 2 failed */
+-	return spu->irqs[2] == NO_IRQ ? -EINVAL : 0;
+-}
+-
+-static int __init spu_map_device_old(struct spu *spu, struct device_node *node)
+-{
+-	const char *prop;
+-	int ret;
+-
+-	ret = -ENODEV;
+-	spu->name = get_property(node, "name", NULL);
+-	if (!spu->name)
+-		goto out;
+-
+-	prop = get_property(node, "local-store", NULL);
+-	if (!prop)
+-		goto out;
+-	spu->local_store_phys = *(unsigned long *)prop;
+-
+-	/* we use local store as ram, not io memory */
+-	spu->local_store = (void __force *)
+-		map_spe_prop(spu, node, "local-store");
+-	if (!spu->local_store)
+-		goto out;
+-
+-	prop = get_property(node, "problem", NULL);
+-	if (!prop)
+-		goto out_unmap;
+-	spu->problem_phys = *(unsigned long *)prop;
+-
+-	spu->problem= map_spe_prop(spu, node, "problem");
+-	if (!spu->problem)
+-		goto out_unmap;
+-
+-	spu_get_pdata(spu)->priv1= map_spe_prop(spu, node, "priv1");
+-
+-	spu->priv2= map_spe_prop(spu, node, "priv2");
+-	if (!spu->priv2)
+-		goto out_unmap;
+-	ret = 0;
+-	goto out;
+-
+-out_unmap:
+-	spu_unmap(spu);
+-out:
+-	return ret;
+-}
+-
+-static int __init spu_map_interrupts(struct spu *spu, struct device_node *np)
+-{
+-	struct of_irq oirq;
+-	int ret;
+-	int i;
+-
+-	for (i=0; i < 3; i++) {
+-		ret = of_irq_map_one(np, i, &oirq);
+-		if (ret) {
+-			pr_debug("spu_new: failed to get irq %d\n", i);
+-			goto err;
+-		}
+-		ret = -EINVAL;
+-		pr_debug("  irq %d no 0x%x on %s\n", i, oirq.specifier[0],
+-			 oirq.controller->full_name);
+-		spu->irqs[i] = irq_create_of_mapping(oirq.controller,
+-					oirq.specifier, oirq.size);
+-		if (spu->irqs[i] == NO_IRQ) {
+-			pr_debug("spu_new: failed to map it !\n");
+-			goto err;
+-		}
+-	}
+-	return 0;
+-
+-err:
+-	pr_debug("failed to map irq %x for spu %s\n", *oirq.specifier,
+-		spu->name);
+-	for (; i >= 0; i--) {
+-		if (spu->irqs[i] != NO_IRQ)
+-			irq_dispose_mapping(spu->irqs[i]);
+-	}
+-	return ret;
+-}
+-
+-static int spu_map_resource(struct spu *spu, int nr,
+-			    void __iomem** virt, unsigned long *phys)
+-{
+-	struct device_node *np = spu_get_pdata(spu)->devnode;
+-	unsigned long start_pfn, nr_pages;
+-	struct pglist_data *pgdata;
+-	struct zone *zone;
+-	struct resource resource = { };
+-	unsigned long len;
+-	int ret;
+-
+-	ret = of_address_to_resource(np, nr, &resource);
+-	if (ret)
+-		goto out;
+-
+-	if (phys)
+-		*phys = resource.start;
+-	len = resource.end - resource.start + 1;
+-	*virt = ioremap(resource.start, len);
+-	if (!*virt)
+-		ret = -EINVAL;
+-
+-	start_pfn = resource.start >> PAGE_SHIFT;
+-	nr_pages = (len + PAGE_SIZE - 1) >> PAGE_SHIFT;
+-
+-	pgdata = NODE_DATA(spu->node);
+-	zone = pgdata->node_zones;
+-
+-	/* XXX rethink locking here */
+-	mutex_lock(&add_spumem_mutex);
+-	ret = __add_pages(zone, start_pfn, nr_pages);
+-	mutex_unlock(&add_spumem_mutex);
+-
+-out:
+-	return ret;
+-}
+-
+-static int __init spu_map_device(struct spu *spu)
+-{
+-	struct device_node *np = spu_get_pdata(spu)->devnode;
+-	int ret = -ENODEV;
+-
+-	spu->name = get_property(np, "name", NULL);
+-	if (!spu->name)
+-		goto out;
+-
+-	ret = spu_map_resource(spu, 0, (void __iomem**)&spu->local_store,
+-			       &spu->local_store_phys);
+-	if (ret) {
+-		pr_debug("spu_new: failed to map %s resource 0\n",
+-			 np->full_name);
+-		goto out;
+-	}
+-	ret = spu_map_resource(spu, 1, (void __iomem**)&spu->problem,
+-			       &spu->problem_phys);
+-	if (ret) {
+-		pr_debug("spu_new: failed to map %s resource 1\n",
+-			 np->full_name);
+-		goto out_unmap;
+-	}
+-	ret = spu_map_resource(spu, 2, (void __iomem**)&spu->priv2, NULL);
+-	if (ret) {
+-		pr_debug("spu_new: failed to map %s resource 2\n",
+-			 np->full_name);
+-		goto out_unmap;
+-	}
+-	if (!firmware_has_feature(FW_FEATURE_LPAR))
+-		ret = spu_map_resource(spu, 3,
+-			       (void __iomem**)&spu_get_pdata(spu)->priv1, NULL);
+-	if (ret) {
+-		pr_debug("spu_new: failed to map %s resource 3\n",
+-			 np->full_name);
+-		goto out_unmap;
+-	}
+-	pr_debug("spu_new: %s maps:\n", np->full_name);
+-	pr_debug("  local store   : 0x%016lx -> 0x%p\n",
+-		 spu->local_store_phys, spu->local_store);
+-	pr_debug("  problem state : 0x%016lx -> 0x%p\n",
+-		 spu->problem_phys, spu->problem);
+-	pr_debug("  priv2         :                       0x%p\n", spu->priv2);
+-	pr_debug("  priv1         :                       0x%p\n",
+-		 spu_get_pdata(spu)->priv1);
+-
+-	return 0;
+-
+-out_unmap:
+-	spu_unmap(spu);
+-out:
+-	pr_debug("failed to map spe %s: %d\n", spu->name, ret);
+-	return ret;
+-}
+-
+-static int __init of_enumerate_spus(int (*fn)(void *data))
+-{
+-	int ret;
+-	struct device_node *node;
+-
+-	ret = -ENODEV;
+-	for (node = of_find_node_by_type(NULL, "spe");
+-			node; node = of_find_node_by_type(node, "spe")) {
+-		ret = fn(node);
+-		if (ret) {
+-			printk(KERN_WARNING "%s: Error initializing %s\n",
+-				__FUNCTION__, node->name);
+-			break;
+-		}
+-	}
+-	return ret;
+-}
+-
+-static int __init of_create_spu(struct spu *spu, void *data)
+-{
+-	int ret;
+-	struct device_node *spe = (struct device_node *)data;
+-
+-	spu->pdata = kzalloc(sizeof(struct spu_pdata),
+-		GFP_KERNEL);
+-	if (!spu->pdata) {
+-		ret = -ENOMEM;
+-		goto out;
+-	}
+-	spu_get_pdata(spu)->devnode = of_node_get(spe);
+-
+-	spu->node = of_node_to_nid(spe);
+-	if (spu->node >= MAX_NUMNODES) {
+-		printk(KERN_WARNING "SPE %s on node %d ignored,"
+-		       " node number too big\n", spe->full_name, spu->node);
+-		printk(KERN_WARNING "Check if CONFIG_NUMA is enabled.\n");
+-		ret = -ENODEV;
+-		goto out_free;
+-	}
+-
+-	ret = spu_map_device(spu);
+-	/* try old method */
+-	if (ret)
+-		ret = spu_map_device_old(spu, spe);
+-	if (ret)
+-		goto out_free;
+-
+-	ret = spu_map_interrupts(spu, spe);
+-	if (ret)
+-		ret = spu_map_interrupts_old(spu, spe);
+-	if (ret)
+-		goto out_unmap;
+-
+-	pr_debug(KERN_DEBUG "Using SPE %s %p %p %p %p %d\n", spu->name,
+-		spu->local_store, spu->problem, spu_get_pdata(spu)->priv1,
+-		spu->priv2, spu->number);
+-	goto out;
+-
+-out_unmap:
+-	spu_unmap(spu);
+-out_free:
+-	kfree(spu->pdata);
+-	spu->pdata = NULL;
+-out:
+-	return ret;
+-}
+-
+-static int of_destroy_spu(struct spu *spu)
+-{
+-	spu_unmap(spu);
+-	of_node_put(spu_get_pdata(spu)->devnode);
+-	kfree(spu->pdata);
+-	spu->pdata = NULL;
+-	return 0;
+-}
+-
+-const struct spu_management_ops spu_management_of_ops = {
+-	.enumerate_spus = of_enumerate_spus,
+-	.create_spu = of_create_spu,
+-	.destroy_spu = of_destroy_spu,
+-};
+-
+ static void int_mask_and(struct spu *spu, int class, u64 mask)
+ {
+ 	u64 old_mask;
+ 
+-	old_mask = in_be64(&spu_get_pdata(spu)->priv1->int_mask_RW[class]);
+-	out_be64(&spu_get_pdata(spu)->priv1->int_mask_RW[class],
+-		old_mask & mask);
++	old_mask = in_be64(&spu->priv1->int_mask_RW[class]);
++	out_be64(&spu->priv1->int_mask_RW[class], old_mask & mask);
+ }
+ 
+ static void int_mask_or(struct spu *spu, int class, u64 mask)
+ {
+ 	u64 old_mask;
+ 
+-	old_mask = in_be64(&spu_get_pdata(spu)->priv1->int_mask_RW[class]);
+-	out_be64(&spu_get_pdata(spu)->priv1->int_mask_RW[class],
+-		old_mask | mask);
++	old_mask = in_be64(&spu->priv1->int_mask_RW[class]);
++	out_be64(&spu->priv1->int_mask_RW[class], old_mask | mask);
+ }
+ 
+ static void int_mask_set(struct spu *spu, int class, u64 mask)
+ {
+-	out_be64(&spu_get_pdata(spu)->priv1->int_mask_RW[class], mask);
++	out_be64(&spu->priv1->int_mask_RW[class], mask);
+ }
+ 
+ static u64 int_mask_get(struct spu *spu, int class)
+ {
+-	return in_be64(&spu_get_pdata(spu)->priv1->int_mask_RW[class]);
++	return in_be64(&spu->priv1->int_mask_RW[class]);
+ }
+ 
+ static void int_stat_clear(struct spu *spu, int class, u64 stat)
+ {
+-	out_be64(&spu_get_pdata(spu)->priv1->int_stat_RW[class], stat);
++	out_be64(&spu->priv1->int_stat_RW[class], stat);
+ }
+ 
+ static u64 int_stat_get(struct spu *spu, int class)
+ {
+-	return in_be64(&spu_get_pdata(spu)->priv1->int_stat_RW[class]);
++	return in_be64(&spu->priv1->int_stat_RW[class]);
+ }
+ 
+ static void cpu_affinity_set(struct spu *spu, int cpu)
+ {
+ 	u64 target = iic_get_target_id(cpu);
+ 	u64 route = target << 48 | target << 32 | target << 16;
+-	out_be64(&spu_get_pdata(spu)->priv1->int_route_RW, route);
++	out_be64(&spu->priv1->int_route_RW, route);
+ }
+ 
+ static u64 mfc_dar_get(struct spu *spu)
+ {
+-	return in_be64(&spu_get_pdata(spu)->priv1->mfc_dar_RW);
++	return in_be64(&spu->priv1->mfc_dar_RW);
+ }
+ 
+ static u64 mfc_dsisr_get(struct spu *spu)
+ {
+-	return in_be64(&spu_get_pdata(spu)->priv1->mfc_dsisr_RW);
++	return in_be64(&spu->priv1->mfc_dsisr_RW);
+ }
+ 
+ static void mfc_dsisr_set(struct spu *spu, u64 dsisr)
+ {
+-	out_be64(&spu_get_pdata(spu)->priv1->mfc_dsisr_RW, dsisr);
++	out_be64(&spu->priv1->mfc_dsisr_RW, dsisr);
+ }
+ 
+ static void mfc_sdr_setup(struct spu *spu)
+ {
+-	out_be64(&spu_get_pdata(spu)->priv1->mfc_sdr_RW, mfspr(SPRN_SDR1));
++	out_be64(&spu->priv1->mfc_sdr_RW, mfspr(SPRN_SDR1));
+ }
+ 
+ static void mfc_sr1_set(struct spu *spu, u64 sr1)
+ {
+-	out_be64(&spu_get_pdata(spu)->priv1->mfc_sr1_RW, sr1);
++	out_be64(&spu->priv1->mfc_sr1_RW, sr1);
+ }
+ 
+ static u64 mfc_sr1_get(struct spu *spu)
+ {
+-	return in_be64(&spu_get_pdata(spu)->priv1->mfc_sr1_RW);
++	return in_be64(&spu->priv1->mfc_sr1_RW);
+ }
+ 
+ static void mfc_tclass_id_set(struct spu *spu, u64 tclass_id)
+ {
+-	out_be64(&spu_get_pdata(spu)->priv1->mfc_tclass_id_RW, tclass_id);
++	out_be64(&spu->priv1->mfc_tclass_id_RW, tclass_id);
+ }
+ 
+ static u64 mfc_tclass_id_get(struct spu *spu)
+ {
+-	return in_be64(&spu_get_pdata(spu)->priv1->mfc_tclass_id_RW);
++	return in_be64(&spu->priv1->mfc_tclass_id_RW);
+ }
+ 
+ static void tlb_invalidate(struct spu *spu)
+ {
+-	out_be64(&spu_get_pdata(spu)->priv1->tlb_invalidate_entry_W, 0ul);
++	out_be64(&spu->priv1->tlb_invalidate_entry_W, 0ul);
+ }
+ 
+ static void resource_allocation_groupID_set(struct spu *spu, u64 id)
+ {
+-	out_be64(&spu_get_pdata(spu)->priv1->resource_allocation_groupID_RW,
+-		id);
++	out_be64(&spu->priv1->resource_allocation_groupID_RW, id);
+ }
+ 
+ static u64 resource_allocation_groupID_get(struct spu *spu)
+ {
+-	return in_be64(
+-		&spu_get_pdata(spu)->priv1->resource_allocation_groupID_RW);
++	return in_be64(&spu->priv1->resource_allocation_groupID_RW);
+ }
+ 
+ static void resource_allocation_enable_set(struct spu *spu, u64 enable)
+ {
+-	out_be64(&spu_get_pdata(spu)->priv1->resource_allocation_enable_RW,
+-		enable);
++	out_be64(&spu->priv1->resource_allocation_enable_RW, enable);
+ }
+ 
+ static u64 resource_allocation_enable_get(struct spu *spu)
+ {
+-	return in_be64(
+-		&spu_get_pdata(spu)->priv1->resource_allocation_enable_RW);
++	return in_be64(&spu->priv1->resource_allocation_enable_RW);
+ }
+ 
+ const struct spu_priv1_ops spu_priv1_mmio_ops =
+Index: linux-powerpc-git/arch/powerpc/platforms/cell/spu_manage.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/cell/spu_manage.c:1.2
 --- /dev/null	Fri Feb  2 13:38:06 2007
-+++ linux-powerpc-git/drivers/char/hvc_beat.c	Thu Jan 18 13:42:02 2007
-@@ -0,0 +1,134 @@
++++ linux-powerpc-git/arch/powerpc/platforms/cell/spu_manage.c	Fri Jan 26 19:42:05 2007
+@@ -0,0 +1,420 @@
 +/*
-+ * Beat hypervisor console driver
++ * spu management operations for of based platforms
 + *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This code is based on drivers/char/hvc_rtas.c:
-+ * (C) Copyright IBM Corporation 2001-2005
-+ * (C) Copyright Red Hat, Inc. 2005
++ * (C) Copyright IBM Deutschland Entwicklung GmbH 2005
++ * Copyright 2006 Sony Corp.
++ * (C) Copyright 2007 TOSHIBA CORPORATION
 + *
 + * This program is free software; you can redistribute it and/or modify
 + * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
++ * the Free Software Foundation; version 2 of the License.
 + *
 + * This program is distributed in the hope that it will be useful,
 + * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -85,113 +617,420 @@ diff -u /dev/null linux-powerpc-git/drivers/char/hvc_beat.c:1.3
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
++#include <linux/interrupt.h>
++#include <linux/list.h>
 +#include <linux/module.h>
-+#include <linux/init.h>
-+#include <linux/err.h>
-+#include <linux/string.h>
-+#include <linux/console.h>
-+#include <asm/prom.h>
-+#include <asm/hvconsole.h>
++#include <linux/ptrace.h>
++#include <linux/slab.h>
++#include <linux/wait.h>
++#include <linux/mm.h>
++#include <linux/io.h>
++#include <linux/mutex.h>
++#include <linux/device.h>
++
++#include <asm/spu.h>
++#include <asm/spu_priv1.h>
 +#include <asm/firmware.h>
++#include <asm/prom.h>
 +
-+#include "hvc_console.h"
++#include "interrupt.h"
 +
-+extern int64_t beat_get_term_char(uint64_t, uint64_t *, uint64_t *, uint64_t *);
-+extern int64_t beat_put_term_char(uint64_t, uint64_t, uint64_t, uint64_t);
-+
-+struct hvc_struct *hvc_beat_dev = NULL;
-+
-+/* bug: only one queue is available regardless of vtermno */
-+static int hvc_beat_get_chars(uint32_t vtermno, char *buf, int cnt)
++struct device_node *spu_devnode(struct spu *spu)
 +{
-+	static unsigned char q[sizeof(unsigned long) * 2]
-+		__attribute__((aligned(sizeof(unsigned long))));
-+	static int qlen = 0;
-+	unsigned long got;
++	return spu->devnode;
++}
 +
-+again:
-+	if (qlen) {
-+		if (qlen > cnt) {
-+			memcpy(buf, q, cnt);
-+			qlen -= cnt;
-+			memmove(q + cnt, q, qlen);
-+			return cnt;
-+		} else {	/* qlen <= cnt */
-+			int	r;
++EXPORT_SYMBOL_GPL(spu_devnode);
 +
-+			memcpy(buf, q, qlen);
-+			r = qlen;
-+			qlen = 0;
-+			return r;
++static u64 __init find_spu_unit_number(struct device_node *spe)
++{
++	const unsigned int *prop;
++	int proplen;
++	prop = get_property(spe, "unit-id", &proplen);
++	if (proplen == 4)
++		return (u64)*prop;
++
++	prop = get_property(spe, "reg", &proplen);
++	if (proplen == 4)
++		return (u64)*prop;
++
++	return 0;
++}
++
++static int __init cell_spuprop_present(struct spu *spu, struct device_node *spe,
++		const char *prop)
++{
++	const struct address_prop {
++		unsigned long address;
++		unsigned int len;
++	} __attribute__((packed)) *p;
++	int proplen;
++
++	unsigned long start_pfn, nr_pages;
++	struct pglist_data *pgdata;
++	struct zone *zone;
++	int ret;
++
++	p = get_property(spe, prop, &proplen);
++	WARN_ON(proplen != sizeof (*p));
++
++	start_pfn = p->address >> PAGE_SHIFT;
++	nr_pages = ((unsigned long)p->len + PAGE_SIZE - 1) >> PAGE_SHIFT;
++
++	pgdata = NODE_DATA(spu->node);
++	zone = pgdata->node_zones;
++
++	ret = __add_pages(zone, start_pfn, nr_pages);
++
++	return ret;
++}
++
++static void __iomem * __init map_spe_prop(struct spu *spu,
++		struct device_node *n, const char *name)
++{
++	const struct address_prop {
++		unsigned long address;
++		unsigned int len;
++	} __attribute__((packed)) *prop;
++
++	const void *p;
++	int proplen;
++	void __iomem *ret = NULL;
++	int err = 0;
++
++	p = get_property(n, name, &proplen);
++	if (proplen != sizeof (struct address_prop))
++		return NULL;
++
++	prop = p;
++
++	err = cell_spuprop_present(spu, n, name);
++	if (err && (err != -EEXIST))
++		goto out;
++
++	ret = ioremap(prop->address, prop->len);
++
++ out:
++	return ret;
++}
++
++static void spu_unmap(struct spu *spu)
++{
++	if (!firmware_has_feature(FW_FEATURE_LPAR))
++		iounmap(spu->priv1);
++	iounmap(spu->priv2);
++	iounmap(spu->problem);
++	iounmap((__force u8 __iomem *)spu->local_store);
++}
++
++static int __init spu_map_interrupts_old(struct spu *spu,
++	struct device_node *np)
++{
++	unsigned int isrc;
++	const u32 *tmp;
++	int nid;
++
++	/* Get the interrupt source unit from the device-tree */
++	tmp = get_property(np, "isrc", NULL);
++	if (!tmp)
++		return -ENODEV;
++	isrc = tmp[0];
++
++	tmp = get_property(np->parent->parent, "node-id", NULL);
++	if (!tmp) {
++		printk(KERN_WARNING "%s: can't find node-id\n", __FUNCTION__);
++		nid = spu->node;
++	} else
++		nid = tmp[0];
++
++	/* Add the node number */
++	isrc |= nid << IIC_IRQ_NODE_SHIFT;
++
++	/* Now map interrupts of all 3 classes */
++	spu->irqs[0] = irq_create_mapping(NULL, IIC_IRQ_CLASS_0 | isrc);
++	spu->irqs[1] = irq_create_mapping(NULL, IIC_IRQ_CLASS_1 | isrc);
++	spu->irqs[2] = irq_create_mapping(NULL, IIC_IRQ_CLASS_2 | isrc);
++
++	/* Right now, we only fail if class 2 failed */
++	return spu->irqs[2] == NO_IRQ ? -EINVAL : 0;
++}
++
++static int __init spu_map_device_old(struct spu *spu)
++{
++	struct device_node *node = spu->devnode;
++	const char *prop;
++	int ret;
++
++	ret = -ENODEV;
++	spu->name = get_property(node, "name", NULL);
++	if (!spu->name)
++		goto out;
++
++	prop = get_property(node, "local-store", NULL);
++	if (!prop)
++		goto out;
++	spu->local_store_phys = *(unsigned long *)prop;
++
++	/* we use local store as ram, not io memory */
++	spu->local_store = (void __force *)
++		map_spe_prop(spu, node, "local-store");
++	if (!spu->local_store)
++		goto out;
++
++	prop = get_property(node, "problem", NULL);
++	if (!prop)
++		goto out_unmap;
++	spu->problem_phys = *(unsigned long *)prop;
++
++	spu->problem = map_spe_prop(spu, node, "problem");
++	if (!spu->problem)
++		goto out_unmap;
++
++	spu->priv2 = map_spe_prop(spu, node, "priv2");
++	if (!spu->priv2)
++		goto out_unmap;
++
++	if (!firmware_has_feature(FW_FEATURE_LPAR)) {
++		spu->priv1 = map_spe_prop(spu, node, "priv1");
++		if (!spu->priv1)
++			goto out_unmap;
++	}
++
++	ret = 0;
++	goto out;
++
++out_unmap:
++	spu_unmap(spu);
++out:
++	return ret;
++}
++
++static int __init spu_map_interrupts(struct spu *spu, struct device_node *np)
++{
++	struct of_irq oirq;
++	int ret;
++	int i;
++
++	for (i=0; i < 3; i++) {
++		ret = of_irq_map_one(np, i, &oirq);
++		if (ret) {
++			pr_debug("spu_new: failed to get irq %d\n", i);
++			goto err;
++		}
++		ret = -EINVAL;
++		pr_debug("  irq %d no 0x%x on %s\n", i, oirq.specifier[0],
++			 oirq.controller->full_name);
++		spu->irqs[i] = irq_create_of_mapping(oirq.controller,
++					oirq.specifier, oirq.size);
++		if (spu->irqs[i] == NO_IRQ) {
++			pr_debug("spu_new: failed to map it !\n");
++			goto err;
 +		}
 +	}
-+	if (beat_get_term_char(vtermno, &got,
-+		((unsigned long *)q), ((unsigned long *)q) + 1) == 0) {
-+		qlen = got;
-+		goto again;
++	return 0;
++
++err:
++	pr_debug("failed to map irq %x for spu %s\n", *oirq.specifier,
++		spu->name);
++	for (; i >= 0; i--) {
++		if (spu->irqs[i] != NO_IRQ)
++			irq_dispose_mapping(spu->irqs[i]);
 +	}
++	return ret;
++}
++
++static int spu_map_resource(struct spu *spu, int nr,
++			    void __iomem** virt, unsigned long *phys)
++{
++	struct device_node *np = spu->devnode;
++	unsigned long start_pfn, nr_pages;
++	struct pglist_data *pgdata;
++	struct zone *zone;
++	struct resource resource = { };
++	unsigned long len;
++	int ret;
++
++	ret = of_address_to_resource(np, nr, &resource);
++	if (ret)
++		goto out;
++
++	if (phys)
++		*phys = resource.start;
++	len = resource.end - resource.start + 1;
++	*virt = ioremap(resource.start, len);
++	if (!*virt)
++		ret = -EINVAL;
++
++	start_pfn = resource.start >> PAGE_SHIFT;
++	nr_pages = (len + PAGE_SIZE - 1) >> PAGE_SHIFT;
++
++	pgdata = NODE_DATA(spu->node);
++	zone = pgdata->node_zones;
++
++	ret = __add_pages(zone, start_pfn, nr_pages);
++
++out:
++	return ret;
++}
++
++static int __init spu_map_device(struct spu *spu)
++{
++	struct device_node *np = spu->devnode;
++	int ret = -ENODEV;
++
++	spu->name = get_property(np, "name", NULL);
++	if (!spu->name)
++		goto out;
++
++	ret = spu_map_resource(spu, 0, (void __iomem**)&spu->local_store,
++			       &spu->local_store_phys);
++	if (ret) {
++		pr_debug("spu_new: failed to map %s resource 0\n",
++			 np->full_name);
++		goto out;
++	}
++	ret = spu_map_resource(spu, 1, (void __iomem**)&spu->problem,
++			       &spu->problem_phys);
++	if (ret) {
++		pr_debug("spu_new: failed to map %s resource 1\n",
++			 np->full_name);
++		goto out_unmap;
++	}
++	ret = spu_map_resource(spu, 2, (void __iomem**)&spu->priv2, NULL);
++	if (ret) {
++		pr_debug("spu_new: failed to map %s resource 2\n",
++			 np->full_name);
++		goto out_unmap;
++	}
++	if (!firmware_has_feature(FW_FEATURE_LPAR))
++		ret = spu_map_resource(spu, 3,
++			       (void __iomem**)&spu->priv1, NULL);
++	if (ret) {
++		pr_debug("spu_new: failed to map %s resource 3\n",
++			 np->full_name);
++		goto out_unmap;
++	}
++	pr_debug("spu_new: %s maps:\n", np->full_name);
++	pr_debug("  local store   : 0x%016lx -> 0x%p\n",
++		 spu->local_store_phys, spu->local_store);
++	pr_debug("  problem state : 0x%016lx -> 0x%p\n",
++		 spu->problem_phys, spu->problem);
++	pr_debug("  priv2         :                       0x%p\n", spu->priv2);
++	pr_debug("  priv1         :                       0x%p\n", spu->priv1);
++
++	return 0;
++
++out_unmap:
++	spu_unmap(spu);
++out:
++	pr_debug("failed to map spe %s: %d\n", spu->name, ret);
++	return ret;
++}
++
++static int __init of_enumerate_spus(int (*fn)(void *data))
++{
++	int ret;
++	struct device_node *node;
++
++	ret = -ENODEV;
++	for (node = of_find_node_by_type(NULL, "spe");
++			node; node = of_find_node_by_type(node, "spe")) {
++		ret = fn(node);
++		if (ret) {
++			printk(KERN_WARNING "%s: Error initializing %s\n",
++				__FUNCTION__, node->name);
++			break;
++		}
++	}
++	return ret;
++}
++
++static int __init of_create_spu(struct spu *spu, void *data)
++{
++	int ret;
++	struct device_node *spe = (struct device_node *)data;
++	static int legacy_map = 0, legacy_irq = 0;
++
++	spu->devnode = of_node_get(spe);
++	spu->spe_id = find_spu_unit_number(spe);
++
++	spu->node = of_node_to_nid(spe);
++	if (spu->node >= MAX_NUMNODES) {
++		printk(KERN_WARNING "SPE %s on node %d ignored,"
++		       " node number too big\n", spe->full_name, spu->node);
++		printk(KERN_WARNING "Check if CONFIG_NUMA is enabled.\n");
++		ret = -ENODEV;
++		goto out;
++	}
++
++	ret = spu_map_device(spu);
++	if (ret) {
++		if (!legacy_map) {
++			legacy_map = 1;
++			printk(KERN_WARNING "%s: Legacy device tree found, "
++				"trying to map old style\n", __FUNCTION__);
++		}
++		ret = spu_map_device_old(spu);
++		if (ret) {
++			printk(KERN_ERR "Unable to map %s\n",
++				spu->name);
++			goto out;
++		}
++	}
++
++	ret = spu_map_interrupts(spu, spe);
++	if (ret) {
++		if (!legacy_irq) {
++			legacy_irq = 1;
++			printk(KERN_WARNING "%s: Legacy device tree found, "
++				"trying old style irq\n", __FUNCTION__);
++		}
++		ret = spu_map_interrupts_old(spu, spe);
++		if (ret) {
++			printk(KERN_ERR "%s: could not map interrupts",
++				spu->name);
++			goto out_unmap;
++		}
++	}
++
++	pr_debug("Using SPE %s %p %p %p %p %d\n", spu->name,
++		spu->local_store, spu->problem, spu->priv1,
++		spu->priv2, spu->number);
++	goto out;
++
++out_unmap:
++	spu_unmap(spu);
++out:
++	return ret;
++}
++
++static int of_destroy_spu(struct spu *spu)
++{
++	spu_unmap(spu);
++	of_node_put(spu->devnode);
 +	return 0;
 +}
 +
-+static int hvc_beat_put_chars(uint32_t vtermno, const char *buf, int cnt)
-+{
-+	unsigned long kb[2];
-+	int rest, nlen;
-+
-+	for (rest = cnt; rest > 0; rest -= nlen) {
-+		nlen = (rest > 16) ? 16 : rest;
-+		memcpy(kb, buf, nlen);
-+		beat_put_term_char(vtermno, rest, kb[0], kb[1]);
-+		rest -= nlen;
-+	}
-+	return cnt;
-+}
-+
-+static struct hv_ops hvc_beat_get_put_ops = {
-+	.get_chars = hvc_beat_get_chars,
-+	.put_chars = hvc_beat_put_chars,
++const struct spu_management_ops spu_management_of_ops = {
++	.enumerate_spus = of_enumerate_spus,
++	.create_spu = of_create_spu,
++	.destroy_spu = of_destroy_spu,
 +};
+Index: linux-powerpc-git/arch/powerpc/platforms/cell/Makefile
+diff -u linux-powerpc-git/arch/powerpc/platforms/cell/Makefile:1.1.1.1 linux-powerpc-git/arch/powerpc/platforms/cell/Makefile:1.2
+--- linux-powerpc-git/arch/powerpc/platforms/cell/Makefile:1.1.1.1	Wed Dec  6 08:25:44 2006
++++ linux-powerpc-git/arch/powerpc/platforms/cell/Makefile	Fri Jan 26 16:31:12 2007
+@@ -14,7 +14,12 @@
+ spufs-modular-$(CONFIG_SPU_FS)		+= spu_syscalls.o
+ spu-priv1-$(CONFIG_PPC_CELL_NATIVE)	+= spu_priv1_mmio.o
+ 
++spu-manage-$(CONFIG_PPC_CELLEB)		+= spu_manage.o
++spu-manage-$(CONFIG_PPC_CELL_NATIVE)	+= spu_manage.o
 +
-+static int hvc_beat_useit = 1;
-+
-+static int hvc_beat_config(char *p)
-+{
-+	hvc_beat_useit = simple_strtoul(p, NULL, 0);
-+	return 0;
-+}
-+
-+static int hvc_beat_console_init(void)
-+{
-+	if (hvc_beat_useit && machine_is_compatible("Beat")) {
-+		hvc_instantiate(0, 0, &hvc_beat_get_put_ops);
-+	}
-+	return 0;
-+}
-+
-+/* temp */
-+static int hvc_beat_init(void)
-+{
-+	struct hvc_struct *hp;
-+
-+	if (!firmware_has_feature(FW_FEATURE_BEAT))
-+		return -ENODEV;
-+
-+	hp = hvc_alloc(0, NO_IRQ, &hvc_beat_get_put_ops, 16);
-+	if (IS_ERR(hp))
-+		return PTR_ERR(hp);
-+	hvc_beat_dev = hp;
-+	return 0;
-+}
-+
-+static void __exit hvc_beat_exit(void)
-+{
-+	if (hvc_beat_dev)
-+		hvc_remove(hvc_beat_dev);
-+}
-+
-+module_init(hvc_beat_init);
-+module_exit(hvc_beat_exit);
-+
-+__setup("hvc_beat=", hvc_beat_config);
-+
-+console_initcall(hvc_beat_console_init);
+ obj-$(CONFIG_SPU_BASE)			+= spu_callbacks.o spu_base.o \
+ 					   spu_coredump.o \
+ 					   $(spufs-modular-m) \
+-					   $(spu-priv1-y) spufs/
++					   $(spu-priv1-y) \
++					   $(spu-manage-y) \
++					   spufs/
