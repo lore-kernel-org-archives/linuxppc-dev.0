@@ -1,19 +1,18 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
-	by ozlabs.org (Postfix) with ESMTP id 8D1EEDDE0D
+Return-Path: <a.korud@vector.com.pl>
+Received: from mail-ex.vector.com.pl (mail-ex.vector.com.pl [81.210.9.37])
+	by ozlabs.org (Postfix) with ESMTP id E5E1FDDE26
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Feb 2007 07:26:19 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: "Andriy Korud" <a.korud@vector.com.pl>
-Subject: Re: Anyone success with 440GR Rev.B (1.1)?
-Date: Fri, 2 Feb 2007 21:26:25 +0100
-References: <60E856FD577CC04BA3727AF4122D3F1601238644@3bit.vector.com.pl>
-	<adafy9o4l74.fsf@cisco.com>
-In-Reply-To: <adafy9o4l74.fsf@cisco.com>
+	Sat,  3 Feb 2007 07:38:48 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702022126.25872.sr@denx.de>
+	charset="koi8-r"
+Subject: RE: Anyone success with 440GR Rev.B (1.1)?
+Date: Fri, 2 Feb 2007 21:37:22 +0100
+Message-ID: <60E856FD577CC04BA3727AF4122D3F160123864A@3bit.vector.com.pl>
+References: <60E856FD577CC04BA3727AF4122D3F1601238644@3bit.vector.com.pl>
+	<adafy9o4l74.fsf@cisco.com> <200702022126.25872.sr@denx.de>
+From: "Andriy Korud" <a.korud@vector.com.pl>
+To: "Stefan Roese" <sr@denx.de>
 Cc: Roland Dreier <rdreier@cisco.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,9 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+
+Thanks,
+I've discovered this few hours ago. After adding entry to cputable =
+everything works fine.
+
+Anyway thanks and sorry for bothering :)
+regards,
+--
+Andriy Korud
+
+-----Original Message-----
+From: Stefan Roese [mailto:sr@denx.de]
+Sent: =F0=D4 2007-02-02 21:26
+To: Andriy Korud
+Cc: linuxppc-embedded@ozlabs.org; Roland Dreier
+Subject: Re: Anyone success with 440GR Rev.B (1.1)?
+=20
 On Friday 02 February 2007 16:45, Roland Dreier wrote:
 >  > I have complete system (U-Boot, Linux, userspace) running on 440GR
->  > Rev.A. However after mounting newer chip revision (Rev.B, 1.1) U-Boot
+>  > Rev.A. However after mounting newer chip revision (Rev.B, 1.1) =
+U-Boot
 >  > and Linux boots fine, however when trying to execute first userland
 >  > application (init), I get:
 >  >
@@ -40,7 +57,7 @@ On Friday 02 February 2007 16:45, Roland Dreier wrote:
 
 Good idea. That's probably it.
 
-> If you don't then 
+> If you don't then=20
 > I think the default kernel settings will result in the wrong cacheline
 > size being used, which leads to userspace often dying with illegal
 > instruction traps.
@@ -52,11 +69,13 @@ Good idea. That's probably it.
 
 440GR has the same PVR as 440EP:
 
-440EP Rev B == 440GR Rev A
-440EP Rev C == 440GR Rev B
+440EP Rev B =3D=3D 440GR Rev A
+440EP Rev C =3D=3D 440GR Rev B
 
-So your kernel should support 440EP Rev. C. The denx kernel has support for 
-those CPU's included. I'll try to send some patches in the next few days to 
+So your kernel should support 440EP Rev. C. The denx kernel has support =
+for=20
+those CPU's included. I'll try to send some patches in the next few days =
+to=20
 support them in the kernel.org version.
 
 Best regards,
