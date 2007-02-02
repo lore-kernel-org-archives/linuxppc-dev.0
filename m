@@ -1,20 +1,12 @@
-Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45C3908D.8040600@us.ibm.com>
-Date: Fri, 02 Feb 2007 13:27:09 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH 4/4] Add support to OProfile for profiling
-	Cell BE SPUs -- update
-References: <45BE4ED0.5030808@us.ibm.com> <200701300839.05144.arnd@arndb.de>
-	<45BFBB78.7060907@us.ibm.com> <200701310657.41317.arnd@arndb.de>
-In-Reply-To: <200701310657.41317.arnd@arndb.de>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>,
-	cbe-oss-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	linux-kernel@vger.kernel.org
-Reply-To: maynardj@us.ibm.com
+Return-Path: <cel@us.ibm.com>
+Subject: [PATCH] CELL PPU Oprofile cleanup patch (updated patch)
+From: Carl Love <cel@us.ibm.com>
+To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	cbe-oss-dev@ozlabs.org
+Content-Type: text/plain
+Date: Fri, 02 Feb 2007 13:34:34 -0800
+Message-Id: <1170452074.5204.28.camel@dyn9047021078.beaverton.ibm.com>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,165 +16,372 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
+This is the second update to the patch previously posted by Maynard
+Johnson as "PATCH 1/4. Add support to OProfile for profiling CELL".  
+The patch updates are:
+-  to not remove the MACROs per the discussion with Christoph
+Hellwig and Benjamin Herrenschmidt.
+-  to fix the incorrect #define name found by Michael Neuling
 
-> On Tuesday 30 January 2007 22:41, Maynard Johnson wrote:
-> 
->>Arnd Bergmann wrote:
-> 
-> 
->>>>+       kt = ktime_set(0, profiling_interval);
->>>>+       if (!spu_prof_running)
->>>>+               goto STOP;
->>>>+       hrtimer_forward(timer, timer->base->get_time(), kt);
->>>>+       return HRTIMER_RESTART;
->>>
->>>
->>>is hrtimer_forward really the right interface here? You are ignoring
->>>the number of overruns anyway, so hrtimer_start(,,) sounds more
->>>correct to me.
->>
->>According to Tom Gleixner, "hrtimer_forward is a convenience function to 
->>move the expiry time of a timer forward in multiples of the interval, so 
->>it is in the future.  After setting the expiry time you restart the 
->>timer either with [sic] a return HRTIMER_RESTART (if you are in the 
->>timer callback function)."
->>
-> 
-> Ok, I see. Have you seen the timer actually coming in late, resulting
-> in hrtimer_forward returning non-zero? I guess it's not a big problem
-> for statistic data collection if that happens, but you might still want
-> to be able to see it.
-I don't think there's much point in knowing if we have overrun(s). 
-We're not going to schedule the timer any differently. We want to keep 
-the timer interrupts as consistent as possible according to the user's 
-request.
-> 
-> 
->>>>+       /* Since cpufreq_quick_get returns frequency in kHz, we use
->>>>+        * USEC_PER_SEC here vs NSEC_PER_SEC.
->>>>+        */
->>>>+       unsigned long nsPerCyc = (USEC_PER_SEC << SCALE_SHIFT)/khzfreq;
->>>>+       profiling_interval = (nsPerCyc * cycles_reset) >> SCALE_SHIFT;
->>>>+       
->>>>+       pr_debug("timer resolution: %lu\n", 
->>>>+                TICK_NSEC);
->>>
->>>
->>>Don't you need to adapt the profiling_interval at run time, when cpufreq
->>>changes the core frequency? You should probably use
->>>cpufreq_register_notifier() to update this.
->>
->>Since OProfile is a statistical profiler, the exact frequency is not 
->>critical.  The user is going to be looking for hot spots in their code, 
->>so it's all relative.  With that said,  I don't imagine using the 
->>cpufreq notiication would be a big deal.  We'll look at it.
->>
->>
->>>>@@ -480,7 +491,22 @@
->>>>              struct op_system_config *sys, int num_ctrs)
->>>>{
->>>>       int i, j, cpu;
->>>>+       spu_cycle_reset = 0;
->>>>
->>>>+       /* The cpufreq_quick_get function requires that cbe_cpufreq module
->>>>+        * be loaded.  This function is not actually provided and exported
->>>>+        * by cbe_cpufreq, but it relies on cbe_cpufreq initialize kernel
->>>>+        * data structures.  Since there's no way for depmod to realize
->>>>+        * that our OProfile module depends on cbe_cpufreq, we currently
->>>>+        * are letting the userspace tool, opcontrol, ensure that the
->>>>+        * cbe_cpufreq module is loaded.
->>>>+        */
->>>>+       khzfreq = cpufreq_quick_get(smp_processor_id());
->>>
->>>
->>>You should probably have a fallback in here in case the cpufreq module
->>>is not loaded. There is a global variable ppc_proc_freq (in Hz) that
->>>you can access.
->>
->>Our userspace tool ensures the cpufreq module is loaded.
-> 
-> 
-> You should not rely on user space tools to do the right thing in the kernel.
-Ok, we'll look at the fallback option you suggest.  I don't recall if I 
-even knew about ppc_proc_freq before or why I originally chose 
-cpufreq_guick_get.  Maybe we can do without the cpufreq and use 
-ppc_proc_freq all the time.  We'll see . . .
-> 
-> Moreover, if the exact frequency is not that important, as you mentioned
-> above, you can probably just hardcode a compile-time constant here.
-Well, exact frequency isn't critical, but it should, as close as 
-possible, correspond with the user's requested value for "spu cycle reset".
-> 
-> 
->>>>+ * 
->>>>+ * Ideally, we would like to be able to create the cached_info for
->>>>+ * an SPU task just one time -- when libspe first loads the SPU 
->>>>+ * binary file.  We would store the cached_info in a list.  Then, as
->>>>+ * SPU tasks are switched out and new ones switched in, the cached_info
->>>>+ * for inactive tasks would be kept, and the active one would be placed
->>>>+ * at the head of the list.  But this technique may not with
->>>>+ * current spufs functionality since the spu used in bind_context may
->>>>+ * be a different spu than was used in a previous bind_context for a
->>>>+ * reactivated SPU task.  Additionally, a reactivated SPU task may be
->>>>+ * assigned to run on a different physical SPE.  We will investigate
->>>>+ * further if this can be done.
->>>>+ *
->>>>+ */
->>>
->>>
->>>You should stuff a pointer to cached_info into struct spu_context,
->>>e.g. 'void *profile_private'.
->>>
->>>
->>>
->>>>+struct cached_info {
->>>>+       vma_map_t * map;
->>>>+       struct spu * the_spu;
->>>>+       struct kref cache_ref;
->>>>+       struct list_head list;
->>>>+};
->>>
->>>
->>>And replace the 'the_spu' member with a back pointer to the
->>>spu_context if you need it.
->>>
->>>
->>>
->>>>+
->>>>+/* A data structure for cached information about active SPU tasks.
->>>>+ * Storage is dynamically allocated, sized as
->>>>+ * "number of active nodes multplied by 8". 
->>>>+ * The info_list[n] member holds 0 or more 
->>>>+ * 'struct cached_info' objects for SPU#=n. 
->>>>+ *
->>>>+ * As currently implemented, there will only ever be one cached_info 
->>>>+ * in the list for a given SPU.  If we can devise a way to maintain
->>>>+ * multiple cached_infos in our list, then it would make sense
->>>>+ * to also cache the dcookie representing the PPU task application.
->>>>+ * See above description of struct cached_info for more details.
->>>>+ */
->>>>+struct spu_info_stacks {
->>>>+       struct list_head * info_list;
->>>>+};
->>>
->>>
->>>Why do you store pointers to list_head structures? If you want to store
->>>lists, you should have a lists_head itself in here.
->>
->>info_list is an array of n lists, where n is the number of SPUs.
-> 
-> 
-> My point was that it's not an array of lists, but an array of pointers
-> to lists. The way that include/list.h works is by having a struct list_head
-> as the anchor and then add nodes to it. By simply pointing to a list_head,
-> you won't be able to use the list_for_each_entry() macro the way it is meant.
-I've got to rework this implementation anyway . . .
-> 
-> 
-[snip]
+From: Maynard Johnson <maynardj@us.ibm.com>, Carl Love
+<carll@us.ibm.com>
 
--Maynard
+This is a clean up patch that includes the following changes:
 
-> 
-> 	Arnd <><
+        -Some comments were added to clarify the code based on feedback
+         from the community.
+        -The write_pm_cntrl() and set_count_mode() were passed a
+structure
+         element from a global variable.  The argument was removed so
+the
+         functions now just operate on the global directly.
+        -The set_pm_event() function call in the cell_virtual_cntr()
+routine
+         was moved to a for-loop before the for_each_cpu loop
+
+Signed-off-by: Carl Love <carll@us.ibm.com>
+Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com>
+
+Index: linux-2.6.20-rc1/arch/powerpc/oprofile/op_model_cell.c
+===================================================================
+--- linux-2.6.20-rc1.orig/arch/powerpc/oprofile/op_model_cell.c
+2007-01-18 16:43:14.428510224 -0600
++++ linux-2.6.20-rc1/arch/powerpc/oprofile/op_model_cell.c	2007-02-01
+17:21:23.780799368 -0600
+@@ -41,8 +41,12 @@
+ #define PPU_CYCLES_EVENT_NUM 1	/*  event number for CYCLES */
+ #define CBE_COUNT_ALL_CYCLES 0x42800000	/* PPU cycle event specifier */
+ 
+-#define NUM_THREADS 2
+-#define VIRT_CNTR_SW_TIME_NS 100000000	// 0.5 seconds
++#define NUM_THREADS 2         /* number of physical threads in 
++			       * physical processor 
++			       */
++#define NUM_TRACE_BUS_WORDS 4
++#define NUM_INPUT_BUS_WORDS 2
++
+ 
+ struct pmc_cntrl_data {
+ 	unsigned long vcntr;
+@@ -93,7 +97,6 @@
+ 	u32 pm07_cntrl[NR_PHYS_CTRS];
+ } pm_regs;
+ 
+-
+ #define GET_SUB_UNIT(x) ((x & 0x0000f000) >> 12)
+ #define GET_BUS_WORD(x) ((x & 0x000000f0) >> 4)
+ #define GET_BUS_TYPE(x) ((x & 0x00000300) >> 8)
+@@ -101,7 +104,6 @@
+ #define GET_COUNT_CYCLES(x) (x & 0x00000001)
+ #define GET_INPUT_CONTROL(x) ((x & 0x00000004) >> 2)
+ 
+-
+ static DEFINE_PER_CPU(unsigned long[NR_PHYS_CTRS], pmc_values);
+ 
+ static struct pmc_cntrl_data pmc_cntrl[NUM_THREADS][NR_PHYS_CTRS];
+@@ -129,8 +131,8 @@
+ 
+ static u32 ctr_enabled;
+ 
+-static unsigned char trace_bus[4];
+-static unsigned char input_bus[2];
++static unsigned char trace_bus[NUM_TRACE_BUS_WORDS];
++static unsigned char input_bus[NUM_INPUT_BUS_WORDS];
+ 
+ /*
+  * Firmware interface functions
+@@ -183,7 +185,8 @@
+ 	for (j = 0; j < count; j++) {
+ 		/* fw expects physical cpu # */
+ 		pm_signal_local[j].cpu = node;
+-		pm_signal_local[j].signal_group = pm_signal[j].signal_group;
++		pm_signal_local[j].signal_group 
++			= pm_signal[j].signal_group;
+ 		pm_signal_local[j].bus_word = pm_signal[j].bus_word;
+ 		pm_signal_local[j].sub_unit = pm_signal[j].sub_unit;
+ 		pm_signal_local[j].bit = pm_signal[j].bit;
+@@ -232,13 +235,21 @@
+ 
+ 	p->signal_group = event / 100;
+ 	p->bus_word = bus_word;
+-	p->sub_unit = unit_mask & 0x0000f000;
++	p->sub_unit = (unit_mask & 0x0000f000) >> 12;
+ 
+ 	pm_regs.pm07_cntrl[ctr] = 0;
+ 	pm_regs.pm07_cntrl[ctr] |= PM07_CTR_COUNT_CYCLES(count_cycles);
+ 	pm_regs.pm07_cntrl[ctr] |= PM07_CTR_POLARITY(polarity);
+ 	pm_regs.pm07_cntrl[ctr] |= PM07_CTR_INPUT_CONTROL(input_control);
+ 
++	/* Some of the islands signal selection is based on 64 bit words.
++	 * The debug bus words are 32 bits, the input words to the performance
++	 * counters are defined as 32 bits.  Need to convert the 64 bit island
++	 * specification to the appropriate 32 input bit and bus word for the
++	 * performance counter event selection.  See the CELL Performance
++	 * monitoring signals manual and the Perf cntr hardware descriptions
++	 * for the details.
++	 */
+ 	if (input_control == 0) {
+ 		if (signal_bit > 31) {
+ 			signal_bit -= 32;
+@@ -259,12 +270,12 @@
+ 		p->bit = signal_bit;
+ 	}
+ 
+-	for (i = 0; i < 4; i++) {
++	for (i = 0; i < NUM_TRACE_BUS_WORDS; i++) {
+ 		if (bus_word & (1 << i)) {
+ 			pm_regs.debug_bus_control |=
+ 			    (bus_type << (31 - (2 * i) + 1));
+ 
+-			for (j = 0; j < 2; j++) {
++			for (j = 0; j < NUM_INPUT_BUS_WORDS; j++) {
+ 				if (input_bus[j] == 0xff) {
+ 					input_bus[j] = i;
+ 					pm_regs.group_control |=
+@@ -278,52 +289,58 @@
+ 	;
+ }
+ 
+-static void write_pm_cntrl(int cpu, struct pm_cntrl *pm_cntrl)
++static void write_pm_cntrl(int cpu)
+ {
+-	/* Oprofile will use 32 bit counters, set bits 7:10 to 0 */
++	/* Oprofile will use 32 bit counters, set bits 7:10 to 0 
++	 * pmregs.pm_cntrl is a global
++	 */
++        
+ 	u32 val = 0;
+-	if (pm_cntrl->enable == 1)
++	if (pm_regs.pm_cntrl.enable == 1)
+ 		val |= CBE_PM_ENABLE_PERF_MON;
+ 
+-	if (pm_cntrl->stop_at_max == 1)
++	if (pm_regs.pm_cntrl.stop_at_max == 1)
+ 		val |= CBE_PM_STOP_AT_MAX;
+ 
+-	if (pm_cntrl->trace_mode == 1)
+-		val |= CBE_PM_TRACE_MODE_SET(pm_cntrl->trace_mode);
++	if (pm_regs.pm_cntrl.trace_mode == 1)
++		val |= CBE_PM_TRACE_MODE_SET(pm_regs.pm_cntrl.trace_mode);
+ 
+-	if (pm_cntrl->freeze == 1)
++	if (pm_regs.pm_cntrl.freeze == 1)
+ 		val |= CBE_PM_FREEZE_ALL_CTRS;
+ 
+ 	/* Routine set_count_mode must be called previously to set
+ 	 * the count mode based on the user selection of user and kernel.
+ 	 */
+-	val |= CBE_PM_COUNT_MODE_SET(pm_cntrl->count_mode);
++	val |= CBE_PM_COUNT_MODE_SET(pm_regs.pm_cntrl.count_mode);
+ 	cbe_write_pm(cpu, pm_control, val);
+ }
+ 
+ static inline void
+-set_count_mode(u32 kernel, u32 user, struct pm_cntrl *pm_cntrl)
++set_count_mode(u32 kernel, u32 user)
+ {
+ 	/* The user must specify user and kernel if they want them. If
+-	 *  neither is specified, OProfile will count in hypervisor mode
++	 *  neither is specified, OProfile will count in hypervisor mode.
++	 *  pm_regs.pm_cntrl is a global
+ 	 */
+ 	if (kernel) {
+ 		if (user)
+-			pm_cntrl->count_mode = CBE_COUNT_ALL_MODES;
++			pm_regs.pm_cntrl.count_mode = CBE_COUNT_ALL_MODES;
+ 		else
+-			pm_cntrl->count_mode = CBE_COUNT_SUPERVISOR_MODE;
++			pm_regs.pm_cntrl.count_mode = 
++				CBE_COUNT_SUPERVISOR_MODE;
+ 	} else {
+ 		if (user)
+-			pm_cntrl->count_mode = CBE_COUNT_PROBLEM_MODE;
++			pm_regs.pm_cntrl.count_mode = CBE_COUNT_PROBLEM_MODE;
+ 		else
+-			pm_cntrl->count_mode = CBE_COUNT_HYPERVISOR_MODE;
++			pm_regs.pm_cntrl.count_mode = 
++				CBE_COUNT_HYPERVISOR_MODE;
+ 	}
+ }
+ 
+ static inline void enable_ctr(u32 cpu, u32 ctr, u32 * pm07_cntrl)
+ {
+ 
+-	pm07_cntrl[ctr] |= PM07_CTR_ENABLE(1);
++	pm07_cntrl[ctr] |= CBE_PM_CTR_ENABLE;
+ 	cbe_write_pm07_control(cpu, ctr, pm07_cntrl[ctr]);
+ }
+ 
+@@ -365,6 +382,14 @@
+ 	hdw_thread = 1 ^ hdw_thread;
+ 	next_hdw_thread = hdw_thread;
+ 
++	for (i = 0; i < num_counters; i++)
++	/* There are some per thread events.  Must do the
++	 * set event, for the thread that is being started
++	 */
++		set_pm_event(i,
++			pmc_cntrl[next_hdw_thread][i].evnts,
++			pmc_cntrl[next_hdw_thread][i].masks);
++
+ 	/* The following is done only once per each node, but
+ 	 * we need cpu #, not node #, to pass to the cbe_xxx functions.
+ 	 */
+@@ -385,12 +410,13 @@
+ 			    == 0xFFFFFFFF)
+ 				/* If the cntr value is 0xffffffff, we must
+ 				 * reset that to 0xfffffff0 when the current
+-				 * thread is restarted.  This will generate a new
+-				 * interrupt and make sure that we never restore
+-				 * the counters to the max value.  If the counters
+-				 * were restored to the max value, they do not
+-				 * increment and no interrupts are generated.  Hence
+-				 * no more samples will be collected on that cpu.
++				 * thread is restarted.  This will generate a 
++				 * new interrupt and make sure that we never 
++				 * restore the counters to the max value.  If 
++				 * the counters were restored to the max value,
++				 * they do not increment and no interrupts are
++				 * generated.  Hence no more samples will be 
++				 * collected on that cpu.
+ 				 */
+ 				cbe_write_ctr(cpu, i, 0xFFFFFFF0);
+ 			else
+@@ -410,9 +436,6 @@
+ 				 * Must do the set event, enable_cntr
+ 				 * for each cpu.
+ 				 */
+-				set_pm_event(i,
+-				     pmc_cntrl[next_hdw_thread][i].evnts,
+-				     pmc_cntrl[next_hdw_thread][i].masks);
+ 				enable_ctr(cpu, i,
+ 					   pm_regs.pm07_cntrl);
+ 			} else {
+@@ -465,8 +488,7 @@
+ 	pm_regs.pm_cntrl.trace_mode = 0;
+ 	pm_regs.pm_cntrl.freeze = 1;
+ 
+-	set_count_mode(sys->enable_kernel, sys->enable_user,
+-		       &pm_regs.pm_cntrl);
++	set_count_mode(sys->enable_kernel, sys->enable_user);
+ 
+ 	/* Setup the thread 0 events */
+ 	for (i = 0; i < num_ctrs; ++i) {
+@@ -498,10 +520,10 @@
+ 		pmc_cntrl[1][i].vcntr = i;
+ 	}
+ 
+-	for (i = 0; i < 4; i++)
++	for (i = 0; i < NUM_TRACE_BUS_WORDS; i++)
+ 		trace_bus[i] = 0xff;
+ 
+-	for (i = 0; i < 2; i++)
++	for (i = 0; i < NUM_INPUT_BUS_WORDS; i++)
+ 		input_bus[i] = 0xff;
+ 
+ 	/* Our counters count up, and "count" refers to
+@@ -560,7 +582,7 @@
+ 	cbe_write_pm(cpu, pm_start_stop, 0);
+ 	cbe_write_pm(cpu, group_control, pm_regs.group_control);
+ 	cbe_write_pm(cpu, debug_bus_control, pm_regs.debug_bus_control);
+-	write_pm_cntrl(cpu, &pm_regs.pm_cntrl);
++	write_pm_cntrl(cpu);
+ 
+ 	for (i = 0; i < num_counters; ++i) {
+ 		if (ctr_enabled & (1 << i)) {
+@@ -602,7 +624,7 @@
+ 			}
+ 		}
+ 
+-		cbe_clear_pm_interrupts(cpu);
++		cbe_get_and_clear_pm_interrupts(cpu);
+ 		cbe_enable_pm_interrupts(cpu, hdw_thread, interrupt_mask);
+ 		cbe_enable_pm(cpu);
+ 	}
+@@ -672,7 +694,7 @@
+ 
+ 	cbe_disable_pm(cpu);
+ 
+-	interrupt_mask = cbe_clear_pm_interrupts(cpu);
++	interrupt_mask = cbe_get_and_clear_pm_interrupts(cpu);
+ 
+ 	/* If the interrupt mask has been cleared, then the virt cntr
+ 	 * has cleared the interrupt.  When the thread that generated
+Index: linux-2.6.20-rc1/arch/powerpc/platforms/cell/pmu.c
+===================================================================
+--- linux-2.6.20-rc1.orig/arch/powerpc/platforms/cell/pmu.c	2007-01-18
+16:43:14.319526792 -0600
++++ linux-2.6.20-rc1/arch/powerpc/platforms/cell/pmu.c	2007-01-18
+16:49:58.319611848 -0600
+@@ -345,18 +345,12 @@
+  * Enabling/disabling interrupts for the entire performance monitoring
+unit.
+  */
+ 
+-u32 cbe_query_pm_interrupts(u32 cpu)
+-{
+-	return cbe_read_pm(cpu, pm_status);
+-}
+-EXPORT_SYMBOL_GPL(cbe_query_pm_interrupts);
+-
+-u32 cbe_clear_pm_interrupts(u32 cpu)
++u32 cbe_get_and_clear_pm_interrupts(u32 cpu)
+ {
+ 	/* Reading pm_status clears the interrupt bits. */
+-	return cbe_query_pm_interrupts(cpu);
++	return cbe_read_pm(cpu, pm_status);
+ }
+-EXPORT_SYMBOL_GPL(cbe_clear_pm_interrupts);
++EXPORT_SYMBOL_GPL(cbe_get_and_clear_pm_interrupts);
+ 
+ void cbe_enable_pm_interrupts(u32 cpu, u32 thread, u32 mask)
+ {
+@@ -371,7 +365,7 @@
+ 
+ void cbe_disable_pm_interrupts(u32 cpu)
+ {
+-	cbe_clear_pm_interrupts(cpu);
++	cbe_get_and_clear_pm_interrupts(cpu);
+ 	cbe_write_pm(cpu, pm_status, 0);
+ }
+ EXPORT_SYMBOL_GPL(cbe_disable_pm_interrupts);
+Index: linux-2.6.20-rc1/include/asm-powerpc/cell-pmu.h
+===================================================================
+--- linux-2.6.20-rc1.orig/include/asm-powerpc/cell-pmu.h	2007-01-18
+16:43:19.932605072 -0600
++++ linux-2.6.20-rc1/include/asm-powerpc/cell-pmu.h	2007-02-01
+12:38:41.339772960 -0600
+@@ -53,6 +53,11 @@
+ #define CBE_PM_CTR_POLARITY                0x01000000
+ #define CBE_PM_CTR_COUNT_CYCLES            0x00800000
+ #define CBE_PM_CTR_ENABLE                  0x00400000
++#define PM07_CTR_INPUT_MUX(x)              (((x) & 0x3F) << 26)
++#define PM07_CTR_INPUT_CONTROL(x)          (((x) & 1) << 25)
++#define PM07_CTR_POLARITY(x)               (((x) & 1) << 24)
++#define PM07_CTR_COUNT_CYCLES(x)           (((x) & 1) << 23)
++#define PM07_CTR_ENABLE(x)                 (((x) & 1) << 22)
+ 
+ /* Macros for the pm_status register. */
+ #define CBE_PM_CTR_OVERFLOW_INTR(ctr)      (1 << (31 - ((ctr) & 7)))
+@@ -89,8 +94,7 @@
+ 
+ extern void cbe_enable_pm_interrupts(u32 cpu, u32 thread, u32 mask);
+ extern void cbe_disable_pm_interrupts(u32 cpu);
+-extern u32  cbe_query_pm_interrupts(u32 cpu);
+-extern u32  cbe_clear_pm_interrupts(u32 cpu);
++extern u32  cbe_get_and_clear_pm_interrupts(u32 cpu);
+ extern void cbe_sync_irq(int node);
+ 
+ /* Utility functions, macros */
+@@ -103,11 +107,4 @@
+ #define CBE_COUNT_PROBLEM_MODE          2
+ #define CBE_COUNT_ALL_MODES             3
+ 
+-/* Macros for the pm07_control registers. */
+-#define PM07_CTR_INPUT_MUX(x)                    (((x) & 0x3F) << 26)
+-#define PM07_CTR_INPUT_CONTROL(x)                (((x) & 1) << 25)
+-#define PM07_CTR_POLARITY(x)                     (((x) & 1) << 24)
+-#define PM07_CTR_COUNT_CYCLES(x)                 (((x) & 1) << 23)
+-#define PM07_CTR_ENABLE(x)                       (((x) & 1) << 22)
+-
+ #endif /* __ASM_CELL_PMU_H__ */
