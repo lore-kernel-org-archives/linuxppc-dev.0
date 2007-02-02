@@ -1,12 +1,12 @@
 Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 99D9EDDE46
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 18:37:35 +1100 (EST)
-Date: Fri, 02 Feb 2007 16:37:30 +0900 (JST)
-Message-Id: <200702020737.l127bVSt018122@toshiba.co.jp>
-Subject: [PATCH 2/11] Celleb: support interrupts
+	by ozlabs.org (Postfix) with ESMTP id 33BA6DDEC0
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 18:38:52 +1100 (EST)
+Date: Fri, 02 Feb 2007 16:38:41 +0900 (JST)
+Message-Id: <200702020738.l127cidC017335@toshiba.co.jp>
+Subject: [PATCH 3/11] Celleb: setup usb host controller in SCC
 To: paulus@samba.org
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
@@ -21,20 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch creates Celleb platform dependent files to support interrupts.
+USB host controller in SCC requires enable sequence. It should be done
+before USB host drivers start.
 
 Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 ---
 
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c:1.8
---- /dev/null	Fri Feb  2 13:38:03 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c	Thu Jan 25 19:06:24 2007
-@@ -0,0 +1,274 @@
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c:1.6
+--- /dev/null	Fri Feb  2 13:38:04 2007
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_uhc.c	Fri Jan 26 18:27:15 2007
+@@ -0,0 +1,94 @@
 +/*
-+ * Celleb/Beat Interrupt controller
++ * SCC (Super Companion Chip) UHC setup
 + *
 + * (C) Copyright 2006-2007 TOSHIBA CORPORATION
 + *
@@ -53,295 +53,77 @@ diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.c:1.
 + * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 + */
 +
-+#include <linux/init.h>
-+#include <linux/interrupt.h>
-+#include <linux/irq.h>
-+#include <linux/percpu.h>
-+#include <linux/types.h>
++#include <linux/kernel.h>
++#include <linux/pci.h>
 +
++#include <asm/delay.h>
++#include <asm/io.h>
 +#include <asm/machdep.h>
 +
-+#include "interrupt.h"
-+#include "beat_wrapper.h"
++#include "scc.h"
 +
-+#define	MAX_IRQS	NR_IRQS
-+static DEFINE_SPINLOCK(beatic_irq_mask_lock);
-+static uint64_t	beatic_irq_mask_enable[(MAX_IRQS+255)/64];
-+static uint64_t	beatic_irq_mask_ack[(MAX_IRQS+255)/64];
++#define UHC_RESET_WAIT_MAX 10000
 +
-+static struct irq_host *beatic_host = NULL;
-+
-+/*
-+ * In this implementation, "virq" == "IRQ plug number",
-+ * "(irq_hw_number_t)hwirq" == "IRQ outlet number".
-+ */
-+
-+/* assumption: locked */
-+static inline void beatic_update_irq_mask(unsigned int irq_plug)
++static inline int uhc_clkctrl_ready(u32 val)
 +{
-+	int off;
-+	unsigned long masks[4];
-+
-+	off = (irq_plug / 256) * 4;
-+	masks[0] = beatic_irq_mask_enable[off + 0]
-+	           & beatic_irq_mask_ack[off + 0];
-+	masks[1] = beatic_irq_mask_enable[off + 1]
-+	           & beatic_irq_mask_ack[off + 1];
-+	masks[2] = beatic_irq_mask_enable[off + 2]
-+	           & beatic_irq_mask_ack[off + 2];
-+	masks[3] = beatic_irq_mask_enable[off + 3]
-+	           & beatic_irq_mask_ack[off + 3];
-+	if (beat_set_interrupt_mask(irq_plug&~255UL,
-+		masks[0], masks[1], masks[2], masks[3]) != 0)
-+		panic("Failed to set mask IRQ!");
-+}
-+
-+static void beatic_mask_irq(unsigned int irq_plug)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	beatic_irq_mask_enable[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
-+
-+static void beatic_unmask_irq(unsigned int irq_plug)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	beatic_irq_mask_enable[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
-+
-+static void beatic_ack_irq(unsigned int irq_plug)
-+{
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	beatic_irq_mask_ack[irq_plug/64] &= ~(1UL << (63 - (irq_plug%64)));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
-+
-+static void beatic_end_irq(unsigned int irq_plug)
-+{
-+	s64 err;
-+	unsigned long flags;
-+
-+	if ((err = beat_downcount_of_interrupt(irq_plug)) != 0) {
-+		if ((err & 0xFFFFFFFF) != 0xFFFFFFF5) /* -11: wrong state */
-+			panic("Failed to downcount IRQ! Error = %16lx", err);
-+
-+		printk(KERN_ERR "IRQ over-downcounted, plug %d\n", irq_plug);
-+	}
-+	spin_lock_irqsave(&beatic_irq_mask_lock, flags);
-+	beatic_irq_mask_ack[irq_plug/64] |= 1UL << (63 - (irq_plug%64));
-+	beatic_update_irq_mask(irq_plug);
-+	spin_unlock_irqrestore(&beatic_irq_mask_lock, flags);
-+}
-+
-+static struct irq_chip beatic_pic = {
-+	.typename = " CELL-BEAT ",
-+	.unmask = beatic_unmask_irq,
-+	.mask = beatic_mask_irq,
-+	.eoi = beatic_end_irq,
-+};
-+
-+/*
-+ * Dispose binding hardware IRQ number (hw) and Virtuql IRQ number (virq),
-+ * update flags.
-+ *
-+ * Note that the number (virq) is already assigned at upper layer.
-+ */
-+static void beatic_pic_host_unmap(struct irq_host *h, unsigned int virq)
-+{
-+	beat_destruct_irq_plug(virq);
++	const u32 mask = SCC_UHC_USBCEN | SCC_UHC_USBCEN;
++	return((val & mask) == mask);
 +}
 +
 +/*
-+ * Create or update binding hardware IRQ number (hw) and Virtuql
-+ * IRQ number (virq). This is called only once for a given mapping.
-+ *
-+ * Note that the number (virq) is already assigned at upper layer.
++ * UHC(usb host controler) enable function.
++ * affect to both of OHCI and EHCI core module.
 + */
-+static int beatic_pic_host_map(struct irq_host *h, unsigned int virq,
-+			       irq_hw_number_t hw)
++static void enable_scc_uhc(struct pci_dev *dev)
 +{
-+	struct irq_desc *desc = get_irq_desc(virq);
-+	int64_t	err;
-+
-+	if ((err = beat_construct_and_connect_irq_plug(virq, hw)) < 0)
-+		return -EIO;
-+
-+	desc->status |= IRQ_LEVEL;
-+	set_irq_chip_and_handler(virq, &beatic_pic, handle_fasteoi_irq);
-+	return 0;
-+}
-+
-+/*
-+ * Update binding hardware IRQ number (hw) and Virtuql
-+ * IRQ number (virq). This is called only once for a given mapping.
-+ */
-+static void beatic_pic_host_remap(struct irq_host *h, unsigned int virq,
-+			       irq_hw_number_t hw)
-+{
-+	beat_construct_and_connect_irq_plug(virq, hw);
-+}
-+
-+/*
-+ * Translate device-tree interrupt spec to irq_hw_number_t style (ulong),
-+ * to pass away to irq_create_mapping().
-+ *
-+ * Called from irq_create_of_mapping() only.
-+ * Note: We have only 1 entry to translate.
-+ */
-+static int beatic_pic_host_xlate(struct irq_host *h, struct device_node *ct,
-+				 u32 *intspec, unsigned int intsize,
-+				 irq_hw_number_t *out_hwirq,
-+				 unsigned int *out_flags)
-+{
-+	u64 *intspec2 = (u64 *)intspec;
-+
-+	*out_hwirq = *intspec2;
-+	*out_flags |= IRQ_TYPE_LEVEL_LOW;
-+	return 0;
-+}
-+
-+static struct irq_host_ops beatic_pic_host_ops = {
-+	.map = beatic_pic_host_map,
-+	.remap = beatic_pic_host_remap,
-+	.unmap = beatic_pic_host_unmap,
-+	.xlate = beatic_pic_host_xlate,
-+};
-+
-+/*
-+ * Get an IRQ number
-+ * Note: returns VIRQ
-+ */
-+static inline unsigned int beatic_get_irq_plug(void)
-+{
++	void __iomem *uhc_base;
++	u32 __iomem *uhc_clkctrl;
++	u32 __iomem *uhc_ecmode;
++	u32 val = 0;
 +	int i;
-+	uint64_t	pending[4], ub;
 +
-+	for (i = 0; i < MAX_IRQS; i += 256) {
-+		beat_detect_pending_interrupts(i, pending);
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[0] & beatic_irq_mask_enable[i/64+0]
-+			               & beatic_irq_mask_ack[i/64+0]));
-+		if (ub != 64)
-+			return i + ub + 0;
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[1] & beatic_irq_mask_enable[i/64+1]
-+			               & beatic_irq_mask_ack[i/64+1]));
-+		if (ub != 64)
-+			return i + ub + 64;
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[2] & beatic_irq_mask_enable[i/64+2]
-+			               & beatic_irq_mask_ack[i/64+2]));
-+		if (ub != 64)
-+			return i + ub + 128;
-+		__asm__ ("cntlzd %0,%1":"=r"(ub):
-+			"r"(pending[3] & beatic_irq_mask_enable[i/64+3]
-+			               & beatic_irq_mask_ack[i/64+3]));
-+		if (ub != 64)
-+			return i + ub + 192;
++	if (!machine_is(celleb))
++		return;
++
++	uhc_base = ioremap(pci_resource_start(dev, 0),
++			   pci_resource_len(dev, 0));
++	if (!uhc_base) {
++		printk(KERN_ERR "failed to map UHC register base.\n");
++		return;
++	}
++	uhc_clkctrl = uhc_base + SCC_UHC_CKRCTRL; 
++	uhc_ecmode  = uhc_base + SCC_UHC_ECMODE; 
++
++	/* setup for normal mode */
++	val |= SCC_UHC_F48MCKLEN;
++	out_be32(uhc_clkctrl, val);
++	val |= SCC_UHC_PHY_SUSPEND_SEL;
++	out_be32(uhc_clkctrl, val);
++	udelay(10);
++	val |= SCC_UHC_PHYEN;
++	out_be32(uhc_clkctrl, val);
++	udelay(50);
++
++	/* disable reset */
++	val |= SCC_UHC_HCLKEN;
++	out_be32(uhc_clkctrl, val);
++	val |= (SCC_UHC_USBCEN | SCC_UHC_USBEN);
++	out_be32(uhc_clkctrl, val);
++	i = 0;
++	while (!uhc_clkctrl_ready(in_be32(uhc_clkctrl))) {
++		udelay(10);
++		if (i++ > UHC_RESET_WAIT_MAX) {
++			printk(KERN_ERR "Failed to disable UHC reset %x\n",
++			       in_be32(uhc_clkctrl));
++			break;
++		}
 +	}
 +
-+	return NO_IRQ;
-+}
-+unsigned int beatic_get_irq(void)
-+{
-+	unsigned int ret;
++	/* Endian Conversion Mode for Master ALL area */
++	out_be32(uhc_ecmode, SCC_UHC_ECMODE_BY_BYTE);
 +
-+	ret = beatic_get_irq_plug();
-+	if (ret != NO_IRQ)
-+		beatic_ack_irq(ret);
-+	return ret;
++	iounmap(uhc_base);
 +}
 +
-+/*
-+ */
-+void __init beatic_init_IRQ(void)
-+{
-+	int	i;
-+
-+	memset(beatic_irq_mask_enable, 0, sizeof(beatic_irq_mask_enable));
-+	memset(beatic_irq_mask_ack, 255, sizeof(beatic_irq_mask_ack));
-+	for (i = 0; i < MAX_IRQS; i += 256)
-+		beat_set_interrupt_mask(i, 0L, 0L, 0L, 0L);
-+
-+	/* Set out get_irq function */
-+	ppc_md.get_irq = beatic_get_irq;
-+
-+	/* Allocate an irq host */
-+	beatic_host = irq_alloc_host(IRQ_HOST_MAP_NOMAP, 0,
-+					 &beatic_pic_host_ops,
-+					 0);
-+	BUG_ON(beatic_host == NULL);
-+	irq_set_default_host(beatic_host);
-+}
-+
-+#ifdef CONFIG_SMP
-+
-+/* Nullified to compile with SMP mode */
-+void beatic_setup_cpu(int cpu)
-+{
-+}
-+
-+void beatic_cause_IPI(int cpu, int mesg)
-+{
-+}
-+
-+void beatic_request_IPIs(void)
-+{
-+}
-+#endif /* CONFIG_SMP */
-+
-+void beatic_deinit_IRQ(void)
-+{
-+	int	i;
-+
-+	for (i = 1; i < NR_IRQS; i++)
-+		beat_destruct_irq_plug(i);
-+}
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.h
-diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.h:1.2
---- /dev/null	Fri Feb  2 13:38:03 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/interrupt.h	Wed Dec 13 17:06:47 2006
-@@ -0,0 +1,33 @@
-+/*
-+ * Celleb/Beat Interrupt controller
-+ *
-+ * (C) Copyright 2006 TOSHIBA CORPORATION
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2 of the License, or
-+ * (at your option) any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License along
-+ * with this program; if not, write to the Free Software Foundation, Inc.,
-+ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
-+ */
-+
-+#ifndef ASM_BEAT_PIC_H
-+#define ASM_BEAT_PIC_H
-+#ifdef __KERNEL__
-+
-+extern void beatic_init_IRQ(void);
-+extern unsigned int beatic_get_irq(void);
-+extern void beatic_cause_IPI(int cpu, int mesg);
-+extern void beatic_request_IPIs(void);
-+extern void beatic_setup_cpu(int);
-+extern void beatic_deinit_IRQ(void);
-+
-+#endif
-+#endif /* ASM_BEAT_PIC_H */
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_TOSHIBA_2,
++		 PCI_DEVICE_ID_TOSHIBA_SCC_USB, enable_scc_uhc);
