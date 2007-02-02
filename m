@@ -1,17 +1,19 @@
-Return-Path: <vpd.84@rediffmail.com>
-Received: from rediffmail.com (unknown [59.160.240.216])
-	by ozlabs.org (Postfix) with SMTP id D7239DDE2A
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 60868DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Feb 2007 18:04:59 +1100 (EST)
-Date: 2 Feb 2007 06:55:23 -0000
-Message-ID: <20070202065523.8853.qmail@webmail91.rediffmail.com>
-MIME-Version: 1.0
-From: "Vikram Dhir" <vpd.84@rediffmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Multicast problem on MPC8272ADS
-Content-type: multipart/alternative;
-	boundary="Next_1170399323---0-59.160.240.216-8846"
-Reply-To: Vikram Dhir <vpd.84@rediffmail.com>
+	Fri,  2 Feb 2007 18:28:12 +1100 (EST)
+To: "Saiful Khan" <saiful.etc@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: ELDKs Kernel is not printing the printk 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 01 Feb 2007 23:22:37 +0530."
+	<38b44d590702010952nd58f2dbl45a296e535e35869@mail.gmail.com>
+Date: Fri, 02 Feb 2007 08:28:09 +0100
+Sender: wd@denx.de
+Message-Id: <20070202072809.E17E3352B86@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,60 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- This is a multipart mime message
+In message <38b44d590702010952nd58f2dbl45a296e535e35869@mail.gmail.com> you wrote:
+> 
+> but when i try to boot the kernel image from ram, i got the last message
+> from u-boot but i do not get any printk() message from kerne.
+> so i am unable to debug the kernel also..
 
+Use a BDM debugger.
 
---Next_1170399323---0-59.160.240.216-8846
-Content-type: text/plain;
-	charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+> please suggest me if i have to concentrate more on some particular section
+> and proceed, and how to proceed...?
 
-Hi,=0A=0AI have written a multicast test application in which there is a mu=
-lticast sender and receiver. The multicast sender sends multicast packets o=
-n a specified interface and the multicast receiver receives multicast packe=
-ts. I have tested this application on my network with x86 machines. But whe=
-n I run a multicast receiver (which has been cross compiled for MPC8272ADS)=
- on my MPC board, it is unable to receive multicast packets (the recvfrom c=
-all is waiting for ever for packets to arrive). The MPC board is able to se=
-nd multicast packets to without any problems. The /proc/net/dev_mcast shows=
- the appropriate entries for the multicast address being enabled for the in=
-terface of interest(esentially group joining appear to work).=0A=0AMy confi=
-guration is a MPC8272ADS board with Linux Kernel 2.6.16.34 and I m using th=
-e Freescale Ethernet driver, with ethernet using FCC(with multicast enabled=
-). rp_filter =3D0 for all interfaces (ie no source filtering).=0A=0AI am wo=
-ndering where the problem could be, configurations or the ethernet driver i=
-tself? Are there some known issues with the freescale ethernet driver that =
-comes with the Linux Kernel? =0A=0ABy the way with loopback enabled the rec=
-eption of packets works in case the sender and receiver are on the same mac=
-hine [as expected].=0A=0Avpd=0A
---Next_1170399323---0-59.160.240.216-8846
-Content-type: text/html;
-	charset=iso-8859-1
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+And read the debugging  sdection  in  the  DULG,  and  the  FAQ.  For
+example, try a post mortem dump of the log buffer.
 
-<P>=0AHi,<BR>=0A<BR>=0AI have written a multicast test application in which=
- there is a multicast sender and receiver. The multicast sender sends multi=
-cast packets on a specified interface and the multicast receiver receives m=
-ulticast packets. I have tested this application on my network with x86 mac=
-hines. But when I run a multicast receiver (which has been cross compiled f=
-or MPC8272ADS) on my MPC board, it is unable to receive multicast packets (=
-the recvfrom call is waiting for ever for packets to arrive). The MPC board=
- is able to send multicast packets to without any problems. The /proc/net/d=
-ev_mcast shows the appropriate entries for the multicast address being enab=
-led for the interface of interest(esentially group joining appear to work).=
-<BR>=0A<BR>=0AMy configuration is a MPC8272ADS board with Linux Kernel 2.6.=
-16.34 and I m using the Freescale Ethernet driver, with ethernet using FCC(=
-with multicast enabled). rp_filter =3D0 for all interfaces (ie no source fi=
-ltering).<BR>=0A<BR>=0AI am wondering where the problem could be, configura=
-tions or the ethernet driver itself? Are there some known issues with the f=
-reescale ethernet driver that comes with the Linux Kernel? <BR>=0A<BR>=0ABy=
- the way with loopback enabled the reception of packets works in case the s=
-ender and receiver are on the same machine [as expected].<BR>=0A<BR>=0Avpd<=
-BR>=0A=0A</P>=0A<br><br>=0A<a href=3D"http://adworks.rediff.com/cgi-bin/AdW=
-orks/sigclick.cgi/www.rediff.com/signature-home.htm/1507191490@Middle5?PART=
-NER=3D3"><IMG SRC=3D"http://adworks.rediff.com/cgi-bin/AdWorks/sigimpress.c=
-gi/www.rediff.com/signature-home.htm/1963059423@Middle5?OAS_query=3Dnull&PA=
-RTNER=3D3" BORDER=3D0 VSPACE=3D0 HSPACE=3D0></a>=0A
---Next_1170399323---0-59.160.240.216-8846--
+Best regards,
+
+Wolfgang Denk
+
+-- 
+Software Engineering:  Embedded and Realtime Systems,  Embedded Linux
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Committee, n.:  A group of men who individually can do nothing but as
+a group decide that nothing can be done.                 - Fred Allen
