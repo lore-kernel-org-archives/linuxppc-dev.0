@@ -1,16 +1,16 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc3-s19.bay0.hotmail.com (bay0-omc3-s19.bay0.hotmail.com
-	[65.54.246.219]) by ozlabs.org (Postfix) with ESMTP id 6CC81DDEF4
+Return-Path: <poseidon21@post.sk>
+Received: from otrok.post.sk (otrok.post.sk [85.248.69.172])
+	by ozlabs.org (Postfix) with ESMTP id 6962CDDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Feb 2007 22:14:47 +1100 (EST)
-Message-ID: <BAY110-F330FC367B85118B4B375E3B29B0@phx.gbl>
-In-Reply-To: <BAY110-F34B4349BCEE991CA4DB0CB2A40@phx.gbl>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: RE: Profiler on PPC405 on Xilinx ML403
-Date: Fri, 02 Feb 2007 11:02:30 +0000
+	Fri,  2 Feb 2007 22:38:53 +1100 (EST)
+Message-ID: <45C31795.000001.05998@kamasutra>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+Content-Type: Text/Plain;
+	Charset = "ISO-8859-2"
+From: Ladislav Klenovic <poseidon21@post.sk>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Re: Re: SMC as UART problem on mpc8xx
+Date: 02 Feb 2007 11:51:01 +0100 (CET)
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,43 +21,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear all,
-I noticed that just in the menuconfig, there is an option called "Profiling 
-support" and also "OProfile system profiling". I have enabled these options 
-and recompiled my kernel. However I cannot find any commands related to 
-Oprofile when I boot my new kernel. Is Oprofile really included in the 
-kernel, or shall I install it from the beginning? My platform is ppc405 on 
-ml403.  Also I will appreciate a lot if you can make me sure that ppc405 is 
-supported by Oprofile. I just see that only PPC64 is supported by Oprofile, 
-without ppc405.
+> On 01 Feb 2007 17:10:31 +0100 (CET)
+> a b  wrote:
+> 
+> > Hi,
+> > I have mpc8xx where I would like the following configuration:
+> >  - SCC1 as system console (works fine) 
+> >  - SMC1-2 as UART (doesn\\\'t work)
+> > 
+> > I use linux 2.6.16.20 with backward patch from linux-2.6.19.2 for SMCs. My only problem is 
+> > that even I can see cpm_uart registered for IRQ 20 (for SMC1) I never get interrupt even
+> > I do e.g. \\\"echo 123 > /dev/ttyCPM\\\". 
+> > 
+> > here is a short extract from /proc/interrupts:
+> >  20:          0   CPM       Edge      cpm_uart  <--SMC1
+> >  21:       7546   CPM       Edge      SPI
+> >  46:         20   CPM       Edge      cpm_uart  <-- SCC1 (console)
+> > 
+> > here is a short extract from /proc/tty/driver/ttyCPM:
+> > serinfo:1.0 driver revision:
+> > 0: uart:CPM UART mmio:0xFFF00A80 irq:20 tx:14 rx:0 RTS|CTS|DTR|DSR|CD
+> > 1: uart:CPM UART mmio:0xFFF00A90 irq:19 tx:0 rx:0 CTS|DSR|CD
+> > 2: uart:CPM UART mmio:0xFFF00A00 irq:46 tx:3038 rx:46 RTS|CTS|DTR|DSR|CD
+> > 
+> > Can anybody help me to get SMCs working?
+> > 
+> > 
+> Check IO ports? IIRC, in 8xx some SoC devices could not work simultaneously because they 
+> share some GPIO pins. In any case, if something does not function with CPM UART, IOports stuff is the first thing to check.
+> 
+> -- 
+> Sincerely, 
+> Vitaly
+> 
 
-BR
-Ming
+Hi,
+thnx for hint, you were right, problem was in I/O port configuration. 
+I am a bit wondered why is B port for mpc8xx not configured in 2.16.19.2. Or is it  
+configured somewhere else? I especially miss this part of code in cpm_uart_cpm1.c:
+
+void smc1_lineif(struct uart_cpm_port *pinfo){
+...
+#elif defined (CONFIG_MPC86XADS)
+       if (!pinfo->is_portb) {
+                cp->cp_pbpar |= iobits;
+                cp->cp_pbdir &= ~iobits;
+                cp->cp_pbodr &= ~iobits;
+        } else {
+                ((immap_t *)IMAP_ADDR)->im_ioport.iop_papar |= iobits;
+                ((immap_t *)IMAP_ADDR)->im_ioport.iop_padir &= ~iobits;
+                ((immap_t *)IMAP_ADDR)->im_ioport.iop_paodr &= ~iobits;
+        }
+#endif
+...
+}
+
+Regards,
+Ladislav.
 
 
->From: "Ming Liu" <eemingliu@hotmail.com>
->To: linuxppc-embedded@ozlabs.org
->Subject: Profiler on PPC405 on Xilinx ML403
->Date: Thu, 01 Feb 2007 14:22:03 +0000
->
->Dear all,
->Can anyone suggest me a best profiler on ppc405 architecture with 
->linux 2.6, specifically on ML403 board? I need to find out the CPU 
->consumption problem of the device drivers in my system. Thanks for 
->your telling.
->
->BR
->Ming
->
->_________________________________________________________________
->ÏíÓÃÊÀ½çÉÏ×î´óµÄµç×ÓÓÊ¼þÏµÍ³¡ª MSN Hotmail¡£  http://www.hotmail.com
->
 
-
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-_________________________________________________________________
-ÓëÁª»úµÄÅóÓÑ½øÐÐ½»Á÷£¬ÇëÊ¹ÓÃ MSN Messenger:  http://messenger.msn.com/cn  
+__________
+Mobilné telefóny v slovenskej premiére a najaktuálnej¹ie informácie - http://mobil.sme.sk/
