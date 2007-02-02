@@ -2,12 +2,12 @@ Return-Path: <kou.ishizaki@toshiba.co.jp>
 Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EA09EDDE2D
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 18:35:04 +1100 (EST)
-Date: Fri, 02 Feb 2007 16:34:53 +0900 (JST)
-Message-Id: <200702020734.l127Ysfg013490@toshiba.co.jp>
+	by ozlabs.org (Postfix) with ESMTP id 54075DDE3C
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Feb 2007 18:36:35 +1100 (EST)
+Date: Fri, 02 Feb 2007 16:36:27 +0900 (JST)
+Message-Id: <200702020736.l127aVjs015093@toshiba.co.jp>
+Subject: [PATCH 1/11] Celleb: interfaces to the hypervisor
 To: paulus@samba.org
-Subject: [PATCH 0/11] Patches for Toshiba Cell reference set
 From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
@@ -21,22 +21,526 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul-san,
+This patch creates Celleb platform dependent files which add
+interfaces to call hypervisor.
 
-This is a revised version of the patch set for Toshiba Cell reference
-set (aka Celleb). It is against powerpc.git. Please apply.
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+---
 
-
-Changes from our previous patch set:
-
-[PATCH 5/11] Celleb: htab routines
-* use spin_lock_irqsave() instead of spin_lock()
-
-[PATCH 8/11] Celleb: consolidate spu management ops
-* (already posted)
-  fix compile error in arch/powerpc/platforms/cell/spu_priv1_mmio.h
-
-
-Best regards,
-Kou Ishizaki
-Toshiba
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/hvCall.S
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/hvCall.S:1.6
+--- /dev/null	Fri Feb  2 13:38:03 2007
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/hvCall.S	Fri Jan 26 14:34:08 2007
+@@ -0,0 +1,287 @@
++/*
++ * Beat hypervisor call I/F
++ *
++ * (C) Copyright 2007 TOSHIBA CORPORATION
++ *
++ * This code is based on arch/powerpc/platforms/pseries/hvCall.S.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++
++#include <asm/ppc_asm.h>
++
++#define	STK_PARM(i)	(48 + ((i)-3)*8)
++
++/* Not implemented on Beat, now */
++#define	HCALL_INST_PRECALL
++#define	HCALL_INST_POSTCALL
++
++	.text
++
++#define	HVSC	.long	0x44000022
++
++/* Note: takes only 7 input parameters at maximum */
++_GLOBAL(beat_hcall_norets)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++
++	HCALL_INST_PRECALL
++
++	mr	r11,r3
++	mr	r3,r4
++	mr	r4,r5
++	mr	r5,r6
++	mr	r6,r7
++	mr	r7,r8
++	mr	r8,r9
++
++	HVSC				/* invoke the hypervisor */
++
++	HCALL_INST_POSTCALL
++
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
++
++/* Note: takes 8 input parameters at maximum */
++_GLOBAL(beat_hcall_norets8)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++
++	HCALL_INST_PRECALL
++
++	mr	r11,r3
++	mr	r3,r4
++	mr	r4,r5
++	mr	r5,r6
++	mr	r6,r7
++	mr	r7,r8
++	mr	r8,r9
++	ld	r10,STK_PARM(r10)(r1)
++
++	HVSC				/* invoke the hypervisor */
++
++	HCALL_INST_POSTCALL
++
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
++
++/* Note: takes only 6 input parameters, 1 output parameters at maximum */
++_GLOBAL(beat_hcall1)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++
++	HCALL_INST_PRECALL
++
++	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
++
++	mr	r11,r3
++	mr	r3,r5
++	mr	r4,r6
++	mr	r5,r7
++	mr	r6,r8
++	mr	r7,r9
++	mr	r8,r10
++
++	HVSC				/* invoke the hypervisor */
++
++	HCALL_INST_POSTCALL
++
++	ld	r12,STK_PARM(r4)(r1)
++	std	r4,  0(r12)
++
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
++
++/* Note: takes only 6 input parameters, 2 output parameters at maximum */
++_GLOBAL(beat_hcall2)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++
++	HCALL_INST_PRECALL
++
++	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
++
++	mr	r11,r3
++	mr	r3,r5
++	mr	r4,r6
++	mr	r5,r7
++	mr	r6,r8
++	mr	r7,r9
++	mr	r8,r10
++
++	HVSC				/* invoke the hypervisor */
++
++	HCALL_INST_POSTCALL
++
++	ld	r12,STK_PARM(r4)(r1)
++	std	r4,  0(r12)
++	std	r5,  8(r12)
++
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
++
++/* Note: takes only 6 input parameters, 3 output parameters at maximum */
++_GLOBAL(beat_hcall3)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++
++	HCALL_INST_PRECALL
++
++	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
++
++	mr	r11,r3
++	mr	r3,r5
++	mr	r4,r6
++	mr	r5,r7
++	mr	r6,r8
++	mr	r7,r9
++	mr	r8,r10
++
++	HVSC				/* invoke the hypervisor */
++
++	HCALL_INST_POSTCALL
++
++	ld	r12,STK_PARM(r4)(r1)
++	std	r4,  0(r12)
++	std	r5,  8(r12)
++	std	r6, 16(r12)
++
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
++
++/* Note: takes only 6 input parameters, 4 output parameters at maximum */
++_GLOBAL(beat_hcall4)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++
++	HCALL_INST_PRECALL
++
++	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
++
++	mr	r11,r3
++	mr	r3,r5
++	mr	r4,r6
++	mr	r5,r7
++	mr	r6,r8
++	mr	r7,r9
++	mr	r8,r10
++
++	HVSC				/* invoke the hypervisor */
++
++	HCALL_INST_POSTCALL
++
++	ld	r12,STK_PARM(r4)(r1)
++	std	r4,  0(r12)
++	std	r5,  8(r12)
++	std	r6, 16(r12)
++	std	r7, 24(r12)
++
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
++
++/* Note: takes only 6 input parameters, 5 output parameters at maximum */
++_GLOBAL(beat_hcall5)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++
++	HCALL_INST_PRECALL
++
++	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
++
++	mr	r11,r3
++	mr	r3,r5
++	mr	r4,r6
++	mr	r5,r7
++	mr	r6,r8
++	mr	r7,r9
++	mr	r8,r10
++
++	HVSC				/* invoke the hypervisor */
++
++	HCALL_INST_POSTCALL
++
++	ld	r12,STK_PARM(r4)(r1)
++	std	r4,  0(r12)
++	std	r5,  8(r12)
++	std	r6, 16(r12)
++	std	r7, 24(r12)
++	std	r8, 32(r12)
++
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
++
++/* Note: takes only 6 input parameters, 6 output parameters at maximum */
++_GLOBAL(beat_hcall6)
++	HMT_MEDIUM
++
++	mfcr	r0
++	stw	r0,8(r1)
++
++	HCALL_INST_PRECALL
++
++	std	r4,STK_PARM(r4)(r1)	/* save ret buffer */
++
++	mr	r11,r3
++	mr	r3,r5
++	mr	r4,r6
++	mr	r5,r7
++	mr	r6,r8
++	mr	r7,r9
++	mr	r8,r10
++
++	HVSC				/* invoke the hypervisor */
++
++	HCALL_INST_POSTCALL
++
++	ld	r12,STK_PARM(r4)(r1)
++	std	r4,  0(r12)
++	std	r5,  8(r12)
++	std	r6, 16(r12)
++	std	r7, 24(r12)
++	std	r8, 32(r12)
++	std	r9, 40(r12)
++
++	lwz	r0,8(r1)
++	mtcrf	0xff,r0
++
++	blr				/* return r3 = status */
+Index: linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h
+diff -u /dev/null linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h:1.4
+--- /dev/null	Fri Feb  2 13:38:03 2007
++++ linux-powerpc-git/arch/powerpc/platforms/celleb/beat_wrapper.h	Tue Jan  9 16:56:57 2007
+@@ -0,0 +1,220 @@
++/*
++ * Beat hypervisor call I/F
++ *
++ * (C) Copyright 2007 TOSHIBA CORPORATION
++ *
++ * This code is based on arch/powerpc/platforms/pseries/plpar_wrapper.h.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2 of the License, or
++ * (at your option) any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License along
++ * with this program; if not, write to the Free Software Foundation, Inc.,
++ * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
++ */
++#ifndef BEAT_HCALL
++#include "beat_syscall.h"
++
++/* defined in hvCall.S */
++extern s64 beat_hcall_norets(u64 opcode, ...);
++extern s64 beat_hcall_norets8(u64 opcode, u64 arg1, u64 arg2, u64 arg3,
++	u64 arg4, u64 arg5, u64 arg6, u64 arg7, u64 arg8);
++extern s64 beat_hcall1(u64 opcode, u64 retbuf[1], ...);
++extern s64 beat_hcall2(u64 opcode, u64 retbuf[2], ...);
++extern s64 beat_hcall3(u64 opcode, u64 retbuf[3], ...);
++extern s64 beat_hcall4(u64 opcode, u64 retbuf[4], ...);
++extern s64 beat_hcall5(u64 opcode, u64 retbuf[5], ...);
++extern s64 beat_hcall6(u64 opcode, u64 retbuf[6], ...);
++
++static inline s64 beat_downcount_of_interrupt(u64 plug_id)
++{
++	return beat_hcall_norets(HV_downcount_of_interrupt, plug_id);
++}
++
++static inline s64 beat_set_interrupt_mask(u64 index,
++	u64 val0, u64 val1, u64 val2, u64 val3)
++{
++	return beat_hcall_norets(HV_set_interrupt_mask, index,
++	       val0, val1, val2, val3);
++}
++
++static inline s64 beat_destruct_irq_plug(u64 plug_id)
++{
++	return beat_hcall_norets(HV_destruct_irq_plug, plug_id);
++}
++
++static inline s64 beat_construct_and_connect_irq_plug(u64 plug_id,
++	u64 outlet_id)
++{
++	return beat_hcall_norets(HV_construct_and_connect_irq_plug, plug_id,
++	       outlet_id);
++}
++
++static inline s64 beat_detect_pending_interrupts(u64 index, u64 *retbuf)
++{
++	return beat_hcall4(HV_detect_pending_interrupts, retbuf, index);
++}
++
++static inline s64 beat_pause(u64 style)
++{
++	return beat_hcall_norets(HV_pause, style);
++}
++
++static inline s64 beat_read_htab_entries(u64 htab_id, u64 index, u64 *retbuf)
++{
++	return beat_hcall5(HV_read_htab_entries, retbuf, htab_id, index);
++}
++
++static inline s64 beat_insert_htab_entry(u64 htab_id, u64 group,
++	u64 bitmask, u64 hpte_v, u64 hpte_r, u64 *slot)
++{
++	u64 dummy[3];
++	s64 ret;
++
++	ret = beat_hcall3(HV_insert_htab_entry, dummy, htab_id, group,
++		bitmask, hpte_v, hpte_r);
++	*slot = dummy[0];
++	return ret;
++}
++
++static inline s64 beat_write_htab_entry(u64 htab_id, u64 slot,
++	u64 hpte_v, u64 hpte_r, u64 mask_v, u64 mask_r,
++	u64 *ret_v, u64 *ret_r)
++{
++	u64 dummy[2];
++	s64 ret;
++
++	ret = beat_hcall2(HV_write_htab_entry, dummy, htab_id, slot,
++		hpte_v, hpte_r, mask_v, mask_r);
++	*ret_v = dummy[0];
++	*ret_r = dummy[1];
++	return ret;
++}
++
++static inline void beat_shutdown_logical_partition(u64 code)
++{
++	(void)beat_hcall_norets(HV_shutdown_logical_partition, code);
++}
++
++static inline s64 beat_rtc_write(u64 time_from_epoch)
++{
++	return beat_hcall_norets(HV_rtc_write, time_from_epoch);
++}
++
++static inline s64 beat_rtc_read(u64 *time_from_epoch)
++{
++	u64 dummy[1];
++	s64 ret;
++
++	ret = beat_hcall1(HV_rtc_read, dummy);
++	*time_from_epoch = dummy[0];
++	return ret;
++}
++
++#define	BEAT_NVRW_CNT	(sizeof(u64) * 6)
++
++static inline s64 beat_eeprom_write(u64 index, u64 length, u8 *buffer)
++{
++	u64	b[6];
++
++	if (length > BEAT_NVRW_CNT)
++		return -1;
++	memcpy(b, buffer, sizeof(b));
++	return beat_hcall_norets8(HV_eeprom_write, index, length,
++		b[0], b[1], b[2], b[3], b[4], b[5]);
++}
++
++static inline s64 beat_eeprom_read(u64 index, u64 length, u8 *buffer)
++{
++	u64	b[6];
++	s64	ret;
++
++	if (length > BEAT_NVRW_CNT)
++		return -1;
++	ret = beat_hcall6(HV_eeprom_read, b, index, length);
++	memcpy(buffer, b, length);
++	return ret;
++}
++
++static inline s64 beat_set_dabr(u64 value, u64 style)
++{
++	return beat_hcall_norets(HV_set_dabr, value, style);
++}
++
++static inline s64 beat_get_characters_from_console(u64 termno, u64 *len,
++	u8 *buffer)
++{
++	u64 dummy[3];
++	s64 ret;
++
++	ret = beat_hcall3(HV_get_characters_from_console, dummy, termno, len);
++	*len = dummy[0];
++	memcpy(buffer, dummy + 1, *len);
++	return ret;
++}
++
++static inline s64 beat_put_characters_to_console(u64 termno, u64 len,
++	u8 *buffer)
++{
++	u64 b[2];
++
++	memcpy(b, buffer, len);
++	return beat_hcall_norets(HV_put_characters_to_console, termno, len,					 b[0], b[1]);
++}
++
++static inline s64 beat_get_spe_privileged_state_1_registers(
++		u64 id, u64 offsetof, u64 *value)
++{
++	u64 dummy[1];
++	s64 ret;
++
++	ret = beat_hcall1(HV_get_spe_privileged_state_1_registers, dummy, id,
++		offsetof);
++	*value = dummy[0];
++	return ret;
++}
++
++static inline s64 beat_set_irq_mask_for_spe(u64 id, u64 class, u64 mask)
++{
++	return beat_hcall_norets(HV_set_irq_mask_for_spe, id, class, mask);
++}
++
++static inline s64 beat_clear_interrupt_status_of_spe(u64 id, u64 class,
++	u64 mask)
++{
++	return beat_hcall_norets(HV_clear_interrupt_status_of_spe,
++		id, class, mask);
++}
++
++static inline s64 beat_set_spe_privileged_state_1_registers(
++		u64 id, u64 offsetof, u64 value)
++{
++	return beat_hcall_norets(HV_set_spe_privileged_state_1_registers,
++		id, offsetof, value);
++}
++
++static inline s64 beat_get_interrupt_status_of_spe(u64 id, u64 class, u64 *val)
++{
++	u64 dummy[1];
++	s64 ret;
++
++	ret = beat_hcall1(HV_get_interrupt_status_of_spe, dummy, id, class);
++	*val = dummy[0];
++	return ret;
++}
++
++static inline s64 beat_put_iopte(u64 ioas_id, u64 io_addr, u64 real_addr,
++	u64 ioid, u64 flags)
++{
++	return beat_hcall_norets(HV_put_iopte, ioas_id, io_addr, real_addr,
++		ioid, flags);
++}
++
++#endif
