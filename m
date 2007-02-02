@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A31A9DDFA0
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
+	by ozlabs.org (Postfix) with ESMTP id 7E168DDEC8
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Feb 2007 02:28:52 +1100 (EST)
-In-Reply-To: <000c01c746db$6451e7e0$6405a8c0@absolut>
-References: <000c01c746db$6451e7e0$6405a8c0@absolut>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <06A02CF1-7D0C-4D59-9628-A2EB0FF3CCF4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC8360 : PCI resource allocate error
-Date: Fri, 2 Feb 2007 09:27:55 -0600
-To: rmcguire@videopresence.com
+	Sat,  3 Feb 2007 02:46:00 +1100 (EST)
+To: "Andriy Korud" <a.korud@vector.com.pl>
+Subject: Re: Anyone success with 440GR Rev.B (1.1)?
+References: <60E856FD577CC04BA3727AF4122D3F1601238644@3bit.vector.com.pl>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Fri, 02 Feb 2007 07:45:51 -0800
+In-Reply-To: <60E856FD577CC04BA3727AF4122D3F1601238644@3bit.vector.com.pl>
+	(Andriy Korud's message of "Fri, 2 Feb 2007 12:35:46 +0100")
+Message-ID: <adafy9o4l74.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,85 +24,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+ > I have complete system (U-Boot, Linux, userspace) running on 440GR Rev.A. 
+ > However after mounting newer chip revision (Rev.B, 1.1) U-Boot and Linux boots fine, however when trying to execute first userland application (init), I get:
+ > 
+ > Freeing unused kernel memory: 112k init
+ > init has generated signal 4 but has no handler for it
+ > Kernel panic - not syncing: Attempted to kill init!
 
-On Feb 2, 2007, at 9:04 AM, Russell McGuire wrote:
+signal 4 is SIGILL.  Just a guess but do you have a cputable entry for
+440GR rev B in your arch/powerpc/kernel/cputable.c?  If you don't then
+I think the default kernel settings will result in the wrong cacheline
+size being used, which leads to userspace often dying with illegal
+instruction traps.
 
-> While trying out various of my PCI slots, I ran into this =20
-> interesting error.
->
->
->
-> If I try to put a sounc card, Audigy SE, into SLOT 1 and 2 this =20
-> error doesn=92t occur.
->
-> But when I place it in the 3rd. I get this:  <Note the 02:0b is =20
-> SLOT 3>
->
->
->
-> <Linux 2.6.20-rc6 compiled for PowerPC / MPC83xx>
->
->
->
-> --------------------------------------
->
-> PCI: Probing PCI hardware
->
-> Try to map irq for 0000:00:19.0...
->
-> pci_busdev_to_OF_node(0,0xc8)
->
->  parent is /soc8360@f0000000/pci@8500
->
->  result is <NULL>
->
-> Try to map irq for 0000:00:19.1...
->
-> pci_busdev_to_OF_node(0,0xc9)
->
->  parent is /soc8360@f0000000/pci@8500
->
->  result is <NULL>
->
-> Try to map irq for 0000:02:0b.0...
->
-> pci_busdev_to_OF_node(2,0x58)
->
-> pci_busdev_to_OF_node(0,0xc9)
->
->  parent is /soc8360@f0000000/pci@8500
->
->  result is <NULL>
->
->  -> got one, spec 2 cells (0x00000017...) on /soc8360@f0000000/pic@700
->
-> PCI: bridge rsrc 0..ffffffff (100), parent c038d184
->
-> PCI: bridge rsrc 80000000..8fffffff (1200), parent c038d168
->
-> PCI: bridge rsrc 90000000..9fffffff (200), parent c038d168
->
-> PCI: bridge rsrc f0302000..f0302fff (101), parent c03da03c
->
-> PCI:0000:02:0b.0: Resource 0: 0000000000302000-000000000030201f =20
-> (f=3D101)
->
-> PCI: Cannot allocate resource region 0 of device 0000:02:0b.0
->
-> PCI: Error while updating region 0000:02:0b.0/0 (f0302001 !=3D =
-00302001)
->
-> ------------------------------
->
->
->
-> What can cause this to not work?
+(I don't see any 440GR entries in cputable.c, neither rev A nor rev B,
+in the upstream kernel so I'm assuming you're patching your kernel
+somehow.  So checking that your patch covers rev B would be the first
+thing to do)
 
-The problem is with the IO resource, for some reason the code things =20
-your PCI IO space is at f03... instead of 000...
-
-Is Slot 3 behind the P2P bridge or directly connected to the 83xx?
-
-Also, what's your .dts look like now.
-
-- k=
+ - R.
