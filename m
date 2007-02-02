@@ -1,19 +1,39 @@
-Return-Path: <jackweics@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.236])
-	by ozlabs.org (Postfix) with ESMTP id 595BBDDEE0
+Return-Path: <rmcguire@videopresence.com>
+Received: from smtpout07-04.prod.mesa1.secureserver.net
+	(smtpout07-01.prod.mesa1.secureserver.net [64.202.165.230])
+	by ozlabs.org (Postfix) with SMTP id C6E4FDDDE5
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Feb 2007 23:22:01 +1100 (EST)
-Received: by wx-out-0506.google.com with SMTP id i31so768147wxd
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 02 Feb 2007 04:21:59 -0800 (PST)
-Message-ID: <685e477d0702020421w5b14f7fdn40208fb579bedff0@mail.gmail.com>
-Date: Fri, 2 Feb 2007 20:21:59 +0800
-From: "Wei Jack" <jackweics@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: how to build uboot with edk8.2.2 at winxp platform.
+	Sat,  3 Feb 2007 00:37:02 +1100 (EST)
+From: "Russell McGuire" <rmcguire@videopresence.com>
+To: "'Kumar Gala'" <galak@kernel.crashing.org>
+References: <mailman.1454.1170226011.9285.linuxppc-embedded@ozlabs.org>
+	<000601c74531$62220820$6405a8c0@absolut>
+	<0ACC0A3E-9DF3-4927-8F67-E525BA0E6C13@kernel.crashing.org>
+	<000001c7454b$69a25ae0$6405a8c0@absolut>
+	<0A655A39-4101-48B4-BE9C-50A30163679C@kernel.crashing.org>
+	<000701c7457a$d180e300$6405a8c0@absolut>
+	<183E66A5-E983-4D17-96E9-2EEAE6FDF7B6@kernel.crashing.org>
+	<000f01c74587$10bc5cf0$6405a8c0@absolut>
+	<1546691E-0CCF-41C9-8B8A-7C6326CEEF7E@kernel.crashing.org>
+	<000301c7458b$b9eb1330$6405a8c0@absolut>
+	<829261C6-F534-4B85-A04D-8D280E46B2CF@kernel.crashing.org>
+	<000401c74591$8a3a4ec0$6405a8c0@absolut>
+	<BC5846DA-A217-43B7-8060-6EA05CC62913@kernel.crashing.org>
+	<000801c7460d$211e46e0$6405a8c0@absolut>
+	<974C77BD-19A0-4843-8E7B-3B430DB4ADE9@kernel.crashing.org>
+	<001101c74629$28797380$6405a8c0@absolut>
+	<AF782BFC-5262-462B-A522-8F685DC59158@kernel.crashing.org>
+	<001001c74674$b17bf4f0$6405a8c0@absolut>
+	<567B131D-57F5-4972-AF09-5373D041368C@kernel.crashing.org>
+Subject: RE: 8360E - PCI / DTC Blob Setup
+Date: Fri, 2 Feb 2007 05:36:56 -0800
+Message-ID: <000b01c746cf$35accc40$6405a8c0@absolut>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_8608_29178358.1170418919128"
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <567B131D-57F5-4972-AF09-5373D041368C@kernel.crashing.org>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +44,275 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_8608_29178358.1170418919128
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
 
-I have download uboot.zip from xilinx websit. follow the doc readme.ml300 in
-uboot to build uboot. but there is NOT gcc to build tools under uboot
-folder. How should i do? anyone could kindly give me some help. thanks!
+Well I am getting smarter on this:
 
-------=_Part_8608_29178358.1170418919128
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+I have read through the PCI Bridge Specs and found another issue that might
+have been causing a problem with the IDSEL lines. Unless you are interested
+I'll forgo that explanation and just go with fact that I have changed the
+IDSEL mappings to be legal when they are issued from the 83xx.
 
-I have download uboot.zip from xilinx websit. follow the doc readme.ml300 in uboot to build uboot. but there is NOT gcc to build tools under uboot folder. How should i do? anyone could kindly give me some help. thanks!
+I have changed the IDSELs to be as follows, does this look correct?
+I agree with placing the NODE for the bridge into the dts file to be
+correct. Except I get stuck immediately at trying to come up with an
+address. I.e. the PCI host has a PCI@8500, which makes sense. But the Bridge
+chip doesn't have a mapped address to place in the file. I did read the PCI
+OF node spec <dated 1996> it hints that PCI-PCI bridges are essentially the
+same domain and may not need translation.
 
-------=_Part_8608_29178358.1170418919128--
+Another concern I have now is that the interrupt mask may be incorrect.
+i.e. currently it is <f800 0 0 7>, should I change this to <3f800 0 0 7>
+since I am using an extra 2 bits to indicate bus? This would make sense if
+the ((Bus << 16) | Dev << 11))
+
+>> Bus 1, Slot 1, (Bridge IDSEL = AD27 mapped to IDSEL AD11 on host)
+> 15800 0 0 1 700 14 8 //Int A always to IRQ 20
+> 15800 0 0 2 700 15 8 //Int B always to IRQ 21
+> 15800 0 0 3 700 16 8 //Int C always to IRQ 22
+> 15800 0 0 4 700 17 8 //Int D always to IRQ 23
+>> Bus 1, Slot 2, (Bridge IDSEL = AD30 mapped to IDSEL AD13 on host)
+> 17000 0 0 1 700 14 8
+> 17000 0 0 2 700 15 8
+> 17000 0 0 3 700 16 8
+> 17000 0 0 4 700 17 8
+>> Bus 2, Slot 1, (Bridge IDSEL = AD27 mapped to IDSEL AD11 on host)
+> 25800 0 0 1 700 14 8
+> 25800 0 0 2 700 15 8
+> 25800 0 0 3 700 16 8
+> 25800 0 0 4 700 17 8
+
+These IDSEL mappings seem to match exactly what U-boot will report
+i.e. Bus.Dev = 1.0b, 1.0e, 2.0b. 
+
+I have not placed any reference to the Bridge chip's IDSEL line, since it
+cannot activate any IRQ lines directly. Well try it both ways perhaps and
+see what happens.
+
+The good news is with this configuration, the ca0106 driver will load. I can
+get all the way into linux, and see the associated creations under the
+/proc/ file system. To me all this really proves to me is that the IRQ
+hasn't been toggled. Now I have to figure out how to get the /dev/dsp
+devices in the /dev directory. If ALSA still uses this, I am used to OSS.
+
+I am trying a PCI USB 2.0 card now, with various drivers and devices plugged
+in I get varying results from 'try irqpoll' to boot hanging. Not sure if
+this is an IRQ problem or a another related PCI bug.
+
+What fun this is.
+
+-Russ
+
+-----Original Message-----
+From: Kumar Gala [mailto:galak@kernel.crashing.org] 
+Sent: Thursday, February 01, 2007 10:21 PM
+To: rmcguire@videopresence.com
+Cc: linuxppc-embedded@ozlabs.org ((((E-Mail)))); Benjamin Herrenschmidt
+Subject: Re: 8360E - PCI / DTC Blob Setup
+
+
+On Feb 1, 2007, at 8:49 PM, Russell McGuire wrote:
+
+> Kumar,
+>
+> THANK you, for pointing me in the right direction. I might have  
+> scratched my
+> head another 10 years finding this bug. And an apology for thinking  
+> I had a
+> software issue, when it was a hardware issue.
+
+No problem, this pretty much comes out of the PCI OF spec, but it  
+takes a while to grok how we actually use it.
+
+> This is helping me greatly, all the while I had this sinking  
+> feeling, like I
+> didn't route any 'incoming' interrupt lines to the CPU. Something  
+> about the
+> 8360 being able to get configured as an agent device, so I over  
+> looked the
+> use of the INTA pin on the CPU as incoming vs outgoing.
+>
+> SO it would seem I didn't have ANY incoming pins, and thus the  
+> IRQ4-7 pins
+> that occur in the 8360E-MDS board were floating on my board. So as  
+> soon as
+> the sound driver enabled the interrupt, it was low all the time.
+
+That would definitely be a HW issue :)
+
+>> <HOST IRQ specifier> (on 83xx):>
+>>
+>> [linux,phandle for interrupt controller] [IRQ #] [sense]
+>
+> I assume all these numbers are in HEX, So 0x14, 0x 15, 0x 16, 0x 17  
+> would
+> correspond to external IRQ4-7 in the MPC8360E. I will wire this up  
+> and give
+> it a shot, guess it works better when they are connected.
+
+Yeah all numbers are hex, I forget if you can put a leading 0x or  
+not.. its kinda annoying.
+
+>> <PCI DEV specifier>:
+>>
+>> [(bus << 16) | (idsel << 11)] 0 0
+>
+> Well I think this is definitely part of my problem.
+> So I am mapping interrupts from bus 1 and 2, I would need something  
+> like?
+
+Truthfully you should probably have child nodes that describe the  
+bridges and have their interrupt mappings described there.
+
+The code is going to end up using the Bus #, IDSEL for the pci device  
+to try and determine the CPU ext interrupt its mapped to.
+
+Unfortunately, we don't really have an example of this.
+
+> Alternating the 14,15,16,17 to make a 'load-balanced' mapping? Are  
+> the bus
+
+not following the question.
+
+>
+>> Bus 1, Slot 1, IDSEL = AD20
+> 1a000 0 0 1 700 14 8
+> 1a000 0 0 1 700 15 8
+> 1a000 0 0 1 700 16 8
+> 1a000 0 0 1 700 17 8
+>> Bus 1, Slot 2, IDSEL = AD24
+> 1c000 0 0 1 700 15 8
+> 1c000 0 0 1 700 16 8
+> 1c000 0 0 1 700 17 8
+> 1c000 0 0 1 700 18 8
+>> Bus 2, Slot 1, IDSEL = AD20
+> 2a000 0 0 1 700 16 8
+> 2a000 0 0 1 700 17 8
+> 2a000 0 0 1 700 18 8
+> 2a000 0 0 1 700 19 8
+>
+> -Russ
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, February 01, 2007 10:11 AM
+> To: rmcguire@videopresence.com
+> Cc: linuxppc-embedded@ozlabs.org
+> Subject: Re: 8360E - PCI / DTC Blob Setup
+>
+>
+> On Feb 1, 2007, at 11:48 AM, Russell McGuire wrote:
+>
+>> This might be the wrong forum to discuss HW routing, but I am not
+>> sure of
+>> many HW guys that would understand blob setups. I know I still don't.
+>>
+>> I read through the booting-without-of-tree.txt and it doesn't
+>> explain this
+>> other than the interrupt routing needs to be present. Perhaps some
+>> of the
+>> maintainers of the 83xx platforms can explain how this blob is
+>> developed?
+>> I assume their board work with the submitted mp38360emds.dts files,
+>> as an
+>> example.
+>>
+>> Let me see if I can simplify this, I had this schematic reviewed by
+>> Pericom
+>> <a PCI bridge MFG> and they recommended these IDSEL lines. And I
+>> know the
+>> card detection works great, in U-boot.
+>>
+>> My external PCI bridge is the only thing routed directly to the
+>> 8360 Host
+>> bridge. The PCI Host bridge in my system is connected on IDSEL-
+>>> AD25,0x19
+>> Perhaps I shouldn't use any interrupt routing for this, as there is
+>> no true
+>> /INTA line tied directly to the bridge?
+>>
+>> My Three PCI slots are routed as follows:
+>>
+>> Bus 0, Bridge Chip, IDSEL = AD25
+>
+> Huh, this is only describes one slot/connection.  If you have 3
+> slots, they'd have 3 unique IDSELs
+>
+>> Other side of the Host bridge, all are routed to INTA directly to the
+>> CPU.
+>> Bus 1, Slot 1, IDSEL = AD20 <card would be ID'd as 1.04 (Bus.Dev)>
+>> Bus 1, Slot 2, IDSEL = AD24 <card would be ID'd as 1.08 (Bus.Dev)>
+>> Bus 2, Slot 1, IDSEL = AD20 <card would be ID'd as 2.04 (Bus.Dev)>
+>>
+>> That being said:
+>> /* IDSEL 0x19 AD25*/
+>>  c800 0 0 1 700 14 8
+>
+> so the way you read this:
+>
+> <PCI DEV specifier> <INT A-D> <HOST IRQ specifier>
+>
+> Do break it down further:
+>
+> <PCI DEV specifier>:
+>
+> [(bus << 16) | (idsel << 11)] 0 0
+>
+> <INT A-D>:
+> INTA - 1
+> INTB - 2
+> INTC - 3
+> INTD - 4
+>
+> <HOST IRQ specifier> (on 83xx):
+>
+> [linux,phandle for interrupt controller] [IRQ #] [sense]
+>
+>> I see in the c800 directly corresponds to the 83xx manual for PCI
+>> CONFIG
+>> address mapping for AD25.
+>>
+>> I think the '1' is mapped to /INTA, which is the only PCI INT
+>> available in
+>> the 8360E.
+>
+> INTA..INTD is more about the device, not host.
+>
+>> I understand the 700 in this case is the address of the PIC@700.
+>>
+>> That leaves 5 fields/questions.
+>> 1) What do the first two '0's after c800 mean?
+>
+> There always 0 0, since the int masks them away (they normally
+> describe the address the device is at)
+>
+>> 2) What does the '14' map to?
+>
+> 0x14 is the external IRQ # its wired to.
+>
+>> 3) What does the '8' map to?
+>
+> Sense of IRQ, should always be level for PCI.
+>
+>> 4) Why would some boards map multiple interrupts to a single IDSEL,
+>> like the
+>> mpc8360emds.dts file? Is this to handle extra bridges that might be
+>> plugged
+>> in at a later time?
+>
+> This is to handle the fact that a PCI add on card put into a slot
+> might use multiple interrupts (INTA, INTB), so it lists multiple
+> entries to cover the 4 PCI defined interrupts.
+>
+>> If I understand the mapping correctly then I think I can hard code
+>> in the
+>> interrupts for the PCI slots.
+>>
+>> So I don't drive everybody nuts, is there actual documentation on
+>> this. I
+>> would be happy to stop spamming this list... :-)
+>
+> There is, but its scattered in places.
+>
+> Its good to ask these questions so the answers will get archived and
+> other people can figure it out as well.
+>
+> - k
