@@ -1,21 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D989ADDE22
+Return-Path: <vpd.84@rediffmail.com>
+Received: from rediffmail.com (unknown [59.160.240.216])
+	by ozlabs.org (Postfix) with SMTP id D7239DDE2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Feb 2007 17:28:20 +1100 (EST)
-In-Reply-To: <200702011408330875.0BD61D69@smtp.dslextreme.com>
-References: <200702011408330875.0BD61D69@smtp.dslextreme.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8F04B814-2F03-42B1-BFF3-B44551D6104E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: PPC 85xx serial port error
-Date: Fri, 2 Feb 2007 00:27:21 -0600
-To: Dan Wilson <dwilson@dslextreme.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Fri,  2 Feb 2007 18:04:59 +1100 (EST)
+Date: 2 Feb 2007 06:55:23 -0000
+Message-ID: <20070202065523.8853.qmail@webmail91.rediffmail.com>
+MIME-Version: 1.0
+From: "Vikram Dhir" <vpd.84@rediffmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Multicast problem on MPC8272ADS
+Content-type: multipart/alternative;
+	boundary="Next_1170399323---0-59.160.240.216-8846"
+Reply-To: Vikram Dhir <vpd.84@rediffmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +22,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+ This is a multipart mime message
 
-On Feb 1, 2007, at 4:08 PM, Dan Wilson wrote:
 
-> We are using an 8541 processor with ELDK 4.0 and 2.6.15 kernel.
->
-> Frequently, if we dump large amounts of output to the console port  
-> (for example, if we use 'tar' with the verbose option), we see an  
-> error message that starts and scrolls until we reboot the unit:
->     serial8250: too much work for irq90
->
-> We see this at 9600 baud and also at 115200 baud, although it seems  
-> to happen less often at 115k.
->
-> This message comes from serial8250_interrupt, which appears to  
-> trigger it if the interrupt handler has looped 256 times through  
-> the list?
->
-> How is this possible?  If the interrupt routine is running, does  
-> that not prevent user threads from running and adding more data to  
-> the list?  Or am I not understanding this code correctly?
->
-> Any light that anyone can shed on the expected behavior of this  
-> driver and any ideas on how to work around this are greatly  
-> appreciated!
+--Next_1170399323---0-59.160.240.216-8846
+Content-type: text/plain;
+	charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This question may be better addressed by the linux-kernel mailing  
-list since its more about how the serial driver works than anything  
-PPC specific.
+Hi,=0A=0AI have written a multicast test application in which there is a mu=
+lticast sender and receiver. The multicast sender sends multicast packets o=
+n a specified interface and the multicast receiver receives multicast packe=
+ts. I have tested this application on my network with x86 machines. But whe=
+n I run a multicast receiver (which has been cross compiled for MPC8272ADS)=
+ on my MPC board, it is unable to receive multicast packets (the recvfrom c=
+all is waiting for ever for packets to arrive). The MPC board is able to se=
+nd multicast packets to without any problems. The /proc/net/dev_mcast shows=
+ the appropriate entries for the multicast address being enabled for the in=
+terface of interest(esentially group joining appear to work).=0A=0AMy confi=
+guration is a MPC8272ADS board with Linux Kernel 2.6.16.34 and I m using th=
+e Freescale Ethernet driver, with ethernet using FCC(with multicast enabled=
+). rp_filter =3D0 for all interfaces (ie no source filtering).=0A=0AI am wo=
+ndering where the problem could be, configurations or the ethernet driver i=
+tself? Are there some known issues with the freescale ethernet driver that =
+comes with the Linux Kernel? =0A=0ABy the way with loopback enabled the rec=
+eption of packets works in case the sender and receiver are on the same mac=
+hine [as expected].=0A=0Avpd=0A
+--Next_1170399323---0-59.160.240.216-8846
+Content-type: text/html;
+	charset=iso-8859-1
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-- k
+<P>=0AHi,<BR>=0A<BR>=0AI have written a multicast test application in which=
+ there is a multicast sender and receiver. The multicast sender sends multi=
+cast packets on a specified interface and the multicast receiver receives m=
+ulticast packets. I have tested this application on my network with x86 mac=
+hines. But when I run a multicast receiver (which has been cross compiled f=
+or MPC8272ADS) on my MPC board, it is unable to receive multicast packets (=
+the recvfrom call is waiting for ever for packets to arrive). The MPC board=
+ is able to send multicast packets to without any problems. The /proc/net/d=
+ev_mcast shows the appropriate entries for the multicast address being enab=
+led for the interface of interest(esentially group joining appear to work).=
+<BR>=0A<BR>=0AMy configuration is a MPC8272ADS board with Linux Kernel 2.6.=
+16.34 and I m using the Freescale Ethernet driver, with ethernet using FCC(=
+with multicast enabled). rp_filter =3D0 for all interfaces (ie no source fi=
+ltering).<BR>=0A<BR>=0AI am wondering where the problem could be, configura=
+tions or the ethernet driver itself? Are there some known issues with the f=
+reescale ethernet driver that comes with the Linux Kernel? <BR>=0A<BR>=0ABy=
+ the way with loopback enabled the reception of packets works in case the s=
+ender and receiver are on the same machine [as expected].<BR>=0A<BR>=0Avpd<=
+BR>=0A=0A</P>=0A<br><br>=0A<a href=3D"http://adworks.rediff.com/cgi-bin/AdW=
+orks/sigclick.cgi/www.rediff.com/signature-home.htm/1507191490@Middle5?PART=
+NER=3D3"><IMG SRC=3D"http://adworks.rediff.com/cgi-bin/AdWorks/sigimpress.c=
+gi/www.rediff.com/signature-home.htm/1963059423@Middle5?OAS_query=3Dnull&PA=
+RTNER=3D3" BORDER=3D0 VSPACE=3D0 HSPACE=3D0></a>=0A
+--Next_1170399323---0-59.160.240.216-8846--
