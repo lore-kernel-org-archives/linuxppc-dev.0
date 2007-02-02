@@ -1,23 +1,20 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A6315DDEE9
+Return-Path: <sr@denx.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.190])
+	by ozlabs.org (Postfix) with ESMTP id 8D1EEDDE0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Feb 2007 03:08:20 +1100 (EST)
-In-Reply-To: <001101c746e3$5b8dab00$6405a8c0@absolut>
-References: <000c01c746db$6451e7e0$6405a8c0@absolut>
-	<06A02CF1-7D0C-4D59-9628-A2EB0FF3CCF4@kernel.crashing.org>
-	<001101c746e3$5b8dab00$6405a8c0@absolut>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A755B15B-9C78-40E1-998D-FE9E68E74805@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC8360 : PCI resource allocate error
-Date: Fri, 2 Feb 2007 10:07:21 -0600
-To: <rmcguire@videopresence.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat,  3 Feb 2007 07:26:19 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: "Andriy Korud" <a.korud@vector.com.pl>
+Subject: Re: Anyone success with 440GR Rev.B (1.1)?
+Date: Fri, 2 Feb 2007 21:26:25 +0100
+References: <60E856FD577CC04BA3727AF4122D3F1601238644@3bit.vector.com.pl>
+	<adafy9o4l74.fsf@cisco.com>
+In-Reply-To: <adafy9o4l74.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702022126.25872.sr@denx.de>
+Cc: Roland Dreier <rdreier@cisco.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,34 +25,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-On Feb 2, 2007, at 10:01 AM, Russell McGuire wrote:
-
-> Here is the current .dts mapping, though I am beginning to suspect the
-> hardware or a possible U-boot bug on this.
+On Friday 02 February 2007 16:45, Roland Dreier wrote:
+>  > I have complete system (U-Boot, Linux, userspace) running on 440GR
+>  > Rev.A. However after mounting newer chip revision (Rev.B, 1.1) U-Boot
+>  > and Linux boots fine, however when trying to execute first userland
+>  > application (init), I get:
+>  >
+>  > Freeing unused kernel memory: 112k init
+>  > init has generated signal 4 but has no handler for it
+>  > Kernel panic - not syncing: Attempted to kill init!
 >
-> U-boot can't see the PCI USB card in SLOT 3, but it can see the all  
-> of the
-> other various PCI cards I have <ATI video card, sound card, ATA card,
-> network card>
+> signal 4 is SIGILL.  Just a guess but do you have a cputable entry for
+> 440GR rev B in your arch/powerpc/kernel/cputable.c?
 
-Are any cards detected in SLOT 3 with u-boot?  If not, I'd think HW  
-as well.
+Good idea. That's probably it.
 
-> All the cards that are seen by U-boot have the IO resource problem.  
-> Only
-> when in Slot 3.
+> If you don't then 
+> I think the default kernel settings will result in the wrong cacheline
+> size being used, which leads to userspace often dying with illegal
+> instruction traps.
 >
-> I probably need to direct this at the U-boot crowd, but what about  
-> these
-> defines in U-boot? Would they have any bearing? I forgot to publish  
-> these
-> when I originally had asked the question bout PCI IO space, but  
-> they are the
-> only ALL zero's in the mapping.
+> (I don't see any 440GR entries in cputable.c, neither rev A nor rev B,
+> in the upstream kernel so I'm assuming you're patching your kernel
+> somehow.  So checking that your patch covers rev B would be the first
+> thing to do)
 
-They shouldn't on just seeing the device.  Since PCI config cycles  
-are used and U-boot will scan all busses you should at least see the  
-device.
+440GR has the same PVR as 440EP:
 
-- k
+440EP Rev B == 440GR Rev A
+440EP Rev C == 440GR Rev B
+
+So your kernel should support 440EP Rev. C. The denx kernel has support for 
+those CPU's included. I'll try to send some patches in the next few days to 
+support them in the kernel.org version.
+
+Best regards,
+Stefan
