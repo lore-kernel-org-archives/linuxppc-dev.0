@@ -1,20 +1,31 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] powermac: proper time of day after resume
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1170357390.4036.9.camel@johannes.berg>
-References: <20061213123819.403286000@sipsolutions.net> >
-	<20061213123945.386891000@sipsolutions.net> >
-	<1169620444.18754.66.camel@localhost.localdomain>
-	<1170357390.4036.9.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-039oaZ8Krv9/h3LpkBfo"
-Date: Sat, 03 Feb 2007 13:41:34 +1100
-Message-Id: <1170470494.30263.0.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <ahuja@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D0982DDE2C
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Feb 2007 15:16:34 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l134GSEB025689
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Feb 2007 23:16:28 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l134GTuZ303956
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Feb 2007 23:16:29 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l134GSso019902
+	for <linuxppc-dev@ozlabs.org>; Fri, 2 Feb 2007 23:16:28 -0500
+Message-ID: <45C40C97.807@austin.ibm.com>
+Date: Fri, 02 Feb 2007 22:16:23 -0600
+From: Manish Ahuja <ahuja@austin.ibm.com>
+MIME-Version: 1.0
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH]Enabling Auto poweron after power is restored.
+References: <45707469.9060604@austin.ibm.com>	<4575E76C.7030300@austin.ibm.com>	<17785.415.574041.518517@cargo.ozlabs.ibm.com>	<458EBE02.3010401@austin.ibm.com>
+	<17827.5922.667200.166153@cargo.ozlabs.ibm.com>
+In-Reply-To: <17827.5922.667200.166153@cargo.ozlabs.ibm.com>
+Content-Type: multipart/mixed; boundary="------------050908090406070005020908"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +35,192 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
+--------------050908090406070005020908
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
---=-039oaZ8Krv9/h3LpkBfo
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Resubmitting this patch with a sysfs interface instead of /proc.
+During some off line discussion, /sys/power was suggested as a possible 
+candidate area for this functionality to reside.
 
-On Thu, 2007-02-01 at 20:16 +0100, Johannes Berg wrote:
-> This patch converts the time restore code from a PMU notifier to a regula=
-r
-> sys device so any powerpc platform will use it.
->=20
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->=20
-> ---
->  arch/powerpc/Kconfig                           |    5 +
->  arch/powerpc/kernel/Makefile                   |    1
->  arch/powerpc/platforms/powermac/time.c         |   38 -------------
->  mb-wireless/arch/powerpc/kernel/time_suspend.c |   70 ++++++++++++++++++=
-+++++++
+-------------------------------------------------------------------------------------------------------------------------
 
-Would it be better in arch/powerpc/sysdev perhaps? :)
+During power outages, the ups notifies the system for a shutdown. In the 
+current setup, it isn't possible to poweron when power is restored. This 
+patch fixes the issue by calling the right ibm,power-off-ups token 
+during such events. It also adds a sysfs interface so that rc.powerfail 
+can parse the epow events and modify the power-off behavior accordingly 
+to enable the right token to be called.
 
-cheers
+Signed-off-by: Manish Ahuja <ahuja@austin.ibm.com>
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+--------------050908090406070005020908
+Content-Type: text/plain;
+ name="Auto-poweron-patch"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="Auto-poweron-patch"
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Index: 2.6.20-rc6-git1-t2/arch/powerpc/kernel/rtas.c
+===================================================================
+--- 2.6.20-rc6-git1-t2.orig/arch/powerpc/kernel/rtas.c	2007-02-02 05:47:13.000000000 -0800
++++ 2.6.20-rc6-git1-t2/arch/powerpc/kernel/rtas.c	2007-02-02 08:37:09.000000000 -0800
+@@ -607,13 +607,31 @@
+ 	for (;;);
+ }
+ 
++/**
++ * rtas_power_off - tell firmware about how to power off the system.
++ *
++ * This function calls either the power-off rtas token in normal cases
++ * or the ibm,power-off-ups token (if present & requested) in case of
++ * a power failure. If power-off token is used, power on will only be
++ * possible with power button press. If ibm,power-off-ups token is used
++ * it will allow auto poweron after power is restored.
++ */
+ void rtas_power_off(void)
+ {
++	int rc;
++	int rtas_poweroff_ups_token = rtas_token("ibm,power-off-ups");
++
+ 	if (rtas_flash_term_hook)
+-		rtas_flash_term_hook(SYS_POWER_OFF);
+-	/* allow power on only with power button press */
+-	printk("RTAS power-off returned %d\n",
+-	       rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1));
++	rtas_flash_term_hook(SYS_POWER_OFF);
++
++	if (rtas_poweron_auto == 0 ||
++		rtas_poweroff_ups_token == RTAS_UNKNOWN_SERVICE) {
++		rc = rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1);
++		printk(KERN_INFO "RTAS power-off returned %d\n", rc);
++	} else {
++		rc = rtas_call(rtas_poweroff_ups_token, 0, 1, NULL);
++		printk(KERN_INFO "RTAS ibm,power-off-ups returned %d\n", rc);
++	}
+ 	for (;;);
+ }
+ 
+Index: 2.6.20-rc6-git1-t2/include/asm-powerpc/rtas.h
+===================================================================
+--- 2.6.20-rc6-git1-t2.orig/include/asm-powerpc/rtas.h	2007-02-02 05:47:32.000000000 -0800
++++ 2.6.20-rc6-git1-t2/include/asm-powerpc/rtas.h	2007-02-02 08:39:25.000000000 -0800
+@@ -225,6 +225,9 @@
+ /* RMO buffer reserved for user-space RTAS use */
+ extern unsigned long rtas_rmo_buf;
+ 
++/* Poweron buffer used for enabling auto ups restart */
++extern unsigned long rtas_poweron_auto;
++
+ #define GLOBAL_INTERRUPT_QUEUE 9005
+ 
+ /**
+Index: 2.6.20-rc6-git1-t2/arch/powerpc/platforms/pseries/power.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ 2.6.20-rc6-git1-t2/arch/powerpc/platforms/pseries/power.c	2007-02-02 13:18:09.000000000 -0800
+@@ -0,0 +1,87 @@
++/*
++ *  Interface for power-management for ppc64 compliant platform
++ *
++ *  Manish Ahuja <mahuja@us.ibm.com>
++ *
++ *  Feb 2007
++ *
++ *  Copyright (C) 2007 IBM Corporation.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
++ */
++
++#include <linux/kobject.h>
++#include <linux/string.h>
++#include <linux/errno.h>
++#include <linux/init.h>
++
++unsigned long rtas_poweron_auto; /* default and normal state is 0 */
++
++static ssize_t auto_poweron_show(struct subsystem * subsys, char * buf)
++{
++        return sprintf(buf, "%lu\n", rtas_poweron_auto);
++}
++
++static ssize_t
++auto_poweron_store(struct subsystem * subsys, const char * buf, size_t n)
++{
++	int ret;
++	unsigned long ups_restart;
++	ret = sscanf(buf, "%lu", &ups_restart);
++
++	if ((ret == 1) && ((ups_restart == 1) || (ups_restart == 0))){
++		rtas_poweron_auto = ups_restart;
++		return n;
++	}
++	return -EINVAL;
++}
++
++static struct subsys_attribute auto_poweron_attr = {
++        .attr   = {
++                .name = __stringify(auto_poweron),
++                .mode = 0644,
++        },
++        .show   = auto_poweron_show,
++        .store  = auto_poweron_store,
++};
++
++#ifndef CONFIG_PM
++decl_subsys(power,NULL,NULL);
++
++static struct attribute * g[] = {
++        &auto_poweron_attr.attr,
++        NULL,
++};
++
++static struct attribute_group attr_group = {
++        .attrs = g,
++};
++
++static int __init pm_init(void)
++{
++        int error = subsystem_register(&power_subsys);
++        if (!error)
++                error = sysfs_create_group(&power_subsys.kset.kobj,&attr_group);
++        return error;
++}
++core_initcall(pm_init);
++#else
++extern struct subsystem power_subsys;
++
++static int __init apo_pm_init(void)
++{
++	return(subsys_create_file(&power_subsys, &auto_poweron_attr));
++}
++__initcall(apo_pm_init);
++#endif
+Index: 2.6.20-rc6-git1-t2/arch/powerpc/platforms/pseries/Makefile
+===================================================================
+--- 2.6.20-rc6-git1-t2.orig/arch/powerpc/platforms/pseries/Makefile	2007-02-02 05:47:13.000000000 -0800
++++ 2.6.20-rc6-git1-t2/arch/powerpc/platforms/pseries/Makefile	2007-02-02 09:32:09.000000000 -0800
+@@ -4,7 +4,7 @@
+ 
+ obj-y			:= pci.o lpar.o hvCall.o nvram.o reconfig.o \
+ 			   setup.o iommu.o ras.o rtasd.o pci_dlpar.o \
+-			   firmware.o
++			   firmware.o power.o
+ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_XICS)	+= xics.o
+ obj-$(CONFIG_SCANLOG)	+= scanlog.o
 
---=-039oaZ8Krv9/h3LpkBfo
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBFw/ZedSjSd0sB4dIRAvCUAJsGS7ezc6aHXodEHKeIHGawLYiK4QCdGTrF
-HdOCOhpPqnhDg7db7KZmNgA=
-=zmhy
------END PGP SIGNATURE-----
-
---=-039oaZ8Krv9/h3LpkBfo--
+--------------050908090406070005020908--
