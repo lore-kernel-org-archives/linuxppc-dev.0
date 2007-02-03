@@ -1,20 +1,25 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 61F8BDDE33
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Feb 2007 19:28:12 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [4/9] pasemi: Idle loops
-Date: Sat, 3 Feb 2007 09:27:49 +0100
-References: <20070202045448.145851000@lixom.net>
-	<20070202045448.145851000@lixom.net>>
-	<20070202045508.379230000@lixom.net>>
-In-Reply-To: <20070202045508.379230000@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702030927.49659.arnd@arndb.de>
-Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1FCE1DDE04
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Feb 2007 04:38:49 +1100 (EST)
+Subject: Re: [PATCH] powermac: proper time of day after resume
+From: Johannes Berg <johannes@sipsolutions.net>
+To: michael@ellerman.id.au
+In-Reply-To: <1170470494.30263.0.camel@concordia.ozlabs.ibm.com>
+References: <20061213123819.403286000@sipsolutions.net> >
+	<20061213123945.386891000@sipsolutions.net> >
+	<1169620444.18754.66.camel@localhost.localdomain>
+	<1170357390.4036.9.camel@johannes.berg>
+	<1170470494.30263.0.camel@concordia.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-BtN1efON946gbrOFNU1v"
+Date: Sat, 03 Feb 2007 18:37:51 +0100
+Message-Id: <1170524271.4629.15.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,15 +29,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gRnJpZGF5IDAyIEZlYnJ1YXJ5IDIwMDcgMDU6NTQsIE9sb2YgSm9oYW5zc29uIHdyb3RlOgo+
-ICtzdGF0aWMgdm9pZCBwYXNlbWlfaWRsZSh2b2lkKQo+ICt7Cj4gK6CgoKCgoKB3aGlsZSAoMSkg
-ewo+ICugoKCgoKCgoKCgoKCgoKAvKiBYWFhPSk4gb3Byb2ZpbGUgb2ZmPyAqLwo+ICugoKCgoKCg
-oKCgoKCgoKB3aGlsZSAoIW5lZWRfcmVzY2hlZCgpKQo+ICugoKCgoKCgoKCgoKCgoKCgoKCgoKCg
-oG1vZGVzW2N1cnJlbnRfbW9kZV0uZW50cnkoKTsKPiArCj4gK6CgoKCgoKCgoKCgoKCgoC8qIFhY
-WE9KTiBvcHJvZmlsZSBvbj8gKi8KPiAroKCgoKCgoKCgoKCgoKCgcHJlZW1wdF9lbmFibGVfbm9f
-cmVzY2hlZCgpOwo+ICugoKCgoKCgoKCgoKCgoKBzY2hlZHVsZSgpOwo+ICugoKCgoKCgoKCgoKCg
-oKBwcmVlbXB0X2Rpc2FibGUoKTsKPiAroKCgoKCgoH0KPiArfQoKQ2FuIHlvdSBkbyB0aGlzIHVz
-aW5nIGEgcG93ZXJfc2F2ZSgpIGNhbGxiYWNrIGluc3RlYWQgb2YKYW4gaWRsZSgpIGNhbGxiYWNr
-PyBXZSd2ZSBhbHJlYWR5IG1vdmVkIG92ZXIgcHJhY3RpY2FsbHkKYWxsIHBsYXRmb3JtcyB0byBw
-b3dlcl9zYXZlKCksIGl0IHdvdWxkIGJlIGdvb2QgdG8Ka2lsbCBvZmYgdGhlIHBwY19tZC5pZGxl
-KCkgZnVuY3Rpb24gYXMgc29vbiBhcyBpdCdzCnVubmVlZGVkLgoKCUFybmQgPD48Cg==
+
+--=-BtN1efON946gbrOFNU1v
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
+
+On Sat, 2007-02-03 at 13:41 +1100, Michael Ellerman wrote:
+> On Thu, 2007-02-01 at 20:16 +0100, Johannes Berg wrote:
+> > This patch converts the time restore code from a PMU notifier to a regu=
+lar
+> > sys device so any powerpc platform will use it.
+> >=20
+> > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> >=20
+> > ---
+> >  arch/powerpc/Kconfig                           |    5 +
+> >  arch/powerpc/kernel/Makefile                   |    1
+> >  arch/powerpc/platforms/powermac/time.c         |   38 -------------
+> >  mb-wireless/arch/powerpc/kernel/time_suspend.c |   70 ++++++++++++++++=
++++++++++
+>=20
+> Would it be better in arch/powerpc/sysdev perhaps? :)
+
+Well, I put it along with time.c :) But we can well put it into sysdev
+as well, I don't really care.
+
+johannes
+
+--=-BtN1efON946gbrOFNU1v
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFxMhv/ETPhpq3jKURApcQAJ9A2JZK+3xnRQ5gF1/NV2SPPI2fagCgmT+W
+x4BhKd/4LgnCCqQYG02gFqk=
+=mBwh
+-----END PGP SIGNATURE-----
+
+--=-BtN1efON946gbrOFNU1v--
