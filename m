@@ -1,19 +1,24 @@
-Return-Path: <a.korud@vector.com.pl>
-Received: from mail-ex.vector.com.pl (mail-ex.vector.com.pl [81.210.9.37])
-	by ozlabs.org (Postfix) with ESMTP id E5E1FDDE26
+Return-Path: <rmcguire@videopresence.com>
+Received: from smtpout07-04.prod.mesa1.secureserver.net
+	(smtpout07-01.prod.mesa1.secureserver.net [64.202.165.230])
+	by ozlabs.org (Postfix) with SMTP id 63947DDDE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Feb 2007 07:38:48 +1100 (EST)
+	Sat,  3 Feb 2007 16:32:46 +1100 (EST)
+From: "Russell McGuire" <rmcguire@videopresence.com>
+To: "'Kumar Gala'" <galak@kernel.crashing.org>
+References: <000c01c746db$6451e7e0$6405a8c0@absolut>
+	<06A02CF1-7D0C-4D59-9628-A2EB0FF3CCF4@kernel.crashing.org>
+	<001101c746e3$5b8dab00$6405a8c0@absolut>
+	<A755B15B-9C78-40E1-998D-FE9E68E74805@kernel.crashing.org>
+Subject: RE: MPC8360 : PCI resource allocate error
+Date: Fri, 2 Feb 2007 21:32:41 -0800
+Message-ID: <000601c74754$b9a1eb90$6405a8c0@absolut>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="koi8-r"
-Subject: RE: Anyone success with 440GR Rev.B (1.1)?
-Date: Fri, 2 Feb 2007 21:37:22 +0100
-Message-ID: <60E856FD577CC04BA3727AF4122D3F160123864A@3bit.vector.com.pl>
-References: <60E856FD577CC04BA3727AF4122D3F1601238644@3bit.vector.com.pl>
-	<adafy9o4l74.fsf@cisco.com> <200702022126.25872.sr@denx.de>
-From: "Andriy Korud" <a.korud@vector.com.pl>
-To: "Stefan Roese" <sr@denx.de>
-Cc: Roland Dreier <rdreier@cisco.com>, linuxppc-embedded@ozlabs.org
+	charset="us-ascii"
+In-Reply-To: <A755B15B-9C78-40E1-998D-FE9E68E74805@kernel.crashing.org>
+Cc: linuxppc-embedded@ozlabs.org
+Reply-To: rmcguire@videopresence.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,59 +29,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Comments in line:
 
-Thanks,
-I've discovered this few hours ago. After adding entry to cputable =
-everything works fine.
+> On Feb 2, 2007, at 10:01 AM, Russell McGuire wrote:
+> 
+> > Here is the current .dts mapping, though I am beginning to suspect the
+> > hardware or a possible U-boot bug on this.
+> >
+> > U-boot can't see the PCI USB card in SLOT 3, but it can see the all
+> > of the
+> > other various PCI cards I have <ATI video card, sound card, ATA card,
+> > network card>
+> 
+> Are any cards detected in SLOT 3 with u-boot?  If not, I'd think HW
+> as well.
 
-Anyway thanks and sorry for bothering :)
-regards,
---
-Andriy Korud
+Yes, actually of the 6 cards I have, all are seen except the USB card. 
+And the USB card is seen in all other slots. So it appears to be a SLOT
+issue, but not a card issue.  Somehow this card is unique and uncovering an
+error that I don't know about yet. Perhaps I have a single address line
+sizzled or something. This is the same slot that has the IO resource
+allocation problems; I don't think I need to debug that in Linux. 
 
------Original Message-----
-From: Stefan Roese [mailto:sr@denx.de]
-Sent: =F0=D4 2007-02-02 21:26
-To: Andriy Korud
-Cc: linuxppc-embedded@ozlabs.org; Roland Dreier
-Subject: Re: Anyone success with 440GR Rev.B (1.1)?
-=20
-On Friday 02 February 2007 16:45, Roland Dreier wrote:
->  > I have complete system (U-Boot, Linux, userspace) running on 440GR
->  > Rev.A. However after mounting newer chip revision (Rev.B, 1.1) =
-U-Boot
->  > and Linux boots fine, however when trying to execute first userland
->  > application (init), I get:
->  >
->  > Freeing unused kernel memory: 112k init
->  > init has generated signal 4 but has no handler for it
->  > Kernel panic - not syncing: Attempted to kill init!
->
-> signal 4 is SIGILL.  Just a guess but do you have a cputable entry for
-> 440GR rev B in your arch/powerpc/kernel/cputable.c?
+OR.. 
 
-Good idea. That's probably it.
+Is there any PCI test code out there??? Maybe I should forego the drivers,
+and figure out some kind of test. I made a blind assumption in U-boot that
+if it worked to detect cards that everything was in order.
 
-> If you don't then=20
-> I think the default kernel settings will result in the wrong cacheline
-> size being used, which leads to userspace often dying with illegal
-> instruction traps.
->
-> (I don't see any 440GR entries in cputable.c, neither rev A nor rev B,
-> in the upstream kernel so I'm assuming you're patching your kernel
-> somehow.  So checking that your patch covers rev B would be the first
-> thing to do)
-
-440GR has the same PVR as 440EP:
-
-440EP Rev B =3D=3D 440GR Rev A
-440EP Rev C =3D=3D 440GR Rev B
-
-So your kernel should support 440EP Rev. C. The denx kernel has support =
-for=20
-those CPU's included. I'll try to send some patches in the next few days =
-to=20
-support them in the kernel.org version.
-
-Best regards,
-Stefan
+> 
+> > All the cards that are seen by U-boot have the IO resource problem.
+> > Only
+> > when in Slot 3.
+> >
+> > I probably need to direct this at the U-boot crowd, but what about
+> > these
+> > defines in U-boot? Would they have any bearing? I forgot to publish
+> > these
+> > when I originally had asked the question bout PCI IO space, but
+> > they are the
+> > only ALL zero's in the mapping.
+> 
+> They shouldn't on just seeing the device.  Since PCI config cycles
+> are used and U-boot will scan all busses you should at least see the
+> device.
+> 
+> - k
