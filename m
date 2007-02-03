@@ -1,16 +1,16 @@
 Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45C4EA7D.4000709@us.ibm.com>
-Date: Sat, 03 Feb 2007 14:03:09 -0600
+Message-ID: <45C51F6C.7080300@us.ibm.com>
+Date: Sat, 03 Feb 2007 17:49:00 -0600
 From: Maynard Johnson <maynardj@us.ibm.com>
 MIME-Version: 1.0
 To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [Cbe-oss-dev] [RFC,
 	PATCH 4/4] Add support to OProfile for profiling
 	Cell BE SPUs -- update
-References: <45BE4ED0.5030808@us.ibm.com> <200701310752.48632.arnd@arndb.de>
-	<45C36B21.60400@us.ibm.com> <200702030840.06270.arnd@arndb.de>
-In-Reply-To: <200702030840.06270.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <45BE4ED0.5030808@us.ibm.com> <45BE4FA4.9020105@us.ibm.com>
+	<200701300839.05144.arnd@arndb.de>
+In-Reply-To: <200701300839.05144.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
 	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,36 +24,65 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Arnd Bergmann wrote:
 
->On Friday 02 February 2007 17:47, Maynard Johnson wrote:
+>On Monday 29 January 2007 20:48, Maynard Johnson wrote:
 >  
 >
->>>We also want to be able to profile the context switch code itself, which
->>>means that we also need one event buffer associated with the kernel to
->>>collect events that for a zero context_id.
->>>      
->>>
->>The hardware design precludes tracing both SPU and PPU simultaneously.
+>>Subject: Add support to OProfile for profiling Cell BE SPUs
 >>
 >>    
 >>
->I mean the SPU-side part of the context switch code, which you can find
->in arch/powerpc/platforms/cell/spufs/spu_{save,restore}*.
->
->This code is the one that runs when context_id == 0 is passed to the
->callback.
 >  
 >
-I presume you mean 'object_id'.  What you're asking for is a new 
-requirement, and one which I don't believe is achievable in the current 
-timeframe.  Since this is spufs code that's dynamicaly loaded into the 
-SPU at runtime, the symbol information for this code is not accessible 
-to the userspace post-processing tools.  It would require an altogether 
-different mechanism to record samples along with necessary information, 
-not to mention the changes required in the post-processing tools.  This 
-will have to be a future enhancement.
+[snip]
+
+>>+ * 
+>>+ * Ideally, we would like to be able to create the cached_info for
+>>+ * an SPU task just one time -- when libspe first loads the SPU 
+>>+ * binary file.  We would store the cached_info in a list.  Then, as
+>>+ * SPU tasks are switched out and new ones switched in, the cached_info
+>>+ * for inactive tasks would be kept, and the active one would be placed
+>>+ * at the head of the list.  But this technique may not with
+>>+ * current spufs functionality since the spu used in bind_context may
+>>+ * be a different spu than was used in a previous bind_context for a
+>>+ * reactivated SPU task.  Additionally, a reactivated SPU task may be
+>>+ * assigned to run on a different physical SPE.  We will investigate
+>>+ * further if this can be done.
+>>+ *
+>>+ */
+>>    
+>>
+>
+>You should stuff a pointer to cached_info into struct spu_context,
+>e.g. 'void *profile_private'.
+>  
+>
+I seem to recall looking at this option a while back, but didn't go that 
+route since struct spu_context is opaque to me.  With such a teqnique, I 
+could then use a simple 16-element array of  pointers to cached_info 
+objects, creating them as needed when spu_context->profile_private is 
+NULL.  I suppose the better option for now is to add a 
+get_profile_private() function to SPUFs, rather than requiring 
+spu_context to be visible.  Don't know why I didn't think to do that 
+before.  Ah, well, live and learn.
 
 -Maynard
 
+>  
+>
+>>+struct cached_info {
+>>+       vma_map_t * map;
+>>+       struct spu * the_spu;
+>>+       struct kref cache_ref;
+>>+       struct list_head list;
+>>+};
+>>    
+>>
+>
+>And replace the 'the_spu' member with a back pointer to the
+>spu_context if you need it.
+>
+>  
+>
 >	Arnd <><
 >  
 >
