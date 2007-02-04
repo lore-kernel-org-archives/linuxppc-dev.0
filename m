@@ -1,15 +1,15 @@
 Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45C613DB.6000301@us.ibm.com>
-Date: Sun, 04 Feb 2007 11:11:55 -0600
+Message-ID: <45C618FA.3060000@us.ibm.com>
+Date: Sun, 04 Feb 2007 11:33:46 -0600
 From: Maynard Johnson <maynardj@us.ibm.com>
 MIME-Version: 1.0
 To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [Cbe-oss-dev] [RFC,
 	PATCH 4/4] Add support to OProfile for profiling
 	Cell BE SPUs -- update
-References: <45BE4ED0.5030808@us.ibm.com> <200702030840.06270.arnd@arndb.de>
-	<45C4EA7D.4000709@us.ibm.com> <200702040342.39626.arnd@arndb.de>
-In-Reply-To: <200702040342.39626.arnd@arndb.de>
+References: <45BE4ED0.5030808@us.ibm.com> <200701300839.05144.arnd@arndb.de>
+	<45C51F6C.7080300@us.ibm.com> <200702040352.03792.arnd@arndb.de>
+In-Reply-To: <200702040352.03792.arnd@arndb.de>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
 	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
@@ -24,60 +24,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Arnd Bergmann wrote:
 
->On Saturday 03 February 2007 21:03, Maynard Johnson wrote:
+>On Sunday 04 February 2007 00:49, Maynard Johnson wrote:
 >  
 >
->>I presume you mean 'object_id'. 
+>>I seem to recall looking at this option a while back, but didn't go that 
+>>route since struct spu_context is opaque to me.  With such a teqnique, I 
+>>could then use a simple 16-element array of  pointers to cached_info 
+>>objects, creating them as needed when spu_context->profile_private is 
+>>NULL.  I suppose the better option for now is to add a 
+>>get_profile_private() function to SPUFs, rather than requiring 
+>>spu_context to be visible.
 >>    
 >>
 >
->Right, sorry for the confusion.
->
+>Yes, that sounds good. Note that the file providing the 
+>spufs_get_profile_private (and respective spufs_set_profile_private)
+>functions needs to be compiled into the kernel then in case oprofile
+>gets linked in but spufs is a module.
 >  
 >
->>What you're asking for is a new  
->>requirement, and one which I don't believe is achievable in the current 
->>timeframe.  Since this is spufs code that's dynamicaly loaded into the 
->>SPU at runtime, the symbol information for this code is not accessible 
->>to the userspace post-processing tools.
->>    
->>
->
->We can always fix the user space tool later, but it is important to
->get at least the kernel interface right, so we can add the functionality
->later without breaking new user space on old kernels or vice versa.
->  
->
-There's no obvious solution to this problem, so it's going to take some 
-design effort to come up with a solution.  We can work on the problem, 
-but I don't think we can allow it to get in the way of getting our 
-currently proposed SPU profiling functionality into the kernel.
+Hmm . . . we already depend on the register/unregister functions in 
+sched.c, so my patch changes the oprofile Kconfig to default to 'm' and 
+'depends on SPU_FS'.
 
+>I think it would also be necessary to have another interface for cleaning
+>up this data when spufs destroys the context. That could possibly
+>a variation of the existing notifier call, or a new call, or you
+>establish the convention that if the private pointer is non-NULL,
+>spufs will kfree it.
 >  
 >
->>It would require an altogether  
->>different mechanism to record samples along with necessary information, 
->>not to mention the changes required in the post-processing tools.  This 
->>will have to be a future enhancement.
->>    
->>
->
->So what do you do with the samples for object_id == 0? I would expect them
->to be simply added to the sample buffer for the kernel, which is sort
->of special in oprofile anyway.
->  
->
-There is no sample buffer for the kernel in SPU profiling.  When 
-OProfile gets notified of an SPU task switching out (object_if == 0), we 
-stop recording samples for the corresponding SPU.  If SPUFs sends the 
-notification after the spu_save operation, we still would be collecting 
-samples during that time; however, since the VMAs of these samples would 
-not map to any fileoffset in the SPU binary that's executing, our 
-current implementation throws them away.  We could change that behavior 
-and record them in the samples buffer as "anonymous samples".  Not sure 
-it that would help too much, as you wouldn't be able to distinguish 
-between spu_save samples and samples from generated stubs that are 
-executing from the stack.
+Yes, I was thnking along the lines of your last suggestion.  I presume 
+OProfile gets notified (object_id == 0) before the context is actually 
+destroyed.  At that time, we would NULL-out the reference to the 
+cached_info, so then SPUFS would kfree it at destroy time.
 
 -Maynard
 
