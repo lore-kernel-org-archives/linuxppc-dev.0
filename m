@@ -1,13 +1,13 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 7BDE6DDEC2
+	by ozlabs.org (Postfix) with ESMTP id 7E21DDDEC3
 	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 09:41:53 +1100 (EST)
-Message-Id: <20070204223753.016205000@lixom.net>>
+Message-Id: <20070204223753.301109000@lixom.net>>
 References: <20070204223648.767950000@lixom.net>>
-Date: Sun, 04 Feb 2007 16:36:53 -0600
+Date: Sun, 04 Feb 2007 16:36:54 -0600
 From: Olof Johansson <olof@lixom.net>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] [v2] [5/8] pasemi: SMP timebase sync
+Subject: [PATCH] [v2] [6/8] pasemi: Configure DMA controller interrupts
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,72 +18,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timebase update is simple on PA6T, since global updates can be done from
-one core by writing to an SPR.
+The DMA controller on PWRficient is somewhat special -- has a PCI header
+so it looks like it's on the root PCI (-Express) root bus, but it uses
+more than the default number of interrupts (and they are hardwired).
+
+We need to wire up all interrupts for the DMA controller. The generic
+IRQ code will only map the primary interrupt from the PCI header (128),
+so add 129->211 by hand.
 
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
-
+Index: merge/arch/powerpc/platforms/pasemi/pci.c
+===================================================================
+--- merge.orig/arch/powerpc/platforms/pasemi/pci.c
++++ merge/arch/powerpc/platforms/pasemi/pci.c
+@@ -163,6 +163,19 @@ static void __init pas_fixup_phb_resourc
+ }
+ 
+ 
++void __devinit pas_pci_irq_fixup(struct pci_dev *dev)
++{
++	/* DMA is special, 84 interrupts (128 -> 211), all but 128
++	 * need to be mapped by hand here.
++	 */
++	if (dev->vendor == 0x1959 && dev->device == 0xa007) {
++		int i;
++		for (i = 129; i < 212; i++)
++			irq_create_mapping(NULL, i);
++	}
++}
++
++
+ void __init pas_pci_init(void)
+ {
+ 	struct device_node *np, *root;
 Index: merge/arch/powerpc/platforms/pasemi/setup.c
 ===================================================================
 --- merge.orig/arch/powerpc/platforms/pasemi/setup.c
 +++ merge/arch/powerpc/platforms/pasemi/setup.c
-@@ -48,13 +48,36 @@ static void pas_restart(char *cmd)
- }
- 
- #ifdef CONFIG_SMP
-+static DEFINE_SPINLOCK(timebase_lock);
-+
-+static void __devinit pas_give_timebase(void)
-+{
-+	unsigned long tb;
-+
-+	spin_lock(&timebase_lock);
-+	mtspr(SPRN_TBCTL, TBCTL_FREEZE);
-+	tb = mftb();
-+	mtspr(SPRN_TBCTL, TBCTL_UPDATE_LOWER | (tb & 0xffffffff));
-+	mtspr(SPRN_TBCTL, TBCTL_UPDATE_UPPER | (tb >> 32));
-+	mtspr(SPRN_TBCTL, TBCTL_RESTART);
-+	spin_unlock(&timebase_lock);
-+	pr_debug("pas_give_timebase: cpu %d gave tb %lx\n",
-+		 smp_processor_id(), tb);
-+}
-+
-+static void __devinit pas_take_timebase(void)
-+{
-+	pr_debug("pas_take_timebase: cpu %d has tb %lx\n",
-+		 smp_processor_id(), mftb());
-+}
-+
- struct smp_ops_t pas_smp_ops = {
- 	.probe		= smp_mpic_probe,
- 	.message_pass	= smp_mpic_message_pass,
- 	.kick_cpu	= smp_generic_kick_cpu,
- 	.setup_cpu	= smp_mpic_setup_cpu,
--	.give_timebase	= smp_generic_give_timebase,
--	.take_timebase	= smp_generic_take_timebase,
-+	.give_timebase	= pas_give_timebase,
-+	.take_timebase	= pas_take_timebase,
+@@ -234,4 +234,5 @@ define_machine(pas) {
+ 	.check_legacy_ioport    = pas_check_legacy_ioport,
+ 	.progress		= pas_progress,
+ 	.machine_check_exception = pas_machine_check_handler,
++	.pci_irq_fixup		= pas_pci_irq_fixup,
  };
- #endif /* CONFIG_SMP */
- 
-Index: merge/include/asm-powerpc/reg.h
+Index: merge/arch/powerpc/platforms/pasemi/pasemi.h
 ===================================================================
---- merge.orig/include/asm-powerpc/reg.h
-+++ merge/include/asm-powerpc/reg.h
-@@ -392,6 +392,12 @@
- #define SPRN_HSRR0	0x13A	/* Save/Restore Register 0 */
- #define SPRN_HSRR1	0x13B	/* Save/Restore Register 1 */
+--- merge.orig/arch/powerpc/platforms/pasemi/pasemi.h
++++ merge/arch/powerpc/platforms/pasemi/pasemi.h
+@@ -3,6 +3,7 @@
  
-+#define SPRN_TBCTL	0x35f	/* PA6T Timebase control register */
-+#define   TBCTL_FREEZE		0x0000000000000000ull /* Freeze all tbs */
-+#define   TBCTL_RESTART		0x0000000100000000ull /* Restart all tbs */
-+#define   TBCTL_UPDATE_UPPER	0x0000000200000000ull /* Set upper 32 bits */
-+#define   TBCTL_UPDATE_LOWER	0x0000000300000000ull /* Set lower 32 bits */
-+
- #ifndef SPRN_SVR
- #define SPRN_SVR	0x11E	/* System Version Register */
- #endif
+ extern unsigned long pas_get_boot_time(void);
+ extern void pas_pci_init(void);
++extern void __devinit pas_pci_irq_fixup(struct pci_dev *dev);
+ 
+ extern void __init pasemi_idle_init(void);
+ 
 
 --
