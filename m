@@ -1,22 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4289CDDE41
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 00:43:44 +1100 (EST)
-Subject: Re: powerbook/radeon PM problem
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1170564480.2620.30.camel@localhost.localdomain>
-References: <1170357083.4036.5.camel@johannes.berg>
-	<1170564480.2620.30.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-/Um13jmLM2bEYF/nmd1R"
-Date: Sun, 04 Feb 2007 14:42:50 +0100
-Message-Id: <1170596570.23273.8.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <maynardj@us.ibm.com>
+Message-ID: <45C613DB.6000301@us.ibm.com>
+Date: Sun, 04 Feb 2007 11:11:55 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
+MIME-Version: 1.0
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH 4/4] Add support to OProfile for profiling
+	Cell BE SPUs -- update
+References: <45BE4ED0.5030808@us.ibm.com> <200702030840.06270.arnd@arndb.de>
+	<45C4EA7D.4000709@us.ibm.com> <200702040342.39626.arnd@arndb.de>
+In-Reply-To: <200702040342.39626.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,53 +22,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Arnd Bergmann wrote:
 
---=-/Um13jmLM2bEYF/nmd1R
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+>On Saturday 03 February 2007 21:03, Maynard Johnson wrote:
+>  
+>
+>>I presume you mean 'object_id'. 
+>>    
+>>
+>
+>Right, sorry for the confusion.
+>
+>  
+>
+>>What you're asking for is a new  
+>>requirement, and one which I don't believe is achievable in the current 
+>>timeframe.  Since this is spufs code that's dynamicaly loaded into the 
+>>SPU at runtime, the symbol information for this code is not accessible 
+>>to the userspace post-processing tools.
+>>    
+>>
+>
+>We can always fix the user space tool later, but it is important to
+>get at least the kernel interface right, so we can add the functionality
+>later without breaking new user space on old kernels or vice versa.
+>  
+>
+There's no obvious solution to this problem, so it's going to take some 
+design effort to come up with a solution.  We can work on the problem, 
+but I don't think we can allow it to get in the way of getting our 
+currently proposed SPU profiling functionality into the kernel.
 
-On Sun, 2007-02-04 at 15:47 +1100, Benjamin Herrenschmidt wrote:
+>  
+>
+>>It would require an altogether  
+>>different mechanism to record samples along with necessary information, 
+>>not to mention the changes required in the post-processing tools.  This 
+>>will have to be a future enhancement.
+>>    
+>>
+>
+>So what do you do with the samples for object_id == 0? I would expect them
+>to be simply added to the sample buffer for the kernel, which is sort
+>of special in oprofile anyway.
+>  
+>
+There is no sample buffer for the kernel in SPU profiling.  When 
+OProfile gets notified of an SPU task switching out (object_if == 0), we 
+stop recording samples for the corresponding SPU.  If SPUFs sends the 
+notification after the spu_save operation, we still would be collecting 
+samples during that time; however, since the VMAs of these samples would 
+not map to any fileoffset in the SPU binary that's executing, our 
+current implementation throws them away.  We could change that behavior 
+and record them in the samples buffer as "anonymous samples".  Not sure 
+it that would help too much, as you wouldn't be able to distinguish 
+between spu_save samples and samples from generated stubs that are 
+executing from the stack.
 
-> Yeah well, it's -supposed- to be taken by the resume function, but the
-> early resume path is a hack that runs -really- early (so you get a
-> screen back for debugging). I should find a way to silence those stupid
-> warnings...
+-Maynard
 
-Yes, I agree that the semaphore that the comment talks about won't ever
-be taken anyway. The warning actually comes from the notifier chain that
-is used there, of course.
-
-> > I'm totally unsure what the correct fix for this is.
->=20
-> None other than removing the early wakeup hack :-(
-
-Actually, looking at the code again... fb_notifier_list is a blocking
-notifier list. This could be converted to a raw one without any locking,
-and we could require that callers of fb_register_client,
-fb_unregister_client and fb_notifier_call_chain hold the console
-semaphore while calling.
-Then, some callers in drivers/video/fbmem.c would need to be updated,
-but since fb_set_suspend already requires the semaphore to be held it
-wouldn't acquire it again, of course.
-
-We'd still abuse fb_set_suspend here by calling it without the semaphore
-held, but we know that nobody else can hold it at that time so that'd be
-ok.
-
-Just a thought.
-
-johannes
-
---=-/Um13jmLM2bEYF/nmd1R
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFxeLZ/ETPhpq3jKURAufJAJ0Sx11Ozt/auEqBlIc/UHapFoVoEwCghUi2
-kh8eOLte8eVc/u0ophQ9uIQ=
-=1how
------END PGP SIGNATURE-----
-
---=-/Um13jmLM2bEYF/nmd1R--
+>	Arnd <><
+>  
+>
