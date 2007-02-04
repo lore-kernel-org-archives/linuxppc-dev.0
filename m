@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <proski@gnu.org>
+Received: from fencepost.gnu.org (fencepost.gnu.org [199.232.76.164])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02E00DDEC1
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Feb 2007 15:48:12 +1100 (EST)
-Subject: Re: powerbook/radeon PM problem
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1170357083.4036.5.camel@johannes.berg>
-References: <1170357083.4036.5.camel@johannes.berg>
+	by ozlabs.org (Postfix) with ESMTP id 245D2DDE45
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Feb 2007 19:16:14 +1100 (EST)
+Received: from proski by fencepost.gnu.org with local (Exim 4.60)
+	(envelope-from <proski@gnu.org>) id 1HDcWe-0002iT-Eq
+	for linuxppc-dev@ozlabs.org; Sun, 04 Feb 2007 03:15:04 -0500
+Received: from proski by gnu.org with local (Exim 4.63)
+	(envelope-from <proski@gnu.org>) id 1HDcXg-0007tH-6q
+	for linuxppc-dev@ozlabs.org; Sun, 04 Feb 2007 03:16:08 -0500
+Subject: [PATCH] Assign all PCI busses on G3 Blue & White
+From: Pavel Roskin <proski@gnu.org>
+To: linuxppc-dev@ozlabs.org
 Content-Type: text/plain
-Date: Sun, 04 Feb 2007 15:47:59 +1100
-Message-Id: <1170564480.2620.30.camel@localhost.localdomain>
+Date: Sun, 04 Feb 2007 03:16:08 -0500
+Message-Id: <1170576968.21644.55.camel@dv>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,50 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-02-01 at 20:11 +0100, Johannes Berg wrote:
-> Whenever I resume my powerbook I get:
-> 
-> [  336.307861] BUG: sleeping function called from invalid context at kernel/rwsem.c:20
-> [  336.307871] in_atomic():0, irqs_disabled():1
-> [  336.307875] Call Trace:
-> [  336.307879] [EC257D30] [C000901C] show_stack+0x3c/0x194 (unreliable)
-> [  336.307900] [EC257D60] [C00268B8] __might_sleep+0xd4/0xe8
-> [  336.307918] [EC257D70] [C004555C] down_read+0x24/0x5c
-> [  336.307930] [EC257D90] [C003A574] blocking_notifier_call_chain+0x20/0x54
-> [  336.307940] [EC257DB0] [C017FB60] fb_notifier_call_chain+0x24/0x34
-> [  336.307949] [EC257DC0] [C0180178] fb_set_suspend+0x58/0x6c
-> [  336.307956] [EC257DE0] [C01A79F0] radeonfb_pci_resume+0x1fc/0x3e0
-> [  336.307964] [EC257E00] [C01A7BF8] radeonfb_early_resume+0x24/0x40
-> [  336.307970] [EC257E20] [C001A5C0] pmac_call_early_video_resume+0x2c/0x3c
-> [  336.307985] [EC257E30] [C01E1148] pmu_ioctl+0x6f8/0xb64
-> [  336.307994] [EC257ED0] [C0091C84] do_ioctl+0x80/0x84
-> [  336.308003] [EC257EE0] [C0091D0C] vfs_ioctl+0x84/0x43c
-> [  336.308009] [EC257F10] [C0092104] sys_ioctl+0x40/0x74
-> [  336.308014] [EC257F40] [C00114B4] ret_from_syscall+0x0/0x38
-> 
-> 
-> Hence, there must be a bug somewhere... The documentation to
-> fb_set_suspend notes:
-> "It must be called with the console semaphore held"
+From: Pavel Roskin <proski@gnu.org>
 
-Yeah well, it's -supposed- to be taken by the resume function, but the
-early resume path is a hack that runs -really- early (so you get a
-screen back for debugging). I should find a way to silence those stupid
-warnings...
+G3 Blue & White is misconfigured by default so that CardBus controllers
+in PCI slots don't work.  The PCI bridge is programmed to only allow
+access to bus 1 but not higher busses.
 
-> So that's one of the bugs, how can that be satisfied when we're just
-> resuming and haven't taken that semaphore? (if we did take it, then we'd
-> get the warning earlier..)
-> 
-> Then again, is the resume code really supposed to be called with
-> interrupts disabled?
+The patch forces the PCI busses to be reassigned if a Grackle controller
+is found and the machine identifies itself as "PowerMac1,1"
 
-Not normally... but when I wrote that stuff, there was no semaphore
-involved in that code path... In fact, the semaphore we are taking
-shouldn't be held by anybody else anyway..
+Signed-off-by: Pavel Roskin <proski@gnu.org>
+---
+My previous attempt to fix this bug can be found in this thread:
+http://ozlabs.org/pipermail/linuxppc-dev/2004-May/thread.html#17056
+The new patch relies on the existing common PCI code and doesn't poke
+bridge registers itself.  It would even do the right thing if a PCI or
+CardBus bridge is inserted into the upper slot reserved for video cards
+and connected directly to bus 0.
+---
 
-> I'm totally unsure what the correct fix for this is.
+ arch/powerpc/sysdev/grackle.c |    2 ++
+ 1 files changed, 2 insertions(+), 0 deletions(-)
 
-None other than removing the early wakeup hack :-(
+diff --git a/arch/powerpc/sysdev/grackle.c b/arch/powerpc/sysdev/grackle.c
+index b6ec793..4205362 100644
+--- a/arch/powerpc/sysdev/grackle.c
++++ b/arch/powerpc/sysdev/grackle.c
+@@ -56,6 +56,8 @@ static inline void grackle_set_loop_snoop(struct pci_controller *bp, int enable)
+ void __init setup_grackle(struct pci_controller *hose)
+ {
+ 	setup_indirect_pci(hose, 0xfec00000, 0xfee00000);
++	if (machine_is_compatible("PowerMac1,1"))
++		pci_assign_all_buses = 1;
+ 	if (machine_is_compatible("AAPL,PowerBook1998"))
+ 		grackle_set_loop_snoop(hose, 1);
+ #if 0	/* Disabled for now, HW problems ??? */
 
-Ben.
+
+-- 
+Regards,
+Pavel Roskin
