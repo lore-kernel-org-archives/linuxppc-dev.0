@@ -1,18 +1,19 @@
-Return-Path: <maynardj@us.ibm.com>
-Message-ID: <45C618FA.3060000@us.ibm.com>
-Date: Sun, 04 Feb 2007 11:33:46 -0600
-From: Maynard Johnson <maynardj@us.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 5FFA5DDE06
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 09:11:25 +1100 (EST)
+Date: Sun, 4 Feb 2007 16:18:49 -0600
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH] [1/9] pasemi: Default root device
+Message-ID: <20070204221849.GA2862@lixom.net>
+References: <20070202045448.145851000@lixom.net>>
+	<20070202045507.589087000@lixom.net>>
+	<45C3BB0A.1020307@am.sony.com>
 MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH 4/4] Add support to OProfile for profiling
-	Cell BE SPUs -- update
-References: <45BE4ED0.5030808@us.ibm.com> <200701300839.05144.arnd@arndb.de>
-	<45C51F6C.7080300@us.ibm.com> <200702040352.03792.arnd@arndb.de>
-In-Reply-To: <200702040352.03792.arnd@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45C3BB0A.1020307@am.sony.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,45 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
+On Fri, Feb 02, 2007 at 02:28:26PM -0800, Geoff Levand wrote:
+> Olof Johansson wrote:
+> > Set up default root device on the pasemi platform.
+> > +	if (ROOT_DEV == 0) {
+> > +#ifdef  CONFIG_ROOT_NFS
+> > +		ROOT_DEV = Root_NFS;
+> > +#else
+> > +		ROOT_DEV = Root_SDA1;
+> > +#endif
+> 
+> Christoph told me these are no longer desired in new
+> platform code.
 
->On Sunday 04 February 2007 00:49, Maynard Johnson wrote:
->  
->
->>I seem to recall looking at this option a while back, but didn't go that 
->>route since struct spu_context is opaque to me.  With such a teqnique, I 
->>could then use a simple 16-element array of  pointers to cached_info 
->>objects, creating them as needed when spu_context->profile_private is 
->>NULL.  I suppose the better option for now is to add a 
->>get_profile_private() function to SPUFs, rather than requiring 
->>spu_context to be visible.
->>    
->>
->
->Yes, that sounds good. Note that the file providing the 
->spufs_get_profile_private (and respective spufs_set_profile_private)
->functions needs to be compiled into the kernel then in case oprofile
->gets linked in but spufs is a module.
->  
->
-Hmm . . . we already depend on the register/unregister functions in 
-sched.c, so my patch changes the oprofile Kconfig to default to 'm' and 
-'depends on SPU_FS'.
+What's no longer desired, the logic trying to figure out if NFS is the
+root, or setting a platform-specific root device if none is specified
+already?
 
->I think it would also be necessary to have another interface for cleaning
->up this data when spufs destroys the context. That could possibly
->a variation of the existing notifier call, or a new call, or you
->establish the convention that if the private pointer is non-NULL,
->spufs will kfree it.
->  
->
-Yes, I was thnking along the lines of your last suggestion.  I presume 
-OProfile gets notified (object_id == 0) before the context is actually 
-destroyed.  At that time, we would NULL-out the reference to the 
-cached_info, so then SPUFS would kfree it at destroy time.
 
--Maynard
-
->	Arnd <><
->  
->
+-Olof
