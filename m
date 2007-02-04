@@ -1,22 +1,22 @@
-Return-Path: <proski@gnu.org>
-Received: from fencepost.gnu.org (fencepost.gnu.org [199.232.76.164])
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 245D2DDE45
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Feb 2007 19:16:14 +1100 (EST)
-Received: from proski by fencepost.gnu.org with local (Exim 4.60)
-	(envelope-from <proski@gnu.org>) id 1HDcWe-0002iT-Eq
-	for linuxppc-dev@ozlabs.org; Sun, 04 Feb 2007 03:15:04 -0500
-Received: from proski by gnu.org with local (Exim 4.63)
-	(envelope-from <proski@gnu.org>) id 1HDcXg-0007tH-6q
-	for linuxppc-dev@ozlabs.org; Sun, 04 Feb 2007 03:16:08 -0500
-Subject: [PATCH] Assign all PCI busses on G3 Blue & White
-From: Pavel Roskin <proski@gnu.org>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Sun, 04 Feb 2007 03:16:08 -0500
-Message-Id: <1170576968.21644.55.camel@dv>
+	by ozlabs.org (Postfix) with ESMTP id 4289CDDE41
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 00:43:44 +1100 (EST)
+Subject: Re: powerbook/radeon PM problem
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1170564480.2620.30.camel@localhost.localdomain>
+References: <1170357083.4036.5.camel@johannes.berg>
+	<1170564480.2620.30.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-/Um13jmLM2bEYF/nmd1R"
+Date: Sun, 04 Feb 2007 14:42:50 +0100
+Message-Id: <1170596570.23273.8.camel@johannes.berg>
 Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,43 +26,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Pavel Roskin <proski@gnu.org>
 
-G3 Blue & White is misconfigured by default so that CardBus controllers
-in PCI slots don't work.  The PCI bridge is programmed to only allow
-access to bus 1 but not higher busses.
+--=-/Um13jmLM2bEYF/nmd1R
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The patch forces the PCI busses to be reassigned if a Grackle controller
-is found and the machine identifies itself as "PowerMac1,1"
+On Sun, 2007-02-04 at 15:47 +1100, Benjamin Herrenschmidt wrote:
 
-Signed-off-by: Pavel Roskin <proski@gnu.org>
----
-My previous attempt to fix this bug can be found in this thread:
-http://ozlabs.org/pipermail/linuxppc-dev/2004-May/thread.html#17056
-The new patch relies on the existing common PCI code and doesn't poke
-bridge registers itself.  It would even do the right thing if a PCI or
-CardBus bridge is inserted into the upper slot reserved for video cards
-and connected directly to bus 0.
----
+> Yeah well, it's -supposed- to be taken by the resume function, but the
+> early resume path is a hack that runs -really- early (so you get a
+> screen back for debugging). I should find a way to silence those stupid
+> warnings...
 
- arch/powerpc/sysdev/grackle.c |    2 ++
- 1 files changed, 2 insertions(+), 0 deletions(-)
+Yes, I agree that the semaphore that the comment talks about won't ever
+be taken anyway. The warning actually comes from the notifier chain that
+is used there, of course.
 
-diff --git a/arch/powerpc/sysdev/grackle.c b/arch/powerpc/sysdev/grackle.c
-index b6ec793..4205362 100644
---- a/arch/powerpc/sysdev/grackle.c
-+++ b/arch/powerpc/sysdev/grackle.c
-@@ -56,6 +56,8 @@ static inline void grackle_set_loop_snoop(struct pci_controller *bp, int enable)
- void __init setup_grackle(struct pci_controller *hose)
- {
- 	setup_indirect_pci(hose, 0xfec00000, 0xfee00000);
-+	if (machine_is_compatible("PowerMac1,1"))
-+		pci_assign_all_buses = 1;
- 	if (machine_is_compatible("AAPL,PowerBook1998"))
- 		grackle_set_loop_snoop(hose, 1);
- #if 0	/* Disabled for now, HW problems ??? */
+> > I'm totally unsure what the correct fix for this is.
+>=20
+> None other than removing the early wakeup hack :-(
 
+Actually, looking at the code again... fb_notifier_list is a blocking
+notifier list. This could be converted to a raw one without any locking,
+and we could require that callers of fb_register_client,
+fb_unregister_client and fb_notifier_call_chain hold the console
+semaphore while calling.
+Then, some callers in drivers/video/fbmem.c would need to be updated,
+but since fb_set_suspend already requires the semaphore to be held it
+wouldn't acquire it again, of course.
 
--- 
-Regards,
-Pavel Roskin
+We'd still abuse fb_set_suspend here by calling it without the semaphore
+held, but we know that nobody else can hold it at that time so that'd be
+ok.
+
+Just a thought.
+
+johannes
+
+--=-/Um13jmLM2bEYF/nmd1R
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFxeLZ/ETPhpq3jKURAufJAJ0Sx11Ozt/auEqBlIc/UHapFoVoEwCghUi2
+kh8eOLte8eVc/u0ophQ9uIQ=
+=1how
+-----END PGP SIGNATURE-----
+
+--=-/Um13jmLM2bEYF/nmd1R--
