@@ -2,20 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 22AA7DDE37
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 10:45:11 +1100 (EST)
-Subject: Re: [Cbe-oss-dev] spidernet: dynamic phy setup code
+	by ozlabs.org (Postfix) with ESMTP id 82F9CDDE42
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 10:50:10 +1100 (EST)
+Subject: Re: [PATCH] [3/9] pasemi: Machine check handler
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jens Osterkamp <jens@de.ibm.com>
-In-Reply-To: <200702011204.30526.jens@de.ibm.com>
-References: <200702010805.l11853LX014768@toshiba.co.jp>
-	<200702011204.30526.jens@de.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070202045508.119282000@lixom.net>>
+References: <20070202045448.145851000@lixom.net> >
+	<20070202045508.119282000@lixom.net>>
 Content-Type: text/plain
-Date: Mon, 05 Feb 2007 10:44:32 +1100
-Message-Id: <1170632672.2620.47.camel@localhost.localdomain>
+Date: Mon, 05 Feb 2007 10:49:57 +1100
+Message-Id: <1170632998.2620.50.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-	jim@jklewis.com
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +24,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-02-01 at 12:04 +0100, Jens Osterkamp wrote:
-> Ishizaki-san,
+On Thu, 2007-02-01 at 22:54 -0600, Olof Johansson wrote:
+> plain text document attachment (pasemi-machine-check)
+> Print out decoded machine check information on PA6T.
 > 
-> > This patch partially works on celleb but remains 
-> > following several problems.
-> > 1. It doesn't recover once an ethernet cable which is
-> >    connected to a spider_net card is unpluged. 
 > 
-> My understanding is that you are using the LINK interrupt to detect this.
-> For the blade this is not connected but reenabling it wont hurt, I hope.
+> Signed-off-by: Olof Johansson <olof@lixom.net>
 
-I would suggest just polling from a delayed work or a timer like sungem
-does.
+Not specific to your patch, but in general, Machine Check might happen
+while MSR:EE is off... which means the kernel might dislike printk being
+called from the MC handler under some circumstances (for example,
+re-entering printk itself in places it doesn't expect to be).
 
-> I still dont see why you need different settings for different speed switches.
-> This is getting to a point where access to some hardware would be handy.
-> What exact phy are using anyway ?
-
-Yeah, same question...
-
-> > Furthermore, we have a problem that poll_link() may succeed even when
-> > the auto-neg initial setting is for different network switch type,
-> > and the network card does not work on this case. We retry auto-neg
-> > with the another initial setting on this case.
-> 
-> See above, could you give some more details why this is the case. Or maybe Ben
-> knows more about this ?
-
-No, I'm surprised too.
+Might be worth, when the MC is recoverable, to try to "defer" the
+printout to some real irq or timer irq 
 
 Ben.
