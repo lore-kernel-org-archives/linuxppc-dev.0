@@ -1,19 +1,20 @@
-Return-Path: <hch@lst.de>
-Received: from mail.lst.de (verein.lst.de [213.95.11.210])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 160DDDDDE4
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 09:43:39 +1100 (EST)
-Date: Mon, 5 Feb 2007 23:43:25 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 02/10] windfarm: dont die on suspend thread signal
-Message-ID: <20070205224325.GA8453@lst.de>
+	by ozlabs.org (Postfix) with ESMTP id 1E767DDE25
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 09:58:10 +1100 (EST)
+Subject: [PATCH revision 2] windfarm: dont die on suspend thread signal
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Christoph Hellwig <hch@lst.de>
+In-Reply-To: <20070205224325.GA8453@lst.de>
 References: <20070205183026.989209000@sipsolutions.net>
 	<20070205185835.700233000@sipsolutions.net>
+	<20070205224325.GA8453@lst.de>
+Content-Type: text/plain
+Date: Mon, 05 Feb 2007 23:54:34 +0100
+Message-Id: <1170716074.30959.13.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070205185835.700233000@sipsolutions.net>
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
 	linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,12 +26,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 05, 2007 at 07:30:29PM +0100, Johannes Berg wrote:
-> -		/* there should be no signal, but oh well */
-> -		if (signal_pending(current)) {
-> +		/* there should be no non-suspend signal, but oh well */
-> +		if (signal_pending(current) && !try_to_freeze()) {
+When the windfarm thread gets a suspend signal it will die instead of
+freezing. This fixes it.
 
-Given that the driver uses the kthread infrastructure and doesn't
-explicitly re-enable signals there can't be any other signal.
-So just remove the signal_pending check.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+
+---
+Adresses Christoph's comment: This keeps the original try_to_freeze() in
+place and just remove the code that kills the thread on a signal.
+
+--- mb-wireless.orig/drivers/macintosh/windfarm_core.c	2007-02-05 16:07:10.524524763 +0100
++++ mb-wireless/drivers/macintosh/windfarm_core.c	2007-02-05 23:49:46.004524763 +0100
+@@ -117,12 +117,6 @@ static int wf_thread_func(void *data)
+ 		delay = next - jiffies;
+ 		if (delay <= HZ)
+ 			schedule_timeout_interruptible(delay);
+-
+-		/* there should be no signal, but oh well */
+-		if (signal_pending(current)) {
+-			printk(KERN_WARNING "windfarm: thread got sigl !\n");
+-			break;
+-		}
+ 	}
+ 
+ 	DBG("wf: thread stopped\n");
