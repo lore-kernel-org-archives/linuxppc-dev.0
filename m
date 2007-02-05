@@ -1,18 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: EMAC device-tree binding #3 (& driver)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-In-Reply-To: <1170118707.26655.299.camel@localhost.localdomain>
-References: <1170118707.26655.299.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 05 Feb 2007 17:00:38 +1100
-Message-Id: <1170655238.2620.114.camel@localhost.localdomain>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7A6BFDDDE9
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 17:46:43 +1100 (EST)
+Subject: Re: CPU hotplug vs. cpufreq on ppc64
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1170639556.2620.75.camel@localhost.localdomain>
+References: <1170360890.4036.19.camel@johannes.berg>
+	<1170639556.2620.75.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-4glY/Rtv7aRNuX68vvqn"
+Date: Mon, 05 Feb 2007 07:45:51 +0100
+Message-Id: <1170657951.23273.22.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: Michael Ellerman <michaele@au.ibm.com>,
-	Christian Rund <Christian.Rund@de.ibm.com>,
-	Mark Yadlosky <yadlosky@us.ibm.com>, Murali N Iyer <mniyer@us.ibm.com>,
-	Hartmut Penner <HPENNER@de.ibm.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	cpufreq <cpufreq@lists.linux.org.uk>,
+	Ashok Raj <ashok.raj@intel.com>, davej@codemonkey.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,117 +28,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ok, here's the "final" binding for now and a driver at:
 
-http://gate.crashing.org/~benh/powerpc-emac-new-20070205.diff
+--=-4glY/Rtv7aRNuX68vvqn
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-The driver isn't much different than the previous ones I posted for
-Axon, mostly changes to adapt to binding updates & axon related bug
-fixes.
+On Mon, 2007-02-05 at 12:39 +1100, Benjamin Herrenschmidt wrote:
 
-Hopefully, David will have enough of the 440 port up soon to start
-testing it on 4xx hardware as well at which point I'll think about
-submitting it for upstream.
+> So you mean that the policy->cpus mask is lost on unplug/replug ? Hrm...
 
-* The OPB node needs a "clock-frequency" property
+Yes, but fixing that wouldn't fix the problem.
 
-* In the EMAC node itself (plb5/plb4/opb/ethernet)
+> I'm not sure what's the best way to restore it. Do we have a cpufreq
+> backend callback on hotplug to restore things ?
 
- - name              : "ethernet"
- - device_type       : "network"
- - compatible        : compatible list, contains 2 entries, first is "ibm,emac-CHIP" where
-                       CHIP is the host ASIC (440gx, 405gp, axon) and second is either
-                       "ibm,emac" or "ibm,emac4".	
-                       For axon, thus, we have: "ibm,emac-axon","ibm,emac4"
- - model             : optional model string
- - interrupts	     : <interrupt mapping for EMAC IRQ and WOL IRQ>
- - interrupt-parent  : optional, if needed for interrupt mapping
- - reg               : <registers mapping>
- - local-mac-address : 6 bytes, MAC address
- - mal-device        : 1 cell, phandle of the associated McMAL node
- - mal-tx-channel    : 1 cell, index of the tx channel on McMAL associated with this EMAC
- - mal-rx-channel    : 1 cell, index of the rx channel on McMAL associated with this EMAC
- - cell-index        : 1 cell, hardware index of the EMAC cell on a given ASIC (typically
-                       0x00000000 and 0x00000001 for EMAC-0 and EMAC-1 on each Axon chip)
- - max-frame-size    : 1 cell, maximum frame size supported in bytes
- - rx-fifo-size      : 1 cell, Rx fifo size in bytes for 10 and 100 Mb/sec operations.
-                       For axon, 2048
- - rx-fifo-size-gige : 1 cell, optional, Rx fifo size in bytes for 1000 Mb/sec operations
-                       (if absent the value is the same as rx-fifo-size).
-                       For axon, either absent or 2048.
- - tx-fifo-size      : 1 cell, Tx fifo size in bytes for 10 and 100 Mb/sec operations. For axon
- - tx-fifo-size-gige : 1 cell, optional, Tx fifo size in bytes for 1000 Mb/sec operations
-                       (if absent the value is the same as tx-fifo-size)
-                       For axon, either absent or 2048.
- - fifo-entry-size   : 1 cell, size of a fifo entry (used to calculate thresholds)
-                       For axon, 0x00000010
- - mal-burst-size    : 1 cell, MAL burst size (used to calculate thresholds) in bytes
-                       For axon, 0x00000100 (I think ...)
- - phy-mode          : string, mode of operations of the PHY interface. Supported values are:
-                         "mii", "rmii", "smii", "rgmii", "tbi", "gmii", rtbi", "sgmii"
-                       For axon on CAB, it is "rgmii"
- - phy-address       : 1 cell, optional, MDIO address of the PHY. If absent, a search
-                       is performed
-                       For axon: please fill with approriate value, I don't have it at
-                       hand, it depends on the board and the EMAC of course.
- - phy-map           : 1 cell, optional, bitmap of addresses to probe the PHY for, used
-                       if phy-address is absent. bit 0x00000001 is MDIO address 0. For axon
-                       it can be absent, thouugh my current driver doesn't handle phy-address
-                       yet so for now, keep 0x00ffffff in it.
- - mdio-device       : 1 cell, optional. If shared MDIO registers (440EP), phandle of the EMAC
-                       to use to drive the MDIO lines for the PHY used by this EMAC.
-                       For axon: absent
- - zmii-device       : 1 cell, optional. If connected to a ZMII, phandle of the ZMII device node
-                       For axon: absent
- - zmii-channel      : 1 cell, optional. If connected to a ZMII, which channel or 0xffffffff if
-                       ZMII is only used for MDIO
- - rgmii-device      : 1 cell, optional. If connected to a RGMII, phandle of the RGMII device node
-                       For axon: phandle of plb5/plb4/opb/rgmii
- - rgmii-channel     : 1 cell, optional. If connected to a RGMII, which channel
-                       Fox axon: present, whatever value is appropriate for each EMAC, that is
-                       the content of the current (bogus) "phy-port" property
- - tah-device        : 1 cell, optional. If connected to a TAH engine for offload, phandle of
-                       the TAH device node
- - tah-channel       : 1 cell, optional. If appropriate, channel used on the TAH engine
+Not afaict, but you can of course always use register_hotcpu_notifier.
 
-* In the McMAL node
+This, however, is what cpufreq.c uses to be notified of a new CPU that
+is coming online, and it then calls cpufreq_add_dev which even with a
+correct policy->cpus mask wouldn't go back to adding the links back,
+this is only done when CPU#0 comes online.
 
- - name               : "mcmal"
- - device_type        : "dma-controller"
- - compatible         : compatible list, containing 2 entries, first is "ibm,mcmal-CHIP" where
-                        CHIP is the hose ASIC (like emac) and the second is either "ibm,mcmal"
-                        or "ibm,mcmal2".
-                      : For axon, "ibm,mcmal-axon","ibm,mcmal2"
- - model              : optional model string
- - interrupts         : <interrupt mapping for the MAL interrupts sources:
-                         5 sources: tx_eob, rx_eob, serr, txde, rxde>.
-                        For axon: This is _different_ from the current firmware. We use
-                        the "delayed" interrupts for txeob and rxeob. Thus we end up with
-                        mapping those 5 MPIC interrupts, all level positive sensitive:
-                        10, 11, 32, 33, 34 (in decimal)
- - dcr-reg            : < DCR registers range >
- - dcr-parent         : if needed for dcr-reg
- - num-tx-chans       : 1 cell, number of Tx channels
- - num-rx-chans       : 1 cell, number of Rx channels
+I think this is a more generic problem and code will need to be added to
+cpufreq to
+ (a) call into the cpufreq_driver asking it to update the mask on
+     hotplug
+ (b) after that, check the mask and re-link on hotplug.
 
-* In the ZMII node
+johannes
 
- - name               : "zmii"
- - device_type        : "zmii-interface"
- - compatible         : compatible list, containing 2 entries, first is "ibm,zmii-CHIP" where
-                        CHIP is the hose ASIC (like emac) and the second is "zmii"
-                      : For axon, there is no ZMII node
- - model              : optional model string
- - reg                : <registers mapping>
+--=-4glY/Rtv7aRNuX68vvqn
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-* In the RGMII node
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
 
- - name               : "rgmii"
- - device_type        : "rgmii-interface"
- - compatible         : compatible list, containing 2 entries, first is "ibm,rgmii-CHIP" where
-                        CHIP is the hose ASIC (like emac) and the second is "rgmii"
-                      : For axon, "ibm,rgmii-axon","ibm,rgmii"
- - model              : optional model string
- - reg                : <registers mapping>
- - revision           : as provided by the RGMII new version register if available
-                        For axon: 0x0000012a
+iD8DBQBFxtKf/ETPhpq3jKURAr7uAKCxu52CVwxYZiZRX5q9MIb/q5ccOwCgpVHp
+k/UQGfRJ0qYRJFKVkesSNAE=
+=OxfZ
+-----END PGP SIGNATURE-----
+
+--=-4glY/Rtv7aRNuX68vvqn--
