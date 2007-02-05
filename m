@@ -2,19 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 360BCDDEC3
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 11:08:34 +1100 (EST)
-Subject: Re: spidernet: dynamic phy setup code
+	by ozlabs.org (Postfix) with ESMTP id 90A2FDDEBF
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 11:11:41 +1100 (EST)
+Subject: Re: [PATCH] Assign all PCI busses on G3 Blue & White
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <200702021020.l12AKLrS011304@toshiba.co.jp>
-References: <200702021020.l12AKLrS011304@toshiba.co.jp>
+To: Pavel Roskin <proski@gnu.org>
+In-Reply-To: <1170576968.21644.55.camel@dv>
+References: <1170576968.21644.55.camel@dv>
 Content-Type: text/plain
-Date: Mon, 05 Feb 2007 11:08:07 +1100
-Message-Id: <1170634087.2620.69.camel@localhost.localdomain>
+Date: Mon, 05 Feb 2007 11:11:29 +1100
+Message-Id: <1170634289.2620.71.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, jim@jklewis.com,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +23,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 2007-02-04 at 03:16 -0500, Pavel Roskin wrote:
+> From: Pavel Roskin <proski@gnu.org>
+> 
+> G3 Blue & White is misconfigured by default so that CardBus controllers
+> in PCI slots don't work.  The PCI bridge is programmed to only allow
+> access to bus 1 but not higher busses.
+> 
+> The patch forces the PCI busses to be reassigned if a Grackle controller
+> is found and the machine identifies itself as "PowerMac1,1"
+> 
+> Signed-off-by: Pavel Roskin <proski@gnu.org>
 
-> We use bcm5461. There is a possibility that we don't know the appropriate
-> setting which is applicable for both type of switches.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Have you tested the existing 54xx code in sungem_phy.c ? We use that
-with 5462 at least in K2 and all sorts of 54xx chips and it works
-fine... Just setup the right advertisement bits and call setup_aneg in
-the PHY ops. You don't even need to implement the "forced" fallback code
-that is in sungem. It's not necessary with most broadcom PHYs as they do
-that themselves, just setup aneg and poll the link from a timer, that's
-it. Once you get a link, then setup your GMACMODE based on the link
-speed.
-
-I don't have the datasheet of the 5461 at hand but I doubt it's any
-different... Like other Broadcom 54xx PHYs, it might need some special
-initialization code to work around firmware bugs though...
-
-> We didn't investigate for the detail, but we met the following phenomena.
-> 1. When auto-neg starts with Gbps setting and ethernet card is connected to
->    a 100Mbps switch, LINK is not detected.
-> 2. When auto-neg starts with 100/10Mbps setting and ethernet card is 
->    connected to Gbps switch, LINK is detected (poll_link() succeeds), but
->    the network is not available.
-
-That is very strange... I would need to review your code in more details
-or eventually have HW access to run my own experiments, but none of this
-should happen if things are setup properly. Also avoid relying on the
-link interrupt, it's a known cause of trouble. Just poll.
-
-Ben.
+> ---
+> My previous attempt to fix this bug can be found in this thread:
+> http://ozlabs.org/pipermail/linuxppc-dev/2004-May/thread.html#17056
+> The new patch relies on the existing common PCI code and doesn't poke
+> bridge registers itself.  It would even do the right thing if a PCI or
+> CardBus bridge is inserted into the upper slot reserved for video cards
+> and connected directly to bus 0.
+> ---
+> 
+>  arch/powerpc/sysdev/grackle.c |    2 ++
+>  1 files changed, 2 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/grackle.c b/arch/powerpc/sysdev/grackle.c
+> index b6ec793..4205362 100644
+> --- a/arch/powerpc/sysdev/grackle.c
+> +++ b/arch/powerpc/sysdev/grackle.c
+> @@ -56,6 +56,8 @@ static inline void grackle_set_loop_snoop(struct pci_controller *bp, int enable)
+>  void __init setup_grackle(struct pci_controller *hose)
+>  {
+>  	setup_indirect_pci(hose, 0xfec00000, 0xfee00000);
+> +	if (machine_is_compatible("PowerMac1,1"))
+> +		pci_assign_all_buses = 1;
+>  	if (machine_is_compatible("AAPL,PowerBook1998"))
+>  		grackle_set_loop_snoop(hose, 1);
+>  #if 0	/* Disabled for now, HW problems ??? */
+> 
+> 
