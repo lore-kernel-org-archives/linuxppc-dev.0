@@ -1,25 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF5F1DDE2C
+Return-Path: <darwish.07@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id 9B4D4DDE3A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Feb 2007 03:20:46 +1100 (EST)
-In-Reply-To: <000601c74754$b9a1eb90$6405a8c0@absolut>
-References: <000c01c746db$6451e7e0$6405a8c0@absolut>
-	<06A02CF1-7D0C-4D59-9628-A2EB0FF3CCF4@kernel.crashing.org>
-	<001101c746e3$5b8dab00$6405a8c0@absolut>
-	<A755B15B-9C78-40E1-998D-FE9E68E74805@kernel.crashing.org>
-	<000601c74754$b9a1eb90$6405a8c0@absolut>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4A62CA3B-408B-4F63-BDF4-671B6EB88F67@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC8360 : PCI resource allocate error
-Date: Mon, 5 Feb 2007 10:19:49 -0600
-To: <rmcguire@videopresence.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue,  6 Feb 2007 03:59:25 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1191873ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 05 Feb 2007 08:59:23 -0800 (PST)
+Date: Mon, 5 Feb 2007 18:59:16 +0200
+To: ebs@ebshome.net
+Subject: [PATCH 2.6.20] ibm_emac: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070205165916.GK3896@Ahmed>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070205165429.GD3896@Ahmed>
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: netdev@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,47 +26,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Feb 2, 2007, at 11:32 PM, Russell McGuire wrote:
+A patch to use ARRAY_SIZE macro already defined in kernel.h.
 
-> Comments in line:
->
->> On Feb 2, 2007, at 10:01 AM, Russell McGuire wrote:
->>
->>> Here is the current .dts mapping, though I am beginning to  
->>> suspect the
->>> hardware or a possible U-boot bug on this.
->>>
->>> U-boot can't see the PCI USB card in SLOT 3, but it can see the all
->>> of the
->>> other various PCI cards I have <ATI video card, sound card, ATA  
->>> card,
->>> network card>
->>
->> Are any cards detected in SLOT 3 with u-boot?  If not, I'd think HW
->> as well.
->
-> Yes, actually of the 6 cards I have, all are seen except the USB card.
-> And the USB card is seen in all other slots. So it appears to be a  
-> SLOT
-> issue, but not a card issue.  Somehow this card is unique and  
-> uncovering an
-> error that I don't know about yet. Perhaps I have a single address  
-> line
-> sizzled or something. This is the same slot that has the IO resource
-> allocation problems; I don't think I need to debug that in Linux.
->
-> OR..
->
-> Is there any PCI test code out there??? Maybe I should forego the  
-> drivers,
-> and figure out some kind of test. I made a blind assumption in U- 
-> boot that
-> if it worked to detect cards that everything was in order.
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+---
+Patch isn't compile-tested cause I don't have the needed hardware.
 
-The only thing that u-boot seeing a card tests is that PCI config  
-cycles are working.  It doesn't cover anything like bus mastering, or  
-interrupts, etc.  (and there is still a possibility of address/data  
-line problems).
+diff --git a/drivers/net/ibm_emac/ibm_emac_debug.c b/drivers/net/ibm_emac/ibm_emac_debug.c
+index 92f970d..1f70906 100644
+--- a/drivers/net/ibm_emac/ibm_emac_debug.c
++++ b/drivers/net/ibm_emac/ibm_emac_debug.c
+@@ -132,7 +132,7 @@ void emac_dbg_register(int idx, struct ocp_enet_private *dev)
+ {
+ 	unsigned long flags;
+ 
+-	if (idx >= sizeof(__emacs) / sizeof(__emacs[0])) {
++	if (idx >= ARRAY_SIZE(__emacs)) {
+ 		printk(KERN_WARNING
+ 		       "invalid index %d when registering EMAC for debugging\n",
+ 		       idx);
+@@ -148,7 +148,7 @@ void mal_dbg_register(int idx, struct ibm_ocp_mal *mal)
+ {
+ 	unsigned long flags;
+ 
+-	if (idx >= sizeof(__mals) / sizeof(__mals[0])) {
++	if (idx >= ARRAY_SIZE(__mals)) {
+ 		printk(KERN_WARNING
+ 		       "invalid index %d when registering MAL for debugging\n",
+ 		       idx);
+@@ -167,11 +167,11 @@ void emac_dbg_dump_all(void)
+ 
+ 	local_irq_save(flags);
+ 
+-	for (i = 0; i < sizeof(__mals) / sizeof(__mals[0]); ++i)
++	for (i = 0; i < ARRAY_SIZE(__mals); ++i)
+ 		if (__mals[i])
+ 			emac_mal_dump(__mals[i]);
+ 
+-	for (i = 0; i < sizeof(__emacs) / sizeof(__emacs[0]); ++i)
++	for (i = 0; i < ARRAY_SIZE(__emacs); ++i)
+ 		if (__emacs[i])
+ 			emac_mac_dump(i, __emacs[i]);
+ 
 
-- k
+-- 
+Ahmed S. Darwish
+http://darwish-07.blogspot.com
