@@ -1,19 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id D26DEDDE3E
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 15:45:30 +1100 (EST)
-Date: Sun, 4 Feb 2007 22:52:58 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] [7/9] pasemi: Configure DMA controller interrupts
-Message-ID: <20070205045258.GB4719@lixom.net>
-References: <20070202045448.145851000@lixom.net>
-	<20070202045509.170129000@lixom.net>>
-	<1170633229.2620.54.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1170633229.2620.54.camel@localhost.localdomain>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: EMAC device-tree binding #3 (& driver)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1170118707.26655.299.camel@localhost.localdomain>
+References: <1170118707.26655.299.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Mon, 05 Feb 2007 17:00:38 +1100
+Message-Id: <1170655238.2620.114.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Michael Ellerman <michaele@au.ibm.com>,
+	Christian Rund <Christian.Rund@de.ibm.com>,
+	Mark Yadlosky <yadlosky@us.ibm.com>, Murali N Iyer <mniyer@us.ibm.com>,
+	Hartmut Penner <HPENNER@de.ibm.com>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,51 +22,117 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 05, 2007 at 10:53:49AM +1100, Benjamin Herrenschmidt wrote:
-> On Thu, 2007-02-01 at 22:54 -0600, Olof Johansson wrote:
-> > plain text document attachment (pasemi-dma-irqs)
-> > The DMA controller on PWRficient is somewhat special -- has a PCI header
-> > so it looks like it's on the root PCI (-Express) root bus, but it uses
-> > more than the default number of interrupts (and they are hardwired).
-> > 
-> > We need to wire up all interrupts for the DMA controller. The generic
-> > IRQ code will only map the primary interrupt from the PCI header (128),
-> > so add 129->211 by hand.
-> 
-> Or you can have them in the device-tree ... the generic code only maps
-> PCI IRQ index 0 but nothing prevents your fixup code to map the other
-> ones.
+Ok, here's the "final" binding for now and a driver at:
 
-I don't see the point in having them in the device tree fixups instead
-of pci fixups. I'll move them to the driver for now.
+http://gate.crashing.org/~benh/powerpc-emac-new-20070205.diff
 
-> However, I do wonder what is the point of creating a mapping and nor
-> storing the resulting virq anywhere ?
+The driver isn't much different than the previous ones I posted for
+Axon, mostly changes to adapt to binding updates & axon related bug
+fixes.
 
-Current usage was relying on the virqs being allocated linearly with
-the rest. Yes, that's in hindsight broken.
+Hopefully, David will have enough of the 440 port up soon to start
+testing it on 4xx hardware as well at which point I'll think about
+submitting it for upstream.
 
-> When are those IRQs actually used ?
+* The OPB node needs a "clock-frequency" property
 
-In the ethernet driver;
+* In the EMAC node itself (plb5/plb4/opb/ethernet)
 
-       ret = request_irq(mac->dma_pdev->irq + mac->dma_txch,
-                         &pasemi_mac_tx_intr, IRQF_DISABLED,
-                         mac->tx->irq_name, dev);
-[...]
+ - name              : "ethernet"
+ - device_type       : "network"
+ - compatible        : compatible list, contains 2 entries, first is "ibm,emac-CHIP" where
+                       CHIP is the host ASIC (440gx, 405gp, axon) and second is either
+                       "ibm,emac" or "ibm,emac4".	
+                       For axon, thus, we have: "ibm,emac-axon","ibm,emac4"
+ - model             : optional model string
+ - interrupts	     : <interrupt mapping for EMAC IRQ and WOL IRQ>
+ - interrupt-parent  : optional, if needed for interrupt mapping
+ - reg               : <registers mapping>
+ - local-mac-address : 6 bytes, MAC address
+ - mal-device        : 1 cell, phandle of the associated McMAL node
+ - mal-tx-channel    : 1 cell, index of the tx channel on McMAL associated with this EMAC
+ - mal-rx-channel    : 1 cell, index of the rx channel on McMAL associated with this EMAC
+ - cell-index        : 1 cell, hardware index of the EMAC cell on a given ASIC (typically
+                       0x00000000 and 0x00000001 for EMAC-0 and EMAC-1 on each Axon chip)
+ - max-frame-size    : 1 cell, maximum frame size supported in bytes
+ - rx-fifo-size      : 1 cell, Rx fifo size in bytes for 10 and 100 Mb/sec operations.
+                       For axon, 2048
+ - rx-fifo-size-gige : 1 cell, optional, Rx fifo size in bytes for 1000 Mb/sec operations
+                       (if absent the value is the same as rx-fifo-size).
+                       For axon, either absent or 2048.
+ - tx-fifo-size      : 1 cell, Tx fifo size in bytes for 10 and 100 Mb/sec operations. For axon
+ - tx-fifo-size-gige : 1 cell, optional, Tx fifo size in bytes for 1000 Mb/sec operations
+                       (if absent the value is the same as tx-fifo-size)
+                       For axon, either absent or 2048.
+ - fifo-entry-size   : 1 cell, size of a fifo entry (used to calculate thresholds)
+                       For axon, 0x00000010
+ - mal-burst-size    : 1 cell, MAL burst size (used to calculate thresholds) in bytes
+                       For axon, 0x00000100 (I think ...)
+ - phy-mode          : string, mode of operations of the PHY interface. Supported values are:
+                         "mii", "rmii", "smii", "rgmii", "tbi", "gmii", rtbi", "sgmii"
+                       For axon on CAB, it is "rgmii"
+ - phy-address       : 1 cell, optional, MDIO address of the PHY. If absent, a search
+                       is performed
+                       For axon: please fill with approriate value, I don't have it at
+                       hand, it depends on the board and the EMAC of course.
+ - phy-map           : 1 cell, optional, bitmap of addresses to probe the PHY for, used
+                       if phy-address is absent. bit 0x00000001 is MDIO address 0. For axon
+                       it can be absent, thouugh my current driver doesn't handle phy-address
+                       yet so for now, keep 0x00ffffff in it.
+ - mdio-device       : 1 cell, optional. If shared MDIO registers (440EP), phandle of the EMAC
+                       to use to drive the MDIO lines for the PHY used by this EMAC.
+                       For axon: absent
+ - zmii-device       : 1 cell, optional. If connected to a ZMII, phandle of the ZMII device node
+                       For axon: absent
+ - zmii-channel      : 1 cell, optional. If connected to a ZMII, which channel or 0xffffffff if
+                       ZMII is only used for MDIO
+ - rgmii-device      : 1 cell, optional. If connected to a RGMII, phandle of the RGMII device node
+                       For axon: phandle of plb5/plb4/opb/rgmii
+ - rgmii-channel     : 1 cell, optional. If connected to a RGMII, which channel
+                       Fox axon: present, whatever value is appropriate for each EMAC, that is
+                       the content of the current (bogus) "phy-port" property
+ - tah-device        : 1 cell, optional. If connected to a TAH engine for offload, phandle of
+                       the TAH device node
+ - tah-channel       : 1 cell, optional. If appropriate, channel used on the TAH engine
 
-       ret = request_irq(mac->dma_pdev->irq + 20 + mac->dma_rxch,
-                         &pasemi_mac_rx_intr, IRQF_DISABLED,
-                         mac->rx->irq_name, dev);
+* In the McMAL node
 
-> That is the place where the mapping should happen... There is no
-> guarantee that the resulting virq from irq_create_mapping() will be the
-> same as the HW irq you passed in (it will in -most- cases with the
-> current code, but it's a bug to rely on that behaviour). Thus you should
-> store the result of irq_create_mapping() and use that. I see no
-> advantage in "pre-mapping" things that way.
+ - name               : "mcmal"
+ - device_type        : "dma-controller"
+ - compatible         : compatible list, containing 2 entries, first is "ibm,mcmal-CHIP" where
+                        CHIP is the hose ASIC (like emac) and the second is either "ibm,mcmal"
+                        or "ibm,mcmal2".
+                      : For axon, "ibm,mcmal-axon","ibm,mcmal2"
+ - model              : optional model string
+ - interrupts         : <interrupt mapping for the MAL interrupts sources:
+                         5 sources: tx_eob, rx_eob, serr, txde, rxde>.
+                        For axon: This is _different_ from the current firmware. We use
+                        the "delayed" interrupts for txeob and rxeob. Thus we end up with
+                        mapping those 5 MPIC interrupts, all level positive sensitive:
+                        10, 11, 32, 33, 34 (in decimal)
+ - dcr-reg            : < DCR registers range >
+ - dcr-parent         : if needed for dcr-reg
+ - num-tx-chans       : 1 cell, number of Tx channels
+ - num-rx-chans       : 1 cell, number of Rx channels
 
-I'll submit an incremental patch to the ethernet driver.
+* In the ZMII node
 
+ - name               : "zmii"
+ - device_type        : "zmii-interface"
+ - compatible         : compatible list, containing 2 entries, first is "ibm,zmii-CHIP" where
+                        CHIP is the hose ASIC (like emac) and the second is "zmii"
+                      : For axon, there is no ZMII node
+ - model              : optional model string
+ - reg                : <registers mapping>
 
--Olof
+* In the RGMII node
+
+ - name               : "rgmii"
+ - device_type        : "rgmii-interface"
+ - compatible         : compatible list, containing 2 entries, first is "ibm,rgmii-CHIP" where
+                        CHIP is the hose ASIC (like emac) and the second is "rgmii"
+                      : For axon, "ibm,rgmii-axon","ibm,rgmii"
+ - model              : optional model string
+ - reg                : <registers mapping>
+ - revision           : as provided by the RGMII new version register if available
+                        For axon: 0x0000012a
