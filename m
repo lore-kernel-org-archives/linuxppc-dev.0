@@ -2,18 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 90A2FDDEBF
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 11:11:41 +1100 (EST)
-Subject: Re: [PATCH] Assign all PCI busses on G3 Blue & White
+	by ozlabs.org (Postfix) with ESMTP id 3A8F3DDE04
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 12:40:08 +1100 (EST)
+Subject: Re: CPU hotplug vs. cpufreq on ppc64
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Pavel Roskin <proski@gnu.org>
-In-Reply-To: <1170576968.21644.55.camel@dv>
-References: <1170576968.21644.55.camel@dv>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1170360890.4036.19.camel@johannes.berg>
+References: <1170360890.4036.19.camel@johannes.berg>
 Content-Type: text/plain
-Date: Mon, 05 Feb 2007 11:11:29 +1100
-Message-Id: <1170634289.2620.71.camel@localhost.localdomain>
+Date: Mon, 05 Feb 2007 12:39:16 +1100
+Message-Id: <1170639556.2620.75.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	cpufreq <cpufreq@lists.linux.org.uk>,
+	Ashok Raj <ashok.raj@intel.com>, davej@codemonkey.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,44 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-02-04 at 03:16 -0500, Pavel Roskin wrote:
-> From: Pavel Roskin <proski@gnu.org>
-> 
-> G3 Blue & White is misconfigured by default so that CardBus controllers
-> in PCI slots don't work.  The PCI bridge is programmed to only allow
-> access to bus 1 but not higher busses.
-> 
-> The patch forces the PCI busses to be reassigned if a Grackle controller
-> is found and the machine identifies itself as "PowerMac1,1"
-> 
-> Signed-off-by: Pavel Roskin <proski@gnu.org>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> which seems fine. However, when I resume, I get
+> [  168.446692] cpufreq-core: resuming cpu 0
+> [  168.446708] cpufreq-core: resuming cpu 1
+> [  168.446715] cpufreq-core: resuming cpu 2
+> [  168.446721] cpufreq-core: resuming cpu 3
+> [  168.624880] cpufreq-core: handle_update for cpu 0 called
+> [  168.624893] cpufreq-core: updating policy for CPU 0
+> [  168.624905] cpufreq-core: setting new policy for CPU 0: 1250000 - 2500000 kHz
+> [  168.624965] cpufreq-core: new min and max freqs are 1250000 - 2500000 kHz
+> [  168.624974] cpufreq-core: governor: change or update limits
+> [  168.624982] cpufreq-core: __cpufreq_governor for CPU 0, event 3
+> [  168.625009] cpufreq-core: target for CPU 0: 1250000 kHz, relation 0
+> [  169.232726] cpufreq-core: adding CPU 1
+> [  169.232741] cpufreq-core: initialization failed
+> [  169.239623] cpufreq-core: adding CPU 2
+> [  169.239636] cpufreq-core: initialization failed
+> [  169.247240] cpufreq-core: adding CPU 3
+> [  169.247255] cpufreq-core: initialization failed
+> 
+> The question now is where this needs to be handled, and how. The driver
+> can't really say that it initialised fine because it's still initialised
+> on CPU0. However, I suppose that for real CPU hotplug cpufreq can't try
+> to remember the pre-unplug groups either...
 
-> ---
-> My previous attempt to fix this bug can be found in this thread:
-> http://ozlabs.org/pipermail/linuxppc-dev/2004-May/thread.html#17056
-> The new patch relies on the existing common PCI code and doesn't poke
-> bridge registers itself.  It would even do the right thing if a PCI or
-> CardBus bridge is inserted into the upper slot reserved for video cards
-> and connected directly to bus 0.
-> ---
-> 
->  arch/powerpc/sysdev/grackle.c |    2 ++
->  1 files changed, 2 insertions(+), 0 deletions(-)
-> 
-> diff --git a/arch/powerpc/sysdev/grackle.c b/arch/powerpc/sysdev/grackle.c
-> index b6ec793..4205362 100644
-> --- a/arch/powerpc/sysdev/grackle.c
-> +++ b/arch/powerpc/sysdev/grackle.c
-> @@ -56,6 +56,8 @@ static inline void grackle_set_loop_snoop(struct pci_controller *bp, int enable)
->  void __init setup_grackle(struct pci_controller *hose)
->  {
->  	setup_indirect_pci(hose, 0xfec00000, 0xfee00000);
-> +	if (machine_is_compatible("PowerMac1,1"))
-> +		pci_assign_all_buses = 1;
->  	if (machine_is_compatible("AAPL,PowerBook1998"))
->  		grackle_set_loop_snoop(hose, 1);
->  #if 0	/* Disabled for now, HW problems ??? */
-> 
-> 
+So you mean that the policy->cpus mask is lost on unplug/replug ? Hrm...
+I'm not sure what's the best way to restore it. Do we have a cpufreq
+backend callback on hotplug to restore things ?
+
+Ben.
