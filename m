@@ -2,20 +2,21 @@ Return-Path: <akpm@linux-foundation.org>
 Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
 	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
 	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 7E2A3DDE2D
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 09:54:32 +1100 (EST)
-Date: Mon, 5 Feb 2007 14:54:25 -0800
+	by ozlabs.org (Postfix) with ESMTP id 95F08DDDEE
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 10:18:24 +1100 (EST)
+Date: Mon, 5 Feb 2007 15:18:16 -0800
 From: Andrew Morton <akpm@linux-foundation.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 02/10] windfarm: dont die on suspend thread signal
-Message-Id: <20070205145425.5f6ecbb0.akpm@linux-foundation.org>
-In-Reply-To: <20070205185835.700233000@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 03/10] powerpc: fix comment in kernel/irq.c
+Message-Id: <20070205151816.d841633b.akpm@linux-foundation.org>
+In-Reply-To: <1170716376.2620.141.camel@localhost.localdomain>
 References: <20070205183026.989209000@sipsolutions.net>
-	<20070205185835.700233000@sipsolutions.net>
+	<20070205185836.099816000@sipsolutions.net>
+	<1170716376.2620.141.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Torrance <torrance123@gmail.com>,
-	linux-pm@lists.osdl.org
+Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
+	linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 05 Feb 2007 19:30:29 +0100
-Johannes Berg <johannes@sipsolutions.net> wrote:
+On Tue, 06 Feb 2007 09:59:36 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-> When the windfarm thread gets a suspend signal it will die instead of
-> freezing. This fixes it.
+> On Mon, 2007-02-05 at 19:30 +0100, Johannes Berg wrote:
+> > plain text document attachment (irq-comment.patch)
+> > kernel/irq.c contains a comment that speaks of -1 and -2 as interrupt
+> > numbers. Replace by NO_IRQ and NO_IRQ_IGNORE.
+> > 
+> > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> > Cc: Andrew Morton <akpm@osdl.org>
 > 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Andrew Morton <akpm@osdl.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> ---
-> Please apply to -mm.
-> 
-> --- mb-wireless.orig/drivers/macintosh/windfarm_core.c	2007-02-05 14:24:06.344526864 +0100
-> +++ mb-wireless/drivers/macintosh/windfarm_core.c	2007-02-05 14:24:38.264526864 +0100
-> @@ -94,8 +94,6 @@ static int wf_thread_func(void *data)
->  	DBG("wf: thread started\n");
->  
->  	while(!kthread_should_stop()) {
-> -		try_to_freeze();
-> -
->  		if (time_after_eq(jiffies, next)) {
->  			wf_notify(WF_EVENT_TICK, NULL);
->  			if (wf_overtemp) {
-> @@ -118,8 +116,8 @@ static int wf_thread_func(void *data)
->  		if (delay <= HZ)
->  			schedule_timeout_interruptible(delay);
->  
-> -		/* there should be no signal, but oh well */
-> -		if (signal_pending(current)) {
-> +		/* there should be no non-suspend signal, but oh well */
-> +		if (signal_pending(current) && !try_to_freeze()) {
->  			printk(KERN_WARNING "windfarm: thread got sigl !\n");
->  			break;
->  		}
-> 
-> --
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-That sounds like a fairly irritating feature.  Should we backport this into 2.6.20?
+I hope that wasn't acked at me.  I was only copied on half this patch
+series and I only picked up swsusp-dont-copy-pages-that-arent-ram.patch and
+windfarm-dont-die-on-suspend-thread-signal.patch.
