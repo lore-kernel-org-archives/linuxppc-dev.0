@@ -1,18 +1,19 @@
-Return-Path: <darwish.07@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 3698ADDE28
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 13:43:29 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1053533ugf
-	for <linuxppc-dev@ozlabs.org>; Sun, 04 Feb 2007 18:43:29 -0800 (PST)
-Date: Mon, 5 Feb 2007 04:43:16 +0200
-To: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH 2.6.20] arch PPC: user ARRAY_SIZE macro when appropriate
-Message-ID: <20070205024316.GN18118@Ahmed>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 8F0BBDDE31
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 15:11:54 +1100 (EST)
+Date: Sun, 4 Feb 2007 22:19:19 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] [3/9] pasemi: Machine check handler
+Message-ID: <20070205041919.GA4719@lixom.net>
+References: <20070202045448.145851000@lixom.net>
+	<20070202045508.119282000@lixom.net>>
+	<1170632998.2620.50.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070205023935.GG18118@Ahmed>
-From: "Ahmed S. Darwish" <darwish.07@gmail.com>
-Cc: linux-kernel@vger.kernel.org
+In-Reply-To: <1170632998.2620.50.camel@localhost.localdomain>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,79 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Mon, Feb 05, 2007 at 10:49:57AM +1100, Benjamin Herrenschmidt wrote:
+> On Thu, 2007-02-01 at 22:54 -0600, Olof Johansson wrote:
+> > plain text document attachment (pasemi-machine-check)
+> > Print out decoded machine check information on PA6T.
+> > 
+> > 
+> > Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> Not specific to your patch, but in general, Machine Check might happen
+> while MSR:EE is off... which means the kernel might dislike printk being
+> called from the MC handler under some circumstances (for example,
+> re-entering printk itself in places it doesn't expect to be).
+> 
+> Might be worth, when the MC is recoverable, to try to "defer" the
+> printout to some real irq or timer irq 
 
-A patch to use ARRAY_SIZE macro already defined in linux/kernel.h
+Right. There are some other fixups to be done too that I will look at
+later, for example all machine checks are still passed through a 32-bit
+decoder after the ppc_md one. It can be quite confusing and should
+probably be moved out to ppc_machdep handlers on all platforms instead.
 
-Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
----
-Patch isn't compile checked cause I have no PowerPC machine at hand.
-Thanks,
+I'll try to have some cleanup of the generic code for 2.6.22. Meanwhile
+I think this can go in.
 
-diff --git a/arch/ppc/lib/rheap.c b/arch/ppc/lib/rheap.c
-index 31e5118..d407007 100644
---- a/arch/ppc/lib/rheap.c
-+++ b/arch/ppc/lib/rheap.c
-@@ -14,6 +14,7 @@
-  */
- #include <linux/types.h>
- #include <linux/errno.h>
-+#include <linux/kernel.h>
- #include <linux/mm.h>
- #include <linux/slab.h>
- 
-@@ -654,7 +655,7 @@ void rh_dump(rh_info_t * info)
- 	int maxnr;
- 	int i, nr;
- 
--	maxnr = sizeof(st) / sizeof(st[0]);
-+	maxnr = ARRAY_SIZE(st);
- 
- 	printk(KERN_INFO
- 	       "info @0x%p (%d slots empty / %d max)\n",
-diff --git a/arch/ppc/syslib/m8xx_setup.c b/arch/ppc/syslib/m8xx_setup.c
-index d8d299b..01e48d8 100644
---- a/arch/ppc/syslib/m8xx_setup.c
-+++ b/arch/ppc/syslib/m8xx_setup.c
-@@ -77,7 +77,7 @@ static struct mtd_partition mpc8xxads_partitions[] = {
- 	}
- };
- 
--#define mpc8xxads_part_num (sizeof (mpc8xxads_partitions) / sizeof (mpc8xxads_partitions[0]))
-+#define mpc8xxads_part_num ARRAY_SIZE(mpc8xxads_partitions)
- 
- #endif
- 
-diff --git a/arch/ppc/xmon/ppc-opc.c b/arch/ppc/xmon/ppc-opc.c
-index 533a6c9..034313c 100644
---- a/arch/ppc/xmon/ppc-opc.c
-+++ b/arch/ppc/xmon/ppc-opc.c
-@@ -19,6 +19,7 @@ along with this file; see the file COPYING.  If not, write to the Free
- Software Foundation, 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.  */
- 
- #include <linux/posix_types.h>
-+#include <linux/kernel.h>
- #include "ansidecl.h"
- #include "ppc.h"
- 
-@@ -2669,8 +2670,7 @@ const struct powerpc_opcode powerpc_opcodes[] = {
- 
- };
- 
--const int powerpc_num_opcodes =
--  sizeof (powerpc_opcodes) / sizeof (powerpc_opcodes[0]);
-+const int powerpc_num_opcodes = ARRAY_SIZE(powerpc_opcodes);
- 
- /* The macro table.  This is only used by the assembler.  */
- 
-@@ -2717,5 +2717,4 @@ const struct powerpc_macro powerpc_macros[] = {
- 
- };
- 
--const int powerpc_num_macros =
--  sizeof (powerpc_macros) / sizeof (powerpc_macros[0]);
-+const int powerpc_num_macros = ARRAY_SIZE(powerpc_macros);
 
--- 
-Ahmed S. Darwish
-http://darwish-07.blogspot.com
+-Olof
