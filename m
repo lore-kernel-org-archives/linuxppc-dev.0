@@ -1,23 +1,33 @@
-Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts36-srv.bellnexxia.net (tomts36.bellnexxia.net
-	[209.226.175.93]) by ozlabs.org (Postfix) with ESMTP id 4E794DDE40
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 07:21:36 +1100 (EST)
-Received: from krystal.dyndns.org ([67.68.196.179])
-	by tomts36-srv.bellnexxia.net
-	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20070205202130.YYJT1862.tomts36-srv.bellnexxia.net@krystal.dyndns.org>
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 15:21:30 -0500
-Date: Mon, 5 Feb 2007 15:21:30 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] Missing ifndef __ASSEMBLY__ in include/asm-powerpc/dcr.h
-Message-ID: <20070205202130.GB13694@Krystal>
-References: <20070205193310.GA12412@Krystal>
-	<1170706715.2620.126.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <1170706715.2620.126.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <b07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 302B4DDECE
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 07:43:51 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l15KhiRw001134
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 13:43:44 -0700 (MST)
+Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
+	[10.82.65.62])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l15Khhox013758
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 14:43:43 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
+	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
+	l15KPVnh013612
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 14:25:32 -0600 (CST)
+Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 947244B927
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 14:43:37 -0600 (CST)
+Received: (from b07421@localhost)
+	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
+	l15Khb7S003692
+	for linuxppc-dev@ozlabs.org; Mon, 5 Feb 2007 14:43:37 -0600
+Date: Mon, 5 Feb 2007 14:43:37 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/2] 83xx: ioremap() the entire IMMR for misc register blocks.
+Message-ID: <20070205204337.GA3683@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,46 +37,121 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-* Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
-> On Mon, 2007-02-05 at 14:33 -0500, Mathieu Desnoyers wrote:
-> > Missing ifndef __ASSEMBLY__ in include/asm-powerpc/dcr.h
-> >=20
-> > A missing structure forward declaration causes a lot of warnings when
-> > compiling for a powerpc 405. Because this header is used for assembly
-> > too, the declaration must be put within #ifndef __ASSEMBLY__, as should
-> > be the function prototypes.
-> >=20
-> > This patch applies on 2.6.20.
-> >=20
-> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->=20
-> Out of curiosity, are you working on 405 support for arch/powerpc ?
->=20
-> Ben.
->=20
+Rather than add each component of the IMMR to the device tree as a
+separate device, the entire IMMR is made available for code which
+wants to access registers at known locations.
 
-I am just trying to compile for my LTTng tracer regression tests. I guess
-I'm better off using arch/pcc instead.
+This is intended to be used for simple things are very unlikely to be
+moved or duplicated, such as reset registers.
 
-> > --- a/include/asm-powerpc/dcr.h
-> > +++ b/include/asm-powerpc/dcr.h
-> > @@ -33,10 +33,13 @@
-> >   * base from the device-tree
-> >   */
-> >  #ifdef CONFIG_PPC_MERGE
-> > +#ifndef __ASSEMBLY__
-> > +struct device_node;
-> >  extern unsigned int dcr_resource_start(struct device_node *np,
-> >  				       unsigned int index);
-> >  extern unsigned int dcr_resource_len(struct device_node *np,
-> >  				     unsigned int index);
-> > +#endif
-> >  #endif /* CONFIG_PPC_MERGE */
-> > =20
-> >  #endif /* CONFIG_PPC_DCR */
->=20
+To avoid accidentally touching another soc family in the event that
+support for multiple families is built into the kernel (at some future
+date where that is supported), a compatible property is added to the
+device tree soc node.
 
---=20
-Mathieu Desnoyers
-Computer Engineering Graduate Student, =C9cole Polytechnique de Montr=E9al
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/dts/mpc8349emds.dts  |    1 +
+ arch/powerpc/boot/dts/mpc8349emitx.dts |    1 +
+ arch/powerpc/boot/dts/mpc8360emds.dts  |    1 +
+ arch/powerpc/sysdev/fsl_soc.c          |   29 +++++++++++++++++++++++++++++
+ arch/powerpc/sysdev/fsl_soc.h          |    3 +++
+ 5 files changed, 35 insertions(+), 0 deletions(-)
+
+diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts b/arch/powerpc/boot/dts/mpc8349emds.dts
+index efceb34..c7ff2f1 100644
+--- a/arch/powerpc/boot/dts/mpc8349emds.dts
++++ b/arch/powerpc/boot/dts/mpc8349emds.dts
+@@ -47,6 +47,7 @@
+ 		ranges = <0 e0000000 00100000>;
+ 		reg = <e0000000 00000200>;
+ 		bus-frequency = <0>;
++		compatible = "mpc8349\0mpc834x\0mpc83xx";
+ 
+ 		wdt@200 {
+ 			device_type = "watchdog";
+diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
+index 27807fc..0a3dde8 100644
+--- a/arch/powerpc/boot/dts/mpc8349emitx.dts
++++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
+@@ -46,6 +46,7 @@
+ 		ranges = <0 e0000000 00100000>;
+ 		reg = <e0000000 00000200>;
+ 		bus-frequency = <0>;                    // from bootloader
++		compatible = "mpc8349\0mpc834x\0mpc83xx";
+ 
+ 		wdt@200 {
+ 			device_type = "watchdog";
+diff --git a/arch/powerpc/boot/dts/mpc8360emds.dts b/arch/powerpc/boot/dts/mpc8360emds.dts
+index 9022192..6e3f708 100644
+--- a/arch/powerpc/boot/dts/mpc8360emds.dts
++++ b/arch/powerpc/boot/dts/mpc8360emds.dts
+@@ -62,6 +62,7 @@
+ 		ranges = <0 e0000000 00100000>;
+ 		reg = <e0000000 00000200>;
+ 		bus-frequency = <FBC5200>;
++		compatible = "mpc8360\0mpc836x\0mpc83xx";
+ 
+ 		wdt@200 {
+ 			device_type = "watchdog";
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index ad31e56..e395936 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -63,6 +63,35 @@ phys_addr_t get_immrbase(void)
+ 
+ EXPORT_SYMBOL(get_immrbase);
+ 
++#ifdef CONFIG_83xx
++void __iomem *mpc83xx_immr;
++#endif
++
++static int __init map_immr(void)
++{
++	struct device_node *soc;
++
++	soc = of_find_node_by_type(NULL, "soc");
++	if (soc) {
++		struct resource res;
++		int ret = of_address_to_resource(soc, 0, &res);
++		if (ret)
++			return ret;
++
++#ifdef CONFIG_83xx
++		if (device_is_compatible(soc, "mpc83xx"))
++			mpc83xx_immr = ioremap(res.start,
++			                       res.end - res.start + 1);
++#endif
++
++		of_node_put(soc);
++	};
++
++	return 0;
++}
++
++arch_initcall(map_immr);
++
+ #ifdef CONFIG_CPM2
+ 
+ static u32 brgfreq = -1;
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 04e145b..a02978e 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -2,11 +2,14 @@
+ #define __PPC_FSL_SOC_H
+ #ifdef __KERNEL__
+ 
++#include <linux/compiler.h>
+ #include <asm/mmu.h>
+ 
+ extern phys_addr_t get_immrbase(void);
+ extern u32 get_brgfreq(void);
+ extern u32 get_baudrate(void);
+ 
++extern void __iomem *mpc83xx_immr;
++
+ #endif
+ #endif
+-- 
+1.4.4
