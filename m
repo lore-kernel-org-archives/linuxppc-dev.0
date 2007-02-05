@@ -1,19 +1,23 @@
 Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts5-srv.bellnexxia.net (tomts5.bellnexxia.net
-	[209.226.175.25]) by ozlabs.org (Postfix) with ESMTP id 60589DDE27
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 07:20:14 +1100 (EST)
+Received: from tomts36-srv.bellnexxia.net (tomts36.bellnexxia.net
+	[209.226.175.93]) by ozlabs.org (Postfix) with ESMTP id 4E794DDE40
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 07:21:36 +1100 (EST)
 Received: from krystal.dyndns.org ([67.68.196.179])
-	by tomts5-srv.bellnexxia.net
+	by tomts36-srv.bellnexxia.net
 	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20070205202011.MFJG5067.tomts5-srv.bellnexxia.net@krystal.dyndns.org>
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 15:20:11 -0500
-Date: Mon, 5 Feb 2007 15:20:11 -0500
+	<20070205202130.YYJT1862.tomts36-srv.bellnexxia.net@krystal.dyndns.org>
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 15:21:30 -0500
+Date: Mon, 5 Feb 2007 15:21:30 -0500
 From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH] powerpc 405 : remove 4xx platform from Makefile
-Message-ID: <20070205202011.GA13694@Krystal>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Missing ifndef __ASSEMBLY__ in include/asm-powerpc/dcr.h
+Message-ID: <20070205202130.GB13694@Krystal>
+References: <20070205193310.GA12412@Krystal>
+	<1170706715.2620.126.camel@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <1170706715.2620.126.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +27,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-powerpc 405 : remove 4xx platform from Makefile
+* Benjamin Herrenschmidt (benh@kernel.crashing.org) wrote:
+> On Mon, 2007-02-05 at 14:33 -0500, Mathieu Desnoyers wrote:
+> > Missing ifndef __ASSEMBLY__ in include/asm-powerpc/dcr.h
+> >=20
+> > A missing structure forward declaration causes a lot of warnings when
+> > compiling for a powerpc 405. Because this header is used for assembly
+> > too, the declaration must be put within #ifndef __ASSEMBLY__, as should
+> > be the function prototypes.
+> >=20
+> > This patch applies on 2.6.20.
+> >=20
+> > Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+>=20
+> Out of curiosity, are you working on 405 support for arch/powerpc ?
+>=20
+> Ben.
+>=20
 
-Having an empty arch/powerpc/platforms/4xx (no object) causes a linking
-error. To correct this, 4xx must be removed from the upper level
-Makefile (just like 8xx).
+I am just trying to compile for my LTTng tracer regression tests. I guess
+I'm better off using arch/pcc instead.
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+> > --- a/include/asm-powerpc/dcr.h
+> > +++ b/include/asm-powerpc/dcr.h
+> > @@ -33,10 +33,13 @@
+> >   * base from the device-tree
+> >   */
+> >  #ifdef CONFIG_PPC_MERGE
+> > +#ifndef __ASSEMBLY__
+> > +struct device_node;
+> >  extern unsigned int dcr_resource_start(struct device_node *np,
+> >  				       unsigned int index);
+> >  extern unsigned int dcr_resource_len(struct device_node *np,
+> >  				     unsigned int index);
+> > +#endif
+> >  #endif /* CONFIG_PPC_MERGE */
+> > =20
+> >  #endif /* CONFIG_PPC_DCR */
+>=20
 
---- a/arch/powerpc/platforms/4xx/Makefile
-+++ /dev/null
-@@ -1 +0,0 @@
--# empty makefile so make clean works
-\ No newline at end of file
-diff --git a/arch/powerpc/platforms/Makefile b/arch/powerpc/platforms/Makef=
-ile
-index 507d1b9..0db6cca 100644
---- a/arch/powerpc/platforms/Makefile
-+++ b/arch/powerpc/platforms/Makefile
-@@ -7,7 +7,6 @@ endif
- endif
- obj-$(CONFIG_PPC_MPC52xx)	+=3D 52xx/
- obj-$(CONFIG_PPC_CHRP)		+=3D chrp/
--obj-$(CONFIG_4xx)		+=3D 4xx/
- obj-$(CONFIG_PPC_83xx)		+=3D 83xx/
- obj-$(CONFIG_PPC_85xx)		+=3D 85xx/
- obj-$(CONFIG_PPC_86xx)		+=3D 86xx/
 --=20
 Mathieu Desnoyers
 Computer Engineering Graduate Student, =C9cole Polytechnique de Montr=E9al
