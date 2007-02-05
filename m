@@ -2,14 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 137ADDE15E
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 06:09:28 +1100 (EST)
-Message-Id: <20070205185837.640324000@sipsolutions.net>
+	by ozlabs.org (Postfix) with ESMTP id 4E747DE486
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 06:09:46 +1100 (EST)
+Message-Id: <20070205185838.029827000@sipsolutions.net>
 References: <20070205183026.989209000@sipsolutions.net>
-Date: Mon, 05 Feb 2007 19:30:34 +0100
+Date: Mon, 05 Feb 2007 19:30:35 +0100
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC 07/10] powermac: support G5 CPU hotplug
+Subject: [RFC 08/10] powerpc: dart iommu suspend
 Mime-Version: 1.0
 Cc: linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,110 +21,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch allows "hotplugging" of CPUs on G5 machines. CPUs that are
-disabled are put into an idle loop with interrupts hard-disabled, to wake
-them up again we kick them just like when bringing them up.
-
-Maybe there's some way to actually turn off those CPUs even more?
+This implements suspend and resume code for the dart iommu.
 
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
---- mb-wireless.orig/arch/powerpc/platforms/powermac/smp.c	2007-02-05 16:07:09.164524763 +0100
-+++ mb-wireless/arch/powerpc/platforms/powermac/smp.c	2007-02-05 16:07:50.774524763 +0100
-@@ -898,7 +898,7 @@ void smp_core99_cpu_die(unsigned int cpu
- 	cpu_dead[cpu] = 0;
+---
+Just come to think of it, I made it conditional on
+CONFIG_SOFTWARE_SUSPEND but could imagine that it should
+instead depend on CONFIG_PM... There is no lowlevel suspend
+to RAM code yet which would call this so for now it's
+probably fine.
+
+--- mb-wireless.orig/arch/powerpc/sysdev/dart_iommu.c	2007-02-05 14:24:04.834526864 +0100
++++ mb-wireless/arch/powerpc/sysdev/dart_iommu.c	2007-02-05 14:24:40.684526864 +0100
+@@ -54,6 +54,9 @@ static unsigned long dart_tablesize;
+ 
+ /* Virtual base address of the DART table */
+ static u32 *dart_vbase;
++#ifdef CONFIG_SOFTWARE_SUSPEND
++static u32 *dart_copy;
++#endif
+ 
+ /* Mapped base address for the dart */
+ static unsigned int __iomem *dart;
+@@ -346,6 +349,52 @@ void iommu_init_early_dart(void)
+ 	pci_dma_ops = &dma_direct_ops;
  }
  
--#endif
-+#endif /* CONFIG_HOTPLUG_CPU && CONFIG_PP32 */
- 
- /* Core99 Macs (dual G4s and G5s) */
- struct smp_ops_t core99_smp_ops = {
-@@ -908,8 +908,16 @@ struct smp_ops_t core99_smp_ops = {
- 	.setup_cpu	= smp_core99_setup_cpu,
- 	.give_timebase	= smp_core99_give_timebase,
- 	.take_timebase	= smp_core99_take_timebase,
--#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
-+#if defined(CONFIG_HOTPLUG_CPU)
-+# if defined(CONFIG_PPC32)
- 	.cpu_disable	= smp_core99_cpu_disable,
- 	.cpu_die	= smp_core99_cpu_die,
-+# endif
-+# if defined(CONFIG_PPC64)
-+	.cpu_disable	= generic_cpu_disable,
-+	.cpu_die	= generic_cpu_die,
-+	/* intentionally do *NOT* assign cpu_enable,
-+	 * the generic code will use kick_cpu then! */
-+# endif
- #endif
- };
---- mb-wireless.orig/arch/powerpc/platforms/powermac/setup.c	2007-02-05 16:07:22.024524763 +0100
-+++ mb-wireless/arch/powerpc/platforms/powermac/setup.c	2007-02-05 16:07:50.784524763 +0100
-@@ -490,6 +490,9 @@ static int pmac_late_init(void)
- #ifdef CONFIG_SOFTWARE_SUSPEND
- 	pm_set_ops(&pmac_pm_ops);
- #endif /* CONFIG_SOFTWARE_SUSPEND */
-+	/* this is udbg (which is __init) and we can later use it during
-+	 * cpu hotplug (in smp_core99_kick_cpu) */
-+	ppc_md.progress = NULL;
- 	return 0;
- }
- 
-@@ -716,6 +719,33 @@ static int pmac_pci_probe_mode(struct pc
- 		return PCI_PROBE_NORMAL;
- 	return PCI_PROBE_DEVTREE;
- }
-+
-+#ifdef CONFIG_HOTPLUG_CPU
-+/* access per cpu vars from generic smp.c */
-+DECLARE_PER_CPU(int, cpu_state);
-+
-+static void pmac_cpu_die(void)
++#ifdef CONFIG_SOFTWARE_SUSPEND
++static int iommu_init_late_dart(void)
 +{
-+	/* turn off as much as possible, we'll be
-+	 * kicked out as this will only be invoked
-+	 * on core99 platforms for now ... */
-+	hard_irq_disable();
++	unsigned long i;
++	struct page *p;
 +
-+	printk(KERN_DEBUG "CPU#%d offline\n", smp_processor_id());
-+	__get_cpu_var(cpu_state) = CPU_DEAD;
-+	smp_wmb();
-+	while (1) {
-+		ppc64_runlatch_off();
-+		if (ppc_md.power_save) {
-+			ppc_md.power_save();
-+		} else {
-+			HMT_low();
-+			HMT_very_low();
-+		}
-+	}
++	/* this 16MB area is left unmapped because of caching
++	 * considerations. that happens early so we can't mark
++	 * it there, do it now instead */
++	for (i = 0; i < (1<<24); i+= PAGE_SIZE)
++		SetPageNosave(virt_to_page((void*)((unsigned long)dart_tablebase + i)));
++
++	/* if no dart table exists then we don't need to save it */
++	if (!dart_tablebase)
++		return 0;
++
++	/* For suspend we need to copy the dart contents because
++	 * it is not part of the regular mapping (see above) and
++	 * thus not saved automatically. The memory for this copy
++	 * must be allocated early because we need 2 MB. */
++	p = alloc_pages(GFP_KERNEL, 21 - PAGE_SHIFT);
++	BUG_ON(!p);
++	dart_copy = page_address(p);
++
++	return 0;
++}
++
++late_initcall(iommu_init_late_dart);
++
++void iommu_dart_save(void)
++{
++	if (!dart_tablebase)
++		return;
++
++	memcpy(dart_copy, dart_vbase, 2*1024*1024);
++}
++
++void iommu_dart_restore(void)
++{
++	if (!dart_tablebase)
++		return;
++
++	memcpy(dart_vbase, dart_copy, 2*1024*1024);
++	dart_tlb_invalidate_all();
 +}
 +#endif
-+
+ 
+ void __init alloc_dart_table(void)
+ {
+--- mb-wireless.orig/include/asm-powerpc/iommu.h	2007-02-05 14:24:05.014526864 +0100
++++ mb-wireless/include/asm-powerpc/iommu.h	2007-02-05 14:24:40.684526864 +0100
+@@ -108,6 +108,10 @@ static inline void pci_iommu_init(void) 
  #endif
  
- static void __init pmac_init_irq(void)
-@@ -769,6 +799,6 @@ define_machine(powermac) {
- 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
- #endif
- #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC64)
--	.cpu_die		= generic_mach_cpu_die,
-+	.cpu_die		= pmac_cpu_die,
- #endif
- };
---- mb-wireless.orig/arch/powerpc/kernel/smp.c	2007-02-05 16:07:09.274524763 +0100
-+++ mb-wireless/arch/powerpc/kernel/smp.c	2007-02-05 18:15:51.114524763 +0100
-@@ -558,6 +558,11 @@ int __devinit start_secondary(void *unus
+ extern void alloc_dart_table(void);
++#if defined(CONFIG_SOFTWARE_SUSPEND) && defined(CONFIG_U3_DART)
++extern void iommu_dart_save(void);
++extern void iommu_dart_restore(void);
++#endif
  
- 	local_irq_enable();
- 
-+	/* it seems to be possible that we died from within
-+	 * an interrupt ... reset the in-irq counts */
-+	task_thread_info(paca[cpu].__current)->preempt_count &=
-+		~(SOFTIRQ_MASK|HARDIRQ_MASK);
-+
- 	cpu_idle();
- 	return 0;
- }
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_IOMMU_H */
 
 --
