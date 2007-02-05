@@ -1,19 +1,17 @@
-Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts16-srv.bellnexxia.net (tomts16.bellnexxia.net
-	[209.226.175.4]) by ozlabs.org (Postfix) with ESMTP id B6BEADDF10
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 06:33:16 +1100 (EST)
-Received: from krystal.dyndns.org ([67.68.196.179])
-	by tomts16-srv.bellnexxia.net
-	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20070205193310.YKOE12977.tomts16-srv.bellnexxia.net@krystal.dyndns.org>
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 14:33:10 -0500
-Date: Mon, 5 Feb 2007 14:33:10 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH] Missing ifndef __ASSEMBLY__ in include/asm-powerpc/dcr.h
-Message-ID: <20070205193310.GA12412@Krystal>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 674ECDDEE6
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 06:51:59 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l15Jpv8X014381
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 12:51:57 -0700 (MST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Update udbg_progress() to display the integer
+Date: Mon,  5 Feb 2007 13:51:55 -0600
+Message-Id: <11707051151024-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,34 +21,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Missing ifndef __ASSEMBLY__ in include/asm-powerpc/dcr.h
+Although udbg_progress() takes a string and a short as parameters, only
+the string is displayed.  This patch also displays the integer, if it's not
+equal to 0xFFFF.  This gives callers the option to display only the string.
 
-A missing structure forward declaration causes a lot of warnings when
-compiling for a powerpc 405. Because this header is used for assembly
-too, the declaration must be put within #ifndef __ASSEMBLY__, as should
-be the function prototypes.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/kernel/udbg.c |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-This patch applies on 2.6.20.
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
---- a/include/asm-powerpc/dcr.h
-+++ b/include/asm-powerpc/dcr.h
-@@ -33,10 +33,13 @@
-  * base from the device-tree
-  */
- #ifdef CONFIG_PPC_MERGE
-+#ifndef __ASSEMBLY__
-+struct device_node;
- extern unsigned int dcr_resource_start(struct device_node *np,
- 				       unsigned int index);
- extern unsigned int dcr_resource_len(struct device_node *np,
- 				     unsigned int index);
-+#endif
- #endif /* CONFIG_PPC_MERGE */
-=20
- #endif /* CONFIG_PPC_DCR */
---=20
-Mathieu Desnoyers
-Computer Engineering Graduate Student, =C9cole Polytechnique de Montr=E9al
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+index 5730906..c474961 100644
+--- a/arch/powerpc/kernel/udbg.c
++++ b/arch/powerpc/kernel/udbg.c
+@@ -121,6 +121,11 @@ void udbg_printf(const char *fmt, ...)
+ void __init udbg_progress(char *s, unsigned short hex)
+ {
+ 	udbg_puts(s);
++	if (hex != 0xffff) {
++		char buf[8];
++		sprintf(buf, " : %04X", hex);
++		udbg_puts(buf);
++	}
+ 	udbg_puts("\n");
+ }
+ 
+-- 
+1.4.4
