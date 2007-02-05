@@ -1,24 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A5B61DDE2D
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 10:04:52 +1100 (EST)
-Subject: Re: [PATCH revision 2] windfarm: dont die on suspend thread signal
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 7E2A3DDE2D
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 09:54:32 +1100 (EST)
+Date: Mon, 5 Feb 2007 14:54:25 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1170716641.2620.145.camel@localhost.localdomain>
+Subject: Re: [PATCH 02/10] windfarm: dont die on suspend thread signal
+Message-Id: <20070205145425.5f6ecbb0.akpm@linux-foundation.org>
+In-Reply-To: <20070205185835.700233000@sipsolutions.net>
 References: <20070205183026.989209000@sipsolutions.net>
 	<20070205185835.700233000@sipsolutions.net>
-	<20070205224325.GA8453@lst.de>
-	<1170716074.30959.13.camel@johannes.berg>
-	<1170716641.2620.145.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 10:04:34 +1100
-Message-Id: <1170716674.2620.147.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Torrance <torrance123@gmail.com>,
+	linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,13 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-02-06 at 10:04 +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-02-05 at 23:54 +0100, Johannes Berg wrote:
-> > When the windfarm thread gets a suspend signal it will die instead of
-> > freezing. This fixes it.
+On Mon, 05 Feb 2007 19:30:29 +0100
+Johannes Berg <johannes@sipsolutions.net> wrote:
+
+> When the windfarm thread gets a suspend signal it will die instead of
+> freezing. This fixes it.
 > 
-> Don't we still need to call try_to_freeze() ?
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Andrew Morton <akpm@osdl.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> 
+> ---
+> Please apply to -mm.
+> 
+> --- mb-wireless.orig/drivers/macintosh/windfarm_core.c	2007-02-05 14:24:06.344526864 +0100
+> +++ mb-wireless/drivers/macintosh/windfarm_core.c	2007-02-05 14:24:38.264526864 +0100
+> @@ -94,8 +94,6 @@ static int wf_thread_func(void *data)
+>  	DBG("wf: thread started\n");
+>  
+>  	while(!kthread_should_stop()) {
+> -		try_to_freeze();
+> -
+>  		if (time_after_eq(jiffies, next)) {
+>  			wf_notify(WF_EVENT_TICK, NULL);
+>  			if (wf_overtemp) {
+> @@ -118,8 +116,8 @@ static int wf_thread_func(void *data)
+>  		if (delay <= HZ)
+>  			schedule_timeout_interruptible(delay);
+>  
+> -		/* there should be no signal, but oh well */
+> -		if (signal_pending(current)) {
+> +		/* there should be no non-suspend signal, but oh well */
+> +		if (signal_pending(current) && !try_to_freeze()) {
+>  			printk(KERN_WARNING "windfarm: thread got sigl !\n");
+>  			break;
+>  		}
+> 
+> --
 
-Forget it... of course we do.
-
-Ben.
+That sounds like a fairly irritating feature.  Should we backport this into 2.6.20?
