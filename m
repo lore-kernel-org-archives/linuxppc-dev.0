@@ -1,18 +1,25 @@
-Return-Path: <ntl@pobox.com>
-Received: from gretel.pobox.com (gretel.pobox.com [208.58.1.197])
-	by ozlabs.org (Postfix) with ESMTP id 55F57DDDFB
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 13:27:28 +1100 (EST)
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by gretel.pobox.com (Postfix) with ESMTP id 363B0564439A
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Feb 2007 21:02:00 -0500 (EST)
-Date: Mon, 5 Feb 2007 20:01:15 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] maple: use mmio nvram
-Message-ID: <20070206020115.GG6174@localdomain>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 87664DDE01
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 14:14:12 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l163EAie011156
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 20:14:10 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l163E8dp026147
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 21:14:09 -0600 (CST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 1/3] add USB setup code for 8349emds PB
+Date: Tue, 6 Feb 2007 11:15:24 +0800
+Message-ID: <989B956029373F45A0B8AF02970818900D41BC@zch01exm26.fsl.freescale.net>
+In-Reply-To: <BC5F5DDA-2714-49DE-A197-52C3BD600831@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Paul <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,58 +29,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Some systems supported by the maple platform (e.g. JS2x blades running
-SLOF) are able to use the mmio_nvram backend for reading and writing
-nvram.  This is an improvement over the current situation -- no nvram
-access from userspace at all.
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Monday, February 05, 2007 11:04 PM
+> To: Li Yang-r58472
+> Cc: Paul; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 1/3] add USB setup code for 8349emds PB
+>=20
+>=20
+> On Feb 5, 2007, at 3:09 AM, Li Yang wrote:
+>=20
+> You have no description about what this patch does and why its needed.
 
-Select MMIO_NVRAM for the maple platform.
+Add cpu and board specific initialization code for USB to work in both
+MPH and DR mode for MPC8349EMDS PB board.
+>=20
+> > Signed-off-by: Li Yang <leoli@freescale.com>
+> > ---
+> > arch/powerpc/platforms/83xx/Kconfig       |    4 ++
+> > arch/powerpc/platforms/83xx/mpc834x_sys.c |   77 +++++++++++++++++++
+> > ++++++++++
+> > arch/powerpc/platforms/83xx/mpc834x_sys.h |   23 +++++++++
+> > 3 files changed, 104 insertions(+), 0 deletions(-)
+> >
+> > diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/
+> > platforms/83xx/Kconfig
+> > index edcd5b8..5371645 100644
+> > --- a/arch/powerpc/platforms/83xx/Kconfig
+> > +++ b/arch/powerpc/platforms/83xx/Kconfig
+> > @@ -59,4 +59,8 @@ config PPC_MPC836x
+> > 	select PPC_INDIRECT_PCI
+> > 	default y if MPC8360E_PB
+> > +config 834x_USB_SUPPORT
+> > +	bool
+> > +	default y if MPC834x_SYS && (USB || USB_GADGET)
+> > +
+>=20
+> Do we really need to introduce a new config option?
 
-Initialize the mmio_nvram backend from maple setup code.
+It will be neater to make use of the Kconfig feature than judging all
+the macros and module variations.  It will be a very long #if defined
+the other way.
 
-Signed-off-by: Nathan Lynch <ntl@pobox.com>
----
+> > @@ -65,6 +120,7 @@ static void __init mpc834x_sys_setup_arch(void)
+> > 			loops_per_jiffy =3D 50000000 / HZ;
+> > 		of_node_put(np);
+> > 	}
+> > +
+> > #ifdef CONFIG_PCI
+> > 	for (np =3D NULL; (np =3D of_find_node_by_type(np, "pci")) !=3D =
+NULL;)
+> > 		add_bridge(np);
+> > @@ -72,6 +128,27 @@ static void __init mpc834x_sys_setup_arch(void)
+> > 	ppc_md.pci_exclude_device =3D mpc83xx_exclude_device;
+> > #endif
+> > +#ifdef CONFIG_834x_USB_SUPPORT
+> > +	mpc834x_usb_cfg();
+> > +
+> > +	/* Map BCSR area */
+> > +	np =3D of_find_node_by_name(NULL, "bcsr");
+> > +	if (np !=3D 0) {
+> > +		struct resource res;
+> > +
+> > +		of_address_to_resource(np, 0, &res);
+> > +		bcsr_regs =3D ioremap(res.start, res.end - res.start + 1);
+> > +		of_node_put(np);
+> > +	}
+> > +
+> > +	/*
+> > +	 * if SYS board is plug into PIB board,
+> > +	 * force to use the PHY on SYS board
+> > +	 * */
+> > +	if ((bcsr_regs !=3D NULL) && !(bcsr_regs[5] & BCSR5_INT_USB))
+> > +		bcsr_regs[5] |=3D BCSR5_INT_USB;
+>=20
+> why not fold all this into mpc834x_usb_cfg() since its all board
+> related config code?
 
-Please apply this patch instead of the "rename pSeries nvram
-functions" and "move pSeries nvram code to neutral location" patches
-from January 24.
+Well, not quite.  The code in mpc834x_usb_cfg() is 834x CPU specific
+initialization.  The bcsr is board specific.
 
- arch/powerpc/Kconfig                 |    1 +
- arch/powerpc/platforms/maple/setup.c |    3 +++
- 2 files changed, 4 insertions(+), 0 deletions(-)
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 0855d55..113685e 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -484,6 +484,7 @@ config PPC_MAPLE
- 	select PPC_970_NAP
- 	select PPC_NATIVE
- 	select PPC_RTAS
-+	select MMIO_NVRAM
- 	default n
- 	help
-           This option enables support for the Maple 970FX Evaluation Board.
-diff --git a/arch/powerpc/platforms/maple/setup.c b/arch/powerpc/platforms/maple/setup.c
-index 50855d4..82d3f9e 100644
---- a/arch/powerpc/platforms/maple/setup.c
-+++ b/arch/powerpc/platforms/maple/setup.c
-@@ -62,6 +62,7 @@
- #include <asm/mpic.h>
- #include <asm/rtas.h>
- #include <asm/udbg.h>
-+#include <asm/nvram.h>
- 
- #include "maple.h"
- 
-@@ -195,6 +196,8 @@ void __init maple_setup_arch(void)
- 	maple_use_rtas_reboot_and_halt_if_present();
- 
- 	printk(KERN_DEBUG "Using native/NAP idle loop\n");
-+
-+	mmio_nvram_init();
- }
- 
- /* 
--- 
-1.4.4.3
+- Leo
