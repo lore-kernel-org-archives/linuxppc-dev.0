@@ -1,22 +1,22 @@
 Return-Path: <timur@freescale.com>
 Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 302A9DDE35
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 10:42:49 +1100 (EST)
-Message-ID: <45C91275.4020806@freescale.com>
-Date: Tue, 06 Feb 2007 17:42:45 -0600
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 7D806DDE32
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 10:54:10 +1100 (EST)
+Message-ID: <45C9151E.70201@freescale.com>
+Date: Tue, 06 Feb 2007 17:54:06 -0600
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH] Update udbg_progress() to display the integer
-References: <11707051151024-git-send-email-timur@freescale.com>	
-	<20070206013051.GA15525@lixom.net>
-	<45C90A6E.3040302@freescale.com>	
+References: <11707051151024-git-send-email-timur@freescale.com>
+	<20070206013051.GA15525@lixom.net> <45C90A6E.3040302@freescale.com>
 	<17865.2853.132102.769702@cargo.ozlabs.ibm.com>
 	<1170805102.2620.264.camel@localhost.localdomain>
-In-Reply-To: <1170805102.2620.264.camel@localhost.localdomain>
+	<0C529499-B766-4D3A-8340-361BB1B461D3@kernel.crashing.org>
+In-Reply-To: <0C529499-B766-4D3A-8340-361BB1B461D3@kernel.crashing.org>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->> It would have been for the 2-line display on IBM RS/6000 machines.  If
->> that's still needed, we can put it in arch/powerpc/platforms/chrp
->> somewhere, so feel free to remove it from ppc_init().
-> 
-> Do we actually care about this progress stuff ? 
+Kumar Gala wrote:
 
-I think support for LED progress displays is a nice feature to have.
+> I'm with Ben on this.  I'm not aware of any in tree user that just 
+> doesn't print this stuff out to a console port.  The concept is nice, 
+> but does anyone really use it?
 
-The only reason I noticed it is because on Freescale boards, it's the only way 
-to get printk-like functionality early in the boot process.
+I just ran a quick test on an 8349 board, and it appears that everywhere 
+ppc_md.progress() is called, printk() works, too.
 
-> I've been tempted more
-> than once to rip it all off... we have console access as early as we can
-> do progress output on most powerpc platforms nowadays.
-
-Is that what udbg_progress() uses?  I'm not really familiar with the early 
-console stuff.
-
-> If we really want some way of ack'ing that the kernel reached known
-> known steps with something different than a printk-type interface, then
-> we should probably have somewhere a list of well defined numeric
-> constants and use those, but then, I don't like magic numbers.
-
-Me neither.  I think on systems like RS6000, the progress codes have already 
-been defined, so I don't think we can redefine them.
+Is there any platform where ppc_md.progress() does something different than 
+printk()?  Is there any point in the boot process where ppc_md.progress() works 
+but printk() doesn't?
 
 -- 
 Timur Tabi
