@@ -1,16 +1,18 @@
-Return-Path: <Antonio.DiBacco@technolabs.it>
-Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id F2883DDE40
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 8085BDDE32
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Feb 2007 02:42:40 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C74A05.699A5A0E"
-Subject: Conditions for mydriver_probe to be called
-Date: Tue, 6 Feb 2007 16:42:30 +0100
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E6237D0@aquib01a>
-From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: <linuxppc-embedded@ozlabs.org>
+	Wed,  7 Feb 2007 02:57:21 +1100 (EST)
+Date: Tue, 6 Feb 2007 18:57:51 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: "Jack Ger" <m_123456_h@hotmail.com>
+Subject: Re: Problem with linking customer phy with fs_enet drivers
+Message-ID: <20070206185751.797fa195@vitb.ru.mvista.com>
+In-Reply-To: <BAY116-F157EB542041BF42BB53FE8CD990@phx.gbl>
+References: <BAY116-F157EB542041BF42BB53FE8CD990@phx.gbl>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,45 +23,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Sun, 04 Feb 2007 15:19:41 -0800
+"Jack Ger" <m_123456_h@hotmail.com> wrote:
 
-------_=_NextPart_001_01C74A05.699A5A0E
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> Hi all,
+> 
+> I am trying to run the customer LXT970 phy with MPC870, porting from
+> MPC885.  I have the lxt phy driver installed and fs_enet driver installed 
+> during
+> the kernel bootup.  But during the the fs_enet_open, when trying to link
+> the specific phy, it fails to find the bus_id.   Since we already know that 
+> the FEC
+> is working in 2.4 kernel runing the 8xx_io fec,  it must be something I have 
+> done
+> wrong with the fs_enet, 2 questions:
+> 
+It would be easier not to repeat myself to figure out the reason, and have a look 
+at the patch. Mind posting it here? 
 
-I'm realizing a controller driver for the mpc8xx spi master device. My
-driver has a mpc8xx_spi_probe method that I expected to be called. I'm
-sure that platform_device_register is called for my spi platform_device
-but nothing happens,  mpc8xx_spi_probe is not called.
-=20
-Bye,
-Antonio.
+If that is a problem, send it to me and I'll try to get a few hins out...
 
-------_=_NextPart_001_01C74A05.699A5A0E
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+> 1) I understood that probably I didn't activate the bus, since I am porting 
+> it
+> from MPC885fads_setup.c, there is something I missed.  Currently I am using
+> montavista 4.0.1 which runing on kernel 2.6.10.; I noticed that the 
+> mdiobus_register
+> never get called.
+> 
+> 2) what is the right way to do the mdiobus_register to register the phy bus?
+> 
+> TIA for your help.
+> 
+> A Jones
+> 
+> _________________________________________________________________
+> Laugh, share and connect with Windows Live Messenger 
+> http://clk.atdmt.com/MSN/go/msnnkwme0020000001msn/direct/01/?href=http://imagine-msn.com/messenger/launch80/default.aspx?locale=en-us&source=hmtagline
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D884593715-06022007>I'm =
-realizing a=20
-controller driver for the mpc8xx spi master device. My driver has a=20
-mpc8xx_spi_probe method that I expected to be called.&nbsp;I'm sure that =
 
-platform_device_register is called for my spi platform_device but=20
-nothing&nbsp;happens,&nbsp;&nbsp;mpc8xx_spi_probe is not=20
-called.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D884593715-06022007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D884593715-06022007>Bye,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D884593715-06022007>Antonio.</SPAN></FONT></DIV></BODY></HTML>
-
-------_=_NextPart_001_01C74A05.699A5A0E--
+-- 
+Sincerely, 
+Vitaly
