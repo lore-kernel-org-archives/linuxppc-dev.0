@@ -1,26 +1,19 @@
-Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts20-srv.bellnexxia.net (tomts20.bellnexxia.net
-	[209.226.175.74]) by ozlabs.org (Postfix) with ESMTP id 65FDDDDEDB
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 12:03:36 +1100 (EST)
-Received: from krystal.dyndns.org ([67.68.196.179])
-	by tomts20-srv.bellnexxia.net
-	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20070206010332.XJTQ24907.tomts20-srv.bellnexxia.net@krystal.dyndns.org>
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 20:03:32 -0500
-Date: Mon, 5 Feb 2007 20:03:31 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] Powerpc move of_irq_to_resource from prom.h to prom_parse.c
-Message-ID: <20070206010331.GA22667@Krystal>
-References: <20070205142905.GA31392@Krystal>
-	<1170706469.2620.124.camel@localhost.localdomain>
-	<20070205205636.GA14589@Krystal>
-	<17863.52596.791276.129355@cargo.ozlabs.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id D95A6DDEBA
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 12:12:15 +1100 (EST)
+Date: Mon, 5 Feb 2007 19:19:49 -0600
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [RFC 08/10] powerpc: dart iommu suspend
+Message-ID: <20070206011949.GA15434@lixom.net>
+References: <20070205183026.989209000@sipsolutions.net>
+	<20070205185838.029827000@sipsolutions.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <17863.52596.791276.129355@cargo.ozlabs.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070205185838.029827000@sipsolutions.net>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org,
+	Torrance <torrance123@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,79 +23,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Powerpc move of_irq_to_resource from prom.h to prom_parse.c
+On Mon, Feb 05, 2007 at 07:30:35PM +0100, Johannes Berg wrote:
+> This implements suspend and resume code for the dart iommu.
 
-Sorry for the lack of information, it got cut in the previous messages.
-Let's start all over again :
+It's a good start, but it would be even nicer to have more generic iommu
+suspend/resume hooks instead, and do the alloc/copy there. Add the hooks
+to ppc_md together with the rest of the iommu/tce ops.
 
-In the powerpc architecture, of_irq_to_resource, currently sitting in
-prom.h, needs irq_of_parse_and_map and NO_IRQ from asm-powerpc/irq.h.
-The solution suggested by Benjamin Herrenschmidt is to move it to
-arch/powerpc/kernel/prom_parse.c.
+Minor code comment below.
 
-It applies on 2.6.20.
+> --- mb-wireless.orig/arch/powerpc/sysdev/dart_iommu.c	2007-02-05 14:24:04.834526864 +0100
+> +++ mb-wireless/arch/powerpc/sysdev/dart_iommu.c	2007-02-05 14:24:40.684526864 +0100
+> @@ -54,6 +54,9 @@ static unsigned long dart_tablesize;
+>  
+>  /* Virtual base address of the DART table */
+>  static u32 *dart_vbase;
+> +#ifdef CONFIG_SOFTWARE_SUSPEND
+> +static u32 *dart_copy;
+> +#endif
+>  
+>  /* Mapped base address for the dart */
+>  static unsigned int __iomem *dart;
+> @@ -346,6 +349,52 @@ void iommu_init_early_dart(void)
+>  	pci_dma_ops = &dma_direct_ops;
+>  }
+>  
+> +#ifdef CONFIG_SOFTWARE_SUSPEND
+> +static int iommu_init_late_dart(void)
+> +{
+> +	unsigned long i;
+> +	struct page *p;
+> +
+> +	/* this 16MB area is left unmapped because of caching
+> +	 * considerations. that happens early so we can't mark
+> +	 * it there, do it now instead */
+> +	for (i = 0; i < (1<<24); i+= PAGE_SIZE)
+> +		SetPageNosave(virt_to_page((void*)((unsigned long)dart_tablebase + i)));
 
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+Please do a local void * instead, makes for much less casting in the loop. :)
 
---- a/arch/powerpc/kernel/prom_parse.c
-+++ b/arch/powerpc/kernel/prom_parse.c
-@@ -1003,3 +1003,18 @@ int of_irq_map_one(struct device_node *device, int i=
-ndex, struct of_irq *out_irq
- 	return res;
- }
- EXPORT_SYMBOL_GPL(of_irq_map_one);
-+
-+int of_irq_to_resource(struct device_node *dev, int index, struct resource=
- *r)
-+{
-+	int irq =3D irq_of_parse_and_map(dev, index);
-+
-+	/* Only dereference the resource if both the
-+	 * resource and the irq are valid. */
-+	if (r && irq !=3D NO_IRQ) {
-+		r->start =3D r->end =3D irq;
-+		r->flags =3D IORESOURCE_IRQ;
-+	}
-+
-+	return irq;
-+}
-+EXPORT_SYMBOL_GPL(of_irq_to_resource);
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -19,6 +19,7 @@
- #include <linux/proc_fs.h>
- #include <linux/platform_device.h>
- #include <asm/atomic.h>
-+#include <asm/irq.h>
-=20
- /* Definitions used by the flattened device tree */
- #define OF_DT_HEADER		0xd00dfeed	/* marker */
-@@ -334,20 +335,8 @@ extern int of_irq_map_one(struct device_node *device, =
-int index,
- struct pci_dev;
- extern int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
-=20
--static inline int of_irq_to_resource(struct device_node *dev, int index, s=
-truct resource *r)
--{
--	int irq =3D irq_of_parse_and_map(dev, index);
--
--	/* Only dereference the resource if both the
--	 * resource and the irq are valid. */
--	if (r && irq !=3D NO_IRQ) {
--		r->start =3D r->end =3D irq;
--		r->flags =3D IORESOURCE_IRQ;
--	}
--
--	return irq;
--}
--
-+extern int of_irq_to_resource(struct device_node *dev, int index,
-+			struct resource *r);
-=20
- #endif /* __KERNEL__ */
- #endif /* _POWERPC_PROM_H */
---=20
-Mathieu Desnoyers
-Computer Engineering Graduate Student, =C9cole Polytechnique de Montr=E9al
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+> +
+> +	/* if no dart table exists then we don't need to save it */
+> +	if (!dart_tablebase)
+> +		return 0;
+> +
+> +	/* For suspend we need to copy the dart contents because
+> +	 * it is not part of the regular mapping (see above) and
+> +	 * thus not saved automatically. The memory for this copy
+> +	 * must be allocated early because we need 2 MB. */
+> +	p = alloc_pages(GFP_KERNEL, 21 - PAGE_SHIFT);
+> +	BUG_ON(!p);
+> +	dart_copy = page_address(p);
+> +
+> +	return 0;
+> +}
+> +
+> +late_initcall(iommu_init_late_dart);
+> +
+> +void iommu_dart_save(void)
+> +{
+> +	if (!dart_tablebase)
+> +		return;
+> +
+> +	memcpy(dart_copy, dart_vbase, 2*1024*1024);
+> +}
+> +
+> +void iommu_dart_restore(void)
+> +{
+> +	if (!dart_tablebase)
+> +		return;
+> +
+> +	memcpy(dart_vbase, dart_copy, 2*1024*1024);
+> +	dart_tlb_invalidate_all();
+> +}
+> +#endif
+>  
+>  void __init alloc_dart_table(void)
+>  {
+> --- mb-wireless.orig/include/asm-powerpc/iommu.h	2007-02-05 14:24:05.014526864 +0100
+> +++ mb-wireless/include/asm-powerpc/iommu.h	2007-02-05 14:24:40.684526864 +0100
+> @@ -108,6 +108,10 @@ static inline void pci_iommu_init(void) 
+>  #endif
+>  
+>  extern void alloc_dart_table(void);
+> +#if defined(CONFIG_SOFTWARE_SUSPEND) && defined(CONFIG_U3_DART)
+> +extern void iommu_dart_save(void);
+> +extern void iommu_dart_restore(void);
+> +#endif
+>  
+>  #endif /* __KERNEL__ */
+>  #endif /* _ASM_IOMMU_H */
+> 
+> --
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
