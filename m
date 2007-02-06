@@ -1,20 +1,23 @@
-Return-Path: <watashin@mvision.co.jp>
-Received: from mail.asahi-net.or.jp (mail2.asahi-net.or.jp [202.224.39.198])
-	by ozlabs.org (Postfix) with ESMTP id 6958EDDE44
+Return-Path: <darwish.07@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.224])
+	by ozlabs.org (Postfix) with ESMTP id B0806DDE40
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Feb 2007 20:04:03 +1100 (EST)
-Received: from wata (c200018.ppp.asahi-net.or.jp [210.155.200.18])
-	by mail.asahi-net.or.jp (Postfix) with SMTP id 47D36290AC
+	Tue,  6 Feb 2007 20:12:24 +1100 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so1887737nzf
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Feb 2007 17:44:32 +0900 (JST)
-Message-ID: <003b01c749cb$03998550$1601a8c0@wata>
-From: "Shinji Watanabe" <watashin@mvision.co.jp>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: How to access MPC8555 DMA register ?
-Date: Tue, 6 Feb 2007 17:44:28 +0900
+	Tue, 06 Feb 2007 01:12:23 -0800 (PST)
+Date: Tue, 6 Feb 2007 11:12:07 +0200
+To: Alexey Dobriyan <adobriyan@gmail.com>
+Subject: Re: [PATCH 2.6.20] ibm_emac: Use ARRAY_SIZE macro when appropriate
+Message-ID: <20070206091207.GR3896@Ahmed>
+References: <20070205165429.GD3896@Ahmed> <20070205165916.GK3896@Ahmed>
+	<20070205202206.GD11055@martell.zuzino.mipt.ru>
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-2022-jp";
-	reply-type=original
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070205202206.GD11055@martell.zuzino.mipt.ru>
+From: "Ahmed S. Darwish" <darwish.07@gmail.com>
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,31 +28,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi, all.
+On Mon, Feb 05, 2007 at 11:22:06PM +0300, Alexey Dobriyan wrote:
+> On Mon, Feb 05, 2007 at 06:59:16PM +0200, Ahmed S. Darwish wrote:
+> > A patch to use ARRAY_SIZE macro already defined in kernel.h.
+> 
+> OK, but checks you're changing are strange. idx there is signed so
+> 
+> 	BUG_ON(idx < 0 || idx > ARRAY_SIZE());
+> 
+> should be more appropriate.
 
-I used MPC8555CDS.
+It's just a janitor patch. I don't like to mess with code logic in such
+kind of patches (to minimize errors and because I can't find time to
+understand all affected files since they are scattered allover the tree).
 
-How to access DMA registers of MPC8555 ?
-
-I can't read/write these registers on LINUX.
-
-I called request_mem_region( 0xE0000000, LENGTH, ... ) in my device driver.
-
-When I set LENGTH 0x21100, this function call succeded.
-
-But When I set LENGTH 0x21200, this function call failed.
-
-"e0021100-e002117f : fsl-dma0" is part of /proc/iomem log.
-
-I guess my driver can't access fsl-dma0 area.
-
-But fsl-dma0 area encompassed DMA registers I want to access.
-
-I must find remove simbols like fsl-dma0.
-Or I must find how to use modules encompass fsl-dma0.
-
-Counld you give me some help/hint/tips ?
-
-regards,
-
-Shinji
+Thanks,
+-- 
+Ahmed S. Darwish
+http://darwish-07.blogspot.com
