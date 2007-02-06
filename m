@@ -1,17 +1,20 @@
-Return-Path: <Antonio.DiBacco@technolabs.it>
-Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id A8CC3DDE31
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D1BE9DDEE2
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Feb 2007 03:32:19 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Conditions for mydriver_probe to be called
-Date: Tue, 6 Feb 2007 17:32:17 +0100
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E6237F2@aquib01a>
-In-Reply-To: <20070206192307.71d41f03@vitb.ru.mvista.com>
-From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: "Vitaly Bordug" <vbordug@ru.mvista.com>
+	Wed,  7 Feb 2007 03:37:20 +1100 (EST)
+In-Reply-To: <003b01c749cb$03998550$1601a8c0@wata>
+References: <003b01c749cb$03998550$1601a8c0@wata>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <1C8918CC-4D53-4939-9694-DA299753AE39@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: How to access MPC8555 DMA register ?
+Date: Tue, 6 Feb 2007 10:36:23 -0600
+To: Shinji Watanabe <watashin@mvision.co.jp>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,52 +26,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->Note that for 8xx, spi normally resides on scc, so you'll have to use
-...set_func and >...device_enable() stuff (see in ppc_sys.c for exact
-prototypes) to have foo-bar-scc:spi or=20
-> alike registered on bus.
 
-In my MPC880 the SPI is a standalone device not an SCC.=20
+On Feb 6, 2007, at 2:44 AM, Shinji Watanabe wrote:
 
-I found my problem, and I'm sorry that I disturbed the community for a
-stupid mistake. Anyway I'm answering because someone could meet the same
-problem.
+> Hi, all.
+>
+> I used MPC8555CDS.
+>
+> How to access DMA registers of MPC8555 ?
+>
+> I can't read/write these registers on LINUX.
+>
+> I called request_mem_region( 0xE0000000, LENGTH, ... ) in my device  
+> driver.
+>
+> When I set LENGTH 0x21100, this function call succeded.
+>
+> But When I set LENGTH 0x21200, this function call failed.
+>
+> "e0021100-e002117f : fsl-dma0" is part of /proc/iomem log.
+>
+> I guess my driver can't access fsl-dma0 area.
+>
+> But fsl-dma0 area encompassed DMA registers I want to access.
+>
+> I must find remove simbols like fsl-dma0.
+> Or I must find how to use modules encompass fsl-dma0.
+>
+> Counld you give me some help/hint/tips ?
 
-In mpc8xx_devices.c I addedd the following:
+You need to have your driver bind to the fsl-dma0 device.  The  
+platform code is setting up a device for each dma channel (fsl-dma0,  
+fsl-dma1, ..) and you need to have your driver be setup to bind to  
+that device.
 
-        [MPC8xx_CPM_SPI] =3D {
-                .name =3D "fsl-cpm-spi",
-                .id     =3D 1,
-                .num_resources  =3D 3,
-                .resource =3D (struct resource[]) {
-                        {
-                                .name   =3D "regs",
-                                .start  =3D 0xaa0,
-                                .end    =3D 0xab1,
-                                .flags  =3D IORESOURCE_MEM,
-                        },
-                        {
-                                .name   =3D "pram",
-                                .start  =3D 0x3d80,
-                                .end    =3D 0x3daf,
-                                .flags  =3D IORESOURCE_MEM,
+Take a look at drivers/i2c/busses/i2c-mpc.c, drivers/net/gianfar.c  
+for an examples of how drivers are setup to do the binding.
 
-                        },
-                        {
-                                .name   =3D "interrupt",
-                                .start  =3D MPC8xx_INT_SPI,
-                                .end    =3D MPC8xx_INT_SPI,
-                                .flags  =3D IORESOURCE_IRQ,
-                        },
-                },
-        },
-
-But by mistake I registered mydriver with fsl_cpm_spi (with underscores
-instead of -). The driver name should match the name in platform_device
-structure or at least the default match function should be overriden.
-
-I'm a newbie don't trust me completely (wait for an expert
-confirmation).=20
-
-Bye and thank you,
-Antonio.
+- k
