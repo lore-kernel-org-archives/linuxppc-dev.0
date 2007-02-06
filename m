@@ -1,23 +1,18 @@
-Return-Path: <LeoLi@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id F3CBCDDE0E
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 20:03:56 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l1693tYW026571
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 02:03:55 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l1693rf2010820
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 03:03:54 -0600 (CST)
-Message-ID: <45C844C5.6020108@freescale.com>
-Date: Tue, 06 Feb 2007 17:05:09 +0800
-From: Li Yang <leoli@freescale.com>
-MIME-Version: 1.0
-To: Paul <paulus@samba.org>
-Subject: [PATCH 2/3] add platform_device for USB DR pheripheral driver
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 37AC9DDE10
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 21:43:00 +1100 (EST)
+Date: Tue, 06 Feb 2007 19:42:30 +0900 (JST)
+Message-Id: <200702061042.l16AgVXP027762@toshiba.co.jp>
+Subject: Re: spidernet: dynamic phy setup code
+To: jens@de.ibm.com, benh@kernel.crashing.org
+In-Reply-To: <200702010754.l117s2T8003383@toshiba.co.jp>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,115 +22,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add platform_device setup code for OTG/peripheral mode of
-834x DR module.  It is needed for USB client driver to work.
+Ben-san, Jens-san
 
-Signed-off-by: Li Yang <leoli@freescale.com>
----
- arch/powerpc/sysdev/fsl_soc.c |   76 +++++++++++++++++++++++++++++++----------
- 1 files changed, 58 insertions(+), 18 deletions(-)
+Thanks for your comments and advices.
+First, we should apologize to you that some troubles which we informed
+about spidernet auto-negotiation are caused by our mistake.
+We used wrong MACRO for "advertise" variable to
+phy->def->ops->setup_aneg(). 
 
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index ad31e56..8e4837a 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -440,7 +440,8 @@ static int __init fsl_usb_of_init(void)
- {
- 	struct device_node *np;
- 	unsigned int i;
--	struct platform_device *usb_dev_mph = NULL, *usb_dev_dr = NULL;
-+	struct platform_device *usb_dev_mph = NULL, *usb_dev_dr_host = NULL,
-+		*usb_dev_dr_client = NULL;
- 	int ret;
- 
- 	for (np = NULL, i = 0;
-@@ -506,33 +507,72 @@ static int __init fsl_usb_of_init(void)
- 
- 		of_irq_to_resource(np, 0, &r[1]);
- 
--		usb_dev_dr =
--		    platform_device_register_simple("fsl-ehci", i, r, 2);
--		if (IS_ERR(usb_dev_dr)) {
--			ret = PTR_ERR(usb_dev_dr);
-+		prop = get_property(np, "dr_mode", NULL);
-+
-+		if (prop && !strcmp(prop, "host")) {
-+			usb_data.operating_mode = FSL_USB2_DR_HOST;
-+			usb_dev_dr_host = platform_device_register_simple(
-+					"fsl-ehci", i, r, 2);
-+			if (IS_ERR(usb_dev_dr_host)) {
-+				ret = PTR_ERR(usb_dev_dr_host);
-+				goto err;
-+			}
-+		} else if (prop && !strcmp(prop, "peripheral")) {
-+			usb_data.operating_mode = FSL_USB2_DR_DEVICE;
-+			usb_dev_dr_client = platform_device_register_simple(
-+					"fsl-usb2-udc", i, r, 2);
-+			if (IS_ERR(usb_dev_dr_client)) {
-+				ret = PTR_ERR(usb_dev_dr_client);
-+				goto err;
-+			}
-+		} else if (!prop || (prop && !strcmp(prop, "otg"))) {
-+			usb_data.operating_mode = FSL_USB2_DR_OTG;
-+			usb_dev_dr_host = platform_device_register_simple(
-+					"fsl-ehci", i, r, 2);
-+			if (IS_ERR(usb_dev_dr_host)) {
-+				ret = PTR_ERR(usb_dev_dr_host);
-+				goto err;
-+			}
-+			usb_dev_dr_client = platform_device_register_simple(
-+					"fsl-usb2-udc", i, r, 2);
-+			if (IS_ERR(usb_dev_dr_client)) {
-+				ret = PTR_ERR(usb_dev_dr_client);
-+				goto err;
-+			}
-+		} else {
-+			ret = -EINVAL;
- 			goto err;
- 		}
- 
--		usb_dev_dr->dev.coherent_dma_mask = 0xffffffffUL;
--		usb_dev_dr->dev.dma_mask = &usb_dev_dr->dev.coherent_dma_mask;
--
--		usb_data.operating_mode = FSL_USB2_DR_HOST;
--
- 		prop = get_property(np, "phy_type", NULL);
- 		usb_data.phy_mode = determine_usb_phy(prop);
- 
--		ret =
--		    platform_device_add_data(usb_dev_dr, &usb_data,
--					     sizeof(struct
--						    fsl_usb2_platform_data));
--		if (ret)
--			goto unreg_dr;
-+		if (usb_dev_dr_host) {
-+			usb_dev_dr_host->dev.coherent_dma_mask = 0xffffffffUL;
-+			usb_dev_dr_host->dev.dma_mask = &usb_dev_dr_host->
-+				dev.coherent_dma_mask;
-+			if ((ret = platform_device_add_data(usb_dev_dr_host,
-+						&usb_data, sizeof(struct
-+						fsl_usb2_platform_data))))
-+				goto unreg_dr;
-+		}
-+		if (usb_dev_dr_client) {
-+			usb_dev_dr_client->dev.coherent_dma_mask = 0xffffffffUL;
-+			usb_dev_dr_client->dev.dma_mask = &usb_dev_dr_client->
-+				dev.coherent_dma_mask;
-+			if ((ret = platform_device_add_data(usb_dev_dr_client,
-+						&usb_data, sizeof(struct
-+						fsl_usb2_platform_data))))
-+				goto unreg_dr;
-+		}
- 	}
- 	return 0;
- 
- unreg_dr:
--	if (usb_dev_dr)
--		platform_device_unregister(usb_dev_dr);
-+	if (usb_dev_dr_host)
-+		platform_device_unregister(usb_dev_dr_host);
-+	if (usb_dev_dr_client)
-+		platform_device_unregister(usb_dev_dr_client);
- unreg_mph:
- 	if (usb_dev_mph)
- 		platform_device_unregister(usb_dev_mph);
+We will post the revised patch for spider_net.
+Following are the current status of troubles we informed.
+
+(1)
+>- if (card->aneg_count > 10) {
+>-  /* timeout */
+>-  card->aneg_count = 0;
+>-  is1000 = !is1000;
+>-  goto re_setup;
+>- if (phy->speed == 1000 && !is1000) {
+>-  is1000 = 1;
+>-  goto re_setup;
+>- } else if(phy->speed != 1000 && is1000) {
+>-  is1000 = 0;
+>-  goto re_setup;
+>- }
+> We need to use different auto-neg initial settings between
+> for 10/100Mbps ethernet switches and for Gbps ethernet switches.
+> Driver don't know which type of network switch is connected to
+> network card, so we try both settings alternately in auto negtiation
+> sequences by using a variable "is1000".
+> Furthermore, we have a problem that poll_link() may succeed even when
+> the auto-neg initial setting is for different network switch type,
+> and the network card does not work on this case. We retry auto-neg
+> with the another initial setting on this case.
+Solved.
+
+We are now able to use Gbps switches and 10/100Mbps switches with 
+the same advertise setting and we don't need to use is1000.
+The re_setup is not necessary and they are removed in the revised patch.
+
+2.
+>> - spider_net_write_reg(card, SPIDER_NET_GMACST,
+>> -        spider_net_read_reg(card, SPIDER_NET_GMACST));
+>> - spider_net_write_reg(card, SPIDER_NET_GMACINTEN, 0x4);
+>
+> These codes are enabling LINK status interrupt which is disabled
+> at the beginning of auto-neg.
+> Without this operation, auto negotiation works only when a connection
+> detected for the first time, and auto negotiation will not work 
+> when an ethernet cable is unpluged or pluged.
+Pending(No problem, if they don't cause any trouble on Cell Blades).
+
+By the way, why do you suggest to use polling for auto-neg, Ben-san? 
+Is there a merit to use polling, or is there a problem to use interrupt?
+Sorry, we couldn't find the reason why sungem use polling for auto-neg. 
+
+They might not be necessary, if we use polling to handle LINK status as
+Ben-san said.
+
+3
+>> - mii_phy_probe(phy, phy->mii_id);
+> It seems that PHY reset is necessary before auto negotiation,
+> in the case that ethernet card is disconnected from an ethernet switch
+> then connected to another ethernet switch.
+> We can't call directly reset routine from driver, so we call
+mii_phy_probe().
+Pending.
+
+After all, we need phy reset.
+> If you really need to reset it, then change sungem_phy.c to export the
+> reset function. But I'm surprised you need that. Another option is to
+> reset the PHY in your PHY's setup_aneg() function.
+We still wonder which is the best way, and mii_phy_probe() still remains
+so far.
+
+Best regards,
+Kou Ishizaki
