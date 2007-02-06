@@ -1,24 +1,12 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 160CFDDE33
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 12:29:37 +1100 (EST)
-Subject: Re: [RFC 08/10] powerpc: dart iommu suspend
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070206011949.GA15434@lixom.net>
-References: <20070205183026.989209000@sipsolutions.net>
-	<20070205185838.029827000@sipsolutions.net>
-	<20070206011949.GA15434@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-pJdcLs1UbcJP2xyLypxd"
-Date: Tue, 06 Feb 2007 02:26:02 +0100
-Message-Id: <1170725162.30959.26.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org,
-	Torrance <torrance123@gmail.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 6 Feb 2007 12:48:31 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Remove ibm4{xx,4x}.h from arch/powerpc
+Message-ID: <20070206014831.GE20123@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,48 +16,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ARCH=powerpc should not use the ghastly un-multiplatformable tangle of
+includes that starts with asm-ppc/ibm4xx.h.  This patch removes a
+compile-breaking include of it from head_44x.S.
 
---=-pJdcLs1UbcJP2xyLypxd
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
 
-On Mon, 2007-02-05 at 19:19 -0600, Olof Johansson wrote:
-> On Mon, Feb 05, 2007 at 07:30:35PM +0100, Johannes Berg wrote:
-> > This implements suspend and resume code for the dart iommu.
->=20
-> It's a good start, but it would be even nicer to have more generic iommu
-> suspend/resume hooks instead, and do the alloc/copy there. Add the hooks
-> to ppc_md together with the rest of the iommu/tce ops.
+Index: working-2.6/arch/powerpc/kernel/head_44x.S
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-01-12 17:22:42.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-01-12 17:37:39.000000000 +1100
+@@ -32,8 +32,6 @@
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+ #include <asm/pgtable.h>
+-#include <asm/ibm4xx.h>
+-#include <asm/ibm44x.h>
+ #include <asm/cputable.h>
+ #include <asm/thread_info.h>
+ #include <asm/ppc_asm.h>
 
-Ok, I'll take a look. I think we should leave the alloc up to the code
-and just have generic calls for what now is iommu_dart_{save,restore}, I
-see no point in adding a callback for iommu_init_late_dart since any
-other iommu can do it as a late_initcall as well.
-
-> > +	/* this 16MB area is left unmapped because of caching
-> > +	 * considerations. that happens early so we can't mark
-> > +	 * it there, do it now instead */
-> > +	for (i =3D 0; i < (1<<24); i+=3D PAGE_SIZE)
-> > +		SetPageNosave(virt_to_page((void*)((unsigned long)dart_tablebase + i=
-)));
->=20
-> Please do a local void * instead, makes for much less casting in the loop=
-. :)
-
-:)
-
-johannes
-
---=-pJdcLs1UbcJP2xyLypxd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFx9kq/ETPhpq3jKURAsJHAKCvlD8M+JKwKRAO5OYT8/Ze/oY8LQCeJEuJ
-vx2tNurpdNnn6CqN/DyCJcY=
-=MzUB
------END PGP SIGNATURE-----
-
---=-pJdcLs1UbcJP2xyLypxd--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
