@@ -1,14 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [powerpc] Compile fixes for arch/powerpc dcr code
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070206004828.GC20123@localhost.localdomain>
-References: <20070206004828.GC20123@localhost.localdomain>
-Content-Type: text/plain
-Date: Tue, 06 Feb 2007 11:54:23 +1100
-Message-Id: <1170723263.2620.187.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <compudj@krystal.dyndns.org>
+Received: from tomts20-srv.bellnexxia.net (tomts20.bellnexxia.net
+	[209.226.175.74]) by ozlabs.org (Postfix) with ESMTP id 65FDDDDEDB
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 12:03:36 +1100 (EST)
+Received: from krystal.dyndns.org ([67.68.196.179])
+	by tomts20-srv.bellnexxia.net
+	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
+	<20070206010332.XJTQ24907.tomts20-srv.bellnexxia.net@krystal.dyndns.org>
+	for <linuxppc-dev@ozlabs.org>; Mon, 5 Feb 2007 20:03:32 -0500
+Date: Mon, 5 Feb 2007 20:03:31 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] Powerpc move of_irq_to_resource from prom.h to prom_parse.c
+Message-ID: <20070206010331.GA22667@Krystal>
+References: <20070205142905.GA31392@Krystal>
+	<1170706469.2620.124.camel@localhost.localdomain>
+	<20070205205636.GA14589@Krystal>
+	<17863.52596.791276.129355@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <17863.52596.791276.129355@cargo.ozlabs.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,77 +30,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-02-06 at 11:48 +1100, David Gibson wrote:
-> Paulus, please apply.
-> 
-> The new dcr code does not currently compile when configured for native
-> DCR access on ARCH=powerpc.  This patch fixes the problems.
-> 
-> Signed-off-by: David Gibson <dwg@au1.ibm.com>
+Powerpc move of_irq_to_resource from prom.h to prom_parse.c
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Sorry for the lack of information, it got cut in the previous messages.
+Let's start all over again :
 
-> 
-> Index: working-2.6/arch/powerpc/kernel/ppc_ksyms.c
-> ===================================================================
-> --- working-2.6.orig/arch/powerpc/kernel/ppc_ksyms.c	2007-01-24 12:01:17.000000000 +1100
-> +++ working-2.6/arch/powerpc/kernel/ppc_ksyms.c	2007-02-06 11:34:54.000000000 +1100
-> @@ -44,6 +44,7 @@
->  #include <asm/btext.h>
->  #include <asm/div64.h>
->  #include <asm/signal.h>
-> +#include <asm/dcr.h>
->  
->  #ifdef  CONFIG_8xx
->  #include <asm/commproc.h>
-> Index: working-2.6/include/asm-powerpc/dcr.h
-> ===================================================================
-> --- working-2.6.orig/include/asm-powerpc/dcr.h	2007-01-24 12:01:20.000000000 +1100
-> +++ working-2.6/include/asm-powerpc/dcr.h	2007-02-06 11:34:54.000000000 +1100
-> @@ -33,6 +33,7 @@
->   * base from the device-tree
->   */
->  #ifdef CONFIG_PPC_MERGE
-> +struct device_node;
->  extern unsigned int dcr_resource_start(struct device_node *np,
->  				       unsigned int index);
->  extern unsigned int dcr_resource_len(struct device_node *np,
-> Index: working-2.6/include/asm-ppc/reg_booke.h
-> ===================================================================
-> --- working-2.6.orig/include/asm-ppc/reg_booke.h	2007-01-24 12:01:20.000000000 +1100
-> +++ working-2.6/include/asm-ppc/reg_booke.h	2007-02-06 11:34:54.000000000 +1100
-> @@ -9,8 +9,6 @@
->  #ifndef __ASM_PPC_REG_BOOKE_H__
->  #define __ASM_PPC_REG_BOOKE_H__
->  
-> -#include <asm/dcr.h>
-> -
->  #ifndef __ASSEMBLY__
->  /* Performance Monitor Registers */
->  #define mfpmr(rn)	({unsigned int rval; \
-> Index: working-2.6/arch/ppc/kernel/ppc_ksyms.c
-> ===================================================================
-> --- working-2.6.orig/arch/ppc/kernel/ppc_ksyms.c	2007-02-06 11:38:28.000000000 +1100
-> +++ working-2.6/arch/ppc/kernel/ppc_ksyms.c	2007-02-06 11:38:39.000000000 +1100
-> @@ -43,6 +43,7 @@
->  #include <asm/div64.h>
->  #include <asm/xmon.h>
->  #include <asm/signal.h>
-> +#include <asm/dcr.h>
->  
->  #ifdef  CONFIG_8xx
->  #include <asm/commproc.h>
-> Index: working-2.6/include/asm-ppc/ibm4xx.h
-> ===================================================================
-> --- working-2.6.orig/include/asm-ppc/ibm4xx.h	2007-02-06 11:39:13.000000000 +1100
-> +++ working-2.6/include/asm-ppc/ibm4xx.h	2007-02-06 11:39:27.000000000 +1100
-> @@ -15,6 +15,7 @@
->  #define __ASM_IBM4XX_H__
->  
->  #include <asm/types.h>
-> +#include <asm/dcr.h>
->  
->  #ifdef CONFIG_40x
->  
-> 
-> 
+In the powerpc architecture, of_irq_to_resource, currently sitting in
+prom.h, needs irq_of_parse_and_map and NO_IRQ from asm-powerpc/irq.h.
+The solution suggested by Benjamin Herrenschmidt is to move it to
+arch/powerpc/kernel/prom_parse.c.
+
+It applies on 2.6.20.
+
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+
+--- a/arch/powerpc/kernel/prom_parse.c
++++ b/arch/powerpc/kernel/prom_parse.c
+@@ -1003,3 +1003,18 @@ int of_irq_map_one(struct device_node *device, int i=
+ndex, struct of_irq *out_irq
+ 	return res;
+ }
+ EXPORT_SYMBOL_GPL(of_irq_map_one);
++
++int of_irq_to_resource(struct device_node *dev, int index, struct resource=
+ *r)
++{
++	int irq =3D irq_of_parse_and_map(dev, index);
++
++	/* Only dereference the resource if both the
++	 * resource and the irq are valid. */
++	if (r && irq !=3D NO_IRQ) {
++		r->start =3D r->end =3D irq;
++		r->flags =3D IORESOURCE_IRQ;
++	}
++
++	return irq;
++}
++EXPORT_SYMBOL_GPL(of_irq_to_resource);
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -19,6 +19,7 @@
+ #include <linux/proc_fs.h>
+ #include <linux/platform_device.h>
+ #include <asm/atomic.h>
++#include <asm/irq.h>
+=20
+ /* Definitions used by the flattened device tree */
+ #define OF_DT_HEADER		0xd00dfeed	/* marker */
+@@ -334,20 +335,8 @@ extern int of_irq_map_one(struct device_node *device, =
+int index,
+ struct pci_dev;
+ extern int of_irq_map_pci(struct pci_dev *pdev, struct of_irq *out_irq);
+=20
+-static inline int of_irq_to_resource(struct device_node *dev, int index, s=
+truct resource *r)
+-{
+-	int irq =3D irq_of_parse_and_map(dev, index);
+-
+-	/* Only dereference the resource if both the
+-	 * resource and the irq are valid. */
+-	if (r && irq !=3D NO_IRQ) {
+-		r->start =3D r->end =3D irq;
+-		r->flags =3D IORESOURCE_IRQ;
+-	}
+-
+-	return irq;
+-}
+-
++extern int of_irq_to_resource(struct device_node *dev, int index,
++			struct resource *r);
+=20
+ #endif /* __KERNEL__ */
+ #endif /* _POWERPC_PROM_H */
+--=20
+Mathieu Desnoyers
+Computer Engineering Graduate Student, =C9cole Polytechnique de Montr=E9al
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
