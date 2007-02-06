@@ -1,19 +1,17 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id D95A6DDEBA
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 12:12:15 +1100 (EST)
-Date: Mon, 5 Feb 2007 19:19:49 -0600
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC 08/10] powerpc: dart iommu suspend
-Message-ID: <20070206011949.GA15434@lixom.net>
-References: <20070205183026.989209000@sipsolutions.net>
-	<20070205185838.029827000@sipsolutions.net>
+	by ozlabs.org (Postfix) with ESMTP id E8342DDE47
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 12:23:15 +1100 (EST)
+Date: Mon, 5 Feb 2007 19:30:51 -0600
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] Update udbg_progress() to display the integer
+Message-ID: <20070206013051.GA15525@lixom.net>
+References: <11707051151024-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070205185838.029827000@sipsolutions.net>
+In-Reply-To: <11707051151024-git-send-email-timur@freescale.com>
 From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org,
-	Torrance <torrance123@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,98 +21,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 05, 2007 at 07:30:35PM +0100, Johannes Berg wrote:
-> This implements suspend and resume code for the dart iommu.
+On Mon, Feb 05, 2007 at 01:51:55PM -0600, Timur Tabi wrote:
+> Although udbg_progress() takes a string and a short as parameters, only
+> the string is displayed.  This patch also displays the integer, if it's not
+> equal to 0xFFFF.  This gives callers the option to display only the string.
 
-It's a good start, but it would be even nicer to have more generic iommu
-suspend/resume hooks instead, and do the alloc/copy there. Add the hooks
-to ppc_md together with the rest of the iommu/tce ops.
+Some platforms do this already, but they output the numbers first. It's
+a good idea to stay consistent with that.
 
-Minor code comment below.
+See maple_progress, ps3_progress and friends for templates. They're
+quite verbose though.
 
-> --- mb-wireless.orig/arch/powerpc/sysdev/dart_iommu.c	2007-02-05 14:24:04.834526864 +0100
-> +++ mb-wireless/arch/powerpc/sysdev/dart_iommu.c	2007-02-05 14:24:40.684526864 +0100
-> @@ -54,6 +54,9 @@ static unsigned long dart_tablesize;
->  
->  /* Virtual base address of the DART table */
->  static u32 *dart_vbase;
-> +#ifdef CONFIG_SOFTWARE_SUSPEND
-> +static u32 *dart_copy;
-> +#endif
->  
->  /* Mapped base address for the dart */
->  static unsigned int __iomem *dart;
-> @@ -346,6 +349,52 @@ void iommu_init_early_dart(void)
->  	pci_dma_ops = &dma_direct_ops;
+
+-Olof
+
+
+> 
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
+>  arch/powerpc/kernel/udbg.c |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/udbg.c b/arch/powerpc/kernel/udbg.c
+> index 5730906..c474961 100644
+> --- a/arch/powerpc/kernel/udbg.c
+> +++ b/arch/powerpc/kernel/udbg.c
+> @@ -121,6 +121,11 @@ void udbg_printf(const char *fmt, ...)
+>  void __init udbg_progress(char *s, unsigned short hex)
+>  {
+>  	udbg_puts(s);
+> +	if (hex != 0xffff) {
+> +		char buf[8];
+> +		sprintf(buf, " : %04X", hex);
+> +		udbg_puts(buf);
+> +	}
+>  	udbg_puts("\n");
 >  }
 >  
-> +#ifdef CONFIG_SOFTWARE_SUSPEND
-> +static int iommu_init_late_dart(void)
-> +{
-> +	unsigned long i;
-> +	struct page *p;
-> +
-> +	/* this 16MB area is left unmapped because of caching
-> +	 * considerations. that happens early so we can't mark
-> +	 * it there, do it now instead */
-> +	for (i = 0; i < (1<<24); i+= PAGE_SIZE)
-> +		SetPageNosave(virt_to_page((void*)((unsigned long)dart_tablebase + i)));
-
-Please do a local void * instead, makes for much less casting in the loop. :)
-
-> +
-> +	/* if no dart table exists then we don't need to save it */
-> +	if (!dart_tablebase)
-> +		return 0;
-> +
-> +	/* For suspend we need to copy the dart contents because
-> +	 * it is not part of the regular mapping (see above) and
-> +	 * thus not saved automatically. The memory for this copy
-> +	 * must be allocated early because we need 2 MB. */
-> +	p = alloc_pages(GFP_KERNEL, 21 - PAGE_SHIFT);
-> +	BUG_ON(!p);
-> +	dart_copy = page_address(p);
-> +
-> +	return 0;
-> +}
-> +
-> +late_initcall(iommu_init_late_dart);
-> +
-> +void iommu_dart_save(void)
-> +{
-> +	if (!dart_tablebase)
-> +		return;
-> +
-> +	memcpy(dart_copy, dart_vbase, 2*1024*1024);
-> +}
-> +
-> +void iommu_dart_restore(void)
-> +{
-> +	if (!dart_tablebase)
-> +		return;
-> +
-> +	memcpy(dart_vbase, dart_copy, 2*1024*1024);
-> +	dart_tlb_invalidate_all();
-> +}
-> +#endif
->  
->  void __init alloc_dart_table(void)
->  {
-> --- mb-wireless.orig/include/asm-powerpc/iommu.h	2007-02-05 14:24:05.014526864 +0100
-> +++ mb-wireless/include/asm-powerpc/iommu.h	2007-02-05 14:24:40.684526864 +0100
-> @@ -108,6 +108,10 @@ static inline void pci_iommu_init(void) 
->  #endif
->  
->  extern void alloc_dart_table(void);
-> +#if defined(CONFIG_SOFTWARE_SUSPEND) && defined(CONFIG_U3_DART)
-> +extern void iommu_dart_save(void);
-> +extern void iommu_dart_restore(void);
-> +#endif
->  
->  #endif /* __KERNEL__ */
->  #endif /* _ASM_IOMMU_H */
-> 
-> --
+> -- 
+> 1.4.4
 > 
 > _______________________________________________
 > Linuxppc-dev mailing list
