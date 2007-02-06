@@ -1,16 +1,14 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL PPU Oprofile SPU profiling
-	updated patch
+Subject: Re: [powerpc] Compile fixes for arch/powerpc dcr code
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Carl Love <cel@us.ibm.com>
-In-Reply-To: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
-References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20070206004828.GC20123@localhost.localdomain>
+References: <20070206004828.GC20123@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 06 Feb 2007 11:49:06 +1100
-Message-Id: <1170722946.2620.177.camel@localhost.localdomain>
+Date: Tue, 06 Feb 2007 11:54:23 +1100
+Message-Id: <1170723263.2620.187.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	cbe-oss-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,36 +18,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-02-05 at 16:28 -0800, Carl Love wrote:
-> This is the first update to the patch previously posted by Maynard
-> Johnson as "PATCH 4/4. Add support to OProfile for profiling CELL".  
+On Tue, 2007-02-06 at 11:48 +1100, David Gibson wrote:
+> Paulus, please apply.
 > 
-> There are still a few items from the comments being discussed
-> specifically how to profile the dynamic code for the SPFS context
-> switch
-> code and how to deal with dynamic code stubs for library support.  Our
-> proposal is to assign the samples from the SPFS and dynamic library
-> code
-> to an anonymous sample bucket.  The support for properly handling the
-> symbol extraction in these cases would be deferred to a later SDK.    
+> The new dcr code does not currently compile when configured for native
+> DCR access on ARCH=powerpc.  This patch fixes the problems.
 > 
-> There is also a bug in profiling overlay code that we are
-> investigating.
-> 
-> Subject: Add support to OProfile for profiling Cell BE SPUs
-> 
-> From: Maynard Johnson <maynardj@us.ibm.com>
-> 
-> This patch updates the existing arch/powerpc/oprofile/op_model_cell.c
-> to add in the SPU profiling capabilities.  In addition, a 'cell'
-> subdirectory
-> was added to arch/powerpc/oprofile to hold Cell-specific SPU profiling
-> code.
-> 
-> Signed-off-by: Carl Love <carll@us.ibm.com>
-> Signed-off-by: Maynard Johnson <mpjohn@us.ibm.com> 
+> Signed-off-by: David Gibson <dwg@au1.ibm.com>
 
-Patch got mangled. You seem to be using evolution, make sure you use the
-"Preformat" style when posting a patch.
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Ben.
+> 
+> Index: working-2.6/arch/powerpc/kernel/ppc_ksyms.c
+> ===================================================================
+> --- working-2.6.orig/arch/powerpc/kernel/ppc_ksyms.c	2007-01-24 12:01:17.000000000 +1100
+> +++ working-2.6/arch/powerpc/kernel/ppc_ksyms.c	2007-02-06 11:34:54.000000000 +1100
+> @@ -44,6 +44,7 @@
+>  #include <asm/btext.h>
+>  #include <asm/div64.h>
+>  #include <asm/signal.h>
+> +#include <asm/dcr.h>
+>  
+>  #ifdef  CONFIG_8xx
+>  #include <asm/commproc.h>
+> Index: working-2.6/include/asm-powerpc/dcr.h
+> ===================================================================
+> --- working-2.6.orig/include/asm-powerpc/dcr.h	2007-01-24 12:01:20.000000000 +1100
+> +++ working-2.6/include/asm-powerpc/dcr.h	2007-02-06 11:34:54.000000000 +1100
+> @@ -33,6 +33,7 @@
+>   * base from the device-tree
+>   */
+>  #ifdef CONFIG_PPC_MERGE
+> +struct device_node;
+>  extern unsigned int dcr_resource_start(struct device_node *np,
+>  				       unsigned int index);
+>  extern unsigned int dcr_resource_len(struct device_node *np,
+> Index: working-2.6/include/asm-ppc/reg_booke.h
+> ===================================================================
+> --- working-2.6.orig/include/asm-ppc/reg_booke.h	2007-01-24 12:01:20.000000000 +1100
+> +++ working-2.6/include/asm-ppc/reg_booke.h	2007-02-06 11:34:54.000000000 +1100
+> @@ -9,8 +9,6 @@
+>  #ifndef __ASM_PPC_REG_BOOKE_H__
+>  #define __ASM_PPC_REG_BOOKE_H__
+>  
+> -#include <asm/dcr.h>
+> -
+>  #ifndef __ASSEMBLY__
+>  /* Performance Monitor Registers */
+>  #define mfpmr(rn)	({unsigned int rval; \
+> Index: working-2.6/arch/ppc/kernel/ppc_ksyms.c
+> ===================================================================
+> --- working-2.6.orig/arch/ppc/kernel/ppc_ksyms.c	2007-02-06 11:38:28.000000000 +1100
+> +++ working-2.6/arch/ppc/kernel/ppc_ksyms.c	2007-02-06 11:38:39.000000000 +1100
+> @@ -43,6 +43,7 @@
+>  #include <asm/div64.h>
+>  #include <asm/xmon.h>
+>  #include <asm/signal.h>
+> +#include <asm/dcr.h>
+>  
+>  #ifdef  CONFIG_8xx
+>  #include <asm/commproc.h>
+> Index: working-2.6/include/asm-ppc/ibm4xx.h
+> ===================================================================
+> --- working-2.6.orig/include/asm-ppc/ibm4xx.h	2007-02-06 11:39:13.000000000 +1100
+> +++ working-2.6/include/asm-ppc/ibm4xx.h	2007-02-06 11:39:27.000000000 +1100
+> @@ -15,6 +15,7 @@
+>  #define __ASM_IBM4XX_H__
+>  
+>  #include <asm/types.h>
+> +#include <asm/dcr.h>
+>  
+>  #ifdef CONFIG_40x
+>  
+> 
+> 
