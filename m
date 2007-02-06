@@ -1,16 +1,34 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 296F5DDEBD
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 04:26:50 +1100 (EST)
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-To: mingo@elte.hu
-Subject: [PATCH] (2.6.20-rt3) PowerPC: convert spinlocks into raw
-Date: Tue, 6 Feb 2007 20:26:40 +0300
+Return-Path: <linas@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 06ABBDDE39
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 04:58:54 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l16HxV7U025666
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 12:59:31 -0500
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l16HwoHS295874
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 12:58:50 -0500
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l16HwnPV000931
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 12:58:50 -0500
+Date: Tue, 6 Feb 2007 11:58:49 -0600
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH]Enabling Auto poweron after power is restored.
+Message-ID: <20070206175849.GW5616@austin.ibm.com>
+References: <45707469.9060604@austin.ibm.com> <4575E76C.7030300@austin.ibm.com>
+	<17785.415.574041.518517@cargo.ozlabs.ibm.com>
+	<458EBE02.3010401@austin.ibm.com>
+	<17827.5922.667200.166153@cargo.ozlabs.ibm.com>
+	<45C40C97.807@austin.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702062026.40875.sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org, dwalker@mvista.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45C40C97.807@austin.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,100 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Convert the spinlocks in the PowerPC interrupt related code into the raw ones,
-also convert the PURR and PMC related spinlocks...
+On Fri, Feb 02, 2007 at 10:16:23PM -0600, Manish Ahuja wrote:
+> Resubmitting this patch with a sysfs interface instead of /proc.
+> During some off line discussion, /sys/power was suggested as a possible 
+> candidate area for this functionality to reside.
+> 
+> -------------------------------------------------------------------------------------------------------------------------
+> 
+> During power outages, the ups notifies the system for a shutdown. In the 
+> current setup, it isn't possible to poweron when power is restored. This 
+> patch fixes the issue by calling the right ibm,power-off-ups token 
+> during such events. It also adds a sysfs interface so that rc.powerfail 
+> can parse the epow events and modify the power-off behavior accordingly 
+> to enable the right token to be called.
+> 
+> Signed-off-by: Manish Ahuja <ahuja@austin.ibm.com>
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Acked-by: Linas Vepstas <linas@austin.ibm.com>
 
-Index: linux-2.6/arch/powerpc/kernel/irq.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/irq.c
-+++ linux-2.6/arch/powerpc/kernel/irq.c
-@@ -392,7 +392,7 @@ EXPORT_SYMBOL(do_softirq);
- #ifdef CONFIG_PPC_MERGE
- 
- static LIST_HEAD(irq_hosts);
--static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_RAW_SPINLOCK(irq_big_lock);
- static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
- static unsigned int irq_radix_writer;
- struct irq_map_entry irq_map[NR_IRQS];
-Index: linux-2.6/arch/powerpc/kernel/pmc.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/pmc.c
-+++ linux-2.6/arch/powerpc/kernel/pmc.c
-@@ -52,7 +52,7 @@ static void dummy_perf(struct pt_regs *r
- }
- #endif
- 
--static DEFINE_SPINLOCK(pmc_owner_lock);
-+static DEFINE_RAW_SPINLOCK(pmc_owner_lock);
- static void *pmc_owner_caller; /* mostly for debugging */
- perf_irq_t perf_irq = dummy_perf;
- 
-Index: linux-2.6/arch/powerpc/kernel/time.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/time.c
-+++ linux-2.6/arch/powerpc/kernel/time.c
-@@ -223,7 +223,7 @@ struct cpu_purr_data {
- 	int	initialized;			/* thread is running */
- 	u64	tb;			/* last TB value read */
- 	u64	purr;			/* last PURR value read */
--	spinlock_t lock;
-+	raw_spinlock_t lock;
- };
- 
- static DEFINE_PER_CPU(struct cpu_purr_data, cpu_purr_data);
-Index: linux-2.6/arch/powerpc/sysdev/i8259.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/i8259.c
-+++ linux-2.6/arch/powerpc/sysdev/i8259.c
-@@ -23,7 +23,7 @@ static unsigned char cached_8259[2] = { 
- #define cached_A1 (cached_8259[0])
- #define cached_21 (cached_8259[1])
- 
--static DEFINE_SPINLOCK(i8259_lock);
-+static DEFINE_RAW_SPINLOCK(i8259_lock);
- 
- static struct device_node *i8259_node;
- static struct irq_host *i8259_host;
-Index: linux-2.6/arch/powerpc/sysdev/ipic.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/ipic.c
-+++ linux-2.6/arch/powerpc/sysdev/ipic.c
-@@ -30,7 +30,7 @@
- #include "ipic.h"
- 
- static struct ipic * primary_ipic;
--static DEFINE_SPINLOCK(ipic_lock);
-+static DEFINE_RAW_SPINLOCK(ipic_lock);
- 
- static struct ipic_info ipic_info[] = {
- 	[9] = {
-Index: linux-2.6/arch/powerpc/sysdev/mpic.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/mpic.c
-+++ linux-2.6/arch/powerpc/sysdev/mpic.c
-@@ -44,7 +44,7 @@
- 
- static struct mpic *mpics;
- static struct mpic *mpic_primary;
--static DEFINE_SPINLOCK(mpic_lock);
-+static DEFINE_RAW_SPINLOCK(mpic_lock);
- 
- #ifdef CONFIG_PPC32	/* XXX for now */
- #ifdef CONFIG_IRQ_ALL_CPUS
-Index: linux-2.6/include/asm-powerpc/mpic.h
-===================================================================
---- linux-2.6.orig/include/asm-powerpc/mpic.h
-+++ linux-2.6/include/asm-powerpc/mpic.h
-@@ -279,7 +279,7 @@ struct mpic
- #ifdef CONFIG_MPIC_BROKEN_U3
- 	/* The fixup table */
- 	struct mpic_irq_fixup	*fixups;
--	spinlock_t		fixup_lock;
-+	raw_spinlock_t		fixup_lock;
- #endif
- 
- 	/* Register access method */
+
+--linas
