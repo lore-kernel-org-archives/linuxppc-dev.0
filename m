@@ -1,18 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 6608ADDE3E
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 00:23:21 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/4] PS3: Move system bus to platform directory
-Date: Tue, 6 Feb 2007 14:23:18 +0100
-References: <45BFD2BB.1030008@am.sony.com>
-In-Reply-To: <45BFD2BB.1030008@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702061423.18621.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 910D0DDE35
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 01:24:26 +1100 (EST)
+In-Reply-To: <200702061407.24843.arnd@arndb.de>
+References: <45C6F46C.9000000@freescale.com>
+	<297BF1F9-551F-43AD-9E76-00C79EC8BF31@kernel.crashing.org>
+	<200702061407.24843.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <C9D8CBA2-7ED6-4433-BE70-966BDC94FA13@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/3] add soc setup code for USB DR OTG mode
+Date: Tue, 6 Feb 2007 08:23:19 -0600
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
+	Paul <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,9 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 31 January 2007 00:20, Geoff Levand wrote:
-> Move the PS3 system bus routines from drivers/ps3 to arch/powerpc/platforms/ps3.
-> 
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+
+On Feb 6, 2007, at 7:07 AM, Arnd Bergmann wrote:
+
+> On Monday 05 February 2007 16:15, Kumar Gala wrote:
+>>> +                     usb_data.operating_mode = FSL_USB2_DR_HOST;
+>>> +                     usb_dev_dr_host =  
+>>> platform_device_register_simple(
+>>> +                                     "fsl-ehci", i, r, 2);
+>>> +                     if (IS_ERR(usb_dev_dr_host)) {
+>>> +                             ret = PTR_ERR(usb_dev_dr_host);
+>>> +                             goto err;
+>
+> I just saw that this file has a number of calls to
+> platform_device_register_simple() for devices that come from the OF
+> device tree.
+>
+> Can this be converted to use of_register_platform_driver() and
+> of_platform_device_probe() instead?
+
+This is an ongoing issue and will help once arch/ppc consumers of  
+these drivers go away.  Until then we will continue to use  
+platform_devices.
+
+- k
