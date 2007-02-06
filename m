@@ -1,21 +1,21 @@
 Return-Path: <LeoLi@freescale.com>
 Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id CF39ADDE16
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 20:04:01 +1100 (EST)
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id F3CBCDDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 20:03:56 +1100 (EST)
 Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
 	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l16940aJ026606
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 02:04:00 -0700 (MST)
+	l1693tYW026571
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 02:03:55 -0700 (MST)
 Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
 	[10.192.129.204])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l1693w5O010854
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 03:03:59 -0600 (CST)
-Message-ID: <45C844CA.8070102@freescale.com>
-Date: Tue, 06 Feb 2007 17:05:14 +0800
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l1693rf2010820
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 03:03:54 -0600 (CST)
+Message-ID: <45C844C5.6020108@freescale.com>
+Date: Tue, 06 Feb 2007 17:05:09 +0800
 From: Li Yang <leoli@freescale.com>
 MIME-Version: 1.0
 To: Paul <paulus@samba.org>
-Subject: [PATCH 3/3] DTS updates for 8349emds USB peripheral support
+Subject: [PATCH 2/3] add platform_device for USB DR pheripheral driver
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,57 +27,115 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add new dr_mode property to USB node, and update default
-dts for 8439emds.
+Add platform_device setup code for OTG/peripheral mode of
+834x DR module.  It is needed for USB client driver to work.
 
 Signed-off-by: Li Yang <leoli@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |    3 +++
- arch/powerpc/boot/dts/mpc8349emds.dts        |    6 ++++++
- 2 files changed, 9 insertions(+), 0 deletions(-)
+ arch/powerpc/sysdev/fsl_soc.c |   76 +++++++++++++++++++++++++++++++----------
+ 1 files changed, 58 insertions(+), 18 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 3399427..962034a 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1334,6 +1334,8 @@ platforms are moved over to use the flattened-device-tree model.
-       fsl-usb2-mph compatible controllers.  Either this property or
-       "port0" (or both) must be defined for "fsl-usb2-mph" compatible 
-       controllers.
-+    - dr_mode : indicates the working mode of DR module. Can be "host",
-+      "peripheral" or "otg".
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index ad31e56..8e4837a 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -440,7 +440,8 @@ static int __init fsl_usb_of_init(void)
+ {
+ 	struct device_node *np;
+ 	unsigned int i;
+-	struct platform_device *usb_dev_mph = NULL, *usb_dev_dr = NULL;
++	struct platform_device *usb_dev_mph = NULL, *usb_dev_dr_host = NULL,
++		*usb_dev_dr_client = NULL;
+ 	int ret;
  
-    Recommended properties :
-     - interrupts : <a b> where a is the interrupt number and b is a
-@@ -1367,6 +1369,7 @@ platforms are moved over to use the flattened-device-tree model.
- 		#size-cells = <0>;
- 		interrupt-parent = <700>;
- 		interrupts = <26 1>;
-+		dr_mode = "otg";
- 		phy = "ulpi";
- 	};
+ 	for (np = NULL, i = 0;
+@@ -506,33 +507,72 @@ static int __init fsl_usb_of_init(void)
  
-diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts b/arch/powerpc/boot/dts/mpc8349emds.dts
-index efceb34..dc121b3 100644
---- a/arch/powerpc/boot/dts/mpc8349emds.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emds.dts
-@@ -39,6 +39,11 @@
- 		reg = <00000000 10000000>;	// 256MB at 0
- 	};
+ 		of_irq_to_resource(np, 0, &r[1]);
  
-+	bcsr@e2400000 {
-+		device_type = "board-control";
-+		reg = <e2400000 8000>;
-+	};
+-		usb_dev_dr =
+-		    platform_device_register_simple("fsl-ehci", i, r, 2);
+-		if (IS_ERR(usb_dev_dr)) {
+-			ret = PTR_ERR(usb_dev_dr);
++		prop = get_property(np, "dr_mode", NULL);
 +
- 	soc8349@e0000000 {
- 		#address-cells = <1>;
- 		#size-cells = <1>;
-@@ -103,6 +108,7 @@
- 			#size-cells = <0>;
- 			interrupt-parent = <700>;
- 			interrupts = <26 2>;
-+			dr_mode = "otg";
- 			phy_type = "ulpi";
- 		};
++		if (prop && !strcmp(prop, "host")) {
++			usb_data.operating_mode = FSL_USB2_DR_HOST;
++			usb_dev_dr_host = platform_device_register_simple(
++					"fsl-ehci", i, r, 2);
++			if (IS_ERR(usb_dev_dr_host)) {
++				ret = PTR_ERR(usb_dev_dr_host);
++				goto err;
++			}
++		} else if (prop && !strcmp(prop, "peripheral")) {
++			usb_data.operating_mode = FSL_USB2_DR_DEVICE;
++			usb_dev_dr_client = platform_device_register_simple(
++					"fsl-usb2-udc", i, r, 2);
++			if (IS_ERR(usb_dev_dr_client)) {
++				ret = PTR_ERR(usb_dev_dr_client);
++				goto err;
++			}
++		} else if (!prop || (prop && !strcmp(prop, "otg"))) {
++			usb_data.operating_mode = FSL_USB2_DR_OTG;
++			usb_dev_dr_host = platform_device_register_simple(
++					"fsl-ehci", i, r, 2);
++			if (IS_ERR(usb_dev_dr_host)) {
++				ret = PTR_ERR(usb_dev_dr_host);
++				goto err;
++			}
++			usb_dev_dr_client = platform_device_register_simple(
++					"fsl-usb2-udc", i, r, 2);
++			if (IS_ERR(usb_dev_dr_client)) {
++				ret = PTR_ERR(usb_dev_dr_client);
++				goto err;
++			}
++		} else {
++			ret = -EINVAL;
+ 			goto err;
+ 		}
  
+-		usb_dev_dr->dev.coherent_dma_mask = 0xffffffffUL;
+-		usb_dev_dr->dev.dma_mask = &usb_dev_dr->dev.coherent_dma_mask;
+-
+-		usb_data.operating_mode = FSL_USB2_DR_HOST;
+-
+ 		prop = get_property(np, "phy_type", NULL);
+ 		usb_data.phy_mode = determine_usb_phy(prop);
+ 
+-		ret =
+-		    platform_device_add_data(usb_dev_dr, &usb_data,
+-					     sizeof(struct
+-						    fsl_usb2_platform_data));
+-		if (ret)
+-			goto unreg_dr;
++		if (usb_dev_dr_host) {
++			usb_dev_dr_host->dev.coherent_dma_mask = 0xffffffffUL;
++			usb_dev_dr_host->dev.dma_mask = &usb_dev_dr_host->
++				dev.coherent_dma_mask;
++			if ((ret = platform_device_add_data(usb_dev_dr_host,
++						&usb_data, sizeof(struct
++						fsl_usb2_platform_data))))
++				goto unreg_dr;
++		}
++		if (usb_dev_dr_client) {
++			usb_dev_dr_client->dev.coherent_dma_mask = 0xffffffffUL;
++			usb_dev_dr_client->dev.dma_mask = &usb_dev_dr_client->
++				dev.coherent_dma_mask;
++			if ((ret = platform_device_add_data(usb_dev_dr_client,
++						&usb_data, sizeof(struct
++						fsl_usb2_platform_data))))
++				goto unreg_dr;
++		}
+ 	}
+ 	return 0;
+ 
+ unreg_dr:
+-	if (usb_dev_dr)
+-		platform_device_unregister(usb_dev_dr);
++	if (usb_dev_dr_host)
++		platform_device_unregister(usb_dev_dr_host);
++	if (usb_dev_dr_client)
++		platform_device_unregister(usb_dev_dr_client);
+ unreg_mph:
+ 	if (usb_dev_mph)
+ 		platform_device_unregister(usb_dev_mph);
