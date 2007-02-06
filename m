@@ -1,18 +1,24 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 37AC9DDE10
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 21:43:00 +1100 (EST)
-Date: Tue, 06 Feb 2007 19:42:30 +0900 (JST)
-Message-Id: <200702061042.l16AgVXP027762@toshiba.co.jp>
-Subject: Re: spidernet: dynamic phy setup code
-To: jens@de.ibm.com, benh@kernel.crashing.org
-In-Reply-To: <200702010754.l117s2T8003383@toshiba.co.jp>
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 48370DDE32
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Feb 2007 22:30:42 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l16BUfGO005153
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 04:30:41 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l16BUIxr014599
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 05:30:34 -0600 (CST)
+Message-ID: <45C8671A.9040002@freescale.com>
+Date: Tue, 06 Feb 2007 19:31:38 +0800
+From: Li Yang <leoli@freescale.com>
+MIME-Version: 1.0
+To: jeff@garzik.org
+Subject: [PATCH 2/4] ucc_geth: Switch kmalloc to kzalloc and clean some
+	redundant kmalloc casts
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,79 +28,68 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ben-san, Jens-san
+From: Ahmed S. Darwish <darwish.07@gmail.com>
 
-Thanks for your comments and advices.
-First, we should apologize to you that some troubles which we informed
-about spidernet auto-negotiation are caused by our mistake.
-We used wrong MACRO for "advertise" variable to
-phy->def->ops->setup_aneg(). 
+Switch kmalloc to kzalloc and clean some redundant kmalloc
+casts.
 
-We will post the revised patch for spider_net.
-Following are the current status of troubles we informed.
+Signed-off-by: Ahmed S. Darwish <darwish.07@gmail.com>
+Signed-off-by: Li Yang <leoli@freescale.com>
+---
+ drivers/net/ucc_geth.c |   21 ++++++++-------------
+ 1 files changed, 8 insertions(+), 13 deletions(-)
 
-(1)
->- if (card->aneg_count > 10) {
->-  /* timeout */
->-  card->aneg_count = 0;
->-  is1000 = !is1000;
->-  goto re_setup;
->- if (phy->speed == 1000 && !is1000) {
->-  is1000 = 1;
->-  goto re_setup;
->- } else if(phy->speed != 1000 && is1000) {
->-  is1000 = 0;
->-  goto re_setup;
->- }
-> We need to use different auto-neg initial settings between
-> for 10/100Mbps ethernet switches and for Gbps ethernet switches.
-> Driver don't know which type of network switch is connected to
-> network card, so we try both settings alternately in auto negtiation
-> sequences by using a variable "is1000".
-> Furthermore, we have a problem that poll_link() may succeed even when
-> the auto-neg initial setting is for different network switch type,
-> and the network card does not work on this case. We retry auto-neg
-> with the another initial setting on this case.
-Solved.
-
-We are now able to use Gbps switches and 10/100Mbps switches with 
-the same advertise setting and we don't need to use is1000.
-The re_setup is not necessary and they are removed in the revised patch.
-
-2.
->> - spider_net_write_reg(card, SPIDER_NET_GMACST,
->> -        spider_net_read_reg(card, SPIDER_NET_GMACST));
->> - spider_net_write_reg(card, SPIDER_NET_GMACINTEN, 0x4);
->
-> These codes are enabling LINK status interrupt which is disabled
-> at the beginning of auto-neg.
-> Without this operation, auto negotiation works only when a connection
-> detected for the first time, and auto negotiation will not work 
-> when an ethernet cable is unpluged or pluged.
-Pending(No problem, if they don't cause any trouble on Cell Blades).
-
-By the way, why do you suggest to use polling for auto-neg, Ben-san? 
-Is there a merit to use polling, or is there a problem to use interrupt?
-Sorry, we couldn't find the reason why sungem use polling for auto-neg. 
-
-They might not be necessary, if we use polling to handle LINK status as
-Ben-san said.
-
-3
->> - mii_phy_probe(phy, phy->mii_id);
-> It seems that PHY reset is necessary before auto negotiation,
-> in the case that ethernet card is disconnected from an ethernet switch
-> then connected to another ethernet switch.
-> We can't call directly reset routine from driver, so we call
-mii_phy_probe().
-Pending.
-
-After all, we need phy reset.
-> If you really need to reset it, then change sungem_phy.c to export the
-> reset function. But I'm surprised you need that. Another option is to
-> reset the PHY in your PHY's setup_aneg() function.
-We still wonder which is the best way, and mii_phy_probe() still remains
-so far.
-
-Best regards,
-Kou Ishizaki
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 722a89f..50b1fe9 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -2927,10 +2927,9 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	/* Init Tx bds */
+ 	for (j = 0; j < ug_info->numQueuesTx; j++) {
+ 		/* Setup the skbuff rings */
+-		ugeth->tx_skbuff[j] =
+-		    (struct sk_buff **)kmalloc(sizeof(struct sk_buff *) *
+-					       ugeth->ug_info->bdRingLenTx[j],
+-					       GFP_KERNEL);
++		ugeth->tx_skbuff[j] = kmalloc(sizeof(struct sk_buff *) *
++					      ugeth->ug_info->bdRingLenTx[j],
++					      GFP_KERNEL);
+ 
+ 		if (ugeth->tx_skbuff[j] == NULL) {
+ 			ugeth_err("%s: Could not allocate tx_skbuff",
+@@ -2959,10 +2958,9 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	/* Init Rx bds */
+ 	for (j = 0; j < ug_info->numQueuesRx; j++) {
+ 		/* Setup the skbuff rings */
+-		ugeth->rx_skbuff[j] =
+-		    (struct sk_buff **)kmalloc(sizeof(struct sk_buff *) *
+-					       ugeth->ug_info->bdRingLenRx[j],
+-					       GFP_KERNEL);
++		ugeth->rx_skbuff[j] = kmalloc(sizeof(struct sk_buff *) *
++					      ugeth->ug_info->bdRingLenRx[j],
++					      GFP_KERNEL);
+ 
+ 		if (ugeth->rx_skbuff[j] == NULL) {
+ 			ugeth_err("%s: Could not allocate rx_skbuff",
+@@ -3434,19 +3432,16 @@ static int ucc_geth_startup(struct ucc_geth_private *ugeth)
+ 	 * resource.
+ 	 * This shadow structure keeps a copy of what was done so that the
+ 	 * allocated resources can be released when the channel is freed.
++	 * *p_init_enet_param_shadow is zeroed by kzalloc
+ 	 */
+ 	if (!(ugeth->p_init_enet_param_shadow =
+-	     (struct ucc_geth_init_pram *) kmalloc(sizeof(struct ucc_geth_init_pram),
+-					      GFP_KERNEL))) {
++	      kzalloc(sizeof(struct ucc_geth_init_pram), GFP_KERNEL))) {
+ 		ugeth_err
+ 		    ("%s: Can not allocate memory for"
+ 			" p_UccInitEnetParamShadows.", __FUNCTION__);
+ 		ucc_geth_memclean(ugeth);
+ 		return -ENOMEM;
+ 	}
+-	/* Zero out *p_init_enet_param_shadow */
+-	memset((char *)ugeth->p_init_enet_param_shadow,
+-	       0, sizeof(struct ucc_geth_init_pram));
+ 
+ 	/* Fill shadow InitEnet command parameter structure */
+ 
