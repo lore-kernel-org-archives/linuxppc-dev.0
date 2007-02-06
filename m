@@ -3,22 +3,18 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 59F68DDE42
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 03:17:57 +1100 (EST)
-In-Reply-To: <20070206152442.GB21050@lixom.net>
-References: <20070125073754.GA10004@lixom.net>
-	<17864.25011.534976.210942@cargo.ozlabs.ibm.com>
-	<01A15290-2EA9-454A-8DD5-28A01E39862B@kernel.crashing.org>
-	<20070206152442.GB21050@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id 8703CDDE45
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 03:21:05 +1100 (EST)
+In-Reply-To: <45C844CA.8070102@freescale.com>
+References: <45C844CA.8070102@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <91DAA7F5-2893-45CC-A920-2B3746D71DF9@kernel.crashing.org>
+Message-Id: <90D7EDC8-9E73-4006-8B0E-01D455C18BEC@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] generic RTC support for PPC
-Date: Tue, 6 Feb 2007 10:16:55 -0600
-To: Olof Johansson <olof@lixom.net>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	kimphill@freescale.com
+Subject: Re: [PATCH 3/3] DTS updates for 8349emds USB peripheral support
+Date: Tue, 6 Feb 2007 10:20:07 -0600
+To: Li Yang <leoli@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Paul <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,39 +25,65 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 6, 2007, at 9:24 AM, Olof Johansson wrote:
+On Feb 6, 2007, at 3:05 AM, Li Yang wrote:
 
-> On Tue, Feb 06, 2007 at 08:40:33AM -0600, Kumar Gala wrote:
->>
->> On Feb 6, 2007, at 5:08 AM, Paul Mackerras wrote:
->>
->>> Olof Johansson writes:
->>>
->>>> Make the PPC RTC functions use the generic RTC infrastructure if  
->>>> they
->>>> are not already defined (and an RTC is registered in the system).
->>>>
->>>> This should make it possible to remove the hideous direct access  
->>>> used
->>>> in some of the 83xx platforms.
->>>
->>> What was the consensus in the end about this?  Should it go in for
->>> 2.6.21?
->>
->> Are the "scheduling while atomic" issues that existed before actually
->> been fixed?
->>
->> http://marc.theaimsgroup.com/?l=linux-kernel&m=116378523012349&w=2
+> Add new dr_mode property to USB node, and update default
+> dts for 8439emds.
 >
-> My patch shouldn't do it since it uses a work queue, but that bug  
-> report
-> was for the rtc class api instead of genrtc. It'll need something  
-> similar.
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> Documentation/powerpc/booting-without-of.txt |    3 +++
+> arch/powerpc/boot/dts/mpc8349emds.dts        |    6 ++++++
+> 2 files changed, 9 insertions(+), 0 deletions(-)
 >
-> I can't even find the rtc_class_hookup code in 2.6.20, so I'm not sure
-> just what he was running.
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
+> Documentation/powerpc/booting-without-of.txt
+> index 3399427..962034a 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -1334,6 +1334,8 @@ platforms are moved over to use the flattened- 
+> device-tree model.
+>       fsl-usb2-mph compatible controllers.  Either this property or
+>       "port0" (or both) must be defined for "fsl-usb2-mph"  
+> compatible       controllers.
+> +    - dr_mode : indicates the working mode of DR module. Can be  
+> "host",
+> +      "peripheral" or "otg".
 
-Not 100% sure but we did back out some of the patches to arch/powerpc  
-code related to this.
+Add details about what it means if dr_mode is not set for 'fsl-usb2- 
+dr'.  Also some details about dr_mode being invalid/ignored for 'fsl- 
+usb2-mph'
 
-- k
+>    Recommended properties :
+>     - interrupts : <a b> where a is the interrupt number and b is a
+> @@ -1367,6 +1369,7 @@ platforms are moved over to use the flattened- 
+> device-tree model.
+> 		#size-cells = <0>;
+> 		interrupt-parent = <700>;
+> 		interrupts = <26 1>;
+> +		dr_mode = "otg";
+> 		phy = "ulpi";
+> 	};
+> diff --git a/arch/powerpc/boot/dts/mpc8349emds.dts b/arch/powerpc/ 
+> boot/dts/mpc8349emds.dts
+> index efceb34..dc121b3 100644
+> --- a/arch/powerpc/boot/dts/mpc8349emds.dts
+> +++ b/arch/powerpc/boot/dts/mpc8349emds.dts
+> @@ -39,6 +39,11 @@
+> 		reg = <00000000 10000000>;	// 256MB at 0
+> 	};
+> +	bcsr@e2400000 {
+> +		device_type = "board-control";
+> +		reg = <e2400000 8000>;
+> +	};
+> +
+> 	soc8349@e0000000 {
+> 		#address-cells = <1>;
+> 		#size-cells = <1>;
+> @@ -103,6 +108,7 @@
+> 			#size-cells = <0>;
+> 			interrupt-parent = <700>;
+> 			interrupts = <26 2>;
+> +			dr_mode = "otg";
+> 			phy_type = "ulpi";
+> 		};
