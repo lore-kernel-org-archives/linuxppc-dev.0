@@ -1,22 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 78210DDEFA
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 04:03:06 +1100 (EST)
-Message-ID: <45CA0646.3060203@freescale.com>
-Date: Wed, 07 Feb 2007 11:03:02 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 5F069DDF07
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 04:04:43 +1100 (EST)
+Message-ID: <45CA069F.7060108@am.sony.com>
+Date: Wed, 07 Feb 2007 09:04:31 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
-	generic iopa
-References: <45C86715.6090600@freescale.com>
-	<001EB06E-FC1D-4F0A-A910-8E08EE0B8CE2@kernel.crashing.org>
-	<45CA01C9.3020309@freescale.com>
-	<AC7EDFBD-7282-460F-9D0E-2E3AA9ED7718@kernel.crashing.org>
-In-Reply-To: <AC7EDFBD-7282-460F-9D0E-2E3AA9ED7718@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	linuxppc-dev@ozlabs.org
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 3/3] PS3: System manager support
+References: <45C8FFF7.7090805@am.sony.com>
+	<Pine.LNX.4.62.0702071527350.29060@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0702071527350.29060@pademelon.sonytel.be>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,38 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Geert Uytterhoeven wrote:
+> On Tue, 6 Feb 2007, Geoff Levand wrote:
+>> --- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/setup.c
+>> +++ ps3-linux-dev/arch/powerpc/platforms/ps3/setup.c
+>> @@ -42,6 +42,10 @@
+>>  #define DBG(fmt...) do{if(0)printk(fmt);}while(0)
+>>  #endif
+>>  
+>> +#if !defined(CONFIG_SMP)
+>> +static void smp_send_stop(void) {}
+>> +#endif
+> 
+> Shouldn't this be added to include/linux/smp.h instead? That header file
+> already contains some dummy definitions for the non-SMP case.
 
-> If its been mapped with ioremap() you know the physical address already 
-> so why do you need iopa().  
+Sounds like a good idea.  I'll prepare a seperate patch that does it.
 
-That's what the original function immrbar_virt_to_phys() does.  We're trying to 
-get rid of it, because we thought is redundant with iopa().
-
-static inline unsigned long immrbar_virt_to_phys(volatile void * address)
-{
-	if ( ((u32)address >= (u32)qe_immr) &&
-			((u32)address < ((u32)qe_immr + QE_IMMAP_SIZE)) )
-		return (unsigned long)(address - (u32)qe_immr +
-				(u32)get_qe_base());
-	return (unsigned long)virt_to_phys(address);
-}
-
-get_qe_base() does a search of the OF tree the first time it's called.
-
-Here's the code that calls immrbar_virt_to_phys():
-
-	out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].bd_ring_base,
-		 (u32) immrbar_virt_to_phys(ugeth->
-					    p_tx_bd_ring[i]));
-
-
-Would it be better to replace this code with something like this:
-
-out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].bd_ring_base,
-	get_qe_base() + ((void *) ugeth->p_tx_bd_ring[i] - (void *) qe_immr));
-
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+-Geoff
