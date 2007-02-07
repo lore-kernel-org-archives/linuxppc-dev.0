@@ -1,17 +1,18 @@
-Return-Path: <hch@lst.de>
-Date: Wed, 7 Feb 2007 15:52:26 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH 3/3] spufs: remove need for struct page for
-	SPEs
-Message-ID: <20070207145226.GA14458@lst.de>
-References: <1170823850.450936.293648942401.qpush@grosgo>
-	<20070207045055.295F3DDE46@ozlabs.org>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 37315DDDFD
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 02:21:51 +1100 (EST)
+Date: Wed, 7 Feb 2007 18:22:23 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Pavel Fedin <sonic_amiga@rambler.ru>
+Subject: Re: patches in powerpc.git
+Message-ID: <20070207182223.24d759fd@vitb.ru.mvista.com>
+In-Reply-To: <1241886047.20070207093800@rambler.ru>
+References: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
+	<1241886047.20070207093800@rambler.ru>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070207045055.295F3DDE46@ozlabs.org>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,16 +22,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 07, 2007 at 03:50:52PM +1100, Benjamin Herrenschmidt wrote:
-> This patch removes the need for struct page for SPE local store
-> and registers from spufs. It also makes the locking much more
-> obvious and no longer relying on the truncate logic black magic
-> for protecting against races between unmap_mapping_range() and
-> new pages faulted in. It does so by switching to a nopfn() handler
-> and using the new vm_insert_pfn() to setup the PTEs itself while
-> holding a lock on the SPE.
-> 
-> The nice thing is that this patch actually removes a lot more code
-> than it adds :-)
+On Wed, 7 Feb 2007 09:38:00 +0300
+Pavel Fedin <sonic_amiga@rambler.ru> wrote:
 
-Looks good to me.
+> Hello Paul,
+> 
+> Wednesday, February 7, 2007, 7:03:13 AM, you wrote:
+> 
+> > If anyone has patches not listed here that they want in 2.6.21, please
+> > let me or the relevant sub-arch maintainer know.  I have put in all
+> > the patches I know about that don't seem to be still under discussion.
+> 
+>   You've forgotten this one:
+> 
+> http://patchwork.ozlabs.org/linuxppc/patch?id=9215
+> 
+>  It's well tested working code which has already been included for
+> old "ppc" target since 2.6.11. However it was lost again during
+> ppc64+ppc->powerpc transition (i see that "powerpc" target is based on
+> old "ppc64", not "ppc").
+> 
+Oh, iirc, Paul asked you to resubmit with tabs/spaces fixed that time.
+I guess it's not too late so far to do that...
+-- 
+Sincerely, 
+Vitaly
