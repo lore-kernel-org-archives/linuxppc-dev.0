@@ -2,17 +2,17 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B6D60DE02B
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 00:00:54 +1100 (EST)
-Message-Id: <20070207124610.972565000@sipsolutions.net>
+	by ozlabs.org (Postfix) with ESMTP id 3A9C3DDF89
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 00:00:56 +1100 (EST)
+Message-Id: <20070207124612.176570000@sipsolutions.net>
 References: <20070207124536.963531000@sipsolutions.net>
-Date: Wed, 07 Feb 2007 13:45:39 +0100
+Date: Wed, 07 Feb 2007 13:45:41 +0100
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 03/12] powerpc: dart iommu suspend
+Subject: [PATCH 05/12] power management: no valid states w/o pm_ops + docs
 Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, Paul Mackeras <paulus@samba.org>,
-	linux-pm@lists.osdl.org
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linux-pm@lists.osdl.org,
+	Pavel Macheck <pavel@ucw.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,122 +22,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This implements save and restore hooks for IOMMUs and implements
-it the dart iommu.
+This patch changes /sys/power/state to not advertise any valid states
+(except for disk if SOFTWARE_SUSPEND is enabled) when no pm_ops have been
+set so userspace can easily discover what states should be available.
+
+Also, because the pm ops in powermac are obviously not using them as
+intended, I added documentation for it in kernel-doc format.
+
+Reordering the fields in struct pm_ops not only makes the output of
+kernel-doc make more sense but also removes a hole from the structure on
+64-bit platforms.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: Paul Mackeras <paulus@samba.org>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: Olof Johansson <olof@lixom.net>
+Cc: linux-pm@lists.osdl.org
+Cc: Rafael J. Wysocki <rjw@sisk.pl>
+Cc: Pavel Macheck <pavel@ucw.cz>
 
----
-The quick patch I posted w/o testing of course didn't work. This one does.
-
---- linux-2.6-git.orig/arch/powerpc/sysdev/dart_iommu.c	2007-02-07 02:55:03.607884289 +0100
-+++ linux-2.6-git/arch/powerpc/sysdev/dart_iommu.c	2007-02-07 02:55:29.073884289 +0100
-@@ -54,6 +54,9 @@ static unsigned long dart_tablesize;
+--- linux-2.6-git.orig/kernel/power/main.c	2007-02-07 02:55:01.676884289 +0100
++++ linux-2.6-git/kernel/power/main.c	2007-02-07 02:55:31.182884289 +0100
+@@ -161,7 +161,10 @@ static inline int valid_state(suspend_st
+ 	if (state == PM_SUSPEND_DISK)
+ 		return 1;
  
- /* Virtual base address of the DART table */
- static u32 *dart_vbase;
-+#ifdef CONFIG_PM
-+static u32 *dart_copy;
-+#endif
- 
- /* Mapped base address for the dart */
- static unsigned int __iomem *dart;
-@@ -346,6 +349,49 @@ void iommu_init_early_dart(void)
- 	pci_dma_ops = &dma_direct_ops;
+-	if (pm_ops && pm_ops->valid && !pm_ops->valid(state))
++	/* all other states need lowlevel support and need to be
++	 * valid to the lowlevel implementation, no valid callback
++	 * implies that all are valid. */
++	if (!pm_ops || (pm_ops->valid && !pm_ops->valid(state)))
+ 		return 0;
+ 	return 1;
  }
+--- linux-2.6-git.orig/include/linux/pm.h	2007-02-07 02:55:02.028884289 +0100
++++ linux-2.6-git/include/linux/pm.h	2007-02-07 02:55:31.208884289 +0100
+@@ -120,15 +120,47 @@ typedef int __bitwise suspend_disk_metho
+ #define	PM_DISK_TESTPROC	((__force suspend_disk_method_t) 6)
+ #define	PM_DISK_MAX		((__force suspend_disk_method_t) 7)
  
-+#ifdef CONFIG_PM
-+static void iommu_dart_save(void)
-+{
-+	memcpy(dart_copy, dart_vbase, 2*1024*1024);
-+}
-+
-+static void iommu_dart_restore(void)
-+{
-+	memcpy(dart_vbase, dart_copy, 2*1024*1024);
-+	dart_tlb_invalidate_all();
-+}
-+
-+static int iommu_init_late_dart(void)
-+{
-+	unsigned long i, tbase = (unsigned long) dart_tablebase;
-+	struct page *p;
-+
-+	/* this 16MB area is left unmapped because of caching
-+	 * considerations. that happens early so we can't mark
-+	 * it there, do it now instead */
-+	for (i = 0; i < (1<<24); i+= PAGE_SIZE)
-+		SetPageNosave(virt_to_page((void*)(tbase + i)));
-+
-+	/* if no dart table exists then we don't need to save it */
-+	if (!dart_tablebase)
-+		return 0;
-+
-+	/* For suspend we need to copy the dart contents because
-+	 * it is not part of the regular mapping (see above) and
-+	 * thus not saved automatically. The memory for this copy
-+	 * must be allocated early because we need 2 MB. */
-+	p = alloc_pages(GFP_KERNEL, 21 - PAGE_SHIFT);
-+	BUG_ON(!p);
-+	dart_copy = page_address(p);
-+
-+	ppc_md.iommu_save = iommu_dart_save;
-+	ppc_md.iommu_restore = iommu_dart_restore;
-+
-+	return 0;
-+}
-+
-+late_initcall(iommu_init_late_dart);
-+#endif
++/**
++ * struct pm_ops
++ *
++ * Callbacks for managing platform dependent suspend states.
++ *
++ * @valid: Callback to determine whether the given state can be entered.
++ *         If %CONFIG_SOFTWARE_SUSPEND is set then %PM_SUSPEND_DISK is
++ *         always valid and never passed to this call.
++ *         If not assigned, all suspend states are advertised as valid
++ *         in /sys/power/state (but can still be rejected by prepare or enter.)
++ * @prepare: Prepare the platform for the given suspend state. Can return a
++ *           negative error code if necessary.
++ * @enter: Enter the given suspend state, must be assigned. Can return a
++ *         negative error code if necessary.
++ * @finish: Called when the system has left the given state and all devices
++ *          are resumed. The return value is ignored.
++ * @pm_disk_mode: Set to the disk method that the user should be able to
++ *                configure for suspend-to-disk. Since %PM_DISK_SHUTDOWN,
++ *                %PM_DISK_REBOOT, %PM_DISK_TEST and %PM_DISK_TESTPROC
++ *                are always allowed, currently only %PM_DISK_PLATFORM
++ *                makes sense. If the user then choses %PM_DISK_PLATFORM,
++ *                the @prepare call will be called before suspending to disk
++ *                (if present), the @enter call should be present and will
++ *                be called after all state has been saved and the machine
++ *                is ready to be shut down/suspended/..., and the @finish
++ *                callback is called after state has been restored. All
++ *                these calls are called with %PM_SUSPEND_DISK as the state.
++ */
+ struct pm_ops {
+-	suspend_disk_method_t pm_disk_mode;
+ 	int (*valid)(suspend_state_t state);
+ 	int (*prepare)(suspend_state_t state);
+ 	int (*enter)(suspend_state_t state);
+ 	int (*finish)(suspend_state_t state);
++	suspend_disk_method_t pm_disk_mode;
+ };
  
- void __init alloc_dart_table(void)
- {
---- linux-2.6-git.orig/include/asm-powerpc/iommu.h	2007-02-07 02:55:03.635884289 +0100
-+++ linux-2.6-git/include/asm-powerpc/iommu.h	2007-02-07 02:55:29.099884289 +0100
-@@ -26,6 +26,7 @@
- #include <linux/spinlock.h>
- #include <linux/device.h>
- #include <linux/dma-mapping.h>
-+#include <asm/machdep.h>
- #include <asm/types.h>
- #include <asm/bitops.h>
+-extern void pm_set_ops(struct pm_ops *);
++/**
++ * pm_set_ops - set platform dependent power management ops
++ * @pm_ops: The new power management operations to set.
++ */
++extern void pm_set_ops(struct pm_ops *pm_ops);
+ extern struct pm_ops *pm_ops;
+ extern int pm_suspend(suspend_state_t state);
  
-@@ -108,6 +109,19 @@ static inline void pci_iommu_init(void) 
- #endif
- 
- extern void alloc_dart_table(void);
-+#if defined(CONFIG_PPC64) && defined(CONFIG_PM)
-+static inline void iommu_save(void)
-+{
-+	if (ppc_md.iommu_save)
-+		ppc_md.iommu_save();
-+}
-+
-+static inline void iommu_restore(void)
-+{
-+	if (ppc_md.iommu_restore)
-+		ppc_md.iommu_restore();
-+}
-+#endif
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_IOMMU_H */
---- linux-2.6-git.orig/include/asm-powerpc/machdep.h	2007-02-07 02:55:03.698884289 +0100
-+++ linux-2.6-git/include/asm-powerpc/machdep.h	2007-02-07 02:55:29.108884289 +0100
-@@ -91,6 +91,11 @@ struct machdep_calls {
- 	void __iomem *	(*ioremap)(phys_addr_t addr, unsigned long size,
- 				   unsigned long flags);
- 	void		(*iounmap)(volatile void __iomem *token);
-+
-+#ifdef CONFIG_PM
-+	void		(*iommu_save)(void);
-+	void		(*iommu_restore)(void);
-+#endif
- #endif /* CONFIG_PPC64 */
- 
- 	int		(*probe)(void);
 
 --
