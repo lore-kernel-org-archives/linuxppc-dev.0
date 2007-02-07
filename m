@@ -1,21 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D9F41DDEBB
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 18:58:09 +1100 (EST)
-In-Reply-To: <32F3CC26D4DAC44E8ECD07155727A46E8B7D05@zch01exm20.fsl.freescale.net>
-References: <32F3CC26D4DAC44E8ECD07155727A46E8B7D05@zch01exm20.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <B20A9346-C296-4570-AD4A-E9412C591F7B@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch][0/5] powerpc: Add support to fully comply with IEEE-754
-	standard
-Date: Wed, 7 Feb 2007 01:57:12 -0600
-To: Zhu Ebony-r57400 <ebony.zhu@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 6E07CDDECE
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 19:01:15 +1100 (EST)
+Date: Wed, 7 Feb 2007 09:01:08 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/10] ps3av/fb drivers for 2.6.21
+In-Reply-To: <1170794953.2620.253.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.62.0702070859050.31772@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702051624410.18405@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702061559420.14230@pademelon.sonytel.be>
+	<1170794953.2620.253.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,68 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 7 Feb 2007, Benjamin Herrenschmidt wrote:
+> > ps3av: Use a kernel thread to handle the actual video mode setting, as this
+> > involves some quite big delays.
+> 
+> The ps3 fbdev already has it's own kernel thread no ? Why use a second
+> one ? We could just have the ps3av code keep the delays but be called by
+> a thread ?
 
-On Feb 7, 2007, at 1:21 AM, Zhu Ebony-r57400 wrote:
+That's another possibility.  And since the screen is blanked during mode
+change, there's no need to refresh it, and I may even get rid of the call to
+ps3fb_flip_ctl() in ps3av.
 
->
->
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Wednesday, February 07, 2007 3:12 PM
->> To: Zhu Ebony-r57400
->> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
->> Subject: Re: [patch][0/5] powerpc: Add support to fully
->> comply with IEEE-754 standard
->>
->>
->> On Feb 6, 2007, at 11:52 PM, Zhu Ebony-r57400 wrote:
->>
->>>>>> This snippet of code breaks it from math-emu/sfp-machine.h
->>>>>>
->>>>>>>> +#ifdef CONFIG_SPE
->>>>>>>> +#define __FPU_FPSCR	(current->thread.spefscr)
->>>>>>>> +#else
->>>>>>>>  #define __FPU_FPSCR	(current->thread.fpscr.val)
->>>>>>>> +#endif
->>>>>>
->>>>>> By doing this if I want 'classic FP' emulation as well
->> as the IEEE
->>>>>> fixup my fpscr for classic emu will not be updated properly.
->>>>>
->>>>> Logically, user can choose "SPE Support" and "Math
->>>> emulation" at the
->>>>> same time on menuconfig. But from my understanding, it is not
->>>>> necessary to select math-emu on a SPE available system,
->>>> since SPE can
->>>>> do math operation.
->>>>
->>>> This is not true.  If I want to run a "classic" PPC binary
->> with FP I
->>>> need "Math emulation" and if I want to run an SPE one I
->> enable "SPE
->>>> Support".  I could want to run both of these types of
->> binaries on the
->>>> same system at the same time.
->>>
->>> If this is the case, maybe we need a separate macro like
->>> #define __SPE_SPEFSCR	(current->thread.spefscr)
->>> But if we do this, how does the kernel know if the emulation is for
->>> "classic" PPC binary with FP or an SPE one, thus corresponding
->>> registers(fpscr or spefscr) being updated?
->>
->> It's based on what instruction you are trying to emulate.
->>
-> For example, the FP_ROUNDMODE now defined by __FPU_FPSCR is
-> widely used in existing code. If the kernel doesn't know the emulation
-> is for
-> classic PPC or SPE fixup, then it doesn't know where to get the  
-> correct
-> rounding mode, from fpscr or spefscr? This has confused me.
+I'll look into it...
 
-Yes, this is a good point, I guess in truth the two modes are  
-mutually exclusive.
+Gr{oetje,eeting}s,
 
-Sorry for not figuring that out sooner.  (uugh, all the stuff to make  
-IEEE emulation work properly on SPE is a pain :)
+						Geert
 
-- k
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
