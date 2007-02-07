@@ -1,24 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 218E9DDEC7
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 03:50:57 +1100 (EST)
-In-Reply-To: <45CA01C9.3020309@freescale.com>
-References: <45C86715.6090600@freescale.com>
-	<001EB06E-FC1D-4F0A-A910-8E08EE0B8CE2@kernel.crashing.org>
-	<45CA01C9.3020309@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AC7EDFBD-7282-460F-9D0E-2E3AA9ED7718@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
-	generic iopa
-Date: Wed, 7 Feb 2007 10:49:27 -0600
-To: Timur Tabi <timur@freescale.com>
-Cc: netdev@vger.kernel.org, Li Yang <leoli@freescale.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 111CFDDF66
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 03:51:12 +1100 (EST)
+Date: Wed, 7 Feb 2007 10:59:01 -0600
+To: Manish Ahuja <ahuja@austin.ibm.com>
+Subject: Re: [PATCH]Enabling Auto poweron after power is restored.
+Message-ID: <20070207165901.GA974@lixom.net>
+References: <45707469.9060604@austin.ibm.com> <4575E76C.7030300@austin.ibm.com>
+	<17785.415.574041.518517@cargo.ozlabs.ibm.com>
+	<458EBE02.3010401@austin.ibm.com>
+	<17827.5922.667200.166153@cargo.ozlabs.ibm.com>
+	<45C40C97.807@austin.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45C40C97.807@austin.ibm.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +25,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Feb 02, 2007 at 10:16:23PM -0600, Manish Ahuja wrote:
+> Resubmitting this patch with a sysfs interface instead of /proc.
+> During some off line discussion, /sys/power was suggested as a possible 
+> candidate area for this functionality to reside.
 
-On Feb 7, 2007, at 10:43 AM, Timur Tabi wrote:
+Minor nitpick since you have to respin based on Paul's comments anyway...
 
-> Kumar Gala wrote:
->> On Feb 6, 2007, at 5:31 AM, Li Yang wrote:
->>> Get rid of private immrbar_virt_to_phys() routine and
->>> use generic iopa().
->> Nack. iopa() isn't that generic, shouldn't we really be using the  
->> dma mapping API here?
->
-> I'm having a hard time understanding what's wrong with iopa().  Is  
-> it because it's a 32-bit only function?  The memory has already  
-> been mapped with ioremap(), so why would we want to map it again?
+>  void rtas_power_off(void)
+>  {
+> +	int rc;
+> +	int rtas_poweroff_ups_token = rtas_token("ibm,power-off-ups");
+> +
+>  	if (rtas_flash_term_hook)
+> -		rtas_flash_term_hook(SYS_POWER_OFF);
+> -	/* allow power on only with power button press */
+> -	printk("RTAS power-off returned %d\n",
+> -	       rtas_call(rtas_token("power-off"), 2, 1, NULL, -1, -1));
+> +	rtas_flash_term_hook(SYS_POWER_OFF);
 
-If its been mapped with ioremap() you know the physical address  
-already so why do you need iopa().  The problem I have is iopa() is  
-ppc specific and I can envision a day when someone wants to run Linux  
-on a StarCore + QE, so having the drivers using ppc specific APIs is  
-bad.
+Looks like you have an if (rtas_flash_term_hook) with an unindented line
+right after it.
 
-- k
+
+
+-Olof
