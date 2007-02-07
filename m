@@ -1,20 +1,16 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 955C9DDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 09:16:47 +1100 (EST)
-Message-ID: <45CA4FCC.1000706@freescale.com>
-Date: Wed, 07 Feb 2007 16:16:44 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
+Return-Path: <akpm@linux-foundation.org>
+Date: Wed, 7 Feb 2007 14:21:12 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: mac-address vs. local-mac-address
-References: <45CA41F7.6020700@freescale.com>	
-	<1170883956.2620.305.camel@localhost.localdomain>	
-	<45CA47AB.1000302@freescale.com>
-	<1170886032.2620.309.camel@localhost.localdomain>
-In-Reply-To: <1170886032.2620.309.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 3/3] spufs: remove need for struct page for SPEs
+Message-Id: <20070207142112.e7856c3f.akpm@linux-foundation.org>
+In-Reply-To: <20070207045055.295F3DDE46@ozlabs.org>
+References: <1170823850.450936.293648942401.qpush@grosgo>
+	<20070207045055.295F3DDE46@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,27 +20,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->> Without a firmware device tree, there's no way to update the device tree and 
->> have that new tree retained over a reboot.
-> 
-> I don't think it was ever question to update it over reboot...
+On Wed, 07 Feb 2007 15:50:52 +1100
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-Well, it is a good idea to use the same MAC address at every boot.  The question 
-becomes: when you change the MAC address in Linux, is it possible to retain that 
-value over reboot?  If the driver were able to update the *real* OF tree, then 
-we could provide that functionality (on OF-enabled systems).
+> This patch removes the need for struct page for SPE local store
+> and registers from spufs. It also makes the locking much more
+> obvious and no longer relying on the truncate logic black magic
+> for protecting against races between unmap_mapping_range() and
+> new pages faulted in. It does so by switching to a nopfn() handler
+> and using the new vm_insert_pfn() to setup the PTEs itself while
+> holding a lock on the SPE.
 
-My main point was to define when mac-address should be used, and when 
-local-mac-address should be used.
-
-> mac-address is a runtime property that is lost at reboot, at least
-> that's my understanding of the OF behaviour. That's where your confusion
-> is.
-
-Linux already stores the current MAC address somewhere outside of the OF tree. 
-When I reboot the system, does Linux store the current MAC address somewhere?
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Some of this patch seems to already be in Paul's tree.  Or something.
+I'll duck this patch.
