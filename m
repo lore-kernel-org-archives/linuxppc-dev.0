@@ -2,19 +2,19 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7756DDDE2C
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 11:19:06 +1100 (EST)
-Message-ID: <45C91AF5.8090700@garzik.org>
-Date: Tue, 06 Feb 2007 19:19:01 -0500
+	by ozlabs.org (Postfix) with ESMTP id 51A2BDDDDB
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 11:33:12 +1100 (EST)
+Message-ID: <45C91E3E.2030402@garzik.org>
+Date: Tue, 06 Feb 2007 19:33:02 -0500
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
-	generic iopa
-References: <45C86715.6090600@freescale.com>
-In-Reply-To: <45C86715.6090600@freescale.com>
+To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+Subject: Re: [PATCH 1/3] libata: add another IRQ calls (core and headers)
+References: <200701260727.l0Q7R4Fs005076@toshiba.co.jp>
+In-Reply-To: <200701260727.l0Q7R4Fs005076@toshiba.co.jp>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+	paulus@samba.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Li Yang wrote:
-> Get rid of private immrbar_virt_to_phys() routine and
-> use generic iopa().
+Akira Iguchi wrote:
+> This patch is against the libata core and headers.
 > 
-> Signed-off-by: Li Yang <leoli@freescale.com>
-> ---
-> drivers/net/ucc_geth.c |   29 ++++++-----------------------
-> 1 files changed, 6 insertions(+), 23 deletions(-)
+> Two IRQ calls are added in ata_port_operations.
+> - irq_on() is used to enable interrupts. 
+> - irq_ack() is used to acknowledge a device interrupt.
+> 
+> In most drivers, ata_irq_on() and ata_irq_ack() are used for
+> irq_on and irq_ack respectively. 
+> 
+> In some drivers (ex: ahci, sata_sil24) which cannot use them
+> as is, ata_dummy_irq_on() and ata_dummy_irq_ack() are used.
+> 
+> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+> Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
 
-I'll await resend pending resolution of comments
+applied
