@@ -1,16 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 6D9F6DDE39
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 15:17:58 +1100 (EST)
-Date: Tue, 6 Feb 2007 22:25:43 -0600
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: patches in powerpc.git
-Message-ID: <20070207042543.GA27993@lixom.net>
-References: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
-From: olof@lixom.net (Olof Johansson)
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0FC9ADDE39
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 15:37:40 +1100 (EST)
+In-Reply-To: <20070207032343.GD23870@localhost.localdomain>
+References: <20070207032343.GD23870@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <41B393C3-9A8F-46EC-9B47-FCF8E0733994@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [dtc] Allow multipart property values
+Date: Tue, 6 Feb 2007 22:37:25 -0600
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,20 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 07, 2007 at 03:03:13PM +1100, Paul Mackerras wrote:
-> The following is the list of commits that I have in the powerpc.git
-> tree, and which I plan to ask Linus to pull tomorrow.  If anyone
-> thinks any of these should *not* go in, let me know quickly.
-[...]
->       [POWERPC] pasemi: Configure DMA controller interrupts
 
-I agreed with Ben that this one should go in the driver instead, but I
-didn't repost the series without it.
+On Feb 6, 2007, at 9:23 PM, David Gibson wrote:
 
-It's no big deal that it's in there right now, I'll back it out in the
-same patch that adds it to the driver.
+> At present each property definition in a dts file must give as the
+> value either a string ("abc..."), a bytestring ([12abcd...]) or a cell
+> list (<1 2 3 ...>).  This patch allows a property value to be given as
+> several of these, comma-separated.  The final property value is just
+> the components appended together.  So a property could have a list of
+> cells followed by a string, or a bytestring followed by some cells.
+> Cells are always aligned, so if cells are given following a string or
+> bytestring which is not a multiple of 4 bytes long, zero bytes are
+> inserted to align the following cells.
+>
+> The primary motivation for this feature, however, is to allow defining
+> a property as a list of several strings.  This is what's needed for
+> defining OF 'compatible' properties, and is less ugly and fiddly than
+> using embedded \0s in the strings.
+>
+> Signed-off-by: David Gibson <dwg@au1.ibm.com>
 
+Mind adding examples to the testsuite?
 
-Thanks,
-
--Olof
+- k
