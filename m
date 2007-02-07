@@ -1,22 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id DB642DDEE1
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 11:04:14 +1100 (EST)
-Message-ID: <45C9177B.4050308@freescale.com>
-Date: Tue, 06 Feb 2007 18:04:11 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7756DDDE2C
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 11:19:06 +1100 (EST)
+Message-ID: <45C91AF5.8090700@garzik.org>
+Date: Tue, 06 Feb 2007 19:19:01 -0500
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH] Update udbg_progress() to display the integer
-References: <11707051151024-git-send-email-timur@freescale.com>
-	<20070206013051.GA15525@lixom.net> <45C90A6E.3040302@freescale.com>
-	<17865.2853.132102.769702@cargo.ozlabs.ibm.com>
-	<1170805102.2620.264.camel@localhost.localdomain>
-	<0C529499-B766-4D3A-8340-361BB1B461D3@kernel.crashing.org>
-	<45C9151E.70201@freescale.com> <20070207000326.GA26024@lixom.net>
-In-Reply-To: <20070207000326.GA26024@lixom.net>
+To: Li Yang <leoli@freescale.com>
+Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
+	generic iopa
+References: <45C86715.6090600@freescale.com>
+In-Reply-To: <45C86715.6090600@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof Johansson wrote:
+Li Yang wrote:
+> Get rid of private immrbar_virt_to_phys() routine and
+> use generic iopa().
+> 
+> Signed-off-by: Li Yang <leoli@freescale.com>
+> ---
+> drivers/net/ucc_geth.c |   29 ++++++-----------------------
+> 1 files changed, 6 insertions(+), 23 deletions(-)
 
-> On some IBM machines the progress will also print the status on the hardware
-> maintenance console's status line for the partition/machine in question.
-
-Ah, yes, the HMC.
-
-Looking at the code, there doesn't appear to be much rhyme or reason as to when 
-ppc_md.progress() is called, but it is called from quite a few files.
-
-Is there any reason why we can't just re-route printk() to HMC?
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+I'll await resend pending resolution of comments
