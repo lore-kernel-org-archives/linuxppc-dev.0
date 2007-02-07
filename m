@@ -1,19 +1,32 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id DE78ADDE44
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 03:36:15 +1100 (EST)
-Message-ID: <45C9FE30.8010108@freescale.com>
-Date: Wed, 07 Feb 2007 10:28:32 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Mike Strosaker <strosake@austin.ibm.com>
-Subject: Re: [PATCH] Update udbg_progress() to display the integer
-References: <11707051151024-git-send-email-timur@freescale.com>		<20070206013051.GA15525@lixom.net>	<45C90A6E.3040302@freescale.com>		<17865.2853.132102.769702@cargo.ozlabs.ibm.com>	<1170805102.2620.264.camel@localhost.localdomain>
-	<45C91275.4020806@freescale.com> <45C97121.9080609@austin.ibm.com>
-In-Reply-To: <45C97121.9080609@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1B2A3DDDF3
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 03:38:48 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l17GciAd016096
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Feb 2007 11:38:44 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l17GcaJa060554
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Feb 2007 11:38:36 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l17GcaVb003716
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Feb 2007 11:38:36 -0500
+Subject: Re: patches in powerpc.git
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20070207155515.be5d0d5e.sfr@canb.auug.org.au>
+References: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
+	<20070207155515.be5d0d5e.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Wed, 07 Feb 2007 10:38:30 -0600
+Message-Id: <1170866310.6619.55.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +36,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mike Strosaker wrote:
+On Wed, 2007-07-02 at 15:55 +1100, Stephen Rothwell wrote:
+> On Wed, 7 Feb 2007 15:03:13 +1100 Paul Mackerras <paulus@samba.org> wrote:
+> >
+> > If anyone has patches not listed here that they want in 2.6.21, please
+> > let me or the relevant sub-arch maintainer know.
+> 
+> How about "Fix ppc64's writing to struct file_operations" sent to you
+> yesterday by Andrew Morton.
+> 
 
-> The op panel on recent systems has 2 lines; the first can display 16 
-> characters, the second, 80.  The first line is usually used to display 
-> an 8 character hexadecimal progress/error message (called an SRC: System 
-> Reference Code), and the second line is used to display a location code 
-> when appropriate (e.g. when the SRC indicates a device failure).  IBM 
-> documents many of their OF and RTAS SRCs deep in the Hardware 
-> Information Center:
+Is this the lparcfg fops .write changes that came across LKML
+mid-January?    I didnt notice any references to it here.. 
+-Will
 
-In that case, the big question is: does the kernel conform to this standard? 
-Looking at the current usage of ppc_md.progress(), I can't help but think that 
-it being called the same way printk() is being called, i.e. at the whim of the 
-developer who wrote the code.
-
-So let's say that we need to keep ppc_md.progress().  I think we should have 
-some way of restricting its usage to systems where it does something different 
-than printk().  On an Freescale 83xx reference board, for example, its output 
-goes to the same place as printk(), so it doesn't serve any purpose.
-
-Perhaps we should define ppc_md.progress() such that it never sends the output 
-to the same place as printk().  If the only output device is the serial port, 
-and printk() already outputs there, then ppc_md.progress() should do nothing. 
-This would eliminate any "accidental" use of ppc_md.progress(), when printk() is 
-the better choice.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+> --
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> http://www.canb.auug.org.au/~sfr/
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
