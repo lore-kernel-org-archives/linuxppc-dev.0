@@ -2,23 +2,20 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 75FBBDDEEC
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 22:45:51 +1100 (EST)
-Subject: Re: [linux-pm] [RFC 08/10] powerpc: dart iommu suspend
+	by ozlabs.org (Postfix) with ESMTP id 50F81DDEE0
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 23:21:00 +1100 (EST)
+Subject: Re: patches in powerpc.git
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Pavel Machek <pavel@ucw.cz>
-In-Reply-To: <20070206124047.GC8662@elf.ucw.cz>
-References: <20070205183026.989209000@sipsolutions.net>
-	<20070205185838.029827000@sipsolutions.net>
-	<20070206124047.GC8662@elf.ucw.cz>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
+References: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-G0BPY5vklzayzNmYQWIv"
-Date: Wed, 07 Feb 2007 12:42:58 +0100
-Message-Id: <1170848578.6798.11.camel@johannes.berg>
+	boundary="=-S5sbRJE5or7rRXxVkExb"
+Date: Wed, 07 Feb 2007 13:18:08 +0100
+Message-Id: <1170850688.6798.25.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org,
-	Torrance <torrance123@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,51 +26,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-G0BPY5vklzayzNmYQWIv
+--=-S5sbRJE5or7rRXxVkExb
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2007-02-06 at 13:40 +0100, Pavel Machek wrote:
+On Wed, 2007-02-07 at 15:03 +1100, Paul Mackerras wrote:
 
-> > +		SetPageNosave(virt_to_page((void*)((unsigned long)dart_tablebase + i=
-)));
-> > +
->=20
-> 80 columns rule?
+> If anyone has patches not listed here that they want in 2.6.21, please
+> let me or the relevant sub-arch maintainer know.  I have put in all
+> the patches I know about that don't seem to be still under
+> discussion.=20
 
-Good point. Changed according to Olof's comment anyway so it should be
-shorter now.
+I'd love to have some of the prereq patches for suspend on G5 go in, as
+well as the IRQ comment fix I've been carrying around.
 
-> > --- mb-wireless.orig/include/asm-powerpc/iommu.h	2007-02-05 14:24:05.01=
-4526864 +0100
-> > +++ mb-wireless/include/asm-powerpc/iommu.h	2007-02-05 14:24:40.6845268=
-64 +0100
-> > @@ -108,6 +108,10 @@ static inline void pci_iommu_init(void)=20
-> >  #endif
-> > =20
-> >  extern void alloc_dart_table(void);
-> > +#if defined(CONFIG_SOFTWARE_SUSPEND) && defined(CONFIG_U3_DART)
-> > +extern void iommu_dart_save(void);
-> > +extern void iommu_dart_restore(void);
-> > +#endif
->=20
-> You can go without the ifdef; extra prototype does not do any harm.
+The ones that I think are ready to go are:
+ * powerpc: fix comment in kernel/irq.c
+   obvious comment change
 
-Changed as well anyway to introduce powerpc iommu suspend ops, though I
-introduced two static inlines that are still ifdefed.
+ * powermac: clean up PIC initialisation code
+   just some code shuffling, tested on powermac and powerbook
+
+ * windfarm: don't die on suspend thread signal
+   obvious fix
+
+ * powermac: generic time suspend/resume code
+   really should be named "powerpc: ...", tested on powermac and
+   powerbook
 
 johannes
 
---=-G0BPY5vklzayzNmYQWIv
+--=-S5sbRJE5or7rRXxVkExb
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBFybtC/ETPhpq3jKURAuvVAJ93bZBNMC/e4EgE9xqzAAsg2YbbowCffAEZ
-EPJ14cKK0g8sove8UtyeLR8=
-=g6+u
+iD8DBQBFycOA/ETPhpq3jKURAsIVAKCrWnkBHVqs1AdZTVouV+BoihE/pACfV7hA
+iazn3trg9n2b131PIAhx6fg=
+=oPs8
 -----END PGP SIGNATURE-----
 
---=-G0BPY5vklzayzNmYQWIv--
+--=-S5sbRJE5or7rRXxVkExb--
