@@ -1,15 +1,17 @@
-Return-Path: <arnd.bergmann@de.ibm.com>
-From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 0/3] spufs: don't need struct page for SPEs
-Date: Wed, 7 Feb 2007 15:39:23 +0100
+Return-Path: <hch@lst.de>
+Date: Wed, 7 Feb 2007 15:52:26 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [PATCH 3/3] spufs: remove need for struct page for
+	SPEs
+Message-ID: <20070207145226.GA14458@lst.de>
 References: <1170823850.450936.293648942401.qpush@grosgo>
-In-Reply-To: <1170823850.450936.293648942401.qpush@grosgo>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702071539.23556.arnd.bergmann@de.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, cbe-oss-dev@ozlabs.org
+	<20070207045055.295F3DDE46@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070207045055.295F3DDE46@ozlabs.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,17 +21,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 07 February 2007 05:50, Benjamin Herrenschmidt wrote:
-> I have no firm feeling on wether those should be in 2.6.21 or not,
-> they are pre-requisite for some other work I'm doing with spufs but
-> which won't be in 2.6.21 (well, I don't think it will be ready in time
-> and it doesn't really matter) so I'm mostly posting this here for
-> review/comment/backup :-) I would appreciate testing too, I did some
-> tests here and they seem to pass but heh, the more the better.
+On Wed, Feb 07, 2007 at 03:50:52PM +1100, Benjamin Herrenschmidt wrote:
+> This patch removes the need for struct page for SPE local store
+> and registers from spufs. It also makes the locking much more
+> obvious and no longer relying on the truncate logic black magic
+> for protecting against races between unmap_mapping_range() and
+> new pages faulted in. It does so by switching to a nopfn() handler
+> and using the new vm_insert_pfn() to setup the PTEs itself while
+> holding a lock on the SPE.
+> 
+> The nice thing is that this patch actually removes a lot more code
+> than it adds :-)
 
-I'd say they should go in. The code is clearly moving things into
-the right direction. In fact, we have recently discovered a bug
-in the SPU management that might be fixed by just applying your
-patch, but that still needs to be investigated.
-
-	Arnd <><
+Looks good to me.
