@@ -1,23 +1,15 @@
-Return-Path: <schwab@suse.de>
-Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EC934DDEDA
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 09:53:06 +1100 (EST)
-From: Andreas Schwab <schwab@suse.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 11/12] powermac: disallow pmu sleep notifiers from
-	aborting sleep
-References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124615.015873000@sipsolutions.net>
-Date: Wed, 07 Feb 2007 23:52:50 +0100
-In-Reply-To: <20070207124615.015873000@sipsolutions.net> (Johannes Berg's
-	message of "Wed, 07 Feb 2007 13:45:47 +0100")
-Message-ID: <jetzxxk2bh.fsf@sykes.suse.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
+Return-Path: <b07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id D81D7DDF40
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 10:00:27 +1100 (EST)
+Date: Wed, 7 Feb 2007 17:00:17 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH 00/19] cuboot bootwrapper patchset
+Message-ID: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +19,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg <johannes@sipsolutions.net> writes:
+I've updated the following patchset based on feedback received (and
+tested on mpc83xx and pmac); please apply for 2.6.21 (or comment).
 
-> Tracing through the code, no current PMU sleep notifier can abort sleep.
-> Since no new PMU sleep notifiers should be added, this patch simplifies the
-> code and removes the ability to abort sleep.
-
-There is a use of PBOOK_SLEEP_OK left in
-arch/powerpc/platforms/powermac/time.c.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+-Scott
