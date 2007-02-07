@@ -1,17 +1,20 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id C3E88DE074
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 10:28:48 +1100 (EST)
-Date: Wed, 7 Feb 2007 17:01:45 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH 18/19] bootwrapper: Add xlate_reg(),
-	and use it to find serial registers.
-Message-ID: <20070207230145.GR3849@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 402CFDDF40
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 10:37:32 +1100 (EST)
+In-Reply-To: <20070207170602.45f9c2ee.kim.phillips@freescale.com>
+References: <20070207170602.45f9c2ee.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7A666EA2-E740-42D8-9B36-1E7F6B46158F@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Add base support for the MPC8313E RDB
+Date: Wed, 7 Feb 2007 17:36:34 -0600
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,279 +24,425 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-xlate_reg() uses the ranges properties of a node's parentage to find the
-absolute physical address of the node's registers.
 
-The ns16550 driver uses this when no virtual-reg property is found.
+On Feb 7, 2007, at 5:06 PM, Kim Phillips wrote:
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/boot/Makefile  |    3 +-
- arch/powerpc/boot/devtree.c |  207 +++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/ns16550.c |    9 ++-
- arch/powerpc/boot/ops.h     |    1 +
- 4 files changed, 217 insertions(+), 3 deletions(-)
+> Add support for the MPC8313E Reference Development Board (RDB).
+> Includes dts.
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 6a5e2c2..51a0fd5 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -43,7 +43,8 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
- 		$(addprefix $(obj)/,$(zlibheader))
- 
- src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
--		ns16550.c serial.c simple_alloc.c div64.S util.S $(zlib)
-+		ns16550.c serial.c simple_alloc.c div64.S util.S $(zlib) \
-+		devtree.c
- src-plat := of.c
- src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
- 
-diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
-new file mode 100644
-index 0000000..9fee6fb
---- /dev/null
-+++ b/arch/powerpc/boot/devtree.c
-@@ -0,0 +1,207 @@
-+/*
-+ * Device Tree functions that are semantic, not structural
-+ *
-+ * Author: Scott Wood <scottwood@freescale.com>
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include "ops.h"
-+#include "string.h"
-+
-+#define MAX_ADDR_CELLS 4
-+#define MAX_RANGES 8
-+
-+static int get_reg_format(void *node, u32 *naddr, u32 *nsize)
-+{
-+	int got_addr = 0, got_size = 0;
-+
-+	while (node && !(got_addr && got_size)) {
-+		if (!got_addr && getprop(node, "#address-cells",
-+		                         naddr, 4) == 4)
-+			got_addr = 1;
-+		if (!got_size && getprop(node, "#size-cells",
-+		                         nsize, 4) == 4)
-+			got_size = 1;
-+
-+		node = get_parent(node);
-+	}
-+
-+	if (*naddr <= 0 || *naddr > MAX_ADDR_CELLS ||
-+	    *nsize <= 0 || *nsize > *naddr)
-+		return 0;
-+
-+	return got_addr && got_size;
-+}
-+
-+static int sub_reg(u32 *reg, u32 *sub, u32 naddr)
-+{
-+	int i, borrow = 0;
-+
-+	for (i = 0; i < naddr; i++) {
-+		int prev_borrow = borrow;
-+		borrow = reg[i] < sub[i] + prev_borrow;
-+		reg[i] -= sub[i] + prev_borrow;
-+	}
-+
-+	return !borrow;
-+}
-+
-+static int add_reg(u32 *reg, u32 *add, u32 naddr, u32 naddr_add)
-+{
-+	int i, carry = 0;
-+	int diff = naddr - naddr_add;
-+
-+	if (diff < 0) {
-+		for (i = 0; i < -diff; i++)
-+			if (*add++ != 0)
-+				return 0;
-+
-+		diff = 0;
-+	}
-+
-+	for (i = diff; i < naddr; i++) {
-+		u64 tmp = (u64)reg[i] + add[i - diff] + carry;
-+		carry = tmp >> 32;
-+		reg[i] = (u32)tmp;
-+	}
-+
-+	return !carry;
-+}
-+
-+/* It is assumed that if the first byte of reg fits in a
-+ * range, then the whole reg block fits.  It is also assumed
-+ * that #size-cells <= #address-cells.
-+ */
-+static int compare_reg(u32 *reg, u32 *range, u32 *rangesize,
-+                       u32 naddr, u32 nsize)
-+{
-+	int i, sizeoff = naddr - nsize;
-+
-+	for (i = 0; i < naddr; i++) {
-+		if (reg[i] < range[i])
-+			return 0;
-+		if (reg[i] > range[i])
-+			break;
-+	}
-+
-+	for (i = sizeoff; i < naddr; i++) {
-+		u32 end = range[i] + rangesize[i - sizeoff];
-+
-+		if (reg[i] < end)
-+			break;
-+		if (reg[i] > end)
-+			return 0;
-+		if (i == naddr && reg[i] == end)
-+			return 0;
-+	}
-+
-+	return 1;
-+}
-+
-+static int find_range(u32 *reg, u32 *ranges, int naddr,
-+                      int nsize, int nparentaddr, int buflen)
-+{
-+	int nrange = naddr + nparentaddr + nsize;
-+	int i;
-+
-+	for (i = 0; i + nrange <= buflen; i += nrange) {
-+		if (compare_reg(reg, ranges + i,
-+		                ranges + i + naddr + nparentaddr,
-+		                naddr, nsize))
-+			return i;
-+	}
-+
-+	return -1;
-+}
-+
-+/* Currently only generic buses without special encodings are supported.
-+ * In particular, PCI is not supported.  Also, only the beginning of the
-+ * reg block is tracked; size is ignored except in ranges.
-+ */
-+int xlate_reg(void *node, int res, unsigned long *addr,
-+              unsigned long *size)
-+{
-+	u32 last_addr[MAX_ADDR_CELLS];
-+	u32 buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
-+	void *parent;
-+	u64 ret_addr, ret_size;
-+	u32 naddr, nsize, prev_naddr, prev_nsize;
-+	int buflen, offset;
-+
-+	parent = get_parent(node);
-+	if (!parent)
-+		return 0;
-+
-+	if (!get_reg_format(parent, &naddr, &nsize))
-+		return 0;
-+
-+	if (nsize > 2)
-+		return 0;
-+
-+	buflen = getprop(node, "reg", buf, sizeof(buf)) / 4;
-+	offset = (naddr + nsize) * res;
-+
-+	if (buflen < offset + naddr + nsize)
-+		return 0;
-+
-+	memcpy(last_addr, buf + offset, 4 * naddr);
-+
-+	ret_size = buf[offset + naddr];
-+	if (nsize == 2) {
-+		ret_size <<= 32;
-+		ret_size |= buf[offset + naddr + 1];
-+	}
-+
-+	while ((node = get_parent(node))) {
-+		prev_naddr = naddr;
-+		prev_nsize = nsize;
-+
-+		if (!get_reg_format(node, &naddr, &nsize))
-+			return 0;
-+
-+		buflen = getprop(node, "ranges",
-+		                        buf, sizeof(buf));
-+		if (buflen < 0)
-+			continue;
-+		if (buflen > sizeof(buf))
-+			return 0;
-+
-+		offset = find_range(last_addr, buf, prev_naddr,
-+		                    prev_nsize, naddr, buflen / 4);
-+
-+		if (offset < 0)
-+			return 0;
-+
-+		if (!sub_reg(last_addr, buf + offset, prev_naddr) ||
-+		    !add_reg(buf + offset + prev_naddr, last_addr,
-+		             naddr, prev_naddr))
-+			return 0;
-+
-+		memcpy(last_addr, buf + offset + prev_naddr, 4 * naddr);
-+	}
-+
-+	if (naddr > 2)
-+		return 0;
-+
-+	ret_addr = last_addr[0];
-+	if (naddr == 2) {
-+		ret_addr <<= 32;
-+		ret_addr |= last_addr[1];
-+	}
-+
-+	if (sizeof(void *) == 4 &&
-+	    (ret_addr >= 0x100000000ULL || ret_size > 0x100000000ULL ||
-+	     ret_addr + ret_size > 0x100000000ULL))
-+		return 0;
-+
-+	*addr = ret_addr;
-+	if (size)
-+		*size = ret_size;
-+
-+	return 1;
-+}
-diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
-index 1ffe72e..cce7a11 100644
---- a/arch/powerpc/boot/ns16550.c
-+++ b/arch/powerpc/boot/ns16550.c
-@@ -55,10 +55,15 @@ static u8 ns16550_tstc(void)
- int ns16550_console_init(void *devp, struct serial_console_data *scdp)
- {
- 	int n;
-+	unsigned long reg_phys;
- 
- 	n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
--	if (n != sizeof(reg_base))
--		return -1;
-+	if (n != sizeof(reg_base)) {
-+		if (!xlate_reg(devp, 0, &reg_phys, NULL))
-+			return -1;
-+
-+		reg_base = (void *)reg_phys;
-+	}
- 
- 	n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
- 	if (n != sizeof(reg_shift))
-diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
-index 381627e..8421f40 100644
---- a/arch/powerpc/boot/ops.h
-+++ b/arch/powerpc/boot/ops.h
-@@ -76,6 +76,7 @@ int serial_console_init(void);
- int ns16550_console_init(void *devp, struct serial_console_data *scdp);
- void *simple_alloc_init(char *base, u32 heap_size, u32 granularity,
- 		u32 max_allocs);
-+int xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
- 
- 
- static inline void *finddevice(const char *name)
--- 
-1.4.4
+Can you give some better description about the RDB, like what  
+functionality it supports, etc..
+
+> Signed-off-by: Wilson Lo <Wilson.Lo@freescale.com>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/mpc8313erdb.dts     |  221 ++++++++++++++++++ 
+> +++++++++++
+>  arch/powerpc/platforms/83xx/Kconfig       |   12 ++
+>  arch/powerpc/platforms/83xx/Makefile      |    1 +
+>  arch/powerpc/platforms/83xx/mpc8313_rdb.c |   99 +++++++++++++
+>  4 files changed, 333 insertions(+), 0 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/ 
+> boot/dts/mpc8313erdb.dts
+> new file mode 100644
+> index 0000000..2cde658
+> --- /dev/null
+> +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
+> @@ -0,0 +1,221 @@
+> +/*
+> + * MPC8313E RDB Device Tree Source
+> + *
+> + * Copyright 2005, 2006, 2007 Freescale Semiconductor Inc.
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + */
+> +
+> +/ {
+> +	model = "MPC8313ERDB";
+> +	compatible = "MPC83xx";
+> +	#address-cells = <1>;
+> +	#size-cells = <1>;
+> +
+> +	cpus {
+> +		#cpus = <1>;
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,8313@0 {
+> +			device_type = "cpu";
+> +			reg = <0>;
+> +			d-cache-line-size = <20>;	// 32 bytes
+> +			i-cache-line-size = <20>;	// 32 bytes
+> +			d-cache-size = <4000>;		// L1, 16K
+> +			i-cache-size = <4000>;		// L1, 16K
+> +			timebase-frequency = <0>;	// from bootloader
+> +			bus-frequency = <0>;		// from bootloader
+> +			clock-frequency = <0>;		// from bootloader
+> +			32-bit;
+> +		};
+> +	};
+> +
+> +	memory {
+> +		device_type = "memory";
+> +		reg = <00000000 08000000>;	// 128MB at 0
+> +	};
+> +
+> +	soc8313@e0000000 {
+> +		#address-cells = <1>;
+> +		#size-cells = <1>;
+> +		#interrupt-cells = <2>;
+> +		device_type = "soc";
+> +		ranges = <0 e0000000 00100000>;
+> +		reg = <e0000000 00000200>;
+> +		bus-frequency = <0>;
+> +		compatible = "mpc8313\0mpc831x\0mpc83xx";
+
+I'm not sure what this compatible property is suppose to mean?
+
+> +
+> +		wdt@200 {
+> +			device_type = "watchdog";
+> +			compatible = "mpc83xx_wdt";
+> +			reg = <200 100>;
+> +		};
+> +
+> +		i2c@3000 {
+> +			device_type = "i2c";
+> +			compatible = "fsl-i2c";
+> +			reg = <3000 100>;
+> +			interrupts = <e 8>;
+> +			interrupt-parent = <700>;
+> +			dfsrr;
+> +		};
+> +
+> +		i2c@3100 {
+> +			device_type = "i2c";
+> +			compatible = "fsl-i2c";
+> +			reg = <3100 100>;
+> +			interrupts = <f 8>;
+> +			interrupt-parent = <700>;
+> +			dfsrr;
+> +		};
+> +
+> +		spi@7000 {
+> +			device_type = "spi";
+> +			compatible = "mpc83xx_spi";
+> +			reg = <7000 1000>;
+> +			interrupts = <10 8>;
+> +			interrupt-parent = <700>;
+> +			mode = <0>;
+> +		};
+> +
+> +		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
+> +		usb@23000 {
+> +			device_type = "usb";
+> +			compatible = "fsl-usb2-dr";
+> +			reg = <23000 1000>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			interrupt-parent = <700>;
+> +			interrupts = <26 2>;
+> +			phy_type = "utmi_wide";
+
+Does anything change because of the integrated UTMI phy?
+
+> +			control_init  = <00000280>; // UTMI ext 48 MHz clk
+
+What is 'control_init' ?
+
+
+> +		};
+> +
+> +		mdio@24520 {
+> +			device_type = "mdio";
+> +			compatible = "gianfar";
+> +			reg = <24520 20>;
+> +			#address-cells = <1>;
+> +			#size-cells = <0>;
+> +			linux,phandle = <24520>;
+> +			ethernet-phy@1 {
+> +				linux,phandle = <2452001>;
+> +				interrupt-parent = <700>;
+> +				interrupts = <13 2>;
+> +				reg = <1>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +			ethernet-phy@4 {
+> +				linux,phandle = <2452004>;
+> +				interrupt-parent = <700>;
+> +				interrupts = <14 2>;
+> +				reg = <4>;
+> +				device_type = "ethernet-phy";
+> +			};
+> +		};
+> +
+> +		ethernet@24000 {
+> +			device_type = "network";
+> +			model = "TSEC";
+
+isn't eTSEC on 8313?
+
+> +			compatible = "gianfar";
+> +			reg = <24000 1000>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			interrupts = <25 8 24 8 23 8>;
+> +			interrupt-parent = <700>;
+> +			phy-handle = <2452001>;
+> +		};
+> +
+> +		ethernet@25000 {
+> +			device_type = "network";
+> +			model = "TSEC";
+> +			compatible = "gianfar";
+> +			reg = <25000 1000>;
+> +			local-mac-address = [ 00 00 00 00 00 00 ];
+> +			interrupts = <22 8 21 8 20 8>;
+> +			interrupt-parent = <700>;
+> +			phy-handle = <2452004>;
+> +		};
+> +
+> +		serial@4500 {
+> +			device_type = "serial";
+> +			compatible = "ns16550";
+> +			reg = <4500 100>;
+> +			clock-frequency = <0>;
+> +			interrupts = <9 8>;
+> +			interrupt-parent = <700>;
+> +		};
+> +
+> +		serial@4600 {
+> +			device_type = "serial";
+> +			compatible = "ns16550";
+> +			reg = <4600 100>;
+> +			clock-frequency = <0>;
+> +			interrupts = <a 8>;
+> +			interrupt-parent = <700>;
+> +		};
+> +
+> +		pci@8500 {
+> +			interrupt-map-mask = <f800 0 0 7>;
+> +			interrupt-map = <
+> +
+> +					/* IDSEL 0x0E -mini PCI */
+> +					 7000 0 0 1 700 12 8
+> +					 7000 0 0 2 700 12 8
+> +					 7000 0 0 3 700 12 8
+> +					 7000 0 0 4 700 12 8
+> +
+> +					/* IDSEL 0x0F - PCI slot */
+> +					 7800 0 0 1 700 11 8
+> +					 7800 0 0 2 700 12 8
+> +					 7800 0 0 3 700 11 8
+> +					 7800 0 0 4 700 12 8>;
+> +			interrupt-parent = <700>;
+> +			interrupts = <42 8>;
+> +			bus-range = <0 0>;
+> +			ranges = <02000000 0 90000000 90000000 0 10000000
+> +			          42000000 0 80000000 80000000 0 10000000
+> +			          01000000 0 00000000 e2000000 0 00100000>;
+> +			clock-frequency = <3f940aa>;
+> +			#interrupt-cells = <1>;
+> +			#size-cells = <2>;
+> +			#address-cells = <3>;
+> +			reg = <8500 100>;
+> +			compatible = "83xx";
+> +			device_type = "pci";
+> +		};
+> +
+> +		crypto@30000 {
+> +			device_type = "crypto";
+> +			model = "SEC2";
+> +			compatible = "talitos";
+> +			reg = <30000 7000>;
+> +			interrupts = <b 8>;
+> +			interrupt-parent = <700>;
+> +			/* Rev. 2.2 */
+> +			num-channels = <1>;
+> +			channel-fifo-len = <18>;
+> +			exec-units-mask = <0000004c>;
+> +			descriptor-types-mask = <0122003f>;
+> +		};
+> +
+> +		/* IPIC
+> +		 * interrupts cell = <intr #, sense>
+> +		 * sense values match linux IORESOURCE_IRQ_* defines:
+> +		 * sense == 8: Level, low assertion
+> +		 * sense == 2: Edge, high-to-low change
+> +		 */
+> +		pic@700 {
+> +			linux,phandle = <700>;
+> +			interrupt-controller;
+> +			#address-cells = <0>;
+> +			#interrupt-cells = <2>;
+> +			reg = <700 100>;
+> +			built-in;
+> +			device_type = "ipic";
+> +		};
+> +	};
+> +};
+> diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/ 
+> platforms/83xx/Kconfig
+> index edcd5b8..46883c5 100644
+> --- a/arch/powerpc/platforms/83xx/Kconfig
+> +++ b/arch/powerpc/platforms/83xx/Kconfig
+> @@ -5,6 +5,12 @@ choice
+>  	prompt "Machine Type"
+>  	default MPC834x_SYS
+>
+> +config MPC8313_RDB
+> +	bool "Freescale MPC8313 RDB"
+> +	select DEFAULT_UIMAGE
+> +	help
+> +	  This option enables support for the MPC8313 RDB board.
+> +
+>  config MPC832x_MDS
+>  	bool "Freescale MPC832x MDS"
+>  	select DEFAULT_UIMAGE
+> @@ -41,6 +47,12 @@ config MPC8360E_PB
+>
+>  endchoice
+>
+> +config PPC_MPC831x
+> +	bool
+> +	select PPC_UDBG_16550
+> +	select PPC_INDIRECT_PCI
+> +	default y if MPC8313_RDB
+> +
+>  config PPC_MPC832x
+>  	bool
+>  	select PPC_UDBG_16550
+> diff --git a/arch/powerpc/platforms/83xx/Makefile b/arch/powerpc/ 
+> platforms/83xx/Makefile
+> index f1aa7e2..0b732a7 100644
+> --- a/arch/powerpc/platforms/83xx/Makefile
+> +++ b/arch/powerpc/platforms/83xx/Makefile
+> @@ -3,6 +3,7 @@
+>  #
+>  obj-y				:= misc.o
+>  obj-$(CONFIG_PCI)		+= pci.o
+> +obj-$(CONFIG_MPC8313_RDB)	+= mpc8313_rdb.o
+>  obj-$(CONFIG_MPC834x_SYS)	+= mpc834x_sys.o
+>  obj-$(CONFIG_MPC834x_ITX)	+= mpc834x_itx.o
+>  obj-$(CONFIG_MPC8360E_PB)	+= mpc8360e_pb.o
+> diff --git a/arch/powerpc/platforms/83xx/mpc8313_rdb.c b/arch/ 
+> powerpc/platforms/83xx/mpc8313_rdb.c
+> new file mode 100644
+> index 0000000..c3b98c3
+> --- /dev/null
+> +++ b/arch/powerpc/platforms/83xx/mpc8313_rdb.c
+> @@ -0,0 +1,99 @@
+> +/*
+> + * arch/powerpc/platforms/83xx/mpc8313_rdb.c
+> + *
+> + * Description: MPC8313x RDB board specific routines.
+> + * This file is based on mpc834x_sys.c
+> + * Author: Lo Wlison <r43300@freescale.com>
+> + *
+> + * Copyright (C) Freescale Semiconductor, Inc. 2006. All rights  
+> reserved.
+> + *
+> + * This program is free software; you can redistribute  it and/or  
+> modify it
+> + * under  the terms of  the GNU General  Public License as  
+> published by the
+> + * Free Software Foundation;  either version 2 of the  License, or  
+> (at your
+> + * option) any later version.
+> + */
+> +
+> +#include <linux/pci.h>
+> +
+> +#include <asm/time.h>
+> +#include <asm/ipic.h>
+> +#include <asm/udbg.h>
+> +
+> +#include "mpc83xx.h"
+> +
+> +#undef DEBUG
+> +#ifdef DEBUG
+> +#define DBG(fmt...) udbg_printf(fmt)
+> +#else
+> +#define DBG(fmt...)
+> +#endif
+> +
+> +#ifndef CONFIG_PCI
+> +unsigned long isa_io_base = 0;
+> +unsigned long isa_mem_base = 0;
+> +#endif
+> +
+> +/*  
+> ********************************************************************** 
+> **
+> + *
+> + * Setup the architecture
+> + *
+> + */
+> +static void __init mpc8313_rdb_setup_arch(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	if (ppc_md.progress)
+> +		ppc_md.progress("mpc8313_rdb_setup_arch()", 0);
+> +
+> +#ifdef CONFIG_PCI
+> +	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+> +		add_bridge(np);
+> +
+> +	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+> +#endif
+> +}
+> +
+> +void __init mpc8313_rdb_init_IRQ(void)
+> +{
+> +	struct device_node *np;
+> +
+> +	np = of_find_node_by_type(NULL, "ipic");
+> +	if (!np)
+> +		return;
+> +
+> +	ipic_init(np, 0);
+> +
+> +	/* Initialize the default interrupt mapping priorities,
+> +	 * in case the boot rom changed something on us.
+> +	 */
+> +	ipic_set_default_priority();
+> +}
+> +
+> +/*
+> + * Called very early, MMU is off, device-tree isn't unflattened
+> + */
+> +static int __init mpc8313_rdb_probe(void)
+> +{
+> +	char *model = of_get_flat_dt_prop(of_get_flat_dt_root(),
+> +					  "model", NULL);
+> +	if (model == NULL)
+> +		return 0;
+> +	if (strcmp(model, "MPC8313ERDB"))
+> +		return 0;
+> +
+> +	DBG("MPC8313 RDB found\n");
+> +
+> +	return 1;
+> +}
+> +
+> +define_machine(mpc8313_rdb) {
+> +	.name			= "MPC8313 RDB",
+> +	.probe			= mpc8313_rdb_probe,
+> +	.setup_arch		= mpc8313_rdb_setup_arch,
+> +	.init_IRQ		= mpc8313_rdb_init_IRQ,
+> +	.get_irq		= ipic_get_irq,
+> +	.restart		= mpc83xx_restart,
+> +	.time_init		= mpc83xx_time_init,
+> +	.calibrate_decr		= generic_calibrate_decr,
+> +	.progress		= udbg_progress,
+> +};
+> -- 
+> 1.4.4
