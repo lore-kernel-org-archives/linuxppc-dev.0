@@ -1,16 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 7 Feb 2007 16:37:50 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [dtc] Allow multipart property values
-Message-ID: <20070207053750.GG23870@localhost.localdomain>
-References: <20070207032343.GD23870@localhost.localdomain>
-	<41B393C3-9A8F-46EC-9B47-FCF8E0733994@kernel.crashing.org>
-	<20070207044616.GF23870@localhost.localdomain>
-	<BDAF32A9-05AE-4AFA-922B-22752C3B0845@kernel.crashing.org>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id B2D51DDEC9
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 16:46:47 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l175kiEE014278
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 22:46:44 -0700 (MST)
+Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
+	[10.192.129.204])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l175kfIf005718
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Feb 2007 23:46:42 -0600 (CST)
+Message-ID: <45C9680C.6030601@freescale.com>
+Date: Wed, 07 Feb 2007 13:47:56 +0800
+From: Li Yang <leoli@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BDAF32A9-05AE-4AFA-922B-22752C3B0845@kernel.crashing.org>
+To: Paul <paulus@samba.org>
+Subject: [PATCH 1/3] add USB setup code for 8349emds PB
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,194 +27,161 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 06, 2007 at 10:50:09PM -0600, Kumar Gala wrote:
-> 
-> On Feb 6, 2007, at 10:46 PM, David Gibson wrote:
-> 
-> > On Tue, Feb 06, 2007 at 10:37:25PM -0600, Kumar Gala wrote:
-> >>
-> >> On Feb 6, 2007, at 9:23 PM, David Gibson wrote:
-> >>
-> >>> At present each property definition in a dts file must give as the
-> >>> value either a string ("abc..."), a bytestring ([12abcd...]) or a  
-> >>> cell
-> >>> list (<1 2 3 ...>).  This patch allows a property value to be  
-> >>> given as
-> >>> several of these, comma-separated.  The final property value is just
-> >>> the components appended together.  So a property could have a  
-> >>> list of
-> >>> cells followed by a string, or a bytestring followed by some cells.
-> >>> Cells are always aligned, so if cells are given following a  
-> >>> string or
-> >>> bytestring which is not a multiple of 4 bytes long, zero bytes are
-> >>> inserted to align the following cells.
-> >>>
-> >>> The primary motivation for this feature, however, is to allow  
-> >>> defining
-> >>> a property as a list of several strings.  This is what's needed for
-> >>> defining OF 'compatible' properties, and is less ugly and fiddly  
-> >>> than
-> >>> using embedded \0s in the strings.
-> >>>
-> >>> Signed-off-by: David Gibson <dwg@au1.ibm.com>
-> >>
-> >> Mind adding examples to the testsuite?
-> >
-> > What testsuite...?
-> 
-> Well there was a tests/ dir  and test.dts :)
+Add board specific initialization code for USB
+to work in both MPH and DR mode for MPC8349EMDS
+PB board.
 
-There's nothing in tests/ though - I always meant to make a testsuite,
-but I never got around to it.  Current plan is to implement a
-testsuite by merging libfdt into the dtc tree.
+Signed-off-by: Li Yang <leoli@freescale.com> 
+---
+ arch/powerpc/platforms/83xx/mpc834x_sys.c |   74 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/83xx/mpc834x_sys.h |    2 +
+ arch/powerpc/platforms/83xx/mpc83xx.h     |   18 +++++++
+ 3 files changed, 94 insertions(+), 0 deletions(-)
 
-Here's a revised patch which adds an example usage to test.dts
-
-[dtc] Allow multipart property values
-
-At present each property definition in a dts file must give as the
-value either a string ("abc..."), a bytestring ([12abcd...]) or a cell
-list (<1 2 3 ...>).  This patch allows a property value to be given as
-several of these, comma-separated.  The final property value is just
-the components appended together.  So a property could have a list of
-cells followed by a string, or a bytestring followed by some cells.
-Cells are always aligned, so if cells are given following a string or
-bytestring which is not a multiple of 4 bytes long, zero bytes are
-inserted to align the following cells.
-
-The primary motivation for this feature, however, is to allow defining
-a property as a list of several strings.  This is what's needed for
-defining OF 'compatible' properties, and is less ugly and fiddly than
-using embedded \0s in the strings.
-
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
-
-Index: dtc/data.c
-===================================================================
---- dtc.orig/data.c	2007-02-07 14:17:00.000000000 +1100
-+++ dtc/data.c	2007-02-07 14:24:34.000000000 +1100
-@@ -197,6 +197,33 @@ struct data data_append_data(struct data
- 	return d;
- }
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_sys.c b/arch/powerpc/platforms/83xx/mpc834x_sys.c
+index 80b735a..3d20360 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_sys.c
++++ b/arch/powerpc/platforms/83xx/mpc834x_sys.c
+@@ -35,14 +35,85 @@
+ #include <asm/prom.h>
+ #include <asm/udbg.h>
+ #include <sysdev/fsl_soc.h>
++#include <linux/fsl_devices.h>
  
-+struct data data_merge(struct data d1, struct data d2)
+ #include "mpc83xx.h"
++#include "mpc834x_sys.h"
+ 
+ #ifndef CONFIG_PCI
+ unsigned long isa_io_base = 0;
+ unsigned long isa_mem_base = 0;
+ #endif
+ 
++/* Note: This is only for PB, not for PB+PIB
++ * On PB only port0 is connected using ULPI */
++static int mpc834x_usb_cfg(void)
 +{
-+	struct data d;
-+	struct fixup **ff;
-+	struct fixup *f, *f2;
++	unsigned long sccr, sicrl;
++	void __iomem *immap;
++	void __iomem *bcsr_regs = NULL;
++	u8 bcsr5;
++	struct device_node *np = NULL;
++	int port0_is_dr = 0;
 +
-+	d = data_append_data(d1, d2.val, d2.len);
++	if ((np = of_find_compatible_node(np, "usb", "fsl-usb2-dr")) != NULL)
++		port0_is_dr = 1;
++	if ((np = of_find_compatible_node(np, "usb", "fsl-usb2-mph")) != NULL){
++		if (port0_is_dr) {
++			printk(KERN_WARNING
++				"There is only one USB port on PB board! \n");
++			return -1;
++		} else if (!port0_is_dr)
++			/* No usb port enabled */
++			return -1;
++	}
 +
-+	/* Extract d2's fixups */
-+	f2 = d2.refs;
-+	d2.refs = NULL;
++	immap = ioremap(get_immrbase(), 0x100000);
++	if (!immap)
++		return -1;
 +
-+	/* Tack them onto d's list of fixups */
-+	ff = &d.refs;
-+	while (*ff)
-+		ff = &((*ff)->next);
-+	*ff = f2;
++	/* Configure clock */
++	sccr = in_be32(immap + MPC83XX_SCCR_OFFS);
++	if (port0_is_dr)
++		sccr |= MPC83XX_SCCR_USB_DRCM_11;  /* 1:3 */
++	else
++		sccr |= MPC83XX_SCCR_USB_MPHCM_11; /* 1:3 */
++	out_be32(immap + MPC83XX_SCCR_OFFS, sccr);
 +
-+	/* And correct them for their new position */
-+	for (f = f2; f; f = f->next)
-+		f->offset += d1.len;
++	/* Configure Pin */
++	sicrl = in_be32(immap + MPC83XX_SICRL_OFFS);
++	/* set port0 only */
++	if (port0_is_dr)
++		sicrl |= MPC83XX_SICRL_USB0;
++	else
++		sicrl &= ~(MPC83XX_SICRL_USB0);
++	out_be32(immap + MPC83XX_SICRL_OFFS, sicrl);
 +
-+	data_free(d2);
++	iounmap(immap);
 +
-+	return d;
++	/* Map BCSR area */
++	np = of_find_node_by_name(NULL, "bcsr");
++	if (np != 0) {
++		struct resource res;
++
++		of_address_to_resource(np, 0, &res);
++		bcsr_regs = ioremap(res.start, res.end - res.start + 1);
++		of_node_put(np);
++	}
++	if (!bcsr_regs)
++		return -1;
++
++	/*
++	 * if SYS board is plug into PIB board,
++	 * force to use the PHY on SYS board
++	 */
++	bcsr5 = in_8(bcsr_regs + 5);
++	if (!(bcsr5 & BCSR5_INT_USB))
++		out_8(bcsr_regs + 5, (bcsr5 | BCSR5_INT_USB));
++	iounmap(bcsr_regs);
++	return 0;
 +}
 +
- struct data data_append_cell(struct data d, cell_t word)
- {
- 	cell_t beword = cpu_to_be32(word);
-Index: dtc/dtc-parser.y
-===================================================================
---- dtc.orig/dtc-parser.y	2007-02-07 14:17:00.000000000 +1100
-+++ dtc/dtc-parser.y	2007-02-07 14:24:34.000000000 +1100
-@@ -58,6 +58,7 @@ extern struct boot_info *the_boot_info;
- %token <str> DT_REF
- 
- %type <data> propdata
-+%type <data> propdataprefix
- %type <re> memreserve
- %type <re> memreserves
- %type <data> celllist
-@@ -121,9 +122,15 @@ propdef:	label DT_PROPNAME '=' propdata 
- 		}
- 	;
- 
--propdata:	DT_STRING { $$ = $1; }
--	|	'<' celllist '>' { $$ = $2; }
--	|	'[' bytestring ']' { $$ = $2; }
-+propdata:	propdataprefix DT_STRING { $$ = data_merge($1, $2); }
-+	|	propdataprefix '<' celllist '>' {
-+			$$ = data_merge(data_append_align($1, sizeof(cell_t)), $3);
-+		}
-+	|	propdataprefix '[' bytestring ']' { $$ = data_merge($1, $3); }
-+	;
+ /* ************************************************************************
+  *
+  * Setup the architecture
+@@ -65,6 +136,7 @@ static void __init mpc834x_sys_setup_arch(void)
+ 			loops_per_jiffy = 50000000 / HZ;
+ 		of_node_put(np);
+ 	}
 +
-+propdataprefix:	propdata ',' { $$ = $1; }
-+	|	/* empty */ { $$ = empty_data; }
- 	;
+ #ifdef CONFIG_PCI
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+ 		add_bridge(np);
+@@ -72,6 +144,8 @@ static void __init mpc834x_sys_setup_arch(void)
+ 	ppc_md.pci_exclude_device = mpc83xx_exclude_device;
+ #endif
  
- celllist:	celllist DT_CELL { $$ = data_append_cell($1, $2); }
-Index: dtc/dtc.h
-===================================================================
---- dtc.orig/dtc.h	2007-02-07 14:17:00.000000000 +1100
-+++ dtc/dtc.h	2007-02-07 14:24:34.000000000 +1100
-@@ -119,6 +119,7 @@ struct data data_copy_escape_string(char
- struct data data_copy_file(FILE *f, size_t len);
- 
- struct data data_append_data(struct data d, void *p, int len);
-+struct data data_merge(struct data d1, struct data d2);
- struct data data_append_cell(struct data d, cell_t word);
- struct data data_append_re(struct data d, struct reserve_entry *re);
- struct data data_append_addr(struct data d, u64 addr);
-Index: dtc/dtc-lexer.l
-===================================================================
---- dtc.orig/dtc-lexer.l	2007-02-07 14:17:00.000000000 +1100
-+++ dtc/dtc-lexer.l	2007-02-07 14:24:34.000000000 +1100
-@@ -123,6 +123,15 @@ REFCHAR		({PROPCHAR}|{UNITCHAR}|[/@])
- 			return ']';
- 		}
- 
-+,		{ /* Technically this is a valid property name,
-+		     but we'd rather use it as punctuation, so detect it
-+		     here in preference */
-+			yylloc.first_line = yylineno;
-+			DPRINT("Char (propname like): %c (\\x%02x)\n", yytext[0],
-+				(unsigned)yytext[0]);
-+			return yytext[0];
-+		}
++	mpc834x_usb_cfg();
 +
- {PROPCHAR}+	{
- 			yylloc.first_line = yylineno;
- 			DPRINT("PropName: %s\n", yytext);
-Index: dtc/test.dts
-===================================================================
---- dtc.orig/test.dts	2007-02-07 16:35:54.000000000 +1100
-+++ dtc/test.dts	2007-02-07 16:37:21.000000000 +1100
-@@ -4,7 +4,7 @@
+ #ifdef  CONFIG_ROOT_NFS
+ 	ROOT_DEV = Root_NFS;
+ #else
+diff --git a/arch/powerpc/platforms/83xx/mpc834x_sys.h b/arch/powerpc/platforms/83xx/mpc834x_sys.h
+index 7d5bbef..52f14a3 100644
+--- a/arch/powerpc/platforms/83xx/mpc834x_sys.h
++++ b/arch/powerpc/platforms/83xx/mpc834x_sys.h
+@@ -20,4 +20,6 @@
+ #define PIRQC	MPC83xx_IRQ_EXT6
+ #define PIRQD	MPC83xx_IRQ_EXT7
  
- / {
- 	model = "MyBoardName";
--	compatible = "MyBoardFamilyName";
-+	compatible = "MyBoardName", "MyBoardFamilyName";
- 	#address-cells = <2>;
- 	#size-cells = <2>;
++#define BCSR5_INT_USB		0x02
++
+ #endif				/* __MACH_MPC83XX_SYS_H__ */
+diff --git a/arch/powerpc/platforms/83xx/mpc83xx.h b/arch/powerpc/platforms/83xx/mpc83xx.h
+index 01cae10..9cd03b5 100644
+--- a/arch/powerpc/platforms/83xx/mpc83xx.h
++++ b/arch/powerpc/platforms/83xx/mpc83xx.h
+@@ -4,6 +4,24 @@
+ #include <linux/init.h>
+ #include <linux/device.h>
  
-@@ -39,6 +39,7 @@
- 		string = "\xff\0stuffstuff\t\t\t\n\n\n";
- 		blob = [0a 0b 0c 0d de ea ad be ef];
- 		ref = < &/memory@0 >;
-+		mixed = "abc", [1234], <a b c>;
- 	};
- 
- 	memory@0 {
-
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
++/* System Clock Control Register */
++#define MPC83XX_SCCR_OFFS          0xA08
++#define MPC83XX_SCCR_USB_MPHCM_11  0x00c00000
++#define MPC83XX_SCCR_USB_MPHCM_01  0x00400000
++#define MPC83XX_SCCR_USB_MPHCM_10  0x00800000
++#define MPC83XX_SCCR_USB_DRCM_11   0x00300000
++#define MPC83XX_SCCR_USB_DRCM_01   0x00100000
++#define MPC83XX_SCCR_USB_DRCM_10   0x00200000
++
++/* system i/o configuration register low */
++#define MPC83XX_SICRL_OFFS         0x114
++#define MPC83XX_SICRL_USB0         0x40000000
++#define MPC83XX_SICRL_USB1         0x20000000
++
++/* system i/o configuration register high */
++#define MPC83XX_SICRH_OFFS         0x118
++#define MPC83XX_SICRH_USB_UTMI     0x00020000
++
+ /*
+  * Declaration for the various functions exported by the
+  * mpc83xx_* files. Mostly for use by mpc83xx_setup
