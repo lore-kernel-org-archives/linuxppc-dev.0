@@ -1,19 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 831C9DDE49
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 15:54:56 +1100 (EST)
-Date: Wed, 7 Feb 2007 15:55:15 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: patches in powerpc.git
-Message-Id: <20070207155515.be5d0d5e.sfr@canb.auug.org.au>
-In-Reply-To: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
-References: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/3] spufs: remove need for struct page for SPEs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070207045055.295F3DDE46@ozlabs.org>
+References: <20070207045055.295F3DDE46@ozlabs.org>
+Content-Type: text/plain
+Date: Wed, 07 Feb 2007 15:55:29 +1100
+Message-Id: <1170824129.2620.275.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__7_Feb_2007_15_55_15_+1100_8nTcOssDFm10F=.f"
-Cc: linuxppc-dev@ozlabs.org
+Cc: Andrew Morton <akpm@osdl.org>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +19,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__7_Feb_2007_15_55_15_+1100_8nTcOssDFm10F=.f
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Wed, 2007-02-07 at 15:50 +1100, Benjamin Herrenschmidt wrote:
+> This patch removes the need for struct page for SPE local store
+> and registers from spufs. It also makes the locking much more
+> obvious and no longer relying on the truncate logic black magic
+> for protecting against races between unmap_mapping_range() and
+> new pages faulted in. It does so by switching to a nopfn() handler
+> and using the new vm_insert_pfn() to setup the PTEs itself while
+> holding a lock on the SPE.
+> 
+> The nice thing is that this patch actually removes a lot more code
+> than it adds :-)
+> 
+> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> ---
+> 
+>  Kconfig                         |    2
 
-On Wed, 7 Feb 2007 15:03:13 +1100 Paul Mackerras <paulus@samba.org> wrote:
->
-> If anyone has patches not listed here that they want in 2.6.21, please
-> let me or the relevant sub-arch maintainer know.
+Hrm... diffstat got screwed up by my script, should be:
 
-How about "Fix ppc64's writing to struct file_operations" sent to you
-yesterday by Andrew Morton.
+ Kconfig                         |    2
+ platforms/cell/spu_priv1_mmio.c |   65 +----------------------
+ platforms/cell/spufs/file.c     |  111 ++++++++++++++++++----------------------
+ 3 files changed, 55 insertions(+), 123 deletions(-)
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Wed__7_Feb_2007_15_55_15_+1100_8nTcOssDFm10F=.f
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFFyVu5FdBgD/zoJvwRAkYuAJoCcKqKOR915uKryiQt1L5orES26gCgkKSS
-QTV8UZWvW4Jp5bx/bPP/VDc=
-=42lH
------END PGP SIGNATURE-----
-
---Signature=_Wed__7_Feb_2007_15_55_15_+1100_8nTcOssDFm10F=.f--
+Ben.
