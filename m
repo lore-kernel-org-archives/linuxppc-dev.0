@@ -1,18 +1,18 @@
 Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts10-srv.bellnexxia.net (tomts10.bellnexxia.net
-	[209.226.175.54]) by ozlabs.org (Postfix) with ESMTP id 9F912DDF0B
+Received: from toq5-srv.bellnexxia.net (toq5.bellnexxia.net [209.226.175.27])
+	by ozlabs.org (Postfix) with ESMTP id B8823DDF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Feb 2007 09:37:08 +1100 (EST)
+	Thu,  8 Feb 2007 09:40:02 +1100 (EST)
 Received: from krystal.dyndns.org ([67.68.196.179])
-	by tomts10-srv.bellnexxia.net
+	by tomts5-srv.bellnexxia.net
 	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20070207223706.EZKM1723.tomts10-srv.bellnexxia.net@krystal.dyndns.org>
-	for <linuxppc-embedded@ozlabs.org>; Wed, 7 Feb 2007 17:37:06 -0500
-Date: Wed, 7 Feb 2007 17:37:05 -0500
-From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+	<20070207221900.OJFS1671.tomts5-srv.bellnexxia.net@krystal.dyndns.org>
+	for <linuxppc-embedded@ozlabs.org>; Wed, 7 Feb 2007 17:19:00 -0500
+Date: Wed, 7 Feb 2007 17:18:59 -0500
+From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 To: mporter@kernel.crashing.org, linuxppc-embedded@ozlabs.org
-Subject: [PATCH] symbol irq_desc exported twice in arch/ppc
-Message-ID: <20070207223705.GB22740@Krystal>
+Subject: [PATCH] Undefined DCRN_CPMFR in include/asm-ppc/ocp.h
+Message-ID: <20070207221859.GA22740@Krystal>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -25,23 +25,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-symbol irq_desc exported twice in arch/ppc
+Undefined DCRN_CPMFR in include/asm-ppc/ocp.h
 
-arch/ppc/kernel/ppc_ksyms.c should not export irq_desc since it is
-exported in irq/handle.c.
+There seems to be a missing #include <asm-ppc/io.h> in ocp.h, because it
+needs DCRN_CPMFR to be defined. I get a compile error when compiling it
+on PPC 405 with CONFIG_PM enabled. It applies on 2.6.20.
+
+Mathieu
 
 Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
---- a/arch/ppc/kernel/ppc_ksyms.c
-+++ b/arch/ppc/kernel/ppc_ksyms.c
-@@ -223,7 +223,6 @@ EXPORT_SYMBOL(screen_info);
+--- a/include/asm-ppc/ocp.h
++++ b/include/asm-ppc/ocp.h
+@@ -32,6 +32,7 @@
+ #include <asm/ocp_ids.h>
+ #include <asm/rwsem.h>
+ #include <asm/semaphore.h>
++#include <asm-ppc/io.h>
 =20
- EXPORT_SYMBOL(__delay);
- EXPORT_SYMBOL(timer_interrupt);
--EXPORT_SYMBOL(irq_desc);
- EXPORT_SYMBOL(tb_ticks_per_jiffy);
- EXPORT_SYMBOL(console_drivers);
- #ifdef CONFIG_XMON
+ #ifdef CONFIG_PPC_OCP
 --=20
 Mathieu Desnoyers
 Computer Engineering Graduate Student, =C9cole Polytechnique de Montr=E9al
