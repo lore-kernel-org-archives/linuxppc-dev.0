@@ -1,13 +1,12 @@
 Return-Path: <b07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id A0504DE1E5
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 10:01:54 +1100 (EST)
-Date: Wed, 7 Feb 2007 17:01:36 -0600
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 66FC7DDE01
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 10:01:55 +1100 (EST)
+Date: Wed, 7 Feb 2007 17:01:38 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 13/19] bootwrapper: Make ft_get_parent() return a phandle,
-	and NULL if already top-level.
-Message-ID: <20070207230136.GM3849@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 14/19] bootwrapper: Add ft_find_node_by_prop_value().
+Message-ID: <20070207230138.GN3849@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
@@ -21,83 +20,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Most of ft_get_parent() is factored out into __ft_get_parent(), which
-deals only in internal node pointers.  The ft_get_parent() wrapper
-handles phandle conversion in both directions (previously,
-ft_get_parent() did not convert its return value).
-
-It also now returns NULL as the parent of the toplevel node, rather than
-just returning the toplevel node again (which made it rather useless in
-loops).
+ft_find_node_by_prop_value() finds nodes with the specified
+property/value pair.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/flatdevtree.c |   21 +++++++++++++--------
- arch/powerpc/boot/flatdevtree.h |    1 +
- 2 files changed, 14 insertions(+), 8 deletions(-)
+ arch/powerpc/boot/flatdevtree.c |   65 +++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/flatdevtree.h |    3 ++
+ 2 files changed, 68 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/boot/flatdevtree.c b/arch/powerpc/boot/flatdevtree.c
-index b7ae463..8afb835 100644
+index 8afb835..97698a9 100644
 --- a/arch/powerpc/boot/flatdevtree.c
 +++ b/arch/powerpc/boot/flatdevtree.c
-@@ -732,20 +732,15 @@ void *ft_find_descendent(struct ft_cxt *
- 	return NULL;
+@@ -824,6 +824,71 @@ int ft_get_prop(struct ft_cxt *cxt, cons
+ 	return -1;
  }
  
--void *ft_get_parent(struct ft_cxt *cxt, const void *phandle)
-+void *__ft_get_parent(struct ft_cxt *cxt, void *node)
- {
--	void *node;
- 	int d;
- 	struct ft_atom atom;
- 	char *p;
- 
--	node = ft_node_ph2node(cxt, phandle);
--	if (node == NULL)
--		return NULL;
--
- 	for (d = 0; cxt->genealogy[d] != NULL; ++d)
- 		if (cxt->genealogy[d] == node)
--			return cxt->genealogy[d > 0 ? d - 1 : 0];
-+			return d > 0 ? cxt->genealogy[d - 1] : NULL;
- 
- 	/* have to do it the hard way... */
- 	p = ft_root_node(cxt);
-@@ -757,7 +752,7 @@ void *ft_get_parent(struct ft_cxt *cxt,
- 			if (node == atom.data) {
- 				/* found it */
- 				cxt->genealogy[d + 1] = NULL;
--				return d > 0 ? cxt->genealogy[d - 1] : node;
-+				return d > 0 ? cxt->genealogy[d - 1] : NULL;
- 			}
- 			++d;
- 			break;
-@@ -769,6 +764,16 @@ void *ft_get_parent(struct ft_cxt *cxt,
- 	return NULL;
- }
- 
-+void *ft_get_parent(struct ft_cxt *cxt, const void *phandle)
++void *__ft_find_node_by_prop_value(struct ft_cxt *cxt, void *prev,
++                                   const char *propname, const char *propval,
++                                   unsigned int proplen)
 +{
-+	void *node = ft_node_ph2node(cxt, phandle);
-+	if (node == NULL)
-+		return NULL;
++	struct ft_atom atom;
++	char *p = ft_root_node(cxt);
++	char *next;
++	int past_prev = prev ? 0 : 1;
++	int depth = -1;
 +
-+	node = __ft_get_parent(cxt, node);
++	while ((next = ft_next(cxt, p, &atom)) != NULL) {
++		const void *data;
++		unsigned int size;
++
++		switch (atom.tag) {
++		case OF_DT_BEGIN_NODE:
++			depth++;
++
++			if (prev == p) {
++				past_prev = 1;
++				break;
++			}
++
++			if (!past_prev || depth < 1)
++				break;
++
++			data = __ft_get_prop(cxt, p, propname, &size);
++			if (!data || size != proplen)
++				break;
++			if (memcmp(data, propval, size))
++				break;
++
++			return p;
++
++		case OF_DT_END_NODE:
++			if (depth-- == 0)
++				return NULL;
++
++			break;
++		}
++
++		p = next;
++	}
++
++	return NULL;
++}
++
++void *ft_find_node_by_prop_value(struct ft_cxt *cxt, const void *prev,
++                                 const char *propname, const char *propval,
++                                 int proplen)
++{
++	void *node = NULL;
++
++	if (prev) {
++		node = ft_node_ph2node(cxt, prev);
++
++		if (!node)
++			return NULL;
++	}
++
++	node = __ft_find_node_by_prop_value(cxt, node, propname,
++	                                    propval, proplen);
 +	return ft_get_phandle(cxt, node);
 +}
 +
- static const void *__ft_get_prop(struct ft_cxt *cxt, void *node,
-                                  const char *propname, unsigned int *len)
+ int ft_set_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
+ 		const void *buf, const unsigned int buflen)
  {
 diff --git a/arch/powerpc/boot/flatdevtree.h b/arch/powerpc/boot/flatdevtree.h
-index 1f37ca2..9500424 100644
+index 9500424..e3e3e79 100644
 --- a/arch/powerpc/boot/flatdevtree.h
 +++ b/arch/powerpc/boot/flatdevtree.h
-@@ -104,5 +104,6 @@ int ft_get_prop(struct ft_cxt *cxt, cons
- 		void *buf, const unsigned int buflen);
+@@ -105,5 +105,8 @@ int ft_get_prop(struct ft_cxt *cxt, cons
  int ft_set_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
  		const void *buf, const unsigned int buflen);
-+void *ft_get_parent(struct ft_cxt *cxt, const void *phandle);
+ void *ft_get_parent(struct ft_cxt *cxt, const void *phandle);
++void *ft_find_node_by_prop_value(struct ft_cxt *cxt, const void *prev,
++                                 const char *propname, const char *propval,
++                                 int proplen);
  
  #endif /* FLATDEVTREE_H */
 -- 
