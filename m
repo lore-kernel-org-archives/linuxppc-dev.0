@@ -1,17 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 732E4DDEC2
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 18:31:30 +1100 (EST)
-Date: Wed, 7 Feb 2007 01:39:13 -0600
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: patches in powerpc.git
-Message-ID: <20070207073913.GA29151@lixom.net>
-References: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id F10A7DDEC9
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 18:43:36 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 3/4] PS3: Fix DMA scatter-gather
+Date: Wed, 7 Feb 2007 08:43:24 +0100
+References: <45BFD2C2.70000@am.sony.com>
+In-Reply-To: <45BFD2C2.70000@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702070843.25255.arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,16 +22,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
-
-
-On Wed, Feb 07, 2007 at 03:03:13PM +1100, Paul Mackerras wrote:
-> Paul Mackerras (2):
->       [POWERPC] Clear RI bit in MSR before restoring r13 when returning to userspace
->       [POWERPC] Make pSeries use the H_BULK_REMOVE hypervisor call
-
-On the H_BULK_REMOVE change: Does it show much gains on fork/exit-heavy
-workloads?
-
-
--Olof
+On Wednesday 31 January 2007 00:20, Geoff Levand wrote:
+> Add the missing pieces to support DMA scatter-gather on the PS3 system bus.
+> 
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> 
+Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
