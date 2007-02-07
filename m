@@ -1,15 +1,11 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 7 Feb 2007 15:46:16 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [dtc] Allow multipart property values
-Message-ID: <20070207044616.GF23870@localhost.localdomain>
-References: <20070207032343.GD23870@localhost.localdomain>
-	<41B393C3-9A8F-46EC-9B47-FCF8E0733994@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <41B393C3-9A8F-46EC-9B47-FCF8E0733994@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: <linuxppc-dev@ozlabs.org>,
+	<cbe-oss-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 07 Feb 2007 15:50:50 +1100
+Subject: [PATCH 0/3] spufs: don't need struct page for SPEs
+Message-Id: <1170823850.450936.293648942401.qpush@grosgo>
+Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +15,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 06, 2007 at 10:37:25PM -0600, Kumar Gala wrote:
-> 
-> On Feb 6, 2007, at 9:23 PM, David Gibson wrote:
-> 
-> > At present each property definition in a dts file must give as the
-> > value either a string ("abc..."), a bytestring ([12abcd...]) or a cell
-> > list (<1 2 3 ...>).  This patch allows a property value to be given as
-> > several of these, comma-separated.  The final property value is just
-> > the components appended together.  So a property could have a list of
-> > cells followed by a string, or a bytestring followed by some cells.
-> > Cells are always aligned, so if cells are given following a string or
-> > bytestring which is not a multiple of 4 bytes long, zero bytes are
-> > inserted to align the following cells.
-> >
-> > The primary motivation for this feature, however, is to allow defining
-> > a property as a list of several strings.  This is what's needed for
-> > defining OF 'compatible' properties, and is less ugly and fiddly than
-> > using embedded \0s in the strings.
-> >
-> > Signed-off-by: David Gibson <dwg@au1.ibm.com>
-> 
-> Mind adding examples to the testsuite?
+This serie of patches removes the dependency of spufs on having
+struct page for the SPE local stores and register spaces. That
+means it technically also removes the need for sparsemem for
+native Cell setups though Kconfig still forces it enabled when
+CONFIG_NUMA is set (might be fixable separately).
 
-What testsuite...?
+The first patch is from Nick Piggin, it's part of his serie reworking
+the nopage handling, though it's also perfectly useable standalone.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+The second patch adds a NOPFN_REFAULT return option from ->nopfn()
+equivalent to the NOPAGE_REFAULT I added a while ago for ->nopage() so
+I can use nopfn instead of nopage and thus use VM_PFNMAP for my VMAs
+
+The third patch converts the spufs code to not use struct page and
+removes the code in the cell platform that creates them
+
+I have no firm feeling on wether those should be in 2.6.21 or not,
+they are pre-requisite for some other work I'm doing with spufs but
+which won't be in 2.6.21 (well, I don't think it will be ready in time
+and it doesn't really matter) so I'm mostly posting this here for
+review/comment/backup :-) I would appreciate testing too, I did some
+tests here and they seem to pass but heh, the more the better.
+
+Ben.
