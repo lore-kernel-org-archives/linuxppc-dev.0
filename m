@@ -1,13 +1,13 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 13626DE090
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 10:01:36 +1100 (EST)
-Date: Wed, 7 Feb 2007 17:01:25 -0600
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F41D4DE0B8
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 10:01:41 +1100 (EST)
+Date: Wed, 7 Feb 2007 17:01:31 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 06/19] bootwrapper: Make ft_get_phandle() accept and return
-	NULL.
-Message-ID: <20070207230125.GF3849@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 10/19] bootwrapper: Use map_string() instead of
+	lookup_string() in ft_prop().
+Message-ID: <20070207230131.GJ3849@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
@@ -21,28 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Currently, if ft_get_phandle() is passed NULL it will allocate an entry
-for it and return a non-NULL phandle.  This patch makes it simply pass
-the NULL through.
+When adding a property, the property name should be added to the string
+table if it doesn't already exist.  map_string() does that;
+lookup_string() will fail instead.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/flatdevtree.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/flatdevtree.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 diff --git a/arch/powerpc/boot/flatdevtree.c b/arch/powerpc/boot/flatdevtree.c
-index 971420a..6c18773 100644
+index 0c8970e..605d248 100644
 --- a/arch/powerpc/boot/flatdevtree.c
 +++ b/arch/powerpc/boot/flatdevtree.c
-@@ -40,6 +40,9 @@ static void *ft_get_phandle(struct ft_cx
+@@ -433,7 +433,7 @@ int ft_prop(struct ft_cxt *cxt, const ch
  {
- 	unsigned int i;
+ 	int off, len;
  
-+	if (!node)
-+		return NULL;
-+
- 	for (i = 1; i < cxt->nodes_used; i++)	/* already there? */
- 		if (cxt->node_tbl[i] == node)
- 			return (void *)i;
+-	off = lookup_string(cxt, name);
++	off = map_string(cxt, name);
+ 	if (off == NO_STRING)
+ 		return -1;
+ 
 -- 
 1.4.4
