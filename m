@@ -1,19 +1,23 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 161A2DDEBA
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 09:49:48 +1100 (EST)
-Date: Wed, 7 Feb 2007 23:49:46 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: patches in powerpc.git
-In-Reply-To: <17866.20884.932072.779927@cargo.ozlabs.ibm.com>
-Message-ID: <Pine.LNX.4.60.0702072348440.7474@poirot.grange>
-References: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0702072108280.7474@poirot.grange>
-	<17866.20884.932072.779927@cargo.ozlabs.ibm.com>
+Return-Path: <schwab@suse.de>
+Received: from mx2.suse.de (ns2.suse.de [195.135.220.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx2.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EC934DDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 09:53:06 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 11/12] powermac: disallow pmu sleep notifiers from
+	aborting sleep
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124615.015873000@sipsolutions.net>
+Date: Wed, 07 Feb 2007 23:52:50 +0100
+In-Reply-To: <20070207124615.015873000@sipsolutions.net> (Johannes Berg's
+	message of "Wed, 07 Feb 2007 13:45:47 +0100")
+Message-ID: <jetzxxk2bh.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 8 Feb 2007, Paul Mackerras wrote:
+Johannes Berg <johannes@sipsolutions.net> writes:
 
-> Guennadi Liakhovetski writes:
-> 
-> > Paul, I think, you missed this one:
-> > 
-> > http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030718.html
-> > 
-> > Please, apply or comment:-)
-> 
-> Ah yes.  It's easy to miss a patch when the subject line starts with
-> "Re:". :)  I'll put it in.
+> Tracing through the code, no current PMU sleep notifier can abort sleep.
+> Since no new PMU sleep notifiers should be added, this patch simplifies the
+> code and removes the ability to abort sleep.
 
-I'll __try__ to remember that:-)
+There is a use of PBOOK_SLEEP_OK left in
+arch/powerpc/platforms/powermac/time.c.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
