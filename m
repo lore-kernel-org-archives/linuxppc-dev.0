@@ -2,23 +2,26 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B29D7DDE24
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 08:04:08 +1100 (EST)
-Subject: Re: [PATCH] Update udbg_progress() to display the integer
+	by ozlabs.org (Postfix) with ESMTP id 678D8DDE24
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 08:09:42 +1100 (EST)
+Subject: Re: [Linux-fbdev-devel] [PATCH 0/10] ps3av/fb drivers for 2.6.21
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mike Strosaker <strosake@austin.ibm.com>
-In-Reply-To: <45C97121.9080609@austin.ibm.com>
-References: <11707051151024-git-send-email-timur@freescale.com>
-	<20070206013051.GA15525@lixom.net>	<45C90A6E.3040302@freescale.com>
-	<17865.2853.132102.769702@cargo.ozlabs.ibm.com>
-	<1170805102.2620.264.camel@localhost.localdomain>
-	<45C91275.4020806@freescale.com>  <45C97121.9080609@austin.ibm.com>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+In-Reply-To: <Pine.LNX.4.62.0702071743040.29060@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702051624410.18405@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702061559420.14230@pademelon.sonytel.be>
+	<1170794953.2620.253.camel@localhost.localdomain>
+	<Pine.LNX.4.62.0702070859050.31772@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702071743040.29060@pademelon.sonytel.be>
 Content-Type: text/plain
-Date: Thu, 08 Feb 2007 08:03:46 +1100
-Message-Id: <1170882226.2620.291.camel@localhost.localdomain>
+Date: Thu, 08 Feb 2007 08:07:06 +1100
+Message-Id: <1170882427.2620.293.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Timur Tabi <timur@freescale.com>
+Cc: James Simmons <jsimmons@infradead.org>, Paul Mackerras <paulus@samba.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,13 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2007-02-07 at 17:51 +0100, Geert Uytterhoeven wrote:
+> On Wed, 7 Feb 2007, Geert Uytterhoeven wrote:
+> > On Wed, 7 Feb 2007, Benjamin Herrenschmidt wrote:
+> > > > ps3av: Use a kernel thread to handle the actual video mode setting, as this
+> > > > involves some quite big delays.
+> > > 
+> > > The ps3 fbdev already has it's own kernel thread no ? Why use a second
+> > > one ? We could just have the ps3av code keep the delays but be called by
+> > > a thread ?
+> > 
+> > That's another possibility.  And since the screen is blanked during mode
+> > change, there's no need to refresh it, and I may even get rid of the call to
+> > ps3fb_flip_ctl() in ps3av.
+> > 
+> > I'll look into it...
+> 
+> Below's a new patch (take 3).
+> 
+> But it doesn't work well: after each mode change, the old contents of the
+> screen are visible for a (noticable) fraction of a second.
+> Ps3fbd doesn't refresh the screen contents until ps3av_set_video_mode()
+> returns, which is longer than my display needs to sync to the new video mode
+> (this was actually the reason behind the msleep() calls).
+> 
+> I also could not get rid of the calls to ps3fb_flip_ctl() in ps3av, as screen
+> updates have to be disabled while sending other AV packets, too.
+> 
+> So I prefer the previous solution, using a new ps3av kernel thread.
+> Unless anyone has a better solution, of course :-)
 
-> Yeah, magic numbers suck, but the op panel does have some physical 
-> constraints that prevent the printing of verbose messages.  These codes 
-> could be mapped to useful messages in a file in Documentation/powerpc, 
-> for example.
-
-Or at least a .h with well defined constants instead of the current
-mess :-)
+Moving the flip to ps3av ? :-)
 
 Ben.
