@@ -2,16 +2,16 @@ Return-Path: <jeff@garzik.org>
 Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 51A2BDDDDB
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 11:33:12 +1100 (EST)
-Message-ID: <45C91E3E.2030402@garzik.org>
-Date: Tue, 06 Feb 2007 19:33:02 -0500
+	by ozlabs.org (Postfix) with ESMTP id DE574DDDF2
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 11:35:17 +1100 (EST)
+Message-ID: <45C91EC0.2090305@garzik.org>
+Date: Tue, 06 Feb 2007 19:35:12 -0500
 From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
 To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-Subject: Re: [PATCH 1/3] libata: add another IRQ calls (core and headers)
-References: <200701260727.l0Q7R4Fs005076@toshiba.co.jp>
-In-Reply-To: <200701260727.l0Q7R4Fs005076@toshiba.co.jp>
+Subject: Re: [PATCH 2/3] libata: add another IRQ calls (libata drivers)
+References: <200701260727.l0Q7RVjM019396@toshiba.co.jp>
+In-Reply-To: <200701260727.l0Q7RVjM019396@toshiba.co.jp>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
 	paulus@samba.org, alan@lxorguk.ukuu.org.uk
@@ -25,7 +25,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Akira Iguchi wrote:
-> This patch is against the libata core and headers.
+> This patch is against each libata driver.
 > 
 > Two IRQ calls are added in ata_port_operations.
 > - irq_on() is used to enable interrupts. 
