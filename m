@@ -1,20 +1,19 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DE574DDDF2
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 11:35:17 +1100 (EST)
-Message-ID: <45C91EC0.2090305@garzik.org>
-Date: Tue, 06 Feb 2007 19:35:12 -0500
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-Subject: Re: [PATCH 2/3] libata: add another IRQ calls (libata drivers)
-References: <200701260727.l0Q7RVjM019396@toshiba.co.jp>
-In-Reply-To: <200701260727.l0Q7RVjM019396@toshiba.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
-	paulus@samba.org, alan@lxorguk.ukuu.org.uk
+	by ozlabs.org (Postfix) with ESMTP id 87460DDE2C
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 11:40:26 +1100 (EST)
+Subject: Re: [PATCH 10/11] Celleb: basic support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+In-Reply-To: <200702020747.l127lID7024946@toshiba.co.jp>
+References: <200702020747.l127lID7024946@toshiba.co.jp>
+Content-Type: text/plain
+Date: Wed, 07 Feb 2007 11:40:19 +1100
+Message-Id: <1170808819.2620.266.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +23,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Akira Iguchi wrote:
-> This patch is against each libata driver.
-> 
-> Two IRQ calls are added in ata_port_operations.
-> - irq_on() is used to enable interrupts. 
-> - irq_ack() is used to acknowledge a device interrupt.
-> 
-> In most drivers, ata_irq_on() and ata_irq_ack() are used for
-> irq_on and irq_ack respectively. 
-> 
-> In some drivers (ex: ahci, sata_sil24) which cannot use them
-> as is, ata_dummy_irq_on() and ata_dummy_irq_ack() are used.
+On Fri, 2007-02-02 at 16:47 +0900, Ishizaki Kou wrote:
+> This patch adds base support for Celleb platform.
 > 
 > Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-> Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+> Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-applied
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
