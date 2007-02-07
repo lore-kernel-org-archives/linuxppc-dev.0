@@ -1,12 +1,22 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>,
-	<cbe-oss-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 07 Feb 2007 15:50:52 +1100
-Subject: [PATCH 3/3] spufs: remove need for struct page for SPEs
-In-Reply-To: <1170823850.450936.293648942401.qpush@grosgo>
-Message-Id: <20070207045055.295F3DDE46@ozlabs.org>
-Cc: Andrew Morton <akpm@osdl.org>, Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5A6AEDDFC2
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 15:51:04 +1100 (EST)
+In-Reply-To: <20070207044616.GF23870@localhost.localdomain>
+References: <20070207032343.GD23870@localhost.localdomain>
+	<41B393C3-9A8F-46EC-9B47-FCF8E0733994@kernel.crashing.org>
+	<20070207044616.GF23870@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <BDAF32A9-05AE-4AFA-922B-22752C3B0845@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [dtc] Allow multipart property values
+Date: Tue, 6 Feb 2007 22:50:09 -0600
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,393 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch removes the need for struct page for SPE local store
-and registers from spufs. It also makes the locking much more
-obvious and no longer relying on the truncate logic black magic
-for protecting against races between unmap_mapping_range() and
-new pages faulted in. It does so by switching to a nopfn() handler
-and using the new vm_insert_pfn() to setup the PTEs itself while
-holding a lock on the SPE.
 
-The nice thing is that this patch actually removes a lot more code
-than it adds :-)
+On Feb 6, 2007, at 10:46 PM, David Gibson wrote:
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
+> On Tue, Feb 06, 2007 at 10:37:25PM -0600, Kumar Gala wrote:
+>>
+>> On Feb 6, 2007, at 9:23 PM, David Gibson wrote:
+>>
+>>> At present each property definition in a dts file must give as the
+>>> value either a string ("abc..."), a bytestring ([12abcd...]) or a  
+>>> cell
+>>> list (<1 2 3 ...>).  This patch allows a property value to be  
+>>> given as
+>>> several of these, comma-separated.  The final property value is just
+>>> the components appended together.  So a property could have a  
+>>> list of
+>>> cells followed by a string, or a bytestring followed by some cells.
+>>> Cells are always aligned, so if cells are given following a  
+>>> string or
+>>> bytestring which is not a multiple of 4 bytes long, zero bytes are
+>>> inserted to align the following cells.
+>>>
+>>> The primary motivation for this feature, however, is to allow  
+>>> defining
+>>> a property as a list of several strings.  This is what's needed for
+>>> defining OF 'compatible' properties, and is less ugly and fiddly  
+>>> than
+>>> using embedded \0s in the strings.
+>>>
+>>> Signed-off-by: David Gibson <dwg@au1.ibm.com>
+>>
+>> Mind adding examples to the testsuite?
+>
+> What testsuite...?
 
- Kconfig                         |    2
+Well there was a tests/ dir  and test.dts :)
 
-Index: linux-cell/arch/powerpc/platforms/cell/spu_priv1_mmio.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spu_priv1_mmio.c	2007-02-06 15:39:25.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spu_priv1_mmio.c	2007-02-06 15:39:35.000000000 +1100
-@@ -57,37 +57,6 @@ struct device_node *spu_devnode(struct s
- 
- EXPORT_SYMBOL_GPL(spu_devnode);
- 
--static int __init cell_spuprop_present(struct spu *spu, struct device_node *spe,
--		const char *prop)
--{
--	const struct address_prop {
--		unsigned long address;
--		unsigned int len;
--	} __attribute__((packed)) *p;
--	int proplen;
--
--	unsigned long start_pfn, nr_pages;
--	struct pglist_data *pgdata;
--	struct zone *zone;
--	int ret;
--
--	p = get_property(spe, prop, &proplen);
--	WARN_ON(proplen != sizeof (*p));
--
--	start_pfn = p->address >> PAGE_SHIFT;
--	nr_pages = ((unsigned long)p->len + PAGE_SIZE - 1) >> PAGE_SHIFT;
--
--	pgdata = NODE_DATA(spu->node);
--	zone = pgdata->node_zones;
--
--	/* XXX rethink locking here */
--	mutex_lock(&add_spumem_mutex);
--	ret = __add_pages(zone, start_pfn, nr_pages);
--	mutex_unlock(&add_spumem_mutex);
--
--	return ret;
--}
--
- static void __iomem * __init map_spe_prop(struct spu *spu,
- 		struct device_node *n, const char *name)
- {
-@@ -98,23 +67,13 @@ static void __iomem * __init map_spe_pro
- 
- 	const void *p;
- 	int proplen;
--	void __iomem *ret = NULL;
--	int err = 0;
- 
- 	p = get_property(n, name, &proplen);
- 	if (proplen != sizeof (struct address_prop))
- 		return NULL;
- 
- 	prop = p;
--
--	err = cell_spuprop_present(spu, n, name);
--	if (err && (err != -EEXIST))
--		goto out;
--
--	ret = ioremap(prop->address, prop->len);
--
-- out:
--	return ret;
-+	return ioremap(prop->address, prop->len);
- }
- 
- static void spu_unmap(struct spu *spu)
-@@ -239,37 +198,21 @@ static int spu_map_resource(struct spu *
- 			    void __iomem** virt, unsigned long *phys)
- {
- 	struct device_node *np = spu_get_pdata(spu)->devnode;
--	unsigned long start_pfn, nr_pages;
--	struct pglist_data *pgdata;
--	struct zone *zone;
- 	struct resource resource = { };
- 	unsigned long len;
- 	int ret;
- 
- 	ret = of_address_to_resource(np, nr, &resource);
- 	if (ret)
--		goto out;
-+		return ret;
- 
- 	if (phys)
- 		*phys = resource.start;
- 	len = resource.end - resource.start + 1;
- 	*virt = ioremap(resource.start, len);
- 	if (!*virt)
--		ret = -EINVAL;
--
--	start_pfn = resource.start >> PAGE_SHIFT;
--	nr_pages = (len + PAGE_SIZE - 1) >> PAGE_SHIFT;
--
--	pgdata = NODE_DATA(spu->node);
--	zone = pgdata->node_zones;
--
--	/* XXX rethink locking here */
--	mutex_lock(&add_spumem_mutex);
--	ret = __add_pages(zone, start_pfn, nr_pages);
--	mutex_unlock(&add_spumem_mutex);
--
--out:
--	return ret;
-+		return -EINVAL;
-+	return 0;
- }
- 
- static int __init spu_map_device(struct spu *spu)
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/file.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spufs/file.c	2007-02-06 15:39:25.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/file.c	2007-02-06 15:39:35.000000000 +1100
-@@ -95,14 +95,12 @@ spufs_mem_write(struct file *file, const
- 	return ret;
- }
- 
--static struct page *
--spufs_mem_mmap_nopage(struct vm_area_struct *vma,
--		      unsigned long address, int *type)
-+static unsigned long spufs_mem_mmap_nopfn(struct vm_area_struct *vma,
-+					  unsigned long address)
- {
--	struct page *page = NOPAGE_SIGBUS;
--
- 	struct spu_context *ctx = vma->vm_file->private_data;
--	unsigned long offset = address - vma->vm_start;
-+	unsigned long pfn, offset = address - vma->vm_start;
-+
- 	offset += vma->vm_pgoff << PAGE_SHIFT;
- 
- 	spu_acquire(ctx);
-@@ -110,24 +108,22 @@ spufs_mem_mmap_nopage(struct vm_area_str
- 	if (ctx->state == SPU_STATE_SAVED) {
- 		vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 							& ~_PAGE_NO_CACHE);
--		page = vmalloc_to_page(ctx->csa.lscsa->ls + offset);
-+		pfn = vmalloc_to_pfn(ctx->csa.lscsa->ls + offset);
- 	} else {
- 		vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
--							| _PAGE_NO_CACHE);
--		page = pfn_to_page((ctx->spu->local_store_phys + offset)
--				   >> PAGE_SHIFT);
-+					     | _PAGE_NO_CACHE);
-+		pfn = (ctx->spu->local_store_phys + offset) >> PAGE_SHIFT;
- 	}
--	spu_release(ctx);
-+	vm_insert_pfn(vma, address, pfn);
- 
--	if (type)
--		*type = VM_FAULT_MINOR;
-+	spu_release(ctx);
- 
--	page_cache_get(page);
--	return page;
-+	return NOPFN_REFAULT;
- }
- 
-+
- static struct vm_operations_struct spufs_mem_mmap_vmops = {
--	.nopage = spufs_mem_mmap_nopage,
-+	.nopfn = spufs_mem_mmap_nopfn,
- };
- 
- static int
-@@ -136,7 +132,7 @@ spufs_mem_mmap(struct file *file, struct
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	vma->vm_flags |= VM_IO;
-+	vma->vm_flags |= VM_IO | VM_PFNMAP;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE);
- 
-@@ -152,49 +148,42 @@ static struct file_operations spufs_mem_
- 	.mmap    = spufs_mem_mmap,
- };
- 
--static struct page *spufs_ps_nopage(struct vm_area_struct *vma,
-+static unsigned long spufs_ps_nopfn(struct vm_area_struct *vma,
- 				    unsigned long address,
--				    int *type, unsigned long ps_offs,
-+				    unsigned long ps_offs,
- 				    unsigned long ps_size)
- {
--	struct page *page = NOPAGE_SIGBUS;
--	int fault_type = VM_FAULT_SIGBUS;
- 	struct spu_context *ctx = vma->vm_file->private_data;
--	unsigned long offset = address - vma->vm_start;
--	unsigned long area;
-+	unsigned long area, offset = address - vma->vm_start;
- 	int ret;
- 
- 	offset += vma->vm_pgoff << PAGE_SHIFT;
- 	if (offset >= ps_size)
--		goto out;
-+		return NOPFN_SIGBUS;
- 
-+	/* error here usually means a signal.. we might want to test
-+	 * the error code more precisely though
-+	 */
- 	ret = spu_acquire_runnable(ctx);
- 	if (ret)
--		goto out;
-+		return NOPFN_REFAULT;
- 
- 	area = ctx->spu->problem_phys + ps_offs;
--	page = pfn_to_page((area + offset) >> PAGE_SHIFT);
--	fault_type = VM_FAULT_MINOR;
--	page_cache_get(page);
--
-+	vm_insert_pfn(vma, address, (area + offset) >> PAGE_SHIFT);
- 	spu_release(ctx);
- 
--      out:
--	if (type)
--		*type = fault_type;
--
--	return page;
-+	return NOPFN_REFAULT;
- }
- 
- #if SPUFS_MMAP_4K
--static struct page *spufs_cntl_mmap_nopage(struct vm_area_struct *vma,
--					   unsigned long address, int *type)
-+static unsigned long spufs_cntl_mmap_nopfn(struct vm_area_struct *vma,
-+					   unsigned long address)
- {
--	return spufs_ps_nopage(vma, address, type, 0x4000, 0x1000);
-+	return spufs_ps_nopfn(vma, address, 0x4000, 0x1000);
- }
- 
- static struct vm_operations_struct spufs_cntl_mmap_vmops = {
--	.nopage = spufs_cntl_mmap_nopage,
-+	.nopfn = spufs_cntl_mmap_nopfn,
- };
- 
- /*
-@@ -205,7 +194,7 @@ static int spufs_cntl_mmap(struct file *
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
--	vma->vm_flags |= VM_IO;
-+	vma->vm_flags |= VM_IO | VM_PFNMAP;
- 	vma->vm_page_prot = __pgprot(pgprot_val(vma->vm_page_prot)
- 				     | _PAGE_NO_CACHE | _PAGE_GUARDED);
- 
-@@ -791,23 +780,23 @@ static ssize_t spufs_signal1_write(struc
- 	return 4;
- }
- 
--static struct page *spufs_signal1_mmap_nopage(struct vm_area_struct *vma,
--					      unsigned long address, int *type)
-+static unsigned long spufs_signal1_mmap_nopfn(struct vm_area_struct *vma,
-+					      unsigned long address)
- {
- #if PAGE_SIZE == 0x1000
--	return spufs_ps_nopage(vma, address, type, 0x14000, 0x1000);
-+	return spufs_ps_nopfn(vma, address, 0x14000, 0x1000);
- #elif PAGE_SIZE == 0x10000
- 	/* For 64k pages, both signal1 and signal2 can be used to mmap the whole
- 	 * signal 1 and 2 area
- 	 */
--	return spufs_ps_nopage(vma, address, type, 0x10000, 0x10000);
-+	return spufs_ps_nopfn(vma, address, 0x10000, 0x10000);
- #else
- #error unsupported page size
- #endif
- }
- 
- static struct vm_operations_struct spufs_signal1_mmap_vmops = {
--	.nopage = spufs_signal1_mmap_nopage,
-+	.nopfn = spufs_signal1_mmap_nopfn,
- };
- 
- static int spufs_signal1_mmap(struct file *file, struct vm_area_struct *vma)
-@@ -899,23 +888,23 @@ static ssize_t spufs_signal2_write(struc
- }
- 
- #if SPUFS_MMAP_4K
--static struct page *spufs_signal2_mmap_nopage(struct vm_area_struct *vma,
--					      unsigned long address, int *type)
-+static unsigned long spufs_signal2_mmap_nopfn(struct vm_area_struct *vma,
-+					      unsigned long address)
- {
- #if PAGE_SIZE == 0x1000
--	return spufs_ps_nopage(vma, address, type, 0x1c000, 0x1000);
-+	return spufs_ps_nopfn(vma, address, 0x1c000, 0x1000);
- #elif PAGE_SIZE == 0x10000
- 	/* For 64k pages, both signal1 and signal2 can be used to mmap the whole
- 	 * signal 1 and 2 area
- 	 */
--	return spufs_ps_nopage(vma, address, type, 0x10000, 0x10000);
-+	return spufs_ps_nopfn(vma, address, 0x10000, 0x10000);
- #else
- #error unsupported page size
- #endif
- }
- 
- static struct vm_operations_struct spufs_signal2_mmap_vmops = {
--	.nopage = spufs_signal2_mmap_nopage,
-+	.nopfn = spufs_signal2_mmap_nopfn,
- };
- 
- static int spufs_signal2_mmap(struct file *file, struct vm_area_struct *vma)
-@@ -1000,14 +989,14 @@ DEFINE_SIMPLE_ATTRIBUTE(spufs_signal2_ty
- 					spufs_signal2_type_set, "%llu");
- 
- #if SPUFS_MMAP_4K
--static struct page *spufs_mss_mmap_nopage(struct vm_area_struct *vma,
--					   unsigned long address, int *type)
-+static unsigned long spufs_mss_mmap_nopfn(struct vm_area_struct *vma,
-+					  unsigned long address)
- {
--	return spufs_ps_nopage(vma, address, type, 0x0000, 0x1000);
-+	return spufs_ps_nopfn(vma, address, 0x0000, 0x1000);
- }
- 
- static struct vm_operations_struct spufs_mss_mmap_vmops = {
--	.nopage = spufs_mss_mmap_nopage,
-+	.nopfn = spufs_mss_mmap_nopfn,
- };
- 
- /*
-@@ -1042,14 +1031,14 @@ static struct file_operations spufs_mss_
- 	.mmap	 = spufs_mss_mmap,
- };
- 
--static struct page *spufs_psmap_mmap_nopage(struct vm_area_struct *vma,
--					   unsigned long address, int *type)
-+static unsigned long spufs_psmap_mmap_nopfn(struct vm_area_struct *vma,
-+					    unsigned long address)
- {
--	return spufs_ps_nopage(vma, address, type, 0x0000, 0x20000);
-+	return spufs_ps_nopfn(vma, address, 0x0000, 0x20000);
- }
- 
- static struct vm_operations_struct spufs_psmap_mmap_vmops = {
--	.nopage = spufs_psmap_mmap_nopage,
-+	.nopfn = spufs_psmap_mmap_nopfn,
- };
- 
- /*
-@@ -1083,14 +1072,14 @@ static struct file_operations spufs_psma
- 
- 
- #if SPUFS_MMAP_4K
--static struct page *spufs_mfc_mmap_nopage(struct vm_area_struct *vma,
--					   unsigned long address, int *type)
-+static unsigned long spufs_mfc_mmap_nopfn(struct vm_area_struct *vma,
-+					  unsigned long address)
- {
--	return spufs_ps_nopage(vma, address, type, 0x3000, 0x1000);
-+	return spufs_ps_nopfn(vma, address, 0x3000, 0x1000);
- }
- 
- static struct vm_operations_struct spufs_mfc_mmap_vmops = {
--	.nopage = spufs_mfc_mmap_nopage,
-+	.nopfn = spufs_mfc_mmap_nopfn,
- };
- 
- /*
-Index: linux-cell/arch/powerpc/Kconfig
-===================================================================
---- linux-cell.orig/arch/powerpc/Kconfig	2007-02-06 15:39:25.000000000 +1100
-+++ linux-cell/arch/powerpc/Kconfig	2007-02-06 15:39:35.000000000 +1100
-@@ -832,7 +832,7 @@ config ARCH_SPARSEMEM_ENABLE
- 
- config ARCH_SPARSEMEM_DEFAULT
- 	def_bool y
--	depends on (SMP && PPC_PSERIES) || PPC_CELL
-+	depends on (SMP && PPC_PSERIES) || PPC_PS3
- 
- config ARCH_POPULATES_NODE_MAP
- 	def_bool y
+How about adding something to test.dts or an example.dts that shows  
+various new things you just added.
+
+- k
