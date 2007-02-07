@@ -1,24 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 3DD63DDDFE
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Feb 2007 11:00:00 +1100 (EST)
-Date: Wed, 7 Feb 2007 11:00:22 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Update udbg_progress() to display the integer
-Message-Id: <20070207110022.b26c23ea.sfr@canb.auug.org.au>
-In-Reply-To: <0C529499-B766-4D3A-8340-361BB1B461D3@kernel.crashing.org>
-References: <11707051151024-git-send-email-timur@freescale.com>
-	<20070206013051.GA15525@lixom.net> <45C90A6E.3040302@freescale.com>
-	<17865.2853.132102.769702@cargo.ozlabs.ibm.com>
-	<1170805102.2620.264.camel@localhost.localdomain>
-	<0C529499-B766-4D3A-8340-361BB1B461D3@kernel.crashing.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/3] PS3: System manager support
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <45C8FFF7.7090805@am.sony.com>
+References: <45C8FFF7.7090805@am.sony.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-1b5WypvX9nzyKNUPleng"
+Date: Wed, 07 Feb 2007 11:00:35 +1100
+Message-Id: <1170806435.4640.3.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__7_Feb_2007_11_00_22_+1100_f2SbeBt81hwIjjgJ"
-Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
-	Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +21,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__7_Feb_2007_11_00_22_+1100_f2SbeBt81hwIjjgJ
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
 
-On Tue, 6 Feb 2007 17:41:24 -0600 Kumar Gala <galak@kernel.crashing.org> wrote:
->
->
-> I'm with Ben on this.  I'm not aware of any in tree user that just
-> doesn't print this stuff out to a console port.  The concept is nice,
-> but does anyone really use it?
+--=-1b5WypvX9nzyKNUPleng
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Legacy iSeries prints it *and* send it to the HV which displays it as an
-SRC value in its various monitoring screen.
+On Tue, 2007-02-06 at 14:23 -0800, Geoff Levand wrote:
+> Add PS3 system manager support and the ppc_md routines restart() and
+> power_off().
+>=20
+> The system manager provides an event notification mechanism for reporting
+> events like thermal alert and button presses.  It also provides support t=
+o
+> control system shutdown and startup.
+>=20
+> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+>=20
+> ---
+>  arch/powerpc/platforms/ps3/Kconfig |   10=20
+>  arch/powerpc/platforms/ps3/setup.c |   27 +
+>  drivers/ps3/Makefile               |    1=20
+>  drivers/ps3/sys-manager.c          |  621 ++++++++++++++++++++++++++++++=
++++++++
+>  include/asm-powerpc/ps3.h          |    5=20
+>  5 files changed, 660 insertions(+), 4 deletions(-)
+>=20
+> --- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/Kconfig
+> +++ ps3-linux-dev/arch/powerpc/platforms/ps3/Kconfig
+> @@ -61,4 +61,14 @@ config PS3_PS3AV
+>  	  This support is required for graphics and sound. In
+>  	  general, all users will say Y or M.
+> =20
+> +config PS3_SYS_MANAGER
+> +	tristate "PS3 System Manager driver"
+> +	select PS3_VUART
+> +	default y
+> +	help
+> +	  Include support for the PS3 System Manager.
+> +
+> +	  This support is required for system control.  In
+> +	  general, all users will say Y or M.
+> +
+>  endmenu
+> --- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/setup.c
+> +++ ps3-linux-dev/arch/powerpc/platforms/ps3/setup.c
+> @@ -42,6 +42,10 @@
+>  #define DBG(fmt...) do{if(0)printk(fmt);}while(0)
+>  #endif
+> =20
+> +#if !defined(CONFIG_SMP)
+> +static void smp_send_stop(void) {}
+> +#endif
+> +
+>  int ps3_get_firmware_version(union ps3_firmware_version *v)
+>  {
+>  	int result =3D lv1_get_version_info(&v->raw);
+> @@ -66,22 +70,35 @@ static void ps3_power_save(void)
+>  	lv1_pause(0);
+>  }
+> =20
+> +static void ps3_restart(char *cmd)
+> +{
+> +	DBG("%s:%d cmd '%s'\n", __func__, __LINE__, cmd);
+> +
+> +	smp_send_stop();
+> +	ps3_sys_manager_restart(); /* never returns */
+> +}
+> +
+> +static void ps3_power_off(void)
+> +{
+> +	DBG("%s:%d\n", __func__, __LINE__);
+> +
+> +	smp_send_stop();
+> +	ps3_sys_manager_power_off(); /* never returns */
+> +}
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+What happens here when the sys manager stuff is built as a module ?
 
---Signature=_Wed__7_Feb_2007_11_00_22_+1100_f2SbeBt81hwIjjgJ
-Content-Type: application/pgp-signature
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-1b5WypvX9nzyKNUPleng
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQFFyRaaFdBgD/zoJvwRAksCAJ9wiu8LHVcMfTQwNN9elxb/9OYuVACfYkFM
-12mn9OLz67THCbKqzO2Nrdk=
-=uZCW
+iD8DBQBFyRaidSjSd0sB4dIRAowCAJ9HSJ0ADvHU8QfDB91gLZ04shbWjgCgkzm3
+Mo7cJ3ufCK7Zkahwk/o9q9I=
+=l7u2
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__7_Feb_2007_11_00_22_+1100_f2SbeBt81hwIjjgJ--
+--=-1b5WypvX9nzyKNUPleng--
