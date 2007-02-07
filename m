@@ -1,12 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 7 Feb 2007 14:29:07 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: [dtc] Allow references to labels
-Message-ID: <20070207032907.GE23870@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 3/3] PS3: System manager support
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <45C92856.4080107@am.sony.com>
+References: <45C8FFF7.7090805@am.sony.com>
+	<1170806435.4640.3.camel@concordia.ozlabs.ibm.com>
+	<45C92856.4080107@am.sony.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-aS4S73tNED8O/TYMNns5"
+Date: Wed, 07 Feb 2007 14:41:34 +1100
+Message-Id: <1170819694.4640.5.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,79 +23,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-dtc allows nodes to have labels, which at present are just re-emitted
-as symbols at the appropriate places when using asm-mode output.  It
-also allows "references" where the notation &/path/to/node in a cell
-list will be replaced with the phandle of the referenced node.
 
-This patch extends the reference syntax to allow references to labels
-instead of just full device paths.  This allows nodes deep within the
-tree to be referenced with a shorter more convenient name.  References
-to labels are distinguished from reference to paths by the fact that
-paths must start with a /, but labels can never start with a /.
+--=-aS4S73tNED8O/TYMNns5
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
+On Tue, 2007-02-06 at 17:16 -0800, Geoff Levand wrote:
+> Michael Ellerman wrote:
+> > On Tue, 2007-02-06 at 14:23 -0800, Geoff Levand wrote:
+> >> Add PS3 system manager support and the ppc_md routines restart() and
+> >> power_off().
+> >>=20
+> >> The system manager provides an event notification mechanism for report=
+ing
+> >> events like thermal alert and button presses.  It also provides suppor=
+t to
+> >> control system shutdown and startup.
+> >>=20
+> >> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> >>=20
+> >> ---
+> >>  arch/powerpc/platforms/ps3/Kconfig |   10=20
+> >>  arch/powerpc/platforms/ps3/setup.c |   27 +
+> >>  drivers/ps3/Makefile               |    1=20
+> >>  drivers/ps3/sys-manager.c          |  621 +++++++++++++++++++++++++++=
+++++++++++
+> >>  include/asm-powerpc/ps3.h          |    5=20
+> >>  5 files changed, 660 insertions(+), 4 deletions(-)
+> >>=20
+> >> --- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/Kconfig
+> >> +++ ps3-linux-dev/arch/powerpc/platforms/ps3/Kconfig
+> >> @@ -61,4 +61,14 @@ config PS3_PS3AV
+> >>  	  This support is required for graphics and sound. In
+> >>  	  general, all users will say Y or M.
+> >> =20
+> >> +config PS3_SYS_MANAGER
+> >> +	tristate "PS3 System Manager driver"
+> >> +	select PS3_VUART
+> >> +	default y
+> >> +	help
+> >> +	  Include support for the PS3 System Manager.
+> >> +
+> >> +	  This support is required for system control.  In
+> >> +	  general, all users will say Y or M.
+> >> +
+> >>  endmenu
+> >> --- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/setup.c
+> >> +++ ps3-linux-dev/arch/powerpc/platforms/ps3/setup.c
+> >> @@ -42,6 +42,10 @@
+> >>  #define DBG(fmt...) do{if(0)printk(fmt);}while(0)
+> >>  #endif
+> >> =20
+> >> +#if !defined(CONFIG_SMP)
+> >> +static void smp_send_stop(void) {}
+> >> +#endif
+> >> +
+> >>  int ps3_get_firmware_version(union ps3_firmware_version *v)
+> >>  {
+> >>  	int result =3D lv1_get_version_info(&v->raw);
+> >> @@ -66,22 +70,35 @@ static void ps3_power_save(void)
+> >>  	lv1_pause(0);
+> >>  }
+> >> =20
+> >> +static void ps3_restart(char *cmd)
+> >> +{
+> >> +	DBG("%s:%d cmd '%s'\n", __func__, __LINE__, cmd);
+> >> +
+> >> +	smp_send_stop();
+> >> +	ps3_sys_manager_restart(); /* never returns */
+> >> +}
+> >> +
+> >> +static void ps3_power_off(void)
+> >> +{
+> >> +	DBG("%s:%d\n", __func__, __LINE__);
+> >> +
+> >> +	smp_send_stop();
+> >> +	ps3_sys_manager_power_off(); /* never returns */
+> >> +}
+> >=20
+> > What happens here when the sys manager stuff is built as a module ?
+>=20
+> I don't support it as a module yet.  I'll change the Kconfig.
 
-Index: dtc/livetree.c
-===================================================================
---- dtc.orig/livetree.c	2007-01-31 16:05:59.000000000 +1100
-+++ dtc/livetree.c	2007-01-31 16:13:00.000000000 +1100
-@@ -212,6 +212,24 @@ static struct node *get_node_by_path(str
- 	return NULL;
- }
- 
-+static struct node *get_node_by_label(struct node *tree, const char *label)
-+{
-+	struct node *child, *node;
-+
-+	assert(label && (strlen(label) > 0));
-+
-+	if (tree->label && streq(tree->label, label))
-+		return tree;
-+
-+	for_each_child(tree, child) {
-+		node = get_node_by_label(child, label);
-+		if (node)
-+			return node;
-+	}
-+
-+	return NULL;
-+}
-+
- static struct node *get_node_by_phandle(struct node *tree, cell_t phandle)
- {
- 	struct node *child, *node;	
-@@ -229,6 +247,7 @@ static struct node *get_node_by_phandle(
- 
- 	return NULL;
- }
-+
- /*
-  * Tree checking functions
-  */
-@@ -673,9 +692,16 @@ static void apply_fixup(struct node *roo
- 	struct node *refnode;
- 	cell_t phandle;
- 
--	refnode = get_node_by_path(root, f->ref);
--	if (! refnode)
--		die("Reference to non-existent node \"%s\"\n", f->ref);
-+	if (f->ref[0] == '/') {
-+		/* Reference to full path */
-+		refnode = get_node_by_path(root, f->ref);
-+		if (! refnode)
-+			die("Reference to non-existent node \"%s\"\n", f->ref);
-+	} else {
-+		refnode = get_node_by_label(root, f->ref);
-+		if (! refnode)
-+			die("Reference to non-existent node label \"%s\"\n", f->ref);
-+	}
- 
- 	phandle = get_node_phandle(root, refnode);
- 
+Yeah OK.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I don't think it really makes sense for it to be a module.=20
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-aS4S73tNED8O/TYMNns5
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFyUpudSjSd0sB4dIRAovlAKCKYA7Ikpet3VpJf/8fVI+KxljsQgCgkh2E
+O/F+APh5B8E11YsR8evSEF0=
+=3OaV
+-----END PGP SIGNATURE-----
+
+--=-aS4S73tNED8O/TYMNns5--
