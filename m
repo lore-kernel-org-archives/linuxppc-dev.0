@@ -1,16 +1,21 @@
-Return-Path: <Frank.Prepelica@ubidyne.com>
-Received: from ex01.ads.ubidyne.de (mail.ubidyne.com [212.211.133.238])
-	by ozlabs.org (Postfix) with ESMTP id 9CDD0DDEF7
+Return-Path: <pjmaiya@signal-networks.com>
+Received: from signal-networks.com (unknown [61.95.204.104])
+	by ozlabs.org (Postfix) with ESMTP id 6F973DDEBB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Feb 2007 23:42:03 +1100 (EST)
+	Fri,  9 Feb 2007 00:04:16 +1100 (EST)
+Received: from pjmaiya ([192.168.1.70])
+	by signal-networks.com (mail.signal-networks.com [192.168.1.1])
+	(MDaemon Standard v9.0.1) with ESMTP id md50000068480.msg
+	for <linuxppc-embedded@ozlabs.org>; Thu, 08 Feb 2007 18:32:09 +0530
+Message-ID: <011b01c74b81$5604ad80$4601a8c0@signet>
+From: "pjmaiya" <pjmaiya@signal-networks.com>
+To: <linuxppc-embedded@ozlabs.org>
+References: <29DC34A6B43468409F5A371CFE34E849091044@ex01.ads.ubidyne.de>
+Subject: CLI for embedded system
+Date: Thu, 8 Feb 2007 18:32:06 +0530
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C74B7C.D5F5DF87"
-Subject: Target reset after linux reboot
-Date: Thu, 8 Feb 2007 13:29:53 +0100
-Message-ID: <29DC34A6B43468409F5A371CFE34E849091044@ex01.ads.ubidyne.de>
-From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
-To: <linuxppc-embedded@ozlabs.org>
+	boundary="----=_NextPart_000_0118_01C74BAF.6FB102A0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,151 +28,83 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C74B7C.D5F5DF87
+------=_NextPart_000_0118_01C74BAF.6FB102A0
 Content-Type: text/plain;
-	charset="us-ascii"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-Hi everybody!
-
-=20
-
-I got a problem. After rebooting linux system on the target,
-
-the target "hangs". How could I get that the target makes a reset
-
-to start u-boot or linux again?
-
-=20
-
-Many thanks for help
-
-=20
-
-Best regards
-
-Frank
-
-=20
-
-=20
-
-=20
+Hi,
+   Can anybody give me link/built in package or source code for =
+implmenting CLI for embedded system on linux. We have tried to implement =
+our own CLI on linux(with bash shell as base), but it is massive work =
+since we need to support Tab feature, history feature,help etc..
 
 
-------_=_NextPart_001_01C74B7C.D5F5DF87
+thanx in advance.
+pjmaiya
+------=_NextPart_000_0118_01C74BAF.6FB102A0
 Content-Type: text/html;
-	charset="us-ascii"
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<meta http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.E-MailFormatvorlage17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:70.85pt 70.85pt 2.0cm 70.85pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML xmlns=3D"http://www.w3.org/TR/REC-html40" xmlns:v =3D=20
+"urn:schemas-microsoft-com:vml" xmlns:o =3D=20
+"urn:schemas-microsoft-com:office:office" xmlns:w =3D=20
+"urn:schemas-microsoft-com:office:word"><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2800.1586" name=3DGENERATOR>
+<STYLE>@page Section1 {size: 595.3pt 841.9pt; margin: 70.85pt 70.85pt =
+2.0cm 70.85pt; }
+P.MsoNormal {
+	FONT-SIZE: 12pt; MARGIN: 0cm 0cm 0pt; FONT-FAMILY: "Times New Roman"
+}
+LI.MsoNormal {
+	FONT-SIZE: 12pt; MARGIN: 0cm 0cm 0pt; FONT-FAMILY: "Times New Roman"
+}
+DIV.MsoNormal {
+	FONT-SIZE: 12pt; MARGIN: 0cm 0cm 0pt; FONT-FAMILY: "Times New Roman"
+}
+A:link {
+	COLOR: blue; TEXT-DECORATION: underline
+}
+SPAN.MsoHyperlink {
+	COLOR: blue; TEXT-DECORATION: underline
+}
+A:visited {
+	COLOR: purple; TEXT-DECORATION: underline
+}
+SPAN.MsoHyperlinkFollowed {
+	COLOR: purple; TEXT-DECORATION: underline
+}
+SPAN.E-MailFormatvorlage17 {
+	COLOR: windowtext; FONT-FAMILY: Arial; mso-style-type: personal-compose
+}
+DIV.Section1 {
+	page: Section1
+}
+</STYLE>
 <!--[if gte mso 9]><xml>
  <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
 </xml><![endif]--><!--[if gte mso 9]><xml>
  <o:shapelayout v:ext=3D"edit">
   <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
+ </o:shapelayout></xml><![endif]--></HEAD>
+<BODY lang=3DDE vLink=3Dpurple link=3Dblue bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>&nbsp;&nbsp; Can anybody give me =
+link/built in=20
+package or source code&nbsp;for implmenting CLI for embedded system on =
+linux. We=20
+have tried to implement our own CLI on linux(with&nbsp;bash shell as =
+base), but=20
+it is massive work since we need to support Tab feature, history =
+feature,help=20
+etc..</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>thanx in advance.</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>pjmaiya</FONT></DIV></BODY></HTML>
 
-<body lang=3DDE link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi everybody!<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>I got a problem. After rebooting linux system =
-on the
-target,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>the target &#8220;hangs&#8221;. How could I =
-get that
-the target makes a reset<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>to start u-boot or linux =
-again?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>Many thanks for =
-help<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>Best regards<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>Frank<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C74B7C.D5F5DF87--
+------=_NextPart_000_0118_01C74BAF.6FB102A0--
