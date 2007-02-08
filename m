@@ -1,24 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EFC32DDF18
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 09:33:40 +1100 (EST)
-Subject: Re: [linux-pm] [PATCH 02/12] powermac: support G5 CPU hotplug
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <olecom@flower.upol.cz>
+Received: from raven.upol.cz (raven.upol.cz [158.194.120.4])
+	by ozlabs.org (Postfix) with ESMTP id 0E29EDDE2E
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 23:39:00 +1100 (EST)
+Date: Thu, 8 Feb 2007 13:47:56 +0100
 To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17867.40281.175422.116673@cargo.ozlabs.ibm.com>
-References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124610.392302000@sipsolutions.net>
-	<1170940494.4385.51.camel@johannes.berg>
-	<1170941321.4385.61.camel@johannes.berg>
-	<17867.40281.175422.116673@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 09 Feb 2007 09:33:32 +1100
-Message-Id: <1170974012.2620.384.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Johannes Berg <johannes@sipsolutions.net>,
-	linux-pm@lists.osdl.org
+Subject: Re: Kbuild change breaks the ppc64 build
+Message-ID: <20070208124756.GU22699@flower.upol.cz>
+References: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
+From: Oleg Verych <olecom@flower.upol.cz>
+Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Feb 08, 2007 at 10:10:54PM +1100, Paul Mackerras wrote:
+> Commit 5de043f4bd11a9e0a3e8daec7d1905da575a76b7 breaks the build on
+> 64-bit powerpc because we no longer get the -m64 flag passed to gcc.
+> There is code in arch/powerpc/Makefile which adds (or used to add)
+> -m64 to AS, LD and CC if we are running on a 64-bit machine (which I
+> am) and have a biarch toolchain (which I do).  Without -m64, the
+> toolchain assumes 32-bit and all sorts of things break spectacularly.
+> 
+> I haven't yet tracked down exactly why this commit has this effect,
+> since I find it takes considerable time and effort to understand
+> Kbuild.
 
-> Are you sure this is necessary?  IIRC, the if (!cpu_is_offline(cpu)) a
-> little bit further down is there to cope with this exact situation.
-> And cpu hotplug already works on G4 SMP powermacs, where we can't
-> physically remove the cpu either - we just put it into sleep mode with
-> interrupts disabled, which is what we would be doing on a G5 powermac
-> also.
+As i have refactored some CC checking code in Kbuild.include, it
+turned, that some versions of `make' after calling nested functions,
+add (or leave) prefix whitespace to result, thus ifeq[0] fails:
 
-I've always had doubts about wether SLEEP with EE off was legal and
-wouldn't actually still go out of sleep when getting an interrupt... In
-that case, at least on CPUs where the DEC acts "level" triggered, we
-need to at least reset the DEC to some sane value.
+ .-*- (ppc Makefile)
+ |HAS_BIARCH      := $(call cc-option-yn, -m32)
+0|ifeq ($(HAS_BIARCH),y)
+ |AS              := $(AS) -a32
+ |LD              := $(LD) -m elf32ppc
+ |CC              := $(CC) -m32
+ |endif
 
-Ben.
+David wrote and showed a testcase.
+Adding $(strip ) wrapper helped with this, but may screw many other
+things. Maybe you will help, unless Linus will finally revert this :)
+
+____
