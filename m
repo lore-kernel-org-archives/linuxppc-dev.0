@@ -1,19 +1,32 @@
-Return-Path: <olecom@flower.upol.cz>
-Received: from raven.upol.cz (raven.upol.cz [158.194.120.4])
-	by ozlabs.org (Postfix) with ESMTP id 6837ADDE2E
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 23:40:49 +1100 (EST)
-Date: Thu, 8 Feb 2007 13:35:40 +0100
-To: David Miller <davem@davemloft.net>
-Subject: Re: Kbuild change breaks the ppc64 build
-Message-ID: <20070208123540.GT22699@flower.upol.cz>
-References: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
-	<20070208.040003.112623191.davem@davemloft.net>
+Return-Path: <Jens.Osterkamp@de.ibm.com>
+Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 31A29DDEC0
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 23:56:58 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l18CurTY303212
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 12:56:53 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
+	ESMTP id l18CurTr2080780
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 13:56:53 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l18CurTo019350
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 13:56:53 +0100
+In-Reply-To: <1170894259.2620.325.camel@localhost.localdomain>
+Subject: Re: [PATCH 0/4] spidernet: support for Celleb
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Message-ID: <OF4CD93CB2.C6D8AB5B-ONC125727C.0035FE0B-C125727C.00472022@de.ibm.com>
+From: Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
+Date: Thu, 8 Feb 2007 13:56:52 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070208.040003.112623191.davem@davemloft.net>
-From: Oleg Verych <olecom@flower.upol.cz>
-Cc: torvalds@linux-foundation.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Jeff Garzik <jgarzik@pobox.com>, jim@jklewis.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +36,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 08, 2007 at 04:00:03AM -0800, David Miller wrote:
-> From: Paul Mackerras <paulus@samba.org>
-> Date: Thu, 8 Feb 2007 22:10:54 +1100
-[]
-> Linus and Oleg tried to fix it with various subsequent changes
-> to scripts/Kbuild.include, but it's still broken.
 
-And Roland McGrath, but it turned to be very bad.
+> PHY patch is mostly Ok except I don't like that "medium" variable Jens
+> added which isn't used anywhere in sungem_phy. Jens, can you resend a
+> version without that ? If you need that variable in spidernet itself,
+> then put it there :-)
 
-Maybe you have older set of fixes. I have x86-64 and i386 built,
-though with make 3.81(debian).
+That was the idea I had first, I'll change that.
 
-But it may be ppc specific, as
+> Also, the GMII_* constants, are they standard or 54xx specific ? If the
+> later, then change the name to reflect that.
 
-        CFLAGS += $(call cc-option,-mcpu=970)
-	else
-	CFLAGS += $(call cc-option,-mcpu=power4)
+I'll check...
 
-may be turned to be options without spaces (make V=1)!
-
-> For some reason $(call ...) invocations add spaces.  I tried
-> another test case:
-> 
-> define test
->  $(shell echo -n)
-> endef
-> 
-> VAR:=$(call test)
-> 
-> all:
-> 	@echo "\'$(VAR)\'"
-> 
-> And this always prints:
-> 
-> ' TEST'
-> 
-> even with GNU Make version 3.81
-> 
-> If I put a $(strip ...) around the define, the space is
-> still there.  If I put the $(strip ...) around VAR's
-> $(call), the space goes away.
-
-____
+Jens
