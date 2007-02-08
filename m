@@ -1,21 +1,21 @@
 Return-Path: <ebony.zhu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id E8B5EDDE23
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 14:51:21 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l183pHfl014244
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Feb 2007 20:51:18 -0700 (MST)
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 3CE25DDE24
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 14:52:50 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l183qkxW025754
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Feb 2007 20:52:47 -0700 (MST)
 Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
 	[10.192.129.204])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l183pEFg017889
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Feb 2007 21:51:15 -0600 (CST)
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l183qhal018056
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Feb 2007 21:52:44 -0600 (CST)
 To: paulus@samba.org
-Subject: [patch][1/5] powerpc V2: Add the implementations to handle SPFP
+Subject: [patch][2/5] powerpc V2: Add the implementations to handle DPFP
 	instruction exceptions
 From: ebony.zhu@freescale.com
-Message-ID: <ZCH01EXM20N7UnL8g3C0000105d@zch01exm20.fsl.freescale.net>
-Date: 8 Feb 2007 11:51:13 +0800
+Message-ID: <ZCH01EXM20gVItwarf30000105e@zch01exm20.fsl.freescale.net>
+Date: 8 Feb 2007 11:52:42 +0800
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,57 +26,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add the implementations to handle SPFP instruction exceptions
+Add the implementations to handle DPFP instruction exceptions
 complying with IEEE-754.
 
 Signed-off-by:Ebony Zhu <ebony.zhu@freescale.com>
 ---
- arch/powerpc/math-emu/efsabs.c   |   16 ++++++++++++++
- arch/powerpc/math-emu/efsadd.c   |   36 ++++++++++++++++++++++++++++++
- arch/powerpc/math-emu/efscfd.c   |   37 +++++++++++++++++++++++++++++++
- arch/powerpc/math-emu/efscmpeq.c |   45 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/math-emu/efscmpgt.c |   45 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/math-emu/efscmplt.c |   45 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/math-emu/efsctsf.c  |   29 ++++++++++++++++++++++++
- arch/powerpc/math-emu/efsctsi.c  |   26 ++++++++++++++++++++++
- arch/powerpc/math-emu/efsctsiz.c |   26 ++++++++++++++++++++++
- arch/powerpc/math-emu/efsctuf.c  |   28 ++++++++++++++++++++++++
- arch/powerpc/math-emu/efsctui.c  |   26 ++++++++++++++++++++++
- arch/powerpc/math-emu/efsctuiz.c |   26 ++++++++++++++++++++++
- arch/powerpc/math-emu/efsdiv.c   |   36 ++++++++++++++++++++++++++++++
- arch/powerpc/math-emu/efsmul.c   |   38 ++++++++++++++++++++++++++++++++
- arch/powerpc/math-emu/efsnabs.c  |   16 ++++++++++++++
- arch/powerpc/math-emu/efsneg.c   |   16 ++++++++++++++
- arch/powerpc/math-emu/efssub.c   |   39 +++++++++++++++++++++++++++++++++
- 17 files changed, 530 insertions(+), 0 deletions(-)
+ arch/powerpc/math-emu/efdadd.c    |   36 ++++++++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdcfs.c    |   31 +++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdcmpeq.c  |   45 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdcmpgt.c  |   45 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdcmplt.c  |   45 +++++++++++++++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdctsf.c   |   30 +++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdctsi.c   |   27 ++++++++++++++++++++++
+ arch/powerpc/math-emu/efdctsidz.c |   29 ++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdctsiz.c  |   27 ++++++++++++++++++++++
+ arch/powerpc/math-emu/efdctuf.c   |   29 ++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdctui.c   |   27 ++++++++++++++++++++++
+ arch/powerpc/math-emu/efdctuidz.c |   28 +++++++++++++++++++++++
+ arch/powerpc/math-emu/efdctuiz.c  |   27 ++++++++++++++++++++++
+ arch/powerpc/math-emu/efddiv.c    |   36 ++++++++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdmul.c    |   39 ++++++++++++++++++++++++++++++++
+ arch/powerpc/math-emu/efdnabs.c   |   18 +++++++++++++++
+ arch/powerpc/math-emu/efdsub.c    |   39 ++++++++++++++++++++++++++++++++
+ 17 files changed, 558 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/math-emu/efsabs.c b/arch/powerpc/math-emu/efsabs.c
+diff --git a/arch/powerpc/math-emu/efdadd.c b/arch/powerpc/math-emu/efdadd.c
 new file mode 100644
-index 0000000..083cc46
+index 0000000..e7b7f77
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efsabs.c
-@@ -0,0 +1,16 @@
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <asm/uaccess.h>
-+
-+int
-+efsabs(u32 *rD, u32 *rA)
-+{
-+	rD[0] = rA[0] & 0x7fffffff;
-+
-+#ifdef DEBUG
-+	printk("%s: D %p, A %p: ", __FUNCTION__, rD, rA);
-+	printk("\n");
-+#endif
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/math-emu/efsadd.c b/arch/powerpc/math-emu/efsadd.c
-new file mode 100644
-index 0000000..a09e216
---- /dev/null
-+++ b/arch/powerpc/math-emu/efsadd.c
++++ b/arch/powerpc/math-emu/efdadd.c
 @@ -0,0 +1,36 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
@@ -84,42 +62,42 @@ index 0000000..a09e216
 +
 +#include "spe.h"
 +#include "soft-fp.h"
-+#include "single.h"
++#include "double.h"
 +
 +int
-+efsadd(void *rD, void *rA, void *rB)
++efdadd(void *rD, void *rA, void *rB)
 +{
-+	FP_DECL_S(A);
-+	FP_DECL_S(B);
-+	FP_DECL_S(R);
++	FP_DECL_D(A);
++	FP_DECL_D(B);
++	FP_DECL_D(R);
 +	int ret = 0;
 +
 +#ifdef DEBUG
 +	printk("%s: %p %p %p\n", __FUNCTION__, rD, rA, rB);
 +#endif
 +
-+	__FP_UNPACK_S(A, rA);
-+	__FP_UNPACK_S(B, rB);
++	__FP_UNPACK_D(A, rA);
++	__FP_UNPACK_D(B, rB);
 +
 +#ifdef DEBUG
-+	printk("A: %ld %lu %ld (%ld)\n", A_s, A_f, A_e, A_c);
-+	printk("B: %ld %lu %ld (%ld)\n", B_s, B_f, B_e, B_c);
++	printk("A: %ld %lu %lu %ld (%ld)\n", A_s, A_f1, A_f0, A_e, A_c);
++	printk("B: %ld %lu %lu %ld (%ld)\n", B_s, B_f1, B_f0, B_e, B_c);
 +#endif
 +
-+	FP_ADD_S(R, A, B);
++	FP_ADD_D(R, A, B);
 +
 +#ifdef DEBUG
-+	printk("D: %ld %lu %ld (%ld)\n", R_s, R_f, R_e, R_c);
++	printk("D: %ld %lu %lu %ld (%ld)\n", R_s, R_f1, R_f0, R_e, R_c);
 +#endif
 +
-+	return (ret | __FP_PACK_S(rD, R));
++	return (ret | __FP_PACK_D(rD, R));
 +}
-diff --git a/arch/powerpc/math-emu/efscfd.c b/arch/powerpc/math-emu/efscfd.c
+diff --git a/arch/powerpc/math-emu/efdcfs.c b/arch/powerpc/math-emu/efdcfs.c
 new file mode 100644
-index 0000000..f2c2920
+index 0000000..b55dbc8
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efscfd.c
-@@ -0,0 +1,37 @@
++++ b/arch/powerpc/math-emu/efdcfs.c
+@@ -0,0 +1,31 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
 +#include <asm/uaccess.h>
@@ -130,38 +108,32 @@ index 0000000..f2c2920
 +#include "single.h"
 +
 +int
-+efscfd(void *rD, u64 *rB)
++efdcfs(void *rD, u32 *rB)
 +{
-+	FP_DECL_D(B);
-+	FP_DECL_S(R);
++	FP_DECL_S(B);
++	FP_DECL_D(R);
 +	int ret;
-+	u32 tmp;
-+	tmp = rB[0] >> 32;
-+	rB[0] = rB[0] <<32 | tmp;
++	rB[0]=rB[1];
++
++	__FP_UNPACK_S(B, rB);
 +
 +#ifdef DEBUG
-+	printk("%s: S %p, ea %p\n", __FUNCTION__, rD, rB);
++	printk("B: %ld %lu %ld (%ld)\n", B_s, B_f, B_e, B_c);
 +#endif
 +
-+	__FP_UNPACK_D(B, rB);
++	FP_CONV(D, S, 2, 1, R, B);
 +
 +#ifdef DEBUG
-+	printk("B: %ld %lu %lu %ld (%ld)\n", B_s, B_f1, B_f0, B_e, B_c);
++	printk("R: %ld %lu %lu %ld (%ld)\n", R_s, R_f1, R_f0, R_e, R_c);
 +#endif
-+
-+	FP_CONV(S, D, 1, 2, R, B);
-+
-+#ifdef DEBUG
-+	printk("R: %ld %lu %ld (%ld)\n", R_s, R_f, R_e, R_c);
-+#endif
-+
-+	return (ret | __FP_PACK_S(rD, R));
++	
++	return (ret | __FP_PACK_D(rD, R));
 +}
-diff --git a/arch/powerpc/math-emu/efscmpeq.c b/arch/powerpc/math-emu/efscmpeq.c
+diff --git a/arch/powerpc/math-emu/efdcmpeq.c b/arch/powerpc/math-emu/efdcmpeq.c
 new file mode 100644
-index 0000000..8ad0d9d
+index 0000000..01c5071
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efscmpeq.c
++++ b/arch/powerpc/math-emu/efdcmpeq.c
 @@ -0,0 +1,45 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
@@ -169,13 +141,13 @@ index 0000000..8ad0d9d
 +
 +#include "spe.h"
 +#include "soft-fp.h"
-+#include "single.h"
++#include "double.h"
 +
 +int
-+efscmpeq(u32 *ccr, int crD, void *rA, void *rB)
++efdcmpeq(u32 *ccr, int crD, void *rA, void *rB)
 +{
-+	FP_DECL_S(A);
-+	FP_DECL_S(B);
++	FP_DECL_D(A);
++	FP_DECL_D(B);
 +	long cmp;
 +	int ret = 0;
 +
@@ -183,15 +155,15 @@ index 0000000..8ad0d9d
 +	printk("%s: %p (%08x) %d %p %p\n", __FUNCTION__, ccr, *ccr, crD, rA, rB);
 +#endif
 +
-+	__FP_UNPACK_S(A, rA);
-+	__FP_UNPACK_S(B, rB);
++	__FP_UNPACK_D(A, rA);
++	__FP_UNPACK_D(B, rB);
 +
 +#ifdef DEBUG
-+	printk("A: %ld %lu %ld (%ld)\n", A_s, A_f, A_e, A_c);
-+	printk("B: %ld %lu %ld (%ld)\n", B_s, B_f, B_e, B_c);
++	printk("A: %ld %lu %lu %ld (%ld)\n", A_s, A_f1, A_f0, A_e, A_c);
++	printk("B: %ld %lu %lu %ld (%ld)\n", B_s, B_f1, B_f0, B_e, B_c);
 +#endif
 +
-+	FP_CMP_S(cmp, A, B, 2);
++	FP_CMP_D(cmp, A, B, 2);
 +	
 +	if (cmp == 0) {
 +		cmp = 0x4;
@@ -208,11 +180,11 @@ index 0000000..8ad0d9d
 +
 +	return ret;
 +}
-diff --git a/arch/powerpc/math-emu/efscmpgt.c b/arch/powerpc/math-emu/efscmpgt.c
+diff --git a/arch/powerpc/math-emu/efdcmpgt.c b/arch/powerpc/math-emu/efdcmpgt.c
 new file mode 100644
-index 0000000..95a16f5
+index 0000000..44da1c5
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efscmpgt.c
++++ b/arch/powerpc/math-emu/efdcmpgt.c
 @@ -0,0 +1,45 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
@@ -220,13 +192,13 @@ index 0000000..95a16f5
 +
 +#include "spe.h"
 +#include "soft-fp.h"
-+#include "single.h"
++#include "double.h"
 +
 +int
-+efscmpgt(u32 *ccr, int crD, void *rA, void *rB)
++efdcmpgt(u32 *ccr, int crD, void *rA, void *rB)
 +{
-+	FP_DECL_S(A);
-+	FP_DECL_S(B);
++	FP_DECL_D(A);
++	FP_DECL_D(B);
 +	long cmp;
 +	int ret = 0;
 +
@@ -234,15 +206,15 @@ index 0000000..95a16f5
 +	printk("%s: %p (%08x) %d %p %p\n", __FUNCTION__, ccr, *ccr, crD, rA, rB);
 +#endif
 +
-+	__FP_UNPACK_S(A, rA);
-+	__FP_UNPACK_S(B, rB);
++	__FP_UNPACK_D(A, rA);
++	__FP_UNPACK_D(B, rB);
 +
 +#ifdef DEBUG
-+	printk("A: %ld %lu %ld (%ld)\n", A_s, A_f, A_e, A_c);
-+	printk("B: %ld %lu %ld (%ld)\n", B_s, B_f, B_e, B_c);
++	printk("A: %ld %lu %lu %ld (%ld)\n", A_s, A_f1, A_f0, A_e, A_c);
++	printk("B: %ld %lu %lu %ld (%ld)\n", B_s, B_f1, B_f0, B_e, B_c);
 +#endif
 +
-+	FP_CMP_S(cmp, A, B, 2);
++	FP_CMP_D(cmp, A, B, 2);
 +	
 +	if (cmp == 1) {
 +		cmp = 0x4;
@@ -259,11 +231,11 @@ index 0000000..95a16f5
 +
 +	return ret;
 +}
-diff --git a/arch/powerpc/math-emu/efscmplt.c b/arch/powerpc/math-emu/efscmplt.c
+diff --git a/arch/powerpc/math-emu/efdcmplt.c b/arch/powerpc/math-emu/efdcmplt.c
 new file mode 100644
-index 0000000..dd1154a
+index 0000000..30cea42
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efscmplt.c
++++ b/arch/powerpc/math-emu/efdcmplt.c
 @@ -0,0 +1,45 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
@@ -271,13 +243,13 @@ index 0000000..dd1154a
 +
 +#include "spe.h"
 +#include "soft-fp.h"
-+#include "single.h"
++#include "double.h"
 +
 +int
-+efscmplt(u32 *ccr, int crD, void *rA, void *rB)
++efdcmplt(u32 *ccr, int crD, void *rA, void *rB)
 +{
-+	FP_DECL_S(A);
-+	FP_DECL_S(B);
++	FP_DECL_D(A);
++	FP_DECL_D(B);
 +	long cmp;
 +	int ret = 0;
 +
@@ -285,15 +257,15 @@ index 0000000..dd1154a
 +	printk("%s: %p (%08x) %d %p %p\n", __FUNCTION__, ccr, *ccr, crD, rA, rB);
 +#endif
 +
-+	__FP_UNPACK_S(A, rA);
-+	__FP_UNPACK_S(B, rB);
++	__FP_UNPACK_D(A, rA);
++	__FP_UNPACK_D(B, rB);
 +
 +#ifdef DEBUG
-+	printk("A: %ld %lu %ld (%ld)\n", A_s, A_f, A_e, A_c);
-+	printk("B: %ld %lu %ld (%ld)\n", B_s, B_f, B_e, B_c);
++	printk("A: %ld %lu %lu %ld (%ld)\n", A_s, A_f1, A_f0, A_e, A_c);
++	printk("B: %ld %lu %lu %ld (%ld)\n", B_s, B_f1, B_f0, B_e, B_c);
 +#endif
 +
-+	FP_CMP_S(cmp, A, B, 2);
++	FP_CMP_D(cmp, A, B, 2);
 +	
 +	if (cmp == -1) {
 +		cmp = 0x4;
@@ -310,11 +282,148 @@ index 0000000..dd1154a
 +
 +	return ret;
 +}
-diff --git a/arch/powerpc/math-emu/efsctsf.c b/arch/powerpc/math-emu/efsctsf.c
+diff --git a/arch/powerpc/math-emu/efdctsf.c b/arch/powerpc/math-emu/efdctsf.c
 new file mode 100644
-index 0000000..dcbd7ab
+index 0000000..317c894
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efsctsf.c
++++ b/arch/powerpc/math-emu/efdctsf.c
+@@ -0,0 +1,30 @@
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <asm/uaccess.h>
++
++#include "spe.h"
++#include "soft-fp.h"
++#include "single.h"
++#include "double.h"
++
++int
++efdctsf(u32 *rD, u32 *rB)
++{
++	if (!((rB[0] >> 20) == 0x7ff && ((rB[0] & 0xfffff) > 0 || (rB[1] > 0)))) {/* Not an NaN */
++		if (((rB[0] >> 20) & 0x7ff) == 0 ) { /* rB is Denorm */
++			rD[1] = 0x0;
++		} else if ((rB[0] >> 31) == 0) { /* rB is positive normal */
++			rD[1] = 0x7fffffff;
++		} else { /* rB is negative normal */
++			rD[1] = 0x80000000;
++		}
++	} else { /* rB is NaN */
++		rD[1] = 0x0;	
++	}
++#ifdef DEBUG
++	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
++	printk("\n");
++#endif
++
++	return 0;
++}
+diff --git a/arch/powerpc/math-emu/efdctsi.c b/arch/powerpc/math-emu/efdctsi.c
+new file mode 100644
+index 0000000..eaa7bf5
+--- /dev/null
++++ b/arch/powerpc/math-emu/efdctsi.c
+@@ -0,0 +1,27 @@
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <asm/uaccess.h>
++
++#include "spe.h"
++#include "soft-fp.h"
++#include "double.h"
++
++int
++efdctsi(u32 *rD, void *rB)
++{
++	FP_DECL_D(B);
++	unsigned int r;
++
++	__FP_UNPACK_D(B, rB);
++	_FP_ROUND(2, B);
++	FP_TO_INT_D(r, B, 32, 1);
++	rD[1] = r;
++
++#ifdef DEBUG
++	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
++	dump_double(rD);
++	printk("\n");
++#endif
++
++	return 0;
++}
+diff --git a/arch/powerpc/math-emu/efdctsidz.c b/arch/powerpc/math-emu/efdctsidz.c
+new file mode 100644
+index 0000000..4166c86
+--- /dev/null
++++ b/arch/powerpc/math-emu/efdctsidz.c
+@@ -0,0 +1,29 @@
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <asm/uaccess.h>
++
++#include "spe.h"
++#include "soft-fp.h"
++#include "double.h"
++
++int
++efdctsidz(u32 *rD, void *rB)
++{
++	FP_DECL_D(B);
++	u32 spefscr;
++	u64 r;
++
++	__FP_UNPACK_D(B, rB);
++	_FP_ROUND_ZERO(2, B);
++	FP_TO_INT_D(r, B, 64, 1);
++	rD[1] = r;
++	rD[0] = r >> 32;
++
++#ifdef DEBUG
++	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
++	dump_double(rD);
++	printk("\n");
++#endif
++
++	return 0;
++}
+diff --git a/arch/powerpc/math-emu/efdctsiz.c b/arch/powerpc/math-emu/efdctsiz.c
+new file mode 100644
+index 0000000..9bf5d44
+--- /dev/null
++++ b/arch/powerpc/math-emu/efdctsiz.c
+@@ -0,0 +1,27 @@
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <asm/uaccess.h>
++
++#include "spe.h"
++#include "soft-fp.h"
++#include "double.h"
++
++int
++efdctsiz(u32 *rD, void *rB)
++{
++	FP_DECL_D(B);
++	unsigned int r;
++
++	__FP_UNPACK_D(B, rB);
++	_FP_ROUND_ZERO(2, B);
++	FP_TO_INT_D(r, B, 32, 1);
++	rD[1] = r;
++
++#ifdef DEBUG
++	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
++	dump_double(rD);
++	printk("\n");
++#endif
++
++	return 0;
++}
+diff --git a/arch/powerpc/math-emu/efdctuf.c b/arch/powerpc/math-emu/efdctuf.c
+new file mode 100644
+index 0000000..8e54e92
+--- /dev/null
++++ b/arch/powerpc/math-emu/efdctuf.c
 @@ -0,0 +1,29 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
@@ -323,20 +432,20 @@ index 0000000..dcbd7ab
 +#include "spe.h"
 +#include "soft-fp.h"
 +#include "single.h"
++#include "double.h"
 +
 +int
-+efsctsf(u32 *rD, u32 *rB)
++efdctuf(u32 *rD, u32 *rB)
 +{
-+	if (!((rB[0] >> 23) == 0xff && ((rB[0] & 0x7fffff) > 0))) {/* Not an NaN */
-+		if (((rB[0] >> 23) & 0xff) == 0 ) { /* rB is Denorm */
-+			rD[0] = 0x0;
-+		} else if ((rB[0] >> 31) == 0) { /* rB is positive normal */
-+			rD[0] = 0x7fffffff;
-+		} else { /* rB is negative normal */
-+			rD[0] = 0x80000000;
++	if (!((rB[0] >> 20) == 0x7ff && ((rB[0] & 0xfffff) > 0 || (rB[1] > 0))) /* Not an NaN */
++	    && (rB[0] >> 31) == 0) { /* rB is positive */
++		if (((rB[0] >> 20) & 0x7ff) == 0 ) { /* rB is Denorm */
++			rD[1] = 0x0;
++		} else { /* rB is normal */
++			rD[1] = 0xffffffff;
 +		}
-+	} else { /* rB is NaN */
-+		rD[0] = 0x0;
++	} else { /* rB < 0 or rB is NaN */
++		rD[1] = 0x0;	
 +	}
 +#ifdef DEBUG
 +	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
@@ -345,75 +454,44 @@ index 0000000..dcbd7ab
 +
 +	return 0;
 +}
-diff --git a/arch/powerpc/math-emu/efsctsi.c b/arch/powerpc/math-emu/efsctsi.c
+diff --git a/arch/powerpc/math-emu/efdctui.c b/arch/powerpc/math-emu/efdctui.c
 new file mode 100644
-index 0000000..aa73b95
+index 0000000..8779a2c
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efsctsi.c
-@@ -0,0 +1,26 @@
++++ b/arch/powerpc/math-emu/efdctui.c
+@@ -0,0 +1,27 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
 +#include <asm/uaccess.h>
 +
 +#include "spe.h"
 +#include "soft-fp.h"
-+#include "single.h"
++#include "double.h"
 +
 +int
-+efsctsi(u32 *rD, void *rB)
++efdctui(u32 *rD, void *rB)
 +{
-+	FP_DECL_S(B);
++	FP_DECL_D(B);
 +	unsigned int r;
 +
-+	__FP_UNPACK_S(B, rB);
-+	_FP_ROUND(1, B);
-+	FP_TO_INT_S(r, B, 32, 1);
-+	rD[0] = r;
++	__FP_UNPACK_D(B, rB);
++	_FP_ROUND(2, B);
++	FP_TO_INT_D(r, B, 32, 0);
++	rD[1] = r;
 +
 +#ifdef DEBUG
 +	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
++	dump_double(rD);
 +	printk("\n");
 +#endif
 +
 +	return 0;
 +}
-diff --git a/arch/powerpc/math-emu/efsctsiz.c b/arch/powerpc/math-emu/efsctsiz.c
+diff --git a/arch/powerpc/math-emu/efdctuidz.c b/arch/powerpc/math-emu/efdctuidz.c
 new file mode 100644
-index 0000000..a849bb4
+index 0000000..7f3d4f9
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efsctsiz.c
-@@ -0,0 +1,26 @@
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <asm/uaccess.h>
-+
-+#include "spe.h"
-+#include "soft-fp.h"
-+#include "single.h"
-+
-+int
-+efsctsiz(u32 *rD, void *rB)
-+{
-+	FP_DECL_S(B);
-+	unsigned int r;
-+
-+	__FP_UNPACK_S(B, rB);
-+	_FP_ROUND_ZERO(1, B);
-+	FP_TO_INT_S(r, B, 32, 1);
-+	rD[0] = r;
-+
-+#ifdef DEBUG
-+	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
-+	printk("\n");
-+#endif
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/math-emu/efsctuf.c b/arch/powerpc/math-emu/efsctuf.c
-new file mode 100644
-index 0000000..e1bab26
---- /dev/null
-+++ b/arch/powerpc/math-emu/efsctuf.c
++++ b/arch/powerpc/math-emu/efdctuidz.c
 @@ -0,0 +1,28 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
@@ -421,97 +499,66 @@ index 0000000..e1bab26
 +
 +#include "spe.h"
 +#include "soft-fp.h"
-+#include "single.h"
++#include "double.h"
 +
 +int
-+efsctuf(u32 *rD, u32 *rB)
++efdctuidz(u32 *rD, void *rB)
 +{
-+        if (!((rB[0] >> 23) == 0xff && ((rB[0] & 0x7fffff) > 0 )) /* Not an NaN */
-+	    && (rB[0] >> 31) == 0) { /* rB is positive */
-+		if (((rB[0] >> 23) & 0xff) == 0 ) { /* rB is Denorm */
-+			rD[0] = 0x0;
-+		} else { /* rB is normal */
-+			rD[0] = 0xffffffff;
-+		}
-+        } else { /* rB < 0 or rB is NaN */
-+		rD[0] = 0x0;
-+	}
++	FP_DECL_D(B);
++	u64 r;
++
++	__FP_UNPACK_D(B, rB);
++	_FP_ROUND_ZERO(2, B);
++	FP_TO_INT_D(r, B, 64, 0);
++	rD[1] = r;
++	rD[0] = r >> 32;
++
 +#ifdef DEBUG
 +	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
++	dump_double(rD);
 +	printk("\n");
 +#endif
 +
 +	return 0;
 +}
-diff --git a/arch/powerpc/math-emu/efsctui.c b/arch/powerpc/math-emu/efsctui.c
+diff --git a/arch/powerpc/math-emu/efdctuiz.c b/arch/powerpc/math-emu/efdctuiz.c
 new file mode 100644
-index 0000000..b45e4a9
+index 0000000..795dff0
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efsctui.c
-@@ -0,0 +1,26 @@
++++ b/arch/powerpc/math-emu/efdctuiz.c
+@@ -0,0 +1,27 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
 +#include <asm/uaccess.h>
 +
 +#include "spe.h"
 +#include "soft-fp.h"
-+#include "single.h"
++#include "double.h"
 +
 +int
-+efsctui(u32 *rD, void *rB)
++efdctuiz(u32 *rD, void *rB)
 +{
-+	FP_DECL_S(B);
++	FP_DECL_D(B);
 +	unsigned int r;
 +
-+	__FP_UNPACK_S(B, rB);
-+	_FP_ROUND(1, B);
-+	FP_TO_INT_S(r, B, 32, 0);
-+	rD[0] = r;
++	__FP_UNPACK_D(B, rB);
++	_FP_ROUND_ZERO(2, B);
++	FP_TO_INT_D(r, B, 32, 0);
++	rD[1] = r;
 +
 +#ifdef DEBUG
 +	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
++	dump_double(rD);
 +	printk("\n");
 +#endif
 +
 +	return 0;
 +}
-diff --git a/arch/powerpc/math-emu/efsctuiz.c b/arch/powerpc/math-emu/efsctuiz.c
+diff --git a/arch/powerpc/math-emu/efddiv.c b/arch/powerpc/math-emu/efddiv.c
 new file mode 100644
-index 0000000..1df9c2d
+index 0000000..3d92167
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efsctuiz.c
-@@ -0,0 +1,26 @@
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <asm/uaccess.h>
-+
-+#include "spe.h"
-+#include "soft-fp.h"
-+#include "single.h"
-+
-+int
-+efsctuiz(u32 *rD, void *rB)
-+{
-+	FP_DECL_S(B);
-+	unsigned int r;
-+
-+	__FP_UNPACK_S(B, rB);
-+	_FP_ROUND_ZERO(1, B);
-+	FP_TO_INT_S(r, B, 32, 0);
-+	rD[0] = r;
-+
-+#ifdef DEBUG
-+	printk("%s: D %p, B %p: ", __FUNCTION__, rD, rB);
-+	printk("\n");
-+#endif
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/math-emu/efsdiv.c b/arch/powerpc/math-emu/efsdiv.c
-new file mode 100644
-index 0000000..3d21522
---- /dev/null
-+++ b/arch/powerpc/math-emu/efsdiv.c
++++ b/arch/powerpc/math-emu/efddiv.c
 @@ -0,0 +1,36 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
@@ -519,129 +566,41 @@ index 0000000..3d21522
 +
 +#include "spe.h"
 +#include "soft-fp.h"
-+#include "single.h"
++#include "double.h"
 +
 +int
-+efsdiv(void *rD, void *rA, void *rB)
++efddiv(void *rD, void *rA, void *rB)
 +{
-+	FP_DECL_S(A);
-+	FP_DECL_S(B);
-+	FP_DECL_S(R);
++	FP_DECL_D(A);
++	FP_DECL_D(B);
++	FP_DECL_D(R);
 +	int ret = 0;
 +
 +#ifdef DEBUG
 +	printk("%s: %p %p %p\n", __FUNCTION__, rD, rA, rB);
 +#endif
 +
-+	__FP_UNPACK_S(A, rA);
-+	__FP_UNPACK_S(B, rB);
++	__FP_UNPACK_D(A, rA);
++	__FP_UNPACK_D(B, rB);
 +
 +#ifdef DEBUG
-+	printk("A: %ld %lu %ld (%ld)\n", A_s, A_f, A_e, A_c);
-+	printk("B: %ld %lu %ld (%ld)\n", B_s, B_f, B_e, B_c);
++	printk("A: %ld %lu %lu %ld (%ld)\n", A_s, A_f1, A_f0, A_e, A_c);
++	printk("B: %ld %lu %lu %ld (%ld)\n", B_s, B_f1, B_f0, B_e, B_c);
 +#endif
 +
-+	FP_DIV_S(R, A, B);
++	FP_DIV_D(R, A, B);
 +
 +#ifdef DEBUG
-+	printk("D: %ld %lu %ld (%ld)\n", R_s, R_f, R_e, R_c);
++	printk("D: %ld %lu %lu %ld (%ld)\n", R_s, R_f1, R_f0, R_e, R_c);
 +#endif
 +
-+	return (ret | __FP_PACK_S(rD, R));
++	return (ret | __FP_PACK_D(rD, R));
 +}
-diff --git a/arch/powerpc/math-emu/efsmul.c b/arch/powerpc/math-emu/efsmul.c
+diff --git a/arch/powerpc/math-emu/efdmul.c b/arch/powerpc/math-emu/efdmul.c
 new file mode 100644
-index 0000000..9101399
+index 0000000..2813587
 --- /dev/null
-+++ b/arch/powerpc/math-emu/efsmul.c
-@@ -0,0 +1,38 @@
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <asm/uaccess.h>
-+
-+#include "spe.h"
-+#include "soft-fp.h"
-+#include "single.h"
-+int
-+efsmul(void *rD, void *rA, void *rB)
-+{
-+	FP_DECL_S(A);
-+	FP_DECL_S(B);
-+	FP_DECL_S(R);
-+	int ret = 0;
-+#ifdef DEBUG
-+	printk("%s: %p %p %p\n", __FUNCTION__, rD, rA, rB);
-+#endif
-+
-+	__FP_UNPACK_S(A, rA);
-+	__FP_UNPACK_S(B, rB);
-+
-+#ifdef DEBUG
-+        printk("A: %ld %lu %ld (%ld) [%08lx %lx]\n",
-+               A_s, A_f, A_e, A_c, A_f, A_e + 127);
-+        printk("B: %ld %lu %ld (%ld) [%08lx %lx]\n",
-+               B_s, B_f, B_e, B_c, B_f, B_e + 127);
-+#endif
-+	
-+	FP_MUL_S(R, A, B);
-+
-+#ifdef DEBUG
-+	printk("D: %ld %lu %ld (%ld) [%08lx %lx]\n",
-+	       R_s, R_f, R_e, R_c, R_f, R_e + 127);
-+#endif
-+
-+	return (ret | __FP_PACK_S(rD, R));
-+}
-+
-diff --git a/arch/powerpc/math-emu/efsnabs.c b/arch/powerpc/math-emu/efsnabs.c
-new file mode 100644
-index 0000000..6db3d86
---- /dev/null
-+++ b/arch/powerpc/math-emu/efsnabs.c
-@@ -0,0 +1,16 @@
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <asm/uaccess.h>
-+
-+int
-+efsnabs(u32 *rD, u32 *rA)
-+{
-+	rD[0] = rA[0] | 0x80000000;
-+
-+#ifdef DEBUG
-+	printk("%s: D %p, A %p: ", __FUNCTION__, rD, rA);
-+	printk("\n");
-+#endif
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/math-emu/efsneg.c b/arch/powerpc/math-emu/efsneg.c
-new file mode 100644
-index 0000000..f4abc86
---- /dev/null
-+++ b/arch/powerpc/math-emu/efsneg.c
-@@ -0,0 +1,16 @@
-+#include <linux/types.h>
-+#include <linux/errno.h>
-+#include <asm/uaccess.h>
-+
-+int
-+efsneg(u32 *rD, u32 *rA)
-+{
-+	rD[0] = rA[0] ^ 0x80000000;
-+
-+#ifdef DEBUG
-+	printk("%s: D %p, A %p: ", __FUNCTION__, rD, rA);
-+	printk("\n");
-+#endif
-+
-+	return 0;
-+}
-diff --git a/arch/powerpc/math-emu/efssub.c b/arch/powerpc/math-emu/efssub.c
-new file mode 100644
-index 0000000..55bec0a
---- /dev/null
-+++ b/arch/powerpc/math-emu/efssub.c
++++ b/arch/powerpc/math-emu/efdmul.c
 @@ -0,0 +1,39 @@
 +#include <linux/types.h>
 +#include <linux/errno.h>
@@ -649,38 +608,107 @@ index 0000000..55bec0a
 +
 +#include "spe.h"
 +#include "soft-fp.h"
-+#include "single.h"
++#include "double.h"
 +
 +int
-+efssub(void *rD, void *rA, void *rB)
++efdmul(void *rD, void *rA, void *rB)
 +{
-+	FP_DECL_S(A);
-+	FP_DECL_S(B);
-+	FP_DECL_S(R);
++	FP_DECL_D(A);
++	FP_DECL_D(B);
++	FP_DECL_D(R);
 +	int ret = 0;
 +
 +#ifdef DEBUG
 +	printk("%s: %p %p %p\n", __FUNCTION__, rD, rA, rB);
 +#endif
 +
-+	__FP_UNPACK_S(A, rA);
-+	__FP_UNPACK_S(B, rB);
++	__FP_UNPACK_D(A, rA);
++	__FP_UNPACK_D(B, rB);
 +
 +#ifdef DEBUG
-+	printk("A: %ld %lu %ld (%ld)\n", A_s, A_f, A_e, A_c);
-+	printk("B: %ld %lu %ld (%ld)\n", B_s, B_f, B_e, B_c);
++	printk("A: %ld %lu %lu %ld (%ld) [%08lx.%08lx %lx]\n",
++	       A_s, A_f1, A_f0, A_e, A_c, A_f1, A_f0, A_e + 1023);
++	printk("B: %ld %lu %lu %ld (%ld) [%08lx.%08lx %lx]\n",
++	       B_s, B_f1, B_f0, B_e, B_c, B_f1, B_f0, B_e + 1023);
++#endif
++
++	FP_MUL_D(R, A, B);
++
++#ifdef DEBUG
++	printk("D: %ld %lu %lu %ld (%ld) [%08lx.%08lx %lx]\n",
++	       R_s, R_f1, R_f0, R_e, R_c, R_f1, R_f0, R_e + 1023);
++#endif
++
++	return (ret | __FP_PACK_D(rD, R));
++}
+diff --git a/arch/powerpc/math-emu/efdnabs.c b/arch/powerpc/math-emu/efdnabs.c
+new file mode 100644
+index 0000000..d0cdc55
+--- /dev/null
++++ b/arch/powerpc/math-emu/efdnabs.c
+@@ -0,0 +1,18 @@
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <asm/uaccess.h>
++
++int
++efdnabs(u32 *rD, u32 *rA)
++{
++	rD[0] = rA[0] | 0x80000000;
++	rD[1] = rA[1];
++
++#ifdef DEBUG
++	printk("%s: D %p, A %p: ", __FUNCTION__, rD, rA);
++	dump_double(rD);
++	printk("\n");
++#endif
++
++	return 0;
++}
+diff --git a/arch/powerpc/math-emu/efdsub.c b/arch/powerpc/math-emu/efdsub.c
+new file mode 100644
+index 0000000..72f6e45
+--- /dev/null
++++ b/arch/powerpc/math-emu/efdsub.c
+@@ -0,0 +1,39 @@
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <asm/uaccess.h>
++
++#include "spe.h"
++#include "soft-fp.h"
++#include "double.h"
++
++int
++efdsub(void *rD, void *rA, void *rB)
++{
++	FP_DECL_D(A);
++	FP_DECL_D(B);
++	FP_DECL_D(R);
++	int ret = 0;
++
++#ifdef DEBUG
++	printk("%s: %p %p %p\n", __FUNCTION__, rD, rA, rB);
++#endif
++
++	__FP_UNPACK_D(A, rA);
++	__FP_UNPACK_D(B, rB);
++
++#ifdef DEBUG
++	printk("A: %ld %lu %lu %ld (%ld)\n", A_s, A_f1, A_f0, A_e, A_c);
++	printk("B: %ld %lu %lu %ld (%ld)\n", B_s, B_f1, B_f0, B_e, B_c);
 +#endif
 +
 +	if (B_c != FP_CLS_NAN)
 +		B_s ^= 1;
 +
-+	FP_ADD_S(R, A, B);
++	FP_ADD_D(R, A, B);
 +
 +#ifdef DEBUG
-+	printk("D: %ld %lu %ld (%ld)\n", R_s, R_f, R_e, R_c);
++	printk("D: %ld %lu %lu %ld (%ld)\n", R_s, R_f1, R_f0, R_e, R_c);
 +#endif
 +
-+	return (ret | __FP_PACK_S(rD, R));
++	return (ret | __FP_PACK_D(rD, R));
 +}
 -- 
 1.4.0
