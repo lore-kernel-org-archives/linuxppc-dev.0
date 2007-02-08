@@ -1,18 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 2F930DDE02
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 17:51:56 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Celleb: improve htab lock
-Date: Thu, 8 Feb 2007 07:51:44 +0100
-References: <200702080618.l186InGM014774@toshiba.co.jp>
-In-Reply-To: <200702080618.l186InGM014774@toshiba.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702080751.45278.arnd@arndb.de>
-Cc: paulus@samba.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8E1CDDDE2E
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 17:54:21 +1100 (EST)
+In-Reply-To: <989B956029373F45A0B8AF02970818900D4401@zch01exm26.fsl.freescale.net>
+References: <989B956029373F45A0B8AF02970818900D4401@zch01exm26.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <17A046C6-5FD3-46D5-AB96-EAEDF22FA829@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
+	generic iopa
+Date: Thu, 8 Feb 2007 00:53:23 -0600
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Cc: netdev@vger.kernel.org, Tabi Timur-B04825 <timur@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +26,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-T24gVGh1cnNkYXkgMDggRmVicnVhcnkgMjAwNyAwNzoxOCwgSXNoaXpha2kgS291IHdyb3RlOgo+
-IHMpOwo+ICugoKCgoKCgbG9jYWxfaXJxX3NhdmUoZmxhZ3MpOwo+ICugoKCgoKCgc3Bpbl9sb2Nr
-KCZiZWF0X2h0YWJfbG9jayk7Cj4goKCgoKCgoKBkdW1teTEgPSBiZWF0X2xwYXJfaHB0ZV9nZXR3
-b3JkMChzbG90KTsKPiCgCj4goKCgoKCgoKBpZiAoKGR1bW15MSAmIH4weDdGVUwpICE9ICh3YW50
-X3YgJiB+MHg3RlVMKSkgewo+IKCgoKCgoKCgoKCgoKCgoKBEQkdfTE9XKCJub3QgZm91bmQgIVxu
-Iik7Cj4gLaCgoKCgoKCgoKCgoKCgoHNwaW5fdW5sb2NrX2lycXJlc3RvcmUoJmJlYXRfaHRhYl9s
-b2NrLCBmbGFncyk7Cj4gK6CgoKCgoKCgoKCgoKCgoHNwaW5fdW5sb2NrKCZiZWF0X2h0YWJfbG9j
-ayk7Cj4gK6CgoKCgoKCgoKCgoKCgoGxvY2FsX2lycV9yZXN0b3JlKGZsYWdzKTsKPiCgoKCgoKCg
-oKCgoKCgoKCgcmV0dXJuOwo+IKCgoKCgoKCgfQo+IKAKPiCgoKCgoKCgoGxwYXJfcmMgPSBiZWF0
-X3dyaXRlX2h0YWJfZW50cnkoMCwgc2xvdCwgMCwgMCwgSFBURV9WX1ZBTElELCAwLAo+IKCgoKCg
-oKCgoKCgoKCgoKAmZHVtbXkxLCAmZHVtbXkyKTsKPiAtoKCgoKCgoHNwaW5fdW5sb2NrX2lycXJl
-c3RvcmUoJmJlYXRfaHRhYl9sb2NrLCBmbGFncyk7Cj4gK6CgoKCgoKBzcGluX3VubG9jaygmYmVh
-dF9odGFiX2xvY2spOwo+ICugoKCgoKCgbG9jYWxfaXJxX3Jlc3RvcmUoZmxhZ3MpOwoKVGhlIGZ1
-bmN0aW9uIG5vcm1hbGx5IHVzZWQgaGVyZSB3b3VsZCBiZSBzcGluX2xvY2tfaXJxKCkvc3Bpbl91
-bmxvY2tfaXJxKCksCndoaWNoIGRvZXMgc3Bpbl97LHVufWxvY2sgYWxvbmcgd2l0aCBsb2NhbF9p
-cnFfe3NhdmUscmVzdG9yZX0uCgoJQXJuZCA8PjwK
+
+On Feb 8, 2007, at 12:48 AM, Li Yang-r58472 wrote:
+
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Thursday, February 08, 2007 1:58 PM
+>> To: Li Yang-r58472
+>> Cc: Tabi Timur-B04825; netdev@vger.kernel.org; linuxppc- 
+>> dev@ozlabs.org
+>> Subject: Re: [PATCH 1/4] ucc_geth: Change private  
+>> immrbar_virt_to_phys
+> to generic
+>> iopa
+>>
+>>
+>> On Feb 7, 2007, at 11:52 PM, Li Yang-r58472 wrote:
+>>
+>>>> -----Original Message-----
+>>>> From: Timur Tabi [mailto:timur@freescale.com]
+>>>> Sent: Thursday, February 08, 2007 1:03 AM
+>>>> To: Kumar Gala
+>>>> Cc: Li Yang-r58472; netdev@vger.kernel.org; linuxppc-dev@ozlabs.org
+>>>> Subject: Re: [PATCH 1/4] ucc_geth: Change private
+>>>> immrbar_virt_to_phys
+>>> to generic
+>>>> iopa
+>>>>
+>>>> Kumar Gala wrote:
+>>>>
+>>>>> If its been mapped with ioremap() you know the physical address
+>>> already
+>>>>> so why do you need iopa().
+>>>>
+>>>> That's what the original function immrbar_virt_to_phys() does.
+> We're
+>>> trying to
+>>>> get rid of it, because we thought is redundant with iopa().
+>>>>
+>>>> static inline unsigned long immrbar_virt_to_phys(volatile void *
+>>> address)
+>>>> {
+>>>> 	if ( ((u32)address >= (u32)qe_immr) &&
+>>>> 			((u32)address < ((u32)qe_immr + QE_IMMAP_SIZE))
+>>> )
+>>>> 		return (unsigned long)(address - (u32)qe_immr +
+>>>> 				(u32)get_qe_base());
+>>>> 	return (unsigned long)virt_to_phys(address);
+>>>> }
+>>>>
+>>>> get_qe_base() does a search of the OF tree the first time it's
+>>>> called.
+>>>>
+>>>> Here's the code that calls immrbar_virt_to_phys():
+>>>>
+>>>> 	out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].bd_ring_base,
+>>>> 		 (u32) immrbar_virt_to_phys(ugeth->
+>>>> 					    p_tx_bd_ring[i]));
+>>>>
+>>>>
+>>>> Would it be better to replace this code with something like this:
+>>>>
+>>>> out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].bd_ring_base,
+>>>> 	get_qe_base() + ((void *) ugeth->p_tx_bd_ring[i] - (void *)
+>>> qe_immr));
+>>>
+>>> No, we don't know if the BD ring is in MURAM or main memory as it is
+>>> configurable.  iopa() is best choice to handle both case, IMHO.
+>>
+>> Does MURAM behave differently than normal memory?
+>
+> MURAM is a mmio region so it don't share the characteristic of main
+> memory that phy_addr = virt_addr - PAGE_OFFSET.  While they can  
+> both be
+> mapped through page table using iopa().
+
+Right, so when do you know if you'll be using MURAM or normal  
+memory?  Why not just keep around a token that is the physical  
+address at the point you make the decision of MURAM vs normal memory.
+
+- k
