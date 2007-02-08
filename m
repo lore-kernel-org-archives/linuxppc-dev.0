@@ -3,22 +3,16 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C11A4DDEBC
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 08:48:35 +1100 (EST)
-In-Reply-To: <Pine.LNX.4.60.0612120039470.4039@poirot.grange>
-References: <Pine.LNX.4.60.0612012241430.13326@poirot.grange>
-	<200612021156.37067.arnd@arndb.de>
-	<1165058392.22108.34.camel@localhost.localdomain>
-	<Pine.LNX.4.60.0612120039470.4039@poirot.grange>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <222713BC-A66F-460E-ABAD-DFE967EB259F@kernel.crashing.org>
+	by ozlabs.org (Postfix) with ESMTP id 53882DDE49
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 08:53:30 +1100 (EST)
+Date: Thu, 8 Feb 2007 15:50:52 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] linkstation / kurobox support
-Date: Thu, 8 Feb 2007 15:47:28 -0600
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>,
-	linuxppc-dev@ozlabs.org
+To: Paul Mackerras <paulus@samba.org>
+Message-ID: <Pine.LNX.4.64.0702081546520.30378@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: Guennadi Liakhovetski <g.liakhovetski@gmx.de>, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,52 +22,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Please pull from 'for_paulus' branch of
+master.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
 
-On Jan 28, 2007, at 4:31 PM, Guennadi Liakhovetski wrote:
+to receive the following updates:
 
-> On Sat, 2 Dec 2006, Benjamin Herrenschmidt wrote:
->
->> On Sat, 2006-12-02 at 11:56 +0100, Arnd Bergmann wrote:
->>
->>>> +#ifdef CONFIG_BLK_DEV_INITRD
->>>> +       if (initrd_start)
->>>> +               ROOT_DEV = Root_RAM0;
->>>> +       else
->>>> +#endif
->>>> +#ifdef CONFIG_ROOT_NFS
->>>> +               ROOT_DEV = Root_NFS;
->>>> +#else
->>>> +               ROOT_DEV = Root_HDA1;
->>>> +#endif
->>>> +
->>>
->>> This looks wrong. Didn't the same code come up recently in a  
->>> review for
->>> another platform? What was the conclusion?
->>
->> It's a copy paste that we inhertit from the big bang...  Should  
->> probably
->> go...
->
-> ...and there it goes. Re-diffed against 2.6.20-rc6. For inclusion in
-> 2.6.21.
->
-> Thanks
-> Guennadi
-> ---
-> Guennadi Liakhovetski
->
-> Linkstation systems capable of running mainline kernels use u-boot  
-> as a
-> bootloader, so, specifying a suitable kernel command is not a problem.
-> Don't guess. Also extend linkstation_defconfig to support the  
-> linkstation HS
-> model with a IT8212 IDE controller and kuroboxHD/HD-HLAN linkstation
-> models with a tulip ethernet chip. The latter also require a slightly
-> different .dts file, which is also included with this patch.
->
-> Signed-off-by: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+  Documentation/powerpc/booting-without-of.txt     |    4
+  arch/powerpc/boot/dts/kuroboxHD.dts              |  148 ++
+  arch/powerpc/boot/dts/mpc8313erdb.dts            |  219 +++
+  arch/powerpc/boot/dts/mpc8349emds.dts            |  328 -----
+  arch/powerpc/boot/dts/mpc834x_mds.dts            |  334 +++++
+  arch/powerpc/configs/linkstation_defconfig       |  118 +
+  arch/powerpc/configs/mpc8313_rdb_defconfig       | 1409 +++++++++++++++++++++++
+  arch/powerpc/configs/mpc834x_mds_defconfig       |    9
+  arch/powerpc/kernel/of_platform.c                |    1
+  arch/powerpc/platforms/83xx/Kconfig              |   24
+  arch/powerpc/platforms/83xx/Makefile             |    3
+  arch/powerpc/platforms/83xx/mpc8313_rdb.c        |   99 +
+  arch/powerpc/platforms/83xx/mpc834x_mds.c        |  213 +++
+  arch/powerpc/platforms/83xx/mpc834x_sys.c        |  140 --
+  arch/powerpc/platforms/83xx/mpc834x_sys.h        |   23
+  arch/powerpc/platforms/83xx/mpc83xx.h            |   18
+  arch/powerpc/platforms/embedded6xx/linkstation.c |   12
+  arch/powerpc/sysdev/fsl_soc.c                    |   78 -
+  arch/powerpc/sysdev/qe_lib/ucc_slow.c            |    6
+  include/asm-powerpc/ucc_slow.h                   |    2
+  20 files changed, 2611 insertions(+), 577 deletions(-)
 
-applied
+Andy Fleming (1):
+       [POWERPC] QE: Added QE to the list of default scanned OF devices
 
-- k
+Guennadi Liakhovetski (1):
+       [POWERPC] Update to linkstation / kurobox support
+
+Kim Phillips (2):
+       [POWERPC] 83xx: Add base support for the MPC8313E RDB
+       [POWERPC] 83xx: add the mpc8313erdb defconfig
+
+Kumar Gala (1):
+       [POWERPC] 83xx: Updated and renamed MPC834x SYS to MPC834x MDS
+
+Li Yang (3):
+       [POWERPC] 83xx: Added new dr_mode property for usb controller on 83xx
+       [POWERPC] 83xx: Add USB setup code for MPC8349E MDS-PB
+       [POWERPC] 83xx: Add platform_device for USB DR peripheral driver
+
+Timur Tabi (1):
+       [POWERPC] QE: Rename ucc_slow_info.us_regs to ucc_slow_info.regs
