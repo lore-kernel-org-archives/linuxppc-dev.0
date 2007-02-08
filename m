@@ -1,21 +1,23 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0E0B4DDDFE
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 11:24:45 +1100 (EST)
-Subject: Re: [PATCH 0/4] spidernet: support for Celleb
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jeff Garzik <jgarzik@pobox.com>
-In-Reply-To: <45CA4F90.60806@pobox.com>
-References: <200702070849.l178nvGC005341@toshiba.co.jp>
-	<45CA4F90.60806@pobox.com>
-Content-Type: text/plain
-Date: Thu, 08 Feb 2007 11:24:18 +1100
-Message-Id: <1170894259.2620.325.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Update udbg_progress() to display the integer
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <45C9FE30.8010108@freescale.com>
+References: <11707051151024-git-send-email-timur@freescale.com>
+	<20070206013051.GA15525@lixom.net>	<45C90A6E.3040302@freescale.com>
+	<17865.2853.132102.769702@cargo.ozlabs.ibm.com>
+	<1170805102.2620.264.camel@localhost.localdomain>
+	<45C91275.4020806@freescale.com> <45C97121.9080609@austin.ibm.com>
+	<45C9FE30.8010108@freescale.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-/5fVKq+0CC4kpKHEd0EO"
+Date: Thu, 08 Feb 2007 11:31:46 +1100
+Message-Id: <1170894706.4656.2.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jim@jklewis.com,
-	Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
+Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +27,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-02-07 at 17:15 -0500, Jeff Garzik wrote:
-> Ishizaki Kou wrote:
-> > This is a revised spidernet patch set based on
-> > netdev-2.6.git#upstream.
-> > 
-> > This patch set is merged Jens-san's spidernet patch and works on
-> > Toshiba Cell reference set (aka Celleb). 
-> > It requires Jens-san's phy patch
-> > (http://ozlabs.org/pipermail/linuxppc-dev/2007-February/030987.html).
-> 
-> I'm unsure of the status of the phy patch, so will put this patchset on 
-> hold until that is resolved
 
-PHY patch is mostly Ok except I don't like that "medium" variable Jens
-added which isn't used anywhere in sungem_phy. Jens, can you resend a
-version without that ? If you need that variable in spidernet itself,
-then put it there :-)
+--=-/5fVKq+0CC4kpKHEd0EO
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Also, the GMII_* constants, are they standard or 54xx specific ? If the
-later, then change the name to reflect that.
+On Wed, 2007-02-07 at 10:28 -0600, Timur Tabi wrote:
+> Mike Strosaker wrote:
+>=20
+> > The op panel on recent systems has 2 lines; the first can display 16=20
+> > characters, the second, 80.  The first line is usually used to display=20
+> > an 8 character hexadecimal progress/error message (called an SRC: Syste=
+m=20
+> > Reference Code), and the second line is used to display a location code=
+=20
+> > when appropriate (e.g. when the SRC indicates a device failure).  IBM=20
+> > documents many of their OF and RTAS SRCs deep in the Hardware=20
+> > Information Center:
+>=20
+> In that case, the big question is: does the kernel conform to this standa=
+rd?=20
+> Looking at the current usage of ppc_md.progress(), I can't help but think=
+ that=20
+> it being called the same way printk() is being called, i.e. at the whim o=
+f the=20
+> developer who wrote the code.
+>=20
+> So let's say that we need to keep ppc_md.progress().  I think we should h=
+ave=20
+> some way of restricting its usage to systems where it does something diff=
+erent=20
+> than printk().  On an Freescale 83xx reference board, for example, its ou=
+tput=20
+> goes to the same place as printk(), so it doesn't serve any purpose.
+>=20
+> Perhaps we should define ppc_md.progress() such that it never sends the o=
+utput=20
+> to the same place as printk().  If the only output device is the serial p=
+ort,=20
+> and printk() already outputs there, then ppc_md.progress() should do noth=
+ing.=20
+> This would eliminate any "accidental" use of ppc_md.progress(), when prin=
+tk() is=20
+> the better choice.
 
-Once I have the new patch, I'll give it a test on G5 and if it's ok, it
-will be good to go for 2.6.21
+But then you'll end up with code that does:
 
-Cheers,
-Ben.
+ printk("Setup done");
+ ppc_md.progress("Setup done");
+
+Because on systems where the output _does_ go to two places, you'll want
+the messages to appear in both.
+
+I don't see what the problem is with progress messages going to the
+printk buffer?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-/5fVKq+0CC4kpKHEd0EO
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBFym9xdSjSd0sB4dIRAokLAKCDAwRQBDR4ws6+8dsyto5rOgD8TwCgjAg0
+rFg4/zq/PcPOxRXeD2Jmw0Y=
+=ow5K
+-----END PGP SIGNATURE-----
+
+--=-/5fVKq+0CC4kpKHEd0EO--
