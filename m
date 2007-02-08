@@ -1,26 +1,25 @@
-Return-Path: <adrian@rhlx01.hs-esslingen.de>
-Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+Return-Path: <jsimmons@infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "rhlx01.hs-esslingen.de",
-	Issuer "HE CA - G01" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0C397DDEA3
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 05:01:23 +1100 (EST)
-Date: Thu, 8 Feb 2007 19:01:19 +0100
-From: Adrian Reber <adrian@lisas.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH] CELL Oprofile SPU profiling updated patch
-Message-ID: <20070208180119.GA24743@lisas.de>
-References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
-	<1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com>
-	<b682962303654f4958a6c2c50d805907@bga.com>
-	<200702081821.57358.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200702081821.57358.arnd@arndb.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cbe-oss-dev@ozlabs.org, Carl Love <cel@us.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BA634DDEBD
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 05:43:21 +1100 (EST)
+Date: Thu, 8 Feb 2007 18:42:58 +0000 (GMT)
+From: James Simmons <jsimmons@infradead.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: patches in powerpc.git
+In-Reply-To: <Pine.LNX.4.62.0702081501410.28405@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.64.0702081835100.7686@pentafluge.infradead.org>
+References: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.62.0702071709330.29060@pademelon.sonytel.be>
+	<17866.26862.144883.375934@cargo.ozlabs.ibm.com>
+	<Pine.LNX.4.62.0702081501410.28405@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,18 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 08, 2007 at 06:21:56PM +0100, Arnd Bergmann wrote:
-[...]
-> Moving the sample rate computation to user space sounds like the right
-> idea, but why not have a more drastic version of it:
+
+> On Thu, 8 Feb 2007, Paul Mackerras wrote:
+> > Geert Uytterhoeven writes:
+> > > Can you please tell me your position w.r.t. the PS3 av/fb patches?
+> > > Do you want to handle some of them, or do you want James (or perhaps Andrew) to
+> > > handle them?
+> > 
+> > It's up to Andrew really.  I had been assuming James or Andrew would
+> > take care of them, but if they don't want to, then I can do it.
 > 
-> Right now, all products that support this feature run at the same clock
-> rate (3.2 Ghz), with cpufreq, we can reduce this to 1.6 Ghz. If I understand
-> this correctly, the value depends only on the frequency, so we could simply
-> hardcode this in the kernel, and print out a warning message if we ever
-> encounter a different frequency, right?
+> OK, I sent them to Andrew.
+> 
+> Andrew: please apply. Thanks!
+> 
+> Gr{oetje,eeting}s,
 
-Just for the record... CAB is running with 2.8 GHz. At least all the boards
-I have seen.
+The patch are good. Andrew please apply.
 
-		Adrian
+Acked-By: James Simmons <jsimmons@infradead.org>
