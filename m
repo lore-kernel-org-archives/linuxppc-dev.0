@@ -1,17 +1,27 @@
-Return-Path: <kou.ishizaki@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 100A1DDE0E
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 17:26:03 +1100 (EST)
-Date: Thu, 08 Feb 2007 15:18:33 +0900 (JST)
-Message-Id: <200702080618.l186InGM014774@toshiba.co.jp>
-Subject: [PATCH] Celleb: improve htab lock
-To: paulus@samba.org
-From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C2476DDE23
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 17:46:54 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l186koCS003763
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Feb 2007 23:46:50 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l186kmCX015234
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 00:46:49 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
+	generic iopa
+Date: Thu, 8 Feb 2007 14:48:04 +0800
+Message-ID: <989B956029373F45A0B8AF02970818900D4401@zch01exm26.fsl.freescale.net>
+In-Reply-To: <CD216D17-B494-4B86-992D-453D68694A31@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: netdev@vger.kernel.org, Tabi Timur-B04825 <timur@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,117 +31,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Disabling IRQ is required only in invalidation.
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, February 08, 2007 1:58 PM
+> To: Li Yang-r58472
+> Cc: Tabi Timur-B04825; netdev@vger.kernel.org; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys
+to generic
+> iopa
+>=20
+>=20
+> On Feb 7, 2007, at 11:52 PM, Li Yang-r58472 wrote:
+>=20
+> >> -----Original Message-----
+> >> From: Timur Tabi [mailto:timur@freescale.com]
+> >> Sent: Thursday, February 08, 2007 1:03 AM
+> >> To: Kumar Gala
+> >> Cc: Li Yang-r58472; netdev@vger.kernel.org; linuxppc-dev@ozlabs.org
+> >> Subject: Re: [PATCH 1/4] ucc_geth: Change private
+> >> immrbar_virt_to_phys
+> > to generic
+> >> iopa
+> >>
+> >> Kumar Gala wrote:
+> >>
+> >>> If its been mapped with ioremap() you know the physical address
+> > already
+> >>> so why do you need iopa().
+> >>
+> >> That's what the original function immrbar_virt_to_phys() does.
+We're
+> > trying to
+> >> get rid of it, because we thought is redundant with iopa().
+> >>
+> >> static inline unsigned long immrbar_virt_to_phys(volatile void *
+> > address)
+> >> {
+> >> 	if ( ((u32)address >=3D (u32)qe_immr) &&
+> >> 			((u32)address < ((u32)qe_immr + QE_IMMAP_SIZE))
+> > )
+> >> 		return (unsigned long)(address - (u32)qe_immr +
+> >> 				(u32)get_qe_base());
+> >> 	return (unsigned long)virt_to_phys(address);
+> >> }
+> >>
+> >> get_qe_base() does a search of the OF tree the first time it's
+> >> called.
+> >>
+> >> Here's the code that calls immrbar_virt_to_phys():
+> >>
+> >> 	out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].bd_ring_base,
+> >> 		 (u32) immrbar_virt_to_phys(ugeth->
+> >> 					    p_tx_bd_ring[i]));
+> >>
+> >>
+> >> Would it be better to replace this code with something like this:
+> >>
+> >> out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].bd_ring_base,
+> >> 	get_qe_base() + ((void *) ugeth->p_tx_bd_ring[i] - (void *)
+> > qe_immr));
+> >
+> > No, we don't know if the BD ring is in MURAM or main memory as it is
+> > configurable.  iopa() is best choice to handle both case, IMHO.
+>=20
+> Does MURAM behave differently than normal memory?
 
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
----
+MURAM is a mmio region so it don't share the characteristic of main
+memory that phy_addr =3D virt_addr - PAGE_OFFSET.  While they can both =
+be
+mapped through page table using iopa().
 
-
-Index: linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c
-diff -u linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c:1.1.1.1 linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c:1.9
---- linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c:1.1.1.1	Thu Feb  8 11:38:20 2007
-+++ linux-powerpc-git/arch/powerpc/platforms/celleb/htab.c	Wed Feb  7 11:49:17 2007
-@@ -95,7 +95,6 @@
- 	unsigned long lpar_rc;
- 	unsigned long slot;
- 	unsigned long hpte_v, hpte_r;
--	unsigned long flags;
- 
- 	/* same as iseries */
- 	if (vflags & HPTE_V_SECONDARY)
-@@ -115,17 +114,17 @@
- 	if (rflags & (_PAGE_GUARDED|_PAGE_NO_CACHE))
- 		hpte_r &= ~_PAGE_COHERENT;
- 
--	spin_lock_irqsave(&beat_htab_lock, flags);
-+	spin_lock(&beat_htab_lock);
- 	if ((lpar_rc = beat_read_mask(hpte_group)) == 0) {
- 		if (!(vflags & HPTE_V_BOLTED))
- 			DBG_LOW(" full\n");
--		spin_unlock_irqrestore(&beat_htab_lock, flags);
-+		spin_unlock(&beat_htab_lock);
- 		return -1;
- 	}
- 
- 	lpar_rc = beat_insert_htab_entry(0, hpte_group, lpar_rc << 48,
- 		hpte_v, hpte_r, &slot);
--	spin_unlock_irqrestore(&beat_htab_lock, flags);
-+	spin_unlock(&beat_htab_lock);
- 
- 	/*
- 	 * Since we try and ioremap PHBs we don't own, the pte insert
-@@ -189,7 +188,6 @@
- {
- 	unsigned long lpar_rc;
- 	unsigned long dummy0, dummy1, want_v;
--	unsigned long flags;
- 
- 	want_v = hpte_encode_v(va, psize);
- 
-@@ -197,17 +195,17 @@
- 		"avpnv=%016lx, slot=%016lx, psize: %d, newpp %016lx ... ",
- 		want_v & HPTE_V_AVPN, slot, psize, newpp);
- 
--	spin_lock_irqsave(&beat_htab_lock, flags);
-+	spin_lock(&beat_htab_lock);
- 	dummy0 = beat_lpar_hpte_getword0(slot);
- 	if ((dummy0 & ~0x7FUL) != (want_v & ~0x7FUL)) {
- 		DBG_LOW("not found !\n");
--		spin_unlock_irqrestore(&beat_htab_lock, flags);
-+		spin_unlock(&beat_htab_lock);
- 		return -1;
- 	}
- 
- 	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7, &dummy0,
- 					&dummy1);
--	spin_unlock_irqrestore(&beat_htab_lock, flags);
-+	spin_unlock(&beat_htab_lock);
- 	if (lpar_rc != 0 || dummy0 == 0) {
- 		DBG_LOW("not found !\n");
- 		return -1;
-@@ -256,18 +254,17 @@
- 					  int psize)
- {
- 	unsigned long lpar_rc, slot, vsid, va, dummy0, dummy1;
--	unsigned long flags;
- 
- 	vsid = get_kernel_vsid(ea);
- 	va = (vsid << 28) | (ea & 0x0fffffff);
- 
--	spin_lock_irqsave(&beat_htab_lock, flags);
-+	spin_lock(&beat_htab_lock);
- 	slot = beat_lpar_hpte_find(va, psize);
- 	BUG_ON(slot == -1);
- 
- 	lpar_rc = beat_write_htab_entry(0, slot, 0, newpp, 0, 7,
- 		&dummy0, &dummy1);
--	spin_unlock_irqrestore(&beat_htab_lock, flags);
-+	spin_unlock(&beat_htab_lock);
- 
- 	BUG_ON(lpar_rc != 0);
- }
-@@ -284,18 +281,21 @@
- 		slot, va, psize, local);
- 	want_v = hpte_encode_v(va, psize);
- 
--	spin_lock_irqsave(&beat_htab_lock, flags);
-+	local_irq_save(flags);
-+	spin_lock(&beat_htab_lock);
- 	dummy1 = beat_lpar_hpte_getword0(slot);
- 
- 	if ((dummy1 & ~0x7FUL) != (want_v & ~0x7FUL)) {
- 		DBG_LOW("not found !\n");
--		spin_unlock_irqrestore(&beat_htab_lock, flags);
-+		spin_unlock(&beat_htab_lock);
-+		local_irq_restore(flags);
- 		return;
- 	}
- 
- 	lpar_rc = beat_write_htab_entry(0, slot, 0, 0, HPTE_V_VALID, 0,
- 		&dummy1, &dummy2);
--	spin_unlock_irqrestore(&beat_htab_lock, flags);
-+	spin_unlock(&beat_htab_lock);
-+	local_irq_restore(flags);
- 
- 	BUG_ON(lpar_rc != 0);
- }
+- Leo
