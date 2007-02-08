@@ -1,14 +1,14 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 94AF4DE423
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:59:13 +1100 (EST)
-Date: Thu, 8 Feb 2007 14:59:11 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTP id DA2FDDE54D
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:59:23 +1100 (EST)
+Date: Thu, 8 Feb 2007 14:59:22 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 5/10] fb_videomode_to_var: reset virtual screen parameters
+Subject: [PATCH 6/10] ps3: Preallocate bootmem memory for ps3fb
 In-Reply-To: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0702081459020.19437@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0702081459130.19437@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,43 +25,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-fb_videomode_to_var(): reset the virtual screen parameters when converting from
-an fb_videomode to an fb_var_screeninfo.
-
-Without this the old virtual screen parameters are kept. Hence you cannot
-switch to a video mode with a lower resolution on frame buffer devices that
-don't support virtual screens and panning, as values are not supposed to be
-rounded down when they don't fit.
-
-I also reordered the assignments to match the order of the individual members.
+Preallocate bootmem memory for the PS3 frame buffer device, which needs a
+large block of physically-contiguous memory. The size of this memory block is
+configurable:
+  - The config option CONFIG_FB_PS3_DEFAULT_SIZE_M allows to specify the
+    default amount of memory (in MiB) allocated to the virtual frame buffer.
+  - The early boot parameter `ps3fb=xxx' allows to override the default value.
+    It will be rounded up to a multiple of 1 MiB, if needed.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- drivers/video/modedb.c |    8 ++++++--
- 1 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/ps3/setup.c |   42 +++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/ps3.h          |    9 +++++++
+ 2 files changed, 51 insertions(+)
 
---- ps3-linux-2.6.20.orig/drivers/video/modedb.c
-+++ ps3-linux-2.6.20/drivers/video/modedb.c
-@@ -716,13 +716,17 @@ void fb_videomode_to_var(struct fb_var_s
- {
- 	var->xres = mode->xres;
- 	var->yres = mode->yres;
-+	var->xres_virtual = mode->xres;
-+	var->yres_virtual = mode->yres;
-+	var->xoffset = 0;
-+	var->yoffset = 0;
- 	var->pixclock = mode->pixclock;
- 	var->left_margin = mode->left_margin;
--	var->hsync_len = mode->hsync_len;
--	var->vsync_len = mode->vsync_len;
- 	var->right_margin = mode->right_margin;
- 	var->upper_margin = mode->upper_margin;
- 	var->lower_margin = mode->lower_margin;
-+	var->hsync_len = mode->hsync_len;
-+	var->vsync_len = mode->vsync_len;
- 	var->sync = mode->sync;
- 	var->vmode = mode->vmode & FB_VMODE_MASK;
+--- ps3-linux-2.6.20.orig/arch/powerpc/platforms/ps3/setup.c
++++ ps3-linux-2.6.20/arch/powerpc/platforms/ps3/setup.c
+@@ -24,6 +24,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/console.h>
+ #include <linux/kexec.h>
++#include <linux/bootmem.h>
+ 
+ #include <asm/machdep.h>
+ #include <asm/firmware.h>
+@@ -72,6 +73,46 @@ static void ps3_panic(char *str)
+ 	for (;;) ;
  }
+ 
++
++static void prealloc(struct ps3_prealloc *p)
++{
++	if (!p->size)
++		return;
++
++	p->address = __alloc_bootmem(p->size, p->align, __pa(MAX_DMA_ADDRESS));
++	if (!p->address) {
++		printk(KERN_ERR "%s: Cannot allocate %s\n", __FUNCTION__,
++		       p->name);
++		return;
++	}
++
++	printk(KERN_INFO "%s: %lu bytes at %p\n", p->name, p->size,
++	       p->address);
++}
++
++#ifdef CONFIG_FB_PS3
++struct ps3_prealloc ps3fb_videomemory = {
++    .name = "ps3fb videomemory",
++    .size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
++    .align = 1024*1024			/* the GPU requires 1 MiB alignment */
++};
++#define prealloc_ps3fb_videomemory()	prealloc(&ps3fb_videomemory)
++
++static int __init early_parse_ps3fb(char *p)
++{
++	if (!p)
++		return 1;
++
++	ps3fb_videomemory.size = _ALIGN_UP(memparse(p, &p),
++					   ps3fb_videomemory.align);
++	return 0;
++}
++early_param("ps3fb", early_parse_ps3fb);
++#else
++#define prealloc_ps3fb_videomemory()	do { } while (0)
++#endif
++
++
+ static void __init ps3_setup_arch(void)
+ {
+ 	DBG(" -> %s:%d\n", __func__, __LINE__);
+@@ -87,6 +128,7 @@ static void __init ps3_setup_arch(void)
+ 	conswitchp = &dummy_con;
+ #endif
+ 
++	prealloc_ps3fb_videomemory();
+ 	ppc_md.power_save = ps3_power_save;
+ 
+ 	DBG(" <- %s:%d\n", __func__, __LINE__);
+--- ps3-linux-2.6.20.orig/include/asm-powerpc/ps3.h
++++ ps3-linux-2.6.20/include/asm-powerpc/ps3.h
+@@ -459,4 +459,13 @@ static inline void *ps3_system_bus_get_d
+ 
+ extern struct bus_type ps3_system_bus_type;
+ 
++struct ps3_prealloc {
++    const char *name;
++    void *address;
++    unsigned long size;
++    unsigned long align;
++};
++
++extern struct ps3_prealloc ps3fb_videomemory;
++
+ #endif
 
 Gr{oetje,eeting}s,
 
