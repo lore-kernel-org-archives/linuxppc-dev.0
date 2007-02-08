@@ -1,14 +1,22 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <200702070945.56056.sr@denx.de>
-References: <200702070945.56056.sr@denx.de>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 55509DDE10
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 17:14:30 +1100 (EST)
+In-Reply-To: <989B956029373F45A0B8AF02970818900D43E9@zch01exm26.fsl.freescale.net>
+References: <989B956029373F45A0B8AF02970818900D43E9@zch01exm26.fsl.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <BC3095EE-64C2-4704-9155-9C354B96C268@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CD216D17-B494-4B86-992D-453D68694A31@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] ppc: Fix booke watchdog initialization
-Date: Thu, 8 Feb 2007 00:07:36 -0600
-To: Stefan Roese <sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
+	generic iopa
+Date: Wed, 7 Feb 2007 23:57:53 -0600
+To: "Li Yang-r58472" <LeoLi@freescale.com>
+Cc: netdev@vger.kernel.org, Tabi Timur-B04825 <timur@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,19 +27,58 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 7, 2007, at 2:45 AM, Stefan Roese wrote:
+On Feb 7, 2007, at 11:52 PM, Li Yang-r58472 wrote:
 
-> [PATCH] ppc: Fix booke watchdog initialization
+>> -----Original Message-----
+>> From: Timur Tabi [mailto:timur@freescale.com]
+>> Sent: Thursday, February 08, 2007 1:03 AM
+>> To: Kumar Gala
+>> Cc: Li Yang-r58472; netdev@vger.kernel.org; linuxppc-dev@ozlabs.org
+>> Subject: Re: [PATCH 1/4] ucc_geth: Change private  
+>> immrbar_virt_to_phys
+> to generic
+>> iopa
+>>
+>> Kumar Gala wrote:
+>>
+>>> If its been mapped with ioremap() you know the physical address
+> already
+>>> so why do you need iopa().
+>>
+>> That's what the original function immrbar_virt_to_phys() does.  We're
+> trying to
+>> get rid of it, because we thought is redundant with iopa().
+>>
+>> static inline unsigned long immrbar_virt_to_phys(volatile void *
+> address)
+>> {
+>> 	if ( ((u32)address >= (u32)qe_immr) &&
+>> 			((u32)address < ((u32)qe_immr + QE_IMMAP_SIZE))
+> )
+>> 		return (unsigned long)(address - (u32)qe_immr +
+>> 				(u32)get_qe_base());
+>> 	return (unsigned long)virt_to_phys(address);
+>> }
+>>
+>> get_qe_base() does a search of the OF tree the first time it's  
+>> called.
+>>
+>> Here's the code that calls immrbar_virt_to_phys():
+>>
+>> 	out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].bd_ring_base,
+>> 		 (u32) immrbar_virt_to_phys(ugeth->
+>> 					    p_tx_bd_ring[i]));
+>>
+>>
+>> Would it be better to replace this code with something like this:
+>>
+>> out_be32(&ugeth->p_send_q_mem_reg->sqqd[i].bd_ring_base,
+>> 	get_qe_base() + ((void *) ugeth->p_tx_bd_ring[i] - (void *)
+> qe_immr));
 >
-> Fix two problems in the book-e watchdog driver.
->
-> a) The 4xx default period was defined wrong
-> b) Clear status before enabling the watchdog exception
->
-> Signed-off-by: Stefan Roese <sr@denx.de>
+> No, we don't know if the BD ring is in MURAM or main memory as it is
+> configurable.  iopa() is best choice to handle both case, IMHO.
 
-Acked-by: Kumar Gala <galak@kernel.crashing.org>
-
-(Looks like Paul grabbed this before I did :)
+Does MURAM behave differently than normal memory?
 
 - k
