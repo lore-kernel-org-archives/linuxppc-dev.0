@@ -1,17 +1,18 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 07DB9DDE35
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 23:42:00 +1100 (EST)
-Date: Thu, 8 Feb 2007 13:41:57 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTP id 13A49DDEB6
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 23:52:42 +1100 (EST)
+Date: Thu, 8 Feb 2007 13:52:40 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
 To: David Miller <davem@davemloft.net>
 Subject: Re: checker-shell still hosed...
-In-Reply-To: <20070208.041229.18308943.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.62.0702081340340.28405@pademelon.sonytel.be>
+In-Reply-To: <Pine.LNX.4.62.0702081340340.28405@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0702081351470.28405@pademelon.sonytel.be>
 References: <20070208.030531.112264703.davem@davemloft.net>
 	<20070208.041004.07457320.davem@davemloft.net>
 	<20070208.041229.18308943.davem@davemloft.net>
+	<Pine.LNX.4.62.0702081340340.28405@pademelon.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
@@ -27,17 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 8 Feb 2007, David Miller wrote:
-> From: David Miller <davem@davemloft.net>
-> Date: Thu, 08 Feb 2007 04:10:04 -0800 (PST)
+On Thu, 8 Feb 2007, Geert Uytterhoeven wrote:
+> On Thu, 8 Feb 2007, David Miller wrote:
+> > From: David Miller <davem@davemloft.net>
+> > Date: Thu, 08 Feb 2007 04:10:04 -0800 (PST)
+> > 
+> > > Removing them makes the spaces go away.
+> > 
+> > FWIW, this patch below seems to fix the sparc64 build for me.
+> > 
+> > Paul, does it work for you on powerpc too?
 > 
-> > Removing them makes the spaces go away.
-> 
-> FWIW, this patch below seems to fix the sparc64 build for me.
-> 
-> Paul, does it work for you on powerpc too?
+> Thx, it seems to build now. I'll tell you whether it boots on PS3 soon.
 
-Thx, it seems to build now. I'll tell you whether it boots on PS3 soon.
+Build and boot were successful.
 
 Gr{oetje,eeting}s,
 
