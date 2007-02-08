@@ -1,17 +1,23 @@
-Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [dtc] Allow multipart property values 
-In-Reply-To: Your message of "Wed, 07 Feb 2007 16:37:50 +1100."
-	<20070207053750.GG23870@localhost.localdomain>
-References: <20070207032343.GD23870@localhost.localdomain>
-	<41B393C3-9A8F-46EC-9B47-FCF8E0733994@kernel.crashing.org>
-	<20070207044616.GF23870@localhost.localdomain>
-	<BDAF32A9-05AE-4AFA-922B-22752C3B0845@kernel.crashing.org>
-	<20070207053750.GG23870@localhost.localdomain>
-Date: Thu, 08 Feb 2007 17:29:03 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1HFIhL-0003bU-UX@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BA6FDDDE27
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 10:44:09 +1100 (EST)
+Date: Thu, 8 Feb 2007 17:41:27 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [UPDATED] Please pull from 'for_paulus' branch
+In-Reply-To: <Pine.LNX.4.64.0702081552020.30378@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0702081731170.31218@localhost.localdomain>
+References: <Pine.LNX.4.64.0702081546520.30378@localhost.localdomain>
+	<Pine.LNX.4.64.0702081552020.30378@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: Timur Tabi <timur@freescale.com>, linuxppc-dev@ozlabs.org,
+	Li Yang <leoli@freescale.com>,
+	Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +27,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> 
-> There's nothing in tests/ though - I always meant to make a testsuite,
-> but I never got around to it.  Current plan is to implement a
-> testsuite by merging libfdt into the dtc tree.
-> 
-> Here's a revised patch which adds an example usage to test.dts
-> 
-> [dtc] Allow multipart property values
-> 
-> At present each property definition in a dts file must give as the
-> value either a string ("abc..."), a bytestring ([12abcd...]) or a cell
-> list (<1 2 3 ...>).  This patch allows a property value to be given as
-> several of these, comma-separated.  The final property value is just
-> the components appended together.  So a property could have a list of
-> cells followed by a string, or a bytestring followed by some cells.
-> Cells are always aligned, so if cells are given following a string or
-> bytestring which is not a multiple of 4 bytes long, zero bytes are
-> inserted to align the following cells.
-> 
-> The primary motivation for this feature, however, is to allow defining
-> a property as a list of several strings.  This is what's needed for
-> defining OF 'compatible' properties, and is less ugly and fiddly than
-> using embedded \0s in the strings.
-> 
-> Signed-off-by: David Gibson <dwg@au1.ibm.com>
+Please pull from 'for_paulus' branch of
+master.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
 
-Applied.
+--
+I dropped the patch that added 'qe' to the of_default_bus_ids at benh's 
+requested.  After looking at that more I agree with him that we should 
+remove the list completely.
 
-Thanks,
-jdl
+- k
+
+to receive the following updates:
+
+  Documentation/powerpc/booting-without-of.txt     |    4
+  arch/powerpc/boot/dts/kuroboxHD.dts              |  148 ++
+  arch/powerpc/boot/dts/mpc8313erdb.dts            |  219 +++
+  arch/powerpc/boot/dts/mpc8349emds.dts            |  328 -----
+  arch/powerpc/boot/dts/mpc834x_mds.dts            |  334 +++++
+  arch/powerpc/configs/linkstation_defconfig       |  118 +
+  arch/powerpc/configs/mpc8313_rdb_defconfig       | 1409 +++++++++++++++++++++++
+  arch/powerpc/configs/mpc834x_mds_defconfig       |    9
+  arch/powerpc/platforms/83xx/Kconfig              |   24
+  arch/powerpc/platforms/83xx/Makefile             |    3
+  arch/powerpc/platforms/83xx/mpc8313_rdb.c        |   99 +
+  arch/powerpc/platforms/83xx/mpc834x_mds.c        |  213 +++
+  arch/powerpc/platforms/83xx/mpc834x_sys.c        |  140 --
+  arch/powerpc/platforms/83xx/mpc834x_sys.h        |   23
+  arch/powerpc/platforms/83xx/mpc83xx.h            |   18
+  arch/powerpc/platforms/embedded6xx/linkstation.c |   12
+  arch/powerpc/sysdev/fsl_soc.c                    |   78 -
+  arch/powerpc/sysdev/qe_lib/ucc_slow.c            |    6
+  include/asm-powerpc/ucc_slow.h                   |    2
+  19 files changed, 2610 insertions(+), 577 deletions(-)
+
+Guennadi Liakhovetski (1):
+       [POWERPC] Update to linkstation / kurobox support
+
+Kim Phillips (2):
+       [POWERPC] 83xx: Add base support for the MPC8313E RDB
+       [POWERPC] 83xx: add the mpc8313erdb defconfig
+
+Kumar Gala (1):
+       [POWERPC] 83xx: Updated and renamed MPC834x SYS to MPC834x MDS
+
+Li Yang (3):
+       [POWERPC] 83xx: Added new dr_mode property for usb controller on 83xx
+       [POWERPC] 83xx: Add USB setup code for MPC8349E MDS-PB
+       [POWERPC] 83xx: Add platform_device for USB DR peripheral driver
+
+Timur Tabi (1):
+       [POWERPC] QE: Rename ucc_slow_info.us_regs to ucc_slow_info.regs
