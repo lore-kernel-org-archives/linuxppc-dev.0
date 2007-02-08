@@ -1,26 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 2C714DDEBA
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 19:13:44 +1100 (EST)
-Date: Thu, 8 Feb 2007 09:13:36 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>
-Subject: Re: [Linux-fbdev-devel] [PATCH 0/10] ps3av/fb drivers for 2.6.21
-In-Reply-To: <1170882427.2620.293.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.62.0702080910570.6049@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702051624410.18405@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702061559420.14230@pademelon.sonytel.be>
-	<1170794953.2620.253.camel@localhost.localdomain>
-	<Pine.LNX.4.62.0702070859050.31772@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702071743040.29060@pademelon.sonytel.be>
-	<1170882427.2620.293.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Return-Path: <kou.ishizaki@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id EB110DDE45
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 19:22:34 +1100 (EST)
+Date: Thu, 08 Feb 2007 17:22:07 +0900 (JST)
+Message-Id: <200702080822.l188MFxp028975@toshiba.co.jp>
+To: paulus@samba.org
+Subject: Re: [PATCH 10/11] Celleb: basic support
+In-Reply-To: <17866.46314.560561.936484@cargo.ozlabs.ibm.com>
+From: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,47 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 8 Feb 2007, Benjamin Herrenschmidt wrote:
-> On Wed, 2007-02-07 at 17:51 +0100, Geert Uytterhoeven wrote:
-> > On Wed, 7 Feb 2007, Geert Uytterhoeven wrote:
-> > > On Wed, 7 Feb 2007, Benjamin Herrenschmidt wrote:
-> > > > > ps3av: Use a kernel thread to handle the actual video mode setting, as this
-> > > > > involves some quite big delays.
-> > > > 
-> > > > The ps3 fbdev already has it's own kernel thread no ? Why use a second
-> > > > one ? We could just have the ps3av code keep the delays but be called by
-> > > > a thread ?
-> > > 
-> > > That's another possibility.  And since the screen is blanked during mode
-> > > change, there's no need to refresh it, and I may even get rid of the call to
-> > > ps3fb_flip_ctl() in ps3av.
-> > > 
-> > > I'll look into it...
-> > 
-> > Below's a new patch (take 3).
-> > 
-> > But it doesn't work well: after each mode change, the old contents of the
-> > screen are visible for a (noticable) fraction of a second.
-> > Ps3fbd doesn't refresh the screen contents until ps3av_set_video_mode()
-> > returns, which is longer than my display needs to sync to the new video mode
-> > (this was actually the reason behind the msleep() calls).
-> > 
-> > I also could not get rid of the calls to ps3fb_flip_ctl() in ps3av, as screen
-> > updates have to be disabled while sending other AV packets, too.
-> > 
-> > So I prefer the previous solution, using a new ps3av kernel thread.
-> > Unless anyone has a better solution, of course :-)
+Paul-san,
+
+> Ishizaki Kou writes:
 > 
-> Moving the flip to ps3av ? :-)
+> > +config PPC_CELLEB
+> > +	bool "Toshiba's Cell Reference Set 'Celleb' Architecture"
+> > +	depends on PPC_MULTIPLATFORM && PPC64
+> > +	select PPC_CELL
+> > +	select PPC_OF_PLATFORM_PCI
+> > +	select HAS_TXX9_SERIAL
+> > +	select PPC_UDBG_BEAT
+> > +	select USB_OHCI_BIG_ENDIAN_MMIO
+> > +	select USB_EHCI_BIG_ENDIAN_MMIO
+> 
+> I get:
+> 
+> scripts/kconfig/conf -s arch/powerpc/Kconfig
+> arch/powerpc/Kconfig:569:warning: 'select' used by config symbol
+'PPC_CELLEB' refer to undefined symbol 'USB_OHCI_BIG_ENDIAN_MMIO'
+> arch/powerpc/Kconfig:570:warning: 'select' used by config symbol
+'PPC_CELLEB' refer to undefined symbol 'USB_EHCI_BIG_ENDIAN_MMIO'
+> 
+> I applied this patch anyway.  Is this something that will get fixed by
+> changes you have submitted to the USB maintainer, or is some other fix
+> required?
 
-Using the same kthread as used for mode setting? Besides moving half of ps3fb
-to ps3av, that will give the same problems.
+These symbols will be introduced by USB subsystem. The patch was
+posted by Ben-san and was already accepted for 2.6.21.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Best regards,
+Kou Ishizaki
