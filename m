@@ -1,18 +1,15 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 8ED3BDDE44
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 11:53:47 +1100 (EST)
-Date: Wed, 7 Feb 2007 18:53:37 -0600
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Add base support for the MPC8313E RDB
-Message-Id: <20070207185337.39dead9b.kim.phillips@freescale.com>
-In-Reply-To: <7A666EA2-E740-42D8-9B36-1E7F6B46158F@kernel.crashing.org>
-References: <20070207170602.45f9c2ee.kim.phillips@freescale.com>
-	<7A666EA2-E740-42D8-9B36-1E7F6B46158F@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 8 Feb 2007 12:11:47 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 11/19] bootwrapper: Add ft_find_device_rel().
+Message-ID: <20070208011147.GC31321@localhost.localdomain>
+References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
+	<20070207230133.GK3849@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070207230133.GK3849@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,67 +19,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 7 Feb 2007 17:36:34 -0600
-Kumar Gala <galak@kernel.crashing.org> wrote:
+On Wed, Feb 07, 2007 at 05:01:33PM -0600, Scott Wood wrote:
+> Add a function to look up a relative, rather than absolute, path
+> name.
 
-> 
-> On Feb 7, 2007, at 5:06 PM, Kim Phillips wrote:
-> 
-> > Add support for the MPC8313E Reference Development Board (RDB).
-> > Includes dts.
-> 
-> Can you give some better description about the RDB, like what  
-> functionality it supports, etc..
+Why do you need this one?
 
-I'll respin with the details..
-
-> 
-> > +	soc8313@e0000000 {
-> > +		#address-cells = <1>;
-> > +		#size-cells = <1>;
-> > +		#interrupt-cells = <2>;
-> > +		device_type = "soc";
-> > +		ranges = <0 e0000000 00100000>;
-> > +		reg = <e0000000 00000200>;
-> > +		bus-frequency = <0>;
-> > +		compatible = "mpc8313\0mpc831x\0mpc83xx";
-> 
-> I'm not sure what this compatible property is suppose to mean?
-> 
-
-it was the part of Scott's "ioremap the entire IMMR" patch you acked.  I'll take it out for now, since it should really be a part of that patch.
-
-> > +		/* phy type (ULPI, UTMI, UTMI_WIDE, SERIAL) */
-> > +		usb@23000 {
-> > +			device_type = "usb";
-> > +			compatible = "fsl-usb2-dr";
-> > +			reg = <23000 1000>;
-> > +			#address-cells = <1>;
-> > +			#size-cells = <0>;
-> > +			interrupt-parent = <700>;
-> > +			interrupts = <26 2>;
-> > +			phy_type = "utmi_wide";
-> 
-> Does anything change because of the integrated UTMI phy?
-> 
-yes, it's..
-
-> > +			control_init  = <00000280>; // UTMI ext 48 MHz clk
-> 
-> What is 'control_init' ?
-> 
-
-..which selects and enables the UTMI phy interface options.
-
-> > +
-> > +		ethernet@24000 {
-> > +			device_type = "network";
-> > +			model = "TSEC";
-> 
-> isn't eTSEC on 8313?
-> 
-quite right, I'll change it.
-
-Thanks,
-
-Kim
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
