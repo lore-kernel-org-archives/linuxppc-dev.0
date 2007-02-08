@@ -1,18 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 189EADDF2E
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:28:00 +1100 (EST)
-Message-ID: <45CB254F.9010602@freescale.com>
-Date: Thu, 08 Feb 2007 07:27:43 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
-	generic iopa
-References: <989B956029373F45A0B8AF02970818900D43E9@zch01exm26.fsl.freescale.net>
-In-Reply-To: <989B956029373F45A0B8AF02970818900D43E9@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 69212DDF60
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:30:31 +1100 (EST)
+Subject: [PATCH 10/12] powerpc: remove unneeded page_is_ram export
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1170940253.4385.44.camel@johannes.berg>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124614.830282000@sipsolutions.net>
+	<17866.42529.436809.257415@cargo.ozlabs.ibm.com>
+	<1170940253.4385.44.camel@johannes.berg>
+Content-Type: text/plain
+Date: Thu, 08 Feb 2007 14:27:44 +0100
+Message-Id: <1170941264.4385.59.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Li Yang-r58472 wrote:
+arch/powerpc/mm/mem.c exports page_is_ram which is not used anywhere
+that could be modular.
 
-> No, we don't know if the BD ring is in MURAM or main memory as it is
-> configurable.  iopa() is best choice to handle both case, IMHO.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-The above code would only be used if the BD is in MURAM.  The "if 
-bd_mem_part == MEM_PART_MURAM" would stay.
-
-If the BD ring can be in main memory, then I don't think we should be 
-using a function called "iopa" to get its physical address.  It's 
-conceivable that one day, iopa() will only work on memory that's been 
-ioremap'ed.
+--- linux-2.6.orig/arch/powerpc/mm/mem.c	2007-02-08 14:07:05.446944128 +0100
++++ linux-2.6/arch/powerpc/mm/mem.c	2007-02-08 14:26:24.016944128 +0100
+@@ -83,7 +83,6 @@ int page_is_ram(unsigned long pfn)
+ 	return 0;
+ #endif
+ }
+-EXPORT_SYMBOL(page_is_ram);
+ 
+ pgprot_t phys_mem_access_prot(struct file *file, unsigned long pfn,
+ 			      unsigned long size, pgprot_t vma_prot)
