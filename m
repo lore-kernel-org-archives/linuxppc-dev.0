@@ -1,11 +1,27 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Thu, 08 Feb 2007 18:34:04 +1100
-Subject: [PATCH 4/4] Move MPIC smp routines into mpic.c
-In-Reply-To: <1170920031.184014.219881150011.qpush@cradle>
-Message-Id: <20070208073407.1FB33DDF0A@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 8820CDDEBA
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 18:35:11 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l187Z6ww001310
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 00:35:06 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l187Z1cS000876
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 01:35:05 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
+	generic iopa
+Date: Thu, 8 Feb 2007 15:36:18 +0800
+Message-ID: <989B956029373F45A0B8AF02970818900D441A@zch01exm26.fsl.freescale.net>
+In-Reply-To: <6C343491-B877-4D7D-A46D-B078862160F6@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: netdev@vger.kernel.org, Tabi Timur-B04825 <timur@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,77 +31,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Move a couple of MPIC smp routines into mpic.c, they're inside an SMP
-block in mpic.c - so they're still only built for SMP.
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+> Sent: Thursday, February 08, 2007 3:16 PM
+> To: Li Yang-r58472
+> Cc: Tabi Timur-B04825; netdev@vger.kernel.org; linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys
+to generic
+> iopa
+>=20
+>=20
+> On Feb 8, 2007, at 1:06 AM, Li Yang-r58472 wrote:
+>=20
+> >>> MURAM is a mmio region so it don't share the characteristic of
+main
+> >>> memory that phy_addr =3D virt_addr - PAGE_OFFSET.  While they can
+> >>> both be
+> >>> mapped through page table using iopa().
+> >>
+> >> Right, so when do you know if you'll be using MURAM or normal
+> >> memory?  Why not just keep around a token that is the physical
+> >> address at the point you make the decision of MURAM vs normal
+memory.
+> >
+> > Yes, that can be a way.  But as the virt to phy mapping is only used
+> > once, it's nothing bad to do it this way.
+>=20
+> The problem as I stated before with using iopa() is that its not
+> supported across platforms.
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+Yes, it is only for PPC32.  But we don't have another API to do it.  How
+about make it more generic to add PPC64 version?
 
- arch/powerpc/kernel/smp.c  |   23 -----------------------
- arch/powerpc/sysdev/mpic.c |   21 +++++++++++++++++++++
- 2 files changed, 21 insertions(+), 23 deletions(-)
-
-Index: powerpc/arch/powerpc/kernel/smp.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/smp.c
-+++ powerpc/arch/powerpc/kernel/smp.c
-@@ -78,29 +78,6 @@ int smt_enabled_at_boot = 1;
- 
- static void (*crash_ipi_function_ptr)(struct pt_regs *) = NULL;
- 
--#ifdef CONFIG_MPIC
--int __init smp_mpic_probe(void)
--{
--	int nr_cpus;
--
--	DBG("smp_mpic_probe()...\n");
--
--	nr_cpus = cpus_weight(cpu_possible_map);
--
--	DBG("nr_cpus: %d\n", nr_cpus);
--
--	if (nr_cpus > 1)
--		mpic_request_ipis();
--
--	return nr_cpus;
--}
--
--void __devinit smp_mpic_setup_cpu(int cpu)
--{
--	mpic_setup_this_cpu();
--}
--#endif /* CONFIG_MPIC */
--
- #ifdef CONFIG_PPC64
- void __devinit smp_generic_kick_cpu(int nr)
- {
-Index: powerpc/arch/powerpc/sysdev/mpic.c
-===================================================================
---- powerpc.orig/arch/powerpc/sysdev/mpic.c
-+++ powerpc/arch/powerpc/sysdev/mpic.c
-@@ -1375,4 +1375,25 @@ void smp_mpic_message_pass(int target, i
- 		break;
- 	}
- }
-+
-+int __init smp_mpic_probe(void)
-+{
-+	int nr_cpus;
-+
-+	DBG("smp_mpic_probe()...\n");
-+
-+	nr_cpus = cpus_weight(cpu_possible_map);
-+
-+	DBG("nr_cpus: %d\n", nr_cpus);
-+
-+	if (nr_cpus > 1)
-+		mpic_request_ipis();
-+
-+	return nr_cpus;
-+}
-+
-+void __devinit smp_mpic_setup_cpu(int cpu)
-+{
-+	mpic_setup_this_cpu();
-+}
- #endif /* CONFIG_SMP */
+- Leo
