@@ -1,20 +1,21 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH] CELL Oprofile SPU profiling updated patch
-Date: Thu, 8 Feb 2007 18:21:56 +0100
-References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
-	<1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com>
-	<b682962303654f4958a6c2c50d805907@bga.com>
-In-Reply-To: <b682962303654f4958a6c2c50d805907@bga.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702081821.57358.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	LKML <linux-kernel@vger.kernel.org>,
-	Milton Miller <miltonm@bga.com>, Carl Love <cel@us.ibm.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 09894DDF24
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 04:32:19 +1100 (EST)
+In-Reply-To: <32F3CC26D4DAC44E8ECD07155727A46E8B7E97@zch01exm20.fsl.freescale.net>
+References: <32F3CC26D4DAC44E8ECD07155727A46E8B7E97@zch01exm20.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3E83A767-0E8C-41E3-A9C7-A231CD841EAF@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch][5/5] powerpc V2: Add the general support for Embedded
+	Floating-Point instructions
+Date: Thu, 8 Feb 2007 11:31:25 -0600
+To: Zhu Ebony-r57400 <ebony.zhu@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,152 +25,188 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 08 February 2007 15:18, Milton Miller wrote:
 
-> 1) sample rate setup
-> 
->     In the current patch, the user specifies a sample rate as a time 
-> interval.
->     The kernel is (a) calling cpufreq to get the current cpu frequency, 
-> (b)
->     converting the rate to a cycle count, (c) converting this to a 24 bit
->     LFSR count, an iterative algorithm (in this patch, starting from
->     one of 256 values so a max of 2^16 or 64k iterations), (d) 
-> calculating
->     an trace unload interval.   In addition, a cpufreq notifier is 
-> registered
->     to recalculate on frequency changes.
-> 
->     The obvious problem is step (c), running a loop potentially 64 
-> thousand
->     times in kernel space will have a noticeable impact on other threads.
-> 
->     I propose instead that user space perform the above 4 steps, and 
-> provide
->     the kernel with two inputs: (1) the value to load in the LFSR and (2)
->     the periodic frequency / time interval at which to empty the hardware
->     trace buffer, perform sample analysis, and send the data to the 
-> oprofile
->     subsystem.
-> 
->     There should be no security issues with this approach.   If the LFSR 
-> value
->     is calculated incorrectly, either it will be too short, causing the 
-> trace
->     array to overfill and data to be dropped, or it will be too long, and
->     there will be fewer samples.   Likewise, the kernel periodic poll 
-> can be
->     too long, again causing overflow, or too frequent, causing only timer
->     execution overhead.
-> 
->     Various data is collected by the kernel while processing the 
-> periodic timer,
->     this approach would also allow the profiling tools to control the
->     frequency of this collection.   More frequent collection results in 
-> more
->     accurate sample data, with the linear cost of poll execution 
-> overhead.
-> 
->     Frequency changes can be handled either by the profile code setting
->     collection at a higher than necessary rate, or by interacting with 
-> the
->     governor to limit the speeds.
-> 
->     Optionally, the kernel can add a record indicating that some data was
->     likely dropped if it is able to read all 256 entries without 
-> underflowing
->     the array.  This can be used as hint to user space that the kernel 
-> time
->     was too long for the collection rate.
+On Feb 8, 2007, at 3:06 AM, Zhu Ebony-r57400 wrote:
 
-Moving the sample rate computation to user space sounds like the right
-idea, but why not have a more drastic version of it:
+>
+>
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Thursday, February 08, 2007 3:33 PM
+>> To: Zhu Ebony-r57400
+>> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
+>> Subject: Re: [patch][5/5] powerpc V2: Add the general support
+>> for Embedded Floating-Point instructions
+>>
+>>
+>> On Feb 7, 2007, at 9:55 PM, ebony.zhu@freescale.com wrote:
+>>
+>>> Add the general support for Embedded Floating-Point instructions to
+>>> fully comply with IEEE-754.
+>>>
+>>> Signed-off-by:Ebony Zhu <ebony.zhu@freescale.com>
+>>> ---
+>>>  arch/powerpc/kernel/head_fsl_booke.S |    4
+>>>  arch/powerpc/kernel/traps.c          |   57 +++++
+>>>  arch/powerpc/math-emu/Makefile       |   25 ++
+>>>  arch/powerpc/math-emu/sfp-machine.h  |    2
+>>>  arch/powerpc/math-emu/spe.h          |    1
+>>>  arch/powerpc/sysdev/Makefile         |    1
+>>>  arch/powerpc/sysdev/sigfpe_handler.c |  361 +++++++++++++++++++++++
+>>> +++++++++++
+>>>  7 files changed, 442 insertions(+), 9 deletions(-)
+>>
+>> I thought we were going to have some general Kconfig option
+>> to enable all this?  EMDEDDED_FP_IEEE or something like that
+>
+> So that users have chance to enable/disable fully IEEE compliance?
+> Segher
+> had mentioned this, and it sounds reasonable.
 
-Right now, all products that support this feature run at the same clock
-rate (3.2 Ghz), with cpufreq, we can reduce this to 1.6 Ghz. If I understand
-this correctly, the value depends only on the frequency, so we could simply
-hardcode this in the kernel, and print out a warning message if we ever
-encounter a different frequency, right?
+Its alot of code to bring in if you don't care about IEEE compliance.
 
-> The current patch specifically identifies that only single
-> elf objects are handled.  There is no code to handle dynamic
-> linked libraries or overlays.   Nor is there any method to
-> present samples that may have been collected during context
-> switch processing, they must be discarded.
+>>> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/
+>>> kernel/head_fsl_booke.S
+>>> index 66877bd..0d05db0 100644
+>>> --- a/arch/powerpc/kernel/head_fsl_booke.S
+>>> +++ b/arch/powerpc/kernel/head_fsl_booke.S
+>>> @@ -705,7 +705,7 @@ #else
+>>>  #endif /* CONFIG_SPE */
+>>>
+>>>  	/* SPE Floating Point Round */
+>>> -	EXCEPTION(0x2050, SPEFloatingPointRound, unknown_exception,
+>>> EXC_XFER_EE)
+>>> +	EXCEPTION(0x2050, SPEFloatingPointRound,
+>>> SPEFloatingPointException_Round, EXC_XFER_EE)
+>>>
+>>>  	/* Performance Monitor */
+>>>  	EXCEPTION(0x2060, PerformanceMonitor,
+>>> performance_monitor_exception, EXC_XFER_STD)
+>>> @@ -840,6 +840,8 @@ load_up_spe:
+>>>  	oris	r5,r5,MSR_SPE@h
+>>>  	mtmsr	r5			/* enable use of SPE now */
+>>>  	isync
+>>> +	li	r5,(SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE |
+>>> SPEFSCR_FOVFE)
+>>> +	mtspr   SPRN_SPEFSCR,r5
+>>
+>> We should do this via INIT_THREAD, is there a reason that you
+>> want to
+>> set these always?
+>
+> I just thought it's the first time that an SPE instruction is
+> encountered, so I
+> enable the exceptions here.
 
-I thought it already did handle overlays, what did I miss here?
+Lets do this via INIT_THREAD instead, its cleaner. (just remember to  
+add the proper ifdef protection for SPE_IEEE
 
-> My proposal is to change what is presented to user space.  Instead
-> of trying to translate the SPU address to the backing file
-> as the samples are recorded, store the samples as the SPU
-> context and address.  The context switch would record tid,
-> pid, object id as it does now.   In addition, if this is a
-> new object-id, the kernel would read elf headers as it does
-> today.  However, it would then proceed to provide accurate
-> dcookie information for each loader region and overlay.
+>>>  /*
+>>>   * For SMP, we don't do lazy SPE switching because it just gets too
+>>>   * horrendously complex, especially when a task switches
+>> from one CPU
+>>> diff --git a/arch/powerpc/kernel/traps.c
+>> b/arch/powerpc/kernel/traps.c
+>>> index 6915b91..30ab0f7 100644
+>>> --- a/arch/powerpc/kernel/traps.c
+>>> +++ b/arch/powerpc/kernel/traps.c
+>>> @@ -986,9 +986,16 @@ #endif /* CONFIG_FSL_BOOKE */
+>>>  #ifdef CONFIG_SPE
+>>>  void SPEFloatingPointException(struct pt_regs *regs)
+>>>  {
+>>> +	extern int spedata_handler(struct pt_regs *regs);
+>>>  	unsigned long spefscr;
+>>>  	int fpexc_mode;
+>>>  	int code = 0;
+>>> +	int err;
+>>> +	
+>>> +	preempt_disable();
+>>> +	if (regs->msr & MSR_SPE)
+>>> +		giveup_spe(current);
+>>> +	preempt_enable();
+>>
+>> use flush_spe_to_thread(current);
+>
+> OK. It works, and I'll change it.
+>
+>>
+>>>
+>>>  	spefscr = current->thread.spefscr;
+>>>  	fpexc_mode = current->thread.fpexc_mode;
+>>> @@ -1013,9 +1020,55 @@ void SPEFloatingPointException(struct pt
+>>>  		code = FPE_FLTRES;
+>>>
+>>>  	current->thread.spefscr = spefscr;
+>>> +	err = spedata_handler(regs);
+>>> +	if (err == 0) {
+>>> +		regs->nip += 4;		/* skip emulated instruction */
+>>> +		emulate_single_step(regs);
+>>> +		return;
+>>> +	}
+>>
+>> Take a look at the path I put up that reworks the error
+>> handling from
+>> do_mathemu() we need to be doing something similar (in parsing
+>> spefscr/fpexc_mode to setup code properly)
+>
+> It's new in trap.c? I'll look into it.
 
-Doing the translation in two stages in user space, as you
-suggest here, definitely makes sense to me. I think it
-can be done a little simpler though:
+Pretty recent commit, in Paul's tree, not yet in linus's.
 
-Why would you need the accurate dcookie information to be
-provided by the kernel? The ELF loader is done in user
-space, and the kernel only reproduces what it thinks that
-came up with. If the kernel only gives the dcookie information
-about the SPU ELF binary to the oprofile user space, then
-that can easily recreate the same mapping.
+(or look at my last pull request email to paul)
 
-The kernel still needs to provide the overlay identifiers
-though.
+>>> -	_exception(SIGFPE, regs, code, regs->nip);
+>>> -	return;
+>>> +	if (err == -EFAULT) {
+>>> +		/* got an error reading the instruction */
+>>> +		_exception(SIGSEGV, regs, SEGV_ACCERR, regs->nip);
+>>> +	} else if (err == -EINVAL) {
+>>> +		/* didn't recognize the instruction */
+>>> +		printk(KERN_ERR "unrecognized spe instruction "
+>>> +		       "in %s at %lx\n", current->comm, regs->nip);
+>>
+>> We should probably just SIGSEGV in this case since will never make
+>> forward progress once we hit this case.
+>
+> Won't it hit the case that the instruction is not an spe instruction?
 
-> To identify which overlays are active, (instead of the present
-> read on use and search the list to translate approach) the
-> kernel would record the location of the overlay identifiers
-> as it parsed the kernel, but would then read the identification
-> word and would record the present value as an sample from
-> a separate but related stream.   The kernel could maintain
-> the last value for each overlay and only send profile events
-> for the deltas.
+No, since we will not get this exception on something that's not an  
+SPE instruction.
 
-right.
+>>> diff --git a/arch/powerpc/math-emu/Makefile
+>> b/arch/powerpc/math-emu/
+>>> Makefile
+>>> index 29bc912..2da11ba 100644
+>>> --- a/arch/powerpc/math-emu/Makefile
+>>> +++ b/arch/powerpc/math-emu/Makefile
+>>> @@ -1,16 +1,29 @@
+>>>
+>>> -obj-y				:= math.o fmr.o lfd.o stfd.o
+>>> -
+>>> -obj-$(CONFIG_MATH_EMULATION)	+= fabs.o fadd.o
+>> fadds.o fcmpo.o
+>>> fcmpu.o \
+>>> +obj-y				:= fabs.o fneg.o
+>> types.o udivmodti4.o
+>>
+>> This isn't right, we don't want to always build these files.
+>>
+> fabs.o/fneg.o should be built in the case
+> that CONFIG_MATH_EMULATION or CONFIG_SPE or both are
+> enabled. Because I reused fabs.c and fneg.c to implement instruction
+> efdabs and
+> efdneg. Therefore, these two files should be build once we have chance
+> to build the files in directory math-emu. Types.c and udivmodti4.c
+> contain the function
+> that both math emulation instructions and spe instructions may  
+> call, so
+> they always need
+> to be built.
 
-> This approach trades translation lookup overhead for each
-> recorded sample for a burst of data on new context activation.
-> In addition it exposes the sample point of the overlay identifier
-> vs the address collection.  This allows the ambiguity to be
-> exposed to user space.   In addition, with the above proposed
-> kernel timer vs sample collection, user space could limit the
-> elapsed time between the address collection and the overlay
-> id check.
+Right, but doesn't the new rule say to always build, regardless if  
+CONFIG_MATH_EMULATION or CONFIG_SPE are set?
 
-yes, this sounds nice. But tt does not at all help accuracy,
-only performance, right?
- 
-> This approach allows multiple objects by its nature.  A new
-> elf header could be constructed in memory that contained
-> the union of the elf objects load segments, and the tools
-> will magically work.   Alternatively the object id could
-> point to a new structure, identified via a new header, that
-> it points to other elf headers (easily differentiated by the
-> elf magic headers).   Other binary formats, including several
-> objects in a ar archive, could be supported.
+Why not just duplicate fabs.o fneg.o ... in both lists.  I don't  
+think that will cause any harm.
 
-Yes, that would be a new feature if the kernel passed dcookie
-information for every section, but I doubt that it is worth
-it. I have not seen any program that allows loading code
-from more than one ELF file. In particular, the ELF format
-on the SPU is currently lacking the relocation mechanisms
-that you would need for resolving spu-side symbols at load
-time.
- 
-> If better overlay identification is required, in theory the
-> overlay switch code could be augmented to record the switches
-> (DMA reference time from the PowerPC memory and record a
-> relative decrementer in the SPU), this is obviously a future
-> item.  But it is facilitated by having user space resolve the
-> SPU to source file translation.
-
-This seems to incur a run-time overhead on the SPU even if not
-profiling, I would consider that not acceptable.
-
-	Arnd <><
+- k
