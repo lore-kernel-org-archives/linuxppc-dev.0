@@ -1,22 +1,10 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AE041DDF5B
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 18:16:21 +1100 (EST)
-In-Reply-To: <989B956029373F45A0B8AF02970818900D440B@zch01exm26.fsl.freescale.net>
-References: <989B956029373F45A0B8AF02970818900D440B@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6C343491-B877-4D7D-A46D-B078862160F6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
-	generic iopa
-Date: Thu, 8 Feb 2007 01:16:19 -0600
-To: "Li Yang-r58472" <LeoLi@freescale.com>
-Cc: netdev@vger.kernel.org, Tabi Timur-B04825 <timur@freescale.com>,
-	linuxppc-dev@ozlabs.org
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 08 Feb 2007 18:33:51 +1100
+Subject: [PATCH 1/4] Consolidate pseries platform header files into pseries.h
+Message-Id: <1170920031.184014.219881150011.qpush@cradle>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +14,111 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Following the example of platforms/pasemi, consolidate a couple of
+tiny header files in platforms/pseries into pseries.h.
 
-On Feb 8, 2007, at 1:06 AM, Li Yang-r58472 wrote:
+This gives us a convenient place to put things that need to be
+available to the platform code, but not public. And hopefully will
+help people resist the temptation of sticking externs in C files.
 
->>> MURAM is a mmio region so it don't share the characteristic of main
->>> memory that phy_addr = virt_addr - PAGE_OFFSET.  While they can
->>> both be
->>> mapped through page table using iopa().
->>
->> Right, so when do you know if you'll be using MURAM or normal
->> memory?  Why not just keep around a token that is the physical
->> address at the point you make the decision of MURAM vs normal memory.
->
-> Yes, that can be a way.  But as the virt to phy mapping is only used
-> once, it's nothing bad to do it this way.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-The problem as I stated before with using iopa() is that its not  
-supported across platforms.
+ arch/powerpc/platforms/pseries/firmware.h |   17 -----------------
+ arch/powerpc/platforms/pseries/pseries.h  |   20 ++++++++++++++++++++
+ arch/powerpc/platforms/pseries/ras.c      |    2 +-
+ arch/powerpc/platforms/pseries/ras.h      |    9 ---------
+ arch/powerpc/platforms/pseries/setup.c    |    4 ++--
+ 5 files changed, 23 insertions(+), 29 deletions(-)
 
-- k
+Index: powerpc/arch/powerpc/platforms/pseries/firmware.h
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/firmware.h
++++ /dev/null
+@@ -1,17 +0,0 @@
+-/*
+- * Copyright 2006 IBM Corporation.
+- *
+- *  This program is free software; you can redistribute it and/or
+- *  modify it under the terms of the GNU General Public License
+- *  as published by the Free Software Foundation; either version
+- *  2 of the License, or (at your option) any later version.
+- */
+-
+-#ifndef _PSERIES_FIRMWARE_H
+-#define _PSERIES_FIRMWARE_H
+-
+-#include <asm/firmware.h>
+-
+-extern void __init fw_feature_init(void);
+-
+-#endif /* _PSERIES_FIRMWARE_H */
+Index: powerpc/arch/powerpc/platforms/pseries/pseries.h
+===================================================================
+--- /dev/null
++++ powerpc/arch/powerpc/platforms/pseries/pseries.h
+@@ -0,0 +1,20 @@
++/*
++ * Copyright 2006 IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#ifndef _PSERIES_PSERIES_H
++#define _PSERIES_PSERIES_H
++
++extern void __init fw_feature_init(void);
++
++struct pt_regs;
++
++extern int pSeries_system_reset_exception(struct pt_regs *regs);
++extern int pSeries_machine_check_exception(struct pt_regs *regs);
++
++#endif /* _PSERIES_PSERIES_H */
+Index: powerpc/arch/powerpc/platforms/pseries/ras.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/ras.c
++++ powerpc/arch/powerpc/platforms/pseries/ras.c
+@@ -51,7 +51,7 @@
+ #include <asm/udbg.h>
+ #include <asm/firmware.h>
+ 
+-#include "ras.h"
++#include "pseries.h"
+ 
+ static unsigned char ras_log_buf[RTAS_ERROR_LOG_MAX];
+ static DEFINE_SPINLOCK(ras_log_buf_lock);
+Index: powerpc/arch/powerpc/platforms/pseries/ras.h
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/ras.h
++++ /dev/null
+@@ -1,9 +0,0 @@
+-#ifndef _PSERIES_RAS_H
+-#define _PSERIES_RAS_H
+-
+-struct pt_regs;
+-
+-extern int pSeries_system_reset_exception(struct pt_regs *regs);
+-extern int pSeries_machine_check_exception(struct pt_regs *regs);
+-
+-#endif /* _PSERIES_RAS_H */
+Index: powerpc/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/setup.c
++++ powerpc/arch/powerpc/platforms/pseries/setup.c
+@@ -65,10 +65,10 @@
+ #include <asm/i8259.h>
+ #include <asm/udbg.h>
+ #include <asm/smp.h>
++#include <asm/firmware.h>
+ 
+ #include "plpar_wrappers.h"
+-#include "ras.h"
+-#include "firmware.h"
++#include "pseries.h"
+ 
+ #ifdef DEBUG
+ #define DBG(fmt...) udbg_printf(fmt)
