@@ -1,24 +1,13 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A281ADDED8
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 02:40:59 +1100 (EST)
-Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1170941321.4385.61.camel@johannes.berg>
-References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124610.392302000@sipsolutions.net>
-	<1170940494.4385.51.camel@johannes.berg>
-	<1170941321.4385.61.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-A/EJZGzzs6gtQSLRxE8G"
-Date: Thu, 08 Feb 2007 16:38:19 +0100
-Message-Id: <1170949099.4385.67.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linux-pm@lists.osdl.org
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 80FEBDDEF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 03:47:34 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] Rename ucc_slow_info.us_regs to .regs
+Date: Thu,  8 Feb 2007 10:47:31 -0600
+Message-Id: <1170953251140-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,40 +17,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Rename the 'us_regs' field of the ucc_slow_info structure in ucc_slow.h
+to just 'regs'.  The equivalent field in the ucc_fast_info structure is
+also called 'regs', so this patch makes them comparable, and makes the
+code a little easier to read, because there already is a 'us_regs' in
+another ucc_slow structure.
 
---=-A/EJZGzzs6gtQSLRxE8G
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/sysdev/qe_lib/ucc_slow.c |    6 +++---
+ include/asm-powerpc/ucc_slow.h        |    2 +-
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-On Thu, 2007-02-08 at 14:28 +0100, Johannes Berg wrote:
->=20
-> +#ifdef CONFIG_CPU_HOTPLUG
-> +       /* if we have fake CPU hotplug just to support suspend to disk
-> +        * and can't really turn off a CPU, it may be taking timer interr=
-upts
-> +        * even when it is dead. Avoid doing anything in that case so glo=
-bal
-> +        * state is not modified for and by a CPU that doesn't really exi=
-st. */
-> +       if (__get_cpu_var(cpu_state) =3D=3D CPU_DEAD)
-> +               return;
-> +#endif
-
-Michael Buesch suggested to add an unlikely() there which I'll do for
-the next round.
-
-johannes
-
---=-A/EJZGzzs6gtQSLRxE8G
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBFy0Pr/ETPhpq3jKURAlUXAJsF+/uwDThXLNwaCFJAiEjWfFoxfwCglNRf
-2v5yc0jCi+ZqI2beGp+MyAs=
-=PK2k
------END PGP SIGNATURE-----
-
---=-A/EJZGzzs6gtQSLRxE8G--
+diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
+index 47b5620..0e97e5c 100644
+--- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
++++ b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
+@@ -179,7 +179,7 @@ int ucc_slow_init(struct ucc_slow_info *
+ 	uccs->us_info = us_info;
+ 	uccs->saved_uccm = 0;
+ 	uccs->p_rx_frame = 0;
+-	uccs->us_regs = us_info->us_regs;
++	uccs->us_regs = us_info->regs;
+ 	us_regs = uccs->us_regs;
+ 	uccs->p_ucce = (u16 *) & (us_regs->ucce);
+ 	uccs->p_uccm = (u16 *) & (us_regs->uccm);
+@@ -206,7 +206,7 @@ int ucc_slow_init(struct ucc_slow_info *
+ 	uccs->us_pram = qe_muram_addr(uccs->us_pram_offset);
+ 
+ 	/* Init Guemr register */
+-	if ((ret = ucc_init_guemr((struct ucc_common *) (us_info->us_regs)))) {
++	if ((ret = ucc_init_guemr((struct ucc_common *) (us_info->regs)))) {
+ 		uccs_err("ucc_slow_init: Could not init the guemr register.");
+ 		ucc_slow_free(uccs);
+ 		return ret;
+@@ -214,7 +214,7 @@ int ucc_slow_init(struct ucc_slow_info *
+ 
+ 	/* Set UCC to slow type */
+ 	if ((ret = ucc_set_type(us_info->ucc_num,
+-				(struct ucc_common *) (us_info->us_regs),
++				(struct ucc_common *) (us_info->regs),
+ 				UCC_SPEED_TYPE_SLOW))) {
+ 		uccs_err("ucc_slow_init: Could not init the guemr register.");
+ 		ucc_slow_free(uccs);
+diff --git a/include/asm-powerpc/ucc_slow.h b/include/asm-powerpc/ucc_slow.h
+index ca93bc9..1babad9 100644
+--- a/include/asm-powerpc/ucc_slow.h
++++ b/include/asm-powerpc/ucc_slow.h
+@@ -150,7 +150,7 @@ struct ucc_slow_info {
+ 	int ucc_num;
+ 	enum qe_clock rx_clock;
+ 	enum qe_clock tx_clock;
+-	struct ucc_slow *us_regs;
++	struct ucc_slow *regs;
+ 	int irq;
+ 	u16 uccm_mask;
+ 	int data_mem_part;
+-- 
+1.4.4
