@@ -2,19 +2,18 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 042E6DDE41
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 08:20:16 +1100 (EST)
-Subject: Re: [PATCH] Celleb: improve htab lock
+	by ozlabs.org (Postfix) with ESMTP id 83E0DDDEE8
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 08:26:12 +1100 (EST)
+Subject: Re: Discussion about iopa()
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200702080751.45278.arnd@arndb.de>
-References: <200702080618.l186InGM014774@toshiba.co.jp>
-	<200702080751.45278.arnd@arndb.de>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+In-Reply-To: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
+References: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
 Content-Type: text/plain
-Date: Fri, 09 Feb 2007 08:20:05 +1100
-Message-Id: <1170969605.2620.340.camel@localhost.localdomain>
+Date: Fri, 09 Feb 2007 08:26:05 +1100
+Message-Id: <1170969965.2620.345.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, Tabi Timur-B04825 <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +23,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-02-08 at 07:51 +0100, Arnd Bergmann wrote:
-> On Thursday 08 February 2007 07:18, Ishizaki Kou wrote:
-> > s);
-> > +       local_irq_save(flags);
-> > +       spin_lock(&beat_htab_lock);
-> >         dummy1 = beat_lpar_hpte_getword0(slot);
-> >  
-> >         if ((dummy1 & ~0x7FUL) != (want_v & ~0x7FUL)) {
-> >                 DBG_LOW("not found !\n");
-> > -               spin_unlock_irqrestore(&beat_htab_lock, flags);
-> > +               spin_unlock(&beat_htab_lock);
-> > +               local_irq_restore(flags);
-> >                 return;
-> >         }
-> >  
-> >         lpar_rc = beat_write_htab_entry(0, slot, 0, 0, HPTE_V_VALID, 0,
-> >                 &dummy1, &dummy2);
-> > -       spin_unlock_irqrestore(&beat_htab_lock, flags);
-> > +       spin_unlock(&beat_htab_lock);
-> > +       local_irq_restore(flags);
-> 
-> The function normally used here would be spin_lock_irq()/spin_unlock_irq(),
-> which does spin_{,un}lock along with local_irq_{save,restore}.
 
-Not lock_irq/unlock_irq, that doesn't save/restore but disables/enables
-(that is doesn't save the previous state).
+> Do you think we should remove iopa?
 
-I'd rather have him use _irqsave/irqrestore, that is, keep the current
-code in that function.
+I'm really not fan of it. We might keep it for now to not break
+everything that uses it, but I'd rather avoid new things using it
+directly.
+
+> The information is often not so obvious.  The most case of using iopa is
+> that we allocate memory from MURAM using rheap, and then get the
+> physical address of it.
+
+Then provide specific MURAM functions that return a dma_addr_t in
+addition to the virtual address and have your driver keep track of that.
+It's more efficient than walking the page tables all the time anyway.
+
+Remember that if you have CONFIG_HIGHMEM, you can potentially have to
+create TLB entries for accessing the PTEs used by iopa to resolve the
+address. It's really not efficient.
+
+>   We can calculate phy_addr by using:  virt_addr
+> - virt_muram_base + phy_muram_base, but it is not as straightforward as
+> just using the page table, let alone we need to keep track of
+> virt_muram_base and phy_muram_base.
+
+Using the page table is much less efficient. As I said, I'd rather see
+you having a set of alloc/free functions for your MURAM that return the
+dma_addr_t as well as the virtual address (like dma_alloc_coherent does)
+and have your drivers using these keep track of the dma_addr_t.
 
 Ben.
