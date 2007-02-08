@@ -1,24 +1,20 @@
-Return-Path: <compudj@krystal.dyndns.org>
-Received: from tomts36-srv.bellnexxia.net (tomts36.bellnexxia.net
-	[209.226.175.93]) by ozlabs.org (Postfix) with ESMTP id 1A02EDDE45
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
+	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id BA86CDDED8
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Feb 2007 02:31:53 +1100 (EST)
-Received: from krystal.dyndns.org ([67.68.196.179])
-	by tomts36-srv.bellnexxia.net
-	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
-	<20070208153151.UYKF1862.tomts36-srv.bellnexxia.net@krystal.dyndns.org>
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 Feb 2007 10:31:51 -0500
-Date: Thu, 8 Feb 2007 10:31:51 -0500
-From: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] PPC : missing request_dma and free_dma on PPC 405
-Message-ID: <20070208153151.GA26910@Krystal>
-References: <20070207234845.GA26092@Krystal>
-	<4CCA1279-2782-4184-AF1D-77A043C18768@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <4CCA1279-2782-4184-AF1D-77A043C18768@kernel.crashing.org>
+	Fri,  9 Feb 2007 02:42:43 +1100 (EST)
+Subject: Re: CLI for embedded system
+From: Ben Warren <bwarren@qstreams.com>
+To: pjmaiya <pjmaiya@signal-networks.com>
+In-Reply-To: <011b01c74b81$5604ad80$4601a8c0@signet>
+References: <29DC34A6B43468409F5A371CFE34E849091044@ex01.ads.ubidyne.de>
+	<011b01c74b81$5604ad80$4601a8c0@signet>
+Content-Type: text/plain
+Date: Thu, 08 Feb 2007 10:42:39 -0500
+Message-Id: <1170949359.14627.66.camel@saruman.qstreams.net>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,62 +25,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-* Kumar Gala (galak@kernel.crashing.org) wrote:
->=20
-> On Feb 7, 2007, at 5:48 PM, Mathieu Desnoyers wrote:
->=20
-> >PPC : missing request_dma and free_dma on PPC 405
-> >
-> >The solution I have found to correct this linking error for modules
-> >that use DMA is to allow 4xx to select GENERIC_ISA_DMA in arch/ppc/=20
-> >Kconfig.
-> >It applies on 2.6.20.
-> >
-> >Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
->=20
-> Are you actually using request_dma/free_dma?
->=20
-> The reason this was Kconfig'd this way is that ISA_DMA doesn't make =20
-> sense on 4xx or the majority of PPC's because of the lack of an ISA bus.
->=20
+Pjmaiya,
 
-No, but, in the configuration I tried to build, the following macro :
-include/asm-powerpc/vga.h:#define VGA_MAP_MEM(x,s) (x + vgacon_remap_base)
-is used by drivers/video/console/vgacon.c which can be compiled as a
-module (drivers/video/vga16fb.ko) for PPC 405.
+On Thu, 2007-02-08 at 18:32 +0530, pjmaiya wrote:
+> Hi,
+>    Can anybody give me link/built in package or source code for
+> implmenting CLI for embedded system on linux. We have tried to
+> implement our own CLI on linux(with bash shell as base), but it is
+> massive work since we need to support Tab feature, history
+> feature,help etc..
 
-Maybe the right solution would be to make FB_VGA16, VGA_CONSOLE and
-MDA_CONSOLE depend on GENERIC_ISA_DMA (or disable them for 4xx and 8xx).
+If you're looking for something to emulate Cisco's IOS shell, there's an
+open source project called 'clish':  
 
-in drivers/video/console/Kconfig
-VGA_CONSOLE already uses :
-depends on !ARCH_ACORN && !ARCH_EBSA110 && !4xx && !8xx && !SPARC &&
-    !M68K && !PARISC && !FRV && !ARCH_VERSATILE && !SUPERH
+http://sourceforge.net/projects/clish/
 
-MDA_CONSOLE
-depends on !M68K && !PARISC && ISA (depending on ISA seems to make it
-OK)
+I haven't really used this myself, so can't recommend for or against.
 
-in drivers/video/Kconfig
-FB_VGA16
-depends on FB && (X86 || PPC)
-here we should probably change it for :
-depends on FB && (X86 || PPC64 || (PPC32 && GENERIC_ISA_DMA))
-
-Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -488,7 +488,7 @@ config FB_IMSTT
-=20
- config FB_VGA16
- 	tristate "VGA 16-color graphics support"
--	depends on FB && (X86 || PPC)
-+	depends on FB && (X86 || PPC64 || (PPC32 && GENERIC_ISA_DMA))
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
---=20
-Mathieu Desnoyers
-Computer Engineering Graduate Student, =C9cole Polytechnique de Montr=E9al
-OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
+regards,
+Ben
