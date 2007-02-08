@@ -1,26 +1,26 @@
-Return-Path: <ebony.zhu@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 7ABF4DDE2E
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 19:08:18 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l1888Bbf007878
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 01:08:11 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l18889tB028696
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 02:08:10 -0600 (CST)
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 2C714DDEBA
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 19:13:44 +1100 (EST)
+Date: Thu, 8 Feb 2007 09:13:36 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>
+Subject: Re: [Linux-fbdev-devel] [PATCH 0/10] ps3av/fb drivers for 2.6.21
+In-Reply-To: <1170882427.2620.293.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.62.0702080910570.6049@pademelon.sonytel.be>
+References: <Pine.LNX.4.62.0701301754050.29343@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702051624410.18405@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702061559420.14230@pademelon.sonytel.be>
+	<1170794953.2620.253.camel@localhost.localdomain>
+	<Pine.LNX.4.62.0702070859050.31772@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702071743040.29060@pademelon.sonytel.be>
+	<1170882427.2620.293.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [patch][0/5] powerpc V2 : Add support to fully comply with
-	IEEE-754 standard
-Date: Thu, 8 Feb 2007 16:08:07 +0800
-Message-ID: <32F3CC26D4DAC44E8ECD07155727A46E8B7E7E@zch01exm20.fsl.freescale.net>
-In-Reply-To: <57721FE9-D85E-4FB6-AD5F-8342D99E7BD0@kernel.crashing.org>
-From: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,25 +30,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> >>
-> >> Did you end up getting testfloat running?  I'd like to see some=20
-> >> testing results before accepting these patches.  I think=20
-> testfloat is=20
-> >> our best bet at this point.
-> >>
-> > Hi Kumar,
-> >
-> > I looked into the testfloat suit, and found all the instructions it=20
-> > tests (more than 50)should be implemented based on ASM.
->=20
-> Don't follow?  Can't you build it with the e500 compiler?
->=20
-The TestFloat suite provided the target of 386-Win32-gcc and
-SPARC-Solaris-gcc only, and a template for user to porting his
-own processor. Some general instructions are implemented in C,
-but some CPU specific instructions like evfsmul need to be
-implemented assemblely. To build it with e500 compiler we still
-Have some porting work to do.
+On Thu, 8 Feb 2007, Benjamin Herrenschmidt wrote:
+> On Wed, 2007-02-07 at 17:51 +0100, Geert Uytterhoeven wrote:
+> > On Wed, 7 Feb 2007, Geert Uytterhoeven wrote:
+> > > On Wed, 7 Feb 2007, Benjamin Herrenschmidt wrote:
+> > > > > ps3av: Use a kernel thread to handle the actual video mode setting, as this
+> > > > > involves some quite big delays.
+> > > > 
+> > > > The ps3 fbdev already has it's own kernel thread no ? Why use a second
+> > > > one ? We could just have the ps3av code keep the delays but be called by
+> > > > a thread ?
+> > > 
+> > > That's another possibility.  And since the screen is blanked during mode
+> > > change, there's no need to refresh it, and I may even get rid of the call to
+> > > ps3fb_flip_ctl() in ps3av.
+> > > 
+> > > I'll look into it...
+> > 
+> > Below's a new patch (take 3).
+> > 
+> > But it doesn't work well: after each mode change, the old contents of the
+> > screen are visible for a (noticable) fraction of a second.
+> > Ps3fbd doesn't refresh the screen contents until ps3av_set_video_mode()
+> > returns, which is longer than my display needs to sync to the new video mode
+> > (this was actually the reason behind the msleep() calls).
+> > 
+> > I also could not get rid of the calls to ps3fb_flip_ctl() in ps3av, as screen
+> > updates have to be disabled while sending other AV packets, too.
+> > 
+> > So I prefer the previous solution, using a new ps3av kernel thread.
+> > Unless anyone has a better solution, of course :-)
+> 
+> Moving the flip to ps3av ? :-)
 
-B.R.
-Ebony
+Using the same kthread as used for mode setting? Besides moving half of ps3fb
+to ps3av, that will give the same problems.
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
