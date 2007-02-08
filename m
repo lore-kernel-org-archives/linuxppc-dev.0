@@ -1,22 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6BAD0DDEC8
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 08:55:21 +1100 (EST)
-Date: Thu, 8 Feb 2007 15:52:41 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Please pull from 'for_paulus' branch
-In-Reply-To: <Pine.LNX.4.64.0702081546520.30378@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0702081552020.30378@localhost.localdomain>
-References: <Pine.LNX.4.64.0702081546520.30378@localhost.localdomain>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Li Yang <leoli@freescale.com>,
-	Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
-	Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17867.40281.175422.116673@cargo.ozlabs.ibm.com>
+Date: Fri, 9 Feb 2007 08:59:53 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [linux-pm] [PATCH 02/12] powermac: support G5 CPU hotplug
+In-Reply-To: <1170941321.4385.61.camel@johannes.berg>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124610.392302000@sipsolutions.net>
+	<1170940494.4385.51.camel@johannes.berg>
+	<1170941321.4385.61.camel@johannes.berg>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,62 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-(initial email was missing the subject).
+Johannes Berg writes:
 
-- k
+> +#ifdef CONFIG_CPU_HOTPLUG
+> +	/* if we have fake CPU hotplug just to support suspend to disk
+> +	 * and can't really turn off a CPU, it may be taking timer interrupts
+> +	 * even when it is dead. Avoid doing anything in that case so global
+> +	 * state is not modified for and by a CPU that doesn't really exist. */
+> +	if (__get_cpu_var(cpu_state) == CPU_DEAD)
+> +		return;
+> +#endif
 
-On Thu, 8 Feb 2007, Kumar Gala wrote:
+Are you sure this is necessary?  IIRC, the if (!cpu_is_offline(cpu)) a
+little bit further down is there to cope with this exact situation.
+And cpu hotplug already works on G4 SMP powermacs, where we can't
+physically remove the cpu either - we just put it into sleep mode with
+interrupts disabled, which is what we would be doing on a G5 powermac
+also.
 
-> Please pull from 'for_paulus' branch of
-> master.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
->
-> to receive the following updates:
->
->  Documentation/powerpc/booting-without-of.txt     |    4
->  arch/powerpc/boot/dts/kuroboxHD.dts              |  148 ++
->  arch/powerpc/boot/dts/mpc8313erdb.dts            |  219 +++
->  arch/powerpc/boot/dts/mpc8349emds.dts            |  328 -----
->  arch/powerpc/boot/dts/mpc834x_mds.dts            |  334 +++++
->  arch/powerpc/configs/linkstation_defconfig       |  118 +
->  arch/powerpc/configs/mpc8313_rdb_defconfig       | 1409 +++++++++++++++++++++++
->  arch/powerpc/configs/mpc834x_mds_defconfig       |    9
->  arch/powerpc/kernel/of_platform.c                |    1
->  arch/powerpc/platforms/83xx/Kconfig              |   24
->  arch/powerpc/platforms/83xx/Makefile             |    3
->  arch/powerpc/platforms/83xx/mpc8313_rdb.c        |   99 +
->  arch/powerpc/platforms/83xx/mpc834x_mds.c        |  213 +++
->  arch/powerpc/platforms/83xx/mpc834x_sys.c        |  140 --
->  arch/powerpc/platforms/83xx/mpc834x_sys.h        |   23
->  arch/powerpc/platforms/83xx/mpc83xx.h            |   18
->  arch/powerpc/platforms/embedded6xx/linkstation.c |   12
->  arch/powerpc/sysdev/fsl_soc.c                    |   78 -
->  arch/powerpc/sysdev/qe_lib/ucc_slow.c            |    6
->  include/asm-powerpc/ucc_slow.h                   |    2
->  20 files changed, 2611 insertions(+), 577 deletions(-)
->
-> Andy Fleming (1):
->       [POWERPC] QE: Added QE to the list of default scanned OF devices
->
-> Guennadi Liakhovetski (1):
->       [POWERPC] Update to linkstation / kurobox support
->
-> Kim Phillips (2):
->       [POWERPC] 83xx: Add base support for the MPC8313E RDB
->       [POWERPC] 83xx: add the mpc8313erdb defconfig
->
-> Kumar Gala (1):
->       [POWERPC] 83xx: Updated and renamed MPC834x SYS to MPC834x MDS
->
-> Li Yang (3):
->       [POWERPC] 83xx: Added new dr_mode property for usb controller on 83xx
->       [POWERPC] 83xx: Add USB setup code for MPC8349E MDS-PB
->       [POWERPC] 83xx: Add platform_device for USB DR peripheral driver
->
-> Timur Tabi (1):
->       [POWERPC] QE: Rename ucc_slow_info.us_regs to ucc_slow_info.regs
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->
+Paul.
