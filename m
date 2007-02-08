@@ -1,24 +1,24 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 13A49DDEB6
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 23:52:42 +1100 (EST)
-Date: Thu, 8 Feb 2007 13:52:40 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: David Miller <davem@davemloft.net>
-Subject: Re: checker-shell still hosed...
-In-Reply-To: <Pine.LNX.4.62.0702081340340.28405@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0702081351470.28405@pademelon.sonytel.be>
-References: <20070208.030531.112264703.davem@davemloft.net>
-	<20070208.041004.07457320.davem@davemloft.net>
-	<20070208.041229.18308943.davem@davemloft.net>
-	<Pine.LNX.4.62.0702081340340.28405@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id AD2B1DDEC5
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:06:09 +1100 (EST)
+Subject: Re: [PATCH 04/10] powermac: clean up PIC initialisation code
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17866.43496.243710.13852@cargo.ozlabs.ibm.com>
+References: <20070205183026.989209000@sipsolutions.net>
+	<20070205185836.479588000@sipsolutions.net>
+	<17866.43496.243710.13852@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-h2XYojNWxR48nSL4beV/"
+Date: Thu, 08 Feb 2007 14:03:18 +0100
+Message-Id: <1170939798.4385.38.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 8 Feb 2007, Geert Uytterhoeven wrote:
-> On Thu, 8 Feb 2007, David Miller wrote:
-> > From: David Miller <davem@davemloft.net>
-> > Date: Thu, 08 Feb 2007 04:10:04 -0800 (PST)
-> > 
-> > > Removing them makes the spaces go away.
-> > 
-> > FWIW, this patch below seems to fix the sparc64 build for me.
-> > 
-> > Paul, does it work for you on powerpc too?
-> 
-> Thx, it seems to build now. I'll tell you whether it boots on PS3 soon.
 
-Build and boot were successful.
+--=-h2XYojNWxR48nSL4beV/
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Gr{oetje,eeting}s,
+On Thu, 2007-02-08 at 15:41 +1100, Paul Mackerras wrote:
+> Johannes Berg writes:
+> > This patch cleans up the powermac PIC initialisation code so that for G=
+5
+> > powermacs we don't even compile the old pmac pic file.
+>=20
+> On a 32-bit powermac config, with this patch I get:
+>=20
+>   CC      arch/powerpc/platforms/powermac/mpic.o
+> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c: In fu=
+nction =E2=80=98pmac_pic_setup_mpic_nmi=E2=80=99:
+> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
+ror: =E2=80=98xmon_action=E2=80=99 undeclared (first use in this function)
+> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
+ror: (Each undeclared identifier is reported only once
+> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
+ror: for each function it appears in.)
+> make[3]: *** [arch/powerpc/platforms/powermac/mpic.o] Error 1
 
-						Geert
+Yeah. I noticed that yesterday as well, but too late. Sorry about that.
+I could fix but it isn't nice, let's just drop this patch instead.
+Sorry.
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+johannes
+
+--=-h2XYojNWxR48nSL4beV/
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFyx+W/ETPhpq3jKURAr5EAJwIXjCSzgqKMFebp6JZgbabiHDWLwCbBlMb
+Fs0iC5TE8uf0pWghHYx5mrg=
+=FPPj
+-----END PGP SIGNATURE-----
+
+--=-h2XYojNWxR48nSL4beV/--
