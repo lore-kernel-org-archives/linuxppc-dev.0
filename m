@@ -1,19 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 99CD7DDEAB
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:17:08 +1100 (EST)
-Date: Thu, 08 Feb 2007 05:17:06 -0800 (PST)
-Message-Id: <20070208.051706.112290704.davem@davemloft.net>
-To: olecom@flower.upol.cz
-Subject: Re: Kbuild change breaks the ppc64 build
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070208124756.GU22699@flower.upol.cz>
-References: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
-	<20070208124756.GU22699@flower.upol.cz>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B41BBDDEAB
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:17:34 +1100 (EST)
+Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070207124610.392302000@sipsolutions.net>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124610.392302000@sipsolutions.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-j8baZh/sR370sU53uJcs"
+Date: Thu, 08 Feb 2007 14:14:54 +0100
+Message-Id: <1170940494.4385.51.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: torvalds@linux-foundation.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,63 +26,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Oleg Verych <olecom@flower.upol.cz>
-Date: Thu, 8 Feb 2007 13:47:56 +0100
 
-> On Thu, Feb 08, 2007 at 10:10:54PM +1100, Paul Mackerras wrote:
-> > Commit 5de043f4bd11a9e0a3e8daec7d1905da575a76b7 breaks the build on
-> > 64-bit powerpc because we no longer get the -m64 flag passed to gcc.
-> > There is code in arch/powerpc/Makefile which adds (or used to add)
-> > -m64 to AS, LD and CC if we are running on a 64-bit machine (which I
-> > am) and have a biarch toolchain (which I do).  Without -m64, the
-> > toolchain assumes 32-bit and all sorts of things break spectacularly.
-> > 
-> > I haven't yet tracked down exactly why this commit has this effect,
-> > since I find it takes considerable time and effort to understand
-> > Kbuild.
-> 
-> As i have refactored some CC checking code in Kbuild.include, it
-> turned, that some versions of `make' after calling nested functions,
-> add (or leave) prefix whitespace to result, thus ifeq[0] fails:
+--=-j8baZh/sR370sU53uJcs
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-That's not it, did you see my fix for this problem posted
-already?  The issue is the leading spaces on the first
-line of the define for checker-shell.  Those propagate
-into the callers, although they are reduced down to a
-single space.
+On Wed, 2007-02-07 at 13:45 +0100, Johannes Berg wrote:
 
-This will give you spaces in the result on any version of
-make.
+> Except for the in-irq count hack I'm happy with this. I still haven't fou=
+nd
+> where the in-hard-irq count is set to 1 in the down path during suspend o=
+r
+> resume and other platforms do similar things so I'm inclined to leave thi=
+s.
 
-Here is my fix again for your reference.
+Um, ok, so the hack breaks platforms that don't have paca, e.g. chrp32.
 
-diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
-index 8d7eabf..a1880e8 100644
---- a/scripts/Kbuild.include
-+++ b/scripts/Kbuild.include
-@@ -60,16 +60,15 @@ endef
- # Usage: option = $(call checker-shell,$(CC)...-o $$OUT,option-ok,otherwise)
- # Exit code chooses option. $$OUT is safe location for needless output.
- define checker-shell
-- $(strip
--  $(shell set -e; \
--    DIR=$(KBUILD_EXTMOD); \
--    cd $${DIR:-$(objtree)}; \
--    OUT=$$PWD/.$$$$.null; \
--    if $(1) >/dev/null 2>&1; \
--      then echo "$(2)"; \
--      else echo "$(3)"; \
--    fi; \
--    rm -f $$OUT))
-+$(shell set -e; \
-+  DIR=$(KBUILD_EXTMOD); \
-+  cd $${DIR:-$(objtree)}; \
-+  OUT=$$PWD/.$$$$.null; \
-+  if $(1) >/dev/null 2>&1; \
-+    then echo "$(2)"; \
-+    else echo "$(3)"; \
-+  fi; \
-+  rm -f $$OUT)
- endef
- 
- # as-option
+Also, I finally figured out how the in-hard-irq count happens. The thing
+is that when I try to turn off the CPU it actually doesn't really turn
+off of course, so it ends up doing NAP and taking timer interrupts...
+which goes irq_enter() and we happen to kill it afterwards.
+
+I have two ways of fixing this:
+ - just ignore it as we do now
+ - insert a "if (cpu_dead) return" into the timer interrupt function
+
+I prefer the latter because then we're guaranteed that whatever the
+timer interrupt does we don't modify any state for/by the CPU that isn't
+supposed to exist.
+
+johannes
+
+--=-j8baZh/sR370sU53uJcs
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBFyyJO/ETPhpq3jKURAtIvAKC3peiqx1+DS509RvNWdyMpsl3+CwCeIRfe
+HEyGnG+EZDfamXCylK881mQ=
+=EICJ
+-----END PGP SIGNATURE-----
+
+--=-j8baZh/sR370sU53uJcs--
