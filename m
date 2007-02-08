@@ -2,23 +2,23 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AD2B1DDEC5
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:06:09 +1100 (EST)
-Subject: Re: [PATCH 04/10] powermac: clean up PIC initialisation code
+	by ozlabs.org (Postfix) with ESMTP id 38817DDEC3
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:10:58 +1100 (EST)
+Subject: Re: [PATCH 11/12] powermac: disallow pmu sleep notifiers from
+	aborting sleep
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17866.43496.243710.13852@cargo.ozlabs.ibm.com>
-References: <20070205183026.989209000@sipsolutions.net>
-	<20070205185836.479588000@sipsolutions.net>
-	<17866.43496.243710.13852@cargo.ozlabs.ibm.com>
+To: Andreas Schwab <schwab@suse.de>
+In-Reply-To: <jetzxxk2bh.fsf@sykes.suse.de>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124615.015873000@sipsolutions.net>
+	<jetzxxk2bh.fsf@sykes.suse.de>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-h2XYojNWxR48nSL4beV/"
-Date: Thu, 08 Feb 2007 14:03:18 +0100
-Message-Id: <1170939798.4385.38.camel@johannes.berg>
+	boundary="=-kh4fsVQc73uA6iUXXnaL"
+Date: Thu, 08 Feb 2007 14:08:13 +0100
+Message-Id: <1170940093.4385.40.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	linux-pm@lists.osdl.org, Torrance <torrance123@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,45 +29,38 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-h2XYojNWxR48nSL4beV/
-Content-Type: text/plain; charset=utf-8
+--=-kh4fsVQc73uA6iUXXnaL
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Thu, 2007-02-08 at 15:41 +1100, Paul Mackerras wrote:
-> Johannes Berg writes:
-> > This patch cleans up the powermac PIC initialisation code so that for G=
-5
-> > powermacs we don't even compile the old pmac pic file.
+On Wed, 2007-02-07 at 23:52 +0100, Andreas Schwab wrote:
+> Johannes Berg <johannes@sipsolutions.net> writes:
 >=20
-> On a 32-bit powermac config, with this patch I get:
+> > Tracing through the code, no current PMU sleep notifier can abort sleep=
+.
+> > Since no new PMU sleep notifiers should be added, this patch simplifies=
+ the
+> > code and removes the ability to abort sleep.
 >=20
->   CC      arch/powerpc/platforms/powermac/mpic.o
-> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c: In fu=
-nction =E2=80=98pmac_pic_setup_mpic_nmi=E2=80=99:
-> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
-ror: =E2=80=98xmon_action=E2=80=99 undeclared (first use in this function)
-> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
-ror: (Each undeclared identifier is reported only once
-> /home/paulus/kernel/powerpc/arch/powerpc/platforms/powermac/mpic.c:40: er=
-ror: for each function it appears in.)
-> make[3]: *** [arch/powerpc/platforms/powermac/mpic.o] Error 1
+> There is a use of PBOOK_SLEEP_OK left in
+> arch/powerpc/platforms/powermac/time.c.
 
-Yeah. I noticed that yesterday as well, but too late. Sorry about that.
-I could fix but it isn't nice, let's just drop this patch instead.
-Sorry.
+Ouch. Yeah, the patch was done assuming my time resume patch is applied.
+
+I found another one though, in dmasound.
 
 johannes
 
---=-h2XYojNWxR48nSL4beV/
+--=-kh4fsVQc73uA6iUXXnaL
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBFyx+W/ETPhpq3jKURAr5EAJwIXjCSzgqKMFebp6JZgbabiHDWLwCbBlMb
-Fs0iC5TE8uf0pWghHYx5mrg=
-=FPPj
+iD8DBQBFyyC9/ETPhpq3jKURAnGRAJ0S/3NOcKKrrWPqVtTaKp3PzFU4XwCcD6cu
+e4Owi7xYOVz2EsJ7KGTmIAQ=
+=cS92
 -----END PGP SIGNATURE-----
 
---=-h2XYojNWxR48nSL4beV/--
+--=-kh4fsVQc73uA6iUXXnaL--
