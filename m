@@ -2,19 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 49D08DDDDB
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 08:18:19 +1100 (EST)
-Subject: Re: [PATCH 10/11] Celleb: basic support
+	by ozlabs.org (Postfix) with ESMTP id 042E6DDE41
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 08:20:16 +1100 (EST)
+Subject: Re: [PATCH] Celleb: improve htab lock
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17866.46314.560561.936484@cargo.ozlabs.ibm.com>
-References: <200701261219.l0QCJAG1024510@toshiba.co.jp>
-	<17866.46314.560561.936484@cargo.ozlabs.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200702080751.45278.arnd@arndb.de>
+References: <200702080618.l186InGM014774@toshiba.co.jp>
+	<200702080751.45278.arnd@arndb.de>
 Content-Type: text/plain
-Date: Fri, 09 Feb 2007 08:18:04 +1100
-Message-Id: <1170969484.2620.338.camel@localhost.localdomain>
+Date: Fri, 09 Feb 2007 08:20:05 +1100
+Message-Id: <1170969605.2620.340.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-02-08 at 16:28 +1100, Paul Mackerras wrote:
-> Ishizaki Kou writes:
+On Thu, 2007-02-08 at 07:51 +0100, Arnd Bergmann wrote:
+> On Thursday 08 February 2007 07:18, Ishizaki Kou wrote:
+> > s);
+> > +       local_irq_save(flags);
+> > +       spin_lock(&beat_htab_lock);
+> >         dummy1 = beat_lpar_hpte_getword0(slot);
+> >  
+> >         if ((dummy1 & ~0x7FUL) != (want_v & ~0x7FUL)) {
+> >                 DBG_LOW("not found !\n");
+> > -               spin_unlock_irqrestore(&beat_htab_lock, flags);
+> > +               spin_unlock(&beat_htab_lock);
+> > +               local_irq_restore(flags);
+> >                 return;
+> >         }
+> >  
+> >         lpar_rc = beat_write_htab_entry(0, slot, 0, 0, HPTE_V_VALID, 0,
+> >                 &dummy1, &dummy2);
+> > -       spin_unlock_irqrestore(&beat_htab_lock, flags);
+> > +       spin_unlock(&beat_htab_lock);
+> > +       local_irq_restore(flags);
 > 
-> > +config PPC_CELLEB
-> > +	bool "Toshiba's Cell Reference Set 'Celleb' Architecture"
-> > +	depends on PPC_MULTIPLATFORM && PPC64
-> > +	select PPC_CELL
-> > +	select PPC_OF_PLATFORM_PCI
-> > +	select HAS_TXX9_SERIAL
-> > +	select PPC_UDBG_BEAT
-> > +	select USB_OHCI_BIG_ENDIAN_MMIO
-> > +	select USB_EHCI_BIG_ENDIAN_MMIO
-> 
-> I get:
-> 
-> scripts/kconfig/conf -s arch/powerpc/Kconfig
-> arch/powerpc/Kconfig:569:warning: 'select' used by config symbol 'PPC_CELLEB' refer to undefined symbol 'USB_OHCI_BIG_ENDIAN_MMIO'
-> arch/powerpc/Kconfig:570:warning: 'select' used by config symbol 'PPC_CELLEB' refer to undefined symbol 'USB_EHCI_BIG_ENDIAN_MMIO'
-> 
-> I applied this patch anyway.  Is this something that will get fixed by
-> changes you have submitted to the USB maintainer, or is some other fix
-> required?
+> The function normally used here would be spin_lock_irq()/spin_unlock_irq(),
+> which does spin_{,un}lock along with local_irq_{save,restore}.
 
-Yes, this will be fixed when some patches in greg's queue have reached
-Linus... (looking at git-commit...) and in fact, as of this morning,
-they are in Linus tree.
+Not lock_irq/unlock_irq, that doesn't save/restore but disables/enables
+(that is doesn't save the previous state).
+
+I'd rather have him use _irqsave/irqrestore, that is, keep the current
+code in that function.
 
 Ben.
