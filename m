@@ -2,8 +2,8 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 359C3DDED1
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 09:24:12 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id E100FDDEC6
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 09:24:31 +1100 (EST)
 Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Johannes Berg <johannes@sipsolutions.net>
@@ -12,8 +12,8 @@ References: <20070207124536.963531000@sipsolutions.net>
 	<20070207124610.392302000@sipsolutions.net>
 	<1170940494.4385.51.camel@johannes.berg>
 Content-Type: text/plain
-Date: Fri, 09 Feb 2007 09:24:03 +1100
-Message-Id: <1170973443.2620.371.camel@localhost.localdomain>
+Date: Fri, 09 Feb 2007 09:24:23 +1100
+Message-Id: <1170973463.2620.373.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -47,6 +47,6 @@ On Thu, 2007-02-08 at 14:14 +0100, Johannes Berg wrote:
 > timer interrupt does we don't modify any state for/by the CPU that isn't
 > supposed to exist.
 
-Agreed.
+Or we can just mark interrupts as soft-disabled ?
 
 Ben.
