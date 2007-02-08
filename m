@@ -1,20 +1,16 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E7FE8DDECF
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc2-s5.bay0.hotmail.com (bay0-omc2-s5.bay0.hotmail.com
+	[65.54.246.141]) by ozlabs.org (Postfix) with ESMTP id 6A5CCDDE37
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Feb 2007 18:52:30 +1100 (EST)
-In-Reply-To: <20070207234845.GA26092@Krystal>
-References: <20070207234845.GA26092@Krystal>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=ISO-8859-1; delsp=yes; format=flowed
-Message-Id: <4CCA1279-2782-4184-AF1D-77A043C18768@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] PPC : missing request_dma and free_dma on PPC 405
-Date: Thu, 8 Feb 2007 01:51:34 -0600
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+	Thu,  8 Feb 2007 20:31:05 +1100 (EST)
+Message-ID: <BAY110-F367B542EC391DB7FE0CFF8B29D0@phx.gbl>
+In-Reply-To: <BAY115-W49EA8BA1CCA34CB8DA5E3B29D0@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: mamsadegh@hotmail.com
+Subject: RE: ML403 Hard TEMAC, PLB and Linux 2.6
+Date: Thu, 08 Feb 2007 09:30:55 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,44 +22,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
+In xapp902, they are using the old cores for Temac. So it will be easier to 
+generate a project in EDK 8.2. Not only the cores there are new, but also 
+it can generate the driver for linux 2.6.
 
-On Feb 7, 2007, at 5:48 PM, Mathieu Desnoyers wrote:
+BR
+Ming
 
-> PPC : missing request_dma and free_dma on PPC 405
+>From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+>To: <christophe.alayrac@cresitt.com>
+>CC: linuxppc-embedded@ozlabs.org
+>Subject: RE: ML403 Hard TEMAC, PLB and Linux 2.6
+>Date: Thu, 8 Feb 2007 07:13:47 +0000
 >
-> The solution I have found to correct this linking error for modules
-> that use DMA is to allow 4xx to select GENERIC_ISA_DMA in arch/ppc/=20
-> Kconfig.
-> It applies on 2.6.20.
 >
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-
-Are you actually using request_dma/free_dma?
-
-The reason this was Kconfig'd this way is that ISA_DMA doesn't make =20
-sense on 4xx or the majority of PPC's because of the lack of an ISA bus.
-
-- k
-
+>Hi
+>Thanks for reply
+>Well, regarding xapp902, there is a very simple question, Where can I find 
+it? It seems that Xilinx has deleted all of the links to these files.
 >
-> --- a/arch/ppc/Kconfig
-> +++ b/arch/ppc/Kconfig
-> @@ -1188,7 +1188,7 @@ config ISA
 >
->  config GENERIC_ISA_DMA
->  	bool
-> -	depends on 6xx && !CPM2
-> +	depends on 4xx || 6xx && !CPM2
->  	default y
 >
->  config PPC_I8259
-> --=20
-> Mathieu Desnoyers
-> Computer Engineering Graduate Student, =C9cole Polytechnique de =
-Montr=E9al
-> OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE =20
-> 3BAE 9A68
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
+>----------------------------------------
+> > Subject: Re: ML403 Hard TEMAC, PLB and Linux 2.6
+> > From: christophe.alayrac@cresitt.com
+> > To: mamsadegh@hotmail.com
+> > CC: linuxppc-embedded@ozlabs.org
+> > Date: Thu, 8 Feb 2007 06:51:45 +0100
+> >
+> > Le mercredi 07 f関rier 2007 ?22:30 +0000, Mohammad Sadegh Sadri a
+> > 閏rit :
+> > Hi Mohammad,
+> >
+> > Please find here after some answer
+> >
+> > > 1- I want to use, ML403, Hard TEMAC and PLB TEMAC cores. Is there any 
+ready to use design, or any reference design available for this?
+> > > I'm using EDK 8.1 and I understood that, when I choose the ML403 
+board , EDK does not use hard temac, so , should I add it manually? ( well 
+this is funny, but the wizard does not use hard temac , is it true? )
+> > > Is there any ready EDK projects for ML403, with TEMAC and PLB TEMAC 
+modules already inserted and cofigured? (I don't want to use GSRD ) ( If 
+yes would you please put the link here )
+> > >
+> > You can start from XAPP 902 from Xilinx, this design demonstrate TEMAC
+> > use in loopback mode. Some memers from that community have tried from
+> > that design as a starting point. I did not nknow if the succeed.
+> > I would recommand to get EDK 8.2 SP2 and use the Wizard to build a new
+> > design with TEMAC.
+> >
+> > > 2- Simply, Is there any driver available for linux 2.6 , for PLB 
+TEMAC and Hard TEMAC modules? If yes , can you put the link here, so that I 
+can download it?
+> > >
+> > For the kernel you can get it from Montavista source code site using 
+GIT
+> > to download it (linux-xilinx-26). This is 2.6.17.4 version (last week!)
+> >
+> > Then you will need to pacth the Kernel with TEMAC drivers (look for
+> > TEMAC PAULUS MVISTA with google, or follow my messages in that mailing
+> > list)
+> > NOTE: If you use that TEMAC patch do not use SGDMA on your TEMAC, use
+> > FIFO.
+> >
+> > > thanks
+> > Regards
+> >
+> > Chris
+> > > _________________________________________________________________
+> > > Personalize your Live.com homepage with the news, weather, and photos 
+you care about.
+> > > http://www.live.com/getstarted.aspx?icid=T001MSN30A0701
+> > > _______________________________________________
+> > > Linuxppc-embedded mailing list
+> > > Linuxppc-embedded@ozlabs.org
+> > > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> >
+>
+>_________________________________________________________________
+>Live Search: New search found
+>http://get.live.com/search/overview
+>_______________________________________________
+>Linuxppc-embedded mailing list
+>Linuxppc-embedded@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
