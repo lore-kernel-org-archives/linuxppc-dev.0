@@ -1,13 +1,26 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 089EEDDEFA
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 04:49:27 +1100 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: paulus@samba.org, linuxppc-dev@ozlabs.org
-Subject: [PATCH] Rename ucc_slow_info.us_regs to .regs
-Date: Thu,  8 Feb 2007 10:32:02 -0600
-Message-Id: <1170952322770-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+Return-Path: <adrian@rhlx01.hs-esslingen.de>
+Received: from rhlx01.hs-esslingen.de (rhlx01.hs-esslingen.de [129.143.116.10])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "rhlx01.hs-esslingen.de",
+	Issuer "HE CA - G01" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 0C397DDEA3
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 05:01:23 +1100 (EST)
+Date: Thu, 8 Feb 2007 19:01:19 +0100
+From: Adrian Reber <adrian@lisas.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH] CELL Oprofile SPU profiling updated patch
+Message-ID: <20070208180119.GA24743@lisas.de>
+References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
+	<1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com>
+	<b682962303654f4958a6c2c50d805907@bga.com>
+	<200702081821.57358.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200702081821.57358.arnd@arndb.de>
+Cc: LKML <linux-kernel@vger.kernel.org>, Milton Miller <miltonm@bga.com>,
+	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+	cbe-oss-dev@ozlabs.org, Carl Love <cel@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,61 +30,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Rename the 'us_regs' field of the ucc_slow_info structure in ucc_slow.h
-to just 'regs'.  The equivalent field in the ucc_fast_info structure is
-also called 'regs', so this patch makes them comparable, and makes the
-code a little easier to read, because there already is a 'us_regs' in
-another ucc_slow structure.
+On Thu, Feb 08, 2007 at 06:21:56PM +0100, Arnd Bergmann wrote:
+[...]
+> Moving the sample rate computation to user space sounds like the right
+> idea, but why not have a more drastic version of it:
+> 
+> Right now, all products that support this feature run at the same clock
+> rate (3.2 Ghz), with cpufreq, we can reduce this to 1.6 Ghz. If I understand
+> this correctly, the value depends only on the frequency, so we could simply
+> hardcode this in the kernel, and print out a warning message if we ever
+> encounter a different frequency, right?
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- arch/powerpc/sysdev/qe_lib/ucc_slow.c |    6 +++---
- include/asm-powerpc/ucc_slow.h        |    2 +-
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Just for the record... CAB is running with 2.8 GHz. At least all the boards
+I have seen.
 
-diff --git a/arch/powerpc/sysdev/qe_lib/ucc_slow.c b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-index 47b5620..0e97e5c 100644
---- a/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-+++ b/arch/powerpc/sysdev/qe_lib/ucc_slow.c
-@@ -179,7 +179,7 @@ int ucc_slow_init(struct ucc_slow_info *
- 	uccs->us_info = us_info;
- 	uccs->saved_uccm = 0;
- 	uccs->p_rx_frame = 0;
--	uccs->us_regs = us_info->us_regs;
-+	uccs->us_regs = us_info->regs;
- 	us_regs = uccs->us_regs;
- 	uccs->p_ucce = (u16 *) & (us_regs->ucce);
- 	uccs->p_uccm = (u16 *) & (us_regs->uccm);
-@@ -206,7 +206,7 @@ int ucc_slow_init(struct ucc_slow_info *
- 	uccs->us_pram = qe_muram_addr(uccs->us_pram_offset);
- 
- 	/* Init Guemr register */
--	if ((ret = ucc_init_guemr((struct ucc_common *) (us_info->us_regs)))) {
-+	if ((ret = ucc_init_guemr((struct ucc_common *) (us_info->regs)))) {
- 		uccs_err("ucc_slow_init: Could not init the guemr register.");
- 		ucc_slow_free(uccs);
- 		return ret;
-@@ -214,7 +214,7 @@ int ucc_slow_init(struct ucc_slow_info *
- 
- 	/* Set UCC to slow type */
- 	if ((ret = ucc_set_type(us_info->ucc_num,
--				(struct ucc_common *) (us_info->us_regs),
-+				(struct ucc_common *) (us_info->regs),
- 				UCC_SPEED_TYPE_SLOW))) {
- 		uccs_err("ucc_slow_init: Could not init the guemr register.");
- 		ucc_slow_free(uccs);
-diff --git a/include/asm-powerpc/ucc_slow.h b/include/asm-powerpc/ucc_slow.h
-index ca93bc9..1babad9 100644
---- a/include/asm-powerpc/ucc_slow.h
-+++ b/include/asm-powerpc/ucc_slow.h
-@@ -150,7 +150,7 @@ struct ucc_slow_info {
- 	int ucc_num;
- 	enum qe_clock rx_clock;
- 	enum qe_clock tx_clock;
--	struct ucc_slow *us_regs;
-+	struct ucc_slow *regs;
- 	int irq;
- 	u16 uccm_mask;
- 	int data_mem_part;
--- 
-1.4.4
+		Adrian
