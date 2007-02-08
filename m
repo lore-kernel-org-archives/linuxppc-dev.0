@@ -1,23 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 945A3DDEBA
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 11:02:17 +1100 (EST)
-In-Reply-To: <Pine.LNX.4.60.0702072348440.7474@poirot.grange>
-References: <17865.20353.116215.380614@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0702072108280.7474@poirot.grange>
-	<17866.20884.932072.779927@cargo.ozlabs.ibm.com>
-	<Pine.LNX.4.60.0702072348440.7474@poirot.grange>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AE74A3E6-569F-45F2-ABB5-510EA256F50A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: patches in powerpc.git
-Date: Wed, 7 Feb 2007 18:01:18 -0600
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <compudj@krystal.dyndns.org>
+Received: from tomts20-srv.bellnexxia.net (tomts20-srv.bellnexxia.net
+	[209.226.175.74]) by ozlabs.org (Postfix) with ESMTP id 50CBCDDEC4
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 11:04:48 +1100 (EST)
+Received: from krystal.dyndns.org ([67.68.196.179])
+	by tomts20-srv.bellnexxia.net
+	(InterMail vM.5.01.06.13 201-253-122-130-113-20050324) with ESMTP id
+	<20070208000445.NRSE24907.tomts20-srv.bellnexxia.net@krystal.dyndns.org>
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Feb 2007 19:04:45 -0500
+Date: Wed, 7 Feb 2007 19:04:44 -0500
+From: Mathieu Desnoyers <compudj@krystal.dyndns.org>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: [PATCH] arch/powerpc missing export vgacon_remap_base
+Message-ID: <20070208000444.GC26092@Krystal>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+arch/powerpc missing export vgacon_remap_base
 
-On Feb 7, 2007, at 4:49 PM, Guennadi Liakhovetski wrote:
+The following macro :
+include/asm-powerpc/vga.h:#define VGA_MAP_MEM(x,s) (x + vgacon_remap_base)
+is used by drivers/video/console/vgacon.c which can be compiled as a module
+(drivers/video/vga16fb.ko).
 
-> On Thu, 8 Feb 2007, Paul Mackerras wrote:
->
->> Guennadi Liakhovetski writes:
->>
->>> Paul, I think, you missed this one:
->>>
->>> http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030718.html
->>>
->>> Please, apply or comment:-)
->>
->> Ah yes.  It's easy to miss a patch when the subject line starts with
->> "Re:". :)  I'll put it in.
->
-> I'll __try__ to remember that:-)
+Therefore, vgacon_remap_base must be exported.
 
-Also, I'll try to grab these patches in the future and have them in  
-my tree.
+Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
 
-- k
+--- a/arch/powerpc/kernel/setup_32.c
++++ b/arch/powerpc/kernel/setup_32.c
+@@ -65,6 +65,7 @@ int have_of =3D 1;
+=20
+ #ifdef CONFIG_VGA_CONSOLE
+ unsigned long vgacon_remap_base;
++EXPORT_SYMBOL(vgacon_remap_base);
+ #endif
+=20
+ /*
+diff --git a/arch/ppc/kernel/setup.c b/arch/ppc/kernel/setup.c
+index 3c506af..5856341 100644
+--=20
+Mathieu Desnoyers
+Computer Engineering Graduate Student, =C9cole Polytechnique de Montr=E9al
+OpenPGP key fingerprint: 8CD5 52C3 8E3C 4140 715F  BA06 3F25 A8FE 3BAE 9A68
