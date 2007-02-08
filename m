@@ -1,21 +1,11 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 80065DDFB3
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 18:34:00 +1100 (EST)
-In-Reply-To: <ZCH01EXM202TRqf69aZ00001061@zch01exm20.fsl.freescale.net>
-References: <ZCH01EXM202TRqf69aZ00001061@zch01exm20.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A726EA39-8CA7-418D-BF07-E33A127FFB50@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch][5/5] powerpc V2: Add the general support for Embedded
-	Floating-Point instructions
-Date: Thu, 8 Feb 2007 01:32:58 -0600
-To: ebony.zhu@freescale.com
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Thu, 08 Feb 2007 18:33:55 +1100
+Subject: [PATCH 3/4] Cleanup pseries kexec code
+In-Reply-To: <1170920031.184014.219881150011.qpush@cradle>
+Message-Id: <20070208073403.3C54FDDF0F@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,613 +15,210 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Move all the pseries kexec code into one file, platforms/pseries/kexec.c
+Provide helpers for setting up ppc_md.kexec_cpu_down, so that we don't
+have to have #ifdef CONFIG_KEXEC in setup.c
 
-On Feb 7, 2007, at 9:55 PM, ebony.zhu@freescale.com wrote:
+Move the initialisation of the ppc_md kexec callbacks into an init routine.
+This is well and truly early enough to cause no change in behaviour, we
+can't kexec until userspace has given us a kernel to kexec into.
 
-> Add the general support for Embedded Floating-Point instructions
-> to fully comply with IEEE-754.
->
-> Signed-off-by:Ebony Zhu <ebony.zhu@freescale.com>
-> ---
->  arch/powerpc/kernel/head_fsl_booke.S |    4
->  arch/powerpc/kernel/traps.c          |   57 +++++
->  arch/powerpc/math-emu/Makefile       |   25 ++
->  arch/powerpc/math-emu/sfp-machine.h  |    2
->  arch/powerpc/math-emu/spe.h          |    1
->  arch/powerpc/sysdev/Makefile         |    1
->  arch/powerpc/sysdev/sigfpe_handler.c |  361 +++++++++++++++++++++++ 
-> +++++++++++
->  7 files changed, 442 insertions(+), 9 deletions(-)
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-I thought we were going to have some general Kconfig option to enable  
-all this?  EMDEDDED_FP_IEEE or something like that
+ arch/powerpc/platforms/pseries/Makefile  |    1 
+ arch/powerpc/platforms/pseries/kexec.c   |   72 +++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/pseries/pseries.h |    8 +++
+ arch/powerpc/platforms/pseries/setup.c   |   50 ---------------------
+ 4 files changed, 83 insertions(+), 48 deletions(-)
 
->
-> diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/ 
-> kernel/head_fsl_booke.S
-> index 66877bd..0d05db0 100644
-> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> @@ -705,7 +705,7 @@ #else
->  #endif /* CONFIG_SPE */
->
->  	/* SPE Floating Point Round */
-> -	EXCEPTION(0x2050, SPEFloatingPointRound, unknown_exception,  
-> EXC_XFER_EE)
-> +	EXCEPTION(0x2050, SPEFloatingPointRound,  
-> SPEFloatingPointException_Round, EXC_XFER_EE)
->
->  	/* Performance Monitor */
->  	EXCEPTION(0x2060, PerformanceMonitor,  
-> performance_monitor_exception, EXC_XFER_STD)
-> @@ -840,6 +840,8 @@ load_up_spe:
->  	oris	r5,r5,MSR_SPE@h
->  	mtmsr	r5			/* enable use of SPE now */
->  	isync
-> +	li	r5,(SPEFSCR_FINVE | SPEFSCR_FDBZE | SPEFSCR_FUNFE |  
-> SPEFSCR_FOVFE)
-> +	mtspr   SPRN_SPEFSCR,r5
-
-We should do this via INIT_THREAD, is there a reason that you want to  
-set these always?
-
->  /*
->   * For SMP, we don't do lazy SPE switching because it just gets too
->   * horrendously complex, especially when a task switches from one CPU
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index 6915b91..30ab0f7 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -986,9 +986,16 @@ #endif /* CONFIG_FSL_BOOKE */
->  #ifdef CONFIG_SPE
->  void SPEFloatingPointException(struct pt_regs *regs)
->  {
-> +	extern int spedata_handler(struct pt_regs *regs);
->  	unsigned long spefscr;
->  	int fpexc_mode;
->  	int code = 0;
-> +	int err;
-> +	
-> +	preempt_disable();
-> +	if (regs->msr & MSR_SPE)
-> +		giveup_spe(current);
-> +	preempt_enable();
-
-use flush_spe_to_thread(current);
-
->
->  	spefscr = current->thread.spefscr;
->  	fpexc_mode = current->thread.fpexc_mode;
-> @@ -1013,9 +1020,55 @@ void SPEFloatingPointException(struct pt
->  		code = FPE_FLTRES;
->
->  	current->thread.spefscr = spefscr;
-> +	err = spedata_handler(regs);
-> +	if (err == 0) {
-> +		regs->nip += 4;		/* skip emulated instruction */
-> +		emulate_single_step(regs);
-> +		return;
-> +	}
-
-Take a look at the path I put up that reworks the error handling from  
-do_mathemu() we need to be doing something similar (in parsing  
-spefscr/fpexc_mode to setup code properly)
-
-> -	_exception(SIGFPE, regs, code, regs->nip);
-> -	return;
-> +	if (err == -EFAULT) {
-> +		/* got an error reading the instruction */
-> +		_exception(SIGSEGV, regs, SEGV_ACCERR, regs->nip);
-> +	} else if (err == -EINVAL) {
-> +		/* didn't recognize the instruction */
-> +		printk(KERN_ERR "unrecognized spe instruction "
-> +		       "in %s at %lx\n", current->comm, regs->nip);
-
-We should probably just SIGSEGV in this case since will never make  
-forward progress once we hit this case.
-
-> +	} else {
-> +		_exception(SIGFPE, regs, code, regs->nip);
-> +		return;
-> +	}
-> +}
-> +
-> +void SPEFloatingPointException_Round(struct pt_regs *regs)
-> +{
-> +	extern int speround_handler(struct pt_regs *regs);
-> +	int err;
-> +
-
-
-> +	preempt_disable();
-> +	if (regs->msr & MSR_SPE)
-> +		giveup_spe(current);
-> +	preempt_enable();
-
-use flush_spe_to_thread(current);
-
-> +
-> +	regs->nip -= 4;
-
-uugh, just handle this in speround_handler()
-
-> +	err = speround_handler(regs);
-> +	if (err == 0) {
-> +		regs->nip += 4;		/* skip emulated instruction */
-> +		emulate_single_step(regs);
-
-I don't think this emulate_single_step() needed since we really  
-aren't changing NIP from the HW point of view.
-
-> +		return;
-> +	}
-> +
-> +	if (err == -EFAULT) {
-> +		/* got an error reading the instruction */
-> +		_exception(SIGSEGV, regs, SEGV_ACCERR, regs->nip);
-> +	} else if (err == -EINVAL) {
-> +		/* didn't recognize the instruction */
-> +		printk(KERN_ERR "unrecognized spe instruction "
-> +		       "in %s at %lx\n", current->comm, regs->nip);
-
-similar comment as above
-
-> +	} else {
-> +		_exception(SIGFPE, regs, 0, regs->nip);
-> +		return;
-> +	}
->  }
->  #endif
->
-> diff --git a/arch/powerpc/math-emu/Makefile b/arch/powerpc/math-emu/ 
-> Makefile
-> index 29bc912..2da11ba 100644
-> --- a/arch/powerpc/math-emu/Makefile
-> +++ b/arch/powerpc/math-emu/Makefile
-> @@ -1,16 +1,29 @@
->
-> -obj-y				:= math.o fmr.o lfd.o stfd.o
-> -
-> -obj-$(CONFIG_MATH_EMULATION)	+= fabs.o fadd.o fadds.o fcmpo.o  
-> fcmpu.o \
-> +obj-y				:= fabs.o fneg.o types.o udivmodti4.o
-
-This isn't right, we don't want to always build these files.
-
-> +					
-> +obj-$(CONFIG_MATH_EMULATION)	+= math.o fmr.o lfd.o stfd.o \
-> +					fadd.o fadds.o fcmpo.o fcmpu.o \
->  					fctiw.o fctiwz.o fdiv.o fdivs.o \
->  					fmadd.o fmadds.o fmsub.o fmsubs.o \
-> -					fmul.o fmuls.o fnabs.o fneg.o types.o \
-> +					fmul.o fmuls.o fnabs.o \
->  					fnmadd.o fnmadds.o fnmsub.o fnmsubs.o \
->  					fres.o frsp.o frsqrte.o fsel.o lfs.o \
->  					fsqrt.o	fsqrts.o fsub.o fsubs.o \
->  					mcrfs.o mffs.o mtfsb0.o mtfsb1.o \
-> -					mtfsf.o mtfsfi.o stfiwx.o stfs.o \
-> -					udivmodti4.o
-> +					mtfsf.o mtfsfi.o stfiwx.o stfs.o
-> +
-> +obj-$(CONFIG_SPE)		+= efsabs.o efsadd.o efscfd.o efscmpeq.o \
-> +					efscmpgt.o efscmplt.o efsctsf.o efsctsi.o \
-> +					efsctsiz.o efsctuf.o efsctui.o efsctuiz.o \
-> +					efsdiv.o efsmul.o efsnabs.o efsneg.o efssub.o \
-> +					evfsabs.o evfsadd.o evfscmpeq.o evfscmpgt.o \
-> +					evfscmplt.o evfsctsf.o evfsctsi.o evfsctsiz.o \
-> +					evfsctuf.o evfsctui.o evfsctuiz.o evfsdiv.o \
-> +					evfsmul.o evfsnabs.o evfsneg.o evfssub.o \
-> +					efdadd.o efdcfs.o efdcmpeq.o efdcmpgt.o efdcmplt.o \
-> +					efdctsf.o efdctsi.o efdctsidz.o efdctsiz.o efdctuf.o \
-> +					efdctui.o efdctuidz.o efdctuiz.o efddiv.o efdmul.o \
-> +					efdnabs.o efdsub.o
->
->  CFLAGS_fabs.o = -fno-builtin-fabs
->  CFLAGS_math.o = -fno-builtin-fabs
-> diff --git a/arch/powerpc/math-emu/sfp-machine.h b/arch/powerpc/ 
-> math-emu/sfp-machine.h
-> index 4b17d83..07de8ef 100644
-> --- a/arch/powerpc/math-emu/sfp-machine.h
-> +++ b/arch/powerpc/math-emu/sfp-machine.h
-> @@ -166,7 +166,9 @@ #define __FP_PACK_RAW_2(fs, val, X)			\
->  #include <linux/kernel.h>
->  #include <linux/sched.h>
->
-> +#ifndef __FPU_FPSCR
->  #define __FPU_FPSCR	(current->thread.fpscr.val)
-> +#endif
->
->  /* We only actually write to the destination register
->   * if exceptions signalled (if any) will not trap.
-> diff --git a/arch/powerpc/math-emu/spe.h b/arch/powerpc/math-emu/spe.h
-> new file mode 100644
-> index 0000000..4f63630
-> --- /dev/null
-> +++ b/arch/powerpc/math-emu/spe.h
-> @@ -0,0 +1 @@
-> +#define __FPU_FPSCR	(current->thread.spefscr)
-> diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/ 
-> Makefile
-> index 2621a7e..47f88b6 100644
-> --- a/arch/powerpc/sysdev/Makefile
-> +++ b/arch/powerpc/sysdev/Makefile
-> @@ -12,6 +12,7 @@ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
->  obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
->  obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
->  obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
-> +obj-$(CONFIG_SPE)		+= sigfpe_handler.o
->
->  ifeq ($(CONFIG_PPC_MERGE),y)
->  obj-$(CONFIG_PPC_I8259)		+= i8259.o
-> diff --git a/arch/powerpc/sysdev/sigfpe_handler.c b/arch/powerpc/ 
-> sysdev/sigfpe_handler.c
-> new file mode 100644
-> index 0000000..8f9cfdb
-> --- /dev/null
-> +++ b/arch/powerpc/sysdev/sigfpe_handler.c
-> @@ -0,0 +1,361 @@
-> +/*
-> + * arch/powerpc/sysdev/sigfpe_handler.c
-> + *
-> + * Copyright (C) 2006 Freescale Semiconductor, Inc. All rights  
-> reserved.
-> + *
-> + * Author: Ebony Zhu, ebony.zhu@freescale.com
-> + *
-> + * Derived from arch/powerpc/math-emu/math.c
-> + * Copyright (C) 1999  Eddie C. Dost  (ecd@atecom.com)
-> + *
-> + * Description:
-> + * This file is the exception handler to make E500 SPE instructions
-> + * fully comply with IEEE-754 floating point standard.
-> + *
-> + * This program is free software; you can redistribute it and/or
-> + * modify it under the terms of the GNU General Public License
-> + * as published by the Free Software Foundation; either version
-> + * 2 of the License, or (at your option) any later version.
-> + */
-> +
-> +#include <linux/types.h>
-> +#include <asm/uaccess.h>
-> +#include <asm/reg.h>
-> +
-> +#define SPEFUNC(x)	extern int x(void *, void *, void *, void *)
-> +#define efdabs	fabs
-> +#define efdneg	fneg
-> +
-> +/* Scalar SPFP functions */
-> +SPEFUNC(efsabs);
-> +SPEFUNC(efsadd);
-> +SPEFUNC(efscfd);
-> +SPEFUNC(efscmpeq);
-> +SPEFUNC(efscmpgt);
-> +SPEFUNC(efscmplt);
-> +SPEFUNC(efsctsf);
-> +SPEFUNC(efsctsi);
-> +SPEFUNC(efsctsiz);
-> +SPEFUNC(efsctuf);
-> +SPEFUNC(efsctui);
-> +SPEFUNC(efsctuiz);
-> +SPEFUNC(efsdiv);
-> +SPEFUNC(efsmul);
-> +SPEFUNC(efsnabs);
-> +SPEFUNC(efsneg);
-> +SPEFUNC(efssub);
-> +
-> +/* Vector Floating-Point functions */
-> +SPEFUNC(evfsabs);
-> +SPEFUNC(evfsadd);
-> +SPEFUNC(evfscmpeq);
-> +SPEFUNC(evfscmpgt);
-> +SPEFUNC(evfscmplt);
-> +SPEFUNC(evfsctsf);
-> +SPEFUNC(evfsctsi);
-> +SPEFUNC(evfsctsiz);
-> +SPEFUNC(evfsctuf);
-> +SPEFUNC(evfsctui);
-> +SPEFUNC(evfsctuiz);
-> +SPEFUNC(evfsdiv);
-> +SPEFUNC(evfsmul);
-> +SPEFUNC(evfsnabs);
-> +SPEFUNC(evfsneg);
-> +SPEFUNC(evfssub);
-> +
-> +/* Scalar DPFP functions */
-> +SPEFUNC(efdabs);
-> +SPEFUNC(efdadd);
-> +SPEFUNC(efdcfs);
-> +SPEFUNC(efdcmpeq);
-> +SPEFUNC(efdcmpgt);
-> +SPEFUNC(efdcmplt);
-> +SPEFUNC(efdctsf);
-> +SPEFUNC(efdctsi);
-> +SPEFUNC(efdctsidz);
-> +SPEFUNC(efdctsiz);
-> +SPEFUNC(efdctuf);
-> +SPEFUNC(efdctui);
-> +SPEFUNC(efdctuidz);
-> +SPEFUNC(efdctuiz);
-> +SPEFUNC(efddiv);
-> +SPEFUNC(efdmul);
-> +SPEFUNC(efdnabs);
-> +SPEFUNC(efdneg);
-> +SPEFUNC(efdsub);
-> +
-> +#define VCT		0x4
-> +#define SPFP		0x6
-> +#define DPFP		0x7
-> +#define EFAPU		0x4
-> +
-> +#define EFSADD		0x2c0
-> +#define EFSSUB		0x2c1
-> +#define EFSABS		0x2c4
-> +#define EFSNABS		0x2c5
-> +#define EFSNEG		0x2c6
-> +#define EFSMUL		0x2c8
-> +#define EFSDIV		0x2c9
-> +#define EFSCMPGT	0x2cc
-> +#define EFSCMPLT	0x2cd
-> +#define EFSCMPEQ	0x2ce
-> +#define EFSCFD		0x2cf
-> +#define EFSCTUI		0x2d4
-> +#define EFSCTSI		0x2d5
-> +#define EFSCTUF		0x2d6
-> +#define EFSCTSF		0x2d7
-> +#define EFSCTUIZ	0x2d8
-> +#define EFSCTSIZ	0x2da
-> +
-> +#define EVFSADD		0x280
-> +#define EVFSSUB		0x281
-> +#define EVFSABS		0x284
-> +#define EVFSNABS	0x285
-> +#define EVFSNEG		0x286
-> +#define EVFSMUL		0x288
-> +#define EVFSDIV		0x289
-> +#define EVFSCMPGT	0x28c
-> +#define EVFSCMPLT	0x28d
-> +#define EVFSCMPEQ	0x28e
-> +#define EVFSCTUI	0x294
-> +#define EVFSCTSI	0x295
-> +#define EVFSCTUF	0x296
-> +#define EVFSCTSF	0x297
-> +#define EVFSCTUIZ	0x298
-> +#define EVFSCTSIZ	0x29a
-> +
-> +#define EFDADD		0x2e0
-> +#define EFDSUB		0x2e1
-> +#define EFDABS		0x2e4
-> +#define EFDNABS		0x2e5
-> +#define EFDNEG		0x2e6
-> +#define EFDMUL		0x2e8
-> +#define EFDDIV		0x2e9
-> +#define EFDCTUIDZ	0x2ea
-> +#define EFDCTSIDZ	0x2eb
-> +#define EFDCMPGT	0x2ec
-> +#define EFDCMPLT	0x2ed
-> +#define EFDCMPEQ	0x2ee
-> +#define EFDCFS		0x2ef
-> +#define EFDCTUI		0x2f4
-> +#define EFDCTSI		0x2f5
-> +#define EFDCTUF		0x2f6
-> +#define EFDCTSF		0x2f7
-> +#define EFDCTUIZ	0x2f8
-> +#define EFDCTSIZ	0x2fa
-> +
-> +#define AB	2
-> +#define XA	3
-> +#define XB	4
-> +#define XCR	5	
-> +
-> +static u64 fullgprs[32];
-> +static u32 speinsn;
-> +static int insn_decode(struct pt_regs *regs);
-> +static int (*func)(void *, void *, void *, void *);
-> +static void *op0 = 0, *op1 = 0, *op2 = 0, *op3 = 0;
-> +static int type = 0, flag;
-> +
-> +int
-> +spedata_handler(struct pt_regs *regs)
-> +{
-> +	int i;
-> +
-> +	if (get_user(speinsn, (unsigned int __user *) regs->nip))
-> +		return -EFAULT;
-> +	if ((speinsn >> 26) != 4)
-> +		return -EINVAL;         /* not an spe instruction */
-> +	switch ((speinsn >> 5) & 0x7 ) {
-> +	case SPFP:
-> +		for(i = 0; i < 32; i++) {
-> +			fullgprs[i] = regs->gpr[i];
-> +			fullgprs[i] = fullgprs[i] << 32 | current->thread.evr[i];
-> +		};
-> +		break;
-> +	default:
-> +		for(i = 0; i < 32; i++) {
-> +			fullgprs[i] = current->thread.evr[i];
-> +			fullgprs[i] = (fullgprs[i] << 32) | (regs->gpr[i]);
-> +		};
-> +	}
-> +	
-> +	if (insn_decode(regs) == -ENOSYS) return -ENOSYS;
-> +	flag = func(op0, op1, op2, op3);
-> +	
-> +	switch ((speinsn >> 5) & 0x7 ) {
-> +	case SPFP:
-> +		for (i = 0; i < 32; i++) {
-> +			regs->gpr[i] = fullgprs[i] >> 32;
-> +		};
-> +		break;
-> +	default:
-> +		for (i = 0; i < 32; i++) {
-> +			regs->gpr[i] = fullgprs[i];
-> +			current->thread.evr[i] = fullgprs[i] >> 32;
-> +		};
-> +	}
-> +	return 0;
-> +}
-> +
-> +int
-> +speround_handler(struct pt_regs *regs)
-> +{
-> +	u32 lsb_lo, lsb_hi;
-> +	int s_lo, s_hi;
-> +	int rD;
-> +	
-> +	if (get_user(speinsn, (unsigned int __user *) regs->nip))
-> +		return -EFAULT;
-> +	if ((speinsn >> 26) != 4)
-> +		return -EINVAL;         /* not an spe instruction */
-> +	
-> +	rD = (speinsn >> 21) & 0x1f;
-> +	flag = insn_decode(regs);
-> +	if (type == XCR) return -ENOSYS;
-> +
-> +	s_lo = (regs->gpr[rD] & 0x80000000) >> 31;
-> +	s_hi = (current->thread.evr[rD] & 0x80000000) >> 31;
-> +	lsb_lo = regs->gpr[rD];
-> +	lsb_hi = current->thread.evr[rD];
-> +	switch ((speinsn >> 5) & 0x7 ) {
-> +	/* Since SPE instructions on E500 core can handle round to nearest
-> +	 * and round toward zero with IEEE-754 complied, we just need
-> +	 * to handle round toward +Inf and round toward -Inf by software.
-> +	 */
-> +	case SPFP:
-> +		if ((current->thread.spefscr & 0x3) == 0x2) { /* round to +Inf */
-> +			if (!s_lo) lsb_lo++; /* Z > 0, choose Z1 */
-> +		} else { /* round to -Inf */
-> +			if (s_lo) lsb_lo++; /* Z < 0, choose Z2 */
-> +		}
-> +		regs->gpr[rD] = lsb_lo;
-> +		break;
-> +	case DPFP:
-> +		fullgprs[rD] = current->thread.evr[rD];
-> +		fullgprs[rD] = (fullgprs[rD] << 32) | (regs->gpr[rD]);
-> +
-> +		if ((current->thread.spefscr & 0x3) == 0x2) { /* round to +Inf */
-> +			if (!s_hi) fullgprs[rD]++; /* Z > 0, choose Z1 */
-> +		} else { /* round to -Inf */
-> +			if (s_hi) fullgprs[rD]++; /* Z < 0, choose Z2 */
-> +		}
-> +		regs->gpr[rD] = fullgprs[rD];
-> +		current->thread.evr[rD] = fullgprs[rD] >> 32;
-> +		break;
-> +	case VCT:
-> +		if ((current->thread.spefscr & 0x3) == 0x2) { /* round to +Inf */
-> +			if (!s_lo) lsb_lo++; /* Z_low > 0, choose Z1 */
-> +			if (!s_hi) lsb_hi++; /* Z_high word > 0, choose Z1 */
-> +		} else { /* round to -Inf */
-> +			if (s_lo) lsb_lo++; /* Z_low < 0, choose Z2 */
-> +			if (s_hi) lsb_hi++; /* Z_high < 0, choose Z2 */
-> +		}
-> +		regs->gpr[rD] = lsb_lo;
-> +		current->thread.evr[rD] = lsb_hi;
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}	
-> +	return 0;
-> +}
-> +
-> +static int insn_decode(struct pt_regs *regs)
-> +{
-> +	switch (speinsn >> 26) {
-> +	
-> +	case EFAPU:
-> +		switch (speinsn & 0x7ff) {
-> +		case EFSABS:	func = efsabs;		type = XA;	break;
-> +		case EFSADD:	func = efsadd;		type = AB;      break;
-> +		case EFSCFD:	func = efscfd;		type = XB;	break;
-> +		case EFSCMPEQ:	func = efscmpeq;	type = XCR;	break;
-> +		case EFSCMPGT:	func = efscmpgt;	type = XCR;	break;
-> +		case EFSCMPLT:	func = efscmplt;	type = XCR;	break;
-> +		case EFSCTSF:	func = efsctsf;		type = XB;	break;
-> +		case EFSCTSI:	func = efsctsi;		type = XB;	break;
-> +		case EFSCTSIZ:	func = efsctsiz;	type = XB;	break;
-> +		case EFSCTUF:	func = efsctuf;		type = XB;	break;
-> +		case EFSCTUI:	func = efsctui;		type = XB;	break;
-> +		case EFSCTUIZ:	func = efsctuiz;	type = XB;	break;
-> +		case EFSDIV:	func = efsdiv;		type = AB;	break;
-> +		case EFSMUL:	func = efsmul;		type = AB;	break;
-> +		case EFSNABS:	func = efsnabs;		type = XA;	break;
-> +		case EFSNEG:	func = efsneg;		type = XA;	break;
-> +		case EFSSUB:	func = efssub;		type = AB;	break;
-> +
-> +		case EVFSABS:	func = evfsabs;		type = XA;	break;
-> +		case EVFSADD:	func = evfsadd;		type = AB;      break;
-> +		case EVFSCMPEQ:	func = evfscmpeq;	type = XCR;	break;
-> +		case EVFSCMPGT:	func = evfscmpgt;	type = XCR;	break;
-> +		case EVFSCMPLT:	func = evfscmplt;	type = XCR;	break;
-> +		case EVFSCTSF:	func = evfsctsf;	type = XB;	break;
-> +		case EVFSCTSI:	func = evfsctsi;	type = XB;	break;
-> +		case EVFSCTSIZ:	func = evfsctsiz;	type = XB;	break;
-> +		case EVFSCTUF:	func = evfsctuf;	type = XB;	break;
-> +		case EVFSCTUI:	func = evfsctui;	type = XB;	break;
-> +		case EVFSCTUIZ:	func = evfsctuiz;	type = XB;	break;
-> +		case EVFSDIV:	func = evfsdiv;		type = AB;	break;
-> +		case EVFSMUL:	func = evfsmul;		type = AB;	break;
-> +		case EVFSNABS:	func = evfsnabs;	type = XA;	break;
-> +		case EVFSNEG:	func = evfsneg;		type = XA;	break;
-> +		case EVFSSUB:	func = evfssub;		type = AB;	break;
-> +
-> +		case EFDABS:	func = efdabs;		type = XA;	break;
-> +		case EFDADD:	func = efdadd;		type = AB;	break;
-> +		case EFDCFS:	func = efdcfs;		type = XB;	break;
-> +		case EFDCMPEQ:	func = efdcmpeq;	type = XCR;	break;
-> +		case EFDCMPGT:	func = efdcmpgt;	type = XCR;	break;
-> +		case EFDCMPLT:	func = efdcmplt;	type = XCR;	break;
-> +		case EFDCTSF:	func = efdctsf;		type = XB;	break;
-> +		case EFDCTSI:	func = efdctsi;		type = XB;	break;
-> +		case EFDCTSIDZ:	func = efdctsidz;	type = XB;	break;
-> +		case EFDCTSIZ:	func = efdctsiz;	type = XB;	break;
-> +		case EFDCTUF:	func = efdctuf;		type = XB;	break;
-> +		case EFDCTUI:	func = efdctui;		type = XB;	break;
-> +		case EFDCTUIDZ:	func = efdctuidz;	type = XB;	break;
-> +		case EFDCTUIZ:	func = efdctuiz;	type = XB;	break;
-> +		case EFDDIV:	func = efddiv;		type = AB;	break;
-> +		case EFDMUL:	func = efdmul;		type = AB;	break;
-> +		case EFDNABS:	func = efdnabs;		type = XA;	break;
-> +		case EFDNEG:	func = efdneg;		type = XA;	break;
-> +		case EFDSUB:	func = efdsub;		type = AB;	break;		
-> +		default:
-> +			goto illegal;
-> +		}
-> +		break;
-> +	default:
-> +		goto illegal;
-> +	}
-> +
-> +	switch (type) {
-> +	case AB:
-> +		op0 = &fullgprs[(speinsn >> 21) & 0x1f];
-> +		op1 = &fullgprs[(speinsn >> 16) & 0x1f];
-> +		op2 = &fullgprs[(speinsn >> 11) & 0x1f];
-> +		break;
-> +
-> +	case XA:
-> +		op0 = &fullgprs[(speinsn >> 21) & 0x1f];
-> +		op1 = &fullgprs[(speinsn >> 16) & 0x1f];
-> +		break;
-> +
-> +	case XB:
-> +		op0 = &fullgprs[(speinsn >> 21) & 0x1f];
-> +		op1 = &fullgprs[(speinsn >> 11) & 0x1f];
-> +		break;
-> +	
-> +	case XCR:
-> +		op0 = (void *)&regs->ccr;
-> +		op1 = (void *)((speinsn >> 23) & 0x7);
-> +		op2 = &fullgprs[(speinsn >> 16) & 0x1f];
-> +		op3 = &fullgprs[(speinsn >> 11) & 0x1f];
-> +		break;
-> +
-> +	default:
-> +		goto illegal;
-> +	}
-> +	return 0;
-> +illegal:
-> +	printk(KERN_ERR "\nOoops! IEEE-754 compliance handler encountered  
-> un-supported instruction.\n");
-> +	return -ENOSYS;
-> +}
-> -- 
-> 1.4.0
+Index: powerpc/arch/powerpc/platforms/pseries/Makefile
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/Makefile
++++ powerpc/arch/powerpc/platforms/pseries/Makefile
+@@ -9,6 +9,7 @@ obj-$(CONFIG_SMP)	+= smp.o
+ obj-$(CONFIG_XICS)	+= xics.o
+ obj-$(CONFIG_SCANLOG)	+= scanlog.o
+ obj-$(CONFIG_EEH)	+= eeh.o eeh_cache.o eeh_driver.o eeh_event.o
++obj-$(CONFIG_KEXEC)	+= kexec.o
+ 
+ obj-$(CONFIG_HOTPLUG_CPU)	+= hotplug-cpu.o
+ 
+Index: powerpc/arch/powerpc/platforms/pseries/kexec.c
+===================================================================
+--- /dev/null
++++ powerpc/arch/powerpc/platforms/pseries/kexec.c
+@@ -0,0 +1,72 @@
++/*
++ *  Copyright 2006 Michael Ellerman, IBM Corporation
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++
++#include <asm/machdep.h>
++#include <asm/page.h>
++#include <asm/firmware.h>
++#include <asm/kexec.h>
++#include <asm/mpic.h>
++
++#include "pseries.h"
++#include "xics.h"
++#include "plpar_wrappers.h"
++
++static void pseries_kexec_cpu_down(int crash_shutdown, int secondary)
++{
++	/* Don't risk a hypervisor call if we're crashing */
++	if (firmware_has_feature(FW_FEATURE_SPLPAR) && !crash_shutdown) {
++		unsigned long addr;
++
++		addr = __pa(get_slb_shadow());
++		if (unregister_slb_shadow(hard_smp_processor_id(), addr))
++			printk("SLB shadow buffer deregistration of "
++			       "cpu %u (hw_cpu_id %d) failed\n",
++			       smp_processor_id(),
++			       hard_smp_processor_id());
++
++		addr = __pa(get_lppaca());
++		if (unregister_vpa(hard_smp_processor_id(), addr)) {
++			printk("VPA deregistration of cpu %u (hw_cpu_id %d) "
++					"failed\n", smp_processor_id(),
++					hard_smp_processor_id());
++		}
++	}
++}
++
++static void pseries_kexec_cpu_down_mpic(int crash_shutdown, int secondary)
++{
++	pseries_kexec_cpu_down(crash_shutdown, secondary);
++	mpic_teardown_this_cpu(secondary);
++}
++
++void __init setup_kexec_cpu_down_mpic(void)
++{
++	ppc_md.kexec_cpu_down = pseries_kexec_cpu_down_mpic;
++}
++
++static void pseries_kexec_cpu_down_xics(int crash_shutdown, int secondary)
++{
++	pseries_kexec_cpu_down(crash_shutdown, secondary);
++	xics_teardown_cpu(secondary);
++}
++
++void __init setup_kexec_cpu_down_xics(void)
++{
++	ppc_md.kexec_cpu_down = pseries_kexec_cpu_down_xics;
++}
++
++static int __init pseries_kexec_setup(void)
++{
++	ppc_md.machine_kexec = default_machine_kexec;
++	ppc_md.machine_kexec_prepare = default_machine_kexec_prepare;
++	ppc_md.machine_crash_shutdown = default_machine_crash_shutdown;
++
++	return 0;
++}
++__initcall(pseries_kexec_setup);
+Index: powerpc/arch/powerpc/platforms/pseries/pseries.h
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/pseries.h
++++ powerpc/arch/powerpc/platforms/pseries/pseries.h
+@@ -25,4 +25,12 @@ static inline smp_init_pseries_mpic(void
+ static inline smp_init_pseries_xics(void) { };
+ #endif
+ 
++#ifdef CONFIG_KEXEC
++extern void setup_kexec_cpu_down_xics(void);
++extern void setup_kexec_cpu_down_mpic(void);
++#else
++static inline setup_kexec_cpu_down_xics(void) { };
++static inline setup_kexec_cpu_down_mpic(void) { };
++#endif
++
+ #endif /* _PSERIES_PSERIES_H */
+Index: powerpc/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pseries/setup.c
++++ powerpc/arch/powerpc/platforms/pseries/setup.c
+@@ -55,7 +55,6 @@
+ #include <asm/dma.h>
+ #include <asm/machdep.h>
+ #include <asm/irq.h>
+-#include <asm/kexec.h>
+ #include <asm/time.h>
+ #include <asm/nvram.h>
+ #include "xics.h"
+@@ -219,42 +218,6 @@ static void pseries_lpar_enable_pmcs(voi
+ 		get_lppaca()->pmcregs_in_use = 1;
+ }
+ 
+-#ifdef CONFIG_KEXEC
+-static void pseries_kexec_cpu_down(int crash_shutdown, int secondary)
+-{
+-	/* Don't risk a hypervisor call if we're crashing */
+-	if (firmware_has_feature(FW_FEATURE_SPLPAR) && !crash_shutdown) {
+-		unsigned long addr;
+-
+-		addr = __pa(get_slb_shadow());
+-		if (unregister_slb_shadow(hard_smp_processor_id(), addr))
+-			printk("SLB shadow buffer deregistration of "
+-			       "cpu %u (hw_cpu_id %d) failed\n",
+-			       smp_processor_id(),
+-			       hard_smp_processor_id());
+-
+-		addr = __pa(get_lppaca());
+-		if (unregister_vpa(hard_smp_processor_id(), addr)) {
+-			printk("VPA deregistration of cpu %u (hw_cpu_id %d) "
+-					"failed\n", smp_processor_id(),
+-					hard_smp_processor_id());
+-		}
+-	}
+-}
+-
+-static void pseries_kexec_cpu_down_mpic(int crash_shutdown, int secondary)
+-{
+-	pseries_kexec_cpu_down(crash_shutdown, secondary);
+-	mpic_teardown_this_cpu(secondary);
+-}
+-
+-static void pseries_kexec_cpu_down_xics(int crash_shutdown, int secondary)
+-{
+-	pseries_kexec_cpu_down(crash_shutdown, secondary);
+-	xics_teardown_cpu(secondary);
+-}
+-#endif /* CONFIG_KEXEC */
+-
+ static void __init pseries_discover_pic(void)
+ {
+ 	struct device_node *np;
+@@ -267,16 +230,12 @@ static void __init pseries_discover_pic(
+ 			pSeries_mpic_node = of_node_get(np);
+ 			ppc_md.init_IRQ       = pseries_mpic_init_IRQ;
+ 			ppc_md.get_irq        = mpic_get_irq;
+-#ifdef CONFIG_KEXEC
+-			ppc_md.kexec_cpu_down = pseries_kexec_cpu_down_mpic;
+-#endif
++			setup_kexec_cpu_down_mpic();
+ 			smp_init_pseries_mpic();
+ 			return;
+ 		} else if (strstr(typep, "ppc-xicp")) {
+ 			ppc_md.init_IRQ       = xics_init_IRQ;
+-#ifdef CONFIG_KEXEC
+-			ppc_md.kexec_cpu_down = pseries_kexec_cpu_down_xics;
+-#endif
++			setup_kexec_cpu_down_xics();
+ 			smp_init_pseries_xics();
+ 			return;
+ 		}
+@@ -548,9 +507,4 @@ define_machine(pseries) {
+ 	.check_legacy_ioport	= pSeries_check_legacy_ioport,
+ 	.system_reset_exception = pSeries_system_reset_exception,
+ 	.machine_check_exception = pSeries_machine_check_exception,
+-#ifdef CONFIG_KEXEC
+-	.machine_kexec		= default_machine_kexec,
+-	.machine_kexec_prepare	= default_machine_kexec_prepare,
+-	.machine_crash_shutdown	= default_machine_crash_shutdown,
+-#endif
+ };
