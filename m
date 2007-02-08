@@ -1,20 +1,16 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8AA2FDDDF4
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc3-s41.bay0.hotmail.com (bay0-omc3-s41.bay0.hotmail.com
+	[65.54.246.241]) by ozlabs.org (Postfix) with ESMTP id 88402DDE40
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Feb 2007 21:44:25 +1100 (EST)
-Message-ID: <45CAFEF0.6020408@cambridgebroadband.com>
-Date: Thu, 08 Feb 2007 10:44:00 +0000
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-MIME-Version: 1.0
-To: Daniel Ng <daniel_ng11@lycos.com>
-Subject: Re: multiple devices using ELDK NFS mounts
-References: <loom.20070208T072135-902@post.gmane.org>
-In-Reply-To: <loom.20070208T072135-902@post.gmane.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+	Thu,  8 Feb 2007 23:12:07 +1100 (EST)
+Message-ID: <BAY110-F207F3618DF66A6C22A8E8AB29D0@phx.gbl>
+In-Reply-To: <1170927669.10662.4.camel@Serge-Linux>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: christophe.alayrac@cresitt.com
+Subject: RE: ML403 Hard TEMAC, PLB and Linux 2.6
+Date: Thu, 08 Feb 2007 12:12:01 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,24 +22,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Daniel Ng wrote:
-> Hi,
-> 
-> I am working on multiple ELDK devices. So far, I just have one copy of the ELDK 
-> NFS mount per device. This gets unwieldly when we have more than a few devices, 
-> especially considering the size of one NFS mount being over 800Mb. 
-> 
-> Can you suggest a more efficient way? Something like sharing part of a single 
-> NFS mount across multiple devices? Or some other way?
-> 
-> Cheers,
-> Daniel
-> 
+Hi Alayrac,
 
-I assume you are mounting the NFS as the *root* filesystem, and you don't want the
-devices to overwrite eachothers files.
+>Do you mean that you just copy Xilinx linux 2.6 BSP to Kernel.org source
+>code directly?
+>Or is it a pre patched kernel source tree?
+>Could you also precise the kernel version?
 
-Why not build a ramdisk root filesystem and boot that.  Then mount the NFS filesystem
-somewhere else, e.g. /usr.  This is very well described in the ELDK wiki.
+Yes. Just use the generated driver source code to overwrite the original 
+one in the kernel source. Of course, some fitting must be needed to make 
+sure there is no error when compilation. That's very common during 
+compilation.
 
-Alex
+BR
+Ming
+
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
