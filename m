@@ -1,17 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9B024DDFF0
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:42:08 +1100 (EST)
-Message-ID: <45CB28A6.3050607@freescale.com>
-Date: Thu, 08 Feb 2007 07:41:58 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id ECD9EDDEDA
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:56:23 +1100 (EST)
+Date: Thu, 8 Feb 2007 14:56:21 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 0/10] ps3av/fb drivers for 2.6.21
+Message-ID: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
 MIME-Version: 1.0
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Subject: Re: Discussion about iopa()
-References: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
-In-Reply-To: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, James Simmons <jsimmons@infradead.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Li Yang-r58472 wrote:
+	Hi Andrew,
 
-> Do you think we should remove iopa?
+This is the third submission of the PS3 AV Settings Driver and the PS3 Virtual
+Frame Buffer Driver.
 
-It's not used very much any more.  If you do a grep of the code, I think 
-only some legacy drivers use it.
+Patch summaries:
+[PATCH 1/10] ps3: Add shutdown to virtual uart port driver framework
+[PATCH 2/10] ps3: AV Settings Driver
+[PATCH 3/10] fbdev modedb: allow refresh rates for named video modes
+[PATCH 4/10] fbdev modedb: make more pointer parameters const
+[PATCH 5/10] fb_videomode_to_var: reset virtual screen parameters
+[PATCH 6/10] ps3: Preallocate bootmem memory for ps3fb
+[PATCH 7/10] ps3: Virtual Frame Buffer Driver
+[PATCH 8/10] ps3: disable display flipping during mode changes
+[PATCH 9/10] ps3: cleanup ps3fb before clearing HPTE
+[PATCH 10/10] ps3: ps3av/fb defconfig updates
 
-As long as ioremap'd memory is both physically and virtually contiguous, 
-I think iopa() is unnecessary.
+All patches apply to current linux-2.6.git.
 
-> The information is often not so obvious.  The most case of using iopa is
-> that we allocate memory from MURAM using rheap, and then get the
-> physical address of it.  We can calculate phy_addr by using:  virt_addr
-> - virt_muram_base + phy_muram_base, but it is not as straightforward as
-> just using the page table, let alone we need to keep track of
-> virt_muram_base and phy_muram_base.
+Note that the first 3 frame buffer-specific patches are not PS3-specific:
+  - Without patch 3 you cannot select all available video modes through the
+    kernel command line,
+  - Patch 4 is just a cleanup while I was working on the code,
+  - Without patch 5 you cannot use the ps3videomode command line tool or
+    /sys/class/graphics/fb0/mode to switch to a video mode with a lower
+    resolution.
 
-Walking the page table is slower than using pointer math, so you want to 
-avoid iopa() if you can.
+Please apply, so we can have this in 2.6.21. Thanks!
 
-I think in general, the driver that calls ioremap() should store the 
-physical address along with the virtual address of the base pointer.
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
