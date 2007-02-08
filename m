@@ -1,19 +1,17 @@
 Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 85EB5DDEC8
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:35:13 +1100 (EST)
-Message-ID: <45CB270C.5090603@freescale.com>
-Date: Thu, 08 Feb 2007 07:35:08 -0600
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9B024DDFF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:42:08 +1100 (EST)
+Message-ID: <45CB28A6.3050607@freescale.com>
+Date: Thu, 08 Feb 2007 07:41:58 -0600
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
-	generic iopa
-References: <989B956029373F45A0B8AF02970818900D4401@zch01exm26.fsl.freescale.net>
-	<17A046C6-5FD3-46D5-AB96-EAEDF22FA829@kernel.crashing.org>
-In-Reply-To: <17A046C6-5FD3-46D5-AB96-EAEDF22FA829@kernel.crashing.org>
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Subject: Re: Discussion about iopa()
+References: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
+In-Reply-To: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Li Yang-r58472 wrote:
 
-> Right, so when do you know if you'll be using MURAM or normal memory?  
-> Why not just keep around a token that is the physical address at the 
-> point you make the decision of MURAM vs normal memory.
+> Do you think we should remove iopa?
 
-That's what the original code did, kinda.  It called virt_to_phys() if 
-it is main memory, and it called immrbar_virt_to_phys() if it is MURAM. 
-  immrbar_virt_to_phys() did pointer math to extract the physical address.
+It's not used very much any more.  If you do a grep of the code, I think 
+only some legacy drivers use it.
 
-I knew that Leo's patch was calling iopa() on main memory, but since it 
-worked, I didn't think much about it.  But it does make some sense that 
-since we obtain the physical address when we allocate the BD ring, we 
-should store that address and use it.
+As long as ioremap'd memory is both physically and virtually contiguous, 
+I think iopa() is unnecessary.
 
-That's what most drivers do, anyway, and so we should do the same thing. 
-  So instead of p_tx_bd_ring[i], we would have p_tx_bd_ring[i].virtual 
-and p_tx_bd_ring[i].physical.
+> The information is often not so obvious.  The most case of using iopa is
+> that we allocate memory from MURAM using rheap, and then get the
+> physical address of it.  We can calculate phy_addr by using:  virt_addr
+> - virt_muram_base + phy_muram_base, but it is not as straightforward as
+> just using the page table, let alone we need to keep track of
+> virt_muram_base and phy_muram_base.
 
-Besides, iopa() is slower, because it walks page tables.
+Walking the page table is slower than using pointer math, so you want to 
+avoid iopa() if you can.
+
+I think in general, the driver that calls ioremap() should store the 
+physical address along with the virtual address of the base pointer.
