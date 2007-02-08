@@ -1,19 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 86D56DDF05
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:19:31 +1100 (EST)
-Subject: [PATCH 13/12] mpic: add affinity callback for IPI "chip"
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <20070207124536.963531000@sipsolutions.net>
-References: <20070207124536.963531000@sipsolutions.net>
-Content-Type: text/plain
-Date: Thu, 08 Feb 2007 14:16:51 +0100
-Message-Id: <1170940611.4385.56.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linux-pm@lists.osdl.org
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 189EADDF2E
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:28:00 +1100 (EST)
+Message-ID: <45CB254F.9010602@freescale.com>
+Date: Thu, 08 Feb 2007 07:27:43 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Li Yang-r58472 <LeoLi@freescale.com>
+Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
+	generic iopa
+References: <989B956029373F45A0B8AF02970818900D43E9@zch01exm26.fsl.freescale.net>
+In-Reply-To: <989B956029373F45A0B8AF02970818900D43E9@zch01exm26.fsl.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,32 +22,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a dummy affinity callback for the IPI "chip" to avoid
-getting a warning ("Cannot set affinity for irq 251") when taking a
-CPU offline via sysfs or during suspend.
+Li Yang-r58472 wrote:
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> No, we don't know if the BD ring is in MURAM or main memory as it is
+> configurable.  iopa() is best choice to handle both case, IMHO.
 
---- linux-2.6-git.orig/arch/powerpc/sysdev/mpic.c	2007-02-08 00:19:46.105926568 +0100
-+++ linux-2.6-git/arch/powerpc/sysdev/mpic.c	2007-02-08 00:22:31.810926568 +0100
-@@ -700,6 +700,12 @@ static void mpic_end_ipi(unsigned int ir
- 	mpic_eoi(mpic);
- }
- 
-+static void mpic_set_ipi_affinity(unsigned int irq, cpumask_t cpumask)
-+{
-+	/* we can't set affinity but also don't need to since we only
-+	 * send IPIs to online CPUs */
-+}
-+
- #endif /* CONFIG_SMP */
- 
- static void mpic_set_affinity(unsigned int irq, cpumask_t cpumask)
-@@ -788,6 +794,7 @@ static struct irq_chip mpic_ipi_chip = {
- 	.mask		= mpic_mask_ipi,
- 	.unmask		= mpic_unmask_ipi,
- 	.eoi		= mpic_end_ipi,
-+	.set_affinity	= mpic_set_ipi_affinity,
- };
- #endif /* CONFIG_SMP */
- 
+The above code would only be used if the BD is in MURAM.  The "if 
+bd_mem_part == MEM_PART_MURAM" would stay.
+
+If the BD ring can be in main memory, then I don't think we should be 
+using a function called "iopa" to get its physical address.  It's 
+conceivable that one day, iopa() will only work on memory that's been 
+ioremap'ed.
