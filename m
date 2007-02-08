@@ -1,32 +1,20 @@
-Return-Path: <Jens.Osterkamp@de.ibm.com>
-Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 31A29DDEC0
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Feb 2007 23:56:58 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l18CurTY303212
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 12:56:53 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l18CurTr2080780
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 13:56:53 +0100
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l18CurTo019350
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 13:56:53 +0100
-In-Reply-To: <1170894259.2620.325.camel@localhost.localdomain>
-Subject: Re: [PATCH 0/4] spidernet: support for Celleb
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Message-ID: <OF4CD93CB2.C6D8AB5B-ONC125727C.0035FE0B-C125727C.00472022@de.ibm.com>
-From: Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
-Date: Thu, 8 Feb 2007 13:56:52 +0100
+Return-Path: <olecom@flower.upol.cz>
+Received: from raven.upol.cz (raven.upol.cz [158.194.120.4])
+	by ozlabs.org (Postfix) with ESMTP id A05ADDDED1
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:37:13 +1100 (EST)
+Date: Thu, 8 Feb 2007 14:45:34 +0100
+To: David Miller <davem@davemloft.net>
+Subject: final (Re: Kbuild change breaks the ppc64 build)
+Message-ID: <20070208134534.GV22699@flower.upol.cz>
+References: <17867.1342.763881.188430@cargo.ozlabs.ibm.com>
+	<20070208124756.GU22699@flower.upol.cz>
+	<20070208.051706.112290704.davem@davemloft.net>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Jeff Garzik <jgarzik@pobox.com>, jim@jklewis.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070208.051706.112290704.davem@davemloft.net>
+From: Oleg Verych <olecom@flower.upol.cz>
+Cc: torvalds@linux-foundation.org, paulus@samba.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,17 +24,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Date: Feb 08, 2007 at 05:17:06AM -0800
+From: David Miller
 
-> PHY patch is mostly Ok except I don't like that "medium" variable Jens
-> added which isn't used anywhere in sungem_phy. Jens, can you resend a
-> version without that ? If you need that variable in spidernet itself,
-> then put it there :-)
+> From: Oleg Verych <olecom@flower.upol.cz>
+> Date: Thu, 8 Feb 2007 13:47:56 +0100
+> 
+[]
+> > As i have refactored some CC checking code in Kbuild.include, it
+> > turned, that some versions of `make' after calling nested functions,
+> > add (or leave) prefix whitespace to result, thus ifeq[0] fails:
+> 
+> That's not it, did you see my fix for this problem posted
+> already?
 
-That was the idea I had first, I'll change that.
+Yes, i did. Thanks, David, for fix and for comprehencive approach.
 
-> Also, the GMII_* constants, are they standard or 54xx specific ? If the
-> later, then change the name to reflect that.
+Kudos to everyone, who was forced to deal with this cr@p. Sorry for my
+confusion, that fast commit was a bit of stress.
 
-I'll check...
+> The issue is the leading spaces on the first line of the define for
+> checker-shell.  Those propagate into the callers, although they are
+> reduced down to a single space.
 
-Jens
+Yes, defines leave spaces/tabs as is, it's known thing, but again,
+sorry.
+
+> This will give you spaces in the result on any version of
+> make.
+> 
+> Here is my fix again for your reference.
+> 
+> diff --git a/scripts/Kbuild.include b/scripts/Kbuild.include
+> index 8d7eabf..a1880e8 100644
+> --- a/scripts/Kbuild.include
+> +++ b/scripts/Kbuild.include
+> @@ -60,16 +60,15 @@ endef
+>  # Usage: option = $(call checker-shell,$(CC)...-o $$OUT,option-ok,otherwise)
+>  # Exit code chooses option. $$OUT is safe location for needless output.
+>  define checker-shell
+> - $(strip
+   ^
+Roland had no space here in his patch ;)
+
+> -  $(shell set -e; \
+> -    DIR=$(KBUILD_EXTMOD); \
+> -    cd $${DIR:-$(objtree)}; \
+> -    OUT=$$PWD/.$$$$.null; \
+> -    if $(1) >/dev/null 2>&1; \
+> -      then echo "$(2)"; \
+> -      else echo "$(3)"; \
+> -    fi; \
+> -    rm -f $$OUT))
+> +$(shell set -e; \
+> +  DIR=$(KBUILD_EXTMOD); \
+> +  cd $${DIR:-$(objtree)}; \
+> +  OUT=$$PWD/.$$$$.null; \
+> +  if $(1) >/dev/null 2>&1; \
+> +    then echo "$(2)"; \
+> +    else echo "$(3)"; \
+> +  fi; \
+> +  rm -f $$OUT)
+>  endef
+>  
+>  # as-option
+>
+> 
+
+Thanks!
+____
