@@ -1,14 +1,14 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id DA2FDDE54D
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:59:23 +1100 (EST)
-Date: Thu, 8 Feb 2007 14:59:22 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTP id 74B46DE96E
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 00:59:47 +1100 (EST)
+Date: Thu, 8 Feb 2007 14:59:45 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
 To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH 6/10] ps3: Preallocate bootmem memory for ps3fb
+Subject: [PATCH 8/10] ps3: disable display flipping during mode changes
 In-Reply-To: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.62.0702081459130.19437@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0702081459370.19437@pademelon.sonytel.be>
 References: <Pine.LNX.4.62.0702081452080.19437@pademelon.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -25,102 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Preallocate bootmem memory for the PS3 frame buffer device, which needs a
-large block of physically-contiguous memory. The size of this memory block is
-configurable:
-  - The config option CONFIG_FB_PS3_DEFAULT_SIZE_M allows to specify the
-    default amount of memory (in MiB) allocated to the virtual frame buffer.
-  - The early boot parameter `ps3fb=xxx' allows to override the default value.
-    It will be rounded up to a multiple of 1 MiB, if needed.
+If ps3fb is available, we have to disable display flipping while changing the
+audio or video mode.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 ---
- arch/powerpc/platforms/ps3/setup.c |   42 +++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/ps3.h          |    9 +++++++
- 2 files changed, 51 insertions(+)
+ drivers/ps3/ps3av_cmd.c     |    5 ++++-
+ include/asm-powerpc/ps3fb.h |   10 ++++++++++
+ 2 files changed, 14 insertions(+), 1 deletion(-)
 
---- ps3-linux-2.6.20.orig/arch/powerpc/platforms/ps3/setup.c
-+++ ps3-linux-2.6.20/arch/powerpc/platforms/ps3/setup.c
-@@ -24,6 +24,7 @@
- #include <linux/root_dev.h>
- #include <linux/console.h>
- #include <linux/kexec.h>
-+#include <linux/bootmem.h>
+--- ps3-linux-2.6.20.orig/drivers/ps3/ps3av_cmd.c
++++ ps3-linux-2.6.20/drivers/ps3/ps3av_cmd.c
+@@ -22,6 +22,7 @@
+ #include <linux/kernel.h>
+ #include <linux/delay.h>
+ #include <asm/ps3av.h>
++#include <asm/ps3fb.h>
+ #include <asm/ps3.h>
  
- #include <asm/machdep.h>
- #include <asm/firmware.h>
-@@ -72,6 +73,46 @@ static void ps3_panic(char *str)
- 	for (;;) ;
+ #include "vuart.h"
+@@ -851,8 +852,9 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ {
+ 	int res;
+ 
+-	/* avb packet */
++	ps3fb_flip_ctl(0);	/* flip off */
+ 
++	/* avb packet */
+ 	res = ps3av_do_pkt(PS3AV_CID_AVB_PARAM, send_len, sizeof(*avb),
+ 			   &avb->send_hdr);
+ 	if (res < 0)
+@@ -864,6 +866,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
+ 			 res);
+ 
+       out:
++	ps3fb_flip_ctl(1);	/* flip on */
+ 	return res;
  }
  
-+
-+static void prealloc(struct ps3_prealloc *p)
-+{
-+	if (!p->size)
-+		return;
-+
-+	p->address = __alloc_bootmem(p->size, p->align, __pa(MAX_DMA_ADDRESS));
-+	if (!p->address) {
-+		printk(KERN_ERR "%s: Cannot allocate %s\n", __FUNCTION__,
-+		       p->name);
-+		return;
-+	}
-+
-+	printk(KERN_INFO "%s: %lu bytes at %p\n", p->name, p->size,
-+	       p->address);
-+}
+--- ps3-linux-2.6.20.orig/include/asm-powerpc/ps3fb.h
++++ ps3-linux-2.6.20/include/asm-powerpc/ps3fb.h
+@@ -41,4 +41,14 @@ struct ps3fb_ioctl_res {
+ 	__u32 num_frames; /* num of frame buffers */
+ };
+ 
++#ifdef __KERNEL__
 +
 +#ifdef CONFIG_FB_PS3
-+struct ps3_prealloc ps3fb_videomemory = {
-+    .name = "ps3fb videomemory",
-+    .size = CONFIG_FB_PS3_DEFAULT_SIZE_M*1024*1024,
-+    .align = 1024*1024			/* the GPU requires 1 MiB alignment */
-+};
-+#define prealloc_ps3fb_videomemory()	prealloc(&ps3fb_videomemory)
-+
-+static int __init early_parse_ps3fb(char *p)
-+{
-+	if (!p)
-+		return 1;
-+
-+	ps3fb_videomemory.size = _ALIGN_UP(memparse(p, &p),
-+					   ps3fb_videomemory.align);
-+	return 0;
-+}
-+early_param("ps3fb", early_parse_ps3fb);
++extern void ps3fb_flip_ctl(int on);
 +#else
-+#define prealloc_ps3fb_videomemory()	do { } while (0)
++static inline void ps3fb_flip_ctl(int on) {}
 +#endif
 +
++#endif /* __KERNEL__ */
 +
- static void __init ps3_setup_arch(void)
- {
- 	DBG(" -> %s:%d\n", __func__, __LINE__);
-@@ -87,6 +128,7 @@ static void __init ps3_setup_arch(void)
- 	conswitchp = &dummy_con;
- #endif
- 
-+	prealloc_ps3fb_videomemory();
- 	ppc_md.power_save = ps3_power_save;
- 
- 	DBG(" <- %s:%d\n", __func__, __LINE__);
---- ps3-linux-2.6.20.orig/include/asm-powerpc/ps3.h
-+++ ps3-linux-2.6.20/include/asm-powerpc/ps3.h
-@@ -459,4 +459,13 @@ static inline void *ps3_system_bus_get_d
- 
- extern struct bus_type ps3_system_bus_type;
- 
-+struct ps3_prealloc {
-+    const char *name;
-+    void *address;
-+    unsigned long size;
-+    unsigned long align;
-+};
-+
-+extern struct ps3_prealloc ps3fb_videomemory;
-+
- #endif
+ #endif /* _ASM_POWERPC_PS3FB_H_ */
 
 Gr{oetje,eeting}s,
 
