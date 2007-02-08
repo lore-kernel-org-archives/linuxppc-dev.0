@@ -1,14 +1,20 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 1FF77DDEF8
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 03:57:06 +1100 (EST)
-Date: Thu, 8 Feb 2007 10:56:50 -0600 (CST)
-From: Andy Fleming <afleming@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] Added QE to the list of default scanned OF devices
-Message-ID: <Pine.LNX.4.61.0702081056250.15256@ld0175-tx32.am.freescale.net>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 09F8DDDF3B
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 04:14:10 +1100 (EST)
+Date: Thu, 8 Feb 2007 11:11:27 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] Rename ucc_slow_info.us_regs to .regs
+In-Reply-To: <1170953251140-git-send-email-timur@freescale.com>
+Message-ID: <Pine.LNX.4.64.0702081111110.29459@localhost.localdomain>
+References: <1170953251140-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,23 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 8 Feb 2007, Timur Tabi wrote:
 
-Signed-off-by: Andrew Fleming <afleming@freescale.com>
----
- arch/powerpc/kernel/of_platform.c |    1 +
- 1 files changed, 1 insertions(+), 0 deletions(-)
+> Rename the 'us_regs' field of the ucc_slow_info structure in ucc_slow.h
+> to just 'regs'.  The equivalent field in the ucc_fast_info structure is
+> also called 'regs', so this patch makes them comparable, and makes the
+> code a little easier to read, because there already is a 'us_regs' in
+> another ucc_slow structure.
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
+> ---
 
-diff --git a/arch/powerpc/kernel/of_platform.c b/arch/powerpc/kernel/of_platform.c
-index b734517..43c5a00 100644
---- a/arch/powerpc/kernel/of_platform.c
-+++ b/arch/powerpc/kernel/of_platform.c
-@@ -51,6 +51,7 @@ static struct of_device_id of_default_bu
- 	{ .type = "plb4", },
- 	{ .type = "opb", },
- 	{ .type = "ebc", },
-+	{ .type = "qe", },
- 	{},
- };
- 
--- 
-1.4.4
+applied
+
+- k
