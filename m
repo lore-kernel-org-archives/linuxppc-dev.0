@@ -1,11 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 9 Feb 2007 14:08:27 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [resend] Use udbg_early_init() on ppc32
-Message-ID: <20070209030827.GE3489@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 2FAAADDE46
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 14:18:36 +1100 (EST)
+Date: Fri, 9 Feb 2007 14:18:58 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Quoting in replies (Was: Re: [PATCH 1/2] Added support for the
+	MPC8568E MDS board)
+Message-Id: <20070209141858.4717854f.sfr@canb.auug.org.au>
+In-Reply-To: <97AB0CD4-8EB0-48E5-B47F-F63B633B451F@kernel.crashing.org>
+References: <Pine.LNX.4.61.0702081718400.507@ld0175-tx32.am.freescale.net>
+	<97AB0CD4-8EB0-48E5-B47F-F63B633B451F@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__9_Feb_2007_14_18_58_+1100_8NKLWKbNtufIngf/"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,93 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paulus, please apply.  Resent to fix some conflicts with a very recent
-patch in powerpc.git.
+--Signature=_Fri__9_Feb_2007_14_18_58_+1100_8NKLWKbNtufIngf/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-udbg_early_init() is a function used on 64 bit systems, which
-initializes whichever early udbg backend is configured.  This function
-is not called on 32-bit, however if btext early debug is enabled it
-does have an explicit, inline, #ifdef-ed assignment performing
-analagous initialization.
+On Thu, 8 Feb 2007 17:57:39 -0600 Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On Feb 8, 2007, at 5:19 PM, Andy Fleming wrote:
+>
 
-This patch makes things more uniform by folding the btext
-initialization as an option into udbg_early_init() and calling that
-from the 32-bit setup path.
+... 20k deleted ...
 
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
+Please (and this is to everyone), PLEASE, trim your quoting to something
+appropriate ...
 
-Index: working-2.6/arch/powerpc/kernel/btext.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/btext.c	2007-01-24 12:01:17.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/btext.c	2007-02-09 11:49:56.000000000 +1100
-@@ -372,7 +372,7 @@ static void scrollscreen(void)
- }
- #endif /* ndef NO_SCROLL */
- 
--void btext_drawchar(char c)
-+static void btext_drawchar(char c)
- {
- 	int cline = 0;
- #ifdef NO_SCROLL
-@@ -912,3 +912,11 @@ static unsigned char vga_font[cmapsz] = 
- 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
- 0x00, 0x00, 0x00, 0x00,
- };
-+
-+void __init udbg_init_btext(void)
-+{
-+	/* If btext is enabled, we might have a BAT setup for early display,
-+	 * thus we do enable some very basic udbg output
-+	 */
-+	udbg_putc = btext_drawchar;
-+}
-Index: working-2.6/arch/powerpc/kernel/setup_32.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/setup_32.c	2007-02-09 09:57:55.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/setup_32.c	2007-02-09 11:49:56.000000000 +1100
-@@ -116,12 +116,8 @@ unsigned long __init early_init(unsigned
-  */
- void __init machine_init(unsigned long dt_ptr, unsigned long phys)
- {
--	/* If btext is enabled, we might have a BAT setup for early display,
--	 * thus we do enable some very basic udbg output
--	 */
--#ifdef CONFIG_BOOTX_TEXT
--	udbg_putc = btext_drawchar;
--#endif
-+	/* Enable early debugging if any specified (see udbg.h) */
-+	udbg_early_init();
- 
- 	/* Do some early initialization based on the flat device tree */
- 	early_init_devtree(__va(dt_ptr));
-Index: working-2.6/arch/powerpc/kernel/udbg.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/udbg.c	2007-02-09 09:57:55.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/udbg.c	2007-02-09 11:50:17.000000000 +1100
-@@ -49,6 +49,8 @@ void __init udbg_early_init(void)
- 	udbg_init_debug_beat();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE)
- 	udbg_init_pas_realmode();
-+#elif defined(CONFIG_BOOTX_TEXT)
-+	udbg_init_btext();
- #endif
- }
- 
-Index: working-2.6/include/asm-powerpc/udbg.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/udbg.h	2007-02-09 09:57:55.000000000 +1100
-+++ working-2.6/include/asm-powerpc/udbg.h	2007-02-09 11:50:41.000000000 +1100
-@@ -46,6 +46,7 @@ extern void __init udbg_init_iseries(voi
- extern void __init udbg_init_rtas_panel(void);
- extern void __init udbg_init_rtas_console(void);
- extern void __init udbg_init_debug_beat(void);
-+extern void __init udbg_init_btext(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+--Signature=_Fri__9_Feb_2007_14_18_58_+1100_8NKLWKbNtufIngf/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFFy+gnFdBgD/zoJvwRApL6AJ9SCWOVyKMnvd8tYfQAS6m8mbyPoQCfY9c8
+KX5Xc+M+tlLfyRQ9Mt13Y5A=
+=cqjz
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__9_Feb_2007_14_18_58_+1100_8NKLWKbNtufIngf/--
