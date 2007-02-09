@@ -1,17 +1,33 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc1-s39.bay0.hotmail.com (bay0-omc1-s39.bay0.hotmail.com
-	[65.54.246.111]) by ozlabs.org (Postfix) with ESMTP id A2C31DDE2C
+Return-Path: <imr@rtschenk.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 9CA9ADDE3B
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Feb 2007 01:16:46 +1100 (EST)
-Message-ID: <BAY110-F38826CD4A177B058C34CFFB29C0@phx.gbl>
-In-Reply-To: <689CB232690D8D4E97DA6C76DA098E6C0360F790@XCO-EXCHVS1.xlnx.xilinx.com>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: rick.moleres@xilinx.com
-Subject: RE: Speed of plb_temac 3.00 on ML403
-Date: Fri, 09 Feb 2007 14:16:43 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 10 Feb 2007 01:31:13 +1100 (EST)
+Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 447BD9B116
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  9 Feb 2007 15:10:39 +0100 (CET)
+Received: from mail.dmz.schenk (host-82-135-47-202.customer.m-online.net
+	[82.135.47.202])
+	by mail.mnet-online.de (Postfix) with ESMTP id 1E1F1BB93C
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  9 Feb 2007 15:10:38 +0100 (CET)
+Received: from gwhaus.rt.schenk (gwhaus.rt.schenk [172.22.0.4])
+	by mail.dmz.schenk (Postfix) with ESMTP id D33CED5DB
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  9 Feb 2007 15:10:38 +0100 (CET)
+Received: from pcimr.rt.schenk (pcimr.rt.schenk [172.22.10.20])
+	by gwhaus.rt.schenk (Postfix) with ESMTP id A69721F483
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  9 Feb 2007 15:10:38 +0100 (CET)
+From: Rojhalat Ibrahim <imr@rtschenk.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] PPC: Fix compile error with e500 core
+Date: Fri, 9 Feb 2007 15:10:38 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200702091510.38246.imr@rtschenk.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,48 +38,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Rick,
-Again the problem of TEMAC speed. Hopefully you can give me some suggestion 
-on that.
+Hi,
 
->With a 300Mhz system we saw about 730Mbps Tx with TCP on 2.4.20
->(MontaVista Linux) and about 550Mbps Tx with TCP on 2.6.10 (MontaVista
->again) - using netperf w/ TCP_SENDFILE option. We didn't investigate the
->difference between 2.4 and 2.6.
+this patch fixes a compile error with linux 2.6.20
+configured for the mpc8548.
 
-Now with my system(plb_temac and hard_temac v3.00 with all features enabled 
-to improve the performance, Linux 2.6.10, 300Mhz ppc, netperf), I can 
-achieve AT MOST 213.8Mbps for TCP TX and 277.4Mbps for TCP RX, when 
-jumbo-frame is enabled as 8500. For UDP it is 350Mbps for TX, also 8500 
-jumbo-frame is enabled. 
+Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
 
-So it looks that my results are still much less than yours from 
-Xilinx(550Mbps TCP TX). So I am trying to find the bottleneck and improve 
-the performance.
+---
 
-When I use netperf to transfer data, I noticed that the CPU utilization is 
-almost 100%. So I suspect that CPU is the bottleneck. However other friends 
-said the PLB structure is the bottleneck, because when the CPU is lowered 
-to 100Mhz, the performance will not change much, but if the PLB frquency is 
-lowered, it will. Then they conclude that with the PLB structure, the CPU 
-will wait a long time to load and store data from DDR. So PLB is the 
-criminal.
-
-Then come some questions. 1. Is your result from the GSRD structure or just 
-the normal PLB_TEMAC? Will the GSRD achieve a better performance than the 
-normal PLB_TEMAC? 2. Which on earch is the bottleneck for the network 
-performance, CPU or PLB structure? Is that possible for PLB to achieve a 
-much higher throughput? 3. Because your result is based on Montavista 
-Linux. Is there any difference between MontaVista Linux and the general 
-open-source linux kernel which could lead to different performance? 
-
-I know that many persons including me are struggling to improve the 
-performance of PLB_TEMAC on ML403. So please give us some hints and 
-suggestions with your experience and research. Thanks so much for your 
-work.
-
-BR
-Ming
-
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+diff -ur linux-2.6.20-orig/arch/ppc/kernel/ppc_ksyms.c 
+linux-2.6.20/arch/ppc/kernel/ppc_ksyms.c
+--- linux-2.6.20-orig/arch/ppc/kernel/ppc_ksyms.c	2007-02-04 
+19:44:54.000000000 +0100
++++ linux-2.6.20/arch/ppc/kernel/ppc_ksyms.c	2007-02-09 14:44:15.000000000 
++0100
+@@ -270,7 +270,7 @@
+ extern long *intercept_table;
+ EXPORT_SYMBOL(intercept_table);
+ #endif /* CONFIG_PPC_STD_MMU */
+-#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
++#ifdef CONFIG_PPC_DCR_NATIVE
+ EXPORT_SYMBOL(__mtdcr);
+ EXPORT_SYMBOL(__mfdcr);
+ #endif
