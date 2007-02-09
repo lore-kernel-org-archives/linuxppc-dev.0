@@ -1,16 +1,19 @@
-Return-Path: <Antonio.DiBacco@technolabs.it>
-Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id B278BDDF11
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 97CC5DDE25
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Feb 2007 06:02:21 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C74BB3.A20CE44F"
-Subject: Receveing CD lost event in SCC3  even with PCSO reg bit cleared
-Date: Thu, 8 Feb 2007 20:02:09 +0100
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E264921@aquib01a>
-From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: <linuxppc-embedded@ozlabs.org>
+	Fri,  9 Feb 2007 11:46:12 +1100 (EST)
+To: "Fillod Stephane" <stephane.fillod@thomson.net>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: multiple devices using ELDK NFS mounts 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Thu, 08 Feb 2007 14:04:51 +0100."
+	<0B45E93C5FF65740AEAE690BF3848B7A4AAF68@rennsmail04.eu.thmulti.com>
+Date: Fri, 09 Feb 2007 01:46:09 +0100
+Sender: wd@denx.de
+Message-Id: <20070209004610.04F8D353A6C@atlas.denx.de>
+Cc: Daniel Ng <daniel_ng11@lycos.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,45 +24,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+In message <0B45E93C5FF65740AEAE690BF3848B7A4AAF68@rennsmail04.eu.thmulti.com> you wrote:
+>
+> ELDK is not an end-product, it's a starter-product ;-)
 
-------_=_NextPart_001_01C74BB3.A20CE44F
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+May I quote this? :-)
 
-Hi all,
-=20
-I'm using SCC3 in HDLC synchronous mode on an MPC880 (only TXD3, RXD3 =
-and clocks) with CD3 connected to ground programming relevant PCSO bit =
-to 0.=20
-Even if the CD is internally connected to GND, sometime I receive a CD =
-lost event. How is it possible?
-=20
-Bye,
-Antonio.
-=20
+> Thank goes to DENX Software Engineering for their nice package.
+> BTW, ELDK 4.1 has been released recently, and it includes among
+> other things Xenomai and the long awaited uClibc support.
 
-------_=_NextPart_001_01C74BB3.A20CE44F
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Don't expect too much. Wee added this because customers asked for it.
+But I am not a fan of it. You safe some 800 kB or so in the target
+root file system - and win a lot of trouble.
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN"><HTML =
-DIR=3Dltr><HEAD><META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Diso-8859-1"></HEAD><BODY><DIV><FONT face=3D'Arial' =
-color=3D#000000 size=3D2>Hi all,</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>I'm using SCC3 in HDLC synchronous mode =
-on an =0A=
-MPC880 (only TXD3, RXD3 and clocks) with CD3 connected to ground =
-programming =0A=
-relevant PCSO bit to 0. </FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>Even if the CD is internally connected =
-to GND, =0A=
-sometime I receive a CD lost event. How is it possible?</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>Bye,</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2>Antonio.</FONT></DIV>=0A=
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
-------_=_NextPart_001_01C74BB3.A20CE44F--
+> PS: I am in no way associated with DENX, I'm just a happy customer who
+
+Glad to hear that.
+
+The next "long awaited" feature will be ELDK on Windoze. Available in
+... say 30 minutes from now? :-)
+
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Hi there! This is just a note from me, to you, to tell you, the  per-
+son  reading this note, that I can't think up any more famous quotes,
+jokes, nor bizarre stories, so you may as well go home.
