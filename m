@@ -1,17 +1,11 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id CA0CCDDF21
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:31:22 +1100 (EST)
-Date: Fri, 9 Feb 2007 10:31:49 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] mpc5200 device tree bindings refinement
-Message-ID: <20070209173149.GA23362@mag.az.mvista.com>
-References: <11710062092006-git-send-email-grant.likely@secretlab.ca>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <11710062092006-git-send-email-grant.likely@secretlab.ca>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <krafft@de.ibm.com>
+Date: Fri, 9 Feb 2007 18:35:29 +0100
+From: Christian Krafft <krafft@de.ibm.com>
+To: linuxppc-dev@ozlabs.org, krafft@de.ibm.com, cbe-oss-dev@ozlabs.org
+Subject: [patch 0/1] pmi: initial version
+Message-ID: <20070209183529.67d542d5@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,40 +15,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 09, 2007 at 12:30:09AM -0700, Grant Likely wrote:
+This patch adds a driver for the=20
+"Platform Management Interrupt" interface.
+PMI is basically yet another way to communicate with the BMC.
+It provides small latency and thus can be used=20
+to request frequency changes from the BMC.
+PMI allows bidirectional communication.=20
+The cpufreq driver can be notified about a new limit for=20
+frequency changes for instance.
+PMI can be found on future IBM products.
 
-Hi Grant,
+--=20
+Mit freundlichen Gr=FCssen,
+kind regards,
 
-> Much needed refinement of mpc5200 device tree binding specifications.
-> 
-> Short list:
-
-<snip>
-
-> - Specify reqiured 'cell-index' property to identify between multiple SOC
->   devices of the same type.  (Useful for arbitrating shared register access)
-
-<snip>
-
-> +Important child node properties
-> +name		type		description
-> +----		----		-----------
-> +cell-index	int		When multiple devices are present, is the
-> +				index of the device in the hardware (ie. There
-> +				are 6 PSC on the 5200 numbered PSC1 to PSC6)
-> +				    PSC1 has 'cell-index = <0>'
-> +				    PSC4 has 'cell-index = <3>'
-> +
-
-Dale Farnsworth and I have the exact same problem with the Marvell
-bridges (e.g., 2 MPSC ctlrs use different bits in the same reg).
-Yesterday we talked about it for a while and came up with essentially
-the same solution as you.  The only difference is that we called the
-property "register-set".  I think that is a better name because a)
-"cell-index" sounds like an index into a DT cell which it isn't, and b)
-its more descriptive (IMHO) because its really saying what set of regs
-or bits in a reg are for that ctlr.
-
-Comments?
-
-Mark
+Christian Krafft
+IBM Systems & Technology Group,=20
+Linux Kernel Development
+IT Specialist
