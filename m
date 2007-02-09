@@ -1,22 +1,24 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4860EDDEBA
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:01:42 +1100 (EST)
-In-Reply-To: <45CCA20E.806@freescale.com>
-References: <11710369101980-git-send-email-timur@freescale.com>
-	<122999F4-9700-46C3-9FA5-0AD8FA17A832@kernel.crashing.org>
-	<45CCA20E.806@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CED32B53-91C9-4A83-B336-64C769CE6A6E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Updated mpc834x_itx_defconfig
-Date: Fri, 9 Feb 2007 11:00:51 -0600
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A50EEDDEEA
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:08:02 +1100 (EST)
+Message-ID: <45CCA568.6090607@am.sony.com>
+Date: Fri, 09 Feb 2007 08:46:32 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [PATCH] ps3 usb missed the addition of new argument
+	to	ps3_alloc_io_irq()
+References: <E1HFYFg-0004rz-19@ZenIV.linux.org.uk>
+	<45CC9DDC.2060305@am.sony.com>
+In-Reply-To: <45CC9DDC.2060305@am.sony.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org, greg@kroah.com,
+	Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Geoff Levand wrote:
+> Al Viro wrote:
+>> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> 
+> Greg had this same change queued for his usb tree.
+> 
+> Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> 
 
-On Feb 9, 2007, at 10:32 AM, Timur Tabi wrote:
+Update the PS3 irq allocation routines to take an argument indicating which
+cpu (processor thread) the interrupt should be serviced on.
 
-> Kumar Gala wrote:
->
->> Should the same changes be made to the gp config?
->
-> Um, I thought you rejected my gp config?  I was going to make a new  
-> one and send it out later today.
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
-Nevermind, I thought I had an updated gp config from you.  Can we  
-close on the GP as well.
+---
+I fixed Al's patch to have the proper line lengths.
 
-- k
+-Geoff
+
+ drivers/usb/host/ehci-ps3.c |    3 ++-
+ drivers/usb/host/ohci-ps3.c |    3 ++-
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+--- ps3-linux-dev.orig/drivers/usb/host/ehci-ps3.c
++++ ps3-linux-dev/drivers/usb/host/ehci-ps3.c
+@@ -104,7 +104,8 @@ static int ps3_ehci_sb_probe(struct ps3_
+ 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
+ 		__LINE__, dev->m_region->lpar_addr);
+ 
+-	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
++	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id,
++		&virq);
+ 
+ 	if (result) {
+ 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
+--- ps3-linux-dev.orig/drivers/usb/host/ohci-ps3.c
++++ ps3-linux-dev/drivers/usb/host/ohci-ps3.c
+@@ -107,7 +107,8 @@ static int ps3_ohci_sb_probe(struct ps3_
+ 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
+ 		__LINE__, dev->m_region->lpar_addr);
+ 
+-	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
++	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id,
++		&virq);
+ 
+ 	if (result) {
+ 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
