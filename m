@@ -1,33 +1,20 @@
-Return-Path: <imr@rtschenk.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 9CA9ADDE3B
+Return-Path: <imrek@atomki.hu>
+Received: from imrek.org (strawberry.diszk.unideb.hu [193.6.143.139])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9BDFBDDE35
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Feb 2007 01:31:13 +1100 (EST)
-Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id 447BD9B116
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Feb 2007 15:10:39 +0100 (CET)
-Received: from mail.dmz.schenk (host-82-135-47-202.customer.m-online.net
-	[82.135.47.202])
-	by mail.mnet-online.de (Postfix) with ESMTP id 1E1F1BB93C
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Feb 2007 15:10:38 +0100 (CET)
-Received: from gwhaus.rt.schenk (gwhaus.rt.schenk [172.22.0.4])
-	by mail.dmz.schenk (Postfix) with ESMTP id D33CED5DB
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Feb 2007 15:10:38 +0100 (CET)
-Received: from pcimr.rt.schenk (pcimr.rt.schenk [172.22.10.20])
-	by gwhaus.rt.schenk (Postfix) with ESMTP id A69721F483
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Feb 2007 15:10:38 +0100 (CET)
-From: Rojhalat Ibrahim <imr@rtschenk.de>
+	Sat, 10 Feb 2007 01:50:49 +1100 (EST)
+Date: Fri, 9 Feb 2007 15:57:15 +0100 (CET)
+From: jozsef imrek <imrek@atomki.hu>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] PPC: Fix compile error with e500 core
-Date: Fri, 9 Feb 2007 15:10:38 +0100
+Subject: RE: Speed of plb_temac 3.00 on ML403
+In-Reply-To: <BAY110-F38826CD4A177B058C34CFFB29C0@phx.gbl>
+Message-ID: <Pine.LNX.4.61.0702091527440.32063@imrek.org>
+References: <BAY110-F38826CD4A177B058C34CFFB29C0@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200702091510.38246.imr@rtschenk.de>
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: rick.moleres@xilinx.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,27 +25,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Fri, 9 Feb 2007, Ming Liu wrote:
 
-this patch fixes a compile error with linux 2.6.20
-configured for the mpc8548.
+> Now with my system(plb_temac and hard_temac v3.00 with all features enabled 
+> to improve the performance, Linux 2.6.10, 300Mhz ppc, netperf), I can achieve 
+> AT MOST 213.8Mbps for TCP TX and 277.4Mbps for TCP RX, when jumbo-frame is 
+> enabled as 8500. For UDP it is 350Mbps for TX, also 8500 jumbo-frame is 
+> enabled. 
+> So it looks that my results are still much less than yours from 
+> Xilinx(550Mbps TCP TX). So I am trying to find the bottleneck and improve the 
+> performance.
 
-Signed-off-by: Rojhalat Ibrahim <imr@rtschenk.de>
 
----
+when testing network performance you might want to use the packet
+generator included in the 2.6 linux kernel (in menuconfig go to
+Networking -> Networking options -> Network testing -> Packet Generator).
 
-diff -ur linux-2.6.20-orig/arch/ppc/kernel/ppc_ksyms.c 
-linux-2.6.20/arch/ppc/kernel/ppc_ksyms.c
---- linux-2.6.20-orig/arch/ppc/kernel/ppc_ksyms.c	2007-02-04 
-19:44:54.000000000 +0100
-+++ linux-2.6.20/arch/ppc/kernel/ppc_ksyms.c	2007-02-09 14:44:15.000000000 
-+0100
-@@ -270,7 +270,7 @@
- extern long *intercept_table;
- EXPORT_SYMBOL(intercept_table);
- #endif /* CONFIG_PPC_STD_MMU */
--#if defined(CONFIG_40x) || defined(CONFIG_BOOKE)
-+#ifdef CONFIG_PPC_DCR_NATIVE
- EXPORT_SYMBOL(__mtdcr);
- EXPORT_SYMBOL(__mfdcr);
- #endif
+with this tool you can bypass the ip stack, user space/kernel space 
+barrier, etc, and measure the speed of the hardware itself using UDP-like
+packets.
+
+using pktgen i have seen data rates close to gigabit. (the hardware i'm 
+working with is a memec minimodule with V4FX12. i'm using plb_temac with
+s/g dma, plb running at 100MHz, and our custom core accessed via IPIF's
+address range. sw is linux 2.6.19, xilinx tools are EDK 8.2i)
+
+
+
+another hint: when transfering bulk amount of data TCP is probably an
+overkill, especially on dedicated intranets and given the reliability
+of the network devices available today. just use UDP if you can.
+
+
+-- 
+mazsi
+
+----------------------------------------------------------------
+strawberry fields forever!                       imrek@atomki.hu
+----------------------------------------------------------------
