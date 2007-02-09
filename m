@@ -1,21 +1,22 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound8-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 777D3DDEE6
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 03:59:49 +1100 (EST)
-Message-ID: <45CCA537.9010801@am.sony.com>
-Date: Fri, 09 Feb 2007 08:45:43 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH] ps3: missing exports
-References: <E1HFYFb-0004rm-0y@ZenIV.linux.org.uk>
-In-Reply-To: <E1HFYFb-0004rm-0y@ZenIV.linux.org.uk>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4860EDDEBA
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:01:42 +1100 (EST)
+In-Reply-To: <45CCA20E.806@freescale.com>
+References: <11710369101980-git-send-email-timur@freescale.com>
+	<122999F4-9700-46C3-9FA5-0AD8FA17A832@kernel.crashing.org>
+	<45CCA20E.806@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <CED32B53-91C9-4A83-B336-64C769CE6A6E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Updated mpc834x_itx_defconfig
+Date: Fri, 9 Feb 2007 11:00:51 -0600
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,11 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Al Viro wrote:
----
- arch/powerpc/platforms/ps3/interrupt.c  |    2 ++
- arch/powerpc/platforms/ps3/system-bus.c |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
 
+On Feb 9, 2007, at 10:32 AM, Timur Tabi wrote:
 
-Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> Kumar Gala wrote:
+>
+>> Should the same changes be made to the gp config?
+>
+> Um, I thought you rejected my gp config?  I was going to make a new  
+> one and send it out later today.
+
+Nevermind, I thought I had an updated gp config from you.  Can we  
+close on the GP as well.
+
+- k
