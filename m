@@ -1,19 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29908DDE30
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 17:52:08 +1100 (EST)
-Subject: Re: [PATCH] Celleb: improve htab lock
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-In-Reply-To: <200702090643.l196hHDv006227@toshiba.co.jp>
-References: <200702090643.l196hHDv006227@toshiba.co.jp>
-Content-Type: text/plain
-Date: Fri, 09 Feb 2007 17:52:00 +1100
-Message-Id: <1171003920.2620.427.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
+	by ozlabs.org (Postfix) with ESMTP id 10ED8DDDF0
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 18:03:28 +1100 (EST)
+In-Reply-To: <Pine.LNX.4.61.0702081718400.507@ld0175-tx32.am.freescale.net>
+References: <Pine.LNX.4.61.0702081718400.507@ld0175-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <36A86ACB-F181-4579-B6FE-99455BF1E1DC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/2] Added support for the MPC8568E MDS board
+Date: Fri, 9 Feb 2007 01:02:37 -0600
+To: Andy Fleming <afleming@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,16 +25,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> We need to turn IRQs off when calling htab functions if and only
-> if it is non-atomic, so the "pSeries with LPAR" htab function have
-> no spin_lock or local_irq_save/restore. We think tweaking EE bit
-> locally gives a way to decrease times to be IRQs off and on again
-> (yes, it's smallthing to compare with calling HV),
-> so we prefer current implementation.
+> +/ {
+> +	model = "MPC8568EMDS";
+> +	compatible = "MPC85xx";
+>
 
-Well, it might be indeed worth keeping it that way to avoid long
-latencies with EE off with a big batch... I'll keep it that way for now,
-though I suppose I should add some documentation on the expected caller
-context in machdep.h next to the function pointers.
+MPC85xxMDS instead, its implicit that its a MPC85xx.
 
-Ben.
+- k
