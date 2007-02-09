@@ -1,24 +1,17 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A50EEDDEEA
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:08:02 +1100 (EST)
-Message-ID: <45CCA568.6090607@am.sony.com>
-Date: Fri, 09 Feb 2007 08:46:32 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <scottwood@freescale.com>
+Message-ID: <45CCAB41.4080003@freescale.com>
+Date: Fri, 09 Feb 2007 11:11:29 -0600
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH] ps3 usb missed the addition of new argument
-	to	ps3_alloc_io_irq()
-References: <E1HFYFg-0004rz-19@ZenIV.linux.org.uk>
-	<45CC9DDC.2060305@am.sony.com>
-In-Reply-To: <45CC9DDC.2060305@am.sony.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org, greg@kroah.com,
-	Al Viro <viro@ftp.linux.org.uk>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 19/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
+	<20070207230149.GS3849@ld0162-tx32.am.freescale.net>
+	<20070208211529.GA1894@localhost.localdomain>
+In-Reply-To: <20070208211529.GA1894@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,51 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geoff Levand wrote:
-> Al Viro wrote:
->> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+David Gibson wrote:
+> On Wed, Feb 07, 2007 at 05:01:49PM -0600, Scott Wood wrote:
 > 
-> Greg had this same change queued for his usb tree.
+>>Add a bootwrapper platform (cuboot) that takes a bd_t from a legacy
+>>U-Boot, and inserts data from it into a device tree which has been
+>>compiled into the kernel.  This should help ease the transition to
+>>arch/powerpc in cases where U-Boot has not yet been updated to pass a
+>>device tree, or where upgrading firmware isn't practical.
+>>
+>>The device trees currently in the kernel tree must have
+>>/chosen/linux,stdout-path added to work with cuboot.
+>>
+>>The kernel command line, mac addresses, and various clocks will be filled
+>>in based on the bd_t.
 > 
-> Acked-by: Geoff Levand <geoffrey.levand@am.sony.com>
 > 
+> You're still using config dependent stuff in here...
 
-Update the PS3 irq allocation routines to take an argument indicating which
-cpu (processor thread) the interrupt should be serviced on.
+They come from platform files such as cuboot-83xx.c, not (directly) from 
+the kernel config.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-
----
-I fixed Al's patch to have the proper line lengths.
-
--Geoff
-
- drivers/usb/host/ehci-ps3.c |    3 ++-
- drivers/usb/host/ohci-ps3.c |    3 ++-
- 2 files changed, 4 insertions(+), 2 deletions(-)
-
---- ps3-linux-dev.orig/drivers/usb/host/ehci-ps3.c
-+++ ps3-linux-dev/drivers/usb/host/ehci-ps3.c
-@@ -104,7 +104,8 @@ static int ps3_ehci_sb_probe(struct ps3_
- 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
- 		__LINE__, dev->m_region->lpar_addr);
- 
--	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
-+	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id,
-+		&virq);
- 
- 	if (result) {
- 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
---- ps3-linux-dev.orig/drivers/usb/host/ohci-ps3.c
-+++ ps3-linux-dev/drivers/usb/host/ohci-ps3.c
-@@ -107,7 +107,8 @@ static int ps3_ohci_sb_probe(struct ps3_
- 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
- 		__LINE__, dev->m_region->lpar_addr);
- 
--	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
-+	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id,
-+		&virq);
- 
- 	if (result) {
- 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
+-Scott
