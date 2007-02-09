@@ -1,14 +1,19 @@
-Return-Path: <olaf@aepfle.de>
-Date: Fri, 9 Feb 2007 19:51:07 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: Okay to change default zImage link/load address?
-Message-ID: <20070209185107.GA12703@aepfle.de>
-References: <20070209184345.GA28127@mag.az.mvista.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH] CELL Oprofile SPU profiling updated patch
+Date: Fri, 9 Feb 2007 20:10:26 +0100
+References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
+	<200702081821.57358.arnd@arndb.de>
+	<890c329e3f6e16e1af5b177d4b3622f5@bga.com>
+In-Reply-To: <890c329e3f6e16e1af5b177d4b3622f5@bga.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070209184345.GA28127@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702092010.27162.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Carl Love <cel@us.ibm.com>, cbe-oss-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,12 +23,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 09, Mark A. Greer wrote:
+On Friday 09 February 2007 19:47, Milton Miller wrote:
+> On Feb 8, 2007, at 11:21 AM, Arnd Bergmann wrote:
+>=20
 
-> Does anyone know of a problem downloading to 8MB instead of 4MB in
-> arch/powerpc?  If not, would you object if it changed to 8MB?
+> > Doing the translation in two stages in user space, as you
+> > suggest here, definitely makes sense to me. I think it
+> > can be done a little simpler though:
+> >
+> > Why would you need the accurate dcookie information to be
+> > provided by the kernel? The ELF loader is done in user
+> > space, and the kernel only reproduces what it thinks that
+> > came up with. If the kernel only gives the dcookie information
+> > about the SPU ELF binary to the oprofile user space, then
+> > that can easily recreate the same mapping.
+>=20
+> Actually, I was trying to cover issues such as anonymous
+> memory. =A0 If the kernel doesn't generate dcookies for
+> the load segments the information is not recoverable once
+> the task exits. =A0This would also allow the loader to create
+> an artifical elf header that covered both the base executable
+> and a dynamicly linked one.
+>=20
+> Other alternatives exist, such as a structure for context-id
+> that would have its own identifing magic and an array of elf
+> header pointers.
 
-IBM chrp 32 and 64bit has a free and usable memory range from 64k to
-12M.
-Changing the link address from 4 to 8 MB will reduce the max zImage size
-to 3MB on these systems.
+But _why_ do you want to solve that problem? we don't have
+dynamically linked binaries and I really don't see why the loader
+would want to create artificial elf headers...
+
+> > The kernel still needs to provide the overlay identifiers
+> > though.
+>=20
+> Yes, which means it needs to parse the header (or libpse
+> be enhanced to write the monitor info to a spufs file).
+
+we thought about this in the past and discarded it because of
+the complexity of an spufs interface that would handle this
+correctly.=20
+
+> > yes, this sounds nice. But tt does not at all help accuracy,
+> > only performance, right?
+>=20
+> It allows the user space to know when the sample was taken
+> and =A0be aware of the ambiguity. =A0 If the sample rate is
+> high enough in relation to the overlay switch rate, user space
+> could decide to discard the ambiguous samples.
+
+yes, good point.
+
+> >> This approach allows multiple objects by its nature. =A0A new
+> >> elf header could be constructed in memory that contained
+> >> the union of the elf objects load segments, and the tools
+> >> will magically work. =A0 Alternatively the object id could
+> >> point to a new structure, identified via a new header, that
+> >> it points to other elf headers (easily differentiated by the
+> >> elf magic headers). =A0 Other binary formats, including several
+> >> objects in a ar archive, could be supported.
+> >
+> > Yes, that would be a new feature if the kernel passed dcookie
+> > information for every section, but I doubt that it is worth
+> > it. I have not seen any program that allows loading code
+> > from more than one ELF file. In particular, the ELF format
+> > on the SPU is currently lacking the relocation mechanisms
+> > that you would need for resolving spu-side symbols at load
+> > time
+>=20
+> Actually, It could check all load segments, and only report
+> those where the dcookie changes (as opposed to the offset).
+
+I'm not really following you here, but probably you misunderstood
+my point as well.
+
+> > This seems to incur a run-time overhead on the SPU even if not
+> > profiling, I would consider that not acceptable.
+>=20
+> It definitely is overhead. =A0Which means it would have to be
+> optional, like gprof.
+
+There is some work going on for another profiler independent
+of the hardware feature that only relies on instrumenting the
+spu executable for things like DMA transfers and overlay
+changes.=20
+
+	Arnd <><
