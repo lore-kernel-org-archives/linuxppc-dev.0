@@ -1,26 +1,25 @@
-Return-Path: <ebony.zhu@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 26CEBDDE37
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 17:27:25 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l196RLpE006058
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Feb 2007 23:27:22 -0700 (MST)
-Received: from zch01exm20.fsl.freescale.net (zch01exm20.ap.freescale.net
-	[10.192.129.204])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l196RK6b002438
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 00:27:21 -0600 (CST)
+Return-Path: <akira2.iguchi@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 75064DDE48
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 17:43:22 +1100 (EST)
+Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
+	by inet-tsb5.toshiba.co.jp  with ESMTP id l196hI8N014428
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 15:43:18 +0900 (JST)
+Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id l196hIhr016635
+	for linuxppc-dev@ozlabs.org; Fri, 9 Feb 2007 15:43:18 +0900 (JST)
+Received: from mx12.toshiba.co.jp (localhost [127.0.0.1])
+	by ovp1.toshiba.co.jp  with ESMTP id l196hHMl021469
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 15:43:18 +0900 (JST)
+Message-Id: <200702090643.l196hHks016742@toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [patch][5/5] powerpc V2: Add the general support for Embedded
-	Floating-Point instructions
-Date: Fri, 9 Feb 2007 14:27:18 +0800
-Message-ID: <32F3CC26D4DAC44E8ECD07155727A46E8B7F9F@zch01exm20.fsl.freescale.net>
-In-Reply-To: <2F133E13-3703-40BE-8A40-142C300B93DF@kernel.crashing.org>
-From: "Zhu Ebony-r57400" <ebony.zhu@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Date: Fri, 09 Feb 2007 15:44:12 +0900
+From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+To: benh@kernel.crashing.org
+In-Reply-To: <1170973927.2620.382.camel@localhost.localdomain>
+Subject: Re: [PATCH] Celleb: improve htab lock
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,92 +29,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+Ben-san,
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Friday, February 09, 2007 2:04 PM
-> To: Zhu Ebony-r57400
-> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
-> Subject: Re: [patch][5/5] powerpc V2: Add the general support=20
-> for Embedded Floating-Point instructions
->=20
->=20
-> On Feb 8, 2007, at 11:48 PM, Zhu Ebony-r57400 wrote:
->=20
-> >
-> >
-> >> -----Original Message-----
-> >> From: Kumar Gala [mailto:galak@kernel.crashing.org]
-> >> Sent: Friday, February 09, 2007 1:29 PM
-> >> To: Zhu Ebony-r57400
-> >> Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
-> >> Subject: Re: [patch][5/5] powerpc V2: Add the general support for=20
-> >> Embedded Floating-Point instructions
-> >>
-> >>
-> >> On Feb 8, 2007, at 11:15 PM, Zhu Ebony-r57400 wrote:
-> >>
-> >>>
-> >>>>>>> diff --git a/arch/powerpc/kernel/head_fsl_booke.S
-> >> b/arch/powerpc/
-> >>>>>>> kernel/head_fsl_booke.S index 66877bd..0d05db0 100644
-> >>>>>>> --- a/arch/powerpc/kernel/head_fsl_booke.S
-> >>>>>>> +++ b/arch/powerpc/kernel/head_fsl_booke.S
-> >>>>>>> @@ -705,7 +705,7 @@ #else
-> >>>>>>>  #endif /* CONFIG_SPE */
-> >>>>>>>
-> >>>>>>>  	/* SPE Floating Point Round */
-> >>>>>>> -	EXCEPTION(0x2050, SPEFloatingPointRound,
-> >> unknown_exception,
-> >>>>>>> EXC_XFER_EE)
-> >>>>>>> +	EXCEPTION(0x2050, SPEFloatingPointRound,
-> >>>>>>> SPEFloatingPointException_Round, EXC_XFER_EE)
-> >>>>>>>
-> >>>>>>>  	/* Performance Monitor */
-> >>>>>>>  	EXCEPTION(0x2060, PerformanceMonitor,=20
-> >>>>>>> performance_monitor_exception, EXC_XFER_STD) @@=20
-> -840,6 +840,8 @@
-> >>>>>>> load_up_spe:
-> >>>>>>>  	oris	r5,r5,MSR_SPE@h
-> >>>>>>>  	mtmsr	r5			/* enable use
-> >> of SPE now */
-> >>>>>>>  	isync
-> >>>>>>> +	li	r5,(SPEFSCR_FINVE | SPEFSCR_FDBZE |
-> >> SPEFSCR_FUNFE |
-> >>>>>>> SPEFSCR_FOVFE)
-> >>>>>>> +	mtspr   SPRN_SPEFSCR,r5
-> >>>>>>
-> >>>>>> We should do this via INIT_THREAD, is there a reason that
-> >>>> you want to
-> >>>>>> set these always?
-> >>>>>
-> >>>>> I just thought it's the first time that an SPE instruction is=20
-> >>>>> encountered, so I enable the exceptions here.
-> >>>>
-> >>>> Lets do this via INIT_THREAD instead, its cleaner. (just
-> >> remember to
-> >>>> add the proper ifdef protection for SPE_IEEE
-> >>>
-> >>> Talking about INIT_THREAD, I'm wondering where is the=20
-> best place to=20
-> >>> enble the exceptions? Please advice!
-> >>
-> >> What's the issue with enabling via INIT_THREAD?  am I missing=20
-> >> something?
-> >
-> > Do you mean that add
-> > ".spefscr =3D SPEFSCR_FINV| =
-SPEFSCR_FDBZE|SPEFSCR_FUNFE|SPEFSCR_FOVFE"
-> > In the defination of INIT_THREAD?
->=20
-> You may want to have something like #define=20
-> SPE_EXCEPTION_ENABLE (SPEFSCR_FINV|=20
-> SPEFSCR_FDBZE|SPEFSCR_FUNFE|SPEFSCR_FOVFE)
->=20
-> Yep, with the proper #ifdef CONFIG_ protection.
+> On Thu, 2007-02-08 at 21:43 +0100, Arnd Bergmann wrote:
+> > On Thursday 08 February 2007 21:28, Christoph Hellwig wrote:
+> > >  Also if we're sure that this is
+> > > always called from process context and with irqs enabled we should
+> > > be using local_irq_disable/local_irq_enable and avoid saving the
+> > > flags word.
+> > 
+> > Right, that's what I meant, I was a little confused here.
 
-OK, I got your point.
+> I prefer saving for now. We can be called whenever there is a
+> flush_tlb_pending() called for flushing a pending batch and that is in
+> quite a few places including deep in the context switching code, I
+> wouldn't make assumption on the irq state on entry.
 
-B.R.
-Ebony
+We prefer saving flags, too.
+
+> I do intend at one point to move the local_irq_save/restore up a level
+> though, so that all the htab functions have the same semantic of being
+> called with IRQs off. Right now, the invalidate ones are sort-of an
+> exception.
+
+We need to turn IRQs off when calling htab functions if and only
+if it is non-atomic, so the "pSeries with LPAR" htab function have
+no spin_lock or local_irq_save/restore. We think tweaking EE bit
+locally gives a way to decrease times to be IRQs off and on again
+(yes, it's smallthing to compare with calling HV),
+so we prefer current implementation.
+
+We have a small patch to replace "local_irq_save" and "spin_lock"
+pair to "spin_lock_irqsave". It is not necessary to apply, but if
+it's possible, please apply.
+
+Cheers,
+Akira Iguchi
