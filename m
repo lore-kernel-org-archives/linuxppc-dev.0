@@ -1,20 +1,18 @@
 Return-Path: <dan@embeddedalley.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 1774CDDEBD
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:23:05 +1100 (EST)
-In-Reply-To: <45CB270C.5090603@freescale.com>
-References: <989B956029373F45A0B8AF02970818900D4401@zch01exm26.fsl.freescale.net>
-	<17A046C6-5FD3-46D5-AB96-EAEDF22FA829@kernel.crashing.org>
-	<45CB270C.5090603@freescale.com>
+Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
+	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 5E702DDED4
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:26:12 +1100 (EST)
+In-Reply-To: <45CAF4C4.7030002@karel.com.tr>
+References: <45CAF4C4.7030002@karel.com.tr>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6BD63E47-4738-4116-8A85-983D4FDCFBB9@embeddedalley.com>
+Message-Id: <50CB27D3-ACF9-47E9-8690-95B76391F18C@embeddedalley.com>
 From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
-	generic iopa
-Date: Fri, 9 Feb 2007 12:22:58 -0500
-To: Timur Tabi <timur@freescale.com>
-Cc: netdev@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: Mpc875 Ethernet does not work under linux.
+Date: Fri, 9 Feb 2007 12:26:08 -0500
+To: Cem Vedat ISIK <cem.isik@karel.com.tr>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	ppc embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +23,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 8, 2007, at 8:35 AM, Timur Tabi wrote:
+On Feb 8, 2007, at 5:00 AM, Cem Vedat ISIK wrote:
 
-> That's what the original code did, kinda.  It called virt_to_phys() if
-> it is main memory, and it called immrbar_virt_to_phys() if it is  
-> MURAM.
->   immrbar_virt_to_phys() did pointer math to extract the physical  
-> address.
+> I'm having a problem using ethernet with denx-provided kernel:
+> linuxppc_2_4_devel-2006-04-06-1735 on mpc875 (a member of mpc885  
+> family).
 
-You've got to be kidding.  You created yet another function
-to determine the physical address from a virtual one! LOL!
-Plus, you need logic in the code to first determine which
-one to call?  Everyone is OK with this?
+Sounds like you didn't properly port your
+kernel.  I use both 2.4 and 2.6 on 875 and 885
+every day.  Works fine.  Take a look at your
+clock routing and PHY support functions to
+ensure that's all correct.
 
 
 	-- Dan
