@@ -2,13 +2,14 @@ Return-Path: <viro@ftp.linux.org.uk>
 Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D4A77DDF10
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 03:05:31 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id D4CB5DDF2E
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 03:05:36 +1100 (EST)
 To: torvalds@linux-foundation.org
-Subject: [PATCH] ps3: missing exports
-Message-Id: <E1HFYFb-0004rm-0y@ZenIV.linux.org.uk>
+Subject: [PATCH] ps3 usb missed the addition of new argument to
+	ps3_alloc_io_irq()
+Message-Id: <E1HFYFg-0004rz-19@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Fri, 09 Feb 2007 16:05:27 +0000
+Date: Fri, 09 Feb 2007 16:05:32 +0000
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,49 +23,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/powerpc/platforms/ps3/interrupt.c  |    2 ++
- arch/powerpc/platforms/ps3/system-bus.c |    2 ++
- 2 files changed, 4 insertions(+), 0 deletions(-)
+ drivers/usb/host/ehci-ps3.c |    2 +-
+ drivers/usb/host/ohci-ps3.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/interrupt.c b/arch/powerpc/platforms/ps3/interrupt.c
-index bb17283..631c300 100644
---- a/arch/powerpc/platforms/ps3/interrupt.c
-+++ b/arch/powerpc/platforms/ps3/interrupt.c
-@@ -194,6 +194,7 @@ int ps3_alloc_io_irq(enum ps3_cpu_binding cpu, unsigned int interrupt_id,
+diff --git a/drivers/usb/host/ehci-ps3.c b/drivers/usb/host/ehci-ps3.c
+index 371f194..4d781a2 100644
+--- a/drivers/usb/host/ehci-ps3.c
++++ b/drivers/usb/host/ehci-ps3.c
+@@ -104,7 +104,7 @@ static int ps3_ehci_sb_probe(struct ps3_system_bus_device *dev)
+ 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
+ 		__LINE__, dev->m_region->lpar_addr);
  
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_alloc_io_irq);
+-	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
++	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id, &virq);
  
- int ps3_free_io_irq(unsigned int virq)
- {
-@@ -209,6 +210,7 @@ int ps3_free_io_irq(unsigned int virq)
+ 	if (result) {
+ 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
+diff --git a/drivers/usb/host/ohci-ps3.c b/drivers/usb/host/ohci-ps3.c
+index 69d948b..62283a3 100644
+--- a/drivers/usb/host/ohci-ps3.c
++++ b/drivers/usb/host/ohci-ps3.c
+@@ -107,7 +107,7 @@ static int ps3_ohci_sb_probe(struct ps3_system_bus_device *dev)
+ 	dev_dbg(&dev->core, "%s:%d: mmio mapped_addr %lxh\n", __func__,
+ 		__LINE__, dev->m_region->lpar_addr);
  
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_free_io_irq);
+-	result = ps3_alloc_io_irq(dev->interrupt_id, &virq);
++	result = ps3_alloc_io_irq(PS3_BINDING_CPU_ANY, dev->interrupt_id, &virq);
  
- /**
-  * ps3_alloc_event_irq - Allocate a virq for use with a system event.
-diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-index bce6136..a9f7e4a 100644
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -57,6 +57,7 @@ int ps3_mmio_region_create(struct ps3_mmio_region *r)
- 	dump_mmio_region(r);
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_mmio_region_create);
- 
- int ps3_free_mmio_region(struct ps3_mmio_region *r)
- {
-@@ -72,6 +73,7 @@ int ps3_free_mmio_region(struct ps3_mmio_region *r)
- 	r->lpar_addr = 0;
- 	return result;
- }
-+EXPORT_SYMBOL_GPL(ps3_free_mmio_region);
- 
- static int ps3_system_bus_match(struct device *_dev,
- 	struct device_driver *_drv)
+ 	if (result) {
+ 		dev_dbg(&dev->core, "%s:%d: ps3_construct_io_irq(%d) failed.\n",
 -- 
 1.5.0-rc2.GIT
