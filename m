@@ -1,21 +1,17 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 61B2EDE217
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:26:41 +1100 (EST)
-Message-ID: <45CCAECB.7030207@freescale.com>
-Date: Fri, 09 Feb 2007 11:26:35 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id CA0CCDDF21
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:31:22 +1100 (EST)
+Date: Fri, 9 Feb 2007 10:31:49 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] mpc5200 device tree bindings refinement
+Message-ID: <20070209173149.GA23362@mag.az.mvista.com>
+References: <11710062092006-git-send-email-grant.likely@secretlab.ca>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
-	generic iopa
-References: <989B956029373F45A0B8AF02970818900D4401@zch01exm26.fsl.freescale.net>
-	<17A046C6-5FD3-46D5-AB96-EAEDF22FA829@kernel.crashing.org>
-	<45CB270C.5090603@freescale.com>
-	<6BD63E47-4738-4116-8A85-983D4FDCFBB9@embeddedalley.com>
-In-Reply-To: <6BD63E47-4738-4116-8A85-983D4FDCFBB9@embeddedalley.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: netdev@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <11710062092006-git-send-email-grant.likely@secretlab.ca>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +21,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
-> 
-> On Feb 8, 2007, at 8:35 AM, Timur Tabi wrote:
-> 
->> That's what the original code did, kinda.  It called virt_to_phys() if
->> it is main memory, and it called immrbar_virt_to_phys() if it is MURAM.
->>   immrbar_virt_to_phys() did pointer math to extract the physical 
->> address.
-> 
-> You've got to be kidding.  You created yet another function
-> to determine the physical address from a virtual one! LOL!
-> Plus, you need logic in the code to first determine which
-> one to call?  Everyone is OK with this?
+On Fri, Feb 09, 2007 at 12:30:09AM -0700, Grant Likely wrote:
 
-The whole point behind the patch that we posted a couple days ago is to get rid 
-of this function.  The patch replaced it with a call to iopa(), but Kumar nack'd 
-that.
+Hi Grant,
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+> Much needed refinement of mpc5200 device tree binding specifications.
+> 
+> Short list:
+
+<snip>
+
+> - Specify reqiured 'cell-index' property to identify between multiple SOC
+>   devices of the same type.  (Useful for arbitrating shared register access)
+
+<snip>
+
+> +Important child node properties
+> +name		type		description
+> +----		----		-----------
+> +cell-index	int		When multiple devices are present, is the
+> +				index of the device in the hardware (ie. There
+> +				are 6 PSC on the 5200 numbered PSC1 to PSC6)
+> +				    PSC1 has 'cell-index = <0>'
+> +				    PSC4 has 'cell-index = <3>'
+> +
+
+Dale Farnsworth and I have the exact same problem with the Marvell
+bridges (e.g., 2 MPSC ctlrs use different bits in the same reg).
+Yesterday we talked about it for a while and came up with essentially
+the same solution as you.  The only difference is that we called the
+property "register-set".  I think that is a better name because a)
+"cell-index" sounds like an index into a DT cell which it isn't, and b)
+its more descriptive (IMHO) because its really saying what set of regs
+or bits in a reg are for that ctlr.
+
+Comments?
+
+Mark
