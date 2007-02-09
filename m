@@ -1,21 +1,19 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 2FAAADDE46
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 14:18:36 +1100 (EST)
-Date: Fri, 9 Feb 2007 14:18:58 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Quoting in replies (Was: Re: [PATCH 1/2] Added support for the
-	MPC8568E MDS board)
-Message-Id: <20070209141858.4717854f.sfr@canb.auug.org.au>
-In-Reply-To: <97AB0CD4-8EB0-48E5-B47F-F63B633B451F@kernel.crashing.org>
-References: <Pine.LNX.4.61.0702081718400.507@ld0175-tx32.am.freescale.net>
-	<97AB0CD4-8EB0-48E5-B47F-F63B633B451F@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [PATCH 3/3] spufs: remove need for struct page
+	for SPEs
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+In-Reply-To: <1170890152.2620.313.camel@localhost.localdomain>
+References: <1170823850.450936.293648942401.qpush@grosgo>
+	<20070207045055.295F3DDE46@ozlabs.org>
+	<20070207142112.e7856c3f.akpm@linux-foundation.org>
+	<1170890152.2620.313.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 09 Feb 2007 14:59:48 +1100
+Message-Id: <1170993588.2620.407.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__9_Feb_2007_14_18_58_+1100_8NKLWKbNtufIngf/"
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__9_Feb_2007_14_18_58_+1100_8NKLWKbNtufIngf/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
 
-On Thu, 8 Feb 2007 17:57:39 -0600 Kumar Gala <galak@kernel.crashing.org> wrote:
->
-> On Feb 8, 2007, at 5:19 PM, Andy Fleming wrote:
->
+> Only the 3rd patch in the serie is "new". Duck it for now, I posted it
+> mostly for review/comments, if it goes it, it will go through Paulus
+> though I will need Nick's vm_insert_pfn and and my NOPFN_REFAULT in
+> first and that's where you get involved :-)
 
-... 20k deleted ...
+BTW, Patch has a bug, it doesn't set VM_PFNMAP in all mmap calls, fixing
+that now.
 
-Please (and this is to everyone), PLEASE, trim your quoting to something
-appropriate ...
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Fri__9_Feb_2007_14_18_58_+1100_8NKLWKbNtufIngf/
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFFy+gnFdBgD/zoJvwRApL6AJ9SCWOVyKMnvd8tYfQAS6m8mbyPoQCfY9c8
-KX5Xc+M+tlLfyRQ9Mt13Y5A=
-=cqjz
------END PGP SIGNATURE-----
-
---Signature=_Fri__9_Feb_2007_14_18_58_+1100_8NKLWKbNtufIngf/--
+Ben.
+ 
