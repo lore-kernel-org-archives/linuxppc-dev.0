@@ -1,21 +1,11 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id 32407DDE28
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 05:38:50 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so768655ugf
-	for <linuxppc-dev@ozlabs.org>; Fri, 09 Feb 2007 10:38:43 -0800 (PST)
-Message-ID: <528646bc0702091038k5188d83fsbc088d875472791c@mail.gmail.com>
-Date: Fri, 9 Feb 2007 11:38:42 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [RFC] mpc5200 device tree bindings refinement
-In-Reply-To: <20070209173149.GA23362@mag.az.mvista.com>
+Return-Path: <mgreer@mvista.com>
+Date: Fri, 9 Feb 2007 11:43:45 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Subject: Okay to change default zImage link/load address?
+Message-ID: <20070209184345.GA28127@mag.az.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <11710062092006-git-send-email-grant.likely@secretlab.ca>
-	<20070209173149.GA23362@mag.az.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +15,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/9/07, Mark A. Greer <mgreer@mvista.com> wrote:
-> On Fri, Feb 09, 2007 at 12:30:09AM -0700, Grant Likely wrote:
->
-> Hi Grant,
->
-> > Much needed refinement of mpc5200 device tree binding specifications.
-> >
-> > Short list:
->
-> <snip>
->
-> > - Specify reqiured 'cell-index' property to identify between multiple SOC
-> >   devices of the same type.  (Useful for arbitrating shared register access)
+The default link (and therefore load address if your fw talks ELF)
+is @ 4MB.  This causes problems for at least 2 different platforms
+I have (Maple and f101/prpmc280).  The problem is that a large enough
+zImage overwrites memory--or stops downloading if it would overwrite
+memory--used by the firmware and it ends up complaining about a corrupted
+ELF image or just doesn't run properly.
 
-Look here:
-http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031093.html
+The default in arch/ppc was configurable (CONFIG_BOOT_LOAD) with the
+default being 8MB.  8MB worked fine for most if not all 32-bit platforms.
 
-and here:
-http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031004.html
-http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031060.html
+Does anyone know of a problem downloading to 8MB instead of 4MB in
+arch/powerpc?  If not, would you object if it changed to 8MB?
 
-I just used that same property name that Ben used for the EMAC to try
-and establish some form of convention.
+The patch below is the change I'm talking about.
 
-g.
+Thanks,
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Mark
+--
+
+diff --git a/arch/powerpc/boot/zImage.lds.S b/arch/powerpc/boot/zImage.lds.S
+index 4be3c64..608de2f 100644
+--- a/arch/powerpc/boot/zImage.lds.S
++++ b/arch/powerpc/boot/zImage.lds.S
+@@ -2,7 +2,7 @@ OUTPUT_ARCH(powerpc:common)
+ ENTRY(_zimage_start)
+ SECTIONS
+ {
+-  . = (4*1024*1024);
++  . = (8*1024*1024);
+   _start = .;
+   .text      :
+   {
