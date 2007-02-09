@@ -1,13 +1,22 @@
-Return-Path: <tmorrison@empirix.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: device tree / how to build/compile & use with u-boot to boot uImage?
-Date: Fri, 9 Feb 2007 16:55:22 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901066B2252@EMPBEDEX.empirix.com>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: <linuxppc-embedded@ozlabs.org>,
-	<linuxppc-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E173ADDEB8
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 09:06:32 +1100 (EST)
+Subject: Re: Discussion about iopa()
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Dan Malek <dan@embeddedalley.com>
+In-Reply-To: <0640B069-F05E-4A08-A8EB-C277BEF1466E@embeddedalley.com>
+References: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
+	<1170969965.2620.345.camel@localhost.localdomain>
+	<0640B069-F05E-4A08-A8EB-C277BEF1466E@embeddedalley.com>
+Content-Type: text/plain
+Date: Sat, 10 Feb 2007 09:06:20 +1100
+Message-Id: <1171058780.6578.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Tabi Timur-B04825 <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,44 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All,
+On Fri, 2007-02-09 at 12:13 -0500, Dan Malek wrote:
+> On Feb 8, 2007, at 4:26 PM, Benjamin Herrenschmidt wrote:
+> 
+> > I'm really not fan of it.
+> 
+> That's because I think it's a terribly useful function
+> and the first step toward some orthogonal VM APIs. :-)
 
-Sorry for my ignorance here, but we have upgraded our kernel from
-2.6.11.xx to 2.6.20-rcx (using a specific git-branch for the mpc85xx)=20
-to run on the MPC8548CDS eval board (using default options provided=20
-by this branch for this eval board). I successfully compiled/loaded the=20
-uImage, but it hangs after decompression (with root=3D/dev/nfs)
+No, I think it's very inefficient to walk the page tables, even worse if
+you have PTEs in HIGHMEM. I think it's better to keep track the physical
+address from alloc time, something similar than dma_alloc_coherent but
+for use with that MURAM thingy.
 
-Also, I was told to upgrade our u-boot source code (with another git=20
-branch for to the mpc85xx) and successfully get to the u-boot prompt.
-
->From googling through the lists - it seems that I need to build a=20
-device tree blob and pass that device tree to the kernel in some
-fashion?=20
-
-I tried to compile the default dts image (using the dtc compiler=20
-installed by LTIB), but it is complaining about no '/chosen' in=20
-the definition:
-
-  <path>/dtc -I dts -O dtb - -o mpc8548cds.dtb -V 16 dts/mpc8548cds.dts
-
-I've looked at the Documentation/powerpc/booting_without_of.txt,=20
-and this gives an explanation of the internal parts of the dts file,=20
-but it doesn't tell me how to practically pass it to the kernel=20
-from u-boot (e.g.: load to memory - and use bootm xxx yyy zzz)
-=20
-I am pretty darn confused about this whole thing. Can anybody point me
-to=20
-a SUCCINCT explanation of the use of a dts file (and how compile and use
-
-with u-boot to pass to kernel)?
-
-Tom Morrison
-Principal Software Engineer
-
-
-EMPIRIX=20
-20 Crosby Drive - Bedford, MA  01730
-p: 781.266.3567 f: 781.266.3670=20
-email: tmorrison@empirix.com=20
-www.empirix.com
+Cheers,
+Ben.
+ 
