@@ -1,17 +1,17 @@
-Return-Path: <sheutlin@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 35962DDE43
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 07:44:12 +1100 (EST)
-Message-ID: <45CCDD16.1020807@gmx.de>
-Date: Fri, 09 Feb 2007 21:44:06 +0100
-From: Sebastian Heutling <sheutlin@gmx.de>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id DAAC2DDDE9
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 07:52:18 +1100 (EST)
+Message-ID: <45CCDEFB.5050504@ru.mvista.com>
+Date: Fri, 09 Feb 2007 23:52:11 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Bob Brose <linuxppcdev@qbjnet.com>
-Subject: Re: 2.6.20 zImage.prep??
-References: <20070209180755.26640.qmail@kunk.qbjnet.com>
-In-Reply-To: <20070209180755.26640.qmail@kunk.qbjnet.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] Check mac-address first in fsl_soc.c
+References: <11710513671236-git-send-email-timur@freescale.com>
+In-Reply-To: <11710513671236-git-send-email-timur@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,52 +21,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I can only tell you that it works for 2.6.18 using the debian linux 
-image package. But you need to install linux-image-2.6.18-prep instead 
-of linux-image-2.6.18-powerpc.
+Hello.
 
+Timur Tabi wrote:
+> The mac-address property in the device tree should be checked first,
+> before local-mac-address.  This is because mac-address contains the most
+> recent MAC address, whereas local-mac-address is the default address.
+> Depending on the platform and the version of U-Boot, U-Boot will set
+> one or the other, or both.
 
-Sebastian
+    Argh, *when* it will be setting both?
 
+> This patch updates gfar_of_init() and fs_enet_of_init() to conform to
+> this order.  It skips a property if it doesn't exist or if it contains
+> an all-zero MAC address.  This patch also adds some NULL-pointer checking
+> to make sure there are no panics if no MAC address has been passed.
 
-Bob Brose wrote:
-> Is PReP currently suported? The last kernel version I could make a
-> zImage.prep in was 2.6.14. I see some references to PReP and new
-> kernels here but nothing I'd call definitive.
->
-> >From digging around the net it looks like one is supposed to use
-> mkvmlinuz to do this now however:
->
-> 1) The utilities mkprep, mktree and mkbugboot aren't build be default
-> in 2.6.20 from what I can see and
->
-> 2) Even when I build them and try mkvmlinuz there are errors:
-> debian:/usr/src/linux# mkvmlinuz -v -o vmlinuz.prep -a prep -k vmlinux -r 2.4.20
-> === Building for sub-architecture prep.
-> === Using kernel image file vmlinux.
-> === Release version seems to be 2.4.20.
-> === Using object files from /usr/src/linux.
-> === Building a bootable compressed kernel image in vmlinuz.prep.
-> === Doing build in /tmp/tmp.kTUDZ23437.
-> === Creating compressed kernel image vmlinux.gz...
-> objcopy -O binary vmlinux /tmp/tmp.kTUDZ23437/vmlinux
-> gzip /tmp/tmp.kTUDZ23437/vmlinux
-> === Putting everything into ELF image file image.o...
-> objcopy -R .comment /tmp/tmp.kTUDZ23437/image.o
-> objcopy: '/tmp/tmp.kTUDZ23437/image.o': No such file
-> objcopy: error: the input file '/tmp/tmp.kTUDZ23437/image.o' is empty
-> objcopy /tmp/tmp.kTUDZ23437/image.o /tmp/tmp.kTUDZ23437/image.o --add-section=.image=/tmp/tmp.kTUDZ23437/vmlinux.gz --set-section-flags=.image=contents,alloc,load,readonly,data
-> objcopy: '/tmp/tmp.kTUDZ23437/image.o': No such file
-> objcopy: error: the input file '/tmp/tmp.kTUDZ23437/image.o' is empty
-> === Creating bootable kernel image file vmlinuz.prep...
-> Sorry, I do not know how to handle PowerPC sub-architecture prep in version 2.4.20.
->
-> This is debian sid. If I try the mkvmlinuz command for chrp it works fine.
->
-> Regards,
-> Bob
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->   
+> diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+> index 9f2a9a4..a0586ea 100644
+> --- a/arch/powerpc/sysdev/fsl_soc.c
+> +++ b/arch/powerpc/sysdev/fsl_soc.c
+> @@ -233,12 +233,13 @@ static int __init gfar_of_init(void)
+>  			goto err;
+>  		}
+>  
+> -		mac_addr = get_property(np, "local-mac-address", NULL);
+> -		if (mac_addr == NULL)
+> -			mac_addr = get_property(np, "mac-address", NULL);
+> -		if (mac_addr == NULL) {
+> -			/* Obsolete */
+> -			mac_addr = get_property(np, "address", NULL);
+> +		mac_addr = get_property(np, "mac-address", NULL);
+> +		if (!mac_addr || (memcmp(mac_addr, "\0\0\0\0\0", 6) == 0)) {
+> +			mac_addr = get_property(np, "local-mac-address", NULL);
+> +			if (!mac_addr || (memcmp(mac_addr, "\0\0\0\0\0", 6) == 0)) {
+> +				/* Obsolete */
+> +				mac_addr = get_property(np, "address", NULL);
+> +			}
+>  		}
+>  
+>  		if (mac_addr)
+> @@ -607,7 +608,16 @@ static int __init fs_enet_of_init(void)
+>  		}
+>  
+>  		mac_addr = get_property(np, "mac-address", NULL);
+> -		memcpy(fs_enet_data.macaddr, mac_addr, 6);
+> +		if (!mac_addr || (memcmp(mac_addr, "\0\0\0\0\0", 6) == 0)) {
+> +			mac_addr = get_property(np, "local-mac-address", NULL);
+> +			if (!mac_addr || (memcmp(mac_addr, "\0\0\0\0\0", 6) == 0)) {
+> +				/* Obsolete */
+> +				mac_addr = get_property(np, "address", NULL);
+> +			}
+> +		}
+> +
+> +		if (mac_addr)
+> +			memcpy(fs_enet_data.macaddr, mac_addr, 6);
+>  
+>  		ph = get_property(np, "phy-handle", NULL);
+>  		phy = of_find_node_by_phandle(*ph);
+[...]
+> @@ -891,8 +901,17 @@ static int __init fs_enet_of_init(void)
+>  			goto err;
+>  		r[0].name = enet_regs;
+>  
+> -		mac_addr = (void *)get_property(np, "mac-address", NULL);
+> -		memcpy(fs_enet_data.macaddr, mac_addr, 6);
+> +		mac_addr = get_property(np, "mac-address", NULL);
+> +		if (!mac_addr || (memcmp(mac_addr, "\0\0\0\0\0", 6) == 0)) {
+> +			mac_addr = get_property(np, "local-mac-address", NULL);
+> +			if (!mac_addr || (memcmp(mac_addr, "\0\0\0\0\0", 6) == 0)) {
+> +				/* Obsolete */
+> +				mac_addr = get_property(np, "address", NULL);
+> +			}
+> +		}
+> +
+> +		if (mac_addr)
+> +			memcpy(fs_enet_data.macaddr, mac_addr, 6);
+
+    These are just asking to be put into a separate function... :-)
+
+>  
+>  		ph = (phandle *) get_property(np, "phy-handle", NULL);
+>  		if (ph != NULL)
+
+WBR, Sergei
