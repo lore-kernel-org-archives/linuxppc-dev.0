@@ -1,17 +1,35 @@
-Return-Path: <hch@lst.de>
-Date: Fri, 9 Feb 2007 15:56:20 +0100
-From: Christoph Hellwig <hch@lst.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] spufs: Fix bitrot of the SPU mmap facility
-	(#2)
-Message-ID: <20070209145620.GA15548@lst.de>
-References: <20070209045848.6304FDDE37@ozlabs.org>
-	<1171000330.2620.425.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1171000330.2620.425.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DE672DDE49
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 02:20:31 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l19FKLoM021585
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 10:20:21 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l19FKLLu298750
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 10:20:21 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l19FKKxZ017146
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 10:20:20 -0500
+Message-ID: <45CC9133.80006@linux.vnet.ibm.com>
+Date: Fri, 09 Feb 2007 09:20:19 -0600
+From: Brian King <brking@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Matthew Wilcox <matthew@wil.cx>
+Subject: Re: [PATCH 1/3] pci: New PCI-E reset API
+References: <11703510202911-patch-mail.ibm.com>
+	<20070201191235.GQ7585@parisc-linux.org>
+	<45C26633.2010804@linux.vnet.ibm.com>
+In-Reply-To: <45C26633.2010804@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: James.Bottomley@steeleye.com, linux-scsi@vger.kernel.org, gregkh@suse.de,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	linux-pci@atrey.karlin.mff.cuni.cz
+Reply-To: brking@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +39,83 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 09, 2007 at 04:52:10PM +1100, Benjamin Herrenschmidt wrote:
-> spufs: Fix bitrot of the SPU mmap facility
+Matthew,
+
+Any further comments on this?
+
+Thanks,
+
+Brian
+
+Brian King wrote:
+> Matthew Wilcox wrote:
+>> On Thu, Feb 01, 2007 at 11:30:21AM -0600, Brian King wrote:
+>>> Adds a new API which can be used to issue various types
+>>> of PCI-E reset, including PCI-E warm reset and PCI-E hot reset.
+>>> This is needed for an ipr PCI-E adapter which does not properly
+>>> implement BIST. Running BIST on this adapter results in PCI-E
+>>> errors. The only reliable reset mechanism that exists on this
+>>> hardware is PCI Fundamental reset (warm reset). Since driving
+>>> this type of reset is architecture unique, this provides the
+>>> necessary hooks for architectures to add this support.
+>> A few points ...
+>>
+>>  - When doing a warm reset, you reset the entire device not just the
+>>    function (== pci_dev) that gets passed in.  How happy are drivers for
+>>    the other functions going to be about this?
 > 
-> It looks like we've had some serious bitrot there mostly due to tracking
-> of address_space's of mmap'ed files getting out of sync with the actual
-> mmap code. The mfc, mss and psmap were not tracked properly and thus
-> not invalidated on context switches (oops !)
+> I guess I don't see how a warm reset could be issued to a single function
+> of a PCI device. I would argue that for a multi-function device, you would
+> have to use function level reset. 
 > 
-> I also removed the various file->f_mapping = inode->i_mapping;
-> assignments that were done in the other open() routines since that
-> is already done for us by __dentry_open.
 > 
-> One improvement we might want to do later is to assign the various
-> ctx-> fields at mmap time instead of file open/close time so that we
-> don't call unmap_mapping_range() on thing that have not been mmap'ed
+>>  - You've missed the requirement:
+>>
+>> "To allow components to perform internal initialization, system software
+>> must wait for at least 100 ms from the end of a Conventional Reset of one
+>> or more devices before it is permitted to issue Configuration Requests
+>> to those devices."
+>>
+>>    To fix this, we need to call pci_block_user_cfg_access() before
+>>    calling the pcibios function, then msleep(100) after calling it, then
+>>    call pci_unblock_user_cfg_access().
 > 
-> Finally, I added some smp_wmb's after assigning the ctx-> fields to make
-> sure they are visible to other CPUs. I don't think this is really
-> necessary as I suspect locking in the fs layer will make that happen
-> anyway but better safe than sorry.
+> What I've done is to provide a very low-level API that can be used to
+> accomplish this. In my implementation, the ipr driver is the one doing
+> all the required delays and calling pci_block_user_cfg_access, since it
+> already was doing that in order to run BIST on the adapter.
+> 
+>>  - There's no attempt to support either cold or function-level reset in
+>>    this patch.
+> 
+> Correct. I had no requirement to implement this. It can always be added
+> if there is a need. A function level reset can be performed by simply
+> writing a bit in config space, so *technically* we wouldn't need an
+> API to do that for us, but it could certainly be added here.
+> 
+>> I suspect the Right Way of handling hot/warm/cold reset is going to be
+>> some kind of integration with error handling.  This driver understands
+>> about slots being different from functions, and has the ability to
+>> notify drivers of other functions that a reset is happening.
+> 
+> Perhaps. It would require a way for the adapter device driver to
+> indicate what type of reset(s) will work for a particular pci device.
+> It would also require a method for a device driver to invoke a reset,
+> which does not currently exist today. I think it would be the first
+> case of the device driver invoking pci error recovery, so I'm not sure
+> how difficult that would be to do with the current code.
+> 
+> I actually thought this API might be used by PCI error recovery
+> code, since it may need to perform these sorts of functions.
+> 
+> CC'ing Linas Vepstas since he wrote the powerpc pci recovery code.
+> 
+> Brian
+> 
+> 
 
 
-Looks good to me.
+-- 
+Brian King
+eServer Storage I/O
+IBM Linux Technology Center
