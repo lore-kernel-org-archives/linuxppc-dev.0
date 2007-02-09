@@ -1,21 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 21AE5DDE2C
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 09:51:09 +1100 (EST)
-Message-ID: <45CCFAD6.5070807@freescale.com>
-Date: Fri, 09 Feb 2007 16:51:02 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 64284DDECF
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 10:01:21 +1100 (EST)
+Date: Fri, 9 Feb 2007 16:02:07 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 15/19] bootwrapper: Add initrd information to the device
+	tree in ft_finalize().
+Message-ID: <20070209230207.GA12035@mag.az.mvista.com>
+References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
+	<20070207230140.GO3849@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Discussion about iopa()
-References: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
-	<1170969965.2620.345.camel@localhost.localdomain>
-	<0640B069-F05E-4A08-A8EB-C277BEF1466E@embeddedalley.com>
-	<1171058780.6578.4.camel@localhost.localdomain>
-	<1EFFAE36-7396-45B5-B8F2-DD7348FBE385@kernel.crashing.org>
-In-Reply-To: <1EFFAE36-7396-45B5-B8F2-DD7348FBE385@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070207230140.GO3849@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +23,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+On Wed, Feb 07, 2007 at 05:01:40PM -0600, Scott Wood wrote:
 
-> My feeling is to leave the code alone until we have the dma mapping api 
-> setup to handle MURAM.  If we can't do alloc/map/free with the same 
-> mechanism I dont see the value in just doing 'map'.  It just makes the 
-> code more confusing w/o any big gain.
+Sorry for being so slow on this Scott.
 
-So you don't want to see a patch where we store the physical address in our own 
-data structures when the memory is mapped (or allocated if it's regular RAM)?
+<snip>
 
+> diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
+> index 04da38f..39fa010 100644
+> --- a/arch/powerpc/boot/flatdevtree_misc.c
+> +++ b/arch/powerpc/boot/flatdevtree_misc.c
+> @@ -33,8 +33,20 @@ static int ft_setprop(const void *phandl
+>  	return ft_set_prop(&cxt, phandle, propname, buf, buflen);
+>  }
+>  
+> -static unsigned long ft_finalize(void)
+> +unsigned long ft_finalize(void)
 
+This is unnecessary.  There is already global access from
+dt_ops.finalize.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+>  {
+> +	unsigned long initrd_end = initrd.addr + initrd.size;
+> +	void *devp;
+> +
+> +	if (initrd.size && (devp = finddevice("/chosen"))) {
+> +		setprop(devp, "linux,initrd-start", &initrd.addr,
+> +		        sizeof(initrd.addr));
+> +		setprop(devp, "linux,initrd-end", &initrd_end,
+> +		        sizeof(initrd_end));
+> +
+> +		ft_add_rsvmap(&cxt, initrd.addr, initrd.size);
+> +	}
+> +
+
+IMHO, this is a very unnatural place to put this code.
+It really belongs in main.c.  That's where all the rest
+of the code that accesses initrd.* is.
+
+Mark
