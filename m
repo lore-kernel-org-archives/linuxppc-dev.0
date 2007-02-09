@@ -1,17 +1,18 @@
 Return-Path: <mgreer@mvista.com>
 Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id EB912DDED4
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 10:04:42 +1100 (EST)
-Date: Fri, 9 Feb 2007 16:05:40 -0700
+	by ozlabs.org (Postfix) with ESMTP id 06A78DDEDB
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 10:06:05 +1100 (EST)
+Date: Fri, 9 Feb 2007 16:07:00 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 17/19] bootwrapper: Add dt_ops methods.
-Message-ID: <20070209230540.GB12035@mag.az.mvista.com>
+Subject: Re: [PATCH 18/19] bootwrapper: Add xlate_reg(),
+	and use it to find serial registers.
+Message-ID: <20070209230700.GC12035@mag.az.mvista.com>
 References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
-	<20070207230144.GQ3849@ld0162-tx32.am.freescale.net>
+	<20070207230145.GR3849@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070207230144.GQ3849@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070207230145.GR3849@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,20 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 07, 2007 at 05:01:44PM -0600, Scott Wood wrote:
+On Wed, Feb 07, 2007 at 05:01:45PM -0600, Scott Wood wrote:
+> xlate_reg() uses the ranges properties of a node's parentage to find the
+> absolute physical address of the node's registers.
+> 
+> The ns16550 driver uses this when no virtual-reg property is found.
 
-<snip>
-
-> diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
-> index 39fa010..10e5f27 100644
-> --- a/arch/powerpc/boot/flatdevtree_misc.c
-> +++ b/arch/powerpc/boot/flatdevtree_misc.c
-
-> +void *fdtm_get_parent(const void *phandle)
-> +void *fdtm_create_node(const void *phandle, const char *name)
-> +void *fdtm_find_node_by_prop_value(const void *prev, const char *propname,
-
-Make these static.  Also, we should probably make the naming consistent
-so would you mind making them all fdtm_* or whatever?
+Is this necessary?  Shouldn't there always be a virtual-reg?
 
 Mark
