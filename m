@@ -1,16 +1,13 @@
-Return-Path: <michael@lug-owl.de>
-Received: from lug-owl.de (lug-owl.de [195.71.106.12])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 750D9DDE3C
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 02:54:31 +1100 (EST)
-Date: Fri, 9 Feb 2007 14:46:38 +0100
-From: Michael Westermann <michael@dvmwest.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Booting a microchannel IBM 7013 with a simple Programm via tftp
-Message-ID: <20070209134637.GB20296@dvmwest.dvmwest.de>
-Mime-Version: 1.0
-Content-Type: multipart/mixed; boundary="mP3DRpeJDSE+ciuQ"
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 39645DDED2
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 03:02:01 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: galak@kernel.crashing.org, linuxppc-dev@ozlabs.org
+Subject: [PATCH] Updated mpc834x_itx_defconfig
+Date: Fri,  9 Feb 2007 10:01:50 -0600
+Message-Id: <11710369101980-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,370 +17,408 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch updates the defconfig for the MPC8349E-mITX.  In addition to picking
+up changes from recent kernels, it turns off math emulation, disables support
+for e100 (which doesn't ship with the system), turns off input devices, 
+turns on some I2C support, turns off HW monitoring (HW not yet supported), 
+turns off OHCI USB (not used), turns off USB gadget support (HW not yet 
+supported), turns on DOS FS support, and turns off kernel debugging.
 
---mP3DRpeJDSE+ciuQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/configs/mpc834x_itx_defconfig |  232 +++++++--------------------
+ 1 files changed, 60 insertions(+), 172 deletions(-)
 
-Hello,
-
-I've a Bull ESCALA-D (IBM 7013J) with microchannel and 8 PPC 604 and one gig ram. I work for
-a few years on the booting and loading this box with linux.
-
-this is the second version of my testprog. 
-
-I've attached the source and the  bootfile. This load and display an hexvalue
-to the Small user display, and loop until power off. This Programm use
-the BUMP-Processor.
-
-I've compiled with a gcc ppc-crosscompile on a i386 box.
-
-
-Michael
-
---mP3DRpeJDSE+ciuQ
-Content-Type: text/x-chdr; charset=us-ascii
-Content-Disposition: attachment; filename="ppc.h"
-
-/*
- * include/asm-ppc/ppc_asm.h
- *
- * Definitions used by various bits of low-level assembly code on PowerPC.
- *
- * Copyright (C) 1995-1999 Gary Thomas, Paul Mackerras, Cort Dougan.
- *
- *  This program is free software; you can redistribute it and/or
- *  modify it under the terms of the GNU General Public License
- *  as published by the Free Software Foundation; either version
- *  2 of the License, or (at your option) any later version.
- */
-
-/* Changed for ppc-test by Michael Westermann 2007 */
-
-#define	cr0	0
-#define	cr1	1
-#define	cr2	2
-#define	cr3	3
-#define	cr4	4
-#define	cr5	5
-#define	cr6	6
-#define	cr7	7
-
-
-/* General Purpose Registers (GPRs) */
-
-#define	r0	0
-#define	r1	1
-#define	r2	2
-#define	r3	3
-#define	r4	4
-#define	r5	5
-#define	r6	6
-#define	r7	7
-#define	r8	8
-#define	r9	9
-#define	r10	10
-#define	r11	11
-#define	r12	12
-#define	r13	13
-#define	r14	14
-#define	r15	15
-#define	r16	16
-#define	r17	17
-#define	r18	18
-#define	r19	19
-#define	r20	20
-#define	r21	21
-#define	r22	22
-#define	r23	23
-#define	r24	24
-#define	r25	25
-#define	r26	26
-#define	r27	27
-#define	r28	28
-#define	r29	29
-#define	r30	30
-#define	r31	31
-
-
-/* Floating Point Registers (FPRs) */
-
-#define	fr0	0
-#define	fr1	1
-#define	fr2	2
-#define	fr3	3
-#define	fr4	4
-#define	fr5	5
-#define	fr6	6
-#define	fr7	7
-#define	fr8	8
-#define	fr9	9
-#define	fr10	10
-#define	fr11	11
-#define	fr12	12
-#define	fr13	13
-#define	fr14	14
-#define	fr15	15
-#define	fr16	16
-#define	fr17	17
-#define	fr18	18
-#define	fr19	19
-#define	fr20	20
-#define	fr21	21
-#define	fr22	22
-#define	fr23	23
-#define	fr24	24
-#define	fr25	25
-#define	fr26	26
-#define	fr27	27
-#define	fr28	28
-#define	fr29	29
-#define	fr30	30
-#define	fr31	31
-
-#define	vr0	0
-#define	vr1	1
-#define	vr2	2
-#define	vr3	3
-#define	vr4	4
-#define	vr5	5
-#define	vr6	6
-#define	vr7	7
-#define	vr8	8
-#define	vr9	9
-#define	vr10	10
-#define	vr11	11
-#define	vr12	12
-#define	vr13	13
-#define	vr14	14
-#define	vr15	15
-#define	vr16	16
-#define	vr17	17
-#define	vr18	18
-#define	vr19	19
-#define	vr20	20
-#define	vr21	21
-#define	vr22	22
-#define	vr23	23
-#define	vr24	24
-#define	vr25	25
-#define	vr26	26
-#define	vr27	27
-#define	vr28	28
-#define	vr29	29
-#define	vr30	30
-#define	vr31	31
-
-#define	evr0	0
-#define	evr1	1
-#define	evr2	2
-#define	evr3	3
-#define	evr4	4
-#define	evr5	5
-#define	evr6	6
-#define	evr7	7
-#define	evr8	8
-#define	evr9	9
-#define	evr10	10
-#define	evr11	11
-#define	evr12	12
-#define	evr13	13
-#define	evr14	14
-#define	evr15	15
-#define	evr16	16
-#define	evr17	17
-#define	evr18	18
-#define	evr19	19
-#define	evr20	20
-#define	evr21	21
-#define	evr22	22
-#define	evr23	23
-#define	evr24	24
-#define	evr25	25
-#define	evr26	26
-#define	evr27	27
-#define	evr28	28
-#define	evr29	29
-#define	evr30	30
-#define	evr31	31
-
-/* some stab codes */
-#define N_FUN	36
-#define N_RSYM	64
-#define N_SLINE	68
-#define N_SO	100
-
---mP3DRpeJDSE+ciuQ
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: attachment; filename="test_boot.S"
-
-#include "ppc.h" 
-
-#define block_size	512
-#define bootstrap	0x400
-#define blocks_bootstarp bootstrap/block_size
-#define nvram		0xff60
-#define	start_prog	0x3f0
-#define	ende_file	0xA00
-#define anz_blocks	ende_file/block_size
-#define	magic_number	0xc9c2d4c1			// 'IBMA' EBCIDIC
-
-							/* boot record  */
-		.org	0
-		.long magic_number			// IPL Record id		
-		.long 0, 0, 0, 0, 0			
-		.long 0, 0, 0		
-		.long anz_blocks			// anz blocks bootcode base
-		.long start_prog			// start_prog base
-		.long blocks_bootstarp
-		.long blocks_bootstarp
-		.long anz_blocks
-		.long 0
-		.byte 0x01,0x02,0x00,0x00
-		.long 0, 0, 0, 0, 0, 0, 0, 0, 0
-		.long anz_blocks			// anz blocks bootcode sevice
-		.long start_prog			// start_prog service
-		.long blocks_bootstarp			
-		.long blocks_bootstarp
-		.long anz_blocks
-		.long 0
-
-		.org	bootstrap 
-		.org	bootstrap+start_prog
-test_lix:	mflr	r26			
-		lis	r1,32		// Stack 0x200000
-
-		addi	r28, r4 ,0	
-
-		mtibatu	0,r3
-		mtdbatu	0,r3
-		mtibatu	1,r3
-		mtdbatu	1,r3
-		mtibatu	2,r3
-		mtdbatu	2,r3
-		mtibatu	3,r3
-		mtdbatu	3,r3
-		addi	r0,r4,19	
-		mtibatl	0,r0		// BPRN=0,      PP = 11 WIMG=0010
-		addi	r0,r4,18
-		mtdbatl	0,r0		// BPRN=0,      PP = 10 WIMG=0010
-		addi	r0,r4,255
-		mtibatu	0,r0		// BEPI=0, Area Length=8MB, Vs=1,Vp=1
-		mtdbatu	0,r0		// BEPI=0, Area Length=8MB, Vs=1,Vp=1
-		li	r4,0
-		oris	r4,r4,65472	
-		addi	r0,r4,19	
-		mtibatl	1,r0		// BPRN=0xffc0, PP = 11 WIMG=0010, 
-		addi	r0,r4,19
-		mtdbatl	1,r0		// BPRN=0xffc0, PP = 11 WIMG=0010, 
-		addi	r0,r4,127	
-		mtibatu	1,r0		// BEPI=0xffc0, Area Length=1MB, Vs=1,Vp=1
-		mtdbatu	1,r0		// BEPI=0xffc0, Area Length=1MB, Vs=1,Vp=1
-		lis	r4,-256
-		addi	r0,r4,35
-		mtibatl	2,r0		// BPRN=0xff00, PP = 11 WIMG=0100, 
-		addi	r0,r4,34	// BPRN=0xff00, PP = 10 WIMG=0100, 
-		mtdbatl	2,r0
-		addi	r0,r4,255
-		mtibatu	2,r0		// BEPI=0xff00, Area Length=8MB, Vs=1,Vp=1
-		mtdbatu	2,r0		// BEPI=0xff00, Area Length=8MB, Vs=1,Vp=1
-		lis	r4,384		
-		addi	r0,r4,19
-		mtibatl	3,r0		// BPRN=0x0180, PP = 11 WIMG=0010, 
-		addi	r0,r4,18	// BPRN=0x0180, PP = 10 WIMG=0010, 
-		mtdbatl	3,r0
-		addi	r0,r4,255
-		mtibatu	3,r0		// BEPI=0x0180, Area Length=8MB, Vs=1,Vp=1
-		mtdbatu	3,r0		// BEPI=0x0180, Area Length=8MB, Vs=1,Vp=1
-		sync	
-		isync
-		li	r0,12400
-		mtmsr	r0
-		isync
-		sync
-		
-		bl 	set_led_copy
-		
-		li	r3, 0x444	
-		bl	dump_IPL	
-		sync
-		isync
-loop:		b loop
-
-dump_IPL:	mflr	r0		
-      		mtctr	r0
-		rlwinm	r4,r3,20,0,11
-		li	r3,	0x300
-		oris	r3,r3,	nvram
-		stw	r4,0(r3)
-		sync
-		bctr
-
-set_led_copy:	cmpwi	r3,0		// set_led_copy
-		lis	r3,-158
-		addic	r3,r3,2528
-		li	r0,1
-		beq-	L00004f68
-		stw	r0,-2376(r3)
-		blr
-L00004f68:	li	r0,0
-		stw	r0,-2376(r3)
-		blr
-		.org	ende_file-1
-		.byte 0	
-
---mP3DRpeJDSE+ciuQ
-Content-Type: application/octet-stream
-Content-Disposition: attachment; filename=test_boot
-Content-Transfer-Encoding: base64
-
-ycLUwQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABQAAA/AAAAACAAAAAgAA
-AAUAAAAAAQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAUAAAPw
-AAAAAgAAAAIAAAAFAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAH9IAqY8IAAgO4QAAHxwg6Z8eIOm
-fHKDpnx6g6Z8dIOmfHyDpnx2g6Z8foOmOAQAE3wRg6Y4BAASfBmDpjgEAP98EIOmfBiDpjiA
-AABkhP/AOAQAE3wTg6Y4BAATfBuDpjgEAH98EoOmfBqDpjyA/wA4BAAjfBWDpjgEACJ8HYOm
-OAQA/3wUg6Z8HIOmPIABgDgEABN8F4OmOAQAEnwfg6Y4BAD/fBaDpnweg6Z8AASsTAABLDgA
-MHB8AAEkTAABLHwABKxIAAA5OGAEREgAABF8AASsTAABLEgAAAB8CAKmfAkDplRkoBY4YAMA
-ZGP/YJCDAAB8AASsToAEICwDAAA8YP9iMGMJ4DgAAAFBggAMkAP2uE6AACA4AAAAkAP2uE6A
-ACAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==
-
---mP3DRpeJDSE+ciuQ--
+diff --git a/arch/powerpc/configs/mpc834x_itx_defconfig b/arch/powerpc/configs/mpc834x_itx_defconfig
+index 7902806..23d8964 100644
+--- a/arch/powerpc/configs/mpc834x_itx_defconfig
++++ b/arch/powerpc/configs/mpc834x_itx_defconfig
+@@ -1,7 +1,7 @@
+ #
+ # Automatically generated make config: don't edit
+-# Linux kernel version: 2.6.20-rc5
+-# Fri Jan 26 00:19:02 2007
++# Linux kernel version: 2.6.20
++# Wed Feb  7 13:12:18 2007
+ #
+ # CONFIG_PPC64 is not set
+ CONFIG_PPC32=y
+@@ -34,9 +34,9 @@ CONFIG_DEFAULT_UIMAGE=y
+ CONFIG_PPC_83xx=y
+ # CONFIG_PPC_85xx is not set
+ # CONFIG_PPC_86xx is not set
++# CONFIG_PPC_8xx is not set
+ # CONFIG_40x is not set
+ # CONFIG_44x is not set
+-# CONFIG_8xx is not set
+ # CONFIG_E200 is not set
+ CONFIG_6xx=y
+ CONFIG_83xx=y
+@@ -178,7 +178,6 @@ CONFIG_FSL_SOC=y
+ CONFIG_PCI=y
+ CONFIG_PCI_DOMAINS=y
+ # CONFIG_PCIEPORTBUS is not set
+-# CONFIG_PCI_DEBUG is not set
+ 
+ #
+ # PCCARD (PCMCIA/CardBus) support
+@@ -303,7 +302,6 @@ CONFIG_DEFAULT_TCP_CONG="cubic"
+ CONFIG_STANDALONE=y
+ CONFIG_PREVENT_FIRMWARE_BUILD=y
+ # CONFIG_FW_LOADER is not set
+-# CONFIG_DEBUG_DRIVER is not set
+ # CONFIG_SYS_HYPERVISOR is not set
+ 
+ #
+@@ -523,6 +521,7 @@ CONFIG_SCSI_SPI_ATTRS=y
+ # Serial ATA (prod) and Parallel ATA (experimental) drivers
+ #
+ CONFIG_ATA=y
++# CONFIG_ATA_NONSTANDARD is not set
+ # CONFIG_SATA_AHCI is not set
+ # CONFIG_SATA_SVW is not set
+ # CONFIG_ATA_PIIX is not set
+@@ -647,37 +646,7 @@ CONFIG_CICADA_PHY=y
+ #
+ # Ethernet (10 or 100Mbit)
+ #
+-CONFIG_NET_ETHERNET=y
+-CONFIG_MII=y
+-# CONFIG_HAPPYMEAL is not set
+-# CONFIG_SUNGEM is not set
+-# CONFIG_CASSINI is not set
+-# CONFIG_NET_VENDOR_3COM is not set
+-
+-#
+-# Tulip family network device support
+-#
+-# CONFIG_NET_TULIP is not set
+-# CONFIG_HP100 is not set
+-CONFIG_NET_PCI=y
+-# CONFIG_PCNET32 is not set
+-# CONFIG_AMD8111_ETH is not set
+-# CONFIG_ADAPTEC_STARFIRE is not set
+-# CONFIG_B44 is not set
+-# CONFIG_FORCEDETH is not set
+-# CONFIG_DGRS is not set
+-# CONFIG_EEPRO100 is not set
+-CONFIG_E100=y
+-# CONFIG_FEALNX is not set
+-# CONFIG_NATSEMI is not set
+-# CONFIG_NE2K_PCI is not set
+-# CONFIG_8139CP is not set
+-# CONFIG_8139TOO is not set
+-# CONFIG_SIS900 is not set
+-# CONFIG_EPIC100 is not set
+-# CONFIG_SUNDANCE is not set
+-# CONFIG_TLAN is not set
+-# CONFIG_VIA_RHINE is not set
++# CONFIG_NET_ETHERNET is not set
+ 
+ #
+ # Ethernet (1000 Mbit)
+@@ -693,7 +662,6 @@ CONFIG_E100=y
+ # CONFIG_SKGE is not set
+ # CONFIG_SKY2 is not set
+ # CONFIG_SK98LIN is not set
+-# CONFIG_VIA_VELOCITY is not set
+ # CONFIG_TIGON3 is not set
+ # CONFIG_BNX2 is not set
+ CONFIG_GIANFAR=y
+@@ -746,26 +714,7 @@ CONFIG_GFAR_NAPI=y
+ #
+ # Input device support
+ #
+-CONFIG_INPUT=y
+-# CONFIG_INPUT_FF_MEMLESS is not set
+-
+-#
+-# Userland interfaces
+-#
+-# CONFIG_INPUT_MOUSEDEV is not set
+-# CONFIG_INPUT_JOYDEV is not set
+-# CONFIG_INPUT_TSDEV is not set
+-# CONFIG_INPUT_EVDEV is not set
+-# CONFIG_INPUT_EVBUG is not set
+-
+-#
+-# Input Device Drivers
+-#
+-# CONFIG_INPUT_KEYBOARD is not set
+-# CONFIG_INPUT_MOUSE is not set
+-# CONFIG_INPUT_JOYSTICK is not set
+-# CONFIG_INPUT_TOUCHSCREEN is not set
+-# CONFIG_INPUT_MISC is not set
++# CONFIG_INPUT is not set
+ 
+ #
+ # Hardware I/O ports
+@@ -784,7 +733,7 @@ CONFIG_INPUT=y
+ #
+ CONFIG_SERIAL_8250=y
+ CONFIG_SERIAL_8250_CONSOLE=y
+-CONFIG_SERIAL_8250_PCI=y
++# CONFIG_SERIAL_8250_PCI is not set
+ CONFIG_SERIAL_8250_NR_UARTS=4
+ CONFIG_SERIAL_8250_RUNTIME_UARTS=4
+ # CONFIG_SERIAL_8250_EXTENDED is not set
+@@ -887,7 +836,7 @@ CONFIG_I2C_MPC=y
+ # CONFIG_SENSORS_DS1337 is not set
+ # CONFIG_SENSORS_DS1374 is not set
+ # CONFIG_SENSORS_EEPROM is not set
+-# CONFIG_SENSORS_PCF8574 is not set
++CONFIG_SENSORS_PCF8574=y
+ # CONFIG_SENSORS_PCA9539 is not set
+ # CONFIG_SENSORS_PCF8591 is not set
+ # CONFIG_SENSORS_M41T00 is not set
+@@ -901,7 +850,6 @@ CONFIG_I2C_MPC=y
+ # SPI support
+ #
+ CONFIG_SPI=y
+-# CONFIG_SPI_DEBUG is not set
+ CONFIG_SPI_MASTER=y
+ 
+ #
+@@ -922,52 +870,8 @@ CONFIG_SPI_MPC83xx=y
+ #
+ # Hardware Monitoring support
+ #
+-CONFIG_HWMON=y
++# CONFIG_HWMON is not set
+ # CONFIG_HWMON_VID is not set
+-# CONFIG_SENSORS_ABITUGURU is not set
+-# CONFIG_SENSORS_ADM1021 is not set
+-# CONFIG_SENSORS_ADM1025 is not set
+-# CONFIG_SENSORS_ADM1026 is not set
+-# CONFIG_SENSORS_ADM1031 is not set
+-# CONFIG_SENSORS_ADM9240 is not set
+-# CONFIG_SENSORS_ASB100 is not set
+-# CONFIG_SENSORS_ATXP1 is not set
+-# CONFIG_SENSORS_DS1621 is not set
+-# CONFIG_SENSORS_F71805F is not set
+-# CONFIG_SENSORS_FSCHER is not set
+-# CONFIG_SENSORS_FSCPOS is not set
+-# CONFIG_SENSORS_GL518SM is not set
+-# CONFIG_SENSORS_GL520SM is not set
+-# CONFIG_SENSORS_IT87 is not set
+-# CONFIG_SENSORS_LM63 is not set
+-# CONFIG_SENSORS_LM70 is not set
+-# CONFIG_SENSORS_LM75 is not set
+-# CONFIG_SENSORS_LM77 is not set
+-# CONFIG_SENSORS_LM78 is not set
+-# CONFIG_SENSORS_LM80 is not set
+-# CONFIG_SENSORS_LM83 is not set
+-# CONFIG_SENSORS_LM85 is not set
+-# CONFIG_SENSORS_LM87 is not set
+-# CONFIG_SENSORS_LM90 is not set
+-# CONFIG_SENSORS_LM92 is not set
+-# CONFIG_SENSORS_MAX1619 is not set
+-# CONFIG_SENSORS_PC87360 is not set
+-# CONFIG_SENSORS_PC87427 is not set
+-# CONFIG_SENSORS_SIS5595 is not set
+-# CONFIG_SENSORS_SMSC47M1 is not set
+-# CONFIG_SENSORS_SMSC47M192 is not set
+-# CONFIG_SENSORS_SMSC47B397 is not set
+-# CONFIG_SENSORS_VIA686A is not set
+-# CONFIG_SENSORS_VT1211 is not set
+-# CONFIG_SENSORS_VT8231 is not set
+-# CONFIG_SENSORS_W83781D is not set
+-# CONFIG_SENSORS_W83791D is not set
+-# CONFIG_SENSORS_W83792D is not set
+-# CONFIG_SENSORS_W83793 is not set
+-# CONFIG_SENSORS_W83L785TS is not set
+-# CONFIG_SENSORS_W83627HF is not set
+-# CONFIG_SENSORS_W83627EHF is not set
+-# CONFIG_HWMON_DEBUG_CHIP is not set
+ 
+ #
+ # Multimedia devices
+@@ -983,7 +887,7 @@ CONFIG_HWMON=y
+ #
+ # Graphics support
+ #
+-CONFIG_FIRMWARE_EDID=y
++# CONFIG_FIRMWARE_EDID is not set
+ # CONFIG_FB is not set
+ # CONFIG_FB_IBM_GXT4500 is not set
+ # CONFIG_BACKLIGHT_LCD_SUPPORT is not set
+@@ -994,11 +898,6 @@ CONFIG_FIRMWARE_EDID=y
+ # CONFIG_SOUND is not set
+ 
+ #
+-# HID Devices
+-#
+-CONFIG_HID=y
+-
+-#
+ # USB support
+ #
+ CONFIG_USB_ARCH_HAS_HCD=y
+@@ -1023,10 +922,8 @@ CONFIG_USB_EHCI_HCD=y
+ # CONFIG_USB_EHCI_ROOT_HUB_TT is not set
+ # CONFIG_USB_EHCI_TT_NEWSCHED is not set
+ # CONFIG_USB_ISP116X_HCD is not set
+-CONFIG_USB_OHCI_HCD=y
+-# CONFIG_USB_OHCI_BIG_ENDIAN is not set
+-CONFIG_USB_OHCI_LITTLE_ENDIAN=y
+-CONFIG_USB_UHCI_HCD=y
++# CONFIG_USB_OHCI_HCD is not set
++# CONFIG_USB_UHCI_HCD is not set
+ # CONFIG_USB_SL811_HCD is not set
+ 
+ #
+@@ -1058,25 +955,10 @@ CONFIG_USB_STORAGE=y
+ #
+ # USB Input Devices
+ #
+-# CONFIG_USB_HID is not set
+ 
+ #
+ # USB HID Boot Protocol drivers
+ #
+-# CONFIG_USB_KBD is not set
+-# CONFIG_USB_MOUSE is not set
+-# CONFIG_USB_AIPTEK is not set
+-# CONFIG_USB_WACOM is not set
+-# CONFIG_USB_ACECAD is not set
+-# CONFIG_USB_KBTAB is not set
+-# CONFIG_USB_POWERMATE is not set
+-# CONFIG_USB_TOUCHSCREEN is not set
+-# CONFIG_USB_YEALINK is not set
+-# CONFIG_USB_XPAD is not set
+-# CONFIG_USB_ATI_REMOTE is not set
+-# CONFIG_USB_ATI_REMOTE2 is not set
+-# CONFIG_USB_KEYSPAN_REMOTE is not set
+-# CONFIG_USB_APPLETOUCH is not set
+ 
+ #
+ # USB Imaging devices
+@@ -1133,25 +1015,7 @@ CONFIG_USB_MON=y
+ #
+ # USB Gadget Support
+ #
+-CONFIG_USB_GADGET=y
+-# CONFIG_USB_GADGET_DEBUG_FILES is not set
+-CONFIG_USB_GADGET_SELECTED=y
+-CONFIG_USB_GADGET_NET2280=y
+-CONFIG_USB_NET2280=y
+-# CONFIG_USB_GADGET_PXA2XX is not set
+-# CONFIG_USB_GADGET_GOKU is not set
+-# CONFIG_USB_GADGET_LH7A40X is not set
+-# CONFIG_USB_GADGET_OMAP is not set
+-# CONFIG_USB_GADGET_AT91 is not set
+-# CONFIG_USB_GADGET_DUMMY_HCD is not set
+-CONFIG_USB_GADGET_DUALSPEED=y
+-# CONFIG_USB_ZERO is not set
+-CONFIG_USB_ETH=y
+-CONFIG_USB_ETH_RNDIS=y
+-# CONFIG_USB_GADGETFS is not set
+-# CONFIG_USB_FILE_STORAGE is not set
+-# CONFIG_USB_G_SERIAL is not set
+-# CONFIG_USB_MIDI_GADGET is not set
++# CONFIG_USB_GADGET is not set
+ 
+ #
+ # MMC/SD Card support
+@@ -1273,8 +1137,11 @@ CONFIG_DNOTIFY=y
+ #
+ # DOS/FAT/NT Filesystems
+ #
+-# CONFIG_MSDOS_FS is not set
+-# CONFIG_VFAT_FS is not set
++CONFIG_FAT_FS=y
++CONFIG_MSDOS_FS=y
++CONFIG_VFAT_FS=y
++CONFIG_FAT_DEFAULT_CODEPAGE=437
++CONFIG_FAT_DEFAULT_IOCHARSET="iso8859-1"
+ # CONFIG_NTFS_FS is not set
+ 
+ #
+@@ -1340,7 +1207,7 @@ CONFIG_PARTITION_ADVANCED=y
+ # CONFIG_OSF_PARTITION is not set
+ # CONFIG_AMIGA_PARTITION is not set
+ # CONFIG_ATARI_PARTITION is not set
+-# CONFIG_MAC_PARTITION is not set
++CONFIG_MAC_PARTITION=y
+ CONFIG_MSDOS_PARTITION=y
+ # CONFIG_BSD_DISKLABEL is not set
+ # CONFIG_MINIX_SUBPARTITION is not set
+@@ -1356,7 +1223,46 @@ CONFIG_MSDOS_PARTITION=y
+ #
+ # Native Language Support
+ #
+-# CONFIG_NLS is not set
++CONFIG_NLS=y
++CONFIG_NLS_DEFAULT="iso8859-1"
++# CONFIG_NLS_CODEPAGE_437 is not set
++# CONFIG_NLS_CODEPAGE_737 is not set
++# CONFIG_NLS_CODEPAGE_775 is not set
++# CONFIG_NLS_CODEPAGE_850 is not set
++# CONFIG_NLS_CODEPAGE_852 is not set
++# CONFIG_NLS_CODEPAGE_855 is not set
++# CONFIG_NLS_CODEPAGE_857 is not set
++# CONFIG_NLS_CODEPAGE_860 is not set
++# CONFIG_NLS_CODEPAGE_861 is not set
++# CONFIG_NLS_CODEPAGE_862 is not set
++# CONFIG_NLS_CODEPAGE_863 is not set
++# CONFIG_NLS_CODEPAGE_864 is not set
++# CONFIG_NLS_CODEPAGE_865 is not set
++# CONFIG_NLS_CODEPAGE_866 is not set
++# CONFIG_NLS_CODEPAGE_869 is not set
++# CONFIG_NLS_CODEPAGE_936 is not set
++# CONFIG_NLS_CODEPAGE_950 is not set
++# CONFIG_NLS_CODEPAGE_932 is not set
++# CONFIG_NLS_CODEPAGE_949 is not set
++# CONFIG_NLS_CODEPAGE_874 is not set
++# CONFIG_NLS_ISO8859_8 is not set
++# CONFIG_NLS_CODEPAGE_1250 is not set
++# CONFIG_NLS_CODEPAGE_1251 is not set
++# CONFIG_NLS_ASCII is not set
++# CONFIG_NLS_ISO8859_1 is not set
++# CONFIG_NLS_ISO8859_2 is not set
++# CONFIG_NLS_ISO8859_3 is not set
++# CONFIG_NLS_ISO8859_4 is not set
++# CONFIG_NLS_ISO8859_5 is not set
++# CONFIG_NLS_ISO8859_6 is not set
++# CONFIG_NLS_ISO8859_7 is not set
++# CONFIG_NLS_ISO8859_9 is not set
++# CONFIG_NLS_ISO8859_13 is not set
++# CONFIG_NLS_ISO8859_14 is not set
++# CONFIG_NLS_ISO8859_15 is not set
++# CONFIG_NLS_KOI8_R is not set
++# CONFIG_NLS_KOI8_U is not set
++# CONFIG_NLS_UTF8 is not set
+ 
+ #
+ # Distributed Lock Manager
+@@ -1388,27 +1294,9 @@ CONFIG_ENABLE_MUST_CHECK=y
+ # CONFIG_UNUSED_SYMBOLS is not set
+ # CONFIG_DEBUG_FS is not set
+ # CONFIG_HEADERS_CHECK is not set
+-CONFIG_DEBUG_KERNEL=y
++# CONFIG_DEBUG_KERNEL is not set
+ CONFIG_LOG_BUF_SHIFT=14
+-CONFIG_DETECT_SOFTLOCKUP=y
+-# CONFIG_SCHEDSTATS is not set
+-# CONFIG_DEBUG_SLAB is not set
+-# CONFIG_DEBUG_RT_MUTEXES is not set
+-# CONFIG_RT_MUTEX_TESTER is not set
+-# CONFIG_DEBUG_SPINLOCK is not set
+-# CONFIG_DEBUG_MUTEXES is not set
+-# CONFIG_DEBUG_RWSEMS is not set
+-# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
+-# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
+-# CONFIG_DEBUG_KOBJECT is not set
+ # CONFIG_DEBUG_BUGVERBOSE is not set
+-# CONFIG_DEBUG_INFO is not set
+-# CONFIG_DEBUG_VM is not set
+-# CONFIG_DEBUG_LIST is not set
+-CONFIG_FORCED_INLINING=y
+-# CONFIG_RCU_TORTURE_TEST is not set
+-# CONFIG_DEBUGGER is not set
+-# CONFIG_BDI_SWITCH is not set
+ # CONFIG_BOOTX_TEXT is not set
+ # CONFIG_SERIAL_TEXT_DEBUG is not set
+ # CONFIG_PPC_EARLY_DEBUG is not set
+-- 
+1.4.4
