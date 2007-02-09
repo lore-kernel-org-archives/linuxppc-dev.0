@@ -2,22 +2,20 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9EB8DDDEC5
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 02:41:53 +1100 (EST)
-Subject: Re: [linux-pm] [PATCH 02/12] powermac: support G5 CPU hotplug
+	by ozlabs.org (Postfix) with ESMTP id 708E0DDEC8
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 02:43:36 +1100 (EST)
+Subject: Re: [PATCH 13/12] mpic: add affinity callback for IPI "chip"
 From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17867.40281.175422.116673@cargo.ozlabs.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1170969252.2620.335.camel@localhost.localdomain>
 References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124610.392302000@sipsolutions.net>
-	<1170940494.4385.51.camel@johannes.berg>
-	<1170941321.4385.61.camel@johannes.berg>
-	<17867.40281.175422.116673@cargo.ozlabs.ibm.com>
+	<1170940611.4385.56.camel@johannes.berg>
+	<1170969252.2620.335.camel@localhost.localdomain>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-LmFdauLa3tZI+xVHu6Mi"
-Date: Fri, 09 Feb 2007 16:39:21 +0100
-Message-Id: <1171035561.4520.10.camel@johannes.berg>
+	boundary="=-zPaFEoyswYyTO6SYPiBy"
+Date: Fri, 09 Feb 2007 16:41:08 +0100
+Message-Id: <1171035668.4520.12.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -30,60 +28,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-LmFdauLa3tZI+xVHu6Mi
+--=-zPaFEoyswYyTO6SYPiBy
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2007-02-09 at 08:59 +1100, Paul Mackerras wrote:
-> Johannes Berg writes:
+On Fri, 2007-02-09 at 08:14 +1100, Benjamin Herrenschmidt wrote:
 >=20
-> > +#ifdef CONFIG_CPU_HOTPLUG
-> > +	/* if we have fake CPU hotplug just to support suspend to disk
-> > +	 * and can't really turn off a CPU, it may be taking timer interrupts
-> > +	 * even when it is dead. Avoid doing anything in that case so global
-> > +	 * state is not modified for and by a CPU that doesn't really exist. =
-*/
-> > +	if (__get_cpu_var(cpu_state) =3D=3D CPU_DEAD)
-> > +		return;
-> > +#endif
+> > This patch adds a dummy affinity callback for the IPI "chip" to avoid
+> > getting a warning ("Cannot set affinity for irq 251") when taking a
+> > CPU offline via sysfs or during suspend.
 >=20
-> Are you sure this is necessary?  IIRC, the if (!cpu_is_offline(cpu)) a
-> little bit further down is there to cope with this exact situation.
+> Wouldn't be a better option to make sure they have IRQF_PERCPU set and
+> that we don't do the affinity thing on interrupts with that flag when=20
+> offlining a CPU ?
 
-Yes, but we still do irq_enter() and as it happens with HZ=3D1000 we
-almost always kick the CPU out while it's inbetween irq_enter() and
-irq_exit().
+Hmm. Yeah, something like that could be possible. Looking at
+fixup_irqs() there is a test:
 
-You said:
+                if (irq_desc[irq].status & IRQ_PER_CPU)
+                        continue;
 
-> And cpu hotplug already works on G4 SMP powermacs, where we can't
-> physically remove the cpu either - we just put it into sleep mode with
-> interrupts disabled, which is what we would be doing on a G5 powermac
-> also.
-
-and then Benh said:
-
-> I've always had doubts about wether SLEEP with EE off was legal and
-> wouldn't actually still go out of sleep when getting an interrupt... In
-> that case, at least on CPUs where the DEC acts "level" triggered, we
-> need to at least reset the DEC to some sane value.
-
-I probably should've mentioned that. I tried going into NAP with EE off
-and that seemed to get me a busy loop where the CPU wasn't even napping
-at all. I could have done something wrong, of course.
+but I'd have to dig what else this means.
 
 johannes
 
---=-LmFdauLa3tZI+xVHu6Mi
+--=-zPaFEoyswYyTO6SYPiBy
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBFzJWp/ETPhpq3jKURAg0xAJ9Kk6WxqmnWpc8cmfmjmRpM2ZpyigCgnb/f
-nqwCKAj5rhDcdCEJEXN4vjo=
-=vJhb
+iD8DBQBFzJYU/ETPhpq3jKURAl39AKCx9da7MJvKlrWL0p6Gg3y0iEHjpwCfdUzy
+3bHIMm/M8KBGpHlfhTyvnd4=
+=rR9r
 -----END PGP SIGNATURE-----
 
---=-LmFdauLa3tZI+xVHu6Mi--
+--=-zPaFEoyswYyTO6SYPiBy--
