@@ -1,18 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 89102DDDF2
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Feb 2007 20:20:06 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Celleb: improve htab lock
-Date: Fri, 9 Feb 2007 10:19:54 +0100
-References: <200702090753.l197r4Pr007623@toshiba.co.jp>
-In-Reply-To: <200702090753.l197r4Pr007623@toshiba.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702091019.54795.arnd@arndb.de>
-Cc: paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9D4E2DDE3E
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 01:40:21 +1100 (EST)
+In-Reply-To: <3E83A767-0E8C-41E3-A9C7-A231CD841EAF@kernel.crashing.org>
+References: <32F3CC26D4DAC44E8ECD07155727A46E8B7E97@zch01exm20.fsl.freescale.net>
+	<3E83A767-0E8C-41E3-A9C7-A231CD841EAF@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <543c39e820836fcfe2d93681a0657d57@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch][5/5] powerpc V2: Add the general support for Embedded
+	Floating-Point instructions
+Date: Fri, 9 Feb 2007 15:40:07 +0100
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,11 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 09 February 2007 08:53, Akira Iguchi wrote:
-> Disabling IRQ is required only in invalidation. Replace
-> "spin_lock_irqsave" to "spin_lock" in other ops.
-> 
-> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-> Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+>>> I thought we were going to have some general Kconfig option
+>>> to enable all this?  EMDEDDED_FP_IEEE or something like that
+>>
+>> So that users have chance to enable/disable fully IEEE compliance?
+>> Segher
+>> had mentioned this, and it sounds reasonable.
+>
+> Its alot of code to bring in if you don't care about IEEE compliance.
 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Yes certainly, and that's important for embedded applications.
+
+My point however is that this should be selectable *per process*
+at runtime.  Compare to the AltiVec situation (where processes
+can select (non-)IEEE behaviour by themselves); most tasks do
+*not* want IEEE behaviour as it is just too expensive (and not
+necessary for many applications).
+
+
+Segher
