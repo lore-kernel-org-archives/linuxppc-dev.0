@@ -1,18 +1,13 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 6F0DCDDE4A
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 08:51:30 +1100 (EST)
-Message-ID: <45CCECDD.8060502@freescale.com>
-Date: Fri, 09 Feb 2007 15:51:25 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <tmorrison@empirix.com>
 MIME-Version: 1.0
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: [PATCH] Check mac-address first in fsl_soc.c
-References: <11710513671236-git-send-email-timur@freescale.com>
-	<45CCE696.5070309@smiths-aerospace.com>
-In-Reply-To: <45CCE696.5070309@smiths-aerospace.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: device tree / how to build/compile & use with u-boot to boot uImage?
+Date: Fri, 9 Feb 2007 16:55:22 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901066B2252@EMPBEDEX.empirix.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <linuxppc-embedded@ozlabs.org>,
+	<linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,19 +17,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jerry Van Baren wrote:
+All,
 
-> If you want to check for common errors, add a check that the first byte 
-> does not have the multicast flag set.  
+Sorry for my ignorance here, but we have upgraded our kernel from
+2.6.11.xx to 2.6.20-rcx (using a specific git-branch for the mpc85xx)=20
+to run on the MPC8548CDS eval board (using default options provided=20
+by this branch for this eval board). I successfully compiled/loaded the=20
+uImage, but it hangs after decompression (with root=3D/dev/nfs)
 
-Actually, I'm not checking for errors when I check for all zeros.  I'm checking 
-for a situation where the property exists in the device tree, but it has not 
-been initialized by U-Boot.
+Also, I was told to upgrade our u-boot source code (with another git=20
+branch for to the mpc85xx) and successfully get to the u-boot prompt.
 
-Some versions of U-Boot only update the local-mac-address property, but some 
-device trees have both mac-address and local-mac-address in them.  In this case, 
-mac-address will be all zeros, and the MAC address will be in local-mac-address.
+>From googling through the lists - it seems that I need to build a=20
+device tree blob and pass that device tree to the kernel in some
+fashion?=20
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+I tried to compile the default dts image (using the dtc compiler=20
+installed by LTIB), but it is complaining about no '/chosen' in=20
+the definition:
+
+  <path>/dtc -I dts -O dtb - -o mpc8548cds.dtb -V 16 dts/mpc8548cds.dts
+
+I've looked at the Documentation/powerpc/booting_without_of.txt,=20
+and this gives an explanation of the internal parts of the dts file,=20
+but it doesn't tell me how to practically pass it to the kernel=20
+from u-boot (e.g.: load to memory - and use bootm xxx yyy zzz)
+=20
+I am pretty darn confused about this whole thing. Can anybody point me
+to=20
+a SUCCINCT explanation of the use of a dts file (and how compile and use
+
+with u-boot to pass to kernel)?
+
+Tom Morrison
+Principal Software Engineer
+
+
+EMPIRIX=20
+20 Crosby Drive - Bedford, MA  01730
+p: 781.266.3567 f: 781.266.3670=20
+email: tmorrison@empirix.com=20
+www.empirix.com
