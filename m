@@ -1,15 +1,12 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9B36EDDF0F
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 03:38:19 +1100 (EST)
-To: torvalds@linux-foundation.org
-Subject: [PATCH] arch/powerpc trivial annotations
-Message-Id: <E1HFYlL-0006kg-KO@ZenIV.linux.org.uk>
-From: Al Viro <viro@ftp.linux.org.uk>
-Date: Fri, 09 Feb 2007 16:38:15 +0000
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <linuxppcdev@qbjnet.com>
+Received: from kunk.qbjnet.com (ddsl1-28.ddsl.mr.net [137.192.135.28])
+	by ozlabs.org (Postfix) with SMTP id 63CE2DDF2B
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 03:39:03 +1100 (EST)
+Date: 9 Feb 2007 16:38:57 -0000
+Message-ID: <20070209163857.25187.qmail@kunk.qbjnet.com>
+From: Bob Brose <linuxppcdev@qbjnet.com>
+To: linuxppc-dev@ozlabs.org
+Subject: PMAC: Problems with devices that use PCI shared memory on 2nd PCI bus?
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,71 +16,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I think this reply might have gotten lost in the shuffle...
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- arch/powerpc/platforms/cell/iommu.c |    5 +++--
- arch/powerpc/platforms/chrp/setup.c |    4 ++--
- arch/powerpc/xmon/spu-dis.c         |    2 +-
- 3 files changed, 6 insertions(+), 5 deletions(-)
+Ben Wrote:
+> On Wed, 2007-01-10 at 15:05 +0000, Bob Brose wrote:
+> > Since Ben fixed the irq routing on 32 bit powermacs with changes to pci_32.c
+> > and prom_parse.c I've been able to use all 6 slots with interrupt
+> > driven devices however there appears to be a problem with devices that use
+> > memory mapping. (this is on a S900 w/ 21052 second PCI controller)
+> >
+> > A couple of examples:
+> > When using a 21143 tulip ethernet card on the second PCI bus and with the
+> > "Use PCI shared mem for NIC registers" option turned on the driver
+> > fails with incorrect status register reads. If I compile a kernel without
+> > this option it works fine.
+> >
+> > Also, if I put a rage 128 video board in one of the slots on the
+> > second bus it cannot do DRM. If I turn DRM off it works ok or if I move the
+> > card to the first bus it works fine with DRM.
+>
+> In lspci -vv, do you see the BusMaster bit enabled on the PCI-2-PCI
+> bridge ?
+>
+> Ben.
 
-diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-index b43466b..67d617b 100644
---- a/arch/powerpc/platforms/cell/iommu.c
-+++ b/arch/powerpc/platforms/cell/iommu.c
-@@ -149,7 +149,8 @@ static int cbe_nr_iommus;
- static void invalidate_tce_cache(struct cbe_iommu *iommu, unsigned long *pte,
- 		long n_ptes)
- {
--	unsigned long *reg, val;
-+	unsigned long __iomem *reg;
-+	unsigned long val;
- 	long n;
- 
- 	reg = iommu->xlate_regs + IOC_IOPT_CacheInvd;
-@@ -592,7 +593,7 @@ static void __init cell_iommu_init_one(struct device_node *np, unsigned long off
- 	/* Init base fields */
- 	i = cbe_nr_iommus++;
- 	iommu = &iommus[i];
--	iommu->stab = 0;
-+	iommu->stab = NULL;
- 	iommu->nid = nid;
- 	snprintf(iommu->name, sizeof(iommu->name), "iommu%d", i);
- 	INIT_LIST_HEAD(&iommu->windows);
-diff --git a/arch/powerpc/platforms/chrp/setup.c b/arch/powerpc/platforms/chrp/setup.c
-index e1f51d4..117c9a0 100644
---- a/arch/powerpc/platforms/chrp/setup.c
-+++ b/arch/powerpc/platforms/chrp/setup.c
-@@ -75,7 +75,7 @@ extern irqreturn_t xmon_irq(int, void *);
- extern unsigned long loops_per_jiffy;
- 
- /* To be replaced by RTAS when available */
--static unsigned int *briq_SPOR;
-+static unsigned int __iomem *briq_SPOR;
- 
- #ifdef CONFIG_SMP
- extern struct smp_ops_t chrp_smp_ops;
-@@ -267,7 +267,7 @@ void __init chrp_setup_arch(void)
- 	} else if (machine && strncmp(machine, "TotalImpact,BRIQ-1", 18) == 0) {
- 		_chrp_type = _CHRP_briq;
- 		/* Map the SPOR register on briq and change the restart hook */
--		briq_SPOR = (unsigned int *)ioremap(0xff0000e8, 4);
-+		briq_SPOR = ioremap(0xff0000e8, 4);
- 		ppc_md.restart = briq_restart;
- 	} else {
- 		/* Let's assume it is an IBM chrp if all else fails */
-diff --git a/arch/powerpc/xmon/spu-dis.c b/arch/powerpc/xmon/spu-dis.c
-index ee929c6..e5f8983 100644
---- a/arch/powerpc/xmon/spu-dis.c
-+++ b/arch/powerpc/xmon/spu-dis.c
-@@ -85,7 +85,7 @@ get_index_for_opcode (unsigned int insn)
-   if ((index = spu_disassemble_table[opcode & 0x7ff]) != 0)
-     return index;
- 
--  return 0;
-+  return NULL;
- }
- 
- /* Print a Spu instruction.  */
--- 
-1.5.0-rc2.GIT
+Yes. Here is the lspci -vv for the 21052:
+
+00:0f.0 PCI bridge: Digital Equipment Corporation DECchip 21052 (rev 01) (prog-if 00 [Normal decode])
+        Control: I/O+ Mem+ BusMaster+ SpecCycle- MemWINV- VGASnoop- ParErr- Stepping- SERR- FastB2B-
+        Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+        Latency: 32, Cache Line Size: 32 bytes
+        Bus: primary=00, secondary=01, subordinate=01, sec-latency=0
+        I/O behind bridge: 00001000-00001fff
+        Memory behind bridge: 80800000-808fffff
+        Secondary status: 66MHz- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort+ <SERR- <PERR+
+        BridgeCtl: Parity- SERR- NoISA+ VGA- MAbort- >Reset- FastB2B-
+
+
+Bob
