@@ -1,18 +1,19 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 19ED7DDEBF
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 09:25:53 +1100 (EST)
-Message-ID: <45CCF4EF.9050507@smiths-aerospace.com>
-Date: Fri, 09 Feb 2007 17:25:51 -0500
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-MIME-Version: 1.0
-To: "Morrison, Tom" <tmorrison@empirix.com>
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp104.biz.mail.re2.yahoo.com (smtp104.biz.mail.re2.yahoo.com
+	[206.190.52.173]) by ozlabs.org (Postfix) with SMTP id 1EAE4DDEC6
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 09:26:19 +1100 (EST)
 Subject: Re: device tree / how to build/compile & use with u-boot to boot
 	uImage?
-References: <BD261180E6D35F4D9D32F3E44FD3D901066B2252@EMPBEDEX.empirix.com>
+From: Ben Warren <bwarren@qstreams.com>
+To: "Morrison, Tom" <tmorrison@empirix.com>
 In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901066B2252@EMPBEDEX.empirix.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <BD261180E6D35F4D9D32F3E44FD3D901066B2252@EMPBEDEX.empirix.com>
+Content-Type: text/plain
+Date: Fri, 09 Feb 2007 17:19:38 -0500
+Message-Id: <1171059578.14627.147.camel@saruman.qstreams.net>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,38 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Morrison, Tom wrote:
+Tom,
+
+I feel your pain.
+
+On Fri, 2007-02-09 at 16:55 -0500, Morrison, Tom wrote:
 > All,
 > 
-> Sorry for my ignorance here, but we have upgraded our kernel from
-> 2.6.11.xx to 2.6.20-rcx (using a specific git-branch for the mpc85xx) 
-> to run on the MPC8548CDS eval board (using default options provided 
-> by this branch for this eval board). I successfully compiled/loaded the 
-> uImage, but it hangs after decompression (with root=/dev/nfs)
+
+> I've looked at the Documentation/powerpc/booting_without_of.txt, 
+> and this gives an explanation of the internal parts of the dts file, 
+> but it doesn't tell me how to practically pass it to the kernel 
+> from u-boot (e.g.: load to memory - and use bootm xxx yyy zzz)
+>  
+> I am pretty darn confused about this whole thing. Can anybody point me
+> to 
+> a SUCCINCT explanation of the use of a dts file (and how compile and use
 > 
-> Also, I was told to upgrade our u-boot source code (with another git 
-> branch for to the mpc85xx) and successfully get to the u-boot prompt.
+> with u-boot to pass to kernel)?
 > 
-> From googling through the lists - it seems that I need to build a 
-> device tree blob and pass that device tree to the kernel in some
-> fashion? 
-> 
-> I tried to compile the default dts image (using the dtc compiler 
-> installed by LTIB), but it is complaining about no '/chosen' in 
-> the definition:
-> 
->   <path>/dtc -I dts -O dtb - -o mpc8548cds.dtb -V 16 dts/mpc8548cds.dts
 
-Trivia: the no "/chosen" warning can be ignored.  The u-boot command 
-"bootm" generates the "/chosen" branch when you run the command and it 
-boots linux.
+u-boot> bootm <kernel_address> <initrd_address> <dtb_address>
 
-Note: You want version 16 (or better?) for the fdt blob.  I believe the 
-dtc defaults to this now, but it wasn't always that way.
+If you don't have an initrd, it's
 
-[snip - others have chimed in]
+u-boot> bootm <kernel_address> - <dtb_address>
 
-> Tom Morrison
-> Principal Software Engineer
+Hope that's succinct enough.
 
-gvb
+Ben
