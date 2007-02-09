@@ -1,19 +1,20 @@
 Return-Path: <dan@embeddedalley.com>
-Received: from smtp101.biz.mail.re2.yahoo.com (smtp101.biz.mail.re2.yahoo.com
-	[68.142.229.215]) by ozlabs.org (Postfix) with SMTP id 1BF94DDE3D
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:20:11 +1100 (EST)
-In-Reply-To: <1170969965.2620.345.camel@localhost.localdomain>
-References: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
-	<1170969965.2620.345.camel@localhost.localdomain>
+Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
+	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 1774CDDEBD
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 04:23:05 +1100 (EST)
+In-Reply-To: <45CB270C.5090603@freescale.com>
+References: <989B956029373F45A0B8AF02970818900D4401@zch01exm26.fsl.freescale.net>
+	<17A046C6-5FD3-46D5-AB96-EAEDF22FA829@kernel.crashing.org>
+	<45CB270C.5090603@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0640B069-F05E-4A08-A8EB-C277BEF1466E@embeddedalley.com>
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6BD63E47-4738-4116-8A85-983D4FDCFBB9@embeddedalley.com>
 From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: Discussion about iopa()
-Date: Fri, 9 Feb 2007 12:13:28 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Tabi Timur-B04825 <timur@freescale.com>
+Subject: Re: [PATCH 1/4] ucc_geth: Change private immrbar_virt_to_phys to
+	generic iopa
+Date: Fri, 9 Feb 2007 12:22:58 -0500
+To: Timur Tabi <timur@freescale.com>
+Cc: netdev@vger.kernel.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +25,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 8, 2007, at 4:26 PM, Benjamin Herrenschmidt wrote:
+On Feb 8, 2007, at 8:35 AM, Timur Tabi wrote:
 
-> I'm really not fan of it.
+> That's what the original code did, kinda.  It called virt_to_phys() if
+> it is main memory, and it called immrbar_virt_to_phys() if it is  
+> MURAM.
+>   immrbar_virt_to_phys() did pointer math to extract the physical  
+> address.
 
-That's because I think it's a terribly useful function
-and the first step toward some orthogonal VM APIs. :-)
+You've got to be kidding.  You created yet another function
+to determine the physical address from a virtual one! LOL!
+Plus, you need logic in the code to first determine which
+one to call?  Everyone is OK with this?
 
-No one liked my idea of virtual interrupt mapping
-years ago when the 8xx showed up with the
-CPM and I needed a way to handle some
-non-PC interrupt controller.......
-
-
-Thanks.
 
 	-- Dan
