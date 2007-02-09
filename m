@@ -1,19 +1,25 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 06A78DDEDB
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 10:06:05 +1100 (EST)
-Date: Fri, 9 Feb 2007 16:07:00 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 18/19] bootwrapper: Add xlate_reg(),
-	and use it to find serial registers.
-Message-ID: <20070209230700.GC12035@mag.az.mvista.com>
-References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
-	<20070207230145.GR3849@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070207230145.GR3849@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E5764DDE3B
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 10:07:40 +1100 (EST)
+In-Reply-To: <45CCFAD6.5070807@freescale.com>
+References: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
+	<1170969965.2620.345.camel@localhost.localdomain>
+	<0640B069-F05E-4A08-A8EB-C277BEF1466E@embeddedalley.com>
+	<1171058780.6578.4.camel@localhost.localdomain>
+	<1EFFAE36-7396-45B5-B8F2-DD7348FBE385@kernel.crashing.org>
+	<45CCFAD6.5070807@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7B89E9E3-620C-4DF5-96E7-AF05287D89DC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Discussion about iopa()
+Date: Fri, 9 Feb 2007 17:06:47 -0600
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +29,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 07, 2007 at 05:01:45PM -0600, Scott Wood wrote:
-> xlate_reg() uses the ranges properties of a node's parentage to find the
-> absolute physical address of the node's registers.
-> 
-> The ns16550 driver uses this when no virtual-reg property is found.
 
-Is this necessary?  Shouldn't there always be a virtual-reg?
+On Feb 9, 2007, at 4:51 PM, Timur Tabi wrote:
 
-Mark
+> Kumar Gala wrote:
+>
+>> My feeling is to leave the code alone until we have the dma  
+>> mapping api setup to handle MURAM.  If we can't do alloc/map/free  
+>> with the same mechanism I dont see the value in just doing 'map'.   
+>> It just makes the code more confusing w/o any big gain.
+>
+> So you don't want to see a patch where we store the physical  
+> address in our own data structures when the memory is mapped (or  
+> allocated if it's regular RAM)?
+
+It doesn't seem like it's that big of a change.  I'd rather the code  
+clearly do different things for MURAM vs system memory for ALL accesses.
+
+- k
