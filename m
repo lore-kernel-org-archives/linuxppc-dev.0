@@ -1,30 +1,30 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BDF98DDECA
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 11:23:15 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l1A0MgdB017839
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 19:22:42 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1A0N6ap469214
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 17:23:06 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1A0N57m032622
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 17:23:06 -0700
-Date: Fri, 9 Feb 2007 18:23:05 -0600
+	by ozlabs.org (Postfix) with ESMTP id 0F322DDEEE
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 11:25:31 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1A0PTd8000960
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 19:25:29 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1A0PSMk495768
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 17:25:28 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1A0PS75026260
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 17:25:28 -0700
+Date: Fri, 9 Feb 2007 18:25:28 -0600
 To: jgarzik@pobox.com
-Subject: Re: [PATCH 0/5]: spidernet: misc fixes
-Message-ID: <20070210002305.GE2396@austin.ibm.com>
+Subject: [PATCH 5/5]: spidernet janitorial: typos
+Message-ID: <20070210002528.GF2396@austin.ibm.com>
 References: <20070210000128.GJ5616@austin.ibm.com>
+	<20070210002305.GE2396@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070210000128.GJ5616@austin.ibm.com>
+In-Reply-To: <20070210002305.GE2396@austin.ibm.com>
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: linuxppc-dev@ozlabs.org, James K Lewis <jklewis@us.ibm.com>,
 	Jens Osterkamp <Jens.Osterkamp@de.ibm.com>, netdev@vger.kernel.org
@@ -37,6 +37,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Resend, The subject line was wrong on the last one.
+End-of-day tiredness.
+--linas
 
 Janitorial patch. Undo long lines, fix typo in err msg.
 
