@@ -1,18 +1,18 @@
 Return-Path: <olaf@aepfle.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 52D63DDF22
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Feb 2007 07:36:13 +1100 (EST)
-Date: Sat, 10 Feb 2007 21:37:33 +0100
+	by ozlabs.org (Postfix) with ESMTP id B8572DDF7C
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Feb 2007 07:37:16 +1100 (EST)
+Date: Sat, 10 Feb 2007 21:38:37 +0100
 From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] cleanup variable usage in mesh interrupt handler
-Message-ID: <20070210203733.GA25611@aepfle.de>
+To: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
+Subject: [PATCH] mark winbond IDE PCI resources with start 0 as unassigned
+Message-ID: <20070210203837.GA25625@aepfle.de>
 References: <20070210203512.GA25586@aepfle.de>
 	<20070210203614.GA25602@aepfle.de>
+	<20070210203733.GA25611@aepfle.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070210203614.GA25602@aepfle.de>
-Cc: linux-scsi@vger.kernel.org
+In-Reply-To: <20070210203733.GA25611@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,68 +23,89 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-convert void* to struct mesh_state*
-remove unused irq argument from mesh_interrupt()
+libata calls pci_request_regions to claim PCI BAR 0 - 5
+pci_request_regions fails if one of the regions cant be claimed.
+bar 5 has start == 0,  __request_resource will fail.
+
+Tested on a p630 in SMP mode with pata_sl82c105
+
+ 00:03.1 IDE interface: Symphony Labs SL82c105 (rev 05) (prog-if 8f [Master SecP SecO PriP PriO])
+         Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
+         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
+         Interrupt: pin A routed to IRQ 86
+         Region 0: I/O ports at 3fd3000f000 [size=8]
+         Region 1: I/O ports at 3fd3000f010 [size=4]
+         Region 2: I/O ports at 3fd3000f020 [size=8]
+         Region 3: I/O ports at 3fd3000f030 [size=4]
+         Region 4: I/O ports at 3fd3000f040 [size=16]
+         Region 5: I/O ports at 3fd30000000 [size=16]
+ 00: ad 10 05 01 41 01 80 02 05 8f 01 01 08 48 80 00
+ 10: 01 f0 00 00 11 f0 00 00 21 f0 00 00 31 f0 00 00
+ 20: 41 f0 00 00 01 00 00 00 00 00 00 00 00 00 00 00
+ 30: 00 00 00 00 00 00 00 00 00 00 00 00 56 01 02 28
+ 40: b3 08 ff 00 09 09 00 00 09 09 00 00 09 09 00 00
+ 50: 09 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ 60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ 70: 00 00 00 00 00 00 00 00 00 00 00 00 ff 00 00 00
+ 80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ 90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+ f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
+
+ name             "ide"
+ linux,phandle    00d5cdc0 (14011840)
+ assigned-addresses 81001910 00000000 0000f000 00000000 00000008 81001914
+                  00000000 0000f010 00000000 00000004 81001918 00000000
+                  0000f020 00000000 00000008 8100191c 00000000 0000f030
+                  00000000 00000004 81001920 00000000 0000f040 00000000
+                  00000010 81001924 00000000 00000000 00000000 00000010
+ interrupts       00000003
+ built-in
+ #size-cells      00000000
+ #address-cells   00000001
+ device_type      "ide"
+ reg              00001900 00000000 00000000 00000000 00000000
+                  41001910 00000000 00000000 00000000 00000008
+                  41001914 00000000 00000000 00000000 00000004
+                  41001918 00000000 00000000 00000000 00000008
+                  4100191c 00000000 00000000 00000000 00000004
+                  41001920 00000000 00000000 00000000 00000010
+                  41001924 00000000 00000000 00000000 00000010
+ compatible       "pci10ad,105"
+                  "pciclass,01018f"
+ ibm,fw-slot-number 00000000
+ fast-back-to-back
+ devsel-speed     00000001
+ max-latency      00000028 (40)
+ min-grant        00000002
+ class-code       0001018f (65935)
+ revision-id      00000005
+ device-id        00000105 (261)
+ vendor-id        000010ad (4269)
+ ibm,loc-code     "U0.1-P1/Q6"
 
 Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
 ---
- drivers/scsi/mesh.c |   14 +++++++-------
- 1 file changed, 7 insertions(+), 7 deletions(-)
+ arch/powerpc/platforms/pseries/pci.c |    4 ++++
+ 1 file changed, 4 insertions(+)
 
-Index: linux-2.6/drivers/scsi/mesh.c
+Index: linux-2.6/arch/powerpc/platforms/pseries/pci.c
 ===================================================================
---- linux-2.6.orig/drivers/scsi/mesh.c
-+++ linux-2.6/drivers/scsi/mesh.c
-@@ -185,7 +185,7 @@ struct mesh_state {
-  * Driver is too messy, we need a few prototypes...
-  */
- static void mesh_done(struct mesh_state *ms, int start_next);
--static void mesh_interrupt(int irq, void *dev_id);
-+static void mesh_interrupt(struct mesh_state *ms);
- static void cmd_complete(struct mesh_state *ms);
- static void set_dma_cmds(struct mesh_state *ms, struct scsi_cmnd *cmd);
- static void halt_dma(struct mesh_state *ms);
-@@ -466,7 +466,7 @@ static void mesh_start_cmd(struct mesh_s
- 				dlog(ms, "intr b4 arb, intr/exc/err/fc=%.8x",
- 				     MKWORD(mr->interrupt, mr->exception,
- 					    mr->error, mr->fifo_count));
--				mesh_interrupt(0, (void *)ms);
-+				mesh_interrupt(ms);
- 				if (ms->phase != arbitrating)
- 					return;
- 			}
-@@ -504,7 +504,7 @@ static void mesh_start_cmd(struct mesh_s
- 		dlog(ms, "intr after disresel, intr/exc/err/fc=%.8x",
- 		     MKWORD(mr->interrupt, mr->exception,
- 			    mr->error, mr->fifo_count));
--		mesh_interrupt(0, (void *)ms);
-+		mesh_interrupt(ms);
- 		if (ms->phase != arbitrating)
- 			return;
- 		dlog(ms, "after intr after disresel, intr/exc/err/fc=%.8x",
-@@ -1018,10 +1018,11 @@ static void handle_reset(struct mesh_sta
- static irqreturn_t do_mesh_interrupt(int irq, void *dev_id)
- {
- 	unsigned long flags;
--	struct Scsi_Host *dev = ((struct mesh_state *)dev_id)->host;
-+	struct mesh_state *ms = dev_id;
-+	struct Scsi_Host *dev = ms->host;
- 	
- 	spin_lock_irqsave(dev->host_lock, flags);
--	mesh_interrupt(irq, dev_id);
-+	mesh_interrupt(ms);
- 	spin_unlock_irqrestore(dev->host_lock, flags);
- 	return IRQ_HANDLED;
+--- linux-2.6.orig/arch/powerpc/platforms/pseries/pci.c
++++ linux-2.6/arch/powerpc/platforms/pseries/pci.c
+@@ -98,6 +98,10 @@ static void fixup_winbond_82c105(struct 
+ 		if (dev->resource[i].flags & IORESOURCE_IO
+ 		    && dev->bus->number == 0 && dev->devfn == 0x81)
+ 			dev->resource[i].flags &= ~IORESOURCE_IO;
++		if (dev->resource[i].start == 0 && dev->resource[i].end) {
++			dev->resource[i].flags = 0;
++			dev->resource[i].end = 0;
++		}
+ 	}
  }
-@@ -1661,9 +1662,8 @@ static int mesh_queue(struct scsi_cmnd *
-  * handler (do_mesh_interrupt) or by other functions in
-  * exceptional circumstances
-  */
--static void mesh_interrupt(int irq, void *dev_id)
-+static void mesh_interrupt(struct mesh_state *ms)
- {
--	struct mesh_state *ms = (struct mesh_state *) dev_id;
- 	volatile struct mesh_regs __iomem *mr = ms->mesh;
- 	int intr;
- 
+ DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
