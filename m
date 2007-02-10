@@ -1,18 +1,19 @@
 Return-Path: <olaf@aepfle.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id B8572DDF7C
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Feb 2007 07:37:16 +1100 (EST)
-Date: Sat, 10 Feb 2007 21:38:37 +0100
+	by ozlabs.org (Postfix) with ESMTP id 1BE61DDF35
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Feb 2007 07:38:40 +1100 (EST)
+Date: Sat, 10 Feb 2007 21:40:00 +0100
 From: Olaf Hering <olaf@aepfle.de>
 To: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
-Subject: [PATCH] mark winbond IDE PCI resources with start 0 as unassigned
-Message-ID: <20070210203837.GA25625@aepfle.de>
+Subject: [PATCH] correct AC Power: in /proc/pmu/info on ibook1
+Message-ID: <20070210204000.GA25638@aepfle.de>
 References: <20070210203512.GA25586@aepfle.de>
 	<20070210203614.GA25602@aepfle.de>
 	<20070210203733.GA25611@aepfle.de>
+	<20070210203837.GA25625@aepfle.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070210203733.GA25611@aepfle.de>
+In-Reply-To: <20070210203837.GA25625@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,89 +24,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-libata calls pci_request_regions to claim PCI BAR 0 - 5
-pci_request_regions fails if one of the regions cant be claimed.
-bar 5 has start == 0,  __request_resource will fail.
-
-Tested on a p630 in SMP mode with pata_sl82c105
-
- 00:03.1 IDE interface: Symphony Labs SL82c105 (rev 05) (prog-if 8f [Master SecP SecO PriP PriO])
-         Control: I/O+ Mem- BusMaster- SpecCycle- MemWINV- VGASnoop- ParErr+ Stepping- SERR+ FastB2B-
-         Status: Cap- 66MHz- UDF- FastB2B+ ParErr- DEVSEL=medium >TAbort- <TAbort- <MAbort- >SERR- <PERR-
-         Interrupt: pin A routed to IRQ 86
-         Region 0: I/O ports at 3fd3000f000 [size=8]
-         Region 1: I/O ports at 3fd3000f010 [size=4]
-         Region 2: I/O ports at 3fd3000f020 [size=8]
-         Region 3: I/O ports at 3fd3000f030 [size=4]
-         Region 4: I/O ports at 3fd3000f040 [size=16]
-         Region 5: I/O ports at 3fd30000000 [size=16]
- 00: ad 10 05 01 41 01 80 02 05 8f 01 01 08 48 80 00
- 10: 01 f0 00 00 11 f0 00 00 21 f0 00 00 31 f0 00 00
- 20: 41 f0 00 00 01 00 00 00 00 00 00 00 00 00 00 00
- 30: 00 00 00 00 00 00 00 00 00 00 00 00 56 01 02 28
- 40: b3 08 ff 00 09 09 00 00 09 09 00 00 09 09 00 00
- 50: 09 09 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- 60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- 70: 00 00 00 00 00 00 00 00 00 00 00 00 ff 00 00 00
- 80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- 90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-
- name             "ide"
- linux,phandle    00d5cdc0 (14011840)
- assigned-addresses 81001910 00000000 0000f000 00000000 00000008 81001914
-                  00000000 0000f010 00000000 00000004 81001918 00000000
-                  0000f020 00000000 00000008 8100191c 00000000 0000f030
-                  00000000 00000004 81001920 00000000 0000f040 00000000
-                  00000010 81001924 00000000 00000000 00000000 00000010
- interrupts       00000003
- built-in
- #size-cells      00000000
- #address-cells   00000001
- device_type      "ide"
- reg              00001900 00000000 00000000 00000000 00000000
-                  41001910 00000000 00000000 00000000 00000008
-                  41001914 00000000 00000000 00000000 00000004
-                  41001918 00000000 00000000 00000000 00000008
-                  4100191c 00000000 00000000 00000000 00000004
-                  41001920 00000000 00000000 00000000 00000010
-                  41001924 00000000 00000000 00000000 00000010
- compatible       "pci10ad,105"
-                  "pciclass,01018f"
- ibm,fw-slot-number 00000000
- fast-back-to-back
- devsel-speed     00000001
- max-latency      00000028 (40)
- min-grant        00000002
- class-code       0001018f (65935)
- revision-id      00000005
- device-id        00000105 (261)
- vendor-id        000010ad (4269)
- ibm,loc-code     "U0.1-P1/Q6"
+/proc/pmu/info contains AC Power: 0 when booting without battery.
+Force AC Power, it will be updated whenever the battery state changes.
 
 Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
 ---
- arch/powerpc/platforms/pseries/pci.c |    4 ++++
- 1 file changed, 4 insertions(+)
+ drivers/macintosh/via-pmu.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Index: linux-2.6/arch/powerpc/platforms/pseries/pci.c
+Index: linux-2.6/drivers/macintosh/via-pmu.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/pseries/pci.c
-+++ linux-2.6/arch/powerpc/platforms/pseries/pci.c
-@@ -98,6 +98,10 @@ static void fixup_winbond_82c105(struct 
- 		if (dev->resource[i].flags & IORESOURCE_IO
- 		    && dev->bus->number == 0 && dev->devfn == 0x81)
- 			dev->resource[i].flags &= ~IORESOURCE_IO;
-+		if (dev->resource[i].start == 0 && dev->resource[i].end) {
-+			dev->resource[i].flags = 0;
-+			dev->resource[i].end = 0;
-+		}
- 	}
- }
- DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_WINBOND, PCI_DEVICE_ID_WINBOND_82C105,
+--- linux-2.6.orig/drivers/macintosh/via-pmu.c
++++ linux-2.6/drivers/macintosh/via-pmu.c
+@@ -169,7 +169,7 @@ static int option_server_mode;
+ 
+ int pmu_battery_count;
+ int pmu_cur_battery;
+-unsigned int pmu_power_flags;
++unsigned int pmu_power_flags = PMU_PWR_AC_PRESENT;
+ struct pmu_battery_info pmu_batteries[PMU_MAX_BATTERIES];
+ static int query_batt_timer = BATTERY_POLLING_COUNT;
+ static struct adb_request batt_req;
