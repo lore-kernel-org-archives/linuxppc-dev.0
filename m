@@ -1,18 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 10 Feb 2007 12:02:37 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 19/19] bootwrapper: compatibility layer for old U-Boots
-	(a.k.a. cuImage, cuboot)
-Message-ID: <20070210010237.GF8276@localhost.localdomain>
-References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
-	<20070207230149.GS3849@ld0162-tx32.am.freescale.net>
-	<20070208211529.GA1894@localhost.localdomain>
-	<45CCAB41.4080003@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45CCAB41.4080003@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Subject: Re: Okay to change default zImage link/load address?
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+In-Reply-To: <20070209223531.GA7339@localhost.localdomain>
+References: <20070209184345.GA28127@mag.az.mvista.com>
+	<20070209185107.GA12703@aepfle.de>
+	<20070209185528.GB28127@mag.az.mvista.com>
+	<1171048464.4884.230.camel@zod.rchland.ibm.com>
+	<20070209223531.GA7339@localhost.localdomain>
+Content-Type: text/plain
+Date: Fri, 09 Feb 2007 19:27:36 -0600
+Message-Id: <1171070856.4884.235.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Olaf Hering <olaf@aepfle.de>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,39 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 09, 2007 at 11:11:29AM -0600, Scott Wood wrote:
-> David Gibson wrote:
-> > On Wed, Feb 07, 2007 at 05:01:49PM -0600, Scott Wood wrote:
+On Sat, 2007-02-10 at 09:35 +1100, David Gibson wrote:
+> On Fri, Feb 09, 2007 at 01:14:22PM -0600, Josh Boyer wrote:
+> > On Fri, 2007-02-09 at 11:55 -0700, Mark A. Greer wrote:
+> > > On Fri, Feb 09, 2007 at 07:51:07PM +0100, Olaf Hering wrote:
+> > > > On Fri, Feb 09, Mark A. Greer wrote:
+> > > > 
+> > > > > Does anyone know of a problem downloading to 8MB instead of 4MB in
+> > > > > arch/powerpc?  If not, would you object if it changed to 8MB?
+> > > > 
+> > > > IBM chrp 32 and 64bit has a free and usable memory range from 64k to
+> > > > 12M.
+> > > > Changing the link address from 4 to 8 MB will reduce the max zImage size
+> > > > to 3MB on these systems.
+> > > 
+> > > Hmm, not good.
+> > > 
+> > > Paul, may we may this configurable (i.e., a CONFIG option)?
 > > 
-> >>Add a bootwrapper platform (cuboot) that takes a bd_t from a legacy
-> >>U-Boot, and inserts data from it into a device tree which has been
-> >>compiled into the kernel.  This should help ease the transition to
-> >>arch/powerpc in cases where U-Boot has not yet been updated to pass a
-> >>device tree, or where upgrading firmware isn't practical.
-> >>
-> >>The device trees currently in the kernel tree must have
-> >>/chosen/linux,stdout-path added to work with cuboot.
-> >>
-> >>The kernel command line, mac addresses, and various clocks will be filled
-> >>in based on the bd_t.
-> > 
-> > 
-> > You're still using config dependent stuff in here...
+> > Something like that is going to be needed for 4xx anyway.
 > 
-> They come from platform files such as cuboot-83xx.c, not (directly) from 
-> the kernel config.
+> Uh.. don't think so.  I'm booting fine on 440, loading the zImage at
+> 4MB.
 
-/me looks again...
+Yes, sorry.  Was thinking of where vmlinux is uncompressed to by the
+bootwrapper, but you've solved that a different way as well.
 
-.c files containing only #defines?  My brain hurts.
-
-Better to pass these in as -D flags from the gcc invocation within the
-wrapper script, depending on the given platform (for the platform .o
-*only*).  Oh, and please don't call them CONFIG_* or everyone will
-assume, like me, that they come from the kernel's overall config.h.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+josh
