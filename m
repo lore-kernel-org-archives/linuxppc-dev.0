@@ -1,16 +1,21 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 10 Feb 2007 13:56:01 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: Subject: [PATCH] Add support for the 8568 MDS board
-Message-ID: <20070210025601.GA21415@localhost.localdomain>
-References: <Pine.LNX.4.61.0702091727290.791@ld0175-tx32.am.freescale.net>
-	<20070210004704.GC8276@localhost.localdomain>
-	<F7DA9D5D-B489-48DA-A9A3-77B8A37395FF@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <F7DA9D5D-B489-48DA-A9A3-77B8A37395FF@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp105.biz.mail.re2.yahoo.com (smtp105.biz.mail.re2.yahoo.com
+	[206.190.52.174]) by ozlabs.org (Postfix) with SMTP id 912E5DDDE7
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Feb 2007 05:04:05 +1100 (EST)
+In-Reply-To: <1171075021.20494.0.camel@localhost.localdomain>
+References: <989B956029373F45A0B8AF02970818900D444B@zch01exm26.fsl.freescale.net>
+	<45CB28A6.3050607@freescale.com>
+	<712E63F6-23D6-45EB-92F0-95656FF38BC4@embeddedalley.com>
+	<1171075021.20494.0.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6CDAEEF1-B0ED-42E6-AA2C-6FD1CFCF462C@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: Discussion about iopa()
+Date: Sat, 10 Feb 2007 13:04:03 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,42 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 09, 2007 at 08:07:47PM -0600, Andy Fleming wrote:
-> 
-> On Feb 9, 2007, at 18:47, David Gibson wrote:
-> 
-> > On Fri, Feb 09, 2007 at 05:28:31PM -0600, Andy Fleming wrote:
-> > [snip]
-> >> +/ {
-> >> +	model = "MPC8568EMDS";
-> >> +	compatible = "MPC85xxMDS";
-> >> +	#address-cells = <1>;
-> >> +	#size-cells = <1>;
-> >> +	linux,phandle = <100>;
-> >> +
-> >> +	cpus {
-> >> +		#cpus = <1>;
-> >> +		#address-cells = <1>;
-> >> +		#size-cells = <0>;
-> >> +		linux,phandle = <200>;
-> >
-> > So, every Freescale device tree source I've seen so far has had these
-> > hardcoded phandles all through it.  dtc has supported
-> > reference-to-path to automatically generate the necessary phandles for
-> > ages now.  Please can we use it...
-> 
-> Ok, I'll take a look.  Any pointers on syntax?
 
-	interrupt-parent = <&/path/to/interrupt-controller>;
+On Feb 9, 2007, at 9:37 PM, Benjamin Herrenschmidt wrote:
 
-That will give a phandle to the target node, if it doesn't have one
-already, and insert that phandle value as a cell into the property.
+> We are fairly careful about not bloating fast path in general.
 
-In very recent versions of dtc (as of about yesterday..) you can also
-reference a node's label instead of it's path.
+This isn't any fast path code, and the way the
+exception handlers are growing it doesn't
+seem to be a concern anyway.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> ....  It's more
+> than a couple of memory accesses, especially with PTEs in highmem  
+> where
+> it involves kmap.
+
+It is only a couple of memory accesses, even
+less code than the TLB exception handlers.
+Using highmem has a price any time it's
+configured into a system, it's not unique in
+this case.  In fact, in this case highmem
+shouldn't be a concern any different than
+the TLB exceptions.
+
+I just don't understand how such a trivial
+and useful function that does exactly what
+we need in a very clean way generates so
+much polarized discussion.  I'm beginning
+to think it's just personal, since the only
+argument against it is "I don't like it" when
+the alternatives are just hacks at best that
+still need to be "fixed up someday." :-)
+
+The Linux VM implementation just sucks.
+The majority of systems running this software
+aren't servers and desktop PCs, it's embedded
+SOCs with application specific peripherals.
+They have attributes and are mapped in ways
+that don't fit the "memory at 0" or "IO" model.
+We have to find solutions to this, together.
+
+Thanks.
+
+	-- Dan
