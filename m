@@ -1,14 +1,17 @@
 Return-Path: <olaf@aepfle.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 71ADDDDE44
-	for <linuxppc-dev@ozlabs.org>; Sun, 11 Feb 2007 07:33:53 +1100 (EST)
-Date: Sat, 10 Feb 2007 21:35:12 +0100
+	by ozlabs.org (Postfix) with ESMTP id CD2E6DDF0F
+	for <linuxppc-dev@ozlabs.org>; Sun, 11 Feb 2007 07:34:53 +1100 (EST)
+Date: Sat, 10 Feb 2007 21:36:14 +0100
 From: Olaf Hering <olaf@aepfle.de>
 To: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@osdl.org>
-Subject: [PATCH] move variables in drivers/macintosh to bss
-Message-ID: <20070210203512.GA25586@aepfle.de>
+Subject: [PATCH] add delay around sl82c105_reset_engine calls
+Message-ID: <20070210203614.GA25602@aepfle.de>
+References: <20070210203512.GA25586@aepfle.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20070210203512.GA25586@aepfle.de>
+Cc: linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,207 +22,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Move all the initialized variables to bss.
-Mark a version string as const.
+The hald media changed polling does really confuse things.
+Noone knows why the delays are needed, but they give us access to the CD.
+
+An udelay(50) will give reliable access to the drive, but there is still
+one (or more) EH reset. The drive works without EH resets with udelay(100).
 
 Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
 ---
- drivers/macintosh/adbhid.c        |    4 ++--
- drivers/macintosh/apm_emu.c       |    2 +-
- drivers/macintosh/mac_hid.c       |    4 ++--
- drivers/macintosh/therm_adt746x.c |    6 +++---
- drivers/macintosh/via-cuda.c      |    2 +-
- drivers/macintosh/via-macii.c     |   10 +++++-----
- drivers/macintosh/via-maciisi.c   |    6 +++---
- drivers/macintosh/via-pmu.c       |   11 +++++------
- drivers/macintosh/via-pmu68k.c    |    4 ++--
- 9 files changed, 24 insertions(+), 25 deletions(-)
+ drivers/ata/pata_sl82c105.c |    3 +++
+ 1 file changed, 3 insertions(+)
 
-Index: linux-2.6/drivers/macintosh/adbhid.c
+Index: linux-2.6/drivers/ata/pata_sl82c105.c
 ===================================================================
---- linux-2.6.orig/drivers/macintosh/adbhid.c
-+++ linux-2.6/drivers/macintosh/adbhid.c
-@@ -574,8 +574,8 @@ static struct adb_request led_request;
- static int leds_pending[16];
- static int leds_req_pending;
- static int pending_devs[16];
--static int pending_led_start=0;
--static int pending_led_end=0;
-+static int pending_led_start;
-+static int pending_led_end;
- static DEFINE_SPINLOCK(leds_lock);
- 
- static void leds_done(struct adb_request *req)
-Index: linux-2.6/drivers/macintosh/apm_emu.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/apm_emu.c
-+++ linux-2.6/drivers/macintosh/apm_emu.c
-@@ -102,7 +102,7 @@ static struct pmu_sleep_notifier apm_sle
- 	SLEEP_LEVEL_USERLAND,
- };
- 
--static char			driver_version[] = "0.5";	/* no spaces */
-+static const char driver_version[] = "0.5";	/* no spaces */
- 
- #ifdef DEBUG
- static char *	apm_event_name[] = {
-Index: linux-2.6/drivers/macintosh/mac_hid.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/mac_hid.c
-+++ linux-2.6/drivers/macintosh/mac_hid.c
-@@ -17,10 +17,10 @@
- 
- static struct input_dev *emumousebtn;
- static int emumousebtn_input_register(void);
--static int mouse_emulate_buttons = 0;
-+static int mouse_emulate_buttons;
- static int mouse_button2_keycode = KEY_RIGHTCTRL;	/* right control key */
- static int mouse_button3_keycode = KEY_RIGHTALT;	/* right option key */
--static int mouse_last_keycode = 0;
-+static int mouse_last_keycode;
- 
- #if defined(CONFIG_SYSCTL)
- /* file(s) in /proc/sys/dev/mac_hid */
-Index: linux-2.6/drivers/macintosh/therm_adt746x.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/therm_adt746x.c
-+++ linux-2.6/drivers/macintosh/therm_adt746x.c
-@@ -48,11 +48,11 @@ static u8 FAN_SPD_SET[2] = {0x30, 0x31};
- 
- static u8 default_limits_local[3] = {70, 50, 70};    /* local, sensor1, sensor2 */
- static u8 default_limits_chip[3] = {80, 65, 80};    /* local, sensor1, sensor2 */
--static const char *sensor_location[3] = {NULL, NULL, NULL};
-+static const char *sensor_location[3];
- 
--static int limit_adjust = 0;
-+static int limit_adjust;
- static int fan_speed = -1;
--static int verbose = 0;
-+static int verbose;
- 
- MODULE_AUTHOR("Colin Leroy <colin@colino.net>");
- MODULE_DESCRIPTION("Driver for ADT746x thermostat in iBook G4 and "
-Index: linux-2.6/drivers/macintosh/via-cuda.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/via-cuda.c
-+++ linux-2.6/drivers/macintosh/via-cuda.c
-@@ -86,7 +86,7 @@ static int data_index;
- #ifdef CONFIG_PPC
- static struct device_node *vias;
- #endif
--static int cuda_fully_inited = 0;
-+static int cuda_fully_inited;
- 
- #ifdef CONFIG_ADB
- static int cuda_probe(void);
-Index: linux-2.6/drivers/macintosh/via-macii.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/via-macii.c
-+++ linux-2.6/drivers/macintosh/via-macii.c
-@@ -107,10 +107,10 @@ static enum macii_state {
- 	awaiting_reply
- } macii_state;
- 
--static int need_poll    = 0;
--static int command_byte = 0;
--static int last_reply   = 0;
--static int last_active  = 0;
-+static int need_poll;
-+static int command_byte;
-+static int last_reply;
-+static int last_active;
- 
- static struct adb_request *current_req;
- static struct adb_request *last_req;
-@@ -124,7 +124,7 @@ static int first_byte;
- static int prefix_len;
- static int status = ST_IDLE|TREQ;
- static int last_status;
--static int driver_running = 0;
-+static int driver_running;
- 
- /* debug level 10 required for ADB logging (should be && debug_adb, ideally) */
- 
-Index: linux-2.6/drivers/macintosh/via-maciisi.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/via-maciisi.c
-+++ linux-2.6/drivers/macintosh/via-maciisi.c
-@@ -63,10 +63,10 @@ static volatile unsigned char *via;
- 
- #undef DEBUG_MACIISI_ADB
- 
--static struct adb_request* current_req = NULL;
--static struct adb_request* last_req = NULL;
-+static struct adb_request* current_req;
-+static struct adb_request* last_req;
- static unsigned char maciisi_rbuf[16];
--static unsigned char *reply_ptr = NULL;
-+static unsigned char *reply_ptr;
- static int data_index;
- static int reading_reply;
- static int reply_len;
-Index: linux-2.6/drivers/macintosh/via-pmu.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/via-pmu.c
-+++ linux-2.6/drivers/macintosh/via-pmu.c
-@@ -141,13 +141,13 @@ static volatile int adb_int_pending;
- static volatile int disable_poll;
- static struct device_node *vias;
- static int pmu_kind = PMU_UNKNOWN;
--static int pmu_fully_inited = 0;
-+static int pmu_fully_inited;
- static int pmu_has_adb;
- static struct device_node *gpio_node;
--static unsigned char __iomem *gpio_reg = NULL;
-+static unsigned char __iomem *gpio_reg;
- static int gpio_irq = NO_IRQ;
- static int gpio_irq_enabled = -1;
--static volatile int pmu_suspended = 0;
-+static volatile int pmu_suspended;
- static spinlock_t pmu_lock;
- static u8 pmu_intr_mask;
- static int pmu_version;
-@@ -180,7 +180,7 @@ int asleep;
- BLOCKING_NOTIFIER_HEAD(sleep_notifier_list);
- 
- #ifdef CONFIG_ADB
--static int adb_dev_map = 0;
-+static int adb_dev_map;
- static int pmu_adb_flags;
- 
- static int pmu_probe(void);
-@@ -2777,7 +2777,7 @@ pmu_polled_request(struct adb_request *r
- 
- #if defined(CONFIG_PM) && defined(CONFIG_PPC32)
- 
--static int pmu_sys_suspended = 0;
-+static int pmu_sys_suspended;
- 
- static int pmu_sys_suspend(struct sys_device *sysdev, pm_message_t state)
+--- linux-2.6.orig/drivers/ata/pata_sl82c105.c
++++ linux-2.6/drivers/ata/pata_sl82c105.c
+@@ -187,7 +187,9 @@ static void sl82c105_bmdma_start(struct 
  {
-@@ -2817,7 +2817,6 @@ static struct sysdev_class pmu_sysclass 
- };
+ 	struct ata_port *ap = qc->ap;
  
- static struct sys_device device_pmu = {
--	.id		= 0,
- 	.cls		= &pmu_sysclass,
- };
++	udelay(100);
+ 	sl82c105_reset_engine(ap);
++	udelay(100);
  
-Index: linux-2.6/drivers/macintosh/via-pmu68k.c
-===================================================================
---- linux-2.6.orig/drivers/macintosh/via-pmu68k.c
-+++ linux-2.6/drivers/macintosh/via-pmu68k.c
-@@ -96,10 +96,10 @@ static int data_index;
- static int data_len;
- static int adb_int_pending;
- static int pmu_adb_flags;
--static int adb_dev_map = 0;
-+static int adb_dev_map;
- static struct adb_request bright_req_1, bright_req_2, bright_req_3;
- static int pmu_kind = PMU_UNKNOWN;
--static int pmu_fully_inited = 0;
-+static int pmu_fully_inited;
+ 	/* Set the clocks for DMA */
+ 	sl82c105_configure_dmamode(ap, qc->dev);
+@@ -216,6 +218,7 @@ static void sl82c105_bmdma_stop(struct a
  
- int asleep;
- BLOCKING_NOTIFIER_HEAD(sleep_notifier_list);
+ 	ata_bmdma_stop(qc);
+ 	sl82c105_reset_engine(ap);
++	udelay(100);
+ 
+ 	/* This will redo the initial setup of the DMA device to matching
+ 	   PIO timings */
