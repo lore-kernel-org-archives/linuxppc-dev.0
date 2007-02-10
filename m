@@ -1,24 +1,26 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 09058DDECF
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 11:22:08 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1A0M5tT007721
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 19:22:05 -0500
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1A0M679157348
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 19:22:06 -0500
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1A0M5xm023898
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 19:22:05 -0500
-Date: Fri, 9 Feb 2007 18:22:05 -0600
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BDF98DDECA
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 11:23:15 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l1A0MgdB017839
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 19:22:42 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1A0N6ap469214
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 17:23:06 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1A0N57m032622
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Feb 2007 17:23:06 -0700
+Date: Fri, 9 Feb 2007 18:23:05 -0600
 To: jgarzik@pobox.com
-Subject: [PATCH 4/5]: spidernet: transmit race
-Message-ID: <20070210002205.GD2396@austin.ibm.com>
+Subject: Re: [PATCH 0/5]: spidernet: misc fixes
+Message-ID: <20070210002305.GE2396@austin.ibm.com>
 References: <20070210000128.GJ5616@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -36,35 +38,48 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+Janitorial patch. Undo long lines, fix typo in err msg.
 
-Multiple threads performing a transmit can race into
-the spidernet tx ring cleanup code. This puts the 
-relevant check under a lock.
-
-Signed-off-by: Linas Vepstas <lins@austin.ibm.com>
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: James K Lewis <jklewis@us.ibm.com>
 Cc: Jens Osterkamp <Jens.Osterkamp@de.ibm.com>
 Cc: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 
 ----
- drivers/net/spider_net.c |    6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ drivers/net/spider_net.c |   13 +++++++------
+ 1 file changed, 7 insertions(+), 6 deletions(-)
 
 Index: linux-2.6.20-git4/drivers/net/spider_net.c
 ===================================================================
---- linux-2.6.20-git4.orig/drivers/net/spider_net.c	2007-02-09 17:30:13.000000000 -0600
-+++ linux-2.6.20-git4/drivers/net/spider_net.c	2007-02-09 17:37:41.000000000 -0600
-@@ -767,8 +767,12 @@ spider_net_release_tx_chain(struct spide
- 	unsigned long flags;
- 	int status;
+--- linux-2.6.20-git4.orig/drivers/net/spider_net.c	2007-02-09 17:37:41.000000000 -0600
++++ linux-2.6.20-git4/drivers/net/spider_net.c	2007-02-09 17:40:57.000000000 -0600
+@@ -1017,14 +1017,15 @@ static void show_rx_chain(struct spider_
+ #endif
  
--	while (chain->tail != chain->head) {
-+	while (1) {
- 		spin_lock_irqsave(&chain->lock, flags);
-+		if (chain->tail == chain->head) {
-+			spin_unlock_irqrestore(&chain->lock, flags);
-+			return 0;
-+		}
- 		descr = chain->tail;
- 		hwdescr = descr->hwdescr;
- 
+ /**
+- * spider_net_decode_one_descr - processes an rx descriptor
++ * spider_net_decode_one_descr - processes an RX descriptor
+  * @card: card structure
+  *
+- * Returns 1 if a packet has been sent to the stack, otherwise 0
++ * Returns 1 if a packet has been sent to the stack, otherwise 0.
+  *
+- * Processes an rx descriptor by iommu-unmapping the data buffer and passing
+- * the packet up to the stack. This function is called in softirq
+- * context, e.g. either bottom half from interrupt or NAPI polling context
++ * Processes an RX descriptor by iommu-unmapping the data buffer
++ * and passing the packet up to the stack. This function is called
++ * in softirq context, e.g. either bottom half from interrupt or
++ * NAPI polling context.
+  */
+ static int
+ spider_net_decode_one_descr(struct spider_net_card *card)
+@@ -1061,7 +1062,7 @@ spider_net_decode_one_descr(struct spide
+ 	if ( (status != SPIDER_NET_DESCR_COMPLETE) &&
+ 	     (status != SPIDER_NET_DESCR_FRAME_END) ) {
+ 		if (netif_msg_rx_err(card))
+-			pr_err("%s: RX descriptor with unkown state %d\n",
++			pr_err("%s: RX descriptor with unknown state %d\n",
+ 			       card->netdev->name, status);
+ 		card->spider_stats.rx_desc_unk_state++;
+ 		goto bad_desc;
