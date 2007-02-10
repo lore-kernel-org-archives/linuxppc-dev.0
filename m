@@ -1,19 +1,18 @@
-Return-Path: <s.magistrali@selta.it>
-Received: from seltapc_wus.selta-spa.local (mail.selta.it [88.33.125.115])
-	by ozlabs.org (Postfix) with SMTP id 3AA94DDE26
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
+	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id 6AB4FDDDEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Feb 2007 21:14:07 +1100 (EST)
-Received: from SELTAPC_EX1.selta-spa.local ([10.10.0.22])
-	by seltapc_wus.selta-spa.local (SMSSMTP 4.1.9.35) with SMTP id
-	M2007020910585604562
-	for <linuxppc-embedded@ozlabs.org>; Fri, 09 Feb 2007 10:58:56 +0100
-Message-ID: <45CC45C4.6070501@selta.it>
-Date: Fri, 09 Feb 2007 10:58:28 +0100
-From: stefania magistrali <s.magistrali@selta.it>
-MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org.
-Subject: question about m8260_cpm_hostalloc
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Sun, 11 Feb 2007 05:17:54 +1100 (EST)
+In-Reply-To: <45CC45C4.6070501@selta.it>
+References: <45CC45C4.6070501@selta.it>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <702AA1B6-621F-4317-842F-1DD2BE26C4A9@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: question about m8260_cpm_hostalloc
+Date: Sat, 10 Feb 2007 13:11:12 -0500
+To: stefania magistrali <s.magistrali@selta.it>
+Cc: ppc embedded list <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,12 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
-I am using the m8260_cpm_hostalloc function. My question is: does this 
-function return cached or uncached memory?  Instead I think that the 
-m8xx_cpm_hostalloc function gives back uncached memory.  If so, why this 
-difference?
-I need to have uncached memory, so I would like to be sure about using 
-m8260_cpm_hostalloc function.
-Thanks very much!
-Stefania
+
+On Feb 9, 2007, at 4:58 AM, stefania magistrali wrote:
+
+> Hi!
+> I am using the m8260_cpm_hostalloc function. My question is: does this
+> function return cached or uncached memory?
+
+It returns a cache coherent address space.
+Whether it's cached or uncached is determined
+by the capabilities of the processor.
+
+> I need to have uncached memory,
+
+Why?  The CPM on the 82xx performs
+cache coherent data transfers with the
+G2 core.
+
+Make sure you are using the proper memory
+allocation functions.  The XXX_cpm_hostalloc()
+function is intended to provide an efficient
+allocator for the small memory resident FIFOs
+or control structures needed by the CPM.
+It's not a data transfer buffer allocator.
+
+Thanks.
+
+
+	-- Dan
