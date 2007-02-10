@@ -1,19 +1,18 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Subject: Re: Okay to change default zImage link/load address?
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20070209223531.GA7339@localhost.localdomain>
-References: <20070209184345.GA28127@mag.az.mvista.com>
-	<20070209185107.GA12703@aepfle.de>
-	<20070209185528.GB28127@mag.az.mvista.com>
-	<1171048464.4884.230.camel@zod.rchland.ibm.com>
-	<20070209223531.GA7339@localhost.localdomain>
-Content-Type: text/plain
-Date: Fri, 09 Feb 2007 19:27:36 -0600
-Message-Id: <1171070856.4884.235.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Olaf Hering <olaf@aepfle.de>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 9FC48DDECD
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Feb 2007 13:08:11 +1100 (EST)
+In-Reply-To: <20070210004704.GC8276@localhost.localdomain>
+References: <Pine.LNX.4.61.0702091727290.791@ld0175-tx32.am.freescale.net>
+	<20070210004704.GC8276@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <F7DA9D5D-B489-48DA-A9A3-77B8A37395FF@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: Subject: [PATCH] Add support for the 8568 MDS board
+Date: Fri, 9 Feb 2007 20:07:47 -0600
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-02-10 at 09:35 +1100, David Gibson wrote:
-> On Fri, Feb 09, 2007 at 01:14:22PM -0600, Josh Boyer wrote:
-> > On Fri, 2007-02-09 at 11:55 -0700, Mark A. Greer wrote:
-> > > On Fri, Feb 09, 2007 at 07:51:07PM +0100, Olaf Hering wrote:
-> > > > On Fri, Feb 09, Mark A. Greer wrote:
-> > > > 
-> > > > > Does anyone know of a problem downloading to 8MB instead of 4MB in
-> > > > > arch/powerpc?  If not, would you object if it changed to 8MB?
-> > > > 
-> > > > IBM chrp 32 and 64bit has a free and usable memory range from 64k to
-> > > > 12M.
-> > > > Changing the link address from 4 to 8 MB will reduce the max zImage size
-> > > > to 3MB on these systems.
-> > > 
-> > > Hmm, not good.
-> > > 
-> > > Paul, may we may this configurable (i.e., a CONFIG option)?
-> > 
-> > Something like that is going to be needed for 4xx anyway.
-> 
-> Uh.. don't think so.  I'm booting fine on 440, loading the zImage at
-> 4MB.
 
-Yes, sorry.  Was thinking of where vmlinux is uncompressed to by the
-bootwrapper, but you've solved that a different way as well.
+On Feb 9, 2007, at 18:47, David Gibson wrote:
 
-josh
+> On Fri, Feb 09, 2007 at 05:28:31PM -0600, Andy Fleming wrote:
+> [snip]
+>> +/ {
+>> +	model = "MPC8568EMDS";
+>> +	compatible = "MPC85xxMDS";
+>> +	#address-cells = <1>;
+>> +	#size-cells = <1>;
+>> +	linux,phandle = <100>;
+>> +
+>> +	cpus {
+>> +		#cpus = <1>;
+>> +		#address-cells = <1>;
+>> +		#size-cells = <0>;
+>> +		linux,phandle = <200>;
+>
+> So, every Freescale device tree source I've seen so far has had these
+> hardcoded phandles all through it.  dtc has supported
+> reference-to-path to automatically generate the necessary phandles for
+> ages now.  Please can we use it...
+
+Ok, I'll take a look.  Any pointers on syntax?
+
+Andy
