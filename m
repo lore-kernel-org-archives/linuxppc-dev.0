@@ -1,21 +1,21 @@
 Return-Path: <Leonid@a-k-a.net>
-Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
-	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id 04AD9DDEB6
+Received: from mis011-1.exch011.intermedia.net
+	(mis011-1.exch011.intermedia.net [64.78.21.128])
+	by ozlabs.org (Postfix) with ESMTP id E1AF3DDEBA
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 11 Feb 2007 17:22:03 +1100 (EST)
+	Sun, 11 Feb 2007 17:28:04 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="gb2312"
-Subject: RE: Speed of plb_temac 3.00 on ML403
-Date: Sat, 10 Feb 2007 22:22:01 -0800
-Message-ID: <406A31B117F2734987636D6CCC93EE3CB05883@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <20070209160123.BFF2BA30080@mail83-dub.bigfish.com>
-References: <BAY110-F38826CD4A177B058C34CFFB29C0@phx.gbl>
-	<20070209160123.BFF2BA30080@mail83-dub.bigfish.com>
+	charset="utf-8"
+Subject: RE: problem in booting linux from u-boot in ML405
+Date: Sat, 10 Feb 2007 22:15:55 -0800
+Message-ID: <406A31B117F2734987636D6CCC93EE3CB05882@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <OFE6BC4BE1.B10867EC-ON6525725A.002B55DC-6525725A.003075F5@flextronicssoftware.com>
+References: <OFE6BC4BE1.B10867EC-ON6525725A.002B55DC-6525725A.003075F5@flextronicssoftware.com>
 From: "Leonid" <Leonid@a-k-a.net>
-To: "Rick Moleres" <Rick.Moleres@xilinx.com>,
-	"Ming Liu" <eemingliu@hotmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: "Kiran Poola" <Kiran.Poola@aricent.com>,
+	<linuxppc-embedded@ozlabs.org>
+Cc: Anurag Tripathi <Anurag.Tripathi@aricent.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,137 +26,145 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Does it mean that ml403 and particularly TEMAC need Monta Vista linux? =
-Will standard kernel suffice?=20
-
-Thanks,
-
-Leonid.
-
------Original Message-----
-From: linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org =
-[mailto:linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org] On =
-Behalf Of Rick Moleres
-Sent: Friday, February 09, 2007 8:01 AM
-To: Ming Liu
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Speed of plb_temac 3.00 on ML403
-
-Ming,
-
-Here's a quick summary of the systems we used:
-
-Operating system:	MontaVista Linux 40
-Benchmark tool:		NetPerf / NetServer
-Kernel:			Linux ml403 2.6.10_mvl401-ml40x
-
-IP Core:
-Name & version: 		PLB TEMAC 3.00A
-Operation Mode:		SGDMA mode
-TX/RX DRE:		Yes / Yes
-TX/RX CSUM offload:	Yes / Yes
-TX Data FIFO depth:	131072 bits (i.e. 16K bytes)
-RX Data FIFO depth:	131072 bits (i.e. 16K bytes)
-
-Xilinx Platform Hardware:
-Board:			ML403 / Virtex4 FX12
-Processor:		PPC405 @ 300MHz
-Memory type:		DDR
-Memory burst:		Yes
-
-PC-side Test Hardware:
-Processor:		Intel(R) Pentium(R) 4 CPU 3.20GHz
-OS:			Ubuntu Linux 6.06 LTS, kernel 2.6.15-26-386
-Network adapters used:	D-LinkDL2000-based Gigabit Ethernet (rev 0c)
-
-
-- Are Checksum offload, SGDMA, and DRE enabled in the plb_temac?
-- Are you using the TCP_SENDFILE option of netperf?  Your UDP numbers =
-are similar already to what we saw in Linux 2.6, and your TCP numbers =
-are similar to what we saw *without* the sendfile option.
-
-I don't believe the PLB is the bottleneck here.  We had similar =
-platforms running with Treck and have achieved over 800Mbps TCP rates =
-(Tx and Rx) over the PLB.
-
-To answer your questions:
-1. Results are from PLB_TEMAC, not GSRD.  You would likely see similar =
-throughput rates with GSRD and Linux.
-2. Assuming you have everything tuned for SGDMA based on previous =
-emails, I would suspect the bottleneck is the 300MHz CPU *when* running =
-Linux.  In Linux 2.6 we've not spent any time trying to tune the =
-TCP/Ethernet parameters on the target board or the host, so there could =
-be some optimizations that can be done at that level.  In the exact same =
-system we can achieve over 800Mbps using the Treck TCP/IP stack, and =
-with VxWorks it was over 600Mbps.  I'm not a Linux expert, so I don't =
-know what's tunable for network performance, and there is a possibility =
-the driver could be optimized as well.
-
-Thanks,
--Rick
-
------Original Message-----
-From: Ming Liu [mailto:eemingliu@hotmail.com]=20
-Sent: Friday, February 09, 2007 7:17 AM
-To: Rick Moleres
-Cc: linuxppc-embedded@ozlabs.org
-Subject: RE: Speed of plb_temac 3.00 on ML403
-
-Dear Rick,
-Again the problem of TEMAC speed. Hopefully you can give me some =
-suggestion=20
-on that.
-
->With a 300Mhz system we saw about 730Mbps Tx with TCP on 2.4.20
->(MontaVista Linux) and about 550Mbps Tx with TCP on 2.6.10 (MontaVista
->again) - using netperf w/ TCP_SENDFILE option. We didn't investigate =
-the
->difference between 2.4 and 2.6.
-
-Now with my system(plb_temac and hard_temac v3.00 with all features =
-enabled=20
-to improve the performance, Linux 2.6.10, 300Mhz ppc, netperf), I can=20
-achieve AT MOST 213.8Mbps for TCP TX and 277.4Mbps for TCP RX, when=20
-jumbo-frame is enabled as 8500. For UDP it is 350Mbps for TX, also 8500=20
-jumbo-frame is enabled.=20
-
-So it looks that my results are still much less than yours from=20
-Xilinx(550Mbps TCP TX). So I am trying to find the bottleneck and =
-improve=20
-the performance.
-
-When I use netperf to transfer data, I noticed that the CPU utilization =
-is=20
-almost 100%. So I suspect that CPU is the bottleneck. However other =
-friends=20
-said the PLB structure is the bottleneck, because when the CPU is =
-lowered=20
-to 100Mhz, the performance will not change much, but if the PLB frquency =
-is=20
-lowered, it will. Then they conclude that with the PLB structure, the =
-CPU=20
-will wait a long time to load and store data from DDR. So PLB is the=20
-criminal.
-
-Then come some questions. 1. Is your result from the GSRD structure or =
-just=20
-the normal PLB_TEMAC? Will the GSRD achieve a better performance than =
-the=20
-normal PLB_TEMAC? 2. Which on earch is the bottleneck for the network=20
-performance, CPU or PLB structure? Is that possible for PLB to achieve a =
-
-much higher throughput? 3. Because your result is based on Montavista=20
-Linux. Is there any difference between MontaVista Linux and the general=20
-open-source linux kernel which could lead to different performance?=20
-
-I know that many persons including me are struggling to improve the=20
-performance of PLB_TEMAC on ML403. So please give us some hints and=20
-suggestions with your experience and research. Thanks so much for your=20
-work.
-
-BR
-Ming
-
-_________________________________________________________________
-=D3=EB=C1=AA=BB=FA=B5=C4=C5=F3=D3=D1=BD=F8=D0=D0=BD=BB=C1=F7=A3=AC=C7=EB=CA=
-=B9=D3=C3 MSN Messenger:  http://messenger.msn.com/cn =20
+V2hlcmUgeW91IGdvdCB1LWJvb3QgZm9yIG1sNDA1IGZyb20/IElzIGl0IGluIG1haW4gMS4xLjYg
+dHJlZT8NCg0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0KRnJvbTog
+bGludXhwcGMtZW1iZWRkZWQtYm91bmNlcytsZW9uaWQ9YS1rLWEubmV0QG96bGFicy5vcmcgW21h
+aWx0bzpsaW51eHBwYy1lbWJlZGRlZC1ib3VuY2VzK2xlb25pZD1hLWstYS5uZXRAb3psYWJzLm9y
+Z10gT24gQmVoYWxmIE9mIEtpcmFuIFBvb2xhDQpTZW50OiBGcmlkYXksIEphbnVhcnkgMDUsIDIw
+MDcgMTI6NDYgQU0NClRvOiBsaW51eHBwYy1lbWJlZGRlZEBvemxhYnMub3JnDQpDYzogQW51cmFn
+IFRyaXBhdGhpDQpTdWJqZWN0OiBwcm9ibGVtIGluIGJvb3RpbmcgbGludXggZnJvbSB1LWJvb3Qg
+aW4gTUw0MDUNCg0KDQpIaSBhbGwsIA0KDQpJIGFtIHVzaW5nIG1vbnRhdmlzdGEgbGludXggcHJv
+ZmVzc2lvbmFsIGVkaXRpb24gNC4wLjEuIA0KDQpJbml0aWFsbHkgSSB0cmllZCBib290aW5nIHRo
+ZSBsaW51eCBlbGYgaW1hZ2UgYnkgZG93bmxvYWRpbmcgaXQgaW50byBSQU0gdXNpbmcgdGhlIFVT
+QiBKVEFHLiANCkxpbnV4IGlzIGNvbWluZ3VwIHByb3Blcmx5IGFuZCBJIGFtIGFibGUgdG8gc2Vl
+IHRoZSBsb2dpbiBwcm9tcHQuIA0KDQpOb3cgSSBhbSB0cnlpbmcgdG8gYm9vdCBsaW51eCBmcm9t
+IHRoZSB1LWJvb3QuIMKgSSB3aWxsIGRvd25sb2FkIHRoZSB1LWJvb3QgaW1hZ2UgaW50byB0aGUg
+UkFNIGFuZCBydW4gaXQuIA0KRnJvbSB1LWJvb3QgcHJvbXB0IEkgwqBkb3dubG9hZGVkIHRoZSBr
+ZXJuZWwgaW1hZ2UgYW5kIHJ1biBpdC4gQm9vdCBtZXNzYWdlcyBhcmUgZ2l2ZW4gYmVsb3cuIEkg
+ZW5hYmxlZCBkZWJ1ZyBtZXNzYWdlcyBpbiB1LWJvb3QuIA0KQWZ0ZXIgYW5hbHlzaW5nIHRoZSBr
+ZXJuZWwgYm9vdGluZyBieSBzZXR0aW5nIGhhcmR3YXJlIGJyZWFrcG9pbnRzIGluIHhtZCB3ZSBj
+YW1lIHRvIGtub3cgdGhhdCBpdCBpcyBoYW5naW5nIGluIHRoZSBmdW5jaXRvbiBtbXVfbWFwaW5f
+cmFtKCkgDQpmdW5jdGlvbi4gSGVscCBtZSBpbiBjaGFzaW5nIHRoaXMuLi4gVGhhbmtzIGluIGFk
+dmFuY2UgDQoNCg0KVS1Cb290IDEuMS42IChKYW4gwqAzIDIwMDcgLSAxMTozODo1MSkgDQoNCg0K
+IyMjIE5vIEhXIElEIC0gYXNzdW1pbmcgTUw0MDUgDQpEUkFNOiDCoDY0IE1CIA0KVG9wIG9mIFJB
+TSB1c2FibGUgZm9yIFUtQm9vdCBhdDogMDQwMDAwMDAgDQpSZXNlcnZpbmcgMTkxayBmb3IgVS1C
+b290IGF0OiAwM2ZkMDAwMCANClJlc2VydmluZyAzODRrIGZvciBtYWxsb2MoKSBhdDogMDNmNzAw
+MDAgDQpSZXNlcnZpbmcgMTIwIEJ5dGVzIGZvciBCb2FyZCBJbmZvIGF0OiAwM2Y2ZmY4OCANClJl
+c2VydmluZyA0OCBCeXRlcyBmb3IgR2xvYmFsIERhdGEgYXQ6IDAzZjZmZjU4IA0KU3RhY2sgUG9p
+bnRlciBhdDogMDNmNmZmMzggDQpOZXcgU3RhY2sgUG9pbnRlciBpczogMDNmNmZmMzggDQpOb3cg
+cnVubmluZyBpbiBSQU0gLSBVLUJvb3QgYXQ6IDAzZmQwMDAwIA0KRkxBU0g6IGZsYXNoIGRldGVj
+dCBjZmkgDQpmd2MgYWRkciAyODAwMDAwMCBjbWQgMCAwMDAwMDAwMCAzMmJpdCB4IDggYml0IA0K
+ZndjIGFkZHIgMjgwMDAxNTQgY21kIDk4IDk4OTg5ODk4IDMyYml0IHggOCBiaXQgDQppcz0gY21k
+IDUxKFEpIGFkZHIgMjgwMDAwNDAgaXM9IDAwNTEwMDUxIDUxNTE1MTUxIA0KZndjIGFkZHIgMjgw
+MDAwMDAgY21kIDAgMDAwMDAwMDAgMzJiaXQgeCAxNiBiaXQgDQpmd2MgYWRkciAyODAwMDE1NCBj
+bWQgOTggMDA5ODAwOTggMzJiaXQgeCAxNiBiaXQgDQppcz0gY21kIDUxKFEpIGFkZHIgMjgwMDAw
+NDAgaXM9IDAwNTEwMDUxIDAwNTEwMDUxIA0KaXM9IGNtZCA1MihSKSBhZGRyIDI4MDAwMDQ0IGlz
+PSAwMDUyMDA1MiAwMDUyMDA1MiANCmlzPSBjbWQgNTkoWSkgYWRkciAyODAwMDA0OCBpcz0gMDA1
+OTAwNTkgMDA1OTAwNTkgDQp1c2hvcnQgYWRkciBpcyBhdCAyODAwMDBhMCBpbmZvLT5wb3J0d2k4
+ZHRoID0gNCANCmFkZHJbMCA9IDB4MCANCmFkZHJbMV0gPSAweDIgDQphZGRyWzJdID0gMHgwIA0K
+YWRkclszXSA9IDB4MiANCmFkZHJbNF0gPSAweDAgDQphZGRyWzVdID0gMHgwIA0KYWRkcls2XSA9
+IDB4MCANCmFkZHJbN10gPSAweDAgDQpyZXR2YWwgPSAweDIgDQpkZXZpY2UgaW50ZXJmYWNlIGlz
+IDIgDQpmb3VuZCBwb3J0IDQgY2hpcCAyIHBvcnQgMzIgYml0cyBjaGlwIDE2IGJpdHMgDQp1c2hv
+cnQgYWRkciBpcyBhdCAyODAwMDA0YyBpbmZvLT5wb3J0d2lkdGggPSA0IA0KYWRkclswXSA9IDB4
+MCANCmFkZHJbMV0gPSAweDEgDQphZGRyWzJdID0gMHgwIA0KYWRkclszXSA9IDB4MSANCmFkZHJb
+NF0gPSAweDAgDQphZGRyWzVdID0gMHgwIA0KYWRkcls2XSA9IDB4MCANCmFkZHJbN10gPSAweDAg
+DQpyZXR2YWwgPSAweDEgDQoyODAwMDA0MCA6IDAwIDUxIDAwIDUxIDAwIDUyIDAwIDUyIDAwIDU5
+IDAwIDU5IDAwIDAxIDAwIDAxIMKgLlEuc1EuUi5SLlkuWS4uLi4gDQo4MDAwMDUwIDogMDAgMDAg
+MDAgMDAgMDAgMzEgMDAgMzEgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgwqAuLi4uLjEuMS4uLi4u
+Li4uIA0KMjgwMDAwNjAgOiAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAwMCAy
+NyAwMCAyNyDCoC4uLi4uLi4uLi4uLi4nLicgDQoyODAwMDA3MCA6IDAwIDM2IDAwIDM2IDAwIDAw
+IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDA3IDAwIDA3IMKgLjYuNi4uLi4uLi4uLi4uLiANCjI4MDAw
+MDgwIDogMDAgMDcgMDAgMDcgMDAgMGEgMDAgMGEgMDAgMDAgMDAgMDAgMDAgMDQgMDAgMDQgwqAu
+Li4uLi4uLi4uLi4uLi4uIA0KMjgwMDAwOTAgOiAwMCAwNCAwMCAwNCAwMCAwNCAwMCAwNCAwMCAw
+MCAwMCAwMCAwMCAxNiAwMCAxNiDCoC4uLi4uLi4uLi4uLi4uLi4gDQoyODAwMDBhMCA6IDAwIDAy
+IDAwIDAyIDAwIDAwIDAwIDAwIDAwIDA1IDAwIDA1IDAwIDAwIDAwIDAwIMKgLi4uLi4uLi4uLi4u
+Li4uLiANCjI4MDAwMGIwIDogMDAgMDEgMDAgMDEgMDAgMWYgMDAgMWYgMDAgMDAgMDAgMDAgMDAg
+MDAgMDAgMDAgwqAuLi4uLi4uLi4uLi4uLi4uIA0KMjgwMDAwYzAgOiAwMCAwMiAwMCAwMiAwMCA1
+MCAwMCA1MCAwMCA1MiAwMCA1MiAwMCA0OSAwMCA0OSDCoC4uLi4uUC5QLlIuUi5JLkkgDQoyODAw
+MDBkMCA6IDAwIDMxIDAwIDMxIDAwIDMxIDAwIDMxIDAwIGM2IDAwIGM2IDAwIDAwIDAwIDAwIMKg
+LjEuMS4xLjEuLi4uLi4uLiANCjI4MDAwMGUwIDogMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAgMDAg
+MDEgMDAgMDEgMDAgMDEgMDAgMDEgwqAuLi4uLi4uLi4uLi4uLi4uIA0KMjgwMDAwZjAgOiAwMCAw
+MCAwMCAwMCAwMCAzMyAwMCAzMyAwMCAwMCAwMCAwMCAwMCAwMSAwMCAwMSDCoC4uLi4uMy4zLi4u
+Li4uLi4gDQoyODAwMDEwMCA6IDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAwIDAw
+IDAwIDAwIDAwIMKgLi4uLi4uLi4uLi4uLi4uLiANCjI4MDAwMTEwIDogMDAgMDMgMDAgMDMgMDAg
+MDAgMDAgMDAgMDAgMmMgMDAgMmMgMDAgZmYgMDAgZmYgwqAuLi4uLi4uLi4sLiwuLi4uIA0KMjgw
+MDAxMjAgOiAwMCBmZiAwMCBmZiAwMCBmZiAwMCBmZiAwMCBmZiAwMCBmZiAwMCBmZiAwMCBmZiDC
+oC4uLi4uLi4uLi4uLi4uLi4gDQoyODAwMDEzMCA6IDAwIGZmIDAwIGZmIDAwIGZmIDAwIGZmIDAw
+IGZmIDAwIGZmIDAwIGZmIDAwIGZmIMKgLi4uLi4uLi4uLi4uLi4uLiANCnVzaG9ydCBhZGRyIGlz
+IGF0IDI4MDAwMDU0IGluZm8tPnBvcnR3aWR0aCA9IDQgDQphZGRyWzBdID0gMHgwIA0KYWRkclsx
+XSA9IDB4MzEgDQphZGRyWzJdID0gMHgwIA0KYWRkclszXSA9IDB4MzEgDQphZGRyWzRdID0gMHgw
+IA0KYWRkcls1XSA9IDB4MCANCmFkZHJbNl0gPSAweDAgDQphZGRyWzddID0gMHgwIA0KcmV0dmFs
+ID0gMHgzMSANCm1hbnVmYWN0dXJlciBpcyDCoDEgDQpzaXplX3JhdGlvIHJ0IDMyIGJpdHMgY2hp
+cCAxNiBiaXRzIA0KZm91bmQgMSBlcmFzZSByZWdpb25zIA0KbG9uZyBhZGRyIGlzIGF0IDI4MDAw
+MGI0IGluZm8tPnBvcnR3aWR0aCA9IDQgDQphZGRyWzBdID0gMHgwIA0KYWRkclsxXSA9IDB4MWYg
+DQphZGRyWzJdID0gMHgwIA0KYWRkclszXSA9IDB4MWYgDQphZGRyWzRdID0gMHgwIA0KYWRkcls1
+XSA9IDB4MCANCmFkZHJbNl0gPSAweDAgDQphZGRyWzddID0gMHgwIA0KYWRkcls4XSA9IDB4MCAN
+CmFkZHJbOV0gPSAweDAgDQphZGRyW2FdID0gMHgwIA0KYWRkcltiXSA9IDB4MCANCmFkZHJbY10g
+PSAweDAgDQphZGRyW2RdID0gMHgyIA0KYWRkcltlXSA9IDB4MCANCmFkZHJbZl0gPSAweDIgDQpl
+cmFzZV9yZWdpb25fY291bnQgPSAzMiBlcmFzZV9yZWdpb25fc2l6ZSA9IDEzMTA3MiANCnVzaG9y
+dCBhZGRyIGlzIGF0IDI4MDAwMGE4IGluZm8tPnBvcnR3aWR0aCA9IDQgDQphZGRyWzBdID0gMHgw
+IA0KYWRkclsxXSA9IDB4NSANCmFkZHJbMl0gPSAweDAgDQphZGRyWzNdID0gMHg1IA0KYWRkcls0
+XSA9IDB4MCANCmFkZHJbNV0gPSAweDAgDQphZGRyWzZdID0gMHgwIA0KYWRkcls3XSA9IDB4MCAN
+CnJldHZhbCA9IDB4NSANCmZ3YyBhZGRyIDI4MDAwMDAwIGNtZCBmZiAwMGZmMDBmZiDCoDMyYml0
+IHggMTYgYml0IA0KZmxhc2hfcHJvdGVjdCBPTjogZnJvbSAweDI4MDQwMDAwIHRvIDB4MjgwN0ZG
+RkYgDQpmd2MgYWRkciAyODA0MDAwMCBjbWQgNTAgMDA1MDAwNTAgMzJiaXQgeCAxNiBiaXQgDQpm
+d2MgYWRkciAyODA0MDAwMCBjbWQgNjAgMDA2MDAwNjAgMzJiaXQgeCAxNiBiaXQgDQpmd2MgYWRk
+ciAyODA0MDAwMCBjbWQgMSAwMDAxMDAwMSAzMmJpdCB4IDE2IGJpdCANCmZsYXNoX2lzX2J1c3k6
+IDAgDQppcz0gY21kIDgwKOKCrCkgYWRkciAyODA0MDAwMCBpcz0gMDA4MDAwODAgMDA4MDAwODAg
+DQpmd2MgYWRkciAyODA0MDAwMCBjbWQgZmYgMDBmZjAwZmYgMzJiaXQgeCAxNiBiaXQgDQpwcm90
+ZWN0IG9uIDEgDQrCoDggTUIgDQpJbjogwqAgwqBzZXJpYWwgDQpPdXQ6IMKgIHNlcmlhbCANCkVy
+cjogwqAgc2VyaWFsIA0KVS1Cb290IHJlbG9jYXRlZCB0byAwM2ZkMDAwMCANCk5ldDogwqAgZW1h
+YyMwIA0KPT4gdGZ0cGJvb3QgDQpUcnlpbmcgZW1hYyMwIA0KVXNpbmcgZW1hYyMwIGRldmljZSAN
+ClRGVFAgZnJvbSBzZXJ2ZXIgMTY5LjI1NC41Mi4yOyBvdXIgSVAgYWRkcmVzcyBpcyAxNjkuMjU0
+LjUyLjEgDQpGaWxlbmFtZSAndWIudUltYWdlJy4gDQpMb2FkIGFkZHJlc3M6IDB4NDAwMDAwIA0K
+TG9hZGluZzogKggjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyANCsKgIMKgIMKgIMKgIMKgIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMgDQrCoCDCoCDCoCDC
+oCDCoCMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIA0KwqAgwqAgwqAgwqAgwqAjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyANCsKgIMKgIMKgIMKgIMKgIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMgDQrCoCDCoCDCoCDCoCDCoCMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIA0KwqAgwqAgwqAgwqAgwqAjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyAN
+CsKgIMKgIMKgIMKgIMKgIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMgDQrCoCDCoCDCoCDCoCDCoCMjIyMjIyMjIyMjIyMjIyMj
+IyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIyMjIA0KZG9uZSANCkJ5
+dGVzIHRyYW5zZmVycmVkID0gMjk3NjU4NCAoMmQ2YjQ4IGhleCkgDQo9PiBib290bSANCiMjIEJv
+b3RpbmcgaW1hZ2UgYXQgMDA0MDAwMDAgLi4uIA0KwqAgwqBJbWFnZSBOYW1lOiDCoCBGbGV4IExp
+bnV4IDIuNiANCsKgIMKgSW1hZ2UgVHlwZTogwqAgUG93ZXJQQyBMaW51eCBNdWx0aS1GaWxlIElt
+YWdlIChnemlwIGNvbXByZXNzZWQpIA0KwqAgwqBEYXRhIFNpemU6IMKgIMKgMjk3NjUyMCBCeXRl
+cyA9IMKgMi44IE1CIA0KwqAgwqBMb2FkIEFkZHJlc3M6IDAwMDAwMDAwIA0KwqAgwqBFbnRyeSBQ
+b2ludDpuIMKgMDAwMDAwMDAgDQrCoCDCoG50ZW50czogDQrCoCDCoEltYWdlIDA6IMKgIDYwODA5
+OSBCeXRlcyA9IDU5My44IGtCIA0KwqAgwqBJbWFnZSAxOiDCoDIzNjg0MDggQnl0ZXMgPSDCoDIu
+MyBNQiANCsKgIMKgVmVyaWZ5aW5nIENoZWNrc3VtIC4uLiBPSyANCsKgIMKgVW5jb21wcmVzc2lu
+ZyBNdWx0aS1GaWxlIEltYWdlIC4uLiBPSyANCiMjIEN1cnJlbnQgc3RhY2sgZW5kcyBhdCAweDAz
+RjZGQTIwID0+IHNldCB1cHBlciBsaW1pdCB0byAweDAwODAwMDAwIA0KIyMgY21kbGluZSBhdCAw
+eDAwN0ZGRjAwIC4uLiAweDAwN0ZGRjJDIA0KYmQgYWRkcmVzcyDCoD0gMHgwM0Y2RkY4OCANCm1l
+bXN0YXJ0IMKgIMKgPSAweDAwMDAwMDAwIA0KbWVtc0tpemUgwqAgwqAgPSAweDA0MGxhc2hzdGFy
+dCDCoD0gMHgyODAwMDAwMCANCmZsYXNoc2l6ZSDCoCA9IDB4MDA4MDAwMDAgDQpmbGFzaG9mZnNl
+dCA9IDB4MDAwMDAwMDAgDQpzcmFtc3RhcnQgwqAgPSAweDAwMDAwMDAwIA0Kc3JhbXNpemUgwqAg
+wqA9IDB4MDAwMDAwMDAgDQpib290ZmxhZ3MgwqAgPSAweEEwMDAxMDAzIA0KcHJvY2ZyZXEgwqAg
+wqA9IMKgIMKgMzAwIE1IeiANCnBsYl9idXNmcmVxID0gwqAgwqAxMDAgTUh6IA0KcGNpX2J1c2Zy
+ZXEgPSDCoCDCoCDCoDAgTUh6IA0KZXRoYWRkciDCoCDCoCA9IDlFOjg0OjU0OkJCOkZEOjU1IA0K
+SVAgYWRkciDCoCDCoCA9IDE2OS4yNTQuNTIuMSANCmJhdWRyYXRlIMKgIMKgPSAxMTUyMDAgYnBz
+IA0KIyMgaW5pdHJkIGF0IDB4MDA0OTQ3QjAgLi4uIDB4MDA2RDZCNDcgKGxlbj0yMzY4NDA4PTB4
+MjQyMzk4KSANCsKgIMKgTG9hZGluZyBSYW1kaXNrIHRvIDAzZDJjMDAwLCBlbmQgMDNmNmUzOTgg
+Li4uIE9LIA0KIyMgVHJhbnNmZXJyaW5nIGNvbnRyb2wgdG8gTGludXggKGF0IGFkZHJlc3MgMDAw
+MDAwMDApIC4uLiANCmtiZCA6IDAwN2ZmZTgwIGluaXRyZF9zdGFydCA6IDAzZDJjMDAwIGluaXRy
+ZF9lbmQgOiAwM2Y2ZTM5OCBjbWRfc3RhcnQgOiAwMDdmZmYwMCBjbWRfZW5kIDogMDA3ZmZmMmMg
+Z2QtPmJkIDogMDNmNmZmODggDQoNCg0KVGhhbmtzIGFuZCBSZWdhcmRzLA0KS2lyYW4gUG9vbGEu
+DQoNCg0KDQoqKioqKioqKioqKioqKioqKioqKioqKiDCoEFyaWNlbnQtVW5jbGFzc2lmaWVkIMKg
+ICoqKioqKioqKioqKioqKioqKioqKioqIA0KIkRJU0NMQUlNRVI6IFRoaXMgbWVzc2FnZSBpcyBw
+cm9wcmlldGFyeSB0byBBcmljZW50IGFuZCBpcyBpbnRlbmRlZCBzb2xlbHkgZm9yIHRoZSB1c2Ug
+b2YgDQp0aGUgaW5kaXZpZHVhbCB0byB3aG9tIGl0IGlzIGFkZHJlc3NlZC4gSXQgbWF5IGNvbnRh
+aW4gcHJpdmlsZWdlZCBvciBjb25maWRlbnRpYWwgaW5mb3JtYXRpb24gYW5kIHNob3VsZCBub3Qg
+YmUgDQpjaXJjdWxhdGVkIG9yIHVzZWQgZm9yIGFueSBwdXJwb3NlIG90aGVyIHRoYW4gZm9yIHdo
+YXQgaXQgaXMgaW50ZW5kZWQuIElmIHlvdSBoYXZlIHJlY2VpdmVkIHRoaXMgbWVzc2FnZSBpbiBl
+cnJvciwgDQpwbGVhc2Ugbm90aWZ5IHRoZSBvcmlnaW5hdG9yIGltbWVkaWF0ZWx5LiBJZiB5b3Ug
+YXJlIG5vdCB0aGUgaW50ZW5kZWQgcmVjaXBpZW50LCB5b3UgYXJlIG5vdGlmaWVkIHRoYXQgeW91
+IGFyZSBzdHJpY3RseQ0KcHJvaGliaXRlZCBmcm9tIHVzaW5nLCBjb3B5aW5nLCBhbHRlcmluZywg
+b3IgZGlzY2xvc2luZyB0aGUgY29udGVudHMgb2YgdGhpcyBtZXNzYWdlLiBBcmljZW50IGFjY2Vw
+dHMgbm8gcmVzcG9uc2liaWxpdHkgZm9yIA0KbG9zcyBvciBkYW1hZ2UgYXJpc2luZyBmcm9tIHRo
+ZSB1c2Ugb2YgdGhlIGluZm9ybWF0aW9uIHRyYW5zbWl0dGVkIGJ5IHRoaXMgZW1haWwgaW5jbHVk
+aW5nIGRhbWFnZSBmcm9tIHZpcnVzLiINCg0K
