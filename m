@@ -1,18 +1,22 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 39004DDE22
+Return-Path: <imrek@atomki.hu>
+Received: from imrek.org (unknown [193.6.168.119])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2F8A1DDE33
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Feb 2007 04:54:26 +1100 (EST)
-Date: Mon, 12 Feb 2007 20:55:00 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: hs@denx.de
-Subject: Re: [PATCH] CPM_UART: Fixed SMC handling for CPM2 processors
-Message-ID: <20070212205500.1b7135fe@vitb.ru.mvista.com>
-In-Reply-To: <1171276422.14090.54.camel@Apollo>
-References: <1171276422.14090.54.camel@Apollo>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 13 Feb 2007 05:28:35 +1100 (EST)
+Received: from localhost ([127.0.0.1]) by imrek.org with esmtp (Exim 4.54)
+	id 1HGfbt-0007dQ-Vr
+	for linuxppc-embedded@ozlabs.org; Mon, 12 Feb 2007 19:09:06 +0100
+Date: Mon, 12 Feb 2007 19:09:05 +0100 (CET)
+From: jozsef imrek <imrek@atomki.hu>
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: Speed of plb_temac 3.00 on ML403
+In-Reply-To: <BAY110-F2794FF16F3A122FD2309AFB2920@phx.gbl>
+Message-ID: <Pine.LNX.4.61.0702121803500.27337@imrek.org>
+References: <BAY110-F2794FF16F3A122FD2309AFB2920@phx.gbl>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,69 +27,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 12 Feb 2007 11:33:42 +0100
-Heiko Schocher <hs@denx.de> wrote:
+On Sun, 11 Feb 2007, Ming Liu wrote:
 
-> Hello Vitaly,
-> 
-> I tried the Patch from Kalle Pokki
-> http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025108.html
-> 
-> but my SMC didnt work, without this patch, it works fine. I think that
-> the pram_base must be set the follwing way:
-> 
-Thanks for the patch, but I guess it requires a bit of investigation first since 
-we cannot just drop ioremapped offset and get back to raw one that has been returned by 
-platform_get_....
+> In the end, it shows 996Mb/sec, which means the throughput is 996Mbps(almost 
+> gigabit), right?
 
-We require ioremap stuff for powerpc approach, and I think we'd have to figure out why 
-ioremapped address did not satisfy smc (and I'll try on my 8xx).
+yes.. :)
 
-Guessing we are speaking about arch/ppc/ domain upper...
 
-> diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c
-> b/drivers/serial/cpm_uart/cpm_uart_core.c
-> index ea85f6a..76ab6e5 100644
-> --- a/drivers/serial/cpm_uart/cpm_uart_core.c
-> +++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-> @@ -1025,6 +1025,7 @@ int cpm_uart_drv_get_platform_data(struct
-> platform_device *pdev, int is_con)
->  	struct uart_cpm_port *pinfo;
->  	int line;
->  	u32 mem, pram, pram_base;
-> +	int	base;
->  
->  	idx = pdata->fs_no = fs_uart_get_id(pdata);
->  
-> @@ -1050,11 +1051,12 @@ int cpm_uart_drv_get_platform_data(struct
-> platform_device *pdev, int is_con)
->  	if (!(r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram")))
->  		return -EINVAL;
->  	pram = (u32)ioremap(r->start, r->end - r->start + 1);
-> -
-> +	base = r->start;
-> +	
->  	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram_base");
->  	if (r) {
->  		pram_base = r->start;
-> -		out_be16((u16 *)pram_base, pram & 0xffff);
-> +		out_be16((u16 *)pram_base, base & 0xffff);
->  	}
->  
->  	if(idx > fsid_smc2_uart) {
-> 
-> 
-> with this patch it works fine :-)
-> 
-> Best regards
-> Heiko
-> 
-> -- 
-> DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-> Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-> 
+
+> However I don't think this result is so meaningful because it bypass the 
+> processing for TCP/UDP packets. In the practical implementation, that's not 
+> possible. The TCP/UDP packets have to been processed, right?  In fact, this
+
+on the contrary: our whole design is built on the principle that with UDP
+you do not need too much handling/processing, and your data path can
+bypass the IP stack, the CPU, and with some work even the main memory.
+
+with TCP you (the os) have to take care of connection set up and tear
+down, acknowledgements, packet retransmission (and for that you need to
+save the packets until they are ack'ed!), etc. in return you get reliable
+data transmission, which is a must in many applications.
+
+however we don't need that. duplication or loss of a packet, or reordering
+of packets (which could happen when using UDP) would not be a critical
+problem for us. but these are mostly theoretical issues, they don't realy
+happen on our dedicated daq network (except for packet losses that we
+deliberately use as poor man's flow control).
+
+
+but all theese might be off topic on this list..
+
+
+
+
+> almost gigabit speed is just a representation of the Gigabit ethernet 
+> capability while the bottleneck of the system is not there. So I still need 
+> to solve my practical unsatisfying performance in my design. :(
+
+at least it will probably help you narrowing the problem down.. good
+luck!
+
 
 
 -- 
-Sincerely, 
-Vitaly
+mazsi
+
+----------------------------------------------------------------
+strawberry fields forever!                       imrek@atomki.hu
+----------------------------------------------------------------
