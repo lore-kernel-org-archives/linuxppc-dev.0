@@ -1,26 +1,16 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id F302DDDDE9
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 07:34:32 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l1CKYSw7004584
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 13:34:29 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1CKYS31020276
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 14:34:28 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [RFC] mpc5200 device tree bindings refinement
-Date: Mon, 12 Feb 2007 13:34:04 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA3029428D5@az33exm25.fsl.freescale.net>
-In-Reply-To: <11710062092006-git-send-email-grant.likely@secretlab.ca>
-References: <11710062092006-git-send-email-grant.likely@secretlab.ca>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Grant Likely" <grant.likely@secretlab.ca>, <linuxppc-dev@ozlabs.org>,
-	"Sylvain Munaut" <tnt@246tnt.com>
+Return-Path: <grant.likely@secretlab.ca>
+Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
+	[68.147.191.145]) by ozlabs.org (Postfix) with ESMTP id AE056DDE26
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 07:37:13 +1100 (EST)
+From: Grant Likely <grant.likely@secretlab.ca>
+To: paulus@samba.org,
+	linuxppc-dev@ozlabs.org,
+	tnt@246tnt.com
+Subject: [PATCH] [POWERPC] Fixup mp5200 drivers to match device tree changes
+Date: Mon, 12 Feb 2007 13:36:55 -0700
+Message-Id: <11713126213274-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1171312615567-git-send-email-grant.likely@secretlab.ca>
+References: <1171312615567-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,54 +20,183 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+---
+ arch/powerpc/platforms/52xx/lite5200.c       |   29 +++++++++++++------------
+ arch/powerpc/platforms/52xx/mpc52xx_common.c |    4 +-
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c    |   10 ++++----
+ drivers/ata/pata_mpc52xx.c                   |    6 +---
+ drivers/serial/mpc52xx_uart.c                |    5 +--
+ 5 files changed, 26 insertions(+), 28 deletions(-)
 
-> -----Original Message-----
-> From: linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org=20
-> [mailto:linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org]=20
-> On Behalf Of Grant Likely
-> Sent: Friday, February 09, 2007 1:30 AM
-
-[snip]
-
->  3) The soc5200 node
->  -------------------
-> -This node describes the on chip SOC peripherals.  Every mpc52xx based
-> +This node describes the on chip SOC peripherals.  Every mpc5200 based
->  board will have this node, and as such there is a common naming
->  convention for SOC devices.
-> =20
-> @@ -125,71 +144,107 @@ name			type	=09
-> description
->  device_type		string		must be "soc"
->  ranges			int		should be <0=20
-> baseaddr baseaddr+10000>
->  reg			int		must be <baseaddr 10000>
-> +compatible		string		mpc5200: "mpc5200-soc"
-> +					mpc5200b:=20
-> "mpc5200b-soc\0mpc5200-soc"
-> +system-frequency	int		Fsystem frequency; source of all
-> +					other clocks.
-> +bus-frequency		int		IPB bus=20
-> frequency in HZ.  Clock rate
-
-My suggestion would be to _not_ create a brand new property
-called system-frequency.  Could we not use the existing
-clock-frequency property instead (defined to mean the
-Fsystem frequency)?
-
-Currently across many device types (e.g. PCI, serial) the
-clock-frequency property is used to describe the clock
-frequency in a way specific to that device.  Could that work
-here?
-
-If you did need to create a new property unique to this
-particular device it should have the vendor name preprended
-to the property (e.g. linux,phandle).
-
-If this property is generally across all soc device types
-the "soc" section in booting_without_of.txt should
-be updated with a clear definition of what the property
-means.
-
-Stuart Yoder
+diff --git a/arch/powerpc/platforms/52xx/lite5200.c b/arch/powerpc/platforms/52xx/lite5200.c
+index cdb16bf..cc3b40d 100644
+--- a/arch/powerpc/platforms/52xx/lite5200.c
++++ b/arch/powerpc/platforms/52xx/lite5200.c
+@@ -51,13 +51,13 @@ #include <asm/mpc52xx.h>
+  */
+ 
+ static void __init
+-lite52xx_setup_cpu(void)
++lite5200_setup_cpu(void)
+ {
+ 	struct mpc52xx_gpio __iomem *gpio;
+ 	u32 port_config;
+ 
+ 	/* Map zones */
+-	gpio = mpc52xx_find_and_map("mpc52xx-gpio");
++	gpio = mpc52xx_find_and_map("mpc5200-gpio");
+ 	if (!gpio) {
+ 		printk(KERN_ERR __FILE__ ": "
+ 			"Error while mapping GPIO register for port config. "
+@@ -85,12 +85,12 @@ error:
+ 	iounmap(gpio);
+ }
+ 
+-static void __init lite52xx_setup_arch(void)
++static void __init lite5200_setup_arch(void)
+ {
+ 	struct device_node *np;
+ 
+ 	if (ppc_md.progress)
+-		ppc_md.progress("lite52xx_setup_arch()", 0);
++		ppc_md.progress("lite5200_setup_arch()", 0);
+ 
+ 	np = of_find_node_by_type(NULL, "cpu");
+ 	if (np) {
+@@ -105,7 +105,7 @@ static void __init lite52xx_setup_arch(v
+ 
+ 	/* CPU & Port mux setup */
+ 	mpc52xx_setup_cpu();	/* Generic */
+-	lite52xx_setup_cpu();	/* Platorm specific */
++	lite5200_setup_cpu();	/* Platorm specific */
+ 
+ #ifdef CONFIG_PCI
+ 	np = of_find_node_by_type(np, "pci");
+@@ -126,7 +126,7 @@ #endif
+ 
+ }
+ 
+-void lite52xx_show_cpuinfo(struct seq_file *m)
++void lite5200_show_cpuinfo(struct seq_file *m)
+ {
+ 	struct device_node* np = of_find_all_nodes(NULL);
+ 	const char *model = NULL;
+@@ -143,25 +143,26 @@ void lite52xx_show_cpuinfo(struct seq_fi
+ /*
+  * Called very early, MMU is off, device-tree isn't unflattened
+  */
+-static int __init lite52xx_probe(void)
++static int __init lite5200_probe(void)
+ {
+ 	unsigned long node = of_get_flat_dt_root();
+ 	const char *model = of_get_flat_dt_prop(node, "model", NULL);
+ 
+-	if (!of_flat_dt_is_compatible(node, "lite52xx"))
++	if (!of_flat_dt_is_compatible(node, "fsl,lite5200") &&
++	    !of_flat_dt_is_compatible(node, "fsl,lite5200b"))
+ 		return 0;
+-	pr_debug("%s board w/ mpc52xx found\n", model ? model : "unknown");
++	pr_debug("%s board found\n", model ? model : "unknown");
+ 
+ 	return 1;
+ }
+ 
+-define_machine(lite52xx) {
+-	.name 		= "lite52xx",
+-	.probe 		= lite52xx_probe,
+-	.setup_arch 	= lite52xx_setup_arch,
++define_machine(lite5200) {
++	.name 		= "lite5200",
++	.probe 		= lite5200_probe,
++	.setup_arch 	= lite5200_setup_arch,
+ 	.init		= mpc52xx_declare_of_platform_devices,
+ 	.init_IRQ 	= mpc52xx_init_irq,
+ 	.get_irq 	= mpc52xx_get_irq,
+-	.show_cpuinfo	= lite52xx_show_cpuinfo,
++	.show_cpuinfo	= lite5200_show_cpuinfo,
+ 	.calibrate_decr	= generic_calibrate_decr,
+ };
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_common.c b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+index cc40889..ed0cb69 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_common.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_common.c
+@@ -83,8 +83,8 @@ mpc52xx_setup_cpu(void)
+ 	struct mpc52xx_xlb  __iomem *xlb;
+ 
+ 	/* Map zones */
+-	cdm = mpc52xx_find_and_map("mpc52xx-cdm");
+-	xlb = mpc52xx_find_and_map("mpc52xx-xlb");
++	cdm = mpc52xx_find_and_map("mpc5200-cdm");
++	xlb = mpc52xx_find_and_map("mpc5200-xlb");
+ 
+ 	if (!cdm || !xlb) {
+ 		printk(KERN_ERR __FILE__ ": "
+diff --git a/arch/powerpc/platforms/52xx/mpc52xx_pic.c b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+index cd91a6c..c751925 100644
+--- a/arch/powerpc/platforms/52xx/mpc52xx_pic.c
++++ b/arch/powerpc/platforms/52xx/mpc52xx_pic.c
+@@ -383,16 +383,16 @@ void __init mpc52xx_init_irq(void)
+ 	struct device_node *picnode;
+ 
+ 	/* Remap the necessary zones */
+-	picnode = of_find_compatible_node(NULL, NULL, "mpc52xx-pic");
++	picnode = of_find_compatible_node(NULL, NULL, "mpc5200-pic");
+ 
+-	intr = mpc52xx_find_and_map("mpc52xx-pic");
++	intr = mpc52xx_find_and_map("mpc5200-pic");
+ 	if (!intr)
+-		panic(__FILE__	": find_and_map failed on 'mpc52xx-pic'. "
++		panic(__FILE__	": find_and_map failed on 'mpc5200-pic'. "
+ 				"Check node !");
+ 
+-	sdma = mpc52xx_find_and_map("mpc52xx-bestcomm");
++	sdma = mpc52xx_find_and_map("mpc5200-bestcomm");
+ 	if (!sdma)
+-		panic(__FILE__	": find_and_map failed on 'mpc52xx-bestcomm'. "
++		panic(__FILE__	": find_and_map failed on 'mpc5200-bestcomm'. "
+ 				"Check node !");
+ 
+ 	/* Disable all interrupt sources. */
+diff --git a/drivers/ata/pata_mpc52xx.c b/drivers/ata/pata_mpc52xx.c
+index d7378df..29e1809 100644
+--- a/drivers/ata/pata_mpc52xx.c
++++ b/drivers/ata/pata_mpc52xx.c
+@@ -484,10 +484,8 @@ #endif
+ 
+ static struct of_device_id mpc52xx_ata_of_match[] = {
+ 	{
+-		.compatible = "mpc5200-ata",
+-	},
+-	{
+-		.compatible = "mpc52xx-ata",
++		.type		= "ata",
++		.compatible	= "mpc5200-ata",
+ 	},
+ 	{},
+ };
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index 3c4b6c2..955bbd6 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -127,8 +127,7 @@ #endif
+ 
+ #if defined(CONFIG_PPC_MERGE)
+ static struct of_device_id mpc52xx_uart_of_match[] = {
+-	{ .type = "serial", .compatible = "mpc52xx-psc-uart", },
+-	{ .type = "serial", .compatible = "mpc5200-psc", }, /* Efika only! */
++	{ .type = "serial", .compatible = "mpc5200-psc-uart", },
+ 	{},
+ };
+ #endif
+@@ -1068,7 +1067,7 @@ mpc52xx_uart_of_enumerate(void)
+ 			continue;
+ 
+ 		/* Is a particular device number requested? */
+-		devno = get_property(np, "device_no", NULL);
++		devno = get_property(np, "port-number", NULL);
+ 		mpc52xx_uart_of_assign(of_node_get(np), devno ? *devno : -1);
+ 	}
+ 
+-- 
+1.4.3.rc2.g0503
