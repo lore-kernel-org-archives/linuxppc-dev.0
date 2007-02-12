@@ -1,19 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id B0DAEDDE04
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 23:44:25 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [POWERPC] Wire up sys_getcpu
-Date: Mon, 12 Feb 2007 13:43:38 +0100
-References: <20070212220918.496afa83.sfr@canb.auug.org.au>
-In-Reply-To: <20070212220918.496afa83.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702121343.39137.arnd@arndb.de>
-Cc: Jeremy Kerr <jeremyke@au1.ibm.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
-	paulus@samba.org
+Return-Path: <cel@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated
+	patch
+From: Carl Love <cel@us.ibm.com>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <fdeac69371a6b75fbf0ebffd30228106@bga.com>
+References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
+	<1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com>
+	<b682962303654f4958a6c2c50d805907@bga.com>
+	<200702081821.57358.arnd@arndb.de>
+	<1170975119.5204.99.camel@dyn9047021078.beaverton.ibm.com>
+	<e03c784bc3aff642ef10d0e2ed8eab45@bga.com>
+	<1171037869.5204.143.camel@dyn9047021078.beaverton.ibm.com>
+	<fdeac69371a6b75fbf0ebffd30228106@bga.com>
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 08:38:35 -0800
+Message-Id: <1171298315.5204.235.camel@dyn9047021078.beaverton.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	LKML <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 12 February 2007 12:09, Stephen Rothwell wrote:
->=20
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
-> =A0include/asm-powerpc/systbl.h | =A0 =A01 +
-> =A01 files changed, 1 insertions(+), 0 deletions(-)
->=20
-> Arnd, should this be _SPU?
+On Sun, 2007-02-11 at 16:46 -0600, Milton Miller wrote:
 
-Good question. There is nothing wrong with having the SPU call this,
-i.e. it won't break stuff. The question is more if it should return
-an SPU number instead of a CPU number. I've had people ask for
-a feature like that in the past.
+[cut]
 
-The node information returned from the call usually is the same for
-the CPU and the SPU, but we don't guarantee that, unless the user
-has specified node affinity.
+> 
+> As far as I understand, you are providing access to a completely new
+> hardware that is related to the PMU hardware by the fact that it
+> collects a program counter.   It doesn't use the PMU counters nor the
+> PMU event selection.
+> 
+> In fact, why can the existing op_model_cell profiling not run while
+> the SPU profiling runs?   Is there a shared debug bus inside the
+> chip?   Or just the data stream with your buffer_sync code?
+> 
 
-I don't see a 'right' answer for your question, but I'd say let's
-not forbid the user to call it and make it _SPU, even if it is
-pointless.
+There are two reasons you cannot do SPU profiling and profiling on non
+SPU events at the sametime.  1) the SPU PC values are routed on the
+debug bus.  You cannot also route the signals for other non SPU events
+on the debug bus since they will conflict.  Specifically, the signals
+would get logically OR'd on the bus.  The exception is PPU cycles which
+does not use the debug bus.  2) the hardware that captures the SPU
+program counters has some shared components with the HW performance
+counters.  To use the SPU program counter hardware, the performance
+counter hardware must be disabled.
 
-	Arnd <><
+In summary, we cannot do SPU cycle profiling and non SPU event profiling
+at the same time due to limitations in the hardware.
+
+
+[cut]
+
+
+> milton
+> 
