@@ -1,15 +1,14 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id EB3ABDDE0C
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 22:10:16 +1100 (EST)
-Date: Mon, 12 Feb 2007 22:10:48 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [POWERPC] correct a prototype
-Message-Id: <20070212221048.cb5fcc07.sfr@canb.auug.org.au>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200702121129.05004.sr@denx.de>
+References: <200702121129.05004.sr@denx.de>
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 23:06:28 +1100
+Message-Id: <1171281988.20192.1.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,29 +18,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This rids us of a warning.
+On Mon, 2007-02-12 at 11:29 +0100, Stefan Roese wrote:
+> [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
+> 
+> This patch adds support for the AMCC Taishan PPC440GX evaluation
+> board.
+> 
+> This is still an arch/ppc port. I'm aware that the move
+> 4xx -> arch/powerpc is making good progress right now. So this
+> patch is mainly intended to make the Taishan support available
+> for the community right now.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/cputable.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Excellent, thanks.
 
--- 
+David Gibson is making some good progress with the powerpc port, we have
+ebony booting and emac's up, though he's still ironing out some issues
+and PCI is still to go. Hopefully, we'll port Taishan next as I really
+want to have a 440GX in asap.
+
 Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
-index dd17dff..7ec4ac7 100644
---- a/arch/powerpc/kernel/cputable.c
-+++ b/arch/powerpc/kernel/cputable.c
-@@ -44,7 +44,7 @@ extern void __setup_cpu_745x(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_ppc970(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_ppc970MP(unsigned long offset, struct cpu_spec* spec);
- extern void __setup_cpu_pa6t(unsigned long offset, struct cpu_spec* spec);
--extern void __restore_cpu_pa6t(unsigned long offset, struct cpu_spec* spec);
-+extern void __restore_cpu_pa6t(void);
- extern void __restore_cpu_ppc970(void);
- #endif /* CONFIG_PPC64 */
- 
--- 
-1.4.4.4
+Ben.
