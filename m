@@ -1,16 +1,15 @@
-Return-Path: <onetarget@sina.com>
-Received: from r3-101.sinamail.sina.com.cn (r3-101.sinamail.sina.com.cn
-	[202.108.3.101]) by ozlabs.org (Postfix) with SMTP id D0FECDDDF8
+Return-Path: <indianirav@yahoo.com>
+Received: from web43106.mail.sp1.yahoo.com (web43106.mail.sp1.yahoo.com
+	[216.252.121.6]) by ozlabs.org (Postfix) with SMTP id 880DDDDDCA
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 12 Feb 2007 15:20:03 +1100 (EST)
-Message-ID: <20070212041955.91147.qmail@mail3-101.sinamail.sina.com.cn>
-To: linuxppc-embedded@ozlabs.org
-Subject: Application linking and how to read lxt971's MII registers
-Date: Mon, 12 Feb 2007 12:19:55 +0800 
-From: onetarget@sina.com
+	Mon, 12 Feb 2007 17:51:07 +1100 (EST)
+Date: Sun, 11 Feb 2007 22:51:05 -0800 (PST)
+From: patel nirav <indianirav@yahoo.com>
+Subject: can crosstool cross-compile Any kernel or specific one ?
+To: linux ppc <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=-sina_alt_272cabff9eb42ca7895b085203d1ec61"
+Content-Type: multipart/alternative; boundary="0-1537459485-1171263065=:9911"
+Message-ID: <324718.9911.qm@web43106.mail.sp1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,55 +20,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---=-sina_alt_272cabff9eb42ca7895b085203d1ec61
-Content-Type: text/plain;
-	charset=gbk
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+--0-1537459485-1171263065=:9911
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-DUhpIGFsbCwNICAgIEkgYW0gbm93IHVzaW5nIEVMREsgMy4wIHdpdGggTVBDODI3MCBib2FyZC4g
-VGhlcmUgaXMNYSBMWFQ5NzEgb24gYm9hcmQuICBJIHdvbmRlciBob3cgY2FuIEkgcmVhZCByZWdp
-c3RlcnMgb2YgTFh0OTcxLA1zdWNoIGFzIHN0YXR1cyByZWdpc3Rlcj8NICAgIFRoZW4sIHdpdGgg
-R0NDIGFzIHRoZSB0b29sY2hhaW4sIHdoaWNoIGlzIHRoZQ1sZC5zY3JpcHQgZmlsZSB3aGljaCBp
-cyB1c2VkIGJ5IG1ha2Ugd2hlbiB3ZSBjb21waWxlIGFuZCBsaW5rIHRoZQ1hcHBsaWNhdGlvbj8N
-ICAgIFRoYW5rIHlvdSBhbmQgcmVnYXJkcywNICAgIA0gICAgTy5UYXJnZXQNICAgIEZlYi0xMi0y
-MDA3DQoKX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCgoKCgotLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS0tCsSmzdDC3sCt0MK0usvNu8DA8aOsuPzT0MzUsaa67LD8tcjE48TDISggaHR0cDovL2FkNC5z
-aW5hLmNvbS5jbi9zaW5hL2xpbWVuZzMvbWFpbF96aHVpeXUvMjAwNy9tYWlsX3podWl5dV8yMDA3
-MDIwNS5odG1sICkKCj09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT0K16Ky4dDCwMsyR8Pit9HTys/ko6ggaHR0cDovL21haWwu
-c2luYS5jb20uY24vY2hvb3NlTW9kZS5odG1sIKOp
+I have installed crosstool from kegel.com in /opt/crosstool dictionary.
+ 
+ Now here my question is
+ " Can I cross compile any kernel from this cross tool or any specific kernel " ?
+ 
+ 
 
+Nirav J Patel
+M.Tech(CSE),
+Nirma University,
+Ahmedabad-382481.
+9925138959
+ 
+---------------------------------
+Don't pick lemons.
+See all the new 2007 cars at Yahoo! Autos.
+--0-1537459485-1171263065=:9911
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
---=-sina_alt_272cabff9eb42ca7895b085203d1ec61
-Content-Type: text/html;
-	charset=gbk
-Content-Transfer-Encoding: base64
-Content-Disposition: inline
+I have installed crosstool from kegel.com in /opt/crosstool dictionary.<br> <br> Now here my question is<br> " Can I cross compile any kernel from this cross tool or any specific kernel " ?<br> <br> <BR><BR>Nirav J Patel<br>M.Tech(CSE),<br>Nirma University,<br>Ahmedabad-382481.<br>9925138959<p>&#32;
 
-PHN0eWxlPmJvZHksdGFibGUscHtmb250LXNpemU6MTJweH1we21hcmdpbjowfWltZ3tib3JkZXI6
-MH08L3N0eWxlPg0KPGJvZHk+SGkgYWxsLDxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBJIGFtIG5v
-dyB1c2luZyBFTERLIDMuMCB3aXRoIE1QQzgyNzAgYm9hcmQuIFRoZXJlIGlzDQphIExYVDk3MSBv
-biBib2FyZC4mbmJzcDsgSSB3b25kZXIgaG93IGNhbiBJIHJlYWQgcmVnaXN0ZXJzIG9mIExYdDk3
-MSwNCnN1Y2ggYXMgc3RhdHVzIHJlZ2lzdGVyPzxicj4NCiZuYnNwOyZuYnNwOyZuYnNwOyBUaGVu
-LCB3aXRoIEdDQyBhcyB0aGUgdG9vbGNoYWluLCB3aGljaCBpcyB0aGUNCmxkLnNjcmlwdCBmaWxl
-IHdoaWNoIGlzIHVzZWQgYnkgbWFrZSB3aGVuIHdlIGNvbXBpbGUgYW5kIGxpbmsgdGhlDQphcHBs
-aWNhdGlvbj88YnI+DQombmJzcDsmbmJzcDsmbmJzcDsgVGhhbmsgeW91IGFuZCByZWdhcmRzLDxi
-cj4NCiZuYnNwOyZuYnNwOyZuYnNwOyA8YnI+DQombmJzcDsmbmJzcDsmbmJzcDsgTy5UYXJnZXQ8
-YnI+DQombmJzcDsmbmJzcDsmbmJzcDsgRmViLTEyLTIwMDc8YnI+DQo8c3R5bGU+Ym9keSx0YWJs
-ZSxwe2ZvbnQtc2l6ZToxMnB4O2ZvbnQtZmFtaWx5OsvOzOV9cHttYXJnaW46MH1pbWd7Ym9yZGVy
-OjB9PC9zdHlsZT48L2JvZHk+PGJyIC8+CjxiciAvPgpfX19fX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fXzxiciAvPg0KPGJyIC8+CjxiciAvPgo8YnIgLz4KPGJyIC8+Ci0tLS0tLS0t
-LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
-LS08YnIgLz4KxKbN0MLewK3QwrS6y827wMDxo6y4/NPQzNSxprrssPy1yMTjxMMhKCA8YSBocmVm
-PWh0dHA6Ly9hZDQuc2luYS5jb20uY24vc2luYS9saW1lbmczL21haWxfemh1aXl1LzIwMDcvbWFp
-bF96aHVpeXVfMjAwNzAyMDUuaHRtbCB0YXJnZXQ9X2JsYW5rPmh0dHA6Ly9hZDQuc2luYS5jb20u
-Y24vc2luYS9saW1lbmczL21haWxfemh1aXl1LzIwMDcvbWFpbF96aHVpeXVfMjAwNzAyMDUuaHRt
-bDwvYT4gKTxiciAvPgo8YnIgLz4KPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09
-PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PTxiciAvPgrXorLh0MLAyzJHw+K30dPKz+Sj
-qCA8YSBocmVmPWh0dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRtbCB0YXJnZXQ9
-X2JsYW5rPmh0dHA6Ly9tYWlsLnNpbmEuY29tLmNuL2Nob29zZU1vZGUuaHRtbDwvYT4go6k=
-
-
---=-sina_alt_272cabff9eb42ca7895b085203d1ec61--
+<hr size=1>Don't pick lemons.<br>
+See all the <a href="http://autos.yahoo.com/new_cars.html;_ylc=X3oDMTE0OGRsc3F2BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDbmV3Y2Fycw--">new 2007 cars</a> at <a href="http://autos.yahoo.com/new_cars.html;_ylc=X3oDMTE0OGRsc3F2BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDbmV3Y2Fycw--">Yahoo! Autos.</a>
+--0-1537459485-1171263065=:9911--
