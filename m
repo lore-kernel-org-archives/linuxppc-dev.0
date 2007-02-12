@@ -1,16 +1,19 @@
-Return-Path: <sr@denx.de>
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
-Date: Mon, 12 Feb 2007 13:23:07 +0100
-References: <200702121129.05004.sr@denx.de>
-	<1171281988.20192.1.camel@localhost.localdomain>
-In-Reply-To: <1171281988.20192.1.camel@localhost.localdomain>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id B0DAEDDE04
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 23:44:25 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [POWERPC] Wire up sys_getcpu
+Date: Mon, 12 Feb 2007 13:43:38 +0100
+References: <20070212220918.496afa83.sfr@canb.auug.org.au>
+In-Reply-To: <20070212220918.496afa83.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200702121323.07794.sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <200702121343.39137.arnd@arndb.de>
+Cc: Jeremy Kerr <jeremyke@au1.ibm.com>, ppc-dev <linuxppc-dev@ozlabs.org>,
+	paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,17 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 12 February 2007 13:06, Benjamin Herrenschmidt wrote:
-> David Gibson is making some good progress with the powerpc port, we have
-> ebony booting and emac's up, though he's still ironing out some issues
-> and PCI is still to go.
+On Monday 12 February 2007 12:09, Stephen Rothwell wrote:
+>=20
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+> =A0include/asm-powerpc/systbl.h | =A0 =A01 +
+> =A01 files changed, 1 insertions(+), 0 deletions(-)
+>=20
+> Arnd, should this be _SPU?
 
-That's great news. Finally we are getting there.
+Good question. There is nothing wrong with having the SPU call this,
+i.e. it won't break stuff. The question is more if it should return
+an SPU number instead of a CPU number. I've had people ask for
+a feature like that in the past.
 
-> Hopefully, we'll port Taishan next as I really 
-> want to have a 440GX in asap.
+The node information returned from the call usually is the same for
+the CPU and the SPU, but we don't guarantee that, unless the user
+has specified node affinity.
 
-Good. Please let me know if I can be of any assistance here.
+I don't see a 'right' answer for your question, but I'd say let's
+not forbid the user to call it and make it _SPU, even if it is
+pointless.
 
-Best regards,
-Stefan
+	Arnd <><
