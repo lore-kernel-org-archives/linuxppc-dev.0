@@ -1,16 +1,17 @@
-Return-Path: <jrocnuck@hotmail.com>
-Received: from bay0-omc2-s21.bay0.hotmail.com (bay0-omc2-s21.bay0.hotmail.com
-	[65.54.246.157]) by ozlabs.org (Postfix) with ESMTP id D8DB7DDD01
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 90EE7DDDE5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Feb 2007 08:25:45 +1100 (EST)
-Message-ID: <BAY117-F2427B141C77EDE2107B55CC8910@phx.gbl>
-In-Reply-To: <GPECLCIGPLHEOMGPMCPACELEEGAA.edjubenville@adelphia.net>
-From: "Eric Nuckols" <jrocnuck@hotmail.com>
-To: edjubenville@adelphia.net, linuxppc-embedded@ozlabs.org
-Subject: RE: Finding devices with dynamic IP addresses
-Date: Mon, 12 Feb 2007 16:25:41 -0500
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
+	Tue, 13 Feb 2007 08:53:20 +1100 (EST)
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+To: jgarzik@pobox.com
+Subject: [PATCH] gianfar: don't duplicate gfar_error()
+Date: Tue, 13 Feb 2007 01:53:07 +0400
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702130053.08031.sshtylyov@ru.mvista.com>
+Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,30 +22,163 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+It was hardly necessary to repeat most of the code from gfar_error() in
+gfar_interrupt(), especially having some inconsistencies between the two.
+So, make the gfar_interrupt() just call gfar_error(), and not acknowledge
+the interrupts itself as gfar_{receive/transmit/error}() do it anyway.
+While at it, also clarify/cleanup debug messages in gfar_error()...
 
->From: "Edward Jubenville" <edjubenville@adelphia.net>
->I hope this isn't off topic here...
->
->My network will contain several ELDK-based devices configured with dynamic
->IP addresses (DHCP).  I need a way for any Windows PC on the subnet to
->locate the devices without prior knowledge of their IP address.  I'm hoping
->to find a peer-to-peer
->solution that doesn't involve a third party (DNS) server.
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
+---
+The patch survived netperf stressing on MPC8540ADS realtime kernel. :-)
 
-not sure if you can do a broadcast ping and look at the arp info on 
-windows..but if I were to do this in linux, I'd do something like the 
-following
+ drivers/net/gianfar.c |   85 ++++++++------------------------------------------
+ 1 files changed, 15 insertions(+), 70 deletions(-)
 
-ping -b 255.255.255.255
-
-CTRL-C after a few seconds
-
-then
-
-arp
-
-_________________________________________________________________
-Invite your Hotmail contacts to join your friends list with Windows Live 
-Spaces 
-http://clk.atdmt.com/MSN/go/msnnkwsp0070000001msn/direct/01/?href=http://spaces.live.com/spacesapi.aspx?wx_action=create&wx_url=/friends.aspx&mkt=en-us
+Index: linux-2.6/drivers/net/gianfar.c
+===================================================================
+--- linux-2.6.orig/drivers/net/gianfar.c
++++ linux-2.6/drivers/net/gianfar.c
+@@ -10,6 +10,7 @@
+  * Maintainer: Kumar Gala
+  *
+  * Copyright (c) 2002-2006 Freescale Semiconductor, Inc.
++ * Copyright (c) 2007 MontaVista Software, Inc.
+  *
+  * This program is free software; you can redistribute  it and/or modify it
+  * under  the terms of  the GNU General  Public License as published by the
+@@ -1613,71 +1614,17 @@ static irqreturn_t gfar_interrupt(int ir
+ 	/* Save ievent for future reference */
+ 	u32 events = gfar_read(&priv->regs->ievent);
+ 
+-	/* Clear IEVENT */
+-	gfar_write(&priv->regs->ievent, events);
+-
+ 	/* Check for reception */
+-	if ((events & IEVENT_RXF0) || (events & IEVENT_RXB0))
++	if (events & IEVENT_RX_MASK)
+ 		gfar_receive(irq, dev_id);
+ 
+ 	/* Check for transmit completion */
+-	if ((events & IEVENT_TXF) || (events & IEVENT_TXB))
++	if (events & IEVENT_TX_MASK)
+ 		gfar_transmit(irq, dev_id);
+ 
+-	/* Update error statistics */
+-	if (events & IEVENT_TXE) {
+-		priv->stats.tx_errors++;
+-
+-		if (events & IEVENT_LC)
+-			priv->stats.tx_window_errors++;
+-		if (events & IEVENT_CRL)
+-			priv->stats.tx_aborted_errors++;
+-		if (events & IEVENT_XFUN) {
+-			if (netif_msg_tx_err(priv))
+-				printk(KERN_WARNING "%s: tx underrun. dropped packet\n", dev->name);
+-			priv->stats.tx_dropped++;
+-			priv->extra_stats.tx_underrun++;
+-
+-			/* Reactivate the Tx Queues */
+-			gfar_write(&priv->regs->tstat, TSTAT_CLEAR_THALT);
+-		}
+-	}
+-	if (events & IEVENT_BSY) {
+-		priv->stats.rx_errors++;
+-		priv->extra_stats.rx_bsy++;
+-
+-		gfar_receive(irq, dev_id);
+-
+-#ifndef CONFIG_GFAR_NAPI
+-		/* Clear the halt bit in RSTAT */
+-		gfar_write(&priv->regs->rstat, RSTAT_CLEAR_RHALT);
+-#endif
+-
+-		if (netif_msg_rx_err(priv))
+-			printk(KERN_DEBUG "%s: busy error (rhalt: %x)\n",
+-					dev->name,
+-					gfar_read(&priv->regs->rstat));
+-	}
+-	if (events & IEVENT_BABR) {
+-		priv->stats.rx_errors++;
+-		priv->extra_stats.rx_babr++;
+-
+-		if (netif_msg_rx_err(priv))
+-			printk(KERN_DEBUG "%s: babbling error\n", dev->name);
+-	}
+-	if (events & IEVENT_EBERR) {
+-		priv->extra_stats.eberr++;
+-		if (netif_msg_rx_err(priv))
+-			printk(KERN_DEBUG "%s: EBERR\n", dev->name);
+-	}
+-	if ((events & IEVENT_RXC) && (netif_msg_rx_err(priv)))
+-			printk(KERN_DEBUG "%s: control frame\n", dev->name);
+-
+-	if (events & IEVENT_BABT) {
+-		priv->extra_stats.tx_babt++;
+-		if (netif_msg_rx_err(priv))
+-			printk(KERN_DEBUG "%s: babt error\n", dev->name);
+-	}
++	/* Check for errors */
++	if (events & IEVENT_ERR_MASK)
++		gfar_error(irq, dev_id, regs);
+ 
+ 	return IRQ_HANDLED;
+ }
+@@ -1939,7 +1886,7 @@ static irqreturn_t gfar_error(int irq, v
+ 	/* Hmm... */
+ 	if (netif_msg_rx_err(priv) || netif_msg_tx_err(priv))
+ 		printk(KERN_DEBUG "%s: error interrupt (ievent=0x%08x imask=0x%08x)\n",
+-				dev->name, events, gfar_read(&priv->regs->imask));
++		       dev->name, events, gfar_read(&priv->regs->imask));
+ 
+ 	/* Update the error counters */
+ 	if (events & IEVENT_TXE) {
+@@ -1951,8 +1898,8 @@ static irqreturn_t gfar_error(int irq, v
+ 			priv->stats.tx_aborted_errors++;
+ 		if (events & IEVENT_XFUN) {
+ 			if (netif_msg_tx_err(priv))
+-				printk(KERN_DEBUG "%s: underrun.  packet dropped.\n",
+-						dev->name);
++				printk(KERN_DEBUG "%s: TX FIFO underrun, "
++				       "packet dropped.\n", dev->name);
+ 			priv->stats.tx_dropped++;
+ 			priv->extra_stats.tx_underrun++;
+ 
+@@ -1974,30 +1921,28 @@ static irqreturn_t gfar_error(int irq, v
+ #endif
+ 
+ 		if (netif_msg_rx_err(priv))
+-			printk(KERN_DEBUG "%s: busy error (rhalt: %x)\n",
+-					dev->name,
+-					gfar_read(&priv->regs->rstat));
++			printk(KERN_DEBUG "%s: busy error (rstat: %x)\n",
++			       dev->name, gfar_read(&priv->regs->rstat));
+ 	}
+ 	if (events & IEVENT_BABR) {
+ 		priv->stats.rx_errors++;
+ 		priv->extra_stats.rx_babr++;
+ 
+ 		if (netif_msg_rx_err(priv))
+-			printk(KERN_DEBUG "%s: babbling error\n", dev->name);
++			printk(KERN_DEBUG "%s: babbling RX error\n", dev->name);
+ 	}
+ 	if (events & IEVENT_EBERR) {
+ 		priv->extra_stats.eberr++;
+ 		if (netif_msg_rx_err(priv))
+-			printk(KERN_DEBUG "%s: EBERR\n", dev->name);
++			printk(KERN_DEBUG "%s: bus error\n", dev->name);
+ 	}
+ 	if ((events & IEVENT_RXC) && netif_msg_rx_status(priv))
+-		if (netif_msg_rx_status(priv))
+-			printk(KERN_DEBUG "%s: control frame\n", dev->name);
++		printk(KERN_DEBUG "%s: control frame\n", dev->name);
+ 
+ 	if (events & IEVENT_BABT) {
+ 		priv->extra_stats.tx_babt++;
+ 		if (netif_msg_tx_err(priv))
+-			printk(KERN_DEBUG "%s: babt error\n", dev->name);
++			printk(KERN_DEBUG "%s: babbling TX error\n", dev->name);
+ 	}
+ 	return IRQ_HANDLED;
+ }
