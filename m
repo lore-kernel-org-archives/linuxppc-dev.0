@@ -1,35 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5980EDDED1
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 08:09:23 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1CL9CWL011378
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 16:09:12 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1CL9CSs449614
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 14:09:12 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1CL9Ck5012293
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 14:09:12 -0700
-Subject: Re: [PATCH 18/19] bootwrapper: Add xlate_reg(), and use it to find
-	serial registers.
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id EB075DDD01
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 08:39:03 +1100 (EST)
+Message-ID: <45D0DE6C.1040207@am.sony.com>
+Date: Mon, 12 Feb 2007 13:38:52 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
 To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <45D09993.9050903@freescale.com>
-References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
-	<20070207230145.GR3849@ld0162-tx32.am.freescale.net>
-	<20070209230700.GC12035@mag.az.mvista.com>
-	<45D09993.9050903@freescale.com>
-Content-Type: text/plain
-Date: Mon, 12 Feb 2007 15:10:15 -0600
-Message-Id: <1171314615.4003.27.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [PATCH 19/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+References: <20070212205438.GB17285@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070212205438.GB17285@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,23 +25,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-02-12 at 10:45 -0600, Scott Wood wrote:
-> Mark A. Greer wrote:
-> > On Wed, Feb 07, 2007 at 05:01:45PM -0600, Scott Wood wrote:
-> > 
-> >>xlate_reg() uses the ranges properties of a node's parentage to find the
-> >>absolute physical address of the node's registers.
-> >>
-> >>The ns16550 driver uses this when no virtual-reg property is found.
-> > 
-> > 
-> > Is this necessary?  Shouldn't there always be a virtual-reg?
-> 
-> None of the dts files in the kernel tree currently have such a property...
+Scott Wood wrote:
 
-4xx will use this.  The bootwrapper will use the UART mapping setup by
-the firmware to print out to the console.  At least that is why it was
-added to being with, and how I had it working on Ebony a while ago.
-David may have changed it since.
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index aeb5309..f6e9b5e 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> +config CUIMAGE_DTS
+> +	string "Device tree source file"
+> +	depends on COMPAT_UIMAGE
+> +	help
+> +	  This specifies the device tree source (.dts) file to
+> +	  be compiled and included in the kernel image.  If
+> +	  a relative filename is given, then it will be relative
+> +	  to arch/powerpc/boot/dts.
+> +
 
-josh
+
+There is nothing CUIMAGE specific with this, so why make it so?  Other
+platforms may like to use it.
+
+
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -35,6 +35,8 @@ endif
+>  
+>  BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
+>  
+> +cuboot-plats := 83xx 85xx 86xx
+> +
+>  zlib       := inffast.c inflate.c inftrees.c
+>  zlibheader := inffast.h inffixed.h inflate.h inftrees.h infutil.h
+>  zliblinuxheader := zlib.h zconf.h zutil.h
+> @@ -45,7 +47,7 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
+>  src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+>  		ns16550.c serial.c simple_alloc.c div64.S util.S $(zlib) \
+>  		devtree.c
+> -src-plat := of.c
+> +src-plat := of.c $(cuboot-plats:%=cuboot-%.c)
+
+
+It may be better to do it like this, as there will be more platforms that
+need to hook in specific files.
+
+src-plat-$(CONFIG_COMPAT_UIMAGE) += $(cuboot-plats:%=cuboot-%.c)
+src-plat-$(CONFIG_XXX) += ...
+src-plat-$(CONFIG_YYY) += ...
+...
+src-plat := of.c $(src-plat-y)
+
+
+> +ifeq ($(CONFIG_COMPAT_UIMAGE),y)
+> +cuboot-plat-$(CONFIG_83xx) += 83xx
+> +cuboot-plat-$(CONFIG_85xx) += 85xx
+> +cuboot-plat-$(CONFIG_86xx) += 86xx
+> +cuboot-plat-y += unknown-platform
+> +
+> +$(obj)/uImage: vmlinux $(wrapperbits)
+> +	$(call cmd,wrap_dt,cuboot-$(word 1,$(cuboot-plat-y)))
+> +else
+>  $(obj)/uImage: vmlinux $(wrapperbits)
+>  	$(call cmd,wrap,uboot)
+> +endif
+
+
+It would be nice if you could make the logic such that you don't need this ifeq.
+
+
+-Geoff
