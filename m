@@ -1,29 +1,15 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx013.isp.belgacom.be (outmx013.isp.belgacom.be
-	[195.238.5.64])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C12D9DDDF3
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 10:26:35 +1100 (EST)
-Received: from outmx013.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx013.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l1CNQP5M005529
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 00:26:25 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <45D0F778.1080606@246tNt.com>
-Date: Tue, 13 Feb 2007 00:25:44 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+Return-Path: <bgill@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id DA841DDDFD
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 10:43:55 +1100 (EST)
+Date: Mon, 12 Feb 2007 17:43:46 -0600 (CST)
+From: Becky Bruce <bgill@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH] powerpc: UPDATED Don't write reserved values to MAS1[TSIZE]
+Message-ID: <Pine.LNX.4.61.0702121741350.11175@ld2044.am.freescale.net>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 02/10] powerpc: Add device tree fixups for the EFIKA
-References: <11713184081457-git-send-email-tnt@246tNt.com>	
-	<11713184091057-git-send-email-tnt@246tNt.com>	
-	<11713184101239-git-send-email-tnt@246tNt.com>
-	<1171321965.20192.37.camel@localhost.localdomain>
-In-Reply-To: <1171321965.20192.37.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linux PPC Dev ML <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,65 +19,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
->> +static void __init fixup_device_tree_efika(void)
->> +{
->> +	/* Substitution table */
->> +	#define prop_cstr(x) x, sizeof(x)
->> +	int prop_sound_irq[3] = { 2, 2, 0 };
->> +	int prop_bcomm_irq[3*16] = { 3,0,0, 3,1,0, 3,2,0, 3,3,0,
->> +	                             3,4,0, 3,5,0, 3,6,0, 3,7,0,
->> +	                             3,8,0, 3,9,0, 3,10,0, 3,11,0,
->> +	                             3,12,0, 3,13,0, 3,14,0, 3,15,0 };
->> +	struct subst_entry efika_subst_table[] = {
->> +		{ "/",			"device_type",	prop_cstr("efika") },
->> +		{ "/builtin",		"compatible",	prop_cstr("soc") },
->> +		{ "/builtin/ata",	"compatible",	prop_cstr("mpc5200b-ata\0mpc5200-ata"), },
->> +		{ "/builtin/bestcomm",	"compatible",	prop_cstr("mpc5200b-bestcomm\0mpc5200-bestcomm") },
->> +		{ "/builtin/bestcomm",	"interrupts",	prop_bcomm_irq, sizeof(prop_bcomm_irq) },
->> +		{ "/builtin/ethernet",	"compatible",	prop_cstr("mpc5200b-fec\0mpc5200-fec") },
->> +		{ "/builtin/pic",	"compatible",	prop_cstr("mpc5200b-pic\0mpc5200-pic") },
->> +		{ "/builtin/serial",	"compatible",	prop_cstr("mpc5200b-psc-uart\0mpc5200-psc-uart") },
->> +		{ "/builtin/sound",	"compatible",	prop_cstr("mpc5200b-psc-ac97\0mpc5200-psc-ac97") },
->> +		{ "/builtin/sound",	"interrupts",	prop_sound_irq, sizeof(prop_sound_irq) },
->> +		{ "/builtin/sram",	"compatible",	prop_cstr("mpc5200b-sram\0mpc5200-sram") },
->> +		{ "/builtin/sram",	"device_type",	prop_cstr("sram") },
->> +		{}
->> +	};
->> +	#undef prop_cstr
->>     
->
-> What about making all of the above const ? Also I wonder wether it's
-> useful to mark the tables as static and __initdata  too...
->   
-Interesting remark.
+Some of the current tlbwe instructions early on in head_fsl_booke.S take
+advantage of unarchitected behavior that allows the writing of reserved
+values to the TSIZE field.  This patch corrects that, as well as an error
+where an unitialized (by linux) value was written into a MAS register and
+used for a tlbwe.
 
-The const might cause a warning because prop_set_prop takes a void
-*value and not
-a const void *value. I don't know if does need to modify the value or
-not though.
+Correct this for both arch/ppc and arch/powerpc.
 
-About static, that might achieve the same effect as const without the
-warning and since the function is called only once anyway ...
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
 
-I would have hoped that being local to a __init function the memory for
-the initial values would be freed but I might me over optimistic.
+---
+commit 2a5f6e78c834e1824a9d6ef3d561920cbda61a5e
+tree c26c26d5eee61c1201fbf9e40a1087835d9bbef9
+parent 5986a2ec35836a878350c54af4bd91b1de6abc59
+author Becky Bruce <becky.bruce@freescale.com> Mon, 12 Feb 2007 17:41:09 -0600
+committer Becky Bruce <becky.bruce@freescale.com> Mon, 12 Feb 2007 17:41:09 -0600
 
+ arch/powerpc/kernel/head_fsl_booke.S |    5 ++++-
+ arch/ppc/kernel/head_fsl_booke.S     |    5 ++++-
+ 2 files changed, 8 insertions(+), 2 deletions(-)
 
->> +
->> +	rv = prom_getprop(node, "model", prop, sizeof(prop));
->> +	if (rv == PROM_ERROR)
->> +		return;
->> +	if (strcmp(prop, "EFIKA5K2"))
->> +		return;
->>     
->
-> Is there a version in their device-tree ? We might want to check in case
-> they ever fix it ...
->   
-Yes there is a "revision" that's "2B3" for the moment. I'm not too sure
-if it's a firmware
-revision or a board revision though ...
-
-
-    Sylvain
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 66877bd..54f40d9 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -206,7 +206,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
+ 	mtspr	SPRN_MAS0,r7
+ 	tlbre
+-	li	r6,0
++	mfspr	r6,SPRN_MAS1
++	rlwinm	r6,r6,0,2,0	/* clear IPROT */
+ 	mtspr	SPRN_MAS1,r6
+ 	tlbwe
+ 	/* Invalidate TLB1 */
+@@ -248,6 +249,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	rlwimi	r7,r5,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r5) */
+ 	mtspr	SPRN_MAS0,r7
+ 	tlbre
++	mfspr	r8,SPRN_MAS1
++	rlwinm	r8,r8,0,2,0	/* clear IPROT */
+ 	mtspr	SPRN_MAS1,r8
+ 	tlbwe
+ 	/* Invalidate TLB1 */
+diff --git a/arch/ppc/kernel/head_fsl_booke.S b/arch/ppc/kernel/head_fsl_booke.S
+index 66877bd..54f40d9 100644
+--- a/arch/ppc/kernel/head_fsl_booke.S
++++ b/arch/ppc/kernel/head_fsl_booke.S
+@@ -206,7 +206,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	rlwimi	r7,r3,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r3) */
+ 	mtspr	SPRN_MAS0,r7
+ 	tlbre
+-	li	r6,0
++	mfspr	r6,SPRN_MAS1
++	rlwinm	r6,r6,0,2,0	/* clear IPROT */
+ 	mtspr	SPRN_MAS1,r6
+ 	tlbwe
+ 	/* Invalidate TLB1 */
+@@ -248,6 +249,8 @@ skpinv:	addi	r6,r6,1				/* Increment */
+ 	rlwimi	r7,r5,16,4,15	/* Setup MAS0 = TLBSEL | ESEL(r5) */
+ 	mtspr	SPRN_MAS0,r7
+ 	tlbre
++	mfspr	r8,SPRN_MAS1
++	rlwinm	r8,r8,0,2,0	/* clear IPROT */
+ 	mtspr	SPRN_MAS1,r8
+ 	tlbwe
+ 	/* Invalidate TLB1 */
