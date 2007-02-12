@@ -1,19 +1,17 @@
-Return-Path: <scottwood@freescale.com>
-Message-ID: <45D09B6B.8040309@freescale.com>
-Date: Mon, 12 Feb 2007 10:52:59 -0600
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <rdreier@cisco.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
+References: <200702121129.05004.sr@denx.de>
+	<1171281988.20192.1.camel@localhost.localdomain>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Mon, 12 Feb 2007 10:30:56 -0800
+In-Reply-To: <1171281988.20192.1.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Mon, 12 Feb 2007 23:06:28 +1100")
+Message-ID: <ada7iun8bz3.fsf@cisco.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 19/19] bootwrapper: compatibility layer for old U-Boots
-	(a.k.a. cuImage, cuboot)
-References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
-	<20070207230149.GS3849@ld0162-tx32.am.freescale.net>
-	<20070208211529.GA1894@localhost.localdomain>
-	<45CCAB41.4080003@freescale.com>
-	<20070210010237.GF8276@localhost.localdomain>
-In-Reply-To: <20070210010237.GF8276@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,37 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Fri, Feb 09, 2007 at 11:11:29AM -0600, Scott Wood wrote:
->>They come from platform files such as cuboot-83xx.c, not (directly) from 
->>the kernel config.
-> 
-> 
-> /me looks again...
-> 
-> .c files containing only #defines?  My brain hurts.
+    Benjamin> David Gibson is making some good progress with the
+    Benjamin> powerpc port, we have ebony booting and emac's up,
+    Benjamin> though he's still ironing out some issues and PCI is
+    Benjamin> still to go. Hopefully, we'll port Taishan next as I
+    Benjamin> really want to have a 440GX in asap.
 
-So does mine.  It wasn't my idea...
+Hey Ben, is this work available anywhere?  I am planning on getting
+Katmai (new 440SPe eval board) going soon.  It looks like it will take
+only trivial changes from Yucca (old 440SPe eval board) so I'm
+planning on doing it for arch/ppc first, but I'd be happy to get the
+440SPe (esp. PCIe stuff) moved to arch/powerpc as soon as makes sense.
 
-> Better to pass these in as -D flags from the gcc invocation within the
-> wrapper script, depending on the given platform (for the platform .o
-> *only*). 
-
-I was explicitly told by Paul that it had to be link-time, not compile-time.
-
-See "http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030532.html".
-
-Unless you're saying that the "wrapper" script should do the compilation 
-itself, rather than just linking as it currently does...  in which case 
-I'd really like to know what real benefit we're getting out of all this 
-silliness.
-
-> Oh, and please don't call them CONFIG_* or everyone will
-> assume, like me, that they come from the kernel's overall config.h.
-
-Well, they are related, and I'd have to make ppcboot.h diverge even more 
-from u-boot's version to call it something else.
-
-But I can rename it TARGET_* or something if it'd make y'all happier.
-
--Scott
+Thanks,
+  Roland
