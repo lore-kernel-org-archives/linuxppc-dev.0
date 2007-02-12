@@ -1,22 +1,17 @@
-Return-Path: <mgreer@mvista.com>
-Date: Mon, 12 Feb 2007 12:18:04 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "Mark A. Greer" <mgreer@mvista.com>,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>, Olaf Hering <olaf@aepfle.de>,
-	Paul Mackerras <paulus@samba.org>
-Subject: Re: Okay to change default zImage link/load address?
-Message-ID: <20070212191803.GA2729@mag.az.mvista.com>
-References: <20070209184345.GA28127@mag.az.mvista.com>
-	<20070209185107.GA12703@aepfle.de>
-	<20070209185528.GB28127@mag.az.mvista.com>
-	<45CCCCAD.2040507@am.sony.com>
-	<20070209224010.GB7339@localhost.localdomain>
-	<20070209232100.GD12035@mag.az.mvista.com>
-	<20070209232533.GE12035@mag.az.mvista.com>
-	<20070210005330.GD8276@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070210005330.GD8276@localhost.localdomain>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Roland Dreier <rdreier@cisco.com>
+In-Reply-To: <ada7iun8bz3.fsf@cisco.com>
+References: <200702121129.05004.sr@denx.de>
+	<1171281988.20192.1.camel@localhost.localdomain>
+	<ada7iun8bz3.fsf@cisco.com>
+Content-Type: text/plain
+Date: Tue, 13 Feb 2007 06:55:08 +1100
+Message-Id: <1171310108.20192.7.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,32 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Feb 10, 2007 at 11:53:31AM +1100, David Gibson wrote:
-> On Fri, Feb 09, 2007 at 04:25:33PM -0700, Mark A. Greer wrote:
-> > On Fri, Feb 09, 2007 at 04:21:00PM -0700, Mark A. Greer wrote:
-> > > On Sat, Feb 10, 2007 at 09:40:10AM +1100, David Gibson wrote:
-> > > 
-> > > > Note that the zImage is already build -fPIC and capable of relocating
-> > > > itself if loaded at an address other than 4MB...
-> > > 
-> > > That doesn't address the issue.
-> > > 
-> > > Many firmwares look at the address in the ELF header and that's where
-> > > they download it, period.  Right now, that address is 4MB, period.
-> > > 4MB doesn't work on some platforms so I'm looking for an acceptable
-> > > alternative.
-> > 
-> > David, if I sounded rude, I didn't mean to.
+On Mon, 2007-02-12 at 10:30 -0800, Roland Dreier wrote:
+>     Benjamin> David Gibson is making some good progress with the
+>     Benjamin> powerpc port, we have ebony booting and emac's up,
+>     Benjamin> though he's still ironing out some issues and PCI is
+>     Benjamin> still to go. Hopefully, we'll port Taishan next as I
+>     Benjamin> really want to have a 440GX in asap.
 > 
-> No no.  I see your point.
-> 
-> Hrm... I've already been thinking that we'll need to make the crt0.S
-> replaceable by platform.  The same is probably true for the linker
-> script.
+> Hey Ben, is this work available anywhere?  I am planning on getting
+> Katmai (new 440SPe eval board) going soon.  It looks like it will take
+> only trivial changes from Yucca (old 440SPe eval board) so I'm
+> planning on doing it for arch/ppc first, but I'd be happy to get the
+> 440SPe (esp. PCIe stuff) moved to arch/powerpc as soon as makes sense.
 
-Looks like objcopy can change the addr for us.  So we could pass a
-CONFIG_ value from the Makefile to 'wrapper' and have wrapper run objcopy.
-Seems easier than having to make your own linker script just to change
-the addr.
+Last I asked him (yesterday) he was cleaning up the patches to post a
+first batch. So soon, yes.
 
-Mark
+Note that there are still things that we might want to change. For
+example, I think we really should look into adding a macro mecanism
+and/or an include mecanism to dtc so that we can do things like #include
+<ibm440gp.dtc> to get the base processor/SoC definition and then
+"overlay" some properties on top of it (like emac phy mode etc...)
+
+Cheers,
+Ben.
