@@ -1,18 +1,17 @@
 Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 66F2ADDE16
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 03:45:41 +1100 (EST)
-Message-ID: <45D09993.9050903@freescale.com>
-Date: Mon, 12 Feb 2007 10:45:07 -0600
+Message-ID: <45D09B6B.8040309@freescale.com>
+Date: Mon, 12 Feb 2007 10:52:59 -0600
 From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 18/19] bootwrapper: Add xlate_reg(), and use it to find
-	serial registers.
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 19/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
 References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
-	<20070207230145.GR3849@ld0162-tx32.am.freescale.net>
-	<20070209230700.GC12035@mag.az.mvista.com>
-In-Reply-To: <20070209230700.GC12035@mag.az.mvista.com>
+	<20070207230149.GS3849@ld0162-tx32.am.freescale.net>
+	<20070208211529.GA1894@localhost.localdomain>
+	<45CCAB41.4080003@freescale.com>
+	<20070210010237.GF8276@localhost.localdomain>
+In-Reply-To: <20070210010237.GF8276@localhost.localdomain>
 Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -24,17 +23,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark A. Greer wrote:
-> On Wed, Feb 07, 2007 at 05:01:45PM -0600, Scott Wood wrote:
-> 
->>xlate_reg() uses the ranges properties of a node's parentage to find the
->>absolute physical address of the node's registers.
->>
->>The ns16550 driver uses this when no virtual-reg property is found.
+David Gibson wrote:
+> On Fri, Feb 09, 2007 at 11:11:29AM -0600, Scott Wood wrote:
+>>They come from platform files such as cuboot-83xx.c, not (directly) from 
+>>the kernel config.
 > 
 > 
-> Is this necessary?  Shouldn't there always be a virtual-reg?
+> /me looks again...
+> 
+> .c files containing only #defines?  My brain hurts.
 
-None of the dts files in the kernel tree currently have such a property...
+So does mine.  It wasn't my idea...
+
+> Better to pass these in as -D flags from the gcc invocation within the
+> wrapper script, depending on the given platform (for the platform .o
+> *only*). 
+
+I was explicitly told by Paul that it had to be link-time, not compile-time.
+
+See "http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030532.html".
+
+Unless you're saying that the "wrapper" script should do the compilation 
+itself, rather than just linking as it currently does...  in which case 
+I'd really like to know what real benefit we're getting out of all this 
+silliness.
+
+> Oh, and please don't call them CONFIG_* or everyone will
+> assume, like me, that they come from the kernel's overall config.h.
+
+Well, they are related, and I'd have to make ppcboot.h diverge even more 
+from u-boot's version to call it something else.
+
+But I can rename it TARGET_* or something if it'd make y'all happier.
 
 -Scott
