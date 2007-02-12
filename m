@@ -1,21 +1,24 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 94C4EDDDEB
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 08:55:09 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1392705ugf
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 13:55:04 -0800 (PST)
-Message-ID: <528646bc0702121355k4879737eic63ab285f7213271@mail.gmail.com>
-Date: Mon, 12 Feb 2007 14:55:03 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-Subject: Re: [RFC] mpc5200 device tree bindings refinement
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA3029428D5@az33exm25.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <11710062092006-git-send-email-grant.likely@secretlab.ca>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3029428D5@az33exm25.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tnt@246tNt.com>
+Received: from outmx006.isp.belgacom.be (outmx006.isp.belgacom.be
+	[195.238.4.99])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C1842DDDE5
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 09:14:19 +1100 (EST)
+Received: from outmx006.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx006.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l1CMECPJ013395
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 23:14:13 +0100
+	(envelope-from <tnt@246tNt.com>)
+From: Sylvain Munaut <tnt@246tNt.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH 01/10] powerpc/serial: Dispose irq mapping when done in
+	mpc52xx_serial.c
+Date: Mon, 12 Feb 2007 23:13:19 +0100
+Message-Id: <11713184091057-git-send-email-tnt@246tNt.com>
+In-Reply-To: <11713184081457-git-send-email-tnt@246tNt.com>
+References: <11713184081457-git-send-email-tnt@246tNt.com>
+Cc: Linux PPC Dev ML <linuxppc-dev@ozlabs.org>, Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,34 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 2/12/07, Yoder Stuart-B08248 <stuart.yoder@freescale.com> wrote:
-> My suggestion would be to _not_ create a brand new property
-> called system-frequency.  Could we not use the existing
-> clock-frequency property instead (defined to mean the
-> Fsystem frequency)?
->
-> Currently across many device types (e.g. PCI, serial) the
-> clock-frequency property is used to describe the clock
-> frequency in a way specific to that device.  Could that work
-> here?
->
-> If you did need to create a new property unique to this
-> particular device it should have the vendor name preprended
-> to the property (e.g. linux,phandle).
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+---
+ drivers/serial/mpc52xx_uart.c |    3 +++
+ 1 files changed, 3 insertions(+), 0 deletions(-)
 
-Now that I think about it some more; Is a vendor name prefix really
-warranted here?  I don't see any other examples of vendor prefix being
-used for other SoC property values.  (linux,phandle is the notable
-exception, but that's not an SoC thing).
-
-I bring up this issue because it seems quite inconsistent.  Most of
-the device nodes already uses custom properties w/o any vendor prefix.
- Why make this one the first with a prefix?  :-)
-
-g.
-
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index 6999816..ee4ebaf 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -999,6 +999,9 @@ mpc52xx_uart_of_remove(struct of_device 
+ 	if (port)
+ 		uart_remove_one_port(&mpc52xx_uart_driver, port);
+ 
++	if (port->irq != NO_IRQ)
++		irq_dispose_mapping(port->irq);
++
+ 	return 0;
+ }
+ 
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+1.4.2
