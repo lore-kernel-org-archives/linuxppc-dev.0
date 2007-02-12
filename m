@@ -1,31 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8DA4BDDE2E
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 02:45:35 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1DFjV7j031292
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 10:45:31 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1DFjUp1518942
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 08:45:31 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1DFjQeZ023414
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 08:45:28 -0700
-Subject: Re: [0/16] Preliminary Ebony (440GP) support for arch/powerpc
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070213060904.GA6214@localhost.localdomain>
-References: <20070213060904.GA6214@localhost.localdomain>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8464BDDE0A
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 03:02:37 +1100 (EST)
+Subject: [PATCH 02/12] powermac: support G5 CPU hotplug
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1171035382.4520.7.camel@johannes.berg>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124610.392302000@sipsolutions.net>
+	<1170940494.4385.51.camel@johannes.berg>
+	<1170973463.2620.373.camel@localhost.localdomain>
+	<1171035382.4520.7.camel@johannes.berg>
 Content-Type: text/plain
-Date: Tue, 13 Feb 2007 09:46:05 -0600
-Message-Id: <1171381565.4003.48.camel@zod.rchland.ibm.com>
+Date: Mon, 12 Feb 2007 16:15:54 +0100
+Message-Id: <1171293354.10344.6.camel@johannes.berg>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,48 +27,152 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-02-13 at 17:09 +1100, David Gibson wrote:
-> Here is a preliminary set of patches implementing support for the
-> 440GP based Ebony evaluation board in arch/powerpc.  A number of the
-> earlier patches are in Paul's queue already, so may appear in
-> powerpc.git at any point.  Most of the later ones need at least some
-> cleanup or reworking before they'll be ready for merging.
-> 
-> With these patches I can boot to a shell prompt on initrd on my Ebony
-> board.  There are still a bunch of problems: clock timings are way out
-> (runs about 4* fast), things freeze up when I attempt to use an
-> nfsroot, many devices aren't supported.  A lot of things are hardcoded
-> in the device tree, so you may well have to tweak it if your Ebony is
-> different from mine.
+This patch allows "hotplugging" of CPUs on G5 machines. CPUs that are
+disabled are put into an idle loop with the decrementer frequency set
+to minimum. To wake them up again we kick them just like when bringing
+them up.
 
-I've noticed a couple issues so far on my board, which should just be a
-stock Ebony.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-1) Things are off when just using the zImage.ebony image.  For reasons
-I've yet to narrow down, the bootwrapper thinks something passed an
-initrd to it via the a2 parameter in prep_kernel even though there is no
-initrd.  I get output like:
+---
+This one seems better. I just soft-disable interrupts from the idle
+function and exit it to reset the decrementer.
 
-Loading file "zImage.ebony" ...                                                 
-Sending tftp boot request ...                                                   
-Transfer Complete ...                                                           
-Loaded successfully ...                                                         
-Entry point at 0x400010 ...                                                     
-                                                                                
-zImage starting: loaded at 0x00400000 (sp: 0x0052bda4)                          
-Allocating 0x275088 bytes for kernel ...                                        
-Using loader supplied initrd at 0xfff88000 (0x5463007e bytes)                   
-gunzipping (0x52c320 <- 0x40a000:0x51e0a4)...done 0x256a94 bytes                
-...moving kernel to final address 0x0                                           
-                                                                                
-Linux/PowerPC load: console=ttyS0                                               
-Finalizing device tree... flat tree at 0x4085a0                                 
+ arch/powerpc/kernel/idle_power4.S       |   14 +++++++++----
+ arch/powerpc/platforms/powermac/setup.c |   34 +++++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powermac/smp.c   |   12 +++++++++--
+ include/asm-powerpc/machdep.h           |    2 +
+ 4 files changed, 55 insertions(+), 7 deletions(-)
 
-Which is obviously bogus.  When I ifdef out the check for a2 != 0, it
-doesn't try to do the initrd step.
-
-2) I get no boot output after the "Finalizing device tree..." step.  I
-don't have a BDI or RW at the moment, but I'll try and figure out where
-it's at and what it's doing.
-
-josh
+--- linux-2.6-git.orig/arch/powerpc/platforms/powermac/smp.c	2007-02-12 15:35:52.380522210 +0100
++++ linux-2.6-git/arch/powerpc/platforms/powermac/smp.c	2007-02-12 15:36:12.990522210 +0100
+@@ -897,7 +897,7 @@ void smp_core99_cpu_die(unsigned int cpu
+ 	cpu_dead[cpu] = 0;
+ }
+ 
+-#endif
++#endif /* CONFIG_HOTPLUG_CPU && CONFIG_PP32 */
+ 
+ /* Core99 Macs (dual G4s and G5s) */
+ struct smp_ops_t core99_smp_ops = {
+@@ -907,8 +907,16 @@ struct smp_ops_t core99_smp_ops = {
+ 	.setup_cpu	= smp_core99_setup_cpu,
+ 	.give_timebase	= smp_core99_give_timebase,
+ 	.take_timebase	= smp_core99_take_timebase,
+-#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
++#if defined(CONFIG_HOTPLUG_CPU)
++# if defined(CONFIG_PPC32)
+ 	.cpu_disable	= smp_core99_cpu_disable,
+ 	.cpu_die	= smp_core99_cpu_die,
++# endif
++# if defined(CONFIG_PPC64)
++	.cpu_disable	= generic_cpu_disable,
++	.cpu_die	= generic_cpu_die,
++	/* intentionally do *NOT* assign cpu_enable,
++	 * the generic code will use kick_cpu then! */
++# endif
+ #endif
+ };
+--- linux-2.6-git.orig/arch/powerpc/platforms/powermac/setup.c	2007-02-12 15:35:52.418522210 +0100
++++ linux-2.6-git/arch/powerpc/platforms/powermac/setup.c	2007-02-12 15:39:42.512522210 +0100
+@@ -425,6 +425,9 @@ static int initializing = 1;
+ static int pmac_late_init(void)
+ {
+ 	initializing = 0;
++	/* this is udbg (which is __init) and we can later use it during
++	 * cpu hotplug (in smp_core99_kick_cpu) */
++	ppc_md.progress = NULL;
+ 	return 0;
+ }
+ 
+@@ -651,6 +654,35 @@ static int pmac_pci_probe_mode(struct pc
+ 		return PCI_PROBE_NORMAL;
+ 	return PCI_PROBE_DEVTREE;
+ }
++
++#ifdef CONFIG_HOTPLUG_CPU
++/* access per cpu vars from generic smp.c */
++DECLARE_PER_CPU(int, cpu_state);
++
++static void pmac_cpu_die(void)
++{
++	/* turn off as much as possible, we'll be
++	 * kicked out as this will only be invoked
++	 * on core99 platforms for now ... */
++
++	printk(KERN_INFO "CPU#%d offline\n", smp_processor_id());
++	__get_cpu_var(cpu_state) = CPU_DEAD;
++	smp_wmb();
++
++	/* during the path that leads here preemption is disabled,
++	 * reenable it now so that when coming up preempt count is
++	 * zero correctly */
++	preempt_enable();
++
++	while (1) {
++		/* let's not take timer interrupts too often ... */
++		set_dec(0x7fffffff);
++
++		power4_idle_irqs_softdisabled();
++	}
++}
++#endif
++
+ #endif
+ 
+ define_machine(powermac) {
+@@ -689,6 +721,6 @@ define_machine(powermac) {
+ 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
+ #endif
+ #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC64)
+-	.cpu_die		= generic_mach_cpu_die,
++	.cpu_die		= pmac_cpu_die,
+ #endif
+ };
+--- linux-2.6-git.orig/arch/powerpc/kernel/idle_power4.S	2007-02-12 15:35:52.493522210 +0100
++++ linux-2.6-git/arch/powerpc/kernel/idle_power4.S	2007-02-12 15:39:20.382522210 +0100
+@@ -19,7 +19,12 @@
+ 
+ 	.text
+ 
++_GLOBAL(power4_idle_irqs_softdisabled)
++	li	r6,1
++	b	0f
+ _GLOBAL(power4_idle)
++	li	r6,0
++0:
+ BEGIN_FTR_SECTION
+ 	blr
+ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+@@ -35,8 +40,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+ 	rotldi	r0,r0,16
+ 	mtmsrd	r0,1			/* hard-disable interrupts */
+ 	li	r0,1
+-	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
+-	stb	r0,PACAHARDIRQEN(r13)
++	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
++	stb	r6,PACASOFTIRQEN(r13)	/* set softirqs enabled bit */
+ BEGIN_FTR_SECTION
+ 	DSSALL
+ 	sync
+@@ -51,5 +56,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	isync
+ 	mtmsrd	r7
+ 	isync
+-	b	1b
+-
++	beq-	1b			/* cr0 is still set, exit if this
++					   is power4_idle_irqs_softdisabled */
++	blr
+--- linux-2.6-git.orig/include/asm-powerpc/machdep.h	2007-02-12 15:35:52.551522210 +0100
++++ linux-2.6-git/include/asm-powerpc/machdep.h	2007-02-12 15:36:13.006522210 +0100
+@@ -252,6 +252,8 @@ struct machdep_calls {
+ 
+ extern void power4_idle(void);
+ extern void ppc6xx_idle(void);
++/* this one is for CPU hotplug (e.g. powermac) */
++extern void power4_idle_irqs_softdisabled(void);
+ 
+ /*
+  * ppc_md contains a copy of the machine description structure for the
