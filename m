@@ -1,24 +1,20 @@
-Return-Path: <cel@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated
-	patch
-From: Carl Love <cel@us.ibm.com>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <fdeac69371a6b75fbf0ebffd30228106@bga.com>
-References: <1170721711.5204.44.camel@dyn9047021078.beaverton.ibm.com>
-	<1170802957.5204.56.camel@dyn9047021078.beaverton.ibm.com>
-	<b682962303654f4958a6c2c50d805907@bga.com>
-	<200702081821.57358.arnd@arndb.de>
-	<1170975119.5204.99.camel@dyn9047021078.beaverton.ibm.com>
-	<e03c784bc3aff642ef10d0e2ed8eab45@bga.com>
-	<1171037869.5204.143.camel@dyn9047021078.beaverton.ibm.com>
-	<fdeac69371a6b75fbf0ebffd30228106@bga.com>
-Content-Type: text/plain
-Date: Mon, 12 Feb 2007 08:38:35 -0800
-Message-Id: <1171298315.5204.235.camel@dyn9047021078.beaverton.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	LKML <linux-kernel@vger.kernel.org>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 854DEDDDF2
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 03:42:29 +1100 (EST)
+Message-ID: <45D098E5.3090109@freescale.com>
+Date: Mon, 12 Feb 2007 10:42:13 -0600
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 15/19] bootwrapper: Add initrd information to the device
+	tree in ft_finalize().
+References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
+	<20070207230140.GO3849@ld0162-tx32.am.freescale.net>
+	<20070209230207.GA12035@mag.az.mvista.com>
+In-Reply-To: <20070209230207.GA12035@mag.az.mvista.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-02-11 at 16:46 -0600, Milton Miller wrote:
-
-[cut]
-
+Mark A. Greer wrote:
+>>diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
+>>index 04da38f..39fa010 100644
+>>--- a/arch/powerpc/boot/flatdevtree_misc.c
+>>+++ b/arch/powerpc/boot/flatdevtree_misc.c
+>>@@ -33,8 +33,20 @@ static int ft_setprop(const void *phandl
+>> 	return ft_set_prop(&cxt, phandle, propname, buf, buflen);
+>> }
+>> 
+>>-static unsigned long ft_finalize(void)
+>>+unsigned long ft_finalize(void)
 > 
-> As far as I understand, you are providing access to a completely new
-> hardware that is related to the PMU hardware by the fact that it
-> collects a program counter.   It doesn't use the PMU counters nor the
-> PMU event selection.
 > 
-> In fact, why can the existing op_model_cell profiling not run while
-> the SPU profiling runs?   Is there a shared debug bus inside the
-> chip?   Or just the data stream with your buffer_sync code?
+> This is unnecessary.  There is already global access from
+> dt_ops.finalize.
+
+cuboot has its own dt_ops.finalize, which calls ft_finalize, and 
+relocates the tree to someplace that won't get overwritten by the kernel 
+relocation.
+
+>>+	unsigned long initrd_end = initrd.addr + initrd.size;
+>>+	void *devp;
+>>+
+>>+	if (initrd.size && (devp = finddevice("/chosen"))) {
+>>+		setprop(devp, "linux,initrd-start", &initrd.addr,
+>>+		        sizeof(initrd.addr));
+>>+		setprop(devp, "linux,initrd-end", &initrd_end,
+>>+		        sizeof(initrd_end));
+>>+
+>>+		ft_add_rsvmap(&cxt, initrd.addr, initrd.size);
+>>+	}
+>>+
 > 
-
-There are two reasons you cannot do SPU profiling and profiling on non
-SPU events at the sametime.  1) the SPU PC values are routed on the
-debug bus.  You cannot also route the signals for other non SPU events
-on the debug bus since they will conflict.  Specifically, the signals
-would get logically OR'd on the bus.  The exception is PPU cycles which
-does not use the debug bus.  2) the hardware that captures the SPU
-program counters has some shared components with the HW performance
-counters.  To use the SPU program counter hardware, the performance
-counter hardware must be disabled.
-
-In summary, we cannot do SPU cycle profiling and non SPU event profiling
-at the same time due to limitations in the hardware.
-
-
-[cut]
-
-
-> milton
 > 
+> IMHO, this is a very unnatural place to put this code.
+> It really belongs in main.c.  That's where all the rest
+> of the code that accesses initrd.* is.
+
+I was trying to not change the existing semantics for the of.c platform, 
+which passes the initrd information a different way.
+
+-Scott
