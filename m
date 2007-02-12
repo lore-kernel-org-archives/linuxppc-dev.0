@@ -1,17 +1,17 @@
-Return-Path: <claus.gindhart@kontron.com>
-Received: from mail.kontron-modular.com (mail.kontron-modular.com
-	[62.159.155.200]) by ozlabs.org (Postfix) with ESMTP id 62876DDDE7
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 25AEFDDE0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 12 Feb 2007 18:19:13 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: can crosstool cross-compile Any kernel or specific one ?
-Date: Mon, 12 Feb 2007 08:06:46 +0100
-Message-ID: <DADA32856852FC458E0F96B664A6F55E011E290F@kom-mailsrv1.kontron-modular.com>
-From: "Claus Gindhart" <claus.gindhart@kontron.com>
-To: "patel nirav" <indianirav@yahoo.com>,
-	"linux ppc" <linuxppc-embedded@ozlabs.org>
+	Mon, 12 Feb 2007 21:31:23 +1100 (EST)
+Subject: [PATCH] CPM_UART: Fixed SMC handling for CPM2 processors
+From: Heiko Schocher <hs@denx.de>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: Pine.LNX.4.64.0611071451130.3291@host32.eke.fi
+Content-Type: text/plain
+Date: Mon, 12 Feb 2007 11:33:42 +0100
+Message-Id: <1171276422.14090.54.camel@Apollo>
+Mime-Version: 1.0
+Reply-To: hs@denx.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,73 +22,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Niral,
+Hello Vitaly,
 
-Yes !
-look into the Kernel Makefile, and you will recognize, that its already =
-prepared for Cross-Compiling.
+I tried the Patch from Kalle Pokki
+http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025108.html
 
-Just create a small script, which exports the variable CROSS_COMPILE and =
-ARCH, e.g.
-------------8-<------------
-export =
-CROSS_COMPILE=3D/opt/crosstool/powerpc-e300-linux-gnu/gcc-3.4.1-glibc-2.3=
-.3/bin/powerpc-e300-linux-gnu-
-export ARCH=3Dppc
-------------8-<------------
-After sourcing this script, you can use all the kernel Make-features for =
-your cross-compile environment.
+but my SMC didnt work, without this patch, it works fine. I think that
+the pram_base must be set the follwing way:
 
-Additionally, you might want to export INSTALL_PATH and =
-INSTALL_MOD_PATH, which defines, where Kernel image and modules should =
-be installed.
-
---=20
-Mit freundlichen Gruessen / Best regards
-
-Claus Gindhart
-Kontron Modular Computers GmbH
-Sudetenstra=DFe 7, 87600 Kaufbeuren, Germany
-Phone: +49 (8341) 803 374
-Fax: +49 (8341) 803 40 374
-www.kontron.com
-=20
-Kontron Modular Computers GmbH
-Gesch=E4ftsf=FChrer: Ulrich Gehrmann, Thomas Sabisch=20
-Sitz der Gesellschaft: Kaufbeuren / Rechtsform: GmbH=20
-Amtsgericht Kempten / HRB Nr. 6195
-=20
-Kontron Modular Computers GmbH
-Managing Directors: Ulrich Gehrmann, Thomas Sabisch=20
-Registered Office: Kaufbeuren, Germany / Legal Form: GmbH
-Local District Court: Kempten / Trade Register No. 6195=20
+diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c
+b/drivers/serial/cpm_uart/cpm_uart_core.c
+index ea85f6a..76ab6e5 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_core.c
++++ b/drivers/serial/cpm_uart/cpm_uart_core.c
+@@ -1025,6 +1025,7 @@ int cpm_uart_drv_get_platform_data(struct
+platform_device *pdev, int is_con)
+ 	struct uart_cpm_port *pinfo;
+ 	int line;
+ 	u32 mem, pram, pram_base;
++	int	base;
+ 
+ 	idx = pdata->fs_no = fs_uart_get_id(pdata);
+ 
+@@ -1050,11 +1051,12 @@ int cpm_uart_drv_get_platform_data(struct
+platform_device *pdev, int is_con)
+ 	if (!(r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram")))
+ 		return -EINVAL;
+ 	pram = (u32)ioremap(r->start, r->end - r->start + 1);
+-
++	base = r->start;
++	
+ 	r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram_base");
+ 	if (r) {
+ 		pram_base = r->start;
+-		out_be16((u16 *)pram_base, pram & 0xffff);
++		out_be16((u16 *)pram_base, base & 0xffff);
+ 	}
+ 
+ 	if(idx > fsid_smc2_uart) {
 
 
+with this patch it works fine :-)
 
+Best regards
+Heiko
 
------Original Message-----
-From: linuxppc-embedded-bounces+claus.gindhart=3Dkontron.com@ozlabs.org =
-[mailto:linuxppc-embedded-bounces+claus.gindhart=3Dkontron.com@ozlabs.org=
-]On Behalf Of patel nirav
-Sent: Montag, 12. Februar 2007 07:51
-To: linux ppc
-Subject: can crosstool cross-compile Any kernel or specific one ?
-
-
-I have installed crosstool from kegel.com in /opt/crosstool dictionary.
-
-Now here my question is
-" Can I cross compile any kernel from this cross tool or any specific =
-kernel " ?
-
-
-
-Nirav J Patel
-M.Tech(CSE),
-Nirma University,
-Ahmedabad-382481.
-9925138959
-
-
-Don't pick lemons.
-See all the new 2007 cars at Yahoo! Autos.
+-- 
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
