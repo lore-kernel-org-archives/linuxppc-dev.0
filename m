@@ -1,20 +1,20 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id EB075DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 08:39:03 +1100 (EST)
-Message-ID: <45D0DE6C.1040207@am.sony.com>
-Date: Mon, 12 Feb 2007 13:38:52 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 94C4EDDDEB
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 08:55:09 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1392705ugf
+	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 13:55:04 -0800 (PST)
+Message-ID: <528646bc0702121355k4879737eic63ab285f7213271@mail.gmail.com>
+Date: Mon, 12 Feb 2007 14:55:03 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Subject: Re: [RFC] mpc5200 device tree bindings refinement
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA3029428D5@az33exm25.fsl.freescale.net>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 19/19] bootwrapper: compatibility layer for old U-Boots
-	(a.k.a. cuImage, cuboot)
-References: <20070212205438.GB17285@ld0162-tx32.am.freescale.net>
-In-Reply-To: <20070212205438.GB17285@ld0162-tx32.am.freescale.net>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <11710062092006-git-send-email-grant.likely@secretlab.ca>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3029428D5@az33exm25.fsl.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,70 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood wrote:
+On 2/12/07, Yoder Stuart-B08248 <stuart.yoder@freescale.com> wrote:
+> My suggestion would be to _not_ create a brand new property
+> called system-frequency.  Could we not use the existing
+> clock-frequency property instead (defined to mean the
+> Fsystem frequency)?
+>
+> Currently across many device types (e.g. PCI, serial) the
+> clock-frequency property is used to describe the clock
+> frequency in a way specific to that device.  Could that work
+> here?
+>
+> If you did need to create a new property unique to this
+> particular device it should have the vendor name preprended
+> to the property (e.g. linux,phandle).
 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index aeb5309..f6e9b5e 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> +config CUIMAGE_DTS
-> +	string "Device tree source file"
-> +	depends on COMPAT_UIMAGE
-> +	help
-> +	  This specifies the device tree source (.dts) file to
-> +	  be compiled and included in the kernel image.  If
-> +	  a relative filename is given, then it will be relative
-> +	  to arch/powerpc/boot/dts.
-> +
+Now that I think about it some more; Is a vendor name prefix really
+warranted here?  I don't see any other examples of vendor prefix being
+used for other SoC property values.  (linux,phandle is the notable
+exception, but that's not an SoC thing).
 
+I bring up this issue because it seems quite inconsistent.  Most of
+the device nodes already uses custom properties w/o any vendor prefix.
+ Why make this one the first with a prefix?  :-)
 
-There is nothing CUIMAGE specific with this, so why make it so?  Other
-platforms may like to use it.
+g.
 
-
-> +++ b/arch/powerpc/boot/Makefile
-> @@ -35,6 +35,8 @@ endif
->  
->  BOOTCFLAGS	+= -I$(obj) -I$(srctree)/$(obj)
->  
-> +cuboot-plats := 83xx 85xx 86xx
-> +
->  zlib       := inffast.c inflate.c inftrees.c
->  zlibheader := inffast.h inffixed.h inflate.h inftrees.h infutil.h
->  zliblinuxheader := zlib.h zconf.h zutil.h
-> @@ -45,7 +47,7 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
->  src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
->  		ns16550.c serial.c simple_alloc.c div64.S util.S $(zlib) \
->  		devtree.c
-> -src-plat := of.c
-> +src-plat := of.c $(cuboot-plats:%=cuboot-%.c)
-
-
-It may be better to do it like this, as there will be more platforms that
-need to hook in specific files.
-
-src-plat-$(CONFIG_COMPAT_UIMAGE) += $(cuboot-plats:%=cuboot-%.c)
-src-plat-$(CONFIG_XXX) += ...
-src-plat-$(CONFIG_YYY) += ...
-...
-src-plat := of.c $(src-plat-y)
-
-
-> +ifeq ($(CONFIG_COMPAT_UIMAGE),y)
-> +cuboot-plat-$(CONFIG_83xx) += 83xx
-> +cuboot-plat-$(CONFIG_85xx) += 85xx
-> +cuboot-plat-$(CONFIG_86xx) += 86xx
-> +cuboot-plat-y += unknown-platform
-> +
-> +$(obj)/uImage: vmlinux $(wrapperbits)
-> +	$(call cmd,wrap_dt,cuboot-$(word 1,$(cuboot-plat-y)))
-> +else
->  $(obj)/uImage: vmlinux $(wrapperbits)
->  	$(call cmd,wrap,uboot)
-> +endif
-
-
-It would be nice if you could make the logic such that you don't need this ifeq.
-
-
--Geoff
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
