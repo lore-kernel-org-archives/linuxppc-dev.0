@@ -1,11 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 13 Feb 2007 17:09:04 +1100
+To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [0/16] Preliminary Ebony (440GP) support for arch/powerpc
-Message-ID: <20070213060904.GA6214@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 1/16] Remove ibm4{xx,4x}.h from arch/powerpc
+In-Reply-To: <20070213060904.GA6214@localhost.localdomain>
+Message-Id: <20070213061024.4A283DDD0C@ozlabs.org>
+Date: Tue, 13 Feb 2007 17:10:24 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,21 +14,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is a preliminary set of patches implementing support for the
-440GP based Ebony evaluation board in arch/powerpc.  A number of the
-earlier patches are in Paul's queue already, so may appear in
-powerpc.git at any point.  Most of the later ones need at least some
-cleanup or reworking before they'll be ready for merging.
+ARCH=powerpc should not use the ghastly un-multiplatformable tangle of
+includes that starts with asm-ppc/ibm4xx.h.  This patch removes a
+compile-breaking include of it from head_44x.S.
 
-With these patches I can boot to a shell prompt on initrd on my Ebony
-board.  There are still a bunch of problems: clock timings are way out
-(runs about 4* fast), things freeze up when I attempt to use an
-nfsroot, many devices aren't supported.  A lot of things are hardcoded
-in the device tree, so you may well have to tweak it if your Ebony is
-different from mine.
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
+---
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ arch/powerpc/kernel/head_44x.S |    2 --
+ 1 file changed, 2 deletions(-)
+
+Index: working-2.6/arch/powerpc/kernel/head_44x.S
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-01-12 17:22:42.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-01-12 17:37:39.000000000 +1100
+@@ -32,8 +32,6 @@
+ #include <asm/page.h>
+ #include <asm/mmu.h>
+ #include <asm/pgtable.h>
+-#include <asm/ibm4xx.h>
+-#include <asm/ibm44x.h>
+ #include <asm/cputable.h>
+ #include <asm/thread_info.h>
+ #include <asm/ppc_asm.h>
