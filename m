@@ -1,21 +1,24 @@
-Return-Path: <krafft@de.ibm.com>
-Date: Tue, 13 Feb 2007 20:20:15 +0100
-From: Christian Krafft <krafft@de.ibm.com>
-To: Christian Krafft <krafft@de.ibm.com>
-Subject: Re: [Cbe-oss-dev] [patch v3] powerpc: add PMI driver for cell blade
-Message-ID: <20070213202015.3b79c2f8@localhost>
-In-Reply-To: <20070213194806.3c266282@localhost>
-References: <20070209183529.67d542d5@localhost>
-	<20070209184530.4c8bc2be@localhost>
-	<20070209222956.GH1827@localdomain>
-	<20070212101222.24abe14c@localhost>
-	<20070213143418.06fa01b5@localhost>
-	<20070213194436.0306d18a@localhost>
-	<20070213194806.3c266282@localhost>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id DD1C4DDEB9
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 06:23:54 +1100 (EST)
+Message-ID: <45D20F65.3040603@freescale.com>
+Date: Tue, 13 Feb 2007 13:20:05 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Check mac-address first in fsl_soc.c
+References: <11710513671236-git-send-email-timur@freescale.com>
+	<45CCDEFB.5050504@ru.mvista.com> <45CCDFBC.1090104@freescale.com>
+	<45CCE07F.9040107@ru.mvista.com> <45D1F46C.4050901@freescale.com>
+	<5B1BBAE9-00FC-454B-8855-7D362DF59850@kernel.crashing.org>
+	<45D1F92B.3000000@freescale.com>
+	<774F090A-27E6-4271-ABFE-FBFA7855D5AD@kernel.crashing.org>
+	<45D208CB.9000407@freescale.com>
+	<FA1C9423-376B-41EC-AC41-992FAB4D88F0@kernel.crashing.org>
+In-Reply-To: <FA1C9423-376B-41EC-AC41-992FAB4D88F0@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +28,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 13 Feb 2007 19:48:06 +0100
-Christian Krafft <krafft@de.ibm.com> wrote:
+Kumar Gala wrote:
 
-> +
-> +	data->work_queue =3D create_workqueue("pmi");
-> +	INIT_WORK(&data->work, pmi_notify_handlers);
-> +
+>> Looks like someone broke arch_initcall() or something.
+> 
+> Odd, what config is this? (powerpc.git or linux.git)
+> 
+> Just did a build of my powerpc.git tree w/o this issue.
 
-That's not what I wanted!
-Will send an update.
+Never mind.  I just did git-clone again and rebuilt, and now it works.  I guess 
+there was stray keystroke somewhere that I didn't notice.
 
-
---=20
-Mit freundlichen Gr=FCssen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group,=20
-Linux Kernel Development
-IT Specialist
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
