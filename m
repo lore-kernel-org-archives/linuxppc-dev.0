@@ -1,19 +1,31 @@
-Return-Path: <pavel@ucw.cz>
-Received: from amd.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
-	by ozlabs.org (Postfix) with ESMTP id 027A2DDE4A
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 23:34:37 +1100 (EST)
-Date: Tue, 13 Feb 2007 13:12:49 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 05/12] power management: no valid states w/o pm_ops + docs
-Message-ID: <20070213121249.GJ18101@elf.ucw.cz>
-References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124612.176570000@sipsolutions.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070207124612.176570000@sipsolutions.net>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
-	linux-pm@lists.osdl.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6D768DDEFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 01:18:52 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1DEIkwN011122
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 09:18:46 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1DEIkn8512030
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 07:18:46 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1DEIkPO026610
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 07:18:46 -0700
+Subject: Re: [PATCH 1/16] Remove ibm4{xx,4x}.h from arch/powerpc
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20070213061024.4A283DDD0C@ozlabs.org>
+References: <20070213061024.4A283DDD0C@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 13 Feb 2007 08:19:49 -0600
+Message-Id: <1171376389.4003.33.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,27 +35,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi!
+On Tue, 2007-02-13 at 17:10 +1100, David Gibson wrote:
+> ARCH=powerpc should not use the ghastly un-multiplatformable tangle of
+> includes that starts with asm-ppc/ibm4xx.h.  This patch removes a
+> compile-breaking include of it from head_44x.S.
 
-> This patch changes /sys/power/state to not advertise any valid states
-> (except for disk if SOFTWARE_SUSPEND is enabled) when no pm_ops have been
-> set so userspace can easily discover what states should be available.
-> 
-> Also, because the pm ops in powermac are obviously not using them as
-> intended, I added documentation for it in kernel-doc format.
-> 
-> Reordering the fields in struct pm_ops not only makes the output of
-> kernel-doc make more sense but also removes a hole from the structure on
-> 64-bit platforms.
-> 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: linux-pm@lists.osdl.org
-> Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> Cc: Pavel Macheck <pavel@ucw.cz>
+This one is in paulus' tree.  Just an FYI for those wanting to try
+these.
 
-Looks okay to me.
-										Pavel
-
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+josh
