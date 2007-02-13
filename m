@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 16/16] Support for Ebony in arch/powerpc
+Subject: [PATCH 15/16] Add device tree for Ebony
 In-Reply-To: <20070213060904.GA6214@localhost.localdomain>
-Message-Id: <20070213061026.7979DDDDF0@ozlabs.org>
+Message-Id: <20070213061026.5837FDDDE9@ozlabs.org>
 Date: Tue, 13 Feb 2007 17:10:26 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,109 +14,240 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds platform support code for the Ebony (440GP) evaluation
-board.
+Add a device tree for the Ebony evaluation board (440GP based).  This
+tree is not complete or finalized.  This tree needs a very recent
+version of dtc to process.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/platforms/4xx/Kconfig  |    3 +
- arch/powerpc/platforms/4xx/Makefile |    2 -
- arch/powerpc/platforms/4xx/ebony.c  |   68 ++++++++++++++++++++++++++++++++++++
- 3 files changed, 71 insertions(+), 2 deletions(-)
+ arch/powerpc/boot/dts/ebony.dts |  222 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 222 insertions(+)
 
-Index: working-2.6/arch/powerpc/platforms/4xx/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/platforms/4xx/Makefile	2007-02-13 12:37:37.000000000 +1100
-+++ working-2.6/arch/powerpc/platforms/4xx/Makefile	2007-02-13 12:39:02.000000000 +1100
-@@ -1 +1 @@
--# empty makefile so make clean works
-\ No newline at end of file
-+obj-$(CONFIG_EBONY)	:= ebony.o
-Index: working-2.6/arch/powerpc/platforms/4xx/ebony.c
+Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/platforms/4xx/ebony.c	2007-02-13 12:39:02.000000000 +1100
-@@ -0,0 +1,68 @@
++++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-02-12 16:25:49.000000000 +1100
+@@ -0,0 +1,222 @@
 +/*
-+ * Ebony board specific routines
++ * Device Tree Source for IBM Ebony
 + *
-+ * Matt Porter <mporter@kernel.crashing.org>
-+ * Copyright 2002-2005 MontaVista Software Inc.
++ * Copyright (c) 2006, 2007 IBM Corp.
++ * Josh Boyer <jdub@us.ibm.com>, David Gibson <dwg@au1.ibm.com>
 + *
-+ * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
-+ * Copyright (c) 2003-2005 Zultys Technologies
++ * FIXME: Draft only!
 + *
-+ * Rewritten and ported to the merged powerpc tree:
-+ * Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
 + *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * To build:
++ *   dtc -I dts -O asm -o ebony.S -b 0 -V 16 ebony.dts
++ *   dtc -I dts -O dtb -o ebony.dtb -b 0 -V 16 ebony.dts
 + */
 +
-+#include <linux/init.h>
-+#include <asm/machdep.h>
-+#include <asm/prom.h>
-+#include <asm/udbg.h>
-+#include <asm/time.h>
-+#include <asm/uic.h>
-+#include <asm/of_platform.h>
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "Ebony";
++	compatible = "Ebony";
++	dcr-parent = <&/cpus/PowerPC,440GP>;
 +
-+static struct of_device_id ebony_of_bus[] = {
-+	{ .type = "soc", },
-+	{},
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,440GP {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <5F5E100>; /* 100MHz FIXME: poke in zImage */
++			timebase-frequency = <5F5E100>; /* 100MHz FIXME: wrong, poke in zImage */
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <0>;
++			d-cache-size = <0>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 00000000 08000000>; /* Set by bootwrapper */
++	};
++
++	UIC0: interrupt-controller { /* UIC0 */
++		device_type = "interrupt-controller";
++		compatible = "ibm,uic440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++
++		UIC1: interrupt-controller@1 { /* UIC1 */
++			device_type = "interrupt-controller";
++			compatible = "ibm,uic440gp", "ibm,uic";
++			interrupt-controller;
++			cell-index = <1>;
++			dcr-reg = <0d0 009>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			#interrupt-cells = <2>;
++			interrupts = <1e 4 1f 4>; /* cascade */
++		};
++	};
++
++	plb {
++		device_type = "soc";
++		compatible = "ibm,plb-440gp", "ibm,plb4";
++		ranges;
++
++		POB0: opb@0 {
++			device_type = "soc";
++			compatible = "ibm,opb-440gp", "ibm,opb";
++			ranges;
++			dcr-reg = <090 00b>;
++			interrupt-parent = <&UIC1>;
++			interrupts = <7 4>;
++			clock-frequency = <3ef1480>; // FIXME: 66MHz
++
++			UART0: serial@140000200 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <1 40000200 8>;
++				virtual-reg = <e0000200>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0 4>;
++			};
++
++			UART1: serial@140000300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <1 40000300 8>;
++				virtual-reg = <e0000300>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>; /* FIXME */
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			IIC0: i2c@140000400 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <1 40000400 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++			IIC1: i2c@140000500 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <1 40000500 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <3 4>;
++			};
++
++			GPIO0: gpio@140000700 {
++				/* FIXME */
++				device_type = "gpio";
++				compatible = "ibm,gpio-440gp";
++				reg = <1 40000700 20>;
++			};
++
++			ZMII0: emac-zmii@140000780 {
++				device_type = "emac-zmii";
++				compatible = "ibm,zmii-440gp", "ibm,zmii";
++				reg = <1 40000780 c>;
++			};
++
++			EMAC0: ethernet@140000800 {
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1c 4 1d 4>;
++				reg = <1 40000800 70>;
++				local-mac-address = [0004ace31b1e]; // FIXME
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0 1>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++			};
++			EMAC1: ethernet@140000900 {
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4 1f 4>;
++				reg = <1 40000900 70>;
++				local-mac-address = [0004ace31b1f]; // FIXME
++				mal-device = <&MAL0>;
++				mal-tx-channel = <2 3>;
++				mal-rx-channel = <1>;
++				cell-index = <1>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <1>;
++			};
++
++
++			GPT0: gpt@140000a00 {
++				/* FIXME */
++				reg = <1 40000a00 d4>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <12 4 13 4 14 4 15 4 16 4>;
++			};
++
++		};
++
++		PCIX0: pci@1234 {
++			device_type = "pci";
++			/* FIXME */
++			reg = <2 0ec00000 8
++			       2 0ec80000 f0
++			       2 0ec80100 fc>;
++		};
++
++		MAL0: mcmal {
++			/* FIXME */
++			device_type = "mcmal-dma";
++			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <4>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
++					 /*RXEOB*/ 1 &UIC0 b 4
++					 /*SERR*/  2 &UIC1 0 4
++					 /*TXDE*/  3 &UIC1 1 4
++					 /*RXDE*/  4 &UIC1 2 4>;
++			interrupt-map-mask = <ffffffff>;
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb@0/serial@140000200";
++		linux,initrd-start = <0>; /* FIXME */
++		linux,initrd-end = <0>;
++		interrupt-controller = <&UIC0>;
++	};
 +};
 +
-+static int __init ebony_device_probe(void)
-+{
-+	if (! machine_is(ebony))
-+		return 0;
-+
-+	of_platform_bus_probe(NULL, ebony_of_bus, NULL);
-+
-+	return 0;
-+}
-+device_initcall(ebony_device_probe);
-+
-+/*
-+ * Called very early, MMU is off, device-tree isn't unflattened
-+ */
-+static int __init ebony_probe(void)
-+{
-+	unsigned long root = of_get_flat_dt_root();
-+
-+	if (!of_flat_dt_is_compatible(root, "Ebony"))
-+		return 0;
-+
-+	return 1;
-+}
-+
-+static void __init ebony_setup_arch(void)
-+{
-+}
-+
-+define_machine(ebony) {
-+	.name			= "Ebony",
-+	.probe			= ebony_probe,
-+	.setup_arch		= ebony_setup_arch,
-+	.progress		= udbg_progress,
-+	.init_IRQ		= uic_init_tree,
-+	.get_irq		= uic_get_irq,
-+	.calibrate_decr		= generic_calibrate_decr,
-+};
-Index: working-2.6/arch/powerpc/platforms/4xx/Kconfig
-===================================================================
---- working-2.6.orig/arch/powerpc/platforms/4xx/Kconfig	2007-02-13 12:37:37.000000000 +1100
-+++ working-2.6/arch/powerpc/platforms/4xx/Kconfig	2007-02-13 12:39:02.000000000 +1100
-@@ -112,7 +112,8 @@ config 440EP
- config 440GP
- 	bool
- 	depends on EBONY
--	default y
-+	select IBM_NEW_EMAC_ZMII
-+ 	default y
- 
- config 440GX
- 	bool
