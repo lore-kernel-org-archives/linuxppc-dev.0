@@ -1,35 +1,23 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2617ADDD0A
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 15:55:53 +1100 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l1D5A65m173994
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 16:10:11 +1100
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1D4w4xu071468
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 15:58:05 +1100
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1D4sW8k020300
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 15:54:32 +1100
-Date: Tue, 13 Feb 2007 15:30:44 +1100
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [PATCH 18/19] bootwrapper: Add xlate_reg(),
-	and use it to find serial registers.
-Message-ID: <20070213043044.GD5345@localhost.localdomain>
-References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
-	<20070207230145.GR3849@ld0162-tx32.am.freescale.net>
-	<20070209230700.GC12035@mag.az.mvista.com>
-	<45D09993.9050903@freescale.com>
-	<1171314615.4003.27.camel@zod.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1171314615.4003.27.camel@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <20070213004608.GB4894@localhost.localdomain>
+References: <200702121129.05004.sr@denx.de>
+	<1171281988.20192.1.camel@localhost.localdomain>
+	<ada7iun8bz3.fsf@cisco.com>
+	<1171310108.20192.7.camel@localhost.localdomain>
+	<E1HGhb3-0001fb-9M@jdl.com>
+	<1171311802.20192.15.camel@localhost.localdomain>
+	<D612EBB5-3ABB-45C5-943B-C32E5B9F4319@kernel.crashing.org>
+	<20070213004608.GB4894@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8DEFFE52-2326-43A9-9719-15E04EF17D3A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
+Date: Mon, 12 Feb 2007 23:28:17 -0600
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: Jon Loeliger <jdl@jdl.com>, Roland Dreier <rdreier@cisco.com>,
+	linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org,
+	Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,31 +27,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 12, 2007 at 03:10:15PM -0600, Josh Boyer wrote:
-> On Mon, 2007-02-12 at 10:45 -0600, Scott Wood wrote:
-> > Mark A. Greer wrote:
-> > > On Wed, Feb 07, 2007 at 05:01:45PM -0600, Scott Wood wrote:
-> > > 
-> > >>xlate_reg() uses the ranges properties of a node's parentage to find the
-> > >>absolute physical address of the node's registers.
-> > >>
-> > >>The ns16550 driver uses this when no virtual-reg property is found.
-> > > 
-> > > 
-> > > Is this necessary?  Shouldn't there always be a virtual-reg?
-> > 
-> > None of the dts files in the kernel tree currently have such a property...
-> 
-> 4xx will use this.  The bootwrapper will use the UART mapping setup by
-> the firmware to print out to the console.  At least that is why it was
-> added to being with, and how I had it working on Ebony a while ago.
-> David may have changed it since.
 
-No, I'm using virtual-reg on Ebony.  In fact I think I'm using your
-code for it.
+On Feb 12, 2007, at 6:46 PM, David Gibson wrote:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> On Mon, Feb 12, 2007 at 02:41:36PM -0600, Kumar Gala wrote:
+>>
+>> On Feb 12, 2007, at 2:23 PM, Benjamin Herrenschmidt wrote:
+>>
+>>> On Mon, 2007-02-12 at 14:16 -0600, Jon Loeliger wrote:
+>>>> So, like, the other day Benjamin Herrenschmidt mumbled:
+>>>>>
+>>>>> Note that there are still things that we might want to change. For
+>>>>> example, I think we really should look into adding a macro  
+>>>>> mecanism
+>>>>> and/or an include mecanism to dtc so that we can do things like
+>>>>> #include
+>>>>> <ibm440gp.dtc> to get the base processor/SoC definition and then
+>>>>> "overlay" some properties on top of it (like emac phy mode etc...)
+>>>>
+>>>> What do people prefer here?  Straight CPP pre-run?
+>>>
+>>> CPP pre-run has issue, notably due to the usage of "#" in property
+>>> names.
+>>
+>> You can get around that by invoking cpp with the right flags,  I
+>> looked at doing this a while back and had it working.
+>
+> Umm.. which flags?
+
+cpp -undef -P -x assembler-with-cpp
+
+>>>> Direct support built into dtc to do file-inclusion, macros?
+>>>
+>>> We aren't sure yet, though David might have ideas.
+>>
+>> Would be nice for simple math as well (addition, subtraction, bitwise
+>> ops, and shifts).  For example was thinking that having some macro's
+>> around the PCI dev node's would make it a bit more readable to mere
+>> mortals.
+>
+> Yes.  Adding an expression model would be more complex though.
+
+Is there somewhere we can grab one from?
+
+- k
