@@ -3,20 +3,21 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6B809DDDF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 09:14:21 +1100 (EST)
-In-Reply-To: <45D22C38.10803@freescale.com>
-References: <11710513671236-git-send-email-timur@freescale.com>	<45CCDEFB.5050504@ru.mvista.com>
-	<45CCDFBC.1090104@freescale.com>	<45CCE07F.9040107@ru.mvista.com>
-	<45D1F46C.4050901@freescale.com>	<5B1BBAE9-00FC-454B-8855-7D362DF59850@kernel.crashing.org>	<45D1F92B.3000000@freescale.com>	<774F090A-27E6-4271-ABFE-FBFA7855D5AD@kernel.crashing.org>
-	<45D21688.8090009@freescale.com> <45D22C38.10803@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id D29D4DDE09
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 09:14:22 +1100 (EST)
+In-Reply-To: <E1HH5p5-00014J-P2@jdl.com>
+References: <Pine.LNX.4.61.0702091727290.791@ld0175-tx32.am.freescale.net>
+	<Pine.LNX.4.64.0702131239010.23923@localhost.localdomain>
+	<CACCBE78-FE2A-4D1A-9E74-9298B8159DB9@freescale.com>
+	<31B49492-41E9-4C2F-8CEE-24E12A7C1003@kernel.crashing.org>
+	<E1HH5p5-00014J-P2@jdl.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4C265640-16EB-441F-A668-71963D84C67A@kernel.crashing.org>
+Message-Id: <38F4D0C8-A44C-42E4-81D2-DB444DDF514D@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Check mac-address first in fsl_soc.c
-Date: Tue, 13 Feb 2007 16:14:20 -0600
-To: Timur Tabi <timur@freescale.com>
+Subject: Re: Subject: [PATCH] Add support for the 8568 MDS board 
+Date: Tue, 13 Feb 2007 16:13:33 -0600
+To: Jon Loeliger <jdl@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,26 +29,17 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 13, 2007, at 3:23 PM, Timur Tabi wrote:
+On Feb 13, 2007, at 4:08 PM, Jon Loeliger wrote:
 
-> Timur Tabi wrote:
->> I just had an idea.  The mac-address change should really be  
->> extended to all OF-enabled Ethernet drivers.  How about I put  
->> get_mac_address() in arch/powerpc/kernel/prom.c, right after  
->> get_property(), instead of making it an inline function just for  
->> fsl_soc.c?
+> So, like, the other day Kumar Gala mumbled:
+>>
+>> Duplicating the subject heading is fine.
 >
-> Hmmm... if I do that, then get_mac_address() is no longer an init- 
-> only function.  That probably is a good thing, because then device  
-> trees can call it when they're loaded.  In that case, should I make  
-> null_mac_address[] static again?
->
-> And what about the name?  Should I call it of_get_mac_address()?   
-> Plain old "get_mac_address" sounds like a namespace collision  
-> waiting to happen.
+> I disagree.  It will end up in the git log as
+> a duplicate sentence that way.  Linus has asked
+> in the past that we not do that.
 
-
-of_get_mac_address() seems reasonable, you can always stick it in asm- 
-powerpc/prom.h
+You are correct, sorry about the noise.  I forgot that the 'subject'  
+line is actually in the commit message.
 
 - k
