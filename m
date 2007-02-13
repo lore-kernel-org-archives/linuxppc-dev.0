@@ -1,22 +1,15 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 7773CDDEC3
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 09:24:45 +1100 (EST)
-Date: Tue, 13 Feb 2007 15:25:35 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [RFC] mpc5200 device tree bindings refinement
-Message-ID: <20070213222535.GD8109@mag.az.mvista.com>
-References: <528646bc0702091038k5188d83fsbc088d875472791c@mail.gmail.com>
-	<9696D7A991D0824DBA8DFAC74A9C5FA3029428E1@az33exm25.fsl.freescale.net>
-	<20070212205731.GC2729@mag.az.mvista.com>
-	<528646bc0702130737t2c4fdb1cj6b994d89c8652c9d@mail.gmail.com>
-	<1171402877.20192.105.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1171402877.20192.105.camel@localhost.localdomain>
-Cc: linuxppc-dev Development <linuxppc-dev@ozlabs.org>,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 010FDDDEAB
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 10:11:01 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org, sshtylyov@ru.mvista.com,
+	galak@kernel.crashing.org
+Subject: [PATCH] powerpc: add of_get_mac_address() and update fsl_soc.c to use
+	it
+Date: Tue, 13 Feb 2007 17:10:47 -0600
+Message-Id: <1171408247467-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +19,182 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 14, 2007 at 08:41:17AM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > I am concerned that this ends up been premature optimization (of the
-> > device tree).  Hardware designers are fickle people and like to change
-> > shared registers between different chips.  I do agree that logically
-> > the device is attached to a block of registers that can be described
-> > in a separate node (child of the soc node).  But since we have no idea
-> > if it's going to change in the next chip, it's probably better just to
-> > describe it as the block-index on the soc.
-> > 
-> > Of course, I this begs the argument: "why do we describe anything
-> > about an soc at all; why not just specify the SoC name/revision and be
-> > done with it?"  I don't like that direction myself, but I do find it
-> > non-trivial to find the sweet spot between minimal and "fully-loaded"
-> > device trees.  That just highlights to me that this is just as much of
-> > an art as it is science.  :)
-> 
-> Yeah. Let's keep it simple. For example, with EMAC, well, when you look
-> at all the 4xx specs around, they all talk about EMAC 0, EMAC 1, ... and
-> the registers that might have bits for all emacs around (like clock
-> control) do the same.
-> 
-> Thus it makes sense to use a property like cell-index or block-index to
-> identify which EMAC within an ASIC a given node refers to. I don't think
-> it's justified to have a complex mecanism to describe those registers
-> individual bits however.
+Add function of_get_mac_address(), which obtains the best MAC address to use
+from the device tree by checking various properties in order.  The order is: 
+'mac-address', then 'local-mac-address', then 'address'.  It also skips
+properties that were not initialized by U-Boot.
 
-Hrm, I think you guys misunderstood what I meant about bits within a
-register.  I'm talking about a single 32-bit register where bits 0-7
-are for ctlr 0, bits 8-15 are for ctlr 1, etc.
+Update gfar_of_init() and fs_enet_of_init() in fsl_soc.c to call 
+of_get_mac_address().
 
-This presents the same problem as a block of registers where the register
-at offset 0 is for ctlr 0, offset 0x4 is for ctlr 1, offset 0x8 is for
-ctlr 0, offset 0xc for ctlr 1.  That sort of thing.
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
 
-Marvell bridges do both.  The driver needs some sort of index so it
-knows which ones to access.  'block-index' will do that.
+See the comment for function of_get_mac_address() for a detailed description
+of what it does.
 
-Mark
+After this patch is applied, the next step is to update the various
+OF-enabled Ethernet drivers to use of_get_mac_address().
+
+ arch/powerpc/kernel/prom.c    |   45 ++++++++++++++++++++++++++++++++++------
+ arch/powerpc/sysdev/fsl_soc.c |   19 ++++++-----------
+ include/asm-powerpc/prom.h    |    2 +
+ 3 files changed, 47 insertions(+), 19 deletions(-)
+
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 3e86e6e..4826f01 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -3,9 +3,9 @@
+  *
+  * Paul Mackerras	August 1996.
+  * Copyright (C) 1996-2005 Paul Mackerras.
+- * 
++ *
+  *  Adapted for 64bit PowerPC by Dave Engebretsen and Peter Bergner.
+- *    {engebret|bergner}@us.ibm.com 
++ *    {engebret|bergner}@us.ibm.com
+  *
+  *      This program is free software; you can redistribute it and/or
+  *      modify it under the terms of the GNU General Public License
+@@ -111,7 +111,7 @@ int __init of_scan_flat_dt(int (*it)(uns
+ 	do {
+ 		u32 tag = *((u32 *)p);
+ 		char *pathp;
+-		
++
+ 		p += 4;
+ 		if (tag == OF_DT_END_NODE) {
+ 			depth --;
+@@ -148,7 +148,7 @@ int __init of_scan_flat_dt(int (*it)(uns
+ 		}
+ 		rc = it(p, pathp, depth, data);
+ 		if (rc != 0)
+-			break;		
++			break;
+ 	} while(1);
+ 
+ 	return rc;
+@@ -791,7 +791,7 @@ static int __init early_init_dt_scan_roo
+ 	prop = of_get_flat_dt_prop(node, "#address-cells", NULL);
+ 	dt_root_addr_cells = (prop == NULL) ? 2 : *prop;
+ 	DBG("dt_root_addr_cells = %x\n", dt_root_addr_cells);
+-	
++
+ 	/* break now */
+ 	return 1;
+ }
+@@ -927,7 +927,7 @@ static void __init early_reserve_mem(voi
+ 	lmb_reserve(self_base, self_size);
+ 
+ #ifdef CONFIG_PPC32
+-	/* 
++	/*
+ 	 * Handle the case where we might be booting from an old kexec
+ 	 * image that setup the mem_rsvmap as pairs of 32-bit values
+ 	 */
+@@ -1613,13 +1613,44 @@ const void *get_property(const struct de
+ EXPORT_SYMBOL(get_property);
+ 
+ /*
++ * Search the device tree for the best MAC address to use.  'mac-address' is
++ * checked first, because that is supposed to contain to "most recent" MAC
++ * address. If that isn't set, then 'local-mac-address' is checked next,
++ * because that is the default address.  If that isn't set, then the obsolete
++ * 'address' is checked, just in case we're using an old device tree.
++ *
++ * All-zero MAC addresses are rejected, because those could be properties that
++ * exist in the device tree, but were not set by U-Boot.  For example, the
++ * DTS could define 'mac-address' and 'local-mac-address', with zero MAC
++ * addresses.  Some older U-Boots only initialized 'local-mac-address'.  In
++ * this case, the real MAC is in 'local-mac-address', and 'mac-address' exists
++ * but is all zeros.
++*/
++const void *of_get_mac_address(struct device_node *np)
++{
++	static const u8 null_mac_address[6] = { 0 };
++	const void *mac_addr;
++
++	mac_addr = get_property(np, "mac-address", NULL);
++	if (mac_addr && (memcmp(mac_addr, null_mac_address, 6) != 0))
++		return mac_addr;
++
++	mac_addr = get_property(np, "local-mac-address", NULL);
++	if (mac_addr && (memcmp(mac_addr, null_mac_address, 6) != 0))
++		return mac_addr;
++
++	return get_property(np, "address", NULL);
++}
++EXPORT_SYMBOL(of_get_mac_address);
++
++/*
+  * Add a property to a node
+  */
+ int prom_add_property(struct device_node* np, struct property* prop)
+ {
+ 	struct property **next;
+ 
+-	prop->next = NULL;	
++	prop->next = NULL;
+ 	write_lock(&devtree_lock);
+ 	next = &np->properties;
+ 	while (*next) {
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index 34161bc..d20f029 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -233,14 +233,7 @@ static int __init gfar_of_init(void)
+ 			goto err;
+ 		}
+ 
+-		mac_addr = get_property(np, "local-mac-address", NULL);
+-		if (mac_addr == NULL)
+-			mac_addr = get_property(np, "mac-address", NULL);
+-		if (mac_addr == NULL) {
+-			/* Obsolete */
+-			mac_addr = get_property(np, "address", NULL);
+-		}
+-
++		mac_addr = of_get_mac_address(np);
+ 		if (mac_addr)
+ 			memcpy(gfar_data.mac_addr, mac_addr, 6);
+ 
+@@ -646,8 +639,9 @@ static int __init fs_enet_of_init(void)
+ 			goto unreg;
+ 		}
+ 
+-		mac_addr = get_property(np, "mac-address", NULL);
+-		memcpy(fs_enet_data.macaddr, mac_addr, 6);
++		mac_addr = of_get_mac_address(np);
++		if (mac_addr)
++			memcpy(fs_enet_data.macaddr, mac_addr, 6);
+ 
+ 		ph = get_property(np, "phy-handle", NULL);
+ 		phy = of_find_node_by_phandle(*ph);
+@@ -931,8 +925,9 @@ static int __init fs_enet_of_init(void)
+ 			goto err;
+ 		r[0].name = enet_regs;
+ 
+-		mac_addr = (void *)get_property(np, "mac-address", NULL);
+-		memcpy(fs_enet_data.macaddr, mac_addr, 6);
++		mac_addr = of_get_mac_address(np);
++		if (mac_addr)
++			memcpy(fs_enet_data.macaddr, mac_addr, 6);
+ 
+ 		ph = (phandle *) get_property(np, "phy-handle", NULL);
+ 		if (ph != NULL)
+diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+index 0afee17..020ed01 100644
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -255,6 +255,8 @@ extern void kdump_move_device_tree(void)
+ /* CPU OF node matching */
+ struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
+ 
++/* Get the MAC address */
++extern const void *of_get_mac_address(struct device_node *np);
+ 
+ /*
+  * OF interrupt mapping
+-- 
+1.4.4
