@@ -1,17 +1,39 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc3-s22.bay0.hotmail.com (bay0-omc3-s22.bay0.hotmail.com
-	[65.54.246.222]) by ozlabs.org (Postfix) with ESMTP id C7158DDF19
+Return-Path: <laurent.pinchart@technotrade.biz>
+Received: from outmx019.isp.belgacom.be (outmx019.isp.belgacom.be
+	[195.238.4.200])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B21FEDDECD
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Feb 2007 23:49:38 +1100 (EST)
-Message-ID: <BAY110-F4BB00FE3510B7F04C23C0B2900@phx.gbl>
-In-Reply-To: <20070213201700.ebzmiez00skoocs8@webmail1.sjtu.edu.cn>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: yunfeizhang@sjtu.edu.cn
-Subject: RE: How can I boot a program from flash on ML403?
-Date: Tue, 13 Feb 2007 12:49:33 +0000
-Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 14 Feb 2007 02:09:11 +1100 (EST)
+Received: from outmx019.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx019.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l1DF8vLL005882
+	for <linuxppc-embedded@ozlabs.org>; Tue, 13 Feb 2007 16:08:57 +0100
+	(envelope-from <laurent.pinchart@technotrade.biz>)
+Received: from mail.technotrade.biz (49.198-78-194.adsl-fix.skynet.be
+	[194.78.198.49])
+	by outmx019.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l1DF8uYF005869
+	for <linuxppc-embedded@ozlabs.org>; Tue, 13 Feb 2007 16:08:56 +0100
+	(envelope-from <laurent.pinchart@technotrade.biz>)
+Received: from mail.technotrade.biz (localhost [127.0.0.1])
+	by mail.technotrade.biz (Postfix) with ESMTP id 8E9191BA9
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 13 Feb 2007 16:08:56 +0100 (CET)
+Received: from pclaurent.technotrade.biz (pclaurent.technotrade.biz
+	[192.168.1.47])
+	by mail.technotrade.biz (Postfix) with ESMTP id 7B3B8F34
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 13 Feb 2007 16:08:56 +0100 (CET)
+From: Laurent Pinchart <laurent.pinchart@technotrade.biz>
+To: linuxppc-embedded@ozlabs.org
+Subject: Best way to define flash partitions for an MPC8248
+Date: Tue, 13 Feb 2007 16:08:55 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200702131608.55630.laurent.pinchart@technotrade.biz>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,31 +44,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
-Pls refer to the ml403 user guide. There are several booting mechanisms 
-including the common and useful one from CPLD+Flash for Linux application. 
+Hi everybody,
 
-BR
-Ming
+I'm running Linux 2.6.20 on an MPC8248 using arch/ppc/.
 
+The system flash is divided in 5 partitions, which are currently defined in 
+both U-Boot and in the Linux kernel (hardcoded in platform specific code in 
+arch/ppc/platforms/). This is error prone, as modifying partition information 
+requires a change to the U-Boot environment variables and a recompilation of 
+the Linux kernel.
 
->From: yunfeizhang@sjtu.edu.cn
->To: linuxppc-embedded@ozlabs.org
->Subject: How can I boot a program from flash on ML403?
->Date: Tue, 13 Feb 2007 20:17:00 +0800
->
->hi, all:
->
->     I want to porting u-boot to ML403,but first I should master booting a 
-common app from flash first.Who can tell how to do that?Any details about 
-u-boot on ML403 is also prefered
->
->     Thanks for all your kindness!
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+I would like to get rid of partition data in the kernel. I found 3 ways for 
+the Linux kernel to get those data from elsewhere:
 
-_________________________________________________________________
-与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
+- command line parsing (using the mtdparts argument)
+- redboot partition table parsing
+- OF device tree (drivers/mtd/maps/physmap_of.c)
+
+What is the best suited method ? I don't really like the redboot partition 
+table, is I haven't found any way to write it from U-Boot. Do I need to 
+switch to arch/powerpc/ to use the OF device tree ? If so, is it possible 
+today for the MPC8248 processor, or is it still badly supported in 
+arch/powerpc/ ? Last but not least, is it possible to change the OF device 
+tree from U-Boot at runtime to resize partitions ?
+
+Best regards,
+
+Laurent Pinchart
