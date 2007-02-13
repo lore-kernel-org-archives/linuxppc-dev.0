@@ -1,18 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 9478FDDE46
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 04:25:05 +1100 (EST)
-Message-ID: <45D1F46C.4050901@freescale.com>
-Date: Tue, 13 Feb 2007 11:25:00 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 61CDBDDF17
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 04:32:23 +1100 (EST)
+Message-ID: <45D1F61B.6020104@am.sony.com>
+Date: Tue, 13 Feb 2007 09:32:11 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: paulus@samba.org
-Subject: Re: [PATCH] Check mac-address first in fsl_soc.c
-References: <11710513671236-git-send-email-timur@freescale.com>
-	<45CCDEFB.5050504@ru.mvista.com> <45CCDFBC.1090104@freescale.com>
-	<45CCE07F.9040107@ru.mvista.com>
-In-Reply-To: <45CCE07F.9040107@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 19/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+References: <20070212205438.GB17285@ld0162-tx32.am.freescale.net>
+	<45D0DE6C.1040207@am.sony.com>
+	<20070213161337.GD24815@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070213161337.GD24815@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,30 +27,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov wrote:
-
->    I'm mainly concerned about 85xx. I guess the needed change should be 
-> very alike...
-
-I've submitted U-Boot patches for 83xx, 85xx, 86xx, and 5xxx to the maintainers. 
-  You'll have to ask them when the patches will be applied.
-
->> I wanted to keep my patch simple.
+Scott Wood wrote:
+>> It may be better to do it like this, as there will be more platforms that
+>> need to hook in specific files.
+>> 
+>> src-plat-$(CONFIG_COMPAT_UIMAGE) += $(cuboot-plats:%=cuboot-%.c)
+>> src-plat-$(CONFIG_XXX) += ...
+>> src-plat-$(CONFIG_YYY) += ...
+>> ...
+>> src-plat := of.c $(src-plat-y)
 > 
->    That's clearly an over-simplification to repeat the same code thrice.
+> Take it up with Paul.  He said that all platform files shall always be
+> built, and that the wrapper script picks which ones to link.
 
-Actually, the 2nd and third instances are conditionally compiled, so in most 
-cases only one instance of the code will actually be compiled.  gfar_of_init() 
-should probably also be conditionally compiled, so if I make it a separate 
-function, I'd have to prefix it with something like this:
 
-#if defined(CONFIG_GIANFAR) || defined(CONFIG_CPM2) || defined(CONFIG_8xx)
+That is what this sets up, for all platforms the kernel is built to support,
+all the corresponding wrapperbits are built.
 
-and then I would need to pass a bunch of parameters.  I don't really think 
-that's an improvement.
+The problem I see with what you have done is that if there is a single bug in the
+wrapperbits for any platform, all zImage builds for ANY platform will fail, even
+platforms the kernel is not configured to support.
 
-Paul, if there are no serious objections, please apply this patch.
+I think most people only build for a few platforms and would not want to
+be inconvenienced buy a bug in a platform they have no interest in, and 
+in general, I don't think platform maintainers want to inconvenience people
+with platform specific bugs when they are not building for that platform.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+
+>> > +ifeq ($(CONFIG_COMPAT_UIMAGE),y)
+>> > +cuboot-plat-$(CONFIG_83xx) += 83xx
+>> > +cuboot-plat-$(CONFIG_85xx) += 85xx
+>> > +cuboot-plat-$(CONFIG_86xx) += 86xx
+>> > +cuboot-plat-y += unknown-platform
+>> > +
+>> > +$(obj)/uImage: vmlinux $(wrapperbits)
+>> > +	$(call cmd,wrap_dt,cuboot-$(word 1,$(cuboot-plat-y)))
+>> > +else
+>> >  $(obj)/uImage: vmlinux $(wrapperbits)
+>> >  	$(call cmd,wrap,uboot)
+>> > +endif
+>> 
+>> It would be nice if you could make the logic such that you don't need this ifeq.
+> 
+> Do you mean naming the target something other than uImage?
+
+Perhaps.  Do you see any need to build both types with the same kernel config?
+
+-Geoff
