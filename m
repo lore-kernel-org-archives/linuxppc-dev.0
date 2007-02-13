@@ -1,15 +1,13 @@
 Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 010FDDDEAB
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 10:11:01 +1100 (EST)
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id A5A12DDE40
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 10:34:59 +1100 (EST)
 From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org, sshtylyov@ru.mvista.com,
-	galak@kernel.crashing.org
-Subject: [PATCH] powerpc: add of_get_mac_address() and update fsl_soc.c to use
-	it
-Date: Tue, 13 Feb 2007 17:10:47 -0600
-Message-Id: <1171408247467-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
+Subject: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS files
+Date: Tue, 13 Feb 2007 17:34:47 -0600
+Message-Id: <1171409687840-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>, Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,182 +17,235 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add function of_get_mac_address(), which obtains the best MAC address to use
-from the device tree by checking various properties in order.  The order is: 
-'mac-address', then 'local-mac-address', then 'address'.  It also skips
-properties that were not initialized by U-Boot.
+The 'linux,boot-cpu' property is obsolete, so remove it from all of the DTS 
+files and from booting-without-of.txt.  The boot CPU is actually defined in
+the device tree header, and U-Boot sets that field.  The device tree compiler
+also complains if the property exists.
 
-Update gfar_of_init() and fs_enet_of_init() in fsl_soc.c to call 
-of_get_mac_address().
+Remove a stray 'chosen' section in mpc8272ads.dts.  The 'chosen' section is
+initialized by U-Boot, so the definition in the DTS is not used anyway.
 
 Signed-off-by: Timur Tabi <timur@freescale.com>
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
 ---
 
-See the comment for function of_get_mac_address() for a detailed description
-of what it does.
+Note: The '64-bit' property is already defined by the OF PPC
+binding and is added to show an example of a property
+without a value.  We're not actually adding a new property definition.
 
-After this patch is applied, the next step is to update the various
-OF-enabled Ethernet drivers to use of_get_mac_address().
+ Documentation/powerpc/booting-without-of.txt |    5 ++---
+ arch/powerpc/boot/dts/kuroboxHG.dts          |    1 -
+ arch/powerpc/boot/dts/mpc7448hpc2.dts        |    5 ++---
+ arch/powerpc/boot/dts/mpc8272ads.dts         |    8 --------
+ arch/powerpc/boot/dts/mpc8323emds.dts        |    7 +++----
+ arch/powerpc/boot/dts/mpc8360emds.dts        |    1 -
+ arch/powerpc/boot/dts/mpc8560ads.dts         |    1 -
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts       |    3 +--
+ arch/powerpc/boot/dts/mpc866ads.dts          |    1 -
+ arch/powerpc/boot/dts/mpc885ads.dts          |    1 -
+ 10 files changed, 8 insertions(+), 25 deletions(-)
 
- arch/powerpc/kernel/prom.c    |   45 ++++++++++++++++++++++++++++++++++------
- arch/powerpc/sysdev/fsl_soc.c |   19 ++++++-----------
- include/asm-powerpc/prom.h    |    2 +
- 3 files changed, 47 insertions(+), 19 deletions(-)
-
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 3e86e6e..4826f01 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -3,9 +3,9 @@
-  *
-  * Paul Mackerras	August 1996.
-  * Copyright (C) 1996-2005 Paul Mackerras.
-- * 
-+ *
-  *  Adapted for 64bit PowerPC by Dave Engebretsen and Peter Bergner.
-- *    {engebret|bergner}@us.ibm.com 
-+ *    {engebret|bergner}@us.ibm.com
-  *
-  *      This program is free software; you can redistribute it and/or
-  *      modify it under the terms of the GNU General Public License
-@@ -111,7 +111,7 @@ int __init of_scan_flat_dt(int (*it)(uns
- 	do {
- 		u32 tag = *((u32 *)p);
- 		char *pathp;
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 3399427..310d267 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -497,7 +497,7 @@ looks like in practice.
+       |   |- device_type = "cpu"
+       |   |- reg = <0>
+       |   |- clock-frequency = <5f5e1000>
+-      |   |- linux,boot-cpu
++      |   |- 64-bit
+       |   |- linux,phandle = <2>
+       |
+       o memory@0
+@@ -519,7 +519,7 @@ physical memory layout.  It also include
+ through /chosen, like in this example, the platform type (mandatory)
+ and the kernel command line arguments (optional).
+ 
+-The /cpus/PowerPC,970@0/linux,boot-cpu property is an example of a
++The /cpus/PowerPC,970@0/64-bit property is an example of a
+ property without a value. All other properties have a value. The
+ significance of the #address-cells and #size-cells properties will be
+ explained in chapter IV which defines precisely the required nodes and
+@@ -778,7 +778,6 @@ address which can extend beyond that lim
+       bytes
+     - d-cache-size : one cell, size of L1 data cache in bytes
+     - i-cache-size : one cell, size of L1 instruction cache in bytes
+-    - linux, boot-cpu : Should be defined if this cpu is the boot cpu.
+ 
+   Recommended properties:
+ 
+diff --git a/arch/powerpc/boot/dts/kuroboxHG.dts b/arch/powerpc/boot/dts/kuroboxHG.dts
+index d06b0b0..7531027 100644
+--- a/arch/powerpc/boot/dts/kuroboxHG.dts
++++ b/arch/powerpc/boot/dts/kuroboxHG.dts
+@@ -35,7 +35,6 @@ build with: "dtc -f -I dts -O dtb -o kur
+ 
+ 		PowerPC,603e { /* Really 8241 */
+ 			linux,phandle = <2100>;
+-			linux,boot-cpu;
+ 			device_type = "cpu";
+ 			reg = <0>;
+ 			clock-frequency = <fdad680>;	/* Fixed by bootwrapper */
+diff --git a/arch/powerpc/boot/dts/mpc7448hpc2.dts b/arch/powerpc/boot/dts/mpc7448hpc2.dts
+index c4d9562..4164351 100644
+--- a/arch/powerpc/boot/dts/mpc7448hpc2.dts
++++ b/arch/powerpc/boot/dts/mpc7448hpc2.dts
+@@ -23,7 +23,7 @@
+ 		#address-cells = <1>;
+ 		#size-cells =<0>;
+ 		linux,phandle = <200>;
+-				
++
+ 		PowerPC,7448@0 {
+ 			device_type = "cpu";
+ 			reg = <0>;
+@@ -36,7 +36,6 @@
+ 			bus-frequency = <0>;		// From U-Boot
+ 			32-bit;
+ 			linux,phandle = <201>;
+-			linux,boot-cpu;
+ 		};
+ 	};
+ 
+@@ -152,7 +151,7 @@
+ 			#address-cells = <3>;
+ 			reg = <1000 1000>;
+ 			bus-range = <0 0>;
+-			ranges = <02000000 0 e0000000 e0000000 0 1A000000	
++			ranges = <02000000 0 e0000000 e0000000 0 1A000000
+ 				  01000000 0 00000000 fa000000 0 00010000>;
+ 			clock-frequency = <7f28154>;
+ 			interrupt-parent = <7400>;
+diff --git a/arch/powerpc/boot/dts/mpc8272ads.dts b/arch/powerpc/boot/dts/mpc8272ads.dts
+index 26b44f7..c9ffc12 100644
+--- a/arch/powerpc/boot/dts/mpc8272ads.dts
++++ b/arch/powerpc/boot/dts/mpc8272ads.dts
+@@ -34,7 +34,6 @@
+                        clock-frequency = <0>;
+                        32-bit;
+                        linux,phandle = <201>;
+-                       linux,boot-cpu;
+                };
+        };
+ 
+@@ -53,13 +52,6 @@
+                reg = <00000000 4000000 f4500000 00000020>;
+        };
+ 
+-       chosen {
+-               name = "chosen";
+-               linux,platform = <0>;
+-               interrupt-controller = <10c00>;
+-               linux,phandle = <400>;
+-       };
+-
+        soc8272@f0000000 {
+                #address-cells = <1>;
+                #size-cells = <1>;
+diff --git a/arch/powerpc/boot/dts/mpc8323emds.dts b/arch/powerpc/boot/dts/mpc8323emds.dts
+index fa7ef24..eaf0f86 100644
+--- a/arch/powerpc/boot/dts/mpc8323emds.dts
++++ b/arch/powerpc/boot/dts/mpc8323emds.dts
+@@ -34,7 +34,6 @@
+ 			clock-frequency = <0>;
+ 			32-bit;
+ 			linux,phandle = <201>;
+-			linux,boot-cpu;
+ 		};
+ 	};
+ 
+@@ -174,7 +173,7 @@
+ 			built-in;
+ 			device_type = "ipic";
+ 		};
 -		
 +
- 		p += 4;
- 		if (tag == OF_DT_END_NODE) {
- 			depth --;
-@@ -148,7 +148,7 @@ int __init of_scan_flat_dt(int (*it)(uns
- 		}
- 		rc = it(p, pathp, depth, data);
- 		if (rc != 0)
--			break;		
-+			break;
- 	} while(1);
- 
- 	return rc;
-@@ -791,7 +791,7 @@ static int __init early_init_dt_scan_roo
- 	prop = of_get_flat_dt_prop(node, "#address-cells", NULL);
- 	dt_root_addr_cells = (prop == NULL) ? 2 : *prop;
- 	DBG("dt_root_addr_cells = %x\n", dt_root_addr_cells);
+ 		par_io@1400 {
+ 			reg = <1400 100>;
+ 			device_type = "par_io";
+@@ -237,11 +236,11 @@
+ 		reg = <e0100000 480>;
+ 		brg-frequency = <0>;
+ 		bus-frequency = <BCD3D80>;
+-		
++
+ 		muram@10000 {
+ 			device_type = "muram";
+ 			ranges = <0 00010000 00004000>;
 -	
 +
- 	/* break now */
- 	return 1;
- }
-@@ -927,7 +927,7 @@ static void __init early_reserve_mem(voi
- 	lmb_reserve(self_base, self_size);
+ 			data-only@0 {
+ 				reg = <0 4000>;
+ 			};
+diff --git a/arch/powerpc/boot/dts/mpc8360emds.dts b/arch/powerpc/boot/dts/mpc8360emds.dts
+index 9022192..303bd66 100644
+--- a/arch/powerpc/boot/dts/mpc8360emds.dts
++++ b/arch/powerpc/boot/dts/mpc8360emds.dts
+@@ -39,7 +39,6 @@
+ 			clock-frequency = <1F78A400>;
+ 			32-bit;
+ 			linux,phandle = <201>;
+-			linux,boot-cpu;
+ 		};
+ 	};
  
- #ifdef CONFIG_PPC32
--	/* 
-+	/*
- 	 * Handle the case where we might be booting from an old kexec
- 	 * image that setup the mem_rsvmap as pairs of 32-bit values
- 	 */
-@@ -1613,13 +1613,44 @@ const void *get_property(const struct de
- EXPORT_SYMBOL(get_property);
+diff --git a/arch/powerpc/boot/dts/mpc8560ads.dts b/arch/powerpc/boot/dts/mpc8560ads.dts
+index 119bd5d..c74d6eb 100644
+--- a/arch/powerpc/boot/dts/mpc8560ads.dts
++++ b/arch/powerpc/boot/dts/mpc8560ads.dts
+@@ -35,7 +35,6 @@
+ 			clock-frequency = <312c8040>;
+ 			32-bit;
+ 			linux,phandle = <201>;
+-			linux,boot-cpu;
+ 		};
+ 	};
  
- /*
-+ * Search the device tree for the best MAC address to use.  'mac-address' is
-+ * checked first, because that is supposed to contain to "most recent" MAC
-+ * address. If that isn't set, then 'local-mac-address' is checked next,
-+ * because that is the default address.  If that isn't set, then the obsolete
-+ * 'address' is checked, just in case we're using an old device tree.
-+ *
-+ * All-zero MAC addresses are rejected, because those could be properties that
-+ * exist in the device tree, but were not set by U-Boot.  For example, the
-+ * DTS could define 'mac-address' and 'local-mac-address', with zero MAC
-+ * addresses.  Some older U-Boots only initialized 'local-mac-address'.  In
-+ * this case, the real MAC is in 'local-mac-address', and 'mac-address' exists
-+ * but is all zeros.
-+*/
-+const void *of_get_mac_address(struct device_node *np)
-+{
-+	static const u8 null_mac_address[6] = { 0 };
-+	const void *mac_addr;
+diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+index f0c7731..258fccb 100644
+--- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
++++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
+@@ -32,7 +32,6 @@
+ 			bus-frequency = <0>;		// From uboot
+ 			clock-frequency = <0>;		// From uboot
+ 			32-bit;
+-			linux,boot-cpu;
+ 		};
+ 		PowerPC,8641@1 {
+ 			device_type = "cpu";
+@@ -142,7 +141,7 @@
+ 			interrupt-parent = <40000>;
+ 			phy-handle = <2452001>;
+ 		};
+-		
 +
-+	mac_addr = get_property(np, "mac-address", NULL);
-+	if (mac_addr && (memcmp(mac_addr, null_mac_address, 6) != 0))
-+		return mac_addr;
-+
-+	mac_addr = get_property(np, "local-mac-address", NULL);
-+	if (mac_addr && (memcmp(mac_addr, null_mac_address, 6) != 0))
-+		return mac_addr;
-+
-+	return get_property(np, "address", NULL);
-+}
-+EXPORT_SYMBOL(of_get_mac_address);
-+
-+/*
-  * Add a property to a node
-  */
- int prom_add_property(struct device_node* np, struct property* prop)
- {
- 	struct property **next;
+ 		ethernet@26000 {
+ 			#address-cells = <1>;
+ 			#size-cells = <0>;
+diff --git a/arch/powerpc/boot/dts/mpc866ads.dts b/arch/powerpc/boot/dts/mpc866ads.dts
+index 5d40052..2b56b5d 100644
+--- a/arch/powerpc/boot/dts/mpc866ads.dts
++++ b/arch/powerpc/boot/dts/mpc866ads.dts
+@@ -37,7 +37,6 @@
+ 			interrupts = <f 2>;	// decrementer interrupt
+ 			interrupt-parent = <ff000000>;
+ 			linux,phandle = <201>;
+-			linux,boot-cpu;
+ 		};
+ 	};
  
--	prop->next = NULL;	
-+	prop->next = NULL;
- 	write_lock(&devtree_lock);
- 	next = &np->properties;
- 	while (*next) {
-diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
-index 34161bc..d20f029 100644
---- a/arch/powerpc/sysdev/fsl_soc.c
-+++ b/arch/powerpc/sysdev/fsl_soc.c
-@@ -233,14 +233,7 @@ static int __init gfar_of_init(void)
- 			goto err;
- 		}
+diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
+index cf1a19f..faecd08 100644
+--- a/arch/powerpc/boot/dts/mpc885ads.dts
++++ b/arch/powerpc/boot/dts/mpc885ads.dts
+@@ -37,7 +37,6 @@
+ 			interrupts = <f 2>;	// decrementer interrupt
+ 			interrupt-parent = <ff000000>;
+ 			linux,phandle = <201>;
+-			linux,boot-cpu;
+ 		};
+ 	};
  
--		mac_addr = get_property(np, "local-mac-address", NULL);
--		if (mac_addr == NULL)
--			mac_addr = get_property(np, "mac-address", NULL);
--		if (mac_addr == NULL) {
--			/* Obsolete */
--			mac_addr = get_property(np, "address", NULL);
--		}
--
-+		mac_addr = of_get_mac_address(np);
- 		if (mac_addr)
- 			memcpy(gfar_data.mac_addr, mac_addr, 6);
- 
-@@ -646,8 +639,9 @@ static int __init fs_enet_of_init(void)
- 			goto unreg;
- 		}
- 
--		mac_addr = get_property(np, "mac-address", NULL);
--		memcpy(fs_enet_data.macaddr, mac_addr, 6);
-+		mac_addr = of_get_mac_address(np);
-+		if (mac_addr)
-+			memcpy(fs_enet_data.macaddr, mac_addr, 6);
- 
- 		ph = get_property(np, "phy-handle", NULL);
- 		phy = of_find_node_by_phandle(*ph);
-@@ -931,8 +925,9 @@ static int __init fs_enet_of_init(void)
- 			goto err;
- 		r[0].name = enet_regs;
- 
--		mac_addr = (void *)get_property(np, "mac-address", NULL);
--		memcpy(fs_enet_data.macaddr, mac_addr, 6);
-+		mac_addr = of_get_mac_address(np);
-+		if (mac_addr)
-+			memcpy(fs_enet_data.macaddr, mac_addr, 6);
- 
- 		ph = (phandle *) get_property(np, "phy-handle", NULL);
- 		if (ph != NULL)
-diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index 0afee17..020ed01 100644
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -255,6 +255,8 @@ extern void kdump_move_device_tree(void)
- /* CPU OF node matching */
- struct device_node *of_get_cpu_node(int cpu, unsigned int *thread);
- 
-+/* Get the MAC address */
-+extern const void *of_get_mac_address(struct device_node *np);
- 
- /*
-  * OF interrupt mapping
 -- 
 1.4.4
