@@ -1,22 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4833DDE10F
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 04:37:47 +1100 (EST)
-In-Reply-To: <45D1F46C.4050901@freescale.com>
-References: <11710513671236-git-send-email-timur@freescale.com>
-	<45CCDEFB.5050504@ru.mvista.com> <45CCDFBC.1090104@freescale.com>
-	<45CCE07F.9040107@ru.mvista.com> <45D1F46C.4050901@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <5B1BBAE9-00FC-454B-8855-7D362DF59850@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Check mac-address first in fsl_soc.c
-Date: Tue, 13 Feb 2007 11:37:04 -0600
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BE5CCDDEC2
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 04:44:48 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1DHijS3019923
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 12:44:45 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1DHijwQ543676
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 10:44:45 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1DHihXs030855
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 10:44:44 -0700
+Subject: Re: [PATCH 6/16] Port 44x MMU definitions to ARCH=powerpc
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+In-Reply-To: <adafy9am14g.fsf@cisco.com>
+References: <20070213061024.B4A8CDDD0D@ozlabs.org>
+	<1171347875.20192.63.camel@localhost.localdomain>
+	<adafy9am14g.fsf@cisco.com>
+Content-Type: text/plain
+Date: Tue, 13 Feb 2007 11:45:41 -0600
+Message-Id: <1171388741.4003.55.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: David Gibson <david@gibson.dropbear.id.au>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,46 +37,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2007-02-13 at 09:13 -0800, Roland Dreier wrote:
+>  > > +typedef unsigned long long phys_addr_t;
+>  > > +extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
+>  > > +#define PHYS_FMT	"%16Lx"
+>  > 
+>  > Do we still need that fixup code ? Since we now have full 64 bits
+>  > capable ioremap, we don't need to play tricks anymore. I'd rather get
+>  > rid of them completely.
+> 
+> Maybe make the fixup code print a warning when it actually changes an
+> address below 4G so we can track down all the places relying on this?
 
-On Feb 13, 2007, at 11:25 AM, Timur Tabi wrote:
+That sounds like a good idea.  As boards get ported over, the authors
+will hopefully fix them up.
 
-> Sergei Shtylyov wrote:
->
->>    I'm mainly concerned about 85xx. I guess the needed change  
->> should be very alike...
->
-> I've submitted U-Boot patches for 83xx, 85xx, 86xx, and 5xxx to the  
-> maintainers.  You'll have to ask them when the patches will be  
-> applied.
->
->>> I wanted to keep my patch simple.
->>    That's clearly an over-simplification to repeat the same code  
->> thrice.
->
-> Actually, the 2nd and third instances are conditionally compiled,  
-> so in most cases only one instance of the code will actually be  
-> compiled.  gfar_of_init() should probably also be conditionally  
-> compiled, so if I make it a separate function, I'd have to prefix  
-> it with something like this:
->
-> #if defined(CONFIG_GIANFAR) || defined(CONFIG_CPM2) || defined 
-> (CONFIG_8xx)
->
-> and then I would need to pass a bunch of parameters.  I don't  
-> really think that's an improvement.
->
-> Paul, if there are no serious objections, please apply this patch.
-
-Paul asked me to look at this.
-
-I'd ask one style change.
-
-	if (!mac_addr || (memcmp(mac_addr, "\0\0\0\0\0", 6) == 0)) {
-
-How about something like comparing against a local null array  
-instead.  Something like:
-
-	u8 null_mac_addr[6] = { 0 };
-	if (!mac_addr || (memcmp(mac_addr, null_mac_addr, 6) == 0)) {
-
-- k
+josh
