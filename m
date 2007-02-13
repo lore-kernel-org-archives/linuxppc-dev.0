@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E898DDD01
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 11:27:38 +1100 (EST)
-Subject: Re: [PATCH 0/4] spidernet: support for Celleb
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20070212234959.GF923@austin.ibm.com>
-References: <200702070849.l178nvGC005341@toshiba.co.jp>
-	<20070212234959.GF923@austin.ibm.com>
-Content-Type: text/plain
-Date: Tue, 13 Feb 2007 11:24:10 +1100
-Message-Id: <1171326250.20192.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org, jgarzik@pobox.com,
-	jim@jklewis.com
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 13 Feb 2007 11:43:23 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
+Message-ID: <20070213004322.GA4894@localhost.localdomain>
+References: <200702121129.05004.sr@denx.de>
+	<1171281988.20192.1.camel@localhost.localdomain>
+	<ada7iun8bz3.fsf@cisco.com>
+	<1171310108.20192.7.camel@localhost.localdomain>
+	<E1HGhb3-0001fb-9M@jdl.com> <45D0CEC6.3010209@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45D0CEC6.3010209@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>,
+	Stefan Roese <sr@denx.de>, Roland Dreier <rdreier@cisco.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +24,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-02-12 at 17:49 -0600, Linas Vepstas wrote:
-> On Wed, Feb 07, 2007 at 05:49:50PM +0900, Ishizaki Kou wrote:
-> > This is a revised spidernet patch set based on
-> > netdev-2.6.git#upstream.
+On Mon, Feb 12, 2007 at 02:32:06PM -0600, Scott Wood wrote:
+> Jon Loeliger wrote:
+> > So, like, the other day Benjamin Herrenschmidt mumbled:
+> > 
+> >>Note that there are still things that we might want to change. For
+> >>example, I think we really should look into adding a macro mecanism
+> >>and/or an include mecanism to dtc so that we can do things like #include
+> >><ibm440gp.dtc> to get the base processor/SoC definition and then
+> >>"overlay" some properties on top of it (like emac phy mode etc...)
+> > 
+> > 
+> > What do people prefer here?  Straight CPP pre-run?
+> > Direct support built into dtc to do file-inclusion, macros?
 > 
-> Tested this series of patches together with Jen's "version 3" patch,
-> it worked for me. Code looks reasonable.  Thus
-> 
-> Acked-by: Linas Vepstas <linas@austin.ibm.com>
-> 
-> I'm somewhat unclear as to whethr I should be doing 
-> 
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> Simple textual macros would make it difficult to define 123A and 123B 
+> SoCs whose device tree nodes are mostly a generic 123, but require a few 
+> changes in various parts.  I'd rather see dtc support overlaying trees, 
+> with the "newer" tree able to add, modify, and remove nodes and 
+> properties from the "older", more generic tree.
 
-If the patch wasn't actually handled and passed-on by you or modified by
-you, then no. Acked-by is the way to go.
+We'll certainly need both macros and overlaying trees.  Since SoC
+nodes including external bus controllers in particular could have
+entire board-dependent subtrees hanging off them a mere macro isn't
+really sufficient.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org> too while at
-it.
+Simple overlaying to add nodes, and/or add or replace properties is
+pretty easy and natural to add.  Removing nodes or properties is
+rather uglier and I'd like to avoid if possible.
 
-Ben.
+More convenient overlaying, by say grafting to a given labelled node,
+rather than having to reproduce step-by-step the path to the overlaid
+node is more complex but should be doable.  The main thing is just
+working out a sane syntax.
+
+> Parametric macros (or "template" nodes) might be nice for a few things 
+> on top of that, though (preferably with better syntax than CPP).
+
+Yes, macros certainly want to be parametric.
+
+I'm leaning towards the conclusion that CPP won't quite cut it, for a
+handful of reasons.  But implementing macro and include support
+directly in dtc strikes me as something which could suck up an
+enormous amount of development.  I'm considering using m4.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
