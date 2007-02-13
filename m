@@ -1,17 +1,11 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 2D027DDF0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 07:36:09 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] Open Firmware serial port driver
-Date: Tue, 13 Feb 2007 21:35:38 +0100
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702132135.39056.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-	linux-serial@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17874.8572.761026.618811@cargo.ozlabs.ibm.com>
+Date: Wed, 14 Feb 2007 07:37:16 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: patches in powerpc.git
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,241 +15,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This can be used for serial ports that are connected to an
-OF platform bus but are not autodetected by the lecacy
-serial support.
-It will automatically take over devices that come from the
-legacy serial detection, which usually is only one device.
+These are the patches that are on the master branch of the powerpc.git
+repository on kernel.org.  I plan to ask Linus to pull them later
+today, along with whatever I get from Kumar's for_paulus branch, and
+probably David Gibson's "Use udbg_early_init() on ppc32" patch.
 
-In some cases, rtas may be set up to use the serial port
-in the firmware, which allows easier debugging before probing
-the serial ports. In this case, the "used-by-rtas" property
-must be set by the firmware. This patch also adds code to the
-legacy serial driver to check for this.
+Paul.
 
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+ Documentation/powerpc/booting-without-of.txt       |    4 
+ .../powerpc/mpc52xx-device-tree-bindings.txt       |  183 ++-
+ arch/powerpc/Kconfig                               |    2 
+ arch/powerpc/boot/dts/kuroboxHD.dts                |  148 ++
+ arch/powerpc/boot/dts/lite5200.dts                 |  135 +-
+ arch/powerpc/boot/dts/lite5200b.dts                |  135 +-
+ arch/powerpc/boot/dts/mpc8313erdb.dts              |  219 +++
+ arch/powerpc/boot/dts/mpc834x_mds.dts              |    6 
+ arch/powerpc/configs/linkstation_defconfig         |  118 +-
+ arch/powerpc/configs/mpc8313_rdb_defconfig         | 1409 ++++++++++++++++++++
+ arch/powerpc/configs/mpc834x_mds_defconfig         |    9 
+ arch/powerpc/kernel/cputable.c                     |    2 
+ arch/powerpc/kernel/head_44x.S                     |    2 
+ arch/powerpc/kernel/prom_init.c                    |   81 +
+ arch/powerpc/kernel/vdso.c                         |   34 
+ arch/powerpc/mm/mem.c                              |    3 
+ arch/powerpc/mm/pgtable_32.c                       |    2 
+ arch/powerpc/platforms/52xx/Makefile               |    2 
+ arch/powerpc/platforms/52xx/efika-pci.c            |  119 --
+ arch/powerpc/platforms/52xx/efika-setup.c          |  150 --
+ arch/powerpc/platforms/52xx/efika.c                |  243 +++
+ arch/powerpc/platforms/52xx/efika.h                |   19 
+ arch/powerpc/platforms/52xx/lite5200.c             |   29 
+ arch/powerpc/platforms/52xx/mpc52xx_common.c       |    4 
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c          |   10 
+ arch/powerpc/platforms/83xx/Kconfig                |   24 
+ arch/powerpc/platforms/83xx/Makefile               |    3 
+ arch/powerpc/platforms/83xx/mpc8313_rdb.c          |   99 +
+ arch/powerpc/platforms/83xx/mpc834x_itx.c          |    2 
+ arch/powerpc/platforms/83xx/mpc834x_mds.c          |  213 +++
+ arch/powerpc/platforms/83xx/mpc834x_sys.c          |  140 --
+ arch/powerpc/platforms/83xx/mpc834x_sys.h          |   23 
+ arch/powerpc/platforms/83xx/mpc83xx.h              |   18 
+ arch/powerpc/platforms/85xx/mpc85xx_ads.c          |    7 
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c          |   17 
+ arch/powerpc/platforms/Makefile                    |    2 
+ arch/powerpc/platforms/cell/spu_manage.c           |  102 -
+ arch/powerpc/platforms/cell/spufs/context.c        |   12 
+ arch/powerpc/platforms/cell/spufs/file.c           |  137 +-
+ arch/powerpc/platforms/cell/spufs/spufs.h          |    2 
+ arch/powerpc/platforms/celleb/htab.c               |   19 
+ arch/powerpc/platforms/embedded6xx/linkstation.c   |   12 
+ arch/powerpc/platforms/ps3/spu.c                   |   42 -
+ arch/powerpc/platforms/pseries/pci.c               |    4 
+ arch/powerpc/sysdev/fsl_soc.c                      |   78 +
+ arch/powerpc/sysdev/qe_lib/ucc_slow.c              |    6 
+ arch/ppc/configs/taishan_defconfig                 | 1077 +++++++++++++++
+ arch/ppc/kernel/ppc_ksyms.c                        |    2 
+ arch/ppc/mm/pgtable.c                              |    2 
+ arch/ppc/platforms/4xx/Kconfig                     |   10 
+ arch/ppc/platforms/4xx/Makefile                    |    1 
+ arch/ppc/platforms/4xx/taishan.c                   |  395 ++++++
+ arch/ppc/platforms/4xx/taishan.h                   |   67 +
+ arch/ppc/syslib/Makefile                           |    1 
+ drivers/ata/pata_mpc52xx.c                         |    6 
+ drivers/macintosh/adbhid.c                         |    4 
+ drivers/macintosh/apm_emu.c                        |    2 
+ drivers/macintosh/mac_hid.c                        |    4 
+ drivers/macintosh/therm_adt746x.c                  |    6 
+ drivers/macintosh/via-cuda.c                       |    2 
+ drivers/macintosh/via-macii.c                      |   10 
+ drivers/macintosh/via-maciisi.c                    |    6 
+ drivers/macintosh/via-pmu.c                        |   13 
+ drivers/macintosh/via-pmu68k.c                     |    4 
+ drivers/serial/mpc52xx_uart.c                      |    5 
+ include/asm-powerpc/floppy.h                       |  135 ++
+ include/asm-powerpc/systbl.h                       |    1 
+ include/asm-powerpc/ucc_slow.h                     |    2 
+ include/asm-powerpc/vdso.h                         |    5 
+ include/asm-ppc/ibm4xx.h                           |    4 
+ 70 files changed, 4765 insertions(+), 1029 deletions(-)
+ create mode 100644 arch/powerpc/boot/dts/kuroboxHD.dts
+ create mode 100644 arch/powerpc/boot/dts/mpc8313erdb.dts
+ rename arch/powerpc/boot/dts/{mpc8349emds.dts => mpc834x_mds.dts} (99%)
+ create mode 100644 arch/powerpc/configs/mpc8313_rdb_defconfig
+ delete mode 100644 arch/powerpc/platforms/52xx/efika-pci.c
+ delete mode 100644 arch/powerpc/platforms/52xx/efika-setup.c
+ create mode 100644 arch/powerpc/platforms/52xx/efika.c
+ delete mode 100644 arch/powerpc/platforms/52xx/efika.h
+ create mode 100644 arch/powerpc/platforms/83xx/mpc8313_rdb.c
+ create mode 100644 arch/powerpc/platforms/83xx/mpc834x_mds.c
+ delete mode 100644 arch/powerpc/platforms/83xx/mpc834x_sys.c
+ delete mode 100644 arch/powerpc/platforms/83xx/mpc834x_sys.h
+ create mode 100644 arch/ppc/configs/taishan_defconfig
+ create mode 100644 arch/ppc/platforms/4xx/taishan.c
+ create mode 100644 arch/ppc/platforms/4xx/taishan.h
 
----
+Akira Iguchi (1):
+      [POWERPC] Celleb: improve MMU hashtable locking
 
-Who will handle this driver? It is powerpc specific and
-hooks into powerpc code at one place, but it's also a 
-new driver for the (orphaned) serial layer.
+Benjamin Herrenschmidt (4):
+      [POWERPC] Fix vDSO page count calculation
+      [POWERPC] spufs: remove need for struct page for SPEs
+      [POWERPC] powerpc: Remove SPU struct pages for PS3
+      [POWERPC] spufs: Fix bitrot of the SPU mmap facility
 
-Could either Paul or Andrew merge this, or whoever
-else feels responsible?
+David Gibson (1):
+      [POWERPC] Remove ibm4{xx,4x}.h from arch/powerpc
 
- arch/powerpc/kernel/legacy_serial.c |   15 +
- drivers/serial/Kconfig              |   10 +
- drivers/serial/Makefile             |    1
- drivers/serial/of_serial.c          |  143 ++++++++++++++++
- 4 files changed, 169 insertions(+)
+Grant Likely (2):
+      [POWERPC] Fixup mp5200 drivers to match device tree changes
+      [POWERPC] mpc5200 device tree bindings refinement
 
-Index: linux-2.6/drivers/serial/Makefile
-===================================================================
---- linux-2.6.orig/drivers/serial/Makefile
-+++ linux-2.6/drivers/serial/Makefile
-@@ -58,3 +58,4 @@ obj-$(CONFIG_SERIAL_SGI_IOC3) += ioc3_se
- obj-$(CONFIG_SERIAL_ATMEL) += atmel_serial.o
- obj-$(CONFIG_SERIAL_UARTLITE) += uartlite.o
- obj-$(CONFIG_SERIAL_NETX) += netx-serial.o
-+obj-$(CONFIG_SERIAL_OF_PLATFORM) += of_serial.o
-Index: linux-2.6/drivers/serial/of_serial.c
-===================================================================
---- /dev/null
-+++ linux-2.6/drivers/serial/of_serial.c
-@@ -0,0 +1,143 @@
-+/*
-+ *  Serial Port driver for Open Firmware platform devices
-+ *
-+ *    Copyright (C) 2006 Arnd Bergmann <arnd@arndb.de>, IBM Corp.
-+ *
-+ *  This program is free software; you can redistribute it and/or
-+ *  modify it under the terms of the GNU General Public License
-+ *  as published by the Free Software Foundation; either version
-+ *  2 of the License, or (at your option) any later version.
-+ *
-+ */
-+#include <linux/init.h>
-+#include <linux/module.h>
-+#include <linux/serial_core.h>
-+#include <linux/serial_8250.h>
-+
-+#include <asm/of_platform.h>
-+#include <asm/prom.h>
-+
-+/*
-+ * Fill a struct uart_port for a given device node
-+ */
-+static int __devinit of_platform_serial_setup(struct of_device *ofdev,
-+					int type, struct uart_port *port)
-+{
-+	struct resource resource;
-+	struct device_node *np = ofdev->node;
-+	const unsigned int *clk, *spd;
-+	int ret;
-+
-+	memset(port, 0, sizeof *port);
-+	spd = get_property(np, "current-speed", NULL);
-+	clk = get_property(np, "clock-frequency", NULL);
-+	if (!clk) {
-+		dev_warn(&ofdev->dev, "no clock-frequency property set\n");
-+		return -ENODEV;
-+	}
-+
-+	ret = of_address_to_resource(np, 0, &resource);
-+	if (ret) {
-+		dev_warn(&ofdev->dev, "invalid address\n");
-+		return ret;
-+	}
-+
-+	spin_lock_init(&port->lock);
-+	port->mapbase = resource.start;
-+	port->irq = irq_of_parse_and_map(np, 0);
-+	port->iotype = UPIO_MEM;
-+	port->type = type;
-+	port->uartclk = *clk;
-+	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP;
-+	port->dev = &ofdev->dev;
-+	port->custom_divisor = *clk / (16 * (*spd));
-+
-+	return 0;
-+}
-+
-+/*
-+ * Try to register a serial port
-+ */
-+static int __devinit of_platform_serial_probe(struct of_device *ofdev,
-+						const struct of_device_id *id)
-+{
-+	struct uart_port port;
-+	int port_type;
-+	int ret;
-+
-+	if (of_find_property(ofdev->node, "used-by-rtas", NULL))
-+		return -EBUSY;
-+
-+	port_type = (unsigned long)id->data;
-+	ret = of_platform_serial_setup(ofdev, port_type, &port);
-+	if (ret)
-+		goto out;
-+
-+	switch (port_type) {
-+	case PORT_UNKNOWN:
-+		dev_info(&ofdev->dev, "Unknown serial port found, "
-+			"attempting to use 8250 driver\n");
-+		/* fallthrough */
-+	case PORT_8250 ... PORT_MAX_8250:
-+		ret = serial8250_register_port(&port);
-+		break;
-+	default:
-+		/* need to add code for these */
-+		ret = -ENODEV;
-+		break;
-+	}
-+	if (ret < 0)
-+		goto out;
-+
-+	ofdev->dev.driver_data = (void *)(unsigned long)ret;
-+	return 0;
-+out:
-+	irq_dispose_mapping(port.irq);
-+	return ret;
-+}
-+
-+/*
-+ * Release a line
-+ */
-+static int of_platform_serial_remove(struct of_device *ofdev)
-+{
-+	int line = (unsigned long)ofdev->dev.driver_data;
-+	serial8250_unregister_port(line);
-+	return 0;
-+}
-+
-+/*
-+ * A few common types, add more as needed.
-+ */
-+static struct of_device_id __devinitdata of_platform_serial_table[] = {
-+	{ .type = "serial", .compatible = "ns8250",   .data = (void *)PORT_8250, },
-+	{ .type = "serial", .compatible = "ns16450",  .data = (void *)PORT_16450, },
-+	{ .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550, },
-+	{ .type = "serial", .compatible = "ns16750",  .data = (void *)PORT_16750, },
-+	{ .type = "serial",			      .data = (void *)PORT_UNKNOWN, },
-+	{ /* end of list */ },
-+};
-+
-+static struct of_platform_driver __devinitdata of_platform_serial_driver = {
-+	.owner = THIS_MODULE,
-+	.name = "of_serial",
-+	.probe = of_platform_serial_probe,
-+	.remove = of_platform_serial_remove,
-+	.match_table = of_platform_serial_table,
-+};
-+
-+static int __init of_platform_serial_init(void)
-+{
-+	return of_register_platform_driver(&of_platform_serial_driver);
-+}
-+module_init(of_platform_serial_init);
-+
-+static void __exit of_platform_serial_exit(void)
-+{
-+	return of_unregister_platform_driver(&of_platform_serial_driver);
-+};
-+module_exit(of_platform_serial_exit);
-+
-+MODULE_AUTHOR("Arnd Bergmann <arnd@arndb.de>");
-+MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("Serial Port driver for Open Firmware platform devices");
-Index: linux-2.6/drivers/serial/Kconfig
-===================================================================
---- linux-2.6.orig/drivers/serial/Kconfig
-+++ linux-2.6/drivers/serial/Kconfig
-@@ -999,4 +999,14 @@ config SERIAL_NETX_CONSOLE
- 	  If you have enabled the serial port on the Motorola IMX
- 	  CPU you can make it the console by answering Y to this option.
- 
-+config SERIAL_OF_PLATFORM
-+	tristate "Serial port on Open Firmware platform bus"
-+	depends on PPC_OF
-+	depends on SERIAL_8250
-+	help
-+	  If you have a PowerPC based system that has serial ports
-+	  on a platform specific bus, you should enable this option.
-+	  Currently, only 8250 compatible ports are supported, but
-+	  others can easily be added.
-+
- endmenu
-Index: linux-2.6/arch/powerpc/kernel/legacy_serial.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/legacy_serial.c
-+++ linux-2.6/arch/powerpc/kernel/legacy_serial.c
-@@ -124,6 +124,10 @@ static int __init add_legacy_soc_port(st
- 	if (get_property(np, "clock-frequency", NULL) == NULL)
- 		return -1;
- 
-+	/* if rtas uses this device, don't try to use it as well */
-+	if (get_property(np, "used-by-rtas", NULL) != NULL)
-+		return -1;
-+
- 	/* Get the address */
- 	addrp = of_get_address(soc_dev, 0, NULL, NULL);
- 	if (addrp == NULL)
-@@ -334,6 +338,17 @@ void __init find_legacy_serial_ports(voi
- 		of_node_put(tsi);
- 	}
- 
-+	/* First fill our array with opb bus ports */
-+	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16750")) != NULL;) {
-+		struct device_node *opb = of_get_parent(np);
-+		if (opb && !strcmp(opb->type, "opb")) {
-+			index = add_legacy_soc_port(np, np);
-+			if (index >= 0 && np == stdout)
-+				legacy_serial_console = index;
-+		}
-+		of_node_put(opb);
-+	}
-+
- #ifdef CONFIG_PCI
- 	/* Next, try to locate PCI ports */
- 	for (np = NULL; (np = of_find_all_nodes(np));) {
+Guennadi Liakhovetski (1):
+      [POWERPC] Update to linkstation / kurobox support
+
+Kim Phillips (2):
+      [POWERPC] 83xx: Add base support for the MPC8313E RDB
+      [POWERPC] 83xx: add the mpc8313erdb defconfig
+
+Kumar Gala (3):
+      [POWERPC] Fix is_power_of_4(x) compile error
+      [POWERPC] 85xx: Marked functions static
+      [POWERPC] 83xx: Updated and renamed MPC834x SYS to MPC834x MDS
+
+Li Yang (3):
+      [POWERPC] 83xx: Added new dr_mode property for usb controller on 83xx
+      [POWERPC] 83xx: Add USB setup code for MPC8349E MDS-PB
+      [POWERPC] 83xx: Add platform_device for USB DR peripheral driver
+
+Olaf Hering (3):
+      [POWERPC] move variables in drivers/macintosh to bss
+      [POWERPC] Mark winbond IDE PCI resources with start 0 as unassigned
+      [POWERPC] Correct AC Power: in /proc/pmu/info on ibook1
+
+Pavel Fedin (1):
+      [POWERPC] Virtual DMA support for floppy driver for new powerpc architecture
+
+Rojhalat Ibrahim (1):
+      [PPC] Fix compile error for e500 core based processors
+
+Stefan Roese (1):
+      [POWERPC] ppc: Add support for AMCC Taishan 440GX eval board
+
+Stephen Rothwell (2):
+      [POWERPC] Wire up sys_getcpu
+      [POWERPC] correct a prototype
+
+Sylvain Munaut (5):
+      [POWERPC] Add device tree fixups for the EFIKA
+      [POWERPC] Restore 'proper' link order in platform
+      [POWERPC] Use common 52xx of_platform probe code for EFIKA
+      [POWERPC] Fix unbalanced of_node_{get,put} in efika-setup.c
+      [POWERPC] Small cleanup of EFIKA platform
+
+Timur Tabi (1):
+      [POWERPC] QE: Rename ucc_slow_info.us_regs to ucc_slow_info.regs
