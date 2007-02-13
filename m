@@ -1,21 +1,22 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 278A7DDEE3
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 03:02:44 +1100 (EST)
-Subject: [PATCH 13/12] mpic: set IPIs to be per-CPU
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1170969252.2620.335.camel@localhost.localdomain>
-References: <20070207124536.963531000@sipsolutions.net>
-	<1170940611.4385.56.camel@johannes.berg>
-	<1170969252.2620.335.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Mon, 12 Feb 2007 16:20:18 +0100
-Message-Id: <1171293618.10344.11.camel@johannes.berg>
+Return-Path: <b07421@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9FA05DDEB6
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 03:07:47 +1100 (EST)
+Date: Tue, 13 Feb 2007 10:07:23 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: "Mark A. Greer" <mgreer@mvista.com>, linuxppc-dev@ozlabs.org,
+	paulus@samba.org
+Subject: Re: [PATCH 15/19] bootwrapper: Add initrd information to the device
+	tree in ft_finalize().
+Message-ID: <20070213160723.GC24815@ld0162-tx32.am.freescale.net>
+References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
+	<20070207230140.GO3849@ld0162-tx32.am.freescale.net>
+	<20070209230207.GA12035@mag.az.mvista.com>
+	<45D098E5.3090109@freescale.com>
+	<20070213042937.GC5345@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pm@lists.osdl.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070213042937.GC5345@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch changes the MPIC IPIs to be per-CPU to avoid getting a
-warning ("Cannot set affinity for irq 251") when taking a CPU
-offline via sysfs or during suspend.
+On Tue, Feb 13, 2007 at 03:29:37PM +1100, David Gibson wrote:
+> Why is cuboot's malloc() allocating the flat tree in a place that's in
+> danger of being clobbered by the kernel in the first place?
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+As the comment in cuboot.c explains, there's not enough room to do it any
+other way and still run on boards with only 8MiB of RAM -- the dts has to
+go above the wrapper image, and the "uncompressed" kernel has to go
+below, but the same heap is used for both.  I believe there are some 8xx
+boards out there with only this much; even if not, 8xx currently only
+maps 8MiB by default.  8xx isn't supported by this patchset, but I'd like
+to support it eventually.
 
----
-Yup, that's a lot better, thanks.
-
- arch/powerpc/sysdev/mpic.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
---- linux-2.6-git.orig/arch/powerpc/sysdev/mpic.c	2007-02-12 15:12:36.079524117 +0100
-+++ linux-2.6-git/arch/powerpc/sysdev/mpic.c	2007-02-12 15:23:18.812465943 +0100
-@@ -1388,7 +1388,7 @@ void mpic_request_ipis(void)
- 			printk(KERN_ERR "Failed to map IPI %d\n", i);
- 			break;
- 		}
--		request_irq(vipi, mpic_ipi_action, IRQF_DISABLED,
-+		request_irq(vipi, mpic_ipi_action, IRQF_DISABLED|IRQF_PERCPU,
- 			    ipi_names[i], mpic);
- 	}
- }
+-Scott
