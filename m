@@ -1,19 +1,21 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id A2A7ADDEFD
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 03:13:44 +1100 (EST)
-Date: Tue, 13 Feb 2007 10:13:37 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH 19/19] bootwrapper: compatibility layer for old U-Boots
-	(a.k.a. cuImage, cuboot)
-Message-ID: <20070213161337.GD24815@ld0162-tx32.am.freescale.net>
-References: <20070212205438.GB17285@ld0162-tx32.am.freescale.net>
-	<45D0DE6C.1040207@am.sony.com>
-Mime-Version: 1.0
+Return-Path: <pavel@ucw.cz>
+Received: from amd.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
+	by ozlabs.org (Postfix) with ESMTP id 69B49DDEDA
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 03:15:19 +1100 (EST)
+Date: Tue, 13 Feb 2007 17:14:23 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 05/12] power management: no valid states w/o pm_ops + docs
+Message-ID: <20070213161423.GA21461@elf.ucw.cz>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124612.176570000@sipsolutions.net>
+	<20070213121249.GJ18101@elf.ucw.cz>
+	<1171382920.10344.28.camel@johannes.berg>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45D0DE6C.1040207@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1171382920.10344.28.camel@johannes.berg>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
+	linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +25,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 12, 2007 at 01:38:52PM -0800, Geoff Levand wrote:
-> Scott Wood wrote:
-> > +config CUIMAGE_DTS
+Hi!
+
+> > > This patch changes /sys/power/state to not advertise any valid states
+> > > (except for disk if SOFTWARE_SUSPEND is enabled) when no pm_ops have been
+> > > set so userspace can easily discover what states should be available.
+> > > 
+> > > Also, because the pm ops in powermac are obviously not using them as
+> > > intended, I added documentation for it in kernel-doc format.
+> > > 
+> > > Reordering the fields in struct pm_ops not only makes the output of
+> > > kernel-doc make more sense but also removes a hole from the structure on
+> > > 64-bit platforms.
+> > > 
+> > > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> > > Cc: linux-pm@lists.osdl.org
+> > > Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> > > Cc: Pavel Macheck <pavel@ucw.cz>
+> > 
+> > Looks okay to me.
 > 
-> There is nothing CUIMAGE specific with this, so why make it so?  Other
-> platforms may like to use it.
+> Are you going to pick it up or should I send it to someone else?
 
-Fine, I'll make it BUILTIN_DTS or something.
+Add my Acked-by and send it to akpm. I do not actually maintain a
+tree.
 
-> It may be better to do it like this, as there will be more platforms that
-> need to hook in specific files.
-> 
-> src-plat-$(CONFIG_COMPAT_UIMAGE) += $(cuboot-plats:%=cuboot-%.c)
-> src-plat-$(CONFIG_XXX) += ...
-> src-plat-$(CONFIG_YYY) += ...
-> ...
-> src-plat := of.c $(src-plat-y)
-
-Take it up with Paul.  He said that all platform files shall always be
-built, and that the wrapper script picks which ones to link.
-
-> > +ifeq ($(CONFIG_COMPAT_UIMAGE),y)
-> > +cuboot-plat-$(CONFIG_83xx) += 83xx
-> > +cuboot-plat-$(CONFIG_85xx) += 85xx
-> > +cuboot-plat-$(CONFIG_86xx) += 86xx
-> > +cuboot-plat-y += unknown-platform
-> > +
-> > +$(obj)/uImage: vmlinux $(wrapperbits)
-> > +	$(call cmd,wrap_dt,cuboot-$(word 1,$(cuboot-plat-y)))
-> > +else
-> >  $(obj)/uImage: vmlinux $(wrapperbits)
-> >  	$(call cmd,wrap,uboot)
-> > +endif
-> 
-> It would be nice if you could make the logic such that you don't need this ifeq.
-
-Do you mean naming the target something other than uImage?
-
--Scott
+								Pavel
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
