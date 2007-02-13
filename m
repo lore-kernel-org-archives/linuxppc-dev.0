@@ -3,15 +3,15 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CC52EDDF5D
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 05:55:10 +1100 (EST)
-Date: Tue, 13 Feb 2007 12:52:25 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTP id 6E528DDF5F
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 05:55:37 +1100 (EST)
+Date: Tue, 13 Feb 2007 12:52:49 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: Add support for MPC8349E-mITX-GP
-In-Reply-To: <11710512363897-git-send-email-timur@freescale.com>
-Message-ID: <Pine.LNX.4.64.0702131252090.24347@localhost.localdomain>
-References: <11710512363897-git-send-email-timur@freescale.com>
+Subject: Re: [PATCH] Updated mpc834x_itx_defconfig
+In-Reply-To: <11710369101980-git-send-email-timur@freescale.com>
+Message-ID: <Pine.LNX.4.64.0702131252330.24347@localhost.localdomain>
+References: <11710369101980-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
 Cc: linuxppc-dev@ozlabs.org
@@ -26,11 +26,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Fri, 9 Feb 2007, Timur Tabi wrote:
 
-> This patch adds a defconfig and a DTS for the MPC8349E-mITX-GP, a variant of
-> the MPC8349E-mITX.
->
-> USB is disabled because the only active USB port currently is not supported
-> in the kernel.
+> This patch updates the defconfig for the MPC8349E-mITX.  In addition to picking
+> up changes from recent kernels, it turns off math emulation, disables support
+> for e100 (which doesn't ship with the system), turns off input devices,
+> turns on some I2C support, turns off HW monitoring (HW not yet supported),
+> turns off OHCI USB (not used), turns off USB gadget support (HW not yet
+> supported), turns on DOS FS support, and turns off kernel debugging.
 >
 > Signed-off-by: Timur Tabi <timur@freescale.com>
 
