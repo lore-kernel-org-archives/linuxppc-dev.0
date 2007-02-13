@@ -1,21 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id A991DDDE38
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 06:54:21 +1100 (EST)
-Message-ID: <45D21688.8090009@freescale.com>
-Date: Tue, 13 Feb 2007 13:50:32 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Check mac-address first in fsl_soc.c
-References: <11710513671236-git-send-email-timur@freescale.com>
-	<45CCDEFB.5050504@ru.mvista.com> <45CCDFBC.1090104@freescale.com>
-	<45CCE07F.9040107@ru.mvista.com> <45D1F46C.4050901@freescale.com>
-	<5B1BBAE9-00FC-454B-8855-7D362DF59850@kernel.crashing.org>
-	<45D1F92B.3000000@freescale.com>
-	<774F090A-27E6-4271-ABFE-FBFA7855D5AD@kernel.crashing.org>
-In-Reply-To: <774F090A-27E6-4271-ABFE-FBFA7855D5AD@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 60871DDEED
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 07:09:12 +1100 (EST)
+In-Reply-To: <20070213061026.5837FDDDE9@ozlabs.org>
+References: <20070213061026.5837FDDDE9@ozlabs.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 15/16] Add device tree for Ebony
+Date: Tue, 13 Feb 2007 21:08:52 +0100
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,11 +25,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I just had an idea.  The mac-address change should really be extended to all 
-OF-enabled Ethernet drivers.  How about I put get_mac_address() in 
-arch/powerpc/kernel/prom.c, right after get_property(), instead of making it an 
-inline function just for fsl_soc.c?
+> +	cpus {
+> +		#address-cells = <1>;
+> +		#size-cells = <0>;
+> +
+> +		PowerPC,440GP {
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+PowerPC,440GP@0
+
+> +			clock-frequency = <5F5E100>; /* 100MHz FIXME: poke in zImage */
+> +			timebase-frequency = <5F5E100>; /* 100MHz FIXME: wrong, poke in 
+> zImage */
+
+Can't you use decimal for these?
+
+> +	UIC0: interrupt-controller { /* UIC0 */
+
+> +		#address-cells = <0>;
+> +		#size-cells = <0>;
+
+#address-cells = 0 never makes sense.
+
+> +	plb {
+> +		device_type = "soc";
+> +		compatible = "ibm,plb-440gp", "ibm,plb4";
+> +		ranges;
+
+You need a #address-cells, #size-cells here.
+
+
+Segher
