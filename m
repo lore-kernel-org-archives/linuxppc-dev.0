@@ -1,12 +1,12 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 2/16] More DCR native fixups
+Subject: Re: [PATCH 3/16] [powerpc] Use udbg_early_init() on ppc32
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070213061024.518A9DDD0D@ozlabs.org>
-References: <20070213061024.518A9DDD0D@ozlabs.org>
+In-Reply-To: <20070213061024.7BB35DDD0C@ozlabs.org>
+References: <20070213061024.7BB35DDD0C@ozlabs.org>
 Content-Type: text/plain
-Date: Tue, 13 Feb 2007 17:22:00 +1100
-Message-Id: <1171347720.20192.57.camel@localhost.localdomain>
+Date: Tue, 13 Feb 2007 17:22:16 +1100
+Message-Id: <1171347737.20192.59.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,34 +19,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Tue, 2007-02-13 at 17:10 +1100, David Gibson wrote:
-> Getting BenH's new EMAC driver working on 440GP, I found some more
-> problems in the native mode paths of the new DCR code.  Here's a fix.
+> udbg_early_init() is a function used on 64 bit systems, which
+> initializes whichever early udbg backend is configured.  This function
+> is not called on 32-bit, however if btext early debug is enabled it
+> does have an explicit, inline, #ifdef-ed assignment performing
+> analagous initialization.
+> 
+> This patch makes things more uniform by folding the btext
+> initialization as an option into udbg_early_init() and calling that
+> from the 32-bit setup path.
 > 
 > Signed-off-by: David Gibson <dwg@au1.ibm.com>
 
 Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
-> ---
-> 
->  include/asm-powerpc/dcr-native.h |    4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> Index: working-2.6/include/asm-powerpc/dcr-native.h
-> ===================================================================
-> --- working-2.6.orig/include/asm-powerpc/dcr-native.h	2007-02-09 13:59:07.000000000 +1100
-> +++ working-2.6/include/asm-powerpc/dcr-native.h	2007-02-09 13:59:36.000000000 +1100
-> @@ -26,8 +26,8 @@ typedef struct {} dcr_host_t;
->  
->  #define DCR_MAP_OK(host)	(1)
->  
-> -#define dcr_map(dev, dcr_n, dcr_c)	{}
-> -#define dcr_unmap(host, dcr_n, dcr_c)	{}
-> +#define dcr_map(dev, dcr_n, dcr_c)	((dcr_host_t){})
-> +#define dcr_unmap(host, dcr_n, dcr_c)	do {} while (0)
->  #define dcr_read(host, dcr_n)		mfdcr(dcr_n)
->  #define dcr_write(host, dcr_n, value)	mtdcr(dcr_n, value)
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
