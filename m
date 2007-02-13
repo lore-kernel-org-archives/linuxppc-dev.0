@@ -1,22 +1,24 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9FA05DDEB6
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 03:07:47 +1100 (EST)
-Date: Tue, 13 Feb 2007 10:07:23 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: "Mark A. Greer" <mgreer@mvista.com>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org
-Subject: Re: [PATCH 15/19] bootwrapper: Add initrd information to the device
-	tree in ft_finalize().
-Message-ID: <20070213160723.GC24815@ld0162-tx32.am.freescale.net>
-References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
-	<20070207230140.GO3849@ld0162-tx32.am.freescale.net>
-	<20070209230207.GA12035@mag.az.mvista.com>
-	<45D098E5.3090109@freescale.com>
-	<20070213042937.GC5345@localhost.localdomain>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 71BABDDEC0
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 03:11:15 +1100 (EST)
+Subject: Re: [PATCH 05/12] power management: no valid states w/o pm_ops + docs
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Pavel Machek <pavel@ucw.cz>
+In-Reply-To: <20070213121249.GJ18101@elf.ucw.cz>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124612.176570000@sipsolutions.net>
+	<20070213121249.GJ18101@elf.ucw.cz>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-MZuE30Vyv1TAEKmO67T+"
+Date: Tue, 13 Feb 2007 17:08:40 +0100
+Message-Id: <1171382920.10344.28.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070213042937.GC5345@localhost.localdomain>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
+	linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 13, 2007 at 03:29:37PM +1100, David Gibson wrote:
-> Why is cuboot's malloc() allocating the flat tree in a place that's in
-> danger of being clobbered by the kernel in the first place?
 
-As the comment in cuboot.c explains, there's not enough room to do it any
-other way and still run on boards with only 8MiB of RAM -- the dts has to
-go above the wrapper image, and the "uncompressed" kernel has to go
-below, but the same heap is used for both.  I believe there are some 8xx
-boards out there with only this much; even if not, 8xx currently only
-maps 8MiB by default.  8xx isn't supported by this patchset, but I'd like
-to support it eventually.
+--=-MZuE30Vyv1TAEKmO67T+
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
--Scott
+On Tue, 2007-02-13 at 13:12 +0100, Pavel Machek wrote:
+> Hi!
+>=20
+> > This patch changes /sys/power/state to not advertise any valid states
+> > (except for disk if SOFTWARE_SUSPEND is enabled) when no pm_ops have be=
+en
+> > set so userspace can easily discover what states should be available.
+> >=20
+> > Also, because the pm ops in powermac are obviously not using them as
+> > intended, I added documentation for it in kernel-doc format.
+> >=20
+> > Reordering the fields in struct pm_ops not only makes the output of
+> > kernel-doc make more sense but also removes a hole from the structure o=
+n
+> > 64-bit platforms.
+> >=20
+> > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> > Cc: linux-pm@lists.osdl.org
+> > Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> > Cc: Pavel Macheck <pavel@ucw.cz>
+>=20
+> Looks okay to me.
+
+Are you going to pick it up or should I send it to someone else?
+
+johannes
+
+--=-MZuE30Vyv1TAEKmO67T+
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF0eKI/ETPhpq3jKURAuoRAJ0TI1Umq8VlvhT9MphCqq5DtmIF0gCfe265
+mp4wK77q7cqEHv2/4ih1quo=
+=c5z/
+-----END PGP SIGNATURE-----
+
+--=-MZuE30Vyv1TAEKmO67T+--
