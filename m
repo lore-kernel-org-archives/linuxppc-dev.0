@@ -1,21 +1,22 @@
-Return-Path: <pavel@ucw.cz>
-Received: from amd.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
-	by ozlabs.org (Postfix) with ESMTP id 69B49DDEDA
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 03:15:19 +1100 (EST)
-Date: Tue, 13 Feb 2007 17:14:23 +0100
-From: Pavel Machek <pavel@ucw.cz>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH 05/12] power management: no valid states w/o pm_ops + docs
-Message-ID: <20070213161423.GA21461@elf.ucw.cz>
-References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124612.176570000@sipsolutions.net>
-	<20070213121249.GJ18101@elf.ucw.cz>
-	<1171382920.10344.28.camel@johannes.berg>
-MIME-Version: 1.0
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 60F46DDF4A
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 03:27:28 +1100 (EST)
+Date: Tue, 13 Feb 2007 10:00:45 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 18/19] bootwrapper: Add xlate_reg(),
+	and use it to find serial registers.
+Message-ID: <20070213160045.GB24815@ld0162-tx32.am.freescale.net>
+References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
+	<20070207230145.GR3849@ld0162-tx32.am.freescale.net>
+	<20070209230700.GC12035@mag.az.mvista.com>
+	<45D09993.9050903@freescale.com>
+	<1171314615.4003.27.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1171382920.10344.28.camel@johannes.berg>
-Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
-	linux-pm@lists.osdl.org
+In-Reply-To: <1171314615.4003.27.camel@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi!
-
-> > > This patch changes /sys/power/state to not advertise any valid states
-> > > (except for disk if SOFTWARE_SUSPEND is enabled) when no pm_ops have been
-> > > set so userspace can easily discover what states should be available.
-> > > 
-> > > Also, because the pm ops in powermac are obviously not using them as
-> > > intended, I added documentation for it in kernel-doc format.
-> > > 
-> > > Reordering the fields in struct pm_ops not only makes the output of
-> > > kernel-doc make more sense but also removes a hole from the structure on
-> > > 64-bit platforms.
-> > > 
-> > > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> > > Cc: linux-pm@lists.osdl.org
-> > > Cc: Rafael J. Wysocki <rjw@sisk.pl>
-> > > Cc: Pavel Macheck <pavel@ucw.cz>
+On Mon, Feb 12, 2007 at 03:10:15PM -0600, Josh Boyer wrote:
+> On Mon, 2007-02-12 at 10:45 -0600, Scott Wood wrote:
+> > Mark A. Greer wrote:
+> > > Is this necessary?  Shouldn't there always be a virtual-reg?
 > > 
-> > Looks okay to me.
+> > None of the dts files in the kernel tree currently have such a property...
 > 
-> Are you going to pick it up or should I send it to someone else?
+> 4xx will use this.  The bootwrapper will use the UART mapping setup by
+> the firmware to print out to the console.  At least that is why it was
+> added to being with, and how I had it working on Ebony a while ago.
+> David may have changed it since.
 
-Add my Acked-by and send it to akpm. I do not actually maintain a
-tree.
+Note that my patch will still use virtual-reg if it is there; the ranges
+parsing is a fall back for the targets that don't need virtual-reg.
 
-								Pavel
--- 
-(english) http://www.livejournal.com/~pavelmachek
-(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
+-Scott
