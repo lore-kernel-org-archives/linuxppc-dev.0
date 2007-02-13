@@ -3,20 +3,24 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 357C1DDF6F
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 05:58:49 +1100 (EST)
-In-Reply-To: <CACCBE78-FE2A-4D1A-9E74-9298B8159DB9@freescale.com>
-References: <Pine.LNX.4.61.0702091727290.791@ld0175-tx32.am.freescale.net>
-	<Pine.LNX.4.64.0702131239010.23923@localhost.localdomain>
-	<CACCBE78-FE2A-4D1A-9E74-9298B8159DB9@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id E3E88DDF86
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 06:01:53 +1100 (EST)
+In-Reply-To: <45D208CB.9000407@freescale.com>
+References: <11710513671236-git-send-email-timur@freescale.com>
+	<45CCDEFB.5050504@ru.mvista.com> <45CCDFBC.1090104@freescale.com>
+	<45CCE07F.9040107@ru.mvista.com> <45D1F46C.4050901@freescale.com>
+	<5B1BBAE9-00FC-454B-8855-7D362DF59850@kernel.crashing.org>
+	<45D1F92B.3000000@freescale.com>
+	<774F090A-27E6-4271-ABFE-FBFA7855D5AD@kernel.crashing.org>
+	<45D208CB.9000407@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <31B49492-41E9-4C2F-8CEE-24E12A7C1003@kernel.crashing.org>
+Message-Id: <FA1C9423-376B-41EC-AC41-992FAB4D88F0@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Subject: [PATCH] Add support for the 8568 MDS board
-Date: Tue, 13 Feb 2007 12:58:08 -0600
-To: Andy Fleming <afleming@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Check mac-address first in fsl_soc.c
+Date: Tue, 13 Feb 2007 13:01:12 -0600
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,29 +31,44 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 13, 2007, at 12:48 PM, Andy Fleming wrote:
+On Feb 13, 2007, at 12:51 PM, Timur Tabi wrote:
 
+> Kumar Gala wrote:
 >
-> On Feb 13, 2007, at 12:39, Kumar Gala wrote:
->
->> On Fri, 9 Feb 2007, Andy Fleming wrote:
->>
+>>> If you still want null_mac_addr[], you would need to do this:
 >>>
->>>
->>> Signed-off-by: Andrew Fleming <afleming@freescale.com>
->>> ---
->>
->> Provide a comment in the email next time
+>>>     static const u8 null_mac_addr[6] = { 0 };
+>> Let's drop the static const part.
 >
+> Ok.
 >
-> Well, I agree the email looks sparse, but what kind of comment?  I  
-> couldn't think of anything of interest, unless you want a little  
-> press release about the 8568:
+> Now all I need to do is fix this error, that has nothing to do with  
+> my changes:
 >
-> "Introduces support for the 8568 MDS.  It sings, it dances, it can  
-> cut through a penny while routing ethernet packets.  It's the  
-> latest in Freescale SOC technology!"
+> arch/powerpc/sysdev/fsl_soc.c: In function 'gfar_of_init':
+> arch/powerpc/sysdev/fsl_soc.c:305: warning: ISO C90 forbids mixed  
+> declarations and code
+> arch/powerpc/sysdev/fsl_soc.c:308: error: invalid storage class for  
+> function 'fsl_i2c_of_init'
+> arch/powerpc/sysdev/fsl_soc.c:361: error: initializer element is  
+> not constant
+> arch/powerpc/sysdev/fsl_soc.c:365: error: invalid storage class for  
+> function 'mpc83xx_wdt_init'
+> arch/powerpc/sysdev/fsl_soc.c:423: error: initializer element is  
+> not constant
+> arch/powerpc/sysdev/fsl_soc.c:427: error: invalid storage class for  
+> function 'determine_usb_phy'
+> arch/powerpc/sysdev/fsl_soc.c:443: error: invalid storage class for  
+> function 'fsl_usb_of_init'
+> arch/powerpc/sysdev/fsl_soc.c:586: error: initializer element is  
+> not constant
+> arch/powerpc/sysdev/fsl_soc.c:586: error: syntax error at end of input
+> make[1]: *** [arch/powerpc/sysdev/fsl_soc.o] Error 1
+>
+> Looks like someone broke arch_initcall() or something.
 
-Duplicating the subject heading is fine.
+Odd, what config is this? (powerpc.git or linux.git)
+
+Just did a build of my powerpc.git tree w/o this issue.
 
 - k
