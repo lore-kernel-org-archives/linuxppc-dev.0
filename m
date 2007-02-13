@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 7/16] Early serial debug support for PPC44x
+Subject: [PATCH 8/16] Define FIXED_PORT flag for serial_core
 In-Reply-To: <20070213060904.GA6214@localhost.localdomain>
-Message-Id: <20070213061024.DA1ABDDD0C@ozlabs.org>
+Message-Id: <20070213061024.E2BECDDD0D@ozlabs.org>
 Date: Tue, 13 Feb 2007 17:10:24 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,250 +14,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for early serial debugging via the built in
-port on IBM/AMCC PowerPC 44x CPUs.  It uses a bolted TLB entry in
-address space 1 for the UART's mapping, allowing robust debugging both
-before and after the initialization of the MMU.
+At present, the serial core always allows setserial in userspace to
+change the port address, irq and base clock of any serial port.  That
+makes sense for legacy ISA ports, but not for (say) embedded ns16550
+compatible serial ports at peculiar addresses.  In these cases, the
+kernel code configuring the ports must know exactly where they are,
+and their clocking arrangements (which can be unusual on embedded
+boards).  It doesn't make sense for userspace to change these
+settings.
+
+Therefore, this patch defines a UPF_FIXED_PORT flag for the uart_port
+structure.  If this flag is set when the serial port is configured,
+any attempts to alter the port's type, io address, irq or base clock
+with setserial are ignored.
+
+In addition this patch uses the new flag when initializing serial
+ports for system-on-chip devices in
+arch/powerpc/kernel/legacy_serial.c
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/Kconfig.debug       |   18 +++++++++++----
- arch/powerpc/kernel/Makefile     |    1 
- arch/powerpc/kernel/head_44x.S   |   34 +++++++++++-----------------
- arch/powerpc/kernel/misc_44x.S   |   46 +++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/udbg.c       |    3 ++
- arch/powerpc/kernel/udbg_16550.c |   24 ++++++++++++++++++++
- include/asm-powerpc/mmu_44x.h    |    6 +++++
- include/asm-powerpc/udbg.h       |    1 
- 8 files changed, 107 insertions(+), 26 deletions(-)
+ arch/powerpc/kernel/legacy_serial.c |    3 ++-
+ drivers/serial/serial_core.c        |   22 +++++++++++++---------
+ include/linux/serial_core.h         |    1 +
+ 3 files changed, 16 insertions(+), 10 deletions(-)
 
-Index: working-2.6/arch/powerpc/Kconfig.debug
+Index: working-2.6/drivers/serial/serial_core.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/Kconfig.debug	2007-02-09 09:57:55.000000000 +1100
-+++ working-2.6/arch/powerpc/Kconfig.debug	2007-02-09 11:51:03.000000000 +1100
-@@ -130,11 +130,6 @@ config BOOTX_TEXT
- 	  Say Y here to see progress messages from the boot firmware in text
- 	  mode. Requires either BootX or Open Firmware.
+--- working-2.6.orig/drivers/serial/serial_core.c	2007-01-24 12:01:19.000000000 +1100
++++ working-2.6/drivers/serial/serial_core.c	2007-02-13 12:37:43.000000000 +1100
+@@ -672,19 +672,21 @@ static int uart_set_info(struct uart_sta
+ 	 */
+ 	mutex_lock(&state->mutex);
  
--config SERIAL_TEXT_DEBUG
--	bool "Support for early boot texts over serial port"
--	depends on 4xx || LOPEC || MV64X60 || PPLUS || PRPMC800 || \
--		PPC_GEN550 || PPC_MPC52xx
--
- config PPC_EARLY_DEBUG
- 	bool "Early debugging (dangerous)"
+-	change_irq  = new_serial.irq != port->irq;
++	change_irq  = !(port->flags & UPF_FIXED_PORT)
++		&& new_serial.irq != port->irq;
  
-@@ -199,6 +194,19 @@ config PPC_EARLY_DEBUG_BEAT
- 	help
- 	  Select this to enable early debugging for Celleb with Beat.
+ 	/*
+ 	 * Since changing the 'type' of the port changes its resource
+ 	 * allocations, we should treat type changes the same as
+ 	 * IO port changes.
+ 	 */
+-	change_port = new_port != port->iobase ||
+-		      (unsigned long)new_serial.iomem_base != port->mapbase ||
+-		      new_serial.hub6 != port->hub6 ||
+-		      new_serial.io_type != port->iotype ||
+-		      new_serial.iomem_reg_shift != port->regshift ||
+-		      new_serial.type != port->type;
++	change_port = !(port->flags & UPF_FIXED_PORT)
++		&& (new_port != port->iobase ||
++		    (unsigned long)new_serial.iomem_base != port->mapbase ||
++		    new_serial.hub6 != port->hub6 ||
++		    new_serial.io_type != port->iotype ||
++		    new_serial.iomem_reg_shift != port->regshift ||
++		    new_serial.type != port->type);
  
-+config PPC_EARLY_DEBUG_44x
-+	bool "Early serial debugging for IBM 44x CPUs"
-+	depends on 44x
-+	select PPC_UDBG_16550
-+	help
-+	  Select this to enable early debugging for IBM 44x chips via the
-+	  inbuilt serial port.
-+
- endchoice
+ 	old_flags = port->flags;
+ 	new_flags = new_serial.flags;
+@@ -796,8 +798,10 @@ static int uart_set_info(struct uart_sta
+ 		}
+ 	}
  
-+config PPC_EARLY_DEBUG_44x_PHYSADDR
-+	hex
-+	depends PPC_EARLY_DEBUG_44x
-+	default "0x140000200"
-+
- endmenu
-Index: working-2.6/arch/powerpc/kernel/head_44x.S
+-	port->irq              = new_serial.irq;
+-	port->uartclk          = new_serial.baud_base * 16;
++	if (change_irq)
++		port->irq      = new_serial.irq;
++	if (! (port->flags & UPF_FIXED_PORT))
++		port->uartclk  = new_serial.baud_base * 16;
+ 	port->flags            = (port->flags & ~UPF_CHANGE_MASK) |
+ 				 (new_flags & UPF_CHANGE_MASK);
+ 	port->custom_divisor   = new_serial.custom_divisor;
+Index: working-2.6/include/linux/serial_core.h
 ===================================================================
---- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-02-09 11:51:01.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-02-09 11:51:03.000000000 +1100
-@@ -172,36 +172,28 @@ skpinv:	addi	r4,r4,1				/* Increment */
- 	isync
+--- working-2.6.orig/include/linux/serial_core.h	2007-01-24 12:01:21.000000000 +1100
++++ working-2.6/include/linux/serial_core.h	2007-02-13 12:37:43.000000000 +1100
+@@ -260,6 +260,7 @@ struct uart_port {
+ #define UPF_CONS_FLOW		((__force upf_t) (1 << 23))
+ #define UPF_SHARE_IRQ		((__force upf_t) (1 << 24))
+ #define UPF_BOOT_AUTOCONF	((__force upf_t) (1 << 28))
++#define UPF_FIXED_PORT		((__force upf_t) (1 << 29))
+ #define UPF_DEAD		((__force upf_t) (1 << 30))
+ #define UPF_IOREMAP		((__force upf_t) (1 << 31))
  
- 4:
--#ifdef CONFIG_SERIAL_TEXT_DEBUG
--	/*
--	 * Add temporary UART mapping for early debug.
--	 * We can map UART registers wherever we want as long as they don't
--	 * interfere with other system mappings (e.g. with pinned entries).
--	 * For an example of how we handle this - see ocotea.h.       --ebs
--	 */
-+#ifdef CONFIG_PPC_EARLY_DEBUG_44x
-+	/* Add UART mapping for early debug. */
-+
-  	/* pageid fields */
--	lis	r3,UART0_IO_BASE@h
--	ori	r3,r3,PPC44x_TLB_VALID | PPC44x_TLB_4K
-+	lis	r3,PPC44x_EARLY_DEBUG_VIRTADDR@h
-+	ori	r3,r3,PPC44x_TLB_VALID|PPC44x_TLB_TS|PPC44x_TLB_64K
- 
- 	/* xlat fields */
--	lis	r4,UART0_PHYS_IO_BASE@h		/* RPN depends on SoC */
--#ifndef CONFIG_440EP
--	ori	r4,r4,0x0001		/* ERPN is 1 for second 4GB page */
--#endif
-+	lis	r4,CONFIG_PPC_EARLY_DEBUG_44x_PHYSADDR@h
-+	ori	r4,r4,(CONFIG_PPC_EARLY_DEBUG_44x_PHYSADDR >> 32)
- 
- 	/* attrib fields */
--	li	r5,0
--	ori	r5,r5,(PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_I | PPC44x_TLB_G)
--
--        li      r0,0                    /* TLB slot 0 */
-+	li	r5,(PPC44x_TLB_SW|PPC44x_TLB_SR|PPC44x_TLB_I|PPC44x_TLB_G)
-+        li      r0,62                    /* TLB slot 0 */
- 
--	tlbwe	r3,r0,PPC44x_TLB_PAGEID	/* Load the pageid fields */
--	tlbwe	r4,r0,PPC44x_TLB_XLAT	/* Load the translation fields */
--	tlbwe	r5,r0,PPC44x_TLB_ATTRIB	/* Load the attrib/access fields */
-+	tlbwe	r3,r0,PPC44x_TLB_PAGEID
-+	tlbwe	r4,r0,PPC44x_TLB_XLAT
-+	tlbwe	r5,r0,PPC44x_TLB_ATTRIB
- 
- 	/* Force context change */
- 	isync
--#endif /* CONFIG_SERIAL_TEXT_DEBUG */
-+#endif /* CONFIG_PPC_EARLY_DEBUG_44x */
- 
- 	/* Establish the interrupt vector offsets */
- 	SET_IVOR(0,  CriticalInput);
-Index: working-2.6/arch/powerpc/kernel/udbg_16550.c
+Index: working-2.6/arch/powerpc/kernel/legacy_serial.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/kernel/udbg_16550.c	2007-02-09 09:57:55.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/udbg_16550.c	2007-02-09 11:51:03.000000000 +1100
-@@ -191,3 +191,27 @@ void udbg_init_pas_realmode(void)
- 	udbg_getc_poll = NULL;
- }
- #endif /* CONFIG_PPC_MAPLE */
-+
-+#ifdef CONFIG_PPC_EARLY_DEBUG_44x
-+extern u8 as1_readb(volatile u8 __iomem  *addr);
-+extern void as1_writeb(u8 data, volatile u8 __iomem *addr);
-+
-+static void udbg_44x_as1_putc(char c)
-+{
-+	if (udbg_comport) {
-+		while ((as1_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
-+			/* wait for idle */;
-+		as1_writeb(c, &udbg_comport->thr); eieio();
-+		if (c == '\n')
-+			udbg_44x_as1_putc('\r');
-+	}
-+}
-+
-+void __init udbg_init_44x_as1(void)
-+{
-+	udbg_comport =
-+		(volatile struct NS16550 __iomem *)PPC44x_EARLY_DEBUG_VIRTADDR;
-+
-+	udbg_putc = udbg_44x_as1_putc;
-+}
-+#endif /* CONFIG_PPC_EARLY_DEBUG_44x */
-Index: working-2.6/include/asm-powerpc/mmu_44x.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/mmu_44x.h	2007-02-09 11:51:01.000000000 +1100
-+++ working-2.6/include/asm-powerpc/mmu_44x.h	2007-02-09 11:51:03.000000000 +1100
-@@ -68,7 +68,13 @@ typedef struct {
- #define PPC44x_PIN_SHIFT	28
- #define PPC_PIN_SIZE		(1 << PPC44x_PIN_SHIFT)
+--- working-2.6.orig/arch/powerpc/kernel/legacy_serial.c	2007-02-13 12:37:53.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/legacy_serial.c	2007-02-13 12:38:03.000000000 +1100
+@@ -115,7 +115,8 @@ static int __init add_legacy_soc_port(st
+ {
+ 	u64 addr;
+ 	const u32 *addrp;
+-	upf_t flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST | UPF_SHARE_IRQ;
++	upf_t flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST | UPF_SHARE_IRQ
++		| UPF_FIXED_PORT;
+ 	struct device_node *tsi = of_get_parent(np);
  
-+#ifndef CONFIG_PPC_EARLY_DEBUG_44x
- #define PPC44x_EARLY_TLBS	1
-+#else
-+#define PPC44x_EARLY_TLBS	2
-+#define PPC44x_EARLY_DEBUG_VIRTADDR	\
-+	(ASM_CONST(0xf0000000) | (CONFIG_PPC_EARLY_DEBUG_44x_PHYSADDR & 0xffff))
-+#endif
- 
- #endif /* _ASM_POWERPC_MMU_44X_H_ */
- 
-Index: working-2.6/arch/powerpc/kernel/udbg.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/udbg.c	2007-02-09 11:50:17.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/udbg.c	2007-02-09 11:51:03.000000000 +1100
-@@ -51,6 +51,9 @@ void __init udbg_early_init(void)
- 	udbg_init_pas_realmode();
- #elif defined(CONFIG_BOOTX_TEXT)
- 	udbg_init_btext();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_44x)
-+	/* PPC44x debug */
-+	udbg_init_44x_as1();
- #endif
- }
- 
-Index: working-2.6/include/asm-powerpc/udbg.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/udbg.h	2007-02-09 11:50:41.000000000 +1100
-+++ working-2.6/include/asm-powerpc/udbg.h	2007-02-09 11:51:03.000000000 +1100
-@@ -47,6 +47,7 @@ extern void __init udbg_init_rtas_panel(
- extern void __init udbg_init_rtas_console(void);
- extern void __init udbg_init_debug_beat(void);
- extern void __init udbg_init_btext(void);
-+extern void __init udbg_init_44x_as1(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
-Index: working-2.6/arch/powerpc/kernel/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/Makefile	2007-02-09 11:50:54.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/Makefile	2007-02-09 11:51:03.000000000 +1100
-@@ -54,6 +54,7 @@ obj-y				+= time.o prom.o traps.o setup-
- 				   udbg.o misc.o io.o
- obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
- obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
-+obj-$(CONFIG_44x)		+= misc_44x.o
- obj-$(CONFIG_PPC_MULTIPLATFORM)	+= prom_init.o
- obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
- obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
-Index: working-2.6/arch/powerpc/kernel/misc_44x.S
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/kernel/misc_44x.S	2007-02-09 11:51:03.000000000 +1100
-@@ -0,0 +1,46 @@
-+/*
-+ * This file contains miscellaneous low-level functions for PPC 44x.
-+ *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ *
-+ */
-+
-+#include <asm/reg.h>
-+#include <asm/ppc_asm.h>
-+
-+	.text
-+
-+/*
-+ * Do an IO access in AS1
-+ */
-+_GLOBAL(as1_readb)
-+	mfmsr	r7
-+	ori	r0,r7,MSR_DS
-+	sync
-+	mtmsr	r0
-+	sync
-+	isync
-+	lbz	r3,0(r3)
-+	sync
-+	mtmsr	r7
-+	sync
-+	isync
-+	blr
-+
-+_GLOBAL(as1_writeb)
-+	mfmsr	r7
-+	ori	r0,r7,MSR_DS
-+	sync
-+	mtmsr	r0
-+	sync
-+	isync
-+	stb	r3,0(r4)
-+	sync
-+	mtmsr	r7
-+	sync
-+	isync
-+	blr
+ 	/* We only support ports that have a clock frequency properly
