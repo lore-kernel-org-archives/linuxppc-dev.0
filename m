@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 9/16] Use resource_size_t for serial port IO addresses
+Subject: [PATCH 10/16] Add support for BSS stack for zImage wrapper
 In-Reply-To: <20070213060904.GA6214@localhost.localdomain>
-Message-Id: <20070213061025.1C2B3DDD0C@ozlabs.org>
+Message-Id: <20070213061025.50601DDD0D@ozlabs.org>
 Date: Tue, 13 Feb 2007 17:10:25 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,144 +14,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, various parts of the serial code use unsigned long to
-define resource addresses.  This is a problem, because some 32-bit
-platforms have physical addresses larger than 32-bits, and have mmio
-serial uarts located above the 4GB point.
-
-This patch changes the type of mapbase in both struct uart_port and
-struct plat_serial8250_port to resource_size_t, which can be
-configured to be 64 bits on such platforms.  The mapbase in
-serial_struct can't safely be changed, that structure is user visible.
+Some embedded powerpc firmwares don't set up a stack before the zImage
+wrapper enters, or set up a stack at an address which is not usable
+for some reason.  This patch provides an (optional) alternate,
+fixed-size stack included in the zImage's BSS area.  Platforms which
+need their own stack can use the USE_BSS_STACK macro in their platform
+.o files to force the BSS stack to be used instead of assuming that r1
+contains a usable stack pointer on entry.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- drivers/serial/8250.c        |    5 +++--
- drivers/serial/8250_early.c  |   16 +++++++++-------
- drivers/serial/serial_core.c |    9 +++++----
- include/linux/serial_8250.h  |    2 +-
- include/linux/serial_core.h  |    2 +-
- 5 files changed, 19 insertions(+), 15 deletions(-)
+ arch/powerpc/boot/Makefile    |    2 +-
+ arch/powerpc/boot/bss_stack.S |   17 +++++++++++++++++
+ arch/powerpc/boot/crt0.S      |   11 +++++++++--
+ arch/powerpc/boot/ops.h       |    3 +++
+ 4 files changed, 30 insertions(+), 3 deletions(-)
 
-Index: working-2.6/include/linux/serial_core.h
+Index: working-2.6/arch/powerpc/boot/bss_stack.S
 ===================================================================
---- working-2.6.orig/include/linux/serial_core.h	2007-02-05 15:21:40.000000000 +1100
-+++ working-2.6/include/linux/serial_core.h	2007-02-05 15:21:40.000000000 +1100
-@@ -273,7 +273,7 @@ struct uart_port {
- 	const struct uart_ops	*ops;
- 	unsigned int		custom_divisor;
- 	unsigned int		line;			/* port index */
--	unsigned long		mapbase;		/* for ioremap */
-+	resource_size_t		mapbase;		/* for ioremap */
- 	struct device		*dev;			/* parent device */
- 	unsigned char		hub6;			/* this should be in the 8250 driver */
- 	unsigned char		unused[3];
-Index: working-2.6/drivers/serial/serial_core.c
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/bss_stack.S	2007-02-06 13:49:05.000000000 +1100
+@@ -0,0 +1,17 @@
++/*
++ * Copyright 2007 David Gibson, IBM Corporation.  <dwg@au1.ibm.com>
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ * NOTE: this code runs in 32 bit mode and is packaged as ELF32.
++ */
++
++	.section ".bss"
++	.weak	_bss_stack, _bss_stack_top
++	.globl	_bss_stack, _bss_stack_top
++_bss_stack:
++	.space	4096
++_bss_stack_top:
+Index: working-2.6/arch/powerpc/boot/crt0.S
 ===================================================================
---- working-2.6.orig/drivers/serial/serial_core.c	2007-02-05 15:21:40.000000000 +1100
-+++ working-2.6/drivers/serial/serial_core.c	2007-02-05 15:21:40.000000000 +1100
-@@ -633,7 +633,7 @@ static int uart_get_info(struct uart_sta
- 	tmp.hub6	    = port->hub6;
- 	tmp.io_type         = port->iotype;
- 	tmp.iomem_reg_shift = port->regshift;
--	tmp.iomem_base      = (void *)port->mapbase;
-+	tmp.iomem_base      = (void *)(unsigned long)port->mapbase;
+--- working-2.6.orig/arch/powerpc/boot/crt0.S	2007-02-06 13:48:27.000000000 +1100
++++ working-2.6/arch/powerpc/boot/crt0.S	2007-02-06 14:04:28.000000000 +1100
+@@ -11,6 +11,8 @@
  
- 	if (copy_to_user(retinfo, &tmp, sizeof(*retinfo)))
- 		return -EFAULT;
-@@ -1673,10 +1673,11 @@ static int uart_line_info(char *buf, str
- 		return 0;
+ #include "ppc_asm.h"
  
- 	mmio = port->iotype >= UPIO_MEM;
--	ret = sprintf(buf, "%d: uart:%s %s%08lX irq:%d",
-+	ret = sprintf(buf, "%d: uart:%s %s%08llX irq:%d",
- 			port->line, uart_type(port),
- 			mmio ? "mmio:0x" : "port:",
--			mmio ? port->mapbase : (unsigned long) port->iobase,
-+			mmio ? (unsigned long long)port->mapbase
-+		             : (unsigned long long) port->iobase,
- 			port->irq);
++	.weak	_bss_stack_top
++
+ 	.text
+ 	/* a procedure descriptor used when booting this as a COFF file */
+ _zimage_start_opd:
+@@ -59,6 +61,11 @@ _zimage_start:
+ 	sync
+ 	isync
  
- 	if (port->type == PORT_UNKNOWN) {
-@@ -2062,7 +2063,7 @@ uart_report_port(struct uart_driver *drv
- 	case UPIO_AU:
- 	case UPIO_TSI:
- 		snprintf(address, sizeof(address),
--			 "MMIO 0x%lx", port->mapbase);
-+			 "MMIO 0x%llx", (unsigned long long)port->mapbase);
- 		break;
- 	default:
- 		strlcpy(address, "*unknown*", sizeof(address));
-Index: working-2.6/drivers/serial/8250_early.c
+-	mr	r6,r1
+-	b	start
++	lis	r6,_bss_stack_top@ha
++	addi	r6,r6,_bss_stack_top@l
++	cmpwi	r6,0
++	beq	5f
++	mr	r1,r6
+ 
++5:	mr	r6,r1
++	b	start
+Index: working-2.6/arch/powerpc/boot/Makefile
 ===================================================================
---- working-2.6.orig/drivers/serial/8250_early.c	2007-02-05 15:20:46.000000000 +1100
-+++ working-2.6/drivers/serial/8250_early.c	2007-02-05 15:21:40.000000000 +1100
-@@ -145,8 +145,9 @@ static int __init parse_options(struct e
- 		port->mapbase = simple_strtoul(options + 5, &options, 0);
- 		port->membase = ioremap(port->mapbase, mapsize);
- 		if (!port->membase) {
--			printk(KERN_ERR "%s: Couldn't ioremap 0x%lx\n",
--				__FUNCTION__, port->mapbase);
-+			printk(KERN_ERR "%s: Couldn't ioremap 0x%llx\n",
-+				__FUNCTION__,
-+			       (unsigned long long)port->mapbase);
- 			return -ENOMEM;
- 		}
- 		mmio = 1;
-@@ -168,9 +169,10 @@ static int __init parse_options(struct e
- 			device->baud);
- 	}
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-06 13:48:27.000000000 +1100
++++ working-2.6/arch/powerpc/boot/Makefile	2007-02-06 14:15:08.000000000 +1100
+@@ -41,7 +41,7 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
+ 		$(addprefix $(obj)/,$(zlibheader))
  
--	printk(KERN_INFO "Early serial console at %s 0x%lx (options '%s')\n",
-+	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
- 		mmio ? "MMIO" : "I/O port",
--		mmio ? port->mapbase : (unsigned long) port->iobase,
-+		mmio ? (unsigned long long) port->mapbase
-+	             : (unsigned long long) port->iobase,
- 		device->options);
- 	return 0;
+ src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+-		ns16550.c serial.c simple_alloc.c div64.S util.S $(zlib)
++		ns16550.c serial.c simple_alloc.c div64.S util.S bss_stack.S $(zlib)
+ src-plat := of.c
+ src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
+ 
+Index: working-2.6/arch/powerpc/boot/ops.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/ops.h	2007-02-06 14:14:00.000000000 +1100
++++ working-2.6/arch/powerpc/boot/ops.h	2007-02-06 14:15:45.000000000 +1100
+@@ -100,4 +100,7 @@ static inline void exit(void)
+ 	for(;;);
  }
-@@ -236,10 +238,10 @@ static int __init early_uart_console_swi
- 	mmio = (port->iotype == UPIO_MEM);
- 	line = serial8250_start_console(port, device->options);
- 	if (line < 0)
--		printk("No ttyS device at %s 0x%lx for console\n",
-+		printk("No ttyS device at %s 0x%llx for console\n",
- 			mmio ? "MMIO" : "I/O port",
--			mmio ? port->mapbase :
--			    (unsigned long) port->iobase);
-+			mmio ? (unsigned long long) port->mapbase
-+		             : (unsigned long long) port->iobase);
  
- 	unregister_console(&early_uart_console);
- 	if (mmio)
-Index: working-2.6/include/linux/serial_8250.h
-===================================================================
---- working-2.6.orig/include/linux/serial_8250.h	2007-02-05 15:20:46.000000000 +1100
-+++ working-2.6/include/linux/serial_8250.h	2007-02-05 15:21:40.000000000 +1100
-@@ -20,7 +20,7 @@
- struct plat_serial8250_port {
- 	unsigned long	iobase;		/* io base address */
- 	void __iomem	*membase;	/* ioremap cookie or NULL */
--	unsigned long	mapbase;	/* resource base */
-+	resource_size_t	mapbase;	/* resource base */
- 	unsigned int	irq;		/* interrupt number */
- 	unsigned int	uartclk;	/* UART clock rate */
- 	unsigned char	regshift;	/* register shift */
-Index: working-2.6/drivers/serial/8250.c
-===================================================================
---- working-2.6.orig/drivers/serial/8250.c	2007-02-05 15:24:16.000000000 +1100
-+++ working-2.6/drivers/serial/8250.c	2007-02-05 15:24:34.000000000 +1100
-@@ -2456,8 +2456,9 @@ static int __devinit serial8250_probe(st
- 		ret = serial8250_register_port(&port);
- 		if (ret < 0) {
- 			dev_err(&dev->dev, "unable to register port at index %d "
--				"(IO%lx MEM%lx IRQ%d): %d\n", i,
--				p->iobase, p->mapbase, p->irq, ret);
-+				"(IO%lx MEM%llx IRQ%d): %d\n", i,
-+				p->iobase, (unsigned long long)p->mapbase,
-+				p->irq, ret);
- 		}
- 	}
- 	return 0;
++extern char _bss_stack[], _bss_stack_top[];
++#define USE_BSS_STACK	void *_bss_stack_ptr = &_bss_stack_top
++
+ #endif /* _PPC_BOOT_OPS_H_ */
