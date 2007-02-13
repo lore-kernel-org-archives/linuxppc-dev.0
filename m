@@ -1,33 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5554ADDEB7
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 07:20:32 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l1DKJu4k004611
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 15:19:56 -0500
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1DKKQ64469066
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 13:20:26 -0700
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1DKKPjC005085
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 13:20:26 -0700
-Subject: Re: [0/16] Preliminary Ebony (440GP) support for arch/powerpc
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <1171377431.4003.36.camel@zod.rchland.ibm.com>
-References: <20070213060904.GA6214@localhost.localdomain>
-	<1171377431.4003.36.camel@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Tue, 13 Feb 2007 14:21:20 -0600
-Message-Id: <1171398080.4003.68.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 2D027DDF0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 07:36:09 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] Open Firmware serial port driver
+Date: Tue, 13 Feb 2007 21:35:38 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702132135.39056.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
+	linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,958 +21,241 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-02-13 at 08:37 -0600, Josh Boyer wrote:
-> 
-> We're also missing an arch/powerpc/configs/ebony_defconfig.
+This can be used for serial ports that are connected to an
+OF platform bus but are not autodetected by the lecacy
+serial support.
+It will automatically take over devices that come from the
+legacy serial detection, which usually is only one device.
 
-So here's the defconfig I've been using.  It should work, but David
-might have a better one.
+In some cases, rtas may be set up to use the serial port
+in the firmware, which allows easier debugging before probing
+the serial ports. In this case, the "used-by-rtas" property
+must be set by the firmware. This patch also adds code to the
+legacy serial driver to check for this.
 
-josh
-
-
-
-Add defconfig for Ebony board to arch/powerpc
-
-Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
 ---
- arch/powerpc/configs/ebony_defconfig |  933 +++++++++++++++++++++++++++++++++++
- 1 file changed, 933 insertions(+)
 
+Who will handle this driver? It is powerpc specific and
+hooks into powerpc code at one place, but it's also a 
+new driver for the (orphaned) serial layer.
+
+Could either Paul or Andrew merge this, or whoever
+else feels responsible?
+
+ arch/powerpc/kernel/legacy_serial.c |   15 +
+ drivers/serial/Kconfig              |   10 +
+ drivers/serial/Makefile             |    1
+ drivers/serial/of_serial.c          |  143 ++++++++++++++++
+ 4 files changed, 169 insertions(+)
+
+Index: linux-2.6/drivers/serial/Makefile
+===================================================================
+--- linux-2.6.orig/drivers/serial/Makefile
++++ linux-2.6/drivers/serial/Makefile
+@@ -58,3 +58,4 @@ obj-$(CONFIG_SERIAL_SGI_IOC3) += ioc3_se
+ obj-$(CONFIG_SERIAL_ATMEL) += atmel_serial.o
+ obj-$(CONFIG_SERIAL_UARTLITE) += uartlite.o
+ obj-$(CONFIG_SERIAL_NETX) += netx-serial.o
++obj-$(CONFIG_SERIAL_OF_PLATFORM) += of_serial.o
+Index: linux-2.6/drivers/serial/of_serial.c
+===================================================================
 --- /dev/null
-+++ linux-2.6/arch/powerpc/configs/ebony_defconfig
-@@ -0,0 +1,933 @@
-+#
-+# Automatically generated make config: don't edit
-+# Linux kernel version: 2.6.20
-+# Tue Feb 13 09:54:36 2007
-+#
-+# CONFIG_PPC64 is not set
-+CONFIG_PPC32=y
-+CONFIG_PPC_MERGE=y
-+CONFIG_MMU=y
-+CONFIG_GENERIC_HARDIRQS=y
-+CONFIG_IRQ_PER_CPU=y
-+CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-+CONFIG_ARCH_HAS_ILOG2_U32=y
-+CONFIG_GENERIC_HWEIGHT=y
-+CONFIG_GENERIC_CALIBRATE_DELAY=y
-+CONFIG_GENERIC_FIND_NEXT_BIT=y
-+CONFIG_PPC=y
-+CONFIG_EARLY_PRINTK=y
-+CONFIG_GENERIC_NVRAM=y
-+CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
-+CONFIG_ARCH_MAY_HAVE_PC_FDC=y
-+CONFIG_PPC_OF=y
-+# CONFIG_PPC_UDBG_16550 is not set
-+# CONFIG_GENERIC_TBSYNC is not set
-+CONFIG_AUDIT_ARCH=y
-+CONFIG_GENERIC_BUG=y
-+# CONFIG_DEFAULT_UIMAGE is not set
-+
-+#
-+# Processor support
-+#
-+# CONFIG_CLASSIC32 is not set
-+# CONFIG_PPC_82xx is not set
-+# CONFIG_PPC_83xx is not set
-+# CONFIG_PPC_85xx is not set
-+# CONFIG_PPC_86xx is not set
-+# CONFIG_PPC_8xx is not set
-+# CONFIG_40x is not set
-+CONFIG_44x=y
-+# CONFIG_E200 is not set
-+CONFIG_PPC_DCR_NATIVE=y
-+# CONFIG_PPC_DCR_MMIO is not set
-+CONFIG_PPC_DCR=y
-+CONFIG_BOOKE=y
-+CONFIG_PTE_64BIT=y
-+CONFIG_PHYS_64BIT=y
-+CONFIG_NOT_COHERENT_CACHE=y
-+CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
-+
-+#
-+# Code maturity level options
-+#
-+CONFIG_EXPERIMENTAL=y
-+CONFIG_BROKEN_ON_SMP=y
-+CONFIG_INIT_ENV_ARG_LIMIT=32
-+
-+#
-+# General setup
-+#
-+CONFIG_LOCALVERSION=""
-+CONFIG_LOCALVERSION_AUTO=y
-+CONFIG_SWAP=y
-+CONFIG_SYSVIPC=y
-+# CONFIG_IPC_NS is not set
-+CONFIG_POSIX_MQUEUE=y
-+# CONFIG_BSD_PROCESS_ACCT is not set
-+# CONFIG_TASKSTATS is not set
-+# CONFIG_UTS_NS is not set
-+# CONFIG_AUDIT is not set
-+# CONFIG_IKCONFIG is not set
-+CONFIG_SYSFS_DEPRECATED=y
-+# CONFIG_RELAY is not set
-+# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
-+CONFIG_SYSCTL=y
-+CONFIG_EMBEDDED=y
-+CONFIG_SYSCTL_SYSCALL=y
-+CONFIG_KALLSYMS=y
-+# CONFIG_KALLSYMS_ALL is not set
-+# CONFIG_KALLSYMS_EXTRA_PASS is not set
-+CONFIG_HOTPLUG=y
-+CONFIG_PRINTK=y
-+CONFIG_BUG=y
-+CONFIG_ELF_CORE=y
-+CONFIG_BASE_FULL=y
-+CONFIG_FUTEX=y
-+CONFIG_EPOLL=y
-+CONFIG_SHMEM=y
-+CONFIG_SLAB=y
-+CONFIG_VM_EVENT_COUNTERS=y
-+CONFIG_RT_MUTEXES=y
-+# CONFIG_TINY_SHMEM is not set
-+CONFIG_BASE_SMALL=0
-+# CONFIG_SLOB is not set
-+
-+#
-+# Loadable module support
-+#
-+CONFIG_MODULES=y
-+CONFIG_MODULE_UNLOAD=y
-+# CONFIG_MODULE_FORCE_UNLOAD is not set
-+# CONFIG_MODVERSIONS is not set
-+# CONFIG_MODULE_SRCVERSION_ALL is not set
-+CONFIG_KMOD=y
-+
-+#
-+# Block layer
-+#
-+CONFIG_BLOCK=y
-+CONFIG_LBD=y
-+# CONFIG_BLK_DEV_IO_TRACE is not set
-+# CONFIG_LSF is not set
-+
-+#
-+# IO Schedulers
-+#
-+CONFIG_IOSCHED_NOOP=y
-+CONFIG_IOSCHED_AS=y
-+CONFIG_IOSCHED_DEADLINE=y
-+CONFIG_IOSCHED_CFQ=y
-+CONFIG_DEFAULT_AS=y
-+# CONFIG_DEFAULT_DEADLINE is not set
-+# CONFIG_DEFAULT_CFQ is not set
-+# CONFIG_DEFAULT_NOOP is not set
-+CONFIG_DEFAULT_IOSCHED="anticipatory"
-+CONFIG_PPC_GEN550=y
-+CONFIG_4xx=y
-+CONFIG_WANT_EARLY_SERIAL=y
-+
-+#
-+# AMCC 4xx options
-+#
-+# CONFIG_BAMBOO is not set
-+CONFIG_EBONY=y
-+# CONFIG_LUAN is not set
-+# CONFIG_OCOTEA is not set
-+CONFIG_440GP=y
-+CONFIG_440=y
-+CONFIG_IBM_OCP=y
-+# CONFIG_PPC4xx_DMA is not set
-+# CONFIG_MPIC is not set
-+
-+#
-+# Kernel options
-+#
-+# CONFIG_HIGHMEM is not set
-+# CONFIG_HZ_100 is not set
-+CONFIG_HZ_250=y
-+# CONFIG_HZ_300 is not set
-+# CONFIG_HZ_1000 is not set
-+CONFIG_HZ=250
-+CONFIG_PREEMPT_NONE=y
-+# CONFIG_PREEMPT_VOLUNTARY is not set
-+# CONFIG_PREEMPT is not set
-+CONFIG_BINFMT_ELF=y
-+# CONFIG_BINFMT_MISC is not set
-+# CONFIG_MATH_EMULATION is not set
-+CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
-+# CONFIG_PC_KEYBOARD is not set
-+CONFIG_ARCH_FLATMEM_ENABLE=y
-+CONFIG_ARCH_POPULATES_NODE_MAP=y
-+CONFIG_SELECT_MEMORY_MODEL=y
-+CONFIG_FLATMEM_MANUAL=y
-+# CONFIG_DISCONTIGMEM_MANUAL is not set
-+# CONFIG_SPARSEMEM_MANUAL is not set
-+CONFIG_FLATMEM=y
-+CONFIG_FLAT_NODE_MEM_MAP=y
-+# CONFIG_SPARSEMEM_STATIC is not set
-+CONFIG_SPLIT_PTLOCK_CPUS=4
-+CONFIG_RESOURCES_64BIT=y
-+CONFIG_ZONE_DMA_FLAG=1
-+# CONFIG_PROC_DEVICETREE is not set
-+CONFIG_CMDLINE_BOOL=y
-+CONFIG_CMDLINE="ip=on"
-+CONFIG_SECCOMP=y
-+CONFIG_ISA_DMA_API=y
-+
-+#
-+# Bus options
-+#
-+CONFIG_ZONE_DMA=y
-+# CONFIG_MPIC_WEIRD is not set
-+# CONFIG_PPC_I8259 is not set
-+CONFIG_PPC_INDIRECT_PCI=y
-+CONFIG_PCI=y
-+CONFIG_PCI_DOMAINS=y
-+# CONFIG_PCIEPORTBUS is not set
-+# CONFIG_PCI_DEBUG is not set
-+
-+#
-+# PCCARD (PCMCIA/CardBus) support
-+#
-+# CONFIG_PCCARD is not set
-+
-+#
-+# PCI Hotplug Support
-+#
-+# CONFIG_HOTPLUG_PCI is not set
-+
-+#
-+# Advanced setup
-+#
-+# CONFIG_ADVANCED_OPTIONS is not set
-+
-+#
-+# Default settings for advanced configuration options are used
-+#
-+CONFIG_HIGHMEM_START=0xfe000000
-+CONFIG_LOWMEM_SIZE=0x30000000
-+CONFIG_KERNEL_START=0xc0000000
-+CONFIG_TASK_SIZE=0x80000000
-+CONFIG_CONSISTENT_START=0xff100000
-+CONFIG_CONSISTENT_SIZE=0x00200000
-+CONFIG_BOOT_LOAD=0x01000000
-+
-+#
-+# Networking
-+#
-+CONFIG_NET=y
-+
-+#
-+# Networking options
-+#
-+# CONFIG_NETDEBUG is not set
-+CONFIG_PACKET=y
-+# CONFIG_PACKET_MMAP is not set
-+CONFIG_UNIX=y
-+CONFIG_XFRM=y
-+# CONFIG_XFRM_USER is not set
-+# CONFIG_XFRM_SUB_POLICY is not set
-+# CONFIG_XFRM_MIGRATE is not set
-+# CONFIG_NET_KEY is not set
-+CONFIG_INET=y
-+# CONFIG_IP_MULTICAST is not set
-+# CONFIG_IP_ADVANCED_ROUTER is not set
-+CONFIG_IP_FIB_HASH=y
-+CONFIG_IP_PNP=y
-+# CONFIG_IP_PNP_DHCP is not set
-+CONFIG_IP_PNP_BOOTP=y
-+# CONFIG_IP_PNP_RARP is not set
-+# CONFIG_NET_IPIP is not set
-+# CONFIG_NET_IPGRE is not set
-+# CONFIG_ARPD is not set
-+# CONFIG_SYN_COOKIES is not set
-+# CONFIG_INET_AH is not set
-+# CONFIG_INET_ESP is not set
-+# CONFIG_INET_IPCOMP is not set
-+# CONFIG_INET_XFRM_TUNNEL is not set
-+# CONFIG_INET_TUNNEL is not set
-+CONFIG_INET_XFRM_MODE_TRANSPORT=y
-+CONFIG_INET_XFRM_MODE_TUNNEL=y
-+CONFIG_INET_XFRM_MODE_BEET=y
-+CONFIG_INET_DIAG=y
-+CONFIG_INET_TCP_DIAG=y
-+# CONFIG_TCP_CONG_ADVANCED is not set
-+CONFIG_TCP_CONG_CUBIC=y
-+CONFIG_DEFAULT_TCP_CONG="cubic"
-+# CONFIG_TCP_MD5SIG is not set
-+
-+#
-+# IP: Virtual Server Configuration
-+#
-+# CONFIG_IP_VS is not set
-+# CONFIG_IPV6 is not set
-+# CONFIG_INET6_XFRM_TUNNEL is not set
-+# CONFIG_INET6_TUNNEL is not set
-+# CONFIG_NETWORK_SECMARK is not set
-+CONFIG_NETFILTER=y
-+# CONFIG_NETFILTER_DEBUG is not set
-+
-+#
-+# Core Netfilter Configuration
-+#
-+# CONFIG_NETFILTER_NETLINK is not set
-+# CONFIG_NF_CONNTRACK_ENABLED is not set
-+# CONFIG_NETFILTER_XTABLES is not set
-+
-+#
-+# IP: Netfilter Configuration
-+#
-+# CONFIG_IP_NF_QUEUE is not set
-+# CONFIG_IP_NF_IPTABLES is not set
-+# CONFIG_IP_NF_ARPTABLES is not set
-+
-+#
-+# DCCP Configuration (EXPERIMENTAL)
-+#
-+# CONFIG_IP_DCCP is not set
-+
-+#
-+# SCTP Configuration (EXPERIMENTAL)
-+#
-+# CONFIG_IP_SCTP is not set
-+
-+#
-+# TIPC Configuration (EXPERIMENTAL)
-+#
-+# CONFIG_TIPC is not set
-+# CONFIG_ATM is not set
-+# CONFIG_BRIDGE is not set
-+# CONFIG_VLAN_8021Q is not set
-+# CONFIG_DECNET is not set
-+# CONFIG_LLC2 is not set
-+# CONFIG_IPX is not set
-+# CONFIG_ATALK is not set
-+# CONFIG_X25 is not set
-+# CONFIG_LAPB is not set
-+# CONFIG_ECONET is not set
-+# CONFIG_WAN_ROUTER is not set
-+
-+#
-+# QoS and/or fair queueing
-+#
-+# CONFIG_NET_SCHED is not set
-+
-+#
-+# Network testing
-+#
-+# CONFIG_NET_PKTGEN is not set
-+# CONFIG_HAMRADIO is not set
-+# CONFIG_IRDA is not set
-+# CONFIG_BT is not set
-+# CONFIG_IEEE80211 is not set
-+
-+#
-+# Device Drivers
-+#
-+
-+#
-+# Generic Driver Options
-+#
-+CONFIG_STANDALONE=y
-+CONFIG_PREVENT_FIRMWARE_BUILD=y
-+CONFIG_FW_LOADER=y
-+# CONFIG_DEBUG_DRIVER is not set
-+# CONFIG_DEBUG_DEVRES is not set
-+# CONFIG_SYS_HYPERVISOR is not set
-+
-+#
-+# Connector - unified userspace <-> kernelspace linker
-+#
-+CONFIG_CONNECTOR=y
-+CONFIG_PROC_EVENTS=y
-+
-+#
-+# Memory Technology Devices (MTD)
-+#
-+# CONFIG_MTD is not set
-+
-+#
-+# Parallel port support
-+#
-+# CONFIG_PARPORT is not set
-+
-+#
-+# Plug and Play support
-+#
-+
-+#
-+# Block devices
-+#
-+# CONFIG_BLK_DEV_FD is not set
-+# CONFIG_BLK_CPQ_DA is not set
-+# CONFIG_BLK_CPQ_CISS_DA is not set
-+# CONFIG_BLK_DEV_DAC960 is not set
-+# CONFIG_BLK_DEV_UMEM is not set
-+# CONFIG_BLK_DEV_COW_COMMON is not set
-+# CONFIG_BLK_DEV_LOOP is not set
-+# CONFIG_BLK_DEV_NBD is not set
-+# CONFIG_BLK_DEV_SX8 is not set
-+# CONFIG_BLK_DEV_RAM is not set
-+# CONFIG_BLK_DEV_INITRD is not set
-+# CONFIG_CDROM_PKTCDVD is not set
-+# CONFIG_ATA_OVER_ETH is not set
-+
-+#
-+# Misc devices
-+#
-+# CONFIG_SGI_IOC4 is not set
-+# CONFIG_TIFM_CORE is not set
-+
-+#
-+# ATA/ATAPI/MFM/RLL support
-+#
-+# CONFIG_IDE is not set
-+
-+#
-+# SCSI device support
-+#
-+# CONFIG_RAID_ATTRS is not set
-+# CONFIG_SCSI is not set
-+# CONFIG_SCSI_NETLINK is not set
-+
-+#
-+# Serial ATA (prod) and Parallel ATA (experimental) drivers
-+#
-+# CONFIG_ATA is not set
-+
-+#
-+# Multi-device support (RAID and LVM)
-+#
-+# CONFIG_MD is not set
-+
-+#
-+# Fusion MPT device support
-+#
-+# CONFIG_FUSION is not set
-+
-+#
-+# IEEE 1394 (FireWire) support
-+#
-+# CONFIG_IEEE1394 is not set
-+
-+#
-+# I2O device support
-+#
-+# CONFIG_I2O is not set
-+
-+#
-+# Macintosh device drivers
-+#
-+# CONFIG_MAC_EMUMOUSEBTN is not set
-+# CONFIG_WINDFARM is not set
-+
-+#
-+# Network device support
-+#
-+CONFIG_NETDEVICES=y
-+# CONFIG_DUMMY is not set
-+# CONFIG_BONDING is not set
-+# CONFIG_EQUALIZER is not set
-+# CONFIG_TUN is not set
-+
-+#
-+# ARCnet devices
-+#
-+# CONFIG_ARCNET is not set
-+
-+#
-+# PHY device support
-+#
-+
-+#
-+# Ethernet (10 or 100Mbit)
-+#
-+# CONFIG_NET_ETHERNET is not set
-+# CONFIG_IBM_NEW_EMAC is not set
-+CONFIG_IBM_NEW_EMAC_ZMII=y
-+# CONFIG_IBM_NEW_EMAC_RGMII is not set
-+# CONFIG_IBM_NEW_EMAC_TAH is not set
-+# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
-+
-+#
-+# Ethernet (1000 Mbit)
-+#
-+# CONFIG_ACENIC is not set
-+# CONFIG_DL2K is not set
-+# CONFIG_E1000 is not set
-+# CONFIG_NS83820 is not set
-+# CONFIG_HAMACHI is not set
-+# CONFIG_YELLOWFIN is not set
-+# CONFIG_R8169 is not set
-+# CONFIG_SIS190 is not set
-+# CONFIG_SKGE is not set
-+# CONFIG_SKY2 is not set
-+# CONFIG_SK98LIN is not set
-+# CONFIG_TIGON3 is not set
-+# CONFIG_BNX2 is not set
-+# CONFIG_QLA3XXX is not set
-+
-+#
-+# Ethernet (10000 Mbit)
-+#
-+# CONFIG_CHELSIO_T1 is not set
-+# CONFIG_CHELSIO_T3 is not set
-+# CONFIG_IXGB is not set
-+# CONFIG_S2IO is not set
-+# CONFIG_MYRI10GE is not set
-+# CONFIG_NETXEN_NIC is not set
-+
-+#
-+# Token Ring devices
-+#
-+# CONFIG_TR is not set
-+
-+#
-+# Wireless LAN (non-hamradio)
-+#
-+# CONFIG_NET_RADIO is not set
-+
-+#
-+# Wan interfaces
-+#
-+# CONFIG_WAN is not set
-+# CONFIG_FDDI is not set
-+# CONFIG_HIPPI is not set
-+# CONFIG_PPP is not set
-+# CONFIG_SLIP is not set
-+# CONFIG_SHAPER is not set
-+# CONFIG_NETCONSOLE is not set
-+# CONFIG_NETPOLL is not set
-+# CONFIG_NET_POLL_CONTROLLER is not set
-+
-+#
-+# ISDN subsystem
-+#
-+# CONFIG_ISDN is not set
-+
-+#
-+# Telephony Support
-+#
-+# CONFIG_PHONE is not set
-+
-+#
-+# Input device support
-+#
-+CONFIG_INPUT=y
-+# CONFIG_INPUT_FF_MEMLESS is not set
-+
-+#
-+# Userland interfaces
-+#
-+CONFIG_INPUT_MOUSEDEV=y
-+CONFIG_INPUT_MOUSEDEV_PSAUX=y
-+CONFIG_INPUT_MOUSEDEV_SCREEN_X=1024
-+CONFIG_INPUT_MOUSEDEV_SCREEN_Y=768
-+# CONFIG_INPUT_JOYDEV is not set
-+# CONFIG_INPUT_TSDEV is not set
-+# CONFIG_INPUT_EVDEV is not set
-+# CONFIG_INPUT_EVBUG is not set
-+
-+#
-+# Input Device Drivers
-+#
-+# CONFIG_INPUT_KEYBOARD is not set
-+# CONFIG_INPUT_MOUSE is not set
-+# CONFIG_INPUT_JOYSTICK is not set
-+# CONFIG_INPUT_TOUCHSCREEN is not set
-+# CONFIG_INPUT_MISC is not set
-+
-+#
-+# Hardware I/O ports
-+#
-+CONFIG_SERIO=y
-+# CONFIG_SERIO_I8042 is not set
-+# CONFIG_SERIO_SERPORT is not set
-+# CONFIG_SERIO_PCIPS2 is not set
-+# CONFIG_SERIO_LIBPS2 is not set
-+# CONFIG_SERIO_RAW is not set
-+# CONFIG_GAMEPORT is not set
-+
-+#
-+# Character devices
-+#
-+# CONFIG_VT is not set
-+# CONFIG_SERIAL_NONSTANDARD is not set
-+
-+#
-+# Serial drivers
-+#
-+CONFIG_SERIAL_8250=y
-+CONFIG_SERIAL_8250_CONSOLE=y
-+CONFIG_SERIAL_8250_PCI=y
-+CONFIG_SERIAL_8250_NR_UARTS=4
-+CONFIG_SERIAL_8250_RUNTIME_UARTS=4
-+CONFIG_SERIAL_8250_EXTENDED=y
-+# CONFIG_SERIAL_8250_MANY_PORTS is not set
-+CONFIG_SERIAL_8250_SHARE_IRQ=y
-+# CONFIG_SERIAL_8250_DETECT_IRQ is not set
-+# CONFIG_SERIAL_8250_RSA is not set
-+
-+#
-+# Non-8250 serial port support
-+#
-+# CONFIG_SERIAL_UARTLITE is not set
-+CONFIG_SERIAL_CORE=y
-+CONFIG_SERIAL_CORE_CONSOLE=y
-+# CONFIG_SERIAL_JSM is not set
-+CONFIG_UNIX98_PTYS=y
-+# CONFIG_LEGACY_PTYS is not set
-+
-+#
-+# IPMI
-+#
-+# CONFIG_IPMI_HANDLER is not set
-+
-+#
-+# Watchdog Cards
-+#
-+# CONFIG_WATCHDOG is not set
-+CONFIG_HW_RANDOM=y
-+# CONFIG_NVRAM is not set
-+# CONFIG_GEN_RTC is not set
-+# CONFIG_DTLK is not set
-+# CONFIG_R3964 is not set
-+# CONFIG_APPLICOM is not set
-+# CONFIG_AGP is not set
-+# CONFIG_DRM is not set
-+# CONFIG_RAW_DRIVER is not set
-+
-+#
-+# TPM devices
-+#
-+# CONFIG_TCG_TPM is not set
-+
-+#
-+# I2C support
-+#
-+# CONFIG_I2C is not set
-+
-+#
-+# SPI support
-+#
-+# CONFIG_SPI is not set
-+# CONFIG_SPI_MASTER is not set
-+
-+#
-+# Dallas's 1-wire bus
-+#
-+# CONFIG_W1 is not set
-+
-+#
-+# Hardware Monitoring support
-+#
-+# CONFIG_HWMON is not set
-+# CONFIG_HWMON_VID is not set
-+
-+#
-+# Multimedia devices
-+#
-+# CONFIG_VIDEO_DEV is not set
-+
-+#
-+# Digital Video Broadcasting Devices
-+#
-+# CONFIG_DVB is not set
-+
-+#
-+# Graphics support
-+#
-+CONFIG_FIRMWARE_EDID=y
-+# CONFIG_FB is not set
-+# CONFIG_FB_IBM_GXT4500 is not set
-+# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
-+
-+#
-+# Sound
-+#
-+# CONFIG_SOUND is not set
-+
-+#
-+# HID Devices
-+#
-+# CONFIG_HID is not set
-+
-+#
-+# USB support
-+#
-+CONFIG_USB_ARCH_HAS_HCD=y
-+CONFIG_USB_ARCH_HAS_OHCI=y
-+CONFIG_USB_ARCH_HAS_EHCI=y
-+# CONFIG_USB is not set
-+
-+#
-+# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
-+#
-+
-+#
-+# USB Gadget Support
-+#
-+# CONFIG_USB_GADGET is not set
-+
-+#
-+# MMC/SD Card support
-+#
-+# CONFIG_MMC is not set
-+
-+#
-+# LED devices
-+#
-+# CONFIG_NEW_LEDS is not set
-+
-+#
-+# LED drivers
-+#
-+
-+#
-+# LED Triggers
-+#
-+
-+#
-+# InfiniBand support
-+#
-+# CONFIG_INFINIBAND is not set
-+
-+#
-+# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
-+#
-+
-+#
-+# Real Time Clock
-+#
-+# CONFIG_RTC_CLASS is not set
-+
-+#
-+# DMA Engine support
-+#
-+# CONFIG_DMA_ENGINE is not set
-+
-+#
-+# DMA Clients
-+#
-+
-+#
-+# DMA Devices
-+#
-+
-+#
-+# Auxiliary Display support
-+#
-+
-+#
-+# Virtualization
-+#
-+
-+#
-+# File systems
-+#
-+# CONFIG_EXT2_FS is not set
-+# CONFIG_EXT3_FS is not set
-+# CONFIG_EXT4DEV_FS is not set
-+# CONFIG_REISERFS_FS is not set
-+# CONFIG_JFS_FS is not set
-+# CONFIG_FS_POSIX_ACL is not set
-+# CONFIG_XFS_FS is not set
-+# CONFIG_GFS2_FS is not set
-+# CONFIG_OCFS2_FS is not set
-+# CONFIG_MINIX_FS is not set
-+# CONFIG_ROMFS_FS is not set
-+CONFIG_INOTIFY=y
-+CONFIG_INOTIFY_USER=y
-+# CONFIG_QUOTA is not set
-+CONFIG_DNOTIFY=y
-+# CONFIG_AUTOFS_FS is not set
-+# CONFIG_AUTOFS4_FS is not set
-+# CONFIG_FUSE_FS is not set
-+
-+#
-+# CD-ROM/DVD Filesystems
-+#
-+# CONFIG_ISO9660_FS is not set
-+# CONFIG_UDF_FS is not set
-+
-+#
-+# DOS/FAT/NT Filesystems
-+#
-+# CONFIG_MSDOS_FS is not set
-+# CONFIG_VFAT_FS is not set
-+# CONFIG_NTFS_FS is not set
-+
-+#
-+# Pseudo filesystems
-+#
-+CONFIG_PROC_FS=y
-+CONFIG_PROC_KCORE=y
-+CONFIG_PROC_SYSCTL=y
-+CONFIG_SYSFS=y
-+CONFIG_TMPFS=y
-+# CONFIG_TMPFS_POSIX_ACL is not set
-+# CONFIG_HUGETLB_PAGE is not set
-+CONFIG_RAMFS=y
-+# CONFIG_CONFIGFS_FS is not set
-+
-+#
-+# Miscellaneous filesystems
-+#
-+# CONFIG_ADFS_FS is not set
-+# CONFIG_AFFS_FS is not set
-+# CONFIG_HFS_FS is not set
-+# CONFIG_HFSPLUS_FS is not set
-+# CONFIG_BEFS_FS is not set
-+# CONFIG_BFS_FS is not set
-+# CONFIG_EFS_FS is not set
-+CONFIG_CRAMFS=y
-+# CONFIG_VXFS_FS is not set
-+# CONFIG_HPFS_FS is not set
-+# CONFIG_QNX4FS_FS is not set
-+# CONFIG_SYSV_FS is not set
-+# CONFIG_UFS_FS is not set
-+
-+#
-+# Network File Systems
-+#
-+CONFIG_NFS_FS=y
-+CONFIG_NFS_V3=y
-+# CONFIG_NFS_V3_ACL is not set
-+CONFIG_NFS_V4=y
-+CONFIG_NFS_DIRECTIO=y
-+# CONFIG_NFSD is not set
-+CONFIG_ROOT_NFS=y
-+CONFIG_LOCKD=y
-+CONFIG_LOCKD_V4=y
-+CONFIG_NFS_COMMON=y
-+CONFIG_SUNRPC=y
-+CONFIG_SUNRPC_GSS=y
-+CONFIG_RPCSEC_GSS_KRB5=y
-+# CONFIG_RPCSEC_GSS_SPKM3 is not set
-+# CONFIG_SMB_FS is not set
-+# CONFIG_CIFS is not set
-+# CONFIG_NCP_FS is not set
-+# CONFIG_CODA_FS is not set
-+# CONFIG_AFS_FS is not set
-+# CONFIG_9P_FS is not set
-+
-+#
-+# Partition Types
-+#
-+# CONFIG_PARTITION_ADVANCED is not set
-+CONFIG_MSDOS_PARTITION=y
-+
-+#
-+# Native Language Support
-+#
-+# CONFIG_NLS is not set
-+
-+#
-+# Distributed Lock Manager
-+#
-+# CONFIG_DLM is not set
-+
-+#
-+# Library routines
-+#
-+CONFIG_BITREVERSE=y
-+# CONFIG_CRC_CCITT is not set
-+# CONFIG_CRC16 is not set
-+CONFIG_CRC32=y
-+# CONFIG_LIBCRC32C is not set
-+CONFIG_ZLIB_INFLATE=y
-+CONFIG_PLIST=y
-+CONFIG_HAS_IOMEM=y
-+CONFIG_HAS_IOPORT=y
-+
-+#
-+# Instrumentation Support
-+#
-+# CONFIG_PROFILING is not set
-+
-+#
-+# Kernel hacking
-+#
-+CONFIG_PRINTK_TIME=y
-+CONFIG_ENABLE_MUST_CHECK=y
-+CONFIG_MAGIC_SYSRQ=y
-+# CONFIG_UNUSED_SYMBOLS is not set
-+# CONFIG_DEBUG_FS is not set
-+# CONFIG_HEADERS_CHECK is not set
-+CONFIG_DEBUG_KERNEL=y
-+# CONFIG_DEBUG_SHIRQ is not set
-+CONFIG_LOG_BUF_SHIFT=14
-+CONFIG_DETECT_SOFTLOCKUP=y
-+# CONFIG_SCHEDSTATS is not set
-+# CONFIG_DEBUG_SLAB is not set
-+# CONFIG_DEBUG_RT_MUTEXES is not set
-+# CONFIG_RT_MUTEX_TESTER is not set
-+# CONFIG_DEBUG_SPINLOCK is not set
-+# CONFIG_DEBUG_MUTEXES is not set
-+# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
-+# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
-+# CONFIG_DEBUG_KOBJECT is not set
-+# CONFIG_DEBUG_BUGVERBOSE is not set
-+# CONFIG_DEBUG_INFO is not set
-+# CONFIG_DEBUG_VM is not set
-+# CONFIG_DEBUG_LIST is not set
-+CONFIG_FORCED_INLINING=y
-+# CONFIG_RCU_TORTURE_TEST is not set
-+# CONFIG_DEBUG_STACKOVERFLOW is not set
-+# CONFIG_DEBUG_STACK_USAGE is not set
-+CONFIG_DEBUGGER=y
-+# CONFIG_KGDB is not set
-+# CONFIG_XMON is not set
-+# CONFIG_BDI_SWITCH is not set
-+# CONFIG_BOOTX_TEXT is not set
-+# CONFIG_PPC_EARLY_DEBUG is not set
-+
-+#
-+# Security options
-+#
-+# CONFIG_KEYS is not set
-+# CONFIG_SECURITY is not set
-+
-+#
-+# Cryptographic options
-+#
-+CONFIG_CRYPTO=y
-+CONFIG_CRYPTO_ALGAPI=y
-+CONFIG_CRYPTO_BLKCIPHER=y
-+CONFIG_CRYPTO_MANAGER=y
-+# CONFIG_CRYPTO_HMAC is not set
-+# CONFIG_CRYPTO_XCBC is not set
-+# CONFIG_CRYPTO_NULL is not set
-+# CONFIG_CRYPTO_MD4 is not set
-+CONFIG_CRYPTO_MD5=y
-+# CONFIG_CRYPTO_SHA1 is not set
-+# CONFIG_CRYPTO_SHA256 is not set
-+# CONFIG_CRYPTO_SHA512 is not set
-+# CONFIG_CRYPTO_WP512 is not set
-+# CONFIG_CRYPTO_TGR192 is not set
-+# CONFIG_CRYPTO_GF128MUL is not set
-+CONFIG_CRYPTO_ECB=m
-+CONFIG_CRYPTO_CBC=y
-+CONFIG_CRYPTO_PCBC=m
-+# CONFIG_CRYPTO_LRW is not set
-+CONFIG_CRYPTO_DES=y
-+# CONFIG_CRYPTO_FCRYPT is not set
-+# CONFIG_CRYPTO_BLOWFISH is not set
-+# CONFIG_CRYPTO_TWOFISH is not set
-+# CONFIG_CRYPTO_SERPENT is not set
-+# CONFIG_CRYPTO_AES is not set
-+# CONFIG_CRYPTO_CAST5 is not set
-+# CONFIG_CRYPTO_CAST6 is not set
-+# CONFIG_CRYPTO_TEA is not set
-+# CONFIG_CRYPTO_ARC4 is not set
-+# CONFIG_CRYPTO_KHAZAD is not set
-+# CONFIG_CRYPTO_ANUBIS is not set
-+# CONFIG_CRYPTO_DEFLATE is not set
-+# CONFIG_CRYPTO_MICHAEL_MIC is not set
-+# CONFIG_CRYPTO_CRC32C is not set
-+# CONFIG_CRYPTO_CAMELLIA is not set
-+# CONFIG_CRYPTO_TEST is not set
-+
-+#
-+# Hardware crypto devices
-+#
++++ linux-2.6/drivers/serial/of_serial.c
+@@ -0,0 +1,143 @@
++/*
++ *  Serial Port driver for Open Firmware platform devices
++ *
++ *    Copyright (C) 2006 Arnd Bergmann <arnd@arndb.de>, IBM Corp.
++ *
++ *  This program is free software; you can redistribute it and/or
++ *  modify it under the terms of the GNU General Public License
++ *  as published by the Free Software Foundation; either version
++ *  2 of the License, or (at your option) any later version.
++ *
++ */
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/serial_core.h>
++#include <linux/serial_8250.h>
++
++#include <asm/of_platform.h>
++#include <asm/prom.h>
++
++/*
++ * Fill a struct uart_port for a given device node
++ */
++static int __devinit of_platform_serial_setup(struct of_device *ofdev,
++					int type, struct uart_port *port)
++{
++	struct resource resource;
++	struct device_node *np = ofdev->node;
++	const unsigned int *clk, *spd;
++	int ret;
++
++	memset(port, 0, sizeof *port);
++	spd = get_property(np, "current-speed", NULL);
++	clk = get_property(np, "clock-frequency", NULL);
++	if (!clk) {
++		dev_warn(&ofdev->dev, "no clock-frequency property set\n");
++		return -ENODEV;
++	}
++
++	ret = of_address_to_resource(np, 0, &resource);
++	if (ret) {
++		dev_warn(&ofdev->dev, "invalid address\n");
++		return ret;
++	}
++
++	spin_lock_init(&port->lock);
++	port->mapbase = resource.start;
++	port->irq = irq_of_parse_and_map(np, 0);
++	port->iotype = UPIO_MEM;
++	port->type = type;
++	port->uartclk = *clk;
++	port->flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF | UPF_IOREMAP;
++	port->dev = &ofdev->dev;
++	port->custom_divisor = *clk / (16 * (*spd));
++
++	return 0;
++}
++
++/*
++ * Try to register a serial port
++ */
++static int __devinit of_platform_serial_probe(struct of_device *ofdev,
++						const struct of_device_id *id)
++{
++	struct uart_port port;
++	int port_type;
++	int ret;
++
++	if (of_find_property(ofdev->node, "used-by-rtas", NULL))
++		return -EBUSY;
++
++	port_type = (unsigned long)id->data;
++	ret = of_platform_serial_setup(ofdev, port_type, &port);
++	if (ret)
++		goto out;
++
++	switch (port_type) {
++	case PORT_UNKNOWN:
++		dev_info(&ofdev->dev, "Unknown serial port found, "
++			"attempting to use 8250 driver\n");
++		/* fallthrough */
++	case PORT_8250 ... PORT_MAX_8250:
++		ret = serial8250_register_port(&port);
++		break;
++	default:
++		/* need to add code for these */
++		ret = -ENODEV;
++		break;
++	}
++	if (ret < 0)
++		goto out;
++
++	ofdev->dev.driver_data = (void *)(unsigned long)ret;
++	return 0;
++out:
++	irq_dispose_mapping(port.irq);
++	return ret;
++}
++
++/*
++ * Release a line
++ */
++static int of_platform_serial_remove(struct of_device *ofdev)
++{
++	int line = (unsigned long)ofdev->dev.driver_data;
++	serial8250_unregister_port(line);
++	return 0;
++}
++
++/*
++ * A few common types, add more as needed.
++ */
++static struct of_device_id __devinitdata of_platform_serial_table[] = {
++	{ .type = "serial", .compatible = "ns8250",   .data = (void *)PORT_8250, },
++	{ .type = "serial", .compatible = "ns16450",  .data = (void *)PORT_16450, },
++	{ .type = "serial", .compatible = "ns16550",  .data = (void *)PORT_16550, },
++	{ .type = "serial", .compatible = "ns16750",  .data = (void *)PORT_16750, },
++	{ .type = "serial",			      .data = (void *)PORT_UNKNOWN, },
++	{ /* end of list */ },
++};
++
++static struct of_platform_driver __devinitdata of_platform_serial_driver = {
++	.owner = THIS_MODULE,
++	.name = "of_serial",
++	.probe = of_platform_serial_probe,
++	.remove = of_platform_serial_remove,
++	.match_table = of_platform_serial_table,
++};
++
++static int __init of_platform_serial_init(void)
++{
++	return of_register_platform_driver(&of_platform_serial_driver);
++}
++module_init(of_platform_serial_init);
++
++static void __exit of_platform_serial_exit(void)
++{
++	return of_unregister_platform_driver(&of_platform_serial_driver);
++};
++module_exit(of_platform_serial_exit);
++
++MODULE_AUTHOR("Arnd Bergmann <arnd@arndb.de>");
++MODULE_LICENSE("GPL");
++MODULE_DESCRIPTION("Serial Port driver for Open Firmware platform devices");
+Index: linux-2.6/drivers/serial/Kconfig
+===================================================================
+--- linux-2.6.orig/drivers/serial/Kconfig
++++ linux-2.6/drivers/serial/Kconfig
+@@ -999,4 +999,14 @@ config SERIAL_NETX_CONSOLE
+ 	  If you have enabled the serial port on the Motorola IMX
+ 	  CPU you can make it the console by answering Y to this option.
+ 
++config SERIAL_OF_PLATFORM
++	tristate "Serial port on Open Firmware platform bus"
++	depends on PPC_OF
++	depends on SERIAL_8250
++	help
++	  If you have a PowerPC based system that has serial ports
++	  on a platform specific bus, you should enable this option.
++	  Currently, only 8250 compatible ports are supported, but
++	  others can easily be added.
++
+ endmenu
+Index: linux-2.6/arch/powerpc/kernel/legacy_serial.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/legacy_serial.c
++++ linux-2.6/arch/powerpc/kernel/legacy_serial.c
+@@ -124,6 +124,10 @@ static int __init add_legacy_soc_port(st
+ 	if (get_property(np, "clock-frequency", NULL) == NULL)
+ 		return -1;
+ 
++	/* if rtas uses this device, don't try to use it as well */
++	if (get_property(np, "used-by-rtas", NULL) != NULL)
++		return -1;
++
+ 	/* Get the address */
+ 	addrp = of_get_address(soc_dev, 0, NULL, NULL);
+ 	if (addrp == NULL)
+@@ -334,6 +338,17 @@ void __init find_legacy_serial_ports(voi
+ 		of_node_put(tsi);
+ 	}
+ 
++	/* First fill our array with opb bus ports */
++	for (np = NULL; (np = of_find_compatible_node(np, "serial", "ns16750")) != NULL;) {
++		struct device_node *opb = of_get_parent(np);
++		if (opb && !strcmp(opb->type, "opb")) {
++			index = add_legacy_soc_port(np, np);
++			if (index >= 0 && np == stdout)
++				legacy_serial_console = index;
++		}
++		of_node_put(opb);
++	}
++
+ #ifdef CONFIG_PCI
+ 	/* Next, try to locate PCI ports */
+ 	for (np = NULL; (np = of_find_all_nodes(np));) {
