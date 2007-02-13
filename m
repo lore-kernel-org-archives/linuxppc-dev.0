@@ -1,20 +1,29 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 5761EDDDF8
+Return-Path: <yunfeizhang@sjtu.edu.cn>
+Received: from mx.sjtu.edu.cn (mx.sjtu.edu.cn [202.112.26.52])
+	by ozlabs.org (Postfix) with ESMTP id 01864DDEBB
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Feb 2007 22:42:59 +1100 (EST)
-Date: Tue, 13 Feb 2007 14:42:45 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: hs@denx.de
-Subject: Re: [PATCH] CPM_UART: Fixed SMC handling for CPM2 processors
-Message-ID: <20070213144245.51de948b@localhost.localdomain>
-In-Reply-To: <1171354187.5919.29.camel@Apollo>
-References: <1171276422.14090.54.camel@Apollo>
-	<20070212205500.1b7135fe@vitb.ru.mvista.com>
-	<1171354187.5919.29.camel@Apollo>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 13 Feb 2007 23:35:45 +1100 (EST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mx.sjtu.edu.cn (Postfix) with ESMTP id 411E22A0D01
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 13 Feb 2007 20:17:02 +0800 (CST)
+Received: from mx.sjtu.edu.cn ([127.0.0.1])
+	by localhost (mx [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
+	id 30885-07 for <linuxppc-embedded@ozlabs.org>;
+	Tue, 13 Feb 2007 20:17:02 +0800 (CST)
+Received: from sjtu.edu.cn (unknown [202.112.26.39])
+	by mx.sjtu.edu.cn (Postfix) with ESMTP id 2D38B2A0CF0
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 13 Feb 2007 20:17:02 +0800 (CST)
+Message-ID: <20070213201700.ebzmiez00skoocs8@webmail1.sjtu.edu.cn>
+Date: Tue, 13 Feb 2007 20:17:00 +0800
+From: yunfeizhang@sjtu.edu.cn
+To: linuxppc-embedded@ozlabs.org
+Subject: How can I boot a program from flash on ML403?
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=GB2312;
+	format="flowed"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,47 +34,8 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 13 Feb 2007 09:09:47 +0100
-Heiko Schocher wrote:
+hi, all:
 
-> Hello Vitaly,
-> 
-> Vitaly Bordug wrote:
-> > > I tried the Patch from Kalle Pokki
-> > > http://ozlabs.org/pipermail/linuxppc-embedded/2006-November/025108.html
-> > > 
-> > > but my SMC didnt work, without this patch, it works fine. I think
-> > > that the pram_base must be set the follwing way:
-> > > 
-> > Thanks for the patch, but I guess it requires a bit of
-> > investigation first since we cannot just drop ioremapped offset and
-> > get back to raw one that has been returned by platform_get_....
-> 
-> Ok, "Linux" writes/reads with the ioremapped Address in the Dualported
-> RAM we get with platform_get_...("pram"), thats Okay, but the CPM
-> needs the "real" Dualported RAM Address from this Area at offset
-> SMCx_BASE, which we get with platform_get_...("pram_base"), so it can
-> find the SMC Parameter RAM, he(CPM) didnt know anything about
-> ioremapped addresses.
-> 
-> > We require ioremap stuff for powerpc approach, and I think we'd
-> > have to figure out why ioremapped address did not satisfy smc (and
-> > I'll try on my 8xx).
-> 
-> Hmm... you mean the following?:
-> 
->   r = platform_get_resource_byname(pdev, IORESOURCE_MEM, "pram_base");
->   if (r) {
-> +           pram_base = (u32)ioremap(r->start, r->end - r->start + 1);
->             out_be16((u16 *)pram_base, base & 0xffff);
-> +           iounmap(pram_base);
->          }
-> 
-> But thats not, what I correct with my patch, the error was, that
-> we wrote the ioremapped address pram in pram_base and not the real
-> address ... and with this ioremapped address, the CPM cannot do
-> anything (I think).
-> 
+    I want to porting u-boot to ML403,but first I should master booting a common app from flash first.Who can tell how to do that?Any details about u-boot on ML403 is also prefered
 
-That is what I am about - I think there is a bit of confusion around the upper. I mean, we'll have to investigate
-what's happening in arch/powerpc since the SMC CPM works fine for me in aprch/powerpc with the ioremap stuff. Maybe it has to do something with io_block_map() and the ioremap - I'm not sure. Well it worths looking at it, if it will be unclear we can end up with #ifdef that areas to keep ppc/ happy at least.
+    Thanks for all your kindness!
