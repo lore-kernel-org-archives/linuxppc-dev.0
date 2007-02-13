@@ -1,14 +1,35 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 13 Feb 2007 15:54:22 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org
-Subject: Re: [resend] Use udbg_early_init() on ppc32
-Message-ID: <20070213045422.GE5345@localhost.localdomain>
-References: <20070209030827.GE3489@localhost.localdomain>
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2617ADDD0A
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 15:55:53 +1100 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l1D5A65m173994
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 16:10:11 +1100
+Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1D4w4xu071468
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 15:58:05 +1100
+Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
+	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1D4sW8k020300
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 15:54:32 +1100
+Date: Tue, 13 Feb 2007 15:30:44 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 18/19] bootwrapper: Add xlate_reg(),
+	and use it to find serial registers.
+Message-ID: <20070213043044.GD5345@localhost.localdomain>
+References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
+	<20070207230145.GR3849@ld0162-tx32.am.freescale.net>
+	<20070209230700.GC12035@mag.az.mvista.com>
+	<45D09993.9050903@freescale.com>
+	<1171314615.4003.27.camel@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070209030827.GE3489@localhost.localdomain>
+In-Reply-To: <1171314615.4003.27.camel@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,92 +39,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sorry, initial version of that patch broke compile on powermac 32-bit.
-Here's a fixed version.
+On Mon, Feb 12, 2007 at 03:10:15PM -0600, Josh Boyer wrote:
+> On Mon, 2007-02-12 at 10:45 -0600, Scott Wood wrote:
+> > Mark A. Greer wrote:
+> > > On Wed, Feb 07, 2007 at 05:01:45PM -0600, Scott Wood wrote:
+> > > 
+> > >>xlate_reg() uses the ranges properties of a node's parentage to find the
+> > >>absolute physical address of the node's registers.
+> > >>
+> > >>The ns16550 driver uses this when no virtual-reg property is found.
+> > > 
+> > > 
+> > > Is this necessary?  Shouldn't there always be a virtual-reg?
+> > 
+> > None of the dts files in the kernel tree currently have such a property...
+> 
+> 4xx will use this.  The bootwrapper will use the UART mapping setup by
+> the firmware to print out to the console.  At least that is why it was
+> added to being with, and how I had it working on Ebony a while ago.
+> David may have changed it since.
 
-[powerpc] Use udbg_early_init() on ppc32
-
-udbg_early_init() is a function used on 64 bit systems, which
-initializes whichever early udbg backend is configured.  This function
-is not called on 32-bit, however if btext early debug is enabled it
-does have an explicit, inline, #ifdef-ed assignment performing
-analagous initialization.
-
-This patch makes things more uniform by folding the btext
-initialization as an option into udbg_early_init() and calling that
-from the 32-bit setup path.
-
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
-
-Index: working-2.6/arch/powerpc/kernel/btext.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/btext.c	2007-01-24 12:01:17.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/btext.c	2007-02-13 15:53:18.000000000 +1100
-@@ -18,6 +18,7 @@
- #include <asm/io.h>
- #include <asm/lmb.h>
- #include <asm/processor.h>
-+#include <asm/udbg.h>
- 
- #define NO_SCROLL
- 
-@@ -912,3 +913,11 @@ static unsigned char vga_font[cmapsz] = 
- 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
- 0x00, 0x00, 0x00, 0x00,
- };
-+
-+void __init udbg_init_btext(void)
-+{
-+	/* If btext is enabled, we might have a BAT setup for early display,
-+	 * thus we do enable some very basic udbg output
-+	 */
-+	udbg_putc = btext_drawchar;
-+}
-Index: working-2.6/arch/powerpc/kernel/setup_32.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/setup_32.c	2007-02-09 09:57:55.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/setup_32.c	2007-02-13 15:50:54.000000000 +1100
-@@ -116,12 +116,8 @@ unsigned long __init early_init(unsigned
-  */
- void __init machine_init(unsigned long dt_ptr, unsigned long phys)
- {
--	/* If btext is enabled, we might have a BAT setup for early display,
--	 * thus we do enable some very basic udbg output
--	 */
--#ifdef CONFIG_BOOTX_TEXT
--	udbg_putc = btext_drawchar;
--#endif
-+	/* Enable early debugging if any specified (see udbg.h) */
-+	udbg_early_init();
- 
- 	/* Do some early initialization based on the flat device tree */
- 	early_init_devtree(__va(dt_ptr));
-Index: working-2.6/arch/powerpc/kernel/udbg.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/udbg.c	2007-02-09 09:57:55.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/udbg.c	2007-02-13 15:50:54.000000000 +1100
-@@ -49,6 +49,8 @@ void __init udbg_early_init(void)
- 	udbg_init_debug_beat();
- #elif defined(CONFIG_PPC_EARLY_DEBUG_PAS_REALMODE)
- 	udbg_init_pas_realmode();
-+#elif defined(CONFIG_BOOTX_TEXT)
-+	udbg_init_btext();
- #endif
- }
- 
-Index: working-2.6/include/asm-powerpc/udbg.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/udbg.h	2007-02-09 09:57:55.000000000 +1100
-+++ working-2.6/include/asm-powerpc/udbg.h	2007-02-13 15:50:54.000000000 +1100
-@@ -46,6 +46,7 @@ extern void __init udbg_init_iseries(voi
- extern void __init udbg_init_rtas_panel(void);
- extern void __init udbg_init_rtas_console(void);
- extern void __init udbg_init_debug_beat(void);
-+extern void __init udbg_init_btext(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
-
+No, I'm using virtual-reg on Ebony.  In fact I think I'm using your
+code for it.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
