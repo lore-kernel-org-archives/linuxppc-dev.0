@@ -1,17 +1,21 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 90EE7DDDE5
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 15186DDD08
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Feb 2007 08:53:20 +1100 (EST)
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-To: jgarzik@pobox.com
-Subject: [PATCH] gianfar: don't duplicate gfar_error()
-Date: Tue, 13 Feb 2007 01:53:07 +0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702130053.08031.sshtylyov@ru.mvista.com>
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+	Tue, 13 Feb 2007 13:40:18 +1100 (EST)
+Date: Mon, 12 Feb 2007 18:40:15 -0800
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Lonsn <lonsn2004@126.com>
+Subject: Re: How to force the 1000M network interface work in 100M mode?(AMCC
+	440GX, board based on ocotea)
+Message-ID: <20070213024015.GD9754@gate.ebshome.net>
+References: <45D123A9.50805@126.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45D123A9.50805@126.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,163 +26,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-It was hardly necessary to repeat most of the code from gfar_error() in
-gfar_interrupt(), especially having some inconsistencies between the two.
-So, make the gfar_interrupt() just call gfar_error(), and not acknowledge
-the interrupts itself as gfar_{receive/transmit/error}() do it anyway.
-While at it, also clarify/cleanup debug messages in gfar_error()...
+On Tue, Feb 13, 2007 at 10:34:17AM +0800, Lonsn wrote:
+> Hi, all:
+> We have design a new board based on AMCC ocotea board. The linux kernel 
+> version we use is 2.6.18 from kernel.org. The network interface is the 
+> same as ocotea(eth0 and eth1 work in SMII mode, eth2 and eth3 work in 
+> RGMII mode).The 1000Mbit ehernet physical transceiver chip is also 
+> CIS8201(VSC8201). These pins(ANEG_DIS,FRC_DPLX,MODE10,MODE100,MODE1000) 
+> of CIS8201 are set as 01111.
+> Maybe because of the signal integrity problem of the gigabit 
+> clock&data,eth3 doesn't work in 1000M mode(eth2 is ok). If we connect 
+> eth3 with a host which has 100M ethernet, then eth3 works in 100M mode 
+> well. If we connect eth3 with a host which has 1000M ethernet interface, 
+>  then eth3 can recognize the link is 1000Mbit, but ping is not ok.
+> So we want to force the eth3 work in 100M mode even eth3 is connected 
+> with a 1000M host.(we think the hardware is ok when eth3 works in 100M 
+> mode).
+> We have used ethtool in the board and in the host to force the eth3 work 
+> in 100M mode, but failed. Maybe we can't change this setting in 
+> userspace? or we should changed the IBM_EMAC driver?
+> Any suggestions?
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Use ethtool to limit advertised auto-negotiation mode or force 100 on 
+_both_ ends of the link. Probably, when you forced 100, you did it 
+only on 440GX side, that's why it failed. Personally, I prefer 
+"forcing" link speed by tweaking advertised modes, this way you have 
+to do this only on one side of the link.
 
----
-The patch survived netperf stressing on MPC8540ADS realtime kernel. :-)
-
- drivers/net/gianfar.c |   85 ++++++++------------------------------------------
- 1 files changed, 15 insertions(+), 70 deletions(-)
-
-Index: linux-2.6/drivers/net/gianfar.c
-===================================================================
---- linux-2.6.orig/drivers/net/gianfar.c
-+++ linux-2.6/drivers/net/gianfar.c
-@@ -10,6 +10,7 @@
-  * Maintainer: Kumar Gala
-  *
-  * Copyright (c) 2002-2006 Freescale Semiconductor, Inc.
-+ * Copyright (c) 2007 MontaVista Software, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -1613,71 +1614,17 @@ static irqreturn_t gfar_interrupt(int ir
- 	/* Save ievent for future reference */
- 	u32 events = gfar_read(&priv->regs->ievent);
- 
--	/* Clear IEVENT */
--	gfar_write(&priv->regs->ievent, events);
--
- 	/* Check for reception */
--	if ((events & IEVENT_RXF0) || (events & IEVENT_RXB0))
-+	if (events & IEVENT_RX_MASK)
- 		gfar_receive(irq, dev_id);
- 
- 	/* Check for transmit completion */
--	if ((events & IEVENT_TXF) || (events & IEVENT_TXB))
-+	if (events & IEVENT_TX_MASK)
- 		gfar_transmit(irq, dev_id);
- 
--	/* Update error statistics */
--	if (events & IEVENT_TXE) {
--		priv->stats.tx_errors++;
--
--		if (events & IEVENT_LC)
--			priv->stats.tx_window_errors++;
--		if (events & IEVENT_CRL)
--			priv->stats.tx_aborted_errors++;
--		if (events & IEVENT_XFUN) {
--			if (netif_msg_tx_err(priv))
--				printk(KERN_WARNING "%s: tx underrun. dropped packet\n", dev->name);
--			priv->stats.tx_dropped++;
--			priv->extra_stats.tx_underrun++;
--
--			/* Reactivate the Tx Queues */
--			gfar_write(&priv->regs->tstat, TSTAT_CLEAR_THALT);
--		}
--	}
--	if (events & IEVENT_BSY) {
--		priv->stats.rx_errors++;
--		priv->extra_stats.rx_bsy++;
--
--		gfar_receive(irq, dev_id);
--
--#ifndef CONFIG_GFAR_NAPI
--		/* Clear the halt bit in RSTAT */
--		gfar_write(&priv->regs->rstat, RSTAT_CLEAR_RHALT);
--#endif
--
--		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: busy error (rhalt: %x)\n",
--					dev->name,
--					gfar_read(&priv->regs->rstat));
--	}
--	if (events & IEVENT_BABR) {
--		priv->stats.rx_errors++;
--		priv->extra_stats.rx_babr++;
--
--		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: babbling error\n", dev->name);
--	}
--	if (events & IEVENT_EBERR) {
--		priv->extra_stats.eberr++;
--		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: EBERR\n", dev->name);
--	}
--	if ((events & IEVENT_RXC) && (netif_msg_rx_err(priv)))
--			printk(KERN_DEBUG "%s: control frame\n", dev->name);
--
--	if (events & IEVENT_BABT) {
--		priv->extra_stats.tx_babt++;
--		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: babt error\n", dev->name);
--	}
-+	/* Check for errors */
-+	if (events & IEVENT_ERR_MASK)
-+		gfar_error(irq, dev_id, regs);
- 
- 	return IRQ_HANDLED;
- }
-@@ -1939,7 +1886,7 @@ static irqreturn_t gfar_error(int irq, v
- 	/* Hmm... */
- 	if (netif_msg_rx_err(priv) || netif_msg_tx_err(priv))
- 		printk(KERN_DEBUG "%s: error interrupt (ievent=0x%08x imask=0x%08x)\n",
--				dev->name, events, gfar_read(&priv->regs->imask));
-+		       dev->name, events, gfar_read(&priv->regs->imask));
- 
- 	/* Update the error counters */
- 	if (events & IEVENT_TXE) {
-@@ -1951,8 +1898,8 @@ static irqreturn_t gfar_error(int irq, v
- 			priv->stats.tx_aborted_errors++;
- 		if (events & IEVENT_XFUN) {
- 			if (netif_msg_tx_err(priv))
--				printk(KERN_DEBUG "%s: underrun.  packet dropped.\n",
--						dev->name);
-+				printk(KERN_DEBUG "%s: TX FIFO underrun, "
-+				       "packet dropped.\n", dev->name);
- 			priv->stats.tx_dropped++;
- 			priv->extra_stats.tx_underrun++;
- 
-@@ -1974,30 +1921,28 @@ static irqreturn_t gfar_error(int irq, v
- #endif
- 
- 		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: busy error (rhalt: %x)\n",
--					dev->name,
--					gfar_read(&priv->regs->rstat));
-+			printk(KERN_DEBUG "%s: busy error (rstat: %x)\n",
-+			       dev->name, gfar_read(&priv->regs->rstat));
- 	}
- 	if (events & IEVENT_BABR) {
- 		priv->stats.rx_errors++;
- 		priv->extra_stats.rx_babr++;
- 
- 		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: babbling error\n", dev->name);
-+			printk(KERN_DEBUG "%s: babbling RX error\n", dev->name);
- 	}
- 	if (events & IEVENT_EBERR) {
- 		priv->extra_stats.eberr++;
- 		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: EBERR\n", dev->name);
-+			printk(KERN_DEBUG "%s: bus error\n", dev->name);
- 	}
- 	if ((events & IEVENT_RXC) && netif_msg_rx_status(priv))
--		if (netif_msg_rx_status(priv))
--			printk(KERN_DEBUG "%s: control frame\n", dev->name);
-+		printk(KERN_DEBUG "%s: control frame\n", dev->name);
- 
- 	if (events & IEVENT_BABT) {
- 		priv->extra_stats.tx_babt++;
- 		if (netif_msg_tx_err(priv))
--			printk(KERN_DEBUG "%s: babt error\n", dev->name);
-+			printk(KERN_DEBUG "%s: babbling TX error\n", dev->name);
- 	}
- 	return IRQ_HANDLED;
- }
+-- 
+Eugene
