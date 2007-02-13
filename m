@@ -1,20 +1,14 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
-	[151.189.21.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 60871DDEED
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 07:09:12 +1100 (EST)
-In-Reply-To: <20070213061026.5837FDDDE9@ozlabs.org>
-References: <20070213061026.5837FDDDE9@ozlabs.org>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 15/16] Add device tree for Ebony
-Date: Tue, 13 Feb 2007 21:08:52 +0100
-To: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <bgill@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id E42F2DDEB7
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 07:19:58 +1100 (EST)
+Date: Tue, 13 Feb 2007 14:16:08 -0600 (CST)
+From: Becky Bruce <bgill@freescale.com>
+To: galak@kernel.crashing.org
+Subject: [PATCH] powerpc/ppc: Drop use of SYNC macro in head_fsl_booke.S
+Message-ID: <Pine.LNX.4.61.0702131409570.28978@ld2044.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,33 +19,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +	cpus {
-> +		#address-cells = <1>;
-> +		#size-cells = <0>;
-> +
-> +		PowerPC,440GP {
+Eliminate needless invocation of the SYNC macro (which always evaluates to
+nothing on BookE) from head_fsl_booke.S
 
-PowerPC,440GP@0
+Signed-off-by: Becky Bruce <becky.bruce@freescale.com>
 
-> +			clock-frequency = <5F5E100>; /* 100MHz FIXME: poke in zImage */
-> +			timebase-frequency = <5F5E100>; /* 100MHz FIXME: wrong, poke in 
-> zImage */
+---
+commit 6007a6b0235e2060556c8136f1fa2ddfea2228d3
+tree d6b96565246807ae10f9fa64e24280eb2664e8ec
+parent 2a5f6e78c834e1824a9d6ef3d561920cbda61a5e
+author Becky Bruce <becky.bruce@freescale.com> Mon, 12 Feb 2007 17:55:50 -0600
+committer Becky Bruce <becky.bruce@freescale.com> Mon, 12 Feb 2007 17:55:50 -0600
 
-Can't you use decimal for these?
+ arch/powerpc/kernel/head_fsl_booke.S |    2 --
+ arch/ppc/kernel/head_fsl_booke.S     |    2 --
+ 2 files changed, 0 insertions(+), 4 deletions(-)
 
-> +	UIC0: interrupt-controller { /* UIC0 */
-
-> +		#address-cells = <0>;
-> +		#size-cells = <0>;
-
-#address-cells = 0 never makes sense.
-
-> +	plb {
-> +		device_type = "soc";
-> +		compatible = "ibm,plb-440gp", "ibm,plb4";
-> +		ranges;
-
-You need a #address-cells, #size-cells here.
-
-
-Segher
+diff --git a/arch/powerpc/kernel/head_fsl_booke.S b/arch/powerpc/kernel/head_fsl_booke.S
+index 54f40d9..1f155d3 100644
+--- a/arch/powerpc/kernel/head_fsl_booke.S
++++ b/arch/powerpc/kernel/head_fsl_booke.S
+@@ -892,7 +892,6 @@ load_up_spe:
+ 	REST_GPR(9, r11)
+ 	REST_GPR(12, r11)
+ 	lwz	r11,GPR11(r11)
+-	SYNC
+ 	rfi
+ 
+ /*
+@@ -956,7 +955,6 @@ _GLOBAL(giveup_altivec)
+ _GLOBAL(giveup_spe)
+ 	mfmsr	r5
+ 	oris	r5,r5,MSR_SPE@h
+-	SYNC
+ 	mtmsr	r5			/* enable use of SPE now */
+ 	isync
+ 	cmpi	0,r3,0
+diff --git a/arch/ppc/kernel/head_fsl_booke.S b/arch/ppc/kernel/head_fsl_booke.S
+index 54f40d9..1f155d3 100644
+--- a/arch/ppc/kernel/head_fsl_booke.S
++++ b/arch/ppc/kernel/head_fsl_booke.S
+@@ -892,7 +892,6 @@ load_up_spe:
+ 	REST_GPR(9, r11)
+ 	REST_GPR(12, r11)
+ 	lwz	r11,GPR11(r11)
+-	SYNC
+ 	rfi
+ 
+ /*
+@@ -956,7 +955,6 @@ _GLOBAL(giveup_altivec)
+ _GLOBAL(giveup_spe)
+ 	mfmsr	r5
+ 	oris	r5,r5,MSR_SPE@h
+-	SYNC
+ 	mtmsr	r5			/* enable use of SPE now */
+ 	isync
+ 	cmpi	0,r3,0
