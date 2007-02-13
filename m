@@ -1,19 +1,19 @@
 Return-Path: <timur@freescale.com>
 Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 911D5DDF4B
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 04:20:51 +1100 (EST)
-Message-ID: <45D1F36A.4030402@freescale.com>
-Date: Tue, 13 Feb 2007 11:20:42 -0600
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 9478FDDE46
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 04:25:05 +1100 (EST)
+Message-ID: <45D1F46C.4050901@freescale.com>
+Date: Tue, 13 Feb 2007 11:25:00 -0600
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
-	files
-References: <11713852392294-git-send-email-timur@freescale.com>
-	<1712A11E-2F9F-441E-97E2-6FE82ED5A539@kernel.crashing.org>
-In-Reply-To: <1712A11E-2F9F-441E-97E2-6FE82ED5A539@kernel.crashing.org>
+To: paulus@samba.org
+Subject: Re: [PATCH] Check mac-address first in fsl_soc.c
+References: <11710513671236-git-send-email-timur@freescale.com>
+	<45CCDEFB.5050504@ru.mvista.com> <45CCDFBC.1090104@freescale.com>
+	<45CCE07F.9040107@ru.mvista.com>
+In-Reply-To: <45CCE07F.9040107@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
+Sergei Shtylyov wrote:
+
+>    I'm mainly concerned about 85xx. I guess the needed change should be 
+> very alike...
+
+I've submitted U-Boot patches for 83xx, 85xx, 86xx, and 5xxx to the maintainers. 
+  You'll have to ask them when the patches will be applied.
+
+>> I wanted to keep my patch simple.
 > 
-> On Feb 13, 2007, at 10:47 AM, Timur Tabi wrote:
-> 
->> The 'linux,boot-cpu' property and the 'chosen' node do not belong in the
->> DTS file, because U-Boot creates these entries in the device tree when
->> it boots linux.
->>
->> Signed-off-by: Timur Tabi <timur@freescale.com>
->> ---
-> 
-> Is there some harm is having them set in the .dts?
+>    That's clearly an over-simplification to repeat the same code thrice.
 
-Well, I don't think a DTS should contain a property that isn't going to be used. 
-  It might convince people that the property belongs there.
+Actually, the 2nd and third instances are conditionally compiled, so in most 
+cases only one instance of the code will actually be compiled.  gfar_of_init() 
+should probably also be conditionally compiled, so if I make it a separate 
+function, I'd have to prefix it with something like this:
 
-The 'chosen' section is absent from all but one DTS for the same reason.
+#if defined(CONFIG_GIANFAR) || defined(CONFIG_CPM2) || defined(CONFIG_8xx)
 
-> I can see 'linux,boot-cpu' may vary on a SMP, but the majority of .dts's 
-> are for uniproc's
+and then I would need to pass a bunch of parameters.  I don't really think 
+that's an improvement.
 
-U-Boot sets it, so whatever the DTS contains is ignored.
+Paul, if there are no serious objections, please apply this patch.
 
 -- 
 Timur Tabi
