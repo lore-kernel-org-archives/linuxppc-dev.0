@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 12/16] Automatically lmb_reserve() initrd
+Subject: [PATCH 13/16] Add initrd properties to device tree from zImage
 In-Reply-To: <20070213060904.GA6214@localhost.localdomain>
-Message-Id: <20070213061025.9BAEDDDD0E@ozlabs.org>
+Message-Id: <20070213061025.C63CBDDD0C@ozlabs.org>
 Date: Tue, 13 Feb 2007 17:10:25 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,101 +14,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, when an initrd is passed to the kernel used flat device
-tree properties, the memory the initrd occupies must also be reserved
-in the flat tree's reserve map, or the kernel may overwrite it.  That
-makes life more complicated than it could be for the bootwrapper.
+Current kernels expect the address of an initrd to be passed via
+properties in the /chosen node of the device tree.  However, so far
+the zImage wrapper code does not add these properties to the device
+tree and will only pass initrd information to the kernel via the older
+OF method.
 
-This patch makes the kernel automatically reserve the initrd's space.
-That in turn requires parsing the initrd parameters earlier than they
-are currently, in early_init_dt_scan_chosen() instead of
-check_for_initrd().
+This patch fixes that deficiency.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/kernel/prom.c         |   23 +++++++++++++++++++++++
- arch/powerpc/kernel/setup-common.c |   22 ++--------------------
- 2 files changed, 25 insertions(+), 20 deletions(-)
+ arch/powerpc/boot/main.c |   13 +++++++++++++
+ 1 file changed, 13 insertions(+)
 
-Index: working-2.6/arch/powerpc/kernel/prom.c
+Index: working-2.6/arch/powerpc/boot/main.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/kernel/prom.c	2007-02-09 15:12:00.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/prom.c	2007-02-09 15:14:27.000000000 +1100
-@@ -719,6 +719,7 @@ static int __init early_init_dt_scan_cho
- 					    const char *uname, int depth, void *data)
+--- working-2.6.orig/arch/powerpc/boot/main.c	2007-02-09 15:17:15.000000000 +1100
++++ working-2.6/arch/powerpc/boot/main.c	2007-02-09 15:25:03.000000000 +1100
+@@ -172,6 +172,7 @@ static int is_elf32(void *hdr)
+ static void prep_kernel(unsigned long a1, unsigned long a2)
  {
- 	unsigned long *lprop;
-+	u32 *prop;
- 	unsigned long l;
- 	char *p;
+ 	int len;
++	void *devp;
  
-@@ -760,6 +761,22 @@ static int __init early_init_dt_scan_cho
-                crashk_res.end = crashk_res.start + *lprop - 1;
- #endif
+ 	vmlinuz.addr = (unsigned long)_vmlinux_start;
+ 	vmlinuz.size = (unsigned long)(_vmlinux_end - _vmlinux_start);
+@@ -236,6 +237,18 @@ static void prep_kernel(unsigned long a1
+ 		       initrd.addr, initrd.size);
+ 	}
  
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	DBG("Looking for initrd properties... ");
-+	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
-+	if (prop) {
-+		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
-+		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
-+		if (prop) {
-+			initrd_end = (unsigned long)__va(of_read_ulong(prop, l/4));
-+			initrd_below_start_ok = 1;
-+		} else {
-+			initrd_start = 0;
-+		}
++	/* Tell the kernel initrd address via device tree */
++	if (initrd.size && (devp = finddevice("/chosen"))) {
++		u32 initrd_start = initrd.addr;
++		u32 initrd_end = initrd.addr + initrd.size;
++
++		setprop(devp, "linux,initrd-start", &initrd_start,
++			sizeof(initrd_start));
++		setprop(devp, "linux,initrd-end", &initrd_end,
++			sizeof(initrd_end));
 +	}
-+	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
-+#endif /* CONFIG_BLK_DEV_INITRD */
 +
- 	/* Retreive command line */
-  	p = of_get_flat_dt_prop(node, "bootargs", &l);
- 	if (p != NULL && l > 0)
-@@ -926,6 +943,12 @@ static void __init early_reserve_mem(voi
- 	self_size = initial_boot_params->totalsize;
- 	lmb_reserve(self_base, self_size);
- 
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	/* then reserve the initrd, if any */
-+	if (initrd_start && (initrd_end > initrd_start))
-+		lmb_reserve(__pa(initrd_start), initrd_end - initrd_start);
-+#endif /* CONFIG_BLK_DEV_INITRD */
 +
- #ifdef CONFIG_PPC32
- 	/* 
- 	 * Handle the case where we might be booting from an old kexec
-Index: working-2.6/arch/powerpc/kernel/setup-common.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/setup-common.c	2007-01-24 12:01:17.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/setup-common.c	2007-02-09 15:15:15.000000000 +1100
-@@ -304,26 +304,8 @@ struct seq_operations cpuinfo_op = {
- void __init check_for_initrd(void)
- {
- #ifdef CONFIG_BLK_DEV_INITRD
--	const unsigned int *prop;
--	int len;
--
--	DBG(" -> check_for_initrd()\n");
--
--	if (of_chosen) {
--		prop = get_property(of_chosen, "linux,initrd-start", &len);
--		if (prop != NULL) {
--			initrd_start = (unsigned long)
--				__va(of_read_ulong(prop, len / 4));
--			prop = get_property(of_chosen,
--					"linux,initrd-end", &len);
--			if (prop != NULL) {
--				initrd_end = (unsigned long)
--					__va(of_read_ulong(prop, len / 4));
--				initrd_below_start_ok = 1;
--			} else
--				initrd_start = 0;
--		}
--	}
-+	DBG(" -> check_for_initrd()  initrd_start=0x%lx  initrd_end=0x%lx\n",
-+	    initrd_start, initrd_end);
- 
- 	/* If we were passed an initrd, set the ROOT_DEV properly if the values
- 	 * look sensible. If not, clear initrd reference.
+ 	/* Eventually gunzip the kernel */
+ 	if (*(unsigned short *)vmlinuz.addr == 0x1f8b) {
+ 		printf("gunzipping (0x%lx <- 0x%lx:0x%0lx)...",
