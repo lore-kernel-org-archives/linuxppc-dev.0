@@ -1,31 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AC156DDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 02:03:56 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1DF3qTs003188
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 10:03:52 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1DF3qtM503574
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 08:03:52 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1DF3lqD011546
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 08:03:47 -0700
-Subject: Re: [PATCH 7/16] Early serial debug support for PPC44x
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070213061024.DA1ABDDD0C@ozlabs.org>
-References: <20070213061024.DA1ABDDD0C@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 13 Feb 2007 09:04:47 -0600
-Message-Id: <1171379087.4003.40.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id C8E37DDE3C
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 02:37:22 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1614869ugf
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 07:37:19 -0800 (PST)
+Message-ID: <528646bc0702130737t2c4fdb1cj6b994d89c8652c9d@mail.gmail.com>
+Date: Tue, 13 Feb 2007 08:37:18 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Mark A. Greer" <mgreer@mvista.com>,
+	"linuxppc-dev Development" <linuxppc-dev@ozlabs.org>
+Subject: Re: [RFC] mpc5200 device tree bindings refinement
+In-Reply-To: <20070212205731.GC2729@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <528646bc0702091038k5188d83fsbc088d875472791c@mail.gmail.com>
+	<9696D7A991D0824DBA8DFAC74A9C5FA3029428E1@az33exm25.fsl.freescale.net>
+	<20070212205731.GC2729@mag.az.mvista.com>
+Cc: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,22 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-02-13 at 17:10 +1100, David Gibson wrote:
-> This patch adds support for early serial debugging via the built in
-> port on IBM/AMCC PowerPC 44x CPUs.  It uses a bolted TLB entry in
-> address space 1 for the UART's mapping, allowing robust debugging both
-> before and after the initialization of the MMU.
+On 2/12/07, Mark A. Greer <mgreer@mvista.com> wrote:
+> On Mon, Feb 12, 2007 at 01:48:07PM -0700, Yoder Stuart-B08248 wrote:
+> >
+> > If the property is to distinguish between multiple
+> > devices of the same type how about using
+> > 'device-index' or 'device-idx' as a property name.
+>
+> 2) I (we?) really don't need to know a device index, per se.  What I
+> need to know is what set of regs within a block of regs or bits with a
+> single register are associated with a device.  Whether its device 0
+> or 1 or... doesn't really matter.  That's why I'm partial to
+> 'register-set' but I'm always open.
 
-When enabling this option, I get the following error:
+I am concerned that this ends up been premature optimization (of the
+device tree).  Hardware designers are fickle people and like to change
+shared registers between different chips.  I do agree that logically
+the device is attached to a block of registers that can be described
+in a separate node (child of the soc node).  But since we have no idea
+if it's going to change in the next chip, it's probably better just to
+describe it as the block-index on the soc.
 
- AS      arch/powerpc/kernel/head_44x.o
-arch/powerpc/kernel/head_44x.S: Assembler messages:
-arch/powerpc/kernel/head_44x.S:179: Warning: left operand is a bignum;
-integer 0 assumed
-arch/powerpc/kernel/head_44x.S:183: Error: bignum invalid
-arch/powerpc/kernel/head_44x.S:184: Warning: left operand is a bignum;
-integer 0 assumed
-make[1]: *** [arch/powerpc/kernel/head_44x.o] Error 1
-make: *** [arch/powerpc/kernel] Error 2
+Of course, I this begs the argument: "why do we describe anything
+about an soc at all; why not just specify the SoC name/revision and be
+done with it?"  I don't like that direction myself, but I do find it
+non-trivial to find the sweet spot between minimal and "fully-loaded"
+device trees.  That just highlights to me that this is just as much of
+an art as it is science.  :)
 
-josh
+On 2/12/07, Yoder Stuart-B08248 <stuart.yoder@freescale.com> wrote:
+> > > Maybe ip-block-index ? :-) The word "cell" can be confusing... or just
+> > > "block-index" ?
+> >
+> > I'm happy with 'block-index'
+> >
+> If it could be changed I like block-index better.
+>
+BTW, I'm cool with block-index or ip-block-index too.
+
+Cheers,
+g.
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
