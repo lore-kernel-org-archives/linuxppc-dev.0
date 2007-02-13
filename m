@@ -1,32 +1,24 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7FDF2DDD02
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 10:50:04 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1CNo0eW023126
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 18:50:00 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1CNo0ee551936
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 16:50:00 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1CNo07b017949
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Feb 2007 16:50:00 -0700
-Date: Mon, 12 Feb 2007 17:49:59 -0600
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Subject: Re: [PATCH 0/4] spidernet: support for Celleb
-Message-ID: <20070212234959.GF923@austin.ibm.com>
-References: <200702070849.l178nvGC005341@toshiba.co.jp>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200702070849.l178nvGC005341@toshiba.co.jp>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, jim@jklewis.com,
-	linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DF213DDDCF
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 11:20:32 +1100 (EST)
+Subject: Re: [PATCH 02/10] powerpc: Add device tree fixups for the EFIKA
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Sylvain Munaut <tnt@246tNt.com>
+In-Reply-To: <45D0F778.1080606@246tNt.com>
+References: <11713184081457-git-send-email-tnt@246tNt.com>
+	<11713184091057-git-send-email-tnt@246tNt.com>
+	<11713184101239-git-send-email-tnt@246tNt.com>
+	<1171321965.20192.37.camel@localhost.localdomain>
+	<45D0F778.1080606@246tNt.com>
+Content-Type: text/plain
+Date: Tue, 13 Feb 2007 11:20:15 +1100
+Message-Id: <1171326015.20192.44.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Linux PPC Dev ML <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,19 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 07, 2007 at 05:49:50PM +0900, Ishizaki Kou wrote:
-> This is a revised spidernet patch set based on
-> netdev-2.6.git#upstream.
 
-Tested this series of patches together with Jen's "version 3" patch,
-it worked for me. Code looks reasonable.  Thus
+> The const might cause a warning because prop_set_prop takes a void
+> *value and not
+> a const void *value. I don't know if does need to modify the value or
+> not though.
 
-Acked-by: Linas Vepstas <linas@austin.ibm.com>
+Ok, there's room for another patch to constify prom_set_prop and all
+callers then :-)
 
-I'm somewhat unclear as to whethr I should be doing 
+> About static, that might achieve the same effect as const without the
+> warning and since the function is called only once anyway ...
+> 
+> I would have hoped that being local to a __init function the memory for
+> the initial values would be freed but I might me over optimistic.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Yeah, worth checking the ELF output but I think you are over
+optimistic :-)
+> 
+> >> +
+> >> +	rv = prom_getprop(node, "model", prop, sizeof(prop));
+> >> +	if (rv == PROM_ERROR)
+> >> +		return;
+> >> +	if (strcmp(prop, "EFIKA5K2"))
+> >> +		return;
+> >>     
+> >
+> > Is there a version in their device-tree ? We might want to check in case
+> > they ever fix it ...
+> >   
+> Yes there is a "revision" that's "2B3" for the moment. I'm not too sure
+> if it's a firmware
+> revision or a board revision though ...
 
-instead.
+Hrm... let's ignore it for now, we can always fixup the fixups if
+necessary :-)
 
---linas
+Ben.
