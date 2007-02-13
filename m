@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 4/16] powerpc: Allow duplicate lmb_reserve() calls
+Subject: [PATCH 5/16] powerpc: Add zImage platform hook for kernel address
 In-Reply-To: <20070213060904.GA6214@localhost.localdomain>
-Message-Id: <20070213061024.82D45DDD0D@ozlabs.org>
+Message-Id: <20070213061024.A82ABDDD0C@ozlabs.org>
 Date: Tue, 13 Feb 2007 17:10:24 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,60 +14,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present calling lmb_reserve() (and hence lmb_add_region()) twice
-for exactly the same memory region will cause strange behaviour.
+Unlike "classic" 32 and 64-bit PowerPC processors, the early setup
+code for 4xx is not able to relocate the kernel if loaded at an
+address other than 0.  For 440 it's even potentially difficult to add
+this support, because at entry the kernel doesn't necessarily know the
+full MMU configuration.
 
-This makes life difficult when booting from a flat device tree with
-memory reserve map.  Which regions are automatically reserved by the
-kernel has changed over time, so it's quite possible a newer kernel
-could attempt to auto-reserve a region which is also explicitly listed
-in the device tree's reserve map, leading to trouble.
-
-This patch avoids the problem by making lmb_reserve() ignore a call to
-reserve a previously reserved region.  It also removes a now redundant
-test designed to avoid one specific case of the problem noted above.
-
-At present, this patch deals only with duplicate reservations of an
-identical region.  Attempting to reserve two different, but
-overlapping regions will still cause problems.  I might post another
-patch later dealing with this case, but I'm avoiding it now since it
-is substantially more complicated to deal with, less likely to occur
-and more likely to indicate a genuine bug elsewhere if it does occur.
+This patch, therefore, adds a hook to the zImage wrapper code which
+allows a platform to specify a function giving the address to which
+the vmlinux must be moved before entering the kernel.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
+ arch/powerpc/boot/main.c |   19 +++++++++++++++----
+ arch/powerpc/boot/ops.h  |    1 +
+ 2 files changed, 16 insertions(+), 4 deletions(-)
 
- arch/powerpc/kernel/prom.c |    3 ---
- arch/powerpc/mm/lmb.c      |    4 ++++
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-Index: working-2.6/arch/powerpc/mm/lmb.c
+Index: working-2.6/arch/powerpc/boot/main.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/mm/lmb.c	2007-02-06 16:21:02.000000000 +1100
-+++ working-2.6/arch/powerpc/mm/lmb.c	2007-02-06 16:22:32.000000000 +1100
-@@ -146,6 +146,10 @@ static long __init lmb_add_region(struct
- 		unsigned long rgnbase = rgn->region[i].base;
- 		unsigned long rgnsize = rgn->region[i].size;
- 
-+		if ((rgnbase == base) && (rgnsize == size))
-+			/* Already have this region, so we're done */
-+			return 0;
-+
- 		adjacent = lmb_addrs_adjacent(base,size,rgnbase,rgnsize);
- 		if ( adjacent > 0 ) {
- 			rgn->region[i].base -= size;
-Index: working-2.6/arch/powerpc/kernel/prom.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/prom.c	2007-02-06 16:22:48.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/prom.c	2007-02-06 16:22:57.000000000 +1100
-@@ -954,9 +954,6 @@ static void __init early_reserve_mem(voi
- 		size = *(reserve_map++);
- 		if (size == 0)
- 			break;
--		/* skip if the reservation is for the blob */
--		if (base == self_base && size == self_size)
--			continue;
- 		DBG("reserving: %llx -> %llx\n", base, size);
- 		lmb_reserve(base, size);
+--- working-2.6.orig/arch/powerpc/boot/main.c	2007-01-12 14:43:34.000000000 +1100
++++ working-2.6/arch/powerpc/boot/main.c	2007-01-12 14:48:10.000000000 +1100
+@@ -249,12 +249,23 @@ static void prep_kernel(unsigned long a1
+ 			vmlinuz.size);
  	}
+ 
+-	/* Skip over the ELF header */
++	/* Move into final position */
++	if (platform_ops.vmlinux_addr) {
++		unsigned long old_addr = vmlinux.addr;
++		vmlinux.addr = platform_ops.vmlinux_addr(vmlinux.size);
+ #ifdef DEBUG
+-	printf("... skipping 0x%lx bytes of ELF header\n\r",
+-			elfoffset);
++		printf("...moving kernel to final address 0x%lx\n\r", vmlinux.addr);
+ #endif
+-	vmlinux.addr += elfoffset;
++		memmove((void *)vmlinux.addr, (void *)old_addr+elfoffset,
++			vmlinux.size);
++	} else {
++		/* Just Skip over the ELF header */
++#ifdef DEBUG
++		printf("... skipping 0x%lx bytes of ELF header\n\r",
++		       elfoffset);
++#endif
++		vmlinux.addr += elfoffset;
++	}
+ 
+ 	flush_cache((void *)vmlinux.addr, vmlinux.size);
+ }
+Index: working-2.6/arch/powerpc/boot/ops.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/ops.h	2007-01-12 14:42:11.000000000 +1100
++++ working-2.6/arch/powerpc/boot/ops.h	2007-01-12 14:45:43.000000000 +1100
+@@ -25,6 +25,7 @@ struct platform_ops {
+ 	void	(*free)(void *ptr);
+ 	void *	(*realloc)(void *ptr, unsigned long size);
+ 	void	(*exit)(void);
++	unsigned long (*vmlinux_addr)(unsigned long size);
+ };
+ extern struct platform_ops platform_ops;
+ 
