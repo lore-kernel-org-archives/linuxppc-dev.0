@@ -1,11 +1,18 @@
-Return-Path: <benh@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 13 Feb 2007 11:46:08 +1100
-Subject: [PATCH 3/3] spufs: Fix bitrot of the SPU mmap facility
-In-Reply-To: <1171327564.314011.545768742379.qpush@grosgo>
-Message-Id: <20070213004618.82B78DDEE2@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 13 Feb 2007 15:29:37 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 15/19] bootwrapper: Add initrd information to the device
+	tree in ft_finalize().
+Message-ID: <20070213042937.GC5345@localhost.localdomain>
+References: <20070207230017.GA3758@ld0162-tx32.am.freescale.net>
+	<20070207230140.GO3849@ld0162-tx32.am.freescale.net>
+	<20070209230207.GA12035@mag.az.mvista.com>
+	<45D098E5.3090109@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45D098E5.3090109@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,144 +22,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It looks like we've had some serious bitrot there mostly due to tracking
-of address_space's of mmap'ed files getting out of sync with the actual
-mmap code. The mfc, mss and psmap were not tracked properly and thus
-not invalidated on context switches (oops !)
+On Mon, Feb 12, 2007 at 10:42:13AM -0600, Scott Wood wrote:
+> Mark A. Greer wrote:
+> >>diff --git a/arch/powerpc/boot/flatdevtree_misc.c b/arch/powerpc/boot/flatdevtree_misc.c
+> >>index 04da38f..39fa010 100644
+> >>--- a/arch/powerpc/boot/flatdevtree_misc.c
+> >>+++ b/arch/powerpc/boot/flatdevtree_misc.c
+> >>@@ -33,8 +33,20 @@ static int ft_setprop(const void *phandl
+> >> 	return ft_set_prop(&cxt, phandle, propname, buf, buflen);
+> >> }
+> >> 
+> >>-static unsigned long ft_finalize(void)
+> >>+unsigned long ft_finalize(void)
+> > 
+> > 
+> > This is unnecessary.  There is already global access from
+> > dt_ops.finalize.
+> 
+> cuboot has its own dt_ops.finalize, which calls ft_finalize, and 
+> relocates the tree to someplace that won't get overwritten by the kernel 
+> relocation.
 
-I also removed the various file->f_mapping = inode->i_mapping;
-assignments that were done in the other open() routines since that
-is already done for us by __dentry_open.
+Why is cuboot's malloc() allocating the flat tree in a place that's in
+danger of being clobbered by the kernel in the first place?
 
-One improvement we might want to do later is to assign the various
-ctx-> fields at mmap time instead of file open/close time so that we
-don't call unmap_mapping_range() on thing that have not been mmap'ed
-
-Finally, I added some smp_wmb's after assigning the ctx-> fields to make
-sure they are visible to other CPUs. I don't think this is really
-necessary as I suspect locking in the fs layer will make that happen
-anyway but better safe than sorry.
-
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
- arch/powerpc/platforms/cell/spufs/context.c |   12 ++++++++----
- arch/powerpc/platforms/cell/spufs/file.c    |   16 ++++++++++++----
- arch/powerpc/platforms/cell/spufs/spufs.h   |    2 ++
- 3 files changed, 22 insertions(+), 8 deletions(-)
-
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/context.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spufs/context.c	2007-02-09 15:47:28.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/context.c	2007-02-09 15:48:27.000000000 +1100
-@@ -111,13 +111,17 @@ void spu_unmap_mappings(struct spu_conte
- 	if (ctx->local_store)
- 		unmap_mapping_range(ctx->local_store, 0, LS_SIZE, 1);
- 	if (ctx->mfc)
--		unmap_mapping_range(ctx->mfc, 0, 0x4000, 1);
-+		unmap_mapping_range(ctx->mfc, 0, 0x1000, 1);
- 	if (ctx->cntl)
--		unmap_mapping_range(ctx->cntl, 0, 0x4000, 1);
-+		unmap_mapping_range(ctx->cntl, 0, 0x1000, 1);
- 	if (ctx->signal1)
--		unmap_mapping_range(ctx->signal1, 0, 0x4000, 1);
-+		unmap_mapping_range(ctx->signal1, 0, PAGE_SIZE, 1);
- 	if (ctx->signal2)
--		unmap_mapping_range(ctx->signal2, 0, 0x4000, 1);
-+		unmap_mapping_range(ctx->signal2, 0, PAGE_SIZE, 1);
-+	if (ctx->mss)
-+		unmap_mapping_range(ctx->mss, 0, 0x1000, 1);
-+	if (ctx->psmap)
-+		unmap_mapping_range(ctx->psmap, 0, 0x20000, 1);
- }
- 
- int spu_acquire_exclusive(struct spu_context *ctx)
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/file.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spufs/file.c	2007-02-09 15:47:28.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/file.c	2007-02-09 16:29:33.000000000 +1100
-@@ -45,8 +45,8 @@ spufs_mem_open(struct inode *inode, stru
- 	struct spufs_inode_info *i = SPUFS_I(inode);
- 	struct spu_context *ctx = i->i_ctx;
- 	file->private_data = ctx;
--	file->f_mapping = inode->i_mapping;
- 	ctx->local_store = inode->i_mapping;
-+	smp_wmb();
- 	return 0;
- }
- 
-@@ -232,8 +232,8 @@ static int spufs_cntl_open(struct inode 
- 	struct spu_context *ctx = i->i_ctx;
- 
- 	file->private_data = ctx;
--	file->f_mapping = inode->i_mapping;
- 	ctx->cntl = inode->i_mapping;
-+	smp_wmb();
- 	return simple_attr_open(inode, file, spufs_cntl_get,
- 					spufs_cntl_set, "0x%08lx");
- }
-@@ -717,8 +717,8 @@ static int spufs_signal1_open(struct ino
- 	struct spufs_inode_info *i = SPUFS_I(inode);
- 	struct spu_context *ctx = i->i_ctx;
- 	file->private_data = ctx;
--	file->f_mapping = inode->i_mapping;
- 	ctx->signal1 = inode->i_mapping;
-+	smp_wmb();
- 	return nonseekable_open(inode, file);
- }
- 
-@@ -824,8 +824,8 @@ static int spufs_signal2_open(struct ino
- 	struct spufs_inode_info *i = SPUFS_I(inode);
- 	struct spu_context *ctx = i->i_ctx;
- 	file->private_data = ctx;
--	file->f_mapping = inode->i_mapping;
- 	ctx->signal2 = inode->i_mapping;
-+	smp_wmb();
- 	return nonseekable_open(inode, file);
- }
- 
-@@ -1021,8 +1021,11 @@ static int spufs_mss_mmap(struct file *f
- static int spufs_mss_open(struct inode *inode, struct file *file)
- {
- 	struct spufs_inode_info *i = SPUFS_I(inode);
-+	struct spu_context *ctx = i->i_ctx;
- 
- 	file->private_data = i->i_ctx;
-+	ctx->mss = inode->i_mapping;
-+	smp_wmb();
- 	return nonseekable_open(inode, file);
- }
- 
-@@ -1060,8 +1063,11 @@ static int spufs_psmap_mmap(struct file 
- static int spufs_psmap_open(struct inode *inode, struct file *file)
- {
- 	struct spufs_inode_info *i = SPUFS_I(inode);
-+	struct spu_context *ctx = i->i_ctx;
- 
- 	file->private_data = i->i_ctx;
-+	ctx->psmap = inode->i_mapping;
-+	smp_wmb();
- 	return nonseekable_open(inode, file);
- }
- 
-@@ -1114,6 +1120,8 @@ static int spufs_mfc_open(struct inode *
- 		return -EBUSY;
- 
- 	file->private_data = ctx;
-+	ctx->mfc = inode->i_mapping;
-+	smp_wmb();
- 	return nonseekable_open(inode, file);
- }
- 
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/spufs.h
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2007-02-09 15:47:28.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/spufs.h	2007-02-09 15:48:15.000000000 +1100
-@@ -51,6 +51,8 @@ struct spu_context {
- 	struct address_space *cntl; 	   /* 'control' area mappings. */
- 	struct address_space *signal1; 	   /* 'signal1' area mappings. */
- 	struct address_space *signal2; 	   /* 'signal2' area mappings. */
-+	struct address_space *mss; 	   /* 'mss' area mappings. */
-+	struct address_space *psmap; 	   /* 'psmap' area mappings. */
- 	u64 object_id;		   /* user space pointer for oprofile */
- 
- 	enum { SPU_STATE_RUNNABLE, SPU_STATE_SAVED } state;
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
