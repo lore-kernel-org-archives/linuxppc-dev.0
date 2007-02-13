@@ -1,16 +1,19 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [PATCH 3/3] spufs: Fix bitrot of the SPU mmap
-	facility
-Date: Tue, 13 Feb 2007 13:16:34 +0100
-References: <20070213004618.82B78DDEE2@ozlabs.org>
-In-Reply-To: <20070213004618.82B78DDEE2@ozlabs.org>
+Return-Path: <pavel@ucw.cz>
+Received: from amd.ucw.cz (gprs189-60.eurotel.cz [160.218.189.60])
+	by ozlabs.org (Postfix) with ESMTP id 027A2DDE4A
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 23:34:37 +1100 (EST)
+Date: Tue, 13 Feb 2007 13:12:49 +0100
+From: Pavel Machek <pavel@ucw.cz>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 05/12] power management: no valid states w/o pm_ops + docs
+Message-ID: <20070213121249.GJ18101@elf.ucw.cz>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124612.176570000@sipsolutions.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702131316.35365.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070207124612.176570000@sipsolutions.net>
+Cc: "Rafael J. Wysocki" <rjw@sisk.pl>, linuxppc-dev@ozlabs.org,
+	linux-pm@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,25 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 13 February 2007 01:46, Benjamin Herrenschmidt wrote:
-> It looks like we've had some serious bitrot there mostly due to tracking
-> of address_space's of mmap'ed files getting out of sync with the actual
-> mmap code. The mfc, mss and psmap were not tracked properly and thus
-> not invalidated on context switches (oops !)
-> 
-> I also removed the various file->f_mapping = inode->i_mapping;
-> assignments that were done in the other open() routines since that
-> is already done for us by __dentry_open.
-> 
-> One improvement we might want to do later is to assign the various
-> ctx-> fields at mmap time instead of file open/close time so that we
-> don't call unmap_mapping_range() on thing that have not been mmap'ed
-> 
-> Finally, I added some smp_wmb's after assigning the ctx-> fields to make
-> sure they are visible to other CPUs. I don't think this is really
-> necessary as I suspect locking in the fs layer will make that happen
-> anyway but better safe than sorry.
-> 
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Hi!
 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> This patch changes /sys/power/state to not advertise any valid states
+> (except for disk if SOFTWARE_SUSPEND is enabled) when no pm_ops have been
+> set so userspace can easily discover what states should be available.
+> 
+> Also, because the pm ops in powermac are obviously not using them as
+> intended, I added documentation for it in kernel-doc format.
+> 
+> Reordering the fields in struct pm_ops not only makes the output of
+> kernel-doc make more sense but also removes a hole from the structure on
+> 64-bit platforms.
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Cc: linux-pm@lists.osdl.org
+> Cc: Rafael J. Wysocki <rjw@sisk.pl>
+> Cc: Pavel Macheck <pavel@ucw.cz>
+
+Looks okay to me.
+										Pavel
+
+-- 
+(english) http://www.livejournal.com/~pavelmachek
+(cesky, pictures) http://atrey.karlin.mff.cuni.cz/~pavel/picture/horses/blog.html
