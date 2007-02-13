@@ -1,10 +1,10 @@
 Return-Path: <benh@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 13 Feb 2007 11:46:07 +1100
-Subject: [PATCH 2/3] powerpc: Remove SPU struct page's for PS3
+Date: Tue, 13 Feb 2007 11:46:08 +1100
+Subject: [PATCH 3/3] spufs: Fix bitrot of the SPU mmap facility
 In-Reply-To: <1171327564.314011.545768742379.qpush@grosgo>
-Message-Id: <20070213004617.2C93BDDF19@ozlabs.org>
+Message-Id: <20070213004618.82B78DDEE2@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,78 +15,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Struct page are no longer needed for SPUs, so let's not create them
-on PS3 anymore.
+It looks like we've had some serious bitrot there mostly due to tracking
+of address_space's of mmap'ed files getting out of sync with the actual
+mmap code. The mfc, mss and psmap were not tracked properly and thus
+not invalidated on context switches (oops !)
+
+I also removed the various file->f_mapping = inode->i_mapping;
+assignments that were done in the other open() routines since that
+is already done for us by __dentry_open.
+
+One improvement we might want to do later is to assign the various
+ctx-> fields at mmap time instead of file open/close time so that we
+don't call unmap_mapping_range() on thing that have not been mmap'ed
+
+Finally, I added some smp_wmb's after assigning the ctx-> fields to make
+sure they are visible to other CPUs. I don't think this is really
+necessary as I suspect locking in the fs layer will make that happen
+anyway but better safe than sorry.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/powerpc/platforms/ps3/spu.c |   42 +--------------------------------------
- 1 file changed, 2 insertions(+), 40 deletions(-)
+ arch/powerpc/platforms/cell/spufs/context.c |   12 ++++++++----
+ arch/powerpc/platforms/cell/spufs/file.c    |   16 ++++++++++++----
+ arch/powerpc/platforms/cell/spufs/spufs.h   |    2 ++
+ 3 files changed, 22 insertions(+), 8 deletions(-)
 
-Index: linux-cell/arch/powerpc/platforms/ps3/spu.c
+Index: linux-cell/arch/powerpc/platforms/cell/spufs/context.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/platforms/ps3/spu.c	2007-02-13 11:34:38.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/ps3/spu.c	2007-02-13 11:37:07.000000000 +1100
-@@ -170,31 +170,6 @@ static int __init construct_spu(struct s
- 	return result;
+--- linux-cell.orig/arch/powerpc/platforms/cell/spufs/context.c	2007-02-09 15:47:28.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/cell/spufs/context.c	2007-02-09 15:48:27.000000000 +1100
+@@ -111,13 +111,17 @@ void spu_unmap_mappings(struct spu_conte
+ 	if (ctx->local_store)
+ 		unmap_mapping_range(ctx->local_store, 0, LS_SIZE, 1);
+ 	if (ctx->mfc)
+-		unmap_mapping_range(ctx->mfc, 0, 0x4000, 1);
++		unmap_mapping_range(ctx->mfc, 0, 0x1000, 1);
+ 	if (ctx->cntl)
+-		unmap_mapping_range(ctx->cntl, 0, 0x4000, 1);
++		unmap_mapping_range(ctx->cntl, 0, 0x1000, 1);
+ 	if (ctx->signal1)
+-		unmap_mapping_range(ctx->signal1, 0, 0x4000, 1);
++		unmap_mapping_range(ctx->signal1, 0, PAGE_SIZE, 1);
+ 	if (ctx->signal2)
+-		unmap_mapping_range(ctx->signal2, 0, 0x4000, 1);
++		unmap_mapping_range(ctx->signal2, 0, PAGE_SIZE, 1);
++	if (ctx->mss)
++		unmap_mapping_range(ctx->mss, 0, 0x1000, 1);
++	if (ctx->psmap)
++		unmap_mapping_range(ctx->psmap, 0, 0x20000, 1);
  }
  
--static int __init add_spu_pages(unsigned long start_addr, unsigned long size)
--{
--	int result;
--	unsigned long start_pfn;
--	unsigned long nr_pages;
--	struct pglist_data *pgdata;
--	struct zone *zone;
--
--	BUG_ON(!mem_init_done);
--
--	start_pfn = start_addr >> PAGE_SHIFT;
--	nr_pages = (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
--
--	pgdata = NODE_DATA(0);
--	zone = pgdata->node_zones;
--
--	result = __add_pages(zone, start_pfn, nr_pages);
--
--	if (result)
--		pr_debug("%s:%d: __add_pages failed: (%d)\n",
--			__func__, __LINE__, result);
--
--	return result;
--}
--
- static void spu_unmap(struct spu *spu)
- {
- 	iounmap(spu->priv2);
-@@ -206,19 +181,6 @@ static void spu_unmap(struct spu *spu)
- static int __init setup_areas(struct spu *spu)
- {
- 	struct table {char* name; unsigned long addr; unsigned long size;};
--	int result;
--
--	/* setup pages */
--
--	result = add_spu_pages(spu->local_store_phys, LS_SIZE);
--	if (result)
--		goto fail_add;
--
--	result = add_spu_pages(spu->problem_phys, sizeof(struct spu_problem));
--	if (result)
--		goto fail_add;
--
--	/* ioremap */
- 
- 	spu_pdata(spu)->shadow = __ioremap(
- 		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
-@@ -260,8 +222,8 @@ static int __init setup_areas(struct spu
- 
- fail_ioremap:
- 	spu_unmap(spu);
--fail_add:
--	return result;
-+
-+	return -ENOMEM;
+ int spu_acquire_exclusive(struct spu_context *ctx)
+Index: linux-cell/arch/powerpc/platforms/cell/spufs/file.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/cell/spufs/file.c	2007-02-09 15:47:28.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/cell/spufs/file.c	2007-02-09 16:29:33.000000000 +1100
+@@ -45,8 +45,8 @@ spufs_mem_open(struct inode *inode, stru
+ 	struct spufs_inode_info *i = SPUFS_I(inode);
+ 	struct spu_context *ctx = i->i_ctx;
+ 	file->private_data = ctx;
+-	file->f_mapping = inode->i_mapping;
+ 	ctx->local_store = inode->i_mapping;
++	smp_wmb();
+ 	return 0;
  }
  
- static int __init setup_interrupts(struct spu *spu)
+@@ -232,8 +232,8 @@ static int spufs_cntl_open(struct inode 
+ 	struct spu_context *ctx = i->i_ctx;
+ 
+ 	file->private_data = ctx;
+-	file->f_mapping = inode->i_mapping;
+ 	ctx->cntl = inode->i_mapping;
++	smp_wmb();
+ 	return simple_attr_open(inode, file, spufs_cntl_get,
+ 					spufs_cntl_set, "0x%08lx");
+ }
+@@ -717,8 +717,8 @@ static int spufs_signal1_open(struct ino
+ 	struct spufs_inode_info *i = SPUFS_I(inode);
+ 	struct spu_context *ctx = i->i_ctx;
+ 	file->private_data = ctx;
+-	file->f_mapping = inode->i_mapping;
+ 	ctx->signal1 = inode->i_mapping;
++	smp_wmb();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+@@ -824,8 +824,8 @@ static int spufs_signal2_open(struct ino
+ 	struct spufs_inode_info *i = SPUFS_I(inode);
+ 	struct spu_context *ctx = i->i_ctx;
+ 	file->private_data = ctx;
+-	file->f_mapping = inode->i_mapping;
+ 	ctx->signal2 = inode->i_mapping;
++	smp_wmb();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+@@ -1021,8 +1021,11 @@ static int spufs_mss_mmap(struct file *f
+ static int spufs_mss_open(struct inode *inode, struct file *file)
+ {
+ 	struct spufs_inode_info *i = SPUFS_I(inode);
++	struct spu_context *ctx = i->i_ctx;
+ 
+ 	file->private_data = i->i_ctx;
++	ctx->mss = inode->i_mapping;
++	smp_wmb();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+@@ -1060,8 +1063,11 @@ static int spufs_psmap_mmap(struct file 
+ static int spufs_psmap_open(struct inode *inode, struct file *file)
+ {
+ 	struct spufs_inode_info *i = SPUFS_I(inode);
++	struct spu_context *ctx = i->i_ctx;
+ 
+ 	file->private_data = i->i_ctx;
++	ctx->psmap = inode->i_mapping;
++	smp_wmb();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+@@ -1114,6 +1120,8 @@ static int spufs_mfc_open(struct inode *
+ 		return -EBUSY;
+ 
+ 	file->private_data = ctx;
++	ctx->mfc = inode->i_mapping;
++	smp_wmb();
+ 	return nonseekable_open(inode, file);
+ }
+ 
+Index: linux-cell/arch/powerpc/platforms/cell/spufs/spufs.h
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/cell/spufs/spufs.h	2007-02-09 15:47:28.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/cell/spufs/spufs.h	2007-02-09 15:48:15.000000000 +1100
+@@ -51,6 +51,8 @@ struct spu_context {
+ 	struct address_space *cntl; 	   /* 'control' area mappings. */
+ 	struct address_space *signal1; 	   /* 'signal1' area mappings. */
+ 	struct address_space *signal2; 	   /* 'signal2' area mappings. */
++	struct address_space *mss; 	   /* 'mss' area mappings. */
++	struct address_space *psmap; 	   /* 'psmap' area mappings. */
+ 	u64 object_id;		   /* user space pointer for oprofile */
+ 
+ 	enum { SPU_STATE_RUNNABLE, SPU_STATE_SAVED } state;
