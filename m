@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8A3C4DDEDB
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 05:43:20 +1100 (EST)
-Date: Tue, 13 Feb 2007 12:40:32 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH v2] Add a defconfig for the 8568 MDS
-In-Reply-To: <Pine.LNX.4.61.0702091728390.791@ld0175-tx32.am.freescale.net>
-Message-ID: <Pine.LNX.4.64.0702131240070.23923@localhost.localdomain>
-References: <Pine.LNX.4.61.0702091728390.791@ld0175-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <krafft@de.ibm.com>
+Date: Tue, 13 Feb 2007 19:44:36 +0100
+From: Christian Krafft <krafft@de.ibm.com>
+To: Christian Krafft <krafft@de.ibm.com>
+Subject: Re: [Cbe-oss-dev] [patch v3] pmi: initial version
+Message-ID: <20070213194436.0306d18a@localhost>
+In-Reply-To: <20070213143418.06fa01b5@localhost>
+References: <20070209183529.67d542d5@localhost>
+	<20070209184530.4c8bc2be@localhost>
+	<20070209222956.GH1827@localdomain>
+	<20070212101222.24abe14c@localhost>
+	<20070213143418.06fa01b5@localhost>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,18 +23,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 9 Feb 2007, Andy Fleming wrote:
+Hi,
 
->
->
-> Signed-off-by: Andrew Fleming <afleming@freescale.com>
-> ---
-> arch/powerpc/configs/mpc8568mds_defconfig |  992 +++++++++++++++++++++++++++++
-> 1 files changed, 992 insertions(+), 0 deletions(-)
->
+sorry for resending this patch again.
+I added a work queue to the interrupt handler to shorten the time we run with interrupts off.
 
-Provide a comment in the email next time.
-
-applied.
-
-- k
+Cheers,
+ck
