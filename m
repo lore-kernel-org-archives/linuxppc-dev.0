@@ -1,11 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 14/16] Add arch/powerpc driver for UIC,
-	PPC4xx interrupt controller
+Subject: [PATCH 16/16] Support for Ebony in arch/powerpc
 In-Reply-To: <20070213060904.GA6214@localhost.localdomain>
-Message-Id: <20070213061025.CB873DDD0B@ozlabs.org>
-Date: Tue, 13 Feb 2007 17:10:25 +1100 (EST)
+Message-Id: <20070213061026.7979DDDDF0@ozlabs.org>
+Date: Tue, 13 Feb 2007 17:10:26 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,28 +14,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a driver to arch/powerpc/sysdev for the UIC, the
-on-chip interrupt controller from IBM/AMCC 4xx chips.  It uses the new
-irq host mapping infrastructure.
+This patch adds platform support code for the Ebony (440GP) evaluation
+board.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/sysdev/Makefile |    1 
- arch/powerpc/sysdev/uic.c    |  343 +++++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/uic.h    |   23 ++
- 3 files changed, 367 insertions(+)
+ arch/powerpc/platforms/4xx/Kconfig  |    3 +
+ arch/powerpc/platforms/4xx/Makefile |    2 -
+ arch/powerpc/platforms/4xx/ebony.c  |   68 ++++++++++++++++++++++++++++++++++++
+ 3 files changed, 71 insertions(+), 2 deletions(-)
 
-Index: working-2.6/arch/powerpc/sysdev/uic.c
+Index: working-2.6/arch/powerpc/platforms/4xx/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/platforms/4xx/Makefile	2007-02-13 12:37:37.000000000 +1100
++++ working-2.6/arch/powerpc/platforms/4xx/Makefile	2007-02-13 12:39:02.000000000 +1100
+@@ -1 +1 @@
+-# empty makefile so make clean works
+\ No newline at end of file
++obj-$(CONFIG_EBONY)	:= ebony.o
+Index: working-2.6/arch/powerpc/platforms/4xx/ebony.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/sysdev/uic.c	2007-02-12 14:30:31.000000000 +1100
-@@ -0,0 +1,343 @@
++++ working-2.6/arch/powerpc/platforms/4xx/ebony.c	2007-02-13 12:39:02.000000000 +1100
+@@ -0,0 +1,68 @@
 +/*
-+ * arch/powerpc/sysdev/uic.c
++ * Ebony board specific routines
 + *
-+ * IBM PowerPC 4xx Universal Interrupt Controller
++ * Matt Porter <mporter@kernel.crashing.org>
++ * Copyright 2002-2005 MontaVista Software Inc.
 + *
++ * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
++ * Copyright (c) 2003-2005 Zultys Technologies
++ *
++ * Rewritten and ported to the merged powerpc tree:
 + * Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
 + *
 + * This program is free software; you can redistribute  it and/or modify it
@@ -44,374 +55,68 @@ Index: working-2.6/arch/powerpc/sysdev/uic.c
 + * Free Software Foundation;  either version 2 of the  License, or (at your
 + * option) any later version.
 + */
-+#include <linux/kernel.h>
++
 +#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/slab.h>
-+#include <linux/stddef.h>
-+#include <linux/sched.h>
-+#include <linux/signal.h>
-+#include <linux/sysdev.h>
-+#include <linux/device.h>
-+#include <linux/bootmem.h>
-+#include <linux/spinlock.h>
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <asm/irq.h>
-+#include <asm/io.h>
++#include <asm/machdep.h>
 +#include <asm/prom.h>
-+#include <asm/dcr.h>
++#include <asm/udbg.h>
++#include <asm/time.h>
++#include <asm/uic.h>
++#include <asm/of_platform.h>
 +
-+#define NR_UIC_INTS	32
-+
-+#define UIC_SR		0x0
-+#define UIC_ER		0x2
-+#define UIC_CR		0x3
-+#define UIC_PR		0x4
-+#define UIC_TR		0x5
-+#define UIC_MSR		0x6
-+#define UIC_VR		0x7
-+#define UIC_VCR		0x8
-+
-+#define uic_irq_to_hw(virq)	(irq_map[virq].hwirq)
-+
-+struct uic *primary_uic;
-+
-+struct uic {
-+	int index;
-+	int dcrbase;
-+
-+	spinlock_t lock;
-+
-+	/* The remapper for this UIC */
-+	struct irq_host	*irqhost;
-+
-+	/* For secondary UICs, the cascade interrupt's irqaction */
-+	struct irqaction cascade;
-+
-+	/* The device node of the interrupt controller */
-+	struct device_node *of_node;
++static struct of_device_id ebony_of_bus[] = {
++	{ .type = "soc", },
++	{},
 +};
 +
-+static void uic_unmask_irq(unsigned int virq)
++static int __init ebony_device_probe(void)
 +{
-+	struct uic *uic = get_irq_chip_data(virq);
-+	unsigned int src = uic_irq_to_hw(virq);
-+	unsigned long flags;
-+	u32 er;
-+
-+	spin_lock_irqsave(&uic->lock, flags);
-+	er = mfdcr(uic->dcrbase + UIC_ER);
-+	er |= 1 << (31 - src);
-+	mtdcr(uic->dcrbase + UIC_ER, er);
-+	spin_unlock_irqrestore(&uic->lock, flags);
-+}
-+
-+static void uic_mask_irq(unsigned int virq)
-+{
-+	struct uic *uic = get_irq_chip_data(virq);
-+	unsigned int src = uic_irq_to_hw(virq);
-+	unsigned long flags;
-+	u32 er;
-+
-+	spin_lock_irqsave(&uic->lock, flags);
-+	er = mfdcr(uic->dcrbase + UIC_ER);
-+	er &= ~(1 << (31 - src));
-+	mtdcr(uic->dcrbase + UIC_ER, er);
-+	spin_unlock_irqrestore(&uic->lock, flags);
-+}
-+
-+static void uic_ack_irq(unsigned int virq)
-+{
-+	struct uic *uic = get_irq_chip_data(virq);
-+	unsigned int src = uic_irq_to_hw(virq);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&uic->lock, flags);
-+	mtdcr(uic->dcrbase + UIC_SR, 1 << (31-src));
-+	spin_unlock_irqrestore(&uic->lock, flags);
-+}
-+
-+static int uic_set_irq_type(unsigned int virq, unsigned int flow_type)
-+{
-+	struct uic *uic = get_irq_chip_data(virq);
-+	unsigned int src = uic_irq_to_hw(virq);
-+	struct irq_desc *desc = get_irq_desc(virq);
-+	unsigned long flags;
-+	int trigger, polarity;
-+	u32 tr, pr, mask;
-+
-+	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
-+	case IRQ_TYPE_NONE:
-+		uic_mask_irq(virq);
++	if (! machine_is(ebony))
 +		return 0;
 +
-+	case IRQ_TYPE_EDGE_RISING:
-+		trigger = 1; polarity = 1;
-+		break;
-+	case IRQ_TYPE_EDGE_FALLING:
-+		trigger = 1; polarity = 0;
-+		break;
-+	case IRQ_TYPE_LEVEL_HIGH:
-+		trigger = 0; polarity = 1;
-+		break;
-+	case IRQ_TYPE_LEVEL_LOW:
-+		trigger = 0; polarity = 1;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	mask = ~(1 << (31 - src));
-+
-+	spin_lock_irqsave(&uic->lock, flags);
-+	tr = mfdcr(uic->dcrbase + UIC_TR);
-+	pr = mfdcr(uic->dcrbase + UIC_PR);
-+	tr = (tr & mask) | (trigger << (31-src));
-+	pr = (pr & mask) | (polarity << (31-src));
-+
-+	mtdcr(uic->dcrbase + UIC_PR, pr);
-+	mtdcr(uic->dcrbase + UIC_TR, tr);
-+
-+	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
-+	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
-+#if 0
-+	/* In fact, handle_edge_irq() can handle UIC's edge
-+	 * interrupts, too, because UIC doesn't lose edges detected
-+	 * while the interrupt is masked.  FIXME: Check this is really
-+	 * true */
-+	if (trigger) {
-+		set_irq_handler_locked(virq, handle_edge_irq, 0, "edge");
-+	} else {
-+		desc->status |= IRQ_LEVEL;
-+		set_irq_handler_locked(virq, handle_level_irq, 0, "level");
-+	}
-+#endif
-+
-+	spin_unlock_irqrestore(&uic->lock, flags);
++	of_platform_bus_probe(NULL, ebony_of_bus, NULL);
 +
 +	return 0;
 +}
++device_initcall(ebony_device_probe);
 +
-+static struct irq_chip uic_irq_chip = {
-+	.typename	= " UIC  ",
-+	.unmask		= uic_unmask_irq,
-+	.mask		= uic_mask_irq,
-+/* 	.mask_ack	= uic_mask_irq_and_ack, */
-+	.ack		= uic_ack_irq,
-+	.set_type	= uic_set_irq_type,
-+};
-+
-+static int uic_host_match(struct irq_host *h, struct device_node *node)
-+{
-+	struct uic *uic = h->host_data;
-+	return uic->of_node == node;
-+}
-+
-+static int uic_host_map(struct irq_host *h, unsigned int virq,
-+			irq_hw_number_t hw)
-+{
-+	struct uic *uic = h->host_data;
-+
-+	set_irq_chip_data(virq, uic);
-+	set_irq_chip_and_handler(virq, &uic_irq_chip, handle_level_irq);
-+
-+	/* Set default irq type */
-+	set_irq_type(virq, IRQ_TYPE_NONE);
-+
-+	return 0;
-+}
-+
-+static int uic_host_xlate(struct irq_host *h, struct device_node *ct,
-+			  u32 *intspec, unsigned int intsize,
-+			  irq_hw_number_t *out_hwirq, unsigned int *out_type)
-+
-+{
-+	/* UIC intspecs must have 2 cells */
-+	BUG_ON(intsize != 2);
-+	*out_hwirq = intspec[0];
-+	*out_type = intspec[1];
-+	return 0;
-+}
-+
-+static struct irq_host_ops uic_host_ops = {
-+	.match	= uic_host_match,
-+	.map	= uic_host_map,
-+	.xlate	= uic_host_xlate,
-+};
-+
-+irqreturn_t uic_cascade(int virq, void *data)
-+{
-+	struct uic *uic = data;
-+	u32 msr;
-+	int src;
-+	int subvirq;
-+
-+	msr = mfdcr(uic->dcrbase + UIC_MSR);
-+	src = 32 - ffs(msr);
-+
-+	subvirq = irq_linear_revmap(uic->irqhost, src);
-+	generic_handle_irq(subvirq);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+void __init uic_init_one(struct device_node *node)
-+{
-+	struct uic *uic;
-+	const u32 *indexp, *dcrreg, *interrupts;
-+	int len;
-+
-+	uic = alloc_bootmem(sizeof(*uic));
-+	if (! uic)
-+		return; /* FIXME: panic? */
-+
-+	memset(uic, 0, sizeof(*uic));
-+	uic->of_node = of_node_get(node);
-+	indexp = get_property(node, "cell-index", &len);
-+	if (!indexp || (len != sizeof(u32))) {
-+		printk(KERN_ERR "uic: Device node %s has missing or invalid "
-+		       "cell-index property\n", node->full_name);
-+		return;
-+	}
-+	uic->index = *indexp;
-+
-+	dcrreg = get_property(node, "dcr-reg", &len);
-+	if (!dcrreg || (len != 2*sizeof(u32))) {
-+		printk(KERN_ERR "uic: Device node %s has missing or invalid "
-+		       "dcr-reg property\n", node->full_name);
-+		return;
-+	}
-+	uic->dcrbase = *dcrreg;
-+
-+	uic->irqhost = irq_alloc_host(IRQ_HOST_MAP_LINEAR, NR_UIC_INTS,
-+				      &uic_host_ops, -1);
-+	if (! uic->irqhost) {
-+		of_node_put(node);
-+		return; /* FIXME: panic? */
-+	}
-+
-+	uic->irqhost->host_data = uic;
-+
-+	/* Start with all interrupts disable and non-critical */
-+	mtdcr(uic->dcrbase + UIC_ER, 0);
-+	mtdcr(uic->dcrbase + UIC_CR, 0);
-+
-+	printk ("UIC%d (%d IRQ sources) at DCR 0x%x\n", uic->index,
-+		NR_UIC_INTS, uic->dcrbase);
-+
-+	interrupts = get_property(node, "interrupts", &len);
-+
-+	if (! interrupts) {
-+		/* This is the top level controller */
-+		primary_uic = uic;
-+		irq_set_default_host(primary_uic->irqhost);
-+		return;
-+	} else {
-+		/* Secondary UIC */
-+		int cascade_virq;
-+		int ret;
-+
-+		cascade_virq = irq_of_parse_and_map(node, 0);
-+
-+		uic->cascade.handler = uic_cascade;
-+		uic->cascade.name = "UIC cascade";
-+		uic->cascade.dev_id = uic;
-+
-+		ret = setup_irq(cascade_virq, &uic->cascade);
-+		if (ret)
-+			printk(KERN_ERR "Failed to setup_irq(%d) for "
-+			       "UIC%d cascade\n", cascade_virq, uic->index);
-+
-+		/* FIXME: setup critical cascade?? */
-+	}
-+}
-+
-+void __init uic_init_tree(void)
-+{
-+	const phandle *ic_phandle;
-+	struct device_node *top, *sub, *prev;
-+	int len;
-+
-+	ic_phandle = get_property(of_chosen, "interrupt-controller", &len);
-+	if (!ic_phandle || (len != sizeof(*ic_phandle))) {
-+		printk(KERN_CRIT "uic: Couldn't find interrupt-controller property "
-+		       "in /chosen\n");
-+		return;
-+	}
-+
-+	top = of_find_node_by_phandle(*ic_phandle);
-+	if (! top) {
-+		printk(KERN_CRIT "uic: Couldn't find top-level UIC, phandle=%x\n",
-+		       *ic_phandle);
-+	}
-+
-+	uic_init_one(top);
-+
-+	prev = NULL;
-+	while ((sub = of_get_next_child(top, prev)) != NULL) {
-+		if (prev)
-+			of_node_put(prev);
-+
-+		uic_init_one(sub);
-+
-+		prev = sub;
-+	}
-+
-+	of_node_put(top);
-+}
-+
-+/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-+unsigned int uic_get_irq(void)
-+{
-+	u32 msr;
-+	int src;
-+
-+	BUG_ON(primary_uic == NULL);
-+
-+	msr = mfdcr(primary_uic->dcrbase + UIC_MSR);
-+	src = 32 - ffs(msr);
-+
-+	return irq_linear_revmap(primary_uic->irqhost, src);
-+}
-Index: working-2.6/arch/powerpc/sysdev/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/sysdev/Makefile	2007-02-09 09:57:55.000000000 +1100
-+++ working-2.6/arch/powerpc/sysdev/Makefile	2007-02-12 14:22:17.000000000 +1100
-@@ -16,6 +16,7 @@ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
- obj-$(CONFIG_PPC_83xx)		+= ipic.o
-+obj-$(CONFIG_4xx)		+= uic.o
- endif
- 
- # Temporary hack until we have migrated to asm-powerpc
-Index: working-2.6/include/asm-powerpc/uic.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/include/asm-powerpc/uic.h	2007-02-12 14:22:17.000000000 +1100
-@@ -0,0 +1,23 @@
 +/*
-+ * include/asm-powerpc/uic.h
-+ *
-+ * IBM PPC4xx UIC external definitions and structure.
-+ *
-+ * Maintainer: David Gibson <dwg@au1.ibm.com>
-+ * Copyright 2007 IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * Called very early, MMU is off, device-tree isn't unflattened
 + */
-+#ifndef _ASM_POWERPC_UIC_H
-+#define _ASM_POWERPC_UIC_H
++static int __init ebony_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
 +
-+#ifdef __KERNEL__
++	if (!of_flat_dt_is_compatible(root, "Ebony"))
++		return 0;
 +
-+extern void __init uic_init_tree(void);
-+extern unsigned int uic_get_irq(void);
++	return 1;
++}
 +
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_POWERPC_UIC_H */
++static void __init ebony_setup_arch(void)
++{
++}
++
++define_machine(ebony) {
++	.name			= "Ebony",
++	.probe			= ebony_probe,
++	.setup_arch		= ebony_setup_arch,
++	.progress		= udbg_progress,
++	.init_IRQ		= uic_init_tree,
++	.get_irq		= uic_get_irq,
++	.calibrate_decr		= generic_calibrate_decr,
++};
+Index: working-2.6/arch/powerpc/platforms/4xx/Kconfig
+===================================================================
+--- working-2.6.orig/arch/powerpc/platforms/4xx/Kconfig	2007-02-13 12:37:37.000000000 +1100
++++ working-2.6/arch/powerpc/platforms/4xx/Kconfig	2007-02-13 12:39:02.000000000 +1100
+@@ -112,7 +112,8 @@ config 440EP
+ config 440GP
+ 	bool
+ 	depends on EBONY
+-	default y
++	select IBM_NEW_EMAC_ZMII
++ 	default y
+ 
+ config 440GX
+ 	bool
