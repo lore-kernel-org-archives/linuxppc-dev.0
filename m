@@ -1,23 +1,17 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5292ADDDF8
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 08:29:38 +1100 (EST)
-Subject: RE: [PATCH 15/16] Add device tree for Ebony
+Subject: Re: [PATCH 15/16] Add device tree for Ebony
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@jdub.homelinux.org>
-In-Reply-To: <1171470754.4003.101.camel@zod.rchland.ibm.com>
-References: <20070213060904.GA6214@localhost.localdomain>
-	<20070213061026.5837FDDDE9@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
-	<1171470754.4003.101.camel@zod.rchland.ibm.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <45afe653a3f963e21e58a063c09b1b22@kernel.crashing.org>
+References: <20070213061026.5837FDDDE9@ozlabs.org>
+	<e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org>
+	<20070214002210.GE11491@localhost.localdomain>
+	<45afe653a3f963e21e58a063c09b1b22@kernel.crashing.org>
 Content-Type: text/plain
-Date: Thu, 15 Feb 2007 08:29:20 +1100
-Message-Id: <1171488560.20192.175.camel@localhost.localdomain>
+Date: Thu, 15 Feb 2007 08:30:43 +1100
+Message-Id: <1171488643.20192.177.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,11 +22,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Right, OPB hangs off of PLB in this case.  I dunno if "soc" is the right
-> device type for them though.
+> There cannot *exist* any children of the node.  Unless
+> your hardware is really weird.  I guess it is :-)
+> 
+> In such a case, you just don't put a "reg" property in
+> the kid nodes.
 
-I'm no fan of "soc" anyway... plb could have device type "plb" and opb
-"opb" :-) Or ibm,plb-bus and ibm,opb-bus ... (For axon, plb5 is plb5,
-plb4 is plb4 and opb is opb).
+No. The #address-cells in the interrupt controller is necessary to
+define the size of the unit address part of the unit interrupt specifier
+of interrupt children. Re-read your spec :-)
+
+Having it set to 0 provides the necessary definition so that the "right
+hand" members of an interrupt map don't need a unit address in their
+unit interrupt specifier.
 
 Ben.
