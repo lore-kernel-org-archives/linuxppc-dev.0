@@ -1,21 +1,28 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: RE: [PATCH 15/16] Add device tree for Ebony
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
-References: <20070213060904.GA6214@localhost.localdomain>
-	<20070213061026.5837FDDDE9@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
-	<1171470754.4003.101.camel@zod.rchland.ibm.com>
-	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B86F@az33exm25.fsl.freescale.net>
-	<9df9bf3adf511f4c1a7945e022fdd447@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
-Content-Type: text/plain
-Date: Thu, 15 Feb 2007 08:42:40 +1100
-Message-Id: <1171489360.20192.184.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 582EBDDE37
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 08:58:08 +1100 (EST)
+Message-ID: <45D385E9.4020808@freescale.com>
+Date: Wed, 14 Feb 2007 15:58:01 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
+	files
+References: <1171409687840-git-send-email-timur@freescale.com>	
+	<1171411075.20192.116.camel@localhost.localdomain>	
+	<45D29AE5.7090004@freescale.com>	
+	<1171430877.20192.133.camel@localhost.localdomain>	
+	<45D29EB1.5060801@freescale.com>	
+	<1171431334.20192.138.camel@localhost.localdomain>	
+	<45D316CD.9070901@freescale.com>	
+	<1171486473.20192.147.camel@localhost.localdomain>	
+	<45D378F4.3040003@freescale.com>
+	<1171487822.20192.163.camel@localhost.localdomain>
+In-Reply-To: <1171487822.20192.163.camel@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +32,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> der an "soc" node at the same level.
-> > 
-> > A "soc" node is meant to contain SoC specific stuff like
-> > clock registers or whatnot.  It typically wouldn't have
-> > child nodes.
-> 
-> That's not what booting_without_of.txt says.  It says:
-> 
->     The SOC node may contain child nodes for each SOC
->     device that the  platform uses.
-> 
-> All the dts files in arch/powerpc/boot/dts I've looked at have
-> an soc node with a whole bunch of devices under it.
+Benjamin Herrenschmidt wrote:
 
-Wel, that was written by FSL not long ago :-)
+> In case somebody wants to use something else than uboot ? I'd like the
+> base structure of the mandatory nodes to be there. /chosen is mandatory,
+> so it should be there.
 
-> The current practice seems to be that an "soc" node contains
-> all the on chip devices (regardless of the physical bus internal
-> to the soc).
+I just posted a new patch that just deletes linux,boot-cpu and leaves the 
+'chosen' node alone.
 
-That's the current FSL practice yes. As I said, I'm not too fan of it. I
-prefer a more precise representation of the internal bus layout.
+However, there is a valid reason for *not* having a 'chosen' node in the DTS. 
+Currently, U-Boot does not update the existing 'chosen' node.  Instead, it 
+creates a new one.  This means that if one existed in the DTS, then there would 
+be *two* in the device tree that is passed to the kernel.  There is no way to 
+guarantee that the kernel will use the right one.
 
-> The device_type is typically things like "network" and "serial"
-> which don't specify the programming model.   The compatible 
-> property is used in driver selection. 
+Of course, the real solution to this problem is to fix U-Boot.  However, there 
+isn't any signed up to do that, and even if someone posted a patch right now, 
+there's no telling when it will get applied.  And even if it got applied today, 
+all current U-Boot installations would be broken.  Many of these systems will 
+never be updated.
 
-The device type specifies the programming model of the node for OF, that
-is the set of words the driver will provide to OF. So that's something
-we don't necessarily care much about for non-OF implementation but still
-we should avoid going too far from that model either (after all,
-somebody can very well want to use a real OF on a board with a SoC).
+Therefore, I would say that having a 'chosen' node in the DTS is actually a 
+*bad* thing, on systems that use U-Boot.
 
-The device type is also used by the kernel in some areas. For example,
-the spec specifies that PCI host controllers and P2P bridges have a
-device-type of "pci" and the kernel relies heavily on that. Same for
-ISA. It thus makes sense to continue that practice with other bus types.
+Another work-around would be to update the compiler to delete the chosen node 
+when it builds the DTB.  That's not a bad idea, I think, but until that feature 
+is implemented, the DTS files should not have a 'chosen' node.
 
-Ben.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
