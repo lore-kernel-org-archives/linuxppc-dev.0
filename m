@@ -1,18 +1,30 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 818A5DDE00
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 905E4DDE2E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Feb 2007 07:42:34 +1100 (EST)
-Date: Wed, 14 Feb 2007 21:42:33 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Laurent Pinchart <laurent.pinchart@technotrade.biz>
-Subject: Re: Moving from arch/ppc to arch/powerpc with an MPC8248 (part 1)
-In-Reply-To: <200702141308.17815.laurent.pinchart@technotrade.biz>
-Message-ID: <Pine.LNX.4.60.0702142138460.8621@poirot.grange>
-References: <200702141308.17815.laurent.pinchart@technotrade.biz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 15 Feb 2007 10:10:01 +1100 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1HHTFz-00089W-CJ
+	for linuxppc-embedded@ozlabs.org; Thu, 15 Feb 2007 00:09:47 +0100
+Received: from dsl-202-45-109-210-static.VIC.netspace.net.au ([202.45.109.210])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 15 Feb 2007 00:09:47 +0100
+Received: from daniel_ng11 by dsl-202-45-109-210-static.VIC.netspace.net.au
+	with local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Thu, 15 Feb 2007 00:09:47 +0100
+To: linuxppc-embedded@ozlabs.org
+From: Daniel Ng <daniel_ng11@lycos.com>
+Subject: Re: 'make' behaviour in BuildRoot
+Date: Wed, 14 Feb 2007 23:09:31 +0000 (UTC)
+Message-ID: <loom.20070215T000853-313@post.gmane.org>
+References: <loom.20070214T072955-792@post.gmane.org>
+	<97C76137-FF67-4145-BAF3-1AB3290F4D05@emi.yamaha.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,27 +35,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 14 Feb 2007, Laurent Pinchart wrote:
+> How about mounting the cramfs image and append 'test23' to '/usr'
+> inside mounted image, then unmount the image.
 
-> arch/ppc defines some 8260 generic handlers in syslib/mpc8260_setup.c for 
-> operations such as halt, reset, show_cpuinfo, ... The MPC82xx ADS in 
-> arch/powerpc/platforms/82xx redefines those handles as board-specific 
-> functions. Should they be made generic to all 82xx boards, or should I copy 
-> them to my board-specific file ? If the code should be shared by all 82xx 
-> boards, I'll probably end up copying most of the 
-> arch/ppc/syslib/mpc8260_setup.c code to 
-> arch/powerpc/platforms/82xx/mpc82xx.c.
+Thanks for your comment Suzuki, I realise I can do it the way you suggested but 
+what if I start adding several files, or edit some of these files? I would end 
+up with a mounted system whose tree structure would be quite different to the 
+one in 'build_powerpc/root'. This would just lead to confusion and more of my 
+hair falling out. 
 
-Emn, sorry, don't know about 8248 and 8260 specifically, but just looking 
-at notation 8248 should be closer to 8245 than to 8260, is it not?
+Surely I should just be able to type 'make' which would result in the tree 
+structure updated in the cramfs image? Any ideas? Where are the BuildRoot 
+experts out there? Can someone tell me how to subscribe to the BuildRoot list?
 
-If there are enough similarities, you might also look at 
-arch/powerpc/platforms/embedded6xx/linkstation.c for an example of such a 
-ppc -> powerpc migration. Not that I considered it an ideal example to 
-follow. Rather, if it helps you - good. If you find anything that can be 
-improved there - would be happy to know.
-
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+(Sorry I think my original example was a bit too simple).
