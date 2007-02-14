@@ -1,14 +1,13 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 14 Feb 2007 11:17:10 +1100
+Date: Wed, 14 Feb 2007 11:20:09 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH 11/16] zImage wrapper for Ebony
-Message-ID: <20070214001710.GC11491@localhost.localdomain>
-References: <20070213061025.6EB43DDD0C@ozlabs.org>
-	<45D1EFBC.7040805@am.sony.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH 16/16] Support for Ebony in arch/powerpc
+Message-ID: <20070214002009.GD11491@localhost.localdomain>
+References: <20070213061026.7979DDDDF0@ozlabs.org> <adabqjym0vy.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45D1EFBC.7040805@am.sony.com>
+In-Reply-To: <adabqjym0vy.fsf@cisco.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,42 +18,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 13, 2007 at 09:05:00AM -0800, Geoff Levand wrote:
-> David Gibson wrote:
-> > This patch adds support for building a zImage wrapper suitable for the
-> > Ebony (440GP) evaluation board.  This supports booting both from uboot
-> > (old versions which don't supply a flattened device tree) and IBM
-> > Openbios (aka "treeboot").
+On Tue, Feb 13, 2007 at 09:18:57AM -0800, Roland Dreier wrote:
+>  >  config 440GP
+>  >  	bool
+>  >  	depends on EBONY
+>  > -	default y
+>  > +	select IBM_NEW_EMAC_ZMII
+>  > + 	default y
 > 
-> > +++ working-2.6/arch/powerpc/boot/Makefile	2007-02-12 14:22:17.000000000 +1100
-> > -src-plat := of.c
-> > +src-plat := of.c ebony.c
-> >  src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
+> Maybe we could take this opportunity to clean up the CPU selection in
+> Kconfig and use select instead... right now we have a mess like
 > 
+> config 440GP
+>         bool
+>         depends on EBONY
+>         default y
 > 
-> Could this be better as:
+> config 440
+>         bool
+>         depends on 440GP || 440SP || 440SPE || 440EP
+>         default y
 > 
-> src-plat-$(CONFIG_44x) += ebony.c
-> src-plat := of.c $(src-plat-y)
+> etc... -- it would be nice for this to look like
 > 
+> config EBONY
+> 	bool
+> 	select 440GP
 > 
-> >  src-boot := $(addprefix $(obj)/, $(src-boot))
-> > @@ -94,6 +94,12 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-
-> >  $(obj)/wrapper.a: $(obj-wlib)
-> >  	$(call cmd,bootar)
-> >  
-> > +quiet_cmd_dtc = DTC     $@
-> > +      cmd_dtc = $(dtc) -O dtb -o $@ -b 0 -V 16 $<
-> > +
-> > +$(obj)/%.dtb: $(srctree)/$(src)/dts/%.dts
-> > +	$(call if_changed,dtc)
-> > +
+> config 440GP
+> 	bool
+> 	select IBM_NEW_EMAC_ZMII
+> 	select 440
 > 
+> config 440
+> 	bool
 > 
-> If dtc is not installed will this create an empty dtb file that ends
-> up getting used?  If so, try something like this:
+> I'm happy to do this cleanup after things settle down though
 
-Um.. no.  How would dtc create a file if it wasn't there..?
+Yes, I've been thinking about something like that.  Sounds good to
+me.  At the same time we need to change the board options from a
+choice to individual bools, since it should now be possible to make a
+kernel bootable on multiple boards.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
