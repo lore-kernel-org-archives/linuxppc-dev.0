@@ -1,22 +1,16 @@
-Return-Path: <imrek@atomki.hu>
-Received: from imrek.org (unknown [193.6.168.119])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DFCF1DDDF4
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id 2C8F1DDDE5
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Feb 2007 18:17:24 +1100 (EST)
-Received: from localhost ([127.0.0.1]) by imrek.org with esmtp (Exim 4.54)
-	id 1HHEVY-00008u-VO
-	for linuxppc-embedded@ozlabs.org; Wed, 14 Feb 2007 08:24:53 +0100
-Date: Wed, 14 Feb 2007 08:24:52 +0100 (CET)
-From: jozsef imrek <imrek@atomki.hu>
-To: linuxppc-embedded@ozlabs.org
-Subject: RE: Speed of plb_temac 3.00 on ML403
-In-Reply-To: <BAY110-F266A0C4987983C9B579C76B2910@phx.gbl>
-Message-ID: <Pine.LNX.4.61.0702140546360.32655@imrek.org>
-References: <BAY110-F266A0C4987983C9B579C76B2910@phx.gbl>
+	Wed, 14 Feb 2007 19:29:30 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: New driver model in 2.6
+Date: Wed, 14 Feb 2007 09:29:26 +0100
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E651F70@aquib01a>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,76 +21,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 12 Feb 2007, Ming Liu wrote:
+Anyone knows how, where, when the match device of spi_bus_type structure
+is called? I put a printk in spi_match_device function and registered an
+spi device in this way:
 
-> You said in your application the data path can bypass the IP stack, the CPU, 
-> and with some work even the main memory. How can you achieve that? Then who 
-> will process the UDP packets? If you add the work of processing packets in,
+static struct spi_board_info spi_board_info[] __initdata =3D {
+        {
+                .modalias       =3D "m25p80",
+                .max_speed_hz   =3D 16000000,
+                .bus_num        =3D 0,
+                .chip_select    =3D 0,
+        },
+};
 
-a precondition for this to work is to have all your data processing
-implemented in hardware, since the CPU will not see the payload of
-the udp packets, so it will have no chance to modify it.
+static int board_init_spi(void)
+{
+        printk("%s\n", __FUNCTION__);
+        spi_register_board_info(spi_board_info,
+ARRAY_SIZE(spi_board_info));
+        return 0;
+}
 
-the trick is (as i mentioned in my first reply) is to use an IPIF with
-address range support (so it looks like a memory), and have the s/g dma
-engine of the plb_temac read the udp payload from this "memory" instead
-of your system ram.
+But spi_match_device is not called and consequently the _probe function
+of m25p80 driver is never called.
 
-the packet header (ethernet + ip + udp) in our application is assembled
-by a code based on pktgen. you could implement it in hw as well, but there
-is no need for that since you can utilize the full gigabit bandwith (this
-you have seen.. :), and it is more convinient to have that functionality
-in sw.
-
-
-a quick hack to see this theory working:
-
-1, create a new peripherial with address range support.
- 	(start xps -> hardware -> create or import new peripherial,
- 	plb bus, no sw reset/mir, no interrupt, no user regs, with
- 	burst support, no fifo, with user address range, no dma,
- 	no master iface)
-
- 	you might want to replace the bram in the sample code
- 	(pcores/*/hdl/vhdl/user_logic.vhd) with a fixed value
- 	or a counter.
-
-2, add this core to your design, create and download your new bitfile.
-
-3, modify the source of the plb_temac linux driver. when a packet
- 	is sent with fragments a buffer descriptor (bd) will be set
- 	up for each fragment. the first bd will be used for the
- 	packet header, and the rest of the bd's will point to the
- 	the udp payload. so you want to make sure, that the physical
-  	address of all but the first bd's is pointing to the physical
-  	address of your IPIF's address range (you can find it in your
- 	mhs file, search for C_AR_BASEADDR).
-
- 	in adapter.c in xenet_SgSend_internal() search for the loop
- 	where a bd is set up for each payload fragment (something like
- 	for (i = 1; i < total_frags; i++, frag++)..), and set the
- 	phy_addr to the address of your core (ie. phy_addr = 0x70090000;).
-
- 	compile your new kernel, download it.
-
-4, start pktgen with frags = 1 (use pgset "frags 1"). check the
- 	payload of the packets sent on the wire (ie. with tcpdump).
-
- 	if you have replaced the bram in step 1 with a fixed value
- 	you should see that value. if you have replaced it with a
- 	counter you should see the values rolling. if you did not
- 	replace the bram, you should see the contents of the bram - it
- 	is filled with all zeroes on reset, but you can fill it with
- 	any test pattern.
-
-
-
-good luck, and let me know how it works!
-
-
--- 
-mazsi
-
-----------------------------------------------------------------
-strawberry fields forever!                       imrek@atomki.hu
-----------------------------------------------------------------
+Any help is appreciated,
+Antonio.
