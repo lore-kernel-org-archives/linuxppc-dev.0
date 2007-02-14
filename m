@@ -1,16 +1,19 @@
-Return-Path: <cem.isik@karel.com.tr>
-Message-ID: <45D2C9C6.4030307@karel.com.tr>
-Date: Wed, 14 Feb 2007 10:35:18 +0200
-From: Cem Vedat ISIK <cem.isik@karel.com.tr>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 7E53ADDDE5
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 19:57:55 +1100 (EST)
+Date: Wed, 14 Feb 2007 09:57:46 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Thomas Meyer <thomas@m3y3r.de>
+Subject: Re: undefined symbol 'PS3_PS3AV'
+In-Reply-To: <45D2A835.7020606@m3y3r.de>
+Message-ID: <Pine.LNX.4.62.0702140955130.17463@pademelon.sonytel.be>
+References: <45D2A835.7020606@m3y3r.de>
 MIME-Version: 1.0
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: Mpc875 Ethernet does not work under linux.
-References: <45CAF4C4.7030002@karel.com.tr>
-	<50CB27D3-ACF9-47E9-8690-95B76391F18C@embeddedalley.com>
-In-Reply-To: <50CB27D3-ACF9-47E9-8690-95B76391F18C@embeddedalley.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	ppc embedded list <linuxppc-embedded@ozlabs.org>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,42 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dan,
-As 2.4.25 kernel, I'm using denx-supplied
-linuxppc_2_4_devel-2006-04-06-1735 kernel, which shows me "8xx" option
-as "Processor Type" in "Platform Support" section with "make menuconfig"
-command.
-Well, I want to try kernel 2.6.x but, I haven't seen any option for 875
-support with "make menuconfig" command. Could you suggest any methods to
-configure 2.6 kernel for mpc875?
-Thanks in advance, looking forward to hearing from you soon.
-
-Dan Malek wrote:
+On Wed, 14 Feb 2007, Thomas Meyer wrote:
+> with 93bbad8fe13a25dcf7f3bc628a71d1a7642ae61b:
 > 
-> On Feb 8, 2007, at 5:00 AM, Cem Vedat ISIK wrote:
-> 
->> I'm having a problem using ethernet with denx-provided kernel:
->> linuxppc_2_4_devel-2006-04-06-1735 on mpc875 (a member of mpc885 family).
-> 
-> Sounds like you didn't properly port your
-> kernel.  I use both 2.4 and 2.6 on 875 and 885
-> every day.  Works fine.  Take a look at your
-> clock routing and PHY support functions to
-> ensure that's all correct.
-> 
-> 
->     -- Dan
+> drivers/video/Kconfig:1604:warning: 'select' used by config symbol 'FB_PS3'
+> refer to undefined symbol 'PS3_PS3AV'
 
+It's defined in arch/powerpc/platforms/ps3/Kconfig, which is sourced by
+arch/powerpc/Kconfig only.
 
--- 
-Cem Vedat ISIK
-cem.isik@karel.com.tr
+I don't know what's the best way to shut this up. Anyone with a suggestion?
 
-PGP Key ID = 0×6D7B02F7
-fingerprint = 8C34 144C 999A 917C 8EA0 1199 C136 C114 6D7B 02F7
+Gr{oetje,eeting}s,
 
------------------------------------------------------------------------
-Bu mesaj Karel MailScanner ile tehlikeli icerik ve virus kontrolunden gecirilmistir.
-KAREL A.S. - Bilgi Teknolojileri Bolumu
-This message has been scanned for viruses and dangerous content by Karel MailScanner, and is believed to be clean.
-KAREL A.S. - Information Technologies Department
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
