@@ -1,27 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id CD703DDE0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 01:05:43 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l1EE5eAW029702
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 07:05:41 -0700 (MST)
-Received: from Artemis.local (mvp-10-214-73-46.am.freescale.net [10.214.73.46])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1EE5ew0002364
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 08:05:40 -0600 (CST)
-Message-ID: <45D31734.7030808@freescale.com>
-Date: Wed, 14 Feb 2007 08:05:40 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 8CBE4DDE23
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 01:09:25 +1100 (EST)
+Message-ID: <45D31804.4050507@ru.mvista.com>
+Date: Wed, 14 Feb 2007 17:09:08 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
-	files
-References: <11713852392294-git-send-email-timur@freescale.com>
-	<20070214003119.GF11491@localhost.localdomain>
-	<45D29BBA.7090401@freescale.com>
-	<20070214052440.GB12609@localhost.localdomain>
-In-Reply-To: <20070214052440.GB12609@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: add of_get_mac_address() and update fsl_soc.c
+	to use it
+References: <1171408247467-git-send-email-timur@freescale.com>
+	<1171411219.20192.118.camel@localhost.localdomain>
+	<45D29B80.2060705@freescale.com>
+In-Reply-To: <45D29B80.2060705@freescale.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,17 +24,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+Hello.
 
-> The interrupt-controller property in /chosen just points to the
-> system's top-level interrupt controller to make it easier for the
-> kernel to find in the tree.  I think most platforms don't actually
-> need or use it at present, but booting-without-of does recommend it.
-> 
-> As such it's a property of the board, not something which will change
-> from boot to boot.  It would therefore be rather strange for the
-> bootloader to poke this property.
+Timur Tabi wrote:
 
-That's all the more reason to delete the 'chosen' section, isn't it? 
-Sicne it's wrong, deleting the entire section will just make the problem 
-go away.  Or am I missing something?
+>>> +    return get_property(np, "address", NULL);
+
+>> Since there is so much room for confusion with "address", please at
+>> least do some basic sanity checking, like check that it's size is 6
+>> bytes and maybe that the multicast bit isn't set.
+
+> Are you saying that some device trees have something *other* than a MAC 
+> address in the 'address' property?
+
+    'address' property was originally defined to hold a virtual address of the 
+device registers (with 'reg' holding the physical address) until FSL decided 
+to "reinvent" the property. :-)
+
+WBR, Sergei
