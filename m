@@ -1,32 +1,26 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D79EBDDECC
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 03:06:10 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1EG66WP005272
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 11:06:06 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1EG66se451532
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 09:06:06 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1EG65fk022426
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 09:06:05 -0700
-Subject: Re: [0/16] Preliminary Ebony (440GP) support for arch/powerpc
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <1171381565.4003.48.camel@zod.rchland.ibm.com>
+Return-Path: <stuart.yoder@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id BE92FDDE07
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 03:14:25 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l1EGEHF5029902
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 09:14:18 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1EGEHUI004591
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 10:14:17 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [PATCH 15/16] Add device tree for Ebony
+Date: Wed, 14 Feb 2007 09:14:15 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
+In-Reply-To: <20070213061026.5837FDDDE9@ozlabs.org>
 References: <20070213060904.GA6214@localhost.localdomain>
-	<1171381565.4003.48.camel@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Wed, 14 Feb 2007 10:06:23 -0600
-Message-Id: <1171469183.4003.96.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	<20070213061026.5837FDDDE9@ozlabs.org>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "David Gibson" <david@gibson.dropbear.id.au>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,38 +30,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-02-13 at 09:46 -0600, Josh Boyer wrote:
-> On Tue, 2007-02-13 at 17:09 +1100, David Gibson wrote:
-> > Here is a preliminary set of patches implementing support for the
-> > 440GP based Ebony evaluation board in arch/powerpc.  A number of the
-> > earlier patches are in Paul's queue already, so may appear in
-> > powerpc.git at any point.  Most of the later ones need at least some
-> > cleanup or reworking before they'll be ready for merging.
-> > 
-> > With these patches I can boot to a shell prompt on initrd on my Ebony
-> > board.  There are still a bunch of problems: clock timings are way out
-> > (runs about 4* fast), things freeze up when I attempt to use an
-> > nfsroot, many devices aren't supported.  A lot of things are hardcoded
-> > in the device tree, so you may well have to tweak it if your Ebony is
-> > different from mine.
-> 
-> I've noticed a couple issues so far on my board, which should just be a
-> stock Ebony.
-> 
-> 1) Things are off when just using the zImage.ebony image.  For reasons
-> I've yet to narrow down, the bootwrapper thinks something passed an
-> initrd to it via the a2 parameter in prep_kernel even though there is no
-> initrd.  I get output like:
 
-I still have this issue, just haven't had a chance to figure out why
-yet.  Likely because the openbios code is leaving garbage somewhere.
+I realize the dts is preliminary, but saw some stuff and=20
+thought I would comment.
 
-> 2) I get no boot output after the "Finalizing device tree..." step.  I
-> don't have a BDI or RW at the moment, but I'll try and figure out where
-> it's at and what it's doing.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org]=20
+> On Behalf Of David Gibson
 
-After turning on the early debug stuff (once I got it to compile) I get
-output of the kernel boot.  Without that enabled however, I get no
-kernel boot messages.
+[snip]
 
-josh
+> +	UIC0: interrupt-controller { /* UIC0 */
+> +		device_type =3D "interrupt-controller";
+> +		compatible =3D "ibm,uic440gp", "ibm,uic";
+> +		interrupt-controller;
+> +		cell-index =3D <0>;
+> +		dcr-reg =3D <0c0 009>;
+> +		#address-cells =3D <0>;
+> +		#size-cells =3D <0>;
+> +		#interrupt-cells =3D <2>;
+> +
+> +		UIC1: interrupt-controller@1 { /* UIC1 */
+> +			device_type =3D "interrupt-controller";
+> +			compatible =3D "ibm,uic440gp", "ibm,uic";
+> +			interrupt-controller;
+> +			cell-index =3D <1>;
+> +			dcr-reg =3D <0d0 009>;
+> +			#address-cells =3D <0>;
+> +			#size-cells =3D <0>;
+> +			#interrupt-cells =3D <2>;
+> +			interrupts =3D <1e 4 1f 4>; /* cascade */
+> +		};
+> +	};
+
+Did you mean to have UIC1 nested under UIC0 or should
+they be at the same level?
+
+> +	plb {
+> +		device_type =3D "soc";
+> +		compatible =3D "ibm,plb-440gp", "ibm,plb4";
+> +		ranges;
+> +
+> +		POB0: opb@0 {
+> +			device_type =3D "soc";
+> +			compatible =3D "ibm,opb-440gp", "ibm,opb";
+> +			ranges;
+> +			dcr-reg =3D <090 00b>;
+> +			interrupt-parent =3D <&UIC1>;
+> +			interrupts =3D <7 4>;
+> +			clock-frequency =3D <3ef1480>; // FIXME: 66MHz
+
+Hmm.  There are two "soc" devices here, one nested under the
+first??
+
+I'm assuming these are two levels of busses the opb bus is attached
+to the plb bus.  Is the "soc" device_type the right way to=20
+do this?
+
+Stuart
