@@ -1,35 +1,32 @@
-Return-Path: <SRS0=2/sND6=HW=cogcomp.com=mike@yourhostingaccount.com>
-Received: from mailout10.yourhostingaccount.com
-	(mailout10.yourhostingaccount.com [65.254.253.85])
-	by ozlabs.org (Postfix) with ESMTP id 7B5B7DDEED
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 11:44:23 +1100 (EST)
-Received: from mailscan03.yourhostingaccount.com ([10.1.15.3]
-	helo=mailscan03.yourhostingaccount.com)
-	by mailout10.yourhostingaccount.com with esmtp (Exim)
-	id 1HH7rr-0007MF-SU
-	for linuxppc-dev@ozlabs.org; Tue, 13 Feb 2007 19:19:27 -0500
-Received: from authsmtp08.yourhostingaccount.com ([10.1.18.8] ident=exim)
-	by mailscan03.yourhostingaccount.com with spamscanlookuphost (Exim)
-	id 1HH7rr-0007CT-Mk
-	for linuxppc-dev@ozlabs.org; Tue, 13 Feb 2007 19:19:27 -0500
-Received: from authsmtp08.yourhostingaccount.com ([10.1.18.8]
-	helo=authsmtp08.yourhostingaccount.com)
-	by mailscan03.yourhostingaccount.com with esmtp (Exim)
-	id 1HH7rr-0007CQ-2u
-	for linuxppc-dev@ozlabs.org; Tue, 13 Feb 2007 19:19:27 -0500
-Received: from ip68-9-156-117.ri.ri.cox.net ([68.9.156.117]
-	helo=mike-home.cogcomp.com)
-	by authsmtp08.yourhostingaccount.com with esmtpa (Exim)
-	id 1HH7rq-0002lq-T8
-	for linuxppc-dev@ozlabs.org; Tue, 13 Feb 2007 19:19:27 -0500
-Message-Id: <6.2.5.6.2.20070213191530.03e27eb0@cogcomp.com>
-Date: Tue, 13 Feb 2007 19:21:26 -0500
-To: linuxppc-dev@ozlabs.org
-From: Michael Kelly <mike@cogcomp.com>
-Subject: USB Host controller for MPC8548e board
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 22338DDEBE
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 11:57:37 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1E0vT8Y001811
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 19:57:30 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1E0vTbc299640
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 19:57:29 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1E0vTLb002602
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Feb 2007 19:57:29 -0500
+Date: Tue, 13 Feb 2007 19:02:36 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: [PATCH 7/16] Early serial debug support for PPC44x
+Message-ID: <20070214010235.GB19430@crusty.rchland.ibm.com>
+References: <20070213061024.DA1ABDDD0C@ozlabs.org>
+	<1171379087.4003.40.camel@zod.rchland.ibm.com>
+	<20070214001622.GB11491@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
-Sender: Michael Kelly <mike@cogcomp.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070214001622.GB11491@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,25 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello all.  We are in the process of designing an MPC8548e board.  We 
-wish to add
-USB host via either the NXP ISP1561 or NEC upd720101.  They are both OHCI and
-EHCI.
+On Wed, Feb 14, 2007 at 11:16:22AM +1100, David Gibson wrote:
+> >  AS      arch/powerpc/kernel/head_44x.o
+> > arch/powerpc/kernel/head_44x.S: Assembler messages:
+> > arch/powerpc/kernel/head_44x.S:179: Warning: left operand is a bignum;
+> > integer 0 assumed
+> > arch/powerpc/kernel/head_44x.S:183: Error: bignum invalid
+> > arch/powerpc/kernel/head_44x.S:184: Warning: left operand is a bignum;
+> > integer 0 assumed
+> > make[1]: *** [arch/powerpc/kernel/head_44x.o] Error 1
+> > make: *** [arch/powerpc/kernel] Error 2
+> 
+> Um... works for me?  What version of the assembler are you using?
+> 
+> I'm using a 64-bit constant there, but for me at least the assembler
+> is able to handle manipulating it in constant expressions.
 
-Is there any general advice on one over the other or even if it is 
-realistic to have a USB
-host controller on a big endian processor?
+[jwboyer@zod ~]$ powerpc-440-linux-gnu-as --version
+GNU assembler 2.15
 
-Regards,
-Michael
+This is a crosstool built toolchain with binutils 2.15 and gcc 3.4.1.
+Which versions are you using?
 
-
-Michael J. Kelly
-VP Engineering
-Cogent Computer Systems, Inc.
-17 Industrial Dr.
-Smithfield, RI 02917 USA
-tel: 401-223-3441, fax: 401-223-3442
-email: mike@cogcomp.com
-alternate email: mkelly6505@hotmail.com
-web: www.cogcomp.com
+josh
