@@ -1,22 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 14 Feb 2007 11:31:19 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
+	files
+Message-ID: <20070214003119.GF11491@localhost.localdomain>
+References: <11713852392294-git-send-email-timur@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17874.22587.981499.55058@cargo.ozlabs.ibm.com>
-Date: Wed, 14 Feb 2007 11:30:51 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Christian Krafft <krafft@de.ibm.com>
-Subject: Re: [Cbe-oss-dev] [patch v3] powerpc: add PMI driver for cell blade
-In-Reply-To: <20070213202854.09332582@localhost>
-References: <20070209183529.67d542d5@localhost>
-	<20070209184530.4c8bc2be@localhost>
-	<20070209222956.GH1827@localdomain>
-	<20070212101222.24abe14c@localhost>
-	<20070213143418.06fa01b5@localhost>
-	<20070213194436.0306d18a@localhost>
-	<20070213194806.3c266282@localhost>
-	<20070213202854.09332582@localhost>
-Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
-	cbe-oss-dev@ozlabs.org
+In-Reply-To: <11713852392294-git-send-email-timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +19,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christian Krafft writes:
+On Tue, Feb 13, 2007 at 10:47:19AM -0600, Timur Tabi wrote:
+> The 'linux,boot-cpu' property and the 'chosen' node do not belong in the
+> DTS file, because U-Boot creates these entries in the device tree when
+> it boots linux.
 
-> From: Christian Krafft <krafft@de.ibm.com>
-> This patch adds driver code for the PMI device found in future IBM products.
-> PMI stands for "Platform Management Interrupt" and is a way to communicate
-> with the BMC. It provides bidirectional communication with a low latency.
+[snip]
+> @@ -53,13 +52,6 @@
+>                 reg = <00000000 4000000 f4500000 00000020>;
+>         };
+>  
+> -       chosen {
+> -               name = "chosen";
+> -               linux,platform = <0>;
+> -               interrupt-controller = <10c00>;
+> -               linux,phandle = <400>;
+> -       };
+> -
 
-Thanks for telling us what PMI is, but what's a BMC?
+Um.. at least the interrupt-controller property here should be fixed,
+and thus should probably remain in the dts.
 
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
