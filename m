@@ -1,19 +1,24 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 7DB7EDDDE6
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 11:12:47 +1100 (EST)
-Date: Tue, 13 Feb 2007 18:21:33 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: add of_get_mac_address() and update fsl_soc.c to
-	use it
-Message-ID: <20070214002133.GA4851@lixom.net>
-References: <1171408247467-git-send-email-timur@freescale.com>
-	<1171411219.20192.118.camel@localhost.localdomain>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 14 Feb 2007 11:11:06 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
+Message-ID: <20070214001106.GA11491@localhost.localdomain>
+References: <200702121129.05004.sr@denx.de>
+	<1171281988.20192.1.camel@localhost.localdomain>
+	<ada7iun8bz3.fsf@cisco.com>
+	<1171310108.20192.7.camel@localhost.localdomain>
+	<E1HGhb3-0001fb-9M@jdl.com>
+	<1171311802.20192.15.camel@localhost.localdomain>
+	<D612EBB5-3ABB-45C5-943B-C32E5B9F4319@kernel.crashing.org>
+	<20070213004608.GB4894@localhost.localdomain>
+	<8DEFFE52-2326-43A9-9719-15E04EF17D3A@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1171411219.20192.118.camel@localhost.localdomain>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Timur Tabi <timur@freescale.com>
+In-Reply-To: <8DEFFE52-2326-43A9-9719-15E04EF17D3A@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>,
+	Stefan Roese <sr@denx.de>, Roland Dreier <rdreier@cisco.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +28,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 14, 2007 at 11:00:19AM +1100, Benjamin Herrenschmidt wrote:
+On Mon, Feb 12, 2007 at 11:28:17PM -0600, Kumar Gala wrote:
 > 
-> > +	return get_property(np, "address", NULL);
+> On Feb 12, 2007, at 6:46 PM, David Gibson wrote:
 > 
-> Since there is so much room for confusion with "address", please at
-> least do some basic sanity checking, like check that it's size is 6
-> bytes and maybe that the multicast bit isn't set.
+> > On Mon, Feb 12, 2007 at 02:41:36PM -0600, Kumar Gala wrote:
+> >>
+> >> On Feb 12, 2007, at 2:23 PM, Benjamin Herrenschmidt wrote:
+> >>
+> >>> On Mon, 2007-02-12 at 14:16 -0600, Jon Loeliger wrote:
+> >>>> So, like, the other day Benjamin Herrenschmidt mumbled:
+> >>>>>
+> >>>>> Note that there are still things that we might want to change. For
+> >>>>> example, I think we really should look into adding a macro  
+> >>>>> mecanism
+> >>>>> and/or an include mecanism to dtc so that we can do things like
+> >>>>> #include
+> >>>>> <ibm440gp.dtc> to get the base processor/SoC definition and then
+> >>>>> "overlay" some properties on top of it (like emac phy mode etc...)
+> >>>>
+> >>>> What do people prefer here?  Straight CPP pre-run?
+> >>>
+> >>> CPP pre-run has issue, notably due to the usage of "#" in property
+> >>> names.
+> >>
+> >> You can get around that by invoking cpp with the right flags,  I
+> >> looked at doing this a while back and had it working.
+> >
+> > Umm.. which flags?
+> 
+> cpp -undef -P -x assembler-with-cpp
 
-No need to reinvent the wheel, is_valid_ether_addr() is easy to use.
+What exactly does the -x assembler-with-cpp do?  I can't seem to find
+a useful description in the man page or info.
 
-Might still want to check the property length though.
-
-
--Olof
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
