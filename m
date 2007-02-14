@@ -1,29 +1,16 @@
-Return-Path: <laurent.pinchart@technotrade.biz>
-Received: from outmx027.isp.belgacom.be (outmx027.isp.belgacom.be
-	[195.238.4.208])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 19149DDE03
+Return-Path: <Glenn.G.Hart@us.westinghouse.com>
+Received: from swec9607.wecnq.com (swec9607.wecnq.com [147.72.234.65])
+	by ozlabs.org (Postfix) with ESMTP id B4096DDDF2
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Feb 2007 00:59:31 +1100 (EST)
-Received: from outmx027.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx027.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l1EDxNDn015622
-	for <linuxppc-embedded@ozlabs.org>; Wed, 14 Feb 2007 14:59:24 +0100
-	(envelope-from <laurent.pinchart@technotrade.biz>)
-From: Laurent Pinchart <laurent.pinchart@technotrade.biz>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: Moving from arch/ppc to arch/powerpc with an MPC8248 (part 1)
-Date: Wed, 14 Feb 2007 14:59:19 +0100
-References: <200702141308.17815.laurent.pinchart@technotrade.biz>
-	<200702141443.18865.laurent.pinchart@technotrade.biz>
-	<20070214165330.5312de55@vitb.dev.rtsoft.ru>
-In-Reply-To: <20070214165330.5312de55@vitb.dev.rtsoft.ru>
+	Thu, 15 Feb 2007 01:47:54 +1100 (EST)
+Subject: RE: Linux w/ML403 PLB TEMAC
+To: linuxppc-embedded@ozlabs.org
+Message-ID: <OF229BF134.4671531A-ON85257282.005139A1-85257282.0051498A@ct.wec.com>
+From: Glenn.G.Hart@us.westinghouse.com
+Date: Wed, 14 Feb 2007 09:47:50 -0500
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702141459.19785.laurent.pinchart@technotrade.biz>
-Cc: linuxppc-embedded@ozlabs.org
+Content-type: multipart/mixed;
+	Boundary="0__=0ABBF811DFC2BF318f9e8a93df938690918c0ABBF811DFC2BF31"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,57 +21,93 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- Hi,
+--0__=0ABBF811DFC2BF318f9e8a93df938690918c0ABBF811DFC2BF31
+Content-transfer-encoding: base64
+Content-type: text/plain; charset=gb2312
 
-> > > > I'm trying to take the big jump and move my (mostly) stable board
-> > > > support from arch/ppc to arch/powerpc. I'm still at a very early
-> > > > stage, but here are already a few questions.
-> > > >
-> > > > arch/ppc defines some 8260 generic handlers in syslib/mpc8260_setup.c
-> > > > for operations such as halt, reset, show_cpuinfo, ... The MPC82xx ADS
-> > > > in arch/powerpc/platforms/82xx redefines those handles as
-> > > > board-specific functions. Should they be made generic to all 82xx
-> > > > boards, or should I copy them to my board-specific file ? If the code
-> > > > should be shared by all 82xx boards, I'll probably end up copying
-> > > > most of the
-> > > > arch/ppc/syslib/mpc8260_setup.c code to
-> > > > arch/powerpc/platforms/82xx/mpc82xx.c.
-> > >
-> > > I'd just copy stuff to the BSP -- let's consider the common/uncommon
-> > > stuff later when we'll have to add something else.
-> > >
-> > > It's hard to envision what level of code should be common and what
-> > > should be board-specific as of now. Otherwise, we'll have to painfully
-> > > revisit issue later.
-> >
-> > It seems there are still lots of inconsistencies regarding MPC82xx
-> > support in arch/powerpc. For instance, get_immrbase() is used to get the
-> > IMMR address from the OF device tree, but cpm2_map() uses the
-> > CPM_MAP_ADDR address which is platform-dependant, and hardcoded to
-> > 0xf0000000 in
-> > platforms/82xx/pq2ads.h.
->
-> Are you using up-to-date powerpc.git? I get rid of hardcoded CPM_MAP_ADDR
-> completely (or it should be such, heh). please make sure you have my recent
-> commits in.
 
-I'm using up-to-date linux-2.6.git, which is probably way old compared to 
-powerpc.git :-) What's the powerpc.git URL ? Do you plan to push your changes 
-upstream for 2.6.21 ?
+TWluZy9SaWNrLA0KDQpJIHRyaWVkIHNldHRpbmcgdGhlIHNwZWVkIHRvIDEwMDAgYXMgYmVsb3cs
+IGJ1dCBpdCBkaWQgbm90IGNoYW5nZSB0aGUNCnJlc3VsdC4gIEkgYWxzbyB0cmllZCBSaWNrJ3Mg
+bmV3IGFkYXB0ZXIuYyB3aXRoIHRoZSBzYW1lIHJlc3VsdHMuICBDaGFuZ2luZw0KdGhlIGhhcmRf
+dGVtYWNfdjNfYiB0byBoYXJkX3RlbWFjX3YzX2Egd2FzIHRoZSBjaGFuZ2UgSSBuZWVkZWQuDQpV
+bmZvcnR1bmF0ZWx5LCB0aGUgc3BlZWQgb2YgdGhlIG5ldHdvcmsgaXMgbXVjaCBzbG93ZXIgbm93
+LiAgSSBzd2l0Y2hlZCB0bw0KRE1BIGFuZCB0aGVuIGNoYW5nZWQgdGhlIExpbnV4IGRyaXZlcnMg
+Zm9yIHRoZSBETUEgJiBURU1BQyB2MiB0byB2My4NCg0KSSBoYXZlIG15IG93biBwcm9ncmFtIHRv
+IHRlc3QgcGVyZm9ybWFuY2UuICBJdCBzZWVtcyBldmVyeXRoaW5nIGlzIHNvIHNsb3cNCml0IGRv
+ZXMgbm90IGV2ZXJ5IGNvbXBsZXRlIHRvIGdpdmUgbWUgdGhlIHN0YXRpc3RpY3MuICBNeSBwaW5n
+IGFyZSBhbHNvDQpzbG93ZXIuICBJIHVzZWQgdG8gYmUgYWJsZSB0byBwaW5nIG15IGNvbXB1dGVy
+IGFuZCBnZXQgMC42LTAuNyBtcyB0aW1lcy4NCldpdGggdGhlIERNQSBhbmQgVEVNQUMgdjMgSSBh
+bSBub3cgZ2V0dGluZyAxLjggbXMgdGltZXMuDQoNCkkgYW0gbm93IG5vdCBzdXJlIGlmIGl0IGlz
+IG15IGJ1aWxkIG9yIG15IFBQQyBkZXNpZ24uICBGb3IgdGhlIFBQQyBkZXNpZ24gSQ0KaGF2ZSBh
+IG1pbmltdW0gUFBDIHdpdGggT1BCLVJTMjMyLCBQTEItRERSLCBhbmQgUExCLVRFTUFDLiAgSSB1
+c2UgYWxsIHRoZQ0KZGVmYXVsdHMgZnJvbSBCU0IgZXhjZXB0IEkgY2hlY2sgdXNlIGludGVycnVw
+dCBvbiB0aGUgUlMyMzIgYW5kIFRFTUFDLg0KDQpBbnkgc3VnZ2VzdGlvbnM/DQoNClRoYW5rcywN
+CkdsZW5uDQoNCg0KDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IA0KIChFbWJlZGRlZCAgICAgIk1pbmcgTGl1IiA8ZWVtaW5nbGl1QGhvdG1haWwuY29tPkBvemxh
+YnMub3JnICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCiBpbWFnZSBt
+b3ZlZCAgIDAyLzEyLzIwMDcgMTE6NDggQU0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQogdG8gZmlsZTogICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgIA0KIHBpYzA0MTY5LnBjeCkgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KDQoNClNl
+bnQgYnk6DQogICAgICAgbGludXhwcGMtZW1iZWRkZWQtYm91bmNlcytnbGVubi5nLmhhcnQ9dXMu
+d2VzdGluZ2hvdXNlLmNvbUBvemxhYnMub3JnDQoNCg0KVG86ICAgIEdsZW5uLkcuSGFydEB1cy53
+ZXN0aW5naG91c2UuY29tDQpjYzogICAgbGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KU3Vi
+amVjdDogICAgUkU6IExpbnV4IHcvTUw0MDMgUExCIFRFTUFDDQoNClNlY3VyaXR5IExldmVsOj8g
+ICAgICAgICAgICAgIEludGVybmFsDQoNCg0KRGVhciBHbGVubiwNCg0KPjMuICBUaGUgc3BlZWQg
+b2YgdGhlIG5ldHdvcmsgd2FzIHZlcnkgcG9vci4gIEkgd2FudGVkIHRvIGltcGxlbWVudCBETUEg
+Zm9yDQo+dGhlIFRFTUFDLiAgSSBjcmVhdGVkIGEgbmV3IFBQQyB3aXRoIEJTQiB1c2luZyBETUEg
+b24gdGhlIFRFTUFDLiAgS2VybmVsDQo+cmVjb21waWxpZWQgd2l0aG91dCBhIHByb2JsZW0sIGJ1
+dCB1cG9uIHN0YXJ0aW5nIHRoZSBrZXJuZWwgSSBnb3Q6DQoNCkluIGZhY3QsIHRoZSBvbGQgY29y
+ZXMgb2YgVEVNQUMocGxiX3RlbWFjIDIuMDAgJiBoYXJkX3RlbWFjIDEuMDApIGFsc28NCnN1cHBv
+cnQgRE1BLiBCdXQgb2YgY291cnNlIHRoZSAzLjAwIGNvcmVzIGFyZSBwcmVmZXJlZCBiZWNhdXNl
+IG9mIG90aGVyDQppbXByb3ZlZCBmZWF0dXJlcy4NCg0KPjYuICBJIGFtIHVzaW5nIGJ1c3lib3gg
+MS4yLjEgd2hpY2ggd29ya2VkIGZpbmUgcHJldmlvdXNseSBjb25maWd1cmluZyB0aGUNCj5uZXR3
+b3JrLiAgTm93IHdoZW4gSSBleGVjdXRlIGlmY29uZmlnIEkgZ2V0IHRoZSBmb2xsb3dpbmcgcHJv
+YmxlbToNCj5bICAgMTIuMjI4NzIxXSBldGgwOiBYVGVtYWM6IE9wdGlvbnM6IDB4YjhmMg0KPlsg
+ICAyNC4xOTc3NDldIGV0aDA6IFhUZW1hYzogTm90IGFibGUgdG8gc2V0IHRoZSBzcGVlZCB0byAx
+MDAwIChzdGF0dXM6DQo+MHgxNDgpDQo+WyAgIDM0LjIxNTU5M10gZXRoMDogWFRlbWFjOiBOb3Qg
+YWJsZSB0byBzZXQgdGhlIHNwZWVkIHRvIDEwMCAoc3RhdHVzOg0KPjB4MTQ4KQ0KPlsgICA0NC4y
+MzIzNDldIGV0aDA6IFhUZW1hYzogTm90IGFibGUgdG8gc2V0IHRoZSBzcGVlZCB0byAxMCAoc3Rh
+dHVzOg0KPjB4MTQ4KQ0KPlsgICA0NC4zMTM3MjddIGV0aDA6IFhUZW1hYzogY291bGQgbm90IG5l
+Z290aWF0ZSBzcGVlZA0KPlsgICA0NC4zNzIyMjZdIGV0aDA6IFhUZW1hYzogU2VuZCBUaHJlc2hv
+bGQgPSAxNiwgUmVjZWl2ZSBUaHJlc2hvbGQgPSAyDQo+WyAgIDQ0LjQ0ODQyMV0gZXRoMDogWFRl
+bWFjOiBTZW5kIFdhaXQgYm91bmQgPSAxLCBSZWNlaXZlIFdhaXQgYm91bmQgPSAxDQo+IyBbICAg
+NTcuMTgwMTUyXSBldGgwOiBYVGVtYWM6IFBIWSBMaW5rIGNhcnJpZXIgbG9zdC4NCg0KSSBhbHNv
+IGhhZCBzdWNoIGEgcHJvYmxlbSBiZWZvcmUuIFRvIHNvbHZlIHN1Y2ggYSBwcm9ibGVtIG1vc3Qg
+cXVpY2tseSwgeW91DQpjYW4ganVzdCBzcGVjaWZ5IGEgZml4ZWQgc3BlZWQgKGxpa2UgMTAwME1i
+cHMpIGluIGFkYXB0ZXIuYyBmaWxlLiBJbiB0aGlzDQpmaWxlLCBhZnRlciB0aGUgbGluZSBvZiAi
+LyogR2V0IGN1cnJlbnQgbGluayBzcGVlZCAqLyAoYXJvdW5kIEwzNzgpIGFuZA0KInBoeWxpbmtz
+cGVlZCA9IChSZWdWYWx1ZSAmIE1BUlZFTExfODhFMTExMV9MSU5LU1BFRURfTUFSSyk+Pg0KTUFS
+VkVMTF84OEUxMTExX0xJTktTUEVFRF9TSElGVDsiLCBJIGp1c3QgYWRkIGFuZCBzcGVjaWZ5IHRo
+ZSBzcGVlZCBhcw0KInBoeWxpbmtzcGVlZCA9IE1BUlZFTExfODhFMTExMV9MSU5LU1BFRURfMTAw
+ME07IiBPZiBjb3Vyc2Ugd2l0aCB0aGlzDQptZXRob2QsIHRoZSBzcGVlZCBjYW5ub3QgYmUgYXV0
+by1uZWdvdGlhdGVkIGFueSBtb3JlLg0KDQpBbm90aGVyIGhpbnRzOiBJIHJlbWVtYmVyIHRoYXQg
+dGhlcmUgaXMgYW5vdGhlciBwb3N0IGZyb20gUmljayBvbiB0aGUNCnVwZGF0ZWQgImFkYXB0ZXIu
+YyIgYSBmZXcgZGF5cyBhZ28uIE1heWJlIHRoYXQgY291bGQgc29sdmUgeW91ciBwcm9ibGVtLiBJ
+DQpkaWRuJ3QgdHJ5IHRoYXQgYmVmb3JlLiBTbyBpZiB5b3Ugd2lsbCB0cnksIHBscyBsZXQgdXMg
+a25vdyB0aGUgcmVzdWx0LiA6KQ0KDQpCUg0KTWluZw0KDQpfX19fX19fX19fX19fX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0Kz+3Tw8rAvefJz9fu
+tPO1xLXn19PTyrz+z7XNs6GqIE1TTiBIb3RtYWlsoaMgIGh0dHA6Ly93d3cuaG90bWFpbC5jb20N
+Cg0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCkxpbnV4
+cHBjLWVtYmVkZGVkIG1haWxpbmcgbGlzdA0KTGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0K
+aHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQNCg0K
+DQoNCg0KDQoNCg0KDQoNCg0K
 
-> > Is someone working on fixing MPC82xx support for arch/powerpc ? I don't
-> > have much time now to hack all the platform-specific code and cleanup
-> > inconsistencies, so if someone is working on it I'll wait for patches. If
-> > not, I'll have to work on that later, as time permits. As I'm new to the
-> > arch/powerpc code, I'd appreciate if someone with a good understanding of
-> > what should be done could give me a few pointers (such as 'fix the CPM2
-> > mapping code this way', just general guidelines). Otherwise I'll have to
-> > ask questions at every line of code.
->
-> Well 827x works perfectly for me, and there are no direct immr dereferences
-> anymore in arch/powerpc... There still might be gotchas because that merge
-> was sort of one-man-show, but let me know and we'll figure out something.
+--0__=0ABBF811DFC2BF318f9e8a93df938690918c0ABBF811DFC2BF31
+Content-type: application/octet-stream;
+	name="pic04169.pcx"
+Content-Disposition: attachment; filename="pic04169.pcx"
+Content-Transfer-Encoding: base64
 
-I'll have a look at that, thanks.
+CgUBCAAAAABBADEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAABQgABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+AAAAAAAAAAAAAAAAAAA=
 
-Laurent Pinchart
+
+--0__=0ABBF811DFC2BF318f9e8a93df938690918c0ABBF811DFC2BF31--
