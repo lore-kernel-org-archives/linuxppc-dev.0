@@ -1,20 +1,20 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-1.cisco.com (sj-iport-1-in.cisco.com [171.71.176.70])
-	by ozlabs.org (Postfix) with ESMTP id AD54EDDD08
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 11:50:23 +1100 (EST)
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2.6.21-rc1 4/5] ehca: replace yield() by
-	wait_for_completion()
-References: <200702141741.35444.hnguyen@linux.vnet.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Wed, 14 Feb 2007 16:50:06 -0800
-In-Reply-To: <200702141741.35444.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
-	Nguyen's message of "Wed, 14 Feb 2007 17:41:35 +0100")
-Message-ID: <adahctow8g1.fsf@cisco.com>
+Return-Path: <bzolnier@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.227])
+	by ozlabs.org (Postfix) with ESMTP id D67EDDDE2D
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 06:42:34 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id i31so341659wxd
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 11:42:31 -0800 (PST)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] (pata-2.6 fix queue) sl82c105: rework PIO support
+Date: Wed, 14 Feb 2007 20:48:00 +0100
+References: <200702140101.26639.sshtylyov@ru.mvista.com>
+In-Reply-To: <200702140101.26639.sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, openib-general@openib.org, hch@infradead.org,
-	linuxppc-dev@ozlabs.org, raisch@de.ibm.com, h.carstens@de.ibm.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702142048.00786.bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,6 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I agree with Christoph -- the use of wait_for_completion() in a loop
-makes no sense.  When you send a new copy of this patch without
-whitespace damage, please fix that up too...
+
+On Tuesday 13 February 2007 23:01, Sergei Shtylyov wrote:
+> Get rid of the 'pio_speed' member of 'ide_drive_t' that was only used by this
+> driver by storing the PIO mode timings in the 'drive_data' instead -- this
+> allows us to greatly simplify the process  of "reloading" of the chip's timing
+> register and do in right in the ide_dma_off_quietly() and to turn the former
+> config_for_pio() into the tuneproc() method.
+> 
+> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> 
+> ---
+> This patch has also been actually tested at last. :-)
+
+applied
