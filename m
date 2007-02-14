@@ -1,31 +1,26 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2B2F5DDE08
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 07:28:42 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1EKTKUZ023313
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 15:29:20 -0500
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1EKSbhD252518
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 15:28:37 -0500
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1EKSb0R030249
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 15:28:37 -0500
-Date: Wed, 14 Feb 2007 14:28:36 -0600
-To: James.Bottomley@SteelEye.com
-Subject: [PATCH] lpfc: add PCI error recovery support
-Message-ID: <20070214202836.GS923@austin.ibm.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 05F74DDE27
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 07:32:08 +1100 (EST)
+Message-ID: <45D371C0.80805@freescale.com>
+Date: Wed, 14 Feb 2007 14:32:00 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linux-scsi@vger.kernel.org, James Smart <james.smart@Emulex.Com>,
-	Bino.Sebastian@Emulex.Com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, rlary@us.ibm.com,
-	linux-pci@atrey.karlin.mff.cuni.cz
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
+	files
+References: <1171409687840-git-send-email-timur@freescale.com>
+	<1171411075.20192.116.camel@localhost.localdomain>
+	<45D29AE5.7090004@freescale.com>
+	<1171430877.20192.133.camel@localhost.localdomain>
+	<45D29EB1.5060801@freescale.com>
+	<1171431334.20192.138.camel@localhost.localdomain>
+	<45D316CD.9070901@freescale.com>
+	<Pine.LNX.4.60.0702142118200.8621@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0702142118200.8621@poirot.grange>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: paulus@samba.org, Stuart Yoder <stuart.yoder@freescale.com>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,192 +30,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Guennadi Liakhovetski wrote:
 
-James,
+> Is that dts also for u-boot? maybe they have another bootloader? I know 
+> u-boot creates "chosen" itself, but not all possible bootloaders?
 
-Please review and forward upstream.  This is a patch I'd previously
-submitted, and reworked by Bino.Sebastian@Emulex.Com in January.
-Not clear if I need to also nag James Smart (who is listed as the
-maintainer) for an Acked-by (which I am lead to beleive should be
-forthcoming? Ahh the joys of indirect communication!)
+Well, that's what I'm trying to figure out.  I don't see any evidence to suggest 
+that the 8276 is different from any other 8xxx board, with respect to U-Boot, 
+and none of the other 8xxx DTS files have a 'chosen' section.  Then there's the 
+fact that the 8276's 'chosen' section is in the *middle* of the DTS, and not at 
+the end where everyone else puts it, leads me to believe that its presence is an 
+oversight.
 
---linas
+So far, no one who has chimed in on this particular subject has answered this 
+question: what's so special about the 8276 that its DTS should have a 'chosen' 
+section when none of the others do?
 
-This patch adds PCI Error recovery support to the
-Emulex Lightpulse Fibrechannel (lpfc) SCSI device driver.
-Lightly tested at this point, works.
+> (as a matter of fact, the more I think about those .dts's, the more it 
+> seems to me like they belong to bootloaders, not in the kernel... Just 
+> one word - information duplication...)
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Signed-off-by: Bino.Sebastian@Emulex.Com
-Cc: James Smart <james.smart@emulex.com>
+Well, that's a completely separate issue altogether.  I believe that they are 
+kept with the kernel as a convenience, so that we all have more control over 
+their contents.
 
-----
+> Another thing, Timur, if you respin your patch, could you do it against 
+> the current powerpc.git? There's at least one more .dts there that also 
+> would need boot-cpu removed - kuroboxHD.dts.
 
- drivers/scsi/lpfc/lpfc_init.c |   97 ++++++++++++++++++++++++++++++++++++++++++
- drivers/scsi/lpfc/lpfc_sli.c  |   12 +++++
- 2 files changed, 109 insertions(+)
+My patch already removes linux,boot-cpu from kuroboxHD.dts:
 
-Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c
-===================================================================
---- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_init.c	2007-02-09 17:22:30.000000000 -0600
-+++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c	2007-02-14 14:12:22.000000000 -0600
-@@ -518,6 +518,10 @@ lpfc_handle_eratt(struct lpfc_hba * phba
- 	struct lpfc_sli *psli = &phba->sli;
- 	struct lpfc_sli_ring  *pring;
- 	uint32_t event_data;
-+	/* If the pci channel is offline, ignore possible errors,
-+	 * since we cannot communicate with the pci card anyway. */
-+	if (pci_channel_offline(phba->pcidev))
-+		return;
- 
- 	if (phba->work_hs & HS_FFER6 ||
- 	    phba->work_hs & HS_FFER5) {
-@@ -1797,6 +1801,92 @@ lpfc_pci_remove_one(struct pci_dev *pdev
- 	pci_set_drvdata(pdev, NULL);
- }
- 
-+/**
-+ * lpfc_io_error_detected - called when PCI error is detected
-+ * @pdev: Pointer to PCI device
-+ * @state: The current pci conneection state
-+ *
-+ * This function is called after a PCI bus error affecting
-+ * this device has been detected.
-+ */
-+static pci_ers_result_t lpfc_io_error_detected(struct pci_dev *pdev,
-+				pci_channel_state_t state)
-+{
-+	struct Scsi_Host *host = pci_get_drvdata(pdev);
-+	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
-+	struct lpfc_sli *psli = &phba->sli;
-+	struct lpfc_sli_ring  *pring;
-+
-+	if (state == pci_channel_io_perm_failure) {
-+		lpfc_pci_remove_one(pdev);
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+	pci_disable_device(pdev);
-+	/*
-+	 * There may be I/Os dropped by the firmware.
-+	 * Error iocb (I/O) on txcmplq and let the SCSI layer
-+	 * retry it after re-establishing link.
-+	 */
-+	pring = &psli->ring[psli->fcp_ring];
-+	lpfc_sli_abort_iocb_ring(phba, pring);
-+
-+	/* Request a slot reset. */
-+	return PCI_ERS_RESULT_NEED_RESET;
-+}
-+
-+/**
-+ * lpfc_io_slot_reset - called after the pci bus has been reset.
-+ * @pdev: Pointer to PCI device
-+ *
-+ * Restart the card from scratch, as if from a cold-boot.
-+ */
-+static pci_ers_result_t lpfc_io_slot_reset(struct pci_dev *pdev)
-+{
-+	struct Scsi_Host *host = pci_get_drvdata(pdev);
-+	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
-+	struct lpfc_sli *psli = &phba->sli;
-+	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
-+
-+	dev_printk(KERN_INFO, &pdev->dev, "recovering from a slot reset.\n");
-+	if (pci_enable_device_bars(pdev, bars)) {
-+		printk(KERN_ERR "lpfc: Cannot re-enable "
-+			"PCI device after reset.\n");
-+		return PCI_ERS_RESULT_DISCONNECT;
-+	}
-+
-+	pci_set_master(pdev);
-+
-+	/* Re-establishing Link */
-+	spin_lock_irq(phba->host->host_lock);
-+	phba->fc_flag |= FC_ESTABLISH_LINK;
-+	psli->sli_flag &= ~LPFC_SLI2_ACTIVE;
-+	spin_unlock_irq(phba->host->host_lock);
-+
-+
-+	/* Take device offline; this will perform cleanup */
-+	lpfc_offline(phba);
-+	lpfc_sli_brdrestart(phba);
-+
-+	return PCI_ERS_RESULT_RECOVERED;
-+}
-+
-+/**
-+ * lpfc_io_resume - called when traffic can start flowing again.
-+ * @pdev: Pointer to PCI device
-+ *
-+ * This callback is called when the error recovery driver tells us that
-+ * its OK to resume normal operation.
-+ */
-+static void lpfc_io_resume(struct pci_dev *pdev)
-+{
-+	struct Scsi_Host *host = pci_get_drvdata(pdev);
-+	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
-+
-+	if (lpfc_online(phba) == 0) {
-+		mod_timer(&phba->fc_estabtmo, jiffies + HZ * 60);
-+	}
-+}
-+
- static struct pci_device_id lpfc_id_table[] = {
- 	{PCI_VENDOR_ID_EMULEX, PCI_DEVICE_ID_VIPER,
- 		PCI_ANY_ID, PCI_ANY_ID, },
-@@ -1857,11 +1947,18 @@ static struct pci_device_id lpfc_id_tabl
- 
- MODULE_DEVICE_TABLE(pci, lpfc_id_table);
- 
-+static struct pci_error_handlers lpfc_err_handler = {
-+	.error_detected = lpfc_io_error_detected,
-+	.slot_reset = lpfc_io_slot_reset,
-+	.resume = lpfc_io_resume,
-+};
-+
- static struct pci_driver lpfc_driver = {
- 	.name		= LPFC_DRIVER_NAME,
- 	.id_table	= lpfc_id_table,
- 	.probe		= lpfc_pci_probe_one,
- 	.remove		= __devexit_p(lpfc_pci_remove_one),
-+	.err_handler = &lpfc_err_handler,
- };
- 
- static int __init
-Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c
-===================================================================
---- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_sli.c	2007-02-09 17:22:30.000000000 -0600
-+++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c	2007-02-14 14:01:31.000000000 -0600
-@@ -2104,6 +2104,10 @@ lpfc_sli_issue_mbox(struct lpfc_hba * ph
- 	volatile uint32_t word0, ldata;
- 	void __iomem *to_slim;
- 
-+	/* If the PCI channel is in offline state, do not post mbox. */
-+	if (unlikely(pci_channel_offline(phba->pcidev)))
-+		return MBX_NOT_FINISHED;
-+
- 	psli = &phba->sli;
- 
- 	spin_lock_irqsave(phba->host->host_lock, drvr_flag);
-@@ -2407,6 +2411,10 @@ lpfc_sli_issue_iocb(struct lpfc_hba *phb
- 	struct lpfc_iocbq *nextiocb;
- 	IOCB_t *iocb;
- 
-+	/* If the PCI channel is in offline state, do not post iocbs. */
-+	if (unlikely(pci_channel_offline(phba->pcidev)))
-+		return IOCB_ERROR;
-+
- 	/*
- 	 * We should never get an IOCB if we are in a < LINK_DOWN state
- 	 */
-@@ -3154,6 +3162,10 @@ lpfc_intr_handler(int irq, void *dev_id)
- 	if (unlikely(!phba))
- 		return IRQ_NONE;
- 
-+	/* If the pci channel is offline, ignore all the interrupts. */
-+	if (unlikely(pci_channel_offline(phba->pcidev)))
-+		return IRQ_NONE;
-+
- 	phba->sli.slistat.sli_intr++;
- 
- 	/*
+diff --git a/arch/powerpc/boot/dts/kuroboxHG.dts 
+b/arch/powerpc/boot/dts/kuroboxHG.dts
+index d06b0b0..7531027 100644
+--- a/arch/powerpc/boot/dts/kuroboxHG.dts
++++ b/arch/powerpc/boot/dts/kuroboxHG.dts
+@@ -35,7 +35,6 @@ build with: "dtc -f -I dts -O dtb -o kur
+
+  		PowerPC,603e { /* Really 8241 */
+  			linux,phandle = <2100>;
+-			linux,boot-cpu;
+  			device_type = "cpu";
+  			reg = <0>;
+  			clock-frequency = <fdad680>;	/* Fixed by bootwrapper */
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
