@@ -1,21 +1,23 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 85E39DDDF7
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 16:24:57 +1100 (EST)
-Message-ID: <45D29D24.8040908@freescale.com>
-Date: Tue, 13 Feb 2007 23:24:52 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Stuart Yoder <stuart.yoder@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C6D3BDDDFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 16:28:06 +1100 (EST)
 Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
 	files
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <45D29AE5.7090004@freescale.com>
 References: <1171409687840-git-send-email-timur@freescale.com>
 	<1171411075.20192.116.camel@localhost.localdomain>
 	<45D29AE5.7090004@freescale.com>
-	<20070214051924.GA12609@localhost.localdomain>
-In-Reply-To: <20070214051924.GA12609@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain
+Date: Wed, 14 Feb 2007 16:27:57 +1100
+Message-Id: <1171430877.20192.133.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+On Tue, 2007-02-13 at 23:15 -0600, Timur Tabi wrote:
+> Benjamin Herrenschmidt wrote:
+> 
+> > I think that:
+> > 
+> >  - The /chosen node should be present in the .dts even if empty
+> 
+> Only one DTS file has it.  It's been removed from every other DTS.  Are 
+> you should that instead of removing the last one, I should *add* one to 
+> the other DTS files?
 
-> Um.. you may be right in this case, but "the device tree compiler
-> complains" is (sadly) not in general a good reason to decide
-> something's bad.  The warning code in dtc is pretty bogus and
-> complains about a number of things it shouldn't while failing to
-> complain about some things it should.  I just haven't had time to make
-> it much better.
+Or just leave them alone for now.
 
-I agree that the DTC has problems, but my understanding is that 
-linux,boot-cpu is just plain wrong nowadays.  Besides, U-Boot overrides 
-whatever is in the device tree, so it doesn't really matter what you say 
-in the DTS.
+> >  - I don't see why you are removing linux,boot-cpu from the
+> > documentation ! It's a fairly important property. 
+> 
+> No, it's a dead property.  Specifying linux,boot-cpu in the DTS is 
+> obsolete and deprecated.  If you specify it, the device tree compiler 
+> complains.  The proper way to specify the device tree is with the -b 
+> parameter to dtc.
+
+Ah indeed, my bad. We moved that to a header field didn't we ?
+
+/me grumbles about kexec... :-)
+
+Ben.
