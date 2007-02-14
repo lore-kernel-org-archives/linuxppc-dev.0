@@ -1,16 +1,11 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 14 Feb 2007 15:46:41 +1100
+Date: Wed, 14 Feb 2007 15:50:21 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH 15/16] Add device tree for Ebony
-Message-ID: <20070214044641.GB12402@localhost.localdomain>
-References: <20070213061026.5837FDDDE9@ozlabs.org>
-	<e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org>
-	<20070214002210.GE11491@localhost.localdomain>
-	<1171417866.20192.126.camel@localhost.localdomain>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Automatically lmb_reserve() initrd
+Message-ID: <20070214045021.GC12402@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1171417866.20192.126.camel@localhost.localdomain>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,39 +16,103 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 14, 2007 at 12:51:06PM +1100, Benjamin Herrenschmidt wrote:
-> 
-> > > > +	UIC0: interrupt-controller { /* UIC0 */
-> > > 
-> > > > +		#address-cells = <0>;
-> > > > +		#size-cells = <0>;
-> > > 
-> > > #address-cells = 0 never makes sense.
-> > 
-> > Why not?  Children of this node have and need no reg property, and no
-> > meaningful address.  Sounds like #address-cells = 0 to me.
-> 
-> In fact, not only it does make perfect sense but it's also routinely
-> used for ... interrupt controllers :-) That's among others why the
-> interrupt map entries "second" part usually doesn't contain the address
-> cells.
+Paulus, I think this one's ready to go now.  For backwards
+compatibility, it should only be applied after my patch which makes
+multiple identical lmb_reserve() calls valid.
 
-Oh, btw, I take it you didn't think my method of placing the secondary
-UICs under the node for UIC0 was insane.
+At present, when an initrd is passed to the kernel used flat device
+tree properties, the memory the initrd occupies must also be reserved
+in the flat tree's reserve map, or the kernel may overwrite it.  That
+makes life more complicated than it could be for the bootwrapper.
 
-> > > > +	plb {
-> > > > +		device_type = "soc";
-> > > > +		compatible = "ibm,plb-440gp", "ibm,plb4";
-> > > > +		ranges;
-> > > 
-> > > You need a #address-cells, #size-cells here.
-> > 
-> > Why?  The values inherited from the root node are perfectly ok here.
-> 
-> Inheriting values is out of spec. The kernel somewhat does it but that's
-> a bad habit, we should always have them explicit.
+This patch makes the kernel automatically reserve the initrd's space.
+That in turn requires parsing the initrd parameters earlier than they
+are currently, in early_init_dt_scan_chosen() instead of
+check_for_initrd().
 
-Ah, ok.  Values added.
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
+
+Index: working-2.6/arch/powerpc/kernel/prom.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/prom.c	2007-02-09 15:12:00.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/prom.c	2007-02-09 15:14:27.000000000 +1100
+@@ -719,6 +719,7 @@ static int __init early_init_dt_scan_cho
+ 					    const char *uname, int depth, void *data)
+ {
+ 	unsigned long *lprop;
++	u32 *prop;
+ 	unsigned long l;
+ 	char *p;
+ 
+@@ -760,6 +761,22 @@ static int __init early_init_dt_scan_cho
+                crashk_res.end = crashk_res.start + *lprop - 1;
+ #endif
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++	DBG("Looking for initrd properties... ");
++	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
++	if (prop) {
++		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
++		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
++		if (prop) {
++			initrd_end = (unsigned long)__va(of_read_ulong(prop, l/4));
++			initrd_below_start_ok = 1;
++		} else {
++			initrd_start = 0;
++		}
++	}
++	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
++#endif /* CONFIG_BLK_DEV_INITRD */
++
+ 	/* Retreive command line */
+  	p = of_get_flat_dt_prop(node, "bootargs", &l);
+ 	if (p != NULL && l > 0)
+@@ -926,6 +943,12 @@ static void __init early_reserve_mem(voi
+ 	self_size = initial_boot_params->totalsize;
+ 	lmb_reserve(self_base, self_size);
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++	/* then reserve the initrd, if any */
++	if (initrd_start && (initrd_end > initrd_start))
++		lmb_reserve(__pa(initrd_start), initrd_end - initrd_start);
++#endif /* CONFIG_BLK_DEV_INITRD */
++
+ #ifdef CONFIG_PPC32
+ 	/* 
+ 	 * Handle the case where we might be booting from an old kexec
+Index: working-2.6/arch/powerpc/kernel/setup-common.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/setup-common.c	2007-01-24 12:01:17.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/setup-common.c	2007-02-09 15:15:15.000000000 +1100
+@@ -304,26 +304,8 @@ struct seq_operations cpuinfo_op = {
+ void __init check_for_initrd(void)
+ {
+ #ifdef CONFIG_BLK_DEV_INITRD
+-	const unsigned int *prop;
+-	int len;
+-
+-	DBG(" -> check_for_initrd()\n");
+-
+-	if (of_chosen) {
+-		prop = get_property(of_chosen, "linux,initrd-start", &len);
+-		if (prop != NULL) {
+-			initrd_start = (unsigned long)
+-				__va(of_read_ulong(prop, len / 4));
+-			prop = get_property(of_chosen,
+-					"linux,initrd-end", &len);
+-			if (prop != NULL) {
+-				initrd_end = (unsigned long)
+-					__va(of_read_ulong(prop, len / 4));
+-				initrd_below_start_ok = 1;
+-			} else
+-				initrd_start = 0;
+-		}
+-	}
++	DBG(" -> check_for_initrd()  initrd_start=0x%lx  initrd_end=0x%lx\n",
++	    initrd_start, initrd_end);
+ 
+ 	/* If we were passed an initrd, set the ROOT_DEV properly if the values
+ 	 * look sensible. If not, clear initrd reference.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
