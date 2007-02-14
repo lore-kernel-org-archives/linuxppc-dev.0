@@ -1,22 +1,24 @@
-Return-Path: <lethal@linux-sh.org>
-Received: from smtp.ocgnet.org (smtp.ocgnet.org [64.20.243.3])
-	by ozlabs.org (Postfix) with ESMTP id ED969DDE25
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 21:19:29 +1100 (EST)
-Date: Wed, 14 Feb 2007 19:17:19 +0900
-From: Paul Mundt <lethal@linux-sh.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: undefined symbol 'PS3_PS3AV'
-Message-ID: <20070214101719.GA25319@linux-sh.org>
-References: <45D2A835.7020606@m3y3r.de>
-	<Pine.LNX.4.62.0702140955130.17463@pademelon.sonytel.be>
-	<20070214090701.GA11088@linux-sh.org>
-	<Pine.LNX.4.62.0702141100470.2949@pademelon.sonytel.be>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.62.0702141100470.2949@pademelon.sonytel.be>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Thomas Meyer <thomas@m3y3r.de>
+Message-ID: <17874.58072.316004.517233@cargo.ozlabs.ibm.com>
+Date: Wed, 14 Feb 2007 21:22:16 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Christian Krafft <krafft@de.ibm.com>
+Subject: Re: [Cbe-oss-dev] [patch v3] powerpc: add PMI driver for cell blade
+In-Reply-To: <20070214093941.08ec4c7f@localhost>
+References: <20070209183529.67d542d5@localhost>
+	<20070209184530.4c8bc2be@localhost>
+	<20070209222956.GH1827@localdomain>
+	<20070212101222.24abe14c@localhost>
+	<20070213143418.06fa01b5@localhost>
+	<20070213194436.0306d18a@localhost>
+	<20070213194806.3c266282@localhost>
+	<20070213202854.09332582@localhost>
+	<17874.22587.981499.55058@cargo.ozlabs.ibm.com>
+	<20070214093941.08ec4c7f@localhost>
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,17 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 14, 2007 at 11:02:06AM +0100, Geert Uytterhoeven wrote:
-> On Wed, 14 Feb 2007, Paul Mundt wrote:
-> > This would seem like a reasonable candidate for a 'depends on' instead of
-> > a select..
-> 
-> That's what we originally had. But for the user it's simler if he can just
-> enable ps3fb and/or ps3snd (sound driver not yet finished), which both select
-> PS3_PS3AV.
+Christian Krafft writes:
 
-Why not just have PS3_PS3AV def_bool y if ps3fb || ps3snd? Or if that
-doesn't work, just place the PS3FB option in arch/powerpc/platforms/ps3/Kconfig.
+> BMC stands for Baseboard Management Controller:
+> http://en.wikipedia.org/wiki/Baseboard_management_controller
 
-Of course if select obeyed the depends on, this wouldn't be a problem
-either..
+Thanks.
+
+I was actually hinting that it would be good to explain that acronym
+as well as PMI in the description of the patch.  I should have said so
+explicitly.
+
+Paul.
