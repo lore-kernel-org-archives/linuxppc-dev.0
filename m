@@ -1,21 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id C7B87DDE06
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 16:30:34 +1100 (EST)
-Message-ID: <45D29E75.1070008@freescale.com>
-Date: Tue, 13 Feb 2007 23:30:29 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: add of_get_mac_address() and update fsl_soc.c
-	to use it
-References: <1171408247467-git-send-email-timur@freescale.com>	
-	<1171411219.20192.118.camel@localhost.localdomain>	
-	<45D29B80.2060705@freescale.com>
-	<1171430913.20192.134.camel@localhost.localdomain>
-In-Reply-To: <1171430913.20192.134.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0A70DDDE06
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 16:30:36 +1100 (EST)
+Subject: Re: [PATCHSET] libata: PATA driver for Celleb
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Jeff Garzik <jeff@garzik.org>
+In-Reply-To: <200702140518.l1E5IoWX010896@toshiba.co.jp>
+References: <200701260724.l0Q7OISY027645@toshiba.co.jp>
+	<45B9B1CD.4040600@garzik.org>
+	<200702140518.l1E5IoWX010896@toshiba.co.jp>
+Content-Type: text/plain
+Date: Wed, 14 Feb 2007 16:29:57 +1100
+Message-Id: <1171430997.20192.136.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+	paulus@samba.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +26,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
 
->> Are you saying that some device trees have something *other* than a MAC 
->> address in the 'address' property?
-> 
-> Yes, old Apple gear in some nodes, though I don't think in network
-> devices...
+> 2.6.20 has been released and (I think) it is the time of merge-window
+> for 2.6.21. I want this patch to be merged at this time.
+> Please tell me if there are anything I should do.
 
-Ok, then I will respin the patch with some more error checking.  Do you 
-want me to just check the 'address' property, or all of the properties?
+FYI, Jeff, we have merged the rest of the celleb platform support in the
+2.6.21 merge window, so it would be annoying if that didn't make it
+(that and some spidernet fixes).
+
+Ben.
