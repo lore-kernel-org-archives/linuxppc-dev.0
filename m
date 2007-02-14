@@ -1,14 +1,25 @@
-Return-Path: <Masato.Noguchi@jp.sony.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 14 Feb 2007 12:33:30 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] ppc: Add support for AMCC Taishan 440GX eval board
+Message-ID: <20070214013330.GH11491@localhost.localdomain>
+References: <1171281988.20192.1.camel@localhost.localdomain>
+	<ada7iun8bz3.fsf@cisco.com>
+	<1171310108.20192.7.camel@localhost.localdomain>
+	<E1HGhb3-0001fb-9M@jdl.com>
+	<1171311802.20192.15.camel@localhost.localdomain>
+	<D612EBB5-3ABB-45C5-943B-C32E5B9F4319@kernel.crashing.org>
+	<20070213004608.GB4894@localhost.localdomain>
+	<8DEFFE52-2326-43A9-9719-15E04EF17D3A@kernel.crashing.org>
+	<20070214001106.GA11491@localhost.localdomain>
+	<154265F9-EBB3-4BE4-9AD1-3E09BDD9F237@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 2/3] powerpc: Remove SPU struct page's for PS3
-Date: Wed, 14 Feb 2007 10:32:47 +0900
-Message-ID: <C3DCD550FB9ACD4D911D1271DD8CFDD2014625A5@jptkyxms38.jp.sony.com>
-From: "Noguchi, Masato" <Masato.Noguchi@jp.sony.com>
-To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
-	"Paul Mackerras" <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <154265F9-EBB3-4BE4-9AD1-3E09BDD9F237@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>,
+	Stefan Roese <sr@denx.de>, Roland Dreier <rdreier@cisco.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,108 +29,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I read it carefully and ran testsuite on PS3 platform with it.
-It seems pretty good.
+On Tue, Feb 13, 2007 at 06:30:40PM -0600, Kumar Gala wrote:
+> 
+> On Feb 13, 2007, at 6:11 PM, David Gibson wrote:
+> 
+> > On Mon, Feb 12, 2007 at 11:28:17PM -0600, Kumar Gala wrote:
+> >>
+> >> On Feb 12, 2007, at 6:46 PM, David Gibson wrote:
+> >>
+> >>> On Mon, Feb 12, 2007 at 02:41:36PM -0600, Kumar Gala wrote:
+> >>>>
+> >>>> On Feb 12, 2007, at 2:23 PM, Benjamin Herrenschmidt wrote:
+> >>>>
+> >>>>> On Mon, 2007-02-12 at 14:16 -0600, Jon Loeliger wrote:
+> >>>>>> So, like, the other day Benjamin Herrenschmidt mumbled:
+> >>>>>>>
+> >>>>>>> Note that there are still things that we might want to  
+> >>>>>>> change. For
+> >>>>>>> example, I think we really should look into adding a macro
+> >>>>>>> mecanism
+> >>>>>>> and/or an include mecanism to dtc so that we can do things like
+> >>>>>>> #include
+> >>>>>>> <ibm440gp.dtc> to get the base processor/SoC definition and then
+> >>>>>>> "overlay" some properties on top of it (like emac phy mode  
+> >>>>>>> etc...)
+> >>>>>>
+> >>>>>> What do people prefer here?  Straight CPP pre-run?
+> >>>>>
+> >>>>> CPP pre-run has issue, notably due to the usage of "#" in property
+> >>>>> names.
+> >>>>
+> >>>> You can get around that by invoking cpp with the right flags,  I
+> >>>> looked at doing this a while back and had it working.
+> >>>
+> >>> Umm.. which flags?
+> >>
+> >> cpp -undef -P -x assembler-with-cpp
+> >
+> > What exactly does the -x assembler-with-cpp do?  I can't seem to find
+> > a useful description in the man page or info.
+> 
+> I think it treats the input as if where of assembler syntax.  And  
+> thus # has special meaning in some places.
 
-Regards,
-  >> Masato.Noguchi@jp.sony.com <<
+Yes... what places, precisely.
 
-> -----Original Message-----
-> From: cbe-oss-dev-bounces+masato.noguchi=3Djp.sony.com@ozlabs.org
-> [mailto:cbe-oss-dev-bounces+masato.noguchi=3Djp.sony.com@ozlabs.org] =
-On
-> Behalf Of Benjamin Herrenschmidt
-> Sent: Tuesday, February 13, 2007 9:46 AM
-> To: Paul Mackerras
-> Cc: linuxppc-dev@ozlabs.org; cbe-oss-dev@ozlabs.org
-> Subject: [Cbe-oss-dev] [PATCH 2/3] powerpc: Remove SPU struct page's
-for PS3
->=20
-> Struct page are no longer needed for SPUs, so let's not create them
-> on PS3 anymore.
->=20
-> Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
->=20
->  arch/powerpc/platforms/ps3/spu.c |   42
-> +--------------------------------------
->  1 file changed, 2 insertions(+), 40 deletions(-)
->=20
-> Index: linux-cell/arch/powerpc/platforms/ps3/spu.c
-> =
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- linux-cell.orig/arch/powerpc/platforms/ps3/spu.c	2007-02-13
-> 11:34:38.000000000 +1100
-> +++ linux-cell/arch/powerpc/platforms/ps3/spu.c	2007-02-13
-> 11:37:07.000000000 +1100
-> @@ -170,31 +170,6 @@ static int __init construct_spu(struct s
->  	return result;
->  }
->=20
-> -static int __init add_spu_pages(unsigned long start_addr, unsigned
-long size)
-> -{
-> -	int result;
-> -	unsigned long start_pfn;
-> -	unsigned long nr_pages;
-> -	struct pglist_data *pgdata;
-> -	struct zone *zone;
-> -
-> -	BUG_ON(!mem_init_done);
-> -
-> -	start_pfn =3D start_addr >> PAGE_SHIFT;
-> -	nr_pages =3D (size + PAGE_SIZE - 1) >> PAGE_SHIFT;
-> -
-> -	pgdata =3D NODE_DATA(0);
-> -	zone =3D pgdata->node_zones;
-> -
-> -	result =3D __add_pages(zone, start_pfn, nr_pages);
-> -
-> -	if (result)
-> -		pr_debug("%s:%d: __add_pages failed: (%d)\n",
-> -			__func__, __LINE__, result);
-> -
-> -	return result;
-> -}
-> -
->  static void spu_unmap(struct spu *spu)
->  {
->  	iounmap(spu->priv2);
-> @@ -206,19 +181,6 @@ static void spu_unmap(struct spu *spu)
->  static int __init setup_areas(struct spu *spu)
->  {
->  	struct table {char* name; unsigned long addr; unsigned long
-size;};
-> -	int result;
-> -
-> -	/* setup pages */
-> -
-> -	result =3D add_spu_pages(spu->local_store_phys, LS_SIZE);
-> -	if (result)
-> -		goto fail_add;
-> -
-> -	result =3D add_spu_pages(spu->problem_phys, sizeof(struct
-> spu_problem));
-> -	if (result)
-> -		goto fail_add;
-> -
-> -	/* ioremap */
->=20
->  	spu_pdata(spu)->shadow =3D __ioremap(
->  		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
-> @@ -260,8 +222,8 @@ static int __init setup_areas(struct spu
->=20
->  fail_ioremap:
->  	spu_unmap(spu);
-> -fail_add:
-> -	return result;
-> +
-> +	return -ENOMEM;
->  }
->=20
->  static int __init setup_interrupts(struct spu *spu)
-> _______________________________________________
-> cbe-oss-dev mailing list
-> cbe-oss-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/cbe-oss-dev
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
