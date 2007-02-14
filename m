@@ -1,16 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 15/16] Add device tree for Ebony
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070214002210.GE11491@localhost.localdomain>
-References: <20070213061026.5837FDDDE9@ozlabs.org>
-	<e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org>
-	<20070214002210.GE11491@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 14 Feb 2007 12:51:06 +1100
-Message-Id: <1171417866.20192.126.camel@localhost.localdomain>
+Return-Path: <amodra@bigpond.net.au>
+Received: from omta03sl.mx.bigpond.com (omta03sl.mx.bigpond.com
+	[144.140.92.155]) by ozlabs.org (Postfix) with ESMTP id 9CC03DDF2F
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 13:00:13 +1100 (EST)
+Date: Wed, 14 Feb 2007 12:30:12 +1030
+From: Alan Modra <amodra@bigpond.net.au>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 7/16] Early serial debug support for PPC44x
+Message-ID: <20070214020012.GB8541@bubble.grove.modra.org>
+References: <20070213061024.DA1ABDDD0C@ozlabs.org>
+	<1171379087.4003.40.camel@zod.rchland.ibm.com>
+	<20070214001622.GB11491@localhost.localdomain>
+	<20070214010235.GB19430@crusty.rchland.ibm.com>
+	<20070214010044.GG11491@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070214010044.GG11491@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,32 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> > > +	UIC0: interrupt-controller { /* UIC0 */
+On Wed, Feb 14, 2007 at 12:00:44PM +1100, David Gibson wrote:
+> On Tue, Feb 13, 2007 at 07:02:36PM -0600, Josh Boyer wrote:
+> > On Wed, Feb 14, 2007 at 11:16:22AM +1100, David Gibson wrote:
+> > > I'm using a 64-bit constant there, but for me at least the assembler
+> > > is able to handle manipulating it in constant expressions.
 > > 
-> > > +		#address-cells = <0>;
-> > > +		#size-cells = <0>;
+> > [jwboyer@zod ~]$ powerpc-440-linux-gnu-as --version
+> > GNU assembler 2.15
 > > 
-> > #address-cells = 0 never makes sense.
+> > This is a crosstool built toolchain with binutils 2.15 and gcc 3.4.1.
+> > Which versions are you using?
 > 
-> Why not?  Children of this node have and need no reg property, and no
-> meaningful address.  Sounds like #address-cells = 0 to me.
-
-In fact, not only it does make perfect sense but it's also routinely
-used for ... interrupt controllers :-) That's among others why the
-interrupt map entries "second" part usually doesn't contain the address
-cells.
-
-> > > +	plb {
-> > > +		device_type = "soc";
-> > > +		compatible = "ibm,plb-440gp", "ibm,plb4";
-> > > +		ranges;
-> > 
-> > You need a #address-cells, #size-cells here.
+> Hmm.. I appear to have binutils-2.17.  That could be it.
 > 
-> Why?  The values inherited from the root node are perfectly ok here.
+> It would be nice to support the older binutils too, but I'm not sure
+> how to get around this without considerable inconvenience.
 
-Inheriting values is out of spec. The kernel somewhat does it but that's
-a bad habit, we should always have them explicit.
+I would guess that this isn't a matter of how old the assembler is,
+but how the assembler was built.  If built on a 32-bit host with no
+64-bit targets supported, then most internal assembler variables
+are 32-bit and 64-bit constants are not handled very well.
 
-Ben.
+You probably should avoid 64-bit expressions on a 32-bit target.
+
+-- 
+Alan Modra
+IBM OzLabs - Linux Technology Centre
