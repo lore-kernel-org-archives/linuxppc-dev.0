@@ -1,22 +1,16 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8E8B7DDEB9
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 06:27:11 +1100 (EST)
-Message-ID: <45D36285.2010102@am.sony.com>
-Date: Wed, 14 Feb 2007 11:27:01 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
+Return-Path: <linas@austin.ibm.com>
+Date: Wed, 14 Feb 2007 13:55:07 -0600
 To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-Subject: Re: [PATCH] ps3: don't call ps3_system_bus_driver_register on other
-	platforms
-References: <200702140704.l1E74IqP013586@toshiba.co.jp>
-In-Reply-To: <200702140704.l1E74IqP013586@toshiba.co.jp>
-Content-Type: text/plain; charset=UTF-8
-Cc: greg@kroah.com, dbrownell@users.sourceforge.net,
-	linux-usb-devel@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/4] spidernet: support for Celleb
+Message-ID: <20070214195507.GR923@austin.ibm.com>
+References: <20070212234959.GF923@austin.ibm.com>
+	<200702140751.l1E7p73x027147@toshiba.co.jp>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200702140751.l1E7p73x027147@toshiba.co.jp>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: cbe-oss-dev@ozlabs.org, linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	jgarzik@pobox.com, jim@jklewis.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,15 +20,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ishizaki Kou wrote:
-> ps3_system_bus_driver_register is PS3 platform specific function.
-> On other platforms, it triggers WARN_ON in kref_get.
 
-> +++ linux-powerpc-git/drivers/usb/host/ehci-hcd.c
-> +++ linux-powerpc-git/drivers/usb/host/ohci-hcd.c
+Jeff, 
 
-I would think we only need to modify ps3_system_bus_driver_register()
-and ps3_system_bus_driver_unregister() to do the proper thing, not the
-usb host drivers that make those calls.  I'll look into that solution.
+I think we are all in agreement about this patch set, please commit.
 
--Geoff
+--linas
+
+On Wed, Feb 14, 2007 at 04:51:07PM +0900, Ishizaki Kou wrote:
+> 
+> We also need Linas-san's patch set which includes bug-fix and makes
+> the code compilable etc. But our previous patch set conflicts with
+> Linas-san's patch set.
+
+! 
+
+Sorry. I thought I tried it both ways, and although the line numbers
+would be off, I don't remember any outright patch conflicts. I thought
+I'd gottoen lucky, guess not.
