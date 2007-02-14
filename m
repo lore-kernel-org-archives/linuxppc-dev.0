@@ -1,19 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 32E2FDDE02
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 21:02:08 +1100 (EST)
-Date: Wed, 14 Feb 2007 11:02:06 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Paul Mundt <lethal@linux-sh.org>
+Return-Path: <lethal@linux-sh.org>
+Received: from smtp.ocgnet.org (smtp.ocgnet.org [64.20.243.3])
+	by ozlabs.org (Postfix) with ESMTP id ED969DDE25
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 21:19:29 +1100 (EST)
+Date: Wed, 14 Feb 2007 19:17:19 +0900
+From: Paul Mundt <lethal@linux-sh.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Subject: Re: undefined symbol 'PS3_PS3AV'
-In-Reply-To: <20070214090701.GA11088@linux-sh.org>
-Message-ID: <Pine.LNX.4.62.0702141100470.2949@pademelon.sonytel.be>
+Message-ID: <20070214101719.GA25319@linux-sh.org>
 References: <45D2A835.7020606@m3y3r.de>
 	<Pine.LNX.4.62.0702140955130.17463@pademelon.sonytel.be>
 	<20070214090701.GA11088@linux-sh.org>
+	<Pine.LNX.4.62.0702141100470.2949@pademelon.sonytel.be>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.62.0702141100470.2949@pademelon.sonytel.be>
 Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
 	Linux Kernel Development <linux-kernel@vger.kernel.org>,
 	Thomas Meyer <thomas@m3y3r.de>
@@ -26,31 +26,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 14 Feb 2007, Paul Mundt wrote:
-> On Wed, Feb 14, 2007 at 09:57:46AM +0100, Geert Uytterhoeven wrote:
-> > On Wed, 14 Feb 2007, Thomas Meyer wrote:
-> > > with 93bbad8fe13a25dcf7f3bc628a71d1a7642ae61b:
-> > > 
-> > > drivers/video/Kconfig:1604:warning: 'select' used by config symbol 'FB_PS3'
-> > > refer to undefined symbol 'PS3_PS3AV'
-> > 
-> > It's defined in arch/powerpc/platforms/ps3/Kconfig, which is sourced by
-> > arch/powerpc/Kconfig only.
-> > 
-> > I don't know what's the best way to shut this up. Anyone with a suggestion?
-> > 
-> This would seem like a reasonable candidate for a 'depends on' instead of
-> a select..
+On Wed, Feb 14, 2007 at 11:02:06AM +0100, Geert Uytterhoeven wrote:
+> On Wed, 14 Feb 2007, Paul Mundt wrote:
+> > This would seem like a reasonable candidate for a 'depends on' instead of
+> > a select..
+> 
+> That's what we originally had. But for the user it's simler if he can just
+> enable ps3fb and/or ps3snd (sound driver not yet finished), which both select
+> PS3_PS3AV.
 
-That's what we originally had. But for the user it's simler if he can just
-enable ps3fb and/or ps3snd (sound driver not yet finished), which both select
-PS3_PS3AV.
+Why not just have PS3_PS3AV def_bool y if ps3fb || ps3snd? Or if that
+doesn't work, just place the PS3FB option in arch/powerpc/platforms/ps3/Kconfig.
 
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Of course if select obeyed the depends on, this wouldn't be a problem
+either..
