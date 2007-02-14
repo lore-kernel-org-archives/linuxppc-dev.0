@@ -1,24 +1,27 @@
 Return-Path: <timur@freescale.com>
 Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 03BCCDDE01
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 01:04:08 +1100 (EST)
-Message-ID: <45D316CD.9070901@freescale.com>
-Date: Wed, 14 Feb 2007 08:03:57 -0600
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id CD703DDE0D
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 01:05:43 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l1EE5eAW029702
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 07:05:41 -0700 (MST)
+Received: from Artemis.local (mvp-10-214-73-46.am.freescale.net [10.214.73.46])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1EE5ew0002364
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 08:05:40 -0600 (CST)
+Message-ID: <45D31734.7030808@freescale.com>
+Date: Wed, 14 Feb 2007 08:05:40 -0600
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
 	files
-References: <1171409687840-git-send-email-timur@freescale.com>	
-	<1171411075.20192.116.camel@localhost.localdomain>	
-	<45D29AE5.7090004@freescale.com>	
-	<1171430877.20192.133.camel@localhost.localdomain>	
-	<45D29EB1.5060801@freescale.com>
-	<1171431334.20192.138.camel@localhost.localdomain>
-In-Reply-To: <1171431334.20192.138.camel@localhost.localdomain>
+References: <11713852392294-git-send-email-timur@freescale.com>
+	<20070214003119.GF11491@localhost.localdomain>
+	<45D29BBA.7090401@freescale.com>
+	<20070214052440.GB12609@localhost.localdomain>
+In-Reply-To: <20070214052440.GB12609@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Stuart Yoder <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,17 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
+David Gibson wrote:
 
->> I just don't understand why it's okay to leave it there.
+> The interrupt-controller property in /chosen just points to the
+> system's top-level interrupt controller to make it easier for the
+> kernel to find in the tree.  I think most platforms don't actually
+> need or use it at present, but booting-without-of does recommend it.
 > 
-> To make sure there is one. I suspect kernel bits might get upset if it's
-> absent.
+> As such it's a property of the board, not something which will change
+> from boot to boot.  It would therefore be rather strange for the
+> bootloader to poke this property.
 
-That's not what I meant.  What I don't understand is: what's so special 
-about the 8272 that its DTS should have a 'chosen' section, but no other 
-DTS needs one?
-
-Obviously, the kernel needs a 'chosen' section, and that's why U-Boot 
-adds one.  And since U-Boot adds one, the DTS itself doesn't need one. 
-Does the 8272 never use U-Boot?
+That's all the more reason to delete the 'chosen' section, isn't it? 
+Sicne it's wrong, deleting the entire section will just make the problem 
+go away.  Or am I missing something?
