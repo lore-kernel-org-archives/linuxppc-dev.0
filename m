@@ -1,20 +1,19 @@
 Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C526EDDE0C
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 16:15:28 +1100 (EST)
-Message-ID: <45D29AE5.7090004@freescale.com>
-Date: Tue, 13 Feb 2007 23:15:17 -0600
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id A84C7DDE22
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 16:17:59 +1100 (EST)
+Message-ID: <45D29B80.2060705@freescale.com>
+Date: Tue, 13 Feb 2007 23:17:52 -0600
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
-	files
-References: <1171409687840-git-send-email-timur@freescale.com>
-	<1171411075.20192.116.camel@localhost.localdomain>
-In-Reply-To: <1171411075.20192.116.camel@localhost.localdomain>
+Subject: Re: [PATCH] powerpc: add of_get_mac_address() and update fsl_soc.c
+	to use it
+References: <1171408247467-git-send-email-timur@freescale.com>
+	<1171411219.20192.118.camel@localhost.localdomain>
+In-Reply-To: <1171411219.20192.118.camel@localhost.localdomain>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Stuart Yoder <stuart.yoder@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +24,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 Benjamin Herrenschmidt wrote:
-
-> I think that:
+>> +	return get_property(np, "address", NULL);
 > 
->  - The /chosen node should be present in the .dts even if empty
+> Since there is so much room for confusion with "address", please at
+> least do some basic sanity checking, like check that it's size is 6
+> bytes and maybe that the multicast bit isn't set.
 
-Only one DTS file has it.  It's been removed from every other DTS.  Are 
-you should that instead of removing the last one, I should *add* one to 
-the other DTS files?
-
->  - I don't see why you are removing linux,boot-cpu from the
-> documentation ! It's a fairly important property. 
-
-No, it's a dead property.  Specifying linux,boot-cpu in the DTS is 
-obsolete and deprecated.  If you specify it, the device tree compiler 
-complains.  The proper way to specify the device tree is with the -b 
-parameter to dtc.
+Are you saying that some device trees have something *other* than a MAC 
+address in the 'address' property?
