@@ -1,16 +1,17 @@
-Return-Path: <Glenn.G.Hart@us.westinghouse.com>
-Received: from swec9607.wecnq.com (swec9607.wecnq.com [147.72.234.65])
-	by ozlabs.org (Postfix) with ESMTP id B4096DDDF2
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc2-s16.bay0.hotmail.com (bay0-omc2-s16.bay0.hotmail.com
+	[65.54.246.152]) by ozlabs.org (Postfix) with ESMTP id E3A86DDE26
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Feb 2007 01:47:54 +1100 (EST)
+	Thu, 15 Feb 2007 02:10:41 +1100 (EST)
+Message-ID: <BAY110-F18161E498654AD174D62BBB2970@phx.gbl>
+In-Reply-To: <OF229BF134.4671531A-ON85257282.005139A1-85257282.0051498A@ct.wec.com>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: Glenn.G.Hart@us.westinghouse.com
 Subject: RE: Linux w/ML403 PLB TEMAC
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OF229BF134.4671531A-ON85257282.005139A1-85257282.0051498A@ct.wec.com>
-From: Glenn.G.Hart@us.westinghouse.com
-Date: Wed, 14 Feb 2007 09:47:50 -0500
-MIME-Version: 1.0
-Content-type: multipart/mixed;
-	Boundary="0__=0ABBF811DFC2BF318f9e8a93df938690918c0ABBF811DFC2BF31"
+Date: Wed, 14 Feb 2007 15:10:36 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,93 +22,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0__=0ABBF811DFC2BF318f9e8a93df938690918c0ABBF811DFC2BF31
-Content-transfer-encoding: base64
-Content-type: text/plain; charset=gb2312
+Hi Glenn,
 
+>I have my own program to test performance.  It seems everything is so slow
+>it does not every complete to give me the statistics.  My ping are also
+>slower.  I used to be able to ping my computer and get 0.6-0.7 ms times.
+>With the DMA and TEMAC v3 I am now getting 1.8 ms times.
 
-TWluZy9SaWNrLA0KDQpJIHRyaWVkIHNldHRpbmcgdGhlIHNwZWVkIHRvIDEwMDAgYXMgYmVsb3cs
-IGJ1dCBpdCBkaWQgbm90IGNoYW5nZSB0aGUNCnJlc3VsdC4gIEkgYWxzbyB0cmllZCBSaWNrJ3Mg
-bmV3IGFkYXB0ZXIuYyB3aXRoIHRoZSBzYW1lIHJlc3VsdHMuICBDaGFuZ2luZw0KdGhlIGhhcmRf
-dGVtYWNfdjNfYiB0byBoYXJkX3RlbWFjX3YzX2Egd2FzIHRoZSBjaGFuZ2UgSSBuZWVkZWQuDQpV
-bmZvcnR1bmF0ZWx5LCB0aGUgc3BlZWQgb2YgdGhlIG5ldHdvcmsgaXMgbXVjaCBzbG93ZXIgbm93
-LiAgSSBzd2l0Y2hlZCB0bw0KRE1BIGFuZCB0aGVuIGNoYW5nZWQgdGhlIExpbnV4IGRyaXZlcnMg
-Zm9yIHRoZSBETUEgJiBURU1BQyB2MiB0byB2My4NCg0KSSBoYXZlIG15IG93biBwcm9ncmFtIHRv
-IHRlc3QgcGVyZm9ybWFuY2UuICBJdCBzZWVtcyBldmVyeXRoaW5nIGlzIHNvIHNsb3cNCml0IGRv
-ZXMgbm90IGV2ZXJ5IGNvbXBsZXRlIHRvIGdpdmUgbWUgdGhlIHN0YXRpc3RpY3MuICBNeSBwaW5n
-IGFyZSBhbHNvDQpzbG93ZXIuICBJIHVzZWQgdG8gYmUgYWJsZSB0byBwaW5nIG15IGNvbXB1dGVy
-IGFuZCBnZXQgMC42LTAuNyBtcyB0aW1lcy4NCldpdGggdGhlIERNQSBhbmQgVEVNQUMgdjMgSSBh
-bSBub3cgZ2V0dGluZyAxLjggbXMgdGltZXMuDQoNCkkgYW0gbm93IG5vdCBzdXJlIGlmIGl0IGlz
-IG15IGJ1aWxkIG9yIG15IFBQQyBkZXNpZ24uICBGb3IgdGhlIFBQQyBkZXNpZ24gSQ0KaGF2ZSBh
-IG1pbmltdW0gUFBDIHdpdGggT1BCLVJTMjMyLCBQTEItRERSLCBhbmQgUExCLVRFTUFDLiAgSSB1
-c2UgYWxsIHRoZQ0KZGVmYXVsdHMgZnJvbSBCU0IgZXhjZXB0IEkgY2hlY2sgdXNlIGludGVycnVw
-dCBvbiB0aGUgUlMyMzIgYW5kIFRFTUFDLg0KDQpBbnkgc3VnZ2VzdGlvbnM/DQoNClRoYW5rcywN
-CkdsZW5uDQoNCg0KDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-IA0KIChFbWJlZGRlZCAgICAgIk1pbmcgTGl1IiA8ZWVtaW5nbGl1QGhvdG1haWwuY29tPkBvemxh
-YnMub3JnICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICANCiBpbWFnZSBt
-b3ZlZCAgIDAyLzEyLzIwMDcgMTE6NDggQU0gICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgDQogdG8gZmlsZTogICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgIA0KIHBpYzA0MTY5LnBjeCkgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICANCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgDQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
-ICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIA0KDQoNClNl
-bnQgYnk6DQogICAgICAgbGludXhwcGMtZW1iZWRkZWQtYm91bmNlcytnbGVubi5nLmhhcnQ9dXMu
-d2VzdGluZ2hvdXNlLmNvbUBvemxhYnMub3JnDQoNCg0KVG86ICAgIEdsZW5uLkcuSGFydEB1cy53
-ZXN0aW5naG91c2UuY29tDQpjYzogICAgbGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0KU3Vi
-amVjdDogICAgUkU6IExpbnV4IHcvTUw0MDMgUExCIFRFTUFDDQoNClNlY3VyaXR5IExldmVsOj8g
-ICAgICAgICAgICAgIEludGVybmFsDQoNCg0KRGVhciBHbGVubiwNCg0KPjMuICBUaGUgc3BlZWQg
-b2YgdGhlIG5ldHdvcmsgd2FzIHZlcnkgcG9vci4gIEkgd2FudGVkIHRvIGltcGxlbWVudCBETUEg
-Zm9yDQo+dGhlIFRFTUFDLiAgSSBjcmVhdGVkIGEgbmV3IFBQQyB3aXRoIEJTQiB1c2luZyBETUEg
-b24gdGhlIFRFTUFDLiAgS2VybmVsDQo+cmVjb21waWxpZWQgd2l0aG91dCBhIHByb2JsZW0sIGJ1
-dCB1cG9uIHN0YXJ0aW5nIHRoZSBrZXJuZWwgSSBnb3Q6DQoNCkluIGZhY3QsIHRoZSBvbGQgY29y
-ZXMgb2YgVEVNQUMocGxiX3RlbWFjIDIuMDAgJiBoYXJkX3RlbWFjIDEuMDApIGFsc28NCnN1cHBv
-cnQgRE1BLiBCdXQgb2YgY291cnNlIHRoZSAzLjAwIGNvcmVzIGFyZSBwcmVmZXJlZCBiZWNhdXNl
-IG9mIG90aGVyDQppbXByb3ZlZCBmZWF0dXJlcy4NCg0KPjYuICBJIGFtIHVzaW5nIGJ1c3lib3gg
-MS4yLjEgd2hpY2ggd29ya2VkIGZpbmUgcHJldmlvdXNseSBjb25maWd1cmluZyB0aGUNCj5uZXR3
-b3JrLiAgTm93IHdoZW4gSSBleGVjdXRlIGlmY29uZmlnIEkgZ2V0IHRoZSBmb2xsb3dpbmcgcHJv
-YmxlbToNCj5bICAgMTIuMjI4NzIxXSBldGgwOiBYVGVtYWM6IE9wdGlvbnM6IDB4YjhmMg0KPlsg
-ICAyNC4xOTc3NDldIGV0aDA6IFhUZW1hYzogTm90IGFibGUgdG8gc2V0IHRoZSBzcGVlZCB0byAx
-MDAwIChzdGF0dXM6DQo+MHgxNDgpDQo+WyAgIDM0LjIxNTU5M10gZXRoMDogWFRlbWFjOiBOb3Qg
-YWJsZSB0byBzZXQgdGhlIHNwZWVkIHRvIDEwMCAoc3RhdHVzOg0KPjB4MTQ4KQ0KPlsgICA0NC4y
-MzIzNDldIGV0aDA6IFhUZW1hYzogTm90IGFibGUgdG8gc2V0IHRoZSBzcGVlZCB0byAxMCAoc3Rh
-dHVzOg0KPjB4MTQ4KQ0KPlsgICA0NC4zMTM3MjddIGV0aDA6IFhUZW1hYzogY291bGQgbm90IG5l
-Z290aWF0ZSBzcGVlZA0KPlsgICA0NC4zNzIyMjZdIGV0aDA6IFhUZW1hYzogU2VuZCBUaHJlc2hv
-bGQgPSAxNiwgUmVjZWl2ZSBUaHJlc2hvbGQgPSAyDQo+WyAgIDQ0LjQ0ODQyMV0gZXRoMDogWFRl
-bWFjOiBTZW5kIFdhaXQgYm91bmQgPSAxLCBSZWNlaXZlIFdhaXQgYm91bmQgPSAxDQo+IyBbICAg
-NTcuMTgwMTUyXSBldGgwOiBYVGVtYWM6IFBIWSBMaW5rIGNhcnJpZXIgbG9zdC4NCg0KSSBhbHNv
-IGhhZCBzdWNoIGEgcHJvYmxlbSBiZWZvcmUuIFRvIHNvbHZlIHN1Y2ggYSBwcm9ibGVtIG1vc3Qg
-cXVpY2tseSwgeW91DQpjYW4ganVzdCBzcGVjaWZ5IGEgZml4ZWQgc3BlZWQgKGxpa2UgMTAwME1i
-cHMpIGluIGFkYXB0ZXIuYyBmaWxlLiBJbiB0aGlzDQpmaWxlLCBhZnRlciB0aGUgbGluZSBvZiAi
-LyogR2V0IGN1cnJlbnQgbGluayBzcGVlZCAqLyAoYXJvdW5kIEwzNzgpIGFuZA0KInBoeWxpbmtz
-cGVlZCA9IChSZWdWYWx1ZSAmIE1BUlZFTExfODhFMTExMV9MSU5LU1BFRURfTUFSSyk+Pg0KTUFS
-VkVMTF84OEUxMTExX0xJTktTUEVFRF9TSElGVDsiLCBJIGp1c3QgYWRkIGFuZCBzcGVjaWZ5IHRo
-ZSBzcGVlZCBhcw0KInBoeWxpbmtzcGVlZCA9IE1BUlZFTExfODhFMTExMV9MSU5LU1BFRURfMTAw
-ME07IiBPZiBjb3Vyc2Ugd2l0aCB0aGlzDQptZXRob2QsIHRoZSBzcGVlZCBjYW5ub3QgYmUgYXV0
-by1uZWdvdGlhdGVkIGFueSBtb3JlLg0KDQpBbm90aGVyIGhpbnRzOiBJIHJlbWVtYmVyIHRoYXQg
-dGhlcmUgaXMgYW5vdGhlciBwb3N0IGZyb20gUmljayBvbiB0aGUNCnVwZGF0ZWQgImFkYXB0ZXIu
-YyIgYSBmZXcgZGF5cyBhZ28uIE1heWJlIHRoYXQgY291bGQgc29sdmUgeW91ciBwcm9ibGVtLiBJ
-DQpkaWRuJ3QgdHJ5IHRoYXQgYmVmb3JlLiBTbyBpZiB5b3Ugd2lsbCB0cnksIHBscyBsZXQgdXMg
-a25vdyB0aGUgcmVzdWx0LiA6KQ0KDQpCUg0KTWluZw0KDQpfX19fX19fX19fX19fX19fX19fX19f
-X19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fXw0Kz+3Tw8rAvefJz9fu
-tPO1xLXn19PTyrz+z7XNs6GqIE1TTiBIb3RtYWlsoaMgIGh0dHA6Ly93d3cuaG90bWFpbC5jb20N
-Cg0KX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX19fX18NCkxpbnV4
-cHBjLWVtYmVkZGVkIG1haWxpbmcgbGlzdA0KTGludXhwcGMtZW1iZWRkZWRAb3psYWJzLm9yZw0K
-aHR0cHM6Ly9vemxhYnMub3JnL21haWxtYW4vbGlzdGluZm8vbGludXhwcGMtZW1iZWRkZWQNCg0K
-DQoNCg0KDQoNCg0KDQoNCg0K
+I am also struggling with the speed issue. :) Rick is the expert and I am 
+also asking him on this problem. 
 
---0__=0ABBF811DFC2BF318f9e8a93df938690918c0ABBF811DFC2BF31
-Content-type: application/octet-stream;
-	name="pic04169.pcx"
-Content-Disposition: attachment; filename="pic04169.pcx"
-Content-Transfer-Encoding: base64
+For your problem, I suggest you to use a general test software like netperf 
+first. Then it can bypass the problem in your own test program.
 
-CgUBCAAAAABBADEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAABQgABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAA=
+In my system, the ping speed is also slow. From board to pc is 2.1ms and 
+from pc to board is 1.8ms. 
 
+>I am now not sure if it is my build or my PPC design.  For the PPC design 
+I
+>have a minimum PPC with OPB-RS232, PLB-DDR, and PLB-TEMAC.  I use all the
+>defaults from BSB except I check use interrupt on the RS232 and TEMAC.
 
---0__=0ABBF811DFC2BF318f9e8a93df938690918c0ABBF811DFC2BF31--
+This should not be a problem because the platform is so common. 
+
+BR
+Ming
+
+_________________________________________________________________
+与联机的朋友进行交流，请使用 MSN Messenger:  http://messenger.msn.com/cn  
