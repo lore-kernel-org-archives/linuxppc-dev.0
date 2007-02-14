@@ -1,29 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id D8C98DDE4A
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 10:47:25 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l1ENlMYQ013887
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 16:47:22 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l1ENlLvD028815
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Feb 2007 17:47:22 -0600 (CST)
-Message-ID: <45D39F89.4040308@freescale.com>
-Date: Wed, 14 Feb 2007 17:47:21 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
-	files
-References: <11713852392294-git-send-email-timur@freescale.com>
-	<20070214003119.GF11491@localhost.localdomain>
-	<45D29BBA.7090401@freescale.com>
-	<20070214052440.GB12609@localhost.localdomain>
-	<45D31734.7030808@freescale.com>
-	<20070214233348.GH16279@localhost.localdomain>
-In-Reply-To: <20070214233348.GH16279@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 15/16] Add device tree for Ebony
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20070214232246.GE16279@localhost.localdomain>
+References: <20070213060904.GA6214@localhost.localdomain>
+	<20070213061026.5837FDDDE9@ozlabs.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
+	<1171470754.4003.101.camel@zod.rchland.ibm.com>
+	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
+	<20070214232246.GE16279@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 15 Feb 2007 10:51:48 +1100
+Message-Id: <1171497108.20192.202.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,22 +23,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
 
-> Er.. I think you're missing something.
+> Yeah, I've been pretty usnsure about this myself.  Using "soc" was
+> initially a hack to make the legacy serial detection stuff work, but I
+> think Arnd's of_platform serial stuff will deal with that better.
 > 
-> My point is that the interrupt-controller property in /chosen *should*
-> be there, but it doesn't make a lot of sense for it to be set by the
-> bootloader (because it's a fixed property of the board).  Therefore it
-> should be in the dts, therefore the /chosen node needs to be there to
-> contain it.
+> On the other hand, using separate device_type has no particular value,
+> either.  I wonder if we should have a general device_type for any
+> non-probeable, memory-mapped bus.
 
-Ok, I understand.
+What about dumb-bus ? :-0
 
-Well, as soon as my other DTS-related patches are applied, I'll start working on 
-one for the 'chosen' section.
-
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Ben.
