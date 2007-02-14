@@ -1,21 +1,21 @@
-Return-Path: <James.Smart@Emulex.Com>
-Received: from emulex.emulex.com (emulex.emulex.com [138.239.112.1])
-	by ozlabs.org (Postfix) with ESMTP id DD1F9DDE26
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 08:37:12 +1100 (EST)
-Message-ID: <45D37B2E.5050704@emulex.com>
-Date: Wed, 14 Feb 2007 16:12:14 -0500
-From: James Smart <James.Smart@Emulex.Com>
-MIME-Version: 1.0
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH] lpfc: add PCI error recovery support
-References: <20070214202836.GS923@austin.ibm.com>
-In-Reply-To: <20070214202836.GS923@austin.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: James.Bottomley@SteelEye.com, linux-scsi@vger.kernel.org,
-	Bino.Sebastian@Emulex.Com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, rlary@us.ibm.com,
-	linux-pci@atrey.karlin.mff.cuni.cz
-Reply-To: James.Smart@Emulex.Com
+Return-Path: <benh@kernel.crashing.org>
+Subject: RE: [PATCH 15/16] Add device tree for Ebony
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
+References: <20070213060904.GA6214@localhost.localdomain>
+	<20070213061026.5837FDDDE9@ozlabs.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
+	<1171470754.4003.101.camel@zod.rchland.ibm.com>
+	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B86F@az33exm25.fsl.freescale.net>
+	<9df9bf3adf511f4c1a7945e022fdd447@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
+Content-Type: text/plain
+Date: Thu, 15 Feb 2007 08:42:40 +1100
+Message-Id: <1171489360.20192.184.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,198 +25,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ACK - the patch is fine for lpfc....
+> der an "soc" node at the same level.
+> > 
+> > A "soc" node is meant to contain SoC specific stuff like
+> > clock registers or whatnot.  It typically wouldn't have
+> > child nodes.
+> 
+> That's not what booting_without_of.txt says.  It says:
+> 
+>     The SOC node may contain child nodes for each SOC
+>     device that the  platform uses.
+> 
+> All the dts files in arch/powerpc/boot/dts I've looked at have
+> an soc node with a whole bunch of devices under it.
 
--- james s
+Wel, that was written by FSL not long ago :-)
 
+> The current practice seems to be that an "soc" node contains
+> all the on chip devices (regardless of the physical bus internal
+> to the soc).
 
-Linas Vepstas wrote:
-> James,
-> 
-> Please review and forward upstream.  This is a patch I'd previously
-> submitted, and reworked by Bino.Sebastian@Emulex.Com in January.
-> Not clear if I need to also nag James Smart (who is listed as the
-> maintainer) for an Acked-by (which I am lead to beleive should be
-> forthcoming? Ahh the joys of indirect communication!)
-> 
-> --linas
-> 
-> This patch adds PCI Error recovery support to the
-> Emulex Lightpulse Fibrechannel (lpfc) SCSI device driver.
-> Lightly tested at this point, works.
-> 
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-> Signed-off-by: Bino.Sebastian@Emulex.Com
-> Cc: James Smart <james.smart@emulex.com>
-> 
-> ----
-> 
->  drivers/scsi/lpfc/lpfc_init.c |   97 ++++++++++++++++++++++++++++++++++++++++++
->  drivers/scsi/lpfc/lpfc_sli.c  |   12 +++++
->  2 files changed, 109 insertions(+)
-> 
-> Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c
-> ===================================================================
-> --- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_init.c	2007-02-09 17:22:30.000000000 -0600
-> +++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_init.c	2007-02-14 14:12:22.000000000 -0600
-> @@ -518,6 +518,10 @@ lpfc_handle_eratt(struct lpfc_hba * phba
->  	struct lpfc_sli *psli = &phba->sli;
->  	struct lpfc_sli_ring  *pring;
->  	uint32_t event_data;
-> +	/* If the pci channel is offline, ignore possible errors,
-> +	 * since we cannot communicate with the pci card anyway. */
-> +	if (pci_channel_offline(phba->pcidev))
-> +		return;
->  
->  	if (phba->work_hs & HS_FFER6 ||
->  	    phba->work_hs & HS_FFER5) {
-> @@ -1797,6 +1801,92 @@ lpfc_pci_remove_one(struct pci_dev *pdev
->  	pci_set_drvdata(pdev, NULL);
->  }
->  
-> +/**
-> + * lpfc_io_error_detected - called when PCI error is detected
-> + * @pdev: Pointer to PCI device
-> + * @state: The current pci conneection state
-> + *
-> + * This function is called after a PCI bus error affecting
-> + * this device has been detected.
-> + */
-> +static pci_ers_result_t lpfc_io_error_detected(struct pci_dev *pdev,
-> +				pci_channel_state_t state)
-> +{
-> +	struct Scsi_Host *host = pci_get_drvdata(pdev);
-> +	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
-> +	struct lpfc_sli *psli = &phba->sli;
-> +	struct lpfc_sli_ring  *pring;
-> +
-> +	if (state == pci_channel_io_perm_failure) {
-> +		lpfc_pci_remove_one(pdev);
-> +		return PCI_ERS_RESULT_DISCONNECT;
-> +	}
-> +	pci_disable_device(pdev);
-> +	/*
-> +	 * There may be I/Os dropped by the firmware.
-> +	 * Error iocb (I/O) on txcmplq and let the SCSI layer
-> +	 * retry it after re-establishing link.
-> +	 */
-> +	pring = &psli->ring[psli->fcp_ring];
-> +	lpfc_sli_abort_iocb_ring(phba, pring);
-> +
-> +	/* Request a slot reset. */
-> +	return PCI_ERS_RESULT_NEED_RESET;
-> +}
-> +
-> +/**
-> + * lpfc_io_slot_reset - called after the pci bus has been reset.
-> + * @pdev: Pointer to PCI device
-> + *
-> + * Restart the card from scratch, as if from a cold-boot.
-> + */
-> +static pci_ers_result_t lpfc_io_slot_reset(struct pci_dev *pdev)
-> +{
-> +	struct Scsi_Host *host = pci_get_drvdata(pdev);
-> +	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
-> +	struct lpfc_sli *psli = &phba->sli;
-> +	int bars = pci_select_bars(pdev, IORESOURCE_MEM);
-> +
-> +	dev_printk(KERN_INFO, &pdev->dev, "recovering from a slot reset.\n");
-> +	if (pci_enable_device_bars(pdev, bars)) {
-> +		printk(KERN_ERR "lpfc: Cannot re-enable "
-> +			"PCI device after reset.\n");
-> +		return PCI_ERS_RESULT_DISCONNECT;
-> +	}
-> +
-> +	pci_set_master(pdev);
-> +
-> +	/* Re-establishing Link */
-> +	spin_lock_irq(phba->host->host_lock);
-> +	phba->fc_flag |= FC_ESTABLISH_LINK;
-> +	psli->sli_flag &= ~LPFC_SLI2_ACTIVE;
-> +	spin_unlock_irq(phba->host->host_lock);
-> +
-> +
-> +	/* Take device offline; this will perform cleanup */
-> +	lpfc_offline(phba);
-> +	lpfc_sli_brdrestart(phba);
-> +
-> +	return PCI_ERS_RESULT_RECOVERED;
-> +}
-> +
-> +/**
-> + * lpfc_io_resume - called when traffic can start flowing again.
-> + * @pdev: Pointer to PCI device
-> + *
-> + * This callback is called when the error recovery driver tells us that
-> + * its OK to resume normal operation.
-> + */
-> +static void lpfc_io_resume(struct pci_dev *pdev)
-> +{
-> +	struct Scsi_Host *host = pci_get_drvdata(pdev);
-> +	struct lpfc_hba *phba = (struct lpfc_hba *)host->hostdata;
-> +
-> +	if (lpfc_online(phba) == 0) {
-> +		mod_timer(&phba->fc_estabtmo, jiffies + HZ * 60);
-> +	}
-> +}
-> +
->  static struct pci_device_id lpfc_id_table[] = {
->  	{PCI_VENDOR_ID_EMULEX, PCI_DEVICE_ID_VIPER,
->  		PCI_ANY_ID, PCI_ANY_ID, },
-> @@ -1857,11 +1947,18 @@ static struct pci_device_id lpfc_id_tabl
->  
->  MODULE_DEVICE_TABLE(pci, lpfc_id_table);
->  
-> +static struct pci_error_handlers lpfc_err_handler = {
-> +	.error_detected = lpfc_io_error_detected,
-> +	.slot_reset = lpfc_io_slot_reset,
-> +	.resume = lpfc_io_resume,
-> +};
-> +
->  static struct pci_driver lpfc_driver = {
->  	.name		= LPFC_DRIVER_NAME,
->  	.id_table	= lpfc_id_table,
->  	.probe		= lpfc_pci_probe_one,
->  	.remove		= __devexit_p(lpfc_pci_remove_one),
-> +	.err_handler = &lpfc_err_handler,
->  };
->  
->  static int __init
-> Index: linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c
-> ===================================================================
-> --- linux-2.6.20-git4.orig/drivers/scsi/lpfc/lpfc_sli.c	2007-02-09 17:22:30.000000000 -0600
-> +++ linux-2.6.20-git4/drivers/scsi/lpfc/lpfc_sli.c	2007-02-14 14:01:31.000000000 -0600
-> @@ -2104,6 +2104,10 @@ lpfc_sli_issue_mbox(struct lpfc_hba * ph
->  	volatile uint32_t word0, ldata;
->  	void __iomem *to_slim;
->  
-> +	/* If the PCI channel is in offline state, do not post mbox. */
-> +	if (unlikely(pci_channel_offline(phba->pcidev)))
-> +		return MBX_NOT_FINISHED;
-> +
->  	psli = &phba->sli;
->  
->  	spin_lock_irqsave(phba->host->host_lock, drvr_flag);
-> @@ -2407,6 +2411,10 @@ lpfc_sli_issue_iocb(struct lpfc_hba *phb
->  	struct lpfc_iocbq *nextiocb;
->  	IOCB_t *iocb;
->  
-> +	/* If the PCI channel is in offline state, do not post iocbs. */
-> +	if (unlikely(pci_channel_offline(phba->pcidev)))
-> +		return IOCB_ERROR;
-> +
->  	/*
->  	 * We should never get an IOCB if we are in a < LINK_DOWN state
->  	 */
-> @@ -3154,6 +3162,10 @@ lpfc_intr_handler(int irq, void *dev_id)
->  	if (unlikely(!phba))
->  		return IRQ_NONE;
->  
-> +	/* If the pci channel is offline, ignore all the interrupts. */
-> +	if (unlikely(pci_channel_offline(phba->pcidev)))
-> +		return IRQ_NONE;
-> +
->  	phba->sli.slistat.sli_intr++;
->  
->  	/*
-> 
+That's the current FSL practice yes. As I said, I'm not too fan of it. I
+prefer a more precise representation of the internal bus layout.
+
+> The device_type is typically things like "network" and "serial"
+> which don't specify the programming model.   The compatible 
+> property is used in driver selection. 
+
+The device type specifies the programming model of the node for OF, that
+is the set of words the driver will provide to OF. So that's something
+we don't necessarily care much about for non-OF implementation but still
+we should avoid going too far from that model either (after all,
+somebody can very well want to use a real OF on a board with a SoC).
+
+The device type is also used by the kernel in some areas. For example,
+the spec specifies that PCI host controllers and P2P bridges have a
+device-type of "pci" and the kernel relies heavily on that. Same for
+ISA. It thus makes sense to continue that practice with other bus types.
+
+Ben.
