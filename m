@@ -1,31 +1,23 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 19383DDE37
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 09:53:53 +1100 (EST)
-Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
-	files
+Subject: RE: [PATCH 15/16] Add device tree for Ebony
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <45D385E9.4020808@freescale.com>
-References: <1171409687840-git-send-email-timur@freescale.com>
-	<1171411075.20192.116.camel@localhost.localdomain>
-	<45D29AE5.7090004@freescale.com>
-	<1171430877.20192.133.camel@localhost.localdomain>
-	<45D29EB1.5060801@freescale.com>
-	<1171431334.20192.138.camel@localhost.localdomain>
-	<45D316CD.9070901@freescale.com>
-	<1171486473.20192.147.camel@localhost.localdomain>
-	<45D378F4.3040003@freescale.com>
-	<1171487822.20192.163.camel@localhost.localdomain>
-	<45D385E9.4020808@freescale.com>
+To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A1B952@az33exm25.fsl.freescale.net>
+References: <20070213060904.GA6214@localhost.localdomain>
+	<20070213061026.5837FDDDE9@ozlabs.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
+	<1171470754.4003.101.camel@zod.rchland.ibm.com>
+	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B86F@az33exm25.fsl.freescale.net>
+	<9df9bf3adf511f4c1a7945e022fdd447@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
+	<1171489360.20192.184.camel@localhost.localdomain>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B952@az33exm25.fsl.freescale.net>
 Content-Type: text/plain
-Date: Thu, 15 Feb 2007 09:53:42 +1100
-Message-Id: <1171493623.20192.188.camel@localhost.localdomain>
+Date: Thu, 15 Feb 2007 09:57:11 +1100
+Message-Id: <1171493831.20192.194.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Stuart Yoder <stuart.yoder@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,25 +28,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> Of course, the real solution to this problem is to fix U-Boot. 
+> > That's the current FSL practice yes. As I said, I'm not too 
+> > fan of it. I
+> > prefer a more precise representation of the internal bus layout.
+> 
+> Hmm.  I haven't been around here that long and assumed that
+> the soc node was an approach arrived at after discussion and
+> debate in the PPC Linux community in general.
 
-Yup :-)
+Little discussion, as I said, I don't mind that much neither what
+approach FSL uses for their own devices anyway, as long as it's
+consistent and works for your needs. For the IBM CoreConnect parts, I'd
+like to stick with the device type being "plb", "plb4", "plb5", "opb"
+etc... for the various busses.
 
->  However, there 
-> isn't any signed up to do that, and even if someone posted a patch right now, 
-> there's no telling when it will get applied.  And even if it got applied today, 
-> all current U-Boot installations would be broken.  Many of these systems will 
-> never be updated.
+> Do we need to re-open up the discussion about how to represent
+> SOCs in the device tree?  Does it matter?  Or, just have different
+> vendors do it their own way?
 
-But their .dts neither so it doesn't matter does it ?
+I don't think it matters in the sense that I don't think we want to
+change the current practice of FSL SoCs. It fits your needs well, so
+let's stick with it.
 
-> Therefore, I would say that having a 'chosen' node in the DTS is actually a 
-> *bad* thing, on systems that use U-Boot.
-
-Too bad for them..
-
-> Another work-around would be to update the compiler to delete the chosen node 
-> when it builds the DTB.  That's not a bad idea, I think, but until that feature 
-> is implemented, the DTS files should not have a 'chosen' node.
+> Some consistency would be good in my opinion.
 
 Ben.
