@@ -1,12 +1,11 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 14 Feb 2007 15:50:21 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <michael@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Automatically lmb_reserve() initrd
-Message-ID: <20070214045021.GC12402@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Wed, 14 Feb 2007 16:08:05 +1100
+Subject: [PATCH] Fix cut and paste breakage in
+	arch/powerpc/platforms/pseries/pseries.h
+Message-Id: <20070214050809.9EDE3DDE08@ozlabs.org>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,106 +15,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paulus, I think this one's ready to go now.  For backwards
-compatibility, it should only be applied after my patch which makes
-multiple identical lmb_reserve() calls valid.
+My "cleanup" patch (dce623e0827e8d0ad60ce7f385c3394bf1b0bae0) had a cut
+and paste error for the !CONFIG_KEXEC case. Fifty lashes for me.
 
-At present, when an initrd is passed to the kernel used flat device
-tree properties, the memory the initrd occupies must also be reserved
-in the flat tree's reserve map, or the kernel may overwrite it.  That
-makes life more complicated than it could be for the bootwrapper.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-This patch makes the kernel automatically reserve the initrd's space.
-That in turn requires parsing the initrd parameters earlier than they
-are currently, in early_init_dt_scan_chosen() instead of
-check_for_initrd().
+ arch/powerpc/platforms/pseries/pseries.h |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
-
-Index: working-2.6/arch/powerpc/kernel/prom.c
+Index: powerpc/arch/powerpc/platforms/pseries/pseries.h
 ===================================================================
---- working-2.6.orig/arch/powerpc/kernel/prom.c	2007-02-09 15:12:00.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/prom.c	2007-02-09 15:14:27.000000000 +1100
-@@ -719,6 +719,7 @@ static int __init early_init_dt_scan_cho
- 					    const char *uname, int depth, void *data)
- {
- 	unsigned long *lprop;
-+	u32 *prop;
- 	unsigned long l;
- 	char *p;
- 
-@@ -760,6 +761,22 @@ static int __init early_init_dt_scan_cho
-                crashk_res.end = crashk_res.start + *lprop - 1;
+--- powerpc.orig/arch/powerpc/platforms/pseries/pseries.h
++++ powerpc/arch/powerpc/platforms/pseries/pseries.h
+@@ -29,8 +29,8 @@ static inline smp_init_pseries_xics(void
+ extern void setup_kexec_cpu_down_xics(void);
+ extern void setup_kexec_cpu_down_mpic(void);
+ #else
+-static inline setup_kexec_cpu_down_xics(void) { };
+-static inline setup_kexec_cpu_down_mpic(void) { };
++static inline void setup_kexec_cpu_down_xics(void) { }
++static inline void setup_kexec_cpu_down_mpic(void) { }
  #endif
  
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	DBG("Looking for initrd properties... ");
-+	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
-+	if (prop) {
-+		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
-+		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
-+		if (prop) {
-+			initrd_end = (unsigned long)__va(of_read_ulong(prop, l/4));
-+			initrd_below_start_ok = 1;
-+		} else {
-+			initrd_start = 0;
-+		}
-+	}
-+	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
-+#endif /* CONFIG_BLK_DEV_INITRD */
-+
- 	/* Retreive command line */
-  	p = of_get_flat_dt_prop(node, "bootargs", &l);
- 	if (p != NULL && l > 0)
-@@ -926,6 +943,12 @@ static void __init early_reserve_mem(voi
- 	self_size = initial_boot_params->totalsize;
- 	lmb_reserve(self_base, self_size);
- 
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	/* then reserve the initrd, if any */
-+	if (initrd_start && (initrd_end > initrd_start))
-+		lmb_reserve(__pa(initrd_start), initrd_end - initrd_start);
-+#endif /* CONFIG_BLK_DEV_INITRD */
-+
- #ifdef CONFIG_PPC32
- 	/* 
- 	 * Handle the case where we might be booting from an old kexec
-Index: working-2.6/arch/powerpc/kernel/setup-common.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/setup-common.c	2007-01-24 12:01:17.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/setup-common.c	2007-02-09 15:15:15.000000000 +1100
-@@ -304,26 +304,8 @@ struct seq_operations cpuinfo_op = {
- void __init check_for_initrd(void)
- {
- #ifdef CONFIG_BLK_DEV_INITRD
--	const unsigned int *prop;
--	int len;
--
--	DBG(" -> check_for_initrd()\n");
--
--	if (of_chosen) {
--		prop = get_property(of_chosen, "linux,initrd-start", &len);
--		if (prop != NULL) {
--			initrd_start = (unsigned long)
--				__va(of_read_ulong(prop, len / 4));
--			prop = get_property(of_chosen,
--					"linux,initrd-end", &len);
--			if (prop != NULL) {
--				initrd_end = (unsigned long)
--					__va(of_read_ulong(prop, len / 4));
--				initrd_below_start_ok = 1;
--			} else
--				initrd_start = 0;
--		}
--	}
-+	DBG(" -> check_for_initrd()  initrd_start=0x%lx  initrd_end=0x%lx\n",
-+	    initrd_start, initrd_end);
- 
- 	/* If we were passed an initrd, set the ROOT_DEV properly if the values
- 	 * look sensible. If not, clear initrd reference.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ #endif /* _PSERIES_PSERIES_H */
