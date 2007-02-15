@@ -1,20 +1,34 @@
-Return-Path: <jsimmons@infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <hnguyen@linux.vnet.ibm.com>
+Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CF899DDDFA
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 02:49:05 +1100 (EST)
-Date: Thu, 15 Feb 2007 15:48:50 +0000 (GMT)
-From: James Simmons <jsimmons@infradead.org>
-To: linux-fbdev-devel@lists.sourceforge.net
-Subject: Re: [Linux-fbdev-devel] [patch 0/4] PS3 AV/FB updates
-In-Reply-To: <20070215152301.573853000@sonycom.com>
-Message-ID: <Pine.LNX.4.64.0702151548450.10092@pentafluge.infradead.org>
-References: <20070215152301.573853000@sonycom.com>
+	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 86110DDF27
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 03:03:08 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l1FG32SH138910
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:03:02 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
+	ESMTP id l1FG32ni675948
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:03:02 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l1FG30Hg011879
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:03:01 GMT
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, openib-general@openib.org, hch@infradead.org,
+	bos@pathscale.com
+Subject: [PATCH 2.6.21-rc1 1/5] ehca: reworked irq handler to avoid/reduce
+	missed irq events
+Date: Thu, 15 Feb 2007 17:06:33 +0100
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200702151706.33773.hnguyen@linux.vnet.ibm.com>
+Cc: raisch@de.ibm.com, heiko.carstens@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,35 +38,443 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+reworked irq handler to avoid/reduce missed irq events
 
 
-Andrew please apply.
+Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
+---
 
-Acked-By: James Simmons <jsimmons@infradead.org>
+
+ ehca_classes.h |   18 +++-
+ ehca_eq.c      |    1
+ ehca_irq.c     |  214 +++++++++++++++++++++++++++++++++++----------------------
+ ehca_irq.h     |    1
+ ehca_main.c    |   28 +++++--
+ ipz_pt_fn.h    |   11 ++
+ 6 files changed, 182 insertions(+), 91 deletions(-)
 
 
-On Thu, 15 Feb 2007, Geert.Uytterhoeven@sonycom.com wrote:
-
-> Here are a few updates for the PS3 AV Settings and Frame Buffer Device Drivers,
-> in response to recent review comments.
-> 
-> Gr{oetje,eeting}s,
-> 
-> 						Geert
-> 
-> --
-> Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-> Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-> Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
-> 
-> 
-> -------------------------------------------------------------------------
-> Take Surveys. Earn Cash. Influence the Future of IT
-> Join SourceForge.net's Techsay panel and you'll get the chance to share your
-> opinions on IT & business topics through brief surveys-and earn cash
-> http://www.techsay.com/default.php?page=join.php&p=sourceforge&CID=DEVDEV
-> _______________________________________________
-> Linux-fbdev-devel mailing list
-> Linux-fbdev-devel@lists.sourceforge.net
-> https://lists.sourceforge.net/lists/listinfo/linux-fbdev-devel
-> 
+diff --git a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
+index cf95ee4..f08ad6f 100644
+--- a/drivers/infiniband/hw/ehca/ehca_classes.h
++++ b/drivers/infiniband/hw/ehca/ehca_classes.h
+@@ -42,8 +42,6 @@
+ #ifndef __EHCA_CLASSES_H__
+ #define __EHCA_CLASSES_H__
+ 
+-#include "ehca_classes.h"
+-#include "ipz_pt_fn.h"
+ 
+ struct ehca_module;
+ struct ehca_qp;
+@@ -54,14 +52,22 @@ struct ehca_mw;
+ struct ehca_pd;
+ struct ehca_av;
+ 
++#include <rdma/ib_verbs.h>
++#include <rdma/ib_user_verbs.h>
++
+ #ifdef CONFIG_PPC64
+ #include "ehca_classes_pSeries.h"
+ #endif
++#include "ipz_pt_fn.h"
++#include "ehca_qes.h"
++#include "ehca_irq.h"
+ 
+-#include <rdma/ib_verbs.h>
+-#include <rdma/ib_user_verbs.h>
++#define EHCA_EQE_CACHE_SIZE 20
+ 
+-#include "ehca_irq.h"
++struct ehca_eqe_cache_entry {
++	struct ehca_eqe *eqe;
++	struct ehca_cq *cq;
++};
+ 
+ struct ehca_eq {
+ 	u32 length;
+@@ -74,6 +80,8 @@ struct ehca_eq {
+ 	spinlock_t spinlock;
+ 	struct tasklet_struct interrupt_task;
+ 	u32 ist;
++	spinlock_t irq_spinlock;
++	struct ehca_eqe_cache_entry eqe_cache[EHCA_EQE_CACHE_SIZE];
+ };
+ 
+ struct ehca_sport {
+diff --git a/drivers/infiniband/hw/ehca/ehca_eq.c b/drivers/infiniband/hw/ehca/ehca_eq.c
+index 5281dec..33c822e 100644
+--- a/drivers/infiniband/hw/ehca/ehca_eq.c
++++ b/drivers/infiniband/hw/ehca/ehca_eq.c
+@@ -61,6 +61,7 @@ int ehca_create_eq(struct ehca_shca *shc
+ 	struct ib_device *ib_dev = &shca->ib_device;
+ 
+ 	spin_lock_init(&eq->spinlock);
++	spin_lock_init(&eq->irq_spinlock);
+ 	eq->is_initialized = 0;
+ 
+ 	if (type != EHCA_EQ && type != EHCA_NEQ) {
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
+index 6c4f9f9..b923b5d 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.c
++++ b/drivers/infiniband/hw/ehca/ehca_irq.c
+@@ -206,7 +206,7 @@ static void qp_event_callback(struct ehc
+ }
+ 
+ static void cq_event_callback(struct ehca_shca *shca,
+-					  u64 eqe)
++			      u64 eqe)
+ {
+ 	struct ehca_cq *cq;
+ 	unsigned long flags;
+@@ -318,7 +318,7 @@ static void parse_ec(struct ehca_shca *s
+ 			  "disruptive port %x configuration change", port);
+ 
+ 		ehca_info(&shca->ib_device,
+-			 "port %x is inactive.", port);
++			  "port %x is inactive.", port);
+ 		event.device = &shca->ib_device;
+ 		event.event = IB_EVENT_PORT_ERR;
+ 		event.element.port_num = port;
+@@ -326,7 +326,7 @@ static void parse_ec(struct ehca_shca *s
+ 		ib_dispatch_event(&event);
+ 
+ 		ehca_info(&shca->ib_device,
+-			 "port %x is active.", port);
++			  "port %x is active.", port);
+ 		event.device = &shca->ib_device;
+ 		event.event = IB_EVENT_PORT_ACTIVE;
+ 		event.element.port_num = port;
+@@ -401,87 +401,143 @@ irqreturn_t ehca_interrupt_eq(int irq, v
+ 	return IRQ_HANDLED;
+ }
+ 
+-void ehca_tasklet_eq(unsigned long data)
+-{
+-	struct ehca_shca *shca = (struct ehca_shca*)data;
+-	struct ehca_eqe *eqe;
+-	int int_state;
+-	int query_cnt = 0;
+ 
+-	do {
+-		eqe = (struct ehca_eqe *)ehca_poll_eq(shca, &shca->eq);
++static inline void process_eqe(struct ehca_shca *shca, struct ehca_eqe *eqe)
++{
++	u64 eqe_value;
++	u32 token;
++	unsigned long flags;
++	struct ehca_cq *cq;
++	eqe_value = eqe->entry;
++	ehca_dbg(&shca->ib_device, "eqe_value=%lx", eqe_value);
++	if (EHCA_BMASK_GET(EQE_COMPLETION_EVENT, eqe_value)) {
++		ehca_dbg(&shca->ib_device, "... completion event");
++		token = EHCA_BMASK_GET(EQE_CQ_TOKEN, eqe_value);
++		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
++		cq = idr_find(&ehca_cq_idr, token);
++		if (cq == NULL) {
++			spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++			ehca_err(&shca->ib_device,
++				 "Invalid eqe for non-existing cq token=%x",
++				 token);
++			return;
++		}
++		reset_eq_pending(cq);
++#ifdef CONFIG_INFINIBAND_EHCA_SCALING
++		queue_comp_task(cq);
++		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++#else
++		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
++		comp_event_callback(cq);
++#endif
++	} else {
++		ehca_dbg(&shca->ib_device,
++			 "Got non completion event");
++		parse_identifier(shca, eqe_value);
++	}
++}
+ 
+-		if ((shca->hw_level >= 2) && eqe)
+-			int_state = 1;
+-		else
+-			int_state = 0;
++void ehca_process_eq(struct ehca_shca *shca, int is_irq)
++{
++	struct ehca_eq *eq = &shca->eq;
++	struct ehca_eqe_cache_entry *eqe_cache = eq->eqe_cache;
++	u64 eqe_value;
++	unsigned long flags;
++	int eqe_cnt, i;
++	int eq_empty = 0;
+ 
+-		while ((int_state == 1) || eqe) {
+-			while (eqe) {
+-				u64 eqe_value = eqe->entry;
+-
+-				ehca_dbg(&shca->ib_device,
+-					 "eqe_value=%lx", eqe_value);
+-
+-				/* TODO: better structure */
+-				if (EHCA_BMASK_GET(EQE_COMPLETION_EVENT,
+-						   eqe_value)) {
+-					unsigned long flags;
+-					u32 token;
+-					struct ehca_cq *cq;
+-
+-					ehca_dbg(&shca->ib_device,
+-						 "... completion event");
+-					token =
+-						EHCA_BMASK_GET(EQE_CQ_TOKEN,
+-							       eqe_value);
+-					spin_lock_irqsave(&ehca_cq_idr_lock,
+-							  flags);
+-					cq = idr_find(&ehca_cq_idr, token);
+-
+-					if (cq == NULL) {
+-						spin_unlock_irqrestore(&ehca_cq_idr_lock,
+-								       flags);
+-						break;
+-					}
++	spin_lock_irqsave(&eq->irq_spinlock, flags);
++	if (is_irq) {
++		const int max_query_cnt = 100;
++		int query_cnt = 0;
++		int int_state = 1;
++		do {
++			int_state = hipz_h_query_int_state(
++				shca->ipz_hca_handle, eq->ist);
++			query_cnt++;
++			iosync();
++		} while (int_state && query_cnt < max_query_cnt);
++		if (unlikely((query_cnt == max_query_cnt)))
++			ehca_dbg(&shca->ib_device, "int_state=%x query_cnt=%x",
++				 int_state, query_cnt);
++	}
+ 
+-					reset_eq_pending(cq);
++	/* read out all eqes */
++	eqe_cnt = 0;
++	do {
++		u32 token;
++		eqe_cache[eqe_cnt].eqe =
++			(struct ehca_eqe *)ehca_poll_eq(shca, eq);
++		if (!eqe_cache[eqe_cnt].eqe)
++			break;
++		eqe_value = eqe_cache[eqe_cnt].eqe->entry;
++		if (EHCA_BMASK_GET(EQE_COMPLETION_EVENT, eqe_value)) {
++			token = EHCA_BMASK_GET(EQE_CQ_TOKEN, eqe_value);
++			spin_lock(&ehca_cq_idr_lock);
++			eqe_cache[eqe_cnt].cq = idr_find(&ehca_cq_idr, token);
++			if (!eqe_cache[eqe_cnt].cq) {
++				spin_unlock(&ehca_cq_idr_lock);
++				ehca_err(&shca->ib_device,
++					 "Invalid eqe for non-existing cq "
++					 "token=%x", token);
++				continue;
++			}
++			spin_unlock(&ehca_cq_idr_lock);
++		} else
++			eqe_cache[eqe_cnt].cq = NULL;
++		eqe_cnt++;
++	} while (eqe_cnt < EHCA_EQE_CACHE_SIZE);
++	if (!eqe_cnt) {
++		if (is_irq)
++			ehca_dbg(&shca->ib_device,
++				 "No eqe found for irq event");
++		goto unlock_irq_spinlock;
++	} else if (!is_irq)
++		ehca_dbg(&shca->ib_device, "deadman found %x eqe", eqe_cnt);
++	if (unlikely(eqe_cnt == EHCA_EQE_CACHE_SIZE))
++		ehca_dbg(&shca->ib_device, "too many eqes for one irq event");
++	/* enable irq for new packets */
++	for (i = 0; i < eqe_cnt; i++) {
++		if (eq->eqe_cache[i].cq)
++			reset_eq_pending(eq->eqe_cache[i].cq);
++	}
++	/* check eq */
++	spin_lock(&eq->spinlock);
++	eq_empty = (!ipz_eqit_eq_peek_valid(&shca->eq.ipz_queue));
++	spin_unlock(&eq->spinlock);
++	/* call completion handler for cached eqes */
++	for (i = 0; i < eqe_cnt; i++)
++		if (eq->eqe_cache[i].cq) {
+ #ifdef CONFIG_INFINIBAND_EHCA_SCALING
+-					queue_comp_task(cq);
+-					spin_unlock_irqrestore(&ehca_cq_idr_lock,
+-							       flags);
++			spin_lock(&ehca_cq_idr_lock);
++			queue_comp_task(eq->eqe_cache[i].cq);
++			spin_unlock(&ehca_cq_idr_lock);
+ #else
+-					spin_unlock_irqrestore(&ehca_cq_idr_lock,
+-							       flags);
+-					comp_event_callback(cq);
++			comp_event_callback(eq->eqe_cache[i].cq);
+ #endif
+-				} else {
+-					ehca_dbg(&shca->ib_device,
+-						 "... non completion event");
+-					parse_identifier(shca, eqe_value);
+-				}
+-				eqe =
+-					(struct ehca_eqe *)ehca_poll_eq(shca,
+-								    &shca->eq);
+-			}
+-
+-			if (shca->hw_level >= 2) {
+-				int_state =
+-				    hipz_h_query_int_state(shca->ipz_hca_handle,
+-							   shca->eq.ist);
+-				query_cnt++;
+-				iosync();
+-				if (query_cnt >= 100) {
+-					query_cnt = 0;
+-					int_state = 0;
+-				}
+-			}
+-			eqe = (struct ehca_eqe *)ehca_poll_eq(shca, &shca->eq);
+-
++		} else {
++			ehca_dbg(&shca->ib_device, "Got non completion event");
++			parse_identifier(shca, eq->eqe_cache[i].eqe->entry);
+ 		}
+-	} while (int_state != 0);
++	/* poll eq if not empty */
++	if (eq_empty)
++		goto unlock_irq_spinlock;
++	do {
++		struct ehca_eqe *eqe;
++		eqe = (struct ehca_eqe *)ehca_poll_eq(shca, &shca->eq);
++		if (!eqe)
++			break;
++		process_eqe(shca, eqe);
++		eqe_cnt++;
++	} while (1);
+ 
+-	return;
++unlock_irq_spinlock:
++	spin_unlock_irqrestore(&eq->irq_spinlock, flags);
++}
++
++void ehca_tasklet_eq(unsigned long data)
++{
++	ehca_process_eq((struct ehca_shca*)data, 1);
+ }
+ 
+ #ifdef CONFIG_INFINIBAND_EHCA_SCALING
+@@ -654,11 +710,11 @@ static void take_over_work(struct ehca_c
+ 	list_splice_init(&cct->cq_list, &list);
+ 
+ 	while(!list_empty(&list)) {
+-	       cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
++		cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
+ 
+-	       list_del(&cq->entry);
+-	       __queue_comp_task(cq, per_cpu_ptr(pool->cpu_comp_tasks,
+-						 smp_processor_id()));
++		list_del(&cq->entry);
++		__queue_comp_task(cq, per_cpu_ptr(pool->cpu_comp_tasks,
++						  smp_processor_id()));
+ 	}
+ 
+ 	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
+diff --git a/drivers/infiniband/hw/ehca/ehca_irq.h b/drivers/infiniband/hw/ehca/ehca_irq.h
+index be579cc..6ed06ee 100644
+--- a/drivers/infiniband/hw/ehca/ehca_irq.h
++++ b/drivers/infiniband/hw/ehca/ehca_irq.h
+@@ -56,6 +56,7 @@ void ehca_tasklet_neq(unsigned long data
+ 
+ irqreturn_t ehca_interrupt_eq(int irq, void *dev_id);
+ void ehca_tasklet_eq(unsigned long data);
++void ehca_process_eq(struct ehca_shca *shca, int is_irq);
+ 
+ struct ehca_cpu_comp_task {
+ 	wait_queue_head_t wait_queue;
+diff --git a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+index 1155bcf..5790534 100644
+--- a/drivers/infiniband/hw/ehca/ehca_main.c
++++ b/drivers/infiniband/hw/ehca/ehca_main.c
+@@ -52,7 +52,7 @@
+ MODULE_LICENSE("Dual BSD/GPL");
+ MODULE_AUTHOR("Christoph Raisch <raisch@de.ibm.com>");
+ MODULE_DESCRIPTION("IBM eServer HCA InfiniBand Device Driver");
+-MODULE_VERSION("SVNEHCA_0020");
++MODULE_VERSION("SVNEHCA_0021");
+ 
+ int ehca_open_aqp1     = 0;
+ int ehca_debug_level   = 0;
+@@ -432,8 +432,8 @@ static int ehca_destroy_aqp1(struct ehca
+ 
+ static ssize_t ehca_show_debug_level(struct device_driver *ddp, char *buf)
+ {
+-	return  snprintf(buf, PAGE_SIZE, "%d\n",
+-			 ehca_debug_level);
++	return snprintf(buf, PAGE_SIZE, "%d\n",
++			ehca_debug_level);
+ }
+ 
+ static ssize_t ehca_store_debug_level(struct device_driver *ddp,
+@@ -778,8 +778,24 @@ void ehca_poll_eqs(unsigned long data)
+ 
+ 	spin_lock(&shca_list_lock);
+ 	list_for_each_entry(shca, &shca_list, shca_list) {
+-		if (shca->eq.is_initialized)
+-			ehca_tasklet_eq((unsigned long)(void*)shca);
++		if (shca->eq.is_initialized) {
++			/* call deadman proc only if eq ptr does not change */
++			struct ehca_eq *eq = &shca->eq;
++			int max = 3;
++			volatile u64 q_ofs, q_ofs2;
++			u64 flags;
++			spin_lock_irqsave(&eq->spinlock, flags);
++			q_ofs = eq->ipz_queue.current_q_offset;
++			spin_unlock_irqrestore(&eq->spinlock, flags);
++			do {
++				spin_lock_irqsave(&eq->spinlock, flags);
++				q_ofs2 = eq->ipz_queue.current_q_offset;
++				spin_unlock_irqrestore(&eq->spinlock, flags);
++				max--;
++			} while (q_ofs == q_ofs2 && max > 0);
++			if (q_ofs == q_ofs2)
++				ehca_process_eq(shca, 0);
++		}
+ 	}
+ 	mod_timer(&poll_eqs_timer, jiffies + HZ);
+ 	spin_unlock(&shca_list_lock);
+@@ -790,7 +806,7 @@ int __init ehca_module_init(void)
+ 	int ret;
+ 
+ 	printk(KERN_INFO "eHCA Infiniband Device Driver "
+-	                 "(Rel.: SVNEHCA_0020)\n");
++	       "(Rel.: SVNEHCA_0021)\n");
+ 	idr_init(&ehca_qp_idr);
+ 	idr_init(&ehca_cq_idr);
+ 	spin_lock_init(&ehca_qp_idr_lock);
+diff --git a/drivers/infiniband/hw/ehca/ipz_pt_fn.h b/drivers/infiniband/hw/ehca/ipz_pt_fn.h
+index dc3bda2..8199c45 100644
+--- a/drivers/infiniband/hw/ehca/ipz_pt_fn.h
++++ b/drivers/infiniband/hw/ehca/ipz_pt_fn.h
+@@ -79,7 +79,7 @@ static inline void *ipz_qeit_calc(struct
+ 	if (q_offset >= queue->queue_length)
+ 		return NULL;
+ 	current_page = (queue->queue_pages)[q_offset >> EHCA_PAGESHIFT];
+-	return  &current_page->entries[q_offset & (EHCA_PAGESIZE - 1)];
++	return &current_page->entries[q_offset & (EHCA_PAGESIZE - 1)];
+ }
+ 
+ /*
+@@ -247,6 +247,15 @@ static inline void *ipz_eqit_eq_get_inc_
+ 	return ret;
+ }
+ 
++static inline void *ipz_eqit_eq_peek_valid(struct ipz_queue *queue)
++{
++	void *ret = ipz_qeit_get(queue);
++	u32 qe = *(u8 *) ret;
++	if ((qe >> 7) != (queue->toggle_state & 1))
++		return NULL;
++	return ret;
++}
++
+ /* returns address (GX) of first queue entry */
+ static inline u64 ipz_qpt_get_firstpage(struct ipz_qpt *qpt)
+ {
