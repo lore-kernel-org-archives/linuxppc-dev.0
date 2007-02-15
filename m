@@ -1,24 +1,20 @@
-Return-Path: <linuxppcemb@lkmail.de>
-Received: from pm1.terions.de (pm1.terions.de [83.137.96.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.s-s-l.net",
-	Issuer "Equifax Secure Global eBusiness CA-1" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C51C3DDD06
+Return-Path: <watashin@mvision.co.jp>
+Received: from mail.asahi-net.or.jp (mail2.asahi-net.or.jp [202.224.39.198])
+	by ozlabs.org (Postfix) with ESMTP id 9A768DDD04
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Feb 2007 18:12:25 +1100 (EST)
-From: "Lorenz Kolb" <linuxppcemb@lkmail.de>
-To: "'Leonid'" <Leonid@a-k-a.net>,
-	<linuxppc-embedded@ozlabs.org>
-References: <mailman.120.1171370674.21008.linuxppc-embedded@ozlabs.org>
-	<000001c74fa0$ce627870$10b2a8c0@lorenzulm>
-	<406A31B117F2734987636D6CCC93EE3CF9D7A1@ehost011-3.exch011.intermedia.net>
-Subject: Re: RE: How can I boot a program from flash on ML403?
-Date: Thu, 15 Feb 2007 08:12:11 +0100
-Message-ID: <000001c750d0$9e609d60$10b2a8c0@lorenzulm>
+	Thu, 15 Feb 2007 21:16:40 +1100 (EST)
+Received: from wata (c200018.ppp.asahi-net.or.jp [210.155.200.18])
+	by mail.asahi-net.or.jp (Postfix) with SMTP id 980A02AECA
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 15 Feb 2007 19:16:34 +0900 (JST)
+Message-ID: <013b01c750ea$5e8544b0$1601a8c0@wata>
+From: "Shinji Watanabe" <watashin@mvision.co.jp>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: How to access MPC8555 DMA register ?
+Date: Thu, 15 Feb 2007 19:16:27 +0900
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <406A31B117F2734987636D6CCC93EE3CF9D7A1@ehost011-3.exch011.intermedia.net>
+Content-Type: text/plain; format=flowed; charset="iso-2022-jp";
+	reply-type=original
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,28 +25,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Leonid,
+I don't know how to bind the driver.
 
-> I use the same scheme (called 3-stage boot) but I don't see what is dirty
-about it. For testing/debugging you even can load u-boot directly into
-memory using XMD. Of course, image must be compiled to run from memory, not
-flash.
+I maked driver of pci device type for MPC8555 as Log.A.
 
-actually I call it dirty as SREC is a quite stupid format (for a bootloader,
-as it has to be decoded first) and so the loader wastes a lot of time at
-least for productive use we do not want this three stage boot.
+/var/log/message log is Log.B.
 
-Actually my partner and I even fitted an u-boot directly into BRAM (if it is
-loaded via XMD), unfortunately the binutils of ELDK from W. Denk screwed the
-elf (sections were out of segment) and even after fixing that manually (with
-a hex editor) data2mem from Xilinx messes something up.
+When I called platform_get_resource,
+I can't get validate value.
 
-> BTW, do you (or anybody) have XTEMAC drivers for ML403 u-boot?
+Why ?
 
-Actually we did not yet focus on that, we currently mount our NFS by placing
-a small initrd image on flash that loads drivers for opb_ethernet and mounts
-an nfs volume an chroots to it.
+please help me!
 
-Best Regards,
+///////////////////////// log.A
 
-Lorenz
+#define VENDORID_MVPPC 0x1057
+#define DEVICEID_MVPPC 0x000A
+
+static struct pci_device_id ids[] = {
+ { PCI_DEVICE(VENDORID_MVPPC, DEVICEID_MVPPC), },
+ { 0, }
+};
+
+MODULE_DEVICE_TABLE(pci, ids);
+
+static struct pci_driver pci_driver = {
+ .name = PCI_DEVICE_NAME, 
+ ...
+ .id_table = ids,
+ .probe = probe,
+};
+
+
+static int probe(struct pci_dev *dev, const struct pci_device_id *id)
+{
+ struct resource *res;
+ ...
+ ...
+ struct platform_device *pdev = to_platform_device(&dev->dev);
+ ..
+ ..
+ pci_enable_device(dev);
+ ..
+ ..
+ res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+  dprintk("res0 %p\n", 
+   res
+   );
+ res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
+ dprintk("res1 %p\n", 
+   res
+   );
+ res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
+ dprintk("res2 %p\n", 
+   res
+   );
+ ...
+ ...
+}
+
+
+///////////////////////// log.b
+Feb 10 11:34:23 mpc8555cds user.debug kernel: res0 00000000
+Feb 10 11:34:23 mpc8555cds user.debug kernel: res1 00000000
+Feb 10 11:34:23 mpc8555cds user.debug kernel: res2 00000000
+
+
+Regars,
+
+shinji
