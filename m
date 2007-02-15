@@ -1,24 +1,17 @@
-Return-Path: <pjmaiya@signal-networks.com>
-Received: from signal-networks.com (unknown [61.95.204.104])
-	by ozlabs.org (Postfix) with ESMTP id C8324DDE00
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 0FA0DDDE03
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Feb 2007 22:36:43 +1100 (EST)
-Received: from pjmaiya ([192.168.1.70])
-	by signal-networks.com (mail.signal-networks.com [192.168.1.1])
-	(MDaemon Standard v9.0.1) with ESMTP id md50000070852.msg
-	for <linuxppc-embedded@ozlabs.org>; Thu, 15 Feb 2007 17:09:25 +0530
-Message-ID: <01a901c750f5$ef392de0$4601a8c0@signet>
-From: "pjmaiya" <pjmaiya@signal-networks.com>
-To: "pjmaiya" <pjmaiya@signal-networks.com>,
-	<bwarren@qstreams.com>
-References: <29DC34A6B43468409F5A371CFE34E849091044@ex01.ads.ubidyne.de><011b01c74b81$5604ad80$4601a8c0@signet><1170949359.14627.66.camel@saruman.qstreams.net>
-	<00c401c74c36$42aeded0$4601a8c0@signet>
-Subject: Re: CLI for embedded system
-Date: Thu, 15 Feb 2007 17:09:21 +0530
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 15 Feb 2007 23:41:19 +1100 (EST)
+Subject: Re: Moving from arch/ppc to arch/powerpc with an MPC8248 (part 1)
+From: Heiko Schocher <hs@denx.de>
+To: linuxppc-embedded@ozlabs.org
+In-Reply-To: 20070214165330.5312de55@vitb.dev.rtsoft.ru
+Content-Type: text/plain
+Date: Thu, 15 Feb 2007 13:43:43 +0100
+Message-Id: <1171543423.5935.14.camel@Apollo>
+Mime-Version: 1.0
+Reply-To: hs@denx.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,65 +22,73 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-hi,
-    I have successfully complied and used 'clish' in host system (i686
-machine)
-But I need to port the same for PPC platform. Can anyone suggest me how to
-do the same.
+Hello Laurent, Vitaly
 
-thanx in advace,
-pjmaiya
+>> Are you using up-to-date powerpc.git? I get rid of hardcoded
+CPM_MAP_ADDR
+>> completely (or it should be such, heh). please make sure you have my recent
 
------ Original Message ----- 
-From: "pjmaiya" <pjmaiya@signal-networks.com>
-To: <bwarren@qstreams.com>
-Cc: <linuxppc-embedded@ozlabs.org>
-Sent: Friday, February 09, 2007 4:07 PM
-Subject: Re: CLI for embedded system
+I found two more in arch/powerpc/sysdev/cpm2_common.c (in actual powerpc.git Tree):
+
+diff --git a/arch/powerpc/sysdev/cpm2_common.c b/arch/powerpc/sysdev/cpm2_common.c
+index ec26599..2159895 100644
+--- a/arch/powerpc/sysdev/cpm2_common.c
++++ b/arch/powerpc/sysdev/cpm2_common.c
+@@ -60,7 +60,7 @@ intctl_cpm2_t *cpm2_intctl;
+ void
+ cpm2_reset(void)
+ {
+-	cpm2_immr = (cpm2_map_t *)ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
++	cpm2_immr = (cpm2_map_t *) ioremap(get_immrbase(), CPM_MAP_SIZE);
+ 	cpm2_intctl = cpm2_map(im_intctl);
+ 
+ 	/* Reclaim the DP memory for our use.
+@@ -234,7 +234,7 @@ static void cpm2_dpinit(void)
+ {
+ 	spin_lock_init(&cpm_dpmem_lock);
+ 
+-	im_dprambase = ioremap(CPM_MAP_ADDR, CPM_DATAONLY_BASE + CPM_DATAONLY_SIZE);
++	im_dprambase = (u8 *) ioremap(get_immrbase(), CPM_DATAONLY_BASE + CPM_DATAONLY_SIZE);
+ 
+ 	/* initialize the info header */
+ 	rh_init(&cpm_dpmem_info, 1,
 
 
-> Dear Ben,
-> Thanx for giving such a wonderful reference. We are going thru document,
-> hope we can use the same.
+>> commits in.
 >
-> rgds,
-> pjmaiya
->
-> ----- Original Message ----- 
-> From: "Ben Warren" <bwarren@qstreams.com>
-> To: "pjmaiya" <pjmaiya@signal-networks.com>
-> Cc: <linuxppc-embedded@ozlabs.org>
-> Sent: Thursday, February 08, 2007 9:12 PM
-> Subject: Re: CLI for embedded system
->
->
-> > Pjmaiya,
-> >
-> > On Thu, 2007-02-08 at 18:32 +0530, pjmaiya wrote:
-> > > Hi,
-> > >    Can anybody give me link/built in package or source code for
-> > > implmenting CLI for embedded system on linux. We have tried to
-> > > implement our own CLI on linux(with bash shell as base), but it is
-> > > massive work since we need to support Tab feature, history
-> > > feature,help etc..
-> >
-> > If you're looking for something to emulate Cisco's IOS shell, there's an
-> > open source project called 'clish':
-> >
-> > http://sourceforge.net/projects/clish/
-> >
-> > I haven't really used this myself, so can't recommend for or against.
-> >
-> > regards,
-> > Ben
-> >
-> >
->
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
->
+> I'm using up-to-date linux-2.6.git, which is probably way old compared to 
+> powerpc.git :-) What's the powerpc.git URL ? Do you plan to push your changes 
+> upstream for 2.6.21 ?
+
+I think you find the powerpc.git at
+http://www.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git/
+
+Am I right?
+
+I also "playing" at the moment to port a running mpc8272 base port under
+arch/ppc to arch/powerpc, but I cant say, when I am finishing it ...
+
+When I compile the Tree I got a compilererror in
+drivers/serial/cpm_uart/cpm_uart_cpm2.c, because I have a SMC as a
+console. I fixed it with the following patch:
+
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+index 787a8f1..5a36ad2 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm2.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm2.c
+@@ -285,7 +285,7 @@ void cpm_uart_freebuf(struct uart_cpm_port *pinfo)
+ int __init cpm_uart_init_portdesc(void)
+ {
+ #if defined(CONFIG_SERIAL_CPM_SMC1) || defined(CONFIG_SERIAL_CPM_SMC2)
+-	u32 addr;
++	u16* addr;
+ #endif
+ 	pr_debug("CPM uart[-]:init portdesc\n");
+ 
+
+Best regards
+Heiko
+-- 
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
