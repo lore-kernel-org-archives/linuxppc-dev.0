@@ -1,23 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 15/16] Add device tree for Ebony
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <889579906c6fd096a82283d5a3a0227e@kernel.crashing.org>
-References: <20070213060904.GA6214@localhost.localdomain>
-	<20070213061026.5837FDDDE9@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
-	<1171470754.4003.101.camel@zod.rchland.ibm.com>
-	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
-	<20070214232246.GE16279@localhost.localdomain>
-	<fbff2510963c6c5bb9d5ccb0574f97b1@kernel.crashing.org>
-	<20070215015316.GL16279@localhost.localdomain>
-	<889579906c6fd096a82283d5a3a0227e@kernel.crashing.org>
+Return-Path: <pnasrat@redhat.com>
+Subject: Re: [PATCH 1/1] determine last ext3 LBA to fix wild LBA reads - v3
+From: Paul Nasrat <pnasrat@redhat.com>
+To: Doug Maxey <dwm@enoyolf.org>
+In-Reply-To: <1121.1167886652@bebe.enoyolf.org>
+References: <1121.1167886652@bebe.enoyolf.org>
 Content-Type: text/plain
-Date: Thu, 15 Feb 2007 21:52:02 +1100
-Message-Id: <1171536722.5644.6.camel@localhost.localdomain>
+Date: Thu, 15 Feb 2007 12:25:26 +0000
+Message-Id: <1171542327.3387.70.camel@enki.eridu>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Cc: Linux PowerPC List <linuxppc-dev@ozlabs.org>, yaboot-devel@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +18,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-02-15 at 04:09 +0100, Segher Boessenkool wrote:
-> >> Yes.  UIC1 is not addressed via UIC0, and as such should
-> >> not be a child of it; it should be a direct child of its DCR
-> >> controller, just like UIC0.
-> >
-> > No, the DCR tree, like the interrupt tree in most cases, is
-> > independent of the main tree structure.
-> 
-> Yes true; you can hang the UICs from somewhere under the
-> "soc" node or whatever you want.  You need some way to
-> distinguish separate identical devices though; you can't
-> do it by device unit since your devices don't have any
-> (they don't have a "reg" but only a "dcr-reg").  If you
-> would hang them in a DCR tree, you could use the plain
-> "reg" property instead of the "dcr-reg" property and
-> all would be fine (if the DCR binding allows this -- and
-> it better should, it is the standard OF addressing algorithm).
+On Wed, 2007-01-03 at 22:57 -0600, Doug Maxey wrote:
+> The issue seen in the current code is linux_read_blk() is
+> (apparently) looking at the alternate offsets for all possible
+> superblocks.  As yaboot scans each partition for all fs types, until
+> it finds the appropriate signature, when searching the ext fs, libext2
+> appears to calculate some blocks to read that may be 10x the size of
+> the actual disk.
 
-It's not as DCRs are orthogonal to the normal bus tree (yeah, it sucks
-but that's how it is, broken by design :-)
+Thanks for this I've commited and it'll be in 1.3.14 shortly.
 
-For example, MAL is DMA'ing on PLB but controlled via DCRs.
+Sorry for the delay.
 
-> However, my main point remains: the two interrupt controllers
-> should be siblings in the device tree, since they are that on
-> the hardware.
-
-Ben.
+Paul
