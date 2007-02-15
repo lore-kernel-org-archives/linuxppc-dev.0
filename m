@@ -1,21 +1,16 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 193E2DDE32
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 10:09:37 +1100 (EST)
-Message-ID: <45D4E82B.7020403@garzik.org>
-Date: Thu, 15 Feb 2007 18:09:31 -0500
-From: Jeff Garzik <jeff@garzik.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 16 Feb 2007 09:57:39 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [DTC PATCH] Add support for decimal,
+	octal and binary based cell values.
+Message-ID: <20070215225739.GA21654@localhost.localdomain>
+References: <E1HHkAL-0005Xl-2f@jdl.com>
+	<70840B5D-F927-4CC6-84D3-789DA8A66378@embeddedalley.com>
 MIME-Version: 1.0
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] add delay around sl82c105_reset_engine calls
-References: <20070210203512.GA25586@aepfle.de>
-	<20070210203614.GA25602@aepfle.de>
-In-Reply-To: <20070210203614.GA25602@aepfle.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	linux-ide@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <70840B5D-F927-4CC6-84D3-789DA8A66378@embeddedalley.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering wrote:
-> The hald media changed polling does really confuse things.
-> Noone knows why the delays are needed, but they give us access to the CD.
+On Thu, Feb 15, 2007 at 02:33:47PM -0800, Dan Malek wrote:
 > 
-> An udelay(50) will give reliable access to the drive, but there is still
-> one (or more) EH reset. The drive works without EH resets with udelay(100).
+> On Feb 15, 2007, at 9:13 AM, Jon Loeliger wrote:
 > 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> > New syntax d#, b#, o# and h# allow for an explicit prefix
+> > on cell values to specify their base.  Eg: <d# 123>
 > 
-> ---
->  drivers/ata/pata_sl82c105.c |    3 +++
->  1 file changed, 3 insertions(+)
+> Why do we need yet another syntax?  Everyone
+> else, including most silicon documentation, uses
+> the standard "C" syntax 0x for hex, 0 for octal, and
+> nothing for decimal.  If really needed binary, we
+> could us the '0b'.  Of the few dts files I've done,
+> anything to make this easier, rather than inventing
+> something new, would be appreciated.
 
-applied
+Yes, but hex-by-default is already implemented and out there.  We
+can't change it without breaking compatibility horribly.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
