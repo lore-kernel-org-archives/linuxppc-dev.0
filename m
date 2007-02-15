@@ -1,17 +1,37 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 24C5CDDE08
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 04:14:22 +1100 (EST)
-Received: from jdl (helo=jdl.com) by jdl.com with local-esmtp (Exim 4.63)
-	(envelope-from <jdl@jdl.com>) id 1HHkBV-0005Y4-9H
-	for linuxppc-dev@ozlabs.org; Thu, 15 Feb 2007 11:14:19 -0600
-To: linuxppc-dev@ozlabs.org
-Subject: [DTC PATCH] Add some initial test cases.
-Date: Thu, 15 Feb 2007 11:14:17 -0600
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1HHkBV-0005Y4-9H@jdl.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E3AE9DE056
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 04:14:27 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1FHEOvd005327
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 12:14:24 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1FHEOeJ474534
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 10:14:24 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1FHEHr1006365
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 10:14:20 -0700
+Date: Thu, 15 Feb 2007 11:14:14 -0600
+To: Jens Osterkamp <jens@de.ibm.com>
+Subject: Re: [PATCHSET] libata: PATA driver for Celleb
+Message-ID: <20070215171414.GU923@austin.ibm.com>
+References: <200701260724.l0Q7OISY027645@toshiba.co.jp>
+	<45D3EAA7.80805@garzik.org>
+	<1171525923.20192.243.camel@localhost.localdomain>
+	<200702151141.49708.jens@de.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200702151141.49708.jens@de.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Jeff Garzik <jeff@garzik.org>, arnd@arndb.de, linuxppc-dev@ozlabs.org,
+	linux-ide@vger.kernel.org, paulus@samba.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	James K Lewis <jim@jklewis.com>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,587 +41,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Feb 15, 2007 at 11:41:49AM +0100, Jens Osterkamp wrote:
+> On Thursday 15 February 2007, Benjamin Herrenschmidt wrote:
+> > > I'm totally confused about who the heck is the spidernet maintainer.
+> > 
+> > Me too :-)
+> > 
+> > It's been a bit of a mess. I suggest we get our gear together (Linas,
+> > Jens, Kou) and provide you a single patch set from a single source in
+> > the upcoming couple of days coming from the designated maintainer.
 
-Add the original simple test case and a case with
-different based cell values.  Correct output asm
-files as well as stderr is captured.
+OK.
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
+However, I think the blast of paches is a statistical anomoly,
+I'm expecting future activity on spidernet to drop to just about zero.
 
----
+> > Jens ? Linas ? Is that ok with you guys ? Who gets to be that
+> > maintainer ?
+>
+> Linas has done a pretty good job on improving the driver in the last half
+> year or so and he also has access to all the necessary hardware so I think
+> he would be the right person for the job.
 
-Moved the example test.dts file into the test directory
-and added another one with some base examples in it.
-Captured correct output and at least one DTC command so far.
-We'll work on automating it some more later I suppose.
+It seems I've been nominated twice. Since I'm expecting future activity
+to drop to zero, how hard can this be? :-)
 
+I can send a tested patch series (merging all three sources)
+immediately, assuming you like the tree these would be based on. 
+Any special instructions or proceedures to follow, any secret
+initiation rites, hazing, or change of citizenship required?
 
- tests/base01.asm             |  175 +++++++++++++++++++++++++
- tests/base01.cmd             |    1 +
- tests/base01.dts             |   31 +++++
- tests/base01.stderr          |    6 +
- tests/test01.asm             |  294 ++++++++++++++++++++++++++++++++++++++++++
- test.dts => tests/test01.dts |    0 
- tests/test01.stderr          |    4 +
- 7 files changed, 511 insertions(+), 0 deletions(-)
- create mode 100644 tests/base01.asm
- create mode 100644 tests/base01.cmd
- create mode 100644 tests/base01.dts
- create mode 100644 tests/base01.stderr
- create mode 100644 tests/test01.asm
- rename test.dts => tests/test01.dts (100%)
- create mode 100644 tests/test01.stderr
-
-diff --git a/tests/base01.asm b/tests/base01.asm
-new file mode 100644
-index 0000000..266e446
---- /dev/null
-+++ b/tests/base01.asm
-@@ -0,0 +1,175 @@
-+/* autogenerated by dtc, do not edit */
-+
-+#define OF_DT_HEADER 0xd00dfeed
-+#define OF_DT_BEGIN_NODE 0x1
-+#define OF_DT_END_NODE 0x2
-+#define OF_DT_PROP 0x3
-+#define OF_DT_END 0x9
-+
-+	.globl	dt_blob_start
-+dt_blob_start:
-+_dt_blob_start:
-+	.globl	dt_header
-+dt_header:
-+_dt_header:
-+	.long	OF_DT_HEADER /* magic */
-+	.long	_dt_blob_end - _dt_blob_start /* totalsize */
-+	.long	_dt_struct_start - _dt_blob_start /* off_dt_struct */
-+	.long	_dt_strings_start - _dt_blob_start /* off_dt_strings */
-+	.long	_dt_reserve_map - _dt_blob_start /* off_dt_strings */
-+	.long	16 /* version */
-+	.long	16 /* last_comp_version */
-+	.long	0	/*boot_cpuid_phys*/
-+	.long	_dt_strings_end - _dt_strings_start	/* size_dt_strings */
-+	.balign	8
-+	.globl	dt_reserve_map
-+dt_reserve_map:
-+_dt_reserve_map:
-+/* Memory reserve map from source file */
-+	.long	0, 0
-+	.long	0, 0
-+	.globl	dt_struct_start
-+dt_struct_start:
-+_dt_struct_start:
-+	.long	OF_DT_BEGIN_NODE
-+	.string	""
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0xa
-+	.long	0x0
-+	.long	0x536f6d65
-+	.long	0x4d6f6465
-+	.short	0x6c00
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x8
-+	.long	0x6
-+	.long	0x4e6f7468
-+	.long	0x696e6700
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x11
-+	.long	0x2
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x20
-+	.long	0x2
-+	.balign	4
-+	.long	OF_DT_BEGIN_NODE
-+	.string	"memory@0"
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x7
-+	.long	0x2c
-+	.long	0x6d656d6f
-+	.short	0x7279
-+	.byte	0x0
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x10
-+	.long	0x38
-+	.long	0x0
-+	.long	0x0
-+	.long	0x0
-+	.long	0x20000000
-+	.balign	4
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_BEGIN_NODE
-+	.string	"cpus"
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x11
-+	.long	0x1
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x20
-+	.long	0x0
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x3c
-+	.long	0xa
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x40
-+	.long	0x17
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x44
-+	.long	0x5
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x49
-+	.long	0xf
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x4d
-+	.long	0xd00d
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x10
-+	.long	0x53
-+	.long	0x4d2
-+	.long	0x162e
-+	.long	0x2334
-+	.long	0xd80
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x59
-+	.long	0x0
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x61
-+	.long	0xffffffff
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x69
-+	.long	0x0
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x71
-+	.long	0xffffffff
-+	.balign	4
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_END
-+	.globl	dt_struct_end
-+dt_struct_end:
-+_dt_struct_end:
-+	.globl	dt_strings_start
-+dt_strings_start:
-+_dt_strings_start:
-+	.string "model"
-+	.string "compatible"
-+	.string "#address-cells"
-+	.string "#size-cells"
-+	.string "device_type"
-+	.string "reg"
-+	.string "d10"
-+	.string "d23"
-+	.string "b101"
-+	.string "o17"
-+	.string "hd00d"
-+	.string "stuff"
-+	.string "bad-d-1"
-+	.string "bad-d-2"
-+	.string "bad-o-1"
-+	.string "bad-o-2"
-+	.globl	dt_strings_end
-+dt_strings_end:
-+_dt_strings_end:
-+	.globl	dt_blob_end
-+dt_blob_end:
-+_dt_blob_end:
-diff --git a/tests/base01.cmd b/tests/base01.cmd
-new file mode 100644
-index 0000000..e1fce6c
---- /dev/null
-+++ b/tests/base01.cmd
-@@ -0,0 +1 @@
-+dtc -f -b 0 -V 16 -I dts -O asm
-diff --git a/tests/base01.dts b/tests/base01.dts
-new file mode 100644
-index 0000000..f84bc49
---- /dev/null
-+++ b/tests/base01.dts
-@@ -0,0 +1,31 @@
-+/ {
-+	model = "SomeModel";
-+	compatible = "Nothing";
-+	#address-cells = <2>;
-+	#size-cells = <2>;
-+
-+        memory@0 {
-+                device_type = "memory";
-+		reg = <00000000 00000000 00000000 20000000>;
-+        };
-+
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		d10 = <d# 10>;		// hex: 0xa
-+		d23 = <d# 23>;		// hex: 0x17
-+		b101 = <b# 101>;	// hex: 0x5
-+		o17 = <o# 17>;		// hex: 0xf
-+		hd00d = <h# d00d>;	// hex: 0xd00d
-+
-+		//   hex:  0x4d2    0x163e      0x2334    0xd80
-+		stuff = <d# 1234    d# 5678    d# 9012    d# 3456>;
-+
-+
-+		bad-d-1 = <d# abc123>;		// Hrm. 0
-+		bad-d-2 = <d# 123456789012345>;
-+		bad-o-1 = <o# 891>;
-+		bad-o-2 = <o# 123456123456>;
-+	};
-+
-+};
-diff --git a/tests/base01.stderr b/tests/base01.stderr
-new file mode 100644
-index 0000000..0510b0f
---- /dev/null
-+++ b/tests/base01.stderr
-@@ -0,0 +1,6 @@
-+DTC: dts->asm  on file "tests/base01.dts"
-+Line 26: Invalid cell value '123456789012345'; -1 assumed
-+Line 27: Invalid cell value '891'; 0 assumed
-+Line 28: Invalid cell value '123456123456'; -1 assumed
-+ERROR: Missing /chosen node
-+Input tree has errors
-diff --git a/tests/test01.asm b/tests/test01.asm
-new file mode 100644
-index 0000000..bbf66c7
---- /dev/null
-+++ b/tests/test01.asm
-@@ -0,0 +1,294 @@
-+/* autogenerated by dtc, do not edit */
-+
-+#define OF_DT_HEADER 0xd00dfeed
-+#define OF_DT_BEGIN_NODE 0x1
-+#define OF_DT_END_NODE 0x2
-+#define OF_DT_PROP 0x3
-+#define OF_DT_END 0x9
-+
-+	.globl	dt_blob_start
-+dt_blob_start:
-+_dt_blob_start:
-+	.globl	dt_header
-+dt_header:
-+_dt_header:
-+	.long	OF_DT_HEADER /* magic */
-+	.long	_dt_blob_end - _dt_blob_start /* totalsize */
-+	.long	_dt_struct_start - _dt_blob_start /* off_dt_struct */
-+	.long	_dt_strings_start - _dt_blob_start /* off_dt_strings */
-+	.long	_dt_reserve_map - _dt_blob_start /* off_dt_strings */
-+	.long	16 /* version */
-+	.long	16 /* last_comp_version */
-+	.long	0	/*boot_cpuid_phys*/
-+	.long	_dt_strings_end - _dt_strings_start	/* size_dt_strings */
-+	.balign	8
-+	.globl	dt_reserve_map
-+dt_reserve_map:
-+_dt_reserve_map:
-+/* Memory reserve map from source file */
-+	.long	0x10000000
-+	.long	0x00000000
-+	.long	0x00000000
-+	.long	0x02000000
-+	.long	0x20000000
-+	.long	0x00000000
-+	.long	0x01000000
-+	.long	0x00000000
-+	.long	0x00000000
-+	.long	0x00000000
-+	.long	0x00000000
-+	.long	0x00000014
-+	.long	0, 0
-+	.long	0, 0
-+	.globl	dt_struct_start
-+dt_struct_start:
-+_dt_struct_start:
-+	.long	OF_DT_BEGIN_NODE
-+	.string	""
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0xc
-+	.long	0x0
-+	.long	0x4d79426f
-+	.long	0x6172644e
-+	.long	0x616d6500
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x1e
-+	.long	0x6
-+	.long	0x4d79426f
-+	.long	0x6172644e
-+	.long	0x616d6500
-+	.long	0x4d79426f
-+	.long	0x61726446
-+	.long	0x616d696c
-+	.long	0x794e616d
-+	.short	0x6500
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x11
-+	.long	0x2
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x20
-+	.long	0x2
-+	.balign	4
-+	.long	OF_DT_BEGIN_NODE
-+	.string	"cpus"
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x2c
-+	.long	0x1
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x11
-+	.long	0x1
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x20
-+	.long	0x0
-+	.balign	4
-+	.long	OF_DT_BEGIN_NODE
-+	.string	"PowerPC,970@0"
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0xc
-+	.long	0x3a
-+	.long	0x506f7765
-+	.long	0x7250432c
-+	.long	0x39373000
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x3f
-+	.long	0x63707500
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x4b
-+	.long	0x0
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x4f
-+	.long	0x5f5e1000
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x5f
-+	.long	0x1fca055
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x0
-+	.long	0x72
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x81
-+	.long	0x10000
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x8e
-+	.long	0x8000
-+	.balign	4
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_BEGIN_NODE
-+	.string	"PowerPC,970@1"
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0xc
-+	.long	0x3a
-+	.long	0x506f7765
-+	.long	0x7250432c
-+	.long	0x39373000
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x3f
-+	.long	0x63707500
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x4b
-+	.long	0x1
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x4f
-+	.long	0x5f5e1000
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x5f
-+	.long	0x1fca055
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x81
-+	.long	0x10000
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x8e
-+	.long	0x8000
-+	.balign	4
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_BEGIN_NODE
-+	.string	"randomnode"
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x13
-+	.long	0x9b
-+	.long	0xff007374
-+	.long	0x75666673
-+	.long	0x74756666
-+	.long	0x909090a
-+	.short	0xa0a
-+	.byte	0x0
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x9
-+	.long	0xa2
-+	.long	0xa0b0c0d
-+	.long	0xdeeaadbe
-+	.byte	0xef
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0xa7
-+	.long	0x2
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x14
-+	.long	0xab
-+	.long	0x61626300
-+	.long	0x12340000
-+	.long	0xa
-+	.long	0xb
-+	.long	0xc
-+	.balign	4
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_BEGIN_NODE
-+	.string	"memory@0"
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x7
-+	.long	0x3f
-+	.long	0x6d656d6f
-+	.short	0x7279
-+	.byte	0x0
-+	.balign	4
-+	.globl	memreg
-+memreg:
-+	.long	OF_DT_PROP
-+	.long	0x10
-+	.long	0x4b
-+	.long	0x0
-+	.long	0x0
-+	.long	0x0
-+	.long	0x20000000
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0x2c
-+	.long	0x2
-+	.balign	4
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_BEGIN_NODE
-+	.string	"chosen"
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0xf
-+	.long	0xb1
-+	.long	0x726f6f74
-+	.long	0x3d2f6465
-+	.long	0x762f7364
-+	.short	0x6132
-+	.byte	0x0
-+	.balign	4
-+	.long	OF_DT_PROP
-+	.long	0x4
-+	.long	0xba
-+	.long	0x600
-+	.balign	4
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_END_NODE
-+	.long	OF_DT_END
-+	.globl	dt_struct_end
-+dt_struct_end:
-+_dt_struct_end:
-+	.globl	dt_strings_start
-+dt_strings_start:
-+_dt_strings_start:
-+	.string "model"
-+	.string "compatible"
-+	.string "#address-cells"
-+	.string "#size-cells"
-+	.string "linux,phandle"
-+	.string "name"
-+	.string "device_type"
-+	.string "reg"
-+	.string "clock-frequency"
-+	.string "timebase-frequency"
-+	.string "linux,boot-cpu"
-+	.string "i-cache-size"
-+	.string "d-cache-size"
-+	.string "string"
-+	.string "blob"
-+	.string "ref"
-+	.string "mixed"
-+	.string "bootargs"
-+	.string "linux,platform"
-+	.globl	dt_strings_end
-+dt_strings_end:
-+_dt_strings_end:
-+	.globl	dt_blob_end
-+dt_blob_end:
-+_dt_blob_end:
-diff --git a/test.dts b/tests/test01.dts
-similarity index 100%
-rename from test.dts
-rename to tests/test01.dts
-diff --git a/tests/test01.stderr b/tests/test01.stderr
-new file mode 100644
-index 0000000..82ea3f6
---- /dev/null
-+++ b/tests/test01.stderr
-@@ -0,0 +1,4 @@
-+DTC: dts->asm  on file "test.dts"
-+Warning: "linux,boot-cpu" property is deprecated in blob version 2 or higher
-+Warning: /chosen has no "linux,stdout-path" property
-+Warning: /chosen has no "interrupt-controller" property
--- 
-1.5.0.rc3.ge4b0e
+--linas
