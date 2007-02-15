@@ -1,17 +1,17 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8F2AADDDEF
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 07:31:43 +1100 (EST)
-Date: Thu, 15 Feb 2007 23:31:39 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Paul Gortmaker <paul.gortmaker@windriver.com>
-Subject: Re: [PATCH] Fix compile failure in cpm_uart_cpm2
-Message-ID: <20070215233139.5b9eab08@localhost.localdomain>
-In-Reply-To: <20070215174305.GA2820@windriver.com>
-References: <20070215174305.GA2820@windriver.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, p_gortmaker@yahoo.com
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id C2C90DDEAB
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 07:34:29 +1100 (EST)
+Message-ID: <45D4C3CF.9080800@freescale.com>
+Date: Thu, 15 Feb 2007 14:34:23 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Sylvain Munaut <tnt@246tNt.com>
+Subject: Re: Why do the rh_alloc functions return a pointer?
+References: <45D4B486.7030409@freescale.com> <45D4C2CB.2080703@246tNt.com>
+In-Reply-To: <45D4C2CB.2080703@246tNt.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,34 +21,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 15 Feb 2007 12:43:06 -0500
-Paul Gortmaker wrote:
+Sylvain Munaut wrote:
 
-> Fix bug that exists in kernel.org since 2.6.17rc4 - compiles fail if
-> CONFIG_SERIAL_CPM_SMC is defined.  Tested on a board using SMC1
-> console.
+> I talked about it with Panto on IRC a few days ago.
 > 
+> And he agrees that the function could be changed to user "unsigned long"
+> instead of "void *".
 
-This has been submitted already by Heiko Schocher <hs@denx.de>, sorry... 
-Anyway, got to be fixed soon.
+Well, if there is a consensus that this should be changed, then I'll make the patch.
 
+However, since the function prototype for all architectures is in 
+include/asm-ppc/rheap.h, I'll need to change powerpc and ppc in the same patch, 
+otherwise one of the two will break.
 
-> Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
-> ---
-> 
-> --- linux-2.6.20/drivers/serial/cpm_uart/cpm_uart_cpm2.c~
-> 2007-02-07 14:07:47.778573326 -0500 +++
-> linux-2.6.20/drivers/serial/cpm_uart/cpm_uart_cpm2.c
-> 2007-02-07 14:07:58.248391885 -0500 @@ -285,7 +285,7 @@ int __init
-> cpm_uart_init_portdesc(void) {
->  #if defined(CONFIG_SERIAL_CPM_SMC1) ||
-> defined(CONFIG_SERIAL_CPM_SMC2)
-> -	u32 addr;
-> +	u16 *addr;
->  #endif
->  	pr_debug("CPM uart[-]:init portdesc\n");
->  
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
