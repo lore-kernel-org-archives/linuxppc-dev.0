@@ -1,29 +1,23 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id AAC4CDDFBC
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 03:18:55 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l1FGIqNJ001294
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 09:18:52 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1FGIpGr026556
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 10:18:52 -0600 (CST)
-Message-ID: <45D487EB.4090105@freescale.com>
-Date: Thu, 15 Feb 2007 10:18:51 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
-	files
-References: <11713852392294-git-send-email-timur@freescale.com>
-	<20070214003119.GF11491@localhost.localdomain>
-	<45D29BBA.7090401@freescale.com>
-	<20070214052440.GB12609@localhost.localdomain>
-	<45D31734.7030808@freescale.com>
-	<20070214233348.GH16279@localhost.localdomain>
-In-Reply-To: <20070214233348.GH16279@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <jim@jklewis.com>
+Received: from que02.suddenlink.net (que02.suddenlink.net [208.180.40.87])
+	by ozlabs.org (Postfix) with ESMTP id CBB77DDFB3
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 03:20:52 +1100 (EST)
+Subject: Re: [PATCHSET] libata: PATA driver for Celleb
+From: Jim Lewis <jim@jklewis.com>
+To: Jens Osterkamp <jens@de.ibm.com>
+In-Reply-To: <200702151141.49708.jens@de.ibm.com>
+References: <200701260724.l0Q7OISY027645@toshiba.co.jp>
+	<45D3EAA7.80805@garzik.org>
+	<1171525923.20192.243.camel@localhost.localdomain>
+	<200702151141.49708.jens@de.ibm.com>
+Content-Type: text/plain
+Date: Thu, 15 Feb 2007 10:03:06 -0600
+Message-Id: <1171555386.3219.37.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Jeff Garzik <jeff@garzik.org>, arnd@arndb.de, linuxppc-dev@ozlabs.org,
+	linux-ide@vger.kernel.org, paulus@samba.org,
+	Andrew Morton <akpm@linux-foundation.org>, alan@lxorguk.ukuu.org.uk
+Reply-To: jim@jklewis.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,16 +27,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
 
-> My point is that the interrupt-controller property in /chosen *should*
-> be there, but it doesn't make a lot of sense for it to be set by the
-> bootloader (because it's a fixed property of the board).  Therefore it
-> should be in the dts, therefore the /chosen node needs to be there to
-> contain it.
+ We have had some discussions previously about Linas Vepstas taking over
+the maintainership of Spidernet from me. I will look into this and see
+if we can make it happen. 
 
-Ok, I've added that to my to-do list.
+Jim Lewis
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+
+On Thu, 2007-02-15 at 11:41 +0100, Jens Osterkamp wrote:
+> On Thursday 15 February 2007, Benjamin Herrenschmidt wrote:
+> > 
+> > > I'm totally confused about who the heck is the spidernet maintainer.
+> > 
+> > Me too :-)
+> > 
+> > > My 
+> > > inbox is pelted by spidernet driver updates from multiple people, and 
+> > > often the spidernet patches (regardless of author) receive comments that 
+> > > give me pause.  The MAINTAINERS file says
+> > > 
+> > > > SPIDERNET NETWORK DRIVER for CELL
+> > > > P:      Jim Lewis
+> > > > M:      jim@jklewis.com
+> > > > L:      netdev@vger.kernel.org
+> > > > S:      Supported
+> > > 
+> > > but I do not see patch roll-ups or much activity from him at all.  In 
+> > > practice, it seems like Linas does patchsets for spidernet, but there is 
+> > > also Jakob Osterkemp(sp?) and Ishizaki and....
+> > 
+> > I think Jens Osterkampf should be the final ACK/NAK'er as he has all the
+> > hardware to test except the Toshiba gear :-) In fact, Jens, if you are
+> > ok with that, I'd like to have you be the maintainer of that driver,
+> > unless you think it's better for Linas to do it.
+> > 
+> > > My overall impression of spidernet development is that EVERYBODY is 
+> > > submitting patches at once, and expecting me to sort out the mess.  No 
+> > > thanks.
+> > 
+> > It's been a bit of a mess. I suggest we get our gear together (Linas,
+> > Jens, Kou) and provide you a single patch set from a single source in
+> > the upcoming couple of days coming from the designated maintainer.
+> > 
+> > Jens ? Linas ? Is that ok with you guys ? Who gets to be that
+> > maintainer ?
+> > 
+> > _ALSO_ since spidernet uses (and modifies) sungem_phy.c, we need either
+> > DaveM or my ack there (DaveM is sungem maintainer but I wrote sungem_phy
+> > and most of it is only used on powermacs).
+> > 
+> > Thus let's move that back to the cbe-oss-dev mailing list, our
+> > designated maintainer will post there a candidate patch set, I will
+> > verify the sungem_phy change is ok with powermac (I myself haven't
+> > followed enough to figure out what patch is the latest there), we'll all
+> > test on our respective hardware, and then that maintainer will send you
+> > one patch set to apply.
+> > 
+> > That shouldn't take more than a few days. If we miss -rc1, well, then it
+> > will be in -rc2, as most of the patches have been around for long enough
+> > etc... it's really mostly a matter of getting our gear together.
+> > 
+> > > Speaking with one voice would be much appreciated.  And said speaker 
+> > > should patch the MAINTAINERS file to reflect reality.
+> 
+> Sounds reasonable. I fully agree.
+> 
+> Linas has done a pretty good job on improving the driver in the last half
+> year or so and he also has access to all the necessary hardware so I think
+> he would be the right person for the job.
+> 
+> Jens
