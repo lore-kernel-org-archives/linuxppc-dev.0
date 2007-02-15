@@ -1,17 +1,23 @@
-Return-Path: <Sendhilraj.T@Lntemsys.com>
-Received: from mail86.messagelabs.com (mail86.messagelabs.com [216.82.244.115])
-	by ozlabs.org (Postfix) with SMTP id 4FCC3DDD0B
+Return-Path: <pjmaiya@signal-networks.com>
+Received: from signal-networks.com (unknown [61.95.204.104])
+	by ozlabs.org (Postfix) with ESMTP id C8324DDE00
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Feb 2007 22:29:37 +1100 (EST)
-In-Reply-To: <200702131239.12984.arnd@arndb.de>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Porting JFFS2 to 2.4.6 kernel
+	Thu, 15 Feb 2007 22:36:43 +1100 (EST)
+Received: from pjmaiya ([192.168.1.70])
+	by signal-networks.com (mail.signal-networks.com [192.168.1.1])
+	(MDaemon Standard v9.0.1) with ESMTP id md50000070852.msg
+	for <linuxppc-embedded@ozlabs.org>; Thu, 15 Feb 2007 17:09:25 +0530
+Message-ID: <01a901c750f5$ef392de0$4601a8c0@signet>
+From: "pjmaiya" <pjmaiya@signal-networks.com>
+To: "pjmaiya" <pjmaiya@signal-networks.com>,
+	<bwarren@qstreams.com>
+References: <29DC34A6B43468409F5A371CFE34E849091044@ex01.ads.ubidyne.de><011b01c74b81$5604ad80$4601a8c0@signet><1170949359.14627.66.camel@saruman.qstreams.net>
+	<00c401c74c36$42aeded0$4601a8c0@signet>
+Subject: Re: CLI for embedded system
+Date: Thu, 15 Feb 2007 17:09:21 +0530
 MIME-Version: 1.0
-Message-ID: <OF73EC41DC.A2A75D66-ON65257283.003F718B-65257283.003F5CF1@lntemsys.com>
-From: Sendhilraj T <Sendhilraj.T@Lntemsys.com>
-Date: Thu, 15 Feb 2007 17:03:44 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 003F5CEA65257283_="
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,62 +29,65 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 003F5CEA65257283_=
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset="UTF-8"
+hi,
+    I have successfully complied and used 'clish' in host system (i686
+machine)
+But I need to port the same for PPC platform. Can anyone suggest me how to
+do the same.
 
-SGVsbG8gQWxsLA0KDQpOb3cgSSBjcmVhdGVkIGEgbmV3IHBhdGNoIGZpbGUgdG8gc3VwcG9ydCBK
-RkZTMiBpbiAyLjQuNiBmcm9tIDIuNC4xNi4NCkFmdGVyIGluY2x1ZGluZyB0aGUgcGF0Y2ggZm9y
-IEpGRlMyICwgSSByZXN0YXJ0ZWQgdGhlIGtlcm5lbCBhbmQgDQpJIGFtIGdldHRpbmcgc29tZSBl
-cnJvciBtZXNzYWdlcyBsaWtlIGJlbG93DQoNCkNoZWNraW5nIGZvciBVU0Igc3RpY2suLi4gIC9l
-dGMvcmMuZC9yY1MgIHVwZGF0ZS5zaA0KbW91bnQ6IC9kZXYvc2RhMTogdW5rbm93biBkZXZpY2UN
-Cm1vdW50OiAvZGV2L3NkYTogdW5rbm93biBkZXZpY2UNCi4uLiBkb25lDQoNCk1vdW50aW5nIGxv
-Y2FsIGZpbGUtc3lzdGVtcy4uLg0KDQoNCi4uLiBkb25lDQoNCg0KQnVtbWVyLCBjb3VsZCBub3Qg
-cnVuICcvdXNyL2xvY2FsL3NjaTogQ2Fubm90IGFsbG9jYXRlIGlycS4NCmdzOiBnc19jbG9zZTog
-YmFkIHBvcnQgY291bnQ6IC0xDQpwcmcvc3RhcnQnOiBObyBzdWNoIGZpbGUgb3IgZGlyZWN0b3J5
-DQpUcnlpbmcgdG8gZnJlZSBmcmVlIElSUTIzDQpUcnlpbmcgdG8gZnJlZSBmcmVlIElSUTI0DQpU
-cnlpbmcgdG8gZnJlZSBmcmVlIElSUTI1DQoNCihub25lKSBsb2dpbjoNCg0KDQpJIHdvdWxkIGxp
-a2UgdG8ga25vdyB3aGF0IHRoZXNlIGVycm9ycyBtZWFuLiBBbmQgSSB3b3VsZCBsaWtlIHRvIGtu
-b3cgaG93IA0KSSBjYW4gZml4IEl0Lj8NCg0KT25lIG1vcmUgcXVlc3Rpb24gZnJvbSBhIGJlZ2lu
-bmVyIChtZSnigKZJIHdvdWxkIGxpa2UgdG8ga25vdyBob3cgbXkgbmV3IA0Ka2VybmVsIGFmdGVy
-IHBhdGNoaW5nIHN1cHBvcnRzIEpGRlMyPw0KDQpMb29raW5nIGZvciB5b3VyIGhlbHAuDQoNClQu
-U2VudGhpbA0K
---=_alternative 003F5CEA65257283_=
-Content-Transfer-Encoding: base64
-Content-Type: text/html; charset="UTF-8"
+thanx in advace,
+pjmaiya
 
-DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9IkNvdXJpZXIgTmV3Ij5IZWxsbyBBbGwsPC9mb250Pg0K
-PGJyPg0KPGJyPjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+Tm93IEkgY3JlYXRlZCBh
-IG5ldyBwYXRjaCBmaWxlIHRvIHN1cHBvcnQNCkpGRlMyIGluIDIuNC42IGZyb20gMi40LjE2Ljwv
-Zm9udD4NCjxicj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPkFmdGVyIGluY2x1ZGlu
-ZyB0aGUgcGF0Y2ggZm9yIEpGRlMyDQosIEkgcmVzdGFydGVkIHRoZSBrZXJuZWwgYW5kIDwvZm9u
-dD4NCjxicj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPkkgYW0gZ2V0dGluZyBzb21l
-IGVycm9yIG1lc3NhZ2VzIGxpa2UNCmJlbG93PC9mb250Pg0KPGJyPg0KPGJyPjxmb250IHNpemU9
-MiBmYWNlPSJDb3VyaWVyIE5ldyI+Q2hlY2tpbmcgZm9yIFVTQiBzdGljay4uLiAmbmJzcDsvZXRj
-L3JjLmQvcmNTDQombmJzcDt1cGRhdGUuc2g8L2ZvbnQ+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9
-IkNvdXJpZXIgTmV3Ij5tb3VudDogL2Rldi9zZGExOiB1bmtub3duIGRldmljZTwvZm9udD4NCjxi
-cj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPm1vdW50OiAvZGV2L3NkYTogdW5rbm93
-biBkZXZpY2U8L2ZvbnQ+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9IkNvdXJpZXIgTmV3Ij4uLi4g
-ZG9uZTwvZm9udD4NCjxicj4NCjxicj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPk1v
-dW50aW5nIGxvY2FsIGZpbGUtc3lzdGVtcy4uLjwvZm9udD4NCjxicj4NCjxicj4NCjxicj48Zm9u
-dCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPi4uLiBkb25lPC9mb250Pg0KPGJyPg0KPGJyPg0K
-PGJyPjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+QnVtbWVyLCBjb3VsZCBub3QgcnVu
-ICcvdXNyL2xvY2FsL3NjaToNCkNhbm5vdCBhbGxvY2F0ZSBpcnEuPC9mb250Pg0KPGJyPjxmb250
-IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+Z3M6IGdzX2Nsb3NlOiBiYWQgcG9ydCBjb3VudDog
-LTE8L2ZvbnQ+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9IkNvdXJpZXIgTmV3Ij5wcmcvc3RhcnQn
-OiBObyBzdWNoIGZpbGUgb3IgZGlyZWN0b3J5PC9mb250Pg0KPGJyPjxmb250IHNpemU9MiBmYWNl
-PSJDb3VyaWVyIE5ldyI+VHJ5aW5nIHRvIGZyZWUgZnJlZSBJUlEyMzwvZm9udD4NCjxicj48Zm9u
-dCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPlRyeWluZyB0byBmcmVlIGZyZWUgSVJRMjQ8L2Zv
-bnQ+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9IkNvdXJpZXIgTmV3Ij5UcnlpbmcgdG8gZnJlZSBm
-cmVlIElSUTI1PC9mb250Pg0KPGJyPg0KPGJyPjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5l
-dyI+KG5vbmUpIGxvZ2luOjwvZm9udD4NCjxicj4NCjxicj4NCjxicj48Zm9udCBzaXplPTIgZmFj
-ZT0iQ291cmllciBOZXciPkkgd291bGQgbGlrZSB0byBrbm93IHdoYXQgdGhlc2UgZXJyb3JzDQpt
-ZWFuLiBBbmQgSSB3b3VsZCBsaWtlIHRvIGtub3cgaG93IEkgY2FuIGZpeCBJdC4/PC9mb250Pg0K
-PGJyPg0KPGJyPjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+T25lIG1vcmUgcXVlc3Rp
-b24gZnJvbSBhIGJlZ2lubmVyIChtZSnigKZJDQp3b3VsZCBsaWtlIHRvIGtub3cgaG93IG15IG5l
-dyBrZXJuZWwgYWZ0ZXIgcGF0Y2hpbmcgc3VwcG9ydHMgSkZGUzI/PC9mb250Pg0KPGJyPg0KPGJy
-Pjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+TG9va2luZyBmb3IgeW91ciBoZWxwLjwv
-Zm9udD4NCjxicj4NCjxicj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPlQuU2VudGhp
-bDwvZm9udD4NCg==
---=_alternative 003F5CEA65257283_=--
+----- Original Message ----- 
+From: "pjmaiya" <pjmaiya@signal-networks.com>
+To: <bwarren@qstreams.com>
+Cc: <linuxppc-embedded@ozlabs.org>
+Sent: Friday, February 09, 2007 4:07 PM
+Subject: Re: CLI for embedded system
+
+
+> Dear Ben,
+> Thanx for giving such a wonderful reference. We are going thru document,
+> hope we can use the same.
+>
+> rgds,
+> pjmaiya
+>
+> ----- Original Message ----- 
+> From: "Ben Warren" <bwarren@qstreams.com>
+> To: "pjmaiya" <pjmaiya@signal-networks.com>
+> Cc: <linuxppc-embedded@ozlabs.org>
+> Sent: Thursday, February 08, 2007 9:12 PM
+> Subject: Re: CLI for embedded system
+>
+>
+> > Pjmaiya,
+> >
+> > On Thu, 2007-02-08 at 18:32 +0530, pjmaiya wrote:
+> > > Hi,
+> > >    Can anybody give me link/built in package or source code for
+> > > implmenting CLI for embedded system on linux. We have tried to
+> > > implement our own CLI on linux(with bash shell as base), but it is
+> > > massive work since we need to support Tab feature, history
+> > > feature,help etc..
+> >
+> > If you're looking for something to emulate Cisco's IOS shell, there's an
+> > open source project called 'clish':
+> >
+> > http://sourceforge.net/projects/clish/
+> >
+> > I haven't really used this myself, so can't recommend for or against.
+> >
+> > regards,
+> > Ben
+> >
+> >
+>
+>
+>
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
+>
