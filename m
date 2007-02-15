@@ -1,17 +1,23 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 6AD56DDD01
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011-1.exch011.intermedia.net
+	(mis011-1.exch011.intermedia.net [64.78.21.128])
+	by ozlabs.org (Postfix) with ESMTP id 38942DDECE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Feb 2007 00:56:09 +1100 (EST)
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-To: jgarzik@pobox.com
-Subject: [PATCH v2, resend] gianfar: don't duplicate gfar_error()
-Date: Thu, 15 Feb 2007 17:56:01 +0400
+	Fri, 16 Feb 2007 02:55:07 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702151656.01313.sshtylyov@ru.mvista.com>
-Cc: netdev@vger.kernel.org, linuxppc-embedded@ozlabs.org
+	charset="us-ascii"
+Subject: RE: RE: How can I boot a program from flash on ML403?
+Date: Thu, 15 Feb 2007 07:55:05 -0800
+Message-ID: <406A31B117F2734987636D6CCC93EE3CB05893@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <000001c750d0$9e609d60$10b2a8c0@lorenzulm>
+References: <mailman.120.1171370674.21008.linuxppc-embedded@ozlabs.org>
+	<000001c74fa0$ce627870$10b2a8c0@lorenzulm>
+	<406A31B117F2734987636D6CCC93EE3CF9D7A1@ehost011-3.exch011.intermedia.net>
+	<000001c750d0$9e609d60$10b2a8c0@lorenzulm>
+From: "Leonid" <Leonid@a-k-a.net>
+To: "Lorenz Kolb" <linuxppcemb@lkmail.de>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,168 +28,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-It was hardly necessary to repeat most of the code from gfar_error() in
-gfar_interrupt(), especially having some inconsistencies between the two.
-So, make the gfar_interrupt() just call gfar_error(), and not acknowledge
-the interrupts itself as gfar_{receive/transmit/error}() do it anyway.
-While at it, also clarify/cleanup debug messages in gfar_error()...
+On Wednesday, February 14, 2007 11:12 PM Lorenz Kolb
+> > I use the same scheme (called 3-stage boot) but I don't see what is
+dirty
+> > about it. For testing/debugging you even can load u-boot directly
+into
+> > memory using XMD. Of course, image must be compiled to run from
+memory,=20
+> > not flash.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+> actually I call it dirty as SREC is a quite stupid format (for a=20
+> bootloader,
+> as it has to be decoded first) and so the loader wastes a lot of time
+at
+> least for productive use we do not want this three stage boot.
+[Leonid] When I use "3-stage boot" name I actually don't mean that SREC
+format used in production. This is too slow indeed. Here how it works
+for me:
+- u-boot is ALWAYS compiled to run directly from RAM. You can place it
+on flash using JTAG or u-boot itself on later stage (see below).
+Compilation results include binary (for flash burning), ELF and SREC
+files.
+- Early boot (tiny BRAM based program) wakes up, checks whether u-boot
+presents on the flash (can be different criteria) or wait for some input
+or read some config to know where pick up u-boot from. If it's on the
+flash already, early boot copies u-boot to RAM and launches it,
+otherwise waits for SREC file to be sent via serial interface, copies it
+into RAM and starts.
+- u-boot does the rest of job (linux boot, etc...). On this stage you
+can use u-boot to program u-boot image (compiled to run from RAM) onto
+the flash for next reboot.
 
----
-The patch survived netperf stressing on MPC8540ADS realtime kernel. :-)
+This scheme works perfectly for ARM, Xilinx and actually is a good
+choice for any architecture where CPU itself fetches boot code from boot
+location into memory (ARM) or code can reside in RAM from the very
+beginning (FPGA with soft/hard CPU cores). In traditional approach (with
+relocation) u-boot kind of contains both functionalities which probably
+best choice for traditional PPC boards. =20
 
-Sorry, forgot to remove the obsolete regs argument from gfar_error() call,
-call, so the previous version wasn't even compilable -- I've tested the patch
-in the older kernel. Resending now with better placed comments which you won't
-have to edit out... :-<
+> Actually my partner and I even fitted an u-boot directly into BRAM (if
+it > is loaded via XMD),=20
+[Leonid] I also use XMD but load u-boot ELF directly to RAM. Early boot
+is not used in this setup and this is quickest and most convenient way
+for debug.
 
- drivers/net/gianfar.c |   85 ++++++++------------------------------------------
- 1 files changed, 15 insertions(+), 70 deletions(-)
+Best Regards,
 
-Index: linux-2.6/drivers/net/gianfar.c
-===================================================================
---- linux-2.6.orig/drivers/net/gianfar.c
-+++ linux-2.6/drivers/net/gianfar.c
-@@ -10,6 +10,7 @@
-  * Maintainer: Kumar Gala
-  *
-  * Copyright (c) 2002-2006 Freescale Semiconductor, Inc.
-+ * Copyright (c) 2007 MontaVista Software, Inc.
-  *
-  * This program is free software; you can redistribute  it and/or modify it
-  * under  the terms of  the GNU General  Public License as published by the
-@@ -1613,71 +1614,17 @@ static irqreturn_t gfar_interrupt(int ir
- 	/* Save ievent for future reference */
- 	u32 events = gfar_read(&priv->regs->ievent);
- 
--	/* Clear IEVENT */
--	gfar_write(&priv->regs->ievent, events);
--
- 	/* Check for reception */
--	if ((events & IEVENT_RXF0) || (events & IEVENT_RXB0))
-+	if (events & IEVENT_RX_MASK)
- 		gfar_receive(irq, dev_id);
- 
- 	/* Check for transmit completion */
--	if ((events & IEVENT_TXF) || (events & IEVENT_TXB))
-+	if (events & IEVENT_TX_MASK)
- 		gfar_transmit(irq, dev_id);
- 
--	/* Update error statistics */
--	if (events & IEVENT_TXE) {
--		priv->stats.tx_errors++;
--
--		if (events & IEVENT_LC)
--			priv->stats.tx_window_errors++;
--		if (events & IEVENT_CRL)
--			priv->stats.tx_aborted_errors++;
--		if (events & IEVENT_XFUN) {
--			if (netif_msg_tx_err(priv))
--				printk(KERN_WARNING "%s: tx underrun. dropped packet\n", dev->name);
--			priv->stats.tx_dropped++;
--			priv->extra_stats.tx_underrun++;
--
--			/* Reactivate the Tx Queues */
--			gfar_write(&priv->regs->tstat, TSTAT_CLEAR_THALT);
--		}
--	}
--	if (events & IEVENT_BSY) {
--		priv->stats.rx_errors++;
--		priv->extra_stats.rx_bsy++;
--
--		gfar_receive(irq, dev_id);
--
--#ifndef CONFIG_GFAR_NAPI
--		/* Clear the halt bit in RSTAT */
--		gfar_write(&priv->regs->rstat, RSTAT_CLEAR_RHALT);
--#endif
--
--		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: busy error (rhalt: %x)\n",
--					dev->name,
--					gfar_read(&priv->regs->rstat));
--	}
--	if (events & IEVENT_BABR) {
--		priv->stats.rx_errors++;
--		priv->extra_stats.rx_babr++;
--
--		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: babbling error\n", dev->name);
--	}
--	if (events & IEVENT_EBERR) {
--		priv->extra_stats.eberr++;
--		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: EBERR\n", dev->name);
--	}
--	if ((events & IEVENT_RXC) && (netif_msg_rx_err(priv)))
--			printk(KERN_DEBUG "%s: control frame\n", dev->name);
--
--	if (events & IEVENT_BABT) {
--		priv->extra_stats.tx_babt++;
--		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: babt error\n", dev->name);
--	}
-+	/* Check for errors */
-+	if (events & IEVENT_ERR_MASK)
-+		gfar_error(irq, dev_id);
- 
- 	return IRQ_HANDLED;
- }
-@@ -1939,7 +1886,7 @@ static irqreturn_t gfar_error(int irq, v
- 	/* Hmm... */
- 	if (netif_msg_rx_err(priv) || netif_msg_tx_err(priv))
- 		printk(KERN_DEBUG "%s: error interrupt (ievent=0x%08x imask=0x%08x)\n",
--				dev->name, events, gfar_read(&priv->regs->imask));
-+		       dev->name, events, gfar_read(&priv->regs->imask));
- 
- 	/* Update the error counters */
- 	if (events & IEVENT_TXE) {
-@@ -1951,8 +1898,8 @@ static irqreturn_t gfar_error(int irq, v
- 			priv->stats.tx_aborted_errors++;
- 		if (events & IEVENT_XFUN) {
- 			if (netif_msg_tx_err(priv))
--				printk(KERN_DEBUG "%s: underrun.  packet dropped.\n",
--						dev->name);
-+				printk(KERN_DEBUG "%s: TX FIFO underrun, "
-+				       "packet dropped.\n", dev->name);
- 			priv->stats.tx_dropped++;
- 			priv->extra_stats.tx_underrun++;
- 
-@@ -1974,30 +1921,28 @@ static irqreturn_t gfar_error(int irq, v
- #endif
- 
- 		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: busy error (rhalt: %x)\n",
--					dev->name,
--					gfar_read(&priv->regs->rstat));
-+			printk(KERN_DEBUG "%s: busy error (rstat: %x)\n",
-+			       dev->name, gfar_read(&priv->regs->rstat));
- 	}
- 	if (events & IEVENT_BABR) {
- 		priv->stats.rx_errors++;
- 		priv->extra_stats.rx_babr++;
- 
- 		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: babbling error\n", dev->name);
-+			printk(KERN_DEBUG "%s: babbling RX error\n", dev->name);
- 	}
- 	if (events & IEVENT_EBERR) {
- 		priv->extra_stats.eberr++;
- 		if (netif_msg_rx_err(priv))
--			printk(KERN_DEBUG "%s: EBERR\n", dev->name);
-+			printk(KERN_DEBUG "%s: bus error\n", dev->name);
- 	}
- 	if ((events & IEVENT_RXC) && netif_msg_rx_status(priv))
--		if (netif_msg_rx_status(priv))
--			printk(KERN_DEBUG "%s: control frame\n", dev->name);
-+		printk(KERN_DEBUG "%s: control frame\n", dev->name);
- 
- 	if (events & IEVENT_BABT) {
- 		priv->extra_stats.tx_babt++;
- 		if (netif_msg_tx_err(priv))
--			printk(KERN_DEBUG "%s: babt error\n", dev->name);
-+			printk(KERN_DEBUG "%s: babbling TX error\n", dev->name);
- 	}
- 	return IRQ_HANDLED;
- }
+Leonid.
