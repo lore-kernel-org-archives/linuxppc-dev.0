@@ -1,20 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 15 Feb 2007 12:53:16 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17875.49565.444870.924729@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Feb 2007 13:12:45 +1100
+From: Paul Mackerras <paulus@samba.org>
 To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 15/16] Add device tree for Ebony
-Message-ID: <20070215015316.GL16279@localhost.localdomain>
+In-Reply-To: <122a66d49480520cf87cd748bbfc50bb@kernel.crashing.org>
 References: <20070213060904.GA6214@localhost.localdomain>
 	<20070213061026.5837FDDDE9@ozlabs.org>
 	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
 	<1171470754.4003.101.camel@zod.rchland.ibm.com>
 	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
-	<20070214232246.GE16279@localhost.localdomain>
-	<fbff2510963c6c5bb9d5ccb0574f97b1@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <fbff2510963c6c5bb9d5ccb0574f97b1@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B86F@az33exm25.fsl.freescale.net>
+	<9df9bf3adf511f4c1a7945e022fdd447@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
+	<1171489360.20192.184.camel@localhost.localdomain>
+	<122a66d49480520cf87cd748bbfc50bb@kernel.crashing.org>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +28,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 15, 2007 at 01:31:36AM +0100, Segher Boessenkool wrote:
-> >>> No, they are cascaded in hardware.  I think having UIC1 under UCI0 
-> >>> is a
-> >>> correct representation.
-> >>
-> >> Only the interrupt routing is cascaded AFAICS, and
-> >> there is a separate interrupt tree to express that.
-> >
-> > In the case of the UICs, I don't see that there's anything "only"
-> > about the interrupt routing.  They're DCR controlled, and are not on
-> > the normal bus.
-> 
-> Yes.  UIC1 is not addressed via UIC0, and as such should
-> not be a child of it; it should be a direct child of its DCR
-> controller, just like UIC0.
+Segher Boessenkool writes:
 
-No, the DCR tree, like the interrupt tree in most cases, is
-independent of the main tree structure.  The ultimate DCR parent is
-the CPU node.  I see no reason to prefer the DCR connection over the
-interrupt connection for the nesting here.
+> Exactly.  The "separate device tree" imitates a real OF,
+> so you will lose much of its value if you start to deviate
+> from how real OF works.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I disagree.  It was never (and isn't now) the intention to put all of
+the OF requirements on the device tree supplied on OF-less systems.
+
+In other words, "we should do X because the bindings require it" isn't
+of itself an argument for making X a requirement on the device tree.
+"We should do X because there are good technical reasons for doing it
+that way" is.  "We should do X because if we don't then device trees
+from real OF systems won't be compatible" is also a reasonable
+argument.
+
+The device tree is required because it is a flexible way to give
+useful information to the kernel.  Thus the focus is quite properly on
+what is useful (or at least potentially useful) to the Linux kernel,
+not on what some binding document says.
+
+Paul.
