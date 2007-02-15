@@ -1,30 +1,25 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 28C7BDDEFC
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 08:46:03 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l1FLk09W016924
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 14:46:00 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1FLk03c011151
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 15:46:00 -0600 (CST)
+Return-Path: <tnt@246tNt.com>
+Received: from outmx023.isp.belgacom.be (outmx023.isp.belgacom.be
+	[195.238.4.204])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A6808DDE41
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 09:18:57 +1100 (EST)
+Received: from outmx023.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx023.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l1FMIrwV028996
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 23:18:53 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45D4DC20.9070506@246tNt.com>
+Date: Thu, 15 Feb 2007 23:18:08 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: purpose of /chosen node (was RE: [PATCH] powerpc: delete boot-cpu
-	and chosen nodes from all DTSfiles)
-Date: Thu, 15 Feb 2007 14:45:59 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BC91@az33exm25.fsl.freescale.net>
-In-Reply-To: <B8882F02-616E-4E71-BECC-82BDE5D88A4E@kernel.crashing.org>
-References: <11713852392294-git-send-email-timur@freescale.com><20070214003119.GF11491@localhost.localdomain><45D29BBA.7090401@freescale.com><20070214052440.GB12609@localhost.localdomain><45D31734.7030808@freescale.com><20070214233348.GH16279@localhost.localdomain>
-	<c8fe6c9c19018243871df0fb9ed23a0b@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1BC76@az33exm25.fsl.freescale.net>
-	<B8882F02-616E-4E71-BECC-82BDE5D88A4E@kernel.crashing.org>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+To: Paul Mackerras <paulus@samba.org>, Linux PPC dev <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] powerpc/serial: Dispose irq mapping when done in
+	mpc52xx_serial.c
+References: <11713184081457-git-send-email-tnt@246tNt.com>
+In-Reply-To: <11713184081457-git-send-email-tnt@246tNt.com>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,57 +29,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
+---
+Hi Paulus,
 
-> -----Original Message-----
-> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
-> Sent: Thursday, February 15, 2007 3:39 PM
-> To: Yoder Stuart-B08248
-> Cc: Segher Boessenkool; Benjamin Herrenschmidt;=20
-> linuxppc-dev@ozlabs.org
-> Subject: Re: purpose of /chosen node (was RE: [PATCH]=20
-> powerpc: delete boot-cpu and chosen nodes from all DTSfiles)
->=20
->=20
-> On Feb 15, 2007, at 3:26 PM, Yoder Stuart-B08248 wrote:
-> >> -----Original Message-----
-> >> From: linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org
-> >> [mailto:linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org]
-> >> On Behalf Of Segher Boessenkool
-> >> Sent: Wednesday, February 14, 2007 7:40 PM
-> >> To: David Gibson
-> >> Cc: linuxppc-dev@ozlabs.org; Tabi Timur-B04825
-> >> Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen
-> >> nodes from all DTSfiles
-> >>
-> >>> My point is that the interrupt-controller property in
-> >> /chosen *should*
-> >>> be there, but it doesn't make a lot of sense for it to be=20
-> set by the
-> >>> bootloader (because it's a fixed property of the board).
-> >>
-> >> And that means it shouldn't be in /chosen at all.  It's not
-> >> just a fixed property of the board, it is a physical property
-> >> of the board.  It doesn't belong in /chosen.
-> >
-> > I agree with Segher here.  The interrupt-controller property doesn't
-> > belong in /chosen.
-> >
-> > The 1275 OF spec says about /chosen:
-> >
-> >    Has properties describing parameters chosen or specified at
-> >    runtime.
->=20
-> I want to reiterate something Paul mentioned, any similarity=20
-> that the =20
-> device tree has to 1275 is strictly coincidental.
+This is a 'fixed' version of the uart patch. The test on port->irq != NO_IRQ is
+removed. But I added a check for port because it might be NULL ...
 
-I understand that point, but mixing the types of properties in
-/chosen doesn't buy us anything.  We shouldn't be shackled by
-the 1275 spec, but having nodes like /chosen with designated
-purpose architecturally make sense.
+	Sylvain
+---
+ drivers/serial/mpc52xx_uart.c |    4 +++-
+ 1 files changed, 3 insertions(+), 1 deletions(-)
 
-/chosen shouldn't be a catch-all or a convenient place to stick
-stuff.  I think in this case following 1275 is a good thing.
+diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
+index 955bbd6..8d24cd5 100644
+--- a/drivers/serial/mpc52xx_uart.c
++++ b/drivers/serial/mpc52xx_uart.c
+@@ -995,8 +995,10 @@ mpc52xx_uart_of_remove(struct of_device 
+ 	struct uart_port *port = dev_get_drvdata(&op->dev);
+ 	dev_set_drvdata(&op->dev, NULL);
+ 
+-	if (port)
++	if (port) {
+ 		uart_remove_one_port(&mpc52xx_uart_driver, port);
++		irq_dispose_mapping(port->irq);
++	}
+ 
+ 	return 0;
+ }
 
-Stuart
+-- 
+1.4.2
