@@ -1,20 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 8F6A0DDEE5
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 07:55:17 +1100 (EST)
-Message-ID: <45D4C8AF.80607@freescale.com>
-Date: Thu, 15 Feb 2007 14:55:11 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Carl Love <cel@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH] CELL Oprofile SPU profiling =?iso-8859-15?q?updated=09patch?=
+Date: Thu, 15 Feb 2007 22:03:59 +0100
+References: <1171497138.23691.8.camel@dyn9047021078.beaverton.ibm.com>
+	<200702151537.51202.arnd@arndb.de>
+	<1171570918.31179.36.camel@dyn9047021078.beaverton.ibm.com>
+In-Reply-To: <1171570918.31179.36.camel@dyn9047021078.beaverton.ibm.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: add of_get_mac_address() and update fsl_soc.c
-	to use it
-References: <1171408247467-git-send-email-timur@freescale.com>
-	<1171411219.20192.118.camel@localhost.localdomain>
-	<01b23edfa0a058ae8a119594abb51e01@kernel.crashing.org>
-In-Reply-To: <01b23edfa0a058ae8a119594abb51e01@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200702152203.59902.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,45 +23,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>> +    return get_property(np, "address", NULL);
->>
->> Since there is so much room for confusion with "address", please at
->> least do some basic sanity checking, like check that it's size is 6
->> bytes and maybe that the multicast bit isn't set.
-> 
-> Preferably, don't use "address" at all -- there shouldn't
+On Thursday 15 February 2007 21:21, Carl Love wrote:
 
-Unfortunately, I really don't have that luxury.  I *must* support 'address'.
+> I have done some quick measurements. =A0The above method limits the loop
+> to at most 2^16 iterations. =A0Based on running the algorithm in user
+> space, it takes about 3ms of computation time to do the loop 2^16 times.
+>=20
+> At the vary least, we need to put the resched in say every 10,000
+> iterations which would be about every 0.5ms. =A0Should we do a resched
+> more often? =A0
 
-> be any trees in the wild that use it.  If there actually
-> are some, the should use a quirk to change it to "local-
-> mac-address" instead.
+Yes, just to be on the safe side, I'd suggest to do it every 1000
+iterations.
+=20
+> Additionally we could up the size of the table to 512 which would reduce
+> the maximum time to about 1.5ms. =A0What do people think about increasing
+> the table size?
 
-The whole point behind checking for 'address' is to support older device trees 
-that have only that property.  We have a problem where some installations use 
-'address', and if we don't support it here in the kernel, then the kernel won't 
-boot.
+No, that won't help too much. I'd say 256 or 128 entries is the most
+we should have.
 
-> This holds in general: workarounds for gross errors in
-> device trees should be applied much more selectively
-> than is done now, it just doesn't scale this way.
+> As for using a logarithmic spacing of the precomputed values, this
+> approach means that the space between the precomputed values at the high
+> end would be much larger then 2^14, assuming 256 precomputed values.
+> That means it could take much longer then 3ms to get the needed LFSR
+> value for a large N. =A0By evenly spacing the precomputed values, we can
+> ensure that for all N it will take less then 3ms to get the value.
+> Personally, I am more comfortable with a hard limit on the compute time
+> then a variable time that could get much bigger then the 1ms threshold
+> that Arnd wants for resched. =A0Any thoughts?
 
-There are trees in the kernel today that have 'address' in them.  Before I can 
-fix the trees, though, I need to update U-Boot and the kernel to support 
-local-mac-address *without* breaking support for older trees.  That's why this 
-patch is written the way it is.
+When using precomputed values on a logarithmic scale, I'd recommend
+just rounding to the closest value and accepting the relative inaccuracy,
+instead of using the precomputed value as the base and then calculating
+from there.
 
-I have patches for U-Boot already out there, although currently none of the 
-U-Boot maintainers have indicated a willingness to apply them.
-
-This whole local-mac-address mess needs to be fixed in an iterative process. 
-One day, we can remove the check for 'address' from of_get_mac_address(), but 
-not yet.
-
-I've implemented all the other suggestion so far.  I *really* need this patch to 
-go in as is.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+	Arnd <><
