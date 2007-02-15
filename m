@@ -1,15 +1,18 @@
-Return-Path: <paul.gortmaker@windriver.com>
-Received: from yow-pgortmak-d1.corp.ad.wrs.com (unknown [67.71.254.34])
-	by ozlabs.org (Postfix) with ESMTP id 61B64DDF25
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 05:13:30 +1100 (EST)
-Date: Thu, 15 Feb 2007 12:43:06 -0500
-From: Paul Gortmaker <paul.gortmaker@windriver.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix compile failure in cpm_uart_cpm2
-Message-ID: <20070215174305.GA2820@windriver.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: Maynard Johnson <maynardj@us.ibm.com>
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH] CELL Oprofile SPU profiling updated patch
+Date: Thu, 15 Feb 2007 19:13:52 +0100
+References: <1171497138.23691.8.camel@dyn9047021078.beaverton.ibm.com>
+	<200702151537.51202.arnd@arndb.de> <45D4870C.9070908@us.ibm.com>
+In-Reply-To: <45D4870C.9070908@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: p_gortmaker@yahoo.com
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702151913.53594.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Carl Love <cel@us.ibm.com>, cbe-oss-dev@ozlabs.org,
+	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,20 +22,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix bug that exists in kernel.org since 2.6.17rc4 - compiles fail if
-CONFIG_SERIAL_CPM_SMC is defined.  Tested on a board using SMC1 console.
+On Thursday 15 February 2007 17:15, Maynard Johnson wrote:
+> >>+void spu_set_profile_private(struct spu_context * ctx, void * profile_=
+info,
+> >>+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =A0 =
+=A0 struct kref * prof_info_kref,
+> >>+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =A0 =
+=A0 void (* prof_info_release) (struct kref * kref))
+> >>+{
+> >>+=A0=A0=A0=A0=A0ctx->profile_private =3D profile_info;
+> >>+=A0=A0=A0=A0=A0ctx->prof_priv_kref =3D prof_info_kref;
+> >>+=A0=A0=A0=A0=A0ctx->prof_priv_release =3D prof_info_release;
+> >>+}
+> >>+EXPORT_SYMBOL_GPL(spu_set_profile_private);
+> >> =A0 =A0
+> >>
+> >
+> >I think you don't need the profile_private member here, if you just use
+> >container_of with ctx->prof_priv_kref in all users.
+> > =A0
+> >
+> Sorry, I don't follow. We want the profile_private to be stored in the=20
+> spu_context, don't we? =A0How else would I be able to do that? =A0And=20
+> besides, wouldn't container_of need the struct name of profile_private? =
+=A0
+> SPUFS doesn't have access to the type.
 
-Signed-off-by: Paul Gortmaker <paul.gortmaker@windriver.com>
----
+The idea was to have spu_get_profile_private return the kref pointer,
+and then change the user of that to do
 
---- linux-2.6.20/drivers/serial/cpm_uart/cpm_uart_cpm2.c~	2007-02-07 14:07:47.778573326 -0500
-+++ linux-2.6.20/drivers/serial/cpm_uart/cpm_uart_cpm2.c	2007-02-07 14:07:58.248391885 -0500
-@@ -285,7 +285,7 @@
- int __init cpm_uart_init_portdesc(void)
- {
- #if defined(CONFIG_SERIAL_CPM_SMC1) || defined(CONFIG_SERIAL_CPM_SMC2)
--	u32 addr;
-+	u16 *addr;
- #endif
- 	pr_debug("CPM uart[-]:init portdesc\n");
- 
++       if (!spu_info[spu_num] && the_spu) {
++               spu_info[spu_num] =3D container_of(
++				spu_get_profile_private(the_spu->ctx),
++				struct cached_info, cache_kref);
++               if (spu_info[spu_num])
++                       kref_get(&spu_info[spu_num]->cache_ref);
