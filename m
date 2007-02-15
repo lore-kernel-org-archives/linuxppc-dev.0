@@ -1,33 +1,28 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A649ADDEFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 03:51:49 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l1FGpjkG081056
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:51:45 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l1FGpjPu925864
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:51:45 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l1FGpiBI016324
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:51:44 GMT
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	johnrose@us.ibm.com
-Subject: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition and removal of
-	adapters
-Date: Thu, 15 Feb 2007 17:55:12 +0100
+Return-Path: <stuart.yoder@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 35E6FDDE36
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 04:02:17 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l1FH2E5l013051
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 10:02:14 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l1FH2DUj015947
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 11:02:13 -0600 (CST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200702151755.13009.hnguyen@linux.vnet.ibm.com>
-Cc: fenkes@de.ibm.com, pmac@au1.ibm.com
+	charset="us-ascii"
+Subject: RE: [PATCH 15/16] Add device tree for Ebony 
+Date: Thu, 15 Feb 2007 10:02:12 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BAF0@az33exm25.fsl.freescale.net>
+In-Reply-To: <865018a527ef1056f628250167301e64@kernel.crashing.org>
+References: <20070213061026.5837FDDDE9@ozlabs.org><e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org><20070214002210.GE11491@localhost.localdomain><45afe653a3f963e21e58a063c09b1b22@kernel.crashing.org><20070214231734.GC16279@localhost.localdomain><90e2bb990b7e1f46c6eaccd1d9255d77@kernel.crashing.org><E1HHhCD-0004Hf-QT@jdl.com>
+	<865018a527ef1056f628250167301e64@kernel.crashing.org>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "Segher Boessenkool" <segher@kernel.crashing.org>,
+	"Jon Loeliger" <jdl@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,242 +32,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch will add two sysfs attributes to /sys/bus/ibmebus which can be used
-to notify the ebus driver of added / removed ebus devices in the OF device
-tree.
+=20
 
-Echoing the device's location code (as found in the OFDT "ibm,loc-code"
-property) into the "probe" attribute will notify ebus of addition of the device
-and cause the appropriate device driver's probe function to be called on the
-device.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org=20
+> [mailto:linuxppc-dev-bounces+b08248=3Dfreescale.com@ozlabs.org]=20
+> On Behalf Of Segher Boessenkool
+> Sent: Thursday, February 15, 2007 8:57 AM
+> To: Jon Loeliger
+> Cc: linuxppc-dev@ozlabs.org; David Gibson
+> Subject: Re: [PATCH 15/16] Add device tree for Ebony=20
+>=20
+> >> The first option.  Anywhere a number can be used, "d# xxx"
+> >> would mean decimal.
+> >>
+> >> When you would say <d# 1234  5678>, 1234 is decimal and
+> >> 5678 is hexadecimal.
+> >
+> > Where do the tokens end?  Is "d#1234" valid and equal to "d# 1234"?
+> > Or is "d#" an independent token?
+>=20
+> In OF, there has to be whitespace inbetween.
+>=20
+> > And are there other bases to
+> > this model?  Like, maybe, "b#", "o#" and "h#" as well?
+>=20
+> o# d# h# are standard defined; b# exists on many implementations.
 
-Likewise, echoing the location code into the "remove" attribute will cause
-the device to be removed from the system.
+1275 specifies whitespace inbetween, but isn't this due to=20
+the way they are describing things for the forth / stack-based
+operations?
 
-Additionally, the uevent interface is now implemented in the driver.
+I would prefer in the DTS files to have no whitespace in=20
+between--  <d#1234 #h5678> seems much more readable
+than <d# 1234 #h 5678>.
 
+Or even better-- just use standard C notation
+    <1234 0x5678>
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
+That is very readable.  Why bring unnecessary complexity into
+this?
 
-
- arch/powerpc/kernel/ibmebus.c |  121 +++++++++++++++++++++++++++++++++++++++---
- include/asm-powerpc/ibmebus.h |    2 
- 2 files changed, 114 insertions(+), 9 deletions(-)
-
-
-diff -wurp linux-2.6.20/arch/powerpc/kernel/ibmebus.c linux-2.6.20-ebus/arch/powerpc/kernel/ibmebus.c
---- linux-2.6.20/arch/powerpc/kernel/ibmebus.c	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.20-ebus/arch/powerpc/kernel/ibmebus.c	2007-02-14 17:58:00.000000000 +0100
-@@ -2,6 +2,7 @@
-  * IBM PowerPC IBM eBus Infrastructure Support.
-  *
-  * Copyright (c) 2005 IBM Corporation
-+ *  Joachim Fenkes <fenkes@de.ibm.com>
-  *  Heiko J Schick <schickhj@de.ibm.com>
-  *    
-  * All rights reserved.
-@@ -44,7 +45,6 @@
- #include <asm/abs_addr.h>
- 
- static struct ibmebus_dev ibmebus_bus_device = { /* fake "parent" device */
--	.name = ibmebus_bus_device.ofdev.dev.bus_id,
- 	.ofdev.dev.bus_id = "ibmebus",
- 	.ofdev.dev.bus    = &ibmebus_bus_type,
- };
-@@ -161,7 +161,9 @@ static void __devinit ibmebus_dev_releas
- static ssize_t ibmebusdev_show_name(struct device *dev, 
- 				    struct device_attribute *attr, char *buf)
- {
--	return sprintf(buf, "%s\n", to_ibmebus_dev(dev)->name);
-+	struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
-+	char *name = (char*)get_property(ebus_dev->ofdev.node, "name", NULL);
-+	return sprintf(buf, "%s\n", name);
- }
- static DEVICE_ATTR(name, S_IRUSR | S_IRGRP | S_IROTH, ibmebusdev_show_name, 
- 		   NULL);
-@@ -171,7 +173,6 @@ static struct ibmebus_dev* __devinit ibm
- {
- 	int err = 0;
- 
--	dev->name = name;
- 	dev->ofdev.dev.parent  = &ibmebus_bus_device.ofdev.dev;
- 	dev->ofdev.dev.bus     = &ibmebus_bus_type;
- 	dev->ofdev.dev.release = ibmebus_dev_release;
-@@ -262,11 +263,19 @@ static void ibmebus_add_devices_by_id(st
- 	return;
- }
- 
--static int ibmebus_match_helper(struct device *dev, void *data)
-+static int ibmebus_match_helper_name(struct device *dev, void *data)
- {
--	if (strcmp((char*)data, to_ibmebus_dev(dev)->name) == 0)
--		return 1;
-+	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
-+	char *name;
- 	
-+	/* parent device has no of_device node, so skip it */
-+	if (ebus_dev != &ibmebus_bus_device) {
-+		name = (char*)get_property(
-+			ebus_dev->ofdev.node, "name", NULL);
-+	
-+		if (name && (strcmp((char*)data, name) == 0))
-+			return 1;
-+	}
- 	return 0;
- }
- 
-@@ -285,11 +294,10 @@ static void ibmebus_remove_devices_by_id
- 	while (strlen(idt->name) > 0) {
- 		while ((dev = bus_find_device(&ibmebus_bus_type, NULL, 
- 					      (void*)idt->name,
--					      ibmebus_match_helper))) {
-+					      ibmebus_match_helper_name))) {
- 			ibmebus_unregister_device(dev);
- 		}
- 		idt++;
--		
- 	}
- 	
- 	return;
-@@ -307,6 +315,9 @@ int ibmebus_register_driver(struct ibmeb
- 	if ((err = driver_register(&drv->driver) != 0))
- 		return err;
- 
-+	/* remove all supported devices first, in case someone
-+	 * probed them manually before registering the driver */
-+	ibmebus_remove_devices_by_id(drv->id_table);
- 	ibmebus_add_devices_by_id(drv->id_table);
- 	
- 	return 0;
-@@ -361,12 +372,101 @@ static int ibmebus_bus_match(struct devi
- 	return 0;
- }
- 
-+static int ibmebus_uevent(struct device *dev, char **envp, int num_envp,
-+			char *buffer, int buffer_size)
-+{
-+	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
-+	char *name, *cp, *loc_code;
-+	int length;
-+
-+	if (!num_envp)
-+		return -ENOMEM;
-+
-+	if (!ebus_dev->ofdev.node)
-+		return -ENODEV;
-+
-+	name = (char *)get_property(ebus_dev->ofdev.node, "name", NULL);
-+	cp = (char *)get_property(ebus_dev->ofdev.node, "compatible", NULL);
-+	loc_code = (char *)get_property(ebus_dev->ofdev.node,
-+					"ibm,loc-code", NULL);
-+	if (!(name && cp && loc_code))
-+		return -ENODEV;
-+
-+	envp[0] = buffer;
-+	length = scnprintf(buffer, buffer_size,
-+			   "MODALIAS=ibmebus:T%s:S%s:L%s",
-+			   name, cp, loc_code);
-+	if (buffer_size - length <= 0)
-+		return -ENOMEM;
-+	envp[1] = NULL;
-+
-+	return 0;
-+}
-+
- struct bus_type ibmebus_bus_type = {
- 	.name = "ibmebus",
-+	.uevent = ibmebus_uevent,
- 	.match = ibmebus_bus_match,
- };
- EXPORT_SYMBOL(ibmebus_bus_type);
- 
-+static int ibmebus_match_helper_loc_code(struct device *dev, void *data)
-+{
-+	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
-+	char *loc_code;
-+
-+	/* parent device has no of_device node, so skip it */
-+	if (ebus_dev != &ibmebus_bus_device) {
-+		loc_code = (char*)get_property(
-+			ebus_dev->ofdev.node, "ibm,loc-code", NULL);
-+
-+		if (loc_code && (strcmp((char*)data, loc_code) == 0))
-+			return 1;
-+	}
-+	return 0;
-+}
-+
-+static ssize_t ibmebus_store_probe(struct bus_type *dev,
-+				   const char *buf, size_t count)
-+{
-+	struct device_node *dn = NULL;
-+	char *loc_code;
-+
-+	if (bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
-+			     ibmebus_match_helper_loc_code)) {
-+		printk(KERN_WARNING "%s: loc_code %s has already been probed\n",
-+		       __FUNCTION__, buf);
-+		return count;
-+	}
-+
-+	while ((dn = of_find_all_nodes(dn))) {
-+		loc_code = (char *)get_property(dn, "ibm,loc-code", NULL);
-+		if (loc_code && (strncmp(loc_code, buf, count) == 0)) {
-+			if (ibmebus_register_device_node(dn) == NULL) {
-+				of_node_put(dn);
-+				break;
-+			}
-+		}
-+	}
-+
-+	return count;
-+}
-+static BUS_ATTR(probe, S_IWUSR, NULL, ibmebus_store_probe);
-+
-+static ssize_t ibmebus_store_remove(struct bus_type *bus,
-+				    const char *buf, size_t count)
-+{
-+	struct device *dev;
-+
-+	while ((dev = bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
-+				      ibmebus_match_helper_loc_code))) {
-+		ibmebus_unregister_device(dev);
-+	}
-+
-+	return count;
-+}
-+static BUS_ATTR(remove, S_IWUSR, NULL, ibmebus_store_remove);
-+
- static int __init ibmebus_bus_init(void)
- {
- 	int err;
-@@ -389,6 +489,9 @@ static int __init ibmebus_bus_init(void)
- 		return err;
- 	}
- 	
-+	bus_create_file(&ibmebus_bus_type, &bus_attr_probe);
-+	bus_create_file(&ibmebus_bus_type, &bus_attr_remove);
-+
- 	return 0;
- }
- __initcall(ibmebus_bus_init);
-diff -wurp linux-2.6.20/include/asm-powerpc/ibmebus.h linux-2.6.20-ebus/include/asm-powerpc/ibmebus.h
---- linux-2.6.20/include/asm-powerpc/ibmebus.h	2007-02-04 19:44:54.000000000 +0100
-+++ linux-2.6.20-ebus/include/asm-powerpc/ibmebus.h	2007-02-14 17:58:55.000000000 +0100
-@@ -2,6 +2,7 @@
-  * IBM PowerPC eBus Infrastructure Support.
-  *
-  * Copyright (c) 2005 IBM Corporation
-+ *  Joachim Fenkes <fenkes@de.ibm.com>
-  *  Heiko J Schick <schickhj@de.ibm.com>
-  *    
-  * All rights reserved.
-@@ -47,7 +48,6 @@
- extern struct bus_type ibmebus_bus_type;
- 
- struct ibmebus_dev {	
--	const char *name;
- 	struct of_device ofdev;
- };
- 
+Stuart
