@@ -1,34 +1,19 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate5.de.ibm.com (mtagate5.de.ibm.com [195.212.29.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate5.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C592EDDF28
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 03:04:03 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate5.de.ibm.com (8.13.8/8.13.8) with ESMTP id l1FG3xkm122382
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:03:59 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l1FG3wdq1577110
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 17:03:58 +0100
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l1FG3vjM012949
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 17:03:58 +0100
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: Roland Dreier <rdreier@cisco.com>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, openib-general@openib.org, hch@infradead.org,
-	bos@pathscale.com
-Subject: [PATCH 2.6.21-rc1 2/5] ehca: fix race condition/locking issues in
-	scaling code
-Date: Thu, 15 Feb 2007 17:07:30 +0100
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 143D6DDD01
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 03:04:43 +1100 (EST)
+Message-ID: <45D48493.2020505@freescale.com>
+Date: Thu, 15 Feb 2007 10:04:35 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200702151707.31021.hnguyen@linux.vnet.ibm.com>
-Cc: raisch@de.ibm.com, heiko.carstens@de.ibm.com
+To: paulus@samba.org, linuxppc-dev@ozlabs.org, galak@kernel.crashing.org,
+	benh@kernel.crashing.org, g.liakhovetski@gmx.de,
+	Stuart Yoder <stuart.yoder@freescale.com>
+Subject: Re: [PATCH v3] powerpc: delete boot-cpu property from all DTS files
+References: <11714885473600-git-send-email-timur@freescale.com>
+	<20070215005323.GK16279@localhost.localdomain>
+In-Reply-To: <20070215005323.GK16279@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,176 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-fix a race condition in find_next_cpu_online() and some
-other locking issues in scaling code
+David Gibson wrote:
 
+> This looks sane to me.  If you're going about this sort of dts
+> cleanup, it would be nice to remove all the linux,phandle properties
+> and use dtc's reference facility to auto-generate them instead.
 
-Signed-off-by: Hoang-Nam Nguyen <hnguyen@de.ibm.com>
----
+I wouldn't mind making a patch to do that, once my current patch is applied 
+(hint hint).  However, I'd have to study-up on linux,phandle, because I don't 
+know anything about it.  I just created the boot-cpu patch because someone 
+around here said that that property should go, and I was doing other device-tree 
+related work at the time.
 
-
- ehca_irq.c |   68 +++++++++++++++++++++++++++++--------------------------------
- 1 files changed, 33 insertions(+), 35 deletions(-)
-
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index b923b5d..9679b07 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -544,28 +544,30 @@ void ehca_tasklet_eq(unsigned long data)
- 
- static inline int find_next_online_cpu(struct ehca_comp_pool* pool)
- {
--	unsigned long flags_last_cpu;
-+	int cpu;
-+	unsigned long flags;
- 
-+	WARN_ON_ONCE(!in_interrupt());
- 	if (ehca_debug_level)
- 		ehca_dmp(&cpu_online_map, sizeof(cpumask_t), "");
- 
--	spin_lock_irqsave(&pool->last_cpu_lock, flags_last_cpu);
--	pool->last_cpu = next_cpu(pool->last_cpu, cpu_online_map);
--	if (pool->last_cpu == NR_CPUS)
--		pool->last_cpu = first_cpu(cpu_online_map);
--	spin_unlock_irqrestore(&pool->last_cpu_lock, flags_last_cpu);
-+	spin_lock_irqsave(&pool->last_cpu_lock, flags);
-+	cpu = next_cpu(pool->last_cpu, cpu_online_map);
-+	if (cpu == NR_CPUS)
-+		cpu = first_cpu(cpu_online_map);
-+	pool->last_cpu = cpu;
-+	spin_unlock_irqrestore(&pool->last_cpu_lock, flags);
- 
--	return pool->last_cpu;
-+	return cpu;
- }
- 
- static void __queue_comp_task(struct ehca_cq *__cq,
- 			      struct ehca_cpu_comp_task *cct)
- {
--	unsigned long flags_cct;
--	unsigned long flags_cq;
-+	unsigned long flags;
- 
--	spin_lock_irqsave(&cct->task_lock, flags_cct);
--	spin_lock_irqsave(&__cq->task_lock, flags_cq);
-+	spin_lock_irqsave(&cct->task_lock, flags);
-+	spin_lock(&__cq->task_lock);
- 
- 	if (__cq->nr_callbacks == 0) {
- 		__cq->nr_callbacks++;
-@@ -576,8 +578,8 @@ static void __queue_comp_task(struct ehc
- 	else
- 		__cq->nr_callbacks++;
- 
--	spin_unlock_irqrestore(&__cq->task_lock, flags_cq);
--	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
-+	spin_unlock(&__cq->task_lock);
-+	spin_unlock_irqrestore(&cct->task_lock, flags);
- }
- 
- static void queue_comp_task(struct ehca_cq *__cq)
-@@ -588,69 +590,69 @@ static void queue_comp_task(struct ehca_
- 
- 	cpu = get_cpu();
- 	cpu_id = find_next_online_cpu(pool);
--
- 	BUG_ON(!cpu_online(cpu_id));
- 
- 	cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu_id);
-+	BUG_ON(!cct);
- 
- 	if (cct->cq_jobs > 0) {
- 		cpu_id = find_next_online_cpu(pool);
- 		cct = per_cpu_ptr(pool->cpu_comp_tasks, cpu_id);
-+		BUG_ON(!cct);
- 	}
- 
- 	__queue_comp_task(__cq, cct);
--
--	put_cpu();
--
--	return;
- }
- 
- static void run_comp_task(struct ehca_cpu_comp_task* cct)
- {
- 	struct ehca_cq *cq;
--	unsigned long flags_cct;
--	unsigned long flags_cq;
-+	unsigned long flags;
- 
--	spin_lock_irqsave(&cct->task_lock, flags_cct);
-+	spin_lock_irqsave(&cct->task_lock, flags);
- 
- 	while (!list_empty(&cct->cq_list)) {
- 		cq = list_entry(cct->cq_list.next, struct ehca_cq, entry);
--		spin_unlock_irqrestore(&cct->task_lock, flags_cct);
-+		spin_unlock_irqrestore(&cct->task_lock, flags);
- 		comp_event_callback(cq);
--		spin_lock_irqsave(&cct->task_lock, flags_cct);
-+		spin_lock_irqsave(&cct->task_lock, flags);
- 
--		spin_lock_irqsave(&cq->task_lock, flags_cq);
-+		spin_lock(&cq->task_lock);
- 		cq->nr_callbacks--;
- 		if (cq->nr_callbacks == 0) {
- 			list_del_init(cct->cq_list.next);
- 			cct->cq_jobs--;
- 		}
--		spin_unlock_irqrestore(&cq->task_lock, flags_cq);
--
-+		spin_unlock(&cq->task_lock);
- 	}
- 
--	spin_unlock_irqrestore(&cct->task_lock, flags_cct);
--
--	return;
-+	spin_unlock_irqrestore(&cct->task_lock, flags);
- }
- 
- static int comp_task(void *__cct)
- {
- 	struct ehca_cpu_comp_task* cct = __cct;
-+	int cql_empty;
- 	DECLARE_WAITQUEUE(wait, current);
- 
- 	set_current_state(TASK_INTERRUPTIBLE);
- 	while(!kthread_should_stop()) {
- 		add_wait_queue(&cct->wait_queue, &wait);
- 
--		if (list_empty(&cct->cq_list))
-+		spin_lock_irq(&cct->task_lock);
-+		cql_empty = list_empty(&cct->cq_list);
-+		spin_unlock_irq(&cct->task_lock);
-+		if (cql_empty)
- 			schedule();
- 		else
- 			__set_current_state(TASK_RUNNING);
- 
- 		remove_wait_queue(&cct->wait_queue, &wait);
- 
--		if (!list_empty(&cct->cq_list))
-+		spin_lock_irq(&cct->task_lock);
-+		cql_empty = list_empty(&cct->cq_list);
-+		spin_unlock_irq(&cct->task_lock);
-+		if (!cql_empty)
- 			run_comp_task(__cct);
- 
- 		set_current_state(TASK_INTERRUPTIBLE);
-@@ -693,8 +695,6 @@ static void destroy_comp_task(struct ehc
- 
- 	if (task)
- 		kthread_stop(task);
--
--	return;
- }
- 
- static void take_over_work(struct ehca_comp_pool *pool,
-@@ -815,6 +815,4 @@ void ehca_destroy_comp_pool(void)
- 	free_percpu(pool->cpu_comp_tasks);
- 	kfree(pool);
- #endif
--
--	return;
- }
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
