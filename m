@@ -1,16 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 16 Feb 2007 10:01:34 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
-Subject: Re: purpose of /chosen node (was RE: [PATCH] powerpc: delete boot-cpu
-	and chosen nodes from all DTSfiles)
-Message-ID: <20070215230134.GB21654@localhost.localdomain>
-References: <c8fe6c9c19018243871df0fb9ed23a0b@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1BC76@az33exm25.fsl.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BC76@az33exm25.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp102.biz.mail.mud.yahoo.com (smtp102.biz.mail.mud.yahoo.com
+	[68.142.200.237]) by ozlabs.org (Postfix) with SMTP id 5CB0BDDE20
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 10:37:44 +1100 (EST)
+In-Reply-To: <20070215225739.GA21654@localhost.localdomain>
+References: <E1HHkAL-0005Xl-2f@jdl.com>
+	<70840B5D-F927-4CC6-84D3-789DA8A66378@embeddedalley.com>
+	<20070215225739.GA21654@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <79929A88-229C-41D7-A8E8-3191743A3EFF@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [DTC PATCH] Add support for decimal,
+	octal and binary based cell values.
+Date: Thu, 15 Feb 2007 15:37:36 -0800
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,37 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 15, 2007 at 02:26:41PM -0700, Yoder Stuart-B08248 wrote:
->  
-> 
-> > -----Original Message-----
-> > From: linuxppc-dev-bounces+b08248=freescale.com@ozlabs.org 
-> > [mailto:linuxppc-dev-bounces+b08248=freescale.com@ozlabs.org] 
-> > On Behalf Of Segher Boessenkool
-> > Sent: Wednesday, February 14, 2007 7:40 PM
-> > To: David Gibson
-> > Cc: linuxppc-dev@ozlabs.org; Tabi Timur-B04825
-> > Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen 
-> > nodes from all DTSfiles
-> > 
-> > > My point is that the interrupt-controller property in 
-> > /chosen *should*
-> > > be there, but it doesn't make a lot of sense for it to be set by the
-> > > bootloader (because it's a fixed property of the board).
-> > 
-> > And that means it shouldn't be in /chosen at all.  It's not
-> > just a fixed property of the board, it is a physical property
-> > of the board.  It doesn't belong in /chosen.
-> 
-> I agree with Segher here.  The interrupt-controller property doesn't
-> belong in /chosen.
 
-You're right.  Question is, can we change it now.  It's out there in
-the documentation, on the other hand, I don't think the kernel
-actually uses it anywhere yet.  BenH, opinion?
+On Feb 15, 2007, at 2:57 PM, David Gibson wrote:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> Yes, but hex-by-default is already implemented and out there.  We
+> can't change it without breaking compatibility horribly.
+
+Compatibility with what?  The few dts files that exist
+that are still all changing frequently due to other
+tool modifications?  I'd prefer to change them now,
+rather than propagate this new syntax.
+
+Thanks.
+
+	-- Dan
