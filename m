@@ -1,32 +1,21 @@
-Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29A70DDDDB
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011-1.exch011.intermedia.net
+	(mis011-1.exch011.intermedia.net [64.78.21.128])
+	by ozlabs.org (Postfix) with ESMTP id 375CFDDD0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Feb 2007 15:10:31 +1100 (EST)
-Received: from list by ciao.gmane.org with local (Exim 4.43)
-	id 1HHXwt-0003TQ-Fm
-	for linuxppc-embedded@ozlabs.org; Thu, 15 Feb 2007 05:10:23 +0100
-Received: from dsl-202-45-109-210-static.VIC.netspace.net.au ([202.45.109.210])
-	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 15 Feb 2007 05:10:23 +0100
-Received: from daniel_ng11 by dsl-202-45-109-210-static.VIC.netspace.net.au
-	with local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-embedded@ozlabs.org>; Thu, 15 Feb 2007 05:10:23 +0100
-To: linuxppc-embedded@ozlabs.org
-From: Daniel Ng <daniel_ng11@lycos.com>
-Subject: Re: 'make' behaviour in BuildRoot
-Date: Thu, 15 Feb 2007 04:10:11 +0000 (UTC)
-Message-ID: <loom.20070215T050757-659@post.gmane.org>
-References: <loom.20070214T072955-792@post.gmane.org>
-	<97C76137-FF67-4145-BAF3-1AB3290F4D05@emi.yamaha.co.jp>
-	<loom.20070215T000853-313@post.gmane.org>
-	<20070214191629.7e750923@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: news <news@sea.gmane.org>
+	Thu, 15 Feb 2007 15:57:13 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: How can I boot a program from flash on ML403?
+Date: Wed, 14 Feb 2007 20:57:11 -0800
+Message-ID: <406A31B117F2734987636D6CCC93EE3CF9D7A1@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <000001c74fa0$ce627870$10b2a8c0@lorenzulm>
+References: <mailman.120.1171370674.21008.linuxppc-embedded@ozlabs.org>
+	<000001c74fa0$ce627870$10b2a8c0@lorenzulm>
+From: "Leonid" <Leonid@a-k-a.net>
+To: "Lorenz Kolb" <linuxppcemb@lkmail.de>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,4 +26,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks for your help Andrew. I will follow these up on the BuildRoot list.
+Sent: Tuesday, February 13, 2007 10:57 AM Lorenz Kolb:
+> Thus my current (dirty) solution is:
+
+> Using SREC Bootloader from Xilinx' EDK to load a U-Boot and make
+U-Boot=20
+> load Linux both located on flash.
+> Actually, it is quick and dirty, but it works fine for testing...
+
+I use the same scheme (called 3-stage boot) but I don't see what is
+dirty about it. For testing/debugging you even can load u-boot directly
+into memory using XMD. Of course, image must be compiled to run from
+memory, not flash.
+
+BTW, do you (or anybody) have XTEMAC drivers for ML403 u-boot?
+
+Regards,
+
+Leonid.
