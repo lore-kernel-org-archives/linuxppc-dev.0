@@ -4,24 +4,20 @@ Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 81EAFDDD07
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 12:40:14 +1100 (EST)
-In-Reply-To: <20070214233348.GH16279@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 5A077DDD07
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 12:42:43 +1100 (EST)
+In-Reply-To: <1712A11E-2F9F-441E-97E2-6FE82ED5A539@kernel.crashing.org>
 References: <11713852392294-git-send-email-timur@freescale.com>
-	<20070214003119.GF11491@localhost.localdomain>
-	<45D29BBA.7090401@freescale.com>
-	<20070214052440.GB12609@localhost.localdomain>
-	<45D31734.7030808@freescale.com>
-	<20070214233348.GH16279@localhost.localdomain>
+	<1712A11E-2F9F-441E-97E2-6FE82ED5A539@kernel.crashing.org>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c8fe6c9c19018243871df0fb9ed23a0b@kernel.crashing.org>
+Message-Id: <e5c7f884689875fe81080aaefd16f2e6@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: delete boot-cpu and chosen nodes from all DTS
 	files
-Date: Thu, 15 Feb 2007 02:40:09 +0100
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Date: Thu, 15 Feb 2007 02:42:38 +0100
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,13 +27,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> My point is that the interrupt-controller property in /chosen *should*
-> be there, but it doesn't make a lot of sense for it to be set by the
-> bootloader (because it's a fixed property of the board).
+> Is there some harm is having them set in the .dts?
+>
+> I can see 'linux,boot-cpu' may vary on a SMP, but the majority
+> of .dts's are for uniproc's
 
-And that means it shouldn't be in /chosen at all.  It's not
-just a fixed property of the board, it is a physical property
-of the board.  It doesn't belong in /chosen.
+The way this is handled in the OF binding, only multi-processor
+systems are required to explicitly state their boot CPU (in
+/chosen/cpu).  It's quite silly to require this for single
+CPU systems.
 
 
 Segher
