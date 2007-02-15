@@ -1,20 +1,18 @@
-Return-Path: <watashin@mvision.co.jp>
-Received: from mail.asahi-net.or.jp (mail2.asahi-net.or.jp [202.224.39.198])
-	by ozlabs.org (Postfix) with ESMTP id 9A768DDD04
+Return-Path: <Sendhilraj.T@Lntemsys.com>
+Received: from mail86.messagelabs.com (mail86.messagelabs.com [216.82.244.115])
+	by ozlabs.org (Postfix) with SMTP id 4FCC3DDD0B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Feb 2007 21:16:40 +1100 (EST)
-Received: from wata (c200018.ppp.asahi-net.or.jp [210.155.200.18])
-	by mail.asahi-net.or.jp (Postfix) with SMTP id 980A02AECA
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Feb 2007 19:16:34 +0900 (JST)
-Message-ID: <013b01c750ea$5e8544b0$1601a8c0@wata>
-From: "Shinji Watanabe" <watashin@mvision.co.jp>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: How to access MPC8555 DMA register ?
-Date: Thu, 15 Feb 2007 19:16:27 +0900
+	Thu, 15 Feb 2007 22:29:37 +1100 (EST)
+In-Reply-To: <200702131239.12984.arnd@arndb.de>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: Porting JFFS2 to 2.4.6 kernel
 MIME-Version: 1.0
-Content-Type: text/plain; format=flowed; charset="iso-2022-jp";
-	reply-type=original
+Message-ID: <OF73EC41DC.A2A75D66-ON65257283.003F718B-65257283.003F5CF1@lntemsys.com>
+From: Sendhilraj T <Sendhilraj.T@Lntemsys.com>
+Date: Thu, 15 Feb 2007 17:03:44 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 003F5CEA65257283_="
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,73 +23,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I don't know how to bind the driver.
+This is a multipart message in MIME format.
+--=_alternative 003F5CEA65257283_=
+Content-Transfer-Encoding: base64
+Content-Type: text/plain; charset="UTF-8"
 
-I maked driver of pci device type for MPC8555 as Log.A.
+SGVsbG8gQWxsLA0KDQpOb3cgSSBjcmVhdGVkIGEgbmV3IHBhdGNoIGZpbGUgdG8gc3VwcG9ydCBK
+RkZTMiBpbiAyLjQuNiBmcm9tIDIuNC4xNi4NCkFmdGVyIGluY2x1ZGluZyB0aGUgcGF0Y2ggZm9y
+IEpGRlMyICwgSSByZXN0YXJ0ZWQgdGhlIGtlcm5lbCBhbmQgDQpJIGFtIGdldHRpbmcgc29tZSBl
+cnJvciBtZXNzYWdlcyBsaWtlIGJlbG93DQoNCkNoZWNraW5nIGZvciBVU0Igc3RpY2suLi4gIC9l
+dGMvcmMuZC9yY1MgIHVwZGF0ZS5zaA0KbW91bnQ6IC9kZXYvc2RhMTogdW5rbm93biBkZXZpY2UN
+Cm1vdW50OiAvZGV2L3NkYTogdW5rbm93biBkZXZpY2UNCi4uLiBkb25lDQoNCk1vdW50aW5nIGxv
+Y2FsIGZpbGUtc3lzdGVtcy4uLg0KDQoNCi4uLiBkb25lDQoNCg0KQnVtbWVyLCBjb3VsZCBub3Qg
+cnVuICcvdXNyL2xvY2FsL3NjaTogQ2Fubm90IGFsbG9jYXRlIGlycS4NCmdzOiBnc19jbG9zZTog
+YmFkIHBvcnQgY291bnQ6IC0xDQpwcmcvc3RhcnQnOiBObyBzdWNoIGZpbGUgb3IgZGlyZWN0b3J5
+DQpUcnlpbmcgdG8gZnJlZSBmcmVlIElSUTIzDQpUcnlpbmcgdG8gZnJlZSBmcmVlIElSUTI0DQpU
+cnlpbmcgdG8gZnJlZSBmcmVlIElSUTI1DQoNCihub25lKSBsb2dpbjoNCg0KDQpJIHdvdWxkIGxp
+a2UgdG8ga25vdyB3aGF0IHRoZXNlIGVycm9ycyBtZWFuLiBBbmQgSSB3b3VsZCBsaWtlIHRvIGtu
+b3cgaG93IA0KSSBjYW4gZml4IEl0Lj8NCg0KT25lIG1vcmUgcXVlc3Rpb24gZnJvbSBhIGJlZ2lu
+bmVyIChtZSnigKZJIHdvdWxkIGxpa2UgdG8ga25vdyBob3cgbXkgbmV3IA0Ka2VybmVsIGFmdGVy
+IHBhdGNoaW5nIHN1cHBvcnRzIEpGRlMyPw0KDQpMb29raW5nIGZvciB5b3VyIGhlbHAuDQoNClQu
+U2VudGhpbA0K
+--=_alternative 003F5CEA65257283_=
+Content-Transfer-Encoding: base64
+Content-Type: text/html; charset="UTF-8"
 
-/var/log/message log is Log.B.
-
-When I called platform_get_resource,
-I can't get validate value.
-
-Why ?
-
-please help me!
-
-///////////////////////// log.A
-
-#define VENDORID_MVPPC 0x1057
-#define DEVICEID_MVPPC 0x000A
-
-static struct pci_device_id ids[] = {
- { PCI_DEVICE(VENDORID_MVPPC, DEVICEID_MVPPC), },
- { 0, }
-};
-
-MODULE_DEVICE_TABLE(pci, ids);
-
-static struct pci_driver pci_driver = {
- .name = PCI_DEVICE_NAME, 
- ...
- .id_table = ids,
- .probe = probe,
-};
-
-
-static int probe(struct pci_dev *dev, const struct pci_device_id *id)
-{
- struct resource *res;
- ...
- ...
- struct platform_device *pdev = to_platform_device(&dev->dev);
- ..
- ..
- pci_enable_device(dev);
- ..
- ..
- res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-  dprintk("res0 %p\n", 
-   res
-   );
- res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
- dprintk("res1 %p\n", 
-   res
-   );
- res = platform_get_resource(pdev, IORESOURCE_MEM, 2);
- dprintk("res2 %p\n", 
-   res
-   );
- ...
- ...
-}
-
-
-///////////////////////// log.b
-Feb 10 11:34:23 mpc8555cds user.debug kernel: res0 00000000
-Feb 10 11:34:23 mpc8555cds user.debug kernel: res1 00000000
-Feb 10 11:34:23 mpc8555cds user.debug kernel: res2 00000000
-
-
-Regars,
-
-shinji
+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9IkNvdXJpZXIgTmV3Ij5IZWxsbyBBbGwsPC9mb250Pg0K
+PGJyPg0KPGJyPjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+Tm93IEkgY3JlYXRlZCBh
+IG5ldyBwYXRjaCBmaWxlIHRvIHN1cHBvcnQNCkpGRlMyIGluIDIuNC42IGZyb20gMi40LjE2Ljwv
+Zm9udD4NCjxicj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPkFmdGVyIGluY2x1ZGlu
+ZyB0aGUgcGF0Y2ggZm9yIEpGRlMyDQosIEkgcmVzdGFydGVkIHRoZSBrZXJuZWwgYW5kIDwvZm9u
+dD4NCjxicj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPkkgYW0gZ2V0dGluZyBzb21l
+IGVycm9yIG1lc3NhZ2VzIGxpa2UNCmJlbG93PC9mb250Pg0KPGJyPg0KPGJyPjxmb250IHNpemU9
+MiBmYWNlPSJDb3VyaWVyIE5ldyI+Q2hlY2tpbmcgZm9yIFVTQiBzdGljay4uLiAmbmJzcDsvZXRj
+L3JjLmQvcmNTDQombmJzcDt1cGRhdGUuc2g8L2ZvbnQ+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9
+IkNvdXJpZXIgTmV3Ij5tb3VudDogL2Rldi9zZGExOiB1bmtub3duIGRldmljZTwvZm9udD4NCjxi
+cj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPm1vdW50OiAvZGV2L3NkYTogdW5rbm93
+biBkZXZpY2U8L2ZvbnQ+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9IkNvdXJpZXIgTmV3Ij4uLi4g
+ZG9uZTwvZm9udD4NCjxicj4NCjxicj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPk1v
+dW50aW5nIGxvY2FsIGZpbGUtc3lzdGVtcy4uLjwvZm9udD4NCjxicj4NCjxicj4NCjxicj48Zm9u
+dCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPi4uLiBkb25lPC9mb250Pg0KPGJyPg0KPGJyPg0K
+PGJyPjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+QnVtbWVyLCBjb3VsZCBub3QgcnVu
+ICcvdXNyL2xvY2FsL3NjaToNCkNhbm5vdCBhbGxvY2F0ZSBpcnEuPC9mb250Pg0KPGJyPjxmb250
+IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+Z3M6IGdzX2Nsb3NlOiBiYWQgcG9ydCBjb3VudDog
+LTE8L2ZvbnQ+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9IkNvdXJpZXIgTmV3Ij5wcmcvc3RhcnQn
+OiBObyBzdWNoIGZpbGUgb3IgZGlyZWN0b3J5PC9mb250Pg0KPGJyPjxmb250IHNpemU9MiBmYWNl
+PSJDb3VyaWVyIE5ldyI+VHJ5aW5nIHRvIGZyZWUgZnJlZSBJUlEyMzwvZm9udD4NCjxicj48Zm9u
+dCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPlRyeWluZyB0byBmcmVlIGZyZWUgSVJRMjQ8L2Zv
+bnQ+DQo8YnI+PGZvbnQgc2l6ZT0yIGZhY2U9IkNvdXJpZXIgTmV3Ij5UcnlpbmcgdG8gZnJlZSBm
+cmVlIElSUTI1PC9mb250Pg0KPGJyPg0KPGJyPjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5l
+dyI+KG5vbmUpIGxvZ2luOjwvZm9udD4NCjxicj4NCjxicj4NCjxicj48Zm9udCBzaXplPTIgZmFj
+ZT0iQ291cmllciBOZXciPkkgd291bGQgbGlrZSB0byBrbm93IHdoYXQgdGhlc2UgZXJyb3JzDQpt
+ZWFuLiBBbmQgSSB3b3VsZCBsaWtlIHRvIGtub3cgaG93IEkgY2FuIGZpeCBJdC4/PC9mb250Pg0K
+PGJyPg0KPGJyPjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+T25lIG1vcmUgcXVlc3Rp
+b24gZnJvbSBhIGJlZ2lubmVyIChtZSnigKZJDQp3b3VsZCBsaWtlIHRvIGtub3cgaG93IG15IG5l
+dyBrZXJuZWwgYWZ0ZXIgcGF0Y2hpbmcgc3VwcG9ydHMgSkZGUzI/PC9mb250Pg0KPGJyPg0KPGJy
+Pjxmb250IHNpemU9MiBmYWNlPSJDb3VyaWVyIE5ldyI+TG9va2luZyBmb3IgeW91ciBoZWxwLjwv
+Zm9udD4NCjxicj4NCjxicj48Zm9udCBzaXplPTIgZmFjZT0iQ291cmllciBOZXciPlQuU2VudGhp
+bDwvZm9udD4NCg==
+--=_alternative 003F5CEA65257283_=--
