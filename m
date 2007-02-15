@@ -1,35 +1,33 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id E2A82DDDF7
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 03:38:04 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l1FGc0Au002034
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 09:38:01 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1FGc02K002079
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 10:38:00 -0600 (CST)
+Return-Path: <hnguyen@linux.vnet.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A649ADDEFF
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 03:51:49 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l1FGpjkG081056
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:51:45 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
+	ESMTP id l1FGpjPu925864
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:51:45 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l1FGpiBI016324
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:51:44 GMT
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	johnrose@us.ibm.com
+Subject: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition and removal of
+	adapters
+Date: Thu, 15 Feb 2007 17:55:12 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 15/16] Add device tree for Ebony
-Date: Thu, 15 Feb 2007 09:37:59 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BABF@az33exm25.fsl.freescale.net>
-In-Reply-To: <889579906c6fd096a82283d5a3a0227e@kernel.crashing.org>
-References: <20070213060904.GA6214@localhost.localdomain>
-	<20070213061026.5837FDDDE9@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
-	<1171470754.4003.101.camel@zod.rchland.ibm.com>
-	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
-	<20070214232246.GE16279@localhost.localdomain>
-	<fbff2510963c6c5bb9d5ccb0574f97b1@kernel.crashing.org>
-	<20070215015316.GL16279@localhost.localdomain>
-	<889579906c6fd096a82283d5a3a0227e@kernel.crashing.org>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>,
-	"David Gibson" <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org
+  charset="us-ascii"
+Message-Id: <200702151755.13009.hnguyen@linux.vnet.ibm.com>
+Cc: fenkes@de.ibm.com, pmac@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,38 +37,242 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-=20
+This patch will add two sysfs attributes to /sys/bus/ibmebus which can be used
+to notify the ebus driver of added / removed ebus devices in the OF device
+tree.
 
-> -----Original Message-----
-> From: Segher Boessenkool [mailto:segher@kernel.crashing.org]=20
-> Sent: Wednesday, February 14, 2007 9:09 PM
-> To: David Gibson
-> Cc: linuxppc-dev@ozlabs.org; Yoder Stuart-B08248
-> Subject: Re: [PATCH 15/16] Add device tree for Ebony
->=20
-> >> Yes.  UIC1 is not addressed via UIC0, and as such should
-> >> not be a child of it; it should be a direct child of its DCR
-> >> controller, just like UIC0.
-> >
-> > No, the DCR tree, like the interrupt tree in most cases, is
-> > independent of the main tree structure.
->=20
-> Yes true; you can hang the UICs from somewhere under the
-> "soc" node or whatever you want.  You need some way to
-> distinguish separate identical devices though; you can't
-> do it by device unit since your devices don't have any
-> (they don't have a "reg" but only a "dcr-reg").  If you
-> would hang them in a DCR tree, you could use the plain
-> "reg" property instead of the "dcr-reg" property and
-> all would be fine (if the DCR binding allows this -- and
-> it better should, it is the standard OF addressing algorithm).
+Echoing the device's location code (as found in the OFDT "ibm,loc-code"
+property) into the "probe" attribute will notify ebus of addition of the device
+and cause the appropriate device driver's probe function to be called on the
+device.
 
-Is there a DCR binding?  Are the dcr-* properties documented=20
-anywhere:
+Likewise, echoing the location code into the "remove" attribute will cause
+the device to be removed from the system.
 
-dcr-reg         // what do these fields mean?
-dcr-parent      // in case there is more than one controller??
-dcr-controller
-dcr-access-method =3D "native"   // what are the other options?
+Additionally, the uevent interface is now implemented in the driver.
 
-Stuart
+
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
+
+
+ arch/powerpc/kernel/ibmebus.c |  121 +++++++++++++++++++++++++++++++++++++++---
+ include/asm-powerpc/ibmebus.h |    2 
+ 2 files changed, 114 insertions(+), 9 deletions(-)
+
+
+diff -wurp linux-2.6.20/arch/powerpc/kernel/ibmebus.c linux-2.6.20-ebus/arch/powerpc/kernel/ibmebus.c
+--- linux-2.6.20/arch/powerpc/kernel/ibmebus.c	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20-ebus/arch/powerpc/kernel/ibmebus.c	2007-02-14 17:58:00.000000000 +0100
+@@ -2,6 +2,7 @@
+  * IBM PowerPC IBM eBus Infrastructure Support.
+  *
+  * Copyright (c) 2005 IBM Corporation
++ *  Joachim Fenkes <fenkes@de.ibm.com>
+  *  Heiko J Schick <schickhj@de.ibm.com>
+  *    
+  * All rights reserved.
+@@ -44,7 +45,6 @@
+ #include <asm/abs_addr.h>
+ 
+ static struct ibmebus_dev ibmebus_bus_device = { /* fake "parent" device */
+-	.name = ibmebus_bus_device.ofdev.dev.bus_id,
+ 	.ofdev.dev.bus_id = "ibmebus",
+ 	.ofdev.dev.bus    = &ibmebus_bus_type,
+ };
+@@ -161,7 +161,9 @@ static void __devinit ibmebus_dev_releas
+ static ssize_t ibmebusdev_show_name(struct device *dev, 
+ 				    struct device_attribute *attr, char *buf)
+ {
+-	return sprintf(buf, "%s\n", to_ibmebus_dev(dev)->name);
++	struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
++	char *name = (char*)get_property(ebus_dev->ofdev.node, "name", NULL);
++	return sprintf(buf, "%s\n", name);
+ }
+ static DEVICE_ATTR(name, S_IRUSR | S_IRGRP | S_IROTH, ibmebusdev_show_name, 
+ 		   NULL);
+@@ -171,7 +173,6 @@ static struct ibmebus_dev* __devinit ibm
+ {
+ 	int err = 0;
+ 
+-	dev->name = name;
+ 	dev->ofdev.dev.parent  = &ibmebus_bus_device.ofdev.dev;
+ 	dev->ofdev.dev.bus     = &ibmebus_bus_type;
+ 	dev->ofdev.dev.release = ibmebus_dev_release;
+@@ -262,11 +263,19 @@ static void ibmebus_add_devices_by_id(st
+ 	return;
+ }
+ 
+-static int ibmebus_match_helper(struct device *dev, void *data)
++static int ibmebus_match_helper_name(struct device *dev, void *data)
+ {
+-	if (strcmp((char*)data, to_ibmebus_dev(dev)->name) == 0)
+-		return 1;
++	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
++	char *name;
+ 	
++	/* parent device has no of_device node, so skip it */
++	if (ebus_dev != &ibmebus_bus_device) {
++		name = (char*)get_property(
++			ebus_dev->ofdev.node, "name", NULL);
++	
++		if (name && (strcmp((char*)data, name) == 0))
++			return 1;
++	}
+ 	return 0;
+ }
+ 
+@@ -285,11 +294,10 @@ static void ibmebus_remove_devices_by_id
+ 	while (strlen(idt->name) > 0) {
+ 		while ((dev = bus_find_device(&ibmebus_bus_type, NULL, 
+ 					      (void*)idt->name,
+-					      ibmebus_match_helper))) {
++					      ibmebus_match_helper_name))) {
+ 			ibmebus_unregister_device(dev);
+ 		}
+ 		idt++;
+-		
+ 	}
+ 	
+ 	return;
+@@ -307,6 +315,9 @@ int ibmebus_register_driver(struct ibmeb
+ 	if ((err = driver_register(&drv->driver) != 0))
+ 		return err;
+ 
++	/* remove all supported devices first, in case someone
++	 * probed them manually before registering the driver */
++	ibmebus_remove_devices_by_id(drv->id_table);
+ 	ibmebus_add_devices_by_id(drv->id_table);
+ 	
+ 	return 0;
+@@ -361,12 +372,101 @@ static int ibmebus_bus_match(struct devi
+ 	return 0;
+ }
+ 
++static int ibmebus_uevent(struct device *dev, char **envp, int num_envp,
++			char *buffer, int buffer_size)
++{
++	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
++	char *name, *cp, *loc_code;
++	int length;
++
++	if (!num_envp)
++		return -ENOMEM;
++
++	if (!ebus_dev->ofdev.node)
++		return -ENODEV;
++
++	name = (char *)get_property(ebus_dev->ofdev.node, "name", NULL);
++	cp = (char *)get_property(ebus_dev->ofdev.node, "compatible", NULL);
++	loc_code = (char *)get_property(ebus_dev->ofdev.node,
++					"ibm,loc-code", NULL);
++	if (!(name && cp && loc_code))
++		return -ENODEV;
++
++	envp[0] = buffer;
++	length = scnprintf(buffer, buffer_size,
++			   "MODALIAS=ibmebus:T%s:S%s:L%s",
++			   name, cp, loc_code);
++	if (buffer_size - length <= 0)
++		return -ENOMEM;
++	envp[1] = NULL;
++
++	return 0;
++}
++
+ struct bus_type ibmebus_bus_type = {
+ 	.name = "ibmebus",
++	.uevent = ibmebus_uevent,
+ 	.match = ibmebus_bus_match,
+ };
+ EXPORT_SYMBOL(ibmebus_bus_type);
+ 
++static int ibmebus_match_helper_loc_code(struct device *dev, void *data)
++{
++	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
++	char *loc_code;
++
++	/* parent device has no of_device node, so skip it */
++	if (ebus_dev != &ibmebus_bus_device) {
++		loc_code = (char*)get_property(
++			ebus_dev->ofdev.node, "ibm,loc-code", NULL);
++
++		if (loc_code && (strcmp((char*)data, loc_code) == 0))
++			return 1;
++	}
++	return 0;
++}
++
++static ssize_t ibmebus_store_probe(struct bus_type *dev,
++				   const char *buf, size_t count)
++{
++	struct device_node *dn = NULL;
++	char *loc_code;
++
++	if (bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
++			     ibmebus_match_helper_loc_code)) {
++		printk(KERN_WARNING "%s: loc_code %s has already been probed\n",
++		       __FUNCTION__, buf);
++		return count;
++	}
++
++	while ((dn = of_find_all_nodes(dn))) {
++		loc_code = (char *)get_property(dn, "ibm,loc-code", NULL);
++		if (loc_code && (strncmp(loc_code, buf, count) == 0)) {
++			if (ibmebus_register_device_node(dn) == NULL) {
++				of_node_put(dn);
++				break;
++			}
++		}
++	}
++
++	return count;
++}
++static BUS_ATTR(probe, S_IWUSR, NULL, ibmebus_store_probe);
++
++static ssize_t ibmebus_store_remove(struct bus_type *bus,
++				    const char *buf, size_t count)
++{
++	struct device *dev;
++
++	while ((dev = bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
++				      ibmebus_match_helper_loc_code))) {
++		ibmebus_unregister_device(dev);
++	}
++
++	return count;
++}
++static BUS_ATTR(remove, S_IWUSR, NULL, ibmebus_store_remove);
++
+ static int __init ibmebus_bus_init(void)
+ {
+ 	int err;
+@@ -389,6 +489,9 @@ static int __init ibmebus_bus_init(void)
+ 		return err;
+ 	}
+ 	
++	bus_create_file(&ibmebus_bus_type, &bus_attr_probe);
++	bus_create_file(&ibmebus_bus_type, &bus_attr_remove);
++
+ 	return 0;
+ }
+ __initcall(ibmebus_bus_init);
+diff -wurp linux-2.6.20/include/asm-powerpc/ibmebus.h linux-2.6.20-ebus/include/asm-powerpc/ibmebus.h
+--- linux-2.6.20/include/asm-powerpc/ibmebus.h	2007-02-04 19:44:54.000000000 +0100
++++ linux-2.6.20-ebus/include/asm-powerpc/ibmebus.h	2007-02-14 17:58:55.000000000 +0100
+@@ -2,6 +2,7 @@
+  * IBM PowerPC eBus Infrastructure Support.
+  *
+  * Copyright (c) 2005 IBM Corporation
++ *  Joachim Fenkes <fenkes@de.ibm.com>
+  *  Heiko J Schick <schickhj@de.ibm.com>
+  *    
+  * All rights reserved.
+@@ -47,7 +48,6 @@
+ extern struct bus_type ibmebus_bus_type;
+ 
+ struct ibmebus_dev {	
+-	const char *name;
+ 	struct of_device ofdev;
+ };
+ 
