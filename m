@@ -1,27 +1,27 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
-	[151.189.21.49])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B985FDDE3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 01:56:52 +1100 (EST)
-In-Reply-To: <E1HHhCD-0004Hf-QT@jdl.com>
-References: <20070213061026.5837FDDDE9@ozlabs.org>
-	<e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org>
-	<20070214002210.GE11491@localhost.localdomain>
-	<45afe653a3f963e21e58a063c09b1b22@kernel.crashing.org>
-	<20070214231734.GC16279@localhost.localdomain>
-	<90e2bb990b7e1f46c6eaccd1d9255d77@kernel.crashing.org>
-	<E1HHhCD-0004Hf-QT@jdl.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <865018a527ef1056f628250167301e64@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 15/16] Add device tree for Ebony 
-Date: Thu, 15 Feb 2007 15:56:41 +0100
-To: Jon Loeliger <jdl@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DD08DDDECA
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 02:08:37 +1100 (EST)
+Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17875.55046.873365.575945@cargo.ozlabs.ibm.com>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124610.392302000@sipsolutions.net>
+	<1170940494.4385.51.camel@johannes.berg>
+	<1170973463.2620.373.camel@localhost.localdomain>
+	<1171035382.4520.7.camel@johannes.berg>
+	<1171293354.10344.6.camel@johannes.berg>
+	<17875.55046.873365.575945@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-23w1eI5bxGkw6efWr0xa"
+Date: Thu, 15 Feb 2007 16:08:28 +0100
+Message-Id: <1171552108.5220.6.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linux-pm@lists.osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,24 +31,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> The first option.  Anywhere a number can be used, "d# xxx"
->> would mean decimal.
->>
->> When you would say <d# 1234  5678>, 1234 is decimal and
->> 5678 is hexadecimal.
->
-> Where do the tokens end?  Is "d#1234" valid and equal to "d# 1234"?
-> Or is "d#" an independent token?
 
-In OF, there has to be whitespace inbetween.
+--=-23w1eI5bxGkw6efWr0xa
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> And are there other bases to
-> this model?  Like, maybe, "b#", "o#" and "h#" as well?
+On Thu, 2007-02-15 at 14:44 +1100, Paul Mackerras wrote:
 
-o# d# h# are standard defined; b# exists on many implementations.
+> > +_GLOBAL(power4_idle_irqs_softdisabled)
+> > +	li	r6,1
+> > +	b	0f
+> >  _GLOBAL(power4_idle)
+> > +	li	r6,0
+> > +0:
+> >  BEGIN_FTR_SECTION
+> >  	blr
+> >  END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+> > @@ -35,8 +40,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+> >  	rotldi	r0,r0,16
+> >  	mtmsrd	r0,1			/* hard-disable interrupts */
+> >  	li	r0,1
+> > -	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
+> > -	stb	r0,PACAHARDIRQEN(r13)
+> > +	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
+> > +	stb	r6,PACASOFTIRQEN(r13)	/* set softirqs enabled bit */
+>=20
+> Don't you have something backwards here?  If we come in through
+> power4_idle_irqs_softdisabled, the name would indicate to me that we
+> want to end up with paca->soft_enabled set to 0, not 1.
 
-Neither b# nor o# is frequently used but there's no harm in
-including them I suppose.
+Umm, yes, looks like. I'll rewrite it. Interesting that it worked as I
+had expected though (I actually put a printk into the timer interrupt!).
 
+johannes
 
-Segher
+--=-23w1eI5bxGkw6efWr0xa
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF1Hds/ETPhpq3jKURArhQAKCXNsmEFmHexmyDg76Z5/N5Fcr55QCdG41f
+35Yjz/biIRlpYsAJNSlwoCA=
+=2pzT
+-----END PGP SIGNATURE-----
+
+--=-23w1eI5bxGkw6efWr0xa--
