@@ -1,19 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id DAEF3DDE0E
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 04:51:05 +1100 (EST)
-Date: Thu, 15 Feb 2007 12:00:08 -0600
-To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
-Subject: Re: [DTC PATCH] Add support for decimal,
-	octal and binary based cell values.
-Message-ID: <20070215180008.GA25247@lixom.net>
-References: <E1HHkAL-0005Xl-2f@jdl.com>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1BB35@az33exm25.fsl.freescale.net>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
+	by ozlabs.org (Postfix) with ESMTP id D0A76DDEFC
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 04:58:06 +1100 (EST)
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2.6.21-rc1 4/5] ehca: replace yield() by
+	wait_for_completion()
+References: <200702151709.45323.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 15 Feb 2007 09:57:48 -0800
+In-Reply-To: <200702151709.45323.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
+	Nguyen's message of "Thu, 15 Feb 2007 17:09:44 +0100")
+Message-ID: <adazm7fs3qb.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BB35@az33exm25.fsl.freescale.net>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Cc: bos@patchscale.com, heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
+	openib-general@openib.org, hch@infradead.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +25,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 15, 2007 at 10:45:54AM -0700, Yoder Stuart-B08248 wrote:
-> 
-> I like to see no space between the d#, h#, etc and the
-> numeric value.
-> 
-> Does anyone see a good reason to keep whitespace there?
+Looking at this one more time, I think it actually may be buggy:
 
-Does it really matter what color the bike shed is?
+ > @@ -147,6 +147,7 @@ struct ib_cq *ehca_create_cq(struct ib_d
+ >  	spin_lock_init(&my_cq->spinlock);
+ >  	spin_lock_init(&my_cq->cb_lock);
+ >  	spin_lock_init(&my_cq->task_lock);
+ > +	init_completion(&my_cq->zero_callbacks);
 
-http://www.unixguide.net/freebsd/faq/16.19.shtml
+So you initialize the zero_callbacks completion once, at
+ehca_create_cq().
 
-(I've seen 0x<hex> <decimal> or 0d<decimal> and 0b<binary> been used
-sometimes and work well, but I really don't care if it's what the dtc
-uses or not.)
+But then 
 
--Olof
+ > @@ -612,11 +613,14 @@ static void run_comp_task(struct ehca_cp
+ >  
+ >  		spin_lock(&cq->task_lock);
+ >  		cq->nr_callbacks--;
+ > -		if (cq->nr_callbacks == 0) {
+ > +		is_complete = (cq->nr_callbacks == 0);
+ > +		if (is_complete) {
+ >  			list_del_init(cct->cq_list.next);
+ >  			cct->cq_jobs--;
+ >  		}
+ >  		spin_unlock(&cq->task_lock);
+ > +		if (is_complete) /* wake up waiting destroy_cq() */
+ > +			complete(&cq->zero_callbacks);
+ >  	}
+
+every time nr_callbacks drops to 0, you complete the zero_callbacks
+completion.  So the first time a callback runs, you will complete
+zero_callbacks, which will let wait_for_completion() finish even if
+you later increment nr_callbacks again.
+
+Also this
+
+ > -	while (my_cq->nr_callbacks) {
+ > +	if (my_cq->nr_callbacks) {
+ >  		spin_unlock_irqrestore(&ehca_cq_idr_lock, flags);
+ > -		yield();
+ > +		wait_for_completion(&my_cq->zero_callbacks);
+ >  		spin_lock_irqsave(&ehca_cq_idr_lock, flags);
+ >  	}
+
+looks rather unsafe -- I don't see any common locking protecting both
+this test of nr_callbacks and the setting of nr_callbacks in the ehca
+irq handling... so I don't see anything protecting you from seeing
+nr_callbacks==0 and not going into the if() (or while() -- the old
+code has the same problem I think) but then doing ++nr_callbacks
+somewhere else.  In fact since you do the idr_remove() and
+hipz_h_destroy_cq() *after* you make sure no callbacks are running,
+this seems like it could happen easily.
+
+So I'm holding off on applying this for now.  Please think it over and
+either tell me the current patch is OK, or fix it up.  There's not
+really too much urgency because a change like this is something I
+would be comfortable merging between 2.6.21-rc1 and -rc2.
+
+ - R.
