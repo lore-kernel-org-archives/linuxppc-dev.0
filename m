@@ -1,25 +1,28 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 39C00DDDF0
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 16:12:32 +1100 (EST)
-Message-ID: <45D3EBB5.1090408@garzik.org>
-Date: Thu, 15 Feb 2007 00:12:21 -0500
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	kou.ishizaki@toshiba.co.jp, Linas Vepstas <linas@austin.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: spidernet (was Re: [PATCHSET] libata: PATA driver for Celleb)
-References: <200701260724.l0Q7OISY027645@toshiba.co.jp>	
-	<45B9B1CD.4040600@garzik.org>
-	<200702140518.l1E5IoWX010896@toshiba.co.jp>
-	<1171430997.20192.136.camel@localhost.localdomain>
-In-Reply-To: <1171430997.20192.136.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: arnd@arndb.de, linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
-	paulus@samba.org, alan@lxorguk.ukuu.org.uk
+Return-Path: <info@schihei.de>
+In-Reply-To: <20070214140945.4ad0d772@localhost>
+References: <20070209183529.67d542d5@localhost>
+	<20070209184530.4c8bc2be@localhost>
+	<20070209222956.GH1827@localdomain>
+	<20070212101222.24abe14c@localhost>
+	<20070213143418.06fa01b5@localhost>
+	<20070213194436.0306d18a@localhost>
+	<20070213194806.3c266282@localhost>
+	<20070213202854.09332582@localhost>
+	<17874.22587.981499.55058@cargo.ozlabs.ibm.com>
+	<20070214093941.08ec4c7f@localhost>
+	<17874.58072.316004.517233@cargo.ozlabs.ibm.com>
+	<20070214140743.18fafe37@localhost>
+	<20070214140945.4ad0d772@localhost>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8093459E-094C-4BE6-B2DB-DB218F978733@schihei.de>
+From: Heiko J Schick <info@schihei.de>
+Subject: Re: [Cbe-oss-dev] [patch v3] powerpc: add PMI driver for cell blade
+Date: Thu, 15 Feb 2007 08:06:41 +0100
+To: Christian Krafft <parabelboi@bopserverein.de>
+Cc: Christian Krafft <krafft@de.ibm.com>, Nathan Lynch <ntl@pobox.com>,
+	cbe-oss-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,16 +32,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> My overall impression of spidernet development is that EVERYBODY is submitting patches at once, and expecting me to sort out the mess.  No thanks.
-> 
-> Speaking with one voice would be much appreciated.  And said speaker should patch the MAINTAINERS file to reflect reality. 
+Hello Christian,
 
+On 14.02.2007, at 14:09, Christian Krafft wrote:
 
-To be specific, I have dropped -all- spidernet patches I had pending in 
-email, and at the present time there are no unsent spidernet commits in 
-netdev-2.6.git.
+> +	{ .type = "ibm,pmi", .name = "ibm,pmi" },
 
-I'll await the resend of any pending patches from the driver maintainer, 
-once you guys sort out who that is.
+In the FW the device name is still "pmi" - only the type is "ibm,pmi".
 
-	Jeff
+I think it is better to rename it to "ibm,pmi", since PMI is a quite  
+common abbreviation.
+
+Beside this:
+Acked-by: Heiko J Schick <schickhj@de.ibm.com>
+
+Regards,
+	Heiko
