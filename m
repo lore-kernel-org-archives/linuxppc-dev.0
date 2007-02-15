@@ -1,21 +1,26 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1EAF0DDD0C
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 04:31:04 +1100 (EST)
+Return-Path: <stuart.yoder@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 2F3C7DDDFF
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 04:46:00 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l1FHjv3O020741
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 10:45:57 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1FHjuJ1018923
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 11:45:56 -0600 (CST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [DTC PATCH] Add support for decimal,
+	octal and binary based cell values.
+Date: Thu, 15 Feb 2007 10:45:54 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BB35@az33exm25.fsl.freescale.net>
 In-Reply-To: <E1HHkAL-0005Xl-2f@jdl.com>
 References: <E1HHkAL-0005Xl-2f@jdl.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2BDA6214-F867-4719-B0F6-E3409FB525F7@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [DTC PATCH] Add support for decimal,
-	octal and binary based cell values.
-Date: Thu, 15 Feb 2007 11:30:00 -0600
-To: Jon Loeliger <jdl@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "Jon Loeliger" <jdl@jdl.com>, <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +31,9 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 15, 2007, at 11:13 AM, Jon Loeliger wrote:
+I like to see no space between the d#, h#, etc and the
+numeric value.
 
->
-> New syntax d#, b#, o# and h# allow for an explicit prefix
-> on cell values to specify their base.  Eg: <d# 123>
->
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
->
-> ---
+Does anyone see a good reason to keep whitespace there?
 
-What are people's thoughts on supporting '0x' and '0X' for hex?
-
-- k
+Stuart
