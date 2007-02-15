@@ -1,18 +1,23 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Maynard Johnson <maynardj@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH] CELL Oprofile SPU profiling updated patch
-Date: Thu, 15 Feb 2007 19:13:52 +0100
-References: <1171497138.23691.8.camel@dyn9047021078.beaverton.ibm.com>
-	<200702151537.51202.arnd@arndb.de> <45D4870C.9070908@us.ibm.com>
-In-Reply-To: <45D4870C.9070908@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702151913.53594.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Carl Love <cel@us.ibm.com>, cbe-oss-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A797BDDE3E
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 05:42:48 +1100 (EST)
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BB39@az33exm25.fsl.freescale.net>
+References: <E1HHkAL-0005Xl-2f@jdl.com>
+	<2BDA6214-F867-4719-B0F6-E3409FB525F7@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1BB39@az33exm25.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <DFBB231C-47A7-46B9-9D56-B651536B2C5A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [DTC PATCH] Add support for decimal,
+	octal and binary based cell values.
+Date: Thu, 15 Feb 2007 12:41:50 -0600
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,38 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 15 February 2007 17:15, Maynard Johnson wrote:
-> >>+void spu_set_profile_private(struct spu_context * ctx, void * profile_=
-info,
-> >>+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =A0 =
-=A0 struct kref * prof_info_kref,
-> >>+=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 =A0 =
-=A0 void (* prof_info_release) (struct kref * kref))
-> >>+{
-> >>+=A0=A0=A0=A0=A0ctx->profile_private =3D profile_info;
-> >>+=A0=A0=A0=A0=A0ctx->prof_priv_kref =3D prof_info_kref;
-> >>+=A0=A0=A0=A0=A0ctx->prof_priv_release =3D prof_info_release;
-> >>+}
-> >>+EXPORT_SYMBOL_GPL(spu_set_profile_private);
-> >> =A0 =A0
-> >>
-> >
-> >I think you don't need the profile_private member here, if you just use
-> >container_of with ctx->prof_priv_kref in all users.
-> > =A0
-> >
-> Sorry, I don't follow. We want the profile_private to be stored in the=20
-> spu_context, don't we? =A0How else would I be able to do that? =A0And=20
-> besides, wouldn't container_of need the struct name of profile_private? =
-=A0
-> SPUFS doesn't have access to the type.
 
-The idea was to have spu_get_profile_private return the kref pointer,
-and then change the user of that to do
+On Feb 15, 2007, at 11:49 AM, Yoder Stuart-B08248 wrote:
 
-+       if (!spu_info[spu_num] && the_spu) {
-+               spu_info[spu_num] =3D container_of(
-+				spu_get_profile_private(the_spu->ctx),
-+				struct cached_info, cache_kref);
-+               if (spu_info[spu_num])
-+                       kref_get(&spu_info[spu_num]->cache_ref);
+>
+>
+>> -----Original Message-----
+>> From: linuxppc-dev-bounces+b08248=freescale.com@ozlabs.org
+>> [mailto:linuxppc-dev-bounces+b08248=freescale.com@ozlabs.org]
+>> On Behalf Of Kumar Gala
+> [snip]
+>>> New syntax d#, b#, o# and h# allow for an explicit prefix
+>>> on cell values to specify their base.  Eg: <d# 123>
+>>>
+>>> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+>>>
+>>> ---
+>>
+>> What are people's thoughts on supporting '0x' and '0X' for hex?
+>
+> Are you saying allow d#1234, h#5678, and 0x5678?  Or use 0x instead
+> of h#?
+
+I'm saying in addition to supporting the d#, h# notation.
+
+The reason I'm suggesting support '0x' is its pretty natural from C  
+and I know there have been a number of times when I forget that all  
+int constants in .dts are hex.
+
+- k
