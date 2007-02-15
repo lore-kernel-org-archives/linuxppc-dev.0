@@ -1,13 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Resent-Message-ID: <20070215034108.GC17554@localhost.localdomain>
-Date: Thu, 15 Feb 2007 14:38:04 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: More DCR native fixups
-Message-ID: <20070215033804.GB17554@localhost.localdomain>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlab.org
+Message-ID: <17875.55046.873365.575945@cargo.ozlabs.ibm.com>
+Date: Thu, 15 Feb 2007 14:44:06 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
+In-Reply-To: <1171293354.10344.6.camel@johannes.berg>
+References: <20070207124536.963531000@sipsolutions.net>
+	<20070207124610.392302000@sipsolutions.net>
+	<1170940494.4385.51.camel@johannes.berg>
+	<1170973463.2620.373.camel@localhost.localdomain>
+	<1171035382.4520.7.camel@johannes.berg>
+	<1171293354.10344.6.camel@johannes.berg>
+Cc: linux-pm@lists.osdl.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,39 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paulus, resent with better description.  Please apply.
+Johannes Berg writes:
 
-Getting BenH's new EMAC driver working on 440GP, I found some more
-problems in the native mode paths of the new DCR code:
-	- dcr_map() is supposed to return a dcr_host_t, but the native
-version is a macro that doesn't expand to an expression.  With native
-DCRs, dcr_host_t is an empty structure, so we just use a constructor
-expression instead.
-	- dcr_unmap() uses {} instead of the safer do {} while (0)
-idiom to implement a no-op
+> +_GLOBAL(power4_idle_irqs_softdisabled)
+> +	li	r6,1
+> +	b	0f
+>  _GLOBAL(power4_idle)
+> +	li	r6,0
+> +0:
+>  BEGIN_FTR_SECTION
+>  	blr
+>  END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+> @@ -35,8 +40,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+>  	rotldi	r0,r0,16
+>  	mtmsrd	r0,1			/* hard-disable interrupts */
+>  	li	r0,1
+> -	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
+> -	stb	r0,PACAHARDIRQEN(r13)
+> +	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
+> +	stb	r6,PACASOFTIRQEN(r13)	/* set softirqs enabled bit */
 
-Here's a fix.
+Don't you have something backwards here?  If we come in through
+power4_idle_irqs_softdisabled, the name would indicate to me that we
+want to end up with paca->soft_enabled set to 0, not 1.
 
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
-
-Index: working-2.6/include/asm-powerpc/dcr-native.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/dcr-native.h	2007-02-09 13:59:07.000000000 +1100
-+++ working-2.6/include/asm-powerpc/dcr-native.h	2007-02-09 13:59:36.000000000 +1100
-@@ -26,8 +26,8 @@ typedef struct {} dcr_host_t;
- 
- #define DCR_MAP_OK(host)	(1)
- 
--#define dcr_map(dev, dcr_n, dcr_c)	{}
--#define dcr_unmap(host, dcr_n, dcr_c)	{}
-+#define dcr_map(dev, dcr_n, dcr_c)	((dcr_host_t){})
-+#define dcr_unmap(host, dcr_n, dcr_c)	do {} while (0)
- #define dcr_read(host, dcr_n)		mfdcr(dcr_n)
- #define dcr_write(host, dcr_n, value)	mtdcr(dcr_n, value)
- 
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Paul.
