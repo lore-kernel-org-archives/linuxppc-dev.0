@@ -1,24 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17875.49565.444870.924729@cargo.ozlabs.ibm.com>
-Date: Thu, 15 Feb 2007 13:12:45 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
+Return-Path: <benh@kernel.crashing.org>
 Subject: Re: [PATCH 15/16] Add device tree for Ebony
-In-Reply-To: <122a66d49480520cf87cd748bbfc50bb@kernel.crashing.org>
-References: <20070213060904.GA6214@localhost.localdomain>
-	<20070213061026.5837FDDDE9@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
-	<1171470754.4003.101.camel@zod.rchland.ibm.com>
-	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B86F@az33exm25.fsl.freescale.net>
-	<9df9bf3adf511f4c1a7945e022fdd447@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
-	<1171489360.20192.184.camel@localhost.localdomain>
-	<122a66d49480520cf87cd748bbfc50bb@kernel.crashing.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <692d02b69479653f689a50a1257f43e9@kernel.crashing.org>
+References: <20070213061026.5837FDDDE9@ozlabs.org>
+	<e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org>
+	<20070214002210.GE11491@localhost.localdomain>
+	<45afe653a3f963e21e58a063c09b1b22@kernel.crashing.org>
+	<1171488643.20192.177.camel@localhost.localdomain>
+	<7fa77edce7aeb8a41d03b8b422f7f71b@kernel.crashing.org>
+	<1171500782.20192.204.camel@localhost.localdomain>
+	<692d02b69479653f689a50a1257f43e9@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 15 Feb 2007 13:22:43 +1100
+Message-Id: <1171506164.20192.228.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,25 +25,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool writes:
+On Thu, 2007-02-15 at 02:00 +0100, Segher Boessenkool wrote:
+> >>> Note that the "open-pic" node does not have a "#address-cells"
+> >>> property, so that  the number of cells for the parent unit interrupt
+> >>> specifiers is 2 (which is the value of its "#interrupt-cells"
+> >>> property).
+> 
+> > Yes, "missing" is equivalent to 0,
+> 
+> ...and the reason for that is that nodes without physical
+> children should not _have_ a "#address-cells" property.
+> 
+> > but the common practice has always
+> > been to specify it explicitely. Check existing Apple and IBM
+> > device-trees for example.
+> 
+> You do realise how many other borderline (or outright
+> wrong) things are done in those trees, right?
+> 
+> It doesn't really hurt to have a "#a = 0" prop, but it's
+> better to just not have a #a prop if you shouldn't have one.
 
-> Exactly.  The "separate device tree" imitates a real OF,
-> so you will lose much of its value if you start to deviate
-> from how real OF works.
+Let's have one for now. I think that's how I documented it and it works
+fine while I'm not sure the kernel code will cope with not having it (it
+may ... or not).
 
-I disagree.  It was never (and isn't now) the intention to put all of
-the OF requirements on the device tree supplied on OF-less systems.
+There are various issues with the OF bindings, especially the imap one
+(and some pretty bad bugs in it) and that's one of the reason I prefer
+not leaving anything to be "implicit" like this case. It want explicit
+mention of #address-cells/#size-cells/#interrupt-cells at all levels
+where they might enter the parser.
 
-In other words, "we should do X because the bindings require it" isn't
-of itself an argument for making X a requirement on the device tree.
-"We should do X because there are good technical reasons for doing it
-that way" is.  "We should do X because if we don't then device trees
-from real OF systems won't be compatible" is also a reasonable
-argument.
-
-The device tree is required because it is a flexible way to give
-useful information to the kernel.  Thus the focus is quite properly on
-what is useful (or at least potentially useful) to the Linux kernel,
-not on what some binding document says.
-
-Paul.
+Ben.
