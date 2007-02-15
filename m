@@ -1,32 +1,29 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0A08BDDD0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 13:43:13 +1100 (EST)
-In-Reply-To: <17875.49565.444870.924729@cargo.ozlabs.ibm.com>
-References: <20070213060904.GA6214@localhost.localdomain>
-	<20070213061026.5837FDDDE9@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
-	<1171470754.4003.101.camel@zod.rchland.ibm.com>
-	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B86F@az33exm25.fsl.freescale.net>
-	<9df9bf3adf511f4c1a7945e022fdd447@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
-	<1171489360.20192.184.camel@localhost.localdomain>
-	<122a66d49480520cf87cd748bbfc50bb@kernel.crashing.org>
-	<17875.49565.444870.924729@cargo.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 1887ADDD0B
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 13:51:32 +1100 (EST)
+In-Reply-To: <1171506164.20192.228.camel@localhost.localdomain>
+References: <20070213061026.5837FDDDE9@ozlabs.org>
+	<e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org>
+	<20070214002210.GE11491@localhost.localdomain>
+	<45afe653a3f963e21e58a063c09b1b22@kernel.crashing.org>
+	<1171488643.20192.177.camel@localhost.localdomain>
+	<7fa77edce7aeb8a41d03b8b422f7f71b@kernel.crashing.org>
+	<1171500782.20192.204.camel@localhost.localdomain>
+	<692d02b69479653f689a50a1257f43e9@kernel.crashing.org>
+	<1171506164.20192.228.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <6c90a73251f09d619498c77264a15fef@kernel.crashing.org>
+Message-Id: <dbdca7d552aa5656915ef3d8e95365df@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH 15/16] Add device tree for Ebony
-Date: Thu, 15 Feb 2007 03:43:05 +0100
-To: Paul Mackerras <paulus@samba.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
+Date: Thu, 15 Feb 2007 03:51:26 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,41 +33,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Exactly.  The "separate device tree" imitates a real OF,
->> so you will lose much of its value if you start to deviate
->> from how real OF works.
+>> It doesn't really hurt to have a "#a = 0" prop, but it's
+>> better to just not have a #a prop if you shouldn't have one.
 >
-> I disagree.  It was never (and isn't now) the intention to put all of
-> the OF requirements on the device tree supplied on OF-less systems.
+> Let's have one for now. I think that's how I documented it and it works
+> fine while I'm not sure the kernel code will cope with not having it 
+> (it
+> may ... or not).
 
-That's not my point; I'm saying that you shouldn't do the
-same (or similar) things in different ways than "real OF"
-does.
+It *used* to work some months ago, at least.
 
-> In other words, "we should do X because the bindings require it" isn't
-> of itself an argument for making X a requirement on the device tree.
+> There are various issues with the OF bindings, especially the imap one
+> (and some pretty bad bugs in it)
 
-It's a pretty strong indicator though; all other things
-being equal, you should do what the bindings say.  There
-can be good reasons to do differently, but then you better
-have those reasons :-)
+You keep saying this but I can't find any (except in the
+examples, there are some really obvious bugs there -- but
+examples aren't part of the binding /per se/).  Can you
+please tell me what these bugs are?
 
-> "We should do X because there are good technical reasons for doing it
-> that way" is.  "We should do X because if we don't then device trees
-> from real OF systems won't be compatible" is also a reasonable
-> argument.
+> and that's one of the reason I prefer
+> not leaving anything to be "implicit" like this case.
 
-You're turning the argument around, but hey :-)
+It is not implicit; it is an exception.  It really is
+wrong to have the #address-cells property in a node
+like this (though pretty much harmless in practice).
 
-> The device tree is required because it is a flexible way to give
-> useful information to the kernel.  Thus the focus is quite properly on
-> what is useful (or at least potentially useful) to the Linux kernel,
-> not on what some binding document says.
+> It want explicit
+> mention of #address-cells/#size-cells/#interrupt-cells at all levels
+> where they might enter the parser.
 
-Still, if you want to be compatible to "real OF" (and you
-do, otherwise you would have chosen a structure that is
-more appropriate for this goal), you better *be* compatible
-to OF.
+But they *cannot* be used by the parser (for memory
+regions) here; and the parser for interrupt mappings
+better handle this case correctly (and like I said,
+I believe it does, at least in some cases ;-) ).
+
+What you're really saying is "my code might handle
+edge cases incorrectly, so please enter incorrect
+input to avoid those cases".
 
 
 Segher
