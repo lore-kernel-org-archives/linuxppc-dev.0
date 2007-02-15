@@ -1,27 +1,37 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DD08DDDECA
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 02:08:37 +1100 (EST)
-Subject: Re: [PATCH 02/12] powermac: support G5 CPU hotplug
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17875.55046.873365.575945@cargo.ozlabs.ibm.com>
-References: <20070207124536.963531000@sipsolutions.net>
-	<20070207124610.392302000@sipsolutions.net>
-	<1170940494.4385.51.camel@johannes.berg>
-	<1170973463.2620.373.camel@localhost.localdomain>
-	<1171035382.4520.7.camel@johannes.berg>
-	<1171293354.10344.6.camel@johannes.berg>
-	<17875.55046.873365.575945@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-23w1eI5bxGkw6efWr0xa"
-Date: Thu, 15 Feb 2007 16:08:28 +0100
-Message-Id: <1171552108.5220.6.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linux-pm@lists.osdl.org, linuxppc-dev@ozlabs.org
+Return-Path: <hnguyen@linux.vnet.ibm.com>
+Received: from mtagate5.uk.ibm.com (mtagate5.uk.ibm.com [195.212.29.138])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate5.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4FFE4DDE25
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 02:25:26 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate5.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l1FFPM7l353580
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 15:25:22 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
+	ESMTP id l1FFPMb11433786
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 15:25:22 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l1FFPLB5004344
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 15:25:22 GMT
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH 2.6.21-rc1 1/5] ehca: reworked irq handler to avoid/reduce
+	missed irq events
+Date: Thu, 15 Feb 2007 16:28:35 +0100
+References: <200702141740.48286.hnguyen@linux.vnet.ibm.com>
+	<adafy981jgc.fsf@cisco.com>
+In-Reply-To: <adafy981jgc.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702151628.35483.hnguyen@linux.vnet.ibm.com>
+Cc: heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org,
+	openib-general@openib.org, hch@infradead.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,50 +41,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> Looks fine but this patch at least has serious whitespace
+> damage... please resend a fixed version.
+Sorry for this. Resending the patches 1-5.
 
---=-23w1eI5bxGkw6efWr0xa
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2007-02-15 at 14:44 +1100, Paul Mackerras wrote:
-
-> > +_GLOBAL(power4_idle_irqs_softdisabled)
-> > +	li	r6,1
-> > +	b	0f
-> >  _GLOBAL(power4_idle)
-> > +	li	r6,0
-> > +0:
-> >  BEGIN_FTR_SECTION
-> >  	blr
-> >  END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
-> > @@ -35,8 +40,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
-> >  	rotldi	r0,r0,16
-> >  	mtmsrd	r0,1			/* hard-disable interrupts */
-> >  	li	r0,1
-> > -	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
-> > -	stb	r0,PACAHARDIRQEN(r13)
-> > +	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
-> > +	stb	r6,PACASOFTIRQEN(r13)	/* set softirqs enabled bit */
->=20
-> Don't you have something backwards here?  If we come in through
-> power4_idle_irqs_softdisabled, the name would indicate to me that we
-> want to end up with paca->soft_enabled set to 0, not 1.
-
-Umm, yes, looks like. I'll rewrite it. Interesting that it worked as I
-had expected though (I actually put a printk into the timer interrupt!).
-
-johannes
-
---=-23w1eI5bxGkw6efWr0xa
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF1Hds/ETPhpq3jKURArhQAKCXNsmEFmHexmyDg76Z5/N5Fcr55QCdG41f
-35Yjz/biIRlpYsAJNSlwoCA=
-=2pzT
------END PGP SIGNATURE-----
-
---=-23w1eI5bxGkw6efWr0xa--
+Nam
