@@ -1,23 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A797BDDE3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 05:42:48 +1100 (EST)
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BB39@az33exm25.fsl.freescale.net>
-References: <E1HHkAL-0005Xl-2f@jdl.com>
-	<2BDA6214-F867-4719-B0F6-E3409FB525F7@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1BB39@az33exm25.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DFBB231C-47A7-46B9-9D56-B651536B2C5A@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [DTC PATCH] Add support for decimal,
-	octal and binary based cell values.
-Date: Thu, 15 Feb 2007 12:41:50 -0600
-To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 143D1DDDE7
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 06:10:05 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC/PATCH] powerpc: introduce "slices" (aka. meta-segments)
+Date: Thu, 15 Feb 2007 20:09:58 +0100
+References: <1171528608.20192.264.camel@localhost.localdomain>
+In-Reply-To: <1171528608.20192.264.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702152009.58367.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,32 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thursday 15 February 2007 09:36, Benjamin Herrenschmidt wrote:
+> =A0arch/powerpc/Kconfig =A0 =A0 =A0 =A0 =A0 =A0 =A0| =A0 =A05
+> =A0arch/powerpc/kernel/asm-offsets.c | =A0 16 -
+> =A0arch/powerpc/mm/Makefile =A0 =A0 =A0 =A0 =A0| =A0 =A01
+> =A0arch/powerpc/mm/hash_utils_64.c =A0 | =A0 =A04
+> =A0arch/powerpc/mm/hugetlbpage.c =A0 =A0 | =A0514 -----------------------=
+=2D-------------
+> =A0arch/powerpc/mm/mmu_context_64.c =A0| =A0 =A04
+> =A0arch/powerpc/mm/slb.c =A0 =A0 =A0 =A0 =A0 =A0 | =A0 11
+> =A0arch/powerpc/mm/slb_low.S =A0 =A0 =A0 =A0 | =A0 50 ++-
+> =A0arch/powerpc/mm/slice.c =A0 =A0 =A0 =A0 =A0 | =A0517 +++++++++++++++++=
++++++++++++++++++++++
+> =A0include/asm-powerpc/mmu.h =A0 =A0 =A0 =A0 | =A0 12
+> =A0include/asm-powerpc/paca.h =A0 =A0 =A0 =A0| =A0 =A02
+> =A0include/asm-powerpc/page_64.h =A0 =A0 | =A0 83 ++----
+> =A012 files changed, 625 insertions(+), 594 deletions(-)
 
-On Feb 15, 2007, at 11:49 AM, Yoder Stuart-B08248 wrote:
+I tried to review your patch, but I found it hard because of the amount of
+code that that just gets moved from hugetlbpage.c to slice.c. Could you
+send the next version of as two patches, with one of them only moving the
+code without changing it?
 
->
->
->> -----Original Message-----
->> From: linuxppc-dev-bounces+b08248=freescale.com@ozlabs.org
->> [mailto:linuxppc-dev-bounces+b08248=freescale.com@ozlabs.org]
->> On Behalf Of Kumar Gala
-> [snip]
->>> New syntax d#, b#, o# and h# allow for an explicit prefix
->>> on cell values to specify their base.  Eg: <d# 123>
->>>
->>> Signed-off-by: Jon Loeliger <jdl@freescale.com>
->>>
->>> ---
->>
->> What are people's thoughts on supporting '0x' and '0X' for hex?
->
-> Are you saying allow d#1234, h#5678, and 0x5678?  Or use 0x instead
-> of h#?
-
-I'm saying in addition to supporting the d#, h# notation.
-
-The reason I'm suggesting support '0x' is its pretty natural from C  
-and I know there have been a number of times when I forget that all  
-int constants in .dts are hex.
-
-- k
+	Arnd <><
