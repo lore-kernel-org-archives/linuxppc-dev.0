@@ -1,18 +1,14 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Maynard Johnson <maynardj@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH] CELL Oprofile SPU profiling updated patch
-Date: Fri, 16 Feb 2007 18:14:26 +0100
-References: <1171497138.23691.8.camel@dyn9047021078.beaverton.ibm.com>
-	<200702151537.51202.arnd@arndb.de> <45D4FBB0.7090109@us.ibm.com>
-In-Reply-To: <45D4FBB0.7090109@us.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702161814.26855.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Carl Love <cel@us.ibm.com>, cbe-oss-dev@ozlabs.org,
-	oprofile-list@lists.sourceforge.net, linux-kernel@vger.kernel.org
+Return-Path: <b08248@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id BCCE0DDE16
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 04:30:34 +1100 (EST)
+Date: Fri, 16 Feb 2007 11:30:29 -0600
+From: Stuart Yoder <b08248@freescale.com>
+Message-Id: <200702161730.l1GHUTDJ006649@ld0164-tx32.am.freescale.net>
+To: paulus@samba.org
+Subject: [PATCH] powerpc: remove references to the obsolete linux,
+	platform property
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +18,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 16 February 2007 01:32, Maynard Johnson wrote:
-> config OPROFILE_CELL
-> =A0 =A0 =A0 =A0 bool "OProfile for Cell Broadband Engine"
-> =A0 =A0 =A0 =A0 depends on OPROFILE && SPU_FS
-> =A0 =A0 =A0 =A0 default y if ((SPU_FS =3D y && OPROFILE =3D y) || (SPU_FS=
- =3D m &&=20
-> OPROFILE =3D m))
-> =A0 =A0 =A0 =A0 help
-> =A0 =A0 =A0 =A0 =A0 Profiling of Cell BE SPUs requires special support en=
-abled
-> =A0 =A0 =A0 =A0 =A0 by this option. =A0Both SPU_FS and OPROFILE options m=
-ust be
-> =A0 =A0 =A0 =A0 =A0 set 'y' or both be set 'm'.
-> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->=20
-> Can anyone see a problem with any of this . . . or perhaps a suggestion=20
-> of a better way?
 
-The text suggests it doesn't allow SPU_FS=3Dy with OPROFILE=3Dm, which I th=
-ink
-should be allowed. I also don't see any place in the code where you actually
-use CONFIG_OPROFILE_CELL.
+Remove references to the linux,platform property from
+booting-without-of.txt since it is obsolete.
 
-Ideally, you should be able to have an oprofile_spu module that can be
-loaded after spufs.ko and oprofile.ko. In that case you only need
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
+ Documentation/powerpc/booting-without-of.txt |    9 +--------
+ 1 files changed, 1 insertions(+), 8 deletions(-)
 
-config OPROFILE_SPU
-	depends on OPROFILE && SPU_FS
-	default y
-
-and it will automatically build oprofile_spu as a module if one of the two
-is a module and won't build it if one of them is disabled.
-
-	Arnd <><
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 3b51467..b2ab388 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -509,7 +509,6 @@ looks like in practice.
+       o chosen
+         |- name = "chosen"
+         |- bootargs = "root=/dev/sda2"
+-        |- linux,platform = <00000600>
+         |- linux,phandle = <4>
+ 
+ This tree is almost a minimal tree. It pretty much contains the
+@@ -733,8 +732,7 @@ address which can extend beyond that lim
+       that typically get driven by the same platform code in the
+       kernel, you would use a different "model" property but put a
+       value in "compatible". The kernel doesn't directly use that
+-      value (see /chosen/linux,platform for how the kernel chooses a
+-      platform type) but it is generally useful.
++      value but it is generally useful.
+ 
+   The root node is also generally where you add additional properties
+   specific to your board like the serial number if any, that sort of
+@@ -843,11 +841,6 @@ address which can extend beyond that lim
+   the prom_init() trampoline when booting with an OF client interface,
+   but that you have to provide yourself when using the flattened format.
+ 
+-  Required properties:
+-
+-    - linux,platform : This is your platform number as assigned by the
+-      architecture maintainers
+-
+   Recommended properties:
+ 
+     - bootargs : This zero-terminated string is passed as the kernel
+-- 
+1.4.4
