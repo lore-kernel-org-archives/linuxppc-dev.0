@@ -1,23 +1,32 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 126DEDDEB6
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 20:20:44 +1100 (EST)
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BAF0@az33exm25.fsl.freescale.net>
-References: <20070213061026.5837FDDDE9@ozlabs.org><e9a2d2be6fe9006c1e2e0b65099a1854@kernel.crashing.org><20070214002210.GE11491@localhost.localdomain><45afe653a3f963e21e58a063c09b1b22@kernel.crashing.org><20070214231734.GC16279@localhost.localdomain><90e2bb990b7e1f46c6eaccd1d9255d77@kernel.crashing.org><E1HHhCD-0004Hf-QT@jdl.com>
-	<865018a527ef1056f628250167301e64@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1BAF0@az33exm25.fsl.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 353F3DDDCF
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 20:23:09 +1100 (EST)
+In-Reply-To: <1171572229.5644.13.camel@localhost.localdomain>
+References: <20070213060904.GA6214@localhost.localdomain>
+	<20070213061026.5837FDDDE9@ozlabs.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
+	<1171470754.4003.101.camel@zod.rchland.ibm.com>
+	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
+	<20070214232246.GE16279@localhost.localdomain>
+	<fbff2510963c6c5bb9d5ccb0574f97b1@kernel.crashing.org>
+	<20070215015316.GL16279@localhost.localdomain>
+	<889579906c6fd096a82283d5a3a0227e@kernel.crashing.org>
+	<1171536722.5644.6.camel@localhost.localdomain>
+	<be63e9b080539aa34a9e44aa8efaa60e@kernel.crashing.org>
+	<1171572229.5644.13.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1425bda02491ec9f112b43ccebb8127e@kernel.crashing.org>
+Message-Id: <a7473577f846bd7bcb2d696decef7efd@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 15/16] Add device tree for Ebony 
-Date: Fri, 16 Feb 2007 10:20:34 +0100
-To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>,
+Subject: Re: [PATCH 15/16] Add device tree for Ebony
+Date: Fri, 16 Feb 2007 10:23:02 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
 	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,34 +37,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 1275 specifies whitespace inbetween, but isn't this due to
-> the way they are describing things for the forth / stack-based
-> operations?
+>> Of course, I know that.  What I'm saying is that devices
+>> where the *only* connection to the system is the DCR ring,
+>> should use normal "reg" properties instead of "dcr-reg"
+>> properties (and normal parent instead of "dcr-parent") to
+>> describe the DCR registers, so that they get a valid unit
+>> address.
+>
+> So you say that we shold have 2 different ways to encode a DCR mapping 
+> ?
+> Nah ....
 
-Sure, since for true OF d# etc. are Forth words and thus
-are whitespace delimited.
-
-> I would prefer in the DTS files to have no whitespace in
-> between--  <d#1234 #h5678> seems much more readable
-> than <d# 1234 #h 5678>.
-
-[h# not #h] Sure, make it optional, that should work just fine.
-
-> Or even better-- just use standard C notation
->     <1234 0x5678>
-
-Right now no prefix means hexadecimal.  So you need a prefix
-that means decimal, and C has none.
-
-> That is very readable.  Why bring unnecessary complexity into
-> this?
-
-It's all historical accident I suppose.  Since the DTS
-format tries to look like C it should have used 0x all
-along.  It's not too late too change btw, the DTS is not
-the actual interface, the binary blob that is passed
-around doesn't care what number base you used in the
-source code.
+If you don't, and you have two identical devices sitting
+on the same DCR bus (but not on an MMIO bus), you have
+no way to distinguish them.  Oops.  You might not like it
+but that's the DCR's fault, not mine :-)
 
 
 Segher
