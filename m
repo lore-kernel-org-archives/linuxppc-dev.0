@@ -1,19 +1,24 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 5DA5ADDE24
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 01:47:51 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 1/12]: sungem_phy: support bcm5461 phy, autoneg.
-Date: Fri, 16 Feb 2007 15:46:31 +0100
-References: <200701260724.l0Q7OISY027645@toshiba.co.jp>
-	<20070216001857.GC923@austin.ibm.com>
-	<20070216004325.GA8192@austin.ibm.com>
-In-Reply-To: <20070216004325.GA8192@austin.ibm.com>
+Return-Path: <bzolnier@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.175])
+	by ozlabs.org (Postfix) with ESMTP id 0C3DBDDE2D
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 01:48:06 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so147160ugf
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 06:48:04 -0800 (PST)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] use winbond libata instead of ide driver for pseries CD
+	drives
+Date: Fri, 16 Feb 2007 15:53:54 +0100
+References: <20070210203512.GA25586@aepfle.de>
+	<20070216092046.GA2572@aepfle.de> <45D5B720.4010308@ru.mvista.com>
+In-Reply-To: <45D5B720.4010308@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200702161546.31765.arnd@arndb.de>
+Message-Id: <200702161553.54550.bzolnier@gmail.com>
+Cc: Andrew Morton <akpm@osdl.org>, Olaf Hering <olaf@aepfle.de>,
+	Jeff Garzik <jeff@garzik.org>, linux-ide@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +28,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday 16 February 2007 01:43, Linas Vepstas wrote:
-> Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-You only have the Signed-off-by information here and in the other
-patches, but no 'From:' line.
+On Friday 16 February 2007 14:52, Sergei Shtylyov wrote:
 
-I assume that Jeff uses the git-applymbox tool to import
-mails, in which case the first line of the patch description
-should be 'From: Someone Else <someone@example.com>', unless you
-are the author of the patch yourself.
+>     I'm sorry, how those 2 drivers can be equivalent?! The pata_winbond driver 
+> is for VLB only, sl81c105 was for PCI only -- you certainly want to use 
+> pata_sl82c105 (indeed better version of sl82c105 driver).
 
-	Arnd <><
+I was under the impression that with your fixes these drivers
+(sl82c105 and pata_sl82c105) are functionally equivalent.
+
+Did I miss something (i.e. some patches)?
+
+Bart
