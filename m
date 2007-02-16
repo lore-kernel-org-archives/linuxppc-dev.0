@@ -1,24 +1,19 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 84151DDDFE
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 01:40:14 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so145018ugf
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 06:40:12 -0800 (PST)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] use winbond libata instead of ide driver for pseries CD
-	drives
-Date: Fri, 16 Feb 2007 15:46:01 +0100
-References: <20070210203512.GA25586@aepfle.de> <45D4E82B.7020403@garzik.org>
-	<20070216092046.GA2572@aepfle.de>
-In-Reply-To: <20070216092046.GA2572@aepfle.de>
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 8DAA2DDE01
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 01:41:27 +1100 (EST)
+Message-ID: <45D5C292.2080904@freescale.com>
+Date: Fri, 16 Feb 2007 08:41:22 -0600
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200702161546.01159.bzolnier@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackeras <paulus@samba.org>, Jeff Garzik <jeff@garzik.org>,
-	linux-ide@vger.kernel.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH v3] powerpc: add of_get_mac_address() and update fsl_soc.c
+	to use it
+References: <11714756473819-git-send-email-timur@freescale.com>
+	<17876.64475.232797.997009@cargo.ozlabs.ibm.com>
+In-Reply-To: <17876.64475.232797.997009@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-Hi,
-
-On Friday 16 February 2007 10:20, Olaf Hering wrote:
+Paul Mackerras wrote:
+> Timur Tabi writes:
 > 
-> Change the default for the built-in IDE on p610/p615/p630 from
-> ide to libata. libata has better error handling and the drive can
-> recover when hald does its CD media polling.
+>> Add function of_get_mac_address(), which obtains the best MAC address to use
+>> from the device tree by checking various properties in order.  The order is:
+>> 'mac-address', then 'local-mac-address', then 'address'.  It skips properties 
+>> that contain invalid MAC addresses, which were probably not initialized
+>> by U-Boot.
 > 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> Looks OK except that of_get_mac_address should go in prom_parse.c, not
+> prom.c.
 
-Does IDE sl82c105 need the same udelay() fix patch as done for
-pata_winbond?
-
-Bart
+Ok, I'll submit another patch in a few hours.  I presume the prototype 
+should stay in include/asm-powerpc/prom.h?
