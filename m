@@ -1,25 +1,19 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id 81DD6DDE21
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 01:46:00 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so146586ugf
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 06:45:58 -0800 (PST)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] use winbond libata instead of ide driver for pseries CD
-	drives
-Date: Fri, 16 Feb 2007 15:51:49 +0100
-References: <20070210203512.GA25586@aepfle.de>
-	<20070216092046.GA2572@aepfle.de>
-	<200702161546.01159.bzolnier@gmail.com>
-In-Reply-To: <200702161546.01159.bzolnier@gmail.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 5DA5ADDE24
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 01:47:51 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 1/12]: sungem_phy: support bcm5461 phy, autoneg.
+Date: Fri, 16 Feb 2007 15:46:31 +0100
+References: <200701260724.l0Q7OISY027645@toshiba.co.jp>
+	<20070216001857.GC923@austin.ibm.com>
+	<20070216004325.GA8192@austin.ibm.com>
+In-Reply-To: <20070216004325.GA8192@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200702161551.49697.bzolnier@gmail.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackeras <paulus@samba.org>, Jeff Garzik <jeff@garzik.org>,
-	linux-ide@vger.kernel.org
+  charset="iso-8859-1"
+Message-Id: <200702161546.31765.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,20 +23,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Friday 16 February 2007 01:43, Linas Vepstas wrote:
+> Signed-off-by: Jens Osterkamp <jens@de.ibm.com>
+> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
-On Friday 16 February 2007 15:46, Bartlomiej Zolnierkiewicz wrote:
-> 
-> Hi,
-> 
-> On Friday 16 February 2007 10:20, Olaf Hering wrote:
-> > 
-> > Change the default for the built-in IDE on p610/p615/p630 from
-> > ide to libata. libata has better error handling and the drive can
-> > recover when hald does its CD media polling.
-> > 
-> > Signed-off-by: Olaf Hering <olaf@aepfle.de>
-> 
-> Does IDE sl82c105 need the same udelay() fix patch as done for
-> pata_winbond?
+You only have the Signed-off-by information here and in the other
+patches, but no 'From:' line.
 
-s/pata_winbond/pata_sl82c105/ of course
+I assume that Jeff uses the git-applymbox tool to import
+mails, in which case the first line of the patch description
+should be 'From: Someone Else <someone@example.com>', unless you
+are the author of the patch yourself.
+
+	Arnd <><
