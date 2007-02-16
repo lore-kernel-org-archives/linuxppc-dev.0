@@ -1,19 +1,19 @@
-Return-Path: <dlclark@chtech.com>
-Received: from mail26e.sbc-webhosting.com (mail26e.sbc-webhosting.com
-	[216.173.236.227]) by ozlabs.org (Postfix) with SMTP id 7BDE1DDE27
+Return-Path: <runet@innovsys.com>
+Received: from mail.innovsys.com (smtp.innovsys.com [66.115.232.196])
+	by ozlabs.org (Postfix) with ESMTP id 95F4FDDDDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Feb 2007 03:39:11 +1100 (EST)
-From: "David Clark" <dlclark@chtech.com>
-To: <a.llano@usyscom.com>
-Subject: RE: 16-bit PCMCIA resource allocation
-Date: Fri, 16 Feb 2007 10:32:44 -0600
-Message-ID: <001e01c751e8$17d81c50$0f01a8c0@longhorn>
+	Sat, 17 Feb 2007 04:40:59 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-In-Reply-To: <1171624587.27115.18.camel@usyscom-sw-server>
-Cc: =?iso-8859-1?Q?'Miguel_=C1ngel_=C1lvarez_Cabanes'?= <ma.alvarez@ziv.es>,
-	'Aitor Arzuaga' <a.arzuaga@usyscom.com>, linuxppc-embedded@ozlabs.org
+	charset="us-ascii"
+Subject: RE: Finding devices with dynamic IP addresses
+Date: Fri, 16 Feb 2007 11:28:52 -0600
+Message-ID: <DCEAAC0833DD314AB0B58112AD99B93B02912B95@ismail.innsys.innovsys.com>
+In-Reply-To: <GPECLCIGPLHEOMGPMCPACELEEGAA.edjubenville@adelphia.net>
+References: <GPECLCIGPLHEOMGPMCPACELEEGAA.edjubenville@adelphia.net>
+From: "Rune Torgersen" <runet@innovsys.com>
+To: "Edward Jubenville" <edjubenville@adelphia.net>,
+	"Linuxppc-Embedded" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,20 +24,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Asier,
+> From: Edward Jubenville
+> Can anyone recommend a strategy for finding devices with dynamic IPs?
 
-Do you get the following message or similar during boot (dmesg output)?
+To do somehting similar here, we use a scheme were the windows host
+sends out a UDP broadcast message, and all the devices have daemon
+running, listening to that broadcast, and sends back (via broadcast) a
+response with the IP address and serial number embedded.
 
-"cs: memory probe 0x80000000-0xfcffffff:"
-"  excluding 0x80000000-0xfcffffff"
-
-Note: in my dmesg output these where not on consecutive lines.
-
-David Clark
-Senior Software Engineer
-C&H Technologies, Inc
-Web: http:\\www.chtech.com
-Phone: 512-733-2621
-Fax: 512-733-2629
-Email: dlclark@chtech.com
- 
+We use this to identify all running devices on the network.
+This only works within the same subnet.
