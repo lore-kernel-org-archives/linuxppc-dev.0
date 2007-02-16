@@ -1,36 +1,28 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3269BDDDF0
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 20:42:07 +1100 (EST)
-In-Reply-To: <17877.1576.405941.835140@cargo.ozlabs.ibm.com>
-References: <20070213060904.GA6214@localhost.localdomain>
-	<20070213061026.5837FDDDE9@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
-	<1171470754.4003.101.camel@zod.rchland.ibm.com>
-	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B86F@az33exm25.fsl.freescale.net>
-	<9df9bf3adf511f4c1a7945e022fdd447@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
-	<1171489360.20192.184.camel@localhost.localdomain>
-	<122a66d49480520cf87cd748bbfc50bb@kernel.crashing.org>
-	<17875.49565.444870.924729@cargo.ozlabs.ibm.com>
-	<6c90a73251f09d619498c77264a15fef@kernel.crashing.org>
-	<17875.53329.662052.612956@cargo.ozlabs.ibm.com>
-	<65b693652fa034ed521e132a6142b3b7@kernel.crashing.org>
-	<17877.1576.405941.835140@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <698289856f5f7db0f9fdee6ecb60a459@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 15/16] Add device tree for Ebony
-Date: Fri, 16 Feb 2007 10:41:58 +0100
-To: Paul Mackerras <paulus@samba.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D9F94DDD0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 20:54:51 +1100 (EST)
+Subject: Re: purpose of /chosen node (was RE: [PATCH] powerpc: delete
+	boot-cpu and chosen nodes from all DTSfiles)
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <9415c89211d2197807813b8311f3ebb1@kernel.crashing.org>
+References: <11713852392294-git-send-email-timur@freescale.com>
+	<20070214003119.GF11491@localhost.localdomain>
+	<45D29BBA.7090401@freescale.com>
+	<20070214052440.GB12609@localhost.localdomain>
+	<45D31734.7030808@freescale.com>
+	<20070214233348.GH16279@localhost.localdomain>
+	<c8fe6c9c19018243871df0fb9ed23a0b@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1BC76@az33exm25.fsl.freescale.net>
+	<9415c89211d2197807813b8311f3ebb1@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 16 Feb 2007 20:54:37 +1100
+Message-Id: <1171619678.5644.69.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,76 +32,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> We don't require an OF device tree;
->>
->> When booting on real OF you do.
->
-> No, the kernel requires a flattened tree, which is created by glue
-> code from the OF device tree.
+On Fri, 2007-02-16 at 08:30 +0100, Segher Boessenkool wrote:
+> > If the kernel needs a convenient place to keep a phandle to the
+> > top level interrupt controller,
+> 
+> Well that's the first point: the kernel doesn't need this
+> at all, it can derive this from the rest of the tree easy
+> enough.
 
-Heh.  And you really think that "glue code" will ever not
-be linked into the zImage, and distributed with the kernel
-code?
+Not that easy. I beleive it's better to have it expressed explicitely.
 
-> Currently everything in the OF tree
-> goes across into the flattened tree, but in future there may not be a
-> 1-1 correspondence.
+> > how about just under root?
+> 
+> CHRP does this (in an extra-plus nasty way).
+> 
+> > (Or, we could make up a new node)
+> 
+> Duplicate node?  No way.  You can be flexible with adding
+> extra properties, but every node should represent a (pseudo-)
+> device, and every device in the system should be represented
+> by exactly one node.
+> 
+> Or you could make the convention that /aliases/interrupt-controller
+> points to the root interrupt controller, if you really
+> think you want this.
 
-Which would be a mistake IMNSHO.  Sure you want to do some
-fixups on broken things in some trees, but that's all.
+That too.
 
-Or perhaps you mean you would morph the tree into some
-completely different format?  That would be fine, just
-make sure it is obvious it is something different.
-
->> Sure.  You could have chosen a structure that is closer to the
->> internal Linux structures.
->
-> What internal Linux structures?
-
-The Linux device abstractions, for example.
-
-> In any case it's a mistake to tie
-> internal and external structures together because it creates future
-> compatibility headaches.
-
-You don't have to tell _me_ that.
-
->>> That it looks strangely familiar to you is just a
->>> coincidence. :)
->>
->> Heh suuuuuuuure :-)
->
-> The device tree is basically a generalization of the list of tags +
-> values that ppc and other architectures use.
-
-Yeah whatever.  It is a *complete* accident that it is
-virtually identical to OF.  I believe you.
-
-> The tags are strings
-> rather than numbers, because that makes sense, and you can group sets
-> of tags + values that relate to a particular device together, and you
-> can link devices together in a hierarchical arrangement.
-
-Not just "you can", you *must*.  The way they are connected
-has a lot of meaning.  Remove that and everything starts
-falling apart.
-
-> The last thing I want to do is to put unnecessary burdens on embedded
-> platforms just to comply with OF requirements.
-
-Then you should define a simpler format that hopefully can
-handle everything that OF can.  Maybe you can do a better
-job if you really think OF is overly complicated.
-
-> We have the device
-> tree because it makes sense both for embedded and for desktop/server
-> machines, not because OF is some sort of holy writ.
-
-Whatever interface definition you do create, it will be "holy
-writ".  Since almost nothing is written down (complete enough
-and without major errors and inconsistencies) elsewhere, there
-is no other choice right now than to fall back to the OF specs.
-
-
-Segher
+Ben.
