@@ -1,14 +1,26 @@
-Return-Path: <b08248@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id BCCE0DDE16
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 04:30:34 +1100 (EST)
-Date: Fri, 16 Feb 2007 11:30:29 -0600
-From: Stuart Yoder <b08248@freescale.com>
-Message-Id: <200702161730.l1GHUTDJ006649@ld0164-tx32.am.freescale.net>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: remove references to the obsolete linux,
-	platform property
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 5C325DDE23
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 04:33:16 +1100 (EST)
+Date: Fri, 16 Feb 2007 18:33:14 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/4 (updated)] ps3fb: thread updates
+In-Reply-To: <20070216163811.GB32051@lst.de>
+Message-ID: <Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
+References: <20070215152301.573853000@sonycom.com>
+	<20070215152432.264415000@sonycom.com>
+	<20070215175007.GA10817@lst.de>
+	<1171575817.5644.44.camel@localhost.localdomain>
+	<20070215165916.de546f0d.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
+	<20070216163811.GB32051@lst.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,48 +30,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 16 Feb 2007, Christoph Hellwig wrote:
+> > +	DEFINE_WAIT(wait);
+> > +	DECLARE_WAIT_QUEUE_HEAD(wq);
+> > +
+> > +	while (!kthread_should_stop()) {
+> > +		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
+> > +		if (!ps3fb.is_kicked)
+> > +			schedule();
+> > +		finish_wait(&wq, &wait);
+> > +		ps3fb.is_kicked = 0;
+> > +		ps3fb_sync(0);	/* single buffer */
+> 
+> should probably be just:
+> 
+> 	while (!kthread_should_stop()) {
+> 		ps3fb_sync(0);
+> 		schedule();
+> 	}
+> 
+> given that you don't need a waitqueue and a spurious wakeup here
+> seems harmless.
 
-Remove references to the linux,platform property from
-booting-without-of.txt since it is obsolete.
+Not always. If flipping is disabled, or external flip is enabled, you don't
+want a spurious flip.
 
-Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
----
- Documentation/powerpc/booting-without-of.txt |    9 +--------
- 1 files changed, 1 insertions(+), 8 deletions(-)
+I'll send a new patch after the weekend.
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 3b51467..b2ab388 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -509,7 +509,6 @@ looks like in practice.
-       o chosen
-         |- name = "chosen"
-         |- bootargs = "root=/dev/sda2"
--        |- linux,platform = <00000600>
-         |- linux,phandle = <4>
- 
- This tree is almost a minimal tree. It pretty much contains the
-@@ -733,8 +732,7 @@ address which can extend beyond that lim
-       that typically get driven by the same platform code in the
-       kernel, you would use a different "model" property but put a
-       value in "compatible". The kernel doesn't directly use that
--      value (see /chosen/linux,platform for how the kernel chooses a
--      platform type) but it is generally useful.
-+      value but it is generally useful.
- 
-   The root node is also generally where you add additional properties
-   specific to your board like the serial number if any, that sort of
-@@ -843,11 +841,6 @@ address which can extend beyond that lim
-   the prom_init() trampoline when booting with an OF client interface,
-   but that you have to provide yourself when using the flattened format.
- 
--  Required properties:
--
--    - linux,platform : This is your platform number as assigned by the
--      architecture maintainers
--
-   Recommended properties:
- 
-     - bootargs : This zero-terminated string is passed as the kernel
--- 
-1.4.4
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
