@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 1/3] zImage: Add more flexible gunzip convenience functions
+Subject: [PATCH 2/3] zImage: Cleanup and improve prep_kernel()
 In-Reply-To: <20070216062458.GA23008@localhost.localdomain>
-Message-Id: <20070216062739.37C95DDD05@ozlabs.org>
+Message-Id: <20070216062739.62AE8DDD08@ozlabs.org>
 Date: Fri, 16 Feb 2007 17:27:39 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,400 +14,334 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, arch/powerpc/boot/main.c includes a gunzip() function
-which is a convenient wrapper around zlib.  However, it doesn't
-conveniently allow decompressing part of an image to one location,
-then the remainder to a different address.
+This patch rewrites prep_kernel() in the zImage wrapper code to be
+clearer and more flexible.  Notable changes:
 
-This patch adds a new set of more flexible convenience wrappers around
-zlib, moving them to their own file, gunzip_util.c, in the process.
-These wrappers allow decompressing sections of the compressed image to
-different locations.  In addition, they transparently handle
-uncompressed data, avoiding special case code to handle uncompressed
-vmlinux images.
-
-The patch also converts main.c to use the new wrappers, using the new
-flexibility to avoid decompressing the vmlinux's ELF header twice as
-we did previously.  That in turn means we avoid extending our
-allocations for the vmlinux to allow space for the extra copy of the
-ELF header.
+	- Handling of the initrd image from prep_kernel() has moved
+into a new prep_initrd() function.
+	- The address of the initrd image is now added as device tree
+properties, as the kernel expects.
+	- We only copy a packaged initrd image to a new location if it
+is in danger of being clobbered when the kernel moves to its final
+location, instead of always.
+	- By default we decompress the kernel directly to address 0,
+instead of requiring it to relocate itself.  Platforms (such as OF)
+where doing this could clobber still-live firmware data structures can
+override the vmlinux_alloc hook to provide an alternate place to
+decompress the kernel.
+	- We no longer pass lots of information between functions in
+global variables.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/boot/Makefile      |    3 
- arch/powerpc/boot/gunzip_util.c |  140 ++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/gunzip_util.h |   30 ++++++++
- arch/powerpc/boot/main.c        |  112 +++++---------------------------
- 4 files changed, 191 insertions(+), 94 deletions(-)
+ arch/powerpc/boot/main.c |  172 ++++++++++++++++++++++++++++-------------------
+ arch/powerpc/boot/of.c   |   12 +++
+ arch/powerpc/boot/ops.h  |    1 
+ 3 files changed, 117 insertions(+), 68 deletions(-)
 
-Index: working-2.6/arch/powerpc/boot/gunzip_util.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/gunzip_util.c	2007-02-16 12:21:27.000000000 +1100
-@@ -0,0 +1,140 @@
-+/*
-+ * Copyright 2007 David Gibson, IBM Corporation.
-+ * Based on earlier work, Copyright (C) Paul Mackerras 1997.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <stddef.h>
-+#include "string.h"
-+#include "stdio.h"
-+#include "ops.h"
-+#include "gunzip_util.h"
-+
-+struct gunzip_state state;
-+
-+#define HEAD_CRC	2
-+#define EXTRA_FIELD	4
-+#define ORIG_NAME	8
-+#define COMMENT		0x10
-+#define RESERVED	0xe0
-+
-+void gunzip_start(struct gunzip_state *state, void *src, int srclen)
-+{
-+	char *hdr = src;
-+	int hdrlen = 0;
-+
-+	memset(state, 0, sizeof(*state));
-+
-+	/* Check for gzip magic number */
-+	if ((hdr[0] == 0x1f) && (hdr[1] == 0x8b)) {
-+		/* gzip data, initialize zlib parameters */
-+		int r, flags;
-+
-+		state->s.workspace = state->scratch;
-+		if (zlib_inflate_workspacesize() > sizeof(state->scratch)) {
-+			printf("insufficient scratch space for gunzip\n\r");
-+			exit();
-+		}
-+
-+		/* skip header */
-+		hdrlen = 10;
-+		flags = hdr[3];
-+		if (hdr[2] != Z_DEFLATED || (flags & RESERVED) != 0) {
-+			printf("bad gzipped data\n\r");
-+			exit();
-+		}
-+		if ((flags & EXTRA_FIELD) != 0)
-+			hdrlen = 12 + hdr[10] + (hdr[11] << 8);
-+		if ((flags & ORIG_NAME) != 0)
-+			while (hdr[hdrlen++] != 0)
-+				;
-+		if ((flags & COMMENT) != 0)
-+			while (hdr[hdrlen++] != 0)
-+				;
-+		if ((flags & HEAD_CRC) != 0)
-+			hdrlen += 2;
-+		if (hdrlen >= srclen) {
-+			printf("gunzip_start: ran out of data in header\n\r");
-+			exit();
-+		}
-+
-+		r = zlib_inflateInit2(&state->s, -MAX_WBITS);
-+		if (r != Z_OK) {
-+			printf("inflateInit2 returned %d\n\r", r);
-+			exit();
-+		}
-+	}
-+
-+	state->s.next_in = src + hdrlen;
-+	state->s.avail_in = srclen - hdrlen;
-+}
-+
-+int gunzip_partial(struct gunzip_state *state, void *dst, int dstlen)
-+{
-+	int len;
-+
-+	if (state->s.workspace) {
-+		/* gunzipping */
-+		int r;
-+
-+		state->s.next_out = dst;
-+		state->s.avail_out = dstlen;
-+		r = zlib_inflate(&state->s, Z_FULL_FLUSH);
-+		if (r != Z_OK && r != Z_STREAM_END) {
-+			printf("inflate returned %d msg: %s\n\r", r, state->s.msg);
-+			exit();
-+		}
-+		len = state->s.next_out - (unsigned char *)dst;
-+	} else {
-+		/* uncompressed image */
-+		len = min(state->s.avail_in, (unsigned)dstlen);
-+		memcpy(dst, state->s.next_in, len);
-+		state->s.next_in += len;
-+		state->s.avail_in -= len;
-+	}
-+	return len;
-+}
-+
-+void gunzip_exactly(struct gunzip_state *state, void *dst, int dstlen)
-+{
-+	int len;
-+
-+	len  = gunzip_partial(state, dst, dstlen);
-+	if (len < dstlen) {
-+			printf("gunzip_block: ran out of data\n\r");
-+			exit();
-+	}
-+}
-+
-+void gunzip_discard(struct gunzip_state *state, int len)
-+{
-+	static char discard_buf[128];
-+
-+	while (len > sizeof(discard_buf)) {
-+		gunzip_exactly(state, discard_buf, sizeof(discard_buf));
-+		len -= sizeof(discard_buf);
-+	}
-+
-+	if (len > 0)
-+		gunzip_exactly(state, discard_buf, len);
-+}
-+
-+int gunzip_finish(struct gunzip_state *state, void *dst, int dstlen)
-+{
-+	int len;
-+
-+	if (state->s.workspace) {
-+		len = gunzip_partial(state, dst, dstlen);
-+		zlib_inflateEnd(&state->s);
-+	} else {
-+		/* uncompressed image */
-+		len = min(state->s.avail_in, (unsigned)dstlen);
-+		memcpy(dst, state->s.next_in, len);
-+	}
-+
-+	return len;
-+}
 Index: working-2.6/arch/powerpc/boot/main.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/main.c	2007-02-16 12:19:18.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/main.c	2007-02-16 12:21:47.000000000 +1100
-@@ -14,8 +14,8 @@
- #include "page.h"
- #include "string.h"
- #include "stdio.h"
--#include "zlib.h"
- #include "ops.h"
-+#include "gunzip_util.h"
- #include "flatdevtree.h"
+--- working-2.6.orig/arch/powerpc/boot/main.c	2007-02-16 12:31:27.000000000 +1100
++++ working-2.6/arch/powerpc/boot/main.c	2007-02-16 12:31:47.000000000 +1100
+@@ -31,24 +31,21 @@ extern char _dtb_start[];
+ extern char _dtb_end[];
  
- extern void flush_cache(void *, unsigned long);
-@@ -42,71 +42,12 @@ static struct addr_range initrd;
- static unsigned long elfoffset;
- static int is_64bit;
+ struct addr_range {
+-	unsigned long addr;
++	void *addr;
+ 	unsigned long size;
+-	unsigned long memsize;
+ };
+-static struct addr_range vmlinux;
+-static struct addr_range vmlinuz;
+-static struct addr_range initrd;
+-
+-static unsigned long elfoffset;
+-static int is_64bit;
  
--/* scratch space for gunzip; 46912 is from zlib_inflate_workspacesize() */
--static char scratch[46912];
- static char elfheader[256];
+-static char elfheader[256];
++struct elf_info {
++	unsigned long loadsize;
++	unsigned long memsize;
++	unsigned long elfoffset;
++} vmlinux;
  
  typedef void (*kernel_entry_t)(unsigned long, unsigned long, void *);
  
  #undef DEBUG
  
--#define HEAD_CRC	2
--#define EXTRA_FIELD	4
--#define ORIG_NAME	8
--#define COMMENT		0x10
--#define RESERVED	0xe0
--
--static void gunzip(void *dst, int dstlen, unsigned char *src, int *lenp)
--{
--	z_stream s;
--	int r, i, flags;
--
--	/* skip header */
--	i = 10;
--	flags = src[3];
--	if (src[2] != Z_DEFLATED || (flags & RESERVED) != 0) {
--		printf("bad gzipped data\n\r");
--		exit();
--	}
--	if ((flags & EXTRA_FIELD) != 0)
--		i = 12 + src[10] + (src[11] << 8);
--	if ((flags & ORIG_NAME) != 0)
--		while (src[i++] != 0)
--			;
--	if ((flags & COMMENT) != 0)
--		while (src[i++] != 0)
--			;
--	if ((flags & HEAD_CRC) != 0)
--		i += 2;
--	if (i >= *lenp) {
--		printf("gunzip: ran out of data in header\n\r");
--		exit();
--	}
--
--	if (zlib_inflate_workspacesize() > sizeof(scratch)) {
--		printf("gunzip needs more mem\n");
--		exit();
--	}
--	memset(&s, 0, sizeof(s));
--	s.workspace = scratch;
--	r = zlib_inflateInit2(&s, -MAX_WBITS);
--	if (r != Z_OK) {
--		printf("inflateInit2 returned %d\n\r", r);
--		exit();
--	}
--	s.next_in = src + i;
--	s.avail_in = *lenp - i;
--	s.next_out = dst;
--	s.avail_out = dstlen;
--	r = zlib_inflate(&s, Z_FULL_FLUSH);
--	if (r != Z_OK && r != Z_STREAM_END) {
--		printf("inflate returned %d msg: %s\n\r", r, s.msg);
--		exit();
--	}
--	*lenp = s.next_out - (unsigned char *) dst;
--	zlib_inflateEnd(&s);
--}
--
- static int is_elf64(void *hdr)
+-static int is_elf64(void *hdr)
++static int parse_elf64(void *hdr, struct elf_info *info)
  {
  	Elf64_Ehdr *elf64 = hdr;
-@@ -132,8 +73,8 @@ static int is_elf64(void *hdr)
+ 	Elf64_Phdr *elf64ph;
+@@ -72,15 +69,14 @@ static int is_elf64(void *hdr)
+ 	if (i >= (unsigned int)elf64->e_phnum)
  		return 0;
  
- 	elfoffset = (unsigned long)elf64ph->p_offset;
--	vmlinux.size = (unsigned long)elf64ph->p_filesz + elfoffset;
--	vmlinux.memsize = (unsigned long)elf64ph->p_memsz + elfoffset;
-+	vmlinux.size = (unsigned long)elf64ph->p_filesz;
-+	vmlinux.memsize = (unsigned long)elf64ph->p_memsz;
+-	elfoffset = (unsigned long)elf64ph->p_offset;
+-	vmlinux.size = (unsigned long)elf64ph->p_filesz;
+-	vmlinux.memsize = (unsigned long)elf64ph->p_memsz;
++	info->loadsize = (unsigned long)elf64ph->p_filesz;
++	info->memsize = (unsigned long)elf64ph->p_memsz;
++	info->elfoffset = (unsigned long)elf64ph->p_offset;
  
- 	is_64bit = 1;
- 	return 1;
-@@ -164,26 +105,22 @@ static int is_elf32(void *hdr)
- 		return 0;
- 
- 	elfoffset = elf32ph->p_offset;
--	vmlinux.size = elf32ph->p_filesz + elf32ph->p_offset;
--	vmlinux.memsize = elf32ph->p_memsz + elf32ph->p_offset;
-+	vmlinux.size = elf32ph->p_filesz;
-+	vmlinux.memsize = elf32ph->p_memsz;
+-	is_64bit = 1;
  	return 1;
  }
  
- static void prep_kernel(unsigned long a1, unsigned long a2)
+-static int is_elf32(void *hdr)
++static int parse_elf32(void *hdr, struct elf_info *info)
  {
-+	static struct gunzip_state gzstate;
- 	int len;
+ 	Elf32_Ehdr *elf32 = hdr;
+ 	Elf32_Phdr *elf32ph;
+@@ -96,7 +92,6 @@ static int is_elf32(void *hdr)
+ 	      elf32->e_machine         == EM_PPC))
+ 		return 0;
  
- 	vmlinuz.addr = (unsigned long)_vmlinux_start;
- 	vmlinuz.size = (unsigned long)(_vmlinux_end - _vmlinux_start);
+-	elf32 = (Elf32_Ehdr *)elfheader;
+ 	elf32ph = (Elf32_Phdr *) ((unsigned long)elf32 + elf32->e_phoff);
+ 	for (i = 0; i < elf32->e_phnum; i++, elf32ph++)
+ 		if (elf32ph->p_type == PT_LOAD)
+@@ -104,25 +99,28 @@ static int is_elf32(void *hdr)
+ 	if (i >= elf32->e_phnum)
+ 		return 0;
+ 
+-	elfoffset = elf32ph->p_offset;
+-	vmlinux.size = elf32ph->p_filesz;
+-	vmlinux.memsize = elf32ph->p_memsz;
++	info->loadsize = elf32ph->p_filesz;
++	info->memsize = elf32ph->p_memsz;
++	info->elfoffset = elf32ph->p_offset;
+ 	return 1;
+ }
+ 
+-static void prep_kernel(unsigned long a1, unsigned long a2)
++static struct addr_range prep_kernel(void)
+ {
+ 	static struct gunzip_state gzstate;
+-	int len;
++	static char elfheader[256];
+ 
+-	vmlinuz.addr = (unsigned long)_vmlinux_start;
+-	vmlinuz.size = (unsigned long)(_vmlinux_end - _vmlinux_start);
++	void *vmlinuz_addr = _vmlinux_start;
++	unsigned long vmlinuz_size = _vmlinux_end - _vmlinux_start;
++	void *addr = 0;
++	struct elf_info ei;
++	int len;
  
  	/* gunzip the ELF header of the kernel */
--	if (*(unsigned short *)vmlinuz.addr == 0x1f8b) {
--		len = vmlinuz.size;
--		gunzip(elfheader, sizeof(elfheader),
--				(unsigned char *)vmlinuz.addr, &len);
--	} else
--		memcpy(elfheader, (const void *)vmlinuz.addr,
--		       sizeof(elfheader));
-+	gunzip_start(&gzstate, (void *)vmlinuz.addr, vmlinuz.size);
-+	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
+-	gunzip_start(&gzstate, (void *)vmlinuz.addr, vmlinuz.size);
++	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
+ 	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
  
- 	if (!is_elf64(elfheader) && !is_elf32(elfheader)) {
+-	if (!is_elf64(elfheader) && !is_elf32(elfheader)) {
++	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei)) {
  		printf("Error: not a valid PPC32 or PPC64 ELF file!\n\r");
-@@ -192,10 +129,10 @@ static void prep_kernel(unsigned long a1
- 	if (platform_ops.image_hdr)
- 		platform_ops.image_hdr(elfheader);
- 
--	/* We need to alloc the memsize plus the file offset since gzip
--	 * will expand the header (file offset), then the kernel, then
--	 * possible rubbish we don't care about. But the kernel bss must
--	 * be claimed (it will be zero'd by the kernel itself)
-+	/* We need to alloc the memsize: gzip will expand the kernel
-+	 * text/data, then possible rubbish we don't care about. But
-+	 * the kernel bss must be claimed (it will be zero'd by the
-+	 * kernel itself)
+ 		exit();
+ 	}
+@@ -134,55 +132,92 @@ static void prep_kernel(unsigned long a1
+ 	 * the kernel bss must be claimed (it will be zero'd by the
+ 	 * kernel itself)
  	 */
- 	printf("Allocating 0x%lx bytes for kernel ...\n\r", vmlinux.memsize);
- 	vmlinux.addr = (unsigned long)malloc(vmlinux.memsize);
-@@ -237,24 +174,13 @@ static void prep_kernel(unsigned long a1
+-	printf("Allocating 0x%lx bytes for kernel ...\n\r", vmlinux.memsize);
+-	vmlinux.addr = (unsigned long)malloc(vmlinux.memsize);
+-	if (vmlinux.addr == 0) {
+-		printf("Can't allocate memory for kernel image !\n\r");
+-		exit();
++	printf("Allocating 0x%lx bytes for kernel ...\n\r", ei.memsize);
++
++	if (platform_ops.vmlinux_alloc) {
++		addr = platform_ops.vmlinux_alloc(ei.memsize);
++	} else {
++		if ((unsigned long)_start < ei.memsize) {
++			printf("Insufficient memory for kernel at address 0!"
++			       " (_start=%lx)\n\r", _start);
++			exit();
++		}
  	}
  
- 	/* Eventually gunzip the kernel */
--	if (*(unsigned short *)vmlinuz.addr == 0x1f8b) {
--		printf("gunzipping (0x%lx <- 0x%lx:0x%0lx)...",
--		       vmlinux.addr, vmlinuz.addr, vmlinuz.addr+vmlinuz.size);
--		len = vmlinuz.size;
--		gunzip((void *)vmlinux.addr, vmlinux.memsize,
--			(unsigned char *)vmlinuz.addr, &len);
--		printf("done 0x%lx bytes\n\r", len);
--	} else {
--		memmove((void *)vmlinux.addr,(void *)vmlinuz.addr,
--			vmlinuz.size);
++	/* Finally, gunzip the kernel */
++	printf("gunzipping (0x%p <- 0x%p:0x%p)...", addr,
++	       vmlinuz_addr, vmlinuz_addr+vmlinuz_size);
++	/* discard up to the actual load data */
++	gunzip_discard(&gzstate, ei.elfoffset - sizeof(elfheader));
++	len = gunzip_finish(&gzstate, addr, ei.memsize);
++	printf("done 0x%lx bytes\n\r", len);
++
++	flush_cache(addr, ei.loadsize);
++
++	return (struct addr_range){addr, ei.memsize};
++}
++
++static struct addr_range prep_initrd(struct addr_range vmlinux,
++				     unsigned long initrd_addr,
++				     unsigned long initrd_size)
++{
++	void *devp;
++	u32 initrd_start, initrd_end;
++
++	/* If we have an image attached to us, it overrides anything
++	 * supplied by the loader. */
++	if (_initrd_end > _initrd_start) {
++		printf("Attached initrd image at 0x%p-0x%p\n\r",
++		       _initrd_start, _initrd_end);
++		initrd_addr = (unsigned long)_initrd_start;
++		initrd_size = _initrd_end - _initrd_start;
++	} else if (initrd_size > 0) {
++		printf("Using loader supplied ramdisk at 0x%lx-0x%lx\n\r",
++		       initrd_addr, initrd_addr + initrd_size);
++	}
++
++	/* If there's no initrd at all, we're done */
++	if (! initrd_size)
++		return (struct addr_range){0, 0};
++
+ 	/*
+-	 * Now find the initrd
+-	 *
+-	 * First see if we have an image attached to us.  If so
+-	 * allocate memory for it and copy it there.
++	 * If the initrd is too low it will be clobbered when the
++	 * kernel relocates to its final location.  In this case,
++	 * allocate a safer place and move it.
+ 	 */
+-	initrd.size = (unsigned long)(_initrd_end - _initrd_start);
+-	initrd.memsize = initrd.size;
+-	if (initrd.size > 0) {
++	if (initrd_addr < vmlinux.size) {
++		void *old_addr = (void *)initrd_addr;
++
+ 		printf("Allocating 0x%lx bytes for initrd ...\n\r",
+-		       initrd.size);
+-		initrd.addr = (unsigned long)malloc((u32)initrd.size);
+-		if (initrd.addr == 0) {
++		       initrd_size);
++		initrd_addr = (unsigned long)malloc(initrd_size);
++		if (! initrd_addr) {
+ 			printf("Can't allocate memory for initial "
+-					"ramdisk !\n\r");
++			       "ramdisk !\n\r");
+ 			exit();
+ 		}
+-		printf("initial ramdisk moving 0x%lx <- 0x%lx "
+-			"(0x%lx bytes)\n\r", initrd.addr,
+-			(unsigned long)_initrd_start, initrd.size);
+-		memmove((void *)initrd.addr, (void *)_initrd_start,
+-			initrd.size);
+-		printf("initrd head: 0x%lx\n\r",
+-				*((unsigned long *)initrd.addr));
+-	} else if (a2 != 0) {
+-		/* Otherwise, see if yaboot or another loader gave us an initrd */
+-		initrd.addr = a1;
+-		initrd.memsize = initrd.size = a2;
+-		printf("Using loader supplied initrd at 0x%lx (0x%lx bytes)\n\r",
+-		       initrd.addr, initrd.size);
 -	}
 -
--	/* Skip over the ELF header */
--#ifdef DEBUG
--	printf("... skipping 0x%lx bytes of ELF header\n\r",
--			elfoffset);
--#endif
--	vmlinux.addr += elfoffset;
-+	printf("gunzipping (0x%lx <- 0x%lx:0x%0lx)...",
-+	       vmlinux.addr, vmlinuz.addr, vmlinuz.addr+vmlinuz.size);
-+	/* discard up to the actual load data */
-+	gunzip_discard(&gzstate, elfoffset - sizeof(elfheader));
-+	len = gunzip_finish(&gzstate, (void *)vmlinux.addr,
-+			    vmlinux.memsize);
-+	printf("done 0x%lx bytes\n\r", len);
+-	/* Eventually gunzip the kernel */
+-	printf("gunzipping (0x%lx <- 0x%lx:0x%0lx)...",
+-	       vmlinux.addr, vmlinuz.addr, vmlinuz.addr+vmlinuz.size);
+-	/* discard up to the actual load data */
+-	gunzip_discard(&gzstate, elfoffset - sizeof(elfheader));
+-	len = gunzip_finish(&gzstate, (void *)vmlinux.addr,
+-			    vmlinux.memsize);
+-	printf("done 0x%lx bytes\n\r", len);
++		printf("Relocating initrd 0x%p <- 0x%p (0x%lx bytes)\n\r",
++		       initrd_addr, old_addr, initrd_size);
++		memmove((void *)initrd_addr, old_addr, initrd_size);
++	}
++
++	printf("initrd head: 0x%lx\n\r", *((unsigned long *)initrd_addr));
++
++	/* Tell the kernel initrd address via device tree */
++	devp = finddevice("/chosen");
++	if (! devp) {
++		printf("Device tree has no chosen node!\n\r");
++		exit();
++	}
++
++	initrd_start = (u32)initrd_addr;
++	initrd_end = (u32)initrd_addr + initrd_size;
++
++	setprop(devp, "linux,initrd-start", &initrd_start,
++		sizeof(initrd_start));
++	setprop(devp, "linux,initrd-end", &initrd_end, sizeof(initrd_end));
  
- 	flush_cache((void *)vmlinux.addr, vmlinux.size);
+-	flush_cache((void *)vmlinux.addr, vmlinux.size);
++	return (struct addr_range){(void *)initrd_addr, initrd_size};
  }
-Index: working-2.6/arch/powerpc/boot/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-16 12:19:18.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-02-16 12:19:21.000000000 +1100
-@@ -41,7 +41,8 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
- 		$(addprefix $(obj)/,$(zlibheader))
  
- src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
--		ns16550.c serial.c simple_alloc.c div64.S util.S $(zlib)
-+		ns16550.c serial.c simple_alloc.c div64.S util.S \
-+		gunzip_util.c $(zlib)
- src-plat := of.c
- src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
+ /* A buffer that may be edited by tools operating on a zImage binary so as to
+@@ -222,6 +257,7 @@ struct console_ops console_ops;
  
-Index: working-2.6/arch/powerpc/boot/gunzip_util.h
+ void start(unsigned long a1, unsigned long a2, void *promptr, void *sp)
+ {
++	struct addr_range vmlinux, initrd;
+ 	kernel_entry_t kentry;
+ 	char cmdline[COMMAND_LINE_SIZE];
+ 	unsigned long ft_addr = 0;
+@@ -241,7 +277,8 @@ void start(unsigned long a1, unsigned lo
+ 	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r",
+ 	       _start, sp);
+ 
+-	prep_kernel(a1, a2);
++	vmlinux = prep_kernel();
++	initrd = prep_initrd(vmlinux, a1, a2);
+ 
+ 	/* If cmdline came from zimage wrapper or if we can edit the one
+ 	 * in the dt, print it out and edit it, if possible.
+@@ -270,8 +307,7 @@ void start(unsigned long a1, unsigned lo
+ 	if (ft_addr)
+ 		kentry(ft_addr, 0, NULL);
+ 	else
+-		/* XXX initrd addr/size should be passed in properties */
+-		kentry(initrd.addr, initrd.size, promptr);
++		kentry((unsigned long)initrd.addr, initrd.size, promptr);
+ 
+ 	/* console closed so printf below may not work */
+ 	printf("Error: Linux kernel returned to zImage boot wrapper!\n\r");
+Index: working-2.6/arch/powerpc/boot/ops.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/gunzip_util.h	2007-02-16 12:21:35.000000000 +1100
-@@ -0,0 +1,30 @@
-+/*
-+ * Decompression convenience functions
-+ *
-+ * Copyright 2007 David Gibson, IBM Corporation.
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without any
-+ * warranty of any kind, whether express or implied.
-+ */
-+#ifndef _PPC_BOOT_GUNZIP_UTIL_H_
-+#define _PPC_BOOT_GUNZIP_UTIL_H_
+--- working-2.6.orig/arch/powerpc/boot/ops.h	2007-02-16 12:31:27.000000000 +1100
++++ working-2.6/arch/powerpc/boot/ops.h	2007-02-16 12:31:29.000000000 +1100
+@@ -25,6 +25,7 @@ struct platform_ops {
+ 	void	(*free)(void *ptr);
+ 	void *	(*realloc)(void *ptr, unsigned long size);
+ 	void	(*exit)(void);
++	void *	(*vmlinux_alloc)(unsigned long size);
+ };
+ extern struct platform_ops platform_ops;
+ 
+Index: working-2.6/arch/powerpc/boot/of.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/of.c	2007-02-16 12:31:27.000000000 +1100
++++ working-2.6/arch/powerpc/boot/of.c	2007-02-16 12:31:29.000000000 +1100
+@@ -208,6 +208,17 @@ static void of_image_hdr(const void *hdr
+ 	}
+ }
+ 
++static void *of_vmlinux_alloc(unsigned long size)
++{
++	void *p = malloc(size);
 +
-+#include "zlib.h"
++	if (!p) {
++		printf("Can't allocate memory for kernel image!\n\r");
++		exit();
++	}
++	return p;
++}
 +
-+/* scratch space for gunzip; 46912 is from zlib_inflate_workspacesize() */
-+#define GUNZIP_SCRATCH_SIZE	46912
-+
-+struct gunzip_state {
-+	char scratch[46912];
-+	z_stream s;
-+};
-+
-+void gunzip_start(struct gunzip_state *state, void *src, int srclen);
-+int gunzip_partial(struct gunzip_state *state, void *dst, int dstlen);
-+void gunzip_exactly(struct gunzip_state *state, void *dst, int len);
-+void gunzip_discard(struct gunzip_state *state, int len);
-+int gunzip_finish(struct gunzip_state *state, void *dst, int len);
-+
-+#endif /* _PPC_BOOT_GUNZIP_UTIL_H_ */
-+
+ static void of_exit(void)
+ {
+ 	call_prom("exit", 0, 0);
+@@ -261,6 +272,7 @@ int platform_init(void *promptr, char *d
+ 	platform_ops.image_hdr = of_image_hdr;
+ 	platform_ops.malloc = of_try_claim;
+ 	platform_ops.exit = of_exit;
++	platform_ops.vmlinux_alloc = of_vmlinux_alloc;
+ 
+ 	dt_ops.finddevice = of_finddevice;
+ 	dt_ops.getprop = of_getprop;
