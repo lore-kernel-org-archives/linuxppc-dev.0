@@ -1,25 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
-	[151.189.21.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EA189DDDE6
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 00:25:45 +1100 (EST)
-In-Reply-To: <45D4C8AF.80607@freescale.com>
-References: <1171408247467-git-send-email-timur@freescale.com>
-	<1171411219.20192.118.camel@localhost.localdomain>
-	<01b23edfa0a058ae8a119594abb51e01@kernel.crashing.org>
-	<45D4C8AF.80607@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d31154b8a4b63cac9aec9a93382ef06c@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: add of_get_mac_address() and update fsl_soc.c to
-	use it
-Date: Fri, 16 Feb 2007 14:25:38 +0100
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 47DDFDDDF0
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 00:52:44 +1100 (EST)
+Message-ID: <45D5B720.4010308@ru.mvista.com>
+Date: Fri, 16 Feb 2007 16:52:32 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] use winbond libata instead of ide driver for pseries
+	CD drives
+References: <20070210203512.GA25586@aepfle.de>	<20070210203614.GA25602@aepfle.de>
+	<45D4E82B.7020403@garzik.org> <20070216092046.GA2572@aepfle.de>
+In-Reply-To: <20070216092046.GA2572@aepfle.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackeras <paulus@samba.org>, Jeff Garzik <jeff@garzik.org>,
+	linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,22 +25,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> There are trees in the kernel today that have 'address' in them.  
-> Before I can fix the trees, though, I need to update U-Boot and the 
-> kernel to support local-mac-address *without* breaking support for 
-> older trees.  That's why this patch is written the way it is.
+Hello.
 
-Yes I understand.  My suggestion was to somehow recognise
-those trees and only for those try the "address" thing.
+Olaf Hering wrote:
+> Change the default for the built-in IDE on p610/p615/p630 from
+> ide to libata. libata has better error handling and the drive can
+> recover when hald does its CD media polling.
 
-Not too important in this case I guess, since almost all
-correct trees will have a "local-mac-address" property,
-and the correct (standard-conform) use of "address" is
-pretty much obsoleted.
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-Since you are planning to at a later date (hopefully soon :-) )
-remove this handling of "address" completely again, I'm sure I
-can live with it -- objection withdrawn ;-)
+> ---
+>  arch/powerpc/configs/ppc64_defconfig   |    4 ++--
+>  arch/powerpc/configs/pseries_defconfig |    4 ++--
+>  2 files changed, 4 insertions(+), 4 deletions(-)
+> 
+> Index: linux-2.6.20/arch/powerpc/configs/ppc64_defconfig
+> ===================================================================
+> --- linux-2.6.20.orig/arch/powerpc/configs/ppc64_defconfig
+> +++ linux-2.6.20/arch/powerpc/configs/ppc64_defconfig
+> @@ -500,7 +500,7 @@ CONFIG_BLK_DEV_AMD74XX=y
+>  # CONFIG_BLK_DEV_PDC202XX_NEW is not set
+>  # CONFIG_BLK_DEV_SVWKS is not set
+>  # CONFIG_BLK_DEV_SIIMAGE is not set
+> -CONFIG_BLK_DEV_SL82C105=y
+> +# CONFIG_BLK_DEV_SL82C105 is not set
+>  # CONFIG_BLK_DEV_SLC90E66 is not set
+>  # CONFIG_BLK_DEV_TRM290 is not set
+>  # CONFIG_BLK_DEV_VIA82CXXX is not set
+> @@ -646,7 +646,7 @@ CONFIG_SATA_SVW=y
+>  # CONFIG_PATA_SIL680 is not set
+>  # CONFIG_PATA_SIS is not set
+>  # CONFIG_PATA_VIA is not set
+> -# CONFIG_PATA_WINBOND is not set
+> +CONFIG_PATA_WINBOND=y
+>  
+>  #
+>  # Multi-device support (RAID and LVM)
+> Index: linux-2.6.20/arch/powerpc/configs/pseries_defconfig
+> ===================================================================
+> --- linux-2.6.20.orig/arch/powerpc/configs/pseries_defconfig
+> +++ linux-2.6.20/arch/powerpc/configs/pseries_defconfig
+> @@ -483,7 +483,7 @@ CONFIG_BLK_DEV_AMD74XX=y
+>  # CONFIG_BLK_DEV_PDC202XX_NEW is not set
+>  # CONFIG_BLK_DEV_SVWKS is not set
+>  # CONFIG_BLK_DEV_SIIMAGE is not set
+> -CONFIG_BLK_DEV_SL82C105=y
+> +# CONFIG_BLK_DEV_SL82C105 is not set
+>  # CONFIG_BLK_DEV_SLC90E66 is not set
+>  # CONFIG_BLK_DEV_TRM290 is not set
+>  # CONFIG_BLK_DEV_VIA82CXXX is not set
+> @@ -628,7 +628,7 @@ CONFIG_ATA=y
+>  # CONFIG_PATA_SIL680 is not set
+>  # CONFIG_PATA_SIS is not set
+>  # CONFIG_PATA_VIA is not set
+> -# CONFIG_PATA_WINBOND is not set
+> +CONFIG_PATA_WINBOND=y
 
+    I'm sorry, how those 2 drivers can be equivalent?! The pata_winbond driver 
+is for VLB only, sl81c105 was for PCI only -- you certainly want to use 
+pata_sl82c105 (indeed better version of sl82c105 driver).
 
-Segher
+WBR, Sergei
