@@ -1,23 +1,28 @@
-Return-Path: <akpm@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1EA52DDF10
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 11:59:28 +1100 (EST)
-Date: Thu, 15 Feb 2007 16:59:16 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 1/4] ps3fb: thread updates
-Message-Id: <20070215165916.de546f0d.akpm@linux-foundation.org>
-In-Reply-To: <1171575817.5644.44.camel@localhost.localdomain>
-References: <20070215152301.573853000@sonycom.com>
-	<20070215152432.264415000@sonycom.com>
-	<20070215175007.GA10817@lst.de>
-	<1171575817.5644.44.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Geert.Uytterhoeven@sonycom.com, linuxppc-dev@ozlabs.org,
-	linux-fbdev-devel@lists.sourceforge.net
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17877.1576.405941.835140@cargo.ozlabs.ibm.com>
+Date: Fri, 16 Feb 2007 12:17:28 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 15/16] Add device tree for Ebony
+In-Reply-To: <65b693652fa034ed521e132a6142b3b7@kernel.crashing.org>
+References: <20070213060904.GA6214@localhost.localdomain>
+	<20070213061026.5837FDDDE9@ozlabs.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
+	<1171470754.4003.101.camel@zod.rchland.ibm.com>
+	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B86F@az33exm25.fsl.freescale.net>
+	<9df9bf3adf511f4c1a7945e022fdd447@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
+	<1171489360.20192.184.camel@localhost.localdomain>
+	<122a66d49480520cf87cd748bbfc50bb@kernel.crashing.org>
+	<17875.49565.444870.924729@cargo.ozlabs.ibm.com>
+	<6c90a73251f09d619498c77264a15fef@kernel.crashing.org>
+	<17875.53329.662052.612956@cargo.ozlabs.ibm.com>
+	<65b693652fa034ed521e132a6142b3b7@kernel.crashing.org>
+Cc: David Gibson <david@gibson.dropbear.id.au>,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,45 +32,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 16 Feb 2007 08:43:37 +1100
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
+Segher Boessenkool writes:
 
-> On Thu, 2007-02-15 at 18:50 +0100, Christoph Hellwig wrote:
-> > On Thu, Feb 15, 2007 at 04:23:02PM +0100, Geert.Uytterhoeven@sonycom.com wrote:
-> > > +	do {
-> > > +		try_to_freeze();
-> > > +		error = down_interruptible(&ps3fb.sem);
-> > > +		if (!error && !atomic_read(&ps3fb.ext_flip))
-> > >  			ps3fb_sync(0);	/* single buffer */
-> > 
-> > this still can deadlock when calling kthread_stop.  You really want
-> > to use wake_up_process to kick this thread or use a workqueue.
+> > We don't require an OF device tree;
 > 
-> kthread_stop does wake_up_process no ? However, that might not get you
-> out of interruptible if you don't also have signal_pending...
+> When booting on real OF you do.
+
+No, the kernel requires a flattened tree, which is created by glue
+code from the OF device tree.  Currently everything in the OF tree
+goes across into the flattened tree, but in future there may not be a
+1-1 correspondence.
+
+> > what we require is something that
+> > provides a way to express what the kernel needs to know about the
+> > hierarchy, interconnections and characteristics of the devices in the
+> > system.
 > 
+> Sure.  You could have chosen a structure that is closer to the
+> internal Linux structures.
 
-No, it won't get you out of down_interruptible().  But the code would have
-failed trivial testing so perhaps we're missing something.
+What internal Linux structures?  In any case it's a mistake to tie
+internal and external structures together because it creates future
+compatibility headaches.
 
-It seems crufty to use semaphores in this manner.  afaict all we're doing
-here is poking a kernel thread and asking it to do a bit of work.  The
-standard way of doing this is to go to sleep on a waitqueue_head.
+> > That it looks strangely familiar to you is just a
+> > coincidence. :)
+> 
+> Heh suuuuuuuure :-)
 
-	DEFINE_WAIT(wait);
+The device tree is basically a generalization of the list of tags +
+values that ppc and other architectures use.  The tags are strings
+rather than numbers, because that makes sense, and you can group sets
+of tags + values that relate to a particular device together, and you
+can link devices together in a hierarchical arrangement.
 
-	while (!kthread_should_stop()) {
-		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
-		if (!atomic_read(&ps3fb.ext_flip))
-			schedule();
-		finish_wait(&wq, &wait);
-		if (!atomic_read(&ps3fb.ext_flip))
-			WARN_ON(1);
-		else
-			ps3fb_sync(0);
-	}
+The last thing I want to do is to put unnecessary burdens on embedded
+platforms just to comply with OF requirements.  We have the device
+tree because it makes sense both for embedded and for desktop/server
+machines, not because OF is some sort of holy writ.
 
-and, elsewhere,
-
-	atomic_inc(&ps3fb.ext_flip);
-	wake_up_process(my_kernel_therad);
+Paul.
