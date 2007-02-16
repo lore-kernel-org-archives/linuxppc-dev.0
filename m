@@ -1,14 +1,13 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 16 Feb 2007 11:06:28 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: [DTC PATCH] Add some initial test cases.
+Message-ID: <20070216000628.GC21654@localhost.localdomain>
+References: <E1HHkBV-0005Y4-9H@jdl.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17876.64475.232797.997009@cargo.ozlabs.ibm.com>
-Date: Fri, 16 Feb 2007 11:33:31 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH v3] powerpc: add of_get_mac_address() and update fsl_soc.c
-	to use it
-In-Reply-To: <11714756473819-git-send-email-timur@freescale.com>
-References: <11714756473819-git-send-email-timur@freescale.com>
+In-Reply-To: <E1HHkBV-0005Y4-9H@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,15 +18,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi writes:
+On Thu, Feb 15, 2007 at 11:14:17AM -0600, Jon Loeliger wrote:
+> 
+> Add the original simple test case and a case with
+> different based cell values.  Correct output asm
+> files as well as stderr is captured.
 
-> Add function of_get_mac_address(), which obtains the best MAC address to use
-> from the device tree by checking various properties in order.  The order is:
-> 'mac-address', then 'local-mac-address', then 'address'.  It skips properties 
-> that contain invalid MAC addresses, which were probably not initialized
-> by U-Boot.
+Um.. but I dont see any code in run_tests to actually execute the
+testcase.
 
-Looks OK except that of_get_mac_address should go in prom_parse.c, not
-prom.c.
-
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
