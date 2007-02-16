@@ -1,28 +1,20 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 1ED87DDD04
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 03:47:55 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l1GGlqs7005515
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 09:47:52 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l1GGlqJ9007435
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 10:47:52 -0600 (CST)
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 534A0DDD0B
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 03:47:57 +1100 (EST)
+Message-ID: <45D5E022.4020306@am.sony.com>
+Date: Fri, 16 Feb 2007 08:47:30 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 15/16] Add device tree for Ebony
-Date: Fri, 16 Feb 2007 09:47:51 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BE96@az33exm25.fsl.freescale.net>
-In-Reply-To: <OF87DD26C1.7685D06A-ONC1257284.00552F00-C1257284.00556891@de.ibm.com>
-References: <1171575668.5644.42.camel@localhost.localdomain>
-	<OF87DD26C1.7685D06A-ONC1257284.00552F00-C1257284.00556891@de.ibm.com>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Hartmut Penner" <HPENNER@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Heiko J Schick <SCHICKHJ@de.ibm.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [0/3] RFC: Cleanups and improvements to the zImage wrapper
+References: <20070216062458.GA23008@localhost.localdomain>
+In-Reply-To: <20070216062458.GA23008@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,37 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Gibson wrote:
+> Here is a set of three patches that make some substantial changes to
+> the zImage wrapper's flow of control.  These changes make things more
+> flexible, in order to more easily handle a wider variety of
+> platforms.  They also make some things clearer than previously.
+> 
+> I think these are fairly close to ready to merge, but they need more
+> testing on various platforms.  In particular, I'm not terribly whether
+> my changes will work correctly on old powermac platforms booting from
+> COFF.
 
-> Harmut Pennter wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 15.02.2007
-22:41:08:
->=20
-> >=20
-> > > Is there a DCR binding?  Are the dcr-* properties documented=20
-> > > anywhere:
-> > >=20
-> > > dcr-reg         // what do these fields mean?
-> > > dcr-parent      // in case there is more than one controller??
-> > > dcr-controller
-> > > dcr-access-method =3D "native"   // what are the other options?
-> >=20
-> > Yes, we wrote a binding document though I can't find it now. Hartmut
-or
-> > Heiko, do you have the latest DCR binding document at hand ?
->=20
-> I found some draft. It is as you discribed here. I need to check, how
-close this=20
-> is to what we did at last. Also we need place were we can publish such
-a document ...=20
+Could I request some in-line documentation be added as we have in other
+parts of the kernel to describe function arguments, etc.?
 
-Harmut,
-
-I would suggest creating a text file and putting this in
-Documentation/powerpc along with booting-without-of.txt and
-mpc52xx-device-tree-bindings.txt.
-
-That is the closest place we have to a centralized repository
-at this point.  Hopefully, in the near future power.org will
-provide a repository outside of the Linux kernel source.
-
-Stuart
+-Geoff
