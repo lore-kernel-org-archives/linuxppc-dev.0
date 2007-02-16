@@ -1,13 +1,13 @@
 Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 3EB10DDDEB
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 13:45:22 +1100 (EST)
-Date: Thu, 15 Feb 2007 20:44:45 -0600 (CST)
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 6948CDDDE9
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 13:45:52 +1100 (EST)
+Date: Thu, 15 Feb 2007 20:45:17 -0600 (CST)
 From: Andy Fleming <afleming@freescale.com>
 To: linuxppc-dev@ozlabs.org, Kumar Gala <galak@kernel.crashing.org>,
 	jdl@jdl.com
-Subject: [RFC 3/7] Unite all PCI-e on 85xx and 86xx under one codebase
-Message-ID: <Pine.LNX.4.61.0702152044060.9034@ld0175-tx32.am.freescale.net>
+Subject: [RFC 4/7] Unite all PCI-e on 85xx and 86xx under one codebase
+Message-ID: <Pine.LNX.4.61.0702152044460.9034@ld0175-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,196 +19,210 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add 8548 CDS PCI express host bridge support
+Updated 8548 CDS DTS file to support PCIe and Arcadia 3.1
 
 Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-Acked-by: Andy Fleming <afleming@freescale.com>
+Signed-off-by: Andy Fleming <afleming@freescale.com>
 ---
- arch/powerpc/platforms/85xx/mpc85xx_cds.c |   11 +--
- arch/powerpc/platforms/85xx/pci.c         |  108 ++++++++++++++++++++++++++++-
- 2 files changed, 110 insertions(+), 9 deletions(-)
+ arch/powerpc/boot/dts/mpc8548cds.dts |  145 +++++++++++++++++++++++-----------
+ 1 files changed, 99 insertions(+), 46 deletions(-)
 
-diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-index abc0aca..2027855 100644
---- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-+++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
-@@ -79,9 +79,9 @@ static int mpc85xx_exclude_device(u_char
- 		return PCIBIOS_SUCCESSFUL;
- }
+diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
+index 893d795..3bb83a3 100644
+--- a/arch/powerpc/boot/dts/mpc8548cds.dts
++++ b/arch/powerpc/boot/dts/mpc8548cds.dts
+@@ -1,5 +1,5 @@
+ /*
+- * MPC8555 CDS Device Tree Source
++ * MPC8548 CDS Device Tree Source
+  *
+  * Copyright 2006 Freescale Semiconductor Inc.
+  *
+@@ -157,8 +157,8 @@
+ 		serial@4500 {
+ 			device_type = "serial";
+ 			compatible = "ns16550";
+-			reg = <4500 100>; 	// reg base, size
+-			clock-frequency = <0>; 	// should we fill in in uboot?
++			reg = <4500 100>;	// reg base, size
++			clock-frequency = <0>;	// should we fill in in uboot?
+ 			interrupts = <1a 2>;
+ 			interrupt-parent = <40000>;
+ 		};
+@@ -167,7 +167,7 @@
+ 			device_type = "serial";
+ 			compatible = "ns16550";
+ 			reg = <4600 100>;	// reg base, size
+-			clock-frequency = <0>; 	// should we fill in in uboot?
++			clock-frequency = <0>;	// should we fill in in uboot?
+ 			interrupts = <1a 2>;
+ 			interrupt-parent = <40000>;
+ 		};
+@@ -176,54 +176,83 @@
+ 			linux,phandle = <8000>;
+ 			interrupt-map-mask = <1f800 0 0 7>;
+ 			interrupt-map = <
++				/* IDSEL 0x4 (PCIX Slot 2) */
++				02000 0 0 1 40000 30 1
++				02000 0 0 2 40000 31 1
++				02000 0 0 3 40000 32 1
++				02000 0 0 4 40000 33 1
  
--static void __init mpc85xx_cds_pcibios_fixup(void)
-+void __init
-+mpc85xx_cds_pci_irq_fixup(struct pci_dev *dev)
- {
--	struct pci_dev *dev;
- 	u_char		c;
+-				/* IDSEL 0x10 */
+-				08000 0 0 1 40000 30 1
+-				08000 0 0 2 40000 31 1
+-				08000 0 0 3 40000 32 1
+-				08000 0 0 4 40000 33 1
++				/* IDSEL 0x5 (PCIX Slot 3) */
++				02800 0 0 1 40000 31 1
++				02800 0 0 2 40000 32 1
++				02800 0 0 3 40000 33 1
++				02800 0 0 4 40000 30 1
++				
++				/* IDSEL 0x6 (PCIX Slot 4) */
++				03000 0 0 1 40000 32 1
++				03000 0 0 2 40000 33 1
++				03000 0 0 3 40000 30 1
++				03000 0 0 4 40000 31 1
++				
++				/* IDSEL 0x8 (PCIX Slot 5) */
++				04000 0 0 1 40000 30 1
++				04000 0 0 2 40000 31 1
++				04000 0 0 3 40000 32 1
++				04000 0 0 4 40000 33 1
++				
++				/* IDSEL 0xC (Tsi310 bridge) */
++				06000 0 0 1 40000 30 1
++				06000 0 0 2 40000 31 1
++				06000 0 0 3 40000 32 1
++				06000 0 0 4 40000 33 1
  
- 	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
-@@ -120,11 +120,6 @@ static void __init mpc85xx_cds_pcibios_f
- 		pci_write_config_byte(dev, PCI_INTERRUPT_LINE, 11);
- 		pci_dev_put(dev);
- 	}
+-				/* IDSEL 0x11 */
+-				08800 0 0 1 40000 30 1
+-				08800 0 0 2 40000 31 1
+-				08800 0 0 3 40000 32 1
+-				08800 0 0 4 40000 33 1
++				/* IDSEL 0x14 (Slot 2) */
++				0a000 0 0 1 40000 30 1
++				0a000 0 0 2 40000 31 1
++				0a000 0 0 3 40000 32 1
++				0a000 0 0 4 40000 33 1
+ 
+-				/* IDSEL 0x12 (Slot 1) */
+-				09000 0 0 1 40000 30 1
+-				09000 0 0 2 40000 31 1
+-				09000 0 0 3 40000 32 1
+-				09000 0 0 4 40000 33 1
++				/* IDSEL 0x15 (Slot 3) */
++				0a800 0 0 1 40000 31 1
++				0a800 0 0 2 40000 32 1
++				0a800 0 0 3 40000 33 1
++				0a800 0 0 4 40000 30 1
+ 
+-				/* IDSEL 0x13 (Slot 2) */
+-				09800 0 0 1 40000 31 1
+-				09800 0 0 2 40000 32 1
+-				09800 0 0 3 40000 33 1
+-				09800 0 0 4 40000 30 1
++				/* IDSEL 0x16 (Slot 4) */
++				0b000 0 0 1 40000 32 1
++				0b000 0 0 2 40000 33 1
++				0b000 0 0 3 40000 30 1
++				0b000 0 0 4 40000 31 1
++				
++				/* IDSEL 0x18 (Slot 5) */
++				0c000 0 0 1 40000 30 1
++				0c000 0 0 2 40000 31 1
++				0c000 0 0 3 40000 32 1
++				0c000 0 0 4 40000 33 1
++				
++				/* bus 1 , idsel 0x2 Tsi310 bridge secondary */
++				11000 0 0 1 40000 32 1
++				11000 0 0 2 40000 33 1
++				11000 0 0 3 40000 30 1
++				11000 0 0 4 40000 31 1
++				
++				/* IDSEL 0x1C (Tsi310 bridge PCI primary) */
++				0E000 0 0 1 40000 30 1
++				0E000 0 0 2 40000 31 1
++				0E000 0 0 3 40000 32 1
++				0E000 0 0 4 40000 33 1
+ 
+-				/* IDSEL 0x14 (Slot 3) */
+-				0a000 0 0 1 40000 32 1
+-				0a000 0 0 2 40000 33 1
+-				0a000 0 0 3 40000 30 1
+-				0a000 0 0 4 40000 31 1
 -
--	/* Now map all the PCI irqs */
--	dev = NULL;
--	for_each_pci_dev(dev)
--		pci_read_irq_line(dev);
- }
- 
- #ifdef CONFIG_PPC_I8259
-@@ -260,7 +255,7 @@ static void __init mpc85xx_cds_setup_arc
- 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
- 		add_bridge(np);
- 
--	ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
-+	ppc_md.pci_irq_fixup = mpc85xx_cds_pci_irq_fixup;
- 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
- #endif
- 
-diff --git a/arch/powerpc/platforms/85xx/pci.c b/arch/powerpc/platforms/85xx/pci.c
-index 05930ee..5c70797 100644
---- a/arch/powerpc/platforms/85xx/pci.c
-+++ b/arch/powerpc/platforms/85xx/pci.c
-@@ -24,6 +24,7 @@
- #include <asm/pci-bridge.h>
- #include <asm/prom.h>
- #include <sysdev/fsl_soc.h>
-+#include <asm/immap_85xx.h>
- 
- #undef DEBUG
- 
-@@ -35,13 +36,108 @@
- 
- int mpc85xx_pci2_busno = 0;
- 
-+extern void
-+setup_indirect_pcie(struct pci_controller* hose, u32 cfg_addr, u32 cfg_data);
-+
- #ifdef CONFIG_PCI
-+struct pcie_outbound_window_regs {
-+	uint    pexotar;               /* 0x.0 - PCI Express outbound translation address register */
-+	uint    pexotear;              /* 0x.4 - PCI Express outbound translation extended address register */
-+	uint    pexowbar;              /* 0x.8 - PCI Express outbound window base address register */
-+	char    res1[4];
-+	uint    pexowar;               /* 0x.10 - PCI Express outbound window attributes register */
-+	char    res2[12];
-+};
-+
-+struct pcie_inbound_window_regs {
-+	uint    pexitar;               /* 0x.0 - PCI Express inbound translation address register */
-+	char    res1[4];
-+	uint    pexiwbar;              /* 0x.8 - PCI Express inbound window base address register */
-+	uint    pexiwbear;             /* 0x.c - PCI Express inbound window base extended address register */
-+	uint    pexiwar;               /* 0x.10 - PCI Express inbound window attributes register */
-+	char    res2[12];
-+};
-+
-+static void __init setup_pcie_atmu(struct pci_controller *hose, struct resource *rsrc)
-+{
-+	volatile struct ccsr_pex *pcie;
-+	volatile struct pcie_outbound_window_regs *pcieow;
-+	volatile struct pcie_inbound_window_regs *pcieiw;
-+	int i = 0;
-+
-+	DBG("PCIE memory map start 0x%x, size 0x%x\n", rsrc->start,
-+			rsrc->end - rsrc->start + 1);
-+	pcie = ioremap(rsrc->start, rsrc->end - rsrc->start + 1);
-+
-+	/* Disable all windows (except pexowar0 since its ignored) */
-+	pcie->pexowar1 = 0;
-+	pcie->pexowar2 = 0;
-+	pcie->pexowar3 = 0;
-+	pcie->pexowar4 = 0;
-+	pcie->pexiwar1 = 0;
-+	pcie->pexiwar2 = 0;
-+	pcie->pexiwar3 = 0;
-+
-+	pcieow = (struct pcie_outbound_window_regs *)&pcie->pexotar1;
-+	pcieiw = (struct pcie_inbound_window_regs *)&pcie->pexitar1;
-+
-+	/* Setup outbound MEM window */
-+	for(i = 0; i < 3; i++)
-+		if (hose->mem_resources[i].flags & IORESOURCE_MEM){
-+			DBG("PCIE MEM resource start 0x%08x, size 0x%08x.\n",
-+				hose->mem_resources[i].start,
-+				hose->mem_resources[i].end
-+				  - hose->mem_resources[i].start + 1);
-+			pcieow->pexotar = (hose->mem_resources[i].start) >> 12
-+				& 0x000fffff;
-+			pcieow->pexotear = 0;
-+			pcieow->pexowbar = (hose->mem_resources[i].start) >> 12
-+				& 0x000fffff;
-+			/* Enable, Mem R/W */
-+			pcieow->pexowar = 0x80044000 |
-+				(__ilog2(hose->mem_resources[i].end
-+					 - hose->mem_resources[i].start + 1)
-+				 - 1);
-+			pcieow++;
-+		}
-+
-+	/* Setup outbound IO window */
-+	if (hose->io_resource.flags & IORESOURCE_IO){
-+		DBG("PCIE IO resource start 0x%08x, size 0x%08x, phy base 0x%08x.\n",
-+			hose->io_resource.start,
-+			hose->io_resource.end - hose->io_resource.start + 1,
-+			hose->io_base_phys);
-+		pcieow->pexotar = (hose->io_resource.start) >> 12 & 0x000fffff;
-+		pcieow->pexotear = 0;
-+		pcieow->pexowbar = (hose->io_base_phys) >> 12 & 0x000fffff;
-+		/* Enable, IO R/W */
-+		pcieow->pexowar = 0x80088000 | (__ilog2(hose->io_resource.end
-+					- hose->io_resource.start + 1) - 1);
-+	}
-+
-+	/* Setup 2G inbound Memory Window @ 0 */
-+	pcieiw->pexitar = 0x00000000;
-+	pcieiw->pexiwbar = 0x00000000;
-+	/* Enable, Prefetch, Local Mem, Snoop R/W, 2G */
-+	pcieiw->pexiwar = 0xa0f5501e;
-+}
-+static void __init
-+mpc85xx_setup_pcie(struct pci_controller *hose)
-+{
-+	u16 temps;
-+	early_read_config_word(hose, 0, 0, PCI_COMMAND, &temps);
-+	temps |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY;
-+	early_write_config_word(hose, 0, 0, PCI_COMMAND, temps);
-+	early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0x80);
-+}
-+
- int __init add_bridge(struct device_node *dev)
- {
- 	int len;
- 	struct pci_controller *hose;
- 	struct resource rsrc;
- 	const int *bus_range;
-+	unsigned int temp;
- 	int primary = 1, has_address = 0;
- 	phys_addr_t immr = get_immrbase();
- 
-@@ -77,6 +173,17 @@ int __init add_bridge(struct device_node
- 		hose->bus_offset = hose->first_busno;
- 		mpc85xx_pci2_busno = hose->first_busno;
- 	}
-+	/* PEX */
-+	if ((rsrc.start & 0xfffff) == 0xa000) {
-+		setup_indirect_pcie(hose, immr + 0xa000, immr + 0xa004);
-+		mpc85xx_setup_pcie(hose);
-+		primary = 1;
-+		hose->bus_offset = hose->first_busno;
-+		/* Setup PEX window registers */
-+		setup_pcie_atmu(hose, &rsrc);
-+		early_read_config_dword(hose, 0, 0, 0x404, &temp);
-+		printk("Reg 0x404 is 0x%x\n",temp);
-+	}
- 
- 	printk(KERN_INFO "Found MPC85xx PCI host bridge at 0x%016llx. "
- 	       "Firmware bus number: %d->%d\n",
-@@ -92,5 +199,4 @@ int __init add_bridge(struct device_node
- 
- 	return 0;
- }
+-				/* IDSEL 0x15 (Slot 4) */
+-				0a800 0 0 1 40000 33 1
+-				0a800 0 0 2 40000 30 1
+-				0a800 0 0 3 40000 31 1
+-				0a800 0 0 4 40000 32 1
 -
- #endif
+-				/* Bus 1 (Tundra Bridge) */
+-				/* IDSEL 0x12 (ISA bridge) */
+-				19000 0 0 1 40000 30 1
+-				19000 0 0 2 40000 31 1
+-				19000 0 0 3 40000 32 1
+-				19000 0 0 4 40000 33 1>;
++				/* VIA chip */
++				12000 0 0 1 19000 30 1
++				12000 0 0 2 19000 31 1
++				12000 0 0 3 19000 32 1
++				12000 0 0 4 19000 33 1>;
++				
+ 			interrupt-parent = <40000>;
+ 			interrupts = <08 2>;
+ 			bus-range = <0 0>;
+-			ranges = <02000000 0 80000000 80000000 0 20000000
+-				  01000000 0 00000000 e2000000 0 00100000>;
++			ranges = <02000000 0 80000000 80000000 0 10000000
++				  01000000 0 00000000 e2000000 0 00800000>;
+ 			clock-frequency = <3f940aa>;
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
+@@ -260,8 +289,8 @@
+ 			interrupt-parent = <40000>;
+ 			interrupts = <09 2>;
+ 			bus-range = <0 0>;
+-			ranges = <02000000 0 a0000000 a0000000 0 20000000
+-				  01000000 0 00000000 e3000000 0 00100000>;
++			ranges = <02000000 0 90000000 90000000 0 10000000
++				  01000000 0 00000000 e2800000 0 00800000>;
+ 			clock-frequency = <3f940aa>;
+ 			#interrupt-cells = <1>;
+ 			#size-cells = <2>;
+@@ -270,6 +299,30 @@
+ 			compatible = "85xx";
+ 			device_type = "pci";
+ 		};
++		/* PCI Express */
++		pci@a000 {
++			linux,phandle = <a000>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++
++				/* IDSEL 0x0 (PEX) */
++				00000 0 0 1 40000 30 1
++				00000 0 0 2 40000 31 0
++				00000 0 0 3 40000 32 0
++				00000 0 0 4 40000 33 0>;
++			interrupt-parent = <40000>;
++			interrupts = <0a 2>;
++			bus-range = <2 ff>;
++			ranges = <02000000 0 a0000000 a0000000 0 20000000
++				  01000000 0 00000000 e3000000 0 01000000>;
++			clock-frequency = <1fca055>;
++			#interrupt-cells = <1>;
++			#size-cells = <2>;
++			#address-cells = <3>;
++			reg = <a000 1000>;
++			compatible = "85xx";
++			device_type = "pci";
++		};
+ 
+ 		pic@40000 {
+ 			linux,phandle = <40000>;
 -- 
 1.4.4
