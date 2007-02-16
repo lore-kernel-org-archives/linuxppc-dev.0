@@ -1,28 +1,33 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17877.1576.405941.835140@cargo.ozlabs.ibm.com>
-Date: Fri, 16 Feb 2007 12:17:28 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 15/16] Add device tree for Ebony
-In-Reply-To: <65b693652fa034ed521e132a6142b3b7@kernel.crashing.org>
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2F0CFDDDDB
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 13:14:50 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1G2Ejtn007979
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 21:14:45 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1G2EjvH300996
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 21:14:45 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1G2Ejpe014406
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 21:14:45 -0500
+Date: Thu, 15 Feb 2007 20:19:56 -0600
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <dwg@au1.ibm.com>
+Subject: Re: [0/16] Preliminary Ebony (440GP) support for arch/powerpc
+Message-ID: <20070216021956.GA1038@crusty.rchland.ibm.com>
 References: <20070213060904.GA6214@localhost.localdomain>
-	<20070213061026.5837FDDDE9@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B705@az33exm25.fsl.freescale.net>
-	<1171470754.4003.101.camel@zod.rchland.ibm.com>
-	<6206de08b7f12175bebe669291c66334@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B86F@az33exm25.fsl.freescale.net>
-	<9df9bf3adf511f4c1a7945e022fdd447@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A1B8EF@az33exm25.fsl.freescale.net>
-	<1171489360.20192.184.camel@localhost.localdomain>
-	<122a66d49480520cf87cd748bbfc50bb@kernel.crashing.org>
-	<17875.49565.444870.924729@cargo.ozlabs.ibm.com>
-	<6c90a73251f09d619498c77264a15fef@kernel.crashing.org>
-	<17875.53329.662052.612956@cargo.ozlabs.ibm.com>
-	<65b693652fa034ed521e132a6142b3b7@kernel.crashing.org>
-Cc: David Gibson <david@gibson.dropbear.id.au>,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>, linuxppc-dev@ozlabs.org
+	<1171381565.4003.48.camel@zod.rchland.ibm.com>
+	<1171469183.4003.96.camel@zod.rchland.ibm.com>
+	<20070214231204.GB16279@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070214231204.GB16279@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,43 +37,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool writes:
-
-> > We don't require an OF device tree;
+On Thu, Feb 15, 2007 at 10:12:04AM +1100, David Gibson wrote:
+> > I still have this issue, just haven't had a chance to figure out why
+> > yet.  Likely because the openbios code is leaving garbage somewhere.
 > 
-> When booting on real OF you do.
+> More likely simply because openbios just puts different things in the
+> registers on entry, and we're assuming it uses the same method OF
+> does.  Need to fix the entry path, and get rid of the hardcoded a1 and
+> a2 junk.
 
-No, the kernel requires a flattened tree, which is created by glue
-code from the OF device tree.  Currently everything in the OF tree
-goes across into the flattened tree, but in future there may not be a
-1-1 correspondence.
+I looked a the openbios code this morning.  For all intents and purposes
+the values it pases in r3 and r4 to the zImage wrapper really are
+garbage.  However, you're right in that we need to fix the boot wrapper
+to not assume all firmwares will follow similar conventions for the entry
+path.
 
-> > what we require is something that
-> > provides a way to express what the kernel needs to know about the
-> > hierarchy, interconnections and characteristics of the devices in the
-> > system.
-> 
-> Sure.  You could have chosen a structure that is closer to the
-> internal Linux structures.
+Is there a compat property or something similar that could be defined in
+the DTS that the wrapper could look at to determine what to expect?
 
-What internal Linux structures?  In any case it's a mistake to tie
-internal and external structures together because it creates future
-compatibility headaches.
-
-> > That it looks strangely familiar to you is just a
-> > coincidence. :)
-> 
-> Heh suuuuuuuure :-)
-
-The device tree is basically a generalization of the list of tags +
-values that ppc and other architectures use.  The tags are strings
-rather than numbers, because that makes sense, and you can group sets
-of tags + values that relate to a particular device together, and you
-can link devices together in a hierarchical arrangement.
-
-The last thing I want to do is to put unnecessary burdens on embedded
-platforms just to comply with OF requirements.  We have the device
-tree because it makes sense both for embedded and for desktop/server
-machines, not because OF is some sort of holy writ.
-
-Paul.
+josh
