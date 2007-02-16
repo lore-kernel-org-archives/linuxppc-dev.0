@@ -1,19 +1,30 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound4-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 534A0DDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 03:47:57 +1100 (EST)
-Message-ID: <45D5E022.4020306@am.sony.com>
-Date: Fri, 16 Feb 2007 08:47:30 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <stuart.yoder@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 812D6DDE35
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 03:58:14 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l1GGwBrc007877
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 09:58:11 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l1GGwAHM010074
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 10:58:10 -0600 (CST)
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [0/3] RFC: Cleanups and improvements to the zImage wrapper
-References: <20070216062458.GA23008@localhost.localdomain>
-In-Reply-To: <20070216062458.GA23008@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: purpose of /chosen node (was RE: [PATCH] powerpc: deleteboot-cpu
+	and chosen nodes from all DTSfiles)
+Date: Fri, 16 Feb 2007 09:58:10 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302A1BEA4@az33exm25.fsl.freescale.net>
+In-Reply-To: <1171584519.5644.60.camel@localhost.localdomain>
+References: <c8fe6c9c19018243871df0fb9ed23a0b@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A1BC76@az33exm25.fsl.freescale.net>
+	<20070215230134.GB21654@localhost.localdomain>
+	<1171584519.5644.60.camel@localhost.localdomain>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>,
+	"David Gibson" <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,18 +35,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> Here is a set of three patches that make some substantial changes to
-> the zImage wrapper's flow of control.  These changes make things more
-> flexible, in order to more easily handle a wider variety of
-> platforms.  They also make some things clearer than previously.
-> 
-> I think these are fairly close to ready to merge, but they need more
-> testing on various platforms.  In particular, I'm not terribly whether
-> my changes will work correctly on old powermac platforms booting from
-> COFF.
+=20
 
-Could I request some in-line documentation be added as we have in other
-parts of the kernel to describe function arguments, etc.?
+> -----Original Message-----
+> From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]=20
+> Sent: Thursday, February 15, 2007 6:09 PM
+> To: David Gibson
+> Cc: Yoder Stuart-B08248; Segher Boessenkool; linuxppc-dev@ozlabs.org
+> Subject: Re: purpose of /chosen node (was RE: [PATCH]=20
+> powerpc: deleteboot-cpu and chosen nodes from all DTSfiles)
+>=20
+>=20
+> > You're right.  Question is, can we change it now.  It's out there in
+> > the documentation, on the other hand, I don't think the kernel
+> > actually uses it anywhere yet.  BenH, opinion?
+>=20
+> We can change the documentation and add a little note about "obsoleted
+> practice". I don't think the kernel uses it.
+>=20
 
--Geoff
+I'll submit a patch to booting-without-of.txt for this.
+
+Stuart
