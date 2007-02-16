@@ -1,13 +1,13 @@
 Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 7343DDDDF2
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 13:47:21 +1100 (EST)
-Date: Thu, 15 Feb 2007 20:46:44 -0600 (CST)
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F3CA9DDE29
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 13:50:50 +1100 (EST)
+Date: Thu, 15 Feb 2007 20:50:06 -0600 (CST)
 From: Andy Fleming <afleming@freescale.com>
 To: linuxppc-dev@ozlabs.org, Kumar Gala <galak@kernel.crashing.org>,
 	jdl@jdl.com
-Subject: [RFC 6/7] Unite all PCI-e on 85xx and 86xx under one codebase
-Message-ID: <Pine.LNX.4.61.0702152046040.9034@ld0175-tx32.am.freescale.net>
+Subject: [RFC 7/7] Unite all PCI-e on 85xx and 86xx under one codebase
+Message-ID: <Pine.LNX.4.61.0702152046450.9034@ld0175-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,441 +19,203 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add PEX support for mpc8548CDS (Arcadia 3.0) board
+Skip the fake PCI bridge (FPGA)
 
-CDC Rev.2.0 with MPC8548 CPU Rev.1.x +
-Carrier Card Rev.1.2 + the Arcadia X3.0
+modified: arch/powerpc/platforms/85xx/mpc85xx_cds.c
+Deleted the exclude list. Implemented by class/PIR
 
-Hardware need to be revised to support PEX due to errata. If
-the hardware modification is made, only PEX is support on the board.
-PCI will not function. They have negative irq polarity.
+modified: arch/powerpc/platforms/85xx/pci.c
+PEX should not set primary since PCI1 sets already
 
-CPU Rev1.x PEX controller will return extra device when scan the
-secondary bus, if there is a PEX device on the bus. so they have to
-be excluded.
-
-mpc8548cds_legacy.dts should be used as device tree.
-
-Also changed the i8259 node and the VIA section of the interrupt map
-to match reality.  The VIA is at IDsel 4 on Bus 1, but the i8259
-was still claiming to be at IDsel 0x12 on Bus 1.  This resulted
-in no mapping for i8259 interrupts.
-
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
-Signed-off-by: Andy Fleming <afleming@freescale.com>
+modified: drivers/pci/probe.c
+Changed child resources assignment when bridge is transparent
+Identifid powerpc processor by class and fixed resources
+Removed whitespace
+Signed-off-by: York Sun <yorksun@freescale.com>
+Acked-by: Andy Fleming <afleming@freescale.com>
 ---
- arch/powerpc/boot/dts/mpc8548cds.dts        |   25 +-
- arch/powerpc/boot/dts/mpc8548cds_legacy.dts |  315 +++++++++++++++++++++++++++
- arch/powerpc/sysdev/fsl_pcie.c              |    8 +-
- 3 files changed, 333 insertions(+), 15 deletions(-)
+There's a second patch at the end of the first one.  If it breaks this 
+email, just delete the last patch, and apply the second patch by hand (or 
+ignore the second patch for now.  There's no effect on functionality).
 
-diff --git a/arch/powerpc/boot/dts/mpc8548cds.dts b/arch/powerpc/boot/dts/mpc8548cds.dts
-index d59a28a..1c8b17f 100644
---- a/arch/powerpc/boot/dts/mpc8548cds.dts
-+++ b/arch/powerpc/boot/dts/mpc8548cds.dts
-@@ -230,23 +230,24 @@
- 				0c000 0 0 3 40000 32 1
- 				0c000 0 0 4 40000 33 1
+ arch/powerpc/kernel/pci_32.c              |   17 +++++++++++-
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   13 +--------
+ arch/powerpc/platforms/85xx/pci.c         |    5 +---
+ drivers/pci/probe.c                       |   40 ++++++++++++++++++++++++----
+ 4 files changed, 51 insertions(+), 24 deletions(-)
+
+diff --git a/arch/powerpc/kernel/pci_32.c b/arch/powerpc/kernel/pci_32.c
+index d8ef2e1..29243ed 100644
+--- a/arch/powerpc/kernel/pci_32.c
++++ b/arch/powerpc/kernel/pci_32.c
+@@ -81,7 +81,18 @@ fixup_cpc710_pci64(struct pci_dev* dev)
+ 	dev->resource[1].start = dev->resource[1].end = 0;
+ 	dev->resource[1].flags = 0;
+ }
+-DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM,	PCI_DEVICE_ID_IBM_CPC710_PCI64,	fixup_cpc710_pci64);
++DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_IBM, PCI_DEVICE_ID_IBM_CPC710_PCI64, fixup_cpc710_pci64);
++
++static void __devinit skip_fake_bridge(struct pci_dev *dev)
++{
++	/* Make it an error to skip the fake bridge
++	 * in pci_setup_device() in probe.c */
++	dev->hdr_type = 0x7f;
++}
++DECLARE_PCI_FIXUP_EARLY(0x1957, 0x3fff, skip_fake_bridge);
++DECLARE_PCI_FIXUP_EARLY(0x3fff, 0x1957, skip_fake_bridge);
++DECLARE_PCI_FIXUP_EARLY(0xff3f, 0x5719, skip_fake_bridge);
++
  
--				/* bus 1 , idsel 0x2 Tsi310 bridge secondary */
--				11000 0 0 1 40000 32 1
--				11000 0 0 2 40000 33 1
--				11000 0 0 3 40000 30 1
--				11000 0 0 4 40000 31 1
--
- 				/* IDSEL 0x1C (Tsi310 bridge PCI primary) */
- 				0E000 0 0 1 40000 30 1
- 				0E000 0 0 2 40000 31 1
- 				0E000 0 0 3 40000 32 1
- 				0E000 0 0 4 40000 33 1
+ static void
+ pcibios_fixup_resources(struct pci_dev *dev)
+@@ -1362,7 +1373,9 @@ void __init pcibios_fixup_bus(struct pci
+ 				continue;
+ 			if (!res->flags)
+ 				continue;
+-			if (io_offset && (res->flags & IORESOURCE_IO)) {
++			if (!bus->self->transparent
++					&& io_offset
++					&& (res->flags & IORESOURCE_IO)) {
+ 				res->start += io_offset;
+ 				res->end += io_offset;
+ 			} else if (hose->pci_mem_offset
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index 2027855..dc8ddde 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -65,18 +65,7 @@ extern int mpc85xx_pci2_busno;
  
-+				/* Bus 1 */
-+				/* IDSEL 0x2 Tsi310 bridge secondary */
-+				11000 0 0 1 40000 32 1
-+				11000 0 0 2 40000 33 1
-+				11000 0 0 3 40000 30 1
-+				11000 0 0 4 40000 31 1
-+
- 				/* VIA chip */
--				12000 0 0 1 19000 30 1
--				12000 0 0 2 19000 31 1
--				12000 0 0 3 19000 32 1
--				12000 0 0 4 19000 33 1>;
-+				12000 0 0 1 40000 30 1
-+				12000 0 0 2 40000 31 1
-+				12000 0 0 3 40000 32 1
-+				12000 0 0 4 40000 33 1>;
+ static int mpc85xx_exclude_device(u_char bus, u_char devfn)
+ {
+-	if (bus == 0 && PCI_SLOT(devfn) == 0)
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	if (mpc85xx_pci2_busno)
+-		if (bus == (mpc85xx_pci2_busno) && PCI_SLOT(devfn) == 0)
+-			return PCIBIOS_DEVICE_NOT_FOUND;
+-	/* We explicitly do not go past the Tundra 320 Bridge */
+-	if ((bus == 1) && (PCI_SLOT(devfn) == ARCADIA_2ND_BRIDGE_IDSEL))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	if ((bus == 0) && (PCI_SLOT(devfn) == ARCADIA_2ND_BRIDGE_IDSEL))
+-		return PCIBIOS_DEVICE_NOT_FOUND;
+-	else
+-		return PCIBIOS_SUCCESSFUL;
++	return PCIBIOS_SUCCESSFUL;
+ }
  
- 			interrupt-parent = <40000>;
- 			interrupts = <08 2>;
-@@ -261,11 +262,11 @@
- 			compatible = "85xx";
- 			device_type = "pci";
+ void __init
+diff --git a/arch/powerpc/platforms/85xx/pci.c b/arch/powerpc/platforms/85xx/pci.c
+index 5c70797..8afb74f 100644
+--- a/arch/powerpc/platforms/85xx/pci.c
++++ b/arch/powerpc/platforms/85xx/pci.c
+@@ -137,7 +137,6 @@ int __init add_bridge(struct device_node
+ 	struct pci_controller *hose;
+ 	struct resource rsrc;
+ 	const int *bus_range;
+-	unsigned int temp;
+ 	int primary = 1, has_address = 0;
+ 	phys_addr_t immr = get_immrbase();
  
--			i8259@19000 {
-+			i8259@12000 {
- 				clock-frequency = <0>;
- 				interrupt-controller;
- 				device_type = "interrupt-controller";
--				reg = <19000 0 0 0 1>;
-+				reg = <12000 0 0 0 1>;
- 				#address-cells = <0>;
- 				#interrupt-cells = <2>;
- 				built-in;
-diff --git a/arch/powerpc/boot/dts/mpc8548cds_legacy.dts b/arch/powerpc/boot/dts/mpc8548cds_legacy.dts
-new file mode 100644
-index 0000000..41c5bb0
---- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc8548cds_legacy.dts
-@@ -0,0 +1,315 @@
-+/*
-+ * MPC8548 CDS with Arcadia 3.0 Device Tree Source
-+ *
-+ * Copyright 2006 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+
-+/ {
-+	model = "MPC8548CDS";
-+	compatible = "MPC85xxCDS";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	linux,phandle = <100>;
-+
-+	cpus {
-+		#cpus = <1>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
-+		linux,phandle = <200>;
-+
-+		PowerPC,8548@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <20>;	// 32 bytes
-+			i-cache-line-size = <20>;	// 32 bytes
-+			d-cache-size = <8000>;		// L1, 32K
-+			i-cache-size = <8000>;		// L1, 32K
-+			timebase-frequency = <0>;	//  33 MHz, from uboot
-+			bus-frequency = <0>;	// 166 MHz
-+			clock-frequency = <0>;	// 825 MHz, from uboot
-+			32-bit;
-+			linux,phandle = <201>;
-+		};
-+	};
-+
-+	memory {
-+		device_type = "memory";
-+		linux,phandle = <300>;
-+		reg = <00000000 08000000>;	// 128M at 0x0
-+	};
-+
-+	soc8548@e0000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <2>;
-+		device_type = "soc";
-+		ranges = <0 e0000000 00100000>;
-+		reg = <e0000000 00100000>;	// CCSRBAR 1M
-+		bus-frequency = <0>;
-+
-+		i2c@3000 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			reg = <3000 100>;
-+			interrupts = <1b 2>;
-+			interrupt-parent = <40000>;
-+			dfsrr;
-+		};
-+
-+		mdio@24520 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "mdio";
-+			compatible = "gianfar";
-+			reg = <24520 20>;
-+			linux,phandle = <24520>;
-+			ethernet-phy@0 {
-+				linux,phandle = <2452000>;
-+				interrupt-parent = <40000>;
-+				interrupts = <35 0>;
-+				reg = <0>;
-+				device_type = "ethernet-phy";
-+			};
-+			ethernet-phy@1 {
-+				linux,phandle = <2452001>;
-+				interrupt-parent = <40000>;
-+				interrupts = <35 0>;
-+				reg = <1>;
-+				device_type = "ethernet-phy";
-+			};
-+
-+			ethernet-phy@2 {
-+				linux,phandle = <2452002>;
-+				interrupt-parent = <40000>;
-+				interrupts = <35 0>;
-+				reg = <2>;
-+				device_type = "ethernet-phy";
-+			};
-+			ethernet-phy@3 {
-+				linux,phandle = <2452003>;
-+				interrupt-parent = <40000>;
-+				interrupts = <35 0>;
-+				reg = <3>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
-+
-+		ethernet@24000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <24000 1000>;
-+			local-mac-address = [ 00 E0 0C 00 73 00 ];
-+			interrupts = <d 2 e 2 12 2>;
-+			interrupt-parent = <40000>;
-+			phy-handle = <2452000>;
-+		};
-+
-+		ethernet@25000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <25000 1000>;
-+			local-mac-address = [ 00 E0 0C 00 73 01 ];
-+			interrupts = <13 2 14 2 18 2>;
-+			interrupt-parent = <40000>;
-+			phy-handle = <2452001>;
-+		};
-+
-+		ethernet@26000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <26000 1000>;
-+			local-mac-address = [ 00 E0 0C 00 73 02 ];
-+			interrupts = <f 2 10 2 11 2>;
-+			interrupt-parent = <40000>;
-+			phy-handle = <2452001>;
-+		};
-+
-+/* eTSEC 4 is currently broken
-+		ethernet@27000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "eTSEC";
-+			compatible = "gianfar";
-+			reg = <27000 1000>;
-+			local-mac-address = [ 00 E0 0C 00 73 03 ];
-+			interrupts = <15 2 16 2 17 2>;
-+			interrupt-parent = <40000>;
-+			phy-handle = <2452001>;
-+		};
-+ */
-+
-+		serial@4500 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4500 100>;	// reg base, size
-+			clock-frequency = <0>;	// should we fill in in uboot?
-+			interrupts = <1a 2>;
-+			interrupt-parent = <40000>;
-+		};
-+
-+		serial@4600 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4600 100>;	// reg base, size
-+			clock-frequency = <0>;	// should we fill in in uboot?
-+			interrupts = <1a 2>;
-+			interrupt-parent = <40000>;
-+		};
-+
-+		pci@8000 {
-+			linux,phandle = <8000>;
-+			interrupt-map-mask = <1f800 0 0 7>;
-+			interrupt-map = <
-+				/* IDSEL 0x2 (PCIX Tsi310 bridge) */
-+				01000 0 0 1 40000 30 1
-+				01000 0 0 2 40000 31 1
-+				01000 0 0 3 40000 32 1
-+				01000 0 0 4 40000 33 1
-+
-+				/* IDSEL 0x3 (PCIX Slot 2) */
-+				01800 0 0 1 40000 30 1
-+				01800 0 0 2 40000 31 1
-+				01800 0 0 3 40000 32 1
-+				01800 0 0 4 40000 33 1
-+
-+				/* IDSEL 0x4 (PCIX Slot 3) */
-+				02000 0 0 1 40000 30 1
-+				02000 0 0 2 40000 31 1
-+				02000 0 0 3 40000 32 1
-+				02000 0 0 4 40000 33 1
-+
-+				/* IDSEL 0x5 (PCIX Slot 4) */
-+				02800 0 0 1 40000 30 1
-+				02800 0 0 2 40000 31 1
-+				02800 0 0 3 40000 32 1
-+				02800 0 0 4 40000 33 1
-+
-+				/* IDSEL 0x6 (PCIX Slot 5) */
-+				03000 0 0 1 40000 30 1
-+				03000 0 0 2 40000 31 1
-+				03000 0 0 3 40000 32 1
-+				03000 0 0 4 40000 33 1
-+
-+				/* IDSEL 0x12 (Tsi310 bridge) */
-+				09000 0 0 1 40000 30 1
-+				09000 0 0 2 40000 31 1
-+				09000 0 0 3 40000 32 1
-+				09000 0 0 4 40000 33 1
-+
-+				/* IDSEL 0x13 (Slot 2) */
-+				09800 0 0 1 40000 30 1
-+				09800 0 0 2 40000 31 1
-+				09800 0 0 3 40000 32 1
-+				09800 0 0 4 40000 33 1
-+
-+				/* IDSEL 0x14 (Slot 3) */
-+				0a000 0 0 1 40000 30 1
-+				0a000 0 0 2 40000 31 1
-+				0a000 0 0 3 40000 32 1
-+				0a000 0 0 4 40000 33 1
-+
-+				/* IDSEL 0x15 (Slot 4) */
-+				0a800 0 0 1 40000 30 1
-+				0a800 0 0 2 40000 31 1
-+				0a800 0 0 3 40000 32 1
-+				0a800 0 0 4 40000 33 1
-+
-+				/* IDSEL 0x16 (Slot 5) */
-+				0b000 0 0 1 40000 30 1
-+				0b000 0 0 2 40000 31 1
-+				0b000 0 0 3 40000 32 1
-+				0b000 0 0 4 40000 33 1>;
-+
-+			interrupt-parent = <40000>;
-+			interrupts = <08 2>;
-+			bus-range = <0 0>;
-+			ranges = <02000000 0 80000000 80000000 0 10000000
-+				  01000000 0 00000000 e2000000 0 00800000>;
-+			clock-frequency = <3f940aa>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <8000 1000>;
-+			compatible = "85xx";
-+			device_type = "pci";
-+		};
-+
-+		pci@9000 {
-+			linux,phandle = <9000>;
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+
-+				/* IDSEL 0x15 */
-+				a800 0 0 1 40000 3b 1
-+				a800 0 0 2 40000 3b 1
-+				a800 0 0 3 40000 3b 1
-+				a800 0 0 4 40000 3b 1>;
-+			interrupt-parent = <40000>;
-+			interrupts = <09 2>;
-+			bus-range = <0 0>;
-+			ranges = <02000000 0 90000000 90000000 0 10000000
-+				  01000000 0 00000000 e2800000 0 00800000>;
-+			clock-frequency = <3f940aa>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <9000 1000>;
-+			compatible = "85xx";
-+			device_type = "pci";
-+		};
-+
-+		/* PCI Express */
-+		pci@a000 {
-+			linux,phandle = <a000>;
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+
-+				/* IDSEL 0x0 (PEX) */
-+				00000 0 0 1 40000 30 2
-+				00000 0 0 2 40000 31 0
-+				00000 0 0 3 40000 32 0
-+				00000 0 0 4 40000 32 0>;
-+			interrupt-parent = <40000>;
-+			interrupts = <0a 2>;
-+			bus-range = <2 255>;
-+			ranges = <02000000 0 a0000000 a0000000 0 20000000
-+				  01000000 0 00000000 e3000000 0 01000000>;
-+			clock-frequency = <1fca055>;
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <a000 1000>;
-+			compatible = "85xx";
-+			device_type = "pci";
-+		};
-+
-+		pic@40000 {
-+			linux,phandle = <40000>;
-+			clock-frequency = <0>;
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <40000 40000>;
-+			built-in;
-+			compatible = "chrp,open-pic";
-+			device_type = "open-pic";
-+                        big-endian;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/sysdev/fsl_pcie.c b/arch/powerpc/sysdev/fsl_pcie.c
-index 469ded9..9b8436f 100644
---- a/arch/powerpc/sysdev/fsl_pcie.c
-+++ b/arch/powerpc/sysdev/fsl_pcie.c
-@@ -1,8 +1,10 @@
- /*
-- * Support for indirect PCI bridges.
-+ * PCIe Indirect Support
-  *
-  * Copyright (C) 1998 Gabriel Paubert.
-  *
-+ * Copyright (C) 2007 Freescale Semiconductor, Inc
-+ *
-  * This program is free software; you can redistribute it and/or
-  * modify it under the terms of the GNU General Public License
-  * as published by the Free Software Foundation; either version
-@@ -44,7 +46,7 @@ indirect_read_config_pcie(struct pci_bus
- 			return PCIBIOS_DEVICE_NOT_FOUND;
+@@ -177,12 +176,10 @@ int __init add_bridge(struct device_node
+ 	if ((rsrc.start & 0xfffff) == 0xa000) {
+ 		setup_indirect_pcie(hose, immr + 0xa000, immr + 0xa004);
+ 		mpc85xx_setup_pcie(hose);
+-		primary = 1;
++		primary = 0;
+ 		hose->bus_offset = hose->first_busno;
+ 		/* Setup PEX window registers */
+ 		setup_pcie_atmu(hose, &rsrc);
+-		early_read_config_dword(hose, 0, 0, 0x404, &temp);
+-		printk("Reg 0x404 is 0x%x\n",temp);
+ 	}
  
- 	/* Possible artifact of CDCpp50937 needs further investigation */
--	if (devfn != 0x0 && bus->number == 0xff)
-+	if (devfn != 0x0 && (bus->number == 0xff || bus->number == 0x3))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 	printk(KERN_INFO "Found MPC85xx PCI host bridge at 0x%016llx. "
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 2fe1d69..9276040 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -289,8 +289,10 @@ void __devinit pci_read_bridge_bases(str
  
- 	PCI_CFG_OUT(hose->cfg_addr, 0x80000000 | 0x4 << 24
-@@ -102,7 +104,7 @@ indirect_write_config_pcie(struct pci_bu
- 			return PCIBIOS_DEVICE_NOT_FOUND;
+ 	if (dev->transparent) {
+ 		printk(KERN_INFO "PCI: Transparent bridge - %s\n", pci_name(dev));
+-		for(i = 3; i < PCI_BUS_NUM_RESOURCES; i++)
+-			child->resource[i] = child->parent->resource[i - 3];
++		for(i = 0; i < PCI_BUS_NUM_RESOURCES; i++)
++			child->resource[i] = child->parent->resource[i];
++
++		return;
+ 	}
  
- 	/* Possible artifact of CDCpp50937 needs further investigation */
--	if (devfn != 0x0 && bus->number == 0xff)
-+	if (devfn != 0x0 && (bus->number == 0xff || bus->number == 0x3))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 	for(i=0; i<3; i++)
+@@ -720,11 +722,26 @@ static int pci_setup_device(struct pci_d
+ 	case PCI_HEADER_TYPE_NORMAL:		    /* standard header */
+ 		if (class == PCI_CLASS_BRIDGE_PCI)
+ 			goto bad;
+-		pci_read_irq(dev);
+-		pci_read_bases(dev, 6, PCI_ROM_ADDRESS);
+-		pci_read_config_word(dev, PCI_SUBSYSTEM_VENDOR_ID, &dev->subsystem_vendor);
+-		pci_read_config_word(dev, PCI_SUBSYSTEM_ID, &dev->subsystem_device);
  
- 	PCI_CFG_OUT(hose->cfg_addr, 0x80000000 | 0x4 << 24
++		if (class == PCI_CLASS_PROCESSOR_POWERPC) {
++			u8 progif;
++			pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
++			if ((progif & 1) == 0) { /* host */
++				dev->resource[0].flags=IORESOURCE_UNSET;
++				dev->resource[1].flags=IORESOURCE_UNSET;
++				dev->resource[2].flags=IORESOURCE_UNSET;
++				dev->resource[3].flags=IORESOURCE_UNSET;
++				dev->resource[4].flags=IORESOURCE_UNSET;
++				dev->resource[5].flags=IORESOURCE_UNSET;
++			}
++		} else {
++			pci_read_irq(dev);
++			pci_read_bases(dev, 6, PCI_ROM_ADDRESS);
++			pci_read_config_word(dev, PCI_SUBSYSTEM_VENDOR_ID,
++					&dev->subsystem_vendor);
++			pci_read_config_word(dev, PCI_SUBSYSTEM_ID,
++					&dev->subsystem_device);
++		}
+ 		/*
+ 		 *	Do the ugly legacy mode stuff here rather than broken chip
+ 		 *	quirk code. Legacy mode ATA controllers have fixed
+@@ -754,6 +771,17 @@ static int pci_setup_device(struct pci_d
+ 		break;
+ 
+ 	case PCI_HEADER_TYPE_BRIDGE:		    /* bridge header */
++		if (class == PCI_CLASS_PROCESSOR_POWERPC) {
++			u8 progif;
++			pci_read_config_byte(dev, PCI_CLASS_PROG, &progif);
++			if ((progif & 1) == 0) { /* rc */
++				dev->transparent = 1;
++				dev->resource[0].flags=IORESOURCE_UNSET;
++				dev->resource[1].flags=IORESOURCE_UNSET;
++				break;
++			}
++		}
++		else if (class != PCI_CLASS_BRIDGE_PCI)
+ 		if (class != PCI_CLASS_BRIDGE_PCI)
+ 			goto bad;
+ 		/* The PCI-to-PCI bridge spec requires that subtractive
+-- 
+1.4.4
+
+Removed an extraneous "if" clause that ended up in the pci code
+
+due to human error
+---
+ drivers/pci/probe.c |    1 -
+ 1 files changed, 0 insertions(+), 1 deletions(-)
+
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index 9276040..47a1793 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -782,7 +782,6 @@ static int pci_setup_device(struct pci_d
+ 			}
+ 		}
+ 		else if (class != PCI_CLASS_BRIDGE_PCI)
+-		if (class != PCI_CLASS_BRIDGE_PCI)
+ 			goto bad;
+ 		/* The PCI-to-PCI bridge spec requires that subtractive
+ 		   decoding (i.e. transparent) bridge must have programming
 -- 
 1.4.4
