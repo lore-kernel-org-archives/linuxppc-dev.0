@@ -1,13 +1,13 @@
 Return-Path: <afleming@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id A8C5CDDDE9
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 13:44:48 +1100 (EST)
-Date: Thu, 15 Feb 2007 20:44:04 -0600 (CST)
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 3EB10DDDEB
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 13:45:22 +1100 (EST)
+Date: Thu, 15 Feb 2007 20:44:45 -0600 (CST)
 From: Andy Fleming <afleming@freescale.com>
 To: linuxppc-dev@ozlabs.org, Kumar Gala <galak@kernel.crashing.org>,
 	jdl@jdl.com
-Subject: [RFC 2/7] Unite all PCI-e on 85xx and 86xx under one codebase
-Message-ID: <Pine.LNX.4.61.0702152043270.9034@ld0175-tx32.am.freescale.net>
+Subject: [RFC 3/7] Unite all PCI-e on 85xx and 86xx under one codebase
+Message-ID: <Pine.LNX.4.61.0702152044060.9034@ld0175-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,99 +19,196 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add 85xx PCI express memory map register.
+Add 8548 CDS PCI express host bridge support
 
 Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
 Acked-by: Andy Fleming <afleming@freescale.com>
 ---
- include/asm-ppc/immap_85xx.h |   75 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 75 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/85xx/mpc85xx_cds.c |   11 +--
+ arch/powerpc/platforms/85xx/pci.c         |  108 ++++++++++++++++++++++++++++-
+ 2 files changed, 110 insertions(+), 9 deletions(-)
 
-diff --git a/include/asm-ppc/immap_85xx.h b/include/asm-ppc/immap_85xx.h
-index b35cd6a..adef8c7 100644
---- a/include/asm-ppc/immap_85xx.h
-+++ b/include/asm-ppc/immap_85xx.h
-@@ -87,6 +87,81 @@ typedef struct ccsr_pci {
- 	char	res19[472];
- } ccsr_pci_t;
+diff --git a/arch/powerpc/platforms/85xx/mpc85xx_cds.c b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+index abc0aca..2027855 100644
+--- a/arch/powerpc/platforms/85xx/mpc85xx_cds.c
++++ b/arch/powerpc/platforms/85xx/mpc85xx_cds.c
+@@ -79,9 +79,9 @@ static int mpc85xx_exclude_device(u_char
+ 		return PCIBIOS_SUCCESSFUL;
+ }
  
-+/* PCI Express Registers */
-+typedef struct ccsr_pex {
-+	uint    pex_config_addr;        /* 0x.000 - PCI Express Configuration Address Register */
-+	uint    pex_config_data;        /* 0x.004 - PCI Express Configuration Data Register */
-+	char    res1[4];
-+	uint    pex_otb_cpl_tor;        /* 0x.00c - PCI Express Outbound completion timeout register */
-+	uint    pex_conf_tor;           /* 0x.010 - PCI Express configuration timeout register */
-+	char    res2[12];
-+	uint    pex_pme_mes_dr;         /* 0x.020 - PCI Express PME and message detect register */
-+	uint    pex_pme_mes_disr;       /* 0x.024 - PCI Express PME and message disable register */
-+	uint    pex_pme_mes_ier;        /* 0x.028 - PCI Express PME and message interrupt enable register */
-+	uint    pex_pmcr;               /* 0x.02c - PCI Express power management command register */
-+	char    res3[3024];
-+	uint    pexotar0;               /* 0x.c00 - PCI Express outbound translation address register 0 */
-+	uint    pexotear0;              /* 0x.c04 - PCI Express outbound translation extended address register 0*/
-+	char    res4[8];
-+	uint    pexowar0;               /* 0x.c10 - PCI Express outbound window attributes register 0*/
-+	char    res5[12];
-+	uint    pexotar1;               /* 0x.c20 - PCI Express outbound translation address register 1 */
-+	uint    pexotear1;              /* 0x.c24 - PCI Express outbound translation extended address register 1*/
-+	uint    pexowbar1;              /* 0x.c28 - PCI Express outbound window base address register 1*/
-+	char    res6[4];
-+	uint    pexowar1;               /* 0x.c30 - PCI Express outbound window attributes register 1*/
-+	char    res7[12];
-+	uint    pexotar2;               /* 0x.c40 - PCI Express outbound translation address register 2 */
-+	uint    pexotear2;              /* 0x.c44 - PCI Express outbound translation extended address register 2*/
-+	uint    pexowbar2;              /* 0x.c48 - PCI Express outbound window base address register 2*/
-+	char    res8[4];
-+	uint    pexowar2;               /* 0x.c50 - PCI Express outbound window attributes register 2*/
-+	char    res9[12];
-+	uint    pexotar3;               /* 0x.c60 - PCI Express outbound translation address register 3 */
-+	uint    pexotear3;              /* 0x.c64 - PCI Express outbound translation extended address register 3*/
-+	uint    pexowbar3;              /* 0x.c68 - PCI Express outbound window base address register 3*/
-+	char    res10[4];
-+	uint    pexowar3;               /* 0x.c70 - PCI Express outbound window attributes register 3*/
-+	char    res11[12];
-+	uint    pexotar4;               /* 0x.c80 - PCI Express outbound translation address register 4 */
-+	uint    pexotear4;              /* 0x.c84 - PCI Express outbound translation extended address register 4*/
-+	uint    pexowbar4;              /* 0x.c88 - PCI Express outbound window base address register 4*/
-+	char    res12[4];
-+	uint    pexowar4;               /* 0x.c90 - PCI Express outbound window attributes register 4*/
-+	char    res13[12];
-+	char    res14[256];
-+	uint    pexitar3;               /* 0x.da0 - PCI Express inbound translation address register 3 */
-+	char    res15[4];
-+	uint    pexiwbar3;              /* 0x.da8 - PCI Express inbound window base address register 3 */
-+	uint    pexiwbear3;             /* 0x.dac - PCI Express inbound window base extended address register 3 */
-+	uint    pexiwar3;               /* 0x.db0 - PCI Express inbound window attributes register 3 */
-+	char    res16[12];
-+	uint    pexitar2;               /* 0x.dc0 - PCI Express inbound translation address register 2 */
-+	char    res17[4];
-+	uint    pexiwbar2;              /* 0x.dc8 - PCI Express inbound window base address register 2 */
-+	uint    pexiwbear2;             /* 0x.dcc - PCI Express inbound window base extended address register 2 */
-+	uint    pexiwar2;               /* 0x.dd0 - PCI Express inbound window attributes register 2 */
-+	char    res18[12];
-+	uint    pexitar1;               /* 0x.de0 - PCI Express inbound translation address register 2 */
-+	char    res19[4];
-+	uint    pexiwbar1;              /* 0x.de8 - PCI Express inbound window base address register 2 */
-+	uint    pexiwbear1;             /* 0x.dec - PCI Express inbound window base extended address register 2 */
-+	uint    pexiwar1;               /* 0x.df0 - PCI Express inbound window attributes register 2 */
-+	char    res20[12];
-+	uint    pex_err_dr;             /* 0x.e00 - PCI Express error detect register */
-+	char    res21[4];
-+	uint    pex_err_en;             /* 0x.e08 - PCI Express error interrupt enable register */
-+	char    res22[4];
-+	uint    pex_err_disr;           /* 0x.e10 - PCI Express error disable register */
-+	char    res23[12];
-+	uint    pex_err_cap_stat;       /* 0x.e20 - PCI Express error capture status register */
-+	char    res24[4];
-+	uint    pex_err_cap_r0;         /* 0x.e28 - PCI Express error capture register 0 */
-+	uint    pex_err_cap_r1;         /* 0x.e2c - PCI Express error capture register 0 */
-+	uint    pex_err_cap_r2;         /* 0x.e30 - PCI Express error capture register 0 */
-+	uint    pex_err_cap_r3;         /* 0x.e34 - PCI Express error capture register 0 */
-+} ccsr_pex_t;
+-static void __init mpc85xx_cds_pcibios_fixup(void)
++void __init
++mpc85xx_cds_pci_irq_fixup(struct pci_dev *dev)
+ {
+-	struct pci_dev *dev;
+ 	u_char		c;
+ 
+ 	if ((dev = pci_get_device(PCI_VENDOR_ID_VIA,
+@@ -120,11 +120,6 @@ static void __init mpc85xx_cds_pcibios_f
+ 		pci_write_config_byte(dev, PCI_INTERRUPT_LINE, 11);
+ 		pci_dev_put(dev);
+ 	}
+-
+-	/* Now map all the PCI irqs */
+-	dev = NULL;
+-	for_each_pci_dev(dev)
+-		pci_read_irq_line(dev);
+ }
+ 
+ #ifdef CONFIG_PPC_I8259
+@@ -260,7 +255,7 @@ static void __init mpc85xx_cds_setup_arc
+ 	for (np = NULL; (np = of_find_node_by_type(np, "pci")) != NULL;)
+ 		add_bridge(np);
+ 
+-	ppc_md.pcibios_fixup = mpc85xx_cds_pcibios_fixup;
++	ppc_md.pci_irq_fixup = mpc85xx_cds_pci_irq_fixup;
+ 	ppc_md.pci_exclude_device = mpc85xx_exclude_device;
+ #endif
+ 
+diff --git a/arch/powerpc/platforms/85xx/pci.c b/arch/powerpc/platforms/85xx/pci.c
+index 05930ee..5c70797 100644
+--- a/arch/powerpc/platforms/85xx/pci.c
++++ b/arch/powerpc/platforms/85xx/pci.c
+@@ -24,6 +24,7 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/prom.h>
+ #include <sysdev/fsl_soc.h>
++#include <asm/immap_85xx.h>
+ 
+ #undef DEBUG
+ 
+@@ -35,13 +36,108 @@
+ 
+ int mpc85xx_pci2_busno = 0;
+ 
++extern void
++setup_indirect_pcie(struct pci_controller* hose, u32 cfg_addr, u32 cfg_data);
 +
- /* Global Utility Registers */
- typedef struct ccsr_guts {
- 	uint	porpllsr;	/* 0x.0000 - POR PLL Ratio Status Register */
+ #ifdef CONFIG_PCI
++struct pcie_outbound_window_regs {
++	uint    pexotar;               /* 0x.0 - PCI Express outbound translation address register */
++	uint    pexotear;              /* 0x.4 - PCI Express outbound translation extended address register */
++	uint    pexowbar;              /* 0x.8 - PCI Express outbound window base address register */
++	char    res1[4];
++	uint    pexowar;               /* 0x.10 - PCI Express outbound window attributes register */
++	char    res2[12];
++};
++
++struct pcie_inbound_window_regs {
++	uint    pexitar;               /* 0x.0 - PCI Express inbound translation address register */
++	char    res1[4];
++	uint    pexiwbar;              /* 0x.8 - PCI Express inbound window base address register */
++	uint    pexiwbear;             /* 0x.c - PCI Express inbound window base extended address register */
++	uint    pexiwar;               /* 0x.10 - PCI Express inbound window attributes register */
++	char    res2[12];
++};
++
++static void __init setup_pcie_atmu(struct pci_controller *hose, struct resource *rsrc)
++{
++	volatile struct ccsr_pex *pcie;
++	volatile struct pcie_outbound_window_regs *pcieow;
++	volatile struct pcie_inbound_window_regs *pcieiw;
++	int i = 0;
++
++	DBG("PCIE memory map start 0x%x, size 0x%x\n", rsrc->start,
++			rsrc->end - rsrc->start + 1);
++	pcie = ioremap(rsrc->start, rsrc->end - rsrc->start + 1);
++
++	/* Disable all windows (except pexowar0 since its ignored) */
++	pcie->pexowar1 = 0;
++	pcie->pexowar2 = 0;
++	pcie->pexowar3 = 0;
++	pcie->pexowar4 = 0;
++	pcie->pexiwar1 = 0;
++	pcie->pexiwar2 = 0;
++	pcie->pexiwar3 = 0;
++
++	pcieow = (struct pcie_outbound_window_regs *)&pcie->pexotar1;
++	pcieiw = (struct pcie_inbound_window_regs *)&pcie->pexitar1;
++
++	/* Setup outbound MEM window */
++	for(i = 0; i < 3; i++)
++		if (hose->mem_resources[i].flags & IORESOURCE_MEM){
++			DBG("PCIE MEM resource start 0x%08x, size 0x%08x.\n",
++				hose->mem_resources[i].start,
++				hose->mem_resources[i].end
++				  - hose->mem_resources[i].start + 1);
++			pcieow->pexotar = (hose->mem_resources[i].start) >> 12
++				& 0x000fffff;
++			pcieow->pexotear = 0;
++			pcieow->pexowbar = (hose->mem_resources[i].start) >> 12
++				& 0x000fffff;
++			/* Enable, Mem R/W */
++			pcieow->pexowar = 0x80044000 |
++				(__ilog2(hose->mem_resources[i].end
++					 - hose->mem_resources[i].start + 1)
++				 - 1);
++			pcieow++;
++		}
++
++	/* Setup outbound IO window */
++	if (hose->io_resource.flags & IORESOURCE_IO){
++		DBG("PCIE IO resource start 0x%08x, size 0x%08x, phy base 0x%08x.\n",
++			hose->io_resource.start,
++			hose->io_resource.end - hose->io_resource.start + 1,
++			hose->io_base_phys);
++		pcieow->pexotar = (hose->io_resource.start) >> 12 & 0x000fffff;
++		pcieow->pexotear = 0;
++		pcieow->pexowbar = (hose->io_base_phys) >> 12 & 0x000fffff;
++		/* Enable, IO R/W */
++		pcieow->pexowar = 0x80088000 | (__ilog2(hose->io_resource.end
++					- hose->io_resource.start + 1) - 1);
++	}
++
++	/* Setup 2G inbound Memory Window @ 0 */
++	pcieiw->pexitar = 0x00000000;
++	pcieiw->pexiwbar = 0x00000000;
++	/* Enable, Prefetch, Local Mem, Snoop R/W, 2G */
++	pcieiw->pexiwar = 0xa0f5501e;
++}
++static void __init
++mpc85xx_setup_pcie(struct pci_controller *hose)
++{
++	u16 temps;
++	early_read_config_word(hose, 0, 0, PCI_COMMAND, &temps);
++	temps |= PCI_COMMAND_SERR | PCI_COMMAND_MASTER | PCI_COMMAND_MEMORY;
++	early_write_config_word(hose, 0, 0, PCI_COMMAND, temps);
++	early_write_config_byte(hose, 0, 0, PCI_LATENCY_TIMER, 0x80);
++}
++
+ int __init add_bridge(struct device_node *dev)
+ {
+ 	int len;
+ 	struct pci_controller *hose;
+ 	struct resource rsrc;
+ 	const int *bus_range;
++	unsigned int temp;
+ 	int primary = 1, has_address = 0;
+ 	phys_addr_t immr = get_immrbase();
+ 
+@@ -77,6 +173,17 @@ int __init add_bridge(struct device_node
+ 		hose->bus_offset = hose->first_busno;
+ 		mpc85xx_pci2_busno = hose->first_busno;
+ 	}
++	/* PEX */
++	if ((rsrc.start & 0xfffff) == 0xa000) {
++		setup_indirect_pcie(hose, immr + 0xa000, immr + 0xa004);
++		mpc85xx_setup_pcie(hose);
++		primary = 1;
++		hose->bus_offset = hose->first_busno;
++		/* Setup PEX window registers */
++		setup_pcie_atmu(hose, &rsrc);
++		early_read_config_dword(hose, 0, 0, 0x404, &temp);
++		printk("Reg 0x404 is 0x%x\n",temp);
++	}
+ 
+ 	printk(KERN_INFO "Found MPC85xx PCI host bridge at 0x%016llx. "
+ 	       "Firmware bus number: %d->%d\n",
+@@ -92,5 +199,4 @@ int __init add_bridge(struct device_node
+ 
+ 	return 0;
+ }
+-
+ #endif
 -- 
 1.4.4
