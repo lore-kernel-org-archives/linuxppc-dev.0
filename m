@@ -1,20 +1,38 @@
-Return-Path: <paulmck@linux.vnet.ibm.com>
-Date: Thu, 15 Feb 2007 13:50:48 -0800
-From: "Paul E. McKenney" <paulmck@linux.vnet.ibm.com>
-To: Carl Love <cel@us.ibm.com>
-Subject: Re: [Cbe-oss-dev] [RFC,
-	PATCH] CELL Oprofile SPU profiling	updated	patch
-Message-ID: <20070215215047.GE1913@linux.vnet.ibm.com>
-References: <1171497138.23691.8.camel@dyn9047021078.beaverton.ibm.com>
-	<200702151537.51202.arnd@arndb.de>
-	<1171570918.31179.36.camel@dyn9047021078.beaverton.ibm.com>
-Mime-Version: 1.0
+Return-Path: <linas@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 22877DDECE
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Feb 2007 11:19:04 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1G0J0uK016459
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 19:19:00 -0500
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1G0Ixfm291916
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 19:18:59 -0500
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1G0Iwa8004861
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Feb 2007 19:18:59 -0500
+Date: Thu, 15 Feb 2007 18:18:57 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: [PATCHSET] spidernet, sungem_phy: consolidated patch series
+Message-ID: <20070216001857.GC923@austin.ibm.com>
+References: <200701260724.l0Q7OISY027645@toshiba.co.jp>
+	<45D3EAA7.80805@garzik.org>
+	<1171525923.20192.243.camel@localhost.localdomain>
+	<200702151141.49708.jens@de.ibm.com>
+	<20070215171414.GU923@austin.ibm.com>
+	<1171572392.5644.15.camel@localhost.localdomain>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1171570918.31179.36.camel@dyn9047021078.beaverton.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	linux-kernel@vger.kernel.org
-Reply-To: paulmck@linux.vnet.ibm.com
+In-Reply-To: <1171572392.5644.15.camel@localhost.localdomain>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Jeff Garzik <jeff@garzik.org>, arnd@arndb.de, linuxppc-dev@ozlabs.org,
+	linux-ide@vger.kernel.org, paulus@samba.org,
+	Andrew Morton <akpm@linux-foundation.org>,
+	James K Lewis <jim@jklewis.com>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,97 +42,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 15, 2007 at 12:21:58PM -0800, Carl Love wrote:
-> On Thu, 2007-02-15 at 15:37 +0100, Arnd Bergmann wrote:
+On Fri, Feb 16, 2007 at 07:46:32AM +1100, Benjamin Herrenschmidt wrote:
+> 
+> > I can send a tested patch series (merging all three sources)
+> 
+> Just send the blast to our list first so I can verify that the
+> sungem_phy doesn't adversely affect sungem and everybody 
 
-[ . . . ]
+By "our list", I assume you mean "linuxppc-dev@ozlabs.org". 
+I'm going to severely trim the cc list at this point, and 
+send a patch series of 12 shortly.  I'm going to pretend
+as if I was maintainer (formalities on this side pending)
+and attach a "signed-off-by" to each.  Ben, it'll be up to 
+you to go/no-go; if you say "go", I'll repost to eff Garzik
+(right?)
 
-> > I agree with Milton that it would be far nicer even to calculate
-> > the value from user space, but since you say that would
-> > violate the oprofile interface conventions, let's not go there.
-> > In order to make this code nicer on the user, you should probably
-> > insert a 'cond_resched()' somewhere in the loop, maybe every
-> > 500 iterations or so.
-> > 
-> > it also looks like there is whitespace damage in the code here.
-> 
-> I will double check on the whitespace damage.  I thought I had gotten
-> all that out.  
-> 
-> I have done some quick measurements.  The above method limits the loop
-> to at most 2^16 iterations.  Based on running the algorithm in user
-> space, it takes about 3ms of computation time to do the loop 2^16 times.
-> 
-> At the vary least, we need to put the resched in say every 10,000
-> iterations which would be about every 0.5ms.  Should we do a resched
-> more often?  
-> 
-> Additionally we could up the size of the table to 512 which would reduce
-> the maximum time to about 1.5ms.  What do people think about increasing
-> the table size?
+> (especially Kou
+> sine you dn't have the Toshiba hardware, do you ?) can verify it all
+> works fine.
 
-Is this 1.5ms with interrupts disabled?  This time period is problematic
-from a realtime perspective if so -- need to be able to preempt.
+I don't have Toshiba hardware. FWIW, I also don't have a ps3. 
 
-						Thanx, Paul
-
-> A little more general discussion about the logarithmic algorithm and
-> limiting the range.  The hardware supports a 24 bit LFSR value. This
-> means the user can say is capture a sample every N cycles, where N is in
-> the range of 1 to 2^24.  The OProfile user tool enforces a minimum value
-> of N to make sure the overhead of OProfile doesn't bring the machine to
-> its knees.  The minimum values is not intended to guarantee the
-> performance impact of OProfile will not be significant.  It is left as
-> an exercise for the user to pick an N that will give minimal performance
-> impact.  We set the lower limit for N for SPU profiling to 100,000. This
-> is actually high enough that we don't seem to see much performance
-> impact when running OProfile.  If the user picked N=2^24 then for a
-> 3.2GHz machine you would get about 200 samples per second on each node.
-> Where a sample consists of the PC value for all 8 SPUs on the node.  If
-> the user wanted to do a relatively long OProfile run, I can see where
-> they might use N=2^24 to avoid gathering too much data.  My gut feeling
-> is that the sampling frequency for N=2^24 is not low enough that someone
-> would never want to use it when doing long runs.  Hence, we should not
-> arbitrarily reduce the maximum value for N.  Although I would expect
-> that the typical value for N will be in the range of several hundred
-> thousand to a few million.
-> 
-> As for using a logarithmic spacing of the precomputed values, this
-> approach means that the space between the precomputed values at the high
-> end would be much larger then 2^14, assuming 256 precomputed values.
-> That means it could take much longer then 3ms to get the needed LFSR
-> value for a large N.  By evenly spacing the precomputed values, we can
-> ensure that for all N it will take less then 3ms to get the value.
-> Personally, I am more comfortable with a hard limit on the compute time
-> then a variable time that could get much bigger then the 1ms threshold
-> that Arnd wants for resched.  Any thoughts?
-> 
-> > 
-> > > +
-> > > +/* This interface allows a profiler (e.g., OProfile) to store
-> > > + * spu_context information needed for profiling, allowing it to
-> > > + * be saved across context save/restore operation.
-> > > + *
-> > > + * Assumes the caller has already incremented the ref count to
-> > > + * profile_info; then spu_context_destroy must call kref_put
-> > > + * on prof_info_kref.
-> > > + */
-> > > +void spu_set_profile_private(struct spu_context * ctx, void * profile_info,
-> > > +			     struct kref * prof_info_kref,
-> > > +			     void (* prof_info_release) (struct kref * kref))
-> > > +{
-> > > +	ctx->profile_private = profile_info;
-> > > +	ctx->prof_priv_kref = prof_info_kref;
-> > > +	ctx->prof_priv_release = prof_info_release;
-> > > +}
-> > > +EXPORT_SYMBOL_GPL(spu_set_profile_private);
-> > 
-> > I think you don't need the profile_private member here, if you just use
-> > container_of with ctx->prof_priv_kref in all users.
-> > 
-> > 	Arnd <><
-> 
-> _______________________________________________
-> cbe-oss-dev mailing list
-> cbe-oss-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/cbe-oss-dev
+--linas
