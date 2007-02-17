@@ -1,20 +1,20 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 5BB39DDDED
+Return-Path: <blueskyjb@verizon.net>
+Received: from vms040pub.verizon.net (vms040pub.verizon.net [206.46.252.40])
+	by ozlabs.org (Postfix) with ESMTP id 724ABDDDE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Feb 2007 10:22:51 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: What happened to include/asm-ppc??
-Date: Sat, 17 Feb 2007 00:22:23 +0100
-References: <32201137.34111171657512254.JavaMail.root@vms061.mailsrvcs.net>
-	<200702162150.44997.arnd@arndb.de> <45D632F3.3000509@freescale.com>
-In-Reply-To: <45D632F3.3000509@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702170022.24595.arnd@arndb.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 17 Feb 2007 12:44:21 +1100 (EST)
+Received: from vms061.mailsrvcs.net ([192.168.1.2])
+	by vms040.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
+	(built Apr
+	3 2006)) with ESMTPA id <0JDL00E3U3HB6HC1@vms040.mailsrvcs.net> for
+	linuxppc-embedded@ozlabs.org; Fri, 16 Feb 2007 19:43:59 -0600 (CST)
+Date: Fri, 16 Feb 2007 19:43:59 -0600 (CST)
+From: <blueskyjb@verizon.net>
+Subject: Problem building app when ARCH=ppc
+To: linuxppc-embedded@ozlabs.org
+Message-id: <673046.109041171676639797.JavaMail.root@vms061.mailsrvcs.net>
+MIME-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,16 +25,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 16 February 2007 23:40, Timur Tabi wrote:
-> > That shouldn't be the case, the headers from asm-powerpc should be
-> > sufficient for all 32 and 64 bit user apps, if not then you should
-> > really report that as a bug.
-> 
-> I thought applications weren't supposed to include kernel header files?
-> 
-Right, but glibc depends on them. We now have a mechanism of installing
-a subset of the kernel headers with 'make headers_install' in order
-to be used by glibc. This currently will install a set of the asm-powerpc
-files, but we got rid of all user dependencies on asm-ppc headers.
+This is a follow-up to my earlier post about
+include/asm-ppc.
 
-	Arnd <><
+I've got a simple test case that won't build with
+ELDK 4.1 configured for a ppc arch:
+
+#include <signal.h>
+main(int argc, char **argv)
+{
+   printf("hello world\n");
+}
+
+This build just fine with ELDK 4.0 using:
+
+% ppc_6xx-gcc hello_world.c
+
+In ELDK 4.1 it gets an error: asm/sigcontext.h: No such file or directory.  
+
+Is include/asm-ppc broken
+or do I need to add some additional compile option?
+
+Thanks,
+
+-- Jimmy
