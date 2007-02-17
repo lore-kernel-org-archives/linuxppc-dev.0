@@ -1,23 +1,21 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CDD29DDDFE
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 07:36:19 +1100 (EST)
-Message-ID: <45D7673D.3070202@garzik.org>
-Date: Sat, 17 Feb 2007 15:36:13 -0500
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] use winbond libata instead of ide driver for pseries
-	CD drives
-References: <20070210203512.GA25586@aepfle.de>
-	<20070210203614.GA25602@aepfle.de>
-	<45D4E82B.7020403@garzik.org> <20070216092046.GA2572@aepfle.de>
-In-Reply-To: <20070216092046.GA2572@aepfle.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackeras <paulus@samba.org>, linux-ide@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 38DEDDDE01
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 09:00:56 +1100 (EST)
+Subject: Re: [PATCH 2.6.21-rc1] powerpc: Make of_device_uevent() compatible
+	with ibmebus
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+In-Reply-To: <200702171728.15597.hnguyen@linux.vnet.ibm.com>
+References: <200702171728.15597.hnguyen@linux.vnet.ibm.com>
+Content-Type: text/plain
+Date: Sun, 18 Feb 2007 08:56:39 +1100
+Message-Id: <1171749399.5644.145.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: pmac@au1.ibm.com, fenkes@de.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, johnrose@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +25,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olaf Hering wrote:
-> Change the default for the built-in IDE on p610/p615/p630 from
-> ide to libata. libata has better error handling and the drive can
-> recover when hald does its CD media polling.
-> 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
-> 
-> ---
->  arch/powerpc/configs/ppc64_defconfig   |    4 ++--
->  arch/powerpc/configs/pseries_defconfig |    4 ++--
->  2 files changed, 4 insertions(+), 4 deletions(-)
+On Sat, 2007-02-17 at 17:28 +0100, Hoang-Nam Nguyen wrote:
+> ibmebus has a fake root device that's not associated with an ofdt node.
+> Filter out any such devices in of_device_uevent().
 
-ACK the patch.  I presume Paul will apply it, as its within his file 
-hierarchy
+Doh ! You are creating an of_device with no attached device-node ? That
+is totally evil ! Why do you need that ?
+
+Ben.
+
+> 
+> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+> ---
+> 
+> 
+>  of_device.c |    4 ++++
+>  1 files changed, 4 insertions(+)
+> 
+> 
+> diff -urp a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
+> --- a/arch/powerpc/kernel/of_device.c	2007-02-17 16:36:32.116368480 +0100
+> +++ b/arch/powerpc/kernel/of_device.c	2007-02-17 16:44:01.319366352 +0100
+> @@ -180,6 +180,10 @@ int of_device_uevent(struct device *dev,
+>  
+>  	ofdev = to_of_device(dev);
+>  
+> +	/* e.g. ibmebus has a fake root device w/o ofdt node -- filter that */
+> +	if (!ofdev->node)
+> +		return -ENODEV;
+> +
+>  	if (add_uevent_var(envp, num_envp, &i,
+>  			   buffer, buffer_size, &length,
+>  			   "OF_NAME=%s", ofdev->node->name))
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
