@@ -1,35 +1,34 @@
 Return-Path: <FENKES@de.ibm.com>
-Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
+Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 64EF4DDDED
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 11:28:04 +1100 (EST)
+	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 108DADDDF3
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 13:24:52 +1100 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate2.de.ibm.com (8.13.8/8.13.8) with ESMTP id l1H0RxrH109164
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 00:27:59 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
+	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l1H2Oia1137042
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 02:24:44 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l1H0Rx4i1753174
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 01:27:59 +0100
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l1H0Rwet016503
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 01:27:59 +0100
-In-Reply-To: <1171569457.20758.76.camel@sinatra.austin.ibm.com>
-To: John Rose <johnrose@austin.ibm.com>
+	ESMTP id l1H2OiGs1081562
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 03:24:44 +0100
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l1H2OiZk016524
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 03:24:44 +0100
+In-Reply-To: <45D4BE7E.7000109@246tNt.com>
+To: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition and	removal
+Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition and removal
 	of adapters
 From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFF5C27801.F7BCD37B-ON85257285.0001F062-85257285.00028E7E@de.ibm.com>
-Date: Fri, 16 Feb 2007 19:27:57 -0500
+Message-ID: <OFD4D98910.EB8251E4-ON85257285.000A5EF1-85257285.000D3F8C@de.ibm.com>
+Date: Fri, 16 Feb 2007 21:24:43 -0500
 Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Paul Mackerras <pmac@au1.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-	External List <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-	Me Notes <johnrose@us.ibm.com>
+Cc: pmac@au1.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+	johnrose@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,26 +38,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-John Rose <johnrose@austin.ibm.com> wrote on 15.02.2007 14:57:37:
+Sylvain Munaut <tnt@246tNt.com> wrote on 15.02.2007 15:11:42:
 
-> Looks good.  Questions: how can the user space tools verify the success
-> of an add or remove?=20
+> Mmmh, I posted a patch that added a common uevent interface for all
+> of=5Fdevice based bus. And that kinda clash with this one.
 
-If the probe operation succeeds, the respective device will show up=20
-beneath
-/sys/bus/ibmebus/devices.
-=20
-> Also, will /sys/bus/ibmebus exist even if the system booted with no LHEA
-> nodes?
+Oops, I was not aware of this. I had a look at your patch and yes, it's a=20
+nice
+and generic interface. I concur that using your generic function is the=20
+better
+approach.
 
-Sure.
-=20
-> Can we also have an attribute "devspec" that communicates the open
-> firmware path through sysfs?
+> But as "ibm,loc=5Fcode" is local to this bus it's not handled by my code.
+> Is it necessary to match the correct driver ?
 
-This is already taken care of by of=5Fdevice=5Fregister().
+The intention of adding the location code was to include a device property
+into the environment that's unique to each device. Actually, the DEVPATH=20
+variable
+provides exactly this: For ebus devices, it points to the ebus device=20
+itself,
+which natually is unique.
 
-Cheers,
+If a userspace tool really needs the location code, the "devspec"=20
+attribute of
+the ebus device will point it to the device tree node, which in turn=20
+contains the
+location code property.
+
+So I think there's nothing preventing me from using your function. Thanks=20
+for
+pointing this out.
+
+Regards,
   Joachim
 
 ---
