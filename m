@@ -1,20 +1,16 @@
-Return-Path: <blueskyjb@verizon.net>
-Received: from vms040pub.verizon.net (vms040pub.verizon.net [206.46.252.40])
-	by ozlabs.org (Postfix) with ESMTP id 724ABDDDE4
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc2-s8.bay0.hotmail.com (bay0-omc2-s8.bay0.hotmail.com
+	[65.54.246.144]) by ozlabs.org (Postfix) with ESMTP id 7D2F5DDDF5
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Feb 2007 12:44:21 +1100 (EST)
-Received: from vms061.mailsrvcs.net ([192.168.1.2])
-	by vms040.mailsrvcs.net (Sun Java System Messaging Server 6.2-6.01
-	(built Apr
-	3 2006)) with ESMTPA id <0JDL00E3U3HB6HC1@vms040.mailsrvcs.net> for
-	linuxppc-embedded@ozlabs.org; Fri, 16 Feb 2007 19:43:59 -0600 (CST)
-Date: Fri, 16 Feb 2007 19:43:59 -0600 (CST)
-From: <blueskyjb@verizon.net>
-Subject: Problem building app when ARCH=ppc
-To: linuxppc-embedded@ozlabs.org
-Message-id: <673046.109041171676639797.JavaMail.root@vms061.mailsrvcs.net>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
+	Sun, 18 Feb 2007 02:09:31 +1100 (EST)
+Message-ID: <BAY115-W166B09D1D3AD08D491466B2940@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: What is the difference between Montavista Kernel Source and
+	Kernel.Org Source
+Date: Sat, 17 Feb 2007 15:09:29 +0000
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,27 +21,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a follow-up to my earlier post about
-include/asm-ppc.
 
-I've got a simple test case that won't build with
-ELDK 4.1 configured for a ppc arch:
+Hi All,
 
-#include <signal.h>
-main(int argc, char **argv)
-{
-   printf("hello world\n");
-}
+Just a simple question
 
-This build just fine with ELDK 4.0 using:
+I'm Going to use linux on ML403.
 
-% ppc_6xx-gcc hello_world.c
+I want to know, what is the difference between the linux kernel source, tha=
+t we download from source.mvista.com ( using git ) and the original kernel =
+source code that we download from kernel.org?
 
-In ELDK 4.1 it gets an error: asm/sigcontext.h: No such file or directory.  
+In other words, Suppose that I have generated the BSP in EDK ( version 8.2.=
+02 ) , and now , I copy this BSP to the root folder of kernel source obtain=
+ed from kernel.org instead of mvista. Can I do the same things as mvista so=
+urce in this case?
 
-Is include/asm-ppc broken
-or do I need to add some additional compile option?
-
-Thanks,
-
--- Jimmy
+Thanks.
+_________________________________________________________________
+Personalize your Live.com homepage with the news, weather, and photos you c=
+are about.
+http://www.live.com/getstarted.aspx?icid=3DT001MSN30A0701=
