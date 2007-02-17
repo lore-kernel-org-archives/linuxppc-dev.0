@@ -1,18 +1,26 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id 643FEDDD0B
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 20:14:16 +1100 (EST)
-From: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-To: "'David Brownell'" <david-b@pacbell.net>
-Subject: RE: [spi-devel-general] [PATCH] Adapt spi_mpc83xx SPI driver for 832x
-Date: Sat, 17 Feb 2007 10:14:07 +0100
-Message-ID: <003d01c75273$fa644360$1e67a8c0@Jocke>
+Return-Path: <tnt@246tNt.com>
+Received: from outmx022.isp.belgacom.be (outmx022.isp.belgacom.be
+	[195.238.4.203])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 87A5EDDDF7
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 20:37:23 +1100 (EST)
+Received: from outmx022.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l1H9b6Vj013419
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 10:37:10 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45D6CC81.1040004@246tNt.com>
+Date: Sat, 17 Feb 2007 10:36:01 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <200702161817.43515.david-b@pacbell.net>
-Cc: spi-devel-general@lists.sourceforge.net,
-	'linuxppc-dev Development' <linuxppc-dev@ozlabs.org>
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Use of_device_uevent()
+References: <200702170356.12600.hnguyen@linux.vnet.ibm.com>
+In-Reply-To: <200702170356.12600.hnguyen@linux.vnet.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: pmac@au1.ibm.com, fenkes@de.ibm.com, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, johnrose@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,42 +30,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> -----Original Message-----
-> From: David Brownell [mailto:david-b@pacbell.net] 
-> Sent: den 17 februari 2007 03:18
-> To: joakim.tjernlund@transmode.se
-> Cc: Kumar Gala; spi-devel-general@lists.sourceforge.net; 
-> 'linuxppc-dev Development'
-> Subject: Re: [spi-devel-general] [PATCH] Adapt spi_mpc83xx 
-> SPI driver for 832x
-> 
-> On Thursday 14 December 2006 2:02 am, Joakim Tjernlund wrote:
-> 
-> > patch needs a litte work, the shift is diffrent for tx 
-> resp. rx so I 
-> > adjusted that and added a temp hack(still in patch below) 
-> to force qe_mode.
-> > The name qe_mode is misleading. This i a QE enabled CPU, 
-> but SPI is running
-> > in cpu mode. qe_mode implies that SPI is runing in native QUICC 
-> > mode.
-> > 
-> > Adjusted patch(lets hope I didn't mangle this one:):
-> 
-> What's the story on this?  I see that no followup patch has 
-> been submitted,
-> so this 832x support is still not merged ...
-> 
-> I'm deleting all this 83xx history from my "pending" mbox, so 
-> if anyone
-> wants this support in the mainstream kernel, this is the only reminder
-> you'll get from me.
-> 
-> - Dave
+Hoang-Nam Nguyen wrote:
+> This patch replaces ibmebus_uevent() by Sylvain's generic function.
+>
+>  struct bus_type ibmebus_bus_type = {
+> -	.name = "ibmebus",
+> -	.uevent = ibmebus_uevent,
+> -	.match = ibmebus_bus_match,
+> +	.name   = "ibmebus",
+> +	.uevent = of_device_uevent,
+> +	.match  = ibmebus_bus_match,
+>  };
+>  EXPORT_SYMBOL(ibmebus_bus_type);
+>   
+Doesn't that oops when called with the fake parent device ?
 
-[snip code]
+Either you do a wrapper that test for it (that's what I did when I
+posted the patch).
+Or, an even better approach is to add this
 
-I think Kumar wanted to clean it up before submission.
-Something needs to be added to the device tree I think.
++	if (!ebus_dev->ofdev.node)
++		return -ENODEV;
 
- Jocke
+inside the code of of_device_uevent itself.
+
+
+	Sylvain
