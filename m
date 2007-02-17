@@ -3,15 +3,16 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BAF12DDDDB
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 11:24:57 +1100 (EST)
-Date: Fri, 16 Feb 2007 18:22:03 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTP id C63AEDDDE7
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 11:25:18 +1100 (EST)
+Date: Fri, 16 Feb 2007 18:22:28 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH] Add missing of_node_put() in mpc86xx_hpcn_init_irq().
-In-Reply-To: <E1HIBOf-0005TC-3B@jdl.com>
-Message-ID: <Pine.LNX.4.64.0702161821540.12824@localhost.localdomain>
-References: <E1HIBOf-0005TC-3B@jdl.com>
+Subject: Re: [PATCH] Remove obsolete setting of ROOT_DEV for 85xx and 86xx
+	platforms.
+In-Reply-To: <E1HIBLL-0005Qg-T5@jdl.com>
+Message-ID: <Pine.LNX.4.64.0702161822120.12824@localhost.localdomain>
+References: <E1HIBLL-0005Qg-T5@jdl.com>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
