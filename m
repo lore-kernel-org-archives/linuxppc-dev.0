@@ -1,21 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 38DEDDDE01
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 09:00:56 +1100 (EST)
-Subject: Re: [PATCH 2.6.21-rc1] powerpc: Make of_device_uevent() compatible
-	with ibmebus
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-In-Reply-To: <200702171728.15597.hnguyen@linux.vnet.ibm.com>
-References: <200702171728.15597.hnguyen@linux.vnet.ibm.com>
-Content-Type: text/plain
-Date: Sun, 18 Feb 2007 08:56:39 +1100
-Message-Id: <1171749399.5644.145.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: pmac@au1.ibm.com, fenkes@de.ibm.com, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org, johnrose@us.ibm.com
+	by ozlabs.org (Postfix) with ESMTP id B77DCDDE03
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 09:34:11 +1100 (EST)
+Date: Sat, 17 Feb 2007 16:31:09 -0600 (CST)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: clean up ucc_slow.c and ucc_fast.c
+In-Reply-To: <11716866811378-git-send-email-timur@freescale.com>
+Message-ID: <Pine.LNX.4.64.0702171630560.11585@localhost.localdomain>
+References: <11716866811378-git-send-email-timur@freescale.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,40 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, 2007-02-17 at 17:28 +0100, Hoang-Nam Nguyen wrote:
-> ibmebus has a fake root device that's not associated with an ofdt node.
-> Filter out any such devices in of_device_uevent().
+On Fri, 16 Feb 2007, Timur Tabi wrote:
 
-Doh ! You are creating an of_device with no attached device-node ? That
-is totally evil ! Why do you need that ?
-
-Ben.
-
-> 
-> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+> Refactored and cleaned up ucc_fast.c and ucc_slow.c so that the two files
+> look more alike and are easier to read.  Removed uccf_printk() and related
+> functions, because they were just front-ends to printk().  Fixed some
+> spacing and tabbing issues.  Minor optimizations of some code.  Changed
+> the type of some variables to their proper type (mostly buffer
+> descriptors).
+>
+> Signed-off-by: Timur Tabi <timur@freescale.com>
 > ---
-> 
-> 
->  of_device.c |    4 ++++
->  1 files changed, 4 insertions(+)
-> 
-> 
-> diff -urp a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
-> --- a/arch/powerpc/kernel/of_device.c	2007-02-17 16:36:32.116368480 +0100
-> +++ b/arch/powerpc/kernel/of_device.c	2007-02-17 16:44:01.319366352 +0100
-> @@ -180,6 +180,10 @@ int of_device_uevent(struct device *dev,
->  
->  	ofdev = to_of_device(dev);
->  
-> +	/* e.g. ibmebus has a fake root device w/o ofdt node -- filter that */
-> +	if (!ofdev->node)
-> +		return -ENODEV;
-> +
->  	if (add_uevent_var(envp, num_envp, &i,
->  			   buffer, buffer_size, &length,
->  			   "OF_NAME=%s", ofdev->node->name))
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+
+applied.
+
+- k
