@@ -1,14 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <maynardj@us.ibm.com>
+Message-ID: <45D8DEE0.4020203@us.ibm.com>
+Date: Sun, 18 Feb 2007 17:18:56 -0600
+From: Maynard Johnson <maynardj@us.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17880.55566.982060.486544@cargo.ozlabs.ibm.com>
-Date: Mon, 19 Feb 2007 09:54:06 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org,
-    linuxppc-dev@ozlabs.org
-Subject: Re: Please pull powerpc.git master branch
-In-Reply-To: <17878.61905.316569.773889@cargo.ozlabs.ibm.com>
-References: <17878.61905.316569.773889@cargo.ozlabs.ibm.com>
+To: maynardj@us.ibm.com
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated
+	patch
+References: <1171497138.23691.8.camel@dyn9047021078.beaverton.ibm.com>
+	<200702151537.51202.arnd@arndb.de> <45D4FBB0.7090109@us.ibm.com>
+	<200702161814.26855.arnd@arndb.de> <45D62583.5080701@us.ibm.com>
+In-Reply-To: <45D62583.5080701@us.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Arnd Bergmann <arnd@arndb.de>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, oprofile-list@lists.sourceforge.net,
+	cbe-oss-dev@ozlabs.org, Carl Love <cel@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,80 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+Maynard Johnson wrote:
 
-I wrote:
+>Arnd Bergmann wrote:
+>
+>  
+>
+>>On Friday 16 February 2007 01:32, Maynard Johnson wrote:
+>>
+>>    
+>>
+>>>config OPROFILE_CELL
+>>>       bool "OProfile for Cell Broadband Engine"
+>>>       depends on OPROFILE && SPU_FS
+>>>       default y if ((SPU_FS = y && OPROFILE = y) || (SPU_FS = m && 
+>>>OPROFILE = m))
+>>>       help
+>>>         Profiling of Cell BE SPUs requires special support enabled
+>>>         by this option.  Both SPU_FS and OPROFILE options must be
+>>>         set 'y' or both be set 'm'.
+>>>=============
+>>>
+>>>Can anyone see a problem with any of this . . . or perhaps a suggestion 
+>>>of a better way?
+>>>      
+>>>
+>>The text suggests it doesn't allow SPU_FS=y with OPROFILE=m, which I think
+>>should be allowed. 
+>>    
+>>
+>Right, good catch.  I'll add another OR to the 'default y' and correct 
+>the text.
+>  
+>
+Actually, it makes more sense to do the following:
 
-> Please do:
-> 
-> git pull \
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git
-> 
-> The commits there are mostly minor bug fixes and cleanups.
+config OPROFILE_CELL
+       bool "OProfile for Cell Broadband Engine"
+       depends on  (SPU_FS = y && OPROFILE = m) || (SPU_FS = y && 
+OPROFILE = y) || (SPU_FS = m && OPROFILE = m)
+       default y
+       help
+         Profiling of Cell BE SPUs requires special support enabled by 
+this option.
 
-I just pulled a set of embedded powerpc updates from Kumar Gala and
-pushed them to my tree, so when you do the pull you'll also see the
-commits below (assuming the mirroring has caught up :).
+> > I also don't see any place in the code where you actually
+>  
+>
+>>use CONFIG_OPROFILE_CELL.
+>>    
+>>
+>As I mentioned, I will use CONFIG_OPROFILE_CELL in the 
+>arch/powerpc/oprofile/Makefile as follows:
+>      oprofile-$(CONFIG_OPROFILE_CELL) += op_model_cell.o \
+>               cell/spu_profiler.o cell/vma_map.o cell/spu_task_sync.o
+>
+>  
+>
+>
+[snip]
 
-Thanks,
-Paul.
-
- arch/powerpc/boot/dts/mpc8313erdb.dts      |   62 ++++-----
- arch/powerpc/boot/dts/mpc832x_mds.dts      |  119 ++++++++---------
- arch/powerpc/boot/dts/mpc8349emitx.dts     |   60 ++++-----
- arch/powerpc/boot/dts/mpc8349emitxgp.dts   |   39 +++---
- arch/powerpc/boot/dts/mpc834x_mds.dts      |  164 ++++++++++++------------
- arch/powerpc/boot/dts/mpc836x_mds.dts      |  123 ++++++++----------
- arch/powerpc/boot/dts/mpc8540ads.dts       |  142 ++++++++++-----------
- arch/powerpc/boot/dts/mpc8541cds.dts       |  108 +++++++---------
- arch/powerpc/boot/dts/mpc8548cds.dts       |  129 ++++++++-----------
- arch/powerpc/boot/dts/mpc8555cds.dts       |  108 +++++++---------
- arch/powerpc/boot/dts/mpc8560ads.dts       |  157 ++++++++++-------------
- arch/powerpc/boot/dts/mpc8568mds.dts       |   96 ++++++--------
- arch/powerpc/boot/dts/mpc8641_hpcn.dts     |  193 ++++++++++++----------------
- arch/powerpc/configs/mpc832x_mds_defconfig |    0 
- arch/powerpc/configs/mpc836x_mds_defconfig |   29 +++-
- arch/powerpc/configs/mpc8568mds_defconfig  |   32 ++++-
- arch/powerpc/platforms/83xx/Kconfig        |    8 +
- arch/powerpc/platforms/83xx/Makefile       |    2 
- arch/powerpc/platforms/83xx/mpc8313_rdb.c  |   11 --
- arch/powerpc/platforms/83xx/mpc832x_mds.c  |   65 ++-------
- arch/powerpc/platforms/83xx/mpc834x_itx.c  |   23 ---
- arch/powerpc/platforms/83xx/mpc834x_mds.c  |   27 +---
- arch/powerpc/platforms/83xx/mpc836x_mds.c  |   97 +++++---------
- arch/powerpc/platforms/85xx/Kconfig        |    8 +
- arch/powerpc/platforms/85xx/Makefile       |    2 
- arch/powerpc/platforms/85xx/mpc85xx_ads.c  |   14 --
- arch/powerpc/platforms/85xx/mpc85xx_cds.c  |   15 --
- arch/powerpc/platforms/85xx/mpc85xx_mds.c  |   46 ++-----
- arch/powerpc/platforms/86xx/mpc86xx_hpcn.c |    9 -
- arch/powerpc/sysdev/qe_lib/ucc_fast.c      |  163 +++++++++---------------
- arch/powerpc/sysdev/qe_lib/ucc_slow.c      |  137 ++++++++------------
- include/asm-powerpc/ucc_slow.h             |    8 +
- 32 files changed, 944 insertions(+), 1252 deletions(-)
- rename arch/powerpc/boot/dts/{mpc8323emds.dts => mpc832x_mds.dts} (78%)
- rename arch/powerpc/boot/dts/{mpc8360emds.dts => mpc836x_mds.dts} (79%)
- rename arch/powerpc/configs/{mpc832xemds_defconfig => mpc832x_mds_defconfig} (100%)
- rename arch/powerpc/configs/{mpc8360emds_defconfig => mpc836x_mds_defconfig} (97%)
- rename arch/powerpc/platforms/83xx/{mpc8360e_pb.c => mpc836x_mds.c} (67%)
- rename arch/powerpc/platforms/85xx/{mpc8568_mds.c => mpc85xx_mds.c} (85%)
-
-Jon Loeliger (2):
-      [POWERPC] 8[56]xx: Remove obsolete setting of ROOT_DEV for 85xx and 86xx platforms.
-      [POWERPC] 86xx: Add missing of_node_put() in mpc86xx_hpcn_init_irq().
-
-Kumar Gala (11):
-      [POWERPC] 83xx: Cleaned up 83xx platform dts files
-      [POWERPC] 83xx: Cleaning up machine probing and board initcalls
-      [POWERPC] 83xx: Remove obsolete setting of ROOT_DEV.
-      [POWERPC] 83xx: use default value of loops_per_jiffy
-      [POWERPC] 83xx: Use of_platform_bus_probe to setup QE devices
-      [POWERPC] 83xx: Updated and renamed MPC8360PB to MPC836x MDS
-      [POWERPC] 83xx: Renamed MPC8323 MDS dts and defconfig to match other boards
-      [POWERPC] 85xx: Cleaned up platform dts files
-      [POWERPC] 85xx: Cleaning up machine probing
-      [POWERPC] 85xx: Renamed MPC8568 MDS board code to match other boards
-      [POWERPC] 86xx: Cleaned up platform dts files
-
-Timur Tabi (1):
-      [POWERPC] QE: clean up ucc_slow.c and ucc_fast.c
+>>	Arnd <><
+>>    
+>>
+>
+>
+>_______________________________________________
+>Linuxppc-dev mailing list
+>Linuxppc-dev@ozlabs.org
+>https://ozlabs.org/mailman/listinfo/linuxppc-dev
+>  
+>
