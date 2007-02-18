@@ -1,30 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D7ACEDDE22
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 12:35:33 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1I1ZR7J009607
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 20:35:27 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1I1ZRCp540298
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 18:35:27 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1I1ZRkT014671
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Feb 2007 18:35:27 -0700
-Date: Sat, 17 Feb 2007 19:40:43 -0600
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sun, 18 Feb 2007 11:22:20 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
 To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [RFC 3/3] zImage: Exception vector support
-Message-ID: <20070218014043.GD1038@crusty.rchland.ibm.com>
-References: <45D7A914.4040000@am.sony.com>
-Mime-Version: 1.0
+Subject: Re: [PATCH 19/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+Message-ID: <20070218002220.GB29434@localhost.localdomain>
+References: <20070212205438.GB17285@ld0162-tx32.am.freescale.net>
+	<45D0DE6C.1040207@am.sony.com>
+	<20070213161337.GD24815@ld0162-tx32.am.freescale.net>
+	<45D1F61B.6020104@am.sony.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45D7A914.4040000@am.sony.com>
+In-Reply-To: <45D1F61B.6020104@am.sony.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,21 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Feb 17, 2007 at 05:17:08PM -0800, Geoff Levand wrote:
-> Add SMP exception vector support to the powerpc zImage bootwrapper.  For
-> platforms which have entry points in the vector table.  This implements
-> SMP entry via the system reset vector.
+On Tue, Feb 13, 2007 at 09:32:11AM -0800, Geoff Levand wrote:
+> Scott Wood wrote:
+> >> It may be better to do it like this, as there will be more platforms that
+> >> need to hook in specific files.
+> >> 
+> >> src-plat-$(CONFIG_COMPAT_UIMAGE) += $(cuboot-plats:%=cuboot-%.c)
+> >> src-plat-$(CONFIG_XXX) += ...
+> >> src-plat-$(CONFIG_YYY) += ...
+> >> ...
+> >> src-plat := of.c $(src-plat-y)
+> > 
+> > Take it up with Paul.  He said that all platform files shall always be
+> > built, and that the wrapper script picks which ones to link.
 > 
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 > 
-> ---
->  arch/powerpc/boot/head.S       |   96 +++++++++++++++++++++++++++++++++++++++++
->  arch/powerpc/boot/zImage.lds.S |    2 
+> That is what this sets up, for all platforms the kernel is built to support,
+> all the corresponding wrapperbits are built.
+> 
+> The problem I see with what you have done is that if there is a single bug in the
+> wrapperbits for any platform, all zImage builds for ANY platform will fail, even
+> platforms the kernel is not configured to support.
+> 
+> I think most people only build for a few platforms and would not want to
+> be inconvenienced buy a bug in a platform they have no interest in, and 
+> in general, I don't think platform maintainers want to inconvenience people
+> with platform specific bugs when they are not building for that platform.
 
-This one seems pretty PS3 specific, and there's no makefile entry to actually
-compile it...  Could we name it head_ps3.S or something similar?
+On the other hand, this property means it's far less likely that
+people will break platforms they're not actively working on at the
+time.
 
-Or am I misunderstanding the code and it's really generic to most SMP
-machines (which would make a case to arguably call it head_smp.S).
-
-josh
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
