@@ -1,17 +1,17 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc1-s36.bay0.hotmail.com (bay0-omc1-s36.bay0.hotmail.com
-	[65.54.246.108]) by ozlabs.org (Postfix) with ESMTP id 77EABDDE2B
+Return-Path: <jrocnuck@hotmail.com>
+Received: from bay0-omc3-s19.bay0.hotmail.com (bay0-omc3-s19.bay0.hotmail.com
+	[65.54.246.219]) by ozlabs.org (Postfix) with ESMTP id B2ED2DDE27
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Feb 2007 03:25:58 +1100 (EST)
-Message-ID: <BAY110-F327851FA040AA8F795E526B28B0@phx.gbl>
-In-Reply-To: <BAY117-F325A022CAE3C47D5866BA1C88B0@phx.gbl>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: jrocnuck@hotmail.com
+	Mon, 19 Feb 2007 07:55:38 +1100 (EST)
+Message-ID: <BAY117-F108D4A96970DA70F0B1EDDC88B0@phx.gbl>
+In-Reply-To: <BAY110-F327851FA040AA8F795E526B28B0@phx.gbl>
+From: "Eric Nuckols" <jrocnuck@hotmail.com>
+To: eemingliu@hotmail.com
 Subject: RE: What is the difference between Montavista Kernel
 	SourceandKernel.Org Source
-Date: Sun, 18 Feb 2007 16:25:55 +0000
+Date: Sun, 18 Feb 2007 15:55:34 -0500
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
+Content-Type: text/plain; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,23 +23,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Eric,
-Thanks for your reply first.
 
->>Another question. Because Montavista kernel is also based on the 
->>open
->>source linux kernel from the general tree, does this mean that the
->>Montavista one is also open source and could be free to be 
->>distributed
->>according to GPL. However as far as I know, that's not true. :)
+>From: "Ming Liu" <eemingliu@hotmail.com>
+>To: jrocnuck@hotmail.com
+>CC: linuxppc-embedded@ozlabs.org
+>Subject: RE: What is the difference between Montavista Kernel 
+>SourceandKernel.Org Source
+>Date: Sun, 18 Feb 2007 16:25:55 +0000
+>
+>Dear Eric,
+>Thanks for your reply first.
+>
+>>>Another question. Because Montavista kernel is also based on the open
+>>>source linux kernel from the general tree, does this mean that the
+>>>Montavista one is also open source and could be free to be distributed
+>>>according to GPL. However as far as I know, that's not true. :)
+>
+>Because you have worked for Montavista Linux, so could you please answer me 
+>this question? I know that anyone can distribute and modify GPL source code 
+>and then the modified code also obey GPL. So how about Montavista Linux? :) 
+>I am just a little confused with this rule.
+>
+>BR
+>Ming
 
-Because you have worked for Montavista Linux, so could you please answer me 
-this question? I know that anyone can distribute and modify GPL source code 
-and then the modified code also obey GPL. So how about Montavista Linux? :) 
-I am just a little confused with this rule.
 
-BR
-Ming
+I only used their product (purchased a license of their tools/product).  I 
+am not in a position to answer legal/licensing questions about MontaVista 
+Linux.  You should contact their sales department for information regarding 
+this type of question.
 
 _________________________________________________________________
-√‚∑—œ¬‘ÿ MSN Explorer:   http://explorer.msn.com/lccn/  
+Find what you need at prices youíll love. Compare products and save at MSNÆ 
+Shopping. 
+http://shopping.msn.com/default/shp/?ptnrid=37,ptnrdata=24102&tcode=T001MSN20A0701
