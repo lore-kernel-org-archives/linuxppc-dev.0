@@ -1,38 +1,38 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound3-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
+Received: from outbound3-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BB8DFDDEE3
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 12:17:12 +1100 (EST)
-Received: from outbound3-fra.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound3-fra-R.bigfish.com (Postfix) with ESMTP id 00484113154
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:08 +0000 (UTC)
-Received: from mail39-fra-R.bigfish.com (unknown [10.4.252.3])
-	by outbound3-fra.bigfish.com (Postfix) with ESMTP id F2A9F9B8051
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:07 +0000 (UTC)
-Received: from mail39-fra (localhost.localdomain [127.0.0.1])
-	by mail39-fra-R.bigfish.com (Postfix) with ESMTP id E743614041A
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:07 +0000 (UTC)
-Received: from mail8.fw-bc.sony.com (mail8.fw-bc.sony.com [160.33.98.75])
+	by ozlabs.org (Postfix) with ESMTP id ED981DDF27
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 12:17:14 +1100 (EST)
+Received: from outbound3-blu.bigfish.com (localhost.localdomain [127.0.0.1])
+	by outbound3-blu-R.bigfish.com (Postfix) with ESMTP id 729C37B2310
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:11 +0000 (UTC)
+Received: from mail75-blu-R.bigfish.com (unknown [10.1.252.3])
+	by outbound3-blu.bigfish.com (Postfix) with ESMTP id 59F1E84004C
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:11 +0000 (UTC)
+Received: from mail75-blu (localhost.localdomain [127.0.0.1])
+	by mail75-blu-R.bigfish.com (Postfix) with ESMTP id 3AC91B901E8
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:11 +0000 (UTC)
+Received: from mail8.fw-sd.sony.com (mail8.fw-sd.sony.com [160.33.66.75])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(No client certificate requested)
-	by mail39-fra.bigfish.com (Postfix) with ESMTP id A9202720070
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:07 +0000 (UTC)
+	by mail75-blu.bigfish.com (Postfix) with ESMTP id DF0EA1A60053
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:10 +0000 (UTC)
 Received: from mail1.sgo.in.sel.sony.com (mail1.sgo.in.sel.sony.com
 	[43.130.1.111])
-	by mail8.fw-bc.sony.com (8.12.11/8.12.11) with ESMTP id l1I1H6wO017335
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:06 GMT
-Received: from USSDIXIM02.am.sony.com (ussdixim02.am.sony.com [43.130.140.34])
+	by mail8.fw-sd.sony.com (8.12.11/8.12.11) with ESMTP id l1I1H9hk014908
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:09 GMT
+Received: from USSDIXIM01.am.sony.com (ussdixim01.am.sony.com [43.130.140.33])
 	by mail1.sgo.in.sel.sony.com (8.12.11/8.12.11) with ESMTP id
-	l1I1H53x001203
-	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:05 GMT
-Message-ID: <45D7A910.60702@am.sony.com>
-Date: Sat, 17 Feb 2007 17:17:04 -0800
+	l1I1H9b2001206
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Feb 2007 01:17:09 GMT
+Message-ID: <45D7A914.4040000@am.sony.com>
+Date: Sat, 17 Feb 2007 17:17:08 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC 2/3] zImage: SMP hold
+Subject: [RFC 3/3] zImage: Exception vector support
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -43,71 +43,124 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add SMP secondary hold helper routines to the powerpc zImage bootwrapper.  For
-platforms which are entered with multiple cpus.  These routines can be used to
-hold the secondary cpus until the kernel is ready for entry.
+Add SMP exception vector support to the powerpc zImage bootwrapper.  For
+platforms which have entry points in the vector table.  This implements
+SMP entry via the system reset vector.
 
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
- arch/powerpc/boot/main.c |   42 ++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 42 insertions(+)
+ arch/powerpc/boot/head.S       |   96 +++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/zImage.lds.S |    2 
+ 2 files changed, 98 insertions(+)
 
---- ps3-linux-dev.orig/arch/powerpc/boot/main.c
-+++ ps3-linux-dev/arch/powerpc/boot/main.c
-@@ -290,6 +290,44 @@ static void set_cmdline(char *buf)
- 		setprop(devp, "bootargs", buf, strlen(buf) + 1);
- }
- 
-+static volatile kernel_entry_t smp_secondary_entry = 0;
-+
-+/**
-+ * smp_secondary_hold - Hold any secondary cpus until kernel is ready to enter.
-+ * @cpu_id: Hardware cpu id.
+--- /dev/null
++++ ps3-linux-dev/arch/powerpc/boot/head.S
+@@ -0,0 +1,96 @@
++/*
++ *  zImage exception vector entry.
 + *
-+ * Called from the early entry code.
++ *  Copyright (C) 2007 Sony Computer Entertainment Inc.
++ *  Copyright 2007 Sony Corp.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; version 2 of the License.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; if not, write to the Free Software
++ *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
 + */
 +
-+void smp_secondary_hold(unsigned int cpu_id)
-+{
-+	while(!smp_secondary_entry)
-+		(void)0;
++#include "ppc_asm.h"
 +
-+	printf("%s:%d: released cpu (%u)\n", __func__, __LINE__, cpu_id);
-+
-+	smp_secondary_entry(0, 0, NULL);
-+
-+	printf("Error: secondary cpu (%u) returned to bootwrapper!\n",
-+		cpu_id);
-+	exit();
-+}
-+
-+/**
-+ * smp_secondary_release - Release any secondary cpus.
-+ * @kentry: The kernel entry for secondary cpus.
++/*
++ * __system_reset_entry - For platforms entering at the reset vector.
 + *
-+ * Typically called by the primary cpu after the kernel is ready for entry.
++ * __system_reset_entry runs the bootwrapper code on cpu 0 to prepare the
++ * wrapped kernel image.  Cpu 0 then enters the kernel at the end of the
++ * bootwrapper code.  .secondary_start sends secondary cpus to
++ * smp_secondary_hold() to wait until the bootwrapper code is finished
++ * running.  When signled, secondary cpus enter the kernel directly from
++ * smp_secondary_hold().
++ *
++ * This implementation supports only one secondary cpu.
++ *
++ * For the PS3 first stage entry the MMU is off and the bootwrapper image
++ * has been loaded to lpar address zero.  The bootwrapper is entered at
++ * 0x100 (system reset) by both proceesor threads.
 + */
 +
-+static void smp_secondary_release(kernel_entry_t kentry)
-+{
-+	printf("%s:%d\n", __func__, __LINE__);
-+	smp_secondary_entry = kentry;
++	.section .vectors,"ax"
++	. = 0x100
++	.globl __system_reset_entry
++__system_reset_entry:
 +
-+	/* Do we need to yield to the secondary cpus here??? */
-+}
++	/* switch to 32-bit mode */
 +
- struct platform_ops platform_ops;
- struct dt_ops dt_ops;
- struct console_ops console_ops;
-@@ -340,7 +378,10 @@ void start(unsigned long a1, unsigned lo
- 	if (console_ops.close)
- 		console_ops.close();
- 
- 	kentry = (kernel_entry_t) vmlinux.addr;
++	mfmsr	r9
++	clrldi	r9,r9,1
++	mtmsrd	r9
++	nop
 +
-+	smp_secondary_release(kentry);
++	/* test thread number and branch */
 +
- 	if (ft_addr)
- 		kentry(ft_addr, 0, NULL);
- 	else
++	mfspr	r3, 0x88
++	cntlzw.	r3, r3
++	beq	__primary_start
++
++__secondary_start:
++
++	/* setup secondary's stack */
++
++	lis	r1, __wrapper_stack_1@ha
++	addi	r1, r1, __wrapper_stack_1@l
++	subi	r1, r1, 16
++
++	xor	r4, r4, r4
++	xor	r5, r5, r5
++	b	smp_secondary_hold
++
++__primary_start:
++
++	/* setup primary's stack */
++
++	lis	r1, __wrapper_stack_0@ha
++	addi	r1, r1, __wrapper_stack_0@l
++	subi	r1, r1, 16
++
++	xor	r3, r3, r3
++	xor	r4, r4, r4
++	xor	r5, r5, r5
++	b	_zimage_start
++
++	.section .bss
++	.align 16;
++	. = . + 4096
++__wrapper_stack_0:
++
++/*
++ * The bss is cleared in crt0, so put a tiny stack in the data
++ * section for the secondary cpu.
++ */
++
++	.section .data
++	.align 16;
++	. = . + 128
++__wrapper_stack_1:
+--- ps3-linux-dev.orig/arch/powerpc/boot/zImage.lds.S
++++ ps3-linux-dev/arch/powerpc/boot/zImage.lds.S
+@@ -2,6 +2,8 @@ OUTPUT_ARCH(powerpc:common)
+ ENTRY(_zimage_start)
+ SECTIONS
+ {
++  .vectors 0 : { *(.vectors) }
++
+   . = (4*1024*1024);
+   _start = .;
+   .text      :
