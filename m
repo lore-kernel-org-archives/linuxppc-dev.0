@@ -1,13 +1,13 @@
 Return-Path: <benh@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: Introduce address space "slices"
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070219153315.GA5036@lixom.net>
+To: Adam Litke <agl@us.ibm.com>
+In-Reply-To: <1171911281.22940.21.camel@localhost.localdomain>
 References: <1171867418.18571.3.camel@localhost.localdomain>
-	<20070219153315.GA5036@lixom.net>
+	<1171911281.22940.21.camel@localhost.localdomain>
 Content-Type: text/plain
-Date: Tue, 20 Feb 2007 06:39:23 +1100
-Message-Id: <1171913963.18571.33.camel@localhost.localdomain>
+Date: Tue, 20 Feb 2007 06:40:50 +1100
+Message-Id: <1171914050.18571.35.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
 	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
@@ -20,27 +20,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-02-19 at 09:33 -0600, Olof Johansson wrote:
-> On Mon, Feb 19, 2007 at 05:43:38PM +1100, Benjamin Herrenschmidt wrote:
-> > powerpc: Introduce address space "slices"
-> > 
-> > This patch provide some infrastructure that will allow proper creation
-> > of special VMAs with different page sizes on powerpc.
-> > 
-> > The basic issue is to be able to do what hugetlbfs does but with
-> > different page sizes for some other special filesystems, more
-> > specifically, my need is:
-> > 
-> >  - hugetlbfs should still work of course :-)
-> > 
-> >  - SPE local store mappings using 64K pages on a 4K base page size
-> > kernel on Cell
-> 
-> Why? What is the reason they can't use 4K pages?
+On Mon, 2007-02-19 at 12:54 -0600, Adam Litke wrote:
+> Patch seems good to me.  I tried it on my power4+ system and it was not
+> happy.  Have you tested on Power4 at all? 
 
-Reduce TLB/ERAT trashing. SPE MMUs are fairly small, and in setups where
-an SPE maps all the others, we take a performance hit due to trashing
-with 4K pages. However, going to full 64K base page size has other
-drawbacks, especially in setups with little main memory.
+No, on Power5 only so far, I might still have something wrong :-) What
+did you try and what was not happy ?
 
-Ben.
+Ben
