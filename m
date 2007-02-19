@@ -1,24 +1,24 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from localhost.localdomain (unknown [81.2.110.250])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound4-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B82D4DDE44
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 08:07:15 +1100 (EST)
-Date: Mon, 19 Feb 2007 21:56:59 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCHSET] libata: PATA driver for Celleb
-Message-ID: <20070219215659.15539fb3@localhost.localdomain>
-In-Reply-To: <200702151909.26082.arnd@arndb.de>
-References: <200701260724.l0Q7OISY027645@toshiba.co.jp>
-	<200702151141.49708.jens@de.ibm.com>
-	<20070215171414.GU923@austin.ibm.com>
-	<200702151909.26082.arnd@arndb.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Jeff Garzik <jeff@garzik.org>, linuxppc-dev@ozlabs.org,
-	linux-ide@vger.kernel.org, paulus@samba.org,
-	Andrew Morton <akpm@linux-foundation.org>, James K Lewis <jim@jklewis.com>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 7DD5BDDF67
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 08:15:02 +1100 (EST)
+Message-ID: <45DA134A.2030602@am.sony.com>
+Date: Mon, 19 Feb 2007 13:14:50 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 3/3] zImage: Cleanup and improve zImage entry point
+References: <20070216062739.6DFDBDDD05@ozlabs.org>	
+	<45D7AA50.3090408@am.sony.com>	
+	<1171915022.18571.50.camel@localhost.localdomain>	
+	<45DA0AA4.3020107@am.sony.com>
+	<1171918206.18571.66.camel@localhost.localdomain>
+In-Reply-To: <1171918206.18571.66.camel@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +28,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I fear that the hardest part is yet to come, when we integrate the
-> driver for the the PS3 (currently called gelic_net) into spidernet.
-> The trouble is that the hardware is sufficiently similar to share
-> all the high-level mechanisms like the DMA data structures and
-> descriptor chains, but the low-level mechanisms are hidden in the
-> hypervisor on the PS3. Someone will have to invest a significant
-> amount of time coordinating this so we don't break celleb and qs20
-> in the process.
+Benjamin Herrenschmidt wrote:
+> On Mon, 2007-02-19 at 12:37 -0800, Geoff Levand wrote:
+>> Benjamin Herrenschmidt wrote:
+>> >> This messed me up a bit since I had two stacks in the bss, one for each
+>> >> processor thread.  By the time this was called on the primary thread the
+>> >> secondary thread could already be using its stack.  I changed the secondary
+>> >> thread to use a small stack in the data section, so this seems OK.
+>> > 
+>> > The secondary thread(s) don't need a stack to loop in secondary hold,
+>> > right ? So maybe we could go all the way without using a stack. Do we
+>> > need C code at all for them ? We just need to hold them until we make
+>> > them branch to the kernel.
+>> 
+>> I thought it would be nice to be able to use printf() in there so you
+>> see the following.  Its handy for debugging.
+>> 
+>> smp_secondary_hold:307: released cpu (1)
+> 
+> The problem is if your secondary CPUs start using printf etc... that
+> means you probably need to get in some locking primitives and make
+> various bits of the zImage wrapper SMP safe... pretty scary don't you
+> think ? :-)
 
-That to me implies they should be different drivers using a common
-libata-something file. The PPC mac drivers likewise are currently mashed
-into one in drivers/ide but really want splitting for libata with some
-kind of libata-pmac owning the shared stuff
+If you want to make it idiot proof, yes, but I was thinking more that
+smp_secondary_hold just prints a final debug message after the primary
+is done.  It does cause problems if there are more than one secondary.
 
-Alan
+> I'd rather leave all non-0 CPUs in an asm holding loop. However, you can
+> still print some status. One of the ideas is to have them fill up a
+> byte-map of present CPUs when they get in the holding loop, then the
+> main CPU can "see" them coming in and print something.
+
+I was more interested in seeing that the secondary left smp_secondary_hold,
+not that it entered it.  I don't really want to add the complexity to make
+the primary wait for the secondaries to exit and then print a message.
+
+-Geoff
