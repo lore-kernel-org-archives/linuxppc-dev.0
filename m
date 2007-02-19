@@ -1,11 +1,17 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 19 Feb 2007 11:48:44 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 3/3] zImage: Cleanup and improve zImage entry point
+Message-ID: <20070219004844.GB6864@localhost.localdomain>
+References: <20070216062739.6DFDBDDD05@ozlabs.org>
+	<45D7AA50.3090408@am.sony.com>
+	<20070218072310.GB1859@localhost.localdomain>
+	<17880.61080.644756.499806@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17880.62082.820011.992072@cargo.ozlabs.ibm.com>
-Date: Mon, 19 Feb 2007 11:42:42 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Harden validate_sp against stack corruption
+In-Reply-To: <17880.61080.644756.499806@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,77 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If something has overflowed or corrupted the stack and causes an oops,
-and we try to print a stack trace, that will call validate_sp, which
-can itself cause an oops if the cpu field of the thread_info struct at
-the bottom of the stack has been corrupted (if CONFIG_IRQSTACKS is
-set).  This makes debugging harder.
+On Mon, Feb 19, 2007 at 11:26:00AM +1100, Paul Mackerras wrote:
+> David Gibson writes:
+> 
+> > Err... isn't the called function responsible for setting up its own
+> > stack frame if necessary.  I thought all that was needed was for r1 to
+> > point to some free space.
+> 
+> The called function stores its return address in the caller's stack
+> frame.  So r1 does need to point to a stack frame.
 
-To avoid the second oops, this adds a check to make sure that the cpu
-number is reasonable before using it to check whether the stack is on
-the softirq or hardirq stack.
+Ah, ok.  Fixing that now.
 
-Signed-off-by: Paul Mackerras <paulus@samba.org>
----
-
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index f3d4dd5..3712fd5 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -818,6 +818,35 @@ out:
- 	return error;
- }
- 
-+#ifdef CONFIG_IRQSTACKS
-+static inline int valid_irq_stack(unsigned long sp, struct task_struct *p,
-+				  unsigned long nbytes)
-+{
-+	unsigned long stack_page;
-+	unsigned long cpu = task_cpu(p);
-+
-+	/*
-+	 * Avoid crashing if the stack has overflowed and corrupted
-+	 * task_cpu(p), which is in the thread_info struct.
-+	 */
-+	if (cpu < NR_IRQS && cpu_possible(cpu)) {
-+		stack_page = (unsigned long) hardirq_ctx[cpu];
-+		if (sp >= stack_page + sizeof(struct thread_struct)
-+		    && sp <= stack_page + THREAD_SIZE - nbytes)
-+			return 1;
-+
-+		stack_page = (unsigned long) softirq_ctx[cpu];
-+		if (sp >= stack_page + sizeof(struct thread_struct)
-+		    && sp <= stack_page + THREAD_SIZE - nbytes)
-+			return 1;
-+	}
-+	return 0;
-+}
-+
-+#else
-+#define valid_irq_stack(sp, p, nb)	0
-+#endif /* CONFIG_IRQSTACKS */
-+
- int validate_sp(unsigned long sp, struct task_struct *p,
- 		       unsigned long nbytes)
- {
-@@ -827,19 +856,7 @@ int validate_sp(unsigned long sp, struct task_struct *p,
- 	    && sp <= stack_page + THREAD_SIZE - nbytes)
- 		return 1;
- 
--#ifdef CONFIG_IRQSTACKS
--	stack_page = (unsigned long) hardirq_ctx[task_cpu(p)];
--	if (sp >= stack_page + sizeof(struct thread_struct)
--	    && sp <= stack_page + THREAD_SIZE - nbytes)
--		return 1;
--
--	stack_page = (unsigned long) softirq_ctx[task_cpu(p)];
--	if (sp >= stack_page + sizeof(struct thread_struct)
--	    && sp <= stack_page + THREAD_SIZE - nbytes)
--		return 1;
--#endif
--
--	return 0;
-+	return valid_irq_stack(sp, p, nbytes);
- }
- 
- #ifdef CONFIG_PPC64
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
