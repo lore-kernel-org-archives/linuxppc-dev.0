@@ -1,14 +1,18 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 3AD52DDFCB
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 05:01:13 +1100 (EST)
-Message-ID: <45D9E5E8.8080200@smiths-aerospace.com>
-Date: Mon, 19 Feb 2007 13:01:12 -0500
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 2/2] libfdt: Use Jon's fdc for testing
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
+	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id 96D50DDEC2
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 05:07:29 +1100 (EST)
+In-Reply-To: <729E7ED6-D601-4D4C-B110-F951409BAE2B@kernel.crashing.org>
+References: <729E7ED6-D601-4D4C-B110-F951409BAE2B@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <F408B146-AC76-43F5-9D9D-0094BAF14941@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: macros and dtc
+Date: Mon, 19 Feb 2007 13:07:32 -0500
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: Linux PPC Dev ML <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,78 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use jdl's flattened device tree compiler (dtc) to generate the test tree.
 
+On Feb 18, 2007, at 11:58 AM, Kumar Gala wrote:
 
-Signed-off-by: Jerry Van Baren <vanbaren@cideas.com>
----
-  tests/Makefile       |   11 ++++++++---
-  tests/test_tree1.dts |   23 +++++++++++++++++++++++
-  2 files changed, 31 insertions(+), 3 deletions(-)
+> After spending some time this weekend cleaning up dts files I figured
+> it would be nice if we can some to consensus on how we are going to
+> do macro support.
 
-diff --git a/tests/Makefile b/tests/Makefile
-index 533c98e..7f7ed9b 100644
---- a/tests/Makefile
-+++ b/tests/Makefile
-@@ -41,15 +41,20 @@ all:	$(TESTS) $(TREES)
-  	@$(VECHO) LD $@
-  	$(CC) $(LDFLAGS) -o $@ $^ $(LDLIBS)
+I'm not sure I'd like to use macros.  I can understand the case
+today where we are still changing too many things that a
+macro would be nice, but at some point this has to settle down.
+There isn't that much information in the file, and I prefer to
+see all of it clearly rather than locating macros to wonder
+how they need to be invoked.
 
-+%.dtb: %.dts
-+	@$(VECHO) NOTE: It is normal to have errors and warnings here.
-+	dtc -b 0 -f -O dtb -V 16 $^ > $@
-+
-+
-  $(LIB_TESTS): %: testutils.o $(LIBFDT)
+> There is clearly a lot of duplication between
+> dts's and it only gets worse when you add in slight variations for
+> revs of boards.
 
-  $(LIBTREE_TESTS): %: testutils.o trees.o $(LIBFDT)
+Of the few boards for which I've had to create new dts
+files, I wonder how the macros would work.  Although the
+variations are slight, there are many variables.  A macro
+is going to have to allow nearly all of the property information
+as parameters, so what's the big savings?  If you are
+just using them to avoid syntax, then perhaps we should
+have chosen a different syntax? :-)  I think a macro with
+lots of parameters is more confusing than the syntax
+we currently use.
 
-  dumptrees: %: trees.o
+I could envision using something like cpp with #include
+to get some standard SOC block properties, but macros
+that try to account for board variations could be quite
+complex.
 
--$(TREES): dumptrees
--	@$(VECHO) DUMPTREES
--	./dumptrees >/dev/null
-+#$(TREES): dumptrees
-+#	@$(VECHO) DUMPTREES
-+#	./dumptrees >/dev/null
+Thanks.
 
-  clean:
-  	@$(VECHO) CLEAN "(tests)"
-diff --git a/tests/test_tree1.dts b/tests/test_tree1.dts
-new file mode 100644
-index 0000000..ab62772
---- /dev/null
-+++ b/tests/test_tree1.dts
-@@ -0,0 +1,23 @@
-+/*
-+ * libfdt test tree source
-+ */
-+
-+/ {
-+	/*
-+	 * Test nodes and values...
-+	 */
-+	prop_int = <deadbeef>;
-+	prop_str = "hello world";
-+	subnode1 {
-+		prop_int = <deadbeef>;
-+		subsubnode {
-+			prop_int = <deadbeef>;
-+		};
-+	};
-+	subnode2 {
-+		prop_int = <abcd1234>;
-+		subsubnode {
-+			prop_int = <abcd1234>;
-+		};
-+	};
-+};
--- 
-1.4.4.4
-
-
-______________________________________________________________________
-CAUTION: This message was sent via the Public Internet and its 
-authenticity cannot be guaranteed.
-
-______________________________________________________
+	-- Dan
