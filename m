@@ -1,14 +1,15 @@
-Return-Path: <b08248@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id D4DA8DDE44
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 04:29:01 +1100 (EST)
-Date: Mon, 19 Feb 2007 11:28:27 -0600
-From: Stuart Yoder <b08248@freescale.com>
-Message-Id: <200702191728.l1JHSRfo025427@ld0164-tx32.am.freescale.net>
-To: jdl@jdl.com
-Subject: [DTC PATCH] remove check for interrupt-controller property under
-	/chosen
-Cc: linuxppc-dev@ozlabs.org, linuxppc-release@sourceforge.freescale.net
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id A4CCDDDE3A
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 05:01:05 +1100 (EST)
+Message-ID: <45D9E5D9.6060704@smiths-aerospace.com>
+Date: Mon, 19 Feb 2007 13:00:57 -0500
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: [PATCH 0/2] libfdt: problems with real life blobs
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,38 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi David,
 
-Remove warning for missing interrupt-controller property
-under /chosen.  There is consensus that this
-property does not belong here.
+I've been trying to use your libfdt in u-boot and my first step, get a 
+value from the blob, failed terminally.  After poking about a bit, it 
+appears that your libfdt and Jon Loeliger's dtc (-V 16) disagree with 
+respect to the format of the blob - libfdt won't traverse the path.
 
-Also, add a warning if interrupt-controller _is_ found
-under /chosen.
+I've created two patches:
+1) Make the libfdt tests use "fdt endian" so that dtc can be used.
+2) Create a minimal test tree and compile it with dtc.
 
-Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
----
- livetree.c |    9 ++++++++-
- 1 files changed, 8 insertions(+), 1 deletions(-)
+The first patch is clean, the second patch is a bit of a hack job, I did 
+just enough to check this out and confirm/deny my suspicions that libfdt 
+doesn't like the dtc format.  Running the tests on the dtc-compiled blob 
+shows the same problems with traversing paths.
 
-diff --git a/livetree.c b/livetree.c
-index ede29fb..1a2764d 100644
---- a/livetree.c
-+++ b/livetree.c
-@@ -594,7 +594,14 @@ static int check_chosen(struct node *roo
- 
- 	CHECK_HAVE_WARN_STRING(chosen, "bootargs");
- 	CHECK_HAVE_WARN_STRING(chosen, "linux,stdout-path");
--	CHECK_HAVE_WARN_PHANDLE(chosen, "interrupt-controller", root);
-+
-+        /* give warning for obsolete interrupt-controller property */
-+	do {
-+		if ((prop = get_property(chosen, "interrupt-controller")) != NULL) {
-+			WARNMSG("%s has obsolete \"%s\" property\n",
-+                                 chosen->fullpath, "interrupt-controller"); 
-+                }
-+	} while (0);
- 
- 	return ok;	
- }
--- 
-1.4.4
+I think I created the correct tree in test_tree1.dts (I didn't do the 
+truncated node, but that is immaterial for my primary objective) but I 
+could be wrong...
+
+Supporting using dtc in the long run as well as the assembly-generated 
+blob would be nice so that regression tests can be done on different 
+versions of the blob format (both supported and unsupported) and to make 
+sure libfdt and dtc stay in sync.
+
+Best regards,
+gvb
