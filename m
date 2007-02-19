@@ -1,12 +1,12 @@
 Return-Path: <b08248@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 82482DDE37
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 04:25:10 +1100 (EST)
-Date: Mon, 19 Feb 2007 11:25:05 -0600
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id D4DA8DDE44
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 04:29:01 +1100 (EST)
+Date: Mon, 19 Feb 2007 11:28:27 -0600
 From: Stuart Yoder <b08248@freescale.com>
-Message-Id: <200702191725.l1JHP5J6025375@ld0164-tx32.am.freescale.net>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: remove interrupt-controller as a property under
+Message-Id: <200702191728.l1JHSRfo025427@ld0164-tx32.am.freescale.net>
+To: jdl@jdl.com
+Subject: [DTC PATCH] remove check for interrupt-controller property under
 	/chosen
 Cc: linuxppc-dev@ozlabs.org, linuxppc-release@sourceforge.freescale.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,52 +19,37 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
- Remove interrupt-controller as a valid property under /chosen in
- the documentation.  There is a consensus that an
- interrupt-controller property does not belong under /chosen.
- /chosen is specifically for dynamic properties set at runtime.
+Remove warning for missing interrupt-controller property
+under /chosen.  There is consensus that this
+property does not belong here.
+
+Also, add a warning if interrupt-controller _is_ found
+under /chosen.
 
 Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
 ---
+ livetree.c |    9 ++++++++-
+ 1 files changed, 8 insertions(+), 1 deletions(-)
 
- As per Ben's  suggestion I also added a note about the 
- obsolete practice.
-
- Documentation/powerpc/booting-without-of.txt |   11 +++++------
- 1 files changed, 5 insertions(+), 6 deletions(-)
-
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 1e1abaf..892974c 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -834,8 +834,7 @@ address which can extend beyond that lim
+diff --git a/livetree.c b/livetree.c
+index ede29fb..1a2764d 100644
+--- a/livetree.c
++++ b/livetree.c
+@@ -594,7 +594,14 @@ static int check_chosen(struct node *roo
  
-   This node is a bit "special". Normally, that's where open firmware
-   puts some variable environment information, like the arguments, or
--  phandle pointers to nodes like the main interrupt controller, or the
--  default input/output devices.
-+  the default input/output devices.
- 
-   This specification makes a few of these mandatory, but also defines
-   some linux-specific properties that would be normally constructed by
-@@ -860,14 +859,14 @@ address which can extend beyond that lim
-       that the kernel tries to find out the default console and has
-       knowledge of various types like 8250 serial ports. You may want
-       to extend this function to add your own.
--    - interrupt-controller : This is one cell containing a phandle
--      value that matches the "linux,phandle" property of your main
--      interrupt controller node. May be used for interrupt routing.
--
- 
-   Note that u-boot creates and fills in the chosen node for platforms
-   that use it.
- 
-+  (Note: a practice that is now obsolete was to include a property
-+  under /chosen called interrupt-controller which had a phandle value
-+  that pointed to the main interrupt controller)
+ 	CHECK_HAVE_WARN_STRING(chosen, "bootargs");
+ 	CHECK_HAVE_WARN_STRING(chosen, "linux,stdout-path");
+-	CHECK_HAVE_WARN_PHANDLE(chosen, "interrupt-controller", root);
 +
-   f) the /soc<SOCname> node
++        /* give warning for obsolete interrupt-controller property */
++	do {
++		if ((prop = get_property(chosen, "interrupt-controller")) != NULL) {
++			WARNMSG("%s has obsolete \"%s\" property\n",
++                                 chosen->fullpath, "interrupt-controller"); 
++                }
++	} while (0);
  
-   This node is used to represent a system-on-a-chip (SOC) and must be
+ 	return ok;	
+ }
 -- 
 1.4.4
