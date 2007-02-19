@@ -1,21 +1,17 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8FBC0DDF4F
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 07:05:23 +1100 (EST)
-Subject: Re: macros and dtc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Dan Malek <dan@embeddedalley.com>
-In-Reply-To: <F408B146-AC76-43F5-9D9D-0094BAF14941@embeddedalley.com>
-References: <729E7ED6-D601-4D4C-B110-F951409BAE2B@kernel.crashing.org>
-	<F408B146-AC76-43F5-9D9D-0094BAF14941@embeddedalley.com>
-Content-Type: text/plain
-Date: Tue, 20 Feb 2007 07:04:44 +1100
-Message-Id: <1171915484.18571.55.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Linux PPC Dev ML <linuxppc-dev@ozlabs.org>, Jon Loeliger <jdl@jdl.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <olof@lixom.net>
+Date: Mon, 19 Feb 2007 14:15:20 -0600
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Introduce address space "slices"
+Message-ID: <20070219201520.GA6776@lixom.net>
+References: <1171867418.18571.3.camel@localhost.localdomain>
+	<20070219153315.GA5036@lixom.net>
+	<1171913963.18571.33.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1171913963.18571.33.camel@localhost.localdomain>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Feb 20, 2007 at 06:39:23AM +1100, Benjamin Herrenschmidt wrote:
+> On Mon, 2007-02-19 at 09:33 -0600, Olof Johansson wrote:
+> > On Mon, Feb 19, 2007 at 05:43:38PM +1100, Benjamin Herrenschmidt wrote:
+> > > powerpc: Introduce address space "slices"
+> > > 
+> > > This patch provide some infrastructure that will allow proper creation
+> > > of special VMAs with different page sizes on powerpc.
+> > > 
+> > > The basic issue is to be able to do what hugetlbfs does but with
+> > > different page sizes for some other special filesystems, more
+> > > specifically, my need is:
+> > > 
+> > >  - hugetlbfs should still work of course :-)
+> > > 
+> > >  - SPE local store mappings using 64K pages on a 4K base page size
+> > > kernel on Cell
+> > 
+> > Why? What is the reason they can't use 4K pages?
+> 
+> Reduce TLB/ERAT trashing. SPE MMUs are fairly small, and in setups where
+> an SPE maps all the others, we take a performance hit due to trashing
+> with 4K pages.
+>
+> However, going to full 64K base page size has other
+> drawbacks, especially in setups with little main memory.
 
-> I could envision using something like cpp with #include
-> to get some standard SOC block properties, but macros
-> that try to account for board variations could be quite
-> complex.
+Right. I was mostly wondering what the underlying reason for the
+requirement was.
 
-For things like SoC, what I'd like is a way via #include or macros,
-whatever, to layout in a part of the tree a standard block, and then, be
-able to "overlay" on top of it.
 
-I can see other uses for macros for things like making easier to build
-interrupt-map properties for example, especially since most embedded
-boards use standard swizzling
+Thanks,
 
-Ben.
+-Olof
