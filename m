@@ -1,15 +1,21 @@
-Return-Path: <pb_fwd_list@yahoo.fr>
-Received: from web23412.mail.ird.yahoo.com (web23412.mail.ird.yahoo.com
-	[217.146.189.97]) by ozlabs.org (Postfix) with SMTP id 906BBDDDCA
+Return-Path: <a.llano@usyscom.com>
+Received: from correo.ziv.es (eu31-237.clientes.euskaltel.es [212.55.31.237])
+	by ozlabs.org (Postfix) with ESMTP id ACC2EDDDEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Feb 2007 19:51:45 +1100 (EST)
-Date: Mon, 19 Feb 2007 09:45:04 +0100 (CET)
-From: Patrice Bouchand <pb_fwd_list@yahoo.fr>
-Subject: mcpu options for AMCC440 with fpu
-To: linuxppc-embedded@ozlabs.org
+	Mon, 19 Feb 2007 19:58:34 +1100 (EST)
+Subject: RE: 16-bit PCMCIA resource allocation
+From: "Asier Llano Palacios" <a.llano@usyscom.com>
+To: "David Clark" <dlclark@chtech.com>
+In-Reply-To: <001e01c751e8$17d81c50$0f01a8c0@longhorn>
+References: <001e01c751e8$17d81c50$0f01a8c0@longhorn>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Mon, 19 Feb 2007 09:58:30 +0100
+Message-ID: <1171875510.27115.29.camel@usyscom-sw-server>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1467494991-1171874704=:55072"
-Message-ID: <600461.55072.qm@web23412.mail.ird.yahoo.com>
+Cc: =?iso-8859-1?Q?'Miguel_=C1ngel_=C1lvarez_Cabanes'?= <ma.alvarez@ziv.es>,
+	'Aitor Arzuaga' <a.arzuaga@usyscom.com>, linuxppc-embedded@ozlabs.org
+Reply-To: a.llano@usyscom.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,90 +26,145 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-1467494991-1171874704=:55072
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+I have the following lines:
 
-Hello,
-
-   I was searching for the best mcpu option for amcc440, compiling and running a small program you can find here: 
-http://magnux.free.fr/gcc/mandelbrot.c. My distro is a ppc fedora core 6, and results are obviously the same using DENX4.0.
-
---------------------
--bash-3.00# gcc -O2 ./mandelbrot.c -o ./mandelbrot && time ./mandelbrot && rm -f ./mandelbrot
-
-real    1m15.059s
-user    1m14.996s
-sys     0m0.060s
--bash-3.00# gcc -O2 -mcpu=440 ./mandelbrot.c -o ./mandelbrot && time ./mandelbrot && rm -f ./mandelbrot
-
-real    0m39.606s
-user    0m39.552s
-sys     0m0.028s
--bash-3.00# gcc -O2 -mcpu=440fp ./mandelbrot.c -o ./mandelbrot && time ./mandelbrot && rm -f ./mandelbrot
-
-real    1m15.016s
-user    1m14.988s
-sys     0m0.024s
--bash-3.00# gcc -O2 -msoft-float ./mandelbrot.c -o ./mandelbrot && time ./mandelbrot && rm -f ./mandelbrot
-
-real    0m39.577s
-user    0m39.544s
-sys     0m0.032s
---------------------
-
-* I do not explain why not using FPU gives better results ?
-
-* I did also a test with bzip2.c ( http://pag.csail.mit.edu/~smcc/projects/single-file-programs/bzip2.c ).
-
-----------------------
--bash-3.00# gcc -O2 ./bzip2.c -o ./bzip2 && time ./bzip2 ./oggenc.c && ./bzip2 -d ./oggenc.c.bz2 && rm ./bzip2
-
-real    0m18.478s
-user    0m18.216s
-sys     0m0.152s
--bash-3.00# gcc -O2 -mcpu=440 ./bzip2.c -o ./bzip2 && time ./bzip2 ./oggenc.c && ./bzip2 -d ./oggenc.c.bz2 && rm ./bzip2
-
-real    0m18.786s
-user    0m18.544s
-sys     0m0.128s
--bash-3.00# gcc -O2 -mcpu=440fp ./bzip2.c -o ./bzip2 && time ./bzip2 ./oggenc.c && ./bzip2 -d ./oggenc.c.bz2 && rm ./bzip2
-
-real    0m18.811s
-user    0m18.548s
-sys     0m0.144s
--bash-3.00# gcc -O2 -mcpu=G3 ./bzip2.c -o ./bzip2 && time ./bzip2 ./oggenc.c && ./bzip2 -d ./oggenc.c.bz2 && rm ./bzip2
-
-real    0m18.871s
-user    0m18.644s
-sys     0m0.104s
-----------------------
-
-* mcpu option seems to not have any effect ?
-
-*  My third test was to compile and run mplayer.
-- With default options (no mcpu specified), my test mpeg was smooth.
-- With mcpu=440fp, my test mpeg was not smooth.
-
- Can anybody bring me some lights about the right gcc mcpu option for amcc440 ?
-
-Best regards,
-
-       Patrice Bouchand
+PCI: Bus 1, cardbus bridge: 0000:00:18.0
+  IO window: 00001000-000011ff
+  IO window: 00001400-000015ff
+  PREFETCH window: 80000000-803fffff
+  MEM window: a0400000-a07fffff
+Yenta: ISA IRQ mask 0x0000, PCI irq 1
+Socket status: 30000410
+pcmcia: parent PCI bridge I/O window: 0x0 - 0xffffff
+pcmcia: parent PCI bridge Memory window: 0x80000000 - 0x9fffffff
+pcmcia: parent PCI bridge Memory window: 0xa0000000 - 0xafffffff
+...
+...
+pccard: PCMCIA card inserted into slot 0
+cs: memory probe 0x80000000-0x9fffffff: excluding 0x80000000-0x9fffffff
+cs: memory probe 0xa0000000-0xafffffff: excluding 0xa0000000-0xa07fffff
 
 
- 		
----------------------------------
- Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! Profitez des connaissances, des opinions et des expériences des internautes sur Yahoo! Questions/Réponses.
---0-1467494991-1171874704=:55072
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+In fact the assigned resources are (the important one is the
+pcmcia_socket0):
 
-Hello,<br><br>&nbsp;&nbsp; I was searching for the best mcpu option for amcc440, compiling and running a small program you can find here: <br>http://magnux.free.fr/gcc/mandelbrot.c. My distro is a ppc fedora core 6, and results are obviously the same using DENX4.0.<br><br>--------------------<br>-bash-3.00# gcc -O2 ./mandelbrot.c -o ./mandelbrot &amp;&amp; time ./mandelbrot &amp;&amp; rm -f ./mandelbrot<br><br>real&nbsp;&nbsp;&nbsp; 1m15.059s<br>user&nbsp;&nbsp;&nbsp; 1m14.996s<br>sys&nbsp;&nbsp;&nbsp;&nbsp; 0m0.060s<br>-bash-3.00# gcc -O2 -mcpu=440 ./mandelbrot.c -o ./mandelbrot &amp;&amp; time ./mandelbrot &amp;&amp; rm -f ./mandelbrot<br><br>real&nbsp;&nbsp;&nbsp; 0m39.606s<br>user&nbsp;&nbsp;&nbsp; 0m39.552s<br>sys&nbsp;&nbsp;&nbsp;&nbsp; 0m0.028s<br>-bash-3.00# gcc -O2 -mcpu=440fp ./mandelbrot.c -o ./mandelbrot &amp;&amp; time ./mandelbrot &amp;&amp; rm -f ./mandelbrot<br><br>real&nbsp;&nbsp;&nbsp; 1m15.016s<br>user&nbsp;&nbsp;&nbsp;
- 1m14.988s<br>sys&nbsp;&nbsp;&nbsp;&nbsp; 0m0.024s<br>-bash-3.00# gcc -O2 -msoft-float ./mandelbrot.c -o ./mandelbrot &amp;&amp; time ./mandelbrot &amp;&amp; rm -f ./mandelbrot<br><br>real&nbsp;&nbsp;&nbsp; 0m39.577s<br>user&nbsp;&nbsp;&nbsp; 0m39.544s<br>sys&nbsp;&nbsp;&nbsp;&nbsp; 0m0.032s<br>--------------------<br><br>* I do not explain why not using FPU gives better results ?<br><br>* I did also a test with bzip2.c ( http://pag.csail.mit.edu/~smcc/projects/single-file-programs/bzip2.c ).<br><br>----------------------<br>-bash-3.00# gcc -O2 ./bzip2.c -o ./bzip2 &amp;&amp; time ./bzip2 ./oggenc.c &amp;&amp; ./bzip2 -d ./oggenc.c.bz2 &amp;&amp; rm ./bzip2<br><br>real&nbsp;&nbsp;&nbsp; 0m18.478s<br>user&nbsp;&nbsp;&nbsp; 0m18.216s<br>sys&nbsp;&nbsp;&nbsp;&nbsp; 0m0.152s<br>-bash-3.00# gcc -O2 -mcpu=440 ./bzip2.c -o ./bzip2 &amp;&amp; time ./bzip2 ./oggenc.c &amp;&amp; ./bzip2 -d ./oggenc.c.bz2 &amp;&amp; rm ./bzip2<br><br>real&nbsp;&nbsp;&nbsp;
- 0m18.786s<br>user&nbsp;&nbsp;&nbsp; 0m18.544s<br>sys&nbsp;&nbsp;&nbsp;&nbsp; 0m0.128s<br>-bash-3.00# gcc -O2 -mcpu=440fp ./bzip2.c -o ./bzip2 &amp;&amp; time ./bzip2 ./oggenc.c &amp;&amp; ./bzip2 -d ./oggenc.c.bz2 &amp;&amp; rm ./bzip2<br><br>real&nbsp;&nbsp;&nbsp; 0m18.811s<br>user&nbsp;&nbsp;&nbsp; 0m18.548s<br>sys&nbsp;&nbsp;&nbsp;&nbsp; 0m0.144s<br>-bash-3.00# gcc -O2 -mcpu=G3 ./bzip2.c -o ./bzip2 &amp;&amp; time ./bzip2 ./oggenc.c &amp;&amp; ./bzip2 -d ./oggenc.c.bz2 &amp;&amp; rm ./bzip2<br><br>real&nbsp;&nbsp;&nbsp; 0m18.871s<br>user&nbsp;&nbsp;&nbsp; 0m18.644s<br>sys&nbsp;&nbsp;&nbsp;&nbsp; 0m0.104s<br>----------------------<br><br>* mcpu option seems to not have any effect ?<br><br>*&nbsp; My third test was to compile and run mplayer.<br>- With default options (no mcpu specified), my test mpeg was smooth.<br>- With mcpu=440fp, my test mpeg was not smooth.<br><br>&nbsp;Can anybody bring me some lights about the right gcc mcpu option for amcc440 ?<br><br>Best
- regards,<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Patrice Bouchand<br><br><p>&#32;
-		<hr size="1"> 
-Découvrez une nouvelle façon d'obtenir des réponses à toutes vos questions ! 
-Profitez des connaissances, des opinions et des expériences des internautes sur <a href="http://fr.rd.yahoo.com/evt=42054/*http://fr.answers.yahoo.com">Yahoo! Questions/Réponses</a>.
---0-1467494991-1171874704=:55072--
+# cat /proc/iomem
+80000000-9fffffff : PCI prefetchable memory
+  80000000-803fffff : PCI CardBus #01
+a0000000-afffffff : PCI memory
+  a0000000-a0000fff : 0000:00:18.0
+    a0000000-a0000fff : yenta_socket
+  a0040000-a007ffff : 0000:00:1a.0
+  a0400000-a07fffff : PCI CardBus #01
+  a0800000-a0800fff : pcmcia_socket0
+f0000900-f000097f : mpc52xx-mscan.0
+f0000980-f00009ff : mpc52xx-mscan.1
+f0000f00-f0000f1f : mpc52xx-spi
+f0001000-f00010ff : ppc-soc-ohci
+f0001200-f00012ff : mpc52xx-sdma
+  f0001200-f00012ff : mpc52xx-sdma
+f0001300-f000130f : mpc52xx-bdlc
+f0002000-f000209f : mpc52xx-psc.0
+  f0002000-f000209f : mpc52xx_psc_uart
+f0002200-f000229f : mpc52xx-psc.1
+f0002400-f000249f : mpc52xx-psc.2
+  f0002400-f000249f : mpc52xx_psc_uart
+f0002600-f000269f : mpc52xx-psc.3
+  f0002600-f000269f : mpc52xx_psc_uart
+f0002800-f000289f : mpc52xx-psc.4
+f0002c00-f0002c9f : mpc52xx-psc.5
+f0003000-f00033ff : mpc52xx-fec
+  f0003000-f00033ff : mpc52xx-fec
+f0003a00-f0003aff : mpc52xx-ata
+f0003d00-f0003d1f : fsl-i2c.0
+f0003d40-f0003d5f : fsl-i2c.1
+f0008000-f000bfff : mpc52xx-sdma
+  f0008000-f000bfff : mpc52xx-sdma
+ff800000-ffffffff : physmap-flash.0
+  ff800000-ffffffff : physmap-flash.0
+# cat /proc/ioports
+00000000-00ffffff : PCI I/O
+  00000000-0000003f : pcmcia_socket0
+  00001000-000011ff : PCI CardBus #01
+  00001400-000015ff : PCI CardBus #01
+
+
+That are not equal to the resources that were used by linux kernel
+2.6.10:
+
+~ # cat /proc/iomem
+80000000-9fffffff : PCI prefetchable memory
+  80000000-803fffff : PCI CardBus #01
+a0000000-afffffff : PCI memory
+  a0000000-a0000fff : 0000:00:18.0
+    a0000000-a0000fff : yenta_socket
+  a0040000-a007ffff : 0000:00:1a.0
+  a0100000-a0100fff : pcmcia_socket0
+  a0400000-a07fffff : PCI CardBus #01
+f0002000-f000209f : mpc52xx_psc_uart
+f0002400-f000249f : mpc52xx_psc_uart
+f0002600-f000269f : mpc52xx_psc_uart
+f0003000-f00033fb : mpc52xx_fec
+f0003d00-f0003d1f : i2c-mpc
+f0003d40-f0003d5f : i2c-mpc
+~ # cat /proc/ioports
+00000000-00ffffff : PCI I/O
+  00000100-0000013f : pcmcia_socket0
+  00001000-000010ff : PCI CardBus #01
+  00001400-000014ff : PCI CardBus #01
+
+Maybe a better understanding of the resource allocation mechanism is
+needed in order to know if the differences are important, or if it
+should work also with this resource allocation table.
+
+Thank you,
+Asier Llano
+
+
+
+El vie, 16-02-2007 a las 10:32 -0600, David Clark escribi=F3:
+> Asier,
+>=20
+> Do you get the following message or similar during boot (dmesg =
+output)?
+>=20
+> "cs: memory probe 0x80000000-0xfcffffff:"
+> "  excluding 0x80000000-0xfcffffff"
+>=20
+> Note: in my dmesg output these where not on consecutive lines.
+>=20
+> David Clark
+> Senior Software Engineer
+> C&H Technologies, Inc
+> Web: http:\\www.chtech.com
+> Phone: 512-733-2621
+> Fax: 512-733-2629
+> Email: dlclark@chtech.com
+> =20
+>=20
+>=20
+>=20
+=20
+----------------------------------------- PLEASE NOTE =
+-------------------------------------------
+This message, along with any attachments, may be confidential or legally =
+privileged.=20
+It is intended only for the named person(s), who is/are the only =
+authorized recipients.
+If this message has reached you in error, kindly destroy it without =
+review and notify the sender immediately.
+Thank you for your help.
+=B5SysCom uses virus scanning software but excludes any liability for =
+viruses contained in any attachment.
+=20
+------------------------------------ ROGAMOS LEA ESTE TEXTO =
+-------------------------------
+Este mensaje y sus anexos pueden contener informaci=F3n confidencial y/o =
+con derecho legal.=20
+Est=E1 dirigido =FAnicamente a la/s persona/s o entidad/es rese=F1adas =
+como =FAnico destinatario autorizado.
+Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
+revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
+Gracias por su colaboraci=F3n. =20
+=B5SysCom utiliza software antivirus, pero no se hace responsable de los =
+virus contenidos en los ficheros anexos.
