@@ -1,15 +1,21 @@
-Return-Path: <olof@lixom.net>
-Date: Mon, 19 Feb 2007 09:33:15 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Introduce address space "slices"
-Message-ID: <20070219153315.GA5036@lixom.net>
-References: <1171867418.18571.3.camel@localhost.localdomain>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 17C31DDDF5
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 02:33:11 +1100 (EST)
+Message-ID: <45D9C32C.7030706@am.sony.com>
+Date: Mon, 19 Feb 2007 07:33:00 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1171867418.18571.3.camel@localhost.localdomain>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [RFC 2/3] zImage: SMP hold
+References: <45D7A910.60702@am.sony.com>
+	<17880.61499.932513.926761@cargo.ozlabs.ibm.com>
+In-Reply-To: <17880.61499.932513.926761@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,26 +25,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 19, 2007 at 05:43:38PM +1100, Benjamin Herrenschmidt wrote:
-> powerpc: Introduce address space "slices"
+Paul Mackerras wrote:
+> Geoff Levand writes:
 > 
-> This patch provide some infrastructure that will allow proper creation
-> of special VMAs with different page sizes on powerpc.
+>> +void smp_secondary_hold(unsigned int cpu_id)
+>> +{
+>> +	while(!smp_secondary_entry)
+>> +		(void)0;
 > 
-> The basic issue is to be able to do what hugetlbfs does but with
-> different page sizes for some other special filesystems, more
-> specifically, my need is:
+> Using a barrier() here rather than making smp_secondary_entry volatile
+> would be better, I think.
 > 
->  - hugetlbfs should still work of course :-)
-> 
->  - SPE local store mappings using 64K pages on a 4K base page size
-> kernel on Cell
+> Also, what's the lifetime of this code after smp_secondary_entry is
+> set, i.e. how do we know the kernel running on the primary cpu will
+> wait for the secondary cpus to have got through this code into the
+> kernel before it reuses this memory for something else?
 
-Why? What is the reason they can't use 4K pages?
+I was thinking the most (only?) reliably way is to do it from inside the kernel.
+Once inside, the primary waits for all secondaries to enter before proceeding.
+That's why I didn't have anything here.  There is already a mechanism in the
+kernel with __secondary_hold_acknowledge, but I don't yet know if it does
+exactly what is needed.  Do you see any trouble with this?
 
->  - Some special 4K segments in 64K pages kernels for mapping a dodgy
-> specie of powerpc specific infiniband hardware that requires 4K MMU
-> mappings for various reasons I won't explain here.
-
-
--Olof
+-Geoff
