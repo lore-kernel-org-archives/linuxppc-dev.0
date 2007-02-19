@@ -1,17 +1,22 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH 3/3] zImage: Cleanup and improve zImage entry point
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B8FFBDDF4A
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 07:02:36 +1100 (EST)
+Subject: Re: [PATCH 2.6.21-rc1] powerpc: Make
+	of_device_uevent()	compatible	with ibmebus
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <45D9BEC0.1060909@am.sony.com>
-References: <20070216062739.6DFDBDDD05@ozlabs.org>
-	<45D7AA50.3090408@am.sony.com>
-	<20070218072310.GB1859@localhost.localdomain>
-	<45D9BEC0.1060909@am.sony.com>
-Content-Type: text/plain
-Date: Tue, 20 Feb 2007 06:59:40 +1100
-Message-Id: <1171915180.18571.52.camel@localhost.localdomain>
+To: Joachim Fenkes <FENKES@de.ibm.com>
+In-Reply-To: <OF18F067AE.FF85D78B-ON85257287.005ADAC3-85257287.005B37D9@de.ibm.com>
+References: <OF18F067AE.FF85D78B-ON85257287.005ADAC3-85257287.005B37D9@de.ibm.com>
+Content-Type: text/plain; charset=utf-8
+Date: Tue, 20 Feb 2007 06:47:52 +1100
+Message-Id: <1171914472.18571.41.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Cc: pmac@au1.ibm.com, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
+	johnrose@us.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,16 +27,34 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-> I think the better idea is to make the generic bootwrapper code support
-> SMP.  I don't see any fundamental reason why it can't.  The trouble here
-> is that your BSS stack is really not a proper way, that's why it doesn't
-> work.
+> If I make the root device a basic struct device, it can't be part of 
+> ibmebus any
+> longer. If we could create a busless device, we wouldn't have a problem, 
+> but I
+> doubt that is possible.
 > 
-> I'll put something together that provides generic (SMP) stack support
-> for the bootwrapper.  I'll  be away the end of this week and next week,
-> so I don't know when I'll be able to post it.
+> Do you have any creative ideas?
 
-As I said earlier, I see no reason why the wrapper needs to provide a
-stack for non-primary CPUs.
+Well, I think PCI does just that for PCI busses ... (a busless device)
 
 Ben.
+
+> > It's a generic problem with sysfs, I agree it somewhat sucks.
+> 
+> With ya.
+> 
+> Later,
+>   Joachim
+> 
+> ---
+> Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer 
+> extraordinaire
+> IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Development 
+> 2)
+> Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
+> eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239 
+> 
+> Vorsitzender des Aufsichtsrats: Johann Weihen  --  Geschäftsführung: 
+> Herbert Kircher
+> Sitz der Gesellschaft: Böblingen  --  Registergericht: Amtsgericht 
+> Stuttgart, HRB 243294
