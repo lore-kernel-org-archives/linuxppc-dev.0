@@ -1,26 +1,24 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from localhost.localdomain (unknown [81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 05167DDD07
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 09:44:09 +1100 (EST)
-Date: Mon, 19 Feb 2007 23:46:51 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <bzolnier@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id 48300DDD0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 10:11:30 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so587439ugf
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Feb 2007 15:11:29 -0800 (PST)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Alan <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCHSET] libata: PATA driver for Celleb
-Message-ID: <20070219234651.4a19a912@localhost.localdomain>
-In-Reply-To: <1171920081.18571.77.camel@localhost.localdomain>
+Date: Tue, 20 Feb 2007 00:17:32 +0100
 References: <200701260724.l0Q7OISY027645@toshiba.co.jp>
-	<200702151141.49708.jens@de.ibm.com>
-	<20070215171414.GU923@austin.ibm.com>
-	<200702151909.26082.arnd@arndb.de>
-	<20070219215659.15539fb3@localhost.localdomain>
 	<1171920081.18571.77.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+	<20070219234651.4a19a912@localhost.localdomain>
+In-Reply-To: <20070219234651.4a19a912@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702200017.32924.bzolnier@gmail.com>
 Cc: Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>,
-	linuxppc-dev@ozlabs.org, Andrew, linux-ide@vger.kernel.org,
-	paulus@samba.org, Morton <akpm@linux-foundation.org>,
+	linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>,
 	James K Lewis <jim@jklewis.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,18 +29,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > into one in drivers/ide but really want splitting for libata with some
-> > kind of libata-pmac owning the shared stuff
+
+On Tuesday 20 February 2007 00:46, Alan wrote:
+> > > into one in drivers/ide but really want splitting for libata with some
+> > > kind of libata-pmac owning the shared stuff
+> > 
+> > You meand driver/ide/ppc/pmac.c ?
 > 
-> You meand driver/ide/ppc/pmac.c ?
+> Yes
+> 
+> > moving them out of the macio_asic to a PCI device at one point, so yes,
+> > maybe you are right, I should move the DMA bits to some "common" file
+> > and split the various implementations.
+> 
+> I suspect it is worth doing when moving to libata at least, even if not
+> for the older driver.
 
-Yes
+fully agreed, the way to go for both drivers
 
-> moving them out of the macio_asic to a PCI device at one point, so yes,
-> maybe you are right, I should move the DMA bits to some "common" file
-> and split the various implementations.
-
-I suspect it is worth doing when moving to libata at least, even if not
-for the older driver.
-
-Alan
+Bart
