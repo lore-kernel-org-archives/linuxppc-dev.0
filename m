@@ -1,18 +1,18 @@
-Return-Path: <jrocnuck@hotmail.com>
-Received: from bay0-omc3-s19.bay0.hotmail.com (bay0-omc3-s19.bay0.hotmail.com
-	[65.54.246.219]) by ozlabs.org (Postfix) with ESMTP id B2ED2DDE27
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
+	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id E0BF6DDD06
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Feb 2007 07:55:38 +1100 (EST)
-Message-ID: <BAY117-F108D4A96970DA70F0B1EDDC88B0@phx.gbl>
-In-Reply-To: <BAY110-F327851FA040AA8F795E526B28B0@phx.gbl>
-From: "Eric Nuckols" <jrocnuck@hotmail.com>
-To: eemingliu@hotmail.com
-Subject: RE: What is the difference between Montavista Kernel
-	SourceandKernel.Org Source
-Date: Sun, 18 Feb 2007 15:55:34 -0500
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Mon, 19 Feb 2007 16:44:52 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: Linux doesn't boot on Vertex4 based board.
+Date: Sun, 18 Feb 2007 21:44:49 -0800
+Message-ID: <406A31B117F2734987636D6CCC93EE3CF9DD19@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <3f51063f7e86.3f7e863f5106@compuserve.de>
+References: <3f51063f7e86.3f7e863f5106@compuserve.de>
+From: "Leonid" <Leonid@a-k-a.net>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,37 +23,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi:
 
->From: "Ming Liu" <eemingliu@hotmail.com>
->To: jrocnuck@hotmail.com
->CC: linuxppc-embedded@ozlabs.org
->Subject: RE: What is the difference between Montavista Kernel 
->SourceandKernel.Org Source
->Date: Sun, 18 Feb 2007 16:25:55 +0000
->
->Dear Eric,
->Thanks for your reply first.
->
->>>Another question. Because Montavista kernel is also based on the open
->>>source linux kernel from the general tree, does this mean that the
->>>Montavista one is also open source and could be free to be distributed
->>>according to GPL. However as far as I know, that's not true. :)
->
->Because you have worked for Montavista Linux, so could you please answer me 
->this question? I know that anyone can distribute and modify GPL source code 
->and then the modified code also obey GPL. So how about Montavista Linux? :) 
->I am just a little confused with this rule.
->
->BR
->Ming
+I'm trying to port Linux on Vertex4 board, similar to Xilinx ML403
+(PPC405 hard core). The main differences between my board and ML403 are:
 
+- I'm using UARTLITE, not UART16550 core.
+- I have only 32M of PLB_SDRAM (ML403 got 64M of DDR).
+- Flash is not in the end of the address space (see boot snapshot
+below).
+- I have TEMAC instead of EMAC.
+- On my board PPC405 is running on 100MHz vs ML403 300MHz.
 
-I only used their product (purchased a license of their tools/product).  I 
-am not in a position to answer legal/licensing questions about MontaVista 
-Linux.  You should contact their sales department for information regarding 
-this type of question.
+I can be somewhat confused regarding ML403 characteristics since I don't
+have actual ML403 yet - will be getting it in several days.
 
-_________________________________________________________________
-Find what you need at prices you’ll love. Compare products and save at MSN® 
-Shopping. 
-http://shopping.msn.com/default/shp/?ptnrid=37,ptnrdata=24102&tcode=T001MSN20A0701
+I successfully ported ML403 u-boot to my board, but couldn't get kernel
+to boot. I tried linux-xilinx-26 from Monta Vista server, 2.6.19.2 from
+DENX and last 2.6.20 from kernel.org. Latest one already has uartlite
+ported, for previous two I tried to port myself. Below please find
+typical u-boot output (I enabled DEBUG in cmd_boot file):
+
+U-Boot> run akanfs
+TFTP from server 192.168.0.141; our IP address is 192.168.0.213
+Filename 'LM200/rel/1.0.1-20/uImage'.
+Load address: 0x1000000
+Loading:
+#################################################################
+=20
+#################################################################
+         #######################################
+done
+Bytes transferred =3D 862398 (d28be hex)
+## Booting image at 01000000 ...
+   Image Name:   Linux-2.6.20
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    862334 Bytes =3D 842.1 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Current stack ends at 0x01F966A0 =3D> set upper limit to 0x00800000
+## cmdline at 0x007FFF00 ... 0x007FFF9C
+memstart    =3D 0x00000000
+memsize     =3D 0x02000000
+flashstart  =3D 0x22000000
+flashsize   =3D 0x00400000
+flashoffset =3D 0x00000000
+sramstart   =3D 0x00000000
+sramsize    =3D 0x00000000
+bootflags   =3D 0x00000000
+procfreq    =3D    100 MHz
+plb_busfreq =3D    100 MHz
+ethaddr     =3D 00:01:02:03:FD:71
+IP addr     =3D 192.168.0.213
+baudrate    =3D 115200 bps
+No initrd
+## Transferring control to Linux (at address 00000000) ...
+
+I realize that can be 1001 reasons for such behavior, yet I'd appreciate
+any ideas you can share with me. I tried use early serial output... no
+success.
+
+Thanks,
+
+Leonid.
