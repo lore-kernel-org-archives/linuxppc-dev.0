@@ -1,17 +1,21 @@
-Return-Path: <olof@lixom.net>
-Date: Mon, 19 Feb 2007 14:15:20 -0600
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Introduce address space "slices"
-Message-ID: <20070219201520.GA6776@lixom.net>
-References: <1171867418.18571.3.camel@localhost.localdomain>
-	<20070219153315.GA5036@lixom.net>
-	<1171913963.18571.33.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1171913963.18571.33.camel@localhost.localdomain>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B6B22DDDF7
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 07:12:26 +1100 (EST)
+Subject: Re: [RFC 3/3] zImage: Exception vector support
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <45D9BC29.5020507@am.sony.com>
+References: <45D7A914.4040000@am.sony.com>
+	<20070218014043.GD1038@crusty.rchland.ibm.com>
+	<45D9BC29.5020507@am.sony.com>
+Content-Type: text/plain
+Date: Tue, 20 Feb 2007 06:55:04 +1100
+Message-Id: <1171914904.18571.47.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 20, 2007 at 06:39:23AM +1100, Benjamin Herrenschmidt wrote:
-> On Mon, 2007-02-19 at 09:33 -0600, Olof Johansson wrote:
-> > On Mon, Feb 19, 2007 at 05:43:38PM +1100, Benjamin Herrenschmidt wrote:
-> > > powerpc: Introduce address space "slices"
-> > > 
-> > > This patch provide some infrastructure that will allow proper creation
-> > > of special VMAs with different page sizes on powerpc.
-> > > 
-> > > The basic issue is to be able to do what hugetlbfs does but with
-> > > different page sizes for some other special filesystems, more
-> > > specifically, my need is:
-> > > 
-> > >  - hugetlbfs should still work of course :-)
-> > > 
-> > >  - SPE local store mappings using 64K pages on a 4K base page size
-> > > kernel on Cell
+On Mon, 2007-02-19 at 07:03 -0800, Geoff Levand wrote:
+> Josh Boyer wrote:
+> > On Sat, Feb 17, 2007 at 05:17:08PM -0800, Geoff Levand wrote:
+> >> Add SMP exception vector support to the powerpc zImage bootwrapper.  For
+> >> platforms which have entry points in the vector table.  This implements
+> >> SMP entry via the system reset vector.
+> >> 
+> >> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> >> 
+> >> ---
+> >>  arch/powerpc/boot/head.S       |   96 +++++++++++++++++++++++++++++++++++++++++
+> >>  arch/powerpc/boot/zImage.lds.S |    2 
 > > 
-> > Why? What is the reason they can't use 4K pages?
+> > This one seems pretty PS3 specific, and there's no makefile entry to actually
+> > compile it...  Could we name it head_ps3.S or something similar?
+> > 
+> > Or am I misunderstanding the code and it's really generic to most SMP
+> > machines (which would make a case to arguably call it head_smp.S).
 > 
-> Reduce TLB/ERAT trashing. SPE MMUs are fairly small, and in setups where
-> an SPE maps all the others, we take a performance hit due to trashing
-> with 4K pages.
->
-> However, going to full 64K base page size has other
-> drawbacks, especially in setups with little main memory.
+> No, its not platform specific nor SMP specific, it should work
+> with all SMP and UP platforms that need this kind of support.
 
-Right. I was mostly wondering what the underlying reason for the
-requirement was.
+Well, all platforms that are multithread at least... the thread number
+testing won't do any good on 970 for example :-)
 
-
-Thanks,
-
--Olof
+Ben.
