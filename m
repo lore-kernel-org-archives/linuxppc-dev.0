@@ -1,16 +1,11 @@
-Return-Path: <bunk@stusta.de>
-Received: from mailhub.stusta.mhn.de (emailhub.stusta.mhn.de [141.84.69.5])
-	by ozlabs.org (Postfix) with ESMTP id 77DAFDDDCF
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 11:08:14 +1100 (EST)
-Date: Tue, 20 Feb 2007 01:08:12 +0100
-From: Adrian Bunk <bunk@stusta.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>
-Subject: [2.6 patch] unexport mac_hid_mouse_emulate_buttons
-Message-ID: <20070220000812.GL13958@stusta.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 20 Feb 2007 13:08:37 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: [0/14] Ebony support, 2nd spin
+Message-ID: <20070220020837.GF17818@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,20 +15,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch removes the unused
-EXPORT_SYMBOL(mac_hid_mouse_emulate_buttons).
+Here is a 2nd spin of my patch series adding support for the Ebony
+440GP evaluation board to the arch/powerpc tree.  Notable changes from
+the last spin:
 
-Signed-off-by: Adrian Bunk <bunk@stusta.de>
+	- I no longer use legacy_serial for the serial ports and
+	  console, instead I'm using Arnd's of_serial system.
+	- Rebased on my recent clean/flexibility patches for the
+	  zImage loader
+	- Includes a general re-orgranization of the arch/powerpc
+	  Kconfig code for 4xx, allowing a kernel to support multiple
+	  boards at once (well, in theory, Ebony is the only supported
+	  one so far).
+	- The early serial hacks no longer use an entire 64-bit
+	  constant, so should work on non-64-bit aware assemblers
 
----
---- linux-2.6.20-mm2/drivers/macintosh/mac_hid.c.old	2007-02-19 15:37:13.000000000 +0100
-+++ linux-2.6.20-mm2/drivers/macintosh/mac_hid.c	2007-02-19 15:37:22.000000000 +0100
-@@ -102,8 +102,6 @@
- 	return 0;
- }
- 
--EXPORT_SYMBOL(mac_hid_mouse_emulate_buttons);
--
- static int emumousebtn_input_register(void)
- {
- 	int ret;
+Again, some of the earlier patches I'm about to push to Paulus or
+others, so they could appear in upstream trees.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
