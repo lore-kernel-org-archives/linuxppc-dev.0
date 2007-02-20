@@ -1,25 +1,29 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id BFEC6DDD0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 19:14:25 +1100 (EST)
-Date: Tue, 20 Feb 2007 09:14:23 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTP id 714B2DDD05
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 21:33:34 +1100 (EST)
+Date: Tue, 20 Feb 2007 11:33:31 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Alan <alan@lxorguk.ukuu.org.uk>
-Subject: Re: [PATCHSET] libata: PATA driver for Celleb
-In-Reply-To: <20070219215659.15539fb3@localhost.localdomain>
-Message-ID: <Pine.LNX.4.62.0702200912410.2082@pademelon.sonytel.be>
-References: <200701260724.l0Q7OISY027645@toshiba.co.jp>
-	<200702151141.49708.jens@de.ibm.com>
-	<20070215171414.GU923@austin.ibm.com>
-	<200702151909.26082.arnd@arndb.de>
-	<20070219215659.15539fb3@localhost.localdomain>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [Linux-fbdev-devel] [PATCH 1/4 (updated)] ps3fb: thread updates
+In-Reply-To: <Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
+Message-ID: <Pine.LNX.4.62.0702201133080.6407@pademelon.sonytel.be>
+References: <20070215152301.573853000@sonycom.com>
+	<20070215152432.264415000@sonycom.com>
+	<20070215175007.GA10817@lst.de>
+	<1171575817.5644.44.camel@localhost.localdomain>
+	<20070215165916.de546f0d.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
+	<20070216163811.GB32051@lst.de>
+	<Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Arnd Bergmann <arnd@arndb.de>, Jeff Garzik <jeff@garzik.org>,
-	linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	paulus@samba.org, Andrew Morton <akpm@linux-foundation.org>,
-	James K Lewis <jim@jklewis.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,26 +33,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 19 Feb 2007, Alan wrote:
-> > I fear that the hardest part is yet to come, when we integrate the
-> > driver for the the PS3 (currently called gelic_net) into spidernet.
-> > The trouble is that the hardware is sufficiently similar to share
-> > all the high-level mechanisms like the DMA data structures and
-> > descriptor chains, but the low-level mechanisms are hidden in the
-> > hypervisor on the PS3. Someone will have to invest a significant
-> > amount of time coordinating this so we don't break celleb and qs20
-> > in the process.
+On Mon, 19 Feb 2007, Geert Uytterhoeven wrote:
+> On Fri, 16 Feb 2007, Geert Uytterhoeven wrote:
+> > On Fri, 16 Feb 2007, Christoph Hellwig wrote:
+> > > > +	DEFINE_WAIT(wait);
+> > > > +	DECLARE_WAIT_QUEUE_HEAD(wq);
+> > > > +
+> > > > +	while (!kthread_should_stop()) {
+> > > > +		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
+> > > > +		if (!ps3fb.is_kicked)
+> > > > +			schedule();
+> > > > +		finish_wait(&wq, &wait);
+> > > > +		ps3fb.is_kicked = 0;
+> > > > +		ps3fb_sync(0);	/* single buffer */
+> > > 
+> > > should probably be just:
+> > > 
+> > > 	while (!kthread_should_stop()) {
+> > > 		ps3fb_sync(0);
+> > > 		schedule();
+> > > 	}
+> > > 
+> > > given that you don't need a waitqueue and a spurious wakeup here
+> > > seems harmless.
+> > 
+> > Not always. If flipping is disabled, or external flip is enabled, you don't
+> > want a spurious flip.
 > 
-> That to me implies they should be different drivers using a common
-> libata-something file. The PPC mac drivers likewise are currently mashed
-> into one in drivers/ide but really want splitting for libata with some
-> kind of libata-pmac owning the shared stuff
+> Looks like the waitqueue is needed. Without it ps3fbd runs at 100% CPU and +15
+> million loops per second.
 
-FYI, the gelic_net and spidernet drivers Arnd was talking about are _Ethernet_
-drivers, not (S)ATA drivers.
-
-That's what happens to the casual reader when the email subjects no longer
-match ;-)
+Nope, adding `set_current_state(TASK_INTERRUPTIBLE);' fixed it. Stay tuned for
+a new patch.
 
 Gr{oetje,eeting}s,
 
