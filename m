@@ -1,18 +1,18 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 12E58DDE21
+Return-Path: <netstv@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.239])
+	by ozlabs.org (Postfix) with ESMTP id 57621DDD05
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Feb 2007 00:43:38 +1100 (EST)
-Date: Tue, 20 Feb 2007 16:44:16 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Manjunath AM <Manjunath.AM@Lntemsys.com>
-Subject: Re: enabling two eths
-Message-ID: <20070220164416.5a3906bc@vitb.dev.rtsoft.ru>
-In-Reply-To: <OFAEAB5385.D1B18D5F-ON65257288.0048394A-65257288.00493E72@lntemsys.com>
-References: <OFAEAB5385.D1B18D5F-ON65257288.0048394A-65257288.00493E72@lntemsys.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: kernelnewbies@nl.linux.org, linuxppc-embedded@ozlabs.org
+	Wed, 21 Feb 2007 01:20:37 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id 37so2190711wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 20 Feb 2007 06:20:35 -0800 (PST)
+Message-ID: <b4b98b690702200620q3c70cba9j2d8046d4451686a1@mail.gmail.com>
+Date: Tue, 20 Feb 2007 06:20:35 -0800
+From: "Steve Iribarne (GMail)" <netstv@gmail.com>
+To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Subject: 8541E and vector table.
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,28 +23,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 20 Feb 2007 18:51:41 +0530
-Manjunath AM <Manjunath.AM@Lntemsys.com> wrote:
+Hi.
 
-> Hi,
-> 
-> We are using MPC8272 based target board, we use montavista Linux version 
-> 2.6.10 kernel image (with NFS enabled) to our target board,
-> 
-> Our board has  2 FCCs (eth0 and eth1). bot the eth's works perfectly when 
-> we use them independently, but when we are trying to enable second one 
-> after the kernel is up using linux command  "ifconfig eth1 192.168.33.64 
-> up"(IP address)nothing is working.
-> Please suggest how to enable second eth (either 0 or 1) once the kernel is 
-> up with NFS file system
-> 
+I must admit, this stuff always baffles me a bit, so I need someone
+who knows this to explain it to me.
 
-I could recall no problems with mpc8272 except stuck PHY which were cured by board power cycle.
-I brought up second Ethernet interface a number of times without any problem; even had them replace each 
-other serving as NFS root gate.
+I am using an 8541E and my system randomly crashes.  By randomly, I
+mean at different times.  I have a BDI hooked up and it always jumps
+to offset 0x0000_0700
 
-So I would suggest supplying more information on "nothing is working", prolly kernel output and details about MVL product you are using.
+I believe this to be a vector table offset, but I need to figure out
+which interrupt it is.  I believe this is a hardware issued, because
+if I look at that value, it looks to be default values.  In other
+words, I don't believe I have it setup.
+
+So the question I have is how do I figure out what that interrupt vector is?
+
+Thanks so much.
+
+-stv
 
 -- 
-Sincerely, 
-Vitaly
+/*
+ * Steve Iribarne
+ * Software Engineer
+ * (aka Grunt)
+ */
