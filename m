@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 7/14] zImage: Cleanup and improve zImage entry point
+Subject: [PATCH 8/14] zImage wrapper for Ebony
 In-Reply-To: <20070220020837.GF17818@localhost.localdomain>
-Message-Id: <20070220021235.173B5DDD06@ozlabs.org>
+Message-Id: <20070220021235.406E0DDD09@ozlabs.org>
 Date: Tue, 20 Feb 2007 13:12:35 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,284 +14,210 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch re-organises the way the zImage wrapper code is entered, to
-allow more flexibility on platforms with unusual entry conditions.
-After this patch, a platform .o file has two options:
-
-1) It can define a _zimage_start, in which case the platform code gets
-   control from the very beginning of execution.  In this case the
-   platform code is responsible for relocating the zImage if necessary,
-   clearing the BSS, performing any platform specific initialization, and
-   finally calling start() to load and enter the kernel.
-
-2) It can define platform_init().  In this case the generic crt0.S
-   handles initial entry, and calls platform_init() before calling
-   start().  The signature of platform_init() is changed, however, to
-   take up to 5 parameters (in r3..r7) as they come from the platform's
-   initial loader, instead of a fixed set of parameters based on OF's
-   usage.
-
-   When using the generic crt0.S, the platform .o can optionally
-   supply a custom stack to use, using the BSS_STACK() macro.  If this
-   is not supplied, the crt0.S will assume that the loader has
-   supplied a usable stack.
-
-In either case, the platform code communicates information to the
-generic code (specifically, a PROM pointer for OF systems, and/or an
-initrd image address supplied by the bootloader) via a global
-structure "loader_info".
-
-In addition the wrapper script is rearranged to ensure that the
-platform .o is always linked first.  This means that platforms where
-the zImage entry point is at a fixed address or offset, rather than
-being encoded in the binary header can be supported using option (1).
+This patch adds support for building a zImage wrapper suitable for the
+Ebony (440GP) evaluation board.  This supports booting both from uboot
+(old versions which don't supply a flattened device tree) and IBM
+Openbios (aka "treeboot").
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/boot/Makefile          |    6 +++---
- arch/powerpc/boot/crt0.S            |   32 +++++++++++++++++++++++++++++---
- arch/powerpc/boot/main.c            |   18 +++++++-----------
- arch/powerpc/boot/of.c              |    6 ++++--
- arch/powerpc/boot/ops.h             |   12 +++++++++++-
- arch/powerpc/boot/wrapper           |    6 ++++--
- arch/powerpc/boot/zImage.coff.lds.S |    3 ++-
- arch/powerpc/boot/zImage.lds.S      |    1 +
- 8 files changed, 61 insertions(+), 23 deletions(-)
+ arch/powerpc/boot/Makefile |   33 ++++++++++++++++++++++++++++++++-
+ arch/powerpc/boot/ebony.c  |   32 ++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/mktree.c |   10 ++++------
+ arch/powerpc/boot/wrapper  |   33 +++++++++++++++++++++++++++++++++
+ 4 files changed, 101 insertions(+), 7 deletions(-)
 
-Index: working-2.6/arch/powerpc/boot/crt0.S
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/crt0.S	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/crt0.S	2007-02-19 14:01:43.000000000 +1100
-@@ -16,6 +16,7 @@
- _zimage_start_opd:
- 	.long	_zimage_start, 0, 0, 0
- 
-+	.weak	_zimage_start
- 	.globl	_zimage_start
- _zimage_start:
- 	/* Work out the offset between the address we were linked at
-@@ -44,7 +45,7 @@ _zimage_start:
- 	addi	r9,r9,4
- 	bdnz	2b
- 
--	/* Do a cache flush for our text, in case OF didn't */
-+	/* Do a cache flush for our text, in case the loader didn't */
- 3:	lis	r9,_start@ha
- 	addi	r9,r9,_start@l
- 	add	r9,r0,r9
-@@ -59,6 +60,31 @@ _zimage_start:
- 	sync
- 	isync
- 
--	mr	r6,r1
--	b	start
-+	/* Clear the BSS */
-+	lis	r9,__bss_start@ha
-+	addi	r9,r9,__bss_start@l
-+	lis	r8,_end@ha
-+	addi	r8,r8,_end@l
-+	li	r0,0
-+5:	stw	r0,0(r9)
-+	addi	r9,r9,4
-+	cmplw	cr0,r9,r8
-+	blt	5b
- 
-+	/* Possibly set up a custom stack */
-+.weak	_platform_stack_top
-+	lis	r8,_platform_stack_top@ha
-+	addi	r8,r8,_platform_stack_top@l
-+	cmpwi	r8,0
-+	beq	6f
-+	lwz	r1,0(r8)
-+	li	r0,0
-+	stwu	r0,-16(r1)	/* establish a stack frame */
-+6:
-+
-+	/* Call platform_init() */
-+	bl	platform_init
-+
-+	/* Call start */
-+	mr	r3,r1
-+	b	start
-Index: working-2.6/arch/powerpc/boot/ops.h
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/ops.h	2007-02-19 14:01:38.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/ops.h	2007-02-19 14:01:43.000000000 +1100
-@@ -59,7 +59,13 @@ struct serial_console_data {
- 	void		(*close)(void);
- };
- 
--int platform_init(void *promptr, char *dt_blob_start, char *dt_blob_end);
-+struct loader_info {
-+	void *promptr;
-+	unsigned long initrd_addr, initrd_size;
-+};
-+extern struct loader_info loader_info;
-+
-+void start(void *sp);
- int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
- int serial_console_init(void);
- int ns16550_console_init(void *devp, struct serial_console_data *scdp);
-@@ -100,4 +106,8 @@ static inline void exit(void)
- 	for(;;);
- }
- 
-+#define BSS_STACK(size) \
-+	static char _bss_stack[size]; \
-+	void *_platform_stack_top = _bss_stack + sizeof(_bss_stack);
-+
- #endif /* _PPC_BOOT_OPS_H_ */
-Index: working-2.6/arch/powerpc/boot/main.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/main.c	2007-02-19 14:01:38.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/main.c	2007-02-19 14:01:43.000000000 +1100
-@@ -254,21 +254,15 @@ static void set_cmdline(char *buf)
- struct platform_ops platform_ops;
- struct dt_ops dt_ops;
- struct console_ops console_ops;
-+struct loader_info loader_info;
- 
--void start(unsigned long a1, unsigned long a2, void *promptr, void *sp)
-+void start(void *sp)
- {
- 	struct addr_range vmlinux, initrd;
- 	kernel_entry_t kentry;
- 	char cmdline[COMMAND_LINE_SIZE];
- 	unsigned long ft_addr = 0;
- 
--	memset(__bss_start, 0, _end - __bss_start);
--	memset(&platform_ops, 0, sizeof(platform_ops));
--	memset(&dt_ops, 0, sizeof(dt_ops));
--	memset(&console_ops, 0, sizeof(console_ops));
--
--	if (platform_init(promptr, _dtb_start, _dtb_end))
--		exit();
- 	if (console_ops.open && (console_ops.open() < 0))
- 		exit();
- 	if (platform_ops.fixups)
-@@ -278,7 +272,8 @@ void start(unsigned long a1, unsigned lo
- 	       _start, sp);
- 
- 	vmlinux = prep_kernel();
--	initrd = prep_initrd(vmlinux, a1, a2);
-+	initrd = prep_initrd(vmlinux, loader_info.initrd_addr,
-+			     loader_info.initrd_size);
- 
- 	/* If cmdline came from zimage wrapper or if we can edit the one
- 	 * in the dt, print it out and edit it, if possible.
-@@ -298,7 +293,7 @@ void start(unsigned long a1, unsigned lo
- 	if (ft_addr)
- 		printf(" flat tree at 0x%lx\n\r", ft_addr);
- 	else
--		printf(" using OF tree (promptr=%p)\n\r", promptr);
-+		printf(" using OF tree (promptr=%p)\n\r", loader_info.promptr);
- 
- 	if (console_ops.close)
- 		console_ops.close();
-@@ -307,7 +302,8 @@ void start(unsigned long a1, unsigned lo
- 	if (ft_addr)
- 		kentry(ft_addr, 0, NULL);
- 	else
--		kentry((unsigned long)initrd.addr, initrd.size, promptr);
-+		kentry((unsigned long)initrd.addr, initrd.size,
-+		       loader_info.promptr);
- 
- 	/* console closed so printf below may not work */
- 	printf("Error: Linux kernel returned to zImage boot wrapper!\n\r");
-Index: working-2.6/arch/powerpc/boot/of.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/of.c	2007-02-19 14:01:38.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/of.c	2007-02-19 14:01:43.000000000 +1100
-@@ -267,7 +267,7 @@ static void of_console_write(char *buf, 
- 	call_prom("write", 3, 1, of_stdout_handle, buf, len);
- }
- 
--int platform_init(void *promptr, char *dt_blob_start, char *dt_blob_end)
-+void platform_init(unsigned long a1, unsigned long a2, void *promptr)
- {
- 	platform_ops.image_hdr = of_image_hdr;
- 	platform_ops.malloc = of_try_claim;
-@@ -282,5 +282,7 @@ int platform_init(void *promptr, char *d
- 	console_ops.write = of_console_write;
- 
- 	prom = (int (*)(void *))promptr;
--	return 0;
-+	loader_info.promptr = promptr;
-+	loader_info.initrd_addr = a1;
-+	loader_info.initrd_size = a2;
- }
 Index: working-2.6/arch/powerpc/boot/Makefile
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-02-19 14:01:43.000000000 +1100
-@@ -40,11 +40,11 @@ zliblinuxheader := zlib.h zconf.h zutil.
- $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) \
- 		$(addprefix $(obj)/,$(zlibheader))
- 
--src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
-+src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-16 15:12:06.000000000 +1100
++++ working-2.6/arch/powerpc/boot/Makefile	2007-02-16 15:13:40.000000000 +1100
+@@ -43,7 +43,7 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
+ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
  		ns16550.c serial.c simple_alloc.c div64.S util.S \
  		gunzip_util.c $(zlib)
- src-plat := of.c
--src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
-+src-boot := $(src-wlib) $(src-plat) empty.c
+-src-plat := of.c
++src-plat := of.c ebony.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
  
  src-boot := $(addprefix $(obj)/, $(src-boot))
- obj-boot := $(addsuffix .o, $(basename $(src-boot)))
-@@ -97,7 +97,7 @@ $(obj)/wrapper.a: $(obj-wlib)
+@@ -95,6 +95,12 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-
+ $(obj)/wrapper.a: $(obj-wlib)
+ 	$(call cmd,bootar)
  
++quiet_cmd_dtc = DTC     $@
++      cmd_dtc = $(dtc) -O dtb -o $@ -b 0 -V 16 $<
++
++$(obj)/%.dtb: $(srctree)/$(src)/dts/%.dts
++	$(call if_changed,dtc)
++
  hostprogs-y	:= addnote addRamDisk hack-coff mktree
  
--extra-y		:= $(obj)/crt0.o $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
-+extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
- 		   $(obj)/zImage.lds $(obj)/zImage.coff.lds
- 
+ extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
+@@ -103,6 +109,8 @@ extra-y		:= $(obj)/wrapper.a $(obj-plat)
  wrapper		:=$(srctree)/$(src)/wrapper
+ wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree)
+ 
++dtc		:= dtc
++
+ #############
+ # Bits for building various flavours of zImage
+ 
+@@ -120,6 +128,13 @@ quiet_cmd_wrap_initrd = WRAP    $@
+       cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+ 				-i $(obj)/ramdisk.image.gz vmlinux
+ 
++quiet_cmd_wrap_dtb	= WRAP    $@
++      cmd_wrap_dtb	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
++				-d $3 vmlinux
++quiet_cmd_wrap_dtb_initrd = WRAP    $@
++      cmd_wrap_dtb_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
++				-d $3 -i $(obj)/ramdisk.image.gz vmlinux
++
+ $(obj)/zImage.chrp: vmlinux $(wrapperbits)
+ 	$(call cmd,wrap,chrp)
+ 
+@@ -156,6 +171,21 @@ $(obj)/zImage.ps3: vmlinux
+ $(obj)/zImage.initrd.ps3: vmlinux
+ 	@echo "  WARNING zImage.initrd.ps3 not supported (yet)"
+ 
++$(obj)/zImage.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb
++	$(call cmd,wrap_dtb,ebony,$(obj)/ebony.dtb)
++
++$(obj)/zImage.initrd.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/ramdisk.image.gz
++	$(call cmd,wrap_dtb_initrd,ebony,$(obj)/ebony.dtb)
++
++$(obj)/zImage.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
++	$(call cmd,wrap_dtb,ebony-tree,$(obj)/ebony.dtb)
++
++$(obj)/zImage.initrd.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
++	$(call cmd,wrap_dtb_initrd,ebony-tree,$(obj)/ebony.dtb)
++
++$(obj)/uImage.ebony: vmlinux $(wrapperbits)  $(obj)/ebony.dtb
++	$(call cmd,wrap_dtb,ebony-uboot,$(obj)/ebony.dtb)
++
+ $(obj)/uImage: vmlinux $(wrapperbits)
+ 	$(call cmd,wrap,uboot)
+ 
+@@ -167,6 +197,7 @@ image-$(CONFIG_PPC_CELLEB)		+= zImage.ps
+ image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
+ image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
+ image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
++image-$(CONFIG_EBONY)			+= zImage.ebony-elf zImage.ebony uImage.ebony
+ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ 
+ # For 32-bit powermacs, build the COFF and miboot images
+Index: working-2.6/arch/powerpc/boot/ebony.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/ebony.c	2007-02-16 15:13:40.000000000 +1100
+@@ -0,0 +1,32 @@
++/*
++ * Copyright (C) Paul Mackerras 1997.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include <stdarg.h>
++#include <stddef.h>
++#include "types.h"
++#include "elf.h"
++#include "string.h"
++#include "stdio.h"
++#include "page.h"
++#include "ops.h"
++
++extern char _start[];
++extern char _end[];
++extern char _dtb_start[];
++extern char _dtb_end[];
++
++BSS_STACK(4096);
++
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
++{
++	u32 heapsize = 0x8000000 - (u32)_end; /* 128M */
++
++	simple_alloc_init(_end, heapsize, 32, 64);
++	ft_init(_dtb_start, 0, 4);
++	serial_console_init();
++}
 Index: working-2.6/arch/powerpc/boot/wrapper
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/wrapper	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/wrapper	2007-02-19 14:01:43.000000000 +1100
-@@ -191,7 +191,7 @@ fi
- 
- if [ "$platform" != "miboot" ]; then
-     ${CROSS}ld -m elf32ppc -T $lds -o "$ofile" \
--	$object/crt0.o $platformo $tmp $object/wrapper.a
-+	$platformo $tmp $object/wrapper.a
-     rm $tmp
- fi
- 
-@@ -201,7 +201,9 @@ pseries|chrp)
-     $object/addnote "$ofile"
+--- working-2.6.orig/arch/powerpc/boot/wrapper	2007-02-16 15:13:36.000000000 +1100
++++ working-2.6/arch/powerpc/boot/wrapper	2007-02-16 15:13:40.000000000 +1100
+@@ -137,6 +137,12 @@ miboot|uboot)
+     ksection=image
+     isection=initrd
      ;;
- pmaccoff)
--    ${CROSS}objcopy -O aixcoff-rs6000 --set-start 0x500000 "$ofile"
-+    entry=`objdump -f "$ofile" | grep '^start address ' | \
-+	cut -d' ' -f3`
-+    ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
++*-tree)
++    platformo=$object/"${platform%%-tree}".o
++    ;;
++*-uboot)
++    platformo=$object/"${platform%%-uboot}".o
++    ;;
+ esac
+ 
+ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
+@@ -206,4 +212,31 @@ pmaccoff)
+     ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
      $object/hack-coff "$ofile"
      ;;
++*-tree)
++    mv "$ofile" "$ofile.elf"
++    entry=`objdump -f "$ofile.elf" | grep '^start address ' | \
++	cut -d' ' -f3`
++    $object/mktree "$ofile.elf" "$ofile" 0x00400000 "$entry"
++    if [ -z "$cacheit" ]; then
++	rm -f "$ofile.elf"
++    fi
++    exit 0
++    ;;
++*-uboot)
++    mv "$ofile" "$ofile.elf"
++    version=`${CROSS}strings "$kernel" | grep '^Linux version [-0-9.]' | \
++	cut -d' ' -f3`
++    if [ -n "$version" ]; then
++	version="-n Linux-$version"
++    fi
++    entry=`objdump -f "$ofile.elf" | grep '^start address ' | \
++	cut -d' ' -f3`
++    ${CROSS}objcopy -O binary "$ofile.elf" "$ofile.bin"
++    mkimage -A ppc -O linux -T kernel -C none -a 0x00400000 -e $entry \
++	$version -d "$ofile.bin" "$ofile"
++    if [ -z "$cacheit" ]; then
++	rm -f "$ofile.elf" "$ofile.bin"
++    fi
++    exit 0
++    ;;
  esac
-Index: working-2.6/arch/powerpc/boot/zImage.lds.S
+Index: working-2.6/arch/powerpc/boot/mktree.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/zImage.lds.S	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/zImage.lds.S	2007-02-19 14:01:43.000000000 +1100
-@@ -1,5 +1,6 @@
- OUTPUT_ARCH(powerpc:common)
- ENTRY(_zimage_start)
-+EXTERN(_zimage_start)
- SECTIONS
- {
-   . = (4*1024*1024);
-Index: working-2.6/arch/powerpc/boot/zImage.coff.lds.S
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/zImage.coff.lds.S	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/zImage.coff.lds.S	2007-02-19 14:01:43.000000000 +1100
-@@ -1,5 +1,6 @@
- OUTPUT_ARCH(powerpc:common)
--ENTRY(_start)
-+ENTRY(_zimage_start_opd)
-+EXTERN(_zimage_start_opd)
- SECTIONS
- {
-   . = (5*1024*1024);
+--- working-2.6.orig/arch/powerpc/boot/mktree.c	2007-02-16 15:12:06.000000000 +1100
++++ working-2.6/arch/powerpc/boot/mktree.c	2007-02-16 15:13:40.000000000 +1100
+@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
+ 	struct	stat	st;
+ 	boot_block_t	bt;
+ 
+-	if (argc < 3) {
+-		fprintf(stderr, "usage: %s <zImage-file> <boot-image> [entry-point]\n",argv[0]);
++	if (argc < 5) {
++		fprintf(stderr, "usage: %s <zImage-file> <boot-image> <load address> <entry point>\n",argv[0]);
+ 		exit(1);
+ 	}
+ 
+@@ -61,10 +61,8 @@ int main(int argc, char *argv[])
+ 	bt.bb_magic = htonl(0x0052504F);
+ 
+ 	/* If we have the optional entry point parameter, use it */
+-	if (argc == 4)
+-		bt.bb_dest = bt.bb_entry_point = htonl(strtoul(argv[3], NULL, 0));
+-	else
+-		bt.bb_dest = bt.bb_entry_point = htonl(0x500000);
++	bt.bb_dest = htonl(strtoul(argv[3], NULL, 0));
++	bt.bb_entry_point = htonl(strtoul(argv[4], NULL, 0));
+ 
+ 	/* We know these from the linker command.
+ 	 * ...and then move it up into memory a little more so the
