@@ -2,10 +2,10 @@ Return-Path: <benh@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>,
 	<cbe-oss-dev@ozlabs.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Tue, 20 Feb 2007 18:44:15 +1100
-Subject: [PATCH 4/5] powerpc: Add ability to 4K kernel to hash in 64K pages
+Date: Tue, 20 Feb 2007 18:44:16 +1100
+Subject: [PATCH 5/5] powerpc: spufs support for 64K LS mappings on 4K kernels
 In-Reply-To: <1171957452.861958.803775545202.qpush@grosgo>
-Message-Id: <20070220074435.35BCADDE39@ozlabs.org>
+Message-Id: <20070220074437.32228DDEEC@ozlabs.org>
 Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,220 +16,454 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds the ability for a kernel compiled with 4K page size
-to have special slices containing 64K pages and hash the right type
-of hash PTEs.
+This patch adds an option to spufs when the kernel is configured for
+4K page to give it the ability to use 64K pages for SPE local store
+mappings.
+
+Currently, we are optimistic and try order 4 allocations when creting
+contexts. If that fails, the code will fallback to 4K automatically.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/powerpc/Kconfig              |    6 ++++++
- arch/powerpc/mm/hash_low_64.S     |    5 ++++-
- arch/powerpc/mm/hash_utils_64.c   |   36 +++++++++++++++++++++++-------------
- arch/powerpc/mm/tlb_64.c          |   12 +++++++++---
- include/asm-powerpc/pgtable-4k.h  |    6 +++++-
- include/asm-powerpc/pgtable-64k.h |    7 ++++++-
- 6 files changed, 53 insertions(+), 19 deletions(-)
+ arch/powerpc/platforms/cell/Kconfig             |   15 +
+ arch/powerpc/platforms/cell/spufs/Makefile      |    2 
+ arch/powerpc/platforms/cell/spufs/context.c     |    4 
+ arch/powerpc/platforms/cell/spufs/file.c        |   77 ++++++++--
+ arch/powerpc/platforms/cell/spufs/lscsa_alloc.c |  181 ++++++++++++++++++++++++
+ arch/powerpc/platforms/cell/spufs/switch.c      |   28 +--
+ include/asm-powerpc/spu_csa.h                   |   10 +
+ 7 files changed, 282 insertions(+), 35 deletions(-)
 
-Index: linux-cell/arch/powerpc/mm/hash_low_64.S
+Index: linux-cell/arch/powerpc/platforms/cell/Kconfig
 ===================================================================
---- linux-cell.orig/arch/powerpc/mm/hash_low_64.S	2007-02-20 18:03:14.000000000 +1100
-+++ linux-cell/arch/powerpc/mm/hash_low_64.S	2007-02-20 18:10:15.000000000 +1100
-@@ -612,6 +612,9 @@ htab_pte_insert_failure:
- 	li	r3,-1
- 	b	htab_bail
+--- linux-cell.orig/arch/powerpc/platforms/cell/Kconfig	2007-02-20 18:23:44.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/cell/Kconfig	2007-02-20 18:24:58.000000000 +1100
+@@ -12,6 +12,21 @@ config SPU_FS
+ 	  Units on machines implementing the Broadband Processor
+ 	  Architecture.
  
-+#endif /* CONFIG_PPC_64K_PAGES */
-+
-+#ifdef CONFIG_PPC_HAS_HASH_64K
- 
- /*****************************************************************************
-  *                                                                           *
-@@ -867,7 +870,7 @@ ht64_pte_insert_failure:
- 	b	ht64_bail
- 
- 
--#endif /* CONFIG_PPC_64K_PAGES */
-+#endif /* CONFIG_PPC_HAS_HASH_64K */
- 
- 
- /*****************************************************************************
-Index: linux-cell/include/asm-powerpc/pgtable-64k.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/pgtable-64k.h	2007-02-20 18:03:14.000000000 +1100
-+++ linux-cell/include/asm-powerpc/pgtable-64k.h	2007-02-20 18:10:15.000000000 +1100
-@@ -35,6 +35,11 @@
- #define _PAGE_HPTE_SUB	0x0ffff000 /* combo only: sub pages HPTE bits */
- #define _PAGE_HPTE_SUB0	0x08000000 /* combo only: first sub page */
- #define _PAGE_COMBO	0x10000000 /* this is a combo 4k page */
-+
-+/* Note the full page bits must be in the same location as for normal
-+ * 4k pages as the same asssembly will be used to insert 64K pages
-+ * wether the kernel has CONFIG_PPC_64K_PAGES or not
-+ */
- #define _PAGE_F_SECOND  0x00008000 /* full page: hidx bits */
- #define _PAGE_F_GIX     0x00007000 /* full page: hidx bits */
- 
-@@ -90,7 +95,7 @@
- 
- #define pte_iterate_hashed_end() } while(0); } } while(0)
- 
--#define pte_pagesize_index(pte)	\
-+#define pte_pagesize_index(mm, addr, pte)	\
- 	(((pte) & _PAGE_COMBO)? MMU_PAGE_4K: MMU_PAGE_64K)
- 
- #endif /*  __ASSEMBLY__ */
-Index: linux-cell/arch/powerpc/Kconfig
-===================================================================
---- linux-cell.orig/arch/powerpc/Kconfig	2007-02-20 18:10:14.000000000 +1100
-+++ linux-cell/arch/powerpc/Kconfig	2007-02-20 18:10:15.000000000 +1100
-@@ -905,9 +905,15 @@ config NODES_SPAN_OTHER_NODES
- 	def_bool y
- 	depends on NEED_MULTIPLE_NODES
- 
-+config PPC_HAS_HASH_64K
-+	bool
-+	depends on PPC64
-+	default n
-+
- config PPC_64K_PAGES
- 	bool "64k page size"
- 	depends on PPC64
++config SPU_FS_64K_LS
++	bool "Use 64K pages to map SPE local  store"
++	# we depend on PPC_MM_SLICES for now rather than selecting
++	# it because we depend on hugetlbfs hooks being present. We
++	# will fix that when the generic code has been improved to
++	# not require hijacking hugetlbfs hooks.
++	depends on SPU_FS && PPC_MM_SLICES && !PPC_64K_PAGES
++	default y
 +	select PPC_HAS_HASH_64K
- 	help
- 	  This option changes the kernel logical page size to 64k. On machines
-           without processor support for 64k pages, the kernel will simulate
-Index: linux-cell/arch/powerpc/mm/hash_utils_64.c
++	help
++	  This option causes SPE local stores to be mapped in process
++	  address spaces using 64K pages while the rest of the kernel
++	  uses 4K pages. This can improve performances of applications
++	  using multiple SPEs by lowering the TLB pressure on them.
++
+ config SPU_BASE
+ 	bool
+ 	default n
+Index: linux-cell/arch/powerpc/platforms/cell/spufs/context.c
 ===================================================================
---- linux-cell.orig/arch/powerpc/mm/hash_utils_64.c	2007-02-20 18:10:14.000000000 +1100
-+++ linux-cell/arch/powerpc/mm/hash_utils_64.c	2007-02-20 18:24:41.000000000 +1100
-@@ -408,7 +408,7 @@ static void __init htab_finish_init(void
- 	extern unsigned int *htab_call_hpte_remove;
- 	extern unsigned int *htab_call_hpte_updatepp;
+--- linux-cell.orig/arch/powerpc/platforms/cell/spufs/context.c	2007-02-20 18:23:44.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/cell/spufs/context.c	2007-02-20 18:24:58.000000000 +1100
+@@ -36,10 +36,8 @@ struct spu_context *alloc_spu_context(st
+ 	/* Binding to physical processor deferred
+ 	 * until spu_activate().
+ 	 */
+-	spu_init_csa(&ctx->csa);
+-	if (!ctx->csa.lscsa) {
++	if (spu_init_csa(&ctx->csa))
+ 		goto out_free;
+-	}
+ 	spin_lock_init(&ctx->mmio_lock);
+ 	kref_init(&ctx->kref);
+ 	mutex_init(&ctx->state_mutex);
+Index: linux-cell/arch/powerpc/platforms/cell/spufs/switch.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/cell/spufs/switch.c	2007-02-20 18:23:44.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/cell/spufs/switch.c	2007-02-20 18:24:58.000000000 +1100
+@@ -2185,40 +2185,30 @@ static void init_priv2(struct spu_state 
+  * as it is by far the largest of the context save regions,
+  * and may need to be pinned or otherwise specially aligned.
+  */
+-void spu_init_csa(struct spu_state *csa)
++int spu_init_csa(struct spu_state *csa)
+ {
+-	struct spu_lscsa *lscsa;
+-	unsigned char *p;
++	int rc;
  
--#ifdef CONFIG_PPC_64K_PAGES
-+#ifdef CONFIG_PPC_HAS_HASH_64K
- 	extern unsigned int *ht64_call_hpte_insert1;
- 	extern unsigned int *ht64_call_hpte_insert2;
- 	extern unsigned int *ht64_call_hpte_remove;
-@@ -658,7 +658,11 @@ int hash_page(unsigned long ea, unsigned
- 			return 1;
- 		}
- 		vsid = get_vsid(mm->context.id, ea);
-+#ifdef CONFIG_PPC_MM_SLICES
-+		psize = get_slice_psize(mm, ea);
-+#else
- 		psize = mm->context.user_psize;
+ 	if (!csa)
+-		return;
++		return -EINVAL;
+ 	memset(csa, 0, sizeof(struct spu_state));
+ 
+-	lscsa = vmalloc(sizeof(struct spu_lscsa));
+-	if (!lscsa)
+-		return;
++	rc = spu_alloc_lscsa(csa);
++	if (rc)
++		return rc;
+ 
+-	memset(lscsa, 0, sizeof(struct spu_lscsa));
+-	csa->lscsa = lscsa;
+ 	spin_lock_init(&csa->register_lock);
+ 
+-	/* Set LS pages reserved to allow for user-space mapping. */
+-	for (p = lscsa->ls; p < lscsa->ls + LS_SIZE; p += PAGE_SIZE)
+-		SetPageReserved(vmalloc_to_page(p));
+-
+ 	init_prob(csa);
+ 	init_priv1(csa);
+ 	init_priv2(csa);
++
++	return 0;
+ }
+ EXPORT_SYMBOL_GPL(spu_init_csa);
+ 
+ void spu_fini_csa(struct spu_state *csa)
+ {
+-	/* Clear reserved bit before vfree. */
+-	unsigned char *p;
+-	for (p = csa->lscsa->ls; p < csa->lscsa->ls + LS_SIZE; p += PAGE_SIZE)
+-		ClearPageReserved(vmalloc_to_page(p));
+-
+-	vfree(csa->lscsa);
++	spu_free_lscsa(csa);
+ }
+ EXPORT_SYMBOL_GPL(spu_fini_csa);
+Index: linux-cell/include/asm-powerpc/spu_csa.h
+===================================================================
+--- linux-cell.orig/include/asm-powerpc/spu_csa.h	2007-02-20 18:23:44.000000000 +1100
++++ linux-cell/include/asm-powerpc/spu_csa.h	2007-02-20 18:24:58.000000000 +1100
+@@ -235,6 +235,12 @@ struct spu_priv2_collapsed {
+  */
+ struct spu_state {
+ 	struct spu_lscsa *lscsa;
++#ifdef CONFIG_SPU_FS_64K_LS
++	int		use_big_pages;
++	/* One struct page per 64k page */
++#define SPU_LSCSA_NUM_BIG_PAGES	(sizeof(struct spu_lscsa) / 0x10000)
++	struct page	*lscsa_pages[SPU_LSCSA_NUM_BIG_PAGES];
 +#endif
- 		break;
- 	case VMALLOC_REGION_ID:
- 		mm = &init_mm;
-@@ -688,8 +692,7 @@ int hash_page(unsigned long ea, unsigned
+ 	struct spu_problem_collapsed prob;
+ 	struct spu_priv1_collapsed priv1;
+ 	struct spu_priv2_collapsed priv2;
+@@ -246,12 +252,14 @@ struct spu_state {
+ 	spinlock_t register_lock;
+ };
  
- #ifdef CONFIG_HUGETLB_PAGE
- 	/* Handle hugepage regions */
--	if (HPAGE_SHIFT &&
--	    unlikely(get_slice_psize(mm, ea) == mmu_huge_psize)) {
-+	if (HPAGE_SHIFT && psize == mmu_huge_psize) {
- 		DBG_LOW(" -> huge page !\n");
- 		return hash_huge_page(mm, access, ea, vsid, local, trap);
- 	}
-@@ -716,17 +719,22 @@ int hash_page(unsigned long ea, unsigned
- 		return 1;
- 	}
+-extern void spu_init_csa(struct spu_state *csa);
++extern int spu_init_csa(struct spu_state *csa);
+ extern void spu_fini_csa(struct spu_state *csa);
+ extern int spu_save(struct spu_state *prev, struct spu *spu);
+ extern int spu_restore(struct spu_state *new, struct spu *spu);
+ extern int spu_switch(struct spu_state *prev, struct spu_state *new,
+ 		      struct spu *spu);
++extern int spu_alloc_lscsa(struct spu_state *csa);
++extern void spu_free_lscsa(struct spu_state *csa);
  
--	/* Do actual hashing */
--#ifndef CONFIG_PPC_64K_PAGES
--	rc = __hash_page_4K(ea, access, vsid, ptep, trap, local);
--#else
-+	/* Handle demotion to 4K pages in situations where 64K pages are
-+	 * not supported for cache inhibited mappings
+ #endif /* !__SPU__ */
+ #endif /* __KERNEL__ */
+Index: linux-cell/arch/powerpc/platforms/cell/spufs/Makefile
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/cell/spufs/Makefile	2007-02-20 18:23:44.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/cell/spufs/Makefile	2007-02-20 18:24:58.000000000 +1100
+@@ -1,4 +1,4 @@
+-obj-y += switch.o
++obj-y += switch.o lscsa_alloc.o
+ 
+ obj-$(CONFIG_SPU_FS) += spufs.o
+ spufs-y += inode.o file.o context.o syscalls.o coredump.o
+Index: linux-cell/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-cell/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c	2007-02-20 18:29:54.000000000 +1100
+@@ -0,0 +1,181 @@
++/*
++ * SPU local store allocation routines
++ *
++ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or modify
++ * it under the terms of the GNU General Public License as published by
++ * the Free Software Foundation; either version 2, or (at your option)
++ * any later version.
++ *
++ * This program is distributed in the hope that it will be useful,
++ * but WITHOUT ANY WARRANTY; without even the implied warranty of
++ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ * GNU General Public License for more details.
++ *
++ * You should have received a copy of the GNU General Public License
++ * along with this program; if not, write to the Free Software
++ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
++ */
++
++#undef DEBUG
++
++#include <linux/kernel.h>
++#include <linux/mm.h>
++#include <linux/vmalloc.h>
++
++#include <asm/spu.h>
++#include <asm/spu_csa.h>
++#include <asm/mmu.h>
++
++static int spu_alloc_lscsa_std(struct spu_state *csa)
++{
++	struct spu_lscsa *lscsa;
++	unsigned char *p;
++
++	lscsa = vmalloc(sizeof(struct spu_lscsa));
++	if (!lscsa)
++		return -ENOMEM;
++	memset(lscsa, 0, sizeof(struct spu_lscsa));
++	csa->lscsa = lscsa;
++
++	/* Set LS pages reserved to allow for user-space mapping. */
++	for (p = lscsa->ls; p < lscsa->ls + LS_SIZE; p += PAGE_SIZE)
++		SetPageReserved(vmalloc_to_page(p));
++
++	return 0;
++}
++
++static void spu_free_lscsa_std(struct spu_state *csa)
++{
++	/* Clear reserved bit before vfree. */
++	unsigned char *p;
++
++	if (csa->lscsa == NULL)
++		return;
++
++	for (p = csa->lscsa->ls; p < csa->lscsa->ls + LS_SIZE; p += PAGE_SIZE)
++		ClearPageReserved(vmalloc_to_page(p));
++
++	vfree(csa->lscsa);
++}
++
++#ifdef CONFIG_SPU_FS_64K_LS
++
++#define SPU_64K_PAGE_SHIFT	16
++#define SPU_64K_PAGE_ORDER	(SPU_64K_PAGE_SHIFT - PAGE_SHIFT)
++#define SPU_64K_PAGE_COUNT	(1ul << SPU_64K_PAGE_ORDER)
++
++int spu_alloc_lscsa(struct spu_state *csa)
++{
++	struct page	**pgarray;
++	unsigned char	*p;
++	int		i, j, n_4k;
++
++	/* Check availability of 64K pages */
++	if (mmu_psize_defs[MMU_PAGE_64K].shift == 0)
++		goto fail;
++
++	csa->use_big_pages = 1;
++
++	pr_debug("spu_alloc_lscsa(csa=0x%p), trying to allocate 64K pages\n",
++		 csa);
++
++	/* First try to allocate our 64K pages. We need 5 of them
++	 * with the current implementation. In the future, we should try
++	 * to separate the lscsa with the actual local store image, thus
++	 * allowing us to require only 4 64K pages per context
 +	 */
-+#ifdef CONFIG_PPC_64K_PAGES
- 	if (mmu_ci_restrictions)
--		psize = hash_handle_ci_restrictions(mm, ea, ptep, psize, user_region);
-+		psize = hash_handle_ci_restrictions(mm, ea, ptep, psize,
-+						    user_region);
-+#endif /* CONFIG_PPC_64K_PAGES */
++	for (i = 0; i < SPU_LSCSA_NUM_BIG_PAGES; i++) {
++		/* XXX This is likely to fail, we should use a special pool
++		 *     similiar to what hugetlbfs does.
++		 */
++		csa->lscsa_pages[i] = alloc_pages(GFP_KERNEL,
++						  SPU_64K_PAGE_ORDER);
++		if (csa->lscsa_pages[i] == NULL)
++			goto fail;
++	}
 +
-+	/* Do actual hashing */
-+#ifdef CONFIG_PPC_HAS_HASH_64K
- 	if (psize == MMU_PAGE_64K)
- 		rc = __hash_page_64K(ea, access, vsid, ptep, trap, local);
- 	else
-+#endif /* CONFIG_PPC_HAS_HASH_64K */
- 		rc = __hash_page_4K(ea, access, vsid, ptep, trap, local);
--#endif /* CONFIG_PPC_64K_PAGES */
++	pr_debug(" success ! creating vmap...\n");
++
++	/* Now we need to create a vmalloc mapping of these for the kernel
++	 * and SPU context switch code to use. Currently, we stick to a
++	 * normal kernel vmalloc mapping, which in our case will be 4K
++	 */
++	n_4k = SPU_64K_PAGE_COUNT * SPU_LSCSA_NUM_BIG_PAGES;
++	pgarray = kmalloc(sizeof(struct page *) * n_4k, GFP_KERNEL);
++	if (pgarray == NULL)
++		goto fail;
++	for (i = 0; i < SPU_LSCSA_NUM_BIG_PAGES; i++)
++		for (j = 0; j < SPU_64K_PAGE_COUNT; j++)
++			/* We assume all the struct page's are contiguous
++			 * which should be hopefully the case for an order 4
++			 * allocation..
++			 */
++			pgarray[i * SPU_64K_PAGE_COUNT + j] =
++				csa->lscsa_pages[i] + j;
++	csa->lscsa = vmap(pgarray, n_4k, VM_USERMAP, PAGE_KERNEL);
++	kfree(pgarray);
++	if (csa->lscsa == NULL)
++		goto fail;
++
++	memset(csa->lscsa, 0, sizeof(struct spu_lscsa));
++
++	/* Set LS pages reserved to allow for user-space mapping.
++	 *
++	 * XXX isn't that a bit obsolete ? I think we should just
++	 * make sure the page count is high enough. Anyway, won't harm
++	 * for now
++	 */
++	for (p = csa->lscsa->ls; p < csa->lscsa->ls + LS_SIZE; p += PAGE_SIZE)
++		SetPageReserved(vmalloc_to_page(p));
++
++	pr_debug(" all good !\n");
++
++	return 0;
++fail:
++	pr_debug("spufs: failed to allocate lscsa 64K pages, falling back\n");
++	spu_free_lscsa(csa);
++	return spu_alloc_lscsa_std(csa);
++}
++
++void spu_free_lscsa(struct spu_state *csa)
++{
++	unsigned char *p;
++	int i;
++
++	if (!csa->use_big_pages) {
++		spu_free_lscsa_std(csa);
++		return;
++	}
++	csa->use_big_pages = 0;
++
++	if (csa->lscsa == NULL)
++		goto free_pages;
++
++	for (p = csa->lscsa->ls; p < csa->lscsa->ls + LS_SIZE; p += PAGE_SIZE)
++		ClearPageReserved(vmalloc_to_page(p));
++
++	vunmap(csa->lscsa);
++	csa->lscsa = NULL;
++
++ free_pages:
++
++	for (i = 0; i < SPU_LSCSA_NUM_BIG_PAGES; i++)
++		if (csa->lscsa_pages[i])
++			__free_pages(csa->lscsa_pages[i], SPU_64K_PAGE_ORDER);
++}
++
++#else /* CONFIG_SPU_FS_64K_LS */
++
++int spu_alloc_lscsa(struct spu_state *csa)
++{
++	return spu_alloc_lscsa_std(csa);
++}
++
++void spu_free_lscsa(struct spu_state *csa)
++{
++	spu_free_lscsa_std(csa);
++}
++
++#endif /* !defined(CONFIG_SPU_FS_64K_LS) */
+Index: linux-cell/arch/powerpc/platforms/cell/spufs/file.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/platforms/cell/spufs/file.c	2007-02-20 18:23:44.000000000 +1100
++++ linux-cell/arch/powerpc/platforms/cell/spufs/file.c	2007-02-20 18:29:11.000000000 +1100
+@@ -98,14 +98,32 @@ spufs_mem_write(struct file *file, const
+ static unsigned long spufs_mem_mmap_nopfn(struct vm_area_struct *vma,
+ 					  unsigned long address)
+ {
+-	struct spu_context *ctx = vma->vm_file->private_data;
+-	unsigned long pfn, offset = address - vma->vm_start;
+-
+-	offset += vma->vm_pgoff << PAGE_SHIFT;
++	struct spu_context *ctx	= vma->vm_file->private_data;
++	unsigned long pfn, offset, addr0 = address;
++#ifdef CONFIG_SPU_FS_64K_LS
++	struct spu_state *csa = &ctx->csa;
++	int psize;
++
++	/* Check what page size we are using */
++	psize = get_slice_psize(vma->vm_mm, address);
++
++	/* Some sanity checking */
++	BUG_ON(csa->use_big_pages != (psize == MMU_PAGE_64K));
++
++	/* Wow, 64K, cool, we need to align the address though */
++	if (csa->use_big_pages) {
++		BUG_ON(vma->vm_start & 0xffff);
++		address &= ~0xfffful;
++	}
++#endif /* CONFIG_SPU_FS_64K_LS */
  
- #ifndef CONFIG_PPC_64K_PAGES
- 	DBG_LOW(" o-pte: %016lx\n", pte_val(*ptep));
-@@ -775,17 +783,19 @@ void hash_preload(struct mm_struct *mm, 
- 	mask = cpumask_of_cpu(smp_processor_id());
- 	if (cpus_equal(mm->cpu_vm_mask, mask))
- 		local = 1;
++	offset = (address - vma->vm_start) + (vma->vm_pgoff << PAGE_SHIFT);
+ 	if (offset >= LS_SIZE)
+ 		return NOPFN_SIGBUS;
+ 
++	pr_debug("spufs_mem_mmap_nopfn address=0x%lx -> 0x%lx, offset=0x%lx\n",
++		 addr0, address, offset);
 +
- 	psize = mm->context.user_psize;
--#ifndef CONFIG_PPC_64K_PAGES
--	__hash_page_4K(ea, access, vsid, ptep, trap, local);
--#else
-+#ifdef CONFIG_PPC_64K_PAGES
- 	if (mmu_ci_restrictions)
- 		psize = hash_handle_ci_restrictions(mm, ea, ptep, psize, 1);
-+#endif /* CONFIG_PPC_64K_PAGES */
+ 	spu_acquire(ctx);
+ 
+ 	if (ctx->state == SPU_STATE_SAVED) {
+@@ -129,9 +147,24 @@ static struct vm_operations_struct spufs
+ 	.nopfn = spufs_mem_mmap_nopfn,
+ };
+ 
+-static int
+-spufs_mem_mmap(struct file *file, struct vm_area_struct *vma)
++static int spufs_mem_mmap(struct file *file, struct vm_area_struct *vma)
+ {
++#ifdef CONFIG_SPU_FS_64K_LS
++	struct spu_context	*ctx = file->private_data;
++	struct spu_state	*csa = &ctx->csa;
 +
-+#ifdef CONFIG_PPC_HAS_HASH_64K
- 	if (psize == MMU_PAGE_64K)
- 		__hash_page_64K(ea, access, vsid, ptep, trap, local);
- 	else
--		__hash_page_4K(ea, access, vsid, ptep, trap, local);
- #endif /* CONFIG_PPC_64K_PAGES */
-+		__hash_page_4K(ea, access, vsid, ptep, trap, local);
- 	local_irq_restore(flags);
++	/* Sanity check VMA alignment */
++	if (csa->use_big_pages) {
++		pr_debug("spufs_mem_mmap 64K, start=0x%lx, end=0x%lx,"
++			 " pgoff=0x%lx\n", vma->vm_start, vma->vm_end,
++			 vma->vm_pgoff);
++		if (vma->vm_start & 0xffff)
++			return -EINVAL;
++		if (vma->vm_pgoff & 0xf)
++			return -EINVAL;
++	}
++#endif /* CONFIG_SPU_FS_64K_LS */
++
+ 	if (!(vma->vm_flags & VM_SHARED))
+ 		return -EINVAL;
+ 
+@@ -143,12 +176,34 @@ spufs_mem_mmap(struct file *file, struct
+ 	return 0;
  }
  
-Index: linux-cell/arch/powerpc/mm/tlb_64.c
-===================================================================
---- linux-cell.orig/arch/powerpc/mm/tlb_64.c	2007-02-20 18:03:14.000000000 +1100
-+++ linux-cell/arch/powerpc/mm/tlb_64.c	2007-02-20 18:10:15.000000000 +1100
-@@ -140,16 +140,22 @@ void hpte_update(struct mm_struct *mm, u
- 	 */
- 	addr &= PAGE_MASK;
- 
--	/* Get page size (maybe move back to caller) */
-+	/* Get page size (maybe move back to caller).
-+	 *
-+	 * NOTE: when using special 64K mappings in 4K environment like
-+	 * for SPEs, we obtain the page size from the slice, which thus
-+	 * must still exist (and thus the VMA not reused) at the time
-+	 * of this call
-+	 */
- 	if (huge) {
- #ifdef CONFIG_HUGETLB_PAGE
- 		psize = mmu_huge_psize;
- #else
- 		BUG();
--		psize = pte_pagesize_index(pte); /* shutup gcc */
-+		psize = pte_pagesize_index(mm, addr, pte); /* shutup gcc */
- #endif
- 	} else
--		psize = pte_pagesize_index(pte);
-+		psize = pte_pagesize_index(mm, addr, pte);
- 
- 	/*
- 	 * This can happen when we are in the middle of a TLB batch and
-Index: linux-cell/include/asm-powerpc/pgtable-4k.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/pgtable-4k.h	2007-02-20 18:03:14.000000000 +1100
-+++ linux-cell/include/asm-powerpc/pgtable-4k.h	2007-02-20 18:10:15.000000000 +1100
-@@ -78,7 +78,11 @@
- 
- #define pte_iterate_hashed_end() } while(0)
- 
--#define pte_pagesize_index(pte)	MMU_PAGE_4K
-+#ifdef CONFIG_PPC_HAS_HASH_64K
-+#define pte_pagesize_index(mm, addr, pte)	get_slice_psize(mm, addr)
-+#else
-+#define pte_pagesize_index(mm, addr, pte)	MMU_PAGE_4K
++#ifdef CONFIG_SPU_FS_64K_LS
++unsigned long spufs_get_unmapped_area(struct file *file, unsigned long addr,
++				      unsigned long len, unsigned long pgoff,
++				      unsigned long flags)
++{
++	struct spu_context	*ctx = file->private_data;
++	struct spu_state	*csa = &ctx->csa;
++
++	/* If not using big pages, fallback to normal MM g_u_a */
++	if (!csa->use_big_pages)
++		return current->mm->get_unmapped_area(file, addr, len,
++						      pgoff, flags);
++
++	/* Else, try to obtain a 64K pages slice */
++	return slice_get_unmapped_area(addr, len, flags,
++				       MMU_PAGE_64K, 1, 0);
++}
++#endif /* CONFIG_SPU_FS_64K_LS */
++
+ static const struct file_operations spufs_mem_fops = {
+-	.open	 = spufs_mem_open,
+-	.read    = spufs_mem_read,
+-	.write   = spufs_mem_write,
+-	.llseek  = generic_file_llseek,
+-	.mmap    = spufs_mem_mmap,
++	.open	 		= spufs_mem_open,
++	.read   		= spufs_mem_read,
++	.write   		= spufs_mem_write,
++	.llseek  		= generic_file_llseek,
++	.mmap    		= spufs_mem_mmap,
++#ifdef CONFIG_SPU_FS_64K_LS
++	.get_unmapped_area	= spufs_get_unmapped_area,
 +#endif
+ };
  
- /*
-  * 4-level page tables related bits
+ static unsigned long spufs_ps_nopfn(struct vm_area_struct *vma,
