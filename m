@@ -1,19 +1,19 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
+Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 53BABDDD07
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 01:23:13 +1100 (EST)
-Message-ID: <45DB0448.9080301@am.sony.com>
-Date: Tue, 20 Feb 2007 06:23:04 -0800
+	by ozlabs.org (Postfix) with ESMTP id 027D5DDE21
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 01:32:10 +1100 (EST)
+Message-ID: <45DB0663.3020600@am.sony.com>
+Date: Tue, 20 Feb 2007 06:32:03 -0800
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [RFC 3/3] zImage: Exception vector support
-References: <45D7A914.4040000@am.sony.com>
-	<20070220022538.GH17818@localhost.localdomain>
-In-Reply-To: <20070220022538.GH17818@localhost.localdomain>
+Subject: Re: [RFC 2/3] zImage: SMP hold
+References: <45D7A910.60702@am.sony.com>
+	<20070220022216.GG17818@localhost.localdomain>
+In-Reply-To: <20070220022216.GG17818@localhost.localdomain>
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -26,22 +26,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 David Gibson wrote:
-> On Sat, Feb 17, 2007 at 05:17:08PM -0800, Geoff Levand wrote:
->> Add SMP exception vector support to the powerpc zImage bootwrapper.  For
->> platforms which have entry points in the vector table.  This implements
->> SMP entry via the system reset vector.
+> On Sat, Feb 17, 2007 at 05:17:04PM -0800, Geoff Levand wrote:
+>> Add SMP secondary hold helper routines to the powerpc zImage
+>> bootwrapper.  For platforms which are entered with multiple cpus.
+>> These routines can be used to hold the secondary cpus until the
+>> kernel is ready for entry.
 > 
-> I really don't like having always-included code take over the absolute
-> start of the zImage's address space.  The whole idea in my entry
-> cleanup patch is that the platform code gets control of the "head.S"
-> area, so we can potentially support platforms with conflicting
-> hard-wired requirements for things at specific offsets.
-> 
-> I think this belongs in a ps3.o, which will define _zimage_start to be
-> identical to the reset vector.
-> 
+> Could we have these functions in their own library module.  That way
+> they can be omitted in the wrappers for strictly-UP platforms (many
+> embedded), or platforms where the secondary CPUs are held in firmware
+> until the kernel releases.
 
-I need two entry points, one for the first stage loader (0x100), and one
-for a second stage kexec loader (_zimage_start).
+After some feedback, I decided to drop trying to support calling C from
+the secondary CPUs.  That will simplify this to just a few bytes.  We can
+think about optimization if another platform needs to use either the
+exception vectors or the SMP support.  They are independent, but I'll just
+put them together in in head.c for convenience.
 
 -Geoff
