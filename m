@@ -1,20 +1,16 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 027D5DDE21
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 01:32:10 +1100 (EST)
-Message-ID: <45DB0663.3020600@am.sony.com>
-Date: Tue, 20 Feb 2007 06:32:03 -0800
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 65979DDDFB
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 01:44:36 +1100 (EST)
+Message-ID: <45DB094A.2040309@ru.mvista.com>
+Date: Tue, 20 Feb 2007 17:44:26 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
 To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [RFC 2/3] zImage: SMP hold
-References: <45D7A910.60702@am.sony.com>
-	<20070220022216.GG17818@localhost.localdomain>
-In-Reply-To: <20070220022216.GG17818@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+Subject: Re: [PATCH 4/14] Use resource_size_t for serial port IO addresses
+References: <20070220021234.E27E2DDD0B@ozlabs.org>
+In-Reply-To: <20070220021234.E27E2DDD0B@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,22 +21,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello.
+
 David Gibson wrote:
-> On Sat, Feb 17, 2007 at 05:17:04PM -0800, Geoff Levand wrote:
->> Add SMP secondary hold helper routines to the powerpc zImage
->> bootwrapper.  For platforms which are entered with multiple cpus.
->> These routines can be used to hold the secondary cpus until the
->> kernel is ready for entry.
+> At present, various parts of the serial code use unsigned long to
+> define resource addresses.  This is a problem, because some 32-bit
+> platforms have physical addresses larger than 32-bits, and have mmio
+> serial uarts located above the 4GB point.
 > 
-> Could we have these functions in their own library module.  That way
-> they can be omitted in the wrappers for strictly-UP platforms (many
-> embedded), or platforms where the secondary CPUs are held in firmware
-> until the kernel releases.
+> This patch changes the type of mapbase in both struct uart_port and
+> struct plat_serial8250_port to resource_size_t, which can be
+> configured to be 64 bits on such platforms.  The mapbase in
+> serial_struct can't safely be changed, because that structure is user
+> visible.
 
-After some feedback, I decided to drop trying to support calling C from
-the secondary CPUs.  That will simplify this to just a few bytes.  We can
-think about optimization if another platform needs to use either the
-exception vectors or the SMP support.  They are independent, but I'll just
-put them together in in head.c for convenience.
+    Erm, isn't linux-serial@vger.kernel.org more proper list for such patches?
+Also, as serial drivers are now unmaintained, this probably needs to go to -mm 
+tree.
 
--Geoff
+> Signed-off-by: David Gibson <dwg@au1.ibm.com>
+
+> Index: working-2.6/drivers/serial/serial_core.c
+> ===================================================================
+> --- working-2.6.orig/drivers/serial/serial_core.c	2007-02-19 11:07:42.000000000 +1100
+> +++ working-2.6/drivers/serial/serial_core.c	2007-02-19 11:07:43.000000000 +1100
+> @@ -633,7 +633,7 @@ static int uart_get_info(struct uart_sta
+>  	tmp.hub6	    = port->hub6;
+>  	tmp.io_type         = port->iotype;
+>  	tmp.iomem_reg_shift = port->regshift;
+> -	tmp.iomem_base      = (void *)port->mapbase;
+> +	tmp.iomem_base      = (void *)(unsigned long)port->mapbase;
+
+    For 32-bit kernels this may result in a meaningless address. Have you 
+considered also changing iomem_base's type?
+
+MBR, Sergei
