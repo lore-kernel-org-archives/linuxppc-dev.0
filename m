@@ -1,23 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4F0B7DDE2D
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 06:56:10 +1100 (EST)
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A58C89@az33exm25.fsl.freescale.net>
-References: <20070220020837.GF17818@localhost.localdomain>
-	<20070220021235.DC02DDDD06@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A58C89@az33exm25.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <ee2e907ab59d7aa9b7bf026437419914@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 12/14] Add device tree for Ebony
-Date: Tue, 20 Feb 2007 20:56:04 +0100
-To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <agl@us.ibm.com>
+Subject: Re: [PATCH] powerpc: Introduce address space "slices"
+From: Adam Litke <agl@us.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1172001107.18571.127.camel@localhost.localdomain>
+References: <1171867418.18571.3.camel@localhost.localdomain>
+	<1172000736.22940.48.camel@localhost.localdomain>
+	<1172001107.18571.127.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Tue, 20 Feb 2007 14:07:11 -0600
+Message-Id: <1172002031.22940.53.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,20 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Since UIC1 is cascaded off UIC0 in the interrupt tree,
-> UIC1 should have an interrupt-parent pointing to UIC0
-> so the interrupt tree can be traversed to the root.
+On Wed, 2007-02-21 at 06:51 +1100, Benjamin Herrenschmidt wrote:
+> On Tue, 2007-02-20 at 13:45 -0600, Adam Litke wrote:
+> > Your patch drops the pgoff check that prepare_hugepage_range used to
+> > check.  The misaligned_offset test in libhugetlbfs identified the
+> > problem.  The following patch (applied on top of yours) makes the
+> > problem go away.  I am not necessarily suggesting it's the correct
+> > fix... just concisely describing the problem.
+> 
+> Ok, I'll fold that into the patch. Ultimately, when I finally do the
+> generic changes, prepare_hugepage_range() will be going away. I will
+> either pass pgoff along to slice_g_u_a for it to validate the pgoff, or
+> I will let f_ops->mmap() be responsible of checking it. For SPEs, I do
+> the pgoff check there. Any reason tht wouldn't work for huge pages ?
 
-Not necessary if UIC0 is the device tree parent of UIC1.
-(And in fact it would be "bad style").  But...
+Actually, it should be in ->mmap() if you ask me.  In fact, at some
+point in history I think it was there.
 
-> I know this was beaten to death last week, but I would
-> still argue that in the device tree UIC0 and UIC1 should
-> be siblings.  (In the interrupt tree the cascade relationship
-> is described through interrupt-parent).
-
-... that is my opinion as well (as I'm sure you know ;-) ),
-and then of course you _do_ need the interrupt-parent property.
-
-
-Segher
+-- 
+Adam Litke - (agl at us.ibm.com)
+IBM Linux Technology Center
