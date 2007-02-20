@@ -1,21 +1,17 @@
-Return-Path: <alan@lxorguk.ukuu.org.uk>
-Received: from localhost.localdomain (unknown [81.2.110.250])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EDF63DDF9D
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 23:03:19 +1100 (EST)
-Date: Tue, 20 Feb 2007 13:07:01 +0000
-From: Alan <alan@lxorguk.ukuu.org.uk>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 1/2] Define FIXED_PORT flag for serial_core
-Message-ID: <20070220130701.00503673@localhost.localdomain>
-In-Reply-To: <20070220031951.56492DDD09@ozlabs.org>
-References: <20070220031717.GI17818@localhost.localdomain>
-	<20070220031951.56492DDD09@ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 54C76DDDCA
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 00:02:22 +1100 (EST)
+Message-ID: <45DAF156.40604@smiths-aerospace.com>
+Date: Tue, 20 Feb 2007 08:02:14 -0500
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>,  linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 0/2] libfdt: problems with real life blobs
+References: <45D9E5D9.6060704@smiths-aerospace.com>
+	<20070219234631.GD17818@localhost.localdomain>
+In-Reply-To: <20070219234631.GD17818@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +21,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 20 Feb 2007 14:19:51 +1100 (EST)
-David Gibson <david@gibson.dropbear.id.au> wrote:
+David Gibson wrote:
+> On Mon, Feb 19, 2007 at 01:00:57PM -0500, Jerry Van Baren wrote:
+>> Hi David,
+>>
+>> I've been trying to use your libfdt in u-boot and my first step, get a 
+>> value from the blob, failed terminally.  After poking about a bit, it 
+>> appears that your libfdt and Jon Loeliger's dtc (-V 16) disagree with 
+>> respect to the format of the blob - libfdt won't traverse the path.
+> 
+> That's certainly bad.
+> 
+>> I've created two patches:
+> 
+> Ug.  Damn.  Trouble is, for IBM paranoid procedural reasons, I'm not
+> really in a position to accept patches for libfdt from outside at
+> present.  I'm already working on fixing that, but there being a
+> ponderous bureaucracy involved, it's going to take a little while.
 
-> At present, the serial core always allows setserial in userspace to
-> change the port address, irq and base clock of any serial port.  That
-> makes sense for legacy ISA ports, but not for (say) embedded ns16550
-> compatible serial ports at peculiar addresses.  In these cases, the
-> kernel code configuring the ports must know exactly where they are,
-> and their clocking arrangements (which can be unusual on embedded
-> boards).  It doesn't make sense for userspace to change these
-> settings.
-> 
-> Therefore, this patch defines a UPF_FIXED_PORT flag for the uart_port
-> structure.  If this flag is set when the serial port is configured,
-> any attempts to alter the port's type, io address, irq or base clock
-> with setserial are ignored.
-> 
-> In addition this patch uses the new flag for on-chip serial ports
-> probed in arch/powerpc/kernel/legacy_serial.c, and for other
-> hard-wired serial ports probed by drivers/serial/of_serial.c.
-> 
-> Signed-off-by: David Gibson <dwg@au1.ibm.com>
->
-Acked-by: Alan Cox <alan@redhat.com>
+That's OK, just call it "the illustration of advice formerly known as a 
+patch."  I just hope I didn't poison the well. ;-)
+
+Seriously, I don't claim copyright on the changes, that would be 
+inappropriate their trivial nature.  I do understand IBM's paranoia, 
+however.  }:-(
+
+gvb
