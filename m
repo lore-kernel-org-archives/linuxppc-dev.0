@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 9/14] Port 44x MMU definitions to ARCH=powerpc
+Subject: [PATCH 10/14] Early serial debug support for PPC44x
 In-Reply-To: <20070220020837.GF17818@localhost.localdomain>
-Message-Id: <20070220021235.4A447DDD0A@ozlabs.org>
+Message-Id: <20070220021235.96911DDD0B@ozlabs.org>
 Date: Tue, 20 Feb 2007 13:12:35 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,261 +14,268 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch moves the mmu.h definitions which are still relevant for
-ARCH=powerpc from include/asm-ppc/mmu.h to their own file,
-include/asm-powerpc/mmu_44x.h.  The new file is included from
-asm-powerpc/mmu.h, and a couple of other tweaks to correct mmu
-definitions for 44x are made.
+This patch adds support for early serial debugging via the built in
+port on IBM/AMCC PowerPC 44x CPUs.  It uses a bolted TLB entry in
+address space 1 for the UART's mapping, allowing robust debugging both
+before and after the initialization of the MMU.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/kernel/head_44x.S |    4 +-
- arch/powerpc/mm/44x_mmu.c      |   81 ++++++++---------------------------------
- arch/powerpc/mm/mmu_decl.h     |    2 +
- include/asm-powerpc/mmu.h      |    4 +-
- include/asm-powerpc/mmu_44x.h  |   74 +++++++++++++++++++++++++++++++++++++
- 5 files changed, 98 insertions(+), 67 deletions(-)
+ arch/powerpc/Kconfig.debug        |   23 ++++++++++++++-----
+ arch/powerpc/kernel/Makefile      |    1 
+ arch/powerpc/kernel/head_44x.S    |   34 ++++++++++------------------
+ arch/powerpc/kernel/misc_44x.S    |   46 ++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/kernel/of_platform.c |    1 
+ arch/powerpc/kernel/udbg.c        |    3 ++
+ arch/powerpc/kernel/udbg_16550.c  |   24 +++++++++++++++++++
+ include/asm-powerpc/mmu_44x.h     |    7 ++++-
+ include/asm-powerpc/udbg.h        |    1 
+ 9 files changed, 112 insertions(+), 28 deletions(-)
 
-Index: working-2.6/include/asm-powerpc/mmu.h
+Index: working-2.6/arch/powerpc/Kconfig.debug
 ===================================================================
---- working-2.6.orig/include/asm-powerpc/mmu.h	2007-01-24 12:01:20.000000000 +1100
-+++ working-2.6/include/asm-powerpc/mmu.h	2007-02-05 14:24:52.000000000 +1100
-@@ -2,7 +2,9 @@
- #define _ASM_POWERPC_MMU_H_
- #ifdef __KERNEL__
+--- working-2.6.orig/arch/powerpc/Kconfig.debug	2007-02-20 11:06:54.000000000 +1100
++++ working-2.6/arch/powerpc/Kconfig.debug	2007-02-20 11:07:36.000000000 +1100
+@@ -130,11 +130,6 @@ config BOOTX_TEXT
+ 	  Say Y here to see progress messages from the boot firmware in text
+ 	  mode. Requires either BootX or Open Firmware.
  
--#ifndef CONFIG_PPC64
-+#ifdef CONFIG_44x
-+#include <asm/mmu_44x.h>
-+#elif !defined(CONFIG_PPC64)
- #include <asm-ppc/mmu.h>
- #else
- 
-Index: working-2.6/include/asm-powerpc/mmu_44x.h
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/include/asm-powerpc/mmu_44x.h	2007-02-05 15:25:11.000000000 +1100
-@@ -0,0 +1,74 @@
-+#ifndef _ASM_POWERPC_MMU_44X_H_
-+#define _ASM_POWERPC_MMU_44X_H_
-+
-+#ifndef __ASSEMBLY__
-+
-+typedef unsigned long long phys_addr_t;
-+extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
-+#define PHYS_FMT	"%16Lx"
-+
-+typedef struct {
-+	unsigned long id;
-+	unsigned long vdso_base;
-+} mm_context_t;
-+
-+#endif /* !__ASSEMBLY__ */
-+
-+/*
-+ * PPC440 support
-+ */
-+#define PPC44x_MMUCR_TID	0x000000ff
-+#define PPC44x_MMUCR_STS	0x00010000
-+
-+#define	PPC44x_TLB_PAGEID	0
-+#define	PPC44x_TLB_XLAT		1
-+#define	PPC44x_TLB_ATTRIB	2
-+
-+/* Page identification fields */
-+#define PPC44x_TLB_EPN_MASK	0xfffffc00      /* Effective Page Number */
-+#define	PPC44x_TLB_VALID	0x00000200      /* Valid flag */
-+#define PPC44x_TLB_TS		0x00000100	/* Translation address space */
-+#define PPC44x_TLB_1K		0x00000000	/* Page sizes */
-+#define PPC44x_TLB_4K		0x00000010
-+#define PPC44x_TLB_16K		0x00000020
-+#define PPC44x_TLB_64K		0x00000030
-+#define PPC44x_TLB_256K		0x00000040
-+#define PPC44x_TLB_1M		0x00000050
-+#define PPC44x_TLB_16M		0x00000070
-+#define	PPC44x_TLB_256M		0x00000090
-+
-+/* Translation fields */
-+#define PPC44x_TLB_RPN_MASK	0xfffffc00      /* Real Page Number */
-+#define	PPC44x_TLB_ERPN_MASK	0x0000000f
-+
-+/* Storage attribute and access control fields */
-+#define PPC44x_TLB_ATTR_MASK	0x0000ff80
-+#define PPC44x_TLB_U0		0x00008000      /* User 0 */
-+#define PPC44x_TLB_U1		0x00004000      /* User 1 */
-+#define PPC44x_TLB_U2		0x00002000      /* User 2 */
-+#define PPC44x_TLB_U3		0x00001000      /* User 3 */
-+#define PPC44x_TLB_W		0x00000800      /* Caching is write-through */
-+#define PPC44x_TLB_I		0x00000400      /* Caching is inhibited */
-+#define PPC44x_TLB_M		0x00000200      /* Memory is coherent */
-+#define PPC44x_TLB_G		0x00000100      /* Memory is guarded */
-+#define PPC44x_TLB_E		0x00000080      /* Memory is guarded */
-+
-+#define PPC44x_TLB_PERM_MASK	0x0000003f
-+#define PPC44x_TLB_UX		0x00000020      /* User execution */
-+#define PPC44x_TLB_UW		0x00000010      /* User write */
-+#define PPC44x_TLB_UR		0x00000008      /* User read */
-+#define PPC44x_TLB_SX		0x00000004      /* Super execution */
-+#define PPC44x_TLB_SW		0x00000002      /* Super write */
-+#define PPC44x_TLB_SR		0x00000001      /* Super read */
-+
-+/* Number of TLB entries */
-+#define PPC44x_TLB_SIZE		64
-+
-+/* TLB entry offset/size used for pinning kernel lowmem */
-+#define PPC44x_PIN_SHIFT	28
-+#define PPC_PIN_SIZE		(1 << PPC44x_PIN_SHIFT)
-+
-+#define PPC44x_EARLY_TLBS	1
-+
-+#endif /* _ASM_POWERPC_MMU_44X_H_ */
-+
-Index: working-2.6/arch/powerpc/mm/44x_mmu.c
-===================================================================
---- working-2.6.orig/arch/powerpc/mm/44x_mmu.c	2006-12-08 10:42:48.000000000 +1100
-+++ working-2.6/arch/powerpc/mm/44x_mmu.c	2007-02-05 15:25:19.000000000 +1100
-@@ -24,73 +24,35 @@
-  *
-  */
- 
--#include <linux/signal.h>
--#include <linux/sched.h>
--#include <linux/kernel.h>
--#include <linux/errno.h>
--#include <linux/string.h>
--#include <linux/types.h>
--#include <linux/ptrace.h>
--#include <linux/mman.h>
--#include <linux/mm.h>
--#include <linux/swap.h>
--#include <linux/stddef.h>
--#include <linux/vmalloc.h>
--#include <linux/init.h>
--#include <linux/delay.h>
--#include <linux/highmem.h>
+-config SERIAL_TEXT_DEBUG
+-	bool "Support for early boot texts over serial port"
+-	depends on 4xx || LOPEC || MV64X60 || PPLUS || PRPMC800 || \
+-		PPC_GEN550 || PPC_MPC52xx
 -
--#include <asm/pgalloc.h>
--#include <asm/prom.h>
--#include <asm/io.h>
--#include <asm/mmu_context.h>
--#include <asm/pgtable.h>
- #include <asm/mmu.h>
--#include <asm/uaccess.h>
--#include <asm/smp.h>
--#include <asm/bootx.h>
--#include <asm/machdep.h>
--#include <asm/setup.h>
+ config PPC_EARLY_DEBUG
+ 	bool "Early debugging (dangerous)"
  
- #include "mmu_decl.h"
+@@ -199,6 +194,24 @@ config PPC_EARLY_DEBUG_BEAT
+ 	help
+ 	  Select this to enable early debugging for Celleb with Beat.
  
--extern char etext[], _stext[];
--
- /* Used by the 44x TLB replacement exception handler.
-  * Just needed it declared someplace.
-  */
--unsigned int tlb_44x_index = 0;
--unsigned int tlb_44x_hwater = 62;
-+unsigned int tlb_44x_index; /* = 0 */
-+unsigned int tlb_44x_hwater = PPC44x_TLB_SIZE - 1 - PPC44x_EARLY_TLBS;
++config PPC_EARLY_DEBUG_44x
++	bool "Early serial debugging for IBM 44x CPUs"
++	depends on 44x
++	select PPC_UDBG_16550
++	help
++	  Select this to enable early debugging for IBM 44x chips via the
++	  inbuilt serial port.
++
+ endchoice
  
- /*
-  * "Pins" a 256MB TLB entry in AS0 for kernel lowmem
-  */
--static void __init
--ppc44x_pin_tlb(int slot, unsigned int virt, unsigned int phys)
-+static void __init ppc44x_pin_tlb(unsigned int virt, unsigned int phys)
- {
--	unsigned long attrib = 0;
--
--	__asm__ __volatile__("\
--	clrrwi	%2,%2,10\n\
--	ori	%2,%2,%4\n\
--	clrrwi	%1,%1,10\n\
--	li	%0,0\n\
--	ori	%0,%0,%5\n\
--	tlbwe	%2,%3,%6\n\
--	tlbwe	%1,%3,%7\n\
--	tlbwe	%0,%3,%8"
-+	__asm__ __volatile__(
-+		"tlbwe	%2,%3,%4\n"
-+		"tlbwe	%1,%3,%5\n"
-+		"tlbwe	%0,%3,%6\n"
- 	:
--	: "r" (attrib), "r" (phys), "r" (virt), "r" (slot),
--	  "i" (PPC44x_TLB_VALID | PPC44x_TLB_256M),
--	  "i" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
-+	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
-+	  "r" (phys),
-+	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_256M),
-+	  "r" (tlb_44x_hwater--), /* slot for this TLB entry */
- 	  "i" (PPC44x_TLB_PAGEID),
- 	  "i" (PPC44x_TLB_XLAT),
- 	  "i" (PPC44x_TLB_ATTRIB));
- }
- 
--/*
-- * MMU_init_hw does the chip-specific initialization of the MMU hardware.
-- */
- void __init MMU_init_hw(void)
- {
- 	flush_instruction_cache();
-@@ -98,22 +60,13 @@ void __init MMU_init_hw(void)
- 
- unsigned long __init mmu_mapin_ram(void)
- {
--	unsigned int pinned_tlbs = 1;
--	int i;
-+	unsigned long addr;
- 
--	/* Determine number of entries necessary to cover lowmem */
--	pinned_tlbs = (unsigned int)
--		(_ALIGN(total_lowmem, PPC_PIN_SIZE) >> PPC44x_PIN_SHIFT);
--
--	/* Write upper watermark to save location */
--	tlb_44x_hwater = PPC44x_LOW_SLOT - pinned_tlbs;
--
--	/* If necessary, set additional pinned TLBs */
--	if (pinned_tlbs > 1)
--		for (i = (PPC44x_LOW_SLOT-(pinned_tlbs-1)); i < PPC44x_LOW_SLOT; i++) {
--			unsigned int phys_addr = (PPC44x_LOW_SLOT-i) * PPC_PIN_SIZE;
--			ppc44x_pin_tlb(i, phys_addr+PAGE_OFFSET, phys_addr);
--		}
-+	/* Pin in enough TLBs to cover any lowmem not covered by the
-+	 * initial 256M mapping established in head_44x.S */
-+	for (addr = PPC_PIN_SIZE; addr < total_lowmem;
-+	     addr += PPC_PIN_SIZE)
-+		ppc44x_pin_tlb(addr + PAGE_OFFSET, addr);
- 
- 	return total_lowmem;
- }
-Index: working-2.6/arch/powerpc/mm/mmu_decl.h
-===================================================================
---- working-2.6.orig/arch/powerpc/mm/mmu_decl.h	2006-12-08 10:42:48.000000000 +1100
-+++ working-2.6/arch/powerpc/mm/mmu_decl.h	2007-02-05 14:24:52.000000000 +1100
-@@ -35,8 +35,10 @@ extern int __map_without_bats;
- extern unsigned long ioremap_base;
- extern unsigned int rtas_data, rtas_size;
- 
-+#ifdef CONFIG_CLASSIC32
- extern PTE *Hash, *Hash_end;
- extern unsigned long Hash_size, Hash_mask;
-+#endif /* CONFIG_CLASSIC32 */
- 
- extern unsigned int num_tlbcam_entries;
- #endif
++config PPC_EARLY_DEBUG_44x_PHYSLOW
++	hex
++	depends PPC_EARLY_DEBUG_44x
++	default "0x40000200"
++
++config PPC_EARLY_DEBUG_44x_PHYSHIGH
++	hex
++	depends PPC_EARLY_DEBUG_44x
++	default "0x1"
++
+ endmenu
 Index: working-2.6/arch/powerpc/kernel/head_44x.S
 ===================================================================
---- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-02-05 14:24:52.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-02-05 15:25:11.000000000 +1100
-@@ -120,8 +120,8 @@ skpinv:	addi	r4,r4,1				/* Increment */
-  * Configure and load pinned entry into TLB slot 63.
-  */
+--- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-02-20 11:06:54.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-02-20 11:07:36.000000000 +1100
+@@ -172,36 +172,28 @@ skpinv:	addi	r4,r4,1				/* Increment */
+ 	isync
  
--	lis	r3,KERNELBASE@h		/* Load the kernel virtual address */
--	ori	r3,r3,KERNELBASE@l
-+	lis	r3,PAGE_OFFSET@h
-+	ori	r3,r3,PAGE_OFFSET@l
+ 4:
+-#ifdef CONFIG_SERIAL_TEXT_DEBUG
+-	/*
+-	 * Add temporary UART mapping for early debug.
+-	 * We can map UART registers wherever we want as long as they don't
+-	 * interfere with other system mappings (e.g. with pinned entries).
+-	 * For an example of how we handle this - see ocotea.h.       --ebs
+-	 */
++#ifdef CONFIG_PPC_EARLY_DEBUG_44x
++	/* Add UART mapping for early debug. */
++
+  	/* pageid fields */
+-	lis	r3,UART0_IO_BASE@h
+-	ori	r3,r3,PPC44x_TLB_VALID | PPC44x_TLB_4K
++	lis	r3,PPC44x_EARLY_DEBUG_VIRTADDR@h
++	ori	r3,r3,PPC44x_TLB_VALID|PPC44x_TLB_TS|PPC44x_TLB_64K
  
- 	/* Kernel is at the base of RAM */
- 	li r4, 0			/* Load the kernel physical address */
+ 	/* xlat fields */
+-	lis	r4,UART0_PHYS_IO_BASE@h		/* RPN depends on SoC */
+-#ifndef CONFIG_440EP
+-	ori	r4,r4,0x0001		/* ERPN is 1 for second 4GB page */
+-#endif
++	lis	r4,CONFIG_PPC_EARLY_DEBUG_44x_PHYSLOW@h
++	ori	r4,r4,CONFIG_PPC_EARLY_DEBUG_44x_PHYSHIGH
+ 
+ 	/* attrib fields */
+-	li	r5,0
+-	ori	r5,r5,(PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_I | PPC44x_TLB_G)
+-
+-        li      r0,0                    /* TLB slot 0 */
++	li	r5,(PPC44x_TLB_SW|PPC44x_TLB_SR|PPC44x_TLB_I|PPC44x_TLB_G)
++        li      r0,62                    /* TLB slot 0 */
+ 
+-	tlbwe	r3,r0,PPC44x_TLB_PAGEID	/* Load the pageid fields */
+-	tlbwe	r4,r0,PPC44x_TLB_XLAT	/* Load the translation fields */
+-	tlbwe	r5,r0,PPC44x_TLB_ATTRIB	/* Load the attrib/access fields */
++	tlbwe	r3,r0,PPC44x_TLB_PAGEID
++	tlbwe	r4,r0,PPC44x_TLB_XLAT
++	tlbwe	r5,r0,PPC44x_TLB_ATTRIB
+ 
+ 	/* Force context change */
+ 	isync
+-#endif /* CONFIG_SERIAL_TEXT_DEBUG */
++#endif /* CONFIG_PPC_EARLY_DEBUG_44x */
+ 
+ 	/* Establish the interrupt vector offsets */
+ 	SET_IVOR(0,  CriticalInput);
+Index: working-2.6/arch/powerpc/kernel/udbg_16550.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/udbg_16550.c	2007-02-20 11:06:54.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/udbg_16550.c	2007-02-20 11:07:36.000000000 +1100
+@@ -191,3 +191,27 @@ void udbg_init_pas_realmode(void)
+ 	udbg_getc_poll = NULL;
+ }
+ #endif /* CONFIG_PPC_MAPLE */
++
++#ifdef CONFIG_PPC_EARLY_DEBUG_44x
++extern u8 as1_readb(volatile u8 __iomem  *addr);
++extern void as1_writeb(u8 data, volatile u8 __iomem *addr);
++
++static void udbg_44x_as1_putc(char c)
++{
++	if (udbg_comport) {
++		while ((as1_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
++			/* wait for idle */;
++		as1_writeb(c, &udbg_comport->thr); eieio();
++		if (c == '\n')
++			udbg_44x_as1_putc('\r');
++	}
++}
++
++void __init udbg_init_44x_as1(void)
++{
++	udbg_comport =
++		(volatile struct NS16550 __iomem *)PPC44x_EARLY_DEBUG_VIRTADDR;
++
++	udbg_putc = udbg_44x_as1_putc;
++}
++#endif /* CONFIG_PPC_EARLY_DEBUG_44x */
+Index: working-2.6/include/asm-powerpc/mmu_44x.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/mmu_44x.h	2007-02-20 11:06:54.000000000 +1100
++++ working-2.6/include/asm-powerpc/mmu_44x.h	2007-02-20 11:07:36.000000000 +1100
+@@ -68,7 +68,12 @@ typedef struct {
+ #define PPC44x_PIN_SHIFT	28
+ #define PPC_PIN_SIZE		(1 << PPC44x_PIN_SHIFT)
+ 
++#ifndef CONFIG_PPC_EARLY_DEBUG_44x
+ #define PPC44x_EARLY_TLBS	1
++#else
++#define PPC44x_EARLY_TLBS	2
++#define PPC44x_EARLY_DEBUG_VIRTADDR	(ASM_CONST(0xf0000000) \
++	| (ASM_CONST(CONFIG_PPC_EARLY_DEBUG_44x_PHYSLOW) & 0xffff))
++#endif
+ 
+ #endif /* _ASM_POWERPC_MMU_44X_H_ */
+-
+Index: working-2.6/arch/powerpc/kernel/udbg.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/udbg.c	2007-02-20 11:06:54.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/udbg.c	2007-02-20 11:07:36.000000000 +1100
+@@ -51,6 +51,9 @@ void __init udbg_early_init(void)
+ 	udbg_init_pas_realmode();
+ #elif defined(CONFIG_BOOTX_TEXT)
+ 	udbg_init_btext();
++#elif defined(CONFIG_PPC_EARLY_DEBUG_44x)
++	/* PPC44x debug */
++	udbg_init_44x_as1();
+ #endif
+ }
+ 
+Index: working-2.6/include/asm-powerpc/udbg.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/udbg.h	2007-02-20 11:06:54.000000000 +1100
++++ working-2.6/include/asm-powerpc/udbg.h	2007-02-20 11:07:36.000000000 +1100
+@@ -47,6 +47,7 @@ extern void __init udbg_init_rtas_panel(
+ extern void __init udbg_init_rtas_console(void);
+ extern void __init udbg_init_debug_beat(void);
+ extern void __init udbg_init_btext(void);
++extern void __init udbg_init_44x_as1(void);
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _ASM_POWERPC_UDBG_H */
+Index: working-2.6/arch/powerpc/kernel/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/Makefile	2007-02-20 11:06:54.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/Makefile	2007-02-20 11:07:36.000000000 +1100
+@@ -53,6 +53,7 @@ obj-y				+= time.o prom.o traps.o setup-
+ 				   udbg.o misc.o io.o
+ obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
+ obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
++obj-$(CONFIG_44x)		+= misc_44x.o
+ obj-$(CONFIG_PPC_MULTIPLATFORM)	+= prom_init.o
+ obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
+ obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
+Index: working-2.6/arch/powerpc/kernel/misc_44x.S
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/kernel/misc_44x.S	2007-02-20 11:07:36.000000000 +1100
+@@ -0,0 +1,46 @@
++/*
++ * This file contains miscellaneous low-level functions for PPC 44x.
++ *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ *
++ */
++
++#include <asm/reg.h>
++#include <asm/ppc_asm.h>
++
++	.text
++
++/*
++ * Do an IO access in AS1
++ */
++_GLOBAL(as1_readb)
++	mfmsr	r7
++	ori	r0,r7,MSR_DS
++	sync
++	mtmsr	r0
++	sync
++	isync
++	lbz	r3,0(r3)
++	sync
++	mtmsr	r7
++	sync
++	isync
++	blr
++
++_GLOBAL(as1_writeb)
++	mfmsr	r7
++	ori	r0,r7,MSR_DS
++	sync
++	mtmsr	r0
++	sync
++	isync
++	stb	r3,0(r4)
++	sync
++	mtmsr	r7
++	sync
++	isync
++	blr
+Index: working-2.6/arch/powerpc/kernel/of_platform.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/of_platform.c	2007-02-20 11:06:54.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/of_platform.c	2007-02-20 11:16:56.000000000 +1100
+@@ -29,7 +29,6 @@
+ #include <asm/ppc-pci.h>
+ #include <asm/atomic.h>
+ 
+-
+ /*
+  * The list of OF IDs below is used for matching bus types in the
+  * system whose devices are to be exposed as of_platform_devices.
