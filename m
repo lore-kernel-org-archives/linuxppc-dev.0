@@ -1,31 +1,21 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <florian.fainelli@int-evry.fr>
+Received: from smtp-ext.int-evry.fr (smtp-ext.int-evry.fr [157.159.11.17])
+	by ozlabs.org (Postfix) with ESMTP id 0D031DDDF5
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 00:53:48 +1100 (EST)
+Received: from mini.int.alphacore.net (florian.maisel.int-evry.fr
+	[157.159.41.36])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 25256DDD0D
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 00:50:31 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1KDoRfM005173
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 08:50:27 -0500
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1KDoRhD538580
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 06:50:27 -0700
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1KDoQF2012623
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 06:50:27 -0700
-Subject: Re: [PATCH 13/14] Re-organize Kconfig code for 4xx in arch/powerpc
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070220021236.3609EDDD0A@ozlabs.org>
-References: <20070220021236.3609EDDD0A@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 20 Feb 2007 07:51:29 -0600
-Message-Id: <1171979489.24204.62.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(No client certificate requested)
+	by smtp-ext.int-evry.fr (Postfix) with ESMTP id 28F688D1699
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 14:33:09 +0100 (CET)
+From: Florian Fainelli <florian.fainelli@int-evry.fr>
+To: linuxppc-dev@ozlabs.org
+Subject: Front LED on Mac mini G4
+Date: Tue, 20 Feb 2007 14:33:09 +0100
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1231848.hvfrZbDmm3";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200702201433.12851.florian.fainelli@int-evry.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,19 +25,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-02-20 at 13:12 +1100, David Gibson wrote:
-> 
-> -# It's often necessary to know the specific 4xx processor type.
-> -# Fortunately, it is impled (so far) from the board type, so we
-> -# don't need to ask more redundant questions.
-> +# 40x specific CPU modules, selected based on the board above.
->  config NP405H
->  	bool
-> -	depends on ASH
-> +	#depends on ASH
->  	default y
+--nextPart1231848.hvfrZbDmm3
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This always turns this option on, even for Ebony builds.  Should
-probably comment out the 'default y' for now as well.
+Hi all,
 
-josh
+I would like to know whether it is possible or not to modify the via-pmu-le=
+d=20
+driver to make it work with the Mac mini G4 front LED, is there anything=20
+particular with this model ?
+
+By the way, why is this driver only available as in-kernel and not module ?
+
+Thanks in advance for your answer.
+=2D-=20
+Regards, Florian
+
+--nextPart1231848.hvfrZbDmm3
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.2 (GNU/Linux)
+
+iD8DBQBF2viYQ/Yr6D8A81kRAjJZAJ9DqozFbKMfHhEGyDiMXpLKr/oQYACfZehn
+8kTq5O1yHz9lARPrdXdmLnc=
+=O3SN
+-----END PGP SIGNATURE-----
+
+--nextPart1231848.hvfrZbDmm3--
