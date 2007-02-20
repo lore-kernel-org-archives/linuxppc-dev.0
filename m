@@ -1,26 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound6-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 73F76DDEBE
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 02:25:14 +1100 (EST)
-In-Reply-To: <200702201607.33249.arnd@arndb.de>
-References: <20070220020837.GF17818@localhost.localdomain>
-	<1171982767.24204.70.camel@zod.rchland.ibm.com>
-	<1171983806.24204.79.camel@zod.rchland.ibm.com>
-	<200702201607.33249.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <814781c1228541df932f8f4c7cc6ea89@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [0/14] Ebony support, 2nd spi
-Date: Tue, 20 Feb 2007 16:25:00 +0100
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Christian Rund <Christian.Rund@de.ibm.com>,
-	Hartmut Penner <HPENNER@de.ibm.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C9F49DDD0B
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 02:44:36 +1100 (EST)
+Message-ID: <45DB1759.2010302@am.sony.com>
+Date: Tue, 20 Feb 2007 07:44:25 -0800
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [RFC 3/3] zImage: Exception vector support
+References: <45D7A914.4040000@am.sony.com>
+	<20070220022538.GH17818@localhost.localdomain>
+	<45DB0448.9080301@am.sony.com>
+In-Reply-To: <45DB0448.9080301@am.sony.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,43 +26,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> And the ebony dts also has the a bus type of "ibm,opb" as well.
->
-> We should really get a common name for these. I don't remember
-> what the discussions were, but it seems we came up with different
-> results for Axon and ppc4xx, which is very bad.
+Geoff Levand wrote:
+> David Gibson wrote:
+>> On Sat, Feb 17, 2007 at 05:17:08PM -0800, Geoff Levand wrote:
+>>> Add SMP exception vector support to the powerpc zImage bootwrapper.  For
+>>> platforms which have entry points in the vector table.  This implements
+>>> SMP entry via the system reset vector.
+>> 
+>> I really don't like having always-included code take over the absolute
+>> start of the zImage's address space.  The whole idea in my entry
+>> cleanup patch is that the platform code gets control of the "head.S"
+>> area, so we can potentially support platforms with conflicting
+>> hard-wired requirements for things at specific offsets.
+>> 
+>> I think this belongs in a ps3.o, which will define _zimage_start to be
+>> identical to the reset vector.
+>> 
+> 
+> I need two entry points, one for the first stage loader (0x100), and one
+> for a second stage kexec loader (_zimage_start).
 
-"Very bad"...  Well sure it's less than desirable, but
-we have to deal with this problem anyway already.
+Sorry, I should have been more clear.  This is what I have in the wrapper.
+My intension was that head.S is only used for platforms that need it.
 
-> Using type "ibm,opb" rather than just "opb" makes sense to me,
-> but I don't know if we already have shipping systems that use
-> "opb" here.
->
-> There is probably a similar problem with the nodes for "plb4",
-> "plb5" and "ebc",
++ps3)
++    platformo="$object/head.o $object/ps3-hvcall.o $object/ps3.o"
++    ;;
 
-It makes sense for generic code to always if it is asked
-to match for "vendor-code,some-name" also to match on
-plain "some-name".  Well unless people start doing crazy
-things like naming something "vendor-code,pci" which
-isn't PCI compatible or something -- in that case there
-could be a function that matches on exact name only, or
-the caller can deal with it itself perhaps.
+Having those vectors makes a 4MB dead gap in the binary image.  The ps3's
+loader supports a gziped image so there is no problem, but for the general
+case of binary images, there is no way we can have those always in there.
 
-But in most cases the matching-without-prefix should work
-fine.
+Regarding these two entry points, the plan is for the kernel in flash memory
+(first stage) to support kexec so that it has the capability to itself load
+and boot a kernel (second stage) from any source the kernel + initrd supports;
+net, removable, USB, HDD, etc.  So the first stage kernel can act as a
+second stage loader.  This second stage loader will take an ELF image, as it
+is most convenient.  The vectors will be in the ELF file in their own
+small section (.vectors), but won't be used by the second stage loader.
 
-> as well as the "compatible" property of the
-> serial port, which, as you noted earlier is "ns16550" on
-> ebony and "ns16750" on axon, although it is exactly the same
-> macro.
-
-So the "compatible" property should read ns16750, ns16550,
-ns16450, i8250.  The kernel really only needs the device
-to be compatible to the 8250; but since lots of device trees
-mention only the newer UART types, you have to match on those
-too.
-
-
-Segher
+-Geoff
