@@ -1,11 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 Feb 2007 13:08:37 +1100
+To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [0/14] Ebony support, 2nd spin
-Message-ID: <20070220020837.GF17818@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Subject: [PATCH 1/14] powerpc: Allow duplicate lmb_reserve() calls
+In-Reply-To: <20070220020837.GF17818@localhost.localdomain>
+Message-Id: <20070220021234.C430ADDD08@ozlabs.org>
+Date: Tue, 20 Feb 2007 13:12:34 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,26 +14,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here is a 2nd spin of my patch series adding support for the Ebony
-440GP evaluation board to the arch/powerpc tree.  Notable changes from
-the last spin:
+At present calling lmb_reserve() (and hence lmb_add_region()) twice
+for exactly the same memory region will cause strange behaviour.
 
-	- I no longer use legacy_serial for the serial ports and
-	  console, instead I'm using Arnd's of_serial system.
-	- Rebased on my recent clean/flexibility patches for the
-	  zImage loader
-	- Includes a general re-orgranization of the arch/powerpc
-	  Kconfig code for 4xx, allowing a kernel to support multiple
-	  boards at once (well, in theory, Ebony is the only supported
-	  one so far).
-	- The early serial hacks no longer use an entire 64-bit
-	  constant, so should work on non-64-bit aware assemblers
+This makes life difficult when booting from a flat device tree with
+memory reserve map.  Which regions are automatically reserved by the
+kernel has changed over time, so it's quite possible a newer kernel
+could attempt to auto-reserve a region which is also explicitly listed
+in the device tree's reserve map, leading to trouble.
 
-Again, some of the earlier patches I'm about to push to Paulus or
-others, so they could appear in upstream trees.
+This patch avoids the problem by making lmb_reserve() ignore a call to
+reserve a previously reserved region.  It also removes a now redundant
+test designed to avoid one specific case of the problem noted above.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+At present, this patch deals only with duplicate reservations of an
+identical region.  Attempting to reserve two different, but
+overlapping regions will still cause problems.  I might post another
+patch later dealing with this case, but I'm avoiding it now since it
+is substantially more complicated to deal with, less likely to occur
+and more likely to indicate a genuine bug elsewhere if it does occur.
+
+Signed-off-by: David Gibson <dwg@au1.ibm.com>
+---
+
+
+ arch/powerpc/kernel/prom.c |    3 ---
+ arch/powerpc/mm/lmb.c      |    4 ++++
+ 2 files changed, 4 insertions(+), 3 deletions(-)
+
+Index: working-2.6/arch/powerpc/mm/lmb.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/lmb.c	2007-02-06 16:21:02.000000000 +1100
++++ working-2.6/arch/powerpc/mm/lmb.c	2007-02-06 16:22:32.000000000 +1100
+@@ -146,6 +146,10 @@ static long __init lmb_add_region(struct
+ 		unsigned long rgnbase = rgn->region[i].base;
+ 		unsigned long rgnsize = rgn->region[i].size;
+ 
++		if ((rgnbase == base) && (rgnsize == size))
++			/* Already have this region, so we're done */
++			return 0;
++
+ 		adjacent = lmb_addrs_adjacent(base,size,rgnbase,rgnsize);
+ 		if ( adjacent > 0 ) {
+ 			rgn->region[i].base -= size;
+Index: working-2.6/arch/powerpc/kernel/prom.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/prom.c	2007-02-06 16:22:48.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/prom.c	2007-02-06 16:22:57.000000000 +1100
+@@ -954,9 +954,6 @@ static void __init early_reserve_mem(voi
+ 		size = *(reserve_map++);
+ 		if (size == 0)
+ 			break;
+-		/* skip if the reservation is for the blob */
+-		if (base == self_base && size == self_size)
+-			continue;
+ 		DBG("reserving: %llx -> %llx\n", base, size);
+ 		lmb_reserve(base, size);
+ 	}
