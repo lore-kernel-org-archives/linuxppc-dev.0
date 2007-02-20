@@ -1,22 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3434CDDDEE
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 04:41:18 +1100 (EST)
-Subject: Re: Front LED on Mac mini G4
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Florian Fainelli <florian.fainelli@int-evry.fr>
-In-Reply-To: <200702201835.14882.florian.fainelli@int-evry.fr>
-References: <200702201433.12851.florian.fainelli@int-evry.fr>
-	<1171987020.15489.177.camel@johannes.berg>
-	<200702201835.14882.florian.fainelli@int-evry.fr>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-wM6xLXJVzZy1p35v0Jkj"
-Date: Tue, 20 Feb 2007 18:41:05 +0100
-Message-Id: <1171993265.15489.211.camel@johannes.berg>
-Mime-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTP id 059E2DDDCF
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 04:57:44 +1100 (EST)
+To: Stuart Yoder <b08248@freescale.com>
+Subject: Re: [DTC PATCH] remove check for interrupt-controller property under
+	/chosen
+In-Reply-To: Your message of "Mon, 19 Feb 2007 11:28:27 CST."
+	<200702191728.l1JHSRfo025427@ld0164-tx32.am.freescale.net>
+References: <200702191728.l1JHSRfo025427@ld0164-tx32.am.freescale.net> 
+Date: Tue, 20 Feb 2007 11:57:37 -0600
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1HJZFB-0004Tg-5b@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,41 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+So, like, the other day Stuart Yoder mumbled:
+> 
+> Remove warning for missing interrupt-controller property
+> under /chosen.  There is consensus that this
+> property does not belong here.
+> 
+> Also, add a warning if interrupt-controller _is_ found
+> under /chosen.
+> 
+> Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
 
---=-wM6xLXJVzZy1p35v0Jkj
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Applied.
 
-On Tue, 2007-02-20 at 18:35 +0100, Florian Fainelli wrote:
-
-> It is a PowerMac10,1. After bypassing some device checks in via_pmu_led_i=
-nit,=20
-> I tried : echo 0 > /sys/class/leds/pmu-front-led/brightness
->=20
-> which resulted in : PMU: bad reply len 85 and the brightness not changed =
-of=20
-> course.
-
-Hm, ok.
-
-> the check is in via-pmu.c line 1500
->=20
-> Do you know what could cause this reply ?
-
-No, I don't really know the PMU that well.
-
-johannes
-
---=-wM6xLXJVzZy1p35v0Jkj
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF2zKx/ETPhpq3jKURAursAKCGKjdWCEYiaeaLzHeonGf2f2KI6wCdHDlQ
-lN4mF1QHJy5AziK3RdHFBng=
-=9azh
------END PGP SIGNATURE-----
-
---=-wM6xLXJVzZy1p35v0Jkj--
+Thanks,
+jdl
