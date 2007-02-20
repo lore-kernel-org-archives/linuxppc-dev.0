@@ -1,35 +1,19 @@
-Return-Path: <johnrose@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 87C80DDD07
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 04:28:08 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1KHS5cu029146
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 12:28:05 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1KHS5LS308164
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 10:28:05 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1KHS4Re028445
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 10:28:04 -0700
-Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition
-	and	removal of adapters
-From: John Rose <johnrose@austin.ibm.com>
-To: Joachim Fenkes <FENKES@de.ibm.com>
-In-Reply-To: <OFF5C27801.F7BCD37B-ON85257285.0001F062-85257285.00028E7E@de.ibm.com>
-References: <OFF5C27801.F7BCD37B-ON85257285.0001F062-85257285.00028E7E@de.ibm.com>
-Content-Type: text/plain
-Message-Id: <1171992306.22669.5.camel@sinatra.austin.ibm.com>
-Mime-Version: 1.0
-Date: Tue, 20 Feb 2007 11:25:06 -0600
-Cc: Paul Mackerras <pmac@au1.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-	External List <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-	Me Notes <johnrose@us.ibm.com>
+Return-Path: <florian.fainelli@int-evry.fr>
+Received: from smtp-ext.int-evry.fr (smtp-ext.int-evry.fr [157.159.11.17])
+	by ozlabs.org (Postfix) with ESMTP id 6D0C0DDDE4
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 04:35:30 +1100 (EST)
+From: Florian Fainelli <florian.fainelli@int-evry.fr>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: Front LED on Mac mini G4
+Date: Tue, 20 Feb 2007 18:35:06 +0100
+References: <200702201433.12851.florian.fainelli@int-evry.fr>
+	<1171987020.15489.177.camel@johannes.berg>
+In-Reply-To: <1171987020.15489.177.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1350704.zYqndmjSl0";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200702201835.14882.florian.fainelli@int-evry.fr>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,22 +23,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> If the probe operation succeeds, the respective device will show up 
-> beneath
-> /sys/bus/ibmebus/devices.
+--nextPart1350704.zYqndmjSl0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-This approach is not particularly synchronous.  Take the case of an add
-failure: how long would an application wait before deciding that the new
-device is not going to appear?
+Hi Johannes,
 
-It might be preferable to have the write to the probe function fail. 
-For example, if we can't find the device node, return -EINVAL or
-something.
+Le mardi 20 f=E9vrier 2007, Johannes Berg a =E9crit=A0:
+> On Tue, 2007-02-20 at 14:33 +0100, Florian Fainelli wrote:
+> > I would like to know whether it is possible or not to modify the
+> > via-pmu-led driver to make it work with the Mac mini G4 front LED, is
+> > there anything particular with this model ?
+>
+> Not sure. If it's a PowerMac10,1 I think it should work.
 
-> This is already taken care of by of_device_register().
+It is a PowerMac10,1. After bypassing some device checks in via_pmu_led_ini=
+t,=20
+I tried : echo 0 > /sys/class/leds/pmu-front-led/brightness
 
-If we are scrapping the use of of_device for ibmebus devices, can we
-still create a devspec file for OF correlation purposes?
+which resulted in : PMU: bad reply len 85 and the brightness not changed of=
+=20
+course.
 
-Thanks-
-John
+the check is in via-pmu.c line 1500
+
+Do you know what could cause this reply ?
+>
+> > By the way, why is this driver only available as in-kernel and not modu=
+le
+> > ?
+>
+> Because it's just an option of the via-pmu driver.
+>
+> johannes
+
+
+
+=2D-=20
+Cordialement, Florian Fainelli
+=2D--------------------------------------------
+5, rue Charles Fourier
+Chambre 1202
+91011 Evry
+http://www.alphacore.net
+(+33) 01 60 76 64 21
+(+33) 06 09 02 64 95
+=2D--------------------------------------------
+Association MiNET
+http://www.minet.net
+=2D--------------------------------------------
+Institut National des T=E9l=E9communication
+http://www.int-evry.fr/telecomint
+=2D--------------------------------------------
+
+--nextPart1350704.zYqndmjSl0
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.2 (GNU/Linux)
+
+iD8DBQBF2zFSQ/Yr6D8A81kRAuTAAJ9+YTawTmOxYa9rfWjtFLRlbLS2AgCfT0Ms
+BF6vxuMCoQcUzMdv3tHVCyw=
+=qTWK
+-----END PGP SIGNATURE-----
+
+--nextPart1350704.zYqndmjSl0--
