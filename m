@@ -1,21 +1,23 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 524A5DDE30
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 02:57:13 +1100 (EST)
-Subject: Re: Front LED on Mac mini G4
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Florian Fainelli <florian.fainelli@int-evry.fr>
-In-Reply-To: <200702201433.12851.florian.fainelli@int-evry.fr>
-References: <200702201433.12851.florian.fainelli@int-evry.fr>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-PNz69NIwXolHGuFGqhYK"
-Date: Tue, 20 Feb 2007 16:57:00 +0100
-Message-Id: <1171987020.15489.177.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2CBCEDDDF2
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 03:02:21 +1100 (EST)
+In-Reply-To: <45DB1759.2010302@am.sony.com>
+References: <45D7A914.4040000@am.sony.com>
+	<20070220022538.GH17818@localhost.localdomain>
+	<45DB0448.9080301@am.sony.com> <45DB1759.2010302@am.sony.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <fc45fc62b1568ccaedb712d3a6eb5ca0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [RFC 3/3] zImage: Exception vector support
+Date: Tue, 20 Feb 2007 17:02:11 +0100
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,37 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> +ps3)
+> +    platformo="$object/head.o $object/ps3-hvcall.o $object/ps3.o"
+> +    ;;
+>
+> Having those vectors makes a 4MB dead gap in the binary image.  The 
+> ps3's
+> loader supports a gziped image so there is no problem, but for the 
+> general
+> case of binary images, there is no way we can have those always in 
+> there.
 
---=-PNz69NIwXolHGuFGqhYK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+If this is an ELF file, you can put the exception vectors in a
+separate segment.  Or if you don't need the entry point to
+be in the low region, (and you don't need that unless your
+boot loader ignores the entry point in the ELF header), you can
+copy the vectors in at startup and have no code linked at 0 at
+all.
 
-On Tue, 2007-02-20 at 14:33 +0100, Florian Fainelli wrote:
 
-> I would like to know whether it is possible or not to modify the via-pmu-=
-led=20
-> driver to make it work with the Mac mini G4 front LED, is there anything=20
-> particular with this model ?
-
-Not sure. If it's a PowerMac10,1 I think it should work.
-
-> By the way, why is this driver only available as in-kernel and not module=
- ?
-
-Because it's just an option of the via-pmu driver.
-
-johannes
-
---=-PNz69NIwXolHGuFGqhYK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF2xpL/ETPhpq3jKURAoU/AKCR5DhSIt32xU/EiMdQd9xcXSU8YQCgqKyS
-g9nHAaO7VbJE5G7lyikjiVo=
-=7pG7
------END PGP SIGNATURE-----
-
---=-PNz69NIwXolHGuFGqhYK--
+Segher
