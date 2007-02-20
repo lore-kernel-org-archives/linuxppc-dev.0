@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 10/14] Early serial debug support for PPC44x
+Subject: [PATCH 12/14] Add device tree for Ebony
 In-Reply-To: <20070220020837.GF17818@localhost.localdomain>
-Message-Id: <20070220021235.96911DDD0B@ozlabs.org>
+Message-Id: <20070220021235.DC02DDDD06@ozlabs.org>
 Date: Tue, 20 Feb 2007 13:12:35 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,268 +14,243 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for early serial debugging via the built in
-port on IBM/AMCC PowerPC 44x CPUs.  It uses a bolted TLB entry in
-address space 1 for the UART's mapping, allowing robust debugging both
-before and after the initialization of the MMU.
+Add a device tree for the Ebony evaluation board (440GP based).  This
+tree is not complete or finalized.  This tree needs a very recent
+version of dtc to process.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/Kconfig.debug        |   23 ++++++++++++++-----
- arch/powerpc/kernel/Makefile      |    1 
- arch/powerpc/kernel/head_44x.S    |   34 ++++++++++------------------
- arch/powerpc/kernel/misc_44x.S    |   46 ++++++++++++++++++++++++++++++++++++++
- arch/powerpc/kernel/of_platform.c |    1 
- arch/powerpc/kernel/udbg.c        |    3 ++
- arch/powerpc/kernel/udbg_16550.c  |   24 +++++++++++++++++++
- include/asm-powerpc/mmu_44x.h     |    7 ++++-
- include/asm-powerpc/udbg.h        |    1 
- 9 files changed, 112 insertions(+), 28 deletions(-)
+ arch/powerpc/boot/dts/ebony.dts |  225 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 225 insertions(+)
 
-Index: working-2.6/arch/powerpc/Kconfig.debug
-===================================================================
---- working-2.6.orig/arch/powerpc/Kconfig.debug	2007-02-20 11:06:54.000000000 +1100
-+++ working-2.6/arch/powerpc/Kconfig.debug	2007-02-20 11:07:36.000000000 +1100
-@@ -130,11 +130,6 @@ config BOOTX_TEXT
- 	  Say Y here to see progress messages from the boot firmware in text
- 	  mode. Requires either BootX or Open Firmware.
- 
--config SERIAL_TEXT_DEBUG
--	bool "Support for early boot texts over serial port"
--	depends on 4xx || LOPEC || MV64X60 || PPLUS || PRPMC800 || \
--		PPC_GEN550 || PPC_MPC52xx
--
- config PPC_EARLY_DEBUG
- 	bool "Early debugging (dangerous)"
- 
-@@ -199,6 +194,24 @@ config PPC_EARLY_DEBUG_BEAT
- 	help
- 	  Select this to enable early debugging for Celleb with Beat.
- 
-+config PPC_EARLY_DEBUG_44x
-+	bool "Early serial debugging for IBM 44x CPUs"
-+	depends on 44x
-+	select PPC_UDBG_16550
-+	help
-+	  Select this to enable early debugging for IBM 44x chips via the
-+	  inbuilt serial port.
-+
- endchoice
- 
-+config PPC_EARLY_DEBUG_44x_PHYSLOW
-+	hex
-+	depends PPC_EARLY_DEBUG_44x
-+	default "0x40000200"
-+
-+config PPC_EARLY_DEBUG_44x_PHYSHIGH
-+	hex
-+	depends PPC_EARLY_DEBUG_44x
-+	default "0x1"
-+
- endmenu
-Index: working-2.6/arch/powerpc/kernel/head_44x.S
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-02-20 11:06:54.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-02-20 11:07:36.000000000 +1100
-@@ -172,36 +172,28 @@ skpinv:	addi	r4,r4,1				/* Increment */
- 	isync
- 
- 4:
--#ifdef CONFIG_SERIAL_TEXT_DEBUG
--	/*
--	 * Add temporary UART mapping for early debug.
--	 * We can map UART registers wherever we want as long as they don't
--	 * interfere with other system mappings (e.g. with pinned entries).
--	 * For an example of how we handle this - see ocotea.h.       --ebs
--	 */
-+#ifdef CONFIG_PPC_EARLY_DEBUG_44x
-+	/* Add UART mapping for early debug. */
-+
-  	/* pageid fields */
--	lis	r3,UART0_IO_BASE@h
--	ori	r3,r3,PPC44x_TLB_VALID | PPC44x_TLB_4K
-+	lis	r3,PPC44x_EARLY_DEBUG_VIRTADDR@h
-+	ori	r3,r3,PPC44x_TLB_VALID|PPC44x_TLB_TS|PPC44x_TLB_64K
- 
- 	/* xlat fields */
--	lis	r4,UART0_PHYS_IO_BASE@h		/* RPN depends on SoC */
--#ifndef CONFIG_440EP
--	ori	r4,r4,0x0001		/* ERPN is 1 for second 4GB page */
--#endif
-+	lis	r4,CONFIG_PPC_EARLY_DEBUG_44x_PHYSLOW@h
-+	ori	r4,r4,CONFIG_PPC_EARLY_DEBUG_44x_PHYSHIGH
- 
- 	/* attrib fields */
--	li	r5,0
--	ori	r5,r5,(PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_I | PPC44x_TLB_G)
--
--        li      r0,0                    /* TLB slot 0 */
-+	li	r5,(PPC44x_TLB_SW|PPC44x_TLB_SR|PPC44x_TLB_I|PPC44x_TLB_G)
-+        li      r0,62                    /* TLB slot 0 */
- 
--	tlbwe	r3,r0,PPC44x_TLB_PAGEID	/* Load the pageid fields */
--	tlbwe	r4,r0,PPC44x_TLB_XLAT	/* Load the translation fields */
--	tlbwe	r5,r0,PPC44x_TLB_ATTRIB	/* Load the attrib/access fields */
-+	tlbwe	r3,r0,PPC44x_TLB_PAGEID
-+	tlbwe	r4,r0,PPC44x_TLB_XLAT
-+	tlbwe	r5,r0,PPC44x_TLB_ATTRIB
- 
- 	/* Force context change */
- 	isync
--#endif /* CONFIG_SERIAL_TEXT_DEBUG */
-+#endif /* CONFIG_PPC_EARLY_DEBUG_44x */
- 
- 	/* Establish the interrupt vector offsets */
- 	SET_IVOR(0,  CriticalInput);
-Index: working-2.6/arch/powerpc/kernel/udbg_16550.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/udbg_16550.c	2007-02-20 11:06:54.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/udbg_16550.c	2007-02-20 11:07:36.000000000 +1100
-@@ -191,3 +191,27 @@ void udbg_init_pas_realmode(void)
- 	udbg_getc_poll = NULL;
- }
- #endif /* CONFIG_PPC_MAPLE */
-+
-+#ifdef CONFIG_PPC_EARLY_DEBUG_44x
-+extern u8 as1_readb(volatile u8 __iomem  *addr);
-+extern void as1_writeb(u8 data, volatile u8 __iomem *addr);
-+
-+static void udbg_44x_as1_putc(char c)
-+{
-+	if (udbg_comport) {
-+		while ((as1_readb(&udbg_comport->lsr) & LSR_THRE) == 0)
-+			/* wait for idle */;
-+		as1_writeb(c, &udbg_comport->thr); eieio();
-+		if (c == '\n')
-+			udbg_44x_as1_putc('\r');
-+	}
-+}
-+
-+void __init udbg_init_44x_as1(void)
-+{
-+	udbg_comport =
-+		(volatile struct NS16550 __iomem *)PPC44x_EARLY_DEBUG_VIRTADDR;
-+
-+	udbg_putc = udbg_44x_as1_putc;
-+}
-+#endif /* CONFIG_PPC_EARLY_DEBUG_44x */
-Index: working-2.6/include/asm-powerpc/mmu_44x.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/mmu_44x.h	2007-02-20 11:06:54.000000000 +1100
-+++ working-2.6/include/asm-powerpc/mmu_44x.h	2007-02-20 11:07:36.000000000 +1100
-@@ -68,7 +68,12 @@ typedef struct {
- #define PPC44x_PIN_SHIFT	28
- #define PPC_PIN_SIZE		(1 << PPC44x_PIN_SHIFT)
- 
-+#ifndef CONFIG_PPC_EARLY_DEBUG_44x
- #define PPC44x_EARLY_TLBS	1
-+#else
-+#define PPC44x_EARLY_TLBS	2
-+#define PPC44x_EARLY_DEBUG_VIRTADDR	(ASM_CONST(0xf0000000) \
-+	| (ASM_CONST(CONFIG_PPC_EARLY_DEBUG_44x_PHYSLOW) & 0xffff))
-+#endif
- 
- #endif /* _ASM_POWERPC_MMU_44X_H_ */
--
-Index: working-2.6/arch/powerpc/kernel/udbg.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/udbg.c	2007-02-20 11:06:54.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/udbg.c	2007-02-20 11:07:36.000000000 +1100
-@@ -51,6 +51,9 @@ void __init udbg_early_init(void)
- 	udbg_init_pas_realmode();
- #elif defined(CONFIG_BOOTX_TEXT)
- 	udbg_init_btext();
-+#elif defined(CONFIG_PPC_EARLY_DEBUG_44x)
-+	/* PPC44x debug */
-+	udbg_init_44x_as1();
- #endif
- }
- 
-Index: working-2.6/include/asm-powerpc/udbg.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/udbg.h	2007-02-20 11:06:54.000000000 +1100
-+++ working-2.6/include/asm-powerpc/udbg.h	2007-02-20 11:07:36.000000000 +1100
-@@ -47,6 +47,7 @@ extern void __init udbg_init_rtas_panel(
- extern void __init udbg_init_rtas_console(void);
- extern void __init udbg_init_debug_beat(void);
- extern void __init udbg_init_btext(void);
-+extern void __init udbg_init_44x_as1(void);
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_UDBG_H */
-Index: working-2.6/arch/powerpc/kernel/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/Makefile	2007-02-20 11:06:54.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/Makefile	2007-02-20 11:07:36.000000000 +1100
-@@ -53,6 +53,7 @@ obj-y				+= time.o prom.o traps.o setup-
- 				   udbg.o misc.o io.o
- obj-$(CONFIG_PPC32)		+= entry_32.o setup_32.o misc_32.o
- obj-$(CONFIG_PPC64)		+= misc_64.o dma_64.o iommu.o
-+obj-$(CONFIG_44x)		+= misc_44x.o
- obj-$(CONFIG_PPC_MULTIPLATFORM)	+= prom_init.o
- obj-$(CONFIG_MODULES)		+= ppc_ksyms.o
- obj-$(CONFIG_BOOTX_TEXT)	+= btext.o
-Index: working-2.6/arch/powerpc/kernel/misc_44x.S
+Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/kernel/misc_44x.S	2007-02-20 11:07:36.000000000 +1100
-@@ -0,0 +1,46 @@
++++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-02-19 15:31:36.000000000 +1100
+@@ -0,0 +1,225 @@
 +/*
-+ * This file contains miscellaneous low-level functions for PPC 44x.
-+ *    Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
++ * Device Tree Source for IBM Ebony
 + *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ * Copyright (c) 2006, 2007 IBM Corp.
++ * Josh Boyer <jdub@us.ibm.com>, David Gibson <dwg@au1.ibm.com>
 + *
++ * FIXME: Draft only!
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ *
++ * To build:
++ *   dtc -I dts -O asm -o ebony.S -b 0 -V 16 ebony.dts
++ *   dtc -I dts -O dtb -o ebony.dtb -b 0 -V 16 ebony.dts
 + */
 +
-+#include <asm/reg.h>
-+#include <asm/ppc_asm.h>
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "Ebony";
++	compatible = "Ebony";
++	dcr-parent = <&/cpus/PowerPC,440GP@0>;
 +
-+	.text
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+/*
-+ * Do an IO access in AS1
-+ */
-+_GLOBAL(as1_readb)
-+	mfmsr	r7
-+	ori	r0,r7,MSR_DS
-+	sync
-+	mtmsr	r0
-+	sync
-+	isync
-+	lbz	r3,0(r3)
-+	sync
-+	mtmsr	r7
-+	sync
-+	isync
-+	blr
++		PowerPC,440GP@0 {
++			model = "440GP Rev. C";
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <17d78400>; /* 400MHz FIXME: poke in zImage */
++			timebase-frequency = <17d78400>; /* 400MHz FIXME: wrong, poke in zImage */
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <0>;
++			d-cache-size = <0>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
 +
-+_GLOBAL(as1_writeb)
-+	mfmsr	r7
-+	ori	r0,r7,MSR_DS
-+	sync
-+	mtmsr	r0
-+	sync
-+	isync
-+	stb	r3,0(r4)
-+	sync
-+	mtmsr	r7
-+	sync
-+	isync
-+	blr
-Index: working-2.6/arch/powerpc/kernel/of_platform.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/of_platform.c	2007-02-20 11:06:54.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/of_platform.c	2007-02-20 11:16:56.000000000 +1100
-@@ -29,7 +29,6 @@
- #include <asm/ppc-pci.h>
- #include <asm/atomic.h>
- 
--
- /*
-  * The list of OF IDs below is used for matching bus types in the
-  * system whose devices are to be exposed as of_platform_devices.
++	memory {
++		device_type = "memory";
++		reg = <0 00000000 08000000>; /* Set by bootwrapper */
++	};
++
++	UIC0: interrupt-controller { /* UIC0 */
++		device_type = "interrupt-controller";
++		compatible = "ibm,uic440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++
++		UIC1: interrupt-controller@1 { /* UIC1 */
++			device_type = "interrupt-controller";
++			compatible = "ibm,uic440gp", "ibm,uic";
++			interrupt-controller;
++			cell-index = <1>;
++			dcr-reg = <0d0 009>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			#interrupt-cells = <2>;
++			interrupts = <1e 4 1f 4>; /* cascade */
++		};
++	};
++
++	plb {
++		device_type = "ibm,plb";
++		compatible = "ibm,plb-440gp", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++
++		POB0: opb@0 {
++			device_type = "ibm,opb";
++			compatible = "ibm,opb-440gp", "ibm,opb";
++			ranges;
++			dcr-reg = <090 00b>;
++			interrupt-parent = <&UIC1>;
++			interrupts = <7 4>;
++			clock-frequency = <3ef1480>; // FIXME: 66MHz
++
++			UART0: serial@140000200 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <1 40000200 8>;
++				virtual-reg = <e0000200>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0 4>;
++			};
++
++			UART1: serial@140000300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <1 40000300 8>;
++				virtual-reg = <e0000300>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>; /* FIXME */
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			IIC0: i2c@140000400 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <1 40000400 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++			IIC1: i2c@140000500 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <1 40000500 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <3 4>;
++			};
++
++			GPIO0: gpio@140000700 {
++				/* FIXME */
++				device_type = "gpio";
++				compatible = "ibm,gpio-440gp";
++				reg = <1 40000700 20>;
++			};
++
++			ZMII0: emac-zmii@140000780 {
++				device_type = "emac-zmii";
++				compatible = "ibm,zmii-440gp", "ibm,zmii";
++				reg = <1 40000780 c>;
++			};
++
++			EMAC0: ethernet@140000800 {
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1c 4 1d 4>;
++				reg = <1 40000800 70>;
++				local-mac-address = [0004ace31b1e]; // FIXME
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0 1>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++			};
++			EMAC1: ethernet@140000900 {
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4 1f 4>;
++				reg = <1 40000900 70>;
++				local-mac-address = [0004ace31b1f]; // FIXME
++				mal-device = <&MAL0>;
++				mal-tx-channel = <2 3>;
++				mal-rx-channel = <1>;
++				cell-index = <1>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <1>;
++			};
++
++
++			GPT0: gpt@140000a00 {
++				/* FIXME */
++				reg = <1 40000a00 d4>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <12 4 13 4 14 4 15 4 16 4>;
++			};
++
++		};
++
++		PCIX0: pci@1234 {
++			device_type = "pci";
++			/* FIXME */
++			reg = <2 0ec00000 8
++			       2 0ec80000 f0
++			       2 0ec80100 fc>;
++		};
++
++		MAL0: mcmal {
++			/* FIXME */
++			device_type = "mcmal-dma";
++			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <4>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
++					 /*RXEOB*/ 1 &UIC0 b 4
++					 /*SERR*/  2 &UIC1 0 4
++					 /*TXDE*/  3 &UIC1 1 4
++					 /*RXDE*/  4 &UIC1 2 4>;
++			interrupt-map-mask = <ffffffff>;
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb@0/serial@140000200";
++		linux,initrd-start = <0>; /* FIXME */
++		linux,initrd-end = <0>;
++		interrupt-controller = <&UIC0>;
++	};
++};
++
