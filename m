@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 6/14] zImage: Cleanup and improve prep_kernel()
+Subject: [PATCH 7/14] zImage: Cleanup and improve zImage entry point
 In-Reply-To: <20070220020837.GF17818@localhost.localdomain>
-Message-Id: <20070220021235.0998DDDDCA@ozlabs.org>
+Message-Id: <20070220021235.173B5DDD06@ozlabs.org>
 Date: Tue, 20 Feb 2007 13:12:35 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,332 +14,284 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch rewrites prep_kernel() in the zImage wrapper code to be
-clearer and more flexible.  Notable changes:
+This patch re-organises the way the zImage wrapper code is entered, to
+allow more flexibility on platforms with unusual entry conditions.
+After this patch, a platform .o file has two options:
 
-	- Handling of the initrd image from prep_kernel() has moved
-into a new prep_initrd() function.
-	- The address of the initrd image is now added as device tree
-properties, as the kernel expects.
-	- We only copy a packaged initrd image to a new location if it
-is in danger of being clobbered when the kernel moves to its final
-location, instead of always.
-	- By default we decompress the kernel directly to address 0,
-instead of requiring it to relocate itself.  Platforms (such as OF)
-where doing this could clobber still-live firmware data structures can
-override the vmlinux_alloc hook to provide an alternate place to
-decompress the kernel.
-	- We no longer pass lots of information between functions in
-global variables.
+1) It can define a _zimage_start, in which case the platform code gets
+   control from the very beginning of execution.  In this case the
+   platform code is responsible for relocating the zImage if necessary,
+   clearing the BSS, performing any platform specific initialization, and
+   finally calling start() to load and enter the kernel.
+
+2) It can define platform_init().  In this case the generic crt0.S
+   handles initial entry, and calls platform_init() before calling
+   start().  The signature of platform_init() is changed, however, to
+   take up to 5 parameters (in r3..r7) as they come from the platform's
+   initial loader, instead of a fixed set of parameters based on OF's
+   usage.
+
+   When using the generic crt0.S, the platform .o can optionally
+   supply a custom stack to use, using the BSS_STACK() macro.  If this
+   is not supplied, the crt0.S will assume that the loader has
+   supplied a usable stack.
+
+In either case, the platform code communicates information to the
+generic code (specifically, a PROM pointer for OF systems, and/or an
+initrd image address supplied by the bootloader) via a global
+structure "loader_info".
+
+In addition the wrapper script is rearranged to ensure that the
+platform .o is always linked first.  This means that platforms where
+the zImage entry point is at a fixed address or offset, rather than
+being encoded in the binary header can be supported using option (1).
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/boot/main.c |  171 ++++++++++++++++++++++++++++-------------------
- arch/powerpc/boot/of.c   |   12 +++
- arch/powerpc/boot/ops.h  |    1 
- 3 files changed, 116 insertions(+), 68 deletions(-)
+ arch/powerpc/boot/Makefile          |    6 +++---
+ arch/powerpc/boot/crt0.S            |   32 +++++++++++++++++++++++++++++---
+ arch/powerpc/boot/main.c            |   18 +++++++-----------
+ arch/powerpc/boot/of.c              |    6 ++++--
+ arch/powerpc/boot/ops.h             |   12 +++++++++++-
+ arch/powerpc/boot/wrapper           |    6 ++++--
+ arch/powerpc/boot/zImage.coff.lds.S |    3 ++-
+ arch/powerpc/boot/zImage.lds.S      |    1 +
+ 8 files changed, 61 insertions(+), 23 deletions(-)
 
+Index: working-2.6/arch/powerpc/boot/crt0.S
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/crt0.S	2007-02-19 14:00:50.000000000 +1100
++++ working-2.6/arch/powerpc/boot/crt0.S	2007-02-19 14:01:43.000000000 +1100
+@@ -16,6 +16,7 @@
+ _zimage_start_opd:
+ 	.long	_zimage_start, 0, 0, 0
+ 
++	.weak	_zimage_start
+ 	.globl	_zimage_start
+ _zimage_start:
+ 	/* Work out the offset between the address we were linked at
+@@ -44,7 +45,7 @@ _zimage_start:
+ 	addi	r9,r9,4
+ 	bdnz	2b
+ 
+-	/* Do a cache flush for our text, in case OF didn't */
++	/* Do a cache flush for our text, in case the loader didn't */
+ 3:	lis	r9,_start@ha
+ 	addi	r9,r9,_start@l
+ 	add	r9,r0,r9
+@@ -59,6 +60,31 @@ _zimage_start:
+ 	sync
+ 	isync
+ 
+-	mr	r6,r1
+-	b	start
++	/* Clear the BSS */
++	lis	r9,__bss_start@ha
++	addi	r9,r9,__bss_start@l
++	lis	r8,_end@ha
++	addi	r8,r8,_end@l
++	li	r0,0
++5:	stw	r0,0(r9)
++	addi	r9,r9,4
++	cmplw	cr0,r9,r8
++	blt	5b
+ 
++	/* Possibly set up a custom stack */
++.weak	_platform_stack_top
++	lis	r8,_platform_stack_top@ha
++	addi	r8,r8,_platform_stack_top@l
++	cmpwi	r8,0
++	beq	6f
++	lwz	r1,0(r8)
++	li	r0,0
++	stwu	r0,-16(r1)	/* establish a stack frame */
++6:
++
++	/* Call platform_init() */
++	bl	platform_init
++
++	/* Call start */
++	mr	r3,r1
++	b	start
+Index: working-2.6/arch/powerpc/boot/ops.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/ops.h	2007-02-19 14:01:38.000000000 +1100
++++ working-2.6/arch/powerpc/boot/ops.h	2007-02-19 14:01:43.000000000 +1100
+@@ -59,7 +59,13 @@ struct serial_console_data {
+ 	void		(*close)(void);
+ };
+ 
+-int platform_init(void *promptr, char *dt_blob_start, char *dt_blob_end);
++struct loader_info {
++	void *promptr;
++	unsigned long initrd_addr, initrd_size;
++};
++extern struct loader_info loader_info;
++
++void start(void *sp);
+ int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
+ int serial_console_init(void);
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp);
+@@ -100,4 +106,8 @@ static inline void exit(void)
+ 	for(;;);
+ }
+ 
++#define BSS_STACK(size) \
++	static char _bss_stack[size]; \
++	void *_platform_stack_top = _bss_stack + sizeof(_bss_stack);
++
+ #endif /* _PPC_BOOT_OPS_H_ */
 Index: working-2.6/arch/powerpc/boot/main.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/main.c	2007-02-19 14:01:15.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/main.c	2007-02-19 14:01:38.000000000 +1100
-@@ -33,24 +33,21 @@ extern char _dtb_end[];
- static struct gunzip_state gzstate;
+--- working-2.6.orig/arch/powerpc/boot/main.c	2007-02-19 14:01:38.000000000 +1100
++++ working-2.6/arch/powerpc/boot/main.c	2007-02-19 14:01:43.000000000 +1100
+@@ -254,21 +254,15 @@ static void set_cmdline(char *buf)
+ struct platform_ops platform_ops;
+ struct dt_ops dt_ops;
+ struct console_ops console_ops;
++struct loader_info loader_info;
  
- struct addr_range {
--	unsigned long addr;
-+	void *addr;
- 	unsigned long size;
--	unsigned long memsize;
- };
--static struct addr_range vmlinux;
--static struct addr_range vmlinuz;
--static struct addr_range initrd;
--
--static unsigned long elfoffset;
--static int is_64bit;
- 
--static char elfheader[256];
-+struct elf_info {
-+	unsigned long loadsize;
-+	unsigned long memsize;
-+	unsigned long elfoffset;
-+};
- 
- typedef void (*kernel_entry_t)(unsigned long, unsigned long, void *);
- 
- #undef DEBUG
- 
--static int is_elf64(void *hdr)
-+static int parse_elf64(void *hdr, struct elf_info *info)
+-void start(unsigned long a1, unsigned long a2, void *promptr, void *sp)
++void start(void *sp)
  {
- 	Elf64_Ehdr *elf64 = hdr;
- 	Elf64_Phdr *elf64ph;
-@@ -74,15 +71,14 @@ static int is_elf64(void *hdr)
- 	if (i >= (unsigned int)elf64->e_phnum)
- 		return 0;
- 
--	elfoffset = (unsigned long)elf64ph->p_offset;
--	vmlinux.size = (unsigned long)elf64ph->p_filesz;
--	vmlinux.memsize = (unsigned long)elf64ph->p_memsz;
-+	info->loadsize = (unsigned long)elf64ph->p_filesz;
-+	info->memsize = (unsigned long)elf64ph->p_memsz;
-+	info->elfoffset = (unsigned long)elf64ph->p_offset;
- 
--	is_64bit = 1;
- 	return 1;
- }
- 
--static int is_elf32(void *hdr)
-+static int parse_elf32(void *hdr, struct elf_info *info)
- {
- 	Elf32_Ehdr *elf32 = hdr;
- 	Elf32_Phdr *elf32ph;
-@@ -98,7 +94,6 @@ static int is_elf32(void *hdr)
- 	      elf32->e_machine         == EM_PPC))
- 		return 0;
- 
--	elf32 = (Elf32_Ehdr *)elfheader;
- 	elf32ph = (Elf32_Phdr *) ((unsigned long)elf32 + elf32->e_phoff);
- 	for (i = 0; i < elf32->e_phnum; i++, elf32ph++)
- 		if (elf32ph->p_type == PT_LOAD)
-@@ -106,24 +101,26 @@ static int is_elf32(void *hdr)
- 	if (i >= elf32->e_phnum)
- 		return 0;
- 
--	elfoffset = elf32ph->p_offset;
--	vmlinux.size = elf32ph->p_filesz;
--	vmlinux.memsize = elf32ph->p_memsz;
-+	info->loadsize = elf32ph->p_filesz;
-+	info->memsize = elf32ph->p_memsz;
-+	info->elfoffset = elf32ph->p_offset;
- 	return 1;
- }
- 
--static void prep_kernel(unsigned long a1, unsigned long a2)
-+static struct addr_range prep_kernel(void)
- {
-+	char elfheader[256];
-+	void *vmlinuz_addr = _vmlinux_start;
-+	unsigned long vmlinuz_size = _vmlinux_end - _vmlinux_start;
-+	void *addr = 0;
-+	struct elf_info ei;
- 	int len;
- 
--	vmlinuz.addr = (unsigned long)_vmlinux_start;
--	vmlinuz.size = (unsigned long)(_vmlinux_end - _vmlinux_start);
--
- 	/* gunzip the ELF header of the kernel */
--	gunzip_start(&gzstate, (void *)vmlinuz.addr, vmlinuz.size);
-+	gunzip_start(&gzstate, vmlinuz_addr, vmlinuz_size);
- 	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
- 
--	if (!is_elf64(elfheader) && !is_elf32(elfheader)) {
-+	if (!parse_elf64(elfheader, &ei) && !parse_elf32(elfheader, &ei)) {
- 		printf("Error: not a valid PPC32 or PPC64 ELF file!\n\r");
- 		exit();
- 	}
-@@ -135,55 +132,92 @@ static void prep_kernel(unsigned long a1
- 	 * the kernel bss must be claimed (it will be zero'd by the
- 	 * kernel itself)
- 	 */
--	printf("Allocating 0x%lx bytes for kernel ...\n\r", vmlinux.memsize);
--	vmlinux.addr = (unsigned long)malloc(vmlinux.memsize);
--	if (vmlinux.addr == 0) {
--		printf("Can't allocate memory for kernel image !\n\r");
--		exit();
-+	printf("Allocating 0x%lx bytes for kernel ...\n\r", ei.memsize);
-+
-+	if (platform_ops.vmlinux_alloc) {
-+		addr = platform_ops.vmlinux_alloc(ei.memsize);
-+	} else {
-+		if ((unsigned long)_start < ei.memsize) {
-+			printf("Insufficient memory for kernel at address 0!"
-+			       " (_start=%lx)\n\r", _start);
-+			exit();
-+		}
- 	}
- 
-+	/* Finally, gunzip the kernel */
-+	printf("gunzipping (0x%p <- 0x%p:0x%p)...", addr,
-+	       vmlinuz_addr, vmlinuz_addr+vmlinuz_size);
-+	/* discard up to the actual load data */
-+	gunzip_discard(&gzstate, ei.elfoffset - sizeof(elfheader));
-+	len = gunzip_finish(&gzstate, addr, ei.memsize);
-+	printf("done 0x%lx bytes\n\r", len);
-+
-+	flush_cache(addr, ei.loadsize);
-+
-+	return (struct addr_range){addr, ei.memsize};
-+}
-+
-+static struct addr_range prep_initrd(struct addr_range vmlinux,
-+				     unsigned long initrd_addr,
-+				     unsigned long initrd_size)
-+{
-+	void *devp;
-+	u32 initrd_start, initrd_end;
-+
-+	/* If we have an image attached to us, it overrides anything
-+	 * supplied by the loader. */
-+	if (_initrd_end > _initrd_start) {
-+		printf("Attached initrd image at 0x%p-0x%p\n\r",
-+		       _initrd_start, _initrd_end);
-+		initrd_addr = (unsigned long)_initrd_start;
-+		initrd_size = _initrd_end - _initrd_start;
-+	} else if (initrd_size > 0) {
-+		printf("Using loader supplied ramdisk at 0x%lx-0x%lx\n\r",
-+		       initrd_addr, initrd_addr + initrd_size);
-+	}
-+
-+	/* If there's no initrd at all, we're done */
-+	if (! initrd_size)
-+		return (struct addr_range){0, 0};
-+
- 	/*
--	 * Now find the initrd
--	 *
--	 * First see if we have an image attached to us.  If so
--	 * allocate memory for it and copy it there.
-+	 * If the initrd is too low it will be clobbered when the
-+	 * kernel relocates to its final location.  In this case,
-+	 * allocate a safer place and move it.
- 	 */
--	initrd.size = (unsigned long)(_initrd_end - _initrd_start);
--	initrd.memsize = initrd.size;
--	if (initrd.size > 0) {
-+	if (initrd_addr < vmlinux.size) {
-+		void *old_addr = (void *)initrd_addr;
-+
- 		printf("Allocating 0x%lx bytes for initrd ...\n\r",
--		       initrd.size);
--		initrd.addr = (unsigned long)malloc((u32)initrd.size);
--		if (initrd.addr == 0) {
-+		       initrd_size);
-+		initrd_addr = (unsigned long)malloc(initrd_size);
-+		if (! initrd_addr) {
- 			printf("Can't allocate memory for initial "
--					"ramdisk !\n\r");
-+			       "ramdisk !\n\r");
- 			exit();
- 		}
--		printf("initial ramdisk moving 0x%lx <- 0x%lx "
--			"(0x%lx bytes)\n\r", initrd.addr,
--			(unsigned long)_initrd_start, initrd.size);
--		memmove((void *)initrd.addr, (void *)_initrd_start,
--			initrd.size);
--		printf("initrd head: 0x%lx\n\r",
--				*((unsigned long *)initrd.addr));
--	} else if (a2 != 0) {
--		/* Otherwise, see if yaboot or another loader gave us an initrd */
--		initrd.addr = a1;
--		initrd.memsize = initrd.size = a2;
--		printf("Using loader supplied initrd at 0x%lx (0x%lx bytes)\n\r",
--		       initrd.addr, initrd.size);
--	}
--
--	/* Eventually gunzip the kernel */
--	printf("gunzipping (0x%lx <- 0x%lx:0x%0lx)...",
--	       vmlinux.addr, vmlinuz.addr, vmlinuz.addr+vmlinuz.size);
--	/* discard up to the actual load data */
--	gunzip_discard(&gzstate, elfoffset - sizeof(elfheader));
--	len = gunzip_finish(&gzstate, (void *)vmlinux.addr,
--			    vmlinux.memsize);
--	printf("done 0x%lx bytes\n\r", len);
-+		printf("Relocating initrd 0x%p <- 0x%p (0x%lx bytes)\n\r",
-+		       initrd_addr, old_addr, initrd_size);
-+		memmove((void *)initrd_addr, old_addr, initrd_size);
-+	}
-+
-+	printf("initrd head: 0x%lx\n\r", *((unsigned long *)initrd_addr));
-+
-+	/* Tell the kernel initrd address via device tree */
-+	devp = finddevice("/chosen");
-+	if (! devp) {
-+		printf("Device tree has no chosen node!\n\r");
-+		exit();
-+	}
-+
-+	initrd_start = (u32)initrd_addr;
-+	initrd_end = (u32)initrd_addr + initrd_size;
-+
-+	setprop(devp, "linux,initrd-start", &initrd_start,
-+		sizeof(initrd_start));
-+	setprop(devp, "linux,initrd-end", &initrd_end, sizeof(initrd_end));
- 
--	flush_cache((void *)vmlinux.addr, vmlinux.size);
-+	return (struct addr_range){(void *)initrd_addr, initrd_size};
- }
- 
- /* A buffer that may be edited by tools operating on a zImage binary so as to
-@@ -223,6 +257,7 @@ struct console_ops console_ops;
- 
- void start(unsigned long a1, unsigned long a2, void *promptr, void *sp)
- {
-+	struct addr_range vmlinux, initrd;
+ 	struct addr_range vmlinux, initrd;
  	kernel_entry_t kentry;
  	char cmdline[COMMAND_LINE_SIZE];
  	unsigned long ft_addr = 0;
-@@ -242,7 +277,8 @@ void start(unsigned long a1, unsigned lo
- 	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r",
+ 
+-	memset(__bss_start, 0, _end - __bss_start);
+-	memset(&platform_ops, 0, sizeof(platform_ops));
+-	memset(&dt_ops, 0, sizeof(dt_ops));
+-	memset(&console_ops, 0, sizeof(console_ops));
+-
+-	if (platform_init(promptr, _dtb_start, _dtb_end))
+-		exit();
+ 	if (console_ops.open && (console_ops.open() < 0))
+ 		exit();
+ 	if (platform_ops.fixups)
+@@ -278,7 +272,8 @@ void start(unsigned long a1, unsigned lo
  	       _start, sp);
  
--	prep_kernel(a1, a2);
-+	vmlinux = prep_kernel();
-+	initrd = prep_initrd(vmlinux, a1, a2);
+ 	vmlinux = prep_kernel();
+-	initrd = prep_initrd(vmlinux, a1, a2);
++	initrd = prep_initrd(vmlinux, loader_info.initrd_addr,
++			     loader_info.initrd_size);
  
  	/* If cmdline came from zimage wrapper or if we can edit the one
  	 * in the dt, print it out and edit it, if possible.
-@@ -271,8 +307,7 @@ void start(unsigned long a1, unsigned lo
+@@ -298,7 +293,7 @@ void start(unsigned long a1, unsigned lo
+ 	if (ft_addr)
+ 		printf(" flat tree at 0x%lx\n\r", ft_addr);
+ 	else
+-		printf(" using OF tree (promptr=%p)\n\r", promptr);
++		printf(" using OF tree (promptr=%p)\n\r", loader_info.promptr);
+ 
+ 	if (console_ops.close)
+ 		console_ops.close();
+@@ -307,7 +302,8 @@ void start(unsigned long a1, unsigned lo
  	if (ft_addr)
  		kentry(ft_addr, 0, NULL);
  	else
--		/* XXX initrd addr/size should be passed in properties */
--		kentry(initrd.addr, initrd.size, promptr);
-+		kentry((unsigned long)initrd.addr, initrd.size, promptr);
+-		kentry((unsigned long)initrd.addr, initrd.size, promptr);
++		kentry((unsigned long)initrd.addr, initrd.size,
++		       loader_info.promptr);
  
  	/* console closed so printf below may not work */
  	printf("Error: Linux kernel returned to zImage boot wrapper!\n\r");
-Index: working-2.6/arch/powerpc/boot/ops.h
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/ops.h	2007-02-19 14:00:51.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/ops.h	2007-02-19 14:01:38.000000000 +1100
-@@ -25,6 +25,7 @@ struct platform_ops {
- 	void	(*free)(void *ptr);
- 	void *	(*realloc)(void *ptr, unsigned long size);
- 	void	(*exit)(void);
-+	void *	(*vmlinux_alloc)(unsigned long size);
- };
- extern struct platform_ops platform_ops;
- 
 Index: working-2.6/arch/powerpc/boot/of.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/of.c	2007-02-19 14:00:51.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/of.c	2007-02-19 14:01:38.000000000 +1100
-@@ -208,6 +208,17 @@ static void of_image_hdr(const void *hdr
- 	}
+--- working-2.6.orig/arch/powerpc/boot/of.c	2007-02-19 14:01:38.000000000 +1100
++++ working-2.6/arch/powerpc/boot/of.c	2007-02-19 14:01:43.000000000 +1100
+@@ -267,7 +267,7 @@ static void of_console_write(char *buf, 
+ 	call_prom("write", 3, 1, of_stdout_handle, buf, len);
  }
  
-+static void *of_vmlinux_alloc(unsigned long size)
-+{
-+	void *p = malloc(size);
-+
-+	if (!p) {
-+		printf("Can't allocate memory for kernel image!\n\r");
-+		exit();
-+	}
-+	return p;
-+}
-+
- static void of_exit(void)
+-int platform_init(void *promptr, char *dt_blob_start, char *dt_blob_end)
++void platform_init(unsigned long a1, unsigned long a2, void *promptr)
  {
- 	call_prom("exit", 0, 0);
-@@ -261,6 +272,7 @@ int platform_init(void *promptr, char *d
  	platform_ops.image_hdr = of_image_hdr;
  	platform_ops.malloc = of_try_claim;
- 	platform_ops.exit = of_exit;
-+	platform_ops.vmlinux_alloc = of_vmlinux_alloc;
+@@ -282,5 +282,7 @@ int platform_init(void *promptr, char *d
+ 	console_ops.write = of_console_write;
  
- 	dt_ops.finddevice = of_finddevice;
- 	dt_ops.getprop = of_getprop;
+ 	prom = (int (*)(void *))promptr;
+-	return 0;
++	loader_info.promptr = promptr;
++	loader_info.initrd_addr = a1;
++	loader_info.initrd_size = a2;
+ }
+Index: working-2.6/arch/powerpc/boot/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-19 14:00:50.000000000 +1100
++++ working-2.6/arch/powerpc/boot/Makefile	2007-02-19 14:01:43.000000000 +1100
+@@ -40,11 +40,11 @@ zliblinuxheader := zlib.h zconf.h zutil.
+ $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) \
+ 		$(addprefix $(obj)/,$(zlibheader))
+ 
+-src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
++src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c $(zlib)
+ src-plat := of.c
+-src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
++src-boot := $(src-wlib) $(src-plat) empty.c
+ 
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+ obj-boot := $(addsuffix .o, $(basename $(src-boot)))
+@@ -97,7 +97,7 @@ $(obj)/wrapper.a: $(obj-wlib)
+ 
+ hostprogs-y	:= addnote addRamDisk hack-coff mktree
+ 
+-extra-y		:= $(obj)/crt0.o $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
++extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
+ 		   $(obj)/zImage.lds $(obj)/zImage.coff.lds
+ 
+ wrapper		:=$(srctree)/$(src)/wrapper
+Index: working-2.6/arch/powerpc/boot/wrapper
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/wrapper	2007-02-19 14:00:50.000000000 +1100
++++ working-2.6/arch/powerpc/boot/wrapper	2007-02-19 14:01:43.000000000 +1100
+@@ -191,7 +191,7 @@ fi
+ 
+ if [ "$platform" != "miboot" ]; then
+     ${CROSS}ld -m elf32ppc -T $lds -o "$ofile" \
+-	$object/crt0.o $platformo $tmp $object/wrapper.a
++	$platformo $tmp $object/wrapper.a
+     rm $tmp
+ fi
+ 
+@@ -201,7 +201,9 @@ pseries|chrp)
+     $object/addnote "$ofile"
+     ;;
+ pmaccoff)
+-    ${CROSS}objcopy -O aixcoff-rs6000 --set-start 0x500000 "$ofile"
++    entry=`objdump -f "$ofile" | grep '^start address ' | \
++	cut -d' ' -f3`
++    ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
+     $object/hack-coff "$ofile"
+     ;;
+ esac
+Index: working-2.6/arch/powerpc/boot/zImage.lds.S
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/zImage.lds.S	2007-02-19 14:00:50.000000000 +1100
++++ working-2.6/arch/powerpc/boot/zImage.lds.S	2007-02-19 14:01:43.000000000 +1100
+@@ -1,5 +1,6 @@
+ OUTPUT_ARCH(powerpc:common)
+ ENTRY(_zimage_start)
++EXTERN(_zimage_start)
+ SECTIONS
+ {
+   . = (4*1024*1024);
+Index: working-2.6/arch/powerpc/boot/zImage.coff.lds.S
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/zImage.coff.lds.S	2007-02-19 14:00:50.000000000 +1100
++++ working-2.6/arch/powerpc/boot/zImage.coff.lds.S	2007-02-19 14:01:43.000000000 +1100
+@@ -1,5 +1,6 @@
+ OUTPUT_ARCH(powerpc:common)
+-ENTRY(_start)
++ENTRY(_zimage_start_opd)
++EXTERN(_zimage_start_opd)
+ SECTIONS
+ {
+   . = (5*1024*1024);
