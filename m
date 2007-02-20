@@ -1,20 +1,23 @@
-Return-Path: <ajz@cambridgebroadband.com>
-Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
-	[217.204.121.83])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A5C27DDE02
+	by ozlabs.org (Postfix) with ESMTP id D2356DDE2D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Feb 2007 02:32:09 +1100 (EST)
-Message-ID: <45DB146A.7010302@cambridgebroadband.com>
-Date: Tue, 20 Feb 2007 15:31:54 +0000
-From: Alex Zeffertt <ajz@cambridgebroadband.com>
-MIME-Version: 1.0
-To: Manjunath AM <Manjunath.AM@Lntemsys.com>, linuxppc-embedded@ozlabs.org
-Subject: Re: enabling two eths
-References: <OFAEAB5385.D1B18D5F-ON65257288.0048394A-65257288.00493E72@lntemsys.com>
-In-Reply-To: <OFAEAB5385.D1B18D5F-ON65257288.0048394A-65257288.00493E72@lntemsys.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Wed, 21 Feb 2007 02:56:36 +1100 (EST)
+In-Reply-To: <b4b98b690702200729g389fb77fr488ce2404566ace0@mail.gmail.com>
+References: <b4b98b690702200620q3c70cba9j2d8046d4451686a1@mail.gmail.com>
+	<002d01c754fd$1f030860$0600000a@waves.com>
+	<b4b98b690702200729g389fb77fr488ce2404566ace0@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <4DD2C4C8-908E-415C-A46F-8387E463D622@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: 8541E and vector table.
+Date: Tue, 20 Feb 2007 09:55:36 -0600
+To: Steve Iribarne (GMail) <netstv@gmail.com>
+Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,21 +29,22 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Manjunath AM wrote:
-> 
-> Hi,
-> 
-> We are using MPC8272 based target board, we use montavista Linux version 
-> 2.6.10 kernel image (with NFS enabled) to our target board,
-> 
-> Our board has  2 FCCs (eth0 and eth1). bot the eth's works perfectly 
-> when we use them independently, but when we are trying to enable second 
-> one after the kernel is up using linux command  "ifconfig eth1 
-> 192.168.33.64 up"(IP address)nothing is working.
-> Please suggest how to enable second eth (either 0 or 1) once the kernel 
-> is up with NFS file system
+On Feb 20, 2007, at 9:29 AM, Steve Iribarne (GMail) wrote:
 
+> Hi Ami,
+>
+> Thanks for the reply.  Yes I have the manual.  I guess I need to be a
+> little more specific.  I usually don't get down to this level of the
+> hardware.  It usually just works for me.
+>
+> I have all the explinations etc.. of each vector, but in my memory, I
+> can't figure out how to map 0x0000_0700 to one of the SPR's.  I think
+> that's what I want to know. :)
+>
+> -stv
 
-Have you made sure that eth0 and eth1 are on *different* IP subnets?
-If they are on the same subnet, or intersecting subnets, your routing
-will get confused.
+0x700 is most likely Program Check Exception, there isn't a great way  
+to do the reverse mapping (addr -> exception) other than looking at  
+the code.  You can dump all the IVORs and see which matches if you want.
+
+- k
