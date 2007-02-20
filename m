@@ -1,35 +1,33 @@
-Return-Path: <FENKES@de.ibm.com>
-Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+Return-Path: <hnguyen@linux.vnet.ibm.com>
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D648BDDDF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 09:36:22 +1100 (EST)
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9519DDDDE9
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 09:57:35 +1100 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l1KMaIWE091418
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 22:36:18 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
+	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l1KMvVLh132060
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 22:57:31 GMT
+Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
+	[9.149.165.213])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l1KMaI1i1532074
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 23:36:18 +0100
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l1KMaHIe009567
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 23:36:18 +0100
-In-Reply-To: <1171992306.22669.5.camel@sinatra.austin.ibm.com>
-To: John Rose <johnrose@austin.ibm.com>
+	ESMTP id l1KMvUbJ1843318
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 23:57:30 +0100
+Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l1KMvUkR025135
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 23:57:30 +0100
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	johnrose@us.ibm.com
+Subject: [PATCH 2.6.21-rc1] ibmebus: more error reporting in dynamic
+	add/remove code
 MIME-Version: 1.0
-Subject: Re: [PATCH 2.6.21-rc1] ibmebus: Support dynamic addition	and	removal
-	of adapters
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OF11FDFA50.7BF76A97-ON85257288.006AC46B-85257288.007C2AD7@de.ibm.com>
-Date: Tue, 20 Feb 2007 17:36:16 -0500
-Content-Type: text/plain; charset="ISO-8859-1"
-Cc: Paul Mackerras <pmac@au1.ibm.com>, lkml <linux-kernel@vger.kernel.org>,
-	External List <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-	Me Notes <johnrose@us.ibm.com>
+Date: Wed, 21 Feb 2007 00:01:21 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702210001.21273.hnguyen@linux.vnet.ibm.com>
+Cc: fenkes@de.ibm.com, pmac@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,40 +37,162 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-John Rose <johnrose@austin.ibm.com> wrote on 20.02.2007 12:25:06:
+Writing the ibmebus probe and remove attributes now throws an appropriate
+error if something goes wrong. This way, userspace tools can check for
+success or failure of an addition or removal. The write will block until
+the probe/remove operation completes, so, when the write operation returns
+without an error, you can be sure the probe was successful and the device
+is present in the system.
 
-> > If the probe operation succeeds, the respective device will show up=20
-> > beneath
-> > /sys/bus/ibmebus/devices.
->=20
-> This approach is not particularly synchronous.  Take the case of an add
-> failure: how long would an application wait before deciding that the new
-> device is not going to appear?
->
-> It might be preferable to have the write to the probe function fail.=20
-> For example, if we can't find the device node, return -EINVAL or
-> something.
+As an added bonus, an eventual trailing newline is now removed from the
+written string.
 
-Can be done, sure. Just a matter of putting some more sophisticated error
-handling into my code. Patch follows in a bit.
-=20
-> > This is already taken care of by of=5Fdevice=5Fregister().
->=20
-> If we are scrapping the use of of=5Fdevice for ibmebus devices, can we
-> still create a devspec file for OF correlation purposes?
 
-We don't. My recent patch only changes the fake root device.
-Ibmebus-based devices will still be of=5Fdevices, of course.
-
-Regards,
-  Joachim
-
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
 ---
-Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
-IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
-Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
-eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239=20
 
-Sitz der Gesellschaft: B=F6blingen  --  Geschftsfhrung: Herbert Kircher
-Vorsitzender des Aufsichtsrats: Johann Weihen
-Registergericht: Amtsgericht Stuttgart, HRB 243294
+
+ ibmebus.c |   54 ++++++++++++++++++++++++++++++++++++------------------
+ 1 files changed, 36 insertions(+), 18 deletions(-)
+
+
+diff -urp a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+--- a/arch/powerpc/kernel/ibmebus.c	2007-02-20 21:54:22.366443424 +0100
++++ b/arch/powerpc/kernel/ibmebus.c	2007-02-20 23:31:39.950486616 +0100
+@@ -167,7 +167,7 @@ static ssize_t ibmebusdev_show_name(stru
+ static DEVICE_ATTR(name, S_IRUSR | S_IRGRP | S_IROTH, ibmebusdev_show_name,
+ 		   NULL);
+ 
+-static struct ibmebus_dev* __devinit ibmebus_register_device_common(
++static int __devinit ibmebus_register_device_common(
+ 	struct ibmebus_dev *dev, const char *name)
+ {
+ 	int err = 0;
+@@ -186,12 +186,12 @@ static struct ibmebus_dev* __devinit ibm
+ 	if ((err = of_device_register(&dev->ofdev)) != 0) {
+ 		printk(KERN_ERR "%s: failed to register device (%d).\n",
+ 		       __FUNCTION__, err);
+-		return NULL;
++		return -ENODEV;
+ 	}
+ 
+ 	device_create_file(&dev->ofdev.dev, &dev_attr_name);
+ 
+-	return dev;
++	return 0;
+ }
+ 
+ static struct ibmebus_dev* __devinit ibmebus_register_device_node(
+@@ -205,18 +205,18 @@ static struct ibmebus_dev* __devinit ibm
+ 	if (!loc_code) {
+                 printk(KERN_WARNING "%s: node %s missing 'ibm,loc-code'\n",
+ 		       __FUNCTION__, dn->name ? dn->name : "<unknown>");
+-		return NULL;
++		return ERR_PTR(-EINVAL);
+         }
+ 
+ 	if (strlen(loc_code) == 0) {
+ 	        printk(KERN_WARNING "%s: 'ibm,loc-code' is invalid\n",
+ 		       __FUNCTION__);
+-		return NULL;
++		return ERR_PTR(-EINVAL);
+ 	}
+ 
+ 	dev = kzalloc(sizeof(struct ibmebus_dev), GFP_KERNEL);
+ 	if (!dev) {
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 	}
+ 
+ 	dev->ofdev.node = of_node_get(dn);
+@@ -227,9 +227,9 @@ static struct ibmebus_dev* __devinit ibm
+ 		min(length, BUS_ID_SIZE - 1));
+ 
+ 	/* Register with generic device framework. */
+-	if (ibmebus_register_device_common(dev, dn->name) == NULL) {
++	if (ibmebus_register_device_common(dev, dn->name) != 0) {
+ 		kfree(dev);
+-		return NULL;
++		return ERR_PTR(-ENODEV);
+ 	}
+ 
+ 	return dev;
+@@ -240,9 +240,8 @@ static void ibmebus_probe_of_nodes(char*
+ 	struct device_node *dn = NULL;
+ 
+ 	while ((dn = of_find_node_by_name(dn, name))) {
+-		if (ibmebus_register_device_node(dn) == NULL) {
++		if (IS_ERR(ibmebus_register_device_node(dn))) {
+ 			of_node_put(dn);
+-
+ 			return;
+ 		}
+ 	}
+@@ -390,30 +389,40 @@ static int ibmebus_match_helper_loc_code
+ 	return 0;
+ }
+ 
+-static ssize_t ibmebus_store_probe(struct bus_type *dev,
++static ssize_t ibmebus_store_probe(struct bus_type *bus,
+ 				   const char *buf, size_t count)
+ {
+ 	struct device_node *dn = NULL;
++	struct ibmebus_dev *dev;
+ 	char *loc_code;
+ 
++	buf[count] = '\0';
++	if (buf[count-1] == '\n')
++		buf[count-1] = '\0';
++
+ 	if (bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
+ 			     ibmebus_match_helper_loc_code)) {
+ 		printk(KERN_WARNING "%s: loc_code %s has already been probed\n",
+ 		       __FUNCTION__, buf);
+-		return count;
++		return -EINVAL;
+ 	}
+ 
+ 	while ((dn = of_find_all_nodes(dn))) {
+ 		loc_code = (char *)get_property(dn, "ibm,loc-code", NULL);
+ 		if (loc_code && (strncmp(loc_code, buf, count) == 0)) {
+-			if (ibmebus_register_device_node(dn) == NULL) {
++			dev = ibmebus_register_device_node(dn);
++			if (IS_ERR(dev)) {
+ 				of_node_put(dn);
+-				break;
+-			}
++				return PTR_ERR(dev);
++			} else
++				return count; /* success */
+ 		}
+ 	}
+ 
+-	return count;
++	/* if we drop out of the loop, the loc code was invalid */
++	printk(KERN_WARNING "%s: no device with loc_code %s found\n",
++	       __FUNCTION__, buf);
++	return -ENODEV;
+ }
+ static BUS_ATTR(probe, S_IWUSR, NULL, ibmebus_store_probe);
+ 
+@@ -422,9 +431,18 @@ static ssize_t ibmebus_store_remove(stru
+ {
+ 	struct device *dev;
+ 
+-	while ((dev = bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
+-				      ibmebus_match_helper_loc_code))) {
++	buf[count] = '\0';
++	if (buf[count-1] == '\n')
++		buf[count-1] = '\0';
++
++	/* The location code is unique, so we will find one device at most */
++	if ((dev = bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
++				   ibmebus_match_helper_loc_code))) {
+ 		ibmebus_unregister_device(dev);
++	} else {
++		printk(KERN_WARNING "%s: loc_code %s not on the bus\n",
++		       __FUNCTION__, buf);
++		return -ENODEV;
+ 	}
+ 
+ 	return count;
