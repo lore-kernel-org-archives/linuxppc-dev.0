@@ -1,21 +1,16 @@
-Return-Path: <mh@omnisys.se>
-Received: from ch-smtp02.sth.basefarm.net (ch-smtp02.sth.basefarm.net
-	[80.76.149.213])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 09F4CDDDEB
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id 9F9DFDDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Feb 2007 07:24:27 +1100 (EST)
-Date: Wed, 21 Feb 2007 22:35:43 +0100
-From: Magnus Hjorth <mh@omnisys.se>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: mcpu options for AMCC440 with fpu
-Message-Id: <20070221223543.64d584d7.mh@omnisys.se>
-In-Reply-To: <1172087270.3018.18.camel@localhost.localdomain>
-References: <600461.55072.qm@web23412.mail.ird.yahoo.com>
-	<1172087270.3018.18.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Thu, 22 Feb 2007 08:14:01 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C755FD.338E02E1"
+Subject: wait_for_completion blocks the whole kernel?
+Date: Wed, 21 Feb 2007 22:10:53 +0100
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E264924@aquib01a>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,123 +21,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+This is a multi-part message in MIME format.
 
-Have you tried using the -ffast-math option?
+------_=_NextPart_001_01C755FD.338E02E1
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-/Magnus
+Is it possible that calling wait_for_completion the whole kernel =
+freezes?
+Is it possible to specify a timeout for wait_for_completion?=20
+
+Bye,
+Antonio.
 
 
-On Wed, 21 Feb 2007 20:47:50 +0100
-Patrice Bouchand <pb_fwd_list@yahoo.fr> wrote:
+------_=_NextPart_001_01C755FD.338E02E1
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
->=20
-> FYI, I got the following answer on mplayer mailing list:
->=20
-> > Apparently -mcpu=3D440fp is the one. However, it's possible, that GCC
-> > "optimizations" actually make the code slower.
->=20
-> Can someone confirme this possiblity ?
->=20
-> Any answer would be greatly appreciated ;)=20
->=20
->=20
->     Patrice Bouchand
->=20
->=20
-> > Hello,
-> >=20
-> >    I was searching for the best mcpu option for amcc440, compiling and
-> > running a small program you can find here:=20
-> > http://magnux.free.fr/gcc/mandelbrot.c. My distro is a ppc fedora core
-> > 6, and results are obviously the same using DENX4.0.
-> >=20
-> > --------------------
-> > -bash-3.00# gcc -O2 ./mandelbrot.c -o ./mandelbrot &&
-> > time ./mandelbrot && rm -f ./mandelbrot
-> >=20
-> > real    1m15.059s
-> > user    1m14.996s
-> > sys     0m0.060s
-> > -bash-3.00# gcc -O2 -mcpu=3D440 ./mandelbrot.c -o ./mandelbrot &&
-> > time ./mandelbrot && rm -f ./mandelbrot
-> >=20
-> > real    0m39.606s
-> > user    0m39.552s
-> > sys     0m0.028s
-> > -bash-3.00# gcc -O2 -mcpu=3D440fp ./mandelbrot.c -o ./mandelbrot &&
-> > time ./mandelbrot && rm -f ./mandelbrot
-> >=20
-> > real    1m15.016s
-> > user    1m14.988s
-> > sys     0m0.024s
-> > -bash-3.00# gcc -O2 -msoft-float ./mandelbrot.c -o ./mandelbrot &&
-> > time ./mandelbrot && rm -f ./mandelbrot
-> >=20
-> > real    0m39.577s
-> > user    0m39.544s
-> > sys     0m0.032s
-> > --------------------
-> >=20
-> > * I do not explain why not using FPU gives better results ?
-> >=20
-> > * I did also a test with bzip2.c
-> > ( http://pag.csail.mit.edu/~smcc/projects/single-file-programs/bzip2.c =
-).
-> >=20
-> > ----------------------
-> > -bash-3.00# gcc -O2 ./bzip2.c -o ./bzip2 && time ./bzip2 ./oggenc.c
-> > && ./bzip2 -d ./oggenc.c.bz2 && rm ./bzip2
-> >=20
-> > real    0m18.478s
-> > user    0m18.216s
-> > sys     0m0.152s
-> > -bash-3.00# gcc -O2 -mcpu=3D440 ./bzip2.c -o ./bzip2 &&
-> > time ./bzip2 ./oggenc.c && ./bzip2 -d ./oggenc.c.bz2 && rm ./bzip2
-> >=20
-> > real    0m18.786s
-> > user    0m18.544s
-> > sys     0m0.128s
-> > -bash-3.00# gcc -O2 -mcpu=3D440fp ./bzip2.c -o ./bzip2 &&
-> > time ./bzip2 ./oggenc.c && ./bzip2 -d ./oggenc.c.bz2 && rm ./bzip2
-> >=20
-> > real    0m18.811s
-> > user    0m18.548s
-> > sys     0m0.144s
-> > -bash-3.00# gcc -O2 -mcpu=3DG3 ./bzip2.c -o ./bzip2 &&
-> > time ./bzip2 ./oggenc.c && ./bzip2 -d ./oggenc.c.bz2 && rm ./bzip2
-> >=20
-> > real    0m18.871s
-> > user    0m18.644s
-> > sys     0m0.104s
-> > ----------------------
-> >=20
-> > * mcpu option seems to not have any effect ?
-> >=20
-> > *  My third test was to compile and run mplayer.
-> > - With default options (no mcpu specified), my test mpeg was smooth.
-> > - With mcpu=3D440fp, my test mpeg was not smooth.
-> >=20
-> >  Can anybody bring me some lights about the right gcc mcpu option for
-> > amcc440 ?
-> >=20
-> > Best regards,
-> >=20
-> >        Patrice Bouchand
-> >=20
-> >=20
-> >=20
-> >=20
-> > ______________________________________________________________________
-> > D=E9couvrez une nouvelle fa=E7on d'obtenir des r=E9ponses =E0 toutes vos
-> > questions ! Profitez des connaissances, des opinions et des
-> > exp=E9riences des internautes sur Yahoo! Questions/R=E9ponses.
-> > _______________________________________________
-> > Linuxppc-embedded mailing list
-> > Linuxppc-embedded@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->=20
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7233.69">
+<TITLE>wait_for_completion blocks the whole kernel?</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>Is it possible that calling wait_for_completion the =
+whole kernel freezes?<BR>
+Is it possible to specify a timeout for wait_for_completion?<BR>
+<BR>
+Bye,<BR>
+Antonio.<BR>
+<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C755FD.338E02E1--
