@@ -1,18 +1,15 @@
-Return-Path: <ckrinke@istor.com>
-Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 14090DDE23
+Return-Path: <jrocnuck@hotmail.com>
+Received: from bay0-omc2-s22.bay0.hotmail.com (bay0-omc2-s22.bay0.hotmail.com
+	[65.54.246.158]) by ozlabs.org (Postfix) with ESMTP id CF1C2DDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Feb 2007 12:24:12 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: understanding an IO question
-Date: Tue, 20 Feb 2007 17:13:47 -0800
-Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A164@MERCURY.inside.istor.com>
-From: "Charles Krinke" <ckrinke@istor.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Wed, 21 Feb 2007 15:46:07 +1100 (EST)
+Message-ID: <BAY117-F33A497693D921B5E40FD95C8880@phx.gbl>
+From: "Eric Nuckols" <jrocnuck@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Motorola PrPMC6001
+Date: Tue, 20 Feb 2007 23:46:05 -0500
+Mime-Version: 1.0
+Content-Type: text/plain; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,38 +20,18 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have a board using an 8541 which is based on the mpc85xx_cds bsp. It
-has one PCI device connected to the 8541, an ASIC we make that maps in
-resources for its registers at 0x8400_0000 - 0x8400_0038.
+anybody out there working with the new Motorola PrPMC6001?
 
-The driver for our ASIC works in an 8241 design and I am trying to get
-its register access working in the 8541 and need a little additional
-understanding.
+We're thinking about using that platform in some future work, and I'm 
+curious if anybody's got a kernel and rootfs setup for one of those boards.
 
-I can see in cat /proc/iomem where we have memory apparently allocated
-for our registers, like this.
+reading through the documentation from Motorola, there appear to be some 
+board support patches, but I can't locate those files anywhere on the net to 
+examine.
 
-cat /proc/iomem
-80000000-9fffffff : PCI1 host bridge
-  84000000-84000038 : ichar
-  88000000-8fffffff : ichar
-e0003000-e00030ff : fsl-i2c.1
-e0004500-e0004507 : serial
+thanks,
+Eric Nuckols
 
-In our driver, I do an ioremap_nocache with 0x8400_0000 as an argument
-to the ioremap and am returned a virtual address of the form
-0xc905_8000. Unfortunately, I cannot seem to access my registers as they
-all return zero when accessed with the iowrite32/ioread32 helper
-functions.
-
-A little further. We do use the Outbound Address Translation window
-feature in the 8541 to get to our PCI device and I do set this up in
-uboot and I can read and write registers on our ASIC from uboot. Its
-just in the Linux driver that I seem to be having trouble.
-
-So,... I am hoping someone could give me a couple of pointers on where
-to look next for the missing piece of why I cannot access the registers
-on our ASIC from Linux whereas things were working fine from uboot
-before booting Linux.
-
-Charles
+_________________________________________________________________
+Don’t miss your chance to WIN 10 hours of private jet travel from Microsoft® 
+Office Live http://clk.atdmt.com/MRT/go/mcrssaub0540002499mrt/direct/01/
