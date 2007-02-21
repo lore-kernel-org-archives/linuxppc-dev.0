@@ -1,18 +1,19 @@
-Return-Path: <Manjunath.AM@Lntemsys.com>
-Received: from mail145.messagelabs.com (mail145.messagelabs.com
-	[216.82.245.115]) by ozlabs.org (Postfix) with SMTP id 91B7FDDDE7
+Return-Path: <ami@waves.com>
+Received: from dcmail1.waves.com (dcmail1.waves.com [12.34.136.6])
+	by ozlabs.org (Postfix) with SMTP id 7EAFDDDE0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Feb 2007 15:46:06 +1100 (EST)
-In-Reply-To: <20070220190011.09b6b8e6@vitb.dev.rtsoft.ru>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: enabling two eths
+	Wed, 21 Feb 2007 19:51:57 +1100 (EST)
+From: "Ami Levi Waves" <ami@waves.com>
+To: "'Charles Krinke'" <ckrinke@istor.com>,
+	<linuxppc-embedded@ozlabs.org>
+Subject: RE: understanding an IO question
+Date: Wed, 21 Feb 2007 09:50:57 +0100
+Message-ID: <003a01c75595$818084c0$0600000a@waves.com>
 MIME-Version: 1.0
-Message-ID: <OFEDE45104.191EF09D-ON65257289.001981AA-65257289.001A6E1E@lntemsys.com>
-From: Manjunath AM <Manjunath.AM@Lntemsys.com>
-Date: Wed, 21 Feb 2007 10:20:21 +0530
-Content-Type: multipart/alternative;
-	boundary="=_alternative 001A6E1C65257289_="
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A164@MERCURY.inside.istor.com>
+Reply-To: ami@waves.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,187 +24,68 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multipart message in MIME format.
---=_alternative 001A6E1C65257289_=
-Content-Type: text/plain; charset="US-ASCII"
+The way we do it:
 
-Hi, Thanks for your kind reply, Yes i have used different * IP Subnets*
+Fisrt open a memory device:
 
-The IPs and subnet details I use is
-1. eth0(configured through u-boot env settings)->> 192.168.174.231 and 
-subnet is 255.255.255.0 
-2. eth1(configured after kernel is up)--> 192.168.33.64 and subnet is 
-255.255.248.0
+	Handle =3D open("/dev/mem", O_RDWR);
 
-Even i tried by connecting second eth to host PC using cross cable as a 
-stand-alone network but even "ping" did not work.. 
+Than map the address using:
 
+	mmap(NULL, nAdress, PORT_READ | PROT_WRITE, MAP_SHARED, Handle, your
+base address);
 
+mmap returns a virtual pointer, pointing to your HW.
 
-Thanks & Regards
- MANJUNATH AM
- Senior Software Engineer
- Emsys
- Larsen & Toubro Limited
- Mysore-570018
- Mobile:9886375926
+Ami
 
-
-
-
-Vitaly Bordug <vbordug@ru.mvista.com> 
-02/20/2007 09:30 PM
-
-To
-Alex Zeffertt <ajz@cambridgebroadband.com>
-cc
-Manjunath AM <Manjunath.AM@Lntemsys.com>, linuxppc-embedded@ozlabs.org
-Subject
-Re: enabling two eths
-
-
-
-
-
-
-On Tue, 20 Feb 2007 15:31:54 +0000
-Alex Zeffertt <ajz@cambridgebroadband.com> wrote:
-
-> 
-> Manjunath AM wrote:
-> > 
-> > Hi,
-> > 
-> > We are using MPC8272 based target board, we use montavista Linux 
-version 
-> > 2.6.10 kernel image (with NFS enabled) to our target board,
-> > 
-> > Our board has  2 FCCs (eth0 and eth1). bot the eth's works perfectly 
-> > when we use them independently, but when we are trying to enable 
-second 
-> > one after the kernel is up using linux command  "ifconfig eth1 
-> > 192.168.33.64 up"(IP address)nothing is working.
-> > Please suggest how to enable second eth (either 0 or 1) once the 
-kernel 
-> > is up with NFS file system
-> 
-> 
-> Have you made sure that eth0 and eth1 are on *different* IP subnets?
-> If they are on the same subnet, or intersecting subnets, your routing
-> will get confused.
-> 
-It depends :)
-
-I used to test functionality such a way to have two enets in same subnet, 
-then ifdown one of them.
-
-At least with mvista RFS, one enet  handles NFS, other is up but all the 
-packets are routed to it via
-the first one. And when the first one got ifdown, routing switches to the 
-remaining enet...
--- 
-Sincerely, 
-Vitaly
-
-
---=_alternative 001A6E1C65257289_=
-Content-Type: text/html; charset="US-ASCII"
-
-
-<br><font size=2 face="sans-serif">Hi, Thanks for your kind reply, Yes
-i have used different * IP Subnets*</font>
-<br>
-<br><font size=2 face="sans-serif">The IPs and subnet details I use is</font>
-<br><font size=2 face="sans-serif">1. eth0(configured through u-boot env
-settings)-&gt;&gt; 192.168.174.231 and subnet is 255.255.255.0 </font>
-<br><font size=2 face="sans-serif">2. eth1(configured after kernel is up)--&gt;
-192.168.33.64 and subnet is 255.255.248.0</font>
-<br>
-<br><font size=2 face="sans-serif">Even i tried by connecting second eth
-to host PC using cross cable as a stand-alone network but even &quot;ping&quot;
-did not work.. </font>
-<br>
-<br>
-<br>
-<br><font size=2 face="sans-serif">Thanks &amp; Regards<br>
- MANJUNATH AM<br>
- Senior Software Engineer<br>
- Emsys<br>
- Larsen &amp; Toubro Limited<br>
- Mysore-570018<br>
- Mobile:9886375926<br>
-</font>
-<br>
-<br>
-<br>
-<table width=100%>
-<tr valign=top>
-<td width=40%><font size=1 face="sans-serif"><b>Vitaly Bordug &lt;vbordug@ru.mvista.com&gt;</b>
-</font>
-<p><font size=1 face="sans-serif">02/20/2007 09:30 PM</font>
-<td width=59%>
-<table width=100%>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">To</font></div>
-<td><font size=1 face="sans-serif">Alex Zeffertt &lt;ajz@cambridgebroadband.com&gt;</font>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">cc</font></div>
-<td><font size=1 face="sans-serif">Manjunath AM &lt;Manjunath.AM@Lntemsys.com&gt;,
-linuxppc-embedded@ozlabs.org</font>
-<tr valign=top>
-<td>
-<div align=right><font size=1 face="sans-serif">Subject</font></div>
-<td><font size=1 face="sans-serif">Re: enabling two eths</font></table>
-<br>
-<table>
-<tr valign=top>
-<td>
-<td></table>
-<br></table>
-<br>
-<br>
-<br><font size=2><tt>On Tue, 20 Feb 2007 15:31:54 +0000<br>
-Alex Zeffertt &lt;ajz@cambridgebroadband.com&gt; wrote:<br>
-<br>
-&gt; <br>
-&gt; Manjunath AM wrote:<br>
-&gt; &gt; <br>
-&gt; &gt; Hi,<br>
-&gt; &gt; <br>
-&gt; &gt; We are using MPC8272 based target board, we use montavista Linux
-version <br>
-&gt; &gt; 2.6.10 kernel image (with NFS enabled) to our target board,<br>
-&gt; &gt; <br>
-&gt; &gt; Our board has &nbsp;2 FCCs (eth0 and eth1). bot the eth's works
-perfectly <br>
-&gt; &gt; when we use them independently, but when we are trying to enable
-second <br>
-&gt; &gt; one after the kernel is up using linux command &nbsp;&quot;ifconfig
-eth1 <br>
-&gt; &gt; 192.168.33.64 up&quot;(IP address)nothing is working.<br>
-&gt; &gt; Please suggest how to enable second eth (either 0 or 1) once
-the kernel <br>
-&gt; &gt; is up with NFS file system<br>
-&gt; <br>
-&gt; <br>
-&gt; Have you made sure that eth0 and eth1 are on *different* IP subnets?<br>
-&gt; If they are on the same subnet, or intersecting subnets, your routing<br>
-&gt; will get confused.<br>
-&gt; <br>
-It depends :)<br>
-<br>
-I used to test functionality such a way to have two enets in same subnet,
-then ifdown one of them.<br>
-<br>
-At least with mvista RFS, one enet &nbsp;handles NFS, other is up but all
-the packets are routed to it via<br>
-the first one. And when the first one got ifdown, routing switches to the
-remaining enet...<br>
--- <br>
-Sincerely, <br>
-Vitaly<br>
-</tt></font>
-<br>
---=_alternative 001A6E1C65257289_=--
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+ami=3Dwaves.com@ozlabs.org =
+[mailto:linuxppc-
+> embedded-bounces+ami=3Dwaves.com@ozlabs.org] On Behalf Of Charles =
+Krinke
+> Sent: Wednesday, February 21, 2007 2:14 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: understanding an IO question
+>=20
+> I have a board using an 8541 which is based on the mpc85xx_cds bsp. It
+> has one PCI device connected to the 8541, an ASIC we make that maps in
+> resources for its registers at 0x8400_0000 - 0x8400_0038.
+>=20
+> The driver for our ASIC works in an 8241 design and I am trying to get
+> its register access working in the 8541 and need a little additional
+> understanding.
+>=20
+> I can see in cat /proc/iomem where we have memory apparently allocated
+> for our registers, like this.
+>=20
+> cat /proc/iomem
+> 80000000-9fffffff : PCI1 host bridge
+>   84000000-84000038 : ichar
+>   88000000-8fffffff : ichar
+> e0003000-e00030ff : fsl-i2c.1
+> e0004500-e0004507 : serial
+>=20
+> In our driver, I do an ioremap_nocache with 0x8400_0000 as an argument
+> to the ioremap and am returned a virtual address of the form
+> 0xc905_8000. Unfortunately, I cannot seem to access my registers as =
+they
+> all return zero when accessed with the iowrite32/ioread32 helper
+> functions.
+>=20
+> A little further. We do use the Outbound Address Translation window
+> feature in the 8541 to get to our PCI device and I do set this up in
+> uboot and I can read and write registers on our ASIC from uboot. Its
+> just in the Linux driver that I seem to be having trouble.
+>=20
+> So,... I am hoping someone could give me a couple of pointers on where
+> to look next for the missing piece of why I cannot access the =
+registers
+> on our ASIC from Linux whereas things were working fine from uboot
+> before booting Linux.
+>=20
+> Charles
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
