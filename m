@@ -1,18 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: Introduce address space "slices"
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <dwg@au1.ibm.com>
-In-Reply-To: <20070221002922.GG10231@localhost.localdomain>
-References: <1171867418.18571.3.camel@localhost.localdomain>
-	<1172000736.22940.48.camel@localhost.localdomain>
-	<1172001107.18571.127.camel@localhost.localdomain>
-	<20070221002922.GG10231@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 21 Feb 2007 11:40:57 +1100
-Message-Id: <1172018457.18571.176.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	"cbe-oss-dev@ozlabs.org" <cbe-oss-dev@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 21 Feb 2007 11:35:58 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [0/14] Ebony support, 2nd spin
+Message-ID: <20070221003558.GJ10231@localhost.localdomain>
+References: <20070220020837.GF17818@localhost.localdomain>
+	<1171980307.24204.66.camel@zod.rchland.ibm.com>
+	<200702201516.25160.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200702201516.25160.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,29 +20,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-02-21 at 11:29 +1100, David Gibson wrote:
-> On Wed, Feb 21, 2007 at 06:51:47AM +1100, Benjamin Herrenschmidt wrote:
-> > On Tue, 2007-02-20 at 13:45 -0600, Adam Litke wrote:
-> > > Your patch drops the pgoff check that prepare_hugepage_range used to
-> > > check.  The misaligned_offset test in libhugetlbfs identified the
-> > > problem.  The following patch (applied on top of yours) makes the
-> > > problem go away.  I am not necessarily suggesting it's the correct
-> > > fix... just concisely describing the problem.
-> > 
-> > Ok, I'll fold that into the patch. Ultimately, when I finally do the
-> > generic changes, prepare_hugepage_range() will be going away. I will
-> > either pass pgoff along to slice_g_u_a for it to validate the pgoff, or
-> > I will let f_ops->mmap() be responsible of checking it. For SPEs, I do
-> > the pgoff check there. Any reason tht wouldn't work for huge pages ?
+On Tue, Feb 20, 2007 at 03:16:24PM +0100, Arnd Bergmann wrote:
+> On Tuesday 20 February 2007 15:05, Josh Boyer wrote:
+> > Which probably has something to do with the of_serial driver being used
+> > now.  Just an FYI.
 > 
-> Err... there was.  The trouble was the prepare() or
-> get_unmapped_area() which could open new slices happens before the
-> ->mmap() call, so we could have already converted segments,
-> irreversibly, then have the mmap fail because of a bad alignment.  Now
-> that slice conversions can go both ways, that might not be a
-> significant problem any more.
+> If you want to use of_serial together with serial console, you need
+> to make sure that the detection logic in arch/powerpc/kernel/legacy_serial.c
+> finds the port. It currently finds the serial port on axon, but that
+> requires that the bus it's on is of type "opb" and the device itself
+> is listed as "stdout" and has type "serial" and is compatible with
+> "ns16750" (note: the others look for "ns16550" here).
 
-Ok. I'll start working on the generic g_u_a changes and will try to make
-sure I get that right there. In the meantime, Adam's patch is good.
+Err.. no.  On my system legacy_serial doesn't touch the ports, but I'm
+getting console output via of_serial just fine.  The console is
+initialized rather later than would be ideal, but it works.
 
-Ben.
+I know that BenH has expressed the strong preference that
+legacy_serial should be reverted to only handling legacy ISA ports,
+not SoC and other hardwired ports.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
