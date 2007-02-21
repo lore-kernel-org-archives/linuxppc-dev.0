@@ -1,27 +1,19 @@
-Return-Path: <pjmaiya@signal-networks.com>
-Received: from signal-networks.com (unknown [61.95.204.104])
-	by ozlabs.org (Postfix) with ESMTP id 002F9DDD0C
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0DEEBDDD0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Feb 2007 22:45:43 +1100 (EST)
-Received: from pjmaiya ([192.168.1.70])
-	by signal-networks.com (mail.signal-networks.com [192.168.1.1])
-	(MDaemon Standard v9.0.1) with ESMTP id md50000072889.msg
-	for <linuxppc-embedded@ozlabs.org>; Wed, 21 Feb 2007 17:18:37 +0530
-Message-ID: <000d01c755ae$364a7bf0$4601a8c0@signet>
-From: "pjmaiya" <pjmaiya@signal-networks.com>
-To: <bwarren@qstreams.com>
-References: <29DC34A6B43468409F5A371CFE34E849091044@ex01.ads.ubidyne.de>
-	<011b01c74b81$5604ad80$4601a8c0@signet>
-	<1170949359.14627.66.camel@saruman.qstreams.net>
-	<00c401c74c36$42aeded0$4601a8c0@signet>
-	<01a901c750f5$ef392de0$4601a8c0@signet>
-	<1171555658.7029.49.camel@saruman.qstreams.net>
-Subject: Re: CLI for embedded system
-Date: Wed, 21 Feb 2007 17:18:32 +0530
+	Thu, 22 Feb 2007 01:14:45 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Cc: linuxppc-embedded@ozlabs.org
+	charset="us-ascii"
+Subject: RE: understanding an IO question
+Date: Wed, 21 Feb 2007 06:14:43 -0800
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A165@MERCURY.inside.istor.com>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: <ami@waves.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,66 +24,104 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Ben,
-     I have tried following option, with host as ppc_8xx, since we are using
-mpc860 processor and  also we are using montavista provided compiler
-(ppc_8xx).
-Our embedded target runs on montavista linux with mpc860 processor and
-compiler given by monta vista(hard hat linux).
+I apologize for not making myself clearer. This is a kernel driver
+issue, not a user space issue. The issue is addressing the registers in
+a PCI device in its driver.
 
-host$ ./configure --host=ppc_8xx --build=i686 CC=ppc_8xx-gcc
+We have a functioning code base that works with Linux 2.6.17.11 on our
+8241 platform. We have built a new board using the 8541. Although the
+registers are addressable from uboot and can be read/written, once Linux
+boots, the registers cannot be addressed.
 
-We are getting error ppc_8xx unkown host at some stage. When we further
-investigated "clish" code we found that we need to add our new architecture
-in aux_scripts/configure.sub file. We have successfully built that part. But
-for some libarary we are getting error in /usr/lib/libbstd++, but we need to
-change this path..only option left for us to change in "configure" file
-which requires autoconf tool..Also we need to change some thing in
-"configure.in". We are little bit stuck in this part..Can U help in this
-regard.. Writing our make for clish is massive work!!!
+I suspect this to be in either TLB1 setup or Outbound Address
+Translation windows.
 
-thanx for help.
--pjmaiya
+So,... my questions really are=20
 
------ Original Message ----- 
-From: "Ben Warren" <bwarren@qstreams.com>
-To: "pjmaiya" <pjmaiya@signal-networks.com>
-Cc: <linuxppc-embedded@ozlabs.org>
-Sent: Thursday, February 15, 2007 9:37 PM
-Subject: Re: CLI for embedded system
+1. "Where are the TLB's setup in the 85xx chip during Linux
+initialization for devices that may be using PCI memory in the
+0x8000_0000 - 0x9fff_ffff address space region?". I can see that some
+reset of TLB's occurs in head_fsl_booke.S and perhaps that is part of
+the answer. The other part may be in where TLB's are then setup again
+after they are reset in Linux.
+
+2. "Are Outbound Address Translation windows reset by the arch/ppc/...
+Linux initialization and if so, where. If they are reset, where is the
+best place to put them back to the state I had set them up in uboot.
+
+Charles
 
 
-> On Thu, 2007-02-15 at 17:09 +0530, pjmaiya wrote:
-> > hi,
-> >     I have successfully complied and used 'clish' in host system (i686
-> > machine)
-> > But I need to port the same for PPC platform. Can anyone suggest me how
-to
-> > do the same.
-> >
-> > thanx in advace,
-> > pjmaiya
-> >
->
-> Like many other projects, I believe this one uses autoconf (I think
-> that's the term).  As a starting point, try:
->
-> host$ ./configure --host=ppc-linux-gnu --build=i686 CC=
-> ${CROSS_COMPILE}gcc
->
-> /* Monitor the output of configure to make sure that everything looks
-> kosher.  You'll probably want to add a "--prefix=" option that tells it
-> where to place the end result, and there may be other options you want
-> too.  Read and understand the Makefile that configure creates.  Then:
->
-> host$ make
->
-> I reiterate - this is only a starting point.  This may not compile
-> cleanly and you will need to experiment a bit, I'm sure.  Hopefully it's
-> not too bad, but these projects can sometimes be a pain to get exactly
-> as you want.
->
-> regards,
-> Ben
->
->
+
+-----Original Message-----
+From: Ami Levi Waves [mailto:ami@waves.com]=20
+Sent: Wednesday, February 21, 2007 12:51 AM
+To: Charles Krinke; linuxppc-embedded@ozlabs.org
+Subject: RE: understanding an IO question
+
+The way we do it:
+
+Fisrt open a memory device:
+
+	Handle =3D open("/dev/mem", O_RDWR);
+
+Than map the address using:
+
+	mmap(NULL, nAdress, PORT_READ | PROT_WRITE, MAP_SHARED, Handle,
+your
+base address);
+
+mmap returns a virtual pointer, pointing to your HW.
+
+Ami
+
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+ami=3Dwaves.com@ozlabs.org
+[mailto:linuxppc-
+> embedded-bounces+ami=3Dwaves.com@ozlabs.org] On Behalf Of Charles =
+Krinke
+> Sent: Wednesday, February 21, 2007 2:14 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: understanding an IO question
+>=20
+> I have a board using an 8541 which is based on the mpc85xx_cds bsp. It
+> has one PCI device connected to the 8541, an ASIC we make that maps in
+> resources for its registers at 0x8400_0000 - 0x8400_0038.
+>=20
+> The driver for our ASIC works in an 8241 design and I am trying to get
+> its register access working in the 8541 and need a little additional
+> understanding.
+>=20
+> I can see in cat /proc/iomem where we have memory apparently allocated
+> for our registers, like this.
+>=20
+> cat /proc/iomem
+> 80000000-9fffffff : PCI1 host bridge
+>   84000000-84000038 : ichar
+>   88000000-8fffffff : ichar
+> e0003000-e00030ff : fsl-i2c.1
+> e0004500-e0004507 : serial
+>=20
+> In our driver, I do an ioremap_nocache with 0x8400_0000 as an argument
+> to the ioremap and am returned a virtual address of the form
+> 0xc905_8000. Unfortunately, I cannot seem to access my registers as
+they
+> all return zero when accessed with the iowrite32/ioread32 helper
+> functions.
+>=20
+> A little further. We do use the Outbound Address Translation window
+> feature in the 8541 to get to our PCI device and I do set this up in
+> uboot and I can read and write registers on our ASIC from uboot. Its
+> just in the Linux driver that I seem to be having trouble.
+>=20
+> So,... I am hoping someone could give me a couple of pointers on where
+> to look next for the missing piece of why I cannot access the
+registers
+> on our ASIC from Linux whereas things were working fine from uboot
+> before booting Linux.
+>=20
+> Charles
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
