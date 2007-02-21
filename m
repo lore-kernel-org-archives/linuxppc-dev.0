@@ -1,33 +1,16 @@
-Return-Path: <hnguyen@linux.vnet.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9519DDDDE9
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 09:57:35 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l1KMvVLh132060
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 22:57:31 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l1KMvUbJ1843318
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 23:57:30 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l1KMvUkR025135
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Feb 2007 23:57:30 +0100
-From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-To: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	johnrose@us.ibm.com
-Subject: [PATCH 2.6.21-rc1] ibmebus: more error reporting in dynamic
-	add/remove code
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 21 Feb 2007 11:16:23 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+Subject: Re: [RFC 3/3] zImage: Exception vector support
+Message-ID: <20070221001623.GA10231@localhost.localdomain>
+References: <45D7A914.4040000@am.sony.com>
+	<20070220022538.GH17818@localhost.localdomain>
+	<45DB0448.9080301@am.sony.com> <45DB1759.2010302@am.sony.com>
 MIME-Version: 1.0
-Date: Wed, 21 Feb 2007 00:01:21 +0100
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702210001.21273.hnguyen@linux.vnet.ibm.com>
-Cc: fenkes@de.ibm.com, pmac@au1.ibm.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45DB1759.2010302@am.sony.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,162 +20,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Writing the ibmebus probe and remove attributes now throws an appropriate
-error if something goes wrong. This way, userspace tools can check for
-success or failure of an addition or removal. The write will block until
-the probe/remove operation completes, so, when the write operation returns
-without an error, you can be sure the probe was successful and the device
-is present in the system.
+On Tue, Feb 20, 2007 at 07:44:25AM -0800, Geoff Levand wrote:
+> Geoff Levand wrote:
+> > David Gibson wrote:
+> >> On Sat, Feb 17, 2007 at 05:17:08PM -0800, Geoff Levand wrote:
+> >>> Add SMP exception vector support to the powerpc zImage bootwrapper.  For
+> >>> platforms which have entry points in the vector table.  This implements
+> >>> SMP entry via the system reset vector.
+> >> 
+> >> I really don't like having always-included code take over the absolute
+> >> start of the zImage's address space.  The whole idea in my entry
+> >> cleanup patch is that the platform code gets control of the "head.S"
+> >> area, so we can potentially support platforms with conflicting
+> >> hard-wired requirements for things at specific offsets.
+> >> 
+> >> I think this belongs in a ps3.o, which will define _zimage_start to be
+> >> identical to the reset vector.
+> >> 
+> > 
+> > I need two entry points, one for the first stage loader (0x100), and one
+> > for a second stage kexec loader (_zimage_start).
 
-As an added bonus, an eventual trailing newline is now removed from the
-written string.
+Ok, in that case you can have a separate _zimage_start from the reset
+vector.
 
+> Sorry, I should have been more clear.  This is what I have in the wrapper.
+> My intension was that head.S is only used for platforms that need it.
+> 
+> +ps3)
+> +    platformo="$object/head.o $object/ps3-hvcall.o $object/ps3.o"
+> +    ;;
+> 
+> Having those vectors makes a 4MB dead gap in the binary image.  The ps3's
+> loader supports a gziped image so there is no problem, but for the general
+> case of binary images, there is no way we can have those always in there.
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
+Ah, ok, that's reasonable.  However, for the time being, PS3 is the
+only platform that needs this.  I think it would be better to do this
+as a PS3 specific wrapper initially.  Later, if we get other platforms
+that need a reset vector we can see what's really common and
+consolidate it.
 
-
- ibmebus.c |   54 ++++++++++++++++++++++++++++++++++++------------------
- 1 files changed, 36 insertions(+), 18 deletions(-)
-
-
-diff -urp a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
---- a/arch/powerpc/kernel/ibmebus.c	2007-02-20 21:54:22.366443424 +0100
-+++ b/arch/powerpc/kernel/ibmebus.c	2007-02-20 23:31:39.950486616 +0100
-@@ -167,7 +167,7 @@ static ssize_t ibmebusdev_show_name(stru
- static DEVICE_ATTR(name, S_IRUSR | S_IRGRP | S_IROTH, ibmebusdev_show_name,
- 		   NULL);
- 
--static struct ibmebus_dev* __devinit ibmebus_register_device_common(
-+static int __devinit ibmebus_register_device_common(
- 	struct ibmebus_dev *dev, const char *name)
- {
- 	int err = 0;
-@@ -186,12 +186,12 @@ static struct ibmebus_dev* __devinit ibm
- 	if ((err = of_device_register(&dev->ofdev)) != 0) {
- 		printk(KERN_ERR "%s: failed to register device (%d).\n",
- 		       __FUNCTION__, err);
--		return NULL;
-+		return -ENODEV;
- 	}
- 
- 	device_create_file(&dev->ofdev.dev, &dev_attr_name);
- 
--	return dev;
-+	return 0;
- }
- 
- static struct ibmebus_dev* __devinit ibmebus_register_device_node(
-@@ -205,18 +205,18 @@ static struct ibmebus_dev* __devinit ibm
- 	if (!loc_code) {
-                 printk(KERN_WARNING "%s: node %s missing 'ibm,loc-code'\n",
- 		       __FUNCTION__, dn->name ? dn->name : "<unknown>");
--		return NULL;
-+		return ERR_PTR(-EINVAL);
-         }
- 
- 	if (strlen(loc_code) == 0) {
- 	        printk(KERN_WARNING "%s: 'ibm,loc-code' is invalid\n",
- 		       __FUNCTION__);
--		return NULL;
-+		return ERR_PTR(-EINVAL);
- 	}
- 
- 	dev = kzalloc(sizeof(struct ibmebus_dev), GFP_KERNEL);
- 	if (!dev) {
--		return NULL;
-+		return ERR_PTR(-ENOMEM);
- 	}
- 
- 	dev->ofdev.node = of_node_get(dn);
-@@ -227,9 +227,9 @@ static struct ibmebus_dev* __devinit ibm
- 		min(length, BUS_ID_SIZE - 1));
- 
- 	/* Register with generic device framework. */
--	if (ibmebus_register_device_common(dev, dn->name) == NULL) {
-+	if (ibmebus_register_device_common(dev, dn->name) != 0) {
- 		kfree(dev);
--		return NULL;
-+		return ERR_PTR(-ENODEV);
- 	}
- 
- 	return dev;
-@@ -240,9 +240,8 @@ static void ibmebus_probe_of_nodes(char*
- 	struct device_node *dn = NULL;
- 
- 	while ((dn = of_find_node_by_name(dn, name))) {
--		if (ibmebus_register_device_node(dn) == NULL) {
-+		if (IS_ERR(ibmebus_register_device_node(dn))) {
- 			of_node_put(dn);
--
- 			return;
- 		}
- 	}
-@@ -390,30 +389,40 @@ static int ibmebus_match_helper_loc_code
- 	return 0;
- }
- 
--static ssize_t ibmebus_store_probe(struct bus_type *dev,
-+static ssize_t ibmebus_store_probe(struct bus_type *bus,
- 				   const char *buf, size_t count)
- {
- 	struct device_node *dn = NULL;
-+	struct ibmebus_dev *dev;
- 	char *loc_code;
- 
-+	buf[count] = '\0';
-+	if (buf[count-1] == '\n')
-+		buf[count-1] = '\0';
-+
- 	if (bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
- 			     ibmebus_match_helper_loc_code)) {
- 		printk(KERN_WARNING "%s: loc_code %s has already been probed\n",
- 		       __FUNCTION__, buf);
--		return count;
-+		return -EINVAL;
- 	}
- 
- 	while ((dn = of_find_all_nodes(dn))) {
- 		loc_code = (char *)get_property(dn, "ibm,loc-code", NULL);
- 		if (loc_code && (strncmp(loc_code, buf, count) == 0)) {
--			if (ibmebus_register_device_node(dn) == NULL) {
-+			dev = ibmebus_register_device_node(dn);
-+			if (IS_ERR(dev)) {
- 				of_node_put(dn);
--				break;
--			}
-+				return PTR_ERR(dev);
-+			} else
-+				return count; /* success */
- 		}
- 	}
- 
--	return count;
-+	/* if we drop out of the loop, the loc code was invalid */
-+	printk(KERN_WARNING "%s: no device with loc_code %s found\n",
-+	       __FUNCTION__, buf);
-+	return -ENODEV;
- }
- static BUS_ATTR(probe, S_IWUSR, NULL, ibmebus_store_probe);
- 
-@@ -422,9 +431,18 @@ static ssize_t ibmebus_store_remove(stru
- {
- 	struct device *dev;
- 
--	while ((dev = bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
--				      ibmebus_match_helper_loc_code))) {
-+	buf[count] = '\0';
-+	if (buf[count-1] == '\n')
-+		buf[count-1] = '\0';
-+
-+	/* The location code is unique, so we will find one device at most */
-+	if ((dev = bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
-+				   ibmebus_match_helper_loc_code))) {
- 		ibmebus_unregister_device(dev);
-+	} else {
-+		printk(KERN_WARNING "%s: loc_code %s not on the bus\n",
-+		       __FUNCTION__, buf);
-+		return -ENODEV;
- 	}
- 
- 	return count;
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
