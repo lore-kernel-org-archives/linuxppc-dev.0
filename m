@@ -1,18 +1,23 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 0DEA5DDE21
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 20:36:12 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [POWERPC] wire up sys_epoll_pwait
-Date: Wed, 21 Feb 2007 10:36:01 +0100
-References: <20070221153622.2aa958fa.sfr@canb.auug.org.au>
-In-Reply-To: <20070221153622.2aa958fa.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702211036.01861.arnd@arndb.de>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BEDE3DDD0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 23:26:03 +1100 (EST)
+In-Reply-To: <20070221002443.GE10231@localhost.localdomain>
+References: <20070220021235.DC02DDDD06@ozlabs.org>
+	<1171984191.24204.84.camel@zod.rchland.ibm.com>
+	<20070221002443.GE10231@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <b97d3ed6affcbb9cd1f58a82db8a5465@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 12/14] Add device tree for Ebony
+Date: Wed, 21 Feb 2007 13:25:55 +0100
+To: David Gibson <dwg@au1.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 21 February 2007 05:36, Stephen Rothwell wrote:
-> @@ -306,3 +306,4 @@ COMPAT_SYS_SPU(get_robust_list)
-> =A0COMPAT_SYS_SPU(set_robust_list)
-> =A0COMPAT_SYS(move_pages)
-> =A0SYSCALL_SPU(getcpu)
-> +COMPAT_SYS_SPU(epoll_pwait)
+>>> +		POB0: opb@0 {
+>>
+>> I think you meant "OPB0:" for the label.
+>
+> Not really.  The 440GP user manual refers to the bridge (as opposed to
+> the bus) as POB0.  The label is meant to reflect that.
 
-Sorry, but this is wrong. epoll_pwait manipulates the sigmask,
-which is about the only thing that we can't let the SPU fiddle
-with, so it should be COMPAT_SYS().
+The device node represents both the bridge _and_ the bus
+behind it, so you could use OPB just as well as POB, and
+it probably would be less confusing ;-)
 
-I just noticed the move_pages syscall that was added recently,
-and that one should indeed be callable from an SPU.
+But it's just a label, who cares.
 
-This reminds me that I need to update the comment about what
-calls are allowed from the SPU and which ones are not, since
-we can now also allow optional ones like the mq_open mentioned
-in the comment.
 
-	Arnd <><
+Segher
