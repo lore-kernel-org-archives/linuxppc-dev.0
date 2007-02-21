@@ -1,36 +1,31 @@
-Return-Path: <johnrose@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5F5ACDDDE5
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 04:06:00 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l1LH5AgF028721
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 12:05:10 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1LH5vDH538584
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 10:05:57 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1LH5uM5029727
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Feb 2007 10:05:57 -0700
-Subject: Re: [PATCH] ehea: dynamic add / remove port
-From: John Rose <johnrose@austin.ibm.com>
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-In-Reply-To: <200702211706.18235.ossthema@de.ibm.com>
-References: <200702211706.18235.ossthema@de.ibm.com>
-Content-Type: text/plain
-Message-Id: <1172077378.22669.15.camel@sinatra.austin.ibm.com>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CD121DDDF0
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 10:21:00 +1100 (EST)
+Date: Wed, 21 Feb 2007 15:20:47 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 1/4 (final?)] ps3fb: thread updates
+Message-Id: <20070221152047.0d3da74c.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.62.0702201141000.20432@pademelon.sonytel.be>
+References: <20070215152301.573853000@sonycom.com>
+	<20070215152432.264415000@sonycom.com>
+	<20070215175007.GA10817@lst.de>
+	<1171575817.5644.44.camel@localhost.localdomain>
+	<20070215165916.de546f0d.akpm@linux-foundation.org>
+	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
+	<20070216163811.GB32051@lst.de>
+	<Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702201133080.6407@pademelon.sonytel.be>
+	<Pine.LNX.4.62.0702201141000.20432@pademelon.sonytel.be>
 Mime-Version: 1.0
-Date: Wed, 21 Feb 2007 11:02:58 -0600
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <RAISCH@de.ibm.com>,
-	Marcus Eder <MEDER@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Content-Type: text/plain; charset=US-ASCII
+Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,12 +35,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-02-21 at 10:06, Jan-Bernd Themann wrote:
-> This patch introduces functionality to dynamically add / remove
-> ehea ports via an userspace DLPAR tool. It creates a subnode for
-> each logical port in the sysfs. 
+On Tue, 20 Feb 2007 11:42:04 +0100 (CET)
+Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
 
-Looks great!
+> ps3fb: Replace the kernel_thread and the semaphore by a proper kthread, which is
+> simply woken up when the screen must be updated
 
-Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
-Acked-by: John Rose <johnrose@austin.ibm.com>
+<goes off and generates the incremental diff again so we can see what changed>
+
+
+diff -puN drivers/video/ps3fb.c~ps3fb-thread-updates-2 drivers/video/ps3fb.c
+--- a/drivers/video/ps3fb.c~ps3fb-thread-updates-2
++++ a/drivers/video/ps3fb.c
+@@ -32,7 +32,6 @@
+ #include <linux/ioctl.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
+-#include <linux/freezer.h>
+ #include <linux/kthread.h>
+ 
+ #include <asm/uaccess.h>
+@@ -808,16 +807,13 @@ static int ps3fb_ioctl(struct fb_info *i
+ 
+ static int ps3fbd(void *arg)
+ {
+-	DEFINE_WAIT(wait);
+-	DECLARE_WAIT_QUEUE_HEAD(wq);
+-
+ 	while (!kthread_should_stop()) {
+-		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
+-		if (!ps3fb.is_kicked)
+-			schedule();
+-		finish_wait(&wq, &wait);
+-		ps3fb.is_kicked = 0;
+-		ps3fb_sync(0);	/* single buffer */
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (ps3fb.is_kicked) {
++			ps3fb.is_kicked = 0;
++			ps3fb_sync(0);	/* single buffer */
++		}
++		schedule();
+ 	}
+ 	return 0;
+ }
+_
+
+There's still no try_to_freeze() in there.  Shouldn't we have one?
