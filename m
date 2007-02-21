@@ -1,17 +1,17 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 21 Feb 2007 15:57:56 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 12/14] Add device tree for Ebony
-Message-ID: <20070221045756.GA23082@localhost.localdomain>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [0/14] Ebony support, 2nd spin
+Date: Wed, 21 Feb 2007 10:06:58 +0100
 References: <20070220020837.GF17818@localhost.localdomain>
-	<20070220021235.DC02DDDD06@ozlabs.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A58C89@az33exm25.fsl.freescale.net>
-	<ee2e907ab59d7aa9b7bf026437419914@kernel.crashing.org>
+	<200702201516.25160.arnd@arndb.de>
+	<20070221003558.GJ10231@localhost.localdomain>
+In-Reply-To: <20070221003558.GJ10231@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <ee2e907ab59d7aa9b7bf026437419914@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702211006.58565.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Feb 20, 2007 at 08:56:04PM +0100, Segher Boessenkool wrote:
-> > Since UIC1 is cascaded off UIC0 in the interrupt tree,
-> > UIC1 should have an interrupt-parent pointing to UIC0
-> > so the interrupt tree can be traversed to the root.
-> 
-> Not necessary if UIC0 is the device tree parent of UIC1.
-> (And in fact it would be "bad style").  But...
-> 
-> > I know this was beaten to death last week, but I would
-> > still argue that in the device tree UIC0 and UIC1 should
-> > be siblings.  (In the interrupt tree the cascade relationship
-> > is described through interrupt-parent).
-> 
-> ... that is my opinion as well (as I'm sure you know ;-) ),
-> and then of course you _do_ need the interrupt-parent property.
+On Wednesday 21 February 2007 01:35, David Gibson wrote:
+> Err.. no. =A0On my system legacy_serial doesn't touch the ports, but I'm
+> getting console output via of_serial just fine. =A0The console is
+> initialized rather later than would be ideal, but it works.
+>=20
+> I know that BenH has expressed the strong preference that
+> legacy_serial should be reverted to only handling legacy ISA ports,
+> not SoC and other hardwired ports.
 
-Ok, there are enough people of this opinion (including Paul), that
-I've changed to representing the UICs as siblings.
+Ok, my impression on this was that of_serial is the right solution
+in general, but it often gets initialized too late to debug some
+of the interesting parts of the boot sequence.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Unless we take handling of soc serial ports completely out of
+legacy_serial, I think it should handle ebony just like the other
+boards.
+
+Because of the way the serial layer works, it does exactly the
+right thing if you have both drivers enabled, i.e. it starts
+out using the first port when legacy_serial detects it, but later
+of_serial finds it as well, and wires up all the logic to connect
+both the serial ports to the right device tree nodes.
+
+	Arnd <><
