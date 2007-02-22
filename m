@@ -1,19 +1,14 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 1A4A7DDE08
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 00:44:06 +1100 (EST)
-Message-ID: <45DD9E1B.7060604@ru.mvista.com>
-Date: Thu, 22 Feb 2007 16:43:55 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 15EB3DDE20
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 00:58:16 +1100 (EST)
+Message-ID: <45DD9A41.7060900@smiths-aerospace.com>
+Date: Thu, 22 Feb 2007 08:27:29 -0500
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
 MIME-Version: 1.0
-To: ebony.zhu@freescale.com
-Subject: Re: [patch][5/5] powerpc V2: Add the general support for Embedded
-	Floating-Point instructions
-References: <ZCH01EXM202TRqf69aZ00001061@zch01exm20.fsl.freescale.net>
-	<45DD911D.1090101@ru.mvista.com>
-In-Reply-To: <45DD911D.1090101@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+To: David Gibson <david@gibson.dropbear.id.au>,  linuxppc-dev@ozlabs.org
+Subject: libfdt: a fix but still broken
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +18,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
+Hi Dave,
 
->> Add the general support for Embedded Floating-Point instructions
->> to fully comply with IEEE-754.
+I have good news and bad news. ;-)  The good news is that the 
+incompatibility between libfdt and jdl's dtc is that libfdt has the name 
+offset and the length of the name switched.  booting_without_of.txt says 
+the length comes first, so libfdt is in the wrong.
 
->>  arch/powerpc/sysdev/sigfpe_handler.c |  361
->> ++++++++++++++++++++++++++++++++++
+The bad news is that, when I fix this, nearly all of the tests fail (but 
+they fail the same way for both tree.S and jdl's dtc).  I have not 
+started on that layer of the onion yet.
 
->    I'm sorry, but is sysdev/ really fitting place for this file? 
-> Shouldn't it be under kernel/ or math-emu/ instead?
+Best regards,
+gvb
 
-    Also, the name doesn't look fittingto me, since we're not handling 
-*SIGFPE* here (which is for userland), we're handling SPE exceptions.
+$ git diff fdt.h
+diff --git a/fdt.h b/fdt.h
+index fff533e..4687a31 100644
+--- a/fdt.h
++++ b/fdt.h
+@@ -36,8 +36,8 @@ struct fdt_node_header {
 
-WBR, Sergei
+  struct fdt_property {
+         uint32_t tag;
+-       uint32_t nameoff;
+         uint32_t len;
++       uint32_t nameoff;
+         char data[0];
+  };
+
+$ git diff tests/trees.S
+diff --git a/tests/trees.S b/tests/trees.S
+index 76c0057..400e7d0 100644
+--- a/tests/trees.S
++++ b/tests/trees.S
+@@ -39,8 +39,8 @@ tree: \
+
+  #define PROPHDR(tree, name, len) \
+         FDTLONG(FDT_PROP)       ; \
+-       FDTLONG(tree##_##name - tree##_strings) ; \
+-       FDTLONG(len)            ;
++       FDTLONG(len)            ; \
++       FDTLONG(tree##_##name - tree##_strings) ;
+
+  #define PROP_INT(tree, name, val) \
+         PROPHDR(tree, name, 4) \
+
+
+______________________________________________________________________
+CAUTION: This message was sent via the Public Internet and its 
+authenticity cannot be guaranteed.
+
+______________________________________________________
