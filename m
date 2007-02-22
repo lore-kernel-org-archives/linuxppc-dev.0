@@ -1,35 +1,23 @@
-Return-Path: <johnrose@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7F3C3DDDFB
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 03:23:41 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1MGNcib016672
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 11:23:38 -0500
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l1MGNaoe268444
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 09:23:36 -0700
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l1MGNZYl019221
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 09:23:35 -0700
-Subject: Re: [PATCH 1/2] ibmebus: dynamic add/remove, uevent, root device
-	and whitespace
-From: John Rose <johnrose@austin.ibm.com>
-To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
-In-Reply-To: <200702220615.51332.hnguyen@linux.vnet.ibm.com>
-References: <200702220615.51332.hnguyen@linux.vnet.ibm.com>
-Content-Type: text/plain
-Message-Id: <1172161235.20962.2.camel@sinatra.austin.ibm.com>
-Mime-Version: 1.0
-Date: Thu, 22 Feb 2007 10:20:35 -0600
-Cc: Paul Mackerras <pmac@au1.ibm.com>, fenkes@de.ibm.com,
-	lkml <linux-kernel@vger.kernel.org>,
-	External List <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Me Notes <johnrose@us.ibm.com>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E8AF5DDDFC
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 03:36:56 +1100 (EST)
+In-Reply-To: <45DD9E1B.7060604@ru.mvista.com>
+References: <ZCH01EXM202TRqf69aZ00001061@zch01exm20.fsl.freescale.net>
+	<45DD911D.1090101@ru.mvista.com> <45DD9E1B.7060604@ru.mvista.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0d13db503c02906b8d61a65f295e3ddd@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch][5/5] powerpc V2: Add the general support for Embedded
+	Floating-Point instructions
+Date: Thu, 22 Feb 2007 17:36:48 +0100
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,7 +27,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Looks great!
+>>>  arch/powerpc/sysdev/sigfpe_handler.c |  361
+>>> ++++++++++++++++++++++++++++++++++
+>
+>>    I'm sorry, but is sysdev/ really fitting place for this file?
+>> Shouldn't it be under kernel/ or math-emu/ instead?
+>
+>     Also, the name doesn't look fittingto me, since we're not handling
+> *SIGFPE* here (which is for userland), we're handling SPE exceptions.
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
-Acked-by: John Rose <johnrose@austin.ibm.com>
+arch/powerpc/math-emu/spe/<whatever>.c seems like a good
+place?
+
+
+Segher
