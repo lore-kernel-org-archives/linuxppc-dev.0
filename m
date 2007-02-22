@@ -1,20 +1,22 @@
-Return-Path: <Leonid@a-k-a.net>
-Received: from mis011-2.exch011.intermedia.net
-	(mis011-2.exch011.intermedia.net [64.78.21.129])
-	by ozlabs.org (Postfix) with ESMTP id 67409DDE0C
+Return-Path: <Martin.Leisner@xerox.com>
+Received: from wvmler3.mail.xerox.com (wvmler3.mail.xerox.com [13.8.138.218])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "wvmler3.mail.xerox.com",
+	Issuer "wvmler3.mail.xerox.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id E5164DDDFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Feb 2007 05:37:07 +1100 (EST)
+	Fri, 23 Feb 2007 07:39:24 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Help with a board similar to the Xilinx ML403
-Date: Thu, 22 Feb 2007 10:37:01 -0800
-Message-ID: <406A31B117F2734987636D6CCC93EE3C0108D8DA@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <45DD9F03.6060004@duolabs.com>
-References: <45DD9F03.6060004@duolabs.com>
-From: "Leonid" <Leonid@a-k-a.net>
-To: <luca.manai@duolabs.com>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C756C1.7470D8E4"
+Subject: RE: enabling two eths
+Date: Thu, 22 Feb 2007 15:38:48 -0500
+Message-ID: <556445368AFA1C438794ABDA8901891C03445720@usa0300ms03.na.xerox.net>
+In-Reply-To: <OFBE288479.DC0A765B-ON6525728A.0017B972-6525728A.00180C87@lntemsys.com>
+From: "Leisner, Martin" <Martin.Leisner@xerox.com>
+To: "Manjunath AM" <Manjunath.AM@Lntemsys.com>
+Cc: linuxppc-embedded-bounces+manjunath.am=lntemsys.com@ozlabs.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,149 +27,592 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Can I see your xparameters.h and kernel .config files please? EDK =
-project can help as well, or at least MHS & MSS files along with BSP TCL =
-scripts - I think you use some Linux BSP, right?=20
+This is a multi-part message in MIME format.
 
-Also how do you load kernel - using u-boot? If so, can you please define =
-DEBUG in cmd_bootm.c file and send me output?
+------_=_NextPart_001_01C756C1.7470D8E4
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Thanks,
-
-Leonid.=20
-
-________________________________________
-From: linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org =
-[mailto:linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org] On =
-Behalf Of Luca Manai
-Sent: Thursday, February 22, 2007 5:48 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: Help with a board similar to the Xilinx ML403
-
-Hello.
-
-I would need some help to understand what is the problem...
-I am a bit lost...
-
-The board is very similar to the Xilinx ML403 with a Virtex-4 and PPC =
-405.
-
-What can I provide to make the debugging easier?
-
-Can the problem be the content of the initrd RAM disk?
-
-Thanks for your help.
-
-Luca.
-
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+so eth1 works but eth0 doesn't?
+=20
+what's interesting is here you have no tx/rx/error packets -- how do you
+know its not working?
+=20
+Are there machines on this subnet which are working?
+=20
+Also ping into the machine...
+=20
+Its also sometimes useful to have a hub (not a switch) and sniff the
+packets...
+=20
+marty
+=20
 
 
-loaded at:=A0=A0=A0=A0 00400000 0065213C
-board data at: 00650124 0065013C
-relocated to:=A0 0040408C 004040A4
-zimage at:=A0=A0=A0=A0 00404E19 004F055F
-initrd at:=A0=A0=A0=A0 004F1000 0064FE30
-avail ram:=A0=A0=A0=A0 00653000 04000000
+________________________________
 
-Linux/PPC load: console=3DttyS0,9600
-Uncompressing Linux...done.
-Now booting the kernel
-[=A0=A0=A0 0.000000] Linux version 2.6.20 (rapax@localhost.localdomain) =
-(gcc version 3.4.4) #24 Thu Feb 22 14:26:45 CET 2007
-[=A0=A0=A0 0.000000] Xilinx ML403 Reference System (Virtex-4 FX)
-[=A0=A0=A0 0.000000] Zone PFN ranges:
-[=A0=A0=A0 0.000000]=A0=A0 DMA=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0 0 =
-->=A0=A0=A0 16384
-[=A0=A0=A0 0.000000]=A0=A0 Normal=A0=A0=A0=A0=A0 16384 ->=A0=A0=A0 16384
-[=A0=A0=A0 0.000000] early_node_map[1] active PFN ranges
-[=A0=A0=A0 0.000000]=A0=A0=A0=A0 0:=A0=A0=A0=A0=A0=A0=A0 0 ->=A0=A0=A0 =
-16384
-[=A0=A0=A0 0.000000] Built 1 zonelists.=A0 Total pages: 16256
-[=A0=A0=A0 0.000000] Kernel command line: console=3DttyS0,9600
-[=A0=A0=A0 0.000000] Xilinx INTC #0 at 0x05810000 mapped to 0xFDFFE000
-[=A0=A0=A0 0.000000] PID hash table entries: 256 (order: 8, 1024 bytes)
-[=A0=A0=A0 0.000254] Console: colour dummy device 80x25
-[=A0=A0=A0 0.001029] Dentry cache hash table entries: 8192 (order: 3, =
-32768 bytes)
-[=A0=A0=A0 0.002145] Inode-cache hash table entries: 4096 (order: 2, =
-16384 bytes)
-[=A0=A0=A0 0.022641] Memory: 61408k available (1560k kernel code, 432k =
-data, 100k init, 0k highmem)
-[=A0=A0=A0 0.208605] Mount-cache hash table entries: 512
-[=A0=A0=A0 0.215183] NET: Registered protocol family 16
-[=A0=A0=A0 0.240164] NET: Registered protocol family 2
-[=A0=A0=A0 0.296652] IP route cache hash table entries: 1024 (order: 0, =
-4096 bytes)
-[=A0=A0=A0 0.297952] TCP established hash table entries: 2048 (order: 1, =
-8192 bytes)
-[=A0=A0=A0 0.298188] TCP bind hash table entries: 1024 (order: 0, 4096 =
-bytes)
-[=A0=A0=A0 0.298314] TCP: Hash tables configured (established 2048 bind =
-1024)
-[=A0=A0=A0 0.298347] TCP reno registered
-[=A0=A0=A0 0.317702] checking if image is initramfs...it isn't (no cpio =
-magic); looks like an initrd
-[=A0=A0=A0 1.078167] Freeing initrd memory: 1403k freed
-[=A0=A0=A0 1.085007] io scheduler noop registered
-[=A0=A0=A0 1.085068] io scheduler anticipatory registered (default)
-[=A0=A0=A0 1.085098] io scheduler deadline registered
-[=A0=A0=A0 1.085303] io scheduler cfq registered
-[=A0=A0=A0 1.158419] Serial: 8250/16550 driver $Revision: 1.90 $ 4 =
-ports, IRQ sharing disabled
-[=A0=A0=A0 1.166897] serial8250.0: ttyS0 at MMIO 0x6001003 (irq =3D 5) =
-is a 16550A
-[=A0=A0=A0 1.868935] RAMDISK driver initialized: 16 RAM disks of 65536K =
-size 1024 blocksize
-[=A0=A0=A0 1.901545] tun: Universal TUN/TAP device driver, 1.6
-[=A0=A0=A0 1.921877] tun: (C) 1999-2004 Max Krasnyansky =
-<maxk@qualcomm.com>
-[=A0=A0=A0 1.948919] XTemac: using sgDMA mode.
-[=A0=A0=A0 1.963764] XTemac: using TxDRE mode
-[=A0=A0=A0 1.978133] XTemac: using RxDRE mode
-[=A0=A0=A0 1.992471] XTemac: buffer descriptor size: 32768 (0x8000)
-[=A0=A0=A0 2.015328] XTemac: (buffer_descriptor_init) phy: 0x610000, =
-virt: 0xff100000, size: 0x8000
-[=A0=A0=A0 2.055149] eth0: Dropping NETIF_F_SG since no checksum =
-feature.
-[=A0=A0=A0 2.080791] eth0: Xilinx TEMAC #0 at 0xFFE00000 mapped to =
-0xC5000000, irq=3D4
-[=A0=A0=A0 2.108767] eth0: XTemac id 1.0f, block id 5, type 8
-[=A0=A0=A0 2.129728] mice: PS/2 mouse device common for all mice
-[=A0=A0=A0 2.151097] TCP cubic registered
-[=A0=A0=A0 2.164340] NET: Registered protocol family 1
-[=A0=A0=A0 2.181936] NET: Registered protocol family 17
-[=A0=A0=A0 2.201411] RAMDISK: Compressed image found at block 0
-[=A0=A0=A0 3.229002] VFS: Mounted root (ext2 filesystem).
-[=A0=A0=A0 3.355400] ------------[ cut here ]------------
-[=A0=A0=A0 3.373911] kernel BUG at mm/prio_tree.c:79!
-[=A0=A0=A0 3.390991] Oops: Exception in kernel mode, sig: 5 [#1]
-[=A0=A0=A0 3.411889] NIP: C003FA34 LR: C0044D68 CTR: 00000000
-[=A0=A0=A0 3.431752] REGS: c04b7dc0 TRAP: 0700=A0=A0 Not tainted=A0 =
-(2.6.20)
-[=A0=A0=A0 3.454721] MSR: 00029030 <EE,ME,IR,DR>=A0 CR: 44088048=A0 XER: =
-2000000E
-[=A0=A0=A0 3.480351] TASK =3D c02a9490[140] 'ifconfig' THREAD: c04b6000
-[=A0=A0=A0 3.502282] GPR00: 00000001 C04B7E70 C02A9490 C0486BA8 C044E95C =
-C04B7E20 C04B7E24 0FFDF000=20
-[=A0=A0=A0 3.535955] GPR08: 000000AD 00000010 0000000F 00000011 24004042 =
-10065ABC 00000001 30017510=20
-[=A0=A0=A0 3.569632] GPR16: 10001B05 00000000 0FFDF000 000000AD C0432B94 =
-00000000 C0432BA8 00000000=20
-[=A0=A0=A0 3.603306] GPR24: C0675E20 00000000 0FFF0000 C044BA00 00000000 =
-C0486B54 C0486BA8 C0486DA0=20
-[=A0=A0=A0 3.637713] NIP [C003FA34] vma_prio_tree_add+0x54/0xd0
-[=A0=A0=A0 3.658333] LR [C0044D68] vma_adjust+0x264/0x384
-[=A0=A0=A0 3.676836] Call Trace:
-[=A0=A0=A0 3.686598] [C04B7E70] [C0044D68] vma_adjust+0x264/0x384 =
-(unreliable)
-[=A0=A0=A0 3.712428] [C04B7ED0] [C0045B2C] split_vma+0x118/0x13c
-[=A0=A0=A0 3.733395] [C04B7EF0] [C0046CF8] sys_mprotect+0x210/0x4dc
-[=A0=A0=A0 3.755370] [C04B7F40] [C0002E54] ret_from_syscall+0x0/0x3c
-[=A0=A0=A0 3.777723] Instruction dump:
-[=A0=A0=A0 3.789602] 80040008 7d675850 7c0a0050 556ba33e 5400a33e =
-7d295a14 7d080214 3908ffff=20
-[=A0=A0=A0 3.820807] 3929ffff 7d294278 3149ffff 7c0a4910 <0f000000> =
-39200000 9123002c 8004002c=20
+	From: Manjunath AM [mailto:Manjunath.AM@Lntemsys.com]=20
+	Sent: Wednesday, February 21, 2007 11:24 PM
+	To: Leisner, Martin
+	Cc: linuxppc-embedded@ozlabs.org;
+linuxppc-embedded-bounces+manjunath.am=3Dlntemsys.com@ozlabs.org; Vitaly
+Bordug
+	Subject: RE: enabling two eths
+=09
+=09
+
+	Hi Martin,=20
+=09
+	Thanks for your reply,Yes I tried swapping the assignments,same
+thing is happening in both cases..ifconfig and route -n results are as
+below:=20
+=09
+=09
+	ifconfig=20
+=09
+	eth0      Link encap:Ethernet  HWaddr 00:99:23:C4:AD:DE=20
+	          inet addr:192.168.33.64  Bcast:192.168.33.255
+Mask:255.255.248.0=20
+	          inet6 addr: fe80::299:23ff:fec4:adde/64 Scope:Link=20
+	          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1=20
+	          RX packets:0 errors:0 dropped:0 overruns:0 frame:0=20
+	          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0=20
+	          collisions:0 txqueuelen:1000=20
+	          RX bytes:0 (0.0 b)  TX bytes:308 (308.0 b)=20
+	          Base address:0x8400=20
+=09
+	eth1      Link encap:Ethernet  HWaddr 00:99:23:44:AD:DE=20
+	          inet addr:192.168.178.124  Bcast:192.168.178.255
+Mask:255.255.255.0=20
+	          inet6 addr: fe80::299:23ff:fe44:adde/64 Scope:Link=20
+	          UP BROADCAST RUNNING MULTICAST  MTU:1500  Metric:1=20
+	          RX packets:22790 errors:0 dropped:0 overruns:0 frame:0
+
+	          TX packets:9218 errors:0 dropped:0 overruns:0
+carrier:8830=20
+	          collisions:0 txqueuelen:1000=20
+	          RX bytes:14916045 (14.2 MiB)  TX bytes:1463093 (1.3
+MiB)=20
+	          Base address:0x8500=20
+=09
+	lo        Link encap:Local Loopback=20
+	          inet6 addr: ::1/128 Scope:Host=20
+	          UP LOOPBACK RUNNING  MTU:16436  Metric:1=20
+	          RX packets:0 errors:0 dropped:0 overruns:0 frame:0=20
+	          TX packets:0 errors:0 dropped:0 overruns:0 carrier:0=20
+	          collisions:0 txqueuelen:0=20
+	          RX bytes:0 (0.0 b)  TX bytes:0 (0.0 b)=20
+=09
+	route -n=20
+	Destination     Gateway         Genmask         Flags Metric Ref
+Use Iface=20
+	192.168.178.0   0.0.0.0         255.255.255.0   U     0      0
+0 eth1=20
+	192.168.32.0    0.0.0.0         255.255.248.0   U     0      0
+0 eth0=20
+	0.0.0.0         192.168.178.47  0.0.0.0         UG    0      0
+0 eth1=20
+=09
+=09
+=09
+	Thanks & Regards
+	MANJUNATH AM
+	Senior Software Engineer
+	Emsys
+	Larsen & Toubro Limited
+	Mysore-570018
+	Mobile:9886375926
+=09
+=09
+=09
+=09
+"Leisner, Martin" <Martin.Leisner@xerox.com>=20
+Sent by: =
+linuxppc-embedded-bounces+manjunath.am=3Dlntemsys.com@ozlabs.org=20
+
+02/21/2007 09:58 PM=20
+
+To
+"Manjunath AM" <Manjunath.AM@Lntemsys.com>, "Vitaly Bordug"
+<vbordug@ru.mvista.com>=20
+cc
+linuxppc-embedded@ozlabs.org=20
+Subject
+RE: enabling two eths
+
+=09
+
+
+
+
+	 =20
+	Send the results of=20
+	ifconfig=20
+	and=20
+	route -n=20
+	 =20
+	I take it eth0 works fine...=20
+	 =20
+	Have you tried swapping the assignments and see if eth1 works
+(to eliminate faulty hardware).=20
+	 =20
+	marty=20
+=09
+=09
+________________________________
+
+	From:
+linuxppc-embedded-bounces+martin.leisner=3Dxerox.com@ozlabs.org
+[mailto:linuxppc-embedded-bounces+martin.leisner=3Dxerox.com@ozlabs.org]
+On Behalf Of Manjunath AM
+	Sent: Tuesday, February 20, 2007 11:50 PM
+	To: Vitaly Bordug
+	Cc: linuxppc-embedded@ozlabs.org
+	Subject: Re: enabling two eths
+=09
+=09
+	Hi, Thanks for your kind reply, Yes i have used different * IP
+Subnets*=20
+=09
+	The IPs and subnet details I use is=20
+	1. eth0(configured through u-boot env settings)->>
+192.168.174.231 and subnet is 255.255.255.0=20
+	2. eth1(configured after kernel is up)--> 192.168.33.64 and
+subnet is 255.255.248.0=20
+=09
+	Even i tried by connecting second eth to host PC using cross
+cable as a stand-alone network but even "ping" did not work..=20
+=09
+=09
+=09
+	Thanks & Regards
+	MANJUNATH AM
+	Senior Software Engineer
+	Emsys
+	Larsen & Toubro Limited
+	Mysore-570018
+	Mobile:9886375926
+=09
+=09
+=09
+Vitaly Bordug <vbordug@ru.mvista.com>=20
+
+02/20/2007 09:30 PM=20
+
+
+
+To
+Alex Zeffertt <ajz@cambridgebroadband.com>=20
+cc
+Manjunath AM <Manjunath.AM@Lntemsys.com>, linuxppc-embedded@ozlabs.org=20
+Subject
+Re: enabling two eths
+
+
+=09
+
+
+=09
+=09
+=09
+	On Tue, 20 Feb 2007 15:31:54 +0000
+	Alex Zeffertt <ajz@cambridgebroadband.com> wrote:
+=09
+	>=20
+	> Manjunath AM wrote:
+	> >=20
+	> > Hi,
+	> >=20
+	> > We are using MPC8272 based target board, we use montavista
+Linux version=20
+	> > 2.6.10 kernel image (with NFS enabled) to our target board,
+	> >=20
+	> > Our board has  2 FCCs (eth0 and eth1). bot the eth's works
+perfectly=20
+	> > when we use them independently, but when we are trying to
+enable second=20
+	> > one after the kernel is up using linux command  "ifconfig
+eth1=20
+	> > 192.168.33.64 up"(IP address)nothing is working.
+	> > Please suggest how to enable second eth (either 0 or 1) once
+the kernel=20
+	> > is up with NFS file system
+	>=20
+	>=20
+	> Have you made sure that eth0 and eth1 are on *different* IP
+subnets?
+	> If they are on the same subnet, or intersecting subnets, your
+routing
+	> will get confused.
+	>=20
+	It depends :)
+=09
+	I used to test functionality such a way to have two enets in
+same subnet, then ifdown one of them.
+=09
+	At least with mvista RFS, one enet  handles NFS, other is up but
+all the packets are routed to it via
+	the first one. And when the first one got ifdown, routing
+switches to the remaining enet...
+	--=20
+	Sincerely,=20
+	Vitaly
+	_______________________________________________
+	Linuxppc-embedded mailing list
+	Linuxppc-embedded@ozlabs.org
+	https://ozlabs.org/mailman/listinfo/linuxppc-embedded=20
+=09
+
+
+------_=_NextPart_001_01C756C1.7470D8E4
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.3020" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>so eth1 works but eth0 =
+doesn't?</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>what's interesting is here you have no =
+tx/rx/error packets=20
+-- how do you know its not working?</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>Are there machines on this subnet which are=20
+working?</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>Also ping into the =
+machine...</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>Its also sometimes useful to have a hub (not a =
+switch) and=20
+sniff the packets...</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2>marty</FONT></SPAN></DIV>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D670553620-22022007><FONT =
+face=3DArial=20
+color=3D#0000ff size=3D2></FONT></SPAN>&nbsp;</DIV><BR>
+<BLOCKQUOTE=20
+style=3D"PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #0000ff 2px =
+solid; MARGIN-RIGHT: 0px">
+  <DIV class=3DOutlookMessageHeader lang=3Den-us dir=3Dltr align=3Dleft>
+  <HR tabIndex=3D-1>
+  <FONT face=3DTahoma size=3D2><B>From:</B> Manjunath AM=20
+  [mailto:Manjunath.AM@Lntemsys.com] <BR><B>Sent:</B> Wednesday, =
+February 21,=20
+  2007 11:24 PM<BR><B>To:</B> Leisner, Martin<BR><B>Cc:</B>=20
+  linuxppc-embedded@ozlabs.org;=20
+  linuxppc-embedded-bounces+manjunath.am=3Dlntemsys.com@ozlabs.org; =
+Vitaly=20
+  Bordug<BR><B>Subject:</B> RE: enabling two eths<BR></FONT><BR></DIV>
+  <DIV></DIV><BR><FONT face=3Dsans-serif size=3D2>Hi Martin,</FONT> =
+<BR><BR><FONT=20
+  face=3Dsans-serif size=3D2>Thanks for your reply,Yes I tried swapping =
+the=20
+  assignments,same thing is happening in both cases..ifconfig and route =
+-n=20
+  results are as below:</FONT> <BR><BR><BR><FONT face=3DArial =
+color=3Dblue=20
+  size=3D2><B>ifconfig</B></FONT> <BR><BR><FONT face=3Dsans-serif =
+size=3D2>eth0 &nbsp;=20
+  &nbsp; &nbsp;Link encap:Ethernet &nbsp;HWaddr 00:99:23:C4:AD:DE</FONT> =
+
+  <BR><FONT face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; inet=20
+  addr:192.168.33.64 &nbsp;Bcast:192.168.33.255 =
+&nbsp;Mask:255.255.248.0</FONT>=20
+  <BR><FONT face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; inet6=20
+  addr: fe80::299:23ff:fec4:adde/64 Scope:Link</FONT> <BR><FONT =
+face=3Dsans-serif=20
+  size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; UP BROADCAST RUNNING =
+MULTICAST=20
+  &nbsp;MTU:1500 &nbsp;Metric:1</FONT> <BR><FONT face=3Dsans-serif =
+size=3D2>&nbsp;=20
+  &nbsp; &nbsp; &nbsp; &nbsp; RX packets:0 errors:0 dropped:0 overruns:0 =
+
+  frame:0</FONT> <BR><FONT face=3Dsans-serif size=3D2>&nbsp; &nbsp; =
+&nbsp; &nbsp;=20
+  &nbsp; TX packets:0 errors:0 dropped:0 overruns:0 carrier:0</FONT> =
+<BR><FONT=20
+  face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+collisions:0=20
+  txqueuelen:1000</FONT> <BR><FONT face=3Dsans-serif size=3D2>&nbsp; =
+&nbsp; &nbsp;=20
+  &nbsp; &nbsp; RX bytes:0 (0.0 b) &nbsp;TX bytes:308 (308.0 b)</FONT> =
+<BR><FONT=20
+  face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Base=20
+  address:0x8400</FONT> <BR><BR><FONT face=3Dsans-serif size=3D2>eth1 =
+&nbsp; &nbsp;=20
+  &nbsp;Link encap:Ethernet &nbsp;HWaddr 00:99:23:44:AD:DE</FONT> =
+<BR><FONT=20
+  face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; inet=20
+  addr:192.168.178.124 &nbsp;Bcast:192.168.178.255=20
+  &nbsp;Mask:255.255.255.0</FONT> <BR><FONT face=3Dsans-serif =
+size=3D2>&nbsp; &nbsp;=20
+  &nbsp; &nbsp; &nbsp; inet6 addr: fe80::299:23ff:fe44:adde/64 =
+Scope:Link</FONT>=20
+  <BR><FONT face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; =
+&nbsp; UP=20
+  BROADCAST RUNNING MULTICAST &nbsp;MTU:1500 &nbsp;Metric:1</FONT> =
+<BR><FONT=20
+  face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; RX =
+packets:22790=20
+  errors:0 dropped:0 overruns:0 frame:0</FONT> <BR><FONT =
+face=3Dsans-serif=20
+  size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; TX packets:9218 errors:0 =
+dropped:0=20
+  overruns:0 carrier:8830</FONT> <BR><FONT face=3Dsans-serif =
+size=3D2>&nbsp; &nbsp;=20
+  &nbsp; &nbsp; &nbsp; collisions:0 txqueuelen:1000</FONT> <BR><FONT=20
+  face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; RX =
+bytes:14916045=20
+  (14.2 MiB) &nbsp;TX bytes:1463093 (1.3 MiB)</FONT> <BR><FONT =
+face=3Dsans-serif=20
+  size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; Base address:0x8500</FONT> =
+
+  <BR><BR><FONT face=3Dsans-serif size=3D2>lo &nbsp; &nbsp; &nbsp; =
+&nbsp;Link=20
+  encap:Local Loopback</FONT> <BR><FONT face=3Dsans-serif =
+size=3D2>&nbsp; &nbsp;=20
+  &nbsp; &nbsp; &nbsp; inet6 addr: ::1/128 Scope:Host</FONT> <BR><FONT=20
+  face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; UP =
+LOOPBACK RUNNING=20
+  &nbsp;MTU:16436 &nbsp;Metric:1</FONT> <BR><FONT face=3Dsans-serif =
+size=3D2>&nbsp;=20
+  &nbsp; &nbsp; &nbsp; &nbsp; RX packets:0 errors:0 dropped:0 overruns:0 =
+
+  frame:0</FONT> <BR><FONT face=3Dsans-serif size=3D2>&nbsp; &nbsp; =
+&nbsp; &nbsp;=20
+  &nbsp; TX packets:0 errors:0 dropped:0 overruns:0 carrier:0</FONT> =
+<BR><FONT=20
+  face=3Dsans-serif size=3D2>&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; =
+collisions:0=20
+  txqueuelen:0</FONT> <BR><FONT face=3Dsans-serif size=3D2>&nbsp; &nbsp; =
+&nbsp;=20
+  &nbsp; &nbsp; RX bytes:0 (0.0 b) &nbsp;TX bytes:0 (0.0 b)</FONT> =
+<BR><BR><FONT=20
+  face=3DArial color=3Dblue size=3D2><B>route -n</B></FONT> <BR><FONT =
+face=3Dsans-serif=20
+  size=3D2>Destination &nbsp; &nbsp; Gateway &nbsp; &nbsp; &nbsp; &nbsp; =
+Genmask=20
+  &nbsp; &nbsp; &nbsp; &nbsp; Flags Metric Ref &nbsp; &nbsp;Use =
+Iface</FONT>=20
+  <BR><FONT face=3Dsans-serif size=3D2>192.168.178.0 &nbsp; 0.0.0.0 =
+&nbsp; &nbsp;=20
+  &nbsp; &nbsp; 255.255.255.0 &nbsp; U &nbsp; &nbsp; 0 &nbsp; &nbsp; =
+&nbsp;0=20
+  &nbsp; &nbsp; &nbsp; &nbsp;0 eth1</FONT> <BR><FONT face=3Dsans-serif=20
+  size=3D2>192.168.32.0 &nbsp; &nbsp;0.0.0.0 &nbsp; &nbsp; &nbsp; &nbsp; =
+
+  255.255.248.0 &nbsp; U &nbsp; &nbsp; 0 &nbsp; &nbsp; &nbsp;0 &nbsp; =
+&nbsp;=20
+  &nbsp; &nbsp;0 eth0</FONT> <BR><FONT face=3Dsans-serif =
+size=3D2>0.0.0.0 &nbsp;=20
+  &nbsp; &nbsp; &nbsp; 192.168.178.47 &nbsp;0.0.0.0 &nbsp; &nbsp; &nbsp; =
+&nbsp;=20
+  UG &nbsp; &nbsp;0 &nbsp; &nbsp; &nbsp;0 &nbsp; &nbsp; &nbsp; &nbsp;0=20
+  eth1</FONT> <BR><BR><BR><BR><FONT face=3Dsans-serif size=3D2>Thanks =
+&amp;=20
+  Regards<BR>MANJUNATH AM<BR>Senior Software Engineer<BR>Emsys<BR>Larsen =
+&amp;=20
+  Toubro =
+Limited<BR>Mysore-570018<BR>Mobile:9886375926<BR></FONT><BR><BR><BR>
+  <TABLE width=3D"100%">
+    <TBODY>
+    <TR vAlign=3Dtop>
+      <TD width=3D"40%"><FONT face=3Dsans-serif size=3D1><B>"Leisner, =
+Martin"=20
+        &lt;Martin.Leisner@xerox.com&gt;</B> </FONT><BR><FONT =
+face=3Dsans-serif=20
+        size=3D1>Sent by:=20
+        =
+linuxppc-embedded-bounces+manjunath.am=3Dlntemsys.com@ozlabs.org</FONT>=20
+        <P><FONT face=3Dsans-serif size=3D1>02/21/2007 09:58 PM</FONT> =
+</P>
+      <TD width=3D"59%">
+        <TABLE width=3D"100%">
+          <TBODY>
+          <TR vAlign=3Dtop>
+            <TD>
+              <DIV align=3Dright><FONT face=3Dsans-serif =
+size=3D1>To</FONT></DIV>
+            <TD><FONT face=3Dsans-serif size=3D1>"Manjunath AM"=20
+              &lt;Manjunath.AM@Lntemsys.com&gt;, "Vitaly Bordug"=20
+              &lt;vbordug@ru.mvista.com&gt;</FONT>=20
+          <TR vAlign=3Dtop>
+            <TD>
+              <DIV align=3Dright><FONT face=3Dsans-serif =
+size=3D1>cc</FONT></DIV>
+            <TD><FONT face=3Dsans-serif=20
+              size=3D1>linuxppc-embedded@ozlabs.org</FONT>=20
+          <TR vAlign=3Dtop>
+            <TD>
+              <DIV align=3Dright><FONT face=3Dsans-serif =
+size=3D1>Subject</FONT></DIV>
+            <TD><FONT face=3Dsans-serif size=3D1>RE: enabling two=20
+          eths</FONT></TR></TBODY></TABLE><BR>
+        <TABLE>
+          <TBODY>
+          <TR vAlign=3Dtop>
+            <TD>
+            =
+<TD></TR></TBODY></TABLE><BR></TR></TBODY></TABLE><BR><BR><BR><FONT=20
+  size=3D3>&nbsp;</FONT> <BR><FONT face=3DArial color=3Dblue =
+size=3D2>Send the results=20
+  of </FONT><BR><FONT face=3DArial color=3Dblue size=3D2>ifconfig</FONT> =
+<BR><FONT=20
+  face=3DArial color=3Dblue size=3D2>and</FONT> <BR><FONT face=3DArial =
+color=3Dblue=20
+  size=3D2>route -n</FONT> <BR><FONT size=3D3>&nbsp;</FONT> <BR><FONT =
+face=3DArial=20
+  color=3Dblue size=3D2>I take it eth0 works fine...</FONT> <BR><FONT=20
+  size=3D3>&nbsp;</FONT> <BR><FONT face=3DArial color=3Dblue =
+size=3D2>Have you tried=20
+  swapping the assignments and see if eth1 works (to eliminate faulty=20
+  hardware).</FONT> <BR><FONT size=3D3>&nbsp;</FONT> <BR><FONT =
+face=3DArial=20
+  color=3Dblue size=3D2>marty</FONT> <BR><BR>
+  <HR>
+  <FONT face=3DTahoma size=3D2><B>From:</B>=20
+  linuxppc-embedded-bounces+martin.leisner=3Dxerox.com@ozlabs.org=20
+  =
+[mailto:linuxppc-embedded-bounces+martin.leisner=3Dxerox.com@ozlabs.org] =
+<B>On=20
+  Behalf Of </B>Manjunath AM<B><BR>Sent:</B> Tuesday, February 20, 2007 =
+11:50=20
+  PM<B><BR>To:</B> Vitaly Bordug<B><BR>Cc:</B>=20
+  linuxppc-embedded@ozlabs.org<B><BR>Subject:</B> Re: enabling two=20
+  eths</FONT><FONT size=3D3><BR></FONT><BR><FONT face=3Dsans-serif =
+size=3D2><BR>Hi,=20
+  Thanks for your kind reply, Yes i have used different * IP=20
+  Subnets*</FONT><FONT size=3D3> <BR></FONT><FONT face=3Dsans-serif =
+size=3D2><BR>The=20
+  IPs and subnet details I use is</FONT><FONT size=3D3> </FONT><FONT=20
+  face=3Dsans-serif size=3D2><BR>1. eth0(configured through u-boot env=20
+  settings)-&gt;&gt; 192.168.174.231 and subnet is 255.255.255.0 <BR>2.=20
+  eth1(configured after kernel is up)--&gt; 192.168.33.64 and subnet is=20
+  255.255.248.0</FONT><FONT size=3D3> <BR></FONT><FONT face=3Dsans-serif =
+
+  size=3D2><BR>Even i tried by connecting second eth to host PC using =
+cross cable=20
+  as a stand-alone network but even "ping" did not work.. </FONT><FONT=20
+  size=3D3><BR><BR><BR></FONT><FONT face=3Dsans-serif =
+size=3D2><BR>Thanks &amp;=20
+  Regards<BR>MANJUNATH AM<BR>Senior Software Engineer<BR>Emsys<BR>Larsen =
+&amp;=20
+  Toubro Limited<BR>Mysore-570018<BR>Mobile:9886375926</FONT><FONT=20
+  size=3D3><BR><BR><BR></FONT>
+  <TABLE width=3D"100%">
+    <TBODY>
+    <TR vAlign=3Dtop>
+      <TD width=3D"34%"><FONT face=3Dsans-serif size=3D1><B>Vitaly =
+Bordug=20
+        &lt;vbordug@ru.mvista.com&gt;</B> </FONT>
+        <P><FONT face=3Dsans-serif size=3D1>02/20/2007 09:30 =
+PM</FONT><FONT size=3D3>=20
+        </FONT></P>
+      <TD width=3D"65%"><BR>
+        <TABLE width=3D"100%">
+          <TBODY>
+          <TR vAlign=3Dtop>
+            <TD width=3D"8%">
+              <DIV align=3Dright><FONT face=3Dsans-serif =
+size=3D1>To</FONT></DIV>
+            <TD width=3D"91%"><FONT face=3Dsans-serif size=3D1>Alex =
+Zeffertt=20
+              &lt;ajz@cambridgebroadband.com&gt;</FONT><FONT size=3D3> =
+</FONT>
+          <TR vAlign=3Dtop>
+            <TD>
+              <DIV align=3Dright><FONT face=3Dsans-serif =
+size=3D1>cc</FONT></DIV>
+            <TD><FONT face=3Dsans-serif size=3D1>Manjunath AM=20
+              &lt;Manjunath.AM@Lntemsys.com&gt;,=20
+              linuxppc-embedded@ozlabs.org</FONT><FONT size=3D3> </FONT>
+          <TR vAlign=3Dtop>
+            <TD>
+              <DIV align=3Dright><FONT face=3Dsans-serif =
+size=3D1>Subject</FONT></DIV>
+            <TD><FONT face=3Dsans-serif size=3D1>Re: enabling two=20
+          eths</FONT></TR></TBODY></TABLE><BR><BR>
+        <TABLE width=3D"100%">
+          <TBODY>
+          <TR vAlign=3Dtop>
+            <TD width=3D"50%">
+            <TD =
+width=3D"50%"></TR></TBODY></TABLE><BR></TR></TBODY></TABLE><BR><FONT=20
+  size=3D3><BR><BR></FONT><FONT size=3D2><TT><BR>On Tue, 20 Feb 2007 =
+15:31:54=20
+  +0000<BR>Alex Zeffertt &lt;ajz@cambridgebroadband.com&gt; =
+wrote:<BR><BR>&gt;=20
+  <BR>&gt; Manjunath AM wrote:<BR>&gt; &gt; <BR>&gt; &gt; Hi,<BR>&gt; =
+&gt;=20
+  <BR>&gt; &gt; We are using MPC8272 based target board, we use =
+montavista Linux=20
+  version <BR>&gt; &gt; 2.6.10 kernel image (with NFS enabled) to our =
+target=20
+  board,<BR>&gt; &gt; <BR>&gt; &gt; Our board has &nbsp;2 FCCs (eth0 and =
+eth1).=20
+  bot the eth's works perfectly <BR>&gt; &gt; when we use them =
+independently,=20
+  but when we are trying to enable second <BR>&gt; &gt; one after the =
+kernel is=20
+  up using linux command &nbsp;"ifconfig eth1 <BR>&gt; &gt; =
+192.168.33.64 up"(IP=20
+  address)nothing is working.<BR>&gt; &gt; Please suggest how to enable =
+second=20
+  eth (either 0 or 1) once the kernel <BR>&gt; &gt; is up with NFS file=20
+  system<BR>&gt; <BR>&gt; <BR>&gt; Have you made sure that eth0 and eth1 =
+are on=20
+  *different* IP subnets?<BR>&gt; If they are on the same subnet, or=20
+  intersecting subnets, your routing<BR>&gt; will get confused.<BR>&gt; =
+<BR>It=20
+  depends :)<BR><BR>I used to test functionality such a way to have two =
+enets in=20
+  same subnet, then ifdown one of them.<BR><BR>At least with mvista RFS, =
+one=20
+  enet &nbsp;handles NFS, other is up but all the packets are routed to =
+it=20
+  via<BR>the first one. And when the first one got ifdown, routing =
+switches to=20
+  the remaining enet...<BR>-- <BR>Sincerely, <BR>Vitaly</TT></FONT><FONT =
+
+  size=3D3><BR></FONT><FONT=20
+  =
+size=3D2><TT>_______________________________________________<BR>Linuxppc-=
+embedded=20
+  mailing=20
+  =
+list<BR>Linuxppc-embedded@ozlabs.org<BR>https://ozlabs.org/mailman/listin=
+fo/linuxppc-embedded</TT></FONT>=20
+  <BR></BLOCKQUOTE></BODY></HTML>
+
+------_=_NextPart_001_01C756C1.7470D8E4--
