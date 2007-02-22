@@ -1,31 +1,15 @@
 Return-Path: <Geert.Uytterhoeven@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id ECC4DDDD08
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 19:21:43 +1100 (EST)
-Date: Thu, 22 Feb 2007 09:21:36 +0100 (CET)
+	by ozlabs.org (Postfix) with ESMTP id D0EF4DDDF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 21:14:38 +1100 (EST)
+Date: Thu, 22 Feb 2007 11:14:36 +0100 (CET)
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 Sender: geert@sonytel.be
-To: Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: [PATCH 1/4 (final?)] ps3fb: thread updates
-In-Reply-To: <20070221152047.0d3da74c.akpm@linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0702220918150.32271@pademelon.sonytel.be>
-References: <20070215152301.573853000@sonycom.com>
-	<20070215152432.264415000@sonycom.com>
-	<20070215175007.GA10817@lst.de>
-	<1171575817.5644.44.camel@localhost.localdomain>
-	<20070215165916.de546f0d.akpm@linux-foundation.org>
-	<Pine.LNX.4.62.0702161658530.8263@pademelon.sonytel.be>
-	<20070216163811.GB32051@lst.de>
-	<Pine.LNX.4.62.0702161832200.22939@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702191505510.32160@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702201133080.6407@pademelon.sonytel.be>
-	<Pine.LNX.4.62.0702201141000.20432@pademelon.sonytel.be>
-	<20070221152047.0d3da74c.akpm@linux-foundation.org>
+To: Linux/PPC Development <linuxppc-dev@ozlabs.org>
+Subject: platform_ops.malloc() vs. realloc()
+Message-ID: <Pine.LNX.4.62.0702221112010.22848@pademelon.sonytel.be>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,46 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 Feb 2007, Andrew Morton wrote:
-> On Tue, 20 Feb 2007 11:42:04 +0100 (CET)
-> Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com> wrote:
-> 
-> > ps3fb: Replace the kernel_thread and the semaphore by a proper kthread, which is
-> > simply woken up when the screen must be updated
-> 
-> <goes off and generates the incremental diff again so we can see what changed>
 
-Sorry, I thought you were just going to replace the patch you already had in
-your queue/heap/stack.
+arch/powerpc/boot/ops.h has:
 
-> @@ -808,16 +807,13 @@ static int ps3fb_ioctl(struct fb_info *i
->  
->  static int ps3fbd(void *arg)
->  {
-> -	DEFINE_WAIT(wait);
-> -	DECLARE_WAIT_QUEUE_HEAD(wq);
-> -
->  	while (!kthread_should_stop()) {
-> -		prepare_to_wait(&wq, &wait, TASK_INTERRUPTIBLE);
-> -		if (!ps3fb.is_kicked)
-> -			schedule();
-> -		finish_wait(&wq, &wait);
-> -		ps3fb.is_kicked = 0;
-> -		ps3fb_sync(0);	/* single buffer */
-> +		set_current_state(TASK_INTERRUPTIBLE);
-> +		if (ps3fb.is_kicked) {
-> +			ps3fb.is_kicked = 0;
-> +			ps3fb_sync(0);	/* single buffer */
-> +		}
-> +		schedule();
->  	}
->  	return 0;
->  }
-> _
-> 
-> There's still no try_to_freeze() in there.  Shouldn't we have one?
+| /* Platform specific operations */
+| struct platform_ops {
+|         void    (*fixups)(void);
+|         void    (*image_hdr)(const void *);
+|         void *  (*malloc)(u32 size);
+|         void    (*free)(void *ptr);
+|         void *  (*realloc)(void *ptr, unsigned long size);
+|         void    (*exit)(void);
+| };
 
-Thanks, I'll add it.
+Is there a specific reason why the size parameters of malloc() and realloc()
+differ in type?
 
 Gr{oetje,eeting}s,
 
