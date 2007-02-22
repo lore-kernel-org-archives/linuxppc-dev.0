@@ -1,21 +1,35 @@
-Return-Path: <juergen.beisert@weihenstephan.org>
-Received: from bill.weihenstephan.org (bill.weihenstephan.org [82.135.35.21])
-	by ozlabs.org (Postfix) with ESMTP id B3064DDDFC
+Return-Path: <cem.isik@karel.com.tr>
+Received: from [195.214.178.6] (unknown [85.105.64.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "out0.karel.com.tr",
+	Issuer "out0.karel.com.tr" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id BBC85DDDFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Feb 2007 22:29:55 +1100 (EST)
-From: Juergen Beisert <juergen.beisert@weihenstephan.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] jffs2 file system
-Date: Thu, 22 Feb 2007 12:29:46 +0100
-References: <9097247.post@talk.nabble.com>
-	<200702221128.02970.juergen.beisert@weihenstephan.org>
-	<9097618.post@talk.nabble.com>
-In-Reply-To: <9097618.post@talk.nabble.com>
+	Thu, 22 Feb 2007 22:54:52 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by out0.karel.com.tr (Postfix) with ESMTP id BC1FDD5C12E
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 22 Feb 2007 13:54:49 +0200 (EET)
+Received: from mailist.karel.com.tr (mailist [192.168.0.10])
+	by out0.karel.com.tr (Postfix) with ESMTP id 192D9D5C134
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 22 Feb 2007 13:54:39 +0200 (EET)
+Received: from octopus.karel.com.tr (octopus.karel.com.tr [192.168.200.253])
+	by mailist.karel.com.tr (8.12.8/8.12.8) with ESMTP id l1MBucGR017243
+	for <linuxppc-embedded@ozlabs.org>; Thu, 22 Feb 2007 13:56:44 +0200
+Received: from orfoz.karel.com.tr (orfoz.karel.com.tr [192.168.2.254])
+	by octopus.karel.com.tr (8.13.1/8.13.1) with ESMTP id l1MBvSoM017099
+	for <linuxppc-embedded@ozlabs.org>; Thu, 22 Feb 2007 13:57:28 +0200
+Received: from [192.168.2.108] ([192.168.2.108])
+	by orfoz.karel.com.tr (8.13.1/8.13.1) with ESMTP id l1MCuHLm026751
+	for <linuxppc-embedded@ozlabs.org>; Thu, 22 Feb 2007 14:56:18 +0200
+Message-ID: <45DD83A9.1060105@karel.com.tr>
+Date: Thu, 22 Feb 2007 13:51:05 +0200
+From: Cem Vedat ISIK <cem.isik@karel.com.tr>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702221229.51830.juergen.beisert@weihenstephan.org>
-Cc: Nethra <nethra_gmit@yahoo.co.in>
+To: ppc embedded list <linuxppc-embedded@ozlabs.org>
+Subject: mpc875 support in 2.4.34 kernel
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,21 +40,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 22 February 2007 11:58, Nethra wrote:
-> do i need to mention mtdparts in command line....i thought that it is
-> enabled in case if we want we can specify partitions in command line
-> itself.
+Hi all,
+I'm trying to compile 2.4.34 kernel for Freescale mpc875 which is a
+member of mpc885 family. I've chosen 2.4.34 since it's the latest kernel
+of 2.4 family, but some other 2.4.x may be useful.
 
-The kernel does not know anything about your flash partitioning. Where is mtd0 
-starting in your flash? At the baseaddress of the flash?
+With
+#make ARCH=ppc CROSS_COMPILE=ppc_88x- menuconfig
+command, all I get is support for mpc860 family.
+Is there a patch or method to compile 2.4 kernel with dual ethernet
+enabled mpc875 support?
+Thanks in advance, looking forward to hearing from you soon.
 
-> do i need to disable ramdisk option in kernel config for jffs2 booting?
+-- 
+Cem Vedat ISIK
+cem.isik@karel.com.tr
 
-No.
+PGP Key ID = 0×6D7B02F7
+fingerprint = 8C34 144C 999A 917C 8EA0 1199 C136 C114 6D7B 02F7
 
-On my MPC5200 based system I start the kernel with this partition command:
-
-mtdparts=phys_mapped_flash:256k(ubootl),1792k(kernel),13312k(jffs2),256k(uboot)ro,-(space)
-root=/dev/mtdblock2 rootfstype=jffs2
-
-Juergen
+-----------------------------------------------------------------------
+Bu mesaj Karel MailScanner ile tehlikeli icerik ve virus kontrolunden gecirilmistir.
+KAREL A.S. - Bilgi Teknolojileri Bolumu
+This message has been scanned for viruses and dangerous content by Karel MailScanner, and is believed to be clean.
+KAREL A.S. - Information Technologies Department
