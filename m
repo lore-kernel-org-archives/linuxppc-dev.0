@@ -1,20 +1,13 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 13D43DDDEB
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 21:31:58 +1100 (EST)
-In-Reply-To: <Pine.LNX.4.62.0702221112010.22848@pademelon.sonytel.be>
-References: <Pine.LNX.4.62.0702221112010.22848@pademelon.sonytel.be>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <dcd4ed49af66f0fb9bb0eb1e86823c54@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: platform_ops.malloc() vs. realloc()
-Date: Thu, 22 Feb 2007 11:31:49 +0100
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 22 Feb 2007 21:25:53 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
 To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: platform_ops.malloc() vs. realloc()
+Message-ID: <20070222102553.GA11014@localhost.localdomain>
+References: <Pine.LNX.4.62.0702221112010.22848@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.62.0702221112010.22848@pademelon.sonytel.be>
 Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,16 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Feb 22, 2007 at 11:14:36AM +0100, Geert Uytterhoeven wrote:
+> 
+> arch/powerpc/boot/ops.h has:
+> 
+> | /* Platform specific operations */
+> | struct platform_ops {
+> |         void    (*fixups)(void);
+> |         void    (*image_hdr)(const void *);
 > |         void *  (*malloc)(u32 size);
-
+> |         void    (*free)(void *ptr);
 > |         void *  (*realloc)(void *ptr, unsigned long size);
-
-> Is there a specific reason why the size parameters of malloc() and 
-> realloc()
+> |         void    (*exit)(void);
+> | };
+> 
+> Is there a specific reason why the size parameters of malloc() and realloc()
 > differ in type?
 
-There are good arguments to prefer either u32 or unsigned
-long, so maybe the current situation is a compromise ;-P
+Not as far as I'm aware, I believe it's just a wart.  The zImage is
+always compiler 32-bit, so they're actually the same thing.  I'm
+actually hoping to get rid of malloc() and realloc() at some point.
 
-
-Segher
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
