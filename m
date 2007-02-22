@@ -1,15 +1,23 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 23 Feb 2007 09:57:07 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
-Subject: Re: [PATCH] powerpc: document new interrupt-array property
-Message-ID: <20070222225707.GB15387@localhost.localdomain>
-References: <b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 99530DDE0E
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 09:59:04 +1100 (EST)
+Date: Thu, 22 Feb 2007 23:58:55 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Johannes Berg <johannes@sipsolutions.net>,
+	David Brownell <david-b@pacbell.net>
+Subject: Re: several messages
+In-Reply-To: <200702211950.22422.david-b@pacbell.net>
+Message-ID: <Pine.LNX.4.60.0702222352460.6771@poirot.grange>
+References: <200702211929.17203.david-b@pacbell.net>
+	<200702211950.22422.david-b@pacbell.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com, john stultz <johnstul@us.ibm.com>,
+	linux-pm@lists.osdl.org, Linux Kernel list <linux-kernel@vger.kernel.org>,
+	Torrance <torrance123@gmail.com>, linuxppc-dev@ozlabs.org,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,141 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 22, 2007 at 08:47:28AM -0700, Yoder Stuart-B08248 wrote:
->  
-> > -----Original Message-----
-> > From: linuxppc-dev-bounces+b08248=freescale.com@ozlabs.org 
-> > [mailto:linuxppc-dev-bounces+b08248=freescale.com@ozlabs.org] 
-> > On Behalf Of Segher Boessenkool
-> > Sent: Thursday, February 22, 2007 5:06 AM
-> > To: David Gibson
-> > Cc: linuxppc-dev@ozlabs.org; paulus@samba.org; Yoder Stuart-B08248
-> > Subject: Re: [PATCH] powerpc: document new interrupt-array property
-> > 
-> > >> Not really a hack, this is documented in the interrupt
-> > >> binding:
-> > >
-> > > No, it really is a hack, I'm afraid.  interrupt-map doesn't 
-> > in general
-> > > make sense for mapping interrupt-children which are not physical
-> > > children.  Why?  Because the interrupt map includes unit specifiers,
-> > > which means the expected addressing format in the interrupt map must
-> > > match that of the reg property in every node mapped through it.
-> > 
-> > Hrm I guess I misunderstood the way you do things now.
-> > Could you give an example?  I'm too lazy to look up
-> > the DTS file :-)
-> 
-> So there seems to be 3 options:
-> 
-> Option #1 -- Current 'hack' :) looks like this.  This works but is
-> ugly.
-> 
->   MAL0: mcmal {
->       /* FIXME */
->       device_type = "mcmal-dma";
->       compatible = "ibm,mcmal-440gp", "ibm,mcmal";
->       dcr-reg = <180 62>;
->       num-tx-chans = <4>;
->       num-rx-chans = <4>;
->       interrupt-parent = <&MAL0>;
->       interrupts = <0 1 2 3 4>;
->       #interrupt-cells = <1>;
->       #address-cells = <0>;
->       #size-cells = <0>;
->       interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
->                /*RXEOB*/ 1 &UIC0 b 4
->                /*SERR*/  2 &UIC1 0 4
->                /*TXDE*/  3 &UIC1 1 4
->                /*RXDE*/  4 &UIC1 2 4>;
->       interrupt-map-mask = <ffffffff>;
->   };
-> 
-> Option #2 -- new interrupt-array property.  MAL would look
-> like this:
-> 
->   MAL0: mcmal {
->       /* FIXME */
->       device_type = "mcmal-dma";
->       compatible = "ibm,mcmal-440gp", "ibm,mcmal";
->       dcr-reg = <180 62>;
->       num-tx-chans = <4>;
->       num-rx-chans = <4>;
->       interrupt-array = <&UIC0 a 4
->                          &UIC0 b 4
->                          &UIC1 0 4
->                          &UIC1 1 4
->                          &UIC1 2 4>;
->   };
-> 
-> Option #3 -- define new, logical interrupt nexus to do
-> the mapping.   Not sure if I got this right but here is
-> my take on what this might look like:
-> 
->   MALINT: malint_nexus {
->       #interrupt-cells = <1>;
->       #address-cells = <0>;
->       #size-cells = <0>;
->       interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
->                /*RXEOB*/ 1 &UIC0 b 4
->                /*SERR*/  2 &UIC1 0 4
->                /*TXDE*/  3 &UIC1 1 4
->                /*RXDE*/  4 &UIC1 2 4>;
->       interrupt-map-mask = <ffffffff>;
->   }
-> 
->   MAL0: mcmal {
->       /* FIXME */
->       device_type = "mcmal-dma";
->       compatible = "ibm,mcmal-440gp", "ibm,mcmal";
->       dcr-reg = <180 62>;
->       num-tx-chans = <4>;
->       num-rx-chans = <4>;
->       interrupt-parent = <&MALINT>;
->       interrupts = <0 1 2 3 4>;
->   };
-> 
-> The malint_nexus node is attache to / I guess??  Segher
-> is this what you had in mind?
-> 
-> The question is-- is option #3 clear enough?  Is a new
-> property warranted?
+of the following 2 patches:
 
-There's no point to option 3 as given.  If we're going to use an
-interrupt nexus, and rely on the fact that the physical versus
-interrupt tree addressing mismatch doesn't matter in this case, then
-we might as well put the interrupt nexus into the node itself,
-i.e. option 1.  The only point to 3 would be if we make the MAL a
-child of its interrupt nexus, thereby ensuring that the address forms
-match.
+On Mon, 5 Feb 2007, Johannes Berg wrote:
 
-Something like:
+> This patch removes the time suspend/restore code that was done through
+> a PMU notifier in arch/platforms/powermac/time.c.
+> 
+> Instead, we introduce arch/powerpc/sysdev/timer.c which creates a sys
+> device and handles time of day suspend/resume through that.
+> 
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Cc: Andrew Morton <akpm@osdl.org>
+> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-malint-nexus {
-	#interrupt-cells = <1>;
-	ranges;
-	interrupt-map = <0 0 0 &UIC0 a 4
-		.... >;
-	interrupt-map-mask = <ffffffff 0 0>;
-	MAL0: mcmal {
-		device_type = "mcmal-dma";
-		compatible = "ibm,mcmal-440gp", "ibm,mcmal";
-		dcr-reg = <180 62>;
-		num-tx-chans = <4>;
-		num-rx-chans = <4>;
-		interrupt-parent = <&MALINT>;
-		interrupts = <0 1 2 3 4>;
-	};
-};
+[patch trimmed]
 
-Note the empty ranges property (passthrough).  That's kind of
-irrelevant here, since MAL is DCR controlled, but would matter if we
-had a similar situation with a device that had MMIO registers (and
-therefore a "reg" property).  For MAL, since it has no "reg", we set
-the interrupt-map-mask to ignore the unit address.
+On Wed, 21 Feb 2007, David Brownell wrote:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> RTC class suspend/resume support, re-initializing the system clock on resume
+> >from the clock used to initialize it at boot time.
+> 
+>  - Inlining the same code used by ARM, which saves and restores the
+>    delta between a selected RTC and the current system wall-clock time.
+> 
+>  - Removes calls to that ARM code from AT91, OMAP, and S3C RTCs.
+> 
+> This goes on top of the patch series removing "struct class_device" usage
+> >from the RTC framework.  That makes class suspend()/resume() work.
+> 
+> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
+> 
+> ---
+>  drivers/rtc/Kconfig          |   24 +++++++++----
+>  drivers/rtc/class.c          |   74 +++++++++++++++++++++++++++++++++++++++++++
+>  drivers/rtc/rtc-at91rm9200.c |   30 -----------------
+>  drivers/rtc/rtc-omap.c       |   17 ---------
+>  drivers/rtc/rtc-s3c.c        |   22 ------------
+>  5 files changed, 91 insertions(+), 76 deletions(-)
+
+[patch trimmed]
+
+I think, we only want 1, right? And the latter seems to be more generic / 
+platform independent? And as a side-effect, powermac would have to migrate 
+to generic rtc:-)
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
