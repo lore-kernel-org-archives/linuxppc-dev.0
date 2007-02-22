@@ -1,18 +1,32 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 22 Feb 2007 21:34:10 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: document new interrupt-array property
-Message-ID: <20070222103410.GB11014@localhost.localdomain>
-References: <200702212325.l1LNPBwL007793@ld0164-tx32.am.freescale.net>
-	<A31D7159-8C25-445D-A21D-85F04C1FDC45@kernel.crashing.org>
-	<20070222011811.GA18364@localhost.localdomain>
-	<45b623f395654fc4f4920b9553794def@kernel.crashing.org>
+Return-Path: <cem.isik@karel.com.tr>
+Received: from [195.214.178.6] (unknown [85.105.64.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "out0.karel.com.tr",
+	Issuer "out0.karel.com.tr" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 910F0DDE06
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 23:08:14 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by out0.karel.com.tr (Postfix) with ESMTP id 115B3D5C134
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 14:08:08 +0200 (EET)
+Received: from mailist.karel.com.tr (mailist [192.168.0.10])
+	by out0.karel.com.tr (Postfix) with ESMTP id 17DE3D5C13C
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 14:08:00 +0200 (EET)
+Received: from octopus.karel.com.tr (octopus.karel.com.tr [192.168.200.253])
+	by mailist.karel.com.tr (8.12.8/8.12.8) with ESMTP id l1MC9wGR019108
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 14:10:01 +0200
+Received: from orfoz.karel.com.tr (orfoz.karel.com.tr [192.168.2.254])
+	by octopus.karel.com.tr (8.13.1/8.13.1) with ESMTP id l1MCAm2O018330
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 14:10:48 +0200
+Received: from [192.168.2.108] ([192.168.2.108])
+	by orfoz.karel.com.tr (8.13.1/8.13.1) with ESMTP id l1MD9cn1027193
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Feb 2007 15:09:39 +0200
+Message-ID: <45DD86CA.9050404@karel.com.tr>
+Date: Thu, 22 Feb 2007 14:04:26 +0200
+From: Cem Vedat ISIK <cem.isik@karel.com.tr>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <45b623f395654fc4f4920b9553794def@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Stuart Yoder <b08248@freescale.com>
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: mpc875 support in 2.4.34 kernel
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,68 +36,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 22, 2007 at 08:01:31AM +0100, Segher Boessenkool wrote:
-> >> what problem is this trying to solve?
-> >
-> > As he says, it's for devices with interrupts routed to multiple
-> > controllers.  The normal interrupts property assumes a single
-> > interrupt parent for a device.  This is needed on most 4xx boards,
-> > where the MAL has 5 interrupts, some of which are on UIC0 and some of
-> > which are on UIC1.  At the moment the Ebony port deals with this using
-> > an "interesting" hack, treating the MAL as an interrupt nexus for
-> > itself, using an interrupt-map to remap its interrupts to the two
-> > controllers.
-> 
-> Not really a hack, this is documented in the interrupt
-> binding:
+Hi all,
+I'm trying to compile 2.4.34 kernel for Freescale mpc875 which is a
+member of mpc885 family. I've chosen 2.4.34 since it's the latest kernel
+of 2.4 family, but some other 2.4.x may be useful.
 
-No, it really is a hack, I'm afraid.  interrupt-map doesn't in general
-make sense for mapping interrupt-children which are not physical
-children.  Why?  Because the interrupt map includes unit specifiers,
-which means the expected addressing format in the interrupt map must
-match that of the reg property in every node mapped through it.
-
-We get away with it in this case because we ignore the unit specifier
-part, and the kernel parser happens to use the interrupt parent's
-#address-cells value, rather than the physical parent's.
-
-> > 3.3.  "interrupt-map" property
-> > At any level in the interrupt tree, a mapping may need to take
-> > place between the child interrupt domain and the parentâ€™s.  This
-> > is represented by a new property called "interrupt-map".
-> 
-> Note it says "*any* level".
-
-We could do this properly via an interrupt map by placing the MAL
-under a MAL-interrupt-nexus node, which exists to do nothing but remap
-the interrupts.  That's pretty horrible, though.
-
-> > The interrupt-array proposal does the same thing much
-> > more neatly and compactly.
-> 
-> Sure, for every specific case one can envision a more neat
-> and compact device tree ;-P
-> 
-> If in a certain tree you have this "problem" with not only
-> the MAL but with lots of devices, you could introduce a
-> "fake" interrupt nexus that doesn't represent a physical
-> device as such, but that represents the combined cascaded
-> interrupt controllers, and maps the interrupts to the nodes
-> for the "physical" interrupt controllers.  Just don't make
-> the mistake of putting an "interrupt-controller" property
-> in there and all is just fine.  As an added bonus you end up
-> with one single namespace for the interrupts (one interrupt
-> domain in interrupt-mapping speak), which is probably what
-> the chip documentation does as well.
-
-No, actually.  Afaict for the 4xx chips, the user manuals just give
-the interrupt mapping in tables in the the chapter on the interrupt
-controllers.  There's a separate table, with separate interrupt
-numbers for each UIC.  IIRC, elsewhere in the document the interrupts
-are just referred to by name.
-
+With
+#make ARCH=ppc CROSS_COMPILE=ppc_88x- menuconfig
+command, all I get is support for mpc860 family.
+Is there a patch or method to compile 2.4 kernel with dual ethernet
+enabled mpc875 support?
+Thanks in advance, looking forward to hearing from you soon.
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Cem Vedat ISIK
+cem.isik@karel.com.tr
+
+PGP Key ID = 0×6D7B02F7
+fingerprint = 8C34 144C 999A 917C 8EA0 1199 C136 C114 6D7B 02F7
+
+-----------------------------------------------------------------------
+Bu mesaj Karel MailScanner ile tehlikeli icerik ve virus kontrolunden gecirilmistir.
+KAREL A.S. - Bilgi Teknolojileri Bolumu
+This message has been scanned for viruses and dangerous content by Karel MailScanner, and is believed to be clean.
+KAREL A.S. - Information Technologies Department
