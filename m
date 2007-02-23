@@ -1,22 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DC5B0DDDE7
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
+	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id 0A7F4DDEB6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Feb 2007 03:12:38 +1100 (EST)
-In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A16E@MERCURY.inside.istor.com>
-References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A16E@MERCURY.inside.istor.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <205D2E1A-FDE9-4BC6-BC81-150D186207E4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: understanding an IO question
-Date: Fri, 23 Feb 2007 10:11:32 -0600
-To: Charles Krinke <ckrinke@istor.com>
-Cc: Randy Brown <rbrown@istor.com>, Chris Carlson <ccarlson@istor.com>,
-	linuxppc-embedded@ozlabs.org
+	Sat, 24 Feb 2007 08:33:49 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: debugging custom Xilinx boot loader with abatron and
+	Montavistadevrocket
+Date: Fri, 23 Feb 2007 13:33:46 -0800
+Message-ID: <406A31B117F2734987636D6CCC93EE3C0108DC6A@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <45a1b53e0702230811i79bbc10dqd6e10ac05b06ac16@mail.gmail.com>
+References: <45a1b53e0702230811i79bbc10dqd6e10ac05b06ac16@mail.gmail.com>
+From: "Leonid" <Leonid@a-k-a.net>
+To: "Wade Maxfield" <wmaxfield@gmail.com>, "ppc" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,59 +24,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+If you need just bootloader - use u-boot.
 
-On Feb 23, 2007, at 8:16 AM, Charles Krinke wrote:
+________________________________________
+From: linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org =
+[mailto:linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org] On =
+Behalf Of Wade Maxfield
+Sent: Friday, February 23, 2007 8:11 AM
+To: ppc
+Subject: debugging custom Xilinx boot loader with abatron and =
+Montavistadevrocket
 
->
-> Dear Kumar:
->
-> Thank you very much for your advice on addressing our PCI device. It
-> turned out that the OutboundTranslation windows were the key.
->
-> In uboot, I setup two windows to allow accesses to 32bit cpu space
-> 0x8400_000 & 0x8800_0000 to be translated to 64bit DAC (Dual Address
-> Cycles) at 0x3_0000_0000 & 0x1_0000_0000 respectively, and both the  
-> 8241
-> and 8541 do this quite well.
->
-> Once the potar, powbar and other outbound translation address windows
-> were reset to the same values in Linux that they had in uboot,  
-> outbound
-> transactions work fine and address the registers and memory in our  
-> ASIC.
 
-Good to hear.
+=A0 I want to debug a ppc custom boot loader with Montavista (since we =
+spent the money on it) under the Xilinx fx60.
 
-> Next, I need to study the difference between the DMA engines in the  
-> 8241
-> and 8541 to accomplish a similar mission. This one may be a bit  
-> trickier
-> and you advice would be greatly appreciated.
->
-> The 8241 DMA engine understands 64bit DMA  in that it has a high  
-> source
-> & destination address register for the upper 32bits of a 64bit  
-> address.
-> Unfortunately, the 8541 does not. It only supports 32bit DMA.
+=A0 I've been able to get the kernel to debug under MontaVista.=A0 =
+However, since the hardware engineers have given up on DDR ram (they =
+could not get it to work reliably and will be dropping it from the next =
+release), I don't think I can use Linux for now. =A0 Unfortunately, this =
+decision is not changeable.=A0 When a hardware engineer is embarrassed, =
+the results are not good for software engineers.=20
 
-This is doable, however I haven't done it myself.
+I don't think I've got enough static ram to host a PPC linux kernel and =
+applications (we only have 8 meg).=A0 We will have 16 meg on the next =
+release, I expect.=A0 Is that enough for simple apps and linux under =
+PPC???=A0 I need some guidance here, as I don't have enough PPC =
+experience.=20
 
-> So, my assumption is that there is some way to use a different  
-> outbound
-> address translation window and emulate 64bit DMA transactions using  
-> the
-> 32bit DMA engine in the 8541.
+=A0 Fortunately, we got the ppc running and can manage the hardware =
+using Xilkernel and Xilnet (lwIP maybe later).
 
-Yep. If you have the POTARs setup to access the 64 bit PCI address  
-space you want than you just DMA to the 'internal' address that the  
-POTAR is pointing to.
+=A0 I've done numerous Google searches, and searches on MontaVista =
+support page.=A0 They are specific to Linux.=20
 
-I suggest a simple direct mode test first to make sure everything  
-appears to be working properly (maybe via hand in u-boot with memory  
-write commands)
+=A0 Has anyone debugged a custom boot loader with MontaVista and =
+Abatron?=A0 How do you set up the project under=A0 eclipse (which is =
+devrocket)?=A0 Nothing I see seems to match, as I need the boot vector =
+code, and I don't know how to tell eclipse to compile for that =
+option.=A0 Can I just bring over the elf (compiled with debug under =
+Xilinx) and the source files and start debugging?=A0 If so, what kind of =
+project would I pick under devrocket?=A0 The more I look, the more =
+confused I get.=20
 
-> I don't know if you have studied this part at all, but if you or  
-> anyone
-> would be willing to offer a few hints, I would be appreciative.
+=A0=A0 I could possibly bring up linux on an ML403 board and use gdb/ddd =
+on that.=A0 if so, how would I cause the boot code to be located at the =
+right address?=A0 Any howto's to read that aren't simply hand waves =
+would be very useful. I understand once I do it is easy, but getting it =
+done the first time is my problem right now.=20
 
-- k
+=A0=A0 I've got to pull some serious asses from the fire, so I'm under a =
+lot of pressure.=A0 I also know who will be blamed if I don't pull this =
+off.
+
+=A0 Any help is greatly appreciated!
+
+thanks,
+wade
