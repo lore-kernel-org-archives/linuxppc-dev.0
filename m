@@ -1,25 +1,22 @@
-Return-Path: <zippel@linux-m68k.org>
-Received: from scrub.xs4all.nl (scrub.xs4all.nl [194.109.195.176])
-	by ozlabs.org (Postfix) with ESMTP id 0195CDDD06
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 09:52:42 +1100 (EST)
-Date: Fri, 23 Feb 2007 23:44:32 +0100 (CET)
-From: Roman Zippel <zippel@linux-m68k.org>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [Linux-fbdev-devel] linux 2.6.21-rc1 : FB Kconfig error
-In-Reply-To: <Pine.LNX.4.62.0702221854520.25919@pademelon.sonytel.be>
-Message-ID: <Pine.LNX.4.64.0702232343330.14457@scrub.home>
-References: <200702210946.27758.toralf.foerster@gmx.de>
-	<Pine.LNX.4.62.0702211102000.340@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0702211238400.14457@scrub.home>
-	<Pine.LNX.4.62.0702211322350.340@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0702220052020.14457@scrub.home>
-	<Pine.LNX.4.62.0702221854520.25919@pademelon.sonytel.be>
+Return-Path: <bzolnier@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id AE1E4DDDCA
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 10:36:49 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so178580nfc
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 15:36:48 -0800 (PST)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] (pata-2.6 fix queue) sl82c105: DMA support code cleanup
+	(take 3)
+Date: Sat, 24 Feb 2007 00:42:59 +0100
+References: <200702140043.25244.sshtylyov@ru.mvista.com>
+	<200702231913.55522.sshtylyov@ru.mvista.com>
+In-Reply-To: <200702231913.55522.sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>,
-	=?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702240042.59737.bzolnier@gmail.com>
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-On Thu, 22 Feb 2007, Geert Uytterhoeven wrote:
-
-> Like this?
+On Friday 23 February 2007, Sergei Shtylyov wrote:
+> Fold the now equivalent code in the ide_dma_check() method into a mere call to
+> ide_use_dma().  Make config_for_dma() return non-zero if DMA mode has been set
+> and call it from the ide_dma_check() method instead of ide_dma_on().
+> Also, defer writing the DMA timings to the chip registers until DMA is actually
+> turned on (and do not enable IORDY for DMA).  Remove unnecessary code from the
+> init_hwif() method, improve its looks overall, and also rename the driver's
+> ide_dma_check() and dma_start() methods.
 > 
-> Subject: ps3: Introduce CONFIG_PS3_ADVANCED
+> ---
+> This version takes into account that the ide-use-fast-pio.patch had been merged
+> to mainline...
 
-Looks good.
-
-> --- ps3-linux-2.6.21-rc1.orig/arch/powerpc/platforms/ps3/Kconfig
-> +++ ps3-linux-2.6.21-rc1/arch/powerpc/platforms/ps3/Kconfig
-> @@ -1,9 +1,25 @@
->  menu "PS3 Platform Options"
->  	depends on PPC_PS3
->  
-> +config PS3_ADVANCED
-> +	depends on PPC_PS3
-> +	bool "PS3 Advanced configuration options"
-> +	default n
-
-except that this default is not really necessary.
-
-bye, Roman
+applied
