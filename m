@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 1D332DDE2E
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 14:40:59 +1100 (EST)
-Date: Fri, 23 Feb 2007 14:40:57 +1100
+	by ozlabs.org (Postfix) with ESMTP id E846EDDE34
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 14:41:41 +1100 (EST)
+Date: Fri, 23 Feb 2007 14:41:41 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [POWERPC] tidy spinlock.h a bit
-Message-Id: <20070223144057.27e1e819.sfr@canb.auug.org.au>
+Subject: [POWERPC] make ppc64_defconfig - CONFIG_PPC_PSERIES build
+Message-Id: <20070223144141.c598a92a.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>
@@ -20,50 +20,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-_raw_{spin,read,write}relax() are not used anywhere, so remove them.
-
-The calls to __spin_yield() and __rw_yield() will only be compiled in
-if CONFIG_PPC_SPLPAR or CONFIG_PPC_ISERIES is defined, so we don't need
-alternate definitions for them (just declarations).
-
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- include/asm-powerpc/spinlock.h |   10 ++--------
- 1 files changed, 2 insertions(+), 8 deletions(-)
+ arch/powerpc/lib/locks.c |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/include/asm-powerpc/spinlock.h b/include/asm-powerpc/spinlock.h
-index cc4cfce..e247503 100644
---- a/include/asm-powerpc/spinlock.h
-+++ b/include/asm-powerpc/spinlock.h
-@@ -95,13 +95,11 @@ static int __inline__ __raw_spin_trylock(raw_spinlock_t *lock)
- #if defined(CONFIG_PPC_SPLPAR) || defined(CONFIG_PPC_ISERIES)
- /* We only yield to the hypervisor if we are in shared processor mode */
- #define SHARED_PROCESSOR (get_lppaca()->shared_proc)
--extern void __spin_yield(raw_spinlock_t *lock);
--extern void __rw_yield(raw_rwlock_t *lock);
- #else /* SPLPAR || ISERIES */
--#define __spin_yield(x)	barrier()
--#define __rw_yield(x)	barrier()
- #define SHARED_PROCESSOR	0
- #endif
-+extern void __spin_yield(raw_spinlock_t *lock);
-+extern void __rw_yield(raw_rwlock_t *lock);
- 
- static void __inline__ __raw_spin_lock(raw_spinlock_t *lock)
- {
-@@ -285,9 +283,5 @@ static __inline__ void __raw_write_unlock(raw_rwlock_t *rw)
- 	rw->lock = 0;
+diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
+index 80b482c..79d0fa3 100644
+--- a/arch/powerpc/lib/locks.c
++++ b/arch/powerpc/lib/locks.c
+@@ -43,9 +43,11 @@ void __spin_yield(raw_spinlock_t *lock)
+ 	if (firmware_has_feature(FW_FEATURE_ISERIES))
+ 		HvCall2(HvCallBaseYieldProcessor, HvCall_YieldToProc,
+ 			((u64)holder_cpu << 32) | yield_count);
++#ifdef CONFIG_PPC_SPLPAR
+ 	else
+ 		plpar_hcall_norets(H_CONFER,
+ 			get_hard_smp_processor_id(holder_cpu), yield_count);
++#endif
  }
  
--#define _raw_spin_relax(lock)	__spin_yield(lock)
--#define _raw_read_relax(lock)	__rw_yield(lock)
--#define _raw_write_relax(lock)	__rw_yield(lock)
--
- #endif /* __KERNEL__ */
- #endif /* __ASM_SPINLOCK_H */
+ /*
+@@ -72,9 +74,11 @@ void __rw_yield(raw_rwlock_t *rw)
+ 	if (firmware_has_feature(FW_FEATURE_ISERIES))
+ 		HvCall2(HvCallBaseYieldProcessor, HvCall_YieldToProc,
+ 			((u64)holder_cpu << 32) | yield_count);
++#ifdef CONFIG_PPC_SPLPAR
+ 	else
+ 		plpar_hcall_norets(H_CONFER,
+ 			get_hard_smp_processor_id(holder_cpu), yield_count);
++#endif
+ }
+ #endif
+ 
 -- 
 1.4.4.4
