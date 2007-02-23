@@ -1,25 +1,15 @@
-Return-Path: <david-b@pacbell.net>
-Received: from smtp110.sbc.mail.re2.yahoo.com (smtp110.sbc.mail.re2.yahoo.com
-	[68.142.229.95]) by ozlabs.org (Postfix) with SMTP id 1A2DCDDE2B
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 13:24:55 +1100 (EST)
-From: David Brownell <david-b@pacbell.net>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: several messages
-Date: Thu, 22 Feb 2007 17:15:01 -0800
-References: <200702211929.17203.david-b@pacbell.net>
-	<200702211950.22422.david-b@pacbell.net>
-	<Pine.LNX.4.60.0702222352460.6771@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0702222352460.6771@poirot.grange>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200702221715.03195.david-b@pacbell.net>
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, john stultz <johnstul@us.ibm.com>,
-	linux-pm@lists.osdl.org, Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Torrance <torrance123@gmail.com>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Johannes Berg <johannes@sipsolutions.net>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 1D332DDE2E
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 14:40:59 +1100 (EST)
+Date: Fri, 23 Feb 2007 14:40:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [POWERPC] tidy spinlock.h a bit
+Message-Id: <20070223144057.27e1e819.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,17 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 22 February 2007 2:58 pm, Guennadi Liakhovetski wrote:
-> 
-> I think, we only want 1, right? And the latter seems to be more generic / 
-> platform independent? And as a side-effect, powermac would have to migrate 
-> to generic rtc:-)
 
-I'd certainly think that restoring the system clock should be, as much
-as possible, in platform-agnostic code.  Like the generic RTC framework.
+_raw_{spin,read,write}relax() are not used anywhere, so remove them.
 
-And hmm, that powermac/time.c file replicates other RTC code...
+The calls to __spin_yield() and __rw_yield() will only be compiled in
+if CONFIG_PPC_SPLPAR or CONFIG_PPC_ISERIES is defined, so we don't need
+alternate definitions for them (just declarations).
 
-Minor obstacle:  removing the EXPERIMENTAL label from that code.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/spinlock.h |   10 ++--------
+ 1 files changed, 2 insertions(+), 8 deletions(-)
 
-- Dave
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/asm-powerpc/spinlock.h b/include/asm-powerpc/spinlock.h
+index cc4cfce..e247503 100644
+--- a/include/asm-powerpc/spinlock.h
++++ b/include/asm-powerpc/spinlock.h
+@@ -95,13 +95,11 @@ static int __inline__ __raw_spin_trylock(raw_spinlock_t *lock)
+ #if defined(CONFIG_PPC_SPLPAR) || defined(CONFIG_PPC_ISERIES)
+ /* We only yield to the hypervisor if we are in shared processor mode */
+ #define SHARED_PROCESSOR (get_lppaca()->shared_proc)
+-extern void __spin_yield(raw_spinlock_t *lock);
+-extern void __rw_yield(raw_rwlock_t *lock);
+ #else /* SPLPAR || ISERIES */
+-#define __spin_yield(x)	barrier()
+-#define __rw_yield(x)	barrier()
+ #define SHARED_PROCESSOR	0
+ #endif
++extern void __spin_yield(raw_spinlock_t *lock);
++extern void __rw_yield(raw_rwlock_t *lock);
+ 
+ static void __inline__ __raw_spin_lock(raw_spinlock_t *lock)
+ {
+@@ -285,9 +283,5 @@ static __inline__ void __raw_write_unlock(raw_rwlock_t *rw)
+ 	rw->lock = 0;
+ }
+ 
+-#define _raw_spin_relax(lock)	__spin_yield(lock)
+-#define _raw_read_relax(lock)	__rw_yield(lock)
+-#define _raw_write_relax(lock)	__rw_yield(lock)
+-
+ #endif /* __KERNEL__ */
+ #endif /* __ASM_SPINLOCK_H */
+-- 
+1.4.4.4
