@@ -1,18 +1,33 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 23 Feb 2007 11:33:17 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: document new interrupt-array property
-Message-ID: <20070223003317.GA18508@localhost.localdomain>
-References: <b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
-	<20070222225707.GB15387@localhost.localdomain>
-	<621751322ddfe998a15538e8d3903b93@kernel.crashing.org>
+Return-Path: <hnguyen@linux.vnet.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A3FB9DDE28
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 11:33:37 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l1N0XXNa062788
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 00:33:33 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
+	ESMTP id l1N0XWI71319122
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 00:33:33 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l1N0XWZA001113
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 00:33:32 GMT
+From: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+To: paulus@samba.org, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	johnrose@us.ibm.com
+Subject: [PATCH 1/2] ibmebus: dynamic addiiton/removal of adapters, uevent,
+	root device based on struct device
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <621751322ddfe998a15538e8d3903b93@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Date: Fri, 23 Feb 2007 01:37:24 +0100
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702230137.24348.hnguyen@linux.vnet.ibm.com>
+Cc: fenkes@de.ibm.com, pmac@au1.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,105 +37,315 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 23, 2007 at 01:07:25AM +0100, Segher Boessenkool wrote:
-> >> Option #3 -- define new, logical interrupt nexus to do
-> >> the mapping.
-> 
-> > There's no point to option 3 as given.  If we're going to use an
-> > interrupt nexus, and rely on the fact that the physical versus
-> > interrupt tree addressing mismatch doesn't matter in this case, then
-> > we might as well put the interrupt nexus into the node itself,
-> > i.e. option 1.
-> 
-> That can give problems if there are interrupts in one
-> of the descendants of the node.  It's also just nasty,
-> don't you agree?
+From: Joachim Fenkes <fenkes@de.ibm.com>
 
-Well, if the node has descendents then it's going to need something
-more complex in the interrupt-map to handle them, certainly.  But
-then, if it has (interrupt) children they'll need to be handled
-properly by the nexus in any case.
+This adds two sysfs attributes to /sys/bus/ibmebus which can
+be used to notify the ebus driver of added / removed ebus
+devices in the OF device tree.
 
-> > The only point to 3 would be if we make the MAL a
-> > child of its interrupt nexus, thereby ensuring that the address forms
-> > match.
-> 
-> No, you cannot do that.  There is no extra device
-> there in reality so it shouldn't be in the device tree
-> either.  Also, it just doesn't work.
+Echoing the device's location code (as found in the OFDT
+"ibm,loc-code" property) into the "probe" attribute will
+notify ebus of addition of the device and cause the appropriate
+device driver's probe function to be called on the device.
 
-Exactly, there's no extra device in reality.  So I don't see that it's
-any more bogus to put the fake device as the MAL's parent than as the
-MAL's child or sibling or anywhere else in the tree.
+Likewise, echoing the location code into the "remove" attribute
+will cause the device to be removed from the system.
 
-To represent this without either the nexus-in-node or an extra bogus
-node, we need something like interrupt-array.  Which is why I like the
-idea.
+The writes will block until the respective operation has
+finished and return an error code if the operation failed.
 
-> > Something like:
-> >
-> > malint-nexus {
-> > 	#interrupt-cells = <1>;
-> > 	ranges;
-> > 	interrupt-map = <0 0 0 &UIC0 a 4
-> > 		.... >;
-> > 	interrupt-map-mask = <ffffffff 0 0>;
-> 
-> If you have a "ranges" property you need a
-> "#address-cells" and a "#size-cells" property
-> too -- it just doesn't make any sense otherwise.
+Additionally, uevent is now supported by ibmebus through the
+generic of_device_uevent function.
 
-Oh, yes, my mistake.  #a and #s would need to be identical to the
-parent of malint-nexus.
+The fake root device used to provide a common parent for all
+ebus devices is now based on device instead of of_device - it
+had no associated devtree node. This saves several checks
+throughout the ebus driver.
 
-> You don't want this nexus node to be anywhere inside
-> the "normal" device tree -- it doesn't sit there in
-> hardware, it shouldn't sit there in the device tree,
-> that will only cause problems.
 
-So why did you suggest its existance in the first place?
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
 
-> > Note the empty ranges property (passthrough).
-> 
-> There is nothing to pass anything through though,
-> this node shouldn't be here.
+I repost this patch because a kind fellow (wave to Paul =)
+reminded me of the finer points of patch descriptions - Thanks!
 
-If it shouldn't be here, it shouldn't be anywhere else either.
+As said before, I deem this ready for inclusion.
 
-> > That's kind of
-> > irrelevant here, since MAL is DCR controlled,
-> 
-> Yeah, so MAL should have the DCR reg in its "reg"
-> property.  It needs *something* there -- what if
-> you had two MALs?
 
-No, because that would potentially collide with "reg" properties in
-its siblings which have MMIO addresses on the parent bus.
+ arch/powerpc/kernel/ibmebus.c |  129 ++++++++++++++++++++++++++++++++++--------
+ include/asm-powerpc/ibmebus.h |    2 
 
-> > but would matter if we
-> > had a similar situation with a device that had MMIO registers (and
-> > therefore a "reg" property).
-> 
-> Sorry, I'm going to shout: "reg" HAS NOTHING TO DO
-> WITH MMIO.
 
-Not in general, no, but here specifically it does.  "reg" has to match
-the address type of the parent bus, in this case that's MMIO.  But the
-MAL *is* on the PLB (it's a PLB master, in fact), but it has no
-address on the PLB.
-
-> > For MAL, since it has no "reg", we set
-> > the interrupt-map-mask to ignore the unit address.
-> 
-> So you're saying your "#address-cells" is not 0, but
-> you have no "reg" property?  Congratulations, you
-> built yourself a wildcard package.
-
-How else would you represent a device which exists on the bus, but
-which has no address on the bus?
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+diff -wurp a/arch/powerpc/kernel/ibmebus.c b/arch/powerpc/kernel/ibmebus.c
+--- a/arch/powerpc/kernel/ibmebus.c	2007-02-22 05:26:24.971939672 +0100
++++ b/arch/powerpc/kernel/ibmebus.c	2007-02-20 23:31:39.000000000 +0100
+@@ -2,6 +2,7 @@
+  * IBM PowerPC IBM eBus Infrastructure Support.
+  *
+  * Copyright (c) 2005 IBM Corporation
++ *  Joachim Fenkes <fenkes@de.ibm.com>
+  *  Heiko J Schick <schickhj@de.ibm.com>
+  *    
+  * All rights reserved.
+@@ -43,10 +44,8 @@
+ #include <asm/ibmebus.h>
+ #include <asm/abs_addr.h>
+ 
+-static struct ibmebus_dev ibmebus_bus_device = { /* fake "parent" device */
+-	.name = ibmebus_bus_device.ofdev.dev.bus_id,
+-	.ofdev.dev.bus_id = "ibmebus",
+-	.ofdev.dev.bus    = &ibmebus_bus_type,
++static struct device ibmebus_bus_device = { /* fake "parent" device */
++	.bus_id = "ibmebus",
+ };
+ 
+ static void *ibmebus_alloc_coherent(struct device *dev,
+@@ -161,18 +160,19 @@ static void __devinit ibmebus_dev_releas
+ static ssize_t ibmebusdev_show_name(struct device *dev, 
+ 				    struct device_attribute *attr, char *buf)
+ {
+-	return sprintf(buf, "%s\n", to_ibmebus_dev(dev)->name);
++	struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
++	char *name = (char*)get_property(ebus_dev->ofdev.node, "name", NULL);
++	return sprintf(buf, "%s\n", name);
+ }
+ static DEVICE_ATTR(name, S_IRUSR | S_IRGRP | S_IROTH, ibmebusdev_show_name, 
+ 		   NULL);
+ 
+-static struct ibmebus_dev* __devinit ibmebus_register_device_common(
++static int __devinit ibmebus_register_device_common(
+ 	struct ibmebus_dev *dev, const char *name)
+ {
+ 	int err = 0;
+ 
+-	dev->name = name;
+-	dev->ofdev.dev.parent  = &ibmebus_bus_device.ofdev.dev;
++	dev->ofdev.dev.parent  = &ibmebus_bus_device;
+ 	dev->ofdev.dev.bus     = &ibmebus_bus_type;
+ 	dev->ofdev.dev.release = ibmebus_dev_release;
+ 
+@@ -186,12 +186,12 @@ static struct ibmebus_dev* __devinit ibm
+ 	if ((err = of_device_register(&dev->ofdev)) != 0) {
+ 		printk(KERN_ERR "%s: failed to register device (%d).\n",
+ 		       __FUNCTION__, err);
+-		return NULL;
++		return -ENODEV;
+ 	}
+ 	
+ 	device_create_file(&dev->ofdev.dev, &dev_attr_name);
+ 	
+-	return dev;
++	return 0;
+ }
+ 
+ static struct ibmebus_dev* __devinit ibmebus_register_device_node(
+@@ -205,18 +205,18 @@ static struct ibmebus_dev* __devinit ibm
+ 	if (!loc_code) {
+                 printk(KERN_WARNING "%s: node %s missing 'ibm,loc-code'\n",
+ 		       __FUNCTION__, dn->name ? dn->name : "<unknown>");
+-		return NULL;
++		return ERR_PTR(-EINVAL);
+         }
+ 	
+ 	if (strlen(loc_code) == 0) {
+ 	        printk(KERN_WARNING "%s: 'ibm,loc-code' is invalid\n",
+ 		       __FUNCTION__);
+-		return NULL;
++		return ERR_PTR(-EINVAL);
+ 	}
+ 
+ 	dev = kzalloc(sizeof(struct ibmebus_dev), GFP_KERNEL);
+ 	if (!dev) {
+-		return NULL;
++		return ERR_PTR(-ENOMEM);
+ 	}
+ 
+ 	dev->ofdev.node = of_node_get(dn);
+@@ -227,9 +227,9 @@ static struct ibmebus_dev* __devinit ibm
+ 		min(length, BUS_ID_SIZE - 1));
+ 
+ 	/* Register with generic device framework. */
+-	if (ibmebus_register_device_common(dev, dn->name) == NULL) {
++	if (ibmebus_register_device_common(dev, dn->name) != 0) {
+ 		kfree(dev);
+-		return NULL;
++		return ERR_PTR(-ENODEV);
+ 	}
+ 
+ 	return dev;
+@@ -240,9 +240,8 @@ static void ibmebus_probe_of_nodes(char*
+ 	struct device_node *dn = NULL;
+ 	
+ 	while ((dn = of_find_node_by_name(dn, name))) {
+-		if (ibmebus_register_device_node(dn) == NULL) {
++		if (IS_ERR(ibmebus_register_device_node(dn))) {
+ 			of_node_put(dn);
+-			
+ 			return;
+ 		}
+ 	}
+@@ -262,9 +261,15 @@ static void ibmebus_add_devices_by_id(st
+ 	return;
+ }
+ 
+-static int ibmebus_match_helper(struct device *dev, void *data)
++static int ibmebus_match_helper_name(struct device *dev, void *data)
+ {
+-	if (strcmp((char*)data, to_ibmebus_dev(dev)->name) == 0)
++	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
++	char *name;
++
++	name = (char*)get_property(
++		ebus_dev->ofdev.node, "name", NULL);
++
++	if (name && (strcmp((char*)data, name) == 0))
+ 		return 1;
+ 	
+ 	return 0;
+@@ -285,11 +290,10 @@ static void ibmebus_remove_devices_by_id
+ 	while (strlen(idt->name) > 0) {
+ 		while ((dev = bus_find_device(&ibmebus_bus_type, NULL, 
+ 					      (void*)idt->name,
+-					      ibmebus_match_helper))) {
++					      ibmebus_match_helper_name))) {
+ 			ibmebus_unregister_device(dev);
+ 		}
+ 		idt++;
+-		
+ 	}
+ 	
+ 	return;
+@@ -307,6 +311,9 @@ int ibmebus_register_driver(struct ibmeb
+ 	if ((err = driver_register(&drv->driver) != 0))
+ 		return err;
+ 
++	/* remove all supported devices first, in case someone
++	 * probed them manually before registering the driver */
++	ibmebus_remove_devices_by_id(drv->id_table);
+ 	ibmebus_add_devices_by_id(drv->id_table);
+ 	
+ 	return 0;
+@@ -363,10 +370,85 @@ static int ibmebus_bus_match(struct devi
+ 
+ struct bus_type ibmebus_bus_type = {
+ 	.name = "ibmebus",
++	.uevent = of_device_uevent,
+ 	.match = ibmebus_bus_match,
+ };
+ EXPORT_SYMBOL(ibmebus_bus_type);
+ 
++static int ibmebus_match_helper_loc_code(struct device *dev, void *data)
++{
++	const struct ibmebus_dev *ebus_dev = to_ibmebus_dev(dev);
++	char *loc_code;
++
++	loc_code = (char*)get_property(
++		ebus_dev->ofdev.node, "ibm,loc-code", NULL);
++
++	if (loc_code && (strcmp((char*)data, loc_code) == 0))
++		return 1;
++
++	return 0;
++}
++
++static ssize_t ibmebus_store_probe(struct bus_type *bus,
++				   const char *buf, size_t count)
++{
++	struct device_node *dn = NULL;
++	struct ibmebus_dev *dev;
++	char *loc_code;
++
++	buf[count] = '\0';
++	if (buf[count-1] == '\n')
++		buf[count-1] = '\0';
++
++	if (bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
++			     ibmebus_match_helper_loc_code)) {
++		printk(KERN_WARNING "%s: loc_code %s has already been probed\n",
++		       __FUNCTION__, buf);
++		return -EINVAL;
++	}
++
++	while ((dn = of_find_all_nodes(dn))) {
++		loc_code = (char *)get_property(dn, "ibm,loc-code", NULL);
++		if (loc_code && (strncmp(loc_code, buf, count) == 0)) {
++			dev = ibmebus_register_device_node(dn);
++			if (IS_ERR(dev)) {
++				of_node_put(dn);
++				return PTR_ERR(dev);
++			} else
++				return count; /* success */
++		}
++	}
++
++	/* if we drop out of the loop, the loc code was invalid */
++	printk(KERN_WARNING "%s: no device with loc_code %s found\n",
++	       __FUNCTION__, buf);
++	return -ENODEV;
++}
++static BUS_ATTR(probe, S_IWUSR, NULL, ibmebus_store_probe);
++
++static ssize_t ibmebus_store_remove(struct bus_type *bus,
++				    const char *buf, size_t count)
++{
++	struct device *dev;
++
++	buf[count] = '\0';
++	if (buf[count-1] == '\n')
++		buf[count-1] = '\0';
++
++	/* The location code is unique, so we will find one device at most */
++	if ((dev = bus_find_device(&ibmebus_bus_type, NULL, (char*)buf,
++				   ibmebus_match_helper_loc_code))) {
++		ibmebus_unregister_device(dev);
++	} else {
++		printk(KERN_WARNING "%s: loc_code %s not on the bus\n",
++		       __FUNCTION__, buf);
++		return -ENODEV;
++	}
++
++	return count;
++}
++static BUS_ATTR(remove, S_IWUSR, NULL, ibmebus_store_remove);
++
+ static int __init ibmebus_bus_init(void)
+ {
+ 	int err;
+@@ -380,7 +462,7 @@ static int __init ibmebus_bus_init(void)
+ 		return err;
+ 	}
+ 	
+-	err = device_register(&ibmebus_bus_device.ofdev.dev);
++	err = device_register(&ibmebus_bus_device);
+ 	if (err) {
+ 		printk(KERN_WARNING "%s: device_register returned %i\n", 
+ 		       __FUNCTION__, err);
+@@ -389,6 +471,9 @@ static int __init ibmebus_bus_init(void)
+ 		return err;
+ 	}
+ 	
++	bus_create_file(&ibmebus_bus_type, &bus_attr_probe);
++	bus_create_file(&ibmebus_bus_type, &bus_attr_remove);
++
+ 	return 0;
+ }
+ __initcall(ibmebus_bus_init);
+diff -wurp a/include/asm-powerpc/ibmebus.h b/include/asm-powerpc/ibmebus.h
+--- a/include/asm-powerpc/ibmebus.h	2007-02-22 05:27:57.392999408 +0100
++++ b/include/asm-powerpc/ibmebus.h	2007-02-22 05:28:09.244928272 +0100
+@@ -2,6 +2,7 @@
+  * IBM PowerPC eBus Infrastructure Support.
+  *
+  * Copyright (c) 2005 IBM Corporation
++ *  Joachim Fenkes <fenkes@de.ibm.com>
+  *  Heiko J Schick <schickhj@de.ibm.com>
+  *    
+  * All rights reserved.
+@@ -47,7 +48,6 @@
+ extern struct bus_type ibmebus_bus_type;
+ 
+ struct ibmebus_dev {	
+-	const char *name;
+ 	struct of_device ofdev;
+ };
+ 
