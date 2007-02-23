@@ -1,15 +1,14 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E846EDDE34
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 14:41:41 +1100 (EST)
-Date: Fri, 23 Feb 2007 14:41:41 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [POWERPC] make ppc64_defconfig - CONFIG_PPC_PSERIES build
-Message-Id: <20070223144141.c598a92a.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 23 Feb 2007 14:47:35 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Subject: Re: libfdt: a fix but still broken
+Message-ID: <20070223034734.GA18698@localhost.localdomain>
+References: <45DD9A41.7060900@smiths-aerospace.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45DD9A41.7060900@smiths-aerospace.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,43 +18,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Feb 22, 2007 at 08:27:29AM -0500, Jerry Van Baren wrote:
+> Hi Dave,
+> 
+> I have good news and bad news. ;-)  The good news is that the 
+> incompatibility between libfdt and jdl's dtc is that libfdt has the name 
+> offset and the length of the name switched.  booting_without_of.txt says 
+> the length comes first, so libfdt is in the wrong.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/lib/locks.c |    4 ++++
- 1 files changed, 4 insertions(+), 0 deletions(-)
+Ouch.  That's.. a very embarrassing bug.  Actually, I know where it
+came from: I was looking at flat_dt.h from dtc, which also gets this
+wrong (but the declaration in question is unused).  Of course, I also
+wrote flat_dt.h ...
+
+> The bad news is that, when I fix this, nearly all of the tests fail (but 
+> they fail the same way for both tree.S and jdl's dtc).  I have not 
+> started on that layer of the onion yet.
+
+Found it, there was a direct use of the position of the length in
+_fdt_next_tag().  Just pushed out a fix for this in the libfdt tree,
+along with some other small fixes which I found while tracking this
+one down.
+
+Oh, incidentally, I applied your patch by eye rather than with
+patch(1), which was handy, because it appears to have been whitespace
+damaged.
 
 -- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/lib/locks.c b/arch/powerpc/lib/locks.c
-index 80b482c..79d0fa3 100644
---- a/arch/powerpc/lib/locks.c
-+++ b/arch/powerpc/lib/locks.c
-@@ -43,9 +43,11 @@ void __spin_yield(raw_spinlock_t *lock)
- 	if (firmware_has_feature(FW_FEATURE_ISERIES))
- 		HvCall2(HvCallBaseYieldProcessor, HvCall_YieldToProc,
- 			((u64)holder_cpu << 32) | yield_count);
-+#ifdef CONFIG_PPC_SPLPAR
- 	else
- 		plpar_hcall_norets(H_CONFER,
- 			get_hard_smp_processor_id(holder_cpu), yield_count);
-+#endif
- }
- 
- /*
-@@ -72,9 +74,11 @@ void __rw_yield(raw_rwlock_t *rw)
- 	if (firmware_has_feature(FW_FEATURE_ISERIES))
- 		HvCall2(HvCallBaseYieldProcessor, HvCall_YieldToProc,
- 			((u64)holder_cpu << 32) | yield_count);
-+#ifdef CONFIG_PPC_SPLPAR
- 	else
- 		plpar_hcall_norets(H_CONFER,
- 			get_hard_smp_processor_id(holder_cpu), yield_count);
-+#endif
- }
- #endif
- 
--- 
-1.4.4.4
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
