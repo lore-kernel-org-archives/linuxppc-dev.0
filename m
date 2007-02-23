@@ -1,30 +1,26 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0E7CADDE44
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 07:24:57 +1100 (EST)
-Subject: Re: rtc suspend()/resume() restores system clock
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-In-Reply-To: <Pine.LNX.4.60.0702231927220.8712@poirot.grange>
-References: <200702211929.17203.david-b@pacbell.net>
-	<200702211950.22422.david-b@pacbell.net>
-	<Pine.LNX.4.60.0702222352460.6771@poirot.grange>
-	<1172229450.3870.5.camel@johannes.berg>
-	<Pine.LNX.4.60.0702231927220.8712@poirot.grange>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-JjbS1zQ0owr6QPZ/V+s1"
-Date: Fri, 23 Feb 2007 21:24:35 +0100
-Message-Id: <1172262275.3870.65.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, Torrance <torrance123@gmail.com>,
-	linux-pm@lists.osdl.org, Linux Kernel list <linux-kernel@vger.kernel.org>,
-	David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	john stultz <johnstul@us.ibm.com>,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 67A5FDDE9E
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 08:31:02 +1100 (EST)
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A59732@az33exm25.fsl.freescale.net>
+References: <200702212325.l1LNPBwL007793@ld0164-tx32.am.freescale.net><A31D7159-8C25-445D-A21D-85F04C1FDC45@kernel.crashing.org><20070222011811.GA18364@localhost.localdomain><45b623f395654fc4f4920b9553794def@kernel.crashing.org><20070222103410.GB11014@localhost.localdomain>
+	<b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
+	<259dc2545888e6588a8a0707ad2e84b0@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A59732@az33exm25.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1fb51bd63da9a7de836f3037908be52e@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+Date: Fri, 23 Feb 2007 22:30:54 +0100
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,35 +30,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>> I'd rather write it like
+>>
+>>>       interrupts        = < a 4   b 4   0 4   1 4   2 4 >
+>>>       interrupt-parents = <&UIC0 &UIC0 &UIC1 &UIC1 &UIC1>
+>>
+>
+> Segher, with your proposal here of an interrupt-parents property
+> is this really keeping with the normal OF way of representing
+> property values?
+>
+> Examples exists where one property tells you how to interpret
+> or decode another (e.g. #address-cells), but your proposal we
+> have two distinct properties each with values that together
+> provide the complete 'value' (interrupt parent + interrupt
+> specifier).  Is there any precedent for this approach?
 
---=-JjbS1zQ0owr6QPZ/V+s1
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+"interrupt-parent" normally is a separate property already.
+"My" way, you keep the original definition for "interrupts"
+and the bleeding obvious definition for "interrupt-parents".
 
-On Fri, 2007-02-23 at 19:31 +0100, Guennadi Liakhovetski wrote:
+An example where two arrays with corresponding entries is
+already used is "alternate-reg" in the PCI binding.  There
+are literally hundreds of examples of non-array properties
+that only make sense together, of course.
 
-> Johannes, is there any special meaning in "migrate all of powerpc to=20
-> genrtc"? Or is it just porting every single rtc driver to the generic rtc=
-=20
-> API, moving it under drivers/rtc and adjusting its users or are there any=
-=20
-> global changes required to arch/powerpc?
+Both "alternate-reg" and "interrupt-parents" can be seen as
+an optional extension to their corresponding array properties
+("reg" and "interrupts" respectively) so it all makes perfect
+sense (to me, at least ;-) ).
 
-I don't know. powerpc has some platform-specific rtc hooks that will
-want conversion (or deletion?), I think.
 
-johannes
-
---=-JjbS1zQ0owr6QPZ/V+s1
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF302D/ETPhpq3jKURAo4sAKCFgLQ4ijCOpAuiNu9f8FhP0h/IzgCfTJYH
-HgAnaJqH7UX5RnEWy+kV9zE=
-=Fm8Y
------END PGP SIGNATURE-----
-
---=-JjbS1zQ0owr6QPZ/V+s1--
+Segher
