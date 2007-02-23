@@ -1,19 +1,19 @@
-Return-Path: <jeff@theptrgroup.com>
-Received: from mail.theptrgroup.com (mail.theptrgroup.com [71.246.247.9])
-	by ozlabs.org (Postfix) with ESMTP id 3EC0CDDEBE
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2419DDDEBE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Feb 2007 09:23:53 +1100 (EST)
-Subject: Re: debugging custom Xilinx boot loader with abatron and
-	Montavista devrocket
-From: Jeff Angielski <jeff@theptrgroup.com>
-To: Wade Maxfield <wmaxfield@gmail.com>
-In-Reply-To: <45a1b53e0702230811i79bbc10dqd6e10ac05b06ac16@mail.gmail.com>
-References: <45a1b53e0702230811i79bbc10dqd6e10ac05b06ac16@mail.gmail.com>
-Content-Type: text/plain
-Date: Fri, 23 Feb 2007 16:53:11 -0500
-Message-Id: <1172267591.13040.30.camel@jaalaptop>
-Mime-Version: 1.0
-Cc: ppc <linuxppc-embedded@ozlabs.org>
+	Sat, 24 Feb 2007 09:58:21 +1100 (EST)
+To: Patrice Bouchand <pb_fwd_list@yahoo.fr>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: mcpu options for AMCC440 with fpu 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Mon, 19 Feb 2007 09:45:04 +0100."
+	<600461.55072.qm@web23412.mail.ird.yahoo.com>
+Date: Fri, 23 Feb 2007 23:58:18 +0100
+Sender: wd@denx.de
+Message-Id: <20070223225818.8DF743525B0@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,109 +24,75 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-02-23 at 10:11 -0600, Wade Maxfield wrote:
+In message <600461.55072.qm@web23412.mail.ird.yahoo.com> you wrote:
+>
+>    I was searching for the best mcpu option for amcc440, compiling and running a small program you can find here: 
+> http://magnux.free.fr/gcc/mandelbrot.c. My distro is a ppc fedora core 6, and results are obviously the same using DENX4.0.
+
+In general, you should need to meddle much with such options; the ELDK
+default settings are usually OK.
+
+> --------------------
+> -bash-3.00# gcc -O2 ./mandelbrot.c -o ./mandelbrot && time ./mandelbrot && rm -f ./mandelbrot
 > 
->   I want to debug a ppc custom boot loader with Montavista (since we
-> spent the money on it) under the Xilinx fx60.
-
-Writing custom bootloaders is nontrivial.  Are you sure you really want
-to do that?
-
-And what does MV have to do with the bootloader?
+> real    1m15.059s
+> user    1m14.996s
+> sys     0m0.060s
+> -bash-3.00# gcc -O2 -mcpu=440 ./mandelbrot.c -o ./mandelbrot && time ./mandelbrot && rm -f ./mandelbrot
 > 
->   I've been able to get the kernel to debug under MontaVista.
-> However, since the hardware engineers have given up on DDR ram (they
-> could not get it to work reliably and will be dropping it from the
-> next release), I don't think I can use Linux for now.   Unfortunately,
-> this decision is not changeable.  When a hardware engineer is
-> embarrassed, the results are not good for software engineers. 
+> real    0m39.606s
+> user    0m39.552s
+> sys     0m0.028s
+> -bash-3.00# gcc -O2 -mcpu=440fp ./mandelbrot.c -o ./mandelbrot && time ./mandelbrot && rm -f ./mandelbrot
 > 
-> I don't think I've got enough static ram to host a PPC linux kernel
-> and applications (we only have 8 meg).  We will have 16 meg on the
-> next release, I expect.  Is that enough for simple apps and linux
-> under PPC???  I need some guidance here, as I don't have enough PPC
-> experience. 
-
-You can get Linux up and running with 16MB, and probably with the 8MB,
-although as your RAM decreases the software development time will
-increase exponentially.  You are going to be required to use Busybox and
-uclibc on the user space side.  And you are most likely going to need to
-significantly customize the Linux kernel to use memory sparingly.  It is
-not really worth the effort unless you area talking about very large
-numbers of units.
-
-You never talked about how much flash you have and what kind it is.  You
-will need to compress the binaries and/or run XIP.  You will need to use
-a compressed filesystem.
-
-Most of this is Embedded Linux 101, the *easy* stuff which you can find
-in a bunch of books that are out there...
-
->   Fortunately, we got the ppc running and can manage the hardware
-> using Xilkernel and Xilnet (lwIP maybe later).
+> real    1m15.016s
+> user    1m14.988s
+> sys     0m0.024s
+> -bash-3.00# gcc -O2 -msoft-float ./mandelbrot.c -o ./mandelbrot && time ./mandelbrot && rm -f ./mandelbrot
 > 
->   I've done numerous Google searches, and searches on MontaVista
-> support page.  They are specific to Linux. 
+> real    0m39.577s
+> user    0m39.544s
+> sys     0m0.032s
 
-That is because MV is a Linux vendor...  :)
+This looks to me as if you have been runing all these  tests  in  the
+SAME  environment,  probably  the /opt/eldk/ppc_4xx root file system,
+which is soft-float based. You must not do this.
 
->   Has anyone debugged a custom boot loader with MontaVista and
-> Abatron?
+For tests with FP instructions, you MUST use the  /opt/eldk/ppc_4xxFP
+root  file  system.  For  tests  with  soft-float,  you  MUST use the
+/opt/eldk/ppc_4xx root file system.
 
-What does MV have to do with *debugging* the custom bootloader?  Do you
-mean the cross compiler that comes with MV?  Or just DevRocket?
+You CANNOT link  an  application  build  with  one  settings  against
+libraries using other settings, or you will run into trouble. You
+would probably have seen the problems if you had used any test where
+the results of the calculations would have been visible.
 
-You can use the Abatron to debug the bootloader code you are writing.
-It is done everyday.
 
->   How do you set up the project under  eclipse (which is devrocket)?
+> * I do not explain why not using FPU gives better results ?
 
-Why even use eclipse?   You mentioned gdb/ddd later in the email.
+Because you did not run the tests you thought yoiu were running.
 
->   Nothing I see seems to match, as I need the boot vector code, and I
-> don't know how to tell eclipse to compile for that option.  Can I just
-> bring over the elf (compiled with debug under Xilinx) and the source
-> files and start debugging?  If so, what kind of project would I pick
-> under devrocket?  The more I look, the more confused I get.
+> * mcpu option seems to not have any effect ?
 
-Sounds like you are looking for information on how to connect Eclipse to
-the GDB backend of the Abatron.  This has nothing to do with the custom
-bootloader per se.
+Use "gcc -v" to see exactly which options get passed to the  compiler
+stages.
 
-Keep in mind, however, that there is a lot of code development that
-needs to take place before you get to the point where you can single
-step through C source code using a nice interface.
+> *  My third test was to compile and run mplayer.
+> - With default options (no mcpu specified), my test mpeg was smooth.
+> - With mcpu=440fp, my test mpeg was not smooth.
 > 
->    I could possibly bring up linux on an ML403 board and use gdb/ddd
-> on that.  if so, how would I cause the boot code to be located at the
-> right address?  Any howto's to read that aren't simply hand waves
-> would be very useful. I understand once I do it is easy, but getting
-> it done the first time is my problem right now. 
+>  Can anybody bring me some lights about the right gcc mcpu option for amcc440 ?
 
-Again, I would point you to uboot.  It works on many PPC variants and
-contains more features than you could ever want.
-> 
->    I've got to pull some serious asses from the fire, so I'm under a
-> lot of pressure.  I also know who will be blamed if I don't pull this
-> off.
+Just use the  defaults, unless you know exactly what you are doing.
 
-Custom bootloader and custom hardware do not mix well with pressure and
-schedules.  Especially for you since you seem to be very new to writing
-bootloaders and using the embedded tools.
+Best regards,
 
->   Any help is greatly appreciated!
-
-Update the resume?  ;)  JK
-
-Uboot is your friend.  Get it.  Learn it. Use it.
-
-Busybox and uclibc are your friends when it comes time to write the
-userspace code.
-
-Compression will be required.  The time and place will be dependent on
-your final hardware resources.
-
+Wolfgang Denk
 
 -- 
-Jeff Angielski
-The PTR Group
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+If there was anything that depressed him more than his own  cynicism,
+it was that quite often it still wasn't as cynical as real life.
+                                 - Terry Pratchett, _Guards! Guards!_
