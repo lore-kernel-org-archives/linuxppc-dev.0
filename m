@@ -1,23 +1,24 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id 99530DDE0E
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 09:59:04 +1100 (EST)
-Date: Thu, 22 Feb 2007 23:58:55 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Johannes Berg <johannes@sipsolutions.net>,
-	David Brownell <david-b@pacbell.net>
-Subject: Re: several messages
-In-Reply-To: <200702211950.22422.david-b@pacbell.net>
-Message-ID: <Pine.LNX.4.60.0702222352460.6771@poirot.grange>
-References: <200702211929.17203.david-b@pacbell.net>
-	<200702211950.22422.david-b@pacbell.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
-	rtc-linux@googlegroups.com, john stultz <johnstul@us.ibm.com>,
-	linux-pm@lists.osdl.org, Linux Kernel list <linux-kernel@vger.kernel.org>,
-	Torrance <torrance123@gmail.com>, linuxppc-dev@ozlabs.org,
-	Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D6230DDD0E
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 11:07:32 +1100 (EST)
+In-Reply-To: <20070222225707.GB15387@localhost.localdomain>
+References: <b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
+	<20070222225707.GB15387@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <621751322ddfe998a15538e8d3903b93@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+Date: Fri, 23 Feb 2007 01:07:25 +0100
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,52 +28,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-of the following 2 patches:
+>> Option #3 -- define new, logical interrupt nexus to do
+>> the mapping.
 
-On Mon, 5 Feb 2007, Johannes Berg wrote:
+> There's no point to option 3 as given.  If we're going to use an
+> interrupt nexus, and rely on the fact that the physical versus
+> interrupt tree addressing mismatch doesn't matter in this case, then
+> we might as well put the interrupt nexus into the node itself,
+> i.e. option 1.
 
-> This patch removes the time suspend/restore code that was done through
-> a PMU notifier in arch/platforms/powermac/time.c.
-> 
-> Instead, we introduce arch/powerpc/sysdev/timer.c which creates a sys
-> device and handles time of day suspend/resume through that.
-> 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> Cc: Andrew Morton <akpm@osdl.org>
-> Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+That can give problems if there are interrupts in one
+of the descendants of the node.  It's also just nasty,
+don't you agree?
 
-[patch trimmed]
+> The only point to 3 would be if we make the MAL a
+> child of its interrupt nexus, thereby ensuring that the address forms
+> match.
 
-On Wed, 21 Feb 2007, David Brownell wrote:
+No, you cannot do that.  There is no extra device
+there in reality so it shouldn't be in the device tree
+either.  Also, it just doesn't work.
 
-> RTC class suspend/resume support, re-initializing the system clock on resume
-> >from the clock used to initialize it at boot time.
-> 
->  - Inlining the same code used by ARM, which saves and restores the
->    delta between a selected RTC and the current system wall-clock time.
-> 
->  - Removes calls to that ARM code from AT91, OMAP, and S3C RTCs.
-> 
-> This goes on top of the patch series removing "struct class_device" usage
-> >from the RTC framework.  That makes class suspend()/resume() work.
-> 
-> Signed-off-by: David Brownell <dbrownell@users.sourceforge.net>
-> 
-> ---
->  drivers/rtc/Kconfig          |   24 +++++++++----
->  drivers/rtc/class.c          |   74 +++++++++++++++++++++++++++++++++++++++++++
->  drivers/rtc/rtc-at91rm9200.c |   30 -----------------
->  drivers/rtc/rtc-omap.c       |   17 ---------
->  drivers/rtc/rtc-s3c.c        |   22 ------------
->  5 files changed, 91 insertions(+), 76 deletions(-)
+> Something like:
+>
+> malint-nexus {
+> 	#interrupt-cells = <1>;
+> 	ranges;
+> 	interrupt-map = <0 0 0 &UIC0 a 4
+> 		.... >;
+> 	interrupt-map-mask = <ffffffff 0 0>;
 
-[patch trimmed]
+If you have a "ranges" property you need a
+"#address-cells" and a "#size-cells" property
+too -- it just doesn't make any sense otherwise.
 
-I think, we only want 1, right? And the latter seems to be more generic / 
-platform independent? And as a side-effect, powermac would have to migrate 
-to generic rtc:-)
+You don't want this nexus node to be anywhere inside
+the "normal" device tree -- it doesn't sit there in
+hardware, it shouldn't sit there in the device tree,
+that will only cause problems.
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+> Note the empty ranges property (passthrough).
+
+There is nothing to pass anything through though,
+this node shouldn't be here.
+
+> That's kind of
+> irrelevant here, since MAL is DCR controlled,
+
+Yeah, so MAL should have the DCR reg in its "reg"
+property.  It needs *something* there -- what if
+you had two MALs?
+
+> but would matter if we
+> had a similar situation with a device that had MMIO registers (and
+> therefore a "reg" property).
+
+Sorry, I'm going to shout: "reg" HAS NOTHING TO DO
+WITH MMIO.
+
+> For MAL, since it has no "reg", we set
+> the interrupt-map-mask to ignore the unit address.
+
+So you're saying your "#address-cells" is not 0, but
+you have no "reg" property?  Congratulations, you
+built yourself a wildcard package.
+
+
+Segher
