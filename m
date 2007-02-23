@@ -1,24 +1,28 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
+Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
+	[151.189.21.51])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D6230DDD0E
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 11:07:32 +1100 (EST)
-In-Reply-To: <20070222225707.GB15387@localhost.localdomain>
-References: <b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
-	<20070222225707.GB15387@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 1384CDDE0E
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 11:25:27 +1100 (EST)
+In-Reply-To: <20070222224809.GA15387@localhost.localdomain>
+References: <200702212325.l1LNPBwL007793@ld0164-tx32.am.freescale.net>
+	<A31D7159-8C25-445D-A21D-85F04C1FDC45@kernel.crashing.org>
+	<20070222011811.GA18364@localhost.localdomain>
+	<45b623f395654fc4f4920b9553794def@kernel.crashing.org>
+	<20070222103410.GB11014@localhost.localdomain>
+	<b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
+	<20070222224809.GA15387@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <621751322ddfe998a15538e8d3903b93@kernel.crashing.org>
+Message-Id: <740231a8bb5a4ec8f877b6a17dfdf8db@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: document new interrupt-array property
-Date: Fri, 23 Feb 2007 01:07:25 +0100
+Date: Fri, 23 Feb 2007 01:25:19 +0100
 To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+	Stuart Yoder <b08248@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,70 +32,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Option #3 -- define new, logical interrupt nexus to do
->> the mapping.
-
-> There's no point to option 3 as given.  If we're going to use an
-> interrupt nexus, and rely on the fact that the physical versus
-> interrupt tree addressing mismatch doesn't matter in this case, then
-> we might as well put the interrupt nexus into the node itself,
-> i.e. option 1.
-
-That can give problems if there are interrupts in one
-of the descendants of the node.  It's also just nasty,
-don't you agree?
-
-> The only point to 3 would be if we make the MAL a
-> child of its interrupt nexus, thereby ensuring that the address forms
-> match.
-
-No, you cannot do that.  There is no extra device
-there in reality so it shouldn't be in the device tree
-either.  Also, it just doesn't work.
-
-> Something like:
+>> [Of course the #a value better be the same as the value
+>> in the physical parent, and all nodes mapping via a
+>> particular "interrupt-map" better have unique unit
+>> address for that map].
 >
-> malint-nexus {
-> 	#interrupt-cells = <1>;
-> 	ranges;
-> 	interrupt-map = <0 0 0 &UIC0 a 4
-> 		.... >;
-> 	interrupt-map-mask = <ffffffff 0 0>;
+> Right.  In other words, the addressing format of the interrupt-parent
+> must match that of the physical parent,
 
-If you have a "ranges" property you need a
-"#address-cells" and a "#size-cells" property
-too -- it just doesn't make any sense otherwise.
+Not just the addressing _format_, the _whole_
+addressing (addresses need to be unique!)
 
-You don't want this nexus node to be anywhere inside
-the "normal" device tree -- it doesn't sit there in
-hardware, it shouldn't sit there in the device tree,
-that will only cause problems.
+> which breaks the usual
+> disconnection between the interrupt tree and the main tree.
 
-> Note the empty ranges property (passthrough).
+Well they aren't really disconnected anyway.  But yeah I
+know what you mean, and it doesn't help constructing
+elegant interrupt trees -- you often end up creating
+lots of extra nexus nodes, just to get a couple of devices
+at the same level.
 
-There is nothing to pass anything through though,
-this node shouldn't be here.
+> Or to
+> look at it another way, the "reg" property is doubly constrained to
+> make sense both in the main tree, and in the interrupt tree.
 
-> That's kind of
-> irrelevant here, since MAL is DCR controlled,
+But in all cases where it makes sense to use the unit
+address in an interrupt map, that map does sit in the
+parent node in question so all is good.
 
-Yeah, so MAL should have the DCR reg in its "reg"
-property.  It needs *something* there -- what if
-you had two MALs?
+> And
+> really, the only way I can see it working other than by happy
+> coincidence is if the interrupt-parent *is* the physical parent.
 
-> but would matter if we
-> had a similar situation with a device that had MMIO registers (and
-> therefore a "reg" property).
-
-Sorry, I'm going to shout: "reg" HAS NOTHING TO DO
-WITH MMIO.
-
-> For MAL, since it has no "reg", we set
-> the interrupt-map-mask to ignore the unit address.
-
-So you're saying your "#address-cells" is not 0, but
-you have no "reg" property?  Congratulations, you
-built yourself a wildcard package.
+It works by having interrupt-controller nodes for
+all interrupt controllers, and interrupt-nexus
+nodes for all wacky routing / swizzling / whatever.
+Since a nexus is a bunch of wires that aren't described
+elsewhere in the tree you have to create a node for
+it.  It's not physically addressable so you just have to
+put it somewhere logical.  In the case of a PCI-PCI
+bridge's "standard" swizzling for example, the bridge
+node is a reasonable spot.  In many cases there is no
+suitable already existing node so you just have to
+create a new node.
 
 
 Segher
