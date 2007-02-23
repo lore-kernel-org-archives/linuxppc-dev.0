@@ -1,25 +1,20 @@
-Return-Path: <bounces@nabble.com>
-Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E136DDE37
+Return-Path: <sipcop009@gmail.com>
+Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.227])
+	by ozlabs.org (Postfix) with ESMTP id 7E0E2DDD07
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Feb 2007 15:29:00 +1100 (EST)
-Received: from [72.21.53.38] (helo=jubjub.nabble.com)
-	by talk.nabble.com with esmtp (Exim 4.50) id 1HKS3F-0002OD-9K
-	for linuxppc-embedded@ozlabs.org; Thu, 22 Feb 2007 20:28:57 -0800
-Message-ID: <9113399.post@talk.nabble.com>
-Date: Thu, 22 Feb 2007 20:28:57 -0800 (PST)
-From: Nethra <nethra_gmit@yahoo.co.in>
+	Fri, 23 Feb 2007 16:14:18 +1100 (EST)
+Received: by wr-out-0506.google.com with SMTP id 37so464984wra
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 22 Feb 2007 21:14:17 -0800 (PST)
+Message-ID: <5a4792c00702222114ycd2b6a5xbec6bc996d99c9ce@mail.gmail.com>
+Date: Thu, 22 Feb 2007 21:14:16 -0800
+From: "SIP COP 009" <sipcop009@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] jffs2 file system
-In-Reply-To: <200702221229.51830.juergen.beisert@weihenstephan.org>
+Subject: Gianfar on 8347 sometimes get stuck at startup
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <9097247.post@talk.nabble.com>
-	<200702221128.02970.juergen.beisert@weihenstephan.org>
-	<9097618.post@talk.nabble.com>
-	<200702221229.51830.juergen.beisert@weihenstephan.org>
+Content-Type: multipart/alternative;
+	boundary="----=_Part_39616_29414280.1172207656519"
+Cc: sipcop009@gmail.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,38 +25,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_39616_29414280.1172207656519
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
+We have the our own MPC8349 based board which has 2 GigEs. It is pretty much
+modelled similar to the 8349ADS EVAL boards, infact we have zero changes.
 
-thanks...
+The issue that we are seeing -
 
-what are the steps to create jffs2 image?
+Sometimes at startup, we have send 2 TX packets to kind-of-kickstart the
+TSEC Tranmission. If we send only packet it does not get to the other side.
+This does not happen always.
 
-do i need to disable nfs option in kernel?
+The TSEC Registers dont really show any errors nor does the Marvell PHY show
+any errors.
 
-what r steps for jffs2 mounting after nfs mounting on the board?
+The kernel that we are using is 2.6.11.
 
-nethra
+Anybody  seen this before or something similar ?
 
-> do i need to mention mtdparts in command line....i thought that it is
-> enabled in case if we want we can specify partitions in command line
-> itself.
+Any pointers will be appreciated. We cannot move to any other kernel
+verision right now.
 
-The kernel does not know anything about your flash partitioning. Where is
-mtd0 
-starting in your flash? At the baseaddress of the flash?
+Thanks!
+ashutosh
 
-> do i need to disable ramdisk option in kernel config for jffs2 booting?
+------=_Part_39616_29414280.1172207656519
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-No.
+<div>&nbsp;</div>
+<div>We have the our own MPC8349 based&nbsp;board which has 2 GigEs. It is pretty much modelled similar to the 8349ADS EVAL boards, infact we have zero changes.</div>
+<div>&nbsp;</div>
+<div>The issue that we are seeing - </div>
+<div>&nbsp;</div>
+<div>Sometimes at startup, we have send 2 TX packets to kind-of-kickstart the TSEC Tranmission. If we send only packet it does not get to the other side. This does not happen always.</div>
+<div>&nbsp;</div>
+<div>The TSEC Registers dont really show any errors nor does the Marvell PHY show any errors.</div>
+<div>&nbsp;</div>
+<div>The kernel that we are using is 2.6.11.</div>
+<div>&nbsp;</div>
+<div>Anybody &nbsp;seen this before or something similar ? </div>
+<div>&nbsp;</div>
+<div>Any pointers will be appreciated. We cannot move to any other kernel verision right now.</div>
+<div>&nbsp;</div>
+<div>Thanks!</div>
+<div>ashutosh</div>
+<div>&nbsp;</div>
 
-On my MPC5200 based system I start the kernel with this partition command:
-
-mtdparts=phys_mapped_flash:256k(ubootl),1792k(kernel),13312k(jffs2),256k(uboot)ro,-(space)
-root=/dev/mtdblock2 rootfstype=jffs2
-
-Juergen
-
-
--- 
-View this message in context: http://www.nabble.com/jffs2-file-system-tf3271928.html#a9113399
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+------=_Part_39616_29414280.1172207656519--
