@@ -1,14 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 23 Feb 2007 14:47:35 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: libfdt: a fix but still broken
-Message-ID: <20070223034734.GA18698@localhost.localdomain>
-References: <45DD9A41.7060900@smiths-aerospace.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45DD9A41.7060900@smiths-aerospace.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 18A20DDE3C
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 17:07:49 +1100 (EST)
+Date: Fri, 23 Feb 2007 17:07:43 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: Re: [POWERPC] tidy spinlock.h a bit
+Message-Id: <20070223170743.9b13566b.sfr@canb.auug.org.au>
+In-Reply-To: <20070223144057.27e1e819.sfr@canb.auug.org.au>
+References: <20070223144057.27e1e819.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Fri__23_Feb_2007_17_07_43_+1100_+KkoS6FFgXWpX3Pz"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,34 +23,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Feb 22, 2007 at 08:27:29AM -0500, Jerry Van Baren wrote:
-> Hi Dave,
-> 
-> I have good news and bad news. ;-)  The good news is that the 
-> incompatibility between libfdt and jdl's dtc is that libfdt has the name 
-> offset and the length of the name switched.  booting_without_of.txt says 
-> the length comes first, so libfdt is in the wrong.
+--Signature=_Fri__23_Feb_2007_17_07_43_+1100_+KkoS6FFgXWpX3Pz
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Ouch.  That's.. a very embarrassing bug.  Actually, I know where it
-came from: I was looking at flat_dt.h from dtc, which also gets this
-wrong (but the declaration in question is unused).  Of course, I also
-wrote flat_dt.h ...
+On Fri, 23 Feb 2007 14:40:57 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+> _raw_{spin,read,write}relax() are not used anywhere, so remove them.
 
-> The bad news is that, when I fix this, nearly all of the tests fail (but 
-> they fail the same way for both tree.S and jdl's dtc).  I have not 
-> started on that layer of the onion yet.
+Forget this one.  (mutter ... damn constructed symbols ... mutter)
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Found it, there was a direct use of the position of the length in
-_fdt_next_tag().  Just pushed out a fix for this in the libfdt tree,
-along with some other small fixes which I found while tracking this
-one down.
+--Signature=_Fri__23_Feb_2007_17_07_43_+1100_+KkoS6FFgXWpX3Pz
+Content-Type: application/pgp-signature
 
-Oh, incidentally, I applied your patch by eye rather than with
-patch(1), which was handy, because it appears to have been whitespace
-damaged.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+iD8DBQFF3oS0FdBgD/zoJvwRAhlEAJ4mlLhuGWxdn81dIA6sGU9Xt2P3aACglSLT
+HfEyVWtUlTTF0uv0ihB3aPY=
+=ZKqA
+-----END PGP SIGNATURE-----
+
+--Signature=_Fri__23_Feb_2007_17_07_43_+1100_+KkoS6FFgXWpX3Pz--
