@@ -1,24 +1,16 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id C91FDDDEC9
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 09:47:29 +1100 (EST)
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 24 Feb 2007 09:25:09 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@jdl.com>
+Subject: Re: libfdt: a fix but still broken
+Message-ID: <20070223222509.GC21625@localhost.localdomain>
+References: <45DD9A41.7060900@smiths-aerospace.com>
+	<20070223034734.GA18698@localhost.localdomain>
+	<E1HKc1x-0001ze-0b@jdl.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Update on: MPC85xx git/MPC8548cds - PCI/PCIE problemS with Marvel
-	SATA driver...
-Date: Fri, 23 Feb 2007 17:47:22 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901053E84AA@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D9010685DAA6@EMPBEDEX.empirix.com>
-	<BE415006-0D71-4D2F-8699-3BD2A513D9C0@freescale.com>
-	<BD261180E6D35F4D9D32F3E44FD3D9010685DCFC@EMPBEDEX.empirix.com>
-	<8B9F6546-0D85-4AD0-A196-25F0F9C1A5A0@freescale.com>
-	<BD261180E6D35F4D9D32F3E44FD3D901069D9CA4@EMPBEDEX.empirix.com>
-	<20070223202921.GA22331@lixom.net>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Olof Johansson" <olof@lixom.net>
-Cc: Geary Sean-R60898 <sean.geary@freescale.com>, linuxppc-dev@ozlabs.org,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <E1HKc1x-0001ze-0b@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,60 +20,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Olof,
+On Fri, Feb 23, 2007 at 09:08:16AM -0600, Jon Loeliger wrote:
+> So, like, the other day David Gibson mumbled:
+> > On Thu, Feb 22, 2007 at 08:27:29AM -0500, Jerry Van Baren wrote:
+> > > Hi Dave,
+> > > 
+> > > I have good news and bad news. ;-)  The good news is that the 
+> > > incompatibility between libfdt and jdl's dtc is that libfdt has the name 
+> > > offset and the length of the name switched.  booting_without_of.txt says 
+> > > the length comes first, so libfdt is in the wrong.
+> > 
+> > Ouch.  That's.. a very embarrassing bug.  Actually, I know where it
+> > came from: I was looking at flat_dt.h from dtc, which also gets this
+> > wrong (but the declaration in question is unused).  Of course, I also
+> > wrote flat_dt.h ...
+> > 
+> > > The bad news is that, when I fix this, nearly all of the tests fail (but 
+> > > they fail the same way for both tree.S and jdl's dtc).  I have not 
+> > > started on that layer of the onion yet.
+> > 
+> > Found it, there was a direct use of the position of the length in
+> > _fdt_next_tag().  Just pushed out a fix for this in the libfdt tree,
+> > along with some other small fixes which I found while tracking this
+> > one down.
+> > 
+> > Oh, incidentally, I applied your patch by eye rather than with
+> > patch(1), which was handy, because it appears to have been whitespace
+> > damaged.
+> 
+> And amidst all of this, is there an actual DTC change needed?
+> I've not detected one yet, but I'm watching... :-)
 
-Are you saying that it must 'know' about the PCI id(s)
-for this SATA card before it even probes that device???
+We need to fix flat_dt.h so it doesn't mislead anyone else.  The
+structure in question is never used in dtc, so in fact the fix won't
+change anything in the object code.
 
-Even though the module is compiled into the kernel and=20
-I've verified that:
-
-  a) the pci scan bus has detected this device
-  b) that the sata_mv driver is registering itself
-     as a PCI Device driver?
-
-????
-
-Also, fyi, its also complaining about the PCI Express=20
-Root Bridge on the MPC8548 as an unknown device...
-
-   manufacturer: 0x1957 (aka: Freescale)
-   class: 0xFFFF
-
-although that doesn't explain why the same PCI=20
-Express SATA card / ~same sata_mv driver on an=20
-Intel X86 platform doesn't get recognized either.
-
-Thank you for any additional insight you have on this Olof!
-
-Tom
-
------Original Message-----
-From: Olof Johansson [mailto:olof@lixom.net]
-Sent: Fri 2/23/2007 3:29 PM
-To: Morrison, Tom
-Cc: Andy Fleming; Geary Sean-R60898; linuxppc-dev@ozlabs.org; Zhang =
-Wei-r63237
-Subject: Re: Update on: MPC85xx git/MPC8548cds - PCI/PCIE problemS with =
-Marvel SATA driver...
-=20
-On Fri, Feb 23, 2007 at 02:57:38PM -0500, Morrison, Tom wrote:
-
-> PCI Express/7042 Marvell Sata Card:
-> =
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
->    On PCI Express Bus - it never performs the probe - even though
->    the bus was scanned and device was found ("lspci" shows this =
-device)
->=20
->    FYI, I tried the PCI Express SATA Card in an X86 running Fedora
->    Core 6 (2.6.19.1-2xxx) and this seemingly is the same behavior
->    on this platform?
-
-A patch went into 2.6.20 quite late to add the PCI ids for at least
-one 7042 controller (Highpoint). You might have to add the ids of your
-controller as well.
-
-
--Olof
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
