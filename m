@@ -1,22 +1,28 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	by ozlabs.org (Postfix) with ESMTP id 3D90DDDEB6
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 03:50:02 +1100 (EST)
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH] ehea: Optional TX/RX path optimized for SMP
-References: <200702231730.58579.ossthema@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Fri, 23 Feb 2007 08:49:59 -0800
-In-Reply-To: <200702231730.58579.ossthema@de.ibm.com> (Jan-Bernd Themann's
-	message of "Fri, 23 Feb 2007 17:30:58 +0100")
-Message-ID: <adairdses3s.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
+	[151.189.21.50])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 059ACDDEDB
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 03:55:07 +1100 (EST)
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A59633@az33exm25.fsl.freescale.net>
+References: <b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
+	<20070222225707.GB15387@localhost.localdomain>
+	<621751322ddfe998a15538e8d3903b93@kernel.crashing.org>
+	<20070223003317.GA18508@localhost.localdomain>
+	<1be2170fcb25fdc4ac52c93444269737@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A59633@az33exm25.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <851c62f4acae2d5c9b2d1eeab20bdd47@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+Date: Fri, 23 Feb 2007 17:55:00 +0100
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,30 +32,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > This patch introduces an optional alternative receive processing
- > functionality (enabled via module load parameter). The ehea adapter
- > can sort TCP traffic to multiple receive queues to be processed by
- > the driver in parallel on multiple CPUs. The hardware always puts
- > packets for an individual tcp stream on the same queue. As the
- > current NAPI interface does not allow to handle parallel receive
- > threads for a single adapter (processing on multiple CPUs in parallel)
- > this patch uses tasklets with a simple fairness algorithm instead. 
- > On the send side we also take advantage of ehea's multiple send queue
- > capabilites. A simple hash function in combination with the LL_TX
- > attribute allows to process tx-packets on multiple CPUs on different
- > queues. The hash function is needed to guarantee proper TCP packet
- > ordering. This alternative packet processing functionality leads to 
- > significant performance improvements with ehea. 
+>>> we need something like interrupt-array.
+>>
+>> Again, the "interrupt-array" helps only this one specific
+>> case, and not the general case *at all*.
+>>
+>
+> Yes-- The interrupt-array helps only this specific case. But
+> the question is, will this specific case be common in the
+> future?
 
-Why make this a module option that the user has to set?  Are there any
-circumstances when someone wouldn't want "significant performance
-improvements?"  If this approach is just better, then it should just
-replace the old code.
+I hope (and think) not.  I can't predict the future though
+and there is an approximately 100% chance some hardware will
+duplicate this particular weirdness, of course.
 
-Also, as far as the approach of using tasklets, I think it would be
-better to use the "fake netdev" approach to continue to use NAPI.
-Basically you create a pseudo-netdev for each receive queue and have
-NAPI handle the polling for you -- you could look for
-drivers/net/cxgb3 for an example of this.
+> If this is a one-off situation it doesn't warrant a new
+> general property.  However, if it becomes common enough
+> a simpler representation will benefit developers.
 
- - R.
+Sure.  But in that case, it would be a lot better to
+try to come up with something new that can handle the
+general case (or many many more cases at least).
+
+> There are
+> developers who have a hard enough time figuring out the
+> interrupt-map scheme, much less a logical interrupt nexus
+> node.
+
+Adding redundant ways of representing the interrupt
+mapping that only apply to minority cases doesn't help
+the confusion.  Either educate users how to do things,
+come up with a more general more flexible framework,
+or both.  Interface explosion only makes the situation
+_worse_.
+
+
+Segher
