@@ -1,30 +1,23 @@
-Return-Path: <stuart.yoder@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 8EFBBDDEB9
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 06:15:36 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l1NJFWJn028711
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 12:15:32 -0700 (MST)
-Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
-	[10.64.32.16])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1NJFVBb012282
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 13:15:31 -0600 (CST)
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id 5351BDDEC2
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 06:57:47 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: [PATCH] powerpc: document new interrupt-array property
-Date: Fri, 23 Feb 2007 12:15:30 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302A59732@az33exm25.fsl.freescale.net>
-In-Reply-To: <259dc2545888e6588a8a0707ad2e84b0@kernel.crashing.org>
-References: <200702212325.l1LNPBwL007793@ld0164-tx32.am.freescale.net><A31D7159-8C25-445D-A21D-85F04C1FDC45@kernel.crashing.org><20070222011811.GA18364@localhost.localdomain><45b623f395654fc4f4920b9553794def@kernel.crashing.org><20070222103410.GB11014@localhost.localdomain>
-	<b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
-	<259dc2545888e6588a8a0707ad2e84b0@kernel.crashing.org>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	David Gibson <david@gibson.dropbear.id.au>
+Subject: Update on: MPC85xx git/MPC8548cds - PCI/PCIE problemS with Marvel
+	SATA driver...
+Date: Fri, 23 Feb 2007 14:57:38 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901069D9CA4@EMPBEDEX.empirix.com>
+In-Reply-To: <8B9F6546-0D85-4AD0-A196-25F0F9C1A5A0@freescale.com>
+References: <BD261180E6D35F4D9D32F3E44FD3D9010685DAA6@EMPBEDEX.empirix.com>
+	<BE415006-0D71-4D2F-8699-3BD2A513D9C0@freescale.com>
+	<BD261180E6D35F4D9D32F3E44FD3D9010685DCFC@EMPBEDEX.empirix.com>
+	<8B9F6546-0D85-4AD0-A196-25F0F9C1A5A0@freescale.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: "Andy Fleming" <afleming@freescale.com>
+Cc: Geary Sean-R60898 <sean.geary@freescale.com>, linuxppc-dev@ozlabs.org,
+	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,24 +27,60 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+All,
 
-> I'd rather write it like
->=20
-> >       interrupts        =3D < a 4   b 4   0 4   1 4   2 4 >
-> >       interrupt-parents =3D <&UIC0 &UIC0 &UIC1 &UIC1 &UIC1>
->=20
+I have yet to successfully gone through full initialization /=20
+registration of this driver for this board.
 
-Segher, with your proposal here of an interrupt-parents property
-is this really keeping with the normal OF way of representing
-property values?
+I have both a Marvell PCI SATA Card (with 6042 chip)=20
+and a Marvell PCI Express SATA card (with 7042 chip).
 
-Examples exists where one property tells you how to interpret
-or decode another (e.g. #address-cells), but your proposal we
-have two distinct properties each with values that together
-provide the complete 'value' (interrupt parent + interrupt
-specifier).  Is there any precedent for this approach?
+PCI/6042 Chip Marvel SATA Card
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D
+   On PCI Bus - the card is probed, and finds the SATA drive -=20
+   goes through an ata add device process - up to adding scsi device -
+   even goes all the way to checking the file system -and lastly says:
 
-I think I'd rather see all the information encoded in
-one value.
+       SCSI device sda: write cache: enabled, read cache: enabled,=20
+        sda: unknown partition table
+       sd 0:0:0:0: Attached scsi disk sda
 
-Stuart
+   After full boot (I am nfs mounting my root file system until I get
+   this working), I try to mount drive - no good - I can't mount it
+   (it also doesn't create a /dev/sda or /dev/sda1 device - I assume=20
+   that if it knew the partitioning table - it would actually create
+   these devices and Yes, I have ms-dos file system support compiled in?
+
+   Is there anything else that=20
+
+PCI Express/7042 Marvell Sata Card:
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+   On PCI Express Bus - it never performs the probe - even though
+   the bus was scanned and device was found ("lspci" shows this device)
+
+   FYI, I tried the PCI Express SATA Card in an X86 running Fedora
+   Core 6 (2.6.19.1-2xxx) and this seemingly is the same behavior
+   on this platform?
+
+   Are there other things I need to configure or initialize to=20
+   allow the to recognize/probe the SATA drive on the PCI Express bus?
+
+   Or there has to be other PCI Express SATA Cards out there that
+   Do NOT have this problem? How do they get around this?
+
+
+Am I really missing something here or just going crazy?
+
+Thank you for all your suggestions!!!
+
+Sincerely,
+
+Tom Morrison
+Principal Software Engineer
+EMPIRIX=20
+20 Crosby Drive - Bedford, MA  01730
+p: 781.266.3567 f: 781.266.3670=20
+email: tmorrison@empirix.com=20
+www.empirix.comz
