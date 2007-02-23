@@ -1,19 +1,28 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 18A20DDE3C
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 17:07:49 +1100 (EST)
-Date: Fri, 23 Feb 2007 17:07:43 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: Re: [POWERPC] tidy spinlock.h a bit
-Message-Id: <20070223170743.9b13566b.sfr@canb.auug.org.au>
-In-Reply-To: <20070223144057.27e1e819.sfr@canb.auug.org.au>
-References: <20070223144057.27e1e819.sfr@canb.auug.org.au>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 50A7FDDE36
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Feb 2007 22:17:53 +1100 (EST)
+Subject: Re: several messages
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+In-Reply-To: <Pine.LNX.4.60.0702222352460.6771@poirot.grange>
+References: <200702211929.17203.david-b@pacbell.net>
+	<200702211950.22422.david-b@pacbell.net>
+	<Pine.LNX.4.60.0702222352460.6771@poirot.grange>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-cDwk91uBwu/qFu5OL5oW"
+Date: Fri, 23 Feb 2007 12:17:30 +0100
+Message-Id: <1172229450.3870.5.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Fri__23_Feb_2007_17_07_43_+1100_+KkoS6FFgXWpX3Pz"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: Alessandro Zummo <alessandro.zummo@towertech.it>,
+	rtc-linux@googlegroups.com, Torrance <torrance123@gmail.com>,
+	linux-pm@lists.osdl.org, Linux Kernel list <linux-kernel@vger.kernel.org>,
+	David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	john stultz <johnstul@us.ibm.com>,
+	Andrew Morton <akpm@linux-foundation.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,30 +32,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Fri__23_Feb_2007_17_07_43_+1100_+KkoS6FFgXWpX3Pz
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
 
-On Fri, 23 Feb 2007 14:40:57 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
->
-> _raw_{spin,read,write}relax() are not used anywhere, so remove them.
+--=-cDwk91uBwu/qFu5OL5oW
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Forget this one.  (mutter ... damn constructed symbols ... mutter)
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+On Thu, 2007-02-22 at 23:58 +0100, Guennadi Liakhovetski wrote:
 
---Signature=_Fri__23_Feb_2007_17_07_43_+1100_+KkoS6FFgXWpX3Pz
-Content-Type: application/pgp-signature
+> I think, we only want 1, right? And the latter seems to be more generic /=
+=20
+> platform independent? And as a side-effect, powermac would have to migrat=
+e=20
+> to generic rtc:-)
+
+Can we migrate all of powerpc to genrtc? But yes, I agree. Had enough to
+do though already to get suspend working :)
+
+johannes
+
+--=-cDwk91uBwu/qFu5OL5oW
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Comment: Johannes Berg (powerbook)
 
-iD8DBQFF3oS0FdBgD/zoJvwRAhlEAJ4mlLhuGWxdn81dIA6sGU9Xt2P3aACglSLT
-HfEyVWtUlTTF0uv0ihB3aPY=
-=ZKqA
+iD8DBQBF3s1K/ETPhpq3jKURAqBaAKCjpO/qgcV3Np3alMq15nGj5PhYJwCfdoXp
+kJ5f8zbUKkdzRtWtwHQOV0Q=
+=CzDY
 -----END PGP SIGNATURE-----
 
---Signature=_Fri__23_Feb_2007_17_07_43_+1100_+KkoS6FFgXWpX3Pz--
+--=-cDwk91uBwu/qFu5OL5oW--
