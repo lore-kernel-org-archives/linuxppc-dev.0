@@ -1,21 +1,19 @@
-Return-Path: <juergen.beisert@weihenstephan.org>
-Received: from bill.weihenstephan.org (bill.weihenstephan.org [82.135.35.21])
-	by ozlabs.org (Postfix) with ESMTP id 905B8DDEBF
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 4E382DDEC2
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 25 Feb 2007 04:30:35 +1100 (EST)
-From: Juergen Beisert <juergen.beisert@weihenstephan.org>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] jffs2 file system
-Date: Sat, 24 Feb 2007 18:30:27 +0100
-References: <9097247.post@talk.nabble.com>
-	<1172144688.2759.0.camel@vader.jdub.homelinux.org>
-	<9132046.post@talk.nabble.com>
-In-Reply-To: <9132046.post@talk.nabble.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702241830.29259.juergen.beisert@weihenstephan.org>
-Cc: Nethra <nethra_gmit@yahoo.co.in>
+	Sun, 25 Feb 2007 07:37:46 +1100 (EST)
+To: pb_fwd_list@yahoo.fr
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: mcpu options for AMCC440 with fpu 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Sat, 24 Feb 2007 07:44:45 +0100."
+	<1172299485.2993.8.camel@localhost.localdomain>
+Date: Sat, 24 Feb 2007 21:20:28 +0100
+Sender: wd@denx.de
+Message-Id: <20070224202028.BA600353CF6@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,35 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Saturday 24 February 2007 09:38, Nethra wrote:
-[...]
-> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
-> ide: Assuming 50MHz system bus speed for PIO modes; override with idebus=xx
-> elevator: using anticipatory as default io scheduler
-> $Id: ftl.c,v 1.55 2005/01/17 13:47:21 hvr Exp $
+In message <1172299485.2993.8.camel@localhost.localdomain> you wrote:
+>  
+> Indeed ! I was waiting for warnings or errors while compiling to tell me
+> I was doing something wrong but I should not.
 
-Flash Translation Layer? JFFS2 does not need it (I believe).
+There might be situations where what you did was fully intentional.
 
-> physmap flash device: 800000 at ff800000
-> RedBoot partition parsing not available
-> Using physmap partition definition
-> Creating 4 MTD partitions on "phys_mapped_flash":
-> 0x00000000-0x00600000 : "User FS"
-> mtd: Giving out device 0 to User FS
-> ftl_cs: FTL header not found.
+"UNIX was not designed to stop you from doing stupid things,  because
+that would also stop you from doing clever things."       - Doug Gwyn
 
-Disable the FTL when you try to use the content as JFFS2!
+:-)
 
-> 0x00600000-0x00700000 : "uImage"
-> mtd: Giving out device 1 to uImage
-> ftl_cs: FTL header not found.
-> 0x00700000-0x00740000 : "bootloader"
-> mtd: Giving out device 2 to bootloader
-> ftl_cs: FTL header not found.
-> 0x00740000-0x00780000 : "bootloader env"
-> mtd: Giving out device 3 to bootloader env
-> ftl_cs: FTL header not found.
 
-Are these partitions correct? I cannot see where the definitions comes from. 
+Best regards,
 
-Juergen
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+History tends to exaggerate.
+	-- Col. Green, "The Savage Curtain", stardate 5906.4
