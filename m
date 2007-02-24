@@ -1,20 +1,27 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 881B7DDD02
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 88AB3DDE27
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Feb 2007 13:16:15 +1100 (EST)
-In-Reply-To: <OF37CF163F.2ABC0002-ON8825728C.00068359-8825728C.00075898@selinc.com>
-To: Bruce_Leonard@selinc.com
-Subject: Re: MPC834x global timers question
+	Sat, 24 Feb 2007 14:19:56 +1100 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1HKnRw-0000vy-DZ
+	for linuxppc-embedded@ozlabs.org; Fri, 23 Feb 2007 19:19:52 -0800
+Message-ID: <9130617.post@talk.nabble.com>
+Date: Fri, 23 Feb 2007 19:19:52 -0800 (PST)
+From: Nethra <nethra_gmit@yahoo.co.in>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] jffs2 file system
+In-Reply-To: <1172242531.22834.138.camel@saruman.qstreams.net>
 MIME-Version: 1.0
-Message-ID: <OFA2B855F5.8FEEC16C-ON8825728C.000C6AC9-8825728C.000C740E@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Fri, 23 Feb 2007 18:16:01 -0800
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <9097247.post@talk.nabble.com>
+	<200702221128.02970.juergen.beisert@weihenstephan.org>
+	<9097618.post@talk.nabble.com>
+	<200702221229.51830.juergen.beisert@weihenstephan.org>
+	<9113399.post@talk.nabble.com>
+	<1172242531.22834.138.camel@saruman.qstreams.net>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,41 +32,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Never mind, I answered my own question.  Sorry for the noise.
 
-Bruce
 
-linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org wrote on 02/23/2007 
-05:20:14 PM:
+ thanks ben,
 
-> I know this isn't the right forum for this but I can't seem to find a 
-> generic PPC mailing list.
+I have already tried to build jffs2 image as per link mentioned using
+mkfs.jffs2 utility, but mkfs.jffs2 is absent in host...so i downloded
+mkfs.jffs2 from net and used the same to create the image.Is it the correct
+way?
+
+it is giveing error when booting...
+
+nethra
+
+> thanks...
 > 
-> I'm trying to get a global timer going on an MPC834x, and the way I 
-learn 
-> is to just play with HW, so I've got an Abatron BDI2K hooked up to my 
-> processor so I can just manipulate registers without having to deal with 
-
-> writing code.  However, I seem to be unable to modify certain registers 
-in 
-> the global timers with this set up and I don't understand why. 
-> Specifically, if a register has a bit that's a '1' following a reset, I 
-> can't change that bit to a '0'.  This is happening with the Global 
-Timers 
-> Reference Registers (GTRFR1 - 4) and the Global Timers Prescale 
-Registers 
-> (GTPSR1 - 4).  The reset state of the GTRFRs is 0xFFFF and I can't 
-change 
-> it to any other value.  The reset state of the GTPSRs is 0x3 and I can't 
-
-> clear the 2 LSB.  I can change any other bits in the prescale registers, 
-
-> but not the two which are a '1' at reset.
+> what are the steps to create jffs2 image?
 > 
-> Has anyone else seen this behavior?
+Here's a good link on building a JFFS2 filesystem:
+http://www.denx.de/wiki/view/DULG/RootFileSystemOnAJFFS2FileSystem
+
+> do i need to disable nfs option in kernel?
+No.  Both can happily co-exist
 > 
-> Bruce
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> what r steps for jffs2 mounting after nfs mounting on the board?
+> 
+Try:
+
+mount -t jffs2 -o ro /dev/mtdblockX /<mount_path>
+
+I'd recommend booting to an NFS filesystem.  Once in Linux, you can try
+mounting the JFFS2 block and debug from there.  Once you have that
+working, try booting to JFFS2 via the MTD_PHYSMAP methods.
+
+regards,
+Ben
+
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+
+-- 
+View this message in context: http://www.nabble.com/jffs2-file-system-tf3271928.html#a9130617
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
