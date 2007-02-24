@@ -1,19 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 4E382DDEC2
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5A00CDDEFD
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 25 Feb 2007 07:37:46 +1100 (EST)
-To: pb_fwd_list@yahoo.fr
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: mcpu options for AMCC440 with fpu 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Sat, 24 Feb 2007 07:44:45 +0100."
-	<1172299485.2993.8.camel@localhost.localdomain>
-Date: Sat, 24 Feb 2007 21:20:28 +0100
-Sender: wd@denx.de
-Message-Id: <20070224202028.BA600353CF6@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sun, 25 Feb 2007 08:17:27 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: using gdb/kgdb
+Date: Sat, 24 Feb 2007 13:17:24 -0800
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069AEA@MERCURY.inside.istor.com>
+References: <OFA2B855F5.8FEEC16C-ON8825728C.000C6AC9-8825728C.000C740E@selinc.com>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,26 +24,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <1172299485.2993.8.camel@localhost.localdomain> you wrote:
->  
-> Indeed ! I was waiting for warnings or errors while compiling to tell me
-> I was doing something wrong but I should not.
+I am having a little trouble with kgdb in an 8541 kernel.=20
 
-There might be situations where what you did was fully intentional.
+The kernel is compiled with CONFIG_DEBUG_KERNEL, CONFIG_KGDB, =
+CONFIG_KGDB_TTYS1 all defined and I can boot it to the point where it is =
+waiting for a gdb connection and it does make a connection. I have =
+kernel command line that contains "kgdb=3DttyS1,115200,halt kgdbwait" in =
+it and this appears to be working fine and the output looks like this.
 
-"UNIX was not designed to stop you from doing stupid things,  because
-that would also stop you from doing clever things."       - Doug Gwyn
+MMU:enterJCSSU'=EB=81init
+MMU:mapin
+MMU:setio
+MMU:exit
+begin start_kernel
+setup_arch: enter
+setup_arch: kgdb breakpoint
 
-:-)
+At this point, from the cross-compiled gdb on a host, if I invoke gdb =
+with vmlinux as an argument, the PC is zero.
 
+$ ppc-gdb vmlinux
 
-Best regards,
+(gdb)set remotebaud 115200
 
-Wolfgang Denk
+(gdb)target remote /dev/ttyUSB0
 
--- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-History tends to exaggerate.
-	-- Col. Green, "The Savage Curtain", stardate 5906.4
+(gdb)0x00000000 in ?? ()
+
+If I invoke the cross-compiled gdb without vmlinux as an argument, I get =
+a better looking pc, like this
+
+$ ppc-gdb=20
+
+(gdb)set remotebaud 115200
+
+(gdb)target remote /dev/ttyUSB0
+
+(gdb)0xc00071f4 in ?? ()
+
+But in neither case can I 'step' or 'next' as gdb merely replies
+
+Cannot find bounds of current function.
+
+Can someone offer a spot of advice to this despicable condition?
+
+Charles
+
+p.s. I apologize if this comes out html as I am using the companies =
+webmail interface from home.
+
+=20
+
+=20
