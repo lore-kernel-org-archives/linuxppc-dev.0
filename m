@@ -2,14 +2,14 @@ Return-Path: <bounces@nabble.com>
 Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 188AFDDE30
+	by ozlabs.org (Postfix) with ESMTP id C6278DDE3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Feb 2007 14:38:08 +1100 (EST)
+	Sat, 24 Feb 2007 14:45:06 +1100 (EST)
 Received: from [72.21.53.38] (helo=jubjub.nabble.com)
-	by talk.nabble.com with esmtp (Exim 4.50) id 1HKnjZ-00061a-Di
-	for linuxppc-embedded@ozlabs.org; Fri, 23 Feb 2007 19:38:05 -0800
-Message-ID: <9130715.post@talk.nabble.com>
-Date: Fri, 23 Feb 2007 19:38:05 -0800 (PST)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1HKnqK-000834-3h
+	for linuxppc-embedded@ozlabs.org; Fri, 23 Feb 2007 19:45:04 -0800
+Message-ID: <9130746.post@talk.nabble.com>
+Date: Fri, 23 Feb 2007 19:45:04 -0800 (PST)
 From: Nethra <nethra_gmit@yahoo.co.in>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: [PATCH] jffs2 file system
@@ -35,6 +35,10 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
+it prints the fallowing line continously when booting...
+
+jffs2_scan_eraseblock(): Magic bitmask 0x1985 not found at 0x005c0004:
+0xffff in
 
 mkfs.jffs2 -r /mnt -e 0x20000 -o image.jffs2 -b
 
@@ -79,5 +83,5 @@ Ben Warren wrote:
 > 
 
 -- 
-View this message in context: http://www.nabble.com/jffs2-file-system-tf3271928.html#a9130715
+View this message in context: http://www.nabble.com/jffs2-file-system-tf3271928.html#a9130746
 Sent from the linuxppc-embedded mailing list archive at Nabble.com.
