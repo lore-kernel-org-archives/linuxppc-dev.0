@@ -1,21 +1,23 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 03E4DDDE39
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 17:35:56 +1100 (EST)
-Subject: Re: [PATCH] powerpc: document new interrupt-array property
+Subject: RE: [PATCH] powerpc: document new interrupt-array property
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <9841c5ba165e4bec773366568b3d4195@kernel.crashing.org>
+To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302A59732@az33exm25.fsl.freescale.net>
 References: <200702212325.l1LNPBwL007793@ld0164-tx32.am.freescale.net>
-	<9841c5ba165e4bec773366568b3d4195@kernel.crashing.org>
+	<A31D7159-8C25-445D-A21D-85F04C1FDC45@kernel.crashing.org>
+	<20070222011811.GA18364@localhost.localdomain>
+	<45b623f395654fc4f4920b9553794def@kernel.crashing.org>
+	<20070222103410.GB11014@localhost.localdomain>
+	<b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
+	<259dc2545888e6588a8a0707ad2e84b0@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A59732@az33exm25.fsl.freescale.net>
 Content-Type: text/plain
-Date: Sat, 24 Feb 2007 07:35:48 +0100
-Message-Id: <1172298948.1902.20.camel@localhost.localdomain>
+Date: Sat, 24 Feb 2007 07:40:59 +0100
+Message-Id: <1172299259.1902.22.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: Stuart Yoder <b08248@freescale.com>, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,29 +27,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2007-02-23 at 12:15 -0700, Yoder Stuart-B08248 wrote:
+> > I'd rather write it like
+> > 
+> > >       interrupts        = < a 4   b 4   0 4   1 4   2 4 >
+> > >       interrupt-parents = <&UIC0 &UIC0 &UIC1 &UIC1 &UIC1>
+> > 
+> 
+> Segher, with your proposal here of an interrupt-parents property
+> is this really keeping with the normal OF way of representing
+> property values?
+> 
+> Examples exists where one property tells you how to interpret
+> or decode another (e.g. #address-cells), but your proposal we
+> have two distinct properties each with values that together
+> provide the complete 'value' (interrupt parent + interrupt
+> specifier).  Is there any precedent for this approach?
 
-> It would be nicer to keep the "interrupts" property and
-> add a property "interrupt-parents" with the same number
-> of entries, that encodes the same as "interrupt-parent"
-> but per interrupt.  You keep more in line with the
-> "normal" stuff and I suspect it's less code to parse as
-> well.
+Somewhat... interrupt-map and interrupt-map-mask... that sort of thing.
 
-There are pro and cons to this approach. I did think about it initially.
-The main cons is that "interrupts" becomes harder to parse as you ahve
-to walk interrupt-parents at the same time to get the #interrupt-cells
-of each entry. Also, it adds more potential for stupid breakage (how
-shluld the parser react if interrupt-parents has less entries than
-interrupts ?)
+> I think I'd rather see all the information encoded in
+> one value.
 
-The pro, which is quite important too, is that it's a common assuption
-that you have interrupts when you have an "interrupts" property, period.
-In fact, it would indeed fit a bit better in the current parser.
-
-> Wrong place to document this?  It's true for all interrupt
-> specifiers.
-
-Might be worth giving a crazy example where the 2 interrupt specifiers
-have different size.
+On the other hand, I do quite like keeping with the old principle that
+having interrupts == having an "interrupts" node.
 
 Ben.
