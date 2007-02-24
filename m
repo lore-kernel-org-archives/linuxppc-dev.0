@@ -1,20 +1,15 @@
-Return-Path: <mh@omnisys.se>
-Received: from ch-smtp02.sth.basefarm.net (ch-smtp02.sth.basefarm.net
-	[80.76.149.213])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0F9DEDDD05
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc1-s24.bay0.hotmail.com (bay0-omc1-s24.bay0.hotmail.com
+	[65.54.246.96]) by ozlabs.org (Postfix) with ESMTP id D99D6DDE48
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Feb 2007 22:11:46 +1100 (EST)
-Date: Sat, 24 Feb 2007 13:38:11 +0100
-From: Magnus Hjorth <mh@omnisys.se>
-To: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-Subject: Re: Compiling Linux Kernel for ML403
-Message-Id: <20070224133811.d1956273.mh@omnisys.se>
-In-Reply-To: <BAY115-W2357CBD76DF1F526BE65A7B28D0@phx.gbl>
-References: <BAY115-W2357CBD76DF1F526BE65A7B28D0@phx.gbl>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1
+	Sun, 25 Feb 2007 00:03:57 +1100 (EST)
+Message-ID: <BAY115-W5610B35B5ED6C430EA31BB28D0@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: Magnus Hjorth <mh@omnisys.se>
+Subject: RE: Compiling Linux Kernel for ML403
+Date: Sat, 24 Feb 2007 13:03:54 +0000
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,86 +21,125 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mohammad,
 
-The files that are in generated in the BSP are for an older mvista kernel (=
-based on 2.6.14 I think) and some things have changed since then. In partic=
-ular some tables in virtex.c and xilinx_ml403.c are different. It's probabl=
-y easier to fix these files manually than to copy the files from the BSP.=20
 
-You should rename the xparameters_ml40x.h in the BSP to xparameters_ml403.h=
-. You may also need to add some #defines for constants that have changed na=
-mes, which you will discover when you try to compile the kernel.=20
+well
 
-You need to manually edit Kconfig files to get menuconfig entries, and you =
-will need to edit some Makefiles to get it all to be compiled in. It could =
-be easier in mvista, I don't know... Good luck!
+Then, if what you say is correct, We should do almost all of the job by han=
+d, ... this is very difficult and time cosuming....
 
-Best regards,
-Magnus
+What is the role of xmake tcl script in generated linux bsp?=20
 
-On Sat, 24 Feb 2007 09:44:33 +0000
-Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
+I renamed all of ML40x to ML403 in all of the files of the generated bsp, b=
+ut still I encounter this error while compiling the kernel using xmake:
 
+arch/ppc/platforms/4xx/virtex.c:20: error: array type has incomplete elemen=
+t type
+arch/ppc/platforms/4xx/virtex.c:60: error: field name not in record or unio=
+n initializer
+arch/ppc/platforms/4xx/virtex.c:60: error: (near initialization for 'core_o=
+cp')
+make[1]: *** [arch/ppc/platforms/4xx/virtex.o] Error 1
+make: *** [arch/ppc/platforms/4xx] Error 2
+
+any body knows the reason for this error message?
+
+
+
+
+----------------------------------------
+> Date: Sat, 24 Feb 2007 13:38:11 +0100
+> From: mh@omnisys.se
+> To: mamsadegh@hotmail.com
+> CC: linuxppc-embedded@ozlabs.org
+> Subject: Re: Compiling Linux Kernel for ML403
 >=20
-> Hi all,
+> Hi Mohammad,
 >=20
-> Again , I have some questions:
+> The files that are in generated in the BSP are for an older mvista kernel=
+ (based on 2.6.14 I think) and some things have changed since then. In part=
+icular some tables in virtex.c and xilinx_ml403.c are different. It's proba=
+bly easier to fix these files manually than to copy the files from the BSP.=
+=20
 >=20
-> I downloaded the linux kernel from both of source.mvista.com ( 2.6.19 I t=
-hink ) and kernel.org ( 2.6.20 ) , and I did the following tests on both of=
- them:
+> You should rename the xparameters_ml40x.h in the BSP to xparameters_ml403=
+.h. You may also need to add some #defines for constants that have changed =
+names, which you will discover when you try to compile the kernel.=20
 >=20
-> 1- Using EDK 8.2.02 , generated my base system for ml403. EDK generated B=
-SP files.=20
-> 2- I copied the linux-2.6.20.tar.bz2 into proper location in eldk directo=
-ry and extracted there, Then I copied all of the BSP files into the root fo=
-lder of my kernel source.
-> 3- Editted the Makefile and set the ARCH and CROSS_COMPILE variables , al=
-so I set all of the env variables needed by edk.=20
+> You need to manually edit Kconfig files to get menuconfig entries, and yo=
+u will need to edit some Makefiles to get it all to be compiled in. It coul=
+d be easier in mvista, I don't know... Good luck!
 >=20
-> 4- ( First Question ) looking the BSP files generated by EDK I see that /=
-arch/ppc/platforms/4xx/xparameters contains two files: xparameteres.h and x=
-parameters_ml40x.h=20
-> However when I look at the same folder in kernel source tree I see that t=
-he file name is different, it is xparameters_ml403.h=20
-> Is this OK? I think that I should rename the file?
+> Best regards,
+> Magnus
 >=20
-> 5- ( Second Question ) Although I have copied the BSP files into the my k=
-ernel source tree completely, nothing changes in the menuconfig. I mean the=
- menuconfig ( menus and configs ) is the same as before, for example  , no =
-special option is added for gigabit ethernet support ( hard temac )
-> Is this ok? I expected to see some changes in menuconfig when I copied th=
-e files into kernel source.=20
+> On Sat, 24 Feb 2007 09:44:33 +0000
+> Mohammad Sadegh Sadri  wrote:
 >=20
-> 6- ( Third Question ) Now, I do the needed primary configurations and the=
-n I type : make, to begin the build process. Obviously, It generates some e=
-rror messages, Is this  kind of behaviour natural? I was not expecting to s=
-ee syntax errors in kernel source tree ? ( Of course, when I build the kern=
-el without Xilinx BSP every thing is OK )
->=20
-> ( The above descriptions are true for both of mvista and kernel.org, )
->=20
-> thanks
->=20
->=20
->=20
-> _________________________________________________________________
-> Explore the seven wonders of the world
-> http://search.msn.com/results.aspx?q=3D7+wonders+world&mkt=3Den-US&form=
+> >=20
+> > Hi all,
+> >=20
+> > Again , I have some questions:
+> >=20
+> > I downloaded the linux kernel from both of source.mvista.com ( 2.6.19 I=
+ think ) and kernel.org ( 2.6.20 ) , and I did the following tests on both =
+of them:
+> >=20
+> > 1- Using EDK 8.2.02 , generated my base system for ml403. EDK generated=
+ BSP files.=20
+> > 2- I copied the linux-2.6.20.tar.bz2 into proper location in eldk direc=
+tory and extracted there, Then I copied all of the BSP files into the root =
+folder of my kernel source.
+> > 3- Editted the Makefile and set the ARCH and CROSS_COMPILE variables , =
+also I set all of the env variables needed by edk.=20
+> >=20
+> > 4- ( First Question ) looking the BSP files generated by EDK I see that=
+ /arch/ppc/platforms/4xx/xparameters contains two files: xparameteres.h and=
+ xparameters_ml40x.h=20
+> > However when I look at the same folder in kernel source tree I see that=
+ the file name is different, it is xparameters_ml403.h=20
+> > Is this OK? I think that I should rename the file?
+> >=20
+> > 5- ( Second Question ) Although I have copied the BSP files into the my=
+ kernel source tree completely, nothing changes in the menuconfig. I mean t=
+he menuconfig ( menus and configs ) is the same as before, for example  , n=
+o special option is added for gigabit ethernet support ( hard temac )
+> > Is this ok? I expected to see some changes in menuconfig when I copied =
+the files into kernel source.=20
+> >=20
+> > 6- ( Third Question ) Now, I do the needed primary configurations and t=
+hen I type : make, to begin the build process. Obviously, It generates some=
+ error messages, Is this  kind of behaviour natural? I was not expecting to=
+ see syntax errors in kernel source tree ? ( Of course, when I build the ke=
+rnel without Xilinx BSP every thing is OK )
+> >=20
+> > ( The above descriptions are true for both of mvista and kernel.org, )
+> >=20
+> > thanks
+> >=20
+> >=20
+> >=20
+> > _________________________________________________________________
+> > Explore the seven wonders of the world
+> > http://search.msn.com/results.aspx?q=3D7+wonders+world&mkt=3Den-US&form=
 =3DQBRE
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> > _______________________________________________
+> > Linuxppc-embedded mailing list
+> > Linuxppc-embedded@ozlabs.org
+> > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
+>=20
+> --=20
+>=20
+> Magnus Hjorth, M.Sc.
+> Omnisys Instruments AB
+> Gruvgatan 8
+> SE-421 30  V=E4stra Fr=F6lunda, SWEDEN
+> Phone: +46 31 734 34 09
+> Fax: +46 31 734 34 29
+> http://www.omnisys.se=20
 
-
---=20
-
-Magnus Hjorth, M.Sc.
-Omnisys Instruments AB
-Gruvgatan 8
-SE-421 30  V=E4stra Fr=F6lunda, SWEDEN
-Phone: +46 31 734 34 09
-Fax: +46 31 734 34 29
-http://www.omnisys.se=20
+_________________________________________________________________
+Connect to the next generation of MSN Messenger=A0
+http://imagine-msn.com/messenger/launch80/default.aspx?locale=3Den-us&sourc=
+e=3Dwlmailtagline=
