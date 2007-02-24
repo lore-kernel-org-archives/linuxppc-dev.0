@@ -1,25 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 81372DDDEC
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 19:25:19 +1100 (EST)
-Subject: Re: Update on: MPC85xx git/MPC8548cds - PCI/PCIE problemS with
-	Marvel SATA driver...
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Morrison, Tom" <tmorrison@empirix.com>
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901069D9CA4@EMPBEDEX.empirix.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D9010685DAA6@EMPBEDEX.empirix.com>
-	<BE415006-0D71-4D2F-8699-3BD2A513D9C0@freescale.com>
-	<BD261180E6D35F4D9D32F3E44FD3D9010685DCFC@EMPBEDEX.empirix.com>
-	<8B9F6546-0D85-4AD0-A196-25F0F9C1A5A0@freescale.com>
-	<BD261180E6D35F4D9D32F3E44FD3D901069D9CA4@EMPBEDEX.empirix.com>
-Content-Type: text/plain
-Date: Sat, 24 Feb 2007 09:25:05 +0100
-Message-Id: <1172305505.1902.27.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Geary Sean-R60898 <sean.geary@freescale.com>, linuxppc-dev@ozlabs.org,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0A6B2DE068
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 22:12:04 +1100 (EST)
+In-Reply-To: <1172298948.1902.20.camel@localhost.localdomain>
+References: <200702212325.l1LNPBwL007793@ld0164-tx32.am.freescale.net>
+	<9841c5ba165e4bec773366568b3d4195@kernel.crashing.org>
+	<1172298948.1902.20.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c3142d07a3c85adb9e67659ee5953c45@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+Date: Sat, 24 Feb 2007 12:11:56 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Stuart Yoder <b08248@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,36 +28,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-02-23 at 14:57 -0500, Morrison, Tom wrote:
-> All,
-> 
-> I have yet to successfully gone through full initialization / 
-> registration of this driver for this board.
-> 
-> I have both a Marvell PCI SATA Card (with 6042 chip) 
-> and a Marvell PCI Express SATA card (with 7042 chip).
-> 
-> PCI/6042 Chip Marvel SATA Card
-> ==============================
->    On PCI Bus - the card is probed, and finds the SATA drive - 
->    goes through an ata add device process - up to adding scsi device -
->    even goes all the way to checking the file system -and lastly says:
-> 
->        SCSI device sda: write cache: enabled, read cache: enabled, 
->         sda: unknown partition table
->        sd 0:0:0:0: Attached scsi disk sda
-> 
->    After full boot (I am nfs mounting my root file system until I get
->    this working), I try to mount drive - no good - I can't mount it
->    (it also doesn't create a /dev/sda or /dev/sda1 device - I assume 
->    that if it knew the partitioning table - it would actually create
->    these devices and Yes, I have ms-dos file system support compiled in?
+>> It would be nicer to keep the "interrupts" property and
+>> add a property "interrupt-parents" with the same number
+>> of entries, that encodes the same as "interrupt-parent"
+>> but per interrupt.  You keep more in line with the
+>> "normal" stuff and I suspect it's less code to parse as
+>> well.
+>
+> There are pro and cons to this approach. I did think about it 
+> initially.
+> The main cons is that "interrupts" becomes harder to parse as you ahve
+> to walk interrupt-parents at the same time to get the #interrupt-cells
+> of each entry.
 
-The above looks like it's working and you don't have a proper partition
-table on the disk or you haven't compiled in support for the right type
-of partition map (this is different from the filesystem type)....
+Yeah, you have to do some things inside of the interrupt
+parsing loop, that you normally can move outside of the
+loop.  That's true in the "interrupt-array" case too, you
+just get the interrupt parent from somewhere else.  It's
+in the nature of this extension.
 
-Make sure you enable MS-DOS partition type support in addition to file
-system type.
+> Also, it adds more potential for stupid breakage (how
+> shluld the parser react if interrupt-parents has less entries than
+> interrupts ?)
 
-Ben.
+Just fail loudly.  Just like it should do if it notes
+something else nonsensical (a non-phandle in the
+"interrupt-array" case, for example, or running out
+of encoded integers while parsing).
+
+> The pro, which is quite important too, is that it's a common assuption
+> that you have interrupts when you have an "interrupts" property, 
+> period.
+
+Yes, it would be a lot closer to the generic case, only add
+to the interrupt mapping binding, not change anything in the
+base OF spec.
+
+> In fact, it would indeed fit a bit better in the current parser.
+
+Yeah I think so too.
+
+>> Wrong place to document this?  It's true for all interrupt
+>> specifiers.
+>
+> Might be worth giving a crazy example where the 2 interrupt specifiers
+> have different size.
+
+I'd rather not.  Anyway, this was in reply to:
+
+>> +Note: the number of cells needed to represent the
+>> +interrupt-specifier is determined by the #interrupt-cells
+>> +property of the interrupt parent.
+
+Which is a general statement about interrupt specifiers.
+Nowhere does the "booting without OF" doc define interrupt
+specifiers before it uses them; do that, move this comment
+there, and put a comment saying "each entry in "interrupts"
+can potentially have a different # of interrupt cells, you
+have to look at the corresponding interrupt parent to find
+out" in its place?
+
+
+Segher
