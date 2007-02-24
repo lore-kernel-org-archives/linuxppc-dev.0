@@ -1,25 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id A02DDDDE23
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Feb 2007 14:06:31 +1100 (EST)
-Date: Fri, 23 Feb 2007 21:16:49 -0600
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Subject: Re: Update on: MPC85xx git/MPC8548cds - PCI/PCIE problemS with Marvel
-	SATA driver...
-Message-ID: <20070224031649.GA26751@lixom.net>
-References: <BD261180E6D35F4D9D32F3E44FD3D9010685DAA6@EMPBEDEX.empirix.com>
-	<BE415006-0D71-4D2F-8699-3BD2A513D9C0@freescale.com>
-	<BD261180E6D35F4D9D32F3E44FD3D9010685DCFC@EMPBEDEX.empirix.com>
-	<8B9F6546-0D85-4AD0-A196-25F0F9C1A5A0@freescale.com>
-	<BD261180E6D35F4D9D32F3E44FD3D901069D9CA4@EMPBEDEX.empirix.com>
-	<20070223202921.GA22331@lixom.net>
-	<BD261180E6D35F4D9D32F3E44FD3D901053E84AA@EMPBEDEX.empirix.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BD261180E6D35F4D9D32F3E44FD3D901053E84AA@EMPBEDEX.empirix.com>
-From: olof@lixom.net (Olof Johansson)
-Cc: Geary Sean-R60898 <sean.geary@freescale.com>, linuxppc-dev@ozlabs.org,
-	Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <45b623f395654fc4f4920b9553794def@kernel.crashing.org>
+References: <200702212325.l1LNPBwL007793@ld0164-tx32.am.freescale.net>
+	<A31D7159-8C25-445D-A21D-85F04C1FDC45@kernel.crashing.org>
+	<20070222011811.GA18364@localhost.localdomain>
+	<45b623f395654fc4f4920b9553794def@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sat, 24 Feb 2007 07:30:20 +0100
+Message-Id: <1172298620.1902.15.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Stuart Yoder <b08248@freescale.com>,
+	paulus@samba.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,47 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Feb 23, 2007 at 05:47:22PM -0500, Morrison, Tom wrote:
-> Olof,
+
+> Sure, for every specific case one can envision a more neat
+> and compact device tree ;-P
+
+Still... I do think that even in the general case, providing a way to
+directly encode pairs <parent,specifier> is useful, especially when
+interrupt are wired in all sort of crazy ways as is common in the
+embedded world.
+ 
+> If in a certain tree you have this "problem" with not only
+> the MAL but with lots of devices, you could introduce a
+> "fake" interrupt nexus that doesn't represent a physical
+> device as such, but that represents the combined cascaded
+> interrupt controllers, and maps the interrupts to the nodes
+> for the "physical" interrupt controllers.  Just don't make
+> the mistake of putting an "interrupt-controller" property
+> in there and all is just fine.  As an added bonus you end up
+> with one single namespace for the interrupts (one interrupt
+> domain in interrupt-mapping speak), which is probably what
+> the chip documentation does as well.
 > 
-> Are you saying that it must 'know' about the PCI id(s)
-> for this SATA card before it even probes that device???
 > 
-> Even though the module is compiled into the kernel and 
-> I've verified that:
+> Segher
 > 
->   a) the pci scan bus has detected this device
->   b) that the sata_mv driver is registering itself
->      as a PCI Device driver?
-
-Yes. There's the device on the bus, and there's the PCI bus code that will
-walk all busses and enumerate all devices. Then there's the driver. All
-drivers have a small table that they use to specify which PCI devices
-they are usable with, so if the device isn't listed, the driver won't
-get involved.
-
-See the sata_mv sources for more info, search for '7042' and you'll find
-the table, at least if you're looking at the 2.6.20 sources.
-
-> Also, fyi, its also complaining about the PCI Express 
-> Root Bridge on the MPC8548 as an unknown device...
-> 
->    manufacturer: 0x1957 (aka: Freescale)
->    class: 0xFFFF
-
-What complains? lspci? Or the kernel? lspci is just a high-level program
-that has a database that maps the numerical codes to manufacturers and
-devices. The database might be out of date, or someone forgot to submit
-the device IDs to it. It happens all the time.
-
-
-> although that doesn't explain why the same PCI 
-> Express SATA card / ~same sata_mv driver on an 
-> Intel X86 platform doesn't get recognized either.
-
-Same thing -- PCI id missing from the driver.
-
-> Thank you for any additional insight you have on this Olof!
-
-
--Olof
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
