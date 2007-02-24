@@ -1,22 +1,21 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 4C090DDE3B
+Return-Path: <juergen.beisert@weihenstephan.org>
+Received: from bill.weihenstephan.org (bill.weihenstephan.org [82.135.35.21])
+	by ozlabs.org (Postfix) with ESMTP id 905B8DDEBF
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 25 Feb 2007 02:46:17 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so481491ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Feb 2007 07:46:15 -0800 (PST)
-Message-ID: <528646bc0702240746ve5d9cd7j150f6d58da1fb964@mail.gmail.com>
-Date: Sat, 24 Feb 2007 08:46:15 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
-Subject: Re: Compiling Linux Kernel for ML403
-In-Reply-To: <BAY115-W5610B35B5ED6C430EA31BB28D0@phx.gbl>
+	Sun, 25 Feb 2007 04:30:35 +1100 (EST)
+From: Juergen Beisert <juergen.beisert@weihenstephan.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH] jffs2 file system
+Date: Sat, 24 Feb 2007 18:30:27 +0100
+References: <9097247.post@talk.nabble.com>
+	<1172144688.2759.0.camel@vader.jdub.homelinux.org>
+	<9132046.post@talk.nabble.com>
+In-Reply-To: <9132046.post@talk.nabble.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <BAY115-W5610B35B5ED6C430EA31BB28D0@phx.gbl>
-Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702241830.29259.juergen.beisert@weihenstephan.org>
+Cc: Nethra <nethra_gmit@yahoo.co.in>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,28 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 2/24/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
->
->
-> well
->
-> Then, if what you say is correct, We should do almost all of the job by hand, ... this is very difficult and time cosuming....
->
-> What is the role of xmake tcl script in generated linux bsp?
->
+On Saturday 24 February 2007 09:38, Nethra wrote:
+[...]
+> Uniform Multi-Platform E-IDE driver Revision: 7.00alpha2
+> ide: Assuming 50MHz system bus speed for PIO modes; override with idebus=xx
+> elevator: using anticipatory as default io scheduler
+> $Id: ftl.c,v 1.55 2005/01/17 13:47:21 hvr Exp $
 
-The EDK <--> Linux kernel interactions is.... messy... at best.  I'm
-not at all a fan of the BSP generation approach that EDK uses.  I
-understand from the Xilinx folks that they are working to get their
-driver code into mainline, but in the meantime you need to do stuff
-manually unless you're using the exact kernel source version that the
-EDK code generation works with.
+Flash Translation Layer? JFFS2 does not need it (I believe).
 
-Cheers,
-g.
+> physmap flash device: 800000 at ff800000
+> RedBoot partition parsing not available
+> Using physmap partition definition
+> Creating 4 MTD partitions on "phys_mapped_flash":
+> 0x00000000-0x00600000 : "User FS"
+> mtd: Giving out device 0 to User FS
+> ftl_cs: FTL header not found.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Disable the FTL when you try to use the content as JFFS2!
+
+> 0x00600000-0x00700000 : "uImage"
+> mtd: Giving out device 1 to uImage
+> ftl_cs: FTL header not found.
+> 0x00700000-0x00740000 : "bootloader"
+> mtd: Giving out device 2 to bootloader
+> ftl_cs: FTL header not found.
+> 0x00740000-0x00780000 : "bootloader env"
+> mtd: Giving out device 3 to bootloader env
+> ftl_cs: FTL header not found.
+
+Are these partitions correct? I cannot see where the definitions comes from. 
+
+Juergen
