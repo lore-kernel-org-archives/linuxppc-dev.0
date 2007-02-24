@@ -1,27 +1,16 @@
-Return-Path: <bounces@nabble.com>
-Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 88AB3DDE27
+Return-Path: <bwarren@qstreams.com>
+Received: from web308.biz.mail.mud.yahoo.com (web308.biz.mail.mud.yahoo.com
+	[68.142.199.184]) by ozlabs.org (Postfix) with SMTP id 49F1ADDE10
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Feb 2007 14:19:56 +1100 (EST)
-Received: from [72.21.53.38] (helo=jubjub.nabble.com)
-	by talk.nabble.com with esmtp (Exim 4.50) id 1HKnRw-0000vy-DZ
-	for linuxppc-embedded@ozlabs.org; Fri, 23 Feb 2007 19:19:52 -0800
-Message-ID: <9130617.post@talk.nabble.com>
-Date: Fri, 23 Feb 2007 19:19:52 -0800 (PST)
-From: Nethra <nethra_gmit@yahoo.co.in>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] jffs2 file system
-In-Reply-To: <1172242531.22834.138.camel@saruman.qstreams.net>
+	Sat, 24 Feb 2007 14:20:25 +1100 (EST)
+Date: Fri, 23 Feb 2007 19:13:43 -0800 (PST)
+From: Ben Warren <bwarren@qstreams.com>
+Subject: Re: MPC834x global timers question
+To: Bruce_Leonard@selinc.com, linuxppc-embedded@ozlabs.org
+In-Reply-To: <OF37CF163F.2ABC0002-ON8825728C.00068359-8825728C.00075898@selinc.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-References: <9097247.post@talk.nabble.com>
-	<200702221128.02970.juergen.beisert@weihenstephan.org>
-	<9097618.post@talk.nabble.com>
-	<200702221229.51830.juergen.beisert@weihenstephan.org>
-	<9113399.post@talk.nabble.com>
-	<1172242531.22834.138.camel@saruman.qstreams.net>
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <725190.72914.qm@web308.biz.mail.mud.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,50 +21,78 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Bruce,
 
+--- Bruce_Leonard@selinc.com wrote:
 
- thanks ben,
-
-I have already tried to build jffs2 image as per link mentioned using
-mkfs.jffs2 utility, but mkfs.jffs2 is absent in host...so i downloded
-mkfs.jffs2 from net and used the same to create the image.Is it the correct
-way?
-
-it is giveing error when booting...
-
-nethra
-
-> thanks...
+> I know this isn't the right forum for this but I
+> can't seem to find a 
+> generic PPC mailing list.
 > 
-> what are the steps to create jffs2 image?
-> 
-Here's a good link on building a JFFS2 filesystem:
-http://www.denx.de/wiki/view/DULG/RootFileSystemOnAJFFS2FileSystem
+> I'm trying to get a global timer going on an
+> MPC834x, and the way I learn 
+> is to just play with HW, so I've got an Abatron
+> BDI2K hooked up to my 
+> processor so I can just manipulate registers without
+> having to deal with 
+> writing code.  However, I seem to be unable to
+> modify certain registers in 
+> the global timers with this set up and I don't
+> understand why. 
+> Specifically, if a register has a bit that's a '1'
+> following a reset, I 
+> can't change that bit to a '0'.  This is happening
+> with the Global Timers 
+> Reference Registers (GTRFR1 - 4) and the Global
+> Timers Prescale Registers 
+> (GTPSR1 - 4).  The reset state of the GTRFRs is
+> 0xFFFF and I can't change 
+> it to any other value.  The reset state of the
+> GTPSRs is 0x3 and I can't 
+> clear the 2 LSB.  I can change any other bits in the
+> prescale registers, 
+> but not the two which are a '1' at reset.
 
-> do i need to disable nfs option in kernel?
-No.  Both can happily co-exist
-> 
-> what r steps for jffs2 mounting after nfs mounting on the board?
-> 
-Try:
+There's a sequence that needs to be followed.  You
+need to enable the timer first, then set the mode,
+then set the prescaler.  I've attached some expect
+code for U-boot that generates a 1Hz output from timer
+3 on an MCP8349.  It's not quite what you have, but
+hopefully close enough for you to figure it out.  I
+also have a simple char driver for Linux if you need
+it later on.
 
-mount -t jffs2 -o ro /dev/mtdblockX /<mount_path>
+COMMENT "Set SICLR so that GPIO1_8 becomes TOUT3"
+send "mm.w e0000114\r"
+expect $mmPrompt
+send "8001\r"
+expect $mmPrompt
+send "q\r"
+expect $mainPrompt
 
-I'd recommend booting to an NFS filesystem.  Once in Linux, you can try
-mounting the JFFS2 block and debug from there.  Once you have that
-working, try booting to JFFS2 via the MTD_PHYSMAP methods.
+COMMENT "Enable timer 3"
+send "mm.b e0000504\r"
+expect $mmPrompt
+send "01\r"
+expect $mmPrompt
+send "q\r"
+expect $mainPrompt
 
+COMMENT "Set mode register"
+send "mm.w e0000520\r"
+expect $mmPrompt
+send "ff0c\r"
+expect $mmPrompt
+send "q\r"
+
+COMMENT "Set frequency to 1Hz"
+send "mm.w e0000524\r"
+expect $mmPrompt
+send "1f77\r"
+expect $mmPrompt
+send "q\r"
+expect $mainPrompt
+
+Hope this helps
 regards,
 Ben
-
-
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
-
-
-
--- 
-View this message in context: http://www.nabble.com/jffs2-file-system-tf3271928.html#a9130617
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
