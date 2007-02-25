@@ -1,15 +1,18 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id EC105DDD07
-	for <linuxppc-dev@ozlabs.org>; Sun, 25 Feb 2007 04:57:26 +1100 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9f47411a14abab4a1a53a08d5b8822c0@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] Harden validate_sp against stack corruption
-Date: Sat, 24 Feb 2007 11:57:24 -0600
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 62064DDEA2
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 06:03:43 +1100 (EST)
+Date: Sun, 25 Feb 2007 20:04:18 +0100
+From: Olaf Hering <olaf@aepfle.de>
+To: Hugh Dickins <hugh@veritas.com>, stable@kernel.org
+Subject: [PATCH] include stddef.h in asm-powerpc/current.h to get definition
+	of offsetof
+Message-ID: <20070225190418.GA11805@aepfle.de>
+References: <Pine.LNX.4.64.0610311834580.26470@blonde.wat.veritas.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <Pine.LNX.4.64.0610311834580.26470@blonde.wat.veritas.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon Feb 19 11:42:42 EST 2007, Paul Mackerras wrote:
+On Tue, Oct 31, Hugh Dickins wrote:
 
-> If something has overflowed or corrupted the stack and causes an oops,
-> and we try to print a stack trace, that will call validate_sp, which
-> can itself cause an oops if the cpu field of the thread_info struct at
-> the bottom of the stack has been corrupted (if CONFIG_IRQSTACKS is
-> set).  This makes debugging harder.
->
-> To avoid the second oops, this adds a check to make sure that the cpu
-> number is reasonable before using it to check whether the stack is on
-> the softirq or hardirq stack.
->
-> Signed-off-by: Paul Mackerras <paulus at samba.org>
-> ---
->
-> diff --git a/arch/powerpc/kernel/process.c 
-> b/arch/powerpc/kernel/process.c
-> index f3d4dd5..3712fd5 100644
->
+> +++ linux/include/asm-powerpc/current.h	2006-10-30 19:27:05.000000000 +0000
 
+> +static inline struct task_struct *get_current(void)
+> +{
+> +	struct task_struct *task;
+> +
+> +	__asm__ __volatile__("ld %0,%1(13)"
+> +	: "=r" (task)
+> +	: "i" (offsetof(struct paca_struct, __current)));
 
-> +       if (cpu < NR_IRQS && cpu_possible(cpu)) {
->
+This breaks compile of 2.6.18.8:
 
-NR_CPUS ?
+  CC [M]  drivers/media/video/pwc/pwc-uncompress.o
+In file included from /home/olaf/kernel/linux-2.6.18.8/drivers/media/video/pwc/pwc-uncompress.c:29:
+include2/asm/current.h: In function 'get_current':
+include2/asm/current.h:23: warning: implicit declaration of function 'offsetof'
+include2/asm/current.h:23: error: expected expression before 'struct'
+make[5]: *** [drivers/media/video/pwc/pwc-uncompress.o] Error 1
 
 
-(and I looked, its simple test_bit so its needed).
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-milton
+---
+ include/asm-powerpc/current.h |    1 +
+ 1 file changed, 1 insertion(+)
+
+Index: linux-2.6.18.8/include/asm-powerpc/current.h
+===================================================================
+--- linux-2.6.18.8.orig/include/asm-powerpc/current.h
++++ linux-2.6.18.8/include/asm-powerpc/current.h
+@@ -12,6 +12,7 @@
+ struct task_struct;
+ 
+ #ifdef __powerpc64__
++#include <linux/stddef.h>
+ #include <asm/paca.h>
+ 
+ static inline struct task_struct *get_current(void)
