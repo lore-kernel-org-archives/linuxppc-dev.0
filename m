@@ -1,18 +1,17 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 62064DDEA2
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 06:03:43 +1100 (EST)
-Date: Sun, 25 Feb 2007 20:04:18 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Hugh Dickins <hugh@veritas.com>, stable@kernel.org
-Subject: [PATCH] include stddef.h in asm-powerpc/current.h to get definition
-	of offsetof
-Message-ID: <20070225190418.GA11805@aepfle.de>
-References: <Pine.LNX.4.64.0610311834580.26470@blonde.wat.veritas.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 26 Feb 2007 10:57:48 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [0/14] Ebony support, 2nd spin
+Message-ID: <20070225235748.GA29826@localhost.localdomain>
+References: <20070220020837.GF17818@localhost.localdomain>
+	<200702201516.25160.arnd@arndb.de>
+	<20070221003558.GJ10231@localhost.localdomain>
+	<200702211006.58565.arnd@arndb.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <Pine.LNX.4.64.0610311834580.26470@blonde.wat.veritas.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <200702211006.58565.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,43 +21,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Oct 31, Hugh Dickins wrote:
+On Wed, Feb 21, 2007 at 10:06:58AM +0100, Arnd Bergmann wrote:
+> On Wednesday 21 February 2007 01:35, David Gibson wrote:
+> > Err.. no.  On my system legacy_serial doesn't touch the ports, but I'm
+> > getting console output via of_serial just fine.  The console is
+> > initialized rather later than would be ideal, but it works.
+> > 
+> > I know that BenH has expressed the strong preference that
+> > legacy_serial should be reverted to only handling legacy ISA ports,
+> > not SoC and other hardwired ports.
+> 
+> Ok, my impression on this was that of_serial is the right solution
+> in general, but it often gets initialized too late to debug some
+> of the interesting parts of the boot sequence.
+> 
+> Unless we take handling of soc serial ports completely out of
+> legacy_serial, I think it should handle ebony just like the other
+> boards.
 
-> +++ linux/include/asm-powerpc/current.h	2006-10-30 19:27:05.000000000 +0000
-
-> +static inline struct task_struct *get_current(void)
-> +{
-> +	struct task_struct *task;
-> +
-> +	__asm__ __volatile__("ld %0,%1(13)"
-> +	: "=r" (task)
-> +	: "i" (offsetof(struct paca_struct, __current)));
-
-This breaks compile of 2.6.18.8:
-
-  CC [M]  drivers/media/video/pwc/pwc-uncompress.o
-In file included from /home/olaf/kernel/linux-2.6.18.8/drivers/media/video/pwc/pwc-uncompress.c:29:
-include2/asm/current.h: In function 'get_current':
-include2/asm/current.h:23: warning: implicit declaration of function 'offsetof'
-include2/asm/current.h:23: error: expected expression before 'struct'
-make[5]: *** [drivers/media/video/pwc/pwc-uncompress.o] Error 1
+Well, Ben has said to me that he'd like to remove handling of SoC
+serial ports (indeed everything excepy legacy ISA) from
+legacy_serial.c.
 
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
-
----
- include/asm-powerpc/current.h |    1 +
- 1 file changed, 1 insertion(+)
-
-Index: linux-2.6.18.8/include/asm-powerpc/current.h
-===================================================================
---- linux-2.6.18.8.orig/include/asm-powerpc/current.h
-+++ linux-2.6.18.8/include/asm-powerpc/current.h
-@@ -12,6 +12,7 @@
- struct task_struct;
- 
- #ifdef __powerpc64__
-+#include <linux/stddef.h>
- #include <asm/paca.h>
- 
- static inline struct task_struct *get_current(void)
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
