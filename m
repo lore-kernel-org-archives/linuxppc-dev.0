@@ -1,24 +1,38 @@
-Return-Path: <wli@holomorphy.com>
-Received: from holomorphy.com (holomorphy.com [66.93.40.71])
-	by ozlabs.org (Postfix) with ESMTP id 012DEDDECC
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 18:23:13 +1100 (EST)
-Date: Sun, 25 Feb 2007 22:59:43 -0800
-From: William Lee Irwin III <wli@holomorphy.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: Make sure we populate the initroot filesystem late enough
-Message-ID: <20070226065943.GA3037@holomorphy.com>
-References: <200612112059.kBBKx1j7022473@hera.kernel.org>
-	<1172448057.3971.9.camel@shinybook.infradead.org>
-	<Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
-	<1172452660.3971.33.camel@shinybook.infradead.org>
-	<Pine.LNX.4.64.0702251940500.12485@woody.linux-foundation.org>
-	<1172462466.3971.46.camel@shinybook.infradead.org>
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 29C4FDDEC2
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 00:49:58 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l1QDnpwP170508
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 13:49:51 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
+	ESMTP id l1QDnovb1315048
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 13:49:51 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l1QDnfUi024218
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 13:49:41 GMT
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] ehea: Optional TX/RX path optimized for SMP
+Date: Mon, 26 Feb 2007 14:43:46 +0100
+References: <200702231730.58579.ossthema@de.ibm.com>
+	<adairdses3s.fsf@cisco.com>
+In-Reply-To: <adairdses3s.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1172462466.3971.46.camel@shinybook.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	john stultz <johnstul@us.ibm.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200702261443.46791.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +42,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Feb 25, 2007 at 11:01:06PM -0500, David Woodhouse wrote:
-> Yeah, I did that before giving up on it for the day and going in search
-> of dinner. It changes the failure mode to a BUG() in
-> cache_free_debugcheck(), at line 2876 of mm/slab.c
-> It smells like the pages weren't actually reserved in the first place
-> and we were blithely allocating them. The only problem with that theory
-> is that the initrd doesn't seem to be getting corrupted -- and if we
-> were handing out its pages like that then surely _something_ would have
-> scribbled on it before we tried to read it.
-> When I head back in tomorrow morning I'll instrument free_initrd_mem()
-> to check that the PageReserved bit was actually set on each page, before
-> clearing it. And I'll make the page allocation routines check whether
-> they're giving out pages between initrd_start and initrd_end, etc.
+Hi
 
-Another few things to try would be inserting checks in page_alloc.c for
-pages in that specific range before some flag set in free_initrd_mem()
-is set, and (conflicting with that, though easily reconciled) unmapping
-initrd memory in free_initrd_mem() instead of freeing it.
+> Also, as far as the approach of using tasklets, I think it would be
+> better to use the "fake netdev" approach to continue to use NAPI.
+> Basically you create a pseudo-netdev for each receive queue and have
+> NAPI handle the polling for you -- you could look for
+> drivers/net/cxgb3 for an example of this.
+> 
+Thanks for pointing us to this solution. We are now building a NAPI version
+that makes use of these pseudo-netdev. The fairness amongst other netdevices
+should be better this way.
 
+> 
+> Why make this a module option that the user has to set?  Are there any
+> circumstances when someone wouldn't want "significant performance
+> improvements?"  If this approach is just better, then it should just
+> replace the old code.
+> 
 
--- wli
+We'll change the default behaviour to multi queue, but we'd like to keep
+the option to run in a single queue mode for debug and backward compabilty.
+
+Thanks,
+
+Jan-Bernd & Christoph R.
+ 
