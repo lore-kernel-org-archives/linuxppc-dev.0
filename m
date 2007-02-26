@@ -1,26 +1,24 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 33631DDEE0
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 15:13:48 +1100 (EST)
-Date: Sun, 25 Feb 2007 20:13:49 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: Make sure we populate the initroot filesystem late enough
-In-Reply-To: <1172462466.3971.46.camel@shinybook.infradead.org>
-Message-ID: <Pine.LNX.4.64.0702252009110.12485@woody.linux-foundation.org>
-References: <200612112059.kBBKx1j7022473@hera.kernel.org>
-	<1172448057.3971.9.camel@shinybook.infradead.org>
-	<Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
-	<1172452660.3971.33.camel@shinybook.infradead.org>
-	<Pine.LNX.4.64.0702251940500.12485@woody.linux-foundation.org>
-	<1172462466.3971.46.camel@shinybook.infradead.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 26 Feb 2007 15:16:46 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+Message-ID: <20070226041646.GC29826@localhost.localdomain>
+References: <200702212325.l1LNPBwL007793@ld0164-tx32.am.freescale.net>
+	<A31D7159-8C25-445D-A21D-85F04C1FDC45@kernel.crashing.org>
+	<20070222011811.GA18364@localhost.localdomain>
+	<45b623f395654fc4f4920b9553794def@kernel.crashing.org>
+	<20070222103410.GB11014@localhost.localdomain>
+	<b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
+	<259dc2545888e6588a8a0707ad2e84b0@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A59732@az33exm25.fsl.freescale.net>
+	<1172299259.1902.22.camel@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	john stultz <johnstul@us.ibm.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1172299259.1902.22.camel@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,41 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-On Sun, 25 Feb 2007, David Woodhouse wrote:
->
-> > Can you try adding something like
+On Sat, Feb 24, 2007 at 07:40:59AM +0100, Benjamin Herrenschmidt wrote:
+> On Fri, 2007-02-23 at 12:15 -0700, Yoder Stuart-B08248 wrote:
+> > > I'd rather write it like
+> > > 
+> > > >       interrupts        = < a 4   b 4   0 4   1 4   2 4 >
+> > > >       interrupt-parents = <&UIC0 &UIC0 &UIC1 &UIC1 &UIC1>
+> > > 
 > > 
-> >         memset(start, 0xf0, end - start);
+> > Segher, with your proposal here of an interrupt-parents property
+> > is this really keeping with the normal OF way of representing
+> > property values?
+> > 
+> > Examples exists where one property tells you how to interpret
+> > or decode another (e.g. #address-cells), but your proposal we
+> > have two distinct properties each with values that together
+> > provide the complete 'value' (interrupt parent + interrupt
+> > specifier).  Is there any precedent for this approach?
 > 
-> Yeah, I did that before giving up on it for the day and going in search
-> of dinner. It changes the failure mode to a BUG() in
-> cache_free_debugcheck(), at line 2876 of mm/slab.c
+> Somewhat... interrupt-map and interrupt-map-mask... that sort of thing.
+> 
+> > I think I'd rather see all the information encoded in
+> > one value.
+> 
+> On the other hand, I do quite like keeping with the old principle that
+> having interrupts == having an "interrupts" node.
 
-Ok, that's just strange. 
+That would be nice.  On the other hand, re-using interrupts means that
+it's possible to get a silent misparse of the interrupt information: a
+parser which doesn't understand the new 'interrupt-parents' property
+will encounter the node, see the 'interrupts' property, assume that
+the interrupt parent is the physical parent and, if the
+#interrupt-cells values match up, which is quite possible, assume that
+it has correctly understood the interrupt information.
 
-One obvious thing to do would be to remove all the "__initdata" entries in 
-mm/slab.c.. But I'd also like to see the full backtrace for the  BUG_ON(), 
-in case that gives any clues at all.
+This is arguably a worse behaviour than simply having an old-style
+parser see the lack of 'interrupts' property and assume the device has
+no interrupts.
 
-> It smells like the pages weren't actually reserved in the first place
-> and we were blithely allocating them. The only problem with that theory
-> is that the initrd doesn't seem to be getting corrupted -- and if we
-> were handing out its pages like that then surely _something_ would have
-> scribbled on it before we tried to read it.
-
-Yeah, I don't think it's necessarily initrd itself, I'd be more inclined 
-to think that the reason you see this change with the initrd unpacking is 
-simply that it does a lot of allocations for the initrd files, so I think 
-it is only indirectly involved - just because it ends up being a slab 
-user.
-
-> When I head back in tomorrow morning I'll instrument free_initrd_mem()
-> to check that the PageReserved bit was actually set on each page, before
-> clearing it. And I'll make the page allocation routines check whether
-> they're giving out pages between initrd_start and initrd_end, etc.
-
-Sounds like a sane plan.
-
-			Linus
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
