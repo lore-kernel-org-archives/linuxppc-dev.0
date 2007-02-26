@@ -1,24 +1,24 @@
-Return-Path: <hugh_dickins@symantec.com>
-Received: from extu-mxob-2.symantec.com (extu-mxob-2.symantec.com
-	[216.10.194.135])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 812EBDDE2E
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 23:04:35 +1100 (EST)
-Date: Mon, 26 Feb 2007 11:34:05 +0000 (GMT)
-From: Hugh Dickins <hugh@veritas.com>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] include stddef.h in asm-powerpc/current.h to get
-	definition of offsetof
-In-Reply-To: <20070225190418.GA11805@aepfle.de>
-Message-ID: <Pine.LNX.4.64.0702261124040.28415@blonde.wat.veritas.com>
-References: <Pine.LNX.4.64.0610311834580.26470@blonde.wat.veritas.com>
-	<20070225190418.GA11805@aepfle.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 27 Feb 2007 00:08:37 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+Message-ID: <20070226130837.GA32080@localhost.localdomain>
+References: <20070222011811.GA18364@localhost.localdomain>
+	<45b623f395654fc4f4920b9553794def@kernel.crashing.org>
+	<20070222103410.GB11014@localhost.localdomain>
+	<b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
+	<259dc2545888e6588a8a0707ad2e84b0@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A59732@az33exm25.fsl.freescale.net>
+	<1172299259.1902.22.camel@localhost.localdomain>
+	<20070226041646.GC29826@localhost.localdomain>
+	<4540139ce9bb2426dbcc3822e6c1a63a@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Luc Saillard <luc@saillard.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, stable@kernel.org,
-	Mauro Carvalho Chehab <mchehab@infradead.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4540139ce9bb2426dbcc3822e6c1a63a@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,70 +28,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 25 Feb 2007, Olaf Hering wrote:
-> On Tue, Oct 31, Hugh Dickins wrote:
+On Mon, Feb 26, 2007 at 06:36:29AM +0100, Segher Boessenkool wrote:
+> >> On the other hand, I do quite like keeping with the old principle that
+> >> having interrupts == having an "interrupts" node.
+> >
+> > That would be nice.  On the other hand, re-using interrupts means that
+> > it's possible to get a silent misparse of the interrupt information:
 > 
-> > +++ linux/include/asm-powerpc/current.h	2006-10-30 19:27:05.000000000 +0000
-> 
-> > +static inline struct task_struct *get_current(void)
-> > +{
-> > +	struct task_struct *task;
-> > +
-> > +	__asm__ __volatile__("ld %0,%1(13)"
-> > +	: "=r" (task)
-> > +	: "i" (offsetof(struct paca_struct, __current)));
-> 
-> This breaks compile of 2.6.18.8:
-> 
->   CC [M]  drivers/media/video/pwc/pwc-uncompress.o
-> In file included from /home/olaf/kernel/linux-2.6.18.8/drivers/media/video/pwc/pwc-uncompress.c:29:
-> include2/asm/current.h: In function 'get_current':
-> include2/asm/current.h:23: warning: implicit declaration of function 'offsetof'
-> include2/asm/current.h:23: error: expected expression before 'struct'
-> make[5]: *** [drivers/media/video/pwc/pwc-uncompress.o] Error 1
+> Incorrect parsing of interrupt info tends to end up
+> in spectacular crashes, not silent at all ;-)
 
-Ow!  I'm very sorry for that.  My fault.
+Well, yes, but "sorry, I can't understand this device tree" or "huh?
+I can't find the interrupts" would be preferable to spectacular
+crashes.
 
-(I wonder what changed between 2.6.18 and 2.6.19,
-to make 2.6.19 and 2.6.20 okay, yet this error in 2.6.18.8?)
-
-Your patch is clearly correct, and satisfies the "any header should
-include whatever it needs" rule; though my own preference (desperate
-attempt to fool people into thinking my blame lies elsewhere?) would
-be for the patch at the bottom - it seems that pwc-uncompress.c's
-inclusion of asm/current.h is just bogus, probably a leftover of
-some private debugging session around 2.6.8.
-
-Hugh
-
+> > a
+> > parser which doesn't understand the new 'interrupt-parents' property
+> > will encounter the node, see the 'interrupts' property, assume that
+> > the interrupt parent is the physical parent and, if the
+> > #interrupt-cells values match up, which is quite possible, assume that
+> > it has correctly understood the interrupt information.
 > 
+> Something similar is true for *every* new binding; although
+> indeed if you get a misparse the effects can be disastrous,
+> with interrupts.  For other cases, the kernel would have to
+> say "I don't understand this device" and give up on it, which
+> can easily mean a failed boot; or silently assume something
+> that is just a guess at best.
 > 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
-> 
-> ---
->  include/asm-powerpc/current.h |    1 +
->  1 file changed, 1 insertion(+)
-> 
-> Index: linux-2.6.18.8/include/asm-powerpc/current.h
-> ===================================================================
-> --- linux-2.6.18.8.orig/include/asm-powerpc/current.h
-> +++ linux-2.6.18.8/include/asm-powerpc/current.h
-> @@ -12,6 +12,7 @@
->  struct task_struct;
->  
->  #ifdef __powerpc64__
-> +#include <linux/stddef.h>
->  #include <asm/paca.h>
->  
->  static inline struct task_struct *get_current(void)
+> You cannot boot a client program that doesn't understand the
+> device tree and expect it to understand the device tree ;-)
 
---- 2.6.18.8/drivers/media/video/pwc/pwc-uncompress.c	2006-09-20 04:42:06.000000000 +0100
-+++ 2.6.18.9/drivers/media/video/pwc/pwc-uncompress.c	2007-02-26 10:59:40.000000000 +0000
-@@ -26,7 +26,6 @@
-    vim: set ts=8:
- */
- 
--#include <asm/current.h>
- #include <asm/types.h>
- 
- #include "pwc.h"
+Obviously, but I'd like the client program to *know* that it doesn't
+understand the device tree.
+
+> > This is arguably a worse behaviour than simply having an old-style
+> > parser see the lack of 'interrupts' property and assume the device has
+> > no interrupts.
+> 
+> Until recently (well, not that recently) Linux couldn't
+> parse the interrupt tree correctly and would royally
+> mess up in unusual cases.  Does that mean that no device
+> tree in the world should use the interrupt mapping binding?
+> 
+> Also, a device that has interrupts but no "interrupts"
+> property is *just wrong*.  There are many more things
+> that (can) look at the device tree than just the kernel,
+> don't let your opinion be guided solely by what you
+> think the kernel would do with a tree.
+
+It's not specific to the kernel, the same reasoning applies to any
+program using the device tree.  If something that's not aware of the
+new property sees a node with an 'interrupts' but no
+'interrupt-parent' property, it has *no reason* to believe there's
+anything more to know.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
