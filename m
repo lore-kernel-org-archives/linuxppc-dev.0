@@ -1,21 +1,23 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8E014DDE2D
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 14:45:50 +1100 (EST)
-Date: Sun, 25 Feb 2007 19:45:50 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <SRS0+d6cead0195db3fcd630e+1282+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 34C96DDDFA
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 15:00:41 +1100 (EST)
 Subject: Re: Make sure we populate the initroot filesystem late enough
-In-Reply-To: <1172452660.3971.33.camel@shinybook.infradead.org>
-Message-ID: <Pine.LNX.4.64.0702251940500.12485@woody.linux-foundation.org>
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702251940500.12485@woody.linux-foundation.org>
 References: <200612112059.kBBKx1j7022473@hera.kernel.org>
 	<1172448057.3971.9.camel@shinybook.infradead.org>
 	<Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
 	<1172452660.3971.33.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	<Pine.LNX.4.64.0702251940500.12485@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 25 Feb 2007 23:01:06 -0500
+Message-Id: <1172462466.3971.46.camel@shinybook.infradead.org>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	john stultz <johnstul@us.ibm.com>
@@ -28,42 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 2007-02-25 at 19:45 -0800, Linus Torvalds wrote:
+> Ok. Clearly something is using that memory. That said, I *suspect* that 
+> the commit that you bisected to is just showing the problem indirectly. 
+> The ordering shouldn't make any difference, but it can obviously make a 
+> huge difference in various allocation patterns etc, thus just showing a 
+> pre-existing problem more clearly..
 
+Indeed.
 
-On Sun, 25 Feb 2007, David Woodhouse wrote:
+> Can you try adding something like
 > 
-> I'm inclined to agree that it _shouldn't_ be a problem. Nevertheless,
-> even this hack seems sufficient to 'fix' it:
+>         memset(start, 0xf0, end - start);
 
-Ok. Clearly something is using that memory. That said, I *suspect* that 
-the commit that you bisected to is just showing the problem indirectly. 
-The ordering shouldn't make any difference, but it can obviously make a 
-huge difference in various allocation patterns etc, thus just showing a 
-pre-existing problem more clearly..
+Yeah, I did that before giving up on it for the day and going in search
+of dinner. It changes the failure mode to a BUG() in
+cache_free_debugcheck(), at line 2876 of mm/slab.c
 
-Can you try adding something like
+It smells like the pages weren't actually reserved in the first place
+and we were blithely allocating them. The only problem with that theory
+is that the initrd doesn't seem to be getting corrupted -- and if we
+were handing out its pages like that then surely _something_ would have
+scribbled on it before we tried to read it.
 
-	memset(start, 0xf0, end - start);
+When I head back in tomorrow morning I'll instrument free_initrd_mem()
+to check that the PageReserved bit was actually set on each page, before
+clearing it. And I'll make the page allocation routines check whether
+they're giving out pages between initrd_start and initrd_end, etc.
 
-to before the return? That might give a better idea of exactly what is 
-using it after it's free'd, hopefully by having the user trigger some more 
-spectacular oops..
-
-It is, of course, also entirely possible that the rootfs unpacking change 
-really *was* buggy, and I am just missing something totally obvious. The 
-memset() might still make it more obvious, though. Maybe.
-
-
->         if (start < end)
-> -               printk ("Freeing initrd memory: %ldk freed\n", (end - start) >> 10);
-> +               printk ("NOT Freeing initrd memory: %ldKiB would be freed\n", (end - start) >> 10);
-
-.. so adding the "memset()" here would be what I'm suggesting ..
-
-> +       return;
-
-.. and you might as well leave the return there, so that nobody else comes 
-along and re-uses the memory. That should just improve on the chances of 
-the memset() hopefully catching the problem..
-
-		Linus "I don't see anything wrong" Torvalds
+-- 
+dwmw2
