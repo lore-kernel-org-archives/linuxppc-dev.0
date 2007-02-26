@@ -1,24 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <johnstul@us.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7D7ADDDF0B
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 05:19:21 +1100 (EST)
-In-Reply-To: <7EA18FDD2DC2154AA3BD6D2F22A62A0E5AD714@zch01exm23.fsl.freescale.net>
-References: <Pine.LNX.4.61.0702152043270.9034@ld0175-tx32.am.freescale.net>
-	<EE5E84C5-87F0-4836-AE28-1EE0E2CC556C@kernel.crashing.org>
-	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5AD638@zch01exm23.fsl.freescale.net>
-	<ED7561C6-CCD9-4F8F-9385-23FCEF2A7722@kernel.crashing.org>
-	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5AD714@zch01exm23.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <84F00E3F-8613-4D92-A229-9207ADC05814@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC 2/7] Unite all PCI-e on 85xx and 86xx under one codebase
-Date: Mon, 26 Feb 2007 12:18:25 -0600
-To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8B72DDDD0A
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 06:27:56 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1QJSYDm032267
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 14:28:34 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1QJRon4288732
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 14:27:50 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1QJRn1O023626
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 14:27:50 -0500
+Subject: Re: Make sure we populate the initroot filesystem late enough
+From: john stultz <johnstul@us.ibm.com>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1172448057.3971.9.camel@shinybook.infradead.org>
+References: <200612112059.kBBKx1j7022473@hera.kernel.org>
+	<1172448057.3971.9.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Mon, 26 Feb 2007 11:27:47 -0800
+Message-Id: <1172518068.15970.6.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,51 +36,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Feb 26, 2007, at 9:52 AM, Zang Roy-r61911 wrote:
-
+On Sun, 2007-02-25 at 19:00 -0500, David Woodhouse wrote:
+> On Mon, 2006-12-11 at 20:59 +0000, Linux Kernel Mailing List wrote:
+> > 
+> >     Make sure we populate the initroot filesystem late enough
 >
->> On Feb 26, 2007, at 12:41 AM, Zang Roy-r61911 wrote:
->>
->>>
->>>> On Feb 15, 2007, at 8:44 PM, Andy Fleming wrote:
->>>>
->>>>> Add 85xx PCI express memory map register.
->>>>>
->>>>> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
->>>>> Acked-by: Andy Fleming <afleming@freescale.com>
->>>>> ---
->>>>>  include/asm-ppc/immap_85xx.h |   75
->>>> +++++++++++++++++++++++++++++++
->>>>> +++++++++++
->>>>>  1 files changed, 75 insertions(+), 0 deletions(-)
->>>>
->>>> Are the 86xx and 85xx structs the same?  If so, can we
->> pull them out
->>>> of immap_*.h into a sysdev/fsl_pcie.h
->>>>
->>>> (and lose the typedef while you're at it).
->>> They have same structs. But I do not think it is proper to
->> move them
->>> into sysdev/fsl_pcie.h now. sysdev/fsl_pcie.c does not use  this
->>> header file.
->>> plaforms/85xx/pci.c use it to set up memory map windows.
->>> In fact, there is little difference between immap_85xx.h and
->>> immap_86xx.h.
->>> After the migration from ppc to powerpc, we can unify them together.
->>
->> Why wait, I don't believe we support pcie in arch/ppc for
->> anything fsl platform and the PCI support is different
->> between arch/powerpc and arch/ppc.
->>
-> Wait  to unify immap  together :-).
+> This seems to be what's triggering the apparent memory corruption we've
+> been seeing recently -- in the case of the Fedora kernel it manifests
+> itself as a BUG() in cache_alloc_refill() when the pmac ide driver
+> initialises.
+> 
+> Another report was at http://lkml.org/lkml/2006/12/17/4
+> 
+> We've been seeing it on a Mac Mini too, and I managed to reproduce it on
+> my shinybook this evening by booting with 'mem=512M'.
 
-Don't exactly follow.
+Just for reference (as its not in the thread linked above), this issue
+disappeared for me after some config changes (I somehow changed my
+selection when I backtracked and then moved forward w/ git bisect).
 
-> I agree to separate pcie struct for  arch/powerpc, then the code in
-> arch/powerpc will not depend header file include/asm-ppc.
-> I will provide patch to Andy and Jon tomorrow.
+I've not been able to reproduce it since, but I know others (BCC'ed on
+this note) have seen it and might prod them to come forth with details
+(and broken .config files)
 
-ok.
-
-- k
+thanks
+-john
