@@ -1,22 +1,31 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3B66ADDEC1
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 08:17:47 +1100 (EST)
-Date: Mon, 26 Feb 2007 13:17:45 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: Make sure we populate the initroot filesystem late enough
-In-Reply-To: <1172523468.3560.2.camel@shinybook.infradead.org>
-Message-ID: <Pine.LNX.4.64.0702261315080.12485@woody.linux-foundation.org>
-References: <1172462466.3971.46.camel@shinybook.infradead.org>
-	<35684e789e5c2447eab393c8946efcb9@bga.com>
-	<1172523468.3560.2.camel@shinybook.infradead.org>
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 818E2DDEC6
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 08:38:26 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l1QLcNk6001862
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 16:38:23 -0500
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l1QLcNn7531504
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 14:38:23 -0700
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l1QLcM2M022868
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 14:38:22 -0700
+Date: Mon, 26 Feb 2007 15:38:22 -0600
+To: "Kiran Kumar.A" <kiranf5@lycos.com>
+Subject: Re: regarding bcm5461
+Message-ID: <20070226213822.GI4396@austin.ibm.com>
+References: <20070226055800.HM.0000000000002QM@kiranf5.bos-mail-wwl14.lycos.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
-	Milton Miller <miltonm@bga.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070226055800.HM.0000000000002QM@kiranf5.bos-mail-wwl14.lycos.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +35,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-
-On Mon, 26 Feb 2007, David Woodhouse wrote:
+On Mon, Feb 26, 2007 at 05:58:00AM -0500, Kiran Kumar.A wrote:
+> Hi Linas,
 > 
-> Now I'm starting to wonder if it's something the firmware sets up to DMA
-> to a certain region of memory, which makes it non-deterministic. And the
-> other things we're blaming are only making a difference because they
-> change the layout of what we have in memory.
+> This is kiran here from Bangalore,India.
+> 
+> I saw your patch dated feb 16 2007 for bcm5461.
 
-USB controller issues? We used to have these really hard-to-debug problems 
-with the USB controller being active and having had the BIOS set up the 
-command queues etc. Really subtle. It's why we now have PCI quirks for 
-shutting up (most) USB controllers very early.
+I assume you are refering to "[PATCH 1/12]: sungem_phy: support bcm5461 phy, autoneg."
+right?  This patch is originally from Jens Osterkamp, who would be more expert than I.
 
-If there is some USB controller that we miss, or that sets up its command 
-chain to some unexpected area (so that USB is active and corrupting memory 
-even very early on), that could explain it.
+> I'm working on mpc8548e based board which has a bcm5461 phy configured for fiber mode.
+> 
+> I'm receiving from the other system if i connect it on lan in "ping". But when i ping from the mpc8548e board which has bcn5461.
+> the counters shows error in packet (RUNT errors). Please throw some light on the same.
+> I'm using gianfar drivers.
 
-		Linus
+I'm confused -- the gianfar drivers do not make use of the sungem_phy
+code, so I do not understand why this patch would affect you. Can you
+clarify?
+
+--linas
