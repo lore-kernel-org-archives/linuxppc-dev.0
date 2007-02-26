@@ -1,30 +1,29 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 3C9A0DDEE1
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 02:48:55 +1100 (EST)
-Date: Mon, 26 Feb 2007 16:48:49 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH] ps3: Introduce CONFIG_PS3_ADVANCED
-In-Reply-To: <Pine.LNX.4.64.0702232343330.14457@scrub.home>
-Message-ID: <Pine.LNX.4.62.0702261644310.5716@pademelon.sonytel.be>
-References: <200702210946.27758.toralf.foerster@gmx.de>
-	<Pine.LNX.4.62.0702211102000.340@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0702211238400.14457@scrub.home>
-	<Pine.LNX.4.62.0702211322350.340@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0702220052020.14457@scrub.home>
-	<Pine.LNX.4.62.0702221854520.25919@pademelon.sonytel.be>
-	<Pine.LNX.4.64.0702232343330.14457@scrub.home>
+Return-Path: <tie-fei.zang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 5CBDFDDEE8
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 02:52:11 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l1QFq7KA022505
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 08:52:07 -0700 (MST)
+Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
+	[10.192.129.207])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l1QFq5nu028787
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 09:52:06 -0600 (CST)
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux Frame Buffer Device Development
-	<linux-fbdev-devel@lists.sourceforge.net>,
-	=?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
-	Linux Kernel Development <linux-kernel@vger.kernel.org>,
-	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [RFC 2/7] Unite all PCI-e on 85xx and 86xx under one codebase
+Date: Mon, 26 Feb 2007 23:52:04 +0800
+Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E5AD714@zch01exm23.fsl.freescale.net>
+In-Reply-To: <ED7561C6-CCD9-4F8F-9385-23FCEF2A7722@kernel.crashing.org>
+References: <Pine.LNX.4.61.0702152043270.9034@ld0175-tx32.am.freescale.net>
+	<EE5E84C5-87F0-4836-AE28-1EE0E2CC556C@kernel.crashing.org>
+	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5AD638@zch01exm23.fsl.freescale.net>
+	<ED7561C6-CCD9-4F8F-9385-23FCEF2A7722@kernel.crashing.org>
+From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,100 +33,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ps3: Introduce CONFIG_PS3_ADVANCED, as suggested by Roman Zippel, and use it to
-control questions about PS3 subsystems that may not be obvious for the casual
-user.
-
-This gets rid of the following warning on non-powerpc platforms:
-| drivers/video/Kconfig:1604:warning: 'select' used by config symbol 'FB_PS3' refer to undefined symbol 'PS3_PS3AV'
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Geoff Levand <geoffrey.levand@am.sony.com>
-Cc: Paul Mackerras <paulus@samba.org>
-Cc: Roman Zippel <zippel@linux-m68k.org>
----
- arch/powerpc/platforms/ps3/Kconfig |   28 +++++++++++++++++++++-------
- drivers/video/Kconfig              |    3 +--
- 2 files changed, 22 insertions(+), 9 deletions(-)
-
---- ps3-linux-2.6.21-rc1.orig/arch/powerpc/platforms/ps3/Kconfig
-+++ ps3-linux-2.6.21-rc1/arch/powerpc/platforms/ps3/Kconfig
-@@ -1,9 +1,24 @@
- menu "PS3 Platform Options"
- 	depends on PPC_PS3
- 
-+config PS3_ADVANCED
-+	depends on PPC_PS3
-+	bool "PS3 Advanced configuration options"
-+	help
-+	  This gives you access to some advanced options for the PS3. The
-+	  defaults should be fine for most users, but these options may make
-+	  it possible to better control the kernel configuration if you know
-+	  what you are doing.
-+
-+	  Note that the answer to this question won't directly affect the
-+	  kernel: saying N will just cause the configurator to skip all
-+	  the questions about these options.
-+
-+	  Most users should say N to this question.
-+
- config PS3_HTAB_SIZE
- 	depends on PPC_PS3
--	int "PS3 Platform pagetable size"
-+	int "PS3 Platform pagetable size" if PS3_ADVANCED
- 	range 18 20
- 	default 20
- 	help
-@@ -42,7 +57,7 @@ config PS3_USE_LPAR_ADDR
- 
- config PS3_VUART
- 	depends on PPC_PS3
--	bool "PS3 Virtual UART support"
-+	bool "PS3 Virtual UART support" if PS3_ADVANCED
- 	default y
- 	help
- 	  Include support for the PS3 Virtual UART.
-@@ -52,9 +67,8 @@ config PS3_VUART
- 	  general, all users will say Y.
- 
- config PS3_PS3AV
--	tristate "PS3 AV settings driver"
--	depends on PPC_PS3
--	select PS3_VUART
-+	tristate "PS3 AV settings driver" if PS3_ADVANCED
-+	depends on PS3_VUART
- 	default y
- 	help
- 	  Include support for the PS3 AV Settings driver.
-@@ -63,8 +77,8 @@ config PS3_PS3AV
- 	  general, all users will say Y or M.
- 
- config PS3_SYS_MANAGER
--	bool "PS3 System Manager driver"
--	select PS3_VUART
-+	bool "PS3 System Manager driver" if PS3_ADVANCED
-+	depends on PS3_VUART
- 	default y
- 	help
- 	  Include support for the PS3 System Manager.
---- ps3-linux-2.6.21-rc1.orig/drivers/video/Kconfig
-+++ ps3-linux-2.6.21-rc1/drivers/video/Kconfig
-@@ -1618,8 +1618,7 @@ config FB_IBM_GXT4500
- 
- config FB_PS3
- 	bool "PS3 GPU framebuffer driver"
--	depends on FB && PPC_PS3
--	select PS3_PS3AV
-+	depends on FB && PS3_PS3AV
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+=20
+> On Feb 26, 2007, at 12:41 AM, Zang Roy-r61911 wrote:
+>=20
+> >
+> >> On Feb 15, 2007, at 8:44 PM, Andy Fleming wrote:
+> >>
+> >>> Add 85xx PCI express memory map register.
+> >>>
+> >>> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> >>> Acked-by: Andy Fleming <afleming@freescale.com>
+> >>> ---
+> >>>  include/asm-ppc/immap_85xx.h |   75
+> >> +++++++++++++++++++++++++++++++
+> >>> +++++++++++
+> >>>  1 files changed, 75 insertions(+), 0 deletions(-)
+> >>
+> >> Are the 86xx and 85xx structs the same?  If so, can we=20
+> pull them out=20
+> >> of immap_*.h into a sysdev/fsl_pcie.h
+> >>
+> >> (and lose the typedef while you're at it).
+> > They have same structs. But I do not think it is proper to=20
+> move them=20
+> > into sysdev/fsl_pcie.h now. sysdev/fsl_pcie.c does not use  this=20
+> > header file.
+> > plaforms/85xx/pci.c use it to set up memory map windows.
+> > In fact, there is little difference between immap_85xx.h and=20
+> > immap_86xx.h.
+> > After the migration from ppc to powerpc, we can unify them together.
+>=20
+> Why wait, I don't believe we support pcie in arch/ppc for=20
+> anything fsl platform and the PCI support is different=20
+> between arch/powerpc and arch/ppc.
+>=20
+Wait  to unify immap  together :-).
+I agree to separate pcie struct for  arch/powerpc, then the code in
+arch/powerpc will not depend header file include/asm-ppc.
+I will provide patch to Andy and Jon tomorrow.
+Roy
