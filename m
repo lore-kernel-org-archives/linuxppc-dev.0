@@ -1,28 +1,18 @@
-Return-Path: <yunfeizhang@sjtu.edu.cn>
-Received: from mx.sjtu.edu.cn (mx.sjtu.edu.cn [202.112.26.52])
-	by ozlabs.org (Postfix) with ESMTP id 86234DDE35
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id A47E4DDD0B
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Feb 2007 12:55:56 +1100 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mx.sjtu.edu.cn (Postfix) with ESMTP id 53EC12A3ECA
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Feb 2007 09:55:56 +0800 (CST)
-Received: from mx.sjtu.edu.cn ([127.0.0.1])
-	by localhost (mx [127.0.0.1]) (amavisd-new, port 10024) with ESMTP
-	id 26207-10 for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Feb 2007 09:55:56 +0800 (CST)
-Received: from jerry (unknown [58.196.148.33])
-	by mx.sjtu.edu.cn (Postfix) with ESMTP id 3962A2A3DB1
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Feb 2007 09:55:56 +0800 (CST)
-Date: Mon, 26 Feb 2007 09:55:55 +0800
-From: "yunfeizhang" <yunfeizhang@sjtu.edu.cn>
-To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
-Subject: I can I boot u-boot from flash on Virtex-4 based board
-Message-ID: <200702260955550388280@sjtu.edu.cn>
+	Mon, 26 Feb 2007 18:41:26 +1100 (EST)
+Date: Mon, 26 Feb 2007 10:41:23 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+Subject: Re: SPI controller hangs in 2.6 and not in 2.4 (on MPC875)
+Message-ID: <20070226104123.46e18917@localhost.localdomain>
+In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E264927@aquib01a>
+References: <F1F6EC0C8B75034F9E3A79FC85122E8E264927@aquib01a>
 Mime-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="=====003_Dragon054245125621_====="
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,54 +23,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Sun, 25 Feb 2007 20:51:12 +0100
+DI BACCO ANTONIO - technolabs wrote:
 
-This is a multi-part message in MIME format.
+> Hi Melinda,
+> 
+> the problem in my case was caused by the following instructions to
+> allocate the buffers for SPI controller tx and rx:
+> 
+>         rxbuffer = (u8*)m8xx_cpm_hostalloc(SPI_MAX_BUFFER_SIZE);  
+>         txbuffer = (u8*)m8xx_cpm_hostalloc(SPI_MAX_BUFFER_SIZE); 
+>         // Set the bd's rx and tx buffer address pointers
+>         rbdf->cbd_bufaddr = virt_to_bus((void
+> *)rxbuffer); tbdf->cbd_bufaddr = virt_to_bus((void *)txbuffer);   
+> 
+> I don't know why (I'm asking an opinion to Vitaly Bordug), I replaced
+> the allocation of rx and tx buffers with:
+> 
+> ...->cbd_bufaddr = __pa(__get_free_page(GFP_KERNEL | GFP_DMA))
+> 
+Well this is just evil... even if it works :)
 
---=====003_Dragon054245125621_=====
-Content-Type: text/plain;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
 
+> but it will better to use dma_alloc_coherent.
+> In my case the use of m8xx_cpm_hostalloc led to an immediate kernel
+> hang after giving the start command to the spi controller.
+> 
+Heh, this case you'lll have to use dpram for the buffers I guess iiuc.
 
-Hi all,
-I am confused for a long time about on how to boot a common program on Virtex. I want to porting a 
-
-u-boot to Xilinx VIrtex-4 ML403 Evaluation Board, but I can even boot a common program from flash.
-
-can someone give me some advice, thanks for all your kindness!
-
-
-
-yunfeizhang
-2007-02-26
-
---=====003_Dragon054245125621_=====
-Content-Type: text/html;
-	charset="gb2312"
-Content-Transfer-Encoding: 7bit
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=Content-Type content="text/html; charset=gb2312">
-<META content="MSHTML 6.00.2900.3059" name=GENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=Verdana><FONT size=2></FONT>&nbsp;</DIV>
-<DIV><FONT size=2>
-<DIV><FONT face=Verdana><FONT size=2>Hi all,</FONT></FONT></DIV>
-<DIV><FONT face=Verdana><FONT size=2>I am confused for a long time about on how 
-to boot a common program on Virtex. I want to porting a </FONT></FONT></DIV>
-<DIV><FONT face=Verdana><FONT size=2></FONT></FONT>&nbsp;</DIV>
-<DIV><FONT face=Verdana><FONT size=2>u-boot to <A 
-href="file:///D:/EDK/EDKexamples/example_details.htm#ml403"><STRONG>Xilinx 
-VIrtex-4 ML403 Evaluation Board</STRONG></A>, but I can even boot a common 
-program from flash.</FONT></FONT></DIV>
-<DIV><FONT face=Verdana size=2></FONT>&nbsp;</DIV>
-<DIV><FONT face=Verdana size=2>can someone give me some advice, thanks for all 
-your kindness!</FONT></DIV></FONT></DIV>
-<DIV align=left><FONT size=2>
-<HR style="WIDTH: 122px; HEIGHT: 2px" SIZE=2>
-</FONT></DIV>
-<DIV><FONT color=#c0c0c0><FONT size=2>yunfeizhang</FONT></DIV>
-<DIV><FONT size=2>2007-02-26</FONT></FONT></DIV></FONT></BODY></HTML>
-
---=====003_Dragon054245125621_=====--
+dma_* stuff might work too but I'm not sure. Moreover, it didn't work  for 
+me in case of powerpc, where m8xx_cpm_hostalloc made as a placeholder for 
+dma_alloc_coherent...
