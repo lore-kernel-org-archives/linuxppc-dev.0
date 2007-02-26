@@ -1,19 +1,21 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 2B97BDDEC2
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 11:24:37 +1100 (EST)
-Date: Sun, 25 Feb 2007 16:24:41 -0800 (PST)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <SRS0+d6cead0195db3fcd630e+1282+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E6685DDE20
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 11:44:40 +1100 (EST)
 Subject: Re: Make sure we populate the initroot filesystem late enough
-In-Reply-To: <1172448057.3971.9.camel@shinybook.infradead.org>
-Message-ID: <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
+From: David Woodhouse <dwmw2@infradead.org>
+To: Linus Torvalds <torvalds@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
 References: <200612112059.kBBKx1j7022473@hera.kernel.org>
 	<1172448057.3971.9.camel@shinybook.infradead.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+	<Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
+Content-Type: text/plain
+Date: Sun, 25 Feb 2007 19:45:04 -0500
+Message-Id: <1172450704.3971.30.camel@shinybook.infradead.org>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org,
 	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	john stultz <johnstul@us.ibm.com>
@@ -26,20 +28,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 2007-02-25 at 16:24 -0800, Linus Torvalds wrote:
+> Hmm. No, I don't think that should be a problem. free_initmem() only 
+> happens at the very, after do_basic_setup() has been run, which includes 
+> all the initcall stuff.
 
+> However, it's an interesting observation. How sure are you that it's this 
+> commit that triggers it. You say "This seems to be what's triggering ..", 
+> I'm wondering how firm that is.. 
 
-On Sun, 25 Feb 2007, David Woodhouse wrote:
-> 
-> One side-effect of this patch is to move the call to free_initrd() much
-> later in the init sequence, potentially after other memory management
-> code is assuming it's already been freed.
+I found it with git-bisect. The Fedora kernel has been broken on this
+particular 512MiB Mac Mini for a while, and now I've reverted the patch
+it seems to be fine again. So I'm fairly sure. I'll be surer in a few
+minutes once the full RPM build has finished with the patch reverted.
 
-Hmm. No, I don't think that should be a problem. free_initmem() only 
-happens at the very, after do_basic_setup() has been run, which includes 
-all the initcall stuff.
+Of course, it could easily be an entirely separate bug which by some
+bizarre coincidence is just triggered by this.
 
-However, it's an interesting observation. How sure are you that it's this 
-commit that triggers it. You say "This seems to be what's triggering ..", 
-I'm wondering how firm that is..
-
-		Linus
+-- 
+dwmw2
