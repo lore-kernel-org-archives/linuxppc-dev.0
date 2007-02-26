@@ -1,22 +1,22 @@
-Return-Path: <SRS0+d6cead0195db3fcd630e+1282+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AFAFFDDE49
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 07:57:22 +1100 (EST)
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3B66ADDEC1
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 08:17:47 +1100 (EST)
+Date: Mon, 26 Feb 2007 13:17:45 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
 Subject: Re: Make sure we populate the initroot filesystem late enough
-From: David Woodhouse <dwmw2@infradead.org>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <35684e789e5c2447eab393c8946efcb9@bga.com>
+In-Reply-To: <1172523468.3560.2.camel@shinybook.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702261315080.12485@woody.linux-foundation.org>
 References: <1172462466.3971.46.camel@shinybook.infradead.org>
 	<35684e789e5c2447eab393c8946efcb9@bga.com>
-Content-Type: text/plain
-Date: Mon, 26 Feb 2007 15:57:48 -0500
-Message-Id: <1172523468.3560.2.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	LKML <linux-kernel@vger.kernel.org>
+	<1172523468.3560.2.camel@shinybook.infradead.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, LKML <linux-kernel@vger.kernel.org>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-02-26 at 10:44 -0600, Milton Miller wrote:
-> Any chance you are using one of the unusal code paths, like the 
-> bootloader moving the initrd or using a kernel crash region?
 
-I'm doing nothing special. And I'm less sure now about the trigger. I
-built a Fedora 7 test 2 install tree with the patch reverted, and
-managed to boot and install.... but now when I boot the _same_ machine
-with the same CD, it fails. 
 
-Now I'm starting to wonder if it's something the firmware sets up to DMA
-to a certain region of memory, which makes it non-deterministic. And the
-other things we're blaming are only making a difference because they
-change the layout of what we have in memory.
+On Mon, 26 Feb 2007, David Woodhouse wrote:
+> 
+> Now I'm starting to wonder if it's something the firmware sets up to DMA
+> to a certain region of memory, which makes it non-deterministic. And the
+> other things we're blaming are only making a difference because they
+> change the layout of what we have in memory.
 
--- 
-dwmw2
+USB controller issues? We used to have these really hard-to-debug problems 
+with the USB controller being active and having had the BIOS set up the 
+command queues etc. Really subtle. It's why we now have PCI quirks for 
+shutting up (most) USB controllers very early.
+
+If there is some USB controller that we miss, or that sets up its command 
+chain to some unexpected area (so that USB is active and corrupting memory 
+even very early on), that could explain it.
+
+		Linus
