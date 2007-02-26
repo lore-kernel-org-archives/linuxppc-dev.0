@@ -1,18 +1,18 @@
-Return-Path: <ckrinke@istor.com>
-Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 11A73DDED8
+Return-Path: <linuxppcemb@lkmail.de>
+Received: from pm1.terions.de (pm1.terions.de [83.137.96.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.s-s-l.net",
+	Issuer "Equifax Secure Global eBusiness CA-1" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 45B92DDF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Feb 2007 02:34:11 +1100 (EST)
+	Tue, 27 Feb 2007 02:37:52 +1100 (EST)
+Message-ID: <45E2FEB8.1060007@lkmail.de>
+Date: Mon, 26 Feb 2007 16:37:28 +0100
+From: Lorenz Kolb <linuxppcemb@lkmail.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: using gdb/kgdb
-Date: Mon, 26 Feb 2007 07:34:08 -0800
-Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A175@MERCURY.inside.istor.com>
-From: "Charles Krinke" <ckrinke@istor.com>
-To: "Jenkins, Clive" <Clive.Jenkins@xerox.com>, <linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: I can I boot u-boot from flash on Virtex-4 based board
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,38 +23,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Mon, 26 Feb 2007 09:55:55 +0800
+"yunfeizhang" <yunfeizhang ( a t ) sjtu.edu.cn> wrote:
+> 
+> Hi all,
+> I am confused for a long time about on how to boot a common program on Virtex. I want to porting a 
+> 
+> u-boot to Xilinx VIrtex-4 ML403 Evaluation Board, but I can even boot a common program from flash.
+> 
+> can someone give me some advice, thanks for all your kindness!
 
+Hi,
 
->=20
-At this point, try setting the architecture as below (you can
-show the current architecture first, to check that it is
-wrongly set to "e500", which doesn't work properly)
+I already found that non trivial.
 
-(gdb) show architecture
-The target architecture is set automatically (currently powerpc:e500)
+Easiest way is: write some mini-bootloader that fits into BRAM and loads u-boot from flash.
 
-(gdb) set architecture powerpc:common
-The target architecture is assumed to be powerpc:common
+If you need some more detailed instructions and a patch created from Xilinx'u-boot tree to patch u-boot 1.20 to work with ML403 I can send you the files.
 
-> (gdb)target remote /dev/ttyUSB0
-> ...
+Greetings,
 
-More explanation can be found here:
-http://www.ultsol.com/faq_p311.htm
-[I would prefer to reference an explanation on this
-mailing list, but I did not find one.]
-
-I hope this solves your problem.
-
-Clive
-
-Dear Clive:
-
-I appreciate your kind comment, but I think I have already accommodate
-this by using the latest gdb and cross-compiling it and it starts up in
-architecture powerpc:common.
-
-There must be something else going awry here and I wonder what other
-things might cause the pc to be unreadable and uncontrollable from gdb.
-
-Charles
+Lorenz Kolb
