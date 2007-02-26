@@ -1,38 +1,30 @@
-Return-Path: <krafft@de.ibm.com>
-Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C6A4CDDEE0
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 02:11:36 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l1QFBQ06043486
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 15:11:26 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
-	[9.149.37.212])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
-	ESMTP id l1QFBPxZ1233026
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 15:11:26 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l1QFBOPo001552
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 15:11:25 GMT
-Date: Mon, 26 Feb 2007 16:09:17 +0100
-From: Christian Krafft <krafft@de.ibm.com>
-To: michael@ellerman.id.au
-Subject: [patch] ipmi: check, if default ports are accessible on PPC
-Message-ID: <20070226160917.2c801ec7@localhost>
-In-Reply-To: <1172295412.16060.8.camel@concordia.ozlabs.ibm.com>
-References: <1172223703.4695.59.camel@concordia.ozlabs.ibm.com>
-	<20070223135859.62e19ca8@localhost>
-	<1172295412.16060.8.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary="Sig_h/1zvgsRiDF15f.Tx0lelNo";
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"openipmi-developer@lists.sourceforge.net"
-	<openipmi-developer@lists.sourceforge.net>,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 3C9A0DDEE1
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 02:48:55 +1100 (EST)
+Date: Mon, 26 Feb 2007 16:48:49 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Linus Torvalds <torvalds@linux-foundation.org>,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] ps3: Introduce CONFIG_PS3_ADVANCED
+In-Reply-To: <Pine.LNX.4.64.0702232343330.14457@scrub.home>
+Message-ID: <Pine.LNX.4.62.0702261644310.5716@pademelon.sonytel.be>
+References: <200702210946.27758.toralf.foerster@gmx.de>
+	<Pine.LNX.4.62.0702211102000.340@pademelon.sonytel.be>
+	<Pine.LNX.4.64.0702211238400.14457@scrub.home>
+	<Pine.LNX.4.62.0702211322350.340@pademelon.sonytel.be>
+	<Pine.LNX.4.64.0702220052020.14457@scrub.home>
+	<Pine.LNX.4.62.0702221854520.25919@pademelon.sonytel.be>
+	<Pine.LNX.4.64.0702232343330.14457@scrub.home>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux Frame Buffer Device Development
+	<linux-fbdev-devel@lists.sourceforge.net>,
+	=?UTF-8?Q?Toralf_F=F6rster?= <toralf.foerster@gmx.de>,
+	Linux Kernel Development <linux-kernel@vger.kernel.org>,
+	Linux/PPC Development <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,69 +34,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_h/1zvgsRiDF15f.Tx0lelNo
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+ps3: Introduce CONFIG_PS3_ADVANCED, as suggested by Roman Zippel, and use it to
+control questions about PS3 subsystems that may not be obvious for the casual
+user.
 
-Subject: ipmi: check, if default ports are accessible on PPC
+This gets rid of the following warning on non-powerpc platforms:
+| drivers/video/Kconfig:1604:warning: 'select' used by config symbol 'FB_PS3' refer to undefined symbol 'PS3_PS3AV'
 
-From: Christian Krafft <krafft@de.ibm.com>
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Cc: Geoff Levand <geoffrey.levand@am.sony.com>
+Cc: Paul Mackerras <paulus@samba.org>
+Cc: Roman Zippel <zippel@linux-m68k.org>
+---
+ arch/powerpc/platforms/ps3/Kconfig |   28 +++++++++++++++++++++-------
+ drivers/video/Kconfig              |    3 +--
+ 2 files changed, 22 insertions(+), 9 deletions(-)
 
-ipmi_si_intf tries to access default ports, if no device could
-be found elsewhere. On PPC we have a function to check,
-if these legacy IO ports are accessible. This patch adds
-a check for these ports on PPC.
-This patch fixes a breakage of IPMI module
-on PPC machines without a BMC.
-
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-
-Index: linux/drivers/char/ipmi/ipmi_si_intf.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux.orig/drivers/char/ipmi/ipmi_si_intf.c
-+++ linux/drivers/char/ipmi/ipmi_si_intf.c
-@@ -2580,6 +2580,11 @@ static __devinit void default_find_bmc(v
- 		if (!info)
- 			return;
-=20
-+#ifdef CONFIG_PPC_MERGE
-+		if (check_legacy_ioport(ipmi_defaults[i].port))
-+			continue;
-+#endif
+--- ps3-linux-2.6.21-rc1.orig/arch/powerpc/platforms/ps3/Kconfig
++++ ps3-linux-2.6.21-rc1/arch/powerpc/platforms/ps3/Kconfig
+@@ -1,9 +1,24 @@
+ menu "PS3 Platform Options"
+ 	depends on PPC_PS3
+ 
++config PS3_ADVANCED
++	depends on PPC_PS3
++	bool "PS3 Advanced configuration options"
++	help
++	  This gives you access to some advanced options for the PS3. The
++	  defaults should be fine for most users, but these options may make
++	  it possible to better control the kernel configuration if you know
++	  what you are doing.
 +
- 		info->addr_source =3D NULL;
-=20
- 		info->si_type =3D ipmi_defaults[i].type;
-=20
++	  Note that the answer to this question won't directly affect the
++	  kernel: saying N will just cause the configurator to skip all
++	  the questions about these options.
++
++	  Most users should say N to this question.
++
+ config PS3_HTAB_SIZE
+ 	depends on PPC_PS3
+-	int "PS3 Platform pagetable size"
++	int "PS3 Platform pagetable size" if PS3_ADVANCED
+ 	range 18 20
+ 	default 20
+ 	help
+@@ -42,7 +57,7 @@ config PS3_USE_LPAR_ADDR
+ 
+ config PS3_VUART
+ 	depends on PPC_PS3
+-	bool "PS3 Virtual UART support"
++	bool "PS3 Virtual UART support" if PS3_ADVANCED
+ 	default y
+ 	help
+ 	  Include support for the PS3 Virtual UART.
+@@ -52,9 +67,8 @@ config PS3_VUART
+ 	  general, all users will say Y.
+ 
+ config PS3_PS3AV
+-	tristate "PS3 AV settings driver"
+-	depends on PPC_PS3
+-	select PS3_VUART
++	tristate "PS3 AV settings driver" if PS3_ADVANCED
++	depends on PS3_VUART
+ 	default y
+ 	help
+ 	  Include support for the PS3 AV Settings driver.
+@@ -63,8 +77,8 @@ config PS3_PS3AV
+ 	  general, all users will say Y or M.
+ 
+ config PS3_SYS_MANAGER
+-	bool "PS3 System Manager driver"
+-	select PS3_VUART
++	bool "PS3 System Manager driver" if PS3_ADVANCED
++	depends on PS3_VUART
+ 	default y
+ 	help
+ 	  Include support for the PS3 System Manager.
+--- ps3-linux-2.6.21-rc1.orig/drivers/video/Kconfig
++++ ps3-linux-2.6.21-rc1/drivers/video/Kconfig
+@@ -1618,8 +1618,7 @@ config FB_IBM_GXT4500
+ 
+ config FB_PS3
+ 	bool "PS3 GPU framebuffer driver"
+-	depends on FB && PPC_PS3
+-	select PS3_PS3AV
++	depends on FB && PS3_PS3AV
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 
---=20
-Mit freundlichen Gruessen,
-kind regards,
+Gr{oetje,eeting}s,
 
-Christian Krafft
-IBM Systems & Technology Group,
-Linux Kernel Development
-IT Specialist
+						Geert
 
-
-Vorsitzender des Aufsichtsrats:	Johann Weihen
-Geschaeftsfuehrung:		Herbert Kircher
-Sitz der Gesellschaft:		Boeblingen
-Registriergericht:		Amtsgericht Stuttgart, HRB 243294
-
-
---Sig_h/1zvgsRiDF15f.Tx0lelNo
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFF4vg66rqK4qDx+dcRAhhNAKC9g5NIJ8C1qc86p6242yawAB7QWQCfUFrV
-SevFBVmLX1G1RjLRnn+TG1Q=
-=8sq1
------END PGP SIGNATURE-----
-
---Sig_h/1zvgsRiDF15f.Tx0lelNo--
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
