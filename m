@@ -1,19 +1,22 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id D22FADDEE3
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 11:18:37 +1100 (EST)
-Message-ID: <45E22753.2020809@freescale.com>
-Date: Sun, 25 Feb 2007 18:18:27 -0600
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <torvalds@linux-foundation.org>
+Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 2B97BDDEC2
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Feb 2007 11:24:37 +1100 (EST)
+Date: Sun, 25 Feb 2007 16:24:41 -0800 (PST)
+From: Linus Torvalds <torvalds@linux-foundation.org>
+To: David Woodhouse <dwmw2@infradead.org>
+Subject: Re: Make sure we populate the initroot filesystem late enough
+In-Reply-To: <1172448057.3971.9.camel@shinybook.infradead.org>
+Message-ID: <Pine.LNX.4.64.0702251614420.12485@woody.linux-foundation.org>
+References: <200612112059.kBBKx1j7022473@hera.kernel.org>
+	<1172448057.3971.9.camel@shinybook.infradead.org>
 MIME-Version: 1.0
-To: "Morrison, Tom" <tmorrison@empirix.com>
-Subject: Re: Update on: MPC85xx git/MPC8548cds - PCI/PCIE problemS with	Marvel
-	SATA driver...
-References: <BD261180E6D35F4D9D32F3E44FD3D9010685DAA6@EMPBEDEX.empirix.com>	<BE415006-0D71-4D2F-8699-3BD2A513D9C0@freescale.com>	<BD261180E6D35F4D9D32F3E44FD3D9010685DCFC@EMPBEDEX.empirix.com>	<8B9F6546-0D85-4AD0-A196-25F0F9C1A5A0@freescale.com>	<BD261180E6D35F4D9D32F3E44FD3D901069D9CA4@EMPBEDEX.empirix.com>
-	<1172305505.1902.27.camel@localhost.localdomain>
-In-Reply-To: <1172305505.1902.27.camel@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	john stultz <johnstul@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,19 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt wrote:
 
-> The above looks like it's working and you don't have a proper partition
-> table on the disk or you haven't compiled in support for the right type
-> of partition map (this is different from the filesystem type)....
+
+On Sun, 25 Feb 2007, David Woodhouse wrote:
 > 
-> Make sure you enable MS-DOS partition type support in addition to file
-> system type.
+> One side-effect of this patch is to move the call to free_initrd() much
+> later in the init sequence, potentially after other memory management
+> code is assuming it's already been freed.
 
-Yeah, I made the same mistake once too.
+Hmm. No, I don't think that should be a problem. free_initmem() only 
+happens at the very, after do_basic_setup() has been run, which includes 
+all the initcall stuff.
 
-The trick is not to confuse a file system with a partition type. 
-They're completely separate options.  You can select any combination of 
-file systems and partition types, even combinations that can never exist 
-in the real world.  So if you turn on MS-DOS file system support, you 
-also need to turn on MS-DOS partition support.
+However, it's an interesting observation. How sure are you that it's this 
+commit that triggers it. You say "This seems to be what's triggering ..", 
+I'm wondering how firm that is..
+
+		Linus
