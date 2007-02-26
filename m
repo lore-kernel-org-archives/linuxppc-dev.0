@@ -1,21 +1,24 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 4DA97DDEC8
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 04:02:52 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Update on: MPC85xx git/MPC8548cds - PCI/PCIE problemS with	Marvel
-	SATA driver...
-Date: Mon, 26 Feb 2007 12:01:28 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90106A49495@EMPBEDEX.empirix.com>
-In-Reply-To: <45E22753.2020809@freescale.com>
-References: <BD261180E6D35F4D9D32F3E44FD3D9010685DAA6@EMPBEDEX.empirix.com>	<BE415006-0D71-4D2F-8699-3BD2A513D9C0@freescale.com>	<BD261180E6D35F4D9D32F3E44FD3D9010685DCFC@EMPBEDEX.empirix.com>	<8B9F6546-0D85-4AD0-A196-25F0F9C1A5A0@freescale.com>	<BD261180E6D35F4D9D32F3E44FD3D901069D9CA4@EMPBEDEX.empirix.com>
-	<1172305505.1902.27.camel@localhost.localdomain>
-	<45E22753.2020809@freescale.com>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: "Timur Tabi" <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7D7ADDDF0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 05:19:21 +1100 (EST)
+In-Reply-To: <7EA18FDD2DC2154AA3BD6D2F22A62A0E5AD714@zch01exm23.fsl.freescale.net>
+References: <Pine.LNX.4.61.0702152043270.9034@ld0175-tx32.am.freescale.net>
+	<EE5E84C5-87F0-4836-AE28-1EE0E2CC556C@kernel.crashing.org>
+	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5AD638@zch01exm23.fsl.freescale.net>
+	<ED7561C6-CCD9-4F8F-9385-23FCEF2A7722@kernel.crashing.org>
+	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5AD714@zch01exm23.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <84F00E3F-8613-4D92-A229-9207ADC05814@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [RFC 2/7] Unite all PCI-e on 85xx and 86xx under one codebase
+Date: Mon, 26 Feb 2007 12:18:25 -0600
+To: Zang Roy-r61911 <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, jdl@jdl.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,32 +28,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Yup, missed that! Thank you=20
 
------Original Message-----
-From: Timur Tabi [mailto:timur@freescale.com]=20
-Sent: Sunday, February 25, 2007 7:18 PM
-To: Morrison, Tom
-Cc: linuxppc-dev@ozlabs.org
-Subject: Re: Update on: MPC85xx git/MPC8548cds - PCI/PCIE problemS with
-Marvel SATA driver...
+On Feb 26, 2007, at 9:52 AM, Zang Roy-r61911 wrote:
 
-Benjamin Herrenschmidt wrote:
+>
+>> On Feb 26, 2007, at 12:41 AM, Zang Roy-r61911 wrote:
+>>
+>>>
+>>>> On Feb 15, 2007, at 8:44 PM, Andy Fleming wrote:
+>>>>
+>>>>> Add 85xx PCI express memory map register.
+>>>>>
+>>>>> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+>>>>> Acked-by: Andy Fleming <afleming@freescale.com>
+>>>>> ---
+>>>>>  include/asm-ppc/immap_85xx.h |   75
+>>>> +++++++++++++++++++++++++++++++
+>>>>> +++++++++++
+>>>>>  1 files changed, 75 insertions(+), 0 deletions(-)
+>>>>
+>>>> Are the 86xx and 85xx structs the same?  If so, can we
+>> pull them out
+>>>> of immap_*.h into a sysdev/fsl_pcie.h
+>>>>
+>>>> (and lose the typedef while you're at it).
+>>> They have same structs. But I do not think it is proper to
+>> move them
+>>> into sysdev/fsl_pcie.h now. sysdev/fsl_pcie.c does not use  this
+>>> header file.
+>>> plaforms/85xx/pci.c use it to set up memory map windows.
+>>> In fact, there is little difference between immap_85xx.h and
+>>> immap_86xx.h.
+>>> After the migration from ppc to powerpc, we can unify them together.
+>>
+>> Why wait, I don't believe we support pcie in arch/ppc for
+>> anything fsl platform and the PCI support is different
+>> between arch/powerpc and arch/ppc.
+>>
+> Wait  to unify immap  together :-).
 
-> The above looks like it's working and you don't have a proper
-partition
-> table on the disk or you haven't compiled in support for the right
-type
-> of partition map (this is different from the filesystem type)....
->=20
-> Make sure you enable MS-DOS partition type support in addition to file
-> system type.
+Don't exactly follow.
 
-Yeah, I made the same mistake once too.
+> I agree to separate pcie struct for  arch/powerpc, then the code in
+> arch/powerpc will not depend header file include/asm-ppc.
+> I will provide patch to Andy and Jon tomorrow.
 
-The trick is not to confuse a file system with a partition type.=20
-They're completely separate options.  You can select any combination of=20
-file systems and partition types, even combinations that can never exist
+ok.
 
-in the real world.  So if you turn on MS-DOS file system support, you=20
-also need to turn on MS-DOS partition support.
+- k
