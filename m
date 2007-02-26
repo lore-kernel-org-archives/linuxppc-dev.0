@@ -1,20 +1,15 @@
-Return-Path: <pantelis@embeddedalley.com>
-Received: from smtp102.biz.mail.re2.yahoo.com (smtp102.biz.mail.re2.yahoo.com
-	[68.142.229.216]) by ozlabs.org (Postfix) with SMTP id 0E589DDE31
+Return-Path: <indianirav@yahoo.com>
+Received: from web43136.mail.sp1.yahoo.com (web43136.mail.sp1.yahoo.com
+	[216.252.121.66]) by ozlabs.org (Postfix) with SMTP id E5D04DDEC7
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Feb 2007 23:52:25 +1100 (EST)
-In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069AED@MERCURY.inside.istor.com>
-References: <OFA2B855F5.8FEEC16C-ON8825728C.000C6AC9-8825728C.000C740E@selinc.com>
-	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069AEA@MERCURY.inside.istor.com>
-	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069AED@MERCURY.inside.istor.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=UTF-8; delsp=yes; format=flowed
-Message-Id: <D0255586-C0FC-4E2A-B829-74D79A8D02CD@embeddedalley.com>
-From: Pantelis Antoniou <pantelis@embeddedalley.com>
-Subject: Re: CPM FCC1 & FCC2
-Date: Mon, 26 Feb 2007 14:45:38 +0200
-To: Charles Krinke <ckrinke@istor.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Tue, 27 Feb 2007 01:55:11 +1100 (EST)
+Date: Mon, 26 Feb 2007 06:37:06 -0800 (PST)
+From: patel nirav <indianirav@yahoo.com>
+Subject: which version of gcc,glibc is needed for 2.4.18
+To: linux ppc <linuxppc-embedded@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-981393002-1172500626=:66607"
+Message-ID: <60860.66607.qm@web43136.mail.sp1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,34 +20,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--0-981393002-1172500626=:66607
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-On 25 =CE=A6=CE=B5=CE=B2 2007, at 12:19 =CE=A0=CE=9C, Charles Krinke =
-wrote:
+hello all,
+Which version of gcc, glibc,  gdb needed  to cross compile linux kernel 2.4.18  for powerpc 604 (ppc604) 
 
-> In our design for an 8541 board, we are going to be using FCC1 & =20
-> FCC2 in addition to the FAST controller.
->
-> I have been looking through the Linux-2.6.17.11 source we are using =20=
 
-> and although I can find some references to MPC85xx_CPM_FCC1, I =20
-> cannot quite identify the driver used with the 85xx in Linux.
->
-> Can someone help me determine the name of the appropriate driver =20
-> for the two FCC sections of the 8541 please?
->
-> Charles
->
->
+Nirav J Patel
+M.Tech(CSE),
+Nirma University,
+Ahmedabad-382481.
+9925138959
+ 
+---------------------------------
+Now that's room service! Choose from over 150,000 hotels 
+in 45,000 destinations on Yahoo! Travel to find your fit.
+--0-981393002-1172500626=:66607
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Hi Charles,
+hello all,<br>Which version of gcc, glibc,&nbsp; gdb needed&nbsp; to cross compile linux kernel 2.4.18&nbsp; for powerpc 604 (ppc604) <br><BR><BR>Nirav J Patel<br>M.Tech(CSE),<br>Nirma University,<br>Ahmedabad-382481.<br>9925138959<p>&#32;
 
-There's FCC support in the fs_enet driver, but I'm afraid it's not being
-ported to the 85xx yet I'm afraid. The only supported family for the =20
-fcc's is 82xx.
-
-It shouldn't be very hard to add this, and I'd be glad to help with =20
-some pointers.
-
-Regards
-
--- Pantelis
+<hr size=1>Now that's room service! <a href="http://travel.yahoo.com/hotelsearchpage;_ylc=X3oDMTFtaTIzNXVjBF9TAzk3NDA3NTg5BF9zAzI3MTk0ODEEcG9zAzIEc2VjA21haWx0YWdsaW5lBHNsawNxMS0wNw--
+">Choose from over 150,000 hotels <br>in 45,000 destinations on Yahoo! Travel</a> to find your fit.
+--0-981393002-1172500626=:66607--
