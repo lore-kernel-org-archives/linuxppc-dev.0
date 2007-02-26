@@ -1,18 +1,16 @@
-Return-Path: <linuxppcemb@lkmail.de>
-Received: from pm1.terions.de (pm1.terions.de [83.137.96.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.s-s-l.net",
-	Issuer "Equifax Secure Global eBusiness CA-1" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 45B92DDF09
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id 29EF5DDFAC
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Feb 2007 02:37:52 +1100 (EST)
-Message-ID: <45E2FEB8.1060007@lkmail.de>
-Date: Mon, 26 Feb 2007 16:37:28 +0100
-From: Lorenz Kolb <linuxppcemb@lkmail.de>
+	Tue, 27 Feb 2007 02:54:57 +1100 (EST)
+Subject: __pa(dma_alloc_coherent()) doesn't give physical address
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: I can I boot u-boot from flash on Virtex-4 based board
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C759BE.7506DCA9"
+Date: Mon, 26 Feb 2007 16:54:53 +0100
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E682C13@aquib01a>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,24 +21,62 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 26 Feb 2007 09:55:55 +0800
-"yunfeizhang" <yunfeizhang ( a t ) sjtu.edu.cn> wrote:
-> 
-> Hi all,
-> I am confused for a long time about on how to boot a common program on Virtex. I want to porting a 
-> 
-> u-boot to Xilinx VIrtex-4 ML403 Evaluation Board, but I can even boot a common program from flash.
-> 
-> can someone give me some advice, thanks for all your kindness!
+This is a multi-part message in MIME format.
 
-Hi,
+------_=_NextPart_001_01C759BE.7506DCA9
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-I already found that non trivial.
+dma_alloc_coherent gives a kernel virtual address as a return address,
+applying __pa I expected a physical address.
+It doesn't happen, I receive an address far beyond my 16 MB ram.
+Applying virt_to_bus doesn't give a physical address too.
+OK, you can resort to dma_addr_t parameter of dma_alloc_coherent but is
+there a reason for __pa not working on a kernel virtual address?
+=20
+=20
+=20
+Bye,
+Antonio.
 
-Easiest way is: write some mini-bootloader that fits into BRAM and loads u-boot from flash.
+------_=_NextPart_001_01C759BE.7506DCA9
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-If you need some more detailed instructions and a patch created from Xilinx'u-boot tree to patch u-boot 1.20 to work with ML403 I can send you the files.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D606374515-26022007>dma_alloc_coherent=20
+gives a kernel virtual address as a return address, applying __pa I =
+expected a=20
+physical address.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D606374515-26022007>It =
+doesn't happen, I=20
+receive an address far beyond my 16 MB ram. Applying virt_to_bus doesn't =
+give a=20
+physical address too.</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D606374515-26022007>OK, =
+you can resort=20
+to dma_addr_t parameter of dma_alloc_coherent but is there a reason for =
+__pa not=20
+working on a kernel virtual address?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D606374515-26022007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN =
+class=3D606374515-26022007></SPAN></FONT><FONT=20
+face=3DArial size=3D2><SPAN =
+class=3D606374515-26022007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D606374515-26022007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D606374515-26022007>Bye,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D606374515-26022007>Antonio.</SPAN></FONT></DIV></BODY></HTML>
 
-Greetings,
-
-Lorenz Kolb
+------_=_NextPart_001_01C759BE.7506DCA9--
