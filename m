@@ -1,22 +1,20 @@
-Return-Path: <Paul.Hampson@Pobox.com>
-Received: from mail.cbit.net.au (betty.cbit.net.au [202.55.154.10])
-	by ozlabs.org (Postfix) with ESMTP id 5C2EFDDD08
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 09:52:34 +1100 (EST)
-Date: Tue, 27 Feb 2007 09:27:24 +1100
-From: Paul TBBle Hampson <Paul.Hampson@Pobox.com>
-To: john stultz <johnstul@us.ibm.com>
-Subject: Re: Make sure we populate the initroot filesystem late enough
-Message-ID: <20070226222724.GA13182@keitarou>
-References: <200612112059.kBBKx1j7022473@hera.kernel.org>
-	<1172448057.3971.9.camel@shinybook.infradead.org>
-	<1172518068.15970.6.camel@localhost>
-MIME-Version: 1.0
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] CELL Oprofile SPU profiling updated
+	patch
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200702270051.00393.arnd@arndb.de>
+References: <1172102523.5233.31.camel@dyn9047021078.beaverton.ibm.com>
+	<200702270051.00393.arnd@arndb.de>
 Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="3V7upXqbjpZ4EhLz"
-In-Reply-To: <1172518068.15970.6.camel@localhost>
-Cc: torvalds@linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org
+	protocol="application/pgp-signature";
+	boundary="=-NXpwvAIj5UyJc5dBBuIX"
+Date: Tue, 27 Feb 2007 10:31:46 +0900
+Message-Id: <1172539906.15967.36.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	oprofile-list@lists.sourceforge.net, cbe-oss-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,64 +25,64 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---3V7upXqbjpZ4EhLz
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+--=-NXpwvAIj5UyJc5dBBuIX
+Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Mon, Feb 26, 2007 at 11:27:47AM -0800, john stultz wrote:
-> On Sun, 2007-02-25 at 19:00 -0500, David Woodhouse wrote:
->> On Mon, 2006-12-11 at 20:59 +0000, Linux Kernel Mailing List wrote:
-> >>=20
-> >>     Make sure we populate the initroot filesystem late enough
+On Tue, 2007-02-27 at 00:50 +0100, Arnd Bergmann wrote:
+> On Thursday 22 February 2007, Carl Love wrote:
+> > This patch updates the existing arch/powerpc/oprofile/op_model_cell.c
+> > to add in the SPU profiling capabilities.  In addition, a 'cell' subdir=
+ectory
+> > was added to arch/powerpc/oprofile to hold Cell-specific SPU profiling
+> > code.
+>=20
+> There was a significant amount of whitespace breakage in this patch,
+> which I cleaned up. The patch below consists of the other things
+> I changed as a further cleanup. Note that I changed the format
+> of the context switch record, which I found too complicated, as
+> I described on IRC last week.
+>=20
+> 	Arnd <><
+>=20
+> --
+> Subject: cleanup spu oprofile code
+>=20
+> From: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> This cleans up some of the new oprofile code. It's mostly
+> cosmetic changes, like way multi-line comments are formatted.
+> The most significant change is a simplification of the
+> context-switch record format.
+>=20
+> It does mean the oprofile report tool needs to be adapted,
+> but I'm sure that it pays off in the end.
 
->> This seems to be what's triggering the apparent memory corruption we've
->> been seeing recently -- in the case of the Fedora kernel it manifests
->> itself as a BUG() in cache_alloc_refill() when the pmac ide driver
->> initialises.
->>=20
->> Another report was at http://lkml.org/lkml/2006/12/17/4
->>=20
->> We've been seeing it on a Mac Mini too, and I managed to reproduce it on
->> my shinybook this evening by booting with 'mem=3D512M'.
+I hate to be a stickler, but this patch is quite large, contains
+multiple changes, and mixes formatting changes with functional
+changes ... makes it a little hard to review :/
 
-> Just for reference (as its not in the thread linked above), this issue
-> disappeared for me after some config changes (I somehow changed my
-> selection when I backtracked and then moved forward w/ git bisect).
-
-> I've not been able to reproduce it since, but I know others (BCC'ed on
-> this note) have seen it and might prod them to come forth with details
-> (and broken .config files)
-
-In my case, disabling CPU_FREQ_PMAC made the failure go away.
-After reverting this patch, CPU_FREQ_PMAC is once again operating
-successfully, so far.
+cheers
 
 --=20
------------------------------------------------------------
-Paul "TBBle" Hampson, B.Sc, LPI, MCSE
-On-hiatus Asian Studies student, ANU
-The Boss, Bubblesworth Pty Ltd (ABN: 51 095 284 361)
-Paul.Hampson@Pobox.Com
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Of course Pacman didn't influence us as kids. If it did,
-we'd be running around in darkened rooms, popping pills and
-listening to repetitive music.
- -- Kristian Wilson, Nintendo, Inc, 1989
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-License: http://creativecommons.org/licenses/by/2.1/au/
------------------------------------------------------------
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
---3V7upXqbjpZ4EhLz
-Content-Type: application/pgp-signature
-Content-Disposition: inline
+--=-NXpwvAIj5UyJc5dBBuIX
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQFF417MexDuohKLFuARArwmAJ935Wo7mlLd4DOaWcwZAsfefxIqBACfaqq+
-QsDgU/TGLK72b30RCT05Ozk=
-=2x33
+iD8DBQBF44oCdSjSd0sB4dIRAgFIAKCJuAhgkS7NjyVo+hilSLYAfdNj1QCdH6Do
+gM7ZRT1LJWSYm+h0JkyyjC8=
+=nQ/o
 -----END PGP SIGNATURE-----
 
---3V7upXqbjpZ4EhLz--
+--=-NXpwvAIj5UyJc5dBBuIX--
