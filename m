@@ -1,16 +1,23 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: #cpus property
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7BC3CDDEBA
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 17:50:03 +1100 (EST)
+Subject: Re: Make sure we populate the initroot filesystem late enough
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070227021151.GB1861@localhost.localdomain>
-References: <9696D7A991D0824DBA8DFAC74A9C5FA302AA0181@az33exm25.fsl.freescale.net>
-	<213956050aa89759f6329f518e46f42b@kernel.crashing.org>
-	<20070227021151.GB1861@localhost.localdomain>
+To: Paul TBBle Hampson <Paul.Hampson@Pobox.com>
+In-Reply-To: <20070226222724.GA13182@keitarou>
+References: <200612112059.kBBKx1j7022473@hera.kernel.org>
+	<1172448057.3971.9.camel@shinybook.infradead.org>
+	<1172518068.15970.6.camel@localhost> <20070226222724.GA13182@keitarou>
 Content-Type: text/plain
-Date: Tue, 27 Feb 2007 07:48:54 +0100
-Message-Id: <1172558934.11949.45.camel@localhost.localdomain>
+Date: Tue, 27 Feb 2007 07:48:16 +0100
+Message-Id: <1172558897.11949.43.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, john stultz <johnstul@us.ibm.com>,
+	torvalds@linux-foundation.org, David Woodhouse <dwmw2@infradead.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,18 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-02-27 at 13:11 +1100, David Gibson wrote:
-> On Tue, Feb 27, 2007 at 12:33:05AM +0100, Segher Boessenkool wrote:
-> > > Anyone know the origin of the #cpus property that seems to be in most 
-> > > of
-> > > the DTS files.  It seems to be documented nowhere.
-> > 
-> > It was there in the first DTS file to hit the kernel
-> > source tree.  Probably all others just copied that.
-> 
-> That sounds likely.  We should probably get rid of it, the kernel
-> doesn't use it.  BenH, Paulus, you can't see any use for this one?
 
-Nope.
+> > I've not been able to reproduce it since, but I know others (BCC'ed on
+> > this note) have seen it and might prod them to come forth with details
+> > (and broken .config files)
+> 
+> In my case, disabling CPU_FREQ_PMAC made the failure go away.
+> After reverting this patch, CPU_FREQ_PMAC is once again operating
+> successfully, so far.
+
+Hrm.. which cpufreq method is used on both your machines ? If it's the
+one involving the PMU, it does involve a full hard reset of the
+processor (with appropriate cache flushes etc...), maybe something's
+going wrong in that area....
 
 Ben.
