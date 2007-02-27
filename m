@@ -1,23 +1,24 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [patch] ipmi: check, if default ports are accessible on PPC
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Christian Krafft <krafft@de.ibm.com>
-In-Reply-To: <20070226160917.2c801ec7@localhost>
-References: <1172223703.4695.59.camel@concordia.ozlabs.ibm.com>
-	<20070223135859.62e19ca8@localhost>
-	<1172295412.16060.8.camel@concordia.ozlabs.ibm.com>
-	<20070226160917.2c801ec7@localhost>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-0E7bOQnm411CVFZ+jk6/"
-Date: Tue, 27 Feb 2007 11:27:10 +0900
-Message-Id: <1172543230.15967.47.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	"openipmi-developer@lists.sourceforge.net"
-	<openipmi-developer@lists.sourceforge.net>,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 27 Feb 2007 13:32:43 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+Message-ID: <20070227023243.GC1861@localhost.localdomain>
+References: <20070222103410.GB11014@localhost.localdomain>
+	<b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
+	<259dc2545888e6588a8a0707ad2e84b0@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302A59732@az33exm25.fsl.freescale.net>
+	<1172299259.1902.22.camel@localhost.localdomain>
+	<20070226041646.GC29826@localhost.localdomain>
+	<4540139ce9bb2426dbcc3822e6c1a63a@kernel.crashing.org>
+	<20070226130837.GA32080@localhost.localdomain>
+	<de3b5db39f5254bc8d5f859c718e7103@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <de3b5db39f5254bc8d5f859c718e7103@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,51 +28,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Feb 26, 2007 at 03:26:38PM +0100, Segher Boessenkool wrote:
+> >> Incorrect parsing of interrupt info tends to end up
+> >> in spectacular crashes, not silent at all ;-)
+> >
+> > Well, yes, but "sorry, I can't understand this device tree" or "huh?
+> > I can't find the interrupts" would be preferable to spectacular
+> > crashes.
+> 
+> Yes, of course.  It sometimes just can't be helped though.
+> 
+> Oh btw, since Linux has the new interrupt mapping code, you
+> quite probably will *not* hard crash, the kernel notices the
+> interrupt map isn't sane and uses a fallback.  You can get
+> unlucky of course.  Also, and this is just an inherent problem
+> to all interrupts, many important devices just don't work
+> without correctly configured interrupts (or their Linux drivers
+> don't).  With ATA at least you still get one block through
+> every 30s, but that is hardly optimal ;-)
+> 
+> >> You cannot boot a client program that doesn't understand the
+> >> device tree and expect it to understand the device tree ;-)
+> >
+> > Obviously, but I'd like the client program to *know* that it doesn't
+> > understand the device tree.
+> 
+> Solving that would be equivalent to the halting problem I'm
+> afraid.  It can be done for *simple* cases of course.
+> 
+> > It's not specific to the kernel, the same reasoning applies to any
+> > program using the device tree.  If something that's not aware of the
+> > new property sees a node with an 'interrupts' but no
+> > 'interrupt-parent' property, it has *no reason* to believe there's
+> > anything more to know.
+> 
+> And if a program parsing the device tree sees no valid
+> "interrupts" property, it can validly assume the device
+> doesn't have interrupts.
+> 
+> Same problem.
 
---=-0E7bOQnm411CVFZ+jk6/
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Sort of.  But the probable consequences of mistakenly believing a
+device has no interrupts are substantially less messy than mistakenly
+believing you understand the node's interrupts when you don't.
 
-On Mon, 2007-02-26 at 16:09 +0100, Christian Krafft wrote:
-> Subject: ipmi: check, if default ports are accessible on PPC
->=20
-> From: Christian Krafft <krafft@de.ibm.com>
->=20
-> ipmi_si_intf tries to access default ports, if no device could
-> be found elsewhere. On PPC we have a function to check,
-> if these legacy IO ports are accessible. This patch adds
-> a check for these ports on PPC.
-> This patch fixes a breakage of IPMI module
-> on PPC machines without a BMC.
->=20
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-
-Yep that fixes the problem on my machine.
-
-Acked-by: Michael Ellerman <michael@ellerman.id.au>
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-0E7bOQnm411CVFZ+jk6/
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBF45b9dSjSd0sB4dIRAr2/AJ0VeujYBwHyV+5bePsqTQkR7O0EEACgkPhb
-SSK4x5MPry/90lirMibgwP0=
-=iYxV
------END PGP SIGNATURE-----
-
---=-0E7bOQnm411CVFZ+jk6/--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
