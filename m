@@ -1,12 +1,23 @@
-Return-Path: <dgibson@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	<linuxppc-dev@ozlabs.org>
-From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 2/2] Automatically lmb_reserve() initrd
-In-Reply-To: <20070228031120.GF11775@localhost.localdomain>
-Message-Id: <20070228031229.55D11DDDF9@ozlabs.org>
-Date: Wed, 28 Feb 2007 14:12:29 +1100 (EST)
+Return-Path: <kaber@trash.net>
+Received: from stinky.trash.net (stinky.trash.net [213.144.137.162])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4E8EFDDDF0
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 04:13:56 +1100 (EST)
+Message-ID: <45E46208.3000003@trash.net>
+Date: Tue, 27 Feb 2007 17:53:28 +0100
+From: Patrick McHardy <kaber@trash.net>
+MIME-Version: 1.0
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH 2/2] ehea: NAPI multi queue TX/RX path for SMP
+References: <200702271732.51829.ossthema@de.ibm.com>
+In-Reply-To: <200702271732.51829.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,101 +27,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, when an initrd is passed to the kernel used flat device
-tree properties, the memory the initrd occupies must also be reserved
-in the flat tree's reserve map, or the kernel may overwrite it.  That
-makes life more complicated than it could be for the bootwrapper.
+Jan-Bernd Themann wrote:
+> This patch provides a functionality that allows parallel 
+> RX processing on multiple RX queues by using dummy netdevices.
+> 
+>  
+> +static inline int ehea_hash_skb(struct sk_buff *skb, int num_qps)
+> +{
+> +	u32 tmp;
+> +	if ((skb->nh.iph->protocol == IPPROTO_TCP)
+> +	    && skb->protocol == ETH_P_IP) {
 
-This patch makes the kernel automatically reserve the initrd's space.
-That in turn requires parsing the initrd parameters earlier than they
-are currently, in early_init_dt_scan_chosen() instead of
-check_for_initrd().
+skb->protocol has network byte order. The ETH_P_IP test should also
+logically come before checking the IP protocol.
 
-Signed-off-by: David Gibson <dwg@au1.ibm.com>
----
+> +		tmp = (skb->h.th->source + (skb->h.th->dest << 16)) % 31;
 
- arch/powerpc/kernel/prom.c         |   23 +++++++++++++++++++++++
- arch/powerpc/kernel/setup-common.c |   22 ++--------------------
- 2 files changed, 25 insertions(+), 20 deletions(-)
+Only locally generated packets have a valid h.th pointer.
 
-Index: working-2.6/arch/powerpc/kernel/prom.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/prom.c	2007-02-09 15:12:00.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/prom.c	2007-02-09 15:14:27.000000000 +1100
-@@ -719,6 +719,7 @@ static int __init early_init_dt_scan_cho
- 					    const char *uname, int depth, void *data)
- {
- 	unsigned long *lprop;
-+	u32 *prop;
- 	unsigned long l;
- 	char *p;
- 
-@@ -760,6 +761,22 @@ static int __init early_init_dt_scan_cho
-                crashk_res.end = crashk_res.start + *lprop - 1;
- #endif
- 
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	DBG("Looking for initrd properties... ");
-+	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
-+	if (prop) {
-+		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
-+		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
-+		if (prop) {
-+			initrd_end = (unsigned long)__va(of_read_ulong(prop, l/4));
-+			initrd_below_start_ok = 1;
-+		} else {
-+			initrd_start = 0;
-+		}
-+	}
-+	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
-+#endif /* CONFIG_BLK_DEV_INITRD */
-+
- 	/* Retreive command line */
-  	p = of_get_flat_dt_prop(node, "bootargs", &l);
- 	if (p != NULL && l > 0)
-@@ -926,6 +943,12 @@ static void __init early_reserve_mem(voi
- 	self_size = initial_boot_params->totalsize;
- 	lmb_reserve(self_base, self_size);
- 
-+#ifdef CONFIG_BLK_DEV_INITRD
-+	/* then reserve the initrd, if any */
-+	if (initrd_start && (initrd_end > initrd_start))
-+		lmb_reserve(__pa(initrd_start), initrd_end - initrd_start);
-+#endif /* CONFIG_BLK_DEV_INITRD */
-+
- #ifdef CONFIG_PPC32
- 	/* 
- 	 * Handle the case where we might be booting from an old kexec
-Index: working-2.6/arch/powerpc/kernel/setup-common.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/setup-common.c	2007-01-24 12:01:17.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/setup-common.c	2007-02-09 15:15:15.000000000 +1100
-@@ -304,26 +304,8 @@ struct seq_operations cpuinfo_op = {
- void __init check_for_initrd(void)
- {
- #ifdef CONFIG_BLK_DEV_INITRD
--	const unsigned int *prop;
--	int len;
--
--	DBG(" -> check_for_initrd()\n");
--
--	if (of_chosen) {
--		prop = get_property(of_chosen, "linux,initrd-start", &len);
--		if (prop != NULL) {
--			initrd_start = (unsigned long)
--				__va(of_read_ulong(prop, len / 4));
--			prop = get_property(of_chosen,
--					"linux,initrd-end", &len);
--			if (prop != NULL) {
--				initrd_end = (unsigned long)
--					__va(of_read_ulong(prop, len / 4));
--				initrd_below_start_ok = 1;
--			} else
--				initrd_start = 0;
--		}
--	}
-+	DBG(" -> check_for_initrd()  initrd_start=0x%lx  initrd_end=0x%lx\n",
-+	    initrd_start, initrd_end);
- 
- 	/* If we were passed an initrd, set the ROOT_DEV properly if the values
- 	 * look sensible. If not, clear initrd reference.
+> +		tmp += skb->nh.iph->daddr % 31;
+> +		return tmp % num_qps;
+> +	}
+> +	else
+> +		return 0;
+> +}
+> +
+>  static int ehea_start_xmit(struct sk_buff *skb, struct net_device *dev)
+>  {
+>  	struct ehea_port *port = netdev_priv(dev);
+> @@ -1796,9 +1818,18 @@ static int ehea_start_xmit(struct sk_buf
+>  	unsigned long flags;
+>  	u32 lkey;
+>  	int swqe_index;
+> -	struct ehea_port_res *pr = &port->port_res[0];
+> +	struct ehea_port_res *pr;
+> +
+> +	pr = &port->port_res[ehea_hash_skb(skb, port->num_tx_qps)];
+> +
