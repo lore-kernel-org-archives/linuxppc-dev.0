@@ -1,9 +1,12 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 27 Feb 2007 13:32:43 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: document new interrupt-array property
-Message-ID: <20070227023243.GC1861@localhost.localdomain>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
+	[151.189.21.42])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A8A17DDE49
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Feb 2007 13:52:47 +1100 (EST)
+In-Reply-To: <20070227023243.GC1861@localhost.localdomain>
 References: <20070222103410.GB11014@localhost.localdomain>
 	<b16b3a03ce9b890909b3f64f50e78b75@kernel.crashing.org>
 	<9696D7A991D0824DBA8DFAC74A9C5FA302A592C7@az33exm25.fsl.freescale.net>
@@ -14,9 +17,14 @@ References: <20070222103410.GB11014@localhost.localdomain>
 	<4540139ce9bb2426dbcc3822e6c1a63a@kernel.crashing.org>
 	<20070226130837.GA32080@localhost.localdomain>
 	<de3b5db39f5254bc8d5f859c718e7103@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <de3b5db39f5254bc8d5f859c718e7103@kernel.crashing.org>
+	<20070227023243.GC1861@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <0bb86e9c2642f033697bfb44a4f59ff8@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+Date: Tue, 27 Feb 2007 03:52:41 +0100
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
 	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,52 +36,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Feb 26, 2007 at 03:26:38PM +0100, Segher Boessenkool wrote:
-> >> Incorrect parsing of interrupt info tends to end up
-> >> in spectacular crashes, not silent at all ;-)
-> >
-> > Well, yes, but "sorry, I can't understand this device tree" or "huh?
-> > I can't find the interrupts" would be preferable to spectacular
-> > crashes.
-> 
-> Yes, of course.  It sometimes just can't be helped though.
-> 
-> Oh btw, since Linux has the new interrupt mapping code, you
-> quite probably will *not* hard crash, the kernel notices the
-> interrupt map isn't sane and uses a fallback.  You can get
-> unlucky of course.  Also, and this is just an inherent problem
-> to all interrupts, many important devices just don't work
-> without correctly configured interrupts (or their Linux drivers
-> don't).  With ATA at least you still get one block through
-> every 30s, but that is hardly optimal ;-)
-> 
-> >> You cannot boot a client program that doesn't understand the
-> >> device tree and expect it to understand the device tree ;-)
-> >
-> > Obviously, but I'd like the client program to *know* that it doesn't
-> > understand the device tree.
-> 
-> Solving that would be equivalent to the halting problem I'm
-> afraid.  It can be done for *simple* cases of course.
-> 
-> > It's not specific to the kernel, the same reasoning applies to any
-> > program using the device tree.  If something that's not aware of the
-> > new property sees a node with an 'interrupts' but no
-> > 'interrupt-parent' property, it has *no reason* to believe there's
-> > anything more to know.
-> 
-> And if a program parsing the device tree sees no valid
-> "interrupts" property, it can validly assume the device
-> doesn't have interrupts.
-> 
-> Same problem.
+>> And if a program parsing the device tree sees no valid
+>> "interrupts" property, it can validly assume the device
+>> doesn't have interrupts.
+>>
+>> Same problem.
+>
+> Sort of.  But the probable consequences of mistakenly believing a
+> device has no interrupts are substantially less messy than mistakenly
+> believing you understand the node's interrupts when you don't.
 
-Sort of.  But the probable consequences of mistakenly believing a
-device has no interrupts are substantially less messy than mistakenly
-believing you understand the node's interrupts when you don't.
+"Less messy"...  well the device won't work properly
+in either case.  The kernel might completely screw
+up programming the interrupts, which would mean it
+doesn't do enough sanity checking; or it could give
+spectacular oopses, where the "less messy" case would
+simply be a device driver not running for your device.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+If the one case gives you more information to track
+down the problem than the other case, I argue that's
+a shortcoming of the kernel, not of the OF binding.
+
+Anyway, it's all a question of deployment: you just
+have to make sure your users use a new enough kernel
+with your device tree (and device), which you have
+to do *anyway*.  Also DTS files are still conveniently
+shipped with the kernel so it's even less of a problem.
+
+
+Segher
