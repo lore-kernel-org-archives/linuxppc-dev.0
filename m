@@ -1,19 +1,19 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-02.arcor-online.net (mail-in-02.arcor-online.net
-	[151.189.21.42])
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 95870DDDED
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 10:24:13 +1100 (EST)
-In-Reply-To: <200702272223.l1RMNKcF030373@ld0164-tx32.am.freescale.net>
-References: <200702272223.l1RMNKcF030373@ld0164-tx32.am.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id AF491DDDFD
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 10:41:29 +1100 (EST)
+In-Reply-To: <200702272254.l1RMsjt2030709@ld0164-tx32.am.freescale.net>
+References: <200702272254.l1RMsjt2030709@ld0164-tx32.am.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <02cb84d7709d1b86ce33030c297c0de1@kernel.crashing.org>
+Message-Id: <6d55dd0f38d35c0b938acf26abff62ec@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: update interrupt info in booting-without-of.txt
-Date: Wed, 28 Feb 2007 00:23:30 +0100
+Subject: Re: [RFC] powerpc: Document new property called interrupt-parents 
+Date: Wed, 28 Feb 2007 00:40:31 +0100
 To: Stuart Yoder <b08248@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -25,47 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +Devices that generate interrupts have an 'interrupt parent' in
-> +the interrupt tree.  An interrupt parent can be explicitly
-> +defined through the interrupt-parent property. For nodes with
-> +no interrupt-parent, the interrupt parent is assumed to be
-> +the node's  _device tree_ parent.
+> +For devices that generate interrupts to multiple interrupt
+> +controllers, the  interrupt-parent representation
+> +is not sufficient because it only describes a single
+> +interrupt parent. The 'interrupt-parents' property should be used
+> +to represent this (note the plural in the property name).
 
-Or its parent, or its grandparent, etc.
+s/should be used/can be used/
 
-> +The encoding of an interrupt specifier is determined by the
-> +domain (or nexus)
+> +   pic0: pic@700 {
+> +       interrupt-controller;
+> +       #address-cells = <0>;
+> +       #interrupt-cells = <2>;
+> +       reg = <700 100>;
+> +       device_type = "open-pic";
+> +   };
 
-Domain.  An interrupt nexus is to the interrupt tree
-what a node is to the device tree.
+I still say the #address-cells should be removed.
 
-> +The PCI bus binding specifies a #interrupt-cell value of 1 to encode
-> +which interrupt line (INTA,INTB,INTC,INTD) is used.
+> +   ethernet@25000 {
+> +       #address-cells = <1>;
+> +       #size-cells = <0>;
+> +       device_type = "network";
+> +       model = "fsl,TSEC";
+> +       compatible = "gianfar";
+> +       reg = <25000 1000>;
+> +       mac-address = [ 00 E0 0C 00 73 01 ];
+> +       interrupt-parents = <&pic0 &pic0 &pic1>;
+> +       interrupts = <13 3 14 3 18 3>;
+> +       phy-handle = <2452001>;
+> +   };
 
-s/line/pin/ to agree with PCI terminology.
+Maybe write this like
 
-> +The interrupt-parent property is specified to define an explicit
-> +link between a device node and its interrupt parent in
-> +the interrupt tree.  The value of interrupt-parent is the
-> +phandle to the parent node.
+ethernet@25000 {
+         device_type = "network";
+         reg = <25000 1000>;
+         ...
+         interrupt-parents = <&pic0 &pic0 &pic1>;
+         interrupts = <13 3 14 3 18 3>;
+};
 
-phandle _of_ the parent node please.
+to make the example more readable?  And some spacing in
+the properties, so maybe
 
-> +If the interrupt-parent property is not defined for a node, it's
-> +interrupt parent is assumed to be it's device tree_ parent.
+ethernet@25000 {
+         device_type = "network";
+         reg = <25000 1000>;
+         ...
+         interrupt-parents = <&pic0 &pic0 &pic1>;
+         interrupts        = <13 3  14 3  18 3 >;
+};
 
-Same thing again.  You missed an underscore, too.
+> +Note: each interrupt parent in the interrupt-parents array can
+> +potentially specify a different value for #interrupt-cells.  The 
+> number
+> +of #interrupt-cells for each parent must be determined to correctly
+> +parser the interrupts property.
 
-> +OpenPIC interrupt controllers required 2 cells to encode
-
-s/required/require/
-
-> +ISA PIC interrupt controllers required 2 cells to encode
-
-same thing
-
-
-Looks good otherwise, thanks.
+s/parser/parse/
 
 
 Segher
