@@ -1,16 +1,15 @@
-Return-Path: <Frank.Prepelica@ubidyne.com>
-Received: from ex01.ads.ubidyne.de (mail.ubidyne.com [212.211.133.238])
-	by ozlabs.org (Postfix) with ESMTP id 9BCBEDDDF9
+Return-Path: <andrea.galbusera@teamware.it>
+Received: from smtp5.aruba.it (smtpd2.aruba.it [62.149.128.207])
+	by ozlabs.org (Postfix) with SMTP id EE740DDE08
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Feb 2007 22:34:47 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C75B2C.708DE849"
-Subject: RE: Could not create MTD Partitions
-Date: Wed, 28 Feb 2007 12:34:41 +0100
-Message-ID: <29DC34A6B43468409F5A371CFE34E8490B624D@ex01.ads.ubidyne.de>
-From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
-To: <linuxppc-embedded@ozlabs.org>
+	Wed, 28 Feb 2007 22:47:13 +1100 (EST)
+Subject: Post-boot PCI bus rescan
+From: Andrea Galbusera <andrea.galbusera@teamware.it>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Wed, 28 Feb 2007 12:41:00 +0100
+Message-Id: <1172662860.2799.66.camel@localhost.localdomain>
+Mime-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,100 +20,84 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Hi all,
+I'm working on a mpc5200 based custom board. This is basically a
+Lite5200 like platform. I have an onboard FPGA that I configure from
+userspace linux with the required "firmware". Only after configuration
+the FPGA shows its PCI device "nature".
+I have the problem to make linux correctly see the PCI device, in order
+to load my device driver and go on running applications.
 
-------_=_NextPart_001_01C75B2C.708DE849
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+First solution we implemented was to go through a reboot (without
+powering off the FPGA, of course) and consequent boot-time rescan of the
+bus. Works fine but performance is an issue here.
 
-Many thanks Gerhard,
+I then started digging around and found some PCI rescan solution (mainly
+fakephp from the kernel tree and a rescan routine by John Carlson). Both
+these can detect the device and correctly initialize /sys entries. 
 
-=20
+Unfortunately my PCI device config space appears to be different from
+the one I have with the reboot approach. I then compiled my kernel with
+full PCI debugging enabled and got the log attached below. As far as I
+can understand during boot linux calls some fixups on irqs and resouces
+for my PCI device (0000:00:18.0). Those seem to be called by
+pcibios_init() in arch/ppc/kernel/pci.c.
 
-I changed the value for Bankwidth from 2 to 4
+My question is: am I on the right way to figure out why PCI device
+config space appear different with the two approaches? What is the logic
+behind those fixups? Can I call them again after boot i.e. from my
+rescan module?
 
-Now it works!!
+Thanks in advance for any kind help
+Andrea
 
-=20
 
+----------------------------------------
+Boot time PCI debug messages if I reboot
+----------------------------------------
 
-------_=_NextPart_001_01C75B2C.708DE849
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0cm;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.E-MailFormatvorlage17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:595.3pt 841.9pt;
-	margin:70.85pt 70.85pt 2.0cm 70.85pt;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1027" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DDE link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Many thanks Gerhard,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>I changed the value for Bankwidth from 2 to =
-4<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'>Now it works!!<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
-style=3D'font-size:
-10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C75B2C.708DE849--
+> PCI: Probing PCI hardware
+> DEV: registering device: ID = 'pci0000:00'
+> kobject pci0000:00: registering. parent: <NULL>, set: devices
+> kobject_uevent
+> CLASS: registering class device: ID = '0000:00'
+> kobject 0000:00: registering. parent: pci_bus, set: class_obj
+> kobject_uevent
+> fill_kobj_path: path = '/class/pci_bus/0000:00'
+> class_uevent - name = 0000:00
+> PCI: Scanning bus 0000:00
+> PCI: Found 0000:00:18.0 [1172/abcd] 00ffed 00
+> PCI: Calling quirk c00098bc for 0000:00:18.0
+> PCI: Calling quirk c010d400 for 0000:00:18.0
+> PCI: Found 0000:00:1a.0 [1057/5809] 000680 00
+> PCI: Calling quirk c00098bc for 0000:00:1a.0
+> PCI: Calling quirk c010d400 for 0000:00:1a.0
+> PCI: Fixups for bus 0000:00
+> PCI: Bus scan for 0000:00 returning with max=00
+> DEV: registering device: ID = '0000:00:18.0'
+> kobject 0000:00:18.0: registering. parent: pci0000:00, set: devices
+> kobject_uevent
+> fill_kobj_path: path = '/devices/pci0000:00/0000:00:18.0'
+> bus pci: add device 0000:00:18.0
+> DEV: registering device: ID = '0000:00:1a.0'
+> kobject 0000:00:1a.0: registering. parent: pci0000:00, set: devices
+> kobject_uevent
+> fill_kobj_path: path = '/devices/pci0000:00/0000:00:1a.0'
+> bus pci: add device 0000:00:1a.0
+> PCI: fixup irq: (0000:00:18.0) got 1
+> PCI: fixup irq: (0000:00:1a.0) got 0
+> PCI: bridge rsrc 0..ffffff (100), parent c027a1fc
+> PCI: bridge rsrc 80000000..9fffffff (1200), parent c027a1e0
+> PCI: bridge rsrc a0000000..afffffff (200), parent c027a1e0
+>   got res [80000000:80000fff] bus [80000000:80000fff] flags 1208 for
+BAR 0 of 0000:00:18.0
+> PCI: moved device 0000:00:18.0 resource 0 (1208) to 80000000
+>   got res [80800000:80ffffff] bus [80800000:80ffffff] flags 1208 for
+BAR 1 of 0000:00:18.0
+> PCI: moved device 0000:00:18.0 resource 1 (1208) to 80800000
+>   got res [a0000000:a0003fff] bus [a0000000:a0003fff] flags 200 for
+BAR 2 of 0000:00:18.0
+> PCI: moved device 0000:00:18.0 resource 2 (200) to a0000000
+>   got res [a0040000:a007ffff] bus [a0040000:a007ffff] flags 200 for
+BAR 0 of 0000:00:1a.0
+> PCI: moved device 0000:00:1a.0 resource 0 (200) to a0040000
