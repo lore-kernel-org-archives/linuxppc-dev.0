@@ -1,23 +1,27 @@
-Return-Path: <kaber@trash.net>
-Received: from stinky.trash.net (stinky.trash.net [213.144.137.162])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4E8EFDDDF0
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 04:13:56 +1100 (EST)
-Message-ID: <45E46208.3000003@trash.net>
-Date: Tue, 27 Feb 2007 17:53:28 +0100
-From: Patrick McHardy <kaber@trash.net>
-MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH 2/2] ehea: NAPI multi queue TX/RX path for SMP
-References: <200702271732.51829.ossthema@de.ibm.com>
-In-Reply-To: <200702271732.51829.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-15
-Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
-	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: document new interrupt-array property
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <293fa602618ce81ba7f80be15684aa4b@kernel.crashing.org>
+References: <9696D7A991D0824DBA8DFAC74A9C5FA302A59732@az33exm25.fsl.freescale.net>
+	<1172299259.1902.22.camel@localhost.localdomain>
+	<20070226041646.GC29826@localhost.localdomain>
+	<4540139ce9bb2426dbcc3822e6c1a63a@kernel.crashing.org>
+	<20070226130837.GA32080@localhost.localdomain>
+	<de3b5db39f5254bc8d5f859c718e7103@kernel.crashing.org>
+	<20070227023243.GC1861@localhost.localdomain>
+	<0bb86e9c2642f033697bfb44a4f59ff8@kernel.crashing.org>
+	<20070227034541.GD1861@localhost.localdomain>
+	<e974c705d1088b60aa021856b8fb95a6@kernel.crashing.org>
+	<20070228004040.GC11775@localhost.localdomain>
+	<293fa602618ce81ba7f80be15684aa4b@kernel.crashing.org>
+Content-Type: text/plain
+Date: Wed, 28 Feb 2007 07:40:56 +0100
+Message-Id: <1172644856.11949.88.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,40 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> This patch provides a functionality that allows parallel 
-> RX processing on multiple RX queues by using dummy netdevices.
-> 
->  
-> +static inline int ehea_hash_skb(struct sk_buff *skb, int num_qps)
-> +{
-> +	u32 tmp;
-> +	if ((skb->nh.iph->protocol == IPPROTO_TCP)
-> +	    && skb->protocol == ETH_P_IP) {
+> PCI isn't required to have a device tree at all, with the
+> flat tree.
 
-skb->protocol has network byte order. The ETH_P_IP test should also
-logically come before checking the IP protocol.
+Yes but if there is a device-node, it's expected somewhat to have proper
+interrupt informations (though on PCI they are easy to derive if you
+have a correct map in the parent).
 
-> +		tmp = (skb->h.th->source + (skb->h.th->dest << 16)) % 31;
+Now, we do indeed have some "fallback" code that attempts to find PCI
+interrupts using "alternate" methods including reading the
+PCI_INTERRUPT_LINE config space entry when the standard parsing fails.
+We had to do that to deal with broken firmwares on the field including
+old SLOF versions.
 
-Only locally generated packets have a valid h.th pointer.
+> If _either_ doesn't allow sharing, i.e., almost all of
+> the time.
 
-> +		tmp += skb->nh.iph->daddr % 31;
-> +		return tmp % num_qps;
-> +	}
-> +	else
-> +		return 0;
-> +}
-> +
->  static int ehea_start_xmit(struct sk_buff *skb, struct net_device *dev)
->  {
->  	struct ehea_port *port = netdev_priv(dev);
-> @@ -1796,9 +1818,18 @@ static int ehea_start_xmit(struct sk_buf
->  	unsigned long flags;
->  	u32 lkey;
->  	int swqe_index;
-> -	struct ehea_port_res *pr = &port->port_res[0];
-> +	struct ehea_port_res *pr;
-> +
-> +	pr = &port->port_res[ehea_hash_skb(skb, port->num_tx_qps)];
-> +
+Most if not all PCI drivers do allow sharing. It's VERY common to share
+PCI interrupts on x86.
+
+> SoC interrupts shared?  Not very likely...
+> Sure in principle anything can happen.
+
+SoC generally no. But external interrupts connected to random things on
+embedded boards being shared, yes. Heh, look at ARM to see the kind of
+crackpot you find on the field (especially in PDAs), it's scary.
+
+Ben.
