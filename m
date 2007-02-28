@@ -1,103 +1,90 @@
-Return-Path: <andrea.galbusera@teamware.it>
-Received: from smtp5.aruba.it (smtpd2.aruba.it [62.149.128.207])
-	by ozlabs.org (Postfix) with SMTP id EE740DDE08
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Feb 2007 22:47:13 +1100 (EST)
-Subject: Post-boot PCI bus rescan
-From: Andrea Galbusera <andrea.galbusera@teamware.it>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Wed, 28 Feb 2007 12:41:00 +0100
-Message-Id: <1172662860.2799.66.camel@localhost.localdomain>
-Mime-Version: 1.0
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <n.eicker@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id AB552DDD04
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Mar 2007 01:43:15 +1100 (EST)
+From: Norbert Eicker <n.eicker@fz-juelich.de>
+To: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+Subject: [PATCH] spidernet: Fix problem sending IP fragments
+Date: Wed, 28 Feb 2007 15:21:34 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200702281521.34277.n.eicker@fz-juelich.de>
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
-I'm working on a mpc5200 based custom board. This is basically a
-Lite5200 like platform. I have an onboard FPGA that I configure from
-userspace linux with the required "firmware". Only after configuration
-the FPGA shows its PCI device "nature".
-I have the problem to make linux correctly see the PCI device, in order
-to load my device driver and go on running applications.
+Hi,
 
-First solution we implemented was to go through a reboot (without
-powering off the FPGA, of course) and consequent boot-time rescan of the
-bus. Works fine but performance is an issue here.
+I found out that the spidernet-driver is unable to send fragmented IP 
+frames.
 
-I then started digging around and found some PCI rescan solution (mainly
-fakephp from the kernel tree and a rescan routine by John Carlson). Both
-these can detect the device and correctly initialize /sys entries. 
+Let me just recall the basic structure of "normal" UDP/IP/Ethernet 
+frames (that actually work):
+ - It starts with the Ethernet header (dest MAC, src MAC, etc.)
+ - The next part is occupied by the IP header (version info, length of 
+packet, id=0, fragment offset=0, checksum, from / to address, etc.)
+ - Then comes the UDP header (src / dest port, length, checksum)
+ - Actual payload
+ - Ethernet checksum
 
-Unfortunately my PCI device config space appears to be different from
-the one I have with the reboot approach. I then compiled my kernel with
-full PCI debugging enabled and got the log attached below. As far as I
-can understand during boot linux calls some fixups on irqs and resouces
-for my PCI device (0000:00:18.0). Those seem to be called by
-pcibios_init() in arch/ppc/kernel/pci.c.
+Now what's different for IP fragment:
+ - The IP header has id set to some value (same for all fragments), 
+offset is set appropriately (i.e. 0 for first fragment, following 
+according to size of other fragments), size is the length of the frame.
+ - UDP header is unchanged. I.e. length is according to full UDP 
+datagram, not just the part within the actual frame! But this is only 
+true within the first frame: all following frames don't have a valid 
+UDP-header at all.
 
-My question is: am I on the right way to figure out why PCI device
-config space appear different with the two approaches? What is the logic
-behind those fixups? Can I call them again after boot i.e. from my
-rescan module?
+The spidernet silicon seems to be quite intelligent: It's able to 
+compute (IP / UDP / Ethernet) checksums on the fly and tests if frames 
+are conforming to RFC -- at least conforming to RFC on complete frames.
 
-Thanks in advance for any kind help
-Andrea
+But IP fragments are different as explained above:
+I.e. for IP fragments containing part of a UDP datagram it sees 
+incompatible length in the headers for IP and UDP in the first frame 
+and, thus, skips this frame. But the content *is* correct for IP 
+fragments. For all following frames it finds (most probably) no valid 
+UDP header at all. But this *is* also correct for IP fragments.
 
+The Linux IP-stack seems to be clever in this point. It expects the 
+spidernet to calculate the checksum (since the module claims to be able 
+to do so) and marks the skb's for "normal" frames accordingly 
+(ip_summed set to CHECKSUM_HW).
+But for the IP fragments it does not expect the driver to be capable to 
+handle the frames appropriately. Thus all checksums are allready 
+computed. This is also flaged within the skb (ip_summed set to 
+CHECKSUM_NONE).
 
-----------------------------------------
-Boot time PCI debug messages if I reboot
-----------------------------------------
+Unfortunately the spidernet driver ignores that hints. It tries to send 
+the IP fragments of UDP datagrams as normal UDP/IP frames. Since they 
+have different structure the silicon detects them the be not 
+"well-formed" and skips them.
 
-> PCI: Probing PCI hardware
-> DEV: registering device: ID = 'pci0000:00'
-> kobject pci0000:00: registering. parent: <NULL>, set: devices
-> kobject_uevent
-> CLASS: registering class device: ID = '0000:00'
-> kobject 0000:00: registering. parent: pci_bus, set: class_obj
-> kobject_uevent
-> fill_kobj_path: path = '/class/pci_bus/0000:00'
-> class_uevent - name = 0000:00
-> PCI: Scanning bus 0000:00
-> PCI: Found 0000:00:18.0 [1172/abcd] 00ffed 00
-> PCI: Calling quirk c00098bc for 0000:00:18.0
-> PCI: Calling quirk c010d400 for 0000:00:18.0
-> PCI: Found 0000:00:1a.0 [1057/5809] 000680 00
-> PCI: Calling quirk c00098bc for 0000:00:1a.0
-> PCI: Calling quirk c010d400 for 0000:00:1a.0
-> PCI: Fixups for bus 0000:00
-> PCI: Bus scan for 0000:00 returning with max=00
-> DEV: registering device: ID = '0000:00:18.0'
-> kobject 0000:00:18.0: registering. parent: pci0000:00, set: devices
-> kobject_uevent
-> fill_kobj_path: path = '/devices/pci0000:00/0000:00:18.0'
-> bus pci: add device 0000:00:18.0
-> DEV: registering device: ID = '0000:00:1a.0'
-> kobject 0000:00:1a.0: registering. parent: pci0000:00, set: devices
-> kobject_uevent
-> fill_kobj_path: path = '/devices/pci0000:00/0000:00:1a.0'
-> bus pci: add device 0000:00:1a.0
-> PCI: fixup irq: (0000:00:18.0) got 1
-> PCI: fixup irq: (0000:00:1a.0) got 0
-> PCI: bridge rsrc 0..ffffff (100), parent c027a1fc
-> PCI: bridge rsrc 80000000..9fffffff (1200), parent c027a1e0
-> PCI: bridge rsrc a0000000..afffffff (200), parent c027a1e0
->   got res [80000000:80000fff] bus [80000000:80000fff] flags 1208 for
-BAR 0 of 0000:00:18.0
-> PCI: moved device 0000:00:18.0 resource 0 (1208) to 80000000
->   got res [80800000:80ffffff] bus [80800000:80ffffff] flags 1208 for
-BAR 1 of 0000:00:18.0
-> PCI: moved device 0000:00:18.0 resource 1 (1208) to 80800000
->   got res [a0000000:a0003fff] bus [a0000000:a0003fff] flags 200 for
-BAR 2 of 0000:00:18.0
-> PCI: moved device 0000:00:18.0 resource 2 (200) to a0000000
->   got res [a0040000:a007ffff] bus [a0040000:a007ffff] flags 200 for
-BAR 0 of 0000:00:1a.0
-> PCI: moved device 0000:00:1a.0 resource 0 (200) to a0040000
+The following one-liner against 2.6.21-rc2 changes this behavior. If the 
+IP-stack claims to have done the checksumming, the driver should not 
+try to checksum (and analyze) the frame but send it as is.
+
+Signed-off-by: Norbert Eicker <n.eicker@fz-juelich.de>
+---
+diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
+index 3b91af8..31507ac 100644
+--- a/drivers/net/spider_net.c
++++ b/drivers/net/spider_net.c
+@@ -719,7 +719,7 @@ spider_net_prepare_tx_descr(struct spide
+                        SPIDER_NET_DESCR_CARDOWNED | 
+SPIDER_NET_DMAC_NOCS;
+        spin_unlock_irqrestore(&chain->lock, flags);
+
+-       if (skb->protocol == htons(ETH_P_IP))
++       if (skb->protocol == htons(ETH_P_IP) && skb->ip_summed == 
+CHECKSUM_HW)
+                switch (skb->nh.iph->protocol) {
+                case IPPROTO_TCP:
+                        hwdescr->dmac_cmd_status |= SPIDER_NET_DMAC_TCP;
