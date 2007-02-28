@@ -1,25 +1,16 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 75614DDE48
+Return-Path: <cthomas@Soneticom.com>
+Received: from Soneticom.com (soneticom.com [209.114.210.150])
+	by ozlabs.org (Postfix) with ESMTP id ECD96DDE26
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Mar 2007 05:20:10 +1100 (EST)
-In-Reply-To: <45E5C333.2060100@zytor.com>
-References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com>
-	<46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com>
-	<45E5BD6B.1010509@freescale.com>
-	<F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com>
-	<45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-Date: Wed, 28 Feb 2007 13:20:07 -0500
-To: H. Peter Anvin <hpa@zytor.com>
-Cc: Torben.Mathiasen@hp.com, linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
-	Timur Tabi <timur@freescale.com>,
-	Segher Boessenkool <segher@kernel.crashing.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	Thu,  1 Mar 2007 05:41:38 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C75B68.127A3FE8"
+Subject: MTD and U-boot
+Date: Wed, 28 Feb 2007 13:41:36 -0500
+Message-ID: <3C02138692C13C4BB675FE7EA24095292E0871@bluefin.Soneticom.local>
+From: "Clint Thomas" <cthomas@Soneticom.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,29 +21,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On Feb 28, 2007, at 1:00 PM, H. Peter Anvin wrote:
+------_=_NextPart_001_01C75B68.127A3FE8
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-> I would much rather see these devices moved to a different minor  
-> range.
+Hey,
 
-No.  We just did that all too recently, and
-i don't know why the minors didn't get
-allocated properly.  I don't want to have to
-update all of our embedded software distributions
-just because someone doesn't like minor
-numbers that aren't causing trouble.
-If we allocate unique spaces for all of the
-possible UART variations, there isn't going
-to be enough space.
+I want to be able to write/read from the same boot flash U-boot resides
+on. Right now, u-boot and the vmlinux.img reside on the same 16bit NAND
+flash. Is it possible to setup the flash so that from linux, I can erase
+and write an updated vmlinux.img when I want to update a kernel build on
+the system, without partitioning off a section of it away from U-boot?
+=20
+Clinton Thomas
 
-Just allocate the four slots and we'll deal with
-anything above this in custom products.  Using
-more than four of these processor resources
-as UARTs isn't likely to happen because there
-won't be anything left for the interesting
-communication ports.
+=20
 
-Thanks.
+------_=_NextPart_001_01C75B68.127A3FE8
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-	-- Dan
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.6000.16414" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><SPAN class=3D418412818-28022007><FONT face=3DArial =
+size=3D2>Hey,<BR><BR>I want=20
+to be able to write/read from the same boot flash U-boot resides on. =
+Right now,=20
+u-boot and the vmlinux.img reside on the same 16bit NAND flash. Is it =
+possible=20
+to setup the flash so that from linux, I can erase and write an updated=20
+vmlinux.img when I want to update a kernel build on the system, without=20
+partitioning off a section of it away from U-boot?</FONT></SPAN></DIV>
+<DIV>&nbsp;</DIV>
+<DIV align=3Dleft><FONT face=3DArial size=3D2>Clinton =
+Thomas<BR></FONT></DIV>
+<DIV>&nbsp;</DIV></BODY></HTML>
+
+------_=_NextPart_001_01C75B68.127A3FE8--
