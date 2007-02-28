@@ -1,21 +1,28 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <glppe-linuxppc-embedded-2@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4787EDDD0E
+	by ozlabs.org (Postfix) with ESMTP id 76206DDDE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Feb 2007 05:53:48 +1100 (EST)
-In-Reply-To: <29DC34A6B43468409F5A371CFE34E8490B614F@ex01.ads.ubidyne.de>
-References: <29DC34A6B43468409F5A371CFE34E8490B614F@ex01.ads.ubidyne.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=WINDOWS-1252; delsp=yes; format=flowed
-Message-Id: <CB39D235-9A02-4FB3-B19E-D7928F0E44E2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Could not create MTD Partitions
-Date: Tue, 27 Feb 2007 12:52:54 -0600
-To: Frank Prepelica <Frank.Prepelica@ubidyne.com>
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 28 Feb 2007 12:00:54 +1100 (EST)
+Received: from list by ciao.gmane.org with local (Exim 4.43)
+	id 1HMDBS-0007Wv-IM
+	for linuxppc-embedded@ozlabs.org; Wed, 28 Feb 2007 02:00:43 +0100
+Received: from dsl-202-45-109-210-static.VIC.netspace.net.au ([202.45.109.210])
+	by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 28 Feb 2007 02:00:42 +0100
+Received: from daniel_ng11 by dsl-202-45-109-210-static.VIC.netspace.net.au
+	with local (Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-embedded@ozlabs.org>; Wed, 28 Feb 2007 02:00:42 +0100
+To: linuxppc-embedded@ozlabs.org
+From: Daniel Ng <daniel_ng11@lycos.com>
+Subject: RADIUS client?
+Date: Wed, 28 Feb 2007 01:00:29 +0000 (UTC)
+Message-ID: <loom.20070228T015905-86@post.gmane.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@sea.gmane.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,20 +33,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-On Feb 27, 2007, at 3:48 AM, Frank Prepelica wrote:
+Can anyone recommend a small RADIUS client for Power PC? I'm running Linux 
+2.6.12 with uClibc on a PowerPC.
 
-> Hi all,
->
->
->
-> I got a problem during creating the MTD partitions. I=92m using the
->
-> ELDK 4.1 with 2.6.19.2 Kernel and the MPC8343 board with 128MB RAM
->
-> and 64MB flash memory.
-
-Are you sure its a single flash chip that is 64M or multiple flash =20
-chips?
-
-- k
+Cheers,
+Daniel
