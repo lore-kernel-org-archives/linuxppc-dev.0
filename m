@@ -1,30 +1,15 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id CC4CEDDEE7
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc2-s13.bay0.hotmail.com (bay0-omc2-s13.bay0.hotmail.com
+	[65.54.246.149]) by ozlabs.org (Postfix) with ESMTP id 9E5B1DDEBA
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Mar 2007 07:57:50 +1100 (EST)
-In-Reply-To: <45E5DB49.8010205@freescale.com>
-References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com>
-	<46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com>
-	<45E5BD6B.1010509@freescale.com>
-	<F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com>
-	<45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com>
-	<ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com>
-	<E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org>
-	<45E5D627.6030707@zytor.com> <45E5D84A.5000502@freescale.com>
-	<278AADB6-E175-4177-A728-5357E21697B7@kernel.crashing.org>
-	<45E5DB49.8010205@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-Date: Wed, 28 Feb 2007 15:57:48 -0500
-To: Timur Tabi <timur@freescale.com>
-Cc: Segher Boessenkool <segher@kernel.crashing.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>, Torben.Mathiasen@hp.com
+	Thu,  1 Mar 2007 08:21:34 +1100 (EST)
+Message-ID: <BAY115-W509068F8DB7774727EF71B2810@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Please help me with compiling the kernel for ML403
+Date: Wed, 28 Feb 2007 21:21:33 +0000
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,27 +21,167 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Feb 28, 2007, at 2:43 PM, Timur Tabi wrote:
+Hi
 
-> What about major number 205?  It also has the screwed-up /dev/ 
-> ttyCPM entries, but it has more room, and the CPM driver doesn't  
-> actually use it.  At least, I can't see where it uses it.
+It is some thing more than 2 weeks that I'm trying to compile the kernel fo=
+r ML403.=20
+Posted to questions here, but unfortunately, didn't get any answer from the=
+ experts here.
+I have tested every thing I knew ( with my limited knowledge ) and now, I r=
+eally need your help.
 
-Please, let's just leave the four we have and let
-the driver just allocate increasing minor numbers.
-If anyone has a product with more than 4 UARTs,
-they will have to figure out what to do with the
-additional minors.
+I'm using the following set of tools:
+EDK 8.2.02,  ( Latest )
+ELDK 4.1 ( Latest )
 
-We are making a very complicated problem
-out of nothing.  This hasn't caused any problems
-in the past, and changing the existing names and
-minors will cause problems for everyone today.
+-I want to compile the 2.6.20 kernel, downloaded from kernel.org
 
-Just leave it alone, fix up the documentation,
-and have the driver print some warning if it
-allocates more than 4 UARTs.
+-As the first step, in EDK, I choose linux 2.6 in software platform generat=
+ion settings,
+
+-I generate the BSP.=20
+
+-In the generated BSP , I convert all of the 40x strings to 403, also I cha=
+nge the name of xparameters_ml40x to xparameters_ml403
+
+-I copy the 2.6.20 kernel /eldk/ppc_4xx/usr/src/linux , and set all of the =
+needed env variables for cross compile, and set the needed changes in the l=
+inux Makefile. ( ARCH and=20
+CROSS_COMPILE )
+
+-I copy the entire BSP into the root of the linux kernel.
+
+-I edit the linux/arch/ppc/Kconfig file, and add these lines into it:
+config XILINX_OCP
+	bool "Xilinx OCP"
+	default y
+
+config XILINX_TEMAC
+	bool "Xilinx TEMAC"
+	default y
+
+config XILINX_SYSACE
+	bool "Xilinx System ACE"
+	default y
+
+config XILINX_EDK
+	bool "Xilinx EDK Support"
+	default y
+
+-In the linux folder I execute the cow.tcl script provided with the BSP fro=
+m EDK ( I execute tclsh cow.tcl )=20
+
+-I make a symbolic link , for config.h file, ( I go to linux/include/linux =
+and then ln -s autoconf.h config.h )
+
+-I begin the menuconfig and set all of the needed parameters
+
+-Now, I begin the make process by simply typing : make
+
+- I encounter the following error:
+arch/ppc/platforms/4xx/virtex.c:20: error: array type has incomplete elemen=
+t type
+arch/ppc/platforms/4xx/virtex.c:60: error: field name not in record or unio=
+n initializer
+arch/ppc/platforms/4xx/virtex.c:60: error: (near initialization for 'core_o=
+cp')
+make[1]: *** [arch/ppc/platforms/4xx/virtex.o] Error 1
+make: *** [arch/ppc/platforms/4xx] Error 2
+
+- I can prevent this error by commenting these lines of /arch/ppc/platforms=
+/4xx/virtex.c file:
+/* Have OCP take care of the serial ports. */
+struct ocp_def core_ocp[] =3D {
+#ifdef XPAR_UARTNS550_0_BASEADDR
+	{ .vendor	=3D OCP_VENDOR_XILINX,
+	  .function	=3D OCP_FUNC_16550,
+	  .index	=3D 0,
+	  .paddr	=3D XPAR_UARTNS550_0_BASEADDR,
+	  .irq		=3D XPAR_INTC_0_UARTNS550_0_VEC_ID,
+	  .pm		=3D OCP_CPM_NA
+	},
+#ifdef XPAR_UARTNS550_1_BASEADDR
+	{ .vendor	=3D OCP_VENDOR_XILINX,
+	  .function	=3D OCP_FUNC_16550,
+	  .index	=3D 1,
+	  .paddr	=3D XPAR_UARTNS550_1_BASEADDR,
+	  .irq		=3D XPAR_INTC_0_UARTNS550_1_VEC_ID,
+	  .pm		=3D OCP_CPM_NA
+	},
+#ifdef XPAR_UARTNS550_2_BASEADDR
+	{ .vendor	=3D OCP_VENDOR_XILINX,
+	  .function	=3D OCP_FUNC_16550,
+	  .index	=3D 2,
+	  .paddr	=3D XPAR_UARTNS550_2_BASEADDR,
+	  .irq		=3D XPAR_INTC_0_UARTNS550_2_VEC_ID,
+	  .pm		=3D OCP_CPM_NA
+	},
+#ifdef XPAR_UARTNS550_3_BASEADDR
+	{ .vendor	=3D OCP_VENDOR_XILINX,
+	  .function	=3D OCP_FUNC_16550,
+	  .index	=3D 3,
+	  .paddr	=3D XPAR_UARTNS550_3_BASEADDR,
+	  .irq		=3D XPAR_INTC_0_UARTNS550_3_VEC_ID,
+	  .pm		=3D OCP_CPM_NA
+	},
+#ifdef XPAR_UARTNS550_4_BASEADDR
+#error Edit this file to add more devices.
+#endif			/* 4 */
+#endif			/* 3 */
+#endif			/* 2 */
+#endif			/* 1 */
+#endif			/* 0 */
+	{ .vendor	=3D OCP_VENDOR_INVALID
+	}
+};
+
+- Instead of the ebove lines, I just put one simple line: ( I use uart lite=
+ and not the 16550 so there should be no problem commenting these lines? )
+struct ocp_def * core_ocp;
+
+- now, I begin the make process again, The make process goes ahead but afte=
+r a long time it generates another error:
+  GEN     .version
+  CHK     include/linux/compile.h
+  UPD     include/linux/compile.h
+  CC      init/version.o
+  LD      init/built-in.o
+  LD      .tmp_vmlinux1
+arch/ppc/syslib/built-in.o: In function `ppc_sys_device_remove':
+: undefined reference to `ppc_sys_platform_devices'
+arch/ppc/syslib/built-in.o: In function `ppc_sys_device_remove':
+: undefined reference to `ppc_sys_platform_devices'
+arch/ppc/syslib/built-in.o: In function `ppc_sys_device_initfunc':
+: undefined reference to `ppc_sys_platform_devices'
+arch/ppc/syslib/built-in.o: In function `ppc_sys_device_initfunc':
+: undefined reference to `ppc_sys_platform_devices'
+arch/ppc/syslib/built-in.o: In function `ppc_sys_device_setfunc':
+: undefined reference to `ppc_sys_platform_devices'
+arch/ppc/syslib/built-in.o:: more undefined references to `ppc_sys_platform=
+_devices' follow
+make: *** [.tmp_vmlinux1] Error 1
+
+- If I do not add the BSP files from EDK to my kernel and compile the kerne=
+l for ML403, every thing will be completely OK. ( But I want TEMAC )
+
+- when I look in the original virtex.c file, I see that it has defined ppc_=
+sys_platform_devices but when I look at the virtex.c generated by Xilinx, I=
+ see that it has a completely different structure, it has no definition of =
+this variable. It is completely different from the original virtex.c
+
+- I have tested the same things above, with different versions of 2.6 kerne=
+l, such as, 2.6.17.1 and 26-xilinx-devel ( which I download from montavista=
+ using git near two weeks ago ) , I also changed the version of eldk to 4.0=
+ and to 3.5 ( with 3.5 I could not compile the kernel at all )=20
+
+Any idea, Any suggestion and any thing which can help even a litte, is welc=
+ome,=20
+I really do not know what to do more.
 
 Thanks.
 
-	-- Dan
+_________________________________________________________________
+Invite your mail contacts to join your friends list with Windows Live Space=
+s. It's easy!=20
+http://spaces.live.com/spacesapi.aspx?wx_action=3Dcreate&wx_url=3D/friends.=
+aspx&mkt=3Den-us=
