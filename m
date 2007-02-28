@@ -1,26 +1,38 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33889DDDFB
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 17:45:06 +1100 (EST)
-Subject: Re: Make sure we populate the initroot filesystem late enough
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <3ac1a55a11baddefb903f24b988566fe@kernel.crashing.org>
-References: <200612112059.kBBKx1j7022473@hera.kernel.org>
-	<1172448057.3971.9.camel@shinybook.infradead.org>
-	<1172518068.15970.6.camel@localhost> <20070226222724.GA13182@keitarou>
-	<1172558897.11949.43.camel@localhost.localdomain>
-	<3ac1a55a11baddefb903f24b988566fe@kernel.crashing.org>
-Content-Type: text/plain
-Date: Wed, 28 Feb 2007 07:43:07 +0100
-Message-Id: <1172644987.11949.90.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: David Woodhouse <dwmw2@infradead.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, john stultz <johnstul@us.ibm.com>,
-	Paul TBBle Hampson <Paul.Hampson@Pobox.com>, torvalds@linux-foundation.org
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7BB43DDDFC
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 20:29:36 +1100 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l1S9TSdt094788
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 09:29:28 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
+	[9.149.37.216])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.2) with
+	ESMTP id l1S9TSEd1437870
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 09:29:28 GMT
+Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l1S9TRgH001817
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 09:29:28 GMT
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Patrick McHardy <kaber@trash.net>
+Subject: Re: [PATCH 2/2] ehea: NAPI multi queue TX/RX path for SMP
+Date: Wed, 28 Feb 2007 10:23:16 +0100
+References: <200702271732.51829.ossthema@de.ibm.com>
+	<45E46208.3000003@trash.net>
+In-Reply-To: <45E46208.3000003@trash.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200702281023.17591.ossthema@de.ibm.com>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,16 +42,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
-> It's most likely a red herring, lots of config changes
-> make the bug go away on some kernel versions (but not
-> on others); the problem is very sensitive to changes in
-> memory layout.
+> >  
+> > +static inline int ehea_hash_skb(struct sk_buff *skb, int num_qps)
+> > +{
+> > +	u32 tmp;
+> > +	if ((skb->nh.iph->protocol == IPPROTO_TCP)
+> > +	    && skb->protocol == ETH_P_IP) {
+> 
+> skb->protocol has network byte order. The ETH_P_IP test should also
+> logically come before checking the IP protocol.
+> 
 
-I wouldn't be that sure ... I've had problems in the past with PMU based
-cpufreq... looks like flushing all caches and hard-resetting the
-processor on the fly when there can be pending DMAs might be a source of
-trouble... especially on CPUs that don't have working cache flush HW
-assist.
+fixed.
 
-Ben.
+> > +		tmp = (skb->h.th->source + (skb->h.th->dest << 16)) % 31;
+> 
+> Only locally generated packets have a valid h.th pointer.
+> 
+good point. I'll fix that.
+
+I'll send a new patch set later today
+
+Thanks,
+Jan-Bernd
