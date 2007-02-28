@@ -1,21 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[217.147.92.249])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B6FBCDDE47
-	for <linuxppc-dev@ozlabs.org>; Thu,  1 Mar 2007 09:03:31 +1100 (EST)
-In-Reply-To: <45E5ED35.7090207@gmail.com>
-References: <45E5ED35.7090207@gmail.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0a1927a91e52d34352e8a545b7dc57d0@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: problems with pci bus on a pm520 board
-Date: Wed, 28 Feb 2007 23:03:24 +0100
-To: Luotao Fu <devtty0@gmail.com>
-Cc: linuxppc-dev@ozlabs.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1FBF0DDEA3
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Mar 2007 09:26:47 +1100 (EST)
+Date: Wed, 28 Feb 2007 22:26:30 +0000
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 1/2] Define FIXED_PORT flag for serial_core
+Message-ID: <20070228222630.GA11999@flint.arm.linux.org.uk>
+References: <20070220031717.GI17818@localhost.localdomain>
+	<20070220031951.56492DDD09@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070220031951.56492DDD09@ozlabs.org>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> 11.* is the usb controller
+On Tue, Feb 20, 2007 at 02:19:51PM +1100, David Gibson wrote:
+> Therefore, this patch defines a UPF_FIXED_PORT flag for the uart_port
+> structure.  If this flag is set when the serial port is configured,
+> any attempts to alter the port's type, io address, irq or base clock
+> with setserial are ignored.
 
-Three OHCIs or is one an EHCI?
+I've been wondering about this, and it is questionable whether we
+should allow any serial port which isn't owned by the legacy platform
+device (the one called "serial8250", iow by the 8250 driver itself)
+to have the base addresses and interrupts changed.
 
-> However, if I compile the usb driver in and try to
-> boot. The system stucks somewhere at ohci_init or ohci_run without 
-> doing
-> anything till I switch the power off. I attached a bdi to the system 
-> and
-> found out that the system always stucks at the instruction lwbrx, which
-> is called by ohci_readl().
+IOW, we apply this "fixed port" to any port registered by probe
+modules external to the 8250 driver itself, such as PCI, PNP, etc.
 
-32-bit PCI read I suppose.  Use the BDI to figure out what
-address is accessed, and what source code corresponds to
-this access.
-
-> Seemed that the usb driver failed to acces
-> some mapped io memory address somehow.
-
-Yeah.
-
-> The funny thing is that the e100
-> driver also does some reading calls on iomem in the initialisation, 
-> such
-> as readb() in e100_eeprom_read(). It however doesn't cause system
-> freezing and the driver quits with an error message that the eeprom is
-> corrupted. I suppose the problem is somehow still on the pci
-> configuration in the device tree.
-
-Linux normally is perfectly happy if you leave out all of
-the PCI devices from your device tree (except the root
-bridges of course).
-
-> Hence I suppose the file is still not OK. Anybody could help me with an
-> idea where I still could look for or give me some detailed information
-> on the format of device tree?
-
-Sure, post it.
-
-> Along with this mail I attached my dts file.
-
-No you didn't.
-
-
-Segher
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
