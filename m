@@ -1,30 +1,16 @@
-Return-Path: <g.jaeger@sysgo.com>
-Received: from mail.sysgo.com (mail.sysgo.com [62.8.134.5])
-	by ozlabs.org (Postfix) with ESMTP id 5080CDDDF3
+Return-Path: <Frank.Prepelica@ubidyne.com>
+Received: from ex01.ads.ubidyne.de (mail.ubidyne.com [212.211.133.238])
+	by ozlabs.org (Postfix) with ESMTP id 9BCBEDDDF9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Feb 2007 20:37:52 +1100 (EST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.sysgo.com (Postfix) with ESMTP id AD069CC141
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Feb 2007 10:37:50 +0100 (CET)
-Received: from donald.sysgo.com (unknown [172.20.1.30])
-	by mail.sysgo.com (Postfix) with ESMTP id 6EC0DCC13E
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Feb 2007 10:37:50 +0100 (CET)
-Received: from gja.ulm.sysgo.com (unknown [172.30.1.130])
-	by donald.sysgo.com (Postfix) with ESMTP id 6DCBC287869
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Feb 2007 10:37:50 +0100 (CET)
-From: Gerhard Jaeger <g.jaeger@sysgo.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Could not create MTD Partitions
-Date: Wed, 28 Feb 2007 10:37:49 +0100
-References: <29DC34A6B43468409F5A371CFE34E8490B621B@ex01.ads.ubidyne.de>
-In-Reply-To: <29DC34A6B43468409F5A371CFE34E8490B621B@ex01.ads.ubidyne.de>
+	Wed, 28 Feb 2007 22:34:47 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200702281037.49739.g.jaeger@sysgo.com>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C75B2C.708DE849"
+Subject: RE: Could not create MTD Partitions
+Date: Wed, 28 Feb 2007 12:34:41 +0100
+Message-ID: <29DC34A6B43468409F5A371CFE34E8490B624D@ex01.ads.ubidyne.de>
+From: "Frank Prepelica" <Frank.Prepelica@ubidyne.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,56 +21,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mittwoch, 28. Februar 2007, Frank Prepelica wrote:
-> Well, actually I'm not sure. But I found some details
-> In the manual:
-> 
-> 32x Bus DDR
-> SDRAM w/ ECC
-> 
-> 32 MByte 
-> 128 Mbit (8M x 16 bit) devices
-> 2 Micron MT46V8M16TG-6T
-> 4 MBytes x 4 banks x 2 devices = 32 MBytes total
-> 2 bit bank address at 4[BA0,BA1]
-> 12 bit row address at 4K [A0:A11]
-> 9 bit column address at 512[A0:A8]
-> 
-> 64 MByte 
-> 256 Mbit (16M x 16 bit) devices
-> 2 Micron MT46V16M16TG-6T
-> 8 MBytes x 4 banks x 2 devices = 64 MBytes total
-> 2 bit bank address at 4[BA0,BA1]
-> 13 bit row address at 8K [A0:A12]
-> 9 bit column address at 512[A0:A8]
-> 
-> 128 MByte 
-> 512 Mbit (32M x 16 bit) devices
-> 2 Micron MT46V32M16TG-6T
-> 16 MBytes x 4 banks x 2 devices = 128 MBytes total
-> 2 bit bank address at 4[BA0,BA1]
-> 13 bit row address at 8K [A0:A12]
-> 10 bit column address at 1K[A0:A9]
-> 
-> 
-> Are the details for the 64MByte corresponding to that post
-> from Gerhard?
-> 
-> @Gerhard
-> Here are some parts of my configuration regarding the MTD settings.
-> Could you tell which I have to modify to get running the MTD partitions?
-[SNIPSNAP]
+This is a multi-part message in MIME format.
 
-The stuff above describe only the available RAM configurations, not the
-flash. Checkout for AMD/Spansion chips (according to your earlier post)...
+------_=_NextPart_001_01C75B2C.708DE849
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Your config should be okay, what I meant in my previous mail was, that
-you should check your mapping driver regarding the bankwidth parameter.
+Many thanks Gerhard,
 
-- Gerhard
+=20
 
--- 
-Gerhard Jaeger <gjaeger@sysgo.com>            
-SYSGO AG                      Embedded and Real-Time Software
-Lise-Meitner-Str. 15                    D-89081 Ulm / Germany
-www.sysgo.com | www.elinos.com | www.pikeos.com | www.osek.de 
+I changed the value for Bankwidth from 2 to 4
+
+Now it works!!
+
+=20
+
+
+------_=_NextPart_001_01C75B2C.708DE849
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0cm;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.E-MailFormatvorlage17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:595.3pt 841.9pt;
+	margin:70.85pt 70.85pt 2.0cm 70.85pt;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1027" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DDE link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Many thanks Gerhard,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>I changed the value for Bankwidth from 2 to =
+4<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'>Now it works!!<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span lang=3DEN-GB =
+style=3D'font-size:
+10.0pt;font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C75B2C.708DE849--
