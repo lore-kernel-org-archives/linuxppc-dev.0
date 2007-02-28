@@ -1,23 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9D295DDEB7
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Feb 2007 12:09:56 +1100 (EST)
-In-Reply-To: <20070228005615.GE11775@localhost.localdomain>
-References: <200702272254.l1RMsjt2030709@ld0164-tx32.am.freescale.net>
-	<20070228005615.GE11775@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <58f8dd3e83ff9ec2936e4cc735d9ff25@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC] powerpc: Document new property called interrupt-parents
-Date: Wed, 28 Feb 2007 02:09:49 +0100
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	Stuart Yoder <b08248@freescale.com>
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] [RFC,
+	PATCH] CELL Oprofile SPU profiling updated patch
+Date: Wed, 28 Feb 2007 02:44:12 +0100
+References: <1172102523.5233.31.camel@dyn9047021078.beaverton.ibm.com>
+	<200702270051.00393.arnd@arndb.de> <45E461D4.6050807@us.ibm.com>
+In-Reply-To: <45E461D4.6050807@us.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200702280244.12844.arnd@arndb.de>
+Cc: Gerhard Stenzel <gerhard.stenzel@de.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Mike Perks <mperks@us.ibm.com>,
+	oprofile-list@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,17 +23,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> +Note: each interrupt parent in the interrupt-parents array can
->> +potentially specify a different value for #interrupt-cells.  The 
->> number
->> +of #interrupt-cells for each parent must be determined to correctly
->> +parser the interrupts property.
->
-> I suggest your example actually show this case, since it's the more
-> general.
+On Tuesday 27 February 2007, Maynard Johnson wrote:
+> I have applied the "cleanup" patch that Arnd sent, but had to fix up a=20
+> few things:
+> =A0 =A0- =A0Bug fix: =A0Initialize retval in spu_task_sync.c, line 95, ot=
+herwise=20
+> OProfile this function returns non-zero and OProfile fails.
+> =A0 =A0- =A0Remove unused codes in include/linux/oprofile.h
+> =A0 =A0- =A0Compile warnings: =A0Initialize offset and spu_cookie at line=
+s 283=20
+> and 284 in spu_task_sync.c
+>=20
+> With these changes and some userspace changes that were necessary to=20
+> correspond with Arnd's changes, our testing was successful.
+>=20
+> A fixup patch is attached.
+>=20
 
-But it won't very likely happen in reality, unlike
-the nested-identical-PICs case.
+The patch does not contain any of the metadata I need to apply it
+(subject, description, signed-off-by).
 
+> @@ -280,8 +280,8 @@ static int process_context_switch(struct
+>  {
+>         unsigned long flags;
+>         int retval;
+> -       unsigned int offset;
+> -       unsigned long spu_cookie, app_dcookie;
+> +       unsigned int offset =3D 0;
+> +       unsigned long spu_cookie =3D 0, app_dcookie;
+>         retval =3D prepare_cached_spu_info(spu, objectId);
+>         if (retval)
+>                 goto out;
 
-Segher
+No, this is wrong. Leaving the variables uninitialized at least warns
+you about the bug you have in this function: when there is anything wrong,
+you just continue writing the record with zero offset and dcookie values
+in it. Instead, you should get handle the error condition somewhere
+down the code.
+
+It's harmless most of the time, but you really should not be painting
+over your bugs by blindly initializing variables.
+
+> diff -paur linux-orig/include/linux/oprofile.h linux-new/include/linux/op=
+rofile.h
+> --- linux-orig/include/linux/oprofile.h 2007-02-27 14:41:29.000000000 -06=
+00
+> +++ linux-new/include/linux/oprofile.h  2007-02-27 14:43:18.000000000 -06=
+00
+> @@ -36,9 +36,6 @@
+>  #define XEN_ENTER_SWITCH_CODE          10
+>  #define SPU_PROFILING_CODE             11
+>  #define SPU_CTX_SWITCH_CODE            12
+> -#define SPU_OFFSET_CODE                13
+> -#define SPU_COOKIE_CODE                14
+> -#define SPU_SHLIB_COOKIE_CODE          15
+> =20
+>  struct super_block;
+>  struct dentry;
+>=20
+Right, I forgot about this.
+
+	Arnd <><
