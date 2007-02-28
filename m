@@ -1,15 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 1 Mar 2007 10:33:34 +1100
+Date: Thu, 1 Mar 2007 10:38:01 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: Time to put bootwrapper patches into powerpc.git?
-Message-ID: <20070228233334.GB3048@localhost.localdomain>
-References: <20070216203134.GB26099@mag.az.mvista.com>
-	<45E5FB91.5090007@freescale.com>
+To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Subject: Re: [RFC] powerpc: Document new property called interrupt-parents
+Message-ID: <20070228233801.GC3048@localhost.localdomain>
+References: <200702272254.l1RMsjt2030709@ld0164-tx32.am.freescale.net>
+	<20070228005615.GE11775@localhost.localdomain>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302AA071F@az33exm25.fsl.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45E5FB91.5090007@freescale.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, paulus@samba.org
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302AA071F@az33exm25.fsl.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,23 +20,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Feb 28, 2007 at 04:00:49PM -0600, Timur Tabi wrote:
-> Mark A. Greer wrote:
-> > There is a rather large number of patches for the bootwrapper (from
-> > Scott Wood, David Gibson, others?) queued up to go into powerpc.git.
-> > I think most of them are acceptable or pretty close so IMHO it would be
-> > nice to have them in powerpc.git.  Especially since I have more patches
-> > for the bootwrapper and I don't know what I should base them on. :)
+On Wed, Feb 28, 2007 at 08:56:55AM -0700, Yoder Stuart-B08248 wrote:
+> 
+> > -----Original Message-----
+> > From: David Gibson [mailto:david@gibson.dropbear.id.au] 
+> > Sent: Tuesday, February 27, 2007 6:56 PM
+> > To: Yoder Stuart-B08248
+> > Cc: paulus@samba.org; linuxppc-dev@ozlabs.org
+> > Subject: Re: [RFC] powerpc: Document new property called 
+> > interrupt-parents
 > > 
-> > Anyone agree?
+> > On Tue, Feb 27, 2007 at 04:54:45PM -0600, Stuart Yoder wrote:
+> > > 
+> > > Document new property called interrupt-parents which can
+> > > be used to represent interrupts for devices that route
+> > > interrupts to more than one interrupt controller.
+> > 
+> > Well, whatever Segher says, I'm still very concerned about the
+> > potential for extra difficulty in debugging with this approach.
 > 
-> Yes, I think these patches are long overdue.
+> The issue, as I understand it, is the potential for an old
+> kernel parser to silently misparse a new dev tree with this
+> new property.
 > 
-> Paul, do you see any reason why these patches can't become part of 2.6.21?
+> Do the version and last_comp_version in the blob header
+> help here?
 
-Well, the merge window for 2.6.21 is closed now, but I hope they can
-go into 2.6.22.  My patches, at least, still need testing on 32-bit
-powermac, which I haven't managed to arrange yet.
+Unfortunately not.  Those fields version the the serialization format
+of the device tree, not the content of the device tree.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
