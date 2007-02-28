@@ -1,16 +1,30 @@
-Return-Path: <jrocnuck@hotmail.com>
-Received: from bay0-omc3-s1.bay0.hotmail.com (bay0-omc3-s1.bay0.hotmail.com
-	[65.54.246.201]) by ozlabs.org (Postfix) with ESMTP id 056E2DDE37
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 644AFDDE33
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Mar 2007 06:04:58 +1100 (EST)
-Message-ID: <BAY117-F2369837F5EDAB8813B2421C8810@phx.gbl>
-In-Reply-To: <3C02138692C13C4BB675FE7EA24095292E0871@bluefin.Soneticom.local>
-From: "Eric Nuckols" <jrocnuck@hotmail.com>
-To: cthomas@Soneticom.com, linuxppc-embedded@ozlabs.org
-Subject: RE: MTD and U-boot
-Date: Wed, 28 Feb 2007 14:04:52 -0500
-Mime-Version: 1.0
-Content-Type: text/plain; format=flowed
+	Thu,  1 Mar 2007 06:19:22 +1100 (EST)
+In-Reply-To: <ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com>
+References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com>
+	<46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com>
+	<45E5BD6B.1010509@freescale.com>
+	<F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com>
+	<45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com>
+	<ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
+Date: Wed, 28 Feb 2007 13:18:21 -0600
+To: Dan Malek <dan@embeddedalley.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
+	Torben.Mathiasen@hp.com, Timur Tabi <timur@freescale.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,65 +36,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
+On Feb 28, 2007, at 12:20 PM, Dan Malek wrote:
 
-
->From: "Clint Thomas" <cthomas@Soneticom.com>
->To: <linuxppc-embedded@ozlabs.org>
->Subject: MTD and U-boot
->Date: Wed, 28 Feb 2007 13:41:36 -0500
 >
->Hey,
+> On Feb 28, 2007, at 1:00 PM, H. Peter Anvin wrote:
 >
->I want to be able to write/read from the same boot flash U-boot resides
->on. Right now, u-boot and the vmlinux.img reside on the same 16bit NAND
->flash. Is it possible to setup the flash so that from linux, I can erase
->and write an updated vmlinux.img when I want to update a kernel build on
->the system, without partitioning off a section of it away from U-boot?
+>> I would much rather see these devices moved to a different minor
+>> range.
 >
->Clinton Thomas
+> No.  We just did that all too recently, and
+> i don't know why the minors didn't get
+> allocated properly.  I don't want to have to
+> update all of our embedded software distributions
+> just because someone doesn't like minor
+> numbers that aren't causing trouble.
+> If we allocate unique spaces for all of the
+> possible UART variations, there isn't going
+> to be enough space.
 >
+> Just allocate the four slots and we'll deal with
+> anything above this in custom products.  Using
+> more than four of these processor resources
+> as UARTs isn't likely to happen because there
+> won't be anything left for the interesting
+> communication ports.
 
-Not sure if this is exactly what I think it is, but I asked a similar 
-question to this a couple weeks ago and didn't get any response.  So I will 
-tell you what I found out (for my case only).
+Why don't we allocate the 2nd group of four as well, just at a new  
+location.  They'll be discontinuous, but at least we'll have support  
+for all 8.
 
-We have a PPC Bug boot image in our flash and we have partitioned off 5 
-areas in the kernel mtd_physmap, one of which is used to store the 
-compressed kernel image file and root disk all in one (PPC bugboot image 
-file)
-
-I wrote some code to extract the entire contents of the "kernel" partition 
-and save off the binary to a file.  Then I figured out how my actual flashed 
-kernel image matched up with the offsets into that partition, and from that 
-was able to determine how to change the kernel image in flash to my new 
-image from a currently booted and running kernel.  I was using the MTD flash 
-device drivers and basically did something in userspace code like:
-
-fd = open("/dev/mtd/1")
-read from fd X bytes and store in file where X is size of kernel partition
-
-use hex editor to compare real file image to contents of flash dumped file 
-and determine offset into flash for start of actual bugboot image. (this 
-works for us, because we only have a kernel image in that flash space and 
-nothing else)
-
-
-so in the update/reprogram software it goes something like:
-
-eraseall /dev/mtd/1
-fd = open("my new image file")
-fd2 = open("/dev/mtd/1")
-
-seek up to correct offset on fd2 (or just write zeros until the proper 
-offset is reached)
-
-loop over fd:
-   read data from fd
-   write bytes into fd2
-
-
-that's it.. then reboot and bingo... new kernel image is running...
-
-_________________________________________________________________
-Don’t miss your chance to WIN 10 hours of private jet travel from Microsoft® 
-Office Live http://clk.atdmt.com/MRT/go/mcrssaub0540002499mrt/direct/01/
+- k 
