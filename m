@@ -1,34 +1,14 @@
-Return-Path: <cjashfor@us.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 9AC2BDDF11
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Mar 2007 06:25:02 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l21JOx05009112
-	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Mar 2007 14:24:59 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l21JOxfr362796
-	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Mar 2007 12:24:59 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l21JOxIO010540
-	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Mar 2007 12:24:59 -0700
-Received: from [9.47.21.171] (rational-corey.beaverton.ibm.com [9.47.21.171])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l21JOwB1010460
-	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Mar 2007 12:24:59 -0700
-Message-ID: <45E7288A.2090703@us.ibm.com>
-Date: Thu, 01 Mar 2007 11:24:58 -0800
-From: Corey Ashford <cjashfor@us.ibm.com>
+Return-Path: <Bruce_Leonard@selinc.com>
+In-Reply-To: <200703011101.20116.frank.bodammer@hs.gcd-erlangen.de>
+To: Frank Bodammer <frank.bodammer@hs.gcd-erlangen.de>
+Subject: Re: Kernel support for the TI1520 PCI-CardBus bridge?
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: PowerPC Switches Extension for the Eclipse CDT released on alphaWorks
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: cjashfor@us.ibm.com
+Message-ID: <OF2A2BDD6B.6E8EF202-ON88257291.006A3B74-88257291.006ADC4D@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Thu, 1 Mar 2007 11:27:17 -0800
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -39,39 +19,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi Frank,
 
-A PowerPC Switches Extension for the Eclipse CDT is now available here:
+linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org wrote on 03/01/2007 
+02:01:19 AM:
 
-http://alphaworks.ibm.com/tech/powerpcswitches
+> On Thursday 01 March 2007 02:35, Bruce_Leonard@selinc.com wrote:
+> > Hi all,
+> >
+> > We're designing a new product and we want to put a CF card in it. 
+We're
+> 
+> I got a TI  cardbus controller PCI1520IPDV working in a embedded PPC 
+> system with little modifications to kernel 2.4.25, but i didn't 
+> found a common 
+> configuration for the I/O-space that works for all type of cards 
+> (cardbus and 
+> pcmcia). I tested some pcmcia cards, like WLAN, Ethernet, pcmcia 
+harddisk 
+> and CF-Adapter with a different kernel configuration as for cardbus 
+cards. 
+> 
+> Frank
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
-This plug-in provides PowerPC-specific tool settings for the GNU C/C++
-compiler and assembler, as well as link options (also supplied to gcc),
-for managed C and C++ projects.
+Thanks for the reply.  So it sounds like if you got it working in 2.4.25, 
+there's probably better support in the current kernel.  How much work did 
+you have to do?  You say 'little modifications'.  Was it a few hours, 
+days, or weeks?  Based on what I've found so far (and my admittedly naive 
+understanding of pcmcia and the kernel), it looks like this should almost 
+be plug and play.  Turn on the the yenta pcmcia driver and tell it to look 
+for TI parts.  The TI1520 is alredy listed in pci_ids.h so it may be that 
+it'll just work.  We're just looking for a warm fuzzy before we commit to 
+this part since we're getting no help from TI on it.  And if we can't find 
+a warm fuzzy will look at something else.  Thanks again.
 
-It is free to download and released under an IBM license which allows
-unlimited use and copying.  Please read the license for details.
+Take care and stay safe.
 
-If you have any feedback on this plug-in, please provide it through the
-forums tab at the link above.
-
-
-Regards,
-
-- Corey
-
--- 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
-
-
--- 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+bruce
