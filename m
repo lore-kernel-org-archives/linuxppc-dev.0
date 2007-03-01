@@ -1,33 +1,17 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B63F5DDF2F
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2007 10:34:30 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l21NYRFX031739
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Mar 2007 18:34:27 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l21NYRiP525568
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Mar 2007 16:34:27 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l21NYQOD021297
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Mar 2007 16:34:27 -0700
-Date: Thu, 1 Mar 2007 17:34:26 -0600
-To: Chris Engel <chrisengel@gmail.com>
-Subject: Re: [PATCH] spidernet: Fix problem sending IP fragments
-Message-ID: <20070301233426.GH4717@austin.ibm.com>
-References: <200702281521.34277.n.eicker@fz-juelich.de>
-	<1e548a3f0703011452u6dde9c53ifde2fa41fe5f4c38@mail.gmail.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 9C9B0DDF30
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2007 10:49:28 +1100 (EST)
+Date: Thu, 1 Mar 2007 16:49:51 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Subject: Re: RFA & Update: Using libfdt in u-boot for fdt command
+Message-ID: <20070301234951.GC8177@mag.az.mvista.com>
+References: <45E6DCB4.3080106@smiths-aerospace.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1e548a3f0703011452u6dde9c53ifde2fa41fe5f4c38@mail.gmail.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Norbert Eicker <n.eicker@fz-juelich.de>, netdev@vger.kernel.org,
-	Adam Emerich <aemerich@us.ibm.com>, linuxppc-dev@ozlabs.org
+In-Reply-To: <45E6DCB4.3080106@smiths-aerospace.com>
+Cc: u-boot-users@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,15 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 01, 2007 at 04:52:54PM -0600, Chris Engel wrote:
-> I tried to apply this patch to 2.6.21-rc2 and CHECKSUM_HW appears to be
-> changed to CHECKSUM_COMPLETE 
+On Thu, Mar 01, 2007 at 09:01:24AM -0500, Jerry Van Baren wrote:
+> Hi all,
+> 
+> This is a Request for Advice.
 
-The use of CHECKSUM_HW was replaced by CHECKSUM_PARTIAL and CHECKSUM_COMPLETE
-on a cae-by-case basis, in the patch series leading up to 2.6.19.  In this case,
-I'm not sure which should have been used.
+Hi Jerry.
 
-Norbert, can you resubmit a patch that applies to a more recent kernel?
-p.s. your emailer replaced tabs by spaces ... 
+One minor thing.  I'd just want to remind you that we shouldn't stray
+too far from the OF interface.  The bootwrapper code sits on top of
+either the FDT access interface or the true OF DT access interface.  
+The closer we keep the two, the cleaner & easier the we can keep
+the bootwrapper code.
 
---linas
+Mark
