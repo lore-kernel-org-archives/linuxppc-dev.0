@@ -1,20 +1,35 @@
-Return-Path: <frank.bodammer@gcd-solutions.de>
-Received: from relay1.global.de (relay1.global.de [217.64.163.3])
+Return-Path: <jan-hinnerk.dumjahn@arcor.de>
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "localhost", Issuer "www.qmailtoaster.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 61CE7DDEC5
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6D881DDE28
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Mar 2007 21:08:50 +1100 (EST)
-From: Frank Bodammer <frank.bodammer@hs.gcd-erlangen.de>
+	Thu,  1 Mar 2007 22:17:08 +1100 (EST)
+Received: from mail-in-01-z2.arcor-online.net (mail-in-06-z2.arcor-online.net
+	[151.189.8.18])
+	by mail-in-06.arcor-online.net (Postfix) with ESMTP id F250331E73E
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Mar 2007 12:17:01 +0100 (CET)
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
+	by mail-in-01-z2.arcor-online.net (Postfix) with ESMTP id E588D5C169
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Mar 2007 12:17:01 +0100 (CET)
+Received: from [192.168.1.51] (pD95FF380.dip.t-dialin.net [217.95.243.128])
+	(Authenticated sender: jan-hinnerk.dumjahn@arcor.de)
+	by mail-in-07.arcor-online.net (Postfix) with ESMTP id BE550292B62
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu,  1 Mar 2007 12:17:01 +0100 (CET)
+From: Jan-Hinnerk Dumjahn <jan-hinnerk.dumjahn@arcor.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Kernel support for the TI1520 PCI-CardBus bridge?
-Date: Thu, 1 Mar 2007 11:01:19 +0100
-References: <OFB8991C41.CAB80F63-ON88257291.0008226D-88257291.0008B663@selinc.com>
-In-Reply-To: <OFB8991C41.CAB80F63-ON88257291.0008226D-88257291.0008B663@selinc.com>
+Subject: Problems with PHY on STK5200
+Date: Thu, 1 Mar 2007 12:16:57 +0100
 MIME-Version: 1.0
+Message-Id: <200703011216.57611.jan-hinnerk.dumjahn@arcor.de>
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703011101.20116.frank.bodammer@hs.gcd-erlangen.de>
+  charset="us-ascii"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,24 +40,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 01 March 2007 02:35, Bruce_Leonard@selinc.com wrote:
-> Hi all,
->
-> We're designing a new product and we want to put a CF card in it.  We're
-> thinking the easiest way to do that is to put in a PCI-CF bridge and we
-> would like to use the TI1520 because it's industrial rated which we need.
-> We can get the parts but TI is refusing to give us any support because
-> they're devoting 100% of their time to dealing with the Vista release. I'm
-> curious if anyone has ever successfully gotten this part to work in linux.
->  I found it listed in pci_ids.h, but that doesn't mean it's actually
-> used/working.  I'm not looking for a detailed explination right now, we're
-> just trying to gage if this part would be a couple of weeks of work or a
-> couple of months.  Thanks for any info.
+Hi,
 
-I got a TI  cardbus controller PCI1520IPDV working in a embedded PPC 
-system with little modifications to kernel 2.4.25, but i didn't found a common  
-configuration for the I/O-space that works for all type of cards (cardbus and  
-pcmcia). I tested some pcmcia cards, like WLAN, Ethernet, pcmcia harddisk 
-and CF-Adapter with a different kernel configuration as for cardbus cards. 
+I'm trying to compile a recent kernel from DENX "linuxppc_2_4_devel" for my 
+STK5200 using ELDK 3.1.1.
 
-Frank
+It seems that the current kernel there is not configuring the PHY. It looks 
+like the link is configured for full-duplex (although it should be configured 
+half-duplex).
+There is no informative output about the PHY after the line
+
+eth0: Phy @ 0x0, type LXT971 (0x001378e2)
+
+-------
+
+I have traced this change of behaviour back to a commit on 2005-09-04 
+22:41:06. This is a major restructuring/rework of the file 
+"arch/ppc/5xxx_io/fec.c".
+
+BTW: What is the normal way to reference a commit in a git-repository? I 
+haven't seen any revision numbers.
+
+The versions also show different program flow (with MPC5xxx_FEC_DEBUG set to 
+2).
+The old version goes:
+- mpc5xxx_fec_init()
+- mpc5xxx_fec_restart()
+  - PHY gets identified here
+- mpc5xxx_fec_open()
+  - autonegotiation here
+- mpc5xxx_fec_restart()
+
+The new one goes
+- mpc5xxx_fec_init()
+- mpc5xxx_fec_open()
+- mpc5xxx_fec_restart()
+  - PHY gets identified here
+
+
+The new version has some bad (or at least dead) code in the funtion 
+mpc5xxx_fec_setup(). However, I don't understand enough of the drivers design 
+to see how to fix this.
+
+Can anybody explain what the driver should to? Or even better has some patch 
+to make it work?
+
+Thanks in advance
+/Jan-Hinnerk Dumjahn
