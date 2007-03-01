@@ -1,9 +1,14 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 049D8DDF36
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 339D4DDF22
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Mar 2007 02:48:44 +1100 (EST)
-In-Reply-To: <a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org>
+	Fri,  2 Mar 2007 02:56:02 +1100 (EST)
+Message-ID: <45E6F78A.7070603@freescale.com>
+Date: Thu, 01 Mar 2007 09:55:54 -0600
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Dan Malek <dan@embeddedalley.com>, Torben.Mathiasen@hp.com
+Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
 References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com>
 	<46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com>
 	<45E5BD6B.1010509@freescale.com>
@@ -16,17 +21,13 @@ References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@k
 	<45E5DB49.8010205@freescale.com>
 	<A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com>
 	<a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
-Date: Thu, 1 Mar 2007 10:48:45 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	"H. Peter Anvin" <hpa@zytor.com>, Torben.Mathiasen@hp.com,
-	Timur Tabi <timur@freescale.com>
+	<BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com>
+In-Reply-To: <BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Segher Boessenkool <segher@kernel.crashing.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -37,36 +38,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Dan Malek wrote:
 
-On Feb 28, 2007, at 5:08 PM, Segher Boessenkool wrote:
+> People have used more than 4, but we just
+> allocated the additional /dev entries to cover
+> them.  I know of only one time this has happened.
+> It's such a custom case that the other device
+> names didn't matter.
 
-> Since you say no one has ever used more than 4 UARTs,
-> there are two options:
+Ok guys, I need a consensus here.  Are we going to allocate a second block of 4 minor 
+numbers for the QE/CPM UART or not?
 
-People have used more than 4, but we just
-allocated the additional /dev entries to cover
-them.  I know of only one time this has happened.
-It's such a custom case that the other device
-names didn't matter.
+My driver already has a macro that limits the number of UARTS to 4, and it just uses minor 
+numbers 47 through (47 + UCC_MAX_UART - 1).  So my driver can easily be modified to spill 
+into the Altic's range if some custom board needs it.
 
-> - Cap the driver at 4 UARTs;
+I'll add a second TTY struct to handle the 2nd set of minor numbers if and only if 
+devices-2.6+.txt is updated with that information.
 
-Let's do this, but design the code to
-allow more by just changing a #define.
-
-> Just randomly using some extra minors that aren't
-> assigned to you isn't such a great idea.
-
-Maybe for a desktop or generic server where
-you don't know what's going to be configured,
-but it's not unusual to do so with custom
-embedded systems.  The small experimental
-or user allocations often don't cover what
-is needed, so we just grab some allocation
-from a device that isn't ever going to be
-used on the system.
-
-
-Thanks.
-
-	-- Dan
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
