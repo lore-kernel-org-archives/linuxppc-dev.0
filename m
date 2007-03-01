@@ -1,14 +1,9 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 339D4DDF22
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
+	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id 800CADDF38
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Mar 2007 02:56:02 +1100 (EST)
-Message-ID: <45E6F78A.7070603@freescale.com>
-Date: Thu, 01 Mar 2007 09:55:54 -0600
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Dan Malek <dan@embeddedalley.com>, Torben.Mathiasen@hp.com
-Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
+	Fri,  2 Mar 2007 03:06:13 +1100 (EST)
+In-Reply-To: <45E6F78A.7070603@freescale.com>
 References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com>
 	<46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com>
 	<45E5BD6B.1010509@freescale.com>
@@ -22,12 +17,18 @@ References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@k
 	<A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com>
 	<a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org>
 	<BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com>
-In-Reply-To: <BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Segher Boessenkool <segher@kernel.crashing.org>,
-	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>
+	<45E6F78A.7070603@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D077F753-DA34-47AD-8F8F-76643A0DD692@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
+Date: Thu, 1 Mar 2007 11:06:12 -0500
+To: Timur Tabi <timur@freescale.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>,
+	linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Torben.Mathiasen@hp.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,24 +39,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dan Malek wrote:
 
-> People have used more than 4, but we just
-> allocated the additional /dev entries to cover
-> them.  I know of only one time this has happened.
-> It's such a custom case that the other device
-> names didn't matter.
 
-Ok guys, I need a consensus here.  Are we going to allocate a second block of 4 minor 
-numbers for the QE/CPM UART or not?
+Since I'm probably the only one that
+really uses the driver for custom
+uses and cares......
 
-My driver already has a macro that limits the number of UARTS to 4, and it just uses minor 
-numbers 47 through (47 + UCC_MAX_UART - 1).  So my driver can easily be modified to spill 
-into the Altic's range if some custom board needs it.
+On Mar 1, 2007, at 10:55 AM, Timur Tabi wrote:
 
-I'll add a second TTY struct to handle the 2nd set of minor numbers if and only if 
-devices-2.6+.txt is updated with that information.
+> Ok guys, I need a consensus here.  Are we going to allocate a  
+> second block of 4 minor numbers for the QE/CPM UART or not?
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+not.
+
+> My driver already has a macro that limits the number of UARTS to 4,
+
+perfect.
+
+> I'll add a second TTY struct...
+
+Don't worry about it for now.  We'll just keep this in
+mind when we make a major change someday in
+the future.  We may have a better solution then.
+
+Thanks.
+
+	-- Dan
