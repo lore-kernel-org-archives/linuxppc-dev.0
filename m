@@ -1,33 +1,20 @@
-Return-Path: <cjashfor@us.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A1A93DDF10
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2007 06:23:29 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l21JNQoY027243
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Mar 2007 14:23:26 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
-	l21JNQW3269354
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Mar 2007 12:23:26 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l21JNQkl002044
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Mar 2007 12:23:26 -0700
-Received: from [9.47.21.171] (rational-corey.beaverton.ibm.com [9.47.21.171])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l21JNPrj001991
-	for <linuxppc-dev@ozlabs.org>; Thu, 1 Mar 2007 12:23:26 -0700
-Message-ID: <45E7282D.9060101@us.ibm.com>
-Date: Thu, 01 Mar 2007 11:23:25 -0800
-From: Corey Ashford <cjashfor@us.ibm.com>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
+	by ozlabs.org (Postfix) with ESMTP id 83BA3DDF27
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2007 08:04:08 +1100 (EST)
+To: Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>
+Subject: Re: [PATCH 2.6.21-rc2] ehca: fix mismatched sync between completion
+	handler and destroy cq
+References: <200702281801.02747.hnguyen@linux.vnet.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 01 Mar 2007 13:04:05 -0800
+In-Reply-To: <200702281801.02747.hnguyen@linux.vnet.ibm.com> (Hoang-Nam
+	Nguyen's message of "Wed, 28 Feb 2007 18:01:02 +0100")
+Message-ID: <ada8xegr7zu.fsf@cisco.com>
 MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
-Subject: PowerPC Switches Extension for the Eclipse CDT released on alphaWorks
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: cjashfor@us.ibm.com
+Content-Type: text/plain; charset=us-ascii
+Cc: heiko.carstens@de.ibm.com, linux-kernel@vger.kernel.org, hch@infradead.org,
+	linuxppc-dev@ozlabs.org, raisch@de.ibm.com, general@lists.openfabrics.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,29 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-A PowerPC Switches Extension for the Eclipse CDT is now available here:
+Looks OK to me, queued for 2.6.21, except:
 
-http://alphaworks.ibm.com/tech/powerpcswitches
+ > +#include <linux/completion.h>
 
-This plug-in provides PowerPC-specific tool settings for the GNU C/C++ 
-compiler and assembler, as well as link options (also supplied to gcc), 
-for managed C and C++ projects.
+This can just be <linux/wait.h>, because you're only using
+wait_queue_head_t and not struct completion, right?
 
-It is free to download and released under an IBM license which allows 
-unlimited use and copying.  Please read the license for details.
-
-If you have any feedback on this plug-in, please provide it through the 
-forums tab at the link above.
-
-
-Regards,
-
-- Corey
-
--- 
-Corey Ashford
-Software Engineer
-IBM Linux Technology Center, Linux Toolchain
-Beaverton, OR
-503-578-3507
-cjashfor@us.ibm.com
+I fixed this up before merging.
