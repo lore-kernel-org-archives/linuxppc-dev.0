@@ -1,21 +1,16 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 68922DDE9E
+Return-Path: <Sendhilraj.T@Lntemsys.com>
+Received: from mail85.messagelabs.com (mail85.messagelabs.com [216.82.240.99])
+	by ozlabs.org (Postfix) with SMTP id 4E6E8DDE3D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Mar 2007 12:35:21 +1100 (EST)
-Received: from hopper.selinc.com (hopper.selinc.com [12.110.71.10])
-	by tesla.selinc.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l211ZHSs019058
-	for <linuxppc-embedded@ozlabs.org>; Wed, 28 Feb 2007 17:35:17 -0800
+	Thu,  1 Mar 2007 17:28:57 +1100 (EST)
 To: linuxppc-embedded@ozlabs.org
-Subject: Kernel support for the TI1520 PCI-CardBus bridge?
+Subject: mount time for JFFS and JFFS2 file systems
 MIME-Version: 1.0
-Message-ID: <OFB8991C41.CAB80F63-ON88257291.0008226D-88257291.0008B663@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Wed, 28 Feb 2007 17:35:15 -0800
-Content-Type: text/plain; charset="US-ASCII"
+Message-ID: <OF504F4B72.710412FB-ON65257291.0023EA67-65257291.0023F5F9@lntemsys.com>
+From: Sendhilraj T <Sendhilraj.T@Lntemsys.com>
+Date: Thu, 1 Mar 2007 12:03:16 +0530
+Content-Type: multipart/alternative;
+	boundary="=_alternative 0023F5F865257291_="
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,19 +21,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multipart message in MIME format.
+--=_alternative 0023F5F865257291_=
+Content-Type: text/plain; charset="US-ASCII"
+
 Hi all,
 
-We're designing a new product and we want to put a CF card in it.  We're 
-thinking the easiest way to do that is to put in a PCI-CF bridge and we 
-would like to use the TI1520 because it's industrial rated which we need. 
-We can get the parts but TI is refusing to give us any support because 
-they're devoting 100% of their time to dealing with the Vista release. I'm 
-curious if anyone has ever successfully gotten this part to work in linux. 
- I found it listed in pci_ids.h, but that doesn't mean it's actually 
-used/working.  I'm not looking for a detailed explination right now, we're 
-just trying to gage if this part would be a couple of weeks of work or a 
-couple of months.  Thanks for any info.
+I wonder if any one could let me know the normal mount time for JFFS and 
+JFFS2 fiel systems.
+Which one takes more time to get mounted?
+Why JFFS2 takes more time to mount ,eventhough it has Log Structured File 
+system?
 
-See 'ya!
+T.Senthil
+--=_alternative 0023F5F865257291_=
+Content-Type: text/html; charset="US-ASCII"
 
-Bruce
+
+<br><font size=2 face="sans-serif">Hi all,</font>
+<br>
+<br><font size=2 face="sans-serif">I wonder if any one could let me know
+the normal mount time for JFFS and JFFS2 fiel systems.</font>
+<br><font size=2 face="sans-serif">Which one takes more time to get mounted?</font>
+<br><font size=2 face="sans-serif">Why JFFS2 takes more time to mount ,eventhough
+it has Log Structured File system?</font>
+<br>
+<br><font size=2 face="sans-serif">T.Senthil</font>
+--=_alternative 0023F5F865257291_=--
