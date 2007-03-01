@@ -1,19 +1,34 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
+Return-Path: <cjashfor@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
-	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 31FC1DDF10
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9AC2BDDF11
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Mar 2007 06:18:19 +1100 (EST)
-In-Reply-To: <795221.8746.qm@web302.biz.mail.mud.yahoo.com>
-To: Ben Warren <bwarren@qstreams.com>
-Subject: Re: Kernel support for the TI1520 PCI-CardBus bridge?
+	Fri,  2 Mar 2007 06:25:02 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l21JOx05009112
+	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Mar 2007 14:24:59 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.2) with ESMTP id
+	l21JOxfr362796
+	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Mar 2007 12:24:59 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l21JOxIO010540
+	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Mar 2007 12:24:59 -0700
+Received: from [9.47.21.171] (rational-corey.beaverton.ibm.com [9.47.21.171])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l21JOwB1010460
+	for <linuxppc-embedded@ozlabs.org>; Thu, 1 Mar 2007 12:24:59 -0700
+Message-ID: <45E7288A.2090703@us.ibm.com>
+Date: Thu, 01 Mar 2007 11:24:58 -0800
+From: Corey Ashford <cjashfor@us.ibm.com>
 MIME-Version: 1.0
-Message-ID: <OF47D2DFEA.BFE6D63F-ON88257291.006962FB-88257291.006A06FF@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Thu, 1 Mar 2007 11:18:11 -0800
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: PowerPC Switches Extension for the Eclipse CDT released on alphaWorks
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Reply-To: cjashfor@us.ibm.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,40 +39,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Ben,
 
-Ben Warren <bwarren@qstreams.com> wrote on 03/01/2007 04:00:27 AM:
+A PowerPC Switches Extension for the Eclipse CDT is now available here:
 
-> Bruce,
-> --- Bruce_Leonard@selinc.com wrote:
-> 
-> > Hi all,
-> > 
-> > We're designing a new product and we want to put a
-> > CF card in it.  We're 
-> 
-> If you don't need hot-plugging and happen to be using
-> either a Freescale PowerQUICCx or IBM/AMCC 4xx chip,
-> you might consider connecting directly to the local
-> bus and operating in TrueIDE mode.  This has
-> limitations, but has been done many times.
-> 
-> regards,
-> Ben
+http://alphaworks.ibm.com/tech/powerpcswitches
 
-Thanks for the feedback.  We've considered doing that.  We're using a 
-MPC8347 and have FS's 8349ITX ref design which is where we got the idea of 
-using the local bus.  But digging into our requirements more we found that 
-we want to support Compact Flash + cards in addition to Compact Flash 
-Storage cards.  Also, in the future, we'll probably want to support more 
-than one card at a time.  That's why we decided a PCI-CF bridge with two 
-slots would be a better solution.
+This plug-in provides PowerPC-specific tool settings for the GNU C/C++
+compiler and assembler, as well as link options (also supplied to gcc),
+for managed C and C++ projects.
 
-A related question (since I'm new to this PCMCIA/CardBus/Compact Flash 
-world): what is a yenta-compatible device?  I know it's some how tied up 
-in all of this, but googling it doesn't give me any usefull results.  Or 
-is this question/thread better asked on the linux-pcmcia list?
+It is free to download and released under an IBM license which allows
+unlimited use and copying.  Please read the license for details.
 
-Take care and stay safe.
+If you have any feedback on this plug-in, please provide it through the
+forums tab at the link above.
 
-bruce
+
+Regards,
+
+- Corey
+
+-- 
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
+
+
+-- 
+Corey Ashford
+Software Engineer
+IBM Linux Technology Center, Linux Toolchain
+Beaverton, OR
+503-578-3507
+cjashfor@us.ibm.com
