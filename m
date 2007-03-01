@@ -1,13 +1,13 @@
 Return-Path: <domen.puncer@telargo.com>
 Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id 92BB4DDFD5
+	by ozlabs.org (Postfix) with ESMTP id 0EF21DE01B
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Mar 2007 18:57:22 +1100 (EST)
-Date: Thu, 1 Mar 2007 08:57:16 +0100
+	Thu,  1 Mar 2007 18:59:43 +1100 (EST)
+Date: Thu, 1 Mar 2007 08:59:19 +0100
 From: Domen Puncer <domen.puncer@telargo.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH 6/7] lite5200b suspend: PIC
-Message-ID: <20070301075716.GF17184@moe.telargo.com>
+Subject: [u-boot patch] support lite5200b wakeup in u-boot
+Message-ID: <20070301075919.GG17184@moe.telargo.com>
 References: <20070301075323.GP4397@moe.telargo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -22,58 +22,90 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Save and restore MPC52xx PIC registers.
+U-Boot part of Lite5200b low power mode support.
+Puts SDRAM out of self-refresh and transfers control to
+address saved at physical 0x0
 
 
 Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 
-Index: grant.git/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-===================================================================
---- grant.git.orig/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-+++ grant.git/arch/powerpc/platforms/52xx/mpc52xx_pic.c
-@@ -471,3 +471,45 @@ unsigned int mpc52xx_get_irq(void)
- 
- 	return irq_linear_revmap(mpc52xx_irqhost, irq);
- }
+diff --git a/board/icecube/icecube.c b/board/icecube/icecube.c
+index 9b222da..4b35776 100644
+--- a/board/icecube/icecube.c
++++ b/board/icecube/icecube.c
+@@ -42,6 +42,54 @@ # else
+ #include "mt48lc16m16a2-75.h"
+ # endif
+ #endif
 +
-+#ifdef CONFIG_PM
-+/* save and restore registers for suspend to ram */
-+static struct mpc52xx_intr saved_intr;
-+void mpc52xx_pic_suspend(void)
-+{
-+	saved_intr.per_mask = in_be32(&intr->per_mask);
-+	saved_intr.per_pri1 = in_be32(&intr->per_pri1);
-+	saved_intr.per_pri2 = in_be32(&intr->per_pri2);
-+	saved_intr.per_pri3 = in_be32(&intr->per_pri3);
-+	saved_intr.ctrl =     in_be32(&intr->ctrl);
-+	saved_intr.main_mask = in_be32(&intr->main_mask);
-+	saved_intr.main_pri1 = in_be32(&intr->main_pri1);
-+	saved_intr.main_pri2 = in_be32(&intr->main_pri2);
-+	saved_intr.reserved1 = in_be32(&intr->reserved1);
-+	saved_intr.enc_status = in_be32(&intr->enc_status);
-+	saved_intr.crit_status = in_be32(&intr->crit_status);
-+	saved_intr.main_status = in_be32(&intr->main_status);
-+	saved_intr.per_status = in_be32(&intr->per_status);
-+	saved_intr.reserved2 = in_be32(&intr->reserved2);
-+	saved_intr.per_error = in_be32(&intr->per_error);
-+}
++#ifdef CONFIG_LITE5200B
++/* u-boot part of low-power mode implementation */
++#define SAVED_ADDR (*(void **)0x00000000)
++#define PSC2_4 0x02
 +
-+void mpc52xx_pic_resume(void)
++void lite5200b_wakeup(void)
 +{
-+	out_be32(&intr->per_mask, saved_intr.per_mask);
-+	out_be32(&intr->per_pri1, saved_intr.per_pri1);
-+	out_be32(&intr->per_pri2, saved_intr.per_pri2);
-+	out_be32(&intr->per_pri3, saved_intr.per_pri3);
-+	out_be32(&intr->ctrl,     saved_intr.ctrl);
-+	out_be32(&intr->main_mask, saved_intr.main_mask);
-+	out_be32(&intr->main_pri1, saved_intr.main_pri1);
-+	out_be32(&intr->main_pri2, saved_intr.main_pri2);
-+	out_be32(&intr->reserved1, saved_intr.reserved1);
-+	out_be32(&intr->enc_status, saved_intr.enc_status);
-+	out_be32(&intr->crit_status, saved_intr.crit_status);
-+	out_be32(&intr->main_status, saved_intr.main_status);
-+	out_be32(&intr->per_status, saved_intr.per_status);
-+	out_be32(&intr->reserved2, saved_intr.reserved2);
-+	out_be32(&intr->per_error, saved_intr.per_error);
++	unsigned char wakeup_pin;
++	void (*linux_wakeup)(void);
++
++	/* check PSC2_4, if it's down "QT" is signaling we have a wakeup
++	 * from low power mode */
++	*(vu_char *)MPC5XXX_WU_GPIO_ENABLE = PSC2_4;
++	__asm__ volatile ("sync");
++
++	wakeup_pin = *(vu_char *)MPC5XXX_WU_GPIO_DATA_I;
++	if (wakeup_pin & PSC2_4)
++		return;
++
++	/* acknowledge to "QT"
++	 * by holding pin at 1 for 10 uS */
++	*(vu_char *)MPC5XXX_WU_GPIO_DIR = PSC2_4;
++	__asm__ volatile ("sync");
++	*(vu_char *)MPC5XXX_WU_GPIO_DATA = PSC2_4;
++	__asm__ volatile ("sync");
++	udelay(10);
++
++	/* put ram out of self-refresh */
++	*(vu_long *)MPC5XXX_SDRAM_CTRL |= 0x80000000;	// mode_en
++	__asm__ volatile ("sync");
++	*(vu_long *)MPC5XXX_SDRAM_CTRL |= 0x50000000;	// cke ref_en
++	__asm__ volatile ("sync");
++	*(vu_long *)MPC5XXX_SDRAM_CTRL &= ~0x80000000;	// !mode_en
++	__asm__ volatile ("sync");
++	udelay(10); /* wait a bit */
++
++	/* jump back to linux kernel code */
++	linux_wakeup = SAVED_ADDR;
++	printf("\n\nLooks like we just woke, transferring control to 0x%08lx\n",
++			linux_wakeup);
++	linux_wakeup();
 +}
++#else
++#define lite5200b_wakeup
 +#endif
++
++
+ #ifndef CFG_RAMBOOT
+ static void sdram_start (int hi_addr)
+ {
+@@ -208,6 +256,8 @@ #endif /* CFG_RAMBOOT */
+ 		__asm__ volatile ("sync");
+ 	}
+ 
++	lite5200b_wakeup();
++
+ 	return dramsize + dramsize2;
+ }
+ 
+diff --git a/include/mpc5xxx.h b/include/mpc5xxx.h
+index 1d20d1d..c7eb090 100644
+--- a/include/mpc5xxx.h
++++ b/include/mpc5xxx.h
+@@ -189,6 +189,7 @@ #define MPC5XXX_WU_GPIO_ENABLE  (MPC5XXX
+ #define MPC5XXX_WU_GPIO_ODE     (MPC5XXX_WU_GPIO + 0x0004)
+ #define MPC5XXX_WU_GPIO_DIR     (MPC5XXX_WU_GPIO + 0x0008)
+ #define MPC5XXX_WU_GPIO_DATA    (MPC5XXX_WU_GPIO + 0x000c)
++#define MPC5XXX_WU_GPIO_DATA_I  (MPC5XXX_WU_GPIO + 0x0020)
+ 
+ /* PCI registers */
+ #define MPC5XXX_PCI_CMD		(MPC5XXX_PCI + 0x04)
