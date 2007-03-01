@@ -1,21 +1,22 @@
-Return-Path: <orutsch@sympatec.com>
-Received: from sympatec.com (mail.sympatec.net [217.5.250.35])
-	(using SSLv3 with cipher DES-CBC3-SHA (168/168 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 77F18DDEBC
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 509F2DDEFE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Mar 2007 00:45:36 +1100 (EST)
-Received: from [172.20.3.12] (account rutsch [172.20.3.12] verified)
-	by sympatec.com (CommuniGate Pro SMTP 5.1.4)
-	with ESMTPSA id 1307604 for linuxppc-embedded@ozlabs.org;
-	Thu, 01 Mar 2007 13:45:21 +0100
-Message-ID: <45E6CAC8.8090007@sympatec.com>
-Date: Thu, 01 Mar 2007 13:44:56 +0100
-From: Oliver Rutsch <orutsch@sympatec.com>
+	Fri,  2 Mar 2007 01:25:34 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so339876ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 01 Mar 2007 06:25:32 -0800 (PST)
+Message-ID: <528646bc0703010625o92ff794ra5ba561b0861f2e3@mail.gmail.com>
+Date: Thu, 1 Mar 2007 07:25:31 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [PATCH 0/7] MPC5200 and Lite5200b low power modes
+In-Reply-To: <20070301075323.GP4397@moe.telargo.com>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: MPC5200, PLX9054 PCI Card - stalled DMA transfers
-Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070301075323.GP4397@moe.telargo.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,29 +27,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On 3/1/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> Hi!
+>
+> Patches are based on latest mainline git tree + fec patches:
+> Fec_MPC5200_eth_driver.patch
+> Copy_bestcomm_support_files_into_arch_powerpc.patch
+> Make_FEC_work_on_the_lite5200.patch
+>
+---8<---snip--->8---
+>
+> I would appreaciate any comments, suggestions etc.
 
-we're using a TQM5200S-Module (MPC5200) on a STK52xx-board with a 
-PLX9054-based PCI card. The 2.4.25-kernel on the 3.1.1 ELDK had big 
-problems to map the PCI resources of this card, so I tried the latest 
-2.6.19.2-kernel of the 4.1 ELDK. This kernel mapped successfully the PCI 
-resources on this card.
-After building the latest PLX driver on the 2.6.19-kernel (I had to make 
-some changes for the .19 kernel and for some litte/big endian issues) I 
-was able to transfer data with programmed I/O. But as this is too slow I 
-like to use the DMA functions of this device and here is the problem:
-PLX provides an example program for scatter/gather DMA. This program 
-works with their latetst driver on a linux PC. But on the TQM5200 the 
-'Channel 0 done' flag of the DMASR0 register is never set after starting 
-the DMA transfer. What can be the reason for this? The debug output of 
-the driver looks O.K., but waiting for the DMA done interrupt gives a 
-timeout, because the flag is not set. I wrote some test patterns in my 
-DMA buffer before the DMA transfer and no byte of the buffer was 
-altered, so the DMA engine seems not to be able to write a single byte.
-Has anybody this or a similar card running on a ppc environment? Any 
-ideas what I can do?
+Cool, good work.  I'll try to do a proper review today.
 
-Thanks in advance and bye,
+Note on the Bestcomm stuff; the patches that you've referenced above
+will not be going into mainline.  They will be replaced by a new set
+of bestcomm/FEC patches, hopfully in the .22 timeframe, so your
+patches there will need some rework.
+
+Cheers,
+g.
+
 -- 
-Dipl. Ing. Oliver Rutsch
-EMail: orutsch@sympatec.com
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
