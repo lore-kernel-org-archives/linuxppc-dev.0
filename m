@@ -1,14 +1,18 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-In-Reply-To: <200703011101.20116.frank.bodammer@hs.gcd-erlangen.de>
-To: Frank Bodammer <frank.bodammer@hs.gcd-erlangen.de>
-Subject: Re: Kernel support for the TI1520 PCI-CardBus bridge?
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0D5A7DDEF0
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  2 Mar 2007 07:49:49 +1100 (EST)
 MIME-Version: 1.0
-Message-ID: <OF2A2BDD6B.6E8EF202-ON88257291.006A3B74-88257291.006ADC4D@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Thu, 1 Mar 2007 11:27:17 -0800
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: To DMA or not to DMA
+Date: Thu, 1 Mar 2007 12:49:47 -0800
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A181@MERCURY.inside.istor.com>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,44 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Frank,
+I am in the midst of "trying" to get DMA working in a driver on a new
+8541 board using Linux-2.6.17.11. I am starting with a functional driver
+on an 8241.
 
-linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org wrote on 03/01/2007 
-02:01:19 AM:
+One of the issues seems to be the difference between the DMA engines in
+the 8241 vs the 8541. Our PCI device uses DAC (Dual Address Cycles) to
+write to a 64bit memory space using a 32bit PCI interface and this works
+just fine on both the 8241 and the 8541. On both processors, the
+outbound address translation windows are used to create the DAC. On the
+8241, its DMA engine can create DAC's to 64bit PCI address space on a
+32bit PCI interface with no problem. The problem occurs in that the DMA
+engine in the new 8541 will not produce DAC's. Rather it looks like one
+must DMA to an outbound window and let the address translation logic do
+the DAC.
 
-> On Thursday 01 March 2007 02:35, Bruce_Leonard@selinc.com wrote:
-> > Hi all,
-> >
-> > We're designing a new product and we want to put a CF card in it. 
-We're
-> 
-> I got a TI  cardbus controller PCI1520IPDV working in a embedded PPC 
-> system with little modifications to kernel 2.4.25, but i didn't 
-> found a common 
-> configuration for the I/O-space that works for all type of cards 
-> (cardbus and 
-> pcmcia). I tested some pcmcia cards, like WLAN, Ethernet, pcmcia 
-harddisk 
-> and CF-Adapter with a different kernel configuration as for cardbus 
-cards. 
-> 
-> Frank
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+With this in mind, I am using POTAR2 and its cousins for access to
+memory on our PCI device. In the DMA logic, I do (in pseudocode)
 
-Thanks for the reply.  So it sounds like if you got it working in 2.4.25, 
-there's probably better support in the current kernel.  How much work did 
-you have to do?  You say 'little modifications'.  Was it a few hours, 
-days, or weeks?  Based on what I've found so far (and my admittedly naive 
-understanding of pcmcia and the kernel), it looks like this should almost 
-be plug and play.  Turn on the the yenta pcmcia driver and tell it to look 
-for TI parts.  The TI1520 is alredy listed in pci_ids.h so it may be that 
-it'll just work.  We're just looking for a warm fuzzy before we commit to 
-this part since we're getting no help from TI on it.  And if we can't find 
-a warm fuzzy will look at something else.  Thanks again.
+origPotar =3D readl(POTAR2) //save outbound address translation=20
+writel(0x00040000, SATR0) //source attribute for normal read/write
+writel(0x00040000, DATR0) //dest attribute for normal read/write
+writel(destHigh32bits >> 8, POTAR2) //put address into window
+considering the bit shifting required
+writel(destLow32bits, DAR0) //setup the destination address register
+writel(sourceLow32bits, SAR0) //setup the source address register
+writel(size, BCR0) //setup the number of words to transfer
+writel(1, MRx[CS]) //trigger the DMA to go
+writel(origPotar, POTAR2) //restor outbound address translation
 
-Take care and stay safe.
+And I would expect the DMA to work, but it doesn't. Can someone help me
+get my mind around how the DMA in the 8541 is supposed to work?
 
-bruce
+Charles
