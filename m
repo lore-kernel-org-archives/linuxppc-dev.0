@@ -1,17 +1,32 @@
-Return-Path: <Glenn.G.Hart@us.westinghouse.com>
-Received: from swec9607.wecnq.com (swec9607.wecnq.com [147.72.234.65])
-	by ozlabs.org (Postfix) with ESMTP id 60992DDEFB
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
+	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 049D8DDF36
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Mar 2007 02:48:18 +1100 (EST)
-Subject: Re: Please help me with compiling the kernel for ML403
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <OFC20D38B5.96F4EB96-ON85257291.005683D5-85257291.0056D389@ct.wec.com>
-From: Glenn.G.Hart@us.westinghouse.com
-Date: Thu, 1 Mar 2007 10:48:20 -0500
-MIME-Version: 1.0
-Content-type: multipart/mixed;
-	Boundary="0__=0ABBF802DFC505458f9e8a93df938690918c0ABBF802DFC50545"
-Cc: mamsadegh@hotmail.com
+	Fri,  2 Mar 2007 02:48:44 +1100 (EST)
+In-Reply-To: <a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org>
+References: <45E46976.6060600@freescale.com>	<29c13109971547687159078eacdea008@kernel.crashing.org>	<45E592DC.9060700@freescale.com>	<511cacb7bbe8a65ff72738c84ec9ece4@kernel.crashing.org>	<BD465924-7387-47EF-B90F-606F215819C2@embeddedalley.com>	<45E5B604.904@freescale.com>
+	<46F6BF70-2922-4E05-8DAB-6B0830B0AB47@embeddedalley.com>
+	<45E5BD6B.1010509@freescale.com>
+	<F2D0230C-CA22-4DEF-917E-6982FA0C6171@embeddedalley.com>
+	<45E5C128.7020204@freescale.com> <45E5C333.2060100@zytor.com>
+	<ED6BD6F0-827F-4ADC-9D66-F9C3DD7FC470@embeddedalley.com>
+	<E919B903-0890-4725-81CF-005003A1A2F6@kernel.crashing.org>
+	<45E5D627.6030707@zytor.com> <45E5D84A.5000502@freescale.com>
+	<278AADB6-E175-4177-A728-5357E21697B7@kernel.crashing.org>
+	<45E5DB49.8010205@freescale.com>
+	<A6EED9FC-4CE4-4089-ACB8-A1C7A3C50FDD@embeddedalley.com>
+	<a2fc3b0b25c4ad798b63b03763256a2f@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <BE8D549F-71E4-43DE-B624-A8E4A50D094D@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: lanana: Add major/minor entries for PPC QE UART devices
+Date: Thu, 1 Mar 2007 10:48:45 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linux-ppc-embedded <linuxppc-embedded@ozlabs.org>,
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	"H. Peter Anvin" <hpa@zytor.com>, Torben.Mathiasen@hp.com,
+	Timur Tabi <timur@freescale.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,279 +37,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0__=0ABBF802DFC505458f9e8a93df938690918c0ABBF802DFC50545
-Content-type: text/plain; charset=us-ascii
 
+On Feb 28, 2007, at 5:08 PM, Segher Boessenkool wrote:
 
-Mohammad,
+> Since you say no one has ever used more than 4 UARTs,
+> there are two options:
 
-The patches were not in the kernel version I was using (2.6.19).  They are
-for the TEMAC only, so they only need to be applied for networking support.
-I have not used the montavista version, this is the free version of the
-Linux kernel from kernel.org.
+People have used more than 4, but we just
+allocated the additional /dev entries to cover
+them.  I know of only one time this has happened.
+It's such a custom case that the other device
+names didn't matter.
 
-It did seem like you were mixing different methods.  If you follow my steps
-you should not have any problems.
+> - Cap the driver at 4 UARTs;
 
-Glenn
+Let's do this, but design the code to
+allow more by just changing a #define.
 
+> Just randomly using some extra minors that aren't
+> assigned to you isn't such a great idea.
 
+Maybe for a desktop or generic server where
+you don't know what's going to be configured,
+but it's not unusual to do so with custom
+embedded systems.  The small experimental
+or user allocations often don't cover what
+is needed, so we just grab some allocation
+from a device that isn't ever going to be
+used on the system.
 
-                                                                                                     
- (Embedded     Mohammad Sadegh Sadri <mamsadegh@hotmail.com>                                         
- image moved   03/01/2007 01:29 AM                                                                   
- to file:                                                                                            
- pic31673.pcx)                                                                                       
-                                                                                                     
-                                                                                                     
-
-
-
-To:    Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-cc:    <glenn.g.hart@us.westinghouse.com>
-Subject:    Re: Please help me with compiling the kernel for ML403
-
-Security Level:?              Internal
-
-
-
-Glenn,
-
-I studied your post carefuly,
-
-You are using a patch: paulus,
-I looked at some parts of these patches,
-most of them are already applied to the kernel,
-Do I really need to apply these patches?
-Is this true for newer versions of the kernel , like 2.6.20? or the devel
-version from montavista
-You have applied these patches to 2.6.14 , from kernel.org, Yes?
-
-one of the persons here, told me that I'm mixing different methods for
-building the kernel,
-I think that he may be true, Am I using a correct set of tools?
 
 Thanks.
 
-
-------------------------------------------------------------------------------------------------
-
-Date: Wed, 28 Feb 2007 16:53:39 -0500
-From: Glenn.G.Hart@us.westinghouse.com
-Subject: Re: Please help me with compiling the kernel for ML403
-To: linuxppc-embedded@ozlabs.org
-Message-ID:
-
-Content-Type: text/plain; charset="us-ascii"
-
-
-Mohammad,
-
-I didn't have much success copying the entire BSP into the kernel.  Please
-see my post titled "Linux w/ML403 PLB TEMAC".  It is basically the tutorial
-of how I got Linux working on an ML403 board.
-
-Glenn
-
-
-
-
- (Embedded     Mohammad Sadegh Sadri @ozlabs.org
- image moved   02/28/2007 04:21 PM
- to file:
- pic26924.pcx)
-
-
-
-
-Sent by:
-       linuxppc-embedded-bounces+glenn.g.hart=us.westinghouse.com@ozlabs.org
-
-
-To:
-cc:
-Subject:    Please help me with compiling the kernel for ML403
-
-Security Level:?              Internal
-
-
-
-Hi
-
-It is some thing more than 2 weeks that I'm trying to compile the kernel
-for ML403.
-Posted to questions here, but unfortunately, didn't get any answer from the
-experts here.
-I have tested every thing I knew ( with my limited knowledge ) and now, I
-really need your help.
-
-I'm using the following set of tools:
-EDK 8.2.02,  ( Latest )
-ELDK 4.1 ( Latest )
-
--I want to compile the 2.6.20 kernel, downloaded from kernel.org
-
--As the first step, in EDK, I choose linux 2.6 in software platform
-generation settings,
-
--I generate the BSP.
-
--In the generated BSP , I convert all of the 40x strings to 403, also I
-change the name of xparameters_ml40x to xparameters_ml403
-
--I copy the 2.6.20 kernel /eldk/ppc_4xx/usr/src/linux , and set all of the
-needed env variables for cross compile, and set the needed changes in the
-linux Makefile. ( ARCH and
-CROSS_COMPILE )
-
--I copy the entire BSP into the root of the linux kernel.
-
--I edit the linux/arch/ppc/Kconfig file, and add these lines into it:
-config XILINX_OCP
- bool "Xilinx OCP"
- default y
-
-config XILINX_TEMAC
- bool "Xilinx TEMAC"
- default y
-
-config XILINX_SYSACE
- bool "Xilinx System ACE"
- default y
-
-config XILINX_EDK
- bool "Xilinx EDK Support"
- default y
-
--In the linux folder I execute the cow.tcl script provided with the BSP
-from EDK ( I execute tclsh cow.tcl )
-
--I make a symbolic link , for config.h file, ( I go to linux/include/linux
-and then ln -s autoconf.h config.h )
-
--I begin the menuconfig and set all of the needed parameters
-
--Now, I begin the make process by simply typing : make
-
-- I encounter the following error:
-arch/ppc/platforms/4xx/virtex.c:20: error: array type has incomplete
-element type
-arch/ppc/platforms/4xx/virtex.c:60: error: field name not in record or
-union initializer
-arch/ppc/platforms/4xx/virtex.c:60: error: (near initialization for
-'core_ocp')
-make[1]: *** [arch/ppc/platforms/4xx/virtex.o] Error 1
-make: *** [arch/ppc/platforms/4xx] Error 2
-
-- I can prevent this error by commenting these lines of
-/arch/ppc/platforms/4xx/virtex.c file:
-/* Have OCP take care of the serial ports. */
-struct ocp_def core_ocp[] = {
-#ifdef XPAR_UARTNS550_0_BASEADDR
- { .vendor  = OCP_VENDOR_XILINX,
-   .function      = OCP_FUNC_16550,
-   .index   = 0,
-   .paddr   = XPAR_UARTNS550_0_BASEADDR,
-   .irq           = XPAR_INTC_0_UARTNS550_0_VEC_ID,
-   .pm            = OCP_CPM_NA
- },
-#ifdef XPAR_UARTNS550_1_BASEADDR
- { .vendor  = OCP_VENDOR_XILINX,
-   .function      = OCP_FUNC_16550,
-   .index   = 1,
-   .paddr   = XPAR_UARTNS550_1_BASEADDR,
-   .irq           = XPAR_INTC_0_UARTNS550_1_VEC_ID,
-   .pm            = OCP_CPM_NA
- },
-#ifdef XPAR_UARTNS550_2_BASEADDR
- { .vendor  = OCP_VENDOR_XILINX,
-   .function      = OCP_FUNC_16550,
-   .index   = 2,
-   .paddr   = XPAR_UARTNS550_2_BASEADDR,
-   .irq           = XPAR_INTC_0_UARTNS550_2_VEC_ID,
-   .pm            = OCP_CPM_NA
- },
-#ifdef XPAR_UARTNS550_3_BASEADDR
- { .vendor  = OCP_VENDOR_XILINX,
-   .function      = OCP_FUNC_16550,
-   .index   = 3,
-   .paddr   = XPAR_UARTNS550_3_BASEADDR,
-   .irq           = XPAR_INTC_0_UARTNS550_3_VEC_ID,
-   .pm            = OCP_CPM_NA
- },
-#ifdef XPAR_UARTNS550_4_BASEADDR
-#error Edit this file to add more devices.
-#endif                  /* 4 */
-#endif                  /* 3 */
-#endif                  /* 2 */
-#endif                  /* 1 */
-#endif                  /* 0 */
- { .vendor  = OCP_VENDOR_INVALID
- }
-};
-
-- Instead of the ebove lines, I just put one simple line: ( I use uart lite
-and not the 16550 so there should be no problem commenting these lines? )
-struct ocp_def * core_ocp;
-
-- now, I begin the make process again, The make process goes ahead but
-  after a long time it generates another error:
-  GEN     .version
-  CHK     include/linux/compile.h
-  UPD     include/linux/compile.h
-  CC      init/version.o
-  LD      init/built-in.o
-  LD      .tmp_vmlinux1
-arch/ppc/syslib/built-in.o: In function `ppc_sys_device_remove':
-: undefined reference to `ppc_sys_platform_devices'
-arch/ppc/syslib/built-in.o: In function `ppc_sys_device_remove':
-: undefined reference to `ppc_sys_platform_devices'
-arch/ppc/syslib/built-in.o: In function `ppc_sys_device_initfunc':
-: undefined reference to `ppc_sys_platform_devices'
-arch/ppc/syslib/built-in.o: In function `ppc_sys_device_initfunc':
-: undefined reference to `ppc_sys_platform_devices'
-arch/ppc/syslib/built-in.o: In function `ppc_sys_device_setfunc':
-: undefined reference to `ppc_sys_platform_devices'
-arch/ppc/syslib/built-in.o:: more undefined references to
-`ppc_sys_platform_devices' follow
-make: *** [.tmp_vmlinux1] Error 1
-
-- If I do not add the BSP files from EDK to my kernel and compile the
-kernel for ML403, every thing will be completely OK. ( But I want TEMAC )
-
-- when I look in the original virtex.c file, I see that it has defined
-ppc_sys_platform_devices but when I look at the virtex.c generated by
-Xilinx, I see that it has a completely different structure, it has no
-definition of this variable. It is completely different from the original
-virtex.c
-
-- I have tested the same things above, with different versions of 2.6
-kernel, such as, 2.6.17.1 and 26-xilinx-devel ( which I download from
-montavista using git near two weeks ago ) , I also changed the version of
-eldk to 4.0 and to 3.5 ( with 3.5 I could not compile the kernel at all )
-
-Any idea, Any suggestion and any thing which can help even a litte, is
-welcome,
-I really do not know what to do more.
-
-Thanks.
-
-_________________________________________________________________
-Discover the new Windows Vista
-http://search.msn.com/results.aspx?q=windows+vista&mkt=en-US&form=QBRE
-
-
-
-
---0__=0ABBF802DFC505458f9e8a93df938690918c0ABBF802DFC50545
-Content-type: application/octet-stream;
-	name="pic31673.pcx"
-Content-Disposition: attachment; filename="pic31673.pcx"
-Content-Transfer-Encoding: base64
-
-CgUBCAAAAABBADEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAABQgABAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
-AAAAAAAAAAAAAAAAAAA=
-
-
---0__=0ABBF802DFC505458f9e8a93df938690918c0ABBF802DFC50545--
+	-- Dan
