@@ -1,25 +1,23 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: Make sure we populate the initroot filesystem late enough
-From: Michael Ellerman <michael@ellerman.id.au>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1172657584.3452.51.camel@pmac.infradead.org>
-References: <200612112059.kBBKx1j7022473@hera.kernel.org>
-	<1172448057.3971.9.camel@shinybook.infradead.org>
-	<1172518068.15970.6.camel@localhost> <20070226222724.GA13182@keitarou>
-	<1172558897.11949.43.camel@localhost.localdomain>
-	<3ac1a55a11baddefb903f24b988566fe@kernel.crashing.org>
-	<1172644987.11949.90.camel@localhost.localdomain>
-	<1172657584.3452.51.camel@pmac.infradead.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-2ZNM82A6n2fXIxhibzWK"
-Date: Thu, 01 Mar 2007 09:30:56 +0900
-Message-Id: <1172709056.5852.6.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@ozlabs.org, john stultz <johnstul@us.ibm.com>,
-	Paul TBBle Hampson <Paul.Hampson@Pobox.com>, torvalds@linux-foundation.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 57094DDEB7
+	for <linuxppc-dev@ozlabs.org>; Thu,  1 Mar 2007 12:53:38 +1100 (EST)
+In-Reply-To: <45E61161.9040900@gmail.com>
+References: <45E5ED35.7090207@gmail.com>
+	<0a1927a91e52d34352e8a545b7dc57d0@kernel.crashing.org>
+	<45E61161.9040900@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <eaa8f5754d3e1544ce91df01acf2054d@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: problems with pci bus on a pm520 board
+Date: Thu, 1 Mar 2007 02:53:29 +0100
+To: Luotao Fu <devtty0@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,63 +27,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>  * JohnDeere Vehicleserver (based on pm520 board by microsys) 
+> devicetree file
+>  * Copyright 2006 Pengutronix
+>  * Luotao Fu <l.fu@pengutronix.de>
 
---=-2ZNM82A6n2fXIxhibzWK
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+You removed the original copyright notice, please don't;
+it might even be illegal to do so, depending on where
+you live/work.  Just add your own, don't remove the original.
 
-On Wed, 2007-02-28 at 10:13 +0000, David Woodhouse wrote:
-> On Wed, 2007-02-28 at 07:43 +0100, Benjamin Herrenschmidt wrote:
-> > I wouldn't be that sure ... I've had problems in the past with PMU base=
-d
-> > cpufreq... looks like flushing all caches and hard-resetting the
-> > processor on the fly when there can be pending DMAs might be a source o=
-f
-> > trouble... especially on CPUs that don't have working cache flush HW
-> > assist.=20
->=20
-> I've seen it on a PowerMac3,1 (400MHz G4) where we don't have cpufreq.
-> I've also seen it on the latest 1.5GHz Mac Mini, and on my shinybook.
-> They all fall over with the latest kernel, although the shinybook only
-> does so immediately when booted with mem=3D512M. The shinybook does crash
-> later with new kernels though; I don't yet know why. It could be the
-> same thing, or it could be something different. That one seemed to
-> appear between Fedora's 2.6.19-1.2913 and 2.6.19-1.2914 kernels, where
-> we did nothing but turned CONFIG_SYSFS_DEPRECATED on.
->=20
-> I don't blame cpufreq. At various times I've been equally convinced that
-> it was due to CONFIG_KPROBES, and Linus' initrd-moving patch.
+> 			interrupt-map = <8000 0 0 1 500 1 1 3 // e100, 10.0
+> 			                 8000 0 0 2 500 1 1 3
+> 			                 8000 0 0 3 500 1 1 3
+> 			                 8000 0 0 4 500 1 1 3
 
-Is there any pattern to the way it dies? Or is it just randomly dieing
-somewhere depending on which config options you have enabled?
+8000 is device 16, not 10
 
-This is starting to sound reminiscent of a bug I chased for a while last
-year on Power5, but didn't find. It was "fixed" on some machines by
-disabling CONFIG_KEXEC, and/or other random unrelated CONFIG options.
-Unfortunately it magically stopped reproducing so I never caught it :/
+> 			                 8800 0 0 1 500 1 0 3 // usb 11.0, 11.1, 11.2
+> 			                 8800 0 0 2 500 1 2 3
+> 			                 8800 0 0 3 500 1 3 3
+> 			                 8800 0 0 4 500 0 0 3>;
 
-cheers
+and 8800 is device 17
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Your tree looks reasonable otherwise, I didn't look at
+the details though.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+Hope that helps,
 
---=-2ZNM82A6n2fXIxhibzWK
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBF5h6/dSjSd0sB4dIRArzvAJwMMBfvhEnZ/v0EdjbUz2tRQlh/zgCgs5+G
-MB8crp0n6/EuMWImcVCQfXI=
-=OueZ
------END PGP SIGNATURE-----
-
---=-2ZNM82A6n2fXIxhibzWK--
+Segher
