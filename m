@@ -1,16 +1,15 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from web302.biz.mail.mud.yahoo.com (web302.biz.mail.mud.yahoo.com
-	[68.142.199.178]) by ozlabs.org (Postfix) with SMTP id 05EACDDE41
+Return-Path: <melinda.develey70@yahoo.com>
+Received: from web63009.mail.re1.yahoo.com (web63009.mail.re1.yahoo.com
+	[69.147.96.220]) by ozlabs.org (Postfix) with SMTP id 3CF02DDEEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Mar 2007 23:00:29 +1100 (EST)
-Date: Thu, 1 Mar 2007 04:00:27 -0800 (PST)
-From: Ben Warren <bwarren@qstreams.com>
-Subject: Re: Kernel support for the TI1520 PCI-CardBus bridge?
-To: Bruce_Leonard@selinc.com, linuxppc-embedded@ozlabs.org
-In-Reply-To: <OFB8991C41.CAB80F63-ON88257291.0008226D-88257291.0008B663@selinc.com>
+	Fri,  2 Mar 2007 00:18:12 +1100 (EST)
+Message-ID: <20070301131811.11407.qmail@web63009.mail.re1.yahoo.com>
+Date: Thu, 1 Mar 2007 05:18:11 -0800 (PST)
+From: melinda develey <melinda.develey70@yahoo.com>
+Subject: i2c driver for mpc8xx
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <795221.8746.qm@web302.biz.mail.mud.yahoo.com>
+Content-Type: multipart/alternative; boundary="0-1522527852-1172755091=:10596"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,36 +20,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bruce,
---- Bruce_Leonard@selinc.com wrote:
+--0-1522527852-1172755091=:10596
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-> Hi all,
-> 
-> We're designing a new product and we want to put a
-> CF card in it.  We're 
-> thinking the easiest way to do that is to put in a
-> PCI-CF bridge and we 
-> would like to use the TI1520 because it's industrial
-> rated which we need. 
-> We can get the parts but TI is refusing to give us
-> any support because 
-> they're devoting 100% of their time to dealing with
-> the Vista release. I'm 
-> curious if anyone has ever successfully gotten this
-> part to work in linux. 
->  I found it listed in pci_ids.h, but that doesn't
-> mean it's actually 
-> used/working.  I'm not looking for a detailed
-> explination right now, we're 
-> just trying to gage if this part would be a couple
-> of weeks of work or a 
-> couple of months.  Thanks for any info.
+hi   all,
+     
+    anyone knows if an   i2c driver for the i2c controller of MPC88x processor in linux kernel   2.6.19? I tried to find it but I didn't find one.
+  
+  Thank you,
+  Melinda
+  
+  
+ 
+---------------------------------
+Never Miss an Email
+Stay connected with Yahoo! Mail on your mobile. Get started!
+--0-1522527852-1172755091=:10596
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-If you don't need hot-plugging and happen to be using
-either a Freescale PowerQUICCx or IBM/AMCC 4xx chip,
-you might consider connecting directly to the local
-bus and operating in TrueIDE mode.  This has
-limitations, but has been done many times.
+<div><font face="Arial" size="2"><span class="670581113-01032007">hi   all,</span></font></div>    <div><font face="Arial" size="2"><span class="670581113-01032007"></span></font>&nbsp;</div>    <div><font face="Arial" size="2"><span class="670581113-01032007">anyone&nbsp;knows if an   i2c driver for the i2c controller of MPC88x processor in linux kernel   2.6.19? I tried to find it but I didn't find one.<br>  <br>  Thank you,<br>  Melinda<br>  </span></font></div>  <p>&#32;
 
-regards,
-Ben
+<hr size=1>Never Miss an Email<br>Stay connected with Yahoo! Mail on your mobile. <a href="http://us.rd.yahoo.com/evt=43909/*http://mobile.yahoo.com/services?promote=mail">Get started!</a>
+--0-1522527852-1172755091=:10596--
