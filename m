@@ -1,18 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 2E5FFDDF0E
+Return-Path: <Bruce_Leonard@selinc.com>
+Received: from tesla.selinc.com (tesla.selinc.com [12.110.71.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "tesla.selinc.com", Issuer "RSA Data Security,
+	Inc." (verified OK)) by ozlabs.org (Postfix) with ESMTP id 31FC1DDF10
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Mar 2007 05:57:50 +1100 (EST)
-To: Jan-Hinnerk Dumjahn <jan-hinnerk.dumjahn@arcor.de>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: Problems with PHY on STK5200 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 01 Mar 2007 12:16:57 +0100."
-	<200703011216.57611.jan-hinnerk.dumjahn@arcor.de>
-Date: Thu, 01 Mar 2007 19:57:45 +0100
-Sender: wd@denx.de
-Message-Id: <20070301185745.254BB353C3A@atlas.denx.de>
+	Fri,  2 Mar 2007 06:18:19 +1100 (EST)
+In-Reply-To: <795221.8746.qm@web302.biz.mail.mud.yahoo.com>
+To: Ben Warren <bwarren@qstreams.com>
+Subject: Re: Kernel support for the TI1520 PCI-CardBus bridge?
+MIME-Version: 1.0
+Message-ID: <OF47D2DFEA.BFE6D63F-ON88257291.006962FB-88257291.006A06FF@selinc.com>
+From: Bruce_Leonard@selinc.com
+Date: Thu, 1 Mar 2007 11:18:11 -0800
+Content-Type: text/plain; charset="US-ASCII"
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,38 +24,40 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <200703011216.57611.jan-hinnerk.dumjahn@arcor.de> you wrote:
+Ben,
+
+Ben Warren <bwarren@qstreams.com> wrote on 03/01/2007 04:00:27 AM:
+
+> Bruce,
+> --- Bruce_Leonard@selinc.com wrote:
 > 
-> I'm trying to compile a recent kernel from DENX "linuxppc_2_4_devel" for my 
-> STK5200 using ELDK 3.1.1.
+> > Hi all,
+> > 
+> > We're designing a new product and we want to put a
+> > CF card in it.  We're 
+> 
+> If you don't need hot-plugging and happen to be using
+> either a Freescale PowerQUICCx or IBM/AMCC 4xx chip,
+> you might consider connecting directly to the local
+> bus and operating in TrueIDE mode.  This has
+> limitations, but has been done many times.
+> 
+> regards,
+> Ben
 
-It should compile and run fine.
+Thanks for the feedback.  We've considered doing that.  We're using a 
+MPC8347 and have FS's 8349ITX ref design which is where we got the idea of 
+using the local bus.  But digging into our requirements more we found that 
+we want to support Compact Flash + cards in addition to Compact Flash 
+Storage cards.  Also, in the future, we'll probably want to support more 
+than one card at a time.  That's why we decided a PCI-CF bridge with two 
+slots would be a better solution.
 
-> It seems that the current kernel there is not configuring the PHY. It looks 
-> like the link is configured for full-duplex (although it should be configured 
-> half-duplex).
+A related question (since I'm new to this PCMCIA/CardBus/Compact Flash 
+world): what is a yenta-compatible device?  I know it's some how tied up 
+in all of this, but googling it doesn't give me any usefull results.  Or 
+is this question/thread better asked on the linux-pcmcia list?
 
-What makes you think it should be half duplex only?
+Take care and stay safe.
 
-> BTW: What is the normal way to reference a commit in a git-repository? I 
-> haven't seen any revision numbers.
-
-You specify the git commit ID.
-
-> Can anybody explain what the driver should to? Or even better has some patch 
-> to make it work?
-
-The driver should work :-) And it certainly does for me.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Is not that the nature of men and women -- that the  pleasure  is  in
-the learning of each other?
-	-- Natira, the High Priestess of Yonada, "For the World is
-	   Hollow and I Have Touched the Sky", stardate 5476.3.
+bruce
