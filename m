@@ -1,19 +1,15 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org,
- michael@ellerman.id.au
-Subject: Re: [Cbe-oss-dev] [PATCH 14/22] spufs: use SPU master control to
-	prevent =?iso-8859-15?q?wild=09SPU?= execution
-Date: Thu, 1 Mar 2007 14:50:50 +0100
-References: <20061120174454.067872000@arndb.de>
-	<20061120180525.281408000@arndb.de>
-	<1172729890.5852.40.camel@concordia.ozlabs.ibm.com>
-In-Reply-To: <1172729890.5852.40.camel@concordia.ozlabs.ibm.com>
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 1 Mar 2007 16:24:04 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: Time to put bootwrapper patches into powerpc.git?
+Message-ID: <20070301232404.GB8177@mag.az.mvista.com>
+References: <20070216203134.GB26099@mag.az.mvista.com>
+	<45E5FB91.5090007@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200703011450.50935.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45E5FB91.5090007@freescale.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +19,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 01 March 2007, Michael Ellerman wrote:
-> On Mon, 2006-11-20 at 18:45 +0100, Arnd Bergmann wrote:
-> > plain text document attachment (spufs-master-control.diff)
-> > When the user changes the runcontrol register, an SPU might be
-> > running without a process being attached to it and waiting for
-> > events. In order to prevent this, make sure we always disable
-> > the priv1 master control when we're not inside of spu_run.
+On Wed, Feb 28, 2007 at 04:00:49PM -0600, Timur Tabi wrote:
+> Mark A. Greer wrote:
+> >There is a rather large number of patches for the bootwrapper (from
+> >Scott Wood, David Gibson, others?) queued up to go into powerpc.git.
+> >I think most of them are acceptable or pretty close so IMHO it would be
+> >nice to have them in powerpc.git.  Especially since I have more patches
+> >for the bootwrapper and I don't know what I should base them on. :)
+> >
+> >Anyone agree?
 > 
-> Hi Arnd,
+> Yes, I think these patches are long overdue.
 > 
-> Sorry I didn't comment on this when you sent it, I wasn't paying enough
-> attention. This patch confuses me, you say we should make sure we always
-> disable the master control when we're not inside spu_run, but I see
-> several exit paths where we leave the master run bit enabled - or maybe
-> I'm reading it wrong.
+> Paul, do you see any reason why these patches can't become part of 2.6.21?
 
-I think you're right, there is at least one path that I now saw
-getting out of spufs_run_spu incorrectly. In particular, when
-spu_reacquire_runnable() fails, we never call the master stop,
-which is a bug, but should happen very infrequently in practice.
-Do you see another case where we end up with the same problem?
+Hey, I'd be happy just to get the backlog into the powerpc.git tree...
 
-If not, I'll prepare a patch to fix this one case.
-
-	Arnd <><
+Mark
