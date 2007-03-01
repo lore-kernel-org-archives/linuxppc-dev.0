@@ -1,19 +1,20 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
-	by ozlabs.org (Postfix) with ESMTP id A90ECDDE41
+Return-Path: <frank.bodammer@gcd-solutions.de>
+Received: from relay1.global.de (relay1.global.de [217.64.163.3])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "localhost", Issuer "www.qmailtoaster.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 61CE7DDEC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  1 Mar 2007 19:48:30 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
+	Thu,  1 Mar 2007 21:08:50 +1100 (EST)
+From: Frank Bodammer <frank.bodammer@hs.gcd-erlangen.de>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: [u-boot patch] support lite5200b wakeup in u-boot
-Date: Thu, 1 Mar 2007 09:49:03 +0100
-References: <20070301075323.GP4397@moe.telargo.com>
-	<20070301075919.GG17184@moe.telargo.com>
-In-Reply-To: <20070301075919.GG17184@moe.telargo.com>
+Subject: Re: Kernel support for the TI1520 PCI-CardBus bridge?
+Date: Thu, 1 Mar 2007 11:01:19 +0100
+References: <OFB8991C41.CAB80F63-ON88257291.0008226D-88257291.0008B663@selinc.com>
+In-Reply-To: <OFB8991C41.CAB80F63-ON88257291.0008226D-88257291.0008B663@selinc.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200703010949.03739.sr@denx.de>
+Message-Id: <200703011101.20116.frank.bodammer@hs.gcd-erlangen.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,12 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 01 March 2007 08:59, Domen Puncer wrote:
-> U-Boot part of Lite5200b low power mode support.
-> Puts SDRAM out of self-refresh and transfers control to
-> address saved at physical 0x0
+On Thursday 01 March 2007 02:35, Bruce_Leonard@selinc.com wrote:
+> Hi all,
+>
+> We're designing a new product and we want to put a CF card in it.  We're
+> thinking the easiest way to do that is to put in a PCI-CF bridge and we
+> would like to use the TI1520 because it's industrial rated which we need.
+> We can get the parts but TI is refusing to give us any support because
+> they're devoting 100% of their time to dealing with the Vista release. I'm
+> curious if anyone has ever successfully gotten this part to work in linux.
+>  I found it listed in pci_ids.h, but that doesn't mean it's actually
+> used/working.  I'm not looking for a detailed explination right now, we're
+> just trying to gage if this part would be a couple of weeks of work or a
+> couple of months.  Thanks for any info.
 
-Please post this patch to the U-Boot mailing list.
+I got a TI  cardbus controller PCI1520IPDV working in a embedded PPC 
+system with little modifications to kernel 2.4.25, but i didn't found a common  
+configuration for the I/O-space that works for all type of cards (cardbus and  
+pcmcia). I tested some pcmcia cards, like WLAN, Ethernet, pcmcia harddisk 
+and CF-Adapter with a different kernel configuration as for cardbus cards. 
 
-Best regards,
-Stefan
+Frank
