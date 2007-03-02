@@ -1,12 +1,12 @@
 Return-Path: <b08248@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 13361DDF30
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 06:10:22 +1100 (EST)
-Date: Fri, 2 Mar 2007 13:10:17 -0600
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id CEE28DDF4E
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 06:42:52 +1100 (EST)
+Date: Fri, 2 Mar 2007 13:42:33 -0600
 From: Stuart Yoder <b08248@freescale.com>
-Message-Id: <200703021910.l22JAHMV005585@ld0164-tx32.am.freescale.net>
+Message-Id: <200703021942.l22JgXbJ005904@ld0164-tx32.am.freescale.net>
 To: paulus@samba.org
-Subject: [PATCH v2] powerpc: update interrupt info in booting-without-of.txt
+Subject: [PATCH v3] powerpc: update interrupt info in booting-without-of.txt
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,7 +23,7 @@ in the device tree.  Added more detail. Clarified some things.
 
 Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
 ---
-
+  -** corrected whitespace mistake in V2 of this patch **
   -updated the proprosal with corrections, suggestions by
    Segher and David Gibson
   -Note: There is a lot that could/should be added to this doc
@@ -31,11 +31,11 @@ Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
    is simply an initial step, by moving the current documentation
    to a new section and adding a bit more detail.
 
- Documentation/powerpc/booting-without-of.txt |  126 ++++++++++++++++++--------
- 1 files changed, 88 insertions(+), 38 deletions(-)
+ Documentation/powerpc/booting-without-of.txt |  123 ++++++++++++++++++--------
+ 1 files changed, 87 insertions(+), 36 deletions(-)
 
 diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index eaa0c32..8315d5f 100644
+index eaa0c32..d66958d 100644
 --- a/Documentation/powerpc/booting-without-of.txt
 +++ b/Documentation/powerpc/booting-without-of.txt
 @@ -1108,42 +1108,7 @@ See appendix A for an example partial SO
@@ -82,13 +82,8 @@ index eaa0c32..8315d5f 100644
  ----------------------------------------------------------
  
  Currently, there are many devices on SOCs that do not have a standard
-@@ -1728,10 +1693,95 @@ platforms are moved over to use the flat
-  		partitions = <00000000 00f80000
-  			      00f80000 00080001>;
-  		partition-names = "fs\0firmware";
-- 	};
--
-+ 	}; 
+@@ -1732,6 +1697,92 @@ platforms are moved over to use the flat
+ 
     More devices will be defined as this spec matures.
  
 +VII - Specifying interrupt information for devices 
