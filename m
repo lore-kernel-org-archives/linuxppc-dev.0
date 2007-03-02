@@ -1,12 +1,22 @@
-Return-Path: <benh@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>,
-	<cbe-oss-dev@ozlabs.org>
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Fri, 02 Mar 2007 22:33:18 +1100
-Subject: [PATCH 5/5] powerpc: spufs support for 64K LS mappings on 4K kernels
-In-Reply-To: <1172835163.743765.616483133775.qpush@grosgo>
-Message-Id: <20070302113332.6AB8DDE2AC@ozlabs.org>
-Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Return-Path: <gerald.vanbaren@comcast.net>
+Received: from rwcrmhc11.comcast.net (rwcrmhc11.comcast.net [216.148.227.151])
+	by ozlabs.org (Postfix) with ESMTP id 0A09ADDE08
+	for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2007 23:31:42 +1100 (EST)
+Message-ID: <45E8192B.8020104@comcast.net>
+Date: Fri, 02 Mar 2007 07:31:39 -0500
+From: Jerry Van Baren <gerald.vanbaren@comcast.net>
+MIME-Version: 1.0
+To: Jerry Van Baren <gerald.vanbaren@comcast.net>,
+	u-boot-users@lists.sourceforge.net,  linuxppc-dev@ozlabs.org
+Subject: Re: RFA & Update: Using libfdt in u-boot for fdt command
+References: <45E6DCB4.3080106@smiths-aerospace.com>
+	<20070302015553.GA1687@localhost.localdomain>
+	<45E7A346.5080206@comcast.net>
+	<20070302044815.GI1687@localhost.localdomain>
+	<45E7B53D.6020603@comcast.net>
+	<20070302053640.GJ1687@localhost.localdomain>
+In-Reply-To: <20070302053640.GJ1687@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,454 +26,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds an option to spufs when the kernel is configured for
-4K page to give it the ability to use 64K pages for SPE local store
-mappings.
+David Gibson wrote:
+> On Fri, Mar 02, 2007 at 12:25:17AM -0500, Jerry Van Baren wrote:
+>> David Gibson wrote:
+>>> On Thu, Mar 01, 2007 at 11:08:38PM -0500, Jerry Van Baren wrote:
+>> [snip]
+>>
+>>>> to give me a pointer to the node name for node tags and property name 
+>>>> for property tags.  Now that I have it working, it would be trivial to 
+>>>> change the calls to _fdt_next_tag() to instead call fdt_next_tag() 
+>>>> passing NULL for the new fourth parameter **namep. ;-)
+>>>>
+>>>> The reason I need it, I'm printing an unknown tree by stepping through 
+>>>> the tree discovering the node and property names.  I need to have 
+>>>> fdt_next_tag() return the *name* of the node/property as well as the tag 
+>>>> so that I can print and indent for nodes or look up the property value 
+>>>> and print the name=value combination.
+>>> Hrm.  And it returns NULL for tags without a name?
+>> I was unable to generate a tag without a name using dtc (other than the 
+>> root node).  It should/would return null, which would be a problem. :-/
+> 
+> I was thinking more of tag types which don't have a name, to wit,
+> FDT_END_NODE and FDT_NOP.
+> 
+>>> That might be a useful extension for the next_tag function.  The one
+>>> thing I'm concerned about is who's responsible for verifying the name
+>>> pointer.  I'm trying to keep libfdt robust enough that evern if
+>>> presented with a badly corrupt blob it will fail relatively
+>>> gracefully.  Ideally, no matter what it's presented with, it will
+>>> always return at worst FDT_ERR_BADSTRUCTURE rather than crashing and
+>>> will under no circumstances access memory outside the given blob
+>>> size.
+>> [snip]
+>>
+>>>> Oh gaak!  What I hear you saying... if you have node a with subnode b 
+>>>> and property b, subnode b has a property c:
+>>>> /a     => node
+>>>> /a/b   => node
+>>>> /a/b   => property (inside node a)
+>>>> /a/b/c => property (inside node b)
+>>> Well, yes.  Except that in OF and derived terminology, properties are
+>>> *never* referred to by path in this way.  It's always:
+>>> 	"property 'fred' of node /foo/bar/baz"
+>> I'm coming from a human interface syntax point of view and assumed that 
+>> the human interface is paths like linux where the last item is a 
+>> directory or file with the computer guessing what you really meant 
+>> (which _isn't_ ambiguous in file/dir paths).  Is there a better syntax 
+>> for distinguishing between node paths and properties?
+> 
+> You assumed incorrectly.  Well, unless you count /proc/device-tree as
+> a human interface to the device tree, which isn't entirely
+> unreasonable.  OF certainly doesn't use that approach, it uses state
+> instead, first "dev /foo/bar/baz" then ".properties" or "setprop ....".
 
-Currently, we are optimistic and try order 4 allocations when creting
-contexts. If that fails, the code will fallback to 4K automatically.
+OF is a programming language that has some crude elements of interaction 
+(wouldn't that be "/foo/bar/baz" dev in Forthspeak? ;-).  Making user 
+interface commands have state, where you do "fdt dev /foo/bar/baz" 
+(remembering the offset of the node) and then "fdt .properties" 
+implicitly working on /foo/bar/baz is ugly ugly ugly.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+We need a usable human interface syntax, replacing the last "/" with 
+some other character that is not a legal character for a name and thus 
+won't cause confusion.  I am not familiar enough with OF to know if 
+there is a unique character that can be used for the node path vs. 
+property separator.  If someone has a good one, hollar, otherwise I'll 
+do some more research when I have time.
 
- arch/powerpc/platforms/cell/Kconfig             |   15 +
- arch/powerpc/platforms/cell/spufs/Makefile      |    2 
- arch/powerpc/platforms/cell/spufs/context.c     |    4 
- arch/powerpc/platforms/cell/spufs/file.c        |   77 ++++++++--
- arch/powerpc/platforms/cell/spufs/lscsa_alloc.c |  181 ++++++++++++++++++++++++
- arch/powerpc/platforms/cell/spufs/switch.c      |   28 +--
- include/asm-powerpc/spu_csa.h                   |   10 +
- 7 files changed, 282 insertions(+), 35 deletions(-)
+Lacking a good property separator character, I will be sticking with the 
+convention that the stuff after the last "/" is a node unless that 
+assumption is wrong, in which case it is a property.
 
-Index: linux-cell/arch/powerpc/platforms/cell/Kconfig
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/Kconfig	2007-02-20 18:23:44.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/Kconfig	2007-02-20 18:24:58.000000000 +1100
-@@ -12,6 +12,21 @@ config SPU_FS
- 	  Units on machines implementing the Broadband Processor
- 	  Architecture.
- 
-+config SPU_FS_64K_LS
-+	bool "Use 64K pages to map SPE local  store"
-+	# we depend on PPC_MM_SLICES for now rather than selecting
-+	# it because we depend on hugetlbfs hooks being present. We
-+	# will fix that when the generic code has been improved to
-+	# not require hijacking hugetlbfs hooks.
-+	depends on SPU_FS && PPC_MM_SLICES && !PPC_64K_PAGES
-+	default y
-+	select PPC_HAS_HASH_64K
-+	help
-+	  This option causes SPE local stores to be mapped in process
-+	  address spaces using 64K pages while the rest of the kernel
-+	  uses 4K pages. This can improve performances of applications
-+	  using multiple SPEs by lowering the TLB pressure on them.
-+
- config SPU_BASE
- 	bool
- 	default n
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/context.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spufs/context.c	2007-02-20 18:23:44.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/context.c	2007-02-20 18:24:58.000000000 +1100
-@@ -36,10 +36,8 @@ struct spu_context *alloc_spu_context(st
- 	/* Binding to physical processor deferred
- 	 * until spu_activate().
- 	 */
--	spu_init_csa(&ctx->csa);
--	if (!ctx->csa.lscsa) {
-+	if (spu_init_csa(&ctx->csa))
- 		goto out_free;
--	}
- 	spin_lock_init(&ctx->mmio_lock);
- 	kref_init(&ctx->kref);
- 	mutex_init(&ctx->state_mutex);
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/switch.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spufs/switch.c	2007-02-20 18:23:44.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/switch.c	2007-02-20 18:24:58.000000000 +1100
-@@ -2185,40 +2185,30 @@ static void init_priv2(struct spu_state 
-  * as it is by far the largest of the context save regions,
-  * and may need to be pinned or otherwise specially aligned.
-  */
--void spu_init_csa(struct spu_state *csa)
-+int spu_init_csa(struct spu_state *csa)
- {
--	struct spu_lscsa *lscsa;
--	unsigned char *p;
-+	int rc;
- 
- 	if (!csa)
--		return;
-+		return -EINVAL;
- 	memset(csa, 0, sizeof(struct spu_state));
- 
--	lscsa = vmalloc(sizeof(struct spu_lscsa));
--	if (!lscsa)
--		return;
-+	rc = spu_alloc_lscsa(csa);
-+	if (rc)
-+		return rc;
- 
--	memset(lscsa, 0, sizeof(struct spu_lscsa));
--	csa->lscsa = lscsa;
- 	spin_lock_init(&csa->register_lock);
- 
--	/* Set LS pages reserved to allow for user-space mapping. */
--	for (p = lscsa->ls; p < lscsa->ls + LS_SIZE; p += PAGE_SIZE)
--		SetPageReserved(vmalloc_to_page(p));
--
- 	init_prob(csa);
- 	init_priv1(csa);
- 	init_priv2(csa);
-+
-+	return 0;
- }
- EXPORT_SYMBOL_GPL(spu_init_csa);
- 
- void spu_fini_csa(struct spu_state *csa)
- {
--	/* Clear reserved bit before vfree. */
--	unsigned char *p;
--	for (p = csa->lscsa->ls; p < csa->lscsa->ls + LS_SIZE; p += PAGE_SIZE)
--		ClearPageReserved(vmalloc_to_page(p));
--
--	vfree(csa->lscsa);
-+	spu_free_lscsa(csa);
- }
- EXPORT_SYMBOL_GPL(spu_fini_csa);
-Index: linux-cell/include/asm-powerpc/spu_csa.h
-===================================================================
---- linux-cell.orig/include/asm-powerpc/spu_csa.h	2007-02-20 18:23:44.000000000 +1100
-+++ linux-cell/include/asm-powerpc/spu_csa.h	2007-02-20 18:24:58.000000000 +1100
-@@ -235,6 +235,12 @@ struct spu_priv2_collapsed {
-  */
- struct spu_state {
- 	struct spu_lscsa *lscsa;
-+#ifdef CONFIG_SPU_FS_64K_LS
-+	int		use_big_pages;
-+	/* One struct page per 64k page */
-+#define SPU_LSCSA_NUM_BIG_PAGES	(sizeof(struct spu_lscsa) / 0x10000)
-+	struct page	*lscsa_pages[SPU_LSCSA_NUM_BIG_PAGES];
-+#endif
- 	struct spu_problem_collapsed prob;
- 	struct spu_priv1_collapsed priv1;
- 	struct spu_priv2_collapsed priv2;
-@@ -246,12 +252,14 @@ struct spu_state {
- 	spinlock_t register_lock;
- };
- 
--extern void spu_init_csa(struct spu_state *csa);
-+extern int spu_init_csa(struct spu_state *csa);
- extern void spu_fini_csa(struct spu_state *csa);
- extern int spu_save(struct spu_state *prev, struct spu *spu);
- extern int spu_restore(struct spu_state *new, struct spu *spu);
- extern int spu_switch(struct spu_state *prev, struct spu_state *new,
- 		      struct spu *spu);
-+extern int spu_alloc_lscsa(struct spu_state *csa);
-+extern void spu_free_lscsa(struct spu_state *csa);
- 
- #endif /* !__SPU__ */
- #endif /* __KERNEL__ */
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/Makefile
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spufs/Makefile	2007-02-20 18:23:44.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/Makefile	2007-02-20 18:24:58.000000000 +1100
-@@ -1,4 +1,4 @@
--obj-y += switch.o
-+obj-y += switch.o lscsa_alloc.o
- 
- obj-$(CONFIG_SPU_FS) += spufs.o
- spufs-y += inode.o file.o context.o syscalls.o coredump.o
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/lscsa_alloc.c	2007-02-20 18:29:54.000000000 +1100
-@@ -0,0 +1,181 @@
-+/*
-+ * SPU local store allocation routines
-+ *
-+ * Copyright 2007 Benjamin Herrenschmidt, IBM Corp.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License as published by
-+ * the Free Software Foundation; either version 2, or (at your option)
-+ * any later version.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
-+ */
-+
-+#undef DEBUG
-+
-+#include <linux/kernel.h>
-+#include <linux/mm.h>
-+#include <linux/vmalloc.h>
-+
-+#include <asm/spu.h>
-+#include <asm/spu_csa.h>
-+#include <asm/mmu.h>
-+
-+static int spu_alloc_lscsa_std(struct spu_state *csa)
-+{
-+	struct spu_lscsa *lscsa;
-+	unsigned char *p;
-+
-+	lscsa = vmalloc(sizeof(struct spu_lscsa));
-+	if (!lscsa)
-+		return -ENOMEM;
-+	memset(lscsa, 0, sizeof(struct spu_lscsa));
-+	csa->lscsa = lscsa;
-+
-+	/* Set LS pages reserved to allow for user-space mapping. */
-+	for (p = lscsa->ls; p < lscsa->ls + LS_SIZE; p += PAGE_SIZE)
-+		SetPageReserved(vmalloc_to_page(p));
-+
-+	return 0;
-+}
-+
-+static void spu_free_lscsa_std(struct spu_state *csa)
-+{
-+	/* Clear reserved bit before vfree. */
-+	unsigned char *p;
-+
-+	if (csa->lscsa == NULL)
-+		return;
-+
-+	for (p = csa->lscsa->ls; p < csa->lscsa->ls + LS_SIZE; p += PAGE_SIZE)
-+		ClearPageReserved(vmalloc_to_page(p));
-+
-+	vfree(csa->lscsa);
-+}
-+
-+#ifdef CONFIG_SPU_FS_64K_LS
-+
-+#define SPU_64K_PAGE_SHIFT	16
-+#define SPU_64K_PAGE_ORDER	(SPU_64K_PAGE_SHIFT - PAGE_SHIFT)
-+#define SPU_64K_PAGE_COUNT	(1ul << SPU_64K_PAGE_ORDER)
-+
-+int spu_alloc_lscsa(struct spu_state *csa)
-+{
-+	struct page	**pgarray;
-+	unsigned char	*p;
-+	int		i, j, n_4k;
-+
-+	/* Check availability of 64K pages */
-+	if (mmu_psize_defs[MMU_PAGE_64K].shift == 0)
-+		goto fail;
-+
-+	csa->use_big_pages = 1;
-+
-+	pr_debug("spu_alloc_lscsa(csa=0x%p), trying to allocate 64K pages\n",
-+		 csa);
-+
-+	/* First try to allocate our 64K pages. We need 5 of them
-+	 * with the current implementation. In the future, we should try
-+	 * to separate the lscsa with the actual local store image, thus
-+	 * allowing us to require only 4 64K pages per context
-+	 */
-+	for (i = 0; i < SPU_LSCSA_NUM_BIG_PAGES; i++) {
-+		/* XXX This is likely to fail, we should use a special pool
-+		 *     similiar to what hugetlbfs does.
-+		 */
-+		csa->lscsa_pages[i] = alloc_pages(GFP_KERNEL,
-+						  SPU_64K_PAGE_ORDER);
-+		if (csa->lscsa_pages[i] == NULL)
-+			goto fail;
-+	}
-+
-+	pr_debug(" success ! creating vmap...\n");
-+
-+	/* Now we need to create a vmalloc mapping of these for the kernel
-+	 * and SPU context switch code to use. Currently, we stick to a
-+	 * normal kernel vmalloc mapping, which in our case will be 4K
-+	 */
-+	n_4k = SPU_64K_PAGE_COUNT * SPU_LSCSA_NUM_BIG_PAGES;
-+	pgarray = kmalloc(sizeof(struct page *) * n_4k, GFP_KERNEL);
-+	if (pgarray == NULL)
-+		goto fail;
-+	for (i = 0; i < SPU_LSCSA_NUM_BIG_PAGES; i++)
-+		for (j = 0; j < SPU_64K_PAGE_COUNT; j++)
-+			/* We assume all the struct page's are contiguous
-+			 * which should be hopefully the case for an order 4
-+			 * allocation..
-+			 */
-+			pgarray[i * SPU_64K_PAGE_COUNT + j] =
-+				csa->lscsa_pages[i] + j;
-+	csa->lscsa = vmap(pgarray, n_4k, VM_USERMAP, PAGE_KERNEL);
-+	kfree(pgarray);
-+	if (csa->lscsa == NULL)
-+		goto fail;
-+
-+	memset(csa->lscsa, 0, sizeof(struct spu_lscsa));
-+
-+	/* Set LS pages reserved to allow for user-space mapping.
-+	 *
-+	 * XXX isn't that a bit obsolete ? I think we should just
-+	 * make sure the page count is high enough. Anyway, won't harm
-+	 * for now
-+	 */
-+	for (p = csa->lscsa->ls; p < csa->lscsa->ls + LS_SIZE; p += PAGE_SIZE)
-+		SetPageReserved(vmalloc_to_page(p));
-+
-+	pr_debug(" all good !\n");
-+
-+	return 0;
-+fail:
-+	pr_debug("spufs: failed to allocate lscsa 64K pages, falling back\n");
-+	spu_free_lscsa(csa);
-+	return spu_alloc_lscsa_std(csa);
-+}
-+
-+void spu_free_lscsa(struct spu_state *csa)
-+{
-+	unsigned char *p;
-+	int i;
-+
-+	if (!csa->use_big_pages) {
-+		spu_free_lscsa_std(csa);
-+		return;
-+	}
-+	csa->use_big_pages = 0;
-+
-+	if (csa->lscsa == NULL)
-+		goto free_pages;
-+
-+	for (p = csa->lscsa->ls; p < csa->lscsa->ls + LS_SIZE; p += PAGE_SIZE)
-+		ClearPageReserved(vmalloc_to_page(p));
-+
-+	vunmap(csa->lscsa);
-+	csa->lscsa = NULL;
-+
-+ free_pages:
-+
-+	for (i = 0; i < SPU_LSCSA_NUM_BIG_PAGES; i++)
-+		if (csa->lscsa_pages[i])
-+			__free_pages(csa->lscsa_pages[i], SPU_64K_PAGE_ORDER);
-+}
-+
-+#else /* CONFIG_SPU_FS_64K_LS */
-+
-+int spu_alloc_lscsa(struct spu_state *csa)
-+{
-+	return spu_alloc_lscsa_std(csa);
-+}
-+
-+void spu_free_lscsa(struct spu_state *csa)
-+{
-+	spu_free_lscsa_std(csa);
-+}
-+
-+#endif /* !defined(CONFIG_SPU_FS_64K_LS) */
-Index: linux-cell/arch/powerpc/platforms/cell/spufs/file.c
-===================================================================
---- linux-cell.orig/arch/powerpc/platforms/cell/spufs/file.c	2007-02-20 18:23:44.000000000 +1100
-+++ linux-cell/arch/powerpc/platforms/cell/spufs/file.c	2007-02-20 18:29:11.000000000 +1100
-@@ -98,14 +98,32 @@ spufs_mem_write(struct file *file, const
- static unsigned long spufs_mem_mmap_nopfn(struct vm_area_struct *vma,
- 					  unsigned long address)
- {
--	struct spu_context *ctx = vma->vm_file->private_data;
--	unsigned long pfn, offset = address - vma->vm_start;
--
--	offset += vma->vm_pgoff << PAGE_SHIFT;
-+	struct spu_context *ctx	= vma->vm_file->private_data;
-+	unsigned long pfn, offset, addr0 = address;
-+#ifdef CONFIG_SPU_FS_64K_LS
-+	struct spu_state *csa = &ctx->csa;
-+	int psize;
-+
-+	/* Check what page size we are using */
-+	psize = get_slice_psize(vma->vm_mm, address);
-+
-+	/* Some sanity checking */
-+	BUG_ON(csa->use_big_pages != (psize == MMU_PAGE_64K));
-+
-+	/* Wow, 64K, cool, we need to align the address though */
-+	if (csa->use_big_pages) {
-+		BUG_ON(vma->vm_start & 0xffff);
-+		address &= ~0xfffful;
-+	}
-+#endif /* CONFIG_SPU_FS_64K_LS */
- 
-+	offset = (address - vma->vm_start) + (vma->vm_pgoff << PAGE_SHIFT);
- 	if (offset >= LS_SIZE)
- 		return NOPFN_SIGBUS;
- 
-+	pr_debug("spufs_mem_mmap_nopfn address=0x%lx -> 0x%lx, offset=0x%lx\n",
-+		 addr0, address, offset);
-+
- 	spu_acquire(ctx);
- 
- 	if (ctx->state == SPU_STATE_SAVED) {
-@@ -129,9 +147,24 @@ static struct vm_operations_struct spufs
- 	.nopfn = spufs_mem_mmap_nopfn,
- };
- 
--static int
--spufs_mem_mmap(struct file *file, struct vm_area_struct *vma)
-+static int spufs_mem_mmap(struct file *file, struct vm_area_struct *vma)
- {
-+#ifdef CONFIG_SPU_FS_64K_LS
-+	struct spu_context	*ctx = file->private_data;
-+	struct spu_state	*csa = &ctx->csa;
-+
-+	/* Sanity check VMA alignment */
-+	if (csa->use_big_pages) {
-+		pr_debug("spufs_mem_mmap 64K, start=0x%lx, end=0x%lx,"
-+			 " pgoff=0x%lx\n", vma->vm_start, vma->vm_end,
-+			 vma->vm_pgoff);
-+		if (vma->vm_start & 0xffff)
-+			return -EINVAL;
-+		if (vma->vm_pgoff & 0xf)
-+			return -EINVAL;
-+	}
-+#endif /* CONFIG_SPU_FS_64K_LS */
-+
- 	if (!(vma->vm_flags & VM_SHARED))
- 		return -EINVAL;
- 
-@@ -143,12 +176,34 @@ spufs_mem_mmap(struct file *file, struct
- 	return 0;
- }
- 
-+#ifdef CONFIG_SPU_FS_64K_LS
-+unsigned long spufs_get_unmapped_area(struct file *file, unsigned long addr,
-+				      unsigned long len, unsigned long pgoff,
-+				      unsigned long flags)
-+{
-+	struct spu_context	*ctx = file->private_data;
-+	struct spu_state	*csa = &ctx->csa;
-+
-+	/* If not using big pages, fallback to normal MM g_u_a */
-+	if (!csa->use_big_pages)
-+		return current->mm->get_unmapped_area(file, addr, len,
-+						      pgoff, flags);
-+
-+	/* Else, try to obtain a 64K pages slice */
-+	return slice_get_unmapped_area(addr, len, flags,
-+				       MMU_PAGE_64K, 1, 0);
-+}
-+#endif /* CONFIG_SPU_FS_64K_LS */
-+
- static const struct file_operations spufs_mem_fops = {
--	.open	 = spufs_mem_open,
--	.read    = spufs_mem_read,
--	.write   = spufs_mem_write,
--	.llseek  = generic_file_llseek,
--	.mmap    = spufs_mem_mmap,
-+	.open	 		= spufs_mem_open,
-+	.read   		= spufs_mem_read,
-+	.write   		= spufs_mem_write,
-+	.llseek  		= generic_file_llseek,
-+	.mmap    		= spufs_mem_mmap,
-+#ifdef CONFIG_SPU_FS_64K_LS
-+	.get_unmapped_area	= spufs_get_unmapped_area,
-+#endif
- };
- 
- static unsigned long spufs_ps_nopfn(struct vm_area_struct *vma,
+Best regards,
+gvb
