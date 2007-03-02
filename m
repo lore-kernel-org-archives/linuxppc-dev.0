@@ -1,21 +1,28 @@
-Return-Path: <ckrinke@istor.com>
-Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 64AD0DDF6A
+Return-Path: <ed.swarthout@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 5E558DDF63
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Mar 2007 06:52:30 +1100 (EST)
+	Sat,  3 Mar 2007 08:27:35 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
+	l22LRVQH021252
+	for <linuxppc-embedded@ozlabs.org>; Fri, 2 Mar 2007 14:27:31 -0700 (MST)
+Received: from az33exm20.fsl.freescale.net (az33exm20.am.freescale.net
+	[10.64.32.6])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l22LRVVV011156
+	for <linuxppc-embedded@ozlabs.org>; Fri, 2 Mar 2007 15:27:31 -0600 (CST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: DMA take 3
-Date: Fri, 2 Mar 2007 11:52:27 -0800
-Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B02@MERCURY.inside.istor.com>
+	charset="us-ascii"
+Subject: RE: DMA take 3
+Date: Fri, 2 Mar 2007 14:27:25 -0700
+Message-ID: <B52955765C54604CB1A62A9967F22C7301EAE5F8@az33exm20.fsl.freescale.net>
+In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B02@MERCURY.inside.istor.com>
 References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A181@MERCURY.inside.istor.com>
 	<B52955765C54604CB1A62A9967F22C7301EAE573@az33exm20.fsl.freescale.net>
-From: "Charles Krinke" <ckrinke@istor.com>
-To: "Swarthout Edward L-SWARTHOU" <ed.swarthout@freescale.com>,
-	<linuxppc-embedded@ozlabs.org>
+	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069B02@MERCURY.inside.istor.com>
+From: "Swarthout Edward L-SWARTHOU" <ed.swarthout@freescale.com>
+To: "Charles Krinke" <ckrinke@istor.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,62 +33,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Ed:
-Thank you for the two hints. Please bear with me for another question or =
-two as I try to converge this today.
-=20
-I have incorporated your two ideas and still have something else going =
-awry. First of all, I do not have to be changing a POTAR at this point =
-in the program for a while. So I am trying to simplify it until it =
-works. Here is the current state.
-=20
-write(0, SR0)  //clear anything and everything
-write(0x00040000, SATR0)  //READTTYPE=3DRead, do not snoop=20
-write(0x00040000, DATR0)  //READTTYPE=3DWrite, do not snoop=20
-write(sourceLow32bits, SAR0)  //usually 0x07xxxxxx near the top of =
-128Mbyte physical memory=20
-write(size, BCR0) =20
-printk(various things including some of the registers recently written
-//I am assuming this is benign in a Linux driver at this point
-asm("sync") //got this in here now
-write(destLow32bits, DAR0)  //This should now trigger the DMA
-//potar already has the destHi32Bits and it is always 0x1_0000_0000 in =
-64bit memory space in
-//At this point, I would expect the DMA engine to DMA through the window =
-previously setup in potar
-=20
-Charles
-=20
-________________________________
-
-From: Swarthout Edward L-SWARTHOU [mailto:ed.swarthout@freescale.com]
-Sent: Fri 3/2/2007 11:28 AM
-To: Charles Krinke; linuxppc-embedded@ozlabs.org
-Subject: RE: To DMA or not to DMA
-
-
-
-It could be a lot of other things, but I see two things wrong:
-
-> From: Charles Krinke
-...
-> origPotar =3D readl(POTAR2) //save outbound address translation
-> writel(0x00040000, SATR0) //source attribute for normal read/write
-> writel(0x00040000, DATR0) //dest attribute for normal read/write
-> writel(destHigh32bits >> 8, POTAR2) //put address into window conside
-> writel(destLow32bits, DAR0) //setup the destination address register
-> writel(sourceLow32bits, SAR0) //setup the source address register
-> writel(size, BCR0) //setup the number of words to transfer
-
-Add a sync here to ensure the previous stores are out of the cpu.
-
-> writel(1, MRx[CS]) //trigger the DMA to go
-> writel(origPotar, POTAR2) //restor outbound address translation
-
-Don't destroy the outbound window brefore the dma is complete!
-
-> And I would expect the DMA to work, but it doesn't. Can someone help
-me
-> get my mind around how the DMA in the 8541 is supposed to work?
+Maybe even a more basic question - are you setting the controller up
+correctly for this mode (SRW=3D1 and CTM=3D1)?
+One suggestion is to try it once by hand in u-boot to ensure the
+hardware is working as expected before trying it in Linux.
 
 -EdS
+
+#simple u-boot Direct Mode dma example - Ed.Swarthout
+setenv sad fff80000 #source
+setenv dad 10000    #dest
+setenv bc 10        #byte count
+setenv b e0021      #ccsr
+
+mw ${b}104 ffffffff #sr clear
+mw ${b}110 50000    #satr SREADTTYPE=3D5 read snoop
+mw ${b}114 $sad	  #sar
+mw ${b}118 50000    #datr write snoop
+mw ${b}120 $bc	  #bcr=20
+mw ${b}100 0f03c404 #mr BWC=3Df, DAHTS=3D3, SAHTS=3D3, SRW=3D1 CTM
+md $dad 5           #before
+mw ${b}11c $dad     #set dar and go
+md ${b}100 9        #show status
+md $dad 5           #after
+
+Or make a dma command and run it:
+
+setenv dma 'mw ${b}104 ffffffff;mw ${b}110 50000;mw ${b}114 $sad;mw
+${b}118 50000;mw ${b}120 $bc;mw ${b}100 0f03c404; mw ${b}11c $dad; md
+${b}100 9'
+
+setenv b e0021; setenv sad fff80000; setenv dad 10000; setenv bc 10
+run dma
+
+--- results ---
+
+=3D> md $dad 5
+md $dad
+00010000: deadbeef deadbeef deadbeef deadbeef    ................
+00010010: deadbeef    ....
+=3D> run dma
+run dma
+e0021100: 0f03c405 00000000 00000000 00000000    ................
+e0021110: 00050000 fff80010 00050000 00010010    ................
+e0021120: 00000000    ....
+=3D> md $dad 5
+md $dad 5
+00010000: 27051956 552d426f 6f742031 2e322e30    '..VU-Boot 1.2.0
+00010010: deadbeef    ....
