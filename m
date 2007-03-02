@@ -1,22 +1,24 @@
-Return-Path: <gerald.vanbaren@comcast.net>
-Received: from rwcrmhc11.comcast.net (rwcrmhc11.comcast.net [216.148.227.151])
-	by ozlabs.org (Postfix) with ESMTP id 0A09ADDE08
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2007 23:31:42 +1100 (EST)
-Message-ID: <45E8192B.8020104@comcast.net>
-Date: Fri, 02 Mar 2007 07:31:39 -0500
-From: Jerry Van Baren <gerald.vanbaren@comcast.net>
+Return-Path: <devtty0@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id E330FDDF37
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 03:13:44 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so1185748nfc
+	for <linuxppc-dev@ozlabs.org>; Fri, 02 Mar 2007 08:13:41 -0800 (PST)
+Message-ID: <45E84D32.8040405@gmail.com>
+Date: Fri, 02 Mar 2007 17:13:38 +0100
+From: Luotao Fu <devtty0@gmail.com>
 MIME-Version: 1.0
-To: Jerry Van Baren <gerald.vanbaren@comcast.net>,
-	u-boot-users@lists.sourceforge.net,  linuxppc-dev@ozlabs.org
-Subject: Re: RFA & Update: Using libfdt in u-boot for fdt command
-References: <45E6DCB4.3080106@smiths-aerospace.com>
-	<20070302015553.GA1687@localhost.localdomain>
-	<45E7A346.5080206@comcast.net>
-	<20070302044815.GI1687@localhost.localdomain>
-	<45E7B53D.6020603@comcast.net>
-	<20070302053640.GJ1687@localhost.localdomain>
-In-Reply-To: <20070302053640.GJ1687@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: problems with pci bus on a pm520 board
+References: <45E5ED35.7090207@gmail.com>
+	<0a1927a91e52d34352e8a545b7dc57d0@kernel.crashing.org>
+	<45E61161.9040900@gmail.com>
+	<eaa8f5754d3e1544ce91df01acf2054d@kernel.crashing.org>
+	<45E69CDF.20608@gmail.com>
+	<3a8c70b34f2ef98fb696c371b4d2c2d2@kernel.crashing.org>
+In-Reply-To: <3a8c70b34f2ef98fb696c371b4d2c2d2@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,75 +28,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Fri, Mar 02, 2007 at 12:25:17AM -0500, Jerry Van Baren wrote:
->> David Gibson wrote:
->>> On Thu, Mar 01, 2007 at 11:08:38PM -0500, Jerry Van Baren wrote:
->> [snip]
->>
->>>> to give me a pointer to the node name for node tags and property name 
->>>> for property tags.  Now that I have it working, it would be trivial to 
->>>> change the calls to _fdt_next_tag() to instead call fdt_next_tag() 
->>>> passing NULL for the new fourth parameter **namep. ;-)
->>>>
->>>> The reason I need it, I'm printing an unknown tree by stepping through 
->>>> the tree discovering the node and property names.  I need to have 
->>>> fdt_next_tag() return the *name* of the node/property as well as the tag 
->>>> so that I can print and indent for nodes or look up the property value 
->>>> and print the name=value combination.
->>> Hrm.  And it returns NULL for tags without a name?
->> I was unable to generate a tag without a name using dtc (other than the 
->> root node).  It should/would return null, which would be a problem. :-/
+Segher Boessenkool wrote:
+>>>>             interrupt-map = <8000 0 0 1 500 1 1 3 // e100, 10.0
+>>>>                              8000 0 0 2 500 1 1 3
+>>>>                              8000 0 0 3 500 1 1 3
+>>>>                              8000 0 0 4 500 1 1 3
+>>>
+>>> 8000 is device 16, not 10
 > 
-> I was thinking more of tag types which don't have a name, to wit,
-> FDT_END_NODE and FDT_NOP.
+> <snip>
 > 
->>> That might be a useful extension for the next_tag function.  The one
->>> thing I'm concerned about is who's responsible for verifying the name
->>> pointer.  I'm trying to keep libfdt robust enough that evern if
->>> presented with a badly corrupt blob it will fail relatively
->>> gracefully.  Ideally, no matter what it's presented with, it will
->>> always return at worst FDT_ERR_BADSTRUCTURE rather than crashing and
->>> will under no circumstances access memory outside the given blob
->>> size.
->> [snip]
->>
->>>> Oh gaak!  What I hear you saying... if you have node a with subnode b 
->>>> and property b, subnode b has a property c:
->>>> /a     => node
->>>> /a/b   => node
->>>> /a/b   => property (inside node a)
->>>> /a/b/c => property (inside node b)
->>> Well, yes.  Except that in OF and derived terminology, properties are
->>> *never* referred to by path in this way.  It's always:
->>> 	"property 'fred' of node /foo/bar/baz"
->> I'm coming from a human interface syntax point of view and assumed that 
->> the human interface is paths like linux where the last item is a 
->> directory or file with the computer guessing what you really meant 
->> (which _isn't_ ambiguous in file/dir paths).  Is there a better syntax 
->> for distinguishing between node paths and properties?
+>> I got the address 8000 here. Is the
+>> pdev->bus->number actually supposed to be 10 for device 10? I had some
+>> trouble tracking down how the bus number is initialized. It might be
+>> nice if you or some one could give me a hint on this.
 > 
-> You assumed incorrectly.  Well, unless you count /proc/device-tree as
-> a human interface to the device tree, which isn't entirely
-> unreasonable.  OF certainly doesn't use that approach, it uses state
-> instead, first "dev /foo/bar/baz" then ".properties" or "setprop ....".
+> 8000 is device 16 is 0x10 hex.  PCI device numbers are
+> usually written in decimal.  Is your device 10 == 0x0a
+> or 16 == 0x10?
 
-OF is a programming language that has some crude elements of interaction 
-(wouldn't that be "/foo/bar/baz" dev in Forthspeak? ;-).  Making user 
-interface commands have state, where you do "fdt dev /foo/bar/baz" 
-(remembering the offset of the node) and then "fdt .properties" 
-implicitly working on /foo/bar/baz is ugly ugly ugly.
+I took the number 10 out of the sysfs bus entry. As they are printed as
+%x there. The 10 is a 0x10 = 16. Hence 8000 seemed to be OK then. How is
+this actually supposed to be calculated? (As you can see, I know only
+little about pci stuffs) As I wrote in the last mail. The addr is
+calculated by the parser with
+laddr[0] = (pdev->bus->number << 16) | (pdev->devfn << 8)
+Since we have only one pci bus here, I suppose the bus number should be
+0. However I'm wondering about what does this devfn stands for?
 
-We need a usable human interface syntax, replacing the last "/" with 
-some other character that is not a legal character for a name and thus 
-won't cause confusion.  I am not familiar enough with OF to know if 
-there is a unique character that can be used for the node path vs. 
-property separator.  If someone has a good one, hollar, otherwise I'll 
-do some more research when I have time.
+I now finally made some processes. I made a really stupid failure and
+put the pci bus in 66 MhZ, the USB controller doesn't like it at all and
+went dow the hill.... Now I run the pci bus with 33MhZ and the USB
+controller is working all fine now. However I still get troubles with
+the intel gd82551t ethernet controller. I connected it to the network
+and generated some activities, I even saw the phy blinking. The watchdog
+also works properly and reports link status. However the controller just
+won't generate or receive any interrupts. Both the Becker Driver and the
+intel driver just won't work.
 
-Lacking a good property separator character, I will be sticking with the 
-convention that the stuff after the last "/" is a node unless that 
-assumption is wrong, in which case it is a property.
+I tried the irqpoll option in the kernel command line, which also didn't
+help. Seemed that the no interrupts is coming through at all, which is
+really strange since the controller seemed to be corretly configured.
 
-Best regards,
-gvb
+I noticed that the L1 information are different for the ethernet and usb
+controllers according to /proc/interrupts. for eth1 it says Main and for
+usb it says IRQ[0-3], might this be the reason of my problem?
+
+root@testboard:~ cat /proc/interrupts
+           CPU0
+ 64:          0  MPC52xx Main Edge      eth1
+ 65:          2   MPC52xx IRQ[0-3]  Edge      ehci_hcd:usb1,
+ohci_hcd:usb2, ohci_hcd:usb3
+129:        903  MPC52xx Peripherals Edge      mpc52xx_psc_uart
+133:          7  MPC52xx Peripherals Edge      mpc52xx-fec_ctrl
+145:          0  MPC52xx Peripherals Edge      can0
+146:          0  MPC52xx Peripherals Edge      can1
+192:       4004  MPC52xx SDMA Edge      mpc52xx-fec_rx
+193:       3343  MPC52xx SDMA Edge      mpc52xx-fec_tx
+BAD:          0
+
+The interrupt pin of the ethernet controller is connected to irq0 pin of
+the MPC5200B while the interrupt pin of the usb controller is connected
+to irq1 of the MPC5200B. Since the usb has 65 and is working, I suppose
+strongly that 64 for the ethernet controller should also be correct.
+
+The pci node of my the device tree now looks like this:
+
+pci@0d00 {
+	#interrupt-cells = <1>;
+	#size-cells = <2>;
+	#address-cells = <3>;
+	device_type = "pci";
+	compatible = "mpc5200b-pci\0mpc5200-pci";
+	reg = <d00 100>;
+	interrupt-map-mask = <f800 0 0 7>;
+	interrupt-map = <8000 0 0 1 500 1 0 3 // e100, 10.0               			
+8000 0 0 2 500 1 1 3
+			 8000 0 0 3 500 1 2 3
+			 8000 0 0 4 500 1 3 3
+
+			 8800 0 0 1 500 1 1 3 // usb 11.*
+			 8800 0 0 2 500 1 2 3
+			 8800 0 0 3 500 1 3 3
+			 8800 0 0 4 500 0 0 3>;
+	clock-frequency = <0>; // From boot loader
+	interrupts = <2 8 0 2 9 0 2 a 0>;
+	interrupt-parent = <500>;
+	bus-range = <0 0>;
+	ranges = <42000000 0 80000000 80000000 0 20000000
+		  02000000 0 a0000000 a0000000 0 10000000
+		  01000000 0 00000000 b0000000 0 01000000>;
+};
+
+Like I mentioned before. I quite did not get the idea of all the open
+firmware things. I'd be very appreciate if you could take a near look on
+this and tell me if you see anything wrong with this node.
+
+Thanx a lot
+cheers
+Luotao Fu
