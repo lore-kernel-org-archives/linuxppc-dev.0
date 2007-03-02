@@ -1,13 +1,19 @@
-Return-Path: <b08248@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id CEE28DDF4E
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 06:42:52 +1100 (EST)
-Date: Fri, 2 Mar 2007 13:42:33 -0600
-From: Stuart Yoder <b08248@freescale.com>
-Message-Id: <200703021942.l22JgXbJ005904@ld0164-tx32.am.freescale.net>
-To: paulus@samba.org
-Subject: [PATCH v3] powerpc: update interrupt info in booting-without-of.txt
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id B4CA6DDF63
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 07:36:24 +1100 (EST)
+Date: Fri, 2 Mar 2007 13:36:21 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [patch 1/1] powerpc: ppc EDAC ECC software scrubber
+Message-ID: <20070302203621.GA14737@blade.az.mvista.com>
+References: <20070302000930.GA8426@blade.az.mvista.com>
+	<20070302190220.GA9656@mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20070302190220.GA9656@mvista.com>
+Cc: norsk5@yahoo.com, dfarnsworth@mvista.com,
+	bluesmoke-devel@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,163 +23,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Resubmit of patch. Fixed whitespace issues.
 
-Create a new section descrbing how interrupts are represented
-in the device tree.  Added more detail. Clarified some things.
-
-Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
 ---
-  -** corrected whitespace mistake in V2 of this patch **
-  -updated the proprosal with corrections, suggestions by
-   Segher and David Gibson
-  -Note: There is a lot that could/should be added to this doc
-   related to interrupts and interrupt mapping.  This patch
-   is simply an initial step, by moving the current documentation
-   to a new section and adding a bit more detail.
 
- Documentation/powerpc/booting-without-of.txt |  123 ++++++++++++++++++--------
- 1 files changed, 87 insertions(+), 36 deletions(-)
+Implements the per arch atomic_scrub() that EDAC use for software
+ECC scrubbing.  It reads memory and then writes back the original
+value, allowing the hardware to detect and correct memory errors.
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index eaa0c32..d66958d 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1108,42 +1108,7 @@ See appendix A for an example partial SO
- MPC8540.
- 
- 
--2) Specifying interrupt information for SOC devices
-----------------------------------------------------
--
--Each device that is part of an SOC and which generates interrupts
--should have the following properties:
--
--	- interrupt-parent : contains the phandle of the interrupt
--          controller which handles interrupts for this device
--	- interrupts : a list of tuples representing the interrupt
--          number and the interrupt sense and level for each interrupt
--          for this device.
--
--This information is used by the kernel to build the interrupt table
--for the interrupt controllers in the system.
--
--Sense and level information should be encoded as follows:
--
--   Devices connected to openPIC-compatible controllers should encode
--   sense and polarity as follows:
--
--	0 = low to high edge sensitive type enabled
--	1 = active low level sensitive type enabled
--	2 = active high level sensitive type enabled
--	3 = high to low edge sensitive type enabled
--
--   ISA PIC interrupt controllers should adhere to the ISA PIC
--   encodings listed below:
--
--	0 =  active low level sensitive type enabled
--	1 =  active high level sensitive type enabled
--	2 =  high to low edge sensitive type enabled
--	3 =  low to high edge sensitive type enabled
--
--
--
--3) Representing devices without a current OF specification
-+2) Representing devices without a current OF specification
- ----------------------------------------------------------
- 
- Currently, there are many devices on SOCs that do not have a standard
-@@ -1732,6 +1697,92 @@ platforms are moved over to use the flat
- 
-    More devices will be defined as this spec matures.
- 
-+VII - Specifying interrupt information for devices 
-+===================================================
+Signed-off-by: Dave Jiang <djiang@mvista.com>
+---
+
+ include/asm-powerpc/edac.h |   40 ++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 40 insertions(+), 0 deletions(-)
+
+diff --git a/include/asm-powerpc/edac.h b/include/asm-powerpc/edac.h
+new file mode 100644
+index 0000000..384b37d
+--- /dev/null
++++ b/include/asm-powerpc/edac.h
+@@ -0,0 +1,40 @@
++/*
++ * PPC EDAC common defs
++ *
++ * Author: Dave Jiang <djiang@mvista.com>
++ *
++ * 2007 (c) MontaVista Software, Inc. This file is licensed under
++ * the terms of the GNU General Public License version 2. This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ */
++#ifndef ASM_EDAC_H
++#define ASM_EDAC_H
++/* 
++ * ECC atomic, DMA, SMP and interrupt safe scrub function.
++ * Implements the per arch atomic_scrub() that EDAC use for software
++ * ECC scrubbing.  It reads memory and then writes back the original
++ * value, allowing the hardware to detect and correct memory errors.
++ */
++static __inline__ void atomic_scrub(void *va, u32 size)
++{
++	unsigned int *virt_addr = va;
++	unsigned int temp;
++	unsigned int i;
 +
-+The device tree represents the busses and devices of a hardware
-+system in a form similar to the physical bus topology of the
-+hardware.
++	for (i = 0; i < size / sizeof(*virt_addr); i++, virt_addr++) {
++		/* Very carefully read and write to memory atomically
++		 * so we are interrupt, DMA and SMP safe.
++		 */
++		__asm__ __volatile__ ("\n\
++				1:	lwarx	%0,0,%1\n\
++					stwcx.	%0,0,%1\n\
++					bne-	1b\n\
++					isync"
++					: "=&r"(temp)
++					: "r"(virt_addr)
++					: "cr0", "memory");
++	}
++}
 +
-+In addition, a logical 'interrupt tree' exists which represents the
-+hierarchy and routing of interrupts in the hardware.
-+
-+The interrupt tree model is fully described in the
-+document "Open Firmware Recommended Practice: Interrupt
-+Mapping Version 0.9".  The document is available at:
-+<http://playground.sun.com/1275/practice>.
-+
-+1) interrupts property
-+----------------------
-+
-+Devices that generate interrupts to a single interrupt controller
-+should use the conventional OF representation described in the
-+OF interrupt mapping documentation.
-+
-+Each device which generates interrupts must have an 'interrupt'
-+property.  The interrupt property value is an arbitrary number of
-+of 'interrupt specifier' values which describe the interrupt or
-+interrupts for the device.
-+
-+The encoding of an interrupt specifier is determined by the
-+interrupt domain in which the device is located in the
-+interrupt tree.  The root of an interrupt domain specifies in
-+its #interrupt-cells property the number of 32-bit cells
-+required to encode an interrupt specifier.  See the OF interrupt
-+mapping documentation for a detailed description of domains.
-+
-+For example, the binding for the OpenPIC interrupt controller 
-+specifies  an #interrupt-cells value of 2 to encode the interrupt
-+number and level/sense information. All interrupt children in an
-+OpenPIC interrupt domain use 2 cells per interrupt in their interrupts
-+property.
-+
-+The PCI bus binding specifies a #interrupt-cell value of 1 to encode
-+which interrupt pin (INTA,INTB,INTC,INTD) is used.
-+
-+2) interrupt-parent property
-+----------------------------
-+
-+The interrupt-parent property is specified to define an explicit
-+link between a device node and its interrupt parent in
-+the interrupt tree.  The value of interrupt-parent is the
-+phandle of the parent node.
-+
-+If the interrupt-parent property is not defined for a node, it's
-+interrupt parent is assumed to be an ancestor in the node's
-+_device tree_ hierarchy.
-+
-+3) OpenPIC Interrupt Controllers
-+--------------------------------
-+
-+OpenPIC interrupt controllers require 2 cells to encode
-+interrupt information.  The first cell defines the interrupt
-+number.  The second cell defines the sense and level 
-+information.
-+
-+Sense and level information should be encoded as follows:
-+
-+	0 = low to high edge sensitive type enabled
-+	1 = active low level sensitive type enabled
-+	2 = active high level sensitive type enabled
-+	3 = high to low edge sensitive type enabled
-+
-+4) ISA Interrupt Controllers
-+----------------------------
-+
-+ISA PIC interrupt controllers require 2 cells to encode
-+interrupt information.  The first cell defines the interrupt
-+number.  The second cell defines the sense and level 
-+information.
-+
-+ISA PIC interrupt controllers should adhere to the ISA PIC
-+encodings listed below:
-+
-+	0 =  active low level sensitive type enabled
-+	1 =  active high level sensitive type enabled
-+	2 =  high to low edge sensitive type enabled
-+	3 =  low to high edge sensitive type enabled
-+
- 
- Appendix A - Sample SOC node for MPC8540
- ========================================
--- 
-1.4.4
++#endif
