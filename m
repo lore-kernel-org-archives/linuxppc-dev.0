@@ -1,24 +1,21 @@
-Return-Path: <devtty0@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
-	by ozlabs.org (Postfix) with ESMTP id E330FDDF37
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 03:13:44 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so1185748nfc
-	for <linuxppc-dev@ozlabs.org>; Fri, 02 Mar 2007 08:13:41 -0800 (PST)
-Message-ID: <45E84D32.8040405@gmail.com>
-Date: Fri, 02 Mar 2007 17:13:38 +0100
-From: Luotao Fu <devtty0@gmail.com>
+Return-Path: <n.eicker@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id 660A0DDEFB
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 04:39:19 +1100 (EST)
+From: Norbert Eicker <n.eicker@fz-juelich.de>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH] spidernet: Fix problem sending IP fragments
+Date: Fri, 2 Mar 2007 18:39:15 +0100
+References: <200702281521.34277.n.eicker@fz-juelich.de>
+	<1e548a3f0703011452u6dde9c53ifde2fa41fe5f4c38@mail.gmail.com>
+	<20070301233426.GH4717@austin.ibm.com>
+In-Reply-To: <20070301233426.GH4717@austin.ibm.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: problems with pci bus on a pm520 board
-References: <45E5ED35.7090207@gmail.com>
-	<0a1927a91e52d34352e8a545b7dc57d0@kernel.crashing.org>
-	<45E61161.9040900@gmail.com>
-	<eaa8f5754d3e1544ce91df01acf2054d@kernel.crashing.org>
-	<45E69CDF.20608@gmail.com>
-	<3a8c70b34f2ef98fb696c371b4d2c2d2@kernel.crashing.org>
-In-Reply-To: <3a8c70b34f2ef98fb696c371b4d2c2d2@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703021839.16158.n.eicker@fz-juelich.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
+	Adam Emerich <aemerich@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,102 +25,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->>>>             interrupt-map = <8000 0 0 1 500 1 1 3 // e100, 10.0
->>>>                              8000 0 0 2 500 1 1 3
->>>>                              8000 0 0 3 500 1 1 3
->>>>                              8000 0 0 4 500 1 1 3
->>>
->>> 8000 is device 16, not 10
-> 
-> <snip>
-> 
->> I got the address 8000 here. Is the
->> pdev->bus->number actually supposed to be 10 for device 10? I had some
->> trouble tracking down how the bus number is initialized. It might be
->> nice if you or some one could give me a hint on this.
-> 
-> 8000 is device 16 is 0x10 hex.  PCI device numbers are
-> usually written in decimal.  Is your device 10 == 0x0a
-> or 16 == 0x10?
+On Fri 2.3.2007 00:34, Linas Vepstas wrote:
+> On Thu, Mar 01, 2007 at 04:52:54PM -0600, Chris Engel wrote:
+> > I tried to apply this patch to 2.6.21-rc2 and CHECKSUM_HW appears
+> > to be changed to CHECKSUM_COMPLETE
 
-I took the number 10 out of the sysfs bus entry. As they are printed as
-%x there. The 10 is a 0x10 = 16. Hence 8000 seemed to be OK then. How is
-this actually supposed to be calculated? (As you can see, I know only
-little about pci stuffs) As I wrote in the last mail. The addr is
-calculated by the parser with
-laddr[0] = (pdev->bus->number << 16) | (pdev->devfn << 8)
-Since we have only one pci bus here, I suppose the bus number should be
-0. However I'm wondering about what does this devfn stands for?
+Oops. I did not test this on the actual 2.6.21-rc2 before sending it.
+It worked fine for me on 2.6.18.
 
-I now finally made some processes. I made a really stupid failure and
-put the pci bus in 66 MhZ, the USB controller doesn't like it at all and
-went dow the hill.... Now I run the pci bus with 33MhZ and the USB
-controller is working all fine now. However I still get troubles with
-the intel gd82551t ethernet controller. I connected it to the network
-and generated some activities, I even saw the phy blinking. The watchdog
-also works properly and reports link status. However the controller just
-won't generate or receive any interrupts. Both the Becker Driver and the
-intel driver just won't work.
+In the meantime it tested the patch below on 2.6.21.
 
-I tried the irqpoll option in the kernel command line, which also didn't
-help. Seemed that the no interrupts is coming through at all, which is
-really strange since the controller seemed to be corretly configured.
+> The use of CHECKSUM_HW was replaced by CHECKSUM_PARTIAL and
+> CHECKSUM_COMPLETE on a cae-by-case basis, in the patch series leading
+> up to 2.6.19.  In this case, I'm not sure which should have been
+> used.
 
-I noticed that the L1 information are different for the ethernet and usb
-controllers according to /proc/interrupts. for eth1 it says Main and for
-usb it says IRQ[0-3], might this be the reason of my problem?
+In fact CHECKSUM_COMPLETE seems to be used on the receiving side while
+CHECKSUM_PARTIAL is the one to be used while sending frames. Thus the
+latter is the one to chose.
 
-root@testboard:~ cat /proc/interrupts
-           CPU0
- 64:          0  MPC52xx Main Edge      eth1
- 65:          2   MPC52xx IRQ[0-3]  Edge      ehci_hcd:usb1,
-ohci_hcd:usb2, ohci_hcd:usb3
-129:        903  MPC52xx Peripherals Edge      mpc52xx_psc_uart
-133:          7  MPC52xx Peripherals Edge      mpc52xx-fec_ctrl
-145:          0  MPC52xx Peripherals Edge      can0
-146:          0  MPC52xx Peripherals Edge      can1
-192:       4004  MPC52xx SDMA Edge      mpc52xx-fec_rx
-193:       3343  MPC52xx SDMA Edge      mpc52xx-fec_tx
-BAD:          0
+> Norbert, can you resubmit a patch that applies to a more recent
+> kernel? p.s. your emailer replaced tabs by spaces ...
 
-The interrupt pin of the ethernet controller is connected to irq0 pin of
-the MPC5200B while the interrupt pin of the usb controller is connected
-to irq1 of the MPC5200B. Since the usb has 65 and is working, I suppose
-strongly that 64 for the ethernet controller should also be correct.
+so here's the new one:
 
-The pci node of my the device tree now looks like this:
+Fix problem sending IP fragments on spidernet.
 
-pci@0d00 {
-	#interrupt-cells = <1>;
-	#size-cells = <2>;
-	#address-cells = <3>;
-	device_type = "pci";
-	compatible = "mpc5200b-pci\0mpc5200-pci";
-	reg = <d00 100>;
-	interrupt-map-mask = <f800 0 0 7>;
-	interrupt-map = <8000 0 0 1 500 1 0 3 // e100, 10.0               			
-8000 0 0 2 500 1 1 3
-			 8000 0 0 3 500 1 2 3
-			 8000 0 0 4 500 1 3 3
+Signed-off-by: Norbert Eicker <n.eicker@fz-juelich.de>
+---
+diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
+index 3b91af8..e3019d5 100644
+--- a/drivers/net/spider_net.c
++++ b/drivers/net/spider_net.c
+@@ -719,7 +719,7 @@ spider_net_prepare_tx_descr(struct spide
+			SPIDER_NET_DESCR_CARDOWNED | SPIDER_NET_DMAC_NOCS;
+	spin_unlock_irqrestore(&chain->lock, flags);
 
-			 8800 0 0 1 500 1 1 3 // usb 11.*
-			 8800 0 0 2 500 1 2 3
-			 8800 0 0 3 500 1 3 3
-			 8800 0 0 4 500 0 0 3>;
-	clock-frequency = <0>; // From boot loader
-	interrupts = <2 8 0 2 9 0 2 a 0>;
-	interrupt-parent = <500>;
-	bus-range = <0 0>;
-	ranges = <42000000 0 80000000 80000000 0 20000000
-		  02000000 0 a0000000 a0000000 0 10000000
-		  01000000 0 00000000 b0000000 0 01000000>;
-};
-
-Like I mentioned before. I quite did not get the idea of all the open
-firmware things. I'd be very appreciate if you could take a near look on
-this and tell me if you see anything wrong with this node.
-
-Thanx a lot
-cheers
-Luotao Fu
+-	if (skb->protocol == htons(ETH_P_IP))
++	if (skb->protocol == htons(ETH_P_IP) && skb->ip_summed == CHECKSUM_PARTIAL)
+		switch (skb->nh.iph->protocol) {
+		case IPPROTO_TCP:
+			hwdescr->dmac_cmd_status |= SPIDER_NET_DMAC_TCP;
