@@ -1,21 +1,19 @@
-Return-Path: <n.eicker@fz-juelich.de>
-Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
-	by ozlabs.org (Postfix) with SMTP id 660A0DDEFB
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 04:39:19 +1100 (EST)
-From: Norbert Eicker <n.eicker@fz-juelich.de>
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH] spidernet: Fix problem sending IP fragments
-Date: Fri, 2 Mar 2007 18:39:15 +0100
-References: <200702281521.34277.n.eicker@fz-juelich.de>
-	<1e548a3f0703011452u6dde9c53ifde2fa41fe5f4c38@mail.gmail.com>
-	<20070301233426.GH4717@austin.ibm.com>
-In-Reply-To: <20070301233426.GH4717@austin.ibm.com>
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id B32B9DDF13
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 05:35:55 +1100 (EST)
+Message-ID: <45E86E77.3020305@smiths-aerospace.com>
+Date: Fri, 02 Mar 2007 13:35:35 -0500
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703021839.16158.n.eicker@fz-juelich.de>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org,
-	Adam Emerich <aemerich@us.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [U-Boot-Users] RFA & Update: Using libfdt in u-boot for
+	fdt	command
+References: <45E6DCB4.3080106@smiths-aerospace.com>	<20070302015553.GA1687@localhost.localdomain>	<45E7A346.5080206@comcast.net>	<20070302044815.GI1687@localhost.localdomain>	<45E7B53D.6020603@comcast.net>	<20070302053640.GJ1687@localhost.localdomain>
+	<45E8192B.8020104@comcast.net>
+In-Reply-To: <45E8192B.8020104@comcast.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: u-boot-users@lists.sourceforge.net, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,44 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri 2.3.2007 00:34, Linas Vepstas wrote:
-> On Thu, Mar 01, 2007 at 04:52:54PM -0600, Chris Engel wrote:
-> > I tried to apply this patch to 2.6.21-rc2 and CHECKSUM_HW appears
-> > to be changed to CHECKSUM_COMPLETE
+Jerry Van Baren wrote:
+> David Gibson wrote:
 
-Oops. I did not test this on the actual 2.6.21-rc2 before sending it.
-It worked fine for me on 2.6.18.
+[lots of snipping]
 
-In the meantime it tested the patch below on 2.6.21.
+>>> I'm coming from a human interface syntax point of view and assumed that 
+>>> the human interface is paths like linux where the last item is a 
+>>> directory or file with the computer guessing what you really meant 
+>>> (which _isn't_ ambiguous in file/dir paths).  Is there a better syntax 
+>>> for distinguishing between node paths and properties?
+>> You assumed incorrectly.  Well, unless you count /proc/device-tree as
+>> a human interface to the device tree, which isn't entirely
+>> unreasonable.  OF certainly doesn't use that approach, it uses state
+>> instead, first "dev /foo/bar/baz" then ".properties" or "setprop ....".
+> 
+> OF is a programming language that has some crude elements of interaction 
+> (wouldn't that be "/foo/bar/baz" dev in Forthspeak? ;-).  Making user 
+> interface commands have state, where you do "fdt dev /foo/bar/baz" 
+> (remembering the offset of the node) and then "fdt .properties" 
+> implicitly working on /foo/bar/baz is ugly ugly ugly.
+> 
+> We need a usable human interface syntax, replacing the last "/" with 
+> some other character that is not a legal character for a name and thus 
+> won't cause confusion.  I am not familiar enough with OF to know if 
+> there is a unique character that can be used for the node path vs. 
+> property separator.  If someone has a good one, hollar, otherwise I'll 
+> do some more research when I have time.
+> 
+> Lacking a good property separator character, I will be sticking with the 
+> convention that the stuff after the last "/" is a node unless that 
+> assumption is wrong, in which case it is a property.
+> 
+> Best regards,
+> gvb
 
-> The use of CHECKSUM_HW was replaced by CHECKSUM_PARTIAL and
-> CHECKSUM_COMPLETE on a cae-by-case basis, in the patch series leading
-> up to 2.6.19.  In this case, I'm not sure which should have been
-> used.
+OK, here is a reference on the OF device tree browsing commands:
+<http://www.firmworks.com/QuickRef.html#Device%20Tree%20Browsing>
 
-In fact CHECKSUM_COMPLETE seems to be used on the receiving side while
-CHECKSUM_PARTIAL is the one to be used while sending frames. Thus the
-latter is the one to chose.
+Where I'm coming from is that I've written the "fdt print" command to 
+put out the same text (possibly with data formatting differences) as 
+went into the dtc to create the blob.  This is very useful and intuitive 
+to me.
 
-> Norbert, can you resubmit a patch that applies to a more recent
-> kernel? p.s. your emailer replaced tabs by spaces ...
+The OF device tree browsing is modeled after filesys directory and file 
+browsing (sorta).
+   ".properties" ~ "ls" but only shows files (properties ~ files)
+   "dev" == "cd"
+   "ls" == "ls -d *" (only shows subdirectories)
+   "pwd" == "pwd"
+   "dend" - has no equiv
+   "show-devs" - has no equiv, sounds like it may be my "print" command
+   "words" - has no equiv, does not apply (dir *.exe in DOS :-)
+   "sift-devs ccc" == find . -name "*ccc*"
 
-so here's the new one:
+Looks a lot more complex with no clear benefit for u-boot.
 
-Fix problem sending IP fragments on spidernet.
+I have not found any character that could clearly and cleanly be used to 
+separate the node path from the property name.
+* Comma ',' - used to separate a device name from an argument - one
+      could argue that the property name is an argument to the path.
+      "/foo/bar,baz" is the property baz under the node "/foo/bar".
+* Space ' ' - "/foo/bar/baz" is a node path, "/foo/bar baz" is the
+     property baz under the node "/foo/bar".  Spaces complicate parsing.
 
-Signed-off-by: Norbert Eicker <n.eicker@fz-juelich.de>
----
-diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
-index 3b91af8..e3019d5 100644
---- a/drivers/net/spider_net.c
-+++ b/drivers/net/spider_net.c
-@@ -719,7 +719,7 @@ spider_net_prepare_tx_descr(struct spide
-			SPIDER_NET_DESCR_CARDOWNED | SPIDER_NET_DMAC_NOCS;
-	spin_unlock_irqrestore(&chain->lock, flags);
+Any strong opinions?  At this point I don't see any reason to change 
+from my current technique and proposed command set for u-boot.
 
--	if (skb->protocol == htons(ETH_P_IP))
-+	if (skb->protocol == htons(ETH_P_IP) && skb->ip_summed == CHECKSUM_PARTIAL)
-		switch (skb->nh.iph->protocol) {
-		case IPPROTO_TCP:
-			hwdescr->dmac_cmd_status |= SPIDER_NET_DMAC_TCP;
+Best regards,
+gvb
