@@ -1,21 +1,25 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id 8DECBDDED3
+Return-Path: <christophe.alayrac@cresitt.com>
+Received: from postfix1-g20.free.fr (postfix1-g20.free.fr [212.27.60.42])
+	by ozlabs.org (Postfix) with ESMTP id D1E6DDDED3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Mar 2007 18:31:17 +1100 (EST)
-Date: Fri, 2 Mar 2007 08:31:09 +0100
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Bartlomiej Sieka <tur@semihalf.com>
-Subject: Re: New Bestcomm/FEC patches (was: Re: [PATCH 0/7] MPC5200 and
-	Lite5200b low power modes)
-Message-ID: <20070302073109.GS4397@moe.telargo.com>
-References: <20070301075323.GP4397@moe.telargo.com>
-	<528646bc0703010625o92ff794ra5ba561b0861f2e3@mail.gmail.com>
-	<45E6E888.9050508@semihalf.com>
+	Fri,  2 Mar 2007 18:58:54 +1100 (EST)
+Received: from smtp5-g19.free.fr (smtp5-g19.free.fr [212.27.42.35])
+	by postfix1-g20.free.fr (Postfix) with ESMTP id 118A3ADAEFA
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  2 Mar 2007 08:58:52 +0100 (CET)
+Received: from CRESITTLAB (sou45-1-82-229-118-71.fbx.proxad.net
+	[82.229.118.71])
+	by smtp5-g19.free.fr (Postfix) with ESMTP id 7C1077200
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri,  2 Mar 2007 08:58:49 +0100 (CET)
+From: "alayrac" <christophe.alayrac@cresitt.com>
+To: "'linux ppc'" <linuxppc-embedded@ozlabs.org>
+Subject: Kernel start error
+Date: Fri, 2 Mar 2007 08:58:45 +0100
+Message-ID: <000001c75ca0$9a668040$c900a8c0@CRESITTLAB>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45E6E888.9050508@semihalf.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,46 +30,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 01/03/07 15:51 +0100, Bartlomiej Sieka wrote:
-> Grant Likely wrote:
-> > On 3/1/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> >> Hi!
-> >>
-> >> Patches are based on latest mainline git tree + fec patches:
-> >> Fec_MPC5200_eth_driver.patch
-> >> Copy_bestcomm_support_files_into_arch_powerpc.patch
-> >> Make_FEC_work_on_the_lite5200.patch
-> >>
-> > ---8<---snip--->8---
-> >> I would appreaciate any comments, suggestions etc.
-> > 
-> > Cool, good work.  I'll try to do a proper review today.
-> > 
-> > Note on the Bestcomm stuff; the patches that you've referenced above
-> > will not be going into mainline.  They will be replaced by a new set
-> > of bestcomm/FEC patches, hopfully in the .22 timeframe, so your
-> > patches there will need some rework.
-> 
-> Hello,
-> 
-> I am working on porting arch/powerpc Linux to a custom MPC5200B-based 
-> board, and currently using your 52xx-dev branch. Is this new set of 
-> bestcomm/FEC patches already in any of your publicly available branches, 
-> or is it something completely fresh? I am seeing some networking 
-> problems, and would be interested in giving new patches a try.
+Hi all.
 
-Patches I used were from Grant's 52xx-dev branch.
+I'am coming to you looking for some experience with HydraXC-50
+(Virtex4FX12, Proc PPC405) to try to figure out some boot sequence
+error.
 
+On that platform there is an Atmega8L that load FPGA bitstream through
+JTAG chain. The Loader V1.1 code is in FPGA internal BRAM so that after
+FPGA initialisation the PPC405 start execution from that memory.
 
-	Domen
+This loader start properly, read the kernel image.bin from SDCARD and
+try to start the kernel at is start address, in my case 0x400000.
 
-> 
-> Regards,
-> Bartlomiej
-> 
-> 
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+In the loader the last point is
+    print("\n\rStarting image from Memory\n\r");
+    jump();	
+
+with jump function
+   void jump() {
+	cmdline[0]='\0';
+	xil_printf("mem_start %08X\r\n",mem_start);
+	kernel_start = (void_fn)mem_start;
+	kernel_start(cmdline);
+   }
+
+The loader hangs up after the messages : 
+	Starting image from Memory
+	mem_start 00400000
+
+If I download the kernel image (zImage.elf) using JTAG emulator under
+Xilinx XMD shell, with commands
+	dow zImage.elf
+	con
+then the kernel start properly.
+
+I did not succeed to understand why the loader start procedure hangs up.
+
+Thank in advance for any help.
+
+Chris
