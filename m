@@ -1,28 +1,23 @@
-Return-Path: <ed.swarthout@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 5E558DDF63
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5BF6DDDF6A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Mar 2007 08:27:35 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l22LRVQH021252
-	for <linuxppc-embedded@ozlabs.org>; Fri, 2 Mar 2007 14:27:31 -0700 (MST)
-Received: from az33exm20.fsl.freescale.net (az33exm20.am.freescale.net
-	[10.64.32.6])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l22LRVVV011156
-	for <linuxppc-embedded@ozlabs.org>; Fri, 2 Mar 2007 15:27:31 -0600 (CST)
+	Sat,  3 Mar 2007 08:33:15 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="us-ascii"
+	charset="iso-8859-1"
 Subject: RE: DMA take 3
-Date: Fri, 2 Mar 2007 14:27:25 -0700
-Message-ID: <B52955765C54604CB1A62A9967F22C7301EAE5F8@az33exm20.fsl.freescale.net>
-In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B02@MERCURY.inside.istor.com>
+Date: Fri, 2 Mar 2007 13:29:42 -0800
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B03@MERCURY.inside.istor.com>
 References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A181@MERCURY.inside.istor.com>
 	<B52955765C54604CB1A62A9967F22C7301EAE573@az33exm20.fsl.freescale.net>
 	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069B02@MERCURY.inside.istor.com>
-From: "Swarthout Edward L-SWARTHOU" <ed.swarthout@freescale.com>
-To: "Charles Krinke" <ckrinke@istor.com>, <linuxppc-embedded@ozlabs.org>
+	<B52955765C54604CB1A62A9967F22C7301EAE5F8@az33exm20.fsl.freescale.net>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: "Swarthout Edward L-SWARTHOU" <ed.swarthout@freescale.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,6 +27,23 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Thanks again Ed. This is a really good idea. It is entirely possible =
+that some other complication in Linux is getting to me.
+=20
+So, with that in mind, I'm off to uboot for a while to see if I can =
+convince myself the rest of the chips are setup correctly on the board.
+=20
+Charles
+
+________________________________
+
+From: Swarthout Edward L-SWARTHOU [mailto:ed.swarthout@freescale.com]
+Sent: Fri 3/2/2007 1:27 PM
+To: Charles Krinke; linuxppc-embedded@ozlabs.org
+Subject: RE: DMA take 3
+
+
 
 Maybe even a more basic question - are you setting the controller up
 correctly for this mode (SRW=3D1 and CTM=3D1)?
@@ -48,9 +60,9 @@ setenv b e0021      #ccsr
 
 mw ${b}104 ffffffff #sr clear
 mw ${b}110 50000    #satr SREADTTYPE=3D5 read snoop
-mw ${b}114 $sad	  #sar
+mw ${b}114 $sad   #sar
 mw ${b}118 50000    #datr write snoop
-mw ${b}120 $bc	  #bcr=20
+mw ${b}120 $bc    #bcr
 mw ${b}100 0f03c404 #mr BWC=3Df, DAHTS=3D3, SAHTS=3D3, SRW=3D1 CTM
 md $dad 5           #before
 mw ${b}11c $dad     #set dar and go
