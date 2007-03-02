@@ -1,19 +1,13 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id CB65FDDF13
-	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 05:38:39 +1100 (EST)
-Message-ID: <45E86F20.8000402@smiths-aerospace.com>
-Date: Fri, 02 Mar 2007 13:38:24 -0500
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-MIME-Version: 1.0
-To: Jerry Van Baren <gerald.vanbaren@comcast.net>,
-	u-boot-users@lists.sourceforge.net,  linuxppc-dev@ozlabs.org
-Subject: Re: [U-Boot-Users] RFA & Update: Using libfdt in u-boot for
-	fdt	command
-References: <45E6DCB4.3080106@smiths-aerospace.com>	<20070302015553.GA1687@localhost.localdomain>	<45E7A346.5080206@comcast.net>	<20070302044815.GI1687@localhost.localdomain>	<45E7B53D.6020603@comcast.net>
-	<20070302053640.GJ1687@localhost.localdomain>
-In-Reply-To: <20070302053640.GJ1687@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <b08248@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 13361DDF30
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 06:10:22 +1100 (EST)
+Date: Fri, 2 Mar 2007 13:10:17 -0600
+From: Stuart Yoder <b08248@freescale.com>
+Message-Id: <200703021910.l22JAHMV005585@ld0164-tx32.am.freescale.net>
+To: paulus@samba.org
+Subject: [PATCH v2] powerpc: update interrupt info in booting-without-of.txt
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,33 +17,168 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Fri, Mar 02, 2007 at 12:25:17AM -0500, Jerry Van Baren wrote:
->> David Gibson wrote:
->>> On Thu, Mar 01, 2007 at 11:08:38PM -0500, Jerry Van Baren wrote:
->> [snip]
->>
->>>> to give me a pointer to the node name for node tags and property name 
->>>> for property tags.  Now that I have it working, it would be trivial to 
->>>> change the calls to _fdt_next_tag() to instead call fdt_next_tag() 
->>>> passing NULL for the new fourth parameter **namep. ;-)
->>>>
->>>> The reason I need it, I'm printing an unknown tree by stepping through 
->>>> the tree discovering the node and property names.  I need to have 
->>>> fdt_next_tag() return the *name* of the node/property as well as the tag 
->>>> so that I can print and indent for nodes or look up the property value 
->>>> and print the name=value combination.
->>> Hrm.  And it returns NULL for tags without a name?
->> I was unable to generate a tag without a name using dtc (other than the 
->> root node).  It should/would return null, which would be a problem. :-/
-> 
-> I was thinking more of tag types which don't have a name, to wit,
-> FDT_END_NODE and FDT_NOP.
 
-fdt_next_tag() returns the tag, so it returns FDT_END_NODE or FDT_NOP 
-and, presumably, the caller would know there is no name associated with 
-those tags.  Setting the name pointer *namep to NULL would be good 
-paranoia, however.
+Create a new section descrbing how interrupts are represented
+in the device tree.  Added more detail. Clarified some things.
 
-Best regards,
-gvb
+Signed-off-by: Stuart Yoder <stuart.yoder@freescale.com>
+---
+
+  -updated the proprosal with corrections, suggestions by
+   Segher and David Gibson
+  -Note: There is a lot that could/should be added to this doc
+   related to interrupts and interrupt mapping.  This patch
+   is simply an initial step, by moving the current documentation
+   to a new section and adding a bit more detail.
+
+ Documentation/powerpc/booting-without-of.txt |  126 ++++++++++++++++++--------
+ 1 files changed, 88 insertions(+), 38 deletions(-)
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index eaa0c32..8315d5f 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1108,42 +1108,7 @@ See appendix A for an example partial SO
+ MPC8540.
+ 
+ 
+-2) Specifying interrupt information for SOC devices
+----------------------------------------------------
+-
+-Each device that is part of an SOC and which generates interrupts
+-should have the following properties:
+-
+-	- interrupt-parent : contains the phandle of the interrupt
+-          controller which handles interrupts for this device
+-	- interrupts : a list of tuples representing the interrupt
+-          number and the interrupt sense and level for each interrupt
+-          for this device.
+-
+-This information is used by the kernel to build the interrupt table
+-for the interrupt controllers in the system.
+-
+-Sense and level information should be encoded as follows:
+-
+-   Devices connected to openPIC-compatible controllers should encode
+-   sense and polarity as follows:
+-
+-	0 = low to high edge sensitive type enabled
+-	1 = active low level sensitive type enabled
+-	2 = active high level sensitive type enabled
+-	3 = high to low edge sensitive type enabled
+-
+-   ISA PIC interrupt controllers should adhere to the ISA PIC
+-   encodings listed below:
+-
+-	0 =  active low level sensitive type enabled
+-	1 =  active high level sensitive type enabled
+-	2 =  high to low edge sensitive type enabled
+-	3 =  low to high edge sensitive type enabled
+-
+-
+-
+-3) Representing devices without a current OF specification
++2) Representing devices without a current OF specification
+ ----------------------------------------------------------
+ 
+ Currently, there are many devices on SOCs that do not have a standard
+@@ -1728,10 +1693,95 @@ platforms are moved over to use the flat
+  		partitions = <00000000 00f80000
+  			      00f80000 00080001>;
+  		partition-names = "fs\0firmware";
+- 	};
+-
++ 	}; 
+    More devices will be defined as this spec matures.
+ 
++VII - Specifying interrupt information for devices 
++===================================================
++
++The device tree represents the busses and devices of a hardware
++system in a form similar to the physical bus topology of the
++hardware.
++
++In addition, a logical 'interrupt tree' exists which represents the
++hierarchy and routing of interrupts in the hardware.
++
++The interrupt tree model is fully described in the
++document "Open Firmware Recommended Practice: Interrupt
++Mapping Version 0.9".  The document is available at:
++<http://playground.sun.com/1275/practice>.
++
++1) interrupts property
++----------------------
++
++Devices that generate interrupts to a single interrupt controller
++should use the conventional OF representation described in the
++OF interrupt mapping documentation.
++
++Each device which generates interrupts must have an 'interrupt'
++property.  The interrupt property value is an arbitrary number of
++of 'interrupt specifier' values which describe the interrupt or
++interrupts for the device.
++
++The encoding of an interrupt specifier is determined by the
++interrupt domain in which the device is located in the
++interrupt tree.  The root of an interrupt domain specifies in
++its #interrupt-cells property the number of 32-bit cells
++required to encode an interrupt specifier.  See the OF interrupt
++mapping documentation for a detailed description of domains.
++
++For example, the binding for the OpenPIC interrupt controller 
++specifies  an #interrupt-cells value of 2 to encode the interrupt
++number and level/sense information. All interrupt children in an
++OpenPIC interrupt domain use 2 cells per interrupt in their interrupts
++property.
++
++The PCI bus binding specifies a #interrupt-cell value of 1 to encode
++which interrupt pin (INTA,INTB,INTC,INTD) is used.
++
++2) interrupt-parent property
++----------------------------
++
++The interrupt-parent property is specified to define an explicit
++link between a device node and its interrupt parent in
++the interrupt tree.  The value of interrupt-parent is the
++phandle of the parent node.
++
++If the interrupt-parent property is not defined for a node, it's
++interrupt parent is assumed to be an ancestor in the node's
++_device tree_ hierarchy.
++
++3) OpenPIC Interrupt Controllers
++--------------------------------
++
++OpenPIC interrupt controllers require 2 cells to encode
++interrupt information.  The first cell defines the interrupt
++number.  The second cell defines the sense and level 
++information.
++
++Sense and level information should be encoded as follows:
++
++	0 = low to high edge sensitive type enabled
++	1 = active low level sensitive type enabled
++	2 = active high level sensitive type enabled
++	3 = high to low edge sensitive type enabled
++
++4) ISA Interrupt Controllers
++----------------------------
++
++ISA PIC interrupt controllers require 2 cells to encode
++interrupt information.  The first cell defines the interrupt
++number.  The second cell defines the sense and level 
++information.
++
++ISA PIC interrupt controllers should adhere to the ISA PIC
++encodings listed below:
++
++	0 =  active low level sensitive type enabled
++	1 =  active high level sensitive type enabled
++	2 =  high to low edge sensitive type enabled
++	3 =  low to high edge sensitive type enabled
++
+ 
+ Appendix A - Sample SOC node for MPC8540
+ ========================================
+-- 
+1.4.4
