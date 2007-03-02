@@ -1,20 +1,19 @@
-Return-Path: <ckrinke@istor.com>
-Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F3F06DDD0E
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id F326FDDEFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  3 Mar 2007 04:23:51 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: DMA take 2
-Date: Fri, 2 Mar 2007 09:21:19 -0800
-Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069AF9@MERCURY.inside.istor.com>
-References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A181@MERCURY.inside.istor.com>
-From: "Charles Krinke" <ckrinke@istor.com>
-To: <linuxppc-embedded@ozlabs.org>
-Cc: Randy Brown <rbrown@istor.com>, Chris Carlson <ccarlson@istor.com>
+	Sat,  3 Mar 2007 05:57:08 +1100 (EST)
+Date: Fri, 2 Mar 2007 12:57:02 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: [PATCH 7/7] lite5200b suspend: low-power mode
+Message-ID: <20070302185702.GA2719@ld0162-tx32.am.freescale.net>
+References: <20070301075323.GP4397@moe.telargo.com>
+	<20070301080008.GH17184@moe.telargo.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070301080008.GH17184@moe.telargo.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,15 +24,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Let me try my DMA question a bit more concisely to the linuxppc group.
-=20
-I am working on a DMA routine for the 8541 and the status register ends =
-up with the CB (ChannelBusy) bit set, which I suspect is a programming =
-error on my part.
-=20
-So, the question is:
-=20
-"What are the common programming errors that lead to SR0[CB] set at the =
-end of a DMA transaction in an 8541?"
-=20
-Charles
+On Thu, Mar 01, 2007 at 09:00:08AM +0100, Domen Puncer wrote:
+> +static int lite5200_pm_enter(suspend_state_t state)
+> +{
+[snip]
+> +	mbar = ioremap_nocache(0xf0000000, 0x8000);
+
+You can't do ioremap with interrupts disabled (it will fail with spinlock
+debugging enabled); the mapping should be set up at boot time.
+
+-Scott
