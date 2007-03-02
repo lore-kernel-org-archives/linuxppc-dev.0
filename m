@@ -1,19 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 51675DDE3F
-	for <linuxppc-dev@ozlabs.org>; Fri,  2 Mar 2007 20:11:41 +1100 (EST)
-Subject: Re: [PATCH] celleb: bug fix caused by not casting pointer types
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Ishizaki Kou <kou.ishizaki@toshiba.co.jp>
-In-Reply-To: <200703020759.l227xYIY002693@toshiba.co.jp>
-References: <200703020759.l227xYIY002693@toshiba.co.jp>
-Content-Type: text/plain
-Date: Fri, 02 Mar 2007 10:11:10 +0100
-Message-Id: <1172826670.8184.17.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [Cbe-oss-dev] [PATCH 14/22] spufs: use SPU master control to
+	prevent wild	SPU execution
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200703011450.50935.arnd@arndb.de>
+References: <20061120174454.067872000@arndb.de>
+	<20061120180525.281408000@arndb.de>
+	<1172729890.5852.40.camel@concordia.ozlabs.ibm.com>
+	<200703011450.50935.arnd@arndb.de>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-55G8gmVN1fLU+I4MzSsa"
+Date: Fri, 02 Mar 2007 19:13:57 +0900
+Message-Id: <1172830438.16533.6.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,229 +26,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-03-02 at 16:59 +0900, Ishizaki Kou wrote:
-> This patch fixes a bug caused by changes of pointer type in
-> commit f1fda89522c5aaa1bd4ef69605e85e6ee9c85faf.
-> 
-> hose->cfg_addr type is "volatile unsigned int __iomem *", so
-> "hose->cfg_addr + X" will not make an intended address.
-> 
-> This patch also adds comments for usage of cfg_addr and cfg_data in
-> pci_controller structure. We use them in irregular way, and the
-> original code is short of explanations about them.
-> 
-> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+--=-55G8gmVN1fLU+I4MzSsa
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-NOTE: It would be preferrable to actually change the host->cfg_addr
-field to be void __iomem * instead of what it is now and make sure
-we fix every user. Your patch is fine and can go in as a bug fix, I'll
-try to remember to do the cleanup for 2.6.22 if you don't beat me at it
-though.
+On Thu, 2007-03-01 at 14:50 +0100, Arnd Bergmann wrote:=20
+> On Thursday 01 March 2007, Michael Ellerman wrote:
+> > On Mon, 2006-11-20 at 18:45 +0100, Arnd Bergmann wrote:
+> > > plain text document attachment (spufs-master-control.diff)
+> > > When the user changes the runcontrol register, an SPU might be
+> > > running without a process being attached to it and waiting for
+> > > events. In order to prevent this, make sure we always disable
+> > > the priv1 master control when we're not inside of spu_run.
+> >=20
+> > Hi Arnd,
+> >=20
+> > Sorry I didn't comment on this when you sent it, I wasn't paying enough
+> > attention. This patch confuses me, you say we should make sure we alway=
+s
+> > disable the master control when we're not inside spu_run, but I see
+> > several exit paths where we leave the master run bit enabled - or maybe
+> > I'm reading it wrong.
+>=20
+> I think you're right, there is at least one path that I now saw
+> getting out of spufs_run_spu incorrectly. In particular, when
+> spu_reacquire_runnable() fails, we never call the master stop,
+> which is a bug, but should happen very infrequently in practice.
+> Do you see another case where we end up with the same problem?
 
-Ben.
+That was the first one that caught my eye, but I wasn't sure about the
+semantics of the error case.
+
+There's also the error case for spu_run_init() which skips the master
+stop. I guess that's ok because we've only set the master control in the
+backing store, and the only way that will ever get propagated to an
+actual spu is by coming back thorough spufs_run_spu().
+
+What originally caught my eye on this was the output from xmon. When we
+drop into xmon with no spu programs running and stop the spus, it
+reports that they _all_ have the master run enabled, and some of them
+have the runcntl enabled (those that have had spu programs run on them
+since boot it seems).
+
+It looks like the save/restore code sets the master bit in several
+places, but never sets/clears the runcntl, which seems bogus to me.
+
+So when we leave spufs_spu_run we do the master stop call:
+
+spu_mfc_sr1_set: spu: c00000007ffdfc80 (15) sr1: 0x1b runcntl: 0x1
+Call Trace:
+[C00000000196BAA0] [C00000000000F920] .show_stack+0x68/0x1b0 (unreliable)
+[C00000000196BB40] [D0000000001475C0] .spu_hw_master_stop+0xa8/0x170 [spufs=
+]
+[C00000000196BBE0] [D000000000148598] .spufs_run_spu+0x5ec/0x770 [spufs]
+[C00000000196BCC0] [D000000000144BA0] .do_spu_run+0xb4/0x180 [spufs]
+[C00000000196BD80] [C00000000003905C] .sys_spu_run+0xb0/0x108
+[C00000000196BE30] [C000000000008634] syscall_exit+0x0/0x40
 
 
-> ---
-> 
-> Index: linux-powerpc-git/arch/powerpc/platforms/celleb/scc_epci.c
-> diff -u linux-powerpc-git/arch/powerpc/platforms/celleb/scc_epci.c:1.1.1.2 linux-powerpc-git/arch/powerpc/platforms/celleb/scc_epci.c:1.20
-> --- linux-powerpc-git/arch/powerpc/platforms/celleb/scc_epci.c:1.1.1.2	Wed Feb 14 10:52:11 2007
-> +++ linux-powerpc-git/arch/powerpc/platforms/celleb/scc_epci.c	Wed Feb 21 14:06:25 2007
-> @@ -43,11 +43,34 @@
->  
->  #define iob()  __asm__ __volatile__("eieio; sync":::"memory")
->  
-> +static inline volatile void __iomem *celleb_epci_get_epci_base(
-> +					struct pci_controller *hose)
-> +{
-> +	/*
-> +	 * Note:
-> +	 * Celleb epci uses cfg_addr as a base address for
-> +	 * epci control registers.
-> +	 */
-> +
-> +	return hose->cfg_addr;
-> +}
-> +
-> +static inline volatile void __iomem *celleb_epci_get_epci_cfg(
-> +					struct pci_controller *hose)
-> +{
-> +	/*
-> +	 * Note:
-> +	 * Celleb epci uses cfg_data as a base address for
-> +	 * configuration area for epci devices.
-> +	 */
-> +
-> +	return hose->cfg_data;
-> +}
->  
->  #if 0 /* test code for epci dummy read */
->  static void celleb_epci_dummy_read(struct pci_dev *dev)
->  {
-> -	void __iomem *epci_base;
-> +	volatile void __iomem *epci_base;
->  	struct device_node *node;
->  	struct pci_controller *hose;
->  	u32 val;
-> @@ -58,7 +81,7 @@
->  	if (!hose)
->  		return;
->  
-> -	epci_base = hose->cfg_addr;
-> +	epci_base = celleb_epci_get_epci_base(hose);
->  
->  	val = in_be32(epci_base + SCC_EPCI_WATRP);
->  	iosync();
-> @@ -70,19 +93,20 @@
->  static inline void clear_and_disable_master_abort_interrupt(
->  					struct pci_controller *hose)
->  {
-> -	void __iomem *addr;
-> -	addr = hose->cfg_addr + PCI_COMMAND;
-> -	out_be32(addr, in_be32(addr) | (PCI_STATUS_REC_MASTER_ABORT << 16));
-> +	volatile void __iomem *epci_base, *reg;
-> +	epci_base = celleb_epci_get_epci_base(hose);
-> +	reg = epci_base + PCI_COMMAND;
-> +	out_be32(reg, in_be32(reg) | (PCI_STATUS_REC_MASTER_ABORT << 16));
->  }
->  
->  static int celleb_epci_check_abort(struct pci_controller *hose,
-> -				   void __iomem *addr)
-> +				   volatile void __iomem *addr)
->  {
-> -	void __iomem *reg, *epci_base;
-> +	volatile void __iomem *reg, *epci_base;
->  	u32 val;
->  
->  	iob();
-> -	epci_base = hose->cfg_addr;
-> +	epci_base = celleb_epci_get_epci_base(hose);
->  
->  	reg = epci_base + PCI_COMMAND;
->  	val = in_be32(reg);
-> @@ -108,20 +132,21 @@
->  	return PCIBIOS_SUCCESSFUL;
->  }
->  
-> -static void __iomem *celleb_epci_make_config_addr(struct pci_controller *hose,
-> +static volatile void __iomem *celleb_epci_make_config_addr(
-> +					struct pci_controller *hose,
->  					unsigned int devfn, int where)
->  {
-> -	void __iomem *addr;
-> +	volatile void __iomem *addr;
->  	struct pci_bus *bus = hose->bus;
->  
->  	if (bus->self)
-> -		addr = hose->cfg_data +
-> +		addr = celleb_epci_get_epci_cfg(hose) +
->  		       (((bus->number & 0xff) << 16)
->  		        | ((devfn & 0xff) << 8)
->  		        | (where & 0xff)
->  		        | 0x01000000);
->  	else
-> -		addr = hose->cfg_data +
-> +		addr = celleb_epci_get_epci_cfg(hose) +
->  		       (((devfn & 0xff) << 8) | (where & 0xff));
->  
->  	pr_debug("EPCI: config_addr = 0x%p\n", addr);
-> @@ -132,7 +157,7 @@
->  static int celleb_epci_read_config(struct pci_bus *bus,
->  			unsigned int devfn, int where, int size, u32 * val)
->  {
-> -	void __iomem *addr;
-> +	volatile void __iomem *epci_base, *addr;
->  	struct device_node *node;
->  	struct pci_controller *hose;
->  
-> @@ -142,13 +167,14 @@
->  	node = (struct device_node *)bus->sysdata;
->  	hose = pci_find_hose_for_OF_device(node);
->  
-> -	if (!hose->cfg_data)
-> +	if (!celleb_epci_get_epci_cfg(hose))
->  		return PCIBIOS_DEVICE_NOT_FOUND;
->  
->  	if (bus->number == hose->first_busno && devfn == 0) {
->  		/* EPCI controller self */
->  
-> -		addr = hose->cfg_addr + where;
-> +		epci_base = celleb_epci_get_epci_base(hose);
-> +		addr = epci_base + where;
->  
->  		switch (size) {
->  		case 1:
-> @@ -185,7 +211,7 @@
->  	}
->  
->  	pr_debug("EPCI: "
-> -		 "addr=0x%lx, devfn=0x%x, where=0x%x, size=0x%x, val=0x%x\n",
-> +		 "addr=0x%p, devfn=0x%x, where=0x%x, size=0x%x, val=0x%x\n",
->  		 addr, devfn, where, size, *val);
->  
->  	return celleb_epci_check_abort(hose, NULL);
-> @@ -194,7 +220,7 @@
->  static int celleb_epci_write_config(struct pci_bus *bus,
->  			unsigned int devfn, int where, int size, u32 val)
->  {
-> -	void __iomem *addr;
-> +	volatile void __iomem *epci_base, *addr;
->  	struct device_node *node;
->  	struct pci_controller *hose;
->  
-> @@ -204,13 +230,15 @@
->  	node = (struct device_node *)bus->sysdata;
->  	hose = pci_find_hose_for_OF_device(node);
->  
-> -	if (!hose->cfg_data)
-> +
-> +	if (!celleb_epci_get_epci_cfg(hose))
->  		return PCIBIOS_DEVICE_NOT_FOUND;
->  
->  	if (bus->number == hose->first_busno && devfn == 0) {
->  		/* EPCI controller self */
->  
-> -		addr = hose->cfg_addr + where;
-> +		epci_base = celleb_epci_get_epci_base(hose);
-> +		addr = epci_base + where;
->  
->  		switch (size) {
->  		case 1:
-> @@ -258,10 +286,10 @@
->  static int __devinit celleb_epci_init(struct pci_controller *hose)
->  {
->  	u32 val;
-> -	void __iomem *reg, *epci_base;
-> +	volatile void __iomem *reg, *epci_base;
->  	int hwres = 0;
->  
-> -	epci_base = hose->cfg_addr;
-> +	epci_base = celleb_epci_get_epci_base(hose);
->  
->  	/* PCI core reset(Internal bus and PCI clock) */
->  	reg = epci_base + SCC_EPCI_CKCTRL;
-> @@ -382,6 +410,18 @@
->  
->  	pr_debug("PCI: celleb_setup_epci()\n");
->  
-> +	/*
-> +	 * Note:
-> +	 * Celleb epci uses cfg_addr and cfg_data member of  
-> +	 * pci_controller structure in irregular way.
-> +	 *
-> +	 * cfg_addr is used to map for control registers of 
-> +	 * celleb epci.
-> +	 *
-> +	 * cfg_data is used for configuration area of devices
-> +	 * on Celleb epci buses.
-> +	 */
-> +
->  	if (of_address_to_resource(node, 0, &r))
->  		goto error;
->  	hose->cfg_addr = ioremap(r.start, (r.end - r.start + 1));
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+But then the save/restore code sets it back on?
+
+spu_mfc_sr1_set: spu: c00000007ffdfc80 (15) sr1: 0x32 runcntl: 0x1
+Call Trace:
+[C00000000FF9B790] [C00000000000F920] .show_stack+0x68/0x1b0 (unreliable)
+[C00000000FF9B830] [C00000000003B310] .spu_save+0x9b0/0x156c
+[C00000000FF9B950] [D0000000001457FC] .spu_unbind_context+0x124/0x1a4 [spuf=
+s]
+[C00000000FF9B9F0] [D0000000001458B0] .spu_deactivate+0x34/0x138 [spufs]
+[C00000000FF9BA80] [D00000000014448C] .spu_acquire_saved+0x34/0x4c [spufs]
+[C00000000FF9BB10] [D00000000014493C] .spu_forget+0x18/0x4c [spufs]
+[C00000000FF9BBA0] [D00000000014030C] .spufs_dir_close+0x78/0xb4 [spufs]
+[C00000000FF9BC50] [C0000000000B8594] .__fput+0x110/0x200
+[C00000000FF9BD00] [C0000000000B4F38] .filp_close+0xac/0xd4
+[C00000000FF9BD90] [C0000000000B68BC] .sys_close+0xc4/0x130
+[C00000000FF9BE30] [C000000000008634] syscall_exit+0x0/0x40
+
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-55G8gmVN1fLU+I4MzSsa
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBF5/jldSjSd0sB4dIRAslrAJ9jIKuU9H0IqTybcPgszgpiPDqKQQCgmrtN
+2b+aAW95kQnvq2FYk842f8E=
+=E1sj
+-----END PGP SIGNATURE-----
+
+--=-55G8gmVN1fLU+I4MzSsa--
