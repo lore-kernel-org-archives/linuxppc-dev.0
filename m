@@ -1,20 +1,20 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1FEBCDDF33
+Return-Path: <domen.puncer@telargo.com>
+Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
+	by ozlabs.org (Postfix) with ESMTP id 8DECBDDED3
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  2 Mar 2007 10:52:40 +1100 (EST)
-Message-ID: <45E75859.3090508@ovro.caltech.edu>
-Date: Thu, 01 Mar 2007 14:48:57 -0800
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Fri,  2 Mar 2007 18:31:17 +1100 (EST)
+Date: Fri, 2 Mar 2007 08:31:09 +0100
+From: Domen Puncer <domen.puncer@telargo.com>
+To: Bartlomiej Sieka <tur@semihalf.com>
+Subject: Re: New Bestcomm/FEC patches (was: Re: [PATCH 0/7] MPC5200 and
+	Lite5200b low power modes)
+Message-ID: <20070302073109.GS4397@moe.telargo.com>
+References: <20070301075323.GP4397@moe.telargo.com>
+	<528646bc0703010625o92ff794ra5ba561b0861f2e3@mail.gmail.com>
+	<45E6E888.9050508@semihalf.com>
 MIME-Version: 1.0
-To: Oliver Rutsch <orutsch@sympatec.com>
-Subject: Re: MPC5200, PLX9054 PCI Card - stalled DMA transfers
-References: <45E6CAC8.8090007@sympatec.com>
-In-Reply-To: <45E6CAC8.8090007@sympatec.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45E6E888.9050508@semihalf.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,53 +26,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Oliver Rutsch wrote:
-> Hi,
+On 01/03/07 15:51 +0100, Bartlomiej Sieka wrote:
+> Grant Likely wrote:
+> > On 3/1/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> >> Hi!
+> >>
+> >> Patches are based on latest mainline git tree + fec patches:
+> >> Fec_MPC5200_eth_driver.patch
+> >> Copy_bestcomm_support_files_into_arch_powerpc.patch
+> >> Make_FEC_work_on_the_lite5200.patch
+> >>
+> > ---8<---snip--->8---
+> >> I would appreaciate any comments, suggestions etc.
+> > 
+> > Cool, good work.  I'll try to do a proper review today.
+> > 
+> > Note on the Bestcomm stuff; the patches that you've referenced above
+> > will not be going into mainline.  They will be replaced by a new set
+> > of bestcomm/FEC patches, hopfully in the .22 timeframe, so your
+> > patches there will need some rework.
 > 
-> we're using a TQM5200S-Module (MPC5200) on a STK52xx-board with a 
-> PLX9054-based PCI card. The 2.4.25-kernel on the 3.1.1 ELDK had big 
-> problems to map the PCI resources of this card, so I tried the latest 
-> 2.6.19.2-kernel of the 4.1 ELDK. This kernel mapped successfully the PCI 
-> resources on this card.
-> After building the latest PLX driver on the 2.6.19-kernel (I had to make 
-> some changes for the .19 kernel and for some litte/big endian issues) I 
-> was able to transfer data with programmed I/O. But as this is too slow I 
-> like to use the DMA functions of this device and here is the problem:
-> PLX provides an example program for scatter/gather DMA. This program 
-> works with their latetst driver on a linux PC. But on the TQM5200 the 
-> 'Channel 0 done' flag of the DMASR0 register is never set after starting 
-> the DMA transfer. What can be the reason for this? The debug output of 
-> the driver looks O.K., but waiting for the DMA done interrupt gives a 
-> timeout, because the flag is not set. I wrote some test patterns in my 
-> DMA buffer before the DMA transfer and no byte of the buffer was 
-> altered, so the DMA engine seems not to be able to write a single byte.
-> Has anybody this or a similar card running on a ppc environment? Any 
-> ideas what I can do?
+> Hello,
 > 
-> Thanks in advance and bye,
+> I am working on porting arch/powerpc Linux to a custom MPC5200B-based 
+> board, and currently using your 52xx-dev branch. Is this new set of 
+> bestcomm/FEC patches already in any of your publicly available branches, 
+> or is it something completely fresh? I am seeing some networking 
+> problems, and would be interested in giving new patches a try.
 
-Hi,
+Patches I used were from Grant's 52xx-dev branch.
 
-I use the PLX-9054 in my custom boards (TI DSP on-board), and
-Linux x86 host computer. When debugging, I load a simple memmap
-driver, and 'tickle' the board registers directly.
 
-There's a copy of the PLX driver in here ...
-http://www.ovro.caltech.edu/~dwh/correlator/pdf/cobra_driver.pdf
-http://www.ovro.caltech.edu/~dwh/correlator/software/cobra_driver-2.9.tar.gz
+	Domen
 
-And if my memory serves me right, I think I wrote a generic
-one that lets you map any PCI device ...
-http://www.ovro.caltech.edu/~dwh/correlator/pdf/LNX-723-Hawkins.pdf
-http://www.ovro.caltech.edu/~dwh/correlator/software/driver_design.tar.gz
-
-Anyway, manually setup a DMA transfer and convince yourself that
-you know which bits to twiddle, then figure out why the driver
-code isn't doing as its asked.
-
-Take a look at the COBRA driver code, it has PLX-9054 DMA control.
-
-There might be a few clues in my docs that'll help you.
-
-Cheers
-Dave
+> 
+> Regards,
+> Bartlomiej
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
