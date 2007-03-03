@@ -1,16 +1,21 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id D123DDDFA7
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Mar 2007 10:17:44 +1100 (EST)
-Date: Sat, 3 Mar 2007 17:29:15 -0600
-To: Jake Moilanen <moilanen@austin.ibm.com>
-Subject: Re: [PATCH] DMA 4GB boundary protection
-Message-ID: <20070303232915.GB8028@lixom.net>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4F572DDFC2
+	for <linuxppc-dev@ozlabs.org>; Sun,  4 Mar 2007 10:32:18 +1100 (EST)
+In-Reply-To: <20070303232915.GB8028@lixom.net>
 References: <1172872183.5310.145.camel@goblue>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1172872183.5310.145.camel@goblue>
-From: olof@lixom.net (Olof Johansson)
+	<20070303232915.GB8028@lixom.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <8049bab22e1c006dcf916eb12202b73d@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] DMA 4GB boundary protection
+Date: Sun, 4 Mar 2007 00:32:04 +0100
+To: olof@lixom.net (Olof Johansson)
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,28 +26,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 02, 2007 at 03:49:43PM -0600, Jake Moilanen wrote:
-> This normally is not an issue as firmware gives us dma-windows under
-> 4gigs.  However, some of the new System-P boxes have dma-windows above
-> 4gigs, and this present a problem.
+> The drawback of this patch is that it adds code to every single 
+> allocation.
+> Instead, you should just mark the last entry before the 4GB boundary
+> as allocated when you setup the bitmaps for the table. That way, no
+> allocation will ever be able to cross over.
 
-Above 4 gigs, or that crosses the 4GB boundary? There's a difference.
+Jake said that this bug happens when crossing _any_ 4GB
+boundary, so that means reserving a few more blocks.
 
-> I propose fixing it in the IOMMU allocation instead of making each
-> driver protect against it as it is more efficient, and won't require
-> changing every driver which has not considered this issue.
+> Even nicer would be to only do it when a boot option is specified, so
+> we actually have a chance to expose and find the driver bugs instead of
+> papering them over.
 
-The drawback of this patch is that it adds code to every single allocation.
-Instead, you should just mark the last entry before the 4GB boundary
-as allocated when you setup the bitmaps for the table. That way, no
-allocation will ever be able to cross over.
+Almost all drivers (*) that can do DAC already avoid
+crossing the SAC-to-DAC boundary.  I have never heard
+about a card having the bug on _any_ 4GB crossing, I
+doubt they are that common.  Just fix the drivers :-)
 
-Even nicer would be to only do it when a boot option is specified, so
-we actually have a chance to expose and find the driver bugs instead of
-papering them over.
-
-Also, remember to use IOMMU_PAGE_SHIFT instead of PAGE_SHIFT, they might
-be different.
+(*) Well, amongst those that matter and have this bug.
 
 
--Olof
+Segher
