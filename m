@@ -1,22 +1,27 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 3 Mar 2007 09:31:40 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: [U-Boot-Users] RFA & Update: Using libfdt in u-boot for
-	fdt	command
-Message-ID: <20070302223140.GA11166@localhost.localdomain>
-References: <45E6DCB4.3080106@smiths-aerospace.com>
-	<20070302015553.GA1687@localhost.localdomain>
-	<45E7A346.5080206@comcast.net>
-	<20070302044815.GI1687@localhost.localdomain>
-	<45E7B53D.6020603@comcast.net>
-	<20070302053640.GJ1687@localhost.localdomain>
-	<45E8192B.8020104@comcast.net>
-	<45E86E77.3020305@smiths-aerospace.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45E86E77.3020305@smiths-aerospace.com>
-Cc: u-boot-users@lists.sourceforge.net, linuxppc-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A8A5ADDF81
+	for <linuxppc-dev@ozlabs.org>; Sat,  3 Mar 2007 11:16:45 +1100 (EST)
+In-Reply-To: <45E84D32.8040405@gmail.com>
+References: <45E5ED35.7090207@gmail.com>
+	<0a1927a91e52d34352e8a545b7dc57d0@kernel.crashing.org>
+	<45E61161.9040900@gmail.com>
+	<eaa8f5754d3e1544ce91df01acf2054d@kernel.crashing.org>
+	<45E69CDF.20608@gmail.com>
+	<3a8c70b34f2ef98fb696c371b4d2c2d2@kernel.crashing.org>
+	<45E84D32.8040405@gmail.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <507a41eebf447d7ce7c18b007a971b9e@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: problems with pci bus on a pm520 board
+Date: Sat, 3 Mar 2007 01:16:31 +0100
+To: Luotao Fu <devtty0@gmail.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,57 +31,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 02, 2007 at 01:35:35PM -0500, Jerry Van Baren wrote:
-> Jerry Van Baren wrote:
-> > David Gibson wrote:
-[snip]
-> OK, here is a reference on the OF device tree browsing commands:
-> <http://www.firmworks.com/QuickRef.html#Device%20Tree%20Browsing>
-> 
-> Where I'm coming from is that I've written the "fdt print" command to 
-> put out the same text (possibly with data formatting differences) as 
-> went into the dtc to create the blob.  This is very useful and intuitive 
-> to me.
-> 
-> The OF device tree browsing is modeled after filesys directory and file 
-> browsing (sorta).
->    ".properties" ~ "ls" but only shows files (properties ~ files)
->    "dev" == "cd"
->    "ls" == "ls -d *" (only shows subdirectories)
->    "pwd" == "pwd"
->    "dend" - has no equiv
->    "show-devs" - has no equiv, sounds like it may be my "print" command
->    "words" - has no equiv, does not apply (dir *.exe in DOS :-)
->    "sift-devs ccc" == find . -name "*ccc*"
-> 
-> Looks a lot more complex with no clear benefit for u-boot.
+>>>> 8000 is device 16, not 10
 
-Sorry, I was unclear.  I wasn't trying to suggest you use the OF
-client interface model for device tree commands in general.  Just that
-you don't treat properties as having paths.
+> I took the number 10 out of the sysfs bus entry. As they are printed as
+> %x there.
 
-> I have not found any character that could clearly and cleanly be used to 
-> separate the node path from the property name.
-> * Comma ',' - used to separate a device name from an argument - one
->       could argue that the property name is an argument to the path.
->       "/foo/bar,baz" is the property baz under the node "/foo/bar".
-> * Space ' ' - "/foo/bar/baz" is a node path, "/foo/bar baz" is the
->      property baz under the node "/foo/bar".  Spaces complicate parsing.
+Oh okay.
 
-Space only complicates parsing if you insist of thinking of these
-things as paths-to-properties, which is not really a good idea in the
-first place.  Just think of the node-path and the property name as
-separate parameters to your commands.
+> The 10 is a 0x10 = 16. Hence 8000 seemed to be OK then. How is
+> this actually supposed to be calculated? (As you can see, I know only
+> little about pci stuffs) As I wrote in the last mail. The addr is
+> calculated by the parser with
+> laddr[0] = (pdev->bus->number << 16) | (pdev->devfn << 8)
+> Since we have only one pci bus here, I suppose the bus number should be
+> 0. However I'm wondering about what does this devfn stands for?
 
-So, getprop takes 2 parameters (node, property), setprop takes 3
-(node, property, value).  print, or whatever you end up calling it
-takes either 1 or 2 (node, plus optional property name)
+bus-dev-fn-offset is a 24-bit number; the high 8 bits are
+bus number, then 5 bits device number, 3 bits function
+number, and 8 bits offset.  devfn is simply device and
+function number combined; so your 0x8000 is bus 0, device
+16, function 0 (and offset 0).
 
-> Any strong opinions?  At this point I don't see any reason to change 
-> from my current technique and proposed command set for u-boot.
+> I now finally made some processes. I made a really stupid failure and
+> put the pci bus in 66 MhZ, the USB controller doesn't like it at all 
+> and
+> went dow the hill.... Now I run the pci bus with 33MhZ and the USB
+> controller is working all fine now.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Progress, good :-)
+
+> However I still get troubles with
+> the intel gd82551t ethernet controller. I connected it to the network
+> and generated some activities, I even saw the phy blinking. The 
+> watchdog
+> also works properly and reports link status. However the controller 
+> just
+> won't generate or receive any interrupts. Both the Becker Driver and 
+> the
+> intel driver just won't work.
+
+Something is wrong with either the interrupts in your
+device tree, or with the board wiring then.
+
+> I noticed that the L1 information are different for the ethernet and 
+> usb
+> controllers according to /proc/interrupts.
+
+I have no idea what L1 is?
+
+> for eth1 it says Main and for
+> usb it says IRQ[0-3], might this be the reason of my problem?
+
+Yeah, since...
+
+>  64:          0  MPC52xx Main Edge      eth1
+>  65:          2   MPC52xx IRQ[0-3]  Edge      ehci_hcd:usb1,
+> ohci_hcd:usb2, ohci_hcd:usb3
+
+
+> The interrupt pin of the ethernet controller is connected to irq0 pin 
+> of
+> the MPC5200B while the interrupt pin of the usb controller is connected
+> to irq1 of the MPC5200B.
+
+...you say that the ethernet controller is on IRQ0, which
+would be Linux IRQ 65 as well.
+
+> Since the usb has 65 and is working, I suppose
+> strongly that 64 for the ethernet controller should also be correct.
+
+Sounds like both should be 65 to me?  Maybe someone
+who has experience with 5200 can chime in, I have
+never used it.
+
+> The pci node of my the device tree now looks like this:
+>
+> pci@0d00 {
+
+> 	interrupt-map-mask = <f800 0 0 7>;
+> 	interrupt-map = <8000 0 0 1 500 1 0 3 // e100, 10.0
+
+That says: device 16.0, PIRQA, goes to phandle 500
+IRQ 1 (so far so good), priority 0?  I believe priority
+should be one from 1..3 (but I could very well
+be mistaken).
+
+That doesn't explain why Linux throws your interrupt
+at 64 instead of 65 though.
+
+> 	interrupt-parent = <500>;
+
+Oh and if you have an interrupt-map, you shouldn't
+have an interrupt-parent.  Not that that causes
+your problem though.
+
+> Like I mentioned before. I quite did not get the idea of all the open
+> firmware things. I'd be very appreciate if you could take a near look 
+> on
+> this and tell me if you see anything wrong with this node.
+
+It looks pretty much sane.
+
+Enable DEBUG in arch/powerpc/kernel/prom_parse.c ,
+maybe it'll tell you a bit more.  Oh and read the
+5200 datasheet again, make double sure which interrupt
+on the interrupt controller the four PCI interrupts
+connect to.
+
+Good luck and have fun,
+
+
+Segher
