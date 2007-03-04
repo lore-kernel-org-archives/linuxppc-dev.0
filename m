@@ -1,21 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 84179DE048
-	for <linuxppc-dev@ozlabs.org>; Sun,  4 Mar 2007 17:07:55 +1100 (EST)
-Date: Sun, 4 Mar 2007 17:07:38 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH 6/6] [POWERPC] make find_and_init_pbs() a void function
-Message-Id: <20070304170738.26de2007.sfr@canb.auug.org.au>
-In-Reply-To: <20070304170534.5c1ba10f.sfr@canb.auug.org.au>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 01202DDF31
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Mar 2007 01:06:53 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 4/6] [POWERPC] allow pSeries to build without CONFIG_PCI
+Date: Sun, 4 Mar 2007 15:07:06 +0100
 References: <20070304165839.4d2bf50b.sfr@canb.auug.org.au>
-	<20070304170241.816f9802.sfr@canb.auug.org.au>
 	<20070304170348.511af7cb.sfr@canb.auug.org.au>
 	<20070304170444.2eb423ce.sfr@canb.auug.org.au>
-	<20070304170534.5c1ba10f.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <20070304170444.2eb423ce.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703041507.06307.arnd@arndb.de>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,52 +24,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It always returned 0 and noone checked.
+On Sunday 04 March 2007 07:04:44 Stephen Rothwell wrote:
+> =A0config PCI
+> =A0=A0=A0=A0=A0=A0=A0=A0bool "PCI support" if 40x || CPM2 || PPC_83xx || =
+PPC_85xx || PPC_86xx \=20
+> -=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0|| PPC_MPC52xx || (EMBEDDED=
+ && PPC_ISERIES) || MPC7448HPC2 || PPC_PS3=20
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0|| PPC_MPC52xx || (EMBEDDED=
+ &&  (PPC_PSERIES || PPC_ISERIES)) \=20
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0|| MPC7448HPC2 || PPC_PS3=20
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/rtas_pci.c |    4 +---
- include/asm-powerpc/ppc-pci.h  |    2 +-
- 2 files changed, 2 insertions(+), 4 deletions(-)
+This may be a dumb question, but system would you want to run a pSeries
+kernel without PCI on? Is this just for build tests, or is there an
+actual application for this?
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+>  procfs-$(CONFIG_PPC64)         :=3D proc_ppc64.o
+>  obj-$(CONFIG_PROC_FS)          +=3D $(procfs-y)
+> -rtaspci-$(CONFIG_PPC64)                :=3D rtas_pci.o
+> -obj-$(CONFIG_PPC_RTAS)         +=3D rtas.o rtas-rtc.o $(rtaspci-y)
+> +rtaspci-$(CONFIG_PPC64)-$(CONFIG_PCI)  :=3D rtas_pci.o
+> +obj-$(CONFIG_PPC_RTAS)         +=3D rtas.o rtas-rtc.o $(rtaspci-y-y)
+>  obj-$(CONFIG_RTAS_FLASH)       +=3D rtas_flash.o
+>  obj-$(CONFIG_RTAS_PROC)                +=3D rtas-proc.o
 
-diff --git a/arch/powerpc/kernel/rtas_pci.c b/arch/powerpc/kernel/rtas_pci.c
-index ace9f4c..1616a44 100644
---- a/arch/powerpc/kernel/rtas_pci.c
-+++ b/arch/powerpc/kernel/rtas_pci.c
-@@ -274,7 +274,7 @@ int __devinit rtas_setup_phb(struct pci_controller *phb)
- 	return 0;
- }
- 
--unsigned long __init find_and_init_phbs(void)
-+void __init find_and_init_phbs(void)
- {
- 	struct device_node *node;
- 	struct pci_controller *phb;
-@@ -319,8 +319,6 @@ unsigned long __init find_and_init_phbs(void)
- 		if (prop)
- 			pci_assign_all_buses = *prop;
- 	}
--
--	return 0;
- }
- 
- /* RPA-specific bits for removing PHBs */
-diff --git a/include/asm-powerpc/ppc-pci.h b/include/asm-powerpc/ppc-pci.h
-index 4a05340..f186720 100644
---- a/include/asm-powerpc/ppc-pci.h
-+++ b/include/asm-powerpc/ppc-pci.h
-@@ -24,7 +24,7 @@ extern void pci_setup_phb_io_dynamic(struct pci_controller *hose, int primary);
- extern struct list_head hose_list;
- extern int global_phb_number;
- 
--extern unsigned long find_and_init_phbs(void);
-+extern void find_and_init_phbs(void);
- 
- extern struct pci_dev *ppc64_isabridge_dev;	/* may be NULL if no ISA bus */
- 
--- 
-1.5.0.1
+The double -y suffix always confuses me. Do you mind turning this
+into a Kconfig symbol instead?
+
+config RTAS_PCI
+	default y
+	depends on PCI && PPC64 && PPC_RTAS
+
+obj-$(CONFIG_RTAS_PCI)	+=3D rtas_pci.o
+
+	Arnd <><
