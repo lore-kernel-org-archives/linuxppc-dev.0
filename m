@@ -1,21 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 38D23DDF1B
-	for <linuxppc-dev@ozlabs.org>; Mon,  5 Mar 2007 05:44:05 +1100 (EST)
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id BD99FDDF29
+	for <linuxppc-dev@ozlabs.org>; Mon,  5 Mar 2007 06:00:00 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Subject: Re: [PATCH 4/6] [POWERPC] allow pSeries to build without CONFIG_PCI
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200703041507.06307.arnd@arndb.de>
+Date: Sun, 4 Mar 2007 19:59:46 +0100
 References: <20070304165839.4d2bf50b.sfr@canb.auug.org.au>
-	<20070304170348.511af7cb.sfr@canb.auug.org.au>
-	<20070304170444.2eb423ce.sfr@canb.auug.org.au>
 	<200703041507.06307.arnd@arndb.de>
-Content-Type: text/plain
-Date: Sun, 04 Mar 2007 19:43:46 +0100
-Message-Id: <1173033826.8184.68.camel@localhost.localdomain>
-Mime-Version: 1.0
+	<1173033826.8184.68.camel@localhost.localdomain>
+In-Reply-To: <1173033826.8184.68.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200703041959.46872.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
 	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,22 +25,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-03-04 at 15:07 +0100, Arnd Bergmann wrote:
-> On Sunday 04 March 2007 07:04:44 Stephen Rothwell wrote:
-> >  config PCI
-> >         bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \ 
-> > -               || PPC_MPC52xx || (EMBEDDED && PPC_ISERIES) || MPC7448HPC2 || PPC_PS3 
-> > +               || PPC_MPC52xx || (EMBEDDED &&  (PPC_PSERIES || PPC_ISERIES)) \ 
-> > +               || MPC7448HPC2 || PPC_PS3 
-> 
-> This may be a dumb question, but system would you want to run a pSeries
-> kernel without PCI on? Is this just for build tests, or is there an
-> actual application for this?
+On Sunday 04 March 2007, Benjamin Herrenschmidt wrote:
+> On Sun, 2007-03-04 at 15:07 +0100, Arnd Bergmann wrote:
+> > On Sunday 04 March 2007 07:04:44 Stephen Rothwell wrote:
+> > > =A0config PCI
+> > > =A0 =A0 =A0 =A0 bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_=
+85xx || PPC_86xx \=20
+> > > - =A0 =A0 =A0 =A0 =A0 =A0 =A0 || PPC_MPC52xx || (EMBEDDED && PPC_ISER=
+IES) || MPC7448HPC2 || PPC_PS3=20
+> > > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 || PPC_MPC52xx || (EMBEDDED && =A0(PPC_=
+PSERIES || PPC_ISERIES)) \=20
+> > > + =A0 =A0 =A0 =A0 =A0 =A0 =A0 || MPC7448HPC2 || PPC_PS3=20
+> >=20
+> I dislike the giant conditional though.
 
-When running in an LPAR, it's fairly common to have no PCI devices, and
-it's thus possible to imagine somebody wanting to build something
-without PCI.
+How about changing it to
 
-I dislike the giant conditional though.
+config PCI_ENABLE
+	bool
 
-Ben.
+config PCI
+	bool "PCI support" if PCI_ENABLE
+
+config PPC_PSERIES
+	select PCI_ENABLE
+	select PCI if !EMBEDDED
+
+config PPC_PS3
+	select PCI_ENABLE
+
+config PPC_PMAC
+	select PCI
+
+	Arnd <><
