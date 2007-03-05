@@ -1,15 +1,18 @@
-Return-Path: <tmorrison@empirix.com>
-Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
-	by ozlabs.org (Postfix) with ESMTP id 71D37DDF78
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 03:37:22 +1100 (EST)
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id D50CDDDF7E
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 04:10:52 +1100 (EST)
+Date: Mon, 5 Mar 2007 10:10:53 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 11/15] zImage wrapper for Ebony
+Message-ID: <20070305171053.GC32672@mag.az.mvista.com>
+References: <20070305032307.GB31417@localhost.localdomain>
+	<20070305032452.EDB2BDDF1D@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: pci_dev start/stop addresses
-Date: Mon, 5 Mar 2007 11:37:13 -0500
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90106BF2D19@EMPBEDEX.empirix.com>
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070305032452.EDB2BDDF1D@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,38 +22,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I am trying to port/debug a driver on a 32bit MPC8548E platform=20
-that is reading the resource start address in the PCI Device=20
-structure (struct pci_dev). I should mention this driver was
-original developed on an X86 platform and works flawlessly...
+On Mon, Mar 05, 2007 at 02:24:52PM +1100, David Gibson wrote:
+> This patch adds support for building a zImage wrapper suitable for the
+> Ebony (440GP) evaluation board.  This supports booting both from uboot
+> (old versions which don't supply a flattened device tree) and IBM
+> Openbios (aka "treeboot").
+> 
+> Signed-off-by: David Gibson <dwg@au1.ibm.com>
+> ---
 
-But, when this driver reads the start value in this struct=20
-into a local unsigned long value - it comes up as '0x0' (and=20
-prints out the same via %lx).
+<snip>
 
-Looking closer, it seems that this value is a size - resource_size_t=20
-- that resolves into a u32 value (and I have printed the physical=20
-size sizeof(resource_size_t)) and it seems to be the correct size(4).
+> Index: working-2.6/arch/powerpc/boot/Makefile
+> ===================================================================
+> --- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-26 13:25:31.000000000 +1100
+> +++ working-2.6/arch/powerpc/boot/Makefile	2007-02-26 13:25:33.000000000 +1100
 
-I am also looking into the sysfs and it appears that for=20
-this device on the pci bus - it is being 'stored' in this=20
-resource file as a 64bit value?
+<snip>
 
-I am confused as to what is actually in this PCI device=20
-structure and/or what is actually returned. I do know that
-the even though the start address is coming back as '0',=20
-the length being calculated is correct (end-start=3Dlength)?
+> @@ -120,6 +128,13 @@ quiet_cmd_wrap_initrd = WRAP    $@
+>        cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+>  				-i $(obj)/ramdisk.image.gz vmlinux
+>  
+> +quiet_cmd_wrap_dtb	= WRAP    $@
+> +      cmd_wrap_dtb	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+> +				-d $3 vmlinux
+> +quiet_cmd_wrap_dtb_initrd = WRAP    $@
+> +      cmd_wrap_dtb_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+> +				-d $3 -i $(obj)/ramdisk.image.gz vmlinux
+> +
 
-It seems to be me, I have some type of mismatch in the=20
-device tree types and/or an endian problem.
+David,
 
-Any insight would be appreciated here!
+I think we more-or-less agreed to go with Scott Wood's 'wrap' method
+(unless there is a problem with it).
 
-Tom Morrison
-Principal Software Engineer
+http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031337.html
 
-EMPIRIX=20
-20 Crosby Drive - Bedford, MA  01730
-p: 781.266.3567 f: 781.266.3670=20
-email: tmorrison@empirix.com=20
-www.empirix.com
+Mark
