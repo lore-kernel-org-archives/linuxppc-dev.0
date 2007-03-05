@@ -1,17 +1,18 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw3.extranet.thmulti.com (dmzraw3.extranet.thmulti.com
-	[141.11.234.71]) by ozlabs.org (Postfix) with ESMTP id 4E8D4DDF59
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 45709DDF71
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Mar 2007 02:12:39 +1100 (EST)
+	Tue,  6 Mar 2007 02:15:01 +1100 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
 Subject: RE: Endianness versus too many byte swaps??
-Date: Mon, 5 Mar 2007 16:12:27 +0100
-Message-ID: <0B45E93C5FF65740AEAE690BF3848B7A4AAFD5@rennsmail04.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "Charles Krinke" <ckrinke@istor.com>,
-	<linuxppc-embedded@ozlabs.org>
+Date: Mon, 5 Mar 2007 07:14:56 -0800
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A185@MERCURY.inside.istor.com>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,20 +23,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Charles Krinke wrote:
-[...]
->I am told that we are running this ppc in big endian, so would this
-mean
->that readl & writel should actually be resolving to in_be32/out_be32
->respectively? Is there some other setup that may be wrong?
+Thank you Stephane and Kumar.
 
-IIRC, readl and writel were defined this way in order to ease PCI driver
+I think the moral of this story is that the drive logic created by my
+predecessor that calls readl/writel to read/write ppc registers needs to
+be changed to call in_be32 & outbe32 so I don't continue a mistake.
 
-portability from x86 PC centric world to big-endian arch's.
-
-That's why now I'm always using in_be*/out_be*/in_le*/out_le*, to make
-things explicit, and let the header files do the swapping if need be.
-
-Regards
---=20
-Stephane
+Charles
