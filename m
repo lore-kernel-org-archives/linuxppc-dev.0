@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
+Subject: [PATCH 10/15] Add device tree for Ebony
 In-Reply-To: <20070305032307.GB31417@localhost.localdomain>
-Message-Id: <20070305032452.810C1DDF1B@ozlabs.org>
+Message-Id: <20070305032452.B8CC0DDF1B@ozlabs.org>
 Date: Mon,  5 Mar 2007 14:24:52 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,284 +14,264 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch re-organises the way the zImage wrapper code is entered, to
-allow more flexibility on platforms with unusual entry conditions.
-After this patch, a platform .o file has two options:
-
-1) It can define a _zimage_start, in which case the platform code gets
-   control from the very beginning of execution.  In this case the
-   platform code is responsible for relocating the zImage if necessary,
-   clearing the BSS, performing any platform specific initialization, and
-   finally calling start() to load and enter the kernel.
-
-2) It can define platform_init().  In this case the generic crt0.S
-   handles initial entry, and calls platform_init() before calling
-   start().  The signature of platform_init() is changed, however, to
-   take up to 5 parameters (in r3..r7) as they come from the platform's
-   initial loader, instead of a fixed set of parameters based on OF's
-   usage.
-
-   When using the generic crt0.S, the platform .o can optionally
-   supply a custom stack to use, using the BSS_STACK() macro.  If this
-   is not supplied, the crt0.S will assume that the loader has
-   supplied a usable stack.
-
-In either case, the platform code communicates information to the
-generic code (specifically, a PROM pointer for OF systems, and/or an
-initrd image address supplied by the bootloader) via a global
-structure "loader_info".
-
-In addition the wrapper script is rearranged to ensure that the
-platform .o is always linked first.  This means that platforms where
-the zImage entry point is at a fixed address or offset, rather than
-being encoded in the binary header can be supported using option (1).
+Add a device tree for the Ebony evaluation board (440GP based).  This
+tree is not complete or finalized.  This tree needs a very recent
+version of dtc to process.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/boot/Makefile          |    6 +++---
- arch/powerpc/boot/crt0.S            |   32 +++++++++++++++++++++++++++++---
- arch/powerpc/boot/main.c            |   18 +++++++-----------
- arch/powerpc/boot/of.c              |    6 ++++--
- arch/powerpc/boot/ops.h             |   12 +++++++++++-
- arch/powerpc/boot/wrapper           |    6 ++++--
- arch/powerpc/boot/zImage.coff.lds.S |    3 ++-
- arch/powerpc/boot/zImage.lds.S      |    1 +
- 8 files changed, 61 insertions(+), 23 deletions(-)
+ arch/powerpc/boot/dts/ebony.dts |  246 ++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 246 insertions(+)
 
-Index: working-2.6/arch/powerpc/boot/crt0.S
+Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/crt0.S	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/crt0.S	2007-02-19 14:01:43.000000000 +1100
-@@ -16,6 +16,7 @@
- _zimage_start_opd:
- 	.long	_zimage_start, 0, 0, 0
- 
-+	.weak	_zimage_start
- 	.globl	_zimage_start
- _zimage_start:
- 	/* Work out the offset between the address we were linked at
-@@ -44,7 +45,7 @@ _zimage_start:
- 	addi	r9,r9,4
- 	bdnz	2b
- 
--	/* Do a cache flush for our text, in case OF didn't */
-+	/* Do a cache flush for our text, in case the loader didn't */
- 3:	lis	r9,_start@ha
- 	addi	r9,r9,_start@l
- 	add	r9,r0,r9
-@@ -59,6 +60,31 @@ _zimage_start:
- 	sync
- 	isync
- 
--	mr	r6,r1
--	b	start
-+	/* Clear the BSS */
-+	lis	r9,__bss_start@ha
-+	addi	r9,r9,__bss_start@l
-+	lis	r8,_end@ha
-+	addi	r8,r8,_end@l
-+	li	r0,0
-+5:	stw	r0,0(r9)
-+	addi	r9,r9,4
-+	cmplw	cr0,r9,r8
-+	blt	5b
- 
-+	/* Possibly set up a custom stack */
-+.weak	_platform_stack_top
-+	lis	r8,_platform_stack_top@ha
-+	addi	r8,r8,_platform_stack_top@l
-+	cmpwi	r8,0
-+	beq	6f
-+	lwz	r1,0(r8)
-+	li	r0,0
-+	stwu	r0,-16(r1)	/* establish a stack frame */
-+6:
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-02-27 12:07:05.000000000 +1100
+@@ -0,0 +1,246 @@
++/*
++ * Device Tree Source for IBM Ebony
++ *
++ * Copyright (c) 2006, 2007 IBM Corp.
++ * Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
++ *
++ * FIXME: Draft only!
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without
++ * any warranty of any kind, whether express or implied.
++ *
++ * To build:
++ *   dtc -I dts -O asm -o ebony.S -b 0 -V 16 ebony.dts
++ *   dtc -I dts -O dtb -o ebony.dtb -b 0 -V 16 ebony.dts
++ */
 +
-+	/* Call platform_init() */
-+	bl	platform_init
++/ {
++	#address-cells = <2>;
++	#size-cells = <1>;
++	model = "Ebony";
++	compatible = "Ebony";
++	dcr-parent = <&/cpus/PowerPC,440GP@0>;
 +
-+	/* Call start */
-+	mr	r3,r1
-+	b	start
-Index: working-2.6/arch/powerpc/boot/ops.h
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/ops.h	2007-02-19 14:01:38.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/ops.h	2007-02-19 14:01:43.000000000 +1100
-@@ -59,7 +59,13 @@ struct serial_console_data {
- 	void		(*close)(void);
- };
- 
--int platform_init(void *promptr, char *dt_blob_start, char *dt_blob_end);
-+struct loader_info {
-+	void *promptr;
-+	unsigned long initrd_addr, initrd_size;
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
++
++		PowerPC,440GP@0 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <0>; // Filled in by zImage
++			timebase-frequency = <0>; // Filled in by zImage
++			i-cache-line-size = <32>;
++			d-cache-line-size = <32>;
++			i-cache-size = <0>;
++			d-cache-size = <0>;
++			dcr-controller;
++			dcr-access-method = "native";
++		};
++	};
++
++	memory {
++		device_type = "memory";
++		reg = <0 0 0>; // Filled in by zImage
++	};
++
++	UIC0: interrupt-controller0 {
++		device_type = "ibm,uic";
++		compatible = "ibm,uic-440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <0>;
++		dcr-reg = <0c0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++
++	};
++
++	UIC1: interrupt-controller1 {
++		device_type = "ibm,uic";
++		compatible = "ibm,uic-440gp", "ibm,uic";
++		interrupt-controller;
++		cell-index = <1>;
++		dcr-reg = <0d0 009>;
++		#address-cells = <0>;
++		#size-cells = <0>;
++		#interrupt-cells = <2>;
++		interrupts = <1e 4 1f 4>; /* cascade */
++		interrupt-parent = <&UIC0>;
++	};
++
++	CPC0: cpc {
++		device_type = "ibm,cpc";
++		compatible = "ibm,cpc-440gp";
++		dcr-reg = <0b0 003 0e0 010>;
++		// FIXME: anything else?
++	};
++
++	plb {
++		device_type = "ibm,plb";
++		compatible = "ibm,plb-440gp", "ibm,plb4";
++		#address-cells = <2>;
++		#size-cells = <1>;
++		ranges;
++		clock-frequency = <0>; // Filled in by zImage
++
++		SDRAM0: sdram {
++			device_type = "memory-controller";
++			compatible = "ibm,sdram-440gp", "ibm,sdram";
++			dcr-reg = <010 2>;
++			// FIXME: anything else?
++		};
++
++		DMA0: dma {
++			// FIXME: ???
++			device_type = "ibm,dma-4xx";
++			compatible = "ibm,dma-440gp", "ibm,dma-4xx";
++			dcr-reg = <100 027>;
++		};
++
++		MAL0: mcmal {
++			device_type = "mcmal-dma";
++			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
++			dcr-reg = <180 62>;
++			num-tx-chans = <4>;
++			num-rx-chans = <4>;
++			interrupt-parent = <&MAL0>;
++			interrupts = <0 1 2 3 4>;
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			#size-cells = <0>;
++			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
++					 /*RXEOB*/ 1 &UIC0 b 4
++					 /*SERR*/  2 &UIC1 0 4
++					 /*TXDE*/  3 &UIC1 1 4
++					 /*RXDE*/  4 &UIC1 2 4>;
++			interrupt-map-mask = <ffffffff>;
++		};
++
++		POB0: opb@0 {
++			device_type = "ibm,opb";
++			compatible = "ibm,opb-440gp", "ibm,opb";
++			ranges;
++			dcr-reg = <090 00b>;
++			interrupt-parent = <&UIC1>;
++			interrupts = <7 4>;
++			clock-frequency = <0>; // Filled in by zImage
++
++			UART0: serial@140000200 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <1 40000200 8>;
++				virtual-reg = <e0000200>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <0 4>;
++			};
++
++			UART1: serial@140000300 {
++				device_type = "serial";
++				compatible = "ns16550";
++				reg = <1 40000300 8>;
++				virtual-reg = <e0000300>;
++				clock-frequency = <A8C000>;
++				current-speed = <2580>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <1 4>;
++			};
++
++			IIC0: i2c@140000400 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <1 40000400 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <2 4>;
++			};
++			IIC1: i2c@140000500 {
++				/* FIXME */
++				device_type = "i2c";
++				compatible = "ibm,iic-440gp", "ibm,iic";
++				reg = <1 40000500 14>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <3 4>;
++			};
++
++			GPIO0: gpio@140000700 {
++				/* FIXME */
++				device_type = "gpio";
++				compatible = "ibm,gpio-440gp";
++				reg = <1 40000700 20>;
++			};
++
++			ZMII0: emac-zmii@140000780 {
++				device_type = "emac-zmii";
++				compatible = "ibm,zmii-440gp", "ibm,zmii";
++				reg = <1 40000780 c>;
++			};
++
++			EMAC0: ethernet@140000800 {
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1c 4 1d 4>;
++				reg = <1 40000800 70>;
++				local-mac-address = [000000000000]; // Filled in by zImage
++				mal-device = <&MAL0>;
++				mal-tx-channel = <0 1>;
++				mal-rx-channel = <0>;
++				cell-index = <0>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <0>;
++			};
++			EMAC1: ethernet@140000900 {
++				device_type = "network";
++				compatible = "ibm,emac-440gp", "ibm,emac";
++				interrupt-parent = <&UIC1>;
++				interrupts = <1e 4 1f 4>;
++				reg = <1 40000900 70>;
++				local-mac-address = [000000000000]; // Filled in by zImage
++				mal-device = <&MAL0>;
++				mal-tx-channel = <2 3>;
++				mal-rx-channel = <1>;
++				cell-index = <1>;
++				max-frame-size = <5dc>;
++				rx-fifo-size = <1000>;
++				tx-fifo-size = <800>;
++				phy-mode = "rmii";
++				phy-map = <00000001>;
++				zmii-device = <&ZMII0>;
++				zmii-channel = <1>;
++			};
++
++
++			GPT0: gpt@140000a00 {
++				/* FIXME */
++				reg = <1 40000a00 d4>;
++				interrupt-parent = <&UIC0>;
++				interrupts = <12 4 13 4 14 4 15 4 16 4>;
++			};
++
++		};
++
++		PCIX0: pci@1234 {
++			device_type = "pci";
++			/* FIXME */
++			reg = <2 0ec00000 8
++			       2 0ec80000 f0
++			       2 0ec80100 fc>;
++		};
++	};
++
++	chosen {
++		linux,stdout-path = "/plb/opb@0/serial@140000200";
++		linux,initrd-start = <0>; /* FIXME */
++		linux,initrd-end = <0>;
++	};
 +};
-+extern struct loader_info loader_info;
 +
-+void start(void *sp);
- int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
- int serial_console_init(void);
- int ns16550_console_init(void *devp, struct serial_console_data *scdp);
-@@ -100,4 +106,8 @@ static inline void exit(void)
- 	for(;;);
- }
- 
-+#define BSS_STACK(size) \
-+	static char _bss_stack[size]; \
-+	void *_platform_stack_top = _bss_stack + sizeof(_bss_stack);
-+
- #endif /* _PPC_BOOT_OPS_H_ */
-Index: working-2.6/arch/powerpc/boot/main.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/main.c	2007-02-19 14:01:38.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/main.c	2007-02-19 14:01:43.000000000 +1100
-@@ -254,21 +254,15 @@ static void set_cmdline(char *buf)
- struct platform_ops platform_ops;
- struct dt_ops dt_ops;
- struct console_ops console_ops;
-+struct loader_info loader_info;
- 
--void start(unsigned long a1, unsigned long a2, void *promptr, void *sp)
-+void start(void *sp)
- {
- 	struct addr_range vmlinux, initrd;
- 	kernel_entry_t kentry;
- 	char cmdline[COMMAND_LINE_SIZE];
- 	unsigned long ft_addr = 0;
- 
--	memset(__bss_start, 0, _end - __bss_start);
--	memset(&platform_ops, 0, sizeof(platform_ops));
--	memset(&dt_ops, 0, sizeof(dt_ops));
--	memset(&console_ops, 0, sizeof(console_ops));
--
--	if (platform_init(promptr, _dtb_start, _dtb_end))
--		exit();
- 	if (console_ops.open && (console_ops.open() < 0))
- 		exit();
- 	if (platform_ops.fixups)
-@@ -278,7 +272,8 @@ void start(unsigned long a1, unsigned lo
- 	       _start, sp);
- 
- 	vmlinux = prep_kernel();
--	initrd = prep_initrd(vmlinux, a1, a2);
-+	initrd = prep_initrd(vmlinux, loader_info.initrd_addr,
-+			     loader_info.initrd_size);
- 
- 	/* If cmdline came from zimage wrapper or if we can edit the one
- 	 * in the dt, print it out and edit it, if possible.
-@@ -298,7 +293,7 @@ void start(unsigned long a1, unsigned lo
- 	if (ft_addr)
- 		printf(" flat tree at 0x%lx\n\r", ft_addr);
- 	else
--		printf(" using OF tree (promptr=%p)\n\r", promptr);
-+		printf(" using OF tree (promptr=%p)\n\r", loader_info.promptr);
- 
- 	if (console_ops.close)
- 		console_ops.close();
-@@ -307,7 +302,8 @@ void start(unsigned long a1, unsigned lo
- 	if (ft_addr)
- 		kentry(ft_addr, 0, NULL);
- 	else
--		kentry((unsigned long)initrd.addr, initrd.size, promptr);
-+		kentry((unsigned long)initrd.addr, initrd.size,
-+		       loader_info.promptr);
- 
- 	/* console closed so printf below may not work */
- 	printf("Error: Linux kernel returned to zImage boot wrapper!\n\r");
-Index: working-2.6/arch/powerpc/boot/of.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/of.c	2007-02-19 14:01:38.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/of.c	2007-02-19 14:01:43.000000000 +1100
-@@ -267,7 +267,7 @@ static void of_console_write(char *buf, 
- 	call_prom("write", 3, 1, of_stdout_handle, buf, len);
- }
- 
--int platform_init(void *promptr, char *dt_blob_start, char *dt_blob_end)
-+void platform_init(unsigned long a1, unsigned long a2, void *promptr)
- {
- 	platform_ops.image_hdr = of_image_hdr;
- 	platform_ops.malloc = of_try_claim;
-@@ -282,5 +282,7 @@ int platform_init(void *promptr, char *d
- 	console_ops.write = of_console_write;
- 
- 	prom = (int (*)(void *))promptr;
--	return 0;
-+	loader_info.promptr = promptr;
-+	loader_info.initrd_addr = a1;
-+	loader_info.initrd_size = a2;
- }
-Index: working-2.6/arch/powerpc/boot/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-02-19 14:01:43.000000000 +1100
-@@ -40,11 +40,11 @@ zliblinuxheader := zlib.h zconf.h zutil.
- $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) \
- 		$(addprefix $(obj)/,$(zlibheader))
- 
--src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
-+src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c $(zlib)
- src-plat := of.c
--src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
-+src-boot := $(src-wlib) $(src-plat) empty.c
- 
- src-boot := $(addprefix $(obj)/, $(src-boot))
- obj-boot := $(addsuffix .o, $(basename $(src-boot)))
-@@ -97,7 +97,7 @@ $(obj)/wrapper.a: $(obj-wlib)
- 
- hostprogs-y	:= addnote addRamDisk hack-coff mktree
- 
--extra-y		:= $(obj)/crt0.o $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
-+extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
- 		   $(obj)/zImage.lds $(obj)/zImage.coff.lds
- 
- wrapper		:=$(srctree)/$(src)/wrapper
-Index: working-2.6/arch/powerpc/boot/wrapper
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/wrapper	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/wrapper	2007-02-19 14:01:43.000000000 +1100
-@@ -191,7 +191,7 @@ fi
- 
- if [ "$platform" != "miboot" ]; then
-     ${CROSS}ld -m elf32ppc -T $lds -o "$ofile" \
--	$object/crt0.o $platformo $tmp $object/wrapper.a
-+	$platformo $tmp $object/wrapper.a
-     rm $tmp
- fi
- 
-@@ -201,7 +201,9 @@ pseries|chrp)
-     $object/addnote "$ofile"
-     ;;
- pmaccoff)
--    ${CROSS}objcopy -O aixcoff-rs6000 --set-start 0x500000 "$ofile"
-+    entry=`objdump -f "$ofile" | grep '^start address ' | \
-+	cut -d' ' -f3`
-+    ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
-     $object/hack-coff "$ofile"
-     ;;
- esac
-Index: working-2.6/arch/powerpc/boot/zImage.lds.S
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/zImage.lds.S	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/zImage.lds.S	2007-02-19 14:01:43.000000000 +1100
-@@ -1,5 +1,6 @@
- OUTPUT_ARCH(powerpc:common)
- ENTRY(_zimage_start)
-+EXTERN(_zimage_start)
- SECTIONS
- {
-   . = (4*1024*1024);
-Index: working-2.6/arch/powerpc/boot/zImage.coff.lds.S
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/zImage.coff.lds.S	2007-02-19 14:00:50.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/zImage.coff.lds.S	2007-02-19 14:01:43.000000000 +1100
-@@ -1,5 +1,6 @@
- OUTPUT_ARCH(powerpc:common)
--ENTRY(_start)
-+ENTRY(_zimage_start_opd)
-+EXTERN(_zimage_start_opd)
- SECTIONS
- {
-   . = (5*1024*1024);
