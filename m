@@ -1,32 +1,15 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 70782DDF6C
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 03:31:19 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l25GVwOJ020106
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Mar 2007 11:31:58 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l25GVDvr212370
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Mar 2007 11:31:13 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l25GVDMp011522
-	for <linuxppc-dev@ozlabs.org>; Mon, 5 Mar 2007 11:31:13 -0500
-Subject: Re: [PATCH 2/6] [POWERPC] create and use get_pci_dma_ops(
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20070304170241.816f9802.sfr@canb.auug.org.au>
-References: <20070304165839.4d2bf50b.sfr@canb.auug.org.au>
-	<20070304170241.816f9802.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Mon, 05 Mar 2007 10:31:11 -0600
-Message-Id: <1173112272.5877.5.camel@localhost>
-Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
-Reply-To: will_schmidt@vnet.ibm.com
+Return-Path: <tmorrison@empirix.com>
+Received: from empbedex1.empirix.com (empbedex1.empirix.com [12.38.203.54])
+	by ozlabs.org (Postfix) with ESMTP id 71D37DDF78
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 03:37:22 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: pci_dev start/stop addresses
+Date: Mon, 5 Mar 2007 11:37:13 -0500
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D90106BF2D19@EMPBEDEX.empirix.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,95 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-04-03 at 17:02 +1100, Stephen Rothwell wrote:
-> This allows us to hide pci_dma_ops.
-> 
+I am trying to port/debug a driver on a 32bit MPC8548E platform=20
+that is reading the resource start address in the PCI Device=20
+structure (struct pci_dev). I should mention this driver was
+original developed on an X86 platform and works flawlessly...
 
-<snippage>
+But, when this driver reads the start value in this struct=20
+into a local unsigned long value - it comes up as '0x0' (and=20
+prints out the same via %lx).
 
-> -EXPORT_SYMBOL(pci_dma_ops);
+Looking closer, it seems that this value is a size - resource_size_t=20
+- that resolves into a u32 value (and I have printed the physical=20
+size sizeof(resource_size_t)) and it seems to be the correct size(4).
 
-> +EXPORT_SYMBOL(get_pci_dma_ops);
+I am also looking into the sysfs and it appears that for=20
+this device on the pci bus - it is being 'stored' in this=20
+resource file as a 64bit value?
 
-should this one be EXPORT_SYMBOL_GPL(get_pci_dma_ops);
-        
-or is it grandfathered in because it is replacing and renaming
-EXPORT_SYMBOL(pci_dma_ops);   ?
-        
--Will
-        
-        
-> +
->  static void fixup_broken_pcnet32(struct pci_dev* dev)
->  {
->  	if ((dev->class>>8 == PCI_CLASS_NETWORK_ETHERNET)) {
-> diff --git a/arch/powerpc/platforms/cell/iommu.c b/arch/powerpc/platforms/cell/iommu.c
-> index d0e02ea..7c953cc 100644
-> --- a/arch/powerpc/platforms/cell/iommu.c
-> +++ b/arch/powerpc/platforms/cell/iommu.c
-> @@ -496,7 +496,7 @@ static void cell_dma_dev_setup(struct device *dev)
->  	struct dev_archdata *archdata = &dev->archdata;
-> 
->  	/* If we run without iommu, no need to do anything */
-> -	if (pci_dma_ops == &dma_direct_ops)
-> +	if (get_pci_dma_ops() == &dma_direct_ops)
->  		return;
-> 
->  	/* Current implementation uses the first window available in that
-> @@ -530,7 +530,7 @@ static int cell_of_bus_notify(struct notifier_block *nb, unsigned long action,
->  		return 0;
-> 
->  	/* We use the PCI DMA ops */
-> -	dev->archdata.dma_ops = pci_dma_ops;
-> +	dev->archdata.dma_ops = get_pci_dma_ops();
-> 
->  	cell_dma_dev_setup(dev);
-> 
-> diff --git a/arch/powerpc/platforms/celleb/iommu.c b/arch/powerpc/platforms/celleb/iommu.c
-> index fecc4ff..e94de6a 100644
-> --- a/arch/powerpc/platforms/celleb/iommu.c
-> +++ b/arch/powerpc/platforms/celleb/iommu.c
-> @@ -80,7 +80,7 @@ static int celleb_of_bus_notify(struct notifier_block *nb,
->  	if (action != BUS_NOTIFY_ADD_DEVICE)
->  		return 0;
-> 
-> -	dev->archdata.dma_ops = pci_dma_ops;
-> +	dev->archdata.dma_ops = get_pci_dma_ops();
-> 
->  	return 0;
->  }
-> diff --git a/include/asm-powerpc/pci.h b/include/asm-powerpc/pci.h
-> index ebf31f1..ce0f13e 100644
-> --- a/include/asm-powerpc/pci.h
-> +++ b/include/asm-powerpc/pci.h
-> @@ -71,17 +71,18 @@ static inline int pci_get_legacy_ide_irq(struct pci_dev *dev, int channel)
->  #define PCI_DISABLE_MWI
-> 
->  #ifdef CONFIG_PCI
-> -extern struct dma_mapping_ops *pci_dma_ops;
-> -
->  extern void set_pci_dma_ops(struct dma_mapping_ops *dma_ops);
-> +extern struct dma_mapping_ops *get_pci_dma_ops(void);
-> 
->  /* For DAC DMA, we currently don't support it by default, but
->   * we let 64-bit platforms override this.
->   */
->  static inline int pci_dac_dma_supported(struct pci_dev *hwdev,u64 mask)
->  {
-> -	if (pci_dma_ops && pci_dma_ops->dac_dma_supported)
-> -		return pci_dma_ops->dac_dma_supported(&hwdev->dev, mask);
-> +	struct dma_mapping_ops *d = get_pci_dma_ops();
-> +
-> +	if (d && d->dac_dma_supported)
-> +		return d->dac_dma_supported(&hwdev->dev, mask);
->  	return 0;
->  }
-> 
-> @@ -103,6 +104,7 @@ static inline void pci_dma_burst_advice(struct pci_dev *pdev,
->  }
->  #else	/* CONFIG_PCI */
->  #define set_pci_dma_ops(d)
-> +#define get_pci_dma_ops()	NULL
->  #endif
-> 
->  extern int pci_domain_nr(struct pci_bus *bus);
+I am confused as to what is actually in this PCI device=20
+structure and/or what is actually returned. I do know that
+the even though the start address is coming back as '0',=20
+the length being calculated is correct (end-start=3Dlength)?
+
+It seems to be me, I have some type of mismatch in the=20
+device tree types and/or an endian problem.
+
+Any insight would be appreciated here!
+
+Tom Morrison
+Principal Software Engineer
+
+EMPIRIX=20
+20 Crosby Drive - Bedford, MA  01730
+p: 781.266.3567 f: 781.266.3670=20
+email: tmorrison@empirix.com=20
+www.empirix.com
