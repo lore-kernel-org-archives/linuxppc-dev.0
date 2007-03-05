@@ -1,10 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 1/15] powerpc: Allow duplicate lmb_reserve() calls
+Subject: [PATCH 2/15] Automatically lmb_reserve() initrd
 In-Reply-To: <20070305032307.GB31417@localhost.localdomain>
-Message-Id: <20070305032450.4062BDDF18@ozlabs.org>
-Date: Mon,  5 Mar 2007 14:24:49 +1100 (EST)
+Message-Id: <20070305032450.44F57DDF1B@ozlabs.org>
+Date: Mon,  5 Mar 2007 14:24:50 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,60 +14,101 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present calling lmb_reserve() (and hence lmb_add_region()) twice
-for exactly the same memory region will cause strange behaviour.
+At present, when an initrd is passed to the kernel used flat device
+tree properties, the memory the initrd occupies must also be reserved
+in the flat tree's reserve map, or the kernel may overwrite it.  That
+makes life more complicated than it could be for the bootwrapper.
 
-This makes life difficult when booting from a flat device tree with
-memory reserve map.  Which regions are automatically reserved by the
-kernel has changed over time, so it's quite possible a newer kernel
-could attempt to auto-reserve a region which is also explicitly listed
-in the device tree's reserve map, leading to trouble.
-
-This patch avoids the problem by making lmb_reserve() ignore a call to
-reserve a previously reserved region.  It also removes a now redundant
-test designed to avoid one specific case of the problem noted above.
-
-At present, this patch deals only with duplicate reservations of an
-identical region.  Attempting to reserve two different, but
-overlapping regions will still cause problems.  I might post another
-patch later dealing with this case, but I'm avoiding it now since it
-is substantially more complicated to deal with, less likely to occur
-and more likely to indicate a genuine bug elsewhere if it does occur.
+This patch makes the kernel automatically reserve the initrd's space.
+That in turn requires parsing the initrd parameters earlier than they
+are currently, in early_init_dt_scan_chosen() instead of
+check_for_initrd().
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
+ arch/powerpc/kernel/prom.c         |   23 +++++++++++++++++++++++
+ arch/powerpc/kernel/setup-common.c |   22 ++--------------------
+ 2 files changed, 25 insertions(+), 20 deletions(-)
 
- arch/powerpc/kernel/prom.c |    3 ---
- arch/powerpc/mm/lmb.c      |    4 ++++
- 2 files changed, 4 insertions(+), 3 deletions(-)
-
-Index: working-2.6/arch/powerpc/mm/lmb.c
-===================================================================
---- working-2.6.orig/arch/powerpc/mm/lmb.c	2007-02-06 16:21:02.000000000 +1100
-+++ working-2.6/arch/powerpc/mm/lmb.c	2007-02-06 16:22:32.000000000 +1100
-@@ -146,6 +146,10 @@ static long __init lmb_add_region(struct
- 		unsigned long rgnbase = rgn->region[i].base;
- 		unsigned long rgnsize = rgn->region[i].size;
- 
-+		if ((rgnbase == base) && (rgnsize == size))
-+			/* Already have this region, so we're done */
-+			return 0;
-+
- 		adjacent = lmb_addrs_adjacent(base,size,rgnbase,rgnsize);
- 		if ( adjacent > 0 ) {
- 			rgn->region[i].base -= size;
 Index: working-2.6/arch/powerpc/kernel/prom.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/kernel/prom.c	2007-02-06 16:22:48.000000000 +1100
-+++ working-2.6/arch/powerpc/kernel/prom.c	2007-02-06 16:22:57.000000000 +1100
-@@ -954,9 +954,6 @@ static void __init early_reserve_mem(voi
- 		size = *(reserve_map++);
- 		if (size == 0)
- 			break;
--		/* skip if the reservation is for the blob */
--		if (base == self_base && size == self_size)
--			continue;
- 		DBG("reserving: %llx -> %llx\n", base, size);
- 		lmb_reserve(base, size);
- 	}
+--- working-2.6.orig/arch/powerpc/kernel/prom.c	2007-02-09 15:12:00.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/prom.c	2007-02-09 15:14:27.000000000 +1100
+@@ -719,6 +719,7 @@ static int __init early_init_dt_scan_cho
+ 					    const char *uname, int depth, void *data)
+ {
+ 	unsigned long *lprop;
++	u32 *prop;
+ 	unsigned long l;
+ 	char *p;
+ 
+@@ -760,6 +761,22 @@ static int __init early_init_dt_scan_cho
+                crashk_res.end = crashk_res.start + *lprop - 1;
+ #endif
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++	DBG("Looking for initrd properties... ");
++	prop = of_get_flat_dt_prop(node, "linux,initrd-start", &l);
++	if (prop) {
++		initrd_start = (unsigned long)__va(of_read_ulong(prop, l/4));
++		prop = of_get_flat_dt_prop(node, "linux,initrd-end", &l);
++		if (prop) {
++			initrd_end = (unsigned long)__va(of_read_ulong(prop, l/4));
++			initrd_below_start_ok = 1;
++		} else {
++			initrd_start = 0;
++		}
++	}
++	DBG("initrd_start=0x%lx  initrd_end=0x%lx\n", initrd_start, initrd_end);
++#endif /* CONFIG_BLK_DEV_INITRD */
++
+ 	/* Retreive command line */
+  	p = of_get_flat_dt_prop(node, "bootargs", &l);
+ 	if (p != NULL && l > 0)
+@@ -926,6 +943,12 @@ static void __init early_reserve_mem(voi
+ 	self_size = initial_boot_params->totalsize;
+ 	lmb_reserve(self_base, self_size);
+ 
++#ifdef CONFIG_BLK_DEV_INITRD
++	/* then reserve the initrd, if any */
++	if (initrd_start && (initrd_end > initrd_start))
++		lmb_reserve(__pa(initrd_start), initrd_end - initrd_start);
++#endif /* CONFIG_BLK_DEV_INITRD */
++
+ #ifdef CONFIG_PPC32
+ 	/* 
+ 	 * Handle the case where we might be booting from an old kexec
+Index: working-2.6/arch/powerpc/kernel/setup-common.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/setup-common.c	2007-01-24 12:01:17.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/setup-common.c	2007-02-09 15:15:15.000000000 +1100
+@@ -304,26 +304,8 @@ struct seq_operations cpuinfo_op = {
+ void __init check_for_initrd(void)
+ {
+ #ifdef CONFIG_BLK_DEV_INITRD
+-	const unsigned int *prop;
+-	int len;
+-
+-	DBG(" -> check_for_initrd()\n");
+-
+-	if (of_chosen) {
+-		prop = get_property(of_chosen, "linux,initrd-start", &len);
+-		if (prop != NULL) {
+-			initrd_start = (unsigned long)
+-				__va(of_read_ulong(prop, len / 4));
+-			prop = get_property(of_chosen,
+-					"linux,initrd-end", &len);
+-			if (prop != NULL) {
+-				initrd_end = (unsigned long)
+-					__va(of_read_ulong(prop, len / 4));
+-				initrd_below_start_ok = 1;
+-			} else
+-				initrd_start = 0;
+-		}
+-	}
++	DBG(" -> check_for_initrd()  initrd_start=0x%lx  initrd_end=0x%lx\n",
++	    initrd_start, initrd_end);
+ 
+ 	/* If we were passed an initrd, set the ROOT_DEV properly if the values
+ 	 * look sensible. If not, clear initrd reference.
