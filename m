@@ -1,19 +1,21 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id BE842DDF9F
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 04:17:14 +1100 (EST)
-Date: Mon, 5 Mar 2007 10:04:02 -0700
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Real time clock support in arch/powerpc
-Message-ID: <20070305170402.GB32672@mag.az.mvista.com>
-References: <20070305032307.GB31417@localhost.localdomain>
-	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5F6216@zch01exm23.fsl.freescale.net>
-	<9A1B5311-2BE0-4757-A2EB-B4E316289FD0@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <9A1B5311-2BE0-4757-A2EB-B4E316289FD0@kernel.crashing.org>
-From: "Mark A. Greer" <mgreer@mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 816DBDDEFE
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 09:55:35 +1100 (EST)
+Date: Tue, 6 Mar 2007 09:55:25 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: will_schmidt@vnet.ibm.com
+Subject: Re: [PATCH 2/6] [POWERPC] create and use get_pci_dma_ops(
+Message-Id: <20070306095525.781a730d.sfr@canb.auug.org.au>
+In-Reply-To: <1173112272.5877.5.camel@localhost>
+References: <20070304165839.4d2bf50b.sfr@canb.auug.org.au>
+	<20070304170241.816f9802.sfr@canb.auug.org.au>
+	<1173112272.5877.5.camel@localhost>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__6_Mar_2007_09_55_25_+1100_f5gbtZ4Wp23rCnE/"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +25,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 05, 2007 at 09:10:47AM -0600, Kumar Gala wrote:
-> 
-> On Mar 5, 2007, at 2:02 AM, Zang Roy-r61911 wrote:
-> 
-> >
-> >Is there any plan to add real time clock support in arch/powerpc?
-> >I can find the support in arch/ppc/syslib/todc_time.c
-> 
-> I thought our intent was to try and start using the drivers rtc  
-> subsystem going forward.
+--Signature=_Tue__6_Mar_2007_09_55_25_+1100_f5gbtZ4Wp23rCnE/
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-It is.  todc is deprecated and removed from arch/powerpc.  drivers/rtc
-is what we should use from now on.
+On Mon, 05 Mar 2007 10:31:11 -0600 Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
+>
+> > -EXPORT_SYMBOL(pci_dma_ops);
+>
+> > +EXPORT_SYMBOL(get_pci_dma_ops);
+>
+> should this one be EXPORT_SYMBOL_GPL(get_pci_dma_ops);
+>
+> or is it grandfathered in because it is replacing and renaming
+> EXPORT_SYMBOL(pci_dma_ops);   ?
 
-Mark
+Yes, I don't know if there are any out of tree uses, but there could
+easily be.
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__6_Mar_2007_09_55_25_+1100_f5gbtZ4Wp23rCnE/
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFF7J/oFdBgD/zoJvwRAiYRAJ9Fj1gflrPFLjvAh4DbHWYae/aX/gCeJWxs
+Rk7UcnbQ4CetOGAtze9X8zM=
+=T/Lj
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__6_Mar_2007_09_55_25_+1100_f5gbtZ4Wp23rCnE/--
