@@ -1,17 +1,17 @@
-Return-Path: <stephane.fillod@thomson.net>
-Received: from dmzraw4.extranet.thmulti.com (dmzraw4.extranet.thmulti.com
-	[141.11.234.72]) by ozlabs.org (Postfix) with ESMTP id 5788FDDEC0
+Return-Path: <domen.puncer@telargo.com>
+Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
+	by ozlabs.org (Postfix) with ESMTP id D1C92DDE4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  5 Mar 2007 20:42:12 +1100 (EST)
+	Mon,  5 Mar 2007 21:08:06 +1100 (EST)
+Date: Mon, 5 Mar 2007 11:08:02 +0100
+From: Domen Puncer <domen.puncer@telargo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH alternative] lite5200(b) support for i2c
+Message-ID: <20070305100802.GV4397@moe.telargo.com>
+References: <20070302104718.GU4397@moe.telargo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Endianness versus too many byte swaps??
-Date: Mon, 5 Mar 2007 10:41:55 +0100
-Message-ID: <0B45E93C5FF65740AEAE690BF3848B7A4AAFD1@rennsmail04.eu.thmulti.com>
-From: "Fillod Stephane" <stephane.fillod@thomson.net>
-To: "Charles Krinke" <ckrinke@istor.com>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070302104718.GU4397@moe.telargo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,45 +22,89 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Charles Krinke wrote:
->This routine uses a ccsr_pci struct to assign potar2, powar2, powbar2
-and >others like this:
->
->pci->potar2     =3D 0x00100000;
->pci->powar2   =3D 0x8004401a;
->pci->powbar2 =3D 0x00888000;
+Add fsl-i2c to lite5200 i2c nodes in device tree, and enable FSL_SOC.
 
-This is big-endian access to the registers, right?
+Tested to work with built-in eeprom on lite5200b.
 
-I tend to prefer explicit macros like the following when accessing CCSR
-and=20
-such. It also adds IO synchronization as a bonus.
 
-out_be32(&pci->potar2, 0x00100000);
-out_be32(&pci->powar2, 0x8004401a);
-out_be32(&pci->powbar2, 0x00888000);
+Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 
->Where I have changed the constants for our board. The issue is that
-when I >call readl to read back these same registers at the end of this
-same >subroutine, I get into endianess issues. That is, I read back
->=20
->POTAR2     =3D=3D 0x00001000
->POWAR2   =3D=3D 0x1A400480
->POWBAR2 =3D=3D 0x00800800
->
->Where the four bytes in each 32bit word are now exchanged so that
->80_04_40_1A became 1A_40_04_80.
->
->I understand big versus little endian, that isn't the question. The
->question is "What is really in the POTAR2, POWAR2 & POWBAR2 registers
-and >how can I prove that what is in the registers is really what I wish
-to be >in the registers?"
+---
+This patch obsoletes the previous one, and is shorter too :-)
 
-You do understand that readl is in fact a call to in_le32() on ppc
-(cf. include/asm-ppc/io.h).
-=20
-The question now is, what endianness you would like in that register?
 
-Regards
---=20
-Stephane
+ arch/powerpc/Kconfig                |    1 +
+ arch/powerpc/boot/dts/lite5200.dts  |    6 ++++--
+ arch/powerpc/boot/dts/lite5200b.dts |    6 ++++--
+ 3 files changed, 9 insertions(+), 4 deletions(-)
+
+Index: grant.git/arch/powerpc/Kconfig
+===================================================================
+--- grant.git.orig/arch/powerpc/Kconfig
++++ grant.git/arch/powerpc/Kconfig
+@@ -128,6 +128,7 @@ config CLASSIC32
+ 	bool "52xx/6xx/7xx/74xx"
+ 	select PPC_FPU
+ 	select 6xx
++	select FSL_SOC
+ 	help
+ 	  There are four families of PowerPC chips supported.  The more common
+ 	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
+Index: grant.git/arch/powerpc/boot/dts/lite5200b.dts
+===================================================================
+--- grant.git.orig/arch/powerpc/boot/dts/lite5200b.dts
++++ grant.git/arch/powerpc/boot/dts/lite5200b.dts
+@@ -323,20 +323,22 @@
+ 
+ 		i2c@3d00 {
+ 			device_type = "i2c";
+-			compatible = "mpc5200b-i2c\0mpc5200-i2c";
++			compatible = "mpc5200b-i2c\0mpc5200-i2c\0fsl-i2c";
+ 			cell-index = <0>;
+ 			reg = <3d00 40>;
+ 			interrupts = <2 f 0>;
+ 			interrupt-parent = <500>;
++			fsl5200-clocking;
+ 		};
+ 
+ 		i2c@3d40 {
+ 			device_type = "i2c";
+-			compatible = "mpc5200b-i2c\0mpc5200-i2c";
++			compatible = "mpc5200b-i2c\0mpc5200-i2c\0fsl-i2c";
+ 			cell-index = <1>;
+ 			reg = <3d40 40>;
+ 			interrupts = <2 10 0>;
+ 			interrupt-parent = <500>;
++			fsl5200-clocking;
+ 		};
+ 		sram@8000 {
+ 			device_type = "sram";
+Index: grant.git/arch/powerpc/boot/dts/lite5200.dts
+===================================================================
+--- grant.git.orig/arch/powerpc/boot/dts/lite5200.dts
++++ grant.git/arch/powerpc/boot/dts/lite5200.dts
+@@ -318,20 +318,22 @@
+ 
+ 		i2c@3d00 {
+ 			device_type = "i2c";
+-			compatible = "mpc5200-i2c";
++			compatible = "mpc5200-i2c\0fsl-i2c";
+ 			cell-index = <0>;
+ 			reg = <3d00 40>;
+ 			interrupts = <2 f 0>;
+ 			interrupt-parent = <500>;
++			fsl5200-clocking;
+ 		};
+ 
+ 		i2c@3d40 {
+ 			device_type = "i2c";
+-			compatible = "mpc5200-i2c";
++			compatible = "mpc5200-i2c\0fsl-i2c";
+ 			cell-index = <1>;
+ 			reg = <3d40 40>;
+ 			interrupts = <2 10 0>;
+ 			interrupt-parent = <500>;
++			fsl5200-clocking;
+ 		};
+ 		sram@8000 {
+ 			device_type = "sram";
