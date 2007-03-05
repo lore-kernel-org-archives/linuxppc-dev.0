@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 5/15] Re-organize Kconfig code for 4xx in arch/powerpc
+Subject: [PATCH 6/15] zImage: Add more flexible gunzip convenience functions
 In-Reply-To: <20070305032307.GB31417@localhost.localdomain>
-Message-Id: <20070305032452.43C4CDDF18@ozlabs.org>
+Message-Id: <20070305032452.4DCDBDDF1B@ozlabs.org>
 Date: Mon,  5 Mar 2007 14:24:52 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,459 +14,404 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that we always take a device tree in arch/powerpc, there's no good
-reason not to allow a single kernel to support multiple embedded 4xx
-boards - the correct platform code can be selected based on the device
-tree information.
+At present, arch/powerpc/boot/main.c includes a gunzip() function
+which is a convenient wrapper around zlib.  However, it doesn't
+conveniently allow decompressing part of an image to one location,
+then the remainder to a different address.
 
-Therefore, this patch re-arranges the 4xx Kconfig code to allow this.
-In addition we:
-	- use "select" instead of depends to configure the correct
-	  config options for specific 4xx CPUs and workarounds, which
-	  makes the information about specific boards and CPUs less
-	  scattered.
-	- Some old, unused (in arch/powerpc) config options are
-	  removed: WANT_EARLY_SERIAL, IBM_OCP, etc.
+This patch adds a new set of more flexible convenience wrappers around
+zlib, moving them to their own file, gunzip_util.c, in the process.
+These wrappers allow decompressing sections of the compressed image to
+different locations.  In addition, they transparently handle
+uncompressed data, avoiding special case code to handle uncompressed
+vmlinux images.
+
+The patch also converts main.c to use the new wrappers, using the new
+flexibility to avoid decompressing the vmlinux's ELF header twice as
+we did previously.  That in turn means we avoid extending our
+allocations for the vmlinux to allow space for the extra copy of the
+ELF header.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/platforms/4xx/Kconfig |  378 ++++++++++++++-----------------------
- 1 file changed, 153 insertions(+), 225 deletions(-)
+ arch/powerpc/boot/Makefile      |    3 
+ arch/powerpc/boot/gunzip_util.c |  140 ++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/gunzip_util.h |   30 ++++++++
+ arch/powerpc/boot/main.c        |  113 +++++---------------------------
+ 4 files changed, 192 insertions(+), 94 deletions(-)
 
-Index: working-2.6/arch/powerpc/platforms/4xx/Kconfig
+Index: working-2.6/arch/powerpc/boot/gunzip_util.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/platforms/4xx/Kconfig	2007-02-21 11:20:50.000000000 +1100
-+++ working-2.6/arch/powerpc/platforms/4xx/Kconfig	2007-02-21 11:25:43.000000000 +1100
-@@ -3,278 +3,206 @@ config 4xx
- 	depends on 40x || 44x
- 	default y
- 
--config WANT_EARLY_SERIAL
-+config BOOKE
- 	bool
--	select SERIAL_8250
--	default n
--
--menu "AMCC 4xx options"
--	depends on 4xx
--
--choice
--	prompt "Machine Type"
--	depends on 40x
--	default WALNUT
--
--config BUBINGA
--	bool "Bubinga"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM 405EP evaluation board.
--
--config CPCI405
--	bool "CPCI405"
--	help
--	  This option enables support for the CPCI405 board.
--
--config EP405
--	bool "EP405/EP405PC"
--	help
--	  This option enables support for the EP405/EP405PC boards.
--
--config REDWOOD_5
--	bool "Redwood-5"
--	help
--	  This option enables support for the IBM STB04 evaluation board.
--
--config REDWOOD_6
--	bool "Redwood-6"
--	help
--	  This option enables support for the IBM STBx25xx evaluation board.
--
--config SYCAMORE
--	bool "Sycamore"
--	help
--	  This option enables support for the IBM PPC405GPr evaluation board.
--
--config WALNUT
--	bool "Walnut"
--	help
--	  This option enables support for the IBM PPC405GP evaluation board.
--
--config XILINX_ML300
--	bool "Xilinx-ML300"
--	help
--	  This option enables support for the Xilinx ML300 evaluation board.
--
--endchoice
--
--choice
--	prompt "Machine Type"
- 	depends on 44x
--	default EBONY
--
--config BAMBOO
--	bool "Bamboo"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440EP evaluation board.
--
--config EBONY
--	bool "Ebony"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440GP evaluation board.
--
--config LUAN
--	bool "Luan"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440SP evaluation board.
--
--config OCOTEA
--	bool "Ocotea"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440GX evaluation board.
-+	default y
- 
--endchoice
-+menu "AMCC 40x options"
-+	depends on 40x
- 
--config EP405PC
--	bool "EP405PC Support"
--	depends on EP405
-+#config BUBINGA
-+#	bool "Bubinga"
-+#	depends on 40x
-+#	default n
-+#	select 405EP
-+#	help
-+#	  This option enables support for the IBM 405EP evaluation board.
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/gunzip_util.c	2007-02-19 13:52:02.000000000 +1100
+@@ -0,0 +1,140 @@
++/*
++ * Copyright 2007 David Gibson, IBM Corporation.
++ * Based on earlier work, Copyright (C) Paul Mackerras 1997.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
 +
-+#config CPCI405
-+#	bool "CPCI405"
-+#	depends on 40x
-+#	default n
-+#	select 405GP
-+#	help
-+#	  This option enables support for the CPCI405 board.
++#include <stddef.h>
++#include "string.h"
++#include "stdio.h"
++#include "ops.h"
++#include "gunzip_util.h"
 +
-+#config EP405
-+#	bool "EP405/EP405PC"
-+#	depends on 40x
-+#	default n
-+#	select 405GP
-+#	help
-+#	  This option enables support for the EP405/EP405PC boards.
++struct gunzip_state state;
 +
-+#config EP405PC
-+#	bool "EP405PC Support"
-+#	depends on EP405
-+#	default y
-+#	help
-+#	  This option enables support for the extra features of the EP405PC board.
++#define HEAD_CRC	2
++#define EXTRA_FIELD	4
++#define ORIG_NAME	8
++#define COMMENT		0x10
++#define RESERVED	0xe0
 +
-+#config REDWOOD_5
-+#	bool "Redwood-5"
-+#	depends on 40x
-+#	default n
-+#	select STB03xxx
-+#	help
-+#	  This option enables support for the IBM STB04 evaluation board.
++void gunzip_start(struct gunzip_state *state, void *src, int srclen)
++{
++	char *hdr = src;
++	int hdrlen = 0;
 +
-+#config REDWOOD_6
-+#	bool "Redwood-6"
-+#	depends on 40x
-+#	default n
-+#	select STB03xxx
-+#	help
-+#	  This option enables support for the IBM STBx25xx evaluation board.
++	memset(state, 0, sizeof(*state));
 +
-+#config SYCAMORE
-+#	bool "Sycamore"
-+#	depends on 40x
-+#	default n
-+#	select 405GPR
-+#	help
-+#	  This option enables support for the IBM PPC405GPr evaluation board.
++	/* Check for gzip magic number */
++	if ((hdr[0] == 0x1f) && (hdr[1] == 0x8b)) {
++		/* gzip data, initialize zlib parameters */
++		int r, flags;
 +
-+#config WALNUT
-+#	bool "Walnut"
-+#	depends on 40x
-+#	default y
-+#	select 405GP
-+#	help
-+#	  This option enables support for the IBM PPC405GP evaluation board.
++		state->s.workspace = state->scratch;
++		if (zlib_inflate_workspacesize() > sizeof(state->scratch)) {
++			printf("insufficient scratch space for gunzip\n\r");
++			exit();
++		}
 +
-+#config XILINX_ML300
-+#	bool "Xilinx-ML300"
-+#	depends on 40x
-+#	default y
-+#	select VIRTEX_II_PRO
-+#	help
-+#	  This option enables support for the Xilinx ML300 evaluation board.
- 
-+endmenu
- 
--# It's often necessary to know the specific 4xx processor type.
--# Fortunately, it is impled (so far) from the board type, so we
--# don't need to ask more redundant questions.
-+# 40x specific CPU modules, selected based on the board above.
- config NP405H
- 	bool
--	depends on ASH
--	default y
-+	#depends on ASH
- 
--config 440EP
-+# OAK doesn't exist but wanted to keep this around for any future 403GCX boards
-+config 403GCX
- 	bool
--	depends on BAMBOO
--	select PPC_FPU
--	default y
-+	#depends on OAK
-+	select IBM405_ERR51
- 
--config 440GP
-+config 405GP
- 	bool
--	depends on EBONY
--	default y
-+	select IBM405_ERR77
-+	select IBM405_ERR51
- 
--config 440GX
-+config 405EP
- 	bool
--	depends on OCOTEA
--	default y
- 
--config 440SP
-+config 405GPR
- 	bool
--	depends on LUAN
--	default y
- 
--config 440
-+config VIRTEX_II_PRO
- 	bool
--	depends on 440GP || 440SP || 440EP
--	default y
-+	select IBM405_ERR77
-+	select IBM405_ERR51
- 
--config 440A
-+config STB03xxx
- 	bool
--	depends on 440GX
--	default y
-+	select IBM405_ERR77
-+	select IBM405_ERR51
- 
--config IBM440EP_ERR42
--	bool
--	depends on 440EP
--	default y
-+# 40x errata/workaround config symbols, selected by the CPU models above
- 
- # All 405-based cores up until the 405GPR and 405EP have this errata.
- config IBM405_ERR77
- 	bool
--	depends on 40x && !403GCX && !405GPR && !405EP
--	default y
- 
- # All 40x-based cores, up until the 405GPR and 405EP have this errata.
- config IBM405_ERR51
- 	bool
--	depends on 40x && !405GPR && !405EP
--	default y
- 
--config BOOKE
--	bool
-+menu "AMCC 44x options"
- 	depends on 44x
--	default y
- 
--config IBM_OCP
--	bool
--	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
--	default y
-+#config BAMBOO
-+#	bool "Bamboo"
-+#	depends on 44x
-+#	default n
-+#	select 440EP
-+#	help
-+#	  This option enables support for the IBM PPC440EP evaluation board.
- 
--config XILINX_OCP
--	bool
--	depends on XILINX_ML300
--	default y
--
--config IBM_EMAC4
--	bool
--	depends on 440GX || 440SP
--	default y
--
--config BIOS_FIXUP
--	bool
--	depends on BUBINGA || EP405 || SYCAMORE || WALNUT
--	default y
--
--# OAK doesn't exist but wanted to keep this around for any future 403GCX boards
--config 403GCX
--	bool
--	depends on OAK
--	default y
--
--config 405EP
--	bool
--	depends on BUBINGA
--	default y
--
--config 405GP
--	bool
--	depends on CPCI405 || EP405 || WALNUT
--	default y
--
--config 405GPR
--	bool
--	depends on SYCAMORE
--	default y
--
--config VIRTEX_II_PRO
--	bool
--	depends on XILINX_ML300
--	default y
--
--config STB03xxx
--	bool
--	depends on REDWOOD_5 || REDWOOD_6
--	default y
--
--config EMBEDDEDBOOT
--	bool
--	depends on EP405 || XILINX_ML300
-+config EBONY
-+	bool "Ebony"
-+	depends on 44x
- 	default y
-+	select 440GP
-+	help
-+	  This option enables support for the IBM PPC440GP evaluation board.
- 
--config IBM_OPENBIOS
--	bool
--	depends on ASH || BUBINGA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
--	default y
-+#config LUAN
-+#	bool "Luan"
-+#	depends on 44x
-+#	default n
-+#	select 440SP
-+#	help
-+#	  This option enables support for the IBM PPC440SP evaluation board.
++		/* skip header */
++		hdrlen = 10;
++		flags = hdr[3];
++		if (hdr[2] != Z_DEFLATED || (flags & RESERVED) != 0) {
++			printf("bad gzipped data\n\r");
++			exit();
++		}
++		if ((flags & EXTRA_FIELD) != 0)
++			hdrlen = 12 + hdr[10] + (hdr[11] << 8);
++		if ((flags & ORIG_NAME) != 0)
++			while (hdr[hdrlen++] != 0)
++				;
++		if ((flags & COMMENT) != 0)
++			while (hdr[hdrlen++] != 0)
++				;
++		if ((flags & HEAD_CRC) != 0)
++			hdrlen += 2;
++		if (hdrlen >= srclen) {
++			printf("gunzip_start: ran out of data in header\n\r");
++			exit();
++		}
 +
-+#config OCOTEA
-+#	bool "Ocotea"
-+#	depends on 44x
-+#	default n
-+#	select 440GX
-+#	help
-+#	  This option enables support for the IBM PPC440GX evaluation board.
- 
--config PPC4xx_DMA
--	bool "PPC4xx DMA controller support"
--	depends on 4xx
-+endmenu
- 
--config PPC4xx_EDMA
-+# 44x specific CPU modules, selected based on the board above.
-+config 440EP
- 	bool
--	depends on !STB03xxx && PPC4xx_DMA
--	default y
-+	select PPC_FPU
-+	select IBM440EP_ERR42
- 
--config PPC_GEN550
-+config 440GP
- 	bool
--	depends on 4xx
--	default y
--
--choice
--	prompt "TTYS0 device and default console"
--	depends on 40x
--	default UART0_TTYS0
--
--config UART0_TTYS0
--	bool "UART0"
--
--config UART0_TTYS1
--	bool "UART1"
-+	select IBM_NEW_EMAC_ZMII
- 
--endchoice
--
--config SERIAL_SICC
--	bool "SICC Serial port support"
--	depends on STB03xxx
--
--config UART1_DFLT_CONSOLE
-+config 440GX
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
--	default y
- 
--config SERIAL_SICC_CONSOLE
-+config 440SP
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
--	default y
--endmenu
--
- 
--menu "IBM 40x options"
--	depends on 40x
--
--config SERIAL_SICC
--	bool "SICC Serial port"
--	depends on STB03xxx
--
--config UART1_DFLT_CONSOLE
-+config 440A
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
-+	depends on 440GX
- 	default y
- 
--config SERIAL_SICC_CONSOLE
-+# 44x errata/workaround config symbols, selected by the CPU models above
-+config IBM440EP_ERR42
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
--	default y
- 
--endmenu
-+#config XILINX_OCP
-+#	bool
-+#	depends on XILINX_ML300
-+#	default y
++		r = zlib_inflateInit2(&state->s, -MAX_WBITS);
++		if (r != Z_OK) {
++			printf("inflateInit2 returned %d\n\r", r);
++			exit();
++		}
++	}
 +
-+#config BIOS_FIXUP
-+#	bool
-+#	depends on BUBINGA || EP405 || SYCAMORE || WALNUT
-+#	default y
++	state->s.next_in = src + hdrlen;
++	state->s.avail_in = srclen - hdrlen;
++}
 +
-+#config PPC4xx_DMA
-+#	bool "PPC4xx DMA controller support"
-+#	depends on 4xx
++int gunzip_partial(struct gunzip_state *state, void *dst, int dstlen)
++{
++	int len;
 +
-+#config PPC4xx_EDMA
-+#	bool
-+#	depends on !STB03xxx && PPC4xx_DMA
-+#	default y
++	if (state->s.workspace) {
++		/* gunzipping */
++		int r;
++
++		state->s.next_out = dst;
++		state->s.avail_out = dstlen;
++		r = zlib_inflate(&state->s, Z_FULL_FLUSH);
++		if (r != Z_OK && r != Z_STREAM_END) {
++			printf("inflate returned %d msg: %s\n\r", r, state->s.msg);
++			exit();
++		}
++		len = state->s.next_out - (unsigned char *)dst;
++	} else {
++		/* uncompressed image */
++		len = min(state->s.avail_in, (unsigned)dstlen);
++		memcpy(dst, state->s.next_in, len);
++		state->s.next_in += len;
++		state->s.avail_in -= len;
++	}
++	return len;
++}
++
++void gunzip_exactly(struct gunzip_state *state, void *dst, int dstlen)
++{
++	int len;
++
++	len  = gunzip_partial(state, dst, dstlen);
++	if (len < dstlen) {
++		printf("gunzip_block: ran out of data\n\r");
++		exit();
++	}
++}
++
++void gunzip_discard(struct gunzip_state *state, int len)
++{
++	static char discard_buf[128];
++
++	while (len > sizeof(discard_buf)) {
++		gunzip_exactly(state, discard_buf, sizeof(discard_buf));
++		len -= sizeof(discard_buf);
++	}
++
++	if (len > 0)
++		gunzip_exactly(state, discard_buf, len);
++}
++
++int gunzip_finish(struct gunzip_state *state, void *dst, int dstlen)
++{
++	int len;
++
++	if (state->s.workspace) {
++		len = gunzip_partial(state, dst, dstlen);
++		zlib_inflateEnd(&state->s);
++	} else {
++		/* uncompressed image */
++		len = min(state->s.avail_in, (unsigned)dstlen);
++		memcpy(dst, state->s.next_in, len);
++	}
++
++	return len;
++}
+Index: working-2.6/arch/powerpc/boot/main.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/main.c	2007-02-19 13:51:27.000000000 +1100
++++ working-2.6/arch/powerpc/boot/main.c	2007-02-19 14:01:15.000000000 +1100
+@@ -14,8 +14,8 @@
+ #include "page.h"
+ #include "string.h"
+ #include "stdio.h"
+-#include "zlib.h"
+ #include "ops.h"
++#include "gunzip_util.h"
+ #include "flatdevtree.h"
+ 
+ extern void flush_cache(void *, unsigned long);
+@@ -30,6 +30,8 @@ extern char _initrd_end[];
+ extern char _dtb_start[];
+ extern char _dtb_end[];
+ 
++static struct gunzip_state gzstate;
++
+ struct addr_range {
+ 	unsigned long addr;
+ 	unsigned long size;
+@@ -42,71 +44,12 @@ static struct addr_range initrd;
+ static unsigned long elfoffset;
+ static int is_64bit;
+ 
+-/* scratch space for gunzip; 46912 is from zlib_inflate_workspacesize() */
+-static char scratch[46912];
+ static char elfheader[256];
+ 
+ typedef void (*kernel_entry_t)(unsigned long, unsigned long, void *);
+ 
+ #undef DEBUG
+ 
+-#define HEAD_CRC	2
+-#define EXTRA_FIELD	4
+-#define ORIG_NAME	8
+-#define COMMENT		0x10
+-#define RESERVED	0xe0
+-
+-static void gunzip(void *dst, int dstlen, unsigned char *src, int *lenp)
+-{
+-	z_stream s;
+-	int r, i, flags;
+-
+-	/* skip header */
+-	i = 10;
+-	flags = src[3];
+-	if (src[2] != Z_DEFLATED || (flags & RESERVED) != 0) {
+-		printf("bad gzipped data\n\r");
+-		exit();
+-	}
+-	if ((flags & EXTRA_FIELD) != 0)
+-		i = 12 + src[10] + (src[11] << 8);
+-	if ((flags & ORIG_NAME) != 0)
+-		while (src[i++] != 0)
+-			;
+-	if ((flags & COMMENT) != 0)
+-		while (src[i++] != 0)
+-			;
+-	if ((flags & HEAD_CRC) != 0)
+-		i += 2;
+-	if (i >= *lenp) {
+-		printf("gunzip: ran out of data in header\n\r");
+-		exit();
+-	}
+-
+-	if (zlib_inflate_workspacesize() > sizeof(scratch)) {
+-		printf("gunzip needs more mem\n");
+-		exit();
+-	}
+-	memset(&s, 0, sizeof(s));
+-	s.workspace = scratch;
+-	r = zlib_inflateInit2(&s, -MAX_WBITS);
+-	if (r != Z_OK) {
+-		printf("inflateInit2 returned %d\n\r", r);
+-		exit();
+-	}
+-	s.next_in = src + i;
+-	s.avail_in = *lenp - i;
+-	s.next_out = dst;
+-	s.avail_out = dstlen;
+-	r = zlib_inflate(&s, Z_FULL_FLUSH);
+-	if (r != Z_OK && r != Z_STREAM_END) {
+-		printf("inflate returned %d msg: %s\n\r", r, s.msg);
+-		exit();
+-	}
+-	*lenp = s.next_out - (unsigned char *) dst;
+-	zlib_inflateEnd(&s);
+-}
+-
+ static int is_elf64(void *hdr)
+ {
+ 	Elf64_Ehdr *elf64 = hdr;
+@@ -132,8 +75,8 @@ static int is_elf64(void *hdr)
+ 		return 0;
+ 
+ 	elfoffset = (unsigned long)elf64ph->p_offset;
+-	vmlinux.size = (unsigned long)elf64ph->p_filesz + elfoffset;
+-	vmlinux.memsize = (unsigned long)elf64ph->p_memsz + elfoffset;
++	vmlinux.size = (unsigned long)elf64ph->p_filesz;
++	vmlinux.memsize = (unsigned long)elf64ph->p_memsz;
+ 
+ 	is_64bit = 1;
+ 	return 1;
+@@ -164,8 +107,8 @@ static int is_elf32(void *hdr)
+ 		return 0;
+ 
+ 	elfoffset = elf32ph->p_offset;
+-	vmlinux.size = elf32ph->p_filesz + elf32ph->p_offset;
+-	vmlinux.memsize = elf32ph->p_memsz + elf32ph->p_offset;
++	vmlinux.size = elf32ph->p_filesz;
++	vmlinux.memsize = elf32ph->p_memsz;
+ 	return 1;
+ }
+ 
+@@ -177,13 +120,8 @@ static void prep_kernel(unsigned long a1
+ 	vmlinuz.size = (unsigned long)(_vmlinux_end - _vmlinux_start);
+ 
+ 	/* gunzip the ELF header of the kernel */
+-	if (*(unsigned short *)vmlinuz.addr == 0x1f8b) {
+-		len = vmlinuz.size;
+-		gunzip(elfheader, sizeof(elfheader),
+-				(unsigned char *)vmlinuz.addr, &len);
+-	} else
+-		memcpy(elfheader, (const void *)vmlinuz.addr,
+-		       sizeof(elfheader));
++	gunzip_start(&gzstate, (void *)vmlinuz.addr, vmlinuz.size);
++	gunzip_exactly(&gzstate, elfheader, sizeof(elfheader));
+ 
+ 	if (!is_elf64(elfheader) && !is_elf32(elfheader)) {
+ 		printf("Error: not a valid PPC32 or PPC64 ELF file!\n\r");
+@@ -192,10 +130,10 @@ static void prep_kernel(unsigned long a1
+ 	if (platform_ops.image_hdr)
+ 		platform_ops.image_hdr(elfheader);
+ 
+-	/* We need to alloc the memsize plus the file offset since gzip
+-	 * will expand the header (file offset), then the kernel, then
+-	 * possible rubbish we don't care about. But the kernel bss must
+-	 * be claimed (it will be zero'd by the kernel itself)
++	/* We need to alloc the memsize: gzip will expand the kernel
++	 * text/data, then possible rubbish we don't care about. But
++	 * the kernel bss must be claimed (it will be zero'd by the
++	 * kernel itself)
+ 	 */
+ 	printf("Allocating 0x%lx bytes for kernel ...\n\r", vmlinux.memsize);
+ 	vmlinux.addr = (unsigned long)malloc(vmlinux.memsize);
+@@ -237,24 +175,13 @@ static void prep_kernel(unsigned long a1
+ 	}
+ 
+ 	/* Eventually gunzip the kernel */
+-	if (*(unsigned short *)vmlinuz.addr == 0x1f8b) {
+-		printf("gunzipping (0x%lx <- 0x%lx:0x%0lx)...",
+-		       vmlinux.addr, vmlinuz.addr, vmlinuz.addr+vmlinuz.size);
+-		len = vmlinuz.size;
+-		gunzip((void *)vmlinux.addr, vmlinux.memsize,
+-			(unsigned char *)vmlinuz.addr, &len);
+-		printf("done 0x%lx bytes\n\r", len);
+-	} else {
+-		memmove((void *)vmlinux.addr,(void *)vmlinuz.addr,
+-			vmlinuz.size);
+-	}
+-
+-	/* Skip over the ELF header */
+-#ifdef DEBUG
+-	printf("... skipping 0x%lx bytes of ELF header\n\r",
+-			elfoffset);
+-#endif
+-	vmlinux.addr += elfoffset;
++	printf("gunzipping (0x%lx <- 0x%lx:0x%0lx)...",
++	       vmlinux.addr, vmlinuz.addr, vmlinuz.addr+vmlinuz.size);
++	/* discard up to the actual load data */
++	gunzip_discard(&gzstate, elfoffset - sizeof(elfheader));
++	len = gunzip_finish(&gzstate, (void *)vmlinux.addr,
++			    vmlinux.memsize);
++	printf("done 0x%lx bytes\n\r", len);
+ 
+ 	flush_cache((void *)vmlinux.addr, vmlinux.size);
+ }
+Index: working-2.6/arch/powerpc/boot/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-19 13:51:30.000000000 +1100
++++ working-2.6/arch/powerpc/boot/Makefile	2007-02-19 14:00:50.000000000 +1100
+@@ -41,7 +41,8 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
+ 		$(addprefix $(obj)/,$(zlibheader))
+ 
+ src-wlib := string.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+-		ns16550.c serial.c simple_alloc.c div64.S util.S $(zlib)
++		ns16550.c serial.c simple_alloc.c div64.S util.S \
++		gunzip_util.c $(zlib)
+ src-plat := of.c
+ src-boot := crt0.S $(src-wlib) $(src-plat) empty.c
+ 
+Index: working-2.6/arch/powerpc/boot/gunzip_util.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/gunzip_util.h	2007-02-19 13:51:52.000000000 +1100
+@@ -0,0 +1,30 @@
++/*
++ * Decompression convenience functions
++ *
++ * Copyright 2007 David Gibson, IBM Corporation.
++ *
++ * This file is licensed under the terms of the GNU General Public
++ * License version 2.  This program is licensed "as is" without any
++ * warranty of any kind, whether express or implied.
++ */
++#ifndef _PPC_BOOT_GUNZIP_UTIL_H_
++#define _PPC_BOOT_GUNZIP_UTIL_H_
++
++#include "zlib.h"
++
++/* scratch space for gunzip; 46912 is from zlib_inflate_workspacesize() */
++#define GUNZIP_SCRATCH_SIZE	46912
++
++struct gunzip_state {
++	z_stream s;
++	char scratch[46912];
++};
++
++void gunzip_start(struct gunzip_state *state, void *src, int srclen);
++int gunzip_partial(struct gunzip_state *state, void *dst, int dstlen);
++void gunzip_exactly(struct gunzip_state *state, void *dst, int len);
++void gunzip_discard(struct gunzip_state *state, int len);
++int gunzip_finish(struct gunzip_state *state, void *dst, int len);
++
++#endif /* _PPC_BOOT_GUNZIP_UTIL_H_ */
++
