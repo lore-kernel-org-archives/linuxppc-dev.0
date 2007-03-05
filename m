@@ -1,27 +1,25 @@
-Return-Path: <robertst@tihlde.org>
-Received: from osl1smout1.broadpark.no (osl1smout1.broadpark.no [80.202.4.58])
-	by ozlabs.org (Postfix) with ESMTP id 1C8C9DDF2A
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DC937DDDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  5 Mar 2007 22:21:55 +1100 (EST)
-Received: from osl1sminn1.broadpark.no ([80.202.4.59])
-	by osl1smout1.broadpark.no
-	(Sun Java System Messaging Server 6.1 HotFix 0.05 (built Oct 21 2004))
-	with ESMTP id <0JEF007ZGGWCZP20@osl1smout1.broadpark.no> for
-	linuxppc-embedded@ozlabs.org; Mon, 05 Mar 2007 12:21:49 +0100 (CET)
-Received: from [127.0.0.1] ([84.48.53.104]) by osl1sminn1.broadpark.no
-	(Sun Java System Messaging Server 6.1 HotFix 0.05 (built Oct 21 2004))
-	with ESMTP id <0JEF00JPBGWBTDC0@osl1sminn1.broadpark.no> for
-	linuxppc-embedded@ozlabs.org; Mon, 05 Mar 2007 12:21:48 +0100 (CET)
-Date: Mon, 05 Mar 2007 12:21:26 +0100
-From: Robert Staven <robertst@tihlde.org>
-Subject: Re: Getting the LED light up... (A&M Rattler 8250PCI linux 2.6.13-AM)
-In-reply-to: <200703050927.05201.laurent.pinchart@technotrade.biz>
-To: linuxppc-embedded@ozlabs.org
-Message-id: <45EBFD36.1040801@tihlde.org>
-MIME-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1; format=flowed
-References: <45EAB26F.1060001@tihlde.org>
-	<200703050927.05201.laurent.pinchart@technotrade.biz>
+	Tue,  6 Mar 2007 01:54:15 +1100 (EST)
+In-Reply-To: <45EBF6B3.2080808@246tNt.com>
+References: <20070302104718.GU4397@moe.telargo.com>
+	<20070305100802.GV4397@moe.telargo.com>
+	<45EBEFEE.9030309@246tNt.com>
+	<20070305104031.GW4397@moe.telargo.com>
+	<45EBF6B3.2080808@246tNt.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <D1381E0F-9C2D-4D51-ABB6-41D2EA270EF3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH try3] lite5200(b) support for i2c
+Date: Mon, 5 Mar 2007 08:53:20 -0600
+To: Sylvain Munaut <tnt@246tNt.com>
+Cc: Domen Puncer <domen.puncer@telargo.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,23 +30,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- >> #define P0        0x8000 // P0 bit in registers
- >> #define P1        0x4000 // P1 bit in registers
- >> #define P2        0x2000 // P2 bit in registers
- >
- >
- > Shouldn't that be
- > #define P0        0x80000000 // P0 bit in registers
- > #define P1        0x40000000 // P1 bit in registers
- > #define P2        0x20000000 // P2 bit in registers
- > ?
 
-<shamed>Hmmm, next time I'll better use my calculator figuring out how 
-many digits there is in a 32bit hex number... :P </shamed>
+On Mar 5, 2007, at 4:53 AM, Sylvain Munaut wrote:
 
-Many thanks for the assistance Laurent! (the LED came to life)
+> Domen Puncer wrote:
+>> Add fsl-i2c to mpc5200 i2c node in device tree, and enable FSL_SOC.
+>>
+>> Tested to work with built-in eeprom on lite5200b.
+>>
+>>
+>> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+>>
+> Acked-by: Sylvain Munaut <tnt@246tNt.com>
+>
+>
+> I'll make sure this is included in my next merge batch to Paul.
 
-And you all may have a good long laugh of me now, I deserve it! :)
+Driver patches should go via the driver subsystem maintainers and not  
+Paul.
 
-br
-Robert
+- k
