@@ -1,37 +1,18 @@
-Return-Path: <jan-hinnerk.dumjahn@arcor.de>
-Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
-	[151.189.21.51])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A1E3BDDF27
+Return-Path: <dgalari@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.238])
+	by ozlabs.org (Postfix) with ESMTP id D9DF2DDF6C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Mar 2007 03:13:29 +1100 (EST)
-Received: from mail-in-03-z2.arcor-online.net (mail-in-03-z2.arcor-online.net
-	[151.189.8.15])
-	by mail-in-11.arcor-online.net (Postfix) with ESMTP id 295DE12231
+	Tue,  6 Mar 2007 04:57:02 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id i31so1499818wxd
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  5 Mar 2007 17:13:20 +0100 (CET)
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
-	by mail-in-03-z2.arcor-online.net (Postfix) with ESMTP id 0ECE02D3802
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  5 Mar 2007 17:13:19 +0100 (CET)
-Received: from [192.168.1.51] (pD95FF933.dip.t-dialin.net [217.95.249.51])
-	(Authenticated sender: jan-hinnerk.dumjahn@arcor.de)
-	by mail-in-04.arcor-online.net (Postfix) with ESMTP id C756D2B6A4C
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  5 Mar 2007 17:13:18 +0100 (CET)
-From: Jan-Hinnerk Dumjahn <jan-hinnerk.dumjahn@arcor.de>
+	Mon, 05 Mar 2007 09:57:00 -0800 (PST)
+Message-ID: <3184691b0703050957n6ccbdd84x6e01dba9985d5b2c@mail.gmail.com>
+Date: Mon, 5 Mar 2007 18:57:00 +0100
+From: "Juan Lopez" <dgalari@gmail.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Problems with PHY on STK5200
-Date: Mon, 5 Mar 2007 17:12:28 +0100
-References: <20070301185745.254BB353C3A@atlas.denx.de>
-In-Reply-To: <20070301185745.254BB353C3A@atlas.denx.de>
+Subject: boot LITE5200B
 MIME-Version: 1.0
-Message-Id: <200703051712.29021.jan-hinnerk.dumjahn@arcor.de>
-Content-Type: text/plain;
-  charset="iso-8859-1"
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -42,66 +23,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 01 March 2007 19:57, Wolfgang Denk wrote:
+Hello all,
 
-> In message <200703011216.57611.jan-hinnerk.dumjahn@arcor.de> you wrote:
-> > I'm trying to compile a recent kernel from DENX "linuxppc_2_4_devel" for
-> > my STK5200 using ELDK 3.1.1.
->
-> It should compile and run fine.
+I have a problem to boot a linux image in a Freescale LITE5200B, I
+compile a Kernel image and a rootfs image with the scripts where I
+found in the page http://cross-stuff.sourceforge.net/ , the LITE5200B
+post in the screen:
 
-It is compiling fine and it is basically working, but I get lot of receive 
-errors on the link, making it (almost) unusable for NFS root file system.
+## Booting image at ff0a0000 ...
+   Image Name:   Linux MPC5200
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    1298549 Bytes =  1.2 MB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Uncompressing Kernel Image ... OK
+id mach(): done
+MMU:enter
+MMU:hw init
+MMU:mapin
+MMU:setio
+MMU:exit
+setup_arch: enter
+setup_arch: bootmem
+arch: exit
 
-If I connect the STK5200 directly to my workstation using a crossover cable, 
-everything works fine.
 
-> > It seems that the current kernel there is not configuring the PHY. It
-> > looks like the link is configured for full-duplex (although it should be
-> > configured half-duplex).
->
-> What makes you think it should be half duplex only?
+and my  variables are:
 
-The old version (up to and including cc891b92c2540487be1eeba4b5d38c913570d339) 
-is negotiating half duplex. My linux workstation is also using half duplex if 
-plugged into the same hub (a D-Link DFE-905DX).
+=> printenv
+baudrate=115200
+preboot=echo;echo Type "run flash_nfs" to mount root filesystem over NFS;echo
+skipnetcheck=y
+skippcicheck=y
+skipidecheck=y
+verify=n
+netdev=eth0
+nfsargs=setenv bootargs root=/dev/nfs rw nfsroot=$(serverip):$(rootpath)
+ramargs=setenv bootargs root=/dev/ram rw
+addip=setenv bootargs $(bootargs)
+ip=$(ipaddr):$(serverip):$(gatewayip):$(netmask):$(hostname):$(netdev):off
+panic=1
+flash_nfs=run nfsargs addip;bootm $(kernel_addr)
+flash_self=run ramargs addip;bootm $(kernel_addr) $(ramdisk_addr)
+net_nfs=tftp 200000 $(bootfile);run nfsargs addip;bootm
+rootpath=/opt/eldk/ppc_82xx
+autoload=no
+autostart=no
+ethaddr=00:04:9f:00:5b:46
+ethact=FEC ETHERNET
+mtd_args=setenv bootargs
+root=8.142.77:10.48.142.152:10.48.142.152:255.255.255.0:::off
+jff2args=setenv bootargs root=/dev/mtdblock0 rw rootfstype=jffs2
+flash_jffs2=run jffs2args
+kernel_adrr=0xFF0A0000
+kernel_addr=0xFF0A0000
+hostname=dhcp30-56139
+dnsip=10.30.1.2
+bootfile=uImage-LITE5200
+ipddr=192.168.0.20
+filesize=f8
+fileaddr=200000
+gatewayip=192.168.0.1
+netmask=255.255.0.0
+ipaddr=192.168.0.20
+serverip=192.168.0.11
+bootdelay=3
+bootargs=root=/dev/mtdblock3 ro console=ttyS1 rootfstype=jffs2
+bootcmd=bootm 0xFF0A0000
+stdin=serial
+stdout=serial
+stderr=serial
 
-However, I'm not 100% sure that the PHY on STK5200 is operating with 
-full-duplex, because the link status is not reported by the kernel.
+Environment size: 1348/65524 bytes
 
-> > BTW: What is the normal way to reference a commit in a git-repository? I
-> > haven't seen any revision numbers.
->
-> You specify the git commit ID.
 
-I hope the number above is a commit-ID...
+somebody knows that it happens??
 
-> > Can anybody explain what the driver should to? Or even better has some
-> > patch to make it work?
->
-> The driver should work :-) And it certainly does for me.
-
-It certainly doesn't work for me ;-(
-
-All least newer versions of the kernel don't register "mdio_timer_callback()". 
-So, link up report isn't working.
-This is caused by two occurences of the following code in mpc5xxx_fec_setup().
-
-if(!reinit) {
-...
-  if(reinit) {
-...
-  }
-...
-}
-
-Nevertheless, the MDIO-code is doing something useful. Without CONFIG_USE_MDIO 
-I don't get a single packet through the network interface (using either hub 
-or crossover-cable).
-
-I'm willing to do further tests and provide more information. However, I need 
-some advice on the direction, because I don't understand enough of the code, 
-yet.
-
-Best regards,
-  Jan-Hinnerk Dumjahn
+Thanks
