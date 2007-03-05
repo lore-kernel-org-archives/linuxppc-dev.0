@@ -1,10 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 11/15] zImage wrapper for Ebony
+Subject: [PATCH 12/15] Support for Ebony in arch/powerpc
 In-Reply-To: <20070305032307.GB31417@localhost.localdomain>
-Message-Id: <20070305032452.EDB2BDDF1D@ozlabs.org>
-Date: Mon,  5 Mar 2007 14:24:52 +1100 (EST)
+Message-Id: <20070305032453.39F2CDDF18@ozlabs.org>
+Date: Mon,  5 Mar 2007 14:24:53 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,457 +14,987 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds support for building a zImage wrapper suitable for the
-Ebony (440GP) evaluation board.  This supports booting both from uboot
-(old versions which don't supply a flattened device tree) and IBM
-Openbios (aka "treeboot").
+This patch adds platform support code for the Ebony (440GP) evaluation
+board.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/boot/Makefile |   33 +++++++
- arch/powerpc/boot/dcr.h    |   85 ++++++++++++++++++++
- arch/powerpc/boot/ebony.c  |  188 +++++++++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/mktree.c |   10 --
- arch/powerpc/boot/wrapper  |   33 +++++++
- 5 files changed, 342 insertions(+), 7 deletions(-)
+ arch/powerpc/configs/ebony_defconfig |  886 +++++++++++++++++++++++++++++++++++
+ arch/powerpc/platforms/4xx/Makefile  |    2 
+ arch/powerpc/platforms/4xx/ebony.c   |   69 ++
+ 3 files changed, 956 insertions(+), 1 deletion(-)
 
-Index: working-2.6/arch/powerpc/boot/Makefile
+Index: working-2.6/arch/powerpc/platforms/4xx/Makefile
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-26 13:25:31.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-02-26 13:25:33.000000000 +1100
-@@ -43,7 +43,7 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
- src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c $(zlib)
--src-plat := of.c
-+src-plat := of.c ebony.c
- src-boot := $(src-wlib) $(src-plat) empty.c
- 
- src-boot := $(addprefix $(obj)/, $(src-boot))
-@@ -95,6 +95,12 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-
- $(obj)/wrapper.a: $(obj-wlib)
- 	$(call cmd,bootar)
- 
-+quiet_cmd_dtc = DTC     $@
-+      cmd_dtc = $(dtc) -O dtb -o $@ -b 0 -V 16 $<
-+
-+$(obj)/%.dtb: $(srctree)/$(src)/dts/%.dts
-+	$(call if_changed,dtc)
-+
- hostprogs-y	:= addnote addRamDisk hack-coff mktree
- 
- extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
-@@ -103,6 +109,8 @@ extra-y		:= $(obj)/wrapper.a $(obj-plat)
- wrapper		:=$(srctree)/$(src)/wrapper
- wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree)
- 
-+dtc		:= dtc
-+
- #############
- # Bits for building various flavours of zImage
- 
-@@ -120,6 +128,13 @@ quiet_cmd_wrap_initrd = WRAP    $@
-       cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
- 				-i $(obj)/ramdisk.image.gz vmlinux
- 
-+quiet_cmd_wrap_dtb	= WRAP    $@
-+      cmd_wrap_dtb	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-+				-d $3 vmlinux
-+quiet_cmd_wrap_dtb_initrd = WRAP    $@
-+      cmd_wrap_dtb_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-+				-d $3 -i $(obj)/ramdisk.image.gz vmlinux
-+
- $(obj)/zImage.chrp: vmlinux $(wrapperbits)
- 	$(call cmd,wrap,chrp)
- 
-@@ -156,6 +171,21 @@ $(obj)/zImage.ps3: vmlinux
- $(obj)/zImage.initrd.ps3: vmlinux
- 	@echo "  WARNING zImage.initrd.ps3 not supported (yet)"
- 
-+$(obj)/zImage.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb
-+	$(call cmd,wrap_dtb,ebony,$(obj)/ebony.dtb)
-+
-+$(obj)/zImage.initrd.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/ramdisk.image.gz
-+	$(call cmd,wrap_dtb_initrd,ebony,$(obj)/ebony.dtb)
-+
-+$(obj)/zImage.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
-+	$(call cmd,wrap_dtb,ebony-tree,$(obj)/ebony.dtb)
-+
-+$(obj)/zImage.initrd.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
-+	$(call cmd,wrap_dtb_initrd,ebony-tree,$(obj)/ebony.dtb)
-+
-+$(obj)/uImage.ebony: vmlinux $(wrapperbits)  $(obj)/ebony.dtb
-+	$(call cmd,wrap_dtb,ebony-uboot,$(obj)/ebony.dtb)
-+
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call cmd,wrap,uboot)
- 
-@@ -167,6 +197,7 @@ image-$(CONFIG_PPC_CELLEB)		+= zImage.ps
- image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
- image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
-+image-$(CONFIG_EBONY)			+= zImage.ebony-elf zImage.ebony uImage.ebony
- image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
- 
- # For 32-bit powermacs, build the COFF and miboot images
-Index: working-2.6/arch/powerpc/boot/ebony.c
+--- working-2.6.orig/arch/powerpc/platforms/4xx/Makefile	2006-12-08 10:42:48.000000000 +1100
++++ working-2.6/arch/powerpc/platforms/4xx/Makefile	2007-02-28 13:38:44.000000000 +1100
+@@ -1 +1 @@
+-# empty makefile so make clean works
+\ No newline at end of file
++obj-$(CONFIG_EBONY)	:= ebony.o
+Index: working-2.6/arch/powerpc/platforms/4xx/ebony.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/ebony.c	2007-02-26 13:46:05.000000000 +1100
-@@ -0,0 +1,188 @@
++++ working-2.6/arch/powerpc/platforms/4xx/ebony.c	2007-02-28 13:38:44.000000000 +1100
+@@ -0,0 +1,69 @@
 +/*
-+ * Copyright 2007 David Gibson, IBM Corporation.
++ * Ebony board specific routines
 + *
-+ * Based on earlier code:
-+ * Copyright (C) Paul Mackerras 1997.
++ * Matt Porter <mporter@kernel.crashing.org>
 + * Copyright 2002-2005 MontaVista Software Inc.
-+ * Copyright (c) 2003, 2004 Zultys Technologies
-+
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
++ *
++ * Eugene Surovegin <eugene.surovegin@zultys.com> or <ebs@ebshome.net>
++ * Copyright (c) 2003-2005 Zultys Technologies
++ *
++ * Rewritten and ported to the merged powerpc tree:
++ * Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
 + */
-+#include <stdarg.h>
-+#include <stddef.h>
-+#include "types.h"
-+#include "elf.h"
-+#include "string.h"
-+#include "stdio.h"
-+#include "page.h"
-+#include "ops.h"
-+#include "dcr.h"
 +
-+extern char _start[];
-+extern char _end[];
-+extern char _dtb_start[];
-+extern char _dtb_end[];
++#include <linux/init.h>
++#include <asm/machdep.h>
++#include <asm/prom.h>
++#include <asm/udbg.h>
++#include <asm/time.h>
++#include <asm/uic.h>
++#include <asm/of_platform.h>
 +
-+BSS_STACK(4096);
++static struct of_device_id ebony_of_bus[] = {
++	{ .type = "ibm,plb", },
++	{ .type = "ibm,opb", },
++	{},
++};
 +
-+#define OPENBIOS_MAC_BASE	0xfffffe0c
-+#define OPENBIOS_MAC_OFFSET	0xc
-+
-+static inline u32 mfpvr(void)
++static int __init ebony_device_probe(void)
 +{
-+	u32 pvr;
-+	asm volatile ("mfpvr	%0" : "=r"(pvr));
-+	return pvr;
++	if (! machine_is(ebony))
++		return 0;
++
++	of_platform_bus_probe(NULL, ebony_of_bus, NULL);
++
++	return 0;
++}
++device_initcall(ebony_device_probe);
++
++/*
++ * Called very early, MMU is off, device-tree isn't unflattened
++ */
++static int __init ebony_probe(void)
++{
++	unsigned long root = of_get_flat_dt_root();
++
++	if (!of_flat_dt_is_compatible(root, "Ebony"))
++		return 0;
++
++	return 1;
 +}
 +
-+void poke_tree(const char *path, const char *name, void *val, int size)
++static void __init ebony_setup_arch(void)
 +{
-+	void *devp;
-+	int ret;
-+
-+	devp = finddevice(path);
-+	if (! devp) {
-+		printf("Couldn't find node %s to poke\n\r", path);
-+		exit();
-+	}
-+
-+	ret = setprop(devp, name, val, size);
-+	if (ret != 0) {
-+		printf("Couldn't set %s property in %s\n\r", name, path);
-+		exit();
-+	}
 +}
 +
-+#define poke_tree_val(path, name, val)	\
-+	do { \
-+		typeof(val) x = val; \
-+		poke_tree((path),(name),&x,sizeof(x)); \
-+	} while (0)
-+
-+/* Read the 44x memory controller to get size of system memory. */
-+static void ibm44x_fixup_memsize(void)
-+{
-+	int i;
-+	unsigned long memsize, bank_config;
-+	u32 memreg[3];
-+
-+	memsize = 0;
-+	for (i = 0; i < ARRAY_SIZE(sdram_bxcr); i++) {
-+		mtdcr(DCRN_SDRAM0_CFGADDR, sdram_bxcr[i]);
-+		bank_config = mfdcr(DCRN_SDRAM0_CFGDATA);
-+
-+		if (bank_config & SDRAM_CONFIG_BANK_ENABLE)
-+			memsize += SDRAM_CONFIG_BANK_SIZE(bank_config);
-+	}
-+
-+	printf("PPC44X: %dM RAM\n\r", memsize / 1024 / 1024);
-+	memreg[0] = memreg[1] = 0;
-+	memreg[2] = memsize;
-+	poke_tree("/memory", "reg", memreg, sizeof(memreg));
-+}
-+
-+/* Calculate 440GP clocks */
-+void ibm440gp_fixup_clocks(unsigned int sysclk, unsigned int ser_clk)
-+{
-+	u32 sys0 = mfdcr(DCRN_CPC0_SYS0);
-+	u32 cr0 = mfdcr(DCRN_CPC0_CR0);
-+	u32 cpu, plb, opb, ebc, tb, uart0, uart1, m;
-+	u32 opdv = CPC0_SYS0_OPDV(sys0);
-+	u32 epdv = CPC0_SYS0_EPDV(sys0);
-+
-+	if (sys0 & CPC0_SYS0_BYPASS) {
-+		/* Bypass system PLL */
-+		cpu = plb = sysclk;
-+	} else {
-+		if (sys0 & CPC0_SYS0_EXTSL)
-+			/* PerClk */
-+			m = CPC0_SYS0_FWDVB(sys0) * opdv * epdv;
-+		else
-+			/* CPU clock */
-+			m = CPC0_SYS0_FBDV(sys0) * CPC0_SYS0_FWDVA(sys0);
-+		cpu = sysclk * m / CPC0_SYS0_FWDVA(sys0);
-+		plb = sysclk * m / CPC0_SYS0_FWDVB(sys0);
-+	}
-+
-+	opb = plb / opdv;
-+	ebc = opb / epdv;
-+
-+	/* FIXME: Check if this is for all 440GP, or just Ebony */
-+	if ((mfpvr() & 0xf0000fff) == 0x40000440)
-+		/* Rev. B 440GP, use external system clock */
-+		tb = sysclk;
-+	else
-+		/* Rev. C 440GP, errata force us to use internal clock */
-+		tb = cpu;
-+
-+	if (cr0 & CPC0_CR0_U0EC)
-+		/* External UART clock */
-+		uart0 = ser_clk;
-+	else
-+		/* Internal UART clock */
-+		uart0 = plb / CPC0_CR0_UDIV(cr0);
-+
-+	if (cr0 & CPC0_CR0_U1EC)
-+		/* External UART clock */
-+		uart1 = ser_clk;
-+	else
-+		/* Internal UART clock */
-+		uart1 = plb / CPC0_CR0_UDIV(cr0);
-+
-+	printf("PPC440GP: SysClk = %dMHz (%x)\n\r",
-+	       (sysclk + 500000) / 1000000, sysclk);
-+	printf("PPC440GP: CPU clock = %dMHz (%x)\n\r",
-+	       (cpu + 500000) / 1000000, cpu);
-+	poke_tree_val("/cpus/PowerPC,440GP", "clock-frequency", cpu);
-+	printf("PPC440GP: timebase frequency = %dMHz (%x)\n\r",
-+	       (tb + 500000) / 1000000, tb);
-+	poke_tree_val("/cpus/PowerPC,440GP", "timebase-frequency", tb);
-+	printf("PPC440GP: PLB clock = %dMHz (%x)\n\r",
-+	       (plb + 500000) / 1000000, plb);
-+	poke_tree_val("/plb", "clock-frequency", plb);
-+	printf("PPC440GP: OPB clock = %dMHz (%x)\n\r",
-+	       (opb + 500000) / 1000000, opb);
-+	poke_tree_val("/plb/opb", "clock-frequency", opb);
-+	printf("PPC440GP: EBC clock = %dMHz (%x)\n\r",
-+	       (ebc + 500000) / 1000000, ebc);
-+	printf("PPC440GP: UART0 clock = %dMHz (%x)\n\r",
-+	       (uart0 + 500000) / 1000000, uart0);
-+	poke_tree_val("/plb/opb/serial@140000200", "clock-frequency", uart0);
-+	printf("PPC440GP: UART1 clock = %dMHz (%x)\n\r",
-+	       (uart1 + 500000) / 1000000, uart1);
-+	poke_tree_val("/plb/opb/serial@140000200", "clock-frequency", uart1);
-+}
-+
-+static void ebony_fixups(void)
-+{
-+	// FIXME: sysclk should be derived by reading the FPGA registers
-+	unsigned long sysclk = 33000000;
-+	u8 *mac0, *mac1;
-+
-+	ibm440gp_fixup_clocks(sysclk, 6 * 1843200);
-+	ibm44x_fixup_memsize();
-+
-+	mac0 = (u8 *)OPENBIOS_MAC_BASE;
-+	mac1 = (u8 *)(OPENBIOS_MAC_BASE + OPENBIOS_MAC_OFFSET);
-+	printf("Ebony: EMAC0 addr %02x:%02x:%02x:%02x:%02x:%02x\n\r",
-+	       mac0[0], mac0[1], mac0[2], mac0[3], mac0[4], mac0[5]);
-+	poke_tree("/plb/opb/ethernet@140000800", "local-mac-address",
-+		  mac0, 6);
-+	printf("Ebony: EMAC1 addr %02x:%02x:%02x:%02x:%02x:%02x\n\r",
-+	       mac1[0], mac1[1], mac1[2], mac1[3], mac1[4], mac1[5]);
-+	poke_tree("/plb/opb/ethernet@140000900", "local-mac-address",
-+		  mac1, 6);
-+}
-+
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
-+{
-+	u32 heapsize = 0x8000000 - (u32)_end; /* 128M */
-+
-+	platform_ops.fixups = ebony_fixups;
-+	simple_alloc_init(_end, heapsize, 32, 64);
-+	ft_init(_dtb_start, 0, 32);
-+	serial_console_init();
-+}
-Index: working-2.6/arch/powerpc/boot/wrapper
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/wrapper	2007-02-26 13:25:31.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/wrapper	2007-02-26 13:25:33.000000000 +1100
-@@ -137,6 +137,12 @@ miboot|uboot)
-     ksection=image
-     isection=initrd
-     ;;
-+*-tree)
-+    platformo=$object/"${platform%%-tree}".o
-+    ;;
-+*-uboot)
-+    platformo=$object/"${platform%%-uboot}".o
-+    ;;
- esac
- 
- vmz="$tmpdir/`basename \"$kernel\"`.$ext"
-@@ -206,4 +212,31 @@ pmaccoff)
-     ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
-     $object/hack-coff "$ofile"
-     ;;
-+*-tree)
-+    mv "$ofile" "$ofile.elf"
-+    entry=`objdump -f "$ofile.elf" | grep '^start address ' | \
-+	cut -d' ' -f3`
-+    $object/mktree "$ofile.elf" "$ofile" 0x00400000 "$entry"
-+    if [ -z "$cacheit" ]; then
-+	rm -f "$ofile.elf"
-+    fi
-+    exit 0
-+    ;;
-+*-uboot)
-+    mv "$ofile" "$ofile.elf"
-+    version=`${CROSS}strings "$kernel" | grep '^Linux version [-0-9.]' | \
-+	cut -d' ' -f3`
-+    if [ -n "$version" ]; then
-+	version="-n Linux-$version"
-+    fi
-+    entry=`objdump -f "$ofile.elf" | grep '^start address ' | \
-+	cut -d' ' -f3`
-+    ${CROSS}objcopy -O binary "$ofile.elf" "$ofile.bin"
-+    mkimage -A ppc -O linux -T kernel -C none -a 0x00400000 -e $entry \
-+	$version -d "$ofile.bin" "$ofile"
-+    if [ -z "$cacheit" ]; then
-+	rm -f "$ofile.elf" "$ofile.bin"
-+    fi
-+    exit 0
-+    ;;
- esac
-Index: working-2.6/arch/powerpc/boot/mktree.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/mktree.c	2007-02-26 13:25:31.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/mktree.c	2007-02-26 13:25:33.000000000 +1100
-@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
- 	struct	stat	st;
- 	boot_block_t	bt;
- 
--	if (argc < 3) {
--		fprintf(stderr, "usage: %s <zImage-file> <boot-image> [entry-point]\n",argv[0]);
-+	if (argc < 5) {
-+		fprintf(stderr, "usage: %s <zImage-file> <boot-image> <load address> <entry point>\n",argv[0]);
- 		exit(1);
- 	}
- 
-@@ -61,10 +61,8 @@ int main(int argc, char *argv[])
- 	bt.bb_magic = htonl(0x0052504F);
- 
- 	/* If we have the optional entry point parameter, use it */
--	if (argc == 4)
--		bt.bb_dest = bt.bb_entry_point = htonl(strtoul(argv[3], NULL, 0));
--	else
--		bt.bb_dest = bt.bb_entry_point = htonl(0x500000);
-+	bt.bb_dest = htonl(strtoul(argv[3], NULL, 0));
-+	bt.bb_entry_point = htonl(strtoul(argv[4], NULL, 0));
- 
- 	/* We know these from the linker command.
- 	 * ...and then move it up into memory a little more so the
-Index: working-2.6/arch/powerpc/boot/dcr.h
++define_machine(ebony) {
++	.name			= "Ebony",
++	.probe			= ebony_probe,
++	.setup_arch		= ebony_setup_arch,
++	.progress		= udbg_progress,
++	.init_IRQ		= uic_init_tree,
++	.get_irq		= uic_get_irq,
++	.calibrate_decr		= generic_calibrate_decr,
++};
+Index: working-2.6/arch/powerpc/configs/ebony_defconfig
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/dcr.h	2007-02-26 13:25:33.000000000 +1100
-@@ -0,0 +1,85 @@
-+#ifndef _PPC_BOOT_DCR_H_
-+#define _PPC_BOOT_DCR_H_
++++ working-2.6/arch/powerpc/configs/ebony_defconfig	2007-02-28 15:28:39.000000000 +1100
+@@ -0,0 +1,886 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.20-powerpc-emac-new-20070212.diff
++# Wed Feb 28 15:24:15 2007
++#
++# CONFIG_PPC64 is not set
++CONFIG_PPC32=y
++CONFIG_PPC_MERGE=y
++CONFIG_MMU=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_IRQ_PER_CPU=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_ARCH_HAS_ILOG2_U32=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_PPC=y
++CONFIG_EARLY_PRINTK=y
++CONFIG_GENERIC_NVRAM=y
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
++CONFIG_PPC_OF=y
++# CONFIG_PPC_UDBG_16550 is not set
++# CONFIG_GENERIC_TBSYNC is not set
++CONFIG_AUDIT_ARCH=y
++CONFIG_GENERIC_BUG=y
++# CONFIG_DEFAULT_UIMAGE is not set
 +
-+#define mfdcr(rn) \
-+	({	\
-+		unsigned long rval; \
-+		asm volatile("mfdcr %0,%1" : "=r"(rval) : "i"(rn)); \
-+		rval; \
-+	})
-+#define mtdcr(rn, val) \
-+	asm volatile("mtdcr %0,%1" : : "i"(rn), "r"(val))
++#
++# Processor support
++#
++# CONFIG_CLASSIC32 is not set
++# CONFIG_PPC_82xx is not set
++# CONFIG_PPC_83xx is not set
++# CONFIG_PPC_85xx is not set
++# CONFIG_PPC_86xx is not set
++# CONFIG_PPC_8xx is not set
++# CONFIG_40x is not set
++CONFIG_44x=y
++# CONFIG_E200 is not set
++CONFIG_PPC_DCR_NATIVE=y
++# CONFIG_PPC_DCR_MMIO is not set
++CONFIG_PPC_DCR=y
++CONFIG_BOOKE=y
++CONFIG_PTE_64BIT=y
++CONFIG_PHYS_64BIT=y
++CONFIG_NOT_COHERENT_CACHE=y
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 +
-+/* 440GP/440GX SDRAM controller DCRs */
-+#define DCRN_SDRAM0_CFGADDR				0x010
-+#define DCRN_SDRAM0_CFGDATA				0x011
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
 +
-+#define 	SDRAM0_B0CR				0x40
-+#define 	SDRAM0_B1CR				0x44
-+#define 	SDRAM0_B2CR				0x48
-+#define 	SDRAM0_B3CR				0x4c
++#
++# General setup
++#
++CONFIG_LOCALVERSION=""
++CONFIG_LOCALVERSION_AUTO=y
++CONFIG_SWAP=y
++CONFIG_SYSVIPC=y
++# CONFIG_IPC_NS is not set
++CONFIG_SYSVIPC_SYSCTL=y
++CONFIG_POSIX_MQUEUE=y
++# CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_TASKSTATS is not set
++# CONFIG_UTS_NS is not set
++# CONFIG_AUDIT is not set
++# CONFIG_IKCONFIG is not set
++CONFIG_SYSFS_DEPRECATED=y
++# CONFIG_RELAY is not set
++CONFIG_INITRAMFS_SOURCE=""
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SYSCTL=y
++CONFIG_EMBEDDED=y
++CONFIG_SYSCTL_SYSCALL=y
++CONFIG_KALLSYMS=y
++# CONFIG_KALLSYMS_ALL is not set
++# CONFIG_KALLSYMS_EXTRA_PASS is not set
++CONFIG_HOTPLUG=y
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++CONFIG_ELF_CORE=y
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_SHMEM=y
++CONFIG_SLAB=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_RT_MUTEXES=y
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
++# CONFIG_SLOB is not set
 +
-+static const unsigned long sdram_bxcr[] = { SDRAM0_B0CR, SDRAM0_B1CR, SDRAM0_B2CR, SDRAM0_B3CR };
++#
++# Loadable module support
++#
++CONFIG_MODULES=y
++CONFIG_MODULE_UNLOAD=y
++# CONFIG_MODULE_FORCE_UNLOAD is not set
++# CONFIG_MODVERSIONS is not set
++# CONFIG_MODULE_SRCVERSION_ALL is not set
++CONFIG_KMOD=y
 +
-+#define			SDRAM_CONFIG_BANK_ENABLE        0x00000001
-+#define			SDRAM_CONFIG_SIZE_MASK          0x000e0000
-+#define			SDRAM_CONFIG_BANK_SIZE(reg)	\
-+	(0x00400000 << ((reg & SDRAM_CONFIG_SIZE_MASK) >> 17))
++#
++# Block layer
++#
++CONFIG_BLOCK=y
++CONFIG_LBD=y
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_LSF is not set
 +
-+/* 440GP Clock, PM, chip control */
-+#define DCRN_CPC0_SR					0x0b0
-+#define DCRN_CPC0_ER					0x0b1
-+#define DCRN_CPC0_FR					0x0b2
-+#define DCRN_CPC0_SYS0					0x0e0
-+#define		CPC0_SYS0_TUNE				0xffc00000
-+#define		CPC0_SYS0_FBDV_MASK			0x003c0000
-+#define		CPC0_SYS0_FBDV(reg)			\
-+	((((((reg) & CPC0_SYS0_FBDV_MASK) >> 18) - 1) & 0xf) + 1)
-+#define		CPC0_SYS0_FWDVA_MASK			0x00038000
-+#define		CPC0_SYS0_FWDVA(reg)			\
-+	(8 - (((reg) & CPC0_SYS0_FWDVA_MASK) >> 15))
-+#define		CPC0_SYS0_FWDVB_MASK			0x00007000
-+#define		CPC0_SYS0_FWDVB(reg)			\
-+	(8 - (((reg) & CPC0_SYS0_FWDVB_MASK) >> 12))
-+#define		CPC0_SYS0_OPDV_MASK			0x00000c00
-+#define		CPC0_SYS0_OPDV(reg)			\
-+	((((reg) & CPC0_SYS0_OPDV_MASK) >> 10) + 1)
-+#define		CPC0_SYS0_EPDV_MASK			0x00000300
-+#define		CPC0_SYS0_EPDV(reg)			\
-+	((((reg) & CPC0_SYS0_EPDV_MASK) >> 8) + 1)
-+#define		CPC0_SYS0_EXTSL				0x00000080
-+#define		CPC0_SYS0_RW_MASK			0x00000060
-+#define		CPC0_SYS0_RL				0x00000010
-+#define		CPC0_SYS0_ZMIISL_MASK			0x0000000c
-+#define		CPC0_SYS0_BYPASS			0x00000002
-+#define		CPC0_SYS0_NTO1				0x00000001
-+#define DCRN_CPC0_SYS1					0x0e1
-+#define DCRN_CPC0_CUST0					0x0e2
-+#define DCRN_CPC0_CUST1					0x0e3
-+#define DCRN_CPC0_STRP0					0x0e4
-+#define DCRN_CPC0_STRP1					0x0e5
-+#define DCRN_CPC0_STRP2					0x0e6
-+#define DCRN_CPC0_STRP3					0x0e7
-+#define DCRN_CPC0_GPIO					0x0e8
-+#define DCRN_CPC0_PLB					0x0e9
-+#define DCRN_CPC0_CR1					0x0ea
-+#define DCRN_CPC0_CR0					0x0eb
-+#define		CPC0_CR0_SWE				0x80000000
-+#define		CPC0_CR0_CETE				0x40000000
-+#define		CPC0_CR0_U1FCS				0x20000000
-+#define		CPC0_CR0_U0DTE				0x10000000
-+#define		CPC0_CR0_U0DRE				0x08000000
-+#define		CPC0_CR0_U0DC				0x04000000
-+#define		CPC0_CR0_U1DTE				0x02000000
-+#define		CPC0_CR0_U1DRE				0x01000000
-+#define		CPC0_CR0_U1DC				0x00800000
-+#define		CPC0_CR0_U0EC				0x00400000
-+#define		CPC0_CR0_U1EC				0x00200000
-+#define		CPC0_CR0_UDIV_MASK			0x001f0000
-+#define		CPC0_CR0_UDIV(reg)			\
-+	((((reg) & CPC0_CR0_UDIV_MASK) >> 16) + 1)
-+#define DCRN_CPC0_MIRQ0					0x0ec
-+#define DCRN_CPC0_MIRQ1					0x0ed
-+#define DCRN_CPC0_JTAGID				0x0ef
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++CONFIG_IOSCHED_AS=y
++CONFIG_IOSCHED_DEADLINE=y
++CONFIG_IOSCHED_CFQ=y
++CONFIG_DEFAULT_AS=y
++# CONFIG_DEFAULT_DEADLINE is not set
++# CONFIG_DEFAULT_CFQ is not set
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="anticipatory"
++CONFIG_4xx=y
 +
-+#endif	/* _PPC_BOOT_DCR_H_ */
++#
++# AMCC 44x options
++#
++CONFIG_EBONY=y
++CONFIG_440GP=y
++# CONFIG_MPIC is not set
++
++#
++# Kernel options
++#
++# CONFIG_HIGHMEM is not set
++# CONFIG_HZ_100 is not set
++CONFIG_HZ_250=y
++# CONFIG_HZ_300 is not set
++# CONFIG_HZ_1000 is not set
++CONFIG_HZ=250
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_BINFMT_ELF=y
++# CONFIG_BINFMT_MISC is not set
++CONFIG_MATH_EMULATION=y
++CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
++# CONFIG_PC_KEYBOARD is not set
++CONFIG_ARCH_FLATMEM_ENABLE=y
++CONFIG_ARCH_POPULATES_NODE_MAP=y
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++CONFIG_SPLIT_PTLOCK_CPUS=4
++CONFIG_RESOURCES_64BIT=y
++CONFIG_ZONE_DMA_FLAG=1
++CONFIG_PROC_DEVICETREE=y
++CONFIG_CMDLINE_BOOL=y
++CONFIG_CMDLINE=""
++CONFIG_SECCOMP=y
++CONFIG_ISA_DMA_API=y
++
++#
++# Bus options
++#
++CONFIG_ZONE_DMA=y
++# CONFIG_MPIC_WEIRD is not set
++# CONFIG_PPC_I8259 is not set
++CONFIG_PPC_INDIRECT_PCI=y
++CONFIG_PCI=y
++CONFIG_PCI_DOMAINS=y
++# CONFIG_PCIEPORTBUS is not set
++# CONFIG_PCI_DEBUG is not set
++
++#
++# PCCARD (PCMCIA/CardBus) support
++#
++# CONFIG_PCCARD is not set
++
++#
++# PCI Hotplug Support
++#
++# CONFIG_HOTPLUG_PCI is not set
++
++#
++# Advanced setup
++#
++# CONFIG_ADVANCED_OPTIONS is not set
++
++#
++# Default settings for advanced configuration options are used
++#
++CONFIG_HIGHMEM_START=0xfe000000
++CONFIG_LOWMEM_SIZE=0x30000000
++CONFIG_KERNEL_START=0xc0000000
++CONFIG_TASK_SIZE=0x80000000
++CONFIG_CONSISTENT_START=0xff100000
++CONFIG_CONSISTENT_SIZE=0x00200000
++CONFIG_BOOT_LOAD=0x01000000
++
++#
++# Networking
++#
++CONFIG_NET=y
++
++#
++# Networking options
++#
++# CONFIG_NETDEBUG is not set
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=y
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++# CONFIG_IP_MULTICAST is not set
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
++# CONFIG_IP_PNP_RARP is not set
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_ARPD is not set
++# CONFIG_SYN_COOKIES is not set
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++# CONFIG_INET_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_TRANSPORT is not set
++# CONFIG_INET_XFRM_MODE_TUNNEL is not set
++# CONFIG_INET_XFRM_MODE_BEET is not set
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_CUBIC=y
++CONFIG_DEFAULT_TCP_CONG="cubic"
++# CONFIG_TCP_MD5SIG is not set
++# CONFIG_IPV6 is not set
++# CONFIG_INET6_XFRM_TUNNEL is not set
++# CONFIG_INET6_TUNNEL is not set
++# CONFIG_NETWORK_SECMARK is not set
++# CONFIG_NETFILTER is not set
++
++#
++# DCCP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_DCCP is not set
++
++#
++# SCTP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_SCTP is not set
++
++#
++# TIPC Configuration (EXPERIMENTAL)
++#
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
++
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
++
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_IEEE80211 is not set
++
++#
++# Device Drivers
++#
++
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++CONFIG_FW_LOADER=y
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_DEBUG_DEVRES is not set
++# CONFIG_SYS_HYPERVISOR is not set
++
++#
++# Connector - unified userspace <-> kernelspace linker
++#
++CONFIG_CONNECTOR=y
++CONFIG_PROC_EVENTS=y
++
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
++
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
++
++#
++# Plug and Play support
++#
++# CONFIG_PNPACPI is not set
++
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++# CONFIG_BLK_DEV_LOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_SX8 is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=35000
++CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
++
++#
++# Misc devices
++#
++# CONFIG_SGI_IOC4 is not set
++# CONFIG_TIFM_CORE is not set
++
++#
++# ATA/ATAPI/MFM/RLL support
++#
++# CONFIG_IDE is not set
++
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++# CONFIG_SCSI is not set
++# CONFIG_SCSI_NETLINK is not set
++
++#
++# Serial ATA (prod) and Parallel ATA (experimental) drivers
++#
++# CONFIG_ATA is not set
++
++#
++# Multi-device support (RAID and LVM)
++#
++# CONFIG_MD is not set
++
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
++
++#
++# IEEE 1394 (FireWire) support
++#
++# CONFIG_IEEE1394 is not set
++
++#
++# I2O device support
++#
++# CONFIG_I2O is not set
++
++#
++# Macintosh device drivers
++#
++# CONFIG_MAC_EMUMOUSEBTN is not set
++# CONFIG_WINDFARM is not set
++
++#
++# Network device support
++#
++CONFIG_NETDEVICES=y
++# CONFIG_DUMMY is not set
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
++
++#
++# ARCnet devices
++#
++# CONFIG_ARCNET is not set
++
++#
++# PHY device support
++#
++
++#
++# Ethernet (10 or 100Mbit)
++#
++# CONFIG_NET_ETHERNET is not set
++CONFIG_IBM_NEW_EMAC=y
++CONFIG_IBM_NEW_EMAC_RXB=128
++CONFIG_IBM_NEW_EMAC_TXB=64
++CONFIG_IBM_NEW_EMAC_POLL_WEIGHT=32
++CONFIG_IBM_NEW_EMAC_RX_COPY_THRESHOLD=256
++CONFIG_IBM_NEW_EMAC_RX_SKB_HEADROOM=0
++# CONFIG_IBM_NEW_EMAC_DEBUG is not set
++CONFIG_IBM_NEW_EMAC_ZMII=y
++# CONFIG_IBM_NEW_EMAC_RGMII is not set
++# CONFIG_IBM_NEW_EMAC_TAH is not set
++# CONFIG_IBM_NEW_EMAC_EMAC4 is not set
++
++#
++# Ethernet (1000 Mbit)
++#
++# CONFIG_ACENIC is not set
++# CONFIG_DL2K is not set
++# CONFIG_E1000 is not set
++# CONFIG_NS83820 is not set
++# CONFIG_HAMACHI is not set
++# CONFIG_YELLOWFIN is not set
++# CONFIG_R8169 is not set
++# CONFIG_SIS190 is not set
++# CONFIG_SKGE is not set
++# CONFIG_SKY2 is not set
++# CONFIG_SK98LIN is not set
++# CONFIG_TIGON3 is not set
++# CONFIG_BNX2 is not set
++# CONFIG_QLA3XXX is not set
++# CONFIG_ATL1 is not set
++
++#
++# Ethernet (10000 Mbit)
++#
++# CONFIG_CHELSIO_T1 is not set
++# CONFIG_CHELSIO_T3 is not set
++# CONFIG_IXGB is not set
++# CONFIG_S2IO is not set
++# CONFIG_MYRI10GE is not set
++# CONFIG_NETXEN_NIC is not set
++
++#
++# Token Ring devices
++#
++# CONFIG_TR is not set
++
++#
++# Wireless LAN (non-hamradio)
++#
++# CONFIG_NET_RADIO is not set
++
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_SHAPER is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Telephony Support
++#
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++# CONFIG_INPUT is not set
++
++#
++# Hardware I/O ports
++#
++# CONFIG_SERIO is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++# CONFIG_VT is not set
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++# CONFIG_SERIAL_8250_PCI is not set
++CONFIG_SERIAL_8250_NR_UARTS=4
++CONFIG_SERIAL_8250_RUNTIME_UARTS=4
++CONFIG_SERIAL_8250_EXTENDED=y
++# CONFIG_SERIAL_8250_MANY_PORTS is not set
++CONFIG_SERIAL_8250_SHARE_IRQ=y
++# CONFIG_SERIAL_8250_DETECT_IRQ is not set
++# CONFIG_SERIAL_8250_RSA is not set
++
++#
++# Non-8250 serial port support
++#
++# CONFIG_SERIAL_UARTLITE is not set
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++# CONFIG_SERIAL_JSM is not set
++CONFIG_SERIAL_OF_PLATFORM=y
++CONFIG_UNIX98_PTYS=y
++CONFIG_LEGACY_PTYS=y
++CONFIG_LEGACY_PTY_COUNT=256
++
++#
++# IPMI
++#
++# CONFIG_IPMI_HANDLER is not set
++
++#
++# Watchdog Cards
++#
++# CONFIG_WATCHDOG is not set
++# CONFIG_HW_RANDOM is not set
++# CONFIG_NVRAM is not set
++# CONFIG_GEN_RTC is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++# CONFIG_RAW_DRIVER is not set
++
++#
++# TPM devices
++#
++# CONFIG_TCG_TPM is not set
++
++#
++# I2C support
++#
++# CONFIG_I2C is not set
++
++#
++# SPI support
++#
++# CONFIG_SPI is not set
++# CONFIG_SPI_MASTER is not set
++
++#
++# Dallas's 1-wire bus
++#
++# CONFIG_W1 is not set
++
++#
++# Hardware Monitoring support
++#
++# CONFIG_HWMON is not set
++# CONFIG_HWMON_VID is not set
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Digital Video Broadcasting Devices
++#
++# CONFIG_DVB is not set
++
++#
++# Graphics support
++#
++# CONFIG_FIRMWARE_EDID is not set
++# CONFIG_FB is not set
++# CONFIG_FB_IBM_GXT4500 is not set
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# USB support
++#
++CONFIG_USB_ARCH_HAS_HCD=y
++CONFIG_USB_ARCH_HAS_OHCI=y
++CONFIG_USB_ARCH_HAS_EHCI=y
++# CONFIG_USB is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++
++#
++# USB Gadget Support
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# MMC/SD Card support
++#
++# CONFIG_MMC is not set
++
++#
++# LED devices
++#
++# CONFIG_NEW_LEDS is not set
++
++#
++# LED drivers
++#
++
++#
++# LED Triggers
++#
++
++#
++# InfiniBand support
++#
++# CONFIG_INFINIBAND is not set
++
++#
++# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
++#
++
++#
++# Real Time Clock
++#
++# CONFIG_RTC_CLASS is not set
++
++#
++# DMA Engine support
++#
++# CONFIG_DMA_ENGINE is not set
++
++#
++# DMA Clients
++#
++
++#
++# DMA Devices
++#
++
++#
++# Auxiliary Display support
++#
++
++#
++# Virtualization
++#
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++# CONFIG_EXT2_FS_XATTR is not set
++# CONFIG_EXT2_FS_XIP is not set
++# CONFIG_EXT3_FS is not set
++# CONFIG_EXT4DEV_FS is not set
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_GFS2_FS is not set
++# CONFIG_OCFS2_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_ROMFS_FS is not set
++CONFIG_INOTIFY=y
++CONFIG_INOTIFY_USER=y
++# CONFIG_QUOTA is not set
++CONFIG_DNOTIFY=y
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++CONFIG_TMPFS=y
++# CONFIG_TMPFS_POSIX_ACL is not set
++# CONFIG_HUGETLB_PAGE is not set
++CONFIG_RAMFS=y
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++CONFIG_CRAMFS=y
++# CONFIG_VXFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Network File Systems
++#
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++# CONFIG_NFS_V3_ACL is not set
++# CONFIG_NFS_V4 is not set
++# CONFIG_NFS_DIRECTIO is not set
++# CONFIG_NFSD is not set
++CONFIG_ROOT_NFS=y
++CONFIG_LOCKD=y
++CONFIG_LOCKD_V4=y
++CONFIG_NFS_COMMON=y
++CONFIG_SUNRPC=y
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++# CONFIG_9P_FS is not set
++
++#
++# Partition Types
++#
++# CONFIG_PARTITION_ADVANCED is not set
++CONFIG_MSDOS_PARTITION=y
++
++#
++# Native Language Support
++#
++# CONFIG_NLS is not set
++
++#
++# Distributed Lock Manager
++#
++# CONFIG_DLM is not set
++
++#
++# Library routines
++#
++CONFIG_BITREVERSE=y
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++CONFIG_CRC32=y
++# CONFIG_LIBCRC32C is not set
++CONFIG_ZLIB_INFLATE=y
++CONFIG_PLIST=y
++CONFIG_HAS_IOMEM=y
++CONFIG_HAS_IOPORT=y
++
++#
++# Instrumentation Support
++#
++# CONFIG_PROFILING is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_MUST_CHECK=y
++CONFIG_MAGIC_SYSRQ=y
++# CONFIG_UNUSED_SYMBOLS is not set
++# CONFIG_DEBUG_FS is not set
++# CONFIG_HEADERS_CHECK is not set
++CONFIG_DEBUG_KERNEL=y
++# CONFIG_DEBUG_SHIRQ is not set
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_DETECT_SOFTLOCKUP=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_TIMER_STATS is not set
++# CONFIG_DEBUG_SLAB is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
++# CONFIG_DEBUG_BUGVERBOSE is not set
++# CONFIG_DEBUG_INFO is not set
++# CONFIG_DEBUG_VM is not set
++# CONFIG_DEBUG_LIST is not set
++CONFIG_FORCED_INLINING=y
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_DEBUG_STACKOVERFLOW is not set
++# CONFIG_DEBUG_STACK_USAGE is not set
++CONFIG_DEBUGGER=y
++# CONFIG_KGDB is not set
++# CONFIG_XMON is not set
++# CONFIG_BDI_SWITCH is not set
++# CONFIG_BOOTX_TEXT is not set
++# CONFIG_PPC_EARLY_DEBUG is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++
++#
++# Cryptographic options
++#
++CONFIG_CRYPTO=y
++CONFIG_CRYPTO_ALGAPI=y
++CONFIG_CRYPTO_BLKCIPHER=y
++CONFIG_CRYPTO_MANAGER=y
++# CONFIG_CRYPTO_HMAC is not set
++# CONFIG_CRYPTO_XCBC is not set
++# CONFIG_CRYPTO_NULL is not set
++# CONFIG_CRYPTO_MD4 is not set
++CONFIG_CRYPTO_MD5=y
++# CONFIG_CRYPTO_SHA1 is not set
++# CONFIG_CRYPTO_SHA256 is not set
++# CONFIG_CRYPTO_SHA512 is not set
++# CONFIG_CRYPTO_WP512 is not set
++# CONFIG_CRYPTO_TGR192 is not set
++# CONFIG_CRYPTO_GF128MUL is not set
++CONFIG_CRYPTO_ECB=y
++CONFIG_CRYPTO_CBC=y
++CONFIG_CRYPTO_PCBC=y
++# CONFIG_CRYPTO_LRW is not set
++CONFIG_CRYPTO_DES=y
++# CONFIG_CRYPTO_FCRYPT is not set
++# CONFIG_CRYPTO_BLOWFISH is not set
++# CONFIG_CRYPTO_TWOFISH is not set
++# CONFIG_CRYPTO_SERPENT is not set
++# CONFIG_CRYPTO_AES is not set
++# CONFIG_CRYPTO_CAST5 is not set
++# CONFIG_CRYPTO_CAST6 is not set
++# CONFIG_CRYPTO_TEA is not set
++# CONFIG_CRYPTO_ARC4 is not set
++# CONFIG_CRYPTO_KHAZAD is not set
++# CONFIG_CRYPTO_ANUBIS is not set
++# CONFIG_CRYPTO_DEFLATE is not set
++# CONFIG_CRYPTO_MICHAEL_MIC is not set
++# CONFIG_CRYPTO_CRC32C is not set
++# CONFIG_CRYPTO_CAMELLIA is not set
++# CONFIG_CRYPTO_TEST is not set
++
++#
++# Hardware crypto devices
++#
