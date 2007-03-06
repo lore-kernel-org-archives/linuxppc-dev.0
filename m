@@ -1,15 +1,30 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 6 Mar 2007 11:09:05 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 11/15] zImage wrapper for Ebony
-Message-ID: <20070306000905.GC4728@localhost.localdomain>
-References: <20070305032307.GB31417@localhost.localdomain>
-	<20070305032452.EDB2BDDF1D@ozlabs.org>
-	<20070305171053.GC32672@mag.az.mvista.com>
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 518EADDF17
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 11:21:28 +1100 (EST)
+Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l260bvoG211264
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 11:37:57 +1100
+Received: from d23av02.au.ibm.com (d23av02.au.ibm.com [9.190.250.243])
+	by sd0208e0.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l260Ndkb100796
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 11:23:40 +1100
+Received: from d23av02.au.ibm.com (loopback [127.0.0.1])
+	by d23av02.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l260K9tr019132
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 11:20:09 +1100
+Date: Tue, 6 Mar 2007 11:04:13 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 10/15] Add device tree for Ebony
+Message-ID: <20070306000413.GB4728@localhost.localdomain>
+References: <20070305032452.B8CC0DDF1B@ozlabs.org>
+	<1173104584.6561.5.camel@zod.rchland.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070305171053.GC32672@mag.az.mvista.com>
+In-Reply-To: <1173104584.6561.5.camel@zod.rchland.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,53 +35,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 05, 2007 at 10:10:53AM -0700, Mark A. Greer wrote:
-> On Mon, Mar 05, 2007 at 02:24:52PM +1100, David Gibson wrote:
-> > This patch adds support for building a zImage wrapper suitable for the
-> > Ebony (440GP) evaluation board.  This supports booting both from uboot
-> > (old versions which don't supply a flattened device tree) and IBM
-> > Openbios (aka "treeboot").
+On Mon, Mar 05, 2007 at 08:23:04AM -0600, Josh Boyer wrote:
+> On Mon, 2007-03-05 at 14:24 +1100, David Gibson wrote:
+> > Add a device tree for the Ebony evaluation board (440GP based).  This
+> > tree is not complete or finalized.  This tree needs a very recent
+> > version of dtc to process.
 > > 
 > > Signed-off-by: David Gibson <dwg@au1.ibm.com>
 > > ---
-> 
-> <snip>
-> 
-> > Index: working-2.6/arch/powerpc/boot/Makefile
-> > ===================================================================
-> > --- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-26 13:25:31.000000000 +1100
-> > +++ working-2.6/arch/powerpc/boot/Makefile	2007-02-26 13:25:33.000000000 +1100
-> 
-> <snip>
-> 
-> > @@ -120,6 +128,13 @@ quiet_cmd_wrap_initrd = WRAP    $@
-> >        cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-> >  				-i $(obj)/ramdisk.image.gz vmlinux
-> >  
-> > +quiet_cmd_wrap_dtb	= WRAP    $@
-> > +      cmd_wrap_dtb	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-> > +				-d $3 vmlinux
-> > +quiet_cmd_wrap_dtb_initrd = WRAP    $@
-> > +      cmd_wrap_dtb_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
-> > +				-d $3 -i $(obj)/ramdisk.image.gz vmlinux
 > > +
+> > +	chosen {
+> > +		linux,stdout-path = "/plb/opb@0/serial@140000200";
+> > +		linux,initrd-start = <0>; /* FIXME */
+> > +		linux,initrd-end = <0>;
 > 
-> David,
+> Could we add a bootargs property here?  It needs to be present to allow
+> set_cmdline in the wrapper to actually function.  Without it, the
+> console ops allow you to specify on at the
 > 
-> I think we more-or-less agreed to go with Scott Wood's 'wrap' method
-> (unless there is a problem with it).
+> Linux/PowerPC load:
+> 
+> line, but it doesn't actually get set in the DT.  In my testing, having
+> 
+> bootargs = "";
+> 
+> was sufficient to allow the cmdline editing (or inserting in this case)
+> to work.
 
-Oh, we had?
-
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031337.html
-
-Um.. I'm pretty uneasy about that, because I'm not at all sure that
-the wrapper script does the right thing w.r.t. where it puts the .dtb
-file, when building with a VPATH.
-
-Actually, longer term what I think might be a better option is to
-build *all* the dts files into asm (with different symbolic names) and
-fold them into the wrapper library.
+Ah, yes, I can do that.  In the interim, at least, until I get libfdt
+going properly which can add new properties without difficulty.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
