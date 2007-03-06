@@ -1,24 +1,29 @@
-Return-Path: <ntl@pobox.com>
-Received: from lollipop.listbox.com (lollipop.listbox.com [208.210.124.78])
-	by ozlabs.org (Postfix) with ESMTP id F0CE8DDE43
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 09:21:21 +1100 (EST)
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by lollipop.listbox.com (Postfix) with ESMTP id 18682412DA5
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 17:06:20 -0500 (EST)
-Date: Tue, 6 Mar 2007 16:05:46 -0600
-From: Nathan Lynch <ntl@pobox.com>
-To: Mohan Kumar M <mohan@in.ibm.com>
-Subject: Re: [PATCH] Fix interrupt distribution in ppc970
-Message-ID: <20070306220546.GI24926@localdomain>
-References: <20061208045537.GA14626@in.ibm.com>
-	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
-	<20061218105706.GB3911@in.ibm.com>
-	<20070306135754.GB7476@in.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070306135754.GB7476@in.ibm.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	fastboot@lists.osdl.org
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0952FDDEE5
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 10:11:49 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l26NBhEg024953
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 18:11:43 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l26NBhNi279156
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 18:11:43 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l26NBhpw006386
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 18:11:43 -0500
+Subject: [PATCH] [POWERPC] fix up log_plpar_hcall_return
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 06 Mar 2007 17:11:41 -0600
+Message-Id: <1173222701.13165.9.camel@localhost>
+Mime-Version: 1.0
+Cc: Paul Mackerras <paulus@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,23 +33,103 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mohan Kumar M wrote:
-> Hi,
-> 
-> Here comes the revised version of patch to fix the interrupt missing
-> problem when a kdump kernel is booted with "maxcpus=1" kernel parameter.
-> 
-> In the xics initialization code a check is made to detemine whether
-> maxcpus kernel parameter is present and if its present then
-> default_distrib_server variable is initialized to the current boot cpu
-> id (by default_server variable). So that when ever a kernel is booted
-> with maxcpus kernel parameter all interrupts are routed to the boot cpu
-> only.
-> 
-> Tested on POWER5 and JS20 systems.
-> 
-> Any comment?
 
-Was the root cause of this problem ever determined?  It sure looked
-like a firmware or hardware problem since it's known to occur only on
-JS20.
+This is mostly cosmetic.  This updates log_plpar_hcall_return() to use a
+case statement rather than an if-then-else jumble, and moves it to
+rtas.c where it can be near the other rtas related functions. 
+
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+---
+ arch/powerpc/kernel/lparcfg.c |   25 -------------------------
+ arch/powerpc/kernel/rtas.c    |   29 +++++++++++++++++++++++++++++
+ include/asm-powerpc/rtas.h    |    1 +
+ 3 files changed, 30 insertions(+), 25 deletions(-)
+
+diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+index 89486b6..e89471f 100644
+--- a/arch/powerpc/kernel/lparcfg.c
++++ b/arch/powerpc/kernel/lparcfg.c
+@@ -130,31 +130,6 @@ #ifdef CONFIG_PPC_PSERIES
+ /*
+  * Methods used to fetch LPAR data when running on a pSeries platform.
+  */
+-/* find a better place for this function... */
+-static void log_plpar_hcall_return(unsigned long rc, char *tag)
+-{
+-	if (rc == 0)		/* success, return */
+-		return;
+-/* check for null tag ? */
+-	if (rc == H_HARDWARE)
+-		printk(KERN_INFO
+-		       "plpar-hcall (%s) failed with hardware fault\n", tag);
+-	else if (rc == H_FUNCTION)
+-		printk(KERN_INFO
+-		       "plpar-hcall (%s) failed; function not allowed\n", tag);
+-	else if (rc == H_AUTHORITY)
+-		printk(KERN_INFO
+-		       "plpar-hcall (%s) failed; not authorized to this"
+-		       " function\n", tag);
+-	else if (rc == H_PARAMETER)
+-		printk(KERN_INFO "plpar-hcall (%s) failed; Bad parameter(s)\n",
+-		       tag);
+-	else
+-		printk(KERN_INFO
+-		       "plpar-hcall (%s) failed with unexpected rc(0x%lx)\n",
+-		       tag, rc);
+-
+-}
+ 
+ /*
+  * H_GET_PPP hcall returns info in 4 parms.
+diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
+index 9d0735a..b215b6b 100644
+--- a/arch/powerpc/kernel/rtas.c
++++ b/arch/powerpc/kernel/rtas.c
+@@ -506,6 +506,35 @@ int rtas_error_rc(int rtas_rc)
+ 	return rc;
+ }
+ 
++/* provide a human-readible description of some hcall return codes. */
++void log_plpar_hcall_return(unsigned long rc, char *tag)
++{
++	switch(rc) {
++	case 0:
++		return;
++	case H_HARDWARE:
++		printk(KERN_INFO "plpar-hcall (%s) "
++					"Hardware fault\n", tag);
++		return;
++	case H_FUNCTION:
++		printk(KERN_INFO "plpar-hcall (%s) "
++					"Function not allowed\n", tag);
++		return;
++	case H_AUTHORITY:
++		printk(KERN_INFO "plpar-hcall (%s) "
++				"Not authorized to this function\n", tag);
++		return;
++	case H_PARAMETER:
++		printk(KERN_INFO "plpar-hcall (%s) "
++					"Bad parameter(s)\n",tag);
++		return;
++	default:
++		printk(KERN_INFO "plpar-hcall (%s) "
++					"Unexpected rc(0x%lx)\n", tag, rc);
++	}
++}
++EXPORT_SYMBOL(log_plpar_hcall_return);
++
+ int rtas_get_power_level(int powerdomain, int *level)
+ {
+ 	int token = rtas_token("get-power-level");
+diff --git a/include/asm-powerpc/rtas.h b/include/asm-powerpc/rtas.h
+index 8eaa7b2..f36aaba 100644
+--- a/include/asm-powerpc/rtas.h
++++ b/include/asm-powerpc/rtas.h
+@@ -185,6 +185,7 @@ extern int early_init_dt_scan_rtas(unsig
+ 		const char *uname, int depth, void *data);
+ 
+ extern void pSeries_log_error(char *buf, unsigned int err_type, int fatal);
++extern void log_plpar_hcall_return(unsigned long rc, char *tag);
+ 
+ /* Error types logged.  */
+ #define ERR_FLAG_ALREADY_LOGGED	0x0
