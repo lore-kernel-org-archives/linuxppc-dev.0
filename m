@@ -1,22 +1,38 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Fix interrupt distribution in ppc970
-From: Michael Ellerman <michael@ellerman.id.au>
-To: mohan@in.ibm.com
-In-Reply-To: <20070306165529.GD7476@in.ibm.com>
-References: <20061208045537.GA14626@in.ibm.com>
-	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
-	<20061218105706.GB3911@in.ibm.com> <20070306135754.GB7476@in.ibm.com>
-	<1173190615.4675.30.camel@concordia.ozlabs.ibm.com>
-	<20070306165529.GD7476@in.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-20u2ivDuHhEYp/tqVqpB"
-Date: Tue, 06 Mar 2007 18:37:14 +0100
-Message-Id: <1173202634.4675.37.camel@concordia.ozlabs.ibm.com>
+Return-Path: <mohan@in.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4FEDEDDEED
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 04:41:51 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l26Hfk2R014481
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 12:41:46 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l26He0fm266442
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 12:40:00 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l26He0L4025997
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 12:40:00 -0500
+Received: from explorer.in.ibm.com ([9.124.96.40])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l26Hdwih025888
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 12:39:59 -0500
+Received: from explorer.in.ibm.com (explorer.in.ibm.com [127.0.0.1])
+	by explorer.in.ibm.com (Postfix) with ESMTP id 12245282FDC
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 23:09:42 +0530 (IST)
+Received: (from mohan@localhost)
+	by explorer.in.ibm.com (8.13.5/8.13.5/Submit) id l26Hdfui032253
+	for linuxppc-dev@ozlabs.org; Tue, 6 Mar 2007 23:09:41 +0530
+Date: Tue, 6 Mar 2007 23:09:41 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Clearing the interrupt
+Message-ID: <20070306173941.GE7476@in.ibm.com>
 Mime-Version: 1.0
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	fastboot@lists.osdl.org
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=us-ascii
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,81 +42,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
---=-20u2ivDuHhEYp/tqVqpB
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+I would like to get some suggestions to implement the interrupt clearing
+methods in kdump kernel.
 
-On Tue, 2007-03-06 at 22:25 +0530, Mohan Kumar M wrote:
-> On Tue, Mar 06, 2007 at 03:16:55PM +0100, Michael Ellerman wrote:
-> > On Tue, 2007-03-06 at 19:27 +0530, Mohan Kumar M wrote:
-> > > Hi,
-> > >=20
-> > > Here comes the revised version of patch to fix the interrupt missing
-> > > problem when a kdump kernel is booted with "maxcpus=3D1" kernel param=
-eter.
-> > >=20
-> > > In the xics initialization code a check is made to detemine whether
-> > > maxcpus kernel parameter is present and if its present then
-> > > default_distrib_server variable is initialized to the current boot cp=
-u
-> > > id (by default_server variable). So that when ever a kernel is booted
-> > > with maxcpus kernel parameter all interrupts are routed to the boot c=
-pu
-> > > only.
-> > >=20
-> > > Tested on POWER5 and JS20 systems.
-> >=20
-> > First, I don't know why we keep telling people to use maxcpus=3D1 for
-> > kexec/kdump - it's causing bugs, and I don't know of any that it fixes?
->=20
-> Some distros want to use maxcpus=3D1 for kdump.
+After a panic situation, first kernel goes through each irq_desc
+structure and if any interrupt is in progress, it calls eoi handler for
+that interrupt. eoi handler is called from the crashing cpu context.
 
-Yeah OK.
+	for_each_irq(irq) {
+		struct irq_desc *desc = irq_desc + irq;
 
-> > Second, the way you've written this is not so good. The xics code shoul=
-d
-> > not be checking that "maxcpus" exists on the command line, it should be
-> > checking that the distrib server points to a cpu that is online - using
-> > cpu_online() etc.
-> >
->=20
-> In get_irq_server function in xics.c, "noirqdistrib" command line
-> parameter is indirectly checked for routing the interrupts either to a
-> specific cpu or to all cpus. So I think checking for maxcpus=3D command
-> line parameter in xics.c is not a problem.
+		if (desc->status & IRQ_INPROGRESS)
+			desc->chip->eoi(irq);
 
-No, it checks a flag, it doesn't run strstr on the saved command line.
+		if (!(desc->status & IRQ_DISABLED))
+			desc->chip->disable(irq);
+	}
 
-> Also during the xics_init_IRQ function other cpus (secondary cpus) will
-> not be online, they are made online at a later stage. So using
-> cpu_online() function at xics_init_IRQ will return true only for boot
-> cpu id.
 
-OK, so you should be able to use cpus possible map or something similar.
+But initially some another cpu might have acknowledged the interrupt and
+started processing the interrupt. But eoi handler may not be called by
+the cpu which acknowledged the interrupt.
 
-cheers
+Is there any problem with the above approach? Is there any restriction
+such that a cpu which acknowledged the interrupt only should send the eoi
+signal?
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-20u2ivDuHhEYp/tqVqpB
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBF7abKdSjSd0sB4dIRApAfAKC882It0VxCc9GwXQ5YpH7YqNIONQCeMtfS
-YVGSSA9qZAFbMFAhka3xX0Q=
-=Hrdl
------END PGP SIGNATURE-----
-
---=-20u2ivDuHhEYp/tqVqpB--
+Regards,
+Mohan.
