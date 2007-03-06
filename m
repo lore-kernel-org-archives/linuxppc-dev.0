@@ -1,34 +1,20 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 08BB1DDF1E
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 00:58:19 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l26DwGKR011717
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 08:58:16 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l26DwG0A554396
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 06:58:16 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l26DwFas010895
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 06:58:16 -0700
-Date: Tue, 6 Mar 2007 19:27:54 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ellerman.id.au>
 Subject: Re: [PATCH] Fix interrupt distribution in ppc970
-Message-ID: <20070306135754.GB7476@in.ibm.com>
+From: Michael Ellerman <michael@ellerman.id.au>
+To: mohan@in.ibm.com
+In-Reply-To: <20070306135754.GB7476@in.ibm.com>
 References: <20061208045537.GA14626@in.ibm.com>
 	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
-	<20061218105706.GB3911@in.ibm.com>
+	<20061218105706.GB3911@in.ibm.com> <20070306135754.GB7476@in.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-PxOuLcJHhwVZfj+KpdiZ"
+Date: Tue, 06 Mar 2007 15:16:55 +0100
+Message-Id: <1173190615.4675.30.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20061218105706.GB3911@in.ibm.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, fastboot@lists.osdl.org
-Reply-To: mohan@in.ibm.com
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	fastboot@lists.osdl.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,43 +24,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-Here comes the revised version of patch to fix the interrupt missing
-problem when a kdump kernel is booted with "maxcpus=1" kernel parameter.
+--=-PxOuLcJHhwVZfj+KpdiZ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-In the xics initialization code a check is made to detemine whether
-maxcpus kernel parameter is present and if its present then
-default_distrib_server variable is initialized to the current boot cpu
-id (by default_server variable). So that when ever a kernel is booted
-with maxcpus kernel parameter all interrupts are routed to the boot cpu
-only.
+On Tue, 2007-03-06 at 19:27 +0530, Mohan Kumar M wrote:
+> Hi,
+>=20
+> Here comes the revised version of patch to fix the interrupt missing
+> problem when a kdump kernel is booted with "maxcpus=3D1" kernel parameter=
+.
+>=20
+> In the xics initialization code a check is made to detemine whether
+> maxcpus kernel parameter is present and if its present then
+> default_distrib_server variable is initialized to the current boot cpu
+> id (by default_server variable). So that when ever a kernel is booted
+> with maxcpus kernel parameter all interrupts are routed to the boot cpu
+> only.
+>=20
+> Tested on POWER5 and JS20 systems.
 
-Tested on POWER5 and JS20 systems.
+First, I don't know why we keep telling people to use maxcpus=3D1 for
+kexec/kdump - it's causing bugs, and I don't know of any that it fixes?
 
-Any comment?
+Second, the way you've written this is not so good. The xics code should
+not be checking that "maxcpus" exists on the command line, it should be
+checking that the distrib server points to a cpu that is online - using
+cpu_online() etc.
 
-Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
+cheers
 
----
- arch/powerpc/platforms/pseries/xics.c |    7 +++++++
- 1 file changed, 7 insertions(+)
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-Index: linux-2.6.20/arch/powerpc/platforms/pseries/xics.c
-===================================================================
---- linux-2.6.20.orig/arch/powerpc/platforms/pseries/xics.c
-+++ linux-2.6.20/arch/powerpc/platforms/pseries/xics.c
-@@ -734,6 +734,13 @@ void __init xics_init_IRQ(void)
- skip_gserver_check:
- 	of_node_put(np);
- 
-+	/* Kdump with maxcpus parameter in PPC970xx creates interrupt
-+	 * distribution problems. So assign current boot cpu id to
-+	 * interrupt distribution server
-+	 */
-+	if (strstr(saved_command_line, "maxcpus="))
-+		default_distrib_server = default_server;
-+
- 	if (firmware_has_feature(FW_FEATURE_LPAR))
- 		ppc_md.get_irq = xics_get_irq_lpar;
- 	else
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-PxOuLcJHhwVZfj+KpdiZ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBF7XfXdSjSd0sB4dIRAky8AJ0WjzUjyIV4CjKQn3HoLWfHkLGiHACfS4Rm
+tUPzHTNCYFXOgxfXHa7zdBU=
+=i+hX
+-----END PGP SIGNATURE-----
+
+--=-PxOuLcJHhwVZfj+KpdiZ--
