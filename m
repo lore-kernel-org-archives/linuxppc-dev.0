@@ -1,27 +1,22 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx022.isp.belgacom.be (outmx022.isp.belgacom.be
-	[195.238.4.203])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 61C06DDF05
+Return-Path: <glikely@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
+	by ozlabs.org (Postfix) with ESMTP id D025EDDF42
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Mar 2007 01:55:29 +1100 (EST)
-Received: from outmx022.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l26EtJUo006711
-	for <linuxppc-embedded@ozlabs.org>; Tue, 6 Mar 2007 15:55:21 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <45ED80AB.9010907@246tNt.com>
-Date: Tue, 06 Mar 2007 15:54:35 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
+	Wed,  7 Mar 2007 02:14:21 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so2204275nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 06 Mar 2007 07:14:19 -0800 (PST)
+Message-ID: <528646bc0703060714n50bb0055oe3a93dcadc42377b@mail.gmail.com>
+Date: Tue, 6 Mar 2007 08:14:16 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Sylvain Munaut" <tnt@246tnt.com>
+Subject: Re: [PATCH] lite5200(b) typos in dts
+In-Reply-To: <45ED3EE3.40304@246tNt.com>
 MIME-Version: 1.0
-To: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
-Subject: Re: Dereferencing phys addr IMMAP works even if it is not a virtual
-	address. Strange?
-References: <F1F6EC0C8B75034F9E3A79FC85122E8E6C0B3A@aquib01a>
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E6C0B3A@aquib01a>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070306095139.GZ4397@moe.telargo.com> <45ED3EE3.40304@246tNt.com>
+Cc: Domen Puncer <domen.puncer@telargo.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,20 +27,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-DI BACCO ANTONIO - technolabs wrote:
-> Now I'm doing a ioremap_nocache of IMMAP and using the virtual pointer
-> returned to access my 880 registers but also using the physical
-> address it works, I can access the registers.
-If the IMMAP base is high (like 0xf0000000 ) and therefore doesn't
-collide with anything, it's quite common practice to map it statically
-using a BAT somewhere in the setup code and often it's mapped such that
-phys = virt ...
+On 3/6/07, Sylvain Munaut <tnt@246tnt.com> wrote:
+> Domen Puncer wrote:
+> > Fix lite5200(b) copy paste typos in dts.
+> >
+> >
+> > Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+> >
+> Acked-by: Sylvain Munaut <tnt@246tNt.com>
+>
+> Obviously correct ...
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
-So a physical address in this zone is equal to a virtual addres ...
-
-When that's the case, ioremap detects the BAT mapping and just does
-nothing. But you should always use ioremap nonetheless ... because if at
-some point some one decide to move the BAT mapping, if you didn't do
-things properly your code will break.
-
-Sylvain
+Indeed!
