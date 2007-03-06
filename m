@@ -1,19 +1,17 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 44D6CDDF18
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id DFDD8DDF37
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  6 Mar 2007 23:44:28 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: static immap_t   __iomem *imap    or   immap_t *imap;
-Date: Tue, 6 Mar 2007 13:44:00 +0100
-References: <F1F6EC0C8B75034F9E3A79FC85122E8E6C0AA8@aquib01a>
-In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E6C0AA8@aquib01a>
+	Wed,  7 Mar 2007 01:00:43 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703061344.00685.arnd@arndb.de>
-Cc: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C75FF7.D2B5CDE5"
+Subject: Dereferencing phys addr IMMAP works even if it is not a virtual
+	address. Strange?
+Date: Tue, 6 Mar 2007 15:00:39 +0100
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E6C0B3A@aquib01a>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,25 +22,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 06 March 2007, DI BACCO ANTONIO - technolabs wrote:
-> Why should I use
-> static immap_t =A0 __iomem *imap;
-> And not
-> immap_t *imap;
-> in a driver?
-> when imap =3D ioremap_nocache()
->=20
-> In particular I know that __iomem is useful to the compiler to avoid
-> reordering and delaying io memory writes but what's the need for static
-> in this case?
+This is a multi-part message in MIME format.
 
-The '__iomem' is use to allow static checking with the 'sparse' tool,
-you really should use that before submitting any code. At this point,
-gcc itself doesn't care. ioremap_nocache() returns __iomem, so anything
-you assign it to should also be __iomem.
+------_=_NextPart_001_01C75FF7.D2B5CDE5
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-The 'static' is what you should use for _any_ symbol that is private
-to your driver in order to avoid namespace pollution, it has nothing
-to do whatsoever with whether it is about an __iomem address or not.
+Now I'm doing a ioremap_nocache of IMMAP and using the virtual pointer
+returned to access my 880 registers but also using the physical address
+it works, I can access the registers.=20
+=20
+Bye,
+Antonio.
 
-	Arnd <><
+------_=_NextPart_001_01C75FF7.D2B5CDE5
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D556295613-06032007>Now =
+I'm doing a=20
+ioremap_nocache of IMMAP and using the virtual pointer returned to =
+access my 880=20
+registers but also using the physical address it works, I can access the =
+
+registers. </SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D556295613-06032007></SPAN></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D556295613-06032007>Bye,</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN=20
+class=3D556295613-06032007>Antonio.</SPAN></FONT></DIV></BODY></HTML>
+
+------_=_NextPart_001_01C75FF7.D2B5CDE5--
