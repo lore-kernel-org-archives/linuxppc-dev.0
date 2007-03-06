@@ -1,38 +1,24 @@
-Return-Path: <mohan@in.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4FEDEDDEED
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 04:41:51 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l26Hfk2R014481
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 12:41:46 -0500
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l26He0fm266442
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 12:40:00 -0500
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l26He0L4025997
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 12:40:00 -0500
-Received: from explorer.in.ibm.com ([9.124.96.40])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l26Hdwih025888
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 12:39:59 -0500
-Received: from explorer.in.ibm.com (explorer.in.ibm.com [127.0.0.1])
-	by explorer.in.ibm.com (Postfix) with ESMTP id 12245282FDC
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 23:09:42 +0530 (IST)
-Received: (from mohan@localhost)
-	by explorer.in.ibm.com (8.13.5/8.13.5/Submit) id l26Hdfui032253
-	for linuxppc-dev@ozlabs.org; Tue, 6 Mar 2007 23:09:41 +0530
-Date: Tue, 6 Mar 2007 23:09:41 +0530
-From: Mohan Kumar M <mohan@in.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Clearing the interrupt
-Message-ID: <20070306173941.GE7476@in.ibm.com>
+Return-Path: <James.Bottomley@SteelEye.com>
+Received: from hancock.sc.steeleye.com (hancock.steeleye.com [71.30.118.248])
+	by ozlabs.org (Postfix) with ESMTP id 5A78BDDEEF
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 05:09:01 +1100 (EST)
+Subject: Re: [parisc-linux] [PATCH 2/2] Make pcibios_add_platform_entries()
+	return errors
+From: James Bottomley <James.Bottomley@SteelEye.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+In-Reply-To: <20070306150725.68D97DDF36@ozlabs.org>
+References: <20070306150725.68D97DDF36@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 06 Mar 2007 12:05:01 -0600
+Message-Id: <1173204301.3379.33.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Reply-To: mohan@in.ibm.com
+Cc: discuss@x86-64.org, dev-etrax@axis.com, linux-ia64@vger.kernel.org,
+	chris@zankel.net, Greg Kroah-Hartman <greg@kroah.com>,
+	linux-m68k@vger.kernel.org, uclinux-v850@lsi.nec.co.jp,
+	linuxppc-dev@ozlabs.org, linux-mips@linux-mips.org,
+	gerg@uclinux.org, sparclinux@vger.kernel.org,
+	ink@jurassic.park.msu.ru, linux-pci@atrey.karlin.mff.cuni.cz,
+	rth@twiddle.net, kernel@wantstofly.org, parisc-linux@parisc-linux.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,33 +28,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Tue, 2007-03-06 at 16:06 +0100, Michael Ellerman wrote:
+>  int __must_check pci_create_sysfs_dev_files (struct pci_dev *pdev)
+> @@ -644,10 +644,13 @@ int __must_check pci_create_sysfs_dev_fi
+>  		}
+>  	}
+>  	/* add platform-specific attributes */
+> -	pcibios_add_platform_entries(pdev);
+> +	if (pcibios_add_platform_entries(pdev))
+> +		goto err_rom_attr;
+>  
+>  	return 0;
+>  
+> +err_rom_attr:
+> +	sysfs_remove_bin_file(&pdev->dev.kobj, rom_attr);
 
-I would like to get some suggestions to implement the interrupt clearing
-methods in kdump kernel.
+This file is only created if the rom resource has a non-zero length.  If
+you unconditionally call sysfs_remove_bin_file() it's going to spit
+scary warnings and dump traces in this error leg if the rom resource
+doesn't exist.
 
-After a panic situation, first kernel goes through each irq_desc
-structure and if any interrupt is in progress, it calls eoi handler for
-that interrupt. eoi handler is called from the crashing cpu context.
-
-	for_each_irq(irq) {
-		struct irq_desc *desc = irq_desc + irq;
-
-		if (desc->status & IRQ_INPROGRESS)
-			desc->chip->eoi(irq);
-
-		if (!(desc->status & IRQ_DISABLED))
-			desc->chip->disable(irq);
-	}
+James
 
 
-But initially some another cpu might have acknowledged the interrupt and
-started processing the interrupt. But eoi handler may not be called by
-the cpu which acknowledged the interrupt.
-
-Is there any problem with the above approach? Is there any restriction
-such that a cpu which acknowledged the interrupt only should send the eoi
-signal?
-
-Regards,
-Mohan.
+>  err_rom:
+>  	kfree(rom_attr);
+>  err_bin_file:
+> Index: msi-new/include/linux/pci.h
+> ===================================================================
+> --- msi-new.orig/include/linux/pci.h
+> +++ msi-new/include/linux/pci.h
+> @@ -857,7 +857,7 @@ extern int pci_pci_problems;
+>  extern unsigned long pci_cardbus_io_size;
+>  extern unsigned long pci_cardbus_mem_size;
+>  
+> -extern void pcibios_add_platform_entries(struct pci_dev *dev);
+> +extern int pcibios_add_platform_entries(struct pci_dev *dev);
+>  
+>  #endif /* __KERNEL__ */
+>  #endif /* LINUX_PCI_H */
+> _______________________________________________
+> parisc-linux mailing list
+> parisc-linux@lists.parisc-linux.org
+> http://lists.parisc-linux.org/mailman/listinfo/parisc-linux
