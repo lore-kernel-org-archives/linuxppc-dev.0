@@ -1,17 +1,27 @@
-Return-Path: <Antonio.DiBacco@technolabs.it>
-Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id DFDD8DDF37
+Return-Path: <tnt@246tNt.com>
+Received: from outmx022.isp.belgacom.be (outmx022.isp.belgacom.be
+	[195.238.4.203])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 61C06DDF05
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  7 Mar 2007 01:00:43 +1100 (EST)
+	Wed,  7 Mar 2007 01:55:29 +1100 (EST)
+Received: from outmx022.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx022.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l26EtJUo006711
+	for <linuxppc-embedded@ozlabs.org>; Tue, 6 Mar 2007 15:55:21 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45ED80AB.9010907@246tNt.com>
+Date: Tue, 06 Mar 2007 15:54:35 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C75FF7.D2B5CDE5"
-Subject: Dereferencing phys addr IMMAP works even if it is not a virtual
+To: DI BACCO ANTONIO - technolabs <Antonio.DiBacco@technolabs.it>
+Subject: Re: Dereferencing phys addr IMMAP works even if it is not a virtual
 	address. Strange?
-Date: Tue, 6 Mar 2007 15:00:39 +0100
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E6C0B3A@aquib01a>
-From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
-To: <linuxppc-embedded@ozlabs.org>
+References: <F1F6EC0C8B75034F9E3A79FC85122E8E6C0B3A@aquib01a>
+In-Reply-To: <F1F6EC0C8B75034F9E3A79FC85122E8E6C0B3A@aquib01a>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,43 +32,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+DI BACCO ANTONIO - technolabs wrote:
+> Now I'm doing a ioremap_nocache of IMMAP and using the virtual pointer
+> returned to access my 880 registers but also using the physical
+> address it works, I can access the registers.
+If the IMMAP base is high (like 0xf0000000 ) and therefore doesn't
+collide with anything, it's quite common practice to map it statically
+using a BAT somewhere in the setup code and often it's mapped such that
+phys = virt ...
 
-------_=_NextPart_001_01C75FF7.D2B5CDE5
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+So a physical address in this zone is equal to a virtual addres ...
 
-Now I'm doing a ioremap_nocache of IMMAP and using the virtual pointer
-returned to access my 880 registers but also using the physical address
-it works, I can access the registers.=20
-=20
-Bye,
-Antonio.
+When that's the case, ioremap detects the BAT mapping and just does
+nothing. But you should always use ioremap nonetheless ... because if at
+some point some one decide to move the BAT mapping, if you didn't do
+things properly your code will break.
 
-------_=_NextPart_001_01C75FF7.D2B5CDE5
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Dus-ascii">
-<META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
-<BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D556295613-06032007>Now =
-I'm doing a=20
-ioremap_nocache of IMMAP and using the virtual pointer returned to =
-access my 880=20
-registers but also using the physical address it works, I can access the =
-
-registers. </SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D556295613-06032007></SPAN></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D556295613-06032007>Bye,</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D556295613-06032007>Antonio.</SPAN></FONT></DIV></BODY></HTML>
-
-------_=_NextPart_001_01C75FF7.D2B5CDE5--
+Sylvain
