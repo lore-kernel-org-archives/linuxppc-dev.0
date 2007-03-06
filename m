@@ -1,14 +1,20 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A185@MERCURY.inside.istor.com>
-To: "Charles Krinke" <ckrinke@istor.com>
-Subject: RE: Endianness versus too many byte swaps??
-MIME-Version: 1.0
-Message-ID: <OF07643750.0087C9A8-ON88257296.00759603-88257296.0075F01D@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Tue, 6 Mar 2007 13:28:11 -0800
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org,
-	linuxppc-embedded@ozlabs.org
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 65F2BDDEE6
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  7 Mar 2007 08:45:22 +1100 (EST)
+Date: Wed, 7 Mar 2007 00:45:14 +0300
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: "Cedric Pontois" <cpontois@nortel.com>
+Subject: Re: [patch 1/1] ppc: Possible bug fix for FCC driver
+Message-ID: <20070307004514.76bb83cc@localhost.localdomain>
+In-Reply-To: <00B1F4365DDBE745B091C67A1CCFCB4307124DB1@zctfhxm1>
+References: <20070306124218.4bebc288@localhost.localdomain>
+	<00B1F4365DDBE745B091C67A1CCFCB4307124DB1@zctfhxm1>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: Rachid  Koucha <koucha@nortel.com>, dmalek@jlc.net,
+	linux-kernel@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,20 +25,76 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Charles
+On Tue, 6 Mar 2007 12:03:57 +0100
+Cedric Pontois wrote:
 
-linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org wrote on 03/05/2007 
-07:14:56 AM:
+> Hi Vitaly,
+> 
+> The problem seems to be similar in recent kernels
+> (/drivers/net/fs_enet/mac-fcc.c). The transmit clock is inverted (TCI
+> bit set). The packets are well received, transmitted packets go out
+> (tx counter is ok), unfortunately as the clock is inverted (TCI) the
+> data are not correctly received by the other side. The FCC works in
+> 100Mbps (luck?) but doesn't in 10Mbps. I solved this problem by
+> removing the TCI bit set as described in the patch. Actually, this
+> problem depends also of the Ethernet phy used on board.
+> 
+IIRC it worked for us with Davicom PHY on 10 MBps on one of 8260-like...
+ 
+Well I give it a try once more with the recent kernel, but anyway if you think 
+you've located and fixed root cause, do (and test) a patch against recent kernel,
+send it to me cc'ing netdev and linuxppc-embedded, and I'll push it along
+if it is not breaking existing boards.
 
-> I think the moral of this story is that the drive logic created by my
-> predecessor that calls readl/writel to read/write ppc registers needs to
-> be changed to call in_be32 & outbe32 so I don't continue a mistake.
+-Vitaly
 
-Something that I'm not sure has been made clear to you (and I'm speaking 
-from 8347 experiance so you situation may be different but I don't think 
-so) is that the entire PCI interface on the chip is in little endian mode 
-regardless of the endianess you are running the processor in.  That's why 
-readl/writel map to in_le32/outle32, it's taking care of the byte swaping 
-for you.
-
-bruce
+> Cedric
+> 
+> -----Original Message-----
+> From: Vitaly Bordug [mailto:vbordug@ru.mvista.com] 
+> Sent: mardi 6 mars 2007 10:42
+> To: Li Yang-r58472
+> Cc: Pontois, Cedric UMTS (CEZ:8Z10); dmalek@jlc.net;
+> linux-kernel@vger.kernel.org; linuxppc-embedded@ozlabs.org
+> Subject: Re: [patch 1/1] ppc: Possible bug fix for FCC driver
+> 
+> 
+> On Tue, 6 Mar 2007 10:23:43 +0800
+> Li Yang-r58472 wrote:
+> 
+> > Hi Cedric,
+> > 
+> > For ppc embedded related patches, please also cc: 
+> > linuxppc-embedded@ozlabs.org.
+> > 
+> > > We use a kernel 2.6.14 on PPC platform (MPC 8555). The FCC driver
+> > works
+> > 
+> > To submit a kernel patch upstream, the patch should be against the 
+> > latest kernel version which is 2.6.21-rc now.
+> > > well with a 100Mbps link. But it doesn't with a 10Mbps link. To 
+> > > solve it, I modified the GFMR register init: removed TCI bit and
+> > > set
+> 
+> > > CRC32
+> > bit
+> > > instead of.
+> > 
+> > I don't know how these bits caused the 10M link issue.  Do you have 
+> > any reasoning?
+> > 
+> > > 	Signed-off-by: Cedric Pontois <cpontois@nortel.com>
+> > > 
+> > >
+> > ----------------------------------------------------------------------
+> > --
+> > > -----
+> > > 
+> > > diff -ruN pa-original/arch/ppc/8260_io/fcc_enet.c
+> The fcc code in 8260_io has been obsoleted by fs_enet driver
+> (drivers/net/fs_enet). It is known to work with 85xx at least in
+> recent kernels. If it does not for some reason, please letus know.
+> 
+> Thanks,
+> 
+> -Vitaly
