@@ -1,23 +1,24 @@
-Return-Path: <edo@onkeh.net>
-Received: from pulsar.hytekhosting.com (pulsar.hytekhosting.com
-	[208.101.48.101])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D723BDDEF3
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 09:01:42 +1100 (EST)
-Received: from onkehf2 by pulsar.hytekhosting.com with local (Exim 4.63)
-	(envelope-from <edo@onkeh.net>) id 1HOhj1-0006sI-LZ
-	for linuxppc-dev@ozlabs.org; Tue, 06 Mar 2007 17:01:39 -0500
-Message-ID: <29265.81.170.117.164.1173218499.squirrel@onkeh.net>
-In-Reply-To: <Pine.LNX.4.62.0703062016450.4463@pademelon.sonytel.be>
-References: <29902.81.170.115.218.1173205803.squirrel@onkeh.net>
-	<Pine.LNX.4.62.0703062016450.4463@pademelon.sonytel.be>
-Date: Tue, 6 Mar 2007 17:01:39 -0500 (EST)
-Subject: Re: Updated ps3fb usage?
-From: "Edward Strong" <edo@onkeh.net>
-To: linuxppc-dev@ozlabs.org
+Return-Path: <ntl@pobox.com>
+Received: from lollipop.listbox.com (lollipop.listbox.com [208.210.124.78])
+	by ozlabs.org (Postfix) with ESMTP id F0CE8DDE43
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 09:21:21 +1100 (EST)
+Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
+	by lollipop.listbox.com (Postfix) with ESMTP id 18682412DA5
+	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 17:06:20 -0500 (EST)
+Date: Tue, 6 Mar 2007 16:05:46 -0600
+From: Nathan Lynch <ntl@pobox.com>
+To: Mohan Kumar M <mohan@in.ibm.com>
+Subject: Re: [PATCH] Fix interrupt distribution in ppc970
+Message-ID: <20070306220546.GI24926@localdomain>
+References: <20061208045537.GA14626@in.ibm.com>
+	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
+	<20061218105706.GB3911@in.ibm.com>
+	<20070306135754.GB7476@in.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070306135754.GB7476@in.ibm.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	fastboot@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,22 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I modified ps3fb to support the standard fbdev modedb framework, so you
-> should
-> be able to say e.g. `video=720p' or `video=ps3fb:720p' now.
->
-> It should still work the old way (`video=ps3fb:mode:%u'), though (I'll
-> give it
-> a try when I get back to the office).
->
-> Gr{oetje,eeting}s,
+Mohan Kumar M wrote:
+> Hi,
+> 
+> Here comes the revised version of patch to fix the interrupt missing
+> problem when a kdump kernel is booted with "maxcpus=1" kernel parameter.
+> 
+> In the xics initialization code a check is made to detemine whether
+> maxcpus kernel parameter is present and if its present then
+> default_distrib_server variable is initialized to the current boot cpu
+> id (by default_server variable). So that when ever a kernel is booted
+> with maxcpus kernel parameter all interrupts are routed to the boot cpu
+> only.
+> 
+> Tested on POWER5 and JS20 systems.
+> 
+> Any comment?
 
-Thanks Geert, just tried this and I'm still getting a "no signal" from my
-TV after kboot, I'm pretty sure it's booting fine since I can see
-hard-drive activity and the system reboots on ctrl+alt+delete.
-
-My last working compile was version 2.6.20-gd96197dd.  I used the
-ps3_defconfig, and my TV supports 480p/720p/1080i so not quite sure where
-I'm going wrong here.  Any pointers would be much appreciated.
-
-Edward
+Was the root cause of this problem ever determined?  It sure looked
+like a firmware or hardware problem since it's known to occur only on
+JS20.
