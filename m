@@ -1,19 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <mohan@in.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 29D51DDF0E
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 00:56:56 +1100 (EST)
-Received: from [127.0.0.1] (localhost.localdomain [127.0.0.1])
-	by gate.crashing.org (8.13.8/8.13.8) with ESMTP id l26Dup0u016327
-	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 07:56:52 -0600
-Subject: [HACK] powerpc: DEBUG_PAGEALLOC for 32 bits
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Date: Tue, 06 Mar 2007 14:56:50 +0100
-Message-Id: <1173189411.12263.4.camel@localhost.localdomain>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 08BB1DDF1E
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 00:58:19 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l26DwGKR011717
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 08:58:16 -0500
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l26DwG0A554396
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 06:58:16 -0700
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l26DwFas010895
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 06:58:16 -0700
+Date: Tue, 6 Mar 2007 19:27:54 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Fix interrupt distribution in ppc970
+Message-ID: <20070306135754.GB7476@in.ibm.com>
+References: <20061208045537.GA14626@in.ibm.com>
+	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
+	<20061218105706.GB3911@in.ibm.com>
 Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20061218105706.GB3911@in.ibm.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, fastboot@lists.osdl.org
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,160 +38,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's an implementation of DEBUG_PAGEALLOC for ppc32. It disables BAT
-mapping and is only tested with Hash table based processor though it
-shouldn't be too hard to adapt it to others.
+Hi,
 
-It has at least one known problem: The current ppc32 kernel has a known
-problem when running without BATs as it can't cope with hash misses in
-some hash management code path. In practice, it will probably work just
-fine on UP and might deadlock every now and then on SMP. I might look
-into fixing that some day....
+Here comes the revised version of patch to fix the interrupt missing
+problem when a kdump kernel is booted with "maxcpus=1" kernel parameter.
 
-In the meantime, I think I already found a hit with that patch in
-ide-pmac... good tool to have. I'll look into doing it for 64 bits
-later.
+In the xics initialization code a check is made to detemine whether
+maxcpus kernel parameter is present and if its present then
+default_distrib_server variable is initialized to the current boot cpu
+id (by default_server variable). So that when ever a kernel is booted
+with maxcpus kernel parameter all interrupts are routed to the boot cpu
+only.
 
-Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Tested on POWER5 and JS20 systems.
 
-Index: linux-work/arch/powerpc/Kconfig.debug
+Any comment?
+
+Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
+
+---
+ arch/powerpc/platforms/pseries/xics.c |    7 +++++++
+ 1 file changed, 7 insertions(+)
+
+Index: linux-2.6.20/arch/powerpc/platforms/pseries/xics.c
 ===================================================================
---- linux-work.orig/arch/powerpc/Kconfig.debug	2007-03-06 11:10:19.000000000 +0100
-+++ linux-work/arch/powerpc/Kconfig.debug	2007-03-06 11:10:24.000000000 +0100
-@@ -18,6 +18,15 @@
+--- linux-2.6.20.orig/arch/powerpc/platforms/pseries/xics.c
++++ linux-2.6.20/arch/powerpc/platforms/pseries/xics.c
+@@ -734,6 +734,13 @@ void __init xics_init_IRQ(void)
+ skip_gserver_check:
+ 	of_node_put(np);
  
- 	  This option will slow down process creation somewhat.
- 
-+config DEBUG_PAGEALLOC
-+        bool "Debug page memory allocations"
-+        depends on DEBUG_KERNEL && !SOFTWARE_SUSPEND && PPC32
-+        help
-+          Unmap pages from the kernel linear mapping after free_pages().
-+          This results in a large slowdown, but helps to find certain types
-+          of memory corruptions.
++	/* Kdump with maxcpus parameter in PPC970xx creates interrupt
++	 * distribution problems. So assign current boot cpu id to
++	 * interrupt distribution server
++	 */
++	if (strstr(saved_command_line, "maxcpus="))
++		default_distrib_server = default_server;
 +
-+
- config HCALL_STATS
- 	bool "Hypervisor call instrumentation"
- 	depends on PPC_PSERIES && DEBUG_FS
-Index: linux-work/arch/powerpc/mm/init_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/init_32.c	2007-03-06 11:10:19.000000000 +0100
-+++ linux-work/arch/powerpc/mm/init_32.c	2007-03-06 14:15:33.000000000 +0100
-@@ -115,6 +115,10 @@
- 	if (strstr(cmd_line, "noltlbs")) {
- 		__map_without_ltlbs = 1;
- 	}
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+	__map_without_bats = 1;
-+	__map_without_ltlbs = 1;
-+#endif
- }
- 
- /*
-Index: linux-work/arch/powerpc/mm/pgtable_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/pgtable_32.c	2007-03-06 11:10:19.000000000 +0100
-+++ linux-work/arch/powerpc/mm/pgtable_32.c	2007-03-06 14:38:51.000000000 +0100
-@@ -266,9 +266,9 @@
- 	pg = pte_alloc_kernel(pd, va);
- 	if (pg != 0) {
- 		err = 0;
--		set_pte_at(&init_mm, va, pg, pfn_pte(pa >> PAGE_SHIFT, __pgprot(flags)));
--		if (mem_init_done)
--			flush_HPTE(0, va, pmd_val(*pd));
-+		set_pte_at(&init_mm, va, pg, pfn_pte(pa >> PAGE_SHIFT,
-+						     __pgprot(flags)));
-+		flush_HPTE(0, va, pmd_val(*pd));
- 	}
- 	return err;
- }
-@@ -445,3 +445,55 @@
- 	return ret;
- }
- 
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+
-+static int __change_page_attr(struct page *page, pgprot_t prot)
-+{
-+	pte_t *kpte;
-+	pmd_t *kpmd;
-+	unsigned long address;
-+
-+	BUG_ON(PageHighMem(page));
-+	address = (unsigned long)page_address(page);
-+
-+	if (v_mapped_by_bats(address) || v_mapped_by_tlbcam(address))
-+		return 0;
-+	if (!get_pteptr(&init_mm, address, &kpte, &kpmd))
-+		return -EINVAL;
-+	set_pte_at(&init_mm, address, kpte, mk_pte(page, prot));
-+	wmb();
-+	flush_HPTE(0, address, pmd_val(*kpmd));
-+	pte_unmap(kpte);
-+
-+	return 0;
-+}
-+
-+/*
-+ * Change the page attributes of an page in the linear mapping.
-+ *
-+ * THIS CONFLICTS WITH BAT MAPPINGS, DEBUG USE ONLY
-+ */
-+static int change_page_attr(struct page *page, int numpages, pgprot_t prot)
-+{
-+	int i, err = 0;
-+	unsigned long flags;
-+
-+	local_irq_save(flags);
-+	for (i = 0; i < numpages; i++, page++) {
-+		err = __change_page_attr(page, prot);
-+		if (err)
-+			break;
-+	}
-+	local_irq_restore(flags);
-+	return err;
-+}
-+
-+
-+void kernel_map_pages(struct page *page, int numpages, int enable)
-+{
-+	if (PageHighMem(page))
-+		return;
-+
-+	change_page_attr(page, numpages, enable ? PAGE_KERNEL : __pgprot(0));
-+}
-+#endif /* CONFIG_DEBUG_PAGEALLOC */
-Index: linux-work/arch/powerpc/mm/ppc_mmu_32.c
-===================================================================
---- linux-work.orig/arch/powerpc/mm/ppc_mmu_32.c	2007-03-06 11:10:19.000000000 +0100
-+++ linux-work/arch/powerpc/mm/ppc_mmu_32.c	2007-03-06 14:16:24.000000000 +0100
-@@ -85,8 +85,10 @@
- 	unsigned long max_size = (256<<20);
- 	unsigned long align;
- 
--	if (__map_without_bats)
-+	if (__map_without_bats) {
-+		printk(KERN_DEBUG "RAM mapped without BATs for data\n");
- 		return 0;
-+	}
- 
- 	/* Set up BAT2 and if necessary BAT3 to cover RAM. */
- 
-Index: linux-work/include/asm-powerpc/cacheflush.h
-===================================================================
---- linux-work.orig/include/asm-powerpc/cacheflush.h	2007-03-06 11:10:19.000000000 +0100
-+++ linux-work/include/asm-powerpc/cacheflush.h	2007-03-06 11:10:24.000000000 +0100
-@@ -64,6 +64,12 @@
- 	memcpy(dst, src, len)
- 
- 
-+
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+/* internal debugging function */
-+void kernel_map_pages(struct page *page, int numpages, int enable);
-+#endif
-+
- #endif /* __KERNEL__ */
- 
- #endif /* _ASM_POWERPC_CACHEFLUSH_H */
+ 	if (firmware_has_feature(FW_FEATURE_LPAR))
+ 		ppc_md.get_irq = xics_get_irq_lpar;
+ 	else
