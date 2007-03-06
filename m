@@ -1,21 +1,16 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 816DBDDEFE
-	for <linuxppc-dev@ozlabs.org>; Tue,  6 Mar 2007 09:55:35 +1100 (EST)
-Date: Tue, 6 Mar 2007 09:55:25 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: will_schmidt@vnet.ibm.com
-Subject: Re: [PATCH 2/6] [POWERPC] create and use get_pci_dma_ops(
-Message-Id: <20070306095525.781a730d.sfr@canb.auug.org.au>
-In-Reply-To: <1173112272.5877.5.camel@localhost>
-References: <20070304165839.4d2bf50b.sfr@canb.auug.org.au>
-	<20070304170241.816f9802.sfr@canb.auug.org.au>
-	<1173112272.5877.5.camel@localhost>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__6_Mar_2007_09_55_25_+1100_f5gbtZ4Wp23rCnE/"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 6 Mar 2007 11:09:05 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 11/15] zImage wrapper for Ebony
+Message-ID: <20070306000905.GC4728@localhost.localdomain>
+References: <20070305032307.GB31417@localhost.localdomain>
+	<20070305032452.EDB2BDDF1D@ozlabs.org>
+	<20070305171053.GC32672@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070305171053.GC32672@mag.az.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,39 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__6_Mar_2007_09_55_25_+1100_f5gbtZ4Wp23rCnE/
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Mon, Mar 05, 2007 at 10:10:53AM -0700, Mark A. Greer wrote:
+> On Mon, Mar 05, 2007 at 02:24:52PM +1100, David Gibson wrote:
+> > This patch adds support for building a zImage wrapper suitable for the
+> > Ebony (440GP) evaluation board.  This supports booting both from uboot
+> > (old versions which don't supply a flattened device tree) and IBM
+> > Openbios (aka "treeboot").
+> > 
+> > Signed-off-by: David Gibson <dwg@au1.ibm.com>
+> > ---
+> 
+> <snip>
+> 
+> > Index: working-2.6/arch/powerpc/boot/Makefile
+> > ===================================================================
+> > --- working-2.6.orig/arch/powerpc/boot/Makefile	2007-02-26 13:25:31.000000000 +1100
+> > +++ working-2.6/arch/powerpc/boot/Makefile	2007-02-26 13:25:33.000000000 +1100
+> 
+> <snip>
+> 
+> > @@ -120,6 +128,13 @@ quiet_cmd_wrap_initrd = WRAP    $@
+> >        cmd_wrap_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+> >  				-i $(obj)/ramdisk.image.gz vmlinux
+> >  
+> > +quiet_cmd_wrap_dtb	= WRAP    $@
+> > +      cmd_wrap_dtb	=$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+> > +				-d $3 vmlinux
+> > +quiet_cmd_wrap_dtb_initrd = WRAP    $@
+> > +      cmd_wrap_dtb_initrd =$(CONFIG_SHELL) $(wrapper) -c -o $@ -p $2 $(CROSSWRAP) \
+> > +				-d $3 -i $(obj)/ramdisk.image.gz vmlinux
+> > +
+> 
+> David,
+> 
+> I think we more-or-less agreed to go with Scott Wood's 'wrap' method
+> (unless there is a problem with it).
 
-On Mon, 05 Mar 2007 10:31:11 -0600 Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
->
-> > -EXPORT_SYMBOL(pci_dma_ops);
->
-> > +EXPORT_SYMBOL(get_pci_dma_ops);
->
-> should this one be EXPORT_SYMBOL_GPL(get_pci_dma_ops);
->
-> or is it grandfathered in because it is replacing and renaming
-> EXPORT_SYMBOL(pci_dma_ops);   ?
+Oh, we had?
 
-Yes, I don't know if there are any out of tree uses, but there could
-easily be.
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031337.html
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+Um.. I'm pretty uneasy about that, because I'm not at all sure that
+the wrapper script does the right thing w.r.t. where it puts the .dtb
+file, when building with a VPATH.
 
---Signature=_Tue__6_Mar_2007_09_55_25_+1100_f5gbtZ4Wp23rCnE/
-Content-Type: application/pgp-signature
+Actually, longer term what I think might be a better option is to
+build *all* the dts files into asm (with different symbolic names) and
+fold them into the wrapper library.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFF7J/oFdBgD/zoJvwRAiYRAJ9Fj1gflrPFLjvAh4DbHWYae/aX/gCeJWxs
-Rk7UcnbQ4CetOGAtze9X8zM=
-=T/Lj
------END PGP SIGNATURE-----
-
---Signature=_Tue__6_Mar_2007_09_55_25_+1100_f5gbtZ4Wp23rCnE/--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
