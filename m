@@ -1,17 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 2C5F1DDEFA
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 06:20:03 +1100 (EST)
-Date: Tue, 6 Mar 2007 20:19:58 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Edward Strong <edo@onkeh.net>
-Subject: Re: Updated ps3fb usage?
-In-Reply-To: <29902.81.170.115.218.1173205803.squirrel@onkeh.net>
-Message-ID: <Pine.LNX.4.62.0703062016450.4463@pademelon.sonytel.be>
-References: <29902.81.170.115.218.1173205803.squirrel@onkeh.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 20FB7DDDF5
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 08:04:57 +1100 (EST)
+Subject: Re: Clearing the interrupt
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: mohan@in.ibm.com
+In-Reply-To: <20070306173941.GE7476@in.ibm.com>
+References: <20070306173941.GE7476@in.ibm.com>
+Content-Type: text/plain
+Date: Tue, 06 Mar 2007 22:04:47 +0100
+Message-Id: <1173215087.9349.17.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,23 +23,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 6 Mar 2007, Edward Strong wrote:
-> Hi, I've just done a pull on Geoff's PS3 kernel git and I've noticed you
-> can't change the videomode as a kernel parameter in kboot.conf anymore. 
-> Has this feature been modified or removed completely?  I only ask because
-> I seem to be stuck in an unusable video mode at boot.
+> Is there any problem with the above approach? Is there any restriction
+> such that a cpu which acknowledged the interrupt only should send the eoi
+> signal?
 
-I modified ps3fb to support the standard fbdev modedb framework, so you should
-be able to say e.g. `video=720p' or `video=ps3fb:720p' now.
+While I don't think there -should- be any restriction, I also seem to
+remember that the xics "emulation" done by the firmware on things like
+JS20 requires the eoi to be done from the CPU where the interrupt
+originated.
 
-It should still work the old way (`video=ps3fb:mode:%u'), though (I'll give it
-a try when I get back to the office).
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Ben.
