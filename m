@@ -1,16 +1,16 @@
 Return-Path: <James.Bottomley@SteelEye.com>
 Received: from hancock.sc.steeleye.com (hancock.steeleye.com [71.30.118.248])
-	by ozlabs.org (Postfix) with ESMTP id 5A78BDDEEF
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 05:09:01 +1100 (EST)
-Subject: Re: [parisc-linux] [PATCH 2/2] Make pcibios_add_platform_entries()
-	return errors
+	by ozlabs.org (Postfix) with ESMTP id 874B4DDEF3
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 05:09:07 +1100 (EST)
+Subject: Re: [parisc-linux] [PATCH 1/2] Use a weak symbol for the empty
+	version of pcibios_add_platform_entries()
 From: James Bottomley <James.Bottomley@SteelEye.com>
 To: Michael Ellerman <michael@ellerman.id.au>
-In-Reply-To: <20070306150725.68D97DDF36@ozlabs.org>
-References: <20070306150725.68D97DDF36@ozlabs.org>
+In-Reply-To: <1173193568.89821.610708199943.qpush@concordia>
+References: <1173193568.89821.610708199943.qpush@concordia>
 Content-Type: text/plain
-Date: Tue, 06 Mar 2007 12:05:01 -0600
-Message-Id: <1173204301.3379.33.camel@mulgrave.il.steeleye.com>
+Date: Tue, 06 Mar 2007 12:01:00 -0600
+Message-Id: <1173204060.3379.28.camel@mulgrave.il.steeleye.com>
 Mime-Version: 1.0
 Cc: discuss@x86-64.org, dev-etrax@axis.com, linux-ia64@vger.kernel.org,
 	chris@zankel.net, Greg Kroah-Hartman <greg@kroah.com>,
@@ -29,45 +29,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Tue, 2007-03-06 at 16:06 +0100, Michael Ellerman wrote:
->  int __must_check pci_create_sysfs_dev_files (struct pci_dev *pdev)
-> @@ -644,10 +644,13 @@ int __must_check pci_create_sysfs_dev_fi
->  		}
->  	}
->  	/* add platform-specific attributes */
-> -	pcibios_add_platform_entries(pdev);
-> +	if (pcibios_add_platform_entries(pdev))
-> +		goto err_rom_attr;
->  
->  	return 0;
->  
-> +err_rom_attr:
-> +	sysfs_remove_bin_file(&pdev->dev.kobj, rom_attr);
+> I'm not sure if this is going to fly, weak symbols work on the compilers I'm
+> using, but whether they work for all of the affected architectures I can't say.
+> I've cc'ed as many arch maintainers/lists as I could find.
 
-This file is only created if the rom resource has a non-zero length.  If
-you unconditionally call sysfs_remove_bin_file() it's going to spit
-scary warnings and dump traces in this error leg if the rom resource
-doesn't exist.
+Well, for your use, PCI already uses weak symbols, so it must work on
+every architecture that you want to do it on ...
 
 James
-
-
->  err_rom:
->  	kfree(rom_attr);
->  err_bin_file:
-> Index: msi-new/include/linux/pci.h
-> ===================================================================
-> --- msi-new.orig/include/linux/pci.h
-> +++ msi-new/include/linux/pci.h
-> @@ -857,7 +857,7 @@ extern int pci_pci_problems;
->  extern unsigned long pci_cardbus_io_size;
->  extern unsigned long pci_cardbus_mem_size;
->  
-> -extern void pcibios_add_platform_entries(struct pci_dev *dev);
-> +extern int pcibios_add_platform_entries(struct pci_dev *dev);
->  
->  #endif /* __KERNEL__ */
->  #endif /* LINUX_PCI_H */
-> _______________________________________________
-> parisc-linux mailing list
-> parisc-linux@lists.parisc-linux.org
-> http://lists.parisc-linux.org/mailman/listinfo/parisc-linux
