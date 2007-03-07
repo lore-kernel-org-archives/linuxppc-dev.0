@@ -1,25 +1,19 @@
-Return-Path: <edo@onkeh.net>
-Received: from pulsar.hytekhosting.com (pulsar.hytekhosting.com
-	[208.101.48.101])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7FD16DDED7
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 11:04:23 +1100 (EST)
-Received: from onkehf2 by pulsar.hytekhosting.com with local (Exim 4.63)
-	(envelope-from <edo@onkeh.net>) id 1HOjdk-0000N9-L6
-	for linuxppc-dev@ozlabs.org; Tue, 06 Mar 2007 19:04:20 -0500
-Message-ID: <29357.81.170.117.164.1173225860.squirrel@onkeh.net>
-In-Reply-To: <45EDF8F5.9090009@am.sony.com>
-References: <29902.81.170.115.218.1173205803.squirrel@onkeh.net>
-	<Pine.LNX.4.62.0703062016450.4463@pademelon.sonytel.be>
-	<29265.81.170.117.164.1173218499.squirrel@onkeh.net>
-	<45EDF8F5.9090009@am.sony.com>
-Date: Tue, 6 Mar 2007 19:04:20 -0500 (EST)
-Subject: Re: Updated ps3fb usage?
-From: "Edward Strong" <edo@onkeh.net>
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: text/plain;charset=iso-8859-1
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 36A73DDE3B
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 11:12:58 +1100 (EST)
+Date: Wed, 7 Mar 2007 11:12:46 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: will_schmidt@vnet.ibm.com
+Subject: Re: [PATCH] [POWERPC] fix up log_plpar_hcall_return
+Message-Id: <20070307111246.79afc104.sfr@canb.auug.org.au>
+In-Reply-To: <1173222701.13165.9.camel@localhost>
+References: <1173222701.13165.9.camel@localhost>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Wed__7_Mar_2007_11_12_46_+1100_JNZ0uVI0XkQt0c6e"
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,27 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Sorry for the trouble, I accidentally applied the patch
-> ps3-hires-defconfig.diff
-> (below) when committing.  'mode:5' is 1080p, which your monitor does not
-> support.
-> Just set the mode to one your monitor supports.
->
-> BTW, you need to build the video mode into kernel with CONFIG_CMDLINE
-> since I
-> don't yet have the code to parse and use the command line from kboot done.
->
-> -Geoff
->
-> --- ps3-linux-dev.orig/arch/powerpc/configs/ps3_defconfig
-> +++ ps3-linux-dev/arch/powerpc/configs/ps3_defconfig
-> @@ -213 +213,1 @@
-> -CONFIG_CMDLINE="root=/dev/sda1 ip=dhcp"
-> +CONFIG_CMDLINE="root=/dev/sda1 ip=dhcp video=ps3fb:mode:5"
->
->
+--Signature=_Wed__7_Mar_2007_11_12_46_+1100_JNZ0uVI0XkQt0c6e
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Yes this solved it.  Apologies, it was sloppy of me not to check the
-defconfig.  Thanks again,
+[sfr done Blue Hair]
 
-Edward
+Hi Will,
+
+On Tue, 06 Mar 2007 17:11:41 -0600 Will Schmidt <will_schmidt@vnet.ibm.com> wrote:
+>
+> This is mostly cosmetic.  This updates log_plpar_hcall_return() to use a
+> case statement rather than an if-then-else jumble, and moves it to
+> rtas.c where it can be near the other rtas related functions.
+
+You are moving a static function from the only file that calls it.  You
+are exporting it when the only callers are in a file that cannot be part
+of a module and you are (maybe) optimizing something that is only used in
+error paths.
+
+Sorry, but unless you are doing to introduce others uses, that I don't
+see that this change helps.
+
+[sfr redons normal hair]
+
+I don't mean to sound harsh  :-)
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Wed__7_Mar_2007_11_12_46_+1100_JNZ0uVI0XkQt0c6e
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFF7gOIFdBgD/zoJvwRAhZoAJ4naAEG/cA5KL/RxuxU/EQNTmkS2wCdEsXC
+WmllshIzFzWtfcmR3XXRo7w=
+=jx11
+-----END PGP SIGNATURE-----
+
+--Signature=_Wed__7_Mar_2007_11_12_46_+1100_JNZ0uVI0XkQt0c6e--
