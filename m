@@ -2,23 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 624D5DDD0E
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 17:53:29 +1100 (EST)
-Subject: Re: [POWERPC] Clean up deciding when PCI is selectable
+	by ozlabs.org (Postfix) with ESMTP id 6BACDDDED1
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 19:53:16 +1100 (EST)
+Subject: Re: [PATCH] Fix interrupt distribution in ppc970
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20070307164737.e927711d.sfr@canb.auug.org.au>
-References: <20070304165839.4d2bf50b.sfr@canb.auug.org.au>
-	<20070304170348.511af7cb.sfr@canb.auug.org.au>
-	<20070304170444.2eb423ce.sfr@canb.auug.org.au>
-	<200703041507.06307.arnd@arndb.de>
-	<1173033826.8184.68.camel@localhost.localdomain>
-	<20070307164737.e927711d.sfr@canb.auug.org.au>
+To: Nathan Lynch <ntl@pobox.com>
+In-Reply-To: <20070306220546.GI24926@localdomain>
+References: <20061208045537.GA14626@in.ibm.com>
+	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
+	<20061218105706.GB3911@in.ibm.com> <20070306135754.GB7476@in.ibm.com>
+	<20070306220546.GI24926@localdomain>
 Content-Type: text/plain
-Date: Wed, 07 Mar 2007 07:53:11 +0100
-Message-Id: <1173250391.9349.21.camel@localhost.localdomain>
+Date: Wed, 07 Mar 2007 09:52:47 +0100
+Message-Id: <1173257567.9349.27.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	fastboot@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +27,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-03-07 at 16:47 +1100, Stephen Rothwell wrote:
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/Kconfig                       |   18 +++++++++++++++---
->  arch/powerpc/platforms/85xx/Kconfig        |    1 +
->  arch/powerpc/platforms/embedded6xx/Kconfig |    2 ++
->  3 files changed, 18 insertions(+), 3 deletions(-)
+On Tue, 2007-03-06 at 16:05 -0600, Nathan Lynch wrote:
+> Mohan Kumar M wrote:
+> > Hi,
+> > 
+> > Here comes the revised version of patch to fix the interrupt missing
+> > problem when a kdump kernel is booted with "maxcpus=1" kernel parameter.
+> > 
+> > In the xics initialization code a check is made to detemine whether
+> > maxcpus kernel parameter is present and if its present then
+> > default_distrib_server variable is initialized to the current boot cpu
+> > id (by default_server variable). So that when ever a kernel is booted
+> > with maxcpus kernel parameter all interrupts are routed to the boot cpu
+> > only.
+> > 
+> > Tested on POWER5 and JS20 systems.
+> > 
+> > Any comment?
 > 
-> On Sun, 04 Mar 2007 19:43:46 +0100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
-> >
-> > I dislike the giant conditional though.
-> 
-> How about this (only tested on a couple of configs).
+> Was the root cause of this problem ever determined?  It sure looked
+> like a firmware or hardware problem since it's known to occur only on
+> JS20.
 
-I much prefer this one yes.
+js20 and js21 have in common that the firmware "emulates" the XICS on
+top of an MPIC, which can cause interesting issues ... like the
+requirement of issuing EOI's from the CPU that got the interrupt, among
+ohters.
+
+Ben.
