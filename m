@@ -1,10 +1,9 @@
 Return-Path: <root@elitedvb.net>
-Message-Id: <20070307180525.636451000@elitedvb.net>>
-References: <20070307180144.812594000@elitedvb.net>>
-Date: Wed, 07 Mar 2007 19:01:45 +0100
+Message-Id: <20070307180144.812594000@elitedvb.net>>
+Date: Wed, 07 Mar 2007 19:01:44 +0100
 From: Felix Domke <tmbinc@elitedvb.net>
 To: Linuxppc-dev@ozlabs.org
-Subject: [patch 1/7] xenon: add PCI Vendor ID: Microsoft
+Subject: [patch 0/7] [RFC] Xenon support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,21 +13,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Felix Domke <tmbinc@elitedvb.net>
+This series of patches add support for the Xbox 360 gaming console.
 
----
- include/linux/pci_ids.h |    2 ++
- 1 file changed, 2 insertions(+)
+Note that these patches were written by different people, who want
+to remain anonymous. These drivers were written without hardware 
+documentation being available.
 
-Index: linux-2.6.20/include/linux/pci_ids.h
-===================================================================
---- linux-2.6.20.orig/include/linux/pci_ids.h	2007-03-07 19:01:12.000000000 +0100
-+++ linux-2.6.20/include/linux/pci_ids.h	2007-03-07 19:01:20.000000000 +0100
-@@ -2383,3 +2383,5 @@
- 
- #define PCI_VENDOR_ID_QUICKNET		0x15E2
- #define PCI_DEVICE_ID_QUICKNET_XJ	0x0500
-+
-+#define PCI_VENDOR_ID_MICROSOFT		0x1414
+There are probably more than some rough edges. Please comment 
+and/or provide patches.
+
+To actually run this, you need a special loader which exploits the
+recently announced vulnerability. This loader was developed seperately
+and should be available soon.
+
+thanks,
+Felix
 
 --
