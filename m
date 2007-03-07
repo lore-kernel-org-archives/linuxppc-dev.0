@@ -1,18 +1,20 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Fastboot] [PATCH] Fix interrupt distribution in ppc970
+Subject: Re: [PATCH] Fix interrupt distribution in ppc970
 From: Michael Ellerman <michael@ellerman.id.au>
-To: vgoyal@in.ibm.com
-In-Reply-To: <20070307060623.GA5469@in.ibm.com>
+To: mohan@in.ibm.com
+In-Reply-To: <20070307045341.GG7476@in.ibm.com>
 References: <20061208045537.GA14626@in.ibm.com>
 	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
 	<20061218105706.GB3911@in.ibm.com> <20070306135754.GB7476@in.ibm.com>
 	<1173190615.4675.30.camel@concordia.ozlabs.ibm.com>
-	<20070307060623.GA5469@in.ibm.com>
+	<20070306165529.GD7476@in.ibm.com>
+	<1173202634.4675.37.camel@concordia.ozlabs.ibm.com>
+	<20070307045341.GG7476@in.ibm.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-2kP/jPIIx/cxkNsN4qd9"
-Date: Wed, 07 Mar 2007 11:46:31 +0100
-Message-Id: <1173264391.5101.44.camel@concordia.ozlabs.ibm.com>
+	boundary="=-jVM5s4y5HBCdHwnTYQ07"
+Date: Wed, 07 Mar 2007 11:52:32 +0100
+Message-Id: <1173264752.5101.49.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
 Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
 	fastboot@lists.osdl.org
@@ -27,46 +29,60 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-2kP/jPIIx/cxkNsN4qd9
+--=-jVM5s4y5HBCdHwnTYQ07
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2007-03-07 at 11:36 +0530, Vivek Goyal wrote:
-> On Tue, Mar 06, 2007 at 03:16:55PM +0100, Michael Ellerman wrote:
-> > On Tue, 2007-03-06 at 19:27 +0530, Mohan Kumar M wrote:
-> > > Hi,
+On Wed, 2007-03-07 at 10:23 +0530, Mohan Kumar M wrote:
+> On Tue, Mar 06, 2007 at 06:37:14PM +0100, Michael Ellerman wrote:
+> > On Tue, 2007-03-06 at 22:25 +0530, Mohan Kumar M wrote:
+> > > On Tue, Mar 06, 2007 at 03:16:55PM +0100, Michael Ellerman wrote:
+> > > > First, I don't know why we keep telling people to use maxcpus=3D1 f=
+or
+> > > > kexec/kdump - it's causing bugs, and I don't know of any that it fi=
+xes?
 > > >=20
-> > > Here comes the revised version of patch to fix the interrupt missing
-> > > problem when a kdump kernel is booted with "maxcpus=3D1" kernel param=
-eter.
-> > >=20
-> > > In the xics initialization code a check is made to detemine whether
-> > > maxcpus kernel parameter is present and if its present then
-> > > default_distrib_server variable is initialized to the current boot cp=
-u
-> > > id (by default_server variable). So that when ever a kernel is booted
-> > > with maxcpus kernel parameter all interrupts are routed to the boot c=
-pu
-> > > only.
-> > >=20
-> > > Tested on POWER5 and JS20 systems.
+> > > Some distros want to use maxcpus=3D1 for kdump.
 > >=20
-> > First, I don't know why we keep telling people to use maxcpus=3D1 for
-> > kexec/kdump - it's causing bugs, and I don't know of any that it fixes?
+> > Yeah OK.
 > >=20
->=20
-> Logically speaking, there is no need to bring up all the cpus in the
-> system to capture the dump. A single cpu can do the job, may be in
-> relatively lesser memory. Just because we see bugs with maxcpus=3D1, does
-> not mean we should try to bring up all the cpus in second kernel. I think
-> we should try to clean maxcpus=3D1 path instead.
+> > > > Second, the way you've written this is not so good. The xics code s=
+hould
+> > > > not be checking that "maxcpus" exists on the command line, it shoul=
+d be
+> > > > checking that the distrib server points to a cpu that is online - u=
+sing
+> > > > cpu_online() etc.
+> > > >
+> > >=20
+> > > In get_irq_server function in xics.c, "noirqdistrib" command line
+> > > parameter is indirectly checked for routing the interrupts either to =
+a
+> > > specific cpu or to all cpus. So I think checking for maxcpus=3D comma=
+nd
+> > > line parameter in xics.c is not a problem.
+> >=20
+> > No, it checks a flag, it doesn't run strstr on the saved command line.
+> >
+> What if I use a flag (or existing global variable if any) to check for
+> the presence of maxcpus kernel paramter?
 
-Sure it'd be nice. But in reality I think the memory reductions are
-miniscule, it's still an SMP kernel, it still allocates per-cpu data for
-every cpu, they're still spinning. The only thing that maxcpus does is
-not bring them online ... and cause lots of bugs.
+There's already maxcpus in init/main.c, that would probably be better,
+though still ugly.
 
-But the distros have made the call, so I'll just shutup now :)
+> > > Also during the xics_init_IRQ function other cpus (secondary cpus) wi=
+ll
+> > > not be online, they are made online at a later stage. So using
+> > > cpu_online() function at xics_init_IRQ will return true only for boot
+> > > cpu id.
+> >=20
+> > OK, so you should be able to use cpus possible map or something similar=
+.
+> >
+> Hmm, I think cpus possible map will have an entry for the offline cpu
+> also.
+
+You're right, it will, did I mention that maxcpus=3D is broken :)
 
 cheers
 
@@ -80,16 +96,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-2kP/jPIIx/cxkNsN4qd9
+--=-jVM5s4y5HBCdHwnTYQ07
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQBF7pgHdSjSd0sB4dIRAlc4AJwNlLsbtAuiEYILsVLQmzSq7UEnywCgychi
-JWF5hKKz57Er7lZSUJY1JtM=
-=QR+e
+iD8DBQBF7plwdSjSd0sB4dIRAhidAJ0fodEx0rXo4T1k2gKC1Np2GAQT5wCfUPqi
+VTDIlnQmlXZhP4vqEZ4kNYw=
+=4r62
 -----END PGP SIGNATURE-----
 
---=-2kP/jPIIx/cxkNsN4qd9--
+--=-jVM5s4y5HBCdHwnTYQ07--
