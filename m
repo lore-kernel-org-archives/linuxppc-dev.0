@@ -1,18 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 2A0A4DE1E0
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 08:30:12 +1100 (EST)
-Message-ID: <45EF2ED5.5040905@ru.mvista.com>
-Date: Thu, 08 Mar 2007 00:29:57 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
-Subject: Re: [RFC] [patch 5/6] powerpc 2.6.20-rt8: fix a boot error
-	for	handle_percpu_irq
-References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi1wk125dj.wl@toshiba.co.jp>
-In-Reply-To: <yyi1wk125dj.wl@toshiba.co.jp>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17903.12035.781782.317694@cargo.ozlabs.ibm.com>
+Date: Thu, 8 Mar 2007 08:30:43 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw
+	ones.
+In-Reply-To: <45EF2CD8.3050804@ru.mvista.com>
+References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi649d25qz.wl@toshiba.co.jp>
+	<45EECE5C.6030100@ru.mvista.com>
+	<17902.60669.945986.186995@cargo.ozlabs.ibm.com>
+	<45EEF6A4.9090807@ru.mvista.com>
+	<17903.4302.502364.126701@cargo.ozlabs.ibm.com>
+	<45EF2CD8.3050804@ru.mvista.com>
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,76 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Sergei Shtylyov writes:
 
-Tsutomu OWA wrote:
->   To fix the following boot time error by removing ack member added by
-> the rt patch.
+>     I've floowed up to my patch with such explanation. In the context of an-rt 
+> patch itself, it was just too clear, hence I didn't go into explanations in 
+> the patch itself. :-)
 
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-> Processor 1 found.
-> Brought up 2 CPUs
-> ------------[ cut here ]------------
-> kernel BUG at arch/powerpc/platforms/cell/interrupt.c:86!
-> pu 0x1: Vector: 700 (Program Check) at [c00000000fff3c80]
->     pc: c000000000033f9c: .iic_eoi+0x58/0x64
->     lr: c00000000009add8: .handle_percpu_irq+0xd4/0xf4
->     sp: c00000000fff3f00
->    msr: 9000000000021032
->   current = 0xc000000000fee040
->   paca    = 0xc000000000509e80
->     pid   = 0, comm = swapper
-> kernel BUG at arch/powerpc/platforms/cell/interrupt.c:86!
-> enter ? for help
-> [link register   ] c00000000009add8 .handle_percpu_irq+0xd4/0xf4
-> [c00000000fff3f00] c00000000009ada8 .handle_percpu_irq+0xa4/0xf4 (unreliable)
-> [c00000000fff3f90] c000000000023bb8 .call_handle_irq+0x1c/0x2c
-> [c000000000ff7950] c00000000000c910 .do_IRQ+0xf8/0x1b8
-> [c000000000ff79f0] c000000000034f34 .cbe_system_reset_exception+0x74/0xb4
-> [c000000000ff7a70] c000000000022610 .system_reset_exception+0x40/0xe0
-> [c000000000ff7af0] c000000000003378 system_reset_common+0xf8/0x100
-> --- Exception: 100 (System Reset) at c000000000035008 .cbe_power_save+0x94/0xb0
-> [c000000000ff7e70] c000000000012030 .cpu_idle+0xc8/0x144
-> [c000000000ff7f00] c000000000026894 .start_secondary+0x150/0x174
-> [c000000000ff7f90] c000000000008364 .start_secondary_prolog+0xc/0x10
-> 1:mon>
-> 
-> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
->   I found a pile of e-mail started by Sergei Shtylyov on linuxppc-dev regarding this.
->     Subject: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi type IRQ handlers
->     From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
->     Date: Sun, 19 Nov 2006 22:43:34 +0300
+Well, it might be clear, to you, now, with the context in your head.
+But if such a patch is to go into a git tree, and somebody comes along
+in 3 years time and wants to know exactly why you made that change
+(and maybe that somebody is you :), then they will need more detail -
+such as how you came to the conclusion that those locks and no others
+needed to be changed, for instance.
 
->   Though I don't quite get the conclusion, the code does not work at least
-> on celleb when handle_percpu_irq is applied.  Since the handle_percpu_irq calls
+At least give some of the reasoning behind your choice of which locks
+to convert, so that in future, if the patch turns out to have
+introduced a bug somehow, the person debugging it can either identify
+that there was a flaw in your logic, or else understand something that
+you have seen that they missed.
 
-    Hmmm, I was under impression that I was fixing fasteoi flow case... Sorry 
-if it broke something but it really shouldn't even have been there at all. :-/
-
-> both .ask and .eoi and when ask is set to iic_eoi, then iic_eoi() is called twice
-> for one interrupt.  It hits BUG_ON(iic->eoi_ptr < 0)!
-
->   Anthor workaround could be to add one more irq_chip structure for handle_percpu_irq
-> which does not have ack member...
-
->   Any comments?
-
-    Well, I've told Ingo long ago that he shouldn't add that to the -rt patch 
-(it's been refused from the very start but then got "restored" along with 
-previously dropped genTOD patches).
-
-> Signed-off-by: Tsutomu Owa <tsutomu.owa@toshiba.co.jp>
-> -- owa
-> 
-> diff -rup linux-rt8/arch/powerpc/platforms/cell/interrupt.c rt/arch/powerpc/platforms/cell/interrupt.c
-> --- linux-rt8/arch/powerpc/platforms/cell/interrupt.c	2007-02-20 14:30:38.000000000 +0900
-> +++ rt/arch/powerpc/platforms/cell/interrupt.c	2007-03-02 18:48:52.000000000 +0900
-> @@ -90,7 +90,6 @@ static struct irq_chip iic_chip = {
->  	.typename = " CELL-IIC ",
->  	.mask = iic_mask,
->  	.unmask = iic_unmask,
-> -	.ack = iic_eoi,
->  	.eoi = iic_eoi,
->  };
-
-WBR, Sergei
+Paul.
