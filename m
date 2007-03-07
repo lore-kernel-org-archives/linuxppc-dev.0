@@ -1,21 +1,10 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3F8E8DDF2F
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 07:01:49 +1100 (EST)
-In-Reply-To: <1173292541.23776.125.camel@ld0161-tx32>
-References: <1173292541.23776.125.camel@ld0161-tx32>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E122D060-AA41-48DE-AC44-CF7714EBAD53@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Do not skip PCI Express to PCI bridge when scanning OF
-	node
-Date: Wed, 7 Mar 2007 14:00:52 -0600
-To: Jon Loeliger <jdl@freescale.com>, Haiying Wang <haiying.wang@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org Dev ML" <linuxppc-dev@ozlabs.org>
+Return-Path: <root@elitedvb.net>
+Message-Id: <20070307180525.919926000@elitedvb.net>>
+References: <20070307180144.812594000@elitedvb.net>>
+Date: Wed, 07 Mar 2007 19:01:47 +0100
+From: Felix Domke <tmbinc@elitedvb.net>
+To: Linuxppc-dev@ozlabs.org
+Subject: [patch 3/7] xenon: udbg support (ugly)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,20 +14,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This adds support for a serial kernel output on the Xenon platform.
 
-On Mar 7, 2007, at 12:35 PM, Jon Loeliger wrote:
+Signed-off-by: Felix Domke <tmbinc@elitedvb.net>
 
-> From: Haiying Wang <haiying.wang@freescale.com>
->
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-> Signed-off-by: Haiying Wang <haiying.wang@freescale.com>
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+---
+ arch/powerpc/kernel/misc_64.S |    2 +-
+ arch/powerpc/kernel/udbg.c    |   14 ++++++++++++++
+ 2 files changed, 15 insertions(+), 1 deletion(-)
 
-The signed-off-by's are out of order if this patch is really from  
-Haiyang.
+Index: linux-2.6.20/arch/powerpc/kernel/misc_64.S
+===================================================================
+--- linux-2.6.20.orig/arch/powerpc/kernel/misc_64.S	2007-03-07 19:01:12.000000000 +0100
++++ linux-2.6.20/arch/powerpc/kernel/misc_64.S	2007-03-07 19:01:21.000000000 +0100
+@@ -247,7 +247,7 @@
+ 	blr
+ 
+ 
+-#if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE)
++#if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE) || defined(CONFIG_PPC_XENON)
+ /*
+  * Do an IO access in real mode
+  */
+Index: linux-2.6.20/arch/powerpc/kernel/udbg.c
+===================================================================
+--- linux-2.6.20.orig/arch/powerpc/kernel/udbg.c	2007-03-07 19:01:12.000000000 +0100
++++ linux-2.6.20/arch/powerpc/kernel/udbg.c	2007-03-07 19:01:21.000000000 +0100
+@@ -25,6 +25,18 @@
+  * Early debugging facilities. You can enable _one_ of these via .config,
+  * if you do so your kernel _will not boot_ on anything else. Be careful.
+  */
++
++extern u8 real_readb(volatile u8 __iomem  *addr);
++extern void real_writeb(u8 data, volatile u8 __iomem *addr);
++
++void udbg_xenon_real_putc(char c)
++{
++	if (c == '\n')
++		udbg_xenon_real_putc('\r');
++	while (!(real_readb((void*)0x80000200ea001018ULL)&0x02));
++	real_writeb(c, (void*)0x80000200ea001014ULL);
++}
++
+ void __init udbg_early_init(void)
+ {
+ #if defined(CONFIG_PPC_EARLY_DEBUG_LPAR)
+@@ -46,6 +58,7 @@
+ 	/* For iSeries - hit Ctrl-x Ctrl-x to see the output */
+ 	udbg_init_iseries();
+ #endif
++	udbg_putc = udbg_xenon_real_putc;
+ }
+ 
+ /* udbg library, used by xmon et al */
+@@ -150,6 +163,7 @@
+ 		printk(KERN_INFO "early console immortal !\n");
+ 		return;
+ 	}
++	return;
+ 	unregister_console(&udbg_console);
+ 	early_console_initialized = 0;
+ }
 
-Also, I think a better description about why this was needed should  
-be provided.  I'm guessing devices behind a PCI Ex to PCI bridge end  
-up pdev->bus->self set?  Seems like a bug in the generic pci code.
-
-- k
+--
