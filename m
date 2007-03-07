@@ -1,19 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 4DC58DDF7F
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 10:29:32 +1100 (EST)
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 0CBFEDDF7F
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 10:29:34 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 4/7] xenon: add southbridge ethernet support
-Date: Thu, 8 Mar 2007 00:27:25 +0100
+Subject: Re: [patch 2/7] xenon: add platform support
+Date: Thu, 8 Mar 2007 00:06:25 +0100
 References: <20070307180144.812594000@elitedvb.net>
 	<20070307180144.812594000@elitedvb.net>>
-	<20070307180526.058443000@elitedvb.net>>
-In-Reply-To: <20070307180526.058443000@elitedvb.net>
+	<20070307180525.774243000@elitedvb.net>>
+In-Reply-To: <20070307180525.774243000@elitedvb.net>
 MIME-Version: 1.0
-Message-Id: <200703080027.25914.arnd@arndb.de>
 Content-Type: text/plain;
   charset="iso-8859-1"
+Message-Id: <200703080006.25246.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,146 +23,186 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 07 March 2007 19:01:48 Felix Domke wrote:
-> This adds support for the Ethernet controller used in the Xenon
-> southbridge.
->
-> It is based on the skeleton code, and works surprisingly good. It has some
-> rough edges, especially regarding SMP locks, and probably needs some code
-> cleanup.
+> +#define PRIO_IPI_4       0x08
+> +#define PRIO_IPI_3       0x10
+> +#define PRIO_SMM         0x14
+> +#define PRIO_SFCX        0x18
+> +#define PRIO_SATA_HDD    0x20
+> +#define PRIO_SATA_CDROM  0x24
+> +#define PRIO_OHCI_0      0x2c
+> +#define PRIO_EHCI_0      0x30
+> +#define PRIO_OHCI_1      0x34
+> +#define PRIO_EHCI_1      0x38
+> +#define PRIO_XMA         0x40
+> +#define PRIO_AUDIO       0x44
+> +#define PRIO_ENET        0x4C
+> +#define PRIO_XPS         0x54
+> +#define PRIO_GRAPHICS    0x58
+> +#define PRIO_PROFILER    0x60
+> +#define PRIO_BIU         0x64
+> +#define PRIO_IOC         0x68
+> +#define PRIO_FSB         0x6c
+> +#define PRIO_IPI_2       0x70
+> +#define PRIO_CLOCK       0x74
+> +#define PRIO_IPI_1       0x78
 
-Right, though it appears that some of the code that needs to be cleaned
-up even comes from the skeleton driver...
+These should probably all come from the device tree
+instead of compile-time constants.
 
-It's also the wrong mailing list to post this to, it should go to netdev.
-
-Furthermore, this driver should have MODULE_LICENSE, MODULE_AUTHOR
-and MODULE_DESCRIPTION field, like any loadable module.
-
-> +0100 @@ -0,0 +1,725 @@
-> +/*
-> + * based on skeleton code.
-> + */
-
-Your other files have a long copyright notice, why the inconsistency?
-
-> +#define assert(expr) \
-> +        if(!(expr)) {					\
-> +        printk( "Assertion failed! %s,%s,%s,line=%d\n",	\
-> +        #expr,__FILE__,__FUNCTION__,__LINE__);		\
-> +        }
-
-use BUG_ON() instead of assert()
-
-> +/* Symbolic offsets to registers. */
-> +enum XENONNET_registers {
-> +	TxConfig = 0x00,
-> +	TxDescriptorBase = 0x04,
-> +	TxDescriptorStatus = 0x0C,
-> +	RxConfig = 0x10,
-> +	RxDescriptorBase = 0x14,
-> +	InterruptStatus = 0x20,
-> +	InterruptMask = 0x24,
-> +	Config0 = 0x28,
-> +	Power = 0x30,
-> +	PhyConfig = 0x40,
-> +	PhyControl = 0x44,
-> +	Config1 = 0x50,
-> +	RetryCount = 0x54,
-> +	MulticastFilterControl = 0x60,
-> +	Address0 = 0x62,
-> +	MulticastHash = 0x68,
-> +	MaxPacketSize = 0x78,
-> +	Address1 = 0x7A
-> +};
-
-Don't use mixed case identifiers.
-
-> +static int xenon_net_open (struct net_device *dev);
-> +static void xenon_net_tx_timeout (struct net_device *dev);
-> +static void xenon_net_init_ring (struct net_device *dev);
-> +static int xenon_net_start_xmit (struct sk_buff *skb, struct net_device
-> *dev); +static irqreturn_t xenon_net_interrupt(int irq, void *dev_id);
-> +static int xenon_net_close (struct net_device *dev);
-> +static void xenon_net_hw_start (struct net_device *dev);
-> +static int xenon_net_poll(struct net_device *dev, int *budget);
-
-avoid forward declarations for static functions
-
-> +#define XENONNET_W8(reg, val8)	writeb ((val8), ioaddr + (reg))
-> +#define XENONNET_W16(reg, val16)	writew ((val16), ioaddr + (reg))
-> +#define XENONNET_W32(reg, val32)	do { writel ((val32), ioaddr + (reg));  }
-> while (0) +#define XENONNET_R8(reg)		readb (ioaddr + (reg))
-> +#define XENONNET_R16(reg)		readw (ioaddr + (reg))
-> +#define XENONNET_R32(reg)		((u32) readl (ioaddr + (reg)))
-
-get rid of these, just use the {read,write}{b,w,l} directly
-
-> +		printk ("EXIT, returning -ENOMEM\n");
-
-use proper printk levels or kill this output. also watch
-your whitespace.
-
-> +	SET_MODULE_OWNER(dev);
-
-SET_MODULE_OWNER is deprecated, just remove this.
-
-> +	memcpy(dev->dev_addr, "\0\0\1\2\3\4", 6);
-
-use random_ether_address
-
-> +	while (1)
-> +	{
-> +		int index = atomic_read(&tp->rx_next);
-> +		volatile u32 *descr = tp->rx_descriptor_base + index * 0x10;
-
-'volatile' is most likely wrong here, I guess you need to convert this
-to use the right barriers.
-
-> +static irqreturn_t xenon_net_interrupt(int irq, void *dev_id)
+> +void __init xenon_iic_init_IRQ(void)
 > +{
-> +	struct net_device *dev = dev_id;
-> +	struct xenon_net_private *tp = dev->priv;
-> +	void *ioaddr = tp->mmio_addr;
-> +	u32 status;
+> +	int i;
+> +	struct device_node *dn;
 > +
-> +	spin_lock (&tp->lock);
+> +	printk("XENON init IRQ\n");
+
+needs a printk level, KERN_DEBUG or KERN_INFO.
+
+> +			/* search for our interrupt controller inside the device tree */
+> +	for (dn = NULL;
+> +	     (dn = of_find_node_by_name(dn,"interrupt-controller")) != NULL;) {
+> +		if (!device_is_compatible(dn,
+> +				     "xenon"))
+> +			continue;
 > +
-> +	status = XENONNET_R32(InterruptStatus);
+> +		irq_set_virq_count(0x80);
+> +		iic_base = ioremap_nocache(0x20000050000, 0x10000);
+
+This should come from the 'reg' property of the above node.
+
+
+> +void xenon_cause_IPI(int target, int msg)
+> +{
+> +	int ipi_prio;
 > +
-> +	if (status & 0x40)
-> +	{
-> +		if (netif_rx_schedule_prep(dev)) {
-> +			status &= ~0x40;
-> +			__netif_rx_schedule (dev);
-> +		}
-> +	}
+> +	ipi_prio = ipi_to_prio(msg);
 > +
-> +	if (status & 4)
-> +	{
-> +		xenon_net_tx_interrupt(dev, tp, ioaddr);
-> +		status &= ~0x4;
-> +	}
+> +	__raw_writeq( (0x10000<<target) | ipi_prio, iic_base + 0x10 +
+> hard_smp_processor_id() * 0x1000); +}
 > +
-> +//	if (status)
-> +//		printk("other interrupt: %08x\n", status);
+
+You seem to have a line wrapping problem and might need to fix your
+mail client.
+Also, don't use __raw_writeq here. In order to access on-chip data,
+use out_be64().
+
+> +	hose->ops = &xenon_pci_ops;
+> +	hose->cfg_addr = ioremap(0xd0000000, 0x1000000);
 > +
-> +	spin_unlock (&tp->lock);
+The addresses should come from the device tree, don't hardcode
+them in the source.
+
+> +#define DEBUG
 > +
-> +	return IRQ_HANDLED;
+
+really?
+
+
+> +void __init xenon_pci_init(void);
+> +#ifdef CONFIG_SMP
+> +extern void smp_init_xenon(void);
+> +#endif
+
+move these declarations to a header
+
+> +static void xenon_show_cpuinfo(struct seq_file *m)
+> +{
+> +	struct device_node *root;
+> +	const char *model = "";
+> +
+> +	root = of_find_node_by_path("/");
+> +	if (root)
+> +		model = get_property(root, "model", NULL);
+> +	seq_printf(m, "machine\t\t: CHRP %s\n", model);
+> +	of_node_put(root);
 > +}
 
-Usually, you'd want to use a single poll function for both receive
-and transmit, and call __netif_rx_schedule in both cases.
+CHRP???
 
-> +	spin_lock_irqsave (&tp->lock, flags);
-> +	spin_unlock_irqrestore (&tp->lock, flags);
+> +static void __init xenon_pcibios_fixup(void)
+> +{
+> +	struct pci_dev *dev = NULL;
+> +
+> +	for_each_pci_dev(dev)
+> +		pci_read_irq_line(dev);
+> +}
 
-huh?
+I guess you copied that from cell? You should not need it.
 
-> +	synchronize_irq (dev->irq);
-> +	free_irq (dev->irq, dev);
+> +	if (ROOT_DEV == 0) {
+> +		printk("No ramdisk, default root is /dev/hda2\n");
+> +		ROOT_DEV = Root_HDA2;
+> +	}
 
-free_irq does syncronize_irq itself, iirc
+kill this, it's unnecessary (and probably wrong in your case)
 
-	Arnd <><
+> +static int __init xenon_probe(void)
+> +{
+> +       hpte_init_native();
+> +
+> +       return 1;
+> +}
+
+This definitely needs to check the device tree whether it's running
+on the right platform, otherwise you can not build a multiplatform
+kernel.
+
+> +void __init xenon_hpte_init(unsigned long htab_size);
+> +
+move this to a header file
+
+
+> +#include <asm/rtas.h>
+
+rtas???
+
+> +#ifdef DEBUG
+> +#define DBG(fmt...) printk(fmt)
+> +#else
+> +#define DBG(fmt...)
+> +#endif
+> +
+
+Don't define your own macros like this, use the pr_debug()
+one from kernel.h.
+
+> +void smp_init_xenon(void);
+> +
+> +extern void xenon_request_IPIs(void);
+> +extern void xenon_init_irq_on_cpu(int cpu);
+> +
+> +extern void xenon_cause_IPI(int target, int msg);
+
+extern declarations should go to header files, not into
+the implementation.
+
+
+> +	/* Mark threads which are still spinning in hold loops. */
+> +	if (cpu_has_feature(CPU_FTR_SMT)) {
+> +		for_each_present_cpu(i) {
+> +			if (i % 2 == 0)
+> +				/*
+> +				 * Even-numbered logical cpus correspond to
+> +				 * primary threads.
+> +				 */
+> +				cpu_set(i, of_spin_map);
+> +		}
+> +	} else {
+> +		of_spin_map = cpu_present_map;
+> +	}
+
+Yes, we wrote code like that for CBE, but that doesn't mean it's good
+enough to copy it ;-)
+
+Relying on the cpu number to mean something specific is bad, and
+we're trying to get rid of that in other places, so you should
+not introduce it again here.
+
+> +#define CPU_FTRS_XENON ((CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
+> +	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
+> +	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
+> +	    CPU_FTR_CTRL )&~CPU_FTR_16M_PAGE)
+> +// | CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE  /* we need to setup large
+
+If the CPU doesn't do 16M pages, you need to make sure that CPU_FTRS_ALWAYS
+is adapted properly.
