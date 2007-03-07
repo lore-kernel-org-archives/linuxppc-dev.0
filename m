@@ -1,23 +1,25 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6BACDDDED1
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 19:53:16 +1100 (EST)
-Subject: Re: [PATCH] Fix interrupt distribution in ppc970
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Nathan Lynch <ntl@pobox.com>
-In-Reply-To: <20070306220546.GI24926@localdomain>
-References: <20061208045537.GA14626@in.ibm.com>
-	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
-	<20061218105706.GB3911@in.ibm.com> <20070306135754.GB7476@in.ibm.com>
-	<20070306220546.GI24926@localdomain>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 09:52:47 +0100
-Message-Id: <1173257567.9349.27.camel@localhost.localdomain>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [parisc-linux] [PATCH 2/2] Make pcibios_add_platform_entries()
+	return errors
+From: Michael Ellerman <michael@ellerman.id.au>
+To: James Bottomley <James.Bottomley@SteelEye.com>
+In-Reply-To: <1173204301.3379.33.camel@mulgrave.il.steeleye.com>
+References: <20070306150725.68D97DDF36@ozlabs.org>
+	<1173204301.3379.33.camel@mulgrave.il.steeleye.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-BgsAG7SQX+bolLlRm7kx"
+Date: Wed, 07 Mar 2007 09:55:18 +0100
+Message-Id: <1173257718.5101.16.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	fastboot@lists.osdl.org
+Cc: discuss@x86-64.org, dev-etrax@axis.com, linux-ia64@vger.kernel.org,
+	chris@zankel.net, Greg Kroah-Hartman <greg@kroah.com>,
+	linux-m68k@vger.kernel.org, uclinux-v850@lsi.nec.co.jp,
+	linuxppc-dev@ozlabs.org, linux-mips@linux-mips.org,
+	gerg@uclinux.org, sparclinux@vger.kernel.org,
+	ink@jurassic.park.msu.ru, linux-pci@atrey.karlin.mff.cuni.cz,
+	rth@twiddle.net, kernel@wantstofly.org, parisc-linux@parisc-linux.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +29,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-03-06 at 16:05 -0600, Nathan Lynch wrote:
-> Mohan Kumar M wrote:
-> > Hi,
-> > 
-> > Here comes the revised version of patch to fix the interrupt missing
-> > problem when a kdump kernel is booted with "maxcpus=1" kernel parameter.
-> > 
-> > In the xics initialization code a check is made to detemine whether
-> > maxcpus kernel parameter is present and if its present then
-> > default_distrib_server variable is initialized to the current boot cpu
-> > id (by default_server variable). So that when ever a kernel is booted
-> > with maxcpus kernel parameter all interrupts are routed to the boot cpu
-> > only.
-> > 
-> > Tested on POWER5 and JS20 systems.
-> > 
-> > Any comment?
-> 
-> Was the root cause of this problem ever determined?  It sure looked
-> like a firmware or hardware problem since it's known to occur only on
-> JS20.
 
-js20 and js21 have in common that the firmware "emulates" the XICS on
-top of an MPIC, which can cause interesting issues ... like the
-requirement of issuing EOI's from the CPU that got the interrupt, among
-ohters.
+--=-BgsAG7SQX+bolLlRm7kx
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Ben.
+On Tue, 2007-03-06 at 12:05 -0600, James Bottomley wrote:
+> On Tue, 2007-03-06 at 16:06 +0100, Michael Ellerman wrote:
+> >  int __must_check pci_create_sysfs_dev_files (struct pci_dev *pdev)
+> > @@ -644,10 +644,13 @@ int __must_check pci_create_sysfs_dev_fi
+> >  		}
+> >  	}
+> >  	/* add platform-specific attributes */
+> > -	pcibios_add_platform_entries(pdev);
+> > +	if (pcibios_add_platform_entries(pdev))
+> > +		goto err_rom_attr;
+> > =20
+> >  	return 0;
+> > =20
+> > +err_rom_attr:
+> > +	sysfs_remove_bin_file(&pdev->dev.kobj, rom_attr);
+>=20
+> This file is only created if the rom resource has a non-zero length.  If
+> you unconditionally call sysfs_remove_bin_file() it's going to spit
+> scary warnings and dump traces in this error leg if the rom resource
+> doesn't exist.
+
+Ah crud, don't write patches during meetings. I'll send a fixed version.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-BgsAG7SQX+bolLlRm7kx
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBF7n32dSjSd0sB4dIRAn5sAKDLKRSrFBG7U5Cd40rDmTlteEGzOgCgsZhx
+xnxBaUCAjUOpUDo/Iyyq50o=
+=Lg0a
+-----END PGP SIGNATURE-----
+
+--=-BgsAG7SQX+bolLlRm7kx--
