@@ -1,9 +1,9 @@
 Return-Path: <benh@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 07 Mar 2007 11:27:45 +0100
-Subject: [PATCH 2/3] powerpc: Fix warning in powermac feature.c
-Message-Id: <20070307102755.74E38DE169@ozlabs.org>
+Date: Wed, 07 Mar 2007 11:27:55 +0100
+Subject: [PATCH 3/3] powerpc: Fix warning in powermac pci.c
+Message-Id: <20070307102807.71977DE261@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,34 +14,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This fixes a warning due to unused return from pci_enable_device() in
-powermac feature.c core99_ata100_enable() function.
+This fixes a warning due to unused result from pci_enable_device() in
+powermac pci.c
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
- arch/powerpc/platforms/powermac/feature.c |    5 ++++-
- 1 file changed, 4 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/powermac/pci.c |    7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
 
-Index: linux-tika/arch/powerpc/platforms/powermac/feature.c
+Index: linux-tika/arch/powerpc/platforms/powermac/pci.c
 ===================================================================
---- linux-tika.orig/arch/powerpc/platforms/powermac/feature.c	2007-03-05 14:22:31.000000000 +0100
-+++ linux-tika/arch/powerpc/platforms/powermac/feature.c	2007-03-05 14:22:54.000000000 +0100
-@@ -810,6 +810,7 @@
- 	unsigned long flags;
- 	struct pci_dev *pdev = NULL;
- 	u8 pbus, pid;
-+	int rc;
- 
- 	if (uninorth_rev < 0x24)
- 		return -ENODEV;
-@@ -828,7 +829,9 @@
- 			pdev = pci_find_slot(pbus, pid);
- 		if (pdev == NULL)
- 			return 0;
--		pci_enable_device(pdev);
-+		rc = pci_enable_device(pdev);
-+		if (rc)
-+			return rc;
- 		pci_set_master(pdev);
+--- linux-tika.orig/arch/powerpc/platforms/powermac/pci.c	2007-03-05 14:24:23.000000000 +0100
++++ linux-tika/arch/powerpc/platforms/powermac/pci.c	2007-03-05 14:25:17.000000000 +0100
+@@ -1191,8 +1191,11 @@
+ 	 * -- BenH
+ 	 */
+ 	for_each_pci_dev(dev) {
+-		if ((dev->class >> 16) == PCI_BASE_CLASS_STORAGE)
+-			pci_enable_device(dev);
++		if ((dev->class >> 16) != PCI_BASE_CLASS_STORAGE)
++			continue;
++		if (pci_enable_device(dev))
++			printk(KERN_WARNING
++			       "pci: Failed to enable %s\n", pci_name(dev));
  	}
- 	return 0;
+ #endif /* CONFIG_BLK_DEV_IDE */
+ 
