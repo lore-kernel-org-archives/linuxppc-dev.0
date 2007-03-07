@@ -1,21 +1,37 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 40490DDF21
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 16:47:43 +1100 (EST)
-Date: Wed, 7 Mar 2007 16:47:37 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [POWERPC] Clean up deciding when PCI is selectable
-Message-Id: <20070307164737.e927711d.sfr@canb.auug.org.au>
-In-Reply-To: <1173033826.8184.68.camel@localhost.localdomain>
-References: <20070304165839.4d2bf50b.sfr@canb.auug.org.au>
-	<20070304170348.511af7cb.sfr@canb.auug.org.au>
-	<20070304170444.2eb423ce.sfr@canb.auug.org.au>
-	<200703041507.06307.arnd@arndb.de>
-	<1173033826.8184.68.camel@localhost.localdomain>
+Return-Path: <vgoyal@in.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 007F6DDEFF
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 17:06:38 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2766ZGO027909
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 01:06:35 -0500
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l2766ZqC119020
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 23:06:35 -0700
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2766YI2009163
+	for <linuxppc-dev@ozlabs.org>; Tue, 6 Mar 2007 23:06:35 -0700
+Date: Wed, 7 Mar 2007 11:36:23 +0530
+From: Vivek Goyal <vgoyal@in.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [Fastboot] [PATCH] Fix interrupt distribution in ppc970
+Message-ID: <20070307060623.GA5469@in.ibm.com>
+References: <20061208045537.GA14626@in.ibm.com>
+	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
+	<20061218105706.GB3911@in.ibm.com>
+	<20070306135754.GB7476@in.ibm.com>
+	<1173190615.4675.30.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1173190615.4675.30.camel@concordia.ozlabs.ibm.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	fastboot@lists.osdl.org
+Reply-To: vgoyal@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,139 +41,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Mar 06, 2007 at 03:16:55PM +0100, Michael Ellerman wrote:
+> On Tue, 2007-03-06 at 19:27 +0530, Mohan Kumar M wrote:
+> > Hi,
+> > 
+> > Here comes the revised version of patch to fix the interrupt missing
+> > problem when a kdump kernel is booted with "maxcpus=1" kernel parameter.
+> > 
+> > In the xics initialization code a check is made to detemine whether
+> > maxcpus kernel parameter is present and if its present then
+> > default_distrib_server variable is initialized to the current boot cpu
+> > id (by default_server variable). So that when ever a kernel is booted
+> > with maxcpus kernel parameter all interrupts are routed to the boot cpu
+> > only.
+> > 
+> > Tested on POWER5 and JS20 systems.
+> 
+> First, I don't know why we keep telling people to use maxcpus=1 for
+> kexec/kdump - it's causing bugs, and I don't know of any that it fixes?
+> 
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/Kconfig                       |   18 +++++++++++++++---
- arch/powerpc/platforms/85xx/Kconfig        |    1 +
- arch/powerpc/platforms/embedded6xx/Kconfig |    2 ++
- 3 files changed, 18 insertions(+), 3 deletions(-)
+Logically speaking, there is no need to bring up all the cpus in the
+system to capture the dump. A single cpu can do the job, may be in
+relatively lesser memory. Just because we see bugs with maxcpus=1, does
+not mean we should try to bring up all the cpus in second kernel. I think
+we should try to clean maxcpus=1 path instead.
 
-On Sun, 04 Mar 2007 19:43:46 +0100 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
-> I dislike the giant conditional though.
-
-How about this (only tested on a couple of configs).
-
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index e720527..d7c447f 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -157,12 +157,14 @@ config PPC_83xx
- 	select FSL_SOC
- 	select 83xx
- 	select PPC_FPU
-+	select PCI_SELECTABLE
- 
- config PPC_85xx
- 	bool "Freescale 85xx"
- 	select E500
- 	select FSL_SOC
- 	select 85xx
-+	select PCI_SELECTABLE
- 
- config PPC_86xx
- 	bool "Freescale 86xx"
-@@ -170,6 +172,7 @@ config PPC_86xx
- 	select FSL_SOC
- 	select PPC_FPU
- 	select ALTIVEC
-+	select PCI_SELECTABLE
- 	help
- 	  The Freescale E600 SoCs have 74xx cores.
- 
-@@ -181,6 +184,7 @@ config PPC_8xx
- config 40x
- 	bool "AMCC 40x"
- 	select PPC_DCR_NATIVE
-+	select PCI_SELECTABLE
- 
- config 44x
- 	bool "AMCC 44x"
-@@ -413,12 +417,14 @@ config PPC_PSERIES
- 	select RTAS_ERROR_LOGGING
- 	select PPC_UDBG_16550
- 	select PPC_NATIVE
-+	select PCI_SELECTABLE if EMBEDDED
- 	default y
- 
- config PPC_ISERIES
- 	bool "IBM Legacy iSeries"
- 	depends on PPC_MULTIPLATFORM && PPC64
- 	select PPC_INDIRECT_IO
-+	select PCI_SELECTABLE if EMBEDDED
- 
- config PPC_CHRP
- 	bool "Common Hardware Reference Platform (CHRP) based machines"
-@@ -434,6 +440,7 @@ config PPC_CHRP
- 
- config PPC_MPC52xx
- 	bool
-+	select PCI_SELECTABLE
- 	default n
- 
- config PPC_MPC5200
-@@ -557,6 +564,7 @@ config PPC_PS3
- 	select USB_OHCI_BIG_ENDIAN_MMIO
- 	select USB_ARCH_HAS_EHCI
- 	select USB_EHCI_BIG_ENDIAN_MMIO
-+	select PCI_SELECTABLE
- 	help
- 	  This option enables support for the Sony PS3 game console
- 	  and other platforms using the PS3 hypervisor.
-@@ -1026,10 +1034,14 @@ config FSL_SOC
- config MCA
- 	bool
- 
-+config PCI_SELECTABLE
-+	def_bool n
-+	help
-+	  A platform should select this if the builder of the kernel may
-+	  choose whether CONFIG_PCI is set or not.
-+
- config PCI
--	bool "PCI support" if 40x || CPM2 || PPC_83xx || PPC_85xx || PPC_86xx \
--		|| PPC_MPC52xx || (EMBEDDED && (PPC_PSERIES || PPC_ISERIES)) \
--		|| MPC7448HPC2 || PPC_PS3
-+	bool "PCI support" if PCI_SELECTABLE
- 	default y if !40x && !CPM2 && !8xx && !APUS && !PPC_83xx \
- 		&& !PPC_85xx && !PPC_86xx
- 	default PCI_PERMEDIA if !4xx && !CPM2 && !8xx && APUS
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index eb661cc..67af06d 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -60,6 +60,7 @@ config MPIC
- 
- config CPM2
- 	bool
-+	select PCI_SELECTABLE
- 	depends on MPC8560
- 	default y
- 	help
-diff --git a/arch/powerpc/platforms/embedded6xx/Kconfig b/arch/powerpc/platforms/embedded6xx/Kconfig
-index 886c522..b659515 100644
---- a/arch/powerpc/platforms/embedded6xx/Kconfig
-+++ b/arch/powerpc/platforms/embedded6xx/Kconfig
-@@ -93,6 +93,7 @@ config MPC7448HPC2
- 	select PPC_UDBG_16550
- 	select MPIC
- 	select MPIC_WEIRD
-+	select PCI_SELECTABLE
- 	help
- 	  Select MPC7448HPC2 if configuring for Freescale MPC7448HPC2 (Taiga)
- 	  platform
-@@ -187,6 +188,7 @@ config 8272
- config CPM2
- 	bool
- 	depends on 8260 || MPC8560 || MPC8555
-+	select PCI_SELECTABLE
- 	default y
- 	help
- 	  The CPM2 (Communications Processor Module) is a coprocessor on
--- 
-1.5.0.2
+Thanks
+Vivek
