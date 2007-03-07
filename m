@@ -1,10 +1,10 @@
 Return-Path: <root@elitedvb.net>
-Message-Id: <20070307180525.919926000@elitedvb.net>>
+Message-Id: <20070307180526.194853000@elitedvb.net>>
 References: <20070307180144.812594000@elitedvb.net>>
-Date: Wed, 07 Mar 2007 19:01:47 +0100
+Date: Wed, 07 Mar 2007 19:01:49 +0100
 From: Felix Domke <tmbinc@elitedvb.net>
 To: Linuxppc-dev@ozlabs.org
-Subject: [patch 3/7] xenon: udbg support (ugly)
+Subject: [patch 5/7] xenon: add SATA support
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,66 +14,340 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds support for a serial kernel output on the Xenon platform.
+This adds support for the HDD and DVD SATA controller on the xenon southbridge.
+
+It also disables ATA_TFLAG_POLLING in libata-core, which prevented the DVD drive
+from being detected. It needs to be investigated what exactly is wrong here. 
 
 Signed-off-by: Felix Domke <tmbinc@elitedvb.net>
 
 ---
- arch/powerpc/kernel/misc_64.S |    2 +-
- arch/powerpc/kernel/udbg.c    |   14 ++++++++++++++
- 2 files changed, 15 insertions(+), 1 deletion(-)
+ drivers/ata/Kconfig       |    8 +
+ drivers/ata/Makefile      |    1 
+ drivers/ata/libata-core.c |    2 
+ drivers/ata/sata_xenon.c  |  272 ++++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 282 insertions(+), 1 deletion(-)
 
-Index: linux-2.6.20/arch/powerpc/kernel/misc_64.S
+Index: linux-2.6.20/drivers/ata/Kconfig
 ===================================================================
---- linux-2.6.20.orig/arch/powerpc/kernel/misc_64.S	2007-03-07 19:01:12.000000000 +0100
-+++ linux-2.6.20/arch/powerpc/kernel/misc_64.S	2007-03-07 19:01:21.000000000 +0100
-@@ -247,7 +247,7 @@
- 	blr
+--- linux-2.6.20.orig/drivers/ata/Kconfig	2007-03-07 19:01:12.000000000 +0100
++++ linux-2.6.20/drivers/ata/Kconfig	2007-03-07 19:01:22.000000000 +0100
+@@ -123,6 +123,14 @@
  
+ 	  If unsure, say N.
  
--#if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE)
-+#if defined(CONFIG_PPC_PMAC) || defined(CONFIG_PPC_MAPLE) || defined(CONFIG_PPC_XENON)
- /*
-  * Do an IO access in real mode
-  */
-Index: linux-2.6.20/arch/powerpc/kernel/udbg.c
++config SATA_XENON
++	tristate "Xenon SATA support"
++	depends on PCI
++	help
++	  This option enables support for Xenon southbridge.
++
++	  If unsure, say N.
++
+ config SATA_ULI
+ 	tristate "ULi Electronics SATA support"
+ 	depends on PCI
+Index: linux-2.6.20/drivers/ata/Makefile
 ===================================================================
---- linux-2.6.20.orig/arch/powerpc/kernel/udbg.c	2007-03-07 19:01:12.000000000 +0100
-+++ linux-2.6.20/arch/powerpc/kernel/udbg.c	2007-03-07 19:01:21.000000000 +0100
-@@ -25,6 +25,18 @@
-  * Early debugging facilities. You can enable _one_ of these via .config,
-  * if you do so your kernel _will not boot_ on anything else. Be careful.
-  */
+--- linux-2.6.20.orig/drivers/ata/Makefile	2007-03-07 19:01:12.000000000 +0100
++++ linux-2.6.20/drivers/ata/Makefile	2007-03-07 19:01:22.000000000 +0100
+@@ -11,6 +11,7 @@
+ obj-$(CONFIG_SATA_VIA)		+= sata_via.o
+ obj-$(CONFIG_SATA_VITESSE)	+= sata_vsc.o
+ obj-$(CONFIG_SATA_SIS)		+= sata_sis.o
++obj-$(CONFIG_SATA_XENON)	+= sata_xenon.o
+ obj-$(CONFIG_SATA_SX4)		+= sata_sx4.o
+ obj-$(CONFIG_SATA_NV)		+= sata_nv.o
+ obj-$(CONFIG_SATA_ULI)		+= sata_uli.o
+Index: linux-2.6.20/drivers/ata/libata-core.c
+===================================================================
+--- linux-2.6.20.orig/drivers/ata/libata-core.c	2007-03-07 19:01:12.000000000 +0100
++++ linux-2.6.20/drivers/ata/libata-core.c	2007-03-07 19:01:22.000000000 +0100
+@@ -1478,7 +1478,7 @@
+ 	}
+ 
+ 	tf.protocol = ATA_PROT_PIO;
+-	tf.flags |= ATA_TFLAG_POLLING; /* for polling presence detection */
++//	tf.flags |= ATA_TFLAG_POLLING; /* for polling presence detection */
+ 
+ 	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_FROM_DEVICE,
+ 				     id, sizeof(id[0]) * ATA_ID_WORDS);
+Index: linux-2.6.20/drivers/ata/sata_xenon.c
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6.20/drivers/ata/sata_xenon.c	2007-03-07 19:01:22.000000000 +0100
+@@ -0,0 +1,272 @@
++/*
++ *  sata_xenon.c - SATA support for xenon southbridge
++ *
++ *  based on sata_sis.c, modifications by anonymous xbox360 hacker,
++ *
++ *  		    Please ALWAYS copy linux-ide@vger.kernel.org
++ *		    on emails.
++ *
++ *  This program is free software; you can redistribute it and/or modify
++ *  it under the terms of the GNU General Public License as published by
++ *  the Free Software Foundation; either version 2, or (at your option)
++ *  any later version.
++ *
++ *  This program is distributed in the hope that it will be useful,
++ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
++ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++ *  GNU General Public License for more details.
++ *
++ *  You should have received a copy of the GNU General Public License
++ *  along with this program; see the file COPYING.  If not, write to
++ *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
++ *
++ *
++ *  libata documentation is available via 'make {ps|pdf}docs',
++ *  as Documentation/DocBook/libata.*
++ *
++ */
 +
-+extern u8 real_readb(volatile u8 __iomem  *addr);
-+extern void real_writeb(u8 data, volatile u8 __iomem *addr);
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/pci.h>
++#include <linux/init.h>
++#include <linux/blkdev.h>
++#include <linux/delay.h>
++#include <linux/interrupt.h>
++#include <linux/device.h>
++#include <scsi/scsi_host.h>
++#include <linux/libata.h>
 +
-+void udbg_xenon_real_putc(char c)
++#define DRV_NAME	"sata_xenon"
++#define DRV_VERSION	"0.1"
++
++	/* small note: it's completely unknown whether the xenon southbridge sata
++	   is really based on SiS technology.
++	   Most of SATA is standardized anyway.
++
++
++	   So, we have these two pci devices, one for each port.
++
++	   They have two BARs, one for the IDE registers (0..7,
++	   altstatus/devctl is +0xA), and one for the BMDMA.
++
++	   SCR seem to be sis-like in pci config space, but that should
++	   be verified!
++
++	   Note on the DVD-ROM part:
++
++	   The drives usually require some tweaks to be usable under linux.
++
++	   You either need to hack the scsi layer, or, in case of the GDR3120L,
++	   set 'modeB' in the bootloader.
++	*/
++
++enum {
++	/* PCI configuration registers */
++	SIS_SCR_BASE		= 0xc0, /* sata0 phy SCR registers */
++};
++
++extern struct ata_probe_ent *ata_probe_ent_alloc(struct device *dev,
++						 const struct ata_port_info *port);
++
++static int xenon_init_one (struct pci_dev *pdev, const struct pci_device_id *ent);
++static u32 xenon_scr_read (struct ata_port *ap, unsigned int sc_reg);
++static void xenon_scr_write (struct ata_port *ap, unsigned int sc_reg, u32 val);
++
++static const struct pci_device_id xenon_pci_tbl[] = {
++	{ PCI_VDEVICE(MICROSOFT, 0x5803), 0 },
++	{ PCI_VDEVICE(MICROSOFT, 0x5802), 0 },
++
++	{ }	/* terminate list */
++};
++
++static struct pci_driver xenon_pci_driver = {
++	.name			= DRV_NAME,
++	.id_table		= xenon_pci_tbl,
++	.probe			= xenon_init_one,
++	.remove			= ata_pci_remove_one,
++};
++
++static struct scsi_host_template xenon_sht = {
++	.module			= THIS_MODULE,
++	.name			= DRV_NAME,
++	.ioctl			= ata_scsi_ioctl,
++	.queuecommand		= ata_scsi_queuecmd,
++	.can_queue		= ATA_DEF_QUEUE,
++	.this_id		= ATA_SHT_THIS_ID,
++	.sg_tablesize		= ATA_MAX_PRD,
++	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
++	.emulated		= ATA_SHT_EMULATED,
++	.use_clustering		= ATA_SHT_USE_CLUSTERING,
++	.proc_name		= DRV_NAME,
++	.dma_boundary		= ATA_DMA_BOUNDARY,
++	.slave_configure	= ata_scsi_slave_config,
++	.slave_destroy		= ata_scsi_slave_destroy,
++	.bios_param		= ata_std_bios_param,
++};
++
++static const struct ata_port_operations xenon_ops = {
++	.port_disable		= ata_port_disable,
++	.tf_load		= ata_tf_load,
++	.tf_read		= ata_tf_read,
++	.check_status		= ata_check_status,
++	.exec_command		= ata_exec_command,
++	.dev_select		= ata_std_dev_select,
++	.bmdma_setup            = ata_bmdma_setup,
++	.bmdma_start            = ata_bmdma_start,
++	.bmdma_stop		= ata_bmdma_stop,
++	.bmdma_status		= ata_bmdma_status,
++	.qc_prep		= ata_qc_prep,
++	.qc_issue		= ata_qc_issue_prot,
++	.data_xfer		= ata_pio_data_xfer,
++	.freeze			= ata_bmdma_freeze,
++	.thaw			= ata_bmdma_thaw,
++	.error_handler		= ata_bmdma_error_handler,
++	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
++	.irq_handler		= ata_interrupt,
++	.irq_clear		= ata_bmdma_irq_clear,
++	.scr_read		= xenon_scr_read,
++	.scr_write		= xenon_scr_write,
++	.port_start		= ata_port_start,
++	.port_stop		= ata_port_stop,
++	.host_stop		= ata_host_stop,
++};
++
++static struct ata_port_info xenon_port_info = {
++	.sht		= &xenon_sht,
++	.flags		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY,
++	.pio_mask	= 0x1f,
++	.mwdma_mask	= 0x7,
++	.udma_mask	= 0x7f,
++	.port_ops	= &xenon_ops,
++};
++
++
++MODULE_DESCRIPTION("low-level driver for Xenon Southbridge SATA controller");
++MODULE_LICENSE("GPL");
++MODULE_DEVICE_TABLE(pci, xenon_pci_tbl);
++MODULE_VERSION(DRV_VERSION);
++
++static unsigned int get_scr_cfg_addr(unsigned int port_no, unsigned int sc_reg, int device)
 +{
-+	if (c == '\n')
-+		udbg_xenon_real_putc('\r');
-+	while (!(real_readb((void*)0x80000200ea001018ULL)&0x02));
-+	real_writeb(c, (void*)0x80000200ea001014ULL);
++	unsigned int addr = SIS_SCR_BASE + (4 * sc_reg);
++
++	return addr;
 +}
 +
- void __init udbg_early_init(void)
- {
- #if defined(CONFIG_PPC_EARLY_DEBUG_LPAR)
-@@ -46,6 +58,7 @@
- 	/* For iSeries - hit Ctrl-x Ctrl-x to see the output */
- 	udbg_init_iseries();
- #endif
-+	udbg_putc = udbg_xenon_real_putc;
- }
- 
- /* udbg library, used by xmon et al */
-@@ -150,6 +163,7 @@
- 		printk(KERN_INFO "early console immortal !\n");
- 		return;
- 	}
-+	return;
- 	unregister_console(&udbg_console);
- 	early_console_initialized = 0;
- }
++static u32 xenon_scr_cfg_read (struct ata_port *ap, unsigned int sc_reg)
++{
++	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
++	unsigned int cfg_addr = get_scr_cfg_addr(ap->port_no, sc_reg, pdev->device);
++	u32 val;
++
++	if (sc_reg == SCR_ERROR) /* doesn't exist in PCI cfg space */
++		return 0; /* assume no error */
++
++	pci_read_config_dword(pdev, cfg_addr, &val);
++
++	return val;
++}
++
++static void xenon_scr_cfg_write (struct ata_port *ap, unsigned int scr, u32 val)
++{
++	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
++	unsigned int cfg_addr = get_scr_cfg_addr(ap->port_no, scr, pdev->device);
++
++	if (scr == SCR_ERROR) /* doesn't exist in PCI cfg space */
++		return;
++
++	pci_write_config_dword(pdev, cfg_addr, val);
++}
++
++static u32 xenon_scr_read (struct ata_port *ap, unsigned int sc_reg)
++{
++	if (sc_reg > SCR_CONTROL)
++		return 0xffffffffU;
++
++	return xenon_scr_cfg_read(ap, sc_reg);
++}
++
++static void xenon_scr_write (struct ata_port *ap, unsigned int sc_reg, u32 val)
++{
++	if (sc_reg > SCR_CONTROL)
++		return;
++
++	xenon_scr_cfg_write(ap, sc_reg, val);
++}
++
++static int xenon_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
++{
++	static int printed_version;
++	struct ata_probe_ent *probe_ent = NULL;
++	int rc;
++	int pci_dev_busy = 0;
++
++	if (!printed_version++)
++		dev_printk(KERN_INFO, &pdev->dev, "version " DRV_VERSION "\n");
++
++	rc = pci_enable_device(pdev);
++	if (rc)
++		return rc;
++
++	rc = pci_request_regions(pdev, DRV_NAME);
++	if (rc) {
++		pci_dev_busy = 1;
++		goto err_out;
++	}
++
++	rc = pci_set_dma_mask(pdev, ATA_DMA_MASK);
++	if (rc)
++		goto err_out_regions;
++	rc = pci_set_consistent_dma_mask(pdev, ATA_DMA_MASK);
++	if (rc)
++		goto err_out_regions;
++
++	probe_ent = ata_probe_ent_alloc(pci_dev_to_dev(pdev), &xenon_port_info);
++	if (!probe_ent) {
++		rc = -ENOMEM;
++		goto err_out_regions;
++	}
++
++	probe_ent->irq = pdev->irq;
++	probe_ent->irq_flags = IRQF_SHARED;
++
++	probe_ent->port->cmd_addr = (long)ioremap(pci_resource_start(pdev, 0), PAGE_SIZE);
++	probe_ent->port->altstatus_addr = probe_ent->port->cmd_addr + 0xa;
++	probe_ent->port->ctl_addr = probe_ent->port->cmd_addr + 0xa;
++	probe_ent->port->bmdma_addr = (long)ioremap(pci_resource_start(pdev, 1), PAGE_SIZE);
++	ata_std_ports(probe_ent->port);
++	probe_ent->n_ports = 1;
++
++	pci_set_master(pdev);
++	pci_intx(pdev, 1);
++
++	/* FIXME: check ata_device_add return value */
++	ata_device_add(probe_ent);
++	kfree(probe_ent);
++
++	return 0;
++
++err_out_regions:
++	pci_release_regions(pdev);
++
++err_out:
++	if (!pci_dev_busy)
++		pci_disable_device(pdev);
++	return rc;
++
++}
++
++static int __init xenon_init(void)
++{
++	return pci_register_driver(&xenon_pci_driver);
++}
++
++static void __exit xenon_exit(void)
++{
++	pci_unregister_driver(&xenon_pci_driver);
++}
++
++module_init(xenon_init);
++module_exit(xenon_exit);
++
 
 --
