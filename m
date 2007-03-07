@@ -1,19 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 0CBFEDDF7F
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 10:29:34 +1100 (EST)
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id BCA6DDE046
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 10:29:35 +1100 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 2/7] xenon: add platform support
-Date: Thu, 8 Mar 2007 00:06:25 +0100
+Subject: Re: [patch 6/7] xenon: add SMC support
+Date: Wed, 7 Mar 2007 22:54:51 +0100
 References: <20070307180144.812594000@elitedvb.net>
 	<20070307180144.812594000@elitedvb.net>>
-	<20070307180525.774243000@elitedvb.net>>
-In-Reply-To: <20070307180525.774243000@elitedvb.net>
+	<20070307180526.334384000@elitedvb.net>>
+In-Reply-To: <20070307180526.334384000@elitedvb.net>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200703080006.25246.arnd@arndb.de>
+Message-Id: <200703072254.51225.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,186 +23,173 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> +#define PRIO_IPI_4       0x08
-> +#define PRIO_IPI_3       0x10
-> +#define PRIO_SMM         0x14
-> +#define PRIO_SFCX        0x18
-> +#define PRIO_SATA_HDD    0x20
-> +#define PRIO_SATA_CDROM  0x24
-> +#define PRIO_OHCI_0      0x2c
-> +#define PRIO_EHCI_0      0x30
-> +#define PRIO_OHCI_1      0x34
-> +#define PRIO_EHCI_1      0x38
-> +#define PRIO_XMA         0x40
-> +#define PRIO_AUDIO       0x44
-> +#define PRIO_ENET        0x4C
-> +#define PRIO_XPS         0x54
-> +#define PRIO_GRAPHICS    0x58
-> +#define PRIO_PROFILER    0x60
-> +#define PRIO_BIU         0x64
-> +#define PRIO_IOC         0x68
-> +#define PRIO_FSB         0x6c
-> +#define PRIO_IPI_2       0x70
-> +#define PRIO_CLOCK       0x74
-> +#define PRIO_IPI_1       0x78
+On Wednesday 07 March 2007 19:01:50 Felix Domke wrote:
 
-These should probably all come from the device tree
-instead of compile-time constants.
+> It requires a userspace daemon.
 
-> +void __init xenon_iic_init_IRQ(void)
+Is that available somewhere? You should probably list a URL
+for this in the driver and/or changelog
+
+> +config XENON_SMC
+> +	bool "Xenon SMC"
+> +	depends on PPC_XENON
+> +	help
+> +	  SMC controller in the Xbox 360.
+> +
+
+Please expand the acronym here. It's not a particularly unique
+TLA after all.
+
+> +struct xenon_smc
 > +{
-> +	int i;
-> +	struct device_node *dn;
+> +	void __iomem *base;
+> +	unsigned long is_active;
+> +	wait_queue_head_t wait;
+> +};
 > +
-> +	printk("XENON init IRQ\n");
+> +static struct xenon_smc *first_smc;
 
-needs a printk level, KERN_DEBUG or KERN_INFO.
+Why do you think you need the global instance variable?
+Normally, this should be pointed to by the pci device
+private data.
 
-> +			/* search for our interrupt controller inside the device tree */
-> +	for (dn = NULL;
-> +	     (dn = of_find_node_by_name(dn,"interrupt-controller")) != NULL;) {
-> +		if (!device_is_compatible(dn,
-> +				     "xenon"))
-> +			continue;
+> +#define to_smc(pdev) dev_get_drvdata(&pdev->dev)
 > +
-> +		irq_set_virq_count(0x80);
-> +		iic_base = ioremap_nocache(0x20000050000, 0x10000);
+> +static int get_smc(struct xenon_smc *ctx, u8 *msg);
+> +static void send_smc(struct xenon_smc *ctx, void *msg);
+> +static irqreturn_t xenon_smc_irq(int irq, void *dev_id);
+> +static ssize_t smc_write(struct file *file, const char __user *data,
+> +				size_t len, loff_t *ppos);
+> +static int smc_ioctl(struct inode *inode, struct file *file,
+> +				unsigned int cmd, unsigned long arg);
+> +static ssize_t smc_read(struct file *file, char __user *data,
+> +				size_t len, loff_t *ppos);
+> +static int smc_open(struct inode *inode, struct file *file);
+> +static int smc_release(struct inode *inode, struct file *file);
+> +static int xenon_smc_init_one (struct pci_dev *pdev, const struct
+> pci_device_id *ent); +static void __devexit xenon_smc_remove(struct pci_dev
+> *pdev);
 
-This should come from the 'reg' property of the above node.
+Don't do forward declarations of static functions, please instead
+reorder them so you don't need these.
 
+> +static struct miscdevice smc_miscdev = {
+> +	.minor =  RTC_MINOR,
+> +	.name =   "smc",
+> +	.fops =	  &smc_fops,
+> +};
 
-> +void xenon_cause_IPI(int target, int msg)
+You can't grab the RTC device number if you don't support the
+respective interfaces. Use a dynamic minor number instead!
+
+> +static int get_smc(struct xenon_smc *ctx, u8 *msg)
 > +{
-> +	int ipi_prio;
-> +
-> +	ipi_prio = ipi_to_prio(msg);
-> +
-> +	__raw_writeq( (0x10000<<target) | ipi_prio, iic_base + 0x10 +
-> hard_smp_processor_id() * 0x1000); +}
-> +
-
-You seem to have a line wrapping problem and might need to fix your
-mail client.
-Also, don't use __raw_writeq here. In order to access on-chip data,
-use out_be64().
-
-> +	hose->ops = &xenon_pci_ops;
-> +	hose->cfg_addr = ioremap(0xd0000000, 0x1000000);
-> +
-The addresses should come from the device tree, don't hardcode
-them in the source.
-
-> +#define DEBUG
-> +
-
-really?
-
-
-> +void __init xenon_pci_init(void);
-> +#ifdef CONFIG_SMP
-> +extern void smp_init_xenon(void);
-> +#endif
-
-move these declarations to a header
-
-> +static void xenon_show_cpuinfo(struct seq_file *m)
-> +{
-> +	struct device_node *root;
-> +	const char *model = "";
-> +
-> +	root = of_find_node_by_path("/");
-> +	if (root)
-> +		model = get_property(root, "model", NULL);
-> +	seq_printf(m, "machine\t\t: CHRP %s\n", model);
-> +	of_node_put(root);
-> +}
-
-CHRP???
-
-> +static void __init xenon_pcibios_fixup(void)
-> +{
-> +	struct pci_dev *dev = NULL;
-> +
-> +	for_each_pci_dev(dev)
-> +		pci_read_irq_line(dev);
-> +}
-
-I guess you copied that from cell? You should not need it.
-
-> +	if (ROOT_DEV == 0) {
-> +		printk("No ramdisk, default root is /dev/hda2\n");
-> +		ROOT_DEV = Root_HDA2;
+> +	if (readl(ctx->base + 0x94) & 4)
+> +	{
+> +		u32 *message = (u32*)msg;
+> +		int i;
+> +		writel(4, ctx->base + 0x94);
+> +		for (i=0; i<4; ++i)
+> +			message[i] = __raw_readl(ctx->base + 0x90);
+> +		writel(0, ctx->base + 0x94);
+> +		return 1;
 > +	}
-
-kill this, it's unnecessary (and probably wrong in your case)
-
-> +static int __init xenon_probe(void)
-> +{
-> +       hpte_init_native();
+> +	return 0;
+> +}
 > +
-> +       return 1;
+> +static void send_smc(struct xenon_smc *ctx, void *msg)
+> +{
+> +	while (!(readl(ctx->base + 0x84) & 4));
+> +	writel(4, ctx->base + 0x84);
+> +	__raw_writel(*(u32*)(msg+0), ctx->base + 0x80);
+> +	__raw_writel(*(u32*)(msg+4), ctx->base + 0x80);
+> +	__raw_writel(*(u32*)(msg+8), ctx->base + 0x80);
+> +	__raw_writel(*(u32*)(msg+12), ctx->base + 0x80);
+> +	writel(0, ctx->base + 0x84);
 > +}
 
-This definitely needs to check the device tree whether it's running
-on the right platform, otherwise you can not build a multiplatform
-kernel.
+This needs to be cleaned up:
 
-> +void __init xenon_hpte_init(unsigned long htab_size);
+- don't use __raw_read/write on pci devices
+- in the endless loop, use cpu_relax()
+- avoid the casts if you can
+
+> +static ssize_t smc_write(struct file *file, const char __user *data,
+> +			     size_t len, loff_t *ppos)
+> +{
+> +	unsigned char msg[16];
+> +	if (len != 16)
+> +		return -EINVAL;
 > +
-move this to a header file
-
-
-> +#include <asm/rtas.h>
-
-rtas???
-
-> +#ifdef DEBUG
-> +#define DBG(fmt...) printk(fmt)
-> +#else
-> +#define DBG(fmt...)
-> +#endif
+> +	if (copy_from_user(msg, data, 16))
+> +		return -EFAULT;
 > +
-
-Don't define your own macros like this, use the pr_debug()
-one from kernel.h.
-
-> +void smp_init_xenon(void);
+> +	send_smc(first_smc, msg);
 > +
-> +extern void xenon_request_IPIs(void);
-> +extern void xenon_init_irq_on_cpu(int cpu);
+> +	return 16;
+> +}
+
+You can get the pointer to the smc from file->f_dentry->d_inode->i_private
+if you put it in there 
+
+> +static int smc_ioctl(struct inode *inode, struct file *file,
+> +			  unsigned int cmd, unsigned long arg)
+> +{
+> +	return -ENODEV;
+> +}
+
+please kill this function, it's not needed.
+
+> +static ssize_t smc_read(struct file *file, char __user *data,
+> +				size_t len, loff_t *ppos)
+> +{
+> +	struct xenon_smc *ctx = first_smc;
+> +	int ret;
+> +	u8 msg[0x10];
 > +
-> +extern void xenon_cause_IPI(int target, int msg);
-
-extern declarations should go to header files, not into
-the implementation.
-
-
-> +	/* Mark threads which are still spinning in hold loops. */
-> +	if (cpu_has_feature(CPU_FTR_SMT)) {
-> +		for_each_present_cpu(i) {
-> +			if (i % 2 == 0)
-> +				/*
-> +				 * Even-numbered logical cpus correspond to
-> +				 * primary threads.
-> +				 */
-> +				cpu_set(i, of_spin_map);
-> +		}
-> +	} else {
-> +		of_spin_map = cpu_present_map;
+> +	if (len != 16)
+> +		return -EINVAL;
+> +
+> +	if (!(readl(ctx->base + 0x94) & 4))
+> +	{
+> +		if (file->f_flags & O_NONBLOCK)
+> +			return -EAGAIN;
+> +
+> +		ret = wait_event_interruptible(ctx->wait, readl(ctx->base + 0x94) & 4);
+> +		if (ret < 0)
+> +			return ret;
 > +	}
+> +
+> +	if (get_smc(ctx, msg) == 0)
+> +		return -EAGAIN;
+> +
+> +	if (copy_to_user(data, msg, 0x10))
+> +		return -EFAULT;
+> +
+> +	return 0x10;
+> +}
+> +
+> +static int smc_open(struct inode *inode, struct file *file)
+> +{
+> +	if (test_and_set_bit(0, &first_smc->is_active))
+> +		return -EBUSY;
+> +
+> +	return nonseekable_open(inode, file);
+> +}
 
-Yes, we wrote code like that for CBE, but that doesn't mean it's good
-enough to copy it ;-)
+This doesn't guarantee that you have only one fd to the device,
+you can still get multiple copies through dup or fork.
 
-Relying on the cpu number to mean something specific is bad, and
-we're trying to get rid of that in other places, so you should
-not introduce it again here.
+> +
+> +	rc = misc_register(&smc_miscdev);
+> +	if (rc != 0)
+> +	{
 
-> +#define CPU_FTRS_XENON ((CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_USE_TB | \
-> +	    CPU_FTR_HPTE_TABLE | CPU_FTR_PPCAS_ARCH_V2 | \
-> +	    CPU_FTR_ALTIVEC_COMP | CPU_FTR_MMCRA | CPU_FTR_SMT | \
-> +	    CPU_FTR_CTRL )&~CPU_FTR_16M_PAGE)
-> +// | CPU_FTR_PAUSE_ZERO | CPU_FTR_CI_LARGE_PAGE  /* we need to setup large
+You should be consistant with the indentation, opening braces here
+and in other places (except function bodies) go at the end of the
+previous line.
 
-If the CPU doesn't do 16M pages, you need to make sure that CPU_FTRS_ALWAYS
-is adapted properly.
+It's also more common to write 'if (!rc)' than comparing return values
+against 0 or NULL.
+
+	Arnd <><
