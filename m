@@ -1,12 +1,18 @@
-Return-Path: <anton@ozlabs.org>
-Date: Wed, 7 Mar 2007 15:29:10 -0600
-From: Anton Blanchard <anton@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: speed up kernel_thread
-Message-ID: <20070307212910.GA3648@kryten>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id 2A0A4DE1E0
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 08:30:12 +1100 (EST)
+Message-ID: <45EF2ED5.5040905@ru.mvista.com>
+Date: Thu, 08 Mar 2007 00:29:57 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: paulus@samba.org
+To: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
+Subject: Re: [RFC] [patch 5/6] powerpc 2.6.20-rt8: fix a boot error
+	for	handle_percpu_irq
+References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi1wk125dj.wl@toshiba.co.jp>
+In-Reply-To: <yyi1wk125dj.wl@toshiba.co.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,166 +22,76 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello.
 
-When looking through Ingo's syslet code, I noticed our kernel_thread
-implementation executed two syscalls. The patch below avoids these by
-calling do_fork directly.
+Tsutomu OWA wrote:
+>   To fix the following boot time error by removing ack member added by
+> the rt patch.
 
-Of course after doing this I had to create kthreadbench to test the
-change. Good news, its over 3% faster to create 1000 kernel threads!
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+> Processor 1 found.
+> Brought up 2 CPUs
+> ------------[ cut here ]------------
+> kernel BUG at arch/powerpc/platforms/cell/interrupt.c:86!
+> pu 0x1: Vector: 700 (Program Check) at [c00000000fff3c80]
+>     pc: c000000000033f9c: .iic_eoi+0x58/0x64
+>     lr: c00000000009add8: .handle_percpu_irq+0xd4/0xf4
+>     sp: c00000000fff3f00
+>    msr: 9000000000021032
+>   current = 0xc000000000fee040
+>   paca    = 0xc000000000509e80
+>     pid   = 0, comm = swapper
+> kernel BUG at arch/powerpc/platforms/cell/interrupt.c:86!
+> enter ? for help
+> [link register   ] c00000000009add8 .handle_percpu_irq+0xd4/0xf4
+> [c00000000fff3f00] c00000000009ada8 .handle_percpu_irq+0xa4/0xf4 (unreliable)
+> [c00000000fff3f90] c000000000023bb8 .call_handle_irq+0x1c/0x2c
+> [c000000000ff7950] c00000000000c910 .do_IRQ+0xf8/0x1b8
+> [c000000000ff79f0] c000000000034f34 .cbe_system_reset_exception+0x74/0xb4
+> [c000000000ff7a70] c000000000022610 .system_reset_exception+0x40/0xe0
+> [c000000000ff7af0] c000000000003378 system_reset_common+0xf8/0x100
+> --- Exception: 100 (System Reset) at c000000000035008 .cbe_power_save+0x94/0xb0
+> [c000000000ff7e70] c000000000012030 .cpu_idle+0xc8/0x144
+> [c000000000ff7f00] c000000000026894 .start_secondary+0x150/0x174
+> [c000000000ff7f90] c000000000008364 .start_secondary_prolog+0xc/0x10
+> 1:mon>
+> 
+> - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+>   I found a pile of e-mail started by Sergei Shtylyov on linuxppc-dev regarding this.
+>     Subject: [PATCH] 2.6.18-rt7: PowerPC: fix breakage in threaded fasteoi type IRQ handlers
+>     From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+>     Date: Sun, 19 Nov 2006 22:43:34 +0300
 
-Tested on ppc64 only.
+>   Though I don't quite get the conclusion, the code does not work at least
+> on celleb when handle_percpu_irq is applied.  Since the handle_percpu_irq calls
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+    Hmmm, I was under impression that I was fixing fasteoi flow case... Sorry 
+if it broke something but it really shouldn't even have been there at all. :-/
 
-Index: linux-2.6/arch/powerpc/kernel/process.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/process.c	2007-03-07 14:27:57.000000000 -0600
-+++ linux-2.6/arch/powerpc/kernel/process.c	2007-03-07 15:15:16.000000000 -0600
-@@ -522,6 +522,7 @@
- 		p->thread.regs = NULL;	/* no user register state */
- 	} else {
- 		childregs->gpr[1] = usp;
-+		childregs->gpr[3] = 0;  /* Result from fork() */
- 		p->thread.regs = childregs;
- 		if (clone_flags & CLONE_SETTLS) {
- #ifdef CONFIG_PPC64
-@@ -532,7 +533,6 @@
- 				childregs->gpr[2] = childregs->gpr[6];
- 		}
- 	}
--	childregs->gpr[3] = 0;  /* Result from fork() */
- 	sp -= STACK_FRAME_OVERHEAD;
- 
- 	/*
-@@ -650,6 +650,30 @@
- #endif /* CONFIG_SPE */
- }
- 
-+long kernel_thread(int (*fn)(void *), void *arg, unsigned long flags)
-+{
-+	extern void kernel_thread_helper(void);
-+	struct pt_regs regs;
-+
-+	memset(&regs, 0, sizeof(regs));
-+
-+	/* use non volatile GPRs so they get restored in _switch */
-+	regs.gpr[14] = (unsigned long)arg;
-+	regs.msr = mfmsr();
-+
-+#ifdef CONFIG_PPC64
-+	regs.gpr[15] = *((unsigned long *)fn);
-+	regs.gpr[2] = *((unsigned long *)fn + 1);
-+	regs.nip = *((unsigned long *)kernel_thread_helper);
-+#else
-+	regs.gpr[15] = (unsigned long)fn;
-+	regs.nip = (unsigned long)kernel_thread_helper;
-+#endif
-+
-+	return do_fork(flags | CLONE_VM | CLONE_UNTRACED, 0, &regs, 0,
-+		       NULL, NULL);
-+}
-+
- #define PR_FP_ALL_EXCEPT (PR_FP_EXC_DIV | PR_FP_EXC_OVF | PR_FP_EXC_UND \
- 		| PR_FP_EXC_RES | PR_FP_EXC_INV)
- 
-Index: linux-2.6/arch/powerpc/kernel/misc_64.S
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/misc_64.S	2007-03-07 14:27:57.000000000 -0600
-+++ linux-2.6/arch/powerpc/kernel/misc_64.S	2007-03-07 15:15:16.000000000 -0600
-@@ -422,38 +422,14 @@
- 	blr
- #endif /* CONFIG_CPU_FREQ_PMAC64 */
- 
--
--/*
-- * Create a kernel thread
-- *   kernel_thread(fn, arg, flags)
-- */
--_GLOBAL(kernel_thread)
--	std	r29,-24(r1)
--	std	r30,-16(r1)
--	stdu	r1,-STACK_FRAME_OVERHEAD(r1)
--	mr	r29,r3
--	mr	r30,r4
--	ori	r3,r5,CLONE_VM	/* flags */
--	oris	r3,r3,(CLONE_UNTRACED>>16)
--	li	r4,0		/* new sp (unused) */
--	li	r0,__NR_clone
--	sc
--	cmpdi	0,r3,0		/* parent or child? */
--	bne	1f		/* return if parent */
-+_GLOBAL(kernel_thread_helper)
- 	li	r0,0
-+	mtctr	r15
- 	stdu	r0,-STACK_FRAME_OVERHEAD(r1)
--	ld	r2,8(r29)
--	ld	r29,0(r29)
--	mtlr	r29              /* fn addr in lr */
--	mr	r3,r30	        /* load arg and call fn */
--	blrl
--	li	r0,__NR_exit	/* exit after child exits */
--        li	r3,0
--	sc
--1:	addi	r1,r1,STACK_FRAME_OVERHEAD	
--	ld	r29,-24(r1)
--	ld	r30,-16(r1)
--	blr
-+	mr	r3,r14
-+	bctrl
-+	li	r3,0
-+	bl	.do_exit
- 
- /*
-  * disable_kernel_fp()
-Index: linux-2.6/arch/powerpc/kernel/misc_32.S
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/misc_32.S	2007-03-07 14:27:57.000000000 -0600
-+++ linux-2.6/arch/powerpc/kernel/misc_32.S	2007-03-07 15:15:16.000000000 -0600
-@@ -738,36 +738,15 @@
- 	mr	r3,r1		/* Close enough */
- 	blr
- 
--/*
-- * Create a kernel thread
-- *   kernel_thread(fn, arg, flags)
-- */
--_GLOBAL(kernel_thread)
--	stwu	r1,-16(r1)
--	stw	r30,8(r1)
--	stw	r31,12(r1)
--	mr	r30,r3		/* function */
--	mr	r31,r4		/* argument */
--	ori	r3,r5,CLONE_VM	/* flags */
--	oris	r3,r3,CLONE_UNTRACED>>16
--	li	r4,0		/* new sp (unused) */
--	li	r0,__NR_clone
--	sc
--	cmpwi	0,r3,0		/* parent or child? */
--	bne	1f		/* return if parent */
--	li	r0,0		/* make top-level stack frame */
--	stwu	r0,-16(r1)
--	mtlr	r30		/* fn addr in lr */
--	mr	r3,r31		/* load arg and call fn */
--	PPC440EP_ERR42
--	blrl
--	li	r0,__NR_exit	/* exit if function returns */
--	li	r3,0
--	sc
--1:	lwz	r30,8(r1)
--	lwz	r31,12(r1)
--	addi	r1,r1,16
--	blr
-+_GLOBAL(kernel_thread_helper)
-+	li	r0,0
-+	mtctr	r15
-+	stdu	r0,-STACK_FRAME_OVERHEAD(r1)
-+	mr	r3,r14
-+	PPC440EP_ERR42 /* XXX required? */
-+	bctrl
-+	li	r3,0
-+	bl	do_exit
- 
- _GLOBAL(kernel_execve)
- 	li	r0,__NR_execve
+> both .ask and .eoi and when ask is set to iic_eoi, then iic_eoi() is called twice
+> for one interrupt.  It hits BUG_ON(iic->eoi_ptr < 0)!
+
+>   Anthor workaround could be to add one more irq_chip structure for handle_percpu_irq
+> which does not have ack member...
+
+>   Any comments?
+
+    Well, I've told Ingo long ago that he shouldn't add that to the -rt patch 
+(it's been refused from the very start but then got "restored" along with 
+previously dropped genTOD patches).
+
+> Signed-off-by: Tsutomu Owa <tsutomu.owa@toshiba.co.jp>
+> -- owa
+> 
+> diff -rup linux-rt8/arch/powerpc/platforms/cell/interrupt.c rt/arch/powerpc/platforms/cell/interrupt.c
+> --- linux-rt8/arch/powerpc/platforms/cell/interrupt.c	2007-02-20 14:30:38.000000000 +0900
+> +++ rt/arch/powerpc/platforms/cell/interrupt.c	2007-03-02 18:48:52.000000000 +0900
+> @@ -90,7 +90,6 @@ static struct irq_chip iic_chip = {
+>  	.typename = " CELL-IIC ",
+>  	.mask = iic_mask,
+>  	.unmask = iic_unmask,
+> -	.ack = iic_eoi,
+>  	.eoi = iic_eoi,
+>  };
+
+WBR, Sergei
