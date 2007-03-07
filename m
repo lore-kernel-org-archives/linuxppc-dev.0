@@ -1,19 +1,23 @@
-Return-Path: <ckrinke@istor.com>
-Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6F359DDF95
+Return-Path: <glikely@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
+	by ozlabs.org (Postfix) with ESMTP id 13E93DDDFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Mar 2007 02:20:29 +1100 (EST)
-Subject: DMA take 4
+	Thu,  8 Mar 2007 03:26:02 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so212974nfc
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 07 Mar 2007 08:25:58 -0800 (PST)
+Message-ID: <528646bc0703070825y299e0c78ne8d0a91e1cc6c02d@mail.gmail.com>
+Date: Wed, 7 Mar 2007 09:25:58 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [RFC PATCH] icecube/lite5200b: fix OF_TBCLK (timebase-frequency)
+	calculation
+In-Reply-To: <20070307070258.GA4397@moe.telargo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Date: Wed, 7 Mar 2007 07:20:25 -0800
-Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A18B@MERCURY.inside.istor.com>
-From: "Charles Krinke" <ckrinke@istor.com>
-To: "Swarthout Edward L-SWARTHOU" <ed.swarthout@freescale.com>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070307070258.GA4397@moe.telargo.com>
+Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +28,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I have gotten to the point where u-boot performs dma transactions
-repeatedly and reliably with the 8541 and have moved back to my Linux
-driver.
+On 3/7/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> I tracked jiffies (on Linux) incrementing twice as fast on
+> lite5200b to this ("timebase-frequency" property).
+>
+> G2 core reference manual says decrementer and time base
+> are decreasing/increasing once every 4 bus clock cycles.
+>
+> Was there a reason this was busfreq/8?
 
-When I complete the DMA transaction in the Linux driver, the SR0
-registers tends to have 0x00000024 in it, meaning SR0[CH] & SR0[CB] are
-both set and MR0[CS] is set.
+Simply sloppyness on my part.
 
-I start out with:
+Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
 
-Set SR0   to 0xFFFF_FFFF
-Set SATR0 to 0x0005_0000
-Set DATR0 to 0x0005_0000
-Set MR0   to 0x0F03_C404
-Set SAR0 to the physical address in local memory
-Set DAR0 to the physical address of the PCI window at 0x8800_0000 which
-is been previously setup with POTAR2, POWAR2 & POWBAR2.
+>
+>
+>         Domen
+> ---
+>  include/configs/IceCube.h |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>
+> Index: u-boot.git/include/configs/IceCube.h
+> ===================================================================
+> --- u-boot.git.orig/include/configs/IceCube.h
+> +++ u-boot.git/include/configs/IceCube.h
+> @@ -182,7 +182,7 @@
+>
+>  #define OF_CPU                 "PowerPC,5200@0"
+>  #define OF_SOC                 "soc5200@f0000000"
+> -#define OF_TBCLK               (bd->bi_busfreq / 8)
+> +#define OF_TBCLK               (bd->bi_busfreq / 4)
+>  #define OF_STDOUT_PATH         "/soc5200@f0000000/serial@2000"
+>
+>  /*
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>
 
-It seems that the DMA transaction in Linux, using the same 8541 register
-settings as are in u-boot is not completing.
 
-So, this leads me to wondering about ioremap_nocache() perhaps. Although
-here, I think I want physical addresses for the source and destination
-of the DMA.
-
-What other things can I look into to understand why a DMA in Linux using
-the 8541 is going awry?
-
-Charles
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
