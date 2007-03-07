@@ -1,20 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id DF1A9DDF11
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 22:07:21 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC] [patch 4/6 -rt] powerpc 2.6.20-rt8: fix a runtime warnings
-	for xmon
-Date: Wed, 7 Mar 2007 12:06:51 +0100
-References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi3b4h25jj.wl@toshiba.co.jp>
-	<20070307091638.GC1783@elte.hu>
-In-Reply-To: <20070307091638.GC1783@elte.hu>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id E73A8DDE41
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 01:27:02 +1100 (EST)
+Message-ID: <45EECBAA.2020608@ru.mvista.com>
+Date: Wed, 07 Mar 2007 17:26:50 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703071206.52551.arnd@arndb.de>
-Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
+To: Tsutomu OWA <tsutomu.owa@toshiba.co.jp>
+Subject: Re: [patch 0/6 -rt] powerpc 2.6.20-rt8: fix boot/runtime
+	errors/warnings for PowerPC(ppc64)
+References: <yyi8xe925vg.wl@toshiba.co.jp>
+In-Reply-To: <yyi8xe925vg.wl@toshiba.co.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, mingo@elte.hu, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 07 March 2007, Ingo Molnar wrote:
-> i'm not an xmon expert, but maybe it might make more sense to first 
-> disable preemption, then interrupts - otherwise you could be preempted 
-> right after having disabled these interrupts (and be scheduled to 
-> another CPU, etc.). What is the difference between local_irq_save() and 
-> the above 'disable interrupts' sequence? If it's not the same and 
-> xmon_core() relied on having hardirqs disabled then it might make sense 
-> to do a local_irq_save() there, instead of a preempt_disable().
+Tsutomu OWA wrote:
+> Hi Ingo,
 
-Since relatively recently, powerpc does no longer actually disable
-the hardware interrupts with local_irq_disable(), but rather sets
-a per-cpu flag that will be checked if an actual interrupt comes
-in as part of the critical section.
+>   Please consider for inclusion in your rt tree.
 
-The mtmsr() sequence in xmon corresponds to hard_irq_disable()
-and should probably changed to that, but then you still need
-the extra preempt_disable() / preempt_enable().
+>   This series of patches fixes boot and runntime errors/warnings for
+> powerpc (esp. 64 bit).  This applies to linux-2.6.20, patch-2.6.20-rt8
+> and previous my patch set;
+>   http://ozlabs.org/pipermail/linuxppc-dev/2007-March/032640.html
+>   http://lkml.org/lkml/2007/3/6/503
 
-I think you're right about the sequence having to be
-1. preempt_disable()
-2. hard_irq_disable()
-3.
-4. hard_irq_enable()
-5. preempt_enable()
+>   Compile and boot tested on celleb (Cell Reference set) for both
+> PREEMPT_RT=y and PREEMPT_NONE=y.
 
-	Arnd <><
+>   CONFIG_MCOUNT, CONFIG_LATENCY_TRACE and other tracing options nor
+> CONFIG_GENERIC_TIME,
+
+    There is PowerPC genTOD patch and it's incorporated into -rt (don't know 
+it works for Cell) but it breaks TOD vsyscalls. Several months ago I've posted 
+patches removing them for the time being:
+
+http://ozlabs.org/pipermail/linuxppc-dev/2006-November/027686.html
+
+and I've heard that this issue is being worked on now by John Stultz.
+    Here's also a patch implemeting read_persitent_clock():
+
+http://www.tglx.de/projects/hrtimers/2.6.18/broken-out/gtod-persistent-clock-support-ppc.patch
+
+> clockevents etc are not yet ported.
+
+    Note that there *is* PowerPC clockevents driver already (don't know if it 
+works for Cell) -- it just never got merged to -rt:
+
+http://ozlabs.org/pipermail/linuxppc-dev/2006-November/027794.html
+http://ozlabs.org/pipermail/linuxppc-dev/2006-November/027852.html
+
+>   Comments and suggestions are welcome.
+
+>   Thanks in advance.
+> -- owa
+> TOSHIBA, Software Engineering Center.
