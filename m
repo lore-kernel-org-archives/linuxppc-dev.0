@@ -1,20 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <tmbinc@elitedvb.net>
+Message-ID: <45EF2985.1020407@elitedvb.net>
+Date: Wed, 07 Mar 2007 22:07:17 +0100
+From: Felix Domke <tmbinc@elitedvb.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17903.12035.781782.317694@cargo.ozlabs.ibm.com>
-Date: Thu, 8 Mar 2007 08:30:43 +1100
-From: Paul Mackerras <paulus@samba.org>
 To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw
-	ones.
-In-Reply-To: <45EF2CD8.3050804@ru.mvista.com>
-References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi649d25qz.wl@toshiba.co.jp>
-	<45EECE5C.6030100@ru.mvista.com>
-	<17902.60669.945986.186995@cargo.ozlabs.ibm.com>
-	<45EEF6A4.9090807@ru.mvista.com>
-	<17903.4302.502364.126701@cargo.ozlabs.ibm.com>
-	<45EF2CD8.3050804@ru.mvista.com>
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [patch 5/7] xenon: add SATA support
+References: <20070307180144.812594000@elitedvb.net>>
+	<20070307180526.194853000@elitedvb.net>>
+	<45EF285C.1090800@ru.mvista.com>
+In-Reply-To: <45EF285C.1090800@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Linuxppc-dev@ozlabs.org, Linux IDE <linux-ide@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +20,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov writes:
+Sergei Shtylyov wrote:
+> Felix Domke wrote:
+>> This adds support for the HDD and DVD SATA controller on the xenon
+>> southbridge.
+>   Pleas post this to linux-ide@vger.kernel.org in the future.
+I'll do.
 
->     I've floowed up to my patch with such explanation. In the context of an-rt 
-> patch itself, it was just too clear, hence I didn't go into explanations in 
-> the patch itself. :-)
+>> It also disables ATA_TFLAG_POLLING in libata-core, which prevented the
+>> DVD drive
+>> from being detected. It needs to be investigated what exactly is wrong
+>> here. 
 
-Well, it might be clear, to you, now, with the context in your head.
-But if such a patch is to go into a git tree, and somebody comes along
-in 3 years time and wants to know exactly why you made that change
-(and maybe that somebody is you :), then they will need more detail -
-such as how you came to the conclusion that those locks and no others
-needed to be changed, for instance.
+>>      tf.protocol = ATA_PROT_PIO;
+>> -    tf.flags |= ATA_TFLAG_POLLING; /* for polling presence detection */
+>> +//    tf.flags |= ATA_TFLAG_POLLING; /* for polling presence
+>> detection */
+>    I doubt that this could *ever* get accepted.
+It was not meant to be accepted, but to work around the problem which
+was introduced in 2.6.19. I have far too less knowledge of the SATA
+layer to understand why this flag exactly causes the detection of the
+DVD-Drive fail.
 
-At least give some of the reasoning behind your choice of which locks
-to convert, so that in future, if the patch turns out to have
-introduced a bug somehow, the person debugging it can either identify
-that there was a flaw in your logic, or else understand something that
-you have seen that they missed.
+As said, this needs to be investigated, and fixed (in the driver, of
+course, not in the subsystem).
 
-Paul.
+>> +static unsigned int get_scr_cfg_addr(unsigned int port_no, unsigned
+>> int sc_reg, int device)
+>> +{
+>> +    unsigned int addr = SIS_SCR_BASE + (4 * sc_reg);
+>> +
+>    Why we need device and port_no arguments here?
+As there is only one device/port per PCI device, the arguments should
+probably be removed from this function, right.
+
+>> +    if (sc_reg == SCR_ERROR) /* doesn't exist in PCI cfg space */
+>> +        return 0; /* assume no error */
+>    Since SCR_ERROR == 1, this check seems broken.
+Why?
+
+
+Felix
