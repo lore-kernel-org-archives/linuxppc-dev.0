@@ -1,15 +1,16 @@
-Return-Path: <tmbinc@elitedvb.net>
-Message-ID: <45EF2B2F.4080903@elitedvb.net>
-Date: Wed, 07 Mar 2007 22:14:23 +0100
-From: Felix Domke <tmbinc@elitedvb.net>
-MIME-Version: 1.0
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [patch 0/7] [RFC] Xenon support
+Return-Path: <geert@linux-m68k.org>
+Date: Wed, 7 Mar 2007 22:00:07 +0100 (CET)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@sonytel.be
+To: Felix Domke <tmbinc@elitedvb.net>
+Subject: Re: [patch 3/7] xenon: udbg support (ugly)
+In-Reply-To: <20070307180525.919926000@elitedvb.net>>
+Message-ID: <Pine.LNX.4.62.0703072159220.4463@pademelon.sonytel.be>
 References: <20070307180144.812594000@elitedvb.net>>
-	<1173301611.5799.38.camel@zod.rchland.ibm.com>
-In-Reply-To: <1173301611.5799.38.camel@zod.rchland.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev@ozlabs.org
+	<20070307180525.919926000@elitedvb.net>>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: Linux/PPC Development <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,24 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Josh Boyer wrote:
-> On Wed, 2007-03-07 at 19:01 +0100, Felix Domke wrote:
->> This series of patches add support for the Xbox 360 gaming console.
->> Note that these patches were written by different people, who want
->> to remain anonymous. These drivers were written without hardware 
->> documentation being available.
-> Taking anonymous contributions to the kernel goes against the
-> Developer's Certificate of Origin.  Are you sure you can certify it's
-> origin and are willing to take responsibility for the code?
+On Wed, 7 Mar 2007, Felix Domke wrote:
+> --- linux-2.6.20.orig/arch/powerpc/kernel/udbg.c	2007-03-07 19:01:12.000000000 +0100
+> +++ linux-2.6.20/arch/powerpc/kernel/udbg.c	2007-03-07 19:01:21.000000000 +0100
+> @@ -25,6 +25,18 @@
+>   * Early debugging facilities. You can enable _one_ of these via .config,
+>   * if you do so your kernel _will not boot_ on anything else. Be careful.
+>   */
+> +
+> +extern u8 real_readb(volatile u8 __iomem  *addr);
+> +extern void real_writeb(u8 data, volatile u8 __iomem *addr);
+> +
+> +void udbg_xenon_real_putc(char c)
+> +{
+> +	if (c == '\n')
+> +		udbg_xenon_real_putc('\r');
+> +	while (!(real_readb((void*)0x80000200ea001018ULL)&0x02));
+> +	real_writeb(c, (void*)0x80000200ea001014ULL);
+> +}
+> +
+>  void __init udbg_early_init(void)
+>  {
+>  #if defined(CONFIG_PPC_EARLY_DEBUG_LPAR)
+> @@ -46,6 +58,7 @@
+>  	/* For iSeries - hit Ctrl-x Ctrl-x to see the output */
+>  	udbg_init_iseries();
+>  #endif
+> +	udbg_putc = udbg_xenon_real_putc;
 
->>> (c) The contribution was provided directly to me by some other
->>>     person who certified (a), (b) or (c) and I have not modified
->>>     it.
-This is true for the patch series. I understand that as far as the
-original authors want to remain anonymous, this isn't worth a cent.
+No #ifdef?
 
-My guess is that the original authors either need to take resposibility
-for their code, or the code needs to be rewritten from scratch. I hope
-to be able to fix that up in the next days.
+>  }
+>  
+>  /* udbg library, used by xmon et al */
+> @@ -150,6 +163,7 @@
+>  		printk(KERN_INFO "early console immortal !\n");
+>  		return;
+>  	}
+> +	return;
 
-Felix
+??
+
+>  	unregister_console(&udbg_console);
+>  	early_console_initialized = 0;
+>  }
+
+Gr{oetje,eeting}s,
+
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
