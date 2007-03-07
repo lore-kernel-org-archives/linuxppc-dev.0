@@ -1,16 +1,19 @@
-Return-Path: <geert@linux-m68k.org>
-Date: Wed, 7 Mar 2007 22:00:07 +0100 (CET)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@sonytel.be
-To: Felix Domke <tmbinc@elitedvb.net>
-Subject: Re: [patch 3/7] xenon: udbg support (ugly)
-In-Reply-To: <20070307180525.919926000@elitedvb.net>>
-Message-ID: <Pine.LNX.4.62.0703072159220.4463@pademelon.sonytel.be>
-References: <20070307180144.812594000@elitedvb.net>>
-	<20070307180525.919926000@elitedvb.net>>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id D7E9BDE10C
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 08:21:38 +1100 (EST)
+Message-ID: <45EF2CD8.3050804@ru.mvista.com>
+Date: Thu, 08 Mar 2007 00:21:28 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Linux/PPC Development <Linuxppc-dev@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to raw
+	ones.
+References: <yyi8xe925vg.wl@toshiba.co.jp>	<yyi649d25qz.wl@toshiba.co.jp>	<45EECE5C.6030100@ru.mvista.com>	<17902.60669.945986.186995@cargo.ozlabs.ibm.com>	<45EEF6A4.9090807@ru.mvista.com>
+	<17903.4302.502364.126701@cargo.ozlabs.ibm.com>
+In-Reply-To: <17903.4302.502364.126701@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,58 +23,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 7 Mar 2007, Felix Domke wrote:
-> --- linux-2.6.20.orig/arch/powerpc/kernel/udbg.c	2007-03-07 19:01:12.000000000 +0100
-> +++ linux-2.6.20/arch/powerpc/kernel/udbg.c	2007-03-07 19:01:21.000000000 +0100
-> @@ -25,6 +25,18 @@
->   * Early debugging facilities. You can enable _one_ of these via .config,
->   * if you do so your kernel _will not boot_ on anything else. Be careful.
->   */
-> +
-> +extern u8 real_readb(volatile u8 __iomem  *addr);
-> +extern void real_writeb(u8 data, volatile u8 __iomem *addr);
-> +
-> +void udbg_xenon_real_putc(char c)
-> +{
-> +	if (c == '\n')
-> +		udbg_xenon_real_putc('\r');
-> +	while (!(real_readb((void*)0x80000200ea001018ULL)&0x02));
-> +	real_writeb(c, (void*)0x80000200ea001014ULL);
-> +}
-> +
->  void __init udbg_early_init(void)
->  {
->  #if defined(CONFIG_PPC_EARLY_DEBUG_LPAR)
-> @@ -46,6 +58,7 @@
->  	/* For iSeries - hit Ctrl-x Ctrl-x to see the output */
->  	udbg_init_iseries();
->  #endif
-> +	udbg_putc = udbg_xenon_real_putc;
+Hello.
 
-No #ifdef?
+Paul Mackerras wrote:
 
->  }
->  
->  /* udbg library, used by xmon et al */
-> @@ -150,6 +163,7 @@
->  		printk(KERN_INFO "early console immortal !\n");
->  		return;
->  	}
-> +	return;
+>>    As I said, this was intended for the -rt patch, hence the question was for 
+>>Ingo. I CC'ed the list just to keep people here in a loop.
 
-??
+> OK, fair enough, but I still think the patch description was
+> inadequate.  In the -rt context, I would at least expect to see some
+> explanation as to why those particular locks needed to be converted.
 
->  	unregister_console(&udbg_console);
->  	early_console_initialized = 0;
->  }
+    I've floowed up to my patch with such explanation. In the context of an-rt 
+patch itself, it was just too clear, hence I didn't go into explanations in 
+the patch itself. :-)
 
-Gr{oetje,eeting}s,
+> Paul.
 
-						Geert
-
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+WBR, Sergei
