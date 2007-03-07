@@ -1,21 +1,21 @@
 Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id DE8F1DDEF4
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 04:47:45 +1100 (EST)
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 6D0C0DDF7F
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 05:22:45 +1100 (EST)
 Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l27Hlgq7004096
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 10:47:42 -0700 (MST)
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l27IMagJ005715
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 11:22:36 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l27HlguB023166
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 11:47:42 -0600 (CST)
-Subject: [PATCH] Added 2nd PCI-Ex controller support for MPC8641.
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l27IMZLd002053
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 12:22:36 -0600 (CST)
+Subject: [PATCH] Fix e500 v2 core reboot bug
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1173289661.23776.115.camel@ld0161-tx32>
+Message-Id: <1173291755.23776.121.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Wed, 07 Mar 2007 11:47:41 -0600
+Date: Wed, 07 Mar 2007 12:22:35 -0600
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,48 +25,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Zhang Wei <wei.zhang@freescale.com>
+From: Roy Zang <tie-fei.zang@freescale.com>
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
+For e500 v2 core, a new reset control register is added.
+
+Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+Acked-by: Jon Loeliger <jdl@freescale.com>
 ---
- arch/powerpc/boot/dts/mpc8641_hpcn.dts |   24 ++++++++++++++++++++++++
- 1 files changed, 24 insertions(+), 0 deletions(-)
+ arch/powerpc/platforms/85xx/misc.c |   10 ++++++++++
+ 1 files changed, 10 insertions(+), 0 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8641_hpcn.dts b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-index 8a4995a..19121ea 100644
---- a/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-+++ b/arch/powerpc/boot/dts/mpc8641_hpcn.dts
-@@ -300,6 +300,30 @@
- 			};
+diff --git a/arch/powerpc/platforms/85xx/misc.c b/arch/powerpc/platforms/85xx/misc.c
+index 3e62fcb..9fcbf56 100644
+--- a/arch/powerpc/platforms/85xx/misc.c
++++ b/arch/powerpc/platforms/85xx/misc.c
+@@ -13,11 +13,21 @@
+ #include <linux/irq.h>
+ #include <linux/module.h>
+ #include <asm/irq.h>
++#include <asm/io.h>
++#include <sysdev/fsl_soc.h>
  
- 		};
+ extern void abort(void);
+ 
+ void mpc85xx_restart(char *cmd)
+ {
++	unsigned int pvr;
 +
-+		pci@9000 {
-+			compatible = "86xx";
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <9000 1000>;
-+			bus-range = <0 ff>;
-+			ranges = <02000000 0 a0000000 a0000000 0 20000000
-+				  01000000 0 00000000 e3000000 0 00100000>;
-+			clock-frequency = <1fca055>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <19 2>;
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+				/* IDSEL 0x0 */
-+				0000 0 0 1 &mpic 44 1
-+				0000 0 0 2 &mpic 45 1
-+				0000 0 0 3 &mpic 46 1
-+				0000 0 0 4 &mpic 47 1
-+				>;
-+		};
-+
- 		mpic: pic@40000 {
- 			clock-frequency = <0>;
- 			interrupt-controller;
++	pvr = mfspr(SPRN_PVR);
++	if ((pvr >> 16) & 0x1){
++		u32 __iomem *rstcr;
++		rstcr = ioremap(get_immrbase() + 0xE00B0, 0x100);
++		*rstcr = 0x2;           /* HRESET_REQ */
++	}
+ 	local_irq_disable();
+ 	abort();
+ }
 -- 
 1.5.0.1.213.g509b
