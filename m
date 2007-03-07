@@ -1,10 +1,21 @@
-Return-Path: <root@elitedvb.net>
-Message-Id: <20070307180526.470069000@elitedvb.net>>
-References: <20070307180144.812594000@elitedvb.net>>
-Date: Wed, 07 Mar 2007 19:01:51 +0100
-From: Felix Domke <tmbinc@elitedvb.net>
-To: Linuxppc-dev@ozlabs.org
-Subject: [patch 7/7] xenon: add framebuffer support (ugly)
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 80541DDF34
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 07:48:49 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l27Kmj7q016563
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 13:48:46 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l27KmjIV025244
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 14:48:45 -0600 (CST)
+Subject: [PATCH] Move 8641 PCI-Express to arch/powerpc/sysdev/fsl_pcie.c.
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1173300525.23776.136.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Wed, 07 Mar 2007 14:48:45 -0600
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,507 +25,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds support for a framebuffer on the "Xenos" graphics chip used in the
-Xbox 360 machine. It requires a pre-initialized framebuffer.
 
-The major problem is that the graphics chip only supports a 'tiled' mode,
-thus this patch also uses some serious ugly patches to allow the framebuffer
-console to handle this. So this patch is given just for completeness, to have 
-a working console output, and of course not meant for inclusion into the 
-kernel.
+This move sets the stage for the use of generic PCI Express
+code in 85xx and 86xx parts from FSL.  Subsequent patches
+for 8548 and 8544 will be able to use this shared code.
 
-This patch can probably be rewritten using the deferred io support in a
-much nicer way.
-
-Signed-off-by: Felix Domke <tmbinc@elitedvb.net>
-
+Signed-off-by: Jon Loeliger <jdl@freescale.com>
+Acked-by: Andy Fleming <afleming@freescale.com>
 ---
- drivers/video/Kconfig     |    9 +
- drivers/video/Makefile    |    1 
- drivers/video/cfbimgblt.c |   23 +--
- drivers/video/xenonfb.c   |  337 ++++++++++++++++++++++++++++++++++++++++++++++
- include/linux/fb.h        |   12 +
- 5 files changed, 373 insertions(+), 9 deletions(-)
+ arch/powerpc/Kconfig                               |    5 +++++
+ arch/powerpc/platforms/86xx/Makefile               |    2 +-
+ arch/powerpc/sysdev/Makefile                       |    1 +
+ .../86xx/mpc86xx_pcie.c => sysdev/fsl_pcie.c}      |    2 --
+ 4 files changed, 7 insertions(+), 3 deletions(-)
+ rename arch/powerpc/{platforms/86xx/mpc86xx_pcie.c => sysdev/fsl_pcie.c} (100%)
 
-Index: linux-2.6.20/drivers/video/Kconfig
-===================================================================
---- linux-2.6.20.orig/drivers/video/Kconfig	2007-03-07 19:01:12.000000000 +0100
-+++ linux-2.6.20/drivers/video/Kconfig	2007-03-07 19:01:23.000000000 +0100
-@@ -568,6 +568,15 @@
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 6dfbd52..f68de20 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -168,6 +168,7 @@ config PPC_86xx
+ 	bool "Freescale 86xx"
+ 	select 6xx
+ 	select FSL_SOC
++	select FSL_PCIE
+ 	select PPC_FPU
+ 	select ALTIVEC
  	help
- 	  This is the frame buffer device driver for the Intel-based Macintosh
+@@ -1022,6 +1023,10 @@ config SBUS
+ config FSL_SOC
+ 	bool
  
-+config FB_XENON
-+	bool "Xbox 360 Framebuffer Support"
-+	depends on (FB = y) && PPC
-+	select FB_CFB_FILLRECT
-+	select FB_CFB_COPYAREA
-+	select FB_CFB_IMAGEBLIT
-+	help
-+	  This is the frame buffer device driver for the Microsoft Xbox 360.
++config FSL_PCIE
++	bool
++	depends on PPC_86xx
 +
- config FB_HGA
- 	tristate "Hercules mono graphics support"
- 	depends on FB && X86
-Index: linux-2.6.20/drivers/video/Makefile
-===================================================================
---- linux-2.6.20.orig/drivers/video/Makefile	2007-03-07 19:01:12.000000000 +0100
-+++ linux-2.6.20/drivers/video/Makefile	2007-03-07 19:01:23.000000000 +0100
-@@ -104,6 +104,7 @@
- # Platform or fallback drivers go here
- obj-$(CONFIG_FB_VESA)             += vesafb.o
- obj-$(CONFIG_FB_IMAC)             += imacfb.o
-+obj-$(CONFIG_FB_XENON)            += xenonfb.o
- obj-$(CONFIG_FB_VGA16)            += vga16fb.o vgastate.o
- obj-$(CONFIG_FB_OF)               += offb.o
+ # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
+ config MCA
+ 	bool
+diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
+index 476a6ee..418fd8f 100644
+--- a/arch/powerpc/platforms/86xx/Makefile
++++ b/arch/powerpc/platforms/86xx/Makefile
+@@ -4,4 +4,4 @@
  
-Index: linux-2.6.20/drivers/video/cfbimgblt.c
-===================================================================
---- linux-2.6.20.orig/drivers/video/cfbimgblt.c	2007-03-07 19:01:12.000000000 +0100
-+++ linux-2.6.20/drivers/video/cfbimgblt.c	2007-03-07 19:01:23.000000000 +0100
-@@ -72,8 +72,13 @@
- 	0x00000000, 0xffffffff
- };
+ obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
+ obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
+-obj-$(CONFIG_PCI)		+= pci.o mpc86xx_pcie.o
++obj-$(CONFIG_PCI)		+= pci.o
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 26ca3ff..86fc8c0 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -11,6 +11,7 @@ obj-$(CONFIG_PPC_PMI)		+= pmi.o
+ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
++obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
  
--#define FB_WRITEL fb_writel
--#define FB_READL  fb_readl
-+#if 0
-+#define FB_WRITEL(p,b,addr) fb_writel(b,addr)
-+#define FB_READL(p,addr)  fb_readl(addr)
-+#else
-+#define FB_READL(p,addr)  fb_readl(xenon_convert(p, addr))
-+#define FB_WRITEL(p,b,addr) fb_writel(b, xenon_convert(p, addr))
-+#endif
+diff --git a/arch/powerpc/platforms/86xx/mpc86xx_pcie.c b/arch/powerpc/sysdev/fsl_pcie.c
+similarity index 100%
+rename from arch/powerpc/platforms/86xx/mpc86xx_pcie.c
+rename to arch/powerpc/sysdev/fsl_pcie.c
+index a2f4f73..041c07e 100644
+--- a/arch/powerpc/platforms/86xx/mpc86xx_pcie.c
++++ b/arch/powerpc/sysdev/fsl_pcie.c
+@@ -24,8 +24,6 @@
+ #include <asm/pci-bridge.h>
+ #include <asm/machdep.h>
  
- static inline void color_imageblit(const struct fb_image *image, 
- 				   struct fb_info *p, u8 __iomem *dst1, 
-@@ -97,7 +102,7 @@
- 		
- 		if (start_index) {
- 			u32 start_mask = ~(FB_SHIFT_HIGH(~(u32)0, start_index));
--			val = FB_READL(dst) & start_mask;
-+			val = FB_READL(p, dst) & start_mask;
- 			shift = start_index;
- 		}
- 		while (n--) {
-@@ -109,7 +114,7 @@
- 			color <<= FB_LEFT_POS(bpp);
- 			val |= FB_SHIFT_HIGH(color, shift);
- 			if (shift >= null_bits) {
--				FB_WRITEL(val, dst++);
-+				FB_WRITEL(p, val, dst++);
- 	
- 				val = (shift == null_bits) ? 0 : 
- 					FB_SHIFT_LOW(color, 32 - shift);
-@@ -121,7 +126,7 @@
- 		if (shift) {
- 			u32 end_mask = FB_SHIFT_HIGH(~(u32)0, shift);
+-#include "mpc86xx.h"
+-
+ #define PCI_CFG_OUT out_be32
  
--			FB_WRITEL((FB_READL(dst) & end_mask) | val, dst);
-+			FB_WRITEL(p, (FB_READL(p, dst) & end_mask) | val, dst);
- 		}
- 		dst1 += p->fix.line_length;
- 		if (pitch_index) {
-@@ -162,7 +167,7 @@
- 		/* write leading bits */
- 		if (start_index) {
- 			u32 start_mask = ~(FB_SHIFT_HIGH(~(u32)0,start_index));
--			val = FB_READL(dst) & start_mask;
-+			val = FB_READL(p, dst) & start_mask;
- 			shift = start_index;
- 		}
- 
-@@ -173,7 +178,7 @@
- 			
- 			/* Did the bitshift spill bits to the next long? */
- 			if (shift >= null_bits) {
--				FB_WRITEL(val, dst++);
-+				FB_WRITEL(p, val, dst++);
- 				val = (shift == null_bits) ? 0 :
- 					FB_SHIFT_LOW(color,32 - shift);
- 			}
-@@ -186,7 +191,7 @@
-  		if (shift) {
- 			u32 end_mask = FB_SHIFT_HIGH(~(u32)0, shift);
- 
--			FB_WRITEL((FB_READL(dst) & end_mask) | val, dst);
-+			FB_WRITEL(p, (FB_READL(p, dst) & end_mask) | val, dst);
- 		}
- 		
- 		dst1 += pitch;
-@@ -251,7 +256,7 @@
- 		for (j = k; j--; ) {
- 			shift -= ppw;
- 			end_mask = tab[(*src >> shift) & bit_mask];
--			FB_WRITEL((end_mask & eorx)^bgx, dst++);
-+			FB_WRITEL(p, (end_mask & eorx)^bgx, dst++);
- 			if (!shift) { shift = 8; src++; }		
- 		}
- 		dst1 += p->fix.line_length;
-Index: linux-2.6.20/include/linux/fb.h
-===================================================================
---- linux-2.6.20.orig/include/linux/fb.h	2007-03-07 19:01:12.000000000 +0100
-+++ linux-2.6.20/include/linux/fb.h	2007-03-07 19:01:23.000000000 +0100
-@@ -907,6 +907,18 @@
- 	}
- }
- 
-+static inline int *xenon_convert(struct fb_info *p, int *addr)
-+{
-+	int index = ((char*)addr) - ((char*)p->screen_base);
-+	int y = index / (p->fix.line_length);
-+	int x = index % (p->fix.line_length)/4;
-+	unsigned int base = ((((y & ~31)*p->var.xres) + (x & ~31)*32 ) +
-+	 (((x&3) + ((y&1)<<2) + ((x&28)<<1) + ((y&30)<<5)) ^ ((y&8)<<2))) * 4;
-+
-+	return (int*)(((char*)p->screen_base)+base);
-+}
-+
-+
- /* drivers/video/fbsysfs.c */
- extern struct fb_info *framebuffer_alloc(size_t size, struct device *dev);
- extern void framebuffer_release(struct fb_info *info);
-Index: linux-2.6.20/drivers/video/xenonfb.c
-===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6.20/drivers/video/xenonfb.c	2007-03-07 19:01:23.000000000 +0100
-@@ -0,0 +1,337 @@
-+/*
-+ * framebuffer driver for Microsoft Xbox 360
-+ *
-+ * (c) 2006 ...
-+ * Original vesafb driver written by Gerd Knorr <kraxel@goldbach.in-berlin.de>
-+ *
-+ */
-+
-+#include <linux/delay.h>
-+#include <linux/errno.h>
-+#include <linux/fb.h>
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/ioport.h>
-+#include <linux/mm.h>
-+#include <linux/module.h>
-+#include <linux/platform_device.h>
-+#include <linux/screen_info.h>
-+#include <linux/slab.h>
-+#include <linux/string.h>
-+#include <linux/dmi.h>
-+
-+#include <asm/io.h>
-+
-+#include <video/vga.h>
-+
-+/* --------------------------------------------------------------------- */
-+
-+static struct fb_var_screeninfo xenonfb_defined __initdata = {
-+	.activate		= FB_ACTIVATE_NOW,
-+	.height			= -1,
-+	.width			= -1,
-+	.right_margin		= 32,
-+	.upper_margin		= 16,
-+	.lower_margin		= 4,
-+	.vsync_len		= 4,
-+	.vmode			= FB_VMODE_NONINTERLACED,
-+};
-+
-+static struct fb_fix_screeninfo xenonfb_fix __initdata = {
-+	.id			= "XENON FB",
-+	.type			= FB_TYPE_PACKED_PIXELS,
-+	.accel			= FB_ACCEL_NONE,
-+	.visual			= FB_VISUAL_TRUECOLOR,
-+};
-+
-+typedef struct {
-+	uint32_t unknown1[4];
-+	uint32_t base;
-+	uint32_t unknown2[8];
-+	uint32_t width;
-+	uint32_t height;
-+} ati_info;
-+
-+#define	DEFAULT_FB_MEM	1024*1024*16
-+
-+/* --------------------------------------------------------------------- */
-+
-+static int xenonfb_setcolreg(unsigned regno, unsigned red, unsigned green,
-+			    unsigned blue, unsigned transp,
-+			    struct fb_info *info)
-+{
-+	/*
-+	 *  Set a single color register. The values supplied are
-+	 *  already rounded down to the hardware's capabilities
-+	 *  (according to the entries in the `var' structure). Return
-+	 *  != 0 for invalid regno.
-+	 */
-+
-+	if (regno >= info->cmap.len)
-+		return 1;
-+
-+	if (regno < 16) {
-+		red   >>= 8;
-+		green >>= 8;
-+		blue  >>= 8;
-+		((u32 *)(info->pseudo_palette))[regno] =
-+			(red   << info->var.red.offset)   |
-+			(green << info->var.green.offset) |
-+			(blue  << info->var.blue.offset);
-+	}
-+	return 0;
-+}
-+
-+#define XENON_XY_TO_STD_PTR(x,y) ((int*)(((char*)p->screen_base)+y*p->fix.line_length+x*(p->var.bits_per_pixel/8)))
-+#define XENON_XY_TO_XENON_PTR(x,y) xenon_convert(p, XENON_XY_TO_STD_PTR(x,y))
-+
-+inline void xenon_pset(struct fb_info *p, int x, int y, int color)
-+{
-+	fb_writel(color, XENON_XY_TO_XENON_PTR(x,y));
-+}
-+
-+inline int xenon_pget(struct fb_info *p, int x, int y)
-+{
-+	return fb_readl(XENON_XY_TO_XENON_PTR(x,y));
-+}
-+
-+void xenon_fillrect(struct fb_info *p, const struct fb_fillrect *rect)
-+{
-+
-+	__u32 x, y;
-+	for (y=0; y<rect->height; y++) {
-+		for (x=0; x<rect->width; x++) {
-+			xenon_pset(p, rect->dx+x, rect->dy+y, rect->color);
-+
-+		}
-+	}
-+}
-+
-+void xenon_copyarea(struct fb_info *p, const struct fb_copyarea *area)
-+{
-+
-+	/* if the beginning of the target area might overlap with the end of
-+	the source area, be have to copy the area reverse. */
-+	if ((area->dy == area->sy && area->dx > area->sx) || (area->dy > area->sy)) {
-+		__s32 x, y;
-+		for (y=area->height-1; y>0; y--) {
-+			for (x=area->width-1; x>0; x--) {
-+				xenon_pset(p, area->dx+x, area->dy+y, xenon_pget(p, area->sx+x, area->sy+y));
-+			}
-+		}
-+	} else {
-+		__u32 x, y;
-+		for (y=0; y<area->height; y++) {
-+			for (x=0; x<area->width; x++) {
-+				xenon_pset(p, area->dx+x, area->dy+y, xenon_pget(p, area->sx+x, area->sy+y));
-+			}
-+		}
-+	}
-+}
-+
-+static struct fb_ops xenonfb_ops = {
-+	.owner		= THIS_MODULE,
-+	.fb_setcolreg	= xenonfb_setcolreg,
-+	.fb_fillrect	= xenon_fillrect,
-+	.fb_copyarea	= xenon_copyarea,
-+	.fb_imageblit	= cfb_imageblit,
-+};
-+
-+static int __init xenonfb_probe(struct platform_device *dev)
-+{
-+	struct fb_info *info;
-+	int err;
-+	unsigned int size_vmode;
-+	unsigned int size_remap;
-+	unsigned int size_total;
-+
-+	screen_info.lfb_depth = 32;
-+	screen_info.lfb_size = DEFAULT_FB_MEM / 0x10000;
-+	screen_info.pages=1;
-+	screen_info.blue_size = 8;
-+	screen_info.blue_pos = 24;
-+	screen_info.green_size = 8;
-+	screen_info.green_pos = 16;
-+	screen_info.red_size = 8;
-+	screen_info.red_pos = 8;
-+	screen_info.rsvd_size = 8;
-+	screen_info.rsvd_pos = 0;
-+
-+	ati_info *ai = ioremap(0x200ec806100ULL, sizeof(ati_info));
-+
-+
-+
-+
-+
-+
-+
-+	screen_info.lfb_base = ai->base;
-+	screen_info.lfb_width = ai->width;
-+	screen_info.lfb_height = ai->height;
-+	screen_info.lfb_linelength = screen_info.lfb_width * screen_info.lfb_depth/4;
-+
-+	printk(KERN_INFO "xenonfb: detected %dx%d framebuffer @ 0x%08x\n", screen_info.lfb_width, screen_info.lfb_height, screen_info.lfb_base);
-+
-+
-+	iounmap(ai);
-+
-+	xenonfb_fix.smem_start = screen_info.lfb_base;
-+	xenonfb_defined.bits_per_pixel = screen_info.lfb_depth;
-+	xenonfb_defined.xres = screen_info.lfb_width;
-+	xenonfb_defined.yres = screen_info.lfb_height;
-+	xenonfb_defined.xoffset = 0;
-+	xenonfb_defined.yoffset = 0;
-+	xenonfb_fix.line_length = screen_info.lfb_linelength;
-+
-+	/*   size_vmode -- that is the amount of memory needed for the
-+	 *                 used video mode, i.e. the minimum amount of
-+	 *                 memory we need. */
-+	size_vmode = xenonfb_defined.yres * xenonfb_fix.line_length;
-+
-+	/*   size_total -- all video memory we have. Used for
-+	 *                 entries, ressource allocation and bounds
-+	 *                 checking. */
-+	size_total = screen_info.lfb_size * 65536;
-+	if (size_total < size_vmode)
-+		size_total = size_vmode;
-+
-+	/*   size_remap -- the amount of video memory we are going to
-+	 *                 use for xenonfb.  With modern cards it is no
-+	 *                 option to simply use size_total as that
-+	 *                 wastes plenty of kernel address space. */
-+	size_remap  = size_vmode * 2;
-+	if (size_remap < size_vmode)
-+		size_remap = size_vmode;
-+	if (size_remap > size_total)
-+		size_remap = size_total;
-+	xenonfb_fix.smem_len = size_remap;
-+
-+	if (!request_mem_region(xenonfb_fix.smem_start, size_total, "xenonfb")) {
-+		printk(KERN_WARNING
-+		       "xenonfb: cannot reserve video memory at 0x%lx\n",
-+			xenonfb_fix.smem_start);
-+		/* We cannot make this fatal. Sometimes this comes from magic
-+		   spaces our resource handlers simply don't know about */
-+	}
-+
-+	info = framebuffer_alloc(sizeof(u32) * 16, &dev->dev);
-+	if (!info) {
-+		err = -ENOMEM;
-+		goto err_release_mem;
-+	}
-+	info->pseudo_palette = info->par;
-+	info->par = NULL;
-+
-+	info->screen_base = ioremap(xenonfb_fix.smem_start, xenonfb_fix.smem_len);
-+	if (!info->screen_base) {
-+		printk(KERN_ERR "xenonfb: abort, cannot ioremap video memory "
-+				"0x%x @ 0x%lx\n",
-+			xenonfb_fix.smem_len, xenonfb_fix.smem_start);
-+		err = -EIO;
-+		goto err_unmap;
-+	}
-+
-+	printk(KERN_INFO "xenonfb: framebuffer at 0x%lx, mapped to 0x%p, "
-+	       "using %dk, total %dk\n",
-+	       xenonfb_fix.smem_start, info->screen_base,
-+	       size_remap/1024, size_total/1024);
-+	printk(KERN_INFO "xenonfb: mode is %dx%dx%d, linelength=%d, pages=%d\n",
-+	       xenonfb_defined.xres, xenonfb_defined.yres,
-+	       xenonfb_defined.bits_per_pixel, xenonfb_fix.line_length,
-+	       screen_info.pages);
-+
-+	xenonfb_defined.xres_virtual = xenonfb_defined.xres;
-+	xenonfb_defined.yres_virtual = xenonfb_fix.smem_len /
-+					xenonfb_fix.line_length;
-+	printk(KERN_INFO "xenonfb: scrolling: redraw\n");
-+	xenonfb_defined.yres_virtual = xenonfb_defined.yres;
-+
-+	/* some dummy values for timing to make fbset happy */
-+	xenonfb_defined.pixclock     = 10000000 / xenonfb_defined.xres *
-+					1000 / xenonfb_defined.yres;
-+	xenonfb_defined.left_margin  = (xenonfb_defined.xres / 8) & 0xf8;
-+	xenonfb_defined.hsync_len    = (xenonfb_defined.xres / 8) & 0xf8;
-+
-+	xenonfb_defined.red.offset    = screen_info.red_pos;
-+	xenonfb_defined.red.length    = screen_info.red_size;
-+	xenonfb_defined.green.offset  = screen_info.green_pos;
-+	xenonfb_defined.green.length  = screen_info.green_size;
-+	xenonfb_defined.blue.offset   = screen_info.blue_pos;
-+	xenonfb_defined.blue.length   = screen_info.blue_size;
-+	xenonfb_defined.transp.offset = screen_info.rsvd_pos;
-+	xenonfb_defined.transp.length = screen_info.rsvd_size;
-+
-+	printk(KERN_INFO "xenonfb: %s: "
-+	       "size=%d:%d:%d:%d, shift=%d:%d:%d:%d\n",
-+	       "Truecolor",
-+	       screen_info.rsvd_size,
-+	       screen_info.red_size,
-+	       screen_info.green_size,
-+	       screen_info.blue_size,
-+	       screen_info.rsvd_pos,
-+	       screen_info.red_pos,
-+	       screen_info.green_pos,
-+	       screen_info.blue_pos);
-+
-+	xenonfb_fix.ypanstep  = 0;
-+	xenonfb_fix.ywrapstep = 0;
-+
-+	/* request failure does not faze us, as vgacon probably has this
-+	 * region already (FIXME) */
-+	request_region(0x3c0, 32, "xenonfb");
-+
-+	info->fbops = &xenonfb_ops;
-+	info->var = xenonfb_defined;
-+	info->fix = xenonfb_fix;
-+	info->flags = FBINFO_FLAG_DEFAULT;
-+
-+	if (fb_alloc_cmap(&info->cmap, 256, 0) < 0) {
-+		err = -ENOMEM;
-+		goto err_unmap;
-+	}
-+	if (register_framebuffer(info)<0) {
-+		err = -EINVAL;
-+		goto err_fb_dealoc;
-+	}
-+	printk(KERN_INFO "fb%d: %s frame buffer device\n",
-+	       info->node, info->fix.id);
-+	return 0;
-+
-+err_fb_dealoc:
-+	fb_dealloc_cmap(&info->cmap);
-+err_unmap:
-+	iounmap(info->screen_base);
-+	framebuffer_release(info);
-+err_release_mem:
-+	release_mem_region(xenonfb_fix.smem_start, size_total);
-+	return err;
-+}
-+
-+static struct platform_driver xenonfb_driver = {
-+	.probe	= xenonfb_probe,
-+	.driver	= {
-+		.name	= "xenonfb",
-+	},
-+};
-+
-+static struct platform_device xenonfb_device = {
-+	.name	= "xenonfb",
-+};
-+
-+static int __init xenonfb_init(void)
-+{
-+	int ret;
-+
-+	ret = platform_driver_register(&xenonfb_driver);
-+
-+	if (!ret) {
-+		ret = platform_device_register(&xenonfb_device);
-+		if (ret)
-+			platform_driver_unregister(&xenonfb_driver);
-+	}
-+	return ret;
-+}
-+module_init(xenonfb_init);
-+
-+MODULE_LICENSE("GPL");
-+
-
---
+ /* ERRATA PCI-Ex 14 PCIE Controller timeout */
+-- 
+1.5.0.1.213.g509b
