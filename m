@@ -1,21 +1,32 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 4F9DADDFC8
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 01:55:36 +1100 (EST)
-Message-ID: <45EED260.80109@ru.mvista.com>
-Date: Wed, 07 Mar 2007 17:55:28 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Ingo Molnar <mingo@elte.hu>
-Subject: Re: v2.6.19-rt6, yum/rpm
-References: <20061205171114.GA25926@elte.hu> <4582CAD6.9040404@ru.mvista.com>
-	<20061215161952.GA29191@elte.hu> <45C20CC6.2070201@ru.mvista.com>
-	<20070201173855.GA29309@elte.hu> <20070201174900.GA31866@elte.hu>
-	<45C22AFF.6060102@ru.mvista.com>
-In-Reply-To: <45C22AFF.6060102@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
-	linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DF5A0DDFAA
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 02:27:01 +1100 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l27FQvTv019334
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 10:26:57 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l27FQv0D174272
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 10:26:57 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l27FQvNr018365
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 10:26:57 -0500
+Subject: Re: [PATCH] [POWERPC] fix up log_plpar_hcall_return
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1173278165.8635.0.camel@localhost.localdomain>
+References: <1173222701.13165.9.camel@localhost>
+	<1173278165.8635.0.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 07 Mar 2007 09:26:53 -0600
+Message-Id: <1173281214.13165.73.camel@localhost>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,105 +36,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
+On Wed, 2007-07-03 at 15:36 +0100, Benjamin Herrenschmidt wrote:
+> On Tue, 2007-03-06 at 17:11 -0600, Will Schmidt wrote:
+> > This is mostly cosmetic.  This updates log_plpar_hcall_return() to use a
+> > case statement rather than an if-then-else jumble, and moves it to
+> > rtas.c where it can be near the other rtas related functions. 
+> 
+> Except that this has nothing to do with RTAS or do I miss something ?
+> 
+> Ben.
 
->>>>> could you resend them to me please?
+Hi Ben, hello to other folks too, 
 
->>>>   Seeing that GENERIC_TIME has been thrown out from the -rt patch, 
->>>> [...]
+Milton made a similar comment via IRC.
 
->>> hm, i did that accidentally during a rebase. That was certainly not 
->>> meant to be a persistent condition.
+I am likely blending the rtas/hcall terminology in a bad way, but will
+clarify what I was thinking so someone can correct me.  :-)
 
->> ok, the delta below is what i've managed to restore from your PPC 
->> patches so far. Looks like this was truly a comedy of errors: i 
->> accidentally dropped the big ppc-gtod patch,
+The lparcfg function is named log_plpar_hcall_return(), taking a hcall
+return value and a string, and outputs a human-readable error message
+that corresponds to that return value.  
 
-[...]
+There is no hcall.c that this function would belong in.  HvCall.S and
+plpar_wrappers.h contain wrappers and the assembly code that does the
+actual calls; but neither of those places look like good candidates for
+this function.   
+The file rtas.c, however, does make some plpar_hcall function calls, and
+has a number of the 900# magic numbers that *look* like the H_* defines
+to me. 
 
->>     Ingo
-
->> Index: linux/arch/powerpc/platforms/cell/interrupt.c
->> ===================================================================
->> --- linux.orig/arch/powerpc/platforms/cell/interrupt.c
->> +++ linux/arch/powerpc/platforms/cell/interrupt.c
->> @@ -90,6 +90,7 @@ static struct irq_chip iic_chip = {
->>      .typename = " CELL-IIC ",
->>      .mask = iic_mask,
->>      .unmask = iic_unmask,
->> +    .ack = iic_eoi,
->>      .eoi = iic_eoi,
->>  };
->>  
->> Index: linux/arch/powerpc/platforms/iseries/irq.c
->> ===================================================================
->> --- linux.orig/arch/powerpc/platforms/iseries/irq.c
->> +++ linux/arch/powerpc/platforms/iseries/irq.c
->> @@ -279,6 +279,7 @@ static struct irq_chip iseries_pic = {
->>      .shutdown    = iseries_shutdown_IRQ,
->>      .unmask        = iseries_enable_IRQ,
->>      .mask        = iseries_disable_IRQ,
->> +    .ack        = iseries_end_IRQ,
->>      .eoi        = iseries_end_IRQ
->>  };
->>  
->> Index: linux/arch/powerpc/platforms/pseries/xics.c
->> ===================================================================
->> --- linux.orig/arch/powerpc/platforms/pseries/xics.c
->> +++ linux/arch/powerpc/platforms/pseries/xics.c
->> @@ -456,6 +456,7 @@ static struct irq_chip xics_pic_direct =
->>      .startup = xics_startup,
->>      .mask = xics_mask_irq,
->>      .unmask = xics_unmask_irq,
->> +    .ack = xics_eoi_direct,
->>      .eoi = xics_eoi_direct,
->>      .set_affinity = xics_set_affinity
->>  };
->> @@ -466,6 +467,7 @@ static struct irq_chip xics_pic_lpar = {
->>      .startup = xics_startup,
->>      .mask = xics_mask_irq,
->>      .unmask = xics_unmask_irq,
->> +    .ack = xics_eoi_lpar,
->>      .eoi = xics_eoi_lpar,
->>      .set_affinity = xics_set_affinity
->>  };
->> Index: linux/arch/powerpc/sysdev/mpic.c
->> ===================================================================
->> --- linux.orig/arch/powerpc/sysdev/mpic.c
->> +++ linux/arch/powerpc/sysdev/mpic.c
->> @@ -767,6 +767,7 @@ static int mpic_set_irq_type(unsigned in
->>  static struct irq_chip mpic_irq_chip = {
->>      .mask        = mpic_mask_irq,
->>      .unmask        = mpic_unmask_irq,
->> +    .ack        = mpic_end_irq,
->>      .eoi        = mpic_end_irq,
->>      .set_type    = mpic_set_irq_type,
->>  };
-
->    These changes have been refused in favor of "fasetoi" flow fix.
-
-    Ugh, seeing them 2.6.20-rt8 still -- *please* remove, they're now useless 
-and quite ugly...
-
->> Index: linux/kernel/latency_trace.c
->> ===================================================================
->> --- linux.orig/kernel/latency_trace.c
->> +++ linux/kernel/latency_trace.c
->> @@ -1774,8 +1774,8 @@ check_critical_timing(int cpu, struct cp
->>  #ifndef CONFIG_CRITICAL_LATENCY_HIST
->>      if (!preempt_thresh && preempt_max_latency > delta) {
->>          printk("bug: updating %016Lx > %016Lx?\n",
->> -            preempt_max_latency, delta);
->> -        printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
->> +            (u64)preempt_max_latency, (u64)delta);
->> +        printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
->>      }
->>  #endif
-
->    IIRC, this is a fragment of my another refused patch (maybe the first 
-> take on it?)... Should be outdated now.
-
-    Ugh, I'm seeing this one in 2.6.20-rt8 still... *Please* remove it -- it's 
-*useless* with the current -rt code.
-
-WBR, Sergei
+-Will
