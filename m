@@ -1,21 +1,15 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 80541DDF34
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 07:48:49 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l27Kmj7q016563
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 13:48:46 -0700 (MST)
-Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l27KmjIV025244
-	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 14:48:45 -0600 (CST)
-Subject: [PATCH] Move 8641 PCI-Express to arch/powerpc/sysdev/fsl_pcie.c.
-From: Jon Loeliger <jdl@freescale.com>
-To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
-Content-Type: text/plain
-Message-Id: <1173300525.23776.136.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Wed, 07 Mar 2007 14:48:45 -0600
+Return-Path: <sshtylyov@ru.mvista.com>
+Message-ID: <45EF285C.1090800@ru.mvista.com>
+Date: Thu, 08 Mar 2007 00:02:20 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Felix Domke <tmbinc@elitedvb.net>
+Subject: Re: [patch 5/7] xenon: add SATA support
+References: <20070307180144.812594000@elitedvb.net>>
+	<20070307180526.194853000@elitedvb.net>>
+In-Reply-To: <20070307180526.194853000@elitedvb.net>>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Linuxppc-dev@ozlabs.org, Linux IDE <linux-ide@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,81 +19,357 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Felix Domke wrote:
+> This adds support for the HDD and DVD SATA controller on the xenon southbridge.
 
-This move sets the stage for the use of generic PCI Express
-code in 85xx and 86xx parts from FSL.  Subsequent patches
-for 8548 and 8544 will be able to use this shared code.
+   Pleas post this to linux-ide@vger.kernel.org in the future.
 
-Signed-off-by: Jon Loeliger <jdl@freescale.com>
-Acked-by: Andy Fleming <afleming@freescale.com>
----
- arch/powerpc/Kconfig                               |    5 +++++
- arch/powerpc/platforms/86xx/Makefile               |    2 +-
- arch/powerpc/sysdev/Makefile                       |    1 +
- .../86xx/mpc86xx_pcie.c => sysdev/fsl_pcie.c}      |    2 --
- 4 files changed, 7 insertions(+), 3 deletions(-)
- rename arch/powerpc/{platforms/86xx/mpc86xx_pcie.c => sysdev/fsl_pcie.c} (100%)
+> It also disables ATA_TFLAG_POLLING in libata-core, which prevented the DVD drive
+> from being detected. It needs to be investigated what exactly is wrong here. 
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 6dfbd52..f68de20 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -168,6 +168,7 @@ config PPC_86xx
- 	bool "Freescale 86xx"
- 	select 6xx
- 	select FSL_SOC
-+	select FSL_PCIE
- 	select PPC_FPU
- 	select ALTIVEC
- 	help
-@@ -1022,6 +1023,10 @@ config SBUS
- config FSL_SOC
- 	bool
- 
-+config FSL_PCIE
-+	bool
-+	depends on PPC_86xx
-+
- # Yes MCA RS/6000s exist but Linux-PPC does not currently support any
- config MCA
- 	bool
-diff --git a/arch/powerpc/platforms/86xx/Makefile b/arch/powerpc/platforms/86xx/Makefile
-index 476a6ee..418fd8f 100644
---- a/arch/powerpc/platforms/86xx/Makefile
-+++ b/arch/powerpc/platforms/86xx/Makefile
-@@ -4,4 +4,4 @@
- 
- obj-$(CONFIG_SMP)		+= mpc86xx_smp.o
- obj-$(CONFIG_MPC8641_HPCN)	+= mpc86xx_hpcn.o
--obj-$(CONFIG_PCI)		+= pci.o mpc86xx_pcie.o
-+obj-$(CONFIG_PCI)		+= pci.o
-diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
-index 26ca3ff..86fc8c0 100644
---- a/arch/powerpc/sysdev/Makefile
-+++ b/arch/powerpc/sysdev/Makefile
-@@ -11,6 +11,7 @@ obj-$(CONFIG_PPC_PMI)		+= pmi.o
- obj-$(CONFIG_U3_DART)		+= dart_iommu.o
- obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
- obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
-+obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
- 
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_pcie.c b/arch/powerpc/sysdev/fsl_pcie.c
-similarity index 100%
-rename from arch/powerpc/platforms/86xx/mpc86xx_pcie.c
-rename to arch/powerpc/sysdev/fsl_pcie.c
-index a2f4f73..041c07e 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_pcie.c
-+++ b/arch/powerpc/sysdev/fsl_pcie.c
-@@ -24,8 +24,6 @@
- #include <asm/pci-bridge.h>
- #include <asm/machdep.h>
- 
--#include "mpc86xx.h"
--
- #define PCI_CFG_OUT out_be32
- 
- /* ERRATA PCI-Ex 14 PCIE Controller timeout */
--- 
-1.5.0.1.213.g509b
+> Signed-off-by: Felix Domke <tmbinc@elitedvb.net>
+
+> ---
+>  drivers/ata/Kconfig       |    8 +
+>  drivers/ata/Makefile      |    1 
+>  drivers/ata/libata-core.c |    2 
+>  drivers/ata/sata_xenon.c  |  272 ++++++++++++++++++++++++++++++++++++++++++++++
+>  4 files changed, 282 insertions(+), 1 deletion(-)
+> 
+> Index: linux-2.6.20/drivers/ata/Kconfig
+> ===================================================================
+> --- linux-2.6.20.orig/drivers/ata/Kconfig	2007-03-07 19:01:12.000000000 +0100
+> +++ linux-2.6.20/drivers/ata/Kconfig	2007-03-07 19:01:22.000000000 +0100
+> @@ -123,6 +123,14 @@
+>  
+>  	  If unsure, say N.
+>  
+> +config SATA_XENON
+> +	tristate "Xenon SATA support"
+> +	depends on PCI
+> +	help
+> +	  This option enables support for Xenon southbridge.
+> +
+> +	  If unsure, say N.
+> +
+>  config SATA_ULI
+>  	tristate "ULi Electronics SATA support"
+>  	depends on PCI
+> Index: linux-2.6.20/drivers/ata/Makefile
+> ===================================================================
+> --- linux-2.6.20.orig/drivers/ata/Makefile	2007-03-07 19:01:12.000000000 +0100
+> +++ linux-2.6.20/drivers/ata/Makefile	2007-03-07 19:01:22.000000000 +0100
+> @@ -11,6 +11,7 @@
+>  obj-$(CONFIG_SATA_VIA)		+= sata_via.o
+>  obj-$(CONFIG_SATA_VITESSE)	+= sata_vsc.o
+>  obj-$(CONFIG_SATA_SIS)		+= sata_sis.o
+> +obj-$(CONFIG_SATA_XENON)	+= sata_xenon.o
+>  obj-$(CONFIG_SATA_SX4)		+= sata_sx4.o
+>  obj-$(CONFIG_SATA_NV)		+= sata_nv.o
+>  obj-$(CONFIG_SATA_ULI)		+= sata_uli.o
+> Index: linux-2.6.20/drivers/ata/libata-core.c
+> ===================================================================
+> --- linux-2.6.20.orig/drivers/ata/libata-core.c	2007-03-07 19:01:12.000000000 +0100
+> +++ linux-2.6.20/drivers/ata/libata-core.c	2007-03-07 19:01:22.000000000 +0100
+> @@ -1478,7 +1478,7 @@
+>  	}
+>  
+>  	tf.protocol = ATA_PROT_PIO;
+> -	tf.flags |= ATA_TFLAG_POLLING; /* for polling presence detection */
+> +//	tf.flags |= ATA_TFLAG_POLLING; /* for polling presence detection */
+
+    I doubt that this could *ever* get accepted.
+
+>  	err_mask = ata_exec_internal(dev, &tf, NULL, DMA_FROM_DEVICE,
+>  				     id, sizeof(id[0]) * ATA_ID_WORDS);
+> Index: linux-2.6.20/drivers/ata/sata_xenon.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6.20/drivers/ata/sata_xenon.c	2007-03-07 19:01:22.000000000 +0100
+> @@ -0,0 +1,272 @@
+> +/*
+> + *  sata_xenon.c - SATA support for xenon southbridge
+> + *
+> + *  based on sata_sis.c, modifications by anonymous xbox360 hacker,
+> + *
+> + *  		    Please ALWAYS copy linux-ide@vger.kernel.org
+> + *		    on emails.
+> + *
+> + *  This program is free software; you can redistribute it and/or modify
+> + *  it under the terms of the GNU General Public License as published by
+> + *  the Free Software Foundation; either version 2, or (at your option)
+> + *  any later version.
+> + *
+> + *  This program is distributed in the hope that it will be useful,
+> + *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+> + *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+> + *  GNU General Public License for more details.
+> + *
+> + *  You should have received a copy of the GNU General Public License
+> + *  along with this program; see the file COPYING.  If not, write to
+> + *  the Free Software Foundation, 675 Mass Ave, Cambridge, MA 02139, USA.
+> + *
+> + *
+> + *  libata documentation is available via 'make {ps|pdf}docs',
+> + *  as Documentation/DocBook/libata.*
+> + *
+> + */
+> +
+> +#include <linux/kernel.h>
+> +#include <linux/module.h>
+> +#include <linux/pci.h>
+> +#include <linux/init.h>
+> +#include <linux/blkdev.h>
+> +#include <linux/delay.h>
+> +#include <linux/interrupt.h>
+> +#include <linux/device.h>
+> +#include <scsi/scsi_host.h>
+> +#include <linux/libata.h>
+> +
+> +#define DRV_NAME	"sata_xenon"
+> +#define DRV_VERSION	"0.1"
+> +
+> +	/* small note: it's completely unknown whether the xenon southbridge sata
+> +	   is really based on SiS technology.
+> +	   Most of SATA is standardized anyway.
+> +
+> +
+> +	   So, we have these two pci devices, one for each port.
+> +
+> +	   They have two BARs, one for the IDE registers (0..7,
+> +	   altstatus/devctl is +0xA), and one for the BMDMA.
+> +
+> +	   SCR seem to be sis-like in pci config space, but that should
+> +	   be verified!
+> +
+> +	   Note on the DVD-ROM part:
+> +
+> +	   The drives usually require some tweaks to be usable under linux.
+> +
+> +	   You either need to hack the scsi layer, or, in case of the GDR3120L,
+> +	   set 'modeB' in the bootloader.
+> +	*/
+> +
+> +enum {
+> +	/* PCI configuration registers */
+> +	SIS_SCR_BASE		= 0xc0, /* sata0 phy SCR registers */
+> +};
+> +
+> +extern struct ata_probe_ent *ata_probe_ent_alloc(struct device *dev,
+> +						 const struct ata_port_info *port);
+> +
+> +static int xenon_init_one (struct pci_dev *pdev, const struct pci_device_id *ent);
+> +static u32 xenon_scr_read (struct ata_port *ap, unsigned int sc_reg);
+> +static void xenon_scr_write (struct ata_port *ap, unsigned int sc_reg, u32 val);
+> +
+> +static const struct pci_device_id xenon_pci_tbl[] = {
+> +	{ PCI_VDEVICE(MICROSOFT, 0x5803), 0 },
+> +	{ PCI_VDEVICE(MICROSOFT, 0x5802), 0 },
+> +
+> +	{ }	/* terminate list */
+> +};
+> +
+> +static struct pci_driver xenon_pci_driver = {
+> +	.name			= DRV_NAME,
+> +	.id_table		= xenon_pci_tbl,
+> +	.probe			= xenon_init_one,
+> +	.remove			= ata_pci_remove_one,
+> +};
+> +
+> +static struct scsi_host_template xenon_sht = {
+> +	.module			= THIS_MODULE,
+> +	.name			= DRV_NAME,
+> +	.ioctl			= ata_scsi_ioctl,
+> +	.queuecommand		= ata_scsi_queuecmd,
+> +	.can_queue		= ATA_DEF_QUEUE,
+> +	.this_id		= ATA_SHT_THIS_ID,
+> +	.sg_tablesize		= ATA_MAX_PRD,
+> +	.cmd_per_lun		= ATA_SHT_CMD_PER_LUN,
+> +	.emulated		= ATA_SHT_EMULATED,
+> +	.use_clustering		= ATA_SHT_USE_CLUSTERING,
+> +	.proc_name		= DRV_NAME,
+> +	.dma_boundary		= ATA_DMA_BOUNDARY,
+> +	.slave_configure	= ata_scsi_slave_config,
+> +	.slave_destroy		= ata_scsi_slave_destroy,
+> +	.bios_param		= ata_std_bios_param,
+> +};
+> +
+> +static const struct ata_port_operations xenon_ops = {
+> +	.port_disable		= ata_port_disable,
+> +	.tf_load		= ata_tf_load,
+> +	.tf_read		= ata_tf_read,
+> +	.check_status		= ata_check_status,
+> +	.exec_command		= ata_exec_command,
+> +	.dev_select		= ata_std_dev_select,
+> +	.bmdma_setup            = ata_bmdma_setup,
+> +	.bmdma_start            = ata_bmdma_start,
+> +	.bmdma_stop		= ata_bmdma_stop,
+> +	.bmdma_status		= ata_bmdma_status,
+> +	.qc_prep		= ata_qc_prep,
+> +	.qc_issue		= ata_qc_issue_prot,
+> +	.data_xfer		= ata_pio_data_xfer,
+> +	.freeze			= ata_bmdma_freeze,
+> +	.thaw			= ata_bmdma_thaw,
+> +	.error_handler		= ata_bmdma_error_handler,
+> +	.post_internal_cmd	= ata_bmdma_post_internal_cmd,
+> +	.irq_handler		= ata_interrupt,
+> +	.irq_clear		= ata_bmdma_irq_clear,
+> +	.scr_read		= xenon_scr_read,
+> +	.scr_write		= xenon_scr_write,
+> +	.port_start		= ata_port_start,
+> +	.port_stop		= ata_port_stop,
+> +	.host_stop		= ata_host_stop,
+> +};
+> +
+> +static struct ata_port_info xenon_port_info = {
+> +	.sht		= &xenon_sht,
+> +	.flags		= ATA_FLAG_SATA | ATA_FLAG_NO_LEGACY,
+> +	.pio_mask	= 0x1f,
+> +	.mwdma_mask	= 0x7,
+> +	.udma_mask	= 0x7f,
+> +	.port_ops	= &xenon_ops,
+> +};
+> +
+> +
+> +MODULE_DESCRIPTION("low-level driver for Xenon Southbridge SATA controller");
+> +MODULE_LICENSE("GPL");
+> +MODULE_DEVICE_TABLE(pci, xenon_pci_tbl);
+> +MODULE_VERSION(DRV_VERSION);
+> +
+> +static unsigned int get_scr_cfg_addr(unsigned int port_no, unsigned int sc_reg, int device)
+> +{
+> +	unsigned int addr = SIS_SCR_BASE + (4 * sc_reg);
+> +
+
+    Why we need device and port_no arguments here?
+
+> +	return addr;
+> +}
+> +
+> +static u32 xenon_scr_cfg_read (struct ata_port *ap, unsigned int sc_reg)
+> +{
+> +	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+> +	unsigned int cfg_addr = get_scr_cfg_addr(ap->port_no, sc_reg, pdev->device);
+> +	u32 val;
+> +
+> +	if (sc_reg == SCR_ERROR) /* doesn't exist in PCI cfg space */
+> +		return 0; /* assume no error */
+
+    Since SCR_ERROR == 1, this check seems broken.
+
+> +
+> +	pci_read_config_dword(pdev, cfg_addr, &val);
+> +
+> +	return val;
+> +}
+> +
+> +static void xenon_scr_cfg_write (struct ata_port *ap, unsigned int scr, u32 val)
+> +{
+> +	struct pci_dev *pdev = to_pci_dev(ap->host->dev);
+> +	unsigned int cfg_addr = get_scr_cfg_addr(ap->port_no, scr, pdev->device);
+> +
+> +	if (scr == SCR_ERROR) /* doesn't exist in PCI cfg space */
+> +		return;
+
+    Same here.
+
+> +
+> +	pci_write_config_dword(pdev, cfg_addr, val);
+> +}
+> +
+> +static u32 xenon_scr_read (struct ata_port *ap, unsigned int sc_reg)
+> +{
+> +	if (sc_reg > SCR_CONTROL)
+> +		return 0xffffffffU;
+> +
+> +	return xenon_scr_cfg_read(ap, sc_reg);
+> +}
+> +
+> +static void xenon_scr_write (struct ata_port *ap, unsigned int sc_reg, u32 val)
+> +{
+> +	if (sc_reg > SCR_CONTROL)
+> +		return;
+> +
+> +	xenon_scr_cfg_write(ap, sc_reg, val);
+> +}
+> +
+
+    Reading SATA regs via config. space... isn't that ugly? :-]
+
+> +static int xenon_init_one (struct pci_dev *pdev, const struct pci_device_id *ent)
+> +{
+> +	static int printed_version;
+> +	struct ata_probe_ent *probe_ent = NULL;
+> +	int rc;
+> +	int pci_dev_busy = 0;
+> +
+> +	if (!printed_version++)
+> +		dev_printk(KERN_INFO, &pdev->dev, "version " DRV_VERSION "\n");
+> +
+> +	rc = pci_enable_device(pdev);
+> +	if (rc)
+> +		return rc;
+> +
+> +	rc = pci_request_regions(pdev, DRV_NAME);
+> +	if (rc) {
+> +		pci_dev_busy = 1;
+> +		goto err_out;
+> +	}
+> +
+> +	rc = pci_set_dma_mask(pdev, ATA_DMA_MASK);
+> +	if (rc)
+> +		goto err_out_regions;
+> +	rc = pci_set_consistent_dma_mask(pdev, ATA_DMA_MASK);
+> +	if (rc)
+> +		goto err_out_regions;
+> +
+> +	probe_ent = ata_probe_ent_alloc(pci_dev_to_dev(pdev), &xenon_port_info);
+> +	if (!probe_ent) {
+> +		rc = -ENOMEM;
+> +		goto err_out_regions;
+> +	}
+> +
+> +	probe_ent->irq = pdev->irq;
+> +	probe_ent->irq_flags = IRQF_SHARED;
+> +
+> +	probe_ent->port->cmd_addr = (long)ioremap(pci_resource_start(pdev, 0), PAGE_SIZE);
+> +	probe_ent->port->altstatus_addr = probe_ent->port->cmd_addr + 0xa;
+> +	probe_ent->port->ctl_addr = probe_ent->port->cmd_addr + 0xa;
+> +	probe_ent->port->bmdma_addr = (long)ioremap(pci_resource_start(pdev, 1), PAGE_SIZE);
+> +	ata_std_ports(probe_ent->port);
+> +	probe_ent->n_ports = 1;
+> +
+> +	pci_set_master(pdev);
+> +	pci_intx(pdev, 1);
+> +
+> +	/* FIXME: check ata_device_add return value */
+> +	ata_device_add(probe_ent);
+> +	kfree(probe_ent);
+> +
+> +	return 0;
+> +
+> +err_out_regions:
+> +	pci_release_regions(pdev);
+> +
+> +err_out:
+> +	if (!pci_dev_busy)
+> +		pci_disable_device(pdev);
+> +	return rc;
+> +
+> +}
+> +
+> +static int __init xenon_init(void)
+> +{
+> +	return pci_register_driver(&xenon_pci_driver);
+> +}
+> +
+> +static void __exit xenon_exit(void)
+> +{
+> +	pci_unregister_driver(&xenon_pci_driver);
+> +}
+> +
+> +module_init(xenon_init);
+> +module_exit(xenon_exit);
+> +
+
+MBR, Sergei
