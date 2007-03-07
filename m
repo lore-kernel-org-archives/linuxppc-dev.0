@@ -1,25 +1,20 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2D2EFDDF05
-	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 22:06:30 +1100 (EST)
-Subject: Re: PROBLEM: 2.6.20-1 not working on ibook g4 (BUG/Oops)
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Collins <paul@briny.ondioline.org>
-In-Reply-To: <873b4h64dm.fsf@briny.internal.ondioline.org>
-References: <200703051414.15802.frafore@tiscali.it>
-	<1173143894.3461.240.camel@pmac.infradead.org>
-	<87tzwzqgrx.fsf@briny.internal.ondioline.org>
-	<1173177329.3461.291.camel@pmac.infradead.org>
-	<873b4h64dm.fsf@briny.internal.ondioline.org>
-Content-Type: text/plain
-Date: Wed, 07 Mar 2007 12:04:39 +0100
-Message-Id: <1173265479.9349.51.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: francesco foresti <frafore@tiscali.it>,
-	David Woodhouse <dwmw2@infradead.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id DF1A9DDF11
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 22:07:21 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC] [patch 4/6 -rt] powerpc 2.6.20-rt8: fix a runtime warnings
+	for xmon
+Date: Wed, 7 Mar 2007 12:06:51 +0100
+References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi3b4h25jj.wl@toshiba.co.jp>
+	<20070307091638.GC1783@elte.hu>
+In-Reply-To: <20070307091638.GC1783@elte.hu>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703071206.52551.arnd@arndb.de>
+Cc: Ingo Molnar <mingo@elte.hu>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,18 +24,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-03-07 at 17:53 +1300, Paul Collins wrote:
-> David Woodhouse <dwmw2@infradead.org> writes:
-> 
-> > On Tue, 2007-03-06 at 14:53 +1300, Paul Collins wrote:
-> >> In case it's of interest, 2.6.20 has been running fine on my
-> >> PowerBook5,4. 
-> >
-> > How much memory? What if you boot with mem=512M or mem=256M?
-> 
-> 1GB.  Also works fine when booted with those options.
+On Wednesday 07 March 2007, Ingo Molnar wrote:
+> i'm not an xmon expert, but maybe it might make more sense to first 
+> disable preemption, then interrupts - otherwise you could be preempted 
+> right after having disabled these interrupts (and be scheduled to 
+> another CPU, etc.). What is the difference between local_irq_save() and 
+> the above 'disable interrupts' sequence? If it's not the same and 
+> xmon_core() relied on having hardirqs disabled then it might make sense 
+> to do a local_irq_save() there, instead of a preempt_disable().
 
-Can you try 2.6.21-rc3 ? We just fixed a nasty bug causing memory
-corruption.
+Since relatively recently, powerpc does no longer actually disable
+the hardware interrupts with local_irq_disable(), but rather sets
+a per-cpu flag that will be checked if an actual interrupt comes
+in as part of the critical section.
 
-Ben.
+The mtmsr() sequence in xmon corresponds to hard_irq_disable()
+and should probably changed to that, but then you still need
+the extra preempt_disable() / preempt_enable().
+
+I think you're right about the sequence having to be
+1. preempt_disable()
+2. hard_irq_disable()
+3.
+4. hard_irq_enable()
+5. preempt_enable()
+
+	Arnd <><
