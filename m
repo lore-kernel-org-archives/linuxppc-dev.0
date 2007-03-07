@@ -1,24 +1,21 @@
 Return-Path: <michael@ellerman.id.au>
-Subject: Re: [parisc-linux] [PATCH 2/2] Make pcibios_add_platform_entries()
-	return errors
+Subject: Re: [Cbe-oss-dev] [PATCH 14/22] spufs: use SPU master control
+	to	prevent wild	SPU execution
 From: Michael Ellerman <michael@ellerman.id.au>
-To: James Bottomley <James.Bottomley@SteelEye.com>
-In-Reply-To: <1173204301.3379.33.camel@mulgrave.il.steeleye.com>
-References: <20070306150725.68D97DDF36@ozlabs.org>
-	<1173204301.3379.33.camel@mulgrave.il.steeleye.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200703050202.59596.arnd@arndb.de>
+References: <20061120174454.067872000@arndb.de>
+	<200703011450.50935.arnd@arndb.de>
+	<1172830438.16533.6.camel@concordia.ozlabs.ibm.com>
+	<200703050202.59596.arnd@arndb.de>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-BgsAG7SQX+bolLlRm7kx"
-Date: Wed, 07 Mar 2007 09:55:18 +0100
-Message-Id: <1173257718.5101.16.camel@concordia.ozlabs.ibm.com>
+	boundary="=-qrNX51q/o/d+4nSZESZc"
+Date: Wed, 07 Mar 2007 09:58:25 +0100
+Message-Id: <1173257905.5101.18.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Cc: discuss@x86-64.org, dev-etrax@axis.com, linux-ia64@vger.kernel.org,
-	chris@zankel.net, Greg Kroah-Hartman <greg@kroah.com>,
-	linux-m68k@vger.kernel.org, uclinux-v850@lsi.nec.co.jp,
-	linuxppc-dev@ozlabs.org, linux-mips@linux-mips.org,
-	gerg@uclinux.org, sparclinux@vger.kernel.org,
-	ink@jurassic.park.msu.ru, linux-pci@atrey.karlin.mff.cuni.cz,
-	rth@twiddle.net, kernel@wantstofly.org, parisc-linux@parisc-linux.org
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
+	linux-kernel@vger.kernel.org
 Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,32 +27,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-BgsAG7SQX+bolLlRm7kx
+--=-qrNX51q/o/d+4nSZESZc
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2007-03-06 at 12:05 -0600, James Bottomley wrote:
-> On Tue, 2007-03-06 at 16:06 +0100, Michael Ellerman wrote:
-> >  int __must_check pci_create_sysfs_dev_files (struct pci_dev *pdev)
-> > @@ -644,10 +644,13 @@ int __must_check pci_create_sysfs_dev_fi
-> >  		}
-> >  	}
-> >  	/* add platform-specific attributes */
-> > -	pcibios_add_platform_entries(pdev);
-> > +	if (pcibios_add_platform_entries(pdev))
-> > +		goto err_rom_attr;
-> > =20
-> >  	return 0;
-> > =20
-> > +err_rom_attr:
-> > +	sysfs_remove_bin_file(&pdev->dev.kobj, rom_attr);
+On Mon, 2007-03-05 at 02:02 +0100, Arnd Bergmann wrote:
+> On Friday 02 March 2007, Michael Ellerman wrote:
+> > There's also the error case for spu_run_init() which skips the master
+> > stop. I guess that's ok because we've only set the master control in th=
+e
+> > backing store, and the only way that will ever get propagated to an
+> > actual spu is by coming back thorough spufs_run_spu().
 >=20
-> This file is only created if the rom resource has a non-zero length.  If
-> you unconditionally call sysfs_remove_bin_file() it's going to spit
-> scary warnings and dump traces in this error leg if the rom resource
-> doesn't exist.
+> Hmm, the correct way would be to switch off the master control in there,
+> afaics. Fixing it only in spu_run_init would mean that we also handle
+> the case of spu_reacquire_runnable along with it.
+>=20
+> > What originally caught my eye on this was the output from xmon. When we
+> > drop into xmon with no spu programs running and stop the spus, it
+> > reports that they _all_ have the master run enabled,
+>=20
+> That looks right, there is no problem to have master control enabled,
+> as long as user space can't access the spu through a context that is
+> bound to it.
+>=20
+> > and some of them=20
+> > have the runcntl enabled (those that have had spu programs run on them
+> > since boot it seems).
+>=20
+> While this sounds wrong. Maybe the runcntl is active on those that have
+> _not_ run since boot, which would make more sense. We should investigate
+> this.
 
-Ah crud, don't write patches during meetings. I'll send a fixed version.
+No I'm pretty sure it's enabled on the ones that _have_ run since boot.
+I'm booting up fresh, running two spu programs, and then I see two spus
+with master and runcntl set.
 
 cheers
 
@@ -69,16 +75,16 @@ phone: +61 2 6212 1183 (tie line 70 21183)
 We do not inherit the earth from our ancestors,
 we borrow it from our children. - S.M.A.R.T Person
 
---=-BgsAG7SQX+bolLlRm7kx
+--=-qrNX51q/o/d+4nSZESZc
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQBF7n32dSjSd0sB4dIRAn5sAKDLKRSrFBG7U5Cd40rDmTlteEGzOgCgsZhx
-xnxBaUCAjUOpUDo/Iyyq50o=
-=Lg0a
+iD8DBQBF7n6xdSjSd0sB4dIRAlGvAJ9H8AY6oCaMXVxfgfTW4C7CphSfbACfZzKD
+xAm7Xo0L/MMAmshhX5YwgOQ=
+=awir
 -----END PGP SIGNATURE-----
 
---=-BgsAG7SQX+bolLlRm7kx--
+--=-qrNX51q/o/d+4nSZESZc--
