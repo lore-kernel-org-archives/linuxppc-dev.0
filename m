@@ -1,20 +1,21 @@
 Return-Path: <sshtylyov@ru.mvista.com>
 Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id E93EBDDFD4
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 01:54:55 +1100 (EST)
-Message-ID: <45EED235.9010509@ru.mvista.com>
-Date: Wed, 07 Mar 2007 17:54:45 +0300
+	by ozlabs.org (Postfix) with ESMTP id 4F9DADDFC8
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 01:55:36 +1100 (EST)
+Message-ID: <45EED260.80109@ru.mvista.com>
+Date: Wed, 07 Mar 2007 17:55:28 +0300
 From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [patch 2/6 -rt] powerpc 2.6.20-rt8: to convert spinlocks to	raw
-	ones.
-References: <yyi8xe925vg.wl@toshiba.co.jp> <yyi649d25qz.wl@toshiba.co.jp>	
-	<45EECE5C.6030100@ru.mvista.com>
-	<1173278589.8635.4.camel@localhost.localdomain>
-In-Reply-To: <1173278589.8635.4.camel@localhost.localdomain>
+To: Ingo Molnar <mingo@elte.hu>
+Subject: Re: v2.6.19-rt6, yum/rpm
+References: <20061205171114.GA25926@elte.hu> <4582CAD6.9040404@ru.mvista.com>
+	<20061215161952.GA29191@elte.hu> <45C20CC6.2070201@ru.mvista.com>
+	<20070201173855.GA29309@elte.hu> <20070201174900.GA31866@elte.hu>
+	<45C22AFF.6060102@ru.mvista.com>
+In-Reply-To: <45C22AFF.6060102@ru.mvista.com>
 Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: mingo@elte.hu, linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Thomas Gleixner <tglx@linutronix.de>,
+	linux-kernel@vger.kernel.org, linux-rt-users@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,52 +25,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Hello, I wrote:
 
-Benjamin Herrenschmidt wrote:
+>>>>> could you resend them to me please?
 
->>>--- linux-rt8/arch/powerpc/kernel/irq.c	2007-02-20 14:30:38.000000000 +0900
->>>+++ rt/arch/powerpc/kernel/irq.c	2007-03-05 18:54:34.000000000 +0900
->>>@@ -392,7 +392,7 @@ EXPORT_SYMBOL(do_softirq);
->>> #ifdef CONFIG_PPC_MERGE
->>> 
->>> static LIST_HEAD(irq_hosts);
->>>-static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
->>>+static DEFINE_RAW_SPINLOCK(irq_big_lock);
->>> static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
->>> static unsigned int irq_radix_writer;
->>> struct irq_map_entry irq_map[NR_IRQS];
+>>>>   Seeing that GENERIC_TIME has been thrown out from the -rt patch, 
+>>>> [...]
 
->>    I've already sent a patch fixing this one (along with many others) a month 
->>ago:
+>>> hm, i did that accidentally during a rebase. That was certainly not 
+>>> meant to be a persistent condition.
 
->>http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031164.html
+>> ok, the delta below is what i've managed to restore from your PPC 
+>> patches so far. Looks like this was truly a comedy of errors: i 
+>> accidentally dropped the big ppc-gtod patch,
 
->>    I wonder iof it was ever considered... :-/
+[...]
 
-> It was but not for 2.6.21 timeframe due to people lack of time/bandwidth
-> among others :-)
+>>     Ingo
 
-    I was asking Ingo, basically. :-)
+>> Index: linux/arch/powerpc/platforms/cell/interrupt.c
+>> ===================================================================
+>> --- linux.orig/arch/powerpc/platforms/cell/interrupt.c
+>> +++ linux/arch/powerpc/platforms/cell/interrupt.c
+>> @@ -90,6 +90,7 @@ static struct irq_chip iic_chip = {
+>>      .typename = " CELL-IIC ",
+>>      .mask = iic_mask,
+>>      .unmask = iic_unmask,
+>> +    .ack = iic_eoi,
+>>      .eoi = iic_eoi,
+>>  };
+>>  
+>> Index: linux/arch/powerpc/platforms/iseries/irq.c
+>> ===================================================================
+>> --- linux.orig/arch/powerpc/platforms/iseries/irq.c
+>> +++ linux/arch/powerpc/platforms/iseries/irq.c
+>> @@ -279,6 +279,7 @@ static struct irq_chip iseries_pic = {
+>>      .shutdown    = iseries_shutdown_IRQ,
+>>      .unmask        = iseries_enable_IRQ,
+>>      .mask        = iseries_disable_IRQ,
+>> +    .ack        = iseries_end_IRQ,
+>>      .eoi        = iseries_end_IRQ
+>>  };
+>>  
+>> Index: linux/arch/powerpc/platforms/pseries/xics.c
+>> ===================================================================
+>> --- linux.orig/arch/powerpc/platforms/pseries/xics.c
+>> +++ linux/arch/powerpc/platforms/pseries/xics.c
+>> @@ -456,6 +456,7 @@ static struct irq_chip xics_pic_direct =
+>>      .startup = xics_startup,
+>>      .mask = xics_mask_irq,
+>>      .unmask = xics_unmask_irq,
+>> +    .ack = xics_eoi_direct,
+>>      .eoi = xics_eoi_direct,
+>>      .set_affinity = xics_set_affinity
+>>  };
+>> @@ -466,6 +467,7 @@ static struct irq_chip xics_pic_lpar = {
+>>      .startup = xics_startup,
+>>      .mask = xics_mask_irq,
+>>      .unmask = xics_unmask_irq,
+>> +    .ack = xics_eoi_lpar,
+>>      .eoi = xics_eoi_lpar,
+>>      .set_affinity = xics_set_affinity
+>>  };
+>> Index: linux/arch/powerpc/sysdev/mpic.c
+>> ===================================================================
+>> --- linux.orig/arch/powerpc/sysdev/mpic.c
+>> +++ linux/arch/powerpc/sysdev/mpic.c
+>> @@ -767,6 +767,7 @@ static int mpic_set_irq_type(unsigned in
+>>  static struct irq_chip mpic_irq_chip = {
+>>      .mask        = mpic_mask_irq,
+>>      .unmask        = mpic_unmask_irq,
+>> +    .ack        = mpic_end_irq,
+>>      .eoi        = mpic_end_irq,
+>>      .set_type    = mpic_set_irq_type,
+>>  };
 
-> I intend to try to spend some time before the 2.6.22 merge window to
-> gather those -rt related patches that can be merged already and push
-> them to powerpc.git.
+>    These changes have been refused in favor of "fasetoi" flow fix.
 
-> (Note to mingo: that means that we might end up with patches both in
-> your tree and being push via powerpc, I hope that's not too much of a
-> problem).
+    Ugh, seeing them 2.6.20-rt8 still -- *please* remove, they're now useless 
+and quite ugly...
 
-    Well, this is happening every -rc1 now -- part of -rt getting merged to 
-mainline.
+>> Index: linux/kernel/latency_trace.c
+>> ===================================================================
+>> --- linux.orig/kernel/latency_trace.c
+>> +++ linux/kernel/latency_trace.c
+>> @@ -1774,8 +1774,8 @@ check_critical_timing(int cpu, struct cp
+>>  #ifndef CONFIG_CRITICAL_LATENCY_HIST
+>>      if (!preempt_thresh && preempt_max_latency > delta) {
+>>          printk("bug: updating %016Lx > %016Lx?\n",
+>> -            preempt_max_latency, delta);
+>> -        printk("  [%016Lx %016Lx %016Lx]\n", T0, T1, T2);
+>> +            (u64)preempt_max_latency, (u64)delta);
+>> +        printk("  [%016Lx %016Lx %016Lx]\n", (u64)T0, (u64)T1, (u64)T2);
+>>      }
+>>  #endif
 
-> I can't promise I'll have time to do much, but I'd like to do it, so
-> find me on irc every now and then to "poke" if you don't see anything
-> happening...
+>    IIRC, this is a fragment of my another refused patch (maybe the first 
+> take on it?)... Should be outdated now.
 
-    My purpose was only to get this into -rt patch for now.
-
-> Cheers,
-> Ben.
+    Ugh, I'm seeing this one in 2.6.20-rt8 still... *Please* remove it -- it's 
+*useless* with the current -rt code.
 
 WBR, Sergei
