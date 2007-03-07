@@ -1,22 +1,37 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] [PATCH 14/22] spufs: use SPU master control
-	to	prevent wild	SPU execution
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <200703050202.59596.arnd@arndb.de>
-References: <20061120174454.067872000@arndb.de>
-	<200703011450.50935.arnd@arndb.de>
-	<1172830438.16533.6.camel@concordia.ozlabs.ibm.com>
-	<200703050202.59596.arnd@arndb.de>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-qrNX51q/o/d+4nSZESZc"
-Date: Wed, 07 Mar 2007 09:58:25 +0100
-Message-Id: <1173257905.5101.18.camel@concordia.ozlabs.ibm.com>
+Return-Path: <mohan@in.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4576DDDF8A
+	for <linuxppc-dev@ozlabs.org>; Wed,  7 Mar 2007 20:10:59 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l279AsdG002588
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 04:10:54 -0500
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l279Arvo270686
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 04:10:53 -0500
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l279Ar52012928
+	for <linuxppc-dev@ozlabs.org>; Wed, 7 Mar 2007 04:10:53 -0500
+Date: Wed, 7 Mar 2007 14:40:26 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] Fix interrupt distribution in ppc970
+Message-ID: <20070307091026.GJ7476@in.ibm.com>
+References: <20061208045537.GA14626@in.ibm.com>
+	<17798.6928.378248.28903@cargo.ozlabs.ibm.com>
+	<20061218105706.GB3911@in.ibm.com>
+	<20070306135754.GB7476@in.ibm.com>
+	<20070306220546.GI24926@localdomain>
+	<1173257567.9349.27.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1173257567.9349.27.camel@localhost.localdomain>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Nathan Lynch <ntl@pobox.com>,
+	Paul Mackerras <paulus@samba.org>, fastboot@lists.osdl.org
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,65 +41,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, Mar 07, 2007 at 09:52:47AM +0100, Benjamin Herrenschmidt wrote:
+> On Tue, 2007-03-06 at 16:05 -0600, Nathan Lynch wrote:
+> > Was the root cause of this problem ever determined?  It sure looked
+> > like a firmware or hardware problem since it's known to occur only on
+> > JS20.
+> 
+> js20 and js21 have in common that the firmware "emulates" the XICS on
+> top of an MPIC, which can cause interesting issues ... like the
+> requirement of issuing EOI's from the CPU that got the interrupt, among
+> ohters.
+>
 
---=-qrNX51q/o/d+4nSZESZc
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+There is no interrupt missing problems in JS21. Only JS20 boxes face this
+problem. The only difference between JS20 and JS21 is that JS20 does not
+have Global Interrupt Queue while JS21 has GIQ.
 
-On Mon, 2007-03-05 at 02:02 +0100, Arnd Bergmann wrote:
-> On Friday 02 March 2007, Michael Ellerman wrote:
-> > There's also the error case for spu_run_init() which skips the master
-> > stop. I guess that's ok because we've only set the master control in th=
-e
-> > backing store, and the only way that will ever get propagated to an
-> > actual spu is by coming back thorough spufs_run_spu().
->=20
-> Hmm, the correct way would be to switch off the master control in there,
-> afaics. Fixing it only in spu_run_init would mean that we also handle
-> the case of spu_reacquire_runnable along with it.
->=20
-> > What originally caught my eye on this was the output from xmon. When we
-> > drop into xmon with no spu programs running and stop the spus, it
-> > reports that they _all_ have the master run enabled,
->=20
-> That looks right, there is no problem to have master control enabled,
-> as long as user space can't access the spu through a context that is
-> bound to it.
->=20
-> > and some of them=20
-> > have the runcntl enabled (those that have had spu programs run on them
-> > since boot it seems).
->=20
-> While this sounds wrong. Maybe the runcntl is active on those that have
-> _not_ run since boot, which would make more sense. We should investigate
-> this.
-
-No I'm pretty sure it's enabled on the ones that _have_ run since boot.
-I'm booting up fresh, running two spu programs, and then I see two spus
-with master and runcntl set.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-qrNX51q/o/d+4nSZESZc
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBF7n6xdSjSd0sB4dIRAlGvAJ9H8AY6oCaMXVxfgfTW4C7CphSfbACfZzKD
-xAm7Xo0L/MMAmshhX5YwgOQ=
-=awir
------END PGP SIGNATURE-----
-
---=-qrNX51q/o/d+4nSZESZc--
+Regards,
+Mohan.
