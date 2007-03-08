@@ -1,31 +1,24 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 763E7DDF19
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 06:45:03 +1100 (EST)
-Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
-	[9.17.195.11])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l28Jjhtw032058
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 14:45:43 -0500
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l28JivEc145686
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 12:44:57 -0700
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l28Jiu9t014678
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 12:44:57 -0700
-Subject: Re: [PATCH 14/15] Early serial debug support for PPC44x
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070305032453.6B56ADDF1E@ozlabs.org>
-References: <20070305032453.6B56ADDF1E@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 08 Mar 2007 13:44:10 -0600
-Message-Id: <1173383051.4861.27.camel@zod.rchland.ibm.com>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 72400DDF6C
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 07:34:28 +1100 (EST)
+Date: Thu, 8 Mar 2007 14:34:21 -0600
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Better timer and RTC handling for 8641HPCN.
+Message-Id: <20070308143421.5994d6dd.kim.phillips@freescale.com>
+In-Reply-To: <1AEDE9F3-E4D4-4BB8-A0C7-D7D82BE29A4C@kernel.crashing.org>
+References: <1173293364.23776.128.camel@ld0161-tx32>
+	<150E096E-0304-4E48-985C-2F4D599196FE@kernel.crashing.org>
+	<20070307193438.GA30721@ld0162-tx32.am.freescale.net>
+	<CBC6BDF5-EB84-463C-A53C-1204CC396D5F@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C0DBE14@zch01exm26.fsl.freescale.net>
+	<011CC9FF-E609-43A1-BC66-C57CC6233B4B@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C0DBE68@zch01exm26.fsl.freescale.net>
+	<1AEDE9F3-E4D4-4BB8-A0C7-D7D82BE29A4C@kernel.crashing.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Wei.Zhang@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,26 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-03-05 at 14:24 +1100, David Gibson wrote:
+On Wed, 7 Mar 2007 23:57:36 -0600
+Kumar Gala <galak@kernel.crashing.org> wrote:
+
 > 
-> +config PPC_EARLY_DEBUG_44x_PHYSLOW
-> +	hex
-> +	depends PPC_EARLY_DEBUG_44x
-> +	default "0x40000200"
-> +
-> +config PPC_EARLY_DEBUG_44x_PHYSHIGH
-> +	hex
-> +	depends PPC_EARLY_DEBUG_44x
-> +	default "0x1"
-> +
+> On Mar 7, 2007, at 11:38 PM, Zhang Wei-r63237 wrote:
+> 
+> > In fact, I've included <asm-generic/rtc.h> in mpc86xx_hpcn.c file, and
+> > the file linux/mc146818rtc.h was included in asm-generic/rtc.h.
+> 
+> Uugh, sorry... was looking at asm/rtc.h not asm-generic/rtc.h (thus  
+> my confusion)
+> 
+> I don't think we should add new users of the old rtc code at this  
+> point.  We really should look at using the rtc class code.
+> 
+yes, removing the ppc_md hooks and configuring RTC_DRV_CMOS might be a more appropriate thing to do for this board.
 
-These two options need to have some kind of description string next to
-hex otherwise Kconfig will not allow you to set them.  I noticed this
-while playing with bamboo.  So something like:
-
-config PPC_EARLY_DEBUG_44x_PHYSLOW
-	hex "The low 32bits of the UART address"
-
-That will allow you to change the values from the default.
-
-josh
+Kim
