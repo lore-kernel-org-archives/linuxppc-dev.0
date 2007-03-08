@@ -1,13 +1,13 @@
 Return-Path: <linas@austin.ibm.com>
-Date: Thu, 8 Mar 2007 17:29:42 -0600
-To: Felix Domke <tmbinc@elitedvb.net>
-Subject: Re: [patch 6/7] xenon: add SMC support
-Message-ID: <20070308232942.GF30703@austin.ibm.com>
-References: <20070307180144.812594000@elitedvb.net>>
-	<20070307180526.334384000@elitedvb.net>
+Date: Thu, 8 Mar 2007 17:50:45 -0600
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [patch 0/7] [RFC] Xenon support
+Message-ID: <20070308235045.GG30703@austin.ibm.com>
+References: <20070307180144.812594000@elitedvb.net>
+	<20070308113545.5dcc2565.sfr@canb.auug.org.au>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070307180526.334384000@elitedvb.net>
+In-Reply-To: <20070308113545.5dcc2565.sfr@canb.auug.org.au>
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,15 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 07, 2007 at 07:01:50PM +0100, Felix Domke wrote:
-> This adds lowlevel support for the "System Management Controller"
-> on the Xenon southbridge, which controls power, the frontpanel leds, 
-> infrared remote, tilt switch, AVIP detection, RTC and DVD tray control.
+On Thu, Mar 08, 2007 at 11:35:45AM +1100, Stephen Rothwell wrote:
+> 
+> Sorry, but given the anonymity requirement above, I do not want to even
+> read these patches.  Tracking of the pedigree of code in Linux has become
+> an issue and deevelopers want to be anonymous really pokes a big hole in
+> that.
 
-Unlike Arndt, I'd suggest that these three lines appear in the C file
-as well. I've spent too many days wondering what some some file was 
-supposed to be doing, because the author didn't even bother to mention
-something as basic as this. This is particularly important when 
-documentation is not generally available.
+Please note that legal systems do have pretty robust notions about 
+"reasonable people" and "reasonable behaviour".  Having gone through
+the patches, I can affirm that these are utterly unremarkable, perfectly
+ordinary patches, and there is no way that any "reasonable person" will 
+get "contaminated" reading this stuff. The code looks like any other 
+ethernet or ide or sata code; a few register definitions are different, 
+but that's about it. 
+
+Concepts like "pedigree" and "contamination" and "certificate of 
+originality" and etc. apply when the code in question starts doing
+things that are unique, novel, "not obvious to practitioners
+versed in the state of the art".  When some code implements something
+unusual, then there can be legitimate concerns about infringing on
+some patent, etc.
+
+At most, one might argue that there are some "trade secrets" in that
+code. However, "trade secrets" are not protected by law: once they're
+public, the're not secret any more, and the holder of the secret is
+plain out-of-luck, and has no legal recourse. 
+
+Oh, did I mention I'm not a lawyer, never studied law, etc. etc.?
+The above is all my personal opinion, not that or my employer etc. 
 
 --linas
