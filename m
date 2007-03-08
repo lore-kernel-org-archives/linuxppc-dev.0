@@ -1,19 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id BCA6DDE046
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 10:29:35 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch 6/7] xenon: add SMC support
-Date: Wed, 7 Mar 2007 22:54:51 +0100
-References: <20070307180144.812594000@elitedvb.net>
-	<20070307180144.812594000@elitedvb.net>>
-	<20070307180526.334384000@elitedvb.net>>
-In-Reply-To: <20070307180526.334384000@elitedvb.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 8 Mar 2007 11:24:00 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 11/15] zImage wrapper for Ebony
+Message-ID: <20070308002400.GB3950@localhost.localdomain>
+References: <20070305032307.GB31417@localhost.localdomain>
+	<20070305032452.EDB2BDDF1D@ozlabs.org>
+	<20070305171053.GC32672@mag.az.mvista.com>
+	<20070306000905.GC4728@localhost.localdomain>
+	<20070307194732.GB30721@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703072254.51225.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070307194732.GB30721@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,173 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 07 March 2007 19:01:50 Felix Domke wrote:
+On Wed, Mar 07, 2007 at 01:47:32PM -0600, Scott Wood wrote:
+> On Tue, Mar 06, 2007 at 11:09:05AM +1100, David Gibson wrote:
+> > On Mon, Mar 05, 2007 at 10:10:53AM -0700, Mark A. Greer wrote:
+> > > I think we more-or-less agreed to go with Scott Wood's 'wrap' method
+> > > (unless there is a problem with it).
+> > 
+> > Oh, we had?
+> > 
+> > > http://ozlabs.org/pipermail/linuxppc-dev/2007-February/031337.html
+> > 
+> > Um.. I'm pretty uneasy about that, because I'm not at all sure that
+> > the wrapper script does the right thing w.r.t. where it puts the .dtb
+> > file, when building with a VPATH.
+> 
+> My patches don't change where the dtb goes as far as I can tell.  If
+> there's a problem, it can be addressed with an additional patch (or if my
+> patches do change it, please tell me how).
 
-> It requires a userspace daemon.
+If you're building so that the object files go in a separate tree from
+the source, with your patch the dtb will still go in the source tree.
+The trouble is that this is fiddlier to fix with the -s option as you
+use to the wrapper than the -d option, because the correct path for
+the dtb must also be passed into the script.
 
-Is that available somewhere? You should probably list a URL
-for this in the driver and/or changelog
+> > Actually, longer term what I think might be a better option is to
+> > build *all* the dts files into asm (with different symbolic names) and
+> > fold them into the wrapper library.
+> 
+> I can see potential benefit in allowing multiple dtbs to be included, to
+> be chosen at runtime (such as from a board ID passed from the bootloader,
+> or based on detection of how the board is configured (such as detecting
+> whether an MDS board is plugged into a PCI backplane, or is acting as a
+> PCI agent, or is standalone)).  But why all of them?
 
-> +config XENON_SMC
-> +	bool "Xenon SMC"
-> +	depends on PPC_XENON
-> +	help
-> +	  SMC controller in the Xbox 360.
-> +
+Simplicity, and a better chance to pick up syntax errors at least for
+obscure platforms.  Note that they'd be going as separate modules into
+a .a, so only the relevant ones would be included in the final zImage.
 
-Please expand the acronym here. It's not a particularly unique
-TLA after all.
-
-> +struct xenon_smc
-> +{
-> +	void __iomem *base;
-> +	unsigned long is_active;
-> +	wait_queue_head_t wait;
-> +};
-> +
-> +static struct xenon_smc *first_smc;
-
-Why do you think you need the global instance variable?
-Normally, this should be pointed to by the pci device
-private data.
-
-> +#define to_smc(pdev) dev_get_drvdata(&pdev->dev)
-> +
-> +static int get_smc(struct xenon_smc *ctx, u8 *msg);
-> +static void send_smc(struct xenon_smc *ctx, void *msg);
-> +static irqreturn_t xenon_smc_irq(int irq, void *dev_id);
-> +static ssize_t smc_write(struct file *file, const char __user *data,
-> +				size_t len, loff_t *ppos);
-> +static int smc_ioctl(struct inode *inode, struct file *file,
-> +				unsigned int cmd, unsigned long arg);
-> +static ssize_t smc_read(struct file *file, char __user *data,
-> +				size_t len, loff_t *ppos);
-> +static int smc_open(struct inode *inode, struct file *file);
-> +static int smc_release(struct inode *inode, struct file *file);
-> +static int xenon_smc_init_one (struct pci_dev *pdev, const struct
-> pci_device_id *ent); +static void __devexit xenon_smc_remove(struct pci_dev
-> *pdev);
-
-Don't do forward declarations of static functions, please instead
-reorder them so you don't need these.
-
-> +static struct miscdevice smc_miscdev = {
-> +	.minor =  RTC_MINOR,
-> +	.name =   "smc",
-> +	.fops =	  &smc_fops,
-> +};
-
-You can't grab the RTC device number if you don't support the
-respective interfaces. Use a dynamic minor number instead!
-
-> +static int get_smc(struct xenon_smc *ctx, u8 *msg)
-> +{
-> +	if (readl(ctx->base + 0x94) & 4)
-> +	{
-> +		u32 *message = (u32*)msg;
-> +		int i;
-> +		writel(4, ctx->base + 0x94);
-> +		for (i=0; i<4; ++i)
-> +			message[i] = __raw_readl(ctx->base + 0x90);
-> +		writel(0, ctx->base + 0x94);
-> +		return 1;
-> +	}
-> +	return 0;
-> +}
-> +
-> +static void send_smc(struct xenon_smc *ctx, void *msg)
-> +{
-> +	while (!(readl(ctx->base + 0x84) & 4));
-> +	writel(4, ctx->base + 0x84);
-> +	__raw_writel(*(u32*)(msg+0), ctx->base + 0x80);
-> +	__raw_writel(*(u32*)(msg+4), ctx->base + 0x80);
-> +	__raw_writel(*(u32*)(msg+8), ctx->base + 0x80);
-> +	__raw_writel(*(u32*)(msg+12), ctx->base + 0x80);
-> +	writel(0, ctx->base + 0x84);
-> +}
-
-This needs to be cleaned up:
-
-- don't use __raw_read/write on pci devices
-- in the endless loop, use cpu_relax()
-- avoid the casts if you can
-
-> +static ssize_t smc_write(struct file *file, const char __user *data,
-> +			     size_t len, loff_t *ppos)
-> +{
-> +	unsigned char msg[16];
-> +	if (len != 16)
-> +		return -EINVAL;
-> +
-> +	if (copy_from_user(msg, data, 16))
-> +		return -EFAULT;
-> +
-> +	send_smc(first_smc, msg);
-> +
-> +	return 16;
-> +}
-
-You can get the pointer to the smc from file->f_dentry->d_inode->i_private
-if you put it in there 
-
-> +static int smc_ioctl(struct inode *inode, struct file *file,
-> +			  unsigned int cmd, unsigned long arg)
-> +{
-> +	return -ENODEV;
-> +}
-
-please kill this function, it's not needed.
-
-> +static ssize_t smc_read(struct file *file, char __user *data,
-> +				size_t len, loff_t *ppos)
-> +{
-> +	struct xenon_smc *ctx = first_smc;
-> +	int ret;
-> +	u8 msg[0x10];
-> +
-> +	if (len != 16)
-> +		return -EINVAL;
-> +
-> +	if (!(readl(ctx->base + 0x94) & 4))
-> +	{
-> +		if (file->f_flags & O_NONBLOCK)
-> +			return -EAGAIN;
-> +
-> +		ret = wait_event_interruptible(ctx->wait, readl(ctx->base + 0x94) & 4);
-> +		if (ret < 0)
-> +			return ret;
-> +	}
-> +
-> +	if (get_smc(ctx, msg) == 0)
-> +		return -EAGAIN;
-> +
-> +	if (copy_to_user(data, msg, 0x10))
-> +		return -EFAULT;
-> +
-> +	return 0x10;
-> +}
-> +
-> +static int smc_open(struct inode *inode, struct file *file)
-> +{
-> +	if (test_and_set_bit(0, &first_smc->is_active))
-> +		return -EBUSY;
-> +
-> +	return nonseekable_open(inode, file);
-> +}
-
-This doesn't guarantee that you have only one fd to the device,
-you can still get multiple copies through dup or fork.
-
-> +
-> +	rc = misc_register(&smc_miscdev);
-> +	if (rc != 0)
-> +	{
-
-You should be consistant with the indentation, opening braces here
-and in other places (except function bodies) go at the end of the
-previous line.
-
-It's also more common to write 'if (!rc)' than comparing return values
-against 0 or NULL.
-
-	Arnd <><
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
