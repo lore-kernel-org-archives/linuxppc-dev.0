@@ -1,20 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3B584DDE42
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 16:28:21 +1100 (EST)
-Date: Wed, 7 Mar 2007 23:25:08 -0600 (CST)
-From: Kumar Gala <galak@kernel.crashing.org>
-To: Jon Loeliger <jdl@freescale.com>, wei.zhang@freescale.com
-Subject: Re: [PATCH] Added 2nd PCI-Ex controller support for MPC8641.
-In-Reply-To: <1173289661.23776.115.camel@ld0161-tx32>
-Message-ID: <Pine.LNX.4.64.0703072324510.2619@localhost.localdomain>
-References: <1173289661.23776.115.camel@ld0161-tx32>
+Return-Path: <anton@ozlabs.org>
+Date: Wed, 7 Mar 2007 23:32:31 -0600
+From: Anton Blanchard <anton@samba.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: speed up kernel_thread
+Message-ID: <20070308053231.GA20496@kryten>
+References: <20070307212910.GA3648@kryten>
+	<20070307220104.GA32067@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070307220104.GA32067@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +19,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 7 Mar 2007, Jon Loeliger wrote:
+ 
+Hi Scott,
 
-> From: Zhang Wei <wei.zhang@freescale.com>
->
-> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
-> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> Shouldn't this be stwu on 32-bit?
 
-applied.
+Definitely, thanks for spotting it.
 
-- k
+Anton
