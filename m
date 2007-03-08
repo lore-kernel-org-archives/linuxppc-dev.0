@@ -3,18 +3,18 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B760ADDECC
-	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 16:19:21 +1100 (EST)
-Date: Wed, 7 Mar 2007 23:16:09 -0600 (CST)
+	by ozlabs.org (Postfix) with ESMTP id 10346DDE41
+	for <linuxppc-dev@ozlabs.org>; Thu,  8 Mar 2007 16:26:09 +1100 (EST)
+Date: Wed, 7 Mar 2007 23:22:56 -0600 (CST)
 From: Kumar Gala <galak@kernel.crashing.org>
-To: Li Yang <leoli@freescale.com>
-Subject: Re: [PATCH] minor fixes for 834x_mds USB setup code
-In-Reply-To: <45ED302A.1090006@freescale.com>
-Message-ID: <Pine.LNX.4.64.0703072315580.2619@localhost.localdomain>
-References: <45ED302A.1090006@freescale.com>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH] Move 8641 PCI-Express to arch/powerpc/sysdev/fsl_pcie.c.
+In-Reply-To: <1173300525.23776.136.camel@ld0161-tx32>
+Message-ID: <Pine.LNX.4.64.0703072322380.2619@localhost.localdomain>
+References: <1173300525.23776.136.camel@ld0161-tx32>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 6 Mar 2007, Li Yang wrote:
+On Wed, 7 Mar 2007, Jon Loeliger wrote:
 
-> Fix broken node manipulating code, and clarify inaccurate comment.
 >
-> Signed-off-by: Li Yang <leoli@freescale.com>
+> This move sets the stage for the use of generic PCI Express
+> code in 85xx and 86xx parts from FSL.  Subsequent patches
+> for 8548 and 8544 will be able to use this shared code.
+>
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> Acked-by: Andy Fleming <afleming@freescale.com>
 
-applied.
+applied
 
 - k
