@@ -1,26 +1,20 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx016.isp.belgacom.be (outmx016.isp.belgacom.be
-	[195.238.4.115])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 49D8ADDE45
+	by ozlabs.org (Postfix) with ESMTP id 8C324DDEA3
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  8 Mar 2007 23:21:48 +1100 (EST)
-Received: from outmx016.isp.belgacom.be (localhost [127.0.0.1])
-	by outmx016.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
-	with ESMTP id l28CLeG4022685
-	for <linuxppc-embedded@ozlabs.org>; Thu, 8 Mar 2007 13:21:41 +0100
-	(envelope-from <tnt@246tNt.com>)
-Message-ID: <45EFFFA5.7080004@246tNt.com>
-Date: Thu, 08 Mar 2007 13:20:53 +0100
-From: Sylvain Munaut <tnt@246tNt.com>
-MIME-Version: 1.0
-To: Oliver Rutsch <orutsch@sympatec.com>
-Subject: Re: MPC5200, PLX9054 PCI Card - stalled DMA transfers
-References: <45E6CAC8.8090007@sympatec.com> <45E75859.3090508@ovro.caltech.edu>
-	<45EFBF91.7080304@sympatec.com>
-In-Reply-To: <45EFBF91.7080304@sympatec.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	Fri,  9 Mar 2007 01:30:55 +1100 (EST)
+In-Reply-To: <1173129745.24846.50.camel@saruman.qstreams.net>
+References: <1173129745.24846.50.camel@saruman.qstreams.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3E32AE64-2BE2-4B74-8AEC-4A42AF888010@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Reset cause API
+Date: Thu, 8 Mar 2007 08:29:57 -0600
+To: bwarren@qstreams.com
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -33,23 +27,18 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
->> Anyway, manually setup a DMA transfer and convince yourself that
->> you know which bits to twiddle, then figure out why the driver
->> code isn't doing as its asked.
->>
->>     
+On Mar 5, 2007, at 3:22 PM, Ben Warren wrote:
+
+> Hello,
 >
-> I've done so without success. The driver seems to make everything 
-> correct. A block DMA is fairly simple on the 9054, so I think there must 
-> be a hardware reason for this.
-> Has anybody ever used a PCI card on the MPC5200 which has its own 
-> busmaster controller? I think most people use the BestComm DMA 
-> controller on the MPC5200, right?
->   
-No, most PCI card that need big xfer uses bus mater. A ide card, a
-network card, ...  all most certainly use it.
+> Is there an API call, either Linux or PowerPC-specific, for  
+> determining
+> the cause of the last reset?  I can certainly read the RSR myself, but
+> why bother if the information's available elsewhere.
 
-Bestcomm on the 5200 is for the SoC internal peripheral mainly.
+There isnt anything like this since we don't have any consistent way  
+of maintaining information across a reset.
 
+Something like kexec could possibly do something.
 
-Sylvain
+- k
