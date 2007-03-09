@@ -1,19 +1,17 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
-	by ozlabs.org (Postfix) with ESMTP id 7C9B3DDEA2
+Return-Path: <domen.puncer@telargo.com>
+Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
+	by ozlabs.org (Postfix) with ESMTP id BE101DDEB7
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Mar 2007 19:48:07 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
+	Fri,  9 Mar 2007 19:49:57 +1100 (EST)
+Date: Fri, 9 Mar 2007 09:49:54 +0100
+From: Domen Puncer <domen.puncer@telargo.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: PPC405EP Custom Board. Question for PCI init.
-Date: Fri, 9 Mar 2007 09:49:29 +0100
-References: <45F03501.4040902@googlemail.com>
-In-Reply-To: <45F03501.4040902@googlemail.com>
+Subject: [PATCH] lite5200(b) dts: mscan.1 irq
+Message-ID: <20070309084954.GA14658@moe.telargo.com>
+References: <20070306095139.GZ4397@moe.telargo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703090949.30172.sr@denx.de>
-Cc: powerpc440 <powerpc440@googlemail.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070306095139.GZ4397@moe.telargo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,50 +22,49 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thursday 08 March 2007 17:08, powerpc440 wrote:
-> /* Some IRQs unique to the board
->  * Used by the generic 405 PCI setup functions in ppc4xx_pci.c
->  */
-> int __init
-> ppc405_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
-> {
->     static char pci_irq_table[][4] =
->         /*
->          *      PCI IDSEL/INTPIN->INTLINE
->          *      A       B       C       D
->          */
->     {
->         /*{25, 26, 27, 28},    *//* IDSEL 1 - PCI slot 1 */
->         /*{26, 27, 28, 25},    *//* IDSEL 2 - PCI slot 2 */
->     };
->
->     const long min_idsel = 6, max_idsel = 7, irqs_per_slot = 4;
->     return PCI_IRQ_TABLE_LOOKUP;
-> };
->
-> My question is what exactly means these values {25, 26, 27, 28},
+Hi!
 
-Those are the interrupt numbers. Please take a look at the 405EP users manual 
-and read the description of the UIC and it's external interrupts. In your 
-board design you most likely have connected the PCI interrupts to some 
-external PPC interrupts, right? This configuration is totally board 
-dependant. And please don't forget to configure the external interrupts 
-correctly (level, edge...).
+Found another one. ;-)
 
-> and how 
-> I can determinate and complete the correct config for my board.
-> The PCI slot IDSEL pin is connected to PCI_AD11 (CPU);
-> SATA IDSEL - to PCI_AD12;
-> USB IDSEL - to PCI_AD13
+Btw. I forward ported Freescale's mscan patch to latest
+peak-linux-driver. Should I send it somewhere? Where to?
 
-Since I can't remember how to "calculate" the idsel number from the connected 
-AD signal, I'm just adding a printk() in this function to point the idsel 
-number here.
+--
+Fix mscan irq number.
+Tested with peak-linux-driver + patch from Freescale in
+loopback mode.
 
-Best regards,
-Stefan
 
-=====================================================================
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-=====================================================================
+Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+
+---
+ arch/powerpc/boot/dts/lite5200.dts  |    2 +-
+ arch/powerpc/boot/dts/lite5200b.dts |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+Index: grant.git/arch/powerpc/boot/dts/lite5200.dts
+===================================================================
+--- grant.git.orig/arch/powerpc/boot/dts/lite5200.dts
++++ grant.git/arch/powerpc/boot/dts/lite5200.dts
+@@ -167,7 +167,7 @@
+ 			device_type = "mscan";
+ 			compatible = "mpc5200-mscan";
+ 			cell-index = <1>;
+-			interrupts = <1 12 0>;
++			interrupts = <2 12 0>;
+ 			interrupt-parent = <500>;
+ 			reg = <980 80>;
+ 		};
+Index: grant.git/arch/powerpc/boot/dts/lite5200b.dts
+===================================================================
+--- grant.git.orig/arch/powerpc/boot/dts/lite5200b.dts
++++ grant.git/arch/powerpc/boot/dts/lite5200b.dts
+@@ -167,7 +167,7 @@
+ 			device_type = "mscan";
+ 			compatible = "mpc5200b-mscan\0mpc5200-mscan";
+ 			cell-index = <1>;
+-			interrupts = <1 12 0>;
++			interrupts = <2 12 0>;
+ 			interrupt-parent = <500>;
+ 			reg = <980 80>;
+ 		};
