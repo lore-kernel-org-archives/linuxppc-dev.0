@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 042F0DDED0
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 09:23:06 +1100 (EST)
-In-Reply-To: <1173471495.23776.241.camel@ld0161-tx32>
-References: <1173471495.23776.241.camel@ld0161-tx32>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <891B901D-FC5E-4AFC-9C79-EFAEFD9C59DB@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: The transparent PCI-Express bridge problem
-Date: Fri, 9 Mar 2007 16:22:01 -0600
-To: Jon Loeliger <jdl@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <n.eicker@fz-juelich.de>
+Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
+	by ozlabs.org (Postfix) with SMTP id 19209DDEE1
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 10:16:33 +1100 (EST)
+From: Norbert Eicker <n.eicker@fz-juelich.de>
+To: Jeff Garzik <jgarzik@pobox.com>
+Subject: Re: [PATCH] spidernet: Fix problem sending IP fragments
+Date: Sat, 10 Mar 2007 00:16:57 +0100
+References: <20070308231556.GE30703@austin.ibm.com>
+	<45F19103.3010100@pobox.com>
+In-Reply-To: <45F19103.3010100@pobox.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset=iso-8859-1
+Message-Id: <200703100016.58469.n.eicker@fz-juelich.de>
+Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,56 +23,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Mar 9, 2007, at 2:18 PM, Jon Loeliger wrote:
-
-> Kumar,
+On Friday, 9. March 2007 17:53, Jeff Garzik wrote:
+> Linas Vepstas wrote:
+> > Jeff,
+> >
+> > Please apply. The rather long patch description is from the submitter,
+> > Norbert Eicker, I don't know if that's alright, or if I should ask to
+> > have it trimmed.
+> >
+> > Thanks,
+> > --linas
+> >
+> > From: Norbert Eicker <n.eicker@fz-juelich.de>
+> >
+> >
+> > Signed-off-by: Norbert Eicker <n.eicker@fz-juelich.de>
+> > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 >
-> Here is a lspci -xv from the 8544 DS board.  This is
-> the same board as the 8641 HPCN board, so they both have
-> the same "root complex is really a transparent bridge"
-> problem that needs to be resolved.
->
-> Please let me know if you need further or different info here.
->
-> HTH,
-> jdl
->
->
->
->
-> # lspci -xv
-> 00:00.0 Power PC: Unknown device 1957:0030 (rev 10)
->         !!! Invalid class 0b20 for header type 01
->         Flags: bus master, fast devsel, latency 0
->         Bus: primary=00, secondary=01, subordinate=02, sec-latency=0
->         I/O behind bridge: 00000000-00000fff
->         Memory behind bridge: 00000000-000fffff
->         Prefetchable memory behind bridge:  
-> 0000000000000000-0000000000000000
->         Capabilities: [44] Power Management version 2
->         Capabilities: [4c] #10 [0041]
-> 00: 57 19 30 00 06 01 10 00 10 00 20 0b 00 00 01 00
-> 10: 00 00 00 00 00 00 00 00 00 01 02 00 00 00 00 20
-> 20: 00 00 00 00 01 00 01 00 00 00 00 00 00 00 00 00
-> 30: 00 00 00 00 44 00 00 00 00 00 00 00 00 00 00 00
+> are you sure it can't send out fragmented IP frames?  what's really
+> going on here?
 
-(Mainly responding for anyone else reading this)
+Pretty sure that fragmented IP frames are not send out. Here's a small test 
+using ttcp and tcpdump reproducing the problem (I assume a MTU of 1500):
 
-After some discussion, and reading of the PCI-Express specs the issue  
-is that the class information is not being set properly.  Try a quirk  
-like the following to fixup and see what happens.
+You need two node, lets call them src and dest.
 
-static void __devinit early_fsl_pcie(struct pci_dev *dev)
-{
-         dev->class &= 0xff;
-         dev->class |= (PCI_CLASS_BRIDGE_PCI << 8)
-}
+On dest run 'tcpdump -nvvv host src'.
 
-DECLARE_PCI_FIXUP_EARLY(0x1957, 0x0030, early_fsl_pcie);
+Furthermore start on dest: 'ttcp -u -r -s'
+and on src: 'ttcp -u -t -s -l 1472 -n 4 dest
 
-I think this may resolve the following issues:
-* Do not skip PCI Express to PCI bridge when scanning OF node
-* All the driver/pci/probe.c changes
+tcpdump will show 10 frames received from src, one of size 32 (UDP length 4), 
+four of size 1500 (UDP length 1472) (the payload), five more of size 32 (UDP 
+length 4). The size 32 frames are some startup/closing frames of ttcp.
 
-- k
+Start on dest again: 'ttcp -u -r -s'
+and on src: 'ttcp -u -t -s -l 1473 -n 4 dest
+
+Now tcpdump only sees the six startup/closing frames. The payload frames 
+(which are fragmented by the IP-stack) disappear somehow.
+
+With the patch applied you see in the second case the startup/closing frames 
+plus 4 pairs of frames in between. Each pair consists of one frame of size 
+1500 followed by one of size 21 (with an offset of 1480), i.e. the two 
+fragments of the too large UDP-datagram.
+
+On src tcpdump will show the fragmented IP-frames in both cases (with and 
+without patch applied).
+
+> patch was corrupted anyway, and could not be applied...
+
+Whitespace problem? Let's try again...
+
+Signed-off-by: Norbert Eicker <n.eicker@fz-juelich.de>
+
+diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
+index 3b91af8..e3019d5 100644
+--- a/drivers/net/spider_net.c
++++ b/drivers/net/spider_net.c
+@@ -719,7 +719,7 @@ spider_net_prepare_tx_descr(struct spide
+ 			SPIDER_NET_DESCR_CARDOWNED | SPIDER_NET_DMAC_NOCS;
+ 	spin_unlock_irqrestore(&chain->lock, flags);
+ 
+-	if (skb->protocol == htons(ETH_P_IP))
++	if (skb->protocol == htons(ETH_P_IP) && skb->ip_summed == CHECKSUM_PARTIAL)
+ 		switch (skb->nh.iph->protocol) {
+ 		case IPPROTO_TCP:
+ 			hwdescr->dmac_cmd_status |= SPIDER_NET_DMAC_TCP;
+ 
+-- 
+Fon ++49-(0)2461/61-1492
+http://www.fz-juelich.de
