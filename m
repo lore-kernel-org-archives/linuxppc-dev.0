@@ -1,20 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <SRS0+4f1e0d28af8560107a14+1293+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D997DDDEBA
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 17:03:21 +1100 (EST)
-In-Reply-To: <17904.60099.441388.484204@cargo.ozlabs.ibm.com>
-References: <17904.60099.441388.484204@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <FADB4DD7-E3D2-45C0-87ED-9F2AF081ECED@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: patches pushed to powerpc.git for-2.6.22 branch
-Date: Fri, 9 Mar 2007 00:02:18 -0600
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id DE591DDE9F
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 17:55:51 +1100 (EST)
+Subject: Re: [PATCH] [POWERPC] Wire up sys_sync_file_range
+From: David Woodhouse <dwmw2@infradead.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+In-Reply-To: <20070309152201.027c2bf5.sfr@canb.auug.org.au>
+References: <20070309152201.027c2bf5.sfr@canb.auug.org.au>
+Content-Type: text/plain
+Date: Fri, 09 Mar 2007 06:55:41 +0000
+Message-Id: <1173423341.3461.548.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linux-arch@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>,
+	paulus@samba.org, rmk@arm.linux.org.uk, ralf@linux-mips.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,51 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, 2007-03-09 at 15:22 +1100, Stephen Rothwell wrote:
+> This requires an architecture specific compat routine as u64s are passed
+> in odd/even (high/low) register pairs on ppc32.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-On Mar 8, 2007, at 11:04 PM, Paul Mackerras wrote:
+Doesn't that apply to ARM and to 32-bit MIPS too? And perhaps others?
 
-> I have committed the patches listed below and pushed them to the
-> for-2.6.22 branch of the powerpc.git repository.
->
-> If your patch isn't there and you think it should be, let me know.  I
-> am aware of Sylvain's uevent patches, but I haven't had time to review
-> them properly yet and neither has Ben H or anyone else, so I haven't
-> put them in.  There are some other patches that depend on those
-> (e.g. the ibmebus patches) so they haven't gone in yet either.
->
-> Paul.
+> --- a/arch/powerpc/kernel/sys_ppc32.c
+> +++ b/arch/powerpc/kernel/sys_ppc32.c
+> @@ -814,3 +814,12 @@ asmlinkage long compat_sys_request_key(const char __user *_type,
+>  	return sys_request_key(_type, _description, _callout_info, destringid);
+>  }
+>  
+> +asmlinkage long compat_sys_sync_file_range(int fd, u32 unused,
+> +		u32 offset_high, u32 offset_low,
+> +		u32 nbytes_high, u32 nbytes_low,
+> +		compat_uint_t flags)
+> +{
+> +	return sys_sync_file_range(fd, (loff_t)offset_high << 32 | offset_low,
+> +			(loff_t)nbytes_high << 32 | nbytes_low,
+> +			(unsigned int)flags);
+> +}
 
-[snip]
-
-> Segher Boessenkool (1):
->       [POWERPC] PowerPC: select default image for Linkstation
-
-I pulled this into my 2.6.21 tree for you as it fixes a build issue.
-
-> Stephen Rothwell (8):
->       [POWERPC] Allocate syscall number for sys_getcpu
-
-Should this go into 2.6.21 ?
-
->       [POWERPC] Make ppc64_defconfig without CONFIG_PPC_PSERIES build
->       [POWERPC] Create and use set_pci_dma_ops
->       [POWERPC] Create and use get_pci_dma_ops()
->       [POWERPC] Make iSeries build without CONFIG_PCI
->       [POWERPC] Allow pSeries to build without CONFIG_PCI
->       [POWERPC] Allow xmon to build without CONFIG_DEBUG_BUGVERBOSE
->       [POWERPC] Make find_and_init_pbs() a void function
->
-> Stuart Yoder (3):
->       [POWERPC] Remove interrupt-controller as a property under / 
-> chosen
->       [POWERPC] Remove unused, undocumented #cpus property from  
-> cpus node
->       [POWERPC] Update interrupt info in booting-without-of.txt
->
-> Zang Roy-r61911 (1):
->       [POWERPC] Remove fixed setting of ROOT_DEV for 7448HPC2  
-> platforms
-
-I'll drop this from my tree now.
-
-- k
+-- 
+dwmw2
