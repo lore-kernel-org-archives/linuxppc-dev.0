@@ -1,14 +1,15 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 77110DDEAB
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 11:59:46 +1100 (EST)
-Date: Fri, 9 Mar 2007 11:57:10 +1100
+	by ozlabs.org (Postfix) with ESMTP id 4CE4BDDEAB
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 11:59:47 +1100 (EST)
+Date: Fri, 9 Mar 2007 11:58:11 +1100
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 2/3] [POWERPC] wire up sys_epoll_pwait
-Message-Id: <20070309115710.6050edc8.sfr@canb.auug.org.au>
-In-Reply-To: <20070309115457.611e4c99.sfr@canb.auug.org.au>
+Subject: [PATCH 3/3] [POWERPC] sys_move_pages should be callable from an SPU
+Message-Id: <20070309115811.23861fcf.sfr@canb.auug.org.au>
+In-Reply-To: <20070309115710.6050edc8.sfr@canb.auug.org.au>
 References: <20070309115457.611e4c99.sfr@canb.auug.org.au>
+	<20070309115710.6050edc8.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: pc-dev <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
@@ -24,42 +25,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- include/asm-powerpc/systbl.h |    1 +
- include/asm-powerpc/unistd.h |    3 ++-
- 2 files changed, 3 insertions(+), 1 deletions(-)
-
-This depended on the compat code for epoll which has now gone into
-Linus's kernel.
+ include/asm-powerpc/systbl.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
 diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
-index 418e5c7..fe63831 100644
+index fe63831..8d853c5 100644
 --- a/include/asm-powerpc/systbl.h
 +++ b/include/asm-powerpc/systbl.h
-@@ -306,3 +306,4 @@ COMPAT_SYS_SPU(get_robust_list)
+@@ -304,6 +304,6 @@ SYSCALL_SPU(fchmodat)
+ SYSCALL_SPU(faccessat)
+ COMPAT_SYS_SPU(get_robust_list)
  COMPAT_SYS_SPU(set_robust_list)
- COMPAT_SYS(move_pages)
+-COMPAT_SYS(move_pages)
++COMPAT_SYS_SPU(move_pages)
  SYSCALL_SPU(getcpu)
-+COMPAT_SYS(epoll_pwait)
-diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
-index bcc21bf..2baedbe 100644
---- a/include/asm-powerpc/unistd.h
-+++ b/include/asm-powerpc/unistd.h
-@@ -325,10 +325,11 @@
- #define __NR_set_robust_list	300
- #define __NR_move_pages		301
- #define __NR_getcpu		302
-+#define __NR_epoll_pwait	303
- 
- #ifdef __KERNEL__
- 
--#define __NR_syscalls		303
-+#define __NR_syscalls		304
- 
- #define __NR__exit __NR_exit
- #define NR_syscalls	__NR_syscalls
+ COMPAT_SYS(epoll_pwait)
 -- 
 1.5.0.3
