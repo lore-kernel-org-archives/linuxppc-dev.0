@@ -3,29 +3,19 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1E650DDEA0
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 14:49:49 +1100 (EST)
-In-Reply-To: <46B96294322F7D458F9648B60E15112C131B07@zch01exm26.fsl.freescale.net>
-References: <1173293364.23776.128.camel@ld0161-tx32>
-	<150E096E-0304-4E48-985C-2F4D599196FE@kernel.crashing.org>
-	<20070307193438.GA30721@ld0162-tx32.am.freescale.net>
-	<CBC6BDF5-EB84-463C-A53C-1204CC396D5F@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C0DBE14@zch01exm26.fsl.freescale.net>
-	<011CC9FF-E609-43A1-BC66-C57CC6233B4B@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C0DBE68@zch01exm26.fsl.freescale.net>
-	<1AEDE9F3-E4D4-4BB8-A0C7-D7D82BE29A4C@kernel.crashing.org>
-	<1173381017.23776.211.camel@ld0161-tx32>
-	<1173381543.2968.10.camel@udp097531uds.am.freescale.net>
-	<82D7F244-A949-4DC9-8DE3-A91DD25CD50A@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C131B07@zch01exm26.fsl.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 6455EDDFED
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 14:50:00 +1100 (EST)
+In-Reply-To: <7EA18FDD2DC2154AA3BD6D2F22A62A0E5F6A11@zch01exm23.fsl.freescale.net>
+References: <1173300525.23776.136.camel@ld0161-tx32>
+	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5F6A11@zch01exm23.fsl.freescale.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <53280A91-C40D-4E01-8DA3-D1D9B1C40A61@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <20303D6D-C19A-4BDB-B540-9994AC538642@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Better timer and RTC handling for 8641HPCN.
-Date: Thu, 8 Mar 2007 21:48:48 -0600
-To: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Wang Haiying-r54964 <Haiying.Wang@freescale.com>
+Subject: Re: [PATCH] Move 8641 PCI-Express to arch/powerpc/sysdev/fsl_pcie.c.
+Date: Thu, 8 Mar 2007 21:49:54 -0600
+To: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,13 +26,45 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 8, 2007, at 7:51 PM, Zhang Wei-r63237 wrote:
+On Mar 8, 2007, at 9:32 PM, Zang Roy-r61911 wrote:
 
-> Please use 80.
-> We reserve the first 16 ints for legacy 8259 interrupts. And we  
-> want the
-> virq is the same value to hw-irq.
+>> This move sets the stage for the use of generic PCI Express
+>> code in 85xx and 86xx parts from FSL.  Subsequent patches for
+>> 8548 and 8544 will be able to use this shared code.
+>>
+>> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+>> Acked-by: Andy Fleming <afleming@freescale.com>
+>> ---
+>>  arch/powerpc/Kconfig                               |    5 +++++
+>>  arch/powerpc/platforms/86xx/Makefile               |    2 +-
+>>  arch/powerpc/sysdev/Makefile                       |    1 +
+>>  .../86xx/mpc86xx_pcie.c => sysdev/fsl_pcie.c}      |    2 --
+>>  4 files changed, 7 insertions(+), 3 deletions(-)  rename
+>> arch/powerpc/{platforms/86xx/mpc86xx_pcie.c =>
+>> sysdev/fsl_pcie.c} (100%)
+>>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index 6dfbd52..f68de20 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -168,6 +168,7 @@ config PPC_86xx
+>>  	bool "Freescale 86xx"
+>>  	select 6xx
+>>  	select FSL_SOC
+>> +	select FSL_PCIE
+>>  	select PPC_FPU
+>>  	select ALTIVEC
+>>  	help
+>> @@ -1022,6 +1023,10 @@ config SBUS
+>>  config FSL_SOC
+>>  	bool
+>>
+>> +config FSL_PCIE
+>> +	bool
+>> +	depends on PPC_86xx
+>> +
+> How about 8548 with pcie?
 
-Why?
+There isn't any in tree 85xx user of PCIe at this point.
 
 - k
