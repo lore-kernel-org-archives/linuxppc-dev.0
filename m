@@ -1,28 +1,15 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 30053DDEB8
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 14:53:44 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l293rf0P011708
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 20:53:41 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l293rd9w025519
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 21:53:40 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] Move 8641 PCI-Express to arch/powerpc/sysdev/fsl_pcie.c.
-Date: Fri, 9 Mar 2007 11:53:38 +0800
-Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E5F6A16@zch01exm23.fsl.freescale.net>
-In-Reply-To: <20303D6D-C19A-4BDB-B540-9994AC538642@kernel.crashing.org>
-References: <1173300525.23776.136.camel@ld0161-tx32>
-	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5F6A11@zch01exm23.fsl.freescale.net>
-	<20303D6D-C19A-4BDB-B540-9994AC538642@kernel.crashing.org>
-From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id C788EDDEAB
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 15:21:59 +1100 (EST)
+Date: Fri, 9 Mar 2007 15:22:01 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH] [POWERPC] Wire up sys_sync_file_range
+Message-Id: <20070309152201.027c2bf5.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,49 +19,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->=20
-> On Mar 8, 2007, at 9:32 PM, Zang Roy-r61911 wrote:
->=20
-> >> This move sets the stage for the use of generic PCI=20
-> Express code in=20
-> >> 85xx and 86xx parts from FSL.  Subsequent patches for
-> >> 8548 and 8544 will be able to use this shared code.
-> >>
-> >> Signed-off-by: Jon Loeliger <jdl@freescale.com>
-> >> Acked-by: Andy Fleming <afleming@freescale.com>
-> >> ---
-> >>  arch/powerpc/Kconfig                               |    5 +++++
-> >>  arch/powerpc/platforms/86xx/Makefile               |    2 +-
-> >>  arch/powerpc/sysdev/Makefile                       |    1 +
-> >>  .../86xx/mpc86xx_pcie.c =3D> sysdev/fsl_pcie.c}      |    2 --
-> >>  4 files changed, 7 insertions(+), 3 deletions(-)  rename=20
-> >> arch/powerpc/{platforms/86xx/mpc86xx_pcie.c =3D> sysdev/fsl_pcie.c} =
+This requires an architecture specific compat routine as u64s are passed
+in odd/even (high/low) register pairs on ppc32.
 
-> >> (100%)
-> >>
-> >> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig index=20
-> >> 6dfbd52..f68de20 100644
-> >> --- a/arch/powerpc/Kconfig
-> >> +++ b/arch/powerpc/Kconfig
-> >> @@ -168,6 +168,7 @@ config PPC_86xx
-> >>  	bool "Freescale 86xx"
-> >>  	select 6xx
-> >>  	select FSL_SOC
-> >> +	select FSL_PCIE
-> >>  	select PPC_FPU
-> >>  	select ALTIVEC
-> >>  	help
-> >> @@ -1022,6 +1023,10 @@ config SBUS
-> >>  config FSL_SOC
-> >>  	bool
-> >>
-> >> +config FSL_PCIE
-> >> +	bool
-> >> +	depends on PPC_86xx
-> >> +
-> > How about 8548 with pcie?
->=20
-> There isn't any in tree 85xx user of PCIe at this point.
-No!
-At lease my original serial patches include the pcie support for 8548.
-Roy
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ arch/powerpc/kernel/sys_ppc32.c |    9 +++++++++
+ include/asm-powerpc/systbl.h    |    1 +
+ include/asm-powerpc/unistd.h    |    3 ++-
+ 3 files changed, 12 insertions(+), 1 deletions(-)
+
+David, the other two missing syscalls were wired up in the previous patch
+set I sent today.  Thanks for your patch to push us along.
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/arch/powerpc/kernel/sys_ppc32.c b/arch/powerpc/kernel/sys_ppc32.c
+index 673e8d9..b282035 100644
+--- a/arch/powerpc/kernel/sys_ppc32.c
++++ b/arch/powerpc/kernel/sys_ppc32.c
+@@ -814,3 +814,12 @@ asmlinkage long compat_sys_request_key(const char __user *_type,
+ 	return sys_request_key(_type, _description, _callout_info, destringid);
+ }
+ 
++asmlinkage long compat_sys_sync_file_range(int fd, u32 unused,
++		u32 offset_high, u32 offset_low,
++		u32 nbytes_high, u32 nbytes_low,
++		compat_uint_t flags)
++{
++	return sys_sync_file_range(fd, (loff_t)offset_high << 32 | offset_low,
++			(loff_t)nbytes_high << 32 | nbytes_low,
++			(unsigned int)flags);
++}
+diff --git a/include/asm-powerpc/systbl.h b/include/asm-powerpc/systbl.h
+index 8d853c5..3676a20 100644
+--- a/include/asm-powerpc/systbl.h
++++ b/include/asm-powerpc/systbl.h
+@@ -307,3 +307,4 @@ COMPAT_SYS_SPU(set_robust_list)
+ COMPAT_SYS_SPU(move_pages)
+ SYSCALL_SPU(getcpu)
+ COMPAT_SYS(epoll_pwait)
++COMPAT_SYS_SPU(sync_file_range)
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index 2baedbe..17c2b96 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -326,10 +326,11 @@
+ #define __NR_move_pages		301
+ #define __NR_getcpu		302
+ #define __NR_epoll_pwait	303
++#define __NR_sync_file_range	304
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		304
++#define __NR_syscalls		305
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+-- 
+1.5.0.3
