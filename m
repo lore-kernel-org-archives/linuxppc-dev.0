@@ -1,19 +1,19 @@
-Return-Path: <n.eicker@fz-juelich.de>
-Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
-	by ozlabs.org (Postfix) with SMTP id 19209DDEE1
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 10:16:33 +1100 (EST)
-From: Norbert Eicker <n.eicker@fz-juelich.de>
-To: Jeff Garzik <jgarzik@pobox.com>
-Subject: Re: [PATCH] spidernet: Fix problem sending IP fragments
-Date: Sat, 10 Mar 2007 00:16:57 +0100
-References: <20070308231556.GE30703@austin.ibm.com>
-	<45F19103.3010100@pobox.com>
-In-Reply-To: <45F19103.3010100@pobox.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id ACEE1DDEE0
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 10:32:11 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Please pull powerpc.git merge branch
+Date: Sat, 10 Mar 2007 00:31:53 +0100
+References: <17903.35471.818872.293459@cargo.ozlabs.ibm.com>
+	<17905.52447.829667.16759@cargo.ozlabs.ibm.com>
+In-Reply-To: <17905.52447.829667.16759@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset=iso-8859-1
-Message-Id: <200703100016.58469.n.eicker@fz-juelich.de>
-Cc: linuxppc-dev@ozlabs.org, netdev@vger.kernel.org
+  charset="iso-8859-1"
+Message-Id: <200703100031.54128.arnd@arndb.de>
+Cc: torvalds@linux-foundation.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,74 +23,122 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Friday, 9. March 2007 17:53, Jeff Garzik wrote:
-> Linas Vepstas wrote:
-> > Jeff,
-> >
-> > Please apply. The rather long patch description is from the submitter,
-> > Norbert Eicker, I don't know if that's alright, or if I should ask to
-> > have it trimmed.
-> >
-> > Thanks,
-> > --linas
-> >
-> > From: Norbert Eicker <n.eicker@fz-juelich.de>
-> >
-> >
-> > Signed-off-by: Norbert Eicker <n.eicker@fz-juelich.de>
-> > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
->
-> are you sure it can't send out fragmented IP frames?  what's really
-> going on here?
+On Friday 09 March 2007, Paul Mackerras wrote:
+> > Please do:
+> >=20
+> > git pull \
+> > git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> >=20
+> > There are 6 commits there. =A0Three of them fix compile warnings, one is
+> > a bug fix, one works around a problem on rev 1.0 PPC970MP processors,
+> > and one adds a missing newline in some help text.
+>=20
+> I have pulled 3 more commits from Kumar Gala and pushed them out, so
+> when you do the pull you'll see the commits below in addition to the
+> ones I listed previously.
 
-Pretty sure that fragmented IP frames are not send out. Here's a small test 
-using ttcp and tcpdump reproducing the problem (I assume a MTU of 1500):
+I was late again and only today managed to go through my patch collection
+to see what still needs to be merged in 2.6.21.
 
-You need two node, lets call them src and dest.
+There are three fixes for run-time bugs, one is for making ps3 support not
+break other platforms, and the final one is an updated defconfig for -rc3.
 
-On dest run 'tcpdump -nvvv host src'.
+Please pull these from
 
-Furthermore start on dest: 'ttcp -u -r -s'
-and on src: 'ttcp -u -t -s -l 1472 -n 4 dest
+git://git.kernel.org/pub/scm/linux/kernel/git/arnd/cell-2.6.git cell-merge
 
-tcpdump will show 10 frames received from src, one of size 32 (UDP length 4), 
-four of size 1500 (UDP length 1472) (the payload), five more of size 32 (UDP 
-length 4). The size 32 frames are some startup/closing frames of ttcp.
+=2D--
 
-Start on dest again: 'ttcp -u -r -s'
-and on src: 'ttcp -u -t -s -l 1473 -n 4 dest
+ arch/powerpc/configs/cell_defconfig        |  151 ++++++++++++++++++++++++=
+=2D----
+ arch/powerpc/mm/hash_utils_64.c            |    6 +
+ arch/powerpc/mm/hugetlbpage.c              |    4
+ arch/powerpc/platforms/cell/spu_base.c     |   81 +++++++++++++--
+ arch/powerpc/platforms/cell/spufs/file.c   |   24 ++--
+ arch/powerpc/platforms/cell/spufs/run.c    |    4
+ arch/powerpc/platforms/cell/spufs/sched.c  |   20 ---
+ arch/powerpc/platforms/cell/spufs/spufs.h  |    6 -
+ arch/powerpc/platforms/cell/spufs/switch.c |   62 -----------
+ arch/powerpc/platforms/ps3/mm.c            |    2
+ arch/powerpc/platforms/ps3/system-bus.c    |    2
+ drivers/ps3/ps3av.c                        |    9 +
+ drivers/ps3/sys-manager.c                  |    6 +
+ drivers/ps3/vuart.c                        |    2
+ include/asm-powerpc/spu.h                  |    7 +
+ include/asm-powerpc/spu_csa.h              |    4
+ 16 files changed, 258 insertions(+), 132 deletions(-)
 
-Now tcpdump only sees the six startup/closing frames. The payload frames 
-(which are fragmented by the IP-stack) disappear somehow.
+=2D--
 
-With the patch applied you see in the second case the startup/closing frames 
-plus 4 pairs of frames in between. Each pair consists of one frame of size 
-1500 followed by one of size 21 (with an offset of 1480), i.e. the two 
-fragments of the too large UDP-datagram.
+commit c886c2bf804c029499694adcc0decfdd32a0cd8b
+Author: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Date:   Sat Mar 10 00:05:39 2007 +0100
 
-On src tcpdump will show the fragmented IP-frames in both cases (with and 
-without patch applied).
+    [POWERPC] update cell_defconfig
+   =20
+    Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-> patch was corrupted anyway, and could not be applied...
+commit ef596c697a4d80048eccf50530153d7e3330c127
+Author: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Date:   Sat Mar 10 00:05:38 2007 +0100
 
-Whitespace problem? Let's try again...
+    [POWERPC] ps3: always make sure were running on a PS3
+   =20
+    Add missing checks to PS3 specific drivers ps3av and sys-manager to ver=
+ify that
+    we are actually running on a PS3 (pointed out by Arnd).
+   =20
+    Correct existing checks in other subsystems/drivers to return -ENODEV i=
+nstead
+    of zero.
+   =20
+    Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+    Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Signed-off-by: Norbert Eicker <n.eicker@fz-juelich.de>
+commit 94b2a4393c500a620de90c3266d595926302e26b
+Author: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date:   Sat Mar 10 00:05:37 2007 +0100
 
-diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
-index 3b91af8..e3019d5 100644
---- a/drivers/net/spider_net.c
-+++ b/drivers/net/spider_net.c
-@@ -719,7 +719,7 @@ spider_net_prepare_tx_descr(struct spide
- 			SPIDER_NET_DESCR_CARDOWNED | SPIDER_NET_DMAC_NOCS;
- 	spin_unlock_irqrestore(&chain->lock, flags);
- 
--	if (skb->protocol == htons(ETH_P_IP))
-+	if (skb->protocol == htons(ETH_P_IP) && skb->ip_summed == CHECKSUM_PARTIAL)
- 		switch (skb->nh.iph->protocol) {
- 		case IPPROTO_TCP:
- 			hwdescr->dmac_cmd_status |= SPIDER_NET_DMAC_TCP;
- 
--- 
-Fon ++49-(0)2461/61-1492
-http://www.fz-juelich.de
+    [POWERPC] Fix spu SLB invalidations
+   =20
+    The SPU code doesn't properly invalidate SPUs SLBs when necessary,
+    for example when changing a segment size from the hugetlbfs code. In
+    addition, it saves and restores the SLB content on context switches
+    which makes it harder to properly handle those invalidations.
+   =20
+    This patch removes the saving & restoring for now, something more
+    efficient might be found later on. It also adds a spu_flush_all_slbs(mm)
+    that can be used by the core mm code to flush the SLBs of all SPEs that
+    are running a given mm at the time of the flush.
+   =20
+    In order to do that, it adds a spinlock to the list of all SPEs and move
+    some bits & pieces from spufs to spu_base.c
+   =20
+    Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+commit 50b520d4efbce45281f58112789470ec7965fd33
+Author: Christoph Hellwig <hch@lst.de>
+Date:   Sat Mar 10 00:05:36 2007 +0100
+
+    [POWERPC] avoid SPU_ACTIVATE_NOWAKE optimization
+   =20
+    This optimization was added recently but is still buggy,
+    so back it out for now.
+   =20
+    Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+
+commit aa0ed2bdb663608d5e409faecff3e1e81a3d413a
+Author: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Date:   Sat Mar 10 00:05:35 2007 +0100
+
+    [POWERPC] spufs: fix possible memory corruption is spufs_mem_write
+   =20
+    Due to a buggy unsigned comparison, it was possible to write
+    beyond the end of the local store file in spufs under some
+    circumstances.
+   =20
+    This rewrites the buggy function to look more like
+    simple_copy_from_buffer.
+   =20
+    Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+    Cc: Ulrich Weigand <Ulrich.Weigand@de.ibm.com>
