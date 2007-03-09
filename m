@@ -1,20 +1,34 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <brking@linux.vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 16059DDE9F
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 00:07:10 +1100 (EST)
-Subject: Re: [PATCH] Fix atomicity of TIF update in flush_thread() for powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-In-Reply-To: <20070309024525.GB9462@Krystal>
-References: <20070309024525.GB9462@Krystal>
-Content-Type: text/plain
-Date: Fri, 09 Mar 2007 14:06:39 +0100
-Message-Id: <1173445599.24454.15.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, akpm@linux-foundation.org, paulus@samba.org,
-	linux-kernel@vger.kernel.org, mbligh@google.com
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ED7D6DDE48
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 01:54:38 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l29EtJ7F028142
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 09:55:19 -0500
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l29ErGCS295716
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 09:53:16 -0500
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l29ErG4t001592
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 09:53:16 -0500
+Message-ID: <45F174DB.20802@linux.vnet.ibm.com>
+Date: Fri, 09 Mar 2007 08:53:15 -0600
+From: Brian King <brking@linux.vnet.ibm.com>
+MIME-Version: 1.0
+To: Greg KH <greg@kroah.com>
+Subject: Re: [PATCH 1/3] pci: New PCI-E reset API
+References: <45F075AA.502@linux.vnet.ibm.com>
+	<20070309003257.GA31603@kroah.com>
+In-Reply-To: <20070309003257.GA31603@kroah.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: James.Bottomley@steeleye.com, linuxppc-dev@ozlabs.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, paulus@samba.org,
+	linux-scsi@vger.kernel.org
+Reply-To: brking@linux.vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,29 +38,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- .../...
+Greg KH wrote:
+> On Thu, Mar 08, 2007 at 02:44:26PM -0600, Brian King wrote:
+>> Greg,
+>>
+>> I saw you pulled this into your gregkh-2.6 tree. Does that mean
+>> it is queued for 2.6.22?
+> 
+> Yes it is.  Is that a problem?
 
-> Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
+No problem at all. 
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Thanks,
 
-Nice catch !
+Brian
 
-> --- a/arch/powerpc/kernel/process.c
-> +++ b/arch/powerpc/kernel/process.c
-> @@ -476,8 +476,13 @@ void flush_thread(void)
->  #ifdef CONFIG_PPC64
->  	struct thread_info *t = current_thread_info();
->  
-> -	if (t->flags & _TIF_ABI_PENDING)
-> -		t->flags ^= (_TIF_ABI_PENDING | _TIF_32BIT);
-> +	if (test_tsk_thread_flag(tsk, TIF_ABI_PENDING)) {
-> +		clear_tsk_thread_flag(tsk, TIF_ABI_PENDING);
-> +		if (test_tsk_thread_flag(tsk, TIF_32BIT))
-> +			clear_tsk_thread_flag(tsk, TIF_32BIT);
-> +		else
-> +			set_tsk_thread_flag(tsk, TIF_32BIT);
-> +	}
->  #endif
->  
->  	discard_lazy_cpu_state();
+-- 
+Brian King
+eServer Storage I/O
+IBM Linux Technology Center
