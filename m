@@ -1,40 +1,20 @@
-Return-Path: <Wei.Zhang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 6741CDDEC5
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 16:24:14 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l295OACK026526
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 22:24:10 -0700 (MST)
-Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
-	[10.192.129.221])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l295O8uH021596
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 23:24:09 -0600 (CST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] Better timer and RTC handling for 8641HPCN.
-Date: Fri, 9 Mar 2007 13:24:06 +0800
-Message-ID: <46B96294322F7D458F9648B60E15112C131B7D@zch01exm26.fsl.freescale.net>
-In-Reply-To: <DFDB8D99-C0C2-4884-95F8-98DC8C172A60@kernel.crashing.org>
-References: <1173293364.23776.128.camel@ld0161-tx32>
-	<150E096E-0304-4E48-985C-2F4D599196FE@kernel.crashing.org>
-	<20070307193438.GA30721@ld0162-tx32.am.freescale.net>
-	<CBC6BDF5-EB84-463C-A53C-1204CC396D5F@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C0DBE14@zch01exm26.fsl.freescale.net>
-	<011CC9FF-E609-43A1-BC66-C57CC6233B4B@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C0DBE68@zch01exm26.fsl.freescale.net>
-	<1AEDE9F3-E4D4-4BB8-A0C7-D7D82BE29A4C@kernel.crashing.org>
-	<1173381017.23776.211.camel@ld0161-tx32>
-	<1173381543.2968.10.camel@udp097531uds.am.freescale.net>
-	<82D7F244-A949-4DC9-8DE3-A91DD25CD50A@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C131B07@zch01exm26.fsl.freescale.net>
-	<53280A91-C40D-4E01-8DA3-D1D9B1C40A61@kernel.crashing.org>
-	<46B96294322F7D458F9648B60E15112C131B5F@zch01exm26.fsl.freescale.net>
-	<DFDB8D99-C0C2-4884-95F8-98DC8C172A60@kernel.crashing.org>
-From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Wang Haiying-r54964 <Haiying.Wang@freescale.com>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D997DDDEBA
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 17:03:21 +1100 (EST)
+In-Reply-To: <17904.60099.441388.484204@cargo.ozlabs.ibm.com>
+References: <17904.60099.441388.484204@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <FADB4DD7-E3D2-45C0-87ED-9F2AF081ECED@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: patches pushed to powerpc.git for-2.6.22 branch
+Date: Fri, 9 Mar 2007 00:02:18 -0600
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -44,28 +24,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->=20
-> >>> Please use 80.
-> >>> We reserve the first 16 ints for legacy 8259 interrupts. And we
-> >>> want the
-> >>> virq is the same value to hw-irq.
-> >>
-> >> Why?
-> >
-> > If the virq equals hw-irq, it's clear and simple to user.
->=20
-> I don't think that's a good reason to over allocate.
->=20
-> There's a reason we have virtual IRQs now.  Its specifically to deal =20
-> with issues like the 16 interrupts for 8259 and not have to do games =20
-> to offset IRQs.
->=20
-> If we needed create some debugfs or sysfs info that translates VIRQ =20
-> to HW irq
->=20
 
-I know that's the advantage of virtual IRQs. But in this platform, we
-want to fix up the virq to hwirq and let users know which irq is coming
-from which devices.
+On Mar 8, 2007, at 11:04 PM, Paul Mackerras wrote:
 
-- z
+> I have committed the patches listed below and pushed them to the
+> for-2.6.22 branch of the powerpc.git repository.
+>
+> If your patch isn't there and you think it should be, let me know.  I
+> am aware of Sylvain's uevent patches, but I haven't had time to review
+> them properly yet and neither has Ben H or anyone else, so I haven't
+> put them in.  There are some other patches that depend on those
+> (e.g. the ibmebus patches) so they haven't gone in yet either.
+>
+> Paul.
+
+[snip]
+
+> Segher Boessenkool (1):
+>       [POWERPC] PowerPC: select default image for Linkstation
+
+I pulled this into my 2.6.21 tree for you as it fixes a build issue.
+
+> Stephen Rothwell (8):
+>       [POWERPC] Allocate syscall number for sys_getcpu
+
+Should this go into 2.6.21 ?
+
+>       [POWERPC] Make ppc64_defconfig without CONFIG_PPC_PSERIES build
+>       [POWERPC] Create and use set_pci_dma_ops
+>       [POWERPC] Create and use get_pci_dma_ops()
+>       [POWERPC] Make iSeries build without CONFIG_PCI
+>       [POWERPC] Allow pSeries to build without CONFIG_PCI
+>       [POWERPC] Allow xmon to build without CONFIG_DEBUG_BUGVERBOSE
+>       [POWERPC] Make find_and_init_pbs() a void function
+>
+> Stuart Yoder (3):
+>       [POWERPC] Remove interrupt-controller as a property under / 
+> chosen
+>       [POWERPC] Remove unused, undocumented #cpus property from  
+> cpus node
+>       [POWERPC] Update interrupt info in booting-without-of.txt
+>
+> Zang Roy-r61911 (1):
+>       [POWERPC] Remove fixed setting of ROOT_DEV for 7448HPC2  
+> platforms
+
+I'll drop this from my tree now.
+
+- k
