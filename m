@@ -1,30 +1,11 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 8E0B6DDEBA
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 16:11:29 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l295BPCe024355
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 22:11:25 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l295BNcK005567
-	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 23:11:24 -0600 (CST)
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="US-ASCII"
-Subject: RE: [PATCH] Move 8641 PCI-Express to arch/powerpc/sysdev/fsl_pcie.c.
-Date: Fri, 9 Mar 2007 13:11:22 +0800
-Message-ID: <7EA18FDD2DC2154AA3BD6D2F22A62A0E5F6A32@zch01exm23.fsl.freescale.net>
-In-Reply-To: <A74C51F0-4BAE-4B6D-BF16-E911BAC884DC@kernel.crashing.org>
-References: <1173300525.23776.136.camel@ld0161-tx32>
-	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5F6A11@zch01exm23.fsl.freescale.net>
-	<20303D6D-C19A-4BDB-B540-9994AC538642@kernel.crashing.org>
-	<7EA18FDD2DC2154AA3BD6D2F22A62A0E5F6A16@zch01exm23.fsl.freescale.net>
-	<A74C51F0-4BAE-4B6D-BF16-E911BAC884DC@kernel.crashing.org>
-From: "Zang Roy-r61911" <tie-fei.zang@freescale.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17904.60099.441388.484204@cargo.ozlabs.ibm.com>
+Date: Fri, 9 Mar 2007 16:04:03 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: linuxppc-dev@ozlabs.org
+Subject: patches pushed to powerpc.git for-2.6.22 branch
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,60 +15,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I have committed the patches listed below and pushed them to the
+for-2.6.22 branch of the powerpc.git repository.
 
-> On Mar 8, 2007, at 9:53 PM, Zang Roy-r61911 wrote:
->=20
-> >>
-> >> On Mar 8, 2007, at 9:32 PM, Zang Roy-r61911 wrote:
-> >>
-> >>>> This move sets the stage for the use of generic PCI
-> >> Express code in
-> >>>> 85xx and 86xx parts from FSL.  Subsequent patches for
-> >>>> 8548 and 8544 will be able to use this shared code.
-> >>>>
-> >>>> Signed-off-by: Jon Loeliger <jdl@freescale.com>
-> >>>> Acked-by: Andy Fleming <afleming@freescale.com>
-> >>>> ---
-> >>>>  arch/powerpc/Kconfig                               |    5 +++++
-> >>>>  arch/powerpc/platforms/86xx/Makefile               |    2 +-
-> >>>>  arch/powerpc/sysdev/Makefile                       |    1 +
-> >>>>  .../86xx/mpc86xx_pcie.c =3D> sysdev/fsl_pcie.c}      |    2 --
-> >>>>  4 files changed, 7 insertions(+), 3 deletions(-)  rename=20
-> >>>> arch/powerpc/{platforms/86xx/mpc86xx_pcie.c =3D> =
-sysdev/fsl_pcie.c}
-> >>>> (100%)
-> >>>>
-> >>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig index=20
-> >>>> 6dfbd52..f68de20 100644
-> >>>> --- a/arch/powerpc/Kconfig
-> >>>> +++ b/arch/powerpc/Kconfig
-> >>>> @@ -168,6 +168,7 @@ config PPC_86xx
-> >>>>  	bool "Freescale 86xx"
-> >>>>  	select 6xx
-> >>>>  	select FSL_SOC
-> >>>> +	select FSL_PCIE
-> >>>>  	select PPC_FPU
-> >>>>  	select ALTIVEC
-> >>>>  	help
-> >>>> @@ -1022,6 +1023,10 @@ config SBUS
-> >>>>  config FSL_SOC
-> >>>>  	bool
-> >>>>
-> >>>> +config FSL_PCIE
-> >>>> +	bool
-> >>>> +	depends on PPC_86xx
-> >>>> +
-> >>> How about 8548 with pcie?
-> >>
-> >> There isn't any in tree 85xx user of PCIe at this point.
-> > No!
-> > At lease my original serial patches include the pcie=20
-> support for 8548.
-> > Roy
->=20
-> Which patches?  I'm not seeing any code for 8548. Can you=20
-> point at something specific in the tree?
+If your patch isn't there and you think it should be, let me know.  I
+am aware of Sylvain's uevent patches, but I haven't had time to review
+them properly yet and neither has Ben H or anyone else, so I haven't
+put them in.  There are some other patches that depend on those
+(e.g. the ibmebus patches) so they haven't gone in yet either.
 
-It does not in the current tree.
-I will provide the corresponding patches ASAP.
-Roy
+Paul.
+
+ Documentation/powerpc/booting-without-of.txt      |  134 ++++++++++++++-------
+ arch/powerpc/Kconfig                              |    5 -
+ arch/powerpc/boot/dts/kuroboxHD.dts               |    1 
+ arch/powerpc/boot/dts/kuroboxHG.dts               |    1 
+ arch/powerpc/boot/dts/lite5200.dts                |    1 
+ arch/powerpc/boot/dts/lite5200b.dts               |    1 
+ arch/powerpc/boot/dts/mpc7448hpc2.dts             |    1 
+ arch/powerpc/boot/dts/mpc8272ads.dts              |    1 
+ arch/powerpc/boot/dts/mpc8313erdb.dts             |    1 
+ arch/powerpc/boot/dts/mpc832x_mds.dts             |    1 
+ arch/powerpc/boot/dts/mpc8349emitx.dts            |    1 
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts          |    1 
+ arch/powerpc/boot/dts/mpc834x_mds.dts             |    1 
+ arch/powerpc/boot/dts/mpc836x_mds.dts             |    1 
+ arch/powerpc/boot/dts/mpc8540ads.dts              |    1 
+ arch/powerpc/boot/dts/mpc8541cds.dts              |    1 
+ arch/powerpc/boot/dts/mpc8548cds.dts              |    1 
+ arch/powerpc/boot/dts/mpc8555cds.dts              |    1 
+ arch/powerpc/boot/dts/mpc8560ads.dts              |    1 
+ arch/powerpc/boot/dts/mpc8568mds.dts              |    1 
+ arch/powerpc/boot/dts/mpc8641_hpcn.dts            |    1 
+ arch/powerpc/boot/dts/mpc866ads.dts               |    1 
+ arch/powerpc/boot/dts/mpc885ads.dts               |    1 
+ arch/powerpc/kernel/Makefile                      |    4 -
+ arch/powerpc/kernel/cputable.c                    |   12 ++
+ arch/powerpc/kernel/head_64.S                     |    2 
+ arch/powerpc/kernel/iommu.c                       |   10 ++
+ arch/powerpc/kernel/pci_64.c                      |   14 ++
+ arch/powerpc/kernel/process.c                     |   43 +++++--
+ arch/powerpc/kernel/prom.c                        |   26 ++++
+ arch/powerpc/kernel/rtas_pci.c                    |    4 -
+ arch/powerpc/kernel/setup-common.c                |   22 ---
+ arch/powerpc/lib/locks.c                          |    4 +
+ arch/powerpc/mm/lmb.c                             |    4 +
+ arch/powerpc/platforms/cell/iommu.c               |    8 +
+ arch/powerpc/platforms/celleb/iommu.c             |    4 -
+ arch/powerpc/platforms/embedded6xx/Kconfig        |    1 
+ arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |   10 --
+ arch/powerpc/platforms/iseries/iommu.c            |    2 
+ arch/powerpc/platforms/iseries/irq.c              |    3 
+ arch/powerpc/platforms/pasemi/iommu.c             |    4 -
+ arch/powerpc/platforms/ps3/mm.c                   |    2 
+ arch/powerpc/platforms/ps3/system-bus.c           |    2 
+ arch/powerpc/platforms/pseries/Makefile           |    5 -
+ arch/powerpc/platforms/pseries/iommu.c            |   57 +++++----
+ arch/powerpc/platforms/pseries/setup.c            |    5 +
+ arch/powerpc/sysdev/dart_iommu.c                  |    4 -
+ arch/powerpc/xmon/xmon.c                          |    4 +
+ drivers/macintosh/mac_hid.c                       |    2 
+ drivers/ps3/ps3av.c                               |    9 +
+ drivers/ps3/sys-manager.c                         |    6 +
+ drivers/ps3/vuart.c                               |    2 
+ drivers/video/Kconfig                             |    2 
+ include/asm-powerpc/current.h                     |    1 
+ include/asm-powerpc/edac.h                        |   40 ++++++
+ include/asm-powerpc/pci.h                         |   14 ++
+ include/asm-powerpc/ppc-pci.h                     |    9 +
+ include/asm-powerpc/prom.h                        |    1 
+ include/asm-powerpc/unistd.h                      |    3 
+ 59 files changed, 334 insertions(+), 171 deletions(-)
+ create mode 100644 include/asm-powerpc/edac.h
+
+Adrian Bunk (1):
+      [POWERPC] Unexport mac_hid_mouse_emulate_buttons
+
+Andrew Morton (1):
+      [POWERPC] Fix compile error in prom.h
+
+Dave Jiang (1):
+      [POWERPC] EDAC ECC software scrubber
+
+David Gibson (2):
+      [POWERPC] Allow duplicate lmb_reserve() calls
+      [POWERPC] Automatically lmb_reserve() initrd
+
+Geert Uytterhoeven (1):
+      [POWERPC] ps3: always make sure we're running on a PS3
+
+Jake Moilanen (2):
+      [POWERPC] DMA 4GB boundary protection
+      [POWERPC] 750CL cputable entry
+
+MOKUNO Masakazu (1):
+      [POWERPC] Remove some redundant isync instructions
+
+Olaf Hering (1):
+      [POWERPC] Include stddef.h in asm-powerpc/current.h to get offsetof
+
+Paul Mackerras (1):
+      [POWERPC] Harden validate_sp against stack corruption
+
+Segher Boessenkool (1):
+      [POWERPC] PowerPC: select default image for Linkstation
+
+Stephen Rothwell (8):
+      [POWERPC] Allocate syscall number for sys_getcpu
+      [POWERPC] Make ppc64_defconfig without CONFIG_PPC_PSERIES build
+      [POWERPC] Create and use set_pci_dma_ops
+      [POWERPC] Create and use get_pci_dma_ops()
+      [POWERPC] Make iSeries build without CONFIG_PCI
+      [POWERPC] Allow pSeries to build without CONFIG_PCI
+      [POWERPC] Allow xmon to build without CONFIG_DEBUG_BUGVERBOSE
+      [POWERPC] Make find_and_init_pbs() a void function
+
+Stuart Yoder (3):
+      [POWERPC] Remove interrupt-controller as a property under /chosen
+      [POWERPC] Remove unused, undocumented #cpus property from cpus node
+      [POWERPC] Update interrupt info in booting-without-of.txt
+
+Zang Roy-r61911 (1):
+      [POWERPC] Remove fixed setting of ROOT_DEV for 7448HPC2 platforms
