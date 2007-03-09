@@ -1,17 +1,33 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id BE101DDEB7
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D3C1DDDEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri,  9 Mar 2007 19:49:57 +1100 (EST)
-Date: Fri, 9 Mar 2007 09:49:54 +0100
-From: Domen Puncer <domen.puncer@telargo.com>
+	Fri,  9 Mar 2007 22:35:20 +1100 (EST)
+Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
+	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l29BZ7aD062124
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>; Fri, 9 Mar 2007 12:35:12 +0100 (CET)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1HPdNL-0002K0-7l
+	for linuxppc-embedded@ozlabs.org; Fri, 09 Mar 2007 12:35:07 +0100
+Date: Fri, 9 Mar 2007 12:35:07 +0100
+From: Matthias Fechner <idefix@fechner.net>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] lite5200(b) dts: mscan.1 irq
-Message-ID: <20070309084954.GA14658@moe.telargo.com>
-References: <20070306095139.GZ4397@moe.telargo.com>
+Subject: Re: Howto read I2C on MPC5200 Lite
+Message-ID: <20070309113506.GB6726@server.idefix.lan>
+References: <20070307122430.GA73298@server.idefix.lan>
+	<4b73d43f0703071317o7ae5e531s5eb4b390d41a1b88@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070306095139.GZ4397@moe.telargo.com>
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <4b73d43f0703071317o7ae5e531s5eb4b390d41a1b88@mail.gmail.com>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,49 +38,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
+Hello John,
 
-Found another one. ;-)
+* John Rigby <jrigby@freescale.com> [07-03-07 14:17]:
+> On a stock lite5200b the only thing that shows up is a serial
+> eeprom at address 0x50.
 
-Btw. I forward ported Freescale's mscan patch to latest
-peak-linux-driver. Should I send it somewhere? Where to?
+thx a lot, that tool helped me a lot.
+I have written a very small c-program to access the I2C bus to read the
+temperature of my MAX6633 and convert it to °C.
 
---
-Fix mscan irq number.
-Tested with peak-linux-driver + patch from Freescale in
-loopback mode.
+That worked fine, but after reading the value some time, the I2C bus
+is dead. The kernel says:
+i2c_adapter i2c-1: ioctl, cmd=0x705, arg=0x7feaf8ec
+i2c_adapter i2c-1: ioctl, cmd=0x706, arg=0x40
+i2c_adapter i2c-1: ioctl, cmd=0x720, arg=0x7feaf8f0
+i2c_adapter i2c-1: master_xfer[0] W, addr=0x40, len=1
+i2c_adapter i2c-1: master_xfer[1] R, addr=0x40, len=2
+I2C: timeout
 
+Is that maybe a bug in the I2C driver (i2c-mpc) or is my programm
+faulty?
+If it helps I can attach the programm.
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+Best regards,
+Matthias
 
----
- arch/powerpc/boot/dts/lite5200.dts  |    2 +-
- arch/powerpc/boot/dts/lite5200b.dts |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+-- 
 
-Index: grant.git/arch/powerpc/boot/dts/lite5200.dts
-===================================================================
---- grant.git.orig/arch/powerpc/boot/dts/lite5200.dts
-+++ grant.git/arch/powerpc/boot/dts/lite5200.dts
-@@ -167,7 +167,7 @@
- 			device_type = "mscan";
- 			compatible = "mpc5200-mscan";
- 			cell-index = <1>;
--			interrupts = <1 12 0>;
-+			interrupts = <2 12 0>;
- 			interrupt-parent = <500>;
- 			reg = <980 80>;
- 		};
-Index: grant.git/arch/powerpc/boot/dts/lite5200b.dts
-===================================================================
---- grant.git.orig/arch/powerpc/boot/dts/lite5200b.dts
-+++ grant.git/arch/powerpc/boot/dts/lite5200b.dts
-@@ -167,7 +167,7 @@
- 			device_type = "mscan";
- 			compatible = "mpc5200b-mscan\0mpc5200-mscan";
- 			cell-index = <1>;
--			interrupts = <1 12 0>;
-+			interrupts = <2 12 0>;
- 			interrupt-parent = <500>;
- 			reg = <980 80>;
- 		};
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
