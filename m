@@ -1,22 +1,15 @@
-Return-Path: <gregkh@suse.de>
-Received: from mx2.suse.de (mx2.suse.de [195.135.220.15])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx2.suse.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 74F80DDE33
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 11:34:52 +1100 (EST)
-Date: Thu, 8 Mar 2007 16:32:57 -0800
-From: Greg KH <greg@kroah.com>
-To: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: [PATCH 1/3] pci: New PCI-E reset API
-Message-ID: <20070309003257.GA31603@kroah.com>
-References: <45F075AA.502@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45F075AA.502@linux.vnet.ibm.com>
-Cc: James.Bottomley@steeleye.com, linuxppc-dev@ozlabs.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, paulus@samba.org,
-	linux-scsi@vger.kernel.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A7798DDEAB
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 11:59:45 +1100 (EST)
+Date: Fri, 9 Mar 2007 11:54:57 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 1/3] [POWERPC] allocate syscall number for sys_getcpu
+Message-Id: <20070309115457.611e4c99.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,14 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 08, 2007 at 02:44:26PM -0600, Brian King wrote:
-> Greg,
-> 
-> I saw you pulled this into your gregkh-2.6 tree. Does that mean
-> it is queued for 2.6.22?
 
-Yes it is.  Is that a problem?
+I forgot to do this when wiring up the syscall.
 
-thanks,
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/unistd.h |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-greg k-h
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/asm-powerpc/unistd.h b/include/asm-powerpc/unistd.h
+index 0ae954e..bcc21bf 100644
+--- a/include/asm-powerpc/unistd.h
++++ b/include/asm-powerpc/unistd.h
+@@ -324,10 +324,11 @@
+ #define __NR_get_robust_list	299
+ #define __NR_set_robust_list	300
+ #define __NR_move_pages		301
++#define __NR_getcpu		302
+ 
+ #ifdef __KERNEL__
+ 
+-#define __NR_syscalls		302
++#define __NR_syscalls		303
+ 
+ #define __NR__exit __NR_exit
+ #define NR_syscalls	__NR_syscalls
+-- 
+1.5.0.3
