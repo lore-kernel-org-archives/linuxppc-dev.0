@@ -1,11 +1,40 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 6741CDDEC5
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 16:24:14 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l295OACK026526
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 22:24:10 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l295O8uH021596
+	for <linuxppc-dev@ozlabs.org>; Thu, 8 Mar 2007 23:24:09 -0600 (CST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17904.60099.441388.484204@cargo.ozlabs.ibm.com>
-Date: Fri, 9 Mar 2007 16:04:03 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: linuxppc-dev@ozlabs.org
-Subject: patches pushed to powerpc.git for-2.6.22 branch
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] Better timer and RTC handling for 8641HPCN.
+Date: Fri, 9 Mar 2007 13:24:06 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C131B7D@zch01exm26.fsl.freescale.net>
+In-Reply-To: <DFDB8D99-C0C2-4884-95F8-98DC8C172A60@kernel.crashing.org>
+References: <1173293364.23776.128.camel@ld0161-tx32>
+	<150E096E-0304-4E48-985C-2F4D599196FE@kernel.crashing.org>
+	<20070307193438.GA30721@ld0162-tx32.am.freescale.net>
+	<CBC6BDF5-EB84-463C-A53C-1204CC396D5F@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C0DBE14@zch01exm26.fsl.freescale.net>
+	<011CC9FF-E609-43A1-BC66-C57CC6233B4B@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C0DBE68@zch01exm26.fsl.freescale.net>
+	<1AEDE9F3-E4D4-4BB8-A0C7-D7D82BE29A4C@kernel.crashing.org>
+	<1173381017.23776.211.camel@ld0161-tx32>
+	<1173381543.2968.10.camel@udp097531uds.am.freescale.net>
+	<82D7F244-A949-4DC9-8DE3-A91DD25CD50A@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C131B07@zch01exm26.fsl.freescale.net>
+	<53280A91-C40D-4E01-8DA3-D1D9B1C40A61@kernel.crashing.org>
+	<46B96294322F7D458F9648B60E15112C131B5F@zch01exm26.fsl.freescale.net>
+	<DFDB8D99-C0C2-4884-95F8-98DC8C172A60@kernel.crashing.org>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Wang Haiying-r54964 <Haiying.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,125 +44,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have committed the patches listed below and pushed them to the
-for-2.6.22 branch of the powerpc.git repository.
+>=20
+> >>> Please use 80.
+> >>> We reserve the first 16 ints for legacy 8259 interrupts. And we
+> >>> want the
+> >>> virq is the same value to hw-irq.
+> >>
+> >> Why?
+> >
+> > If the virq equals hw-irq, it's clear and simple to user.
+>=20
+> I don't think that's a good reason to over allocate.
+>=20
+> There's a reason we have virtual IRQs now.  Its specifically to deal =20
+> with issues like the 16 interrupts for 8259 and not have to do games =20
+> to offset IRQs.
+>=20
+> If we needed create some debugfs or sysfs info that translates VIRQ =20
+> to HW irq
+>=20
 
-If your patch isn't there and you think it should be, let me know.  I
-am aware of Sylvain's uevent patches, but I haven't had time to review
-them properly yet and neither has Ben H or anyone else, so I haven't
-put them in.  There are some other patches that depend on those
-(e.g. the ibmebus patches) so they haven't gone in yet either.
+I know that's the advantage of virtual IRQs. But in this platform, we
+want to fix up the virq to hwirq and let users know which irq is coming
+from which devices.
 
-Paul.
-
- Documentation/powerpc/booting-without-of.txt      |  134 ++++++++++++++-------
- arch/powerpc/Kconfig                              |    5 -
- arch/powerpc/boot/dts/kuroboxHD.dts               |    1 
- arch/powerpc/boot/dts/kuroboxHG.dts               |    1 
- arch/powerpc/boot/dts/lite5200.dts                |    1 
- arch/powerpc/boot/dts/lite5200b.dts               |    1 
- arch/powerpc/boot/dts/mpc7448hpc2.dts             |    1 
- arch/powerpc/boot/dts/mpc8272ads.dts              |    1 
- arch/powerpc/boot/dts/mpc8313erdb.dts             |    1 
- arch/powerpc/boot/dts/mpc832x_mds.dts             |    1 
- arch/powerpc/boot/dts/mpc8349emitx.dts            |    1 
- arch/powerpc/boot/dts/mpc8349emitxgp.dts          |    1 
- arch/powerpc/boot/dts/mpc834x_mds.dts             |    1 
- arch/powerpc/boot/dts/mpc836x_mds.dts             |    1 
- arch/powerpc/boot/dts/mpc8540ads.dts              |    1 
- arch/powerpc/boot/dts/mpc8541cds.dts              |    1 
- arch/powerpc/boot/dts/mpc8548cds.dts              |    1 
- arch/powerpc/boot/dts/mpc8555cds.dts              |    1 
- arch/powerpc/boot/dts/mpc8560ads.dts              |    1 
- arch/powerpc/boot/dts/mpc8568mds.dts              |    1 
- arch/powerpc/boot/dts/mpc8641_hpcn.dts            |    1 
- arch/powerpc/boot/dts/mpc866ads.dts               |    1 
- arch/powerpc/boot/dts/mpc885ads.dts               |    1 
- arch/powerpc/kernel/Makefile                      |    4 -
- arch/powerpc/kernel/cputable.c                    |   12 ++
- arch/powerpc/kernel/head_64.S                     |    2 
- arch/powerpc/kernel/iommu.c                       |   10 ++
- arch/powerpc/kernel/pci_64.c                      |   14 ++
- arch/powerpc/kernel/process.c                     |   43 +++++--
- arch/powerpc/kernel/prom.c                        |   26 ++++
- arch/powerpc/kernel/rtas_pci.c                    |    4 -
- arch/powerpc/kernel/setup-common.c                |   22 ---
- arch/powerpc/lib/locks.c                          |    4 +
- arch/powerpc/mm/lmb.c                             |    4 +
- arch/powerpc/platforms/cell/iommu.c               |    8 +
- arch/powerpc/platforms/celleb/iommu.c             |    4 -
- arch/powerpc/platforms/embedded6xx/Kconfig        |    1 
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |   10 --
- arch/powerpc/platforms/iseries/iommu.c            |    2 
- arch/powerpc/platforms/iseries/irq.c              |    3 
- arch/powerpc/platforms/pasemi/iommu.c             |    4 -
- arch/powerpc/platforms/ps3/mm.c                   |    2 
- arch/powerpc/platforms/ps3/system-bus.c           |    2 
- arch/powerpc/platforms/pseries/Makefile           |    5 -
- arch/powerpc/platforms/pseries/iommu.c            |   57 +++++----
- arch/powerpc/platforms/pseries/setup.c            |    5 +
- arch/powerpc/sysdev/dart_iommu.c                  |    4 -
- arch/powerpc/xmon/xmon.c                          |    4 +
- drivers/macintosh/mac_hid.c                       |    2 
- drivers/ps3/ps3av.c                               |    9 +
- drivers/ps3/sys-manager.c                         |    6 +
- drivers/ps3/vuart.c                               |    2 
- drivers/video/Kconfig                             |    2 
- include/asm-powerpc/current.h                     |    1 
- include/asm-powerpc/edac.h                        |   40 ++++++
- include/asm-powerpc/pci.h                         |   14 ++
- include/asm-powerpc/ppc-pci.h                     |    9 +
- include/asm-powerpc/prom.h                        |    1 
- include/asm-powerpc/unistd.h                      |    3 
- 59 files changed, 334 insertions(+), 171 deletions(-)
- create mode 100644 include/asm-powerpc/edac.h
-
-Adrian Bunk (1):
-      [POWERPC] Unexport mac_hid_mouse_emulate_buttons
-
-Andrew Morton (1):
-      [POWERPC] Fix compile error in prom.h
-
-Dave Jiang (1):
-      [POWERPC] EDAC ECC software scrubber
-
-David Gibson (2):
-      [POWERPC] Allow duplicate lmb_reserve() calls
-      [POWERPC] Automatically lmb_reserve() initrd
-
-Geert Uytterhoeven (1):
-      [POWERPC] ps3: always make sure we're running on a PS3
-
-Jake Moilanen (2):
-      [POWERPC] DMA 4GB boundary protection
-      [POWERPC] 750CL cputable entry
-
-MOKUNO Masakazu (1):
-      [POWERPC] Remove some redundant isync instructions
-
-Olaf Hering (1):
-      [POWERPC] Include stddef.h in asm-powerpc/current.h to get offsetof
-
-Paul Mackerras (1):
-      [POWERPC] Harden validate_sp against stack corruption
-
-Segher Boessenkool (1):
-      [POWERPC] PowerPC: select default image for Linkstation
-
-Stephen Rothwell (8):
-      [POWERPC] Allocate syscall number for sys_getcpu
-      [POWERPC] Make ppc64_defconfig without CONFIG_PPC_PSERIES build
-      [POWERPC] Create and use set_pci_dma_ops
-      [POWERPC] Create and use get_pci_dma_ops()
-      [POWERPC] Make iSeries build without CONFIG_PCI
-      [POWERPC] Allow pSeries to build without CONFIG_PCI
-      [POWERPC] Allow xmon to build without CONFIG_DEBUG_BUGVERBOSE
-      [POWERPC] Make find_and_init_pbs() a void function
-
-Stuart Yoder (3):
-      [POWERPC] Remove interrupt-controller as a property under /chosen
-      [POWERPC] Remove unused, undocumented #cpus property from cpus node
-      [POWERPC] Update interrupt info in booting-without-of.txt
-
-Zang Roy-r61911 (1):
-      [POWERPC] Remove fixed setting of ROOT_DEV for 7448HPC2 platforms
+- z
