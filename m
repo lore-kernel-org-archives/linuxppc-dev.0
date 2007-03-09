@@ -1,37 +1,32 @@
-Return-Path: <FENKES@de.ibm.com>
-Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C8BD6DDEC7
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 04:40:41 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate2.de.ibm.com (8.13.8/8.13.8) with ESMTP id l29HebYP080622
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 17:40:37 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l29HeanZ1851422
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 18:40:36 +0100
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l29Hea7E010564
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 18:40:36 +0100
-In-Reply-To: <1173217902.15589.33.camel@sinatra.austin.ibm.com>
-To: John Rose <johnrose@austin.ibm.com>
-MIME-Version: 1.0
-Subject: Re: [PATCH 1/2] ibmebus: dynamic addiiton/removal of adapters, uevent,
-	root device based on struct device
-From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OFAC7B9901.69441F4F-ONC1257299.005F175A-C1257299.006117C1@de.ibm.com>
-Date: Fri, 9 Mar 2007 18:40:35 +0100
-Content-Type: text/plain; charset="US-ASCII"
-Cc: Paul Mackerras <pmac@au1.ibm.com>,
-	Stefan Roscher <stefan.roscher@de.ibm.com>,
-	lkml <linux-kernel@vger.kernel.org>,
-	External List <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
-	Hoang-Nam Nguyen <hnguyen@linux.vnet.ibm.com>,
-	Me Notes <johnrose@us.ibm.com>
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 919AADDEC7
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 04:42:06 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l29Hg2RS021892
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 12:42:02 -0500
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l29Hg2xs542632
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 10:42:02 -0700
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l29Hg2gb014130
+	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 10:42:02 -0700
+Subject: Re: [PATCH 14/15] Early serial debug support for PPC44x
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <1173383051.4861.27.camel@zod.rchland.ibm.com>
+References: <20070305032453.6B56ADDF1E@ozlabs.org>
+	<1173383051.4861.27.camel@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Fri, 09 Mar 2007 11:42:01 -0600
+Message-Id: <1173462122.4861.46.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,24 +36,54 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-John Rose <johnrose@austin.ibm.com> wrote on 06.03.2007 22:51:42:
+On Thu, 2007-03-08 at 13:44 -0600, Josh Boyer wrote:
+> On Mon, 2007-03-05 at 14:24 +1100, David Gibson wrote:
+> > 
+> > +config PPC_EARLY_DEBUG_44x_PHYSLOW
+> > +	hex
+> > +	depends PPC_EARLY_DEBUG_44x
+> > +	default "0x40000200"
+> > +
+> > +config PPC_EARLY_DEBUG_44x_PHYSHIGH
+> > +	hex
+> > +	depends PPC_EARLY_DEBUG_44x
+> > +	default "0x1"
+> > +
+> 
+> These two options need to have some kind of description string next to
+> hex otherwise Kconfig will not allow you to set them.  I noticed this
+> while playing with bamboo.  So something like:
+> 
+> config PPC_EARLY_DEBUG_44x_PHYSLOW
+> 	hex "The low 32bits of the UART address"
+> 
+> That will allow you to change the values from the default.
 
-> We are seeing several build errors when attempting to apply this to
-> 2.6.21-rc2:
+And here's a patch to do that.
 
-Hot Damn! I did my test compiles with gcc 3.3, and you obviously compiled 
-with gcc 4.1 - I only got a warning where you got an error, and that 
-warning escaped me. Sorry about that.
+Fix the PPC_EARLY_DEBUG_44x options to allow setting something other
+than the default.
 
-I fixed the error and all warnings and will post a fresh set of patches 
-right after this reply. If you could give the new patch another go and ack 
-it if it works, I would be delighted! =)
-
-Thanks for pointing this out!
-  Joachim
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
 
 ---
-Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
-IBM Deutschland Entwicklung GmbH  --  Dept. 3627 (I/O Firmware Dev. 2)
-Schoenaicher Strasse 220  --  71032 Boeblingen  --  Germany
-eMail: fenkes@de.ibm.com  --  Phone: +49 7031 16 1239 
+ arch/powerpc/Kconfig.debug |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+--- linux-2.6.orig/arch/powerpc/Kconfig.debug
++++ linux-2.6/arch/powerpc/Kconfig.debug
+@@ -205,12 +205,12 @@ config PPC_EARLY_DEBUG_44x
+ endchoice
+ 
+ config PPC_EARLY_DEBUG_44x_PHYSLOW
+-	hex
++	hex "Low 32bits of UART address"
+ 	depends PPC_EARLY_DEBUG_44x
+ 	default "0x40000200"
+ 
+ config PPC_EARLY_DEBUG_44x_PHYSHIGH
+-	hex
++	hex "ERPN of UART address"
+ 	depends PPC_EARLY_DEBUG_44x
+ 	default "0x1"
+ 
