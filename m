@@ -1,14 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17905.52447.829667.16759@cargo.ozlabs.ibm.com>
-Date: Sat, 10 Mar 2007 08:08:47 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Re: Please pull powerpc.git merge branch
-In-Reply-To: <17903.35471.818872.293459@cargo.ozlabs.ibm.com>
-References: <17903.35471.818872.293459@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 042F0DDED0
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 09:23:06 +1100 (EST)
+In-Reply-To: <1173471495.23776.241.camel@ld0161-tx32>
+References: <1173471495.23776.241.camel@ld0161-tx32>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <891B901D-FC5E-4AFC-9C79-EFAEFD9C59DB@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: The transparent PCI-Express bridge problem
+Date: Fri, 9 Mar 2007 16:22:01 -0600
+To: Jon Loeliger <jdl@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,64 +24,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
 
-I wrote:
+On Mar 9, 2007, at 2:18 PM, Jon Loeliger wrote:
 
-> Please do:
-> 
-> git pull \
-> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
-> 
-> There are 6 commits there.  Three of them fix compile warnings, one is
-> a bug fix, one works around a problem on rev 1.0 PPC970MP processors,
-> and one adds a missing newline in some help text.
+> Kumar,
+>
+> Here is a lspci -xv from the 8544 DS board.  This is
+> the same board as the 8641 HPCN board, so they both have
+> the same "root complex is really a transparent bridge"
+> problem that needs to be resolved.
+>
+> Please let me know if you need further or different info here.
+>
+> HTH,
+> jdl
+>
+>
+>
+>
+> # lspci -xv
+> 00:00.0 Power PC: Unknown device 1957:0030 (rev 10)
+>         !!! Invalid class 0b20 for header type 01
+>         Flags: bus master, fast devsel, latency 0
+>         Bus: primary=00, secondary=01, subordinate=02, sec-latency=0
+>         I/O behind bridge: 00000000-00000fff
+>         Memory behind bridge: 00000000-000fffff
+>         Prefetchable memory behind bridge:  
+> 0000000000000000-0000000000000000
+>         Capabilities: [44] Power Management version 2
+>         Capabilities: [4c] #10 [0041]
+> 00: 57 19 30 00 06 01 10 00 10 00 20 0b 00 00 01 00
+> 10: 00 00 00 00 00 00 00 00 00 01 02 00 00 00 00 20
+> 20: 00 00 00 00 01 00 01 00 00 00 00 00 00 00 00 00
+> 30: 00 00 00 00 44 00 00 00 00 00 00 00 00 00 00 00
 
-I have pulled 3 more commits from Kumar Gala and pushed them out, so
-when you do the pull you'll see the commits below in addition to the
-ones I listed previously.
+(Mainly responding for anyone else reading this)
 
-Thanks,
-Paul.
+After some discussion, and reading of the PCI-Express specs the issue  
+is that the class information is not being set properly.  Try a quirk  
+like the following to fixup and see what happens.
 
- arch/powerpc/platforms/83xx/mpc834x_mds.c  |    8 ++++----
- arch/powerpc/platforms/85xx/Kconfig        |    1 +
- arch/powerpc/platforms/embedded6xx/Kconfig |    1 +
- 3 files changed, 6 insertions(+), 4 deletions(-)
+static void __devinit early_fsl_pcie(struct pci_dev *dev)
+{
+         dev->class &= 0xff;
+         dev->class |= (PCI_CLASS_BRIDGE_PCI << 8)
+}
 
-commit f194bda4ce7e71cc95535f494a4a5515cd91ed85
-Author: Kumar Gala <galak@kernel.crashing.org>
-Date:   Wed Mar 7 23:14:57 2007 -0600
+DECLARE_PCI_FIXUP_EARLY(0x1957, 0x0030, early_fsl_pcie);
 
-    [POWERPC] 85xx: Enable CONFIG_SERIAL_8250_SHARE_IRQ
-    
-    On chip 8250 UARTs share an interrupts on existing 85xx processors.
-    
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+I think this may resolve the following issues:
+* Do not skip PCI Express to PCI bridge when scanning OF node
+* All the driver/pci/probe.c changes
 
-commit 49fdf3f078f8f5d84ecd10d62624c9158e755ec7
-Author: Segher Boessenkool <segher@kernel.crashing.org>
-Date:   Thu Feb 22 23:52:02 2007 +0100
-
-    [POWERPC] Select u-image as default image for Linkstation
-    
-    Fixes image build error:
-    
-    ln: accessing `arch/powerpc/boot/zImage': No such file or directory
-    make[1]: *** [arch/powerpc/boot/zImage] Error 1
-    make: *** [zImage] Error 2
-    
-    Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
-    Acked-by: G. Liakhovetski <g.liakhovetski@gmx.de>
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
-
-commit aea12b75480c0842028bd1bfe0146d9148db2298
-Author: Li Yang <leoli@freescale.com>
-Date:   Tue Mar 6 17:11:06 2007 +0800
-
-    [POWERPC] 83xx: Minor fixes for 834x_mds USB setup code
-    
-    Fix broken node manipulating code, and clarify inaccurate comment.
-    
-    Signed-off-by: Li Yang <leoli@freescale.com>
-    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+- k
