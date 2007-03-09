@@ -1,23 +1,21 @@
-Return-Path: <glikely@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id C1050DDEBC
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 16317DDEC6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Mar 2007 03:07:01 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so971018nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 09 Mar 2007 08:06:58 -0800 (PST)
-Message-ID: <528646bc0703090806x70cc3faak1eb3a93acd065f88@mail.gmail.com>
-Date: Fri, 9 Mar 2007 09:06:57 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH] lite5200(b) dts: mscan.1 irq
-In-Reply-To: <528646bc0703090800v4261495ape7e6f3ee18deaea2@mail.gmail.com>
+	Sat, 10 Mar 2007 04:06:14 +1100 (EST)
+Message-ID: <45F1936C.6030008@ovro.caltech.edu>
+Date: Fri, 09 Mar 2007 09:03:40 -0800
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
+To: Oliver Rutsch <orutsch@sympatec.com>
+Subject: Re: MPC5200, PLX9054 PCI Card - stalled DMA transfers
+References: <45E6CAC8.8090007@sympatec.com> <45E75859.3090508@ovro.caltech.edu>
+	<45EFBF91.7080304@sympatec.com>
+In-Reply-To: <45EFBF91.7080304@sympatec.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070306095139.GZ4397@moe.telargo.com>
-	<20070309084954.GA14658@moe.telargo.com>
-	<528646bc0703090800v4261495ape7e6f3ee18deaea2@mail.gmail.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,19 +27,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 3/9/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> On 3/9/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> > Hi!
-> >
-> > Found another one. ;-)
-> >
-> > Btw. I forward ported Freescale's mscan patch to latest
-> > peak-linux-driver. Should I send it somewhere? Where to?
+Hi Oliver,
 
-Doesn't look like the peak folks have a mailing list and I don't know
-if they are motivated to get it into mainline.  You could try emailing
-your patches to linux@peak-system.com, and cc: it here so it's
-archived for others to find.
+> The PCI card I'm using works without problems on a X86 PC, so I think 
+> the PLX hardware is O.K. I checked every local PLX9054 register on the 
+> MPC5200 against the X86 PC. On both computers they have the same values.
 
-Cheers,
-g.
+Ok, that eliminates a hardware error in reading registers on the board,
+i.e., the PCI connection is fine. There could still be errors in
+the PCI-9054 local bus connections ...
+
+> Even a simple block DMA does not work, although I checked all registers 
+> and addresses. So I think the plx driver software is O.K. 
+
+I'm sure you have checked this, but I'll mention it just in case ...
+you are using readl/writel type functions to access the little-endian
+PCI registers from the big-endian PowerPC right?
+
+> on the MPC5200 
+> and there has to be a hardware reason. Maybe the pci bus is not granted 
+> to the bus master controller of the PLX9054 when it requests the bus.
+> We'll check this when our hardware guy has time for this ;-)
+
+A PCI bus logic analyzer is pretty nice for this type of issue.
+I use an Agilent 1680A, and a FuturePlus PCI or CPCI adapter
+board. The analyzer is about $20k, while the adapters are about
+$2k. However, they pay for themselves pretty quickly.
+
+>> Anyway, manually setup a DMA transfer and convince yourself that
+>> you know which bits to twiddle, then figure out why the driver
+>> code isn't doing as its asked.
+> 
+> I've done so without success. 
+
+Without success on the x86 too?
+
+> The driver seems to make everything correct. A block DMA is fairly
+> simple on the 9054, so I think there must be a hardware reason for this.
+> Has anybody ever used a PCI card on the MPC5200 which has its own 
+> busmaster controller? I think most people use the BestComm DMA 
+> controller on the MPC5200, right?
+
+I tested the PCI debug driver I wrote from an x86 with my PLX
+boards, and on a Yosemite (440EP) board. I tested DMA using
+the PCI-9054 DMA controllers, and the 440EP controllers.
+
+Read p23 to p35 of my 440EP test document, I have some tests
+there that you could repeat ...
+
+http://www.ovro.caltech.edu/~dwh/powerpc_440ep.pdf
+
+However, life will be much easier if you can grab the hardware
+guy's logic analyzer ... out of his cold dead hands if need be ;)
+
+Dave
