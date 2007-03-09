@@ -1,22 +1,36 @@
-Return-Path: <glikely@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
-	by ozlabs.org (Postfix) with ESMTP id 4917EDDED9
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C6BFDDDEE4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Mar 2007 08:44:26 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so1079819nfc
+	Sat, 10 Mar 2007 10:43:03 +1100 (EST)
+Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
+	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l29Ngp7B023757
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 09 Mar 2007 13:44:25 -0800 (PST)
-Message-ID: <528646bc0703091344t28c57cc3yf60980dfe748cad1@mail.gmail.com>
-Date: Fri, 9 Mar 2007 14:44:25 -0700
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Kunal Arya" <kunalarya@gmail.com>
-Subject: Re: Kernel locked at "Now booting the kernel", Xilinx ML310 PPC405GP
-In-Reply-To: <68ee5ad90703091309s64018616v3ba2b25033e84844@mail.gmail.com>
+	Sat, 10 Mar 2007 00:42:57 +0100 (CET)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1HPojb-000KFM-KZ
+	for linuxppc-embedded@ozlabs.org; Sat, 10 Mar 2007 00:42:51 +0100
+Date: Sat, 10 Mar 2007 00:42:51 +0100
+From: Matthias Fechner <idefix@fechner.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Howto read I2C on MPC5200 Lite
+Message-ID: <20070309234251.GA68997@server.idefix.lan>
+References: <20070307122430.GA73298@server.idefix.lan>
+	<4b73d43f0703071317o7ae5e531s5eb4b390d41a1b88@mail.gmail.com>
+	<20070309113506.GB6726@server.idefix.lan>
+	<4b73d43f0703090911y3c2898cdmfdb84f8c7f5da8f@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <68ee5ad90703091309s64018616v3ba2b25033e84844@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4b73d43f0703090911y3c2898cdmfdb84f8c7f5da8f@mail.gmail.com>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,34 +41,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 3/9/07, Kunal Arya <kunalarya@gmail.com> wrote:
-> I'm currently working on getting Linux running on the Xilinx ML310.
-> I've followed all of the directions so far, but have run into a boot
-> problem.
->
-> I used the kernel sources from Montavista's RSYNC servers, using this command:
-> rsync -avz source.mvista.com::linuxppc-2.4 .
->
-> This appears to be kernel version 2.4.30-pre1, according to version.h
+Hello John,
 
-Oh, ick.  you might want to try 2.6.  2.4 is so crusty (but I do have
-2.4 working on my virtex boards, so it's not unusable).  :-)
+* John Rigby <jcrigby@gmail.com> [09-03-07 10:11]:
+> The some 5200's have had a problem with
+> a missing clock pulse on scl.
+> 
+> The latest ppc tree plus Doman Puncer's i2c patch of a few
+> days ago
+> http://article.gmane.org/gmane.linux.ports.ppc.embedded/15718/match=i2c
+> should fix the problem if that is it.
 
-What's probably happening, is some code is trying to access device
-registers after the MMU is turned on, but before ioremap is called on
-the registers.  I've had this situation before.  I usually just trace
-through the boot path to find out how far it gets before the trap so I
-know which device driver is at fault.
+thx a lot for this tip.
+I checked out the current git version of kernel 2.6, added Xenomai
+patch and the i2c patch.
+It seems now that everything works fine. I will check it for the next
+days. And will give some feedback.
 
-If you can access memory, it's also useful to look at the contents of
-__log_buf after the crash.  That will tell you approximately how far
-boot proceeded.
+Thx a lot!
 
-Cheers,
-g.
+Best regards,
+Matthias
 
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
