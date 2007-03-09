@@ -1,15 +1,18 @@
-Return-Path: <linas@austin.ibm.com>
-Date: Thu, 8 Mar 2007 17:50:45 -0600
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [patch 0/7] [RFC] Xenon support
-Message-ID: <20070308235045.GG30703@austin.ibm.com>
-References: <20070307180144.812594000@elitedvb.net>
-	<20070308113545.5dcc2565.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070308113545.5dcc2565.sfr@canb.auug.org.au>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 9F56ADDEA0
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 11:14:08 +1100 (EST)
+Date: Thu, 08 Mar 2007 16:14:07 -0800 (PST)
+Message-Id: <20070308.161407.63995586.davem@davemloft.net>
+To: dwmw2@infradead.org
+Subject: Re: [PATCH] Complain about missing system calls.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1173394873.3461.510.camel@pmac.infradead.org>
+References: <1173394873.3461.510.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, sam@ravnborg.org,
+	linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,34 +22,55 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 08, 2007 at 11:35:45AM +1100, Stephen Rothwell wrote:
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Thu, 08 Mar 2007 23:01:13 +0000
+
+> Most system calls seem to get added to i386 first. This patch
+> automatically generates a warning for any new system call which is
+> implemented on i386 but not the architecture currently being compiled.
+> On PowerPC at the moment, for example, it results in these warnings:
+> init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
+> init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
+> init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
 > 
-> Sorry, but given the anonymity requirement above, I do not want to even
-> read these patches.  Tracking of the pedigree of code in Linux has become
-> an issue and deevelopers want to be anonymous really pokes a big hole in
-> that.
+> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-Please note that legal systems do have pretty robust notions about 
-"reasonable people" and "reasonable behaviour".  Having gone through
-the patches, I can affirm that these are utterly unremarkable, perfectly
-ordinary patches, and there is no way that any "reasonable person" will 
-get "contaminated" reading this stuff. The code looks like any other 
-ethernet or ide or sata code; a few register definitions are different, 
-but that's about it. 
+David, thanks for this __incredibly__ __useful__ patch.  I kicked it
+around on sparc64 and found some more ignores to add, see below.
 
-Concepts like "pedigree" and "contamination" and "certificate of 
-originality" and etc. apply when the code in question starts doing
-things that are unique, novel, "not obvious to practitioners
-versed in the state of the art".  When some code implements something
-unusual, then there can be legitimate concerns about infringing on
-some patent, etc.
+The vast majority of them vector to sys_ni_syscall in the i386 syscall
+table.
 
-At most, one might argue that there are some "trade secrets" in that
-code. However, "trade secrets" are not protected by law: once they're
-public, the're not secret any more, and the holder of the secret is
-plain out-of-luck, and has no legal recourse. 
+sys_ugetrlimit is only necessary if the platform started out
+using the non-SuS compliant sys_old_getrlimit()
 
-Oh, did I mention I'm not a lawyer, never studied law, etc. etc.?
-The above is all my personal opinion, not that or my employer etc. 
+The rest, like ioperm, iopl, modify_ldt, et al. are i386
+specific.
 
---linas
+Signed-off-by: David S. Miller <davem@davemloft.net>
+
+--- a/init/missing_syscalls.c.ORIG	2007-03-08 16:11:00.000000000 -0800
++++ b/init/missing_syscalls.c	2007-03-08 16:02:30.000000000 -0800
+@@ -18,6 +18,22 @@
+ #endif
+ 
+ /* i386-specific or historical system calls */
++#define __IGNORE_break
++#define __IGNORE_stty
++#define __IGNORE_gtty
++#define __IGNORE_ftime
++#define __IGNORE_prof
++#define __IGNORE_lock
++#define __IGNORE_mpx
++#define __IGNORE_ulimit
++#define __IGNORE_profil
++#define __IGNORE_ioperm
++#define __IGNORE_iopl
++#define __IGNORE_idle
++#define __IGNORE_modify_ldt
++#define __IGNORE_getpmsg
++#define __IGNORE_putpmsg
++#define __IGNORE_ugetrlimit
+ #define __IGNORE_mmap2
+ #define __IGNORE_vm86
+ #define __IGNORE_vm86old
