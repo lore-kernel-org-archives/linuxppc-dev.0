@@ -1,22 +1,22 @@
-Return-Path: <jcrigby@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id EADBEDDECE
+Return-Path: <glikely@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
+	by ozlabs.org (Postfix) with ESMTP id A076FDDEE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Mar 2007 04:11:20 +1100 (EST)
-Received: by an-out-0708.google.com with SMTP id b21so799349ana
+	Sat, 10 Mar 2007 05:15:30 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so1014564nfc
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 09 Mar 2007 09:11:18 -0800 (PST)
-Message-ID: <4b73d43f0703090911y3c2898cdmfdb84f8c7f5da8f@mail.gmail.com>
-Date: Fri, 9 Mar 2007 10:11:18 -0700
-From: "John Rigby" <jcrigby@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Howto read I2C on MPC5200 Lite
-In-Reply-To: <20070309113506.GB6726@server.idefix.lan>
+	Fri, 09 Mar 2007 10:15:28 -0800 (PST)
+Message-ID: <528646bc0703091015t1e3e2485s5149927c0d4c9223@mail.gmail.com>
+Date: Fri, 9 Mar 2007 11:15:27 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
+Subject: Re: Xilinx , Ml403, Linux And Money!
+In-Reply-To: <BAY115-W4270CF08F77CA41348714B2850@phx.gbl>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070307122430.GA73298@server.idefix.lan>
-	<4b73d43f0703071317o7ae5e531s5eb4b390d41a1b88@mail.gmail.com>
-	<20070309113506.GB6726@server.idefix.lan>
+References: <BAY115-W4270CF08F77CA41348714B2850@phx.gbl>
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,49 +27,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-The some 5200's have had a problem with
-a missing clock pulse on scl.
+On 3/4/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
+>
+> Hi all,
+>
+> Money seems to be really important, even when your product is still in beta releases ....
+>
+> At least, my recent experince with the latest release of EDK and more than two weeks of trying different approaches to compile the kernel for ml403 is telling me that ...
 
-The latest ppc tree plus Doman Puncer's i2c patch of a few
-days ago
-http://article.gmane.org/gmane.linux.ports.ppc.embedded/15718/match=3Di2c
-should fix the problem if that is it.
+Welcome to the world of embedded development.  Some boards are easy,
+some require a fair bit of knowledge to get working.  The Virtex ppc
+port still requires a fair bit of elbow grease.
 
-On 3/9/07, Matthias Fechner <idefix@fechner.net> wrote:
-> Hello John,
 >
-> * John Rigby <jrigby@freescale.com> [07-03-07 14:17]:
-> > On a stock lite5200b the only thing that shows up is a serial
-> > eeprom at address 0x50.
+> At the begining stages of my work, some one here told me , "simply use edk 8.2.02 to generate the linux bsp and then copy the entire files to kernel tree and you are there " ... working and working and working ... I came to this solution at last : ( again another sentence from some one else here ) " I did not use edk generated files for compiling the kernel, .... I just used xparameters.h and then used the paulus patch " Very interestingly, I'm seeing that the paulus patch is not applied on the main kernel tree , I don't really understand why?
+
+Mostly because nobody has shepherded it into mainline.  Most people
+are using the Xilinx drivers, but the xilinx drivers as-is aren't
+really suitable for inclusion in mainline (style/layout/conventions
+don't match).  Until someone is able to dedicate a fair bit of time to
+get the Virtex drivers sorted out, the situation is unlikely to
+improve.
+
 >
-> thx a lot, that tool helped me a lot.
-> I have written a very small c-program to access the I2C bus to read the
-> temperature of my MAX6633 and convert it to =B0C.
+> Another interesting point is that the GIT development tree of montavista for ML403 is 9 months old ....
+
+That's why I stick with mainline, and I forward port the drivers that I need.
+
 >
-> That worked fine, but after reading the value some time, the I2C bus
-> is dead. The kernel says:
-> i2c_adapter i2c-1: ioctl, cmd=3D0x705, arg=3D0x7feaf8ec
-> i2c_adapter i2c-1: ioctl, cmd=3D0x706, arg=3D0x40
-> i2c_adapter i2c-1: ioctl, cmd=3D0x720, arg=3D0x7feaf8f0
-> i2c_adapter i2c-1: master_xfer[0] W, addr=3D0x40, len=3D1
-> i2c_adapter i2c-1: master_xfer[1] R, addr=3D0x40, len=3D2
-> I2C: timeout
+> Finally, you see some new app notes from xilinx xapp969 that tells you that you should be able to compile the kernel with exactly no problem and very easily if you have purchased either one of montavista or wind river dev kits.... So, Is the version of kernel used in these kits different than what montavista provides as it's git tree? It should be different because I'm sure that copying EDK files into the git tree provided by them just results some errors.
+
+I really don't know, you'd need to ask MV.
+
 >
-> Is that maybe a bug in the I2C driver (i2c-mpc) or is my programm
-> faulty?
-> If it helps I can attach the programm.
+> Finally we see montavista asking for your registration before allowing you to download the preview kit, and then their answer "you are not allowed to access the prev kit because .... ..... "
 >
-> Best regards,
-> Matthias
->
-> --
->
-> "Programming today is a race between software engineers striving to
-> build bigger and better idiot-proof programs, and the universe trying to
-> produce bigger and better idiots. So far, the universe is winning." --
-> Rich Cook
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
+> I was expecting linux kernel source to be free .... But it seems that it is not free at all.
+
+The GPL license grants to the ability to use/modify/distribute the
+kernel source.  It also guarantees that if someone provides you with a
+binary image, then you get access to the source code also with all the
+rights granted by the GPL.  It does *not* compel someone to give you a
+copy of their source/binaries if they don't want to distribute them to
+you.  Free refers to freedom to use it, *not* free cost.
+
+That being said; all the components you need are available in the open
+without cost, but it requires some effort to piece them together.
+
+g.
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
