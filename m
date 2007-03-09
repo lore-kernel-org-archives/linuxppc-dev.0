@@ -1,24 +1,14 @@
-Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [192.83.249.54])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CD9C9DDEBD
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 07:54:05 +1100 (EST)
-Message-ID: <45F1C8FF.9040600@zytor.com>
-Date: Fri, 09 Mar 2007 12:52:15 -0800
-From: "H. Peter Anvin" <hpa@zytor.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-To: "H. Peter Anvin" <hpa@zytor.com>, Andi Kleen <andi@firstfloor.org>,
-	David Woodhouse <dwmw2@infradead.org>, akpm@osdl.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	sam@ravnborg.org, linux-arch@vger.kernel.org
-Subject: Re: [PATCH] Complain about missing system calls.
-References: <1173394873.3461.510.camel@pmac.infradead.org>
-	<p737itqbdnl.fsf@bingen.suse.de>
-	<20070309163805.GV18564@lug-owl.de> <45F1B818.4090007@zytor.com>
-	<20070309201308.GB8444@flint.arm.linux.org.uk>
-In-Reply-To: <20070309201308.GB8444@flint.arm.linux.org.uk>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17905.52447.829667.16759@cargo.ozlabs.ibm.com>
+Date: Sat, 10 Mar 2007 08:08:47 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Re: Please pull powerpc.git merge branch
+In-Reply-To: <17903.35471.818872.293459@cargo.ozlabs.ibm.com>
+References: <17903.35471.818872.293459@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,37 +18,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Russell King wrote:
-> On Fri, Mar 09, 2007 at 11:40:08AM -0800, H. Peter Anvin wrote:
->> Jan-Benedict Glaw wrote:
->>> Not everybody has a simple indexed list of pointers :)  For example,
->>> for vax-linux, we use a struct per syscall with the expected number of
->>> on-stack longwords for the call.
->>>
->>> So if something "new" is coming up, please keep in mind that it should
->>> be flexible enough to represent that. :)
->>>
->> I discussed with Al Viro a while ago about using something like the 
->> SYSCALLS.def file from klibc as the source format for the system calls. 
->>  That would deal very flexibly with almost all kinds of stub generation.
+Linus,
+
+I wrote:
+
+> Please do:
 > 
-> Hopefully with this idea in place, we can spot new syscalls before
-> the final release of the kernel (maybe kautobuild can help there)
-> and fix any silly system call argument ordering which requires
-> different architectures to have different syscall prototypes (eg,
-> sys_arm_fadvise64_64 vs sys_fadvise64_64, sys_arm_sync_file_range vs
-> sys_sync_file_range).
+> git pull \
+> git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+> 
+> There are 6 commits there.  Three of them fix compile warnings, one is
+> a bug fix, one works around a problem on rev 1.0 PPC970MP processors,
+> and one adds a missing newline in some help text.
 
-That would definitely be nice.
+I have pulled 3 more commits from Kumar Gala and pushed them out, so
+when you do the pull you'll see the commits below in addition to the
+ones I listed previously.
 
-> Otherwise the SYSCALLS.def file will probably end up being full of
-> ifdefs.
+Thanks,
+Paul.
 
-... which exactly mirrors the pain and suffering which libc maintainers 
-have to deal with.  The amount of time I spent per line of code in klibc 
-is quite high, in part because I wanted it to be as self-porting as was 
-possible.  I've really tried to avoid arch-specific hacks, and yet there 
-are more there than there should be, in large part because of unusable 
-or missing kernel header exports.
+ arch/powerpc/platforms/83xx/mpc834x_mds.c  |    8 ++++----
+ arch/powerpc/platforms/85xx/Kconfig        |    1 +
+ arch/powerpc/platforms/embedded6xx/Kconfig |    1 +
+ 3 files changed, 6 insertions(+), 4 deletions(-)
 
-	-hpa
+commit f194bda4ce7e71cc95535f494a4a5515cd91ed85
+Author: Kumar Gala <galak@kernel.crashing.org>
+Date:   Wed Mar 7 23:14:57 2007 -0600
+
+    [POWERPC] 85xx: Enable CONFIG_SERIAL_8250_SHARE_IRQ
+    
+    On chip 8250 UARTs share an interrupts on existing 85xx processors.
+    
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+commit 49fdf3f078f8f5d84ecd10d62624c9158e755ec7
+Author: Segher Boessenkool <segher@kernel.crashing.org>
+Date:   Thu Feb 22 23:52:02 2007 +0100
+
+    [POWERPC] Select u-image as default image for Linkstation
+    
+    Fixes image build error:
+    
+    ln: accessing `arch/powerpc/boot/zImage': No such file or directory
+    make[1]: *** [arch/powerpc/boot/zImage] Error 1
+    make: *** [zImage] Error 2
+    
+    Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
+    Acked-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
+
+commit aea12b75480c0842028bd1bfe0146d9148db2298
+Author: Li Yang <leoli@freescale.com>
+Date:   Tue Mar 6 17:11:06 2007 +0800
+
+    [POWERPC] 83xx: Minor fixes for 834x_mds USB setup code
+    
+    Fix broken node manipulating code, and clarify inaccurate comment.
+    
+    Signed-off-by: Li Yang <leoli@freescale.com>
+    Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
