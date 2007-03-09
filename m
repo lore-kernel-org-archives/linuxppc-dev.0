@@ -1,16 +1,20 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 9F56ADDEA0
-	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 11:14:08 +1100 (EST)
-Date: Thu, 08 Mar 2007 16:14:07 -0800 (PST)
-Message-Id: <20070308.161407.63995586.davem@davemloft.net>
-To: dwmw2@infradead.org
+Return-Path: <SRS0+4f1e0d28af8560107a14+1293+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2ED7EDDEA0
+	for <linuxppc-dev@ozlabs.org>; Fri,  9 Mar 2007 11:18:59 +1100 (EST)
 Subject: Re: [PATCH] Complain about missing system calls.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1173394873.3461.510.camel@pmac.infradead.org>
+From: David Woodhouse <dwmw2@infradead.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20070308.161407.63995586.davem@davemloft.net>
 References: <1173394873.3461.510.camel@pmac.infradead.org>
+	<20070308.161407.63995586.davem@davemloft.net>
+Content-Type: text/plain
+Date: Fri, 09 Mar 2007 00:18:49 +0000
+Message-Id: <1173399529.3461.542.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
 Cc: akpm@osdl.org, linuxppc-dev@ozlabs.org, sam@ravnborg.org,
 	linux-kernel@vger.kernel.org, rmk@arm.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,55 +26,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Thu, 08 Mar 2007 23:01:13 +0000
+On Thu, 2007-03-08 at 16:14 -0800, David Miller wrote:
+> The rest, like ioperm, iopl, modify_ldt, et al. are i386
+> specific.
 
-> Most system calls seem to get added to i386 first. This patch
-> automatically generates a warning for any new system call which is
-> implemented on i386 but not the architecture currently being compiled.
-> On PowerPC at the moment, for example, it results in these warnings:
-> init/missing_syscalls.h:935:3: warning: #warning syscall sync_file_range not implemented
-> init/missing_syscalls.h:947:3: warning: #warning syscall getcpu not implemented
-> init/missing_syscalls.h:950:3: warning: #warning syscall epoll_pwait not implemented
-> 
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+Thanks for the update. Quite why the PowerPC kernel defines system call
+numbers for all of these I have no idea :)
 
-David, thanks for this __incredibly__ __useful__ patch.  I kicked it
-around on sparc64 and found some more ignores to add, see below.
-
-The vast majority of them vector to sys_ni_syscall in the i386 syscall
-table.
-
-sys_ugetrlimit is only necessary if the platform started out
-using the non-SuS compliant sys_old_getrlimit()
-
-The rest, like ioperm, iopl, modify_ldt, et al. are i386
-specific.
-
-Signed-off-by: David S. Miller <davem@davemloft.net>
-
---- a/init/missing_syscalls.c.ORIG	2007-03-08 16:11:00.000000000 -0800
-+++ b/init/missing_syscalls.c	2007-03-08 16:02:30.000000000 -0800
-@@ -18,6 +18,22 @@
- #endif
- 
- /* i386-specific or historical system calls */
-+#define __IGNORE_break
-+#define __IGNORE_stty
-+#define __IGNORE_gtty
-+#define __IGNORE_ftime
-+#define __IGNORE_prof
-+#define __IGNORE_lock
-+#define __IGNORE_mpx
-+#define __IGNORE_ulimit
-+#define __IGNORE_profil
-+#define __IGNORE_ioperm
-+#define __IGNORE_iopl
-+#define __IGNORE_idle
-+#define __IGNORE_modify_ldt
-+#define __IGNORE_getpmsg
-+#define __IGNORE_putpmsg
-+#define __IGNORE_ugetrlimit
- #define __IGNORE_mmap2
- #define __IGNORE_vm86
- #define __IGNORE_vm86old
+-- 
+dwmw2
