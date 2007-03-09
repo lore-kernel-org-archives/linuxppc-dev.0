@@ -1,18 +1,22 @@
-Return-Path: <kunalarya@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id C4FD5DDED0
+Return-Path: <glikely@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
+	by ozlabs.org (Postfix) with ESMTP id 4917EDDED9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 10 Mar 2007 08:09:53 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1398960ugf
+	Sat, 10 Mar 2007 08:44:26 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so1079819nfc
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 09 Mar 2007 13:09:51 -0800 (PST)
-Message-ID: <68ee5ad90703091309s64018616v3ba2b25033e84844@mail.gmail.com>
-Date: Fri, 9 Mar 2007 13:09:50 -0800
-From: "Kunal Arya" <kunalarya@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Kernel locked at "Now booting the kernel", Xilinx ML310 PPC405GP
+	Fri, 09 Mar 2007 13:44:25 -0800 (PST)
+Message-ID: <528646bc0703091344t28c57cc3yf60980dfe748cad1@mail.gmail.com>
+Date: Fri, 9 Mar 2007 14:44:25 -0700
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Kunal Arya" <kunalarya@gmail.com>
+Subject: Re: Kernel locked at "Now booting the kernel", Xilinx ML310 PPC405GP
+In-Reply-To: <68ee5ad90703091309s64018616v3ba2b25033e84844@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <68ee5ad90703091309s64018616v3ba2b25033e84844@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,336 +27,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I'm currently working on getting Linux running on the Xilinx ML310.
-I've followed all of the directions so far, but have run into a boot
-problem.
+On 3/9/07, Kunal Arya <kunalarya@gmail.com> wrote:
+> I'm currently working on getting Linux running on the Xilinx ML310.
+> I've followed all of the directions so far, but have run into a boot
+> problem.
+>
+> I used the kernel sources from Montavista's RSYNC servers, using this command:
+> rsync -avz source.mvista.com::linuxppc-2.4 .
+>
+> This appears to be kernel version 2.4.30-pre1, according to version.h
 
-I used the kernel sources from Montavista's RSYNC servers, using this command:
-rsync -avz source.mvista.com::linuxppc-2.4 .
+Oh, ick.  you might want to try 2.6.  2.4 is so crusty (but I do have
+2.4 working on my virtex boards, so it's not unusable).  :-)
 
-This appears to be kernel version 2.4.30-pre1, according to version.h
+What's probably happening, is some code is trying to access device
+registers after the MMU is turned on, but before ioremap is called on
+the registers.  I've had this situation before.  I usually just trace
+through the boot path to find out how far it gets before the trap so I
+know which device driver is at fault.
 
-The kernel compiled fine after several modifications. I had to make 3
-major changes:
- * The version of GCC I was using (4.1.1) no longer allows lvalue
-typecasts (e.g. (const char*)x = y). I simply removed the typecasts,
-assuming they've been enforced already.
- * I had to modify embed_config.h so that the #include for xiic_l.h
-was before the XIic_Recv and XIic_Send calls
- * There were several error messages about extern functions. Googling
-around, I discovered that I could easily remove them or change them to
-static or local functions.
+If you can access memory, it's also useful to look at the contents of
+__log_buf after the crash.  That will tell you approximately how far
+boot proceeded.
 
-Board:
- * Xilinx ML310, running the Virtex-II Pro
- * PowerPC 405GP core
+Cheers,
+g.
 
-On the Xilinx tools side:
- * EDK 8.2.02i
- * Using the Xilinx-provided ml310_pci_design project
-
-Steps I took to compile the kernel:
- * Latest 2.4 kernel from mvista.com via rsync
- * Copied the BSP generated in XPS
- * Copied the appropriate xparameters_ml300.h file to my linux root tree
- * Compiled it both with and without initrd; neither works
-
-I used crosstool with gcc 4.1.1 w/glibc 2.3.6. My xparameters_ml300.h
-and .config files are pasted below.
-
-The problem:
-The kernel panics after printing out the message "Now booting the
-kernel" The exact output is this:
-
-loaded at:     00400000 0089C1E4
-board data at: 00000000 00000018
-relocated to:  00405238 00405250
-zimage at:     00405BD3 004AFDF5
-initrd at:     004B0000 00898382
-avail ram:     0089D000 55555555
-
-Linux/PPC load: root=/dev/ram
-Uncompressing Linux...done.
-Now booting the kernel
-
-Symptoms: I (painstakingly) manually reconstructed the link register
-stack, and I found out that:
-panic called from do_exit @ 0xc0016218
-do_exit called from (0xc0003d5c), in function die (0xc0003d00)
-die called from (0xc000e88c), in function bad_page_fault (0xc000e83c)
-bad_page_fault called from (0xc000e984), in function do_page_fault (0xc000e8a4)
-do_page_fault called from (0xc0003a84), in function ?? (interrupt maybe?)
-
-I was unable to set a hardware breakpoint on the exception handler, so
-I couldn't find out where exactly the offending command was. It seems
-that the PPC is triggering its page fault exception handler because
-it's trying to access memory it shouldn't/can't.
-
-Thanks a lot, and let me know if there's more information that could
-be helpful. Sorry for the horrendously huge message.
--- Kunal Arya
-
------------------------------------------------
-Contents of xparameters_ml300.h (comments trimmed, PS2 omitted):
-
-#define XPAR_XPLBARB_NUM_INSTANCES 1
-#define XPAR_PLB_V34_0_BASEADDR 0x00000000
-#define XPAR_PLB_V34_0_HIGHADDR 0x00000000
-#define XPAR_PLB_V34_0_DEVICE_ID 0
-#define XPAR_PLB_V34_0_PLB_NUM_MASTERS 3
-#define XPAR_PLB_BRAM_IF_CNTLR_0_BASEADDR 0xFFFF8000
-#define XPAR_PLB_BRAM_IF_CNTLR_0_HIGHADDR 0xFFFFFFFF
-#define XPAR_PLB_DDR_0_MEM0_BASEADDR 0x00000000
-#define XPAR_PLB_DDR_0_MEM0_HIGHADDR 0x0FFFFFFF
-#define XPAR_XPCI_NUM_INSTANCES 1
-#define XPAR_OPB_PCI_1_DEVICE_ID 0X0300
-#define XPAR_OPB_PCI_1_BASEADDR 0x3C000000
-#define XPAR_OPB_PCI_1_HIGHADDR 0x3C0001FF
-#define XPAR_OPB_PCI_1_PCIBAR_0 0X00000000
-#define XPAR_OPB_PCI_1_PCIBAR_LEN_0 27
-#define XPAR_OPB_PCI_1_PCIBAR2IPIF_0 0X00000000
-#define XPAR_OPB_PCI_1_PCIBAR_ENDIAN_TRANSLATE_EN_0 0
-#define XPAR_OPB_PCI_1_PCI_PREFETCH_0 1
-#define XPAR_OPB_PCI_1_PCI_SPACETYPE_0 1
-#define XPAR_OPB_PCI_1_PCIBAR_1 0xFFFFFFFF
-#define XPAR_OPB_PCI_1_PCIBAR_LEN_1 20
-#define XPAR_OPB_PCI_1_PCIBAR2IPIF_1 0x00000000
-#define XPAR_OPB_PCI_1_PCIBAR_ENDIAN_TRANSLATE_EN_1 0
-#define XPAR_OPB_PCI_1_PCI_PREFETCH_1 1
-#define XPAR_OPB_PCI_1_PCI_SPACETYPE_1 1
-#define XPAR_OPB_PCI_1_PCIBAR_2 0xFFFFFFFF
-#define XPAR_OPB_PCI_1_PCIBAR_LEN_2 20
-#define XPAR_OPB_PCI_1_PCIBAR2IPIF_2 0x00000000
-#define XPAR_OPB_PCI_1_PCIBAR_ENDIAN_TRANSLATE_EN_2 0
-#define XPAR_OPB_PCI_1_PCI_PREFETCH_2 1
-#define XPAR_OPB_PCI_1_PCI_SPACETYPE_2 1
-#define XPAR_OPB_PCI_1_IPIFBAR_0 0X20000000
-#define XPAR_OPB_PCI_1_IPIF_HIGHADDR_0 0X2FFFFFFF
-#define XPAR_OPB_PCI_1_IPIFBAR2PCI_0 0X00000000
-#define XPAR_OPB_PCI_1_IPIFBAR_ENDIAN_TRANSLATE_EN_0 0
-#define XPAR_OPB_PCI_1_IPIF_PREFETCH_0 1
-#define XPAR_OPB_PCI_1_IPIF_SPACETYPE_0 1
-#define XPAR_OPB_PCI_1_IPIFBAR_1 0X30000000
-#define XPAR_OPB_PCI_1_IPIF_HIGHADDR_1 0X37FFFFFF
-#define XPAR_OPB_PCI_1_IPIFBAR2PCI_1 0X00000000
-#define XPAR_OPB_PCI_1_IPIFBAR_ENDIAN_TRANSLATE_EN_1 0
-#define XPAR_OPB_PCI_1_IPIF_PREFETCH_1 1
-#define XPAR_OPB_PCI_1_IPIF_SPACETYPE_1 1
-#define XPAR_OPB_PCI_1_IPIFBAR_2 0X38000000
-#define XPAR_OPB_PCI_1_IPIF_HIGHADDR_2 0X3BFFFFFF
-#define XPAR_OPB_PCI_1_IPIFBAR2PCI_2 0XC8000000
-#define XPAR_OPB_PCI_1_IPIFBAR_ENDIAN_TRANSLATE_EN_2 0
-#define XPAR_OPB_PCI_1_IPIF_PREFETCH_2 1
-#define XPAR_OPB_PCI_1_IPIF_SPACETYPE_2 0
-#define XPAR_OPB_PCI_1_IPIFBAR_3 0X3E000000
-#define XPAR_OPB_PCI_1_IPIF_HIGHADDR_3 0X3E000FFF
-#define XPAR_OPB_PCI_1_IPIFBAR2PCI_3 0X32000000
-#define XPAR_OPB_PCI_1_IPIFBAR_ENDIAN_TRANSLATE_EN_3 0
-#define XPAR_OPB_PCI_1_IPIF_PREFETCH_3 1
-#define XPAR_OPB_PCI_1_IPIF_SPACETYPE_3 1
-#define XPAR_OPB_PCI_1_IPIFBAR_4 0xFFFFFFFF
-#define XPAR_OPB_PCI_1_IPIF_HIGHADDR_4 0x00000000
-#define XPAR_OPB_PCI_1_IPIFBAR2PCI_4 0x00000000
-#define XPAR_OPB_PCI_1_IPIFBAR_ENDIAN_TRANSLATE_EN_4 0
-#define XPAR_OPB_PCI_1_IPIF_PREFETCH_4 1
-#define XPAR_OPB_PCI_1_IPIF_SPACETYPE_4 1
-#define XPAR_OPB_PCI_1_IPIFBAR_5 0xFFFFFFFF
-#define XPAR_OPB_PCI_1_IPIF_HIGHADDR_5 0x00000000
-#define XPAR_OPB_PCI_1_IPIFBAR2PCI_5 0x00000000
-#define XPAR_OPB_PCI_1_IPIFBAR_ENDIAN_TRANSLATE_EN_5 0
-#define XPAR_OPB_PCI_1_IPIF_PREFETCH_5 1
-#define XPAR_OPB_PCI_1_IPIF_SPACETYPE_5 1
-#define XPAR_OPB_PCI_1_DMA_BASEADDR 0x3D000000
-#define XPAR_OPB_PCI_1_DMA_HIGHADDR 0x3D00007F
-#define XPAR_OPB_PCI_1_DMA_CHAN_TYPE 0
-#define XPAR_OPB_PCI_1_DMA_LENGTH_WIDTH 13
-#define XPAR_OPB_PCI_1_BRIDGE_IDSEL_ADDR_BIT 24
-#define XPAR_XIIC_NUM_INSTANCES 1
-#define XPAR_OPB_IIC_0_BASEADDR 0xA8000000
-#define XPAR_OPB_IIC_0_HIGHADDR 0xA80001FF
-#define XPAR_OPB_IIC_0_DEVICE_ID 0
-#define XPAR_OPB_IIC_0_TEN_BIT_ADR 0
-#define XPAR_OPB_IIC_0_GPO_WIDTH 1
-#define XPAR_XUARTNS550_NUM_INSTANCES 1
-#define XPAR_XUARTNS550_CLOCK_HZ 100000000
-#define XPAR_OPB_UART16550_0_BASEADDR 0xA0000000
-#define XPAR_OPB_UART16550_0_HIGHADDR 0xA0001FFF
-#define XPAR_OPB_UART16550_0_DEVICE_ID 0
-#define XPAR_XSPI_NUM_INSTANCES 1
-#define XPAR_OPB_SPI_0_BASEADDR 0xA4000000
-#define XPAR_OPB_SPI_0_HIGHADDR 0xA400007F
-#define XPAR_OPB_SPI_0_DEVICE_ID 0
-#define XPAR_OPB_SPI_0_FIFO_EXIST 1
-#define XPAR_OPB_SPI_0_SPI_SLAVE_ONLY 0
-#define XPAR_OPB_SPI_0_NUM_SS_BITS 1
-#define XPAR_XGPIO_NUM_INSTANCES 1
-#define XPAR_OPB_GPIO_0_BASEADDR 0x90000000
-#define XPAR_OPB_GPIO_0_HIGHADDR 0x900001FF
-#define XPAR_OPB_GPIO_0_DEVICE_ID 0
-#define XPAR_OPB_GPIO_0_INTERRUPT_PRESENT 0
-#define XPAR_OPB_GPIO_0_IS_DUAL 0
-#define XPAR_INTC_MAX_NUM_INTR_INPUTS 8
-#define XPAR_XINTC_HAS_IPR 1
-#define XPAR_XINTC_USE_DCR 0
-#define XPAR_XINTC_NUM_INSTANCES 1
-#define XPAR_OPB_INTC_0_BASEADDR 0xD0000FC0
-#define XPAR_OPB_INTC_0_HIGHADDR 0xD0000FDF
-#define XPAR_OPB_INTC_0_DEVICE_ID 0
-#define XPAR_OPB_INTC_0_KIND_OF_INTR 0x00000000
-#define XPAR_INTC_SINGLE_BASEADDR 0xD0000FC0
-#define XPAR_INTC_SINGLE_HIGHADDR 0xD0000FDF
-#define XPAR_INTC_SINGLE_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
-#define XPAR_MISC_LOGIC_0_PCI_INT_OR_MASK 0X000001
-#define XPAR_OPB_INTC_0_MISC_LOGIC_0_PCI_INT_OR_INTR 0
-#define XPAR_OPB_PCI_1_IP2INTC_IRPT_MASK 0X000002
-#define XPAR_OPB_INTC_0_OPB_PCI_1_IP2INTC_IRPT_INTR 1
-#define XPAR_OPB_SPI_0_IP2INTC_IRPT_MASK 0X000004
-#define XPAR_OPB_INTC_0_OPB_SPI_0_IP2INTC_IRPT_INTR 2
-#define XPAR_MISC_LOGIC_0_IIC_TEMP_CRIT_MASK 0X000008
-#define XPAR_OPB_INTC_0_MISC_LOGIC_0_IIC_TEMP_CRIT_INTR 3
-#define XPAR_MISC_LOGIC_0_IIC_IRQ_MASK 0X000010
-#define XPAR_OPB_INTC_0_MISC_LOGIC_0_IIC_IRQ_INTR 4
-#define XPAR_OPB_IIC_0_IP2INTC_IRPT_MASK 0X000020
-#define XPAR_OPB_INTC_0_OPB_IIC_0_IP2INTC_IRPT_INTR 5
-#define XPAR_OPB_SYSACE_0_SYSACE_IRQ_MASK 0X000040
-#define XPAR_OPB_INTC_0_OPB_SYSACE_0_SYSACE_IRQ_INTR 6
-#define XPAR_OPB_UART16550_0_IP2INTC_IRPT_MASK 0X000080
-#define XPAR_OPB_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR 7
-#define XPAR_XSYSACE_MEM_WIDTH 8
-#define XPAR_XSYSACE_NUM_INSTANCES 1
-#define XPAR_OPB_SYSACE_0_BASEADDR 0xCF000000
-#define XPAR_OPB_SYSACE_0_HIGHADDR 0xCF0001FF
-#define XPAR_OPB_SYSACE_0_DEVICE_ID 0
-#define XPAR_OPB_SYSACE_0_MEM_WIDTH 8
-#define XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ 300000000
-#define XPAR_UARTNS550_0_BASEADDR (XPAR_OPB_UART16550_0_BASEADDR+0x1000)
-#define XPAR_UARTNS550_0_HIGHADDR XPAR_OPB_UART16550_0_HIGHADDR
-#define XPAR_UARTNS550_0_CLOCK_FREQ_HZ XPAR_XUARTNS550_CLOCK_HZ
-#define XPAR_UARTNS550_0_DEVICE_ID XPAR_OPB_UART16550_0_DEVICE_ID
-#define XPAR_IIC_0_BASEADDR XPAR_OPB_IIC_0_BASEADDR
-#define XPAR_IIC_0_HIGHADDR XPAR_OPB_IIC_0_HIGHADDR
-#define XPAR_IIC_0_TEN_BIT_ADR XPAR_OPB_IIC_0_TEN_BIT_ADR
-#define XPAR_IIC_0_DEVICE_ID XPAR_OPB_IIC_0_DEVICE_ID
-#define XPAR_SYSACE_0_BASEADDR XPAR_OPB_SYSACE_0_BASEADDR
-#define XPAR_SYSACE_0_HIGHADDR XPAR_OPB_SYSACE_0_HIGHADDR
-#define XPAR_SYSACE_0_DEVICE_ID XPAR_OPB_SYSACE_0_DEVICE_ID
-#define XPAR_INTC_0_BASEADDR XPAR_OPB_INTC_0_BASEADDR
-#define XPAR_INTC_0_HIGHADDR XPAR_OPB_INTC_0_HIGHADDR
-#define XPAR_INTC_0_KIND_OF_INTR XPAR_OPB_INTC_0_KIND_OF_INTR
-#define XPAR_INTC_0_DEVICE_ID XPAR_OPB_INTC_0_DEVICE_ID
-#define XPAR_INTC_0_PCI_0_VEC_ID_A XPAR_OPB_INTC_0_MISC_LOGIC_0_PCI_INT_OR_INTR
-#define XPAR_INTC_0_PCI_0_VEC_ID_B XPAR_OPB_INTC_0_MISC_LOGIC_0_PCI_INT_OR_INTR
-#define XPAR_INTC_0_PCI_0_VEC_ID_C XPAR_OPB_INTC_0_MISC_LOGIC_0_PCI_INT_OR_INTR
-#define XPAR_INTC_0_PCI_0_VEC_ID_D XPAR_OPB_INTC_0_MISC_LOGIC_0_PCI_INT_OR_INTR
-#define XPAR_INTC_0_SPI_0_VEC_ID XPAR_OPB_INTC_0_OPB_SPI_0_IP2INTC_IRPT_INTR
-#define XPAR_INTC_0_IIC_0_VEC_ID XPAR_OPB_INTC_0_OPB_IIC_0_IP2INTC_IRPT_INTR
-#define XPAR_INTC_0_SYSACE_0_VEC_ID XPAR_OPB_INTC_0_OPB_SYSACE_0_SYSACE_IRQ_INTR
-#define XPAR_INTC_0_UARTNS550_0_VEC_ID
-XPAR_OPB_INTC_0_OPB_UART16550_0_IP2INTC_IRPT_INTR
-#define XPAR_SPI_0_BASEADDR XPAR_OPB_SPI_0_BASEADDR
-#define XPAR_SPI_0_HIGHADDR XPAR_OPB_SPI_0_HIGHADDR
-#define XPAR_SPI_0_DEVICE_ID XPAR_OPB_SPI_0_DEVICE_ID
-#define XPAR_GPIO_0_BASEADDR XPAR_OPB_GPIO_0_BASEADDR
-#define XPAR_GPIO_0_HIGHADDR XPAR_OPB_GPIO_0_HIGHADDR
-#define XPAR_GPIO_0_DEVICE_ID XPAR_OPB_GPIO_0_DEVICE_ID
-#define XPAR_XPCI_CLOCK_HZ 33333333
-#define XPAR_OPB_PCI_1_CONFIG_ADDR 0X3C000000+0x10c
-#define XPAR_OPB_PCI_1_CONFIG_DATA 0X3C000000+0x110
-#define XPAR_OPB_PCI_1_LCONFIG_ADDR 0X3C000000
-#define XPAR_OPB_PCI_1_MEM_BASEADDR 0X20000000
-#define XPAR_OPB_PCI_1_MEM_HIGHADDR 0X37FFFFFF
-#define XPAR_OPB_PCI_1_IO_BASEADDR 0X38000000
-#define XPAR_OPB_PCI_1_IO_HIGHADDR 0X3BFFFFFF
-#define XPAR_PCI_0_BASEADDR XPAR_OPB_PCI_1_BASEADDR
-#define XPAR_PCI_0_HIGHADDR XPAR_OPB_PCI_1_HIGHADDR
-#define XPAR_PCI_0_CONFIG_ADDR XPAR_OPB_PCI_1_CONFIG_ADDR
-#define XPAR_PCI_0_CONFIG_DATA XPAR_OPB_PCI_1_CONFIG_DATA
-#define XPAR_PCI_0_LCONFIG_ADDR XPAR_OPB_PCI_1_LCONFIG_ADDR
-#define XPAR_PCI_0_MEM_BASEADDR XPAR_OPB_PCI_1_MEM_BASEADDR
-#define XPAR_PCI_0_MEM_HIGHADDR XPAR_OPB_PCI_1_MEM_HIGHADDR
-#define XPAR_PCI_0_IO_BASEADDR XPAR_OPB_PCI_1_IO_BASEADDR
-#define XPAR_PCI_0_IO_HIGHADDR XPAR_OPB_PCI_1_IO_HIGHADDR
-#define XPAR_PCI_0_CLOCK_FREQ_HZ XPAR_XPCI_CLOCK_HZ
-#define XPAR_PCI_0_DEVICE_ID XPAR_OPB_PCI_1_DEVICE_ID
-#define XPAR_PLB_CLOCK_FREQ_HZ 100000000
-#define XPAR_CORE_CLOCK_FREQ_HZ XPAR_CPU_PPC405_CORE_CLOCK_FREQ_HZ
-#define XPAR_DDR_0_SIZE 0x08000000
-#define XPAR_PERSISTENT_0_IIC_0_BASEADDR 0x00000400
-#define XPAR_PERSISTENT_0_IIC_0_HIGHADDR 0x000007FF
-#define XPAR_PERSISTENT_0_IIC_0_EEPROMADDR 0xA0
-#define XPAR_POWER_0_POWERDOWN_BASEADDR 0x90000004
-#define XPAR_POWER_0_POWERDOWN_HIGHADDR 0x90000007
-#define XPAR_POWER_0_POWERDOWN_VALUE 0xFF
-
-----------------------------------------------
-Contents of .config (trimmed down to show only what's explicitly set):
-CONFIG_RWSEM_XCHGADD_ALGORITHM=y
-CONFIG_HAVE_DEC_LOCK=y
-CONFIG_EXPERIMENTAL=y
-CONFIG_PPC=y
-CONFIG_PPC32=y
-CONFIG_40x=y
-CONFIG_4xx=y
-CONFIG_XILINX_ML300=y
-CONFIG_NOT_COHERENT_CACHE=y
-CONFIG_UART0_TTYS0=y
-CONFIG_VIRTEX_II_PRO=y
-CONFIG_EMBEDDEDBOOT=y
-CONFIG_XILINX_OCP=y
-CONFIG_PPC_OCP=y
-CONFIG_GEN550=y
-CONFIG_405=y
-CONFIG_IBM405D5XN_TLB_BUG=y
-CONFIG_IBM405_ERR51=y
-CONFIG_IBM405_ERR77=y
-CONFIG_HIGHMEM_START=0xfe000000
-CONFIG_LOWMEM_SIZE=0x30000000
-CONFIG_KERNEL_START=0xc0000000
-CONFIG_TASK_SIZE=0x80000000
-CONFIG_SYSCTL=y
-CONFIG_SYSVIPC=y
-CONFIG_KCORE_ELF=y
-CONFIG_BINFMT_ELF=y
-CONFIG_KERNEL_ELF=y
-CONFIG_XILINX_SYSACE=y
-CONFIG_BLK_DEV_LOOP=y
-CONFIG_BLK_DEV_RAM=y
-CONFIG_BLK_DEV_RAM_SIZE=16384
-CONFIG_BLK_DEV_INITRD=y
-CONFIG_INPUT=y
-CONFIG_INPUT_EVDEV=y
-CONFIG_SERIAL=y
-CONFIG_SERIAL_CONSOLE=y
-CONFIG_UNIX98_PTYS=y
-CONFIG_UNIX98_PTY_COUNT=256
-CONFIG_I2C=y
-CONFIG_I2C_XILINX=y
-CONFIG_I2C_CHARDEV=y
-CONFIG_I2C_PROC=y
-CONFIG_MOUSE=y
-CONFIG_PSMOUSE=y
-CONFIG_X1226_RTC=y
-CONFIG_XILINX_GPIO=y
-CONFIG_XILINX_SPI=y
-CONFIG_AUTOFS4_FS=y
-CONFIG_EXT3_FS=y
-CONFIG_JBD=y
-CONFIG_JBD_DEBUG=y
-CONFIG_FAT_FS=y
-CONFIG_MSDOS_FS=y
-CONFIG_VFAT_FS=y
-CONFIG_CRAMFS=y
-CONFIG_TMPFS=y
-CONFIG_RAMFS=y
-CONFIG_PROC_FS=y
-CONFIG_DEVFS_FS=y
-CONFIG_DEVFS_MOUNT=y
-CONFIG_DEVPTS_FS=y
-CONFIG_EXT2_FS=y
-CONFIG_XFS_FS=y
-CONFIG_MSDOS_PARTITION=y
-CONFIG_NLS=y
-CONFIG_NLS_DEFAULT="iso8859-1"
-CONFIG_ZLIB_INFLATE=y
-CONFIG_ZLIB_DEFLATE=y
-CONFIG_LOG_BUF_SHIFT=14
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
