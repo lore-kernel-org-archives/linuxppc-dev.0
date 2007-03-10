@@ -1,21 +1,17 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 60678DDEEF
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 10:52:15 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l29NqBDY017234
-	for <linuxppc-dev@ozlabs.org>; Fri, 9 Mar 2007 16:52:12 -0700 (MST)
-In-Reply-To: <20070308210759.59738f6d.kim.phillips@freescale.com>
-References: <20070308210759.59738f6d.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <8390CEA8-EF4E-4D38-BB3F-4245188ACF68@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [RFC] (re)describing the PHY interface property
-Date: Fri, 9 Mar 2007 17:52:10 -0600
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <root@ganymede.vroon.org>
+Received: from ganymede.vroon.org (ganymede.vroon.org [195.66.242.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.vroon.org", Issuer "*.vroon.org" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id DFB95DDEED
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 11:12:56 +1100 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by ganymede.vroon.org (Postfix) with ESMTP id 0BB8D5B810B
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 00:01:30 +0000 (GMT)
+From: Tony Vroon <chainsaw@gentoo.org>
+To: <linuxppc-dev@ozlabs.org>
+Subject: [PATCH] Allow PMU LED control on PowerMac 7,3
+Message-Id: <20070310000123.69D7D5B810D@ganymede.vroon.org>
+Date: Sat, 10 Mar 2007 00:01:23 +0000 (GMT)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,47 +21,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This allows the PMU LED on a PowerMac 7,3 (Dual G5 2.0GHz, June 2004) to be 
+controlled. The physical LED is never off, unlike an iBook/PowerBook LED.
+It is rather dim ("off") or very bright ("on").
+Unfortunately the SATA controller in this machine does not (currently?) 
+work with the IDE trigger of the LED subsystem, but that is not a PMU problem.
 
-On Mar 8, 2007, at 21:07, Kim Phillips wrote:
+Signed-off-by: Tony Vroon <chainsaw@gentoo.org>
 
-> we need to fix the interface property of the PHY nodes in the device
-> trees.  currently, we see things such as:
->
-> 	interface = <6>; //ENET_1000_GMII
->
-> in mpc836x_mds.dts, which is bad because the speed and interface type
-> are conjoined.  I found a spec proposal based on response to a similar
-> matter on this list:
->
-> 	http://playground.sun.com/1275/proposals/Closed/Accepted/378-it.txt
->
-> So do we go with proposal #378, and add the interface type to the  
-> end of
-> its comma-separated list, like this:
->
-> 	supported-network-type = "ethernet,1000,,full,gmii";
-
-
-While I don't object to the supported/chosen IEEE addition, your  
-proposal is to modify it into a realm I'm not convinced it was meant  
-to address.  The properties described in their proposal all clearly  
-relate to the connection between the PHY device and the actual medium  
-through which the signal propagates.
-
-The issue at hand is the connection between the PHY and the MAC,  
-which is quite different.  Mostly because we do not currently have  
-any code that cares about the transceiver, but the network won't work  
-if the interface is not configured properly.
-
-
-
->
-> or forget about proposal #378, and do something like:
->
-> 	max-speed = <d#1000>;
-> 	interface-type = "gmii";
-
-
-I'm ok with this.  I'm not sure you even need the "-type" at the end.
-
-Andy
+--- linux-2.6/drivers/macintosh/via-pmu-led.c.orig	2007-03-09 22:38:31.000000000 +0000
++++ linux-2.6/drivers/macintosh/via-pmu-led.c	2007-03-09 23:01:21.000000000 +0000
+@@ -124,7 +124,8 @@
+ 	if (model == NULL)
+ 		return -ENODEV;
+ 	if (strncmp(model, "PowerBook", strlen("PowerBook")) != 0 &&
+-	    strncmp(model, "iBook", strlen("iBook")) != 0) {
++	    strncmp(model, "iBook", strlen("iBook")) != 0 &&
++	    strncmp(model, "PowerMac7,3", strlen("PowerMac7,3")) != 0) {
+ 		of_node_put(dt);
+ 		/* ignore */
+ 		return -ENODEV;
