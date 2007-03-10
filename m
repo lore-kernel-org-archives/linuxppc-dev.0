@@ -1,25 +1,31 @@
-Return-Path: <jbglaw@lug-owl.de>
-Received: from lug-owl.de (lug-owl.de [195.71.106.12])
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 07E00DDEB8
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 06:35:28 +1100 (EST)
-Date: Fri, 9 Mar 2007 20:35:24 +0100
-From: Jan-Benedict Glaw <jbglaw@lug-owl.de>
-To: Andi Kleen <andi@firstfloor.org>
-Subject: Re: [PATCH] Complain about missing system calls.
-Message-ID: <20070309193524.GX18564@lug-owl.de>
-References: <1173394873.3461.510.camel@pmac.infradead.org>
-	<p737itqbdnl.fsf@bingen.suse.de>
-	<20070309163805.GV18564@lug-owl.de>
-	<20070309190051.GA20521@one.firstfloor.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="1RhGCd1AsoFHGRHc"
-In-Reply-To: <20070309190051.GA20521@one.firstfloor.org>
-Cc: akpm@osdl.org, linux-arch@vger.kernel.org, sam@ravnborg.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	David Woodhouse <dwmw2@infradead.org>, rmk@arm.linux.org.uk
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 67215DDF36
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 15:08:05 +1100 (EST)
+Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l2A4OlN3318470
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 15:24:47 +1100
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
+	by sd0208e0.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l2A4BYFP162540
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 15:11:34 +1100
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2A483lD001597
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 15:08:03 +1100
+Date: Sat, 10 Mar 2007 15:08:02 +1100
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: [PATCH 11/15] zImage wrapper for Ebony
+Message-ID: <20070310040802.GB17083@localhost.localdomain>
+References: <20070305032452.EDB2BDDF1D@ozlabs.org>
+	<1173462611.4861.51.camel@zod.rchland.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1173462611.4861.51.camel@zod.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,57 +35,84 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Mar 09, 2007 at 11:50:11AM -0600, Josh Boyer wrote:
+> On Mon, 2007-03-05 at 14:24 +1100, David Gibson wrote:
+> > Index: working-2.6/arch/powerpc/boot/ebony.c
+> > ===================================================================
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ working-2.6/arch/powerpc/boot/ebony.c	2007-02-26 13:46:05.000000000 +1100
+> 
+> > +
+> > +static inline u32 mfpvr(void)
+> > +{
+> > +	u32 pvr;
+> > +	asm volatile ("mfpvr	%0" : "=r"(pvr));
+> > +	return pvr;
+> > +}
+> 
+> This could probably go in a generic util.h file.
 
---1RhGCd1AsoFHGRHc
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Yes.  I just wasn't sure where, so left it there for now.
 
-On Fri, 2007-03-09 20:00:51 +0100, Andi Kleen <andi@firstfloor.org> wrote:
-> > Not everybody has a simple indexed list of pointers :)  For example,
-> > for vax-linux, we use a struct per syscall with the expected number of
-> > on-stack longwords for the call.
-> >=20
-> > So if something "new" is coming up, please keep in mind that it should
-> > be flexible enough to represent that. :)
->=20
-> Are there plans to merge vax any time soon to mainline?=20
+> > +void poke_tree(const char *path, const char *name, void *val, int size)
+> > +{
+> > +	void *devp;
+> > +	int ret;
+> > +
+> > +	devp = finddevice(path);
+> > +	if (! devp) {
+> > +		printf("Couldn't find node %s to poke\n\r", path);
+> > +		exit();
+> > +	}
+> > +
+> > +	ret = setprop(devp, name, val, size);
+> > +	if (ret != 0) {
+> > +		printf("Couldn't set %s property in %s\n\r", name, path);
+> > +		exit();
+> > +	}
+> > +}
+> > +
+> > +#define poke_tree_val(path, name, val)	\
+> > +	do { \
+> > +		typeof(val) x = val; \
+> > +		poke_tree((path),(name),&x,sizeof(x)); \
+> > +	} while (0)
+> > +
+> > +/* Read the 44x memory controller to get size of system memory. */
+> > +static void ibm44x_fixup_memsize(void)
+> > +{
+> > +	int i;
+> > +	unsigned long memsize, bank_config;
+> > +	u32 memreg[3];
+> > +
+> > +	memsize = 0;
+> > +	for (i = 0; i < ARRAY_SIZE(sdram_bxcr); i++) {
+> > +		mtdcr(DCRN_SDRAM0_CFGADDR, sdram_bxcr[i]);
+> > +		bank_config = mfdcr(DCRN_SDRAM0_CFGDATA);
+> > +
+> > +		if (bank_config & SDRAM_CONFIG_BANK_ENABLE)
+> > +			memsize += SDRAM_CONFIG_BANK_SIZE(bank_config);
+> > +	}
+> > +
+> > +	printf("PPC44X: %dM RAM\n\r", memsize / 1024 / 1024);
+> > +	memreg[0] = memreg[1] = 0;
+> > +	memreg[2] = memsize;
+> > +	poke_tree("/memory", "reg", memreg, sizeof(memreg));
+> > +}
+> 
+> Is it possible to pull these three out into a 4xx_misc.c file?  The
+> exact same memory fixup can be used on boards other than Ebony (Bamboo
+> for example).
 
-Well...  That depends :)  For now, I'd prefer to stay out of mainline,
-until we're having gcc-trunk with a current GNU libc up'n'running.
-Until then, I plan to at least break the complete ABI once (drop old
-syscals and _only_ wire up their modern counterparts.)
+Yeah, I've been expecting to move those into a general use file,
+something like that.  But I was going to wait until the second board
+came along to see what's really common.  Oh, plus I'm not sure what to
+do with the poke_tree() functions - they're not 44x specific at all,
+but I'm wondering if they want cleaning up before being exported to
+everybody.
 
-> Normally we don't care very much about out of tree code, especially
-> if it adds complexity like this.
-
-Sure, but at least mentioning that there's more than only a simple
-table of function pointers may or may not help to *plan* the code to
-fit future needs.
-
-> But I suspect s390 would need number of arguments anyways.
-
-Any they're already merged. Yay :)
-
-MfG, JBG
-
---=20
-      Jan-Benedict Glaw      jbglaw@lug-owl.de              +49-172-7608481
-  Signature of:                           Wenn ich wach bin, tr=C3=A4ume ic=
-h.
-  the second  :
-
---1RhGCd1AsoFHGRHc
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.1 (GNU/Linux)
-
-iD8DBQFF8bb8Hb1edYOZ4bsRAudgAJ0e9E00kfFWDmaVhFGsYPn40r4GzgCeOjeF
-Tlc1fPEqvles7f9IUqYRw4o=
-=2Dxi
------END PGP SIGNATURE-----
-
---1RhGCd1AsoFHGRHc--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
