@@ -1,33 +1,32 @@
 Return-Path: <schwidefsky@de.ibm.com>
-Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1D47FDDE21
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 20:51:39 +1100 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l2A9pZW4169254
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 09:51:35 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (d06av01.portsmouth.uk.ibm.com
-	[9.149.37.212])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l2A9pZEJ1876144
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 09:51:35 GMT
-Received: from d06av01.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av01.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l2A9pYRe009905
-	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 09:51:35 GMT
+	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 96BC4DDF3A
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 20:58:17 +1100 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l2A9wCGF127782
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 09:58:12 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l2A9wC4f2129946
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 10:58:12 +0100
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l2A9wBNa008989
+	for <linuxppc-dev@ozlabs.org>; Sat, 10 Mar 2007 10:58:12 +0100
 Subject: Re: [PATCH] Complain about missing system calls.
 From: Martin Schwidefsky <schwidefsky@de.ibm.com>
-To: Andi Kleen <ak@suse.de>
-In-Reply-To: <200703091954.13982.ak@suse.de>
+To: Andi Kleen <andi@firstfloor.org>
+In-Reply-To: <20070309190051.GA20521@one.firstfloor.org>
 References: <1173394873.3461.510.camel@pmac.infradead.org>
-	<p737itqbdnl.fsf@bingen.suse.de>
-	<1173458854.24454.27.camel@localhost.localdomain>
-	<200703091954.13982.ak@suse.de>
+	<p737itqbdnl.fsf@bingen.suse.de> <20070309163805.GV18564@lug-owl.de>
+	<20070309190051.GA20521@one.firstfloor.org>
 Content-Type: text/plain; charset=ISO-8859-1
-Date: Sat, 10 Mar 2007 10:51:36 +0100
-Message-Id: <1173520296.7128.9.camel@localhost>
+Date: Sat, 10 Mar 2007 10:58:13 +0100
+Message-Id: <1173520693.7128.17.camel@localhost>
 Mime-Version: 1.0
 Cc: akpm@osdl.org, linux-arch@vger.kernel.org, sam@ravnborg.org,
 	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
@@ -42,20 +41,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-03-09 at 19:54 +0100, Andi Kleen wrote:
-> > We need additional gunk for syscalls that can be called from SPEs on
-> > cell
+On Fri, 2007-03-09 at 20:00 +0100, Andi Kleen wrote:
+> > Not everybody has a simple indexed list of pointers :)  For example,
+> > for vax-linux, we use a struct per syscall with the expected number of
+> > on-stack longwords for the call.
+> > 
+> > So if something "new" is coming up, please keep in mind that it should
+> > be flexible enough to represent that. :)
 > 
-> Can that gunk not be auto generated?
+> Are there plans to merge vax any time soon to mainline? 
 > 
-> I know s390 does in some cases, but it looks quite auto generatable to me.
+> Normally we don't care very much about out of tree code, especially
+> if it adds complexity like this.
+> 
+> But I suspect s390 would need number of arguments anyways.
 
-The system call tables and the compat wrapper are all manually created.
-If we manage to get the prototypes for the system calls in a parseable
-format at least the compat wrappers could be auto-generated. I see two
-pitfalls: 1) some compat system calls are directly wired to the system
-call table while others need the compat_wrapper detour, 2) override of
-system calls with "meta" system calls like sys_socket or sys_ipc.
+I can't quite follow that line of thought. Why does s390 need the number
+of arguments? The wrapper of a compat system call implicitly knows how
+many arguments a system calls to do the conversion. For a normal system
+call we just call the function. Random example sys_read: the user space
+loads the arguments to register %r2, %r3, %r4 and calls the system. The
+register are not touched until sys_read is reached. Only sys_read cares
+about the number of arguments in this case.
 
 -- 
 blue skies,              IBM Deutschland Entwicklung GmbH
