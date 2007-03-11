@@ -1,38 +1,15 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de
-	[62.146.248.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id BEBDCDDE32
+Return-Path: <melinda.develey70@yahoo.com>
+Received: from web63001.mail.re1.yahoo.com (web63001.mail.re1.yahoo.com
+	[69.147.96.212]) by ozlabs.org (Postfix) with SMTP id 3846FDDDEB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 11 Mar 2007 12:02:01 +1100 (EST)
-Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
-	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2B11o9v077990
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 11 Mar 2007 02:01:55 +0100 (CET)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1HQCRa-000Am1-7b
-	for linuxppc-embedded@ozlabs.org; Sun, 11 Mar 2007 02:01:50 +0100
-Date: Sun, 11 Mar 2007 02:01:50 +0100
-From: Matthias Fechner <idefix@fechner.net>
+	Mon, 12 Mar 2007 08:57:06 +1100 (EST)
+Message-ID: <20070311215705.59806.qmail@web63001.mail.re1.yahoo.com>
+Date: Sun, 11 Mar 2007 14:57:05 -0700 (PDT)
+From: melinda develey <melinda.develey70@yahoo.com>
+Subject: Xenomai real time driver and normal linux driver mutual exclusion
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: where and how to get the latest 2.6 kernel
-Message-ID: <20070311010149.GB39488@server.idefix.lan>
-References: <20070307122430.GA73298@server.idefix.lan>
-	<4b73d43f0703071317o7ae5e531s5eb4b390d41a1b88@mail.gmail.com>
-	<20070309113506.GB6726@server.idefix.lan>
-	<4b73d43f0703090911y3c2898cdmfdb84f8c7f5da8f@mail.gmail.com>
-	<20070309234251.GA68997@server.idefix.lan>
-	<45F21567.3050008@rogers.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45F21567.3050008@rogers.com>
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-590595006-1173650225=:58341"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -43,23 +20,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Nick,
+--0-590595006-1173650225=:58341
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-* Nick Droogh <ndroogh@rogers.com> [09-03-07 21:18]:
-> I have a mpc5200b based board and I would like to upgrade to the 2.6 
-> kernel from 2.4.  Is there a document explaining where to get the 
-> latests git version, and where to find the xenomai patch?
+I have an I2C bus, some devices should be controlled by a normal linux driver  but an ADC and a DAC on this bus should be controlled by a real time xenomai driver because, after a READ from the DAC I have to write to the ADC every 500 usec. I tried to use the normal linux driver from a xenomai real time user mode task but reading DAC, doing some computations, and writing to the ADC takes more than 500 usec. I thought to write both a RTDM driver for my 8xx I2C controller and a normal linux driver, but, how may I serialize access to the 8xx  I2C controller from these drivers?
 
-I used the git version from denx.de.
-To get the Xenomai patch into the kernel I have to edit one file
-manually but it was quit easy.
+Bye,
+Antonio.
 
-Best regards,
-Matthias
+ 
+---------------------------------
+Bored stiff? Loosen up...
+Download and play hundreds of games for free on Yahoo! Games.
+--0-590595006-1173650225=:58341
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
--- 
+I have an I2C bus, some devices should be controlled by a normal linux driver&nbsp; but an ADC and a DAC on this bus should be controlled by a real time xenomai driver because, after a READ from the DAC I have to write to the ADC every 500 usec. I tried to use the normal linux driver from a xenomai real time user mode task but reading DAC, doing some computations, and writing to the ADC takes more than 500 usec. I thought to write both a RTDM driver for my 8xx I2C controller and a normal linux driver, but, how may I serialize access to the 8xx&nbsp; I2C controller from these drivers?<br><br>Bye,<br>Antonio.<br><p>&#32;
 
-"Programming today is a race between software engineers striving to
-build bigger and better idiot-proof programs, and the universe trying to
-produce bigger and better idiots. So far, the universe is winning." --
-Rich Cook
+<hr size=1><a href="http://us.rd.yahoo.com/evt=49935/*http://games.yahoo.com">Bored stiff?</a> Loosen up...<br><a href="http://us.rd.yahoo.com/evt=49935/*http://games.yahoo.com">Download and play hundreds of games for free</a> on Yahoo! Games.
+--0-590595006-1173650225=:58341--
