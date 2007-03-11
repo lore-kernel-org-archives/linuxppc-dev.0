@@ -1,20 +1,37 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id E2514DDDFA
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D2CF1DDE2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 11 Mar 2007 01:50:21 +1100 (EST)
-Date: Sat, 10 Mar 2007 15:50:13 +0100
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Robert Schwebel <r.schwebel@pengutronix.de>
-Subject: Re: [PATCH] lite5200(b) dts: mscan.1 irq
-Message-ID: <20070310145013.GA22875@nd47.coderock.org>
-References: <20070306095139.GZ4397@moe.telargo.com>
-	<20070309084954.GA14658@moe.telargo.com>
-	<20070310115347.GD4067@pengutronix.de>
+	Sun, 11 Mar 2007 11:55:48 +1100 (EST)
+Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
+	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2B0ta0c077375
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 11 Mar 2007 01:55:41 +0100 (CET)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1HQCLX-000Aa9-TI
+	for linuxppc-embedded@ozlabs.org; Sun, 11 Mar 2007 01:55:35 +0100
+Date: Sun, 11 Mar 2007 01:55:35 +0100
+From: Matthias Fechner <idefix@fechner.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Howto read I2C on MPC5200 Lite
+Message-ID: <20070311005535.GA39488@server.idefix.lan>
+References: <20070307122430.GA73298@server.idefix.lan>
+	<4b73d43f0703071317o7ae5e531s5eb4b390d41a1b88@mail.gmail.com>
+	<20070309113506.GB6726@server.idefix.lan>
+	<4b73d43f0703090911y3c2898cdmfdb84f8c7f5da8f@mail.gmail.com>
+	<20070309234251.GA68997@server.idefix.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070310115347.GD4067@pengutronix.de>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed; boundary="3V7upXqbjpZ4EhLz"
+In-Reply-To: <20070309234251.GA68997@server.idefix.lan>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,33 +42,131 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/03/07 12:53 +0100, Robert Schwebel wrote:
-> Domen,
-> 
-> On Fri, Mar 09, 2007 at 09:49:54AM +0100, Domen Puncer wrote:
-> > Btw. I forward ported Freescale's mscan patch to latest
-> > peak-linux-driver. Should I send it somewhere? Where to?
-> 
-> Is that for the "old" peak driver, or for the new SocketCAN based ones? 
-> Note that Peak is moving to SocketCAN recently - see
-> 
-> http://developer.berlios.de/projects/socketcan/
 
-Hah, I didn't expect a new release just a day or two after I
-downloaded the source. :-P
-I did it against 5.12; 6.0 and SocketCAN are definitely worth
-checking out.
+--3V7upXqbjpZ4EhLz
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-Thanks!
+Hi,
+
+* Matthias Fechner <idefix@fechner.net> [10-03-07 00:42]:
+> It seems now that everything works fine. I will check it for the next
+> days. And will give some feedback.
+
+ok, I checked now the driver some time at it failed. So it seems that
+that the patch had not solved the problem.
+
+I have attached the programm to check it.
+
+I changed the time to 2 seconds but that didn't help.
+
+Best regards,
+Matthias
+
+-- 
+
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
+
+--3V7upXqbjpZ4EhLz
+Content-Type: text/x-csrc; charset=us-ascii
+Content-Disposition: attachment; filename="readMax6633.c"
+
+/* read the data from max6633 */
+
+#include <errno.h>
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <fcntl.h>
+#include "i2c-dev.h"
+#include "version.h"
+
+static __inline__ unsigned short swap_bytes(unsigned short val)
+{
+   return(val >> 8) | (val << 8);
+}
+
+int main(void)
+{
+   int res,address,file;
+   char filename[20];
+   unsigned short temp;
+   long funcs;
+   int i2cbus;
+   int errorCount,successfullCount;
+   errorCount=successfullCount=0;
+   i2cbus=1;
+   address=0x40;
+   
+   sprintf(filename,"/dev/i2c-%d",i2cbus);
+   if((file=open(filename,O_RDWR))<0)
+   {
+      fprintf(stderr,"Error: could not open file %s: %s\n",filename,strerror(errno));
+      exit(1);
+   }
+   
+   /* check adapter functionality */
+   if(ioctl(file,I2C_FUNCS,&funcs) < 0)
+   {
+      fprintf(stderr, "Error: could not get the adapter functionality matrix: %s\n",strerror(errno));
+      goto ERROR0;
+   }
+   if(!(funcs & I2C_FUNC_SMBUS_READ_BYTE_DATA))
+   {
+      fprintf(stderr,"Error: Adapter for i2cbus %d",i2cbus);
+      fprintf(stderr," does not have byte read capability\n");
+      goto ERROR0;
+   }
+   if(!(funcs & I2C_FUNC_SMBUS_READ_WORD_DATA))
+   {
+      fprintf(stderr,"Error: Adapter for i2cbus %d",i2cbus);
+      fprintf(stderr," does not have word read capability\n");
+      goto ERROR0;
+   }
+      
+   
+   /* use FORCE so that we can look at registers even when a driver
+      is also running */
+   if(ioctl(file,I2C_SLAVE,address) <0)
+   {
+      fprintf(stderr,"Error: Could not set address to %d: %s\n",address, strerror(errno));
+      goto ERROR0;
+   }
+   
+   fprintf(stderr,"Read with word_data\n");
+   while(1)
+   {
+      
+      temp=res=i2c_smbus_read_word_data(file,0);
+      if(res<0)
+      {
+	 fprintf(stderr,"Error: Could not read the value from the i2c device\n");
+	 errorCount++;
+      }else
+      {
+	 successfullCount++;
+      }
+      
+      temp=swap_bytes(temp);
+      temp=temp >> 3;
+      
+      printf("Succes: %i, Errorcount: %i, Temp: %f\n",successfullCount,errorCount,(float)(temp*0.0625));
+      sleep(1);
+   }
+   
+   printf("\nCalculate temp\n");
+  
+   close(file);
+   exit(0);
+
+  ERROR0:
+   close(file);
+   exit(1);
+}
 
 
-	Domen
-
-> 
-> Robert
-> -- 
->  Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
->  Pengutronix - Linux Solutions for Science and Industry
->    Handelsregister:  Amtsgericht Hildesheim, HRA 2686
->      Hannoversche Str. 2, 31134 Hildesheim, Germany
->    Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+--3V7upXqbjpZ4EhLz--
