@@ -1,31 +1,25 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de
-	[62.146.248.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id F32BCDDD01
+Return-Path: <tlopez@aotek.es>
+Received: from smtp1.sarenet.es (smtp1.sarenet.es [194.30.0.4])
+	by ozlabs.org (Postfix) with ESMTP id 43764DDD06
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Mar 2007 04:00:45 +1100 (EST)
-Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
-	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2CH0VFU038708
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	Tue, 13 Mar 2007 04:15:08 +1100 (EST)
+Received: from ntvir (unknown [212.81.206.17])
+	by smtp1.sarenet.es (Postfix) with ESMTP id 86A14120ED
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 12 Mar 2007 18:00:37 +0100 (CET)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1HQnst-00027p-3q
-	for linuxppc-embedded@ozlabs.org; Mon, 12 Mar 2007 18:00:31 +0100
-Date: Mon, 12 Mar 2007 18:00:31 +0100
-From: Matthias Fechner <idefix@fechner.net>
-To: linuxppc-embedded@ozlabs.org
-Subject: Problem in compiling a kernel module
-Message-ID: <20070312170030.GA5613@server.idefix.lan>
+	Mon, 12 Mar 2007 17:48:30 +0100 (CET)
+Message-ID: <45F58503.30604@aotek.es>
+Date: Mon, 12 Mar 2007 17:51:15 +0100
+From: Txema Lopez <tlopez@aotek.es>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+To: amoll@ganssloser.com
+Subject: Re: MPC5200B TxRTS auto-toggle mode. (Txema Lopez)
+References: <OF0886F27A.F554CD9A-ONC125729C.004BF911-C125729C.004C7652@avat.
+	local>
+In-Reply-To: <OF0886F27A.F554CD9A-ONC125729C.004BF911-C125729C.004C7652@avat
+	.local>
+Content-Type: multipart/mixed;
+	boundary=------------010900080501080905050605
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -36,36 +30,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi,
+This is a multi-part message in MIME format.
+--------------010900080501080905050605
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I'm not sure if this is the right list, so please correct me.
+Albrecht Moll wrote:
 
-If have written a kernel module to read a I2C chip (it's very basic
-now and I try to understand some thinks first so please forgive some
-stupid questions).
 
-I copied it to drivers/i2c/chips and added it into the Makefile with
-the following line:
-obj-m += max6633.o
+>For your particular case it probably makes more sense to use the TxEMP
+>interrupt of the PSC and deassert RTS manually in the interrupt
+>service routine.
+>  
+>
+Thanks Albrecht, this has been my approach. I have tested it in a custom 
+board and It works. I'have put the patch for a 2.4.xx version in my work 
+pipeline.
 
-If I try now to compile to kernel I got the following error message:
-WARNING: drivers/i2c/chips/max6633.o - Section mismatch: reference to
-.init.data: from .text after 'cleanup_module' (at offset 0x196)
-WARNING: drivers/i2c/chips/max6633.o - Section mismatch: reference to
-.init.data: from .text after 'cleanup_module' (at offset 0x1a6)
-WARNING: drivers/i2c/chips/max6633.o - Section mismatch: reference to
-.init.data: from .text after 'cleanup_module' (at offset 0x1da)
-WARNING: drivers/i2c/chips/max6633.o - Section mismatch: reference to
-.init.data: from .text after 'cleanup_module' (at offset 0x1e2)
 
-What does that mean or how can debug or solve the problem?
 
-Best regards,
-Matthias
 
--- 
+--------------010900080501080905050605
+Content-Type: text/x-vcard; charset=utf-8;
+ name="tlopez.vcf"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: attachment;
+ filename="tlopez.vcf"
 
-"Programming today is a race between software engineers striving to
-build bigger and better idiot-proof programs, and the universe trying to
-produce bigger and better idiots. So far, the universe is winning." --
-Rich Cook
+begin:vcard
+fn:Jose Maria Lopez
+n:Lopez;Jose Maria
+org:Fagor Automation S. Coop.
+adr:;;San Andres 19. Apdo. 144;Arrasate-Mondragon;;20500;Spain
+email;internet:tlopez@aotek.es
+title:Sotware engineer
+tel;work:(34) 943719200
+tel;fax:(34) 943791712 
+x-mozilla-html:FALSE
+url:http://www.fagorautomation.es
+version:2.1
+end:vcard
+
+
+--------------010900080501080905050605--
