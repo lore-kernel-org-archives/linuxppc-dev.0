@@ -1,20 +1,13 @@
-Return-Path: <ntl@pobox.com>
-Received: from lollipop.listbox.com (lollipop.listbox.com [208.210.124.78])
-	by ozlabs.org (Postfix) with ESMTP id 1E93EDDDED
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 07:32:11 +1100 (EST)
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by lollipop.listbox.com (Postfix) with ESMTP id DFF65439822
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Mar 2007 16:24:36 -0400 (EDT)
-Date: Mon, 12 Mar 2007 15:24:00 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: Re: [PATCH 1/2] [powerpc] export symbols for use by lparcfg
-Message-ID: <20070312202400.GE18478@localdomain>
-References: <20070312192114.16630.90671.stgit@joxer.rchland.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070312192114.16630.90671.stgit@joxer.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sfr@canb.auug.org.au
+Return-Path: <b04825@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 2C1D7DDDF0
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 07:40:36 +1100 (EST)
+From: Timur Tabi <timur@freescale.com>
+To: linuxppc-dev@ozlabs.org, galak@kernel.crashing.org
+Subject: [PATCH] powerpc: automatically select QE options
+Date: Mon, 12 Mar 2007 15:40:27 -0500
+Message-Id: <1173732027723-git-send-email-timur@freescale.com>
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +17,88 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Will Schmidt wrote:
-> 
-> Updates the Kconfig to allow lparcfg to be built as a module, and
-> add the necessary EXPORT_SYMBOLS needed for a successful build.
+Change the Kconfig files so that the Freescale QE options are automatically
+selected if a QE device is selected.  Previously, you'd need to manually
+select UCC_FAST if you want any "fast" UCC devices, such as Gigabit Ethernet.
+Now, the QE Gigabit Ethernet option is always available if the device has a
+QE, and UCC_FAST is automatically enabled.  A side-effect is that the
+"QE Options" menu no longer exists.
 
-Well, almost exactly a year ago lparcfg was changed to bool.  Do the
-reasons for that change still stand?
+Signed-off-by: Timur Tabi <timur@freescale.com>
+---
+ arch/powerpc/Kconfig               |    2 --
+ arch/powerpc/sysdev/qe_lib/Kconfig |   10 ++--------
+ drivers/net/Kconfig                |    9 +++++----
+ 3 files changed, 7 insertions(+), 14 deletions(-)
 
-commit 82dfdcae0d57c842e02f037758687eef42fb7af6
-Author: Paul Mackerras <paulus@samba.org>
-Date:   Tue Mar 14 11:35:37 2006 +1100
-
-    powerpc: Disallow lparcfg being a module
-    
-    The lparcfg code needs several things which are pretty arcane internal
-    details and which we don't want to export, which means that lparcfg
-    doesn't work when built as a module.  This makes it a bool instead of
-    a tristate in the Kconfig so that users can't try to build it as a
-    module.
-
-> +EXPORT_SYMBOL_GPL(lppaca);
-
-> +EXPORT_PER_CPU_SYMBOL_GPL(cpu_usage_array);
-
-> +EXPORT_SYMBOL_GPL(vdso_data);
-
-Hmm, I don't think lparcfg needs to access vdso_data at all.
-
-In pseries_lparcfg_data we have:
-
-        lrdrp = get_property(rtas_node, "ibm,lrdr-capacity", NULL);
-
-        if (lrdrp == NULL) {
-                partition_potential_processors = vdso_data->processorCount;
-        } else {
-                partition_potential_processors = *(lrdrp + 4);
-        }
-
-        partition_active_processors = lparcfg_count_active_processors();
-
-But if there's no ibm,lrdr-capacity property then the system doesn't
-support adding processors, so partition_potential_processors should be
-equal to partition_active_processors.
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 6dfbd52..54dd66c 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -396,8 +396,6 @@ endchoice
+ 
+ config QUICC_ENGINE
+ 	bool
+-	depends on PPC_MPC836x || PPC_MPC832x
+-	default y
+ 	help
+ 	  The QUICC Engine (QE) is a new generation of communications
+ 	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
+diff --git a/arch/powerpc/sysdev/qe_lib/Kconfig b/arch/powerpc/sysdev/qe_lib/Kconfig
+index a725e80..887739f 100644
+--- a/arch/powerpc/sysdev/qe_lib/Kconfig
++++ b/arch/powerpc/sysdev/qe_lib/Kconfig
+@@ -2,11 +2,8 @@
+ # QE Communication options
+ #
+ 
+-menu "QE Options"
+-	depends on QUICC_ENGINE
+-
+ config UCC_SLOW
+-	bool "UCC Slow Protocols Support"
++	bool
+ 	default n
+ 	select UCC
+ 	help
+@@ -14,10 +11,9 @@ config UCC_SLOW
+ 	  protocols: UART, BISYNC, QMC
+ 
+ config UCC_FAST
+-	bool "UCC Fast Protocols Support"
++	bool
+ 	default n
+ 	select UCC
+-	select UCC_SLOW
+ 	help
+ 	  This option provides qe_lib support to UCC fast
+ 	  protocols: HDLC, Ethernet, ATM, transparent
+@@ -26,5 +22,3 @@ config UCC
+ 	bool
+ 	default y if UCC_FAST || UCC_SLOW
+ 
+-endmenu
+-
+diff --git a/drivers/net/Kconfig b/drivers/net/Kconfig
+index d9400ef..b92a4e6 100644
+--- a/drivers/net/Kconfig
++++ b/drivers/net/Kconfig
+@@ -2272,11 +2272,12 @@ config GFAR_NAPI
+ 	depends on GIANFAR
+ 
+ config UCC_GETH
+-	tristate "Freescale QE UCC GETH"
+-	depends on QUICC_ENGINE && UCC_FAST
++	tristate "Freescale QE Gigabit Ethernet"
++	depends on QUICC_ENGINE
++	select UCC_FAST
+ 	help
+-	  This driver supports the Gigabit Ethernet mode of QE UCC.
+-	  QE can be found on MPC836x CPUs.
++	  This driver supports the Gigabit Ethernet mode of the QUICC Engine,
++	  which is available on some Freescale SOCs.
+ 
+ config UGETH_NAPI
+ 	bool "NAPI Support"
+-- 
+1.5.0.2.260.g2eb065
