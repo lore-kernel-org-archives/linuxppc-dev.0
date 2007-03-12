@@ -1,13 +1,12 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F2289DDDF0
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 07:41:45 +1100 (EST)
-Date: Mon, 12 Mar 2007 14:41:40 -0600
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id B3089DDECD
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 07:41:47 +1100 (EST)
+Date: Mon, 12 Mar 2007 14:41:42 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 02/19] bootwrapper: Set -msoft-float and assembler target
-	options.
-Message-ID: <20070312204140.GB28545@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 03/19] bootwrapper: Add ft_root_node().
+Message-ID: <20070312204142.GC28545@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -20,67 +19,67 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The bootwrapper should be built with the same target options as the
-kernel.  In particular, -msoft-float and the assembler target need to be
-set.
-
-Without -msoft-float, floating point code can be executed (causing
-problems on chips without FP).
-
-Without the assembler target option, the assembler will use the old
-dedicated mftb/mftbu instructions, rather than mfspr.  This causes the
-boot to hang on e500, which doesn't have the dedicated instructions.
+Clean up some of the open-coded data structure references by providing a
+function to return a pointer to the tree's root node.  This is only used
+in high-level functions trying to access the root of the tree, not in
+low-level code that is actually manipulating the data structure.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/Makefile      |   10 +++++++---
- arch/powerpc/boot/Makefile |    6 ++++--
- 2 files changed, 11 insertions(+), 5 deletions(-)
+ arch/powerpc/boot/flatdevtree.c |   13 +++++++++----
+ 1 files changed, 9 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index a00fe72..8e93565 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -69,7 +69,7 @@ CFLAGS-$(CONFIG_PPC64)	:= -mminimal-toc -mtraceback=none  -mcall-aixdesc
- CFLAGS-$(CONFIG_PPC32)	:= -Iarch/$(ARCH) -ffixed-r2 -mmultiple
- CPPFLAGS	+= $(CPPFLAGS-y)
- AFLAGS		+= $(AFLAGS-y)
--CFLAGS		+= -msoft-float -pipe $(CFLAGS-y)
-+CFLAGS		+= -pipe $(CFLAGS-y)
- CPP		= $(CC) -E $(CFLAGS)
- # Temporary hack until we have migrated to asm-powerpc
- LINUXINCLUDE-$(CONFIG_PPC32)	:= -Iarch/$(ARCH)/include
-@@ -116,8 +116,12 @@ cpu-as-$(CONFIG_POWER4)		+= -Wa,-maltivec
- cpu-as-$(CONFIG_E500)		+= -Wa,-me500
- cpu-as-$(CONFIG_E200)		+= -Wa,-me200
+diff --git a/arch/powerpc/boot/flatdevtree.c b/arch/powerpc/boot/flatdevtree.c
+index c76c194..02823a8 100644
+--- a/arch/powerpc/boot/flatdevtree.c
++++ b/arch/powerpc/boot/flatdevtree.c
+@@ -29,6 +29,11 @@
  
--AFLAGS += $(cpu-as-y)
--CFLAGS += $(cpu-as-y)
-+PLATFORM_AFLAGS += $(cpu-as-y)
-+PLATFORM_CFLAGS += $(cpu-as-y) -msoft-float
-+export PLATFORM_AFLAGS PLATFORM_CFLAGS
+ #define _ALIGN(x, al)	(((x) + (al) - 1) & ~((al) - 1))
+ 
++static char *ft_root_node(struct ft_cxt *cxt)
++{
++	return cxt->rgn[FT_STRUCT].start;
++}
 +
-+AFLAGS += $(PLATFORM_AFLAGS)
-+CFLAGS += $(PLATFORM_CFLAGS)
+ /* Routines for keeping node ptrs returned by ft_find_device current */
+ /* First entry not used b/c it would return 0 and be taken as NULL/error */
+ static void *ft_node_add(struct ft_cxt *cxt, char *node)
+@@ -590,7 +595,7 @@ int ft_add_rsvmap(struct ft_cxt *cxt, u64 physaddr, u64 size)
  
- head-y				:= arch/powerpc/kernel/head_32.o
- head-$(CONFIG_PPC64)		:= arch/powerpc/kernel/head_64.o
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index b1fc029..3c1202c 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -24,8 +24,10 @@ all: $(obj)/zImage
+ void ft_begin_tree(struct ft_cxt *cxt)
+ {
+-	cxt->p = cxt->rgn[FT_STRUCT].start;
++	cxt->p = ft_root_node(cxt);
+ }
  
- HOSTCC		:= gcc
- BOOTCFLAGS	:= $(HOSTCFLAGS) -fno-builtin -nostdinc -isystem \
--		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC
--BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc
-+		   $(shell $(CROSS32CC) -print-file-name=include) -fPIC \
-+		   $(PLATFORM_CFLAGS)
-+BOOTAFLAGS	:= -D__ASSEMBLY__ $(BOOTCFLAGS) -traditional -nostdinc \
-+		   $(PLATFORM_AFLAGS)
+ void ft_end_tree(struct ft_cxt *cxt)
+@@ -636,7 +641,7 @@ void *ft_find_device(struct ft_cxt *cxt, const char *srch_path)
+ 	/* require absolute path */
+ 	if (srch_path[0] != '/')
+ 		return NULL;
+-	node = ft_find_descendent(cxt, cxt->rgn[FT_STRUCT].start, srch_path);
++	node = ft_find_descendent(cxt, ft_root_node(cxt), srch_path);
+ 	return ft_node_add(cxt, node);
+ }
  
- ifeq ($(call cc-option-yn, -fstack-protector),y)
- BOOTCFLAGS	+= -fno-stack-protector
+@@ -717,7 +722,7 @@ void *ft_get_parent(struct ft_cxt *cxt, const void *phandle)
+ 			return cxt->genealogy[d > 0 ? d - 1 : 0];
+ 
+ 	/* have to do it the hard way... */
+-	p = cxt->rgn[FT_STRUCT].start;
++	p = ft_root_node(cxt);
+ 	d = 0;
+ 	while ((p = ft_next(cxt, p, &atom)) != NULL) {
+ 		switch (atom.tag) {
+@@ -855,7 +860,7 @@ void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *path)
+ 	char *p, *next;
+ 	int depth = 0;
+ 
+-	p = cxt->rgn[FT_STRUCT].start;
++	p = ft_root_node(cxt);
+ 	while ((next = ft_next(cxt, p, &atom)) != NULL) {
+ 		switch (atom.tag) {
+ 		case OF_DT_BEGIN_NODE:
 -- 
 1.5.0.3
