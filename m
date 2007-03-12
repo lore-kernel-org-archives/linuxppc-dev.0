@@ -1,12 +1,12 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 270F6DDE02
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 07:41:55 +1100 (EST)
-Date: Mon, 12 Mar 2007 14:41:50 -0600
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 65FC0DE06E
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 07:41:58 +1100 (EST)
+Date: Mon, 12 Mar 2007 14:41:53 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 08/19] bootwrapper: Rename p and pp to anchor and anchorptr.
-Message-ID: <20070312204150.GH28545@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 10/19] bootwrapper: Add ft_find_device_rel().
+Message-ID: <20070312204153.GJ28545@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -19,134 +19,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This makes the meaning of "p" clearer, and increases the visual
-difference between the two to avoid bugs such as the one fixed in
-"Modify *pp, not *p, in ft_shuffle()".
+Add a function to look up a relative, rather than absolute, path name.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/flatdevtree.c |   44 +++++++++++++++++++++-----------------
- 1 files changed, 24 insertions(+), 20 deletions(-)
+ arch/powerpc/boot/flatdevtree.c |   13 +++++++++++++
+ arch/powerpc/boot/flatdevtree.h |    2 ++
+ 2 files changed, 15 insertions(+), 0 deletions(-)
 
 diff --git a/arch/powerpc/boot/flatdevtree.c b/arch/powerpc/boot/flatdevtree.c
-index f2a29ca..0c8970e 100644
+index 605d248..b0d27c9 100644
 --- a/arch/powerpc/boot/flatdevtree.c
 +++ b/arch/powerpc/boot/flatdevtree.c
-@@ -215,23 +215,25 @@ static inline char *next_start(struct ft_cxt *cxt, enum ft_rgn_id r)
-  * See if we can expand region rgn by nextra bytes by using up
-  * free space after or before the region.
-  */
--static int ft_shuffle(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
--		int nextra)
-+static int ft_shuffle(struct ft_cxt *cxt, char **anchorptr,
-+                      enum ft_rgn_id rgn, int nextra)
- {
--	char *p = *pp;
-+	char *anchor = *anchorptr;
- 	char *rgn_start, *rgn_end;
- 
- 	rgn_start = cxt->rgn[rgn].start;
- 	rgn_end = rgn_start + cxt->rgn[rgn].size;
- 	if (nextra <= 0 || rgn_end + nextra <= next_start(cxt, rgn)) {
- 		/* move following stuff */
--		if (p < rgn_end) {
-+		if (anchor < rgn_end) {
- 			if (nextra < 0)
--				memmove(p, p - nextra, rgn_end - p + nextra);
-+				memmove(anchor, anchor - nextra,
-+				        rgn_end - anchor + nextra);
- 			else
--				memmove(p + nextra, p, rgn_end - p);
-+				memmove(anchor + nextra, anchor,
-+				        rgn_end - anchor);
- 			if (rgn == FT_STRUCT)
--				ft_node_update_after(cxt, p, nextra);
-+				ft_node_update_after(cxt, anchor, nextra);
- 		}
- 		cxt->rgn[rgn].size += nextra;
- 		if (rgn == FT_STRINGS)
-@@ -241,12 +243,13 @@ static int ft_shuffle(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
- 	}
- 	if (prev_end(cxt, rgn) <= rgn_start - nextra) {
- 		/* move preceding stuff */
--		if (p > rgn_start) {
--			memmove(rgn_start - nextra, rgn_start, p - rgn_start);
-+		if (anchor > rgn_start) {
-+			memmove(rgn_start - nextra, rgn_start,
-+			        anchor - rgn_start);
- 			if (rgn == FT_STRUCT)
--				ft_node_update_before(cxt, p, -nextra);
-+				ft_node_update_before(cxt, anchor, -nextra);
- 		}
--		*pp -= nextra;
-+		*anchorptr -= nextra;
- 		cxt->rgn[rgn].start -= nextra;
- 		cxt->rgn[rgn].size += nextra;
- 		return 1;
-@@ -254,22 +257,22 @@ static int ft_shuffle(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
- 	return 0;
+@@ -658,6 +658,19 @@ void *ft_find_device(struct ft_cxt *cxt, const char *srch_path)
+ 	return ft_get_phandle(cxt, node);
  }
  
--static int ft_make_space(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
--			 int nextra)
-+static int ft_make_space(struct ft_cxt *cxt, char **anchorptr,
-+                         enum ft_rgn_id rgn, int nextra)
++void *ft_find_device_rel(struct ft_cxt *cxt, const void *top,
++                         const char *srch_path)
++{
++	char *node;
++
++	node = ft_node_ph2node(cxt, top);
++	if (node == NULL)
++		return NULL;
++
++	node = ft_find_descendent(cxt, node, srch_path);
++	return ft_get_phandle(cxt, node);
++}
++
+ void *ft_find_descendent(struct ft_cxt *cxt, void *top, const char *srch_path)
  {
- 	unsigned long size, ssize, tot;
- 	char *str, *next;
- 	enum ft_rgn_id r;
- 
- 	if (!cxt->isordered) {
--		unsigned long rgn_off = *pp - cxt->rgn[rgn].start;
-+		unsigned long rgn_off = *anchorptr - cxt->rgn[rgn].start;
- 
- 		if (!ft_reorder(cxt, nextra))
- 			return 0;
- 
--		*pp = cxt->rgn[rgn].start + rgn_off;
-+		*anchorptr = cxt->rgn[rgn].start + rgn_off;
- 	}
--	if (ft_shuffle(cxt, pp, rgn, nextra))
-+	if (ft_shuffle(cxt, anchorptr, rgn, nextra))
- 		return 1;
- 
- 	/* See if there is space after the strings section */
-@@ -282,7 +285,8 @@ static int ft_make_space(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
- 		memmove(str, cxt->rgn[FT_STRINGS].start, ssize);
- 		cxt->rgn[FT_STRINGS].start = str;
- 		/* enough space now? */
--		if (rgn >= FT_STRUCT && ft_shuffle(cxt, pp, rgn, nextra))
-+		if (rgn >= FT_STRUCT &&
-+		    ft_shuffle(cxt, anchorptr, rgn, nextra))
- 			return 1;
- 	}
- 
-@@ -316,7 +320,7 @@ static int ft_make_space(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
- 				new_start = cxt->rgn[r].start + shift;
- 				cxt->rgn[r].start = new_start;
- 			}
--			*pp += shift;
-+			*anchorptr += shift;
- 			cxt->str_anchor += shift;
- 		}
- 
-@@ -326,7 +330,7 @@ static int ft_make_space(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
- 		memmove(str, cxt->rgn[FT_STRINGS].start, ssize);
- 		cxt->rgn[FT_STRINGS].start = str;
- 
--		if (ft_shuffle(cxt, pp, rgn, nextra))
-+		if (ft_shuffle(cxt, anchorptr, rgn, nextra))
- 			return 1;
- 	}
- 
-@@ -341,7 +345,7 @@ static int ft_make_space(struct ft_cxt *cxt, char **pp, enum ft_rgn_id rgn,
- 		ft_node_update_after(cxt, cxt->rgn[FT_STRUCT].start, nextra);
- 		cxt->rgn[FT_STRUCT].start = next;
- 
--		if (ft_shuffle(cxt, pp, rgn, nextra))
-+		if (ft_shuffle(cxt, anchorptr, rgn, nextra))
- 			return 1;
- 	}
- 
+ 	struct ft_atom atom;
+diff --git a/arch/powerpc/boot/flatdevtree.h b/arch/powerpc/boot/flatdevtree.h
+index b9cd9f6..1f37ca2 100644
+--- a/arch/powerpc/boot/flatdevtree.h
++++ b/arch/powerpc/boot/flatdevtree.h
+@@ -97,6 +97,8 @@ int ft_add_rsvmap(struct ft_cxt *cxt, u64 physaddr, u64 size);
+ void ft_dump_blob(const void *bphp);
+ void ft_merge_blob(struct ft_cxt *cxt, void *blob);
+ void *ft_find_device(struct ft_cxt *cxt, const char *srch_path);
++void *ft_find_device_rel(struct ft_cxt *cxt, const void *top,
++                         const char *srch_path);
+ void *ft_find_descendent(struct ft_cxt *cxt, void *top, const char *srch_path);
+ int ft_get_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
+ 		void *buf, const unsigned int buflen);
 -- 
 1.5.0.3
