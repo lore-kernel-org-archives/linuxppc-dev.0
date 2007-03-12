@@ -1,21 +1,14 @@
-Return-Path: <n.eicker@fz-juelich.de>
-Received: from zam837.fz-juelich.de (zam837.fz-juelich.de [134.94.100.69])
-	by ozlabs.org (Postfix) with SMTP id 65ED9DDDEF
-	for <linuxppc-dev@ozlabs.org>; Mon, 12 Mar 2007 22:21:17 +1100 (EST)
-From: Norbert Eicker <n.eicker@fz-juelich.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [PATCH] spidernet: Fix problem sending IP fragments
-Date: Mon, 12 Mar 2007 12:21:14 +0100
-References: <20070308231556.GE30703@austin.ibm.com>
-	<200703121045.49211.n.eicker@fz-juelich.de>
-	<Pine.LNX.4.62.0703121130100.15998@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0703121130100.15998@pademelon.sonytel.be>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset=iso-8859-1
-Message-Id: <200703121221.14859.n.eicker@fz-juelich.de>
-Cc: Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Jeff Garzik <jgarzik@pobox.com>, netdev@vger.kernel.org
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from news.rchland.ibm.com (rchp4.rochester.ibm.com [129.42.161.36])
+	by ozlabs.org (Postfix) with ESMTP id E8D5ADDD07
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 06:41:00 +1100 (EST)
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: [PATCH 1/2] [powerpc] export symbols for use by lparcfg
+Date: Mon, 12 Mar 2007 13:21:14 -0600
+To: linuxppc-dev@ozlabs.org
+Message-Id: <20070312192114.16630.90671.stgit@joxer.rchland.ibm.com>
+Content-Type: text/plain; charset=utf-8; format=fixed
+Cc: sfr@canb.auug.org.au, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,90 +18,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday, 12. March 2007 11:44, Geert Uytterhoeven wrote:
-> On Mon, 12 Mar 2007, Norbert Eicker wrote:
-> > On Monday, 12. March 2007 09:28, Geert Uytterhoeven wrote:
-> > > On Sat, 10 Mar 2007, Norbert Eicker wrote:
-> > > > On Friday, 9. March 2007 17:53, Jeff Garzik wrote:
-> > > > > Linas Vepstas wrote:
-> > > > > > Please apply. The rather long patch description is from the
-> > > > > > submitter, Norbert Eicker, I don't know if that's alright,
-> > > > > > or if I should ask to have it trimmed.
-> > > > > >
-> > > > > > Thanks,
-> > > > > > --linas
-> > > > > >
-> > > > > > From: Norbert Eicker <n.eicker@fz-juelich.de>
-> > > > > >
-> > > > > >
-> > > > > > Signed-off-by: Norbert Eicker <n.eicker@fz-juelich.de>
-> > > > > > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-> > > > >
-> > > > > are you sure it can't send out fragmented IP frames?  what's
-> > > > > really going on here?
-> > > >
-> > > > Pretty sure that fragmented IP frames are not send out. Here's
-> > > > a small test using ttcp and tcpdump reproducing the problem (I
-> > > > assume a MTU of 1500):
-> > >
-> > > Hence if I understand that correctly, NFS over UDP doesn't work
-> > > at all as NFS uses 8 KiB UDP packets by default?
-> >
-> > NFS seems to work but considering what I saw in tcpdump it uses TCP
-> > instead of UDP. I have not yet found out why NFS seems to default
-> > to TCP on Cell (the man-pages claims that UDP is the default).
->
-> Hmm, I just checked and for me it defaults to UDP.
->
-> > If I explicitely demand to use UDP it indeed does not work at all.
->
-> And NFS over UDP works fine on my PS3 with the gelic Ethernet driver.
-> Ethereal (on the server side) did show fragmented packets.
 
-Well, the gelic is a different driver, so for me it's no surprise it 
-shows different behavior.
+Updates the Kconfig to allow lparcfg to be built as a module, and
+add the necessary EXPORT_SYMBOLS needed for a successful build.
 
-In fact from a quick inspection I would guess that it has not the bug 
-that's inside the spidernet driver: The section I patched in 
-spider_net.c shows up similarly around line 839 in gelic_net.c. But an 
-important difference is in the lines before: It only appears in the 
-else-branch of an 'if'. This one tests if ip_summed is set to 
-CHECKSUM_PARTIAL.
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+---
 
-I.e. gelic_net.c has the test that is missing in spider_net.c.
+ arch/powerpc/kernel/paca.c             |    1 +
+ arch/powerpc/kernel/process.c          |    1 +
+ arch/powerpc/kernel/vdso.c             |    1 +
+ arch/powerpc/platforms/pseries/Kconfig |    2 +-
+ 4 files changed, 4 insertions(+), 1 deletions(-)
 
-> However, I remember having NFS problems when using a different NFS
-> server before.  I just retried using that server, and got these error
-> messages from
->
-> the gelic driver:
-> | error in received descriptor found, data_status=x70002300,
-> | data_error=x06100000 ERROR DESTROY:6100000
-> | error in received descriptor found, data_status=x70002900,
-> | data_error=x06100000 ERROR DESTROY:6100000
->
-> Ethereal (on the server side) did show fragmented packets with
-> retransmissions.
->
-> So sometimes it works, sometimes it doesn't?
->
-> The differences between the 2 NFS servers are:
->   - working one runs 2.6.11, non-working one runs 2.4.17
->   - working one is on the same subnet as the PS3, non-working one
-> isn't. - both work fine with e.g. my laptop as an NFS client
->   - both have nfs-kernel-server 1:1.0.6-3.1
->   - both have 3c905 Tornado Ethernet
->
-> For completeness, sometimes (1-2 times a week) I do see a similar
-> gelic error message when using the working NFS server, but it
-> recovers fine and never is a problem.
-
-IMHO the problem I reported is not an NFS problem at all (there might be 
-more problems in this arena;-)). As I have pointed out you can see the 
-problem even with ttcp (or some other tool sending UDP frames larger 
-than MTU - some_header_length).
-
-Norbert
--- 
-Fon ++49-(0)2461/61-1492
-http://www.fz-juelich.de
+diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
+index 55f1a25..0b2c875 100644
+--- a/arch/powerpc/kernel/paca.c
++++ b/arch/powerpc/kernel/paca.c
+@@ -45,6 +45,7 @@ struct lppaca lppaca[] = {
+ 		.vmxregs_in_use = 0,
+ 	},
+ };
++EXPORT_SYMBOL_GPL(lppaca);
+ 
+ /*
+  * 3 persistent SLBs are registered here.  The buffer will be zero
+diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
+index f3d4dd5..19b209b 100644
+--- a/arch/powerpc/kernel/process.c
++++ b/arch/powerpc/kernel/process.c
+@@ -233,6 +233,7 @@ #endif
+ 
+ #ifdef CONFIG_PPC64
+ DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
++EXPORT_PER_CPU_SYMBOL_GPL(cpu_usage_array);
+ static DEFINE_PER_CPU(unsigned long, current_dabr);
+ #endif
+ 
+diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
+index e46c31b..ea2e015 100644
+--- a/arch/powerpc/kernel/vdso.c
++++ b/arch/powerpc/kernel/vdso.c
+@@ -76,6 +76,7 @@ static union {
+ 	u8			page[PAGE_SIZE];
+ } vdso_data_store __attribute__((__section__(".data.page_aligned")));
+ struct vdso_data *vdso_data = &vdso_data_store.data;
++EXPORT_SYMBOL_GPL(vdso_data);
+ 
+ /* Format of the patch table */
+ struct vdso_patch_def
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index a57032c..4e5c8f8 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -19,7 +19,7 @@ config SCANLOG
+ 	depends on RTAS_PROC && PPC_PSERIES
+ 
+ config LPARCFG
+-	bool "LPAR Configuration Data"
++	tristate "LPAR Configuration Data"
+ 	depends on PPC_PSERIES || PPC_ISERIES
+ 	help
+ 	Provide system capacity information via human readable
