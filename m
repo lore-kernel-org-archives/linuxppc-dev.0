@@ -1,17 +1,20 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id B2DD6DDDFB
+Return-Path: <michaelidyer@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.228])
+	by ozlabs.org (Postfix) with ESMTP id D5167DDDE6
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 12 Mar 2007 18:18:09 +1100 (EST)
-Date: Mon, 12 Mar 2007 08:18:02 +0100
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Zhou Rui <vancasperz@yahoo.com.cn>
-Subject: Re: A problem of debugging kernel with BDI2000 and PPC
-Message-ID: <20070312071802.GB14658@moe.telargo.com>
-References: <754926.95105.qm@web15608.mail.cnb.yahoo.com>
+	Tue, 13 Mar 2007 00:42:08 +1100 (EST)
+Received: by wx-out-0506.google.com with SMTP id i31so1626700wxd
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 12 Mar 2007 06:42:07 -0700 (PDT)
+Message-ID: <45F558AC.9060205@gmail.com>
+Date: Mon, 12 Mar 2007 13:42:04 +0000
+From: Mike Dyer <michaelidyer@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <754926.95105.qm@web15608.mail.cnb.yahoo.com>
+To: Kunal Arya <kunalarya@gmail.com>
+Subject: Re: Kernel locked at "Now booting the kernel", Xilinx ML310 PPC405GP
+References: <68ee5ad90703091309s64018616v3ba2b25033e84844@mail.gmail.com>
+In-Reply-To: <68ee5ad90703091309s64018616v3ba2b25033e84844@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,19 +26,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 10/03/07 13:46 +0800, Zhou Rui wrote:
-> Hi, all
->     I am trying to debug a trivial "helloworld" module with BDI2000 and PPC405EP board. The kernel in the PPC board is 2.6.15 compiled from ELDK4.0. I have tried to get a load map of the module, but there is no "-m" parameter in ELDK's insmod, and if "insmod.old -m hello_module.ko > module.map" is executed, the result is "insmod QM_MODULES : Function not implemented", while "insmod hello_module.ko" runs ok. I also have tried the "insmod" provided by busybox, but there is no content in module.map after "insmod.old -m hello_module.ko > module.map".
->     So would you like to tell me it is the correct way to get the load map for module debugging? Or is there any other method to do that? Thank you very much.
+Hi Kunal,
 
-I used something like:
-~ $ insmod pcan.ko
-~ $ grep '\[pcan\]' /proc/kallsyms | sort | grep '^.\{8\} t' | head -n 1
-d1088000 t buffer_dump  [pcan]
+Apologies if I post this twice - our mail server is unreliable atm...
+> <snip>
+> I used crosstool with gcc 4.1.1 w/glibc 2.3.6. My xparameters_ml300.h
+> and .config files are pasted below.
+>
+> The problem:
+> The kernel panics after printing out the message "Now booting the
+> kernel" The exact output is this:
+>
+> loaded at:     00400000 0089C1E4
+> board data at: 00000000 00000018
+> relocated to:  00405238 00405250
+> zimage at:     00405BD3 004AFDF5
+> initrd at:     004B0000 00898382
+> avail ram:     0089D000 55555555
+>
+> Linux/PPC load: root=/dev/ram
+> Uncompressing Linux...done.
+> Now booting the kernel
+>
+>
+>   
+I had the exact same problem for a different board, using the PPC in a 
+Virtex 4 FX12, using the 2.6 kernel.  I fixed this by rolling the 
+compiler back to version 4.0.2.  Didn't do a lot of thinking about why 
+it worked, but I think it has something to do with the linker and your 
+board data (it randomly changed location every time I tried to boot).  I 
+believe it should be in the 0x00400000 range as well (not 0x00 as it is 
+in your capture).
 
-(gdb) add-symbol-file pcan.ko 0xd1088000
+As a side note: Are there any known issues using GCC 4.1.1?
 
-You should probably provide other section addresses too, if you need them.
-
-
-	Domen
+Cheers,
+Mike
