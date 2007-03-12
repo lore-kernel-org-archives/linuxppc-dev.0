@@ -1,12 +1,14 @@
 Return-Path: <will_schmidt@vnet.ibm.com>
 Received: from news.rchland.ibm.com (rchp4.rochester.ibm.com [129.42.161.36])
-	by ozlabs.org (Postfix) with ESMTP id E8D5ADDD07
+	by ozlabs.org (Postfix) with ESMTP id EB788DDD0E
 	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 06:41:00 +1100 (EST)
 From: Will Schmidt <will_schmidt@vnet.ibm.com>
-Subject: [PATCH 1/2] [powerpc] export symbols for use by lparcfg
-Date: Mon, 12 Mar 2007 13:21:14 -0600
+Subject: [PATCH 2/2] [powerpc] replace if-then-else with a switch statement
+Date: Mon, 12 Mar 2007 13:21:16 -0600
 To: linuxppc-dev@ozlabs.org
-Message-Id: <20070312192114.16630.90671.stgit@joxer.rchland.ibm.com>
+Message-Id: <20070312192116.16630.92222.stgit@joxer.rchland.ibm.com>
+In-Reply-To: <20070312192114.16630.90671.stgit@joxer.rchland.ibm.com>
+References: <20070312192114.16630.90671.stgit@joxer.rchland.ibm.com>
 Content-Type: text/plain; charset=utf-8; format=fixed
 Cc: sfr@canb.auug.org.au, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,64 +21,69 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Updates the Kconfig to allow lparcfg to be built as a module, and
-add the necessary EXPORT_SYMBOLS needed for a successful build.
+convert a compound if-else blob to a switch statement.
+This better fits the kernel coding style.
 
 Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
 ---
 
- arch/powerpc/kernel/paca.c             |    1 +
- arch/powerpc/kernel/process.c          |    1 +
- arch/powerpc/kernel/vdso.c             |    1 +
- arch/powerpc/platforms/pseries/Kconfig |    2 +-
- 4 files changed, 4 insertions(+), 1 deletions(-)
+ arch/powerpc/kernel/lparcfg.c |   43 +++++++++++++++++++++--------------------
+ 1 files changed, 22 insertions(+), 21 deletions(-)
 
-diff --git a/arch/powerpc/kernel/paca.c b/arch/powerpc/kernel/paca.c
-index 55f1a25..0b2c875 100644
---- a/arch/powerpc/kernel/paca.c
-+++ b/arch/powerpc/kernel/paca.c
-@@ -45,6 +45,7 @@ struct lppaca lppaca[] = {
- 		.vmxregs_in_use = 0,
- 	},
- };
-+EXPORT_SYMBOL_GPL(lppaca);
+diff --git a/arch/powerpc/kernel/lparcfg.c b/arch/powerpc/kernel/lparcfg.c
+index 89486b6..0a4f9f5 100644
+--- a/arch/powerpc/kernel/lparcfg.c
++++ b/arch/powerpc/kernel/lparcfg.c
+@@ -130,30 +130,31 @@ #ifdef CONFIG_PPC_PSERIES
+ /*
+  * Methods used to fetch LPAR data when running on a pSeries platform.
+  */
+-/* find a better place for this function... */
+ static void log_plpar_hcall_return(unsigned long rc, char *tag)
+ {
+-	if (rc == 0)		/* success, return */
++	switch(rc) {
++	case 0:
+ 		return;
+-/* check for null tag ? */
+-	if (rc == H_HARDWARE)
+-		printk(KERN_INFO
+-		       "plpar-hcall (%s) failed with hardware fault\n", tag);
+-	else if (rc == H_FUNCTION)
+-		printk(KERN_INFO
+-		       "plpar-hcall (%s) failed; function not allowed\n", tag);
+-	else if (rc == H_AUTHORITY)
+-		printk(KERN_INFO
+-		       "plpar-hcall (%s) failed; not authorized to this"
+-		       " function\n", tag);
+-	else if (rc == H_PARAMETER)
+-		printk(KERN_INFO "plpar-hcall (%s) failed; Bad parameter(s)\n",
+-		       tag);
+-	else
+-		printk(KERN_INFO
+-		       "plpar-hcall (%s) failed with unexpected rc(0x%lx)\n",
+-		       tag, rc);
+-
++	case H_HARDWARE:
++		printk(KERN_INFO "plpar-hcall (%s) "
++				"Hardware fault\n", tag);
++		return;
++	case H_FUNCTION:
++		printk(KERN_INFO "plpar-hcall (%s) "
++				"Function not allowed\n", tag);
++		return;
++	case H_AUTHORITY:
++		printk(KERN_INFO "plpar-hcall (%s) "
++				"Not authorized to this function\n", tag);
++		return;
++	case H_PARAMETER:
++		printk(KERN_INFO "plpar-hcall (%s) "
++				"Bad parameter(s)\n",tag);
++		return;
++	default:
++		printk(KERN_INFO "plpar-hcall (%s) "
++				"Unexpected rc(0x%lx)\n", tag, rc);
++	}
+ }
  
  /*
-  * 3 persistent SLBs are registered here.  The buffer will be zero
-diff --git a/arch/powerpc/kernel/process.c b/arch/powerpc/kernel/process.c
-index f3d4dd5..19b209b 100644
---- a/arch/powerpc/kernel/process.c
-+++ b/arch/powerpc/kernel/process.c
-@@ -233,6 +233,7 @@ #endif
- 
- #ifdef CONFIG_PPC64
- DEFINE_PER_CPU(struct cpu_usage, cpu_usage_array);
-+EXPORT_PER_CPU_SYMBOL_GPL(cpu_usage_array);
- static DEFINE_PER_CPU(unsigned long, current_dabr);
- #endif
- 
-diff --git a/arch/powerpc/kernel/vdso.c b/arch/powerpc/kernel/vdso.c
-index e46c31b..ea2e015 100644
---- a/arch/powerpc/kernel/vdso.c
-+++ b/arch/powerpc/kernel/vdso.c
-@@ -76,6 +76,7 @@ static union {
- 	u8			page[PAGE_SIZE];
- } vdso_data_store __attribute__((__section__(".data.page_aligned")));
- struct vdso_data *vdso_data = &vdso_data_store.data;
-+EXPORT_SYMBOL_GPL(vdso_data);
- 
- /* Format of the patch table */
- struct vdso_patch_def
-diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
-index a57032c..4e5c8f8 100644
---- a/arch/powerpc/platforms/pseries/Kconfig
-+++ b/arch/powerpc/platforms/pseries/Kconfig
-@@ -19,7 +19,7 @@ config SCANLOG
- 	depends on RTAS_PROC && PPC_PSERIES
- 
- config LPARCFG
--	bool "LPAR Configuration Data"
-+	tristate "LPAR Configuration Data"
- 	depends on PPC_PSERIES || PPC_ISERIES
- 	help
- 	Provide system capacity information via human readable
