@@ -1,19 +1,17 @@
-Return-Path: <ben@codiert.org>
-Received: from mail.subgra.de (subgra.de [85.10.194.48])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.subgra.de", Issuer "mail.subgra.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8B72EDDDEC
+Return-Path: <domen.puncer@telargo.com>
+Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
+	by ozlabs.org (Postfix) with ESMTP id B2DD6DDDFB
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 12 Mar 2007 18:12:09 +1100 (EST)
-Date: Mon, 12 Mar 2007 07:42:49 +0100
-From: Benjamin Krill <ben@codiert.org>
-To: "David H. Lynch Jr" <dhlii@comcast.net>
-Subject: Re: compiling withoug glibc
-Message-ID: <20070312064248.GA31115@codiert.org>
-References: <45F4D72F.8010101@comcast.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <45F4D72F.8010101@comcast.net>
+	Mon, 12 Mar 2007 18:18:09 +1100 (EST)
+Date: Mon, 12 Mar 2007 08:18:02 +0100
+From: Domen Puncer <domen.puncer@telargo.com>
+To: Zhou Rui <vancasperz@yahoo.com.cn>
+Subject: Re: A problem of debugging kernel with BDI2000 and PPC
+Message-ID: <20070312071802.GB14658@moe.telargo.com>
+References: <754926.95105.qm@web15608.mail.cnb.yahoo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <754926.95105.qm@web15608.mail.cnb.yahoo.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,54 +23,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hey,
+On 10/03/07 13:46 +0800, Zhou Rui wrote:
+> Hi, all
+>     I am trying to debug a trivial "helloworld" module with BDI2000 and PPC405EP board. The kernel in the PPC board is 2.6.15 compiled from ELDK4.0. I have tried to get a load map of the module, but there is no "-m" parameter in ELDK's insmod, and if "insmod.old -m hello_module.ko > module.map" is executed, the result is "insmod QM_MODULES : Function not implemented", while "insmod hello_module.ko" runs ok. I also have tried the "insmod" provided by busybox, but there is no content in module.map after "insmod.old -m hello_module.ko > module.map".
+>     So would you like to tell me it is the correct way to get the load map for module debugging? Or is there any other method to do that? Thank you very much.
 
-did you try the options "-nostdlib -nostdinc"?
+I used something like:
+~ $ insmod pcan.ko
+~ $ grep '\[pcan\]' /proc/kallsyms | sort | grep '^.\{8\} t' | head -n 1
+d1088000 t buffer_dump  [pcan]
 
-cheers
- ben
+(gdb) add-symbol-file pcan.ko 0xd1088000
 
-* David H. Lynch Jr | 2007-03-11 23:29:35 [-0500]:
+You should probably provide other section addresses too, if you need them.
 
->
->    I have several projects that need to be built using GCC but
->absolutely no external libraries, headers etc.
->    not glibc, not uClibc, nothing.
->
->    I also need to do this under both windows and Linux.
->
->    I have been somewhat successful by renaming directories inside the
->crosscompiler subdirectory so that gcc, ... can't find any standard
->libraries etc.
->
->    But I can not get this to work uniformly accross platforms, and I
->can not trivially reverse it when I do need glibc.
->
->    I have the vaguest clue that doing this has something to do with
->triggering gcc to run through different peices of the "specs" file,
->    but what I can find of documentation is opaque too me.
->
->    A clue would be greatly appreciated.
->
->
->
->
->
->-- 
->Dave Lynch 					  	    DLA Systems
->Software Development:  				         Embedded Linux
->717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
->fax: 1.253.369.9244 			           Cell: 1.717.587.7774
->Over 25 years' experience in platforms, languages, and technologies too numerous to list.
->
->"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
->Albert Einstein
->
->_______________________________________________
->Linuxppc-embedded mailing list
->Linuxppc-embedded@ozlabs.org
->https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
 
--- 
-[ Benjamin Krill ][ ben(@)codiert(.)org ][ http://codiert.org ]
+	Domen
