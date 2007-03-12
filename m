@@ -1,25 +1,21 @@
-Return-Path: <tlopez@aotek.es>
-Received: from smtp1.sarenet.es (smtp1.sarenet.es [194.30.0.4])
-	by ozlabs.org (Postfix) with ESMTP id 43764DDD06
+Return-Path: <glikely@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 3BC54DDD05
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Mar 2007 04:15:08 +1100 (EST)
-Received: from ntvir (unknown [212.81.206.17])
-	by smtp1.sarenet.es (Postfix) with ESMTP id 86A14120ED
+	Tue, 13 Mar 2007 05:36:46 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so1925534nfc
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 12 Mar 2007 17:48:30 +0100 (CET)
-Message-ID: <45F58503.30604@aotek.es>
-Date: Mon, 12 Mar 2007 17:51:15 +0100
-From: Txema Lopez <tlopez@aotek.es>
+	Mon, 12 Mar 2007 11:36:44 -0700 (PDT)
+Message-ID: <528646bc0703121136g628bcaf7if0ef36f87d27dc6b@mail.gmail.com>
+Date: Mon, 12 Mar 2007 12:36:43 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Problem in compiling a kernel module
+In-Reply-To: <20070312170030.GA5613@server.idefix.lan>
 MIME-Version: 1.0
-To: amoll@ganssloser.com
-Subject: Re: MPC5200B TxRTS auto-toggle mode. (Txema Lopez)
-References: <OF0886F27A.F554CD9A-ONC125729C.004BF911-C125729C.004C7652@avat.
-	local>
-In-Reply-To: <OF0886F27A.F554CD9A-ONC125729C.004BF911-C125729C.004C7652@avat
-	.local>
-Content-Type: multipart/mixed;
-	boundary=------------010900080501080905050605
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070312170030.GA5613@server.idefix.lan>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,46 +26,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------010900080501080905050605
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Albrecht Moll wrote:
-
-
->For your particular case it probably makes more sense to use the TxEMP
->interrupt of the PSC and deassert RTS manually in the interrupt
->service routine.
->  
+On 3/12/07, Matthias Fechner <idefix@fechner.net> wrote:
+> If I try now to compile to kernel I got the following error message:
+> WARNING: drivers/i2c/chips/max6633.o - Section mismatch: reference to
+> .init.data: from .text after 'cleanup_module' (at offset 0x196)
+> WARNING: drivers/i2c/chips/max6633.o - Section mismatch: reference to
+> .init.data: from .text after 'cleanup_module' (at offset 0x1a6)
+> WARNING: drivers/i2c/chips/max6633.o - Section mismatch: reference to
+> .init.data: from .text after 'cleanup_module' (at offset 0x1da)
+> WARNING: drivers/i2c/chips/max6633.o - Section mismatch: reference to
+> .init.data: from .text after 'cleanup_module' (at offset 0x1e2)
 >
-Thanks Albrecht, this has been my approach. I have tested it in a custom 
-board and It works. I'have put the patch for a 2.4.xx version in my work 
-pipeline.
+> What does that mean or how can debug or solve the problem?
+>
 
+Looks like you're trying to access inital data (which is freed after
+module load) from regular code (which is not)
 
+g.
 
-
---------------010900080501080905050605
-Content-Type: text/x-vcard; charset=utf-8;
- name="tlopez.vcf"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: attachment;
- filename="tlopez.vcf"
-
-begin:vcard
-fn:Jose Maria Lopez
-n:Lopez;Jose Maria
-org:Fagor Automation S. Coop.
-adr:;;San Andres 19. Apdo. 144;Arrasate-Mondragon;;20500;Spain
-email;internet:tlopez@aotek.es
-title:Sotware engineer
-tel;work:(34) 943719200
-tel;fax:(34) 943791712 
-x-mozilla-html:FALSE
-url:http://www.fagorautomation.es
-version:2.1
-end:vcard
-
-
---------------010900080501080905050605--
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
