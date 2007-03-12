@@ -1,12 +1,13 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id C1267DE0D9
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 07:42:03 +1100 (EST)
-Date: Mon, 12 Mar 2007 14:41:58 -0600
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id D3A51DE0ED
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 07:42:04 +1100 (EST)
+Date: Mon, 12 Mar 2007 14:41:59 -0600
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 13/19] bootwrapper: Add ft_find_node_by_prop_value().
-Message-ID: <20070312204158.GM28545@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 14/19] bootwrapper: Make ft_create_node() pay attention to the
+	parent parameter.
+Message-ID: <20070312204159.GN28545@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -19,102 +20,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ft_find_node_by_prop_value() finds nodes with the specified
-property/value pair.
-
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- arch/powerpc/boot/flatdevtree.c |   65 +++++++++++++++++++++++++++++++++++++++
- arch/powerpc/boot/flatdevtree.h |    3 ++
- 2 files changed, 68 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/flatdevtree.c |   17 ++++++++++++-----
+ arch/powerpc/boot/flatdevtree.h |    1 +
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/boot/flatdevtree.c b/arch/powerpc/boot/flatdevtree.c
-index 8afb835..97698a9 100644
+index 97698a9..8b67745 100644
 --- a/arch/powerpc/boot/flatdevtree.c
 +++ b/arch/powerpc/boot/flatdevtree.c
-@@ -824,6 +824,71 @@ int ft_get_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
+@@ -965,19 +965,26 @@ int ft_del_prop(struct ft_cxt *cxt, const void *phandle, const char *propname)
  	return -1;
  }
  
-+void *__ft_find_node_by_prop_value(struct ft_cxt *cxt, void *prev,
-+                                   const char *propname, const char *propval,
-+                                   unsigned int proplen)
-+{
-+	struct ft_atom atom;
-+	char *p = ft_root_node(cxt);
-+	char *next;
-+	int past_prev = prev ? 0 : 1;
-+	int depth = -1;
-+
-+	while ((next = ft_next(cxt, p, &atom)) != NULL) {
-+		const void *data;
-+		unsigned int size;
-+
-+		switch (atom.tag) {
-+		case OF_DT_BEGIN_NODE:
-+			depth++;
-+
-+			if (prev == p) {
-+				past_prev = 1;
-+				break;
-+			}
-+
-+			if (!past_prev || depth < 1)
-+				break;
-+
-+			data = __ft_get_prop(cxt, p, propname, &size);
-+			if (!data || size != proplen)
-+				break;
-+			if (memcmp(data, propval, size))
-+				break;
-+
-+			return p;
-+
-+		case OF_DT_END_NODE:
-+			if (depth-- == 0)
-+				return NULL;
-+
-+			break;
-+		}
-+
-+		p = next;
-+	}
-+
-+	return NULL;
-+}
-+
-+void *ft_find_node_by_prop_value(struct ft_cxt *cxt, const void *prev,
-+                                 const char *propname, const char *propval,
-+                                 int proplen)
-+{
-+	void *node = NULL;
-+
-+	if (prev) {
-+		node = ft_node_ph2node(cxt, prev);
-+
-+		if (!node)
-+			return NULL;
-+	}
-+
-+	node = __ft_find_node_by_prop_value(cxt, node, propname,
-+	                                    propval, proplen);
-+	return ft_get_phandle(cxt, node);
-+}
-+
- int ft_set_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
- 		const void *buf, const unsigned int buflen)
+-void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *path)
++void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *name)
  {
+ 	struct ft_atom atom;
+ 	char *p, *next;
+ 	int depth = 0;
+ 
+-	p = ft_root_node(cxt);
++	if (parent) {
++		p = ft_node_ph2node(cxt, parent);
++		if (!p)
++			return NULL;
++	} else {
++		p = ft_root_node(cxt);
++	}
++
+ 	while ((next = ft_next(cxt, p, &atom)) != NULL) {
+ 		switch (atom.tag) {
+ 		case OF_DT_BEGIN_NODE:
+ 			++depth;
+-			if (depth == 1 && strcmp(atom.name, path) == 0)
+-				/* duplicate node path, return error */
++			if (depth == 1 && strcmp(atom.name, name) == 0)
++				/* duplicate node name, return error */
+ 				return NULL;
+ 			break;
+ 		case OF_DT_END_NODE:
+@@ -986,7 +993,7 @@ void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *path)
+ 				break;
+ 			/* end of node, insert here */
+ 			cxt->p = p;
+-			ft_begin_node(cxt, path);
++			ft_begin_node(cxt, name);
+ 			ft_end_node(cxt);
+ 			return p;
+ 		}
 diff --git a/arch/powerpc/boot/flatdevtree.h b/arch/powerpc/boot/flatdevtree.h
-index 9500424..e3e3e79 100644
+index e3e3e79..cb26325 100644
 --- a/arch/powerpc/boot/flatdevtree.h
 +++ b/arch/powerpc/boot/flatdevtree.h
-@@ -105,5 +105,8 @@ int ft_get_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
- int ft_set_prop(struct ft_cxt *cxt, const void *phandle, const char *propname,
- 		const void *buf, const unsigned int buflen);
- void *ft_get_parent(struct ft_cxt *cxt, const void *phandle);
-+void *ft_find_node_by_prop_value(struct ft_cxt *cxt, const void *prev,
-+                                 const char *propname, const char *propval,
-+                                 int proplen);
+@@ -108,5 +108,6 @@ void *ft_get_parent(struct ft_cxt *cxt, const void *phandle);
+ void *ft_find_node_by_prop_value(struct ft_cxt *cxt, const void *prev,
+                                  const char *propname, const char *propval,
+                                  int proplen);
++void *ft_create_node(struct ft_cxt *cxt, const void *parent, const char *name);
  
  #endif /* FLATDEVTREE_H */
 -- 
