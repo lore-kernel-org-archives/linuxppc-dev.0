@@ -1,18 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 80A91DDDEF
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 00:54:35 +1100 (EST)
+Return-Path: <glikely@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
+	by ozlabs.org (Postfix) with ESMTP id 73CC4DDDE6
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 01:00:25 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so2280403nfc
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 07:00:23 -0700 (PDT)
+Message-ID: <528646bc0703130700o4773f0c6g460cc2d53ea90da9@mail.gmail.com>
+Date: Tue, 13 Mar 2007 08:00:09 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Christoph Hellwig" <hch@lst.de>
 Subject: Re: [PATCH] ppc: Add support for bigger page sizes than 4KB on PPC44x
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20070313093754.4DE90353A9E@atlas.denx.de>
-References: <20070313093754.4DE90353A9E@atlas.denx.de>
-Content-Type: text/plain
-Date: Tue, 13 Mar 2007 14:54:27 +0100
-Message-Id: <1173794067.24454.78.camel@localhost.localdomain>
-Mime-Version: 1.0
+In-Reply-To: <20070313094229.GA13567@lst.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200703122254.27087.sr@denx.de> <20070313094229.GA13567@lst.de>
 Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,46 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-03-13 at 10:37 +0100, Wolfgang Denk wrote:
-> Dear Ben,
-> 
-> in message <1173769934.24454.67.camel@localhost.localdomain> you wrote:
-> >
-> >  - It's arch/ppc. We shouldn't do new major features on this codebase.
-> > You are welcome however in helping moving over 4xx to arch/powerpc :-)
-> 
-> Will do that as soon as we have an arch/powerpc port for the 440SP /
-> 440SPe
+On 3/13/07, Christoph Hellwig <hch@lst.de> wrote:
+> On Mon, Mar 12, 2007 at 10:54:26PM +0100, Stefan Roese wrote:
+> >  arch/ppc/Kconfig               |   10 ++++++++
+> >  arch/ppc/kernel/head_44x.S     |   23 ++++++++++---------
+> >  arch/ppc/kernel/misc.S         |   13 ++++++-----
+> >  arch/ppc/kernel/vmlinux.lds.S  |   15 +++++++-----
+> >  include/asm-ppc/page.h         |    6 ++++-
+> >  include/asm-ppc/ppc_page_asm.h |   49 ++++++++++++++++++++++++++++++++++++++++
+>
+> I though we'd given up on arch/ppc by now?
+> Can you try to redo this over the arch/powerpc/ 44x port?
 
-Ah great. I was thinking about working on 440GX after I'm back from the
-ski. (I have a Taishan board)
+Not dead yet.  arch/powerpc support is not complete for 4xx cores and
+older bootloaders cannot boot arch/powerpc kernels yet.
 
-We'll need to look into the MSI problem for SPe I suppose too...
-hopefully Michael should have a proper MSI core merged upstream soom
-(/me crosses fingers).
+g.
 
-> >  - Have you tried other page sizes ? How hard would it be to support 16K
-> > and what kind of performance numbers do you get with 16K ? It's a better
-> 
-> 16 kB should work, but was not tested so far. From our RAID oriented
-> calculations it's not interesting.
-
-Fair enough. I still think it would be useful for other workloads to
-have that choice though :-)
-
-> We tried 256 kB, but kernel linking fails with a "Not enough room for
-> program headers" error message. We will investigate this ASAP, but at
-> the moment we have other priorities. [Any hints what might  go  wrong
-> are welcome.]
-
-256K will not be doable without serious hacking afaik. Anything above
-64K. You won't be able to run most userland apps for example as the
-sections are generally 64K aligned.
-
-> Agreed, but this obviously depends  on  the  sort  of  application(s)
-> you're running.
-
-Definitely.
-
-Cheers,
-Ben.
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
