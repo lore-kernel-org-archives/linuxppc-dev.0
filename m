@@ -2,18 +2,19 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F3801DDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 18:12:21 +1100 (EST)
-Subject: Re: [PATCH] ppc: Add support for bigger page sizes than 4KB on PPC44x
+	by ozlabs.org (Postfix) with ESMTP id 88936DDDFD
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 18:15:02 +1100 (EST)
+Subject: Re: [PATCH] Add irq host and hwirq pair fields to output when
+	showing interrupts.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stefan Roese <sr@denx.de>
-In-Reply-To: <200703122254.27087.sr@denx.de>
-References: <200703122254.27087.sr@denx.de>
+To: Zhang Wei <wei.zhang@freescale.com>
+In-Reply-To: <1173755968459-git-send-email-wei.zhang@freescale.com>
+References: <1173755968459-git-send-email-wei.zhang@freescale.com>
 Content-Type: text/plain
-Date: Tue, 13 Mar 2007 08:12:14 +0100
-Message-Id: <1173769934.24454.67.camel@localhost.localdomain>
+Date: Tue, 13 Mar 2007 08:14:52 +0100
+Message-Id: <1173770092.24454.69.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, r54964@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,38 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-03-12 at 22:54 +0100, Stefan Roese wrote:
-> This patch adds support for the PAGE_SIZE set equal to 64 KB on
-> PPC32 platforms. Increasing the PAGE_SIZE may improve the performance
-> of the system in some cases.
+On Tue, 2007-03-13 at 11:19 +0800, Zhang Wei wrote:
+> Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> ---
+>  arch/powerpc/kernel/irq.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
 > 
-> The RAID processing with the dedicated hardware that offloads the CPU
-> is one of such cases. Using the bigger PAGE_SIZE we decrease the number
-> of CPU operations required to process the data blocks, decrease the
-> control overheads and so improve the overall performance. For example,
-> changing the PAGE_SIZE from 4KB to 64KB on a Yucca (440SPe) gives ~300%
-> performance benefit of the full-stripe writing in the (7d+1p) RAID-5
-> setup.
-> 
-> Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
-> Acked-by: Wolfgang Denk <wd@denx.de>
-> Acked-by: Stefan Roese <sr@denx.de>
+> diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> index 919fbf5..2a30ffd 100644
+> --- a/arch/powerpc/kernel/irq.c
+> +++ b/arch/powerpc/kernel/irq.c
+> @@ -194,7 +194,7 @@ #else
+>  		seq_printf(p, "%10u ", kstat_irqs(i));
+>  #endif /* CONFIG_SMP */
+>  		if (desc->chip)
+> -			seq_printf(p, " %s ", desc->chip->typename);
+> +			seq_printf(p, " (%3d) @%s ", (irq_map[i].host->revmap_type == IRQ_HOST_MAP_LEGACY) ? i : virq_to_hw(i), desc->chip->typename);
+>  		else
+>  			seq_puts(p, "  None      ");
+>  		seq_printf(p, "%s", (desc->status & IRQ_LEVEL) ? "Level " : "Edge  ");
 
-While it's a good idea, there are a couple of issues with the patch:
+Well, first, we shouldn't modify the output of /proc/interrupts as this
+will likely break all sort of userland tools displaying it (well, I
+think).
 
- - It's arch/ppc. We shouldn't do new major features on this codebase.
-You are welcome however in helping moving over 4xx to arch/powerpc :-)
+Now, regarding the patch itself, printing the hw irq is not that useful
+without some indication of which host it belongs to. Best is to add a
+name() or something like that to the host ops.
 
- - You only adapted head_4xx.S but the config option is global to all of
-arch/ppc, thus changing it will probably break everything else. Make
-sure the option is done in such a way that it can't be changed or the
-kernel doesn't build if changed for a processor family where you haven't
-implemented the support
-
- - Have you tried other page sizes ? How hard would it be to support 16K
-and what kind of performance numbers do you get with 16K ? It's a better
-compromise for some applications as 64K causes significant bloat of the
-page cache (among other things).
-
-Cheers,
 Ben.
