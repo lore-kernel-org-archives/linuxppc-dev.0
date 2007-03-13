@@ -1,29 +1,14 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[217.147.92.249])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9F14DDDE42
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 20:57:07 +1100 (EST)
-Date: Tue, 13 Mar 2007 09:56:52 +0000
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Heiko Carstens <heiko.carstens@de.ibm.com>,
-	Andreas Schwab <schwab@suse.de>,
-	Giuliano Pochini <pochini@denise.shiny.it>, linuxppc-dev@ozlabs.org,
-	linux-kernel@vger.kernel.org, Suresh Siddha <suresh.b.siddha@intel.com>
-Subject: Re: /sys/devices/system/cpu/cpuX/online are missing
-Message-ID: <20070313095652.GB20518@flint.arm.linux.org.uk>
-References: <20070311222652.5ea40da1.pochini@shiny.it>
-	<20070312085826.GA9985@osiris.boeblingen.de.ibm.com>
-	<Pine.LNX.4.64.0703122337350.25919@denise.shiny.it>
-	<je6496asea.fsf@sykes.suse.de>
-	<20070313090350.GA9890@osiris.boeblingen.de.ibm.com>
-	<20070313091159.GB9890@osiris.boeblingen.de.ibm.com>
-	<20070313094038.GA20518@flint.arm.linux.org.uk>
-Mime-Version: 1.0
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 13 Mar 2007 20:54:12 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Christoph Hellwig <hch@lst.de>
+Subject: Re: [PATCH] ppc: Add support for bigger page sizes than 4KB on PPC44x
+Message-ID: <20070313095412.GA14262@localhost.localdomain>
+References: <200703122254.27087.sr@denx.de> <20070313094229.GA13567@lst.de>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070313094038.GA20518@flint.arm.linux.org.uk>
-Sender: Russell King <rmk@arm.linux.org.uk>
+In-Reply-To: <20070313094229.GA13567@lst.de>
+Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,69 +18,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 13, 2007 at 09:40:39AM +0000, Russell King wrote:
-> On Tue, Mar 13, 2007 at 10:11:59AM +0100, Heiko Carstens wrote:
-> > On Tue, Mar 13, 2007 at 10:03:50AM +0100, Heiko Carstens wrote:
-> > > I was referring to arch/ppc not arch/powerpc. But it seems that arch/ppc
-> > > doesn't support cpu hotplug anyway. So I guess it's indeed just a missing
-> > > config option.
-> > > 
-> > > Grepping a bit further shows that arm suffered by the change that inverted
-> > > the logic if the 'online' attribute for cpus should appear. Since arm
-> > > supports cpu hotplug but the patch left arm out, it doesn't work there
-> > > anymore (cc'ing arm people: changeset 72486f1f8f0a2bc828b9d30cf4690cf2dd6807fc
-> > > is most probably disabling cpu hotplug support on arm like it did on s390).
-> > 
-> > Should have cc'ed Suresh Siddha who caused the breakage ;)
+On Tue, Mar 13, 2007 at 10:42:29AM +0100, Christoph Hellwig wrote:
+> On Mon, Mar 12, 2007 at 10:54:26PM +0100, Stefan Roese wrote:
+> >  arch/ppc/Kconfig               |   10 ++++++++
+> >  arch/ppc/kernel/head_44x.S     |   23 ++++++++++---------
+> >  arch/ppc/kernel/misc.S         |   13 ++++++-----
+> >  arch/ppc/kernel/vmlinux.lds.S  |   15 +++++++-----
+> >  include/asm-ppc/page.h         |    6 ++++-
+> >  include/asm-ppc/ppc_page_asm.h |   49 ++++++++++++++++++++++++++++++++++++++++
 > 
-> Welcome to why cleanups are bad news. ;(  Yes, ARM also needs to be fixed
-> and I'd ask that in future people doing cleanups in core code take a little
-> more time to review the code before submitting patches *AND* give heads-up
-> to *EVERYONE* who might be affected by the change.
+> I though we'd given up on arch/ppc by now?
+> Can you try to redo this over the arch/powerpc/ 44x port?
 
-Right, here's the ARM fix which is now in the ARM tree:
-
-# Base git commit: 8b9909ded6922c33c221b105b26917780cfa497d
-#	(Merge branch 'merge' of master.kernel.org:/pub/scm/linux/kernel/git/paulus/powerpc)
-#
-# Author:    Russell King (Tue Mar 13 09:54:21 GMT 2007)
-# Committer: Russell King (Tue Mar 13 09:54:21 GMT 2007)
-#   
-#   [ARM] Fix breakage caused by 72486f1f8f0a2bc828b9d30cf4690cf2dd6807fc
-#   
-#   72486f1f8f0a2bc828b9d30cf4690cf2dd6807fc inverted the sense for
-#   enabling hotplug CPU controls without reference to any other
-#   architecture other than i386, ia64 and PowerPC.  This left
-#   everyone else without hotplug CPU control.
-#   
-#   Fix ARM for this brain damage.
-#   
-#   Signed-off-by: Russell King
-#
-#    arch/arm/kernel/setup.c |    7 +++++--
-#    1 files changed, 5 insertions(+), 2 deletions(-)
-#
-diff --git a/arch/arm/kernel/setup.c b/arch/arm/kernel/setup.c
-index 03e37af..0453dcc 100644
---- a/arch/arm/kernel/setup.c
-+++ b/arch/arm/kernel/setup.c
-@@ -839,8 +839,11 @@ static int __init topology_init(void)
- {
- 	int cpu;
- 
--	for_each_possible_cpu(cpu)
--		register_cpu(&per_cpu(cpu_data, cpu).cpu, cpu);
-+	for_each_possible_cpu(cpu) {
-+		struct cpuinfo_arm *cpuinfo = &per_cpu(cpu_data, cpu);
-+		cpuinfo->cpu.hotpluggable = 1;
-+		register_cpu(&cpuinfo->cpu, cpu);
-+	}
- 
- 	return 0;
- }
-
+The arch/powerpc 44x port is hardly complete yet...
 
 -- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
