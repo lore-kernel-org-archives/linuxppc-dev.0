@@ -1,16 +1,14 @@
-Return-Path: <wei.zhang@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 7542BDDDF5
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 14:14:13 +1100 (EST)
-From: Zhang Wei <wei.zhang@freescale.com>
-To: paulus@samba.org, galak@kernel.crashing.org
-Subject: [PATCH] Add irq host and hwirq pair fields to output when showing
-	interrupts.
-Date: Tue, 13 Mar 2007 11:19:28 +0800
-Message-Id: <1173755968459-git-send-email-wei.zhang@freescale.com>
-Sender: Zhang Wei <wei.zhang@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, r54964@freescale.com
-Reply-To: Zhang Wei <wei.zhang@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17910.12015.508991.966593@cargo.ozlabs.ibm.com>
+Date: Tue, 13 Mar 2007 15:56:15 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Stefan Roese <sr@denx.de>
+Subject: Re: [PATCH] ppc: Add support for bigger page sizes than 4KB on PPC44x
+In-Reply-To: <200703122254.27087.sr@denx.de>
+References: <200703122254.27087.sr@denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,23 +18,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
----
- arch/powerpc/kernel/irq.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+Stefan Roese writes:
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 919fbf5..2a30ffd 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -194,7 +194,7 @@ #else
- 		seq_printf(p, "%10u ", kstat_irqs(i));
- #endif /* CONFIG_SMP */
- 		if (desc->chip)
--			seq_printf(p, " %s ", desc->chip->typename);
-+			seq_printf(p, " (%3d) @%s ", (irq_map[i].host->revmap_type == IRQ_HOST_MAP_LEGACY) ? i : virq_to_hw(i), desc->chip->typename);
- 		else
- 			seq_puts(p, "  None      ");
- 		seq_printf(p, "%s", (desc->status & IRQ_LEVEL) ? "Level " : "Edge  ");
--- 
-1.4.0
+> +config PPC_PAGE_SHIFT
+> +	int "Page size (12=>4KB; 16=>64KB)"
+> +	default "12"
+> +	range 12 16
+> +	help
+> +	  The PAGE_SIZE definition. Increasing the page size may 
+> +	  improve the system performance in some dedicated cases.
+> +
+> +	  If unsure, set it to 12 (4KB).
+
+[snip]
+
+> +#else
+> +#error "Unsupported PAGE_SIZE"
+> +#endif
+
+If you only support 4k and 64k page sizes, why do you let the user
+choose 13, 14 or 15 for PPC_PAGE_SHIFT?  Why not just have a "64k
+pages" boolean option like 64-bit powerpc does?
+
+Paul.
