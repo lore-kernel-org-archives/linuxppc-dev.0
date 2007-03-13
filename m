@@ -1,34 +1,25 @@
-Return-Path: <stevewin@us.ibm.com>
-Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D15ABDDE01
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 10:15:00 +1100 (EST)
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
-	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l2DHiT2d015001
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 13:44:30 -0400
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2DHdT9c026370
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 13:39:29 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2DHdS3F048004
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 11:39:28 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2DHdRrb029619
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 11:39:28 -0600
-To: benh@kernel.crashing.org
-MIME-Version: 1.0
-Subject: Fw: [PATCH 2/15] Automatically lmb_reserve() initrd
-Message-ID: <OF526C2D02.381593EB-ON8725729D.005FC841-8525729D.0060FE86@us.ibm.com>
-From: Stephen Winiecki <stevewin@us.ibm.com>
-Date: Tue, 13 Mar 2007 13:43:00 -0400
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B4C3EDDE16
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 10:16:12 +1100 (EST)
+In-Reply-To: <45F6F4EE.8090504@freescale.com>
+References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
+	<4CB3B3D5-6D4A-4D67-92FC-3B8C38850326@kernel.crashing.org>
+	<20070313181617.GA5360@ld0162-tx32.am.freescale.net>
+	<F7652F68-D6FF-465C-BC8F-4F0C4D976AC0@kernel.crashing.org>
+	<45F6F4EE.8090504@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <989DE823-E0A3-47F6-9831-A3A86FE22367@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+Date: Tue, 13 Mar 2007 14:13:05 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,33 +29,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 03/12/2007 
-05:25:32 PM:
 
-> 
-> > It might be helpful if some kind of message was surfaced if the 
-> > initrd-start/end properties didn't exist in the dt, esp. since it may 
-not 
-> > be well known initially as a dts definition requirement/option (voice 
-of 
-> > experience :)).  In general I think surfacing messages for any 
-properties 
-> > which are detected as not existing and which might be normally 
-expected 
-> > would be a good thing as people get familiar with defining dts files 
-and 
-> > specifying properties for their platforms. 
-> 
-> Well.. initrd is totally optional...
-> 
+On Mar 13, 2007, at 2:01 PM, Scott Wood wrote:
 
-I understand - I guess I am just thinking of the case where someone didn't 
-define the property because they were not aware of it - esp in this case 
-where the existence of the property name is all that is required for the 
-value to be filled in properly by the init code.  Instead of just setting 
-the start/end to 0 - maybe include a message something like (even if 
-debug) "No initird-start/end property found - setting to 0" - just a minor 
-example.  The larger point also being that defining dts files and 
-properties may be a new thing for many people with the new support - might 
-be helpful to surface missing properties when appropriate (I'm not 
-condoning mass amounts of messages for everything). 
+> Kumar Gala wrote:
+>> On Mar 13, 2007, at 1:16 PM, Scott Wood wrote:
+>>> On Mon, Mar 12, 2007 at 04:07:57PM -0500, Kumar Gala wrote:
+>>>> Why is linux,stdout-path needed by cuboot?
+>>>
+>>> It's used by serial.c to find the console, and the kernel  
+>>> requires  it as
+>>> well.  There's no information in the bd_t that would allow the
+>>> bootwrapper to generate this, so it has to come from the device  
+>>> tree.
+>>>
+>>> The only reason it's not required with dt-enabled u-boot is that  
+>>> u- boot
+>>> has it hardcoded in the board's config file.
+>> I don't think we should put this into the .dts but, have code in  
+>> the  wrapper that handles it.
+>
+> How?  Any means I can think of would be uglier, more complex, and/ 
+> or put information in the bootwrapper that it shouldn't have.
+>
+> I think it belongs in the dts, anyway...  The default serial port  
+> is more a property of the board than a configuration issue  
+> (although it has aspects of both).  Any bootloader that wants to  
+> set a non-default serial port is welcome to overwrite the property.
+
+I'll buy that, I forget that the dts is suppose to be board specific :)
+
+Did this really work for 8560 and CPM based uarts?
+
+- k
