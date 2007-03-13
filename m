@@ -1,22 +1,18 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <b07421@freescale.com>
 Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id A6DFBDDDF4
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 10:00:40 +1100 (EST)
-Message-ID: <45F6FAC5.3040504@freescale.com>
-Date: Tue, 13 Mar 2007 13:25:57 -0600
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 84F7ADDE0E
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 10:13:41 +1100 (EST)
+Date: Tue, 13 Mar 2007 12:16:17 -0600
 From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
 To: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
 	(a.k.a. cuImage, cuboot)
+Message-ID: <20070313181617.GA5360@ld0162-tx32.am.freescale.net>
 References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
 	<4CB3B3D5-6D4A-4D67-92FC-3B8C38850326@kernel.crashing.org>
-	<20070313181617.GA5360@ld0162-tx32.am.freescale.net>
-	<F7652F68-D6FF-465C-BC8F-4F0C4D976AC0@kernel.crashing.org>
-	<45F6F4EE.8090504@freescale.com>
-	<989DE823-E0A3-47F6-9831-A3A86FE22367@kernel.crashing.org>
-In-Reply-To: <989DE823-E0A3-47F6-9831-A3A86FE22367@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4CB3B3D5-6D4A-4D67-92FC-3B8C38850326@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,13 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> I'll buy that, I forget that the dts is suppose to be board specific :)
+On Mon, Mar 12, 2007 at 04:07:57PM -0500, Kumar Gala wrote:
+> On Mar 12, 2007, at 3:42 PM, Scott Wood wrote:
+> >The device trees currently in the kernel tree must have
+> >/chosen/linux,stdout-path added to work with cuboot.
 > 
-> Did this really work for 8560 and CPM based uarts?
+> Why is linux,stdout-path needed by cuboot?
 
-There's no support for CPM uarts in the bootwrapper yet.  I'm tempted to 
-just disable bootwrapper console I/O for such boards, as the command 
-line can be changed from u-boot and passed through the bd_t.
+It's used by serial.c to find the console, and the kernel requires it as
+well.  There's no information in the bd_t that would allow the
+bootwrapper to generate this, so it has to come from the device tree.
+
+The only reason it's not required with dt-enabled u-boot is that u-boot
+has it hardcoded in the board's config file.
+
+> > arch/powerpc/platforms/83xx/mpc834x_mds.c |    5 +-
+> 
+> the whitespace fixup in mpc834x_mds.c shouldn't be part of this.
+
+Oops.  I need to be more careful with 'git commit -a'. :-(
 
 -Scott
