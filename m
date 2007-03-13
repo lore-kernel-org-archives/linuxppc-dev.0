@@ -1,19 +1,34 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 84F7ADDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 10:13:41 +1100 (EST)
-Date: Tue, 13 Mar 2007 12:16:17 -0600
-From: Scott Wood <scottwood@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
-	(a.k.a. cuImage, cuboot)
-Message-ID: <20070313181617.GA5360@ld0162-tx32.am.freescale.net>
-References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
-	<4CB3B3D5-6D4A-4D67-92FC-3B8C38850326@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4CB3B3D5-6D4A-4D67-92FC-3B8C38850326@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <stevewin@us.ibm.com>
+Received: from over.ny.us.ibm.com (over.ny.us.ibm.com [32.97.182.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "over.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D15ABDDE01
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 10:15:00 +1100 (EST)
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+	by pokfb.esmtp.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
+	l2DHiT2d015001
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=OK)
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 13:44:30 -0400
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2DHdT9c026370
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 13:39:29 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l2DHdS3F048004
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 11:39:28 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2DHdRrb029619
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 11:39:28 -0600
+To: benh@kernel.crashing.org
+MIME-Version: 1.0
+Subject: Fw: [PATCH 2/15] Automatically lmb_reserve() initrd
+Message-ID: <OF526C2D02.381593EB-ON8725729D.005FC841-8525729D.0060FE86@us.ibm.com>
+From: Stephen Winiecki <stevewin@us.ibm.com>
+Date: Tue, 13 Mar 2007 13:43:00 -0400
+Content-Type: text/plain; charset="US-ASCII"
+Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +38,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 12, 2007 at 04:07:57PM -0500, Kumar Gala wrote:
-> On Mar 12, 2007, at 3:42 PM, Scott Wood wrote:
-> >The device trees currently in the kernel tree must have
-> >/chosen/linux,stdout-path added to work with cuboot.
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote on 03/12/2007 
+05:25:32 PM:
+
 > 
-> Why is linux,stdout-path needed by cuboot?
-
-It's used by serial.c to find the console, and the kernel requires it as
-well.  There's no information in the bd_t that would allow the
-bootwrapper to generate this, so it has to come from the device tree.
-
-The only reason it's not required with dt-enabled u-boot is that u-boot
-has it hardcoded in the board's config file.
-
-> > arch/powerpc/platforms/83xx/mpc834x_mds.c |    5 +-
+> > It might be helpful if some kind of message was surfaced if the 
+> > initrd-start/end properties didn't exist in the dt, esp. since it may 
+not 
+> > be well known initially as a dts definition requirement/option (voice 
+of 
+> > experience :)).  In general I think surfacing messages for any 
+properties 
+> > which are detected as not existing and which might be normally 
+expected 
+> > would be a good thing as people get familiar with defining dts files 
+and 
+> > specifying properties for their platforms. 
 > 
-> the whitespace fixup in mpc834x_mds.c shouldn't be part of this.
+> Well.. initrd is totally optional...
+> 
 
-Oops.  I need to be more careful with 'git commit -a'. :-(
-
--Scott
+I understand - I guess I am just thinking of the case where someone didn't 
+define the property because they were not aware of it - esp in this case 
+where the existence of the property name is all that is required for the 
+value to be filled in properly by the init code.  Instead of just setting 
+the start/end to 0 - maybe include a message something like (even if 
+debug) "No initird-start/end property found - setting to 0" - just a minor 
+example.  The larger point also being that defining dts files and 
+properties may be a new thing for many people with the new support - might 
+be helpful to surface missing properties when appropriate (I'm not 
+condoning mass amounts of messages for everything). 
