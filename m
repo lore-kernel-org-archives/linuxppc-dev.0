@@ -1,14 +1,14 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 03E7EDDDF6
+	by ozlabs.org (Postfix) with ESMTP id 59B94DDDF5
 	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 01:22:17 +1100 (EST)
-Message-Id: <20070313142152.979187000@sonycom.com>
+Message-Id: <20070313142153.182598000@sonycom.com>
 References: <20070313141910.001573000@sonycom.com>
-Date: Tue, 13 Mar 2007 15:19:11 +0100
+Date: Tue, 13 Mar 2007 15:19:13 +0100
 From: Geert.Uytterhoeven@sonycom.com
 To: Linus Torvalds <torvalds@linux-foundation.org>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 1/5] ps3fb: thread updates
+Subject: [patch 3/5] ps3av: thread updates
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linux-fbdev-devel@lists.sourceforge.net,
@@ -23,123 +23,100 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ps3fb: Replace the kernel_thread and the semaphore by a proper kthread, which is
-simply woken up when the screen must be updated
+ps3av: Replace the kernel_thread and the ping pong semaphores by a singlethread
+workqueue and a completion.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/video/ps3fb.c |   41 ++++++++++++++++++++++++++++++++---------
- 1 files changed, 32 insertions(+), 9 deletions(-)
+ drivers/ps3/ps3av.c         |   30 ++++++++++++++----------------
+ include/asm-powerpc/ps3av.h |    5 +++--
+ 2 files changed, 17 insertions(+), 18 deletions(-)
 
---- ps3-linux-2.6.21-rc3.orig/drivers/video/ps3fb.c
-+++ ps3-linux-2.6.21-rc3/drivers/video/ps3fb.c
-@@ -32,6 +32,8 @@
- #include <linux/ioctl.h>
- #include <linux/notifier.h>
- #include <linux/reboot.h>
-+#include <linux/kthread.h>
-+#include <linux/freezer.h>
+--- ps3-linux-2.6.21-rc3.orig/drivers/ps3/ps3av.c
++++ ps3-linux-2.6.21-rc3/drivers/ps3/ps3av.c
+@@ -440,7 +440,7 @@ static int ps3av_set_videomode(void)
+ 	ps3av_set_av_video_mute(PS3AV_CMD_MUTE_ON);
  
- #include <asm/uaccess.h>
- #include <linux/fb.h>
-@@ -129,7 +131,6 @@ struct ps3fb_priv {
- 	u64 context_handle, memory_handle;
- 	void *xdr_ea;
- 	struct gpu_driver_info *dinfo;
--	struct semaphore sem;
- 	u32 res_index;
+ 	/* wake up ps3avd to do the actual video mode setting */
+-	up(&ps3av.ping);
++	queue_work(ps3av.wq, &ps3av.work);
  
- 	u64 vblank_count;	/* frame count */
-@@ -139,6 +140,8 @@ struct ps3fb_priv {
- 	atomic_t ext_flip;	/* on/off flip with vsync */
- 	atomic_t f_count;	/* fb_open count */
- 	int is_blanked;
-+	int is_kicked;
-+	struct task_struct *task;
- };
- static struct ps3fb_priv ps3fb;
- 
-@@ -805,11 +808,14 @@ static int ps3fb_ioctl(struct fb_info *i
- 
- static int ps3fbd(void *arg)
- {
--	daemonize("ps3fbd");
--	for (;;) {
--		down(&ps3fb.sem);
--		if (atomic_read(&ps3fb.ext_flip) == 0)
-+	while (!kthread_should_stop()) {
-+		try_to_freeze();
-+		set_current_state(TASK_INTERRUPTIBLE);
-+		if (ps3fb.is_kicked) {
-+			ps3fb.is_kicked = 0;
- 			ps3fb_sync(0);	/* single buffer */
-+		}
-+		schedule();
- 	}
  	return 0;
  }
-@@ -830,8 +836,11 @@ static irqreturn_t ps3fb_vsync_interrupt
- 	if (v1 & (1 << GPU_INTR_STATUS_VSYNC_1)) {
- 		/* VSYNC */
- 		ps3fb.vblank_count = head->vblank_count;
--		if (!ps3fb.is_blanked)
--			up(&ps3fb.sem);
-+		if (ps3fb.task && !ps3fb.is_blanked &&
-+		    !atomic_read(&ps3fb.ext_flip)) {
-+			ps3fb.is_kicked = 1;
-+			wake_up_process(ps3fb.task);
-+		}
- 		wake_up_interruptible(&ps3fb.wait_vsync);
+@@ -515,18 +515,10 @@ static void ps3av_set_videomode_cont(u32
+ 	ps3av_set_av_video_mute(PS3AV_CMD_MUTE_OFF);
+ }
+ 
+-static int ps3avd(void *p)
++static void ps3avd(struct work_struct *work)
+ {
+-	struct ps3av *info = p;
+-
+-	daemonize("ps3avd");
+-	while (1) {
+-		down(&info->ping);
+-		ps3av_set_videomode_cont(info->ps3av_mode,
+-					 info->ps3av_mode_old);
+-		up(&info->pong);
+-	}
+-	return 0;
++	ps3av_set_videomode_cont(ps3av.ps3av_mode, ps3av.ps3av_mode_old);
++	complete(&ps3av.done);
+ }
+ 
+ static int ps3av_vid2table_id(int vid)
+@@ -725,7 +717,7 @@ int ps3av_set_video_mode(u32 id, int boo
  	}
  
-@@ -968,6 +977,7 @@ static int __init ps3fb_probe(struct pla
- 	u64 xdr_lpar;
- 	int status;
- 	unsigned long offset;
-+	struct task_struct *task;
+ 	/* set videomode */
+-	down(&ps3av.pong);
++	wait_for_completion(&ps3av.done);
+ 	ps3av.ps3av_mode_old = ps3av.ps3av_mode;
+ 	ps3av.ps3av_mode = id;
+ 	if (ps3av_set_videomode())
+@@ -881,12 +873,16 @@ static int ps3av_probe(struct ps3_vuart_
+ 	memset(&ps3av, 0, sizeof(ps3av));
  
- 	/* get gpu context handle */
- 	status = lv1_gpu_memory_allocate(DDR_SIZE, 0, 0, 0, 0,
-@@ -1050,9 +1060,18 @@ static int __init ps3fb_probe(struct pla
- 	       "fb%d: PS3 frame buffer device, using %ld KiB of video memory\n",
- 	       info->node, ps3fb_videomemory.size >> 10);
- 
--	kernel_thread(ps3fbd, info, CLONE_KERNEL);
-+	task = kthread_run(ps3fbd, info, "ps3fbd");
-+	if (IS_ERR(task)) {
-+		retval = PTR_ERR(task);
-+		goto err_unregister_framebuffer;
-+	}
+ 	init_MUTEX(&ps3av.sem);
+-	init_MUTEX_LOCKED(&ps3av.ping);
+-	init_MUTEX(&ps3av.pong);
+ 	mutex_init(&ps3av.mutex);
+ 	ps3av.ps3av_mode = 0;
+ 	ps3av.dev = dev;
+-	kernel_thread(ps3avd, &ps3av, CLONE_KERNEL);
 +
-+	ps3fb.task = task;
-+
- 	return 0;
++	INIT_WORK(&ps3av.work, ps3avd);
++	init_completion(&ps3av.done);
++	complete(&ps3av.done);
++	ps3av.wq = create_singlethread_workqueue("ps3avd");
++	if (!ps3av.wq)
++		return -ENOMEM;
  
-+err_unregister_framebuffer:
-+	unregister_framebuffer(info);
- err_fb_dealloc:
- 	fb_dealloc_cmap(&info->cmap);
- err_framebuffer_release:
-@@ -1083,6 +1102,11 @@ void ps3fb_cleanup(void)
+ 	ps3av.available = 1;
+ 	switch (ps3_os_area_get_av_multi_out()) {
+@@ -926,6 +922,8 @@ static int ps3av_remove(struct ps3_vuart
  {
- 	int status;
+ 	if (ps3av.available) {
+ 		ps3av_cmd_fin();
++		if (ps3av.wq)
++			destroy_workqueue(ps3av.wq);
+ 		ps3av.available = 0;
+ 	}
  
-+	if (ps3fb.task) {
-+		struct task_struct *task = ps3fb.task;
-+		ps3fb.task = NULL;
-+		kthread_stop(task);
-+	}
- 	if (ps3fb.irq_no) {
- 		free_irq(ps3fb.irq_no, ps3fb.dev);
- 		ps3_free_irq(ps3fb.irq_no);
-@@ -1195,7 +1219,6 @@ static int __init ps3fb_init(void)
- 
- 	atomic_set(&ps3fb.f_count, -1);	/* fbcon opens ps3fb */
- 	atomic_set(&ps3fb.ext_flip, 0);	/* for flip with vsync */
--	init_MUTEX(&ps3fb.sem);
- 	init_waitqueue_head(&ps3fb.wait_vsync);
- 	ps3fb.num_frames = 1;
- 
+--- ps3-linux-2.6.21-rc3.orig/include/asm-powerpc/ps3av.h
++++ ps3-linux-2.6.21-rc3/include/asm-powerpc/ps3av.h
+@@ -646,8 +646,9 @@ struct ps3av_pkt_avb_param {
+ struct ps3av {
+ 	int available;
+ 	struct semaphore sem;
+-	struct semaphore ping;
+-	struct semaphore pong;
++	struct work_struct work;
++	struct completion done;
++	struct workqueue_struct *wq;
+ 	struct mutex mutex;
+ 	int open_count;
+ 	struct ps3_vuart_port_device *dev;
 
 --
 Gr{oetje,eeting}s,
