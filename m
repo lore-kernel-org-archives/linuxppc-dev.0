@@ -1,19 +1,20 @@
 Return-Path: <mgreer@mvista.com>
 Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 1B7BCDDDF6
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 16:32:55 +1100 (EST)
-Date: Mon, 12 Mar 2007 22:33:38 -0700
+	by ozlabs.org (Postfix) with ESMTP id 52914DDDFA
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 16:37:25 +1100 (EST)
+Date: Mon, 12 Mar 2007 22:38:10 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
-To: Scott Wood <scottwood@freescale.com>, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 08/19] bootwrapper: Rename p and pp to anchor and
-	anchorptr.
-Message-ID: <20070313053338.GC27618@mag.az.mvista.com>
-References: <20070312204150.GH28545@ld0162-tx32.am.freescale.net>
-	<20070313021955.GK29506@localhost.localdomain>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 02/19] bootwrapper: Set -msoft-float and assembler target
+	options.
+Message-ID: <20070313053810.GD27618@mag.az.mvista.com>
+References: <20070312204140.GB28545@ld0162-tx32.am.freescale.net>
+	<17910.4629.587851.80369@cargo.ozlabs.ibm.com>
+	<20070313053258.GB27618@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070313021955.GK29506@localhost.localdomain>
+In-Reply-To: <20070313053258.GB27618@mag.az.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,13 +24,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 13, 2007 at 01:19:55PM +1100, David Gibson wrote:
-> On Mon, Mar 12, 2007 at 02:41:50PM -0600, Scott Wood wrote:
-> > This makes the meaning of "p" clearer, and increases the visual
-> > difference between the two to avoid bugs such as the one fixed in
-> > "Modify *pp, not *p, in ft_shuffle()".
+On Mon, Mar 12, 2007 at 10:32:59PM -0700, Mark A. Greer wrote:
+> On Tue, Mar 13, 2007 at 01:53:09PM +1100, Paul Mackerras wrote:
+> > We
+> > should also consider whether the command-line editing is generally
+> > useful, or not, and whether the function to do it should be made more
+> > generic.
 > 
-> Hrm.  This does increase the visual difference, but honestly the
-> meaning of "anchor" is not notably more obvious to me than "p".
+> IMHO, it is very useful if you have fw that doesn't update the dtb for
+> you (i.e., OF and u-boot).  Don't know if it makes sense for OF and/or
+           ^^^ add a "not"
 
-Ditto :)
+> u-boot.
