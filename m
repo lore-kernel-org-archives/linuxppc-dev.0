@@ -1,14 +1,14 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id A5EFFDDDF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 01:22:16 +1100 (EST)
-Message-Id: <20070313142153.276934000@sonycom.com>
+	by ozlabs.org (Postfix) with ESMTP id 03E7EDDDF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 01:22:17 +1100 (EST)
+Message-Id: <20070313142152.979187000@sonycom.com>
 References: <20070313141910.001573000@sonycom.com>
-Date: Tue, 13 Mar 2007 15:19:14 +0100
+Date: Tue, 13 Mar 2007 15:19:11 +0100
 From: Geert.Uytterhoeven@sonycom.com
 To: Linus Torvalds <torvalds@linux-foundation.org>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 4/5] ps3fb: kill superfluous zero initializations
+Subject: [patch 1/5] ps3fb: thread updates
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linux-fbdev-devel@lists.sourceforge.net,
@@ -23,28 +23,123 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ps3fb: kill superfluous zero initializations
+ps3fb: Replace the kernel_thread and the semaphore by a proper kthread, which is
+simply woken up when the screen must be updated
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/video/ps3fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/ps3fb.c |   41 ++++++++++++++++++++++++++++++++---------
+ 1 files changed, 32 insertions(+), 9 deletions(-)
 
 --- ps3-linux-2.6.21-rc3.orig/drivers/video/ps3fb.c
 +++ ps3-linux-2.6.21-rc3/drivers/video/ps3fb.c
-@@ -297,10 +297,10 @@ static const struct fb_videomode ps3fb_m
- #define VP_OFF(i)	(WIDTH(i) * Y_OFF(i) * BPP + X_OFF(i) * BPP)
- #define FB_OFF(i)	(GPU_OFFSET - VP_OFF(i) % GPU_OFFSET)
+@@ -32,6 +32,8 @@
+ #include <linux/ioctl.h>
+ #include <linux/notifier.h>
+ #include <linux/reboot.h>
++#include <linux/kthread.h>
++#include <linux/freezer.h>
  
--static int ps3fb_mode = 0;
-+static int ps3fb_mode;
- module_param(ps3fb_mode, bool, 0);
+ #include <asm/uaccess.h>
+ #include <linux/fb.h>
+@@ -129,7 +131,6 @@ struct ps3fb_priv {
+ 	u64 context_handle, memory_handle;
+ 	void *xdr_ea;
+ 	struct gpu_driver_info *dinfo;
+-	struct semaphore sem;
+ 	u32 res_index;
  
--static char *mode_option __initdata = NULL;
-+static char *mode_option __initdata;
+ 	u64 vblank_count;	/* frame count */
+@@ -139,6 +140,8 @@ struct ps3fb_priv {
+ 	atomic_t ext_flip;	/* on/off flip with vsync */
+ 	atomic_t f_count;	/* fb_open count */
+ 	int is_blanked;
++	int is_kicked;
++	struct task_struct *task;
+ };
+ static struct ps3fb_priv ps3fb;
  
+@@ -805,11 +808,14 @@ static int ps3fb_ioctl(struct fb_info *i
  
- static int ps3fb_get_res_table(u32 xres, u32 yres)
+ static int ps3fbd(void *arg)
+ {
+-	daemonize("ps3fbd");
+-	for (;;) {
+-		down(&ps3fb.sem);
+-		if (atomic_read(&ps3fb.ext_flip) == 0)
++	while (!kthread_should_stop()) {
++		try_to_freeze();
++		set_current_state(TASK_INTERRUPTIBLE);
++		if (ps3fb.is_kicked) {
++			ps3fb.is_kicked = 0;
+ 			ps3fb_sync(0);	/* single buffer */
++		}
++		schedule();
+ 	}
+ 	return 0;
+ }
+@@ -830,8 +836,11 @@ static irqreturn_t ps3fb_vsync_interrupt
+ 	if (v1 & (1 << GPU_INTR_STATUS_VSYNC_1)) {
+ 		/* VSYNC */
+ 		ps3fb.vblank_count = head->vblank_count;
+-		if (!ps3fb.is_blanked)
+-			up(&ps3fb.sem);
++		if (ps3fb.task && !ps3fb.is_blanked &&
++		    !atomic_read(&ps3fb.ext_flip)) {
++			ps3fb.is_kicked = 1;
++			wake_up_process(ps3fb.task);
++		}
+ 		wake_up_interruptible(&ps3fb.wait_vsync);
+ 	}
+ 
+@@ -968,6 +977,7 @@ static int __init ps3fb_probe(struct pla
+ 	u64 xdr_lpar;
+ 	int status;
+ 	unsigned long offset;
++	struct task_struct *task;
+ 
+ 	/* get gpu context handle */
+ 	status = lv1_gpu_memory_allocate(DDR_SIZE, 0, 0, 0, 0,
+@@ -1050,9 +1060,18 @@ static int __init ps3fb_probe(struct pla
+ 	       "fb%d: PS3 frame buffer device, using %ld KiB of video memory\n",
+ 	       info->node, ps3fb_videomemory.size >> 10);
+ 
+-	kernel_thread(ps3fbd, info, CLONE_KERNEL);
++	task = kthread_run(ps3fbd, info, "ps3fbd");
++	if (IS_ERR(task)) {
++		retval = PTR_ERR(task);
++		goto err_unregister_framebuffer;
++	}
++
++	ps3fb.task = task;
++
+ 	return 0;
+ 
++err_unregister_framebuffer:
++	unregister_framebuffer(info);
+ err_fb_dealloc:
+ 	fb_dealloc_cmap(&info->cmap);
+ err_framebuffer_release:
+@@ -1083,6 +1102,11 @@ void ps3fb_cleanup(void)
+ {
+ 	int status;
+ 
++	if (ps3fb.task) {
++		struct task_struct *task = ps3fb.task;
++		ps3fb.task = NULL;
++		kthread_stop(task);
++	}
+ 	if (ps3fb.irq_no) {
+ 		free_irq(ps3fb.irq_no, ps3fb.dev);
+ 		ps3_free_irq(ps3fb.irq_no);
+@@ -1195,7 +1219,6 @@ static int __init ps3fb_init(void)
+ 
+ 	atomic_set(&ps3fb.f_count, -1);	/* fbcon opens ps3fb */
+ 	atomic_set(&ps3fb.ext_flip, 0);	/* for flip with vsync */
+-	init_MUTEX(&ps3fb.sem);
+ 	init_waitqueue_head(&ps3fb.wait_vsync);
+ 	ps3fb.num_frames = 1;
+ 
 
 --
 Gr{oetje,eeting}s,
