@@ -1,20 +1,24 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id DAF43DDD09
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 11:03:47 +1100 (EST)
-Date: Mon, 12 Mar 2007 17:04:21 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "Mark A. Greer" <mgreer@mvista.com>, Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: Re: [PATCH 16/19] bootwrapper: Add xlate_reg(),
-	and use it to find serial registers.
-Message-ID: <20070313000421.GA8930@mag.az.mvista.com>
-References: <20070312204202.GP28545@ld0162-tx32.am.freescale.net>
-	<20070312230148.GG31268@mag.az.mvista.com>
-	<20070312232925.GA29506@localhost.localdomain>
+Return-Path: <schwab@suse.de>
+Received: from mx1.suse.de (ns.suse.de [195.135.220.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx1.suse.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DD2C5DDD08
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 11:39:33 +1100 (EST)
+From: Andreas Schwab <schwab@suse.de>
+To: Giuliano Pochini <pochini@denise.shiny.it>
+Subject: Re: /sys/devices/system/cpu/cpuX/online are missing
+References: <20070311222652.5ea40da1.pochini@shiny.it>
+	<20070312085826.GA9985@osiris.boeblingen.de.ibm.com>
+	<Pine.LNX.4.64.0703122337350.25919@denise.shiny.it>
+Date: Tue, 13 Mar 2007 01:39:25 +0100
+In-Reply-To: <Pine.LNX.4.64.0703122337350.25919@denise.shiny.it> (Giuliano
+	Pochini's message of "Mon, 12 Mar 2007 23:48:21 +0100 (CET)")
+Message-ID: <je6496asea.fsf@sykes.suse.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070312232925.GA29506@localhost.localdomain>
+Content-Type: text/plain; charset=iso-8859-1
+Cc: linuxppc-dev@ozlabs.org, Heiko Carstens <heiko.carstens@de.ibm.com>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,43 +28,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 13, 2007 at 10:29:25AM +1100, David Gibson wrote:
-> On Mon, Mar 12, 2007 at 04:01:48PM -0700, Mark A. Greer wrote:
-> > On Mon, Mar 12, 2007 at 02:42:02PM -0600, Scott Wood wrote:
-> > 
-> > > diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
-> > > index 1ffe72e..cce7a11 100644
-> > > --- a/arch/powerpc/boot/ns16550.c
-> > > +++ b/arch/powerpc/boot/ns16550.c
-> > > @@ -55,10 +55,15 @@ static u8 ns16550_tstc(void)
-> > >  int ns16550_console_init(void *devp, struct serial_console_data *scdp)
-> > >  {
-> > >  	int n;
-> > > +	unsigned long reg_phys;
-> > >  
-> > >  	n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
-> > > -	if (n != sizeof(reg_base))
-> > > -		return -1;
-> > > +	if (n != sizeof(reg_base)) {
-> > > +		if (!xlate_reg(devp, 0, &reg_phys, NULL))
-> > > +			return -1;
-> > > +
-> > > +		reg_base = (void *)reg_phys;
-> > > +	}
-> > 
-> > NACK.
-> > 
-> > 'virtual-reg' _is_ the fully translated virtual address.
-> > Its simply the virtual address that maps to the fully translated
-> > physical addr in the 'reg' property.
-> > 
-> > Even if it wasn't, 'ranges' only work for physical/'reg' properties
-> > and can't be used for a virtual one--you'd have to make a parellel
-> > 'ranges' thingy for 'virtual-reg'.
-> 
-> I think you're misreading, Mark.  The patch only attempts to translate
-> the reg if the virtual-reg property is *not* valid.
+Giuliano Pochini <pochini@denise.shiny.it> writes:
 
-Oops.  :)
+> I had a look at arch/powerpc/kernel/smp.c but I'm not familiar at all with 
+> those parts of the kernel.
 
-Acked-by: Mark A. Greer <mgreer@mvista.com>
+See arch/powerpc/kernel/sysfs.c:topology_init.  I don't think there is
+anything to do here.  You probably don't have CONFIG_HOTPLUG_CPU enabled.
+
+Andreas.
+
+-- 
+Andreas Schwab, SuSE Labs, schwab@suse.de
+SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
+PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
+"And now for something completely different."
