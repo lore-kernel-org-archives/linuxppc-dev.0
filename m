@@ -1,14 +1,14 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 59B94DDDF5
+	by ozlabs.org (Postfix) with ESMTP id A9AF0DDDF7
 	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 01:22:17 +1100 (EST)
-Message-Id: <20070313142153.182598000@sonycom.com>
+Message-Id: <20070313142153.377971000@sonycom.com>
 References: <20070313141910.001573000@sonycom.com>
-Date: Tue, 13 Mar 2007 15:19:13 +0100
+Date: Tue, 13 Mar 2007 15:19:15 +0100
 From: Geert.Uytterhoeven@sonycom.com
 To: Linus Torvalds <torvalds@linux-foundation.org>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 3/5] ps3av: thread updates
+Subject: [patch 5/5] ps3av: misc updates
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
 	linux-fbdev-devel@lists.sourceforge.net,
@@ -23,100 +23,132 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ps3av: Replace the kernel_thread and the ping pong semaphores by a singlethread
-workqueue and a completion.
+ps3av:
+  - Move the definition of struct ps3av to ps3av.c, as it's locally used only.
+  - Kill ps3av.sem, use the existing ps3av.mutex instead.
+  - Make the 512-byte buffer in ps3av_do_pkt() static to reduce stack usage.
+    It's use is protected by a semaphore anyway.
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/ps3/ps3av.c         |   30 ++++++++++++++----------------
- include/asm-powerpc/ps3av.h |    5 +++--
- 2 files changed, 17 insertions(+), 18 deletions(-)
+ drivers/ps3/ps3av.c         |   29 ++++++++++++++++++++++-------
+ include/asm-powerpc/ps3av.h |   22 +---------------------
+ 2 files changed, 23 insertions(+), 28 deletions(-)
 
 --- ps3-linux-2.6.21-rc3.orig/drivers/ps3/ps3av.c
 +++ ps3-linux-2.6.21-rc3/drivers/ps3/ps3av.c
-@@ -440,7 +440,7 @@ static int ps3av_set_videomode(void)
- 	ps3av_set_av_video_mute(PS3AV_CMD_MUTE_ON);
+@@ -38,7 +38,24 @@
+ static int timeout = 5000;	/* in msec ( 5 sec ) */
+ module_param(timeout, int, 0644);
  
- 	/* wake up ps3avd to do the actual video mode setting */
--	up(&ps3av.ping);
-+	queue_work(ps3av.wq, &ps3av.work);
- 
- 	return 0;
- }
-@@ -515,18 +515,10 @@ static void ps3av_set_videomode_cont(u32
- 	ps3av_set_av_video_mute(PS3AV_CMD_MUTE_OFF);
- }
- 
--static int ps3avd(void *p)
-+static void ps3avd(struct work_struct *work)
- {
--	struct ps3av *info = p;
--
--	daemonize("ps3avd");
--	while (1) {
--		down(&info->ping);
--		ps3av_set_videomode_cont(info->ps3av_mode,
--					 info->ps3av_mode_old);
--		up(&info->pong);
--	}
--	return 0;
-+	ps3av_set_videomode_cont(ps3av.ps3av_mode, ps3av.ps3av_mode_old);
-+	complete(&ps3av.done);
- }
- 
- static int ps3av_vid2table_id(int vid)
-@@ -725,7 +717,7 @@ int ps3av_set_video_mode(u32 id, int boo
- 	}
- 
- 	/* set videomode */
--	down(&ps3av.pong);
-+	wait_for_completion(&ps3av.done);
- 	ps3av.ps3av_mode_old = ps3av.ps3av_mode;
- 	ps3av.ps3av_mode = id;
- 	if (ps3av_set_videomode())
-@@ -881,12 +873,16 @@ static int ps3av_probe(struct ps3_vuart_
- 	memset(&ps3av, 0, sizeof(ps3av));
- 
- 	init_MUTEX(&ps3av.sem);
--	init_MUTEX_LOCKED(&ps3av.ping);
--	init_MUTEX(&ps3av.pong);
- 	mutex_init(&ps3av.mutex);
- 	ps3av.ps3av_mode = 0;
- 	ps3av.dev = dev;
--	kernel_thread(ps3avd, &ps3av, CLONE_KERNEL);
-+
-+	INIT_WORK(&ps3av.work, ps3avd);
-+	init_completion(&ps3av.done);
-+	complete(&ps3av.done);
-+	ps3av.wq = create_singlethread_workqueue("ps3avd");
-+	if (!ps3av.wq)
-+		return -ENOMEM;
- 
- 	ps3av.available = 1;
- 	switch (ps3_os_area_get_av_multi_out()) {
-@@ -926,6 +922,8 @@ static int ps3av_remove(struct ps3_vuart
- {
- 	if (ps3av.available) {
- 		ps3av_cmd_fin();
-+		if (ps3av.wq)
-+			destroy_workqueue(ps3av.wq);
- 		ps3av.available = 0;
- 	}
- 
---- ps3-linux-2.6.21-rc3.orig/include/asm-powerpc/ps3av.h
-+++ ps3-linux-2.6.21-rc3/include/asm-powerpc/ps3av.h
-@@ -646,8 +646,9 @@ struct ps3av_pkt_avb_param {
- struct ps3av {
- 	int available;
- 	struct semaphore sem;
--	struct semaphore ping;
--	struct semaphore pong;
+-static struct ps3av ps3av;
++static struct ps3av {
++	int available;
++	struct mutex mutex;
 +	struct work_struct work;
 +	struct completion done;
 +	struct workqueue_struct *wq;
- 	struct mutex mutex;
- 	int open_count;
- 	struct ps3_vuart_port_device *dev;
++	int open_count;
++	struct ps3_vuart_port_device *dev;
++
++	int region;
++	struct ps3av_pkt_av_get_hw_conf av_hw_conf;
++	u32 av_port[PS3AV_AV_PORT_MAX + PS3AV_OPT_PORT_MAX];
++	u32 opt_port[PS3AV_OPT_PORT_MAX];
++	u32 head[PS3AV_HEAD_MAX];
++	u32 audio_port;
++	int ps3av_mode;
++	int ps3av_mode_old;
++} ps3av;
+ 
+ static struct ps3_vuart_port_device ps3av_dev = {
+ 	.match_id = PS3_MATCH_ID_AV_SETTINGS
+@@ -250,7 +267,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
+ 		 struct ps3av_send_hdr *buf)
+ {
+ 	int res = 0;
+-	union {
++	static union {
+ 		struct ps3av_reply_hdr reply_hdr;
+ 		u8 raw[PS3AV_BUF_SIZE];
+ 	} recv_buf;
+@@ -259,8 +276,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
+ 
+ 	BUG_ON(!ps3av.available);
+ 
+-	if (down_interruptible(&ps3av.sem))
+-		return -ERESTARTSYS;
++	mutex_lock(&ps3av.mutex);
+ 
+ 	table = ps3av_search_cmd_table(cid, PS3AV_CID_MASK);
+ 	BUG_ON(!table);
+@@ -290,11 +306,11 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
+ 		goto err;
+ 	}
+ 
+-	up(&ps3av.sem);
++	mutex_unlock(&ps3av.mutex);
+ 	return 0;
+ 
+       err:
+-	up(&ps3av.sem);
++	mutex_unlock(&ps3av.mutex);
+ 	printk(KERN_ERR "%s: failed cid:%x res:%d\n", __FUNCTION__, cid, res);
+ 	return res;
+ }
+@@ -872,7 +888,6 @@ static int ps3av_probe(struct ps3_vuart_
+ 
+ 	memset(&ps3av, 0, sizeof(ps3av));
+ 
+-	init_MUTEX(&ps3av.sem);
+ 	mutex_init(&ps3av.mutex);
+ 	ps3av.ps3av_mode = 0;
+ 	ps3av.dev = dev;
+--- ps3-linux-2.6.21-rc3.orig/include/asm-powerpc/ps3av.h
++++ ps3-linux-2.6.21-rc3/include/asm-powerpc/ps3av.h
+@@ -18,8 +18,6 @@
+ #ifndef _ASM_POWERPC_PS3AV_H_
+ #define _ASM_POWERPC_PS3AV_H_
+ 
+-#include <linux/mutex.h>
+-
+ /** command for ioctl() **/
+ #define PS3AV_VERSION 0x205	/* version of ps3av command */
+ 
+@@ -643,25 +641,6 @@ struct ps3av_pkt_avb_param {
+ 	u8 buf[PS3AV_PKT_AVB_PARAM_MAX_BUF_SIZE];
+ };
+ 
+-struct ps3av {
+-	int available;
+-	struct semaphore sem;
+-	struct work_struct work;
+-	struct completion done;
+-	struct workqueue_struct *wq;
+-	struct mutex mutex;
+-	int open_count;
+-	struct ps3_vuart_port_device *dev;
+-
+-	int region;
+-	struct ps3av_pkt_av_get_hw_conf av_hw_conf;
+-	u32 av_port[PS3AV_AV_PORT_MAX + PS3AV_OPT_PORT_MAX];
+-	u32 opt_port[PS3AV_OPT_PORT_MAX];
+-	u32 head[PS3AV_HEAD_MAX];
+-	u32 audio_port;
+-	int ps3av_mode;
+-	int ps3av_mode_old;
+-};
+ 
+ /** command status **/
+ #define PS3AV_STATUS_SUCCESS			0x0000	/* success */
+@@ -719,6 +698,7 @@ static inline void ps3av_cmd_av_monitor_
+ extern int ps3av_cmd_video_get_monitor_info(struct ps3av_pkt_av_get_monitor_info *,
+ 					    u32);
+ 
++struct ps3_vuart_port_device;
+ extern int ps3av_vuart_write(struct ps3_vuart_port_device *dev,
+ 			     const void *buf, unsigned long size);
+ extern int ps3av_vuart_read(struct ps3_vuart_port_device *dev, void *buf,
 
 --
 Gr{oetje,eeting}s,
