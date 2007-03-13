@@ -3,21 +3,19 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B4C3EDDE16
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 10:16:12 +1100 (EST)
-In-Reply-To: <45F6F4EE.8090504@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id EE27FDDE46
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 10:16:15 +1100 (EST)
+In-Reply-To: <20070313181617.GA5360@ld0162-tx32.am.freescale.net>
 References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
 	<4CB3B3D5-6D4A-4D67-92FC-3B8C38850326@kernel.crashing.org>
 	<20070313181617.GA5360@ld0162-tx32.am.freescale.net>
-	<F7652F68-D6FF-465C-BC8F-4F0C4D976AC0@kernel.crashing.org>
-	<45F6F4EE.8090504@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <989DE823-E0A3-47F6-9831-A3A86FE22367@kernel.crashing.org>
+Message-Id: <F7652F68-D6FF-465C-BC8F-4F0C4D976AC0@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
 	(a.k.a. cuImage, cuboot)
-Date: Tue, 13 Mar 2007 14:13:05 -0500
+Date: Tue, 13 Mar 2007 13:50:41 -0500
 To: Scott Wood <scottwood@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -30,35 +28,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 13, 2007, at 2:01 PM, Scott Wood wrote:
+On Mar 13, 2007, at 1:16 PM, Scott Wood wrote:
 
-> Kumar Gala wrote:
->> On Mar 13, 2007, at 1:16 PM, Scott Wood wrote:
->>> On Mon, Mar 12, 2007 at 04:07:57PM -0500, Kumar Gala wrote:
->>>> Why is linux,stdout-path needed by cuboot?
->>>
->>> It's used by serial.c to find the console, and the kernel  
->>> requires  it as
->>> well.  There's no information in the bd_t that would allow the
->>> bootwrapper to generate this, so it has to come from the device  
->>> tree.
->>>
->>> The only reason it's not required with dt-enabled u-boot is that  
->>> u- boot
->>> has it hardcoded in the board's config file.
->> I don't think we should put this into the .dts but, have code in  
->> the  wrapper that handles it.
+> On Mon, Mar 12, 2007 at 04:07:57PM -0500, Kumar Gala wrote:
+>> On Mar 12, 2007, at 3:42 PM, Scott Wood wrote:
+>>> The device trees currently in the kernel tree must have
+>>> /chosen/linux,stdout-path added to work with cuboot.
+>>
+>> Why is linux,stdout-path needed by cuboot?
 >
-> How?  Any means I can think of would be uglier, more complex, and/ 
-> or put information in the bootwrapper that it shouldn't have.
+> It's used by serial.c to find the console, and the kernel requires  
+> it as
+> well.  There's no information in the bd_t that would allow the
+> bootwrapper to generate this, so it has to come from the device tree.
 >
-> I think it belongs in the dts, anyway...  The default serial port  
-> is more a property of the board than a configuration issue  
-> (although it has aspects of both).  Any bootloader that wants to  
-> set a non-default serial port is welcome to overwrite the property.
+> The only reason it's not required with dt-enabled u-boot is that u- 
+> boot
+> has it hardcoded in the board's config file.
 
-I'll buy that, I forget that the dts is suppose to be board specific :)
-
-Did this really work for 8560 and CPM based uarts?
+I don't think we should put this into the .dts but, have code in the  
+wrapper that handles it.
 
 - k
