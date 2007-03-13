@@ -1,23 +1,15 @@
-Return-Path: <eswierk@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
-	by ozlabs.org (Postfix) with ESMTP id 3A36DDDF71
+Return-Path: <indianirav@yahoo.com>
+Received: from web43146.mail.sp1.yahoo.com (web43146.mail.sp1.yahoo.com
+	[216.252.121.114]) by ozlabs.org (Postfix) with SMTP id DC82BDDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 10:00:56 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so2492423nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Mar 2007 16:00:53 -0700 (PDT)
-Message-ID: <c1bf1cf0703131145l6be0a02fpec844e7ebec058f8@mail.gmail.com>
-Date: Tue, 13 Mar 2007 11:45:45 -0700
-From: "Ed Swierk" <eswierk@arastra.com>
-Sender: eswierk@gmail.com
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Serial console not working on EP8343M
-In-Reply-To: <c1bf1cf0703131122mb959d30v78694fc03bd1d6b@mail.gmail.com>
+	Wed, 14 Mar 2007 10:18:35 +1100 (EST)
+Date: Tue, 13 Mar 2007 10:23:16 -0700 (PDT)
+From: patel nirav <indianirav@yahoo.com>
+Subject: gcc -static
+To: rtai@rtai.org, linux ppc <linuxppc-embedded@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-References: <c1bf1cf0703122005l5014824r3e5fbfd50f1974ce@mail.gmail.com>
-	<8BE4BF8E-A32E-4984-9B1B-C3B6ED2A1BCA@kernel.crashing.org>
-	<c1bf1cf0703131122mb959d30v78694fc03bd1d6b@mail.gmail.com>
+Content-Type: multipart/alternative; boundary="0-1446146114-1173806596=:37968"
+Message-ID: <15137.37968.qm@web43146.mail.sp1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,8 +20,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Another thing I've discovered is that enabling CONFIG_IPMI_HANDLER is
-a bad idea, as init_ipmi_si just hangs. I didn't look into why, as I
-have no need for IPMI and just disabled it.
+--0-1446146114-1173806596=:37968
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
---Ed
+Hello all,
+Can any body tell me what is the use of " - static" option for gcc compilation ?
+
+
+
+Nirav J Patel
+M.Tech(CSE),
+Nirma University,
+Ahmedabad-382481.
+9925138959
+ 
+---------------------------------
+Bored stiff? Loosen up...
+Download and play hundreds of games for free on Yahoo! Games.
+--0-1446146114-1173806596=:37968
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
+
+Hello all,<br>Can any body tell me what is the use of " - static" option for gcc compilation ?<br><br><BR><BR>Nirav J Patel<br>M.Tech(CSE),<br>Nirma University,<br>Ahmedabad-382481.<br>9925138959<p>&#32;
+
+<hr size=1><a href="http://us.rd.yahoo.com/evt=49935/*http://games.yahoo.com">Bored stiff?</a> Loosen up...<br><a href="http://us.rd.yahoo.com/evt=49935/*http://games.yahoo.com">Download and play hundreds of games for free</a> on Yahoo! Games.
+--0-1446146114-1173806596=:37968--
