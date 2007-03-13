@@ -1,20 +1,18 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C6241DDEFF
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 01:39:34 +1100 (EST)
-In-Reply-To: <989B956029373F45A0B8AF02970818902DAF26@zch01exm26.fsl.freescale.net>
-References: <989B956029373F45A0B8AF02970818902DAF26@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4F6311F1-3C9D-4F5C-B807-BCE5A48D91FF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: automatically select QE options
-Date: Tue, 13 Mar 2007 09:38:37 -0500
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Tabi Timur-B04825 <timur@freescale.com>
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id D55D0DDD0D
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 02:28:28 +1100 (EST)
+Date: Tue, 13 Mar 2007 09:28:20 -0600
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+Message-ID: <20070313152820.GA3546@ld0162-tx32.am.freescale.net>
+References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Mar 12, 2007 at 02:42:04PM -0600, Scott Wood wrote:
+> +config CUIMAGE_DTS
+> +	string "Device tree source file"
+> +	depends on DEFAULT_UIMAGE
+> +	help
+> +	  This specifies the device tree source (.dts) file to be
+> +	  compiled and included when building the cuImage target.  If a
+> +	  relative filename is given, then it will be relative to
+> +	  arch/powerpc/boot/dts.
+> +
+> +	  The cuImage target is used for booting on older U-Boot (and
+> +	  PPCBoot) bootloaders that pass a bd_t instead of a device tree.
+> +	  Such a kernel will not work with a newer U-Boot that passes the
+> +	  device tree itself.  If your U-Boot does not mention a device
+> +	  tree in "help bootm", then use the uImage target instead of
+> +	  cuImage.
 
-On Mar 13, 2007, at 5:24 AM, Li Yang-r58472 wrote:
+Oops, this should say, 'If your U-Boot does not mention a device tree in
+"help bootm", then use the cuImage target.  Otherwise, use uImage.'
 
-> Timur,
->
-> ACK on removing choices for UCC_FAST and UCC_SLOW.
->
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index 6dfbd52..54dd66c 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -396,8 +396,6 @@ endchoice
->>
->>  config QUICC_ENGINE
->>  	bool
->> -	depends on PPC_MPC836x || PPC_MPC832x
->> -	default y
->>  	help
->>  	  The QUICC Engine (QE) is a new generation of communications
->>  	  coprocessors on Freescale embedded CPUs (akin to CPM in older
-> chips).
->
-> But I'd prefer QUICC_ENGINE option to depend on chip models rather  
-> than
-> boards.  Also the comment doesn't reflect this change.
-
-We are going to make QUICC_ENGINE a selectable option like it is for  
-CPM2.  I agree that selectable option should depend on chip rather  
-than board.
-
-- k
+-Scott
