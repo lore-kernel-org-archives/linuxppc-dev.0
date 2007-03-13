@@ -1,21 +1,22 @@
-Return-Path: <ammubhai@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.185])
-	by ozlabs.org (Postfix) with ESMTP id 4BB5BDDECD
+Return-Path: <eswierk@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
+	by ozlabs.org (Postfix) with ESMTP id 77594DDEA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 10:41:25 +1100 (EST)
-Received: by mu-out-0910.google.com with SMTP id w9so2754821mue
+	Wed, 14 Mar 2007 10:50:08 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so2509750nfc
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Mar 2007 16:41:23 -0700 (PDT)
-Message-ID: <45F736A0.3050806@gmail.com>
-Date: Tue, 13 Mar 2007 23:41:20 +0000
-From: Ameet Patil <ammubhai@gmail.com>
+	Tue, 13 Mar 2007 16:50:06 -0700 (PDT)
+Message-ID: <c1bf1cf0703131122mb959d30v78694fc03bd1d6b@mail.gmail.com>
+Date: Tue, 13 Mar 2007 11:22:07 -0700
+From: "Ed Swierk" <eswierk@arastra.com>
+Sender: eswierk@gmail.com
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Serial console not working on EP8343M
+In-Reply-To: <8BE4BF8E-A32E-4984-9B1B-C3B6ED2A1BCA@kernel.crashing.org>
 MIME-Version: 1.0
-To: patel nirav <indianirav@yahoo.com>
-Subject: Re: gcc -static
-References: <15137.37968.qm@web43146.mail.sp1.yahoo.com>
-In-Reply-To: <15137.37968.qm@web43146.mail.sp1.yahoo.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: rtai@rtai.org, linux ppc <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+References: <c1bf1cf0703122005l5014824r3e5fbfd50f1974ce@mail.gmail.com>
+	<8BE4BF8E-A32E-4984-9B1B-C3B6ED2A1BCA@kernel.crashing.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,33 +27,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-"-static" option tells gcc to generate an executable that will run by itself. All the runtime libraries (eg. glibc) are linked into the application code to form one big executable.
+On 3/13/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+> Have you tried make the bootargs just console=ttyS0,115200 (or
+> whatever your baud rate is)?
 
--Ameet
+I've tried that too. I just stepped through most of the
+console_initcall sequence with gdb and it seems like everything is
+getting set up properly, including irq and mmio settings for the
+serial devices, but still nothing gets printed. Maybe interrupts
+aren't getting routed?
 
+I just discovered the udbg-immortal command line option, which
+prevents console_init from optimistically disabling the udbg console.
+Debugging this problem should be a lot easier now that I can see
+console output past console_init.
 
-patel nirav wrote:
-> Hello all,
-> Can any body tell me what is the use of " - static" option for gcc 
-> compilation ?
->
->
->
-> Nirav J Patel
-> M.Tech(CSE),
-> Nirma University,
-> Ahmedabad-382481.
-> 9925138959
->
-> ------------------------------------------------------------------------
-> Bored stiff? 
-> <http://us.rd.yahoo.com/evt=49935/*http://games.yahoo.com> Loosen up...
-> Download and play hundreds of games for free 
-> <http://us.rd.yahoo.com/evt=49935/*http://games.yahoo.com> on Yahoo! 
-> Games.
-> ------------------------------------------------------------------------
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+--Ed
