@@ -1,23 +1,20 @@
-Return-Path: <eswierk@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
-	by ozlabs.org (Postfix) with ESMTP id 90D7BDDE17
+Return-Path: <tjuerges@nrao.edu>
+Received: from revere.aoc.nrao.edu (revere.aoc.nrao.edu [146.88.1.15])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 23F23DDE1B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 11:28:03 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so2521937nfc
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Mar 2007 17:28:02 -0700 (PDT)
-Message-ID: <c1bf1cf0703131202y3039420csb5862fcedebd3241@mail.gmail.com>
-Date: Tue, 13 Mar 2007 12:02:20 -0700
-From: "Ed Swierk" <eswierk@arastra.com>
-Sender: eswierk@gmail.com
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Serial console not working on EP8343M
-In-Reply-To: <c1bf1cf0703131122mb959d30v78694fc03bd1d6b@mail.gmail.com>
+	Wed, 14 Mar 2007 10:18:32 +1100 (EST)
+Message-ID: <45F6E0C7.30403@nrao.edu>
+Date: Tue, 13 Mar 2007 11:35:03 -0600
+From: Thomas Juerges <tjuerges@nrao.edu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8; format=flowed
-References: <c1bf1cf0703122005l5014824r3e5fbfd50f1974ce@mail.gmail.com>
-	<8BE4BF8E-A32E-4984-9B1B-C3B6ED2A1BCA@kernel.crashing.org>
-	<c1bf1cf0703131122mb959d30v78694fc03bd1d6b@mail.gmail.com>
+To: patel nirav <indianirav@yahoo.com>
+Subject: Re: gcc -static
+References: <15137.37968.qm@web43146.mail.sp1.yahoo.com>
+In-Reply-To: <15137.37968.qm@web43146.mail.sp1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-15
+Cc: rtai@rtai.org, linux ppc <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,20 +25,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-OK, problem solved. Once I kicked out that nasty IPMI driver,
-everything works, including the serial console without udbg-immortal.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA1
 
-Lessons learned:
+On 03/13/2007 11:23 AM, patel nirav wrote:
+> Hello all, Can any body tell me what is the use of " - static" option
+> for gcc compilation ?
 
-- passing "udbg-immortal loglevel=9 initcall_debug" to the kernel will
-give you much more visibility into early init problems (at least on
-powerpc arch circa 2.6.20)
+man gcc:
 
-- building U-Boot 1.2.0 with DEBUG defined in ft_build.c helps in
-troubleshooting flat device tree problems
+- -static
+        On systems that support dynamic linking, this prevents linking
+        with the shared libraries.  On other systems, this option has no
+        effect.
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.2.6 (GNU/Linux)
 
-- the Abatron BDI2000 is an incredibly useful tool: source-level
-debugging of U-Boot and the Linux kernel, starting at instruction zero
-*swoon*
-
---Ed
+iD8DBQFF9uDGMiyRSD9s+zURAlvnAJ41AjtlgyJFabQ98Nm0Ry1alNy1LgCfU9LY
+5Yjt3BobB15FxEn5hXs+MAs=
+=KS0W
+-----END PGP SIGNATURE-----
