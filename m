@@ -1,15 +1,17 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id CBA58DDDF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 01:22:15 +1100 (EST)
-Message-Id: <20070313141910.001573000@sonycom.com>
-Date: Tue, 13 Mar 2007 15:19:10 +0100
+	by ozlabs.org (Postfix) with ESMTP id 440A2DDDF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 01:22:16 +1100 (EST)
+Message-Id: <20070313142153.080502000@sonycom.com>
+References: <20070313141910.001573000@sonycom.com>
+Date: Tue, 13 Mar 2007 15:19:12 +0100
 From: Geert.Uytterhoeven@sonycom.com
 To: Linus Torvalds <torvalds@linux-foundation.org>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 0/5] PS3 AV/FB updates
+Subject: [patch 2/5] ps3fb: atomic fixes
 Sender: Geert Uytterhoeven <geert@sonycom.com>
-Cc: linux-fbdev-devel@lists.sourceforge.net,
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linux-fbdev-devel@lists.sourceforge.net,
 	James Simmons <jsimmons@infradead.org>,
 	"Antonino A. Daplas" <adaplas@gmail.com>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,17 +23,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These are a few updates for the PS3 Audio/Video Settings Driver and the PS3
-Virtual Frame Buffer Driver:
+ps3fb: Use atomic_dec_if_positive() instead of bogus atomic_read()/atomic_dec()
+combinations
 
-[PATCH 1/5] ps3fb: thread updates
-[PATCH 2/5] ps3fb: atomic fixes
-[PATCH 3/5] ps3av: thread updates
-[PATCH 4/5] ps3fb: kill superfluous zero initializations
-[PATCH 5/5] ps3av: misc updates
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+---
+ drivers/video/ps3fb.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
-Please apply for 2.6.21. Thx!
+--- ps3-linux-2.6.21-rc3.orig/drivers/video/ps3fb.c
++++ ps3-linux-2.6.21-rc3/drivers/video/ps3fb.c
+@@ -680,13 +680,10 @@ EXPORT_SYMBOL_GPL(ps3fb_wait_for_vsync);
+ 
+ void ps3fb_flip_ctl(int on)
+ {
+-	if (on) {
+-		if (atomic_read(&ps3fb.ext_flip) > 0) {
+-			atomic_dec(&ps3fb.ext_flip);
+-		}
+-	} else {
++	if (on)
++		atomic_dec_if_positive(&ps3fb.ext_flip);
++	else
+ 		atomic_inc(&ps3fb.ext_flip);
+-	}
+ }
+ 
+ EXPORT_SYMBOL_GPL(ps3fb_flip_ctl);
+@@ -786,8 +783,7 @@ static int ps3fb_ioctl(struct fb_info *i
+ 
+ 	case PS3FB_IOCTL_OFF:
+ 		DPRINTK("PS3FB_IOCTL_OFF:\n");
+-		if (atomic_read(&ps3fb.ext_flip) > 0)
+-			atomic_dec(&ps3fb.ext_flip);
++		atomic_dec_if_positive(&ps3fb.ext_flip);
+ 		retval = 0;
+ 		break;
+ 
 
+--
 Gr{oetje,eeting}s,
 
 						Geert
