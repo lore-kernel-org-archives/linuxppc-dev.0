@@ -1,16 +1,20 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from web302.biz.mail.mud.yahoo.com (web302.biz.mail.mud.yahoo.com
-	[68.142.199.178]) by ozlabs.org (Postfix) with SMTP id 29D0FDDD08
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E3107DDE3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 13 Mar 2007 23:55:30 +1100 (EST)
-Date: Tue, 13 Mar 2007 05:55:28 -0700 (PDT)
-From: Ben Warren <bwarren@qstreams.com>
-Subject: Re: Problem in compiling a kernel module
-To: idefix@fechner.net
-In-Reply-To: <20070313043050.GB82243@server.idefix.lan>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <513703.69187.qm@web302.biz.mail.mud.yahoo.com>
+	Wed, 14 Mar 2007 01:58:13 +1100 (EST)
+In-Reply-To: <c1bf1cf0703122005l5014824r3e5fbfd50f1974ce@mail.gmail.com>
+References: <c1bf1cf0703122005l5014824r3e5fbfd50f1974ce@mail.gmail.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <8BE4BF8E-A32E-4984-9B1B-C3B6ED2A1BCA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Serial console not working on EP8343M
+Date: Tue, 13 Mar 2007 09:57:15 -0500
+To: Ed Swierk <eswierk@arastra.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -22,26 +26,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Matthias,
 
---- Matthias Fechner <idefix@fechner.net> wrote:
+On Mar 12, 2007, at 10:05 PM, Ed Swierk wrote:
 
-> Hello Grant,
-> 
-> * Grant Likely <grant.likely@secretlab.ca> [12-03-07
-> 12:36]:
-> > Looks like you're trying to access inital data
-> (which is freed after
-> > module load) from regular code (which is not)
-> 
-> is it possible to find the line of code with the
-> address is these
-> warnings?
+> I'm having trouble getting the serial console to work on an EP8343M
+> board when using U-Boot 1.2.0 to start Linux 2.6.20.1. I'm using arch
+> powerpc and platform MPC834x_SYS (which is perhaps wishful thinking,
+> as my board is different, although it should at least have the same
+> serial port configuration).
+>
+> The symptoms are exactly the same as those in
+> http://ozlabs.org/pipermail/linuxppc-embedded/2006-September/ 
+> 024457.html:
+> the console stops working after the call to console_init(). The
+> suggested solution was to ensure that U-Boot is setting
+> timebase-frequency, bus-frequency and clock-frequency and passing
+> those properties to the kernel, and this does indeed seem to be
+> happening in my case.
+>
+> I've attached the output from U-Boot (including a dump of the flat
+> device tree), as well as my kernel config and U-Boot board settings.
+> Any help would be appreciated.
+>
+> --Ed
 
-Is there any chance that you qualify private data as
-__init within the driver?  Can you post the cleanup()
-function and any private (static) functions that it
-calls?
+Have you tried make the bootargs just console=ttyS0,115200 (or  
+whatever your baud rate is)?
 
-regards,
-Ben
+- k
