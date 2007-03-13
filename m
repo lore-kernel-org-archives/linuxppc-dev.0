@@ -1,38 +1,29 @@
-Return-Path: <heiko.carstens@de.ibm.com>
-Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6D0C7DDE02
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 20:13:53 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate3.de.ibm.com (8.13.8/8.13.8) with ESMTP id l2D9DmeQ073516
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 09:13:48 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l2D9Dmws2220056
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 10:13:48 +0100
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l2D9Dl0t013856
-	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 10:13:47 +0100
-Date: Tue, 13 Mar 2007 10:11:59 +0100
-From: Heiko Carstens <heiko.carstens@de.ibm.com>
-To: Andreas Schwab <schwab@suse.de>
-Subject: Re: /sys/devices/system/cpu/cpuX/online are missing
-Message-ID: <20070313091159.GB9890@osiris.boeblingen.de.ibm.com>
-References: <20070311222652.5ea40da1.pochini@shiny.it>
-	<20070312085826.GA9985@osiris.boeblingen.de.ibm.com>
-	<Pine.LNX.4.64.0703122337350.25919@denise.shiny.it>
-	<je6496asea.fsf@sykes.suse.de>
-	<20070313090350.GA9890@osiris.boeblingen.de.ibm.com>
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F136FDDE24
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 20:32:30 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l2D9WQPq029270
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 02:32:27 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2D9WPXl010400
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 04:32:25 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070313090350.GA9890@osiris.boeblingen.de.ibm.com>
-Cc: Suresh Siddha <suresh.b.siddha@intel.com>, spyro@f2s.com,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	Giuliano Pochini <pochini@denise.shiny.it>, rmk@arm.linux.org.uk
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] Add irq host and hwirq pair fields to output whenshowing
+	interrupts.
+Date: Tue, 13 Mar 2007 17:32:21 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C131E7F@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1173770092.24454.69.camel@localhost.localdomain>
+References: <1173755968459-git-send-email-wei.zhang@freescale.com>
+	<1173770092.24454.69.camel@localhost.localdomain>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Wang Haiying-r54964 <Haiying.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,24 +33,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 13, 2007 at 10:03:50AM +0100, Heiko Carstens wrote:
-> On Tue, Mar 13, 2007 at 01:39:25AM +0100, Andreas Schwab wrote:
-> > Giuliano Pochini <pochini@denise.shiny.it> writes:
-> > 
-> > > I had a look at arch/powerpc/kernel/smp.c but I'm not familiar at all with 
-> > > those parts of the kernel.
-> > 
-> > See arch/powerpc/kernel/sysfs.c:topology_init.  I don't think there is
-> > anything to do here.  You probably don't have CONFIG_HOTPLUG_CPU enabled.
-> 
-> I was referring to arch/ppc not arch/powerpc. But it seems that arch/ppc
-> doesn't support cpu hotplug anyway. So I guess it's indeed just a missing
-> config option.
-> 
-> Grepping a bit further shows that arm suffered by the change that inverted
-> the logic if the 'online' attribute for cpus should appear. Since arm
-> supports cpu hotplug but the patch left arm out, it doesn't work there
-> anymore (cc'ing arm people: changeset 72486f1f8f0a2bc828b9d30cf4690cf2dd6807fc
-> is most probably disabling cpu hotplug support on arm like it did on s390).
+> On Tue, 2007-03-13 at 11:19 +0800, Zhang Wei wrote:
+> > Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
+> > ---
+> >  arch/powerpc/kernel/irq.c |    2 +-
+> >  1 files changed, 1 insertions(+), 1 deletions(-)
+> >=20
+> > diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+> > index 919fbf5..2a30ffd 100644
+> > --- a/arch/powerpc/kernel/irq.c
+> > +++ b/arch/powerpc/kernel/irq.c
+> > @@ -194,7 +194,7 @@ #else
+> >  		seq_printf(p, "%10u ", kstat_irqs(i));
+> >  #endif /* CONFIG_SMP */
+> >  		if (desc->chip)
+> > -			seq_printf(p, " %s ", desc->chip->typename);
+> > +			seq_printf(p, " (%3d) @%s ",=20
+> (irq_map[i].host->revmap_type =3D=3D IRQ_HOST_MAP_LEGACY) ? i :=20
+> virq_to_hw(i), desc->chip->typename);
+> >  		else
+> >  			seq_puts(p, "  None      ");
+> >  		seq_printf(p, "%s", (desc->status & IRQ_LEVEL)=20
+> ? "Level " : "Edge  ");
+>=20
+> Well, first, we shouldn't modify the output of=20
+> /proc/interrupts as this
+> will likely break all sort of userland tools displaying it (well, I
+> think).
+>=20
+> Now, regarding the patch itself, printing the hw irq is not=20
+> that useful
+> without some indication of which host it belongs to. Best is to add a
+> name() or something like that to the host ops.
+>=20
 
-Should have cc'ed Suresh Siddha who caused the breakage ;)
+Sure, can I use the PIC controller node full name from of_tree as the
+host name?
+
+Do you prefer debugfs instead of /proc/interrupts?
+
+Thanks!
+Zhang Wei
