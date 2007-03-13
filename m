@@ -1,14 +1,25 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 13 Mar 2007 20:54:12 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Christoph Hellwig <hch@lst.de>
-Subject: Re: [PATCH] ppc: Add support for bigger page sizes than 4KB on PPC44x
-Message-ID: <20070313095412.GA14262@localhost.localdomain>
-References: <200703122254.27087.sr@denx.de> <20070313094229.GA13567@lst.de>
+Return-Path: <LeoLi@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 7C41DDDE0C
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 21:23:23 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l2DANJss010062
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 03:23:20 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2DANIuV017398
+	for <linuxppc-dev@ozlabs.org>; Tue, 13 Mar 2007 05:23:19 -0500 (CDT)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070313094229.GA13567@lst.de>
-Cc: linuxppc-dev@ozlabs.org, Stefan Roese <sr@denx.de>
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] powerpc: automatically select QE options
+Date: Tue, 13 Mar 2007 18:24:45 +0800
+Message-ID: <989B956029373F45A0B8AF02970818902DAF26@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1173732027723-git-send-email-timur@freescale.com>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Tabi Timur-B04825" <timur@freescale.com>, <linuxppc-dev@ozlabs.org>,
+	<galak@kernel.crashing.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,22 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 13, 2007 at 10:42:29AM +0100, Christoph Hellwig wrote:
-> On Mon, Mar 12, 2007 at 10:54:26PM +0100, Stefan Roese wrote:
-> >  arch/ppc/Kconfig               |   10 ++++++++
-> >  arch/ppc/kernel/head_44x.S     |   23 ++++++++++---------
-> >  arch/ppc/kernel/misc.S         |   13 ++++++-----
-> >  arch/ppc/kernel/vmlinux.lds.S  |   15 +++++++-----
-> >  include/asm-ppc/page.h         |    6 ++++-
-> >  include/asm-ppc/ppc_page_asm.h |   49 ++++++++++++++++++++++++++++++++++++++++
-> 
-> I though we'd given up on arch/ppc by now?
-> Can you try to redo this over the arch/powerpc/ 44x port?
+Timur,
 
-The arch/powerpc 44x port is hardly complete yet...
+ACK on removing choices for UCC_FAST and UCC_SLOW. =20
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> index 6dfbd52..54dd66c 100644
+> --- a/arch/powerpc/Kconfig
+> +++ b/arch/powerpc/Kconfig
+> @@ -396,8 +396,6 @@ endchoice
+>=20
+>  config QUICC_ENGINE
+>  	bool
+> -	depends on PPC_MPC836x || PPC_MPC832x
+> -	default y
+>  	help
+>  	  The QUICC Engine (QE) is a new generation of communications
+>  	  coprocessors on Freescale embedded CPUs (akin to CPM in older
+chips).
+
+But I'd prefer QUICC_ENGINE option to depend on chip models rather than
+boards.  Also the comment doesn't reflect this change.
+
+[snip]
+
+- Leo
