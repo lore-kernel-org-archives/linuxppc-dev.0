@@ -1,9 +1,9 @@
 Return-Path: <timur@freescale.com>
 Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id AB9FFDDDF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 08:20:35 +1100 (EST)
-Message-ID: <45F8671D.1010905@freescale.com>
-Date: Wed, 14 Mar 2007 16:20:29 -0500
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 002F8DDE0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 08:42:03 +1100 (EST)
+Message-ID: <45F86C25.1070301@freescale.com>
+Date: Wed, 14 Mar 2007 16:41:57 -0500
 From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
 To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
@@ -27,21 +27,21 @@ Jerry Van Baren wrote:
 
 > The best solution, which I'm making progress on but slowly, is to pull 
 > David Gibson's libfdt utilities into u-boot and use them to manipulate 
-> the tree.  
-
-I don't think that will help, because the problem is how do you update a device tree that 
-you don't know everything about?
-
- > I very much want v17 blobs because that removes my
+> the tree.  I very much want v17 blobs because that removes my 
 > "write-in-place" restrictions on changing the properties.
 
-Another idea which just came to light is to have the compatibility field be only useful to 
-code that just *reads* the DTB.  Any code that *writes* the DTB should look it.
+Here's an alternative idea I got from a colleage (Scott Wood).
 
-Since the kernel only reads the DTB, it can use the compatibility field.  Since U-Boot 
-writes to the DTB, it should currently only accept true V16 DTBs.
+Allow U-Boot to accept V17 DTBs.  When it modifies the DTB, it should change the version 
+to 16, since that's the only version that it really knows.  U-Boot currently does not have 
+the infrastructure to support multiple DTB versions.
 
-If the kernel were to ever write to the DTB, then it would have to be as restrictive.
+The DTB that U-Boot passes to the kernel will say V16, but it will have the extra length 
+field in the header.  Therefore, we need to update the documentation to say that 
+compatibility implies that any DTB will still be able to read the DTB if the DTB version 
+number has been changed to another compatible version.  So if your DTB is V17, and it has 
+V17 data, any code that assumes a V16 DTB should still be able to read it.  That seems 
+obvious, but is should be documented.
 
 -- 
 Timur Tabi
