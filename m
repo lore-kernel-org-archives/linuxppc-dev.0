@@ -1,13 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17911.31508.878043.41229@cargo.ozlabs.ibm.com>
-Date: Wed, 14 Mar 2007 15:33:24 +1100
+Message-ID: <17911.31029.598986.827186@cargo.ozlabs.ibm.com>
+Date: Wed, 14 Mar 2007 15:25:25 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 15/19] bootwrapper: Add dt_ops methods.
-In-Reply-To: <20070312204201.GO28545@ld0162-tx32.am.freescale.net>
-References: <20070312204201.GO28545@ld0162-tx32.am.freescale.net>
+Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+In-Reply-To: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
+References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,12 +21,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Scott Wood writes:
 
-> +static inline void *find_node_by_prop_value_str(const void *prev,
-> +                                                const char *propname,
-> +                                                const char *propval)
+> Add a bootwrapper platform (cuboot) that takes a bd_t from a legacy
+> U-Boot, and inserts data from it into a device tree which has been
+> compiled into the kernel.  This should help ease the transition to
+> arch/powerpc in cases where U-Boot has not yet been updated to pass a
+> device tree, or where upgrading firmware isn't practical.
 
-That name sure is a mouthful.  Since we mostly (only?) use it with
-propname == "device_type", why not make a helper with a nice,
-(relatively) short name like "find_node_by_type" for that case?
+Hmmm... is ppcboot.h a direct copy of a file from somewhere else
+(e.g. uboot), or did you construct it?  It has an *awful* lot of
+ifdefs.  If it is a direct copy from uboot, I can see an argument for
+keeping it as-is, but if not, I think we can come up with a better way
+to structure things.
 
 Paul.
