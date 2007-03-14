@@ -1,19 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id B4AB7DDE08
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 03:30:43 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [patch] PS3: Fix hardware watchpoints
-Date: Wed, 14 Mar 2007 17:30:14 +0100
-References: <45F74D69.5070600@am.sony.com>
-	<17911.24243.64287.434769@cargo.ozlabs.ibm.com>
-In-Reply-To: <17911.24243.64287.434769@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703141730.15344.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 7AA78DDE0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 03:45:17 +1100 (EST)
+Date: Wed, 14 Mar 2007 11:45:10 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+Message-Id: <20070314114510.3c2db987.kim.phillips@freescale.com>
+In-Reply-To: <D951C3CB-F606-455B-B048-6C03D06BDD7D@kernel.crashing.org>
+References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
+	<17911.31029.598986.827186@cargo.ozlabs.ibm.com>
+	<20070314155900.GA10075@ld0162-tx32.am.freescale.net>
+	<D951C3CB-F606-455B-B048-6C03D06BDD7D@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,49 +25,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 14 March 2007, Paul Mackerras wrote:
-> Geoff Levand writes:
+On Wed, 14 Mar 2007 11:08:57 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
+
 > 
-> > Add PS3 support for the PowerPC processor's Data Address Breakpoint
-> > Register (DABR).
-> > 
-> > Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-> > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> > 
-> > ---
-> > Paul, please consider for 2.6.21.
-> 
-> It's nice and small, but it isn't really a bugfix as far as I can
-> see...  What's the downside of it not going into 2.6.21, apart from
-> some inconvenience in debugging things?
+> For example, the majority of 83xx boards don't need cuImage support  
+> (at least I don't think they do) since they only ever existed in arch/ 
+> powerpc.
 
-It makes it possible for a regular user to hang the partition,
-because the kernel falls back to access the actual SPR, which is
-forbidden by the hypervisor.
+believe it or not, I got an 8323 board last week with u-boot 1.1.3 preinstalled.  83xx need cuimage badly.
 
-My original changelog text was:
-
-The lv1 hypervisor silently kills the partition if the kernel attempts
-to access the dabr register directly. Instead, it needs to be set using
-an hcall. Since both pseries and celleb have the same function, the guess
-is that the implementation on ps3 is also the same.
-
-How about making the actual changelog text something like this:
-
-----
-The lv1 hypervisor silently kills the partition if the kernel attempts
-to access the dabr register directly, which can happen when gdb adds
-a hardware breakpoint.
-Instead, the kernel needs to be set using an hcall, the same way as
-it does for pseries and celleb.
-----
-
-The real question however should be if there is a point in merging
-any ps3 patches into 2.6.21 at this point. Geoff, my understanding
-is that the current ps3 platform code in 2.6.21-rc still relies on
-additional patches from you in order to even boot, right?
-
-Maybe it's better to just queue them for 2.6.22 now, independent
-of the severity of bugs fixed by a given patch.
-
-	Arnd <><
+Kim
