@@ -1,14 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17911.24243.64287.434769@cargo.ozlabs.ibm.com>
-Date: Wed, 14 Mar 2007 13:32:19 +1100
+Message-ID: <17911.31508.878043.41229@cargo.ozlabs.ibm.com>
+Date: Wed, 14 Mar 2007 15:33:24 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [patch] PS3: Fix hardware watchpoints
-In-Reply-To: <45F74D69.5070600@am.sony.com>
-References: <45F74D69.5070600@am.sony.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 15/19] bootwrapper: Add dt_ops methods.
+In-Reply-To: <20070312204201.GO28545@ld0162-tx32.am.freescale.net>
+References: <20070312204201.GO28545@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,19 +18,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Geoff Levand writes:
+Scott Wood writes:
 
-> Add PS3 support for the PowerPC processor's Data Address Breakpoint
-> Register (DABR).
-> 
-> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-> Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
-> 
-> ---
-> Paul, please consider for 2.6.21.
+> +static inline void *find_node_by_prop_value_str(const void *prev,
+> +                                                const char *propname,
+> +                                                const char *propval)
 
-It's nice and small, but it isn't really a bugfix as far as I can
-see...  What's the downside of it not going into 2.6.21, apart from
-some inconvenience in debugging things?
+That name sure is a mouthful.  Since we mostly (only?) use it with
+propname == "device_type", why not make a helper with a nice,
+(relatively) short name like "find_node_by_type" for that case?
 
 Paul.
