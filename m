@@ -1,23 +1,21 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C4FBDDD02
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 03:10:05 +1100 (EST)
-In-Reply-To: <20070314155900.GA10075@ld0162-tx32.am.freescale.net>
-References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
-	<17911.31029.598986.827186@cargo.ozlabs.ibm.com>
-	<20070314155900.GA10075@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <D951C3CB-F606-455B-B048-6C03D06BDD7D@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
-	(a.k.a. cuImage, cuboot)
-Date: Wed, 14 Mar 2007 11:08:57 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 71801DDE3E
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 03:17:51 +1100 (EST)
+Date: Wed, 14 Mar 2007 17:17:45 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Al Viro <viro@ftp.linux.org.uk>
+Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
+In-Reply-To: <20070314160258.GK4095@ftp.linux.org.uk>
+Message-ID: <Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be>
+References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
+	<Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
+	<20070314160258.GK4095@ftp.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+	Hi Al,
 
-On Mar 14, 2007, at 10:59 AM, Scott Wood wrote:
+On Wed, 14 Mar 2007, Al Viro wrote:
+> On Wed, Mar 14, 2007 at 10:50:16AM +0100, Geert Uytterhoeven wrote:
+> > On Wed, 14 Mar 2007, Al Viro wrote:
+> > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> > 
+> > NAK
+> 
+> Lovely...  Consider that one withdrawn, please.  FWIW, if we leave it bool
+> (and flip_ctl mess alone would make a good reason for that) we probably want
+> to have it depend on FB=y
 
-> On Wed, Mar 14, 2007 at 03:25:25PM +1100, Paul Mackerras wrote:
->> Hmmm... is ppcboot.h a direct copy of a file from somewhere else
->> (e.g. uboot), or did you construct it?  It has an *awful* lot of
->> ifdefs.  If it is a direct copy from uboot, I can see an argument for
->> keeping it as-is, but if not, I think we can come up with a better  
->> way
->> to structure things.
->
-> It's copied from asm-ppc/ppcboot.h, which was presumably copied from
-> u-boot/ppcboot at some point.  It's certainly ugly, but changing it  
-> would
-> break compatibility (thus negating the point of cuImage).
+What's the advantage of making FB_PS3 depend on FB=y vs. plain FB?
+In both cases it can be enabled if FB=y only, right? Or am I missing something?
 
-I think David's idea about having a <board>.c file that does stuff  
-and knows about what the bd_t should look like for that board makes  
-sense.
+Gr{oetje,eeting}s,
 
-For example, the majority of 83xx boards don't need cuImage support  
-(at least I don't think they do) since they only ever existed in arch/ 
-powerpc.
+						Geert
 
-- k
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
