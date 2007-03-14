@@ -1,18 +1,12 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 65C8FDDD05
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 06:36:16 +1100 (EST)
-Message-ID: <45F84EA0.2080405@freescale.com>
-Date: Wed, 14 Mar 2007 14:36:00 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH][POWERPC] QE: Make QUICC Engine support a configurable
-	option
-References: <Pine.LNX.4.64.0703141314400.18994@localhost.localdomain>
-	<20070314133738.3139d062.kim.phillips@freescale.com>
-In-Reply-To: <20070314133738.3139d062.kim.phillips@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <jdl@jdl.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [dtc] Add support for flat device tree format version 17 
+In-Reply-To: Your message of "Wed, 14 Mar 2007 11:02:40 +1100."
+	<20070314000240.GD25514@localhost.localdomain>
+References: <20070314000240.GD25514@localhost.localdomain> 
+Date: Wed, 14 Mar 2007 15:41:48 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1HRaI8-0000P0-Gy@jdl.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,25 +17,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kim Phillips wrote:
-> On Wed, 14 Mar 2007 13:15:05 -0500 (CDT)
-> Kumar Gala <galak@kernel.crashing.org> wrote:
+So, like, the other day David Gibson mumbled:
+> libfdt defined a new version of the flattened device tree format,
+> version 17.  It is backwards compatible with version 16, just adding
+> an extra header field giving the size of the blob's structure blob.
 > 
->>  arch/powerpc/Kconfig                |    8 --------
->>  arch/powerpc/platforms/83xx/Kconfig |   12 ++++++++++--
->>  2 files changed, 10 insertions(+), 10 deletions(-)
+> This patch adds support to dtc allowing it to read and write version
+> 17 blobs.  It also makes version 17 the default output version for
+> blobs.
 > 
-> What about 85xx QE support?
+> At the same time we change the code to consistently using decimal
+> numbers for versions.  Previously we sometimes used 16 and sometimes
+> 0x10 to refer to version 16.
+> 
+> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Kumar and I talked about it.  85xx support will be added when QE works on 85xx.  However, 
-the patch still needs changes.  To allow each CPU family to have its own QE option, we'll 
-need to define something like QUICC_ENGINE_83xx and QUICC_ENGINE_85xx, and then have 
-something like this:
+Applied.
 
-config QUICC_ENGINE
-	bool
-	default y if QUICC_ENGINE_83xx || QUICC_ENGINE_85xx
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Thanks,
+jdl
