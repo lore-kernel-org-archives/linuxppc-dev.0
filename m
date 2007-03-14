@@ -1,17 +1,17 @@
-Return-Path: <swarthou@petra11.am.freescale.net>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 8FDADDDDF5
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 09:34:00 +1100 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l2EMXv1l003592
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 15:33:57 -0700 (MST)
-From: Ed Swarthout <Ed.Swarthout@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [dtc] ftdump missing be32_to_cpu() on size cell.
-Date: Wed, 14 Mar 2007 17:33:19 -0500
-Message-Id: <11739115994037-git-send-email-Ed.Swarthout@freescale.com>
-Cc: Ed Swarthout <Ed.Swarthout@freescale.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 15 Mar 2007 10:07:12 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [dtc] Add support for flat device tree format version 17
+Message-ID: <20070314230712.GA12573@localhost.localdomain>
+References: <20070313062240.GA22737@localhost.localdomain>
+	<45F863DF.5050709@freescale.com>
+	<45F864E8.40501@smiths-aerospace.com>
+	<45F8671D.1010905@freescale.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <45F8671D.1010905@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,22 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
----
- ftdump.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
+On Wed, Mar 14, 2007 at 04:20:29PM -0500, Timur Tabi wrote:
+> Jerry Van Baren wrote:
+> 
+> > The best solution, which I'm making progress on but slowly, is to pull 
+> > David Gibson's libfdt utilities into u-boot and use them to manipulate 
+> > the tree.  
+> 
+> I don't think that will help, because the problem is how do you
+> update a device tree that you don't know everything about?
+> 
+>  > I very much want v17 blobs because that removes my
+> > "write-in-place" restrictions on changing the properties.
+> 
+> Another idea which just came to light is to have the compatibility
+> field be only useful to code that just *reads* the DTB.  Any code
+> that *writes* the DTB should look it.
 
-diff --git a/ftdump.c b/ftdump.c
-index 67c5228..55209b6 100644
---- a/ftdump.c
-+++ b/ftdump.c
-@@ -142,7 +142,7 @@ static void dump_blob(void *blob)
- 			fprintf(stderr, "%*s ** Unknown tag 0x%08x\n", depth * shift, "", tag);
- 			break;
- 		}
--		sz = GET_CELL(p);
-+		sz = be32_to_cpu(GET_CELL(p));
- 		s = p_strings + be32_to_cpu(GET_CELL(p));
- 		if (version < 16 && sz >= 8)
- 			p = PALIGN(p, 8);
+Yes, that's always been true for the compatibility version field
+(version 3 had exactly the same problem, for example).  Code which
+writes the dtb has to understand everything it writes.  Or to put it
+another way, the 'version' field records the version of the writer,
+'last_comp_version' field records the version of the reader.
+
+But a program which manipulates a tree, like u-boot is both a reader
+and a writer.  It *can* take in a higher compatible version and alter
+it as long as it downgrades the version on its output to the highest
+thing it fully understands.
+
 -- 
-1.5.0.3.290.gc390a
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
