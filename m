@@ -2,13 +2,13 @@ Return-Path: <viro@ftp.linux.org.uk>
 Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 11D60DDDE6
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 20:17:13 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 04925DDE02
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 20:18:35 +1100 (EST)
 To: torvalds@linux-foundation.org
-Subject: [PATCH 13/13] fix ps3fb glue allowing a modular build
-Message-Id: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
+Subject: [PATCH 4/17] constant should be long
+Message-Id: <E1HRPcs-0003QH-0N@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 14 Mar 2007 09:17:04 +0000
+Date: Wed, 14 Mar 2007 09:18:30 +0000
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,55 +22,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/powerpc/platforms/ps3/htab.c |    2 ++
- drivers/video/Kconfig             |    2 +-
- include/asm-powerpc/ps3fb.h       |    5 -----
- 3 files changed, 3 insertions(+), 6 deletions(-)
+ arch/powerpc/kernel/udbg_16550.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
-index e12e59f..67d6f58 100644
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -235,7 +235,9 @@ static void ps3_hpte_invalidate(unsigned long slot, unsigned long va,
- static void ps3_hpte_clear(void)
+diff --git a/arch/powerpc/kernel/udbg_16550.c b/arch/powerpc/kernel/udbg_16550.c
+index e738f93..a963f65 100644
+--- a/arch/powerpc/kernel/udbg_16550.c
++++ b/arch/powerpc/kernel/udbg_16550.c
+@@ -184,7 +184,7 @@ void udbg_pas_real_putc(char c)
+ 
+ void udbg_init_pas_realmode(void)
  {
- 	/* Make sure to clean up the frame buffer device first */
-+#ifdef CONFIG_PS3_FB
- 	ps3fb_cleanup();
-+#endif
+-	udbg_comport = (volatile struct NS16550 __iomem *)0xfcff03f8;
++	udbg_comport = (volatile struct NS16550 __iomem *)0xfcff03f8UL;
  
- 	lv1_unmap_htab(htab_addr);
- }
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 7f5a598..ab43a32 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1615,7 +1615,7 @@ config FB_IBM_GXT4500
- 	  adaptor, found on some IBM System P (pSeries) machines.
- 
- config FB_PS3
--	bool "PS3 GPU framebuffer driver"
-+	tristate "PS3 GPU framebuffer driver"
- 	depends on FB && PS3_PS3AV
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
-diff --git a/include/asm-powerpc/ps3fb.h b/include/asm-powerpc/ps3fb.h
-index ad81cf4..a447387 100644
---- a/include/asm-powerpc/ps3fb.h
-+++ b/include/asm-powerpc/ps3fb.h
-@@ -43,13 +43,8 @@ struct ps3fb_ioctl_res {
- 
- #ifdef __KERNEL__
- 
--#ifdef CONFIG_FB_PS3
- extern void ps3fb_flip_ctl(int on);
- extern void ps3fb_cleanup(void);
--#else
--static inline void ps3fb_flip_ctl(int on) {}
--static inline void ps3fb_cleanup(void) {}
--#endif
- 
- #endif /* __KERNEL__ */
- 
+ 	udbg_putc = udbg_pas_real_putc;
+ 	udbg_getc = NULL;
 -- 
 1.5.0-rc2.GIT
