@@ -1,18 +1,20 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 5FC67DDD0A
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 01:05:48 +1100 (EST)
-Date: Wed, 14 Mar 2007 09:18:55 -0500
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH 4/17] constant should be long
-Message-ID: <20070314141854.GB24809@lixom.net>
-References: <E1HRPcs-0003QH-0N@ZenIV.linux.org.uk>
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 68427DDDE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 02:32:17 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l2EFWB2m026833
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 08:32:11 -0700 (MST)
+Message-ID: <45F8157A.3080300@freescale.com>
+Date: Wed, 14 Mar 2007 10:32:10 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1HRPcs-0003QH-0N@ZenIV.linux.org.uk>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [dtc] Add support for flat device tree format version 17
+References: <20070314000240.GD25514@localhost.localdomain>
+In-Reply-To: <20070314000240.GD25514@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,11 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 14, 2007 at 09:18:30AM +0000, Al Viro wrote:
-> 
-> Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> ---
->  arch/powerpc/kernel/udbg_16550.c |    2 +-
->  1 files changed, 1 insertions(+), 1 deletions(-)
+David Gibson wrote:
 
-Acked-by: Olof Johansson <olof@lixom.net>
+> -	{0x10, 0x10, BPH_V3_SIZE,
+> +	{16, 16, BPH_V3_SIZE,
+>  	 FTF_BOOTCPUID|FTF_STRTABSIZE},
+> +	{17, 16, BPH_V17_SIZE,
+
+So this is compatible with version 16?  Does that mean that a V17 DTB 
+will work fine with U-Boot today?  Or will we need to update U-Boot?
+
+The reason I ask is that I created a patch for U-Boot that tests the 
+version of the DTB before attempting to process it.  By marking V17 to 
+be compatible with V16, the patch will make U-Boot assume that it can 
+parse the DTB.
