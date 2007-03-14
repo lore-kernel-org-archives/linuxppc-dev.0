@@ -1,17 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 15 Mar 2007 10:07:12 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [dtc] Add support for flat device tree format version 17
-Message-ID: <20070314230712.GA12573@localhost.localdomain>
-References: <20070313062240.GA22737@localhost.localdomain>
-	<45F863DF.5050709@freescale.com>
-	<45F864E8.40501@smiths-aerospace.com>
-	<45F8671D.1010905@freescale.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id DD5A7DDDE4
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 10:23:26 +1100 (EST)
+Date: Wed, 14 Mar 2007 16:23:39 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+Message-ID: <20070314232339.GA32287@mag.az.mvista.com>
+References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
+	<20070314214805.GA9546@mag.az.mvista.com>
+	<45F86DC1.9010804@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45F8671D.1010905@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <45F86DC1.9010804@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,36 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 14, 2007 at 04:20:29PM -0500, Timur Tabi wrote:
-> Jerry Van Baren wrote:
+On Wed, Mar 14, 2007 at 04:48:49PM -0500, Scott Wood wrote:
+> Mark A. Greer wrote:
+> >Are you sure that '_end' (which is the end of the zImage/cuImage)
+> >is safe to use?  If the kernel is large enough (e.g., INITRAMFS)
+> >it will overwrite your dtb when its decompressed and relocated to 0.
+> >You need to grok the elfheader to figure out where the kernel will end
+> >and take the max of that and _end.
 > 
-> > The best solution, which I'm making progress on but slowly, is to pull 
-> > David Gibson's libfdt utilities into u-boot and use them to manipulate 
-> > the tree.  
-> 
-> I don't think that will help, because the problem is how do you
-> update a device tree that you don't know everything about?
-> 
->  > I very much want v17 blobs because that removes my
-> > "write-in-place" restrictions on changing the properties.
-> 
-> Another idea which just came to light is to have the compatibility
-> field be only useful to code that just *reads* the DTB.  Any code
-> that *writes* the DTB should look it.
+> Wouldn't it overwrite the bootwrapper itself before overwriting the heap?
 
-Yes, that's always been true for the compatibility version field
-(version 3 had exactly the same problem, for example).  Code which
-writes the dtb has to understand everything it writes.  Or to put it
-another way, the 'version' field records the version of the writer,
-'last_comp_version' field records the version of the reader.
+Sure but that doesn't matter--the kernel is running so the bootwrapper's
+life is over but the dtb's life isn't.
 
-But a program which manipulates a tree, like u-boot is both a reader
-and a writer.  It *can* take in a higher compatible version and alter
-it as long as it downgrades the version on its output to the highest
-thing it fully understands.
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Mark
