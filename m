@@ -1,24 +1,25 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 42205DDE1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 04:45:31 +1100 (EST)
-Date: Wed, 14 Mar 2007 18:45:29 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 229B2DDE22
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 04:59:45 +1100 (EST)
+Date: Wed, 14 Mar 2007 17:59:36 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
-In-Reply-To: <Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
-Message-ID: <Pine.LNX.4.62.0703141838030.28462@pademelon.sonytel.be>
+Message-ID: <20070314175936.GM4095@ftp.linux.org.uk>
 References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
 	<Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
 	<20070314160258.GK4095@ftp.linux.org.uk>
 	<Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be>
 	<20070314170720.GL4095@ftp.linux.org.uk>
 	<Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Al Viro <viro@ftp.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
+	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,65 +29,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 14 Mar 2007, Linus Torvalds wrote:
-> On Wed, 14 Mar 2007, Al Viro wrote:
+On Wed, Mar 14, 2007 at 10:30:31AM -0700, Linus Torvalds wrote:
 > > Nope.  How can kconfig distinguish that from a boolean option in modular
 > > driver?  bool *can* depend on tristate and be selected when tristate is
 > > set to m.
 > 
 > Btw, this is one of those things that easily causes problems.
+> 
+> In many ways it would be nice if we had two different kinds of "bool": one 
+> where "m" in the dependency chain means "y" is ok, and one where "m" means 
+> "n".
 
-I just found another caveat: while `select' is some super-override-it-all that
-ignores depends on non-existent symbols, it doesn't promote `m' to `y'.
-E.g. `select FB_CFB_FILLRECT' from a bool still gives FB_CFB_FILLRECT=m if
-FB=m.
+*nod*
 
-Anyway, here's a fix for the 3 problematic cases I found.
+> Maybe not "bool" vs "mbool", but it might be nice to have
+> 
+> 	bool FB_PS3
+> 		depends strictly on FB
+> 
+> ie a "depends strictly" refuses to upgrade a bool dependency from "m" to 
+> "y", while a regular depends allows it.
+> 
+> Or something.. The "depends strictly on X" thing would really be just a 
+> mental shorthand for "depends on (X)=y" (it's actually longer to type, but 
+> I think it's a bit more intuitive, thus "mental shortcut").
 
-Subject: bool fbdevs must depend on FB = y
-
-Frame buffer device drivers that cannot be built as modules must depend on
-`FB = y'.  Correct the 3 remaining offenders.
-
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-
-diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
-index 7f5a598..e4f0dd0 100644
---- a/drivers/video/Kconfig
-+++ b/drivers/video/Kconfig
-@@ -1320,7 +1320,7 @@ config FB_AU1100
- 
- config FB_AU1200
- 	bool "Au1200 LCD Driver"
--	depends on FB && MIPS && SOC_AU1200
-+	depends on (FB = y) && MIPS && SOC_AU1200
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-@@ -1470,7 +1470,7 @@ config FB_G364
- 
- config FB_68328
- 	bool "Motorola 68328 native frame buffer support"
--	depends on FB && (M68328 || M68EZ328 || M68VZ328)
-+	depends on (FB = y) && (M68328 || M68EZ328 || M68VZ328)
-  	select FB_CFB_FILLRECT
-  	select FB_CFB_COPYAREA
-  	select FB_CFB_IMAGEBLIT
-@@ -1616,7 +1616,7 @@ config FB_IBM_GXT4500
- 
- config FB_PS3
- 	bool "PS3 GPU framebuffer driver"
--	depends on FB && PS3_PS3AV
-+	depends on (FB = y) && PS3_PS3AV
- 	select FB_CFB_FILLRECT
- 	select FB_CFB_COPYAREA
- 	select FB_CFB_IMAGEBLIT
-
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+There's a fun side question, though: what should allmodconfig do?  FB=m,
+FB_PS3=n?  Or FB=y, FB_PS3=y?
