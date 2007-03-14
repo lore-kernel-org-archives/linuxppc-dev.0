@@ -1,18 +1,17 @@
 Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id B506CDDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 02:59:06 +1100 (EST)
-Date: Wed, 14 Mar 2007 10:59:00 -0500
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id EF701DDE0F
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 03:03:01 +1100 (EST)
+Date: Wed, 14 Mar 2007 11:02:55 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
-	(a.k.a. cuImage, cuboot)
-Message-ID: <20070314155900.GA10075@ld0162-tx32.am.freescale.net>
-References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
-	<17911.31029.598986.827186@cargo.ozlabs.ibm.com>
+Subject: Re: [PATCH 15/19] bootwrapper: Add dt_ops methods.
+Message-ID: <20070314160255.GB10075@ld0162-tx32.am.freescale.net>
+References: <20070312204201.GO28545@ld0162-tx32.am.freescale.net>
+	<17911.31508.878043.41229@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17911.31029.598986.827186@cargo.ozlabs.ibm.com>
+In-Reply-To: <17911.31508.878043.41229@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,15 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 14, 2007 at 03:25:25PM +1100, Paul Mackerras wrote:
-> Hmmm... is ppcboot.h a direct copy of a file from somewhere else
-> (e.g. uboot), or did you construct it?  It has an *awful* lot of
-> ifdefs.  If it is a direct copy from uboot, I can see an argument for
-> keeping it as-is, but if not, I think we can come up with a better way
-> to structure things.
+On Wed, Mar 14, 2007 at 03:33:24PM +1100, Paul Mackerras wrote:
+> Scott Wood writes:
+> 
+> > +static inline void *find_node_by_prop_value_str(const void *prev,
+> > +                                                const char *propname,
+> > +                                                const char *propval)
+> 
+> That name sure is a mouthful.  
 
-It's copied from asm-ppc/ppcboot.h, which was presumably copied from
-u-boot/ppcboot at some point.  It's certainly ugly, but changing it would
-break compatibility (thus negating the point of cuImage).
+I had it as find_prop_str() before, but someone asked for a more
+descriptive name.
+
+> Since we mostly (only?) use it with propname == "device_type", why not
+> make a helper with a nice, (relatively) short name like
+> "find_node_by_type" for that case?
+
+OK.
 
 -Scott
