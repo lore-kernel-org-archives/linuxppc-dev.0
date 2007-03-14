@@ -1,12 +1,15 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 14 Mar 2007 16:32:17 +1100
+Date: Wed, 14 Mar 2007 17:35:46 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Add documentation for the zImage's gunzip convenience functions
-Message-ID: <20070314053217.GG25514@localhost.localdomain>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+Message-ID: <20070314063546.GH25514@localhost.localdomain>
+References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,175 +19,169 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds documenting comments to the gunzip convenience
-functions added in commit ad9d2716cfc1cda5a7e0d7bc0db45e3af8a4adbb.
-It also removes a stray newline, and an unused global variable.
+On Mon, Mar 12, 2007 at 02:42:04PM -0600, Scott Wood wrote:
+> Add a bootwrapper platform (cuboot) that takes a bd_t from a legacy
+> U-Boot, and inserts data from it into a device tree which has been
+> compiled into the kernel.  This should help ease the transition to
+> arch/powerpc in cases where U-Boot has not yet been updated to pass a
+> device tree, or where upgrading firmware isn't practical.
+> 
+> The device trees currently in the kernel tree must have
+> /chosen/linux,stdout-path added to work with cuboot.
+> 
+> The kernel command line, mac addresses, and various clocks will be filled
+> in based on the bd_t.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+I'm very dubious about this approach.  The basic problem is that
+pre-device-tree uboot really doesn't much interface commonality across
+boards.  Each has some kind of bd_t with vaguely similar fields, but
+that's about the extent of it.  Hence the complete tangle of #ifdefs
+in ppcboot.h, and the smaller, but still significant number through
+cuboot.c.  There's no guarantee that there won't be per-board magic
+necessary in some cases, which will require yet more #ifdefs.
 
----
+What I'd prefer to see is an approach more like what I've done in my
+Ebony patches.  With the possible exception of obtaining the MAC
+addresses, that should work now on old U-Boot as well as on IBM
+OpenBios (a.k.a. treeboot).
 
-Paulus, at least two people have asked for more documentation on these
-functions.  Please apply.
+In that approach, each board has its own .c file with whatever code is
+necessary for filling in the device tree.  That would include, for
+example, a local definition of the bd_t specifically for that board.
+The device tree information can come either from a bd_t (or other
+firmware structure), or directly from the hardware registers (as Ebony
+is able to do for everything except MAC addresses).  Those board .c
+files *can* use plenty of common functions and macros to do things
+that are the same across different boards.  In the ideal case, the
+board .c will consist of nothing but invocations of a handful of
+common functions; but it's important that there's still a place there
+for special case code on any boards which have bugs that need it.
 
-Index: working-2.6/arch/powerpc/boot/gunzip_util.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/gunzip_util.c	2007-03-14 16:21:23.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/gunzip_util.c	2007-03-14 16:23:06.000000000 +1100
-@@ -14,14 +14,31 @@
- #include "ops.h"
- #include "gunzip_util.h"
- 
--struct gunzip_state state;
--
- #define HEAD_CRC	2
- #define EXTRA_FIELD	4
- #define ORIG_NAME	8
- #define COMMENT		0x10
- #define RESERVED	0xe0
- 
-+/**
-+ * gunzip_start - prepare to decompress gzip data
-+ * @state:     decompressor state structure to be initialized
-+ * @src:       buffer containing gzip compressed or uncompressed data
-+ * @srclen:    size in bytes of the buffer at src
-+ *
-+ * If the buffer at @src contains a gzip header, this function
-+ * initializes zlib to decompress the data, storing the decompression
-+ * state in @state.  The other functions in this file can then be used
-+ * to decompress data from the gzipped stream.
-+ *
-+ * If the buffer at @src does not contain a gzip header, it is assumed
-+ * to contain uncompressed data.  The buffer information is recorded
-+ * in @state and the other functions in this file will simply copy
-+ * data from the uncompressed data stream at @src.
-+ *
-+ * Any errors, such as bad compressed data, cause an error to be
-+ * printed an the platform's exit() function to be called.
-+ */
- void gunzip_start(struct gunzip_state *state, void *src, int srclen)
- {
- 	char *hdr = src;
-@@ -73,6 +90,22 @@ void gunzip_start(struct gunzip_state *s
- 	state->s.avail_in = srclen - hdrlen;
- }
- 
-+/**
-+ * gunzip_partial - extract bytes from a gzip data stream
-+ * @state:     gzip state structure previously initialized by gunzip_start()
-+ * @dst:       buffer to store extracted data
-+ * @dstlen:    maximum number of bytes to extract
-+ *
-+ * This function extracts at most @dstlen bytes from the data stream
-+ * previously associated with @state by gunzip_start(), decompressing
-+ * if necessary.  Exactly @dstlen bytes are extracted unless the data
-+ * stream doesn't contain enough bytes, in which case the entire
-+ * remainder of the stream is decompressed.
-+ *
-+ * Returns the actual number of bytes extracted.  If any errors occur,
-+ * such as a corrupted compressed stream, an error is printed an the
-+ * platform's exit() function is called.
-+ */
- int gunzip_partial(struct gunzip_state *state, void *dst, int dstlen)
- {
- 	int len;
-@@ -99,6 +132,20 @@ int gunzip_partial(struct gunzip_state *
- 	return len;
- }
- 
-+/**
-+ * gunzip_exactly - extract a fixed number of bytes from a gzip data stream
-+ * @state:     gzip state structure previously initialized by gunzip_start()
-+ * @dst:       buffer to store extracted data
-+ * @dstlen:    number of bytes to extract
-+ *
-+ * This function extracts exactly @dstlen bytes from the data stream
-+ * previously associated with @state by gunzip_start(), decompressing
-+ * if necessary.
-+ *
-+ * If there are less @dstlen bytes available in the data stream, or if
-+ * any other errors occur, such as a corrupted compressed stream, an
-+ * error is printed an the platform's exit() function is called.
-+ */
- void gunzip_exactly(struct gunzip_state *state, void *dst, int dstlen)
- {
- 	int len;
-@@ -110,6 +157,21 @@ void gunzip_exactly(struct gunzip_state 
- 	}
- }
- 
-+/**
-+ * gunzip_discard - discard bytes from a gzip data stream
-+ * @state:     gzip state structure previously initialized by gunzip_start()
-+ * @len:       number of bytes to discard
-+ *
-+ * This function extracts, then discards exactly @len bytes from the
-+ * data stream previously associated with @state by gunzip_start().
-+ * Subsequent gunzip_partial(), gunzip_exactly() or gunzip_finish()
-+ * calls will extract the data following the discarded bytes in the
-+ * data stream.
-+ *
-+ * If there are less @len bytes available in the data stream, or if
-+ * any other errors occur, such as a corrupted compressed stream, an
-+ * error is printed an the platform's exit() function is called.
-+ */
- void gunzip_discard(struct gunzip_state *state, int len)
- {
- 	static char discard_buf[128];
-@@ -123,6 +185,21 @@ void gunzip_discard(struct gunzip_state 
- 		gunzip_exactly(state, discard_buf, len);
- }
- 
-+/**
-+ * gunzip_finish - extract all remaining bytes from a gzip data stream
-+ * @state:     gzip state structure previously initialized by gunzip_start()
-+ * @dst:       buffer to store extracted data
-+ * @dstlen:    maximum number of bytes to extract
-+ *
-+ * This function extracts all remaining data, or at most @dstlen
-+ * bytes, from the stream previously associated with @state by
-+ * gunzip_start().  zlib is then shut down, so it is an error to use
-+ * any of the functions in this file on @state until it is
-+ * re-initialized with another call to gunzip_start().
-+ *
-+ * If any errors occur, such as a corrupted compressed stream, an
-+ * error is printed an the platform's exit() function is called.
-+ */
- int gunzip_finish(struct gunzip_state *state, void *dst, int dstlen)
- {
- 	int len;
-Index: working-2.6/arch/powerpc/boot/gunzip_util.h
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/gunzip_util.h	2007-03-14 16:23:27.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/gunzip_util.h	2007-03-14 16:23:49.000000000 +1100
-@@ -12,6 +12,22 @@
- 
- #include "zlib.h"
- 
-+/*
-+ * These functions are designed to make life easy for decompressing
-+ * kernel images, initrd images or any other gzip compressed image,
-+ * particularly if its useful to decompress part of the image (e.g. to
-+ * examine headers) before decompressing the remainder.
-+ *
-+ * To use:
-+ *     - declare a gunzip_state structure
-+ *     - use gunzip_start() to initialize the state, associating it
-+ *       with a stream of compressed data
-+ *     - use gunzip_partial(), gunzip_exactly() and gunzip_discard()
-+ *       in any combination to extract pieces of data from the stream
-+ *     - Finally use gunzip_finish() to extract the tail of the
-+ *       compressed stream and wind up zlib
-+ */
-+
- /* scratch space for gunzip; 46912 is from zlib_inflate_workspacesize() */
- #define GUNZIP_SCRATCH_SIZE	46912
- 
-@@ -27,4 +43,3 @@ void gunzip_discard(struct gunzip_state 
- int gunzip_finish(struct gunzip_state *state, void *dst, int len);
- 
- #endif /* _PPC_BOOT_GUNZIP_UTIL_H_ */
--
+I think that in many cases, the same zImage should be able to boot on
+a board with old u-boot, and on the same board with vendor firmware
+where such exists (e.g. treeboot).
+
+Some specific comments below
+[snip]
+> +static void *set_one_mac(void *last_node, unsigned char *addr)
+> +{
+> +	void *node = find_node_by_prop_value_str(last_node, "device_type",
+> +	                                         "network");
+> +
+> +	if (node)
+> +		setprop(node, "local-mac-address", addr, 6);
+> +
+> +	return node;
+> +}
+
+This function isn't safe, because it relies on finding the ethernet
+devices in a particular order.  In general I've tried to make dtc
+output nodes in the same order they're in the dts file, but that
+behaviour isn't guaranteed: for robustness, users of a device tree
+blob should not rely on the order of nodes.  There have certainly been
+interim versions of dtc which reversed the order of nodes between
+input and output because of the way I handled lists.
+
+> +static void set_mac_addrs(void)
+> +{
+> +	__attribute__((unused)) void *node =
+> +		set_one_mac(NULL, bd.bi_enetaddr);
+> +
+> +#ifdef HAVE_ENET1ADDR
+> +	if (node)
+> +		node = set_one_mac(node, bd.bi_enet1addr);
+> +#endif
+> +#ifdef HAVE_ENET2ADDR
+> +	if (node)
+> +		node = set_one_mac(node, bd.bi_enet2addr);
+> +#endif
+> +#ifdef HAVE_ENET3ADDR
+> +	if (node)
+> +		node = set_one_mac(node, bd.bi_enet3addr);
+> +#endif
+> +}
+
+Ick with the #ifdefs.  I think the nice way to do this would be for
+the board .c file to have a table containing the path to each network
+node, along with a pointer to the address (generated as a pointer to a
+field within the bd_t).  That table can be passed to a common helper
+which will iterate through making the necessary device tree changes
+for each one.
+
+[snip]
+> +#if defined(TARGET_83xx) || defined(TARGET_85xx) || defined(TARGET_86xx)
+> +	node = find_node_by_prop_value_str(NULL, "device_type",
+> "soc");
+
+Does the path of the "soc" node actually vary?
+
+> +	if (node) {
+> +		void *serial;
+> +
+> +		setprop(node, "bus-frequency", &bd.bi_busfreq,
+> +		        sizeof(bd.bi_busfreq));
+> +
+> +		serial = finddevice_rel(node, "serial@4500");
+> +		if (serial)
+> +			setprop(serial, "clock-frequency", &bd.bi_busfreq,
+> +			        sizeof(bd.bi_busfreq));
+> +
+> +		serial = finddevice_rel(node, "serial@4600");
+> +		if (serial)
+> +			setprop(serial, "clock-frequency", &bd.bi_busfreq,
+> +			        sizeof(bd.bi_busfreq));
+> +	}
+> +#endif
+
+Again with the #ifdefs, and board specific node names being used in
+the innards here.  This could also be done more nicely with a table
+driven approach.
+
+[snip]
+> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+> index 157d8c8..99bf85e 100755
+> --- a/arch/powerpc/boot/wrapper
+> +++ b/arch/powerpc/boot/wrapper
+> @@ -29,6 +29,7 @@ initrd=
+>  dtb=
+>  dts=
+>  cacheit=
+> +gzip=.gz
+>  
+>  # cross-compilation prefix
+>  CROSS=
+> @@ -104,9 +105,9 @@ done
+>  
+>  if [ -n "$dts" ]; then
+>      if [ -z "$dtb" ]; then
+> -	dtb="$platform.dtb"
+> +	dtb="$tmpdir/$platform.dtb"
+>      fi
+> -    dtc -O dtb -o "$dtb" -b 0 -V 16 "$dts" || exit 1
+> +    dtc -f -O dtb -o "$dtb" -b 0 -V 16 "$dts" || exit 1
+
+The fixup of the dts->dtb handling in wrapper, and the optional gzip
+thing probably don't belong in this patch, though they're reasonable
+ideas of themselves.
+
+[snip]
+> diff --git a/arch/powerpc/platforms/83xx/mpc834x_mds.c b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+> index e5d8191..77c298c 100644
+> --- a/arch/powerpc/platforms/83xx/mpc834x_mds.c
+> +++ b/arch/powerpc/platforms/83xx/mpc834x_mds.c
+> @@ -180,9 +180,10 @@ late_initcall(mpc834x_rtc_hookup);
+>   */
+>  static int __init mpc834x_mds_probe(void)
+>  {
+> -        unsigned long root = of_get_flat_dt_root();
+> +	unsigned long root = of_get_flat_dt_root();
+>  
+> -        return of_flat_dt_is_compatible(root, "MPC834xMDS");
+> +	return 1;
+> +	return of_flat_dt_is_compatible(root, "MPC834xMDS");
+>  }
+
+The chunk above looks totally bogus.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
