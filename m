@@ -1,24 +1,24 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org", Issuer "OSDL Hostmaster" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 5DBE6DDECA
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 04:31:05 +1100 (EST)
-Date: Wed, 14 Mar 2007 10:30:31 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Al Viro <viro@ftp.linux.org.uk>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 42205DDE1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 04:45:31 +1100 (EST)
+Date: Wed, 14 Mar 2007 18:45:29 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Linus Torvalds <torvalds@linux-foundation.org>
 Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
-In-Reply-To: <20070314170720.GL4095@ftp.linux.org.uk>
-Message-ID: <Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
+Message-ID: <Pine.LNX.4.62.0703141838030.28462@pademelon.sonytel.be>
 References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
 	<Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
 	<20070314160258.GK4095@ftp.linux.org.uk>
 	<Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be>
 	<20070314170720.GL4095@ftp.linux.org.uk>
+	<Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,41 +28,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-
-On Wed, 14 Mar 2007, Al Viro wrote:
+On Wed, 14 Mar 2007, Linus Torvalds wrote:
+> On Wed, 14 Mar 2007, Al Viro wrote:
+> > Nope.  How can kconfig distinguish that from a boolean option in modular
+> > driver?  bool *can* depend on tristate and be selected when tristate is
+> > set to m.
 > 
-> Nope.  How can kconfig distinguish that from a boolean option in modular
-> driver?  bool *can* depend on tristate and be selected when tristate is
-> set to m.
+> Btw, this is one of those things that easily causes problems.
 
-Btw, this is one of those things that easily causes problems.
+I just found another caveat: while `select' is some super-override-it-all that
+ignores depends on non-existent symbols, it doesn't promote `m' to `y'.
+E.g. `select FB_CFB_FILLRECT' from a bool still gives FB_CFB_FILLRECT=m if
+FB=m.
 
-In many ways it would be nice if we had two different kinds of "bool": one 
-where "m" in the dependency chain means "y" is ok, and one where "m" means 
-"n".
+Anyway, here's a fix for the 3 problematic cases I found.
 
-We used to have "dep_bool" and "dep_mbool" for this, a long time ago. It 
-got dropped in the Kconfig language rewrite, and I think it was a mistake.
+Subject: bool fbdevs must depend on FB = y
 
-So I think it would be nice to re-introduce it. As it is, we have a number 
-of Kconfig language constructs that are just unnecessarily hard to 
-understand, because we end up having to add a "= y" or similar.
+Frame buffer device drivers that cannot be built as modules must depend on
+`FB = y'.  Correct the 3 remaining offenders.
 
-The rule *used* to be: "dep_mbool" was a boolean that was valid even for 
-modules, while "dep_bool" was a boolean that was valid only for straigth 
-"y", and a module would turn it off.
+Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 
-Maybe not "bool" vs "mbool", but it might be nice to have
+diff --git a/drivers/video/Kconfig b/drivers/video/Kconfig
+index 7f5a598..e4f0dd0 100644
+--- a/drivers/video/Kconfig
++++ b/drivers/video/Kconfig
+@@ -1320,7 +1320,7 @@ config FB_AU1100
+ 
+ config FB_AU1200
+ 	bool "Au1200 LCD Driver"
+-	depends on FB && MIPS && SOC_AU1200
++	depends on (FB = y) && MIPS && SOC_AU1200
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
+@@ -1470,7 +1470,7 @@ config FB_G364
+ 
+ config FB_68328
+ 	bool "Motorola 68328 native frame buffer support"
+-	depends on FB && (M68328 || M68EZ328 || M68VZ328)
++	depends on (FB = y) && (M68328 || M68EZ328 || M68VZ328)
+  	select FB_CFB_FILLRECT
+  	select FB_CFB_COPYAREA
+  	select FB_CFB_IMAGEBLIT
+@@ -1616,7 +1616,7 @@ config FB_IBM_GXT4500
+ 
+ config FB_PS3
+ 	bool "PS3 GPU framebuffer driver"
+-	depends on FB && PS3_PS3AV
++	depends on (FB = y) && PS3_PS3AV
+ 	select FB_CFB_FILLRECT
+ 	select FB_CFB_COPYAREA
+ 	select FB_CFB_IMAGEBLIT
 
-	bool FB_PS3
-		depends strictly on FB
+Gr{oetje,eeting}s,
 
-ie a "depends strictly" refuses to upgrade a bool dependency from "m" to 
-"y", while a regular depends allows it.
+						Geert
 
-Or something.. The "depends strictly on X" thing would really be just a 
-mental shorthand for "depends on (X)=y" (it's actually longer to type, but 
-I think it's a bit more intuitive, thus "mental shortcut").
-
-		Linus
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
