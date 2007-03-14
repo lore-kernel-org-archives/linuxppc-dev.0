@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 14 Mar 2007 11:06:23 +1100
+Date: Wed, 14 Mar 2007 11:50:40 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: [dtc] Get rid of libdt.c
-Message-ID: <20070314000623.GE25514@localhost.localdomain>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Update documentation for flat device tree format v17
+Message-ID: <20070314005040.GF25514@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,263 +16,109 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-libdt.c was an attempt at creating a device tree handling library
-within the dtc codebase.  However, it was never even close to
-completion, and is entirely obsoleted by it's spiritual descendent,
-libfdt (currently a separate package).  This patch, therefore, removes
-libdt.c entirely, along with its only reference in the Makefile, an
-unused variable.
+This patch updates booting-without-of.txt to describe version 17 of
+the flattened device tree format.  Version 17 is a small, backwards
+compatible change from version 16, adding an extra field giving the
+size of the device tree's structure block.  At this time, the kernel
+has no use for the extra information, however its presence can make
+life easier for bootloaders or other software manipulating the tree.
+
+In addition this patch adds information on the size_dt_strings field
+of the device tree header, present since version 3 of the flattened
+tree format, but omitted from the documentation.  It also makes
+changes to consistently refer to versions 16 and 17 as versions 16 and
+17 in decimal, rather than version 0x10 which was occasionally used
+for version 16 previously.
+
+Finally, we also add the new field to the definition of the device
+tree header structure in prom.h
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
 
-Index: dtc/Makefile
+Paulus, please apply.
+
+Index: working-2.6/include/asm-powerpc/prom.h
 ===================================================================
---- dtc.orig/Makefile	2007-03-14 11:03:32.000000000 +1100
-+++ dtc/Makefile	2007-03-14 11:03:35.000000000 +1100
-@@ -6,8 +6,6 @@ BISON = bison
- DTC_OBJS = dtc.o livetree.o flattree.o data.o treesource.o fstree.o \
- 		dtc-parser.tab.o lex.yy.o
+--- working-2.6.orig/include/asm-powerpc/prom.h	2007-03-14 11:38:34.000000000 +1100
++++ working-2.6/include/asm-powerpc/prom.h	2007-03-14 11:38:40.000000000 +1100
+@@ -59,6 +59,8 @@ struct boot_param_header
+ 	u32	boot_cpuid_phys;	/* Physical CPU id we're booting on */
+ 	/* version 3 fields below */
+ 	u32	dt_strings_size;	/* size of the DT strings block */
++	/* version 17 fields below */
++	u32	dt_struct_size;		/* size of the DT structure block */
+ };
  
--OBJS = $(DTC_OBJS) libdt.o ftdump.o
--
- DEPFILES = $(DTC_OBJS:.o=.d)
  
- all: $(TARGETS)
-Index: dtc/libdt.c
+Index: working-2.6/Documentation/powerpc/booting-without-of.txt
 ===================================================================
---- dtc.orig/libdt.c	2007-03-14 11:03:19.000000000 +1100
-+++ /dev/null	1970-01-01 00:00:00.000000000 +0000
-@@ -1,230 +0,0 @@
--/*
-- * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
-- *
-- * 
-- * This program is free software; you can redistribute it and/or
-- * modify it under the terms of the GNU General Public License as
-- * published by the Free Software Foundation; either version 2 of the
-- * License, or (at your option) any later version.
-- *
-- *  This program is distributed in the hope that it will be useful,
-- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
-- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-- *  General Public License for more details.
-- *                                                                       
-- *  You should have received a copy of the GNU General Public License    
-- *  along with this program; if not, write to the Free Software          
-- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
-- *                                                                   USA 
-- */
--
--#include <stdint.h>
--#include <string.h>
--
--#include "flat_dt.h"
--
--#define ALIGN(x, a)	(((x) + ((a) - 1)) & ~((a) - 1))
--#define PALIGN(p, a)	((void *)(ALIGN((unsigned long)(p), (a))))
--#define GET_CELL(p)	(p += 4, *((uint32_t *)(p-4)))
--
--static char *skip_name(char *p)
--{
--	while (*p != '\0')
--		p++;
--
--	return PALIGN(p, sizeof(uint32_t));
--}
--
--static char *skip_prop(void *blob, char *p)
--{
--	struct boot_param_header *bph = blob;
--	uint32_t len, nameoff;
--
--	len = GET_CELL(p);
--	nameoff = GET_CELL(p);
--	if ((bph->version < 0x10) && (len >= sizeof(uint64_t)))
--		p = PALIGN(p, sizeof(uint64_t));
--	return PALIGN(p + len, sizeof(uint32_t));
--}
--
--static char *get_unit(char *dtpath)
--{
--	char *p;
--
--	if (dtpath[0] != '/')
--		return dtpath;
--
--	p = dtpath + strlen(dtpath);
--	while (*p != '/')
--		p--;
--
--	return p+1;
--}
--
--static int first_seg_len(char *dtpath)
--{
--	int len = 0;
--
--	while ((dtpath[len] != '/') && (dtpath[len] != '\0'))
--		len++;
--
--	return len;
--}
--
--char *flat_dt_get_string(void *blob, uint32_t offset)
--{
--	struct boot_param_header *bph = blob;
--
--	return (char *)blob + bph->off_dt_strings + offset;
--}
--
--void *flat_dt_get_subnode(void *blob, void *node, char *uname, int unamelen)
--{
--	struct boot_param_header *bph = blob;
--	char *p = node;
--	uint32_t tag;
--	int depth = 0;
--	char *nuname;
--
--	if (! unamelen)
--		unamelen = strlen(uname);
--
--	do {
--		tag = GET_CELL(p);
--
--		switch (tag) {
--		case OF_DT_PROP:
--			p = skip_prop(blob, p);
--			break;
--
--		case OF_DT_BEGIN_NODE:
--			if (depth == 0) {
--				nuname = p;
--
--				if (bph->version < 0x10)
--					nuname = get_unit(nuname);
--
--				p = skip_name(p);
--
--				if (strncmp(nuname, uname, unamelen) == 0)
--					return p;
--			}
--			depth++;
--			break;
--
--		case OF_DT_END_NODE:
--			depth--;
--			break;
--
--		case OF_DT_END:
--			/* looks like a malformed tree */
--			return NULL;
--			break;
--
--		default:
--			/* FIXME: throw some sort of error */
--			return NULL;
--		}
--	} while (depth >= 0);
--
--	return NULL;
--}
--
--void *flat_dt_get_node(void *blob, char *path)
--{
--	struct boot_param_header *bph = blob;
--	char *node;
--	int seglen;
--
--	node = blob + bph->off_dt_struct;
--	node += sizeof(uint32_t); /* skip initial OF_DT_BEGIN_NODE */
--	node = skip_name(node);	/* skip root node name */
--
--	while (node && (*path)) {
--		if (path[0] == '/')
--			path++;
--
--		seglen = first_seg_len(path);
--
--		node = flat_dt_get_subnode(blob, node, path, seglen);
--
--		path += seglen;
--	}
--
--	return node;
--}
--
--void flat_dt_traverse(void *blob,
--		      int (*fn)(void *blob, void *node, void *priv),
--		      void *private)
--{
--	struct boot_param_header *bph = blob;
--	char *p;
--	uint32_t tag;
--	int depth = 0;
--	char *uname;
--
--	p = (char *)blob + bph->off_dt_struct;
--
--	tag = GET_CELL(p);
--	while (tag != OF_DT_END) {
--		switch (tag) {
--		case OF_DT_BEGIN_NODE:
--			uname = p;
--
--			if (bph->version < 0x10)
--				uname = get_unit(uname);
--
--			p = skip_name(p);
--
--			(*fn)(blob, p, private);
--			depth++;
--			break;
--
--		case OF_DT_END_NODE:
--			depth--;
--			break;
--
--		case OF_DT_PROP:
--			p = skip_prop(blob, p);
--			break;
--
--		default:
--			/* FIXME: badly formed tree */
--			return;
--		}
--	}
--}
--
--void *flat_dt_get_prop(void *blob, void *node, char *name, uint32_t *len)
--{
--	struct boot_param_header *bph = blob;
--	char *p = node;
--
--	do {
--		uint32_t tag = GET_CELL(p);
--		uint32_t sz, noff;
--		const char *nstr;
--
--		if (tag != OF_DT_PROP)
--			return NULL;
--
--		sz = GET_CELL(p);
--		noff = GET_CELL(p);
--
--		/* Old versions have variable alignment of the
--		 * property value */
--		if ((bph->version < 0x10) && (sz >= 8))
--		    p = PALIGN(p, 8);
--
--		nstr = flat_dt_get_string(blob, noff);
--
--		if (strcmp(name, nstr) == 0) {
--			if (len)
--				*len = sz;
--			return (void *)p;
--		}
--
--		p = PALIGN(p + sz, sizeof(uint32_t));
--	} while(1);
--}
+--- working-2.6.orig/Documentation/powerpc/booting-without-of.txt	2007-03-14 11:38:34.000000000 +1100
++++ working-2.6/Documentation/powerpc/booting-without-of.txt	2007-03-14 11:42:20.000000000 +1100
+@@ -265,6 +265,9 @@ struct boot_param_header {
+                                            booting on */
+         /* version 3 fields below */
+         u32     size_dt_strings;        /* size of the strings block */
++
++        /* version 17 fields below */
++        u32	size_dt_struct;		/* size of the DT structure block */
+ };
+ 
+    Along with the constants:
+@@ -335,10 +338,13 @@ struct boot_param_header {
+      to reallocate it easily at boot and free up the unused flattened
+      structure after expansion. Version 16 introduces a new more
+      "compact" format for the tree itself that is however not backward
+-     compatible. You should always generate a structure of the highest
+-     version defined at the time of your implementation. Currently
+-     that is version 16, unless you explicitly aim at being backward
+-     compatible.
++     compatible. Version 17 adds an additional field, size_dt_struct,
++     allowing it to be reallocated or moved more easily (this is
++     particularly useful for bootloaders which need to make
++     adjustments to a device tree based on probed information). You
++     should always generate a structure of the highest version defined
++     at the time of your implementation. Currently that is version 17,
++     unless you explicitly aim at being backward compatible.
+ 
+    - last_comp_version
+ 
+@@ -347,7 +353,7 @@ struct boot_param_header {
+      is backward compatible with version 1 (that is, a kernel build
+      for version 1 will be able to boot with a version 2 format). You
+      should put a 1 in this field if you generate a device tree of
+-     version 1 to 3, or 0x10 if you generate a tree of version 0x10
++     version 1 to 3, or 16 if you generate a tree of version 16 or 17
+      using the new unit name format.
+ 
+    - boot_cpuid_phys
+@@ -360,6 +366,17 @@ struct boot_param_header {
+      point (see further chapters for more informations on the required
+      device-tree contents)
+ 
++   - size_dt_strings
++
++     This field only exists on version 3 and later headers.  It
++     gives the size of the "strings" section of the device tree (which
++     starts at the offset given by off_dt_strings).
++
++   - size_dt_struct
++
++     This field only exists on version 17 and later headers.  It gives
++     the size of the "structure" section of the device tree (which
++     starts at the offset given by off_dt_struct).
+ 
+    So the typical layout of a DT block (though the various parts don't
+    need to be in that order) looks like this (addresses go from top to
+@@ -417,7 +434,7 @@ root node who has no parent.
+ A node has 2 names. The actual node name is generally contained in a
+ property of type "name" in the node property list whose value is a
+ zero terminated string and is mandatory for version 1 to 3 of the
+-format definition (as it is in Open Firmware). Version 0x10 makes it
++format definition (as it is in Open Firmware). Version 16 makes it
+ optional as it can generate it from the unit name defined below.
+ 
+ There is also a "unit name" that is used to differentiate nodes with
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
