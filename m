@@ -1,13 +1,13 @@
 Return-Path: <jdl@jdl.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [dtc] Get rid of libdt.c 
-In-Reply-To: Your message of "Wed, 14 Mar 2007 11:06:23 +1100."
-	<20070314000623.GE25514@localhost.localdomain>
-References: <20070314000623.GE25514@localhost.localdomain> 
-Date: Wed, 14 Mar 2007 15:42:38 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: Update documentation for flat device tree format v17 
+In-Reply-To: Your message of "Wed, 14 Mar 2007 11:50:40 +1100."
+	<20070314005040.GF25514@localhost.localdomain>
+References: <20070314005040.GF25514@localhost.localdomain> 
+Date: Wed, 14 Mar 2007 15:44:30 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1HRaIw-0000PN-T3@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <E1HRaKk-0000Pi-3x@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,16 +18,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 So, like, the other day David Gibson mumbled:
-> libdt.c was an attempt at creating a device tree handling library
-> within the dtc codebase.  However, it was never even close to
-> completion, and is entirely obsoleted by it's spiritual descendent,
-> libfdt (currently a separate package).  This patch, therefore, removes
-> libdt.c entirely, along with its only reference in the Makefile, an
-> unused variable.
+> This patch updates booting-without-of.txt to describe version 17 of
+> the flattened device tree format.  Version 17 is a small, backwards
+> compatible change from version 16, adding an extra field giving the
+> size of the device tree's structure block.  At this time, the kernel
+> has no use for the extra information, however its presence can make
+> life easier for bootloaders or other software manipulating the tree.
+> 
+> In addition this patch adds information on the size_dt_strings field
+> of the device tree header, present since version 3 of the flattened
+> tree format, but omitted from the documentation.  It also makes
+> changes to consistently refer to versions 16 and 17 as versions 16 and
+> 17 in decimal, rather than version 0x10 which was occasionally used
+> for version 16 previously.
+> 
+> Finally, we also add the new field to the definition of the device
+> tree header structure in prom.h
 > 
 > Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> ---
+> 
+> Paulus, please apply.
 
-Applied.
+Paul,
+
+I have applied the Version 17 Updates patch to my DTC tree.
+
+Acked-by: Jon Loeliger <jdl@freescale.com>
 
 Thanks,
 jdl
