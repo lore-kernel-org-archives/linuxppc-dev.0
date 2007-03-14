@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 14 Mar 2007 11:02:40 +1100
+Date: Wed, 14 Mar 2007 11:06:23 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Jon Loeliger <jdl@freescale.com>
-Subject: [dtc] Add support for flat device tree format version 17
-Message-ID: <20070314000240.GD25514@localhost.localdomain>
+Subject: [dtc] Get rid of libdt.c
+Message-ID: <20070314000623.GE25514@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,125 +16,263 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-libfdt defined a new version of the flattened device tree format,
-version 17.  It is backwards compatible with version 16, just adding
-an extra header field giving the size of the blob's structure blob.
-
-This patch adds support to dtc allowing it to read and write version
-17 blobs.  It also makes version 17 the default output version for
-blobs.
-
-At the same time we change the code to consistently using decimal
-numbers for versions.  Previously we sometimes used 16 and sometimes
-0x10 to refer to version 16.
+libdt.c was an attempt at creating a device tree handling library
+within the dtc codebase.  However, it was never even close to
+completion, and is entirely obsoleted by it's spiritual descendent,
+libfdt (currently a separate package).  This patch, therefore, removes
+libdt.c entirely, along with its only reference in the Makefile, an
+unused variable.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
-Index: dtc/dtc.c
+Index: dtc/Makefile
 ===================================================================
---- dtc.orig/dtc.c	2007-03-14 11:00:05.000000000 +1100
-+++ dtc/dtc.c	2007-03-14 11:01:05.000000000 +1100
-@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
- 	int opt;
- 	FILE *inf = NULL;
- 	FILE *outf = NULL;
--	int outversion = 0x10;
-+	int outversion = 17;
- 	int reservenum = 1;
- 	int boot_cpuid_phys = 0xfeedbeef;
+--- dtc.orig/Makefile	2007-03-14 11:03:32.000000000 +1100
++++ dtc/Makefile	2007-03-14 11:03:35.000000000 +1100
+@@ -6,8 +6,6 @@ BISON = bison
+ DTC_OBJS = dtc.o livetree.o flattree.o data.o treesource.o fstree.o \
+ 		dtc-parser.tab.o lex.yy.o
  
-Index: dtc/flat_dt.h
+-OBJS = $(DTC_OBJS) libdt.o ftdump.o
+-
+ DEPFILES = $(DTC_OBJS:.o=.d)
+ 
+ all: $(TARGETS)
+Index: dtc/libdt.c
 ===================================================================
---- dtc.orig/flat_dt.h	2007-03-14 11:00:06.000000000 +1100
-+++ dtc/flat_dt.h	2007-03-14 11:00:06.000000000 +1100
-@@ -25,11 +25,15 @@ struct boot_param_header {
- 					    booting on */
- 	/* version 3 fields below */
-         uint32_t size_dt_strings;        /* size of the strings block */
-+
-+	/* version 17 fields below */
-+	uint32_t size_dt_struct;         /* size of the DT structure block */
- };
- 
- #define BPH_V1_SIZE	(7*sizeof(uint32_t))
- #define BPH_V2_SIZE	(BPH_V1_SIZE + sizeof(uint32_t))
- #define BPH_V3_SIZE	(BPH_V2_SIZE + sizeof(uint32_t))
-+#define BPH_V17_SIZE	(BPH_V3_SIZE + sizeof(uint32_t))
- 
- struct reserve_entry {
- 	uint64_t address;
-Index: dtc/flattree.c
-===================================================================
---- dtc.orig/flattree.c	2007-03-14 11:00:06.000000000 +1100
-+++ dtc/flattree.c	2007-03-14 11:00:06.000000000 +1100
-@@ -26,6 +26,7 @@
- #define FTF_NAMEPROPS	0x4
- #define FTF_BOOTCPUID	0x8
- #define FTF_STRTABSIZE	0x10
-+#define FTF_STRUCTSIZE	0x20
- 
- static struct version_info {
- 	int version;
-@@ -39,8 +40,10 @@ static struct version_info {
- 	 FTF_FULLPATH|FTF_VARALIGN|FTF_NAMEPROPS|FTF_BOOTCPUID},
- 	{3, 1, BPH_V3_SIZE,
- 	 FTF_FULLPATH|FTF_VARALIGN|FTF_NAMEPROPS|FTF_BOOTCPUID|FTF_STRTABSIZE},
--	{0x10, 0x10, BPH_V3_SIZE,
-+	{16, 16, BPH_V3_SIZE,
- 	 FTF_BOOTCPUID|FTF_STRTABSIZE},
-+	{17, 16, BPH_V17_SIZE,
-+	 FTF_BOOTCPUID|FTF_STRTABSIZE|FTF_STRUCTSIZE},
- };
- 
- struct emitter {
-@@ -328,6 +331,8 @@ static void make_bph(struct boot_param_h
- 		bph->boot_cpuid_phys = cpu_to_be32(boot_cpuid_phys);
- 	if (vi->flags & FTF_STRTABSIZE)
- 		bph->size_dt_strings = cpu_to_be32(strsize);
-+	if (vi->flags & FTF_STRUCTSIZE)
-+		bph->size_dt_struct = cpu_to_be32(dtsize);
- }
- 
- void dt_to_blob(FILE *f, struct boot_info *bi, int version,
-@@ -742,7 +747,7 @@ static struct node *unflatten_tree(struc
- 
- struct boot_info *dt_from_blob(FILE *f)
- {
--	u32 magic, totalsize, version, size_str;
-+	u32 magic, totalsize, version, size_str, size_dt;
- 	u32 off_dt, off_str, off_mem_rsvmap;
- 	int rc;
- 	char *blob;
-@@ -841,8 +846,15 @@ struct boot_info *dt_from_blob(FILE *f)
- 		if (off_str+size_str > totalsize)
- 			die("String table extends past total size\n");
- 	}
-+
-+	if (version >= 17) {
-+		size_dt = be32_to_cpu(bph->size_dt_struct);
-+		fprintf(stderr, "\tsize_dt_struct:\t\t%d\n", size_dt);
-+		if (off_dt+size_dt > totalsize)
-+			die("Structure block extends past total size\n");
-+	}
- 			
--	if (version < 0x10) {
-+	if (version < 16) {
- 		flags |= FTF_FULLPATH | FTF_NAMEPROPS | FTF_VARALIGN;
- 	}
- 
-Index: dtc/ftdump.c
-===================================================================
---- dtc.orig/ftdump.c	2007-03-14 11:00:06.000000000 +1100
-+++ dtc/ftdump.c	2007-03-14 11:00:06.000000000 +1100
-@@ -144,7 +144,7 @@ static void dump_blob(void *blob)
- 		}
- 		sz = GET_CELL(p);
- 		s = p_strings + be32_to_cpu(GET_CELL(p));
--		if (version < 0x10 && sz >= 8)
-+		if (version < 16 && sz >= 8)
- 			p = PALIGN(p, 8);
- 		t = p;
- 
+--- dtc.orig/libdt.c	2007-03-14 11:03:19.000000000 +1100
++++ /dev/null	1970-01-01 00:00:00.000000000 +0000
+@@ -1,230 +0,0 @@
+-/*
+- * (C) Copyright David Gibson <dwg@au1.ibm.com>, IBM Corporation.  2005.
+- *
+- * 
+- * This program is free software; you can redistribute it and/or
+- * modify it under the terms of the GNU General Public License as
+- * published by the Free Software Foundation; either version 2 of the
+- * License, or (at your option) any later version.
+- *
+- *  This program is distributed in the hope that it will be useful,
+- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+- *  General Public License for more details.
+- *                                                                       
+- *  You should have received a copy of the GNU General Public License    
+- *  along with this program; if not, write to the Free Software          
+- *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 
+- *                                                                   USA 
+- */
+-
+-#include <stdint.h>
+-#include <string.h>
+-
+-#include "flat_dt.h"
+-
+-#define ALIGN(x, a)	(((x) + ((a) - 1)) & ~((a) - 1))
+-#define PALIGN(p, a)	((void *)(ALIGN((unsigned long)(p), (a))))
+-#define GET_CELL(p)	(p += 4, *((uint32_t *)(p-4)))
+-
+-static char *skip_name(char *p)
+-{
+-	while (*p != '\0')
+-		p++;
+-
+-	return PALIGN(p, sizeof(uint32_t));
+-}
+-
+-static char *skip_prop(void *blob, char *p)
+-{
+-	struct boot_param_header *bph = blob;
+-	uint32_t len, nameoff;
+-
+-	len = GET_CELL(p);
+-	nameoff = GET_CELL(p);
+-	if ((bph->version < 0x10) && (len >= sizeof(uint64_t)))
+-		p = PALIGN(p, sizeof(uint64_t));
+-	return PALIGN(p + len, sizeof(uint32_t));
+-}
+-
+-static char *get_unit(char *dtpath)
+-{
+-	char *p;
+-
+-	if (dtpath[0] != '/')
+-		return dtpath;
+-
+-	p = dtpath + strlen(dtpath);
+-	while (*p != '/')
+-		p--;
+-
+-	return p+1;
+-}
+-
+-static int first_seg_len(char *dtpath)
+-{
+-	int len = 0;
+-
+-	while ((dtpath[len] != '/') && (dtpath[len] != '\0'))
+-		len++;
+-
+-	return len;
+-}
+-
+-char *flat_dt_get_string(void *blob, uint32_t offset)
+-{
+-	struct boot_param_header *bph = blob;
+-
+-	return (char *)blob + bph->off_dt_strings + offset;
+-}
+-
+-void *flat_dt_get_subnode(void *blob, void *node, char *uname, int unamelen)
+-{
+-	struct boot_param_header *bph = blob;
+-	char *p = node;
+-	uint32_t tag;
+-	int depth = 0;
+-	char *nuname;
+-
+-	if (! unamelen)
+-		unamelen = strlen(uname);
+-
+-	do {
+-		tag = GET_CELL(p);
+-
+-		switch (tag) {
+-		case OF_DT_PROP:
+-			p = skip_prop(blob, p);
+-			break;
+-
+-		case OF_DT_BEGIN_NODE:
+-			if (depth == 0) {
+-				nuname = p;
+-
+-				if (bph->version < 0x10)
+-					nuname = get_unit(nuname);
+-
+-				p = skip_name(p);
+-
+-				if (strncmp(nuname, uname, unamelen) == 0)
+-					return p;
+-			}
+-			depth++;
+-			break;
+-
+-		case OF_DT_END_NODE:
+-			depth--;
+-			break;
+-
+-		case OF_DT_END:
+-			/* looks like a malformed tree */
+-			return NULL;
+-			break;
+-
+-		default:
+-			/* FIXME: throw some sort of error */
+-			return NULL;
+-		}
+-	} while (depth >= 0);
+-
+-	return NULL;
+-}
+-
+-void *flat_dt_get_node(void *blob, char *path)
+-{
+-	struct boot_param_header *bph = blob;
+-	char *node;
+-	int seglen;
+-
+-	node = blob + bph->off_dt_struct;
+-	node += sizeof(uint32_t); /* skip initial OF_DT_BEGIN_NODE */
+-	node = skip_name(node);	/* skip root node name */
+-
+-	while (node && (*path)) {
+-		if (path[0] == '/')
+-			path++;
+-
+-		seglen = first_seg_len(path);
+-
+-		node = flat_dt_get_subnode(blob, node, path, seglen);
+-
+-		path += seglen;
+-	}
+-
+-	return node;
+-}
+-
+-void flat_dt_traverse(void *blob,
+-		      int (*fn)(void *blob, void *node, void *priv),
+-		      void *private)
+-{
+-	struct boot_param_header *bph = blob;
+-	char *p;
+-	uint32_t tag;
+-	int depth = 0;
+-	char *uname;
+-
+-	p = (char *)blob + bph->off_dt_struct;
+-
+-	tag = GET_CELL(p);
+-	while (tag != OF_DT_END) {
+-		switch (tag) {
+-		case OF_DT_BEGIN_NODE:
+-			uname = p;
+-
+-			if (bph->version < 0x10)
+-				uname = get_unit(uname);
+-
+-			p = skip_name(p);
+-
+-			(*fn)(blob, p, private);
+-			depth++;
+-			break;
+-
+-		case OF_DT_END_NODE:
+-			depth--;
+-			break;
+-
+-		case OF_DT_PROP:
+-			p = skip_prop(blob, p);
+-			break;
+-
+-		default:
+-			/* FIXME: badly formed tree */
+-			return;
+-		}
+-	}
+-}
+-
+-void *flat_dt_get_prop(void *blob, void *node, char *name, uint32_t *len)
+-{
+-	struct boot_param_header *bph = blob;
+-	char *p = node;
+-
+-	do {
+-		uint32_t tag = GET_CELL(p);
+-		uint32_t sz, noff;
+-		const char *nstr;
+-
+-		if (tag != OF_DT_PROP)
+-			return NULL;
+-
+-		sz = GET_CELL(p);
+-		noff = GET_CELL(p);
+-
+-		/* Old versions have variable alignment of the
+-		 * property value */
+-		if ((bph->version < 0x10) && (sz >= 8))
+-		    p = PALIGN(p, 8);
+-
+-		nstr = flat_dt_get_string(blob, noff);
+-
+-		if (strcmp(name, nstr) == 0) {
+-			if (len)
+-				*len = sz;
+-			return (void *)p;
+-		}
+-
+-		p = PALIGN(p + sz, sizeof(uint32_t));
+-	} while(1);
+-}
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
