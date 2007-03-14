@@ -1,25 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 2E6BCDDE27
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 05:09:42 +1100 (EST)
-Date: Wed, 14 Mar 2007 19:09:40 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
-In-Reply-To: <20070314175936.GM4095@ftp.linux.org.uk>
-Message-ID: <Pine.LNX.4.62.0703141907290.28462@pademelon.sonytel.be>
-References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
-	<Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
-	<20070314160258.GK4095@ftp.linux.org.uk>
-	<Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be>
-	<20070314170720.GL4095@ftp.linux.org.uk>
-	<Pine.LNX.4.64.0703141016060.9690@woody.linux-foundation.org>
-	<20070314175936.GM4095@ftp.linux.org.uk>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5AFF7DDE27
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 05:18:28 +1100 (EST)
+Date: Wed, 14 Mar 2007 13:15:05 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH][POWERPC] QE: Make QUICC Engine support a configurable option
+Message-ID: <Pine.LNX.4.64.0703141314400.18994@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Linus Torvalds <torvalds@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+Cc: Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,37 +22,74 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 14 Mar 2007, Al Viro wrote:
-> On Wed, Mar 14, 2007 at 10:30:31AM -0700, Linus Torvalds wrote:
-> > Maybe not "bool" vs "mbool", but it might be nice to have
-> > 
-> > 	bool FB_PS3
-> > 		depends strictly on FB
-> > 
-> > ie a "depends strictly" refuses to upgrade a bool dependency from "m" to 
-> > "y", while a regular depends allows it.
-> > 
-> > Or something.. The "depends strictly on X" thing would really be just a 
-> > mental shorthand for "depends on (X)=y" (it's actually longer to type, but 
-> > I think it's a bit more intuitive, thus "mental shortcut").
-> 
-> There's a fun side question, though: what should allmodconfig do?  FB=m,
-> FB_PS3=n?  Or FB=y, FB_PS3=y?
+Allow us choose if we want QE support or not.  This is similiar to what
+we do for the CPM2.  Its feasible to use a processor that has QE HW and not
+use any of the QE functionality.
 
->From `make help':
-| New config selecting modules when possible
+Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 
-FB can be a module, so FB=m, FB_PS3=n.
+---
+commit a554f9b39496127face86d3afc6eb4a9aebef65b
+tree f144b3290bc2cc04aa27591f4003f9b9249216f6
+parent bfbb5a94dd58d2492d34338419a912440b660132
+author Kumar Gala <galak@kernel.crashing.org> Wed, 14 Mar 2007 13:14:02 -0500
+committer Kumar Gala <galak@kernel.crashing.org> Wed, 14 Mar 2007 13:14:02 -0500
 
-It doesn't say anything about things that can't be modules :-)
+ arch/powerpc/Kconfig                |    8 --------
+ arch/powerpc/platforms/83xx/Kconfig |   12 ++++++++++--
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
-But I agree the chances of getting a system that doesn't work increase...
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 5e1ac10..927f512 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -394,14 +394,6 @@ config APUS
+ 	  <http://linux-apus.sourceforge.net/>.
+ endchoice
 
-Gr{oetje,eeting}s,
+-config QUICC_ENGINE
+-	bool
+-	help
+-	  The QUICC Engine (QE) is a new generation of communications
+-	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
+-	  Selecting this option means that you wish to build a kernel
+-	  for a machine with a QE coprocessor.
+-
+ config PPC_PSERIES
+ 	depends on PPC_MULTIPLATFORM && PPC64
+ 	bool "IBM pSeries & new (POWER5-based) iSeries"
+diff --git a/arch/powerpc/platforms/83xx/Kconfig b/arch/powerpc/platforms/83xx/Kconfig
+index 713b31a..745378d 100644
+--- a/arch/powerpc/platforms/83xx/Kconfig
++++ b/arch/powerpc/platforms/83xx/Kconfig
+@@ -14,7 +14,6 @@ config MPC8313_RDB
+ config MPC832x_MDS
+ 	bool "Freescale MPC832x MDS"
+ 	select DEFAULT_UIMAGE
+-	select QUICC_ENGINE
+ 	help
+ 	  This option enables support for the MPC832x MDS evaluation board.
 
-						Geert
+@@ -41,12 +40,21 @@ config MPC834x_ITX
+ config MPC836x_MDS
+ 	bool "Freescale MPC836x MDS"
+ 	select DEFAULT_UIMAGE
+-	select QUICC_ENGINE
+ 	help
+ 	  This option enables support for the MPC836x MDS Processor Board.
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+ endchoice
+
++config QUICC_ENGINE
++	bool "QUICC Engine Support"
++	depends on PPC_MPC836x || PPC_MPC832x
++	default y
++	---help---
++	  The QUICC Engine (QE) is a new generation of communications
++	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
++	  Selecting this option means that you wish to build a kernel
++	  for a machine with a QE coprocessor.
++
+ config PPC_MPC831x
+ 	bool
+ 	select PPC_UDBG_16550
