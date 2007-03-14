@@ -1,34 +1,20 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de
-	[62.146.248.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D1869DDD05
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 83F1EDDDE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 15:33:19 +1100 (EST)
-Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
-	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2E4X5Al021768
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 05:33:11 +0100 (CET)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1HRLAf-0009cx-Nu
-	for linuxppc-embedded@ozlabs.org; Wed, 14 Mar 2007 05:33:05 +0100
-Date: Wed, 14 Mar 2007 05:33:05 +0100
-From: Matthias Fechner <idefix@fechner.net>
+	Wed, 14 Mar 2007 17:41:37 +1100 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1HRNAz-0004Ul-Ko
+	for linuxppc-embedded@ozlabs.org; Tue, 13 Mar 2007 23:41:33 -0700
+Message-ID: <9469217.post@talk.nabble.com>
+Date: Tue, 13 Mar 2007 23:41:33 -0700 (PDT)
+From: Nethra <nethra_gmit@yahoo.co.in>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Problem in compiling a kernel module
-Message-ID: <20070314043305.GB27011@server.idefix.lan>
-References: <20070313043050.GB82243@server.idefix.lan>
-	<513703.69187.qm@web302.biz.mail.mud.yahoo.com>
+Subject: jffs2-No space left on device
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="liOOAslEiF7prFVr"
-In-Reply-To: <513703.69187.qm@web302.biz.mail.mud.yahoo.com>
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -40,263 +26,129 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
---liOOAslEiF7prFVr
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
+hi..
+I m using custom board same as MPC8272ADS board,
+                                            linux is montavista 2.6.10
+                                            boot loader is u-boot-1.1.2.
+I m getting jffs2 mounting on PQ2FADS-ZU board.
 
-Hello Ben,
+Through nfs mounting of root file system.I m trying jffs2 mounting without
+any image( with empty patition).. it is giving 100% of space is used.I m
+getting same output with jffs2 image also.
+what is the actual problem?
 
-* Ben Warren <bwarren@qstreams.com> [13-03-07 05:55]:
-> Is there any chance that you qualify private data as
-> __init within the driver?  Can you post the cleanup()
-> function and any private (static) functions that it
-> calls?
+Here is the output...
+root@cashel:/# od -x /dev/mtd2 | less
+0000000 ffff ffff ffff ffff ffff ffff ffff ffff
+*
+14000000
+root@cashel:/# mount -t jffs2 /dev/mtdblock2 /mnt
+root@cashel:/# dfErase at 0x002c0000 failed immediately: -EROFS. Is the
+sector l
+ocked?
+Erase at 0x002a0000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00280000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00260000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00240000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00220000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00200000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x001e0000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x001c0000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x001a0000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00180000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00160000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00140000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00120000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00100000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x000e0000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x000c0000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x000a0000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00080000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00060000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00040000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00020000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x00000000 failed immediately: -EROFS. Is the sector locked?
+Erase at 0x002e0000 failed immediately: -EROFS. Is the sector locked?
 
-no problem, I attached the file. It is bery basic from now and it is
-not written very well, but it should have all necessary parts in it.
+root@cashel:/# df
+Filesystem           1K-blocks      Used Available Use% Mounted on
+rootfs                74393444  60054060  10499452  86% /
+/dev/root             74393444  60054060  10499452  86% /
+tmpfs                     6952         0      6952   0% /tmp
+/dev/root             74393444  60054060  10499452  86% /dev/.static/dev
+none                     10240      2172      8068  22% /dev
+tmpfs                     6952         0      6952   0% /dev/shm
+/dev/mtdblock2            3072      3072         0 100% /mnt
 
-PS: It's not necessary to CC me I'm on the list :)
+root@cashel:/# mount
+rootfs on / type rootfs (rw)
+/dev/root on / type nfs
+(rw,v2,rsize=4096,wsize=4096,hard,udp,nolock,addr=192.16
+8.178.110)
+proc on /proc type proc (rw,nodiratime)
+sysfs on /sys type sysfs (rw)
+tmpfs on /tmp type tmpfs (rw)
+/dev/root on /dev/.static/dev type nfs
+(rw,v2,rsize=4096,wsize=4096,hard,udp,nol
+ock,addr=192.168.178.110)
+none on /dev type tmpfs (rw)
+devpts on /dev/pts type devpts (rw)
+tmpfs on /dev/shm type tmpfs (rw)
+/dev/mtdblock2 on /mnt type jffs2 (rw,noatime)
 
-Best regards,
-Matthias
+root@cashel:/# df
+Filesystem           1K-blocks      Used Available Use% Mounted on
+rootfs                74393444  60054060  10499452  86% /
+/dev/root             74393444  60054060  10499452  86% /
+tmpfs                     6952         0      6952   0% /tmp
+/dev/root             74393444  60054060  10499452  86% /dev/.static/dev
+none                     10240      2172      8068  22% /dev
+tmpfs                     6952         0      6952   0% /dev/shm
+/dev/mtdblock2            3072      3072         0 100% /mnt
+root@cashel:/# df
+Filesystem           1K-blocks      Used Available Use% Mounted on
+rootfs                74393444  60054060  10499452  86% /
+/dev/root             74393444  60054060  10499452  86% /
+tmpfs                     6952         0      6952   0% /tmp
+/dev/root             74393444  60054060  10499452  86% /dev/.static/dev
+none                     10240      2172      8068  22% /dev
+tmpfs                     6952         0      6952   0% /dev/shm
+/dev/mtdblock2            3072      3072         0 100% /mnt
+root@cashel:/# df
+Filesystem           1K-blocks      Used Available Use% Mounted on
+rootfs                74393444  60054060  10499452  86% /
+/dev/root             74393444  60054060  10499452  86% /
+tmpfs                     6952         0      6952   0% /tmp
+/dev/root             74393444  60054060  10499452  86% /dev/.static/dev
+none                     10240      2172      8068  22% /dev
+tmpfs                     6952         0      6952   0% /dev/shm
+/dev/mtdblock2            3072      3072         0 100% /mnt
+
+
+After mounting also mtd2 device is empty..
+
+root@cashel:/# od -x /dev/mtd2 | less
+0000000 ffff ffff ffff ffff ffff ffff ffff ffff
+*
+14000000
+root@cashel:/# cat /proc/mtd
+dev:    size   erasesize  name
+mtd0: 00020000 00020000 "HRCW"
+mtd1: 00060000 00020000 "bootloader"
+mtd2: 00300000 00020000 "User fs"
+root@cashel:/#
+root@cashel:/# cd /mnt
+root@cashel:/mnt# ls
+root@cashel:/mnt# touch nethra
+touch: cannot touch `nethra': No space left on device
+root@cashel:/mnt#
+
+
+thanks in advance..
+
+Nethra
+
 
 -- 
-
-"Programming today is a race between software engineers striving to
-build bigger and better idiot-proof programs, and the universe trying to
-produce bigger and better idiots. So far, the universe is winning." --
-Rich Cook
-
---liOOAslEiF7prFVr
-Content-Type: text/x-csrc; charset=us-ascii
-Content-Disposition: attachment; filename="max6633.c"
-
-/*
-  driver to support MAX6633
-*/
-
-#include <linux/kernel.h>
-#include <linux/init.h>
-#include <linux/module.h>
-#include <linux/slab.h>
-#include <linux/i2c.h>
-#include <linux/mutex.h>
-
-#define MAX6633_VERSION 0.1
-#define MAX6633_DATE 20070301
-
-//#define MAX633_SYSCTL_FUNC1 0x1000
-//#define MAX6633_REG_GENERIX 0x0
-
-int max6633_attach_adapter(struct i2c_adapter *adapter);
-int max6633_detach_client(struct i2c_client *client);
-int max6633_detect_client(struct i2c_adapter *adapter, int address, int kind);
-void max6633_cleanup(void);
-
-static struct i2c_driver max6633_driver = {
-   .driver = {
-      .name = "max6633",
-   },
-   .attach_adapter = max6633_attach_adapter,
-   .detach_client = max6633_detach_client,
-//   .command = &max6633_command /* may be NULL */
-};
-
-struct max6633_data 
-{
-      struct i2c_client client;
-      struct mutex update_lock;
-      int sysctl_id; /* To keep the /proc directory entry */
-      
-      char valid;
-      u16 temp;
-      
-      unsigned long last_updated;
-};
-
-/// TODO: create the function func1 or rename it here
-/*
-static ctl_table max6633_dir_table_template[]= {
-   { MAX633_SYSCTL_FUNC1, "func1", NULL, 0, 0644, NULL, &i2c_proc_real,
-     &i2c_sysctl_real, NULL, &max6633_temp },
-   { 0 }
-};
-*/
-
-void max6633_temp(struct i2c_client *client, int operation, int ctl_name,
-		  int *nrels_mag, long *results)
-{
-   return;
-}
-
-int max6633_read_value(struct i2c_client *client, u8 reg)
-{
-   return i2c_smbus_read_word_data(client,reg);
-}
-
-int max6633_write_value(struct i2c_client *client, u8 reg, u16 value)
-{
-   return i2c_smbus_write_word_data(client,reg,value);
-}
-
-/// TODO: check all possible addresses
-/* scan 0x40, 0x41 and 0x42 */
-static unsigned short normal_i2c[] = {
-   0x40, 0x41, 0x42, I2C_CLIENT_END
-};
-
-/* Magic definition of all other variables and things */
-I2C_CLIENT_INSMOD;
-
-int max6633_attach_adapter(struct i2c_adapter *adapter)
-{
-   return i2c_probe(adapter, &addr_data,max6633_detect_client);
-}
-
-int max6633_detect_client(struct i2c_adapter *adapter, int address, int kind)
-{
-   int err=0;
-   //int i;
-   struct i2c_client *new_client;
-   struct max6633_data *data;
-
-   /* Let's see wheter this adapter can support what we need */
-   if(!i2c_check_functionality(adapter,I2C_FUNC_SMBUS_WORD_DATA |
-			       I2C_FUNC_SMBUS_BYTE_DATA))
-   {
-      printk("max6633: Adapter doesn't support functionality.\n");
-      goto ERROR0;
-   }
-   
-//   const char *type_name="";
-   
-   /* OK. For now, we presume we have a valid client. We no create the
-      client structure, even though we cannot fill it completely yet.
-      But it allows us to access several i2c functions safely */
-   if(!(data=kzalloc(sizeof(struct max6633_data), GFP_KERNEL)))
-   {
-      err=-ENOMEM;
-      goto ERROR0;
-   }
-   
-   new_client=&data->client;
-   i2c_set_clientdata(new_client, data);
-   
-   new_client->addr=address;
-   new_client->adapter=adapter;
-   new_client->driver=&max6633_driver;
-   new_client->flags=0;
-   
-   /* Now, we do the remaining detection. If no `force' parameter is used. */
-
-   /* First, the generic detection (if any), that is skipped if any force
-      parameter was used. */
-   if(kind <0)
-   {
-      /* The bellow is of course bogus */
-      /*
-      if(max6633_read_value(new_client, MAX633_REG_GENERIC) != MAX633_GENERIC_VALUE)
-	 goto ERROR1;
-      */
-   }
-   
-   /* Fill in the remaining client fields. */
-   strcpy(new_client->name,"max6633");
-   data->valid=0;
-   //init_MUTEX(&data->update_lock); /* only if you use this field */
-
-   /* Any other initialisation in data must be done here too. */
-
-   /* Tell the i2c layer a new client has arrived */
-   if((err=i2c_attach_client(new_client)))
-      goto ERROR3;
-   
-//   type_name="chip1"; /* for /proc entry */
-   
-   /* Register a new directory entry with module sensors. See above for
-      the template structure. */
-/*   if((i=i2c_register_entry(new_client, type_name,
-			    max6633_dir_table_template, THIS_MODULE)) < 0)
-   {
-      err=i;
-      goto ERROR4;
-   }
-*/
-   //data->sysctl_id=i;
-   
-   /* This function can write default values to the client registers, if
-      needed. */
-   //max6633_init_client(new_client);
-
-   printk(KERN_INFO "Found max6633 I2C temperature sensor.\n");
-   return 0;
-   
-   /* OK, this is not exactly good programming practice, usually. But it is
-      ver code-efficient in this case. */
-
-//  ERROR4:
-//   i2c_detach_client(new_client);
-  ERROR3:
-//  ERROR2:
-//  ERROR1:
-   kfree(data);
-  ERROR0:
-   return err;
-}
-
-int max6633_detach_client(struct i2c_client *client)
-{
-   int err;
-   
-   /* Try to detach the client from i2c space */
-   if((err=i2c_detach_client(client)))
-      return err;
-   
-   kfree(i2c_get_clientdata(client));
-   return 0;
-}
-
-/* Keep track of how far we got in the initialisation process. If several
-   things have to initialized and we fail halfway, only those things
-   have to be cleared up! */
-static int __initdata max6633_initialized = 0;
-
-static int __init max6633_init(void)
-{
-   int res;
-   printk("max6633 version %f (%d)\n", MAX6633_VERSION, MAX6633_DATE);
-   
-   if((res=i2c_add_driver(&max6633_driver)))
-   {
-      printk("max6633: Driver registration failed, module not inserted.\n");
-      max6633_cleanup();
-      return res;
-   }
-   max6633_initialized ++;
-   return 0;
-}
-
-void max6633_cleanup(void)
-{
-   int res;
-   if(max6633_initialized==1)
-   {
-      if((res=i2c_del_driver(&max6633_driver)))
-      {
-	 printk("max6633: Driver registration failed, module not removed.\n");
-	 return;
-      }
-      max6633_initialized --;
-   }
-}
-
-MODULE_AUTHOR("Matthias Fechner <idefix@fechner.net>");
-MODULE_DESCRIPTION("Driver for MAX6633 temperature I2C device.");
-
-module_init(max6633_init);
-module_exit(max6633_cleanup);
-
-
-   
-
---liOOAslEiF7prFVr--
+View this message in context: http://www.nabble.com/jffs2-No-space-left-on-device-tf3400453.html#a9469217
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
