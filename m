@@ -1,21 +1,19 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 71801DDE3E
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 03:17:51 +1100 (EST)
-Date: Wed, 14 Mar 2007 17:17:45 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Al Viro <viro@ftp.linux.org.uk>
-Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
-In-Reply-To: <20070314160258.GK4095@ftp.linux.org.uk>
-Message-ID: <Pine.LNX.4.62.0703141715570.28462@pademelon.sonytel.be>
-References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
-	<Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
-	<20070314160258.GK4095@ftp.linux.org.uk>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id B4AB7DDE08
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 03:30:43 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [patch] PS3: Fix hardware watchpoints
+Date: Wed, 14 Mar 2007 17:30:14 +0100
+References: <45F74D69.5070600@am.sony.com>
+	<17911.24243.64287.434769@cargo.ozlabs.ibm.com>
+In-Reply-To: <17911.24243.64287.434769@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703141730.15344.arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,27 +23,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-	Hi Al,
-
-On Wed, 14 Mar 2007, Al Viro wrote:
-> On Wed, Mar 14, 2007 at 10:50:16AM +0100, Geert Uytterhoeven wrote:
-> > On Wed, 14 Mar 2007, Al Viro wrote:
-> > > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-> > 
-> > NAK
+On Wednesday 14 March 2007, Paul Mackerras wrote:
+> Geoff Levand writes:
 > 
-> Lovely...  Consider that one withdrawn, please.  FWIW, if we leave it bool
-> (and flip_ctl mess alone would make a good reason for that) we probably want
-> to have it depend on FB=y
+> > Add PS3 support for the PowerPC processor's Data Address Breakpoint
+> > Register (DABR).
+> > 
+> > Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> > Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
+> > 
+> > ---
+> > Paul, please consider for 2.6.21.
+> 
+> It's nice and small, but it isn't really a bugfix as far as I can
+> see...  What's the downside of it not going into 2.6.21, apart from
+> some inconvenience in debugging things?
 
-What's the advantage of making FB_PS3 depend on FB=y vs. plain FB?
-In both cases it can be enabled if FB=y only, right? Or am I missing something?
+It makes it possible for a regular user to hang the partition,
+because the kernel falls back to access the actual SPR, which is
+forbidden by the hypervisor.
 
-Gr{oetje,eeting}s,
+My original changelog text was:
 
-						Geert
+The lv1 hypervisor silently kills the partition if the kernel attempts
+to access the dabr register directly. Instead, it needs to be set using
+an hcall. Since both pseries and celleb have the same function, the guess
+is that the implementation on ps3 is also the same.
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+How about making the actual changelog text something like this:
+
+----
+The lv1 hypervisor silently kills the partition if the kernel attempts
+to access the dabr register directly, which can happen when gdb adds
+a hardware breakpoint.
+Instead, the kernel needs to be set using an hcall, the same way as
+it does for pseries and celleb.
+----
+
+The real question however should be if there is a point in merging
+any ps3 patches into 2.6.21 at this point. Geoff, my understanding
+is that the current ps3 platform code in 2.6.21-rc still relies on
+additional patches from you in order to even boot, right?
+
+Maybe it's better to just queue them for 2.6.22 now, independent
+of the severity of bugs fixed by a given patch.
+
+	Arnd <><
