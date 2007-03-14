@@ -1,19 +1,18 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 8F6C0DDDF5
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 64BD8DDE2B
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 18:50:50 +1100 (EST)
-To: Nethra <nethra_gmit@yahoo.co.in>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: jffs2-No space left on device 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Tue, 13 Mar 2007 23:41:33 MST."
-	<9469217.post@talk.nabble.com>
-Date: Wed, 14 Mar 2007 08:50:47 +0100
-Sender: wd@denx.de
-Message-Id: <20070314075047.78939352676@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Thu, 15 Mar 2007 05:12:33 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: UartLite for MontaVista - virtex4
+Date: Wed, 14 Mar 2007 11:12:55 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE48710862C816@VCAEXCH01.hq.corp.viasat.com>
+In-Reply-To: <WorldClient-F200703131528.AA28530025@linsys.ca>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "Jantira Hengmeechai \(Tai\)" <Hengmeej@linsys.ca>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,32 +23,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <9469217.post@talk.nabble.com> you wrote:
-> 
-> Through nfs mounting of root file system.I m trying jffs2 mounting without
-> any image( with empty patition).. it is giving 100% of space is used.I m
-> getting same output with jffs2 image also.
-> what is the actual problem?
+>	Xilinx OS Independent Code XAssert: xuartlite.c:195
+>	Code may crash due to unhandled errors.
+>	Xilinx OS Independent Code XAssert: xuartlite.c:195
+>	Code may crash due to unhandled errors.
+>	Xilinx OS Independent Code XAssert: xuartlite.c:195
+>	Code may crash due to unhandled errors.
+>	Xilinx OS Independent Code XAssert: xuartlite.c:195
+>	Code may crash due to unhandled errors.
 
-The actual problem is that your don't read error messages.
+This code is...
 
-> Erase at 0x002a0000 failed immediately: -EROFS. Is the sector locked?
-                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+unsigned int XUartLite_Send(XUartLite *InstancePtr, u8 *DataBufferPtr,
+                            unsigned int NumBytes)
+{
+    unsigned int BytesSent;
+    u32 StatusRegister;
 
-Your file system / partition is read-only, probably because the flash
-sectors are locked.
+    /*
+     * Assert validates the input arguments
+     */
+    XASSERT_NONVOID(InstancePtr !=3D NULL);
+    XASSERT_NONVOID(DataBufferPtr !=3D NULL);
+    XASSERT_NONVOID(InstancePtr->IsReady =3D=3D XCOMPONENT_IS_READY);
+    XASSERT_NONVOID(((signed)NumBytes) >=3D 0); // Line 195
 
-Try unlocking the flash partition before using it.
+There's a patch against the file xuartlite_serial.c to fix a problem
+where a backlog of bytes causes NumBytes to be a negative number.
+Grab the latest xuartlite_serial.c file from your EDK distribution.
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-After a heated argument on some trivial matter Nancy [Astor]  .  .  .
-shouted,  ``If  I were your wife I would put poison in your coffee!''
-Whereupon Winston Churchill with equal heat and  sincerity  answered,
-``And if I were your husband I would drink it.''
+Tim
