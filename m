@@ -2,13 +2,13 @@ Return-Path: <viro@ftp.linux.org.uk>
 Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 227C7DDE02
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 20:19:34 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 2F6A0DDE39
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 20:20:04 +1100 (EST)
 To: torvalds@linux-foundation.org
-Subject: [PATCH 10/17] C99 initializers, proper use of const in drivers/ps3
-Message-Id: <E1HRPdq-0003Vz-1V@ZenIV.linux.org.uk>
+Subject: [PATCH 13/17] ANSIfy powerpc floppy.h
+Message-Id: <E1HRPeK-0003Yo-26@ZenIV.linux.org.uk>
 From: Al Viro <viro@ftp.linux.org.uk>
-Date: Wed, 14 Mar 2007 09:19:30 +0000
+Date: Wed, 14 Mar 2007 09:20:00 +0000
 Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,66 +22,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/ps3/ps3av_cmd.c |   24 +++++++++++++-----------
- 1 files changed, 13 insertions(+), 11 deletions(-)
+ include/asm-powerpc/floppy.h |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/ps3/ps3av_cmd.c b/drivers/ps3/ps3av_cmd.c
-index 21c97c8..bc70e81 100644
---- a/drivers/ps3/ps3av_cmd.c
-+++ b/drivers/ps3/ps3av_cmd.c
-@@ -485,12 +485,12 @@ static u8 ps3av_cnv_mclk(u32 fs)
- 
- static const u32 ps3av_ns_table[][5] = {
- 					/*   D1,    D2,    D3,    D4,    D5 */
--	[PS3AV_CMD_AUDIO_FS_44K-BASE]	{  6272,  6272, 17836, 17836,  8918 },
--	[PS3AV_CMD_AUDIO_FS_48K-BASE]	{  6144,  6144, 11648, 11648,  5824 },
--	[PS3AV_CMD_AUDIO_FS_88K-BASE]	{ 12544, 12544, 35672, 35672, 17836 },
--	[PS3AV_CMD_AUDIO_FS_96K-BASE]	{ 12288, 12288, 23296, 23296, 11648 },
--	[PS3AV_CMD_AUDIO_FS_176K-BASE]	{ 25088, 25088, 71344, 71344, 35672 },
--	[PS3AV_CMD_AUDIO_FS_192K-BASE]	{ 24576, 24576, 46592, 46592, 23296 }
-+	[PS3AV_CMD_AUDIO_FS_44K-BASE] =	{  6272,  6272, 17836, 17836,  8918 },
-+	[PS3AV_CMD_AUDIO_FS_48K-BASE] =	{  6144,  6144, 11648, 11648,  5824 },
-+	[PS3AV_CMD_AUDIO_FS_88K-BASE] =	{ 12544, 12544, 35672, 35672, 17836 },
-+	[PS3AV_CMD_AUDIO_FS_96K-BASE] =	{ 12288, 12288, 23296, 23296, 11648 },
-+	[PS3AV_CMD_AUDIO_FS_176K-BASE] =	{ 25088, 25088, 71344, 71344, 35672 },
-+	[PS3AV_CMD_AUDIO_FS_192K-BASE] =	{ 24576, 24576, 46592, 46592, 23296 }
+diff --git a/include/asm-powerpc/floppy.h b/include/asm-powerpc/floppy.h
+index a0f14ee..afa700d 100644
+--- a/include/asm-powerpc/floppy.h
++++ b/include/asm-powerpc/floppy.h
+@@ -178,7 +178,7 @@ static struct fd_dma_ops virt_dma_ops =
+ 	._dma_setup = vdma_dma_setup
  };
  
- static void ps3av_cnv_ns(u8 *ns, u32 fs, u32 video_vid)
-@@ -543,9 +543,10 @@ static void ps3av_cnv_ns(u8 *ns, u32 fs, u32 video_vid)
- 
- #undef BASE
- 
--static u8 ps3av_cnv_enable(u32 source, u8 *enable)
-+static u8 ps3av_cnv_enable(u32 source, const u8 *enable)
+-static int fd_request_dma()
++static int fd_request_dma(void)
  {
--	u8 *p, ret = 0;
-+	const u8 *p;
-+	u8 ret = 0;
- 
- 	if (source == PS3AV_CMD_AUDIO_SOURCE_SPDIF) {
- 		ret = 0x03;
-@@ -559,9 +560,10 @@ static u8 ps3av_cnv_enable(u32 source, u8 *enable)
- 	return ret;
- }
- 
--static u8 ps3av_cnv_fifomap(u8 *map)
-+static u8 ps3av_cnv_fifomap(const u8 *map)
- {
--	u8 *p, ret = 0;
-+	const u8 *p;
-+	u8 ret = 0;
- 
- 	p = map;
- 	ret = p[0] + (p[1] << 2) + (p[2] << 4) + (p[3] << 6);
-@@ -615,7 +617,7 @@ static void ps3av_cnv_info(struct ps3av_audio_info_frame *info,
- 	info->pb5.lsv = mode->audio_downmix_level;
- }
- 
--static void ps3av_cnv_chstat(u8 *chstat, u8 *cs_info)
-+static void ps3av_cnv_chstat(u8 *chstat, const u8 *cs_info)
- {
- 	memcpy(chstat, cs_info, 5);
- }
+ 	if (can_use_virtual_dma & 1) {
+ 		fd_ops = &virt_dma_ops;
 -- 
 1.5.0-rc2.GIT
