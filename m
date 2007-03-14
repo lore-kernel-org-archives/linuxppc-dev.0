@@ -1,19 +1,17 @@
-Return-Path: <scottwood@freescale.com>
+Return-Path: <swarthou@petra11.am.freescale.net>
 Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 801A6DDDF8
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 08:49:03 +1100 (EST)
-Message-ID: <45F86DC1.9010804@freescale.com>
-Date: Wed, 14 Mar 2007 16:48:49 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
-	(a.k.a. cuImage, cuboot)
-References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
-	<20070314214805.GA9546@mag.az.mvista.com>
-In-Reply-To: <20070314214805.GA9546@mag.az.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 8FDADDDDF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 09:34:00 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l2EMXv1l003592
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 15:33:57 -0700 (MST)
+From: Ed Swarthout <Ed.Swarthout@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [dtc] ftdump missing be32_to_cpu() on size cell.
+Date: Wed, 14 Mar 2007 17:33:19 -0500
+Message-Id: <11739115994037-git-send-email-Ed.Swarthout@freescale.com>
+Cc: Ed Swarthout <Ed.Swarthout@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,13 +21,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Mark A. Greer wrote:
-> Are you sure that '_end' (which is the end of the zImage/cuImage)
-> is safe to use?  If the kernel is large enough (e.g., INITRAMFS)
-> it will overwrite your dtb when its decompressed and relocated to 0.
-> You need to grok the elfheader to figure out where the kernel will end
-> and take the max of that and _end.
+---
+ ftdump.c |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-Wouldn't it overwrite the bootwrapper itself before overwriting the heap?
-
--Scott
+diff --git a/ftdump.c b/ftdump.c
+index 67c5228..55209b6 100644
+--- a/ftdump.c
++++ b/ftdump.c
+@@ -142,7 +142,7 @@ static void dump_blob(void *blob)
+ 			fprintf(stderr, "%*s ** Unknown tag 0x%08x\n", depth * shift, "", tag);
+ 			break;
+ 		}
+-		sz = GET_CELL(p);
++		sz = be32_to_cpu(GET_CELL(p));
+ 		s = p_strings + be32_to_cpu(GET_CELL(p));
+ 		if (version < 16 && sz >= 8)
+ 			p = PALIGN(p, 8);
+-- 
+1.5.0.3.290.gc390a
