@@ -1,18 +1,21 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id EF701DDE0F
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 03:03:01 +1100 (EST)
-Date: Wed, 14 Mar 2007 11:02:55 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 15/19] bootwrapper: Add dt_ops methods.
-Message-ID: <20070314160255.GB10075@ld0162-tx32.am.freescale.net>
-References: <20070312204201.GO28545@ld0162-tx32.am.freescale.net>
-	<17911.31508.878043.41229@cargo.ozlabs.ibm.com>
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 02C73DDEF5
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 03:03:07 +1100 (EST)
+Date: Wed, 14 Mar 2007 16:02:58 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Subject: Re: [PATCH 13/13] fix ps3fb glue allowing a modular build
+Message-ID: <20070314160258.GK4095@ftp.linux.org.uk>
+References: <E1HRPbU-0003Ha-Oq@ZenIV.linux.org.uk>
+	<Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17911.31508.878043.41229@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <Pine.LNX.4.62.0703141040030.28462@pademelon.sonytel.be>
+Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 14, 2007 at 03:33:24PM +1100, Paul Mackerras wrote:
-> Scott Wood writes:
+On Wed, Mar 14, 2007 at 10:50:16AM +0100, Geert Uytterhoeven wrote:
+> On Wed, 14 Mar 2007, Al Viro wrote:
+> > Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 > 
-> > +static inline void *find_node_by_prop_value_str(const void *prev,
-> > +                                                const char *propname,
-> > +                                                const char *propval)
+> NAK
 > 
-> That name sure is a mouthful.  
+> There are several problems with making it modular. I did try, cfr. the
+> incomplete patchlets below.
 
-I had it as find_prop_str() before, but someone asked for a more
-descriptive name.
+[snip]
 
-> Since we mostly (only?) use it with propname == "device_type", why not
-> make a helper with a nice, (relatively) short name like
-> "find_node_by_type" for that case?
+> And finally, make sure CONFIG_LOGO=n, as there's a bug in the logo code: logos
+> are __initdata but the logo code still tries to draw them for a modular fbdev.
+> Originally (eons ago) this case was handled by the flag initmem_freed, which no
+> longer exists.
 
-OK.
-
--Scott
+Lovely...  Consider that one withdrawn, please.  FWIW, if we leave it bool
+(and flip_ctl mess alone would make a good reason for that) we probably want
+to have it depend on FB=y
