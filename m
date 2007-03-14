@@ -1,13 +1,20 @@
-Return-Path: <jdl@jdl.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: Update documentation for flat device tree format v17 
-In-Reply-To: Your message of "Wed, 14 Mar 2007 11:50:40 +1100."
-	<20070314005040.GF25514@localhost.localdomain>
-References: <20070314005040.GF25514@localhost.localdomain> 
-Date: Wed, 14 Mar 2007 15:44:30 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1HRaKk-0000Pi-3x@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id B0B93DDDFA
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 08:06:44 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l2EL6eJP020239
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 14:06:41 -0700 (MST)
+Message-ID: <45F863DF.5050709@freescale.com>
+Date: Wed, 14 Mar 2007 16:06:39 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [dtc] Add support for flat device tree format version 17
+References: <20070313062240.GA22737@localhost.localdomain>
+In-Reply-To: <20070313062240.GA22737@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,34 +24,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day David Gibson mumbled:
-> This patch updates booting-without-of.txt to describe version 17 of
-> the flattened device tree format.  Version 17 is a small, backwards
-> compatible change from version 16, adding an extra field giving the
-> size of the device tree's structure block.  At this time, the kernel
-> has no use for the extra information, however its presence can make
-> life easier for bootloaders or other software manipulating the tree.
-> 
-> In addition this patch adds information on the size_dt_strings field
-> of the device tree header, present since version 3 of the flattened
-> tree format, but omitted from the documentation.  It also makes
-> changes to consistently refer to versions 16 and 17 as versions 16 and
-> 17 in decimal, rather than version 0x10 which was occasionally used
-> for version 16 previously.
-> 
-> Finally, we also add the new field to the definition of the device
-> tree header structure in prom.h
-> 
-> Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
-> ---
-> 
-> Paulus, please apply.
+David Gibson wrote:
+> libfdt defined a new version of the flattened device tree format,
+> version 17.  It is backwards compatible with version 16, just adding
+> an extra header field giving the size of the blob's structure blob.
 
-Paul,
+Question:
 
-I have applied the Version 17 Updates patch to my DTC tree.
+Since the DTB is compatible with V16, then technically U-Boot can work with it.  What 
+would happen if U-Boot added some nodes to the DTB, but it didn't update size_dt_struct? 
+Would the value of size_dt_struct still be correct?  If not, then does that mean that 
+U-Boot should reject V17 DTBs?
 
-Acked-by: Jon Loeliger <jdl@freescale.com>
-
-Thanks,
-jdl
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
