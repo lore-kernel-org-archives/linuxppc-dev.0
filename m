@@ -1,19 +1,18 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 002F8DDE0E
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 08:42:03 +1100 (EST)
-Message-ID: <45F86C25.1070301@freescale.com>
-Date: Wed, 14 Mar 2007 16:41:57 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 78290DDDFF
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 08:47:25 +1100 (EST)
+Date: Wed, 14 Mar 2007 14:48:05 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+Message-ID: <20070314214805.GA9546@mag.az.mvista.com>
+References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: [dtc] Add support for flat device tree format version 17
-References: <20070313062240.GA22737@localhost.localdomain>
-	<45F863DF.5050709@freescale.com>
-	<45F864E8.40501@smiths-aerospace.com>
-In-Reply-To: <45F864E8.40501@smiths-aerospace.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,26 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jerry Van Baren wrote:
+On Mon, Mar 12, 2007 at 02:42:04PM -0600, Scott Wood wrote:
 
-> The best solution, which I'm making progress on but slowly, is to pull 
-> David Gibson's libfdt utilities into u-boot and use them to manipulate 
-> the tree.  I very much want v17 blobs because that removes my 
-> "write-in-place" restrictions on changing the properties.
+> diff --git a/arch/powerpc/boot/cuboot.c b/arch/powerpc/boot/cuboot.c
+> new file mode 100644
+> index 0000000..9689117
+> --- /dev/null
+> +++ b/arch/powerpc/boot/cuboot.c
 
-Here's an alternative idea I got from a colleage (Scott Wood).
+<snip>
 
-Allow U-Boot to accept V17 DTBs.  When it modifies the DTB, it should change the version 
-to 16, since that's the only version that it really knows.  U-Boot currently does not have 
-the infrastructure to support multiple DTB versions.
+> +void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
+> +                   unsigned long r6, unsigned long r7)
+> +{
+> +	memcpy(&bd, (bd_t *)r3, sizeof(bd));
+> +	loader_info.initrd_addr = r4;
+> +	loader_info.initrd_size = r4 ? r5 : 0;
+> +
+> +	simple_alloc_init(_end, 512 * 1024, 32, 64);
+                          ^^^^
+> +	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
 
-The DTB that U-Boot passes to the kernel will say V16, but it will have the extra length 
-field in the header.  Therefore, we need to update the documentation to say that 
-compatibility implies that any DTB will still be able to read the DTB if the DTB version 
-number has been changed to another compatible version.  So if your DTB is V17, and it has 
-V17 data, any code that assumes a V16 DTB should still be able to read it.  That seems 
-obvious, but is should be documented.
+Are you sure that '_end' (which is the end of the zImage/cuImage)
+is safe to use?  If the kernel is large enough (e.g., INITRAMFS)
+it will overwrite your dtb when its decompressed and relocated to 0.
+You need to grok the elfheader to figure out where the kernel will end
+and take the max of that and _end.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+I had some code to do that in a sandpoint patch I submitted a few
+months ago.  It doesn't use David's new gunzip routines though.
+Right now, I'm working on using David's stuff for a different board
+that I should submit patches for in a day or two.
+
+Mark
