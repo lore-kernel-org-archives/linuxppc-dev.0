@@ -1,12 +1,14 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 15 Mar 2007 13:05:38 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>,
-	Scott Wood <scottwood@freescale.com>, linuxppc-dev@ozlabs.org,
-	paulus@samba.org
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id 66968DDD08
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 13:11:34 +1100 (EST)
+Date: Wed, 14 Mar 2007 19:12:20 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: "Mark A. Greer" <mgreer@mvista.com>, Scott Wood <scottwood@freescale.com>,
+	linuxppc-dev@ozlabs.org, paulus@samba.org
 Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
 	(a.k.a. cuImage, cuboot)
-Message-ID: <20070315020538.GC14061@localhost.localdomain>
+Message-ID: <20070315021220.GA9777@mag.az.mvista.com>
 References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
 	<20070314214805.GA9546@mag.az.mvista.com>
 	<45F86DC1.9010804@freescale.com>
@@ -49,7 +51,12 @@ On Thu, Mar 15, 2007 at 01:02:34PM +1100, David Gibson wrote:
 > > Well, its not at 0 if you have a platform_ops.vmlinux_alloc()
 > > defined which could be anyone.  But I get your point.
 > 
-> Well, yes, but cuboot doesn't.  The platforms always going to have to
+> Well, yes, but cuboot doesn't.
+
+True.  I was looking at this thru the lens of my own code which did have
+vmlinux_alloc.  I'll may get rid of it tho.
+
+> The platforms always going to have to
 > define a malloc() and vmlinux_alloc() that don't conflict with each
 > other.
 > 
@@ -67,12 +74,6 @@ On Thu, Mar 15, 2007 at 01:02:34PM +1100, David Gibson wrote:
 > Err... won't the initramfs image go in the same place as the initrd
 > image, not as part of the vmlinux.
 
-Although, speaking of that.  Long term, I think it would be a good
-idea for the wrapper script to base the zImage's link address on the
-size of the vmlinux.
+No, its a part of the vmlinux so the vmlinux could get pretty big.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Mark
