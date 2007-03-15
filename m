@@ -1,25 +1,23 @@
-Return-Path: <akira2.iguchi@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+Return-Path: <viro@ftp.linux.org.uk>
+Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5D717DDE02
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 17:28:32 +1100 (EST)
-Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
-	by inet-tsb5.toshiba.co.jp  with ESMTP id l2F6SSpj011032
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 15:28:28 +0900 (JST)
-Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id l2F6SS8d004490
-	for linuxppc-dev@ozlabs.org; Thu, 15 Mar 2007 15:28:28 +0900 (JST)
-Received: from mx2.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp1.toshiba.co.jp  with ESMTP id l2F6SS1G027889
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 15:28:28 +0900 (JST)
-Message-Id: <200703150628.l2F6SPa3028035@toshiba.co.jp>
-MIME-Version: 1.0
-Date: Thu, 15 Mar 2007 15:30:25 +0900
-From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-To: bzolnier@gmail.com, torvalds@linux-foundation.org
-Subject: [PATCH] BLK_DEV_IDE_CELLEB dependency fix
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Al Viro <viro@ftp.linux.org.uk>
+	by ozlabs.org (Postfix) with ESMTP id 9A0F3DDDF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 19:46:52 +1100 (EST)
+Date: Thu, 15 Mar 2007 08:46:45 +0000
+From: Al Viro <viro@ftp.linux.org.uk>
+To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+Subject: Re: [PATCH 10/13] BLK_DEV_IDE_CELLEB dependency fix
+Message-ID: <20070315084645.GR4095@ftp.linux.org.uk>
+References: <E1HRPb0-0003Eh-OG@ZenIV.linux.org.uk>
+	<200703150523.l2F5NelE001987@toshiba.co.jp>
+	<20070315053607.GQ4095@ftp.linux.org.uk>
+	<200703150608.l2F68JY2026403@toshiba.co.jp>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200703150608.l2F68JY2026403@toshiba.co.jp>
+Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,47 +27,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It's bool and it depends on BLK_DEV_IDE
- => should depend on BLK_DEV_IDE=y
+On Thu, Mar 15, 2007 at 03:10:20PM +0900, Akira Iguchi wrote:
+> Al wrote:
+> >
+> >Eh...  You still need dependency on IDE=y; otherwise you'll get configs
+> >with IDE=m, BLK_DEV_IDE_CELLEB=y and those won't link.  BLK_DEV_IDEDMA_PCI
+> >is selectable just fine with IDE=m.
+> >
+> >It's the same problem as with ps3 fb.
+> >
+> 
+> I'm sorry I missed this case.
+> Using some configurations, I found BLK_DEV_IDE=y was better.
+> (I failed to link when IDE=y and BLK_DEV_IDE=m.)
 
-And move it to "if BLK_DEV_IDEDMA_PCI" block because it depends on 
-BLK_DEV_IDEDMA_PCI.
+Umm...  Point taken.  After looking at the entire thing... well.
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
-Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
----
+a) BLK_DEV_IDE_PMAC has bogus dependency on IDE=y.  If anything, that
+should've been BLK_DEV_IDE=y; however, it *does* build with ide modular -
+it doesn't generate a separate module and its initialization is called
+explicitly from ide one.  AFAICS, we can simply drop that dependency.
 
-diff -Nrpu -X linux-2.6.21-rc3/Documentation/dontdiff linux-2.6.21-rc3/drivers/ide/Kconfig linux-2.6.21-rc3.mod/drivers/ide/Kconfig
---- linux-2.6.21-rc3/drivers/ide/Kconfig	2007-03-07 13:41:20.000000000 +0900
-+++ linux-2.6.21-rc3.mod/drivers/ide/Kconfig	2007-03-15 23:49:33.000000000 +0900
-@@ -769,6 +769,14 @@ config BLK_DEV_TC86C001
- 	help
- 	This driver adds support for Toshiba TC86C001 GOKU-S chip.
- 
-+config BLK_DEV_IDE_CELLEB
-+	bool "Toshiba's Cell Reference Set IDE support"
-+	depends on PPC_CELLEB && BLK_DEV_IDE=y
-+	help
-+	  This driver provides support for the built-in IDE controller on
-+	  Toshiba Cell Reference Board.
-+	  If unsure, say Y.
-+
- endif
- 
- config BLK_DEV_IDE_PMAC
-@@ -800,14 +808,6 @@ config BLK_DEV_IDEDMA_PMAC
- 	  to transfer data to and from memory.  Saying Y is safe and improves
- 	  performance.
- 
--config BLK_DEV_IDE_CELLEB
--	bool "Toshiba's Cell Reference Set IDE support"
--	depends on PPC_CELLEB
--	help
--	  This driver provides support for the built-in IDE controller on
--	  Toshiba Cell Reference Board.
--	  If unsure, say Y.
--
- config BLK_DEV_IDE_SWARM
- 	tristate "IDE for Sibyte evaluation boards"
- 	depends on SIBYTE_SB1xxx_SOC
+b) BLK_DEV_IDE_PMAC does *not* build without BLK_DEV_IDEDMA_PMAC.  Quoting
+benh, "I don't see any reason to keep that dma thingy optional anyway".
+
+c) BLK_DEV_MPC8xx_IDE depends on BLK_DEV_IDE=y *and* IDE=y.  The latter is
+obviously redundant.  The former...  No idea, 8xx is currently b0rken in
+ARCH=powerpc and I can't be arsed to wade through arch/ppc bitrot.  As it
+is, driver definitely wants ARCH=ppc stuff (__res, for one thing).
+
+Now, BLK_DEV_IDE_CELLEB looks interesting.  The nature of breakage is not
+the same as usual (non-modular driver depends on stuff that might be built
+modular); what's going on here is funnier.  If you get ide-core modular,
+you'll have BLK_DEV_IDE_CELLEB code *linked* *into* ide-core.ko.  Unlike
+the rest of its ilk, however, it doesn't have its init called directly from
+ide init.  It uses module_init(), which happens to work when it goes into
+the kernel image (ide-core.o has several initcalls, not a problem), but breaks
+when it goes into a modular ide-core.ko; there multiple module_init() are
+fatal.
+
+So AFAICS the minimal fix for that sucker is dependency on BLK_DEV_IDE=y;
+however, I really wonder if
+	* it needs to be linked into ide-core (as opposed to being a normal
+module of its own)
+	* alternatively, its init should be called explicitly.
+
+Comments?
