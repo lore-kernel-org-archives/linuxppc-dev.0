@@ -1,24 +1,17 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 27807DDE1C
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 21:23:17 +1100 (EST)
-Date: Thu, 15 Mar 2007 21:23:19 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Ralf Baechle <ralf@linux-mips.org>
-Subject: Re: [PATCH] [POWERPC] Wire up sys_sync_file_range
-Message-Id: <20070315212319.d60d0457.sfr@canb.auug.org.au>
-In-Reply-To: <20070309115901.GA29723@linux-mips.org>
-References: <20070309152201.027c2bf5.sfr@canb.auug.org.au>
-	<1173423341.3461.548.camel@pmac.infradead.org>
-	<20070308.231341.41635421.davem@davemloft.net>
-	<20070309115901.GA29723@linux-mips.org>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__15_Mar_2007_21_23_19_+1100_kihYA12gGGvukcz_"
-Cc: linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	dwmw2@infradead.org, David Miller <davem@davemloft.net>,
-	rmk@arm.linux.org.uk
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 59EB4DDE08
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 22:50:43 +1100 (EST)
+Message-ID: <45F9330F.60500@smiths-aerospace.com>
+Date: Thu, 15 Mar 2007 07:50:39 -0400
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+MIME-Version: 1.0
+To: Siva Prasad <sprasad@bivio.net>
+Subject: Re: RFI instruction not working as expected...
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D746E3A5@corpexc01.corp.networkrobots.com>
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D746E3A5@corpexc01.corp.networkrobots.com>
+Content-Type: text/plain; charset=windows-1252; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,53 +21,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__15_Mar_2007_21_23_19_+1100_kihYA12gGGvukcz_
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Siva Prasad wrote:
+> Hi,
+> 
+> I am trying to boot my 8641D based PowerPC board. I am having trouble 
+> booting it.
+> 
+> Following code snippet is from /head_32.S/…..
+> 
+>         lis     r4,2f@h
+>         ori     r4,r4,2f@l
+>         tophys(r4,r4)
+>         li      r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+>         FIX_SRR1(r3,r5)
+>         mtspr   SPRN_SRR0,r4
+>         mtspr   SPRN_SRR1,r3
+>         SYNC
+>         RFI
+> /* Load up the kernel context */
+> 2:    bl      load_up_mmu
+> 
+> My code successfully reaches up to the RFI instruction, but never to 
+> “*/2: bl load_up_mmu/*”. I am not using any debugger (used an LED write 
+> to address to figure it out) in this situation.
+> 
+> Any suggestions on why my execution sequence never reaches the “*/2:/* “?
+> 
+> I exhausted all types of debug information and appreciate any help.
+> 
+> Thanks
+> Siva
 
-On Fri, 9 Mar 2007 11:59:02 +0000 Ralf Baechle <ralf@linux-mips.org> wrote:
->
-> I'd rather let the C compiler sort it out:
->
-> asmlinkage long compat_sys_sync_file_range(int fd, int dummy,
-> 	loff_t offset, loff_t nbytes, unsigned int flags)
-> {
-> 	sys_sync_file_range(fd, offset, nbytes, flags);
-> }
->
-> Which looks like it could be portable to PPC even, so maybe a little cpp
-> magic like:
->
-> #ifdef CONFIG_ABI_NEEDS_PADDING_
-> #define PAD_64BIT_ARG(x)	unsigned int x,
-> #else
-> #define PAD_64BIT_ARG(x)
-> #endif
->
-> [...]
-> asmlinkage long sys_sync_file_range(int fd,  PAD_64BIT_ARG(pad1)
-> 	loff_t offset, loff_t nbytes, unsigned int flags)
+Please don't post HTML.
 
-Except the compat routines are built with a 64 bit compiler and the
-callinf convention is different for 64 bit.  i.e. on ppc64 that routine
-uses a single register for each parameter, while on 32 bit it uses 2
-registers for each of the loff_t's.  It is this difference that we have
-to cope with in the 64 bit kernel when the user process is 32 bit.
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+If you are debugging with an LED, you really don't know if you are 
+getting past the RFI or not.
 
---Signature=_Thu__15_Mar_2007_21_23_19_+1100_kihYA12gGGvukcz_
-Content-Type: application/pgp-signature
+This is the point where the MMU gets enabled and you are transitioning 
+from physical mapping to MMU-controlled (virtual) mapping.  After the 
+RFI and before the MMU is set up, you have a *VERY MINIMAL* memory map 
+and a *VERY DELICATE* system.  If your LED is not mapped via something 
+like a spare BAT, trying to toggle the LED after the RFI and before the 
+LED is (re)mapped in your virtual address space *will* crash your system.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Likely problems for crashing:
+* Your MMU-controlled memory map is not set up correctly.
+   * Big unknown, lots of ways to screw this up
+* You are inadvertently accessing something that isn't mapped yet
+   * Debug LED
+   * Board-specific hardware
+   * Other hardware
 
-iD8DBQFF+R6bFdBgD/zoJvwRAjf+AJsFGNfgc87UVwgabU7WyQPDCOBVXgCcC0jk
-gtjvcdo3/Iz79r5iI86FSKE=
-=TKPp
------END PGP SIGNATURE-----
+This is the #1 hardest part of getting linux to run, magnified 10x 
+because you don't have a hardware debugger (it is very tricky _with_ a 
+hardware debugger).
 
---Signature=_Thu__15_Mar_2007_21_23_19_+1100_kihYA12gGGvukcz_--
+On the positive side, lots of people have done this successfully.  If 
+you limit your initial changes to the absolute bare minimum and review 
+each one carefully, you can get past this even with just a LED for 
+debugging.  If you cannot acquire a debugger (or while you are waiting 
+for FedEx to deliver it tomorrow ;-), review what is mapped and how it 
+is mapped between the RFI that turns on the MMU and when the MMU is 
+fully set up.   During this delicate period, your code is likely 
+accessing something that is not mapped.
+
+Good luck,
+gvb
