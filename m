@@ -1,22 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B01D5DDDF8
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 16:41:06 +1100 (EST)
-In-Reply-To: <989B956029373F45A0B8AF02970818902DB10B@zch01exm26.fsl.freescale.net>
-References: <989B956029373F45A0B8AF02970818902DB10B@zch01exm26.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <656DBF73-C99B-4C86-9C86-763744FB4C5C@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH][POWERPC] QE: Make QUICC Engine support a
-	configurableoption
-Date: Thu, 15 Mar 2007 00:40:13 -0500
-To: "Li Yang-r58472" <LeoLi@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
-	Tabi Timur-B04825 <timur@freescale.com>
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id B9BE9DDDF4
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 17:05:47 +1100 (EST)
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C766C6.271BCB40"
+Subject: RFI instruction not working as expected...
+Date: Wed, 14 Mar 2007 22:52:44 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D746E3A5@corpexc01.corp.networkrobots.com>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,79 +19,276 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-On Mar 15, 2007, at 12:39 AM, Li Yang-r58472 wrote:
+------_=_NextPart_001_01C766C6.271BCB40
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
->> -----Original Message-----
->> From: Kumar Gala [mailto:galak@kernel.crashing.org]
->> Sent: Thursday, March 15, 2007 11:49 AM
->> To: Li Yang-r58472
->> Cc: Tabi Timur-B04825; Phillips Kim-R1AAHA; linuxppc-dev@ozlabs.org
->> Subject: Re: [PATCH][POWERPC] QE: Make QUICC Engine support a
-> configurableoption
->>
->>
->> On Mar 14, 2007, at 10:02 PM, Li Yang-r58472 wrote:
->>
->>>> -----Original Message-----
->>>> From: linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org
->>>> [mailto:linuxppc-dev-bounces+leoli=freescale.com@ozlabs.org] On
->>>> Behalf
->>> Of Timur
->>>> Tabi
->>>> Sent: Thursday, March 15, 2007 3:36 AM
->>>> To: Phillips Kim-R1AAHA
->>>> Cc: linuxppc-dev@ozlabs.org
->>>> Subject: Re: [PATCH][POWERPC] QE: Make QUICC Engine support a
->>> configurableoption
->>>>
->>>> Kim Phillips wrote:
->>>>> On Wed, 14 Mar 2007 13:15:05 -0500 (CDT)
->>>>> Kumar Gala <galak@kernel.crashing.org> wrote:
->>>>>
->>>>>>  arch/powerpc/Kconfig                |    8 --------
->>>>>>  arch/powerpc/platforms/83xx/Kconfig |   12 ++++++++++--
->>>>>>  2 files changed, 10 insertions(+), 10 deletions(-)
->>>>>
->>>>> What about 85xx QE support?
->>>>
->>>> Kumar and I talked about it.  85xx support will be added when QE
->>>> works
->>> on 85xx.
->>>> However,
->>>> the patch still needs changes.  To allow each CPU family to have
-> its
->>> own QE option,
->>>> we'll
->>>> need to define something like QUICC_ENGINE_83xx and
->>>> QUICC_ENGINE_85xx,
->>> and then
->>>> have
->>>> something like this:
->>>>
->>>> config QUICC_ENGINE
->>>> 	bool
->>>> 	default y if QUICC_ENGINE_83xx || QUICC_ENGINE_85xx
->>>
->>> I don't think we need these new options.  If there are differences
->>> between the two SOC versions, presumably not too many, we can
-> address
->>> them in device tree.  It's better to leave the QUICC_ENGINE option
-> at
->>> arch/powerpc/Kconfig level, IMHO.
->>
->>
->> The issue isn't dealing with differences between 83xx/85xx.  Its
->> allowing the choice for only those two subarchs.
->
-> If you want to make it configurable, I suggest we put it under the
-> "Processor Support" menu in arch/powerpc/Kconfig like Altivec and SPE.
-> It is a chip feature rather than board.  And we won't need the two
-> redundant options then.
+Hi,
 
-Both of those are features of the Core processor, not the platform.
+=20
 
-I'd prefer this be a platform option.  (I'm not a fan of the  
-duplication, but its minor)
+I am trying to boot my 8641D based PowerPC board. I am having trouble
+booting it.
 
-- k
+=20
+
+Following code snippet is from head_32.S.....
+
+=20
+
+        lis     r4,2f@h
+
+        ori     r4,r4,2f@l
+
+        tophys(r4,r4)
+
+        li      r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+
+        FIX_SRR1(r3,r5)
+
+        mtspr   SPRN_SRR0,r4
+
+        mtspr   SPRN_SRR1,r3
+
+        SYNC
+
+        RFI
+
+/* Load up the kernel context */
+
+2:    bl      load_up_mmu
+
+=20
+
+=20
+
+My code successfully reaches up to the RFI instruction, but never to "2:
+bl load_up_mmu". I am not using any debugger (used an LED write to
+address to figure it out) in this situation.
+
+=20
+
+Any suggestions on why my execution sequence never reaches the "2: "?
+
+=20
+
+I exhausted all types of debug information and appreciate any help.
+
+=20
+
+Thanks
+
+Siva
+
+=20
+
+
+------_=_NextPart_001_01C766C6.271BCB40
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am trying to boot my 8641D based PowerPC board. I =
+am
+having trouble booting it.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Following code snippet is from <i><span =
+style=3D'font-style:
+italic'>head_32.S</span></i>&#8230;..<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+lis&nbsp;&nbsp;&nbsp;&nbsp; r4,2f@h<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+ori&nbsp;&nbsp;&nbsp;&nbsp; =
+r4,r4,2f@l<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+tophys(r4,r4)<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+li&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; r3,MSR_KERNEL &amp; =
+~(MSR_IR|MSR_DR)<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+FIX_SRR1(r3,r5)<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+mtspr&nbsp;&nbsp; SPRN_SRR0,r4<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+mtspr&nbsp;&nbsp; SPRN_SRR1,r3<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+SYNC<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+RFI<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>/* Load up the =
+kernel
+context */<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>2:&nbsp;&nbsp;&nbsp=
+;
+bl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+load_up_mmu<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>My code successfully reaches up to the RFI =
+instruction, but
+never to &#8220;<b><i><span =
+style=3D'font-weight:bold;font-style:italic'>2: bl
+load_up_mmu</span></i></b>&#8221;. I am not using any debugger (used an =
+LED
+write to address to figure it out) in this =
+situation.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Any suggestions on why my execution sequence never =
+reaches
+the &#8220;<b><i><span =
+style=3D'font-weight:bold;font-style:italic'>2:</span></i></b>
+&#8220;?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I exhausted all types of debug information and =
+appreciate
+any help.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Siva<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C766C6.271BCB40--
