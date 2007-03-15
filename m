@@ -1,23 +1,20 @@
-Return-Path: <tie-fei.zang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 1CCEFDDD0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 13:00:26 +1100 (EST)
-Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l2F20Nud011789
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 19:00:24 -0700 (MST)
-Received: from zch01exm23.fsl.freescale.net (zch01exm23.ap.freescale.net
-	[10.192.129.207])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l2F20MCm010445
-	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 21:00:23 -0500 (CDT)
-Subject: [patch] kernel: Remove loops_per_jiffy code for 7448HPC2 platforms
-From: Zang Roy-r61911 <tie-fei.zang@freescale.com>
-To: Paul Mackerras <paulus@samba.org>
-Content-Type: text/plain
-Message-Id: <1173915476.5191.1.camel@localhost.localdomain>
-Mime-Version: 1.0
-Date: 15 Mar 2007 07:37:56 +0800
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 15 Mar 2007 13:02:34 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
+	(a.k.a. cuImage, cuboot)
+Message-ID: <20070315020234.GB14061@localhost.localdomain>
+References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
+	<20070314214805.GA9546@mag.az.mvista.com>
+	<45F86DC1.9010804@freescale.com>
+	<20070314232339.GA32287@mag.az.mvista.com>
+	<20070315000445.GE12573@localhost.localdomain>
+	<20070315015904.GB8406@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070315015904.GB8406@mag.az.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,41 +24,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Remove loops_per_jiffy code for 7448HPC2 platforms. They are not
-necessary.
+On Wed, Mar 14, 2007 at 06:59:04PM -0700, Mark A. Greer wrote:
+> On Thu, Mar 15, 2007 at 11:04:45AM +1100, David Gibson wrote:
+> > On Wed, Mar 14, 2007 at 04:23:39PM -0700, Mark A. Greer wrote:
+> > > On Wed, Mar 14, 2007 at 04:48:49PM -0500, Scott Wood wrote:
+> > > > Mark A. Greer wrote:
+> > > > >Are you sure that '_end' (which is the end of the zImage/cuImage)
+> > > > >is safe to use?  If the kernel is large enough (e.g., INITRAMFS)
+> > > > >it will overwrite your dtb when its decompressed and relocated to 0.
+> > > > >You need to grok the elfheader to figure out where the kernel will end
+> > > > >and take the max of that and _end.
+> > > > 
+> > > > Wouldn't it overwrite the bootwrapper itself before overwriting the heap?
+> > > 
+> > > Sure but that doesn't matter--the kernel is running so the bootwrapper's
+> > > life is over but the dtb's life isn't.
+> > 
+> > The bootloader now expands the kernel directly at 0, rather than
+> > allocating space for it, except on platforms that can't (OF).
+> 
+> Well, its not at 0 if you have a platform_ops.vmlinux_alloc()
+> defined which could be anyone.  But I get your point.
 
-Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+Well, yes, but cuboot doesn't.  The platforms always going to have to
+define a malloc() and vmlinux_alloc() that don't conflict with each
+other.
 
----
- arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c |   12 ------------
- 1 files changed, 0 insertions(+), 12 deletions(-)
+> > So we
+> > *would* clobber the bootloader during the bootloader's life if the
+> > kernel was too large.  There's a check for a too-large kernel as we
+> > decompress it.
+> 
+> This seems like a problem to me.  Premably, INITRAMFS will be used
+> more & more often so this check is going to fail more & more often.
+> We'll end up havng to keep moving the addr it loads at further & further
+> back or define platform_ops.vmlinux_alloc() and have the issue I
+> mentioned.
 
-diff --git a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-index 9922574..ad0514d 100644
---- a/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-+++ b/arch/powerpc/platforms/embedded6xx/mpc7448_hpc2.c
-@@ -73,22 +73,10 @@ int mpc7448_hpc2_exclude_device(u_char b
- 
- static void __init mpc7448_hpc2_setup_arch(void)
- {
--	struct device_node *cpu;
- 	struct device_node *np;
- 	if (ppc_md.progress)
- 		ppc_md.progress("mpc7448_hpc2_setup_arch():set_bridge", 0);
- 
--	cpu = of_find_node_by_type(NULL, "cpu");
--	if (cpu != 0) {
--		const unsigned int *fp;
--
--		fp = get_property(cpu, "clock-frequency", NULL);
--		if (fp != 0)
--			loops_per_jiffy = *fp / HZ;
--		else
--			loops_per_jiffy = 50000000 / HZ;
--		of_node_put(cpu);
--	}
- 	tsi108_csr_vir_base = get_vir_csrbase();
- 
- 	/* setup PCI host bridge */
+Err... won't the initramfs image go in the same place as the initrd
+image, not as part of the vmlinux.
+
 -- 
-1.4.0
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
