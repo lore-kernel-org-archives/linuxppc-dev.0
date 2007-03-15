@@ -1,23 +1,19 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id 7E7FFDDE23
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011-2.exch011.intermedia.net
+	(mis011-2.exch011.intermedia.net [64.78.21.129])
+	by ozlabs.org (Postfix) with ESMTP id 8E19CDDE21
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 00:35:12 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so291600ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Mar 2007 06:35:08 -0700 (PDT)
-Message-ID: <528646bc0703150635g6b4c50c3g7df35dc62885c187@mail.gmail.com>
-Date: Thu, 15 Mar 2007 07:35:07 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH 2/5] mpc52xx suspend: FEC (ethernet)
-In-Reply-To: <20070315104158.GC22215@moe.telargo.com>
+	Fri, 16 Mar 2007 01:37:31 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070315103959.GA22215@moe.telargo.com>
-	<20070315104158.GC22215@moe.telargo.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/mixed; boundary="----_=_NextPart_001_01C7670F.75BACE36"
+Subject: Wrong board info for ML403.
+Date: Thu, 15 Mar 2007 07:37:30 -0700
+Message-ID: <406A31B117F2734987636D6CCC93EE3CB05902@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <528646bc0703150624i2bac5ce4n7beebc88d8acbafe@mail.gmail.com>
+References: <20070315103959.GA22215@moe.telargo.com><20070315104228.GD22215@moe.telargo.com>
+	<528646bc0703150624i2bac5ce4n7beebc88d8acbafe@mail.gmail.com>
+From: "Leonid" <Leonid@a-k-a.net>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,37 +24,337 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 3/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> Suspend and resume for FEC on MPC52xx.
->
-> Note that resume is a bit different for lite5200b low-power mode.
->
->
-> Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+This is a multi-part message in MIME format.
 
-This of course cannot be applied until a mpc5200 ethernet driver is
-actually in mainline.  :-)
+------_=_NextPart_001_01C7670F.75BACE36
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-Haven't tested, but I don't see anything evil here, other than the
-"ugly hack"  :-)
+Hi:
 
-g.
+I'm trying to bring up Linux on Xilinx ML403 reference board.
 
-> +int mpc52xx_fec_resume(struct of_device *op)
-> +{
-> +       struct net_device *ndev = dev_get_drvdata(&op->dev);
-> +       struct fec_priv *priv = ndev->priv;
-> +       struct mpc52xx_fec *fec = priv->fec;
-> +
-> +       /* XXX ugly hack */
-> +       /* not deep-sleep (but low-power), so re-init hw */
-> +       if (*(unsigned long *)CONFIG_KERNEL_START != 0x60000000) {
-> +               *(unsigned long *)CONFIG_KERNEL_START = 0x60000000; // restore
+I took 2.6.19.2 kernel from DENX. EDK project for ML403 I took from
+official Xilinx site.
 
-Please avoid c++ style comments; even within ugly hacks.  :-)
+I could bring up u-boot on the board, everything is working fine (see
+ml403.h file attached). Then I compiled uImage for kernel and tried to
+download it - I don't see any kernel's outputs:
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+TFTP from server 192.168.0.141; our IP address is 192.168.0.203
+Filename 'LM200/rel/1.0.1d-403/uImage'.
+Load address: 0x1000000
+Loading: T
+#################################################################
+=20
+#################################################################
+         #######################################
+done
+Bytes transferred =3D 861735 (d2627 hex)
+## Booting image at 01000000 ...
+   Image Name:   Linux-2.6.19.2
+   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+   Data Size:    861671 Bytes =3D 841.5 kB
+   Load Address: 00000000
+   Entry Point:  00000000
+   Verifying Checksum ... OK
+   Uncompressing Kernel Image ... OK
+## Current stack ends at 0x03E676F0 =3D> set upper limit to 0x00800000
+## cmdline at 0x007FFF00 ... 0x007FFFF8
+memstart    =3D 0x00000000
+memsize     =3D 0x04000000
+flashstart  =3D 0x28000000
+flashsize   =3D 0x00800000
+flashoffset =3D 0x00000000
+sramstart   =3D 0x00000000
+sramsize    =3D 0x00000000
+bootflags   =3D 0x0000003C
+procfreq    =3D    300 MHz
+plb_busfreq =3D    100 MHz
+ethaddr     =3D 00:01:02:CB:CB:71
+IP addr     =3D 192.168.0.203
+baudrate    =3D 115200 bps
+No initrd
+## Transferring control to Linux (at address 00000000) ...
+
+I have read a lot of posts and reviewed the source code and I think
+these kernel trees I'm using are properly patched for using u-boot; I
+only included asm/ppcboot.h into xilinx_403.h:
+
+/* U-boot expects the bd_t to look like the one in ppcboot.h, not like
+this. */
+#ifdef NOT_USING_UBOOT
+typedef struct board_info {
+	unsigned int	 bi_memsize;		/* DRAM installed, in
+bytes */
+	unsigned char	 bi_enetaddr[6];	/* Local Ethernet MAC
+address */
+	unsigned int	 bi_intfreq;		/* Processor speed, in
+Hz */
+	unsigned int	 bi_busfreq;		/* PLB Bus speed, in Hz
+*/
+	unsigned int	 bi_pci_busfreq;	/* PCI Bus speed, in Hz
+*/
+} bd_t;
+
+/* Some 4xx parts use a different timebase frequency from the internal
+clock.
+*/
+#define bi_tbfreq bi_intfreq
+
+#else
+#include <asm/ppcboot.h>
+#endif /* UBOOT */
+
+Anyway I tried to compile zImage.elf and download it directly to RAM
+using XMD. Here I had partial success: first time after FPGA image
+downloading I try it, I see the following (it doesn't happen if I try to
+repeat downloading again without reloading FPGA image first):
+
+=3D=3D=3D=3D
+loaded at:     00400000 004DA13C
+board data at: 004D8124 004D813C
+relocated to:  00404090 004040A8
+zimage at:     00404E1D 004D7401
+avail ram:     004DB000 04000000
+
+Linux/PPC load: console=3DttyS0,115200
+Uncompressing Linux...done.
+Now booting the kernel
+[    0.000000] Linux version 2.6.19.2 (root@mylinux.a-k-a.local) (gcc
+version 4.0.0 (DENX ELDK 4.1 4.0.0)) #6 Thu Mar 15 05:46:09 PST 2007
+[    0.000000] Xilinx ML403 Reference System (Virtex-4 FX)
+[    0.000000] Zone PFN ranges:
+[    0.000000]   DMA             0 ->    16384
+[    0.000000]   Normal      16384 ->    16384
+[    0.000000] early_node_map[1] active PFN ranges
+[    0.000000]     0:        0 ->    16384
+[    0.000000] Built 1 zonelists.  Total pages: 16256
+[    0.000000] Kernel command line: console=3DttyS0,115200
+[    0.000000] Xilinx INTC #0 at 0xD1000FC0 mapped to 0xFDFFEFC0
+[    0.000000] PID hash table entries: 256 (order: 8, 1024 bytes)
+[    0.000188] Console: colour dummy device 80x25
+[    0.000701] Dentry cache hash table entries: 8192 (order: 3, 32768
+bytes)
+[    0.001489] Inode-cache hash table entries: 4096 (order: 2, 16384
+bytes)
+[    0.015326] Memory: 63104k available (1324k kernel code, 436k data,
+92k init, 0k highmem)
+[    0.108476] Mount-cache hash table entries: 512
+[    0.114051] NET: Registered protocol family 16
+[    0.128395] NET: Registered protocol family 2
+[    0.168472] IP route cache hash table entries: 512 (order: -1, 2048
+bytes)
+[    0.169340] TCP established hash table entries: 2048 (order: 1, 8192
+bytes)
+[    0.169539] TCP bind hash table entries: 1024 (order: 0, 4096 bytes)
+[    0.169648] TCP: Hash tables configured (established 2048 bind 1024)
+[    0.169679] TCP reno registered
+[    0.173555] io scheduler noop registered
+[    0.173600] io scheduler anticipatory registered (default)
+[    0.173630] io scheduler deadline registered
+[    0.173756] io scheduler cfq registered
+[    0.221629] Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ
+sharing disabled
+[    0.227023] serial8250.0: ttyS0 at MMIO 0xa0001003 (irq =3D 9) is a
+16450
+[    0.398738] RAMDISK driver initialized: 16 RAM disks of 65536K size
+1024 blocksize
+[    0.407941] tun: Universal TUN/TAP device driver, 1.6
+[    0.412993] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+[    0.420583] mice: PS/2 mouse device common for all mice
+[    0.426040] TCP cubic registered
+[    0.429347] NET: Registered protocol family 1
+[    0.433727] NET: Registered protocol family 17
+[    0.439482] VFS: Cannot open root device "<NULL>" or
+unknown-block(0,0)
+[    0.446095] Please append a correct "root=3D" boot option
+[    0.451282] Kernel panic - not syncing: VFS: Unable to mount root fs
+on unknown-block(0,0)
+[    0.459492]  <0>Rebooting in 180 seconds..
+
+I don't care about kernel panic for now - it's to be expected since I
+don't provide any filesystem.=20
+
+So, kernel itself is workable, it looks like uImage doesn't pick up
+correct board info parameters from u-boot. Where u-boot write them and
+where Linux looks for them? What is the simplest way to sync between
+u-boot and kernel?
+
+Thanks,
+
+Leonid.
+
+
+
+------_=_NextPart_001_01C7670F.75BACE36
+Content-Type: application/octet-stream;
+	name="ml403.h"
+Content-Transfer-Encoding: base64
+Content-Description: ml403.h
+Content-Disposition: attachment;
+	filename="ml403.h"
+
+LyoKICogTUw0MDMuaDogTUw0MDMgc3BlY2lmaWMgY29uZmlnIG9wdGlvbnMKICoKICogaHR0cDov
+L3d3dy54aWxpbnguY29tL21sNDAzCiAqCiAqIERlcml2ZWQgZnJvbSA6IG1sMzAwLmgKICoKICog
+ICAgIEF1dGhvcjogWGlsaW54LCBJbmMuCiAqCiAqCiAqICAgICBUaGlzIHByb2dyYW0gaXMgZnJl
+ZSBzb2Z0d2FyZTsgeW91IGNhbiByZWRpc3RyaWJ1dGUgaXQgYW5kL29yIG1vZGlmeSBpdAogKiAg
+ICAgdW5kZXIgdGhlIHRlcm1zIG9mIHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhcyBw
+dWJsaXNoZWQgYnkgdGhlCiAqICAgICBGcmVlIFNvZnR3YXJlIEZvdW5kYXRpb247IGVpdGhlciB2
+ZXJzaW9uIDIgb2YgdGhlIExpY2Vuc2UsIG9yIChhdCB5b3VyCiAqICAgICBvcHRpb24pIGFueSBs
+YXRlciB2ZXJzaW9uLgogKgogKgogKiAgICAgWElMSU5YIElTIFBST1ZJRElORyBUSElTIERFU0lH
+TiwgQ09ERSwgT1IgSU5GT1JNQVRJT04gIkFTIElTIiBBUyBBCiAqICAgICBDT1VSVEVTWSBUTyBZ
+T1UuIEJZIFBST1ZJRElORyBUSElTIERFU0lHTiwgQ09ERSwgT1IgSU5GT1JNQVRJT04gQVMKICog
+ICAgIE9ORSBQT1NTSUJMRSBJTVBMRU1FTlRBVElPTiBPRiBUSElTIEZFQVRVUkUsIEFQUExJQ0FU
+SU9OIE9SIFNUQU5EQVJELAogKiAgICAgWElMSU5YIElTIE1BS0lORyBOTyBSRVBSRVNFTlRBVElP
+TiBUSEFUIFRISVMgSU1QTEVNRU5UQVRJT04gSVMgRlJFRQogKiAgICAgRlJPTSBBTlkgQ0xBSU1T
+IE9GIElORlJJTkdFTUVOVCwgQU5EIFlPVSBBUkUgUkVTUE9OU0lCTEUgRk9SCiAqICAgICBPQlRB
+SU5JTkcgQU5ZIFJJR0hUUyBZT1UgTUFZIFJFUVVJUkUgRk9SIFlPVVIgSU1QTEVNRU5UQVRJT04u
+CiAqICAgICBYSUxJTlggRVhQUkVTU0xZIERJU0NMQUlNUyBBTlkgV0FSUkFOVFkgV0hBVFNPRVZF
+UiBXSVRIIFJFU1BFQ1QgVE8KICogICAgIFRIRSBBREVRVUFDWSBPRiBUSEUgSU1QTEVNRU5UQVRJ
+T04sIElOQ0xVRElORyBCVVQgTk9UIExJTUlURUQgVE8gQU5ZCiAqICAgICBXQVJSQU5USUVTIE9S
+IFJFUFJFU0VOVEFUSU9OUyBUSEFUIFRISVMgSU1QTEVNRU5UQVRJT04gSVMgRlJFRSBGUk9NCiAq
+ICAgICBDTEFJTVMgT0YgSU5GUklOR0VNRU5ULCBJTVBMSUVEIFdBUlJBTlRJRVMgT0YgTUVSQ0hB
+TlRBQklMSVRZIEFORAogKiAgICAgRklUTkVTUyBGT1IgQSBQQVJUSUNVTEFSIFBVUlBPU0UuCiAq
+CiAqCiAqICAgICBYaWxpbnggcHJvZHVjdHMgYXJlIG5vdCBpbnRlbmRlZCBmb3IgdXNlIGluIGxp
+ZmUgc3VwcG9ydCBhcHBsaWFuY2VzLAogKiAgICAgZGV2aWNlcywgb3Igc3lzdGVtcy4gVXNlIGlu
+IHN1Y2ggYXBwbGljYXRpb25zIGlzIGV4cHJlc3NseSBwcm9oaWJpdGVkLgogKgogKgogKiAgICAg
+KGMpIENvcHlyaWdodCAyMDAyLTIwMDUgWGlsaW54IEluYy4KICogICAgIEFsbCByaWdodHMgcmVz
+ZXJ2ZWQuCiAqCiAqCiAqICAgICBZb3Ugc2hvdWxkIGhhdmUgcmVjZWl2ZWQgYSBjb3B5IG9mIHRo
+ZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZSBhbG9uZwogKiAgICAgd2l0aCB0aGlzIHByb2dy
+YW07IGlmIG5vdCwgd3JpdGUgdG8gdGhlIEZyZWUgU29mdHdhcmUgRm91bmRhdGlvbiwgSW5jLiwK
+ICogICAgIDY3NSBNYXNzIEF2ZSwgQ2FtYnJpZGdlLCBNQSAwMjEzOSwgVVNBLgogKgogKi8KCiNp
+Zm5kZWYgX19DT05GSUdfSAojZGVmaW5lIF9fQ09ORklHX0gKCi8qICNkZWZpbmUgREVCVUcgKi8K
+LyogI2RlZmluZSBFVF9ERUJVRyAxICovCgovKgogKiBIaWdoIExldmVsIENvbmZpZ3VyYXRpb24g
+T3B0aW9ucwogKiAoZWFzeSB0byBjaGFuZ2UpCiAqLwoKI2RlZmluZSBDT05GSUdfNDA1CQkxCS8q
+IFRoaXMgaXMgYSBQUEM0MDUgQ1BVCQkqLwojZGVmaW5lIENPTkZJR180eHgJCTEJLyogLi4ubWVt
+YmVyIG9mIFBQQzR4eCBmYW1pbHkJKi8KI2RlZmluZSBDT05GSUdfWElMSU5YX01MNDAzCTEJLyog
+Li4ub24gYSBYaWxpbnggTUw0MDMgYm9hcmQJKi8KCiNpbmNsdWRlICIuLi9ib2FyZC94aWxpbngv
+bWw0MDMveHBhcmFtZXRlcnMuaCIKCi8qICBNYWtlIHNvbWUgY29uZmlndXJhdGlvbiBjaG9pY2Vz
+IGJhc2VkIG9uIHRoZSBoYXJkd2FyZSBkZXNpZ24KICogIHNwZWNpZmllZCBpbiB4cGFyYW1ldGVy
+cy5oLgogKi8KCiNkZWZpbmUgQ09ORklHX0ZMQVNIX1NUQVJUICAgICAgICAgWFBBUl9PUEJfRU1D
+XzBfTUVNMV9CQVNFQUREUgojZGVmaW5lIENPTkZJR19GTEFTSF9CT09UX1NUQVJUCSAgIENPTkZJ
+R19GTEFTSF9TVEFSVAojZGVmaW5lIENPTkZJR19GTEFTSF9CT09UX1NJWkUJCSAgICAgICAgICAg
+ICAgICAweDgwMDAwCiNkZWZpbmUgQ09ORklHX0ZMQVNIX0JPT1RFTlZfU1RBUlQgKENPTkZJR19G
+TEFTSF9CT09UX1NUQVJUK0NPTkZJR19GTEFTSF9CT09UX1NJWkUpCiNkZWZpbmUgQ09ORklHX0ZM
+QVNIX0JPT1RFTlZfU0laRQkJICAgICAgICAweDQwMDAwCiNkZWZpbmUgQ09ORklHX0ZMQVNIX0NP
+TkZJR19TVEFSVCAgKENPTkZJR19GTEFTSF9CT09URU5WX1NUQVJUK0NPTkZJR19GTEFTSF9CT09U
+RU5WX1NJWkUpCiNkZWZpbmUgQ09ORklHX0ZMQVNIX0NPTkZJR19TSVpFCQkgICAgICAgIDB4NDAw
+MDAKI2RlZmluZSBDT05GSUdfVEVYVF9CQVNFICAgICAgICAgICAgICAgICAgICAgICAgICAgICAw
+eDAzZTAwMDAwCgojaWZkZWYgWFBBUl9TWVNBQ0VfMF9ERVZJQ0VfSUQKI2RlZmluZSBDT05GSUdf
+U1lTVEVNQUNFCTEKI2RlZmluZSBDT05GSUdfRE9TX1BBUlRJVElPTgkxCiNkZWZpbmUgQ0ZHX1NZ
+U1RFTUFDRV9CQVNFCVhQQVJfU1lTQUNFXzBfQkFTRUFERFIKI2RlZmluZSBDRkdfU1lTVEVNQUNF
+X1dJRFRICVhQQVJfU1lTQUNFXzBfTUVNX1dJRFRICiNkZWZpbmUgQUREX1NZU1RFTUFDRV9DTURT
+ICAgICAgfCBDRkdfQ01EX0ZBVAojZGVmaW5lIFJNX1NZU1RFTUFDRV9DTURTCiNlbHNlCiNkZWZp
+bmUgQUREX1NZU1RFTUFDRV9DTURTCiNkZWZpbmUgUk1fU1lTVEVNQUNFX0NNRFMgICAgICAgfCBD
+RkdfQ01EX0ZBVAojZW5kaWYKCiNpZiAxICAvKiBhc3N1bWUgdGhhdCB3ZSBkbyBub3QgaGF2ZSBG
+bGFzaCAqLwojZGVmaW5lIENGR19FTlZfSVNfSU5fRkxBU0gJMQkvKiBlbnZpcm9ubWVudCBpcyBp
+biBGTEFTSCAqLwojZGVmaW5lIEFERF9GTEFTSF9DTURTICAgICAgICAgIHwgQ0ZHX0NNRF9GTEFT
+SAojZGVmaW5lIFJNX0ZMQVNIX0NNRFMKI2Vsc2UKI2RlZmluZSBBRERfRkxBU0hfQ01EUwojZGVm
+aW5lIFJNX0ZMQVNIX0NNRFMgICAgICAgICAgIHwgQ0ZHX0NNRF9GTEFTSAojZGVmaW5lIENGR19O
+T19GTEFTSCAgICAgICAgICAgIDEKI2VuZGlmCgojaWZkZWYgWFBBUl9JSUNfMF9ERVZJQ0VfSUQK
+I2lmICEgZGVmaW5lZChDRkdfRU5WX0lTX0lOX0ZMQVNIKQojZGVmaW5lIENGR19FTlZfSVNfSU5f
+RUVQUk9NCTEJLyogZW52aXJvbm1lbnQgaXMgaW4gSUlDIEVFUFJPTSAqLwojZW5kaWYKI2RlZmlu
+ZSBBRERfSUlDX0NNRFMgICAgICAgICAgICB8IENGR19DTURfSTJDCiNkZWZpbmUgUk1fSUlDX0NN
+RFMKI2Vsc2UKI2RlZmluZSBBRERfSUlDX0NNRFMKI2RlZmluZSBSTV9JSUNfQ01EUyAgICAgICAg
+ICAgICB8IENGR19DTURfSTJDCiNlbmRpZgoKI2lmZGVmIFhQQVJfRU1BQ18wX0RFVklDRV9JRAoj
+ZGVmaW5lIENPTkZJR19FVEhBRERSICAgICAgICAgIDAwOjBhOjM1OjAwOjIyOjAxCiNkZWZpbmUg
+QUREX05FVF9DTURTICAgICAgICAgICAgfCBDRkdfQ01EX1BJTkcgfCBDRkdfQ01EX05FVCB8IENG
+R19DTURfREhDUAojZGVmaW5lIFJNX05FVF9DTURTCiNlbHNlCiNkZWZpbmUgQUREX05FVF9DTURT
+CiNkZWZpbmUgUk1fTkVUX0NNRFMgICAgICAgICAgICAgfCBDRkdfQ01EX1BJTkcgfCBDRkdfQ01E
+X05FVCB8IENGR19DTURfREhDUAojZW5kaWYKCiNpZiAhIChkZWZpbmVkKENGR19FTlZfSVNfSU5f
+RkxBU0gpIHx8IGRlZmluZWQoQ0ZHX0VOVl9JU19JTl9FRVBST00pKQojZGVmaW5lIENGR19FTlZf
+SVNfTk9XSEVSRSAgICAgIDEgICAgICAgLyogbm8gc3BhY2UgdG8gc3RvcmUgZW52aXJvbm1lbnQg
+Ki8KI2RlZmluZSBDRkdfRU5WX1NJWkUJCTEwMjQKI2RlZmluZSBDRkdfTU9OSVRPUl9CQVNFCTB4
+MDIwMDAwMDAKI2VuZGlmCgovKiBmb2xsb3dpbmcgYXJlIHVzZWQgb25seSBpZiBlbnYgaXMgaW4g
+RUVQUk9NICovCiNpZmRlZglDRkdfRU5WX0lTX0lOX0VFUFJPTQojZGVmaW5lIENGR19JMkNfRUVQ
+Uk9NX0FERFIgICAgICAgICAgICAgKDB4QTAgPj4gMSkKI2RlZmluZSBDRkdfSTJDX0VFUFJPTV9B
+RERSX0xFTiAgICAgICAgIDEKI2RlZmluZSBDRkdfSTJDX0VFUFJPTV9BRERSX09WRVJGTE9XICAg
+IDB4MQojZGVmaW5lIENGR19FTlZfT0ZGU0VUICAgICAgICAgICAgICAgICAgMAojZGVmaW5lIENG
+R19FTlZfU0laRSAgICAgICAgICAgICAgICAgICAgMjU2CiNkZWZpbmUgQ0ZHX0VFUFJPTV9QQUdF
+X1dSSVRFX0JJVFMgICAgICA1CiNkZWZpbmUgQ0ZHX0VFUFJPTV9QQUdFX1dSSVRFX0RFTEFZX01T
+ICA1CiNkZWZpbmUgQ09ORklHX0VOVl9PVkVSV1JJVEUgICAgICAgICAgICAxICAvKiB3cml0YWJs
+ZSBldGhhZGRyIGFuZCBzZXJpYWwjICovCiNkZWZpbmUgQ0ZHX01PTklUT1JfQkFTRSAgICAgICAg
+ICAgICAgICAweDAyMDAwMDAwCiNlbmRpZgoKLyogZm9sbG93aW5nIGFyZSB1c2VkIG9ubHkgaWYg
+ZW52IGlzIGluIEZsYXNoICovCiNpZmRlZiBDRkdfRU5WX0lTX0lOX0ZMQVNICiNkZWZpbmUgQ0ZH
+X0ZMQVNIX0JBU0UJCUNPTkZJR19GTEFTSF9TVEFSVAojZGVmaW5lIENGR19NQVhfRkxBU0hfQkFO
+S1MJMQkvKiBtYXggbnVtYmVyIG9mIG1lbW9yeSBiYW5rcyAgICAgICAgKi8KI2RlZmluZSBDRkdf
+TUFYX0ZMQVNIX1NFQ1QJMjU2CS8qIG1heCBudW1iZXIgb2Ygc2VjdG9ycyBvbiBvbmUgY2hpcCAq
+LwojZGVmaW5lIENGR19GTEFTSF9FUkFTRV9UT1VUCTEyMDAwMAkvKiBUaW1lb3V0IGZvciBGbGFz
+aCBFcmFzZSAoaW4gbXMpICAgKi8KI2RlZmluZSBDRkdfRkxBU0hfV1JJVEVfVE9VVAk1MDAJLyog
+VGltZW91dCBmb3IgRmxhc2ggV3JpdGUgKGluIG1zKSAgICovCiNkZWZpbmUgQ0ZHX0ZMQVNIX0NG
+SQojZGVmaW5lIENGR19GTEFTSF9DRklfRFJJVkVSCiNkZWZpbmUgQ0ZHX0VOVl9BRERSCQlDT05G
+SUdfRkxBU0hfQk9PVEVOVl9TVEFSVAojZGVmaW5lIENGR19FTlZfT0ZGU0VUICAgICAgICAgIENP
+TkZJR19GTEFTSF9CT09URU5WX1NUQVJUCiNkZWZpbmUgQ0ZHX0VOVl9TSVpFICAgICAgICAgICAg
+Q09ORklHX0ZMQVNIX0JPT1RFTlZfU0laRQojZGVmaW5lIENPTkZJR19FTlZfT1ZFUldSSVRFICAg
+IDEgICAgICAgLyogd3JpdGFibGUgZXRoYWRkciBhbmQgc2VyaWFsIyAqLwogICNpZiBkZWZpbmVk
+KENPTkZJR19CT09UX1JPTSkKICAjZGVmaW5lIENGR19NT05JVE9SX0JBU0UJMHhGRkZDMDAwMAog
+ICNlbHNlCiAgI2RlZmluZSBDRkdfTU9OSVRPUl9CQVNFCUNPTkZJR19URVhUX0JBU0UKICAjZW5k
+aWYKI2VuZGlmCgojZGVmaW5lIENPTkZJR19CQVVEUkFURSAgICAgICAgIDExNTIwMCAKI2RlZmlu
+ZSBDT05GSUdfQk9PVERFTEFZICAgICAgICA1ICAgICAgIC8qIGF1dG9ib290IGFmdGVyIDMgc2Vj
+b25kcwkqLwoKI2RlZmluZSBDT05GSUdfQk9PVENPTU1BTkQgICAgICAiYm9vdG0gZmZlMDAwMDAi
+IC8qIGF1dG9ib290IGNvbW1hbmQJKi8KCiNkZWZpbmUgQ09ORklHX0JPT1RBUkdTICAgICAgICAg
+ImNvbnNvbGU9dHR5UzAsMTE1MjAwIGlwPW9mZiAiIFwKICAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAicm9vdD0vZGV2L3hzeXNhY2UvZGlzYzAvcGFydDIgcnciCgojZGVmaW5lIENPTkZJ
+R19MT0FEU19FQ0hPICAgICAgIDEgICAgICAgLyogZWNobyBvbiBmb3Igc2VyaWFsIGRvd25sb2Fk
+CSovCiNkZWZpbmUgQ0ZHX0xPQURTX0JBVURfQ0hBTkdFICAgMSAgICAgICAvKiBhbGxvdyBiYXVk
+cmF0ZSBjaGFuZ2UJKi8KCiNkZWZpbmUgUkVNT1ZFX0NPTU1BTkRTCSAgICAgICAwCgovKgojZGVm
+aW5lIFJFTU9WRV9DT01NQU5EUwkgICAgICAgKENGR19DTURfTE9BRFMgfCBcCiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgQ0ZHX0NNRF9JTUxTIFwKICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICBSTV9JSUNfQ01EUyBcCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+Uk1fU1lTVEVNQUNFX0NNRFMgXAoJCQkgICAgICAgIFJNX05FVF9DTURTIFwKICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICBSTV9GTEFTSF9DTURTKQoqLwoKI2RlZmluZSBDT05GSUdfQ09N
+TUFORFMJICAgICAgICgoQ09ORklHX0NNRF9ERkwgfCBDRkdfQ01EX0VMRiBcCiAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgIEFERF9JSUNfQ01EUyBcCiAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgIEFERF9TWVNURU1BQ0VfQ01EUyBcCiAgICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgIEFERF9ORVRfQ01EUyBcCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg
+IEFERF9GTEFTSF9DTURTKSBcCgkJCQkmIH5SRU1PVkVfQ09NTUFORFMpCgovKiB0aGlzIG11c3Qg
+YmUgaW5jbHVkZWQgQUZURVIgdGhlIGRlZmluaXRpb24gb2YgQ09ORklHX0NPTU1BTkRTIChpZiBh
+bnkpICovCiNpbmNsdWRlIDxjbWRfY29uZmRlZnMuaD4KCi8qCiAqIE1pc2NlbGxhbmVvdXMgY29u
+ZmlndXJhYmxlIG9wdGlvbnMKICovCiNkZWZpbmUgQ0ZHX0xPTkdIRUxQCQkvKiB1bmRlZiB0byBz
+YXZlIG1lbW9yeQkJKi8KI2RlZmluZSBDRkdfUFJPTVBUCSI9PiAiCS8qIE1vbml0b3IgQ29tbWFu
+ZCBQcm9tcHQJKi8KCiNkZWZpbmUgQ0ZHX0NCU0laRQkyNTYJLyogQ29uc29sZSBJL08gQnVmZmVy
+IFNpemUJKi8KCiNkZWZpbmUgQ0ZHX1BCU0laRSAoQ0ZHX0NCU0laRStzaXplb2YoQ0ZHX1BST01Q
+VCkrMTYpCS8qIFByaW50IEJ1ZmZlciBTaXplICovCiNkZWZpbmUgQ0ZHX01BWEFSR1MJMTYJLyog
+bWF4IG51bWJlciBvZiBjb21tYW5kIGFyZ3MJKi8KI2RlZmluZSBDRkdfQkFSR1NJWkUJQ0ZHX0NC
+U0laRQkvKiBCb290IEFyZ3VtZW50IEJ1ZmZlciBTaXplCSovCgojZGVmaW5lIENGR19NRU1URVNU
+X1NUQVJUCTB4MDQwMDAwMAkvKiBtZW10ZXN0IHdvcmtzIG9uCSovCiNkZWZpbmUgQ0ZHX01FTVRF
+U1RfRU5ECQkweDBDMDAwMDAJLyogNCAuLi4gMTIgTUIgaW4gRFJBTQkqLwoKI2RlZmluZSBDRkdf
+RFVBUlRfQ0hBTgkJMAojZGVmaW5lIENGR19OUzE2NTUwX1JFR19TSVpFICAgLTQKI2RlZmluZSBD
+RkdfTlMxNjU1MCAgICAgICAgICAgICAxCiNkZWZpbmUgQ0ZHX0lOSVRfQ0hBTjEJICAgICAgICAx
+CgovKiBUaGUgZm9sbG93aW5nIHRhYmxlIGluY2x1ZGVzIHRoZSBzdXBwb3J0ZWQgYmF1ZHJhdGVz
+ICovCiNkZWZpbmUgQ0ZHX0JBVURSQVRFX1RBQkxFICBcCiAgICB7MzAwLCA2MDAsIDEyMDAsIDI0
+MDAsIDQ4MDAsIDk2MDAsIDE5MjAwLCAzODQwMCwgNTc2MDAsIDExNTIwMCwgMjMwNDAwfQoKI2Rl
+ZmluZSBDRkdfTE9BRF9BRERSCQkweDQwMDAwMAkvKiBkZWZhdWx0IGxvYWQgYWRkcmVzcyAqLwoj
+ZGVmaW5lIENGR19FWFRCRElORk8JCTEJLyogVG8gdXNlIGV4dGVuZGVkIGJvYXJkX2ludG8gKGJk
+X3QpICovCgojZGVmaW5lIENGR19IWgkJMTAwMAkvKiBkZWNyZW1lbnRlciBmcmVxOiAxIG1zIHRp
+Y2tzICovCgovKi0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAqIFN0YXJ0IGFkZHJlc3NlcyBmb3IgdGhlIGZpbmFs
+IG1lbW9yeSBjb25maWd1cmF0aW9uCiAqIChTZXQgdXAgYnkgdGhlIHN0YXJ0dXAgY29kZSkKICog
+UGxlYXNlIG5vdGUgdGhhdCBDRkdfU0RSQU1fQkFTRSBfbXVzdF8gc3RhcnQgYXQgMAogKi8KI2Rl
+ZmluZSBDRkdfU0RSQU1fQkFTRQkJMHgwMDAwMDAwMAojZGVmaW5lIENGR19NT05JVE9SX0xFTgkJ
+KDE5MiAqIDEwMjQpCS8qIFJlc2VydmUgMTk2IGtCIGZvciBNb25pdG9yCSovCiNkZWZpbmUgQ0ZH
+X01BTExPQ19MRU4JCSgxMDI0ICogMTAyNCkJLyogUmVzZXJ2ZSAxMjgga0IgZm9yIG1hbGxvYygp
+CSovCgovKgogKiBGb3IgYm9vdGluZyBMaW51eCwgdGhlIGJvYXJkIGluZm8gYW5kIGNvbW1hbmQg
+bGluZSBkYXRhCiAqIGhhdmUgdG8gYmUgaW4gdGhlIGZpcnN0IDggTUIgb2YgbWVtb3J5LCBzaW5j
+ZSB0aGlzIGlzCiAqIHRoZSBtYXhpbXVtIG1hcHBlZCBieSB0aGUgTGludXgga2VybmVsIGR1cmlu
+ZyBpbml0aWFsaXphdGlvbi4KICovCiNkZWZpbmUgQ0ZHX0JPT1RNQVBTWgkJKDggPDwgMjApCS8q
+IEluaXRpYWwgTWVtb3J5IG1hcCBmb3IgTGludXggKi8KCi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICogQ2Fj
+aGUgQ29uZmlndXJhdGlvbgogKi8KI2RlZmluZSBDRkdfRENBQ0hFX1NJWkUJCTE2Mzg0CS8qIFZp
+cnRleC1JSSBQcm8gUFBDIDQwNSBDUFVzCSovCiNkZWZpbmUgQ0ZHX0NBQ0hFTElORV9TSVpFCTMy
+CS8qIC4uLgkJCSAgICAgICAgKi8KCi8qLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KICogRGVmaW5pdGlvbnMgZm9y
+IGluaXRpYWwgc3RhY2sgcG9pbnRlciBhbmQgZGF0YSBhcmVhIChpbiBEUFJBTSkKICovCgojZGVm
+aW5lIENGR19JTklUX1JBTV9BRERSCTB4ODAwMDAwICAvKiBpbnNpZGUgb2YgU0RSQU0gKi8KI2Rl
+ZmluZSBDRkdfSU5JVF9SQU1fRU5ECTB4MjAwMAkgIC8qIEVuZCBvZiB1c2VkIGFyZWEgaW4gUkFN
+ICovCiNkZWZpbmUgQ0ZHX0dCTF9EQVRBX1NJWkUJMTI4CSAgLyogc2l6ZSBpbiBieXRlcyByZXNl
+cnZlZCBmb3IgaW5pdGlhbCBkYXRhICovCiNkZWZpbmUgQ0ZHX0dCTF9EQVRBX09GRlNFVCAgICAo
+Q0ZHX0lOSVRfUkFNX0VORCAtIENGR19HQkxfREFUQV9TSVpFKQojZGVmaW5lIENGR19JTklUX1NQ
+X09GRlNFVAlDRkdfR0JMX0RBVEFfT0ZGU0VUCgovKgogKiBJbnRlcm5hbCBEZWZpbml0aW9ucwog
+KgogKiBCb290IEZsYWdzCiAqLwojZGVmaW5lIEJPT1RGTEFHX0NPTEQJMHgwMQkvKiBOb3JtYWwg
+UG93ZXItT246IEJvb3QgZnJvbSBGTEFTSAkqLwojZGVmaW5lIEJPT1RGTEFHX1dBUk0JMHgwMgkv
+KiBTb2Z0d2FyZSByZWJvb3QJCQkqLwoKI2VuZGlmCQkJCS8qIF9fQ09ORklHX0ggKi8K
+
+------_=_NextPart_001_01C7670F.75BACE36--
