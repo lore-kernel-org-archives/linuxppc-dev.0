@@ -1,22 +1,22 @@
 Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id CA3AADDE19
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id 7E7FFDDE23
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 00:24:53 +1100 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so288334ugf
+	Fri, 16 Mar 2007 00:35:12 +1100 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so291600ugf
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Mar 2007 06:24:51 -0700 (PDT)
-Message-ID: <528646bc0703150624i2bac5ce4n7beebc88d8acbafe@mail.gmail.com>
-Date: Thu, 15 Mar 2007 07:24:51 -0600
+	Thu, 15 Mar 2007 06:35:08 -0700 (PDT)
+Message-ID: <528646bc0703150635g6b4c50c3g7df35dc62885c187@mail.gmail.com>
+Date: Thu, 15 Mar 2007 07:35:07 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@gmail.com
 To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH 3/5] mpc52xx suspend: USB
-In-Reply-To: <20070315104228.GD22215@moe.telargo.com>
+Subject: Re: [PATCH 2/5] mpc52xx suspend: FEC (ethernet)
+In-Reply-To: <20070315104158.GC22215@moe.telargo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <20070315103959.GA22215@moe.telargo.com>
-	<20070315104228.GD22215@moe.telargo.com>
+	<20070315104158.GC22215@moe.telargo.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -29,44 +29,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 On 3/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> Trivial suspend and resume OF OHCI.
-> On MPC52xx turn off and on power to ports.
+> Suspend and resume for FEC on MPC52xx.
+>
+> Note that resume is a bit different for lite5200b low-power mode.
 >
 >
 > Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 
-Nak; see below
+This of course cannot be applied until a mpc5200 ethernet driver is
+actually in mainline.  :-)
 
->
-> Index: grant.git/drivers/usb/host/ohci-ppc-of.c
-> ===================================================================
-> --- grant.git.orig/drivers/usb/host/ohci-ppc-of.c
-> +++ grant.git/drivers/usb/host/ohci-ppc-of.c
-> @@ -214,6 +214,32 @@ MODULE_DEVICE_TABLE(of, ohci_hcd_ppc_of_
->  #endif
->
->
-> +#ifdef CONFIG_PM
-> +static u32 descr_a;
-> +static int ohci_hcd_ppc_soc_drv_suspend(struct of_device *op,
-> +               pm_message_t state)
+Haven't tested, but I don't see anything evil here, other than the
+"ugly hack"  :-)
+
+g.
+
+> +int mpc52xx_fec_resume(struct of_device *op)
 > +{
-> +       struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
-> +#ifdef CONFIG_PPC_MPC52xx
-> +       struct ohci_hcd *ohci = hcd_to_ohci(hcd);
+> +       struct net_device *ndev = dev_get_drvdata(&op->dev);
+> +       struct fec_priv *priv = ndev->priv;
+> +       struct mpc52xx_fec *fec = priv->fec;
 > +
-> +       descr_a = in_be32(&ohci->regs->roothub.a);
-> +       out_be32(&ohci->regs->roothub.a, (descr_a & ~0x200) | 0x100);
-> +#endif
-> +       return 0;
-> +}
+> +       /* XXX ugly hack */
+> +       /* not deep-sleep (but low-power), so re-init hw */
+> +       if (*(unsigned long *)CONFIG_KERNEL_START != 0x60000000) {
+> +               *(unsigned long *)CONFIG_KERNEL_START = 0x60000000; // restore
 
-#ifdef blocks are a bad idea.  It is now possible to boot one kernel
-image on multiple platforms.  Chip model should be determined ahead of
-time from the device tree and choose the code path accordingly at
-runtime.
-
-
+Please avoid c++ style comments; even within ugly hacks.  :-)
 
 -- 
 Grant Likely, B.Sc. P.Eng.
