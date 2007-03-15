@@ -1,18 +1,26 @@
-Return-Path: <gerald.vanbaren@comcast.net>
-Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [216.148.227.152])
-	by ozlabs.org (Postfix) with ESMTP id 42D8FDDD09
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 13:49:24 +1100 (EST)
-Message-ID: <45F8B432.9010702@comcast.net>
-Date: Wed, 14 Mar 2007 22:49:22 -0400
-From: Jerry Van Baren <gerald.vanbaren@comcast.net>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 1BABEDDD0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 14:01:11 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l2F318is016188
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 20:01:08 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l2F3160D010195
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 22:01:07 -0500 (CDT)
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [dtc] Add support for flat device tree format version 17
-References: <20070313062240.GA22737@localhost.localdomain>	<45F863DF.5050709@freescale.com>	<45F864E8.40501@smiths-aerospace.com>
-	<45F86C25.1070301@freescale.com> <45F8A229.7040602@comcast.net>
-	<45F8A374.9090200@freescale.com>
-In-Reply-To: <45F8A374.9090200@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH][POWERPC] QE: Make QUICC Engine support a
+	configurableoption
+Date: Thu, 15 Mar 2007 11:02:33 +0800
+Message-ID: <989B956029373F45A0B8AF02970818902DB0EA@zch01exm26.fsl.freescale.net>
+In-Reply-To: <45F84EA0.2080405@freescale.com>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Tabi Timur-B04825" <timur@freescale.com>,
+	"Phillips Kim-R1AAHA" <Kim.Phillips@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,72 +31,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Jerry Van Baren wrote:
-> 
->> Actually, I believe that is how the existing code works: it opens the 
->> original blob and copies it to a newly created dft.  It then augments 
->> the new dft with a "chosen" node and optionally additional nodes 
->> (bd_t, env variables) and passes the new dft blob to linux.  
->> Theoretically, the existing code will read a v17 blob and create a new 
->> v16 blob from it (without the additional v17 length field - the header 
->> would be created, not copied).
-> 
-> I'll check out the code and see what it does, since I'm not really 
-> familiar with it.
-> 
->>
->> Trivia: the current code is kinda dumb about it: if the original blob 
->> had a "chosen" node, the code *adds another* "chosen" node.
-> 
-> Yes, I have this bug on my to-do list to fix.
+> -----Original Message-----
+> From: linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org
+> [mailto:linuxppc-dev-bounces+leoli=3Dfreescale.com@ozlabs.org] On =
+Behalf
+Of Timur
+> Tabi
+> Sent: Thursday, March 15, 2007 3:36 AM
+> To: Phillips Kim-R1AAHA
+> Cc: linuxppc-dev@ozlabs.org
+> Subject: Re: [PATCH][POWERPC] QE: Make QUICC Engine support a
+configurableoption
+>=20
+> Kim Phillips wrote:
+> > On Wed, 14 Mar 2007 13:15:05 -0500 (CDT)
+> > Kumar Gala <galak@kernel.crashing.org> wrote:
+> >
+> >>  arch/powerpc/Kconfig                |    8 --------
+> >>  arch/powerpc/platforms/83xx/Kconfig |   12 ++++++++++--
+> >>  2 files changed, 10 insertions(+), 10 deletions(-)
+> >
+> > What about 85xx QE support?
+>=20
+> Kumar and I talked about it.  85xx support will be added when QE works
+on 85xx.
+> However,
+> the patch still needs changes.  To allow each CPU family to have its
+own QE option,
+> we'll
+> need to define something like QUICC_ENGINE_83xx and QUICC_ENGINE_85xx,
+and then
+> have
+> something like this:
+>=20
+> config QUICC_ENGINE
+> 	bool
+> 	default y if QUICC_ENGINE_83xx || QUICC_ENGINE_85xx
 
-That is close to the top of my list.  My intent with the "fdt" command 
-is to have a subcommand that creates the "chosen" node.  This will 
-replace the auto-generation (with no opportunity to review or revise) 
-the "chosen" node as part of the "bootm" command.
+I don't think we need these new options.  If there are differences
+between the two SOC versions, presumably not too many, we can address
+them in device tree.  It's better to leave the QUICC_ENGINE option at
+arch/powerpc/Kconfig level, IMHO.
 
-Downside: "bootm" becomes more than one command.  So script it.
-Upside: MUCH cleaner, allows the user to review and revise the blob 
-before booting linux.
-
-These are my current thoughts for the "fdt" command:
-=> help fdt
-fdt addr   <addr>                  - Set the fdt location to <addr>
-fdt get    <node> <property>       - Get the value of <node> <property>
-fdt set    <node> <property> <val> - Set the value of <property> to <val>
-     (creates a new property if necessary)
-fdt mknode <node>                  - Create a new node <node>
-     (the path must exist except for the last node name)
-fdt rmnode <node>                  - Deletes the node <node>
-     (the last node name in the path)
-fdt print  <node> [<property>]     - Recursive print starting at <node>
-     (if <property> is specified, prints only that property)
-fdt chosen - Add/update the "chosen" branch to the tree
-Hints:
-  * "fdt print /" prints the whole tree.
-  * If the property you are setting/printing has a '#' character,
-      you MUST escape it with a \ character or quote it with " or
-      it will be ignored as a comment.
-  * If the value has spaces in it, you MUST escape the spaces with
-      \ characters or quote it with "
-Examples: fdt p /cpus "#address-cells"
-           fdt s /cpus "#address-cells" "[00 00 00 01]"
-
-I've actually implemented addr, set, and print (get is an alias for print).
-
->> Back to libdft: with a v16 blob, libdft has to either modify in place 
->> (no size change) or you have to create a new blob and copy the 
->> original data over (like the existing code).  With the v17 blob, 
->> libdft is able to expand and contract the contents of the blob (with 
->> limitations, I'm sure).
-> 
-> I agree that it would be nice if U-Boot had a robust DTB parser, but I 
-> don't have the time to do that work.
-
-libfdt.
-
-David already did the work, I'm working on the integration (works but 
-needs some cleanup).
-
-gvb
+- Leo
