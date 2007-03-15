@@ -1,9 +1,9 @@
 Return-Path: <mgreer@mvista.com>
-Date: Thu, 15 Mar 2007 15:35:29 -0700
+Date: Thu, 15 Mar 2007 16:02:30 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: David Gibson <david@gibson.dropbear.id.au>
 Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
-Message-ID: <20070315223529.GA1314@mag.az.mvista.com>
+Message-ID: <20070315230230.GB3342@mag.az.mvista.com>
 References: <20070305032307.GB31417@localhost.localdomain>
 	<20070305032452.810C1DDF1B@ozlabs.org>
 MIME-Version: 1.0
@@ -21,40 +21,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 On Mon, Mar 05, 2007 at 02:24:52PM +1100, David Gibson wrote:
 
-Hi David,
+<snip>
+
+> 1) It can define a _zimage_start, in which case the platform code gets
+>    control from the very beginning of execution.  In this case the
+>    platform code is responsible for relocating the zImage if necessary,
+>    clearing the BSS, performing any platform specific initialization, and
+>    finally calling start() to load and enter the kernel.
+> 
+> 2) It can define platform_init().  In this case the generic crt0.S
+>    handles initial entry, and calls platform_init() before calling
+>    start().  The signature of platform_init() is changed, however, to
+>    take up to 5 parameters (in r3..r7) as they come from the platform's
+>    initial loader, instead of a fixed set of parameters based on OF's
+>    usage.
 
 <snip>
 
-> Index: working-2.6/arch/powerpc/boot/ops.h
-> ===================================================================
-> --- working-2.6.orig/arch/powerpc/boot/ops.h	2007-02-19 14:01:38.000000000 +1100
-> +++ working-2.6/arch/powerpc/boot/ops.h	2007-02-19 14:01:43.000000000 +1100
+> In addition the wrapper script is rearranged to ensure that the
+> platform .o is always linked first.  This means that platforms where
+> the zImage entry point is at a fixed address or offset, rather than
+> being encoded in the binary header can be supported using option (1).
 
-<snip>
-
-> @@ -100,4 +106,8 @@ static inline void exit(void)
->  	for(;;);
->  }
->  
-> +#define BSS_STACK(size) \
-> +	static char _bss_stack[size]; \
-> +	void *_platform_stack_top = _bss_stack + sizeof(_bss_stack);
-              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-> +
->  #endif /* _PPC_BOOT_OPS_H_ */
-
-Statically initializing _platform_stack_top (or any variable) won't
-work when you download/run the zImage at a location different than
-where its linked at.  Yes, I know the image is "relocatable" but that
-doesn't work for addresses put into variables/structs at link time
-like this one.  That type of assignment has to be done at runtime.
-
-What happens is the linker puts 0x0040_1234, say, into
-_platform_stack_top but when you download the image to 0x0080_0000
-it still has a value of 0x0040_1234 even though its running at
-0x00800_0000+.
-
-I think there's at least one more biting me in either yours
-or Scott's patches that I'm looking for now.
+But now you don't have a fixed address for _zimage_start when you use
+option 2).  I don't know what address _zimage_start is at so I can't
+start it.  This is an issue for fw's that don't understand ELF and simply
+download a bucket of bits.  You have to tell the fw where to jump to
+(e.g., go 0x410010).
 
 Mark
