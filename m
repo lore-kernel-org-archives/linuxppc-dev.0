@@ -1,17 +1,15 @@
-Return-Path: <m.kozlowski@tuxland.pl>
-Received: from tuxland.pl (xdsl-664.zgora.dialog.net.pl [81.168.226.152])
-	by ozlabs.org (Postfix) with ESMTP id 35F64DDD09
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 09:18:07 +1100 (EST)
-From: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
-To: paulus@samba.org
-Subject: [PATCH] powerpc: 8xx parenthesis balance
-Date: Thu, 15 Mar 2007 23:20:44 +0100
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 15 Mar 2007 15:35:29 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
+Message-ID: <20070315223529.GA1314@mag.az.mvista.com>
+References: <20070305032307.GB31417@localhost.localdomain>
+	<20070305032452.810C1DDF1B@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-2"
-Message-Id: <200703152320.45181.m.kozlowski@tuxland.pl>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070305032452.810C1DDF1B@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,42 +19,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello,
+On Mon, Mar 05, 2007 at 02:24:52PM +1100, David Gibson wrote:
 
-	This patch (against 2.6.21-rc3-mm1) balances parenthesis in
-powerpc 8xx header files.
+Hi David,
 
-Signed-off-by: Mariusz Kozlowski <m.kozlowski@tuxland.pl>
+<snip>
 
- arch/powerpc/platforms/8xx/mpc86xads.h |    2 +-
- arch/powerpc/platforms/8xx/mpc885ads.h |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+> Index: working-2.6/arch/powerpc/boot/ops.h
+> ===================================================================
+> --- working-2.6.orig/arch/powerpc/boot/ops.h	2007-02-19 14:01:38.000000000 +1100
+> +++ working-2.6/arch/powerpc/boot/ops.h	2007-02-19 14:01:43.000000000 +1100
 
-diff -upr linux-2.6.21-rc3-mm1-a/arch/powerpc/platforms/8xx/mpc86xads.h linux-2.6.21-rc3-mm1-b/arch/powerpc/platforms/8xx/mpc86xads.h
---- linux-2.6.21-rc3-mm1-a/arch/powerpc/platforms/8xx/mpc86xads.h	2007-03-15 22:25:05.000000000 +0100
-+++ linux-2.6.21-rc3-mm1-b/arch/powerpc/platforms/8xx/mpc86xads.h	2007-03-15 22:30:59.000000000 +0100
-@@ -37,7 +37,7 @@
- #define CPM_MAP_ADDR		(get_immrbase() + MPC8xx_CPM_OFFSET)
- #define CPM_IRQ_OFFSET		16     // for compability with cpm_uart driver
- 
--#define PCMCIA_MEM_ADDR		(uint)0xff020000)
-+#define PCMCIA_MEM_ADDR		((uint)0xff020000)
- #define PCMCIA_MEM_SIZE		((uint)(64 * 1024))
- 
- /* Bits of interest in the BCSRs.
-diff -upr linux-2.6.21-rc3-mm1-a/arch/powerpc/platforms/8xx/mpc885ads.h linux-2.6.21-rc3-mm1-b/arch/powerpc/platforms/8xx/mpc885ads.h
---- linux-2.6.21-rc3-mm1-a/arch/powerpc/platforms/8xx/mpc885ads.h	2007-03-15 22:25:05.000000000 +0100
-+++ linux-2.6.21-rc3-mm1-b/arch/powerpc/platforms/8xx/mpc885ads.h	2007-03-15 22:31:15.000000000 +0100
-@@ -37,7 +37,7 @@
- #define CPM_MAP_ADDR		(get_immrbase() + MPC8xx_CPM_OFFSET)
- #define CPM_IRQ_OFFSET		16     // for compability with cpm_uart driver
- 
--#define PCMCIA_MEM_ADDR		(uint)0xff020000)
-+#define PCMCIA_MEM_ADDR		((uint)0xff020000)
- #define PCMCIA_MEM_SIZE		((uint)(64 * 1024))
- 
- /* Bits of interest in the BCSRs.
+<snip>
 
-Regards,
+> @@ -100,4 +106,8 @@ static inline void exit(void)
+>  	for(;;);
+>  }
+>  
+> +#define BSS_STACK(size) \
+> +	static char _bss_stack[size]; \
+> +	void *_platform_stack_top = _bss_stack + sizeof(_bss_stack);
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+> +
+>  #endif /* _PPC_BOOT_OPS_H_ */
 
-	Mariusz Kozlowski
+Statically initializing _platform_stack_top (or any variable) won't
+work when you download/run the zImage at a location different than
+where its linked at.  Yes, I know the image is "relocatable" but that
+doesn't work for addresses put into variables/structs at link time
+like this one.  That type of assignment has to be done at runtime.
+
+What happens is the linker puts 0x0040_1234, say, into
+_platform_stack_top but when you download the image to 0x0080_0000
+it still has a value of 0x0040_1234 even though its running at
+0x00800_0000+.
+
+I think there's at least one more biting me in either yours
+or Scott's patches that I'm looking for now.
+
+Mark
