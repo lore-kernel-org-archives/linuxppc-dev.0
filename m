@@ -1,20 +1,22 @@
-Return-Path: <Leonid@a-k-a.net>
-Received: from mis011-2.exch011.intermedia.net
-	(mis011-2.exch011.intermedia.net [64.78.21.129])
-	by ozlabs.org (Postfix) with ESMTP id A75DDDDD0B
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 00BE1DDD04
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 10:50:17 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: u-boot+linux for ML403 board.
-Date: Thu, 15 Mar 2007 16:50:15 -0700
-Message-ID: <406A31B117F2734987636D6CCC93EE3C0129DDD5@ehost011-3.exch011.intermedia.net>
+	Fri, 16 Mar 2007 12:14:59 +1100 (EST)
 In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A19B@MERCURY.inside.istor.com>
-References: <7691A67C-C3D9-4882-9BCC-E3AA617AD11E@kernel.crashing.org>
-	<9F3F0A752CAEBE4FA7E906CC2FBFF57C06A19B@MERCURY.inside.istor.com>
-From: "Leonid" <Leonid@a-k-a.net>
-To: <linuxppc-embedded@ozlabs.org>
+References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A19B@MERCURY.inside.istor.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <653893AD-CB60-4123-B4FC-FB9B886BD895@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: Exception in kernel mode
+Date: Thu, 15 Mar 2007 18:44:14 -0500
+To: Charles Krinke <ckrinke@istor.com>
+Cc: Chris Carlson <ccarlson@istor.com>, Kevin Smith <ksmith@istor.com>,
+	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,52 +27,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi:
 
-Does anybody use u-boot+linux on ML403 board? If yes, can somebody give
-me kernel or kernel patch to any open source kernel tree (DENX or
-kernel.org).
+On Mar 15, 2007, at 4:17 PM, Charles Krinke wrote:
 
-I couldn't prepare uImage which is working with u-boot on ML403 board -
-it hangs forever:
+> I ran a couple of more tests and the system did not Oops in the
+> timer_interupt except for the first test this morning. The last two
+> times, the NIP was
+>
+> Oops: Exception in kernel mode, sig: 4 [#1]
+> PREEMPT
+> NIP: C002CE68 LR: C002CEC8 CTR: 00003B25
+> REGS: c3119a00 TRAP: 0700   Not tainted  (2.6.17.11)
+> MSR: 00081032 <ME,IR,DR>  CR: 88022484  XER: 00000000
+> TASK = c3ecd870[920] 'tar' THREAD: c3118000
+>
+> And
+>
+> Oops: Exception in kernel mode, sig: 4 [#1]
+> PREEMPT
+> NIP: C00DEE18 LR: C00DEDD8 CTR: 00000000
+> REGS: c299dbc0 TRAP: 0700   Not tainted  (2.6.17.11)
+> MSR: 00081032 <ME,IR,DR>  CR: 84022488  XER: 20000000
+> TASK = c3e2b7d0[925] 'tar' THREAD: c299c000
+>
+> For comparision, this is the original one from this morning
+>
+> Oops: Exception in kernel mode, sig: 4 [#1]
+> PREEMPT
+> NIP: 00000900 LR: C00E579C CTR: 00003A55
+> REGS: c37f3b00 TRAP: 0700   Not tainted  (2.6.17.11)
+> MSR: 00081000 <ME>  CR: 24022484  XER: 00000000
+> TASK = c3eaf810[940] 'tar' THREAD: c37f2000
+>
+> I have to conclude this is not necessarily a timer_interrupt problem.
+> Also, commenting out the innards of the timer_interrupt causes the
+> kernel to hang in its boot right after the message
+>
+> Memory: xxxK available
+>
+> So a properly functioning timer_interrupt is essential to the the  
+> kernel
+> booting.
+>
+> But, ... At this point, I really don't know which way to jump.
 
-TFTP from server 192.168.0.141; our IP address is 192.168.0.203
-Filename 'LM200/rel/1.0.1d-403/uImage'.
-Load address: 0x400000
-Loading: T
-#################################################################
-=20
-#################################################################
-         #######################################
-done
-Bytes transferred =3D 861911 (d26d7 hex)
-## Booting image at 00400000 ...
-   Image Name:   Linux-2.6.19.2
-   Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-   Data Size:    861847 Bytes =3D 841.6 kB
-   Load Address: 00000000
-   Entry Point:  00000000
-   Verifying Checksum ... OK
-   Uncompressing Kernel Image ... OK
-## Current stack ends at 0x03E676F0 =3D> set upper limit to 0x00800000
-Board Info pointer (kbd) at 007ffe80 ## cmdline at 0x007FFF00 ...
-0x007FFFF8
-memstart    =3D 0x00000000
-memsize     =3D 0x04000000
-flashstart  =3D 0x28000000
-flashsize   =3D 0x00800000
-flashoffset =3D 0x00000000
-sramstart   =3D 0x00000000
-sramsize    =3D 0x00000000
-bootflags   =3D 0x00000000
-procfreq    =3D    300 MHz
-plb_busfreq =3D    100 MHz
-ethaddr     =3D 00:01:02:CB:CB:71
-IP addr     =3D 192.168.0.203
-baudrate    =3D 115200 bps
-No initrd
-## Transferring control to Linux (at address 00000000) ..
+It this a system you are just bringing up or one that's been running  
+for a while.  It really seems like memory corruption of some form.   
+I'd suggest checking memory controller settings.
 
-Thanks,
+Also, what happens if you disassemble the kernel image and look at  
+the addresses pointed to by NIP:
+C00DEE18 & C002CE68.
 
-Leonid.
+- k
