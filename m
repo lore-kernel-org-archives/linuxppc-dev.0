@@ -1,23 +1,31 @@
-Return-Path: <viro@ftp.linux.org.uk>
-Received: from ZenIV.linux.org.uk (zeniv.linux.org.uk [195.92.253.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9A0F3DDDF4
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 19:46:52 +1100 (EST)
-Date: Thu, 15 Mar 2007 08:46:45 +0000
-From: Al Viro <viro@ftp.linux.org.uk>
-To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-Subject: Re: [PATCH 10/13] BLK_DEV_IDE_CELLEB dependency fix
-Message-ID: <20070315084645.GR4095@ftp.linux.org.uk>
-References: <E1HRPb0-0003Eh-OG@ZenIV.linux.org.uk>
-	<200703150523.l2F5NelE001987@toshiba.co.jp>
-	<20070315053607.GQ4095@ftp.linux.org.uk>
-	<200703150608.l2F68JY2026403@toshiba.co.jp>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200703150608.l2F68JY2026403@toshiba.co.jp>
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 14DE7DDE08
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 20:53:35 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l2F9rV9I012864
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 02:53:32 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l2F9rUHt018575
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 04:53:31 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH] Add irq host and hwirq pair fields to outputwhenshowing
+	interrupts.
+Date: Thu, 15 Mar 2007 17:53:27 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C1320F5@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1173793926.24454.74.camel@localhost.localdomain>
+References: <1173755968459-git-send-email-wei.zhang@freescale.com>
+	<1173770092.24454.69.camel@localhost.localdomain>
+	<46B96294322F7D458F9648B60E15112C131E7F@zch01exm26.fsl.freescale.net>
+	<1173793926.24454.74.camel@localhost.localdomain>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	Wang Haiying-r54964 <Haiying.Wang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,49 +35,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 15, 2007 at 03:10:20PM +0900, Akira Iguchi wrote:
-> Al wrote:
-> >
-> >Eh...  You still need dependency on IDE=y; otherwise you'll get configs
-> >with IDE=m, BLK_DEV_IDE_CELLEB=y and those won't link.  BLK_DEV_IDEDMA_PCI
-> >is selectable just fine with IDE=m.
-> >
-> >It's the same problem as with ps3 fb.
-> >
-> 
-> I'm sorry I missed this case.
-> Using some configurations, I found BLK_DEV_IDE=y was better.
-> (I failed to link when IDE=y and BLK_DEV_IDE=m.)
+> > > Now, regarding the patch itself, printing the hw irq is not=20
+> > > that useful
+> > > without some indication of which host it belongs to. Best=20
+> is to add a
+> > > name() or something like that to the host ops.
+> > >=20
+> >=20
+> > Sure, can I use the PIC controller node full name from=20
+> of_tree as the
+> > host name?
+>=20
+> There is no 1:1 relationship between an OF node and an irq=20
+> host. (There
+> is -most- of the time but I left the irq core on purpose more=20
+> flexible,
+> hence the match() method. On some setups it makes sense to=20
+> have multiple
+> HW PICs share a single domain number (for example on cell).
+>=20
+> Thus I'd rather have a way for the host to give you that=20
+> name, which in
+> turn can be the OF path if there is such a thing, or something else...
+>=20
+> Best might be 4 columns:
+>=20
+> <virq> <hwirq> <pic name> <host name>
+>=20
+> (PIC name is the same as in /proc/interrupts).
+> =20
+> > Do you prefer debugfs instead of /proc/interrupts?
+>=20
+> Yes, at least for now. Maybe if we can convince ourselves that nothing
+> significant would break of changing /proc/interrupts, then we can add
+> stuffs to it, but I'd rather avoid.
+>=20
 
-Umm...  Point taken.  After looking at the entire thing... well.
+Hi, Ben,=20
 
-a) BLK_DEV_IDE_PMAC has bogus dependency on IDE=y.  If anything, that
-should've been BLK_DEV_IDE=y; however, it *does* build with ide modular -
-it doesn't generate a separate module and its initialization is called
-explicitly from ide one.  AFAICS, we can simply drop that dependency.
+How about set the host name when calling irq_alloc_host?
+In the mpic, the host name can be the mpic->name, is it ok?
 
-b) BLK_DEV_IDE_PMAC does *not* build without BLK_DEV_IDEDMA_PMAC.  Quoting
-benh, "I don't see any reason to keep that dma thingy optional anyway".
-
-c) BLK_DEV_MPC8xx_IDE depends on BLK_DEV_IDE=y *and* IDE=y.  The latter is
-obviously redundant.  The former...  No idea, 8xx is currently b0rken in
-ARCH=powerpc and I can't be arsed to wade through arch/ppc bitrot.  As it
-is, driver definitely wants ARCH=ppc stuff (__res, for one thing).
-
-Now, BLK_DEV_IDE_CELLEB looks interesting.  The nature of breakage is not
-the same as usual (non-modular driver depends on stuff that might be built
-modular); what's going on here is funnier.  If you get ide-core modular,
-you'll have BLK_DEV_IDE_CELLEB code *linked* *into* ide-core.ko.  Unlike
-the rest of its ilk, however, it doesn't have its init called directly from
-ide init.  It uses module_init(), which happens to work when it goes into
-the kernel image (ide-core.o has several initcalls, not a problem), but breaks
-when it goes into a modular ide-core.ko; there multiple module_init() are
-fatal.
-
-So AFAICS the minimal fix for that sucker is dependency on BLK_DEV_IDE=y;
-however, I really wonder if
-	* it needs to be linked into ide-core (as opposed to being a normal
-module of its own)
-	* alternatively, its init should be called explicitly.
-
-Comments?
+Thanks!
+Best Regards,
+Zhang Wei
