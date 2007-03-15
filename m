@@ -1,36 +1,16 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de
-	[62.146.248.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A495FDDD0D
+Return-Path: <sprasad@bivio.net>
+Received: from corpexc01.corp.networkrobots.com (nofear-snat.bivio.net
+	[216.142.75.231]) by ozlabs.org (Postfix) with ESMTP id 7B32DDDDF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Mar 2007 15:27:18 +1100 (EST)
-Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
-	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2F4R6bG045104
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Mar 2007 05:27:11 +0100 (CET)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1HRhYQ-000N0r-Bn
-	for linuxppc-embedded@ozlabs.org; Thu, 15 Mar 2007 05:27:06 +0100
-Date: Thu, 15 Mar 2007 05:27:06 +0100
-From: Matthias Fechner <idefix@fechner.net>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Problem in compiling a kernel module
-Message-ID: <20070315042705.GA82877@server.idefix.lan>
-References: <20070313043050.GB82243@server.idefix.lan>
-	<513703.69187.qm@web302.biz.mail.mud.yahoo.com>
-	<20070314043305.GB27011@server.idefix.lan>
-	<20070314065411.GD14658@moe.telargo.com>
+	Thu, 15 Mar 2007 17:05:46 +1100 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070314065411.GD14658@moe.telargo.com>
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C766C6.500585AA"
+Subject: RFI instruction not working as expected...
+Date: Wed, 14 Mar 2007 22:53:53 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D746E3A6@corpexc01.corp.networkrobots.com>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -41,31 +21,281 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Domen,
+This is a multi-part message in MIME format.
 
-* Domen Puncer <domen.puncer@telargo.com> [14-03-07 07:54]:
-> __initdata
-> 
-> > 
-> > void max6633_cleanup(void)
-> > {
-> >    int res;
-> >    if(max6633_initialized==1)
-> 
-> But you access it from non-init code.
+------_=_NextPart_001_01C766C6.500585AA
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
 
-ah ok, I rechecked the docu in the kernel now again and found a small
-line that mentioned that. I have easily written the code from the docu.
-But now it will be linked fine.
+Hi,
 
-Thx a lot, now a lot of thinks got clearer and I understood some steps.
+=20
 
-Best regards,
-Matthias
+I am trying to boot my 8641D based PowerPC board. I am having trouble
+booting it.
 
--- 
+=20
 
-"Programming today is a race between software engineers striving to
-build bigger and better idiot-proof programs, and the universe trying to
-produce bigger and better idiots. So far, the universe is winning." --
-Rich Cook
+Following code snippet is from head_32.S.....
+
+=20
+
+        lis     r4,2f@h
+
+        ori     r4,r4,2f@l
+
+        tophys(r4,r4)
+
+        li      r3,MSR_KERNEL & ~(MSR_IR|MSR_DR)
+
+        FIX_SRR1(r3,r5)
+
+        mtspr   SPRN_SRR0,r4
+
+        mtspr   SPRN_SRR1,r3
+
+        SYNC
+
+        RFI
+
+/* Load up the kernel context */
+
+2:    bl      load_up_mmu
+
+=20
+
+=20
+
+My code successfully reaches up to the RFI instruction, but never to "2:
+bl load_up_mmu". I am not using any debugger (used an LED write to
+address to figure it out) in this situation.
+
+=20
+
+Any suggestions on why my execution sequence never reaches the "2: "?
+
+=20
+
+Appreciate any help.
+
+=20
+
+Thanks
+
+Siva
+
+=20
+
+
+------_=_NextPart_001_01C766C6.500585AA
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal;
+	font-family:Arial;
+	color:windowtext;}
+span.EmailStyle18
+	{mso-style-type:personal-reply;
+	font-family:Arial;
+	color:navy;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am trying to boot my 8641D based PowerPC board. I =
+am
+having trouble booting it.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Following code snippet is from <i><span =
+style=3D'font-style:
+italic'>head_32.S</span></i>&#8230;..<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+lis&nbsp;&nbsp;&nbsp;&nbsp; r4,2f@h<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+ori&nbsp;&nbsp;&nbsp;&nbsp; =
+r4,r4,2f@l<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+tophys(r4,r4)<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+li&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; r3,MSR_KERNEL &amp; =
+~(MSR_IR|MSR_DR)<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+FIX_SRR1(r3,r5)<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+mtspr&nbsp;&nbsp; SPRN_SRR0,r4<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+mtspr&nbsp;&nbsp; SPRN_SRR1,r3<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+SYNC<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>&nbsp;&nbsp;&nbsp;&=
+nbsp;&nbsp;&nbsp;&nbsp;
+RFI<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>/* Load up the =
+kernel
+context */<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><b><i><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial;font-weight:bold;font-style:italic'>2:&nbsp;&nbsp;&nbsp=
+;
+bl&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; =
+load_up_mmu<o:p></o:p></span></font></i></b></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>My code successfully reaches up to the RFI =
+instruction, but
+never to &#8220;<b><i><span =
+style=3D'font-weight:bold;font-style:italic'>2: bl
+load_up_mmu</span></i></b>&#8221;. I am not using any debugger (used an =
+LED
+write to address to figure it out) in this =
+situation.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Any suggestions on why my execution sequence never =
+reaches
+the &#8220;<b><i><span =
+style=3D'font-weight:bold;font-style:italic'>2:</span></i></b>
+&#8220;?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
+style=3D'font-size:
+10.0pt;font-family:Arial;color:navy'>A</span></font><font size=3D2 =
+face=3DArial><span
+style=3D'font-size:10.0pt;font-family:Arial'>ppreciate any =
+help.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Siva<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------_=_NextPart_001_01C766C6.500585AA--
