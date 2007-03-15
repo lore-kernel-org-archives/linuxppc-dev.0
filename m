@@ -1,12 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 15 Mar 2007 15:29:04 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Don't pass the stack pointer to zImage's start() function
-Message-ID: <20070315042904.GE14061@localhost.localdomain>
-MIME-Version: 1.0
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id E5D51DDDE7
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 15:35:46 +1100 (EST)
+Date: Thu, 15 Mar 2007 15:35:46 +1100
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: Re: Don't pass the stack pointer to zImage's start() function
+Message-ID: <20070315043546.GE12768@bakeyournoodle.com>
+References: <20070315042904.GE14061@localhost.localdomain>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070315042904.GE14061@localhost.localdomain>
+From: tony@bakeyournoodle.com (Tony Breeds)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,65 +20,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, the zImage entry code passes a copy of the stack pointer
-to the start() function.  There's no real reason for this; the only
-thing start() does with it is print it out.  It appears to be a
-leftover debugging hack, so, this patch removes it.
+On Thu, Mar 15, 2007 at 03:29:04PM +1100, David Gibson wrote:
+> At present, the zImage entry code passes a copy of the stack pointer
+> to the start() function.  There's no real reason for this; the only
+> thing start() does with it is print it out.  It appears to be a
+> leftover debugging hack, so, this patch removes it.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
+<snip>
 
-As requested, a cleanup for this wart.  Please apply.
+> --- working-2.6.orig/arch/powerpc/boot/main.c	2007-03-15 14:03:09.000000000 +1100
+> +++ working-2.6/arch/powerpc/boot/main.c	2007-03-15 14:07:05.000000000 +1100
+> @@ -256,7 +256,7 @@ struct dt_ops dt_ops;
+>  struct console_ops console_ops;
+>  struct loader_info loader_info;
+>  
+> -void start(void *sp)
+> +void start(void)
+>  {
+>  	struct addr_range vmlinux, initrd;
+>  	kernel_entry_t kentry;
+> @@ -268,8 +268,7 @@ void start(void *sp)
+>  	if (platform_ops.fixups)
+>  		platform_ops.fixups();
+>  
+> -	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r",
+> -	       _start, sp);
+> +	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r", _start);
 
-Index: working-2.6/arch/powerpc/boot/crt0.S
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/crt0.S	2007-03-15 14:04:14.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/crt0.S	2007-03-15 14:04:23.000000000 +1100
-@@ -86,5 +86,4 @@ _zimage_start:
- 	bl	platform_init
- 
- 	/* Call start */
--	mr	r3,r1
- 	b	start
-Index: working-2.6/arch/powerpc/boot/main.c
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/main.c	2007-03-15 14:03:09.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/main.c	2007-03-15 14:07:05.000000000 +1100
-@@ -256,7 +256,7 @@ struct dt_ops dt_ops;
- struct console_ops console_ops;
- struct loader_info loader_info;
- 
--void start(void *sp)
-+void start(void)
- {
- 	struct addr_range vmlinux, initrd;
- 	kernel_entry_t kentry;
-@@ -268,8 +268,7 @@ void start(void *sp)
- 	if (platform_ops.fixups)
- 		platform_ops.fixups();
- 
--	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r",
--	       _start, sp);
-+	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r", _start);
- 
- 	vmlinux = prep_kernel();
- 	initrd = prep_initrd(vmlinux, loader_info.initrd_addr,
-Index: working-2.6/arch/powerpc/boot/ops.h
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/ops.h	2007-03-15 14:07:13.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/ops.h	2007-03-15 14:07:17.000000000 +1100
-@@ -66,7 +66,7 @@ struct loader_info {
- };
- extern struct loader_info loader_info;
- 
--void start(void *sp);
-+void start(void);
- int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
- int serial_console_init(void);
- int ns16550_console_init(void *devp, struct serial_console_data *scdp);
+Shouldn't that be:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
++	printf("\n\rzImage starting: loaded at 0x%p\n\r", _start);
+
+or similar?
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
