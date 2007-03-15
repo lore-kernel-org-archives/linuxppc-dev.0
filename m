@@ -1,15 +1,17 @@
 Return-Path: <domen.puncer@telargo.com>
-Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
-	by ozlabs.org (Postfix) with ESMTP id B1951DDD04
+Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
+	by ozlabs.org (Postfix) with ESMTP id 62810DDE0E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Mar 2007 21:40:02 +1100 (EST)
-Date: Thu, 15 Mar 2007 11:39:59 +0100
+	Thu, 15 Mar 2007 21:41:16 +1100 (EST)
+Date: Thu, 15 Mar 2007 11:41:13 +0100
 From: Domen Puncer <domen.puncer@telargo.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH 0/5 v2] MPC5200 and Lite5200b low power modes
-Message-ID: <20070315103959.GA22215@moe.telargo.com>
+Subject: [PATCH 1/5] mpc52xx suspend: UART
+Message-ID: <20070315104113.GB22215@moe.telargo.com>
+References: <20070315103959.GA22215@moe.telargo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070315103959.GA22215@moe.telargo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,28 +22,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
-
-Some fixes, improvements from last time:
-- saving/restoring of some registers inside sleep code
-  (so bestcomm and pic patches can be dropped, yay)
-- improvements in FEC code for deep-sleep
-- set up wakeup GPIO so Efika can wake too
-- patch against latest u-boot (doh)
+MPC52xx uart power management.
+Not sure how exactly this should be written, but this seems
+to work, and works around a few seconds delay in resume.
 
 
-Patches are based on latest mainline git tree + fec patches:
-Fec_MPC5200_eth_driver.patch
-Copy_bestcomm_support_files_into_arch_powerpc.patch
-Make_FEC_work_on_the_lite5200.patch
+Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 
-This patchset includes the following patches:
-- [PATCH 1/5] mpc52xx suspend: UART
-- [PATCH 2/5] mpc52xx suspend: FEC (ethernet)
-- [PATCH 3/5] mpc52xx suspend: USB
-- [PATCH 4/5] mpc52xx suspend: deep-sleep
-- [PATCH] icecube/lite5200b: wakeup from low-power support
-- [PATCH 5/5] lite5200b suspend: low-power mode
-
-
-	Domen
+Index: grant.git/drivers/serial/mpc52xx_uart.c
+===================================================================
+--- grant.git.orig/drivers/serial/mpc52xx_uart.c
++++ grant.git/drivers/serial/mpc52xx_uart.c
+@@ -418,6 +418,22 @@ mpc52xx_uart_verify_port(struct uart_por
+ 	return 0;
+ }
+ 
++/* just Reenable TX and RX */
++static void mpc52xx_uart_pm(struct uart_port *port, unsigned int state, unsigned int oldstate)
++{
++	struct mpc52xx_psc __iomem *psc = PSC(port);
++	unsigned long flags;
++
++	/* Get the lock */
++	spin_lock_irqsave(&port->lock, flags);
++
++	/* Reenable TX & RX */
++	out_8(&psc->command,MPC52xx_PSC_TX_ENABLE);
++	out_8(&psc->command,MPC52xx_PSC_RX_ENABLE);
++
++	/* We're all set, release the lock */
++	spin_unlock_irqrestore(&port->lock, flags);
++}
+ 
+ static struct uart_ops mpc52xx_uart_ops = {
+ 	.tx_empty	= mpc52xx_uart_tx_empty,
+@@ -432,8 +448,10 @@ static struct uart_ops mpc52xx_uart_ops 
+ 	.startup	= mpc52xx_uart_startup,
+ 	.shutdown	= mpc52xx_uart_shutdown,
+ 	.set_termios	= mpc52xx_uart_set_termios,
+-/*	.pm		= mpc52xx_uart_pm,		Not supported yet */
+-/*	.set_wake	= mpc52xx_uart_set_wake,	Not supported yet */
++
++	.pm		= mpc52xx_uart_pm,
++/*	.set_wake	= mpc52xx_uart_set_wake,*/
++
+ 	.type		= mpc52xx_uart_type,
+ 	.release_port	= mpc52xx_uart_release_port,
+ 	.request_port	= mpc52xx_uart_request_port,
