@@ -1,35 +1,23 @@
-Return-Path: <MBenedict@twacs.com>
-Received: from outbound4-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 87712DDEE2
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A1404DDDDB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 15 Mar 2007 11:03:27 +1100 (EST)
-Received: from outbound4-fra.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound4-fra-R.bigfish.com (Postfix) with ESMTP id 4EA4A8D8BCA
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 22:58:11 +0000 (UTC)
-Received: from mail50-fra-R.bigfish.com (unknown [10.4.252.3])
-	by outbound4-fra.bigfish.com (Postfix) with ESMTP id 3452D850065
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 22:58:11 +0000 (UTC)
-Received: from mail50-fra (localhost.localdomain [127.0.0.1])
-	by mail50-fra-R.bigfish.com (Postfix) with ESMTP id 27FEC82017B
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 22:58:11 +0000 (UTC)
-Received: from mail.twacs.com (unknown [68.89.149.4])
-	by mail50-fra.bigfish.com (Postfix) with ESMTP id B9BF2BF805F
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 14 Mar 2007 22:58:10 +0000 (UTC)
+	Thu, 15 Mar 2007 15:08:14 +1100 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1HRhG6-0003lh-I6
+	for linuxppc-embedded@ozlabs.org; Wed, 14 Mar 2007 21:08:10 -0700
+Message-ID: <9488285.post@talk.nabble.com>
+Date: Wed, 14 Mar 2007 21:08:10 -0700 (PDT)
+From: Nethra <nethra_gmit@yahoo.co.in>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: jffs2-No space left on device
+In-Reply-To: <20070314075047.78939352676@atlas.denx.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: FW: U-boot with flat device tree
-Date: Wed, 14 Mar 2007 17:57:54 -0500
-Message-ID: <CF7E46FCFF66AD478BB72724345289EC279540@twx-exch01.twacs.local>
-From: "Benedict, Michael" <MBenedict@twacs.com>
-To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+References: <9469217.post@talk.nabble.com>
+	<20070314075047.78939352676@atlas.denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -40,40 +28,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
- Sorry, I intended to reply to the list but accidently hit "reply"
 
------Original Message-----
-From: Benedict, Michael=20
-Sent: Wednesday, March 14, 2007 5:51 PM
-To: 'Kim Phillips'
-Subject: RE: U-boot with flat device tree
+After unlocking flash partion also i m getting same output.if i use different
+flash partition which does not have any readonly area then also i m getting
+same output.
 
-Yep, thanks
-
-If I repeat the above, but call bootm with only the kernel address, I
-get a full boot sequence on the console up to the point that the kernel
-bails because it is unable to mount the root filesystem.
-	Thank you,
-		Michael
-
------Original Message-----
-From: Kim Phillips [mailto:kim.phillips@freescale.com]
-Sent: Wednesday, March 14, 2007 5:47 PM
-To: Benedict, Michael
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: U-boot with flat device tree
-
-On Wed, 14 Mar 2007 16:42:49 -0500
-"Benedict, Michael" <MBenedict@twacs.com> wrote:
+Nethra
 
 
->    Uncompressing Kernel Image ... OK
->    Booting using flat device tree at 0x1000000
->=20
->=20
->=20
-> <stuck>
+In message <9469217.post@talk.nabble.com> you wrote:
+> 
+> Through nfs mounting of root file system.I m trying jffs2 mounting without
+> any image( with empty patition).. it is giving 100% of space is used.I m
+> getting same output with jffs2 image also.
+> what is the actual problem?
 
-are you setting console=3DttyS0,115200?
+The actual problem is that your don't read error messages.
 
-Kim
+> Erase at 0x002a0000 failed immediately: -EROFS. Is the sector locked?
+                                           ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Your file system / partition is read-only, probably because the flash
+sectors are locked.
+
+Try unlocking the flash partition before using it.
+
+Best regards,
+
+Wolfgang Denk
+
+
+
+
+-- 
+View this message in context: http://www.nabble.com/jffs2-No-space-left-on-device-tf3400453.html#a9488285
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
