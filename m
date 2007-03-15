@@ -1,25 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 4A903DDD08
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 13:14:47 +1100 (EST)
-Date: Wed, 14 Mar 2007 19:15:33 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "Mark A. Greer" <mgreer@mvista.com>, Scott Wood <scottwood@freescale.com>,
-	linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: Re: [PATCH 17/19] bootwrapper: compatibility layer for old U-Boots
-	(a.k.a. cuImage, cuboot)
-Message-ID: <20070315021533.GB9777@mag.az.mvista.com>
-References: <20070312204204.GQ28545@ld0162-tx32.am.freescale.net>
-	<20070314214805.GA9546@mag.az.mvista.com>
-	<45F86DC1.9010804@freescale.com>
-	<20070314232339.GA32287@mag.az.mvista.com>
-	<20070315000445.GE12573@localhost.localdomain>
-	<20070315015904.GB8406@mag.az.mvista.com>
-	<20070315020234.GB14061@localhost.localdomain>
-	<20070315020538.GC14061@localhost.localdomain>
+Return-Path: <gerald.vanbaren@comcast.net>
+Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [216.148.227.152])
+	by ozlabs.org (Postfix) with ESMTP id 42D8FDDD09
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 13:49:24 +1100 (EST)
+Message-ID: <45F8B432.9010702@comcast.net>
+Date: Wed, 14 Mar 2007 22:49:22 -0400
+From: Jerry Van Baren <gerald.vanbaren@comcast.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070315020538.GC14061@localhost.localdomain>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [dtc] Add support for flat device tree format version 17
+References: <20070313062240.GA22737@localhost.localdomain>	<45F863DF.5050709@freescale.com>	<45F864E8.40501@smiths-aerospace.com>
+	<45F86C25.1070301@freescale.com> <45F8A229.7040602@comcast.net>
+	<45F8A374.9090200@freescale.com>
+In-Reply-To: <45F8A374.9090200@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,17 +23,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 15, 2007 at 01:05:38PM +1100, David Gibson wrote:
-> On Thu, Mar 15, 2007 at 01:02:34PM +1100, David Gibson wrote:
-> > Err... won't the initramfs image go in the same place as the initrd
-> > image, not as part of the vmlinux.
+Timur Tabi wrote:
+> Jerry Van Baren wrote:
 > 
-> Although, speaking of that.  Long term, I think it would be a good
-> idea for the wrapper script to base the zImage's link address on the
-> size of the vmlinux.
+>> Actually, I believe that is how the existing code works: it opens the 
+>> original blob and copies it to a newly created dft.  It then augments 
+>> the new dft with a "chosen" node and optionally additional nodes 
+>> (bd_t, env variables) and passes the new dft blob to linux.  
+>> Theoretically, the existing code will read a v17 blob and create a new 
+>> v16 blob from it (without the additional v17 length field - the header 
+>> would be created, not copied).
+> 
+> I'll check out the code and see what it does, since I'm not really 
+> familiar with it.
+> 
+>>
+>> Trivia: the current code is kinda dumb about it: if the original blob 
+>> had a "chosen" node, the code *adds another* "chosen" node.
+> 
+> Yes, I have this bug on my to-do list to fix.
 
-That's an interesing idea.  I'm sure there will be sizes that will bring
-the load address into conflict with what the fw needs to do the actual
-download though.  Nothing is ever easy, is it? :)
+That is close to the top of my list.  My intent with the "fdt" command 
+is to have a subcommand that creates the "chosen" node.  This will 
+replace the auto-generation (with no opportunity to review or revise) 
+the "chosen" node as part of the "bootm" command.
 
-Mark
+Downside: "bootm" becomes more than one command.  So script it.
+Upside: MUCH cleaner, allows the user to review and revise the blob 
+before booting linux.
+
+These are my current thoughts for the "fdt" command:
+=> help fdt
+fdt addr   <addr>                  - Set the fdt location to <addr>
+fdt get    <node> <property>       - Get the value of <node> <property>
+fdt set    <node> <property> <val> - Set the value of <property> to <val>
+     (creates a new property if necessary)
+fdt mknode <node>                  - Create a new node <node>
+     (the path must exist except for the last node name)
+fdt rmnode <node>                  - Deletes the node <node>
+     (the last node name in the path)
+fdt print  <node> [<property>]     - Recursive print starting at <node>
+     (if <property> is specified, prints only that property)
+fdt chosen - Add/update the "chosen" branch to the tree
+Hints:
+  * "fdt print /" prints the whole tree.
+  * If the property you are setting/printing has a '#' character,
+      you MUST escape it with a \ character or quote it with " or
+      it will be ignored as a comment.
+  * If the value has spaces in it, you MUST escape the spaces with
+      \ characters or quote it with "
+Examples: fdt p /cpus "#address-cells"
+           fdt s /cpus "#address-cells" "[00 00 00 01]"
+
+I've actually implemented addr, set, and print (get is an alias for print).
+
+>> Back to libdft: with a v16 blob, libdft has to either modify in place 
+>> (no size change) or you have to create a new blob and copy the 
+>> original data over (like the existing code).  With the v17 blob, 
+>> libdft is able to expand and contract the contents of the blob (with 
+>> limitations, I'm sure).
+> 
+> I agree that it would be nice if U-Boot had a robust DTB parser, but I 
+> don't have the time to do that work.
+
+libfdt.
+
+David already did the work, I'm working on the integration (works but 
+needs some cleanup).
+
+gvb
