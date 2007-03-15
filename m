@@ -1,14 +1,28 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 15 Mar 2007 16:18:21 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: Re: Don't pass the stack pointer to zImage's start() function
-Message-ID: <20070315051821.GF14061@localhost.localdomain>
-References: <20070315042904.GE14061@localhost.localdomain>
-	<20070315043546.GE12768@bakeyournoodle.com>
+Return-Path: <akira2.iguchi@toshiba.co.jp>
+Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DC145DDDE6
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 16:23:46 +1100 (EST)
+Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
+	by inet-tsb5.toshiba.co.jp  with ESMTP id l2F5Ng5D002821
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 14:23:42 +0900 (JST)
+Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id l2F5Ngai025180
+	for linuxppc-dev@ozlabs.org; Thu, 15 Mar 2007 14:23:42 +0900 (JST)
+Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
+	by ovp1.toshiba.co.jp  with ESMTP id l2F5NfpY024882
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 14:23:41 +0900 (JST)
+Message-Id: <200703150523.l2F5Ne52001986@toshiba.co.jp>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070315043546.GE12768@bakeyournoodle.com>
+Date: Thu, 15 Mar 2007 14:25:40 +0900
+From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+To: Al Viro <viro@ftp.linux.org.uk>
+In-Reply-To: (Your message of "Wed, 14 Mar 2007 09:16:34 +0000")
+	<E1HRPb0-0003Eh-OG@ZenIV.linux.org.uk>
+References: <E1HRPb0-0003Eh-OG@ZenIV.linux.org.uk>
+Subject: Re: [PATCH 10/13] BLK_DEV_IDE_CELLEB dependency fix
+Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,47 +32,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 15, 2007 at 03:35:46PM +1100, Tony Breeds wrote:
-> On Thu, Mar 15, 2007 at 03:29:04PM +1100, David Gibson wrote:
-> > At present, the zImage entry code passes a copy of the stack pointer
-> > to the start() function.  There's no real reason for this; the only
-> > thing start() does with it is print it out.  It appears to be a
-> > leftover debugging hack, so, this patch removes it.
-> 
-> <snip>
-> 
-> > --- working-2.6.orig/arch/powerpc/boot/main.c	2007-03-15 14:03:09.000000000 +1100
-> > +++ working-2.6/arch/powerpc/boot/main.c	2007-03-15 14:07:05.000000000 +1100
-> > @@ -256,7 +256,7 @@ struct dt_ops dt_ops;
-> >  struct console_ops console_ops;
-> >  struct loader_info loader_info;
-> >  
-> > -void start(void *sp)
-> > +void start(void)
-> >  {
-> >  	struct addr_range vmlinux, initrd;
-> >  	kernel_entry_t kentry;
-> > @@ -268,8 +268,7 @@ void start(void *sp)
-> >  	if (platform_ops.fixups)
-> >  		platform_ops.fixups();
-> >  
-> > -	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r",
-> > -	       _start, sp);
-> > +	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r", _start);
-> 
-> Shouldn't that be:
-> 
-> +	printf("\n\rzImage starting: loaded at 0x%p\n\r", _start);
-> 
-> or similar?
+Al wrote:
+>
+>It's bool and it depends on IDE => should depend on IDE=y
+>
+>Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 
-Crap, yes, I suck.
+Move to "if BLK_DEV_IDEDMA_PCI" block because it depends on 
+BLK_DEV_IDEDMA_PCI.
 
-Fixed version coming, plus a patch to turn on gcc printf format
-warnings for the zImage.
+Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
+Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+---
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+diff -Nrpu -X linux-2.6.21-rc3/Documentation/dontdiff linux-2.6.21-rc3/drivers/ide/Kconfig linux-2.6.21-rc3.mod/drivers/ide/Kconfig
+--- linux-2.6.21-rc3/drivers/ide/Kconfig	2007-03-07 13:41:20.000000000 +0900
++++ linux-2.6.21-rc3.mod/drivers/ide/Kconfig	2007-03-15 22:47:14.000000000 +0900
+@@ -769,6 +769,14 @@ config BLK_DEV_TC86C001
+ 	help
+ 	This driver adds support for Toshiba TC86C001 GOKU-S chip.
+ 
++config BLK_DEV_IDE_CELLEB
++	bool "Toshiba's Cell Reference Set IDE support"
++	depends on PPC_CELLEB
++	help
++	  This driver provides support for the built-in IDE controller on
++	  Toshiba Cell Reference Board.
++	  If unsure, say Y.
++
+ endif
+ 
+ config BLK_DEV_IDE_PMAC
+@@ -800,14 +808,6 @@ config BLK_DEV_IDEDMA_PMAC
+ 	  to transfer data to and from memory.  Saying Y is safe and improves
+ 	  performance.
+ 
+-config BLK_DEV_IDE_CELLEB
+-	bool "Toshiba's Cell Reference Set IDE support"
+-	depends on PPC_CELLEB
+-	help
+-	  This driver provides support for the built-in IDE controller on
+-	  Toshiba Cell Reference Board.
+-	  If unsure, say Y.
+-
+ config BLK_DEV_IDE_SWARM
+ 	tristate "IDE for Sibyte evaluation boards"
+ 	depends on SIBYTE_SB1xxx_SOC
