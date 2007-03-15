@@ -1,20 +1,19 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A5EAEDDDE7
+	by ozlabs.org (Postfix) with ESMTP id D9DF5DDE0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 06:29:08 +1100 (EST)
-In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A199@MERCURY.inside.istor.com>
-References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A199@MERCURY.inside.istor.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <7691A67C-C3D9-4882-9BCC-E3AA617AD11E@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Exception in kernel mode
-Date: Thu, 15 Mar 2007 14:28:11 -0500
-To: Charles Krinke <ckrinke@istor.com>
+	Fri, 16 Mar 2007 06:56:21 +1100 (EST)
+Subject: RE: Exception in kernel mode
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Date: Thu, 15 Mar 2007 12:56:19 -0700
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A19A@MERCURY.inside.istor.com>
+In-Reply-To: <7691A67C-C3D9-4882-9BCC-E3AA617AD11E@kernel.crashing.org>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
 Cc: Chris Carlson <ccarlson@istor.com>, Kevin Smith <ksmith@istor.com>,
 	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -28,46 +27,61 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 15, 2007, at 1:55 PM, Charles Krinke wrote:
 
->
->> mtspr SPRN_SPRG0, r10
->> mtspr SPRN_SPRG1, r11
->
->> Which is, I believe, moving r10 to SPRG0 and r11 to SPRG1.
->
->> So, how do we know that r10 and r11 are always valid in an interrupt
->> context? Are we setting aside r10 and r11 somewhere else in
->
->     That doesn't matter to kernel at all -- they are just *saved* in
-> SPRG regs
-> to avoid being trashed by the exception handler.
->
-> WBR, Sergei
->
-> Well, unfortunately, now I am more confused.
->
-> The original Oops was at an NIP of 00000900, which I think means it
-> faulted on the first mtspr from r10. I suppose one could argue that
-> pipeline issues might make it fault on the second one and appear to be
-> the first.
->
-> But, maybe I am confusing myself here. Would I be correct in assuming
-> that some further instruction in the ISR at 0x900 is the culprit?
->
-> Could there possibly be some user versus supervisor mode thing  
-> going on?
->
-> My key assumption is that the timer_tick (aka Decrementer) has worked
-> for many hundreds of thousands of interrupts and only when running  
-> some
-> particular user application, like tar is there a side effect from  
-> either
-> a mode or some register value, race condition, or other.
 
-Can you post the oops that you are seeing, what you need to find out  
-is what instruction image that is causing the illegal instruction  
-exception.  Once you have that it will be easier to figure out what's  
+Can you post the oops that you are seeing, what you need to find out =20
+is what instruction image that is causing the illegal instruction =20
+exception.  Once you have that it will be easier to figure out what's =20
 going on.
 
 - k
+
+Dear Kumar:
+
+Here is the Oops, and thank you for looking at this. Things have come to
+a halt here until I can figure this one out as about 6 engineers are
+going "We cannot use an unreliable 2.6 kernel, fix it immediately, Mr.
+Kernel Guy".
+
+ Basically, what was happening was a 'tar -xvzf' was underway whose
+source was an nfs mount (root =3D /dev/nfs) and whose destination was
+formatted NAND flash (flash_eraseall -q -j /dev/mtd3, then mounted with
+'mount -t jffs2 /dev/mtdblockx /mnt/mtdblockx').
+
+Since I sent the last exchange, I see in the kernel source something
+about ALTIVEC??. It isnt possible that ALTIVEC needs to be defined for
+the 8241 is it?
+
+Charles
+
+rootfs/sbin/fsck.ext3
+Oops: Exception in kernel mode, sig: 4 [#1]
+PREEMPT
+NIP: 00000900 LR: C00E579C CTR: 00003A55
+REGS: c37f3b00 TRAP: 0700   Not tainted  (2.6.17.11)
+MSR: 00081000 <ME>  CR: 24022484  XER: 00000000
+TASK =3D c3eaf810[940] 'tar' THREAD: c37f2000
+GPR00: 00003FFF C37F3BB0 C3EAF810 C40216BC 00000000 0000FFFE C4022D64
+00008000
+GPR08: C4000A74 C40316BC C4000980 C40216BC C4000000 10045C90 C37F3CE0
+C01D3B68
+GPR16: C3ECC5A0 C37F3C50 00002200 00000000 C2A9E000 C2000000 00000000
+00001000
+GPR24: 00000000 00000000 C01D0000 C2000000 C37F3C58 00000002 00000000
+C4000000
+Call Trace:
+[C37F3BB0] [C00E5764]  (unreliable)
+[C37F3BD0] [C00C93C4]
+[C37F3BF0] [C00B988C]
+[C37F3C40] [C00C0644]
+[C37F3C90] [C00BBA94]
+[C37F3CD0] [C003B8A8]
+[C37F3D90] [C003C270]
+[C37F3E20] [C003C320]
+[C37F3EC0] [C003C470]
+[C37F3EF0] [C0055F80]
+[C37F3F10] [C00560C0]
+[C37F3F40] [C00041A0]
+Instruction dump:
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
+XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX XXXXXXXX
