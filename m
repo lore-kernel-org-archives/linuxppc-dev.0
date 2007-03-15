@@ -1,18 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id E733FDDE04
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 00:05:02 +1100 (EST)
-Message-ID: <45F94472.6010803@freescale.com>
-Date: Thu, 15 Mar 2007 08:04:50 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id F2216DDD0B
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 01:30:55 +1100 (EST)
+Message-ID: <45F9588C.7020108@ru.mvista.com>
+Date: Thu, 15 Mar 2007 17:30:36 +0300
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-To: Li Yang-r58472 <LeoLi@freescale.com>
-Subject: Re: [PATCH][POWERPC] QE: Make QUICC Engine support a
-	configurableoption
-References: <989B956029373F45A0B8AF02970818902DB124@zch01exm26.fsl.freescale.net>
-In-Reply-To: <989B956029373F45A0B8AF02970818902DB124@zch01exm26.fsl.freescale.net>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>
+To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
+Subject: Re: [PATCH] BLK_DEV_IDE_CELLEB dependency fix
+References: <200703150628.l2F6SPa3028035@toshiba.co.jp>
+In-Reply-To: <200703150628.l2F6SPa3028035@toshiba.co.jp>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
+	linux-kernel@vger.kernel.org, bzolnier@gmail.com,
+	Al Viro <viro@ftp.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +23,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Li Yang-r58472 wrote:
+Hello.
 
-> QE is so generic that can be used across different sub-archs maybe even
-> archs.  Why doesn't it deserve a place out of "platform support" menu?
-> An option in the top menu is another choice.
+Akira Iguchi wrote:
 
-Yes, but for now, the QE is marketed as an option for a few SOCs.  That 
-means that when you select the SOC, you expect to see configuration 
-options for that SOC.
+> It's bool and it depends on BLK_DEV_IDE
+>  => should depend on BLK_DEV_IDE=y
 
-> On another thought, it is very unlikely that user chooses a more
-> expensive chip with QE and won't use it.  So make it non-configurable
-> and be selected automatically is not a bad idea for me.
+    Hm, why I'm seeing module_init() in the driver? :-)
 
-This was addressed earlier.  On some boards, the QE is not wired to 
-anything, so there's no point in enabling it.  Disabling it will prevent 
-any unused QE code from becoming part of the kernel.
+> And move it to "if BLK_DEV_IDEDMA_PCI" block because it depends on 
+> BLK_DEV_IDEDMA_PCI.
+
+    IMHO, that driver shouldn't be in drivers/ide/ppc/ then...  Why it got 
+there (the same question about PowerMac driver)?
+
+> diff -Nrpu -X linux-2.6.21-rc3/Documentation/dontdiff linux-2.6.21-rc3/drivers/ide/Kconfig linux-2.6.21-rc3.mod/drivers/ide/Kconfig
+> --- linux-2.6.21-rc3/drivers/ide/Kconfig	2007-03-07 13:41:20.000000000 +0900
+> +++ linux-2.6.21-rc3.mod/drivers/ide/Kconfig	2007-03-15 23:49:33.000000000 +0900
+> @@ -769,6 +769,14 @@ config BLK_DEV_TC86C001
+>  	help
+>  	This driver adds support for Toshiba TC86C001 GOKU-S chip.
+>  
+> +config BLK_DEV_IDE_CELLEB
+> +	bool "Toshiba's Cell Reference Set IDE support"
+> +	depends on PPC_CELLEB && BLK_DEV_IDE=y
+> +	help
+> +	  This driver provides support for the built-in IDE controller on
+> +	  Toshiba Cell Reference Board.
+> +	  If unsure, say Y.
+> +
+>  endif
+>  
+>  config BLK_DEV_IDE_PMAC
+> @@ -800,14 +808,6 @@ config BLK_DEV_IDEDMA_PMAC
+>  	  to transfer data to and from memory.  Saying Y is safe and improves
+>  	  performance.
+>  
+> -config BLK_DEV_IDE_CELLEB
+> -	bool "Toshiba's Cell Reference Set IDE support"
+> -	depends on PPC_CELLEB
+> -	help
+> -	  This driver provides support for the built-in IDE controller on
+> -	  Toshiba Cell Reference Board.
+> -	  If unsure, say Y.
+> -
+>  config BLK_DEV_IDE_SWARM
+>  	tristate "IDE for Sibyte evaluation boards"
+>  	depends on SIBYTE_SB1xxx_SOC
+
+MBR, Sergei
