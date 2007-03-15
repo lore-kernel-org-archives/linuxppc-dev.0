@@ -1,30 +1,27 @@
-Return-Path: <akira2.iguchi@toshiba.co.jp>
-Received: from imx12.toshiba.co.jp (imx12.toshiba.co.jp [61.202.160.132])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E50B7DDDF8
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 17:08:25 +1100 (EST)
-Received: from wall11.toshiba.co.jp (wall11 [133.199.90.149])
-	by imx12.toshiba.co.jp  with ESMTP id l2F68MCc010300
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 15:08:22 +0900 (JST)
-Received: (from root@localhost) by wall11.toshiba.co.jp  id l2F68MNa013500
-	for linuxppc-dev@ozlabs.org; Thu, 15 Mar 2007 15:08:22 +0900 (JST)
-Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp11.toshiba.co.jp  with ESMTP id l2F68LsI011054
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 15:08:21 +0900 (JST)
-Message-Id: <200703150608.l2F68J1M018874@toshiba.co.jp>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id DD38EDDD09
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 17:27:47 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l2F6RhQP019739
+	for <linuxppc-dev@ozlabs.org>; Wed, 14 Mar 2007 23:27:43 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2F6RfQM001682
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 01:27:42 -0500 (CDT)
 MIME-Version: 1.0
-Date: Thu, 15 Mar 2007 15:10:20 +0900
-From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-To: Al Viro <viro@ftp.linux.org.uk>
-In-Reply-To: (Your message of "Thu, 15 Mar 2007 05:36:07 +0000")
-	<20070315053607.GQ4095@ftp.linux.org.uk>
-References: <E1HRPb0-0003Eh-OG@ZenIV.linux.org.uk>
-	<200703150523.l2F5NelE001987@toshiba.co.jp>
-	<20070315053607.GQ4095@ftp.linux.org.uk>
-Subject: Re: [PATCH 10/13] BLK_DEV_IDE_CELLEB dependency fix
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: [PATCH][POWERPC] QE: Make QUICC Engine support a
+	configurableoption
+Date: Thu, 15 Mar 2007 14:29:09 +0800
+Message-ID: <989B956029373F45A0B8AF02970818902DB124@zch01exm26.fsl.freescale.net>
+In-Reply-To: <656DBF73-C99B-4C86-9C86-763744FB4C5C@kernel.crashing.org>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>,
+	Tabi Timur-B04825 <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,19 +31,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Al wrote:
->
->Eh...  You still need dependency on IDE=y; otherwise you'll get configs
->with IDE=m, BLK_DEV_IDE_CELLEB=y and those won't link.  BLK_DEV_IDEDMA_PCI
->is selectable just fine with IDE=m.
->
->It's the same problem as with ps3 fb.
->
+> >>>>>>  arch/powerpc/Kconfig                |    8 --------
+> >>>>>>  arch/powerpc/platforms/83xx/Kconfig |   12 ++++++++++--
+> >>>>>>  2 files changed, 10 insertions(+), 10 deletions(-)
+> >>>>>
+> >>>>> What about 85xx QE support?
+> >>>>
+> >>>> Kumar and I talked about it.  85xx support will be added when QE
+> >>>> works
+> >>> on 85xx.
+> >>>> However,
+> >>>> the patch still needs changes.  To allow each CPU family to have
+> > its
+> >>> own QE option,
+> >>>> we'll
+> >>>> need to define something like QUICC_ENGINE_83xx and
+> >>>> QUICC_ENGINE_85xx,
+> >>> and then
+> >>>> have
+> >>>> something like this:
+> >>>>
+> >>>> config QUICC_ENGINE
+> >>>> 	bool
+> >>>> 	default y if QUICC_ENGINE_83xx || QUICC_ENGINE_85xx
+> >>>
+> >>> I don't think we need these new options.  If there are differences
+> >>> between the two SOC versions, presumably not too many, we can
+> > address
+> >>> them in device tree.  It's better to leave the QUICC_ENGINE option
+> > at
+> >>> arch/powerpc/Kconfig level, IMHO.
+> >>
+> >>
+> >> The issue isn't dealing with differences between 83xx/85xx.  Its
+> >> allowing the choice for only those two subarchs.
+> >
+> > If you want to make it configurable, I suggest we put it under the
+> > "Processor Support" menu in arch/powerpc/Kconfig like Altivec and
+SPE.
+> > It is a chip feature rather than board.  And we won't need the two
+> > redundant options then.
+>=20
+> Both of those are features of the Core processor, not the platform.
+>=20
+> I'd prefer this be a platform option.  (I'm not a fan of the
+> duplication, but its minor)
 
-I'm sorry I missed this case.
-Using some configurations, I found BLK_DEV_IDE=y was better.
-(I failed to link when IDE=y and BLK_DEV_IDE=m.)
+Well, that depends on how we define processor.  Is co-processor also a
+processor? =20
 
+QE is so generic that can be used across different sub-archs maybe even
+archs.  Why doesn't it deserve a place out of "platform support" menu?
+An option in the top menu is another choice.
 
-Best regards,
-Akira Iguchi
+On another thought, it is very unlikely that user chooses a more
+expensive chip with QE and won't use it.  So make it non-configurable
+and be selected automatically is not a bad idea for me.
+
+- Leo
