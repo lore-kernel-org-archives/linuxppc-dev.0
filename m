@@ -1,21 +1,14 @@
-Return-Path: <glikely@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id 06518DDE03
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 10:45:17 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so41920nfc
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 16:45:14 -0700 (PDT)
-Message-ID: <528646bc0703151645xb45d70cg8e96d437540ff6@mail.gmail.com>
-Date: Thu, 15 Mar 2007 17:45:14 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Subject: Re: RFC: arch/powerpc Kconfig cleanup
-In-Reply-To: <Pine.LNX.4.64.0703151816370.3448@localhost.localdomain>
+Return-Path: <gerald.vanbaren@comcast.net>
+Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [204.127.192.82])
+	by ozlabs.org (Postfix) with ESMTP id 99F6CDDE03
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 10:46:55 +1100 (EST)
+Message-ID: <45F9DAEC.30005@comcast.net>
+Date: Thu, 15 Mar 2007 19:46:52 -0400
+From: Jerry Van Baren <gerald.vanbaren@comcast.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <Pine.LNX.4.64.0703151816370.3448@localhost.localdomain>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] Define the default version
+Content-Type: multipart/mixed; boundary="------------080005090909020600030709"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +18,72 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 3/15/07, Kumar Gala <galak@kernel.crashing.org> wrote:
-> arch/powerpc/Kconfig has become something of a mess and platform support
-> is scattered between it and various arch/powerpc/platforms/*/Kconfig
-> files.  I've got some ideas on some simple clean up that will introduce a
-> arch/powerpc/platforms/Kconfig and pull out platform config information
-> from arch/powerpc/Kconfig.
->
-> Beyond general cleanup, there are several config options that should
-> exist under the "Platform support" menu but end up getting duplicated
-> across sub-architectures (QE, CPM2, etc.)
->
-> By introducing a platforms/Kconfig we will have a place to put those
-> config options so we don't have to duplicate them.
+This is a multi-part message in MIME format.
+--------------080005090909020600030709
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I'm all for this, go for it!
+Jon, David:
 
-g.
+Thanks for updating dtc to v17.  This is a trivial patch to fix the 
+usage (permanently) to show the correct version number in the usage help.
 
+Thanks,
+gvb
+
+--------------080005090909020600030709
+Content-Type: text/plain;
+ name="0001-Define-the-default-version.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-Define-the-default-version.txt"
+
+The default version is used in two places (someday maybe more).  Create
+a #define to set the default version in one place.
+
+Signed-off-by: vanbaren@cideas.com <vanbaren@cideas.com>
+---
+ dtc.c     |    4 ++--
+ flat_dt.h |    2 ++
+ 2 files changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/dtc.c b/dtc.c
+index f15d90f..61956f1 100644
+--- a/dtc.c
++++ b/dtc.c
+@@ -92,7 +92,7 @@ static void usage(void)
+ 	fprintf(stderr, "\t\t\tdtb - device tree blob\n");
+ 	fprintf(stderr, "\t\t\tasm - assembler source\n");
+ 	fprintf(stderr, "\t-V <output version>\n");
+-	fprintf(stderr, "\t\tBlob version to produce, defaults to 16 (relevant for dtb\n\t\tand asm output only)\n");
++	fprintf(stderr, "\t\tBlob version to produce, defaults to %d (relevant for dtb\n\t\tand asm output only)\n", OF_DEFAULT_VERSION);
+ 	fprintf(stderr, "\t-R <number>\n");
+ 	fprintf(stderr, "\t\tMake space for <number> reserve map entries (relevant for \n\t\tdtb and asm output only)\n");
+ 	fprintf(stderr, "\t-b <number>\n");
+@@ -113,7 +113,7 @@ int main(int argc, char *argv[])
+ 	int opt;
+ 	FILE *inf = NULL;
+ 	FILE *outf = NULL;
+-	int outversion = 17;
++	int outversion = OF_DEFAULT_VERSION;
+ 	int reservenum = 1;
+ 	int boot_cpuid_phys = 0xfeedbeef;
+ 
+diff --git a/flat_dt.h b/flat_dt.h
+index d5abd80..a8482b4 100644
+--- a/flat_dt.h
++++ b/flat_dt.h
+@@ -2,6 +2,8 @@
+ #define _FLAT_DT_H_
+ 
+ 
++#define OF_DEFAULT_VERSION	17
++
+ #define OF_DT_HEADER            0xd00dfeed      /* 4: version, 4: total size */
+ 
+ #define OF_DT_BEGIN_NODE	0x1             /* Start node: full name */
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+1.4.4.4
+
+
+--------------080005090909020600030709--
