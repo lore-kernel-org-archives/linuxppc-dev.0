@@ -1,19 +1,21 @@
-Return-Path: <ckrinke@istor.com>
-Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1503DDEEE
+Return-Path: <sr@denx.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
+	by ozlabs.org (Postfix) with ESMTP id 02ADADDECB
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Mar 2007 06:14:09 +1100 (EST)
+	Sat, 17 Mar 2007 07:00:40 +1100 (EST)
+Received: from ubuntu (achn-4db49b59.pool.einsundeins.de [77.180.155.89])
+	by post.webmailer.de (mrclete mo21) (RZmta 5.1)
+	with ESMTP id 9047b2j2GH7aIS for <linuxppc-embedded@ozlabs.org>;
+	Fri, 16 Mar 2007 21:00:38 +0100 (MET)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] ppc: Fix PCIX configuration of Ocotea & Taishan for > 512MB
+	DDR
+Date: Fri, 16 Mar 2007 21:02:56 +0100
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: MEN A14C-board
-Date: Fri, 16 Mar 2007 12:10:01 -0700
-Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B44@MERCURY.inside.istor.com>
-References: <45FA6336.9020400@dutchspace.nl>
-From: "Charles Krinke" <ckrinke@istor.com>
-To: "Johan Borkhuis" <j.borkhuis@dutchspace.nl>, <linuxppc-embedded@ozlabs.org>
+  charset="us-ascii"
+Message-Id: <200703162102.56196.sr@denx.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,44 +26,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Johan:
-=20
-Hello to you. It has been a while since I have admired your train wheels =
-on comp.os.vxworks.
-=20
-On recent linux kernels with PPC, one usually has to add =
-CONFIG_SERIAL_TEXT_DEBUG to see very early serial output from the =
-kernel. This sets up the serial uart before the console is setup.
-=20
-Another issue on ppc kernels is they usually require a =
-console=3DttyS0,115200 on the kernel command line (Assuming you primary =
-serial port is ttyS0).
-=20
-I can get into more details if you wish. Let me know.
-=20
-Charles
+Change the configuration of the PCIX PCI->PLB inbound memory window
+to be 2GB instead of 512kB. The comment already mentioned 2GB, but the
+code unfortunately didn't reflect this.
 
-________________________________
+Signed-off-by: Stefan Roese <sr@denx.de>
 
-From: linuxppc-embedded-bounces+ckrinke=3Distor.com@ozlabs.org on behalf =
-of Johan Borkhuis
-Sent: Fri 3/16/2007 2:28 AM
-To: linuxppc-embedded@ozlabs.org
-Subject: MEN A14C-board
+---
+commit 7eb6a3d9d0d0dadd5634d6c7c3fd262652076355
+tree 620c232e5cf39d5cf905ec503f4fc86456cef104
+parent 2553194704512d8a00d6e50b9e780ecc87d1ca2a
+author Stefan Roese <sr@denx.de> Fri, 16 Mar 2007 20:57:00 +0100
+committer Stefan Roese <sr@denx.de> Fri, 16 Mar 2007 20:57:00 +0100
 
+ arch/ppc/platforms/4xx/ocotea.c  |    2 +-
+ arch/ppc/platforms/4xx/taishan.c |    2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-
-Hello,
-
-I am working on getting Linux running on a MEN-Micro A14C board. This
-board contains a PPC-8540, and has a U-Boot compatible bootloader. Is
-anyone else working with this board already?
-I tried modifying some BSP's, but I am not able to get past the
-bootloader prompt, the kernel itself does not produce any output.
-
-Kind Regards,
-    Johan Borkhuis
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+diff --git a/arch/ppc/platforms/4xx/ocotea.c b/arch/ppc/platforms/4xx/ocotea.c
+index 14780eb..626264a 100644
+--- a/arch/ppc/platforms/4xx/ocotea.c
++++ b/arch/ppc/platforms/4xx/ocotea.c
+@@ -178,7 +178,7 @@ ocotea_setup_pcix(void)
+ 	/* Setup 2GB PCI->PLB inbound memory window at 0, enable MSIs */
+ 	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAH);
+ 	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAL);
+-	PCIX_WRITEL(0xe0000007, PCIX0_PIM0SA);
++	PCIX_WRITEL(0x80000007, PCIX0_PIM0SA);
+ 
+ 	eieio();
+ }
+diff --git a/arch/ppc/platforms/4xx/taishan.c b/arch/ppc/platforms/4xx/taishan.c
+index bb0253e..5d9af8d 100644
+--- a/arch/ppc/platforms/4xx/taishan.c
++++ b/arch/ppc/platforms/4xx/taishan.c
+@@ -235,7 +235,7 @@ taishan_setup_pcix(void)
+ 	/* Setup 2GB PCI->PLB inbound memory window at 0, enable MSIs */
+ 	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAH);
+ 	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAL);
+-	PCIX_WRITEL(0xe0000007, PCIX0_PIM0SA);
++	PCIX_WRITEL(0x80000007, PCIX0_PIM0SA);
+ 	PCIX_WRITEL(0xffffffff, PCIX0_PIM0SAH);
+ 
+ 	iounmap(pcix_reg_base);
