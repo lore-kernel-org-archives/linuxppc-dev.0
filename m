@@ -1,21 +1,19 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
-	by ozlabs.org (Postfix) with ESMTP id 02ADADDECB
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 013EDDDE0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Mar 2007 07:00:40 +1100 (EST)
-Received: from ubuntu (achn-4db49b59.pool.einsundeins.de [77.180.155.89])
-	by post.webmailer.de (mrclete mo21) (RZmta 5.1)
-	with ESMTP id 9047b2j2GH7aIS for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 21:00:38 +0100 (MET)
-From: Stefan Roese <sr@denx.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] ppc: Fix PCIX configuration of Ocotea & Taishan for > 512MB
-	DDR
-Date: Fri, 16 Mar 2007 21:02:56 +0100
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200703162102.56196.sr@denx.de>
+	Sat, 17 Mar 2007 07:01:54 +1100 (EST)
+To: "Saiful Khan" <saiful.etc@gmail.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: porting u-boot on sbc7447 board 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Fri, 16 Mar 2007 14:46:33 +0530."
+	<38b44d590703160216y5082ae47qcc7351cce9aeb579@mail.gmail.com>
+Date: Fri, 16 Mar 2007 21:01:52 +0100
+Sender: wd@denx.de
+Message-Id: <20070316200152.C655F352604@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,46 +24,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Change the configuration of the PCIX PCI->PLB inbound memory window
-to be 2GB instead of 512kB. The comment already mentioned 2GB, but the
-code unfortunately didn't reflect this.
+In message <38b44d590703160216y5082ae47qcc7351cce9aeb579@mail.gmail.com> you wrote:
+> 
+> Did anybody ported u-boot on sbc7447 board? Please help me how to start?
 
-Signed-off-by: Stefan Roese <sr@denx.de>
+Wrong list. Please post U-Boot related questions on the U-Boot mailing
+list.
 
----
-commit 7eb6a3d9d0d0dadd5634d6c7c3fd262652076355
-tree 620c232e5cf39d5cf905ec503f4fc86456cef104
-parent 2553194704512d8a00d6e50b9e780ecc87d1ca2a
-author Stefan Roese <sr@denx.de> Fri, 16 Mar 2007 20:57:00 +0100
-committer Stefan Roese <sr@denx.de> Fri, 16 Mar 2007 20:57:00 +0100
+> Content-Type: text/html; charset=ISO-8859-1
+> Content-Transfer-Encoding: 7bit
 
- arch/ppc/platforms/4xx/ocotea.c  |    2 +-
- arch/ppc/platforms/4xx/taishan.c |    2 +-
- 2 files changed, 2 insertions(+), 2 deletions(-)
+And never post HTML.
 
-diff --git a/arch/ppc/platforms/4xx/ocotea.c b/arch/ppc/platforms/4xx/ocotea.c
-index 14780eb..626264a 100644
---- a/arch/ppc/platforms/4xx/ocotea.c
-+++ b/arch/ppc/platforms/4xx/ocotea.c
-@@ -178,7 +178,7 @@ ocotea_setup_pcix(void)
- 	/* Setup 2GB PCI->PLB inbound memory window at 0, enable MSIs */
- 	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAH);
- 	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAL);
--	PCIX_WRITEL(0xe0000007, PCIX0_PIM0SA);
-+	PCIX_WRITEL(0x80000007, PCIX0_PIM0SA);
- 
- 	eieio();
- }
-diff --git a/arch/ppc/platforms/4xx/taishan.c b/arch/ppc/platforms/4xx/taishan.c
-index bb0253e..5d9af8d 100644
---- a/arch/ppc/platforms/4xx/taishan.c
-+++ b/arch/ppc/platforms/4xx/taishan.c
-@@ -235,7 +235,7 @@ taishan_setup_pcix(void)
- 	/* Setup 2GB PCI->PLB inbound memory window at 0, enable MSIs */
- 	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAH);
- 	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAL);
--	PCIX_WRITEL(0xe0000007, PCIX0_PIM0SA);
-+	PCIX_WRITEL(0x80000007, PCIX0_PIM0SA);
- 	PCIX_WRITEL(0xffffffff, PCIX0_PIM0SAH);
- 
- 	iounmap(pcix_reg_base);
+Best regards,
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"The first rule of magic is simple. Don't waste your time waving your
+hands and hoping when a rock or a club will do."
+                                               - McCloctnik the Lucid
