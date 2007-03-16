@@ -1,12 +1,18 @@
-Return-Path: <mikey@neuling.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-From: Michael Neuling <mikey@neuling.org>
-Subject: Re: [POWERPC] minor paca optimisation 
-In-reply-to: <20070316174707.8a5ae78c.sfr@canb.auug.org.au> 
-References: <20070316174707.8a5ae78c.sfr@canb.auug.org.au>
-Date: Fri, 16 Mar 2007 12:18:09 -0500
-Message-ID: <12742.1174065489@neuling.org>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 49F9DDDDF8
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 04:26:48 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l2GHQiAu025144
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 10:26:45 -0700 (MST)
+Date: Fri, 16 Mar 2007 12:26:41 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 00/17] bootwrapper/cuImage patches
+Message-ID: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,48 +22,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Move the slb_shadow_ptr field into the first cache line since it is
-> (like evrything there) read only after boot.  It is in fact statically
-> initialised and there after only read.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+This patchset supersedes patches 2 and 14-17 of my previous (Mar. 13)
+patchset. It depends on patches 11-13 of that patchset (in addition to
+the patches that have been applied).  Patch 18 from that set (Add
+linux,stdout-path to the dts files) should probably wait until u-boot has
+been updated to handle a pre-existing /chosen node.
 
-Acked-by: Michael Neuling <mikey@neuling.org>
-
-> ---
->  include/asm-powerpc/paca.h |    3 +--
->  1 files changed, 1 insertions(+), 2 deletions(-)
-> 
-> -- 
-> Cheers,
-> Stephen Rothwell                    sfr@canb.auug.org.au
-> 
-> diff --git a/include/asm-powerpc/paca.h b/include/asm-powerpc/paca.h
-> index 0d3adc0..4de851d 100644
-> --- a/include/asm-powerpc/paca.h
-> +++ b/include/asm-powerpc/paca.h
-> @@ -70,6 +70,7 @@ struct paca_struct {
->  	s16 hw_cpu_id;			/* Physical processor number */
->  	u8 cpu_start;			/* At startup, processor spins until */
->  					/* this becomes non-zero. */
-> +	struct slb_shadow *slb_shadow_ptr;
->  
->  	/*
->  	 * Now, starting in cacheline 2, the exception save areas
-> @@ -101,8 +102,6 @@ struct paca_struct {
->  	u64 user_time;			/* accumulated usermode TB ticks */
->  	u64 system_time;		/* accumulated system TB ticks */
->  	u64 startpurr;			/* PURR/TB value snapshot */
-> -
-> -	struct slb_shadow *slb_shadow_ptr;
->  };
->  
->  extern struct paca_struct paca[];
-> -- 
-> 1.5.0.3
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+-Scott
