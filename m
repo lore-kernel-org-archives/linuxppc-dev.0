@@ -1,21 +1,19 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound8-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8610ADDDE7
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 11:43:14 +1100 (EST)
-Message-ID: <45F9E81C.5050407@am.sony.com>
-Date: Thu, 15 Mar 2007 17:43:08 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <mgreer@mvista.com>
+Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
+	by ozlabs.org (Postfix) with ESMTP id DF3B5DDDFA
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 11:46:28 +1100 (EST)
+Date: Thu, 15 Mar 2007 17:47:17 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: "Mark A. Greer" <mgreer@mvista.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
+Message-ID: <20070316004717.GB10786@mag.az.mvista.com>
+References: <20070305032307.GB31417@localhost.localdomain>
+	<20070305032452.810C1DDF1B@ozlabs.org>
+	<20070315230230.GB3342@mag.az.mvista.com>
+	<20070316001819.GE6784@localhost.localdomain>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: RFC: arch/powerpc Kconfig cleanup
-References: <Pine.LNX.4.64.0703151816370.3448@localhost.localdomain>
-In-Reply-To: <Pine.LNX.4.64.0703151816370.3448@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070316001819.GE6784@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,13 +23,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> One think I noticed is that various platforms/*/Kconfig create top level
-> menu choices for things like:
+On Fri, Mar 16, 2007 at 11:18:19AM +1100, David Gibson wrote:
+> On Thu, Mar 15, 2007 at 04:02:30PM -0700, Mark A. Greer wrote:
+> > On Mon, Mar 05, 2007 at 02:24:52PM +1100, David Gibson wrote:
+> > > In addition the wrapper script is rearranged to ensure that the
+> > > platform .o is always linked first.  This means that platforms where
+> > > the zImage entry point is at a fixed address or offset, rather than
+> > > being encoded in the binary header can be supported using option (1).
+> > 
+> > But now you don't have a fixed address for _zimage_start when you use
+> > option 2).  I don't know what address _zimage_start is at so I can't
+> > start it.  This is an issue for fw's that don't understand ELF and simply
+> > download a bucket of bits.  You have to tell the fw where to jump to
+> > (e.g., go 0x410010).
 > 
-> PS3 Platform Options
+> The patch already includes an example that deals with this case,
+> uImage.  The wrapper script pulls the ELF entry point information out
+> using objdump and puts it into uboot's structure.
 
-The PS3 Kconfigs need a complete cleanup, but I haven't had a chance to do
-it yet.
+Sure, you're putting the addr into a struct in the uimage that u-boot
+knows enough to get.
 
--Geoff
+'u-boot' == smart
+'my firmware' == dumb
+
+I'm talking about a fw that knows *nothing* about what its downloading/
+running--its just a bucket of bits/instructions.  It doesn't get an address
+out of the image.  It has to be told explicitly where to download the image
+to and where to jump to.  As in, by someone sitting at the console who went
+and dug out the start addr.  Or, more likely with a prestored jump cmd that
+someone figured out the right address for and stored.  But, when the start
+addr changes, suddenly it won't boot and someone has to figure out why,
+find the the new start addr, modify the prestored cmd(s), and its good
+until the next time the start addr changes.
+
+We need something better than that.
+
+Mark
