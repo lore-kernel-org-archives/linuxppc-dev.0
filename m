@@ -1,14 +1,15 @@
-Return-Path: <michael.barkowski@freescale.com>
-Message-ID: <45FACF40.9000405@freescale.com>
-Date: Fri, 16 Mar 2007 12:09:20 -0500
-From: Michael Barkowski <michael.barkowski@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.22] Add MPC832x RDB board.
+Return-Path: <galak@kernel.crashing.org>
+In-Reply-To: <45FACF40.9000405@freescale.com>
 References: <45FABEEC.7040407@freescale.com>
 	<CC7F67C6-0E80-4DAE-88A0-0AD2B5ED179E@kernel.crashing.org>
-In-Reply-To: <CC7F67C6-0E80-4DAE-88A0-0AD2B5ED179E@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
+	<45FACF40.9000405@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <072D59B7-FC61-4E0D-B8C6-D2B107257814@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2.6.22] Add MPC832x RDB board.
+Date: Fri, 16 Mar 2007 11:15:51 -0500
+To: Michael Barkowski <michael.barkowski@freescale.com>
 Cc: Linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -19,372 +20,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Mar 16, 2007, at 10:59 AM, Michael Barkowski wrote:
-> 
-> 
->>Add support for the MPC8323E Reference Development Board (RDB).   
->>The board
->>is a mini-ITX reference board with 64M DDR2, 16M flash, USB, PCI,
->>10/100 ethernet, serial, and phone ports.
+
+On Mar 16, 2007, at 12:09 PM, Michael Barkowski wrote:
+
+> Kumar Gala wrote:
+>> On Mar 16, 2007, at 10:59 AM, Michael Barkowski wrote:
 >>
->>Signed-off-by: Michael Barkowski <michael.barkowski@freescale.com>
->>Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
->>---
->>Please consider for 2.6.22.  Applies cleanly to for-2.6.22 branch  
->>on Paul's tree.
 >>
->> arch/powerpc/boot/dts/mpc832x_rdb.dts      |  294 +++++++
->> arch/powerpc/configs/mpc832x_rdb_defconfig | 1292 +++++++++++++++++ 
->>+++++++++++
->> arch/powerpc/platforms/83xx/Kconfig        |    9 +-
->> arch/powerpc/platforms/83xx/Makefile       |    1 +
->> arch/powerpc/platforms/83xx/mpc832x_rdb.c  |  138 +++
->> 5 files changed, 1733 insertions(+), 1 deletions(-)
->> create mode 100644 arch/powerpc/boot/dts/mpc832x_rdb.dts
->> create mode 100644 arch/powerpc/configs/mpc832x_rdb_defconfig
->> create mode 100644 arch/powerpc/platforms/83xx/mpc832x_rdb.c
-> 
-> 
-> Who different is the 8323E rdb from the 8313 rdb?
+>>> Add support for the MPC8323E Reference Development Board (RDB).
+>>> The board
+>>> is a mini-ITX reference board with 64M DDR2, 16M flash, USB, PCI,
+>>> 10/100 ethernet, serial, and phone ports.
+>>>
+>>> Signed-off-by: Michael Barkowski <michael.barkowski@freescale.com>
+>>> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+>>> ---
+>>> Please consider for 2.6.22.  Applies cleanly to for-2.6.22 branch
+>>> on Paul's tree.
+>>>
+>>> arch/powerpc/boot/dts/mpc832x_rdb.dts      |  294 +++++++
+>>> arch/powerpc/configs/mpc832x_rdb_defconfig | 1292 +++++++++++++++++
+>>> +++++++++++
+>>> arch/powerpc/platforms/83xx/Kconfig        |    9 +-
+>>> arch/powerpc/platforms/83xx/Makefile       |    1 +
+>>> arch/powerpc/platforms/83xx/mpc832x_rdb.c  |  138 +++
+>>> 5 files changed, 1733 insertions(+), 1 deletions(-)
+>>> create mode 100644 arch/powerpc/boot/dts/mpc832x_rdb.dts
+>>> create mode 100644 arch/powerpc/configs/mpc832x_rdb_defconfig
+>>> create mode 100644 arch/powerpc/platforms/83xx/mpc832x_rdb.c
+>>
+>>
+>> Who different is the 8323E rdb from the 8313 rdb?
+>
+> QE Lite 10/100 vs. TSEC
+> no FPU (e300c2).
+> PCI-based USB 2.0 hub vs. fsl USB gadget
+> 64M DDR2
+> smaller size...
 
-QE Lite 10/100 vs. TSEC
-no FPU (e300c2).
-PCI-based USB 2.0 hub vs. fsl USB gadget
-64M DDR2
-smaller size...
- 
-> 
->>diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/ 
->>boot/dts/mpc832x_rdb.dts
->>new file mode 100644
->>index 0000000..cc9e637
->>--- /dev/null
->>+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
->>@@ -0,0 +1,294 @@
->>+/*
->>+ * MPC832x RDB Device Tree Source
->>+ *
->>+ * Copyright 2007 Freescale Semiconductor Inc.
->>+ *
->>+ * This program is free software; you can redistribute  it and/or  
->>modify it
->>+ * under  the terms of  the GNU General  Public License as  
->>published by the
->>+ * Free Software Foundation;  either version 2 of the  License, or  
->>(at your
->>+ * option) any later version.
->>+ */
->>+
->>+/ {
->>+	model = "MPC8323ERDB";
->>+	compatible = "MPC8323ERDB", "MPC832xRDB", "MPC83xxRDB";
->>+	#address-cells = <1>;
->>+	#size-cells = <1>;
->>+
->>+	cpus {
->>+		#address-cells = <1>;
->>+		#size-cells = <0>;
->>+
->>+		PowerPC,8323@0 {
->>+			device_type = "cpu";
->>+			reg = <0>;
->>+			d-cache-line-size = <20>;	// 32 bytes
->>+			i-cache-line-size = <20>;	// 32 bytes
->>+			d-cache-size = <4000>;		// L1, 16K
->>+			i-cache-size = <4000>;		// L1, 16K
->>+			timebase-frequency = <0>;
->>+			bus-frequency = <0>;
->>+			clock-frequency = <0>;
->>+			32-bit;
->>+		};
->>+	};
->>+
->>+	memory {
->>+		device_type = "memory";
->>+		reg = <00000000 04000000>;
->>+	};
->>+
-> 
-> 
-> Is there a memory slot or is it soldered to the board?
+You also mentioned phone ports, do you know what's involved in  
+supporting those (from a sw point of view)?
 
-It's soldered on.
-
-> 
->>+	soc8323@e0000000 {
->>+		#address-cells = <1>;
->>+		#size-cells = <1>;
->>+		#interrupt-cells = <2>;
->>+		device_type = "soc";
->>+		ranges = <0 e0000000 00100000>;
->>+		reg = <e0000000 00000200>;
->>+		bus-frequency = <7DE2900>;  // 132.0 MHz
-> 
-> 
-> Is the freq not set by the boot loader?
-
-Right.  Should be:
-bus-frequency = <0>;
-
-
-> 
->>+
->>+		wdt@200 {
->>+			device_type = "watchdog";
->>+			compatible = "mpc83xx_wdt";
->>+			reg = <200 100>;
->>+		};
->>+
->>+		i2c@3000 {
->>+			device_type = "i2c";
->>+			compatible = "fsl-i2c";
->>+			reg = <3000 100>;
->>+			interrupts = <e 8>;
->>+			interrupt-parent = <&pic>;
->>+			dfsrr;
->>+		};
->>+
->>+		serial@4500 {
->>+			device_type = "serial";
->>+			compatible = "ns16550";
->>+			reg = <4500 100>;
->>+			clock-frequency = <0>;
->>+			interrupts = <9 8>;
->>+			interrupt-parent = <&pic>;
->>+		};
->>+
->>+		serial@4600 {
->>+			device_type = "serial";
->>+			compatible = "ns16550";
->>+			reg = <4600 100>;
->>+			clock-frequency = <0>;
->>+			interrupts = <a 8>;
->>+			interrupt-parent = <&pic>;
->>+		};
->>+
->>+		crypto@30000 {
->>+			device_type = "crypto";
->>+			model = "SEC2";
->>+			compatible = "talitos";
->>+			reg = <30000 7000>;
->>+			interrupts = <b 8>;
->>+			interrupt-parent = <&pic>;
->>+			/* Rev. 2.2 */
->>+			num-channels = <1>;
->>+			channel-fifo-len = <18>;
->>+			exec-units-mask = <0000004c>;
->>+			descriptor-types-mask = <0122003f>;
->>+		};
->>+
->>+		pci@8500 {
->>+			interrupt-map-mask = <f800 0 0 7>;
->>+			interrupt-map = <
->>+					/* IDSEL 0x10 AD16 (USB) */
->>+					 8000 0 0 1 &pic 11 8
->>+					 8000 0 0 2 &pic  0 0
->>+					 8000 0 0 3 &pic  0 0
->>+					 8000 0 0 4 &pic  0 0
-> 
-> 
-> Why are you listing INTB-INTD if there are not interrupts there?
-> 
-
-Good point.  I'll take those 3 lines out.
- 
->>+
->>+					/* IDSEL 0x11 AD17 (Mini1)*/
->>+					 8800 0 0 1 &pic 12 8
->>+					 8800 0 0 2 &pic 13 8
->>+					 8800 0 0 3 &pic 14 8
->>+					 8800 0 0 4 &pic 30 8
->>+
->>+					/* IDSEL 0x12 AD18 (PCI/Mini2) */
->>+					 9000 0 0 1 &pic 13 8
->>+					 9000 0 0 2 &pic 14 8
->>+					 9000 0 0 3 &pic 30 8
->>+					 9000 0 0 4 &pic 11 8>;
->>+
->>+			interrupt-parent = <&pic>;
->>+			interrupts = <42 8>;
->>+			bus-range = <0 0>;
->>+			ranges = <42000000 0 80000000 80000000 0 10000000
->>+			          02000000 0 90000000 90000000 0 10000000
->>+			          01000000 0 d0000000 d0000000 0 04000000>;
->>+			clock-frequency = <0>;
->>+			#interrupt-cells = <1>;
->>+			#size-cells = <2>;
->>+			#address-cells = <3>;
->>+			reg = <8500 100>;
->>+			compatible = "83xx";
->>+			device_type = "pci";
->>+		};
->>+
->>+		pic:pic@700 {
->>+			interrupt-controller;
->>+			#address-cells = <0>;
->>+			#interrupt-cells = <2>;
->>+			reg = <700 100>;
->>+			built-in;
->>+			device_type = "ipic";
->>+		};
->>+
->>+		par_io@1400 {
->>+			reg = <1400 100>;
->>+			device_type = "par_io";
->>+			num-ports = <7>;
->>+
->>+			ucc2pio:ucc_pin@02 {
->>+				pio-map = <
->>+			/* port  pin  dir  open_drain  assignment  has_irq */
->>+					3  4  3  0  2  0 	/* MDIO */
->>+					3  5  1  0  2  0 	/* MDC */
->>+					3 15  2  0  1  0 	/* RX_CLK (CLK16) */
->>+					3 17  2  0  1  0 	/* TX_CLK (CLK3) */
->>+					0 12  1  0  1  0 	/* TxD0 */
->>+					0 13  1  0  1  0 	/* TxD1 */
->>+					0 14  1  0  1  0 	/* TxD2 */
->>+					0 15  1  0  1  0 	/* TxD3 */
->>+					0 16  2  0  1  0 	/* RxD0 */
->>+					0 17  2  0  1  0 	/* RxD1 */
->>+					0 18  2  0  1  0 	/* RxD2 */
->>+					0 19  2  0  1  0 	/* RxD3 */
->>+					0 1a  2  0  1  0 	/* RX_ER */
->>+					0 1b  1  0  1  0 	/* TX_ER */
->>+					0 1c  2  0  1  0 	/* RX_DV */
->>+					0 1d  2  0  1  0 	/* COL */
->>+					0 1e  1  0  1  0 	/* TX_EN */
->>+					0 1f  2  0  1  0>;      /* CRS */
->>+			};
->>+			ucc3pio:ucc_pin@03 {
->>+				pio-map = <
->>+			/* port  pin  dir  open_drain  assignment  has_irq */
->>+					0  d  2  0  1  0 	/* RX_CLK (CLK9) */
->>+					3 18  2  0  1  0 	/* TX_CLK (CLK10) */
->>+					1  0  1  0  1  0 	/* TxD0 */
->>+					1  1  1  0  1  0 	/* TxD1 */
->>+					1  2  1  0  1  0 	/* TxD2 */
->>+					1  3  1  0  1  0 	/* TxD3 */
->>+					1  4  2  0  1  0 	/* RxD0 */
->>+					1  5  2  0  1  0 	/* RxD1 */
->>+					1  6  2  0  1  0 	/* RxD2 */
->>+					1  7  2  0  1  0 	/* RxD3 */
->>+					1  8  2  0  1  0 	/* RX_ER */
->>+					1  9  1  0  1  0 	/* TX_ER */
->>+					1  a  2  0  1  0 	/* RX_DV */
->>+					1  b  2  0  1  0 	/* COL */
->>+					1  c  1  0  1  0 	/* TX_EN */
->>+					1  d  2  0  1  0>;      /* CRS */
->>+			};
->>+		};
->>+	};
->>+
->>+	qe@e0100000 {
->>+		#address-cells = <1>;
->>+		#size-cells = <1>;
->>+		device_type = "qe";
->>+		model = "QE";
->>+		ranges = <0 e0100000 00100000>;
->>+		reg = <e0100000 480>;
->>+		brg-frequency = <0>;
->>+		bus-frequency = <BCD3D80>;
->>+
->>+		muram@10000 {
->>+			device_type = "muram";
->>+			ranges = <0 00010000 00004000>;
->>+
->>+			data-only@0 {
->>+				reg = <0 4000>;
->>+			};
->>+		};
->>+
->>+		spi@4c0 {
->>+			device_type = "spi";
->>+			compatible = "fsl_spi";
->>+			reg = <4c0 40>;
->>+			interrupts = <2>;
->>+			interrupt-parent = <&qeic>;
->>+			mode = "cpu";
->>+		};
->>+
->>+		spi@500 {
->>+			device_type = "spi";
->>+			compatible = "fsl_spi";
->>+			reg = <500 40>;
->>+			interrupts = <1>;
->>+			interrupt-parent = <&qeic>;
->>+			mode = "cpu";
->>+		};
->>+
->>+		ucc@3000 {
->>+			device_type = "network";
->>+			compatible = "ucc_geth";
->>+			model = "UCC";
->>+			device-id = <2>;
->>+			reg = <3000 200>;
->>+			interrupts = <21>;
->>+			interrupt-parent = <&qeic>;
->>+			mac-address = [ 00 04 9f ef 03 02 ];
->>+			rx-clock = <20>;
->>+			tx-clock = <13>;
->>+			phy-handle = <&phy00>;
->>+			pio-handle = <&ucc2pio>;
->>+		};
->>+
->>+		ucc@2200 {
->>+			device_type = "network";
->>+			compatible = "ucc_geth";
->>+			model = "UCC";
->>+			device-id = <3>;
->>+			reg = <2200 200>;
->>+			interrupts = <22>;
->>+			interrupt-parent = <&qeic>;
->>+			mac-address = [ 00 04 9f ef 03 01 ];
->>+			rx-clock = <19>;
->>+			tx-clock = <1a>;
->>+			phy-handle = <&phy04>;
->>+			pio-handle = <&ucc3pio>;
->>+		};
->>+
->>+		mdio@3120 {
->>+			#address-cells = <1>;
->>+			#size-cells = <0>;
->>+			reg = <3120 18>;
->>+			device_type = "mdio";
->>+			compatible = "ucc_geth_phy";
->>+
->>+			phy00:ethernet-phy@00 {
->>+				interrupt-parent = <&pic>;
->>+				interrupts = <0>;
->>+				reg = <0>;
->>+				device_type = "ethernet-phy";
->>+				interface = <3>; //ENET_100_MII
->>+			};
->>+			phy04:ethernet-phy@04 {
->>+				interrupt-parent = <&pic>;
->>+				interrupts = <0>;
->>+				reg = <4>;
->>+				device_type = "ethernet-phy";
->>+				interface = <3>;
->>+			};
->>+		};
->>+
->>+		qeic:qeic@80 {
->>+			interrupt-controller;
->>+			device_type = "qeic";
->>+			#address-cells = <0>;
->>+			#interrupt-cells = <1>;
->>+			reg = <80 80>;
->>+			built-in;
->>+			big-endian;
->>+			interrupts = <20 8 21 8>; //high:32 low:33
->>+			interrupt-parent = <&pic>;
->>+		};
->>+	};
->>+};
-> 
-> 
-> [snip]
-> 
-> - k
-> 
+- k
