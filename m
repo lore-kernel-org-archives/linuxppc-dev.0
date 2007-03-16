@@ -1,21 +1,12 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A4F23DDF3E
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 03:24:12 +1100 (EST)
-Message-ID: <45FAC4A2.4060207@am.sony.com>
-Date: Fri, 16 Mar 2007 09:24:02 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 6/15] zImage: Add more flexible gunzip convenience
-	functions
-References: <20070305032452.4DCDBDDF1B@ozlabs.org>
-In-Reply-To: <20070305032452.4DCDBDDF1B@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+From: Michael Neuling <mikey@neuling.org>
+Subject: Re: [POWERPC] minor paca optimisation 
+In-reply-to: <20070316174707.8a5ae78c.sfr@canb.auug.org.au> 
+References: <20070316174707.8a5ae78c.sfr@canb.auug.org.au>
+Date: Fri, 16 Mar 2007 12:18:09 -0500
+Message-ID: <12742.1174065489@neuling.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,31 +16,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> This patch adds a new set of more flexible convenience wrappers around
-> zlib, moving them to their own file, gunzip_util.c, in the process.
-> These wrappers allow decompressing sections of the compressed image to
-> different locations.  In addition, they transparently handle
-> uncompressed data, avoiding special case code to handle uncompressed
-> vmlinux images.
+> Move the slb_shadow_ptr field into the first cache line since it is
+> (like evrything there) read only after boot.  It is in fact statically
+> initialised and there after only read.
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-Hi.
+Acked-by: Michael Neuling <mikey@neuling.org>
 
-I was waiting for the zimage churn to settle before looking into this
-change, but I though I would let you know so you can keep it in mind
-if you do any work here.
-
-As I mentioned in another mail, the PS3's 1st stage loader (in the
-hypervisor) supports loading a gzipped binary memory image from flash.
-So for Linux, that would be a gzipped zImage.  Since the entire zImage
-is uncompressed by the loader, there is no need to have the kernel image
-compressed on its own, nor to include the zlib code in the wrapper.
-
-Here is a functional expression of what we have now, and what would
-be ideal:
-
-zImage.gz = gzip(wrapper bits + zlib + gzip(vmlinx) + dtb)
-
-zImage.gz = gzip(wrapper bits + vmlinx + dtb)
-
--Geoff
+> ---
+>  include/asm-powerpc/paca.h |    3 +--
+>  1 files changed, 1 insertions(+), 2 deletions(-)
+> 
+> -- 
+> Cheers,
+> Stephen Rothwell                    sfr@canb.auug.org.au
+> 
+> diff --git a/include/asm-powerpc/paca.h b/include/asm-powerpc/paca.h
+> index 0d3adc0..4de851d 100644
+> --- a/include/asm-powerpc/paca.h
+> +++ b/include/asm-powerpc/paca.h
+> @@ -70,6 +70,7 @@ struct paca_struct {
+>  	s16 hw_cpu_id;			/* Physical processor number */
+>  	u8 cpu_start;			/* At startup, processor spins until */
+>  					/* this becomes non-zero. */
+> +	struct slb_shadow *slb_shadow_ptr;
+>  
+>  	/*
+>  	 * Now, starting in cacheline 2, the exception save areas
+> @@ -101,8 +102,6 @@ struct paca_struct {
+>  	u64 user_time;			/* accumulated usermode TB ticks */
+>  	u64 system_time;		/* accumulated system TB ticks */
+>  	u64 startpurr;			/* PURR/TB value snapshot */
+> -
+> -	struct slb_shadow *slb_shadow_ptr;
+>  };
+>  
+>  extern struct paca_struct paca[];
+> -- 
+> 1.5.0.3
+> 
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
