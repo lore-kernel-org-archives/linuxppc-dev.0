@@ -2,19 +2,19 @@ Return-Path: <yur@emcraft.com>
 Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F2030DDEE9
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 00:57:18 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 9B5F4DDFB8
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 00:57:26 +1100 (EST)
 Received: from [172.17.0.11] (helo=iron.emcraft.com)
-	by ocean.emcraft.com with esmtp (Exim 4.43) id 1HSCWA-0003P1-Gf
-	for linuxppc-dev@ozlabs.org; Fri, 16 Mar 2007 16:30:50 +0300
+	by ocean.emcraft.com with esmtp (Exim 4.43) id 1HSCWS-0003P7-Ka
+	for linuxppc-dev@ozlabs.org; Fri, 16 Mar 2007 16:31:08 +0300
 From: Yuri Tikhonov <yur@emcraft.com>
 To: linuxppc-dev@ozlabs.org
 Subject: Re: [PATCH] ppc: Add support for bigger page sizes than 4KB on PPC44x
-Date: Fri, 16 Mar 2007 16:34:58 +0300
+Date: Fri, 16 Mar 2007 16:35:16 +0300
 MIME-Version: 1.0
 Content-Type: Multipart/Mixed;
-  boundary="Boundary-00=_C0p+Fcgc2e/QVcy"
-Message-Id: <200703161634.58444.yur@emcraft.com>
+  boundary="Boundary-00=_U0p+FsJ4iMk3wnu"
+Message-Id: <200703161635.16571.yur@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,105 +24,157 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Boundary-00=_C0p+Fcgc2e/QVcy
+--Boundary-00=_U0p+FsJ4iMk3wnu
 Content-Type: text/plain;
   charset="us-ascii"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: inline
 
-On Tue Mar 13 18:12:14 EST 2007, Benjamin Herrenschmidt wrote:
-> - You only adapted head_4xx.S but the config option is global to all of
-> arch/ppc, thus changing it will probably break everything else. Make
-> sure the option is done in such a way that it can't be changed or the
-> kernel doesn't build if changed for a processor family where you haven't
-> implemented the support
+On Fri Mar 16 16:14:48 EST 2007 Paul Mackerras wrote:
+> If I'm reading the patch right, with 64k pages you're using 8kB pgd
+> arrays and 256-byte pte arrays, so you're only using 1/256th of each
+> PTE page.  In fact each PTE page could map 512MB (assuming 8 byte
+> ptes), and the pgd array could be a tiny 8-entry thing, which we could
+> kmalloc.  I think that would use memory more efficiently.
 
- The configuration option we had introduced changes the global PPC PAGE_SIZE 
-definition indeed. To let changing the PAGE_SIZE from the configuration menu 
-for the 44x processors only the following modification of the 
-arch/ppc/Kconfig file might make sense:
+ Your understanding of the patch is correct. When the page size is set to 64K 
+then the 32-bit linear address is being splitted in the following way:
 
- - int "Page size (12=>4KB; 16=>64KB)"
-+ int "Page size (12=>4KB; 16=>64KB)" if 44x
+(1) 64K:
+PGD: 11 msb -> there are 2K page global directory entries;
+PTE: 5 bits -> 32 8-byte PTE entries in each page table => 32x8=256 of 64K;
+Offset: 16 lsb -> page size is 64K.
 
- For other than 44x processors the PPC_PAGE_SHIFT value will be unchangeable 
-from the configuration menu and set to default  value 12 ( PAGE_SIZE = 4 KB).
+ So, I do not use "page table" pages (with PTEs) fully indeed. If use the 
+following decoding of the linear address then each page table with PTEs will 
+be utilized in full:
 
-> - Have you tried other page sizes ? How hard would it be to support 16K
-> and what kind of performance numbers do you get with 16K ? It's a better
-> compromise for some applications as 64K causes significant bloat of the
-> page cache (among other things).
+(2) 64K:
+PGD: 3 msb -> there are 8 page global directory entries,
+PTE: 13 bits -> 8K 8-byte PTE entries in each page table => 8Kx8=64K of 64K,
+Offset: 16 lsb -> page size is 64K.
 
- To support 16K, one more bunch of definitions should be calculated and added 
-to the include/asm/ppc_page_asm.h file (for PAGE_SHIFT = 14). Attached is the 
-patch that adds 16KB PAGE_SIZE capability for the ppc44x processors.
+ The corresponding point is correct regarding to my 16K implementation too:
+
+(3) 16K:
+PGD: 7 msb -> there are 128 page global directory entries,
+PTE: 11 bits -> 2K 8-byte PTE entries in each page table => 2Kx8=16K of 16K,
+Offset: 14 lsb -> page size is 16K.
+
+ Additional note regarding to the 64K pages. When use decoding (2) there is a 
+WARN_ON() triggered in the dma_alloc_init() function ( 
+arch/powerpc/lib/dma-noncoherent.c):
+
+WARN_ON(!pmd_none(*pmd)),
+
+ that leads to the following message during kernel booting-up:
+------------[ cut here ]------------
+Badness at c02ebb30 [verbose debug info unavailable]
+Call Trace:
+[C054FE50] [C000858C] show_stack+0x48/0x190 (unreliable)
+[C054FE80] [C00F189C] report_bug+0xa4/0xac
+[C054FE90] [C0002A7C] program_check_exception+0x170/0x4a0
+[C054FEB0] [C0001E74] ret_from_except_full+0x0/0x4c
+[C054FF70] [C003C068] init_irq_proc+0x3c/0x5c
+[C054FF80] [C02E0830] init+0x94/0x1c4
+[C054FFF0] [C0003AC0] kernel_thread+0x44/0x60
+
+ This warning means that the PMD, which is being checked here, was already 
+allocated during executing of some prior code. When only 3 msb are being used 
+as a PMD component of the linear address then each PMD entry covers the 512MB 
+area (0x20000000). This is rather a big area so I think there is nothing 
+strange or erroneous that this area was already accessed somewhere before the 
+dma_alloc_init() call. So, to spare users' minds I suggest to replace the 
+WARN_ON() call in the dma_alloc_init() with more harmless warning message. 
+
+ The patch that fixes PTE tables memory usage for the 16K and 64K pages is 
+attached. Also this patch replace WARN_ON() in the dma_alloc_init() with the 
+printk(). 
 
  Regards, Yuri.
 
---Boundary-00=_C0p+Fcgc2e/QVcy
+--Boundary-00=_U0p+FsJ4iMk3wnu
 Content-Type: text/x-diff;
   charset="us-ascii";
-  name="ppc44x_page_16k_070315.patch"
+  name="ppc44x_page_070316.patch"
 Content-Transfer-Encoding: 7bit
 Content-Disposition: attachment;
-	filename="ppc44x_page_16k_070315.patch"
+	filename="ppc44x_page_070316.patch"
 
-Support for the PAGE_SIZE = 16 KB on the PPC32 44x platforms. 
-
-Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
----
-
-diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
-index e825e98..72af523 100644
---- a/arch/ppc/Kconfig
-+++ b/arch/ppc/Kconfig
-@@ -1202,7 +1202,7 @@ config SECCOMP
- 	  If unsure, say Y. Only embedded should say N here.
+diff --git a/arch/powerpc/lib/dma-noncoherent.c b/arch/powerpc/lib/dma-noncoherent.c
+index 48f3d13..4f9da90 100644
+--- a/arch/powerpc/lib/dma-noncoherent.c
++++ b/arch/powerpc/lib/dma-noncoherent.c
+@@ -318,7 +318,8 @@ static int __init dma_alloc_init(void)
+ 			ret = -ENOMEM;
+ 			break;
+ 		}
+-		WARN_ON(!pmd_none(*pmd));
++		if(!pmd_none(*pmd))
++			printk("%s warning: PMD is not empty.\n", __FUNCTION__);
  
- config PPC_PAGE_SHIFT
--	int "Page size (12=>4KB; 16=>64KB)" if 44x
-+	int "Page size (12=>4KB; 14=>16KB; 16=>64KB)" if 44x
- 	default "12"
- 	range 12 16
- 	help
+ 		pte = pte_alloc_kernel(pmd, CONSISTENT_BASE);
+ 		if (!pte) {
 diff --git a/include/asm-ppc/page.h b/include/asm-ppc/page.h
-index 61698ac..0b8f354 100644
+index 0b8f354..3b2f17a 100644
 --- a/include/asm-ppc/page.h
 +++ b/include/asm-ppc/page.h
-@@ -29,7 +29,9 @@
+@@ -28,13 +28,7 @@
+  */
  #ifdef CONFIG_PTE_64BIT
  typedef unsigned long long pte_basic_t;
- #if (PAGE_SHIFT == 16) && defined(CONFIG_PPC32)
--#define PTE_SHIFT	(PAGE_SHIFT - 11)	/* 256 ptes per table*/
-+#define PTE_SHIFT	(PAGE_SHIFT - 11)	/* 32 ptes per table */
-+#elif (PAGE_SHIFT == 14) && defined(CONFIG_PPC32)
-+#define PTE_SHIFT	(PAGE_SHIFT - 7)	/* 128 ptes per table */
+-#if (PAGE_SHIFT == 16) && defined(CONFIG_PPC32)
+-#define PTE_SHIFT	(PAGE_SHIFT - 11)	/* 32 ptes per table */
+-#elif (PAGE_SHIFT == 14) && defined(CONFIG_PPC32)
+-#define PTE_SHIFT	(PAGE_SHIFT - 7)	/* 128 ptes per table */
+-#else
+-#define PTE_SHIFT	(PAGE_SHIFT - 3)	/* 512 ptes per page */
+-#endif
++#define PTE_SHIFT	(PAGE_SHIFT - 3)	/* PAGE_SIZE/8 ptes per page */
+ #define PTE_FMT		"%16Lx"
  #else
- #define PTE_SHIFT	(PAGE_SHIFT - 3)	/* 512 ptes per page */
- #endif
+ typedef unsigned long pte_basic_t;
 diff --git a/include/asm-ppc/ppc_page_asm.h b/include/asm-ppc/ppc_page_asm.h
-index 4918ddc..4f7ee78 100644
+index 4f7ee78..1dbfd3b 100644
 --- a/include/asm-ppc/ppc_page_asm.h
 +++ b/include/asm-ppc/ppc_page_asm.h
-@@ -29,6 +29,19 @@
- #define PPC44x_PTE_ADD_SH	23 /*32 - PMD_SHIFT + PTE_SHIFT + 3*/
- #define PPC44x_PTE_ADD_M1	20 /*32 - 3 - PTE_SHIFT*/
- #define PPC44x_RPN_M2		19 /*31 - PAGE_SHIFT*/
-+#elif (PAGE_SHIFT == 14)
-+/*
-+ * PAGE_SIZE  16K
-+ * PAGE_SHIFT 14
-+ * PTE_SHIFT  7
-+ * PMD_SHIFT  21
-+ */
-+#define PPC44x_TLB_SIZE		PPC44x_TLB_16K
-+#define PPC44x_PGD_OFF_SH	13 /*(32 - PMD_SHIFT + 2)*/
-+#define PPC44x_PGD_OFF_M1	19 /*(PMD_SHIFT - 2)*/
-+#define PPC44x_PTE_ADD_SH	21 /*32 - PMD_SHIFT + PTE_SHIFT + 3*/
-+#define PPC44x_PTE_ADD_M1	22 /*32 - 3 - PTE_SHIFT*/
-+#define PPC44x_RPN_M2		17 /*31 - PAGE_SHIFT*/
+@@ -33,27 +33,27 @@
+ /*
+  * PAGE_SIZE  16K
+  * PAGE_SHIFT 14
+- * PTE_SHIFT  7
+- * PMD_SHIFT  21
++ * PTE_SHIFT  11
++ * PMD_SHIFT  25
+  */
+ #define PPC44x_TLB_SIZE		PPC44x_TLB_16K
+-#define PPC44x_PGD_OFF_SH	13 /*(32 - PMD_SHIFT + 2)*/
+-#define PPC44x_PGD_OFF_M1	19 /*(PMD_SHIFT - 2)*/
++#define PPC44x_PGD_OFF_SH	9  /*(32 - PMD_SHIFT + 2)*/
++#define PPC44x_PGD_OFF_M1	23 /*(PMD_SHIFT - 2)*/
+ #define PPC44x_PTE_ADD_SH	21 /*32 - PMD_SHIFT + PTE_SHIFT + 3*/
+-#define PPC44x_PTE_ADD_M1	22 /*32 - 3 - PTE_SHIFT*/
++#define PPC44x_PTE_ADD_M1	18 /*32 - 3 - PTE_SHIFT*/
+ #define PPC44x_RPN_M2		17 /*31 - PAGE_SHIFT*/
  #elif (PAGE_SHIFT == 16)
  /*
   * PAGE_SIZE  64K
+  * PAGE_SHIFT 16
+- * PTE_SHIFT   5
+- * PMD_SHIFT  21
++ * PTE_SHIFT  13
++ * PMD_SHIFT  29
+  */
+ #define PPC44x_TLB_SIZE		PPC44x_TLB_64K
+-#define PPC44x_PGD_OFF_SH	13 /*(32 - PMD_SHIFT + 2)*/
+-#define PPC44x_PGD_OFF_M1	19 /*(PMD_SHIFT - 2)*/
++#define PPC44x_PGD_OFF_SH	5  /*(32 - PMD_SHIFT + 2)*/
++#define PPC44x_PGD_OFF_M1	27 /*(PMD_SHIFT - 2)*/
+ #define PPC44x_PTE_ADD_SH	19 /*32 - PMD_SHIFT + PTE_SHIFT + 3*/
+-#define PPC44x_PTE_ADD_M1	24 /*32 - 3 - PTE_SHIFT*/
++#define PPC44x_PTE_ADD_M1	16 /*32 - 3 - PTE_SHIFT*/
+ #define PPC44x_RPN_M2		15 /*31 - PAGE_SHIFT*/
+ #else
+ #error "Unsupported PAGE_SIZE"
 
---Boundary-00=_C0p+Fcgc2e/QVcy--
+--Boundary-00=_U0p+FsJ4iMk3wnu--
