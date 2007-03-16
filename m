@@ -1,19 +1,22 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E728ADDED5
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 07:04:52 +1100 (EST)
-Date: Fri, 16 Mar 2007 21:04:52 +0100
-From: Olaf Hering <olaf@aepfle.de>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: Don't pass the stack pointer to zImage's start() function
-Message-ID: <20070316200452.GA31793@aepfle.de>
-References: <20070315042904.GE14061@localhost.localdomain>
-	<20070316183748.GA30637@aepfle.de>
-	<1174073217.16140.10.camel@zod.rchland.ibm.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 008C8DDEAB
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 07:16:23 +1100 (EST)
+Message-ID: <45FAFB12.70306@freescale.com>
+Date: Fri, 16 Mar 2007 15:16:18 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1174073217.16140.10.camel@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH][POWERPC] QE: Make QUICC Engine support a
+	configurableoption
+References: <989B956029373F45A0B8AF02970818902DB124@zch01exm26.fsl.freescale.net>
+	<45F94472.6010803@freescale.com>
+	<Pine.LNX.4.64.0703151006110.28961@localhost.localdomain>
+	<45FAEE43.2040006@freescale.com>
+	<03ECE1F6-5048-44FA-86FD-A42C954E4071@kernel.crashing.org>
+In-Reply-To: <03ECE1F6-5048-44FA-86FD-A42C954E4071@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Phillips Kim-R1AAHA <Kim.Phillips@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,10 +26,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 16, Josh Boyer wrote:
+Kumar Gala wrote:
 
-> How, why is that useful, and where is that ever used?
+>> The patch works, but I was wondering if you could move the QE Options 
+>> (i.e. fast and/or slow UCC support) to this same menu?  Right now, 
+>> that menu appears on the top level. Instead, it should just appear on 
+>> the Platform menu under "QUICC Engine Support".
+> 
+> This will get fixed up as part of my larger arch/powerpc/Kconfig cleanup
 
-prom_init runs with the stack passed from the firmware (unless that
-changed in since 2.6.13). Its better to know where the stack is when
-looking at early boot bugreports.
+Actually, I forgot that my UCC fast/slow Kconfig patch makes the QE Options menu go away 
+completely.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
