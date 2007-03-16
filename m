@@ -1,16 +1,15 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 15 Mar 2007 21:30:17 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [POWERPC] 32-bit early_init() should zero from __bss_start to
-	__bss_stop only
-Message-ID: <20070316043017.GB27209@mag.az.mvista.com>
-References: <20061025233649.GB17461@mag.az.mvista.com>
-	<1161821177.22582.149.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1161821177.22582.149.camel@localhost.localdomain>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <wei.zhang@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9262BDDEF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 15:33:16 +1100 (EST)
+From: Zhang Wei <wei.zhang@freescale.com>
+To: paulus@samba.org, benh@kernel.crashing.org, galak@kernel.crashing.org
+Subject: [PATCH 1/4] Add a new member 'name' to structure irq_host.
+Date: Fri, 16 Mar 2007 12:38:32 +0800
+Message-Id: <11740199151814-git-send-email-wei.zhang@freescale.com>
+Sender: Zhang Wei <wei.zhang@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, r54964@freescale.com
+Reply-To: Zhang Wei <wei.zhang@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +19,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul,
+This patch adds a new member 'name' for irq host's name to structure irq_host and modifies the definition of the function irq_alloc_host(). The assignment to the irq host's name is also added to irq_alloc_host().
 
-This one was dropped somewhere along the way...
-
-Mark
+Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 ---
+ arch/powerpc/kernel/irq.c |    4 +++-
+ include/asm-powerpc/irq.h |    4 +++-
+ 2 files changed, 6 insertions(+), 2 deletions(-)
 
-On Thu, Oct 26, 2006 at 10:06:16AM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2006-10-25 at 16:36 -0700, Mark A. Greer wrote:
-> > Currently, early_init() in setup_32.c zeroes from '_bss_start' to '_end'.
-> > It should only zero from '__bss_start' to '__bss_stop'.  This patch does that.
-> > 
-> > Signed-off-by: Mark A. Greer <mgreer@mvista.com>
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> 
-> > 
-> >  setup_32.c |    3 ++-
-> >  1 files changed, 2 insertions(+), 1 deletion(-)
-> > ---
-> > 
-> > diff --git a/arch/powerpc/kernel/setup_32.c b/arch/powerpc/kernel/setup_32.c
-> > index a4c2964..c682e9a 100644
-> > --- a/arch/powerpc/kernel/setup_32.c
-> > +++ b/arch/powerpc/kernel/setup_32.c
-> > @@ -95,7 +95,8 @@ unsigned long __init early_init(unsigned
-> >  
-> >  	/* First zero the BSS -- use memset_io, some platforms don't have
-> >  	 * caches on yet */
-> > -	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0, _end - __bss_start);
-> > +	memset_io((void __iomem *)PTRRELOC(&__bss_start), 0,
-> > +			__bss_stop - __bss_start);
-> >  
-> >  	/*
-> >  	 * Identify the CPU type and fix up code sections
-> > _______________________________________________
-> > Linuxppc-dev mailing list
-> > Linuxppc-dev@ozlabs.org
-> > https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
+index 919fbf5..2cbf87f 100644
+--- a/arch/powerpc/kernel/irq.c
++++ b/arch/powerpc/kernel/irq.c
+@@ -404,7 +404,8 @@ static struct irq_host *irq_default_host
+ struct irq_host *irq_alloc_host(unsigned int revmap_type,
+ 				unsigned int revmap_arg,
+ 				struct irq_host_ops *ops,
+-				irq_hw_number_t inval_irq)
++				irq_hw_number_t inval_irq,
++				const char *name)
+ {
+ 	struct irq_host *host;
+ 	unsigned int size = sizeof(struct irq_host);
+@@ -429,6 +430,7 @@ struct irq_host *irq_alloc_host(unsigned
+ 	host->revmap_type = revmap_type;
+ 	host->inval_irq = inval_irq;
+ 	host->ops = ops;
++	host->name = name;
+ 
+ 	spin_lock_irqsave(&irq_big_lock, flags);
+ 
+diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
+index cf927c1..d8d77ef 100644
+--- a/include/asm-powerpc/irq.h
++++ b/include/asm-powerpc/irq.h
+@@ -124,6 +124,7 @@ #define IRQ_HOST_MAP_TREE	3 /* radix tre
+ 	struct irq_host_ops	*ops;
+ 	void			*host_data;
+ 	irq_hw_number_t		inval_irq;
++	const char		*name;
+ };
+ 
+ /* The main irq map itself is an array of NR_IRQ entries containing the
+@@ -162,7 +163,8 @@ static inline irq_hw_number_t virq_to_hw
+ extern struct irq_host *irq_alloc_host(unsigned int revmap_type,
+ 				       unsigned int revmap_arg,
+ 				       struct irq_host_ops *ops,
+-				       irq_hw_number_t inval_irq);
++				       irq_hw_number_t inval_irq,
++				       const char *name);
+ 
+ 
+ /**
+-- 
+1.4.0
