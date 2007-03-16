@@ -1,18 +1,20 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 7E7B9DDDFC
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 21:23:33 +1100 (EST)
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors. 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 16 Mar 2007 09:29:18 +0100."
-	<1174033758.6861.41.camel@localhost.localdomain>
-Date: Fri, 16 Mar 2007 11:23:30 +0100
-Sender: wd@denx.de
-Message-Id: <20070316102330.88535352604@atlas.denx.de>
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 819B0DDEE8
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 21:55:31 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: RFC: arch/powerpc Kconfig cleanup
+Date: Fri, 16 Mar 2007 11:54:49 +0100
+References: <Pine.LNX.4.64.0703151816370.3448@localhost.localdomain>
+	<200703160134.23536.arnd@arndb.de>
+	<3999EC16-6013-4632-A0A5-376D006CE057@kernel.crashing.org>
+In-Reply-To: <3999EC16-6013-4632-A0A5-376D006CE057@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703161154.50218.arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,126 +24,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dear Ben,
+On Friday 16 March 2007, Kumar Gala wrote:
+> >
+> > At some point we should also separate the common code (mostly spufs)
+> > from the cell native support that does not apply to ps3 and celleb.
+>=20
+> Fair point, I'll fix that up. =A0I'm more interested if people are ok =A0
+> with having the 'Cell Broadband Engine options' under 'Platform =A0
+> support' is ok or if it should stay at the top level.
 
-in message <1174033758.6861.41.camel@localhost.localdomain> you wrote:
-> 
-> This is all very ugly, hopefully, can be replaced by a proper
-> device-tree representation in arch/powerpc. What are your plans for
-> porting 440SP/SPe over ?
+I was never happy with having it at the top level, but I couldn't
+figure out a better way at the time, and I think I just copied what
+some other platforms did.
 
-We will start working on it as soon as  we  can  lay  fingers  on  an
-arch/powerpc port for the 440SP/SPe...
+I think it would be good to turn them into menuconfig entries, so
+that if platforms/Kconfig basically contains
 
-> > +/*
-> > + *  Init DMA0/1 and XOR engines; allocate memory for DMAx FIFOs; set platform_device
-> > + * memory resources addresses
-> > + */
-> > +static void ppc440spe_configure_raid_devices(void)
-> > +{
-> > +	void *fifo_buf;
-> > +	i2o_regs_t *i2o_reg;
-> > +	dma_regs_t *dma_reg0, *dma_reg1;
-> > +	xor_regs_t *xor_reg;
-> > +	u32 mask;
-> > +
-> > +	printk ("%s\n", __FUNCTION__);
-> 
-> The above should probably go...
+source arch/powerpc/platforms/pseries/Kconfig
+source arch/powerpc/platforms/powermac/Kconfig
+source arch/powerpc/platforms/cell/Kconfig
+source arch/powerpc/platforms/celleb/Kconfig
+source arch/powerpc/platforms/ps3/Kconfig
+=2E..
 
-Agreed, sorry.
+each of them can either be
 
-> > +	i2o_reg  = (i2o_regs_t *)ioremap64(I2O_MMAP_BASE, I2O_MMAP_SIZE);
-> > +	dma_reg0 = (dma_regs_t *)ioremap64(DMA0_MMAP_BASE, DMA_MMAP_SIZE);
-> > +	dma_reg1 = (dma_regs_t *)ioremap64(DMA1_MMAP_BASE, DMA_MMAP_SIZE);
-> > +	xor_reg  = (xor_regs_t *)ioremap64(XOR_MMAP_BASE,XOR_MMAP_SIZE);
-> 
-> You should test the result of these. Also, the move to arch/powerpc here
-> as well will cleanup as ioremap will always take 64 bits resource_size_t
-> (can't you make that working on arch/ppc too and use normal ioremap
-> there as well ?).
-> 
-> In addition, the casting is ugly and your types lack __iomem
-> annotations.
+config CELLEB
+	bool "support for celleb"
+	select FOO
+	select BAR
 
-Will fix. Thanks for pointing out.
+or
 
-> > +	mtdcr(DCRN_SDR0_CFGADDR, 0x200);
-> > +	mtdcr(DCRN_SDR0_CFGDATA, 0x10000);
-> > +	mtdcr(DCRN_SDR0_CFGADDR, 0x200);
-> > +	mtdcr(DCRN_SDR0_CFGDATA, 0x0);
-> 
-> The above could use some symbolic constants... Is this the only piece of
-> code to access the SDR0 indirect config registers ? If not, then some
-> global locking is needed as well.
-> 
-> (See my old thread about providing a global lock/mutex for that sort of
-> system wide, low pressure, config registers accesses).
+menuconfig PSERIES
+	bool "support for pseries"
+	select BAR
+	select BAZ
+config PSERIES_FOO
+	bool "option foo for pseries"
+	depends on PSERIES
+endmenu
 
-Will check.
-
-> > +	/* Setup the base address of mmaped registers */
-> > +	mtdcr(DCRN_I2O0_IBAH, 0x00000004);
-> > +	mtdcr(DCRN_I2O0_IBAL, 0x00100001);
-> 
-> Some symbolic constants here too, also am I right to assume you are hard
-> coding an address here ? That need at least some bold comments as there
-> seem to be no resource management involved to make sure that address
-> hasn't been used elsewhere.
-
-Will check.
-
-> That's also things that should be handled via the device-tree
-> hopefully. 
-
-Agreed.
-
-...
-> > +	PRINTK("\tfree slot %x: %d stride: %d\n", desc->phys, desc->idx, desc->stride);
-> 
-> Why don't you use the kernel existing debugging facilitie, like
-> pr_debug, or dev_dbg if you have a proper struct device (which you
-> should have with an arch/powerpc port hopefully using
-> of_platform_device).
-
-You are right once more..
-
-> > +	for (; i < (plat_data->pool_size/db_sz); i++) {
-> > +		slot = kzalloc(sizeof(struct spe_adma_desc_slot), GFP_KERNEL);
-> 
-> GFP_KERNEL within spin_lock_bh is no good...
-
-Thanks for poointing out
-
-> > diff --git a/include/asm-ppc/adma.h b/include/asm-ppc/adma.h
-> > new file mode 100644
-> > index 0000000..0be88f1
-> > --- /dev/null
-> > +++ b/include/asm-ppc/adma.h
-> 
-> There's way too many code in this .h file, too big inline functions. It
-> should mostly be moved to a .c file
-> 
-> Also, it's a bit rude to have a file called asm-ppc/adma.h that contains
-> ppc440SPe specific code without any guard. I don't care much about
-
-Agreed. Will rename.
-
-> > + * include/asm/ppc440spe_adma.h
-> 
-> Comment doesn't match file name. Just remove the comment anyway.
-
-...and change the file name.
-
-Thanks for your valuable input. Will try to clean up.
-
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Microsoft Multimedia:
-You have nice graphics, sound and animations when the system crashes.
+	Arnd <><
