@@ -1,21 +1,12 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id CE0A9DDE10
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 14:44:48 +1100 (EST)
-Date: Thu, 15 Mar 2007 20:45:39 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "Mark A. Greer" <mgreer@mvista.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
-Message-ID: <20070316034539.GB22233@mag.az.mvista.com>
-References: <20070305032307.GB31417@localhost.localdomain>
-	<20070305032452.810C1DDF1B@ozlabs.org>
-	<20070315230230.GB3342@mag.az.mvista.com>
-	<20070316001819.GE6784@localhost.localdomain>
-	<20070316004717.GB10786@mag.az.mvista.com>
-	<20070316005016.GI6784@localhost.localdomain>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 16 Mar 2007 14:46:53 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: powerpc: Don't pass the stack pointer to zImage's start() function
+Message-ID: <20070316034653.GB12325@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070316005016.GI6784@localhost.localdomain>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,61 +16,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 16, 2007 at 11:50:16AM +1100, David Gibson wrote:
-> On Thu, Mar 15, 2007 at 05:47:17PM -0700, Mark A. Greer wrote:
-> > On Fri, Mar 16, 2007 at 11:18:19AM +1100, David Gibson wrote:
-> > > On Thu, Mar 15, 2007 at 04:02:30PM -0700, Mark A. Greer wrote:
-> > > > On Mon, Mar 05, 2007 at 02:24:52PM +1100, David Gibson wrote:
-> > > > > In addition the wrapper script is rearranged to ensure that the
-> > > > > platform .o is always linked first.  This means that platforms where
-> > > > > the zImage entry point is at a fixed address or offset, rather than
-> > > > > being encoded in the binary header can be supported using option (1).
-> > > > 
-> > > > But now you don't have a fixed address for _zimage_start when you use
-> > > > option 2).  I don't know what address _zimage_start is at so I can't
-> > > > start it.  This is an issue for fw's that don't understand ELF and simply
-> > > > download a bucket of bits.  You have to tell the fw where to jump to
-> > > > (e.g., go 0x410010).
-> > > 
-> > > The patch already includes an example that deals with this case,
-> > > uImage.  The wrapper script pulls the ELF entry point information out
-> > > using objdump and puts it into uboot's structure.
-> > 
-> > Sure, you're putting the addr into a struct in the uimage that u-boot
-> > knows enough to get.
-> > 
-> > 'u-boot' == smart
-> > 'my firmware' == dumb
-> > 
-> > I'm talking about a fw that knows *nothing* about what its downloading/
-> > running--its just a bucket of bits/instructions.  It doesn't get an address
-> > out of the image.  It has to be told explicitly where to download the image
-> > to and where to jump to.  As in, by someone sitting at the console who went
-> > and dug out the start addr.  Or, more likely with a prestored jump cmd that
-> > someone figured out the right address for and stored.  But, when the start
-> > addr changes, suddenly it won't boot and someone has to figure out why,
-> > find the the new start addr, modify the prestored cmd(s), and its good
-> > until the next time the start addr changes.
-> 
-> Sorry, I misunderstood.  That sort of firmware - and the even dumber
-> sort where the start address isn't configurable at all - is exactly
-> what option (1) is for.  You'll need an asm platform file which
-> defines _zimage_start to a fixed offset.  In your case you could
-> probably just make it a jump to the generic _zimage_start.
+At present, the zImage entry code passes a copy of the stack pointer
+to the start() function.  There's no real reason for this; the only
+thing start() does with it is print it out.  It appears to be a
+leftover debugging hack, so, this patch removes it.
 
-Arg, I was afraid you were going to say that.  What I don't like is that
-I'll simply duplicate the functionality of crt0.S verbatim just so I know
-where the start addr is.  It really has nothing to do with crt0.S and
-everything to do with the link order.
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
 
-/me still thinks there's a better way.
+Now without a stupid error in the printf().  Please apply.
 
-<rant>
-Actually, I like it less than I'm letting on.  Basically, you changed
-something that has existed for a long time and worked fine for everyone.
-In the process, my stuff and others were broken.  All of this to support
-an option that there are no users of yet (AFAIK).  I think this needs to
-go back to the old link order and/or a better solution found.
-</rant>
+Index: working-2.6/arch/powerpc/boot/crt0.S
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/crt0.S	2007-03-15 16:15:51.000000000 +1100
++++ working-2.6/arch/powerpc/boot/crt0.S	2007-03-15 16:16:55.000000000 +1100
+@@ -86,5 +86,4 @@ _zimage_start:
+ 	bl	platform_init
+ 
+ 	/* Call start */
+-	mr	r3,r1
+ 	b	start
+Index: working-2.6/arch/powerpc/boot/main.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/main.c	2007-03-15 16:16:48.000000000 +1100
++++ working-2.6/arch/powerpc/boot/main.c	2007-03-15 16:21:54.000000000 +1100
+@@ -256,7 +256,7 @@ struct dt_ops dt_ops;
+ struct console_ops console_ops;
+ struct loader_info loader_info;
+ 
+-void start(void *sp)
++void start(void)
+ {
+ 	struct addr_range vmlinux, initrd;
+ 	kernel_entry_t kentry;
+@@ -268,8 +268,7 @@ void start(void *sp)
+ 	if (platform_ops.fixups)
+ 		platform_ops.fixups();
+ 
+-	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r",
+-	       _start, sp);
++	printf("\n\rzImage starting: loaded at 0x%p\n\r", _start);
+ 
+ 	vmlinux = prep_kernel();
+ 	initrd = prep_initrd(vmlinux, loader_info.initrd_addr,
+Index: working-2.6/arch/powerpc/boot/ops.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/ops.h	2007-03-15 16:15:51.000000000 +1100
++++ working-2.6/arch/powerpc/boot/ops.h	2007-03-15 16:21:54.000000000 +1100
+@@ -66,7 +66,7 @@ struct loader_info {
+ };
+ extern struct loader_info loader_info;
+ 
+-void start(void *sp);
++void start(void);
+ int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
+ int serial_console_init(void);
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp);
 
-Mark
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
