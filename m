@@ -1,15 +1,19 @@
-Return-Path: <xmusun@hotmail.com>
-Received: from bay0-omc1-s29.bay0.hotmail.com (bay0-omc1-s29.bay0.hotmail.com
-	[65.54.246.101]) by ozlabs.org (Postfix) with ESMTP id F1C79DDEE5
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 19:12:00 +1100 (EST)
-Message-ID: <BAY106-W231E7F57D74C5A2E9EEABBC7710@phx.gbl>
-Content-Type: multipart/alternative;
-	boundary="_5e2a2f35-0fb1-4c48-a8e0-f60b62965c2c_"
-From: huangxu <xmusun@hotmail.com>
-To: <linuxppc-dev@ozlabs.org>
-Subject: How to input/output sound/audio using MontaVista Linux on ML403
-Date: Fri, 16 Mar 2007 15:59:57 +0800
-MIME-Version: 1.0
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E77ACDDE3A
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 19:29:27 +1100 (EST)
+Subject: Re: [PATCH] [PPC32]  ADMA support for PPC 440SPe processors.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Wolfgang Denk <wd@denx.de>
+In-Reply-To: <20070315232956.37DAB353A6C@atlas.denx.de>
+References: <20070315232956.37DAB353A6C@atlas.denx.de>
+Content-Type: text/plain
+Date: Fri, 16 Mar 2007 09:29:18 +0100
+Message-Id: <1174033758.6861.41.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +23,178 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---_5e2a2f35-0fb1-4c48-a8e0-f60b62965c2c_
-Content-Type: text/plain; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+Hi !
 
-hi all, I am a fresh guy here, this is my first time sending mails, thanks to all in advance. I got MontaVista Linux run on Xilinx ML403(Powerpc 405, Virtex-4).after that,I am going to input/output sound upon MontaVista Linux, but I found that default kernel seems no support for audio.can anyboy tell me something about how to build a kernel which could be run on ML403 with audio support. thanks so muchHUANG Xu 
-_________________________________________________________________
-通过 Windows Live Spaces 与朋友轻松共享您的生活。
-http://spaces.live.com/spacesapi.aspx?wx_action=create&wx_url=/friends.aspx&mkt=zh-cn
---_5e2a2f35-0fb1-4c48-a8e0-f60b62965c2c_
-Content-Type: text/html; charset="gb2312"
-Content-Transfer-Encoding: 8bit
+I'm short on time, so no really in-depth review right now, but a few
+nits I've spotted while browsing the patch..
 
-<html>
-<head>
-<style>
-P
-{
-margin:0px;
-padding:0px
-}
-body
-{
-FONT-SIZE: 9pt;
-FONT-FAMILY:Tahoma
-}
-</style>
-</head>
-<body>hi all,<BR>&nbsp;<BR>I am a fresh guy here, this is my first time sending mails, thanks to all in advance.<BR>&nbsp;<BR>I got MontaVista Linux run on Xilinx ML403(Powerpc 405, Virtex-4).<BR>after that,<BR>I am going to input/output sound&nbsp;upon MontaVista Linux, but I found that default kernel seems no support&nbsp;for audio.<BR>can anyboy tell me something about how to build a kernel which could be run on ML403&nbsp;with audio support.<BR>&nbsp;<BR>thanks so much<BR><BR>HUANG Xu <BR><BR><br /><hr />通过 Live.com 查看资讯、娱乐信息和您关心的其他信息！ <a href='http://www.live.com/getstarted.aspx ' target='_new'>立即尝试！</a></body>
-</html>
---_5e2a2f35-0fb1-4c48-a8e0-f60b62965c2c_--
+> static u64 ppc440spe_adma_dmamask = DMA_32BIT_MASK;
+> +
+> +/* DMA and XOR platform devices' resources */
+> +static struct resource ppc440spe_dma_0_resources[] = {
+> +	{
+> +		.flags = IORESOURCE_MEM,
+> +	},
+> +	{
+> +		.start = DMA0_CS_FIFO_NEED_SERVICE,
+> +		.end = DMA0_CS_FIFO_NEED_SERVICE,
+> +		.flags = IORESOURCE_IRQ
+> +	}
+> +};
+
+   .../...
+
+This is all very ugly, hopefully, can be replaced by a proper
+device-tree representation in arch/powerpc. What are your plans for
+porting 440SP/SPe over ?
+
+> +/*
+> + *  Init DMA0/1 and XOR engines; allocate memory for DMAx FIFOs; set platform_device
+> + * memory resources addresses
+> + */
+> +static void ppc440spe_configure_raid_devices(void)
+> +{
+> +	void *fifo_buf;
+> +	i2o_regs_t *i2o_reg;
+> +	dma_regs_t *dma_reg0, *dma_reg1;
+> +	xor_regs_t *xor_reg;
+> +	u32 mask;
+> +
+> +	printk ("%s\n", __FUNCTION__);
+
+The above should probably go...
+
+> +	/*
+> +	 * Map registers
+> +	 */
+> +	i2o_reg  = (i2o_regs_t *)ioremap64(I2O_MMAP_BASE, I2O_MMAP_SIZE);
+> +	dma_reg0 = (dma_regs_t *)ioremap64(DMA0_MMAP_BASE, DMA_MMAP_SIZE);
+> +	dma_reg1 = (dma_regs_t *)ioremap64(DMA1_MMAP_BASE, DMA_MMAP_SIZE);
+> +	xor_reg  = (xor_regs_t *)ioremap64(XOR_MMAP_BASE,XOR_MMAP_SIZE);
+
+You should test the result of these. Also, the move to arch/powerpc here
+as well will cleanup as ioremap will always take 64 bits resource_size_t
+(can't you make that working on arch/ppc too and use normal ioremap
+there as well ?).
+
+In addition, the casting is ugly and your types lack __iomem
+annotations.
+
+> +	/*
+> +	 * Configure h/w
+> +	 */
+> +
+> +	/* Reset I2O/DMA */
+> +	mtdcr(DCRN_SDR0_CFGADDR, 0x200);
+> +	mtdcr(DCRN_SDR0_CFGDATA, 0x10000);
+> +	mtdcr(DCRN_SDR0_CFGADDR, 0x200);
+> +	mtdcr(DCRN_SDR0_CFGDATA, 0x0);
+
+The above could use some symbolic constants... Is this the only piece of
+code to access the SDR0 indirect config registers ? If not, then some
+global locking is needed as well.
+
+(See my old thread about providing a global lock/mutex for that sort of
+system wide, low pressure, config registers accesses).
+
+> +	/* Reset XOR */
+> +	out_be32(&xor_reg->crsr, XOR_CRSR_XASR_BIT);
+> +	out_be32(&xor_reg->crrr, XOR_CRSR_64BA_BIT);
+> +
+> +	/* Setup the base address of mmaped registers */
+> +	mtdcr(DCRN_I2O0_IBAH, 0x00000004);
+> +	mtdcr(DCRN_I2O0_IBAL, 0x00100001);
+
+Some symbolic constants here too, also am I right to assume you are hard
+coding an address here ? That need at least some bold comments as there
+seem to be no resource management involved to make sure that address
+hasn't been used elsewhere.
+
+That's also things that should be handled via the device-tree
+hopefully. 
+
+> +	/*  Provide memory regions for DMA's FIFOs: I2O, DMA0 and DMA1 share
+> +	 * the base address of FIFO memory space
+> +	 */
+> +	fifo_buf = kmalloc((DMA0_FIFO_SIZE + DMA1_FIFO_SIZE)<<1, GFP_KERNEL | __GFP_DMA);
+
+Error checking ? Also, what is the rationale for GFP_KERNEL | __GFP_DMA
+here ? I don't think you need the later and probably not with
+underscores if you do anyway.
+
+> +	/* SetUp FIFO memory space base address */
+> +	out_le32(&i2o_reg->ifbah, 0);
+> +	out_le32(&i2o_reg->ifbal, ((u32)__pa(fifo_buf)));
+>
+> +	/* zero FIFO size for I2O, DMAs; 0x1000 to enable DMA */
+> +	out_le32(&i2o_reg->ifsiz, 0);
+> +	out_le32(&dma_reg0->fsiz, 0x1000 | ((DMA0_FIFO_SIZE>>3) - 1));
+> +	out_le32(&dma_reg1->fsiz, 0x1000 | ((DMA1_FIFO_SIZE>>3) - 1));
+
+Symbolicm constants ?
+
+> +	/* Configure DMA engine */
+> +	out_le32(&dma_reg0->cfg, 0x0D880000);
+> +	out_le32(&dma_reg1->cfg, 0x0D880000);
+
+Same ?
+
+> +	/* Clear Status */
+> +	out_le32(&dma_reg0->dsts, ~0);
+> +	out_le32(&dma_reg1->dsts, ~0);
+> +
+> +	/* Unmask 'CS FIFO Attention' interrupts */
+> +	mask = in_le32(&i2o_reg->iopim) & ~0x48;
+> +	out_le32(&i2o_reg->iopim, mask);
+
+Same ?
+
+> +	/* enable XOR engine interrupt */
+> +	out_be32(&xor_reg->ier, XOR_IE_CBLCI_BIT | XOR_IE_CBCIE_BIT | 0x34000);
+
+Same ?
+
+> +	PRINTK("\tfree slot %x: %d stride: %d\n", desc->phys, desc->idx, desc->stride);
+
+Why don't you use the kernel existing debugging facilitie, like
+pr_debug, or dev_dbg if you have a proper struct device (which you
+should have with an arch/powerpc port hopefully using
+of_platform_device).
+
+> +	spin_lock_bh(&spe_chan->lock);
+> +	/* Allocate descriptor slots */
+> +	i = spe_chan->slots_allocated;
+> +	if (spe_chan->device->id != PPC440SPE_XOR_ID)
+> +		db_sz = sizeof (dma_cdb_t);
+> +	else
+> +		db_sz = sizeof (xor_cb_t);
+> +
+> +	for (; i < (plat_data->pool_size/db_sz); i++) {
+> +		slot = kzalloc(sizeof(struct spe_adma_desc_slot), GFP_KERNEL);
+
+GFP_KERNEL within spin_lock_bh is no good...
+ 
+> diff --git a/include/asm-ppc/adma.h b/include/asm-ppc/adma.h
+> new file mode 100644
+> index 0000000..0be88f1
+> --- /dev/null
+> +++ b/include/asm-ppc/adma.h
+
+There's way too many code in this .h file, too big inline functions. It
+should mostly be moved to a .c file
+
+Also, it's a bit rude to have a file called asm-ppc/adma.h that contains
+ppc440SPe specific code without any guard. I don't care much about
+asm-ppc for now but once that's moving to asm-powerpc, you might end up
+with more than one platform doing ADMA differently and several of them
+buildable in a single kernel, so keep that in mind.
+
+> @@ -0,0 +1,715 @@
+> +/*
+> + * include/asm/ppc440spe_adma.h
+> + 
+
+Comment doesn't match file name. Just remove the comment anyway.
+
+Cheers,
+Ben.
