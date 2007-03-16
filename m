@@ -1,28 +1,25 @@
-Return-Path: <gregoire.banderet@ge.com>
-Received: from ext-ch1gw-2.online-age.net (ext-ch1gw-2.online-age.net
-	[216.34.191.36])
+Return-Path: <Daniel.Wyss@securiton.ch>
+Received: from mrp.swissptt.ch (outmail27.swisscom.com [138.190.3.147])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ext-ch1gw.online-age.net",
-	Issuer "Savvis Communications Root CA" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 8C5BDDDE1D
+	(Client CN "outmail2.swisscom.com",
+	Issuer "VeriSign Trust Network" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3853ADDEC9
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 21:38:22 +1100 (EST)
-Received: from int-ch1gw-4.online-age.net (int-ch1gw-4 [3.159.232.68])
-	by ext-ch1gw-2.online-age.net (8.13.6/8.13.6/20051111-SVVS-TLS-DNSBL)
-	with ESMTP id l2G9bTAZ029857 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 05:37:29 -0400 (EDT)
-Received: from cinmlef06.e2k.ad.ge.com (int-ch1gw-4 [3.159.232.68])
-	by int-ch1gw-4.online-age.net (8.13.6/8.13.6/20050510-SVVS) with ESMTP
-	id l2G9bSrd029004 for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 05:37:28 -0400 (EDT)
-Message-ID: <45FA6550.3010604@ge.com>
-Date: Fri, 16 Mar 2007 10:37:20 +0100
-From: Gregoire Banderet <Gregoire.Banderet@ge.com>
+	Sat, 17 Mar 2007 01:00:44 +1100 (EST)
+Received: from stnzolav1.securiton.int (stnzolex1.securiton.int [10.101.10.36])
+	by mrp.swissptt.ch with ESMTP id l2GDdUTU013356
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 16 Mar 2007 14:39:30 +0100 (MET)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Replacing initrd by ramfs, not syncing: VFS: Unable to mount root
-	fs on unknown-block(1,0)
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C767D0.84F43449"
+Subject: RE: login on console=tty with serial input
+Date: Fri, 16 Mar 2007 14:39:28 +0100
+Message-ID: <381D3B2C62C8B94B95219E2DA47C8DCF08E3CA@stnzolex2.securiton.int>
+In-Reply-To: <OF1C808DEE.C8EB82B2-ONC1257295.003752BA-C1257296.0038EEB2@rockwellcollins.com>
+References: <OF1C808DEE.C8EB82B2-ONC1257295.003752BA-C1257296.0038EEB2@rockwellcollins.com>
+From: <Daniel.Wyss@securiton.ch>
+To: <hbruegge@rockwellcollins.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,196 +30,319 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+This is a multi-part message in MIME format.
 
-I have an MPC8349EMDS board with an 2.6.14 kernel and u-boot 1.1.5.
+------_=_NextPart_001_01C767D0.84F43449
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-Until now I was building an uImage from the kernel, creating my own 
-rootfs and creating an initrd from it. Then I was grouping vmlinux.gz 
-and initrd.gz with 'mkimage'.
-Everything was fine, booting like this
-=> tftpboot 1000000 /tftp/uLinux-initrd.img
-=> bootm 1000000
 
-Now I try to use an initramfs instead of the initrd.
-So, I create an cpio.gz archive from my rootfs:
-find . | cpio -o -H newc | gzip > initramfs.gz
-Then I run mkimage:
-mkimage -n 'Linux 2.6 and initramfs' -A ppc -O linux -T multi -C gzip -a 
-0x00000000 -e 0x00000000 -d 
-$(OUTPUT_DIR)/kernel/vmlinux.gz:$(OUTPUT_DIR)/images/initramfs.gz 
-$(OUTPUT_DIR)/images/uLinux-initramfs.img
+Hi Harald
+=0D
+Did you find a solution for your problem?=0D
 
-And I try to boot:
-=> setenv bootargs 
-ip=3.137.218.182:3.137.218.1:3.111.43.96:255.255.255.0:freescale:eth0 
-console=ttyS0,115200
-=> tftpboot 1000000 /tftp/uLinux-initramfs.img
-=> bootm 1000000
+=0D
 
-But it ends with a kernel panic:
-Kernel panic - not syncing: VFS: Unable to mount root fs on 
-unknown-block(1,0)
+I have almost a similar problem.=0D
 
-I have ram devices created:
- > ls -l dev/ram*
-brw-r--r-- 1 root root 1,  0 Mar 16 10:08 dev/ram0
-brw-r--r-- 1 root root 1,  1 Mar 16 10:08 dev/ram1
-...
+On a MPC885 board I have one serial line, an Ethernet port and a QVGA=
+ display with a /dev/fb.
 
-I did not change my kernel config.
+As GUI library, I started to evaluate Nano-X, FLTK and wxWitgets. But there=
+ is the problem that I don't have keyboard input whether form the serial=
+ line nor form a remote shell (Ethernet).=0D
 
-Any idea what the kernel panic message means?
+As far I understand the matter the problem is that the console that is=
+ running on the frame buffer needs as input a keyboard device and not a=
+ serial line. Unfortunately I found till now no solution to redirect the=
+ serial line to a keyboard device.=0D
 
-Thanks,
-Greg.
+=0D
 
-Complete boot log:
+Regards
+Daniel Wyss
+----------------------------------------------
+SECURITON AG Alarm- und Sicherheitssysteme
 
-## Booting image at 01000000 ...
-    Image Name:   Linux 2.6 and initramfs
-    Created:      2007-03-16   9:08:29 UTC
-    Image Type:   PowerPC Linux Multi-File Image (gzip compressed)
-    Data Size:    12003210 Bytes = 11.4 MB
-    Load Address: 00000000
-    Entry Point:  00000000
-    Contents:
-    Image 0:  1489619 Bytes =  1.4 MB
-    Image 1: 10513578 Bytes = 10 MB
-    Verifying Checksum ... OK
-    Uncompressing Multi-File Image ... OK
-    Loading Ramdisk to 0f5a7000, end 0ffadcaa ... OK
-Linux version 2.6.14 (gregb@tux) (gcc version 3.4.4 (Wind River Linux)) 
-#79 PREEMPT Fri Mar 16 10:08:02 CET 2007
-Built 1 zonelists
-Kernel command line: 
-ip=3.137.218.182:3.137.218.1:3.111.43.96:255.255.255.0:freescale:eth0 
-console=ttyS0,115200
-IPIC (128 IRQ sources, 8 External IRQs) at fe000700
-PID hash table entries: 2048 (order: 11, 32768 bytes)
-Console: colour dummy device 80x25
-Dentry cache hash table entries: 65536 (order: 6, 262144 bytes)
-Inode-cache hash table entries: 32768 (order: 5, 131072 bytes)
-Memory: 245760k available (2488k kernel code, 764k data, 116k init, 0k 
-highmem)
-Mount-cache hash table entries: 512
-checking if image is initramfs... it is
-Freeing initrd memory: 10267k freed
-NET: Registered protocol family 16
-PCI: Probing PCI hardware
-PCI: Cannot allocate resource region 0 of device 0000:00:00.0
-PCI: Cannot allocate resource region 2 of device 0000:00:00.0
-PCI: Cannot allocate resource region 0 of device 0001:01:00.0
-PCI: Cannot allocate resource region 2 of device 0001:01:00.0
-PCI: Failed to allocate mem resource #2:80000000@0 for 0000:00:00.0
-PCI: Failed to allocate mem resource #2:80000000@0 for 0001:01:00.0
-SCSI subsystem initialized
-usbcore: registered new driver usbfs
-usbcore: registered new driver hub
-JFFS2 version 2.2. (NAND) (C) 2001-2003 Red Hat, Inc.
-Generic RTC Driver v1.07
-Macintosh non-volatile memory driver v1.1
-Software Watchdog Timer: 0.07 initialized. soft_noboot=0 soft_margin=60 
-sec (nowayout= 0)
-Serial: 8250/16550 driver $Revision: 1.90 $ 4 ports, IRQ sharing enabled
-ttyS0 at MMIO map 0xe0004500 mem 0xfe004500 (irq = 9) is a 16550A
-ttyS1 at MMIO map 0xe0004600 mem 0xfe004600 (irq = 10) is a 16550A
-io scheduler noop registered
-io scheduler deadline registered
-RAMDISK driver initialized: 16 RAM disks of 4096K size 1024 blocksize
-loop: loaded (max 8 devices)
-nbd: registered device at major 43
-eth0: Gianfar Ethernet Controller Version 1.1, 00:04:9f:ef:23:33
-eth0: Running with NAPI disabled
-eth0: 64/64 RX/TX BD ring size
-eth1: Gianfar Ethernet Controller Version 1.1, 00:e0:0c:00:7e:21
-eth1: Running with NAPI disabled
-eth1: 64/64 RX/TX BD ring size
-sata_sil(0000:00:11.0): cache line size not set.  Driver may not function
-sata_sil 0000:00:11.0: Applying R_ERR on DMA activate FIS errata fix
-ata1: SATA max UDMA/100 cmd 0xD1050E80 ctl 0xD1050E8A bmdma 0xD1050E00 
-irq 20
-ata2: SATA max UDMA/100 cmd 0xD1050EC0 ctl 0xD1050ECA bmdma 0xD1050E08 
-irq 20
-ata1: dev 0 ATA, max UDMA/100, 488397168 sectors: lba48
-ata1: dev 0 configured for UDMA/100
-scsi0 : sata_sil
-ata2: no device found (phy stat 00000000)
-scsi1 : sata_sil
-   Vendor: ATA       Model: HDS722525VLSA80   Rev: V36O
-   Type:   Direct-Access                      ANSI SCSI revision: 05
-SCSI device sda: 488397168 512-byte hdwr sectors (250059 MB)
-SCSI device sda: drive cache: write back
-SCSI device sda: 488397168 512-byte hdwr sectors (250059 MB)
-SCSI device sda: drive cache: write back
-  sda: sda1
-Attached scsi disk sda at scsi0, channel 0, id 0, lun 0
-MPC8349MDS flash device: 800000 at fe000000 Partition number 4
-MPC8349MDS Flash Map Info: Found 1 x16 devices at 0x0 in 16-bit bank
-  Intel/Sharp Extended Query Table at 0x0031
-Using buffer write method
-cfi_cmdset_0001: Erase suspend on write enabled
-Creating 4 MTD partitions on "MPC8349MDS Flash Map Info":
-0x00000000-0x00020000 : "HRCW"
-0x00020000-0x00600000 : "JFFS2"
-0x00600000-0x00700000 : "Kernel"
-0x00700000-0x00800000 : "U-Boot"
-MPC8349MDS flash device initialized
-driver fsl-usb2-mph, $Revision: 1.11 $
-fsl-usb2: PIB present, but selecting SYS USB
-fsl-usb: MPH @ 0xfe022100, irq 39
-fsl-usb2-mph fsl-usb2-mph.1: fsl usb20
-fsl-usb2-mph fsl-usb2-mph.1: new USB bus registered, assigned bus number 1
-fsl-usb2-mph fsl-usb2-mph.1: irq 39, io mem 0xfe022100
-fsl-usb2-mph fsl-usb2-mph.1: park 0
-fsl-usb2-mph fsl-usb2-mph.1: USB 0.0 initialized, EHCI 1.00, driver 
-$Revision: 1.11 $
-usb usb1: Product: fsl usb20
-usb usb1: Manufacturer: Linux 2.6.14 fsl-usb2-mph
-usb usb1: SerialNumber: fsl-usb2-mph.1
-hub 1-0:1.0: USB hub found
-hub 1-0:1.0: 2 ports detected
-fsl-usb2-mph fsl-usb2-mph.1: park 0
-fsl-usb2-mph fsl-usb2-mph.1: USB 0.0 restarted, EHCI 1.00, driver 
-$Revision: 1.11 $
-Initializing USB Mass Storage driver...
-usbcore: registered new driver usb-storage
-USB Mass Storage support registered.
-usbcore: registered new driver usbhid
-drivers/usb/input/hid-core.c: v2.6:USB HID core driver
-i2c /dev entries driver
-Advanced Linux Sound Architecture Driver Version 1.0.10rc1 (Mon Sep 12 
-08:13:09 2005 UTC).
-usbcore: registered new driver snd-usb-audio
-ALSA device list:
-   No soundcards found.
-NET: Registered protocol family 2
-IP route cache hash table entries: 4096 (order: 2, 16384 bytes)
-TCP established hash table entries: 16384 (order: 4, 65536 bytes)
-TCP bind hash table entries: 16384 (order: 4, 65536 bytes)
-TCP: Hash tables configured (established 16384 bind 16384)
-TCP reno registered
-TCP bic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-NET: Registered protocol family 15
-usb 1-2: new high speed USB device using fsl-usb2-mph and address 2
-hub 1-2:1.0: USB hub found
-hub 1-2:1.0: 4 ports detected
-eth0: PHY is Marvell 88E1101/88E1111 (1410cc2)
-usb 1-2.2: new high speed USB device using fsl-usb2-mph and address 3
-usb 1-2.2: Product: DaVinci based VCE module - 
-SN12010160000000000026-0-V4.0.0.39851
-usb 1-2.2: Manufacturer: GE Security - VisioWave
-usb 1-2.3: new high speed USB device using fsl-usb2-mph and address 4
-usb 1-2.3: Product: DaVinci based VCE module - 
-SN12010160000000000002-0-V4.0.0.39851
-usb 1-2.3: Manufacturer: GE Security - VisioWave
-usb 1-2.4: new high speed USB device using fsl-usb2-mph and address 5
-usb 1-2.4: Product: DaVinci based VCE module - 
-SN12010160000000000027-0-V4.0.0.39851
-usb 1-2.4: Manufacturer: GE Security - VisioWave
-IP-Config: Gateway not on directly connected network.
-Kernel panic - not syncing: VFS: Unable to mount root fs on 
-unknown-block(1,0)
-  <0>Rebooting in 180 seconds..
+Daniel Wyss
+Entwicklung Sicherheitssysteme
+Alpenstrasse 20
+CH - 3052 Zollikofen
+
+Phone:  +41 31 910 11 22
+Fax:    +41 31 910 13 03
+Direct: +41 31 910 14 37 =0D
+E-Mail: daniel.wyss@securiton.ch
+http://www.securiton.ch <http://www.securiton.ch/>=0D
+----------------------------------------------=0D
+
+=0D
+
+
+________________________________
+
+	From: linuxppc-embedded-bounces+daniel.wyss=3Dsecuriton.ch@ozlabs.org=
+ [mailto:linuxppc-embedded-bounces+daniel.wyss=3Dsecuriton.ch@ozlabs.org]=
+ On Behalf Of hbruegge@rockwellcollins.com
+	Sent: Tuesday, March 06, 2007 11:22 AM
+	To: linuxppc-embedded@ozlabs.org
+	Subject: login on console=3Dtty with serial input
+=0D
+=0D
+
+	Hi everyone.=0D
+=0D
+=0D
+	I just wondering, if anyone outthere can help me. I am currently kind of=
+ lost.=0D
+=0D
+	I have an embedded powerpc based system running with kernel 2.6.20.  The=
+ system has only two serial lines and no PS/2 or USB support. Therefore I=
+ control the system via a serial console ( passing the commandline arg:=
+ console=3DttyS0,57600) and a terminal.=0D
+	A getty program is running on /dev/console, which gives me a login:=
+ prompt, so I can login via the serial line ttyS0.=0D
+	All is working pretty perfect.=0D
+=0D
+	So far so good. And now here comes my problem.=0D
+	To add a better MMI in the future I want to use the graphic card as an=
+ output.=0D
+=0D
+	I added a  graphic card to the system. The kernel configuration includes=
+ framebuffer support for that particular graphic card.=0D
+	After booting the kernel, I can see a /dev/fb0 device and testing with=
+ 'echo "hello" > /dev/fb0', the message "hello" is displayed on the screen.=
+=0D
+	Also if I add the commandline arg: console=3Dtty console=3DttyS0,57600 , I=
+ get all kernel messages displayed, not only on the serial line, but also=
+ on the screen via the framebuffer.=0D
+=0D
+	So basically, what I want is graphical output (dev/fb0) with serial input=
+ (/dev/ttyS0). The user sees a login prompt on the screen and can enter=
+ characters by a terminal program connected to the serial line.=0D
+	Right to that point I always used the serial console for user interaction.=
+ By adding only the commandline argument console=3Dtty, I get a nice login=
+ prompt on the graphic screen. BUT I have no input via the serial line???=0D
+=0D
+	So, how do I connect the serial line /dev/ttySx  to the standard input=
+ path of the virtual console.=0D
+=0D
+	Any hint is welcomed. Any manuals to read are also welcomed.=0D
+=0D
+	Thanx=0D
+=0D
+	Harald Br=FCggemann=0D
+=0D
+	--------------------------------------------------------
+	Harald Br=FCggemann
+	Rockwell Collins Deutschland GmbH
+	Grenzh=F6ferWeg 36
+	D-69046 Heidelberg
+	Germany
+=0D
+	Phone:     +49 - 6221 - 512 484
+	Fax:          +49 - 6221 - 512 301
+=0D
+	e-mail:   hbruegge@rockwellcollins.com
+
+
+
+<html>
+<body>
+<font face =3D "arial" size =3D "1">
+---------------------------------------------------------------------------=
+------------------------------
+This e-mail is confidential and may contain privileged information.
+It is intended only for the addressees. If you have received this
+e-mail in error, kindly notify us immediately by telephone or e-mail
+and delete the message from your system.
+---------------------------------------------------------------------------=
+------------------------------
+</font>
+</body>
+</html>
+------_=_NextPart_001_01C767D0.84F43449
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; charset=
+=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.6000.16414" name=3DGENERATOR></HEAD>
+<BODY>
+<DIV dir=3Dltr align=3Dleft><SPAN class=3D738091813-16032007><FONT face=
+=3DArial=0D
+color=3D#0000ff size=3D2>Hi Harald</FONT></SPAN></DIV>
+<DIV>&nbsp;</DIV>
+<DIV><FONT face=3DArial color=3D#0000ff size=3D2><SPAN class=
+=3D738091813-16032007>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US=0D
+style=3D"FONT-SIZE: 10pt; COLOR: blue; FONT-FAMILY: Arial;=
+ mso-ansi-language: EN-US">Did=0D
+you find a solution for your problem? </SPAN><SPAN lang=3DEN-US=0D
+style=3D"mso-ansi-language: EN-US"><?xml:namespace prefix =3D o ns =3D=0D
+"urn:schemas-microsoft-com:office:office" /><o:p></o:p></SPAN></P>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US=0D
+style=3D"mso-ansi-language: EN-US"><FONT size=3D3><FONT color=
+=3D#000000><FONT=0D
+face=3D"Times New Roman">&nbsp;<o:p></o:p></FONT></FONT></FONT></SPAN></P>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US=0D
+style=3D"FONT-SIZE: 10pt; COLOR: blue; FONT-FAMILY: Arial;=
+ mso-ansi-language: EN-US">I=0D
+have almost a similar problem. </SPAN><SPAN lang=3DEN-US=0D
+style=3D"mso-ansi-language: EN-US"><o:p></o:p></SPAN></P>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US=0D
+style=3D"FONT-SIZE: 10pt; COLOR: blue; FONT-FAMILY: Arial;=
+ mso-ansi-language: EN-US">On=0D
+a MPC885 board I have one serial line, an Ethernet port and a QVGA display=
+ with=0D
+a /dev/fb.</SPAN><SPAN lang=3DEN-US=0D
+style=3D"mso-ansi-language: EN-US"><o:p></o:p></SPAN></P>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US=0D
+style=3D"FONT-SIZE: 10pt; COLOR: blue; FONT-FAMILY: Arial;=
+ mso-ansi-language: EN-US">As=0D
+GUI library, I started to evaluate Nano-X, FLTK and wxWitgets. But there is=
+ the=0D
+problem that I don't have keyboard input whether form the serial line nor=
+ form a=0D
+remote shell (Ethernet). </SPAN><SPAN lang=3DEN-US=0D
+style=3D"mso-ansi-language: EN-US"><o:p></o:p></SPAN></P>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US=0D
+style=3D"FONT-SIZE: 10pt; COLOR: blue; FONT-FAMILY: Arial;=
+ mso-ansi-language: EN-US">As=0D
+far I understand the matter the problem is that the console that is running=
+ on=0D
+the frame buffer needs as input a keyboard device and not a serial line.=0D
+Unfortunately I found till now no solution to redirect the serial line to a=
+=0D
+keyboard device. </SPAN></P>
+<P class=3DMsoNormal style=3D"MARGIN: 0cm 0cm 0pt"><SPAN lang=3DEN-US=0D
+style=3D"FONT-SIZE: 10pt; COLOR: blue; FONT-FAMILY: Arial;=
+ mso-ansi-language: EN-US"></SPAN><SPAN=0D
+lang=3DEN-US=0D
+style=3D"mso-ansi-language:=
+ EN-US"><o:p></o:p></SPAN>&nbsp;</P></SPAN></FONT><FONT=0D
+face=3DArial color=3D#0000ff size=3D2><SPAN=0D
+class=3D738091813-16032007></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial color=3D#0000ff size=3D2><SPAN=0D
+class=3D738091813-16032007>Regards</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial color=3D#0000ff size=3D2><SPAN class=
+=3D738091813-16032007>Daniel=0D
+Wyss</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial color=3D#0000ff size=3D2><SPAN class=
+=3D738091813-16032007><!-- Converted from text/plain format -->
+<P><FONT size=
+=3D2>----------------------------------------------<BR>SECURITON AG=0D
+Alarm- und Sicherheitssysteme<BR><BR>Daniel Wyss<BR>Entwicklung=0D
+Sicherheitssysteme<BR>Alpenstrasse 20<BR>CH - 3052=0D
+Zollikofen<BR><BR>Phone:&nbsp; +41 31 910 11 22<BR>Fax:&nbsp;&nbsp;&nbsp;=
+ +41 31=0D
+910 13 03<BR>Direct: +41 31 910 14 37&nbsp;&nbsp;<BR>E-Mail:=0D
+daniel.wyss@securiton.ch<BR><A=0D
+href=
+=3D"http://www.securiton.ch/">http://www.securiton.ch</A><BR>--------------=
+--------------------------------</FONT>=0D
+</P></SPAN></FONT></DIV>
+<DIV><FONT face=3DArial color=3D#0000ff size=3D2></FONT>&nbsp;</DIV>
+<DIV><BR></DIV>
+<BLOCKQUOTE=0D
+style=3D"PADDING-LEFT: 5px; MARGIN-LEFT: 5px; BORDER-LEFT: #0000ff 2px=
+ solid; MARGIN-RIGHT: 0px">
+  <DIV class=3DOutlookMessageHeader lang=3Dde dir=3Dltr align=3Dleft>
+  <HR tabIndex=3D-1>
+  <FONT face=3DTahoma size=3D2><B>From:</B>=0D
+  linuxppc-embedded-bounces+daniel.wyss=3Dsecuriton.ch@ozlabs.org=0D
+  [mailto:linuxppc-embedded-bounces+daniel.wyss=3Dsecuriton.ch@ozlabs.org]=
+ <B>On=0D
+  Behalf Of </B>hbruegge@rockwellcollins.com<BR><B>Sent:</B> Tuesday, March=
+ 06,=0D
+  2007 11:22 AM<BR><B>To:</B>=
+ linuxppc-embedded@ozlabs.org<BR><B>Subject:</B>=0D
+  login on console=3Dtty with serial input<BR></FONT><BR></DIV>
+  <DIV></DIV><BR><FONT face=3Dsans-serif size=3D2>Hi everyone.</FONT>=0D
+  <BR><BR><BR><FONT face=3Dsans-serif size=3D2>I just wondering, if anyone=
+ outthere=0D
+  can help me. I am currently kind of lost.</FONT> <BR><BR><FONT face=
+=3Dsans-serif=0D
+  size=3D2>I have an embedded powerpc based system running with kernel=
+ 2.6.20.=0D
+  &nbsp;The system has only two serial lines and no PS/2 or USB support.=0D
+  Therefore I control the system via a serial console ( passing the=
+ commandline=0D
+  arg: console=3DttyS0,57600) and a terminal.</FONT> <BR><FONT face=
+=3Dsans-serif=0D
+  size=3D2>A getty program is running on /dev/console, which gives me a=
+ login:=0D
+  prompt, so I can login via the serial line ttyS0.</FONT> <BR><FONT=0D
+  face=3Dsans-serif size=3D2>All is working pretty perfect.</FONT>=
+ <BR><BR><FONT=0D
+  face=3Dsans-serif size=3D2>So far so good. And now here comes my problem.=
+=0D
+  </FONT><BR><FONT face=3Dsans-serif size=3D2>To add a better MMI in the=
+ future I=0D
+  want to use the graphic card as an output.</FONT> <BR><BR><FONT=0D
+  face=3Dsans-serif size=3D2>I added a &nbsp;graphic card to the system.=
+ The kernel=0D
+  configuration includes framebuffer support for that particular graphic=
+ card.=0D
+  </FONT><BR><FONT face=3Dsans-serif size=3D2>After booting the kernel, I=
+ can see a=0D
+  /dev/fb0 device and testing with 'echo "hello" &gt; /dev/fb0', the=
+ message=0D
+  "hello" is displayed on the screen. </FONT><BR><FONT face=3Dsans-serif=0D
+  size=3D2>Also if I add the commandline arg: console=3Dtty console=
+=3DttyS0,57600 , I=0D
+  get all kernel messages displayed, not only on the serial line, but also=
+ on=0D
+  the screen via the framebuffer.</FONT> <BR><BR><FONT face=3Dsans-serif=
+ size=3D2>So=0D
+  basically, what I want is graphical output (dev/fb0) with serial input=0D
+  (/dev/ttyS0). The user sees a login prompt on the screen and can enter=0D
+  characters by a terminal program connected to the serial line.</FONT>=0D
+  <BR><FONT face=3Dsans-serif size=3D2>Right to that point I always used=
+ the serial=0D
+  console for user interaction. By adding only the commandline argument=0D
+  console=3Dtty, I get a nice login prompt on the graphic screen. BUT I=
+ have no=0D
+  input via the serial line???</FONT> <BR><BR><FONT face=3Dsans-serif size=
+=3D2>So,=0D
+  how do I connect the serial line /dev/ttySx &nbsp;to the standard input=
+ path=0D
+  of the virtual console.</FONT> <BR><BR><FONT face=3Dsans-serif size=
+=3D2>Any hint=0D
+  is welcomed. Any manuals to read are also welcomed. </FONT><BR><BR><FONT=
+=0D
+  face=3Dsans-serif size=3D2>Thanx</FONT> <BR><BR><FONT face=3Dsans-serif=0D
+  size=3D2>Harald Br=FCggemann</FONT> <BR><FONT face=3Dsans-serif=0D
+  size=
+=3D2><BR>--------------------------------------------------------<BR>Harald=
+=0D
+  Br=FCggemann<BR>Rockwell Collins Deutschland GmbH<BR>Grenzh=F6ferWeg=
+ 36<BR>D-69046=0D
+  Heidelberg<BR>Germany<BR><BR>Phone:&nbsp;&nbsp;&nbsp;&nbsp; +49 - 6221 -=
+ 512=0D
+  484<BR>Fax:&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;+49 - 6221 -=
+ 512=0D
+ =
+ 301<BR><BR>e-mail:&nbsp;&nbsp;&nbsp;hbruegge@rockwellcollins.com</FONT></B=
+LOCKQUOTE></BODY></HTML>
+
+<table><tr><td bgcolor=3D#ffffff><font color=3D#000000><html><br>
+<body><br>
+<font face =3D "arial" size =3D "1"><br>
+---------------------------------------------------------------------------=
+------------------------------<br>
+This e-mail is confidential and may contain privileged information.<br>
+It is intended only for the addressees. If you have received this<br>
+e-mail in error, kindly notify us immediately by telephone or e-mail<br>
+and delete the message from your system.<br>
+---------------------------------------------------------------------------=
+------------------------------<br>
+</font><br>
+</body><br>
+</html><br>
+</font></td></tr></table>
+------_=_NextPart_001_01C767D0.84F43449--
