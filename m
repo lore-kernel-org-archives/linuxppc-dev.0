@@ -1,12 +1,15 @@
 Return-Path: <wei.zhang@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 9262BDDEF2
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 15:33:16 +1100 (EST)
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id F1207DDEF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 15:33:17 +1100 (EST)
 From: Zhang Wei <wei.zhang@freescale.com>
 To: paulus@samba.org, benh@kernel.crashing.org, galak@kernel.crashing.org
-Subject: [PATCH 1/4] Add a new member 'name' to structure irq_host.
-Date: Fri, 16 Mar 2007 12:38:32 +0800
-Message-Id: <11740199151814-git-send-email-wei.zhang@freescale.com>
+Subject: [PATCH 3/4] Add mpic host name.
+Date: Fri, 16 Mar 2007 12:38:34 +0800
+Message-Id: <11740199154116-git-send-email-wei.zhang@freescale.com>
+In-Reply-To: <11740199152595-git-send-email-wei.zhang@freescale.com>
+References: <11740199151814-git-send-email-wei.zhang@freescale.com>
+	<11740199152595-git-send-email-wei.zhang@freescale.com>
 Sender: Zhang Wei <wei.zhang@freescale.com>
 Cc: linuxppc-dev@ozlabs.org, r54964@freescale.com
 Reply-To: Zhang Wei <wei.zhang@freescale.com>
@@ -19,57 +22,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a new member 'name' for irq host's name to structure irq_host and modifies the definition of the function irq_alloc_host(). The assignment to the irq host's name is also added to irq_alloc_host().
+This patch adds mpic controller host name by the mpic of_node's full_name.
 
 Signed-off-by: Zhang Wei <wei.zhang@freescale.com>
 ---
- arch/powerpc/kernel/irq.c |    4 +++-
- include/asm-powerpc/irq.h |    4 +++-
- 2 files changed, 6 insertions(+), 2 deletions(-)
+ arch/powerpc/sysdev/mpic.c |    3 ++-
+ 1 files changed, 2 insertions(+), 1 deletions(-)
 
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 919fbf5..2cbf87f 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -404,7 +404,8 @@ static struct irq_host *irq_default_host
- struct irq_host *irq_alloc_host(unsigned int revmap_type,
- 				unsigned int revmap_arg,
- 				struct irq_host_ops *ops,
--				irq_hw_number_t inval_irq)
-+				irq_hw_number_t inval_irq,
-+				const char *name)
- {
- 	struct irq_host *host;
- 	unsigned int size = sizeof(struct irq_host);
-@@ -429,6 +430,7 @@ struct irq_host *irq_alloc_host(unsigned
- 	host->revmap_type = revmap_type;
- 	host->inval_irq = inval_irq;
- 	host->ops = ops;
-+	host->name = name;
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index bcfb900..4e1581e 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -926,7 +926,8 @@ struct mpic * __init mpic_alloc(struct d
  
- 	spin_lock_irqsave(&irq_big_lock, flags);
- 
-diff --git a/include/asm-powerpc/irq.h b/include/asm-powerpc/irq.h
-index cf927c1..d8d77ef 100644
---- a/include/asm-powerpc/irq.h
-+++ b/include/asm-powerpc/irq.h
-@@ -124,6 +124,7 @@ #define IRQ_HOST_MAP_TREE	3 /* radix tre
- 	struct irq_host_ops	*ops;
- 	void			*host_data;
- 	irq_hw_number_t		inval_irq;
-+	const char		*name;
- };
- 
- /* The main irq map itself is an array of NR_IRQ entries containing the
-@@ -162,7 +163,8 @@ static inline irq_hw_number_t virq_to_hw
- extern struct irq_host *irq_alloc_host(unsigned int revmap_type,
- 				       unsigned int revmap_arg,
- 				       struct irq_host_ops *ops,
--				       irq_hw_number_t inval_irq);
-+				       irq_hw_number_t inval_irq,
-+				       const char *name);
- 
- 
- /**
+ 	mpic->irqhost = irq_alloc_host(IRQ_HOST_MAP_LINEAR, isu_size,
+ 				       &mpic_host_ops,
+-				       flags & MPIC_LARGE_VECTORS ? 2048 : 256);
++				       flags & MPIC_LARGE_VECTORS ? 2048 : 256,
++				       mpic->of_node->full_name);
+ 	if (mpic->irqhost == NULL) {
+ 		of_node_put(node);
+ 		return NULL;
 -- 
 1.4.0
