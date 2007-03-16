@@ -1,18 +1,19 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id CA996DDEE9
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C1503DDEEE
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Mar 2007 05:39:41 +1100 (EST)
-Message-ID: <45FAE45D.7000908@ru.mvista.com>
-Date: Fri, 16 Mar 2007 21:39:25 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Sat, 17 Mar 2007 06:14:09 +1100 (EST)
 MIME-Version: 1.0
-To: aldo lab <aldo.lab@gmail.com>
-Subject: Re: m8260_map_io
-References: <6e41d1460703161136q7afb3077r49b11cb9a123c124@mail.gmail.com>
-In-Reply-To: <6e41d1460703161136q7afb3077r49b11cb9a123c124@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Subject: RE: MEN A14C-board
+Date: Fri, 16 Mar 2007 12:10:01 -0700
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B44@MERCURY.inside.istor.com>
+References: <45FA6336.9020400@dutchspace.nl>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: "Johan Borkhuis" <j.borkhuis@dutchspace.nl>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,32 +24,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Dear Johan:
+=20
+Hello to you. It has been a while since I have admired your train wheels =
+on comp.os.vxworks.
+=20
+On recent linux kernels with PPC, one usually has to add =
+CONFIG_SERIAL_TEXT_DEBUG to see very early serial output from the =
+kernel. This sets up the serial uart before the console is setup.
+=20
+Another issue on ppc kernels is they usually require a =
+console=3DttyS0,115200 on the kernel command line (Assuming you primary =
+serial port is ttyS0).
+=20
+I can get into more details if you wish. Let me know.
+=20
+Charles
 
-aldo lab wrote:
+________________________________
 
-> I've seen a region of 256MB starting from 0xe0000000 that is io
-> blocking with a BAT filled with Inhibit cache and guarded.
-> do you know which is the reason of this mapping because is not so
-> clear from the code.
-> 
-> 201 static void __init
-> 202 m8260_map_io(void)
-> 203 {
-> 204         uint addr;
-> 205
-> 206         /* Map IMMR region to a 256MB BAT */
-> 207         addr = (cpm2_immr != NULL) ? (uint)cpm2_immr : CPM_MAP_ADDR;
-> 208         io_block_mapping(addr, addr, 0x10000000, _PAGE_IO);
-> 209
-> 210         /* Map I/O region to a 256MB BAT */
-> 211         io_block_mapping(IO_VIRT_ADDR, IO_PHYS_ADDR, 0x10000000, _PAGE_IO);
-> 212 }
-> 213
+From: linuxppc-embedded-bounces+ckrinke=3Distor.com@ozlabs.org on behalf =
+of Johan Borkhuis
+Sent: Fri 3/16/2007 2:28 AM
+To: linuxppc-embedded@ozlabs.org
+Subject: MEN A14C-board
 
-    MPC82xx SoC registers are mapped there.
 
-> Thank you
-> Aldo
 
-WBR, Sergei
+Hello,
+
+I am working on getting Linux running on a MEN-Micro A14C board. This
+board contains a PPC-8540, and has a U-Boot compatible bootloader. Is
+anyone else working with this board already?
+I tried modifying some BSP's, but I am not able to get past the
+bootloader prompt, the kernel itself does not produce any output.
+
+Kind Regards,
+    Johan Borkhuis
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
