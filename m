@@ -1,19 +1,19 @@
-Return-Path: <saiful.etc@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
-	by ozlabs.org (Postfix) with ESMTP id B3EEDDDE3A
+Return-Path: <j.borkhuis@dutchspace.nl>
+Received: from kirk.dutchspace.nl (unknown [82.161.242.14])
+	by ozlabs.org (Postfix) with ESMTP id 3039BDDE32
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 20:16:34 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so171083nfc
+	Fri, 16 Mar 2007 20:28:27 +1100 (EST)
+Received: from [10.21.30.78] (snitkin.dutchspace.nl [10.21.30.78])
+	by kirk.dutchspace.nl (8.11.7p1+Sun/8.10.2) with ESMTP id l2G9Rrt09974
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 02:16:33 -0700 (PDT)
-Message-ID: <38b44d590703160216y5082ae47qcc7351cce9aeb579@mail.gmail.com>
-Date: Fri, 16 Mar 2007 14:46:33 +0530
-From: "Saiful Khan" <saiful.etc@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: porting u-boot on sbc7447 board
+	Fri, 16 Mar 2007 10:27:53 +0100 (MET)
+Message-ID: <45FA6336.9020400@dutchspace.nl>
+Date: Fri, 16 Mar 2007 10:28:22 +0100
+From: Johan Borkhuis <j.borkhuis@dutchspace.nl>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_19680_22530952.1174036593152"
+To: linuxppc-embedded@ozlabs.org
+Subject: MEN A14C-board
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,28 +24,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_19680_22530952.1174036593152
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello,
 
-hello,
+I am working on getting Linux running on a MEN-Micro A14C board. This 
+board contains a PPC-8540, and has a U-Boot compatible bootloader. Is 
+anyone else working with this board already?
+I tried modifying some BSP's, but I am not able to get past the 
+bootloader prompt, the kernel itself does not produce any output.
 
-Did anybody ported u-boot on sbc7447 board? Please help me how to start?
-
-Thanks and regards
-Saiful
-
-------=_Part_19680_22530952.1174036593152
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-<div>hello,</div>
-<div>&nbsp;</div>
-<div>Did anybody ported u-boot on sbc7447 board? Please help me how to start?</div>
-<div>&nbsp;</div>
-<div>Thanks and regards</div>
-<div>Saiful</div>
-
-------=_Part_19680_22530952.1174036593152--
+Kind Regards,
+    Johan Borkhuis
