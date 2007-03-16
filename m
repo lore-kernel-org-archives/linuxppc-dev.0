@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 16 Mar 2007 14:46:53 +1100
+Date: Fri, 16 Mar 2007 14:47:51 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@samba.org>
-Subject: powerpc: Don't pass the stack pointer to zImage's start() function
-Message-ID: <20070316034653.GB12325@localhost.localdomain>
+Subject: powerpc: Add gcc format warnings to zImage printf()
+Message-ID: <20070316034751.GC12325@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-dev@ozlabs.org
@@ -16,62 +16,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, the zImage entry code passes a copy of the stack pointer
-to the start() function.  There's no real reason for this; the only
-thing start() does with it is print it out.  It appears to be a
-leftover debugging hack, so, this patch removes it.
+This patch adds the correct attributes to the zImage's versions of
+printf to make gcc generate format string mismatch warnings.  It also
+corrects several minor problems with format strings in the zImage thus
+discovered.
 
 Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
----
 
-Now without a stupid error in the printf().  Please apply.
+--- 
+Paulus, please apply, and save us from brown-paper-bag bugs like
+mine with the earlier version of the no sp parameter to start() patch.
 
-Index: working-2.6/arch/powerpc/boot/crt0.S
+Index: working-2.6/arch/powerpc/boot/stdio.h
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/crt0.S	2007-03-15 16:15:51.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/crt0.S	2007-03-15 16:16:55.000000000 +1100
-@@ -86,5 +86,4 @@ _zimage_start:
- 	bl	platform_init
+--- working-2.6.orig/arch/powerpc/boot/stdio.h	2007-03-15 16:13:19.000000000 +1100
++++ working-2.6/arch/powerpc/boot/stdio.h	2007-03-15 16:14:40.000000000 +1100
+@@ -7,11 +7,11 @@
+ #define	EINVAL		22	/* Invalid argument */
+ #define ENOSPC		28	/* No space left on device */
  
- 	/* Call start */
--	mr	r3,r1
- 	b	start
+-extern int printf(const char *fmt, ...);
++extern int printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+ 
+ #define fprintf(fmt, args...)	printf(args)
+ 
+-extern int sprintf(char *buf, const char *fmt, ...);
++extern int sprintf(char *buf, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+ 
+ extern int vsprintf(char *buf, const char *fmt, va_list args);
+ 
 Index: working-2.6/arch/powerpc/boot/main.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/main.c	2007-03-15 16:16:48.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/main.c	2007-03-15 16:21:54.000000000 +1100
-@@ -256,7 +256,7 @@ struct dt_ops dt_ops;
- struct console_ops console_ops;
- struct loader_info loader_info;
+--- working-2.6.orig/arch/powerpc/boot/main.c	2007-03-15 16:16:06.000000000 +1100
++++ working-2.6/arch/powerpc/boot/main.c	2007-03-15 16:16:48.000000000 +1100
+@@ -139,7 +139,7 @@ static struct addr_range prep_kernel(voi
+ 	} else {
+ 		if ((unsigned long)_start < ei.memsize) {
+ 			printf("Insufficient memory for kernel at address 0!"
+-			       " (_start=%lx)\n\r", _start);
++			       " (_start=%p)\n\r", _start);
+ 			exit();
+ 		}
+ 	}
+@@ -150,7 +150,7 @@ static struct addr_range prep_kernel(voi
+ 	/* discard up to the actual load data */
+ 	gunzip_discard(&gzstate, ei.elfoffset - sizeof(elfheader));
+ 	len = gunzip_finish(&gzstate, addr, ei.memsize);
+-	printf("done 0x%lx bytes\n\r", len);
++	printf("done 0x%x bytes\n\r", len);
  
--void start(void *sp)
-+void start(void)
- {
- 	struct addr_range vmlinux, initrd;
- 	kernel_entry_t kentry;
-@@ -268,8 +268,7 @@ void start(void *sp)
- 	if (platform_ops.fixups)
- 		platform_ops.fixups();
+ 	flush_cache(addr, ei.loadsize);
  
--	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r",
--	       _start, sp);
-+	printf("\n\rzImage starting: loaded at 0x%p\n\r", _start);
- 
- 	vmlinux = prep_kernel();
- 	initrd = prep_initrd(vmlinux, loader_info.initrd_addr,
-Index: working-2.6/arch/powerpc/boot/ops.h
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/ops.h	2007-03-15 16:15:51.000000000 +1100
-+++ working-2.6/arch/powerpc/boot/ops.h	2007-03-15 16:21:54.000000000 +1100
-@@ -66,7 +66,7 @@ struct loader_info {
- };
- extern struct loader_info loader_info;
- 
--void start(void *sp);
-+void start(void);
- int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
- int serial_console_init(void);
- int ns16550_console_init(void *devp, struct serial_console_data *scdp);
+@@ -196,7 +196,7 @@ static struct addr_range prep_initrd(str
+ 			       "ramdisk !\n\r");
+ 			exit();
+ 		}
+-		printf("Relocating initrd 0x%p <- 0x%p (0x%lx bytes)\n\r",
++		printf("Relocating initrd 0x%lx <- 0x%p (0x%lx bytes)\n\r",
+ 		       initrd_addr, old_addr, initrd_size);
+ 		memmove((void *)initrd_addr, old_addr, initrd_size);
+ 	}
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
