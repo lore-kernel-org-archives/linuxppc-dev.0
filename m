@@ -1,20 +1,15 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.190])
-	by ozlabs.org (Postfix) with ESMTP id BF9F8DDE3D
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 16:55:28 +1100 (EST)
-Received: by mu-out-0910.google.com with SMTP id w9so643317mue
-	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 22:55:26 -0700 (PDT)
-Message-ID: <e9c3a7c20703152255q16563803q33a5893c210634d1@mail.gmail.com>
-Date: Thu, 15 Mar 2007 22:55:26 -0700
-From: "Dan Williams" <dan.j.williams@gmail.com>
-To: "Paul Mackerras" <paulus@samba.org>
-Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
-In-Reply-To: <17914.10957.754781.940591@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070315232956.37DAB353A6C@atlas.denx.de>
-	<17914.10957.754781.940591@cargo.ozlabs.ibm.com>
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id B8DF3DDD02
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 17:46:57 +1100 (EST)
+Date: Fri, 16 Mar 2007 17:47:07 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [POWERPC] minor paca optimisation
+Message-Id: <20070316174707.8a5ae78c.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +19,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 3/15/07, Paul Mackerras <paulus@samba.org> wrote:
-> Wolfgang Denk writes:
->
-> > This patch is based on and requires a set of patches posted to the
-> > linux-raid mailing list by Dan Williams on 2007-01-23:
->
-> Those patches don't seem to be upstream in Linus' tree.  Are they in
-> -mm, or is anyone pushing for them to be?
->
-They are in -mm (git-md-accel.patch).  I'll review this driver and and
-integrate it into my next push to Andrew, along with some further
-cleanups.
+Move the slb_shadow_ptr field into the first cache line since it is
+(like evrything there) read only after boot.  It is in fact statically
+initialised and there after only read.
 
-> Paul.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/paca.h |    3 +--
+ 1 files changed, 1 insertions(+), 2 deletions(-)
 
-Dan
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/asm-powerpc/paca.h b/include/asm-powerpc/paca.h
+index 0d3adc0..4de851d 100644
+--- a/include/asm-powerpc/paca.h
++++ b/include/asm-powerpc/paca.h
+@@ -70,6 +70,7 @@ struct paca_struct {
+ 	s16 hw_cpu_id;			/* Physical processor number */
+ 	u8 cpu_start;			/* At startup, processor spins until */
+ 					/* this becomes non-zero. */
++	struct slb_shadow *slb_shadow_ptr;
+ 
+ 	/*
+ 	 * Now, starting in cacheline 2, the exception save areas
+@@ -101,8 +102,6 @@ struct paca_struct {
+ 	u64 user_time;			/* accumulated usermode TB ticks */
+ 	u64 system_time;		/* accumulated system TB ticks */
+ 	u64 startpurr;			/* PURR/TB value snapshot */
+-
+-	struct slb_shadow *slb_shadow_ptr;
+ };
+ 
+ extern struct paca_struct paca[];
+-- 
+1.5.0.3
