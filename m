@@ -1,22 +1,39 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 00BE1DDD04
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 64A50DDFB4
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 16 Mar 2007 12:14:59 +1100 (EST)
-In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A19B@MERCURY.inside.istor.com>
-References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A19B@MERCURY.inside.istor.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <653893AD-CB60-4123-B4FC-FB9B886BD895@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Exception in kernel mode
-Date: Thu, 15 Mar 2007 18:44:14 -0500
-To: Charles Krinke <ckrinke@istor.com>
-Cc: Chris Carlson <ccarlson@istor.com>, Kevin Smith <ksmith@istor.com>,
-	linuxppc-embedded@ozlabs.org
+	Fri, 16 Mar 2007 15:33:41 +1100 (EST)
+Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
+	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2G4XSJH068735
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 16 Mar 2007 05:33:34 +0100 (CET)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1HS488-0009qM-Nf
+	for linuxppc-embedded@ozlabs.org; Fri, 16 Mar 2007 05:33:28 +0100
+Date: Fri, 16 Mar 2007 05:33:28 +0100
+From: Matthias Fechner <idefix@fechner.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Howto read I2C on MPC5200 Lite
+Message-ID: <20070316043327.GA35040@server.idefix.lan>
+References: <20070307122430.GA73298@server.idefix.lan>
+	<4b73d43f0703071317o7ae5e531s5eb4b390d41a1b88@mail.gmail.com>
+	<20070309113506.GB6726@server.idefix.lan>
+	<4b73d43f0703090911y3c2898cdmfdb84f8c7f5da8f@mail.gmail.com>
+	<20070309234251.GA68997@server.idefix.lan>
+	<20070311005535.GA39488@server.idefix.lan>
+	<20070315095758.GE14658@moe.telargo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070315095758.GE14658@moe.telargo.com>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,56 +44,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello Domen,
 
-On Mar 15, 2007, at 4:17 PM, Charles Krinke wrote:
+* Domen Puncer <domen.puncer@telargo.com> [15-03-07 10:57]:
+> Can you please try following patch.
 
-> I ran a couple of more tests and the system did not Oops in the
-> timer_interupt except for the first test this morning. The last two
-> times, the NIP was
->
-> Oops: Exception in kernel mode, sig: 4 [#1]
-> PREEMPT
-> NIP: C002CE68 LR: C002CEC8 CTR: 00003B25
-> REGS: c3119a00 TRAP: 0700   Not tainted  (2.6.17.11)
-> MSR: 00081032 <ME,IR,DR>  CR: 88022484  XER: 00000000
-> TASK = c3ecd870[920] 'tar' THREAD: c3118000
->
-> And
->
-> Oops: Exception in kernel mode, sig: 4 [#1]
-> PREEMPT
-> NIP: C00DEE18 LR: C00DEDD8 CTR: 00000000
-> REGS: c299dbc0 TRAP: 0700   Not tainted  (2.6.17.11)
-> MSR: 00081032 <ME,IR,DR>  CR: 84022488  XER: 20000000
-> TASK = c3e2b7d0[925] 'tar' THREAD: c299c000
->
-> For comparision, this is the original one from this morning
->
-> Oops: Exception in kernel mode, sig: 4 [#1]
-> PREEMPT
-> NIP: 00000900 LR: C00E579C CTR: 00003A55
-> REGS: c37f3b00 TRAP: 0700   Not tainted  (2.6.17.11)
-> MSR: 00081000 <ME>  CR: 24022484  XER: 00000000
-> TASK = c3eaf810[940] 'tar' THREAD: c37f2000
->
-> I have to conclude this is not necessarily a timer_interrupt problem.
-> Also, commenting out the innards of the timer_interrupt causes the
-> kernel to hang in its boot right after the message
->
-> Memory: xxxK available
->
-> So a properly functioning timer_interrupt is essential to the the  
-> kernel
-> booting.
->
-> But, ... At this point, I really don't know which way to jump.
+ok, I patched the kernel now and was able to read the ic2 chip 100
+times successfully. I will run the programm the next 20 hours and give
+then a shot feedback.
+But the first impression is good.
 
-It this a system you are just bringing up or one that's been running  
-for a while.  It really seems like memory corruption of some form.   
-I'd suggest checking memory controller settings.
+Best regards,
+Matthias
 
-Also, what happens if you disassemble the kernel image and look at  
-the addresses pointed to by NIP:
-C00DEE18 & C002CE68.
+-- 
 
-- k
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
