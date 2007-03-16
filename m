@@ -1,24 +1,18 @@
-Return-Path: <ckrinke@istor.com>
-Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9AC05DDED2
+Return-Path: <aldo.lab@gmail.com>
+Received: from hu-out-0506.google.com (hu-out-0506.google.com [72.14.214.226])
+	by ozlabs.org (Postfix) with ESMTP id 6B38FDDED4
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Mar 2007 03:07:58 +1100 (EST)
+	Sat, 17 Mar 2007 05:36:18 +1100 (EST)
+Received: by hu-out-0506.google.com with SMTP id 16so2541605hue
+	for <linuxppc-embedded@ozlabs.org>;
+	Fri, 16 Mar 2007 11:36:15 -0700 (PDT)
+Message-ID: <6e41d1460703161136q7afb3077r49b11cb9a123c124@mail.gmail.com>
+Date: Fri, 16 Mar 2007 19:36:15 +0100
+From: "aldo lab" <aldo.lab@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: m8260_map_io
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: Exception in kernel mode
-Date: Fri, 16 Mar 2007 09:05:14 -0700
-Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B3F@MERCURY.inside.istor.com>
-References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A19B@MERCURY.inside.istor.com>
-	<653893AD-CB60-4123-B4FC-FB9B886BD895@kernel.crashing.org>
-	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069B3C@MERCURY.inside.istor.com>
-	<B6E0A97C-D5E5-4588-BD87-3B884C52DF88@kernel.crashing.org>
-From: "Charles Krinke" <ckrinke@istor.com>
-To: "Kumar Gala" <galak@kernel.crashing.org>
-Cc: Chris Carlson <ccarlson@istor.com>, Kevin Smith <ksmith@istor.com>,
-	linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,34 +23,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-#2 is inside the kernel as well.  Look at the System.map or objdump -
-d vmlinux to see what exactly is at those instructions.
+Hi all,
 
-> I suspect the actual addresses are red-herrings and this exception=20
-> can occur at any address. This certainly would tend to indicate=20
-> some sort of memory setup issue.
+I've seen a region of 256MB starting from 0xe0000000 that is io
+blocking with a BAT filled with Inhibit cache and guarded.
+do you know which is the reason of this mapping because is not so
+clear from the code.
 
-I think it's useful to know if the instructions at the two offsets=20
-C00DEE18 & C002CE68 are similar in some way before jumping to that=20
-conclusion.
+201 static void __init
+202 m8260_map_io(void)
+203 {
+204         uint addr;
+205
+206         /* Map IMMR region to a 256MB BAT */
+207         addr = (cpm2_immr != NULL) ? (uint)cpm2_immr : CPM_MAP_ADDR;
+208         io_block_mapping(addr, addr, 0x10000000, _PAGE_IO);
+209
+210         /* Map I/O region to a 256MB BAT */
+211         io_block_mapping(IO_VIRT_ADDR, IO_PHYS_ADDR, 0x10000000, _PAGE_IO);
+212 }
+213
 
-> Changing the Oops logic to printout the NextInstruction as well as=20
-> the NIP might be helpful so I could discern the difference between=20
-> what the program is trying to do and what it is really doing.
->
-> Are there any other thoughts you might have on diagnosis techniques=20
-> at this point?
 
-Try turning on KALLSYMS, this should provide more info on the oops as=20
-well.
 
-- k
-
-Dear Kumar:
-=20
-As always, your advice is appreciated. I will try turning on =
-CONFIG_KALLSYMS in the .config file and see if additional info is =
-obtained. Also, I will audit the MMU setup and see if I can see anything =
-unusual.
-=20
-Charles
+Thank you
+Aldo
