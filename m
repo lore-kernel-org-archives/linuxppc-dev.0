@@ -1,15 +1,26 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id B8DF3DDD02
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 17:46:57 +1100 (EST)
-Date: Fri, 16 Mar 2007 17:47:07 +1100
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [POWERPC] minor paca optimisation
-Message-Id: <20070316174707.8a5ae78c.sfr@canb.auug.org.au>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <LeoLi@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id DE19CDDDCA
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 17:58:31 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l2G6wQ92025198
+	for <linuxppc-dev@ozlabs.org>; Thu, 15 Mar 2007 23:58:27 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2G6wPa6016375
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 01:58:26 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="US-ASCII"
+Subject: RE: arch/powerpc Kconfig cleanup
+Date: Fri, 16 Mar 2007 14:59:53 +0800
+Message-ID: <989B956029373F45A0B8AF02970818902DB231@zch01exm26.fsl.freescale.net>
+In-Reply-To: <Pine.LNX.4.64.0703151816370.3448@localhost.localdomain>
+From: "Li Yang-r58472" <LeoLi@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>, <linuxppc-dev@ozlabs.org>
+Cc: Olof Johansson <olof@lixom.net>, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,39 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Move the slb_shadow_ptr field into the first cache line since it is
-(like evrything there) read only after boot.  It is in fact statically
-initialised and there after only read.
+> arch/powerpc/Kconfig has become something of a mess and platform
+support
+> is scattered between it and various arch/powerpc/platforms/*/Kconfig
+> files.  I've got some ideas on some simple clean up that will
+introduce a
+> arch/powerpc/platforms/Kconfig and pull out platform config
+information
+> from arch/powerpc/Kconfig.
+>=20
+> Beyond general cleanup, there are several config options that should
+> exist under the "Platform support" menu but end up getting duplicated
+> across sub-architectures (QE, CPM2, etc.)
+>=20
+> By introducing a platforms/Kconfig we will have a place to put those
+> config options so we don't have to duplicate them.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- include/asm-powerpc/paca.h |    3 +--
- 1 files changed, 1 insertions(+), 2 deletions(-)
+Sounds good to me.
 
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/include/asm-powerpc/paca.h b/include/asm-powerpc/paca.h
-index 0d3adc0..4de851d 100644
---- a/include/asm-powerpc/paca.h
-+++ b/include/asm-powerpc/paca.h
-@@ -70,6 +70,7 @@ struct paca_struct {
- 	s16 hw_cpu_id;			/* Physical processor number */
- 	u8 cpu_start;			/* At startup, processor spins until */
- 					/* this becomes non-zero. */
-+	struct slb_shadow *slb_shadow_ptr;
- 
- 	/*
- 	 * Now, starting in cacheline 2, the exception save areas
-@@ -101,8 +102,6 @@ struct paca_struct {
- 	u64 user_time;			/* accumulated usermode TB ticks */
- 	u64 system_time;		/* accumulated system TB ticks */
- 	u64 startpurr;			/* PURR/TB value snapshot */
--
--	struct slb_shadow *slb_shadow_ptr;
- };
- 
- extern struct paca_struct paca[];
--- 
-1.5.0.3
+- Leo
