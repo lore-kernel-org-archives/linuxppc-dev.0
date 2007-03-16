@@ -1,31 +1,32 @@
 Return-Path: <b07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 497B1DE52B
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 04:28:51 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l2GHSm3F004404
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 10:28:48 -0700 (MST)
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 551A4DE555
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 04:28:53 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l2GHSnQZ014184
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 10:28:50 -0700 (MST)
 Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
 	[10.82.65.62])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2GHSlJx009940
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 12:28:47 -0500 (CDT)
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2GHSnox019365
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 12:28:49 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
 	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	l2GH96YQ001396
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 12:09:06 -0500 (CDT)
+	l2GH97Y4001400
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 12:09:07 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id C4240AEFC9
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 12:28:46 -0500 (CDT)
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 48B2DAEFC9
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 12:28:48 -0500 (CDT)
 Received: (from b07421@localhost)
 	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	l2GHSkR6029820
-	for linuxppc-dev@ozlabs.org; Fri, 16 Mar 2007 12:28:46 -0500
-Date: Fri, 16 Mar 2007 12:28:46 -0500
+	l2GHSmRa029824
+	for linuxppc-dev@ozlabs.org; Fri, 16 Mar 2007 12:28:48 -0500
+Date: Fri, 16 Mar 2007 12:28:48 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 06/17] Document the linux,network-index property.
-Message-ID: <20070316172846.GF29784@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 07/17] bootwrapper: Add dt_set_memory(),
+	to fill in the /memory node.
+Message-ID: <20070316172848.GG29784@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 In-Reply-To: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
@@ -38,45 +39,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-To allow more robust association of each network device node with an
-index (such as is used by the firmware or an EEPROM to indicate MAC
-addresses), a network device's node may specify the index explicitly.
+This adds a library function that platforms can call to fill in the
+/memory node with the specified start and size.  #address-cells and
+#size-cells must be the same, but can be either 1 or 2.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- Documentation/powerpc/booting-without-of.txt |   13 +++++++++++++
- 1 files changed, 13 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/devtree.c |   25 +++++++++++++++++++++++++
+ arch/powerpc/boot/ops.h     |    2 +-
+ 2 files changed, 26 insertions(+), 1 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 6d5a5a0..ab5ed46 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1165,6 +1165,13 @@ platforms are moved over to use the flattened-device-tree model.
-     - phy-handle : The phandle for the PHY connected to this ethernet
-       controller.
+diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
+index 9fee6fb..258158e 100644
+--- a/arch/powerpc/boot/devtree.c
++++ b/arch/powerpc/boot/devtree.c
+@@ -205,3 +205,28 @@ int xlate_reg(void *node, int res, unsigned long *addr,
  
-+  Recommended properties:
+ 	return 1;
+ }
 +
-+    - linux,network-index : This is the intended "index" of this
-+      network device.  This is used by the bootwrapper to interpret
-+      MAC addresses passed by the firmware when no information other
-+      than indices is available to associate an address with a device.
++void dt_set_memory(u64 start, u64 size, int ncells)
++{
++	void *devp;
++	u32 mem[4];
 +
-   Example:
++	if (ncells < 1 || ncells > 2)
++		return;
++
++	mem[ncells - 1] = (u32)start;
++	mem[ncells*2 - 1] = (u32)size;
++
++	if (ncells == 2) {
++		mem[0] = start >> 32;
++		mem[2] = size >> 32;
++	}
++
++	devp = finddevice("/memory");
++	if (!devp) {
++		devp = create_node(NULL, "memory");
++		setprop_str(devp, "device_type", "memory");
++	}
++
++	setprop(devp, "reg", mem, ncells * 8);
++}
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 086f844..1f1cda4 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -80,7 +80,7 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp);
+ void *simple_alloc_init(char *base, u32 heap_size, u32 granularity,
+ 		u32 max_allocs);
+ int xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
+-
++void dt_set_memory(u64 start, u64 len, int ncells);
  
- 	ethernet@24000 {
-@@ -1533,6 +1540,12 @@ platforms are moved over to use the flattened-device-tree model.
-    - mac-address : list of bytes representing the ethernet address.
-    - phy-handle : The phandle for the PHY connected to this controller.
- 
-+   Recommended properties:
-+   - linux,network-index : This is the intended "index" of this
-+     network device.  This is used by the bootwrapper to interpret
-+     MAC addresses passed by the firmware when no information other
-+     than indices is available to associate an address with a device.
-+
-    Example:
- 	ucc@2000 {
- 		device_type = "network";
+ static inline void *finddevice(const char *name)
+ {
 -- 
 1.5.0.3
