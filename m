@@ -1,31 +1,18 @@
-Return-Path: <akira2.iguchi@toshiba.co.jp>
-Received: from inet-tsb5.toshiba.co.jp (inet-tsb5.toshiba.co.jp [202.33.96.24])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8F003DDE00
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 12:30:49 +1100 (EST)
-Received: from tsb-wall.toshiba.co.jp ([133.199.160.134])
-	by inet-tsb5.toshiba.co.jp  with ESMTP id l2G1Uj3O027271
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 10:30:45 +0900 (JST)
-Received: (from root@localhost) by tsb-wall.toshiba.co.jp  id l2G1UkXQ009096
-	for linuxppc-dev@ozlabs.org; Fri, 16 Mar 2007 10:30:46 +0900 (JST)
-Received: from mx.toshiba.co.jp (localhost [127.0.0.1])
-	by ovp1.toshiba.co.jp  with ESMTP id l2G1Ujdw016772
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 10:30:45 +0900 (JST)
-Message-Id: <200703160130.l2G1UjE8021399@toshiba.co.jp>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 16 Mar 2007 12:50:23 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
+Message-ID: <20070316015023.GA6868@localhost.localdomain>
+References: <20070305032307.GB31417@localhost.localdomain>
+	<20070305032452.810C1DDF1B@ozlabs.org>
+	<20070315223529.GA1314@mag.az.mvista.com>
+	<20070316001429.GD6784@localhost.localdomain>
+	<20070316010116.GC10786@mag.az.mvista.com>
 MIME-Version: 1.0
-Date: Fri, 16 Mar 2007 10:32:42 +0900
-From: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-In-Reply-To: (Your message of "Thu, 15 Mar 2007 20:48:42 +0100")
-	<200703152048.42972.bzolnier@gmail.com>
-References: <E1HRPb0-0003Eh-OG@ZenIV.linux.org.uk>
-	<200703150608.l2F68JY2026403@toshiba.co.jp>
-	<20070315084645.GR4095@ftp.linux.org.uk>
-	<200703152048.42972.bzolnier@gmail.com>
-Subject: Re: [PATCH 10/13] BLK_DEV_IDE_CELLEB dependency fix
-Cc: linuxppc-dev@ozlabs.org, torvalds@linux-foundation.org,
-	linux-kernel@vger.kernel.org, Al Viro <viro@ftp.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070316010116.GC10786@mag.az.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,26 +22,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+On Thu, Mar 15, 2007 at 06:01:16PM -0700, Mark A. Greer wrote:
+> On Fri, Mar 16, 2007 at 11:14:30AM +1100, David Gibson wrote:
+> > On Thu, Mar 15, 2007 at 03:35:29PM -0700, Mark A. Greer wrote:
+> 
+> <snip>
+> 
+> > > On Mon, Mar 05, 2007 at 02:24:52PM +1100, David Gibson wrote:
+> > > Statically initializing _platform_stack_top (or any variable) won't
+> > > work when you download/run the zImage at a location different than
+> > > where its linked at.  Yes, I know the image is "relocatable" but that
+> > > doesn't work for addresses put into variables/structs at link time
+> > > like this one.  That type of assignment has to be done at runtime.
+> > > 
+> > > What happens is the linker puts 0x0040_1234, say, into
+> > > _platform_stack_top but when you download the image to 0x0080_0000
+> > > it still has a value of 0x0040_1234 even though its running at
+> > > 0x00800_0000+.
+> > 
+> > Ah, good point.  In this case we should be able to fix this by having
+> > crt0.S relocate the pointer before loading it into r1, yes, in the
+> > same way it relocates the GOT entries?
+> >
+> > Incidentally I would have preferred not to store the stack address in
+> > a variable, but just generated a symbol for the stack top and loaded
+> > that directly in crt0.S.  But I couldn't think of a way in the C macro
+> > to generate the necesary symbol at the end of the stack.
+> 
+> What about something like this:
+> 
+> #define BSS_STACK(size) \
+> 	static char _bss_stack[size]; \
+> 	u32 _platform_stack_size = size;
+> 
+> Then in crt0.S add value of _platform_stack_size to _bss_stack to get r1?
+> That should relocate correctly.
 
-> Bart wrote:
->> Al wrote:
->> So AFAICS the minimal fix for that sucker is dependency on BLK_DEV_IDE=y;
->> however, I really wonder if
->> 	* it needs to be linked into ide-core (as opposed to being a normal
->> module of its own)
->
->AFAICS there are no legacy device ordering issues with scc_pata so it doesn't
->need to be linked into ide-core but I'll leave the definitive answer to Akira
->
->> 	* alternatively, its init should be called explicitly.
+That sounds reasonable, though it's slightly more involved that the
+current code.  I'm wrangling another stack of bootloader patches at
+the moment, you want to send something to implement this?
 
-I don't have the answer why scc_pata is linked into ide-core.
-Reviewing your comments and codes, I will make the following fixes:
-  * remove link to ide-core and make normal module
-  * move from ide/ppc to ide/pci
-
-I will send these patches later.
-
-Best regards,
-Akira Iguchi
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
