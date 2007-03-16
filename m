@@ -1,16 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 16 Mar 2007 11:18:19 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
-Message-ID: <20070316001819.GE6784@localhost.localdomain>
-References: <20070305032307.GB31417@localhost.localdomain>
-	<20070305032452.810C1DDF1B@ozlabs.org>
-	<20070315230230.GB3342@mag.az.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 2DA00DDE06
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 11:34:45 +1100 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: RFC: arch/powerpc Kconfig cleanup
+Date: Fri, 16 Mar 2007 01:34:22 +0100
+References: <Pine.LNX.4.64.0703151816370.3448@localhost.localdomain>
+In-Reply-To: <Pine.LNX.4.64.0703151816370.3448@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070315230230.GB3342@mag.az.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703160134.23536.arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,43 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 15, 2007 at 04:02:30PM -0700, Mark A. Greer wrote:
-> On Mon, Mar 05, 2007 at 02:24:52PM +1100, David Gibson wrote:
-> 
-> <snip>
-> 
-> > 1) It can define a _zimage_start, in which case the platform code gets
-> >    control from the very beginning of execution.  In this case the
-> >    platform code is responsible for relocating the zImage if necessary,
-> >    clearing the BSS, performing any platform specific initialization, and
-> >    finally calling start() to load and enter the kernel.
-> > 
-> > 2) It can define platform_init().  In this case the generic crt0.S
-> >    handles initial entry, and calls platform_init() before calling
-> >    start().  The signature of platform_init() is changed, however, to
-> >    take up to 5 parameters (in r3..r7) as they come from the platform's
-> >    initial loader, instead of a fixed set of parameters based on OF's
-> >    usage.
-> 
-> <snip>
-> 
-> > In addition the wrapper script is rearranged to ensure that the
-> > platform .o is always linked first.  This means that platforms where
-> > the zImage entry point is at a fixed address or offset, rather than
-> > being encoded in the binary header can be supported using option (1).
-> 
-> But now you don't have a fixed address for _zimage_start when you use
-> option 2).  I don't know what address _zimage_start is at so I can't
-> start it.  This is an issue for fw's that don't understand ELF and simply
-> download a bucket of bits.  You have to tell the fw where to jump to
-> (e.g., go 0x410010).
+On Friday 16 March 2007, Kumar Gala wrote:
+> +
+> +config PPC_PS3
+> +=A0=A0=A0=A0=A0=A0=A0bool "Sony PS3 (incomplete)"
+> +=A0=A0=A0=A0=A0=A0=A0depends on PPC_MULTIPLATFORM && PPC64
+> +=A0=A0=A0=A0=A0=A0=A0select PPC_CELL
+> +=A0=A0=A0=A0=A0=A0=A0select USB_ARCH_HAS_OHCI
+> +=A0=A0=A0=A0=A0=A0=A0select USB_OHCI_LITTLE_ENDIAN
+> +=A0=A0=A0=A0=A0=A0=A0select USB_OHCI_BIG_ENDIAN_MMIO
+> +=A0=A0=A0=A0=A0=A0=A0select USB_ARCH_HAS_EHCI
+> +=A0=A0=A0=A0=A0=A0=A0select USB_EHCI_BIG_ENDIAN_MMIO
+> +=A0=A0=A0=A0=A0=A0=A0help
+> +=A0=A0=A0=A0=A0=A0=A0 =A0This option enables support for the Sony PS3 ga=
+me console
+> +=A0=A0=A0=A0=A0=A0=A0 =A0and other platforms using the PS3 hypervisor.
+> +=A0=A0=A0=A0=A0=A0=A0 =A0Support for this platform is not yet complete, =
+so
+> +=A0=A0=A0=A0=A0=A0=A0 =A0enabling this will not result in a bootable ker=
+nel on a
+> +=A0=A0=A0=A0=A0=A0=A0 =A0PS3 system.
+> +
+> +config PPC_CELLEB
+> +=A0=A0=A0=A0=A0=A0=A0bool "Toshiba's Cell Reference Set 'Celleb' Archite=
+cture"
+> +=A0=A0=A0=A0=A0=A0=A0depends on PPC_MULTIPLATFORM && PPC64
+> +=A0=A0=A0=A0=A0=A0=A0select PPC_CELL
+> +=A0=A0=A0=A0=A0=A0=A0select PPC_OF_PLATFORM_PCI
+> +=A0=A0=A0=A0=A0=A0=A0select HAS_TXX9_SERIAL
+> +=A0=A0=A0=A0=A0=A0=A0select PPC_UDBG_BEAT
+> +=A0=A0=A0=A0=A0=A0=A0select USB_OHCI_BIG_ENDIAN_MMIO
+> +=A0=A0=A0=A0=A0=A0=A0select USB_EHCI_BIG_ENDIAN_MMIO
 
-The patch already includes an example that deals with this case,
-uImage.  The wrapper script pulls the ELF entry point information out
-using objdump and puts it into uboot's structure.
+I'm not sure if these should really be part of cell/Kconfig, as they are
+about platform code that is in other directories. I think it would make
+more sense conceptually to have them in ps3/Kconfig and celleb/Kconfig.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+At some point we should also separate the common code (mostly spufs)
+from the cell native support that does not apply to ps3 and celleb.
+
+	Arnd <><
