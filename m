@@ -1,20 +1,24 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 17 Mar 2007 12:38:59 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
-Message-ID: <20070317013859.GJ3969@localhost.localdomain>
-References: <20070305032307.GB31417@localhost.localdomain>
-	<20070305032452.810C1DDF1B@ozlabs.org>
-	<20070315230230.GB3342@mag.az.mvista.com>
-	<20070316001819.GE6784@localhost.localdomain>
-	<20070316004717.GB10786@mag.az.mvista.com>
-	<20070316005016.GI6784@localhost.localdomain>
-	<20070316162135.GA29231@ld0162-tx32.am.freescale.net>
+Return-Path: <bart.vanassche@gmail.com>
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.187])
+	by ozlabs.org (Postfix) with ESMTP id CBBEDDDE0E
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 01:34:36 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so262737nfc
+	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 07:34:35 -0700 (PDT)
+Message-ID: <e2e108260703160734o24550c4dp7bef0d7f33bcdcc5@mail.gmail.com>
+Date: Fri, 16 Mar 2007 15:34:35 +0100
+From: "Bart Van Assche" <bart.vanassche@gmail.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>
+Subject: Re: +
+	ocotea-board-ntpd-complains-that-the-frequency-error-exceeds-the-tolerance.patch
+	added to -mm tree
+In-Reply-To: <FD6A6842-530A-444B-A198-51947F3EAC20@kernel.crashing.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070316162135.GA29231@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <200703161052.l2GAqIRV009441@shell0.pdx.osdl.net>
+	<FD6A6842-530A-444B-A198-51947F3EAC20@kernel.crashing.org>
+Cc: "linuxppc-dev@ozlabs.org ML" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Andrew Morton <akpm@linux-foundation.org>, Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +28,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 16, 2007 at 11:21:35AM -0500, Scott Wood wrote:
-> On Fri, Mar 16, 2007 at 11:50:16AM +1100, David Gibson wrote:
-> > Sorry, I misunderstood.  That sort of firmware - and the even dumber
-> > sort where the start address isn't configurable at all - is exactly
-> > what option (1) is for.  You'll need an asm platform file which
-> > defines _zimage_start to a fixed offset.  In your case you could
-> > probably just make it a jump to the generic _zimage_start.
-> 
-> One problem with that is that the wrapper currently only accepts one
-> platform .o file -- and presumably one isn't going to want to do all of
-> the platform code in assembly.
+On 3/16/07, Kumar Gala <galak@kernel.crashing.org> wrote:
+>
+> On Mar 16, 2007, at 5:52 AM, akpm@linux-foundation.org wrote:
+>
+> >
+> > The patch titled
+> >      Ocotea board: ntpd complains that the frequency error exceeds
+> > the tolerance
+> > has been added to the -mm tree.  Its filename is
+> >      ocotea-board-ntpd-complains-that-the-frequency-error-exceeds-
+> > the-tolerance.patch
+> >
+> > *** Remember to use Documentation/SubmitChecklist when testing your
+> > code ***
+> >
+> > See http://www.zip.com.au/~akpm/linux/patches/stuff/added-to-mm.txt
+> > to find
+> > out what to do about this
+> >
+> > ------------------------------------------------------
+> > Subject: Ocotea board: ntpd complains that the frequency error
+> > exceeds the tolerance
+> > From: Bart Van Assche <bart.vanassche@gmail.com>
+> >
+> > Lifted from http://bugzilla.kernel.org/show_bug.cgi?id=8182
+> >
+> > Steps to reproduce:
+> > - Boot an Ocotea board with the mainline 2.6.20.1 kernel.
+> > - Create an /etc/ntp.conf file with at least one NTP server and
+> > iburst mode set.
+> > - Issue the command "ntpd -g".
+> > - Wait about two minutes.
+> > - Verify ntpd's status via "ntpq -pn" and by looking in /var/log/ntp.
+> >
+> > Patch that fixes this problem:
+> >
+> > Cc: Kumar Gala <galak@gate.crashing.org>
+> > Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> > Cc: Paul Mackerras <paulus@samba.org>
+> > Signed-off-by: Andrew Morton <akpm@linux-foundation.org>
+> > ---
+> >
+> >  arch/ppc/platforms/4xx/ocotea.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> >
+> > diff -puN arch/ppc/platforms/4xx/ocotea.c~ocotea-board-ntpd-
+> > complains-that-the-frequency-error-exceeds-the-tolerance arch/ppc/
+> > platforms/4xx/ocotea.c
+> > --- a/arch/ppc/platforms/4xx/ocotea.c~ocotea-board-ntpd-complains-
+> > that-the-frequency-error-exceeds-the-tolerance
+> > +++ a/arch/ppc/platforms/4xx/ocotea.c
+> > @@ -289,7 +289,7 @@ ocotea_setup_arch(void)
+> >        * from FPGA, because it can be changed by on-board switches
+> >        * --ebs
+> >        */
+> > -     ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
+> > +     ibm440gx_get_clocks(&clocks, 33300000, 6 * 1843200);
+> >       ocp_sys_info.opb_bus_freq = clocks.opb;
+>
+>   I asked Stefan & Josh to look at this and Stefan believes its a
+> 33.33Mhz clock.  So should this really be 33330000?
 
-Um.. nobody does it yet, but I don't think there's actually any reason
-that $platformo can't be set to a list of multiple .o files.
+I have measured the clock frequency on the two Ocotea boards I have on
+my desk, and both have a clock crystal of 33.3 MHz, not 33.33 MHz.
+What I don't know is whether the same clock crystal is mounted on all
+Ocotea boards.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Regards,
+
+Bart Van Assche.
