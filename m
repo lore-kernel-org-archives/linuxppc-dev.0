@@ -1,17 +1,21 @@
-Return-Path: <michael.barkowski@freescale.com>
-Message-ID: <45FAD268.1040403@freescale.com>
-Date: Fri, 16 Mar 2007 12:22:48 -0500
-From: Michael Barkowski <michael.barkowski@freescale.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A4F23DDF3E
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 03:24:12 +1100 (EST)
+Message-ID: <45FAC4A2.4060207@am.sony.com>
+Date: Fri, 16 Mar 2007 09:24:02 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2.6.22] Add MPC832x RDB board.
-References: <45FABEEC.7040407@freescale.com>
-	<CC7F67C6-0E80-4DAE-88A0-0AD2B5ED179E@kernel.crashing.org>
-	<45FACF40.9000405@freescale.com>
-	<072D59B7-FC61-4E0D-B8C6-D2B107257814@kernel.crashing.org>
-In-Reply-To: <072D59B7-FC61-4E0D-B8C6-D2B107257814@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII
-Cc: Linuxppc-dev@ozlabs.org, paulus@samba.org
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 6/15] zImage: Add more flexible gunzip convenience
+	functions
+References: <20070305032452.4DCDBDDF1B@ozlabs.org>
+In-Reply-To: <20070305032452.4DCDBDDF1B@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,51 +25,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Mar 16, 2007, at 12:09 PM, Michael Barkowski wrote:
-> 
-> 
->>Kumar Gala wrote:
->>
->>>On Mar 16, 2007, at 10:59 AM, Michael Barkowski wrote:
->>>
->>>
->>>
->>>>Add support for the MPC8323E Reference Development Board (RDB).
->>>>The board
->>>>is a mini-ITX reference board with 64M DDR2, 16M flash, USB, PCI,
->>>>10/100 ethernet, serial, and phone ports.
->>>>
->>>>Signed-off-by: Michael Barkowski <michael.barkowski@freescale.com>
->>>>Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
->>>>---
->>>>Please consider for 2.6.22.  Applies cleanly to for-2.6.22 branch
->>>>on Paul's tree.
->>>>
->>>>arch/powerpc/boot/dts/mpc832x_rdb.dts      |  294 +++++++
->>>>arch/powerpc/configs/mpc832x_rdb_defconfig | 1292 +++++++++++++++++
->>>>+++++++++++
->>>>arch/powerpc/platforms/83xx/Kconfig        |    9 +-
->>>>arch/powerpc/platforms/83xx/Makefile       |    1 +
->>>>arch/powerpc/platforms/83xx/mpc832x_rdb.c  |  138 +++
->>>>5 files changed, 1733 insertions(+), 1 deletions(-)
->>>>create mode 100644 arch/powerpc/boot/dts/mpc832x_rdb.dts
->>>>create mode 100644 arch/powerpc/configs/mpc832x_rdb_defconfig
->>>>create mode 100644 arch/powerpc/platforms/83xx/mpc832x_rdb.c
->>>
->>>
->>>Who different is the 8323E rdb from the 8313 rdb?
->>
->>QE Lite 10/100 vs. TSEC
->>no FPU (e300c2).
->>PCI-based USB 2.0 hub vs. fsl USB gadget
->>64M DDR2
->>smaller size...
-> 
-> 
-> You also mentioned phone ports, do you know what's involved in  
-> supporting those (from a sw point of view)?
-> 
-> - k
+David Gibson wrote:
+> This patch adds a new set of more flexible convenience wrappers around
+> zlib, moving them to their own file, gunzip_util.c, in the process.
+> These wrappers allow decompressing sections of the compressed image to
+> different locations.  In addition, they transparently handle
+> uncompressed data, avoiding special case code to handle uncompressed
+> vmlinux images.
 
-It's an SPI and TDM interface to a Legerity Le88221 SLIC Codec.
+Hi.
+
+I was waiting for the zimage churn to settle before looking into this
+change, but I though I would let you know so you can keep it in mind
+if you do any work here.
+
+As I mentioned in another mail, the PS3's 1st stage loader (in the
+hypervisor) supports loading a gzipped binary memory image from flash.
+So for Linux, that would be a gzipped zImage.  Since the entire zImage
+is uncompressed by the loader, there is no need to have the kernel image
+compressed on its own, nor to include the zlib code in the wrapper.
+
+Here is a functional expression of what we have now, and what would
+be ideal:
+
+zImage.gz = gzip(wrapper bits + zlib + gzip(vmlinx) + dtb)
+
+zImage.gz = gzip(wrapper bits + vmlinx + dtb)
+
+-Geoff
