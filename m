@@ -1,21 +1,18 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C819DDECA
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 22:37:52 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: Paul Mackerras <paulus@samba.org>,
- linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] ppc: Add support for bigger page sizes than 4KB on PPC44x
-Date: Sat, 17 Mar 2007 14:41:51 +0300
-References: <200703161634.58444.yur@emcraft.com>
-	<17915.7048.393811.714143@cargo.ozlabs.ibm.com>
-In-Reply-To: <17915.7048.393811.714143@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703171441.51276.yur@emcraft.com>
+Return-Path: <khali@linux-fr.org>
+Received: from kellthuzad.dmz.nerim.net (smtp-dmz-236-saturday.dmz.nerim.net
+	[195.5.254.236]) by ozlabs.org (Postfix) with ESMTP id DDD5BDDEC5
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 23:48:36 +1100 (EST)
+Received: from kraid.nerim.net (smtp-106-saturday.nerim.net [62.4.16.106])
+	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 2424713F20
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 13:17:07 +0100 (CET)
+Date: Sat, 17 Mar 2007 13:16:44 +0100
+From: Jean Delvare <khali@linux-fr.org>
+To: Linux I2C <i2c@lm-sensors.org>
+Subject: [PATCH] i2c-rpx: Plan for removal
+Message-Id: <20070317131644.7aa7387f.khali@linux-fr.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Saturday 17 March 2007 01:34, Paul Mackerras wrote:
-> Your patch would still let users select a page shift of 13 or 15,
-> which won't work (and can't be made to work).
+The i2c-rpx driver is broken, it depends on i2c-algo-8xx which, as far
+as I can see, has never been in the mainline kernel. If nobody
+volunteers to fix this, the i2c-rpx driver will be removed from the
+kernel. Deadline is set to June 2007.
 
- Selecting 13 or 15 will lead to a compile-time error "Unsupported PAGE_SIZE" 
-(in include/asm/ppc_page_asm.h), so users will not be able to run kernel with 
-PAGE_SIZE different than 4K, 16K or 64K anyway. 
+Signed-off-by: Jean Delvare <khali@linux-fr.org>
+---
+ Documentation/feature-removal-schedule.txt |    8 ++++++++
+ 1 file changed, 8 insertions(+)
 
- Do you think that replacing one integer option CONFIG_PPC_PAGE_SHIFT with 
-three logical options (i.e., CONFIG_PPC_PAGE_SIZE_4K, 
-CONFIG_PPC_PAGE_SIZE_16K and CONFIG_PPC_PAGE_SIZE_64K) will be the better 
-choice ?
+--- linux-2.6.21-rc4.orig/Documentation/feature-removal-schedule.txt	2007-03-16 18:43:39.000000000 +0100
++++ linux-2.6.21-rc4/Documentation/feature-removal-schedule.txt	2007-03-17 10:36:14.000000000 +0100
+@@ -316,3 +316,11 @@ Why:	the i8xx_tco watchdog driver has be
+ Who:	Wim Van Sebroeck <wim@iguana.be>
+ 
+ ---------------------------
++
++What:	i2c-rpx driver
++When:	June 2007
++Why:	Broken. It depends on i2c-algo-8xx which has never been in the
++	mainline kernel.
++Who:	Jean Delvare <khali@linux-fr.org>
++
++---------------------------
 
- Regards, Yuri.
+
+-- 
+Jean Delvare
