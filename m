@@ -1,20 +1,21 @@
-Return-Path: <dan.j.williams@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.186])
-	by ozlabs.org (Postfix) with ESMTP id CD8D0DDF40
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 05:00:32 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so332643nfc
-	for <linuxppc-dev@ozlabs.org>; Fri, 16 Mar 2007 11:00:30 -0700 (PDT)
-Message-ID: <e9c3a7c20703161100j70a52e5cg25ff3616a5cda8d5@mail.gmail.com>
-Date: Fri, 16 Mar 2007 11:00:30 -0700
-From: "Dan Williams" <dan.j.williams@intel.com>
-Sender: dan.j.williams@gmail.com
-To: "Wolfgang Denk" <wd@denx.de>
-Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
-In-Reply-To: <20070315232956.37DAB353A6C@atlas.denx.de>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound1-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id B2E15DDE24
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 14:16:45 +1100 (EST)
+Message-ID: <45FB5D5F.10106@am.sony.com>
+Date: Fri, 16 Mar 2007 20:15:43 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070315232956.37DAB353A6C@atlas.denx.de>
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org
+To: Scott Wood <scottwood@freescale.com>, "Mark A. Greer" <mgreer@mvista.com>,
+	linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
+References: <20070305032307.GB31417@localhost.localdomain>	<20070305032452.810C1DDF1B@ozlabs.org>	<20070315230230.GB3342@mag.az.mvista.com>	<20070316001819.GE6784@localhost.localdomain>	<20070316004717.GB10786@mag.az.mvista.com>	<20070316005016.GI6784@localhost.localdomain>	<20070316162135.GA29231@ld0162-tx32.am.freescale.net>
+	<20070317013859.GJ3969@localhost.localdomain>
+In-Reply-To: <20070317013859.GJ3969@localhost.localdomain>
+Content-Type: text/plain; charset=UTF-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,127 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here are some additional comments/nits:
+David Gibson wrote:
+> On Fri, Mar 16, 2007 at 11:21:35AM -0500, Scott Wood wrote:
+>> One problem with that is that the wrapper currently only accepts one
+>> platform .o file -- and presumably one isn't going to want to do all of
+>> the platform code in assembly.
+> 
+> Um.. nobody does it yet, but I don't think there's actually any reason
+> that $platformo can't be set to a list of multiple .o files.
 
-> +/*
-> + *  Init DMA0/1 and XOR engines; allocate memory for DMAx FIFOs; set platform_device
-> + * memory resources addresses
-> + */
-> +static void ppc440spe_configure_raid_devices(void)
+I have it setup like this, from a mix of .c and .S sources:
 
-Any reason not to move most of this function into spe_adma_probe?  The
-"set resource address" section is the only piece that spe_adma_probe
-should not handle.
++ps3)
++    platformo="$object/head_64.o $object/smp.o $object/ps3-hvcall.o $object/ps3.o"
 
-> +++ b/drivers/dma/spe-adma.c
-> @@ -0,0 +1,1071 @@
-> +/*
-> + * Copyright(c) 2006 DENX Engineering. All rights reserved.
-> + *
-> + * Author: Yuri Tikhonov <yur@emcraft.com>
-> + *
-> + * This program is free software; you can redistribute it and/or modify it
-> + * under the terms of the GNU General Public License as published by the Free
-> + * Software Foundation; either version 2 of the License, or (at your option)
-> + * any later version.
-> + *
-> + * This program is distributed in the hope that it will be useful, but WITHOUT
-> + * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-> + * FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
-> + * more details.
-> + *
-> + * You should have received a copy of the GNU General Public License along with
-> + * this program; if not, write to the Free Software Foundation, Inc., 59
-> + * Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-> + *
-> + * The full GNU General Public License is included in this distribution in the
-> + * file called COPYING.
-> + */
-> +
-> +/*
-> + *  This driver supports the asynchrounous DMA copy and RAID engines available
-> + * on the AMCC PPC440SPe Processors.
-> + *  Based on the Intel Xscale(R) family of I/O Processors (SPE 32x, 33x, 134x)
-SPE should be IOP on this line.
-
-../..
-
-> +static inline void
-> +spe_adma_slot_cleanup(struct spe_adma_chan *spe_chan)
-> +{
-> +       spin_lock_bh(&spe_chan->lock);
-> +       __spe_adma_slot_cleanup(spe_chan);
-> +       spin_unlock_bh(&spe_chan->lock);
-> +}
-> +
-> +static struct spe_adma_chan *spe_adma_chan_array[3];
-> +static void spe_adma0_task(unsigned long data)
-> +{
-> +       __spe_adma_slot_cleanup(spe_adma_chan_array[0]);
-> +}
-> +
-> +static void spe_adma1_task(unsigned long data)
-> +{
-> +       __spe_adma_slot_cleanup(spe_adma_chan_array[1]);
-> +}
-> +
-> +static void spe_adma2_task(unsigned long data)
-> +{
-> +       __spe_adma_slot_cleanup(spe_adma_chan_array[2]);
-> +}
-> +
-> +DECLARE_TASKLET(spe_adma0_tasklet, spe_adma0_task, 0);
-> +DECLARE_TASKLET(spe_adma1_tasklet, spe_adma1_task, 0);
-> +DECLARE_TASKLET(spe_adma2_tasklet, spe_adma2_task, 0);
-> +struct tasklet_struct *spe_adma_tasklet[] = {
-> +       &spe_adma0_tasklet,
-> +       &spe_adma1_tasklet,
-> +       &spe_adma2_tasklet,
-> +};
-> +
-This is something I am cleaning up in iop-adma by adding a struct
-tasklet * to each channel.    I'll post an incremental diff of my
-iop-adma changes so you can see what I have cleaned up since the
-2.6.20-rc5 posting.
-
-> +static dma_addr_t spe_adma_map_page(struct dma_chan *chan, struct page *page,
-> +                                       unsigned long offset, size_t size,
-> +                                       int direction)
-> +{
-> +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
-> +       return dma_map_page(&spe_chan->device->pdev->dev, page, offset, size,
-> +                       direction);
-> +}
-> +
-> +static dma_addr_t spe_adma_map_single(struct dma_chan *chan, void *cpu_addr,
-> +                                       size_t size, int direction)
-> +{
-> +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
-> +       return dma_map_single(&spe_chan->device->pdev->dev, cpu_addr, size,
-> +                       direction);
-> +}
-> +
-> +static void spe_adma_unmap_page(struct dma_chan *chan, dma_addr_t handle,
-> +                               size_t size, int direction)
-> +{
-> +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
-> +       dma_unmap_page(&spe_chan->device->pdev->dev, handle, size, direction);
-> +}
-> +
-> +static void spe_adma_unmap_single(struct dma_chan *chan, dma_addr_t handle,
-> +                               size_t size, int direction)
-> +{
-> +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
-> +       dma_unmap_single(&spe_chan->device->pdev->dev, handle, size, direction);
-> +}
-> +
-...these are gone as well in the latest code.
-
-> +static int __devinit spe_adma_probe(struct platform_device *pdev)
-../..
-
-> +       printk(KERN_INFO "Intel(R) SPE ADMA Engine found [%d]: "
-Intel(R)? :-)
-
-Regards,
-Dan
+-Geoff
