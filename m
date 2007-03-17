@@ -1,16 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 17 Mar 2007 23:59:05 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH 6/15] zImage: Add more flexible gunzip convenience
-	functions
-Message-ID: <20070317125905.GA5268@localhost.localdomain>
-References: <20070305032452.4DCDBDDF1B@ozlabs.org>
-	<45FAC4A2.4060207@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45FAC4A2.4060207@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 8C1E7DDE9F
+	for <linuxppc-dev@ozlabs.org>; Sun, 18 Mar 2007 02:10:30 +1100 (EST)
+Date: Sun, 18 Mar 2007 02:10:35 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH] [POWERPC] Wire up sys_sync_file_range
+Message-Id: <20070318021035.efccad50.sfr@canb.auug.org.au>
+In-Reply-To: <20070309152201.027c2bf5.sfr@canb.auug.org.au>
+References: <20070309152201.027c2bf5.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__18_Mar_2007_02_10_35_+1100_wZ+TDjjVNp=krbQ9"
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,41 +24,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 16, 2007 at 09:24:02AM -0700, Geoff Levand wrote:
-> David Gibson wrote:
-> > This patch adds a new set of more flexible convenience wrappers around
-> > zlib, moving them to their own file, gunzip_util.c, in the process.
-> > These wrappers allow decompressing sections of the compressed image to
-> > different locations.  In addition, they transparently handle
-> > uncompressed data, avoiding special case code to handle uncompressed
-> > vmlinux images.
-> 
-> Hi.
-> 
-> I was waiting for the zimage churn to settle before looking into this
-> change, but I though I would let you know so you can keep it in mind
-> if you do any work here.
-> 
-> As I mentioned in another mail, the PS3's 1st stage loader (in the
-> hypervisor) supports loading a gzipped binary memory image from flash.
-> So for Linux, that would be a gzipped zImage.  Since the entire zImage
-> is uncompressed by the loader, there is no need to have the kernel image
-> compressed on its own, nor to include the zlib code in the wrapper.
-> 
-> Here is a functional expression of what we have now, and what would
-> be ideal:
-> 
-> zImage.gz = gzip(wrapper bits + zlib + gzip(vmlinx) + dtb)
-> 
-> zImage.gz = gzip(wrapper bits + vmlinx + dtb)
+--Signature=_Sun__18_Mar_2007_02_10_35_+1100_wZ+TDjjVNp=krbQ9
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Ok.  The only bit of that we don't do already is omitting zlib from an
-zImage with a decompressed kernel.  I imagine that's a fairly marginal
-gain, and slightly fiddly to achieve, but we can probably arrange it
-if we want.
+On Fri, 9 Mar 2007 15:22:01 +1100 Stephen Rothwell <sfr@canb.auug.org.au> wrote:
+>
+> +asmlinkage long compat_sys_sync_file_range(int fd, u32 unused,
+> +		u32 offset_high, u32 offset_low,
+> +		u32 nbytes_high, u32 nbytes_low,
+> +		compat_uint_t flags)
+> +{
+> +	return sys_sync_file_range(fd, (loff_t)offset_high << 32 | offset_low,
+> +			(loff_t)nbytes_high << 32 | nbytes_low,
+> +			(unsigned int)flags);
+> +}
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+As pointed out elsewhere, this won't work as it needs to many registers
+(we only have 6 for syscall args).  Probably our best bet is to follow in
+arm's footsteps and create a wrapper that puts the flags arg after fd.
+
+Comments?
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__18_Mar_2007_02_10_35_+1100_wZ+TDjjVNp=krbQ9
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFF/ATwFdBgD/zoJvwRAlsPAJ9doEJ10W/+gh+9NqKomLZT49JTswCfZbjn
+pQkaUdrNDXe8JCwJ+YLrOZs=
+=XsXg
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__18_Mar_2007_02_10_35_+1100_wZ+TDjjVNp=krbQ9--
