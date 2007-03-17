@@ -1,28 +1,39 @@
-Return-Path: <rubini@mail.gnudd.com>
-Received: from mail.gnudd.com (adsl-203-134.38-151.net24.it [151.38.134.203])
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 96D86DDE3F
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id F010BDDEC9
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 17 Mar 2007 09:56:39 +1100 (EST)
-Received: from mail.gnudd.com (rubini@localhost [127.0.0.1])
-	by mail.gnudd.com (8.13.4/8.13.4/Debian-3sarge3) with ESMTP id
-	l2GMgkJH032233
-	for <linuxppc-embedded@ozlabs.org>; Fri, 16 Mar 2007 23:42:46 +0100
-Received: (from rubini@localhost)
-	by mail.gnudd.com (8.13.4/8.13.4/Submit) id l2GMgjJe032230
-	for linuxppc-embedded@ozlabs.org; Fri, 16 Mar 2007 23:42:45 +0100
-Date: Fri, 16 Mar 2007 23:42:45 +0100
-From: Alessandro Rubini <rubini@gnudd.com>
+	Sat, 17 Mar 2007 19:58:05 +1100 (EST)
+Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
+	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2H8vow2036782
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 17 Mar 2007 09:57:56 +0100 (CET)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1HSUjV-000KQ4-UV
+	for linuxppc-embedded@ozlabs.org; Sat, 17 Mar 2007 09:57:49 +0100
+Date: Sat, 17 Mar 2007 09:57:49 +0100
+From: Matthias Fechner <idefix@fechner.net>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: login on console=tty with serial input
-Message-ID: <20070316224245.GA32224@mail.gnudd.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Sender: rubini@gnudd.com
-In-Reply-To: <381D3B2C62C8B94B95219E2DA47C8DCF08E3CA@stnzolex2.securiton.int>
-References: <381D3B2C62C8B94B95219E2DA47C8DCF08E3CA@stnzolex2.securiton.int>
-	<OF1C808DEE.C8EB82B2-ONC1257295.003752BA-C1257296.0038EEB2@rockwellcollins.com>
+Subject: Re: Howto read I2C on MPC5200 Lite
+Message-ID: <20070317085749.GA75794@server.idefix.lan>
+References: <20070307122430.GA73298@server.idefix.lan>
+	<4b73d43f0703071317o7ae5e531s5eb4b390d41a1b88@mail.gmail.com>
+	<20070309113506.GB6726@server.idefix.lan>
+	<4b73d43f0703090911y3c2898cdmfdb84f8c7f5da8f@mail.gmail.com>
+	<20070309234251.GA68997@server.idefix.lan>
+	<20070311005535.GA39488@server.idefix.lan>
+	<20070315095758.GE14658@moe.telargo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070315095758.GE14658@moe.telargo.com>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,31 +44,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hello Domen,
 
-> As GUI library, I started to evaluate Nano-X, FLTK and wxWitgets. But there
->  is the problem that I don't have keyboard input whether form the serial
->  line nor form a remote shell (Ethernet).
+* Domen Puncer <domen.puncer@telargo.com> [15-03-07 10:57]:
+> Anyway, I managed to reproduce some problems, and hopefully "fix" them.
+> One problem seems to be fixed by disabling i2c on stop,
+> another looks like it's:
+> http://ozlabs.org/pipermail/linuxppc-embedded/2005-July/019038.html
 
-What you type in the serial console reaches user space in /dev/ttyS0
-or whatever the name on your platform. What you type in the network
-connection reaches user space in the socket, where the server (sshd,
-telnetd or whatever) pushes it back to a pty master, so your shell
-reads it from the pty (slave) is has on its stdin.
+ok, I can confirm that this patch fixes the problem for me too.
+I was now able to read my I2C sensor 97388 successfully and only 2814
+readfailures happened.
+That means an errorrate of 2.8% that is ok for me.
 
-Programs using /dev/fb usually open /dev/tty1 (or /dev/tty2 etc) to
-read keyboard input from. The device driver that manages it is nether
-the serial driver nor the pty driver, but the "virtual console" one.
-What is reported there as keypresses are the input events reported by
-a keyboard.
- 
-> As far I understand the matter the problem is that the console that is
->  running on the frame buffer needs as input a keyboard device and not a
->  serial line. Unfortunately I found till now no solution to redirect the
->  serial line to a keyboard device.
+Thx a lot for your great work!
 
-Read /dev/ttyS0 and post keypress events associated to the ascii data
-you read. Your graphic environment will see them. You can write
-your own module to post keyboard data or use uinput (CONFIG_INPUT_UINPUT).
+Best regards,
+Matthias
 
-hope this helps
-/alessandro
+-- 
+
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
