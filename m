@@ -1,19 +1,21 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
-	by ozlabs.org (Postfix) with ESMTP id F40C8DDDCA
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 19:06:58 +1100 (EST)
-From: Stefan Roese <sr@denx.de>
-To: "Dan Williams" <dan.j.williams@intel.com>
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DC5E2DDEC9
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 19:53:58 +1100 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: "Dan Williams" <dan.j.williams@intel.com>, linuxppc-dev@ozlabs.org,
+	linux-raid@vger.kernel.org
 Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
-Date: Sat, 17 Mar 2007 09:09:13 +0100
+Date: Sat, 17 Mar 2007 11:57:57 +0300
 References: <20070315232956.37DAB353A6C@atlas.denx.de>
 	<e9c3a7c20703161100j70a52e5cg25ff3616a5cda8d5@mail.gmail.com>
 In-Reply-To: <e9c3a7c20703161100j70a52e5cg25ff3616a5cda8d5@mail.gmail.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200703170909.13869.sr@denx.de>
-Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org
+Message-Id: <200703171157.58056.yur@emcraft.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +25,105 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dan,
+ Hi Dan,
 
-I just noticed that your patch "dmaengine: add the async_tx api":
+On Friday 16 March 2007 21:00, you wrote:
+> Here are some additional comments/nits:
+> > +/*
+> > + *  Init DMA0/1 and XOR engines; allocate memory for DMAx FIFOs; set
+> > platform_device + * memory resources addresses
+> > + */
+> > +static void ppc440spe_configure_raid_devices(void)
+>
+> Any reason not to move most of this function into spe_adma_probe?  
+> The "set resource address" section is the only piece that spe_adma_probe
+> should not handle.
 
-@@ -22,6 +22,17 @@ config NET_DMA
- 	  Since this is the main user of the DMA engine, it should be enabled;
- 	  say Y here.
- 
-+config ASYNC_TX_DMA
-+	tristate "Asynchronous Bulk Memory Transfers/Transforms API"
-+	default y
-+	---help---
-+	  This enables the async_tx management layer for dma engines.
-+	  Subsystems coded to this API will use offload engines for bulk
-+	  memory operations where present.  Software implementations are
-+	  called when a dma engine is not present or fails to allocate
-+	  memory to carry out the transaction.
-+	  Current subsystems ported to async_tx: MD_RAID4,5
-+
+ Two ppc440spe's DMA1 and DMA2 engines have to be configured together with one 
+I2O engine (all these units share the same pointer to the FIFO area in the 
+main memory but use different parts of this common area). So, setting-up of 
+this common FIFO area should be performed in the 
+ppc440spe_configure_raid_devices(). As regarding other code in this function 
+(except "set resource address"), it might be moved to the spe_adma_probe() 
+indeed.
 
-adds ASYNC_TX_DMA unconditionally to _all_ platforms. You might what to bundle 
-this with something like DMA_ENGINE.
+> > +++ b/drivers/dma/spe-adma.c
+...
+> > + *
+> > + * The full GNU General Public License is included in this distribution
+> > in the + * file called COPYING.
+> > + */
+> > +
+> > +/*
+> > + *  This driver supports the asynchrounous DMA copy and RAID engines
+> > available + * on the AMCC PPC440SPe Processors.
+> > + *  Based on the Intel Xscale(R) family of I/O Processors (SPE 32x, 33x,
+> > 134x)
+>
+> SPE should be IOP on this line.
 
-Best regards,
-Stefan
+ Correct.
+...
+> > +
+> > +DECLARE_TASKLET(spe_adma0_tasklet, spe_adma0_task, 0);
+> > +DECLARE_TASKLET(spe_adma1_tasklet, spe_adma1_task, 0);
+> > +DECLARE_TASKLET(spe_adma2_tasklet, spe_adma2_task, 0);
+> > +struct tasklet_struct *spe_adma_tasklet[] = {
+> > +       &spe_adma0_tasklet,
+> > +       &spe_adma1_tasklet,
+> > +       &spe_adma2_tasklet,
+> > +};
+> > +
+>
+> This is something I am cleaning up in iop-adma by adding a struct
+> tasklet * to each channel.    I'll post an incremental diff of my
+> iop-adma changes so you can see what I have cleaned up since the
+> 2.6.20-rc5 posting.
+
+ Thanks.
+
+> > +static dma_addr_t spe_adma_map_page(struct dma_chan *chan, struct page
+> > *page, +                                       unsigned long offset,
+> > size_t size, +                                       int direction)
+> > +{
+> > +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
+> > +       return dma_map_page(&spe_chan->device->pdev->dev, page, offset,
+> > size, +                       direction);
+> > +}
+> > +
+> > +static dma_addr_t spe_adma_map_single(struct dma_chan *chan, void
+> > *cpu_addr, +                                       size_t size, int
+> > direction) +{
+> > +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
+> > +       return dma_map_single(&spe_chan->device->pdev->dev, cpu_addr,
+> > size, +                       direction);
+> > +}
+> > +
+> > +static void spe_adma_unmap_page(struct dma_chan *chan, dma_addr_t
+> > handle, +                               size_t size, int direction)
+> > +{
+> > +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
+> > +       dma_unmap_page(&spe_chan->device->pdev->dev, handle, size,
+> > direction); +}
+> > +
+> > +static void spe_adma_unmap_single(struct dma_chan *chan, dma_addr_t
+> > handle, +                               size_t size, int direction)
+> > +{
+> > +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
+> > +       dma_unmap_single(&spe_chan->device->pdev->dev, handle, size,
+> > direction); +}
+> > +
+>
+> ....these are gone as well in the latest code.
+>
+> > +static int __devinit spe_adma_probe(struct platform_device *pdev)
+>
+> .../..
+>
+> > +       printk(KERN_INFO "Intel(R) SPE ADMA Engine found [%d]: "
+>
+> Intel(R)? :-)
+
+ Right : )
+
+ Regards, Yuri.
