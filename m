@@ -1,21 +1,19 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound1-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id B2E15DDE24
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 14:16:45 +1100 (EST)
-Message-ID: <45FB5D5F.10106@am.sony.com>
-Date: Fri, 16 Mar 2007 20:15:43 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
+Return-Path: <sr@denx.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
+	by ozlabs.org (Postfix) with ESMTP id F40C8DDDCA
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 19:06:58 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: "Dan Williams" <dan.j.williams@intel.com>
+Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
+Date: Sat, 17 Mar 2007 09:09:13 +0100
+References: <20070315232956.37DAB353A6C@atlas.denx.de>
+	<e9c3a7c20703161100j70a52e5cg25ff3616a5cda8d5@mail.gmail.com>
+In-Reply-To: <e9c3a7c20703161100j70a52e5cg25ff3616a5cda8d5@mail.gmail.com>
 MIME-Version: 1.0
-To: Scott Wood <scottwood@freescale.com>, "Mark A. Greer" <mgreer@mvista.com>,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
-References: <20070305032307.GB31417@localhost.localdomain>	<20070305032452.810C1DDF1B@ozlabs.org>	<20070315230230.GB3342@mag.az.mvista.com>	<20070316001819.GE6784@localhost.localdomain>	<20070316004717.GB10786@mag.az.mvista.com>	<20070316005016.GI6784@localhost.localdomain>	<20070316162135.GA29231@ld0162-tx32.am.freescale.net>
-	<20070317013859.GJ3969@localhost.localdomain>
-In-Reply-To: <20070317013859.GJ3969@localhost.localdomain>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703170909.13869.sr@denx.de>
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,18 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Fri, Mar 16, 2007 at 11:21:35AM -0500, Scott Wood wrote:
->> One problem with that is that the wrapper currently only accepts one
->> platform .o file -- and presumably one isn't going to want to do all of
->> the platform code in assembly.
-> 
-> Um.. nobody does it yet, but I don't think there's actually any reason
-> that $platformo can't be set to a list of multiple .o files.
+Dan,
 
-I have it setup like this, from a mix of .c and .S sources:
+I just noticed that your patch "dmaengine: add the async_tx api":
 
-+ps3)
-+    platformo="$object/head_64.o $object/smp.o $object/ps3-hvcall.o $object/ps3.o"
+@@ -22,6 +22,17 @@ config NET_DMA
+ 	  Since this is the main user of the DMA engine, it should be enabled;
+ 	  say Y here.
+ 
++config ASYNC_TX_DMA
++	tristate "Asynchronous Bulk Memory Transfers/Transforms API"
++	default y
++	---help---
++	  This enables the async_tx management layer for dma engines.
++	  Subsystems coded to this API will use offload engines for bulk
++	  memory operations where present.  Software implementations are
++	  called when a dma engine is not present or fails to allocate
++	  memory to carry out the transaction.
++	  Current subsystems ported to async_tx: MD_RAID4,5
++
 
--Geoff
+adds ASYNC_TX_DMA unconditionally to _all_ platforms. You might what to bundle 
+this with something like DMA_ENGINE.
+
+Best regards,
+Stefan
