@@ -1,17 +1,16 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 87575DDEDE
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 09:09:41 +1100 (EST)
-Message-ID: <45FB159B.7020909@ru.mvista.com>
-Date: Sat, 17 Mar 2007 01:09:31 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Sat, 17 Mar 2007 12:23:25 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 01/17] bootwrapper: Make ft_create_node() pay attention to
+	the parent parameter.
+Message-ID: <20070317012325.GA3969@localhost.localdomain>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172752.GA29784@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
-To: tglx@linutronix.de
-Subject: Re: [PATCH] PowerPC: dynamic tick support
-References: <200611082337.28710.sshtylyov@ru.mvista.com>
-In-Reply-To: <200611082337.28710.sshtylyov@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, greg.weeks@timesys.com
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070316172752.GA29784@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,42 +20,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
-
-> Add dynamic tick support for PowerPC.
-
-[...]
-
-
-> Known issues:
-> 1) with 2.6.18-hrt-dyntick2, dynamic tick mode causes bootup slowdown after the
->     HRT mode is entered (it seems to return to normal shortly);
-> 2) with 2.6.18-rt7 (plus an extra patch to make it actually working :-) in the
->    kernel preemption mode other than RT, that slowdown seems permanent (this
->    was not happening with 2.6.18-rt6).
-
-> I don't have time to investigate now, so anybody interested is welcome to...
-
-    ... but I should have done it. :-/
-
-> or I may even return to this if/when the time permits. :-)
-
-    Looks like that was caused by that missing !need_resched_delayed() below. 
-So, should be fixed with the latest 2.6.21-rc3-rt0 patch...
-
->  arch/powerpc/kernel/idle.c |    4 ++++
->  1 files changed, 4 insertions(+)
+On Fri, Mar 16, 2007 at 12:27:52PM -0500, Scott Wood wrote:
+> Previously, ft_create_node() ignored the parent parameter, and instead
+> created the new node as a child of the root node.  The node is now
+> created as a child of "parent".
 > 
-> Index: linux-2.6/arch/powerpc/kernel/idle.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/kernel/idle.c
-> +++ linux-2.6/arch/powerpc/kernel/idle.c
-> @@ -49,6 +49,8 @@ void cpu_idle(void)
->  
->  	set_thread_flag(TIF_POLLING_NRFLAG);
->  	while (1) {
-> +		hrtimer_stop_sched_tick();
-> +
->  		while (!need_resched() && !cpu_should_die()) {
->  			ppc64_runlatch_off();
->  
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
