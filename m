@@ -1,21 +1,15 @@
-Return-Path: <yur@emcraft.com>
-Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id DC5E2DDEC9
-	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 19:53:58 +1100 (EST)
-From: Yuri Tikhonov <yur@emcraft.com>
-To: "Dan Williams" <dan.j.williams@intel.com>, linuxppc-dev@ozlabs.org,
-	linux-raid@vger.kernel.org
-Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
-Date: Sat, 17 Mar 2007 11:57:57 +0300
-References: <20070315232956.37DAB353A6C@atlas.denx.de>
-	<e9c3a7c20703161100j70a52e5cg25ff3616a5cda8d5@mail.gmail.com>
-In-Reply-To: <e9c3a7c20703161100j70a52e5cg25ff3616a5cda8d5@mail.gmail.com>
+Return-Path: <fthain@telegraphics.com.au>
+Received: from loopy.telegraphics.com.au (loopy.telegraphics.com.au
+	[202.45.126.152]) by ozlabs.org (Postfix) with ESMTP id 78309DDEBA
+	for <linuxppc-dev@ozlabs.org>; Sat, 17 Mar 2007 20:30:44 +1100 (EST)
+Date: Sat, 17 Mar 2007 20:08:25 +1100 (EST)
+From: Finn Thain <fthain@telegraphics.com.au>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Subject: [PATCH 10/13] CUDA ADB fixes
+Message-ID: <Pine.LNX.4.64.0703171731391.4875@loopy.telegraphics.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703171157.58056.yur@emcraft.com>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-m68k@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,105 +19,175 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- Hi Dan,
 
-On Friday 16 March 2007 21:00, you wrote:
-> Here are some additional comments/nits:
-> > +/*
-> > + *  Init DMA0/1 and XOR engines; allocate memory for DMAx FIFOs; set
-> > platform_device + * memory resources addresses
-> > + */
-> > +static void ppc440spe_configure_raid_devices(void)
->
-> Any reason not to move most of this function into spe_adma_probe?  
-> The "set resource address" section is the only piece that spe_adma_probe
-> should not handle.
+Fix the flakiness in the CUDA ADB driver on m68k macs (keypresses getting 
+wedged down or ADB just going AWOL altogether).
 
- Two ppc440spe's DMA1 and DMA2 engines have to be configured together with one 
-I2O engine (all these units share the same pointer to the FIFO area in the 
-main memory but use different parts of this common area). So, setting-up of 
-this common FIFO area should be performed in the 
-ppc440spe_configure_raid_devices(). As regarding other code in this function 
-(except "set resource address"), it might be moved to the spe_adma_probe() 
-indeed.
+The only IRQ used by this driver is the VIA shift register IRQ. The 
+PowerMac conditional code disables the other VIA IRQ sources, so don't 
+mess with the other IRQ flags in the common code -- m68k macs need them.
 
-> > +++ b/drivers/dma/spe-adma.c
-...
-> > + *
-> > + * The full GNU General Public License is included in this distribution
-> > in the + * file called COPYING.
-> > + */
-> > +
-> > +/*
-> > + *  This driver supports the asynchrounous DMA copy and RAID engines
-> > available + * on the AMCC PPC440SPe Processors.
-> > + *  Based on the Intel Xscale(R) family of I/O Processors (SPE 32x, 33x,
-> > 134x)
->
-> SPE should be IOP on this line.
+When polling, don't disable local interrupts when we only need to disable 
+the CUDA interrupt.
 
- Correct.
-...
-> > +
-> > +DECLARE_TASKLET(spe_adma0_tasklet, spe_adma0_task, 0);
-> > +DECLARE_TASKLET(spe_adma1_tasklet, spe_adma1_task, 0);
-> > +DECLARE_TASKLET(spe_adma2_tasklet, spe_adma2_task, 0);
-> > +struct tasklet_struct *spe_adma_tasklet[] = {
-> > +       &spe_adma0_tasklet,
-> > +       &spe_adma1_tasklet,
-> > +       &spe_adma2_tasklet,
-> > +};
-> > +
->
-> This is something I am cleaning up in iop-adma by adding a struct
-> tasklet * to each channel.    I'll post an incremental diff of my
-> iop-adma changes so you can see what I have cleaned up since the
-> 2.6.20-rc5 posting.
+Unless polling, don't clear the shift register IRQ flag. On m68k macs this 
+creates a race that often breaks CUDA ADB.
 
- Thanks.
+Tested on Quadra 840av and LC630 (both m68k); also Beige G3 (powerpc).
 
-> > +static dma_addr_t spe_adma_map_page(struct dma_chan *chan, struct page
-> > *page, +                                       unsigned long offset,
-> > size_t size, +                                       int direction)
-> > +{
-> > +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
-> > +       return dma_map_page(&spe_chan->device->pdev->dev, page, offset,
-> > size, +                       direction);
-> > +}
-> > +
-> > +static dma_addr_t spe_adma_map_single(struct dma_chan *chan, void
-> > *cpu_addr, +                                       size_t size, int
-> > direction) +{
-> > +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
-> > +       return dma_map_single(&spe_chan->device->pdev->dev, cpu_addr,
-> > size, +                       direction);
-> > +}
-> > +
-> > +static void spe_adma_unmap_page(struct dma_chan *chan, dma_addr_t
-> > handle, +                               size_t size, int direction)
-> > +{
-> > +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
-> > +       dma_unmap_page(&spe_chan->device->pdev->dev, handle, size,
-> > direction); +}
-> > +
-> > +static void spe_adma_unmap_single(struct dma_chan *chan, dma_addr_t
-> > handle, +                               size_t size, int direction)
-> > +{
-> > +       struct spe_adma_chan *spe_chan = to_spe_adma_chan(chan);
-> > +       dma_unmap_single(&spe_chan->device->pdev->dev, handle, size,
-> > direction); +}
-> > +
->
-> ....these are gone as well in the latest code.
->
-> > +static int __devinit spe_adma_probe(struct platform_device *pdev)
->
-> .../..
->
-> > +       printk(KERN_INFO "Intel(R) SPE ADMA Engine found [%d]: "
->
-> Intel(R)? :-)
+Signed-off-by: Finn Thain <fthain@telegraphics.com.au>
+ 
+ drivers/macintosh/via-cuda.c |   58 +++++++++++++++++++++++--------------------
+ 1 file changed, 32 insertions(+), 26 deletions(-)
 
- Right : )
-
- Regards, Yuri.
+Index: linux-2.6.20/drivers/macintosh/via-cuda.c
+===================================================================
+--- linux-2.6.20.orig/drivers/macintosh/via-cuda.c	2007-03-05 15:19:49.000000000 +1100
++++ linux-2.6.20/drivers/macintosh/via-cuda.c	2007-03-05 15:20:49.000000000 +1100
+@@ -83,6 +83,7 @@ static unsigned char cuda_rbuf[16];
+ static unsigned char *reply_ptr;
+ static int reading_reply;
+ static int data_index;
++static int cuda_irq;
+ #ifdef CONFIG_PPC
+ static struct device_node *vias;
+ #endif
+@@ -161,10 +162,8 @@ int __init find_via_cuda(void)
+     /* Clear and enable interrupts, but only on PPC. On 68K it's done  */
+     /* for us by the main VIA driver in arch/m68k/mac/via.c        */
+ 
+-#ifndef CONFIG_MAC
+     out_8(&via[IFR], 0x7f);	/* clear interrupts by writing 1s */
+     out_8(&via[IER], IER_SET|SR_INT); /* enable interrupt from SR */
+-#endif
+ 
+     /* enable autopoll */
+     cuda_request(&req, NULL, 3, CUDA_PACKET, CUDA_AUTOPOLL, 1);
+@@ -182,24 +181,22 @@ int __init find_via_cuda(void)
+ 
+ static int __init via_cuda_start(void)
+ {
+-    unsigned int irq;
+-
+     if (via == NULL)
+ 	return -ENODEV;
+ 
+ #ifdef CONFIG_MAC
+-    irq = IRQ_MAC_ADB;
++    cuda_irq = IRQ_MAC_ADB;
+ #else /* CONFIG_MAC */
+-    irq = irq_of_parse_and_map(vias, 0);
+-    if (irq == NO_IRQ) {
++    cuda_irq = irq_of_parse_and_map(vias, 0);
++    if (cuda_irq == NO_IRQ) {
+ 	printk(KERN_ERR "via-cuda: can't map interrupts for %s\n",
+ 	       vias->full_name);
+ 	return -ENODEV;
+     }
+-#endif /* CONFIG_MAP */
++#endif /* CONFIG_MAC */
+ 
+-    if (request_irq(irq, cuda_interrupt, 0, "ADB", cuda_interrupt)) {
+-	printk(KERN_ERR "via-cuda: can't request irq %d\n", irq);
++    if (request_irq(cuda_irq, cuda_interrupt, 0, "ADB", cuda_interrupt)) {
++	printk(KERN_ERR "via-cuda: can't request irq %d\n", cuda_irq);
+ 	return -EAGAIN;
+     }
+ 
+@@ -239,6 +236,7 @@ cuda_init(void)
+ 	printk(KERN_ERR "cuda_init_via() failed\n");
+ 	return -ENODEV;
+     }
++    out_8(&via[IER], IER_SET|SR_INT); /* enable interrupt from SR */
+ 
+     return via_cuda_start();
+ #endif
+@@ -264,15 +262,17 @@ cuda_init_via(void)
+     out_8(&via[B], in_8(&via[B]) | TACK | TIP);			/* negate them */
+     out_8(&via[ACR] ,(in_8(&via[ACR]) & ~SR_CTRL) | SR_EXT);	/* SR data in */
+     (void)in_8(&via[SR]);						/* clear any left-over data */
+-#ifndef CONFIG_MAC
++#ifdef CONFIG_PPC
+     out_8(&via[IER], 0x7f);					/* disable interrupts from VIA */
+     (void)in_8(&via[IER]);
++#else
++    out_8(&via[IER], SR_INT)					/* disable SR interrupt from VIA */;
+ #endif
+ 
+     /* delay 4ms and then clear any pending interrupt */
+     mdelay(4);
+     (void)in_8(&via[SR]);
+-    out_8(&via[IFR], in_8(&via[IFR]) & 0x7f);
++    out_8(&via[IFR], SR_INT);
+ 
+     /* sync with the CUDA - assert TACK without TIP */
+     out_8(&via[B], in_8(&via[B]) & ~TACK);
+@@ -283,7 +283,7 @@ cuda_init_via(void)
+     /* wait for the interrupt and then clear it */
+     WAIT_FOR(in_8(&via[IFR]) & SR_INT, "CUDA response to sync (2)");
+     (void)in_8(&via[SR]);
+-    out_8(&via[IFR], in_8(&via[IFR]) & 0x7f);
++    out_8(&via[IFR], SR_INT);
+ 
+     /* finish the sync by negating TACK */
+     out_8(&via[B], in_8(&via[B]) | TACK);
+@@ -292,7 +292,7 @@ cuda_init_via(void)
+     WAIT_FOR(in_8(&via[B]) & TREQ, "CUDA response to sync (3)");
+     WAIT_FOR(in_8(&via[IFR]) & SR_INT, "CUDA response to sync (4)");
+     (void)in_8(&via[SR]);
+-    out_8(&via[IFR], in_8(&via[IFR]) & 0x7f);
++    out_8(&via[IFR], SR_INT);
+     out_8(&via[B], in_8(&via[B]) | TIP);	/* should be unnecessary */
+ 
+     return 0;
+@@ -429,16 +429,12 @@ cuda_start(void)
+ void
+ cuda_poll(void)
+ {
+-    unsigned long flags;
+-
+     /* cuda_interrupt only takes a normal lock, we disable
+      * interrupts here to avoid re-entering and thus deadlocking.
+-     * An option would be to disable only the IRQ source with
+-     * disable_irq(), would that work on m68k ? --BenH
+      */
+-    local_irq_save(flags);
++    disable_irq(cuda_irq);
+     cuda_interrupt(0, NULL);
+-    local_irq_restore(flags);
++    enable_irq(cuda_irq);
+ }
+ 
+ static irqreturn_t
+@@ -449,15 +445,25 @@ cuda_interrupt(int irq, void *arg)
+     unsigned char ibuf[16];
+     int ibuf_len = 0;
+     int complete = 0;
+-    unsigned char virq;
+     
+     spin_lock(&cuda_lock);
+ 
+-    virq = in_8(&via[IFR]) & 0x7f;
+-    out_8(&via[IFR], virq);   
+-    if ((virq & SR_INT) == 0) {
+-        spin_unlock(&cuda_lock);
+-	return IRQ_NONE;
++    /* On powermacs, this handler is registered for the VIA IRQ. But it uses
++     * just the shift register IRQ -- other VIA interrupt sources are disabled.
++     * On m68k macs, the VIA IRQ sources are dispatched individually. Unless
++     * we are polling, the shift register IRQ flag has already been cleared.
++     */
++
++#ifdef CONFIG_MAC
++    if (!arg)
++#endif
++    {
++        if ((in_8(&via[IFR]) & SR_INT) == 0) {
++            spin_unlock(&cuda_lock);
++            return IRQ_NONE;
++        } else {
++            out_8(&via[IFR], SR_INT);
++        }
+     }
+     
+     status = (~in_8(&via[B]) & (TIP|TREQ)) | (in_8(&via[ACR]) & SR_OUT);
