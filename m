@@ -1,17 +1,14 @@
-Return-Path: <gerald.vanbaren@comcast.net>
-Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [204.127.192.82])
-	by ozlabs.org (Postfix) with ESMTP id 6B8E1DDEE5
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 07:49:29 +1100 (EST)
-Message-ID: <45FDA5D4.7050004@comcast.net>
-Date: Sun, 18 Mar 2007 16:49:24 -0400
-From: Jerry Van Baren <gerald.vanbaren@comcast.net>
-MIME-Version: 1.0
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 1E237DDEF0
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 08:40:48 +1100 (EST)
+Date: Sun, 18 Mar 2007 22:40:49 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] DTC: Improve options handling - respin
-References: <45FC1F69.9080204@comcast.net>
-	<20070317231337.GA11017@localhost.localdomain>
-In-Reply-To: <20070317231337.GA11017@localhost.localdomain>
-Content-Type: multipart/mixed; boundary="------------020403080407060104070307"
+Subject: [RFC PATCH] power-management elements for 603e/fsl
+Message-ID: <Pine.LNX.4.60.0703182216130.4143@poirot.grange>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,186 +18,364 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------020403080407060104070307
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Transfer-Encoding: 7bit
+Hi all
 
-David Gibson wrote:
-> On Sat, Mar 17, 2007 at 01:03:37PM -0400, Jerry Van Baren wrote:
->> Hi David, Jon,
->>
->> Here is another fairly trivial patch for dtc.  It adds -h to get the 
->> usage message.  It adds -q (-qq/-qqq) to suppress warnings/errors.
->> It removes the -R option which is advertised but does nothing
->> useful.
-> 
-> NAK.  -R does do something that I believe is useful.
+Below is my current patch that allows me to suspend my kurobox.
 
-Hi David, Jon,
+As some of you would know, it is not a real suspend-to-RAM, since kurobox' 
+hardware doesn't support powering down CPU and peripherals while keeping 
+RAM in self-refresh. So, this patch just sends the SoC and the CPU to 
+SLEEP. It also needs some extra patches for timer suspend / resume, so, 
+this alone will not work properly. Besides, I am not where to put and how 
+to call these functions. So far I put them in fsl namespace as that'll, 
+probably, be similar among Freescale chips? Maybe it's better to call this 
+mode standby, not str?
 
-I was just seeing if I could get a rise out of you. It worked. ;-)
+Is there interest in this code at all? if yes - how and where do we want 
+to put it?
 
-Attached is a respin of my previous two patches: it adds the -h and -q 
-options and #defines the default version but does _not_ delete the -R 
-option (left as an exercise for the reader to make it useful :-).
-
-Best regards,
-gvb
-
---------------020403080407060104070307
-Content-Type: text/plain;
- name="0001-Improve-options-define-default-version.txt"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="0001-Improve-options-define-default-version.txt"
-
-Subject: [PATCH] Improve options, #define default version.
-
-Add -h option for help
-Add -q quiet option to reduce or suppress the whining
-Create #define for the default version value.
-
-Signed-off-by: vanbaren@cideas.com <vanbaren@cideas.com>
+Thanks
+Guennadi
 ---
- dtc.c      |   23 ++++++++++++++++++-----
- dtc.h      |    5 +++++
- flat_dt.h  |    2 ++
- livetree.c |    9 +++++----
- 4 files changed, 30 insertions(+), 9 deletions(-)
+Guennadi Liakhovetski
 
-diff --git a/dtc.c b/dtc.c
-index f15d90f..051a68b 100644
---- a/dtc.c
-+++ b/dtc.c
-@@ -81,6 +81,10 @@ static void usage(void)
- 	fprintf(stderr, "Usage:\n");
- 	fprintf(stderr, "\tdtc [options] <input file>\n");
- 	fprintf(stderr, "\nOptions:\n");
-+	fprintf(stderr, "\t-h\n");
-+	fprintf(stderr, "\t\tThis help text\n");
-+	fprintf(stderr, "\t-q\n");
-+	fprintf(stderr, "\t\tQuiet: -q suppress warnings, -qq errors, -qqq all\n");
- 	fprintf(stderr, "\t-I <input format>\n");
- 	fprintf(stderr, "\t\tInput formats are:\n");
- 	fprintf(stderr, "\t\t\tdts - device tree source text\n");
-@@ -92,7 +96,7 @@ static void usage(void)
- 	fprintf(stderr, "\t\t\tdtb - device tree blob\n");
- 	fprintf(stderr, "\t\t\tasm - assembler source\n");
- 	fprintf(stderr, "\t-V <output version>\n");
--	fprintf(stderr, "\t\tBlob version to produce, defaults to 16 (relevant for dtb\n\t\tand asm output only)\n");
-+	fprintf(stderr, "\t\tBlob version to produce, defaults to %d (relevant for dtb\n\t\tand asm output only)\n", OF_DEFAULT_VERSION);
- 	fprintf(stderr, "\t-R <number>\n");
- 	fprintf(stderr, "\t\tMake space for <number> reserve map entries (relevant for \n\t\tdtb and asm output only)\n");
- 	fprintf(stderr, "\t-b <number>\n");
-@@ -113,11 +117,13 @@ int main(int argc, char *argv[])
- 	int opt;
- 	FILE *inf = NULL;
- 	FILE *outf = NULL;
--	int outversion = 17;
-+	int outversion = OF_DEFAULT_VERSION;
- 	int reservenum = 1;
- 	int boot_cpuid_phys = 0xfeedbeef;
- 
--	while ((opt = getopt(argc, argv, "I:O:o:V:R:fb:")) != EOF) {
-+	quiet = 0;
-+
-+	while ((opt = getopt(argc, argv, "hI:O:o:V:R:fqb:")) != EOF) {
- 		switch (opt) {
- 		case 'I':
- 			inform = optarg;
-@@ -137,9 +143,13 @@ int main(int argc, char *argv[])
- 		case 'f':
- 			force = 1;
- 			break;
-+		case 'q':
-+			quiet++;
-+			break;
- 		case 'b':
- 			boot_cpuid_phys = strtol(optarg, NULL, 0);
- 			break;
-+		case 'h':
- 		default:
- 			usage();
- 		}
-@@ -174,9 +184,12 @@ int main(int argc, char *argv[])
- 		die("Couldn't read input tree\n");
- 
- 	if (! check_device_tree(bi->dt, outversion, boot_cpuid_phys)) {
--		fprintf(stderr, "Input tree has errors\n");
--		if (! force)
-+		if ((force) && (quiet < 3))
-+			fprintf(stderr, "Input tree has errors, output forced\n");
-+		if (! force) {
-+			fprintf(stderr, "Input tree has errors, not writing output (use -f to force output)\n");
- 			exit(1);
-+		}
- 	}
- 
- 	if (streq(outname, "-")) {
-diff --git a/dtc.h b/dtc.h
-index 8d3964c..e3e2863 100644
---- a/dtc.h
-+++ b/dtc.h
-@@ -36,6 +36,11 @@
- 
- #include "flat_dt.h"
- 
-+/*
-+ * Level of quietness
-+ */
-+int quiet;
-+
- static inline void die(char * str, ...)
- {
- 	va_list ap;
-diff --git a/flat_dt.h b/flat_dt.h
-index d5abd80..a8482b4 100644
---- a/flat_dt.h
-+++ b/flat_dt.h
-@@ -2,6 +2,8 @@
- #define _FLAT_DT_H_
- 
- 
-+#define OF_DEFAULT_VERSION	17
-+
- #define OF_DT_HEADER            0xd00dfeed      /* 4: version, 4: total size */
- 
- #define OF_DT_BEGIN_NODE	0x1             /* Start node: full name */
-diff --git a/livetree.c b/livetree.c
-index 84f2f64..45642dc 100644
---- a/livetree.c
-+++ b/livetree.c
-@@ -252,8 +252,8 @@ static struct node *get_node_by_phandle(struct node *tree, cell_t phandle)
-  * Tree checking functions
+Implement "soft" suspend on linkstation.
+
+Signed-off-by: G. Liakhovetski <g.liakhovetski@gmx.de>
+
+diff --git a/arch/powerpc/platforms/embedded6xx/linkstation.c b/arch/powerpc/platforms/embedded6xx/linkstation.c
+index 3f6c411..1daf0ae 100644
+--- a/arch/powerpc/platforms/embedded6xx/linkstation.c
++++ b/arch/powerpc/platforms/embedded6xx/linkstation.c
+@@ -11,15 +11,15 @@
   */
  
--#define ERRMSG(...) fprintf(stderr, "ERROR: " __VA_ARGS__)
--#define WARNMSG(...) fprintf(stderr, "Warning: " __VA_ARGS__)
-+#define ERRMSG(...) if (quiet < 2) fprintf(stderr, "ERROR: " __VA_ARGS__)
-+#define WARNMSG(...) if (quiet < 1) fprintf(stderr, "Warning: " __VA_ARGS__)
+ #include <linux/kernel.h>
+-#include <linux/pci.h>
+ #include <linux/initrd.h>
+ #include <linux/mtd/physmap.h>
++#include <linux/serial_reg.h>
++#include <sysdev/fsl_soc.h>
  
- static int must_be_one_cell(struct property *prop, struct node *node)
+ #include <asm/time.h>
+ #include <asm/prom.h>
+ #include <asm/mpic.h>
+ #include <asm/mpc10x.h>
+-#include <asm/pci-bridge.h>
+ 
+ static struct mtd_partition linkstation_physmap_partitions[] = {
+ 	{
+@@ -134,6 +134,7 @@ static void __init linkstation_init_IRQ(
+ 
+ extern void avr_uart_configure(void);
+ extern void avr_uart_send(const char);
++extern int avr_uart_ier_swap(const char, char *);
+ 
+ static void linkstation_restart(char *cmd)
  {
-@@ -512,13 +512,14 @@ static int check_cpus(struct node *root, int outversion, int boot_cpuid_phys)
- 			char *eptr;
+@@ -197,3 +198,87 @@ define_machine(linkstation){
+ 	.halt	 		= linkstation_halt,
+ 	.calibrate_decr 	= generic_calibrate_decr,
+ };
++
++#ifdef CONFIG_PM
++
++static int ls_pm_valid(suspend_state_t state)
++{
++	switch (state) {
++	case PM_SUSPEND_STANDBY:
++	case PM_SUSPEND_MEM:
++		return 1;
++	default:
++		return 0;
++	}
++}
++
++static int ls_pm_enter(suspend_state_t state)
++{
++	char ier;
++	int ret = 0;
++	u64 tb;
++
++	/* Stop preemption */
++	preempt_disable();
++
++	if ((ret = fsl_suspend(state)) < 0) {
++		preempt_enable();
++		return ret;
++	}
++
++	local_irq_disable();
++
++	avr_uart_configure();
++	ret = avr_uart_ier_swap(UART_IER_RDI | UART_IER_RLSI/* | UART_IER_THRI*/, &ier);
++	if (ret < 0)
++		goto fail;
++
++	/* Get timebase */
++	tb = get_tb();
++
++	/* go zzzzz... (re-enabling interrupts) */
++	fsl_low_sleep();
++
++	local_irq_disable();
++
++	set_tb(tb >> 32, tb & 0xfffffffful);
++
++	(void)avr_uart_ier_swap(ier, NULL);
++fail:
++
++	/* Re-enable local CPU interrupts */
++	local_irq_enable();
++
++	preempt_enable();
++
++	fsl_resume(state);
++
++	return ret;
++}
++
++/*
++ * Called after devices are re-setup, but before processes are thawed.
++ */
++static int ls_pm_finish(suspend_state_t state)
++{
++	return 0;
++}
++
++/*
++ * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
++ */
++static struct pm_ops ls_pm_ops = {
++//	.pm_disk_mode	= PM_DISK_FIRMWARE,
++	.valid		= ls_pm_valid,
++	.enter		= ls_pm_enter,
++	.finish		= ls_pm_finish,
++};
++
++static int __init ls_pm_init(void)
++{
++	pm_set_ops(&ls_pm_ops);
++	return 0;
++}
++
++device_initcall(ls_pm_init);
++#endif
+diff --git a/arch/powerpc/platforms/embedded6xx/ls_uart.c b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+index 0e83776..e7cf3bd 100644
+--- a/arch/powerpc/platforms/embedded6xx/ls_uart.c
++++ b/arch/powerpc/platforms/embedded6xx/ls_uart.c
+@@ -1,3 +1,14 @@
++/*
++ * AVR power-management chip interface for the Buffalo Linkstation /
++ * Kurobox Platform.
++ *
++ * Author: 2006 (c) G. Liakhovetski
++ *	 g.liakhovetski@gmx.de
++ *
++ * This file is licensed under the terms of the GNU General Public License
++ * version 2.  This program is licensed "as is" without any warranty of
++ * any kind, whether express or implied.
++ */
+ #include <linux/workqueue.h>
+ #include <linux/string.h>
+ #include <linux/delay.h>
+@@ -11,6 +22,7 @@ #include <asm/termbits.h>
  
- 			unitnum = strtol(get_unitname(cpu), &eptr, 16);
--			if (*eptr)
-+			if (*eptr) {
- 				WARNMSG("%s has bad format unit name %s (should be CPU number\n",
- 					cpu->fullpath, get_unitname(cpu));
--			else if (unitnum != propval_cell(prop))
-+			} else if (unitnum != propval_cell(prop)) {
- 				WARNMSG("%s unit name \"%s\" does not match \"reg\" property <%x>\n",
- 				       cpu->fullpath, get_unitname(cpu),
- 				       propval_cell(prop));
-+			}
- 		}
+ static void __iomem *avr_addr;
+ static unsigned long avr_clock;
++static unsigned int avr_virq;
  
- /* 		CHECK_HAVE_ONECELL(cpu, "d-cache-line-size"); */
--- 
-1.4.4.4
-
-
---------------020403080407060104070307--
+ static struct work_struct wd_work;
+ 
+@@ -42,6 +54,37 @@ static void wd_stop(struct work_struct *
+ 	printk("\n");
+ }
+ 
++static irqreturn_t avr_handler(int irq, void *id)
++{
++	(void) in_8(avr_addr + UART_LSR);
++	(void) in_8(avr_addr + UART_RX);
++	(void) in_8(avr_addr + UART_IIR);
++	(void) in_8(avr_addr + UART_MSR);
++
++	return IRQ_HANDLED;
++}
++
++int avr_uart_ier_swap(const char new, char *old)
++{
++	int ret = 0;
++
++	if (!avr_addr || !avr_clock || avr_virq == NO_IRQ)
++		return -EIO;
++
++	if (old)
++		ret = request_irq(avr_virq, avr_handler, 0, "avr_wakeup", NULL);
++	else
++		free_irq(avr_virq, NULL);
++
++	if (ret >= 0) {
++		if (old)
++			*old = in_8(avr_addr + UART_IER);
++		out_8(avr_addr + UART_IER, new);
++	}
++
++	return ret;
++}
++
+ #define AVR_QUOT(clock) ((clock) + 8 * 9600) / (16 * 9600)
+ 
+ void avr_uart_configure(void)
+@@ -104,7 +147,7 @@ static int __init ls_uarts_init(void)
+ {
+ 	struct device_node *avr;
+ 	phys_addr_t phys_addr;
+-	int len;
++	int len, irq;
+ 
+ 	avr = of_find_node_by_path("/soc10x/serial@80004500");
+ 	if (!avr)
+@@ -112,10 +155,15 @@ static int __init ls_uarts_init(void)
+ 
+ 	avr_clock = *(u32*)get_property(avr, "clock-frequency", &len);
+ 	phys_addr = ((u32*)get_property(avr, "reg", &len))[0];
++	irq = ((u32*)get_property(avr, "interrupts", &len))[0];
+ 
+ 	if (!avr_clock || !phys_addr)
+ 		return -EINVAL;
+ 
++	avr_virq = irq_find_mapping(NULL, irq);
++	if (avr_virq == NO_IRQ)
++		return -EIO;
++
+ 	avr_addr = ioremap(phys_addr, 32);
+ 	if (!avr_addr)
+ 		return -EFAULT;
+diff --git a/arch/powerpc/sysdev/Makefile b/arch/powerpc/sysdev/Makefile
+index 26ca3ff..a939edd 100644
+--- a/arch/powerpc/sysdev/Makefile
++++ b/arch/powerpc/sysdev/Makefile
+@@ -11,9 +11,15 @@ obj-$(CONFIG_PPC_PMI)		+= pmi.o
+ obj-$(CONFIG_U3_DART)		+= dart_iommu.o
+ obj-$(CONFIG_MMIO_NVRAM)	+= mmio_nvram.o
+ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
++ifeq ($(CONFIG_PM),y)
++obj-$(CONFIG_FSL_SOC)		+= fsl_pm.o
++endif
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+ 
++# contains only the suspend handler for time
++obj-$(CONFIG_PM)		+= timer.o
++
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+ obj-$(CONFIG_PPC_83xx)		+= ipic.o
+diff --git a/arch/powerpc/sysdev/fsl_soc.c b/arch/powerpc/sysdev/fsl_soc.c
+index d20f029..80465fd 100644
+--- a/arch/powerpc/sysdev/fsl_soc.c
++++ b/arch/powerpc/sysdev/fsl_soc.c
+@@ -1097,3 +1097,65 @@ err:
+ arch_initcall(cpm_smc_uart_of_init);
+ 
+ #endif /* CONFIG_8xx */
++
++#ifdef CONFIG_PM
++#include <linux/pci.h>
++#include <asm/pci-bridge.h>
++
++#define	MPC10X_LP_REF_EN	(1<<12)
++#define	MPC10X_PM		(1<<7)
++#define MPC10X_DOZE		(1<<5)
++#define	MPC10X_NAP		(1<<4)
++#define	MPC10X_SLEEP		(1<<3)
++
++int fsl_suspend(suspend_state_t state)
++{
++	struct pci_dev *bridge;
++	unsigned long flags;
++	u16 pmcr1;
++
++	bridge = pci_find_slot(0, 0);
++	if (!bridge)
++		return -ENODEV;
++
++	pci_read_config_word(bridge, 0x70, &pmcr1);
++	local_irq_save(flags);
++	/* Apparently, MacOS uses NAP mode for Grackle ??? */
++	pmcr1 &= ~(MPC10X_DOZE | MPC10X_NAP); 
++	pmcr1 |= MPC10X_PM | MPC10X_SLEEP | MPC10X_LP_REF_EN;
++	pci_write_config_word(bridge, 0x70, pmcr1);
++	local_irq_restore(flags);
++
++	/* Make sure the decrementer won't interrupt us */
++	asm volatile("mtdec %0" : : "r" (0x7fffffff));
++	/* Make sure any pending DEC interrupt occurring while we did
++	 * the above didn't re-enable the DEC */
++	mb();
++	asm volatile("mtdec %0" : : "r" (0x7fffffff)); /* 8 seconds */
++
++	return 0;
++}
++
++int fsl_resume(suspend_state_t state)
++{
++	struct pci_dev *bridge;
++	unsigned long flags;
++	u16 pmcr1;
++
++	bridge = pci_find_slot(0, 0);
++	if (!bridge)
++		return -ENODEV;
++
++	local_irq_save(flags);
++	/* We're awake again, stop grackle PM */
++	pci_read_config_word(bridge, 0x70, &pmcr1);
++	pmcr1 &= ~(MPC10X_PM | MPC10X_DOZE | MPC10X_SLEEP | MPC10X_NAP | MPC10X_LP_REF_EN);
++	pci_write_config_word(bridge, 0x70, pmcr1);
++	local_irq_restore(flags);
++
++	/* Restart jiffies & scheduling */
++	wakeup_decrementer();
++
++	return 0;
++}
++#endif
+diff --git a/arch/powerpc/sysdev/fsl_soc.h b/arch/powerpc/sysdev/fsl_soc.h
+index 04e145b..1a4b364 100644
+--- a/arch/powerpc/sysdev/fsl_soc.h
++++ b/arch/powerpc/sysdev/fsl_soc.h
+@@ -8,5 +8,11 @@ extern phys_addr_t get_immrbase(void);
+ extern u32 get_brgfreq(void);
+ extern u32 get_baudrate(void);
+ 
++#ifdef CONFIG_PM
++extern int fsl_suspend(suspend_state_t state);
++extern int fsl_resume(suspend_state_t state);
++extern void fsl_low_sleep(void);
++#endif
++
+ #endif
+ #endif
+--- /dev/null	2005-08-21 16:20:22.000000000 +0200
++++ b/arch/powerpc/sysdev/fsl_pm.S	2007-03-18 21:10:53.000000000 +0100
+@@ -0,0 +1,19 @@
++#include <asm/reg.h>
++#include <asm/ppc_asm.h>
++
++_GLOBAL(fsl_low_sleep)
++	isync			/* Set the HID0 and MSR for sleep. */
++	mfspr	r3,SPRN_HID0
++	rlwinm	r3,r3,0,10,7	/* clear doze, nap */
++	oris	r3,r3,HID0_SLEEP@h /* r3 |= HID0_SLEEP & (0xffff << 16) */
++	sync
++	isync
++	mtspr	SPRN_HID0,r3
++	sync
++	mfmsr	r3
++	ori	r3,r3,MSR_EE	/* Enable interrupts to wake us up */
++	oris	r3,r3,MSR_POW@h
++	sync
++	mtmsr	r3
++	isync
++	blr
