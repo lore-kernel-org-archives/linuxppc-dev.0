@@ -1,17 +1,23 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sun, 18 Mar 2007 22:56:56 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-Message-ID: <20070318115656.GA12765@localhost.localdomain>
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
-	<20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45FC8643.1080807@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D6865DDF0B
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 01:37:29 +1100 (EST)
+Subject: Re: hibernate, suspend and s2both support
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Tim Dijkstra <newsuser@famdijkstra.org>
+In-Reply-To: <20070318144115.00ab8912@commensaal.drs.p>
+References: <20070318010044.0b0bebf0@commensaal.drs.p>
+	<1174208083.13027.36.camel@johannes.berg>
+	<20070318144115.00ab8912@commensaal.drs.p>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-+bHpuVku/gvgvLG2FKbm"
+Date: Sun, 18 Mar 2007 15:37:50 +0100
+Message-Id: <1174228670.13027.46.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,47 +27,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Mar 17, 2007 at 07:22:27PM -0500, Timur Tabi wrote:
-> David Gibson wrote:
-> 
-> >        while ((addr = va_arg(ap, void *))) {
-> >                devp = find_node_by_prop_value(NULL,
-> > linux,network-index",
-> >                                               &index, sizeof(index));
-> > 
-> >                if (devp)
-> >                       setprop(devp, "local-mac-address", addr, 6);
-> 
-> The problem with this version is that it only updates local-mac-address, 
-> and only if it already exists.  
 
-Uh.. no.  Both my version and Scott's use setprop.  I think at present
-that won't add the property if it doesn't exist, but that's a bug
-which one of Scott's other patches fixes.  In any case, they have the
-same behaviour in terms of whether the property needs to exist first.
+--=-+bHpuVku/gvgvLG2FKbm
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> Scott's version also updates 
-> mac-address.  
+On Sun, 2007-03-18 at 14:41 +0100, Tim Dijkstra wrote:
 
-Well, first, details shmetails.  It's the interface and approach I
-thin is better.  Second, I don't think the zImage should be setting
-mac-address anyway.  In OF that property is based on what the
-interface has been used for during booting, which the zImage doesn't
-know.  The kernel doesn't need mac-address if local-mac-address is
-present, so we should just leave it out.
+> So if I build a binary on ppc that first tries /dev/pmu (if it exists) an=
+d then
+> /sys/power/state, that would be safe?
 
-> Also, in the future, we hope to eliminate *all* MAC 
-> address entries from the DTS files, and the boot loader and/or 
-> bootwrapper will add one.
+Yeah, my current patchset will print a message that the /dev/pmu ioctl
+will be removed but that may well not be present.
 
-I don't think that's really a good idea.  The bootloader certainly
-should be able to add the property if it's not there, but it seems
-silly to make the bootloader do memmove()s to insert a new property
-when it's basically just as easy to set up the device tree to allow an
-in-place edit.
+> I guess that the powerpcs that do not
+> support suspend-to-ram will report that via the PMU_IOC_CAN_SLEEP ioctl
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+They either have no /dev/pmu device or return an error on the ioctl.
+
+>  and
+> they will lack 'mem' in /sys/power/state?
+
+That's tricky. Up until I posted a patch *very* recently (unreleased as
+of yet I think) the contents of /sys/power/state didn't reflect what was
+supported, in fact if *nothing* was supported then "mem" and "standby"
+would be shown. Also, up until that patch I cited in my previous mail,
+mem and standby would, on powermac, kill the machine. On other machines,
+mem and standby exist but return an error.
+
+> > Yup; I've played with s2both a bit but it hangs the machine, I'm not
+> > really sure why yet. It may be related to another slight bug I just
+> > found yesterday though.
+>=20
+> Hmm, so 'echo disk > /s/p/state' and s2ram suspend OK, but s2both doesn't=
+?
+
+No, echo disk ... and s2ram both suspend ok, and I haven't tested your
+s2both tool because I don't know what it does, it seemed to be a
+userland suspend to disk for which I'd need special initramfs support. I
+have tested the 'platform' powerdown method for suspend to disk support
+in the kernel and that killed the machine due to a yet unidentified
+problem.
+
+> Oops, Yes that was the wrong way around... That's what you get if you
+> don't have a Mac;) Did you try it with the obvious fix?
+
+Yeah, it works and uses the pmu ioctl.
+
+> Yes you need an initramfs, but I don't see any reason why if
+> suspend-to-disk and suspend-to-ram work, s2both wouldn't.=20
+
+I think I wasn't really clear on what I said, see above.
+
+> If we get
+> suspend-to-ram working I'll put up proper source package which you can
+> dpkg-buildpackage. That will include hooks for initramfs-tools and will
+> build an initramfs for you.
+
+Do you really think that I let debian build my initramfs? :P
+Have you documented somewhere in text form what pm-utils needs in the
+initramfs?
+
+johannes
+
+--=-+bHpuVku/gvgvLG2FKbm
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF/U69/ETPhpq3jKURAmtGAKCj2Q8vfl9ihQIce+q9V90KPvfdtwCfcuT9
+3I8zti+VoAKcE51eH9Jm/Vw=
+=vsbA
+-----END PGP SIGNATURE-----
+
+--=-+bHpuVku/gvgvLG2FKbm--
