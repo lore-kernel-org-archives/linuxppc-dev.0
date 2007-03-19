@@ -1,21 +1,20 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound7-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 0F0ABDDF35
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 05:44:48 +1100 (EST)
-Message-ID: <45FEDA19.2060506@am.sony.com>
-Date: Mon, 19 Mar 2007 11:44:41 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: Fedora Core 6 or 7 on PPC?
-References: <20070319001739.DE91135260B@atlas.denx.de>
-	<200703190134.26030.arnd@arndb.de>
-In-Reply-To: <200703190134.26030.arnd@arndb.de>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D4C92DE017
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 05:46:56 +1100 (EST)
+Subject: Re: [PATCH 0/5] sleep notifier cleanup
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070319181800.149901000@sipsolutions.net>
+References: <20070319181800.149901000@sipsolutions.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-xG5DJ2s7JDljNlkWCVQb"
+Date: Mon, 19 Mar 2007 19:44:55 +0100
+Message-Id: <1174329895.22561.15.camel@johannes.berg>
+Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,24 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
-> On Monday 19 March 2007, Wolfgang Denk wrote:
->> has anybody Fedora Core 6 (or even better FC7 - test) running on a PPC
->> system? Could you please send me the /root/install.log file from your
->> system? I'd like to know which packages get installed by default, and
->> in which order.
-> 
-> I don't have an up-to-date version of it right here, but in case you
-> are trying to do an installation of the minimal rpm files from a
-> running system, I can recommend the following procedure:
-> 
-> rpm --root /fc7/ --initdb
-> rpm --root /fc7/ -ivh --nodeps ftp://ftp-stud.fht-esslingen.de/Mirrors/fedora.redhat.com/linux/core/development/ppc/os/Fedora/fedora-release-*.noarch.rpm
-> yum --installroot=/fc7/ -y groupinstall Base
-> 
 
-needed this...
+--=-xG5DJ2s7JDljNlkWCVQb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-mkdir -p /fc7/var/lib/rpm
-mkdir -p /fc7/var/lib/tmp
-mkdir -p /fc7/var/log
+On Mon, 2007-03-19 at 19:18 +0100, Johannes Berg wrote:
+> This patch series gets rid of the various pmu sleep notifier
+> users by various means.
+
+Forgot to mention, the time suspend patch is required for this since it
+kills off another user.
+
+johannes
+
+--=-xG5DJ2s7JDljNlkWCVQb
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF/ton/ETPhpq3jKURAiTYAJ4ovJETtD554rQmj2vgEP6yq11JmQCdFono
+ITZUL8Mb6GqqLFCP07t0TzA=
+=QRFq
+-----END PGP SIGNATURE-----
+
+--=-xG5DJ2s7JDljNlkWCVQb--
