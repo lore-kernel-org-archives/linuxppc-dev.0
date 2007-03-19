@@ -2,19 +2,23 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6C393DDF68
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 03:06:10 +1100 (EST)
-Subject: Re: [PATCH 2/5] powerpc: fix suspend states again
+	by ozlabs.org (Postfix) with ESMTP id CA749DDF0B
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 03:13:30 +1100 (EST)
+Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <20070319105358.796834000@sipsolutions.net>
-References: <20070319105352.771599000@sipsolutions.net>
-	<20070319105358.796834000@sipsolutions.net>
+To: Dan Williams <dan.j.williams@gmail.com>
+In-Reply-To: <e9c3a7c20703171209m55fd9dfsbba0e4fff5c6350d@mail.gmail.com>
+References: <20070315232956.37DAB353A6C@atlas.denx.de>
+	<200703170909.13869.sr@denx.de>
+	<e9c3a7c20703171117w7989adfehda99416265eef906@mail.gmail.com>
+	<200703171943.27465.sr@denx.de>
+	<e9c3a7c20703171209m55fd9dfsbba0e4fff5c6350d@mail.gmail.com>
 Content-Type: text/plain
-Date: Mon, 19 Mar 2007 17:06:05 +0100
-Message-Id: <1174320365.5044.20.camel@localhost.localdomain>
+Date: Mon, 19 Mar 2007 17:13:19 +0100
+Message-Id: <1174320799.5044.21.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linux-raid@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Stefan Roese <sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +28,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+BTW folks. Would it be hard to change your spe_ prefixes to something
+else ? There's already enough confusion between the freescale SPE unit
+and the cell SPEs :-)
 
-> +
-> +int save_processor_state(void)
-> +{
-> +	/* Giveup the lazy FPU & vec so we don't have to back them
-> +	 * up from the low level code
-> +	 */
-> +	enable_kernel_fp();
-> +
-> +#ifdef CONFIG_ALTIVEC
-> +	if (cur_cpu_spec->cpu_features & CPU_FTR_ALTIVEC)
-> +		enable_kernel_altivec();
-> +#endif /* CONFIG_ALTIVEC */
-> +
-> +	return 0;
-> +}
+(such confusion is annoying when grepp'ing for code that might touch a
+given functionality for example).
 
-You need to check if there's an FPU I suppose for enable_kernel_fp()
-since this is generic code potentially used with embedded CPUs as well.
-In fact, it would be good to also add some of the freescale stuff.
-
+Cheers,
 Ben.
