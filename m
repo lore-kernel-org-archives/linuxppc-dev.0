@@ -1,17 +1,20 @@
-Return-Path: <miltonm@sullivan.realtime.net>
-Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 59A59DE007
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 08:16:23 +1100 (EST)
-Date: Mon, 19 Mar 2007 15:16:16 -0600 (CST)
-Message-Id: <200703192116.l2JLGGp5021149@sullivan.realtime.net>
-From: Milton Miller <miltonm@bga.com>
-Sender: Milton Miller <miltonm@realtime.net>
-Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
-To: Scott Wood <scottwood@freescale.com>
-In-Reply-To: <20070317013859.GJ3969%40localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id C4816DDF89
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 08:51:18 +1100 (EST)
+Date: Mon, 19 Mar 2007 22:51:15 +0100 (CET)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH 1/5] powerpc: generic time suspend/resume code
+In-Reply-To: <1174315651.5044.4.camel@localhost.localdomain>
+Message-ID: <Pine.LNX.4.60.0703192236420.10137@poirot.grange>
+References: <20070319105352.771599000@sipsolutions.net>
+	<20070319105357.964696000@sipsolutions.net>
+	<1174315651.5044.4.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
+	Johannes Berg <johannes@sipsolutions.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,25 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue Mar 20 02:06:01 EST 2007, Scott Wood wrote:
-> On Sat, Mar 17, 2007 at 12:38:59PM +1100, David Gibson wrote:
-> > On Fri, Mar 16, 2007 at 11:21:35AM -0500, Scott Wood wrote:
-> > > One problem with that is that the wrapper currently only accepts one
-> > > platform .o file -- and presumably one isn't going to want to do all of
-> > > the platform code in assembly.
+On Mon, 19 Mar 2007, Benjamin Herrenschmidt wrote:
+
+> On Mon, 2007-03-19 at 11:53 +0100, Johannes Berg wrote:
+> > plain text document attachment (001-time-resume.patch)
+> > This patch removes the time suspend/restore code that was done through
+> > a PMU notifier in arch/platforms/powermac/time.c.
 > > 
-> > Um.. nobody does it yet, but I don't think there's actually any reason
-> > that $platformo can't be set to a list of multiple .o files.
+> > Instead, introduce arch/powerpc/sysdev/timer.c which creates a sys
+> > device and handles time of day suspend/resume through that.
+> > 
+> > This should probably be replaced by using the generic RTC framework
+> > but for now it gets rid of the arcane powermac specific hack.
+> > 
+> > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 > 
-> Sorry, I was thinking about the default generation of a .o file from the
-> platform name.  Obviously, the wrapper script can add to platformo.
-> 
-> Still, I think it'd be better to only stick something other than crt0 at
-> the beginning if the platform explicitly asks for it.
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-I tested setting platform.o to multiple files.   Another option
-is to link multiple platform files together into one .o file, but
-if there are potentially shared this becomes letss apealing from
-a space perspective.
+Not sure I'm convinced it's a good thing to do...
 
-milton
+As far as I understand it duplicates the functionality proposed in this 
+thread:
+
+http://lists.linux-foundation.org/pipermail/linux-pm/2007-February/thread.html#4949
+
+and by committing it now we'll delay the powerpc migration to generic rtc. 
+How about this: you give me a week before committing this (and any 
+depending) patches, in 1 week I send an email with an estimate whether I'd 
+be able to do the convertion (without being able to test - others will 
+have to do that) and how long I expect to need for that. If we find it 
+acceptible, we'll do that, if not - in one week we still can commit these 
+patches - 2.6.21 either will not be there yet by then or the window will 
+still be open...
+
+David, what's the status of that your patch?
+
+Notice also, that my linkstation suspend patch in its present form also 
+uses the previous version of this patch from Johannes', but I'd rather 
+delay its acceptance upstream and directly go for the ultimate solution.
+
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
