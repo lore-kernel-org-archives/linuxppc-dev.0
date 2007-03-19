@@ -1,20 +1,15 @@
-Return-Path: <SRS0+847214f2c65bad678594+1303+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 3A595DDDE4
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 18:27:34 +1100 (EST)
-Subject: Re: Fedora Core 6 or 7 on PPC?
-From: David Woodhouse <dwmw2@infradead.org>
-To: Wolfgang Denk <wd@denx.de>
-In-Reply-To: <20070319001739.DE91135260B@atlas.denx.de>
-References: <20070319001739.DE91135260B@atlas.denx.de>
-Content-Type: text/plain
-Date: Mon, 19 Mar 2007 07:27:24 +0000
-Message-Id: <1174289244.3392.59.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <xmusun@hotmail.com>
+Received: from bay0-omc2-s23.bay0.hotmail.com (bay0-omc2-s23.bay0.hotmail.com
+	[65.54.246.159]) by ozlabs.org (Postfix) with ESMTP id 02AA0DDECA
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 19:44:48 +1100 (EST)
+Message-ID: <BAY106-W12A0CE4C496998F4F1A3A3C7760@phx.gbl>
+Content-Type: multipart/alternative;
+	boundary="_4657b662-f446-4757-9e41-0a1ed9cdc4c0_"
+From: huangxu <xmusun@hotmail.com>
+To: <linuxppc-embedded@ozlabs.org>, <linuxppc-dev@ozlabs.org>
+Subject: AC97 driver for Xilinx ML403 board
+Date: Mon, 19 Mar 2007 16:44:43 +0800
+MIME-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +19,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-03-19 at 01:17 +0100, Wolfgang Denk wrote:
-> has anybody Fedora Core 6 (or even better FC7 - test) running on a PPC
-> system? Could you please send me the /root/install.log file from your
-> system? I'd like to know which packages get installed by default, and
-> in which order.
+--_4657b662-f446-4757-9e41-0a1ed9cdc4c0_
+Content-Type: text/plain; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
-http://david.woodhou.se/f7t2-install.log
+Hi all, Can anyone help me with a driver for the AC97 codec on the ML403 board,running Montavista PreviewKit 2.4
+ThanksHUANG Xu 
+_________________________________________________________________
+通过 Windows Live Spaces 与朋友轻松共享您的生活。
+http://spaces.live.com/spacesapi.aspx?wx_action=create&wx_url=/friends.aspx&mkt=zh-cn
+--_4657b662-f446-4757-9e41-0a1ed9cdc4c0_
+Content-Type: text/html; charset="gb2312"
+Content-Transfer-Encoding: 8bit
 
--- 
-dwmw2
+<html>
+<head>
+<style>
+P
+{
+margin:0px;
+padding:0px
+}
+body
+{
+FONT-SIZE: 9pt;
+FONT-FAMILY:Tahoma
+}
+</style>
+</head>
+<body><BR>Hi all,<BR> <BR>Can anyone help me with a driver for the AC97 codec on the ML403 board,<BR>running Montavista PreviewKit 2.4<BR>
+<BR>Thanks<BR><BR>HUANG Xu <BR><BR><br /><hr />通过 Live.com 查看资讯、娱乐信息和您关心的其他信息！ <a href='http://www.live.com/getstarted.aspx ' target='_new'>立即尝试！</a></body>
+</html>
+--_4657b662-f446-4757-9e41-0a1ed9cdc4c0_--
