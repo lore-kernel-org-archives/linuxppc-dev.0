@@ -1,13 +1,17 @@
-Return-Path: <sprasad@bivio.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: lmb_remove_region - bad decrementing...
-Date: Mon, 19 Mar 2007 13:00:36 -0700
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D746E786@corpexc01.corp.networkrobots.com>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: <linuxppc-dev@ozlabs.org>,
-	<linuxppc-embedded@ozlabs.org>
+Return-Path: <miltonm@sullivan.realtime.net>
+Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 38FABDDF2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 08:06:45 +1100 (EST)
+Date: Mon, 19 Mar 2007 14:58:05 -0600 (CST)
+Subject: [PATCH 6/7] bootwrapper: allow platforms to call library zImage_start
+From: Milton Miller <miltonm@bga.com>
+Sender: <miltonm@realtime.net>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <boot-00.miltonm@bga.com>
+Message-Id: <boot-06.miltonm@bga.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,41 +21,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Some platforms might need to run some code before the zImage start, but
+could otherwise use the bss clear and relocation code.   Export the
+start address strongly as zImage_start_lib.
 
-This is based on 2.6.19 kernel.
+--- 
+Compiles and links with test user, stack set properly.
+ crt0.S |    2 ++
+ 1 file changed, 2 insertions(+)
 
-In the file mm/lmb.c, we have function lmb_remove_region. In this
-function we are decrementing the region count even if the condition
-fails and we don't necessarily remove the region.
-
-For example ...
-
-static void __init lmb_remove_region(struct lmb_region *rgn, unsigned
-long r)
-{
-        unsigned long i;
-
-        for (i =3D r; i < rgn->cnt - 1; i++) {
-                rgn->region[i].base =3D rgn->region[i + 1].base;
-                rgn->region[i].size =3D rgn->region[i + 1].size;
-        }
-        rgn->cnt--;
-}
-
-Shound't the region count be decremented only if r > rgn->cnt -1. When
-we initially setup lmb, cnt will be 1, and as part of other functions,
-this gets called with out even increasing this number. So, region does
-not get removed, but cnt does get decremented by 1.
-
-At least a quick fix like this "if (rgn->cnt > 1) rgn->cnt--;" should
-serve for now.
-
-Same thing happens at routine lmb_enfore_memory_limit. Actually
-lmb_remove_region gets called from here and the problem starts. So, "i"
-should not be decremented here, if the initial condition fails.
-
-What do you guys think?
-
-Thanks
-Siva
+Index: kernel/arch/powerpc/boot/crt0.S
+===================================================================
+--- kernel.orig/arch/powerpc/boot/crt0.S	2007-03-19 04:15:03.000000000 -0500
++++ kernel/arch/powerpc/boot/crt0.S	2007-03-19 04:15:03.000000000 -0500
+@@ -19,6 +19,8 @@ _zimage_start_opd:
+ 	.weak	_zimage_start
+ 	.globl	_zimage_start
+ _zimage_start:
++	.globl	_zimage_start_lib
++_zimage_start_lib:
+ 	/* Work out the offset between the address we were linked at
+ 	   and the address where we're running. */
+ 	bl	1f
