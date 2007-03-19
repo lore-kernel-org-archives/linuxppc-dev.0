@@ -2,15 +2,13 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 967EFDDF2E
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 08:06:46 +1100 (EST)
-Date: Mon, 19 Mar 2007 14:58:04 -0600 (CST)
-Subject: [PATCH 2/7] boot: rebuild when wrapper changes
+	by ozlabs.org (Postfix) with ESMTP id 0402DDDF73
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 08:06:47 +1100 (EST)
+Date: Mon, 19 Mar 2007 14:55:54 -0600 (CST)
+Subject: [PATCH 0/7] boot: cleanup and prep for more platforms
 From: Milton Miller <miltonm@bga.com>
-Sender: <miltonm@realtime.net>
 To: linuxppc-dev@ozlabs.org
-In-Reply-To: <boot-00.miltonm@bga.com>
-Message-Id: <boot-02.miltonm@bga.com>
+Message-Id: <boot-00.miltonm@bga.com>
 Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,26 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+What follows are the first 7 of my 13 patch series working on a zImage
+that kexec will boot to, at least on 64 bit boxes.
 
-Since there is magic defined per platform in the wrapper script, the
-zImage targets should depend on it.
+The first one makes the Makefile maintainable, the second and third
+make the Makefile work correctly.  The forth is a cleanup for a 
+common idiom, the fifth adds some missing relocations, and the
+sixth and seventh allow other code to reuse the existing functions
+after necessary setup.
 
-Signed-off-by: Milton Miller <miltonm@bga.com>
---- 
- Makefile |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+All have been compile and link tested, and were created against
+a 2.6.20 tree + the 20 patches I found related to the boot directory
+in powerpc.git + patchwork numbers 10010 and 10012 (which seemed
+to be moving that direction).  I have included additional notes
+in some of the patches with the testing.  I think all could be
+applied to for-2.6.22.
 
-Index: kernel/arch/powerpc/boot/Makefile
-===================================================================
---- kernel.orig/arch/powerpc/boot/Makefile	2007-03-19 08:11:18.000000000 -0500
-+++ kernel/arch/powerpc/boot/Makefile	2007-03-19 08:12:14.000000000 -0500
-@@ -101,7 +101,8 @@ extra-y		:= $(obj)/wrapper.a $(obj-plat)
- 		   $(obj)/zImage.lds $(obj)/zImage.coff.lds
- 
- wrapper		:=$(srctree)/$(src)/wrapper
--wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree)
-+wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
-+			$(wrapper)
- 
- #############
- # Bits for building various flavours of zImage
+The last 4, that I am not posting at this time, build upon these
+to create a zImage for use by 64-bit kexec, add a sreset based
+derivative target, and allow for disjoint vmlinuz payloads.  I hope
+to be able to find time in the near future to debug and post
+them.
+
+milton
+
+boot-zImage-rule
+boot-add-wrapper-to-wrapperbits
+boot-add-FORCE
+boot-add-fatal
+boot-crt0-missing-reloc
+boot-crt0-export
+boot-export-flush-cache
