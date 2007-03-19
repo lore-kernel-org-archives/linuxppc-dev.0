@@ -1,16 +1,26 @@
-Return-Path: <carcadiz@hotmail.com>
-Received: from bay0-omc3-s36.bay0.hotmail.com (bay0-omc3-s36.bay0.hotmail.com
-	[65.54.246.236]) by ozlabs.org (Postfix) with ESMTP id 02E20DDE0E
+Return-Path: <tnt@246tNt.com>
+Received: from outmx005.isp.belgacom.be (outmx005.isp.belgacom.be
+	[195.238.4.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 90712DDEC5
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 19 Mar 2007 21:12:51 +1100 (EST)
-Message-ID: <BAY122-F66F0C1E4D2F887354451FCA760@phx.gbl>
-In-Reply-To: <45FE5C63.5040800@fechner.net>
-From: "Pedro Luis D. L." <carcadiz@hotmail.com>
-To: linuxppc-embedded@ozlabs.org
+	Mon, 19 Mar 2007 21:14:38 +1100 (EST)
+Received: from outmx005.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx005.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l2JAEWJ0023367
+	for <linuxppc-embedded@ozlabs.org>; Mon, 19 Mar 2007 11:14:32 +0100
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <45FE627E.3050004@246tNt.com>
+Date: Mon, 19 Mar 2007 11:14:22 +0100
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org, idefix@fechner.net
 Subject: Re: Howto set DIO on MPC-5200 Lite
-Date: Mon, 19 Mar 2007 11:12:45 +0100
-Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1; format=flowed
+References: <BAY122-F7DD64EA831188A2BEA9FACA760@phx.gbl>
+	<45FE5C63.5040800@fechner.net>
+In-Reply-To: <45FE5C63.5040800@fechner.net>
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,33 +31,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-Matthias Fechner wrote on Mon, 19 Mar 2007 10:48:19
+Matthias Fechner wrote:
+> Hi Pedro and Sylvain,
 >
->Hi Pedro and Sylvain,
+> Pedro Luis D. L. wrote:
+>   
+>> Could you mean "GIO" ports?
+>>     
 >
->Pedro Luis D. L. wrote:
-> > Could you mean "GIO" ports?
+> I mean the digital IO ports ok or general IO ports.
+> What I want is to set a signal to high or low which should control a relais.
 >
->I mean the digital IO ports ok or general IO ports.
->What I want is to set a signal to high or low which should control a 
->relais.
+> I thought I can use the pin Dxx for that on the board.
 >
->I thought I can use the pin Dxx for that on the board.
->
->Best regards,
->Matthias
+> Best regards,
+> Matthias
+>   
+Well, just lookup the schematics to which port the pin you want to
+control is connected, then look in the datasheet how to control the
+GPIO. You must make sure the port you want to control is in gpio mode in
+port_config register, then setup it as output and drive a value onto it
+... There is nothing currently in place to do that easily from userspace ...
 
-The digital IO ports in the MPC5200 Lite are called GPIO ports. You can use 
-some pins in the PSC ports and some Timers as General Purpose IO ports.
-You need to define the behaviour of these ports in the Port Config register 
-or the Timer registers.
-
-
-Best,
-Pedro L.
-
-_________________________________________________________________
-Acepta el reto MSN Premium: Protección para tus hijos en internet. 
-Descárgalo y pruébalo 2 meses gratis. 
-http://join.msn.com?XAPID=1697&DI=1055&HL=Footer_mailsenviados_proteccioninfantil
+    Sylvain
