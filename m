@@ -1,24 +1,26 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AAF5DDE074
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 06:55:56 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2JJtp4Q011803
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 15:55:51 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2JJtpc6313842
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 15:55:51 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2JJtprj008335
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 15:55:51 -0400
-Date: Mon, 19 Mar 2007 14:55:51 -0500
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BFB06DDF9F
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 06:56:47 +1100 (EST)
+Received: from westrelay02.boulder.ibm.com (westrelay02.boulder.ibm.com
+	[9.17.195.11])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l2JJt3Dp025297
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 15:55:03 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by westrelay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l2JJuiCc059178
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 13:56:44 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2JJuiXh029063
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 13:56:44 -0600
+Date: Mon, 19 Mar 2007 14:56:43 -0500
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 6/11] ppc64: EEH: multifunction recovery bugfix
-Message-ID: <20070319195551.GF11532@austin.ibm.com>
+Subject: [PATCH 7/11] ppc64: EEH: handle reset state high
+Message-ID: <20070319195643.GG11532@austin.ibm.com>
 References: <20070319194349.GT5151@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,27 +37,46 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+Subject: [PATCH 7/11] ppc64: EEH: handle reset state high
 
-If the second or higher function of a multi-function device fails 
-to recover, this failure is not reported upwards. Fix this.
+Some firmware versions will return a slot reset state of "1"
+when a slot is EEH frozen. Recognize this as a state that can be
+handled.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ----
- arch/powerpc/platforms/pseries/eeh_driver.c |    3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/eeh.c |    6 +++---
+ 1 file changed, 3 insertions(+), 3 deletions(-)
 
-Index: linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh_driver.c
+Index: linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c
 ===================================================================
---- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2007-03-19 13:21:06.000000000 -0500
-+++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh_driver.c	2007-03-19 13:21:35.000000000 -0500
-@@ -158,7 +158,8 @@ static void eeh_report_reset(struct pci_
- 		return;
+--- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:21:21.000000000 -0500
++++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:21:43.000000000 -0500
+@@ -386,7 +386,7 @@ int eeh_dn_check_failure(struct device_n
+ 	}
  
- 	rc = driver->err_handler->slot_reset(dev);
--	if (*res == PCI_ERS_RESULT_NONE) *res = rc;
-+	if ((*res == PCI_ERS_RESULT_NONE) ||
-+	    (*res == PCI_ERS_RESULT_RECOVERED)) *res = rc;
- 	if (*res == PCI_ERS_RESULT_DISCONNECT &&
- 	     rc == PCI_ERS_RESULT_NEED_RESET) *res = rc;
- }
+ 	/* If not the kind of error we know about, punt. */
+-	if (rets[0] != 2 && rets[0] != 4 && rets[0] != 5) {
++	if (rets[0] != 1 && rets[0] != 2 && rets[0] != 4 && rets[0] != 5) {
+ 		false_positives++;
+ 		rc = 0;
+ 		goto dn_unlock;
+@@ -401,7 +401,7 @@ int eeh_dn_check_failure(struct device_n
+ 	spin_unlock_irqrestore(&confirm_error_lock, flags);
+ 
+ 	state = pci_channel_io_normal;
+-	if ((rets[0] == 2) || (rets[0] == 4))
++	if ((rets[0] == 1) || (rets[0] == 2) || (rets[0] == 4))
+ 		state = pci_channel_io_frozen;
+ 	if (rets[0] == 5)
+ 		state = pci_channel_io_perm_failure;
+@@ -410,7 +410,7 @@ int eeh_dn_check_failure(struct device_n
+ 	/* Most EEH events are due to device driver bugs.  Having
+ 	 * a stack trace will help the device-driver authors figure
+ 	 * out what happened.  So print that out. */
+-	if (rets[0] != 5) dump_stack();
++	dump_stack();
+ 	return 1;
+ 
+ dn_unlock:
