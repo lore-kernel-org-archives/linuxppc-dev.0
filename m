@@ -1,25 +1,27 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B34A4DDDF8
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 11:08:51 +1100 (EST)
-Subject: Re: hibernate, suspend and s2both support
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Tim Dijkstra <newsuser@famdijkstra.org>
-In-Reply-To: <20070318234601.3f6cc53b@commensaal.drs.p>
-References: <20070318010044.0b0bebf0@commensaal.drs.p>
-	<1174208083.13027.36.camel@johannes.berg>
-	<20070318144115.00ab8912@commensaal.drs.p>
-	<1174228670.13027.46.camel@johannes.berg>
-	<20070318234601.3f6cc53b@commensaal.drs.p>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-ULMbUU8iGQd8HulV428R"
-Date: Mon, 19 Mar 2007 01:09:43 +0100
-Message-Id: <1174262983.13027.58.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id A7B4ADDF01
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 11:17:41 +1100 (EST)
+Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 70BBF9834B
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 01:17:40 +0100 (CET)
+Received: from mail.denx.de (p54964CBA.dip.t-dialin.net [84.150.76.186])
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 5ED6A91398
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 01:17:40 +0100 (CET)
+Received: from atlas.denx.de (atlas.denx.de [10.0.0.14])
+	by mail.denx.de (Postfix) with ESMTP id 01B906D00A7
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 01:17:39 +0100 (CET)
+Received: from atlas.denx.de (localhost.localdomain [127.0.0.1])
+	by atlas.denx.de (Postfix) with ESMTP id DE91135260B
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 01:17:39 +0100 (MET)
+To: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Fedora Core 6 or 7 on PPC?
+From: Wolfgang Denk <wd@denx.de>
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+Date: Mon, 19 Mar 2007 01:17:39 +0100
+Sender: wd@denx.de
+Message-Id: <20070319001739.DE91135260B@atlas.denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,48 +31,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi,
 
---=-ULMbUU8iGQd8HulV428R
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+has anybody Fedora Core 6 (or even better FC7 - test) running on a PPC
+system? Could you please send me the /root/install.log file from your
+system? I'd like to know which packages get installed by default, and
+in which order.
 
-On Sun, 2007-03-18 at 23:46 +0100, Tim Dijkstra wrote:
+Thanks in advance.
 
-> So maybe the safest algorithm would be
-> - If /dev/pmu exists
-> 	- Check PMU_IOC_CAN_SLEEP
-> 		- Yes -> suspend
-> 		- No -> Fail (maybe prevents a crash when we would have tried 'echo mem=
-')
+Best regards,
 
-That's only when it returns 0/1, when calling it returns an error you
-need to assume (for suspend) that /dev/pmu doesn't exist. If I can get
-my plan through to deprecate both of the ioctls, that is.
+Wolfgang Denk
 
-> > have tested the 'platform' powerdown method for suspend to disk support
-> > in the kernel and that killed the machine due to a yet unidentified
-> > problem.
->=20
-> I think this is a know problem, at least it happens on more machines.
-> Will have to ask for the details.
-
-You can't even try to do it on powerpc right now afaik, and I am sure
-that you can't do it after my patches. So you can't do anything wrong
-either, though I'm still trying to figure out what I need to do to be
-able to allow it.
-
-johannes
-
---=-ULMbUU8iGQd8HulV428R
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBF/dTH/ETPhpq3jKURAhpXAKC2rvZoLzzvUAMcIa3cAzLEk9YnCwCeP30J
-myXgvFx4NhtaQYtX09iCOxk=
-=sa2T
------END PGP SIGNATURE-----
-
---=-ULMbUU8iGQd8HulV428R--
+-- 
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Conceptual integrity in turn dictates that the  design  must  proceed
+from  one  mind,  or  from  a  very small number of agreeing resonant
+minds.               - Frederick Brooks Jr., "The Mythical Man Month"
