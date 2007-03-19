@@ -1,15 +1,20 @@
-Return-Path: <michael.barkowski@freescale.com>
-Message-ID: <45FEACA6.2060302@freescale.com>
-Date: Mon, 19 Mar 2007 10:30:46 -0500
-From: Michael Barkowski <michael.barkowski@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH rev2] Add MPC832x RDB board.
-References: <45FE9B00.5040701@freescale.com>
-	<4B63A2CD-3814-4C1F-B93A-998ED5E87A43@kernel.crashing.org>
-In-Reply-To: <4B63A2CD-3814-4C1F-B93A-998ED5E87A43@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9B01CDDEC2
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 01:47:36 +1100 (EST)
+Subject: Re: [PATCH 1/5] powerpc: generic time suspend/resume code
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <20070319105357.964696000@sipsolutions.net>
+References: <20070319105352.771599000@sipsolutions.net>
+	<20070319105357.964696000@sipsolutions.net>
+Content-Type: text/plain
+Date: Mon, 19 Mar 2007 15:47:31 +0100
+Message-Id: <1174315651.5044.4.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Mar 19, 2007, at 9:15 AM, Michael Barkowski wrote:
+On Mon, 2007-03-19 at 11:53 +0100, Johannes Berg wrote:
+> plain text document attachment (001-time-resume.patch)
+> This patch removes the time suspend/restore code that was done through
+> a PMU notifier in arch/platforms/powermac/time.c.
 > 
+> Instead, introduce arch/powerpc/sysdev/timer.c which creates a sys
+> device and handles time of day suspend/resume through that.
 > 
->>Add support for the MPC8323E Reference Development Board (RDB).   
->>The board
->>is a mini-ITX reference board with 64M DDR2, 16M flash, USB, PCI,
->>10/100 ethernet, serial, and phone ports.
->>
->>Signed-off-by: Michael Barkowski <michael.barkowski@freescale.com>
->>Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
->>---
->>Kumar, here is the respun patch with redundant bus-frequency and  
->>PCI settings removed.
->>If there are no other issues, please apply towards 2.6.22.
->>Thanks,
->>Michael
+> This should probably be replaced by using the generic RTC framework
+> but for now it gets rid of the arcane powermac specific hack.
 > 
-> 
-> Thanks.  Do you know if there are plans to add support for the phone/ 
-> voice(?) functionality?
-> 
-> - k
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-Hi Kumar,
-   The plans for this feature haven't been made public,
-so I afraid I can't comment.
-
--- 
-Michael
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
