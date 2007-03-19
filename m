@@ -2,14 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 42C2FDDFDD
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 21:59:28 +1100 (EST)
-Message-Id: <20070319105357.964696000@sipsolutions.net>
+	by ozlabs.org (Postfix) with ESMTP id 008D4DE014
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 21:59:30 +1100 (EST)
+Message-Id: <20070319105358.796834000@sipsolutions.net>
 References: <20070319105352.771599000@sipsolutions.net>
-Date: Mon, 19 Mar 2007 11:53:53 +0100
+Date: Mon, 19 Mar 2007 11:53:54 +0100
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/5] powerpc: generic time suspend/resume code
+Subject: [PATCH 2/5] powerpc: fix suspend states again
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,175 +20,175 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch removes the time suspend/restore code that was done through
-a PMU notifier in arch/platforms/powermac/time.c.
+In commit 0fba3a1f39f8b0a50b56c8b068fa52131cbc84c2 (a very long time ago,
+May 2006), I fixed a bug that caused powermacs to crash when you tried
+entering standby/mem suspend states.
 
-Instead, introduce arch/powerpc/sysdev/timer.c which creates a sys
-device and handles time of day suspend/resume through that.
+As I'm now getting more familiar with the suspend code I notice a few
+more things:
+ 1. we previously misunderstood what pm_ops is for, it isn't supposed to be
+    for doing platform dependent suspend/resume stuff that needs to be done
+    for suspend to disk (as we currently try to use it!), it is instead for
+    entering platform dependent suspend states ("standby", "mem").
+ 2. due to the first point, we never properly save FPU and altivec states
+    when suspending to disk. It probably hasn't hurt yet because the process
+    that writes the "disk" to /sys/power/state uses neither and its context
+    is used.
 
-This should probably be replaced by using the generic RTC framework
-but for now it gets rid of the arcane powermac specific hack.
+This patch addresses these points as follows:
+ 1. remove all pm_ops from powermac, powermac suspend to ram isn't currently
+    usable via /sys/power/state but is done via the PMU instead.
+ 2. move the code responsible for storing FPU/altivec state into a new
+    arch_prepare_suspend function (previously, this was only present for
+    32-bit platforms from asm-ppc.)
+
+A follow-on patch will create new pm_ops for via-pmu.
+
+I removed
+	set_context(current->active_mm->context.id, current->active_mm->pgd);
+because
+ 1. it works without and
+ 2. I don't see the point
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 ---
- arch/powerpc/Kconfig                   |    5 ++
- arch/powerpc/platforms/powermac/time.c |   38 -----------------
- arch/powerpc/sysdev/Makefile           |    3 +
- arch/powerpc/sysdev/timer.c            |   70 +++++++++++++++++++++++++++++++++
- 4 files changed, 78 insertions(+), 38 deletions(-)
+ arch/powerpc/kernel/Makefile            |    1 
+ arch/powerpc/kernel/swsusp.c            |   26 ++++++++++++
+ arch/powerpc/platforms/powermac/setup.c |   65 --------------------------------
+ include/asm-powerpc/suspend.h           |    9 ++++
+ 4 files changed, 36 insertions(+), 65 deletions(-)
 
---- linux-2.6.orig/arch/powerpc/platforms/powermac/time.c	2007-03-19 11:47:27.312413925 +0100
-+++ linux-2.6/arch/powerpc/platforms/powermac/time.c	2007-03-19 11:47:37.512413925 +0100
-@@ -297,49 +297,11 @@ int __init via_calibrate_decr(void)
- }
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/setup.c	2007-03-19 11:47:26.622413925 +0100
++++ linux-2.6/arch/powerpc/platforms/powermac/setup.c	2007-03-19 11:47:39.132413925 +0100
+@@ -420,76 +420,11 @@ static void __init find_boot_device(void
  #endif
+ }
  
--#ifdef CONFIG_PM
--/*
-- * Reset the time after a sleep.
+-/* TODO: Merge the suspend-to-ram with the common code !!!
+- * currently, this is a stub implementation for suspend-to-disk
+- * only
 - */
--static int
--time_sleep_notify(struct pmu_sleep_notifier *self, int when)
--{
--	static unsigned long time_diff;
--	unsigned long flags;
--	unsigned long seq;
--	struct timespec tv;
 -
--	switch (when) {
--	case PBOOK_SLEEP_NOW:
--		do {
--			seq = read_seqbegin_irqsave(&xtime_lock, flags);
--			time_diff = xtime.tv_sec - pmac_get_boot_time();
--		} while (read_seqretry_irqrestore(&xtime_lock, seq, flags));
--		break;
--	case PBOOK_WAKE:
--		tv.tv_sec = pmac_get_boot_time() + time_diff;
--		tv.tv_nsec = 0;
--		do_settimeofday(&tv);
--		break;
--	}
--	return PBOOK_SLEEP_OK;
+-#ifdef CONFIG_SOFTWARE_SUSPEND
+-
+-static int pmac_pm_prepare(suspend_state_t state)
+-{
+-	printk(KERN_DEBUG "%s(%d)\n", __FUNCTION__, state);
+-
+-	return 0;
 -}
 -
--static struct pmu_sleep_notifier time_sleep_notifier = {
--	time_sleep_notify, SLEEP_LEVEL_MISC,
+-static int pmac_pm_enter(suspend_state_t state)
+-{
+-	printk(KERN_DEBUG "%s(%d)\n", __FUNCTION__, state);
+-
+-	/* Giveup the lazy FPU & vec so we don't have to back them
+-	 * up from the low level code
+-	 */
+-	enable_kernel_fp();
+-
+-#ifdef CONFIG_ALTIVEC
+-	if (cur_cpu_spec->cpu_features & CPU_FTR_ALTIVEC)
+-		enable_kernel_altivec();
+-#endif /* CONFIG_ALTIVEC */
+-
+-	return 0;
+-}
+-
+-static int pmac_pm_finish(suspend_state_t state)
+-{
+-	printk(KERN_DEBUG "%s(%d)\n", __FUNCTION__, state);
+-
+-	/* Restore userland MMU context */
+-	set_context(current->active_mm->context.id, current->active_mm->pgd);
+-
+-	return 0;
+-}
+-
+-static int pmac_pm_valid(suspend_state_t state)
+-{
+-	switch (state) {
+-	case PM_SUSPEND_DISK:
+-		return 1;
+-	/* can't do any other states via generic mechanism yet */
+-	default:
+-		return 0;
+-	}
+-}
+-
+-static struct pm_ops pmac_pm_ops = {
+-	.pm_disk_mode	= PM_DISK_SHUTDOWN,
+-	.prepare	= pmac_pm_prepare,
+-	.enter		= pmac_pm_enter,
+-	.finish		= pmac_pm_finish,
+-	.valid		= pmac_pm_valid,
 -};
--#endif /* CONFIG_PM */
 -
- /*
-  * Query the OF and get the decr frequency.
-  */
- void __init pmac_calibrate_decr(void)
+-#endif /* CONFIG_SOFTWARE_SUSPEND */
+-
+ static int initializing = 1;
+ 
+ static int pmac_late_init(void)
  {
--#if defined(CONFIG_PM) && defined(CONFIG_ADB_PMU)
--	/* XXX why here? */
--	pmu_register_sleep_notifier(&time_sleep_notifier);
--#endif
--
- 	generic_calibrate_decr();
+ 	initializing = 0;
+-#ifdef CONFIG_SOFTWARE_SUSPEND
+-	pm_set_ops(&pmac_pm_ops);
+-#endif /* CONFIG_SOFTWARE_SUSPEND */
+ 	return 0;
+ }
  
- #ifdef CONFIG_PPC32
---- linux-2.6.orig/arch/powerpc/Kconfig	2007-03-19 11:47:27.422413925 +0100
-+++ linux-2.6/arch/powerpc/Kconfig	2007-03-19 11:47:37.512413925 +0100
-@@ -11,6 +11,11 @@ config PPC64
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
- 
-+config PPC_PM_NEEDS_RTC_LIB
-+	bool
-+	select RTC_LIB
-+	default y if PM
-+
- config PPC32
- 	bool
- 	default y if !PPC64
---- linux-2.6.orig/arch/powerpc/sysdev/Makefile	2007-03-19 11:47:27.532413925 +0100
-+++ linux-2.6/arch/powerpc/sysdev/Makefile	2007-03-19 11:47:37.512413925 +0100
-@@ -14,6 +14,9 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
- obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
- obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
- 
-+# contains only the suspend handler for time
-+obj-$(CONFIG_PM)		+= timer.o
-+
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
- obj-$(CONFIG_PPC_83xx)		+= ipic.o
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/arch/powerpc/sysdev/timer.c	2007-03-19 11:47:37.512413925 +0100
-@@ -0,0 +1,70 @@
++++ linux-2.6/include/asm-powerpc/suspend.h	2007-03-19 11:47:39.132413925 +0100
+@@ -0,0 +1,9 @@
++#ifndef __ASM_POWERPC_SUSPEND_H
++#define __ASM_POWERPC_SUSPEND_H
++
++static inline int arch_prepare_suspend(void) { return 0; }
++
++void save_processor_state(void);
++static inline void restore_processor_state(void) {}
++
++#endif /* __ASM_POWERPC_SUSPEND_H */
+--- linux-2.6.orig/arch/powerpc/kernel/Makefile	2007-03-19 11:47:26.692413925 +0100
++++ linux-2.6/arch/powerpc/kernel/Makefile	2007-03-19 11:47:39.172413925 +0100
+@@ -36,6 +36,7 @@ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsy
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
+ obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+ obj-$(CONFIG_TAU)		+= tau_6xx.o
++obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o
+ obj32-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_32.o
+ obj32-$(CONFIG_MODULES)		+= module_32.o
+ 
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/powerpc/kernel/swsusp.c	2007-03-19 11:47:39.172413925 +0100
+@@ -0,0 +1,26 @@
 +/*
-+ * Common code to keep time when machine suspends.
++ * Common powerpc suspend code for 32 and 64 bits
 + *
 + * Copyright 2007	Johannes Berg <johannes@sipsolutions.net>
 + *
 + * GPLv2
 + */
 +
-+#include <linux/time.h>
-+#include <asm/rtc.h>
++#include <asm/cputable.h>
++#include <asm/system.h>
 +
-+static unsigned long suspend_rtc_time;
 +
-+/*
-+ * Reset the time after a sleep.
-+ */
-+static int timer_resume(struct sys_device *dev)
++int save_processor_state(void)
 +{
-+	struct timeval tv;
-+	struct timespec ts;
-+	struct rtc_time cur_rtc_tm;
-+	unsigned long cur_rtc_time, diff;
++	/* Giveup the lazy FPU & vec so we don't have to back them
++	 * up from the low level code
++	 */
++	enable_kernel_fp();
 +
-+	/* get current RTC time and convert to seconds */
-+	get_rtc_time(&cur_rtc_tm);
-+	rtc_tm_to_time(&cur_rtc_tm, &cur_rtc_time);
-+
-+	diff = cur_rtc_time - suspend_rtc_time;
-+
-+	/* adjust time of day by seconds that elapsed while
-+	 * we were suspended */
-+	do_gettimeofday(&tv);
-+	ts.tv_sec = tv.tv_sec + diff;
-+	ts.tv_nsec = tv.tv_usec * NSEC_PER_USEC;
-+	do_settimeofday(&ts);
++#ifdef CONFIG_ALTIVEC
++	if (cur_cpu_spec->cpu_features & CPU_FTR_ALTIVEC)
++		enable_kernel_altivec();
++#endif /* CONFIG_ALTIVEC */
 +
 +	return 0;
 +}
-+
-+static int timer_suspend(struct sys_device *dev, pm_message_t state)
-+{
-+	struct rtc_time suspend_rtc_tm;
-+	WARN_ON(!ppc_md.get_rtc_time);
-+
-+	get_rtc_time(&suspend_rtc_tm);
-+	rtc_tm_to_time(&suspend_rtc_tm, &suspend_rtc_time);
-+
-+	return 0;
-+}
-+
-+static struct sysdev_class timer_sysclass = {
-+	.resume = timer_resume,
-+	.suspend = timer_suspend,
-+	set_kset_name("timer"),
-+};
-+
-+static struct sys_device device_timer = {
-+	.id = 0,
-+	.cls = &timer_sysclass,
-+};
-+
-+static int time_init_device(void)
-+{
-+	int error = sysdev_class_register(&timer_sysclass);
-+	if (!error)
-+		error = sysdev_register(&device_timer);
-+	return error;
-+}
-+
-+device_initcall(time_init_device);
 
 --
