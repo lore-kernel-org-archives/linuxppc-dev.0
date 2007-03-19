@@ -1,23 +1,20 @@
-Return-Path: <SRS0+8a151c898023e94d8b4b+1303+infradead.org+hch@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 17E3EDDF0C
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 01:09:18 +1100 (EST)
-Date: Mon, 19 Mar 2007 14:08:51 +0000
-From: Christoph Hellwig <hch@infradead.org>
-To: Andi Kleen <ak@suse.de>
-Subject: [PATCH] powerpc minor pagefault optimization with kprobes enabled
-Message-ID: <20070319140851.GA11285@infradead.org>
-References: <20070319133149.GA5781@infradead.org>
-	<200703191500.34563.ak@suse.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200703191500.34563.ak@suse.de>
-Cc: Martin Schwidefsky <schwidefsky@de.ibm.com>, linux-s390@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	linux-arch@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 5525FDDF12
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 01:10:48 +1100 (EST)
+To: Jerry Van Baren <gerald.vanbaren@comcast.net>
+Subject: Re: [PATCH] DTC: Improve options handling - respin 
+In-Reply-To: Your message of "Sun, 18 Mar 2007 16:49:24 EDT."
+	<45FDA5D4.7050004@comcast.net>
+References: <45FC1F69.9080204@comcast.net>
+	<20070317231337.GA11017@localhost.localdomain>
+	<45FDA5D4.7050004@comcast.net>
+Date: Mon, 19 Mar 2007 09:10:42 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1HTIZO-00036N-21@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,183 +24,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Agreed, it should be fixed generically.
+So, like, the other day Jerry Van Baren mumbled:
 > 
-> I think the right fix would be to make the notifier call an inline
-> that checks the call chain in the caller. That would be cheap enough,
-> except for the cache line that might need to be referenced.
+> Hi David, Jon,
 > 
-> For the cache line the short term fix would be to find some other
-> global cache line that is referenced in the fault path anyways and put
-> it on the same (e.g. by just putting the variable next to it or
-> using a shared structure) 
+> I was just seeing if I could get a rise out of you. It worked. ;-)
 > 
-> Longer term might be something like Ben LaHaise's patch that can patch
-> code inline for rarely-read globals.
+> Attached is a respin of my previous two patches: it adds the -h and -q 
+> options and #defines the default version but does _not_ delete the -R 
+> option (left as an exercise for the reader to make it useful :-).
 
-I've attached a patch below the optimizes this code path for powerpc,
-but the scheme applies to all architectures aswell.  It just rips out all
-the callachin madness, and does as good as it gets in the pagefault
-handler:
+Please follow the patch layout guideline like this:
 
- - first we check for a user mode pagefault as that check is cheap
- - then we check kprobes_running which unfortunately requires a
-   pagefault_disable
- - finally we do a direct function call to kprobe_fault_handler
+    Mail headers with
+    From: <"default" author>
+    Subject: <patch summary line>
 
+    From: <actual author if different than mail envelope author>
+
+    <detailed log message>
+
+    <sign-off as needed>
+    ---
+
+    Notes and commentary
+
+    <actual patch inline text>
+
+As it was, manual patch editing was necessary to dodge
+your introductory explanation.
+
+> Subject: [PATCH] Improve options, #define default version.
 > 
-> > Please do the right thing to optimize this instead and rip out the brandead
-> > notifier chain mechanisms and directly call into the krobes handler if
-> > kprobes are active, 
+> Add -h option for help
+> Add -q quiet option to reduce or suppress the whining
+> Create #define for the default version value.
 > 
-> No, we should keep the debugger hooks here. Otherwise there will be a zillion
-> external patches patches code in at these places for the various debuggers,
-> resulting in a merge nightmare for lots of people.
+> Signed-off-by: vanbaren@cideas.com <vanbaren@cideas.com>
+> ---
 
-So get them to get their debuggers merged upstream.  Anyway, we need to
-keep the die notifiers because we've actually grown some users for it.
-I don't agree on the page fault notifiers, though - this code path
-is too important to bloat it for posisble existing external parasites.
+Applied and pushed out!
+
+However, two comments:
+
+> ... but does _not_ delete the -R 
+> option (left as an exercise for the reader to make it useful :-).
+
+I'll certainly entertain a patch to fix the reserve space problem. :-)
+That could have been my fault, though we both had our fingers in that pie.
+
+> +	fprintf(stderr, "\t-q\n");
+> +	fprintf(stderr, "\t\tQuiet: -q suppress warnings, -qq errors, -qqq all\n");
+
+This is a bit misleading.  Sepcifically, -qqq does not currently
+suppres "all" messagesm notably	those through yyerror().
+An ambitious soul might beat me to fixing that up...
 
 
-Signed-off-by: Christoph Hellwig <hch@lst.de>
-
-Index: linux-2.6.20/arch/powerpc/mm/fault.c
-===================================================================
---- linux-2.6.20.orig/arch/powerpc/mm/fault.c	2007-03-19 14:50:41.000000000 +0100
-+++ linux-2.6.20/arch/powerpc/mm/fault.c	2007-03-19 15:00:00.000000000 +0100
-@@ -39,37 +39,26 @@
- #include <asm/kdebug.h>
- #include <asm/siginfo.h>
- 
--#ifdef CONFIG_KPROBES
--ATOMIC_NOTIFIER_HEAD(notify_page_fault_chain);
- 
--/* Hook to register for page fault notifications */
--int register_page_fault_notifier(struct notifier_block *nb)
-+#ifdef CONFIG_KPROBES
-+static inline int notify_page_fault(struct pt_regs *regs)
- {
--	return atomic_notifier_chain_register(&notify_page_fault_chain, nb);
--}
-+	int ret = 0;
- 
--int unregister_page_fault_notifier(struct notifier_block *nb)
--{
--	return atomic_notifier_chain_unregister(&notify_page_fault_chain, nb);
--}
-+	/* kprobe_running() needs smp_processor_id() */
-+	if (!user_mode(regs)) {
-+		preempt_disable();
-+		if (kprobe_running() && kprobe_fault_handler(regs, 11))
-+			ret = 1;
-+		preempt_enable();
-+	}
- 
--static inline int notify_page_fault(enum die_val val, const char *str,
--			struct pt_regs *regs, long err, int trap, int sig)
--{
--	struct die_args args = {
--		.regs = regs,
--		.str = str,
--		.err = err,
--		.trapnr = trap,
--		.signr = sig
--	};
--	return atomic_notifier_call_chain(&notify_page_fault_chain, val, &args);
-+	return ret;
- }
- #else
--static inline int notify_page_fault(enum die_val val, const char *str,
--			struct pt_regs *regs, long err, int trap, int sig)
-+static inline int notify_page_fault(struct pt_regs *regs)
- {
--	return NOTIFY_DONE;
-+	return 0;
- }
- #endif
- 
-@@ -175,8 +164,7 @@ int __kprobes do_page_fault(struct pt_re
- 	is_write = error_code & ESR_DST;
- #endif /* CONFIG_4xx || CONFIG_BOOKE */
- 
--	if (notify_page_fault(DIE_PAGE_FAULT, "page_fault", regs, error_code,
--				11, SIGSEGV) == NOTIFY_STOP)
-+	if (notify_page_fault(regs))
- 		return 0;
- 
- 	if (trap == 0x300) {
-Index: linux-2.6.20/arch/powerpc/kernel/kprobes.c
-===================================================================
---- linux-2.6.20.orig/arch/powerpc/kernel/kprobes.c	2007-03-19 14:53:01.000000000 +0100
-+++ linux-2.6.20/arch/powerpc/kernel/kprobes.c	2007-03-19 15:03:41.000000000 +0100
-@@ -376,7 +376,7 @@ out:
- 	return 1;
- }
- 
--static int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
-+int __kprobes kprobe_fault_handler(struct pt_regs *regs, int trapnr)
- {
- 	struct kprobe *cur = kprobe_running();
- 	struct kprobe_ctlblk *kcb = get_kprobe_ctlblk();
-@@ -461,14 +461,6 @@ int __kprobes kprobe_exceptions_notify(s
- 		if (post_kprobe_handler(args->regs))
- 			ret = NOTIFY_STOP;
- 		break;
--	case DIE_PAGE_FAULT:
--		/* kprobe_running() needs smp_processor_id() */
--		preempt_disable();
--		if (kprobe_running() &&
--		    kprobe_fault_handler(args->regs, args->trapnr))
--			ret = NOTIFY_STOP;
--		preempt_enable();
--		break;
- 	default:
- 		break;
- 	}
-Index: linux-2.6.20/include/asm-powerpc/kdebug.h
-===================================================================
---- linux-2.6.20.orig/include/asm-powerpc/kdebug.h	2007-03-19 14:55:13.000000000 +0100
-+++ linux-2.6.20/include/asm-powerpc/kdebug.h	2007-03-19 15:03:27.000000000 +0100
-@@ -18,8 +18,20 @@ struct die_args {
- 
- extern int register_die_notifier(struct notifier_block *);
- extern int unregister_die_notifier(struct notifier_block *);
--extern int register_page_fault_notifier(struct notifier_block *);
--extern int unregister_page_fault_notifier(struct notifier_block *);
-+
-+/*
-+ * These are only here because kprobes.c wants them to implement a
-+ * blatant layer violation.  Will hopefully go away soon once all
-+ * architectures are updated.
-+ */
-+static inline int register_page_fault_notifier(struct notifier_block *nb)
-+{
-+	return 0;
-+}
-+static inline int unregister_page_fault_notifier(struct notifier_block *nb)
-+{
-+	return 0;
-+}
- extern struct atomic_notifier_head powerpc_die_chain;
- 
- /* Grossly misnamed. */
-@@ -29,7 +41,6 @@ enum die_val {
- 	DIE_DABR_MATCH,
- 	DIE_BPT,
- 	DIE_SSTEP,
--	DIE_PAGE_FAULT,
- };
- 
- static inline int notify_die(enum die_val val,char *str,struct pt_regs *regs,long err,int trap, int sig)
-Index: linux-2.6.20/include/asm-powerpc/kprobes.h
-===================================================================
---- linux-2.6.20.orig/include/asm-powerpc/kprobes.h	2007-03-19 15:01:14.000000000 +0100
-+++ linux-2.6.20/include/asm-powerpc/kprobes.h	2007-03-19 15:01:55.000000000 +0100
-@@ -100,5 +100,6 @@ struct kprobe_ctlblk {
- 
- extern int kprobe_exceptions_notify(struct notifier_block *self,
- 					unsigned long val, void *data);
-+extern int kprobe_fault_handler(struct pt_regs *regs, int trapnr);
- #endif /* __KERNEL__ */
- #endif	/* _ASM_POWERPC_KPROBES_H */
+Thanks,
+jdl
