@@ -1,17 +1,14 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id 1BC97DDF12
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 11:34:35 +1100 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Fedora Core 6 or 7 on PPC?
-Date: Mon, 19 Mar 2007 01:34:25 +0100
-References: <20070319001739.DE91135260B@atlas.denx.de>
-In-Reply-To: <20070319001739.DE91135260B@atlas.denx.de>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703190134.26030.arnd@arndb.de>
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17917.55985.39690.519943@cargo.ozlabs.ibm.com>
+Date: Mon, 19 Mar 2007 11:34:57 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: [RFC PATCH] power-management elements for 603e/fsl
+In-Reply-To: <Pine.LNX.4.60.0703182216130.4143@poirot.grange>
+References: <Pine.LNX.4.60.0703182216130.4143@poirot.grange>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,18 +18,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Monday 19 March 2007, Wolfgang Denk wrote:
-> has anybody Fedora Core 6 (or even better FC7 - test) running on a PPC
-> system? Could you please send me the /root/install.log file from your
-> system? I'd like to know which packages get installed by default, and
-> in which order.
+Guennadi Liakhovetski writes:
 
-I don't have an up-to-date version of it right here, but in case you
-are trying to do an installation of the minimal rpm files from a
-running system, I can recommend the following procedure:
+> As some of you would know, it is not a real suspend-to-RAM, since kurobox' 
+> hardware doesn't support powering down CPU and peripherals while keeping 
+> RAM in self-refresh. So, this patch just sends the SoC and the CPU to 
+> SLEEP. It also needs some extra patches for timer suspend / resume, so, 
 
-rpm --root /fc7/ --initdb
-rpm --root /fc7/ -ivh --nodeps ftp://ftp-stud.fht-esslingen.de/Mirrors/fedora.redhat.com/linux/core/development/ppc/os/Fedora/fedora-release-*.noarch.rpm
-yum --installroot=/fc7/ -y groupinstall Base
+The early powerbooks also put the CPU into sleep mode, rather than
+powering it off, so I think you can say that what you are doing is
+suspend to RAM, as long as it manages to reduce power consumption
+substantially, and you have a way to wake it up (e.g. via a keypress
+or a LAN packet).
 
-	Arnd <><
+> this alone will not work properly. Besides, I am not where to put and how 
+> to call these functions. So far I put them in fsl namespace as that'll, 
+> probably, be similar among Freescale chips? Maybe it's better to call this 
+> mode standby, not str?
+
+What you have done looks OK to me.  If we need to move things around
+later, that can be done easily enough.
+
+Paul.
