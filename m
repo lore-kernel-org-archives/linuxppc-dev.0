@@ -1,20 +1,24 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id C4816DDF89
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 08:51:18 +1100 (EST)
-Date: Mon, 19 Mar 2007 22:51:15 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6064CDDF4D
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 09:13:32 +1100 (EST)
 Subject: Re: [PATCH 1/5] powerpc: generic time suspend/resume code
-In-Reply-To: <1174315651.5044.4.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.60.0703192236420.10137@poirot.grange>
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+In-Reply-To: <Pine.LNX.4.60.0703192236420.10137@poirot.grange>
 References: <20070319105352.771599000@sipsolutions.net>
 	<20070319105357.964696000@sipsolutions.net>
 	<1174315651.5044.4.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org,
-	Johannes Berg <johannes@sipsolutions.net>
+	<Pine.LNX.4.60.0703192236420.10137@poirot.grange>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-OtkDVmBafBjmmhLieuz/"
+Date: Mon, 19 Mar 2007 23:11:26 +0100
+Message-Id: <1174342286.22561.25.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: David Brownell <david-b@pacbell.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 19 Mar 2007, Benjamin Herrenschmidt wrote:
 
-> On Mon, 2007-03-19 at 11:53 +0100, Johannes Berg wrote:
-> > plain text document attachment (001-time-resume.patch)
-> > This patch removes the time suspend/restore code that was done through
-> > a PMU notifier in arch/platforms/powermac/time.c.
-> > 
-> > Instead, introduce arch/powerpc/sysdev/timer.c which creates a sys
-> > device and handles time of day suspend/resume through that.
-> > 
-> > This should probably be replaced by using the generic RTC framework
-> > but for now it gets rid of the arcane powermac specific hack.
-> > 
-> > Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+--=-OtkDVmBafBjmmhLieuz/
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Not sure I'm convinced it's a good thing to do...
+On Mon, 2007-03-19 at 22:51 +0100, Guennadi Liakhovetski wrote:
 
-As far as I understand it duplicates the functionality proposed in this 
-thread:
+> Notice also, that my linkstation suspend patch in its present form also=20
+> uses the previous version of this patch from Johannes', but I'd rather=20
+> delay its acceptance upstream and directly go for the ultimate solution.
 
-http://lists.linux-foundation.org/pipermail/linux-pm/2007-February/thread.html#4949
+I just posted a whole other series of cleanup patches that depend on the
+removal of the arcane pmu notifier in the timer code. I don't see the
+point in holding that for much longer just because there's some big
+structural change possibly coming up for the rtc code.
 
-and by committing it now we'll delay the powerpc migration to generic rtc. 
-How about this: you give me a week before committing this (and any 
-depending) patches, in 1 week I send an email with an estimate whether I'd 
-be able to do the convertion (without being able to test - others will 
-have to do that) and how long I expect to need for that. If we find it 
-acceptible, we'll do that, if not - in one week we still can commit these 
-patches - 2.6.21 either will not be there yet by then or the window will 
-still be open...
+It's not just the generic RTC suspend code that is relevant but also the
+ppc_md rtc hooks, ultimately they probably should be removed totally
+once powerpc completely migrates to genrtc everywhere. In the patch you
+showed me to this file you actually circumvented the ppc_md rtc hooks
+because you're already using genrtc, in that case the genrtc suspend
+code is obviously much more appropriate.
 
-David, what's the status of that your patch?
+Since currently only 32-bit powermac even implements suspend in
+mainline, the whole issue is sort of moot anyway. Once the genrtc
+suspend patches is in this file can be removed with the patch that
+migrates powermac to genrtc, and then new platforms wanting to implement
+suspend will need to use genrtc.
 
-Notice also, that my linkstation suspend patch in its present form also 
-uses the previous version of this patch from Johannes', but I'd rather 
-delay its acceptance upstream and directly go for the ultimate solution.
+johannes
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+--=-OtkDVmBafBjmmhLieuz/
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBF/wqO/ETPhpq3jKURAgrFAJ96JRVkccc/ymCcz3BARjcn+70lbACfXlkL
+poLPKaszbww4BxT/qzLErhE=
+=Wq0r
+-----END PGP SIGNATURE-----
+
+--=-OtkDVmBafBjmmhLieuz/--
