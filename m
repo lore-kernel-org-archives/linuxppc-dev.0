@@ -1,26 +1,16 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8AAEDDDF17
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 03:39:08 +1100 (EST)
-Subject: Re: [PATCH 2/5] powerpc: fix suspend states again
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1174321350.22561.11.camel@johannes.berg>
-References: <20070319105352.771599000@sipsolutions.net>
-	<20070319105358.796834000@sipsolutions.net>
-	<1174315727.5044.6.camel@localhost.localdomain>
-	<1174317726.22561.4.camel@johannes.berg>
-	<1174318342.5044.16.camel@localhost.localdomain>
-	<1174319146.22561.6.camel@johannes.berg>
-	<1174319657.22561.9.camel@johannes.berg>
-	<1174321350.22561.11.camel@johannes.berg>
-Content-Type: text/plain
-Date: Mon, 19 Mar 2007 17:39:02 +0100
-Message-Id: <1174322343.5044.23.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 84D99DDE40
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 05:40:13 +1100 (EST)
+Message-Id: <20070319183621.039514000@sipsolutions.net>
+References: <20070319181800.149901000@sipsolutions.net>
+Date: Mon, 19 Mar 2007 19:18:05 +0100
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 5/5] via-pmu: kill sleep notifiers completely
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,36 +20,159 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-03-19 at 17:22 +0100, Johannes Berg wrote:
-> In commit 0fba3a1f39f8b0a50b56c8b068fa52131cbc84c2 (a very long time ago,
-> May 2006), I fixed a bug that caused powermacs to crash when you tried
-> entering standby/mem suspend states.
-> 
-> As I'm now getting more familiar with the suspend code I notice a few
-> more things:
->  1. we previously misunderstood what pm_ops is for, it isn't supposed to be
->     for doing platform dependent suspend/resume stuff that needs to be done
->     for suspend to disk (as we currently try to use it!), it is instead for
->     entering platform dependent suspend states ("standby", "mem").
->  2. due to the first point, we never properly save FPU and altivec states
->     when suspending to disk. It probably hasn't hurt yet because the process
->     that writes the "disk" to /sys/power/state uses neither and its context
->     is used.
-> 
-> This patch addresses these points as follows:
->  1. remove all pm_ops from powermac, powermac suspend to ram isn't currently
->     usable via /sys/power/state but is done via the PMU instead.
->  2. move the code responsible for storing FPU/altivec state into
->     save_processor_state and the set_context() call to restore_processor_state.
-> 
-> It also adds a call to kernel_enable_spe() but I don't have any machines that
-> have that to see if it actually works anyway.
-> 
-> It may look like there is some code removal missing but that is actually because
-> the new suspend.h file overrides the ppc/suspend.h one which was previously used.
-> 
-> A follow-on patch will create new pm_ops for via-pmu.
-> 
-> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+This patch kills off the remnants of the ancient sleep notifiers.
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+---
+ drivers/macintosh/via-pmu.c |   68 --------------------------------------------
+ include/linux/pmu.h         |   36 -----------------------
+ 2 files changed, 104 deletions(-)
+
+--- linux-2.6.orig/drivers/macintosh/via-pmu.c	2007-03-19 19:32:04.053321419 +0100
++++ linux-2.6/drivers/macintosh/via-pmu.c	2007-03-19 19:34:16.793321419 +0100
+@@ -174,7 +174,6 @@ static struct proc_dir_entry *proc_pmu_b
+ 
+ int __fake_sleep;
+ int asleep;
+-BLOCKING_NOTIFIER_HEAD(sleep_notifier_list);
+ 
+ #ifdef CONFIG_ADB
+ static int adb_dev_map;
+@@ -1730,67 +1729,7 @@ pmu_present(void)
+ 	return via != 0;
+ }
+ 
+-#ifdef CONFIG_PM
+-
+-static LIST_HEAD(sleep_notifiers);
+-
+-int
+-pmu_register_sleep_notifier(struct pmu_sleep_notifier *n)
+-{
+-	struct list_head *list;
+-	struct pmu_sleep_notifier *notifier;
+-
+-	for (list = sleep_notifiers.next; list != &sleep_notifiers;
+-	     list = list->next) {
+-		notifier = list_entry(list, struct pmu_sleep_notifier, list);
+-		if (n->priority > notifier->priority)
+-			break;
+-	}
+-	__list_add(&n->list, list->prev, list);
+-	return 0;
+-}
+-EXPORT_SYMBOL(pmu_register_sleep_notifier);
+-
+-int
+-pmu_unregister_sleep_notifier(struct pmu_sleep_notifier* n)
+-{
+-	if (n->list.next == 0)
+-		return -ENOENT;
+-	list_del(&n->list);
+-	n->list.next = NULL;
+-	return 0;
+-}
+-EXPORT_SYMBOL(pmu_unregister_sleep_notifier);
+-#endif /* CONFIG_PM */
+-
+ #if defined(CONFIG_PM) && defined(CONFIG_PPC32)
+-
+-/* Sleep is broadcast last-to-first */
+-static void broadcast_sleep(int when)
+-{
+-	struct list_head *list;
+-	struct pmu_sleep_notifier *notifier;
+-
+-	for (list = sleep_notifiers.prev; list != &sleep_notifiers;
+-	     list = list->prev) {
+-		notifier = list_entry(list, struct pmu_sleep_notifier, list);
+-		notifier->notifier_call(notifier, when);
+-	}
+-}
+-
+-/* Wake is broadcast first-to-last */
+-static void broadcast_wake(void)
+-{
+-	struct list_head *list;
+-	struct pmu_sleep_notifier *notifier;
+-
+-	for (list = sleep_notifiers.next; list != &sleep_notifiers;
+-	     list = list->next) {
+-		notifier = list_entry(list, struct pmu_sleep_notifier, list);
+-		notifier->notifier_call(notifier, PBOOK_WAKE);
+-	}
+-}
+-
+ /*
+  * This struct is used to store config register values for
+  * PCI devices which may get powered off when we sleep.
+@@ -2406,10 +2345,6 @@ pmu_release(struct inode *inode, struct 
+ #if defined(CONFIG_PM) && defined(CONFIG_PPC32)
+ static int powerbook_prepare_sleep(suspend_state_t state)
+ {
+-	/* Notify old-style device drivers */
+-	broadcast_sleep(PBOOK_SLEEP_REQUEST);
+-	broadcast_sleep(PBOOK_SLEEP_NOW);
+-
+ #ifdef CONFIG_PMAC_BACKLIGHT
+ 	/* Tell backlight code not to muck around with the chip anymore */
+ 	pmu_backlight_set_sleep(1);
+@@ -2491,9 +2426,6 @@ static int powerbook_finish_sleep(suspen
+ 	pmac_pfunc_base_resume();
+ 	pmac_pfunc_i2c_resume();
+ 
+-	/* Notify old style drivers */
+-	broadcast_wake();
+-
+ 	return 0;
+ }
+ 
+--- linux-2.6.orig/include/linux/pmu.h	2007-03-19 19:26:35.943321419 +0100
++++ linux-2.6/include/linux/pmu.h	2007-03-19 19:34:16.803321419 +0100
+@@ -159,42 +159,6 @@ extern void pmu_unlock(void);
+ extern int pmu_present(void);
+ extern int pmu_get_model(void);
+ 
+-#ifdef CONFIG_PM
+-/*
+- * Stuff for putting the powerbook to sleep and waking it again.
+- *
+- */
+-#include <linux/list.h>
+-
+-struct pmu_sleep_notifier
+-{
+-	void (*notifier_call)(struct pmu_sleep_notifier *self, int when);
+-	int priority;
+-	struct list_head list;
+-};
+-
+-/* Code values for calling sleep/wakeup handlers
+- */
+-#define PBOOK_SLEEP_REQUEST	1
+-#define PBOOK_SLEEP_NOW		2
+-#define PBOOK_WAKE		3
+-
+-/* priority levels in notifiers */
+-#define SLEEP_LEVEL_VIDEO	100	/* Video driver (first wake) */
+-#define SLEEP_LEVEL_MEDIABAY	90	/* Media bay driver */
+-#define SLEEP_LEVEL_BLOCK	80	/* IDE, SCSI */
+-#define SLEEP_LEVEL_NET		70	/* bmac, gmac */
+-#define SLEEP_LEVEL_MISC	60	/* Anything else */
+-#define SLEEP_LEVEL_USERLAND	55	/* Reserved for apm_emu */
+-#define SLEEP_LEVEL_ADB		50	/* ADB (async) */
+-#define SLEEP_LEVEL_SOUND	40	/* Sound driver (blocking) */
+-
+-/* special register notifier functions */
+-int pmu_register_sleep_notifier(struct pmu_sleep_notifier* notifier);
+-int pmu_unregister_sleep_notifier(struct pmu_sleep_notifier* notifier);
+-
+-#endif /* CONFIG_PM */
+-
+ #define PMU_MAX_BATTERIES	2
+ 
+ /* values for pmu_power_flags */
+
+--
