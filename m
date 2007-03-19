@@ -1,19 +1,20 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BA08FDDF44
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 03:04:21 +1100 (EST)
-Message-ID: <45FEB47D.1090906@garzik.org>
-Date: Mon, 19 Mar 2007 12:04:13 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-Subject: Re: [PATCH] drivers/ata/Kconfig: PATA_SCC depends on wrong platform
-References: <200703150530.l2F5Uwel024855@toshiba.co.jp>
-In-Reply-To: <200703150530.l2F5Uwel024855@toshiba.co.jp>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 6C393DDF68
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 03:06:10 +1100 (EST)
+Subject: Re: [PATCH 2/5] powerpc: fix suspend states again
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <20070319105358.796834000@sipsolutions.net>
+References: <20070319105352.771599000@sipsolutions.net>
+	<20070319105358.796834000@sipsolutions.net>
+Content-Type: text/plain
+Date: Mon, 19 Mar 2007 17:06:05 +0100
+Message-Id: <1174320365.5044.20.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Akira Iguchi wrote:
-> PATA_SCC depends on PPC_CELLEB. (not PPC_IBM_CELL_BLADE)
-> 
-> Signed-off-by: Kou Ishizaki <kou.ishizaki@toshiba.co.jp>
-> Signed-off-by: Akira Iguchi <akira2.iguchi@toshiba.co.jp>
-> ---
-> 
-> diff -Nrpu -X linux-2.6.21-rc3/Documentation/dontdiff linux-2.6.21-rc3/drivers/ata/Kconfig linux-2.6.21-rc3.mod/drivers/ata/Kconfig
-> --- linux-2.6.21-rc3/drivers/ata/Kconfig	2007-03-07 13:41:20.000000000 +0900
-> +++ linux-2.6.21-rc3.mod/drivers/ata/Kconfig	2007-03-15 23:04:14.000000000 +0900
-> @@ -564,7 +564,7 @@ config PATA_IXP4XX_CF
->  
->  config PATA_SCC
->  	tristate "Toshiba's Cell Reference Set IDE support"
-> -	depends on PCI && PPC_IBM_CELL_BLADE
-> +	depends on PCI && PPC_CELLEB
->  	help
->  	  This option enables support for the built-in IDE controller on
 
-aplied
+> +
+> +int save_processor_state(void)
+> +{
+> +	/* Giveup the lazy FPU & vec so we don't have to back them
+> +	 * up from the low level code
+> +	 */
+> +	enable_kernel_fp();
+> +
+> +#ifdef CONFIG_ALTIVEC
+> +	if (cur_cpu_spec->cpu_features & CPU_FTR_ALTIVEC)
+> +		enable_kernel_altivec();
+> +#endif /* CONFIG_ALTIVEC */
+> +
+> +	return 0;
+> +}
+
+You need to check if there's an FPU I suppose for enable_kernel_fp()
+since this is generic code potentially used with embedded CPUs as well.
+In fact, it would be good to also add some of the freescale stuff.
+
+Ben.
