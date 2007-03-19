@@ -2,14 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 84D99DDE40
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 05:40:13 +1100 (EST)
-Message-Id: <20070319183621.039514000@sipsolutions.net>
+	by ozlabs.org (Postfix) with ESMTP id 33A57DDEBB
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 05:40:14 +1100 (EST)
+Message-Id: <20070319183619.051498000@sipsolutions.net>
 References: <20070319181800.149901000@sipsolutions.net>
-Date: Mon, 19 Mar 2007 19:18:05 +0100
+Date: Mon, 19 Mar 2007 19:18:01 +0100
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 5/5] via-pmu: kill sleep notifiers completely
+Subject: [PATCH 1/5] adb: replace sleep notifier with sysdev
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,159 +20,142 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch kills off the remnants of the ancient sleep notifiers.
+This patch replaces the pmu sleep notifier that adb had with a proper
+sysdevice.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 ---
- drivers/macintosh/via-pmu.c |   68 --------------------------------------------
- include/linux/pmu.h         |   36 -----------------------
- 2 files changed, 104 deletions(-)
+ drivers/macintosh/adb.c |   89 ++++++++++++++++++++++++++----------------------
+ 1 file changed, 50 insertions(+), 39 deletions(-)
 
---- linux-2.6.orig/drivers/macintosh/via-pmu.c	2007-03-19 19:32:04.053321419 +0100
-+++ linux-2.6/drivers/macintosh/via-pmu.c	2007-03-19 19:34:16.793321419 +0100
-@@ -174,7 +174,6 @@ static struct proc_dir_entry *proc_pmu_b
- 
- int __fake_sleep;
- int asleep;
--BLOCKING_NOTIFIER_HEAD(sleep_notifier_list);
- 
- #ifdef CONFIG_ADB
- static int adb_dev_map;
-@@ -1730,67 +1729,7 @@ pmu_present(void)
- 	return via != 0;
- }
+--- linux-2.6.orig/drivers/macintosh/adb.c	2007-03-19 19:15:06.553321419 +0100
++++ linux-2.6/drivers/macintosh/adb.c	2007-03-19 19:15:08.613321419 +0100
+@@ -89,14 +89,6 @@ static int sleepy_trackpad;
+ static int autopoll_devs;
+ int __adb_probe_sync;
  
 -#ifdef CONFIG_PM
+-static void adb_notify_sleep(struct pmu_sleep_notifier *self, int when);
+-static struct pmu_sleep_notifier adb_sleep_notifier = {
+-	adb_notify_sleep,
+-	SLEEP_LEVEL_ADB,
+-};
+-#endif
 -
--static LIST_HEAD(sleep_notifiers);
--
--int
--pmu_register_sleep_notifier(struct pmu_sleep_notifier *n)
--{
--	struct list_head *list;
--	struct pmu_sleep_notifier *notifier;
--
--	for (list = sleep_notifiers.next; list != &sleep_notifiers;
--	     list = list->next) {
--		notifier = list_entry(list, struct pmu_sleep_notifier, list);
--		if (n->priority > notifier->priority)
--			break;
--	}
--	__list_add(&n->list, list->prev, list);
--	return 0;
--}
--EXPORT_SYMBOL(pmu_register_sleep_notifier);
--
--int
--pmu_unregister_sleep_notifier(struct pmu_sleep_notifier* n)
--{
--	if (n->list.next == 0)
--		return -ENOENT;
--	list_del(&n->list);
--	n->list.next = NULL;
--	return 0;
--}
--EXPORT_SYMBOL(pmu_unregister_sleep_notifier);
--#endif /* CONFIG_PM */
--
- #if defined(CONFIG_PM) && defined(CONFIG_PPC32)
--
--/* Sleep is broadcast last-to-first */
--static void broadcast_sleep(int when)
--{
--	struct list_head *list;
--	struct pmu_sleep_notifier *notifier;
--
--	for (list = sleep_notifiers.prev; list != &sleep_notifiers;
--	     list = list->prev) {
--		notifier = list_entry(list, struct pmu_sleep_notifier, list);
--		notifier->notifier_call(notifier, when);
--	}
--}
--
--/* Wake is broadcast first-to-last */
--static void broadcast_wake(void)
--{
--	struct list_head *list;
--	struct pmu_sleep_notifier *notifier;
--
--	for (list = sleep_notifiers.next; list != &sleep_notifiers;
--	     list = list->next) {
--		notifier = list_entry(list, struct pmu_sleep_notifier, list);
--		notifier->notifier_call(notifier, PBOOK_WAKE);
--	}
--}
--
- /*
-  * This struct is used to store config register values for
-  * PCI devices which may get powered off when we sleep.
-@@ -2406,10 +2345,6 @@ pmu_release(struct inode *inode, struct 
- #if defined(CONFIG_PM) && defined(CONFIG_PPC32)
- static int powerbook_prepare_sleep(suspend_state_t state)
- {
--	/* Notify old-style device drivers */
--	broadcast_sleep(PBOOK_SLEEP_REQUEST);
--	broadcast_sleep(PBOOK_SLEEP_NOW);
--
- #ifdef CONFIG_PMAC_BACKLIGHT
- 	/* Tell backlight code not to muck around with the chip anymore */
- 	pmu_backlight_set_sleep(1);
-@@ -2491,9 +2426,6 @@ static int powerbook_finish_sleep(suspen
- 	pmac_pfunc_base_resume();
- 	pmac_pfunc_i2c_resume();
- 
--	/* Notify old style drivers */
--	broadcast_wake();
--
+ static int adb_scan_bus(void);
+ static int do_adb_reset_bus(void);
+ static void adbdev_init(void);
+@@ -287,10 +279,51 @@ adb_reset_bus(void)
  	return 0;
  }
  
---- linux-2.6.orig/include/linux/pmu.h	2007-03-19 19:26:35.943321419 +0100
-+++ linux-2.6/include/linux/pmu.h	2007-03-19 19:34:16.803321419 +0100
-@@ -159,42 +159,6 @@ extern void pmu_unlock(void);
- extern int pmu_present(void);
- extern int pmu_get_model(void);
++#ifdef CONFIG_PM
++/*
++ * notify clients before sleep
++ */
++int adb_suspend(struct sys_device *dev, pm_message_t state)
++{
++	adb_got_sleep = 1;
++	/* We need to get a lock on the probe thread */
++	down(&adb_probe_mutex);
++	/* Stop autopoll */
++	if (adb_controller->autopoll)
++		adb_controller->autopoll(0);
++	blocking_notifier_call_chain(&adb_client_list, ADB_MSG_POWERDOWN, NULL);
++
++	return 0;
++}
++
++/*
++ * reset bus after sleep
++ */
++int adb_resume(struct sys_device *dev)
++{
++	adb_got_sleep = 0;
++	up(&adb_probe_mutex);
++	adb_reset_bus();
++	return 0;
++}
++#endif /* CONFIG_PM */
++
++static struct sysdev_class adb_sysclass = {
++#ifdef CONFIG_PM
++	.resume = adb_resume,
++	.suspend = adb_suspend,
++#endif
++	set_kset_name("adb"),
++};
++
++static struct sys_device adb_sysdev = {
++	.cls = &adb_sysclass,
++};
++
+ int __init adb_init(void)
+ {
+ 	struct adb_driver *driver;
+-	int i;
++	int i, err;
+ 
+ #ifdef CONFIG_PPC32
+ 	if (!machine_is(chrp) && !machine_is(powermac))
+@@ -319,14 +352,19 @@ int __init adb_init(void)
+ 		printk(KERN_WARNING "Warning: no ADB interface detected\n");
+ 		adb_controller = NULL;
+ 	} else {
+-#ifdef CONFIG_PM
+-		pmu_register_sleep_notifier(&adb_sleep_notifier);
+-#endif /* CONFIG_PM */
++		err = sysdev_class_register(&adb_sysclass);
++		if (err)
++			return err;
++		err = sysdev_register(&adb_sysdev);
++		if (err)
++			return err;
++
+ #ifdef CONFIG_PPC
+ 		if (machine_is_compatible("AAPL,PowerBook1998") ||
+ 			machine_is_compatible("PowerBook1,1"))
+ 			sleepy_trackpad = 1;
+ #endif /* CONFIG_PPC */
++
+ 		init_completion(&adb_probe_task_comp);
+ 		adbdev_init();
+ 		adb_reset_bus();
+@@ -336,33 +374,6 @@ int __init adb_init(void)
+ 
+ __initcall(adb_init);
  
 -#ifdef CONFIG_PM
 -/*
-- * Stuff for putting the powerbook to sleep and waking it again.
-- *
+- * notify clients before sleep and reset bus afterwards
 - */
--#include <linux/list.h>
--
--struct pmu_sleep_notifier
+-void
+-adb_notify_sleep(struct pmu_sleep_notifier *self, int when)
 -{
--	void (*notifier_call)(struct pmu_sleep_notifier *self, int when);
--	int priority;
--	struct list_head list;
--};
--
--/* Code values for calling sleep/wakeup handlers
-- */
--#define PBOOK_SLEEP_REQUEST	1
--#define PBOOK_SLEEP_NOW		2
--#define PBOOK_WAKE		3
--
--/* priority levels in notifiers */
--#define SLEEP_LEVEL_VIDEO	100	/* Video driver (first wake) */
--#define SLEEP_LEVEL_MEDIABAY	90	/* Media bay driver */
--#define SLEEP_LEVEL_BLOCK	80	/* IDE, SCSI */
--#define SLEEP_LEVEL_NET		70	/* bmac, gmac */
--#define SLEEP_LEVEL_MISC	60	/* Anything else */
--#define SLEEP_LEVEL_USERLAND	55	/* Reserved for apm_emu */
--#define SLEEP_LEVEL_ADB		50	/* ADB (async) */
--#define SLEEP_LEVEL_SOUND	40	/* Sound driver (blocking) */
--
--/* special register notifier functions */
--int pmu_register_sleep_notifier(struct pmu_sleep_notifier* notifier);
--int pmu_unregister_sleep_notifier(struct pmu_sleep_notifier* notifier);
--
+-	switch (when) {
+-	case PBOOK_SLEEP_REQUEST:
+-		adb_got_sleep = 1;
+-		/* We need to get a lock on the probe thread */
+-		down(&adb_probe_mutex);
+-		/* Stop autopoll */
+-		if (adb_controller->autopoll)
+-			adb_controller->autopoll(0);
+-		blocking_notifier_call_chain(&adb_client_list,
+-			ADB_MSG_POWERDOWN, NULL);
+-		break;
+-	case PBOOK_WAKE:
+-		adb_got_sleep = 0;
+-		up(&adb_probe_mutex);
+-		adb_reset_bus();
+-		break;
+-	}
+-}
 -#endif /* CONFIG_PM */
 -
- #define PMU_MAX_BATTERIES	2
- 
- /* values for pmu_power_flags */
+ static int
+ do_adb_reset_bus(void)
+ {
 
 --
