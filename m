@@ -1,24 +1,25 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 03012DDF9B
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 07:00:43 +1100 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2JK0br3000338
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 16:00:37 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2JK00CU292008
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 16:00:00 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2JK00gh015898
-	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 16:00:00 -0400
-Date: Mon, 19 Mar 2007 14:59:59 -0500
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4984BDE01B
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 07:01:35 +1100 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2JK1Wmr000511
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 16:01:32 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l2JK1WYp064230
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 14:01:32 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2JK1Wk0018207
+	for <linuxppc-dev@ozlabs.org>; Mon, 19 Mar 2007 14:01:32 -0600
+Date: Mon, 19 Mar 2007 15:01:31 -0500
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 10/11] ppc64: EEH: verify state change
-Message-ID: <20070319195959.GJ11532@austin.ibm.com>
+Subject: [PATCH 11/11] ppc64: EEH: restructure multi-function support
+Message-ID: <20070319200131.GK11532@austin.ibm.com>
 References: <20070319194349.GT5151@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -35,63 +36,86 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-After requesting a state change, verify that the state change 
-actually ocurred, and the system ends up in the expected state.
+
+Rework how multi-function PCI devices are identified and traversed.
+This fixes a bug with multi-function recovery on Power4 that was
+introduced by a recent Power4 EEH patch.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 
 ----
- arch/powerpc/platforms/pseries/eeh.c        |    6 +++++-
- arch/powerpc/platforms/pseries/eeh_driver.c |    6 +++++-
- 2 files changed, 10 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/eeh.c        |    4 +--
+ arch/powerpc/platforms/pseries/eeh_driver.c |   30 +++++++++++++---------------
+ 2 files changed, 16 insertions(+), 18 deletions(-)
 
 Index: linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh_driver.c
 ===================================================================
---- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2007-03-19 13:21:49.000000000 -0500
-+++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh_driver.c	2007-03-19 13:21:53.000000000 -0500
-@@ -300,7 +300,7 @@ static int eeh_reset_device (struct pci_
- /* The longest amount of time to wait for a pci device
-  * to come back on line, in seconds.
-  */
--#define MAX_WAIT_FOR_RECOVERY 15
-+#define MAX_WAIT_FOR_RECOVERY 150
+--- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/eeh_driver.c	2007-03-19 13:21:53.000000000 -0500
++++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh_driver.c	2007-03-19 13:48:58.000000000 -0500
+@@ -249,6 +249,7 @@ static void eeh_report_failure(struct pc
  
- struct pci_dn * handle_eeh_events (struct eeh_event *event)
+ static int eeh_reset_device (struct pci_dn *pe_dn, struct pci_bus *bus)
  {
-@@ -393,6 +393,8 @@ struct pci_dn * handle_eeh_events (struc
- 	if (result == PCI_ERS_RESULT_CAN_RECOVER) {
- 		rc = rtas_pci_enable(frozen_pdn, EEH_THAW_MMIO);
++	struct device_node *dn;
+ 	int cnt, rc;
  
-+		if (rc < 0)
-+			goto hard_fail;
- 		if (rc) {
- 			result = PCI_ERS_RESULT_NEED_RESET;
- 		} else {
-@@ -405,6 +407,8 @@ struct pci_dn * handle_eeh_events (struc
- 	if (result == PCI_ERS_RESULT_CAN_RECOVER) {
- 		rc = rtas_pci_enable(frozen_pdn, EEH_THAW_DMA);
+ 	/* pcibios will clear the counter; save the value */
+@@ -264,23 +265,20 @@ static int eeh_reset_device (struct pci_
+ 	if (rc)
+ 		return rc;
  
-+		if (rc < 0)
-+			goto hard_fail;
- 		if (rc)
- 			result = PCI_ERS_RESULT_NEED_RESET;
- 		else
+- 	/* New-style config addrs might be shared across multiple devices,
+- 	 * Walk over all functions on this device */
+- 	if (pe_dn->eeh_pe_config_addr) {
+- 		struct device_node *pe = pe_dn->node;
+- 		pe = pe->parent->child;
+- 		while (pe) {
+- 			struct pci_dn *ppe = PCI_DN(pe);
+- 			if (pe_dn->eeh_pe_config_addr == ppe->eeh_pe_config_addr) {
+- 				rtas_configure_bridge(ppe);
+- 				eeh_restore_bars(ppe);
+- 			}
+- 			pe = pe->sibling;
++ 	/* Walk over all functions on this device.  */
++	dn = pe_dn->node;
++	if (!pcibios_find_pci_bus(dn) && PCI_DN(dn->parent))
++		dn = dn->parent->child;
++
++	while (dn) {
++ 		struct pci_dn *ppe = PCI_DN(dn);
++		/* On Power4, always true because eeh_pe_config_addr=0 */
++ 		if (pe_dn->eeh_pe_config_addr == ppe->eeh_pe_config_addr) {
++ 			rtas_configure_bridge(ppe);
++ 			eeh_restore_bars(ppe);
+  		}
+- 	} else {
+- 		rtas_configure_bridge(pe_dn);
+- 		eeh_restore_bars(pe_dn);
+- 	}
++ 		dn = dn->sibling;
++	}
+ 
+ 	/* Give the system 5 seconds to finish running the user-space
+ 	 * hotplug shutdown scripts, e.g. ifdown for ethernet.  Yes, 
 Index: linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c
 ===================================================================
---- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:21:49.000000000 -0500
-+++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:21:53.000000000 -0500
-@@ -527,9 +527,13 @@ rtas_pci_enable(struct pci_dn *pdn, int 
- 		            function);
+--- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:21:53.000000000 -0500
++++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:48:44.000000000 -0500
+@@ -282,7 +282,7 @@ void eeh_mark_slot (struct device_node *
+ 	dn = find_device_pe (dn);
  
- 	if (rc)
--		printk(KERN_WARNING "EEH: Cannot enable function %d, err=%d dn=%s\n",
-+		printk(KERN_WARNING "EEH: Unexpected state change %d, err=%d dn=%s\n",
- 		        function, rc, pdn->node->full_name);
+ 	/* Back up one, since config addrs might be shared */
+-	if (PCI_DN(dn) && PCI_DN(dn)->eeh_pe_config_addr)
++	if (!pcibios_find_pci_bus(dn) && PCI_DN(dn->parent))
+ 		dn = dn->parent;
  
-+	rc = eeh_wait_for_slot_status (pdn, PCI_BUS_RESET_WAIT_MSEC);
-+	if ((rc == 4) && (function == EEH_THAW_MMIO))
-+		return 0;
-+
- 	return rc;
- }
+ 	PCI_DN(dn)->eeh_mode |= mode_flag;
+@@ -316,7 +316,7 @@ void eeh_clear_slot (struct device_node 
+ 	dn = find_device_pe (dn);
+ 	
+ 	/* Back up one, since config addrs might be shared */
+-	if (PCI_DN(dn) && PCI_DN(dn)->eeh_pe_config_addr)
++	if (!pcibios_find_pci_bus(dn) && PCI_DN(dn->parent))
+ 		dn = dn->parent;
  
+ 	PCI_DN(dn)->eeh_mode &= ~mode_flag;
