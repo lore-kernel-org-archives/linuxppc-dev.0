@@ -1,22 +1,32 @@
-Return-Path: <SRS0+d7bf1380eccd0ad21a2b+1304+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C9C74DDE01
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 18:43:18 +1100 (EST)
-Subject: Re: [PATCH] Complain about missing system calls.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-In-Reply-To: <20070319164243.026fdbfd.akpm@linux-foundation.org>
-References: <1173394873.3461.510.camel@pmac.infradead.org>
-	<20070319164243.026fdbfd.akpm@linux-foundation.org>
-Content-Type: text/plain
-Date: Tue, 20 Mar 2007 07:43:08 +0000
-Message-Id: <1174376588.3392.168.camel@pmac.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, sam@ravnborg.org, linux-kernel@vger.kernel.org,
-	rmk@arm.linux.org.uk
+Return-Path: <Wei.Zhang@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id C9452DDF52
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 20:51:42 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l2K9pDDB011755
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 02:51:22 -0700 (MST)
+Received: from zch01exm26.fsl.freescale.net (zch01exm26.ap.freescale.net
+	[10.192.129.221])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2K9pC2I016868
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 04:51:13 -0500 (CDT)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="gb2312"
+Subject: RE: [PATCH 4/4] Add irq debugfs and virq_mapping for getting thevirq
+	to irq host's hwirq mapping list.
+Date: Tue, 20 Mar 2007 17:51:09 +0800
+Message-ID: <46B96294322F7D458F9648B60E15112C132437@zch01exm26.fsl.freescale.net>
+In-Reply-To: <1174359820.10827.8.camel@concordia.ozlabs.ibm.com>
+References: <11740199151814-git-send-email-wei.zhang@freescale.com>
+	<11740199152595-git-send-email-wei.zhang@freescale.com>
+	<11740199154116-git-send-email-wei.zhang@freescale.com>
+	<11740199152381-git-send-email-wei.zhang@freescale.com>
+	<1174359820.10827.8.camel@concordia.ozlabs.ibm.com>
+From: "Zhang Wei-r63237" <Wei.Zhang@freescale.com>
+To: <michael@ellerman.id.au>
+Cc: Wang Haiying-r54964 <Haiying.Wang@freescale.com>, paulus@samba.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,12 +36,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-03-19 at 16:42 -0700, Andrew Morton wrote:
-> hm, did you try running this on x86_64?
 
-I don't have any. I only tested it on PowerPC and i386. Others then
-provided more exclusions for SPARC and maybe ARM, although I'm not sure
-you have the latter yet. It's not hard to add extra exclusions.
+>=20
+> Minor nit. Should we be creating a 'powerpc' directory first, and
+> putting the 'irq' file under that? Otherwise we risk clashing=20
+> with some
+> generic code that creates a file called 'irq' in debugfs.
+>=20
+> cheers
+>=20
+Hi, Michael,
 
--- 
-dwmw2
+I've seen some codes in arch/powerpc/kernel/prom.c to create debugfs dir =
+"powerpc". But those codes were enabled by a local macro 'DEBUG'. There =
+is a little problem. Maybe I should change '#ifdef DEBUG' to '#ifdef =
+CONFIG_DEBUG_FS' before the export_flat_device_tree() function in =
+arch/powerpc/kernel/prom.c. How about it?
+
+Thanks!
+
+Best Regards
+Zhang Wei
