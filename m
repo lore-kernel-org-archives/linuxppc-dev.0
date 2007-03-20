@@ -1,21 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
-	[151.189.21.45])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A4A33DDF33
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 02:53:03 +1100 (EST)
-In-Reply-To: <boot-03.miltonm@bga.com>
-References: <boot-03.miltonm@bga.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c712b29a84737948c507b06921bdf21e@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/7] boot: use FORCE
-Date: Tue, 20 Mar 2007 16:52:56 +0100
-To: Milton Miller <miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <jdl@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id B6CDFDE05B
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 03:18:38 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l2KGIZKv029911
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 09:18:36 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2KGIZ4R006679
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 11:18:35 -0500 (CDT)
+Subject: [PATCH 0/2 Rev 2]
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1174407515.6595.414.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Tue, 20 Mar 2007 11:18:35 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,14 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->  quiet_cmd_bootar = BOOTAR  $@
-> -      cmd_bootar = $(CROSS32AR) -cr $@.$$$$ $^; mv $@.$$$$ $@
-> +      cmd_bootar = $(CROSS32AR) -cr $@.$$$$ $(filter-out FORCE,$^); 
-> mv $@.$$$$ $@
 
-Is there no way to do this without using filter-out?  It's
-ugly and a bit fragile.  Oh and it shouldn't be ; but &&
-(not your fault, but while you're at it...)
+ 
+Kumar and Paul,
 
+This two-part patch series adds the basic MPC8544DS platform
+support files.  These patches have been through one round
+of review and cleanup, and should apply to Paul's current
+for-2.6.22 branch.
 
-Segher
+This is Rev 2, which modifies the interrupts so they
+are no longer offset by 16, as per Kumar's request.
+
+Follow-up patches will provide added functionality for
+peripherals such as PCI and SATA.
+
+Thanks,
+jdl
+                                                                                                                
+                                                                                                                
+                                                                                                                
+ arch/powerpc/boot/dts/mpc8544ds.dts       |  136 ++++
+ arch/powerpc/configs/mpc8544_ds_defconfig | 1077 +++++++++++++++++++++++++++++
+ arch/powerpc/platforms/85xx/Kconfig       |    9 +-
+ arch/powerpc/platforms/85xx/Makefile      |    1 +
+ arch/powerpc/platforms/85xx/mpc8544_ds.c  |  144 ++++
+ 5 files changed, 1366 insertions(+), 1 deletions(-)
