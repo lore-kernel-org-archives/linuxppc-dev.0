@@ -1,17 +1,26 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 20 Mar 2007 10:41:10 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 1/7] boot: use a common zImage rule
-Message-ID: <20070320174110.GA11009@mag.az.mvista.com>
-References: <boot-00.miltonm@bga.com> <boot-01.miltonm@bga.com>
-	<20070320033039.GA21124@localhost.localdomain>
-	<f7b20d0a2660652ca1ddbb69eb41feb5@bga.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f7b20d0a2660652ca1ddbb69eb41feb5@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id EEF4DDDF11
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 05:17:34 +1100 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l2KIHVAQ014242
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 11:17:31 -0700 (MST)
+Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
+From: Jon Loeliger <jdl@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <45FEA7B3.9090304@freescale.com>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
+	<20070317013159.GH3969@localhost.localdomain>
+	<45FC8643.1080807@freescale.com>
+	<20070318115656.GA12765@localhost.localdomain>
+	<45FEA7B3.9090304@freescale.com>
+Content-Type: text/plain
+Message-Id: <1174414649.6595.422.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Tue, 20 Mar 2007 13:17:29 -0500
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,59 +30,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 20, 2007 at 08:47:20AM -0500, Milton Miller wrote:
-> 
-> On Mar 19, 2007, at 10:30 PM, David Gibson wrote:
-> 
-> > On Mon, Mar 19, 2007 at 02:58:07PM -0600, Milton Miller wrote:
-> >> Before the plethora of platforms gets any worse, establish a common
-> >> rule to invoke the wrapper for any platform.  Add arguments to
-> >> the rule for initrd, dts, dtb, etc.   Show example usage with initrd.
-> >
-> > The problem with this patch is that while the wrap command can take a
-> > dts or dtb, there's no way to specify which should be used with each
-> > target.
-> 
-> I thought a bit about that before I posted, but didn't write anything.
-> We could add standard varable names dts-$(platform) dtb-$(platform),
-> since make would default such names as unset.
-> 
-> But this does raise the point, instead of listing the image names, 
-> should
-> we be seelcting the platforms and generating the image names with the
-> expansion.   That would save us stripping of zImage to get the platform
-> name in the rule.
-> 
-> I'll try to test this later.
-> 
-> Should I respin patch 3, add FORCE, without this so we can merge that
-> first?   I put this one first so there would be less adding rules that
-> would be removed later, but the other is really a bugfix and this is
-> a cleanup.
+On Mon, 2007-03-19 at 10:09, Timur Tabi wrote:
 
-FYI, I made the patch below so I could build a zImage with a dts.  I also
-added the rule:
+> Obviously, the DTS files shouldn't have mac-address in them.  But I haven't gotten around 
+> to cleaning that up, because I'm still waiting for the U-Boot maintainers to apply my 
+> pre-requisite patches.
 
-	image-$(CONFIG_PPC_PRPMC2800)		+= zImage.dts.prpmc2800
+Some U-Boot Maintainers are still waiting for respun
+patches that apply cleanly. :-)
 
-to build a zImage.dts.prpmc2800 that contained a dts.
-
-Mark
----
-
-Index: powerpc/arch/powerpc/boot/Makefile
-===================================================================
---- powerpc.orig/arch/powerpc/boot/Makefile
-+++ powerpc/arch/powerpc/boot/Makefile
-@@ -153,6 +153,10 @@ $(addprefix $(obj)/,$(filter-out uImage 
-                $(obj)/zImage.%: vmlinux $(wrapperbits)
-        $(call if_changed,wrap,$(patsubst $(obj)/zImage.%,%,$@))
- 
-+$(addprefix $(obj)/,$(filter-out uImage zImage.ps3,$(image-y))): \
-+               $(obj)/zImage.dts.%: vmlinux $(wrapperbits)
-+       $(call if_changed,wrap,$(patsubst $(obj)/zImage.dts.%,%,$@),$(src)/dts/$(CONFIG_DEVICE_TREE))
-+
- $(addprefix $(obj)/,$(filter-out uImage
-zImage.initrd.ps3,$(initrd-y))): \
-                $(obj)/zImage.initrd.%: vmlinux $(wrapperbits) \
-                $(obj)/ramdisk.image.gz
+jdl
