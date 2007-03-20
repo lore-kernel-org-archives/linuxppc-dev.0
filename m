@@ -1,18 +1,20 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8ADC0DDF33
+Return-Path: <lipovsky@cs.bu.edu>
+Received: from cs3.bu.edu (cs3.bu.edu [128.197.12.8])
+	by ozlabs.org (Postfix) with ESMTP id CAD71DDF3E
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Mar 2007 02:26:51 +1100 (EST)
-Date: Tue, 20 Mar 2007 18:26:41 +0300
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Thomas Maenner <tmaenner@aehr.com>
-Subject: Re: ELDK4.1, TQM860L, Kernel 2.6.19
-Message-ID: <20070320182641.4795df59@vitb.ru.mvista.com>
-In-Reply-To: <200703192121.01939.tmaenner@aehr.com>
-References: <200703192121.01939.tmaenner@aehr.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	Wed, 21 Mar 2007 05:56:46 +1100 (EST)
+Received: from BosLipovskyIPC (host5.gsadvisors.net [65.206.107.5] (may be
+	forged)) (authenticated bits=0)
+	by cs3.bu.edu (8.13.6/8.13.6) with ESMTP id l2KIlXf6015249
+	for <linuxppc-embedded@ozlabs.org>; Tue, 20 Mar 2007 14:48:04 -0400
+From: "Ilya Lipovsky" <lipovsky@cs.bu.edu>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Question about oprofile
+Date: Tue, 20 Mar 2007 14:47:32 -0400
+Message-ID: <001e01c76b20$4a97b410$3a0d10ac@Radstone.Local>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_001F_01C76AFE.C3888510"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,56 +25,138 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Mon, 19 Mar 2007 21:21:01 -0700
-Thomas Maenner <tmaenner@aehr.com> wrote:
+This is a multi-part message in MIME format.
 
-> Hi,
-> 
-> I've downloaded ELDK4.1 and tried to compile the included kernel 2.6.19.2 
-> with:
-> make mrproper
-> make TQM860L_defconfig
-> make
-> (No other changes)
-> 
-> At the end of the compile I get:
-> ---snip---
->   UIMAGE  arch/ppc/boot/images/uImage
-> Image Name:   Linux-2.6.19.2
-> Created:      Mon Mar 19 15:50:14 2007
-> Image Type:   PowerPC Linux Kernel Image (gzip compressed)
-> Data Size:    979098 Bytes = 956.15 kB = 0.93 MB
-> Load Address: 0x00000000
-> Entry Point:  0x00000000
->   Image: arch/ppc/boot/images/uImage is ready
->   AS      arch/ppc/boot/simple/head.o
->   AS      arch/ppc/boot/simple/relocate.o
->   CC      arch/ppc/boot/simple/misc-embedded.o
->   CC      arch/ppc/boot/simple/embed_config.o
-> arch/ppc/boot/simple/embed_config.c:31: warning: 'bdinfo' defined but not used
-> arch/ppc/boot/simple/embed_config.c:44: warning: 'def_enet_addr' defined but 
-> not used
->   CC      arch/ppc/boot/simple/m8xx_tty.o
-> arch/ppc/boot/simple/m8xx_tty.c:32: error: static declaration of 'cpmp' 
-> follows non-static declaration
-> include/asm/commproc.h:74: error: previous declaration of 'cpmp' was here
-> make[2]: *** [arch/ppc/boot/simple/m8xx_tty.o] Error 1
-> make[1]: *** [simple] Error 2
-> make: *** [zImage] Error 2
-> -------
-> 
-> Just in order to get it to compile, I took out static in 
-> arch/ppc/boot/simple/m8xx_tty.c:
-> line 32: cpm8xx_t        *cpmp = (cpm8xx_t *)&(((immap_t 
-> *)IMAP_ADDR)->im_cpm);
-> 
-> BTW, same thing happens if TQM823 config is used.
-> 
-> I'm probably doing something wrong here... ;)
-> 
+------=_NextPart_000_001F_01C76AFE.C3888510
+Content-Type: text/plain;
+	charset="us-ascii"
+Content-Transfer-Encoding: 7bit
 
-Well, after make foo_defconfig I usually do make uImage since with u-boot equipped boards full
-zImage is not required. 
--- 
-Sincerely, 
-Vitaly
+Hi,
+
+ 
+
+I am trying to understand how oprofile works, and so far I have a question:
+
+When rfi'ing back into user context the PMM is cleared. However, if PMM is
+cleared and then a context switch happens (say, to another CPU-local thread)
+the counters keep getting incremented. Is that right?
+
+ 
+
+If this is the case, then the PMC statistics account not just for the
+current user thread, but also for other ones as well and thus are not
+"pure."
+
+ 
+
+Thanks in advance for your help.
+
+-Ilya
+
+
+------=_NextPart_000_001F_01C76AFE.C3888510
+Content-Type: text/html;
+	charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+
+<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
+xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
+xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
+xmlns=3D"http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Dus-ascii">
+<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
+<style>
+<!--
+ /* Style Definitions */
+ p.MsoNormal, li.MsoNormal, div.MsoNormal
+	{margin:0in;
+	margin-bottom:.0001pt;
+	font-size:12.0pt;
+	font-family:"Times New Roman";}
+a:link, span.MsoHyperlink
+	{color:blue;
+	text-decoration:underline;}
+a:visited, span.MsoHyperlinkFollowed
+	{color:purple;
+	text-decoration:underline;}
+span.EmailStyle17
+	{mso-style-type:personal-compose;
+	font-family:Arial;
+	color:windowtext;}
+@page Section1
+	{size:8.5in 11.0in;
+	margin:1.0in 1.25in 1.0in 1.25in;}
+div.Section1
+	{page:Section1;}
+-->
+</style>
+<!--[if gte mso 9]><xml>
+ <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
+</xml><![endif]--><!--[if gte mso 9]><xml>
+ <o:shapelayout v:ext=3D"edit">
+  <o:idmap v:ext=3D"edit" data=3D"1" />
+ </o:shapelayout></xml><![endif]-->
+</head>
+
+<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
+
+<div class=3DSection1>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Hi,<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>I am trying to understand how oprofile works, and so =
+far I have
+a question:<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>When rfi&#8217;ing back into user context the PMM is
+cleared. However, if PMM is cleared and then a context switch happens =
+(say, to
+another CPU-local thread) the counters keep getting incremented. Is that =
+right?<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>If this is the case, then the PMC statistics account =
+not
+just for the current user thread, but also for other ones as well and =
+thus are
+not &#8220;pure.&#8221;<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>Thanks in advance for your =
+help.<o:p></o:p></span></font></p>
+
+<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
+style=3D'font-size:10.0pt;
+font-family:Arial'>-Ilya<o:p></o:p></span></font></p>
+
+</div>
+
+</body>
+
+</html>
+
+------=_NextPart_000_001F_01C76AFE.C3888510--
