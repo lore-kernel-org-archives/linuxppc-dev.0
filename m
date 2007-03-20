@@ -1,14 +1,22 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 Mar 2007 11:39:19 +1100
+Date: Tue, 20 Mar 2007 11:45:27 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 5/7] bootwrapper: missing relocation in crt0.S
-Message-ID: <20070320003919.GC19728@localhost.localdomain>
-References: <boot-00.miltonm@bga.com> <boot-05.miltonm@bga.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
+Message-ID: <20070320004527.GE19728@localhost.localdomain>
+References: <20070305032307.GB31417@localhost.localdomain>
+	<20070305032452.810C1DDF1B@ozlabs.org>
+	<20070315230230.GB3342@mag.az.mvista.com>
+	<20070316001819.GE6784@localhost.localdomain>
+	<20070316004717.GB10786@mag.az.mvista.com>
+	<20070316005016.GI6784@localhost.localdomain>
+	<20070316162135.GA29231@ld0162-tx32.am.freescale.net>
+	<20070317013859.GJ3969@localhost.localdomain>
+	<20070319150601.GA20513@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <boot-05.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070319150601.GA20513@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,12 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 19, 2007 at 02:58:05PM -0600, Milton Miller wrote:
-> crt0.S had provisions to provide run address relocaton to got2 and
-> cache flush, but not on the bss clear or stack pointer load.  Apply
-> the same fixup for them.
+On Mon, Mar 19, 2007 at 10:06:01AM -0500, Scott Wood wrote:
+> On Sat, Mar 17, 2007 at 12:38:59PM +1100, David Gibson wrote:
+> > On Fri, Mar 16, 2007 at 11:21:35AM -0500, Scott Wood wrote:
+> > > One problem with that is that the wrapper currently only accepts one
+> > > platform .o file -- and presumably one isn't going to want to do all of
+> > > the platform code in assembly.
+> > 
+> > Um.. nobody does it yet, but I don't think there's actually any reason
+> > that $platformo can't be set to a list of multiple .o files.
+> 
+> Sorry, I was thinking about the default generation of a .o file from the
+> platform name.  Obviously, the wrapper script can add to platformo.
+> 
+> Still, I think it'd be better to only stick something other than crt0 at
+> the beginning if the platform explicitly asks for it.
 
-Um.. missing Signed-off
+The trouble is that's more difficult to arrange, i.e. it requires
+splitting the platform information across more places.  The nice thing
+about the current thing is that crt0.S is included just based on what
+the symbols the platformo defines.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
