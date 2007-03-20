@@ -1,22 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 Mar 2007 11:45:27 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 8/15] zImage: Cleanup and improve zImage entry point
-Message-ID: <20070320004527.GE19728@localhost.localdomain>
-References: <20070305032307.GB31417@localhost.localdomain>
-	<20070305032452.810C1DDF1B@ozlabs.org>
-	<20070315230230.GB3342@mag.az.mvista.com>
-	<20070316001819.GE6784@localhost.localdomain>
-	<20070316004717.GB10786@mag.az.mvista.com>
-	<20070316005016.GI6784@localhost.localdomain>
-	<20070316162135.GA29231@ld0162-tx32.am.freescale.net>
-	<20070317013859.GJ3969@localhost.localdomain>
-	<20070319150601.GA20513@ld0162-tx32.am.freescale.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070319150601.GA20513@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7CE50DDF2E
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 12:20:40 +1100 (EST)
+In-Reply-To: <1174346834.6595.365.camel@ld0161-tx32>
+References: <1174346834.6595.365.camel@ld0161-tx32>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <7073CDF4-22AE-4460-A5DA-0D49194D95A3@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Add initial MPC8544DS platform files.
+Date: Mon, 19 Mar 2007 20:19:56 -0500
+To: Jon Loeliger <jdl@freescale.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,29 +24,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 19, 2007 at 10:06:01AM -0500, Scott Wood wrote:
-> On Sat, Mar 17, 2007 at 12:38:59PM +1100, David Gibson wrote:
-> > On Fri, Mar 16, 2007 at 11:21:35AM -0500, Scott Wood wrote:
-> > > One problem with that is that the wrapper currently only accepts one
-> > > platform .o file -- and presumably one isn't going to want to do all of
-> > > the platform code in assembly.
-> > 
-> > Um.. nobody does it yet, but I don't think there's actually any reason
-> > that $platformo can't be set to a list of multiple .o files.
-> 
-> Sorry, I was thinking about the default generation of a .o file from the
-> platform name.  Obviously, the wrapper script can add to platformo.
-> 
-> Still, I think it'd be better to only stick something other than crt0 at
-> the beginning if the platform explicitly asks for it.
 
-The trouble is that's more difficult to arrange, i.e. it requires
-splitting the platform information across more places.  The nice thing
-about the current thing is that crt0.S is included just based on what
-the symbols the platformo defines.
+On Mar 19, 2007, at 6:27 PM, Jon Loeliger wrote:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+>
+> This patch provides the basic 8544 platform code and config.
+> Follow-up patches will add peripherals such as PCI and SATA.
+>
+> Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> Signed-off-by: York Sun <yorksun@freescale.com>
+> Signed-off-by: Andy Fleming <afleming@freescale.com>
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> ---
+>  arch/powerpc/boot/dts/mpc8544ds.dts      |  137 +++++++++++++++++++ 
+> +++++++++
+>  arch/powerpc/platforms/85xx/Kconfig      |    9 ++-
+>  arch/powerpc/platforms/85xx/Makefile     |    1 +
+>  arch/powerpc/platforms/85xx/mpc8544_ds.c |  147 +++++++++++++++++++ 
+> +++++++++++
+>  4 files changed, 293 insertions(+), 1 deletions(-)
+>  create mode 100644 arch/powerpc/boot/dts/mpc8544ds.dts
+>  create mode 100644 arch/powerpc/platforms/85xx/mpc8544_ds.c
+
+All the internal interrupts are offset by 16.  Please fix that up.   
+Otherwise looks ok.
+
+- k
