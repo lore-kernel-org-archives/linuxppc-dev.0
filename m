@@ -1,24 +1,21 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 38A5FDDF34
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 13:21:38 +1100 (EST)
-Subject: Re: [PATCH 4/5 v2] powermac: proper sleep management
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1174351738.3645.10.camel@johannes.berg>
-References: <20070319105352.771599000@sipsolutions.net>
-	<20070319105359.744830000@sipsolutions.net>
-	<1174347848.5707.0.camel@johannes.berg>
-	<1174349462.3660.1.camel@johannes.berg>
-	<1174351738.3645.10.camel@johannes.berg>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 4/4] Add irq debugfs and virq_mapping for getting the
+	virq to irq host's hwirq mapping list.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Zhang Wei <wei.zhang@freescale.com>
+In-Reply-To: <11740199152381-git-send-email-wei.zhang@freescale.com>
+References: <11740199151814-git-send-email-wei.zhang@freescale.com>
+	<11740199152595-git-send-email-wei.zhang@freescale.com>
+	<11740199154116-git-send-email-wei.zhang@freescale.com>
+	<11740199152381-git-send-email-wei.zhang@freescale.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-hdE0zxfi6xBPMB8lkors"
-Date: Tue, 20 Mar 2007 03:19:40 +0100
-Message-Id: <1174357180.3813.4.camel@johannes.berg>
+	boundary="=-kD6SpV7t6VplRPZM6Wxp"
+Date: Tue, 20 Mar 2007 14:03:40 +1100
+Message-Id: <1174359820.10827.8.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
+Cc: paulus@samba.org, r54964@freescale.com, linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,28 +26,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-hdE0zxfi6xBPMB8lkors
+--=-kD6SpV7t6VplRPZM6Wxp
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, 2007-03-20 at 01:48 +0100, Johannes Berg wrote:
-> Grmbl. Breakage in the pm_ops interface means I can't do it this way
-> either. Hold off on this until I get an answer from Rafael...
+On Fri, 2007-03-16 at 12:38 +0800, Zhang Wei wrote:
+> This patch adds 'irq' directory into the root debugfs and virq_mapping fo=
+r getting the virq to
+> irq host's hwirq mapping list.
 
-Nah, this patch is correct, the generic code is just totally borked.
+Minor nit. Should we be creating a 'powerpc' directory first, and
+putting the 'irq' file under that? Otherwise we risk clashing with some
+generic code that creates a file called 'irq' in debugfs.
 
-johannes
+cheers
 
---=-hdE0zxfi6xBPMB8lkors
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-kD6SpV7t6VplRPZM6Wxp
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Version: GnuPG v1.4.3 (GNU/Linux)
 
-iD8DBQBF/0S8/ETPhpq3jKURAmTiAKCLgRFzhAR8ug3rP3dJMiQPv/oSegCghKRJ
-6KoEhSLQHKKcj3ZIu2aHuC0=
-=1Bz0
+iD8DBQBF/08MdSjSd0sB4dIRAm/LAKC56W2Abq4DrUEVZQ++1cmQjWozewCgr4i9
+yrho+P251ge9PBUHjM5b7tU=
+=fl6V
 -----END PGP SIGNATURE-----
 
---=-hdE0zxfi6xBPMB8lkors--
+--=-kD6SpV7t6VplRPZM6Wxp--
