@@ -1,29 +1,12 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 2310BDDF3E
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 01:00:33 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l2KE0UTD011365
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 07:00:30 -0700 (MST)
-Received: from Artemis.local (mvp-10-214-73-65.am.freescale.net [10.214.73.65])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2KE0TtN013935
-	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 09:00:30 -0500 (CDT)
-Message-ID: <45FFE8FD.9020902@freescale.com>
-Date: Tue, 20 Mar 2007 09:00:29 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 20 Mar 2007 09:34:05 -0500
+From: Anton Blanchard <anton@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
-	<20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-	<20070318115656.GA12765@localhost.localdomain>
-	<45FEA7B3.9090304@freescale.com>
-	<20070320035957.GC21124@localhost.localdomain>
-In-Reply-To: <20070320035957.GC21124@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Subject: [PATCH] Fix WARN_ON when entering xmon
+Message-ID: <20070320143405.GD31173@kryten>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,75 +16,81 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
 
-> local-mac-address isn't a node, it's a property.  We never deal in
-> pointers (or handles) to properties.
+Whenever we enter xmon we get a WARN_ON out of the rtas code since it
+thinks interrupts are still on:
 
-Sorry, I sometimes use those terms interchangeably.
 
-> Since mac-address is by definition a runtime property, it should
-> *never* exist in a static dts.
+Unable to handle kernel paging request for data at address 0x00000000
+Faulting instruction address: 0xd000000000080008
+cpu 0x3: Vector: 300 (Data Access) at [c0000000075dba00]
+    pc: d000000000080008: .doit+0x8/0x40 [oopser]
+    lr: c000000000077704: .sys_init_module+0x1664/0x1824
+    sp: c0000000075dbc80
+   msr: 9000000000009032
+   dar: 0
+ dsisr: 42000000
+  current = 0xc000000003fa64b0
+  paca    = 0xc000000000694280
+    pid   = 2260, comm = insmod
 
-But it does today.  I think we need to be considerate of existing broken 
-installations.  Someone could be running an older U-Boot with an older 
-DTS, and if they boot a future kernel with it, then
+------------[ cut here ]------------
+Badness at arch/powerpc/kernel/entry_64.S:651
+Call Trace:
+[C0000000075DAE70] [C00000000000EB64] .show_stack+0x68/0x1b0 (unreliable)
+[C0000000075DAF10] [C000000000216254] .report_bug+0x94/0xe8
+[C0000000075DAFA0] [C00000000047B140] __kprobes_text_start+0x178/0x584
+[C0000000075DB040] [C0000000000044F4] program_check_common+0xf4/0x100
+--- Exception: 700 at .enter_rtas+0xa0/0x10c
+    LR = .xmon_core+0x584/0x934
+[C0000000075DB330] [C0000000006CD900] proc_mounts_operations+0x88/0xd8 (unreliable)
+[C0000000075DB510] [C0000000000418A0] .xmon_core+0x584/0x934
+[C0000000075DB6A0] [C000000000041DF0] .xmon+0x38/0x4c
+[C0000000075DB880] [C0000000000234D0] .die+0x50/0x204
+[C0000000075DB910] [C00000000002B698] .bad_page_fault+0xb8/0xd4
+[C0000000075DB990] [C000000000004918] handle_page_fault+0x3c/0x58
 
-> 
->> Obviously, the DTS files shouldn't have mac-address in them.  But I
->> haven't gotten around to cleaning that up, because I'm still waiting
->> for the U-Boot maintainers to apply my pre-requisite patches.
-> 
-> I don't see why fixing the dts files relies on u-boot changes. 
 
-Because today's U-Boot will, on some platforms, write to mac-address and 
-only mac-address.  If you remove that property from the DTS without 
-fixing U-Boot first, then U-Boot will never be able to pass the MAC 
-address to the kernel.
+The xmon code is playing with the msr directly, which doesnt interact
+well with the new irq soft disable code. Switch to using the standard
+macros.
 
-> u-boot
-> *can* know what's going on and might wish to set the mac-address
-> property, but that's its business.  The dts files which are used for
-> inclusion into a zImage should never have this property.
+If we are really paranoid we could think about doing a hard disable (to
+avoid a potential irq + reject).
 
-Bugs need to be fixed in the right order.  You can't fix the DTS files 
-until you fix all the software that uses them first.
+Anton
 
->> Perhaps mac-address should be deleted instead of just ignored?  I
->> don't know if that breaks kexec.
-> 
-> Hrm, maybe.
-
-Would the cuImage bootwrapper run in a kexec'd kernel?  I hope not.  I 
-don't know anything about kexec.
-
-> It's just that every insert could require copying most of the blob,
-> which is a bit sucky.
-
-What if U-Boot were smart enough to insert all of the required items in 
-one shot, and then filled them in?
-
-> I was thinking of making an extension to dtc for these properties that
-> are expected to be replaced in-place by the bootloader:  a special
-> token representing a value to be filled in later, so something like:
-> 	clock-frequency = < _ >;
-> or
-> 	local-mac-address = [??????];
-> The blob produced would just replace the blanks with either all 0s or
-> all 1s, so it doesn't actually do anything new, but it would provide a
-> strong visual clue in the source as to which properties are supposed
-> to be filled in later.  Would that overcome your reluctance to include
-> bootloader-replaced properties in the dts?
-
-No, because it would require DTC to be constantly in sync with U-Boot, 
-and that sounds like a lose-lose proposition to me.  It takes months for 
-any U-Boot patch that I write to be accepted and applied.
-
-For instance, last month, I posted a fix for an old bug in U-Boot that 
-prevents initrd from working with any OF kernel.  U-Boot has had this 
-bug ever since it added OF support.  Despite repeated emails to WD 
-himself, I haven't even gotten an acknowledgment from him as to whether 
-he'll apply it, let alone when.
-
-So as you can imagine, I am very wary about any design that requires 
-U-Boot to be updated in concert with any other software.
+Index: linux-2.6/arch/powerpc/xmon/xmon.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/xmon/xmon.c	2007-03-12 07:53:59.000000000 -0500
++++ linux-2.6/arch/powerpc/xmon/xmon.c	2007-03-12 07:56:50.000000000 -0500
+@@ -330,18 +330,17 @@
+ static int xmon_core(struct pt_regs *regs, int fromipi)
+ {
+ 	int cmd = 0;
+-	unsigned long msr;
+ 	struct bpt *bp;
+ 	long recurse_jmp[JMP_BUF_LEN];
+ 	unsigned long offset;
++	unsigned long flags;
+ #ifdef CONFIG_SMP
+ 	int cpu;
+ 	int secondary;
+ 	unsigned long timeout;
+ #endif
+ 
+-	msr = mfmsr();
+-	mtmsr(msr & ~MSR_EE);	/* disable interrupts */
++	local_irq_save(flags);
+ 
+ 	bp = in_breakpoint_table(regs->nip, &offset);
+ 	if (bp != NULL) {
+@@ -516,7 +515,7 @@
+ 
+ 	insert_cpu_bpts();
+ 
+-	mtmsr(msr);		/* restore interrupt enable */
++	local_irq_restore(flags);
+ 
+ 	return cmd != 'X' && cmd != EOF;
+ }
