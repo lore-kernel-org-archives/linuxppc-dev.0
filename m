@@ -1,18 +1,15 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id D6E23DDFEC
+Return-Path: <aramv@yahoo.com>
+Received: from web54509.mail.yahoo.com (web54509.mail.yahoo.com
+	[206.190.49.159]) by ozlabs.org (Postfix) with SMTP id 0EEC6DDFF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Mar 2007 06:35:34 +1100 (EST)
-Message-ID: <460037AA.7070107@ru.mvista.com>
-Date: Tue, 20 Mar 2007 22:36:10 +0300
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Wed, 21 Mar 2007 03:46:47 +1100 (EST)
+Date: Tue, 20 Mar 2007 09:40:06 -0700 (PDT)
+From: aram vartanian <aramv@yahoo.com>
+Subject: question on mcc driver
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: Valentine Barshak <vbarshak@ru.mvista.com>
-Subject: Re: [PATCH] PPC440EPx/440GRx EMAC support.
-References: <46003608.70308@ru.mvista.com>
-In-Reply-To: <46003608.70308@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=iso-8859-1
+Message-ID: <506007.30412.qm@web54509.mail.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,15 +20,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Hello:
 
-Valentine Barshak wrote:
-> Add PPC440EPx/440GRx EMAC along with
-> Marvell 88E1111 and ET1011C PHY support.
-> The M88E1111 chip can be found on Sequoia board.
+I am trying to implement an MCC driver for the 8248
+processor and noticed on the net that you have this
+code already and have shared it with the linux
+community .  How do I get a copy of the code.
 
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+Thank you in advance for any help
 
-    To netdev@vger.kernel.org, please.
+Aram
 
-WBR, Sergei
+
+ 
+____________________________________________________________________________________
+No need to miss a message. Get email on-the-go 
+with Yahoo! Mail for Mobile. Get started.
+http://mobile.yahoo.com/mail 
