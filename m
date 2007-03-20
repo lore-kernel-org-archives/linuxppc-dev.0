@@ -1,14 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 Mar 2007 14:30:39 +1100
+Date: Tue, 20 Mar 2007 14:50:05 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 1/7] boot: use a common zImage rule
-Message-ID: <20070320033039.GA21124@localhost.localdomain>
-References: <boot-00.miltonm@bga.com> <boot-01.miltonm@bga.com>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 03/17] bootwrapper: Add xlate_reg(),
+	and use it to find serial registers.
+Message-ID: <20070320035005.GB21124@localhost.localdomain>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172757.GC29784@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <boot-01.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070316172757.GC29784@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,23 +20,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 19, 2007 at 02:58:07PM -0600, Milton Miller wrote:
-> Before the plethora of platforms gets any worse, establish a common
-> rule to invoke the wrapper for any platform.  Add arguments to
-> the rule for initrd, dts, dtb, etc.   Show example usage with initrd.
+On Fri, Mar 16, 2007 at 12:27:57PM -0500, Scott Wood wrote:
+> xlate_reg() uses the ranges properties of a node's parentage to find the
+> absolute physical address of the node's registers.
 > 
-> For now, uImage and zImage*ps3 are special.  Hopefully ps3 will join
-> the party.
-> 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> --- 
-> One reviewer pointed out the explicit exception rule are now seperated
-> from the generic rule.  While the rule needs to go after the image-
-> assignment, that code could be moved up.
+> The ns16550 driver uses this when no virtual-reg property is found.
 
-The problem with this patch is that while the wrap command can take a
-dts or dtb, there's no way to specify which should be used with each
-target.
+This is a pretty large chunk of code for use on just some platforms.
+Remind me why we can't just insist on the presence of virtual-reg?
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
