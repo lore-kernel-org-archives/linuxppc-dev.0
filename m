@@ -1,18 +1,21 @@
-Return-Path: <anton@ozlabs.org>
-Date: Tue, 20 Mar 2007 00:12:33 -0500
-From: Anton Blanchard <anton@samba.org>
-To: Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
-	Martin Schwidefsky <schwidefsky@de.ibm.com>,
-	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
-	linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc minor pagefault optimization with kprobes enabled
-Message-ID: <20070320051233.GB31173@kryten>
-References: <20070319133149.GA5781@infradead.org>
-	<200703191500.34563.ak@suse.de>
-	<20070319140851.GA11285@infradead.org>
+Return-Path: <sr@denx.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
+	by ozlabs.org (Postfix) with ESMTP id 462D0DDF3F
+	for <linuxppc-dev@ozlabs.org>; Tue, 20 Mar 2007 16:36:38 +1100 (EST)
+From: Stefan Roese <sr@denx.de>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
+Date: Tue, 20 Mar 2007 06:39:06 +0100
+References: <20070315232956.37DAB353A6C@atlas.denx.de>
+	<1174320799.5044.21.camel@localhost.localdomain>
+	<1174359995.10827.10.camel@concordia.ozlabs.ibm.com>
+In-Reply-To: <1174359995.10827.10.camel@concordia.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070319140851.GA11285@infradead.org>
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200703200639.07868.sr@denx.de>
+Cc: Dan Williams <dan.j.williams@gmail.com>, linux-raid@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,13 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 20 March 2007 04:06, Michael Ellerman wrote:
+> On Mon, 2007-03-19 at 17:13 +0100, Benjamin Herrenschmidt wrote:
+> > BTW folks. Would it be hard to change your spe_ prefixes to something
+> > else ? There's already enough confusion between the freescale SPE unit
+> > and the cell SPEs :-)
+> >
+> > (such confusion is annoying when grepp'ing for code that might touch a
+> > given functionality for example).
+>
+> Please please please!
 
-> I've attached a patch below the optimizes this code path for powerpc,
-> but the scheme applies to all architectures aswell.  It just rips out all
-> the callachin madness, and does as good as it gets in the pagefault
-> handler:
+OK. Who can resist so much pleading. ;-)
 
-NAK, patch on the way to get rid of all the debugger() crap by using
-this very hook.
-
-Anton
+Best regards,
+Stefan
