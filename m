@@ -1,14 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 20 Mar 2007 15:55:38 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 7/7] boot: export flush_cache
-Message-ID: <20070320045538.GE21124@localhost.localdomain>
-References: <boot-00.miltonm@bga.com> <boot-07.miltonm@bga.com>
+Return-Path: <anton@ozlabs.org>
+Date: Tue, 20 Mar 2007 00:12:33 -0500
+From: Anton Blanchard <anton@samba.org>
+To: Christoph Hellwig <hch@infradead.org>, Andi Kleen <ak@suse.de>,
+	Martin Schwidefsky <schwidefsky@de.ibm.com>,
+	linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org,
+	linux-arch@vger.kernel.org, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc minor pagefault optimization with kprobes enabled
+Message-ID: <20070320051233.GB31173@kryten>
+References: <20070319133149.GA5781@infradead.org>
+	<200703191500.34563.ak@suse.de>
+	<20070319140851.GA11285@infradead.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <boot-07.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070319140851.GA11285@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,15 +22,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 19, 2007 at 02:58:06PM -0600, Milton Miller wrote:
-> Move the declaration of flush_cache to ops.h for use by platform code.
-> 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
 
-Acked-by: David Gibson <david@gibson.dropbear.id.au>
+> I've attached a patch below the optimizes this code path for powerpc,
+> but the scheme applies to all architectures aswell.  It just rips out all
+> the callachin madness, and does as good as it gets in the pagefault
+> handler:
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+NAK, patch on the way to get rid of all the debugger() crap by using
+this very hook.
+
+Anton
