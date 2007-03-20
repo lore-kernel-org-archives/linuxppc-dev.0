@@ -1,11 +1,13 @@
 Return-Path: <anton@ozlabs.org>
-Date: Tue, 20 Mar 2007 09:34:05 -0500
+Date: Tue, 20 Mar 2007 09:48:34 -0500
 From: Anton Blanchard <anton@samba.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] Fix WARN_ON when entering xmon
-Message-ID: <20070320143405.GD31173@kryten>
+Subject: Re: [PATCH] Fix WARN_ON when entering xmon
+Message-ID: <20070320144834.GG31173@kryten>
+References: <20070320143405.GD31173@kryten>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070320143405.GD31173@kryten>
 Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,7 +18,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
+[ this time with a Signed-off-by ]
+ 
 Whenever we enter xmon we get a WARN_ON out of the rtas code since it
 thinks interrupts are still on:
 
@@ -58,7 +61,8 @@ macros.
 If we are really paranoid we could think about doing a hard disable (to
 avoid a potential irq + reject).
 
-Anton
+Signed-off-by: Anton Blanchard <anton@samba.org>
+---
 
 Index: linux-2.6/arch/powerpc/xmon/xmon.c
 ===================================================================
