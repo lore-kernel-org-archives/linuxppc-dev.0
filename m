@@ -1,23 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1174320799.5044.21.camel@localhost.localdomain>
-References: <20070315232956.37DAB353A6C@atlas.denx.de>
-	<200703170909.13869.sr@denx.de>
-	<e9c3a7c20703171117w7989adfehda99416265eef906@mail.gmail.com>
-	<200703171943.27465.sr@denx.de>
-	<e9c3a7c20703171209m55fd9dfsbba0e4fff5c6350d@mail.gmail.com>
-	<1174320799.5044.21.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-iMCOltxmGV+CYthZHLyv"
-Date: Tue, 20 Mar 2007 14:06:35 +1100
-Message-Id: <1174359995.10827.10.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Dan Williams <dan.j.williams@gmail.com>, linux-raid@vger.kernel.org,
-	Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 20 Mar 2007 14:30:39 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 1/7] boot: use a common zImage rule
+Message-ID: <20070320033039.GA21124@localhost.localdomain>
+References: <boot-00.miltonm@bga.com> <boot-01.miltonm@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <boot-01.miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,43 +18,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, Mar 19, 2007 at 02:58:07PM -0600, Milton Miller wrote:
+> Before the plethora of platforms gets any worse, establish a common
+> rule to invoke the wrapper for any platform.  Add arguments to
+> the rule for initrd, dts, dtb, etc.   Show example usage with initrd.
+> 
+> For now, uImage and zImage*ps3 are special.  Hopefully ps3 will join
+> the party.
+> 
+> Signed-off-by: Milton Miller <miltonm@bga.com>
+> --- 
+> One reviewer pointed out the explicit exception rule are now seperated
+> from the generic rule.  While the rule needs to go after the image-
+> assignment, that code could be moved up.
 
---=-iMCOltxmGV+CYthZHLyv
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+The problem with this patch is that while the wrap command can take a
+dts or dtb, there's no way to specify which should be used with each
+target.
 
-On Mon, 2007-03-19 at 17:13 +0100, Benjamin Herrenschmidt wrote:
-> BTW folks. Would it be hard to change your spe_ prefixes to something
-> else ? There's already enough confusion between the freescale SPE unit
-> and the cell SPEs :-)
->=20
-> (such confusion is annoying when grepp'ing for code that might touch a
-> given functionality for example).
-
-Please please please!
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-iMCOltxmGV+CYthZHLyv
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBF/0+7dSjSd0sB4dIRAg9sAKCCbUIbUW9Ka6Y10utj/V64mepO8wCfZRvf
-sFxfNO71pxFf1T+gztnif+k=
-=m/iA
------END PGP SIGNATURE-----
-
---=-iMCOltxmGV+CYthZHLyv--
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
