@@ -1,17 +1,19 @@
-Return-Path: <vbarshak@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E076FDE05C
+Return-Path: <ebs@ebshome.net>
+Received: from gate.ebshome.net (gate.ebshome.net [208.106.21.240])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client CN "gate.ebshome.net", Issuer "gate.ebshome.net" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id C515FDDF11
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Mar 2007 03:20:46 +1100 (EST)
-Message-ID: <46015B2F.80807@ru.mvista.com>
-Date: Wed, 21 Mar 2007 19:19:59 +0300
-From: Valentine Barshak <vbarshak@ru.mvista.com>
-MIME-Version: 1.0
-To: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH] PPC440EPx/440GRx Sequoia/Rainier board support.
-References: <20070321154317.924703535D3@atlas.denx.de>
-In-Reply-To: <20070321154317.924703535D3@atlas.denx.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+	Thu, 22 Mar 2007 03:28:50 +1100 (EST)
+Date: Wed, 21 Mar 2007 09:22:07 -0700
+From: Eugene Surovegin <ebs@ebshome.net>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] PPC440EPx/440GRx EMAC support.
+Message-ID: <20070321162207.GA2583@gate.ebshome.net>
+References: <46003608.70308@ru.mvista.com> <20070321160438.GA3023@lixom.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070321160438.GA3023@lixom.net>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,66 +25,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Wolfgang Denk wrote:
-> Valentine,
->
-> in message <4601461E.9010006@ru.mvista.com> you wrote:
->   
->> Add AMCC PPC440EPx/440GRx Sequoia/Rainier board support.
->>
->> Signed-off-by: Stefan Roese <sr@denx.de>
->> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
->>     
->
-> Umm...
->
->   
->> --- linux.orig/arch/ppc/platforms/4xx/ppc440epx.c	1970-01-01 03:00:00.000000000 +0300
->> +++ linux/arch/ppc/platforms/4xx/ppc440epx.c	2007-03-20 14:43:37.000000000 +0300
->> @@ -0,0 +1,284 @@
->> +/*
->> + * arch/ppc/platforms/4xx/ppc440epx.c
->> + *
->> + * PPC440EPx I/O descriptions
->> + *
->> + * Wade Farnsworth <wfarnsworth@mvista.com>
->> + * Copyright 2004-2007 MontaVista Software Inc.
->> + * Copyright 2006 AMCC
->>     
->
-> The same file in our repository looks like this:
->
-> /*
->  * arch/ppc/platforms/4xx/ppc440epx.c
->  *
->  * PPC440EPx I/O descriptions
->  *
->  * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
->  *
->  * Wade Farnsworth <wfarnsworth@mvista.com>
->  * Copyright 2004 MontaVista Software Inc.
->  * Copyright 2006 AMCC
->
->
-> In other words: You *removed* Stefan Roese's (resp.  DENX)  Copyright
-> entry, and replaced it by one for MV?
->
->
-> I think this was not done by accident.
->
-> I don't know what to say.
->
->
-> I think your patches should be rejected.
->
->
-> Wolfgang Denk
->
->   
+On Wed, Mar 21, 2007 at 11:04:38AM -0500, Olof Johansson wrote:
+> On Tue, Mar 20, 2007 at 10:29:12PM +0300, Valentine Barshak wrote:
+> > diff -ruN linux.orig/drivers/net/ibm_emac/ibm_emac.h linux/drivers/net/ibm_emac/ibm_emac.h
+> > --- linux.orig/drivers/net/ibm_emac/ibm_emac.h	2007-03-16 18:03:51.000000000 +0300
+> > +++ linux/drivers/net/ibm_emac/ibm_emac.h	2007-03-18 18:53:08.000000000 +0300
+> > @@ -26,7 +26,7 @@
+> >  #if !defined(CONFIG_405GP) && !defined(CONFIG_405GPR) && !defined(CONFIG_405EP) && \
+> >      !defined(CONFIG_440GP) && !defined(CONFIG_440GX) && !defined(CONFIG_440SP) && \
+> >      !defined(CONFIG_440EP) && !defined(CONFIG_NP405H) && !defined(CONFIG_440SPE) && \
+> > -    !defined(CONFIG_440GR)
+> > +    !defined(CONFIG_440GR) && !defined(CONFIG_440EPX) && !defined(CONFIG_440GRX)
+> 
+> Same here. I know you only added a couple more, but it's reached critical
+> mass (well, it did a while ago).
 
-I'm sorry, but I did *not* remove any copyrights. I've got this file 
-from AMCC with *no* DENX Software copyright.
-Please take a look at this link: 
-http://www.amcc.com/Embedded/Downloads/download.html?item=365
-You might have a later version in your repository.
-Thanks.
+No, it's not same here. Please, take a time and look at the full code 
+this particular snippet has nothing to do with Konfig stuff.
+
+One can argue that it can be removed altogether, but I added this ugly 
+check for a reason - people were adding support for new 4xx SoCs 
+blindly in the past without checking that EMAC registers weren't 
+changed slightly.
+
+So, Valentine, keep this particular ugly ifdef as it is.
+
+Also, Valentine, next time CC me with any EMAC changes because I'm not 
+actively reading PPC maillists these days.
+
+-- 
+Eugene
