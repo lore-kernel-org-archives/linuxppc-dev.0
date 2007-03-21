@@ -1,10 +1,11 @@
 Return-Path: <anton@ozlabs.org>
-Message-Id: <20070321013824.959599000@samba.org>
+Message-Id: <20070321013825.283024000@samba.org>
 References: <20070321013810.404636000@samba.org>
-Date: Tue, 20 Mar 2007 20:38:13 -0500
+Date: Tue, 20 Mar 2007 20:38:16 -0500
 From: anton@samba.org
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 03/10] Handle recursive oopses
+Subject: [patch 06/10] Add notify die hooks and remove some redundant debugger
+	hooks
 Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,94 +16,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Handle recursive oopses, like on x86. We had a few cases recently where 
-we locked up in oops printing and didnt make it into crashdump.
+Add a DIE_OOPS and DIE_MACHINE_CHECK notify_die hook and remove some
+redundant debugger* hooks.
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
 Index: linux-2.6/arch/powerpc/kernel/traps.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/traps.c	2007-03-11 10:34:44.000000000 -0500
-+++ linux-2.6/arch/powerpc/kernel/traps.c	2007-03-11 11:03:11.000000000 -0500
-@@ -108,42 +108,62 @@
- static inline void pmac_backlight_unblank(void) { }
- #endif
- 
--static DEFINE_SPINLOCK(die_lock);
--
- int die(const char *str, struct pt_regs *regs, long err)
- {
-+	static struct {
-+		spinlock_t lock;
-+		u32 lock_owner;
-+		int lock_owner_depth;
-+	} die = {
-+		.lock =			__SPIN_LOCK_UNLOCKED(die.lock),
-+		.lock_owner =		-1,
-+		.lock_owner_depth =	0
-+	};
+--- linux-2.6.orig/arch/powerpc/kernel/traps.c	2007-03-11 12:11:13.000000000 -0500
++++ linux-2.6/arch/powerpc/kernel/traps.c	2007-03-11 12:40:41.000000000 -0500
+@@ -122,6 +122,10 @@
  	static int die_counter;
-+	unsigned long flags;
+ 	unsigned long flags;
  
++	if (notify_die(DIE_OOPS, str, regs, err, regs->trap, SIGSEGV) ==
++		       NOTIFY_STOP)
++		return 1;
++
  	if (debugger(regs))
  		return 1;
  
- 	oops_enter();
+@@ -374,6 +378,11 @@
+ 	return;
+ #endif
  
--	console_verbose();
--	spin_lock_irq(&die_lock);
--	bust_spinlocks(1);
--	if (machine_is(powermac))
--		pmac_backlight_unblank();
-+	if (die.lock_owner != raw_smp_processor_id()) {
-+		console_verbose();
-+		spin_lock_irqsave(&die.lock, flags);
-+		die.lock_owner = smp_processor_id();
-+		die.lock_owner_depth = 0;
-+		bust_spinlocks(1);
-+		if (machine_is(powermac))
-+			pmac_backlight_unblank();
-+	} else {
-+		local_save_flags(flags);
++        if (notify_die(DIE_MACHINE_CHECK, "machine_check", regs, 7, 7,
++		       SIGBUS) == NOTIFY_STOP) {
++		return;
 +	}
- 
--	printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
-+	if (++die.lock_owner_depth < 3) {
-+		printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
- #ifdef CONFIG_PREEMPT
--	printk("PREEMPT ");
-+		printk("PREEMPT ");
- #endif
- #ifdef CONFIG_SMP
--	printk("SMP NR_CPUS=%d ", NR_CPUS);
-+		printk("SMP NR_CPUS=%d ", NR_CPUS);
- #endif
- #ifdef CONFIG_DEBUG_PAGEALLOC
--	printk("DEBUG_PAGEALLOC ");
-+		printk("DEBUG_PAGEALLOC ");
- #endif
- #ifdef CONFIG_NUMA
--	printk("NUMA ");
-+		printk("NUMA ");
- #endif
--	printk("%s\n", ppc_md.name ? "" : ppc_md.name);
-+		printk("%s\n", ppc_md.name ? "" : ppc_md.name);
 +
-+		print_modules();
-+		show_regs(regs);
-+	} else {
-+		printk("Recursive die() failure, output suppressed\n");
-+	}
+ 	if (debugger_fault_handler(regs)) {
+ 		regs->msr |= MSR_RI;
+ 		return;
+@@ -505,8 +514,6 @@
+ 	 */
+ 	platform_machine_check(regs);
  
--	print_modules();
--	show_regs(regs);
- 	bust_spinlocks(0);
--	spin_unlock_irq(&die_lock);
-+	die.lock_owner = -1;
-+	spin_unlock_irqrestore(&die.lock, flags);
+-	if (debugger_fault_handler(regs))
+-		return;
+ 	die("Machine check", regs, SIGBUS);
  
- 	if (kexec_should_crash(current) ||
- 		kexec_sr_activated(smp_processor_id()))
+ 	/* Must die if the interrupt is not recoverable */
+@@ -890,7 +897,6 @@
+ {
+ 	printk(KERN_ERR "Non-recoverable exception at PC=%lx MSR=%lx\n",
+ 	       regs->nip, regs->msr);
+-	debugger(regs);
+ 	die("nonrecoverable exception", regs, SIGKILL);
+ }
+ 
+@@ -936,10 +942,8 @@
+ 
+ 	CHECK_FULL_REGS(regs);
+ 
+-	if (!user_mode(regs)) {
+-		debugger(regs);
++	if (!user_mode(regs))
+ 		die("Kernel Mode Software FPU Emulation", regs, SIGFPE);
+-	}
+ 
+ #ifdef CONFIG_MATH_EMULATION
+ 	errcode = do_mathemu(regs);
+@@ -992,6 +996,9 @@
+ 			mtspr(SPRN_DBCR0, mfspr(SPRN_DBCR0) & ~DBCR0_IC);
+ 			/* Clear the instruction completion event */
+ 			mtspr(SPRN_DBSR, DBSR_IC);
++			if (notify_die(DIE_SSTEP, "single_step", regs, 5, 5,
++				       SIGTRAP) == NOTIFY_STOP)
++				return;
+ 			if (debugger_sstep(regs))
+ 				return;
+ 		}
+Index: linux-2.6/include/asm-powerpc/kdebug.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/kdebug.h	2007-03-11 12:36:52.000000000 -0500
++++ linux-2.6/include/asm-powerpc/kdebug.h	2007-03-11 12:37:05.000000000 -0500
+@@ -30,6 +30,7 @@
+ 	DIE_BPT,
+ 	DIE_SSTEP,
+ 	DIE_PAGE_FAULT,
++	DIE_MACHINE_CHECK,
+ };
+ 
+ static inline int notify_die(enum die_val val,char *str,struct pt_regs *regs,long err,int trap, int sig)
 
 --
