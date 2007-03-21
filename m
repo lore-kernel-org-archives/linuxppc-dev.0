@@ -1,18 +1,22 @@
-Return-Path: <lipovsky@cs.bu.edu>
-Received: from cs3.bu.edu (cs3.bu.edu [128.197.12.8])
-	by ozlabs.org (Postfix) with ESMTP id 22447DDF06
+Return-Path: <adrian.craine@nec.com.au>
+Received: from ns2.nec.com.au (ns2.nec.com.au [147.76.180.2])
+	by ozlabs.org (Postfix) with ESMTP id 4702ADDF00
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Mar 2007 10:08:13 +1100 (EST)
-From: "Ilya Lipovsky" <lipovsky@cs.bu.edu>
-To: "'Andy Fleming'" <afleming@freescale.com>
-Subject: RE: Question about oprofile
-Date: Tue, 20 Mar 2007 19:07:29 -0400
-Message-ID: <004401c76b44$9b4b73f0$3a0d10ac@Radstone.Local>
+	Wed, 21 Mar 2007 13:27:32 +1100 (EST)
+Received: from smtp1.nec.com.au (unknown [172.31.8.18])
+	by ns2.nec.com.au (Postfix) with ESMTP
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 21 Mar 2007 13:00:13 +1100 (EST)
+Received: from [147.76.209.89] ([147.76.209.89])
+	by tns.neca.nec.com.au (8.12.8/8.12.8) with ESMTP id l2L1xL0R021005
+	for <linuxppc-embedded@ozlabs.org>; Wed, 21 Mar 2007 12:59:21 +1100
+Message-ID: <46009113.6050501@nec.com.au>
+Date: Wed, 21 Mar 2007 12:57:39 +1100
+From: Adrian Craine <adrian.craine@nec.com.au>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <5C40F14F-81A8-4134-99A9-2B62BBD3AF05@freescale.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: MPC8347 PQ2 I2C driver
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,46 +27,10 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Has anyone considered doing something like lazy FPU/Altivec save/restore,
-but only for PMC registers (depending on the PMM field in the MSR)... or is
-it a lame idea :)?
+Hi all,
 
--Ilya
+Just a quick one, does any-one know if the i2c-mpc i2c driver will
+function on a Freescale MPC8347?
 
------Original Message-----
-From: Andy Fleming [mailto:afleming@freescale.com] 
-Sent: Tuesday, March 20, 2007 3:14 PM
-To: Ilya Lipovsky
-Cc: linuxppc-embedded@ozlabs.org
-Subject: Re: Question about oprofile
-
-
-On Mar 20, 2007, at 13:47, Ilya Lipovsky wrote:
-
-> Hi,
->
->
->
-> I am trying to understand how oprofile works, and so far I have a  
-> question:
->
-> When rfi'ing back into user context the PMM is cleared. However, if  
-> PMM is cleared and then a context switch happens (say, to another  
-> CPU-local thread) the counters keep getting incremented. Is that  
-> right?
->
->
->
-> If this is the case, then the PMC statistics account not just for  
-> the current user thread, but also for other ones as well and thus  
-> are not "pure."
-
-oprofile does not support counting just on one thread.  The PMM bit  
-is only used to make it so that the interrupt handler and setup code  
-are not counted.  In order to count in one thread, you would need to  
-modify the context switch code to allow the PMM bit to stay set on  
-marked threads, and you would need to modify the oprofile code in  
-arch/powerpc to only count when the mark bit is set (rather than when  
-it is cleared).
-
-Andy
+Cheers,
+             Adrian.
