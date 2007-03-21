@@ -1,16 +1,21 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7EEFDDE0AB
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 23:12:55 +1100 (EST)
-Message-Id: <20070321104212.229074000@sipsolutions.net>
-References: <20070321104037.696668000@sipsolutions.net>
-Date: Wed, 21 Mar 2007 11:40:42 +0100
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC 5/6] powermac: fix G5-cpufreq for cpu on/offline
-Mime-Version: 1.0
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 522E6DDE2A
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 00:23:07 +1100 (EST)
+In-Reply-To: <20070316172845.GE29784@ld0162-tx32.am.freescale.net>
+References: <20070316172845.GE29784@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <fd7a16bc541ab4843de77b7b02aca3aa@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 05/17] bootwrapper: misc device tree fixes
+Date: Wed, 21 Mar 2007 14:22:59 +0100
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,38 +25,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The original code here is wrong, it applies "previous" knowledge.
-The way the cpufreq core is designed is that the policy for the
-secondary CPU that comes online says that it must in fact not
-use this policy but use the same as the other CPUs that are
-listed, which in fact is CPU#0.
+> 2. DTC has a habit of complaining about errors which are not really
+> errors.  Thus, the -f option is now passed to it, to force it to 
+> generate
+> output regardless.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+I hope this is a temporary thing, and you're working on
+fixing dtc, and then remove this hack?
 
----
- arch/powerpc/platforms/powermac/cpufreq_64.c |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- linux-2.6-git.orig/arch/powerpc/platforms/powermac/cpufreq_64.c	2007-03-21 09:22:30.845847391 +0100
-+++ linux-2.6-git/arch/powerpc/platforms/powermac/cpufreq_64.c	2007-03-21 09:23:06.156847391 +0100
-@@ -357,13 +357,13 @@ static unsigned int g5_cpufreq_get_speed
- 
- static int g5_cpufreq_cpu_init(struct cpufreq_policy *policy)
- {
--	if (policy->cpu != 0)
--		return -ENODEV;
--
- 	policy->governor = CPUFREQ_DEFAULT_GOVERNOR;
- 	policy->cpuinfo.transition_latency = CPUFREQ_ETERNAL;
- 	policy->cur = g5_cpu_freqs[g5_query_freq()].frequency;
--	policy->cpus = cpu_possible_map;
-+	/* secondary CPUs are tied to the primary one by the
-+	 * cpufreq core if in the secondary policy we tell it that
-+	 * it actually must be one policy together with all others. */
-+	policy->cpus = cpu_online_map;
- 	cpufreq_frequency_table_get_attr(g5_cpu_freqs, policy->cpu);
- 
- 	return cpufreq_frequency_table_cpuinfo(policy,
-
---
+Segher
