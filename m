@@ -1,15 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 21 Mar 2007 12:51:04 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 05/17] bootwrapper: misc device tree fixes
-Message-ID: <20070321015104.GC27969@localhost.localdomain>
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172845.GE29784@ld0162-tx32.am.freescale.net>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 399FADDFBB
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 12:57:44 +1100 (EST)
+Date: Tue, 20 Mar 2007 21:11:49 -0500
+To: anton@samba.org
+Subject: Re: [patch 10/10] Make sure we only enable xmon once
+Message-ID: <20070321021149.GA2564@lixom.net>
+References: <20070321013810.404636000@samba.org>
+	<20070321013825.735752000@samba.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070316172845.GE29784@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070321013825.735752000@samba.org>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +22,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 16, 2007 at 12:28:45PM -0500, Scott Wood wrote:
-> 1. The dtb should be generated in $tmpdir, rather than the current directory.
-> Normally, $tmpdir is ".", so it doesn't matter, but the wrapper should obey
-> the -W option if it should be passed.
+On Tue, Mar 20, 2007 at 08:38:20PM -0500, anton@samba.org wrote:
+> Now we use notifier hooks we have to be careful not to enable xmon multiple
+> times.
+> 
+> Signed-off-by: Anton Blanchard <anton@samba.org>
+> ---
+> 
+> Index: linux-2.6/arch/powerpc/xmon/xmon.c
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/xmon/xmon.c	2007-03-11 14:52:45.000000000 -0500
+> +++ linux-2.6/arch/powerpc/xmon/xmon.c	2007-03-11 14:56:37.000000000 -0500
+> @@ -2658,11 +2658,20 @@
+>  	unregister_page_fault_notifier(&xmon_page_fault_nb);
+>  }
+>  
+> +#ifdef CONFIG_XMON_DEFAULT
+> +int __initdata xmon_on = 1;
+> +#else
+> +int __initdata xmon_on = 0;
+> +#endif
 
-This is still wrong (or at least insufficient).  If we're building
-with a target directory different from the source directory we
-shouldn't add anything to the source directory, but $tmpdir still
-will.
+This shouldn't be __initdata, should it? It's used at runtime below.
 
-> 2. DTC has a habit of complaining about errors which are not really
-> errors.  Thus, the -f option is now passed to it, to force it to generate
-> output regardless.
+> +
+>  #ifdef CONFIG_MAGIC_SYSRQ
+>  static void sysrq_handle_xmon(int key, struct tty_struct *tty) 
+>  {
+>  	/* ensure xmon is enabled */
+> -	xmon_enable();
+> +	if (!xmon_on) {
+> +		xmon_on = 1;
+> +		xmon_enable();
+> +	}
+>  	xmon(get_irq_regs());
+>  }
+[...]
 
-I'd really prefer not to add -f by default.  I think getting rid of
-the bogus warnings from dtc is a better idea.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+-Olof
