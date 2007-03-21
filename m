@@ -1,16 +1,21 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 21 Mar 2007 13:46:01 +1100
+Date: Wed, 21 Mar 2007 13:54:47 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 1/7] boot: use a common zImage rule
-Message-ID: <20070321024601.GE27969@localhost.localdomain>
-References: <boot-00.miltonm@bga.com> <boot-01.miltonm@bga.com>
-	<20070320033039.GA21124@localhost.localdomain>
-	<f7b20d0a2660652ca1ddbb69eb41feb5@bga.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
+Message-ID: <20070321025447.GG27969@localhost.localdomain>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
+	<20070317013159.GH3969@localhost.localdomain>
+	<45FC8643.1080807@freescale.com>
+	<20070318115656.GA12765@localhost.localdomain>
+	<45FEA7B3.9090304@freescale.com>
+	<20070320035957.GC21124@localhost.localdomain>
+	<45FFE8FD.9020902@freescale.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <f7b20d0a2660652ca1ddbb69eb41feb5@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <45FFE8FD.9020902@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,92 +25,96 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 20, 2007 at 08:47:20AM -0500, Milton Miller wrote:
+On Tue, Mar 20, 2007 at 09:00:29AM -0500, Timur Tabi wrote:
+> David Gibson wrote:
 > 
-> On Mar 19, 2007, at 10:30 PM, David Gibson wrote:
+> > local-mac-address isn't a node, it's a property.  We never deal in
+> > pointers (or handles) to properties.
 > 
-> > On Mon, Mar 19, 2007 at 02:58:07PM -0600, Milton Miller wrote:
-> >> Before the plethora of platforms gets any worse, establish a common
-> >> rule to invoke the wrapper for any platform.  Add arguments to
-> >> the rule for initrd, dts, dtb, etc.   Show example usage with initrd.
-> >
-> > The problem with this patch is that while the wrap command can take a
-> > dts or dtb, there's no way to specify which should be used with each
-> > target.
+> Sorry, I sometimes use those terms interchangeably.
 > 
-> I thought a bit about that before I posted, but didn't write anything.
-> We could add standard varable names dts-$(platform) dtb-$(platform),
-> since make would default such names as unset.
-
-Well, that works until we have a platform that can operate with
-several different dtbs.  I believe Scott's cuboot stuff will have this
-property.
-
-> But this does raise the point, instead of listing the image names, 
-> should
-> we be seelcting the platforms and generating the image names with the
-> expansion.   That would save us stripping of zImage to get the platform
-> name in the rule.
-
-That sounds like a good idea.  $(platform-y) instead of $(image-y).
-
-> I'll try to test this later.
+> > Since mac-address is by definition a runtime property, it should
+> > *never* exist in a static dts.
 > 
-> Should I respin patch 3, add FORCE, without this so we can merge that
-> first?   I put this one first so there would be less adding rules that
-> would be removed later, but the other is really a bugfix and this is
-> a cleanup.
+> But it does today.  I think we need to be considerate of existing broken 
+> installations.  Someone could be running an older U-Boot with an older 
+> DTS, and if they boot a future kernel with it, then
+> 
+> > 
+> >> Obviously, the DTS files shouldn't have mac-address in them.  But I
+> >> haven't gotten around to cleaning that up, because I'm still waiting
+> >> for the U-Boot maintainers to apply my pre-requisite patches.
+> > 
+> > I don't see why fixing the dts files relies on u-boot changes. 
+> 
+> Because today's U-Boot will, on some platforms, write to mac-address and 
+> only mac-address.  If you remove that property from the DTS without 
+> fixing U-Boot first, then U-Boot will never be able to pass the MAC 
+> address to the kernel.
 
-Yes, I think that's a good idea.  Apart from the textual conflicts 2-7
-look sensible.  I like the idea of patch 1, but it heads into some
-complications that need more thought.
+Ah, and it can't add the property if it's not there at all.  Ok, I
+think I understand now.  But.. does u-boot directly use the dts files
+from the kernel tree, or does it have its own copies?
 
-So, some more thought...
+> > u-boot
+> > *can* know what's going on and might wish to set the mac-address
+> > property, but that's its business.  The dts files which are used for
+> > inclusion into a zImage should never have this property.
+> 
+> Bugs need to be fixed in the right order.  You can't fix the DTS files 
+> until you fix all the software that uses them first.
+> 
+> >> Perhaps mac-address should be deleted instead of just ignored?  I
+> >> don't know if that breaks kexec.
+> > 
+> > Hrm, maybe.
+> 
+> Would the cuImage bootwrapper run in a kexec'd kernel?  I hope not.  I 
+> don't know anything about kexec.
 
-I don't like the idea of a per-platform dts variable (as above),
-because there will be platforms which can support more than one device
-tree.  I also don't like the idea of a single variable giving the dts,
-since that takes us back to one-board-per-config, even when the actual
-zImage code is common across multiple boards.
+The maybe was more in relation to should we delete the mac-address
+property.  But that would have the same brokenness as removing
+mac-address from the dts on old, broken u-boot's that set mac-address
+instead of local-mac-address.
 
-There are actually three parameters (apart from the vmlinux itself)
-which determine the final bootable binary:
-	1) what code to include in the zImage
-	2) the included device tree (if any)
-	3) exectable packaging (ELF, uImage, etc.)
+> > It's just that every insert could require copying most of the blob,
+> > which is a bit sucky.
+> 
+> What if U-Boot were smart enough to insert all of the required items in 
+> one shot, and then filled them in?
 
-These are certainly not orthogonal; most combinations of the 3 won't
-make sense.  But, the parameters are independent in the sense that for
-any 2 of them, there are situations in which there are multiple values
-that could make sense for the other one.  For example:
-	- if (1) = Ebony wrapper and (2) = Ebony device tree, the
-binary can be pacakged either for cuboot or for treeboot
-	- if (1) = Open Firmware wrapper and (2) = no device tree,
-then (3) can be ELF or COFF, depending on the format supported by the
-OF version in question.
-	- if (1) = wrapper for cuboot on mpc83xx and (3) = uImage,
-then there are several device trees which could be used, since there
-are several mpc83xx boards
-	- it's not hard to image a board that has two firmware
-versions with incompatible properties such that if (2) = SomeBoard's
-device tree and (3) = whatever then (1) could sensibly be either be
-"SomeBoard old firmware wrapper" or "SomeBoard new firmware wrapper".
+I don't see how that's reasonably possible when the items in question
+are properties in different nodes.
 
-Then there's the possibility of a similar firmware running on several
-different boards, and having a zImage which incorporates several
-device trees, picking the right one based on a firmware-supplied board
-ID of some sort.
+> > I was thinking of making an extension to dtc for these properties that
+> > are expected to be replaced in-place by the bootloader:  a special
+> > token representing a value to be filled in later, so something like:
+> > 	clock-frequency = < _ >;
+> > or
+> > 	local-mac-address = [??????];
+> > The blob produced would just replace the blanks with either all 0s or
+> > all 1s, so it doesn't actually do anything new, but it would provide a
+> > strong visual clue in the source as to which properties are supposed
+> > to be filled in later.  Would that overcome your reluctance to include
+> > bootloader-replaced properties in the dts?
+> 
+> No, because it would require DTC to be constantly in sync with U-Boot, 
+> and that sounds like a lose-lose proposition to me.  It takes months for 
+> any U-Boot patch that I write to be accepted and applied.
 
-Right now the Makefile targets can select both "platform", which picks
-both (1) and (3) and, seperately, the device tree, (2).
+Uh.. how does it require synchronization with u-boot?  This is really
+just a form of internal documentation in the dts which shows which
+properties are expected to be present, but overwrriten by the
+bootloader.
 
-So, thinking about it in this framework.  It's the job of the wrapper
-script to take (in whatever form) the values of (1), (2) and (3) and
-produce an image.  It's the job of the Kconfig and Makefile between
-them to generate, based on the kernel config, a list of (1)-(2)-(3)
-triples and invoke the wrapper for all of them.
-
-Quite how best to achieve this is not yet obvious to me.
+> For instance, last month, I posted a fix for an old bug in U-Boot that 
+> prevents initrd from working with any OF kernel.  U-Boot has had this 
+> bug ever since it added OF support.  Despite repeated emails to WD 
+> himself, I haven't even gotten an acknowledgment from him as to whether 
+> he'll apply it, let alone when.
+> 
+> So as you can imagine, I am very wary about any design that requires 
+> U-Boot to be updated in concert with any other software.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
