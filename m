@@ -2,14 +2,14 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 11EA3DDE22
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 23:12:39 +1100 (EST)
-Message-Id: <20070321104210.786844000@sipsolutions.net>
+	by ozlabs.org (Postfix) with ESMTP id 35F98DDE22
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 23:12:41 +1100 (EST)
+Message-Id: <20070321104210.090659000@sipsolutions.net>
 References: <20070321104037.696668000@sipsolutions.net>
-Date: Wed, 21 Mar 2007 11:40:39 +0100
+Date: Wed, 21 Mar 2007 11:40:38 +0100
 From: Johannes Berg <johannes@sipsolutions.net>
 To: linuxppc-dev@ozlabs.org
-Subject: [RFC 2/6] powerpc: MPIC sys_device & suspend/resume
+Subject: [RFC 1/6] powermac: support G5 CPU hotplug
 Mime-Version: 1.0
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,197 +20,153 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds mpic to the system devices and implements suspend
-and resume for them. This is necessary to get interrupts for
-modules back to where they were before a suspend to disk.
+This patch allows "hotplugging" of CPUs on G5 machines. CPUs that are
+disabled are put into an idle loop with the decrementer frequency set
+to minimum. To wake them up again we kick them just like when bringing
+them up. To stop those CPUs from messing with any global state we stop
+them from entering the timer interrupt.
 
 Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
 ---
-Without this patch, i2sbus (built as a module) for example
-doesn't work properly across a suspend-to-disk/resume cycle,
-with this patch it works fine.
+ arch/powerpc/kernel/idle_power4.S       |   14 +++++++++---
+ arch/powerpc/platforms/powermac/setup.c |   35 +++++++++++++++++++++++++++++++-
+ arch/powerpc/platforms/powermac/smp.c   |   12 +++++++++-
+ include/asm-powerpc/machdep.h           |    2 +
+ 4 files changed, 56 insertions(+), 7 deletions(-)
 
-I'm not entirely sure if there should be some wait logic
-after I restore the MPIC registers, it works as-is for me.
-
-Over the previous version of this patch this changes that
-it also restores the HT interrupts if necessary, making my
-quad G5 actually work.
-
----
- arch/powerpc/sysdev/mpic.c |   96 ++++++++++++++++++++++++++++++++++++++++++++-
- include/asm-powerpc/mpic.h |   15 +++++++
- 2 files changed, 110 insertions(+), 1 deletion(-)
-
---- linux-2.6-git.orig/arch/powerpc/sysdev/mpic.c	2007-03-21 09:22:31.755847391 +0100
-+++ linux-2.6-git/arch/powerpc/sysdev/mpic.c	2007-03-21 09:23:03.129847391 +0100
-@@ -354,6 +354,12 @@ static void mpic_startup_ht_interrupt(st
- 		tmp |= 0x22;
- 	writel(tmp, fixup->base + 4);
- 	spin_unlock_irqrestore(&mpic->fixup_lock, flags);
-+
-+#ifdef CONFIG_PM
-+	/* use the lowest bit inverted to the actual HW,
-+	 * set if this fixup was enabled, clear otherwise */
-+	mpic->save_data[source].fixup_data = tmp | 1;
-+#endif
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/smp.c	2007-03-21 11:18:47.542243895 +0100
++++ linux-2.6/arch/powerpc/platforms/powermac/smp.c	2007-03-21 11:23:27.332243895 +0100
+@@ -897,7 +897,7 @@ void smp_core99_cpu_die(unsigned int cpu
+ 	cpu_dead[cpu] = 0;
  }
  
- static void mpic_shutdown_ht_interrupt(struct mpic *mpic, unsigned int source,
-@@ -375,6 +381,12 @@ static void mpic_shutdown_ht_interrupt(s
- 	tmp |= 1;
- 	writel(tmp, fixup->base + 4);
- 	spin_unlock_irqrestore(&mpic->fixup_lock, flags);
-+
-+#ifdef CONFIG_PM
-+	/* use the lowest bit inverted to the actual HW,
-+	 * set if this fixup was enabled, clear otherwise */
-+	mpic->save_data[source].fixup_data = tmp & ~1;
-+#endif
- }
+-#endif
++#endif /* CONFIG_HOTPLUG_CPU && CONFIG_PP32 */
  
- static void __init mpic_scan_ht_pic(struct mpic *mpic, u8 __iomem *devbase,
-@@ -1143,7 +1155,7 @@ void __init mpic_init(struct mpic *mpic)
- 	/* Do the HT PIC fixups on U3 broken mpic */
- 	DBG("MPIC flags: %x\n", mpic->flags);
- 	if ((mpic->flags & MPIC_BROKEN_U3) && (mpic->flags & MPIC_PRIMARY))
-- 		mpic_scan_ht_pics(mpic);
-+		mpic_scan_ht_pics(mpic);
- 
- 	for (i = 0; i < mpic->num_sources; i++) {
- 		/* start with vector = source number, and masked */
-@@ -1167,6 +1179,12 @@ void __init mpic_init(struct mpic *mpic)
- 
- 	/* Set current processor priority to 0 */
- 	mpic_cpu_write(MPIC_INFO(CPU_CURRENT_TASK_PRI), 0);
-+
-+#ifdef CONFIG_PM
-+	/* allocate memory to save mpic state */
-+	mpic->save_data = alloc_bootmem(mpic->num_sources * sizeof(struct mpic_irq_save));
-+	BUG_ON(mpic->save_data == NULL);
-+#endif
- }
- 
- void __init mpic_set_clk_ratio(struct mpic *mpic, u32 clock_ratio)
-@@ -1417,3 +1435,79 @@ void __devinit smp_mpic_setup_cpu(int cp
- 	mpic_setup_this_cpu();
- }
- #endif /* CONFIG_SMP */
-+
-+#ifdef CONFIG_PM
-+static int mpic_suspend(struct sys_device *dev, pm_message_t state)
-+{
-+	struct mpic *mpic = container_of(dev, struct mpic, sysdev);
-+	int i;
-+
-+	for (i = 0; i < mpic->num_sources; i++) {
-+		mpic->save_data[i].vecprio =
-+			mpic_irq_read(i, MPIC_INFO(IRQ_VECTOR_PRI));
-+		mpic->save_data[i].dest =
-+			mpic_irq_read(i, MPIC_INFO(IRQ_DESTINATION));
-+	}
-+
-+	return 0;
-+}
-+
-+static int mpic_resume(struct sys_device *dev)
-+{
-+	struct mpic *mpic = container_of(dev, struct mpic, sysdev);
-+	int i;
-+
-+	for (i = 0; i < mpic->num_sources; i++) {
-+		mpic_irq_write(i, MPIC_INFO(IRQ_VECTOR_PRI),
-+			       mpic->save_data[i].vecprio);
-+		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION),
-+			       mpic->save_data[i].dest);
-+
-+#ifdef CONFIG_MPIC_BROKEN_U3
-+	{
-+		struct mpic_irq_fixup *fixup = &mpic->fixups[i];
-+
-+		if (fixup->base) {
-+			/* we use the lowest bit in an inverted meaning */
-+			if ((mpic->save_data[i].fixup_data & 1) == 0)
-+				continue;
-+
-+			/* Enable and configure */
-+			writeb(0x10 + 2 * fixup->index, fixup->base + 2);
-+
-+			writel(mpic->save_data[i].fixup_data & ~1,
-+			       fixup->base + 4);
-+		}
-+	}
-+#endif
-+	} /* end for loop */
-+
-+	return 0;
-+}
-+#endif
-+
-+static struct sysdev_class mpic_sysclass = {
-+#ifdef CONFIG_PM
-+	.resume = mpic_resume,
-+	.suspend = mpic_suspend,
-+#endif
-+	set_kset_name("mpic"),
-+};
-+
-+static int mpic_init_sys(void)
-+{
-+	struct mpic *mpic = mpics;
-+	int error, id = 0;
-+
-+	error = sysdev_class_register(&mpic_sysclass);
-+
-+	while (mpic && !error) {
-+		mpic->sysdev.cls = &mpic_sysclass;
-+		mpic->sysdev.id = id++;
-+		error = sysdev_register(&mpic->sysdev);
-+		mpic = mpic->next;
-+	}
-+	return error;
-+}
-+
-+device_initcall(mpic_init_sys);
---- linux-2.6-git.orig/include/asm-powerpc/mpic.h	2007-03-21 09:22:31.795847391 +0100
-+++ linux-2.6-git/include/asm-powerpc/mpic.h	2007-03-21 09:23:03.131847391 +0100
-@@ -3,6 +3,7 @@
- #ifdef __KERNEL__
- 
- #include <linux/irq.h>
-+#include <linux/sysdev.h>
- #include <asm/dcr.h>
- 
- /*
-@@ -228,6 +229,14 @@ struct mpic_reg_bank {
- #endif /* CONFIG_PPC_DCR */
+ /* Core99 Macs (dual G4s and G5s) */
+ struct smp_ops_t core99_smp_ops = {
+@@ -907,8 +907,16 @@ struct smp_ops_t core99_smp_ops = {
+ 	.setup_cpu	= smp_core99_setup_cpu,
+ 	.give_timebase	= smp_core99_give_timebase,
+ 	.take_timebase	= smp_core99_take_timebase,
+-#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
++#if defined(CONFIG_HOTPLUG_CPU)
++# if defined(CONFIG_PPC32)
+ 	.cpu_disable	= smp_core99_cpu_disable,
+ 	.cpu_die	= smp_core99_cpu_die,
++# endif
++# if defined(CONFIG_PPC64)
++	.cpu_disable	= generic_cpu_disable,
++	.cpu_die	= generic_cpu_die,
++	/* intentionally do *NOT* assign cpu_enable,
++	 * the generic code will use kick_cpu then! */
++# endif
+ #endif
  };
- 
-+struct mpic_irq_save {
-+	u32		vecprio,
-+			dest;
-+#ifdef CONFIG_MPIC_BROKEN_U3
-+	u32		fixup_data;
-+#endif
-+};
-+
- /* The instance data of a given MPIC */
- struct mpic
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/setup.c	2007-03-21 11:18:47.612243895 +0100
++++ linux-2.6/arch/powerpc/platforms/powermac/setup.c	2007-03-21 11:28:28.542243895 +0100
+@@ -425,6 +425,9 @@ static int initializing = 1;
+ static int pmac_late_init(void)
  {
-@@ -294,6 +303,12 @@ struct mpic
+ 	initializing = 0;
++	/* this is udbg (which is __init) and we can later use it during
++	 * cpu hotplug (in smp_core99_kick_cpu) */
++	ppc_md.progress = NULL;
+ 	return 0;
+ }
  
- 	/* link */
- 	struct mpic		*next;
+@@ -651,6 +654,36 @@ static int pmac_pci_probe_mode(struct pc
+ 		return PCI_PROBE_NORMAL;
+ 	return PCI_PROBE_DEVTREE;
+ }
 +
-+	struct sys_device	sysdev;
++#ifdef CONFIG_HOTPLUG_CPU
++/* access per cpu vars from generic smp.c */
++DECLARE_PER_CPU(int, cpu_state);
 +
-+#ifdef CONFIG_PM
-+	struct mpic_irq_save	*save_data;
++static void pmac_cpu_die(void)
++{
++	/* turn off as much as possible, we'll be
++	 * kicked out as this will only be invoked
++	 * on core99 platforms for now ... */
++
++	printk(KERN_INFO "CPU#%d offline\n", smp_processor_id());
++	__get_cpu_var(cpu_state) = CPU_DEAD;
++	smp_wmb();
++
++	/* during the path that leads here preemption is disabled,
++	 * reenable it now so that when coming up preempt count is
++	 * zero correctly */
++	preempt_enable();
++
++	while (1) {
++		/* let's not take timer interrupts too often ... */
++		set_dec(0x7fffffff);
++		printk("CPU %d dead\n", smp_processor_id());
++
++		power4_idle_irqs_softdisabled();
++	}
++}
 +#endif
++
+ #endif
+ 
+ define_machine(powermac) {
+@@ -689,6 +722,6 @@ define_machine(powermac) {
+ 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
+ #endif
+ #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC64)
+-	.cpu_die		= generic_mach_cpu_die,
++	.cpu_die		= pmac_cpu_die,
+ #endif
  };
+--- linux-2.6.orig/arch/powerpc/kernel/idle_power4.S	2007-03-21 11:18:47.662243895 +0100
++++ linux-2.6/arch/powerpc/kernel/idle_power4.S	2007-03-21 11:23:27.342243895 +0100
+@@ -19,7 +19,12 @@
+ 
+ 	.text
+ 
++_GLOBAL(power4_idle_irqs_softdisabled)
++	li	r6,0
++	b	0f
+ _GLOBAL(power4_idle)
++	li	r6,1
++0:
+ BEGIN_FTR_SECTION
+ 	blr
+ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+@@ -35,8 +40,8 @@ END_FTR_SECTION_IFCLR(CPU_FTR_CAN_NAP)
+ 	rotldi	r0,r0,16
+ 	mtmsrd	r0,1			/* hard-disable interrupts */
+ 	li	r0,1
+-	stb	r0,PACASOFTIRQEN(r13)	/* we'll hard-enable shortly */
+-	stb	r0,PACAHARDIRQEN(r13)
++	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
++	stb	r6,PACASOFTIRQEN(r13)	/* set softirqs enabled bit */
+ BEGIN_FTR_SECTION
+ 	DSSALL
+ 	sync
+@@ -51,5 +56,6 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	isync
+ 	mtmsrd	r7
+ 	isync
+-	b	1b
+-
++	cmpdi	0,r6,0
++	bne+	1b			/* return for softirq-disabled case */
++	blr
+--- linux-2.6.orig/include/asm-powerpc/machdep.h	2007-03-21 11:18:47.682243895 +0100
++++ linux-2.6/include/asm-powerpc/machdep.h	2007-03-21 11:27:55.412243895 +0100
+@@ -252,6 +252,8 @@ struct machdep_calls {
+ 
+ extern void power4_idle(void);
+ extern void ppc6xx_idle(void);
++/* this one is for CPU hotplug (e.g. powermac) */
++extern void power4_idle_irqs_softdisabled(void);
  
  /*
+  * ppc_md contains a copy of the machine description structure for the
 
 --
