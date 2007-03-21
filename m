@@ -1,20 +1,19 @@
-Return-Path: <ckrinke@istor.com>
-Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
-	(using TLSv1 with cipher RC4-SHA (128/128 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5A331DE081
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 314E1DDF45
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Mar 2007 02:21:43 +1100 (EST)
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C76BCC.9F961754"
-Subject: STACK & HEAP
-Date: Wed, 21 Mar 2007 08:21:39 -0700
-Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1A1@MERCURY.inside.istor.com>
-In-Reply-To: <001e01c76b20$4a97b410$3a0d10ac@Radstone.Local>
-From: "Charles Krinke" <ckrinke@istor.com>
-To: <linuxppc-embedded@ozlabs.org>
-Cc: Chris Carlson <ccarlson@istor.com>
+	Thu, 22 Mar 2007 02:43:20 +1100 (EST)
+To: Valentine Barshak <vbarshak@ru.mvista.com>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH] PPC440EPx/440GRx Sequoia/Rainier board support. 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 21 Mar 2007 17:50:06 +0300."
+	<4601461E.9010006@ru.mvista.com>
+Date: Wed, 21 Mar 2007 16:43:17 +0100
+Sender: wd@denx.de
+Message-Id: <20070321154317.924703535D3@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,97 +24,60 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+Valentine,
 
-------_=_NextPart_001_01C76BCC.9F961754
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+in message <4601461E.9010006@ru.mvista.com> you wrote:
+>
+> Add AMCC PPC440EPx/440GRx Sequoia/Rainier board support.
+> 
+> Signed-off-by: Stefan Roese <sr@denx.de>
+> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
 
-Where are the stack and heap initialized in a linux-2.6.17.11 kernel for
-user space applications after init runs for a PPC8241 architecture?
+Umm...
 
-=20
+> --- linux.orig/arch/ppc/platforms/4xx/ppc440epx.c	1970-01-01 03:00:00.000000000 +0300
+> +++ linux/arch/ppc/platforms/4xx/ppc440epx.c	2007-03-20 14:43:37.000000000 +0300
+> @@ -0,0 +1,284 @@
+> +/*
+> + * arch/ppc/platforms/4xx/ppc440epx.c
+> + *
+> + * PPC440EPx I/O descriptions
+> + *
+> + * Wade Farnsworth <wfarnsworth@mvista.com>
+> + * Copyright 2004-2007 MontaVista Software Inc.
+> + * Copyright 2006 AMCC
 
-Charles
+The same file in our repository looks like this:
 
-
-------_=_NextPart_001_01C76BCC.9F961754
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:v=3D"urn:schemas-microsoft-com:vml" =
-xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal;
-	font-family:Arial;
-	color:windowtext;}
-span.EmailStyle18
-	{mso-style-type:personal-reply;
-	font-family:Arial;
-	color:navy;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-<!--[if gte mso 9]><xml>
- <o:shapedefaults v:ext=3D"edit" spidmax=3D"1026" />
-</xml><![endif]--><!--[if gte mso 9]><xml>
- <o:shapelayout v:ext=3D"edit">
-  <o:idmap v:ext=3D"edit" data=3D"1" />
- </o:shapelayout></xml><![endif]-->
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Where are the stack and heap =
-initialized
-in a linux-2.6.17.11 kernel for user space applications after init runs =
-for a
-PPC8241 architecture?<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 color=3Dnavy face=3DArial><span =
-style=3D'font-size:
-10.0pt;font-family:Arial;color:navy'>Charles<o:p></o:p></span></font></p>=
+/*
+ * arch/ppc/platforms/4xx/ppc440epx.c
+ *
+ * PPC440EPx I/O descriptions
+ *
+ * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
+ *
+ * Wade Farnsworth <wfarnsworth@mvista.com>
+ * Copyright 2004 MontaVista Software Inc.
+ * Copyright 2006 AMCC
 
 
-</div>
+In other words: You *removed* Stefan Roese's (resp.  DENX)  Copyright
+entry, and replaced it by one for MV?
 
-</body>
 
-</html>
+I think this was not done by accident.
 
-------_=_NextPart_001_01C76BCC.9F961754--
+I don't know what to say.
+
+
+I think your patches should be rejected.
+
+
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+"If you own a machine, you are in turn owned by it,  and  spend  your
+time serving it..."    - Marion Zimmer Bradley, _The Forbidden Tower_
