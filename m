@@ -1,11 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 21 Mar 2007 17:30:31 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [0/4] Further zImage work
-Message-ID: <20070321063031.GB30422@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: David Gibson <david@gibson.dropbear.id.au>
+Subject: [PATCH 1/4] powerpc: Add gcc format warnings to zImage printf()
+In-Reply-To: <20070321063031.GB30422@localhost.localdomain>
+Message-Id: <20070321063149.ED879DDE47@ozlabs.org>
+Date: Wed, 21 Mar 2007 17:31:49 +1100 (EST)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,17 +15,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The following patch series is an attempt to consolidate some of the
-more settled ideas in the many zImage patches flying around at the
-moment.
+This patch adds the correct attributes to the zImage's versions of
+printf to make gcc generate format string mismatch warnings.  It also
+corrects several minor problems with format strings in the zImage thus
+discovered.
 
-This patch series needs to be applied on top of patches 4-7 from
-Milton Miller's recent series, and patch number 2 from Scott Wood's
-most recent cuboot series (patch 1 from that series having already
-been applied to powerpc.git).
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+---
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ arch/powerpc/boot/main.c  |    6 +++---
+ arch/powerpc/boot/stdio.h |    4 ++--
+ 2 files changed, 5 insertions(+), 5 deletions(-)
+
+Index: working-2.6/arch/powerpc/boot/stdio.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/stdio.h	2007-01-24 12:01:17.000000000 +1100
++++ working-2.6/arch/powerpc/boot/stdio.h	2007-03-20 14:04:41.000000000 +1100
+@@ -7,11 +7,11 @@
+ #define	EINVAL		22	/* Invalid argument */
+ #define ENOSPC		28	/* No space left on device */
+ 
+-extern int printf(const char *fmt, ...);
++extern int printf(const char *fmt, ...) __attribute__((format(printf, 1, 2)));
+ 
+ #define fprintf(fmt, args...)	printf(args)
+ 
+-extern int sprintf(char *buf, const char *fmt, ...);
++extern int sprintf(char *buf, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
+ 
+ extern int vsprintf(char *buf, const char *fmt, va_list args);
+ 
+Index: working-2.6/arch/powerpc/boot/main.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/main.c	2007-03-20 14:03:26.000000000 +1100
++++ working-2.6/arch/powerpc/boot/main.c	2007-03-20 14:05:13.000000000 +1100
+@@ -136,7 +136,7 @@ static struct addr_range prep_kernel(voi
+ 	} else {
+ 		if ((unsigned long)_start < ei.memsize)
+ 			fatal("Insufficient memory for kernel at address 0!"
+-			       " (_start=%lx)\n\r", _start);
++			       " (_start=%p)\n\r", _start);
+ 	}
+ 
+ 	/* Finally, gunzip the kernel */
+@@ -145,7 +145,7 @@ static struct addr_range prep_kernel(voi
+ 	/* discard up to the actual load data */
+ 	gunzip_discard(&gzstate, ei.elfoffset - sizeof(elfheader));
+ 	len = gunzip_finish(&gzstate, addr, ei.memsize);
+-	printf("done 0x%lx bytes\n\r", len);
++	printf("done 0x%x bytes\n\r", len);
+ 
+ 	flush_cache(addr, ei.loadsize);
+ 
+@@ -189,7 +189,7 @@ static struct addr_range prep_initrd(str
+ 		if (! initrd_addr)
+ 			fatal("Can't allocate memory for initial "
+ 			       "ramdisk !\n\r");
+-		printf("Relocating initrd 0x%p <- 0x%p (0x%lx bytes)\n\r",
++		printf("Relocating initrd 0x%lx <- 0x%p (0x%lx bytes)\n\r",
+ 		       initrd_addr, old_addr, initrd_size);
+ 		memmove((void *)initrd_addr, old_addr, initrd_size);
+ 	}
