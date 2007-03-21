@@ -4,24 +4,23 @@ Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DFF57DDF34
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 01:10:57 +1100 (EST)
-In-Reply-To: <1174320799.5044.21.camel@localhost.localdomain>
-References: <20070315232956.37DAB353A6C@atlas.denx.de>
-	<200703170909.13869.sr@denx.de>
-	<e9c3a7c20703171117w7989adfehda99416265eef906@mail.gmail.com>
-	<200703171943.27465.sr@denx.de>
-	<e9c3a7c20703171209m55fd9dfsbba0e4fff5c6350d@mail.gmail.com>
-	<1174320799.5044.21.camel@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 4DB48DDE9E
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 01:17:51 +1100 (EST)
+In-Reply-To: <1174359820.10827.8.camel@concordia.ozlabs.ibm.com>
+References: <11740199151814-git-send-email-wei.zhang@freescale.com>
+	<11740199152595-git-send-email-wei.zhang@freescale.com>
+	<11740199154116-git-send-email-wei.zhang@freescale.com>
+	<11740199152381-git-send-email-wei.zhang@freescale.com>
+	<1174359820.10827.8.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <582f77296616b0b85ff7533bb7fea05c@kernel.crashing.org>
+Message-Id: <65a42fd7d277db5f565849a07d8dea90@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
-Date: Wed, 21 Mar 2007 15:10:46 +0100
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: linux-raid@vger.kernel.org, Dan Williams <dan.j.williams@gmail.com>,
-	Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 4/4] Add irq debugfs and virq_mapping for getting the virq
+	to irq host's hwirq mapping list.
+Date: Wed, 21 Mar 2007 15:17:45 +0100
+To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, r54964@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,11 +30,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> BTW folks. Would it be hard to change your spe_ prefixes to something
-> else ? There's already enough confusion between the freescale SPE unit
-> and the cell SPEs :-)
+>> This patch adds 'irq' directory into the root debugfs and 
+>> virq_mapping for getting the virq to
+>> irq host's hwirq mapping list.
+>
+> Minor nit. Should we be creating a 'powerpc' directory first, and
+> putting the 'irq' file under that? Otherwise we risk clashing with some
+> generic code that creates a file called 'irq' in debugfs.
 
-Will you change _your_ prefixes too?  :-) :-)
+Or put the whole IRQ tree under sysfs generically...
 
 
 Segher
