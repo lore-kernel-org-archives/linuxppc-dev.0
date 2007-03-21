@@ -4,22 +4,18 @@ Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C3808DDF75
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 03:44:29 +1100 (EST)
-In-Reply-To: <Pine.LNX.4.62.0703210817360.22113@pademelon.sonytel.be>
-References: <20070321013810.404636000@samba.org>
-	<20070321013825.623943000@samba.org>
-	<20070321021456.GB2564@lixom.net>
-	<Pine.LNX.4.62.0703210817360.22113@pademelon.sonytel.be>
+	by ozlabs.org (Postfix) with ESMTP id 57A6ADDF14
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 04:11:25 +1100 (EST)
+In-Reply-To: <20070321063150.04BA4DDE9F@ozlabs.org>
+References: <20070321063150.04BA4DDE9F@ozlabs.org>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <63c4469ae1c5af93ffe9c3f374b97fba@kernel.crashing.org>
+Message-Id: <d33fab3c1f5376bc078ea1b805babbdc@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [patch 09/10] Use lowercase for hex printouts in oops messages.
-Date: Wed, 21 Mar 2007 17:44:21 +0100
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	anton@samba.org
+Subject: Re: [PATCH 2/4] powerpc: Add device tree utility functions to zImage
+Date: Wed, 21 Mar 2007 18:10:21 +0100
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,17 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Use lowercase for hex printouts in oops messages. The number of 
->>> times I have
->>> tried to copy and paste from an oops into an objdump search...
->>
->> YES! Finally someone bothered to fix this. Thank you!
+> @@ -262,6 +253,10 @@ void start(void *sp)
+>  	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r",
+>  	       _start, sp);
+>
+> +	/* Ensure that the device tree has a /chosen node */
+> +	if (! finddevice("/chosen"))
+> +		create_node(NULL, "chosen");
+> +
+>  	vmlinux = prep_kernel();
+>  	initrd = prep_initrd(vmlinux, loader_info.initrd_addr,
+>  			     loader_info.initrd_size);
 
-Bis.
-
-> What about people pasting them into dc? ;-)
-
-So _that's_ how it works in dc!  :-)
+So this is done early, and unconditional now?  Just
+double checking, not enough context (for me, anyway)
+in the patch itself.
 
 
 Segher
