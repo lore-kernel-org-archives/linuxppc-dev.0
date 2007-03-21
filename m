@@ -1,42 +1,31 @@
-Return-Path: <dwm@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <moilanen@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 15622DDF37
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 07:35:56 +1100 (EST)
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 77002DDEF0
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 08:10:14 +1100 (EST)
 Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2LKaedK028264
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 16:36:40 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2LLA9Z4019217
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 17:10:09 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
 	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2LKYnF9244024
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 16:34:49 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2LKYnea014762
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 16:34:49 -0400
-In-reply-to: <7a793472a33a30c35723be73e9cfce2f@kernel.crashing.org> 
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
-	<20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-	<20070318115656.GA12765@localhost.localdomain>
-	<45FEA7B3.9090304@freescale.com>
-	<1b943ac2c00b7f1f5696d006b67e9877@kernel.crashing.org>
-	<46014BF5.6060509@freescale.com>
-	<995355b28eecaafe955a5628ee939340@kernel.crashing.org>
-	<46018315.1030703@freescale.com>
-	<c4aa5f9e5e15d2e9686f77384f6cb532@kernel.crashing.org>
-	<46018A00.9080703@freescale.com>
-	<7a793472a33a30c35723be73e9cfce2f@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses(). 
+	l2LL8r4b249878
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 17:08:53 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2LL8q1g004569
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 17:08:53 -0400
+Subject: Re: [PATCH] DMA 4GB boundary protection
+From: Jake Moilanen <moilanen@austin.ibm.com>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070303232915.GB8028@lixom.net>
+References: <1172872183.5310.145.camel@goblue>
+	<20070303232915.GB8028@lixom.net>
+Content-Type: text/plain
+Date: Wed, 21 Mar 2007 16:05:48 -0500
+Message-Id: <1174511149.5225.135.camel@goblue>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Date: Wed, 21 Mar 2007 15:34:42 -0500
-Message-ID: <24462.1174509282@falcon10.austin.ibm.com>
-From: Doug Maxey <dwm@austin.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -46,46 +35,114 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> > I propose fixing it in the IOMMU allocation instead of making each
+> > driver protect against it as it is more efficient, and won't require
+> > changing every driver which has not considered this issue.
+> 
+> The drawback of this patch is that it adds code to every single allocation.
+> Instead, you should just mark the last entry before the 4GB boundary
+> as allocated when you setup the bitmaps for the table. That way, no
+> allocation will ever be able to cross over.
 
-On Wed, 21 Mar 2007 20:48:25 BST, Segher Boessenkool wrote:
->Just everything everywhere that mentions "mac-address" should be
->completely and utterly eradicated :-)
+Agreed.  While it's not an issue at 4KB, when we go to say 64k, or 16MB
+TCE sizes, this extra space will be wasted.  But, I believe we'll need a
+little code for this anyways.
 
-FYI -
-On a recent build of IBM ofw, on a 8844 booted from the ethernet@4,1
+> Even nicer would be to only do it when a boot option is specified, so
+> we actually have a chance to expose and find the driver bugs instead of
+> papering them over.
 
-find /proc/device-tree/ -path \*ethernet@4,1\*
-primero ~# find /proc/device-tree/ -path \*ethernet@4,*
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/name
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/linux,phandle
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/assigned-addresses
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/chosen-network-type
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/ibm,fw-driver-version
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/mac-address
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/local-mac-address
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/ibm,fw-device-code
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/address-bits
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/max-frame-size
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/ibm,fw-card-type
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/ibm,fw-adapter-name
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/supported-network-types
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/device_type
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/reg
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/compatible
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/built-in
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/133mhz-capable
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/66mhz-capable
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/fast-back-to-back
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/devsel-speed
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/subsystem-id
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/subsystem-vendor-id
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/max-latency
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/min-grant
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/interrupts
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/class-code
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/revision-id
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/device-id
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/vendor-id
-/proc/device-tree/pci@8000000f8000000/pci@2/ethernet@4,1/ibm,loc-code
-primero ~# 
+Done.
+
+> Also, remember to use IOMMU_PAGE_SHIFT instead of PAGE_SHIFT, they might
+> be different.
+
+Yup...
+
+Here's a patch addressing Olof's concerns.
+
+Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
+
+---
+ arch/powerpc/kernel/iommu.c |   32 +++++++++++++++++++++++++++++++-
+ 1 files changed, 31 insertions(+), 1 deletion(-)
+
+Index: powerpc/arch/powerpc/kernel/iommu.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/iommu.c
++++ powerpc/arch/powerpc/kernel/iommu.c
+@@ -47,6 +47,8 @@ static int novmerge = 0;
+ static int novmerge = 1;
+ #endif
+ 
++static int protect4gb = 1;
++
+ static inline unsigned long iommu_num_pages(unsigned long vaddr,
+ 					    unsigned long slen)
+ {
+@@ -58,6 +60,16 @@ static inline unsigned long iommu_num_pa
+ 	return npages;
+ }
+ 
++static int __init setup_protect4gb(char *str)
++{
++	if (strcmp(str, "on") == 0)
++		protect4gb = 1;
++	else if (strcmp(str, "off") == 0)
++		protect4gb = 0;
++
++	return 1;
++}
++
+ static int __init setup_iommu(char *str)
+ {
+ 	if (!strcmp(str, "novmerge"))
+@@ -67,6 +79,7 @@ static int __init setup_iommu(char *str)
+ 	return 1;
+ }
+ 
++__setup("protect4gb=", setup_protect4gb);
+ __setup("iommu=", setup_iommu);
+ 
+ static unsigned long iommu_range_alloc(struct iommu_table *tbl,
+@@ -429,6 +442,8 @@ void iommu_unmap_sg(struct iommu_table *
+ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+ {
+ 	unsigned long sz;
++	unsigned long start_addr, end_addr;
++	unsigned long index;
+ 	static int welcomed = 0;
+ 	struct page *page;
+ 
+@@ -450,7 +465,7 @@ struct iommu_table *iommu_init_table(str
+ 
+ #ifdef CONFIG_CRASH_DUMP
+ 	if (ppc_md.tce_get) {
+-		unsigned long index, tceval;
++		unsigned long tceval;
+ 		unsigned long tcecount = 0;
+ 
+ 		/*
+@@ -480,6 +495,21 @@ struct iommu_table *iommu_init_table(str
+ 	ppc_md.tce_free(tbl, tbl->it_offset, tbl->it_size);
+ #endif
+ 
++	/*
++	 * DMA cannot cross 4 GB boundary.  Mark first entry of each 4
++	 * GB chunk as reserved.
++	 */
++	if (protect4gb) {
++		start_addr = tbl->it_offset << IOMMU_PAGE_SHIFT;
++		/* go up to next 4GB boundary */
++		start_addr = (start_addr + 0x00000000ffffffffl) >> 32;
++		end_addr = (tbl->it_offset + tbl->it_size) << IOMMU_PAGE_SHIFT;
++		for (index = start_addr; index < end_addr; index += (1l << 32)) {
++			/* Reserve 4GB entry */
++			__set_bit((index >> IOMMU_PAGE_SHIFT) - tbl->it_offset,
+tbl->it_map);
++		}
++	}
++
+ 	if (!welcomed) {
+ 		printk(KERN_INFO "IOMMU table initialized, virtual merging %s\n",
+ 		       novmerge ? "disabled" : "enabled");
