@@ -1,12 +1,13 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
-	[151.189.21.52])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 21D8FDDEE9
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 06:34:19 +1100 (EST)
-In-Reply-To: <46018315.1030703@freescale.com>
+Return-Path: <timur@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id CB242DDF39
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 06:39:49 +1100 (EST)
+Message-ID: <46018A00.9080703@freescale.com>
+Date: Wed, 21 Mar 2007 14:39:44 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
 References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
 	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
 	<20070317013159.GH3969@localhost.localdomain>
@@ -17,13 +18,9 @@ References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
 	<46014BF5.6060509@freescale.com>
 	<995355b28eecaafe955a5628ee939340@kernel.crashing.org>
 	<46018315.1030703@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <c4aa5f9e5e15d2e9686f77384f6cb532@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-Date: Wed, 21 Mar 2007 20:34:13 +0100
-To: Timur Tabi <timur@freescale.com>
+	<c4aa5f9e5e15d2e9686f77384f6cb532@kernel.crashing.org>
+In-Reply-To: <c4aa5f9e5e15d2e9686f77384f6cb532@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -34,27 +31,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> Eh, I don't think I agree with that.  mac-address is supposed to be 
->>> used if it exists, because it represents the "most recent MAC 
->>> address".
->> That's policy and belongs in user land, not in the kernel,
->> and certainly not in a device driver.
->
-> The device driver needs to know what MAC address to program into the 
-> hardware when it initializes it.
+Segher Boessenkool wrote:
 
-And it should use "local-mac-address" for that when it exists.
+> No, I'm saying that you shouldn't use "mac-address" for
+> something it isn't meant for.
 
->  Everything else the driver needs is also in the device tree.  So 
-> you're saying the driver should ignore the MAC address fields, and 
-> then when it needs a MAC address, it should ......... ?
+If the property exists in the device tree, then it should be used, no?  Whether or not it 
+exists is not for the driver to decide.
 
-No, I'm saying that you shouldn't use "mac-address" for
-something it isn't meant for.
+What I hope to do is remove all traces of mac-address from the device trees.  If it's not 
+in the DTS, then U-Boot won't add it, bootwrapper won't add it, the kernel won't add it, 
+and therefore it won't exist when the driver loads, so the driver won't use it.
 
-You aren't supposed to have a "mac-address" property for
-devices that weren't used during firmware execution / booting
-_at all_.
+> You aren't supposed to have a "mac-address" property for
+> devices that weren't used during firmware execution / booting
+> _at all_.
 
+I can't tell if we agree or disagree.  Perhaps you should look at the code and tell me 
+what needs to be changed?
 
-Segher
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
