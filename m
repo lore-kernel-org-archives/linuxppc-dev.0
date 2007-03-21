@@ -1,10 +1,10 @@
 Return-Path: <anton@ozlabs.org>
-Message-Id: <20070321013825.179096000@samba.org>
+Message-Id: <20070321013825.490975000@samba.org>
 References: <20070321013810.404636000@samba.org>
-Date: Tue, 20 Mar 2007 20:38:15 -0500
+Date: Tue, 20 Mar 2007 20:38:18 -0500
 From: anton@samba.org
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 05/10] Use KERN_EMERG everywhere in oops printout
+Subject: [patch 08/10] Use notifier hooks for xmon
 Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,230 +15,402 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Turn the volume up to 11. Distros will silence our oops messages no more.
-Use of sunglasses recommended.
+Use notifier hooks for xmon and remove all the debugger* junk. Based on
+a patch by Ananth N Mavinakayanahalli <ananth@in.ibm.com>
 
 Signed-off-by: Anton Blanchard <anton@samba.org>
 ---
 
-Index: linux-2.6/arch/powerpc/kernel/traps.c
+Index: linux-2.6/arch/powerpc/xmon/xmon.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/traps.c	2007-03-20 09:53:57.000000000 -0500
-+++ linux-2.6/arch/powerpc/kernel/traps.c	2007-03-20 09:53:58.000000000 -0500
-@@ -140,7 +140,10 @@
- 	}
- 
- 	if (++die.lock_owner_depth < 3) {
--		printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
-+		printk(KERN_EMERG "Oops: %s, sig: %ld [#%d]\n", str, err,
-+		       ++die_counter);
-+
-+		printk(KERN_EMERG);
- #ifdef CONFIG_PREEMPT
- 		printk("PREEMPT ");
- #endif
-@@ -155,10 +158,11 @@
- #endif
- 		printk("%s\n", ppc_md.name ? ppc_md.name : "");
- 
-+		printk(KERN_EMERG);
- 		print_modules();
--		show_regs(regs);
-+		show_regs_log_lvl(regs, KERN_EMERG);
- 	} else {
--		printk("Recursive die() failure, output suppressed\n");
-+		printk(KERN_EMERG "Recursive die() failure, output suppressed\n");
- 	}
- 
- 	bust_spinlocks(0);
-Index: linux-2.6/arch/powerpc/kernel/process.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/process.c	2007-03-20 09:53:47.000000000 -0500
-+++ linux-2.6/arch/powerpc/kernel/process.c	2007-03-20 09:53:58.000000000 -0500
-@@ -49,8 +49,6 @@
+--- linux-2.6.orig/arch/powerpc/xmon/xmon.c	2007-03-20 09:53:45.000000000 -0500
++++ linux-2.6/arch/powerpc/xmon/xmon.c	2007-03-20 09:54:03.000000000 -0500
+@@ -40,6 +40,7 @@
+ #include <asm/spu.h>
+ #include <asm/spu_priv1.h>
  #include <asm/firmware.h>
- #endif
++#include <asm/kdebug.h>
  
--extern unsigned long _get_SP(void);
--
- #ifndef CONFIG_SMP
- struct task_struct *last_task_used_math = NULL;
- struct task_struct *last_task_used_altivec = NULL;
-@@ -347,13 +345,13 @@
- 	unsigned long pc = regs->nip - (instructions_to_print * 3 / 4 *
- 			sizeof(int));
- 
--	printk("Instruction dump:");
-+	printk(KERN_EMERG "Instruction dump:");
- 
- 	for (i = 0; i < instructions_to_print; i++) {
- 		int instr;
- 
- 		if (!(i % 8))
--			printk("\n");
-+			printk("\n%s", KERN_EMERG);
- 
- 		/* We use __get_user here *only* to avoid an OOPS on a
- 		 * bad address because the pc *should* only be a
-@@ -411,21 +409,25 @@
- #define LAST_VOLATILE	12
- #endif
- 
--void show_regs(struct pt_regs * regs)
-+static void show_stack_log_lvl(struct task_struct *tsk, unsigned long *stack,
-+                               char *log_lvl);
-+
-+void show_regs_log_lvl(struct pt_regs *regs, char *log_lvl)
- {
- 	int i, trap;
- 
--	printk("NIP: "REG" LR: "REG" CTR: "REG"\n",
--	       regs->nip, regs->link, regs->ctr);
--	printk("REGS: %p TRAP: %04lx   %s  (%s)\n",
-+	printk("%sNIP: "REG" LR: "REG" CTR: "REG"\n",
-+	       log_lvl, regs->nip, regs->link, regs->ctr);
-+	printk("%sREGS: %p TRAP: %04lx   %s  (%s)\n", log_lvl,
- 	       regs, regs->trap, print_tainted(), init_utsname()->release);
--	printk("MSR: "REG" ", regs->msr);
-+	printk("%sMSR: "REG" ", log_lvl, regs->msr);
- 	printbits(regs->msr, msr_bits);
- 	printk("  CR: %08lX  XER: %08lX\n", regs->ccr, regs->xer);
- 	trap = TRAP(regs);
- 	if (trap == 0x300 || trap == 0x600)
--		printk("DAR: "REG", DSISR: "REG"\n", regs->dar, regs->dsisr);
--	printk("TASK = %p[%d] '%s' THREAD: %p",
-+		printk("%sDAR: "REG", DSISR: "REG"\n", log_lvl, regs->dar,
-+		       regs->dsisr);
-+	printk("%sTASK = %p[%d] '%s' THREAD: %p", log_lvl,
- 	       current, current->pid, current->comm, task_thread_info(current));
- 
- #ifdef CONFIG_SMP
-@@ -434,7 +436,7 @@
- 
- 	for (i = 0;  i < 32;  i++) {
- 		if ((i % REGS_PER_LINE) == 0)
--			printk("\n" KERN_INFO "GPR%02d: ", i);
-+			printk("\n%sGPR%02d: ", log_lvl, i);
- 		printk(REG " ", regs->gpr[i]);
- 		if (i == LAST_VOLATILE && !FULL_REGS(regs))
- 			break;
-@@ -445,16 +447,21 @@
- 	 * Lookup NIP late so we have the best change of getting the
- 	 * above info out without failing
- 	 */
--	printk("NIP ["REG"] ", regs->nip);
-+	printk("%sNIP ["REG"] ", log_lvl, regs->nip);
- 	print_symbol("%s\n", regs->nip);
--	printk("LR ["REG"] ", regs->link);
-+	printk("%sLR ["REG"] ", log_lvl, regs->link);
- 	print_symbol("%s\n", regs->link);
- #endif
--	show_stack(current, (unsigned long *) regs->gpr[1]);
-+	show_stack_log_lvl(current, (unsigned long *) regs->gpr[1], KERN_EMERG);
- 	if (!user_mode(regs))
- 		show_instructions(regs);
+ #ifdef CONFIG_PPC64
+ #include <asm/hvcall.h>
+@@ -2578,38 +2579,91 @@
  }
+ #endif
  
-+void show_regs(struct pt_regs *regs)
+-void xmon_init(int enable)
++static int xmon_exceptions_notify(struct notifier_block *self,
++				  unsigned long val, void *data)
 +{
-+	show_regs_log_lvl(regs, "");
++	struct die_args *args = (struct die_args *)data;
++
++	switch (val) {
++		case DIE_OOPS:
++		case DIE_DEBUGGER:
++			if (xmon(args->regs))
++				return NOTIFY_STOP;
++			break;
++		case DIE_IABR_MATCH:
++			if (xmon_iabr_match(args->regs))
++				return NOTIFY_STOP;
++			break;
++		case DIE_DABR_MATCH:
++			if (xmon_dabr_match(args->regs))
++				return NOTIFY_STOP;
++			break;
++		case DIE_BPT:
++			if (xmon_bpt(args->regs))
++				return NOTIFY_STOP;
++			break;
++		case DIE_SSTEP:
++			if (xmon_sstep(args->regs))
++				return NOTIFY_STOP;
++			break;
++		case DIE_PAGE_FAULT:
++			if ((TRAP(args->regs) == 0x300 ||
++			    TRAP(args->regs) == 0x400) &&
++			    xmon_fault_handler(args->regs))
++				return NOTIFY_STOP;
++			break;
++		case DIE_MACHINE_CHECK:
++			if (xmon_fault_handler(args->regs)) {
++				/* XXX doesnt look safe to me */
++				args->regs->msr |= MSR_RI;
++				return NOTIFY_STOP;
++			}
++			break;
++		case DIE_IPI:
++			if (!xmon_ipi(args->regs))
++				return NOTIFY_STOP;
++			break;
++		default:
++			break;
++	}
++
++	return NOTIFY_DONE;
 +}
 +
- void exit_thread(void)
++/* XXX What priority should we set? */
++static struct notifier_block xmon_exceptions_nb = {
++	.notifier_call = xmon_exceptions_notify,
++};
++
++static struct notifier_block xmon_page_fault_nb = {
++	.notifier_call = xmon_exceptions_notify,
++};
++
++void xmon_enable(void)
  {
- 	discard_lazy_cpu_state();
-@@ -884,7 +891,8 @@
- 
- static int kstack_depth_to_print = 64;
- 
--void show_stack(struct task_struct *tsk, unsigned long *stack)
-+static void show_stack_log_lvl(struct task_struct *tsk, unsigned long *stack,
-+			       char *log_lvl)
- {
- 	unsigned long sp, ip, lr, newsp;
- 	int count = 0;
-@@ -901,7 +909,7 @@
- 	}
- 
- 	lr = 0;
--	printk("Call Trace:\n");
-+	printk("%sCall Trace:\n", log_lvl);
- 	do {
- 		if (!validate_sp(sp, tsk, MIN_STACK_FRAME))
- 			return;
-@@ -910,7 +918,7 @@
- 		newsp = stack[0];
- 		ip = stack[FRAME_LR_SAVE];
- 		if (!firstframe || ip != lr) {
--			printk("["REG"] ["REG"] ", sp, ip);
-+			printk("%s["REG"] ["REG"] ", log_lvl, sp, ip);
- 			print_symbol("%s", ip);
- 			if (firstframe)
- 				printk(" (unreliable)");
-@@ -926,9 +934,10 @@
- 		    && stack[FRAME_MARKER] == REGS_MARKER) {
- 			struct pt_regs *regs = (struct pt_regs *)
- 				(sp + STACK_FRAME_OVERHEAD);
--			printk("--- Exception: %lx", regs->trap);
-+			printk("%s--- Exception: %lx", log_lvl, regs->trap);
- 			print_symbol(" at %s\n", regs->nip);
- 			lr = regs->link;
-+			printk(KERN_EMERG);
- 			print_symbol("    LR = %s\n", lr);
- 			firstframe = 1;
- 		}
-@@ -937,6 +946,11 @@
- 	} while (count++ < kstack_depth_to_print);
+-#ifdef CONFIG_PPC_ISERIES
+ 	if (firmware_has_feature(FW_FEATURE_ISERIES))
+ 		return;
+-#endif
+-	if (enable) {
+-		__debugger = xmon;
+-		__debugger_ipi = xmon_ipi;
+-		__debugger_bpt = xmon_bpt;
+-		__debugger_sstep = xmon_sstep;
+-		__debugger_iabr_match = xmon_iabr_match;
+-		__debugger_dabr_match = xmon_dabr_match;
+-		__debugger_fault_handler = xmon_fault_handler;
+-	} else {
+-		__debugger = NULL;
+-		__debugger_ipi = NULL;
+-		__debugger_bpt = NULL;
+-		__debugger_sstep = NULL;
+-		__debugger_iabr_match = NULL;
+-		__debugger_dabr_match = NULL;
+-		__debugger_fault_handler = NULL;
+-	}
++
++	register_die_notifier(&xmon_exceptions_nb);
++	register_page_fault_notifier(&xmon_page_fault_nb);
+ 	xmon_map_scc();
  }
  
-+void show_stack(struct task_struct *tsk, unsigned long *stack)
++void xmon_disable(void)
 +{
-+	show_stack_log_lvl(tsk, stack, "");
++	if (firmware_has_feature(FW_FEATURE_ISERIES))
++		return;
++
++	unregister_die_notifier(&xmon_exceptions_nb);
++	unregister_page_fault_notifier(&xmon_page_fault_nb);
 +}
 +
- void dump_stack(void)
+ #ifdef CONFIG_MAGIC_SYSRQ
+ static void sysrq_handle_xmon(int key, struct tty_struct *tty) 
  {
- 	show_stack(current, NULL);
+ 	/* ensure xmon is enabled */
+-	xmon_init(1);
+-	debugger(get_irq_regs());
++	xmon_enable();
++	xmon(get_irq_regs());
+ }
+ 
+ static struct sysrq_key_op sysrq_xmon_op = 
+@@ -2621,10 +2675,8 @@
+ 
+ static int __init setup_xmon_sysrq(void)
+ {
+-#ifdef CONFIG_PPC_ISERIES
+ 	if (firmware_has_feature(FW_FEATURE_ISERIES))
+ 		return 0;
+-#endif
+ 	register_sysrq_key('x', &sysrq_xmon_op);
+ 	return 0;
+ }
+@@ -2637,10 +2689,10 @@
+ {
+ 	if (!p || strncmp(p, "early", 5) == 0) {
+ 		/* just "xmon" is equivalent to "xmon=early" */
+-		xmon_init(1);
++		xmon_enable();
+ 		xmon_early = 1;
+ 	} else if (strncmp(p, "on", 2) == 0)
+-		xmon_init(1);
++		xmon_enable();
+ 	else if (strncmp(p, "off", 3) == 0)
+ 		xmon_off = 1;
+ 	else if (strncmp(p, "nobt", 4) == 0)
+@@ -2656,10 +2708,10 @@
+ {
+ #ifdef CONFIG_XMON_DEFAULT
+ 	if (!xmon_off)
+-		xmon_init(1);
++		xmon_enable();
+ #endif
+ 	if (xmon_early)
+-		debugger(NULL);
++		xmon(NULL);
+ }
+ 
+ #ifdef CONFIG_SPU_BASE
 Index: linux-2.6/include/asm-powerpc/system.h
 ===================================================================
---- linux-2.6.orig/include/asm-powerpc/system.h	2007-03-20 09:53:19.000000000 -0500
-+++ linux-2.6/include/asm-powerpc/system.h	2007-03-20 09:53:58.000000000 -0500
-@@ -103,6 +103,7 @@
+--- linux-2.6.orig/include/asm-powerpc/system.h	2007-03-20 09:53:58.000000000 -0500
++++ linux-2.6/include/asm-powerpc/system.h	2007-03-20 09:54:03.000000000 -0500
+@@ -65,42 +65,6 @@
+ struct task_struct;
+ struct pt_regs;
  
+-#ifdef CONFIG_DEBUGGER
+-
+-extern int (*__debugger)(struct pt_regs *regs);
+-extern int (*__debugger_ipi)(struct pt_regs *regs);
+-extern int (*__debugger_bpt)(struct pt_regs *regs);
+-extern int (*__debugger_sstep)(struct pt_regs *regs);
+-extern int (*__debugger_iabr_match)(struct pt_regs *regs);
+-extern int (*__debugger_dabr_match)(struct pt_regs *regs);
+-extern int (*__debugger_fault_handler)(struct pt_regs *regs);
+-
+-#define DEBUGGER_BOILERPLATE(__NAME) \
+-static inline int __NAME(struct pt_regs *regs) \
+-{ \
+-	if (unlikely(__ ## __NAME)) \
+-		return __ ## __NAME(regs); \
+-	return 0; \
+-}
+-
+-DEBUGGER_BOILERPLATE(debugger)
+-DEBUGGER_BOILERPLATE(debugger_ipi)
+-DEBUGGER_BOILERPLATE(debugger_bpt)
+-DEBUGGER_BOILERPLATE(debugger_sstep)
+-DEBUGGER_BOILERPLATE(debugger_iabr_match)
+-DEBUGGER_BOILERPLATE(debugger_dabr_match)
+-DEBUGGER_BOILERPLATE(debugger_fault_handler)
+-
+-#else
+-static inline int debugger(struct pt_regs *regs) { return 0; }
+-static inline int debugger_ipi(struct pt_regs *regs) { return 0; }
+-static inline int debugger_bpt(struct pt_regs *regs) { return 0; }
+-static inline int debugger_sstep(struct pt_regs *regs) { return 0; }
+-static inline int debugger_iabr_match(struct pt_regs *regs) { return 0; }
+-static inline int debugger_dabr_match(struct pt_regs *regs) { return 0; }
+-static inline int debugger_fault_handler(struct pt_regs *regs) { return 0; }
+-#endif
+-
  extern int set_dabr(unsigned long dabr);
  extern void print_backtrace(unsigned long *);
-+extern void show_regs_log_lvl(struct pt_regs * regs, char * log_lvl);
- extern void show_regs(struct pt_regs * regs);
- extern void flush_instruction_cache(void);
- extern void hard_reset_now(void);
+ extern void show_regs_log_lvl(struct pt_regs * regs, char * log_lvl);
+Index: linux-2.6/arch/powerpc/kernel/traps.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/traps.c	2007-03-20 09:54:01.000000000 -0500
++++ linux-2.6/arch/powerpc/kernel/traps.c	2007-03-20 09:54:03.000000000 -0500
+@@ -54,24 +54,6 @@
+ #endif
+ #include <asm/kexec.h>
+ 
+-#ifdef CONFIG_DEBUGGER
+-int (*__debugger)(struct pt_regs *regs);
+-int (*__debugger_ipi)(struct pt_regs *regs);
+-int (*__debugger_bpt)(struct pt_regs *regs);
+-int (*__debugger_sstep)(struct pt_regs *regs);
+-int (*__debugger_iabr_match)(struct pt_regs *regs);
+-int (*__debugger_dabr_match)(struct pt_regs *regs);
+-int (*__debugger_fault_handler)(struct pt_regs *regs);
+-
+-EXPORT_SYMBOL(__debugger);
+-EXPORT_SYMBOL(__debugger_ipi);
+-EXPORT_SYMBOL(__debugger_bpt);
+-EXPORT_SYMBOL(__debugger_sstep);
+-EXPORT_SYMBOL(__debugger_iabr_match);
+-EXPORT_SYMBOL(__debugger_dabr_match);
+-EXPORT_SYMBOL(__debugger_fault_handler);
+-#endif
+-
+ ATOMIC_NOTIFIER_HEAD(powerpc_die_chain);
+ 
+ int register_die_notifier(struct notifier_block *nb)
+@@ -126,9 +108,6 @@
+ 		       NOTIFY_STOP)
+ 		return 1;
+ 
+-	if (debugger(regs))
+-		return 1;
+-
+ 	oops_enter();
+ 
+ 	if (die.lock_owner != raw_smp_processor_id()) {
+@@ -383,11 +362,6 @@
+ 		return;
+ 	}
+ 
+-	if (debugger_fault_handler(regs)) {
+-		regs->msr |= MSR_RI;
+-		return;
+-	}
+-
+ 	if (check_io_access(regs))
+ 		return;
+ 
+@@ -539,8 +513,6 @@
+ 	if (notify_die(DIE_IABR_MATCH, "iabr_match", regs, 5,
+ 					5, SIGTRAP) == NOTIFY_STOP)
+ 		return;
+-	if (debugger_iabr_match(regs))
+-		return;
+ 	_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
+ }
+ 
+@@ -556,8 +528,6 @@
+ 	if (notify_die(DIE_SSTEP, "single_step", regs, 5,
+ 					5, SIGTRAP) == NOTIFY_STOP)
+ 		return;
+-	if (debugger_sstep(regs))
+-		return;
+ 
+ 	_exception(SIGTRAP, regs, TRAP_TRACE, regs->nip);
+ }
+@@ -798,8 +768,6 @@
+ 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
+ 				== NOTIFY_STOP)
+ 			return;
+-		if (debugger_bpt(regs))
+-			return;
+ 
+ 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
+ 		    report_bug(regs->nip) == BUG_TRAP_TYPE_WARN) {
+@@ -888,7 +856,7 @@
+ {
+ 	printk(KERN_CRIT "Kernel stack overflow in process %p, r1=%lx\n",
+ 	       current, regs->gpr[1]);
+-	debugger(regs);
++	notify_die(DIE_DEBUGGER, "die", regs, 5, 5, SIGSEGV);
+ 	show_regs(regs);
+ 	panic("kernel stack overflow");
+ }
+@@ -999,8 +967,6 @@
+ 			if (notify_die(DIE_SSTEP, "single_step", regs, 5, 5,
+ 				       SIGTRAP) == NOTIFY_STOP)
+ 				return;
+-			if (debugger_sstep(regs))
+-				return;
+ 		}
+ 		_exception(SIGTRAP, regs, TRAP_TRACE, 0);
+ 	}
 Index: linux-2.6/arch/powerpc/mm/fault.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/mm/fault.c	2007-03-20 09:53:19.000000000 -0500
-+++ linux-2.6/arch/powerpc/mm/fault.c	2007-03-20 09:53:58.000000000 -0500
-@@ -429,20 +429,20 @@
- 	switch (regs->trap) {
- 	case 0x300:
- 	case 0x380:
--		printk(KERN_ALERT "Unable to handle kernel paging request for "
-+		printk(KERN_EMERG "Unable to handle kernel paging request for "
- 			"data at address 0x%08lx\n", regs->dar);
- 		break;
- 	case 0x400:
- 	case 0x480:
--		printk(KERN_ALERT "Unable to handle kernel paging request for "
-+		printk(KERN_EMERG "Unable to handle kernel paging request for "
- 			"instruction fetch\n");
- 		break;
- 	default:
--		printk(KERN_ALERT "Unable to handle kernel paging request for "
-+		printk(KERN_EMERG "Unable to handle kernel paging request for "
- 			"unknown fault\n");
- 		break;
- 	}
--	printk(KERN_ALERT "Faulting instruction address: 0x%08lx\n",
-+	printk(KERN_EMERG "Faulting instruction address: 0x%08lx\n",
- 		regs->nip);
+--- linux-2.6.orig/arch/powerpc/mm/fault.c	2007-03-20 09:54:02.000000000 -0500
++++ linux-2.6/arch/powerpc/mm/fault.c	2007-03-20 09:54:03.000000000 -0500
+@@ -115,9 +115,6 @@
+ 			11, SIGSEGV) == NOTIFY_STOP)
+ 		return;
  
- 	die("Kernel access of bad area", regs, sig);
+-	if (debugger_dabr_match(regs))
+-		return;
+-
+ 	/* Clear the DABR */
+ 	set_dabr(0);
+ 
+@@ -173,11 +170,6 @@
+ 				11, SIGSEGV) == NOTIFY_STOP)
+ 		return 0;
+ 
+-	if (trap == 0x300) {
+-		if (debugger_fault_handler(regs))
+-			return 0;
+-	}
+-
+ 	/* On a kernel SLB miss we can only check for a valid exception entry */
+ 	if (!user_mode(regs) && (address >= TASK_SIZE))
+ 		return SIGSEGV;
+Index: linux-2.6/arch/powerpc/kernel/smp.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/kernel/smp.c	2007-03-20 09:53:19.000000000 -0500
++++ linux-2.6/arch/powerpc/kernel/smp.c	2007-03-20 09:54:03.000000000 -0500
+@@ -45,6 +45,7 @@
+ #include <asm/system.h>
+ #include <asm/mpic.h>
+ #include <asm/vdso_datapage.h>
++#include <asm/kdebug.h>
+ #ifdef CONFIG_PPC64
+ #include <asm/paca.h>
+ #endif
+@@ -108,10 +109,9 @@
+ 			crash_ipi_function_ptr(get_irq_regs());
+ 			break;
+ 		}
+-#ifdef CONFIG_DEBUGGER
+-		debugger_ipi(get_irq_regs());
+-		break;
+-#endif /* CONFIG_DEBUGGER */
++		if (notify_die(DIE_IPI, "smp_call_function",
++			       get_irq_regs(), 5, 5, SIGSEGV) == NOTIFY_STOP)
++			break;
+ 		/* FALLTHROUGH */
+ 	default:
+ 		printk("SMP %d: smp_message_recv(): unknown msg %d\n",
+@@ -233,7 +233,8 @@
+ 			printk("smp_call_function on cpu %d: other cpus not "
+ 			       "responding (%d)\n", smp_processor_id(),
+ 			       atomic_read(&data.started));
+-			debugger(NULL);
++			notify_die(DIE_DEBUGGER, "smp_call_function",
++				   NULL, 5, 5, SIGSEGV);
+ 			goto out;
+ 		}
+ 	}
+@@ -247,7 +248,8 @@
+ 				       smp_processor_id(),
+ 				       atomic_read(&data.finished),
+ 				       atomic_read(&data.started));
+-				debugger(NULL);
++				notify_die(DIE_DEBUGGER, "smp_call_function",
++					   NULL, 5, 5, SIGSEGV);
+ 				goto out;
+ 			}
+ 		}
+Index: linux-2.6/include/asm-powerpc/kdebug.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/kdebug.h	2007-03-20 09:54:02.000000000 -0500
++++ linux-2.6/include/asm-powerpc/kdebug.h	2007-03-20 09:54:03.000000000 -0500
+@@ -31,6 +31,8 @@
+ 	DIE_SSTEP,
+ 	DIE_PAGE_FAULT,
+ 	DIE_MACHINE_CHECK,
++	DIE_IPI,
++	DIE_DEBUGGER,
+ };
+ 
+ static inline int notify_die(enum die_val val, const char *str,
 
 --
