@@ -1,18 +1,17 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 314E1DDF45
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 01F0EDDF51
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Mar 2007 02:43:20 +1100 (EST)
+	Thu, 22 Mar 2007 02:50:31 +1100 (EST)
+Date: Wed, 21 Mar 2007 11:04:38 -0500
 To: Valentine Barshak <vbarshak@ru.mvista.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH] PPC440EPx/440GRx Sequoia/Rainier board support. 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Wed, 21 Mar 2007 17:50:06 +0300."
-	<4601461E.9010006@ru.mvista.com>
-Date: Wed, 21 Mar 2007 16:43:17 +0100
-Sender: wd@denx.de
-Message-Id: <20070321154317.924703535D3@atlas.denx.de>
+Subject: Re: [PATCH] PPC440EPx/440GRx EMAC support.
+Message-ID: <20070321160438.GA3023@lixom.net>
+References: <46003608.70308@ru.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46003608.70308@ru.mvista.com>
+From: olof@lixom.net (Olof Johansson)
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,60 +23,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Valentine,
+On Tue, Mar 20, 2007 at 10:29:12PM +0300, Valentine Barshak wrote:
 
-in message <4601461E.9010006@ru.mvista.com> you wrote:
->
-> Add AMCC PPC440EPx/440GRx Sequoia/Rainier board support.
-> 
-> Signed-off-by: Stefan Roese <sr@denx.de>
-> Signed-off-by: Valentine Barshak <vbarshak@ru.mvista.com>
+> diff -ruN linux.orig/drivers/net/ibm_emac/ibm_emac_core.c linux/drivers/net/ibm_emac/ibm_emac_core.c
+> --- linux.orig/drivers/net/ibm_emac/ibm_emac_core.c	2007-03-16 18:03:51.000000000 +0300
+> +++ linux/drivers/net/ibm_emac/ibm_emac_core.c	2007-03-18 18:53:08.000000000 +0300
+> @@ -86,7 +86,8 @@
+>  static u32 busy_phy_map;
+>  
+>  #if defined(CONFIG_IBM_EMAC_PHY_RX_CLK_FIX) && \
+> -    (defined(CONFIG_405EP) || defined(CONFIG_440EP) || defined(CONFIG_440GR))
+> +    (defined(CONFIG_405EP) || defined(CONFIG_440EP) || defined(CONFIG_440GR) || \
+> +     defined(CONFIG_440EPX) || defined(CONFIG_440GRX))
 
-Umm...
+This is getting out of control. Please add a config option for this,
+and add "select" statements to the Kconfig file where any of the above
+CONFIG_4.* are defined. 
 
-> --- linux.orig/arch/ppc/platforms/4xx/ppc440epx.c	1970-01-01 03:00:00.000000000 +0300
-> +++ linux/arch/ppc/platforms/4xx/ppc440epx.c	2007-03-20 14:43:37.000000000 +0300
-> @@ -0,0 +1,284 @@
-> +/*
-> + * arch/ppc/platforms/4xx/ppc440epx.c
-> + *
-> + * PPC440EPx I/O descriptions
-> + *
-> + * Wade Farnsworth <wfarnsworth@mvista.com>
-> + * Copyright 2004-2007 MontaVista Software Inc.
-> + * Copyright 2006 AMCC
+>  /* 405EP has "EMAC to PHY Control Register" (CPC0_EPCTL) which can help us
+>   * with PHY RX clock problem.
+>   * 440EP/440GR has more sane SDR0_MFR register implementation than 440GX, which
+> diff -ruN linux.orig/drivers/net/ibm_emac/ibm_emac.h linux/drivers/net/ibm_emac/ibm_emac.h
+> --- linux.orig/drivers/net/ibm_emac/ibm_emac.h	2007-03-16 18:03:51.000000000 +0300
+> +++ linux/drivers/net/ibm_emac/ibm_emac.h	2007-03-18 18:53:08.000000000 +0300
+> @@ -26,7 +26,7 @@
+>  #if !defined(CONFIG_405GP) && !defined(CONFIG_405GPR) && !defined(CONFIG_405EP) && \
+>      !defined(CONFIG_440GP) && !defined(CONFIG_440GX) && !defined(CONFIG_440SP) && \
+>      !defined(CONFIG_440EP) && !defined(CONFIG_NP405H) && !defined(CONFIG_440SPE) && \
+> -    !defined(CONFIG_440GR)
+> +    !defined(CONFIG_440GR) && !defined(CONFIG_440EPX) && !defined(CONFIG_440GRX)
 
-The same file in our repository looks like this:
-
-/*
- * arch/ppc/platforms/4xx/ppc440epx.c
- *
- * PPC440EPx I/O descriptions
- *
- * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
- *
- * Wade Farnsworth <wfarnsworth@mvista.com>
- * Copyright 2004 MontaVista Software Inc.
- * Copyright 2006 AMCC
+Same here. I know you only added a couple more, but it's reached critical
+mass (well, it did a while ago).
 
 
-In other words: You *removed* Stefan Roese's (resp.  DENX)  Copyright
-entry, and replaced it by one for MV?
 
-
-I think this was not done by accident.
-
-I don't know what to say.
-
-
-I think your patches should be rejected.
-
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"If you own a machine, you are in turn owned by it,  and  spend  your
-time serving it..."    - Marion Zimmer Bradley, _The Forbidden Tower_
+-Olof
