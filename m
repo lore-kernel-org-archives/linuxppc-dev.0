@@ -1,31 +1,24 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 7D289DDEDE
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 02:01:56 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l2LF1n6i008527
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 08:01:53 -0700 (MST)
-Received: from Artemis.local (mvp-10-214-72-23.am.freescale.net [10.214.72.23])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2LF1mPY003090
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 10:01:48 -0500 (CDT)
-Message-ID: <460148DC.3020600@freescale.com>
-Date: Wed, 21 Mar 2007 10:01:48 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
+Return-Path: <miltonm@sullivan.realtime.net>
+Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 82580DDF6B
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 02:02:35 +1100 (EST)
+Received: from sullivan.realtime.net (localhost [127.0.0.1])
+	by sullivan.realtime.net (8.13.1/8.9.3) with ESMTP id l2LF2RvU008480
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 09:02:27 -0600 (CST)
+	(envelope-from miltonm@sullivan.realtime.net)
+Received: (from miltonm@localhost)
+	by sullivan.realtime.net (8.13.1/8.12.7/Submit) id l2LF2OGq008476
+	for linuxppc-dev@ozlabs.org; Wed, 21 Mar 2007 09:02:24 -0600 (CST)
+Date: Wed, 21 Mar 2007 09:02:24 -0600 (CST)
+Subject: [PATCH 0/8] boot: cleanup and prep for more platforms
+Sender: <miltonm@realtime.net>
+From: Milton Miller <miltonm@bga.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
-	<20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-	<20070318115656.GA12765@localhost.localdomain>
-	<45FEA7B3.9090304@freescale.com>
-	<20070320035957.GC21124@localhost.localdomain>
-	<45FFE8FD.9020902@freescale.com>
-	<20070321025447.GG27969@localhost.localdomain>
-In-Reply-To: <20070321025447.GG27969@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <boot-2-00.miltonm@bga.com>
+In-Reply-To: <boot-00.miltonm@bga.com>
+Cc: Paul Mackerras <paulus@samba.org>, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,54 +28,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+After comments from David, I am resending.  Per his request, I have
+moved 4-7 to 0-3, and moved the common rule invocation last.  I
+also added the missing sign offs.
 
-> Ah, and it can't add the property if it's not there at all.  Ok, I
-> think I understand now.  But.. does u-boot directly use the dts files
-> from the kernel tree, or does it have its own copies?
+I substantially reworked the zImage-rule one, including it be just
+a default rule that any platform target can override.  Hopefully
+this will make it mergable now, even as we defer how to select
+the dtb and dts.  I also inserted a patch to fix the clean target
+in the boot directory.
 
-I'm not sure what you mean by that.  You compile the DTS into a DTB, and 
-then make the DTB available to U-Boot.  That can mean either storing it 
-in flash, or tftp'ing it into memory.  When you boot Linux via the 
-U-Boot "bootm" command, you give it the address of the DTB in memory. 
-U-Boot than looks for various things and updates them.  It also creates 
-a couple new things, like a 'chosen' section.
+milton
 
-If the DTB is in flash, it copies it to RAM.  Then it updates the 
-in-memory copy.  It's very hack-ish, though.  I think it just overwrites 
-various nodes as it pleases, and then reconnects everything.
-
-> The maybe was more in relation to should we delete the mac-address
-> property.  But that would have the same brokenness as removing
-> mac-address from the dts on old, broken u-boot's that set mac-address
-> instead of local-mac-address.
-
-I was talking about the bootwrapper deleting the mac-address property, 
-*after* U-Boot has processed the DTB and handed it to the kernel.
-
->> What if U-Boot were smart enough to insert all of the required items in 
->> one shot, and then filled them in?
-> 
-> I don't see how that's reasonably possible when the items in question
-> are properties in different nodes.
-
-Ok.
-
-> Uh.. how does it require synchronization with u-boot?  
-> This is really
-> just a form of internal documentation in the dts which shows which
-> properties are expected to be present, but overwrriten by the
-> bootloader.
-
-Ok, I understand now, but I don't know what value it has.  I don't see 
-the difference, from the DTS point-of-view, between
-
-	local-mac-address = [ 00 00 00 00 00 00 ]
-
-and
-
-	local-mac-address = [ ? ? ? ? ? ? ];
-
-In both cases, the property exists in the DTS.  The whole point was to 
-remove it from the DTS entirely, and let U-Boot realize that it needs to 
-be added.  I don't want DTC to need to know what's missing from a DTS.
+boot-add-fatal
+boot-crt0-missing-reloc
+boot-crt0-export
+boot-export-flush-cache
+boot-add-wrapper-to-wrapperbits
+boot-add-FORCE
+boot-fix-clean
+boot-zImage-rule
