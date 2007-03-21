@@ -1,19 +1,21 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 93985DDFD5
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 02:56:07 +1100 (EST)
-Message-ID: <4601558F.3080004@freescale.com>
-Date: Wed, 21 Mar 2007 10:55:59 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>	<20070317013159.GH3969@localhost.localdomain>	<45FC8643.1080807@freescale.com>	<20070318115656.GA12765@localhost.localdomain>	<45FEA7B3.9090304@freescale.com>	<20070320035957.GC21124@localhost.localdomain>	<45FFE8FD.9020902@freescale.com>	<20070321025447.GG27969@localhost.localdomain>
-	<460148DC.3020600@freescale.com>
-	<46014E6A.90002@smiths-aerospace.com>
-In-Reply-To: <46014E6A.90002@smiths-aerospace.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <b07421@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id A033EDDF5E
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 03:01:20 +1100 (EST)
+Date: Wed, 21 Mar 2007 11:01:12 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 03/17] bootwrapper: Add xlate_reg(),
+	and use it to find serial registers.
+Message-ID: <20070321160112.GA31655@ld0162-tx32.am.freescale.net>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172757.GC29784@ld0162-tx32.am.freescale.net>
+	<20070320035005.GB21124@localhost.localdomain>
+	<e07db139f025494f172389e2773a2e32@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <e07db139f025494f172389e2773a2e32@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +25,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jerry Van Baren wrote:
+On Wed, Mar 21, 2007 at 02:49:30PM +0100, Segher Boessenkool wrote:
+> I didn't look at the actual code but it should be really
+> small; I hope it doesn't copy the Linux code with its
+> millions of workarounds for broken device trees -- we
+> should insist on correct trees, or even just fix them
+> if they *are* broken ;-)
 
-> FWIIW, I'm getting close to having a usable implementation of a new 
-> u-boot command "fdt" that is a lot cleaner than the hack-ish automagical 
-> bootm copying and updating (and uses libfdt - thanks, David!).  I just 
-> sent an update this morning:
-> <http://article.gmane.org/gmane.comp.boot-loaders.u-boot/27187>
+It's around 1700 bytes.  Most of the complexity is for dealing with
+different #address-cells and #size-cells -- if we could assume a max of 2
+for each, then it could be simplified quite a bit by using u64 instead of
+arrays.  However, that wouldn't work with PCI, which has 3 address cells.
 
-I saw that.  Once it gets incorporated into WD's tree, I'll take a look at it and see what 
-we can do with it.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+-Scott
