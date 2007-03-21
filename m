@@ -2,25 +2,23 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 83076DE191
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 02:03:18 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 0F3EDDE1E8
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 02:03:22 +1100 (EST)
 Received: from sullivan.realtime.net (localhost [127.0.0.1])
-	by sullivan.realtime.net (8.13.1/8.9.3) with ESMTP id l2LF3Fq9008528
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 09:03:15 -0600 (CST)
+	by sullivan.realtime.net (8.13.1/8.9.3) with ESMTP id l2LF3Jsq008532
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 09:03:19 -0600 (CST)
 	(envelope-from miltonm@sullivan.realtime.net)
 Received: (from miltonm@localhost)
-	by sullivan.realtime.net (8.13.1/8.12.7/Submit) id l2LF3F1v008527
-	for linuxppc-dev@ozlabs.org; Wed, 21 Mar 2007 09:03:15 -0600 (CST)
-Date: Wed, 21 Mar 2007 09:03:15 -0600 (CST)
-Message-Id: <200703211503.l2LF3F1v008527@sullivan.realtime.net>
-Subject: Re: Patch: [PATCH 04/17] bootwrapper: Make compression of the kernel
-	image optional.
-In-Reply-To: <20070316172759.GD29784@ld0162-tx32.am.freescale.net>
-To: Scott Wood <scottwood@freescale.com>
+	by sullivan.realtime.net (8.13.1/8.12.7/Submit) id l2LF3JRS008531
+	for linuxppc-dev@ozlabs.org; Wed, 21 Mar 2007 09:03:19 -0600 (CST)
+Date: Wed, 21 Mar 2007 09:03:19 -0600 (CST)
+Message-Id: <200703211503.l2LF3JRS008531@sullivan.realtime.net>
+Subject: Re: [PATCH 1/4] powerpc: Add gcc format warnings to zImage printf()
+Sender: <miltonm@realtime.net>
 From: Milton Miller <miltonm@bga.com>
-Sender: Milton Miller <miltonm@realtime.net>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20070321063149.ED879DDE47@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,12 +28,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-You missed two .gz in the code, which would result in ineffective caching.
-Found by inspection.
 
--if [ -z "$cacheit" -o ! -f "$vmz.gz" -o "$vmz.gz" -ot "$kernel" ]; then
-+if [ -z "$cacheit" -o ! -f "$vmz$gzip" -o "$vmz$gzip" -ot "$kernel" ]; then
++extern int sprintf(char *buf, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
 
-You also need to add these generated files to clean-files in the Makefile.
+you exceeded 80 columns by 10.
 
 milton
