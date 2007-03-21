@@ -1,21 +1,40 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 60EFDDDF09
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 65DA5DDE32
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 21 Mar 2007 13:41:24 +1100 (EST)
-Message-ID: <46009B2A.2020706@ovro.caltech.edu>
-Date: Tue, 20 Mar 2007 19:40:42 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Wed, 21 Mar 2007 19:34:28 +1100 (EST)
+Received: from server.idefix.lan (ppp-82-135-67-90.dynamic.mnet-online.de
+	[82.135.67.90]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2L8YBBa062703
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 21 Mar 2007 09:34:16 +0100 (CET)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1HTwGp-000HhU-Fs
+	for linuxppc-embedded@ozlabs.org; Wed, 21 Mar 2007 09:34:11 +0100
+Date: Wed, 21 Mar 2007 09:34:11 +0100
+From: Matthias Fechner <idefix@fechner.net>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Howto read I2C on MPC5200 Lite
+Message-ID: <20070321083410.GA67297@server.idefix.lan>
+References: <20070307122430.GA73298@server.idefix.lan>
+	<4b73d43f0703071317o7ae5e531s5eb4b390d41a1b88@mail.gmail.com>
+	<20070309113506.GB6726@server.idefix.lan>
+	<4b73d43f0703090911y3c2898cdmfdb84f8c7f5da8f@mail.gmail.com>
+	<20070309234251.GA68997@server.idefix.lan>
+	<20070311005535.GA39488@server.idefix.lan>
+	<20070315095758.GE14658@moe.telargo.com>
+	<20070317085749.GA75794@server.idefix.lan>
 MIME-Version: 1.0
-To: Adrian Craine <adrian.craine@nec.com.au>
-Subject: Re: MPC8347 PQ2 I2C driver
-References: <46009113.6050501@nec.com.au>
-In-Reply-To: <46009113.6050501@nec.com.au>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070317085749.GA75794@server.idefix.lan>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,60 +45,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Adrian Craine wrote:
-> Hi all,
-> 
-> Just a quick one, does any-one know if the i2c-mpc i2c driver will
-> function on a Freescale MPC8347?
-> 
+Hi,
 
-Seems to work fine on the MPC8349E-MDS-PB.
+* Matthias Fechner <idefix@fechner.net> [17-03-07 09:57]:
+> ok, I can confirm that this patch fixes the problem for me too.
+> I was now able to read my I2C sensor 97388 successfully and only 2814
+> readfailures happened.
+> That means an errorrate of 2.8% that is ok for me.
 
-I believe one of the engineers just installed the lm-sensors
-i2c tools and they worked fine, i.e., the i2c driver that
-is built by default in the Denx kernel and LTIB kernel
-works.
+I found now when it happens or better when it not happens.
 
-I know I've used the i2c tools without trouble.
+I boot my icecube board via NFS. If the board is up and I unplug the
+network I get no read errors.
+If the network is connected (NFS server responding) I got read errors
+on I2C with a rate of approximatly 3-4%.
+Seems to be a problem with the network driver.
 
-If its any use, here's what appears to be running on the
-board now (ELDK 4.0 based I believe ...)
+Best regards,
+Matthias
 
-bash-3.00# uname -a
-Linux cobralab1 2.6.18-rc2 #1 Tue Aug 8 13:04:42 PDT 2006 ppc ppc ppc 
-GNU/Linux
+-- 
 
-Here's the output from an MPC8349E-MDS-PB bus #0
-
-bash-3.00# i2cdetect -y 0
-      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
-00:          -- -- -- -- -- -- -- -- -- -- -- -- --
-10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-20: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-30: -- 31 -- -- -- -- -- -- -- -- -- -- -- -- -- 3f
-40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-50: 50 51 -- -- -- -- -- -- -- -- -- -- -- -- -- --
-60: -- -- -- -- -- -- -- -- 68 -- -- -- -- -- -- --
-70: -- -- -- -- -- -- -- --
-bash-3.00#
-
-and bus #1
-
-bash-3.00# i2cdetect -y 1
-      0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f
-00:          -- -- -- -- -- -- -- -- -- -- -- -- --
-10: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-20: -- 21 -- -- -- -- -- -- -- -- -- -- -- -- -- --
-30: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-40: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-50: 50 -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-60: -- -- -- -- -- -- -- -- -- -- -- -- -- -- -- --
-70: -- -- -- -- -- -- -- --
-bash-3.00#
-
-I've hooked up an AD7998 I2C eval board to bus #1
-at address 21h. Normally you'd only see the EEPROM
-at 50h.
-
-Cheers,
-Dave
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
