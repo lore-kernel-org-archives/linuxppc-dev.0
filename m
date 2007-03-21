@@ -1,19 +1,28 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id C992EDDF13
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 08:25:33 +1100 (EST)
-Date: Wed, 21 Mar 2007 16:39:45 -0500
-To: Jake Moilanen <moilanen@austin.ibm.com>
-Subject: Re: [PATCH] DMA 4GB boundary protection
-Message-ID: <20070321213945.GA11404@lixom.net>
-References: <1172872183.5310.145.camel@goblue>
-	<20070303232915.GB8028@lixom.net>
-	<1174511149.5225.135.camel@goblue>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1174511149.5225.135.camel@goblue>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 86D2CDDEFC
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 08:46:03 +1100 (EST)
+In-Reply-To: <1174508651.10836.4.camel@localhost.localdomain>
+References: <11740199151814-git-send-email-wei.zhang@freescale.com>
+	<11740199152595-git-send-email-wei.zhang@freescale.com>
+	<11740199154116-git-send-email-wei.zhang@freescale.com>
+	<11740199152381-git-send-email-wei.zhang@freescale.com>
+	<1174359820.10827.8.camel@concordia.ozlabs.ibm.com>
+	<65a42fd7d277db5f565849a07d8dea90@kernel.crashing.org>
+	<1174508651.10836.4.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <016c9b6f097a7688dd80ff73bb68a61b@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 4/4] Add irq debugfs and virq_mapping for getting the virq
+	to irq host's hwirq mapping list.
+Date: Wed, 21 Mar 2007 22:45:42 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, r54964@freescale.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,40 +32,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 21, 2007 at 04:05:48PM -0500, Jake Moilanen wrote:
-> > > I propose fixing it in the IOMMU allocation instead of making each
-> > > driver protect against it as it is more efficient, and won't require
-> > > changing every driver which has not considered this issue.
-> > 
-> > The drawback of this patch is that it adds code to every single allocation.
-> > Instead, you should just mark the last entry before the 4GB boundary
-> > as allocated when you setup the bitmaps for the table. That way, no
-> > allocation will ever be able to cross over.
-> 
-> Agreed.  While it's not an issue at 4KB, when we go to say 64k, or 16MB
-> TCE sizes, this extra space will be wasted.  But, I believe we'll need a
-> little code for this anyways.
+>> Or put the whole IRQ tree under sysfs generically...
+>
+> Except that there is no such thing as an IRQ tree in the generic 
+> code...
 
-Doing 16MB mappings will have it's challenges anyway, especially for
-things such as network and file I/O. It's similar to what happens for
-64kB base page size and the buffer cache: lots and lots of waste, and
-the risk of running out of address space is high (depending on how big
-the window is per device, of course).
-
-> > Even nicer would be to only do it when a boot option is specified, so
-> > we actually have a chance to expose and find the driver bugs instead of
-> > papering them over.
-> 
-> Done.
-> 
-> > Also, remember to use IOMMU_PAGE_SHIFT instead of PAGE_SHIFT, they might
-> > be different.
-> 
-> Yup...
-> 
-> Here's a patch addressing Olof's concerns.
-
-Thanks, I'll have a closer look at it tonight.
+Darn, I thought the whole cascading thing was done in
+generic code now.  Oh well...
 
 
--Olof
+Segher
