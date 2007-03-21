@@ -1,21 +1,21 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id A033EDDF5E
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 03:01:20 +1100 (EST)
-Date: Wed, 21 Mar 2007 11:01:12 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 03/17] bootwrapper: Add xlate_reg(),
-	and use it to find serial registers.
-Message-ID: <20070321160112.GA31655@ld0162-tx32.am.freescale.net>
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172757.GC29784@ld0162-tx32.am.freescale.net>
-	<20070320035005.GB21124@localhost.localdomain>
-	<e07db139f025494f172389e2773a2e32@kernel.crashing.org>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8AE7BDDE3C
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 03:13:49 +1100 (EST)
+Date: Wed, 21 Mar 2007 17:13:42 +0100
+From: Christoph Hellwig <hch@lst.de>
+To: anton@samba.org
+Subject: Re: [patch 07/10] Page fault handler should not depend on
+	CONFIG_KPROBES
+Message-ID: <20070321161342.GA17211@lst.de>
+References: <20070321013810.404636000@samba.org>
+	<20070321013825.385423000@samba.org>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <e07db139f025494f172389e2773a2e32@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20070321013825.385423000@samba.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,16 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 21, 2007 at 02:49:30PM +0100, Segher Boessenkool wrote:
-> I didn't look at the actual code but it should be really
-> small; I hope it doesn't copy the Linux code with its
-> millions of workarounds for broken device trees -- we
-> should insist on correct trees, or even just fix them
-> if they *are* broken ;-)
+On Tue, Mar 20, 2007 at 08:38:17PM -0500, anton@samba.org wrote:
+> Like x86-64, change the page fault notifier code to not depend on
+> CONFIG_KPROBES and export the handlers.
 
-It's around 1700 bytes.  Most of the complexity is for dealing with
-different #address-cells and #size-cells -- if we could assume a max of 2
-for each, then it could be simplified quite a bit by using u64 instead of
-arrays.  However, that wouldn't work with PCI, which has 3 address cells.
+NACK until the performace implication a fixed.  Martin measured this
+costs 300 cycles on s390 even without any notifier activce, and while
+ppc might be slightly bad that's still too much to add to the pagefault
+handler unconditionally.  Please add a light weight method to check
+whether there is any activce user of the notifications.  Also please
+move the code into kernel/ at the same time instead of having the exact
+same thing duplicated all over, as in my notify_die patches.
 
--Scott
+> +EXPORT_SYMBOL_GPL(register_page_fault_notifier);
+
+> +EXPORT_SYMBOL_GPL(unregister_page_fault_notifier);
+
+Please drop these exports.  There's not modular users of it, and
+the target users (kprobes and debuggers) can't be modular either.
