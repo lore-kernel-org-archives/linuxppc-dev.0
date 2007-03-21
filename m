@@ -1,15 +1,18 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 22 Mar 2007 10:31:31 +1100
+Date: Thu, 22 Mar 2007 10:42:26 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 2/4] powerpc: Add device tree utility functions to zImage
-Message-ID: <20070321233131.GA2295@localhost.localdomain>
-References: <20070321063150.04BA4DDE9F@ozlabs.org>
-	<d33fab3c1f5376bc078ea1b805babbdc@kernel.crashing.org>
+Subject: Re: [PATCH 07/17] bootwrapper: Add dt_set_memory(),
+	to fill in the /memory node.
+Message-ID: <20070321234226.GB2295@localhost.localdomain>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172848.GG29784@ld0162-tx32.am.freescale.net>
+	<20070317012654.GE3969@localhost.localdomain>
+	<c01196ee10aa2b13278465a835a49fdf@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <d33fab3c1f5376bc078ea1b805babbdc@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <c01196ee10aa2b13278465a835a49fdf@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,25 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-On Wed, Mar 21, 2007 at 06:10:21PM +0100, Segher Boessenkool wrote:
-> > @@ -262,6 +253,10 @@ void start(void *sp)
-> >  	printf("\n\rzImage starting: loaded at 0x%p (sp: 0x%p)\n\r",
-> >  	       _start, sp);
-> >
-> > +	/* Ensure that the device tree has a /chosen node */
-> > +	if (! finddevice("/chosen"))
-> > +		create_node(NULL, "chosen");
-> > +
-> >  	vmlinux = prep_kernel();
-> >  	initrd = prep_initrd(vmlinux, loader_info.initrd_addr,
-> >  			     loader_info.initrd_size);
+On Wed, Mar 21, 2007 at 02:32:55PM +0100, Segher Boessenkool wrote:
+> > However, #address-cells=2, #size-cells=1 is common enough that we
+> > really need to support that case.
 > 
-> So this is done early, and unconditional now?  Just
-> double checking, not enough context (for me, anyway)
-> in the patch itself.
+> On the root node?!?  Who would do such a strange thing?
 
-Yes, that's right.
+Ebony, for one, it works nicely for a 32-bit system with >32-bit bus.
+Apple G5s do it too.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
