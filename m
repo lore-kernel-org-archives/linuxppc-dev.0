@@ -1,21 +1,16 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102]) by ozlabs.org (Postfix) with ESMTP id 94BEADDFB9
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 02:15:19 +1100 (EST)
-Message-ID: <46014BF5.6060509@freescale.com>
-Date: Wed, 21 Mar 2007 10:15:01 -0500
-From: Timur Tabi <timur@freescale.com>
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 504E5DDF1D
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 02:25:53 +1100 (EST)
+Message-ID: <46014E6A.90002@smiths-aerospace.com>
+Date: Wed, 21 Mar 2007 11:25:30 -0400
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
+To: Timur Tabi <timur@freescale.com>
 Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
-	<20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-	<20070318115656.GA12765@localhost.localdomain>
-	<45FEA7B3.9090304@freescale.com>
-	<1b943ac2c00b7f1f5696d006b67e9877@kernel.crashing.org>
-In-Reply-To: <1b943ac2c00b7f1f5696d006b67e9877@kernel.crashing.org>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>	<20070317013159.GH3969@localhost.localdomain>	<45FC8643.1080807@freescale.com>	<20070318115656.GA12765@localhost.localdomain>	<45FEA7B3.9090304@freescale.com>	<20070320035957.GC21124@localhost.localdomain>	<45FFE8FD.9020902@freescale.com>	<20070321025447.GG27969@localhost.localdomain>
+	<460148DC.3020600@freescale.com>
+In-Reply-To: <460148DC.3020600@freescale.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -27,49 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
->> Normally, that's true.  The problem is that device drivers first check 
->> mac-address and
->> then local-mac-address (see of_get_mac_address()).  If the DTS define 
->> mac-address as
->> something other than 00-00-00-00-00-00, the drivers are going to see 
->> mac-address that and
->> use it.
+Timur Tabi wrote:
+> David Gibson wrote:
 > 
-> So fix that :-)  
-
-I'm working on it.
-
- > It's a layering violation anyway, a device
-> driver has no business peering at "mac-address", that's info
-> for a way higher layer ;-)
-
-Eh, I don't think I agree with that.  mac-address is supposed to be used 
-if it exists, because it represents the "most recent MAC address".  If 
-it's not set, then the driver checks local-mac-address.
-
-See of_get_mac_address(), which I wrote.
-
->> Obviously, the DTS files shouldn't have mac-address in them.  But I 
->> haven't gotten around
->> to cleaning that up, because I'm still waiting for the U-Boot 
->> maintainers to apply my
->> pre-requisite patches.
+>> Ah, and it can't add the property if it's not there at all.  Ok, I
+>> think I understand now.  But.. does u-boot directly use the dts files
+>> from the kernel tree, or does it have its own copies?
 > 
-> Well there's that, sure.  Please put comments in your source
-> code saying this _is_ a hack and for _what_ and that it should
-> be removed when your dependency is fixed, and all is fine.
-
-I don't consider it a hack.  The U-Boot code checks for mac-address, and 
-then updates it if it exists.  Then it checks for local-mac-address and 
-does the same.  I don't see this code changing ever, because we're 
-always going to need to support older device trees that don't have just 
-local-mac-address.
-
->> Perhaps mac-address should be deleted instead of just ignored?
+> I'm not sure what you mean by that.  You compile the DTS into a DTB, and 
+> then make the DTB available to U-Boot.  That can mean either storing it 
+> in flash, or tftp'ing it into memory.  When you boot Linux via the 
+> U-Boot "bootm" command, you give it the address of the DTB in memory. 
+> U-Boot than looks for various things and updates them.  It also creates 
+> a couple new things, like a 'chosen' section.
 > 
-> That would be incorrect behaviour if you get passed a device
-> tree where "mac-address" is correctly set (i.e., the device
-> has been used for booting, or something).
+> If the DTB is in flash, it copies it to RAM.  Then it updates the 
+> in-memory copy.  It's very hack-ish, though.  I think it just overwrites 
+> various nodes as it pleases, and then reconnects everything.
 
-Ok.
+FWIIW, I'm getting close to having a usable implementation of a new 
+u-boot command "fdt" that is a lot cleaner than the hack-ish automagical 
+bootm copying and updating (and uses libfdt - thanks, David!).  I just 
+sent an update this morning:
+<http://article.gmane.org/gmane.comp.boot-loaders.u-boot/27187>
+
+[snip]
+
+Best regards,
+gvb
