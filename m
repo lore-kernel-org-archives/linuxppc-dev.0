@@ -1,11 +1,15 @@
-Return-Path: <anton@ozlabs.org>
-Message-Id: <20070321013825.623943000@samba.org>
-References: <20070321013810.404636000@samba.org>
-Date: Tue, 20 Mar 2007 20:38:19 -0500
-From: anton@samba.org
-To: linuxppc-dev@ozlabs.org
-Subject: [patch 09/10] Use lowercase for hex printouts in oops messages.
-Cc: paulus@samba.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 21 Mar 2007 12:51:04 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 05/17] bootwrapper: misc device tree fixes
+Message-ID: <20070321015104.GC27969@localhost.localdomain>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172845.GE29784@ld0162-tx32.am.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070316172845.GE29784@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,38 +19,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Use lowercase for hex printouts in oops messages. The number of times I have
-tried to copy and paste from an oops into an objdump search...
+On Fri, Mar 16, 2007 at 12:28:45PM -0500, Scott Wood wrote:
+> 1. The dtb should be generated in $tmpdir, rather than the current directory.
+> Normally, $tmpdir is ".", so it doesn't matter, but the wrapper should obey
+> the -W option if it should be passed.
 
-Signed-off-by: Anton Blanchard <anton@samba.org>
----
+This is still wrong (or at least insufficient).  If we're building
+with a target directory different from the source directory we
+shouldn't add anything to the source directory, but $tmpdir still
+will.
 
-Index: linux-2.6/arch/powerpc/kernel/process.c
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/process.c	2007-03-11 14:40:22.000000000 -0500
-+++ linux-2.6/arch/powerpc/kernel/process.c	2007-03-11 14:40:58.000000000 -0500
-@@ -400,11 +400,11 @@
- }
- 
- #ifdef CONFIG_PPC64
--#define REG		"%016lX"
-+#define REG		"%016lx"
- #define REGS_PER_LINE	4
- #define LAST_VOLATILE	13
- #else
--#define REG		"%08lX"
-+#define REG		"%08lx"
- #define REGS_PER_LINE	8
- #define LAST_VOLATILE	12
- #endif
-@@ -422,7 +422,7 @@
- 	       regs, regs->trap, print_tainted(), init_utsname()->release);
- 	printk("%sMSR: "REG" ", log_lvl, regs->msr);
- 	printbits(regs->msr, msr_bits);
--	printk("  CR: %08lX  XER: %08lX\n", regs->ccr, regs->xer);
-+	printk("  CR: %08lx  XER: %08lx\n", regs->ccr, regs->xer);
- 	trap = TRAP(regs);
- 	if (trap == 0x300 || trap == 0x600)
- 		printk("%sDAR: "REG", DSISR: "REG"\n", log_lvl, regs->dar,
+> 2. DTC has a habit of complaining about errors which are not really
+> errors.  Thus, the -f option is now passed to it, to force it to generate
+> output regardless.
 
---
+I'd really prefer not to add -f by default.  I think getting rid of
+the bogus warnings from dtc is a better idea.
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
