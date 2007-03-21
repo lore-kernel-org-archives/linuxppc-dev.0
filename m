@@ -1,32 +1,30 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
+	[151.189.21.52])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 651BDDDEF3
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 06:22:16 +1100 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2LJMB2n019704
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 15:22:11 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2LJKsWr296610
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 15:20:54 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2LJKsEB011065
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 15:20:54 -0400
-Date: Wed, 21 Mar 2007 14:20:54 -0500
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [PATCH 3/11] ppc64: EEH: Tolerate high mmio
-Message-ID: <20070321192053.GZ5151@austin.ibm.com>
-References: <20070319194349.GT5151@austin.ibm.com>
-	<20070319195322.GC11532@austin.ibm.com>
-	<20070321012534.GA2485@lixom.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070321012534.GA2485@lixom.net>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 21D8FDDEE9
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 06:34:19 +1100 (EST)
+In-Reply-To: <46018315.1030703@freescale.com>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
+	<20070317013159.GH3969@localhost.localdomain>
+	<45FC8643.1080807@freescale.com>
+	<20070318115656.GA12765@localhost.localdomain>
+	<45FEA7B3.9090304@freescale.com>
+	<1b943ac2c00b7f1f5696d006b67e9877@kernel.crashing.org>
+	<46014BF5.6060509@freescale.com>
+	<995355b28eecaafe955a5628ee939340@kernel.crashing.org>
+	<46018315.1030703@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c4aa5f9e5e15d2e9686f77384f6cb532@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
+Date: Wed, 21 Mar 2007 20:34:13 +0100
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,35 +34,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 20, 2007 at 08:25:34PM -0500, Olof Johansson wrote:
-> On Mon, Mar 19, 2007 at 02:53:22PM -0500, Linas Vepstas wrote:
-> > 
-> > Some drivers will attempt to perform a lot of mmio even after
-> > an EEH event was detected. This is especially the case for fast cpu's
-> > and PCI-E slots. Be a bit more lenient in allowing this.
-> > 
-> > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-> > 
-> > ----
-> >  arch/powerpc/platforms/pseries/eeh.c |    2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
-> > 
-> > Index: linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c
-> > ===================================================================
-> > --- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:19:26.000000000 -0500
-> > +++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:19:30.000000000 -0500
-> > @@ -74,7 +74,7 @@
-> >   * is broken and panic.  This sets the threshold for how many read
-> >   * attempts we allow before panicking.
-> >   */
-> > -#define EEH_MAX_FAILS	100000
-> > +#define EEH_MAX_FAILS	2100000
-> 
-> 100000 I can understand, it's a nice and round number. but why 2100000
-> of all possible values?
+>>> Eh, I don't think I agree with that.  mac-address is supposed to be 
+>>> used if it exists, because it represents the "most recent MAC 
+>>> address".
+>> That's policy and belongs in user land, not in the kernel,
+>> and certainly not in a device driver.
+>
+> The device driver needs to know what MAC address to program into the 
+> hardware when it initializes it.
 
-After five zeros, I find it hard to count them. So, if the number is less
-uniform, it is easier to see how many decimal places it has. 2123123 is
-one of my favorites.
+And it should use "local-mac-address" for that when it exists.
 
---linas
+>  Everything else the driver needs is also in the device tree.  So 
+> you're saying the driver should ignore the MAC address fields, and 
+> then when it needs a MAC address, it should ......... ?
+
+No, I'm saying that you shouldn't use "mac-address" for
+something it isn't meant for.
+
+You aren't supposed to have a "mac-address" property for
+devices that weren't used during firmware execution / booting
+_at all_.
+
+
+Segher
