@@ -1,20 +1,16 @@
-Return-Path: <Geert.Uytterhoeven@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 4F5D1DDEA2
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 18:18:03 +1100 (EST)
-Date: Wed, 21 Mar 2007 08:17:55 +0100 (CET)
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Sender: geert@sonytel.be
-To: Olof Johansson <olof@lixom.net>
-Subject: Re: [patch 09/10] Use lowercase for hex printouts in oops messages.
-In-Reply-To: <20070321021456.GB2564@lixom.net>
-Message-ID: <Pine.LNX.4.62.0703210817360.22113@pademelon.sonytel.be>
-References: <20070321013810.404636000@samba.org>
-	<20070321013825.623943000@samba.org>
-	<20070321021456.GB2564@lixom.net>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17921.3150.242081.66071@cargo.ozlabs.ibm.com>
+Date: Wed, 21 Mar 2007 21:43:26 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Yuri Tikhonov <yur@emcraft.com>
+Subject: Re: [PATCH] ppc: Add support for bigger page sizes than 4KB on PPC44x
+In-Reply-To: <200703171441.51276.yur@emcraft.com>
+References: <200703161634.58444.yur@emcraft.com>
+	<17915.7048.393811.714143@cargo.ozlabs.ibm.com>
+	<200703171441.51276.yur@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,20 +20,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 20 Mar 2007, Olof Johansson wrote:
-> On Tue, Mar 20, 2007 at 08:38:19PM -0500, anton@samba.org wrote:
-> > Use lowercase for hex printouts in oops messages. The number of times I have
-> > tried to copy and paste from an oops into an objdump search...
-> 
-> YES! Finally someone bothered to fix this. Thank you!
+Yuri Tikhonov writes:
 
-What about people pasting them into dc? ;-)
+>  Do you think that replacing one integer option CONFIG_PPC_PAGE_SHIFT with 
+> three logical options (i.e., CONFIG_PPC_PAGE_SIZE_4K, 
+> CONFIG_PPC_PAGE_SIZE_16K and CONFIG_PPC_PAGE_SIZE_64K) will be the better 
+> choice ?
 
-Gr{oetje,eeting}s,
+I think you should use a choice...endchoice construct in Kconfig,
+which will result in 2 config options, or 3 if you choose to support
+16k pages.
 
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Paul.
