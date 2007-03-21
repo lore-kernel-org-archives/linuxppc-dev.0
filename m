@@ -1,16 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 21 Mar 2007 11:01:01 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 4/7] bootwrapper: add a fatal error helper
-Message-ID: <20070321000101.GB27969@localhost.localdomain>
-References: <boot-00.miltonm@bga.com> <boot-04.miltonm@bga.com>
-	<20070320003847.GB19728@localhost.localdomain>
-	<7a08cdfd3ee0f04ed3e96601c9698de6@bga.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 3585DDDF01
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 12:11:30 +1100 (EST)
+Date: Tue, 20 Mar 2007 20:25:34 -0500
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH 3/11] ppc64: EEH: Tolerate high mmio
+Message-ID: <20070321012534.GA2485@lixom.net>
+References: <20070319194349.GT5151@austin.ibm.com>
+	<20070319195322.GC11532@austin.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7a08cdfd3ee0f04ed3e96601c9698de6@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070319195322.GC11532@austin.ibm.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,47 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 20, 2007 at 08:38:45AM -0500, Milton Miller wrote:
+On Mon, Mar 19, 2007 at 02:53:22PM -0500, Linas Vepstas wrote:
 > 
-> On Mar 19, 2007, at 7:38 PM, David Gibson wrote:
+> Some drivers will attempt to perform a lot of mmio even after
+> an EEH event was detected. This is especially the case for fast cpu's
+> and PCI-E slots. Be a bit more lenient in allowing this.
 > 
-> > On Mon, Mar 19, 2007 at 02:58:03PM -0600, Milton Miller wrote:
-> >> Add a macro fatal that calls printf then exit.  User must include 
-> >> stdio.h.
-> >>
-> >> Typically replaces 3 lines with 1, although I added back some 
-> >> whitespace.
-> >>
-> >> Signed-off-by: Milton Miller <miltonm@bga.com>
-> >
-> > One tiny nit...
-> >
-> > [snip]
-> >> Index: kernel/arch/powerpc/boot/ops.h
-> >> ===================================================================
-> >> --- kernel.orig/arch/powerpc/boot/ops.h	2007-03-19 08:32:50.000000000 
-> >> -0500
-> >> +++ kernel/arch/powerpc/boot/ops.h	2007-03-19 08:33:02.000000000 -0500
-> >> @@ -157,6 +157,8 @@ static inline void exit(void)
-> >>  		platform_ops.exit();
-> >>  	for(;;);
-> >>  }
-> >> +#define fatal(args...) { printf(args); exit(); }
-> >> +
-> >
-> > This is the old gcc way of doing a varargs macro, not the new C99
-> > way.  The new way would be:
-> >
-> > #define fata(...)	{ printf(__VA_ARGS__); exit(); }
-> >
+> Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 > 
-> I was following the example of fprintf in stdio.h.   Is the new C99
-> way used elsewhere in the kernel?
+> ----
+>  arch/powerpc/platforms/pseries/eeh.c |    2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> Index: linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c
+> ===================================================================
+> --- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:19:26.000000000 -0500
+> +++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:19:30.000000000 -0500
+> @@ -74,7 +74,7 @@
+>   * is broken and panic.  This sets the threshold for how many read
+>   * attempts we allow before panicking.
+>   */
+> -#define EEH_MAX_FAILS	100000
+> +#define EEH_MAX_FAILS	2100000
 
-Yes, in a variety of places.  Just grep for __VA_ARGS__.
+100000 I can understand, it's a nice and round number. but why 2100000
+of all possible values?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+-Olof
