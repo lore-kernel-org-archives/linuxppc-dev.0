@@ -1,25 +1,26 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 4EC70DDF2E
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 06:10:19 +1100 (EST)
-Message-ID: <46018315.1030703@freescale.com>
-Date: Wed, 21 Mar 2007 14:10:13 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8646DDDF46
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 06:12:06 +1100 (EST)
+In-Reply-To: <20070321160112.GA31655@ld0162-tx32.am.freescale.net>
 References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
-	<20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-	<20070318115656.GA12765@localhost.localdomain>
-	<45FEA7B3.9090304@freescale.com>
-	<1b943ac2c00b7f1f5696d006b67e9877@kernel.crashing.org>
-	<46014BF5.6060509@freescale.com>
-	<995355b28eecaafe955a5628ee939340@kernel.crashing.org>
-In-Reply-To: <995355b28eecaafe955a5628ee939340@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+	<20070316172757.GC29784@ld0162-tx32.am.freescale.net>
+	<20070320035005.GB21124@localhost.localdomain>
+	<e07db139f025494f172389e2773a2e32@kernel.crashing.org>
+	<20070321160112.GA31655@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <d807f0516a5424a1a5291f2432c5c4b7@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 03/17] bootwrapper: Add xlate_reg(),
+	and use it to find serial registers.
+Date: Wed, 21 Mar 2007 20:11:59 +0100
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +30,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
+>> I didn't look at the actual code but it should be really
+>> small; I hope it doesn't copy the Linux code with its
+>> millions of workarounds for broken device trees -- we
+>> should insist on correct trees, or even just fix them
+>> if they *are* broken ;-)
+>
+> It's around 1700 bytes.  Most of the complexity is for dealing with
+> different #address-cells and #size-cells -- if we could assume a max 
+> of 2
+> for each, then it could be simplified quite a bit by using u64 instead 
+> of
+> arrays.  However, that wouldn't work with PCI, which has 3 address 
+> cells.
 
->> Eh, I don't think I agree with that.  mac-address is supposed to be 
->> used if it exists, because it represents the "most recent MAC address".
-> 
-> That's policy and belongs in user land, not in the kernel,
-> and certainly not in a device driver.
+It is quite safe to assume a max of 3 for #a and a
+max of 2 for #s.
 
-The device driver needs to know what MAC address to program into the hardware when it 
-initializes it.  Everything else the driver needs is also in the device tree.  So you're 
-saying the driver should ignore the MAC address fields, and then when it needs a MAC 
-address, it should ......... ?
+One way to simplify the code (when writing it in C)
+is to always store any address as the maximum supported
+number of 32-bit integers (padding it with zeroes perhaps).
+No need to micro-optimise this stuff, just make the code
+real generic and simple, that'll buy you more in the end.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+
+Segher
