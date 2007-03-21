@@ -1,26 +1,32 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
+Return-Path: <linas@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8646DDDF46
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 06:12:06 +1100 (EST)
-In-Reply-To: <20070321160112.GA31655@ld0162-tx32.am.freescale.net>
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172757.GC29784@ld0162-tx32.am.freescale.net>
-	<20070320035005.GB21124@localhost.localdomain>
-	<e07db139f025494f172389e2773a2e32@kernel.crashing.org>
-	<20070321160112.GA31655@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d807f0516a5424a1a5291f2432c5c4b7@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 03/17] bootwrapper: Add xlate_reg(),
-	and use it to find serial registers.
-Date: Wed, 21 Mar 2007 20:11:59 +0100
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 651BDDDEF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 06:22:16 +1100 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2LJMB2n019704
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 15:22:11 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l2LJKsWr296610
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 15:20:54 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2LJKsEB011065
+	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 15:20:54 -0400
+Date: Wed, 21 Mar 2007 14:20:54 -0500
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH 3/11] ppc64: EEH: Tolerate high mmio
+Message-ID: <20070321192053.GZ5151@austin.ibm.com>
+References: <20070319194349.GT5151@austin.ibm.com>
+	<20070319195322.GC11532@austin.ibm.com>
+	<20070321012534.GA2485@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070321012534.GA2485@lixom.net>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,28 +36,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> I didn't look at the actual code but it should be really
->> small; I hope it doesn't copy the Linux code with its
->> millions of workarounds for broken device trees -- we
->> should insist on correct trees, or even just fix them
->> if they *are* broken ;-)
->
-> It's around 1700 bytes.  Most of the complexity is for dealing with
-> different #address-cells and #size-cells -- if we could assume a max 
-> of 2
-> for each, then it could be simplified quite a bit by using u64 instead 
-> of
-> arrays.  However, that wouldn't work with PCI, which has 3 address 
-> cells.
+On Tue, Mar 20, 2007 at 08:25:34PM -0500, Olof Johansson wrote:
+> On Mon, Mar 19, 2007 at 02:53:22PM -0500, Linas Vepstas wrote:
+> > 
+> > Some drivers will attempt to perform a lot of mmio even after
+> > an EEH event was detected. This is especially the case for fast cpu's
+> > and PCI-E slots. Be a bit more lenient in allowing this.
+> > 
+> > Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+> > 
+> > ----
+> >  arch/powerpc/platforms/pseries/eeh.c |    2 +-
+> >  1 file changed, 1 insertion(+), 1 deletion(-)
+> > 
+> > Index: linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c
+> > ===================================================================
+> > --- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:19:26.000000000 -0500
+> > +++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/eeh.c	2007-03-19 13:19:30.000000000 -0500
+> > @@ -74,7 +74,7 @@
+> >   * is broken and panic.  This sets the threshold for how many read
+> >   * attempts we allow before panicking.
+> >   */
+> > -#define EEH_MAX_FAILS	100000
+> > +#define EEH_MAX_FAILS	2100000
+> 
+> 100000 I can understand, it's a nice and round number. but why 2100000
+> of all possible values?
 
-It is quite safe to assume a max of 3 for #a and a
-max of 2 for #s.
+After five zeros, I find it hard to count them. So, if the number is less
+uniform, it is easier to see how many decimal places it has. 2123123 is
+one of my favorites.
 
-One way to simplify the code (when writing it in C)
-is to always store any address as the maximum supported
-number of 32-bit integers (padding it with zeroes perhaps).
-No need to micro-optimise this stuff, just make the code
-real generic and simple, that'll buy you more in the end.
-
-
-Segher
+--linas
