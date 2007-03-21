@@ -1,20 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 21 Mar 2007 13:54:47 +1100
+Date: Wed, 21 Mar 2007 14:12:14 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-Message-ID: <20070321025447.GG27969@localhost.localdomain>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 03/17] bootwrapper: Add xlate_reg(),
+	and use it to find serial registers.
+Message-ID: <20070321031214.GH27969@localhost.localdomain>
 References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
-	<20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-	<20070318115656.GA12765@localhost.localdomain>
-	<45FEA7B3.9090304@freescale.com>
-	<20070320035957.GC21124@localhost.localdomain>
-	<45FFE8FD.9020902@freescale.com>
+	<20070316172757.GC29784@ld0162-tx32.am.freescale.net>
+	<20070320035005.GB21124@localhost.localdomain>
+	<20070320163422.GA6290@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <45FFE8FD.9020902@freescale.com>
+In-Reply-To: <20070320163422.GA6290@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,96 +22,61 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 20, 2007 at 09:00:29AM -0500, Timur Tabi wrote:
-> David Gibson wrote:
-> 
-> > local-mac-address isn't a node, it's a property.  We never deal in
-> > pointers (or handles) to properties.
-> 
-> Sorry, I sometimes use those terms interchangeably.
-> 
-> > Since mac-address is by definition a runtime property, it should
-> > *never* exist in a static dts.
-> 
-> But it does today.  I think we need to be considerate of existing broken 
-> installations.  Someone could be running an older U-Boot with an older 
-> DTS, and if they boot a future kernel with it, then
-> 
+On Tue, Mar 20, 2007 at 11:34:22AM -0500, Scott Wood wrote:
+> On Tue, Mar 20, 2007 at 02:50:05PM +1100, David Gibson wrote:
+> > On Fri, Mar 16, 2007 at 12:27:57PM -0500, Scott Wood wrote:
+> > > xlate_reg() uses the ranges properties of a node's parentage to find the
+> > > absolute physical address of the node's registers.
+> > > 
+> > > The ns16550 driver uses this when no virtual-reg property is found.
 > > 
-> >> Obviously, the DTS files shouldn't have mac-address in them.  But I
-> >> haven't gotten around to cleaning that up, because I'm still waiting
-> >> for the U-Boot maintainers to apply my pre-requisite patches.
-> > 
-> > I don't see why fixing the dts files relies on u-boot changes. 
+> > This is a pretty large chunk of code for use on just some platforms.
 > 
-> Because today's U-Boot will, on some platforms, write to mac-address and 
-> only mac-address.  If you remove that property from the DTS without 
-> fixing U-Boot first, then U-Boot will never be able to pass the MAC 
-> address to the kernel.
+> It'd be useful on most flatdevicetree platforms that don't have
+> physical addresses larger than virtual addresses...
 
-Ah, and it can't add the property if it's not there at all.  Ok, I
-think I understand now.  But.. does u-boot directly use the dts files
-from the kernel tree, or does it have its own copies?
-
-> > u-boot
-> > *can* know what's going on and might wish to set the mac-address
-> > property, but that's its business.  The dts files which are used for
-> > inclusion into a zImage should never have this property.
+> > Remind me why we can't just insist on the presence of virtual-reg?
 > 
-> Bugs need to be fixed in the right order.  You can't fix the DTS files 
-> until you fix all the software that uses them first.
+> We can, if that's what the general consensus is... but I'd prefer not to.
 > 
-> >> Perhaps mac-address should be deleted instead of just ignored?  I
-> >> don't know if that breaks kexec.
-> > 
-> > Hrm, maybe.
-> 
-> Would the cuImage bootwrapper run in a kexec'd kernel?  I hope not.  I 
-> don't know anything about kexec.
+> For one thing, it impairs mobility of the SOC register block -- the
+> knowledge of where the SOC is mapped would be contained both in the SOC
+> node and in the serial nodes (and have to be updated both places).  This
+> could be a bit of a pain if macros and/or overlays are implemented.
 
-The maybe was more in relation to should we delete the mac-address
-property.  But that would have the same brokenness as removing
-mac-address from the dts on old, broken u-boot's that set mac-address
-instead of local-mac-address.
+Hrm, yeah, okay, I'm convinced.  I hope to get a patch out later today
+which is a merger of yours and my ideas for devtree.c, excluding
+xlate_reg().  Can you rebase on top of that?
 
-> > It's just that every insert could require copying most of the blob,
-> > which is a bit sucky.
-> 
-> What if U-Boot were smart enough to insert all of the required items in 
-> one shot, and then filled them in?
+> And I don't really understand complaining about the wastage for platforms
+> that don't need it in this specific case, when it happens in many others:
+> flatdevtree code with true OF, command line editing when it can be edited
+> just fine in the bootloader, simple_alloc with true OF, gzip code when
+> not compressing vmlinux, etc.  
 
-I don't see how that's reasonably possible when the items in question
-are properties in different nodes.
+Um.. flatdevtree and simple_alloc aren't included on OF (they're
+built, but not linked in).  Command line editing will be probably be
+included in some redundant cases at present, because it's in the same
+module as the rest of the serial stuff, but that would be
+straightforward to fix.  zlib is always included, it would be nice to
+avoid that, but it's a bit less straightforward (but I think we can do
+it with some dummy store-only versions of the gunzip_util.c functions,
+plus some more weak symbol magic).
 
-> > I was thinking of making an extension to dtc for these properties that
-> > are expected to be replaced in-place by the bootloader:  a special
-> > token representing a value to be filled in later, so something like:
-> > 	clock-frequency = < _ >;
-> > or
-> > 	local-mac-address = [??????];
-> > The blob produced would just replace the blanks with either all 0s or
-> > all 1s, so it doesn't actually do anything new, but it would provide a
-> > strong visual clue in the source as to which properties are supposed
-> > to be filled in later.  Would that overcome your reluctance to include
-> > bootloader-replaced properties in the dts?
-> 
-> No, because it would require DTC to be constantly in sync with U-Boot, 
-> and that sounds like a lose-lose proposition to me.  It takes months for 
-> any U-Boot patch that I write to be accepted and applied.
+> Not to mention the duplication of device
+> tree manipulation code that could have been shared with the kernel if
+> this stuff weren't forced into the wrapper (why is OF allowed to have a
+> special prom_init, but nothing else?).
 
-Uh.. how does it require synchronization with u-boot?  This is really
-just a form of internal documentation in the dts which shows which
-properties are expected to be present, but overwrriten by the
-bootloader.
+Legacy.  We'd like to get rid of OF's special casing eventually.
 
-> For instance, last month, I posted a fix for an old bug in U-Boot that 
-> prevents initrd from working with any OF kernel.  U-Boot has had this 
-> bug ever since it added OF support.  Despite repeated emails to WD 
-> himself, I haven't even gotten an acknowledgment from him as to whether 
-> he'll apply it, let alone when.
-> 
-> So as you can imagine, I am very wary about any design that requires 
-> U-Boot to be updated in concert with any other software.
+> If we really want to optimize for size, the approach of including
+> everything except small bits of code for specific other platforms
+> probably isn't the best one.  Does anyone actually do the
+> wrap-kernels-separate-from-building thing?
+
+But we *don't* include everything - only the modules that are actually
+needed from wrapper.a will be linked in.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
