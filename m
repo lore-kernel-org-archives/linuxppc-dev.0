@@ -1,33 +1,23 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4AEC0DDEC6
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 04:59:50 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2LHxlE9013105
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 13:59:47 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2LHxkwv064354
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 11:59:46 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2LHxkhk000894
-	for <linuxppc-dev@ozlabs.org>; Wed, 21 Mar 2007 11:59:46 -0600
-Date: Wed, 21 Mar 2007 12:59:46 -0500
-To: Brian King <brking@linux.vnet.ibm.com>
-Subject: Re: [PATCH 2/11] ppc64: EEH: Add clarifying messages.
-Message-ID: <20070321175946.GY5151@austin.ibm.com>
-References: <20070319194349.GT5151@austin.ibm.com>
-	<20070319195204.GB11532@austin.ibm.com>
-	<46002764.70900@linux.vnet.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46002764.70900@linux.vnet.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 34E23DDEF1
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 05:57:45 +1100 (EST)
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302B97B1A@az33exm25.fsl.freescale.net>
+References: <20070316172846.GF29784@ld0162-tx32.am.freescale.net>
+	<36990c5c3b7de1ab2f65662547641b79@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302B97B1A@az33exm25.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4b0f0296e3beb792337a868c3527c954@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 06/17] Document the linux,network-index property.
+Date: Wed, 21 Mar 2007 19:57:33 +0100
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,15 +27,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 20, 2007 at 01:26:44PM -0500, Brian King wrote:
-> Linas Vepstas wrote:
-> > There are multiple code patchs tht resuls in a "permanent
-> > failure"; when examining rare events, it can be hard to see 
-> > which was taken. This patch adds printk's to assist.
-> 
-> Should these printk's be logging the location of the failing device/slot?
+> Segher, what is the the 'other alias' mechanism you are referring
+> to that should be dropped?  Is it this proposed linux,network-index
+> property?  or something else?
 
-They all branch to a common printk which does do this. The problem I had
-was that I couldn't tell which branch had taken me there.
+Just the
 
---linas
+	pic0: pic@700 {
+		...
+	}
+
+labeling thing -- it becomes redundant when the flat tree
+stuff would support OF-style aliases, so it can be phased
+out then.
+
+For who doesn't know the aliases thing, it looks like this:
+
+/ {
+	aliases {
+		pic0 = "/some/path/to/pic@700";
+		pic1 = "/some/path/to/pic@800";
+
+		enet  = "/some/path/to/some/ethernet";
+		enet0 = "/some/path/to/some/ethernet";
+		enet1 = "/some/path/to/some/other/ethernet";
+		enet2 = "/some/path/to/yet/another/ethernet";
+	
+etc.  Note you can have multiple aliases to the same
+node, that comes in quite handy sometimes (like "disk"
+is the default boot disk, ...)
+
+Path name resolution looks at the aliases whenever
+a path name doesn't start with a '/' character.
+
+
+Segher
