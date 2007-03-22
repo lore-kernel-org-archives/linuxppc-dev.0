@@ -1,20 +1,39 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <b07421@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33998DE035
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 03:14:30 +1100 (EST)
-In-Reply-To: <460292FA.8050206@mindspring.com>
-References: <460292FA.8050206@mindspring.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E9D1DC31-9730-4431-9414-0870FDD3EAF6@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC83xx SDMR setup error
-Date: Thu, 22 Mar 2007 11:13:52 -0500
-To: Chuck Meade <chuckmeade@mindspring.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 699DEDE087
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 03:22:34 +1100 (EST)
+Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l2MGMTdq000467
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 09:22:29 -0700 (MST)
+Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
+	[10.82.65.62])
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l2MGMSuo029398
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:22:28 -0500 (CDT)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
+	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
+	l2MG2WLQ016325
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:02:33 -0500 (CDT)
+Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id CECD5AEFC9
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:22:27 -0500 (CDT)
+Received: (from b07421@localhost)
+	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
+	l2MGMRDA020608
+	for linuxppc-dev@ozlabs.org; Thu, 22 Mar 2007 11:22:27 -0500
+Date: Thu, 22 Mar 2007 11:22:27 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] Remove bogus errors from check_chosen.
+Message-ID: <20070322162227.GA20544@ld0162-tx32.am.freescale.net>
+References: <20070322161109.GA20512@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070322161109.GA20512@ld0162-tx32.am.freescale.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,60 +43,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Mar 22, 2007 at 11:11:09AM -0500, Scott Wood wrote:
+> It is not an error for /chosen (or any of its children) to be missing.
+> 
+> It is not a requirement that the output of dtc be a complete, valid
+> device tree, as it may be intended that the dtb be passed through boot
+> code that will complete it.  Thus, do not complain.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  livetree.c |    9 ++-------
+>  1 files changed, 2 insertions(+), 7 deletions(-)
 
-On Mar 22, 2007, at 9:30 AM, Chuck Meade wrote:
+Obviously, this is a DTC patch, and not a kernel patch.
+I forgot to label it as such.
 
-> There appears to be an error in the MPC83xx SDMR setup in
-> arch/powerpc/sysdev/qe_lib/qe.c line 259.  Since 0x1 shifted right  
-> 13 bits
-> (QE_SDMR_CEN_SHIFT) will always be zero, the CEN field will be set to
-> zero.  This means the SDMR buffer size will always be 512, rather than
-> the intended (and allocated) 1024 bytes.
-
-What does this effect?  I agree the code is wrong.
-
-> In addition, and not shown in the patch below, there is a conflict  
-> in the
-> alignment requirement for the value to be written to the SDEBCR  
-> register.
-> The SDEBCR holds the address in MURAM of the buffer to be used by  
-> the SDMA
-> controller.  In the MPC8323ERM.pdf section 18.1.7 titled "SDMA  
-> Internal
-> Resource", it states that "the base address must be aligned to a  
-> 4KByte
-> boundary."  However, later in the description of the SDEBCR in section
-> 18.1.8.9, it states that the address must be "64 bytes aligned".   
-> The code
-> in arch/powerpc/sysdev/qe_lib/qe.c (line 254) that allocates this  
-> buffer
-> aligns it to a 64-byte boundary.  This is only correct if the  
-> manual section
-> 18.1.7, which requires a 4KByte alignment, is wrong.  Which manual  
-> section
-> is correct?
-
-Hopefully someone at freescale will know.  I'd suggest possibly  
-posting a support request to them to see if you can get a  
-clarification since their UM is not self-consistent on the details.
-
-> Chuck
->
-> --- a/linux-2.6/arch/powerpc/sysdev/qe_lib/qe.c	2007-01-13  
-> 09:37:03.000000000 -0500
-> +++ b/linux-2.6/arch/powerpc/sysdev/qe_lib/qe.c	2007-03-22  
-> 09:48:46.000000000 -0400
-> @@ -256,7 +256,7 @@ static int qe_sdma_init(void)
->   		return -ENOMEM;
->
->   	out_be32(&sdma->sdebcr, sdma_buf_offset & QE_SDEBCR_BA_MASK);
-> -	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 >>
-> +	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 <<
->   					QE_SDMR_CEN_SHIFT)));
->
->   	return 0;
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+-Scott
