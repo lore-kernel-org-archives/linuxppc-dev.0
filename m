@@ -1,21 +1,21 @@
 Return-Path: <jdl@freescale.com>
 Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 57B75DDF81
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 01:25:31 +1100 (EST)
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id B6A91DDF83
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 01:25:33 +1100 (EST)
 Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
 	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l2MEPPQ6027635
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 07:25:26 -0700 (MST)
+	l2MEPRqv027648
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 07:25:27 -0700 (MST)
 Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2MEPOLj029763
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 09:25:25 -0500 (CDT)
-Subject: [Fwd: [PATCH Resend 01/02] Add Linux ASMP support for MPC8641D]
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2MEPQ49029780
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 09:25:27 -0500 (CDT)
+Subject: [Fwd: [PATCH Resend 02/02] Add Linux ASMP support for MPC8641D]
 From: Jon Loeliger <jdl@freescale.com>
 To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 Content-Type: text/plain
-Message-Id: <1174573524.6595.509.camel@ld0161-tx32>
+Message-Id: <1174573526.6595.511.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Thu, 22 Mar 2007 09:25:24 -0500
+Date: Thu, 22 Mar 2007 09:25:26 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,7 +36,7 @@ This patch is directly split in two due to apparently mailer
 issues with the full patch.  Apologies if you have received
 this patch twice.
 
-This is the first half of the patch, everything but the defconfig.
+This is the second half of the patch, just the defconfig.
 
 Thanks,
 jdl
@@ -64,592 +64,1163 @@ Signed-off-by: Haiying Wang <Haiying.Wang@freescale.com>
  drivers/net/gianfar.c                        |   24 +
  7 files changed, 1635 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/dts/mpc8641_core0.dts b/arch/powerpc/boot/dts/mpc8641_core0.dts
+
+
+diff --git a/arch/powerpc/configs/mpc8641d_asmp_defconfig b/arch/powerpc/configs/mpc8641d_asmp_defconfig
 new file mode 100644
-index 0000000..5511799
+index 0000000..1d16cb5
 --- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc8641_core0.dts
-@@ -0,0 +1,287 @@
-+/*
-+ * MPC8641 HPCN Core0 Device Tree Source
-+ *
-+ * Copyright 2006-2007 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
++++ b/arch/powerpc/configs/mpc8641d_asmp_defconfig
+@@ -0,0 +1,1152 @@
++#
++# Automatically generated make config: don't edit
++# Linux kernel version: 2.6.20
++# Mon Feb 26 12:53:10 2007
++#
++# CONFIG_PPC64 is not set
++CONFIG_PPC32=y
++CONFIG_PPC_MERGE=y
++CONFIG_MMU=y
++CONFIG_GENERIC_HARDIRQS=y
++CONFIG_IRQ_PER_CPU=y
++CONFIG_RWSEM_XCHGADD_ALGORITHM=y
++CONFIG_ARCH_HAS_ILOG2_U32=y
++CONFIG_GENERIC_HWEIGHT=y
++CONFIG_GENERIC_CALIBRATE_DELAY=y
++CONFIG_GENERIC_FIND_NEXT_BIT=y
++CONFIG_PPC=y
++CONFIG_EARLY_PRINTK=y
++CONFIG_GENERIC_NVRAM=y
++CONFIG_SCHED_NO_NO_OMIT_FRAME_POINTER=y
++CONFIG_ARCH_MAY_HAVE_PC_FDC=y
++CONFIG_PPC_OF=y
++CONFIG_PPC_UDBG_16550=y
++# CONFIG_GENERIC_TBSYNC is not set
++CONFIG_AUDIT_ARCH=y
++CONFIG_GENERIC_BUG=y
++CONFIG_DEFAULT_UIMAGE=y
 +
++#
++# Processor support
++#
++# CONFIG_CLASSIC32 is not set
++# CONFIG_PPC_82xx is not set
++# CONFIG_PPC_83xx is not set
++# CONFIG_PPC_85xx is not set
++CONFIG_PPC_86xx=y
++# CONFIG_PPC_8xx is not set
++# CONFIG_40x is not set
++# CONFIG_44x is not set
++# CONFIG_E200 is not set
++CONFIG_6xx=y
++CONFIG_PPC_FPU=y
++# CONFIG_PPC_DCR_NATIVE is not set
++# CONFIG_PPC_DCR_MMIO is not set
++CONFIG_ALTIVEC=y
++CONFIG_PPC_STD_MMU=y
++CONFIG_PPC_STD_MMU_32=y
++# CONFIG_SMP is not set
++CONFIG_DEFCONFIG_LIST="/lib/modules/$UNAME_RELEASE/.config"
 +
-+/ {
-+	model = "MPC8641HPCN";
-+	compatible = "mpc86xx";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
++#
++# Code maturity level options
++#
++CONFIG_EXPERIMENTAL=y
++CONFIG_BROKEN_ON_SMP=y
++CONFIG_INIT_ENV_ARG_LIMIT=32
 +
-+	cpus {
-+		#cpus = <1>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++#
++# General setup
++#
++CONFIG_LOCALVERSION=""
++# CONFIG_LOCALVERSION_AUTO is not set
++# CONFIG_SWAP is not set
++# CONFIG_SYSVIPC is not set
++# CONFIG_POSIX_MQUEUE is not set
++# CONFIG_BSD_PROCESS_ACCT is not set
++# CONFIG_TASKSTATS is not set
++# CONFIG_UTS_NS is not set
++# CONFIG_AUDIT is not set
++CONFIG_IKCONFIG=y
++CONFIG_IKCONFIG_PROC=y
++CONFIG_SYSFS_DEPRECATED=y
++# CONFIG_RELAY is not set
++CONFIG_INITRAMFS_SOURCE=""
++# CONFIG_CC_OPTIMIZE_FOR_SIZE is not set
++CONFIG_SYSCTL=y
++CONFIG_EMBEDDED=y
++CONFIG_SYSCTL_SYSCALL=y
++CONFIG_KALLSYMS=y
++# CONFIG_KALLSYMS_ALL is not set
++CONFIG_KALLSYMS_EXTRA_PASS=y
++CONFIG_HOTPLUG=y
++CONFIG_PRINTK=y
++CONFIG_BUG=y
++# CONFIG_ELF_CORE is not set
++CONFIG_BASE_FULL=y
++CONFIG_FUTEX=y
++CONFIG_EPOLL=y
++CONFIG_SHMEM=y
++CONFIG_SLAB=y
++CONFIG_VM_EVENT_COUNTERS=y
++CONFIG_RT_MUTEXES=y
++# CONFIG_TINY_SHMEM is not set
++CONFIG_BASE_SMALL=0
++# CONFIG_SLOB is not set
 +
-+		PowerPC,8641@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <20>;	// 32 bytes
-+			i-cache-line-size = <20>;	// 32 bytes
-+			d-cache-size = <8000>;		// L1, 32K
-+			i-cache-size = <8000>;		// L1, 32K
-+			timebase-frequency = <0>;	// 33 MHz, from uboot
-+			bus-frequency = <0>;		// From uboot
-+			clock-frequency = <0>;		// From uboot
-+			32-bit;
-+		};
-+	};
++#
++# Loadable module support
++#
++# CONFIG_MODULES is not set
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <00000000 10000000>;	// 256M at 0x0
-+	};
++#
++# Block layer
++#
++CONFIG_BLOCK=y
++# CONFIG_LBD is not set
++# CONFIG_BLK_DEV_IO_TRACE is not set
++# CONFIG_LSF is not set
 +
-+	soc8641@f8000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <1>;
-+		device_type = "soc";
-+		ranges = <0 f8000000 00100000>;
-+		reg = <f8000000 00100000>;	// CCSRBAR 1M
-+		bus-frequency = <0>;
++#
++# IO Schedulers
++#
++CONFIG_IOSCHED_NOOP=y
++# CONFIG_IOSCHED_AS is not set
++CONFIG_IOSCHED_DEADLINE=y
++# CONFIG_IOSCHED_CFQ is not set
++# CONFIG_DEFAULT_AS is not set
++CONFIG_DEFAULT_DEADLINE=y
++# CONFIG_DEFAULT_CFQ is not set
++# CONFIG_DEFAULT_NOOP is not set
++CONFIG_DEFAULT_IOSCHED="deadline"
++# CONFIG_WANT_EARLY_SERIAL is not set
++CONFIG_PPC_INDIRECT_PCI_BE=y
++CONFIG_MPIC=y
 +
-+		i2c@3000 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			reg = <3000 100>;
-+			interrupts = <2b 2>;
-+			interrupt-parent = <&mpic>;
-+			dfsrr;
-+		};
++#
++# Platform Support
++#
++CONFIG_MPC8641_HPCN=y
++CONFIG_MPC8641=y
++CONFIG_ASMP=y
 +
-+		i2c@3100 {
-+			device_type = "i2c";
-+			compatible = "fsl-i2c";
-+			reg = <3100 100>;
-+			interrupts = <2b 2>;
-+			interrupt-parent = <&mpic>;
-+			dfsrr;
-+		};
++#
++# Kernel options
++#
++CONFIG_HIGHMEM=y
++# CONFIG_HZ_100 is not set
++# CONFIG_HZ_250 is not set
++# CONFIG_HZ_300 is not set
++CONFIG_HZ_1000=y
++CONFIG_HZ=1000
++CONFIG_PREEMPT_NONE=y
++# CONFIG_PREEMPT_VOLUNTARY is not set
++# CONFIG_PREEMPT is not set
++CONFIG_BINFMT_ELF=y
++# CONFIG_BINFMT_MISC is not set
++CONFIG_ARCH_ENABLE_MEMORY_HOTPLUG=y
++CONFIG_ARCH_FLATMEM_ENABLE=y
++CONFIG_ARCH_POPULATES_NODE_MAP=y
++CONFIG_SELECT_MEMORY_MODEL=y
++CONFIG_FLATMEM_MANUAL=y
++# CONFIG_DISCONTIGMEM_MANUAL is not set
++# CONFIG_SPARSEMEM_MANUAL is not set
++CONFIG_FLATMEM=y
++CONFIG_FLAT_NODE_MEM_MAP=y
++# CONFIG_SPARSEMEM_STATIC is not set
++CONFIG_SPLIT_PTLOCK_CPUS=4
++# CONFIG_RESOURCES_64BIT is not set
++CONFIG_ZONE_DMA_FLAG=1
++CONFIG_PROC_DEVICETREE=y
++# CONFIG_CMDLINE_BOOL is not set
++# CONFIG_PM is not set
++# CONFIG_SECCOMP is not set
++CONFIG_ISA_DMA_API=y
 +
-+		mdio@24520 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "mdio";
-+			compatible = "gianfar";
-+			reg = <24520 20>;
-+			phy0: ethernet-phy@0 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <4a 1>;
-+				reg = <0>;
-+				device_type = "ethernet-phy";
-+			};
-+			phy1: ethernet-phy@1 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <4a 1>;
-+				reg = <1>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
++#
++# Bus options
++#
++CONFIG_ZONE_DMA=y
++CONFIG_GENERIC_ISA_DMA=y
++# CONFIG_MPIC_WEIRD is not set
++CONFIG_PPC_I8259=y
++CONFIG_PPC_INDIRECT_PCI=y
++CONFIG_FSL_SOC=y
++CONFIG_FSL_PCIE=y
++CONFIG_PCI=y
++CONFIG_PCI_DOMAINS=y
++# CONFIG_PCIEPORTBUS is not set
++# CONFIG_PCI_DEBUG is not set
 +
-+		ethernet@24000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <24000 1000>;
-+			mac-address = [ 00 E0 0C 00 73 00 ];
-+			interrupts = <1d 2 1e 2 22 2>;
-+			interrupt-parent = <&mpic>;
-+			phy-handle = <&phy0>;
-+		};
++#
++# PCCARD (PCMCIA/CardBus) support
++#
++# CONFIG_PCCARD is not set
 +
-+		ethernet@25000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <25000 1000>;
-+			mac-address = [ 00 E0 0C 00 73 01 ];
-+			interrupts = <23 2 24 2 28 2>;
-+			interrupt-parent = <&mpic>;
-+			phy-handle = <&phy1>;
-+		};
++#
++# PCI Hotplug Support
++#
++# CONFIG_HOTPLUG_PCI is not set
 +
-+		serial@4500 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4500 100>;
-+			clock-frequency = <0>;
-+			interrupts = <2a 2>;
-+			interrupt-parent = <&mpic>;
-+		};
++#
++# Advanced setup
++#
++# CONFIG_ADVANCED_OPTIONS is not set
 +
-+		pci@8000 {
-+			compatible = "86xx";
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <8000 1000>;
-+			bus-range = <0 fe>;
-+			ranges = <02000000 0 80000000 80000000 0 20000000
-+				  01000000 0 00000000 e2000000 0 00100000>;
-+			clock-frequency = <1fca055>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <18 2>;
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+				/* IDSEL 0x11 */
-+				8800 0 0 1 &i8259 3 2
-+				8800 0 0 2 &i8259 4 2
-+				8800 0 0 3 &i8259 5 2
-+				8800 0 0 4 &i8259 6 2
++#
++# Default settings for advanced configuration options are used
++#
++CONFIG_HIGHMEM_START=0xfe000000
++CONFIG_LOWMEM_SIZE=0x30000000
++CONFIG_KERNEL_START=0xc0000000
++CONFIG_TASK_SIZE=0x80000000
++CONFIG_BOOT_LOAD=0x00800000
 +
-+				/* IDSEL 0x12 */
-+				9000 0 0 1 &i8259 4 2
-+				9000 0 0 2 &i8259 5 2
-+				9000 0 0 3 &i8259 6 2
-+				9000 0 0 4 &i8259 3 2
++#
++# Networking
++#
++CONFIG_NET=y
 +
-+				/* IDSEL 0x13 */
-+				9800 0 0 1 &i8259 0 0
-+				9800 0 0 2 &i8259 0 0
-+				9800 0 0 3 &i8259 0 0
-+				9800 0 0 4 &i8259 0 0
++#
++# Networking options
++#
++# CONFIG_NETDEBUG is not set
++CONFIG_PACKET=y
++# CONFIG_PACKET_MMAP is not set
++CONFIG_UNIX=y
++CONFIG_XFRM=y
++CONFIG_XFRM_USER=y
++# CONFIG_XFRM_SUB_POLICY is not set
++# CONFIG_XFRM_MIGRATE is not set
++# CONFIG_NET_KEY is not set
++CONFIG_INET=y
++# CONFIG_IP_MULTICAST is not set
++# CONFIG_IP_ADVANCED_ROUTER is not set
++CONFIG_IP_FIB_HASH=y
++CONFIG_IP_PNP=y
++CONFIG_IP_PNP_DHCP=y
++CONFIG_IP_PNP_BOOTP=y
++CONFIG_IP_PNP_RARP=y
++# CONFIG_NET_IPIP is not set
++# CONFIG_NET_IPGRE is not set
++# CONFIG_ARPD is not set
++# CONFIG_SYN_COOKIES is not set
++# CONFIG_INET_AH is not set
++# CONFIG_INET_ESP is not set
++# CONFIG_INET_IPCOMP is not set
++# CONFIG_INET_XFRM_TUNNEL is not set
++CONFIG_INET_TUNNEL=y
++CONFIG_INET_XFRM_MODE_TRANSPORT=y
++CONFIG_INET_XFRM_MODE_TUNNEL=y
++CONFIG_INET_XFRM_MODE_BEET=y
++CONFIG_INET_DIAG=y
++CONFIG_INET_TCP_DIAG=y
++# CONFIG_TCP_CONG_ADVANCED is not set
++CONFIG_TCP_CONG_CUBIC=y
++CONFIG_DEFAULT_TCP_CONG="cubic"
++# CONFIG_TCP_MD5SIG is not set
++CONFIG_IPV6=y
++# CONFIG_IPV6_PRIVACY is not set
++# CONFIG_IPV6_ROUTER_PREF is not set
++# CONFIG_INET6_AH is not set
++# CONFIG_INET6_ESP is not set
++# CONFIG_INET6_IPCOMP is not set
++# CONFIG_IPV6_MIP6 is not set
++# CONFIG_INET6_XFRM_TUNNEL is not set
++# CONFIG_INET6_TUNNEL is not set
++CONFIG_INET6_XFRM_MODE_TRANSPORT=y
++CONFIG_INET6_XFRM_MODE_TUNNEL=y
++CONFIG_INET6_XFRM_MODE_BEET=y
++# CONFIG_INET6_XFRM_MODE_ROUTEOPTIMIZATION is not set
++CONFIG_IPV6_SIT=y
++# CONFIG_IPV6_TUNNEL is not set
++# CONFIG_IPV6_MULTIPLE_TABLES is not set
++# CONFIG_NETWORK_SECMARK is not set
++# CONFIG_NETFILTER is not set
 +
-+				/* IDSEL 0x14 */
-+				a000 0 0 1 &i8259 0 0
-+				a000 0 0 2 &i8259 0 0
-+				a000 0 0 3 &i8259 0 0
-+				a000 0 0 4 &i8259 0 0
++#
++# DCCP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_DCCP is not set
 +
-+				/* IDSEL 0x15 */
-+				a800 0 0 1 &i8259 0 0
-+				a800 0 0 2 &i8259 0 0
-+				a800 0 0 3 &i8259 0 0
-+				a800 0 0 4 &i8259 0 0
++#
++# SCTP Configuration (EXPERIMENTAL)
++#
++# CONFIG_IP_SCTP is not set
 +
-+				/* IDSEL 0x16 */
-+				b000 0 0 1 &i8259 0 0
-+				b000 0 0 2 &i8259 0 0
-+				b000 0 0 3 &i8259 0 0
-+				b000 0 0 4 &i8259 0 0
++#
++# TIPC Configuration (EXPERIMENTAL)
++#
++# CONFIG_TIPC is not set
++# CONFIG_ATM is not set
++# CONFIG_BRIDGE is not set
++# CONFIG_VLAN_8021Q is not set
++# CONFIG_DECNET is not set
++# CONFIG_LLC2 is not set
++# CONFIG_IPX is not set
++# CONFIG_ATALK is not set
++# CONFIG_X25 is not set
++# CONFIG_LAPB is not set
++# CONFIG_ECONET is not set
++# CONFIG_WAN_ROUTER is not set
 +
-+				/* IDSEL 0x17 */
-+				b800 0 0 1 &i8259 0 0
-+				b800 0 0 2 &i8259 0 0
-+				b800 0 0 3 &i8259 0 0
-+				b800 0 0 4 &i8259 0 0
++#
++# QoS and/or fair queueing
++#
++# CONFIG_NET_SCHED is not set
 +
-+				/* IDSEL 0x18 */
-+				c000 0 0 1 &i8259 0 0
-+				c000 0 0 2 &i8259 0 0
-+				c000 0 0 3 &i8259 0 0
-+				c000 0 0 4 &i8259 0 0
++#
++# Network testing
++#
++# CONFIG_NET_PKTGEN is not set
++# CONFIG_HAMRADIO is not set
++# CONFIG_IRDA is not set
++# CONFIG_BT is not set
++# CONFIG_IEEE80211 is not set
 +
-+				/* IDSEL 0x19 */
-+				c800 0 0 1 &i8259 0 0
-+				c800 0 0 2 &i8259 0 0
-+				c800 0 0 3 &i8259 0 0
-+				c800 0 0 4 &i8259 0 0
++#
++# Device Drivers
++#
 +
-+				/* IDSEL 0x1a */
-+				d000 0 0 1 &i8259 6 2
-+				d000 0 0 2 &i8259 3 2
-+				d000 0 0 3 &i8259 4 2
-+				d000 0 0 4 &i8259 5 2
++#
++# Generic Driver Options
++#
++CONFIG_STANDALONE=y
++CONFIG_PREVENT_FIRMWARE_BUILD=y
++CONFIG_FW_LOADER=y
++# CONFIG_DEBUG_DRIVER is not set
++# CONFIG_DEBUG_DEVRES is not set
++# CONFIG_SYS_HYPERVISOR is not set
 +
++#
++# Connector - unified userspace <-> kernelspace linker
++#
++# CONFIG_CONNECTOR is not set
 +
-+				/* IDSEL 0x1b */
-+				d800 0 0 1 &i8259 5 2
-+				d800 0 0 2 &i8259 0 0
-+				d800 0 0 3 &i8259 0 0
-+				d800 0 0 4 &i8259 0 0
++#
++# Memory Technology Devices (MTD)
++#
++# CONFIG_MTD is not set
 +
-+				/* IDSEL 0x1c */
-+				e000 0 0 1 &i8259 9 2
-+				e000 0 0 2 &i8259 a 2
-+				e000 0 0 3 &i8259 c 2
-+				e000 0 0 4 &i8259 7 2
++#
++# Parallel port support
++#
++# CONFIG_PARPORT is not set
 +
-+				/* IDSEL 0x1d */
-+				e800 0 0 1 &i8259 9 2
-+				e800 0 0 2 &i8259 a 2
-+				e800 0 0 3 &i8259 b 2
-+				e800 0 0 4 &i8259 0 0
++#
++# Plug and Play support
++#
++# CONFIG_PNPACPI is not set
 +
-+				/* IDSEL 0x1e */
-+				f000 0 0 1 &i8259 c 2
-+				f000 0 0 2 &i8259 0 0
-+				f000 0 0 3 &i8259 0 0
-+				f000 0 0 4 &i8259 0 0
++#
++# Block devices
++#
++# CONFIG_BLK_DEV_FD is not set
++# CONFIG_BLK_CPQ_DA is not set
++# CONFIG_BLK_CPQ_CISS_DA is not set
++# CONFIG_BLK_DEV_DAC960 is not set
++# CONFIG_BLK_DEV_UMEM is not set
++# CONFIG_BLK_DEV_COW_COMMON is not set
++CONFIG_BLK_DEV_LOOP=y
++# CONFIG_BLK_DEV_CRYPTOLOOP is not set
++# CONFIG_BLK_DEV_NBD is not set
++# CONFIG_BLK_DEV_SX8 is not set
++CONFIG_BLK_DEV_RAM=y
++CONFIG_BLK_DEV_RAM_COUNT=16
++CONFIG_BLK_DEV_RAM_SIZE=131072
++CONFIG_BLK_DEV_RAM_BLOCKSIZE=1024
++CONFIG_BLK_DEV_INITRD=y
++# CONFIG_CDROM_PKTCDVD is not set
++# CONFIG_ATA_OVER_ETH is not set
 +
-+				/* IDSEL 0x1f */
-+				f800 0 0 1 &i8259 6 2
-+				f800 0 0 2 &i8259 0 0
-+				f800 0 0 3 &i8259 0 0
-+				f800 0 0 4 &i8259 0 0
-+				>;
-+			i8259: i8259@4d0 {
-+				clock-frequency = <0>;
-+				interrupt-controller;
-+				device_type = "interrupt-controller";
-+				#address-cells = <0>;
-+				#interrupt-cells = <2>;
-+				built-in;
-+				compatible = "chrp,iic";
-+                	        big-endian;
-+				interrupts = <49 2>;
-+				interrupt-parent = <&mpic>;
-+			};
++#
++# Misc devices
++#
++# CONFIG_SGI_IOC4 is not set
++# CONFIG_TIFM_CORE is not set
 +
-+		};
++#
++# ATA/ATAPI/MFM/RLL support
++#
++# CONFIG_IDE is not set
 +
-+		pci@9000 {
-+			compatible = "86xx";
-+			device_type = "pci";
-+			#interrupt-cells = <1>;
-+			#size-cells = <2>;
-+			#address-cells = <3>;
-+			reg = <9000 1000>;
-+			bus-range = <0 ff>;
-+			ranges = <02000000 0 a0000000 a0000000 0 20000000
-+				  01000000 0 00000000 e3000000 0 00100000>;
-+			clock-frequency = <1fca055>;
-+			interrupt-parent = <&mpic>;
-+			interrupts = <19 2>;
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+				/* IDSEL 0x0 */
-+				0000 0 0 1 &mpic 44 1
-+				0000 0 0 2 &mpic 45 1
-+				0000 0 0 3 &mpic 46 1
-+				0000 0 0 4 &mpic 47 1
-+				>;
-+		};
++#
++# SCSI device support
++#
++# CONFIG_RAID_ATTRS is not set
++CONFIG_SCSI=y
++# CONFIG_SCSI_TGT is not set
++# CONFIG_SCSI_NETLINK is not set
++CONFIG_SCSI_PROC_FS=y
 +
-+		mpic: pic@40000 {
-+			clock-frequency = <0>;
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <40000 40000>;
-+			built-in;
-+			compatible = "chrp,open-pic";
-+			device_type = "open-pic";
-+			big-endian;
-+			interrupts = <
-+			18 2 49 2 19 2
-+			2a 2 2b 2 4a 1
-+			1d 2 1e 2 22 2
-+			23 2 24 2 28 2
-+			>;
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/boot/dts/mpc8641_core1.dts b/arch/powerpc/boot/dts/mpc8641_core1.dts
-new file mode 100644
-index 0000000..44598ce
---- /dev/null
-+++ b/arch/powerpc/boot/dts/mpc8641_core1.dts
-@@ -0,0 +1,125 @@
-+/*
-+ * MPC8641 HPCN Core1 Device Tree Source
-+ *
-+ * Copyright 2006-2007 Freescale Semiconductor Inc.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
++#
++# SCSI support type (disk, tape, CD-ROM)
++#
++CONFIG_BLK_DEV_SD=y
++# CONFIG_CHR_DEV_ST is not set
++# CONFIG_CHR_DEV_OSST is not set
++# CONFIG_BLK_DEV_SR is not set
++CONFIG_CHR_DEV_SG=y
++# CONFIG_CHR_DEV_SCH is not set
 +
++#
++# Some SCSI devices (e.g. CD jukebox) support multiple LUNs
++#
++# CONFIG_SCSI_MULTI_LUN is not set
++# CONFIG_SCSI_CONSTANTS is not set
++# CONFIG_SCSI_LOGGING is not set
++# CONFIG_SCSI_SCAN_ASYNC is not set
 +
-+/ {
-+	model = "MPC8641HPCN";
-+	compatible = "mpc86xx";
-+	#address-cells = <1>;
-+	#size-cells = <1>;
++#
++# SCSI Transports
++#
++# CONFIG_SCSI_SPI_ATTRS is not set
++# CONFIG_SCSI_FC_ATTRS is not set
++# CONFIG_SCSI_ISCSI_ATTRS is not set
++# CONFIG_SCSI_SAS_ATTRS is not set
++# CONFIG_SCSI_SAS_LIBSAS is not set
 +
-+	cpus {
-+		#cpus = <1>;
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++#
++# SCSI low-level drivers
++#
++# CONFIG_ISCSI_TCP is not set
++# CONFIG_BLK_DEV_3W_XXXX_RAID is not set
++# CONFIG_SCSI_3W_9XXX is not set
++# CONFIG_SCSI_ACARD is not set
++# CONFIG_SCSI_AACRAID is not set
++# CONFIG_SCSI_AIC7XXX is not set
++# CONFIG_SCSI_AIC7XXX_OLD is not set
++# CONFIG_SCSI_AIC79XX is not set
++# CONFIG_SCSI_AIC94XX is not set
++# CONFIG_SCSI_DPT_I2O is not set
++# CONFIG_SCSI_ARCMSR is not set
++# CONFIG_MEGARAID_NEWGEN is not set
++# CONFIG_MEGARAID_LEGACY is not set
++# CONFIG_MEGARAID_SAS is not set
++# CONFIG_SCSI_HPTIOP is not set
++# CONFIG_SCSI_BUSLOGIC is not set
++# CONFIG_SCSI_DMX3191D is not set
++# CONFIG_SCSI_EATA is not set
++# CONFIG_SCSI_FUTURE_DOMAIN is not set
++# CONFIG_SCSI_GDTH is not set
++# CONFIG_SCSI_IPS is not set
++# CONFIG_SCSI_INITIO is not set
++# CONFIG_SCSI_INIA100 is not set
++# CONFIG_SCSI_STEX is not set
++# CONFIG_SCSI_SYM53C8XX_2 is not set
++# CONFIG_SCSI_IPR is not set
++# CONFIG_SCSI_QLOGIC_1280 is not set
++# CONFIG_SCSI_QLA_FC is not set
++# CONFIG_SCSI_QLA_ISCSI is not set
++# CONFIG_SCSI_LPFC is not set
++# CONFIG_SCSI_DC395x is not set
++# CONFIG_SCSI_DC390T is not set
++# CONFIG_SCSI_NSP32 is not set
++# CONFIG_SCSI_DEBUG is not set
++# CONFIG_SCSI_SRP is not set
 +
-+		PowerPC,8641@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			d-cache-line-size = <20>;	// 32 bytes
-+			i-cache-line-size = <20>;	// 32 bytes
-+			d-cache-size = <8000>;		// L1, 32K
-+			i-cache-size = <8000>;		// L1, 32K
-+			timebase-frequency = <0>;	// 33 MHz, from uboot
-+			bus-frequency = <0>;		// From uboot
-+			clock-frequency = <0>;		// From uboot
-+			32-bit;
-+		};
-+	};
++#
++# Serial ATA (prod) and Parallel ATA (experimental) drivers
++#
++CONFIG_ATA=y
++# CONFIG_ATA_NONSTANDARD is not set
++CONFIG_SATA_AHCI=y
++# CONFIG_SATA_SVW is not set
++# CONFIG_ATA_PIIX is not set
++# CONFIG_SATA_MV is not set
++# CONFIG_SATA_NV is not set
++# CONFIG_PDC_ADMA is not set
++# CONFIG_SATA_QSTOR is not set
++# CONFIG_SATA_PROMISE is not set
++# CONFIG_SATA_SX4 is not set
++# CONFIG_SATA_SIL is not set
++# CONFIG_SATA_SIL24 is not set
++# CONFIG_SATA_SIS is not set
++# CONFIG_SATA_ULI is not set
++# CONFIG_SATA_VIA is not set
++# CONFIG_SATA_VITESSE is not set
++# CONFIG_SATA_INIC162X is not set
++# CONFIG_PATA_ALI is not set
++# CONFIG_PATA_AMD is not set
++# CONFIG_PATA_ARTOP is not set
++# CONFIG_PATA_ATIIXP is not set
++# CONFIG_PATA_CMD64X is not set
++# CONFIG_PATA_CS5520 is not set
++# CONFIG_PATA_CS5530 is not set
++# CONFIG_PATA_CYPRESS is not set
++# CONFIG_PATA_EFAR is not set
++# CONFIG_ATA_GENERIC is not set
++# CONFIG_PATA_HPT366 is not set
++# CONFIG_PATA_HPT37X is not set
++# CONFIG_PATA_HPT3X2N is not set
++# CONFIG_PATA_HPT3X3 is not set
++# CONFIG_PATA_IT821X is not set
++# CONFIG_PATA_IT8213 is not set
++# CONFIG_PATA_JMICRON is not set
++# CONFIG_PATA_TRIFLEX is not set
++# CONFIG_PATA_MARVELL is not set
++# CONFIG_PATA_MPIIX is not set
++# CONFIG_PATA_OLDPIIX is not set
++# CONFIG_PATA_NETCELL is not set
++# CONFIG_PATA_NS87410 is not set
++# CONFIG_PATA_OPTI is not set
++# CONFIG_PATA_OPTIDMA is not set
++# CONFIG_PATA_PDC_OLD is not set
++# CONFIG_PATA_RADISYS is not set
++# CONFIG_PATA_RZ1000 is not set
++# CONFIG_PATA_SC1200 is not set
++# CONFIG_PATA_SERVERWORKS is not set
++# CONFIG_PATA_PDC2027X is not set
++# CONFIG_PATA_SIL680 is not set
++# CONFIG_PATA_SIS is not set
++# CONFIG_PATA_VIA is not set
++# CONFIG_PATA_WINBOND is not set
++# CONFIG_PATA_PLATFORM is not set
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <00000000 10000000>;	// 256M at 0x0
-+	};
++#
++# Multi-device support (RAID and LVM)
++#
++# CONFIG_MD is not set
 +
-+	soc8641@f8000000 {
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <1>;
-+		device_type = "soc";
-+		ranges = <0 f8000000 00100000>;
-+		reg = <f8000000 00100000>;	// CCSRBAR 1M
-+		bus-frequency = <0>;
++#
++# Fusion MPT device support
++#
++# CONFIG_FUSION is not set
++# CONFIG_FUSION_SPI is not set
++# CONFIG_FUSION_FC is not set
++# CONFIG_FUSION_SAS is not set
 +
-+		mdio@24520 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "mdio";
-+			compatible = "gianfar";
-+			reg = <24520 20>;
-+			phy2: ethernet-phy@2 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <4a 1>;
-+				reg = <2>;
-+				device_type = "ethernet-phy";
-+			};
-+			phy3: ethernet-phy@3 {
-+				interrupt-parent = <&mpic>;
-+				interrupts = <4a 1>;
-+				reg = <3>;
-+				device_type = "ethernet-phy";
-+			};
-+		};
++#
++# IEEE 1394 (FireWire) support
++#
++# CONFIG_IEEE1394 is not set
 +
-+		ethernet@26000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <26000 1000>;
-+			mac-address = [ 00 E0 0C 00 02 FD ];
-+			interrupts = <1F 2 20 2 21 2>;
-+			interrupt-parent = <&mpic>;
-+			phy-handle = <&phy2>;
-+		};
++#
++# I2O device support
++#
++# CONFIG_I2O is not set
 +
-+		ethernet@27000 {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "network";
-+			model = "TSEC";
-+			compatible = "gianfar";
-+			reg = <27000 1000>;
-+			mac-address = [ 00 E0 0C 00 03 FD ];
-+			interrupts = <25 2 26 2 27 2>;
-+			interrupt-parent = <&mpic>;
-+			phy-handle = <&phy3>;
-+		};
++#
++# Macintosh device drivers
++#
++# CONFIG_MAC_EMUMOUSEBTN is not set
++# CONFIG_WINDFARM is not set
 +
-+		serial@4600 {
-+			device_type = "serial";
-+			compatible = "ns16550";
-+			reg = <4600 100>;
-+			clock-frequency = <0>;
-+			interrupts = <1c 2>;
-+			interrupt-parent = <&mpic>;
-+		};
++#
++# Network device support
++#
++CONFIG_NETDEVICES=y
++CONFIG_DUMMY=y
++# CONFIG_BONDING is not set
++# CONFIG_EQUALIZER is not set
++# CONFIG_TUN is not set
 +
-+		mpic: pic@40000 {
-+			clock-frequency = <0>;
-+			interrupt-controller;
-+			#address-cells = <0>;
-+			#interrupt-cells = <2>;
-+			reg = <40000 40000>;
-+			built-in;
-+			compatible = "chrp,open-pic";
-+			device_type = "open-pic";
-+			big-endian;
-+			interrupts = <
-+			1c 2
-+			1f 2 20 2 21 2
-+			25 2 26 2 27 2
-+			>;
++#
++# ARCnet devices
++#
++# CONFIG_ARCNET is not set
 +
-+		};
-+	};
-+};
-diff --git a/arch/powerpc/platforms/86xx/Kconfig b/arch/powerpc/platforms/86xx/Kconfig
-index 0c70944..292cb1e 100644
---- a/arch/powerpc/platforms/86xx/Kconfig
-+++ b/arch/powerpc/platforms/86xx/Kconfig
-@@ -30,4 +30,8 @@ config PPC_INDIRECT_PCI_BE
- 	depends on PPC_86xx
- 	default y
- 
-+config ASMP
-+	bool "Asynchronous SMP support"
-+	depends on PPC_86xx
-+	default n
- endmenu
-diff --git a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-index 5ef6d61..70034ad 100644
---- a/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-+++ b/arch/powerpc/platforms/86xx/mpc86xx_hpcn.c
-@@ -80,7 +80,11 @@ mpc86xx_hpcn_init_irq(void)
- 
- 	/* Alloc mpic structure and per isu has 16 INT entries. */
- 	mpic1 = mpic_alloc(np, res.start,
-+#ifdef CONFIG_ASMP
-+			MPIC_PRIMARY | MPIC_BIG_ENDIAN,
-+#else
- 			MPIC_PRIMARY | MPIC_WANTS_RESET | MPIC_BIG_ENDIAN,
-+#endif
- 			16, NR_IRQS - 10,
- 			" MPIC     ");
- 	BUG_ON(mpic1 == NULL);
-diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
-index bcfb900..739d8bf 100644
---- a/arch/powerpc/sysdev/mpic.c
-+++ b/arch/powerpc/sysdev/mpic.c
-@@ -707,9 +707,15 @@ static void mpic_set_affinity(unsigned int irq, cpumask_t cpumask)
- 	cpumask_t tmp;
- 
- 	cpus_and(tmp, cpumask, cpu_online_map);
--
-+#ifdef CONFIG_ASMP
-+	unsigned int pir;
-+	pir = mfspr(SPRN_PIR);
-+	mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
-+			1 << pir);
-+#else
- 	mpic_irq_write(src, MPIC_INFO(IRQ_DESTINATION),
--		       mpic_physmask(cpus_addr(tmp)[0]));	
-+		       mpic_physmask(cpus_addr(tmp)[0]));
-+#endif
- }
- 
- static unsigned int mpic_type_to_vecpri(struct mpic *mpic, unsigned int type)
-@@ -1038,11 +1044,18 @@ struct mpic * __init mpic_alloc(struct device_node *node,
- 				     >> MPIC_GREG_FEATURE_LAST_SRC_SHIFT) + 1;
- 
- 	/* Map the per-CPU registers */
-+#ifdef CONFIG_ASMP
-+	unsigned int pir;
-+	pir = mfspr(SPRN_PIR);
-+	mpic_map(mpic, paddr, &mpic->cpuregs[0], MPIC_INFO(CPU_BASE) +
-+		pir * MPIC_INFO(CPU_STRIDE), 0x1000);
-+#else
- 	for (i = 0; i < mpic->num_cpus; i++) {
- 		mpic_map(mpic, paddr, &mpic->cpuregs[i],
- 			 MPIC_INFO(CPU_BASE) + i * MPIC_INFO(CPU_STRIDE),
- 			 0x1000);
- 	}
-+#endif
- 
- 	/* Initialize main ISU if none provided */
- 	if (mpic->isu_size == 0) {
-@@ -1145,6 +1158,29 @@ void __init mpic_init(struct mpic *mpic)
- 	if ((mpic->flags & MPIC_BROKEN_U3) && (mpic->flags & MPIC_PRIMARY))
-  		mpic_scan_ht_pics(mpic);
- 
-+#ifdef CONFIG_ASMP
-+	u32 pir, rirq, intsize, intlen, vecpri;
-+	struct device_node *np;
-+	const u32 *intspec, *tmp;
++#
++# PHY device support
++#
++CONFIG_PHYLIB=y
 +
-+	/* get current core id */
-+	pir = mfspr(SPRN_PIR);
++#
++# MII PHY device drivers
++#
++# CONFIG_MARVELL_PHY is not set
++# CONFIG_DAVICOM_PHY is not set
++# CONFIG_QSEMI_PHY is not set
++# CONFIG_LXT_PHY is not set
++# CONFIG_CICADA_PHY is not set
++CONFIG_VITESSE_PHY=y
++# CONFIG_SMSC_PHY is not set
++# CONFIG_BROADCOM_PHY is not set
++# CONFIG_FIXED_PHY is not set
 +
-+	/* get interrupts which are  assigned to this core */
-+	np = of_find_node_by_type(NULL, "open-pic");
-+	intspec = get_property(np, "interrupts", &intlen);
-+	intlen /= sizeof(u32);
-+	tmp = get_property(np, "#interrupt-cells", NULL);
-+	intsize = *tmp;
-+	for (i = 0; i < (intlen / 2); i++) {
-+		rirq = intspec[i * intsize];
-+		vecpri = MPIC_VECPRI_MASK | rirq |
-+			(8 << MPIC_VECPRI_PRIORITY_SHIFT);
-+		mpic_irq_write(rirq, MPIC_INFO(IRQ_VECTOR_PRI), vecpri);
-+		mpic_irq_write(rirq, MPIC_INFO(IRQ_DESTINATION),
-+			1 << pir);
-+	}
-+#else
- 	for (i = 0; i < mpic->num_sources; i++) {
- 		/* start with vector = source number, and masked */
- 		u32 vecpri = MPIC_VECPRI_MASK | i |
-@@ -1155,6 +1191,7 @@ void __init mpic_init(struct mpic *mpic)
- 		mpic_irq_write(i, MPIC_INFO(IRQ_DESTINATION),
- 			       1 << hard_smp_processor_id());
- 	}
-+#endif
- 	
- 	/* Init spurious vector */
- 	mpic_write(mpic->gregs, MPIC_INFO(GREG_SPURIOUS), mpic->spurious_vec);
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index 1f83988..7ec67d9 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -692,11 +692,21 @@ int startup_gfar(struct net_device *dev)
- 
- 	priv->tx_bd_base = (struct txbd8 *) vaddr;
- 
-+#ifdef CONFIG_ASMP
-+	unsigned int pir;
-+	pir = mfspr(SPRN_PIR);
-+	/* enet DMA only understands physical addresses */
-+	gfar_write(&regs->tbase0, ((unsigned int)addr + 0x10000000 * pir));
++#
++# Ethernet (10 or 100Mbit)
++#
++CONFIG_NET_ETHERNET=y
++CONFIG_MII=y
++# CONFIG_HAPPYMEAL is not set
++# CONFIG_SUNGEM is not set
++# CONFIG_CASSINI is not set
++# CONFIG_NET_VENDOR_3COM is not set
 +
-+	/* Start the rx descriptor ring where the tx ring leaves off */
-+	addr = addr + sizeof (struct txbd8) * priv->tx_ring_size + 0x10000000 * pir;
-+#else
- 	/* enet DMA only understands physical addresses */
- 	gfar_write(&regs->tbase0, addr);
- 
- 	/* Start the rx descriptor ring where the tx ring leaves off */
- 	addr = addr + sizeof (struct txbd8) * priv->tx_ring_size;
-+#endif
- 	vaddr = vaddr + sizeof (struct txbd8) * priv->tx_ring_size;
- 	priv->rx_bd_base = (struct rxbd8 *) vaddr;
- 	gfar_write(&regs->rbase0, addr);
-@@ -1006,8 +1016,15 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 
- 	/* Set buffer length and pointer */
- 	txbdp->length = skb->len;
-+#ifdef CONFIG_ASMP
-+	unsigned int pir;
-+	pir = mfspr(SPRN_PIR);
-+	txbdp->bufPtr = dma_map_single(NULL, skb->data,
-+			skb->len, DMA_TO_DEVICE) + 0x10000000 * pir;
-+#else
- 	txbdp->bufPtr = dma_map_single(NULL, skb->data,
- 			skb->len, DMA_TO_DEVICE);
-+#endif
- 
- 	/* Save the skb pointer so we can free it later */
- 	priv->tx_skbuff[priv->skb_curtx] = skb;
-@@ -1298,8 +1315,15 @@ struct sk_buff * gfar_new_skb(struct net_device *dev, struct rxbd8 *bdp)
- 
- 	skb->dev = dev;
- 
-+#ifdef CONFIG_ASMP
-+	unsigned int pir;
-+	pir = mfspr(SPRN_PIR);
-+	bdp->bufPtr = dma_map_single(NULL, skb->data,
-+			priv->rx_buffer_size, DMA_FROM_DEVICE) + 0x10000000 * pir;
-+#else
- 	bdp->bufPtr = dma_map_single(NULL, skb->data,
- 			priv->rx_buffer_size, DMA_FROM_DEVICE);
-+#endif
- 
- 	bdp->length = 0;
++#
++# Tulip family network device support
++#
++# CONFIG_NET_TULIP is not set
++# CONFIG_HP100 is not set
++# CONFIG_NET_PCI is not set
++
++#
++# Ethernet (1000 Mbit)
++#
++# CONFIG_ACENIC is not set
++# CONFIG_DL2K is not set
++# CONFIG_E1000 is not set
++# CONFIG_NS83820 is not set
++# CONFIG_HAMACHI is not set
++# CONFIG_YELLOWFIN is not set
++# CONFIG_R8169 is not set
++# CONFIG_SIS190 is not set
++# CONFIG_SKGE is not set
++# CONFIG_SKY2 is not set
++# CONFIG_SK98LIN is not set
++# CONFIG_TIGON3 is not set
++# CONFIG_BNX2 is not set
++CONFIG_GIANFAR=y
++# CONFIG_GFAR_NAPI is not set
++# CONFIG_QLA3XXX is not set
++# CONFIG_ATL1 is not set
++
++#
++# Ethernet (10000 Mbit)
++#
++# CONFIG_CHELSIO_T1 is not set
++# CONFIG_CHELSIO_T3 is not set
++# CONFIG_IXGB is not set
++# CONFIG_S2IO is not set
++# CONFIG_MYRI10GE is not set
++# CONFIG_NETXEN_NIC is not set
++
++#
++# Token Ring devices
++#
++# CONFIG_TR is not set
++
++#
++# Wireless LAN (non-hamradio)
++#
++# CONFIG_NET_RADIO is not set
++
++#
++# Wan interfaces
++#
++# CONFIG_WAN is not set
++# CONFIG_FDDI is not set
++# CONFIG_HIPPI is not set
++# CONFIG_PPP is not set
++# CONFIG_SLIP is not set
++# CONFIG_NET_FC is not set
++# CONFIG_SHAPER is not set
++# CONFIG_NETCONSOLE is not set
++# CONFIG_NETPOLL is not set
++# CONFIG_NET_POLL_CONTROLLER is not set
++
++#
++# ISDN subsystem
++#
++# CONFIG_ISDN is not set
++
++#
++# Telephony Support
++#
++# CONFIG_PHONE is not set
++
++#
++# Input device support
++#
++CONFIG_INPUT=y
++# CONFIG_INPUT_FF_MEMLESS is not set
++
++#
++# Userland interfaces
++#
++# CONFIG_INPUT_MOUSEDEV is not set
++# CONFIG_INPUT_JOYDEV is not set
++# CONFIG_INPUT_TSDEV is not set
++# CONFIG_INPUT_EVDEV is not set
++# CONFIG_INPUT_EVBUG is not set
++
++#
++# Input Device Drivers
++#
++# CONFIG_INPUT_KEYBOARD is not set
++# CONFIG_INPUT_MOUSE is not set
++# CONFIG_INPUT_JOYSTICK is not set
++# CONFIG_INPUT_TOUCHSCREEN is not set
++# CONFIG_INPUT_MISC is not set
++
++#
++# Hardware I/O ports
++#
++CONFIG_SERIO=y
++CONFIG_SERIO_I8042=y
++CONFIG_SERIO_SERPORT=y
++# CONFIG_SERIO_PCIPS2 is not set
++CONFIG_SERIO_LIBPS2=y
++# CONFIG_SERIO_RAW is not set
++# CONFIG_GAMEPORT is not set
++
++#
++# Character devices
++#
++CONFIG_VT=y
++CONFIG_VT_CONSOLE=y
++CONFIG_HW_CONSOLE=y
++# CONFIG_VT_HW_CONSOLE_BINDING is not set
++# CONFIG_SERIAL_NONSTANDARD is not set
++
++#
++# Serial drivers
++#
++CONFIG_SERIAL_8250=y
++CONFIG_SERIAL_8250_CONSOLE=y
++CONFIG_SERIAL_8250_PCI=y
++CONFIG_SERIAL_8250_NR_UARTS=2
++CONFIG_SERIAL_8250_RUNTIME_UARTS=2
++CONFIG_SERIAL_8250_EXTENDED=y
++CONFIG_SERIAL_8250_MANY_PORTS=y
++CONFIG_SERIAL_8250_SHARE_IRQ=y
++CONFIG_SERIAL_8250_DETECT_IRQ=y
++CONFIG_SERIAL_8250_RSA=y
++
++#
++# Non-8250 serial port support
++#
++# CONFIG_SERIAL_UARTLITE is not set
++CONFIG_SERIAL_CORE=y
++CONFIG_SERIAL_CORE_CONSOLE=y
++# CONFIG_SERIAL_JSM is not set
++# CONFIG_SERIAL_OF_PLATFORM is not set
++CONFIG_UNIX98_PTYS=y
++# CONFIG_LEGACY_PTYS is not set
++
++#
++# IPMI
++#
++# CONFIG_IPMI_HANDLER is not set
++
++#
++# Watchdog Cards
++#
++# CONFIG_WATCHDOG is not set
++# CONFIG_HW_RANDOM is not set
++# CONFIG_NVRAM is not set
++# CONFIG_GEN_RTC is not set
++# CONFIG_DTLK is not set
++# CONFIG_R3964 is not set
++# CONFIG_APPLICOM is not set
++# CONFIG_AGP is not set
++# CONFIG_DRM is not set
++# CONFIG_RAW_DRIVER is not set
++
++#
++# TPM devices
++#
++# CONFIG_TCG_TPM is not set
++
++#
++# I2C support
++#
++CONFIG_I2C=y
++# CONFIG_I2C_CHARDEV is not set
++
++#
++# I2C Algorithms
++#
++# CONFIG_I2C_ALGOBIT is not set
++# CONFIG_I2C_ALGOPCF is not set
++# CONFIG_I2C_ALGOPCA is not set
++
++#
++# I2C Hardware Bus support
++#
++# CONFIG_I2C_ALI1535 is not set
++# CONFIG_I2C_ALI1563 is not set
++# CONFIG_I2C_ALI15X3 is not set
++# CONFIG_I2C_AMD756 is not set
++# CONFIG_I2C_AMD8111 is not set
++# CONFIG_I2C_I801 is not set
++# CONFIG_I2C_I810 is not set
++# CONFIG_I2C_PIIX4 is not set
++CONFIG_I2C_MPC=y
++# CONFIG_I2C_NFORCE2 is not set
++# CONFIG_I2C_OCORES is not set
++# CONFIG_I2C_PARPORT_LIGHT is not set
++# CONFIG_I2C_PASEMI is not set
++# CONFIG_I2C_PROSAVAGE is not set
++# CONFIG_I2C_SAVAGE4 is not set
++# CONFIG_I2C_SIS5595 is not set
++# CONFIG_I2C_SIS630 is not set
++# CONFIG_I2C_SIS96X is not set
++# CONFIG_I2C_VIA is not set
++# CONFIG_I2C_VIAPRO is not set
++# CONFIG_I2C_VOODOO3 is not set
++# CONFIG_I2C_PCA_ISA is not set
++
++#
++# Miscellaneous I2C Chip support
++#
++# CONFIG_SENSORS_DS1337 is not set
++# CONFIG_SENSORS_DS1374 is not set
++CONFIG_SENSORS_EEPROM=y
++# CONFIG_SENSORS_PCF8574 is not set
++# CONFIG_SENSORS_PCA9539 is not set
++# CONFIG_SENSORS_PCF8591 is not set
++# CONFIG_SENSORS_M41T00 is not set
++# CONFIG_SENSORS_MAX6875 is not set
++# CONFIG_I2C_DEBUG_CORE is not set
++# CONFIG_I2C_DEBUG_ALGO is not set
++# CONFIG_I2C_DEBUG_BUS is not set
++# CONFIG_I2C_DEBUG_CHIP is not set
++
++#
++# SPI support
++#
++# CONFIG_SPI is not set
++# CONFIG_SPI_MASTER is not set
++
++#
++# Dallas's 1-wire bus
++#
++# CONFIG_W1 is not set
++
++#
++# Hardware Monitoring support
++#
++# CONFIG_HWMON is not set
++# CONFIG_HWMON_VID is not set
++
++#
++# Multimedia devices
++#
++# CONFIG_VIDEO_DEV is not set
++
++#
++# Digital Video Broadcasting Devices
++#
++# CONFIG_DVB is not set
++
++#
++# Graphics support
++#
++CONFIG_FIRMWARE_EDID=y
++# CONFIG_FB is not set
++# CONFIG_FB_IBM_GXT4500 is not set
++
++#
++# Console display driver support
++#
++CONFIG_VGA_CONSOLE=y
++# CONFIG_VGACON_SOFT_SCROLLBACK is not set
++CONFIG_DUMMY_CONSOLE=y
++# CONFIG_BACKLIGHT_LCD_SUPPORT is not set
++
++#
++# Sound
++#
++# CONFIG_SOUND is not set
++
++#
++# HID Devices
++#
++CONFIG_HID=y
++# CONFIG_HID_DEBUG is not set
++
++#
++# USB support
++#
++CONFIG_USB_ARCH_HAS_HCD=y
++CONFIG_USB_ARCH_HAS_OHCI=y
++CONFIG_USB_ARCH_HAS_EHCI=y
++# CONFIG_USB is not set
++
++#
++# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
++#
++
++#
++# USB Gadget Support
++#
++# CONFIG_USB_GADGET is not set
++
++#
++# MMC/SD Card support
++#
++# CONFIG_MMC is not set
++
++#
++# LED devices
++#
++# CONFIG_NEW_LEDS is not set
++
++#
++# LED drivers
++#
++
++#
++# LED Triggers
++#
++
++#
++# InfiniBand support
++#
++# CONFIG_INFINIBAND is not set
++
++#
++# EDAC - error detection and reporting (RAS) (EXPERIMENTAL)
++#
++
++#
++# Real Time Clock
++#
++# CONFIG_RTC_CLASS is not set
++
++#
++# DMA Engine support
++#
++# CONFIG_DMA_ENGINE is not set
++
++#
++# DMA Clients
++#
++
++#
++# DMA Devices
++#
++
++#
++# Auxiliary Display support
++#
++
++#
++# Virtualization
++#
++
++#
++# File systems
++#
++CONFIG_EXT2_FS=y
++# CONFIG_EXT2_FS_XATTR is not set
++# CONFIG_EXT2_FS_XIP is not set
++CONFIG_EXT3_FS=y
++CONFIG_EXT3_FS_XATTR=y
++# CONFIG_EXT3_FS_POSIX_ACL is not set
++# CONFIG_EXT3_FS_SECURITY is not set
++# CONFIG_EXT4DEV_FS is not set
++CONFIG_JBD=y
++# CONFIG_JBD_DEBUG is not set
++CONFIG_FS_MBCACHE=y
++# CONFIG_REISERFS_FS is not set
++# CONFIG_JFS_FS is not set
++# CONFIG_FS_POSIX_ACL is not set
++# CONFIG_XFS_FS is not set
++# CONFIG_GFS2_FS is not set
++# CONFIG_OCFS2_FS is not set
++# CONFIG_MINIX_FS is not set
++# CONFIG_ROMFS_FS is not set
++# CONFIG_INOTIFY is not set
++# CONFIG_QUOTA is not set
++# CONFIG_DNOTIFY is not set
++# CONFIG_AUTOFS_FS is not set
++# CONFIG_AUTOFS4_FS is not set
++# CONFIG_FUSE_FS is not set
++
++#
++# CD-ROM/DVD Filesystems
++#
++# CONFIG_ISO9660_FS is not set
++# CONFIG_UDF_FS is not set
++
++#
++# DOS/FAT/NT Filesystems
++#
++# CONFIG_MSDOS_FS is not set
++# CONFIG_VFAT_FS is not set
++# CONFIG_NTFS_FS is not set
++
++#
++# Pseudo filesystems
++#
++CONFIG_PROC_FS=y
++CONFIG_PROC_KCORE=y
++CONFIG_PROC_SYSCTL=y
++CONFIG_SYSFS=y
++CONFIG_TMPFS=y
++# CONFIG_TMPFS_POSIX_ACL is not set
++# CONFIG_HUGETLB_PAGE is not set
++CONFIG_RAMFS=y
++# CONFIG_CONFIGFS_FS is not set
++
++#
++# Miscellaneous filesystems
++#
++# CONFIG_ADFS_FS is not set
++# CONFIG_AFFS_FS is not set
++# CONFIG_HFS_FS is not set
++# CONFIG_HFSPLUS_FS is not set
++# CONFIG_BEFS_FS is not set
++# CONFIG_BFS_FS is not set
++# CONFIG_EFS_FS is not set
++# CONFIG_CRAMFS is not set
++# CONFIG_VXFS_FS is not set
++# CONFIG_HPFS_FS is not set
++# CONFIG_QNX4FS_FS is not set
++# CONFIG_SYSV_FS is not set
++# CONFIG_UFS_FS is not set
++
++#
++# Network File Systems
++#
++CONFIG_NFS_FS=y
++CONFIG_NFS_V3=y
++# CONFIG_NFS_V3_ACL is not set
++# CONFIG_NFS_V4 is not set
++# CONFIG_NFS_DIRECTIO is not set
++CONFIG_NFSD=y
++# CONFIG_NFSD_V3 is not set
++CONFIG_NFSD_TCP=y
++CONFIG_ROOT_NFS=y
++CONFIG_LOCKD=y
++CONFIG_LOCKD_V4=y
++CONFIG_EXPORTFS=y
++CONFIG_NFS_COMMON=y
++CONFIG_SUNRPC=y
++# CONFIG_RPCSEC_GSS_KRB5 is not set
++# CONFIG_RPCSEC_GSS_SPKM3 is not set
++# CONFIG_SMB_FS is not set
++# CONFIG_CIFS is not set
++# CONFIG_NCP_FS is not set
++# CONFIG_CODA_FS is not set
++# CONFIG_AFS_FS is not set
++# CONFIG_9P_FS is not set
++
++#
++# Partition Types
++#
++CONFIG_PARTITION_ADVANCED=y
++# CONFIG_ACORN_PARTITION is not set
++# CONFIG_OSF_PARTITION is not set
++# CONFIG_AMIGA_PARTITION is not set
++# CONFIG_ATARI_PARTITION is not set
++# CONFIG_MAC_PARTITION is not set
++CONFIG_MSDOS_PARTITION=y
++# CONFIG_BSD_DISKLABEL is not set
++# CONFIG_MINIX_SUBPARTITION is not set
++# CONFIG_SOLARIS_X86_PARTITION is not set
++# CONFIG_UNIXWARE_DISKLABEL is not set
++CONFIG_LDM_PARTITION=y
++# CONFIG_LDM_DEBUG is not set
++# CONFIG_SGI_PARTITION is not set
++# CONFIG_ULTRIX_PARTITION is not set
++# CONFIG_SUN_PARTITION is not set
++# CONFIG_KARMA_PARTITION is not set
++# CONFIG_EFI_PARTITION is not set
++
++#
++# Native Language Support
++#
++CONFIG_NLS=y
++CONFIG_NLS_DEFAULT="iso8859-1"
++# CONFIG_NLS_CODEPAGE_437 is not set
++# CONFIG_NLS_CODEPAGE_737 is not set
++# CONFIG_NLS_CODEPAGE_775 is not set
++# CONFIG_NLS_CODEPAGE_850 is not set
++# CONFIG_NLS_CODEPAGE_852 is not set
++# CONFIG_NLS_CODEPAGE_855 is not set
++# CONFIG_NLS_CODEPAGE_857 is not set
++# CONFIG_NLS_CODEPAGE_860 is not set
++# CONFIG_NLS_CODEPAGE_861 is not set
++# CONFIG_NLS_CODEPAGE_862 is not set
++# CONFIG_NLS_CODEPAGE_863 is not set
++# CONFIG_NLS_CODEPAGE_864 is not set
++# CONFIG_NLS_CODEPAGE_865 is not set
++# CONFIG_NLS_CODEPAGE_866 is not set
++# CONFIG_NLS_CODEPAGE_869 is not set
++# CONFIG_NLS_CODEPAGE_936 is not set
++# CONFIG_NLS_CODEPAGE_950 is not set
++# CONFIG_NLS_CODEPAGE_932 is not set
++# CONFIG_NLS_CODEPAGE_949 is not set
++# CONFIG_NLS_CODEPAGE_874 is not set
++# CONFIG_NLS_ISO8859_8 is not set
++# CONFIG_NLS_CODEPAGE_1250 is not set
++# CONFIG_NLS_CODEPAGE_1251 is not set
++# CONFIG_NLS_ASCII is not set
++# CONFIG_NLS_ISO8859_1 is not set
++# CONFIG_NLS_ISO8859_2 is not set
++# CONFIG_NLS_ISO8859_3 is not set
++# CONFIG_NLS_ISO8859_4 is not set
++# CONFIG_NLS_ISO8859_5 is not set
++# CONFIG_NLS_ISO8859_6 is not set
++# CONFIG_NLS_ISO8859_7 is not set
++# CONFIG_NLS_ISO8859_9 is not set
++# CONFIG_NLS_ISO8859_13 is not set
++# CONFIG_NLS_ISO8859_14 is not set
++# CONFIG_NLS_ISO8859_15 is not set
++# CONFIG_NLS_KOI8_R is not set
++# CONFIG_NLS_KOI8_U is not set
++# CONFIG_NLS_UTF8 is not set
++
++#
++# Distributed Lock Manager
++#
++# CONFIG_DLM is not set
++
++#
++# Library routines
++#
++CONFIG_BITREVERSE=y
++# CONFIG_CRC_CCITT is not set
++# CONFIG_CRC16 is not set
++CONFIG_CRC32=y
++# CONFIG_LIBCRC32C is not set
++CONFIG_PLIST=y
++CONFIG_HAS_IOMEM=y
++CONFIG_HAS_IOPORT=y
++
++#
++# Instrumentation Support
++#
++# CONFIG_PROFILING is not set
++
++#
++# Kernel hacking
++#
++# CONFIG_PRINTK_TIME is not set
++CONFIG_ENABLE_MUST_CHECK=y
++# CONFIG_MAGIC_SYSRQ is not set
++# CONFIG_UNUSED_SYMBOLS is not set
++# CONFIG_DEBUG_FS is not set
++# CONFIG_HEADERS_CHECK is not set
++CONFIG_DEBUG_KERNEL=y
++# CONFIG_DEBUG_SHIRQ is not set
++CONFIG_LOG_BUF_SHIFT=14
++CONFIG_DETECT_SOFTLOCKUP=y
++# CONFIG_SCHEDSTATS is not set
++# CONFIG_TIMER_STATS is not set
++# CONFIG_DEBUG_SLAB is not set
++# CONFIG_DEBUG_RT_MUTEXES is not set
++# CONFIG_RT_MUTEX_TESTER is not set
++# CONFIG_DEBUG_SPINLOCK is not set
++# CONFIG_DEBUG_MUTEXES is not set
++# CONFIG_DEBUG_SPINLOCK_SLEEP is not set
++# CONFIG_DEBUG_LOCKING_API_SELFTESTS is not set
++# CONFIG_DEBUG_KOBJECT is not set
++# CONFIG_DEBUG_HIGHMEM is not set
++# CONFIG_DEBUG_BUGVERBOSE is not set
++# CONFIG_DEBUG_INFO is not set
++# CONFIG_DEBUG_VM is not set
++# CONFIG_DEBUG_LIST is not set
++CONFIG_FORCED_INLINING=y
++# CONFIG_RCU_TORTURE_TEST is not set
++# CONFIG_DEBUG_STACKOVERFLOW is not set
++# CONFIG_DEBUG_STACK_USAGE is not set
++# CONFIG_DEBUGGER is not set
++# CONFIG_BDI_SWITCH is not set
++# CONFIG_BOOTX_TEXT is not set
++# CONFIG_PPC_EARLY_DEBUG is not set
++
++#
++# Security options
++#
++# CONFIG_KEYS is not set
++# CONFIG_SECURITY is not set
++
++#
++# Cryptographic options
++#
++# CONFIG_CRYPTO is not set
