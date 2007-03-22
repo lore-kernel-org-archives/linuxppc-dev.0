@@ -1,19 +1,37 @@
-Return-Path: <chuckmeade@mindspring.com>
-Received: from elasmtp-masked.atl.sa.earthlink.net
-	(elasmtp-masked.atl.sa.earthlink.net [209.86.89.68])
-	by ozlabs.org (Postfix) with ESMTP id E8F31DDFC1
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 05:13:47 +1100 (EST)
-Message-ID: <4602C74F.6040402@mindspring.com>
-Date: Thu, 22 Mar 2007 14:13:35 -0400
-From: Chuck Meade <chuckmeade@mindspring.com>
-MIME-Version: 1.0
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: MPC83xx SDMR setup error
-References: <460292FA.8050206@mindspring.com>	<E9D1DC31-9730-4431-9414-0870FDD3EAF6@kernel.crashing.org>	<4602BD39.9020102@mindspring.com>
-	<20070322125712.2229ff99.kim.phillips@freescale.com>
-In-Reply-To: <20070322125712.2229ff99.kim.phillips@freescale.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <b07421@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F1EF9DDF9E
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 06:46:33 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l2MJkTb8001438
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 12:46:29 -0700 (MST)
+Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
+	[10.82.65.62])
+	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2MJkSOh003798
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 14:46:28 -0500 (CDT)
+Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
+	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
+	l2MJQWHe004339
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 14:26:32 -0500 (CDT)
+Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 749E3AEFC9
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 14:46:27 -0500 (CDT)
+Received: (from b07421@localhost)
+	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
+	l2MJkRDX031938
+	for linuxppc-dev@ozlabs.org; Thu, 22 Mar 2007 14:46:27 -0500
+Date: Thu, 22 Mar 2007 14:46:27 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/6] bootwrapper/cuboot
+Message-ID: <20070322194627.GA31926@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +41,6 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> However, as I mention below, it is unclear whether the buffer alignment
->> requirement is 64 bytes or 4Kbytes.  The code aligns the buffer to 64 bytes.
-> 
-> The rev.1 8360 manual changes the rev.0 manual's 64 bytes to a 4Kbytes alignment requirement, so it's probably best to go with 4KiB.
+This patchset applies to David's "Further zImage work (spin 2)" patchset.
 
-Thanks for the information Kim.
-
-In light of this alignment requirement, I have updated the patch and included
-it below.  The new part of the patch (the alignment change) could prevent
-potentially serious problems of the SDMA using MURAM that is owned by other
-units.
-
-Chuck
-
-diff -uprN a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
---- a/arch/powerpc/sysdev/qe_lib/qe.c	2007-03-22 14:00:02.000000000 -0400
-+++ b/arch/powerpc/sysdev/qe_lib/qe.c	2007-03-22 14:01:30.000000000 -0400
-@@ -251,12 +251,12 @@ static int qe_sdma_init(void)
-
-  	/* allocate 2 internal temporary buffers (512 bytes size each) for
-  	 * the SDMA */
--	sdma_buf_offset = qe_muram_alloc(512 * 2, 64);
-+	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
-  	if (IS_MURAM_ERR(sdma_buf_offset))
-  		return -ENOMEM;
-
-  	out_be32(&sdma->sdebcr, sdma_buf_offset & QE_SDEBCR_BA_MASK);
--	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 >>
-+	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 <<
-  					QE_SDMR_CEN_SHIFT)));
-
-  	return 0;
+-Scott
