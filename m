@@ -1,19 +1,13 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9DBD9DDF21
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 16:44:19 +1100 (EST)
-Subject: Re: [PATCH 2/4] powerpc: Fix 32 bits mm operations when not using BATs
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <20070322030114.D5B9FDDF2B@ozlabs.org>
-References: <20070322030114.D5B9FDDF2B@ozlabs.org>
-Content-Type: text/plain
-Date: Thu, 22 Mar 2007 16:44:06 +1100
-Message-Id: <1174542246.10836.17.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 22 Mar 2007 16:48:12 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [0/4] Further zImage work (spin 2)
+Message-ID: <20070322054812.GA16993@localhost.localdomain>
+References: <20070321063031.GB30422@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070321063031.GB30422@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,16 +17,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> --- linux-cell.orig/arch/powerpc/mm/mmu_decl.h	2007-03-22 13:09:34.000000000 +1100
-> +++ linux-cell/arch/powerpc/mm/mmu_decl.h	2007-03-22 13:15:08.000000000 +1100
-> @@ -31,6 +31,9 @@ extern void settlbcam(int index, unsigne
->  		      unsigned int size, int flags, unsigned int pid);
->  extern void invalidate_tlbcam_entry(int index);
->  
-> +extern void hash_preload(struct mm_struct *mm, unsigned long ea,
-> +			 unsigned long access, unsigned long trap);
-> +
+Ok, here's a revised version of that last series of zImage work.  This
+now applies on top of the for-2.6.22 branch of powerpc.git, plus
+Milton's latest zImage patch series.
 
-The above needs to be moved out of the #ifdef CONFIG_PPC32 it's in...
-
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
