@@ -1,20 +1,24 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
-	by ozlabs.org (Postfix) with ESMTP id 9F32BDDF1A
+Return-Path: <tmb@isotek.co.uk>
+Received: from pih-relay06.plus.net (pih-relay06.plus.net [212.159.14.133])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 36D31DDF6E
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Mar 2007 18:44:46 +1100 (EST)
-Date: Thu, 22 Mar 2007 08:44:43 +0100
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: [PATCH 3/5 v2] mpc52xx suspend: USB
-Message-ID: <20070322074443.GB4620@moe.telargo.com>
-References: <20070315103959.GA22215@moe.telargo.com>
-	<20070315104228.GD22215@moe.telargo.com>
-	<528646bc0703150624i2bac5ce4n7beebc88d8acbafe@mail.gmail.com>
+	Thu, 22 Mar 2007 22:28:44 +1100 (EST)
+Received: from [81.174.145.144] (helo=cow.tmjabarton.plus.com)
+	by pih-relay06.plus.net with esmtp (Exim) id 1HUKLj-0005k0-KM
+	for linuxppc-embedded@ozlabs.org; Thu, 22 Mar 2007 10:16:51 +0000
+Received: from [127.0.0.1] (squirrel.tmjabarton.plus.com [192.168.10.1])
+	by cow.tmjabarton.plus.com (8.12.11/8.12.11) with ESMTP id
+	l2MAGoab027207
+	for <linuxppc-embedded@ozlabs.org>; Thu, 22 Mar 2007 10:16:51 GMT
+Message-ID: <4602578C.4010401@isotek.co.uk>
+Date: Thu, 22 Mar 2007 10:16:44 +0000
+From: Trevor Barton <tmb@isotek.co.uk>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <528646bc0703150624i2bac5ce4n7beebc88d8acbafe@mail.gmail.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Arch: powerpc or ppc?
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,61 +29,33 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Trivial suspend and resume OF OHCI.
-On MPC52xx turn off and on power to ports.
+I've just started bringing Linux up on a Xilinx Virtex 4 FPGA with a 
+PPC405 core.  I'm using 2.6.15, and a crosstools-built toolchain from an 
+x86 running Linux.  The choice of kernel version was because crosstools 
+identified it as a working combination and I can see no reason to choose 
+anything different at the moment.
 
+I'm a bit confused about the difference between the ppc and powerpc 
+architecture trees in the kernel.  I've been using the ppc tree because 
+that seems to have the requisite sources in it (I'm basing it on the 
+ML300 code which seems to be the thing to do), and also because that was 
+the only powerpc-related  tree in earlier kernels.  I can't seem to find 
+any documentation as to where the powerpc tree appeared from and why.
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+Can anyone confirm that I should still be using the ppc tree?  Or even 
+better, point me to some documentation regarding them both?
 
----
- drivers/usb/host/ohci-ppc-of.c |   30 ++++++++++++++++++++++++++++--
- 1 file changed, 28 insertions(+), 2 deletions(-)
+Actually, while I'm at it, pointers to anything useful regarding the 2.6 
+kernel and the Virtex 4 would be helpful.  I've found a reasonable 
+amount of stuff myself, but as these things usually go I'll only find 
+the best documentation after I've solved the problems myself and 
+therefore know what I'm looking for!
 
-Index: grant.git/drivers/usb/host/ohci-ppc-of.c
-===================================================================
---- grant.git.orig/drivers/usb/host/ohci-ppc-of.c
-+++ grant.git/drivers/usb/host/ohci-ppc-of.c
-@@ -214,6 +214,32 @@ MODULE_DEVICE_TABLE(of, ohci_hcd_ppc_of_
- #endif
- 
- 
-+#ifdef CONFIG_PM
-+static u32 descr_a;
-+static int ohci_hcd_ppc_soc_drv_suspend(struct of_device *op,
-+		pm_message_t state)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
-+	if (machine_is_compatible("generic-mpc5200")) {
-+		struct ohci_hcd *ohci = hcd_to_ohci(hcd);
-+
-+		descr_a = in_be32(&ohci->regs->roothub.a);
-+		out_be32(&ohci->regs->roothub.a, (descr_a & ~0x200) | 0x100);
-+	}
-+	return 0;
-+}
-+static int ohci_hcd_ppc_soc_drv_resume(struct of_device *op)
-+{
-+	struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
-+	if (machine_is_compatible("generic-mpc5200")) {
-+		struct ohci_hcd *ohci = hcd_to_ohci(hcd);
-+
-+		out_be32(&ohci->regs->roothub.a, descr_a);
-+	}
-+	return 0;
-+}
-+#endif
-+
- static struct of_platform_driver ohci_hcd_ppc_of_driver = {
- 	.name		= "ppc-of-ohci",
- 	.match_table	= ohci_hcd_ppc_of_match,
-@@ -221,8 +247,8 @@ static struct of_platform_driver ohci_hc
- 	.remove		= ohci_hcd_ppc_of_remove,
- 	.shutdown 	= ohci_hcd_ppc_of_shutdown,
- #ifdef CONFIG_PM
--	/*.suspend	= ohci_hcd_ppc_soc_drv_suspend,*/
--	/*.resume	= ohci_hcd_ppc_soc_drv_resume,*/
-+	.suspend	= ohci_hcd_ppc_soc_drv_suspend,
-+	.resume		= ohci_hcd_ppc_soc_drv_resume,
- #endif
- 	.driver		= {
- 		.name	= "ppc-of-ohci",
+Thanks in advance,
+Trevor Barton
+
+-- 
+Isotek Electronics Ltd., 9 Clayton Wood Bank, Leeds, LS16 6QZ, UK.
+Tel: +44 (113) 275 1339  Fax: +44 (113) 224 9827 Web: www.isotek.co.uk
+Views expressed are my own and not necessarily those of Isotek 
+Electronics Ltd.
