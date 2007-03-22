@@ -1,23 +1,14 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 22 Mar 2007 11:06:20 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-Message-ID: <20070322000620.GC2295@localhost.localdomain>
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
-	<20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-	<20070318115656.GA12765@localhost.localdomain>
-	<45FEA7B3.9090304@freescale.com>
-	<20070320035957.GC21124@localhost.localdomain>
-	<45FFE8FD.9020902@freescale.com>
-	<20070321025447.GG27969@localhost.localdomain>
-	<460148DC.3020600@freescale.com>
+Return-Path: <gerald.vanbaren@comcast.net>
+Received: from rwcrmhc14.comcast.net (rwcrmhc14.comcast.net [216.148.227.154])
+	by ozlabs.org (Postfix) with ESMTP id 733C8DDEDA
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:08:56 +1100 (EST)
+Message-ID: <4601C8F7.5060006@comcast.net>
+Date: Wed, 21 Mar 2007 20:08:23 -0400
+From: Jerry Van Baren <gerald.vanbaren@comcast.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <460148DC.3020600@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+To: linuxppc-dev@ozlabs.org
+Subject: libfdt: going forward for u-boot
+Content-Type: multipart/mixed; boundary="------------070000030501080105090804"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,96 +18,160 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 21, 2007 at 10:01:48AM -0500, Timur Tabi wrote:
-> David Gibson wrote:
-> 
-> > Ah, and it can't add the property if it's not there at all.  Ok, I
-> > think I understand now.  But.. does u-boot directly use the dts files
-> > from the kernel tree, or does it have its own copies?
-> 
-> I'm not sure what you mean by that.  You compile the DTS into a DTB, and 
-> then make the DTB available to U-Boot.  That can mean either storing it 
-> in flash, or tftp'ing it into memory.  When you boot Linux via the 
-> U-Boot "bootm" command, you give it the address of the DTB in memory. 
-> U-Boot than looks for various things and updates them.  It also creates 
-> a couple new things, like a 'chosen' section.
-> 
-> If the DTB is in flash, it copies it to RAM.  Then it updates the 
-> in-memory copy.  It's very hack-ish, though.  I think it just overwrites 
-> various nodes as it pleases, and then reconnects everything.
+This is a multi-part message in MIME format.
+--------------070000030501080105090804
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
 
-I mean, does the u-boot source tree have its own copies of the dts
-files which are built into a dtb during the u-boot build process?  Or
-do you take the dts from the kernel tree and make the dtb from that
-when you build a dtb aware u-boot for a particular machine?
+Hi David,
 
-> > The maybe was more in relation to should we delete the mac-address
-> > property.  But that would have the same brokenness as removing
-> > mac-address from the dts on old, broken u-boot's that set mac-address
-> > instead of local-mac-address.
-> 
-> I was talking about the bootwrapper deleting the mac-address property, 
-> *after* U-Boot has processed the DTB and handed it to the kernel.
+I'm using libfdt in u-boot and getting close to pushing u-boot changes 
+upstream.  I'm curious what libfdt's legal status is WRT dual licensing 
+and the legal dogs you've unleashed.
 
-Yes, but if have a version of u-boot that *only* sets mac-address and
-not local-mac-address, doing so would clobber the only information
-about the MAC address we have.  In any case, I don't think is relevant
-for discussion of this function, because its only designed for use
-with *non* device tree aware firmware.
+One thought that occurred to me since we last discussed this is to 
+relicense it LGPL.  That way it could be linked into proprietary code 
+without having to maintain a dual license and the copyright assignment 
+headaches that come with outside contributors.
 
-> >> What if U-Boot were smart enough to insert all of the required items in 
-> >> one shot, and then filled them in?
-> > 
-> > I don't see how that's reasonably possible when the items in question
-> > are properties in different nodes.
-> 
-> Ok.
-> 
-> > Uh.. how does it require synchronization with u-boot?  
-> > This is really
-> > just a form of internal documentation in the dts which shows which
-> > properties are expected to be present, but overwrriten by the
-> > bootloader.
-> 
-> Ok, I understand now, but I don't know what value it has.  I don't see 
-> the difference, from the DTS point-of-view, between
-> 
-> 	local-mac-address = [ 00 00 00 00 00 00 ]
-> 
-> and
-> 
-> 	local-mac-address = [ ? ? ? ? ? ? ];
+I made some trivial changes to fdt.h and libfdt_env.h to allow libfdt to 
+compiler both on linux and for u-boot.  I've attached a patch since it 
+_is_ trivial.
 
-In terms of the generated dtb output there is no difference.  Well,
-probably.  It would It's
-purely syntactic sugar / internal documentation.
+Here is the thumbnail sketch of my current changes to use libfdt in u-boot:
 
-> In both cases, the property exists in the DTS.  The whole point was to 
-> remove it from the DTS entirely, 
+Makefile
+--------
+* Replaced with a u-boot version, unavoidable.
 
-Well, no.  You wanted to get rid of the property from the dts, I
-didn't.  What I'm suggesting here is an idea to addresses at least one
-possible objection to having the properties in the dts: the fact that
-with actual values there it looks like the tree is complete and it
-might not be obvious that a bootloader *must* tweak values to produce
-a working tree.
+fdt.h
+-----
+* See attached patchfile for trivial change to allow compiling under
+     linux and u-boot.
 
-I think it's useful to document in the dts that certain properties are
-expected to be there, even if their actual values have to be
-determined during boot.  This syntax allows a dts to show to someone
-reading it that a property is expected, and what its expected size is,
-but that the value must be filled in later.  It's for the benefit of
-people reading the dts, not programs.  It has the nice additional
-property that it lets the bootloader avoid extra memmove()s and
-possibly string table scans.
+libfdt_env.h
+------------
+* See attached patchfile for change to allow compiling under linux
+     and u-boot.
+* #include <asm/byteorder.h> which gives us direct byteswapping
+     utilities without having to do a #if __BYTE_ORDER == __BIG_ENDIAN
+#define fdt32_to_cpu(x)                (__be32_to_cpu(x))
+#define cpu_to_fdt32(x)                (__cpu_to_be32(x))
+#define fdt64_to_cpu(x)                (__be64_to_cpu(x))
+#define cpu_to_fdt64(x)                (__cpu_to_be32(x))
+    (could change the source to use __be32_to_cpu(x) and friends, but
+    I was too lazy to do this).
 
-> and let U-Boot realize that it needs to 
-> be added.  I don't want DTC to need to know what's missing from a DTS.
+fdt_ro.c
+--------
+* Added comments as I figured out how things worked... ;-)
+* Added a new function to allow me to step through tags, which I needed
+     to recursively print the tree/subtree.  This returns a pointer to
+     the name of the next node/property (if appropriate) via **namep.
+     The caller can then use the node type (return value) and the string
+     to print the property or follow the node.
 
-It doesn't need to know, but neither does it hurt to know.
+uint32_t fdt_next_tag(const void *fdt, int offset,
+                       int *nextoffset, char **namep);
 
+     *This is the only thing I would consider non-trivial, and that is
+     seriously debatable since it is mostly a copy of _fdt_next_tag()*
+
+     Not done: because I protected namep against NULL, the existing
+     _fdt_next_tag() could be trivially rewritten to be:
+     fdt_next_tag(fdt, offset, nextoffset, NULL);
+
+* Added a (void *) typecast to the fdt_getprop() return value to get rid
+     of a compiler warning.
+
+fdt_rw.c
+--------
+* Nonessential improvements to fdt_open_into()
+   * Validate the header (fdt_move() does the validation, but I skip
+       the move if buf == fdt so I needed to add the validation)
+   * Do the fdt_move() only if (buf != fdt) - I call this at times with
+       a new (longer) length but don't want to actually move the blob,
+       just want the longer length so I can modify the fdt in-place.  The
+       current code works, but it seemed silly to do a move if I'm not
+       actually moving it.
+
+gvb
+
+--------------070000030501080105090804
+Content-Type: text/plain;
+ name="0001-Use-a-common-header-set-linux-u-boot.txt"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="0001-Use-a-common-header-set-linux-u-boot.txt"
+
+>From 6772dfdf27e153d0698f7fbecff767417ae76eab Mon Sep 17 00:00:00 2001
+From: Gerald Van Baren <vanbaren@cideas.com>
+Date: Wed, 21 Mar 2007 19:40:38 -0400
+Subject: [PATCH] Use a common header set linux/u-boot
+
+Using the "right" header files along with the __KERNEL__ discriminator
+allows libfdt to be compiled under linux (userland) or u-boot.  It
+also simplifies the byteswap #defines.
+
+Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
+---
+ fdt.h        |    4 ++++
+ libfdt_env.h |   21 +++++++++------------
+ 2 files changed, 13 insertions(+), 12 deletions(-)
+
+diff --git a/fdt.h b/fdt.h
+index 4687a31..64507a9 100644
+--- a/fdt.h
++++ b/fdt.h
+@@ -3,7 +3,11 @@
+ 
+ #ifndef __ASSEMBLY__
+ 
++#ifndef __KERNEL__
+ #include <stdint.h>
++#else
++#include <linux/types.h>
++#endif
+ 
+ struct fdt_header {
+ 	uint32_t magic;                  /* magic word FDT_MAGIC */
+diff --git a/libfdt_env.h b/libfdt_env.h
+index 59f2536..dc6562e 100644
+--- a/libfdt_env.h
++++ b/libfdt_env.h
+@@ -2,21 +2,18 @@
+ #define _LIBFDT_ENV_H
+ 
+ #include <stddef.h>
++#ifndef __KERNEL__
+ #include <stdint.h>
+ #include <string.h>
+-#include <endian.h>
+-#include <byteswap.h>
+-
+-#if __BYTE_ORDER == __BIG_ENDIAN
+-#define fdt32_to_cpu(x)		(x)
+-#define cpu_to_fdt32(x)		(x)
+-#define fdt64_to_cpu(x)		(x)
+-#define cpu_to_fdt64(x)		(x)
+ #else
+-#define fdt32_to_cpu(x)		(bswap_32((x)))
+-#define cpu_to_fdt32(x)		(bswap_32((x)))
+-#define fdt64_to_cpu(x)		(bswap_64((x)))
+-#define cpu_to_fdt64(x)		(bswap_64((x)))
++#include <linux/types.h>
++#include <linux/string.h>
+ #endif
++#include <asm/byteorder.h>
++
++#define fdt32_to_cpu(x)		(__be32_to_cpu(x))
++#define cpu_to_fdt32(x)		(__cpu_to_be32(x))
++#define fdt64_to_cpu(x)		(__be64_to_cpu(x))
++#define cpu_to_fdt64(x)		(__cpu_to_be32(x))
+ 
+ #endif /* _LIBFDT_ENV_H */
 -- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+1.4.4.4
+
+
+--------------070000030501080105090804--
