@@ -1,24 +1,28 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-12.arcor-online.net (mail-in-12.arcor-online.net
-	[151.189.21.52])
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 57F77DDFEA
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 09:52:15 +1100 (EST)
-In-Reply-To: <20070322175324.GA21120@lixom.net>
-References: <1172872183.5310.145.camel@goblue>
-	<20070303232915.GB8028@lixom.net>
-	<1174511149.5225.135.camel@goblue>
-	<20070322175324.GA21120@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id 133E5DDFF2
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 10:02:53 +1100 (EST)
+In-Reply-To: <1174597311.10836.50.camel@localhost.localdomain>
+References: <1174573524.6595.509.camel@ld0161-tx32>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302B97F7C@az33exm25.fsl.freescale.net>
+	<20070322155155.GA19903@lixom.net>
+	<9E7C3CAC-307E-44A9-9ACB-8A8B8C5B464C@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302B97FCD@az33exm25.fsl.freescale.net>
+	<6186A8EC-8A6F-47E6-B534-D5494E5FA34C@kernel.crashing.org>
+	<1174597311.10836.50.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <438dfe13f572740e899f10b6219b6833@kernel.crashing.org>
+Message-Id: <8bb8cd590716fe5709e79331c3823f4a@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] DMA 4GB boundary protection
-Date: Thu, 22 Mar 2007 23:52:02 +0100
-To: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Subject: Re: [Fwd: [PATCH Resend 01/02] Add Linux ASMP support for MPC8641D]
+Date: Fri, 23 Mar 2007 00:02:21 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,22 +32,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I would also like it to be the last page in the range, not the first
-> (since otherwise you'll reserve even if the window is less than 4GB.
->
-> Something like (untested):
->
-> 	entries_per_4g = 0x100000000 >> IOMMU_PAGE_SHIFT;
->
-> 	/* Mark the last bit before a 4GB boundary as used */
-> 	start_index = tbl->it_offset | (entries_per_4g - 1);
-> 	end_index = tbl->it_offset + tbl->it_size;
->
-> 	for (index = start_index; index < end_index; index += entries_per_4g)
-> 		__set_bit(index, tbl->it_map);
+> I think we should invent an MPIC specific property indicating that the
+> MPIC is to be shared and indicating on one of the users that it's the
+> "master" (the one doing the initial full setup, the others can then 
+> spin
+> on some bit somewhere before going on, unless we decide such a shared
+> setup, the PIC has to be pre-initialized by some firmware and we skip
+> all inits in mpic) and indicating which sources belong to which users.
 
-As a very minor optimisation, avoid reserving the last page
-of the I/O window if it ends on a 4GB boundary?
+There certainly are way more things then just the MPIC
+that both CPUs could do both only one should.  And this
+is really the kernel's business, not something to pollute
+the device tree with -- well perhaps a global flag (in
+/chosen, perhaps) that says "this or that CPU initialises
+the shared resources".
+
+It might make sense to have the firmware setup the devices
+on these strange strange boards, dunno -- let's worry about
+that if/when a board where someone wants that shows up :-)
 
 
 Segher
