@@ -4,36 +4,38 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 699DEDE087
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 03:22:34 +1100 (EST)
+	by ozlabs.org (Postfix) with ESMTP id EC30ADE09E
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 03:22:46 +1100 (EST)
 Received: from az33smr02.freescale.net (az33smr02.freescale.net [10.64.34.200])
 	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l2MGMTdq000467
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 09:22:29 -0700 (MST)
+	l2MGMe0G000508
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 09:22:41 -0700 (MST)
 Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
 	[10.82.65.62])
-	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l2MGMSuo029398
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:22:28 -0500 (CDT)
+	by az33smr02.freescale.net (8.13.1/8.13.0) with ESMTP id l2MGMeBN029435
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:22:40 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
 	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	l2MG2WLQ016325
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:02:33 -0500 (CDT)
+	l2MG2iZK016335
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:02:44 -0500 (CDT)
 Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id CECD5AEFC9
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:22:27 -0500 (CDT)
+	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id 90B83AEFC9
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 11:22:39 -0500 (CDT)
 Received: (from b07421@localhost)
 	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	l2MGMRDA020608
-	for linuxppc-dev@ozlabs.org; Thu, 22 Mar 2007 11:22:27 -0500
-Date: Thu, 22 Mar 2007 11:22:27 -0500
+	l2MGMdwG020618
+	for linuxppc-dev@ozlabs.org; Thu, 22 Mar 2007 11:22:39 -0500
+Date: Thu, 22 Mar 2007 11:22:39 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] Remove bogus errors from check_chosen.
-Message-ID: <20070322162227.GA20544@ld0162-tx32.am.freescale.net>
-References: <20070322161109.GA20512@ld0162-tx32.am.freescale.net>
+Subject: Re: [PATCH 05/17] bootwrapper: misc device tree fixes
+Message-ID: <20070322162239.GA20185@ld0162-tx32.am.freescale.net>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172845.GE29784@ld0162-tx32.am.freescale.net>
+	<20070321015104.GC27969@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070322161109.GA20512@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070321015104.GC27969@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,19 +45,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 22, 2007 at 11:11:09AM -0500, Scott Wood wrote:
-> It is not an error for /chosen (or any of its children) to be missing.
+On Wed, Mar 21, 2007 at 12:51:04PM +1100, David Gibson wrote:
+> On Fri, Mar 16, 2007 at 12:28:45PM -0500, Scott Wood wrote:
+> > 1. The dtb should be generated in $tmpdir, rather than the current directory.
+> > Normally, $tmpdir is ".", so it doesn't matter, but the wrapper should obey
+> > the -W option if it should be passed.
 > 
-> It is not a requirement that the output of dtc be a complete, valid
-> device tree, as it may be intended that the dtb be passed through boot
-> code that will complete it.  Thus, do not complain.
-> 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  livetree.c |    9 ++-------
->  1 files changed, 2 insertions(+), 7 deletions(-)
+> This is still wrong (or at least insufficient).  If we're building
+> with a target directory different from the source directory we
+> shouldn't add anything to the source directory, but $tmpdir still
+> will.
 
-Obviously, this is a DTC patch, and not a kernel patch.
-I forgot to label it as such.
+No, it won't.  The current directory is the object directory.  I tested
+it.
+
+The tmpdir thing wasn't to fix that (since it's not broken); it was just
+something I'd noticed when I was looking over the script.
+
+> > 2. DTC has a habit of complaining about errors which are not really
+> > errors.  Thus, the -f option is now passed to it, to force it to generate
+> > output regardless.
+> 
+> I'd really prefer not to add -f by default.  I think getting rid of
+> the bogus warnings from dtc is a better idea.
+
+I agree, and have posted a patch to DTC do this.
 
 -Scott
