@@ -1,31 +1,29 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate3.de.ibm.com (mtagate3.de.ibm.com [195.212.29.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate3.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E5768DDFDD
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 02:55:24 +1100 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate3.de.ibm.com (8.13.8/8.13.8) with ESMTP id l2MFtJ82127234
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 15:55:19 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l2MFtJal1519776
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 16:55:19 +0100
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l2MFtI4p007870
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 16:55:19 +0100
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: rolandd@cisco.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	general@lists.openfabrics.org
-Subject: [PATCH] eHCA: Make scaling code also work without CPU hotplug
-Date: Thu, 22 Mar 2007 16:52:13 +0100
+Return-Path: <stuart.yoder@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 17296DDFFE
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 02:58:48 +1100 (EST)
+Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
+	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
+	l2MFwiJh027744
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 08:58:44 -0700 (MST)
+Received: from az33exm25.fsl.freescale.net (az33exm25.am.freescale.net
+	[10.64.32.16])
+	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2MFwitq022096
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 10:58:44 -0500 (CDT)
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200703221652.13216.fenkes@de.ibm.com>
+	charset="us-ascii"
+Subject: RE: [Fwd: [PATCH Resend 01/02] Add Linux ASMP support for MPC8641D]
+Date: Thu, 22 Mar 2007 08:58:43 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302B97FCD@az33exm25.fsl.freescale.net>
+In-Reply-To: <9E7C3CAC-307E-44A9-9ACB-8A8B8C5B464C@kernel.crashing.org>
+References: <1174573524.6595.509.camel@ld0161-tx32>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302B97F7C@az33exm25.fsl.freescale.net>
+	<20070322155155.GA19903@lixom.net>
+	<9E7C3CAC-307E-44A9-9ACB-8A8B8C5B464C@kernel.crashing.org>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "Kumar Gala" <galak@kernel.crashing.org>, "Olof Johansson" <olof@lixom.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,67 +33,79 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-eHCA scaling code must not depend on register_cpu_notifier() if
-CONFIG_HOTPLUG_CPU is not set, so put all related code into #ifdefs.
+=20
 
+> -----Original Message-----
+> From: Kumar Gala [mailto:galak@kernel.crashing.org]=20
+> Sent: Thursday, March 22, 2007 10:44 AM
+> To: Olof Johansson
+> Cc: Yoder Stuart-B08248; linuxppc-dev@ozlabs.org
+> Subject: Re: [Fwd: [PATCH Resend 01/02] Add Linux ASMP=20
+> support for MPC8641D]
+>=20
+>=20
+> On Mar 22, 2007, at 10:51 AM, Olof Johansson wrote:
+>=20
+> > On Thu, Mar 22, 2007 at 08:32:33AM -0700, Yoder Stuart-B08248 wrote:
+> >>
+> >>> +		mpic: pic@40000 {
+> >>> +			clock-frequency =3D <0>;
+> >>> +			interrupt-controller;
+> >>> +			#address-cells =3D <0>;
+> >>> +			#interrupt-cells =3D <2>;
+> >>> +			reg =3D <40000 40000>;
+> >>> +			built-in;
+> >>> +			compatible =3D "chrp,open-pic";
+> >>> +			device_type =3D "open-pic";
+> >>> +			big-endian;
+> >>> +			interrupts =3D <
+> >>> +			18 2 49 2 19 2
+> >>> +			2a 2 2b 2 4a 1
+> >>> +			1d 2 1e 2 22 2
+> >>> +			23 2 24 2 28 2
+> >>> +			>;
+> >>> +		};
+> >>> +	};
+> >>> +};
+> >>
+> >> I think using the 'interrupts' property in this way is bad.  It's
+> >> being used to tell the pic which interrupts belong to it.
+> >>
+> >> The problem is that the interrupts property is being overloaded
+> >> and used for a completely different purpose than that which
+> >> it was originally intended and documented.  Interrupt controllers
+> >> should not have an interrupts property.
+> >>
+> >> The only reason I can see to do this is as a convenience to avoid
+> >> walking the device tree.   The pic code should walk the device tree
+> >> to determine the irq numbers the running core.
+> >
+> > Not speaking for the case of the freescale boards here, but not all
+> > interrupts are in the device tree, nor do they have to.=20
+> Especially for
+> > PCI devices, etc.
+> >
+> > This is quite a special case. Having a brand new property=20
+> for it might
+> > be a good idea. It's a pretty big hack anyway, so adding another =20
+> > one to
+> > the device tree isn't that big a deal.
+>=20
+> I think the issue is you don't want the per interrupt registers =20
+> initialized twice.  Thus I suggest we just let set_irq_type handle it.
+>=20
+> There is still an issue for shared interrupts, but I don't think you =20
+> can solve that.  W/o moving the interrupt processing to some common =20
+> level.
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
----
+As I understand the patch, there are two DTS files once for each core
+and each having a partitioned set of devices for that core.  In the=20
+current patch the pic in each DTS has a unique 'interrupts' property.
 
+This shouldn't be necessary-- to initialize the pic should simply be
+a matter of each core walking it's device tree, which only has the
+devices=20
+assigned to it, and programming the pic appropriately.   No registers
+should be programmed twice.
 
- ehca_irq.c |    8 ++++++++
- 1 file changed, 8 insertions(+)
-
-
-diff --git a/drivers/infiniband/hw/ehca/ehca_irq.c b/drivers/infiniband/hw/ehca/ehca_irq.c
-index 20f36bf..f284be1 100644
---- a/drivers/infiniband/hw/ehca/ehca_irq.c
-+++ b/drivers/infiniband/hw/ehca/ehca_irq.c
-@@ -66,7 +66,9 @@ #define ERROR_DATA_TYPE        EHCA_BMAS
- static void queue_comp_task(struct ehca_cq *__cq);
- 
- static struct ehca_comp_pool* pool;
-+#ifdef CONFIG_HOTPLUG_CPU
- static struct notifier_block comp_pool_callback_nb;
-+#endif
- 
- static inline void comp_event_callback(struct ehca_cq *cq)
- {
-@@ -733,6 +735,7 @@ static void take_over_work(struct ehca_c
- 
- }
- 
-+#ifdef CONFIG_HOTPLUG_CPU
- static int comp_pool_callback(struct notifier_block *nfb,
- 			      unsigned long action,
- 			      void *hcpu)
-@@ -775,6 +778,7 @@ static int comp_pool_callback(struct not
- 
- 	return NOTIFY_OK;
- }
-+#endif
- 
- int ehca_create_comp_pool(void)
- {
-@@ -805,9 +809,11 @@ int ehca_create_comp_pool(void)
- 		}
- 	}
- 
-+#ifdef CONFIG_HOTPLUG_CPU
- 	comp_pool_callback_nb.notifier_call = comp_pool_callback;
- 	comp_pool_callback_nb.priority =0;
- 	register_cpu_notifier(&comp_pool_callback_nb);
-+#endif
- 
- 	printk(KERN_INFO "eHCA scaling code enabled\n");
- 
-@@ -821,7 +827,9 @@ void ehca_destroy_comp_pool(void)
- 	if (!ehca_scaling_code)
- 		return;
- 
-+#ifdef CONFIG_HOTPLUG_CPU
- 	unregister_cpu_notifier(&comp_pool_callback_nb);
-+#endif
- 
- 	for (i = 0; i < NR_CPUS; i++) {
- 		if (cpu_online(i))
+Stuart
