@@ -1,18 +1,25 @@
-Return-Path: <g.liakhovetski@gmx.de>
-Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
-	by ozlabs.org (Postfix) with SMTP id EE229DDFDC
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 07:28:41 +1100 (EST)
-Date: Thu, 22 Mar 2007 21:28:42 +0100 (CET)
-From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [RFC PATCH] power-management elements for 603e/fsl
-In-Reply-To: <1174510775.3944.64.camel@johannes.berg>
-Message-ID: <Pine.LNX.4.60.0703222121450.7207@poirot.grange>
-References: <Pine.LNX.4.60.0703182216130.4143@poirot.grange>
-	<1174510775.3944.64.camel@johannes.berg>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1EC36DDE43
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 08:02:12 +1100 (EST)
+Subject: Re: [Fwd: [PATCH Resend 01/02] Add Linux ASMP support for MPC8641D]
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <6186A8EC-8A6F-47E6-B534-D5494E5FA34C@kernel.crashing.org>
+References: <1174573524.6595.509.camel@ld0161-tx32>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302B97F7C@az33exm25.fsl.freescale.net>
+	<20070322155155.GA19903@lixom.net>
+	<9E7C3CAC-307E-44A9-9ACB-8A8B8C5B464C@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302B97FCD@az33exm25.fsl.freescale.net>
+	<6186A8EC-8A6F-47E6-B534-D5494E5FA34C@kernel.crashing.org>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 08:01:51 +1100
+Message-Id: <1174597311.10836.50.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,51 +29,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 21 Mar 2007, Johannes Berg wrote:
 
-> On Sun, 2007-03-18 at 22:40 +0100, Guennadi Liakhovetski wrote:
+> If you look at what mpic_init() does you will see that the registers  
+> would be setup twice.
 > 
-> > +static int ls_pm_valid(suspend_state_t state)
-> > +{
-> > +	switch (state) {
-> > +	case PM_SUSPEND_STANDBY:
-> > +	case PM_SUSPEND_MEM:
-> > +		return 1;
+> Also, you don't need to walk the device-tree at all.  As Olof pointed  
+> out there maybe interrupts that are not described in the device  
+> tree.  We can setup this information when you do a request_irq() ->  
+> set_irq_type().
 > 
-> Better just implement only one of them. Having two that do exactly the
-> same thing is confusing. Since you don't turn off the CPU feel free to
-> call it standby, but it doesn't really matter to me, there doesn't seem
-> to be a good set of rules to apply as to which name to use.
-> 
-> I just posted a patchset that exports a pm_valid_only_mem function in
-> pm.h, you should use that as the .valid callback if you decided to call
-> your sleep state 'mem'.
-> 
-> > +/*
-> > + * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
-> > + */
-> 
-> > +//	.pm_disk_mode	= PM_DISK_FIRMWARE,
-> 
-> Both the comment and .pm_disk_mode are bogus, I just removed all such
-> comments from all other users. It's just wrong, the pm_disk_mode is
-> something that most likely ACPI will only ever use (though I could
-> probably implement it for PMU as well)
->  
-> > +# contains only the suspend handler for time
-> > +obj-$(CONFIG_PM)		+= timer.o
-> > +
-> 
-> That seems to have slipped into this patch :)
+> If you aren't doing a request_irq() for the interrupt than it doesn't  
+> need to be setup.  Additionally, you should only doing a request_irq 
+> () for an interrupt that is "owned" by that core.
 
-Thanks for the comments, Johannes. I'll address them all and the rest that 
-you gave me on IRC in the next version of this patch. Meanwhile, I'll have 
-to wait to some timer suspend / resume code in the mainline to base upon. 
-As linkstation uses generic rtc, it would be logical to use the patch from 
-David Brownell, which is currently in -mm. So, will have to either wait a 
-bit, or base my patch on that.
+The need to have an MPIC shared by more than one cores is something that
+will be coming elsewhere too (can't give details...)
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+I think we should invent an MPIC specific property indicating that the
+MPIC is to be shared and indicating on one of the users that it's the
+"master" (the one doing the initial full setup, the others can then spin
+on some bit somewhere before going on, unless we decide such a shared
+setup, the PIC has to be pre-initialized by some firmware and we skip
+all inits in mpic) and indicating which sources belong to which users.
+
+Ben.
