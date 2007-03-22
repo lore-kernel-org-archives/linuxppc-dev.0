@@ -1,12 +1,14 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
-	[151.189.21.53])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E5CE9DDF7B
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 23:36:45 +1100 (EST)
-In-Reply-To: <20070322113857.GA13547@lst.de>
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id A970DDDF2E
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 00:20:42 +1100 (EST)
+Date: Thu, 22 Mar 2007 14:20:37 +0100 (CET)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
+In-Reply-To: <856c539083dbd89a6f71edfd46f502f0@kernel.crashing.org>
+Message-ID: <Pine.LNX.4.62.0703221419280.7246@pademelon.sonytel.be>
 References: <20070315232956.37DAB353A6C@atlas.denx.de>
 	<200703170909.13869.sr@denx.de>
 	<e9c3a7c20703171117w7989adfehda99416265eef906@mail.gmail.com>
@@ -17,15 +19,11 @@ References: <20070315232956.37DAB353A6C@atlas.denx.de>
 	<1174506924.10836.2.camel@localhost.localdomain>
 	<0e5aac2ffcd189dc51f59d5891b2366c@kernel.crashing.org>
 	<20070322113857.GA13547@lst.de>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <856c539083dbd89a6f71edfd46f502f0@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
-Date: Thu, 22 Mar 2007 13:36:39 +0100
-To: Christoph Hellwig <hch@lst.de>
+	<856c539083dbd89a6f71edfd46f502f0@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 Cc: linux-raid@vger.kernel.org, Dan Williams <dan.j.williams@gmail.com>,
-	Stefan Roese <sr@denx.de>, linuxppc-dev@ozlabs.org
+	Stefan Roese <sr@denx.de>, Linux/PPC Development <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,38 +33,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> BTW folks. Would it be hard to change your spe_ prefixes to 
->>>>> something
->>>>> else ? There's already enough confusion between the freescale SPE
->>>>> unit
->>>>> and the cell SPEs :-)
->>>>
->>>> Will you change _your_ prefixes too?  :-) :-)
->>>
->>> Which ones ? I'm not in charge of the fsl spe thingy nor the spe
->>> scheduler code :-)
->>
->> I meant the Cell code of course.
->
-> Did you ever take a look at the cell code?
+On Thu, 22 Mar 2007, Segher Boessenkool wrote:
+> >>>>> BTW folks. Would it be hard to change your spe_ prefixes to 
+> >>>>> something
+> >>>>> else ? There's already enough confusion between the freescale SPE
+> >>>>> unit
+> >>>>> and the cell SPEs :-)
+> >>>>
+> >>>> Will you change _your_ prefixes too?  :-) :-)
+> >>>
+> >>> Which ones ? I'm not in charge of the fsl spe thingy nor the spe
+> >>> scheduler code :-)
+> >>
+> >> I meant the Cell code of course.
+> >
+> > Did you ever take a look at the cell code?
+> 
+> Not often, no.  I'm perfectly happy that I don't have
+> to touch that.
+> 
+> > The only place 'spe'
+> > is used in a prefix are a handfull of hardware datatstructures and the
+> > sony crap hypervisor hvcalls.  Everything else uses spu_ as a prefix.
+> 
+> That sounds nice.  There are slightly fewer things called
+> SPU than there are called SPE I imagine?  Or is it just a
+> historical misnomer.
 
-Not often, no.  I'm perfectly happy that I don't have
-to touch that.
+AFAIK SPE is the preferred name, as the SPU is only a part of the SPE.
+That's what I was told.
 
-> The only place 'spe'
-> is used in a prefix are a handfull of hardware datatstructures and the
-> sony crap hypervisor hvcalls.  Everything else uses spu_ as a prefix.
+Gr{oetje,eeting}s,
 
-That sounds nice.  There are slightly fewer things called
-SPU than there are called SPE I imagine?  Or is it just a
-historical misnomer.
+						Geert
 
-> But yeah, grep is hard and life is a bitch.. :)
-
-If I'm told there are all these other things in the kernel
-called spe_ I don't feel obliged to grep for it to check
-if this is really so.  Maybe I shouldn't trust people that
-much, dunno.
-
-
-Segher
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
