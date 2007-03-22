@@ -3,19 +3,20 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 00CEADDFA8
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 02:41:35 +1100 (EST)
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302B97F7C@az33exm25.fsl.freescale.net>
+	by ozlabs.org (Postfix) with ESMTP id 47672DDFEA
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 02:44:54 +1100 (EST)
+In-Reply-To: <20070322155155.GA19903@lixom.net>
 References: <1174573524.6595.509.camel@ld0161-tx32>
 	<9696D7A991D0824DBA8DFAC74A9C5FA302B97F7C@az33exm25.fsl.freescale.net>
+	<20070322155155.GA19903@lixom.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <534C64AB-878B-4F35-B178-D4EDCC7B0391@kernel.crashing.org>
+Message-Id: <9E7C3CAC-307E-44A9-9ACB-8A8B8C5B464C@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
 Subject: Re: [Fwd: [PATCH Resend 01/02] Add Linux ASMP support for MPC8641D]
-Date: Thu, 22 Mar 2007 10:40:57 -0500
-To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Date: Thu, 22 Mar 2007 10:44:17 -0500
+To: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +27,56 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 22, 2007, at 10:32 AM, Yoder Stuart-B08248 wrote:
+On Mar 22, 2007, at 10:51 AM, Olof Johansson wrote:
 
+> On Thu, Mar 22, 2007 at 08:32:33AM -0700, Yoder Stuart-B08248 wrote:
+>>
+>>> +		mpic: pic@40000 {
+>>> +			clock-frequency = <0>;
+>>> +			interrupt-controller;
+>>> +			#address-cells = <0>;
+>>> +			#interrupt-cells = <2>;
+>>> +			reg = <40000 40000>;
+>>> +			built-in;
+>>> +			compatible = "chrp,open-pic";
+>>> +			device_type = "open-pic";
+>>> +			big-endian;
+>>> +			interrupts = <
+>>> +			18 2 49 2 19 2
+>>> +			2a 2 2b 2 4a 1
+>>> +			1d 2 1e 2 22 2
+>>> +			23 2 24 2 28 2
+>>> +			>;
+>>> +		};
+>>> +	};
+>>> +};
+>>
+>> I think using the 'interrupts' property in this way is bad.  It's
+>> being used to tell the pic which interrupts belong to it.
+>>
+>> The problem is that the interrupts property is being overloaded
+>> and used for a completely different purpose than that which
+>> it was originally intended and documented.  Interrupt controllers
+>> should not have an interrupts property.
+>>
+>> The only reason I can see to do this is as a convenience to avoid
+>> walking the device tree.   The pic code should walk the device tree
+>> to determine the irq numbers the running core.
 >
->> +		mpic: pic@40000 {
->> +			clock-frequency = <0>;
->> +			interrupt-controller;
->> +			#address-cells = <0>;
->> +			#interrupt-cells = <2>;
->> +			reg = <40000 40000>;
->> +			built-in;
->> +			compatible = "chrp,open-pic";
->> +			device_type = "open-pic";
->> +			big-endian;
->> +			interrupts = <
->> +			18 2 49 2 19 2
->> +			2a 2 2b 2 4a 1
->> +			1d 2 1e 2 22 2
->> +			23 2 24 2 28 2
->> +			>;
->> +		};
->> +	};
->> +};
+> Not speaking for the case of the freescale boards here, but not all
+> interrupts are in the device tree, nor do they have to. Especially for
+> PCI devices, etc.
 >
-> I think using the 'interrupts' property in this way is bad.  It's
-> being used to tell the pic which interrupts belong to it.
->
-> The problem is that the interrupts property is being overloaded
-> and used for a completely different purpose than that which
-> it was originally intended and documented.  Interrupt controllers
-> should not have an interrupts property.
->
-> The only reason I can see to do this is as a convenience to avoid
-> walking the device tree.   The pic code should walk the device tree
-> to determine the irq numbers the running core.
+> This is quite a special case. Having a brand new property for it might
+> be a good idea. It's a pretty big hack anyway, so adding another  
+> one to
+> the device tree isn't that big a deal.
 
-We could just add a flag to skip the initialization of these regs @  
-mpic_init and let set_irq_type do it.
+I think the issue is you don't want the per interrupt registers  
+initialized twice.  Thus I suggest we just let set_irq_type handle it.
+
+There is still an issue for shared interrupts, but I don't think you  
+can solve that.  W/o moving the interrupt processing to some common  
+level.
 
 - k
