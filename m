@@ -1,11 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 22 Mar 2007 17:06:30 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: linuxppc-dev@ozlabs.org
-Subject: [0/10] arch/powerpc Ebony support (draft 3)
-Message-ID: <20070322060630.GB16993@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 86023DDF53
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 17:10:50 +1100 (EST)
+Subject: [RFC/PATCH] powerpc: Always use -mno-string & -mno-multiple
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Thu, 22 Mar 2007 17:10:38 +1100
+Message-Id: <1174543838.10836.21.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Akinobu Mita <mita@fixstars.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,17 +22,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's my latest stack of Ebony patches.  Not yet ready for merging,
-but getting closer.  Notable changes:
-	- Rebased on top of my latest set of zImage patches (which in
-turn are based on some of Milton and Scott's zImage work)
-	- Device tree now contains rudimentary information on the EBC
-and the Ebony's off-chip devices
-	- Reset support is now folded in, rather than a distinct patch
-in the series.
+powerpc: Always use -mno-string and -mno-multiple
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+The string and multiple load/store instructions are causing more
+damage than help on a lot of processors where they are microcoded
+and are generally no good for the kernel to use. Let's make sure
+we don't emit them on any powerpc variant.
+
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+---
+
+Is that actually true ? What about 601 ? 4xx ? Do we want to keep
+generating those for space on embedded processors where they actually
+work (if they do) ?
+
+Index: linux-cell/arch/powerpc/Makefile
+===================================================================
+--- linux-cell.orig/arch/powerpc/Makefile	2007-03-22 17:02:42.000000000 +1100
++++ linux-cell/arch/powerpc/Makefile	2007-03-22 17:05:23.000000000 +1100
+@@ -102,9 +102,9 @@ CFLAGS += $(call cc-option,-mno-altivec)
+ # kernel considerably.
+ CFLAGS += $(call cc-option,-funit-at-a-time)
+ 
+-ifndef CONFIG_FSL_BOOKE
+-CFLAGS		+= -mstring
+-endif
++# Never use string and multiple load/store instructions as they are
++# often slow when they are implemented at all
++CFLAGS		+= -mno-string -mno-multiple
+ 
+ ifeq ($(CONFIG_6xx),y)
+ CFLAGS		+= -mcpu=powerpc
