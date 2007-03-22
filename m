@@ -1,20 +1,25 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4C0B9DDF23
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 21:05:23 +1100 (EST)
-Subject: Re: [RFC PATCH] power-management elements for 603e/fsl
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-In-Reply-To: <Pine.LNX.4.60.0703182216130.4143@poirot.grange>
-References: <Pine.LNX.4.60.0703182216130.4143@poirot.grange>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-kYeXxT5J1q6A3F+d9dUU"
-Date: Wed, 21 Mar 2007 21:59:35 +0100
-Message-Id: <1174510775.3944.64.camel@johannes.berg>
-Mime-Version: 1.0
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4E750DDF39
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 22:03:26 +1100 (EST)
+In-Reply-To: <20070321234226.GB2295@localhost.localdomain>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172848.GG29784@ld0162-tx32.am.freescale.net>
+	<20070317012654.GE3969@localhost.localdomain>
+	<c01196ee10aa2b13278465a835a49fdf@kernel.crashing.org>
+	<20070321234226.GB2295@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7ce9c69ae76258f47790c5ceb851a355@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 07/17] bootwrapper: Add dt_set_memory(),
+	to fill in the /memory node.
+Date: Thu, 22 Mar 2007 12:02:56 +0100
+To: David Gibson <david@gibson.dropbear.id.au>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,58 +30,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>> However, #address-cells=2, #size-cells=1 is common enough that we
+>>> really need to support that case.
+>>
+>> On the root node?!?  Who would do such a strange thing?
+>
+> Ebony, for one, it works nicely for a 32-bit system with >32-bit bus.
 
---=-kYeXxT5J1q6A3F+d9dUU
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+It means you cannot have a 4GB-or-bigger region below your
+root node.  Dunno if Ebony ever needs one, for I/O mapping
+perhaps?
 
-On Sun, 2007-03-18 at 22:40 +0100, Guennadi Liakhovetski wrote:
+> Apple G5s do it too.
 
-> +static int ls_pm_valid(suspend_state_t state)
-> +{
-> +	switch (state) {
-> +	case PM_SUSPEND_STANDBY:
-> +	case PM_SUSPEND_MEM:
-> +		return 1;
+And they do a an awful workaround for their memory node
+because of this.
 
-Better just implement only one of them. Having two that do exactly the
-same thing is confusing. Since you don't turn off the CPU feel free to
-call it standby, but it doesn't really matter to me, there doesn't seem
-to be a good set of rules to apply as to which name to use.
+Is their any reason why you couldn't use #a=#s=2 on 32-bit
+systems?  The root node is one contiguous hunk of address
+space, so the biggest (theoretically) possible size is equal
+to the biggest address (+1).  It's not hard to come up with
+an example where you need a size of 4GB or more.
 
-I just posted a patchset that exports a pm_valid_only_mem function in
-pm.h, you should use that as the .valid callback if you decided to call
-your sleep state 'mem'.
 
-> +/*
-> + * Set to PM_DISK_FIRMWARE so we can quickly veto suspend-to-disk.
-> + */
-
-> +//	.pm_disk_mode	=3D PM_DISK_FIRMWARE,
-
-Both the comment and .pm_disk_mode are bogus, I just removed all such
-comments from all other users. It's just wrong, the pm_disk_mode is
-something that most likely ACPI will only ever use (though I could
-probably implement it for PMU as well)
-=20
-> +# contains only the suspend handler for time
-> +obj-$(CONFIG_PM)		+=3D timer.o
-> +
-
-That seems to have slipped into this patch :)
-
-johannes
-
---=-kYeXxT5J1q6A3F+d9dUU
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGAZy3/ETPhpq3jKURAtqHAJ9tq2oMqHnLgf9ZaZOwq0HFTw1JdQCgmu1W
-v0dr1+Jxm1v+wLDxMMFSNP8=
-=a7cr
------END PGP SIGNATURE-----
-
---=-kYeXxT5J1q6A3F+d9dUU--
+Segher
