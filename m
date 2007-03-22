@@ -1,20 +1,8 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id C0243DDFA6
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 02:13:32 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw02.freescale.net (8.12.11/de01egw02) with ESMTP id
-	l2MFDTCw012741
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 08:13:29 -0700 (MST)
-Received: from [10.82.19.119] (ld0169-tx32.am.freescale.net [10.82.19.119])
-	by de01smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2MFDSYo011643
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 10:13:28 -0500 (CDT)
-Message-ID: <46029D17.5030304@freescale.com>
-Date: Thu, 22 Mar 2007 10:13:27 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: linuxppc-dev@ozlabs.org
+Return-Path: <jdl@freescale.com>
 Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
+From: Jon Loeliger <jdl@freescale.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20070322000620.GC2295@localhost.localdomain>
 References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
 	<20070316172853.GJ29784@ld0162-tx32.am.freescale.net>
 	<20070317013159.GH3969@localhost.localdomain>
@@ -26,8 +14,11 @@ References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
 	<20070321025447.GG27969@localhost.localdomain>
 	<460148DC.3020600@freescale.com>
 	<20070322000620.GC2295@localhost.localdomain>
-In-Reply-To: <20070322000620.GC2295@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain
+Message-Id: <1174576516.6595.542.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 22 Mar 2007 10:15:16 -0500
+Cc: linuxppc-dev@ozlabs.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,43 +28,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+On Wed, 2007-03-21 at 19:06, David Gibson wrote:
 
 > I mean, does the u-boot source tree have its own copies of the dts
-> files which are built into a dtb during the u-boot build process?  
+> files which are built into a dtb during the u-boot build process?
 
-No.
+There are not DTS files in U-Boot anymore.  They are all
+currently in the arch/powerpc/boot/dts directory, or some
+other private home directory. :-)
 
-> Or
+
+>   Or
 > do you take the dts from the kernel tree and make the dtb from that
+
+yes.
+
 > when you build a dtb aware u-boot for a particular machine?
 
-You don't build the DTB with U-Boot.  You build the DTB completely separately from U-Boot. 
-  As far as U-Boot concerned, until you actually boot the kernel, the DTB is just another 
-binary blob.
+Do it whenever you want.  But it has to be downloaded
+to RAM or found in flash on the board by U-Boot by the
+time you want to do the hand-off to Linux.  That is,
+there is no need to "combine" it with U-Boot to make
+it "dtb aware".  U-Boot is still built independently of
+any DT[SB] file entirely.
 
-> Yes, but if have a version of u-boot that *only* sets mac-address and
-> not local-mac-address, doing so would clobber the only information
-> about the MAC address we have. 
 
-That's true.
-
-> In any case, I don't think is relevant
-> for discussion of this function, because its only designed for use
-> with *non* device tree aware firmware.
-
-Ok.
-
+> > Ok, I understand now, but I don't know what value it has.  I don't see 
+> > the difference, from the DTS point-of-view, between
+> > 
+> > 	local-mac-address = [ 00 00 00 00 00 00 ]
+> > and
+> > 	local-mac-address = [ ? ? ? ? ? ? ];
+> 
 > In terms of the generated dtb output there is no difference.  Well,
 > probably.  It would It's
 > purely syntactic sugar / internal documentation.
 
-Then I suggest we just leave the compiler as is, and just update the U-Boot documentation 
-to specify what it does with the various device tree properties.
+Right.  It is more like "make it clear to the DTS file
+reader that these fields are intended to be filled in by
+the bootloader".
 
->> In both cases, the property exists in the DTS.  The whole point was to 
->> remove it from the DTS entirely, 
-> 
+
 > Well, no.  You wanted to get rid of the property from the dts, I
 > didn't.  What I'm suggesting here is an idea to addresses at least one
 > possible objection to having the properties in the dts: the fact that
@@ -81,26 +76,16 @@ to specify what it does with the various device tree properties.
 > might not be obvious that a bootloader *must* tweak values to produce
 > a working tree.
 
-Hmmm... I can understand that.  But I still think documenting it in U-Boot is the easier 
-solution.
+(nit) But let's not forget that there are cases where we _do_ want
+the DTS to be complete too.
 
 > I think it's useful to document in the dts that certain properties are
 > expected to be there, even if their actual values have to be
-> determined during boot. 
+> determined during boot.  This syntax allows a dts to show to someone
+> reading it that a property is expected, and what its expected size is,
+> but that the value must be filled in later.  It's for the benefit of
+> people reading the dts, not programs.
 
-The only problem with this is that the list of properties needed/used by U-Boot can change 
-from one version of U-Boot to another, and I'd hate to have to update all of the DTS files 
-every time this happens.
+Exactly.
 
-For instance,
-
-> It has the nice additional
-> property that it lets the bootloader avoid extra memmove()s and
-> possibly string table scans.
-
-True, but I don't see why we should go through such an effort to avoid these things. 
-Besides, JVB is almost done getting libfdt into U-Boot, and that should make all this moot.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+jdl
