@@ -1,16 +1,10 @@
-Return-Path: <miltonm@sullivan.realtime.net>
-Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 04455DDE28
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 13:18:11 +1100 (EST)
-Date: Wed, 21 Mar 2007 20:18:04 -0600 (CST)
-Message-Id: <200703220218.l2M2I4b9031923@sullivan.realtime.net>
-From: Milton Miller <miltonm@bga.com>
-Sender: <miltonm@realtime.net>
-Subject: Re: O= compilation failure in 2.6.21-rc
-To: Christoph Hellwig <hch@lst.de>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>,
+	<linuxppc-dev@ozlabs.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 22 Mar 2007 13:59:40 +1100
+Subject: [PATCH 1/4] powerpc: Cleanup 32 bits map_page
+Message-Id: <20070322030114.070AFDDF2A@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,56 +14,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu Mar 22 03:17:28 EST 2007, Christoph Hellwig wrote:
-> looks like 2.6.21-rc4 doesn't compile anymore when using objdir !=
-> srcdir.  The message is:
-> 
-> WRAP    arch/powerpc/boot/zImage.pseries
-> powerpc64-linux-ld: cannot open linker script file
-> arch/powerpc/boot/zImage.lds: No such file or directory
-> arch/powerpc/boot/zImage.pseries: No such file or directory
-> 
-> works fine for either building in the source dir or just doing a make
-> vmlinux instead of make so that the zImage wrapper isn't built.
+The 32 bits map_page() function is used internally by the mm code
+for early mmu mappings and for ioremap. It should never be called
+for an address that already has a valid PTE or hash entry, so we
+add a BUG_ON for that and remove the useless flush_HPTE call.
 
+Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Works for me.
+ arch/powerpc/mm/pgtable_32.c |    9 ++++++---
+ 1 file changed, 6 insertions(+), 3 deletions(-)
 
-unpack 2.6.24-rc4
-mkdir obj_4k
-make pseries_defconfig O=obj_4k/
-make zImage O=obj_4k/
-
-..
-  BOOTCC  arch/powerpc/boot/of.o
-  BOOTCC  arch/powerpc/boot/empty.o
-  HOSTCC  arch/powerpc/boot/addnote
-  HOSTCC  arch/powerpc/boot/hack-coff
-  HOSTCC  arch/powerpc/boot/mktree
-  WRAP    arch/powerpc/boot/zImage.pseries
-
-[no complaints]
-
-In additon, here is the dependency chain in arch/powerpc/boot/Makefile
-from the wrapper invocation to the generation of zImage.lds:
-
-
-$(obj)/zImage:          $(addprefix $(obj)/, $(image-y))
-
-$(obj)/zImage.pseries:  vmlinux $(wrapperbits)
-        $(call cmd,wrap,pseries)
-
-wrapperbits     := $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree)
-
-extra-y         := $(obj)/crt0.o $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
-                   $(obj)/zImage.lds $(obj)/zImage.coff.lds
-
-$(obj)/zImage.lds $(obj)/zImage.coff.lds: $(obj)/%: $(srctree)/$(src)/%.S
-        @cp $< $@
-
-
-
-So either your tree is broken, cp is broken, or you need to provide more
-information.
-
-milton
+Index: linux-cell/arch/powerpc/mm/pgtable_32.c
+===================================================================
+--- linux-cell.orig/arch/powerpc/mm/pgtable_32.c	2007-03-22 13:10:02.000000000 +1100
++++ linux-cell/arch/powerpc/mm/pgtable_32.c	2007-03-22 13:10:49.000000000 +1100
+@@ -266,9 +266,12 @@ int map_page(unsigned long va, phys_addr
+ 	pg = pte_alloc_kernel(pd, va);
+ 	if (pg != 0) {
+ 		err = 0;
+-		set_pte_at(&init_mm, va, pg, pfn_pte(pa >> PAGE_SHIFT, __pgprot(flags)));
+-		if (mem_init_done)
+-			flush_HPTE(0, va, pmd_val(*pd));
++		/* The PTE should never be already set nor present in the
++		 * hash table
++		 */
++		BUG_ON(pte_val(*pg) & (_PAGE_PRESENT | _PAGE_HASHPTE));
++		set_pte_at(&init_mm, va, pg, pfn_pte(pa >> PAGE_SHIFT,
++						     __pgprot(flags)));
+ 	}
+ 	return err;
+ }
