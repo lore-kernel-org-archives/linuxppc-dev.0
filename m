@@ -1,19 +1,19 @@
-Return-Path: <chuckmeade@mindspring.com>
-Received: from elasmtp-masked.atl.sa.earthlink.net
-	(elasmtp-masked.atl.sa.earthlink.net [209.86.89.68])
-	by ozlabs.org (Postfix) with ESMTP id 79D17DDFB1
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 04:30:43 +1100 (EST)
-Message-ID: <4602BD39.9020102@mindspring.com>
-Date: Thu, 22 Mar 2007 13:30:33 -0400
-From: Chuck Meade <chuckmeade@mindspring.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 046C5DDFEA
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 04:39:05 +1100 (EST)
+Date: Thu, 22 Mar 2007 12:53:24 -0500
+To: Jake Moilanen <moilanen@austin.ibm.com>
+Subject: Re: [PATCH] DMA 4GB boundary protection
+Message-ID: <20070322175324.GA21120@lixom.net>
+References: <1172872183.5310.145.camel@goblue>
+	<20070303232915.GB8028@lixom.net>
+	<1174511149.5225.135.camel@goblue>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: MPC83xx SDMR setup error
-References: <460292FA.8050206@mindspring.com>
-	<E9D1DC31-9730-4431-9414-0870FDD3EAF6@kernel.crashing.org>
-In-Reply-To: <E9D1DC31-9730-4431-9414-0870FDD3EAF6@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1174511149.5225.135.camel@goblue>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,47 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> .... the CEN field will be set to
->> zero.  This means the SDMR buffer size will always be 512, rather than
->> the intended (and allocated) 1024 bytes.
-> 
-> What does this effect?  I agree the code is wrong.
+On Wed, Mar 21, 2007 at 04:05:48PM -0500, Jake Moilanen wrote:
 
-The SDMA moves data between the QUICC Engine (which includes the units for
-Ethernet, etc.) and external memory.  The buffer we are talking about
-exists in on-chip MURAM, and is used internally by the SDMA controller.
-The manual does not go into detail on its use.  It is pointed to by the
-SDEBCR, which in one section of the manual is referred to as a "temporary
-buffer base" and in another section as "SDMA CAM entries base".
+> @@ -480,6 +495,21 @@ struct iommu_table *iommu_init_table(str
+>  	ppc_md.tce_free(tbl, tbl->it_offset, tbl->it_size);
+>  #endif
+>  
+> +	/*
+> +	 * DMA cannot cross 4 GB boundary.  Mark first entry of each 4
+> +	 * GB chunk as reserved.
+> +	 */
+> +	if (protect4gb) {
+> +		start_addr = tbl->it_offset << IOMMU_PAGE_SHIFT;
+> +		/* go up to next 4GB boundary */
+> +		start_addr = (start_addr + 0x00000000ffffffffl) >> 32;
+> +		end_addr = (tbl->it_offset + tbl->it_size) << IOMMU_PAGE_SHIFT;
+> +		for (index = start_addr; index < end_addr; index += (1l << 32)) {
+> +			/* Reserve 4GB entry */
+> +			__set_bit((index >> IOMMU_PAGE_SHIFT) - tbl->it_offset,
+> tbl->it_map);
+> +		}
+> +	}
+> +
 
-This buffer can be set to sizes ranging from 512 bytes to 3Kbytes.  I
-assume, based on this, that the size of this buffer affects SDMA performance.
-The current code allocates a 1Kbyte buffer for this use, but does not
-correctly set the buffer size to 1K, but rather it is left at 512 bytes.
-This in itself is probably just a reduced performance issue, caused by
-a coding error.
 
-However, as I mention below, it is unclear whether the buffer alignment
-requirement is 64 bytes or 4Kbytes.  The code aligns the buffer to 64 bytes.
-If the alignment requirement is truly 4Kbytes, then it is conceivable that
-with the current code, the SDMA controller could be overwriting MURAM that
-it has not allocated, potentially owned by other controllers.  That would
-be a much worse situation, and lead to some nasty and hard to find problems.
+This is done a bit more complicated than it has to be. The >> 32 is a
+red flag as well.
 
->> ..... The code
->> in arch/powerpc/sysdev/qe_lib/qe.c (line 254) that allocates this buffer
->> aligns it to a 64-byte boundary.  This is only correct if the manual 
->> section
->> 18.1.7, which requires a 4KByte alignment, is wrong.  Which manual 
->> section
->> is correct?
-> 
-> Hopefully someone at freescale will know.  I'd suggest possibly posting 
-> a support request to them to see if you can get a clarification since 
-> their UM is not self-consistent on the details.
+I would also like it to be the last page in the range, not the first
+(since otherwise you'll reserve even if the window is less than 4GB.
 
-I am hoping that some of the Freescale regulars on this list, Dave Liu,
-Timur Tabi, Li Yang, Kim Phillips, will know and can comment.
+Something like (untested):
 
-Thanks,
-Chuck
+	entries_per_4g = 0x100000000 >> IOMMU_PAGE_SHIFT;
+
+	/* Mark the last bit before a 4GB boundary as used */
+	start_index = tbl->it_offset | (entries_per_4g - 1);
+	end_index = tbl->it_offset + tbl->it_size;
+
+	for (index = start_index; index < end_index; index += entries_per_4g)
+		__set_bit(index, tbl->it_map);
+
+Is easier to follow.
+
+
+-Olof
