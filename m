@@ -2,9 +2,10 @@ Return-Path: <dgibson@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>,
 	<linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 2/10] Use resource_size_t for serial port IO addresses
+Subject: [PATCH 4/10] Add arch/powerpc driver for UIC,
+	PPC4xx interrupt controller
 In-Reply-To: <20070322060630.GB16993@localhost.localdomain>
-Message-Id: <20070322092202.091B1DDF34@ozlabs.org>
+Message-Id: <20070322092202.1299EDDF3E@ozlabs.org>
 Date: Thu, 22 Mar 2007 20:22:02 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,145 +16,398 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-At present, various parts of the serial code use unsigned long to
-define resource addresses.  This is a problem, because some 32-bit
-platforms have physical addresses larger than 32-bits, and have mmio
-serial uarts located above the 4GB point.
-
-This patch changes the type of mapbase in both struct uart_port and
-struct plat_serial8250_port to resource_size_t, which can be
-configured to be 64 bits on such platforms.  The mapbase in
-serial_struct can't safely be changed, because that structure is user
-visible.
+This patch adds a driver to arch/powerpc/sysdev for the UIC, the
+on-chip interrupt controller from IBM/AMCC 4xx chips.  It uses the new
+irq host mapping infrastructure.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- drivers/serial/8250.c        |    5 +++--
- drivers/serial/8250_early.c  |   16 +++++++++-------
- drivers/serial/serial_core.c |    9 +++++----
- include/linux/serial_8250.h  |    2 +-
- include/linux/serial_core.h  |    2 +-
- 5 files changed, 19 insertions(+), 15 deletions(-)
+ arch/powerpc/sysdev/Makefile |    1 
+ arch/powerpc/sysdev/uic.c    |  338 +++++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/uic.h    |   23 ++
+ 3 files changed, 362 insertions(+)
 
-Index: working-2.6/include/linux/serial_core.h
+Index: working-2.6/arch/powerpc/sysdev/uic.c
 ===================================================================
---- working-2.6.orig/include/linux/serial_core.h	2007-02-19 11:07:42.000000000 +1100
-+++ working-2.6/include/linux/serial_core.h	2007-02-19 11:07:43.000000000 +1100
-@@ -273,7 +273,7 @@ struct uart_port {
- 	const struct uart_ops	*ops;
- 	unsigned int		custom_divisor;
- 	unsigned int		line;			/* port index */
--	unsigned long		mapbase;		/* for ioremap */
-+	resource_size_t		mapbase;		/* for ioremap */
- 	struct device		*dev;			/* parent device */
- 	unsigned char		hub6;			/* this should be in the 8250 driver */
- 	unsigned char		unused[3];
-Index: working-2.6/drivers/serial/serial_core.c
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/sysdev/uic.c	2007-02-21 15:54:39.000000000 +1100
+@@ -0,0 +1,338 @@
++/*
++ * arch/powerpc/sysdev/uic.c
++ *
++ * IBM PowerPC 4xx Universal Interrupt Controller
++ *
++ * Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/reboot.h>
++#include <linux/slab.h>
++#include <linux/stddef.h>
++#include <linux/sched.h>
++#include <linux/signal.h>
++#include <linux/sysdev.h>
++#include <linux/device.h>
++#include <linux/bootmem.h>
++#include <linux/spinlock.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <asm/irq.h>
++#include <asm/io.h>
++#include <asm/prom.h>
++#include <asm/dcr.h>
++
++#define NR_UIC_INTS	32
++
++#define UIC_SR		0x0
++#define UIC_ER		0x2
++#define UIC_CR		0x3
++#define UIC_PR		0x4
++#define UIC_TR		0x5
++#define UIC_MSR		0x6
++#define UIC_VR		0x7
++#define UIC_VCR		0x8
++
++#define uic_irq_to_hw(virq)	(irq_map[virq].hwirq)
++
++struct uic *primary_uic;
++
++struct uic {
++	int index;
++	int dcrbase;
++
++	spinlock_t lock;
++
++	/* The remapper for this UIC */
++	struct irq_host	*irqhost;
++
++	/* For secondary UICs, the cascade interrupt's irqaction */
++	struct irqaction cascade;
++
++	/* The device node of the interrupt controller */
++	struct device_node *of_node;
++};
++
++static void uic_unmask_irq(unsigned int virq)
++{
++	struct uic *uic = get_irq_chip_data(virq);
++	unsigned int src = uic_irq_to_hw(virq);
++	unsigned long flags;
++	u32 er;
++
++	spin_lock_irqsave(&uic->lock, flags);
++	er = mfdcr(uic->dcrbase + UIC_ER);
++	er |= 1 << (31 - src);
++	mtdcr(uic->dcrbase + UIC_ER, er);
++	spin_unlock_irqrestore(&uic->lock, flags);
++}
++
++static void uic_mask_irq(unsigned int virq)
++{
++	struct uic *uic = get_irq_chip_data(virq);
++	unsigned int src = uic_irq_to_hw(virq);
++	unsigned long flags;
++	u32 er;
++
++	spin_lock_irqsave(&uic->lock, flags);
++	er = mfdcr(uic->dcrbase + UIC_ER);
++	er &= ~(1 << (31 - src));
++	mtdcr(uic->dcrbase + UIC_ER, er);
++	spin_unlock_irqrestore(&uic->lock, flags);
++}
++
++static void uic_ack_irq(unsigned int virq)
++{
++	struct uic *uic = get_irq_chip_data(virq);
++	unsigned int src = uic_irq_to_hw(virq);
++	unsigned long flags;
++
++	spin_lock_irqsave(&uic->lock, flags);
++	mtdcr(uic->dcrbase + UIC_SR, 1 << (31-src));
++	spin_unlock_irqrestore(&uic->lock, flags);
++}
++
++static int uic_set_irq_type(unsigned int virq, unsigned int flow_type)
++{
++	struct uic *uic = get_irq_chip_data(virq);
++	unsigned int src = uic_irq_to_hw(virq);
++	struct irq_desc *desc = get_irq_desc(virq);
++	unsigned long flags;
++	int trigger, polarity;
++	u32 tr, pr, mask;
++
++	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
++	case IRQ_TYPE_NONE:
++		uic_mask_irq(virq);
++		return 0;
++
++	case IRQ_TYPE_EDGE_RISING:
++		trigger = 1; polarity = 1;
++		break;
++	case IRQ_TYPE_EDGE_FALLING:
++		trigger = 1; polarity = 0;
++		break;
++	case IRQ_TYPE_LEVEL_HIGH:
++		trigger = 0; polarity = 1;
++		break;
++	case IRQ_TYPE_LEVEL_LOW:
++		trigger = 0; polarity = 1;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	mask = ~(1 << (31 - src));
++
++	spin_lock_irqsave(&uic->lock, flags);
++	tr = mfdcr(uic->dcrbase + UIC_TR);
++	pr = mfdcr(uic->dcrbase + UIC_PR);
++	tr = (tr & mask) | (trigger << (31-src));
++	pr = (pr & mask) | (polarity << (31-src));
++
++	mtdcr(uic->dcrbase + UIC_PR, pr);
++	mtdcr(uic->dcrbase + UIC_TR, tr);
++
++	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
++	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
++	if (trigger)
++		desc->status |= IRQ_LEVEL;
++
++	spin_unlock_irqrestore(&uic->lock, flags);
++
++	return 0;
++}
++
++static struct irq_chip uic_irq_chip = {
++	.typename	= " UIC  ",
++	.unmask		= uic_unmask_irq,
++	.mask		= uic_mask_irq,
++/* 	.mask_ack	= uic_mask_irq_and_ack, */
++	.ack		= uic_ack_irq,
++	.set_type	= uic_set_irq_type,
++};
++
++static int uic_host_match(struct irq_host *h, struct device_node *node)
++{
++	struct uic *uic = h->host_data;
++	return uic->of_node == node;
++}
++
++static int uic_host_map(struct irq_host *h, unsigned int virq,
++			irq_hw_number_t hw)
++{
++	struct uic *uic = h->host_data;
++
++	set_irq_chip_data(virq, uic);
++	/* Despite the name, handle_level_irq() works for both level
++	 * and edge irqs on UIC.  FIXME: check this is correct */
++	set_irq_chip_and_handler(virq, &uic_irq_chip, handle_level_irq);
++
++	/* Set default irq type */
++	set_irq_type(virq, IRQ_TYPE_NONE);
++
++	return 0;
++}
++
++static int uic_host_xlate(struct irq_host *h, struct device_node *ct,
++			  u32 *intspec, unsigned int intsize,
++			  irq_hw_number_t *out_hwirq, unsigned int *out_type)
++
++{
++	/* UIC intspecs must have 2 cells */
++	BUG_ON(intsize != 2);
++	*out_hwirq = intspec[0];
++	*out_type = intspec[1];
++	return 0;
++}
++
++static struct irq_host_ops uic_host_ops = {
++	.match	= uic_host_match,
++	.map	= uic_host_map,
++	.xlate	= uic_host_xlate,
++};
++
++irqreturn_t uic_cascade(int virq, void *data)
++{
++	struct uic *uic = data;
++	u32 msr;
++	int src;
++	int subvirq;
++
++	msr = mfdcr(uic->dcrbase + UIC_MSR);
++	src = 32 - ffs(msr);
++
++	subvirq = irq_linear_revmap(uic->irqhost, src);
++	generic_handle_irq(subvirq);
++
++	return IRQ_HANDLED;
++}
++
++static struct uic * __init uic_init_one(struct device_node *node)
++{
++	struct uic *uic;
++	const u32 *indexp, *dcrreg;
++	int len;
++
++	BUG_ON(! device_is_compatible(node, "ibm,uic"));
++
++	uic = alloc_bootmem(sizeof(*uic));
++	if (! uic)
++		return NULL; /* FIXME: panic? */
++
++	memset(uic, 0, sizeof(*uic));
++	uic->of_node = of_node_get(node);
++	indexp = get_property(node, "cell-index", &len);
++	if (!indexp || (len != sizeof(u32))) {
++		printk(KERN_ERR "uic: Device node %s has missing or invalid "
++		       "cell-index property\n", node->full_name);
++		return NULL;
++	}
++	uic->index = *indexp;
++
++	dcrreg = get_property(node, "dcr-reg", &len);
++	if (!dcrreg || (len != 2*sizeof(u32))) {
++		printk(KERN_ERR "uic: Device node %s has missing or invalid "
++		       "dcr-reg property\n", node->full_name);
++		return NULL;
++	}
++	uic->dcrbase = *dcrreg;
++
++	uic->irqhost = irq_alloc_host(IRQ_HOST_MAP_LINEAR, NR_UIC_INTS,
++				      &uic_host_ops, -1);
++	if (! uic->irqhost) {
++		of_node_put(node);
++		return NULL; /* FIXME: panic? */
++	}
++
++	uic->irqhost->host_data = uic;
++
++	/* Start with all interrupts disable and non-critical */
++	mtdcr(uic->dcrbase + UIC_ER, 0);
++	mtdcr(uic->dcrbase + UIC_CR, 0);
++
++	printk ("UIC%d (%d IRQ sources) at DCR 0x%x\n", uic->index,
++		NR_UIC_INTS, uic->dcrbase);
++
++	return uic;
++}
++
++void __init uic_init_tree(void)
++{
++	struct device_node *np;
++	struct uic *uic;
++	const u32 *interrupts;
++
++	/* First locate and initialize the top-level UIC */
++
++	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
++	while (np) {
++		interrupts = get_property(np, "interrupts", NULL);
++		if (! interrupts)
++			break;
++
++		np = of_find_compatible_node(np, NULL, "ibm,uic");
++	}
++
++	BUG_ON(!np); /* uic_init_tree() assumes there's a UIC as the
++		      * top-level interrupt controller */
++	primary_uic = uic_init_one(np);
++	if (! primary_uic)
++		panic("Unable to initialize primary UIC %s\n", np->full_name);
++
++	irq_set_default_host(primary_uic->irqhost);
++	of_node_put(np);
++
++	/* The scan again for cascaded UICs */
++	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
++	while (np) {
++		interrupts = get_property(np, "interrupts", NULL);
++		if (interrupts) {
++			/* Secondary UIC */
++			int cascade_virq;
++			int ret;
++
++			uic = uic_init_one(np);
++			if (! uic)
++				panic("Unable to initialize a secondary UIC %s\n",
++				      np->full_name);
++
++			cascade_virq = irq_of_parse_and_map(np, 0);
++
++			uic->cascade.handler = uic_cascade;
++			uic->cascade.name = "UIC cascade";
++			uic->cascade.dev_id = uic;
++
++			ret = setup_irq(cascade_virq, &uic->cascade);
++			if (ret)
++				printk(KERN_ERR "Failed to setup_irq(%d) for "
++				       "UIC%d cascade\n", cascade_virq,
++				       uic->index);
++
++			/* FIXME: setup critical cascade?? */
++		}
++
++		np = of_find_compatible_node(np, NULL, "ibm,uic");
++	}
++}
++
++/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
++unsigned int uic_get_irq(void)
++{
++	u32 msr;
++	int src;
++
++	BUG_ON(! primary_uic);
++
++	msr = mfdcr(primary_uic->dcrbase + UIC_MSR);
++	src = 32 - ffs(msr);
++
++	return irq_linear_revmap(primary_uic->irqhost, src);
++}
+Index: working-2.6/arch/powerpc/sysdev/Makefile
 ===================================================================
---- working-2.6.orig/drivers/serial/serial_core.c	2007-02-19 11:07:42.000000000 +1100
-+++ working-2.6/drivers/serial/serial_core.c	2007-02-19 11:07:43.000000000 +1100
-@@ -633,7 +633,7 @@ static int uart_get_info(struct uart_sta
- 	tmp.hub6	    = port->hub6;
- 	tmp.io_type         = port->iotype;
- 	tmp.iomem_reg_shift = port->regshift;
--	tmp.iomem_base      = (void *)port->mapbase;
-+	tmp.iomem_base      = (void *)(unsigned long)port->mapbase;
+--- working-2.6.orig/arch/powerpc/sysdev/Makefile	2007-02-19 11:05:31.000000000 +1100
++++ working-2.6/arch/powerpc/sysdev/Makefile	2007-02-21 15:35:25.000000000 +1100
+@@ -17,6 +17,7 @@ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+ obj-$(CONFIG_PPC_83xx)		+= ipic.o
++obj-$(CONFIG_4xx)		+= uic.o
+ endif
  
- 	if (copy_to_user(retinfo, &tmp, sizeof(*retinfo)))
- 		return -EFAULT;
-@@ -1673,10 +1673,11 @@ static int uart_line_info(char *buf, str
- 		return 0;
- 
- 	mmio = port->iotype >= UPIO_MEM;
--	ret = sprintf(buf, "%d: uart:%s %s%08lX irq:%d",
-+	ret = sprintf(buf, "%d: uart:%s %s%08llX irq:%d",
- 			port->line, uart_type(port),
- 			mmio ? "mmio:0x" : "port:",
--			mmio ? port->mapbase : (unsigned long) port->iobase,
-+			mmio ? (unsigned long long)port->mapbase
-+		             : (unsigned long long) port->iobase,
- 			port->irq);
- 
- 	if (port->type == PORT_UNKNOWN) {
-@@ -2069,7 +2070,7 @@ uart_report_port(struct uart_driver *drv
- 	case UPIO_AU:
- 	case UPIO_TSI:
- 		snprintf(address, sizeof(address),
--			 "MMIO 0x%lx", port->mapbase);
-+			 "MMIO 0x%llx", (unsigned long long)port->mapbase);
- 		break;
- 	default:
- 		strlcpy(address, "*unknown*", sizeof(address));
-Index: working-2.6/drivers/serial/8250_early.c
+ # Temporary hack until we have migrated to asm-powerpc
+Index: working-2.6/include/asm-powerpc/uic.h
 ===================================================================
---- working-2.6.orig/drivers/serial/8250_early.c	2007-02-19 11:07:40.000000000 +1100
-+++ working-2.6/drivers/serial/8250_early.c	2007-02-19 11:07:43.000000000 +1100
-@@ -145,8 +145,9 @@ static int __init parse_options(struct e
- 		port->mapbase = simple_strtoul(options + 5, &options, 0);
- 		port->membase = ioremap(port->mapbase, mapsize);
- 		if (!port->membase) {
--			printk(KERN_ERR "%s: Couldn't ioremap 0x%lx\n",
--				__FUNCTION__, port->mapbase);
-+			printk(KERN_ERR "%s: Couldn't ioremap 0x%llx\n",
-+				__FUNCTION__,
-+			       (unsigned long long)port->mapbase);
- 			return -ENOMEM;
- 		}
- 		mmio = 1;
-@@ -168,9 +169,10 @@ static int __init parse_options(struct e
- 			device->baud);
- 	}
- 
--	printk(KERN_INFO "Early serial console at %s 0x%lx (options '%s')\n",
-+	printk(KERN_INFO "Early serial console at %s 0x%llx (options '%s')\n",
- 		mmio ? "MMIO" : "I/O port",
--		mmio ? port->mapbase : (unsigned long) port->iobase,
-+		mmio ? (unsigned long long) port->mapbase
-+	             : (unsigned long long) port->iobase,
- 		device->options);
- 	return 0;
- }
-@@ -236,10 +238,10 @@ static int __init early_uart_console_swi
- 	mmio = (port->iotype == UPIO_MEM);
- 	line = serial8250_start_console(port, device->options);
- 	if (line < 0)
--		printk("No ttyS device at %s 0x%lx for console\n",
-+		printk("No ttyS device at %s 0x%llx for console\n",
- 			mmio ? "MMIO" : "I/O port",
--			mmio ? port->mapbase :
--			    (unsigned long) port->iobase);
-+			mmio ? (unsigned long long) port->mapbase
-+		             : (unsigned long long) port->iobase);
- 
- 	unregister_console(&early_uart_console);
- 	if (mmio)
-Index: working-2.6/include/linux/serial_8250.h
-===================================================================
---- working-2.6.orig/include/linux/serial_8250.h	2007-02-19 11:07:40.000000000 +1100
-+++ working-2.6/include/linux/serial_8250.h	2007-02-19 11:07:43.000000000 +1100
-@@ -20,7 +20,7 @@
- struct plat_serial8250_port {
- 	unsigned long	iobase;		/* io base address */
- 	void __iomem	*membase;	/* ioremap cookie or NULL */
--	unsigned long	mapbase;	/* resource base */
-+	resource_size_t	mapbase;	/* resource base */
- 	unsigned int	irq;		/* interrupt number */
- 	unsigned int	uartclk;	/* UART clock rate */
- 	unsigned char	regshift;	/* register shift */
-Index: working-2.6/drivers/serial/8250.c
-===================================================================
---- working-2.6.orig/drivers/serial/8250.c	2007-02-19 11:07:40.000000000 +1100
-+++ working-2.6/drivers/serial/8250.c	2007-02-19 11:07:43.000000000 +1100
-@@ -2550,8 +2550,9 @@ static int __devinit serial8250_probe(st
- 		ret = serial8250_register_port(&port);
- 		if (ret < 0) {
- 			dev_err(&dev->dev, "unable to register port at index %d "
--				"(IO%lx MEM%lx IRQ%d): %d\n", i,
--				p->iobase, p->mapbase, p->irq, ret);
-+				"(IO%lx MEM%llx IRQ%d): %d\n", i,
-+				p->iobase, (unsigned long long)p->mapbase,
-+				p->irq, ret);
- 		}
- 	}
- 	return 0;
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/include/asm-powerpc/uic.h	2007-02-21 15:35:25.000000000 +1100
+@@ -0,0 +1,23 @@
++/*
++ * include/asm-powerpc/uic.h
++ *
++ * IBM PPC4xx UIC external definitions and structure.
++ *
++ * Maintainer: David Gibson <dwg@au1.ibm.com>
++ * Copyright 2007 IBM Corporation.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#ifndef _ASM_POWERPC_UIC_H
++#define _ASM_POWERPC_UIC_H
++
++#ifdef __KERNEL__
++
++extern void __init uic_init_tree(void);
++extern unsigned int uic_get_irq(void);
++
++#endif /* __KERNEL__ */
++#endif /* _ASM_POWERPC_UIC_H */
