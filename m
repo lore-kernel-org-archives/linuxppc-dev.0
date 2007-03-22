@@ -1,12 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5B865DDF05
+	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 15:59:03 +1100 (EST)
+Date: Wed, 21 Mar 2007 23:55:35 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH 1/2 Rev 2] Add initial MPC8544DS basic port defconfig.
+In-Reply-To: <1174407526.6595.416.camel@ld0161-tx32>
+Message-ID: <Pine.LNX.4.64.0703212355150.1023@localhost.localdomain>
+References: <1174407526.6595.416.camel@ld0161-tx32>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17922.1718.441879.244422@cargo.ozlabs.ibm.com>
-Date: Thu, 22 Mar 2007 15:31:50 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,93 +24,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Tue, 20 Mar 2007, Jon Loeliger wrote:
 
-I have three more powerpc bug fixes to go in for 2.6.21, so please do:
+>
+> Signed-off-by: Xianghua Xiao <x.xiao@freescale.com>
+> Signed-off-by: Roy Zang <tie-fei.zang@freescale.com>
+> Signed-off-by: York Sun <yorksun@freescale.com>
+> Signed-off-by: Andy Fleming <afleming@freescale.com>
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
+> ---
+>  arch/powerpc/configs/mpc8544_ds_defconfig | 1077 +++++++++++++++++++++++++++++
+>  1 files changed, 1077 insertions(+), 0 deletions(-)
+>  create mode 100644 arch/powerpc/configs/mpc8544_ds_defconfig
+>
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+applied.
 
-The full commit messages are below.
-
-Thanks,
-Paul.
-
- arch/powerpc/kernel/process.c                   |    9 ++++-
- arch/powerpc/platforms/pseries/hvCall.S         |   41 ++++++++++++++++++++++-
- arch/powerpc/platforms/pseries/lpar.c           |    2 +
- arch/powerpc/platforms/pseries/plpar_wrappers.h |   16 +++++++++
- include/asm-powerpc/hvcall.h                    |   14 ++++++++
- 5 files changed, 78 insertions(+), 4 deletions(-)
-
-commit 4f5fa2fb1259f506d20e8af447117ec3ec426a53
-Author: Anton Blanchard <anton@samba.org>
-Date:   Tue Mar 20 14:29:54 2007 -0500
-
-    [POWERPC] Bypass hcall stats until cpu features have run
-    
-    I noticed that we execute hcalls before cpu feature code has run (eg
-    for setting up the bolted kernel region).  This means that we may be
-    executing code that is not appropriate for the processor we have.
-    Create an unconditional branch that we nop out all the time to fix this.
-    
-    Signed-off-by: Anton Blanchard <anton@samba.org>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit b4aea36b7956eeebfc56314ce0944db1441255ce
-Author: Mohan Kumar M <mohan@in.ibm.com>
-Date:   Wed Mar 21 11:21:32 2007 +0530
-
-    [POWERPC] Avoid hypervisor statistics calculation in real mode
-    
-    kexec invokes plpar_hcall hypervisor call in real mode.  plpar_hcall
-    refers to per cpu variables for accounting hypervisor statistics.
-    These variables may not be in the RMO region, so accesses to them
-    in real mode may result in a data storage exception.
-    
-    This fixes this problem by using a new plpar_hcall_raw function which
-    does not update the hypervisor call statistics.  Thanks to Anton for
-    suggesting this idea.
-    
-    Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
-
-commit f144e7c7272bf527c380bffaa5e789dc28a09d8d
-Author: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-Date:   Sat Mar 10 03:23:03 2007 -0500
-
-    [POWERPC] Fix atomicity of TIF update in flush_thread()
-    
-    Fix atomicity of TIF update in flush_thread() for powerpc
-    
-    Fixes it correctly with *_ti_thread_flag.
-    
-    Race :
-    
-    parent process executing :
-    sys_ptrace()
-     (lock_kernel())
-     (ptrace_get_task_struct(pid))
-     arch_ptrace()
-       ptrace_detach()
-         ptrace_disable(child);
-           clear_singlestep(child);
-             clear_tsk_thread_flag(child, TIF_SINGLESTEP);
-             (which clears the TIF_SINGLESTEP flag atomically from a different
-              process)
-     (put_task_struct(child))
-     (unlock_kernel())
-    
-    And at the same time, in the child process :
-    sys_execve()
-     do_execve()
-       search_binary_handler()
-         load_elf_binary()
-           flush_old_exec()
-             flush_thread()
-               doing a non-atomic thread flag update
-    
-    Applies on 2.6.20.
-    
-    Signed-off-by: Mathieu Desnoyers <mathieu.desnoyers@polymtl.ca>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+- k
