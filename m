@@ -1,15 +1,15 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17922.27905.439387.814432@cargo.ozlabs.ibm.com>
-Date: Thu, 22 Mar 2007 22:48:17 +1100
+Message-ID: <17922.28062.992264.172708@cargo.ozlabs.ibm.com>
+Date: Thu, 22 Mar 2007 22:50:54 +1100
 From: Paul Mackerras <paulus@samba.org>
-To: Tony Vroon <chainsaw@gentoo.org>
-Subject: Re: [PATCH 2.6.22] [resend] Allow PMU LED control on PowerMac 7,
-	2 and 7, 3
-In-Reply-To: <20070318201110.181165B80F1@ganymede.vroon.org>
-References: <20070318201110.181165B80F1@ganymede.vroon.org>
-Cc: linuxppc-dev@ozlabs.org
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] Use mtocrf in asm when CONFIG_POWER4_ONLY=y
+In-Reply-To: <8f820a3c81d934b09c621e9fe55dd248@kernel.crashing.org>
+References: <20070322020925.GA13114@lixom.net>
+	<8f820a3c81d934b09c621e9fe55dd248@kernel.crashing.org>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,16 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Tony Vroon writes:
+Segher Boessenkool writes:
 
->  	if (strncmp(model, "PowerBook", strlen("PowerBook")) != 0 &&
-> -	    strncmp(model, "iBook", strlen("iBook")) != 0) {
-> +	    strncmp(model, "iBook", strlen("iBook")) != 0 &&
-> +	    strncmp(model, "PowerMac7,2", strlen("PowerMac7,2")) != 0 &&
-> +	    strncmp(model, "PowerMac7,3", strlen("PowerMac7,3")) != 0) {
+> Does anyone know which CPUs that don't implement mtocrf
+> don't treat it identical to mtcrf?  That would allow to
+> widen when we use mtocrf.  Or perhaps it's really time
+> for an "asm alternatives" run-time patch thing now :-)
 
-Since we only want to accept "PowerMac7,2" or "PowerMac7,3", and not
-any longer strings ("PowerMac7,30" for instance), I think the
-comparisons you have added should use strcmp rather than strncmp.
+POWER3 takes a 0x700 interrupt when it sees mtocrf, unfortunately.
 
 Paul.
