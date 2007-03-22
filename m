@@ -1,19 +1,24 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102]) by ozlabs.org (Postfix) with ESMTP id 27A74DDFBE
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 03:11:15 +1100 (EST)
-Received: from de01smr01.freescale.net (de01smr01.freescale.net [10.208.0.31])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l2MGBCgX008290
-	for <linuxppc-dev@ozlabs.org>; Thu, 22 Mar 2007 09:11:12 -0700 (MST)
-Date: Thu, 22 Mar 2007 11:11:09 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: jdl@freescale.com
-Subject: [PATCH] Remove bogus errors from check_chosen.
-Message-ID: <20070322161109.GA20512@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 008B8DDFBE
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 03:12:14 +1100 (EST)
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302B97FCD@az33exm25.fsl.freescale.net>
+References: <1174573524.6595.509.camel@ld0161-tx32>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302B97F7C@az33exm25.fsl.freescale.net>
+	<20070322155155.GA19903@lixom.net>
+	<9E7C3CAC-307E-44A9-9ACB-8A8B8C5B464C@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302B97FCD@az33exm25.fsl.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6186A8EC-8A6F-47E6-B534-D5494E5FA34C@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [Fwd: [PATCH Resend 01/02] Add Linux ASMP support for MPC8641D]
+Date: Thu, 22 Mar 2007 11:11:37 -0500
+To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,36 +28,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-It is not an error for /chosen (or any of its children) to be missing.
 
-It is not a requirement that the output of dtc be a complete, valid
-device tree, as it may be intended that the dtb be passed through boot
-code that will complete it.  Thus, do not complain.
+On Mar 22, 2007, at 10:58 AM, Yoder Stuart-B08248 wrote:
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- livetree.c |    9 ++-------
- 1 files changed, 2 insertions(+), 7 deletions(-)
+>
+>
+>> -----Original Message-----
+>> From: Kumar Gala [mailto:galak@kernel.crashing.org]
+>> Sent: Thursday, March 22, 2007 10:44 AM
+>> To: Olof Johansson
+>> Cc: Yoder Stuart-B08248; linuxppc-dev@ozlabs.org
+>> Subject: Re: [Fwd: [PATCH Resend 01/02] Add Linux ASMP
+>> support for MPC8641D]
+>>
+>>
+>> On Mar 22, 2007, at 10:51 AM, Olof Johansson wrote:
+>>
+>>> On Thu, Mar 22, 2007 at 08:32:33AM -0700, Yoder Stuart-B08248 wrote:
+>>>>
+>>>>> +		mpic: pic@40000 {
+>>>>> +			clock-frequency = <0>;
+>>>>> +			interrupt-controller;
+>>>>> +			#address-cells = <0>;
+>>>>> +			#interrupt-cells = <2>;
+>>>>> +			reg = <40000 40000>;
+>>>>> +			built-in;
+>>>>> +			compatible = "chrp,open-pic";
+>>>>> +			device_type = "open-pic";
+>>>>> +			big-endian;
+>>>>> +			interrupts = <
+>>>>> +			18 2 49 2 19 2
+>>>>> +			2a 2 2b 2 4a 1
+>>>>> +			1d 2 1e 2 22 2
+>>>>> +			23 2 24 2 28 2
+>>>>> +			>;
+>>>>> +		};
+>>>>> +	};
+>>>>> +};
+>>>>
+>>>> I think using the 'interrupts' property in this way is bad.  It's
+>>>> being used to tell the pic which interrupts belong to it.
+>>>>
+>>>> The problem is that the interrupts property is being overloaded
+>>>> and used for a completely different purpose than that which
+>>>> it was originally intended and documented.  Interrupt controllers
+>>>> should not have an interrupts property.
+>>>>
+>>>> The only reason I can see to do this is as a convenience to avoid
+>>>> walking the device tree.   The pic code should walk the device tree
+>>>> to determine the irq numbers the running core.
+>>>
+>>> Not speaking for the case of the freescale boards here, but not all
+>>> interrupts are in the device tree, nor do they have to.
+>> Especially for
+>>> PCI devices, etc.
+>>>
+>>> This is quite a special case. Having a brand new property
+>> for it might
+>>> be a good idea. It's a pretty big hack anyway, so adding another
+>>> one to
+>>> the device tree isn't that big a deal.
+>>
+>> I think the issue is you don't want the per interrupt registers
+>> initialized twice.  Thus I suggest we just let set_irq_type handle  
+>> it.
+>>
+>> There is still an issue for shared interrupts, but I don't think you
+>> can solve that.  W/o moving the interrupt processing to some common
+>> level.
+>
+> As I understand the patch, there are two DTS files once for each core
+> and each having a partitioned set of devices for that core.  In the
+> current patch the pic in each DTS has a unique 'interrupts' property.
+>
+> This shouldn't be necessary-- to initialize the pic should simply be
+> a matter of each core walking it's device tree, which only has the
+> devices
+> assigned to it, and programming the pic appropriately.   No registers
+> should be programmed twice.
 
-diff --git a/livetree.c b/livetree.c
-index 45642dc..ce73f50 100644
---- a/livetree.c
-+++ b/livetree.c
-@@ -588,13 +588,8 @@ static int check_chosen(struct node *root)
- 	int ok = 1;
- 
- 	chosen = get_subnode(root, "chosen");
--	if (! chosen) {
--		ERRMSG("Missing /chosen node\n");
--		return 0;
--	}
--
--	CHECK_HAVE_WARN_STRING(chosen, "bootargs");
--	CHECK_HAVE_WARN_STRING(chosen, "linux,stdout-path");
-+	if (!chosen)
-+		return ok;
- 
-         /* give warning for obsolete interrupt-controller property */
- 	do {
--- 
-1.5.0.3
+If you look at what mpic_init() does you will see that the registers  
+would be setup twice.
+
+Also, you don't need to walk the device-tree at all.  As Olof pointed  
+out there maybe interrupts that are not described in the device  
+tree.  We can setup this information when you do a request_irq() ->  
+set_irq_type().
+
+If you aren't doing a request_irq() for the interrupt than it doesn't  
+need to be setup.  Additionally, you should only doing a request_irq 
+() for an interrupt that is "owned" by that core.
+
+- k
