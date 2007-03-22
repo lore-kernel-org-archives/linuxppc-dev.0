@@ -1,19 +1,33 @@
-Return-Path: <sakurken@gmail.com>
-Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.185])
-	by ozlabs.org (Postfix) with ESMTP id 93BC6DDEB7
+Return-Path: <idefix@fechner.net>
+Received: from michelle.lostinspace.de (michelle.lostinspace.de
+	[62.146.248.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "michelle.lostinspace.de",
+	Issuer "michelle.lostinspace.de" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 40773DE001
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Mar 2007 06:34:27 +1100 (EST)
-Received: by mu-out-0910.google.com with SMTP id w9so1189445mue
+	Fri, 23 Mar 2007 07:05:06 +1100 (EST)
+Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
+	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
+	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2MK4qcu046541
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Mar 2007 12:34:24 -0700 (PDT)
-Message-ID: <393e3a4b0703221234n20eee581g6cbf9af9be2c5ebb@mail.gmail.com>
-Date: Thu, 22 Mar 2007 14:34:24 -0500
-From: "Ken Sakurai" <sakurken@gmail.com>
+	Thu, 22 Mar 2007 21:04:58 +0100 (CET)
+	(envelope-from idefix@fechner.net)
+Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
+	(envelope-from <idefix@fechner.net>) id 1HUTWn-000KH0-P9
+	for linuxppc-embedded@ozlabs.org; Thu, 22 Mar 2007 21:04:53 +0100
+Date: Thu, 22 Mar 2007 21:04:53 +0100
+From: Matthias Fechner <idefix@fechner.net>
 To: linuxppc-embedded@ozlabs.org
-Subject: AVNET 440GX board
+Subject: Re: Howto set DIO on MPC-5200 Lite
+Message-ID: <20070322200453.GA76755@server.idefix.lan>
+References: <918EB199DDDFFA42BEA2EB3A1C6021F360C085@CORREO>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_111654_18274102.1174592064250"
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <918EB199DDDFFA42BEA2EB3A1C6021F360C085@CORREO>
+Sender: Matthias Fechner <idefix@fechner.net>
+Reply-To: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,71 +38,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_111654_18274102.1174592064250
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hello Josu,
 
-Hi,
+* Josu Onandia <jonandia@aotek.es> [19-03-07 14:18]:
+> Some sample code. Hope this helps.
 
-I'm trying to boot Linux on  AVNET 440gx eval board but no luck so far.
-What I did are that I downloaded a plain 2.6.20 kernel from kernel.org,
-configured with 440GX, OCOTEA target (I'm not sure OCOTEA is correct
-target),
-then loaded the kernel image via tftp  and tried to boot with bootelf
-command.
-But I had no output message from Linux.
+thx a lot for all your help I love that mailinglist :)
 
-I suspected setting of Linux serial console. So I changed the kernel
-parameter to
-"ttyS0,19200" which I suppose correct becuase this is the minicom setting.
-But still didn't work.
+Here is a very small kernel module for the icecube board.
+It activates the LED 1 and 3 after module has been loaded
+and off again if module has been removed.
+Maybe that helps someone else:
 
-The board comes with u-boot 1.0.2 with some fixes.  I'm checking the u-boot
-source code (might be some hint in there) and the serial device
-initialization code in Linux.
+#include <linux/module.h>
+#include <asm/mpc52xx.h>
 
-Has anyone had experiece with Linux on AVNET 440GX board?
-Any advise would be appreciated !
+#define MPC5xxx_GPIO MPC52xx_VA(MPC52xx_GPIO_OFFSET)
 
--
-Ken
+static void psc6_configure_pins(void)
+{
+   struct mpc52xx_gpio *config;
+   config = (struct mpc52xx_gpio*) MPC5xxx_GPIO;
+         
+   printk("Address: %X\n",(u32)&config->port_config);
+   printk("Configure port\n");
+   config->port_config &= ~(0x00700000);
+		     
+   printk("Set IRDA to GPIO\n");
+   config->simple_gpioe |= 0x30000000;
+			      
+   printk("Set pins to CMOS output\n");
+   config->simple_ode &= ~(0x30000000);
+				       
+   printk("Set simple GPIO data direction register\n");
+   config->simple_ddr |= 0x30000000;
+ }
+   
+// the pins are active low, so we invert it
+static void psc6_pin_on(unsigned int pin)
+{
+   struct mpc52xx_gpio *config;
+   config = (struct mpc52xx_gpio*) MPC5xxx_GPIO;
+   printk("Set LEDs %i\n",pin);
+   config->simple_dvo &= ~(1 << (pin+28));
+}
+	       
+// the pins are active low, so we invert it
+static void psc6_pin_off(unsigned int pin)
+{
+   struct mpc52xx_gpio *config;
+   config = (struct mpc52xx_gpio*) MPC5xxx_GPIO;
+   printk("Clear LED %i\n",pin);
+   config->simple_dvo |= (1 << (pin+28));
+}
+			   
+static int icecube_led_init(void)
+{
+   printk("Module Blink LED loaded\n");
+   printk("Set LEDs on\n");
+   psc6_configure_pins();
+   psc6_pin_on(0);
+   psc6_pin_on(1);
+   return 0;
+}
+						
+static void icecube_led_cleanup(void)
+{
+   printk("Module Blink LED unloaded\n");
+   psc6_pin_off(0);
+   psc6_pin_off(1);
+}
+      
+MODULE_AUTHOR("Matthias Fechner <idefix@fechner.net>");
+MODULE_DESCRIPTION("Driver to switch LED on icecube board after driver loaded successfully and switch LEDs of after driver unloaded successfully.");
+MODULE_LICENSE("GPL");
 
-------
+module_init(icecube_led_init);
+module_exit(icecube_led_cleanup);
 
-=> tftp
-Waiting for PHY auto negotiation to complete.. done
-ENET Speed is 100 Mbps - FULL duplex connection
-*** Warning: no boot file name; using '6501A8C0.img'
-Using ppc_440x_eth2 device
-TFTP from server 192.168.1.1; our IP address is 192.168.1.101
-Filename '6501A8C0.img'.
-Load address: 0x100000
-Loading: #################################################################
-         #################################################################
-         #################################
-done
-Bytes transferred = 832121 (cb279 hex)
-=> bootelf
-Loading .text @ 0x01000000 (15316 bytes)
-Loading .data @ 0x01004000 (700416 bytes)
-Clearing .bss @ 0x010af000 (8500 bytes)
-## Starting application at 0x01000000 ...
 
-(no output after this message)
 
-------=_Part_111654_18274102.1174592064250
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Best regards,
+Matthias
 
-Hi,<br><br>I&#39;m trying to boot Linux on&nbsp; AVNET 440gx eval board but no luck so far.<br>What I did are that I downloaded a plain 2.6.20 kernel from <a href="http://kernel.org">kernel.org</a>,<br>configured with 440GX, OCOTEA target (I&#39;m not sure OCOTEA is correct target),
-<br>then loaded the kernel image via tftp&nbsp; and tried to boot with bootelf command.<br>But I had no output message from Linux.<br><br>I suspected setting of Linux serial console. So I changed the kernel parameter to <br>&quot;ttyS0,19200&quot; which I suppose correct becuase this is the minicom setting.
-<br>But still didn&#39;t work.<br><br>The board comes with u-boot 1.0.2 with some fixes.&nbsp; I&#39;m checking the u-boot <br>source code (might be some hint in there) and the serial device <br>initialization code in Linux.<br>
-<br>Has anyone had experiece with Linux on AVNET 440GX board? <br>Any advise would be appreciated !<br><br>-<br>Ken<br><br>------<br><br>=&gt; tftp<br>Waiting for PHY auto negotiation to complete.. done<br>ENET Speed is 100 Mbps - FULL duplex connection
-<br>*** Warning: no boot file name; using &#39;6501A8C0.img&#39;<br>Using ppc_440x_eth2 device<br>TFTP from server <a href="http://192.168.1.1">192.168.1.1</a>; our IP address is <a href="http://192.168.1.101">192.168.1.101
-</a><br>Filename &#39;6501A8C0.img&#39;.<br>Load address: 0x100000<br>Loading: #################################################################<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #################################################################
-<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; #################################<br>done<br>Bytes transferred = 832121 (cb279 hex)<br>=&gt; bootelf<br>Loading .text @ 0x01000000 (15316 bytes)<br>Loading .data @ 0x01004000 (700416 bytes)<br>Clearing .bss @ 0x010af000 (8500 bytes)
-<br>## Starting application at 0x01000000 ...<br><br>(no output after this message)<br>
+-- 
 
-------=_Part_111654_18274102.1174592064250--
+"Programming today is a race between software engineers striving to
+build bigger and better idiot-proof programs, and the universe trying to
+produce bigger and better idiots. So far, the universe is winning." --
+Rich Cook
