@@ -2,9 +2,9 @@ Return-Path: <dgibson@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>,
 	<linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 3/10] Re-organize Kconfig code for 4xx in arch/powerpc
+Subject: [PATCH 5/10] Port 44x MMU definitions to ARCH=powerpc
 In-Reply-To: <20070322060630.GB16993@localhost.localdomain>
-Message-Id: <20070322092202.16529DDF3D@ozlabs.org>
+Message-Id: <20070322092202.20D73DDF32@ozlabs.org>
 Date: Thu, 22 Mar 2007 20:22:02 +1100 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,459 +15,269 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that we always take a device tree in arch/powerpc, there's no good
-reason not to allow a single kernel to support multiple embedded 4xx
-boards - the correct platform code can be selected based on the device
-tree information.
-
-Therefore, this patch re-arranges the 4xx Kconfig code to allow this.
-In addition we:
-	- use "select" instead of depends to configure the correct
-	  config options for specific 4xx CPUs and workarounds, which
-	  makes the information about specific boards and CPUs less
-	  scattered.
-	- Some old, unused (in arch/powerpc) config options are
-	  removed: WANT_EARLY_SERIAL, IBM_OCP, etc.
+This patch moves the mmu.h definitions which are still relevant for
+ARCH=powerpc from include/asm-ppc/mmu.h to their own file,
+include/asm-powerpc/mmu_44x.h.  The new file is included from
+asm-powerpc/mmu.h, and a couple of other tweaks to correct mmu
+definitions for 44x are made.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/platforms/4xx/Kconfig |  378 ++++++++++++++-----------------------
- 1 file changed, 153 insertions(+), 225 deletions(-)
+ arch/powerpc/kernel/head_44x.S    |    4 -
+ arch/powerpc/mm/44x_mmu.c         |   81 +++++++-------------------------------
+ arch/powerpc/mm/mmu_decl.h        |    2 
+ include/asm-powerpc/mmu-44x/mmu.h |   75 +++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/mmu.h         |   11 ++++-
+ 5 files changed, 105 insertions(+), 68 deletions(-)
 
-Index: working-2.6/arch/powerpc/platforms/4xx/Kconfig
+Index: working-2.6/include/asm-powerpc/mmu.h
 ===================================================================
---- working-2.6.orig/arch/powerpc/platforms/4xx/Kconfig	2007-02-21 11:20:50.000000000 +1100
-+++ working-2.6/arch/powerpc/platforms/4xx/Kconfig	2007-02-21 11:25:43.000000000 +1100
-@@ -3,278 +3,206 @@ config 4xx
- 	depends on 40x || 44x
- 	default y
+--- working-2.6.orig/include/asm-powerpc/mmu.h	2007-02-28 16:49:19.000000000 +1100
++++ working-2.6/include/asm-powerpc/mmu.h	2007-02-28 16:49:36.000000000 +1100
+@@ -2,8 +2,15 @@
+ #define _ASM_POWERPC_MMU_H_
+ #ifdef __KERNEL__
  
--config WANT_EARLY_SERIAL
-+config BOOKE
- 	bool
--	select SERIAL_8250
--	default n
--
--menu "AMCC 4xx options"
--	depends on 4xx
--
--choice
--	prompt "Machine Type"
--	depends on 40x
--	default WALNUT
--
--config BUBINGA
--	bool "Bubinga"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM 405EP evaluation board.
--
--config CPCI405
--	bool "CPCI405"
--	help
--	  This option enables support for the CPCI405 board.
--
--config EP405
--	bool "EP405/EP405PC"
--	help
--	  This option enables support for the EP405/EP405PC boards.
--
--config REDWOOD_5
--	bool "Redwood-5"
--	help
--	  This option enables support for the IBM STB04 evaluation board.
--
--config REDWOOD_6
--	bool "Redwood-6"
--	help
--	  This option enables support for the IBM STBx25xx evaluation board.
--
--config SYCAMORE
--	bool "Sycamore"
--	help
--	  This option enables support for the IBM PPC405GPr evaluation board.
--
--config WALNUT
--	bool "Walnut"
--	help
--	  This option enables support for the IBM PPC405GP evaluation board.
--
--config XILINX_ML300
--	bool "Xilinx-ML300"
--	help
--	  This option enables support for the Xilinx ML300 evaluation board.
--
--endchoice
--
--choice
--	prompt "Machine Type"
- 	depends on 44x
--	default EBONY
--
--config BAMBOO
--	bool "Bamboo"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440EP evaluation board.
--
--config EBONY
--	bool "Ebony"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440GP evaluation board.
--
--config LUAN
--	bool "Luan"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440SP evaluation board.
--
--config OCOTEA
--	bool "Ocotea"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440GX evaluation board.
-+	default y
+-#ifndef CONFIG_PPC64
+-#include <asm-ppc/mmu.h>
++#if defined(CONFIG_44x)
++/* 44x-style software loaded TLB */
++#  include <asm/mmu-44x/mmu.h>
++#elif !defined(CONFIG_PPC64)
++/* Other 32-bit.
++ *
++ * FIXME: split up the other 32-bit MMU types, and revise for
++ * arch/powerpc */
++#  include <asm-ppc/mmu.h>
+ #else
  
--endchoice
-+menu "AMCC 40x options"
-+	depends on 40x
+ /*
+Index: working-2.6/arch/powerpc/mm/44x_mmu.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/44x_mmu.c	2007-02-28 16:49:19.000000000 +1100
++++ working-2.6/arch/powerpc/mm/44x_mmu.c	2007-02-28 16:49:20.000000000 +1100
+@@ -24,73 +24,35 @@
+  *
+  */
  
--config EP405PC
--	bool "EP405PC Support"
--	depends on EP405
-+#config BUBINGA
-+#	bool "Bubinga"
-+#	depends on 40x
-+#	default n
-+#	select 405EP
-+#	help
-+#	  This option enables support for the IBM 405EP evaluation board.
+-#include <linux/signal.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/types.h>
+-#include <linux/ptrace.h>
+-#include <linux/mman.h>
+-#include <linux/mm.h>
+-#include <linux/swap.h>
+-#include <linux/stddef.h>
+-#include <linux/vmalloc.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/highmem.h>
+-
+-#include <asm/pgalloc.h>
+-#include <asm/prom.h>
+-#include <asm/io.h>
+-#include <asm/mmu_context.h>
+-#include <asm/pgtable.h>
+ #include <asm/mmu.h>
+-#include <asm/uaccess.h>
+-#include <asm/smp.h>
+-#include <asm/bootx.h>
+-#include <asm/machdep.h>
+-#include <asm/setup.h>
+ 
+ #include "mmu_decl.h"
+ 
+-extern char etext[], _stext[];
+-
+ /* Used by the 44x TLB replacement exception handler.
+  * Just needed it declared someplace.
+  */
+-unsigned int tlb_44x_index = 0;
+-unsigned int tlb_44x_hwater = 62;
++unsigned int tlb_44x_index; /* = 0 */
++unsigned int tlb_44x_hwater = PPC44x_TLB_SIZE - 1 - PPC44x_EARLY_TLBS;
+ 
+ /*
+  * "Pins" a 256MB TLB entry in AS0 for kernel lowmem
+  */
+-static void __init
+-ppc44x_pin_tlb(int slot, unsigned int virt, unsigned int phys)
++static void __init ppc44x_pin_tlb(unsigned int virt, unsigned int phys)
+ {
+-	unsigned long attrib = 0;
+-
+-	__asm__ __volatile__("\
+-	clrrwi	%2,%2,10\n\
+-	ori	%2,%2,%4\n\
+-	clrrwi	%1,%1,10\n\
+-	li	%0,0\n\
+-	ori	%0,%0,%5\n\
+-	tlbwe	%2,%3,%6\n\
+-	tlbwe	%1,%3,%7\n\
+-	tlbwe	%0,%3,%8"
++	__asm__ __volatile__(
++		"tlbwe	%2,%3,%4\n"
++		"tlbwe	%1,%3,%5\n"
++		"tlbwe	%0,%3,%6\n"
+ 	:
+-	: "r" (attrib), "r" (phys), "r" (virt), "r" (slot),
+-	  "i" (PPC44x_TLB_VALID | PPC44x_TLB_256M),
+-	  "i" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
++	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
++	  "r" (phys),
++	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_256M),
++	  "r" (tlb_44x_hwater--), /* slot for this TLB entry */
+ 	  "i" (PPC44x_TLB_PAGEID),
+ 	  "i" (PPC44x_TLB_XLAT),
+ 	  "i" (PPC44x_TLB_ATTRIB));
+ }
+ 
+-/*
+- * MMU_init_hw does the chip-specific initialization of the MMU hardware.
+- */
+ void __init MMU_init_hw(void)
+ {
+ 	flush_instruction_cache();
+@@ -98,22 +60,13 @@ void __init MMU_init_hw(void)
+ 
+ unsigned long __init mmu_mapin_ram(void)
+ {
+-	unsigned int pinned_tlbs = 1;
+-	int i;
++	unsigned long addr;
+ 
+-	/* Determine number of entries necessary to cover lowmem */
+-	pinned_tlbs = (unsigned int)
+-		(_ALIGN(total_lowmem, PPC_PIN_SIZE) >> PPC44x_PIN_SHIFT);
+-
+-	/* Write upper watermark to save location */
+-	tlb_44x_hwater = PPC44x_LOW_SLOT - pinned_tlbs;
+-
+-	/* If necessary, set additional pinned TLBs */
+-	if (pinned_tlbs > 1)
+-		for (i = (PPC44x_LOW_SLOT-(pinned_tlbs-1)); i < PPC44x_LOW_SLOT; i++) {
+-			unsigned int phys_addr = (PPC44x_LOW_SLOT-i) * PPC_PIN_SIZE;
+-			ppc44x_pin_tlb(i, phys_addr+PAGE_OFFSET, phys_addr);
+-		}
++	/* Pin in enough TLBs to cover any lowmem not covered by the
++	 * initial 256M mapping established in head_44x.S */
++	for (addr = PPC_PIN_SIZE; addr < total_lowmem;
++	     addr += PPC_PIN_SIZE)
++		ppc44x_pin_tlb(addr + PAGE_OFFSET, addr);
+ 
+ 	return total_lowmem;
+ }
+Index: working-2.6/arch/powerpc/mm/mmu_decl.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/mmu_decl.h	2007-02-28 16:49:19.000000000 +1100
++++ working-2.6/arch/powerpc/mm/mmu_decl.h	2007-02-28 16:49:20.000000000 +1100
+@@ -35,8 +35,10 @@ extern int __map_without_bats;
+ extern unsigned long ioremap_base;
+ extern unsigned int rtas_data, rtas_size;
+ 
++#ifdef CONFIG_CLASSIC32
+ extern PTE *Hash, *Hash_end;
+ extern unsigned long Hash_size, Hash_mask;
++#endif /* CONFIG_CLASSIC32 */
+ 
+ extern unsigned int num_tlbcam_entries;
+ #endif
+Index: working-2.6/arch/powerpc/kernel/head_44x.S
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-02-28 16:49:19.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-02-28 16:49:20.000000000 +1100
+@@ -120,8 +120,8 @@ skpinv:	addi	r4,r4,1				/* Increment */
+  * Configure and load pinned entry into TLB slot 63.
+  */
+ 
+-	lis	r3,KERNELBASE@h		/* Load the kernel virtual address */
+-	ori	r3,r3,KERNELBASE@l
++	lis	r3,PAGE_OFFSET@h
++	ori	r3,r3,PAGE_OFFSET@l
+ 
+ 	/* Kernel is at the base of RAM */
+ 	li r4, 0			/* Load the kernel physical address */
+Index: working-2.6/include/asm-powerpc/mmu-44x/mmu.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/include/asm-powerpc/mmu-44x/mmu.h	2007-02-28 16:51:37.000000000 +1100
+@@ -0,0 +1,75 @@
++#ifndef _ASM_POWERPC_MMU_44X_MMU_H_
++#define _ASM_POWERPC_MMU_44X_MMU_H_
 +
-+#config CPCI405
-+#	bool "CPCI405"
-+#	depends on 40x
-+#	default n
-+#	select 405GP
-+#	help
-+#	  This option enables support for the CPCI405 board.
++/*
++ * PPC440 support
++ */
++#define PPC44x_MMUCR_TID	0x000000ff
++#define PPC44x_MMUCR_STS	0x00010000
 +
-+#config EP405
-+#	bool "EP405/EP405PC"
-+#	depends on 40x
-+#	default n
-+#	select 405GP
-+#	help
-+#	  This option enables support for the EP405/EP405PC boards.
++#define	PPC44x_TLB_PAGEID	0
++#define	PPC44x_TLB_XLAT		1
++#define	PPC44x_TLB_ATTRIB	2
 +
-+#config EP405PC
-+#	bool "EP405PC Support"
-+#	depends on EP405
-+#	default y
-+#	help
-+#	  This option enables support for the extra features of the EP405PC board.
++/* Page identification fields */
++#define PPC44x_TLB_EPN_MASK	0xfffffc00      /* Effective Page Number */
++#define	PPC44x_TLB_VALID	0x00000200      /* Valid flag */
++#define PPC44x_TLB_TS		0x00000100	/* Translation address space */
++#define PPC44x_TLB_1K		0x00000000	/* Page sizes */
++#define PPC44x_TLB_4K		0x00000010
++#define PPC44x_TLB_16K		0x00000020
++#define PPC44x_TLB_64K		0x00000030
++#define PPC44x_TLB_256K		0x00000040
++#define PPC44x_TLB_1M		0x00000050
++#define PPC44x_TLB_16M		0x00000070
++#define	PPC44x_TLB_256M		0x00000090
 +
-+#config REDWOOD_5
-+#	bool "Redwood-5"
-+#	depends on 40x
-+#	default n
-+#	select STB03xxx
-+#	help
-+#	  This option enables support for the IBM STB04 evaluation board.
++/* Translation fields */
++#define PPC44x_TLB_RPN_MASK	0xfffffc00      /* Real Page Number */
++#define	PPC44x_TLB_ERPN_MASK	0x0000000f
 +
-+#config REDWOOD_6
-+#	bool "Redwood-6"
-+#	depends on 40x
-+#	default n
-+#	select STB03xxx
-+#	help
-+#	  This option enables support for the IBM STBx25xx evaluation board.
++/* Storage attribute and access control fields */
++#define PPC44x_TLB_ATTR_MASK	0x0000ff80
++#define PPC44x_TLB_U0		0x00008000      /* User 0 */
++#define PPC44x_TLB_U1		0x00004000      /* User 1 */
++#define PPC44x_TLB_U2		0x00002000      /* User 2 */
++#define PPC44x_TLB_U3		0x00001000      /* User 3 */
++#define PPC44x_TLB_W		0x00000800      /* Caching is write-through */
++#define PPC44x_TLB_I		0x00000400      /* Caching is inhibited */
++#define PPC44x_TLB_M		0x00000200      /* Memory is coherent */
++#define PPC44x_TLB_G		0x00000100      /* Memory is guarded */
++#define PPC44x_TLB_E		0x00000080      /* Memory is guarded */
 +
-+#config SYCAMORE
-+#	bool "Sycamore"
-+#	depends on 40x
-+#	default n
-+#	select 405GPR
-+#	help
-+#	  This option enables support for the IBM PPC405GPr evaluation board.
++#define PPC44x_TLB_PERM_MASK	0x0000003f
++#define PPC44x_TLB_UX		0x00000020      /* User execution */
++#define PPC44x_TLB_UW		0x00000010      /* User write */
++#define PPC44x_TLB_UR		0x00000008      /* User read */
++#define PPC44x_TLB_SX		0x00000004      /* Super execution */
++#define PPC44x_TLB_SW		0x00000002      /* Super write */
++#define PPC44x_TLB_SR		0x00000001      /* Super read */
 +
-+#config WALNUT
-+#	bool "Walnut"
-+#	depends on 40x
-+#	default y
-+#	select 405GP
-+#	help
-+#	  This option enables support for the IBM PPC405GP evaluation board.
++/* Number of TLB entries */
++#define PPC44x_TLB_SIZE		64
 +
-+#config XILINX_ML300
-+#	bool "Xilinx-ML300"
-+#	depends on 40x
-+#	default y
-+#	select VIRTEX_II_PRO
-+#	help
-+#	  This option enables support for the Xilinx ML300 evaluation board.
- 
-+endmenu
- 
--# It's often necessary to know the specific 4xx processor type.
--# Fortunately, it is impled (so far) from the board type, so we
--# don't need to ask more redundant questions.
-+# 40x specific CPU modules, selected based on the board above.
- config NP405H
- 	bool
--	depends on ASH
--	default y
-+	#depends on ASH
- 
--config 440EP
-+# OAK doesn't exist but wanted to keep this around for any future 403GCX boards
-+config 403GCX
- 	bool
--	depends on BAMBOO
--	select PPC_FPU
--	default y
-+	#depends on OAK
-+	select IBM405_ERR51
- 
--config 440GP
-+config 405GP
- 	bool
--	depends on EBONY
--	default y
-+	select IBM405_ERR77
-+	select IBM405_ERR51
- 
--config 440GX
-+config 405EP
- 	bool
--	depends on OCOTEA
--	default y
- 
--config 440SP
-+config 405GPR
- 	bool
--	depends on LUAN
--	default y
- 
--config 440
-+config VIRTEX_II_PRO
- 	bool
--	depends on 440GP || 440SP || 440EP
--	default y
-+	select IBM405_ERR77
-+	select IBM405_ERR51
- 
--config 440A
-+config STB03xxx
- 	bool
--	depends on 440GX
--	default y
-+	select IBM405_ERR77
-+	select IBM405_ERR51
- 
--config IBM440EP_ERR42
--	bool
--	depends on 440EP
--	default y
-+# 40x errata/workaround config symbols, selected by the CPU models above
- 
- # All 405-based cores up until the 405GPR and 405EP have this errata.
- config IBM405_ERR77
- 	bool
--	depends on 40x && !403GCX && !405GPR && !405EP
--	default y
- 
- # All 40x-based cores, up until the 405GPR and 405EP have this errata.
- config IBM405_ERR51
- 	bool
--	depends on 40x && !405GPR && !405EP
--	default y
- 
--config BOOKE
--	bool
-+menu "AMCC 44x options"
- 	depends on 44x
--	default y
- 
--config IBM_OCP
--	bool
--	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
--	default y
-+#config BAMBOO
-+#	bool "Bamboo"
-+#	depends on 44x
-+#	default n
-+#	select 440EP
-+#	help
-+#	  This option enables support for the IBM PPC440EP evaluation board.
- 
--config XILINX_OCP
--	bool
--	depends on XILINX_ML300
--	default y
--
--config IBM_EMAC4
--	bool
--	depends on 440GX || 440SP
--	default y
--
--config BIOS_FIXUP
--	bool
--	depends on BUBINGA || EP405 || SYCAMORE || WALNUT
--	default y
--
--# OAK doesn't exist but wanted to keep this around for any future 403GCX boards
--config 403GCX
--	bool
--	depends on OAK
--	default y
--
--config 405EP
--	bool
--	depends on BUBINGA
--	default y
--
--config 405GP
--	bool
--	depends on CPCI405 || EP405 || WALNUT
--	default y
--
--config 405GPR
--	bool
--	depends on SYCAMORE
--	default y
--
--config VIRTEX_II_PRO
--	bool
--	depends on XILINX_ML300
--	default y
--
--config STB03xxx
--	bool
--	depends on REDWOOD_5 || REDWOOD_6
--	default y
--
--config EMBEDDEDBOOT
--	bool
--	depends on EP405 || XILINX_ML300
-+config EBONY
-+	bool "Ebony"
-+	depends on 44x
- 	default y
-+	select 440GP
-+	help
-+	  This option enables support for the IBM PPC440GP evaluation board.
- 
--config IBM_OPENBIOS
--	bool
--	depends on ASH || BUBINGA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
--	default y
-+#config LUAN
-+#	bool "Luan"
-+#	depends on 44x
-+#	default n
-+#	select 440SP
-+#	help
-+#	  This option enables support for the IBM PPC440SP evaluation board.
++#ifndef __ASSEMBLY__
 +
-+#config OCOTEA
-+#	bool "Ocotea"
-+#	depends on 44x
-+#	default n
-+#	select 440GX
-+#	help
-+#	  This option enables support for the IBM PPC440GX evaluation board.
- 
--config PPC4xx_DMA
--	bool "PPC4xx DMA controller support"
--	depends on 4xx
-+endmenu
- 
--config PPC4xx_EDMA
-+# 44x specific CPU modules, selected based on the board above.
-+config 440EP
- 	bool
--	depends on !STB03xxx && PPC4xx_DMA
--	default y
-+	select PPC_FPU
-+	select IBM440EP_ERR42
- 
--config PPC_GEN550
-+config 440GP
- 	bool
--	depends on 4xx
--	default y
--
--choice
--	prompt "TTYS0 device and default console"
--	depends on 40x
--	default UART0_TTYS0
--
--config UART0_TTYS0
--	bool "UART0"
--
--config UART0_TTYS1
--	bool "UART1"
-+	select IBM_NEW_EMAC_ZMII
- 
--endchoice
--
--config SERIAL_SICC
--	bool "SICC Serial port support"
--	depends on STB03xxx
--
--config UART1_DFLT_CONSOLE
-+config 440GX
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
--	default y
- 
--config SERIAL_SICC_CONSOLE
-+config 440SP
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
--	default y
--endmenu
--
- 
--menu "IBM 40x options"
--	depends on 40x
--
--config SERIAL_SICC
--	bool "SICC Serial port"
--	depends on STB03xxx
--
--config UART1_DFLT_CONSOLE
-+config 440A
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
-+	depends on 440GX
- 	default y
- 
--config SERIAL_SICC_CONSOLE
-+# 44x errata/workaround config symbols, selected by the CPU models above
-+config IBM440EP_ERR42
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
--	default y
- 
--endmenu
-+#config XILINX_OCP
-+#	bool
-+#	depends on XILINX_ML300
-+#	default y
++typedef unsigned long long phys_addr_t;
 +
-+#config BIOS_FIXUP
-+#	bool
-+#	depends on BUBINGA || EP405 || SYCAMORE || WALNUT
-+#	default y
++extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
++#define PHYS_FMT	"%16Lx"
 +
-+#config PPC4xx_DMA
-+#	bool "PPC4xx DMA controller support"
-+#	depends on 4xx
++typedef struct {
++	unsigned long id;
++	unsigned long vdso_base;
++} mm_context_t;
 +
-+#config PPC4xx_EDMA
-+#	bool
-+#	depends on !STB03xxx && PPC4xx_DMA
-+#	default y
++#endif /* !__ASSEMBLY__ */
++
++/* TLB entry offset/size used for pinning kernel lowmem */
++#define PPC44x_PIN_SHIFT	28
++#define PPC_PIN_SIZE		(1 << PPC44x_PIN_SHIFT)
++
++#define PPC44x_EARLY_TLBS	1
++
++#endif /* _ASM_POWERPC_MMU_44X_MMU_H_ */
++
