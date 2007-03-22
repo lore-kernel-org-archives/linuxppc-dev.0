@@ -1,33 +1,22 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de
-	[62.146.248.226])
+Return-Path: <tmaenner@aehr.com>
+Received: from loki.aehr.com (loki.aehr.com [207.168.29.203])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 40773DE001
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1CE41DDF94
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Mar 2007 07:05:06 +1100 (EST)
-Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
-	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l2MK4qcu046541
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 22 Mar 2007 21:04:58 +0100 (CET)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1HUTWn-000KH0-P9
-	for linuxppc-embedded@ozlabs.org; Thu, 22 Mar 2007 21:04:53 +0100
-Date: Thu, 22 Mar 2007 21:04:53 +0100
-From: Matthias Fechner <idefix@fechner.net>
+	Fri, 23 Mar 2007 08:10:46 +1100 (EST)
+From: Thomas Maenner <tmaenner@aehr.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Howto set DIO on MPC-5200 Lite
-Message-ID: <20070322200453.GA76755@server.idefix.lan>
-References: <918EB199DDDFFA42BEA2EB3A1C6021F360C085@CORREO>
+Subject: Re: TQM 860L, 64MB RAM, ELDK4.1, TQM860L, Kernel 2.6.19
+Date: Thu, 22 Mar 2007 14:10:37 -0700
+References: <200703212044.40611.tmaenner@aehr.com>
+	<20070322074052.34DD535260B@atlas.denx.de>
+	<f001edbb0703220801m68622465j397a007bb85570cd@mail.gmail.com>
+In-Reply-To: <f001edbb0703220801m68622465j397a007bb85570cd@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <918EB199DDDFFA42BEA2EB3A1C6021F360C085@CORREO>
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703221410.37767.tmaenner@aehr.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,92 +27,92 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello Josu,
+Tried out the following u-boot "setting":
+setenv ramargs setenv bootargs ramdisk_size=3D6144 root=3D/dev/ram console=
+=3DttyCPM0=20
+rw
 
-* Josu Onandia <jonandia@aotek.es> [19-03-07 14:18]:
-> Some sample code. Hope this helps.
+No change; still no output in the console
 
-thx a lot for all your help I love that mailinglist :)
+Note that my module has 64MB, rather that 16; I thought it doesn't matter, =
+or?
 
-Here is a very small kernel module for the icecube board.
-It activates the LED 1 and 3 after module has been loaded
-and off again if module has been removed.
-Maybe that helps someone else:
+Thanks again for your help
+Tom
 
-#include <linux/module.h>
-#include <asm/mpc52xx.h>
+On Thursday 22 March 2007 08:01, Thomas Maenner wrote:
+> Thanks Wolfgang for your reply,
+>
+> You're right, I can not really tell, whether it's frozen since I don't
+> have a BDM...
+> I'll try the console command you suggested, which I haven't had to use
+> before (U-boot 1.1.2 and older, Kernel 2.4, older ELDK)
+>
+> Thanks
+> Tom
+>
+> On 3/22/07, Wolfgang Denk <wd@denx.de> wrote:
+> > In message <200703212044.40611.tmaenner@aehr.com> you wrote:
+> > > need from the experts on the list again.
+> > > The CPU freezes after the ramdisk gets loaded!
+> >
+> > Does it really  freeze?  I  mean,  did  you  verify  this  witha  BDM
+> > debugger,  or  do you just see no further output on the console? Note
+> > that these are two fundamentally different things...
+> >
+> > > u-boot environment:
+> > > =3D> printenv
+> > > bootcmd=3Drun flash_self
+> > > bootdelay=3D5
+> > > baudrate=3D115200
+> > > loads_echo=3D1
+> > > preboot=3Decho;echo TQ-Module Bootloader for ABTS;echo Type "run
+> > > flash_nfs" to mount root filesystem over NFS;echo
+> > > netdev=3Deth0
+> > > nfsargs=3Dsetenv bootargs root=3D/dev/nfs rw
+> > > nfsroot=3D${serverip}:${rootpath} addip=3Dsetenv bootargs ${bootargs}
+> > > ip=3D${ipaddr}:${serverip}:${gatewayip}:
+> > > ${netmask}:${hostname}:${netdev}:off panic=3D1
+> > > flash_nfs=3Drun nfsargs addip;bootm ${kernel_addr}
+> > > flash_self=3Drun ramargs addip;bootm ${kernel_addr} ${ramdisk_addr}
+> > > net_nfs=3Dtftp 200000 ${bootfile};run nfsargs addip;bootm
+> > > rootpath=3D/opt/eldk/ppc_8xx
+> > > kernel_addr=3D40040000
+> > > serial#=3DTQM860LDDBA3-P80.210 11090659
+> > > ethaddr=3D00:D0:93:04:DC:1B
+> > > eth1addr=3D00:D0:93:04:DC:1B
+> > > ethprime=3DFEC ETHERNET
+> > > bootfile=3D/TQM860L/uImage
+> > > fileaddr=3D100000
+> > > ramdisk_addr=3D40200000
+> > > ramargs=3Dsetenv bootargs ramdisk_size=3D6144 root=3D/dev/ram rw
+> > > initrd_high=3D30000000
+> > > stdin=3Dserial
+> > > stdout=3Dserial
+> > > stderr=3Dserial
+> > > ethact=3DFEC ETHERNET
+> > > bootcount=3D39
+> >
+> > I don't see you passing any console=3DttyCPM0 argument here?
+> >
+> > Best regards,
+> >
+> > Wolfgang Denk
+> >
+> > --
+> > DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+> > Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
+> > Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+> > Not one hundred percent efficient, of course ... but nothing ever is.
+> >         -- Kirk, "Metamorphosis", stardate 3219.8
 
-#define MPC5xxx_GPIO MPC52xx_VA(MPC52xx_GPIO_OFFSET)
-
-static void psc6_configure_pins(void)
-{
-   struct mpc52xx_gpio *config;
-   config = (struct mpc52xx_gpio*) MPC5xxx_GPIO;
-         
-   printk("Address: %X\n",(u32)&config->port_config);
-   printk("Configure port\n");
-   config->port_config &= ~(0x00700000);
-		     
-   printk("Set IRDA to GPIO\n");
-   config->simple_gpioe |= 0x30000000;
-			      
-   printk("Set pins to CMOS output\n");
-   config->simple_ode &= ~(0x30000000);
-				       
-   printk("Set simple GPIO data direction register\n");
-   config->simple_ddr |= 0x30000000;
- }
-   
-// the pins are active low, so we invert it
-static void psc6_pin_on(unsigned int pin)
-{
-   struct mpc52xx_gpio *config;
-   config = (struct mpc52xx_gpio*) MPC5xxx_GPIO;
-   printk("Set LEDs %i\n",pin);
-   config->simple_dvo &= ~(1 << (pin+28));
-}
-	       
-// the pins are active low, so we invert it
-static void psc6_pin_off(unsigned int pin)
-{
-   struct mpc52xx_gpio *config;
-   config = (struct mpc52xx_gpio*) MPC5xxx_GPIO;
-   printk("Clear LED %i\n",pin);
-   config->simple_dvo |= (1 << (pin+28));
-}
-			   
-static int icecube_led_init(void)
-{
-   printk("Module Blink LED loaded\n");
-   printk("Set LEDs on\n");
-   psc6_configure_pins();
-   psc6_pin_on(0);
-   psc6_pin_on(1);
-   return 0;
-}
-						
-static void icecube_led_cleanup(void)
-{
-   printk("Module Blink LED unloaded\n");
-   psc6_pin_off(0);
-   psc6_pin_off(1);
-}
-      
-MODULE_AUTHOR("Matthias Fechner <idefix@fechner.net>");
-MODULE_DESCRIPTION("Driver to switch LED on icecube board after driver loaded successfully and switch LEDs of after driver unloaded successfully.");
-MODULE_LICENSE("GPL");
-
-module_init(icecube_led_init);
-module_exit(icecube_led_cleanup);
-
-
-
-Best regards,
-Matthias
-
--- 
-
-"Programming today is a race between software engineers striving to
-build bigger and better idiot-proof programs, and the universe trying to
-produce bigger and better idiots. So far, the universe is winning." --
-Rich Cook
+=2D-=20
+Thomas Maenner
+Engineering Project Manager
+AEHR Test Systems
+400 Kato Terrace
+=46remont, CA 94539
+Phone: =A0+1-510-623-9400x323
+Cell: =A0 +1-925-389-6653
+=46ax: =A0 =A0+1-510-623-9450
+E-Mail: mailto:tmaenner@aehr.com
