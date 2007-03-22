@@ -1,20 +1,15 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id AA757DDF22
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 01:46:45 +1100 (EST)
-In-Reply-To: <1174573524.6595.509.camel@ld0161-tx32>
-References: <1174573524.6595.509.camel@ld0161-tx32>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <30EF1C22-12B8-4236-8427-A78B3134F3BF@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [Fwd: [PATCH Resend 01/02] Add Linux ASMP support for MPC8641D]
-Date: Thu, 22 Mar 2007 09:46:08 -0500
-To: Jon Loeliger <jdl@freescale.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <chuckmeade@mindspring.com>
+Received: from elasmtp-scoter.atl.sa.earthlink.net
+	(elasmtp-scoter.atl.sa.earthlink.net [209.86.89.67])
+	by ozlabs.org (Postfix) with ESMTP id 26CEEDDF86
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 01:48:32 +1100 (EST)
+Message-ID: <460292FA.8050206@mindspring.com>
+Date: Thu, 22 Mar 2007 10:30:18 -0400
+From: Chuck Meade <chuckmeade@mindspring.com>
+MIME-Version: 1.0
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Subject: MPC83xx SDMR setup error
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,34 +19,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+There appears to be an error in the MPC83xx SDMR setup in
+arch/powerpc/sysdev/qe_lib/qe.c line 259.  Since 0x1 shifted right 13 bits
+(QE_SDMR_CEN_SHIFT) will always be zero, the CEN field will be set to
+zero.  This means the SDMR buffer size will always be 512, rather than
+the intended (and allocated) 1024 bytes.
 
-On Mar 22, 2007, at 9:25 AM, Jon Loeliger wrote:
+In addition, and not shown in the patch below, there is a conflict in the
+alignment requirement for the value to be written to the SDEBCR register.
+The SDEBCR holds the address in MURAM of the buffer to be used by the SDMA
+controller.  In the MPC8323ERM.pdf section 18.1.7 titled "SDMA Internal
+Resource", it states that "the base address must be aligned to a 4KByte
+boundary."  However, later in the description of the SDEBCR in section
+18.1.8.9, it states that the address must be "64 bytes aligned".  The code
+in arch/powerpc/sysdev/qe_lib/qe.c (line 254) that allocates this buffer
+aligns it to a 64-byte boundary.  This is only correct if the manual section
+18.1.7, which requires a 4KByte alignment, is wrong.  Which manual section
+is correct?
 
-> Kumar,
->
-> As I indicated on IRC to you a few days ago, here is a copy
-> of the Asymmetric Multi-Processor support patch for 8641 HPCN.
-> For completeness and reference, the corresponding U-Boot patch
-> will be posted to the U-Boot list as well.
->
-> This patch is directly split in two due to apparently mailer
-> issues with the full patch.  Apologies if you have received
-> this patch twice.
->
-> This is the first half of the patch, everything but the defconfig.
->
-> Thanks,
-> jdl
+Chuck
 
-This isn't nearly as much change as I was expecting :)
+--- a/linux-2.6/arch/powerpc/sysdev/qe_lib/qe.c	2007-01-13 09:37:03.000000000 -0500
++++ b/linux-2.6/arch/powerpc/sysdev/qe_lib/qe.c	2007-03-22 09:48:46.000000000 -0400
+@@ -256,7 +256,7 @@ static int qe_sdma_init(void)
+  		return -ENOMEM;
 
-Can you elaborate on what the changes to mpic and gfar are doing.
+  	out_be32(&sdma->sdebcr, sdma_buf_offset & QE_SDEBCR_BA_MASK);
+-	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 >>
++	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 <<
+  					QE_SDMR_CEN_SHIFT)));
 
-I assume that memory is split between the two cores.  So if you have  
-512M of memory 0-256 is for core0 and 256-512 for core1, or do you  
-handle this some other way (excluding the magic hw hack for exception  
-vectors)?
-
-thanks
-
-- k
+  	return 0;
