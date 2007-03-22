@@ -1,33 +1,17 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DFE28DDED5
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 00:38:28 +1100 (EST)
-In-Reply-To: <Pine.LNX.4.62.0703221419280.7246@pademelon.sonytel.be>
-References: <20070315232956.37DAB353A6C@atlas.denx.de>
-	<200703170909.13869.sr@denx.de>
-	<e9c3a7c20703171117w7989adfehda99416265eef906@mail.gmail.com>
-	<200703171943.27465.sr@denx.de>
-	<e9c3a7c20703171209m55fd9dfsbba0e4fff5c6350d@mail.gmail.com>
-	<1174320799.5044.21.camel@localhost.localdomain>
-	<582f77296616b0b85ff7533bb7fea05c@kernel.crashing.org>
-	<1174506924.10836.2.camel@localhost.localdomain>
-	<0e5aac2ffcd189dc51f59d5891b2366c@kernel.crashing.org>
-	<20070322113857.GA13547@lst.de>
-	<856c539083dbd89a6f71edfd46f502f0@kernel.crashing.org>
-	<Pine.LNX.4.62.0703221419280.7246@pademelon.sonytel.be>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <9db80aa3f81b1c7fa6e7bb761b7642a3@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] [PPC32] ADMA support for PPC 440SPe processors.
-Date: Thu, 22 Mar 2007 14:38:20 +0100
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: linux-raid@vger.kernel.org, Linux/PPC Development <linuxppc-dev@ozlabs.org>,
-	Stefan Roese <sr@denx.de>, Dan Williams <dan.j.williams@gmail.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 432A0DDF6F
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 01:19:55 +1100 (EST)
+Date: Thu, 22 Mar 2007 09:34:13 -0500
+To: paulus@samba.org
+Subject: [PATCH] [v2] powerpc: Use mtocrf in asm when CONFIG_POWER4_ONLY=y
+Message-ID: <20070322143413.GA19873@lixom.net>
+References: <20070322020925.GA13114@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070322020925.GA13114@lixom.net>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,16 +21,136 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> That sounds nice.  There are slightly fewer things called
->> SPU than there are called SPE I imagine?  Or is it just a
->> historical misnomer.
->
-> AFAIK SPE is the preferred name, as the SPU is only a part of the SPE.
-> That's what I was told.
-
-And you were told right.  I was trying to be sarcastic
-here, but you missed it.  Don't worry, it wasn't aimed
-at you anyway ;-)
+mtocrf is a faster single-entry mtcrf available in POWER4 and later
+processors. It can make quite a difference in performance on some
+implementations, so use it for CONFIG_POWER4_ONLY builds.
 
 
-Segher
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+
+---
+
+Changed: Fixed space/tab mixup as noted by Stephen Rothwell.
+
+Index: linux-2.6/arch/powerpc/lib/mem_64.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/lib/mem_64.S
++++ linux-2.6/arch/powerpc/lib/mem_64.S
+@@ -19,7 +19,7 @@ _GLOBAL(memset)
+ 	rlwimi	r4,r4,16,0,15
+ 	cmplw	cr1,r5,r0		/* do we get that far? */
+ 	rldimi	r4,r4,32,0
+-	mtcrf	1,r0
++	PPC_MTOCRF	1,r0
+ 	mr	r6,r3
+ 	blt	cr1,8f
+ 	beq+	3f			/* if already 8-byte aligned */
+@@ -49,7 +49,7 @@ _GLOBAL(memset)
+ 	bdnz	4b
+ 5:	srwi.	r0,r5,3
+ 	clrlwi	r5,r5,29
+-	mtcrf	1,r0
++	PPC_MTOCRF	1,r0
+ 	beq	8f
+ 	bf	29,6f
+ 	std	r4,0(r6)
+@@ -65,7 +65,7 @@ _GLOBAL(memset)
+ 	std	r4,0(r6)
+ 	addi	r6,r6,8
+ 8:	cmpwi	r5,0
+-	mtcrf	1,r5
++	PPC_MTOCRF	1,r5
+ 	beqlr+
+ 	bf	29,9f
+ 	stw	r4,0(r6)
+Index: linux-2.6/arch/powerpc/lib/copyuser_64.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/lib/copyuser_64.S
++++ linux-2.6/arch/powerpc/lib/copyuser_64.S
+@@ -24,7 +24,7 @@ _GLOBAL(__copy_tofrom_user)
+ 	dcbt	0,r4
+ 	beq	.Lcopy_page_4K
+ 	andi.	r6,r6,7
+-	mtcrf	0x01,r5
++	PPC_MTOCRF	0x01,r5
+ 	blt	cr1,.Lshort_copy
+ 	bne	.Ldst_unaligned
+ .Ldst_aligned:
+@@ -135,7 +135,7 @@ _GLOBAL(__copy_tofrom_user)
+ 	b	.Ldo_tail
+ 
+ .Ldst_unaligned:
+-	mtcrf	0x01,r6		/* put #bytes to 8B bdry into cr7 */
++	PPC_MTOCRF	0x01,r6		/* put #bytes to 8B bdry into cr7 */
+ 	subf	r5,r6,r5
+ 	li	r7,0
+ 	cmpldi	r1,r5,16
+@@ -150,7 +150,7 @@ _GLOBAL(__copy_tofrom_user)
+ 2:	bf	cr7*4+1,3f
+ 37:	lwzx	r0,r7,r4
+ 83:	stwx	r0,r7,r3
+-3:	mtcrf	0x01,r5
++3:	PPC_MTOCRF	0x01,r5
+ 	add	r4,r6,r4
+ 	add	r3,r6,r3
+ 	b	.Ldst_aligned
+Index: linux-2.6/arch/powerpc/lib/memcpy_64.S
+===================================================================
+--- linux-2.6.orig/arch/powerpc/lib/memcpy_64.S
++++ linux-2.6/arch/powerpc/lib/memcpy_64.S
+@@ -12,7 +12,7 @@
+ 	.align	7
+ _GLOBAL(memcpy)
+ 	std	r3,48(r1)	/* save destination pointer for return value */
+-	mtcrf	0x01,r5
++	PPC_MTOCRF	0x01,r5
+ 	cmpldi	cr1,r5,16
+ 	neg	r6,r3		# LS 3 bits = # bytes to 8-byte dest bdry
+ 	andi.	r6,r6,7
+@@ -128,7 +128,7 @@ _GLOBAL(memcpy)
+ 	b	.Ldo_tail
+ 
+ .Ldst_unaligned:
+-	mtcrf	0x01,r6		# put #bytes to 8B bdry into cr7
++	PPC_MTOCRF	0x01,r6		# put #bytes to 8B bdry into cr7
+ 	subf	r5,r6,r5
+ 	li	r7,0
+ 	cmpldi	r1,r5,16
+@@ -143,7 +143,7 @@ _GLOBAL(memcpy)
+ 2:	bf	cr7*4+1,3f
+ 	lwzx	r0,r7,r4
+ 	stwx	r0,r7,r3
+-3:	mtcrf	0x01,r5
++3:	PPC_MTOCRF	0x01,r5
+ 	add	r4,r6,r4
+ 	add	r3,r6,r3
+ 	b	.Ldst_aligned
+Index: linux-2.6/include/asm-powerpc/asm-compat.h
+===================================================================
+--- linux-2.6.orig/include/asm-powerpc/asm-compat.h
++++ linux-2.6/include/asm-powerpc/asm-compat.h
+@@ -78,6 +78,15 @@
+ #define PPC_STLCX	stringify_in_c(stdcx.)
+ #define PPC_CNTLZL	stringify_in_c(cntlzd)
+ 
++/* Move to CR, single-entry optimized version. Only available
++ * on POWER4 and later.
++ */
++#ifdef CONFIG_POWER4_ONLY
++#define PPC_MTOCRF	stringify_in_c(mtocrf)
++#else
++#define PPC_MTOCRF	stringify_in_c(mtcrf)
++#endif
++
+ #else /* 32-bit */
+ 
+ /* operations for longs and pointers */
+@@ -89,6 +100,7 @@
+ #define PPC_LLARX	stringify_in_c(lwarx)
+ #define PPC_STLCX	stringify_in_c(stwcx.)
+ #define PPC_CNTLZL	stringify_in_c(cntlzw)
++#define PPC_MTOCRF	stringify_in_c(mtcrf)
+ 
+ #endif
+ 
