@@ -1,15 +1,16 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 22 Mar 2007 12:35:01 +1100
+Date: Thu, 22 Mar 2007 12:36:16 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 1/4] powerpc: Add gcc format warnings to zImage printf()
-Message-ID: <20070322013501.GG2295@localhost.localdomain>
-References: <20070321063149.ED879DDE47@ozlabs.org>
-	<200703211503.l2LF3JRS008531@sullivan.realtime.net>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 2/4] powerpc: Add device tree utility functions to zImage
+Message-ID: <20070322013616.GH2295@localhost.localdomain>
+References: <20070321063031.GB30422@localhost.localdomain>
+	<20070321063150.04BA4DDE9F@ozlabs.org>
+	<20070321215741.GA5540@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200703211503.l2LF3JRS008531@sullivan.realtime.net>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070321215741.GA5540@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,13 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 21, 2007 at 09:03:19AM -0600, Milton Miller wrote:
+On Wed, Mar 21, 2007 at 04:57:41PM -0500, Scott Wood wrote:
+> On Wed, Mar 21, 2007 at 05:31:49PM +1100, David Gibson wrote:
+> > +int dt_path_getprop(const char *path, const char *name, void *buf, int bufsize)
+> > +{
+> > +	void *devp = finddevice;
+> > +
+> > +	if (devp)
+> > +		return getprop(devp, name, buf, bufsize);
+> > +	return -1;
+> > +}
 > 
-> +extern int sprintf(char *buf, const char *fmt, ...) __attribute__((format(printf, 2, 3)));
-> 
-> you exceeded 80 columns by 10.
+> Should be "void *devp = finddevice(path);".
 
-Revised in second spin.
+Eep.  Yes.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
