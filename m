@@ -1,17 +1,15 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 23 Mar 2007 18:40:54 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: [PATCH 07/17] bootwrapper: Add dt_set_memory(),
-	to fill in the /memory node.
-Message-ID: <20070323074054.GA15730@localhost.localdomain>
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<7ce9c69ae76258f47790c5ceb851a355@kernel.crashing.org>
-	<20070323032440.GD28006@localhost.localdomain>
-	<200703230749.45563.sr@denx.de>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200703230749.45563.sr@denx.de>
+Message-ID: <17923.46762.363994.307295@cargo.ozlabs.ibm.com>
+Date: Fri, 23 Mar 2007 22:14:50 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: anton@samba.org
+Subject: Re: [patch 06/10] Add notify die hooks and remove some redundant
+	debugger hooks
+In-Reply-To: <20070321013825.283024000@samba.org>
+References: <20070321013810.404636000@samba.org>
+	<20070321013825.283024000@samba.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,30 +20,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 23, 2007 at 07:49:45AM +0100, Stefan Roese wrote:
-> On Friday 23 March 2007 04:24, David Gibson wrote:
-> > On Thu, Mar 22, 2007 at 12:02:56PM +0100, Segher Boessenkool wrote:
-> > > >>> However, #address-cells=2, #size-cells=1 is common enough that we
-> > > >>> really need to support that case.
-> > > >>
-> > > >> On the root node?!?  Who would do such a strange thing?
-> > > >
-> > > > Ebony, for one, it works nicely for a 32-bit system with >32-bit bus.
-> > >
-> > > It means you cannot have a 4GB-or-bigger region below your
-> > > root node.  Dunno if Ebony ever needs one, for I/O mapping
-> > > perhaps?
-> >
-> > Nope.  0-4GB is RAM, 4-8 is in-built IO, 8-12 is PCI IO, and I forget
-> > what 12-16 is, if anything.
-> 
-> The 440SPe supports up to 16GB of DDR2 (0-16GB). You might want to consider 
-> supporting this sort of setup here.
+anton@samba.org writes:
 
-We already do.  440SPe will certainly need #a==#s==2, Ebony doesn't.
+> Add a DIE_OOPS and DIE_MACHINE_CHECK notify_die hook and remove some
+> redundant debugger* hooks.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+As far as I can see, at the moment there is just one thing that gets
+registered to be called by die_notify, and that is
+kprobe_exceptions_notify.  It doesn't do anything with DIE_OOPS or
+DIE_MACHINE_CHECK.
+
+I would rather get rid of die_notify and have a kprobe_notify instead
+that just directly calls kprobe_exceptions_notify.  In fact having
+separate kprobe routines for the different events would be even
+better.
+
+It's not like our cpus are particularly good at indirect functions
+calls... ;(
+
+Paul.
