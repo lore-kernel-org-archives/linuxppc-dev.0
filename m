@@ -1,18 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070323120619.GA7472@localhost.localdomain>
+Return-Path: <mita@fixstars.com>
+Received: from gw.fixstars.com (122x208x5x10.ap122.ftth.ucom.ne.jp
+	[122.208.5.10]) by ozlabs.org (Postfix) with ESMTP id DBC29DE031
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 23:27:51 +1100 (EST)
+Date: Fri, 23 Mar 2007 21:06:19 +0900
+From: Akinobu Mita <mita@fixstars.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: [PATCH] force -mno-string option on cell
+Message-ID: <20070323120619.GA7472@localhost.localdomain>
 References: <1174544624.10836.24.camel@localhost.localdomain>
 	<94d8e19d4b061504fcfd08d1ab70cc78@kernel.crashing.org>
-	<20070323120619.GA7472@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d7a191672b71056daf28a7c93c4e969c@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] force -mno-string option on cell
-Date: Fri, 23 Mar 2007 13:56:51 +0100
-To: Akinobu Mita <mita@fixstars.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <94d8e19d4b061504fcfd08d1ab70cc78@kernel.crashing.org>
+Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> GCC may generate inline copy loop to handle memcpy() function
-> instead of kernel defined memcpy() with -mstring or -Os.
-> But this inlined version of memcpy() caused an alignment interrupt
-> when copying from SPU local store on PS3.
-> (http://ozlabs.org/pipermail/cbe-oss-dev/2007-March/001348.html)
->
-> This patch deletes -mstring option on all powerpc and force -mno-string
-> option on Cell.
+GCC may generate inline copy loop to handle memcpy() function
+instead of kernel defined memcpy() with -mstring or -Os.
+But this inlined version of memcpy() caused an alignment interrupt
+when copying from SPU local store on PS3.
+(http://ozlabs.org/pipermail/cbe-oss-dev/2007-March/001348.html)
 
-Please split into two patches, the first half (deleting
--mstring) we can all agree on and "the other half".
+This patch deletes -mstring option on all powerpc and force -mno-string
+option on Cell.
 
-What your patch does is setting -mno-string for all files
-if your kernel is configured to support Cell.  It would be
-better to set this option (and all other options needed,
--mno-multiple and -mno-algebraic come to mind, and that last
-compiler option doesn't even exist yet) unconditionally on
-the few Cell-specific files that are affected, not on the
-whole kernel:
+Cc: Arnd Bergmann <arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>
+Signed-off-by: Akinobu Mita <mita@fixstars.com>
 
-	CFLAGS_whatever.o := -msome-flags
+---
+ arch/powerpc/Makefile |    5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-It would be even better to not lie to the compiler by
-telling it it can use the LS area as normal memory, since
-evidently it cannot :-)
-
-
-Segher
+Index: 2.6-git-ps3/arch/powerpc/Makefile
+===================================================================
+--- 2.6-git-ps3.orig/arch/powerpc/Makefile
++++ 2.6-git-ps3/arch/powerpc/Makefile
+@@ -102,8 +102,9 @@ CFLAGS += $(call cc-option,-mno-altivec)
+ # kernel considerably.
+ CFLAGS += $(call cc-option,-funit-at-a-time)
+ 
+-ifndef CONFIG_FSL_BOOKE
+-CFLAGS		+= -mstring
++# No string instruction for SPE local store areas
++ifeq ($(CONFIG_PPC_CELL),y)
++CFLAGS		+= -mno-string
+ endif
+ 
+ ifeq ($(CONFIG_6xx),y)
