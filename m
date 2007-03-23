@@ -1,31 +1,19 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 07F46DDE3B
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Mar 2007 03:54:17 +1100 (EST)
-Message-ID: <46040634.3040200@freescale.com>
-Date: Fri, 23 Mar 2007 11:54:12 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH] force -mno-string option on cell
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-References: <20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-	<20070318115656.GA12765@localhost.localdomain>
-	<45FEA7B3.9090304@freescale.com>
-	<20070320035957.GC21124@localhost.localdomain>
-	<45FFE8FD.9020902@freescale.com>
-	<20070321025447.GG27969@localhost.localdomain>
-	<460148DC.3020600@freescale.com>
-	<20070322000620.GC2295@localhost.localdomain>
-	<1174576516.6595.542.camel@ld0161-tx32>
-	<20070323032214.GC28006@localhost.localdomain>
-	<4603E648.4030907@freescale.com>
-	<fe12f78e018a5543b0e8f7fc636dc5c3@kernel.crashing.org>
-	<4604035F.8070703@freescale.com>
-	<10eb99e3d4037e36ba32d136f0e2bb52@kernel.crashing.org>
-In-Reply-To: <10eb99e3d4037e36ba32d136f0e2bb52@kernel.crashing.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <d7a191672b71056daf28a7c93c4e969c@kernel.crashing.org>
+References: <1174544624.10836.24.camel@localhost.localdomain>
+	<94d8e19d4b061504fcfd08d1ab70cc78@kernel.crashing.org>
+	<20070323120619.GA7472@localhost.localdomain>
+	<d7a191672b71056daf28a7c93c4e969c@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sat, 24 Mar 2007 06:38:23 +1100
+Message-Id: <1174678703.10836.69.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: Akinobu Mita <mita@fixstars.com>, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,18 +23,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool wrote:
-
->> No, because that might break of_get_mac_address() which considers an 
->> all-zero MAC address to be invalid.
+On Fri, 2007-03-23 at 13:56 +0100, Segher Boessenkool wrote:
+> > GCC may generate inline copy loop to handle memcpy() function
+> > instead of kernel defined memcpy() with -mstring or -Os.
+> > But this inlined version of memcpy() caused an alignment interrupt
+> > when copying from SPU local store on PS3.
+> > (http://ozlabs.org/pipermail/cbe-oss-dev/2007-March/001348.html)
+> >
+> > This patch deletes -mstring option on all powerpc and force -mno-string
+> > option on Cell.
 > 
-> If you want to default a certain field, you shouldn't set it
-> to ? ? ? ?, but to the default value you have in mind :-)
+> Please split into two patches, the first half (deleting
+> -mstring) we can all agree on and "the other half".
+> 
+> What your patch does is setting -mno-string for all files
+> if your kernel is configured to support Cell.  It would be
+> better to set this option (and all other options needed,
+> -mno-multiple and -mno-algebraic come to mind, and that last
+> compiler option doesn't even exist yet) unconditionally on
+> the few Cell-specific files that are affected, not on the
+> whole kernel:
+> 
+> 	CFLAGS_whatever.o := -msome-flags
+> 
+> It would be even better to not lie to the compiler by
+> telling it it can use the LS area as normal memory, since
+> evidently it cannot :-)
 
-Fair enough, but then we can't use it for local-mac-address, which was the whole point 
-behind this discussion!  So you can use ? for every property *except* local-mac-address. 
-If it's going to be this complicated, I say forget the whole thing.
+It's fair enough to use -mno-string overall. If the kernel is going to
+run on cell, performance will suck with string instructions. In fact,
+I'm not sure they are worth having on anything anyway.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+Ben.
