@@ -1,20 +1,34 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <timur@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E212DDE029
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Mar 2007 01:09:44 +1100 (EST)
-In-Reply-To: <20070322092202.20D73DDF32@ozlabs.org>
-References: <20070322092202.20D73DDF32@ozlabs.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DB443D82-5C88-45F9-BF32-F12AA11244AA@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 5/10] Port 44x MMU definitions to ARCH=powerpc
-Date: Fri, 23 Mar 2007 09:09:11 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 02490DE03A
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Mar 2007 01:38:07 +1100 (EST)
+Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
+	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
+	l2NEc1Nr016312
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 07:38:02 -0700 (MST)
+Message-ID: <4603E648.4030907@freescale.com>
+Date: Fri, 23 Mar 2007 09:38:00 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
+References: <20070317013159.GH3969@localhost.localdomain>
+	<45FC8643.1080807@freescale.com>
+	<20070318115656.GA12765@localhost.localdomain>
+	<45FEA7B3.9090304@freescale.com>
+	<20070320035957.GC21124@localhost.localdomain>
+	<45FFE8FD.9020902@freescale.com>
+	<20070321025447.GG27969@localhost.localdomain>
+	<460148DC.3020600@freescale.com>
+	<20070322000620.GC2295@localhost.localdomain>
+	<1174576516.6595.542.camel@ld0161-tx32>
+	<20070323032214.GC28006@localhost.localdomain>
+In-Reply-To: <20070323032214.GC28006@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +38,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+David Gibson wrote:
 
-On Mar 22, 2007, at 4:22 AM, David Gibson wrote:
+> Well, that's part of why I'm contemplating this idea:  it makes it
+> clear to the reader whether this dts is intended to be complete, or
+> whether it's intended that the bootloader adjust things.
 
-> This patch moves the mmu.h definitions which are still relevant for
-> ARCH=powerpc from include/asm-ppc/mmu.h to their own file,
-> include/asm-powerpc/mmu_44x.h.  The new file is included from
-> asm-powerpc/mmu.h, and a couple of other tweaks to correct mmu
-> definitions for 44x are made.
->
-> Signed-off-by: David Gibson <dwg@au1.ibm.com>
-> ---
->
->  arch/powerpc/kernel/head_44x.S    |    4 -
->  arch/powerpc/mm/44x_mmu.c         |   81 ++++++ 
-> +-------------------------------
->  arch/powerpc/mm/mmu_decl.h        |    2
->  include/asm-powerpc/mmu-44x/mmu.h |   75 ++++++++++++++++++++++++++ 
-> +++++++++
->  include/asm-powerpc/mmu.h         |   11 ++++-
->  5 files changed, 105 insertions(+), 68 deletions(-)
-
-Any reason you are creating a new directory in include/asm-powerpc  
-for 44x mmu defn?  why not just mmu_44x.h or something like that?
-
-- k
+I would have no objection to a patch for DTC that makes it treat "?" 
+like "0".  This would probably make everyone happy.
