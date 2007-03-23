@@ -1,17 +1,20 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp105.biz.mail.mud.yahoo.com (smtp105.biz.mail.mud.yahoo.com
-	[68.142.200.253]) by ozlabs.org (Postfix) with SMTP id A5624DDF06
+Return-Path: <tmaenner@aehr.com>
+Received: from loki.aehr.com (loki.aehr.com [207.168.29.203])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BF8DADDE02
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Mar 2007 04:19:29 +1100 (EST)
-In-Reply-To: <3dcf223d9a87.3d9a873dcf22@compuserve.de>
-References: <3dcf223d9a87.3d9a873dcf22@compuserve.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E0FF8235-FBB6-46D5-8D76-A92BCD9F7E83@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: ttyS0 ttyS1
-Date: Fri, 23 Mar 2007 10:12:54 -0700
-To: <oparz@compuserve.de> <oparz@compuserve.de>
+	Sat, 24 Mar 2007 04:27:08 +1100 (EST)
+From: Thomas Maenner <tmaenner@aehr.com>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: TQM 860L, 64MB RAM, ELDK4.1, TQM860L, Kernel 2.6.19
+Date: Fri, 23 Mar 2007 10:26:31 -0700
+References: <20070322212615.553FE35260B@atlas.denx.de>
+In-Reply-To: <20070322212615.553FE35260B@atlas.denx.de>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703231026.31387.tmaenner@aehr.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,23 +26,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Apparently I was not aware, that the TQ8xx are not supported by 2.6...
+Will try the linuxppc_2_4_devel version from your cvs repository.
 
-On Mar 23, 2007, at 3:43 AM, <oparz@compuserve.de>  
-<oparz@compuserve.de> wrote:
+Thanks
+Tom
 
-> Hello,
-> i have problems to use ttyS1 on my TQM885 Board.
+On Thursday 22 March 2007 14:26, Wolfgang Denk wrote:
+> In message <200703221410.37767.tmaenner@aehr.com> you wrote:
+> > Tried out the following u-boot "setting":
+> > setenv ramargs setenv bootargs ramdisk_size=6144 root=/dev/ram
+> > console=ttyCPM0 rw
+> >
+> > No change; still no output in the console
 >
-> fd1 = open("/dev/ttyS0",O_RDWR);
-> fd2 = open("/dev/ttyS1",O_RDWR);
+> Then buy a debugger and dig into it...
+>
+> > Note that my module has 64MB, rather that 16; I thought it doesn't
+> > matter, or?
+>
+> It doesn't.
+>
+> You are aware that TQM8xxL is not yet supported in the context of the
+> 2.6 Linux kernel, aren't you? [And we will  not  support  it  in  the
+> ARCH=ppc context any more.]
+>
+> Best regards,
+>
+> Wolfgang Denk
 
-If you are using 2.6 kernels....
-/dev/ttyCPM0 and /dev/ttyCPM1
-
-Otherwise, ensure additional serial ports are
-configured in your kernel and the device nodes
-exist.
-
-
-
-	-- Dan
+-- 
+Thomas Maenner
+E-Mail: mailto:tmaenner@aehr.com
