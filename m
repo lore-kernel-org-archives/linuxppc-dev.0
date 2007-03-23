@@ -1,22 +1,25 @@
 Return-Path: <glikely@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.189])
-	by ozlabs.org (Postfix) with ESMTP id DAE03DE0B1
+Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.190])
+	by ozlabs.org (Postfix) with ESMTP id 2515DDDE07
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 24 Mar 2007 02:58:05 +1100 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so1862939nfc
+	Sat, 24 Mar 2007 03:00:13 +1100 (EST)
+Received: by nf-out-0910.google.com with SMTP id m18so1863869nfc
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Mar 2007 08:58:03 -0700 (PDT)
-Message-ID: <528646bc0703230858h237237c2t5b7bedca6e42cddd@mail.gmail.com>
-Date: Fri, 23 Mar 2007 09:58:03 -0600
+	Fri, 23 Mar 2007 09:00:12 -0700 (PDT)
+Message-ID: <528646bc0703230900m461758c5if8e3d996ce00198d@mail.gmail.com>
+Date: Fri, 23 Mar 2007 10:00:11 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@gmail.com
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH 4/5] mpc52xx suspend: deep-sleep
-In-Reply-To: <20070315104307.GE22215@moe.telargo.com>
+To: "Sylvain Munaut" <tnt@246tnt.com>,
+	"Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [PATCH 3/5 v2] mpc52xx suspend: USB
+In-Reply-To: <4603C07F.4000007@246tNt.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <20070315103959.GA22215@moe.telargo.com>
-	<20070315104307.GE22215@moe.telargo.com>
+	<20070315104228.GD22215@moe.telargo.com>
+	<528646bc0703150624i2bac5ce4n7beebc88d8acbafe@mail.gmail.com>
+	<20070322074443.GB4620@moe.telargo.com> <4603C07F.4000007@246tNt.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,60 +31,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 3/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> Implement deep-sleep on MPC52xx.
-> SDRAM is put into self-refresh with help of SRAM code
-> (alternatives would be code in FLASH, I-cache).
-> Interrupt code must also not be in SDRAM, so put it
-> in I-cache.
-> MPC52xx core is static, so contents will remain intact even
-> with clocks turned off.
+On 3/23/07, Sylvain Munaut <tnt@246tnt.com> wrote:
+> Domen Puncer wrote:
+> > +     struct usb_hcd *hcd = dev_get_drvdata(&op->dev);
+> > +     if (machine_is_compatible("generic-mpc5200")) {
+> > +             struct ohci_hcd *ohci = hcd_to_ohci(hcd);
+> >
+> >
+> Not good, what if you have a Ohci PCI card on a 5200 board ...
+>
+> You somehow need to check the compatible list of the of_node associated
+> with the particular instance you're putting to sleep.
 
-Some more comments...
+Also, I don't think the device tree should be queried at runtime
+inside the suspend/resume functions.  All device tree queries should
+probably go into the probe() routine and the results cached.
 
-> Index: grant.git/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-> ===================================================================
-> --- /dev/null
-> +++ grant.git/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-> +/* you will want to change this, to match your board gpios, rtc or whatever */
-> +static void mpc52xx_set_wakeup_mode(void)
-> +{
-> +       struct mpc52xx_gpio_wkup __iomem *gpiow;
-> +       struct mpc52xx_intr __iomem *intr;
-> +#ifdef CONFIG_PPC_LITE5200
-> +       int pin = 1; /* GPIO_WKUP_1 (GPIO_PSC2_4) */
-> +       int level_low = 1; /* wakeup on low level */
-> +#elif defined CONFIG_PPC_EFIKA
-> +       int pin = 4; /* GPIO_WKUP_4 (GPIO_PSC6_0 - IRDA_RX) */
-> +       int level_low = 0; /* wakeup on high level */
-> +       /* IOW. to wake it up, short pins 1 and 3 on IRDA connector */
-> +#else
-> +#warning "define how would you like your board to wake"
-> +#endif
+However, I'm no longer convinced that this is the correct approach.
+I've gone and looked at the 5200b usb documentation, and it looks to
+me like the handling of port power is really a board/system specific
+thing.  For example, a new system might require port power to be
+forced on when the processor is suspended.
 
-The EFIKA and LITE5200 support needs to coexist.  efika.c and
-lite5200.c should each have their own set_wakeup_mode function.  The
-correct function pointer should be selected from *_setup_arch().
-
-> +static struct pm_ops mpc52xx_pm_ops = {
-> +       .valid          = mpc52xx_pm_valid,
-> +       .prepare        = mpc52xx_pm_prepare,
-> +       .enter          = mpc52xx_pm_enter,
-> +       .finish         = mpc52xx_pm_finish,
-> +};
-> +
-> +static int __init mpc52xx_pm_init(void)
-> +{
-> +       pm_set_ops(&mpc52xx_pm_ops);
-> +       return 0;
-> +}
-> +
-> +arch_initcall(mpc52xx_pm_init);
-
-Adding a new arch_initcall is dangerous.  It gets called on *all*
-architectures if the 5200 support is compiled in.  mp52xx_pm_init
-should be called from the setup_arch hook; lite5200_setup_arch() &
-efika_setup_arch()
+I think this code should be moved to the board support code in
+arch/powerpc/platforms/52xx.
 
 Cheers,
 g.
