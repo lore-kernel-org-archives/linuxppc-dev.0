@@ -1,17 +1,20 @@
 Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <20070323120619.GA7472@localhost.localdomain>
-References: <1174544624.10836.24.camel@localhost.localdomain>
-	<94d8e19d4b061504fcfd08d1ab70cc78@kernel.crashing.org>
-	<20070323120619.GA7472@localhost.localdomain>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E212DDE029
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Mar 2007 01:09:44 +1100 (EST)
+In-Reply-To: <20070322092202.20D73DDF32@ozlabs.org>
+References: <20070322092202.20D73DDF32@ozlabs.org>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <94FD59E6-B618-4AB2-9BAB-D40A70CC1589@kernel.crashing.org>
+Message-Id: <DB443D82-5C88-45F9-BF32-F12AA11244AA@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] force -mno-string option on cell
-Date: Fri, 23 Mar 2007 08:37:16 -0500
-To: Akinobu Mita <mita@fixstars.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org, linuxppc-dev list <linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH 5/10] Port 44x MMU definitions to ARCH=powerpc
+Date: Fri, 23 Mar 2007 09:09:11 -0500
+To: David Gibson <david@gibson.dropbear.id.au>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,49 +25,27 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Mar 23, 2007, at 7:06 AM, Akinobu Mita wrote:
+On Mar 22, 2007, at 4:22 AM, David Gibson wrote:
 
-> GCC may generate inline copy loop to handle memcpy() function
-> instead of kernel defined memcpy() with -mstring or -Os.
-> But this inlined version of memcpy() caused an alignment interrupt
-> when copying from SPU local store on PS3.
-> (http://ozlabs.org/pipermail/cbe-oss-dev/2007-March/001348.html)
+> This patch moves the mmu.h definitions which are still relevant for
+> ARCH=powerpc from include/asm-ppc/mmu.h to their own file,
+> include/asm-powerpc/mmu_44x.h.  The new file is included from
+> asm-powerpc/mmu.h, and a couple of other tweaks to correct mmu
+> definitions for 44x are made.
 >
-> This patch deletes -mstring option on all powerpc and force -mno- 
-> string
-> option on Cell.
+> Signed-off-by: David Gibson <dwg@au1.ibm.com>
+> ---
 >
-> Cc: Arnd Bergmann <arnd@arndb.de>
-> Cc: Paul Mackerras <paulus@samba.org>
-> Signed-off-by: Akinobu Mita <mita@fixstars.com>
+>  arch/powerpc/kernel/head_44x.S    |    4 -
+>  arch/powerpc/mm/44x_mmu.c         |   81 ++++++ 
+> +-------------------------------
+>  arch/powerpc/mm/mmu_decl.h        |    2
+>  include/asm-powerpc/mmu-44x/mmu.h |   75 ++++++++++++++++++++++++++ 
+> +++++++++
+>  include/asm-powerpc/mmu.h         |   11 ++++-
+>  5 files changed, 105 insertions(+), 68 deletions(-)
 
-Nack.  If GCC is now putting string instructions even if you don't  
-specify -mstring than we also need this for CONFIG_FSL_BOOKE.  Please  
-fix that up as well.
+Any reason you are creating a new directory in include/asm-powerpc  
+for 44x mmu defn?  why not just mmu_44x.h or something like that?
 
 - k
-
-> ---
->  arch/powerpc/Makefile |    5 +++--
->  1 file changed, 3 insertions(+), 2 deletions(-)
->
-> Index: 2.6-git-ps3/arch/powerpc/Makefile
-> ===================================================================
-> --- 2.6-git-ps3.orig/arch/powerpc/Makefile
-> +++ 2.6-git-ps3/arch/powerpc/Makefile
-> @@ -102,8 +102,9 @@ CFLAGS += $(call cc-option,-mno-altivec)
->  # kernel considerably.
->  CFLAGS += $(call cc-option,-funit-at-a-time)
->
-> -ifndef CONFIG_FSL_BOOKE
-> -CFLAGS		+= -mstring
-> +# No string instruction for SPE local store areas
-> +ifeq ($(CONFIG_PPC_CELL),y)
-> +CFLAGS		+= -mno-string
->  endif
->
->  ifeq ($(CONFIG_6xx),y)
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
