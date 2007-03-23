@@ -1,37 +1,18 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 8D0D5DE05F
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Mar 2007 02:18:41 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw02.freescale.net (8.12.11/az33egw02) with ESMTP id
-	l2NFIcJk019110
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 08:18:38 -0700 (MST)
-Received: from mailserv2.am.freescale.net (mailserv2.am.freescale.net
-	[10.82.65.62])
-	by az33smr01.freescale.net (8.13.1/8.13.0) with ESMTP id l2NFIb2Y014805
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 10:18:37 -0500 (CDT)
-Received: from ld0162-tx32.am.freescale.net (ld0162-tx32 [10.82.19.112])
-	by mailserv2.am.freescale.net (8.13.3/8.13.3) with ESMTP id
-	l2NEweMB011138
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 09:58:40 -0500 (CDT)
-Received: from ld0162-tx32.am.freescale.net (localhost [127.0.0.1])
-	by ld0162-tx32.am.freescale.net (Postfix) with ESMTP id F3F94AEFC9
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 10:18:36 -0500 (CDT)
-Received: (from b07421@localhost)
-	by ld0162-tx32.am.freescale.net (8.12.11/8.12.11/Submit) id
-	l2NFIa4e006213
-	for linuxppc-dev@ozlabs.org; Fri, 23 Mar 2007 10:18:36 -0500
-Date: Fri, 23 Mar 2007 10:18:36 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 5/6] bootwrapper: Add a cuImage target.
-Message-ID: <20070323151836.GC6060@ld0162-tx32.am.freescale.net>
-References: <20070322194627.GA31926@ld0162-tx32.am.freescale.net>
-	<20070322194928.GE31965@ld0162-tx32.am.freescale.net>
-	<20070323054048.GA27940@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070323054048.GA27940@localhost.localdomain>
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id BB1B8DE0C0
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Mar 2007 02:21:35 +1100 (EST)
+Message-ID: <4603F077.9090905@smiths-aerospace.com>
+Date: Fri, 23 Mar 2007 11:21:27 -0400
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+MIME-Version: 1.0
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] Remove bogus errors from check_chosen.
+References: <20070322161109.GA20512@ld0162-tx32.am.freescale.net>	<20070323033158.GG28006@localhost.localdomain>
+	<20070323150517.GB6060@ld0162-tx32.am.freescale.net>
+In-Reply-To: <20070323150517.GB6060@ld0162-tx32.am.freescale.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -41,37 +22,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 23, 2007 at 04:40:48PM +1100, David Gibson wrote:
-> > +cuboot-plats :=
-> > +src-plat := of.c $(cuboot-plats:%=cuboot-%.c)
+Scott Wood wrote:
+> On Fri, Mar 23, 2007 at 02:31:58PM +1100, David Gibson wrote:
+>> I'm not 100% comfortable with this patch; I'd like for dtc to have the
+>> facility to do more-or-less complete tree validation.
 > 
-> Rather than this special cuboot-plats stuff, I suggest you just list
-> each cuboot platform in src-plat independently.
-
-OK, I suppose the number of platforms will be few enough for that.
-
-> We can also git rid of the need for a CONFIG option specifying the dts
-> (and thereby taking us back to the one-config-per-board era) by using
-> rules like:
+> That'd be nice as long as it's optional; it should be possible to do a
+> low level dts->dtb transformation without the tool assuming that the
+> output is intended to be a final, valid tree with the specific bindings
+> that dtc knowns about (or even an OF-ish tree at all).
 > 
-> $(obj)/uImage.83xx.%: vmlinux $(wrapperbits) $(srctree)/$(src)/dts/%.dts
-> 	$(call if_changed,wrap,cuboot-83xx,$(srctree)/$(src)/dts/$*)
+> -Scott
 
-But then you can't build with an out-of-tree dts.  It's not a huge deal,
-but still...  What's wrong with a config option?
+It needs a -Wall ;-)
 
-> And to get the right things built use something like:
-> image-$(CONFIG-83xx)	+= $(mpx83xx-boards:%=uImage.83xx.%)
+The -q[q[q]] I added cuts down/eliminates the moaning, but you still 
+have to -f force the output which doesn't match what Scott is advocating 
+if I understand him.
 
-And then I'd have to determine which boards are supported by the kernel
-that was built, so I don't trick the user into thinking that valid images
-were produced for every single 83xx.  I'd also have to enumerate every
-single board in the makefile, which would suck.
+The gcc -Wall is backwards to what we should have, perhaps adding --no* 
+options like:
+   --nochosen
+   --nocpu
+   --noarmyboots
+to tell dtc that lonely barefoot blobs are OK.
 
-> Or optionally add a batch of bool config options for each board
-> variant.
-
-I don't want to do that.  There shouldn't have to be a 1-1 correspondence
-between each dts file and anything in the kernel.
-
--Scott
+gvb
