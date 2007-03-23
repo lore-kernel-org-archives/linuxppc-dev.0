@@ -1,15 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 23 Mar 2007 16:25:40 +1100
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH 3/6] bootwrapper: Add support for cuboot platforms.
+Message-ID: <20070323052540.GB6199@localhost.localdomain>
+References: <20070322194627.GA31926@ld0162-tx32.am.freescale.net>
+	<20070322194924.GC31965@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17923.25798.710476.476462@cargo.ozlabs.ibm.com>
-Date: Fri, 23 Mar 2007 16:25:26 +1100
-From: Paul Mackerras <paulus@samba.org>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 2/8] bootwrapper: missing relocation in crt0.S
-In-Reply-To: <boot-2-02.miltonm@bga.com>
-References: <boot-2-00.miltonm@bga.com>
-	<boot-2-02.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+In-Reply-To: <20070322194924.GC31965@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +19,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Milton Miller writes:
+On Thu, Mar 22, 2007 at 02:49:24PM -0500, Scott Wood wrote:
+> Platforms beginning with "cuboot" have the bootwrapper code built in,
+> unlike the regular uboot platform.
 
-> crt0.S had provisions to provide run address relocaton to got2 and
-> cache flush, but not on the bss clear or stack pointer load.  Apply
-> the same fixup for them.
-> 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> --- 
-> Compiles and links.  Stack is created within the image when linked at
-> 4M and run at 0.  Did not verify bss relocation.
-> 
-> Index: kernel/arch/powerpc/boot/crt0.S
-> ===================================================================
-> --- kernel.orig/arch/powerpc/boot/crt0.S	2007-03-16 23:22:00.000000000 -0500
-> +++ kernel/arch/powerpc/boot/crt0.S	2007-03-16 23:42:42.000000000 -0500
-> @@ -63,21 +63,30 @@ _zimage_start:
->  	/* Clear the BSS */
->  	lis	r9,__bss_start@ha
->  	addi	r9,r9,__bss_start@l
-> +	add	r9,r0,r9
->  	lis	r8,_end@ha
->  	addi	r8,r8,_end@l
-> +	add	r8,r0,r8
->  	li	r0,0
->  5:	stw	r0,0(r9)
+I think 3, 4 and 5 of this series should be merged into a single
+patch.  They're not much use without each other.
 
-How about changing the last two instructions here to use r10 instead
-of r0 so we don't need to recreate the relocation offset?
-
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
