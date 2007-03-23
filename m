@@ -1,16 +1,15 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 23 Mar 2007 15:17:08 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Hollis Blanchard <hollis@penguinppc.org>
-Subject: Re: libfdt: going forward for u-boot
-Message-ID: <20070323041708.GA6199@localhost.localdomain>
-References: <4601C8F7.5060006@comcast.net>
-	<20070322004959.GE2295@localhost.localdomain>
-	<1174581726.22826.2.camel@basalt>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1174581726.22826.2.camel@basalt>
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <17923.25798.710476.476462@cargo.ozlabs.ibm.com>
+Date: Fri, 23 Mar 2007 16:25:26 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 2/8] bootwrapper: missing relocation in crt0.S
+In-Reply-To: <boot-2-02.miltonm@bga.com>
+References: <boot-2-00.miltonm@bga.com>
+	<boot-2-02.miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,22 +19,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 22, 2007 at 11:42:06AM -0500, Hollis Blanchard wrote:
-> On Thu, 2007-03-22 at 11:49 +1100, David Gibson wrote:
-> > 
-> > I'm actually more inclined to just remove the #include from fdt.h
-> > entirely and require users to provide the stdint types, by whatever
-> > means, before they include fdt.h.  It's a bit icky, but I think it's
-> > the sanest way to allow building in multiple environment. 
+Milton Miller writes:
+
+> crt0.S had provisions to provide run address relocaton to got2 and
+> cache flush, but not on the bss clear or stack pointer load.  Apply
+> the same fixup for them.
 > 
-> I agree. I've done something similar in a few places now, and it's the
-> best solution I've found.
+> Signed-off-by: Milton Miller <miltonm@bga.com>
+> --- 
+> Compiles and links.  Stack is created within the image when linked at
+> 4M and run at 0.  Did not verify bss relocation.
+> 
+> Index: kernel/arch/powerpc/boot/crt0.S
+> ===================================================================
+> --- kernel.orig/arch/powerpc/boot/crt0.S	2007-03-16 23:22:00.000000000 -0500
+> +++ kernel/arch/powerpc/boot/crt0.S	2007-03-16 23:42:42.000000000 -0500
+> @@ -63,21 +63,30 @@ _zimage_start:
+>  	/* Clear the BSS */
+>  	lis	r9,__bss_start@ha
+>  	addi	r9,r9,__bss_start@l
+> +	add	r9,r0,r9
+>  	lis	r8,_end@ha
+>  	addi	r8,r8,_end@l
+> +	add	r8,r0,r8
+>  	li	r0,0
+>  5:	stw	r0,0(r9)
 
-I just pushed out a new libfdt which removes the #include from fdt.h
-as discussed.
+How about changing the last two instructions here to use r10 instead
+of r0 so we don't need to recreate the relocation offset?
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Paul.
