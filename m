@@ -1,15 +1,14 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17923.46762.363994.307295@cargo.ozlabs.ibm.com>
-Date: Fri, 23 Mar 2007 22:14:50 +1100
+Message-ID: <17923.45909.143614.592837@cargo.ozlabs.ibm.com>
+Date: Fri, 23 Mar 2007 22:00:37 +1100
 From: Paul Mackerras <paulus@samba.org>
 To: anton@samba.org
-Subject: Re: [patch 06/10] Add notify die hooks and remove some redundant
-	debugger hooks
-In-Reply-To: <20070321013825.283024000@samba.org>
+Subject: Re: [patch 05/10] Use KERN_EMERG everywhere in oops printout
+In-Reply-To: <20070321013825.179096000@samba.org>
 References: <20070321013810.404636000@samba.org>
-	<20070321013825.283024000@samba.org>
+	<20070321013825.179096000@samba.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,20 +21,16 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 anton@samba.org writes:
 
-> Add a DIE_OOPS and DIE_MACHINE_CHECK notify_die hook and remove some
-> redundant debugger* hooks.
+> @@ -926,9 +934,10 @@
+>  		    && stack[FRAME_MARKER] == REGS_MARKER) {
+>  			struct pt_regs *regs = (struct pt_regs *)
+>  				(sp + STACK_FRAME_OVERHEAD);
+> -			printk("--- Exception: %lx", regs->trap);
+> +			printk("%s--- Exception: %lx", log_lvl, regs->trap);
+>  			print_symbol(" at %s\n", regs->nip);
+>  			lr = regs->link;
+> +			printk(KERN_EMERG);
 
-As far as I can see, at the moment there is just one thing that gets
-registered to be called by die_notify, and that is
-kprobe_exceptions_notify.  It doesn't do anything with DIE_OOPS or
-DIE_MACHINE_CHECK.
-
-I would rather get rid of die_notify and have a kprobe_notify instead
-that just directly calls kprobe_exceptions_notify.  In fact having
-separate kprobe routines for the different events would be even
-better.
-
-It's not like our cpus are particularly good at indirect functions
-calls... ;(
+Why is this one KERN_EMERG rather than log_lvl?  Just an oversight?
 
 Paul.
