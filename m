@@ -1,15 +1,21 @@
-Return-Path: <oparz@compuserve.de>
-Received: from demdwug7.mediaways.net (smtp.compuserve.de [62.52.27.101])
-	by ozlabs.org (Postfix) with SMTP id 9D5E3DDFA8
+Return-Path: <jwboyer@jdub.homelinux.org>
+Received: from jdub.homelinux.org (71-36-216-66.roch.qwest.net [71.36.216.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6C9EEDE024
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 23 Mar 2007 21:43:44 +1100 (EST)
-From: <oparz@compuserve.de>
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <3dcf223d9a87.3d9a873dcf22@compuserve.de>
-Date: Fri, 23 Mar 2007 11:43:37 +0100
-MIME-Version: 1.0
-Subject: ttyS0 ttyS1
-Content-Type: text/plain; charset=us-ascii
+	Fri, 23 Mar 2007 21:43:51 +1100 (EST)
+Subject: Re: AVNET 440GX board
+From: Josh Boyer <jwboyer@jdub.homelinux.org>
+To: Stefan Roese <sr@denx.de>
+In-Reply-To: <200703230722.25498.sr@denx.de>
+References: <393e3a4b0703221234n20eee581g6cbf9af9be2c5ebb@mail.gmail.com>
+	<200703230722.25498.sr@denx.de>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 05:40:18 -0500
+Message-Id: <1174646418.2977.84.camel@vader.jdub.homelinux.org>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,18 +26,20 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
-i have problems to use ttyS1 on my TQM885 Board.
+On Fri, 2007-03-23 at 07:22 +0100, Stefan Roese wrote:
+> Ken,
+> 
+> On Thursday 22 March 2007 20:34, Ken Sakurai wrote:
+> > I'm trying to boot Linux on  AVNET 440gx eval board but no luck so far.
+> > What I did are that I downloaded a plain 2.6.20 kernel from kernel.org,
+> > configured with 440GX, OCOTEA target (I'm not sure OCOTEA is correct
+> > target),
+> 
+> I don't know the AVNET 440GX eval board. Is it _identical_ to the IBM/AMCC 
+> Ocotea? If not you will most likely have no luck with this image. You will 
+> have to port Linux to this special board.
 
-fd1 = open("/dev/ttyS0",O_RDWR);
-fd2 = open("/dev/ttyS1",O_RDWR);
+No, it's not identical.  We had one of these boards at one point and it
+was a pain in the arse.
 
-I have expected to get different filehandles, but
-both handles for ttyS0 and ttyS1 are 0! 
-
-Any help is very appreciated.
-
-_____________________
-Dr. Otto Parzhuber
-Munich University of Applied Sciences
-Fac. of Precision Engineering
+josh
