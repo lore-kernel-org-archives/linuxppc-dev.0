@@ -1,32 +1,28 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4B0E5DE04E
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 23:21:14 +1100 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2NCLAh9032423
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 08:21:10 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2NCLAUr063032
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 06:21:10 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2NCL9og013415
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 06:21:09 -0600
-Subject: Re: [PATCH 4/10] Add arch/powerpc driver for UIC, PPC4xx interrupt
-	controller
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AD96EDE035
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 23:35:17 +1100 (EST)
+In-Reply-To: <20070323032440.GD28006@localhost.localdomain>
+References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
+	<20070316172848.GG29784@ld0162-tx32.am.freescale.net>
+	<20070317012654.GE3969@localhost.localdomain>
+	<c01196ee10aa2b13278465a835a49fdf@kernel.crashing.org>
+	<20070321234226.GB2295@localhost.localdomain>
+	<7ce9c69ae76258f47790c5ceb851a355@kernel.crashing.org>
+	<20070323032440.GD28006@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <24d3db180f457c9a6e659a68bd4287ab@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 07/17] bootwrapper: Add dt_set_memory(),
+	to fill in the /memory node.
+Date: Fri, 23 Mar 2007 13:34:55 +0100
 To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070322092202.1299EDDF3E@ozlabs.org>
-References: <20070322092202.1299EDDF3E@ozlabs.org>
-Content-Type: text/plain
-Date: Fri, 23 Mar 2007 07:20:47 -0500
-Message-Id: <1174652447.3518.22.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,59 +32,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-03-22 at 20:22 +1100, David Gibson wrote:
-> 
-> Index: working-2.6/arch/powerpc/sysdev/uic.c
-> ===================================================================
+>>>>> However, #address-cells=2, #size-cells=1 is common enough that we
+>>>>> really need to support that case.
+>>>>
+>>>> On the root node?!?  Who would do such a strange thing?
+>>>
+>>> Ebony, for one, it works nicely for a 32-bit system with >32-bit bus.
+>>
+>> It means you cannot have a 4GB-or-bigger region below your
+>> root node.  Dunno if Ebony ever needs one, for I/O mapping
+>> perhaps?
+>
+> Nope.  0-4GB is RAM, 4-8 is in-built IO, 8-12 is PCI IO, and I forget
+> what 12-16 is, if anything.
 
- <snip>
+Let's take the first of these -- 4GB of RAM.  Not that
+you'll ever see an Ebony with that much memory of course ;-)
 
-> +static struct uic * __init uic_init_one(struct device_node *node)
-> +{
-> +	struct uic *uic;
-> +	const u32 *indexp, *dcrreg;
-> +	int len;
-> +
-> +	BUG_ON(! device_is_compatible(node, "ibm,uic"));
-> +
-> +	uic = alloc_bootmem(sizeof(*uic));
-> +	if (! uic)
-> +		return NULL; /* FIXME: panic? */
-> +
-> +	memset(uic, 0, sizeof(*uic));
-> +	uic->of_node = of_node_get(node);
-> +	indexp = get_property(node, "cell-index", &len);
-> +	if (!indexp || (len != sizeof(u32))) {
-> +		printk(KERN_ERR "uic: Device node %s has missing or invalid "
-> +		       "cell-index property\n", node->full_name);
-> +		return NULL;
-> +	}
-> +	uic->index = *indexp;
-> +
-> +	dcrreg = get_property(node, "dcr-reg", &len);
-> +	if (!dcrreg || (len != 2*sizeof(u32))) {
-> +		printk(KERN_ERR "uic: Device node %s has missing or invalid "
-> +		       "dcr-reg property\n", node->full_name);
-> +		return NULL;
-> +	}
-> +	uic->dcrbase = *dcrreg;
-> +
-> +	uic->irqhost = irq_alloc_host(IRQ_HOST_MAP_LINEAR, NR_UIC_INTS,
-> +				      &uic_host_ops, -1);
-> +	if (! uic->irqhost) {
-> +		of_node_put(node);
-> +		return NULL; /* FIXME: panic? */
-> +	}
-> +
-> +	uic->irqhost->host_data = uic;
-> +
-> +	/* Start with all interrupts disable and non-critical */
-> +	mtdcr(uic->dcrbase + UIC_ER, 0);
-> +	mtdcr(uic->dcrbase + UIC_CR, 0);
+How do you express 4GB of memory when #a=2 #s=1?  Something
+like
 
-I think at this point we should also clear the interrupts in the SR
-register as well.  When playing with the Bamboo port, I found that the
-firmware leaves pending interrupts, which can lead to some not nice
-results when the cascade bits are enabled.
+reg = < 0 0  ffffffff   0 fffffff  1 >
 
-josh
+and you're lucky this is actually allowed in a memory
+node, some other nodes/properties won't allow you to.
+
+Contrast this to #a=2 #s=2 where you simply say
+
+reg = < 0 0  1 0 >
+
+>>> Apple G5s do it too.
+>>
+>> And they do a an awful workaround for their memory node
+>> because of this.
+>>
+>> Is their any reason why you couldn't use #a=#s=2 on 32-bit
+>> systems?  The root node is one contiguous hunk of address
+>> space, so the biggest (theoretically) possible size is equal
+>> to the biggest address (+1).  It's not hard to come up with
+>> an example where you need a size of 4GB or more.
+>
+> Well, yes, we could.  I believe the only reason Apple does it is to
+> make the tree a little more compact.
+
+I think the main reason is that their 64-bit OF actually
+is a 32-bit one with lots of weird extras tugged on ;-)
+
+> But the point is that trees are
+> out there with #a=2 #s=1, so the fixup code ought to be able to handle
+> them.
+
+Yes of course, I'm not disagreeing there -- I'm just
+saying that for boards where we do have control over
+the device tree we should discourage this monstrosity :-)
+
+
+Segher
