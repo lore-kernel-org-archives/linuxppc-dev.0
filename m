@@ -1,36 +1,32 @@
-Return-Path: <ananth@in.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4B539DE029
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 23:00:53 +1100 (EST)
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4B0E5DE04E
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 23:21:14 +1100 (EST)
 Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
 	[9.17.195.106])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l2NBx2qo025734
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 07:59:02 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2NCLAh9032423
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 08:21:10 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
 	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2NC0och058772
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 06:00:50 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2NC0n0P020874
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 06:00:49 -0600
-Date: Fri, 23 Mar 2007 17:34:17 +0530
-From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [patch 06/10] Add notify die hooks and remove some redundant
-	debugger hooks
-Message-ID: <20070323120417.GA13718@in.ibm.com>
-References: <20070321013810.404636000@samba.org>
-	<20070321013825.283024000@samba.org>
-	<17923.46762.363994.307295@cargo.ozlabs.ibm.com>
+	l2NCLAUr063032
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 06:21:10 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2NCL9og013415
+	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 06:21:09 -0600
+Subject: Re: [PATCH 4/10] Add arch/powerpc driver for UIC, PPC4xx interrupt
+	controller
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+In-Reply-To: <20070322092202.1299EDDF3E@ozlabs.org>
+References: <20070322092202.1299EDDF3E@ozlabs.org>
+Content-Type: text/plain
+Date: Fri, 23 Mar 2007 07:20:47 -0500
+Message-Id: <1174652447.3518.22.camel@zod.rchland.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17923.46762.363994.307295@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
-Reply-To: ananth@in.ibm.com
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,28 +36,59 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 23, 2007 at 10:14:50PM +1100, Paul Mackerras wrote:
-> anton@samba.org writes:
+On Thu, 2007-03-22 at 20:22 +1100, David Gibson wrote:
 > 
-> > Add a DIE_OOPS and DIE_MACHINE_CHECK notify_die hook and remove some
-> > redundant debugger* hooks.
-> 
-> As far as I can see, at the moment there is just one thing that gets
-> registered to be called by die_notify, and that is
-> kprobe_exceptions_notify.  It doesn't do anything with DIE_OOPS or
-> DIE_MACHINE_CHECK.
+> Index: working-2.6/arch/powerpc/sysdev/uic.c
+> ===================================================================
 
-Make that two: patch [8/10] of this series converts xmon to use
-die_notify and these two were added to facilitate that. In any case,
-kprobes just returns NOTIFY_DONE for these callbacks.
+ <snip>
 
-> I would rather get rid of die_notify and have a kprobe_notify instead
-> that just directly calls kprobe_exceptions_notify.  In fact having
-> separate kprobe routines for the different events would be even
-> better.
+> +static struct uic * __init uic_init_one(struct device_node *node)
+> +{
+> +	struct uic *uic;
+> +	const u32 *indexp, *dcrreg;
+> +	int len;
+> +
+> +	BUG_ON(! device_is_compatible(node, "ibm,uic"));
+> +
+> +	uic = alloc_bootmem(sizeof(*uic));
+> +	if (! uic)
+> +		return NULL; /* FIXME: panic? */
+> +
+> +	memset(uic, 0, sizeof(*uic));
+> +	uic->of_node = of_node_get(node);
+> +	indexp = get_property(node, "cell-index", &len);
+> +	if (!indexp || (len != sizeof(u32))) {
+> +		printk(KERN_ERR "uic: Device node %s has missing or invalid "
+> +		       "cell-index property\n", node->full_name);
+> +		return NULL;
+> +	}
+> +	uic->index = *indexp;
+> +
+> +	dcrreg = get_property(node, "dcr-reg", &len);
+> +	if (!dcrreg || (len != 2*sizeof(u32))) {
+> +		printk(KERN_ERR "uic: Device node %s has missing or invalid "
+> +		       "dcr-reg property\n", node->full_name);
+> +		return NULL;
+> +	}
+> +	uic->dcrbase = *dcrreg;
+> +
+> +	uic->irqhost = irq_alloc_host(IRQ_HOST_MAP_LINEAR, NR_UIC_INTS,
+> +				      &uic_host_ops, -1);
+> +	if (! uic->irqhost) {
+> +		of_node_put(node);
+> +		return NULL; /* FIXME: panic? */
+> +	}
+> +
+> +	uic->irqhost->host_data = uic;
+> +
+> +	/* Start with all interrupts disable and non-critical */
+> +	mtdcr(uic->dcrbase + UIC_ER, 0);
+> +	mtdcr(uic->dcrbase + UIC_CR, 0);
 
-Well, the die_notify hooks for DIE_SSTEP, DIE_BPT (and when kwatch is
-implemented for powerpc, even DIE_DABR_MATCH), are shared between
-kprobes and xmon, after the xmon conversion to use notifiers.
+I think at this point we should also clear the interrupts in the SR
+register as well.  When playing with the Bamboo port, I found that the
+firmware leaves pending interrupts, which can lead to some not nice
+results when the cascade bits are enabled.
 
-Ananth
+josh
