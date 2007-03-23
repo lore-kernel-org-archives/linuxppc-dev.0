@@ -1,34 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 02490DE03A
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Mar 2007 01:38:07 +1100 (EST)
-Received: from az33smr01.freescale.net (az33smr01.freescale.net [10.64.34.199])
-	by az33egw01.freescale.net (8.12.11/az33egw01) with ESMTP id
-	l2NEc1Nr016312
-	for <linuxppc-dev@ozlabs.org>; Fri, 23 Mar 2007 07:38:02 -0700 (MST)
-Message-ID: <4603E648.4030907@freescale.com>
-Date: Fri, 23 Mar 2007 09:38:00 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Jon Loeliger <jdl@freescale.com>, linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 10/17] bootwrapper: Add dt_set_mac_addresses().
-References: <20070317013159.GH3969@localhost.localdomain>
-	<45FC8643.1080807@freescale.com>
-	<20070318115656.GA12765@localhost.localdomain>
-	<45FEA7B3.9090304@freescale.com>
-	<20070320035957.GC21124@localhost.localdomain>
-	<45FFE8FD.9020902@freescale.com>
-	<20070321025447.GG27969@localhost.localdomain>
-	<460148DC.3020600@freescale.com>
-	<20070322000620.GC2295@localhost.localdomain>
-	<1174576516.6595.542.camel@ld0161-tx32>
-	<20070323032214.GC28006@localhost.localdomain>
-In-Reply-To: <20070323032214.GC28006@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 6318FDE03B
+	for <linuxppc-dev@ozlabs.org>; Sat, 24 Mar 2007 02:01:08 +1100 (EST)
+Date: Fri, 23 Mar 2007 10:00:58 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 06/17] Document the linux,network-index property.
+Message-ID: <20070323150058.GA6060@ld0162-tx32.am.freescale.net>
+References: <20070316172846.GF29784@ld0162-tx32.am.freescale.net>
+	<36990c5c3b7de1ab2f65662547641b79@kernel.crashing.org>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302B97B1A@az33exm25.fsl.freescale.net>
+	<4b0f0296e3beb792337a868c3527c954@kernel.crashing.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4b0f0296e3beb792337a868c3527c954@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,11 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
+On Wed, Mar 21, 2007 at 07:57:33PM +0100, Segher Boessenkool wrote:
+> >Segher, what is the the 'other alias' mechanism you are referring
+> >to that should be dropped?  Is it this proposed linux,network-index
+> >property?  or something else?
+> 
+> Just the
+> 
+> 	pic0: pic@700 {
+> 		...
+> 	}
+> 
+> labeling thing -- it becomes redundant when the flat tree
+> stuff would support OF-style aliases, so it can be phased
+> out then.
 
-> Well, that's part of why I'm contemplating this idea:  it makes it
-> clear to the reader whether this dts is intended to be complete, or
-> whether it's intended that the bootloader adjust things.
+How?  You still need integer-encoded phandles, as that's how various
+properties are defined.  Why should every node that needs a phandle
+reference have to go in /aliases?  They seem to be solving two different
+problems to me.
 
-I would have no objection to a patch for DTC that makes it treat "?" 
-like "0".  This would probably make everyone happy.
+As for using aliases for network indices, it could be done, but it'd be
+more complicated to implement due to string manipulation.
+
+-Scott
