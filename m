@@ -1,20 +1,17 @@
 Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 23 Mar 2007 14:24:40 +1100
+Date: Fri, 23 Mar 2007 14:28:58 +1100
 From: David Gibson <david@gibson.dropbear.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 07/17] bootwrapper: Add dt_set_memory(),
-	to fill in the /memory node.
-Message-ID: <20070323032440.GD28006@localhost.localdomain>
-References: <20070316172641.GA29709@ld0162-tx32.am.freescale.net>
-	<20070316172848.GG29784@ld0162-tx32.am.freescale.net>
-	<20070317012654.GE3969@localhost.localdomain>
-	<c01196ee10aa2b13278465a835a49fdf@kernel.crashing.org>
-	<20070321234226.GB2295@localhost.localdomain>
-	<7ce9c69ae76258f47790c5ceb851a355@kernel.crashing.org>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: [PATCH 4/10] Add arch/powerpc driver for UIC,
+	PPC4xx interrupt controller
+Message-ID: <20070323032858.GF28006@localhost.localdomain>
+References: <20070322060630.GB16993@localhost.localdomain>
+	<20070322092202.1299EDDF3E@ozlabs.org>
+	<20070322095118.GA18236@moe.telargo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <7ce9c69ae76258f47790c5ceb851a355@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070322095118.GA18236@moe.telargo.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,36 +21,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 22, 2007 at 12:02:56PM +0100, Segher Boessenkool wrote:
-> >>> However, #address-cells=2, #size-cells=1 is common enough that we
-> >>> really need to support that case.
-> >>
-> >> On the root node?!?  Who would do such a strange thing?
-> >
-> > Ebony, for one, it works nicely for a 32-bit system with >32-bit bus.
+On Thu, Mar 22, 2007 at 10:51:18AM +0100, Domen Puncer wrote:
+> On 22/03/07 20:22 +1100, David Gibson wrote:
+> > +static int uic_set_irq_type(unsigned int virq, unsigned int flow_type)
 > 
-> It means you cannot have a 4GB-or-bigger region below your
-> root node.  Dunno if Ebony ever needs one, for I/O mapping
-> perhaps?
-
-Nope.  0-4GB is RAM, 4-8 is in-built IO, 8-12 is PCI IO, and I forget
-what 12-16 is, if anything.
-
-> > Apple G5s do it too.
+> > +	case IRQ_TYPE_LEVEL_HIGH:
+> > +		trigger = 0; polarity = 1;
+> > +		break;
+> > +	case IRQ_TYPE_LEVEL_LOW:
+> > +		trigger = 0; polarity = 1;
 > 
-> And they do a an awful workaround for their memory node
-> because of this.
-> 
-> Is their any reason why you couldn't use #a=#s=2 on 32-bit
-> systems?  The root node is one contiguous hunk of address
-> space, so the biggest (theoretically) possible size is equal
-> to the biggest address (+1).  It's not hard to come up with
-> an example where you need a size of 4GB or more.
+> Is this intended to be the same?
 
-Well, yes, we could.  I believe the only reason Apple does it is to
-make the tree a little more compact.  But the point is that trees are
-out there with #a=2 #s=1, so the fixup code ought to be able to handle
-them.
+Oops, no.  Thanks for spotting that, the Ebony has no level-low
+devices, so I didn't notice any problems.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
