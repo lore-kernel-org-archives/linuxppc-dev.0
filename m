@@ -1,29 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
-	[151.189.21.44])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6165DDDFDC
-	for <linuxppc-dev@ozlabs.org>; Sat, 24 Mar 2007 11:24:10 +1100 (EST)
-In-Reply-To: <20070323235900.GH4459@localhost.localdomain>
-References: <20070316172846.GF29784@ld0162-tx32.am.freescale.net>
-	<36990c5c3b7de1ab2f65662547641b79@kernel.crashing.org>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302B97B1A@az33exm25.fsl.freescale.net>
-	<4b0f0296e3beb792337a868c3527c954@kernel.crashing.org>
-	<20070322002911.GD2295@localhost.localdomain>
-	<28ff7492856c7220f060cd113329e62f@kernel.crashing.org>
-	<20070323031956.GB28006@localhost.localdomain>
-	<1f513f9b14cfe469ffee3d8e10901776@kernel.crashing.org>
-	<20070323235900.GH4459@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a2abd81a733627255520245bb35d26be@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 06/17] Document the linux,network-index property.
-Date: Sat, 24 Mar 2007 01:23:59 +0100
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org, Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17924.38058.582386.176550@cargo.ozlabs.ibm.com>
+Date: Sat, 24 Mar 2007 14:02:02 +1100
+From: Paul Mackerras <paulus@samba.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] force -mno-string option on cell
+In-Reply-To: <d7a191672b71056daf28a7c93c4e969c@kernel.crashing.org>
+References: <1174544624.10836.24.camel@localhost.localdomain>
+	<94d8e19d4b061504fcfd08d1ab70cc78@kernel.crashing.org>
+	<20070323120619.GA7472@localhost.localdomain>
+	<d7a191672b71056daf28a7c93c4e969c@kernel.crashing.org>
+Cc: Akinobu Mita <mita@fixstars.com>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,28 +22,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Well it still needs to know property encoding...
->
-> Well, yes, but in the most likely fixup cases that's trivial:
-> clock-frequency properties are u32, memory address/size are u32 or
-> u64, mac addresses are char[6].
+Segher Boessenkool writes:
 
-Nit: what you call u64 actually is u32[2].  Alignment
-matters sometimes.
+> What your patch does is setting -mno-string for all files
+> if your kernel is configured to support Cell.  It would be
+> better to set this option (and all other options needed,
+> -mno-multiple and -mno-algebraic come to mind, and that last
+> compiler option doesn't even exist yet) unconditionally on
+> the few Cell-specific files that are affected, not on the
+> whole kernel:
+> 
+> 	CFLAGS_whatever.o := -msome-flags
 
->> It would be interesting to see if anyone actually uses this
->> feature ;-)
->
-> Yes, it will.
->
-> Oh, I have been planning for ages to make it possible (if less
-> convenient) to use this with dtb as well as asm output, by
-> (optionally) generating a "map file" (possibly in the form of a .h
-> with #defines) alongside the dtb, giving the offsets of all the
-> labels.
+Unless someone can show a measurable difference in performance between
+a kernel compiled with -mno-string and one compiled without (with the
+kernel compiled without being faster), then I would be inclined just
+to add -mno-string everywhere, since there are some cpus (e.g. e500
+cores) where string instructions aren't implemented.
 
-Sounds like overengineering to me but feel free to prove
-me wrong :-)
-
-
-Segher
+Paul.
