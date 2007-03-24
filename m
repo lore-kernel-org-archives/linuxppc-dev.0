@@ -1,20 +1,22 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <17924.38058.582386.176550@cargo.ozlabs.ibm.com>
-References: <1174544624.10836.24.camel@localhost.localdomain>
-	<94d8e19d4b061504fcfd08d1ab70cc78@kernel.crashing.org>
-	<20070323120619.GA7472@localhost.localdomain>
-	<d7a191672b71056daf28a7c93c4e969c@kernel.crashing.org>
-	<17924.38058.582386.176550@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <481387db70970cb6bd6c44b449299e47@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] force -mno-string option on cell
-Date: Sat, 24 Mar 2007 15:46:49 +0100
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Akinobu Mita <mita@fixstars.com>, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <lists@nerdbynature.de>
+Received: from mail.g-house.de (ns2.g-housing.de [81.169.133.75])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B2641DDF30
+	for <linuxppc-dev@ozlabs.org>; Sun, 25 Mar 2007 03:07:04 +1000 (EST)
+Received: from [77.99.119.75]
+	(helo=77-99-119-75.cable.ubr04.linl.blueyonder.co.uk)
+	by mail.g-house.de with esmtpsa (TLS-1.0:DHE_RSA_AES_256_CBC_SHA:32)
+	(Exim 4.50) id 1HV9QX-0001Kv-Tv
+	for linuxppc-dev@ozlabs.org; Sat, 24 Mar 2007 17:49:17 +0100
+Date: Sat, 24 Mar 2007 16:48:37 +0000 (GMT)
+From: Christian Kujau <lists@nerdbynature.de>
+To: linuxppc-dev@ozlabs.org
+Subject: more bogomips :)
+Message-ID: <Pine.LNX.4.64.0703241645360.10654@sheep.housecafe.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Sender: "evil@g-house.de"@mail.g-house.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +26,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> What your patch does is setting -mno-string for all files
->> if your kernel is configured to support Cell.  It would be
->> better to set this option (and all other options needed,
->> -mno-multiple and -mno-algebraic come to mind, and that last
->> compiler option doesn't even exist yet) unconditionally on
->> the few Cell-specific files that are affected, not on the
->> whole kernel:
->>
->> 	CFLAGS_whatever.o := -msome-flags
->
-> Unless someone can show a measurable difference in performance between
-> a kernel compiled with -mno-string and one compiled without (with the
-> kernel compiled without being faster), then I would be inclined just
-> to add -mno-string everywhere, since there are some cpus (e.g. e500
-> cores) where string instructions aren't implemented.
+I know bogomips are kinda "bogus by definition", but I'll ask anyway, 
+out of curiosity:
 
-So add it _if_ support for e500 is compiled in.
+--- ppc-cpuinfo.2.6.20-rc6      2007-01-27 12:33:00.000000000 +0000
++++ ppc-cpuinfo.2.6.21-rc4-git6 2007-03-24 16:25:26.000000000 +0000
+@@ -1,8 +1,8 @@
+  processor      : 0
+  cpu            : 7447A, altivec supported
+-clock          : 1199.999997MHz
++clock          : 1199.999000MHz
+  revision       : 0.1 (pvr 8003 0101)
+-bogomips       : 36.73
++bogomips       : 73.47
+  timebase       : 18432000
+  platform       : PowerMac
+  machine                : PowerBook6,5
 
-Not using string instructions probably won't hurt performance
-much, but adding -mno-string always doesn't solve any actual
-problems -- in particular, it doesn't solve the original problem
-that got all this started, which needs -mno-multiple too (and
-that hurts performance on many CPUs) and -mno-algebraic and
--mno-dcbz (and those two options don't even exist yet).
+It seems that with a more recent kernel, bogomips have doubled (both 
+with CONFIG_HZ=1000, if this matters). How comes?
 
-If you decide to put -mno-string in there always anyway, please
-put a nice fat big comment on there saying why this is done?
+Thanks,
+Christian
+-- 
+BOFH excuse #108:
 
-
-Segher
+The air conditioning water supply pipe ruptured over the machine room
