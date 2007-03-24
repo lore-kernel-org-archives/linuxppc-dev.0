@@ -1,17 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Sat, 24 Mar 2007 10:51:53 +1100
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@freescale.com>
-Subject: Re: [PATCH] Remove bogus errors from check_chosen.
-Message-ID: <20070323235153.GG4459@localhost.localdomain>
-References: <20070322161109.GA20512@ld0162-tx32.am.freescale.net>
-	<20070323033158.GG28006@localhost.localdomain>
-	<20070323150517.GB6060@ld0162-tx32.am.freescale.net>
-	<1174665793.32390.73.camel@ld0161-tx32>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1174665793.32390.73.camel@ld0161-tx32>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <1174678703.10836.69.camel@localhost.localdomain>
+References: <1174544624.10836.24.camel@localhost.localdomain>
+	<94d8e19d4b061504fcfd08d1ab70cc78@kernel.crashing.org>
+	<20070323120619.GA7472@localhost.localdomain>
+	<d7a191672b71056daf28a7c93c4e969c@kernel.crashing.org>
+	<1174678703.10836.69.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <1f8cf21a42e1b0d8ffe896b8c20aa557@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] force -mno-string option on cell
+Date: Sat, 24 Mar 2007 01:02:33 +0100
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>, Akinobu Mita <mita@fixstars.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,49 +24,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 23, 2007 at 11:03:13AM -0500, Jon Loeliger wrote:
-> On Fri, 2007-03-23 at 10:05, Scott Wood wrote:
-> > On Fri, Mar 23, 2007 at 02:31:58PM +1100, David Gibson wrote:
-> > > I'm not 100% comfortable with this patch; I'd like for dtc to have the
-> > > facility to do more-or-less complete tree validation.
-> > 
-> > That'd be nice as long as it's optional; it should be possible to do a
-> > low level dts->dtb transformation without the tool assuming that the
-> > output is intended to be a final, valid tree with the specific bindings
-> > that dtc knowns about (or even an OF-ish tree at all).
-> > 
-> > -Scott
-> 
-> So, how about adding a "--complete" or "--final"
-> sort of flag an having it:
-> 
->     - Enforce presence of /chosen
->     - Disallowing the proposed [ ? ? ? ? ] indicators
->     - Uh, other stricter checking...
+> It's fair enough to use -mno-string overall.
 
-I was thinking of having three basic levels of checking:
+> If the kernel is going to
+> run on cell, performance will suck with string instructions.
 
-	- syntactic structure
-Checks on the structure of the flat tree: duplicate property / node
-names, invalid characters in names and other such basic errors.  This
-would be on, and fatal by default.
+Yes.
 
-	- semantic structure
-Checks on the content of nodes: linux,phandle #a and #s properties
-have the right size, reg properties match the corresponding #a and #s
-nodes, properties which reference phandles contain a valid phandle,
-properties supposed to contain strings actually do.  This would be on
-by default.  It would be fatal by default when generating a dtb or asm
-from dts, but not in the other direction.
+> In fact,
+> I'm not sure they are worth having on anything anyway.
 
-	- kernel requirements
-Checks this is a complete tree with all the bits that the kernel
-needs: /chosen is present, /memory is present and valid, cpu nodes
-have the required cache size information etc.  This would only be on
-if requested.
+We'll have to disagree here.  String insns _are_ useful
+on many CPUs.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Either way, even if string insns would suck on every
+CPU -- this shouldn't be handled in the kernel Makefiles,
+convince the GCC people instead.  If there are no special
+considerations why certain insns would be inappropriate
+for a certain specific piece of code, you'll just have
+to trust the compiler's insn selection.  That's just the
+same as for any other isns patterns.
+
+If there are such considerations, add the flags you need
+for that source file, and that source file only.
+
+If you don't compile targeting a specific CPU, and GCC's
+choices suck on the hardware you actually run on, select
+a different cost model.  Or, again, convince the GCC people
+to make some changes.
+
+
+Segher
