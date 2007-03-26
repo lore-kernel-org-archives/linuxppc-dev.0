@@ -1,18 +1,16 @@
 Return-Path: <b07421@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 46CBFDDEF1
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 06:51:53 +1000 (EST)
-Date: Mon, 26 Mar 2007 15:51:45 -0500
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id 8FCB2DDEF3
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 06:52:31 +1000 (EST)
+Date: Mon, 26 Mar 2007 15:52:24 -0500
 From: Scott Wood <scottwood@freescale.com>
 To: paulus@samba.org
-Subject: [PATCH 0/5] bootwrapper: cuImage
-Message-ID: <20070326205145.GA2868@ld0162-tx32.am.freescale.net>
+Subject: [PATCH 1/5] bootwrapper: Add dt_xlate_reg(),
+	and use it to find serial registers.
+Message-ID: <20070326205224.GA2931@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070326205145.GA2868@ld0162-tx32.am.freescale.net>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,12 +21,238 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Here's the latest cuImage/cuboot patchset, revised based on feedback.
-It applies on top of patches 2 and 3 from David Gibson's last zImage
-patchset ("Add device tree utility functions to zImage" and "Clean up
-zImage handling of the command line").
+dt_xlate_reg() uses the ranges properties of a node's parentage to find
+the absolute physical address of the node's registers.
 
-Paul, please apply the above prerequisite patches and this patchset for
-2.6.22.
+The ns16550 driver uses this when no virtual-reg property is found.
 
--Scott
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/devtree.c |  178 +++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/ns16550.c |    9 ++-
+ arch/powerpc/boot/ops.h     |    2 +
+ 3 files changed, 187 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/boot/devtree.c b/arch/powerpc/boot/devtree.c
+index 708cade..23492d7 100644
+--- a/arch/powerpc/boot/devtree.c
++++ b/arch/powerpc/boot/devtree.c
+@@ -109,3 +109,181 @@ void __dt_fixup_mac_addresses(u32 startindex, ...)
+ 	}
+ 	va_end(ap);
+ }
++
++#define MAX_ADDR_CELLS 4
++#define MAX_RANGES 8
++
++static void get_reg_format(void *node, u32 *naddr, u32 *nsize)
++{
++	if (getprop(node, "#address-cells", naddr, 4) != 4)
++		*naddr = 2;
++	if (getprop(node, "#size-cells", nsize, 4) != 4)
++		*nsize = 1;
++}
++
++static void copy_val(u32 *dest, u32 *src, int naddr)
++{
++	memset(dest, 0, (MAX_ADDR_CELLS - naddr) * 4);
++	memcpy(dest, src, naddr * 4);
++}
++
++static int sub_reg(u32 *reg, u32 *sub)
++{
++	int i, borrow = 0;
++
++	for (i = 0; i < MAX_ADDR_CELLS; i++) {
++		int prev_borrow = borrow;
++		borrow = reg[i] < sub[i] + prev_borrow;
++		reg[i] -= sub[i] + prev_borrow;
++	}
++
++	return !borrow;
++}
++
++static int add_reg(u32 *reg, u32 *add)
++{
++	int i, carry = 0;
++
++	for (i = 0; i < MAX_ADDR_CELLS; i++) {
++		u64 tmp = (u64)reg[i] + add[i] + carry;
++		carry = tmp >> 32;
++		reg[i] = (u32)tmp;
++	}
++
++	return !carry;
++}
++
++/* It is assumed that if the first byte of reg fits in a
++ * range, then the whole reg block fits.
++ */
++static int compare_reg(u32 *reg, u32 *range, u32 *rangesize)
++{
++	int i;
++	u32 end;
++
++	for (i = 0; i < MAX_ADDR_CELLS; i++) {
++		if (reg[i] < range[i])
++			return 0;
++		if (reg[i] > range[i])
++			break;
++	}
++
++	for (i = 0; i < MAX_ADDR_CELLS; i++) {
++		end = range[i] + rangesize[i];
++
++		if (reg[i] < end)
++			break;
++		if (reg[i] > end)
++			return 0;
++	}
++
++	return reg[i] != end;
++}
++
++/* reg must be MAX_ADDR_CELLS */
++static int find_range(u32 *reg, u32 *ranges, int nregaddr,
++                      int naddr, int nsize, int buflen)
++{
++	int nrange = nregaddr + naddr + nsize;
++	int i;
++
++	for (i = 0; i + nrange <= buflen; i += nrange) {
++		u32 range_addr[MAX_ADDR_CELLS];
++		u32 range_size[MAX_ADDR_CELLS];
++
++		copy_val(range_addr, ranges + i, naddr);
++		copy_val(range_size, ranges + i + nregaddr + naddr, nsize);
++
++		if (compare_reg(reg, range_addr, range_size))
++			return i;
++	}
++
++	return -1;
++}
++
++/* Currently only generic buses without special encodings are supported.
++ * In particular, PCI is not supported.  Also, only the beginning of the
++ * reg block is tracked; size is ignored except in ranges.
++ */
++int dt_xlate_reg(void *node, int res, unsigned long *addr,
++                 unsigned long *size)
++{
++	u32 last_addr[MAX_ADDR_CELLS];
++	u32 this_addr[MAX_ADDR_CELLS];
++	u32 buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
++	void *parent;
++	u64 ret_addr, ret_size;
++	u32 naddr, nsize, prev_naddr;
++	int buflen, offset;
++
++	parent = get_parent(node);
++	if (!parent)
++		return 0;
++
++	get_reg_format(parent, &naddr, &nsize);
++
++	if (nsize > 2)
++		return 0;
++
++	buflen = getprop(node, "reg", buf, sizeof(buf)) / 4;
++	offset = (naddr + nsize) * res;
++
++	if (buflen < offset + naddr + nsize)
++		return 0;
++
++	copy_val(last_addr, buf + offset, naddr);
++
++	ret_size = buf[offset + naddr];
++	if (nsize == 2) {
++		ret_size <<= 32;
++		ret_size |= buf[offset + naddr + 1];
++	}
++
++	while ((node = get_parent(node))) {
++		prev_naddr = naddr;
++
++		get_reg_format(node, &naddr, &nsize);
++
++		buflen = getprop(node, "ranges", buf, sizeof(buf));
++		if (buflen < 0)
++			continue;
++		if (buflen > sizeof(buf))
++			return 0;
++
++		offset = find_range(last_addr, buf, prev_naddr,
++		                    naddr, nsize, buflen / 4);
++
++		if (offset < 0)
++			return 0;
++
++		copy_val(this_addr, buf + offset, prev_naddr);
++
++		if (!sub_reg(last_addr, this_addr))
++			return 0;
++
++		copy_val(this_addr, buf + offset + prev_naddr, naddr);
++
++		if (!add_reg(last_addr, this_addr))
++			return 0;
++	}
++
++	if (naddr > 2)
++		return 0;
++
++	ret_addr = last_addr[0];
++	if (naddr == 2) {
++		ret_addr <<= 32;
++		ret_addr |= last_addr[1];
++	}
++
++	if (sizeof(void *) == 4 &&
++	    (ret_addr >= 0x100000000ULL || ret_size > 0x100000000ULL ||
++	     ret_addr + ret_size > 0x100000000ULL))
++		return 0;
++
++	*addr = ret_addr;
++	if (size)
++		*size = ret_size;
++
++	return 1;
++}
+diff --git a/arch/powerpc/boot/ns16550.c b/arch/powerpc/boot/ns16550.c
+index 1ffe72e..f8f1b2f 100644
+--- a/arch/powerpc/boot/ns16550.c
++++ b/arch/powerpc/boot/ns16550.c
+@@ -55,10 +55,15 @@ static u8 ns16550_tstc(void)
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp)
+ {
+ 	int n;
++	unsigned long reg_phys;
+ 
+ 	n = getprop(devp, "virtual-reg", &reg_base, sizeof(reg_base));
+-	if (n != sizeof(reg_base))
+-		return -1;
++	if (n != sizeof(reg_base)) {
++		if (!dt_xlate_reg(devp, 0, &reg_phys, NULL))
++			return -1;
++
++		reg_base = (void *)reg_phys;
++	}
+ 
+ 	n = getprop(devp, "reg-shift", &reg_shift, sizeof(reg_shift));
+ 	if (n != sizeof(reg_shift))
+diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
+index 8008d61..fbd9030 100644
+--- a/arch/powerpc/boot/ops.h
++++ b/arch/powerpc/boot/ops.h
+@@ -82,6 +82,8 @@ int ns16550_console_init(void *devp, struct serial_console_data *scdp);
+ void *simple_alloc_init(char *base, u32 heap_size, u32 granularity,
+ 		u32 max_allocs);
+ extern void flush_cache(void *, unsigned long);
++int dt_xlate_reg(void *node, int res, unsigned long *addr,
++                 unsigned long *size);
+ 
+ static inline void *finddevice(const char *name)
+ {
+-- 
+1.5.0.3
