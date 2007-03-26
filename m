@@ -1,23 +1,17 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id A55E2DDEDE
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 49301DDEF3
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Mar 2007 02:08:33 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1524299ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Mar 2007 09:08:27 -0700 (PDT)
-Message-ID: <528646bc0703260908q7b018060v40db7e66aa81eaee@mail.gmail.com>
-Date: Mon, 26 Mar 2007 10:08:27 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Domen Puncer" <domen.puncer@telargo.com>
-Subject: Re: [PATCH] icecube/lite5200b: wakeup from low-power support
-In-Reply-To: <20070315104411.GF22215@moe.telargo.com>
+	Tue, 27 Mar 2007 04:32:28 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070315103959.GA22215@moe.telargo.com>
-	<20070315104411.GF22215@moe.telargo.com>
-Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Reading and writing from/to VME device
+Date: Mon, 26 Mar 2007 11:31:56 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE48710888A6FA@VCAEXCH01.hq.corp.viasat.com>
+In-reply-to: <929bf310703260814q18957942s218d56bed8fb4009@mail.gmail.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "Konstantin Boyanov" <kkboyanov@gmail.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,94 +22,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 3/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> U-Boot part of Lite5200b low power mode support.
-> Puts SDRAM out of self-refresh and transfers control to
-> address saved at physical 0x0.
+> I'm using the MVME6100 board with the Motorola driver for linux v3.5
+(kernel 2.6.15).
 
-This looks pretty straight forward.
+I'm not sure what a "Linux v3.5" is - Montavista?  There are patches
+available from Motorola to the vanila kernel if you're interested in
+using something newer than 2.6.15.
 
-My only comment is that psc2_4 is probably used as GPIO instead of
-power control by some users (The lite5200 is an eval board after all).
- Maybe wrap the code with #ifdef CONFIG_LITE5200B_PM (instead of
-CONFIG_LITE5200B) so that it can be easily compiled out.
+> I try to access the CSR registers of an ADC board, in order to
+configure it as to be
+> able to access its memory, on the VME bus using one of the outbound
+windows defined by
+> the driver. As I am new to the whole VME stuff, I'm getting into
+trouble to find out when
+> I'm actually reading something on the VME, i.e. which addresses
+respond.
+> 1. open() and ioctl() one of the /dev/vme_m* devices, which I assume
+is corresponding to
+> an outbound window (at least I try to > configure it as one),=20
+> 2. then mmap() a memory area to hold the contents of the /dev/vme_m*
+device file
+> 3. and finally doing incrementation of the pointer returned by mmap()
+and dereferencing it in the hope that I'll read something, which in most
+cases is 0xFF=20
 
-Also, '//' style comments should be changed to '/* */'
+This sounds like the right steps.  You don't appear to have the ioctl()
+configuration structure set correctly.
+=09
+> memset(&outWinCfgADC, 0, sizeof(vmeOutWindowCfg_t));
+>     perror("memset");
+>	    outWinCfgADC.windowNbr           =3D 0;
+>	    outWinCfgADC.windowEnable     =3D 1;
+>	    outWinCfgADC.wrPostEnable      =3D 0;
+>	    outWinCfgADC.userAccessType  =3D VME_SUPER;
+>	    outWinCfgADC.dataAccessType  =3D VME_DATA;
+>	    outWinCfgADC.windowSizeL        =3D 0x200000;
+>	    outWinCfgADC.xferProtocol         =3D VME_SCT;
+>	    outWinCfgADC.addrSpace           =3D VME_A24;
+>	    outWinCfgADC.maxDataWidth     =3D VME_D16;
+=09
+This will setup a window of size 0x200000, type SingleCycleTransfer (vs.
+BLT, 2eSST, etc), 24-bit addressing, 16-bit data.=09
+The target VME address will be 0x00000000, since you didn't configure
+the .xlatedAddrU or .xlatedAddrL portions of outWinCfgADC.  Typically,
+the VME address space is partitioned by VME chassis slot number or some
+other application-specific scheme.  I'm guessing that 0 is not an
+address that any VME board in your chassis is configured to respond to,
+hence your errors.
 
-Otherwise;
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+Also, since you're doing 16-bit SCT reads, you probably want to
+dereference your mmap'ed pointer as a 16-bit (unsigned short *) instead
+of a (u_char *).
 
-g.
-
->
-> ---
->  board/icecube/icecube.c |   50 ++++++++++++++++++++++++++++++++++++++++++++++++
->  1 file changed, 50 insertions(+)
->
-> Index: u-boot.git/board/icecube/icecube.c
-> ===================================================================
-> --- u-boot.git.orig/board/icecube/icecube.c
-> +++ u-boot.git/board/icecube/icecube.c
-> @@ -42,6 +42,54 @@
->  #include "mt48lc16m16a2-75.h"
->  # endif
->  #endif
-> +
-> +#ifdef CONFIG_LITE5200B
-> +/* u-boot part of low-power mode implementation */
-> +#define SAVED_ADDR (*(void **)0x00000000)
-> +#define PSC2_4 0x02
-> +
-> +void lite5200b_wakeup(void)
-> +{
-> +       unsigned char wakeup_pin;
-> +       void (*linux_wakeup)(void);
-> +
-> +       /* check PSC2_4, if it's down "QT" is signaling we have a wakeup
-> +        * from low power mode */
-> +       *(vu_char *)MPC5XXX_WU_GPIO_ENABLE = PSC2_4;
-> +       __asm__ volatile ("sync");
-> +
-> +       wakeup_pin = *(vu_char *)MPC5XXX_WU_GPIO_DATA_I;
-> +       if (wakeup_pin & PSC2_4)
-> +               return;
-> +
-> +       /* acknowledge to "QT"
-> +        * by holding pin at 1 for 10 uS */
-> +       *(vu_char *)MPC5XXX_WU_GPIO_DIR = PSC2_4;
-> +       __asm__ volatile ("sync");
-> +       *(vu_char *)MPC5XXX_WU_GPIO_DATA_O = PSC2_4;
-> +       __asm__ volatile ("sync");
-> +       udelay(10);
-> +
-> +       /* put ram out of self-refresh */
-> +       *(vu_long *)MPC5XXX_SDRAM_CTRL |= 0x80000000;   // mode_en
-> +       __asm__ volatile ("sync");
-> +       *(vu_long *)MPC5XXX_SDRAM_CTRL |= 0x50000000;   // cke ref_en
-> +       __asm__ volatile ("sync");
-> +       *(vu_long *)MPC5XXX_SDRAM_CTRL &= ~0x80000000;  // !mode_en
-> +       __asm__ volatile ("sync");
-> +       udelay(10); /* wait a bit */
-> +
-> +       /* jump back to linux kernel code */
-> +       linux_wakeup = SAVED_ADDR;
-> +       printf("\n\nLooks like we just woke, transferring control to 0x%08lx\n",
-> +                       linux_wakeup);
-> +       linux_wakeup();
-> +}
-> +#else
-> +#define lite5200b_wakeup()
-> +#endif
-> +
-> +
->  #ifndef CFG_RAMBOOT
->  static void sdram_start (int hi_addr)
->  {
-> @@ -208,6 +256,8 @@ long int initdram (int board_type)
->                 __asm__ volatile ("sync");
->         }
->
-> +       lite5200b_wakeup();
-> +
->         return dramsize + dramsize2;
->  }
+Tim
