@@ -1,15 +1,15 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103]) by ozlabs.org (Postfix) with ESMTP id 12123DDF8C
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 06:52:36 +1000 (EST)
-Date: Mon, 26 Mar 2007 15:52:31 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH 5/5] bootwrapper: cuboot for 83xx
-Message-ID: <20070326205231.GE2931@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070326205145.GA2868@ld0162-tx32.am.freescale.net>
+Return-Path: <chuckmeade@mindspring.com>
+Received: from elasmtp-banded.atl.sa.earthlink.net
+	(elasmtp-banded.atl.sa.earthlink.net [209.86.89.70])
+	by ozlabs.org (Postfix) with ESMTP id 4AC7FDDE0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 08:24:38 +1000 (EST)
+Message-ID: <4608481E.8020204@mindspring.com>
+Date: Mon, 26 Mar 2007 18:24:30 -0400
+From: Chuck Meade <chuckmeade@mindspring.com>
+MIME-Version: 1.0
+To: galak@kernel.crashing.org
+Subject: [PATCH] Fix MPC83xx SDMA setup errors
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,113 +20,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This adds cuboot support for MPC83xx platforms.
+Correct the alignment of the internal buffer used by the MPC83xx SDMA
+controller to 4Kbytes.  Correct the shift direction in the logic that
+sets up the SDMR register for the MPC83xx SDMA controller.
 
-A device tree used with this must have linux,stdout-path in /chosen and
-linux,network-index in any network device nodes that need mac addresses
-assigned.
-
-Signed-off-by: Scott Wood <scottwood@freescale.com>
+Signed-off-by: Chuck Meade <chuckmeade@mindspring.com>
 ---
- arch/powerpc/boot/Makefile      |    3 +-
- arch/powerpc/boot/cuboot-83xx.c |   68 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 70 insertions(+), 1 deletions(-)
- create mode 100644 arch/powerpc/boot/cuboot-83xx.c
+  arch/powerpc/sysdev/qe_lib/qe.c |    4 ++--
+  1 files changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 988e29c..8b1e49b 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -43,7 +43,7 @@ $(addprefix $(obj)/,$(zlib) main.o): $(addprefix $(obj)/,$(zliblinuxheader)) \
- src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
- 		ns16550.c serial.c simple_alloc.c div64.S util.S \
- 		gunzip_util.c $(zlib) devtree.c
--src-plat := of.c
-+src-plat := of.c cuboot-83xx.c
- src-boot := $(src-wlib) $(src-plat) empty.c
- 
- src-boot := $(addprefix $(obj)/, $(src-boot))
-@@ -162,6 +162,7 @@ $(obj)/zImage.initrd.ps3: vmlinux
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,uboot)
- 
-+cuboot-plat-$(CONFIG_83xx) += 83xx
- cuboot-plat-y += unknown-platform
- 
- dts = $(if $(shell echo $(CONFIG_) | grep '^/'),\
-diff --git a/arch/powerpc/boot/cuboot-83xx.c b/arch/powerpc/boot/cuboot-83xx.c
-new file mode 100644
-index 0000000..8f11d1e
---- /dev/null
-+++ b/arch/powerpc/boot/cuboot-83xx.c
-@@ -0,0 +1,68 @@
-+/*
-+ * Old U-boot compatibility for 83xx
-+ *
-+ * Author: Scott Wood <scottwood@freescale.com>
-+ *
-+ * Copyright (c) 2007 Freescale Semiconductor, Inc.
-+ *
-+ * This program is free software; you can redistribute it and/or modify it
-+ * under the terms of the GNU General Public License version 2 as published
-+ * by the Free Software Foundation.
-+ */
-+
-+#include "ops.h"
-+#include "stdio.h"
-+
-+#define TARGET_83xx
-+#include "ppcboot.h"
-+
-+static bd_t bd;
-+extern char _end[];
-+extern char _dtb_start[], _dtb_end[];
-+
-+static void platform_fixups(void)
-+{
-+	void *soc;
-+
-+	dt_fixup_memory(bd.bi_memstart, bd.bi_memsize);
-+	dt_fixup_mac_addresses(bd.bi_enetaddr, bd.bi_enet1addr);
-+	dt_fixup_cpu_clocks(bd.bi_intfreq, bd.bi_busfreq / 4, bd.bi_busfreq);
-+
-+	/* Unfortunately, the specific model number is encoded in the
-+	 * soc node name in existing dts files -- once that is fixed,
-+	 * this can do a simple path lookup.
-+	 */
-+	soc = find_node_by_devtype(NULL, "soc");
-+	if (soc) {
-+		void *serial = NULL;
-+
-+		setprop(soc, "bus-frequency", &bd.bi_busfreq,
-+		        sizeof(bd.bi_busfreq));
-+
-+		while ((serial = find_node_by_devtype(serial, "serial"))) {
-+			if (get_parent(serial) != soc)
-+				continue;
-+
-+			setprop(serial, "clock-frequency", &bd.bi_busfreq,
-+			        sizeof(bd.bi_busfreq));
-+		}
-+	}
-+}
-+
-+void platform_init(unsigned long r3, unsigned long r4, unsigned long r5,
-+                   unsigned long r6, unsigned long r7)
-+{
-+	unsigned long end_of_ram = bd.bi_memstart + bd.bi_memsize;
-+	unsigned long avail_ram = end_of_ram - (unsigned long)_end;
-+
-+	memcpy(&bd, (bd_t *)r3, sizeof(bd));
-+	loader_info.initrd_addr = r4;
-+	loader_info.initrd_size = r4 ? r5 : 0;
-+	loader_info.cmdline = (char *)r6;
-+	loader_info.cmdline_len = r7 - r6;
-+
-+	simple_alloc_init(_end, avail_ram, 32, 64);
-+	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
-+	serial_console_init();
-+	platform_ops.fixups = platform_fixups;
-+}
--- 
-1.5.0.3
+diff -uprN a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+--- a/arch/powerpc/sysdev/qe_lib/qe.c	2007-01-13 09:37:03.000000000 -0500
++++ b/arch/powerpc/sysdev/qe_lib/qe.c	2007-03-26 17:48:08.000000000 -0400
+@@ -251,12 +251,12 @@ static int qe_sdma_init(void)
+
+  	/* allocate 2 internal temporary buffers (512 bytes size each) for
+  	 * the SDMA */
+-	sdma_buf_offset = qe_muram_alloc(512 * 2, 64);
++	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
+  	if (IS_MURAM_ERR(sdma_buf_offset))
+  		return -ENOMEM;
+
+  	out_be32(&sdma->sdebcr, sdma_buf_offset & QE_SDEBCR_BA_MASK);
+-	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 >>
++	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 <<
+  					QE_SDMR_CEN_SHIFT)));
+
+  	return 0;
