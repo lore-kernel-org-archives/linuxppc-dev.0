@@ -1,17 +1,16 @@
-Return-Path: <tim.martin@viasat.com>
-Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
-	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 49301DDEF3
+Return-Path: <Antonio.DiBacco@technolabs.it>
+Received: from smtp.technolabs.it (unknown [213.82.155.20])
+	by ozlabs.org (Postfix) with ESMTP id 69C1EDDF13
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Mar 2007 04:32:28 +1000 (EST)
+	Tue, 27 Mar 2007 06:55:13 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Reading and writing from/to VME device
-Date: Mon, 26 Mar 2007 11:31:56 -0700
-Message-ID: <821B2170E9E7F04FA38DF7EC21DE48710888A6FA@VCAEXCH01.hq.corp.viasat.com>
-In-reply-to: <929bf310703260814q18957942s218d56bed8fb4009@mail.gmail.com>
-From: "Martin, Tim" <tim.martin@viasat.com>
-To: "Konstantin Boyanov" <kkboyanov@gmail.com>, <linuxppc-embedded@ozlabs.org>
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C76FE9.0A8FCC56"
+Subject: Accessng phy registers
+Date: Mon, 26 Mar 2007 22:55:09 +0200
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E264947@aquib01a>
+From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,56 +21,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> I'm using the MVME6100 board with the Motorola driver for linux v3.5
-(kernel 2.6.15).
+This is a multi-part message in MIME format.
 
-I'm not sure what a "Linux v3.5" is - Montavista?  There are patches
-available from Motorola to the vanila kernel if you're interested in
-using something newer than 2.6.15.
+------_=_NextPart_001_01C76FE9.0A8FCC56
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-> I try to access the CSR registers of an ADC board, in order to
-configure it as to be
-> able to access its memory, on the VME bus using one of the outbound
-windows defined by
-> the driver. As I am new to the whole VME stuff, I'm getting into
-trouble to find out when
-> I'm actually reading something on the VME, i.e. which addresses
-respond.
-> 1. open() and ioctl() one of the /dev/vme_m* devices, which I assume
-is corresponding to
-> an outbound window (at least I try to > configure it as one),=20
-> 2. then mmap() a memory area to hold the contents of the /dev/vme_m*
-device file
-> 3. and finally doing incrementation of the pointer returned by mmap()
-and dereferencing it in the hope that I'll read something, which in most
-cases is 0xFF=20
 
-This sounds like the right steps.  You don't appear to have the ioctl()
-configuration structure set correctly.
-=09
-> memset(&outWinCfgADC, 0, sizeof(vmeOutWindowCfg_t));
->     perror("memset");
->	    outWinCfgADC.windowNbr           =3D 0;
->	    outWinCfgADC.windowEnable     =3D 1;
->	    outWinCfgADC.wrPostEnable      =3D 0;
->	    outWinCfgADC.userAccessType  =3D VME_SUPER;
->	    outWinCfgADC.dataAccessType  =3D VME_DATA;
->	    outWinCfgADC.windowSizeL        =3D 0x200000;
->	    outWinCfgADC.xferProtocol         =3D VME_SCT;
->	    outWinCfgADC.addrSpace           =3D VME_A24;
->	    outWinCfgADC.maxDataWidth     =3D VME_D16;
-=09
-This will setup a window of size 0x200000, type SingleCycleTransfer (vs.
-BLT, 2eSST, etc), 24-bit addressing, 16-bit data.=09
-The target VME address will be 0x00000000, since you didn't configure
-the .xlatedAddrU or .xlatedAddrL portions of outWinCfgADC.  Typically,
-the VME address space is partitioned by VME chassis slot number or some
-other application-specific scheme.  I'm guessing that 0 is not an
-address that any VME board in your chassis is configured to respond to,
-hence your errors.
+I saw that both in phy,c and mii.c (linux 2.6.19) there is support to =
+handle ioctls to read PHY registers. Why? And what should be used from a =
+user application? I have both CONFIG_MII and CONFIG_PHYLIB set to y.
 
-Also, since you're doing 16-bit SCT reads, you probably want to
-dereference your mmap'ed pointer as a 16-bit (unsigned short *) instead
-of a (u_char *).
+Bye,
+Antonio.
 
-Tim
+------_=_NextPart_001_01C76FE9.0A8FCC56
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7234.20">
+<TITLE>Accessng phy registers</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+<BR>
+
+<P><FONT SIZE=3D2>I saw that both in phy,c and mii.c (linux 2.6.19) =
+there is support to handle ioctls to read PHY registers. Why? And what =
+should be used from a user application? I have both CONFIG_MII and =
+CONFIG_PHYLIB set to y.<BR>
+<BR>
+Bye,<BR>
+Antonio.</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C76FE9.0A8FCC56--
