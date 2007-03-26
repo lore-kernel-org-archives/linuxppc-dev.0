@@ -1,19 +1,19 @@
 Return-Path: <sr@denx.de>
 Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
-	by ozlabs.org (Postfix) with ESMTP id BB9CADDE38
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Mar 2007 17:14:52 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id E4577DDE3A
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Mar 2007 17:15:45 +1000 (EST)
 Received: from ubuntu (achn-4db4987d.pool.einsundeins.de [77.180.152.125])
-	by post.webmailer.de (mrclete mo23) (RZmta 5.4)
-	with ESMTP id B031f9j2Q5DfJy for <linuxppc-dev@ozlabs.org>;
-	Mon, 26 Mar 2007 09:14:48 +0200 (MEST)
+	by post.webmailer.de (klopstock mo37) (RZmta 5.4)
+	with ESMTP id G07508j2Q6Nii5 for <linuxppc-dev@ozlabs.org>;
+	Mon, 26 Mar 2007 09:15:42 +0200 (MEST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 3/4] ppc: Add Sequoia defconfig file
-Date: Mon, 26 Mar 2007 09:15:21 +0200
+Subject: [PATCH 4/4] ppc: Add Rainier defconfig file
+Date: Mon, 26 Mar 2007 09:16:14 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200703260915.21763.sr@denx.de>
+Message-Id: <200703260916.15517.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +26,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Signed-off-by: Stefan Roese <sr@denx.de>
 
 ---
-commit 6f3687507baa76b77a98064174bb0545e72c931d
-tree 8ddf03d6472ec07c74a00e40c33272e90e1fa28e
-parent 0a4d38554a7ad9754a752f9bbf129115780a4f09
-author Stefan Roese <sr@denx.de> Mon, 26 Mar 2007 09:00:27 +0200
-committer Stefan Roese <sr@denx.de> Mon, 26 Mar 2007 09:00:27 +0200
+commit c310723e0c15fa56163cf190f226c9f7573e9da9
+tree ff83fc61170405e01dd9c2ac9067b4b75bf0f98b
+parent 6f3687507baa76b77a98064174bb0545e72c931d
+author Stefan Roese <sr@denx.de> Mon, 26 Mar 2007 09:00:50 +0200
+committer Stefan Roese <sr@denx.de> Mon, 26 Mar 2007 09:00:50 +0200
 
- arch/ppc/configs/sequoia_defconfig | 1426 ++++++++++++++++++++++++++++++++++++
- 1 files changed, 1426 insertions(+), 0 deletions(-)
+ arch/ppc/configs/rainier_defconfig | 1286 ++++++++++++++++++++++++++++++++++++
+ 1 files changed, 1286 insertions(+), 0 deletions(-)
 
-diff --git a/arch/ppc/configs/sequoia_defconfig b/arch/ppc/configs/sequoia_defconfig
+diff --git a/arch/ppc/configs/rainier_defconfig b/arch/ppc/configs/rainier_defconfig
 new file mode 100644
-index 0000000..238fd12
+index 0000000..aef1914
 --- /dev/null
-+++ b/arch/ppc/configs/sequoia_defconfig
-@@ -0,0 +1,1426 @@
++++ b/arch/ppc/configs/rainier_defconfig
+@@ -0,0 +1,1286 @@
 +#
 +# Automatically generated make config: don't edit
 +# Linux kernel version: 2.6.21-rc4
-+# Mon Mar 26 08:39:26 2007
++# Mon Mar 26 08:52:44 2007
 +#
 +CONFIG_MMU=y
 +CONFIG_GENERIC_HARDIRQS=y
@@ -150,7 +150,6 @@ index 0000000..238fd12
 +# CONFIG_8xx is not set
 +# CONFIG_E200 is not set
 +# CONFIG_E500 is not set
-+CONFIG_PPC_FPU=y
 +CONFIG_PPC_DCR_NATIVE=y
 +CONFIG_PPC_DCR=y
 +CONFIG_BOOKE=y
@@ -170,10 +169,10 @@ index 0000000..238fd12
 +# CONFIG_LUAN is not set
 +# CONFIG_YUCCA is not set
 +# CONFIG_OCOTEA is not set
-+# CONFIG_RAINIER is not set
-+CONFIG_SEQUOIA=y
++CONFIG_RAINIER=y
++# CONFIG_SEQUOIA is not set
 +# CONFIG_TAISHAN is not set
-+CONFIG_440EPX=y
++CONFIG_440GRX=y
 +CONFIG_440A=y
 +CONFIG_IBM_OCP=y
 +CONFIG_IBM_EMAC4=y
@@ -483,7 +482,6 @@ index 0000000..238fd12
 +# CONFIG_BLK_DEV_LOOP is not set
 +# CONFIG_BLK_DEV_NBD is not set
 +# CONFIG_BLK_DEV_SX8 is not set
-+# CONFIG_BLK_DEV_UB is not set
 +CONFIG_BLK_DEV_RAM=y
 +CONFIG_BLK_DEV_RAM_COUNT=16
 +CONFIG_BLK_DEV_RAM_SIZE=4096
@@ -1023,7 +1021,6 @@ index 0000000..238fd12
 +# Digital Video Broadcasting Devices
 +#
 +# CONFIG_DVB is not set
-+# CONFIG_USB_DABUSB is not set
 +
 +#
 +# Graphics support
@@ -1049,153 +1046,16 @@ index 0000000..238fd12
 +CONFIG_USB_ARCH_HAS_HCD=y
 +CONFIG_USB_ARCH_HAS_OHCI=y
 +CONFIG_USB_ARCH_HAS_EHCI=y
-+CONFIG_USB=y
-+# CONFIG_USB_DEBUG is not set
-+
-+#
-+# Miscellaneous USB options
-+#
-+# CONFIG_USB_DEVICEFS is not set
-+# CONFIG_USB_DYNAMIC_MINORS is not set
-+# CONFIG_USB_OTG is not set
-+
-+#
-+# USB Host Controller Drivers
-+#
-+# CONFIG_USB_EHCI_HCD is not set
-+# CONFIG_USB_ISP116X_HCD is not set
-+CONFIG_USB_OHCI_HCD=y
-+# CONFIG_USB_OHCI_BIG_ENDIAN_DESC is not set
-+# CONFIG_USB_OHCI_BIG_ENDIAN_MMIO is not set
-+CONFIG_USB_OHCI_LITTLE_ENDIAN=y
-+# CONFIG_USB_UHCI_HCD is not set
-+# CONFIG_USB_SL811_HCD is not set
-+
-+#
-+# USB Device Class drivers
-+#
-+# CONFIG_USB_ACM is not set
-+# CONFIG_USB_PRINTER is not set
++# CONFIG_USB is not set
 +
 +#
 +# NOTE: USB_STORAGE enables SCSI, and 'SCSI disk support'
 +#
 +
 +#
-+# may also be needed; see USB_STORAGE Help for more information
-+#
-+CONFIG_USB_STORAGE=y
-+# CONFIG_USB_STORAGE_DEBUG is not set
-+# CONFIG_USB_STORAGE_DATAFAB is not set
-+# CONFIG_USB_STORAGE_FREECOM is not set
-+# CONFIG_USB_STORAGE_ISD200 is not set
-+# CONFIG_USB_STORAGE_DPCM is not set
-+# CONFIG_USB_STORAGE_USBAT is not set
-+# CONFIG_USB_STORAGE_SDDR09 is not set
-+# CONFIG_USB_STORAGE_SDDR55 is not set
-+# CONFIG_USB_STORAGE_JUMPSHOT is not set
-+# CONFIG_USB_STORAGE_ALAUDA is not set
-+# CONFIG_USB_STORAGE_KARMA is not set
-+# CONFIG_USB_LIBUSUAL is not set
-+
-+#
-+# USB Input Devices
-+#
-+# CONFIG_USB_HID is not set
-+
-+#
-+# USB HID Boot Protocol drivers
-+#
-+# CONFIG_USB_KBD is not set
-+# CONFIG_USB_MOUSE is not set
-+# CONFIG_USB_AIPTEK is not set
-+# CONFIG_USB_WACOM is not set
-+# CONFIG_USB_ACECAD is not set
-+# CONFIG_USB_KBTAB is not set
-+# CONFIG_USB_POWERMATE is not set
-+# CONFIG_USB_TOUCHSCREEN is not set
-+# CONFIG_USB_YEALINK is not set
-+# CONFIG_USB_XPAD is not set
-+# CONFIG_USB_ATI_REMOTE is not set
-+# CONFIG_USB_ATI_REMOTE2 is not set
-+# CONFIG_USB_KEYSPAN_REMOTE is not set
-+# CONFIG_USB_APPLETOUCH is not set
-+# CONFIG_USB_GTCO is not set
-+
-+#
-+# USB Imaging devices
-+#
-+# CONFIG_USB_MDC800 is not set
-+# CONFIG_USB_MICROTEK is not set
-+
-+#
-+# USB Network Adapters
-+#
-+# CONFIG_USB_CATC is not set
-+# CONFIG_USB_KAWETH is not set
-+# CONFIG_USB_PEGASUS is not set
-+# CONFIG_USB_RTL8150 is not set
-+# CONFIG_USB_USBNET_MII is not set
-+# CONFIG_USB_USBNET is not set
-+CONFIG_USB_MON=y
-+
-+#
-+# USB port drivers
-+#
-+
-+#
-+# USB Serial Converter support
-+#
-+# CONFIG_USB_SERIAL is not set
-+
-+#
-+# USB Miscellaneous drivers
-+#
-+# CONFIG_USB_EMI62 is not set
-+# CONFIG_USB_EMI26 is not set
-+# CONFIG_USB_ADUTUX is not set
-+# CONFIG_USB_AUERSWALD is not set
-+# CONFIG_USB_RIO500 is not set
-+# CONFIG_USB_LEGOTOWER is not set
-+# CONFIG_USB_LCD is not set
-+# CONFIG_USB_BERRY_CHARGE is not set
-+# CONFIG_USB_LED is not set
-+# CONFIG_USB_CYPRESS_CY7C63 is not set
-+# CONFIG_USB_CYTHERM is not set
-+# CONFIG_USB_PHIDGET is not set
-+# CONFIG_USB_IDMOUSE is not set
-+# CONFIG_USB_FTDI_ELAN is not set
-+# CONFIG_USB_APPLEDISPLAY is not set
-+# CONFIG_USB_LD is not set
-+# CONFIG_USB_TRANCEVIBRATOR is not set
-+# CONFIG_USB_IOWARRIOR is not set
-+
-+#
-+# USB DSL modem support
-+#
-+
-+#
 +# USB Gadget Support
 +#
-+CONFIG_USB_GADGET=y
-+# CONFIG_USB_GADGET_DEBUG_FILES is not set
-+CONFIG_USB_GADGET_SELECTED=y
-+CONFIG_USB_GADGET_NET2280=y
-+CONFIG_USB_NET2280=y
-+# CONFIG_USB_GADGET_PXA2XX is not set
-+# CONFIG_USB_GADGET_GOKU is not set
-+# CONFIG_USB_GADGET_LH7A40X is not set
-+# CONFIG_USB_GADGET_OMAP is not set
-+# CONFIG_USB_GADGET_AT91 is not set
-+# CONFIG_USB_GADGET_DUMMY_HCD is not set
-+CONFIG_USB_GADGET_DUALSPEED=y
-+# CONFIG_USB_ZERO is not set
-+CONFIG_USB_ETH=y
-+CONFIG_USB_ETH_RNDIS=y
-+# CONFIG_USB_GADGETFS is not set
-+# CONFIG_USB_FILE_STORAGE is not set
-+# CONFIG_USB_G_SERIAL is not set
-+# CONFIG_USB_MIDI_GADGET is not set
++# CONFIG_USB_GADGET is not set
 +
 +#
 +# MMC/SD Card support
