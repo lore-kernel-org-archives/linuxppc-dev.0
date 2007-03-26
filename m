@@ -1,27 +1,23 @@
 Return-Path: <glikely@gmail.com>
-Received: from nf-out-0910.google.com (nf-out-0910.google.com [64.233.182.191])
-	by ozlabs.org (Postfix) with ESMTP id C0CE7DDEC0
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id A55E2DDEDE
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Mar 2007 01:54:44 +1000 (EST)
-Received: by nf-out-0910.google.com with SMTP id m18so2599532nfc
+	Tue, 27 Mar 2007 02:08:33 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1524299ugf
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Mar 2007 08:54:42 -0700 (PDT)
-Message-ID: <528646bc0703260854h2350c762re706371db1b3dd8f@mail.gmail.com>
-Date: Mon, 26 Mar 2007 09:54:42 -0600
+	Mon, 26 Mar 2007 09:08:27 -0700 (PDT)
+Message-ID: <528646bc0703260908q7b018060v40db7e66aa81eaee@mail.gmail.com>
+Date: Mon, 26 Mar 2007 10:08:27 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@gmail.com
-To: "Domen Puncer" <domen@coderock.org>
-Subject: Re: [PATCH 5/5] lite5200b suspend: low-power mode
-In-Reply-To: <20070326132308.GD3846@nd47.coderock.org>
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [PATCH] icecube/lite5200b: wakeup from low-power support
+In-Reply-To: <20070315104411.GF22215@moe.telargo.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <20070315103959.GA22215@moe.telargo.com>
-	<20070315104447.GG22215@moe.telargo.com>
-	<528646bc0703150709v49af8085p959bd36e0adf1e4a@mail.gmail.com>
-	<20070315163648.GG19297@nd47.coderock.org>
-	<20070322074109.GA4620@moe.telargo.com>
-	<20070326132308.GD3846@nd47.coderock.org>
-Cc: linuxppc-embedded@ozlabs.org
+	<20070315104411.GF22215@moe.telargo.com>
+Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,27 +28,94 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 3/26/07, Domen Puncer <domen@coderock.org> wrote:
-> On 22/03/07 08:41 +0100, Domen Puncer wrote:
-> > On 15/03/07 17:36 +0100, Domen Puncer wrote:
-> > > Well... the code is only applicable for Lite5200b/mpc5200
-> > > and numbers are from specs.
-> > > And it's shorter than mpc52xx_find_and_map() lines.
-> > > I guess I could rewrite it.
-> >
-> > In asm code I need access to SDRAM controller registers (MBAR+0x100).
-> > Do I add an entry to dts, or do you have other suggestions?
+On 3/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> U-Boot part of Lite5200b low power mode support.
+> Puts SDRAM out of self-refresh and transfers control to
+> address saved at physical 0x0.
 
-Fair enough; this is chip-specific code after all; not device driver
-code.  MBAR must always be retrieved from the device tree, but these
-offsets from MBAR will never move, so you don't need to pull them from
-the device tree.  At least comment it as to where the numbers came
-from.
+This looks pretty straight forward.
+
+My only comment is that psc2_4 is probably used as GPIO instead of
+power control by some users (The lite5200 is an eval board after all).
+ Maybe wrap the code with #ifdef CONFIG_LITE5200B_PM (instead of
+CONFIG_LITE5200B) so that it can be easily compiled out.
+
+Also, '//' style comments should be changed to '/* */'
+
+Otherwise;
+Acked-by: Grant Likely <grant.likely@secretlab.ca>
 
 g.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+>
+> ---
+>  board/icecube/icecube.c |   50 ++++++++++++++++++++++++++++++++++++++++++++++++
+>  1 file changed, 50 insertions(+)
+>
+> Index: u-boot.git/board/icecube/icecube.c
+> ===================================================================
+> --- u-boot.git.orig/board/icecube/icecube.c
+> +++ u-boot.git/board/icecube/icecube.c
+> @@ -42,6 +42,54 @@
+>  #include "mt48lc16m16a2-75.h"
+>  # endif
+>  #endif
+> +
+> +#ifdef CONFIG_LITE5200B
+> +/* u-boot part of low-power mode implementation */
+> +#define SAVED_ADDR (*(void **)0x00000000)
+> +#define PSC2_4 0x02
+> +
+> +void lite5200b_wakeup(void)
+> +{
+> +       unsigned char wakeup_pin;
+> +       void (*linux_wakeup)(void);
+> +
+> +       /* check PSC2_4, if it's down "QT" is signaling we have a wakeup
+> +        * from low power mode */
+> +       *(vu_char *)MPC5XXX_WU_GPIO_ENABLE = PSC2_4;
+> +       __asm__ volatile ("sync");
+> +
+> +       wakeup_pin = *(vu_char *)MPC5XXX_WU_GPIO_DATA_I;
+> +       if (wakeup_pin & PSC2_4)
+> +               return;
+> +
+> +       /* acknowledge to "QT"
+> +        * by holding pin at 1 for 10 uS */
+> +       *(vu_char *)MPC5XXX_WU_GPIO_DIR = PSC2_4;
+> +       __asm__ volatile ("sync");
+> +       *(vu_char *)MPC5XXX_WU_GPIO_DATA_O = PSC2_4;
+> +       __asm__ volatile ("sync");
+> +       udelay(10);
+> +
+> +       /* put ram out of self-refresh */
+> +       *(vu_long *)MPC5XXX_SDRAM_CTRL |= 0x80000000;   // mode_en
+> +       __asm__ volatile ("sync");
+> +       *(vu_long *)MPC5XXX_SDRAM_CTRL |= 0x50000000;   // cke ref_en
+> +       __asm__ volatile ("sync");
+> +       *(vu_long *)MPC5XXX_SDRAM_CTRL &= ~0x80000000;  // !mode_en
+> +       __asm__ volatile ("sync");
+> +       udelay(10); /* wait a bit */
+> +
+> +       /* jump back to linux kernel code */
+> +       linux_wakeup = SAVED_ADDR;
+> +       printf("\n\nLooks like we just woke, transferring control to 0x%08lx\n",
+> +                       linux_wakeup);
+> +       linux_wakeup();
+> +}
+> +#else
+> +#define lite5200b_wakeup()
+> +#endif
+> +
+> +
+>  #ifndef CFG_RAMBOOT
+>  static void sdram_start (int hi_addr)
+>  {
+> @@ -208,6 +256,8 @@ long int initdram (int board_type)
+>                 __asm__ volatile ("sync");
+>         }
+>
+> +       lite5200b_wakeup();
+> +
+>         return dramsize + dramsize2;
+>  }
