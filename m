@@ -1,22 +1,23 @@
-Return-Path: <domen@coderock.org>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id 0D068DDF43
+Return-Path: <jan-hinnerk.dumjahn@arcor.de>
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D28BBDDF18
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Mar 2007 23:54:55 +1000 (EST)
-Date: Mon, 26 Mar 2007 15:23:09 +0200
-From: Domen Puncer <domen@coderock.org>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 5/5] lite5200b suspend: low-power mode
-Message-ID: <20070326132308.GD3846@nd47.coderock.org>
-References: <20070315103959.GA22215@moe.telargo.com>
-	<20070315104447.GG22215@moe.telargo.com>
-	<528646bc0703150709v49af8085p959bd36e0adf1e4a@mail.gmail.com>
-	<20070315163648.GG19297@nd47.coderock.org>
-	<20070322074109.GA4620@moe.telargo.com>
+	Tue, 27 Mar 2007 00:08:16 +1000 (EST)
+From: Jan-Hinnerk Dumjahn <jan-hinnerk.dumjahn@arcor.de>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: Problems with PHY on STK5200
+Date: Mon, 26 Mar 2007 16:07:57 +0200
+References: <20070301185745.254BB353C3A@atlas.denx.de>
+	<200703051712.29021.jan-hinnerk.dumjahn@arcor.de>
+In-Reply-To: <200703051712.29021.jan-hinnerk.dumjahn@arcor.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070322074109.GA4620@moe.telargo.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200703261607.57617.jan-hinnerk.dumjahn@arcor.de>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,34 +28,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 22/03/07 08:41 +0100, Domen Puncer wrote:
-> On 15/03/07 17:36 +0100, Domen Puncer wrote:
-> > On 15/03/07 08:09 -0600, Grant Likely wrote:
-> > > On 3/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> > ...
-> > > >+       /* map registers */
-> > > >+       mbar = ioremap_nocache(0xf0000000, 0x8000);
-> > > 
-> > > Magic numbers?  Really?  This should be retrieved from the device
-> > > tree.  There is always the possibility of mbar getting moved.
-> > > 
-> > ...
-> > > >+       gpw = mbar + 0xc00;
-> > > >+       bes = mbar + 0x1200;
-> > > >+       xlb = mbar + 0x1f00;
-> > > 
-> > > Again, magic numbers
-> > 
-> > Well... the code is only applicable for Lite5200b/mpc5200
-> > and numbers are from specs.
-> > And it's shorter than mpc52xx_find_and_map() lines.
-> > I guess I could rewrite it.
-> 
-> In asm code I need access to SDRAM controller registers (MBAR+0x100).
-> Do I add an entry to dts, or do you have other suggestions?
+On Monday 05 March 2007 17:12, Jan-Hinnerk Dumjahn wrote:
+> On Thursday 01 March 2007 19:57, Wolfgang Denk wrote:
+> > In message <200703011216.57611.jan-hinnerk.dumjahn@arcor.de> you wrote:
 
-And on efika, the same problem + there is no CDM nor (wakeup)
-gpio's in device tree. What to do there?
+[...]
+> > > Can anybody explain what the driver should to? Or even better has some
+> > > patch to make it work?
+> >
+> > The driver should work :-) And it certainly does for me.
+>
+> It certainly doesn't work for me ;-(
+>
+> All least newer versions of the kernel don't register
+> "mdio_timer_callback()". So, link up report isn't working.
+> This is caused by two occurences of the following code in
+> mpc5xxx_fec_setup().
+>
+> if(!reinit) {
+> ...
+>   if(reinit) {
+> ...
+>   }
+> ...
+> }
 
+I've done some more analysis: the following is a list of code/data in "fec.c" 
+that is never used:
 
-	Domen
+- lines 936-950 (if-clause)
+- lines 1035-1069 (if-clause)
+- mdio_timer_callback()
+- mpc5xxx_fec_link_up()
+- mii_display_status()
+- phy_cmd_config
+- mii_queue_config()
+- mii_display_config()
+- mii_do_cmd()
+
+BTW: What is the status of the code guarded by CONFIG_USE_MDIO_NOT_YET?
+
+Best regards
+  Jan-Hinnerk Dumjahn
