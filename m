@@ -2,17 +2,17 @@ Return-Path: <jdl@jdl.com>
 Received: from jdl.com (jdl.com [208.123.74.7])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2BF63DDF13
-	for <linuxppc-dev@ozlabs.org>; Mon, 26 Mar 2007 23:35:27 +1000 (EST)
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH] Remove bogus errors from check_chosen. 
-In-Reply-To: Your message of "Thu, 22 Mar 2007 11:11:09 CDT."
-	<20070322161109.GA20512@ld0162-tx32.am.freescale.net>
-References: <20070322161109.GA20512@ld0162-tx32.am.freescale.net> 
-Date: Mon, 26 Mar 2007 08:35:17 -0500
+	by ozlabs.org (Postfix) with ESMTP id D1A39DDF36
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Mar 2007 23:41:55 +1000 (EST)
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH] DTC: Add support for a C-like #include "file" mechanism. 
+In-Reply-To: Your message of "Fri, 23 Mar 2007 15:18:41 CDT."
+	<1174681120.32390.82.camel@ld0161-tx32>
+References: <1174681120.32390.82.camel@ld0161-tx32> 
+Date: Mon, 26 Mar 2007 08:41:52 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1HVpLx-0004Gk-Ip@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <E1HVpSK-0004M3-6D@jdl.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,16 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Scott Wood mumbled:
-> It is not an error for /chosen (or any of its children) to be missing.
+So, like, the other day Jon Loeliger mumbled:
 > 
-> It is not a requirement that the output of dtc be a complete, valid
-> device tree, as it may be intended that the dtb be passed through boot
-> code that will complete it.  Thus, do not complain.
+> Keeps track of open files in a stack, and assigns
+> a filenum to source positions for each lexical token.
+> Modified error reporting to show source file as well.
+> No policy on file directory basis has been decided.
+> Still handles stdin.
 > 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> Tested on all arch/powerpc/boot/dts DTS files
+> 
+> Signed-off-by: Jon Loeliger <jdl@freescale.com>
 
 Applied.
 
-Thanks,
+Er, thanks,
 jdl
