@@ -1,23 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <Pine.LNX.4.62.0703261054180.8896@pademelon.sonytel.be>
-References: <1174544624.10836.24.camel@localhost.localdomain>
-	<94d8e19d4b061504fcfd08d1ab70cc78@kernel.crashing.org>
-	<20070323120619.GA7472@localhost.localdomain>
-	<94FD59E6-B618-4AB2-9BAB-D40A70CC1589@kernel.crashing.org>
-	<b7160f3020aae6e7926b79c14939750c@kernel.crashing.org>
-	<1174679208.10836.71.camel@localhost.localdomain>
-	<6df7c98b19ded7a8a006e375255e3c3f@kernel.crashing.org>
-	<Pine.LNX.4.62.0703261054180.8896@pademelon.sonytel.be>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <2900f15414598ecb5ebb6845f6defe86@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] force -mno-string option on cell
-Date: Mon, 26 Mar 2007 14:33:07 +0200
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Cc: Arnd Bergmann <arnd@arndb.de>, Akinobu Mita <mita@fixstars.com>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org
+Return-Path: <jdl@jdl.com>
+Received: from jdl.com (jdl.com [208.123.74.7])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2BF63DDF13
+	for <linuxppc-dev@ozlabs.org>; Mon, 26 Mar 2007 23:35:27 +1000 (EST)
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] Remove bogus errors from check_chosen. 
+In-Reply-To: Your message of "Thu, 22 Mar 2007 11:11:09 CDT."
+	<20070322161109.GA20512@ld0162-tx32.am.freescale.net>
+References: <20070322161109.GA20512@ld0162-tx32.am.freescale.net> 
+Date: Mon, 26 Mar 2007 08:35:17 -0500
+From: Jon Loeliger <jdl@jdl.com>
+Message-Id: <E1HVpLx-0004Gk-Ip@jdl.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> strings instructions suck, get away with it.
->>
->> No they don't.
->>
->> End of this particular subthread I suppose, heh.
->
-> Really? `They suck!' 'They don't!'...
->
-> Ben: Why do they suck?
-> Segher: Why don't they suck?
+So, like, the other day Scott Wood mumbled:
+> It is not an error for /chosen (or any of its children) to be missing.
+> 
+> It is not a requirement that the output of dtc be a complete, valid
+> device tree, as it may be intended that the dtb be passed through boot
+> code that will complete it.  Thus, do not complain.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-On most CPUs, they perform just fine, microcoded or not,
-in most circumstances (hint: the bottleneck is not at the
-decode stage).  They can actually help because of improved
-code density.
+Applied.
 
-For CPUs where they do suck, GCC knows (or should know)
-preferably not to generate them.  Like on CBE, where lswi
-causes a lovely 11-cycle bubble.  But guess what, many
-more insns do so -- and we're not going to unconditionally
-add a compiler flag to every kernel build that prevents
-the compiler from generating "andi." insns I hope :-)
-
-
-Segher
+Thanks,
+jdl
