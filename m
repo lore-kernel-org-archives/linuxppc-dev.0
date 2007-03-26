@@ -1,17 +1,22 @@
-Return-Path: <b04825@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CEC2CDDEE3
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 05:25:51 +1000 (EST)
-From: Timur Tabi <timur@freescale.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH] qe: ucc_slow.guemr is in the wrong place
-Date: Mon, 26 Mar 2007 14:25:42 -0500
-Message-Id: <1174937142750-git-send-email-timur@freescale.com>
-Cc: Timur Tabi <timur@freescale.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4D48FDDEEE
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 06:10:38 +1000 (EST)
+In-Reply-To: <4602C74F.6040402@mindspring.com>
+References: <460292FA.8050206@mindspring.com>	<E9D1DC31-9730-4431-9414-0870FDD3EAF6@kernel.crashing.org>	<4602BD39.9020102@mindspring.com>
+	<20070322125712.2229ff99.kim.phillips@freescale.com>
+	<4602C74F.6040402@mindspring.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <DD2F76DD-4427-4182-B17A-B470CF14E41D@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: MPC83xx SDMR setup error
+Date: Mon, 26 Mar 2007 15:10:08 -0500
+To: Chuck Meade <chuckmeade@mindspring.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +26,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The definition of struct ucc_slow puts the guemr register immediately after the
-utpt register, when it should be at offset 0x90.  This patch adds the missing
-0x52-byte padding.
 
-Signed-off-by: Timur Tabi <timur@freescale.com>
----
- include/asm-powerpc/immap_qe.h |    3 ++-
- 1 files changed, 2 insertions(+), 1 deletions(-)
+On Mar 22, 2007, at 1:13 PM, Chuck Meade wrote:
 
-diff --git a/include/asm-powerpc/immap_qe.h b/include/asm-powerpc/immap_qe.h
-index 9fdd049..1020b7f 100644
---- a/include/asm-powerpc/immap_qe.h
-+++ b/include/asm-powerpc/immap_qe.h
-@@ -258,8 +258,9 @@ struct ucc_slow {
- 	u8	uccs;		/* UCCx status register */
- 	u8	res3[0x24];
- 	__be16	utpt;
-+	u8	res4[0x52];
- 	u8	guemr;		/* UCC general extended mode register */
--	u8	res4[0x200 - 0x091];
-+	u8	res5[0x200 - 0x091];
- } __attribute__ ((packed));
- 
- /* QE UCC Fast */
--- 
-1.5.0.2.260.g2eb065
+>>> However, as I mention below, it is unclear whether the buffer  
+>>> alignment
+>>> requirement is 64 bytes or 4Kbytes.  The code aligns the buffer  
+>>> to 64 bytes.
+>> The rev.1 8360 manual changes the rev.0 manual's 64 bytes to a  
+>> 4Kbytes alignment requirement, so it's probably best to go with 4KiB.
+>
+> Thanks for the information Kim.
+>
+> In light of this alignment requirement, I have updated the patch  
+> and included
+> it below.  The new part of the patch (the alignment change) could  
+> prevent
+> potentially serious problems of the SDMA using MURAM that is owned  
+> by other
+> units.
+>
+> Chuck
+
+Can you send this with a more proper header/subject and Signed-off- 
+by, according to Documentation/SubmittingPatches
+
+- kumar
+
+> diff -uprN a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/ 
+> qe_lib/qe.c
+> --- a/arch/powerpc/sysdev/qe_lib/qe.c	2007-03-22 14:00:02.000000000  
+> -0400
+> +++ b/arch/powerpc/sysdev/qe_lib/qe.c	2007-03-22 14:01:30.000000000  
+> -0400
+> @@ -251,12 +251,12 @@ static int qe_sdma_init(void)
+>
+>  	/* allocate 2 internal temporary buffers (512 bytes size each) for
+>  	 * the SDMA */
+> -	sdma_buf_offset = qe_muram_alloc(512 * 2, 64);
+> +	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
+>  	if (IS_MURAM_ERR(sdma_buf_offset))
+>  		return -ENOMEM;
+>
+>  	out_be32(&sdma->sdebcr, sdma_buf_offset & QE_SDEBCR_BA_MASK);
+> -	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 >>
+> +	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 <<
+>  					QE_SDMR_CEN_SHIFT)));
+>
+>  	return 0;
