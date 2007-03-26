@@ -1,18 +1,21 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 2B97BDDF7F
+Return-Path: <domen@coderock.org>
+Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
+	by ozlabs.org (Postfix) with ESMTP id 0D068DDF43
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 26 Mar 2007 05:39:52 +1000 (EST)
-To: "Ken Sakurai" <sakurken@gmail.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: AVNET 440GX board 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 23 Mar 2007 16:30:50 EST."
-	<393e3a4b0703231430n65b01a79jaff5942004405aa4@mail.gmail.com>
-Date: Sun, 25 Mar 2007 21:39:50 +0200
-Sender: wd@denx.de
-Message-Id: <20070325193950.4B73A35264E@atlas.denx.de>
+	Mon, 26 Mar 2007 23:54:55 +1000 (EST)
+Date: Mon, 26 Mar 2007 15:23:09 +0200
+From: Domen Puncer <domen@coderock.org>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH 5/5] lite5200b suspend: low-power mode
+Message-ID: <20070326132308.GD3846@nd47.coderock.org>
+References: <20070315103959.GA22215@moe.telargo.com>
+	<20070315104447.GG22215@moe.telargo.com>
+	<528646bc0703150709v49af8085p959bd36e0adf1e4a@mail.gmail.com>
+	<20070315163648.GG19297@nd47.coderock.org>
+	<20070322074109.GA4620@moe.telargo.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070322074109.GA4620@moe.telargo.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,23 +27,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <393e3a4b0703231430n65b01a79jaff5942004405aa4@mail.gmail.com> you wrote:
+On 22/03/07 08:41 +0100, Domen Puncer wrote:
+> On 15/03/07 17:36 +0100, Domen Puncer wrote:
+> > On 15/03/07 08:09 -0600, Grant Likely wrote:
+> > > On 3/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> > ...
+> > > >+       /* map registers */
+> > > >+       mbar = ioremap_nocache(0xf0000000, 0x8000);
+> > > 
+> > > Magic numbers?  Really?  This should be retrieved from the device
+> > > tree.  There is always the possibility of mbar getting moved.
+> > > 
+> > ...
+> > > >+       gpw = mbar + 0xc00;
+> > > >+       bes = mbar + 0x1200;
+> > > >+       xlb = mbar + 0x1f00;
+> > > 
+> > > Again, magic numbers
+> > 
+> > Well... the code is only applicable for Lite5200b/mpc5200
+> > and numbers are from specs.
+> > And it's shorter than mpc52xx_find_and_map() lines.
+> > I guess I could rewrite it.
 > 
-> I found that the bootelf command actually jumped to _start(), and then
-> stoped inside load_kernel()@arch/ppc/boot/simple/misc.c.  Because of
-> stupid debugging method, just slow progress.
+> In asm code I need access to SDRAM controller registers (MBAR+0x100).
+> Do I add an entry to dts, or do you have other suggestions?
 
-You waste your efforts. You use the wrong image format (ELF instead of
-uImage] and the wrong boot command [bootelf instead of bootm].
+And on efika, the same problem + there is no CDM nor (wakeup)
+gpio's in device tree. What to do there?
 
-Best regards,
 
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-Punishment becomes ineffective after a certain point. Men become  in-
-sensitive.
-	-- Eneg, "Patterns of Force", stardate 2534.7
+	Domen
