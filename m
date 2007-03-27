@@ -1,31 +1,16 @@
-Return-Path: <fenkes@de.ibm.com>
-Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EB14BDDEE0
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 00:22:11 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l2REM6HQ297350
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 14:22:06 GMT
-Received: from d12av03.megacenter.de.ibm.com (d12av03.megacenter.de.ibm.com
-	[9.149.165.213])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l2REM6MV1859720
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 16:22:06 +0200
-Received: from d12av03.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av03.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l2REM5rS021334
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 16:22:06 +0200
-From: Joachim Fenkes <fenkes@de.ibm.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH] ibmebus: newline fix
-Date: Tue, 27 Mar 2007 15:18:55 +0100
+Return-Path: <chuckmeade@mindspring.com>
+Received: from elasmtp-kukur.atl.sa.earthlink.net
+	(elasmtp-kukur.atl.sa.earthlink.net [209.86.89.65])
+	by ozlabs.org (Postfix) with ESMTP id BFD74DDEFA
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 00:46:19 +1000 (EST)
+Message-ID: <46092E32.2060501@mindspring.com>
+Date: Tue, 27 Mar 2007 10:46:10 -0400
+From: Chuck Meade <chuckmeade@mindspring.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200703271618.55616.fenkes@de.ibm.com>
-Cc: pmac@au1.ibm.com, themann@de.ibm.com, paulus@samba.org, johnrose@us.ibm.com
+To: galak@kernel.crashing.org
+Subject: [PATCH] Fix QUICC Engine SDMA setup errors
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,29 +20,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Stupid me forgot a newline in an error message.
+Correct the alignment of the internal buffer used by the QUICC Engine
+SDMA controller to 4Kbytes.  Correct the shift direction in the logic
+that sets up the SDMR register for the QUICC Engine SDMA controller.
 
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+Signed-off-by: Chuck Meade <chuckmeade@mindspring.com>
 ---
+In addition to fixing the bugs, this version of this patch addresses
+Segher's concerns about fixing the line break placement.  It also
+addresses Leo's concerns about using the more accurate term
+"QUICC Engine" rather than "MPC83xx" in the subject and header.
 
+  arch/powerpc/sysdev/qe_lib/qe.c |    6 +++---
+  1 files changed, 3 insertions(+), 3 deletions(-)
 
-Applies on top of
-"ibmebus: change probe/remove interface from using loc-code to DT path"
+diff -uprN a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+--- a/arch/powerpc/sysdev/qe_lib/qe.c	2007-01-13 09:37:03.000000000 -0500
++++ b/arch/powerpc/sysdev/qe_lib/qe.c	2007-03-27 09:51:23.000000000 -0400
+@@ -251,13 +251,13 @@ static int qe_sdma_init(void)
 
+  	/* allocate 2 internal temporary buffers (512 bytes size each) for
+  	 * the SDMA */
+-	sdma_buf_offset = qe_muram_alloc(512 * 2, 64);
++	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
+  	if (IS_MURAM_ERR(sdma_buf_offset))
+  		return -ENOMEM;
 
- ibmebus.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  	out_be32(&sdma->sdebcr, sdma_buf_offset & QE_SDEBCR_BA_MASK);
+-	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 >>
+-					QE_SDMR_CEN_SHIFT)));
++	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
++					(0x1 << QE_SDMR_CEN_SHIFT)));
 
-
-diff -Nurp 03b.path/arch/powerpc/kernel/ibmebus.c 03c.path/arch/powerpc/kernel/ibmebus.c
---- 03b.path/arch/powerpc/kernel/ibmebus.c	2007-03-21 15:23:23.000000000 +0100
-+++ 03c.path/arch/powerpc/kernel/ibmebus.c	2007-03-27 15:30:44.341143552 +0200
-@@ -421,7 +421,7 @@ static ssize_t ibmebus_store_probe(struc
- 		of_node_put(dn);
- 		rc = IS_ERR(dev) ? PTR_ERR(dev) : count;
- 	} else {
--		printk(KERN_WARNING "%s: no such device node: %s",
-+		printk(KERN_WARNING "%s: no such device node: %s\n",
- 		       __FUNCTION__, path);
- 		rc = -ENODEV;
- 	}
+  	return 0;
+  }
