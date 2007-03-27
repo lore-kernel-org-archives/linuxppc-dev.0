@@ -1,18 +1,18 @@
-Return-Path: <kryn@in2p3.fr>
-Received: from ccimap.in2p3.fr (ccimap.in2p3.fr [134.158.69.6])
-	by ozlabs.org (Postfix) with ESMTP id 06454DDE41
+Return-Path: <powerpc440@googlemail.com>
+Received: from mu-out-0910.google.com (mu-out-0910.google.com [209.85.134.184])
+	by ozlabs.org (Postfix) with ESMTP id 92DF2DDEE9
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 27 Mar 2007 22:39:00 +1000 (EST)
-Message-ID: <46091060.4000500@in2p3.fr>
-Date: Tue, 27 Mar 2007 14:38:56 +0200
-From: Didier Kryn <kryn@in2p3.fr>
+	Wed, 28 Mar 2007 00:39:36 +1000 (EST)
+Received: by mu-out-0910.google.com with SMTP id w9so3030819mue
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 27 Mar 2007 07:39:34 -0700 (PDT)
+Message-ID: <46092D3A.7000903@googlemail.com>
+Date: Tue, 27 Mar 2007 16:42:02 +0200
+From: powerpc440 <powerpc440@googlemail.com>
 MIME-Version: 1.0
-Subject: Re: Reading and writing from/to VME device
-References: <929bf310703260814q18957942s218d56bed8fb4009@mail.gmail.com>
-	<4608DF55.90508@in2p3.fr>
-In-Reply-To: <4608DF55.90508@in2p3.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Konstantin Boyanov <kkboyanov@gmail.com>, linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Custom board based on PPC405 and PCI Graphic controler problem.
+Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,234 +23,99 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    Sorry, I was wrong about my second point, mmap: MAP_SHARED works=20
-fine and anyway seems more reasonable than MAP_PRIVATE. I just made=20
-A24/D16 transfers, with a sequence similar to yours.
-    Good luck.
-    Didier
+Hi,
 
-Didier Kryn a =E9crit :
->     Hi Konstantin,
->     I am new to this board, and, by chance I am just starting this week=
-=20
-> my first test wit the VME on this board (I have however more than 20=20
-> years of VME experience). Your whole logic is mainly OK.  My driver use=
-s=20
-> slightly different device names but it seems very similar and the API=20
-> uses the same structures. I just noticed three things which bother me:
->     1) You declare outWinCfg and use later in the code outWinCfgADC. I =
+I have a custom board, based on ppc405ep CPU. On the board are 3 PCI devices: sATA, USB and PCI Slot. sATA and PCI working already gut, but still I have some troubles with a Graphic Controler put on PCI slot. The graphic card is standard 3.3V PCI Radeon 7000. I have compile xorg 7.2, and try to start the X server with radeon driver. The X server starts, the monitor is found with the correct model, but no picture is appears. After several seconds the whole board freeze. After system check no Xorg.0.log file is stored, but while X server starts, I see follow messages in serial console:
 
-> guess the compiler will complain, unless I missed something. I guess=20
-> this is not the file you actually compiled.
->     2) Why do you specify MAP_SHARED in the mmap() call ? I sort of=20
-> understood that the philosophy of this driver was all against sharing. =
+root@localhost:~$ X
+_XSERVTransSocketOpenCOTSServer: Unable to open socket for inet6
+_XSERVTransOpen: transport open failed for inet6/localhost:0
+_XSERVTransMakeAllCOTSServerListeners: failed to open listener for inet6
 
-> Maybe it works, but I wouldn't try it the first time.
->     3) I think it is an error to declare your data pointer as a u_char =
+X Window System Version 7.2.0
+Release Date: 22 January 2007
+X Protocol Version 11, Revision 0, Release 7.2
+Build Operating System: Linux 2.6.16.27 ppc
+Current Operating System: Linux localhost 2.6.16.27 #13 Fri Mar 23 10:33:46 CET 2007 ppc
+Build Date: 27 March 2007
+        Before reporting problems, check http://wiki.x.org
+        to make sure that you have the latest version.
+Module Loader present
+Markers: (--) probed, (**) from config file, (==) default setting,
+        (++) from command line, (!!) notice, (II) informational,
+        (WW) warning, (EE) error, (NI) not implemented, (??) unknown.
+(==) Log file: "/usr/xorg/var/log/Xorg.0.log", Time: Tue Mar 27 15:02:51 2007
+(==) Using config file: "/etc/X11/xorg.conf"
+(WW) RADEON: No matching Device section for instance (BusID PCI:0:1:1) found
+(WW) ****INVALID IO ALLOCATION**** b: 0xe800ff00 e: 0xe800ffff correcting
+(EE) end of block range 0xe7ffffff < begin 0xe8000000
+(**) RADEON(0): RADEONPreInit
+(**) RADEON(0): RADEONScreenInit b8000000 0
+(**) RADEON(0): Map: 0xb8000000, 0x00800000
+(**) RADEON(0): RADEONSave
+(**) RADEON(0): RADEONSaveMode(0x101e1408)
+(**) RADEON(0): Read: 0x0000003f 0x000001bb 0x00000000
+(**) RADEON(0): Read: rd=63, fd=443, pd=0
+(**) RADEON(0): RADEONSaveMode returns 0x101e1408
+(**) RADEON(0): RADEONInitMemoryMap() :
+(**) RADEON(0):   mem_size         : 0x08000000
+(**) RADEON(0):   MC_FB_LOCATION   : 0xbfffb800
+(**) RADEON(0):   MC_AGP_LOCATION  : 0xffffffc0
+(**) RADEON(0): RADEONModeInit()
+1400x1050     122.00  1400 1488 1640 1880  1050 1052 1064 1082 (24,32) +H +V
+1400x1050     122.00  1400 1488 1640 1880  1050 1052 1064 1082 (24,32) +H +V
+(**) RADEON(0): Pitch = 11534512 bytes (virtualX = 1400, displayWidth = 1408)
+(**) RADEON(0): dc=12200, of=24400, fd=108, pd=2
+(**) RADEON(0): RADEONInit returns 0x101e1db8
+(**) RADEON(0): RADEONRestoreMode()
+(**) RADEON(0): RADEONRestoreMode(0x101e1db8)
+(**) RADEON(0): RADEONRestoreMemMapRegisters() :
+(**) RADEON(0):   MC_FB_LOCATION   : 0xbfffb800
+(**) RADEON(0):   MC_AGP_LOCATION  : 0xffffffc0
+(**) RADEON(0):   Map Changed ! Applying ...
+(**) RADEON(0):   Map applied, resetting engine ...
+(**) RADEON(0): Updating display base addresses...
+(**) RADEON(0): Memory map updated.
+(**) RADEON(0): Programming CRTC1, offset: 0x00000000
+(**) RADEON(0): Wrote: 0x0000000c 0x0001006c 0x00000000 (0x0000a400)
+(**) RADEON(0): Wrote: rd=12, fd=108, pd=1
+(**) RADEON(0): GRPH_BUFFER_CNTL from 20205c5c to 200e5c5c
+(**) RADEON(0): RADEONSaveScreen(0)
+(**) RADEON(0): Setting up initial surfaces
+(**) RADEON(0): Initializing fb layer
+(**) RADEON(0): Setting up accel memmap
+(**) RADEON(0): Initializing backing store
+(**) RADEON(0): Setting up final surfaces
+(**) RADEON(0): Initializing Acceleration
+(**) RADEON(0): EngineInit (32/32)
+(**) RADEON(0): Pitch for acceleration = 176
+(**) RADEON(0): EngineRestore (32/32)
+(**) RADEON(0): Initializing DPMS
+(**) RADEON(0): Initializing Cursor
+(**) RADEON(0): Initializing color mapnevertheless;
+(**) RADEON(0): Initializing DGA
+(**) RADEON(0): Initializing Xv
+(**) RADEON(0): RADEONScreenInit finished
+expected keysym, got dead_diaresis: line 143 of pc/de
+The XKEYBOARD keymap compiler (xkbcomp) reports:
+> Warning:          Type "ONE_LEVEL" has 1 levels, but <RALT> has 2 symbols
+>                   Ignoring extra symbols
+Errors from xkbcomp are not fatal to the X server
+(**) RADEON(0): Idle timed out: 64 entries, stat=0x80060140
+(EE) RADEON(0): Idle timed out, resetting engine...
+(**) RADEON(0): EngineRestore (32/32)
 
-> *. If you configure your interface for D16, you must perform D16 access=
-=2E=20
-> For example, you might do the following:
->
-> unsigned short *rdPtr;
-> ...
-> rdPtr =3D (unsigned short *)mmap(...);
->     for(i=3D0;i<0x50;i++){
->        printf("# Read at VME address %x =3D %x\n", i*sizeof(*rdPtr),=20
-> rdPtr[i] );
->     }
->
-> I like using sizeof() instead of 2 because it remains valid if you=20
-> convert your code for D32.
-> If you want to perform D8 access, you should configure your window=20
-> accordingly. Beware that there are 2 kinds of D8 transfers, which make =
 
-> them more complicated and, for that reason mostly abandonned. IIRC, the=
-=20
-> VITA standard for CR/CSR defines 1byte data words at even addresses so =
+I know that the monitor is found, because at first I was try with xorg 7.0, and the system stores log file. Nevertheless the error message was the same:
 
-> as to transfer them as D16. Therefore you should transfer them as short=
-=20
-> and then mask the high order byte. I don't know what the high order byt=
-e=20
-> will be in case of successfull transfer. If it is 0, then it is fine,=20
-> because, since a bus error would set all bits to 1, you can check=20
-> immediately the sucess of the transfer.
->
->     Hope this helps.
->     Didier
->
-> Konstantin Boyanov a =E9crit :
->  =20
->> Hi list,
->>
->> I'm using the MVME6100 board with the Motorola driver for linux v3.5=20
->> (kernel 2.6.15). I try to access the CSR registers of an ADC board, in=
-=20
->> order to configure it as to be able to access its memory, on the VME=20
->> bus using one of the outbound windows defined by the driver. As I am=20
->> new to the whole VME stuff, I'm getting into trouble to find out when =
+(EE) RADEON(0): Idle timed out, resetting engine...
 
->> I'm actually reading something on the VME, i.e. which addresses respon=
-d.
->> I'm trying the following schema (source code @ EOM):
->>
->> 1. open() and ioctl() one of the /dev/vme_m* devices, which I assume=20
->> is corresponding to an outbound window (at least I try to configure it=
-=20
->> as one),
->> 2. then mmap() a memory area to hold the contents of the /dev/vme_m*=20
->> device file
->> 3. and finally doing incrementation of the pointer returned by mmap() =
 
->> and dereferencing it in the hope that I'll read something, which in=20
->> most cases is 0xFF
->>
->> In fact my code is very similar to test code that comes with the=20
->> driver and also with a sample code I found in this thread=20
->> ->http://ozlabs.org/pipermail/linuxppc-dev/1999-May/001906.html=20
->> <http://ozlabs.org/pipermail/linuxppc-dev/1999-May/001906.html>
->> I've tried to do a read() on the opened /dev/vme_m* device but I only =
+My question is, what I have to do in u-boot or Linux kernel, to run a standard PCI graphic card on PPC405 system?
 
->> succeed in reading 0 bytes, and when I try to read in chunks from the =
+PS:I was try also the Kernel's framebuffer modules: RADEON and REDEON_OLD but also without any success.
 
->> VME bus i get errno 22 on reads like read(fd, buffer, 1024) for exampl=
-e.
->>
->> I don't know if my strategy is correct in the first place but that's=20
->> what I came up with.
->> When I try to run one of the test applications that came with the=20
->> driver (the "testout" one) I get an errno =3D 29 (Illegal seek?! ) on =
+Thank you in advance!
 
->> the read() operations.
->> So my question is whether I make the right steps in reading an address=
-=20
->> on the VME bus. I know I'm missing something, so I'll be glad to get=20
->> some directions as to how to be sure whether I'm reading something=20
->> from the VME bus and where I'm able to write.
->>
->> Best regards,
->> Konstantin
->> ________________________________
->>
->> #include <stdio.h>
->> #include <string.h>
->> #include <errno.h>
->> #include <sys/ioctl.h>
->> #include <unistd.h>
->> #include "vmedrv.h"
->>
->> int main(int argc, char* argv[])
->> {
->>     vmeOutWindowCfg_t outWinCfg;
->>     vmeOutWindowCfg_t outWinGet;
->>
->>     int fdOut, status, i, j;
->>     unsigned int  n;
->>     u_char *rdPtr, *getPtr;
->>
->>     if(getMyVmeInfo()){
->>       printf("getMyVmeInfo failed.\n");
->>       exit (1);
->>     }
->>
->>     fdOut =3D open("/dev/vme_m0", O_RDWR);
->>     perror("open");
->>     if(fdOut < 0){
->>       printf("Opening /dev/vme_m0 failed. Errno =3D %d\n", errno);
->>     }
->>
->>     memset(&outWinCfgADC, 0, sizeof(vmeOutWindowCfg_t));
->>     perror("memset");
->>
->>     outWinCfgADC.windowNbr           =3D 0;
->>     outWinCfgADC.windowEnable     =3D 1;
->>     outWinCfgADC.wrPostEnable      =3D 0;
->>     outWinCfgADC.userAccessType  =3D VME_SUPER;
->>     outWinCfgADC.dataAccessType  =3D VME_DATA;
->>     outWinCfgADC.windowSizeL        =3D 0x200000;
->>     outWinCfgADC.xferProtocol         =3D VME_SCT;
->>     outWinCfgADC.addrSpace           =3D VME_A24;
->>     outWinCfgADC.maxDataWidth     =3D VME_D16;
->>
->>     status =3D ioctl(fdOut, VME_IOCTL_SET_OUTBOUND, &outWinCfgADC);
->>     perror("ioctl");
->>     if(status < 0){
->>         printf("*** ioctl set on outWinCfgADC failed. Errno =3D %d\n",=
-=20
->> errno);
->>         exit (1);
->>     }
->>     memset(&outWinGetADC, 0, sizeof(vmeOutWindowCfg_t));
->>     outWinGetADC.windowNbr =3D 0;
->>
->>     status =3D ioctl(fdOut, VME_IOCTL_GET_OUTBOUND, &outWinGetADC);
->>     perror("ioctl");
->>     if(status < 0){
->>         printf("*** ioctl get on outWinGetADC failed. Errno =3D %d\n",=
-=20
->> errno);
->>         exit (1);
->>     }
->>
->>     /*
->>      * Check wheather the get and set configurations are the same
->>      */
->>
->>     getPtr =3D (u_char *) mmap(0, outWinCfgADC.windowSizeL,=20
->> PROT_READ|PROT_WRITE, MAP_SHARED, fdOut, 0);
->>     perror("mmap");
->>     printf("# Start of outbound win in virtual address space of the=20
->> process: %p\n", getPtr);
->>
->>     rdPtr =3D getPtr;
->>
->>     for(i=3D0;i<0x100;i++){
->>        printf("# Read at address %x =3D %x\n", rdPtr, *rdPtr);
->>        rdPtr++;
->>     }
->>
->>     status =3D close(fdOut);
->>     if(status !=3D 0){
->>         printf("*** close() failed. Errno =3D %d\n", errno);
->>         exit (1);
->>     }
->>   =20
->>     return 0;
->> }
->>
->> __________________________________
->> Part of the output:
->>
->> mmap: Illegal seek
->> # Start of outbound win in virtual address space of the process:=20
->> 0x30029000
->> # Read at address 30029000 =3D ff
->> # Read at address 30029001 =3D ff
->> # Read at address 30029002 =3D ff
->> # Read at address 30029003 =3D ff
->> # Read at address 30029004 =3D ff
->> # Read at address 30029005 =3D ff
->> # Read at address 30029006 =3D ff
->> # Read at address 30029007 =3D ff
->> # Read at address 30029008 =3D ff
->> # Read at address 30029009 =3D ff
->> # Read at address 3002900a =3D ff
->> # Read at address 3002900b =3D ff
->>
->> and etc.
->> ----------------------------------------------------------------------=
---
->>
->> _______________________________________________
->> Linuxppc-embedded mailing list
->> Linuxppc-embedded@ozlabs.org
->> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->>    =20
->
->
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->  =20
+Best regards,
+Zhivko Yordanov
