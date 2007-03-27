@@ -1,22 +1,21 @@
-Return-Path: <chuckmeade@mindspring.com>
-Received: from elasmtp-mealy.atl.sa.earthlink.net
-	(elasmtp-mealy.atl.sa.earthlink.net [209.86.89.69])
-	by ozlabs.org (Postfix) with ESMTP id 5ACB4DDF19
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 10:23:02 +1000 (EST)
-Message-ID: <460863E2.7000406@mindspring.com>
-Date: Mon, 26 Mar 2007 20:22:58 -0400
-From: Chuck Meade <chuckmeade@mindspring.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id A412BDDEEF
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 11:06:42 +1000 (EST)
+Message-ID: <46086E19.4010609@am.sony.com>
+Date: Mon, 26 Mar 2007 18:06:33 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: MPC83xx SDMR setup error
-References: <460292FA.8050206@mindspring.com>	<E9D1DC31-9730-4431-9414-0870FDD3EAF6@kernel.crashing.org>	<4602BD39.9020102@mindspring.com>
-	<20070322125712.2229ff99.kim.phillips@freescale.com>
-	<4602C74F.6040402@mindspring.com>
-	<DD2F76DD-4427-4182-B17A-B470CF14E41D@kernel.crashing.org>
-	<2cf7d4ce28b4db08cd9ede0eeded130a@kernel.crashing.org>
-In-Reply-To: <2cf7d4ce28b4db08cd9ede0eeded130a@kernel.crashing.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 8/9] ps3: cleanup ps3fb before clearing HPTE
+References: <4605B861.9060006@am.sony.com>
+	<e1f83c095fc09e65524d4a8800c36120@bga.com>
+In-Reply-To: <e1f83c095fc09e65524d4a8800c36120@bga.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +25,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> When you resend, please change the line break to
-> something more reasonable too (like, at the | sign) --
-> it might have avoided this bug in the first place.
+Milton Miller wrote:
+> Paul, after reading this note I send a big fat
+> 
+> NACK
+> 
+> to this patch.
 
-Hi Segher,
+Sorry for not being more clear.  That was what I was kind of
+saying, that there is something strange here, and I am looking
+into it.
 
-I sent the patch to the list already tonight at 6:24 PM EDT with
-new/fixed subject line "[PATCH] Fix MPC83xx SDMA setup errors".
+> On Mar 24, 2007, at 6:46 PM, Geoff Levand wrote:
+> 
+>> Christoph Hellwig wrote:
+>>>>>  static void ps3_hpte_clear(void)
+>>>>  {
+>>>> +
+>>>> +#ifdef CONFIG_FB_PS3
+>>>> +    ps3fb_cleanup();
+>>>> +#endif
+>>>
+>>> And well, adding framebuffer calls into the mmu code is rather fucked.
+>>> This at least needs a big comment explaning the hypervisor braindamage
+>>> that is responsible for this in colourfull language.
+>>
+>> Sorry for such a late reply, but I'm now doing the kexec code and see
+>> why it was put here (by the original author).  It is so you will have
+>> debugging output until the very last possible moment during a kexec
+>> shutdown.
+> 
+> But that is REALLY to late for that.
+> 
+>> The real problem is really that this routine (and the corresponding 
+>> ppc_md
+>> variable) are inappropriately named.
+> 
+> Ok, this should be
+> ppc_md.kexec_cleanup_nothing_but_static_data_bss_real_mode_cleanup()
+> 
+> 
+>> In the general case all that is left
+>> to do is to call ppc_md.hpte_clear_all, but for ps3 we also want to do 
+>> the
+>> framebuffer shutdown here, so something like this should be better:
+>>
+>> -static void ps3_hpte_clear(void)
+>> +static void ps3_kexec_final(void)
+>>
+>> -       ppc_md.hpte_clear_all = ps3_hpte_clear;
+>> +       ppc_md.hpte_clear_all = ps3_kexec_final;
+>>
+> 
+> NACK.
 
-Kumar mentioned making the header/subject more proper.  So due to
-the alignment fix as well as the sdmr fix, the new subject line
-captures the content of the patch better.  Your message came about
-half an hour after I sent the patch, so your line break change
-suggestion is not reflected in it.  If you guys would like, I can
-resubmit with a different line break location.
+Yes, I just wanted to report why this strange code was in ps3_hpte_clear,
+since Christoph never did get an answer, and give my idea on what might
+work.  This is not a solution, just a thought.  I haven't really got
+into it enough to say what the best way would be.  Thanks for the
+comments though.
+ 
+> Oh, I just looked at your ps3 kexec hooks.  Your ps3_kexec_cpu_down 
+> looks
+> totally broken.  
 
-Thanks for the feedback,
-Chuck
+Yes, disregard anything you find regarding kexec on ps3.  I'll post
+some new stuff for review, hopefully sometime soon.
+
+-Geoff
