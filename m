@@ -1,21 +1,24 @@
-Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-dub-R.bigfish.com (outbound-dub.frontbridge.com
-	[213.199.154.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id A412BDDEEF
-	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 11:06:42 +1000 (EST)
-Message-ID: <46086E19.4010609@am.sony.com>
-Date: Mon, 26 Mar 2007 18:06:33 -0700
-From: Geoff Levand <geoffrey.levand@am.sony.com>
-MIME-Version: 1.0
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 8/9] ps3: cleanup ps3fb before clearing HPTE
-References: <4605B861.9060006@am.sony.com>
-	<e1f83c095fc09e65524d4a8800c36120@bga.com>
-In-Reply-To: <e1f83c095fc09e65524d4a8800c36120@bga.com>
-Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: RE: [PATCH 4/4] Add irq debugfs and virq_mapping for getting
+	thevirq to irq host's hwirq mapping list.
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Zhang Wei-r63237 <Wei.Zhang@freescale.com>
+In-Reply-To: <46B96294322F7D458F9648B60E15112C132437@zch01exm26.fsl.freescale.net>
+References: <11740199151814-git-send-email-wei.zhang@freescale.com>
+	<11740199152595-git-send-email-wei.zhang@freescale.com>
+	<11740199154116-git-send-email-wei.zhang@freescale.com>
+	<11740199152381-git-send-email-wei.zhang@freescale.com>
+	<1174359820.10827.8.camel@concordia.ozlabs.ibm.com>
+	<46B96294322F7D458F9648B60E15112C132437@zch01exm26.fsl.freescale.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-ZT9Yrih4tfBl37D/41GT"
+Date: Tue, 27 Mar 2007 13:21:05 +1000
+Message-Id: <1174965665.5348.17.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: Wang Haiying-r54964 <Haiying.Wang@freescale.com>, paulus@samba.org,
+	linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,71 +28,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Milton Miller wrote:
-> Paul, after reading this note I send a big fat
-> 
-> NACK
-> 
-> to this patch.
 
-Sorry for not being more clear.  That was what I was kind of
-saying, that there is something strange here, and I am looking
-into it.
+--=-ZT9Yrih4tfBl37D/41GT
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> On Mar 24, 2007, at 6:46 PM, Geoff Levand wrote:
-> 
->> Christoph Hellwig wrote:
->>>>>  static void ps3_hpte_clear(void)
->>>>  {
->>>> +
->>>> +#ifdef CONFIG_FB_PS3
->>>> +    ps3fb_cleanup();
->>>> +#endif
->>>
->>> And well, adding framebuffer calls into the mmu code is rather fucked.
->>> This at least needs a big comment explaning the hypervisor braindamage
->>> that is responsible for this in colourfull language.
->>
->> Sorry for such a late reply, but I'm now doing the kexec code and see
->> why it was put here (by the original author).  It is so you will have
->> debugging output until the very last possible moment during a kexec
->> shutdown.
-> 
-> But that is REALLY to late for that.
-> 
->> The real problem is really that this routine (and the corresponding 
->> ppc_md
->> variable) are inappropriately named.
-> 
-> Ok, this should be
-> ppc_md.kexec_cleanup_nothing_but_static_data_bss_real_mode_cleanup()
-> 
-> 
->> In the general case all that is left
->> to do is to call ppc_md.hpte_clear_all, but for ps3 we also want to do 
->> the
->> framebuffer shutdown here, so something like this should be better:
->>
->> -static void ps3_hpte_clear(void)
->> +static void ps3_kexec_final(void)
->>
->> -       ppc_md.hpte_clear_all = ps3_hpte_clear;
->> +       ppc_md.hpte_clear_all = ps3_kexec_final;
->>
-> 
-> NACK.
+On Tue, 2007-03-20 at 17:51 +0800, Zhang Wei-r63237 wrote:
+> >=20
+> > Minor nit. Should we be creating a 'powerpc' directory first, and
+> > putting the 'irq' file under that? Otherwise we risk clashing=20
+> > with some
+> > generic code that creates a file called 'irq' in debugfs.
+> >=20
+> > cheers
+> >=20
+> Hi, Michael,
+>=20
+> I've seen some codes in arch/powerpc/kernel/prom.c to create debugfs
+> dir "powerpc". But those codes were enabled by a local macro 'DEBUG'.
+> There is a little problem. Maybe I should change '#ifdef DEBUG' to
+> '#ifdef CONFIG_DEBUG_FS' before the export_flat_device_tree() function
+> in arch/powerpc/kernel/prom.c. How about it?
 
-Yes, I just wanted to report why this strange code was in ps3_hpte_clear,
-since Christoph never did get an answer, and give my idea on what might
-work.  This is not a solution, just a thought.  I haven't really got
-into it enough to say what the best way would be.  Thanks for the
-comments though.
- 
-> Oh, I just looked at your ps3 kexec hooks.  Your ps3_kexec_cpu_down 
-> looks
-> totally broken.  
+No, we don't want to always export the flat device tree.
 
-Yes, disregard anything you find regarding kexec on ps3.  I'll post
-some new stuff for review, hopefully sometime soon.
+Instead I think you should add a function in
+arch/powerpc/kernel/setup-common.c which creates the powerpc directory
+if CONFIG_DEBUG_FS is enabled, make it an arch_initcall. Then the flat
+device tree code can use that directory, and so can your irq stuff.
 
--Geoff
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-ZT9Yrih4tfBl37D/41GT
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBGCI2hdSjSd0sB4dIRAmjmAJ9vPOfQo0cv5X7URl2VgzDJJrEeugCgw3WD
+AWFBMJz65h19U+JCEfYVQao=
+=T5cn
+-----END PGP SIGNATURE-----
+
+--=-ZT9Yrih4tfBl37D/41GT--
