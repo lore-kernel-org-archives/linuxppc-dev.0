@@ -2,13 +2,15 @@ Return-Path: <vbordug@ru.mvista.com>
 Received: from localhost.localdomain (unknown [85.94.3.83])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 744BCDDF13
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 07:33:22 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4C600DDF2C
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 07:58:03 +1000 (EST)
 To: Paul Mackerras <paulus@samba.org>
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: [PATCH] POWERPC CPM_UART: got rid of extra status checks during RX
-Date: Wed, 28 Mar 2007 01:33:17 +0400
-Message-ID: <20070327213317.22598.18315.stgit@localhost.localdomain>
+Subject: [PATCH 2/2] POWERPC: Remove global CPM mappings
+Date: Wed, 28 Mar 2007 01:01:04 +0400
+Message-ID: <20070327210102.22195.81287.stgit@localhost.localdomain>
+In-Reply-To: <20070327210046.22195.772.stgit@localhost.localdomain>
+References: <20070327210046.22195.772.stgit@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
@@ -22,45 +24,199 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Status were verified in the cycle while exact variable is not updated in
-it. All "possibly bad" bits in status are relevant to the last received
-byte from buffer only. Also, more robust handling of overrun case.
+Gets rid or direct IMMR accesses/dereferences for PQ SoC targets and
+relevant drivers.
 
 Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
 ---
 
- drivers/serial/cpm_uart/cpm_uart_core.c |   14 ++++----------
- 1 files changed, 4 insertions(+), 10 deletions(-)
+ arch/powerpc/sysdev/commproc.c          |   13 +++----------
+ drivers/net/fs_enet/fs_enet-main.c      |    7 +------
+ drivers/net/fs_enet/mac-scc.c           |    2 +-
+ drivers/serial/cpm_uart/cpm_uart_cpm1.c |    4 +++-
+ drivers/serial/cpm_uart/cpm_uart_cpm1.h |    2 +-
+ include/asm-powerpc/fs_pd.h             |    9 ++++++---
+ include/asm-ppc/fs_pd.h                 |    8 ++++++++
+ 7 files changed, 23 insertions(+), 22 deletions(-)
 
-diff --git a/drivers/serial/cpm_uart/cpm_uart_core.c b/drivers/serial/cpm_uart/cpm_uart_core.c
-index 7a3b97f..bbb0b22 100644
---- a/drivers/serial/cpm_uart/cpm_uart_core.c
-+++ b/drivers/serial/cpm_uart/cpm_uart_core.c
-@@ -299,8 +299,8 @@ static void cpm_uart_int_rx(struct uart_port *port)
- 			port->icount.rx++;
- 			flg = TTY_NORMAL;
+diff --git a/arch/powerpc/sysdev/commproc.c b/arch/powerpc/sysdev/commproc.c
+index 9b4fafd..44e63e8 100644
+--- a/arch/powerpc/sysdev/commproc.c
++++ b/arch/powerpc/sysdev/commproc.c
+@@ -39,15 +39,11 @@
+ #include <asm/tlbflush.h>
+ #include <asm/rheap.h>
+ #include <asm/prom.h>
+-
+ #include <asm/fs_pd.h>
  
--			if (status &
--			    (BD_SC_BR | BD_SC_FR | BD_SC_PR | BD_SC_OV))
-+			if (!i && status &
-+				  (BD_SC_BR | BD_SC_FR | BD_SC_PR | BD_SC_OV))
- 				goto handle_error;
- 			if (uart_handle_sysrq_char(port, ch))
- 				continue;
-@@ -354,14 +354,8 @@ static void cpm_uart_int_rx(struct uart_port *port)
- 		flg = TTY_FRAME;
+-#define CPM_MAP_SIZE    (0x4000)
+-
+ static void m8xx_cpm_dpinit(void);
+ static	uint	host_buffer;	/* One page of host buffer */
+ static	uint	host_end;	/* end + 1 */
+-cpm8xx_t	*cpmp;		/* Pointer to comm processor space */
+ cpic8xx_t	*cpic_reg;
  
- 	/* overrun does not affect the current character ! */
--	if (status & BD_SC_OV) {
--		ch = 0;
--		flg = TTY_OVERRUN;
--		/* We skip this buffer */
--		/* CHECK: Is really nothing senseful there */
--		/* ASSUMPTION: it contains nothing valid */
--		i = 0;
--	}
-+	if (status & BD_SC_OV)
-+		tty_insert_flip_char(tty, 0, TTY_OVERRUN);
- #ifdef SUPPORT_SYSRQ
- 	port->sysrq = 0;
+ static struct device_node *cpm_pic_node;
+@@ -200,7 +196,7 @@ void cpm_reset(void)
+ 	cpm8xx_t	*commproc;
+ 	sysconf8xx_t    *siu_conf;
+ 
+-	commproc = (cpm8xx_t *)ioremap(CPM_MAP_ADDR, CPM_MAP_SIZE);
++	commproc = (cpm8xx_t *)immr_map(im_cpm);
+ 
+ #ifdef CONFIG_UCODE_PATCH
+ 	/* Perform a reset.
+@@ -213,6 +209,7 @@ void cpm_reset(void)
+ 
+ 	cpm_load_patch(commproc);
+ #endif
++	immr_unmap(commproc);
+ 
+ 	/* Set SDMA Bus Request priority 5.
+ 	 * On 860T, this also enables FEC priority 6.  I am not sure
+@@ -226,10 +223,6 @@ void cpm_reset(void)
+ 
+ 	/* Reclaim the DP memory for our use. */
+ 	m8xx_cpm_dpinit();
+-
+-	/* Tell everyone where the comm processor resides.
+-	*/
+-	cpmp = commproc;
+ }
+ 
+ /* We used to do this earlier, but have to postpone as long as possible
+@@ -283,7 +276,7 @@ cpm_setbrg(uint brg, uint rate)
+ 
+ 	/* This is good enough to get SMCs running.....
+ 	*/
+-	bp = (uint *)&cpmp->cp_brgc1;
++	bp = immr_map_size(im_cpm.cp_brgc1, 16);
+ 	bp += brg;
+ 	/* The BRG has a 12-bit counter.  For really slow baud rates (or
+ 	 * really fast processors), we may have to further divide by 16.
+diff --git a/drivers/net/fs_enet/fs_enet-main.c b/drivers/net/fs_enet/fs_enet-main.c
+index 5bd99c6..ddf4570 100644
+--- a/drivers/net/fs_enet/fs_enet-main.c
++++ b/drivers/net/fs_enet/fs_enet-main.c
+@@ -1131,13 +1131,8 @@ void *fs_enet_immap = NULL;
+ 
+ static int setup_immap(void)
+ {
+-	phys_addr_t paddr = 0;
+-	unsigned long size = 0;
+-
+ #ifdef CONFIG_CPM1
+-	paddr = IMAP_ADDR;
+-	size = 0x10000; /* map 64K */
+-	fs_enet_immap = ioremap(paddr, size);
++	fs_enet_immap = immr_map(im_cpm);
+ #endif
+ 
+ #ifdef CONFIG_CPM2
+diff --git a/drivers/net/fs_enet/mac-scc.c b/drivers/net/fs_enet/mac-scc.c
+index 65925b5..775f92f 100644
+--- a/drivers/net/fs_enet/mac-scc.c
++++ b/drivers/net/fs_enet/mac-scc.c
+@@ -90,7 +90,7 @@
+ 
+ static inline int scc_cr_cmd(struct fs_enet_private *fep, u32 op)
+ {
+-	cpm8xx_t *cpmp = &((immap_t *)fs_enet_immap)->im_cpm;
++	cpm8xx_t *cpmp = fs_enet_immap;
+ 	u32 v, ch;
+ 	int i = 0;
+ 
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.c b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+index 925fb60..d09ab98 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+@@ -52,7 +52,7 @@
+ void cpm_line_cr_cmd(int line, int cmd)
+ {
+ 	ushort val;
+-	volatile cpm8xx_t *cp = cpmp;
++	volatile cpm8xx_t *cp = (cpm8xx_t *)immr_map(im_cpm);
+ 
+ 	switch (line) {
+ 	case UART_SMC1:
+@@ -187,6 +187,8 @@ void cpm_uart_freebuf(struct uart_cpm_port *pinfo)
+ /* Setup any dynamic params in the uart desc */
+ int __init cpm_uart_init_portdesc(void)
+ {
++	cpm8xx_t *cpmp = (cpm8xx_t *)immr_map(im_cpm);
++
+ 	pr_debug("CPM uart[-]:init portdesc\n");
+ 
+ 	cpm_uart_nr = 0;
+diff --git a/drivers/serial/cpm_uart/cpm_uart_cpm1.h b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
+index a99e45e..2a64778 100644
+--- a/drivers/serial/cpm_uart/cpm_uart_cpm1.h
++++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.h
+@@ -37,6 +37,6 @@ static inline void cpm_set_smc_fcr(volatile smc_uart_t * up)
+ 	up->smc_tfcr = SMC_EB;
+ }
+ 
+-#define DPRAM_BASE	((unsigned char *)&cpmp->cp_dpmem[0])
++#define DPRAM_BASE	((unsigned char *)cpm_dpram_addr(0))
+ 
+ #endif
+diff --git a/include/asm-powerpc/fs_pd.h b/include/asm-powerpc/fs_pd.h
+index 77a44f9..bc75442 100644
+--- a/include/asm-powerpc/fs_pd.h
++++ b/include/asm-powerpc/fs_pd.h
+@@ -37,12 +37,11 @@
+ 
+ #ifdef CONFIG_8xx
+ #include <asm/8xx_immap.h>
+-#include <asm/mpc8xx.h>
+ 
+ #define immr_map(member)						\
+ ({									\
+ 	u32 offset = offsetof(immap_t, member);				\
+-	void *addr = ioremap (IMAP_ADDR + offset,			\
++	void *addr = ioremap (get_immrbase() + offset,			\
+ 			      sizeof( ((immap_t*)0)->member));		\
+ 	addr;								\
+ })
+@@ -50,13 +49,17 @@
+ #define immr_map_size(member, size)					\
+ ({									\
+ 	u32 offset = offsetof(immap_t, member);				\
+-	void *addr = ioremap (IMAP_ADDR + offset, size);		\
++	void *addr = ioremap (get_immrbase() + offset, size);		\
+ 	addr;								\
+ })
+ 
+ #define immr_unmap(addr)		iounmap(addr)
+ #endif
+ 
++#ifndef CPM_IRQ_OFFSET
++#define CPM_IRQ_OFFSET	0	/* Backword-compatibility stuff for the drivers */
++#endif
++
+ static inline int uart_baudrate(void)
+ {
+         return get_baudrate();
+diff --git a/include/asm-ppc/fs_pd.h b/include/asm-ppc/fs_pd.h
+index 8691327..b3ec063 100644
+--- a/include/asm-ppc/fs_pd.h
++++ b/include/asm-ppc/fs_pd.h
+@@ -29,8 +29,16 @@ static inline int uart_clock(void)
+ 	return (((bd_t *) __res)->bi_intfreq);
+ }
+ 
++#ifdef CONFIG_CPM2
+ #define cpm2_map(member)	(&cpm2_immr->member)
+ #define cpm2_map_size(member, size)	(&cpm2_immr->member)
+ #define cpm2_unmap(addr)        do {} while(0)
++#endif
++
++#ifdef CONFIG_8xx
++#define immr_map(member)	(&((immap_t *)IMAP_ADDR)->member)
++#define immr_map_size(member, size)	(&((immap_t *)IMAP_ADDR)->member)
++#define immr_unmap(addr)        do {} while(0)
++#endif
+ 
  #endif
