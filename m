@@ -1,15 +1,16 @@
-Return-Path: <marcelo@kvack.org>
-Date: Mon, 26 Mar 2007 20:52:33 -0300
-From: Marcelo Tosatti <marcelo@kvack.org>
-To: Adrian Bunk <bunk@stusta.de>, Dan Malek <dan@embeddededge.com>
-Subject: Re: [RFC: 2.6 patch] powerpc: remove the unused HTDMSOUND driver
-Message-ID: <20070326235233.GA11472@dmt>
-References: <20070325145838.GM16477@stusta.de>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070325145838.GM16477@stusta.de>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	linuxppc-embedded@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>
+Return-Path: <robbat2@gentoo.org>
+Received: from mail.isohunt.com (b01.ext.isohunt.com [208.71.112.51])
+	by ozlabs.org (Postfix) with ESMTP id E2408DE0FB
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 02:37:54 +1000 (EST)
+Date: Tue, 27 Mar 2007 09:31:23 -0700
+From: "Robin H. Johnson" <robbat2@gentoo.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [ALPHA PATCH] Windfarm prototype work for new sensors,
+	missed sensor outputs, and PM72 support
+Message-ID: <20070327163123.GA22984@curie-int.orbis-terrarum.net>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="82I3+IH0IqGh5yIs"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,3141 +20,1955 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dan,
 
-Shall this driver be removed?
+--82I3+IH0IqGh5yIs
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-On Sun, Mar 25, 2007 at 04:58:38PM +0200, Adrian Bunk wrote:
-> Recently, someone fixed a syntax error in the HTDMSOUND driver 
-> introduced 4 years ago.
-> 
-> Unfortunately not by trying to compile this driver for his hardware but 
-> by code inspection - which seems to be a strong indication that there 
-> are no users left for this OSS sound driver.
-> 
-> This patch therefore removes it.
-> 
-> Signed-off-by: Adrian Bunk <bunk@stusta.de>
-> 
-> ---
-> 
-> This patch was already sent on:
-> - 7 Mar 2007
-> 
->  arch/ppc/8xx_io/Kconfig         |    4 
->  arch/ppc/8xx_io/Makefile        |    1 
->  arch/ppc/8xx_io/cs4218.h        |  166 -
->  arch/ppc/8xx_io/cs4218_tdm.c    | 2833 --------------------------------
->  arch/ppc/platforms/rpxclassic.h |    4 
->  arch/ppc/platforms/rpxhiox.h    |   41 
->  arch/ppc/platforms/rpxlite.h    |    4 
->  arch/ppc/syslib/m8xx_setup.c    |    2 
->  8 files changed, 1 insertion(+), 3054 deletions(-)
-> 
-> --- linux-2.6.21-rc2-mm1/arch/ppc/8xx_io/Kconfig.old	2007-03-06 06:47:04.000000000 +0100
-> +++ linux-2.6.21-rc2-mm1/arch/ppc/8xx_io/Kconfig	2007-03-06 06:47:16.000000000 +0100
-> @@ -74,10 +74,6 @@
->  	  Allocate large buffers for MPC8xx Ethernet. Increases throughput
->  	  and decreases the likelihood of dropped packets, but costs memory.
->  
-> -config HTDMSOUND
-> -	bool "Embedded Planet HIOX Audio"
-> -	depends on SOUND=y
-> -
->  # This doesn't really belong here, but it is convenient to ask
->  # 8xx specific questions.
->  comment "Generic MPC8xx Options"
-> --- linux-2.6.21-rc2-mm1/arch/ppc/8xx_io/Makefile.old	2007-03-06 06:47:23.000000000 +0100
-> +++ linux-2.6.21-rc2-mm1/arch/ppc/8xx_io/Makefile	2007-03-06 06:47:30.000000000 +0100
-> @@ -7,4 +7,3 @@
->  obj-$(CONFIG_FEC_ENET)	+= fec.o
->  obj-$(CONFIG_SCC_ENET)	+= enet.o
->  obj-$(CONFIG_UCODE_PATCH) += micropatch.o
-> -obj-$(CONFIG_HTDMSOUND) += cs4218_tdm.o
-> --- linux-2.6.21-rc2-mm1/arch/ppc/platforms/rpxlite.h.old	2007-03-06 06:49:05.000000000 +0100
-> +++ linux-2.6.21-rc2-mm1/arch/ppc/platforms/rpxlite.h	2007-03-06 06:49:41.000000000 +0100
-> @@ -57,10 +57,6 @@
->  #define BCSR1_PCVCTL6          ((uint)0x00020000)
->  #define BCSR1_PCVCTL7          ((uint)0x00010000)
->  
-> -#if defined(CONFIG_HTDMSOUND)
-> -#include <platforms/rpxhiox.h>
-> -#endif
-> -
->  /* define IO_BASE for pcmcia */
->  #define _IO_BASE 0x80000000
->  #define _IO_BASE_SIZE 0x1000
-> --- linux-2.6.21-rc2-mm1/arch/ppc/platforms/rpxclassic.h.old	2007-03-06 06:49:51.000000000 +0100
-> +++ linux-2.6.21-rc2-mm1/arch/ppc/platforms/rpxclassic.h	2007-03-06 06:49:56.000000000 +0100
-> @@ -69,10 +69,6 @@
->  #define BCSR2_QSPACESEL		((uint)0x00004000)
->  #define BCSR2_FETHLEDMODE	((uint)0x00000800)	/* CLLF */
->  
-> -#if defined(CONFIG_HTDMSOUND)
-> -#include <platforms/rpxhiox.h>
-> -#endif
-> -
->  /* define IO_BASE for pcmcia, CLLF only */
->  #if !defined(CONFIG_PCI)
->  #define _IO_BASE 0x80000000
-> --- linux-2.6.21-rc2-mm1/arch/ppc/syslib/m8xx_setup.c.old	2007-03-06 06:50:43.000000000 +0100
-> +++ linux-2.6.21-rc2-mm1/arch/ppc/syslib/m8xx_setup.c	2007-03-06 06:50:59.000000000 +0100
-> @@ -413,7 +413,7 @@
->  	io_block_mapping(_IO_BASE,_IO_BASE,_IO_BASE_SIZE, _PAGE_IO);
->  #endif
->  #endif
-> -#if defined(CONFIG_HTDMSOUND) || defined(CONFIG_RPXTOUCH) || defined(CONFIG_FB_RPX)
-> +#if defined(CONFIG_RPXTOUCH) || defined(CONFIG_FB_RPX)
->  	io_block_mapping(HIOX_CSR_ADDR, HIOX_CSR_ADDR, HIOX_CSR_SIZE, _PAGE_IO);
->  #endif
->  #ifdef CONFIG_FADS
-> --- linux-2.6.21-rc2-mm1/arch/ppc/platforms/rpxhiox.h	2007-02-04 19:44:54.000000000 +0100
-> +++ /dev/null	2006-09-19 00:45:31.000000000 +0200
-> @@ -1,41 +0,0 @@
-> -/*
-> - * The Embedded Planet HIOX expansion card definitions.
-> - * There were a few different versions of these cards, but only
-> - * the one that escaped real production is defined here.
-> - *
-> - * Copyright (c) 2000 Dan Malek (dmalek@jlc.net)
-> - */
-> -#ifndef __MACH_RPX_HIOX_DEFS
-> -#define __MACH_RPX_HIOX_DEFS
-> -
-> -#define HIOX_CSR_ADDR		((uint)0xfac00000)
-> -#define HIOX_CSR_SIZE		((uint)(4 * 1024))
-> -#define HIOX_CSR0_ADDR		HIOX_CSR_ADDR
-> -#define HIOX_CSR4_ADDR		((uint)0xfac00004)
-> -
-> -#define HIOX_CSR0_DEFAULT	((uint)0x380f3c00)
-> -#define HIOX_CSR0_ENSCC2	((uint)0x80000000)
-> -#define HIOX_CSR0_ENSMC2	((uint)0x04000000)
-> -#define HIOX_CSR0_ENVDOCLK	((uint)0x02000000)
-> -#define HIOX_CSR0_VDORST_HL	((uint)0x01000000)
-> -#define HIOX_CSR0_RS232SEL	((uint)0x0000c000)
-> -#define HIOX_CSR0_SCC3SEL	((uint)0x0000c000)
-> -#define HIOX_CSR0_SMC1SEL	((uint)0x00008000)
-> -#define HIOX_CSR0_SCC1SEL	((uint)0x00004000)
-> -#define HIOX_CSR0_ENTOUCH	((uint)0x00000080)
-> -#define HIOX_CSR0_PDOWN100	((uint)0x00000060)
-> -#define HIOX_CSR0_PDOWN10	((uint)0x00000040)
-> -#define HIOX_CSR0_PDOWN1	((uint)0x00000020)
-> -#define HIOX_CSR0_TSELSPI	((uint)0x00000010)
-> -#define HIOX_CSR0_TIRQSTAT	((uint)0x00000008)
-> -#define HIOX_CSR4_DEFAULT	((uint)0x00000000)
-> -#define HIOX_CSR4_ENTIRQ2	((uint)0x20000000)
-> -#define HIOX_CSR4_ENTIRQ3	((uint)0x10000000)
-> -#define HIOX_CSR4_ENAUDIO	((uint)0x00000080)
-> -#define HIOX_CSR4_RSTAUDIO	((uint)0x00000040)	/* 0 == reset */
-> -#define HIOX_CSR4_AUDCLKHI	((uint)0x00000020)
-> -#define HIOX_CSR4_AUDSPISEL	((uint)0x00000010)
-> -#define HIOX_CSR4_AUDIRQSTAT	((uint)0x00000008)
-> -#define HIOX_CSR4_AUDCLKSEL	((uint)0x00000007)
-> -
-> -#endif
-> --- linux-2.6.21-rc2-mm1/arch/ppc/8xx_io/cs4218.h	2007-02-04 19:44:54.000000000 +0100
-> +++ /dev/null	2006-09-19 00:45:31.000000000 +0200
-> @@ -1,166 +0,0 @@
-> -#ifndef _cs4218_h_
-> -/*
-> - *  Hacked version of linux/drivers/sound/dmasound/dmasound.h
-> - *
-> - *
-> - *  Minor numbers for the sound driver.
-> - *
-> - *  Unfortunately Creative called the codec chip of SB as a DSP. For this
-> - *  reason the /dev/dsp is reserved for digitized audio use. There is a
-> - *  device for true DSP processors but it will be called something else.
-> - *  In v3.0 it's /dev/sndproc but this could be a temporary solution.
-> - */
-> -#define _cs4218_h_
-> -
-> -#include <linux/types.h>
-> -
-> -#define SND_NDEVS	256	/* Number of supported devices */
-> -#define SND_DEV_CTL	0	/* Control port /dev/mixer */
-> -#define SND_DEV_SEQ	1	/* Sequencer output /dev/sequencer (FM
-> -				   synthesizer and MIDI output) */
-> -#define SND_DEV_MIDIN	2	/* Raw midi access */
-> -#define SND_DEV_DSP	3	/* Digitized voice /dev/dsp */
-> -#define SND_DEV_AUDIO	4	/* Sparc compatible /dev/audio */
-> -#define SND_DEV_DSP16	5	/* Like /dev/dsp but 16 bits/sample */
-> -#define SND_DEV_STATUS	6	/* /dev/sndstat */
-> -/* #7 not in use now. Was in 2.4. Free for use after v3.0. */
-> -#define SND_DEV_SEQ2	8	/* /dev/sequencer, level 2 interface */
-> -#define SND_DEV_SNDPROC 9	/* /dev/sndproc for programmable devices */
-> -#define SND_DEV_PSS	SND_DEV_SNDPROC
-> -
-> -/* switch on various prinks */
-> -#define DEBUG_DMASOUND 1
-> -
-> -#define MAX_AUDIO_DEV	5
-> -#define MAX_MIXER_DEV	4
-> -#define MAX_SYNTH_DEV	3
-> -#define MAX_MIDI_DEV	6
-> -#define MAX_TIMER_DEV	3
-> -
-> -#define MAX_CATCH_RADIUS	10
-> -
-> -#define le2be16(x)	(((x)<<8 & 0xff00) | ((x)>>8 & 0x00ff))
-> -#define le2be16dbl(x)	(((x)<<8 & 0xff00ff00) | ((x)>>8 & 0x00ff00ff))
-> -
-> -#define IOCTL_IN(arg, ret) \
-> -	do { int error = get_user(ret, (int *)(arg)); \
-> -		if (error) return error; \
-> -	} while (0)
-> -#define IOCTL_OUT(arg, ret)	ioctl_return((int *)(arg), ret)
-> -
-> -static inline int ioctl_return(int *addr, int value)
-> -{
-> -	return value < 0 ? value : put_user(value, addr);
-> -}
-> -
-> -#define HAS_RECORD
-> -
-> -    /*
-> -     *  Initialization
-> -     */
-> -
-> -/* description of the set-up applies to either hard or soft settings */
-> -
-> -typedef struct {
-> -    int format;		/* AFMT_* */
-> -    int stereo;		/* 0 = mono, 1 = stereo */
-> -    int size;		/* 8/16 bit*/
-> -    int speed;		/* speed */
-> -} SETTINGS;
-> -
-> -    /*
-> -     *  Machine definitions
-> -     */
-> -
-> -typedef struct {
-> -    const char *name;
-> -    const char *name2;
-> -    void (*open)(void);
-> -    void (*release)(void);
-> -    void *(*dma_alloc)(unsigned int, gfp_t);
-> -    void (*dma_free)(void *, unsigned int);
-> -    int (*irqinit)(void);
-> -#ifdef MODULE
-> -    void (*irqcleanup)(void);
-> -#endif
-> -    void (*init)(void);
-> -    void (*silence)(void);
-> -    int (*setFormat)(int);
-> -    int (*setVolume)(int);
-> -    int (*setBass)(int);
-> -    int (*setTreble)(int);
-> -    int (*setGain)(int);
-> -    void (*play)(void);
-> -    void (*record)(void);		/* optional */
-> -    void (*mixer_init)(void);		/* optional */
-> -    int (*mixer_ioctl)(u_int, u_long);	/* optional */
-> -    int (*write_sq_setup)(void);	/* optional */
-> -    int (*read_sq_setup)(void);		/* optional */
-> -    int (*sq_open)(mode_t);		/* optional */
-> -    int (*state_info)(char *, size_t);	/* optional */
-> -    void (*abort_read)(void);		/* optional */
-> -    int min_dsp_speed;
-> -    int max_dsp_speed;
-> -    int version ;
-> -    int hardware_afmts ;		/* OSS says we only return h'ware info */
-> -					/* when queried via SNDCTL_DSP_GETFMTS */
-> -    int capabilities ;		/* low-level reply to SNDCTL_DSP_GETCAPS */
-> -    SETTINGS default_hard ;	/* open() or init() should set something valid */
-> -    SETTINGS default_soft ;	/* you can make it look like old OSS, if you want to */
-> -} MACHINE;
-> -
-> -    /*
-> -     *  Low level stuff
-> -     */
-> -
-> -typedef struct {
-> -    ssize_t (*ct_ulaw)(const u_char *, size_t, u_char *, ssize_t *, ssize_t);
-> -    ssize_t (*ct_alaw)(const u_char *, size_t, u_char *, ssize_t *, ssize_t);
-> -    ssize_t (*ct_s8)(const u_char *, size_t, u_char *, ssize_t *, ssize_t);
-> -    ssize_t (*ct_u8)(const u_char *, size_t, u_char *, ssize_t *, ssize_t);
-> -    ssize_t (*ct_s16be)(const u_char *, size_t, u_char *, ssize_t *, ssize_t);
-> -    ssize_t (*ct_u16be)(const u_char *, size_t, u_char *, ssize_t *, ssize_t);
-> -    ssize_t (*ct_s16le)(const u_char *, size_t, u_char *, ssize_t *, ssize_t);
-> -    ssize_t (*ct_u16le)(const u_char *, size_t, u_char *, ssize_t *, ssize_t);
-> -} TRANS;
-> -
-> -
-> -    /*
-> -     * Sound queue stuff, the heart of the driver
-> -     */
-> -
-> -struct sound_queue {
-> -    /* buffers allocated for this queue */
-> -    int numBufs;		/* real limits on what the user can have */
-> -    int bufSize;		/* in bytes */
-> -    char **buffers;
-> -
-> -    /* current parameters */
-> -    int locked ;		/* params cannot be modified when != 0 */
-> -    int user_frags ;		/* user requests this many */
-> -    int user_frag_size ;	/* of this size */
-> -    int max_count;		/* actual # fragments <= numBufs */
-> -    int block_size;		/* internal block size in bytes */
-> -    int max_active;		/* in-use fragments <= max_count */
-> -
-> -    /* it shouldn't be necessary to declare any of these volatile */
-> -    int front, rear, count;
-> -    int rear_size;
-> -    /*
-> -     *	The use of the playing field depends on the hardware
-> -     *
-> -     *	Atari, PMac: The number of frames that are loaded/playing
-> -     *
-> -     *	Amiga: Bit 0 is set: a frame is loaded
-> -     *	       Bit 1 is set: a frame is playing
-> -     */
-> -    int active;
-> -    wait_queue_head_t action_queue, open_queue, sync_queue;
-> -    int open_mode;
-> -    int busy, syncing, xruns, died;
-> -};
-> -
-> -#define SLEEP(queue)		interruptible_sleep_on_timeout(&queue, HZ)
-> -#define WAKE_UP(queue)		(wake_up_interruptible(&queue))
-> -
-> -#endif /* _cs4218_h_ */
-> --- linux-2.6.21-rc2-mm1/arch/ppc/8xx_io/cs4218_tdm.c	2007-03-02 20:14:59.000000000 +0100
-> +++ /dev/null	2006-09-19 00:45:31.000000000 +0200
-> @@ -1,2833 +0,0 @@
-> -
-> -/* This is a modified version of linux/drivers/sound/dmasound.c to
-> - * support the CS4218 codec on the 8xx TDM port.  Thanks to everyone
-> - * that contributed to the dmasound software (which includes me :-).
-> - *
-> - * The CS4218 is configured in Mode 4, sub-mode 0.  This provides
-> - * left/right data only on the TDM port, as a 32-bit word, per frame
-> - * pulse.  The control of the CS4218 is provided by some other means,
-> - * like the SPI port.
-> - * Dan Malek (dmalek@jlc.net)
-> - */
-> -
-> -#include <linux/module.h>
-> -#include <linux/sched.h>
-> -#include <linux/timer.h>
-> -#include <linux/major.h>
-> -#include <linux/fcntl.h>
-> -#include <linux/errno.h>
-> -#include <linux/mm.h>
-> -#include <linux/slab.h>
-> -#include <linux/sound.h>
-> -#include <linux/init.h>
-> -#include <linux/delay.h>
-> -
-> -#include <asm/system.h>
-> -#include <asm/irq.h>
-> -#include <asm/pgtable.h>
-> -#include <asm/uaccess.h>
-> -#include <asm/io.h>
-> -
-> -/* Should probably do something different with this path name.....
-> - * Actually, I should just stop using it...
-> - */
-> -#include "cs4218.h"
-> -#include <linux/soundcard.h>
-> -
-> -#include <asm/mpc8xx.h>
-> -#include <asm/8xx_immap.h>
-> -#include <asm/commproc.h>
-> -
-> -#define DMASND_CS4218		5
-> -
-> -#define MAX_CATCH_RADIUS	10
-> -#define MIN_BUFFERS		4
-> -#define MIN_BUFSIZE 		4
-> -#define MAX_BUFSIZE		128
-> -
-> -#define HAS_8BIT_TABLES
-> -
-> -static int sq_unit = -1;
-> -static int mixer_unit = -1;
-> -static int state_unit = -1;
-> -static int irq_installed = 0;
-> -static char **sound_buffers = NULL;
-> -static char **sound_read_buffers = NULL;
-> -
-> -static DEFINE_SPINLOCK(cs4218_lock);
-> -
-> -/* Local copies of things we put in the control register.  Output
-> - * volume, like most codecs is really attenuation.
-> - */
-> -static int cs4218_rate_index;
-> -
-> -/*
-> - * Stuff for outputting a beep.  The values range from -327 to +327
-> - * so we can multiply by an amplitude in the range 0..100 to get a
-> - * signed short value to put in the output buffer.
-> - */
-> -static short beep_wform[256] = {
-> -	0,	40,	79,	117,	153,	187,	218,	245,
-> -	269,	288,	304,	316,	323,	327,	327,	324,
-> -	318,	310,	299,	288,	275,	262,	249,	236,
-> -	224,	213,	204,	196,	190,	186,	183,	182,
-> -	182,	183,	186,	189,	192,	196,	200,	203,
-> -	206,	208,	209,	209,	209,	207,	204,	201,
-> -	197,	193,	188,	183,	179,	174,	170,	166,
-> -	163,	161,	160,	159,	159,	160,	161,	162,
-> -	164,	166,	168,	169,	171,	171,	171,	170,
-> -	169,	167,	163,	159,	155,	150,	144,	139,
-> -	133,	128,	122,	117,	113,	110,	107,	105,
-> -	103,	103,	103,	103,	104,	104,	105,	105,
-> -	105,	103,	101,	97,	92,	86,	78,	68,
-> -	58,	45,	32,	18,	3,	-11,	-26,	-41,
-> -	-55,	-68,	-79,	-88,	-95,	-100,	-102,	-102,
-> -	-99,	-93,	-85,	-75,	-62,	-48,	-33,	-16,
-> -	0,	16,	33,	48,	62,	75,	85,	93,
-> -	99,	102,	102,	100,	95,	88,	79,	68,
-> -	55,	41,	26,	11,	-3,	-18,	-32,	-45,
-> -	-58,	-68,	-78,	-86,	-92,	-97,	-101,	-103,
-> -	-105,	-105,	-105,	-104,	-104,	-103,	-103,	-103,
-> -	-103,	-105,	-107,	-110,	-113,	-117,	-122,	-128,
-> -	-133,	-139,	-144,	-150,	-155,	-159,	-163,	-167,
-> -	-169,	-170,	-171,	-171,	-171,	-169,	-168,	-166,
-> -	-164,	-162,	-161,	-160,	-159,	-159,	-160,	-161,
-> -	-163,	-166,	-170,	-174,	-179,	-183,	-188,	-193,
-> -	-197,	-201,	-204,	-207,	-209,	-209,	-209,	-208,
-> -	-206,	-203,	-200,	-196,	-192,	-189,	-186,	-183,
-> -	-182,	-182,	-183,	-186,	-190,	-196,	-204,	-213,
-> -	-224,	-236,	-249,	-262,	-275,	-288,	-299,	-310,
-> -	-318,	-324,	-327,	-327,	-323,	-316,	-304,	-288,
-> -	-269,	-245,	-218,	-187,	-153,	-117,	-79,	-40,
-> -};
-> -
-> -#define BEEP_SPEED	5	/* 22050 Hz sample rate */
-> -#define BEEP_BUFLEN	512
-> -#define BEEP_VOLUME	15	/* 0 - 100 */
-> -
-> -static int beep_volume = BEEP_VOLUME;
-> -static int beep_playing = 0;
-> -static int beep_state = 0;
-> -static short *beep_buf;
-> -static void (*orig_mksound)(unsigned int, unsigned int);
-> -
-> -/* This is found someplace else......I guess in the keyboard driver
-> - * we don't include.
-> - */
-> -static void (*kd_mksound)(unsigned int, unsigned int);
-> -
-> -static int catchRadius = 0;
-> -static int numBufs = 4, bufSize = 32;
-> -static int numReadBufs = 4, readbufSize = 32;
-> -
-> -
-> -/* TDM/Serial transmit and receive buffer descriptors.
-> -*/
-> -static volatile cbd_t	*rx_base, *rx_cur, *tx_base, *tx_cur;
-> -
-> -module_param(catchRadius, int, 0);
-> -module_param(numBufs, int, 0);
-> -module_param(bufSize, int, 0);
-> -module_param(numreadBufs, int, 0);
-> -module_param(readbufSize, int, 0);
-> -
-> -#define arraysize(x)	(sizeof(x)/sizeof(*(x)))
-> -#define le2be16(x)	(((x)<<8 & 0xff00) | ((x)>>8 & 0x00ff))
-> -#define le2be16dbl(x)	(((x)<<8 & 0xff00ff00) | ((x)>>8 & 0x00ff00ff))
-> -
-> -#define IOCTL_IN(arg, ret) \
-> -	do { int error = get_user(ret, (int *)(arg)); \
-> -		if (error) return error; \
-> -	} while (0)
-> -#define IOCTL_OUT(arg, ret)	ioctl_return((int *)(arg), ret)
-> -
-> -/* CS4218 serial port control in mode 4.
-> -*/
-> -#define CS_INTMASK	((uint)0x40000000)
-> -#define CS_DO1		((uint)0x20000000)
-> -#define CS_LATTEN	((uint)0x1f000000)
-> -#define CS_RATTEN	((uint)0x00f80000)
-> -#define CS_MUTE		((uint)0x00040000)
-> -#define CS_ISL		((uint)0x00020000)
-> -#define CS_ISR		((uint)0x00010000)
-> -#define CS_LGAIN	((uint)0x0000f000)
-> -#define CS_RGAIN	((uint)0x00000f00)
-> -
-> -#define CS_LATTEN_SET(X)	(((X) & 0x1f) << 24)
-> -#define CS_RATTEN_SET(X)	(((X) & 0x1f) << 19)
-> -#define CS_LGAIN_SET(X)		(((X) & 0x0f) << 12)
-> -#define CS_RGAIN_SET(X)		(((X) & 0x0f) << 8)
-> -
-> -#define CS_LATTEN_GET(X)	(((X) >> 24) & 0x1f)
-> -#define CS_RATTEN_GET(X)	(((X) >> 19) & 0x1f)
-> -#define CS_LGAIN_GET(X)		(((X) >> 12) & 0x0f)
-> -#define CS_RGAIN_GET(X)		(((X) >> 8) & 0x0f)
-> -
-> -/* The control register is effectively write only.  We have to keep a copy
-> - * of what we write.
-> - */
-> -static	uint	cs4218_control;
-> -
-> -/* A place to store expanding information.
-> -*/
-> -static int	expand_bal;
-> -static int	expand_data;
-> -
-> -/* Since I can't make the microcode patch work for the SPI, I just
-> - * clock the bits using software.
-> - */
-> -static	void	sw_spi_init(void);
-> -static	void	sw_spi_io(u_char *obuf, u_char *ibuf, uint bcnt);
-> -static	uint	cs4218_ctl_write(uint ctlreg);
-> -
-> -/*** Some low level helpers **************************************************/
-> -
-> -/* 16 bit mu-law */
-> -
-> -static short ulaw2dma16[] = {
-> -	-32124,	-31100,	-30076,	-29052,	-28028,	-27004,	-25980,	-24956,
-> -	-23932,	-22908,	-21884,	-20860,	-19836,	-18812,	-17788,	-16764,
-> -	-15996,	-15484,	-14972,	-14460,	-13948,	-13436,	-12924,	-12412,
-> -	-11900,	-11388,	-10876,	-10364,	-9852,	-9340,	-8828,	-8316,
-> -	-7932,	-7676,	-7420,	-7164,	-6908,	-6652,	-6396,	-6140,
-> -	-5884,	-5628,	-5372,	-5116,	-4860,	-4604,	-4348,	-4092,
-> -	-3900,	-3772,	-3644,	-3516,	-3388,	-3260,	-3132,	-3004,
-> -	-2876,	-2748,	-2620,	-2492,	-2364,	-2236,	-2108,	-1980,
-> -	-1884,	-1820,	-1756,	-1692,	-1628,	-1564,	-1500,	-1436,
-> -	-1372,	-1308,	-1244,	-1180,	-1116,	-1052,	-988,	-924,
-> -	-876,	-844,	-812,	-780,	-748,	-716,	-684,	-652,
-> -	-620,	-588,	-556,	-524,	-492,	-460,	-428,	-396,
-> -	-372,	-356,	-340,	-324,	-308,	-292,	-276,	-260,
-> -	-244,	-228,	-212,	-196,	-180,	-164,	-148,	-132,
-> -	-120,	-112,	-104,	-96,	-88,	-80,	-72,	-64,
-> -	-56,	-48,	-40,	-32,	-24,	-16,	-8,	0,
-> -	32124,	31100,	30076,	29052,	28028,	27004,	25980,	24956,
-> -	23932,	22908,	21884,	20860,	19836,	18812,	17788,	16764,
-> -	15996,	15484,	14972,	14460,	13948,	13436,	12924,	12412,
-> -	11900,	11388,	10876,	10364,	9852,	9340,	8828,	8316,
-> -	7932,	7676,	7420,	7164,	6908,	6652,	6396,	6140,
-> -	5884,	5628,	5372,	5116,	4860,	4604,	4348,	4092,
-> -	3900,	3772,	3644,	3516,	3388,	3260,	3132,	3004,
-> -	2876,	2748,	2620,	2492,	2364,	2236,	2108,	1980,
-> -	1884,	1820,	1756,	1692,	1628,	1564,	1500,	1436,
-> -	1372,	1308,	1244,	1180,	1116,	1052,	988,	924,
-> -	876,	844,	812,	780,	748,	716,	684,	652,
-> -	620,	588,	556,	524,	492,	460,	428,	396,
-> -	372,	356,	340,	324,	308,	292,	276,	260,
-> -	244,	228,	212,	196,	180,	164,	148,	132,
-> -	120,	112,	104,	96,	88,	80,	72,	64,
-> -	56,	48,	40,	32,	24,	16,	8,	0,
-> -};
-> -
-> -/* 16 bit A-law */
-> -
-> -static short alaw2dma16[] = {
-> -	-5504,	-5248,	-6016,	-5760,	-4480,	-4224,	-4992,	-4736,
-> -	-7552,	-7296,	-8064,	-7808,	-6528,	-6272,	-7040,	-6784,
-> -	-2752,	-2624,	-3008,	-2880,	-2240,	-2112,	-2496,	-2368,
-> -	-3776,	-3648,	-4032,	-3904,	-3264,	-3136,	-3520,	-3392,
-> -	-22016,	-20992,	-24064,	-23040,	-17920,	-16896,	-19968,	-18944,
-> -	-30208,	-29184,	-32256,	-31232,	-26112,	-25088,	-28160,	-27136,
-> -	-11008,	-10496,	-12032,	-11520,	-8960,	-8448,	-9984,	-9472,
-> -	-15104,	-14592,	-16128,	-15616,	-13056,	-12544,	-14080,	-13568,
-> -	-344,	-328,	-376,	-360,	-280,	-264,	-312,	-296,
-> -	-472,	-456,	-504,	-488,	-408,	-392,	-440,	-424,
-> -	-88,	-72,	-120,	-104,	-24,	-8,	-56,	-40,
-> -	-216,	-200,	-248,	-232,	-152,	-136,	-184,	-168,
-> -	-1376,	-1312,	-1504,	-1440,	-1120,	-1056,	-1248,	-1184,
-> -	-1888,	-1824,	-2016,	-1952,	-1632,	-1568,	-1760,	-1696,
-> -	-688,	-656,	-752,	-720,	-560,	-528,	-624,	-592,
-> -	-944,	-912,	-1008,	-976,	-816,	-784,	-880,	-848,
-> -	5504,	5248,	6016,	5760,	4480,	4224,	4992,	4736,
-> -	7552,	7296,	8064,	7808,	6528,	6272,	7040,	6784,
-> -	2752,	2624,	3008,	2880,	2240,	2112,	2496,	2368,
-> -	3776,	3648,	4032,	3904,	3264,	3136,	3520,	3392,
-> -	22016,	20992,	24064,	23040,	17920,	16896,	19968,	18944,
-> -	30208,	29184,	32256,	31232,	26112,	25088,	28160,	27136,
-> -	11008,	10496,	12032,	11520,	8960,	8448,	9984,	9472,
-> -	15104,	14592,	16128,	15616,	13056,	12544,	14080,	13568,
-> -	344,	328,	376,	360,	280,	264,	312,	296,
-> -	472,	456,	504,	488,	408,	392,	440,	424,
-> -	88,	72,	120,	104,	24,	8,	56,	40,
-> -	216,	200,	248,	232,	152,	136,	184,	168,
-> -	1376,	1312,	1504,	1440,	1120,	1056,	1248,	1184,
-> -	1888,	1824,	2016,	1952,	1632,	1568,	1760,	1696,
-> -	688,	656,	752,	720,	560,	528,	624,	592,
-> -	944,	912,	1008,	976,	816,	784,	880,	848,
-> -};
-> -
-> -
-> -/*** Translations ************************************************************/
-> -
-> -
-> -static ssize_t cs4218_ct_law(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft);
-> -static ssize_t cs4218_ct_s8(const u_char *userPtr, size_t userCount,
-> -			  u_char frame[], ssize_t *frameUsed,
-> -			  ssize_t frameLeft);
-> -static ssize_t cs4218_ct_u8(const u_char *userPtr, size_t userCount,
-> -			  u_char frame[], ssize_t *frameUsed,
-> -			  ssize_t frameLeft);
-> -static ssize_t cs4218_ct_s16(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft);
-> -static ssize_t cs4218_ct_u16(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft);
-> -static ssize_t cs4218_ctx_law(const u_char *userPtr, size_t userCount,
-> -			    u_char frame[], ssize_t *frameUsed,
-> -			    ssize_t frameLeft);
-> -static ssize_t cs4218_ctx_s8(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft);
-> -static ssize_t cs4218_ctx_u8(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft);
-> -static ssize_t cs4218_ctx_s16(const u_char *userPtr, size_t userCount,
-> -			    u_char frame[], ssize_t *frameUsed,
-> -			    ssize_t frameLeft);
-> -static ssize_t cs4218_ctx_u16(const u_char *userPtr, size_t userCount,
-> -			    u_char frame[], ssize_t *frameUsed,
-> -			    ssize_t frameLeft);
-> -static ssize_t cs4218_ct_s16_read(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft);
-> -static ssize_t cs4218_ct_u16_read(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft);
-> -
-> -
-> -/*** Low level stuff *********************************************************/
-> -
-> -struct cs_sound_settings {
-> -	MACHINE mach;		/* machine dependent things */
-> -	SETTINGS hard;		/* hardware settings */
-> -	SETTINGS soft;		/* software settings */
-> -	SETTINGS dsp;		/* /dev/dsp default settings */
-> -	TRANS *trans_write;	/* supported translations for playback */
-> -	TRANS *trans_read;	/* supported translations for record */
-> -	int volume_left;	/* volume (range is machine dependent) */
-> -	int volume_right;
-> -	int bass;		/* tone (range is machine dependent) */
-> -	int treble;
-> -	int gain;
-> -	int minDev;		/* minor device number currently open */
-> -};
-> -
-> -static struct cs_sound_settings sound;
-> -
-> -static void *CS_Alloc(unsigned int size, gfp_t flags);
-> -static void CS_Free(void *ptr, unsigned int size);
-> -static int CS_IrqInit(void);
-> -#ifdef MODULE
-> -static void CS_IrqCleanup(void);
-> -#endif /* MODULE */
-> -static void CS_Silence(void);
-> -static void CS_Init(void);
-> -static void CS_Play(void);
-> -static void CS_Record(void);
-> -static int CS_SetFormat(int format);
-> -static int CS_SetVolume(int volume);
-> -static void cs4218_tdm_tx_intr(void *devid);
-> -static void cs4218_tdm_rx_intr(void *devid);
-> -static void cs4218_intr(void *devid);
-> -static int cs_get_volume(uint reg);
-> -static int cs_volume_setter(int volume, int mute);
-> -static int cs_get_gain(uint reg);
-> -static int cs_set_gain(int gain);
-> -static void cs_mksound(unsigned int hz, unsigned int ticks);
-> -static void cs_nosound(unsigned long xx);
-> -
-> -/*** Mid level stuff *********************************************************/
-> -
-> -
-> -static void sound_silence(void);
-> -static void sound_init(void);
-> -static int sound_set_format(int format);
-> -static int sound_set_speed(int speed);
-> -static int sound_set_stereo(int stereo);
-> -static int sound_set_volume(int volume);
-> -
-> -static ssize_t sound_copy_translate(const u_char *userPtr,
-> -				    size_t userCount,
-> -				    u_char frame[], ssize_t *frameUsed,
-> -				    ssize_t frameLeft);
-> -static ssize_t sound_copy_translate_read(const u_char *userPtr,
-> -				    size_t userCount,
-> -				    u_char frame[], ssize_t *frameUsed,
-> -				    ssize_t frameLeft);
-> -
-> -
-> -/*
-> - * /dev/mixer abstraction
-> - */
-> -
-> -struct sound_mixer {
-> -    int busy;
-> -    int modify_counter;
-> -};
-> -
-> -static struct sound_mixer mixer;
-> -
-> -static struct sound_queue sq;
-> -static struct sound_queue read_sq;
-> -
-> -#define sq_block_address(i)	(sq.buffers[i])
-> -#define SIGNAL_RECEIVED	(signal_pending(current))
-> -#define NON_BLOCKING(open_mode)	(open_mode & O_NONBLOCK)
-> -#define ONE_SECOND	HZ	/* in jiffies (100ths of a second) */
-> -#define NO_TIME_LIMIT	0xffffffff
-> -
-> -/*
-> - * /dev/sndstat
-> - */
-> -
-> -struct sound_state {
-> -	int busy;
-> -	char buf[512];
-> -	int len, ptr;
-> -};
-> -
-> -static struct sound_state state;
-> -
-> -/*** Common stuff ********************************************************/
-> -
-> -static long long sound_lseek(struct file *file, long long offset, int orig);
-> -
-> -/*** Config & Setup **********************************************************/
-> -
-> -void dmasound_setup(char *str, int *ints);
-> -
-> -/*** Translations ************************************************************/
-> -
-> -
-> -/* ++TeSche: radically changed for new expanding purposes...
-> - *
-> - * These two routines now deal with copying/expanding/translating the samples
-> - * from user space into our buffer at the right frequency. They take care about
-> - * how much data there's actually to read, how much buffer space there is and
-> - * to convert samples into the right frequency/encoding. They will only work on
-> - * complete samples so it may happen they leave some bytes in the input stream
-> - * if the user didn't write a multiple of the current sample size. They both
-> - * return the number of bytes they've used from both streams so you may detect
-> - * such a situation. Luckily all programs should be able to cope with that.
-> - *
-> - * I think I've optimized anything as far as one can do in plain C, all
-> - * variables should fit in registers and the loops are really short. There's
-> - * one loop for every possible situation. Writing a more generalized and thus
-> - * parameterized loop would only produce slower code. Feel free to optimize
-> - * this in assembler if you like. :)
-> - *
-> - * I think these routines belong here because they're not yet really hardware
-> - * independent, especially the fact that the Falcon can play 16bit samples
-> - * only in stereo is hardcoded in both of them!
-> - *
-> - * ++geert: split in even more functions (one per format)
-> - */
-> -
-> -static ssize_t cs4218_ct_law(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft)
-> -{
-> -	short *table = sound.soft.format == AFMT_MU_LAW ? ulaw2dma16: alaw2dma16;
-> -	ssize_t count, used;
-> -	short *p = (short *) &frame[*frameUsed];
-> -	int val, stereo = sound.soft.stereo;
-> -
-> -	frameLeft >>= 2;
-> -	if (stereo)
-> -		userCount >>= 1;
-> -	used = count = min(userCount, frameLeft);
-> -	while (count > 0) {
-> -		u_char data;
-> -		if (get_user(data, userPtr++))
-> -			return -EFAULT;
-> -		val = table[data];
-> -		*p++ = val;
-> -		if (stereo) {
-> -			if (get_user(data, userPtr++))
-> -				return -EFAULT;
-> -			val = table[data];
-> -		}
-> -		*p++ = val;
-> -		count--;
-> -	}
-> -	*frameUsed += used * 4;
-> -	return stereo? used * 2: used;
-> -}
-> -
-> -
-> -static ssize_t cs4218_ct_s8(const u_char *userPtr, size_t userCount,
-> -			  u_char frame[], ssize_t *frameUsed,
-> -			  ssize_t frameLeft)
-> -{
-> -	ssize_t count, used;
-> -	short *p = (short *) &frame[*frameUsed];
-> -	int val, stereo = sound.soft.stereo;
-> -
-> -	frameLeft >>= 2;
-> -	if (stereo)
-> -		userCount >>= 1;
-> -	used = count = min(userCount, frameLeft);
-> -	while (count > 0) {
-> -		u_char data;
-> -		if (get_user(data, userPtr++))
-> -			return -EFAULT;
-> -		val = data << 8;
-> -		*p++ = val;
-> -		if (stereo) {
-> -			if (get_user(data, userPtr++))
-> -				return -EFAULT;
-> -			val = data << 8;
-> -		}
-> -		*p++ = val;
-> -		count--;
-> -	}
-> -	*frameUsed += used * 4;
-> -	return stereo? used * 2: used;
-> -}
-> -
-> -
-> -static ssize_t cs4218_ct_u8(const u_char *userPtr, size_t userCount,
-> -			  u_char frame[], ssize_t *frameUsed,
-> -			  ssize_t frameLeft)
-> -{
-> -	ssize_t count, used;
-> -	short *p = (short *) &frame[*frameUsed];
-> -	int val, stereo = sound.soft.stereo;
-> -
-> -	frameLeft >>= 2;
-> -	if (stereo)
-> -		userCount >>= 1;
-> -	used = count = min(userCount, frameLeft);
-> -	while (count > 0) {
-> -		u_char data;
-> -		if (get_user(data, userPtr++))
-> -			return -EFAULT;
-> -		val = (data ^ 0x80) << 8;
-> -		*p++ = val;
-> -		if (stereo) {
-> -			if (get_user(data, userPtr++))
-> -				return -EFAULT;
-> -			val = (data ^ 0x80) << 8;
-> -		}
-> -		*p++ = val;
-> -		count--;
-> -	}
-> -	*frameUsed += used * 4;
-> -	return stereo? used * 2: used;
-> -}
-> -
-> -
-> -/* This is the default format of the codec.  Signed, 16-bit stereo
-> - * generated by an application shouldn't have to be copied at all.
-> - * We should just get the phsical address of the buffers and update
-> - * the TDM BDs directly.
-> - */
-> -static ssize_t cs4218_ct_s16(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft)
-> -{
-> -	ssize_t count, used;
-> -	int stereo = sound.soft.stereo;
-> -	short *fp = (short *) &frame[*frameUsed];
-> -
-> -	frameLeft >>= 2;
-> -	userCount >>= (stereo? 2: 1);
-> -	used = count = min(userCount, frameLeft);
-> -	if (!stereo) {
-> -		short *up = (short *) userPtr;
-> -		while (count > 0) {
-> -			short data;
-> -			if (get_user(data, up++))
-> -				return -EFAULT;
-> -			*fp++ = data;
-> -			*fp++ = data;
-> -			count--;
-> -		}
-> -	} else {
-> -		if (copy_from_user(fp, userPtr, count * 4))
-> -			return -EFAULT;
-> -	}
-> -	*frameUsed += used * 4;
-> -	return stereo? used * 4: used * 2;
-> -}
-> -
-> -static ssize_t cs4218_ct_u16(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft)
-> -{
-> -	ssize_t count, used;
-> -	int mask = (sound.soft.format == AFMT_U16_LE? 0x0080: 0x8000);
-> -	int stereo = sound.soft.stereo;
-> -	short *fp = (short *) &frame[*frameUsed];
-> -	short *up = (short *) userPtr;
-> -
-> -	frameLeft >>= 2;
-> -	userCount >>= (stereo? 2: 1);
-> -	used = count = min(userCount, frameLeft);
-> -	while (count > 0) {
-> -		int data;
-> -		if (get_user(data, up++))
-> -			return -EFAULT;
-> -		data ^= mask;
-> -		*fp++ = data;
-> -		if (stereo) {
-> -			if (get_user(data, up++))
-> -				return -EFAULT;
-> -			data ^= mask;
-> -		}
-> -		*fp++ = data;
-> -		count--;
-> -	}
-> -	*frameUsed += used * 4;
-> -	return stereo? used * 4: used * 2;
-> -}
-> -
-> -
-> -static ssize_t cs4218_ctx_law(const u_char *userPtr, size_t userCount,
-> -			    u_char frame[], ssize_t *frameUsed,
-> -			    ssize_t frameLeft)
-> -{
-> -	unsigned short *table = (unsigned short *)
-> -		(sound.soft.format == AFMT_MU_LAW ? ulaw2dma16: alaw2dma16);
-> -	unsigned int data = expand_data;
-> -	unsigned int *p = (unsigned int *) &frame[*frameUsed];
-> -	int bal = expand_bal;
-> -	int hSpeed = sound.hard.speed, sSpeed = sound.soft.speed;
-> -	int utotal, ftotal;
-> -	int stereo = sound.soft.stereo;
-> -
-> -	frameLeft >>= 2;
-> -	if (stereo)
-> -		userCount >>= 1;
-> -	ftotal = frameLeft;
-> -	utotal = userCount;
-> -	while (frameLeft) {
-> -		u_char c;
-> -		if (bal < 0) {
-> -			if (userCount == 0)
-> -				break;
-> -			if (get_user(c, userPtr++))
-> -				return -EFAULT;
-> -			data = table[c];
-> -			if (stereo) {
-> -				if (get_user(c, userPtr++))
-> -					return -EFAULT;
-> -				data = (data << 16) + table[c];
-> -			} else
-> -				data = (data << 16) + data;
-> -			userCount--;
-> -			bal += hSpeed;
-> -		}
-> -		*p++ = data;
-> -		frameLeft--;
-> -		bal -= sSpeed;
-> -	}
-> -	expand_bal = bal;
-> -	expand_data = data;
-> -	*frameUsed += (ftotal - frameLeft) * 4;
-> -	utotal -= userCount;
-> -	return stereo? utotal * 2: utotal;
-> -}
-> -
-> -
-> -static ssize_t cs4218_ctx_s8(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft)
-> -{
-> -	unsigned int *p = (unsigned int *) &frame[*frameUsed];
-> -	unsigned int data = expand_data;
-> -	int bal = expand_bal;
-> -	int hSpeed = sound.hard.speed, sSpeed = sound.soft.speed;
-> -	int stereo = sound.soft.stereo;
-> -	int utotal, ftotal;
-> -
-> -	frameLeft >>= 2;
-> -	if (stereo)
-> -		userCount >>= 1;
-> -	ftotal = frameLeft;
-> -	utotal = userCount;
-> -	while (frameLeft) {
-> -		u_char c;
-> -		if (bal < 0) {
-> -			if (userCount == 0)
-> -				break;
-> -			if (get_user(c, userPtr++))
-> -				return -EFAULT;
-> -			data = c << 8;
-> -			if (stereo) {
-> -				if (get_user(c, userPtr++))
-> -					return -EFAULT;
-> -				data = (data << 16) + (c << 8);
-> -			} else
-> -				data = (data << 16) + data;
-> -			userCount--;
-> -			bal += hSpeed;
-> -		}
-> -		*p++ = data;
-> -		frameLeft--;
-> -		bal -= sSpeed;
-> -	}
-> -	expand_bal = bal;
-> -	expand_data = data;
-> -	*frameUsed += (ftotal - frameLeft) * 4;
-> -	utotal -= userCount;
-> -	return stereo? utotal * 2: utotal;
-> -}
-> -
-> -
-> -static ssize_t cs4218_ctx_u8(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft)
-> -{
-> -	unsigned int *p = (unsigned int *) &frame[*frameUsed];
-> -	unsigned int data = expand_data;
-> -	int bal = expand_bal;
-> -	int hSpeed = sound.hard.speed, sSpeed = sound.soft.speed;
-> -	int stereo = sound.soft.stereo;
-> -	int utotal, ftotal;
-> -
-> -	frameLeft >>= 2;
-> -	if (stereo)
-> -		userCount >>= 1;
-> -	ftotal = frameLeft;
-> -	utotal = userCount;
-> -	while (frameLeft) {
-> -		u_char c;
-> -		if (bal < 0) {
-> -			if (userCount == 0)
-> -				break;
-> -			if (get_user(c, userPtr++))
-> -				return -EFAULT;
-> -			data = (c ^ 0x80) << 8;
-> -			if (stereo) {
-> -				if (get_user(c, userPtr++))
-> -					return -EFAULT;
-> -				data = (data << 16) + ((c ^ 0x80) << 8);
-> -			} else
-> -				data = (data << 16) + data;
-> -			userCount--;
-> -			bal += hSpeed;
-> -		}
-> -		*p++ = data;
-> -		frameLeft--;
-> -		bal -= sSpeed;
-> -	}
-> -	expand_bal = bal;
-> -	expand_data = data;
-> -	*frameUsed += (ftotal - frameLeft) * 4;
-> -	utotal -= userCount;
-> -	return stereo? utotal * 2: utotal;
-> -}
-> -
-> -
-> -static ssize_t cs4218_ctx_s16(const u_char *userPtr, size_t userCount,
-> -			    u_char frame[], ssize_t *frameUsed,
-> -			    ssize_t frameLeft)
-> -{
-> -	unsigned int *p = (unsigned int *) &frame[*frameUsed];
-> -	unsigned int data = expand_data;
-> -	unsigned short *up = (unsigned short *) userPtr;
-> -	int bal = expand_bal;
-> -	int hSpeed = sound.hard.speed, sSpeed = sound.soft.speed;
-> -	int stereo = sound.soft.stereo;
-> -	int utotal, ftotal;
-> -
-> -	frameLeft >>= 2;
-> -	userCount >>= (stereo? 2: 1);
-> -	ftotal = frameLeft;
-> -	utotal = userCount;
-> -	while (frameLeft) {
-> -		unsigned short c;
-> -		if (bal < 0) {
-> -			if (userCount == 0)
-> -				break;
-> -			if (get_user(data, up++))
-> -				return -EFAULT;
-> -			if (stereo) {
-> -				if (get_user(c, up++))
-> -					return -EFAULT;
-> -				data = (data << 16) + c;
-> -			} else
-> -				data = (data << 16) + data;
-> -			userCount--;
-> -			bal += hSpeed;
-> -		}
-> -		*p++ = data;
-> -		frameLeft--;
-> -		bal -= sSpeed;
-> -	}
-> -	expand_bal = bal;
-> -	expand_data = data;
-> -	*frameUsed += (ftotal - frameLeft) * 4;
-> -	utotal -= userCount;
-> -	return stereo? utotal * 4: utotal * 2;
-> -}
-> -
-> -
-> -static ssize_t cs4218_ctx_u16(const u_char *userPtr, size_t userCount,
-> -			    u_char frame[], ssize_t *frameUsed,
-> -			    ssize_t frameLeft)
-> -{
-> -	int mask = (sound.soft.format == AFMT_U16_LE? 0x0080: 0x8000);
-> -	unsigned int *p = (unsigned int *) &frame[*frameUsed];
-> -	unsigned int data = expand_data;
-> -	unsigned short *up = (unsigned short *) userPtr;
-> -	int bal = expand_bal;
-> -	int hSpeed = sound.hard.speed, sSpeed = sound.soft.speed;
-> -	int stereo = sound.soft.stereo;
-> -	int utotal, ftotal;
-> -
-> -	frameLeft >>= 2;
-> -	userCount >>= (stereo? 2: 1);
-> -	ftotal = frameLeft;
-> -	utotal = userCount;
-> -	while (frameLeft) {
-> -		unsigned short c;
-> -		if (bal < 0) {
-> -			if (userCount == 0)
-> -				break;
-> -			if (get_user(data, up++))
-> -				return -EFAULT;
-> -			data ^= mask;
-> -			if (stereo) {
-> -				if (get_user(c, up++))
-> -					return -EFAULT;
-> -				data = (data << 16) + (c ^ mask);
-> -			} else
-> -				data = (data << 16) + data;
-> -			userCount--;
-> -			bal += hSpeed;
-> -		}
-> -		*p++ = data;
-> -		frameLeft--;
-> -		bal -= sSpeed;
-> -	}
-> -	expand_bal = bal;
-> -	expand_data = data;
-> -	*frameUsed += (ftotal - frameLeft) * 4;
-> -	utotal -= userCount;
-> -	return stereo? utotal * 4: utotal * 2;
-> -}
-> -
-> -static ssize_t cs4218_ct_s8_read(const u_char *userPtr, size_t userCount,
-> -			  u_char frame[], ssize_t *frameUsed,
-> -			  ssize_t frameLeft)
-> -{
-> -	ssize_t count, used;
-> -	short *p = (short *) &frame[*frameUsed];
-> -	int val, stereo = sound.soft.stereo;
-> -
-> -	frameLeft >>= 2;
-> -	if (stereo)
-> -		userCount >>= 1;
-> -	used = count = min(userCount, frameLeft);
-> -	while (count > 0) {
-> -		u_char data;
-> -
-> -		val = *p++;
-> -		data = val >> 8;
-> -		if (put_user(data, (u_char *)userPtr++))
-> -			return -EFAULT;
-> -		if (stereo) {
-> -			val = *p;
-> -			data = val >> 8;
-> -			if (put_user(data, (u_char *)userPtr++))
-> -				return -EFAULT;
-> -		}
-> -		p++;
-> -		count--;
-> -	}
-> -	*frameUsed += used * 4;
-> -	return stereo? used * 2: used;
-> -}
-> -
-> -
-> -static ssize_t cs4218_ct_u8_read(const u_char *userPtr, size_t userCount,
-> -			  u_char frame[], ssize_t *frameUsed,
-> -			  ssize_t frameLeft)
-> -{
-> -	ssize_t count, used;
-> -	short *p = (short *) &frame[*frameUsed];
-> -	int val, stereo = sound.soft.stereo;
-> -
-> -	frameLeft >>= 2;
-> -	if (stereo)
-> -		userCount >>= 1;
-> -	used = count = min(userCount, frameLeft);
-> -	while (count > 0) {
-> -		u_char data;
-> -
-> -		val = *p++;
-> -		data = (val >> 8) ^ 0x80;
-> -		if (put_user(data, (u_char *)userPtr++))
-> -			return -EFAULT;
-> -		if (stereo) {
-> -			val = *p;
-> -			data = (val >> 8) ^ 0x80;
-> -			if (put_user(data, (u_char *)userPtr++))
-> -				return -EFAULT;
-> -		}
-> -		p++;
-> -		count--;
-> -	}
-> -	*frameUsed += used * 4;
-> -	return stereo? used * 2: used;
-> -}
-> -
-> -
-> -static ssize_t cs4218_ct_s16_read(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft)
-> -{
-> -	ssize_t count, used;
-> -	int stereo = sound.soft.stereo;
-> -	short *fp = (short *) &frame[*frameUsed];
-> -
-> -	frameLeft >>= 2;
-> -	userCount >>= (stereo? 2: 1);
-> -	used = count = min(userCount, frameLeft);
-> -	if (!stereo) {
-> -		short *up = (short *) userPtr;
-> -		while (count > 0) {
-> -			short data;
-> -			data = *fp;
-> -			if (put_user(data, up++))
-> -				return -EFAULT;
-> -			fp+=2;
-> -			count--;
-> -		}
-> -	} else {
-> -		if (copy_to_user((u_char *)userPtr, fp, count * 4))
-> -			return -EFAULT;
-> -	}
-> -	*frameUsed += used * 4;
-> -	return stereo? used * 4: used * 2;
-> -}
-> -
-> -static ssize_t cs4218_ct_u16_read(const u_char *userPtr, size_t userCount,
-> -			   u_char frame[], ssize_t *frameUsed,
-> -			   ssize_t frameLeft)
-> -{
-> -	ssize_t count, used;
-> -	int mask = (sound.soft.format == AFMT_U16_LE? 0x0080: 0x8000);
-> -	int stereo = sound.soft.stereo;
-> -	short *fp = (short *) &frame[*frameUsed];
-> -	short *up = (short *) userPtr;
-> -
-> -	frameLeft >>= 2;
-> -	userCount >>= (stereo? 2: 1);
-> -	used = count = min(userCount, frameLeft);
-> -	while (count > 0) {
-> -		int data;
-> -
-> -		data = *fp++;
-> -		data ^= mask;
-> -		if (put_user(data, up++))
-> -			return -EFAULT;
-> -		if (stereo) {
-> -			data = *fp;
-> -			data ^= mask;
-> -			if (put_user(data, up++))
-> -				return -EFAULT;
-> -		}
-> -		fp++;
-> -		count--;
-> -	}
-> -	*frameUsed += used * 4;
-> -	return stereo? used * 4: used * 2;
-> -}
-> -
-> -static TRANS transCSNormal = {
-> -	cs4218_ct_law, cs4218_ct_law, cs4218_ct_s8, cs4218_ct_u8,
-> -	cs4218_ct_s16, cs4218_ct_u16, cs4218_ct_s16, cs4218_ct_u16
-> -};
-> -
-> -static TRANS transCSExpand = {
-> -	cs4218_ctx_law, cs4218_ctx_law, cs4218_ctx_s8, cs4218_ctx_u8,
-> -	cs4218_ctx_s16, cs4218_ctx_u16, cs4218_ctx_s16, cs4218_ctx_u16
-> -};
-> -
-> -static TRANS transCSNormalRead = {
-> -	NULL, NULL, cs4218_ct_s8_read, cs4218_ct_u8_read,
-> -	cs4218_ct_s16_read, cs4218_ct_u16_read,
-> -	cs4218_ct_s16_read, cs4218_ct_u16_read
-> -};
-> -
-> -/*** Low level stuff *********************************************************/
-> -
-> -static void *CS_Alloc(unsigned int size, gfp_t flags)
-> -{
-> -	int	order;
-> -
-> -	size >>= 13;
-> -	for (order=0; order < 5; order++) {
-> -		if (size == 0)
-> -			break;
-> -		size >>= 1;
-> -	}
-> -	return (void *)__get_free_pages(flags, order);
-> -}
-> -
-> -static void CS_Free(void *ptr, unsigned int size)
-> -{
-> -	int	order;
-> -
-> -	size >>= 13;
-> -	for (order=0; order < 5; order++) {
-> -		if (size == 0)
-> -			break;
-> -		size >>= 1;
-> -	}
-> -	free_pages((ulong)ptr, order);
-> -}
-> -
-> -static int __init CS_IrqInit(void)
-> -{
-> -	cpm_install_handler(CPMVEC_SMC2, cs4218_intr, NULL);
-> -	return 1;
-> -}
-> -
-> -#ifdef MODULE
-> -static void CS_IrqCleanup(void)
-> -{
-> -	volatile smc_t		*sp;
-> -	volatile cpm8xx_t	*cp;
-> -
-> -	/* First disable transmitter and receiver.
-> -	*/
-> -	sp = &cpmp->cp_smc[1];
-> -	sp->smc_smcmr &= ~(SMCMR_REN | SMCMR_TEN);
-> -
-> -	/* And now shut down the SMC.
-> -	*/
-> -	cp = cpmp;	/* Get pointer to Communication Processor */
-> -	cp->cp_cpcr = mk_cr_cmd(CPM_CR_CH_SMC2,
-> -				CPM_CR_STOP_TX) | CPM_CR_FLG;
-> -	while (cp->cp_cpcr & CPM_CR_FLG);
-> -
-> -	/* Release the interrupt handler.
-> -	*/
-> -	cpm_free_handler(CPMVEC_SMC2);
-> -
-> -	kfree(beep_buf);
-> -	kd_mksound = orig_mksound;
-> -}
-> -#endif /* MODULE */
-> -
-> -static void CS_Silence(void)
-> -{
-> -	volatile smc_t		*sp;
-> -
-> -	/* Disable transmitter.
-> -	*/
-> -	sp = &cpmp->cp_smc[1];
-> -	sp->smc_smcmr &= ~SMCMR_TEN;
-> -}
-> -
-> -/* Frequencies depend upon external oscillator.  There are two
-> - * choices, 12.288 and 11.2896 MHz.  The RPCG audio supports both through
-> - * and external control register selection bit.
-> - */
-> -static int cs4218_freqs[] = {
-> -    /* 12.288  11.2896  */
-> -	48000, 44100,
-> -	32000, 29400,
-> -	24000, 22050,
-> -	19200, 17640,
-> -	16000, 14700,
-> -	12000, 11025,
-> -	 9600,  8820,
-> -	 8000,  7350
-> -};
-> -
-> -static void CS_Init(void)
-> -{
-> -	int i, tolerance;
-> -
-> -	switch (sound.soft.format) {
-> -	case AFMT_S16_LE:
-> -	case AFMT_U16_LE:
-> -		sound.hard.format = AFMT_S16_LE;
-> -		break;
-> -	default:
-> -		sound.hard.format = AFMT_S16_BE;
-> -		break;
-> -	}
-> -	sound.hard.stereo = 1;
-> -	sound.hard.size = 16;
-> -
-> -	/*
-> -	 * If we have a sample rate which is within catchRadius percent
-> -	 * of the requested value, we don't have to expand the samples.
-> -	 * Otherwise choose the next higher rate.
-> -	 */
-> -	i = (sizeof(cs4218_freqs) / sizeof(int));
-> -	do {
-> -		tolerance = catchRadius * cs4218_freqs[--i] / 100;
-> -	} while (sound.soft.speed > cs4218_freqs[i] + tolerance && i > 0);
-> -	if (sound.soft.speed >= cs4218_freqs[i] - tolerance)
-> -		sound.trans_write = &transCSNormal;
-> -	else
-> -		sound.trans_write = &transCSExpand;
-> -	sound.trans_read = &transCSNormalRead;
-> -	sound.hard.speed = cs4218_freqs[i];
-> -	cs4218_rate_index = i;
-> -
-> -	/* The CS4218 has seven selectable clock dividers for the sample
-> -	 * clock.  The HIOX then provides one of two external rates.
-> -	 * An even numbered frequency table index uses the high external
-> -	 * clock rate.
-> -	 */
-> -	*(uint *)HIOX_CSR4_ADDR &= ~(HIOX_CSR4_AUDCLKHI | HIOX_CSR4_AUDCLKSEL);
-> -	if ((i & 1) == 0)
-> -		*(uint *)HIOX_CSR4_ADDR |= HIOX_CSR4_AUDCLKHI;
-> -	i >>= 1;
-> -	*(uint *)HIOX_CSR4_ADDR |= (i & HIOX_CSR4_AUDCLKSEL);
-> -
-> -	expand_bal = -sound.soft.speed;
-> -}
-> -
-> -static int CS_SetFormat(int format)
-> -{
-> -	int size;
-> -
-> -	switch (format) {
-> -	case AFMT_QUERY:
-> -		return sound.soft.format;
-> -	case AFMT_MU_LAW:
-> -	case AFMT_A_LAW:
-> -	case AFMT_U8:
-> -	case AFMT_S8:
-> -		size = 8;
-> -		break;
-> -	case AFMT_S16_BE:
-> -	case AFMT_U16_BE:
-> -	case AFMT_S16_LE:
-> -	case AFMT_U16_LE:
-> -		size = 16;
-> -		break;
-> -	default: /* :-) */
-> -		printk(KERN_ERR "dmasound: unknown format 0x%x, using AFMT_U8\n",
-> -		       format);
-> -		size = 8;
-> -		format = AFMT_U8;
-> -	}
-> -
-> -	sound.soft.format = format;
-> -	sound.soft.size = size;
-> -	if (sound.minDev == SND_DEV_DSP) {
-> -		sound.dsp.format = format;
-> -		sound.dsp.size = size;
-> -	}
-> -
-> -	CS_Init();
-> -
-> -	return format;
-> -}
-> -
-> -/* Volume is the amount of attenuation we tell the codec to impose
-> - * on the outputs.  There are 32 levels, with 0 the "loudest".
-> - */
-> -#define CS_VOLUME_TO_MASK(x)	(31 - ((((x) - 1) * 31) / 99))
-> -#define CS_MASK_TO_VOLUME(y)	(100 - ((y) * 99 / 31))
-> -
-> -static int cs_get_volume(uint reg)
-> -{
-> -	int volume;
-> -
-> -	volume = CS_MASK_TO_VOLUME(CS_LATTEN_GET(reg));
-> -	volume |= CS_MASK_TO_VOLUME(CS_RATTEN_GET(reg)) << 8;
-> -	return volume;
-> -}
-> -
-> -static int cs_volume_setter(int volume, int mute)
-> -{
-> -	uint tempctl;
-> -
-> -	if (mute && volume == 0) {
-> -		tempctl = cs4218_control | CS_MUTE;
-> -	} else {
-> -		tempctl = cs4218_control & ~CS_MUTE;
-> -		tempctl = tempctl & ~(CS_LATTEN | CS_RATTEN);
-> -		tempctl |= CS_LATTEN_SET(CS_VOLUME_TO_MASK(volume & 0xff));
-> -		tempctl |= CS_RATTEN_SET(CS_VOLUME_TO_MASK((volume >> 8) & 0xff));
-> -		volume = cs_get_volume(tempctl);
-> -	}
-> -	if (tempctl != cs4218_control) {
-> -		cs4218_ctl_write(tempctl);
-> -	}
-> -	return volume;
-> -}
-> -
-> -
-> -/* Gain has 16 steps from 0 to 15.  These are in 1.5dB increments from
-> - * 0 (no gain) to 22.5 dB.
-> - */
-> -#define CS_RECLEVEL_TO_GAIN(v) \
-> -	((v) < 0 ? 0 : (v) > 100 ? 15 : (v) * 3 / 20)
-> -#define CS_GAIN_TO_RECLEVEL(v) (((v) * 20 + 2) / 3)
-> -
-> -static int cs_get_gain(uint reg)
-> -{
-> -	int gain;
-> -
-> -	gain = CS_GAIN_TO_RECLEVEL(CS_LGAIN_GET(reg));
-> -	gain |= CS_GAIN_TO_RECLEVEL(CS_RGAIN_GET(reg)) << 8;
-> -	return gain;
-> -}
-> -
-> -static int cs_set_gain(int gain)
-> -{
-> -	uint tempctl;
-> -
-> -	tempctl = cs4218_control & ~(CS_LGAIN | CS_RGAIN);
-> -	tempctl |= CS_LGAIN_SET(CS_RECLEVEL_TO_GAIN(gain & 0xff));
-> -	tempctl |= CS_RGAIN_SET(CS_RECLEVEL_TO_GAIN((gain >> 8) & 0xff));
-> -	gain = cs_get_gain(tempctl);
-> -
-> -	if (tempctl != cs4218_control) {
-> -		cs4218_ctl_write(tempctl);
-> -	}
-> -	return gain;
-> -}
-> -
-> -static int CS_SetVolume(int volume)
-> -{
-> -	return cs_volume_setter(volume, CS_MUTE);
-> -}
-> -
-> -static void CS_Play(void)
-> -{
-> -	int i, count;
-> -	unsigned long flags;
-> -	volatile cbd_t	*bdp;
-> -	volatile cpm8xx_t *cp;
-> -
-> -	/* Protect buffer */
-> -	spin_lock_irqsave(&cs4218_lock, flags);
-> -#if 0
-> -	if (awacs_beep_state) {
-> -		/* sound takes precedence over beeps */
-> -		out_le32(&awacs_txdma->control, (RUN|PAUSE|FLUSH|WAKE) << 16);
-> -		out_le32(&awacs->control,
-> -			 (in_le32(&awacs->control) & ~0x1f00)
-> -			 | (awacs_rate_index << 8));
-> -		out_le32(&awacs->byteswap, sound.hard.format != AFMT_S16_BE);
-> -		out_le32(&awacs_txdma->cmdptr, virt_to_bus(&(awacs_tx_cmds[(sq.front+sq.active) % sq.max_count])));
-> -
-> -		beep_playing = 0;
-> -		awacs_beep_state = 0;
-> -	}
-> -#endif
-> -	i = sq.front + sq.active;
-> -	if (i >= sq.max_count)
-> -		i -= sq.max_count;
-> -	while (sq.active < 2 && sq.active < sq.count) {
-> -		count = (sq.count == sq.active + 1)?sq.rear_size:sq.block_size;
-> -		if (count < sq.block_size && !sq.syncing)
-> -			/* last block not yet filled, and we're not syncing. */
-> -			break;
-> -
-> -		bdp = &tx_base[i];
-> -		bdp->cbd_datlen = count;
-> -
-> -		flush_dcache_range((ulong)sound_buffers[i],
-> -					(ulong)(sound_buffers[i] + count));
-> -
-> -		if (++i >= sq.max_count)
-> -			i = 0;
-> -
-> -		if (sq.active == 0) {
-> -			/* The SMC does not load its fifo until the first
-> -			 * TDM frame pulse, so the transmit data gets shifted
-> -			 * by one word.  To compensate for this, we incorrectly
-> -			 * transmit the first buffer and shorten it by one
-> -			 * word.  Subsequent buffers are then aligned properly.
-> -			 */
-> -			bdp->cbd_datlen -= 2;
-> -
-> -			/* Start up the SMC Transmitter.
-> -			*/
-> -			cp = cpmp;
-> -			cp->cp_smc[1].smc_smcmr |= SMCMR_TEN;
-> -			cp->cp_cpcr = mk_cr_cmd(CPM_CR_CH_SMC2,
-> -					CPM_CR_RESTART_TX) | CPM_CR_FLG;
-> -			while (cp->cp_cpcr & CPM_CR_FLG);
-> -		}
-> -
-> -		/* Buffer is ready now.
-> -		*/
-> -		bdp->cbd_sc |= BD_SC_READY;
-> -
-> -		++sq.active;
-> -	}
-> -	spin_unlock_irqrestore(&cs4218_lock, flags);
-> -}
-> -
-> -
-> -static void CS_Record(void)
-> -{
-> -	unsigned long flags;
-> -	volatile smc_t		*sp;
-> -
-> -	if (read_sq.active)
-> -		return;
-> -
-> -	/* Protect buffer */
-> -	spin_lock_irqsave(&cs4218_lock, flags);
-> -
-> -	/* This is all we have to do......Just start it up.
-> -	*/
-> -	sp = &cpmp->cp_smc[1];
-> -	sp->smc_smcmr |= SMCMR_REN;
-> -
-> -	read_sq.active = 1;
-> -
-> -        spin_unlock_irqrestore(&cs4218_lock, flags);
-> -}
-> -
-> -
-> -static void
-> -cs4218_tdm_tx_intr(void *devid)
-> -{
-> -	int i = sq.front;
-> -	volatile cbd_t *bdp;
-> -
-> -	while (sq.active > 0) {
-> -		bdp = &tx_base[i];
-> -		if (bdp->cbd_sc & BD_SC_READY)
-> -			break;	/* this frame is still going */
-> -		--sq.count;
-> -		--sq.active;
-> -		if (++i >= sq.max_count)
-> -			i = 0;
-> -	}
-> -	if (i != sq.front)
-> -		WAKE_UP(sq.action_queue);
-> -	sq.front = i;
-> -
-> -	CS_Play();
-> -
-> -	if (!sq.active)
-> -		WAKE_UP(sq.sync_queue);
-> -}
-> -
-> -
-> -static void
-> -cs4218_tdm_rx_intr(void *devid)
-> -{
-> -
-> -	/* We want to blow 'em off when shutting down.
-> -	*/
-> -	if (read_sq.active == 0)
-> -		return;
-> -
-> -	/* Check multiple buffers in case we were held off from
-> -	 * interrupt processing for a long time.  Geeze, I really hope
-> -	 * this doesn't happen.
-> -	 */
-> -	while ((rx_base[read_sq.rear].cbd_sc & BD_SC_EMPTY) == 0) {
-> -
-> -		/* Invalidate the data cache range for this buffer.
-> -		*/
-> -		invalidate_dcache_range(
-> -		    (uint)(sound_read_buffers[read_sq.rear]),
-> -		    (uint)(sound_read_buffers[read_sq.rear] + read_sq.block_size));
-> -
-> -		/* Make buffer available again and move on.
-> -		*/
-> -		rx_base[read_sq.rear].cbd_sc |= BD_SC_EMPTY;
-> -		read_sq.rear++;
-> -
-> -		/* Wrap the buffer ring.
-> -		*/
-> -		if (read_sq.rear >= read_sq.max_active)
-> -			read_sq.rear = 0;
-> -
-> -		/* If we have caught up to the front buffer, bump it.
-> -		 * This will cause weird (but not fatal) results if the
-> -		 * read loop is currently using this buffer.  The user is
-> -		 * behind in this case anyway, so weird things are going
-> -		 * to happen.
-> -		 */
-> -		if (read_sq.rear == read_sq.front) {
-> -			read_sq.front++;
-> -			if (read_sq.front >= read_sq.max_active)
-> -				read_sq.front = 0;
-> -		}
-> -	}
-> -
-> -	WAKE_UP(read_sq.action_queue);
-> -}
-> -
-> -static void cs_nosound(unsigned long xx)
-> -{
-> -	unsigned long flags;
-> -
-> -	/* not sure if this is needed, since hardware command is #if 0'd */
-> -	spin_lock_irqsave(&cs4218_lock, flags);
-> -	if (beep_playing) {
-> -#if 0
-> -		st_le16(&beep_dbdma_cmd->command, DBDMA_STOP);
-> -#endif
-> -		beep_playing = 0;
-> -	}
-> -	spin_unlock_irqrestore(&cs4218_lock, flags);
-> -}
-> -
-> -static DEFINE_TIMER(beep_timer, cs_nosound, 0, 0);
-> -
-> -static void cs_mksound(unsigned int hz, unsigned int ticks)
-> -{
-> -	unsigned long flags;
-> -	int beep_speed = BEEP_SPEED;
-> -	int srate = cs4218_freqs[beep_speed];
-> -	int period, ncycles, nsamples;
-> -	int i, j, f;
-> -	short *p;
-> -	static int beep_hz_cache;
-> -	static int beep_nsamples_cache;
-> -	static int beep_volume_cache;
-> -
-> -	if (hz <= srate / BEEP_BUFLEN || hz > srate / 2) {
-> -#if 1
-> -		/* this is a hack for broken X server code */
-> -		hz = 750;
-> -		ticks = 12;
-> -#else
-> -		/* cancel beep currently playing */
-> -		awacs_nosound(0);
-> -		return;
-> -#endif
-> -	}
-> -	/* lock while modifying beep_timer */
-> -	spin_lock_irqsave(&cs4218_lock, flags);
-> -	del_timer(&beep_timer);
-> -	if (ticks) {
-> -		beep_timer.expires = jiffies + ticks;
-> -		add_timer(&beep_timer);
-> -	}
-> -	if (beep_playing || sq.active || beep_buf == NULL) {
-> -		spin_unlock_irqrestore(&cs4218_lock, flags);
-> -		return;		/* too hard, sorry :-( */
-> -	}
-> -	beep_playing = 1;
-> -#if 0
-> -	st_le16(&beep_dbdma_cmd->command, OUTPUT_MORE + BR_ALWAYS);
-> -#endif
-> -	spin_unlock_irqrestore(&cs4218_lock, flags);
-> -
-> -	if (hz == beep_hz_cache && beep_volume == beep_volume_cache) {
-> -		nsamples = beep_nsamples_cache;
-> -	} else {
-> -		period = srate * 256 / hz;	/* fixed point */
-> -		ncycles = BEEP_BUFLEN * 256 / period;
-> -		nsamples = (period * ncycles) >> 8;
-> -		f = ncycles * 65536 / nsamples;
-> -		j = 0;
-> -		p = beep_buf;
-> -		for (i = 0; i < nsamples; ++i, p += 2) {
-> -			p[0] = p[1] = beep_wform[j >> 8] * beep_volume;
-> -			j = (j + f) & 0xffff;
-> -		}
-> -		beep_hz_cache = hz;
-> -		beep_volume_cache = beep_volume;
-> -		beep_nsamples_cache = nsamples;
-> -	}
-> -
-> -#if 0
-> -	st_le16(&beep_dbdma_cmd->req_count, nsamples*4);
-> -	st_le16(&beep_dbdma_cmd->xfer_status, 0);
-> -	st_le32(&beep_dbdma_cmd->cmd_dep, virt_to_bus(beep_dbdma_cmd));
-> -	st_le32(&beep_dbdma_cmd->phy_addr, virt_to_bus(beep_buf));
-> -	awacs_beep_state = 1;
-> -
-> -	spin_lock_irqsave(&cs4218_lock, flags);
-> -	if (beep_playing) {	/* i.e. haven't been terminated already */
-> -		out_le32(&awacs_txdma->control, (RUN|WAKE|FLUSH|PAUSE) << 16);
-> -		out_le32(&awacs->control,
-> -			 (in_le32(&awacs->control) & ~0x1f00)
-> -			 | (beep_speed << 8));
-> -		out_le32(&awacs->byteswap, 0);
-> -		out_le32(&awacs_txdma->cmdptr, virt_to_bus(beep_dbdma_cmd));
-> -		out_le32(&awacs_txdma->control, RUN | (RUN << 16));
-> -	}
-> -	spin_unlock_irqrestore(&cs4218_lock, flags);
-> -#endif
-> -}
-> -
-> -static MACHINE mach_cs4218 = {
-> -	.owner =	THIS_MODULE,
-> -	.name =		"HIOX CS4218",
-> -	.name2 =	"Built-in Sound",
-> -	.dma_alloc =	CS_Alloc,
-> -	.dma_free =	CS_Free,
-> -	.irqinit =	CS_IrqInit,
-> -#ifdef MODULE
-> -	.irqcleanup =	CS_IrqCleanup,
-> -#endif /* MODULE */
-> -	.init =		CS_Init,
-> -	.silence =	CS_Silence,
-> -	.setFormat =	CS_SetFormat,
-> -	.setVolume =	CS_SetVolume,
-> -	.play =		CS_Play
-> -};
-> -
-> -
-> -/*** Mid level stuff *********************************************************/
-> -
-> -
-> -static void sound_silence(void)
-> -{
-> -	/* update hardware settings one more */
-> -	(*sound.mach.init)();
-> -
-> -	(*sound.mach.silence)();
-> -}
-> -
-> -
-> -static void sound_init(void)
-> -{
-> -	(*sound.mach.init)();
-> -}
-> -
-> -
-> -static int sound_set_format(int format)
-> -{
-> -	return(*sound.mach.setFormat)(format);
-> -}
-> -
-> -
-> -static int sound_set_speed(int speed)
-> -{
-> -	if (speed < 0)
-> -		return(sound.soft.speed);
-> -
-> -	sound.soft.speed = speed;
-> -	(*sound.mach.init)();
-> -	if (sound.minDev == SND_DEV_DSP)
-> -		sound.dsp.speed = sound.soft.speed;
-> -
-> -	return(sound.soft.speed);
-> -}
-> -
-> -
-> -static int sound_set_stereo(int stereo)
-> -{
-> -	if (stereo < 0)
-> -		return(sound.soft.stereo);
-> -
-> -	stereo = !!stereo;    /* should be 0 or 1 now */
-> -
-> -	sound.soft.stereo = stereo;
-> -	if (sound.minDev == SND_DEV_DSP)
-> -		sound.dsp.stereo = stereo;
-> -	(*sound.mach.init)();
-> -
-> -	return(stereo);
-> -}
-> -
-> -
-> -static int sound_set_volume(int volume)
-> -{
-> -	return(*sound.mach.setVolume)(volume);
-> -}
-> -
-> -static ssize_t sound_copy_translate(const u_char *userPtr,
-> -				    size_t userCount,
-> -				    u_char frame[], ssize_t *frameUsed,
-> -				    ssize_t frameLeft)
-> -{
-> -	ssize_t (*ct_func)(const u_char *, size_t, u_char *, ssize_t *, ssize_t) = NULL;
-> -
-> -	switch (sound.soft.format) {
-> -	case AFMT_MU_LAW:
-> -		ct_func = sound.trans_write->ct_ulaw;
-> -		break;
-> -	case AFMT_A_LAW:
-> -		ct_func = sound.trans_write->ct_alaw;
-> -		break;
-> -	case AFMT_S8:
-> -		ct_func = sound.trans_write->ct_s8;
-> -		break;
-> -	case AFMT_U8:
-> -		ct_func = sound.trans_write->ct_u8;
-> -		break;
-> -	case AFMT_S16_BE:
-> -		ct_func = sound.trans_write->ct_s16be;
-> -		break;
-> -	case AFMT_U16_BE:
-> -		ct_func = sound.trans_write->ct_u16be;
-> -		break;
-> -	case AFMT_S16_LE:
-> -		ct_func = sound.trans_write->ct_s16le;
-> -		break;
-> -	case AFMT_U16_LE:
-> -		ct_func = sound.trans_write->ct_u16le;
-> -		break;
-> -	}
-> -	if (ct_func)
-> -		return ct_func(userPtr, userCount, frame, frameUsed, frameLeft);
-> -	else
-> -		return 0;
-> -}
-> -
-> -static ssize_t sound_copy_translate_read(const u_char *userPtr,
-> -				    size_t userCount,
-> -				    u_char frame[], ssize_t *frameUsed,
-> -				    ssize_t frameLeft)
-> -{
-> -	ssize_t (*ct_func)(const u_char *, size_t, u_char *, ssize_t *, ssize_t) = NULL;
-> -
-> -	switch (sound.soft.format) {
-> -	case AFMT_MU_LAW:
-> -		ct_func = sound.trans_read->ct_ulaw;
-> -		break;
-> -	case AFMT_A_LAW:
-> -		ct_func = sound.trans_read->ct_alaw;
-> -		break;
-> -	case AFMT_S8:
-> -		ct_func = sound.trans_read->ct_s8;
-> -		break;
-> -	case AFMT_U8:
-> -		ct_func = sound.trans_read->ct_u8;
-> -		break;
-> -	case AFMT_S16_BE:
-> -		ct_func = sound.trans_read->ct_s16be;
-> -		break;
-> -	case AFMT_U16_BE:
-> -		ct_func = sound.trans_read->ct_u16be;
-> -		break;
-> -	case AFMT_S16_LE:
-> -		ct_func = sound.trans_read->ct_s16le;
-> -		break;
-> -	case AFMT_U16_LE:
-> -		ct_func = sound.trans_read->ct_u16le;
-> -		break;
-> -	}
-> -	if (ct_func)
-> -		return ct_func(userPtr, userCount, frame, frameUsed, frameLeft);
-> -	else
-> -		return 0;
-> -}
-> -
-> -
-> -/*
-> - * /dev/mixer abstraction
-> - */
-> -
-> -static int mixer_open(struct inode *inode, struct file *file)
-> -{
-> -	mixer.busy = 1;
-> -	return nonseekable_open(inode, file);
-> -}
-> -
-> -
-> -static int mixer_release(struct inode *inode, struct file *file)
-> -{
-> -	mixer.busy = 0;
-> -	return 0;
-> -}
-> -
-> -
-> -static int mixer_ioctl(struct inode *inode, struct file *file, u_int cmd,
-> -		       u_long arg)
-> -{
-> -	int data;
-> -	uint tmpcs;
-> -
-> -	if (_SIOC_DIR(cmd) & _SIOC_WRITE)
-> -	    mixer.modify_counter++;
-> -	if (cmd == OSS_GETVERSION)
-> -	    return IOCTL_OUT(arg, SOUND_VERSION);
-> -	switch (cmd) {
-> -		case SOUND_MIXER_INFO: {
-> -		    mixer_info info;
-> -		    strlcpy(info.id, "CS4218_TDM", sizeof(info.id));
-> -		    strlcpy(info.name, "CS4218_TDM", sizeof(info.name));
-> -		    info.name[sizeof(info.name)-1] = 0;
-> -		    info.modify_counter = mixer.modify_counter;
-> -		    if (copy_to_user((int *)arg, &info, sizeof(info)))
-> -		    		return -EFAULT;
-> -		    return 0;
-> -		}
-> -		case SOUND_MIXER_READ_DEVMASK:
-> -			data = SOUND_MASK_VOLUME | SOUND_MASK_LINE
-> -				| SOUND_MASK_MIC | SOUND_MASK_RECLEV
-> -				| SOUND_MASK_ALTPCM;
-> -			return IOCTL_OUT(arg, data);
-> -		case SOUND_MIXER_READ_RECMASK:
-> -			data = SOUND_MASK_LINE | SOUND_MASK_MIC;
-> -			return IOCTL_OUT(arg, data);
-> -		case SOUND_MIXER_READ_RECSRC:
-> -			if (cs4218_control & CS_DO1)
-> -				data = SOUND_MASK_LINE;
-> -			else
-> -				data = SOUND_MASK_MIC;
-> -			return IOCTL_OUT(arg, data);
-> -		case SOUND_MIXER_WRITE_RECSRC:
-> -			IOCTL_IN(arg, data);
-> -			data &= (SOUND_MASK_LINE | SOUND_MASK_MIC);
-> -			if (data & SOUND_MASK_LINE)
-> -				tmpcs = cs4218_control |
-> -						(CS_ISL | CS_ISR | CS_DO1);
-> -			if (data & SOUND_MASK_MIC)
-> -				tmpcs = cs4218_control &
-> -						~(CS_ISL | CS_ISR | CS_DO1);
-> -			if (tmpcs != cs4218_control)
-> -				cs4218_ctl_write(tmpcs);
-> -			return IOCTL_OUT(arg, data);
-> -		case SOUND_MIXER_READ_STEREODEVS:
-> -			data = SOUND_MASK_VOLUME | SOUND_MASK_RECLEV;
-> -			return IOCTL_OUT(arg, data);
-> -		case SOUND_MIXER_READ_CAPS:
-> -			return IOCTL_OUT(arg, 0);
-> -		case SOUND_MIXER_READ_VOLUME:
-> -			data = (cs4218_control & CS_MUTE)? 0:
-> -				cs_get_volume(cs4218_control);
-> -			return IOCTL_OUT(arg, data);
-> -		case SOUND_MIXER_WRITE_VOLUME:
-> -			IOCTL_IN(arg, data);
-> -			return IOCTL_OUT(arg, sound_set_volume(data));
-> -		case SOUND_MIXER_WRITE_ALTPCM:	/* really bell volume */
-> -			IOCTL_IN(arg, data);
-> -			beep_volume = data & 0xff;
-> -			/* fall through */
-> -		case SOUND_MIXER_READ_ALTPCM:
-> -			return IOCTL_OUT(arg, beep_volume);
-> -		case SOUND_MIXER_WRITE_RECLEV:
-> -			IOCTL_IN(arg, data);
-> -			data = cs_set_gain(data);
-> -			return IOCTL_OUT(arg, data);
-> -		case SOUND_MIXER_READ_RECLEV:
-> -			data = cs_get_gain(cs4218_control);
-> -			return IOCTL_OUT(arg, data);
-> -	}
-> -
-> -	return -EINVAL;
-> -}
-> -
-> -
-> -static const struct file_operations mixer_fops =
-> -{
-> -	.owner =	THIS_MODULE,
-> -	.llseek =	sound_lseek,
-> -	.ioctl =	mixer_ioctl,
-> -	.open =		mixer_open,
-> -	.release =	mixer_release,
-> -};
-> -
-> -
-> -static void __init mixer_init(void)
-> -{
-> -	mixer_unit = register_sound_mixer(&mixer_fops, -1);
-> -	if (mixer_unit < 0)
-> -		return;
-> -
-> -	mixer.busy = 0;
-> -	sound.treble = 0;
-> -	sound.bass = 0;
-> -
-> -	/* Set Line input, no gain, no attenuation.
-> -	*/
-> -	cs4218_control = CS_ISL | CS_ISR | CS_DO1;
-> -	cs4218_control |= CS_LGAIN_SET(0) | CS_RGAIN_SET(0);
-> -	cs4218_control |= CS_LATTEN_SET(0) | CS_RATTEN_SET(0);
-> -	cs4218_ctl_write(cs4218_control);
-> -}
-> -
-> -
-> -/*
-> - * Sound queue stuff, the heart of the driver
-> - */
-> -
-> -
-> -static int sq_allocate_buffers(void)
-> -{
-> -	int i;
-> -
-> -	if (sound_buffers)
-> -		return 0;
-> -	sound_buffers = kmalloc (numBufs * sizeof(char *), GFP_KERNEL);
-> -	if (!sound_buffers)
-> -		return -ENOMEM;
-> -	for (i = 0; i < numBufs; i++) {
-> -		sound_buffers[i] = sound.mach.dma_alloc (bufSize << 10, GFP_KERNEL);
-> -		if (!sound_buffers[i]) {
-> -			while (i--)
-> -				sound.mach.dma_free (sound_buffers[i], bufSize << 10);
-> -			kfree (sound_buffers);
-> -			sound_buffers = 0;
-> -			return -ENOMEM;
-> -		}
-> -	}
-> -	return 0;
-> -}
-> -
-> -
-> -static void sq_release_buffers(void)
-> -{
-> -	int i;
-> -
-> -	if (sound_buffers) {
-> -		for (i = 0; i < numBufs; i++)
-> -			sound.mach.dma_free (sound_buffers[i], bufSize << 10);
-> -		kfree (sound_buffers);
-> -		sound_buffers = 0;
-> -	}
-> -}
-> -
-> -
-> -static int sq_allocate_read_buffers(void)
-> -{
-> -	int i;
-> -
-> -	if (sound_read_buffers)
-> -		return 0;
-> -	sound_read_buffers = kmalloc(numReadBufs * sizeof(char *), GFP_KERNEL);
-> -	if (!sound_read_buffers)
-> -		return -ENOMEM;
-> -	for (i = 0; i < numBufs; i++) {
-> -		sound_read_buffers[i] = sound.mach.dma_alloc (readbufSize<<10,
-> -							      GFP_KERNEL);
-> -		if (!sound_read_buffers[i]) {
-> -			while (i--)
-> -				sound.mach.dma_free (sound_read_buffers[i],
-> -						     readbufSize << 10);
-> -			kfree (sound_read_buffers);
-> -			sound_read_buffers = 0;
-> -			return -ENOMEM;
-> -		}
-> -	}
-> -	return 0;
-> -}
-> -
-> -static void sq_release_read_buffers(void)
-> -{
-> -	int i;
-> -
-> -	if (sound_read_buffers) {
-> -		cpmp->cp_smc[1].smc_smcmr &= ~SMCMR_REN;
-> -		for (i = 0; i < numReadBufs; i++)
-> -			sound.mach.dma_free (sound_read_buffers[i],
-> -					     bufSize << 10);
-> -		kfree (sound_read_buffers);
-> -		sound_read_buffers = 0;
-> -	}
-> -}
-> -
-> -
-> -static void sq_setup(int numBufs, int bufSize, char **write_buffers)
-> -{
-> -	int i;
-> -	volatile cbd_t *bdp;
-> -	volatile cpm8xx_t	*cp;
-> -	volatile smc_t	*sp;
-> -
-> -	/* Make sure the SMC transmit is shut down.
-> -	*/
-> -	cp = cpmp;
-> -	sp = &cpmp->cp_smc[1];
-> -	sp->smc_smcmr &= ~SMCMR_TEN;
-> -
-> -	sq.max_count = numBufs;
-> -	sq.max_active = numBufs;
-> -	sq.block_size = bufSize;
-> -	sq.buffers = write_buffers;
-> -
-> -	sq.front = sq.count = 0;
-> -	sq.rear = -1;
-> -	sq.syncing = 0;
-> -	sq.active = 0;
-> -
-> -	bdp = tx_base;
-> -	for (i=0; i<numBufs; i++) {
-> -		bdp->cbd_bufaddr = virt_to_bus(write_buffers[i]);
-> -		bdp++;
-> -	}
-> -
-> -	/* This causes the SMC to sync up with the first buffer again.
-> -	*/
-> -	cp->cp_cpcr = mk_cr_cmd(CPM_CR_CH_SMC2, CPM_CR_INIT_TX) | CPM_CR_FLG;
-> -	while (cp->cp_cpcr & CPM_CR_FLG);
-> -}
-> -
-> -static void read_sq_setup(int numBufs, int bufSize, char **read_buffers)
-> -{
-> -	int i;
-> -	volatile cbd_t *bdp;
-> -	volatile cpm8xx_t	*cp;
-> -	volatile smc_t	*sp;
-> -
-> -	/* Make sure the SMC receive is shut down.
-> -	*/
-> -	cp = cpmp;
-> -	sp = &cpmp->cp_smc[1];
-> -	sp->smc_smcmr &= ~SMCMR_REN;
-> -
-> -	read_sq.max_count = numBufs;
-> -	read_sq.max_active = numBufs;
-> -	read_sq.block_size = bufSize;
-> -	read_sq.buffers = read_buffers;
-> -
-> -	read_sq.front = read_sq.count = 0;
-> -	read_sq.rear = 0;
-> -	read_sq.rear_size = 0;
-> -	read_sq.syncing = 0;
-> -	read_sq.active = 0;
-> -
-> -	bdp = rx_base;
-> -	for (i=0; i<numReadBufs; i++) {
-> -		bdp->cbd_bufaddr = virt_to_bus(read_buffers[i]);
-> -		bdp->cbd_datlen = read_sq.block_size;
-> -		bdp++;
-> -	}
-> -
-> -	/* This causes the SMC to sync up with the first buffer again.
-> -	*/
-> -	cp->cp_cpcr = mk_cr_cmd(CPM_CR_CH_SMC2, CPM_CR_INIT_RX) | CPM_CR_FLG;
-> -	while (cp->cp_cpcr & CPM_CR_FLG);
-> -}
-> -
-> -
-> -static void sq_play(void)
-> -{
-> -	(*sound.mach.play)();
-> -}
-> -
-> -
-> -/* ++TeSche: radically changed this one too */
-> -
-> -static ssize_t sq_write(struct file *file, const char *src, size_t uLeft,
-> -			loff_t *ppos)
-> -{
-> -	ssize_t uWritten = 0;
-> -	u_char *dest;
-> -	ssize_t uUsed, bUsed, bLeft;
-> -
-> -	/* ++TeSche: Is something like this necessary?
-> -	 * Hey, that's an honest question! Or does any other part of the
-> -	 * filesystem already checks this situation? I really don't know.
-> -	 */
-> -	if (uLeft == 0)
-> -		return 0;
-> -
-> -	/* The interrupt doesn't start to play the last, incomplete frame.
-> -	 * Thus we can append to it without disabling the interrupts! (Note
-> -	 * also that sq.rear isn't affected by the interrupt.)
-> -	 */
-> -
-> -	if (sq.count > 0 && (bLeft = sq.block_size-sq.rear_size) > 0) {
-> -		dest = sq_block_address(sq.rear);
-> -		bUsed = sq.rear_size;
-> -		uUsed = sound_copy_translate(src, uLeft, dest, &bUsed, bLeft);
-> -		if (uUsed <= 0)
-> -			return uUsed;
-> -		src += uUsed;
-> -		uWritten += uUsed;
-> -		uLeft -= uUsed;
-> -		sq.rear_size = bUsed;
-> -	}
-> -
-> -	do {
-> -		while (sq.count == sq.max_active) {
-> -			sq_play();
-> -			if (NON_BLOCKING(sq.open_mode))
-> -				return uWritten > 0 ? uWritten : -EAGAIN;
-> -			SLEEP(sq.action_queue);
-> -			if (SIGNAL_RECEIVED)
-> -				return uWritten > 0 ? uWritten : -EINTR;
-> -		}
-> -
-> -		/* Here, we can avoid disabling the interrupt by first
-> -		 * copying and translating the data, and then updating
-> -		 * the sq variables. Until this is done, the interrupt
-> -		 * won't see the new frame and we can work on it
-> -		 * undisturbed.
-> -		 */
-> -
-> -		dest = sq_block_address((sq.rear+1) % sq.max_count);
-> -		bUsed = 0;
-> -		bLeft = sq.block_size;
-> -		uUsed = sound_copy_translate(src, uLeft, dest, &bUsed, bLeft);
-> -		if (uUsed <= 0)
-> -			break;
-> -		src += uUsed;
-> -		uWritten += uUsed;
-> -		uLeft -= uUsed;
-> -		if (bUsed) {
-> -			sq.rear = (sq.rear+1) % sq.max_count;
-> -			sq.rear_size = bUsed;
-> -			sq.count++;
-> -		}
-> -	} while (bUsed);   /* uUsed may have been 0 */
-> -
-> -	sq_play();
-> -
-> -	return uUsed < 0? uUsed: uWritten;
-> -}
-> -
-> -
-> -/***********/
-> -
-> -/* Here is how the values are used for reading.
-> - * The value 'active' simply indicates the DMA is running.  This is
-> - * done so the driver semantics are DMA starts when the first read is
-> - * posted.  The value 'front' indicates the buffer we should next
-> - * send to the user.  The value 'rear' indicates the buffer the DMA is
-> - * currently filling.  When 'front' == 'rear' the buffer "ring" is
-> - * empty (we always have an empty available).  The 'rear_size' is used
-> - * to track partial offsets into the current buffer.  Right now, I just keep
-> - * The DMA running.  If the reader can't keep up, the interrupt tosses
-> - * the oldest buffer.  We could also shut down the DMA in this case.
-> - */
-> -static ssize_t sq_read(struct file *file, char *dst, size_t uLeft,
-> -                       loff_t *ppos)
-> -{
-> -
-> -	ssize_t	uRead, bLeft, bUsed, uUsed;
-> -
-> -	if (uLeft == 0)
-> -		return 0;
-> -
-> -	if (!read_sq.active)
-> -		CS_Record();	/* Kick off the record process. */
-> -
-> -	uRead = 0;
-> -
-> -	/* Move what the user requests, depending upon other options.
-> -	*/
-> -	while (uLeft > 0) {
-> -
-> -		/* When front == rear, the DMA is not done yet.
-> -		*/
-> -		while (read_sq.front == read_sq.rear) {
-> -			if (NON_BLOCKING(read_sq.open_mode)) {
-> -			       return uRead > 0 ? uRead : -EAGAIN;
-> -			}
-> -			SLEEP(read_sq.action_queue);
-> -			if (SIGNAL_RECEIVED)
-> -				return uRead > 0 ? uRead : -EINTR;
-> -		}
-> -
-> -		/* The amount we move is either what is left in the
-> -		 * current buffer or what the user wants.
-> -		 */
-> -		bLeft = read_sq.block_size - read_sq.rear_size;
-> -		bUsed = read_sq.rear_size;
-> -		uUsed = sound_copy_translate_read(dst, uLeft,
-> -			read_sq.buffers[read_sq.front], &bUsed, bLeft);
-> -		if (uUsed <= 0)
-> -			return uUsed;
-> -		dst += uUsed;
-> -		uRead += uUsed;
-> -		uLeft -= uUsed;
-> -		read_sq.rear_size += bUsed;
-> -		if (read_sq.rear_size >= read_sq.block_size) {
-> -			read_sq.rear_size = 0;
-> -			read_sq.front++;
-> -			if (read_sq.front >= read_sq.max_active)
-> -				read_sq.front = 0;
-> -		}
-> -	}
-> -	return uRead;
-> -}
-> -
-> -static int sq_open(struct inode *inode, struct file *file)
-> -{
-> -	int rc = 0;
-> -
-> -	if (file->f_mode & FMODE_WRITE) {
-> -		if (sq.busy) {
-> -			rc = -EBUSY;
-> -			if (NON_BLOCKING(file->f_flags))
-> -				goto err_out;
-> -			rc = -EINTR;
-> -			while (sq.busy) {
-> -				SLEEP(sq.open_queue);
-> -				if (SIGNAL_RECEIVED)
-> -					goto err_out;
-> -			}
-> -		}
-> -		sq.busy = 1; /* Let's play spot-the-race-condition */
-> -
-> -		if (sq_allocate_buffers()) goto err_out_nobusy;
-> -
-> -		sq_setup(numBufs, bufSize<<10,sound_buffers);
-> -		sq.open_mode = file->f_mode;
-> -	}
-> -
-> -
-> -	if (file->f_mode & FMODE_READ) {
-> -		if (read_sq.busy) {
-> -			rc = -EBUSY;
-> -			if (NON_BLOCKING(file->f_flags))
-> -				goto err_out;
-> -			rc = -EINTR;
-> -			while (read_sq.busy) {
-> -				SLEEP(read_sq.open_queue);
-> -				if (SIGNAL_RECEIVED)
-> -					goto err_out;
-> -			}
-> -			rc = 0;
-> -		}
-> -		read_sq.busy = 1;
-> -		if (sq_allocate_read_buffers()) goto err_out_nobusy;
-> -
-> -		read_sq_setup(numReadBufs,readbufSize<<10, sound_read_buffers);
-> -		read_sq.open_mode = file->f_mode;
-> -	}
-> -
-> -	/* Start up the 4218 by:
-> -	 * Reset.
-> -	 * Enable, unreset.
-> -	 */
-> -	*((volatile uint *)HIOX_CSR4_ADDR) &= ~HIOX_CSR4_RSTAUDIO;
-> -	eieio();
-> -	*((volatile uint *)HIOX_CSR4_ADDR) |= HIOX_CSR4_ENAUDIO;
-> -	mdelay(50);
-> -	*((volatile uint *)HIOX_CSR4_ADDR) |= HIOX_CSR4_RSTAUDIO;
-> -
-> -	/* We need to send the current control word in case someone
-> -	 * opened /dev/mixer and changed things while we were shut
-> -	 * down.  Chances are good the initialization that follows
-> -	 * would have done this, but it is still possible it wouldn't.
-> -	 */
-> -	cs4218_ctl_write(cs4218_control);
-> -
-> -	sound.minDev = iminor(inode) & 0x0f;
-> -	sound.soft = sound.dsp;
-> -	sound.hard = sound.dsp;
-> -	sound_init();
-> -	if ((iminor(inode) & 0x0f) == SND_DEV_AUDIO) {
-> -		sound_set_speed(8000);
-> -		sound_set_stereo(0);
-> -		sound_set_format(AFMT_MU_LAW);
-> -	}
-> -
-> -	return nonseekable_open(inode, file);
-> -
-> -err_out_nobusy:
-> -	if (file->f_mode & FMODE_WRITE) {
-> -		sq.busy = 0;
-> -		WAKE_UP(sq.open_queue);
-> -	}
-> -	if (file->f_mode & FMODE_READ) {
-> -		read_sq.busy = 0;
-> -		WAKE_UP(read_sq.open_queue);
-> -	}
-> -err_out:
-> -	return rc;
-> -}
-> -
-> -
-> -static void sq_reset(void)
-> -{
-> -	sound_silence();
-> -	sq.active = 0;
-> -	sq.count = 0;
-> -	sq.front = (sq.rear+1) % sq.max_count;
-> -#if 0
-> -	init_tdm_buffers();
-> -#endif
-> -}
-> -
-> -
-> -static int sq_fsync(struct file *filp, struct dentry *dentry)
-> -{
-> -	int rc = 0;
-> -
-> -	sq.syncing = 1;
-> -	sq_play();	/* there may be an incomplete frame waiting */
-> -
-> -	while (sq.active) {
-> -		SLEEP(sq.sync_queue);
-> -		if (SIGNAL_RECEIVED) {
-> -			/* While waiting for audio output to drain, an
-> -			 * interrupt occurred.  Stop audio output immediately
-> -			 * and clear the queue. */
-> -			sq_reset();
-> -			rc = -EINTR;
-> -			break;
-> -		}
-> -	}
-> -
-> -	sq.syncing = 0;
-> -	return rc;
-> -}
-> -
-> -static int sq_release(struct inode *inode, struct file *file)
-> -{
-> -	int rc = 0;
-> -
-> -	if (sq.busy)
-> -		rc = sq_fsync(file, file->f_path.dentry);
-> -	sound.soft = sound.dsp;
-> -	sound.hard = sound.dsp;
-> -	sound_silence();
-> -
-> -	sq_release_read_buffers();
-> -	sq_release_buffers();
-> -
-> -	if (file->f_mode & FMODE_READ) {
-> -		read_sq.busy = 0;
-> -		WAKE_UP(read_sq.open_queue);
-> -	}
-> -
-> -	if (file->f_mode & FMODE_WRITE) {
-> -		sq.busy = 0;
-> -		WAKE_UP(sq.open_queue);
-> -	}
-> -
-> -	/* Shut down the SMC.
-> -	*/
-> -	cpmp->cp_smc[1].smc_smcmr &= ~(SMCMR_TEN | SMCMR_REN);
-> -
-> -	/* Shut down the codec.
-> -	*/
-> -	*((volatile uint *)HIOX_CSR4_ADDR) |= HIOX_CSR4_RSTAUDIO;
-> -	eieio();
-> -	*((volatile uint *)HIOX_CSR4_ADDR) &= ~HIOX_CSR4_ENAUDIO;
-> -
-> -	/* Wake up a process waiting for the queue being released.
-> -	 * Note: There may be several processes waiting for a call
-> -	 * to open() returning. */
-> -
-> -	return rc;
-> -}
-> -
-> -
-> -static int sq_ioctl(struct inode *inode, struct file *file, u_int cmd,
-> -		    u_long arg)
-> -{
-> -	u_long fmt;
-> -	int data;
-> -#if 0
-> -	int size, nbufs;
-> -#else
-> -	int size;
-> -#endif
-> -
-> -	switch (cmd) {
-> -	case SNDCTL_DSP_RESET:
-> -		sq_reset();
-> -		return 0;
-> -	case SNDCTL_DSP_POST:
-> -	case SNDCTL_DSP_SYNC:
-> -		return sq_fsync(file, file->f_path.dentry);
-> -
-> -		/* ++TeSche: before changing any of these it's
-> -		 * probably wise to wait until sound playing has
-> -		 * settled down. */
-> -	case SNDCTL_DSP_SPEED:
-> -		sq_fsync(file, file->f_path.dentry);
-> -		IOCTL_IN(arg, data);
-> -		return IOCTL_OUT(arg, sound_set_speed(data));
-> -	case SNDCTL_DSP_STEREO:
-> -		sq_fsync(file, file->f_path.dentry);
-> -		IOCTL_IN(arg, data);
-> -		return IOCTL_OUT(arg, sound_set_stereo(data));
-> -	case SOUND_PCM_WRITE_CHANNELS:
-> -		sq_fsync(file, file->f_path.dentry);
-> -		IOCTL_IN(arg, data);
-> -		return IOCTL_OUT(arg, sound_set_stereo(data-1)+1);
-> -	case SNDCTL_DSP_SETFMT:
-> -		sq_fsync(file, file->f_path.dentry);
-> -		IOCTL_IN(arg, data);
-> -		return IOCTL_OUT(arg, sound_set_format(data));
-> -	case SNDCTL_DSP_GETFMTS:
-> -		fmt = 0;
-> -		if (sound.trans_write) {
-> -			if (sound.trans_write->ct_ulaw)
-> -				fmt |= AFMT_MU_LAW;
-> -			if (sound.trans_write->ct_alaw)
-> -				fmt |= AFMT_A_LAW;
-> -			if (sound.trans_write->ct_s8)
-> -				fmt |= AFMT_S8;
-> -			if (sound.trans_write->ct_u8)
-> -				fmt |= AFMT_U8;
-> -			if (sound.trans_write->ct_s16be)
-> -				fmt |= AFMT_S16_BE;
-> -			if (sound.trans_write->ct_u16be)
-> -				fmt |= AFMT_U16_BE;
-> -			if (sound.trans_write->ct_s16le)
-> -				fmt |= AFMT_S16_LE;
-> -			if (sound.trans_write->ct_u16le)
-> -				fmt |= AFMT_U16_LE;
-> -		}
-> -		return IOCTL_OUT(arg, fmt);
-> -	case SNDCTL_DSP_GETBLKSIZE:
-> -		size = sq.block_size
-> -			* sound.soft.size * (sound.soft.stereo + 1)
-> -			/ (sound.hard.size * (sound.hard.stereo + 1));
-> -		return IOCTL_OUT(arg, size);
-> -	case SNDCTL_DSP_SUBDIVIDE:
-> -		break;
-> -#if 0	/* Sorry can't do this at the moment.  The CPM allocated buffers
-> -	 * long ago that can't be changed.
-> -	 */
-> -	case SNDCTL_DSP_SETFRAGMENT:
-> -		if (sq.count || sq.active || sq.syncing)
-> -			return -EINVAL;
-> -		IOCTL_IN(arg, size);
-> -		nbufs = size >> 16;
-> -		if (nbufs < 2 || nbufs > numBufs)
-> -			nbufs = numBufs;
-> -		size &= 0xffff;
-> -		if (size >= 8 && size <= 30) {
-> -			size = 1 << size;
-> -			size *= sound.hard.size * (sound.hard.stereo + 1);
-> -			size /= sound.soft.size * (sound.soft.stereo + 1);
-> -			if (size > (bufSize << 10))
-> -				size = bufSize << 10;
-> -		} else
-> -			size = bufSize << 10;
-> -		sq_setup(numBufs, size, sound_buffers);
-> -		sq.max_active = nbufs;
-> -		return 0;
-> -#endif
-> -
-> -	default:
-> -		return mixer_ioctl(inode, file, cmd, arg);
-> -	}
-> -	return -EINVAL;
-> -}
-> -
-> -
-> -
-> -static const struct file_operations sq_fops =
-> -{
-> -	.owner =	THIS_MODULE,
-> -	.llseek =	sound_lseek,
-> -	.read =		sq_read,			/* sq_read */
-> -	.write =	sq_write,
-> -	.ioctl =	sq_ioctl,
-> -	.open =		sq_open,
-> -	.release =	sq_release,
-> -};
-> -
-> -
-> -static void __init sq_init(void)
-> -{
-> -	sq_unit = register_sound_dsp(&sq_fops, -1);
-> -	if (sq_unit < 0)
-> -		return;
-> -
-> -	init_waitqueue_head(&sq.action_queue);
-> -	init_waitqueue_head(&sq.open_queue);
-> -	init_waitqueue_head(&sq.sync_queue);
-> -	init_waitqueue_head(&read_sq.action_queue);
-> -	init_waitqueue_head(&read_sq.open_queue);
-> -	init_waitqueue_head(&read_sq.sync_queue);
-> -
-> -	sq.busy = 0;
-> -	read_sq.busy = 0;
-> -
-> -	/* whatever you like as startup mode for /dev/dsp,
-> -	 * (/dev/audio hasn't got a startup mode). note that
-> -	 * once changed a new open() will *not* restore these!
-> -	 */
-> -	sound.dsp.format = AFMT_S16_BE;
-> -	sound.dsp.stereo = 1;
-> -	sound.dsp.size = 16;
-> -
-> -	/* set minimum rate possible without expanding */
-> -	sound.dsp.speed = 8000;
-> -
-> -	/* before the first open to /dev/dsp this wouldn't be set */
-> -	sound.soft = sound.dsp;
-> -	sound.hard = sound.dsp;
-> -
-> -	sound_silence();
-> -}
-> -
-> -/*
-> - * /dev/sndstat
-> - */
-> -
-> -
-> -/* state.buf should not overflow! */
-> -
-> -static int state_open(struct inode *inode, struct file *file)
-> -{
-> -	char *buffer = state.buf, *mach = "", cs4218_buf[50];
-> -	int len = 0;
-> -
-> -	if (state.busy)
-> -		return -EBUSY;
-> -
-> -	state.ptr = 0;
-> -	state.busy = 1;
-> -
-> -	sprintf(cs4218_buf, "Crystal CS4218 on TDM, ");
-> -	mach = cs4218_buf;
-> -
-> -	len += sprintf(buffer+len, "%sDMA sound driver:\n", mach);
-> -
-> -	len += sprintf(buffer+len, "\tsound.format = 0x%x", sound.soft.format);
-> -	switch (sound.soft.format) {
-> -	case AFMT_MU_LAW:
-> -		len += sprintf(buffer+len, " (mu-law)");
-> -		break;
-> -	case AFMT_A_LAW:
-> -		len += sprintf(buffer+len, " (A-law)");
-> -		break;
-> -	case AFMT_U8:
-> -		len += sprintf(buffer+len, " (unsigned 8 bit)");
-> -		break;
-> -	case AFMT_S8:
-> -		len += sprintf(buffer+len, " (signed 8 bit)");
-> -		break;
-> -	case AFMT_S16_BE:
-> -		len += sprintf(buffer+len, " (signed 16 bit big)");
-> -		break;
-> -	case AFMT_U16_BE:
-> -		len += sprintf(buffer+len, " (unsigned 16 bit big)");
-> -		break;
-> -	case AFMT_S16_LE:
-> -		len += sprintf(buffer+len, " (signed 16 bit little)");
-> -		break;
-> -	case AFMT_U16_LE:
-> -		len += sprintf(buffer+len, " (unsigned 16 bit little)");
-> -		break;
-> -	}
-> -	len += sprintf(buffer+len, "\n");
-> -	len += sprintf(buffer+len, "\tsound.speed = %dHz (phys. %dHz)\n",
-> -		       sound.soft.speed, sound.hard.speed);
-> -	len += sprintf(buffer+len, "\tsound.stereo = 0x%x (%s)\n",
-> -		       sound.soft.stereo, sound.soft.stereo ? "stereo" : "mono");
-> -	len += sprintf(buffer+len, "\tsq.block_size = %d sq.max_count = %d"
-> -		       " sq.max_active = %d\n",
-> -		       sq.block_size, sq.max_count, sq.max_active);
-> -	len += sprintf(buffer+len, "\tsq.count = %d sq.rear_size = %d\n", sq.count,
-> -		       sq.rear_size);
-> -	len += sprintf(buffer+len, "\tsq.active = %d sq.syncing = %d\n",
-> -		       sq.active, sq.syncing);
-> -	state.len = len;
-> -	return nonseekable_open(inode, file);
-> -}
-> -
-> -
-> -static int state_release(struct inode *inode, struct file *file)
-> -{
-> -	state.busy = 0;
-> -	return 0;
-> -}
-> -
-> -
-> -static ssize_t state_read(struct file *file, char *buf, size_t count,
-> -			  loff_t *ppos)
-> -{
-> -	int n = state.len - state.ptr;
-> -	if (n > count)
-> -		n = count;
-> -	if (n <= 0)
-> -		return 0;
-> -	if (copy_to_user(buf, &state.buf[state.ptr], n))
-> -		return -EFAULT;
-> -	state.ptr += n;
-> -	return n;
-> -}
-> -
-> -
-> -static const struct file_operations state_fops =
-> -{
-> -	.owner =	THIS_MODULE,
-> -	.llseek =	sound_lseek,
-> -	.read =		state_read,
-> -	.open =		state_open,
-> -	.release =	state_release,
-> -};
-> -
-> -
-> -static void __init state_init(void)
-> -{
-> -	state_unit = register_sound_special(&state_fops, SND_DEV_STATUS);
-> -	if (state_unit < 0)
-> -		return;
-> -	state.busy = 0;
-> -}
-> -
-> -
-> -/*** Common stuff ********************************************************/
-> -
-> -static long long sound_lseek(struct file *file, long long offset, int orig)
-> -{
-> -	return -ESPIPE;
-> -}
-> -
-> -
-> -/*** Config & Setup **********************************************************/
-> -
-> -
-> -int __init tdm8xx_sound_init(void)
-> -{
-> -	int i, has_sound;
-> -	uint			dp_offset;
-> -	volatile uint		*sirp;
-> -	volatile cbd_t		*bdp;
-> -	volatile cpm8xx_t	*cp;
-> -	volatile smc_t		*sp;
-> -	volatile smc_uart_t	*up;
-> -	volatile immap_t	*immap;
-> -
-> -	has_sound = 0;
-> -
-> -	/* Program the SI/TSA to use TDMa, connected to SMC2, for 4 bytes.
-> -	*/
-> -	cp = cpmp;	/* Get pointer to Communication Processor */
-> -	immap = (immap_t *)IMAP_ADDR;	/* and to internal registers */
-> -
-> -	/* Set all TDMa control bits to zero.  This enables most features
-> -	 * we want.
-> -	 */
-> -	cp->cp_simode &= ~0x00000fff;
-> -
-> -	/* Enable common receive/transmit clock pins, use IDL format.
-> -	 * Sync on falling edge, transmit rising clock, receive falling
-> -	 * clock, delay 1 bit on both Tx and Rx.  Common Tx/Rx clocks and
-> -	 * sync.
-> -	 * Connect SMC2 to TSA.
-> -	 */
-> -	cp->cp_simode |= 0x80000141;
-> -
-> -	/* Configure port A pins for TDMa operation.
-> -	 * The RPX-Lite (MPC850/823) loses SMC2 when TDM is used.
-> -	 */
-> -	immap->im_ioport.iop_papar |= 0x01c0; /* Enable TDMa functions */
-> -	immap->im_ioport.iop_padir |= 0x00c0; /* Enable TDMa Tx/Rx */
-> -	immap->im_ioport.iop_padir &= ~0x0100; /* Enable L1RCLKa */
-> -
-> -	immap->im_ioport.iop_pcpar |= 0x0800; /* Enable L1RSYNCa */
-> -	immap->im_ioport.iop_pcdir &= ~0x0800;
-> -
-> -	/* Initialize the SI TDM routing table.  We use TDMa only.
-> -	 * The receive table and transmit table each have only one
-> -	 * entry, to capture/send four bytes after each frame pulse.
-> -	 * The 16-bit ram entry is 0000 0001 1000 1111. (SMC2)
-> -	 */
-> -	cp->cp_sigmr = 0;
-> -	sirp = (uint *)cp->cp_siram;
-> -
-> -	*sirp = 0x018f0000;		/* Receive entry */
-> -	sirp += 64;
-> -	*sirp = 0x018f0000;		/* Tramsmit entry */
-> -
-> -	/* Enable single TDMa routing.
-> -	*/
-> -	cp->cp_sigmr = 0x04;
-> -
-> -	/* Initialize the SMC for transparent operation.
-> -	*/
-> -	sp = &cpmp->cp_smc[1];
-> -	up = (smc_uart_t *)&cp->cp_dparam[PROFF_SMC2];
-> -
-> -	/* We need to allocate a transmit and receive buffer
-> -	 * descriptors from dual port ram.
-> -	 */
-> -	dp_addr = cpm_dpalloc(sizeof(cbd_t) * numReadBufs, 8);
-> -
-> -	/* Set the physical address of the host memory
-> -	 * buffers in the buffer descriptors, and the
-> -	 * virtual address for us to work with.
-> -	 */
-> -	bdp = (cbd_t *)&cp->cp_dpmem[dp_addr];
-> -	up->smc_rbase = dp_offset;
-> -	rx_cur = rx_base = (cbd_t *)bdp;
-> -
-> -	for (i=0; i<(numReadBufs-1); i++) {
-> -		bdp->cbd_bufaddr = 0;
-> -		bdp->cbd_datlen = 0;
-> -		bdp->cbd_sc = BD_SC_EMPTY | BD_SC_INTRPT;
-> -		bdp++;
-> -	}
-> -	bdp->cbd_bufaddr = 0;
-> -	bdp->cbd_datlen = 0;
-> -	bdp->cbd_sc = BD_SC_WRAP | BD_SC_EMPTY | BD_SC_INTRPT;
-> -
-> -	/* Now, do the same for the transmit buffers.
-> -	*/
-> -	dp_offset = cpm_dpalloc(sizeof(cbd_t) * numBufs, 8);
-> -
-> -	bdp = (cbd_t *)&cp->cp_dpmem[dp_addr];
-> -	up->smc_tbase = dp_offset;
-> -	tx_cur = tx_base = (cbd_t *)bdp;
-> -
-> -	for (i=0; i<(numBufs-1); i++) {
-> -		bdp->cbd_bufaddr = 0;
-> -		bdp->cbd_datlen = 0;
-> -		bdp->cbd_sc = BD_SC_INTRPT;
-> -		bdp++;
-> -	}
-> -	bdp->cbd_bufaddr = 0;
-> -	bdp->cbd_datlen = 0;
-> -	bdp->cbd_sc = (BD_SC_WRAP | BD_SC_INTRPT);
-> -
-> -	/* Set transparent SMC mode.
-> -	 * A few things are specific to our application.  The codec interface
-> -	 * is MSB first, hence the REVD selection.  The CD/CTS pulse are
-> -	 * used by the TSA to indicate the frame start to the SMC.
-> -	 */
-> -	up->smc_rfcr = SCC_EB;
-> -	up->smc_tfcr = SCC_EB;
-> -	up->smc_mrblr = readbufSize * 1024;
-> -
-> -	/* Set 16-bit reversed data, transparent mode.
-> -	*/
-> -	sp->smc_smcmr = smcr_mk_clen(15) |
-> -		SMCMR_SM_TRANS | SMCMR_REVD | SMCMR_BS;
-> -
-> -	/* Enable and clear events.
-> -	 * Because of FIFO delays, all we need is the receive interrupt
-> -	 * and we can process both the current receive and current
-> -	 * transmit interrupt within a few microseconds of the transmit.
-> -	 */
-> -	sp->smc_smce = 0xff;
-> -	sp->smc_smcm = SMCM_TXE | SMCM_TX | SMCM_RX;
-> -
-> -	/* Send the CPM an initialize command.
-> -	*/
-> -	cp->cp_cpcr = mk_cr_cmd(CPM_CR_CH_SMC2,
-> -				CPM_CR_INIT_TRX) | CPM_CR_FLG;
-> -	while (cp->cp_cpcr & CPM_CR_FLG);
-> -
-> -	sound.mach = mach_cs4218;
-> -	has_sound = 1;
-> -
-> -	/* Initialize beep stuff */
-> -	orig_mksound = kd_mksound;
-> -	kd_mksound = cs_mksound;
-> -	beep_buf = kmalloc(BEEP_BUFLEN * 4, GFP_KERNEL);
-> -	if (beep_buf == NULL)
-> -		printk(KERN_WARNING "dmasound: no memory for "
-> -		       "beep buffer\n");
-> -
-> -	if (!has_sound)
-> -		return -ENODEV;
-> -
-> -	/* Initialize the software SPI.
-> -	*/
-> -	sw_spi_init();
-> -
-> -	/* Set up sound queue, /dev/audio and /dev/dsp. */
-> -
-> -	/* Set default settings. */
-> -	sq_init();
-> -
-> -	/* Set up /dev/sndstat. */
-> -	state_init();
-> -
-> -	/* Set up /dev/mixer. */
-> -	mixer_init();
-> -
-> -	if (!sound.mach.irqinit()) {
-> -		printk(KERN_ERR "DMA sound driver: Interrupt initialization failed\n");
-> -		return -ENODEV;
-> -	}
-> -#ifdef MODULE
-> -	irq_installed = 1;
-> -#endif
-> -
-> -	printk(KERN_INFO "DMA sound driver installed, using %d buffers of %dk.\n",
-> -	       numBufs, bufSize);
-> -
-> -	return 0;
-> -}
-> -
-> -/* Due to FIFOs and bit delays, the transmit interrupt occurs a few
-> - * microseconds ahead of the receive interrupt.
-> - * When we get an interrupt, we service the transmit first, then
-> - * check for a receive to prevent the overhead of returning through
-> - * the interrupt handler only to get back here right away during
-> - * full duplex operation.
-> - */
-> -static void
-> -cs4218_intr(void *dev_id)
-> -{
-> -	volatile smc_t	*sp;
-> -	volatile cpm8xx_t	*cp;
-> -
-> -	sp = &cpmp->cp_smc[1];
-> -
-> -	if (sp->smc_smce & SCCM_TX) {
-> -		sp->smc_smce = SCCM_TX;
-> -		cs4218_tdm_tx_intr((void *)sp);
-> -	}
-> -
-> -	if (sp->smc_smce & SCCM_RX) {
-> -		sp->smc_smce = SCCM_RX;
-> -		cs4218_tdm_rx_intr((void *)sp);
-> -	}
-> -
-> -	if (sp->smc_smce & SCCM_TXE) {
-> -		/* Transmit underrun.  This happens with the application
-> -		 * didn't keep up sending buffers.  We tell the SMC to
-> -		 * restart, which will cause it to poll the current (next)
-> -		 * BD.  If the user supplied data since this occurred,
-> -		 * we just start running again.  If they didn't, the SMC
-> -		 * will poll the descriptor until data is placed there.
-> -		 */
-> -		sp->smc_smce = SCCM_TXE;
-> -		cp = cpmp;	/* Get pointer to Communication Processor */
-> -		cp->cp_cpcr = mk_cr_cmd(CPM_CR_CH_SMC2,
-> -					CPM_CR_RESTART_TX) | CPM_CR_FLG;
-> -		while (cp->cp_cpcr & CPM_CR_FLG);
-> -	}
-> -}
-> -
-> -
-> -#define MAXARGS		8	/* Should be sufficient for now */
-> -
-> -void __init dmasound_setup(char *str, int *ints)
-> -{
-> -	/* check the bootstrap parameter for "dmasound=" */
-> -
-> -	switch (ints[0]) {
-> -	case 3:
-> -		if ((ints[3] < 0) || (ints[3] > MAX_CATCH_RADIUS))
-> -			printk("dmasound_setup: invalid catch radius, using default = %d\n", catchRadius);
-> -		else
-> -			catchRadius = ints[3];
-> -		/* fall through */
-> -	case 2:
-> -		if (ints[1] < MIN_BUFFERS)
-> -			printk("dmasound_setup: invalid number of buffers, using default = %d\n", numBufs);
-> -		else
-> -			numBufs = ints[1];
-> -		if (ints[2] < MIN_BUFSIZE || ints[2] > MAX_BUFSIZE)
-> -			printk("dmasound_setup: invalid buffer size, using default = %d\n", bufSize);
-> -		else
-> -			bufSize = ints[2];
-> -		break;
-> -	case 0:
-> -		break;
-> -	default:
-> -		printk("dmasound_setup: invalid number of arguments\n");
-> -	}
-> -}
-> -
-> -/* Software SPI functions.
-> - * These are on Port B.
-> - */
-> -#define PB_SPICLK	((uint)0x00000002)
-> -#define PB_SPIMOSI	((uint)0x00000004)
-> -#define PB_SPIMISO	((uint)0x00000008)
-> -
-> -static
-> -void	sw_spi_init(void)
-> -{
-> -	volatile cpm8xx_t	*cp;
-> -	volatile uint		*hcsr4;
-> -
-> -	hcsr4 = (volatile uint *)HIOX_CSR4_ADDR;
-> -	cp = cpmp;	/* Get pointer to Communication Processor */
-> -
-> -	*hcsr4 &= ~HIOX_CSR4_AUDSPISEL;	/* Disable SPI select */
-> -
-> -	/* Make these Port B signals general purpose I/O.
-> -	 * First, make sure the clock is low.
-> -	 */
-> -	cp->cp_pbdat &= ~PB_SPICLK;
-> -	cp->cp_pbpar &= ~(PB_SPICLK | PB_SPIMOSI | PB_SPIMISO);
-> -
-> -	/* Clock and Master Output are outputs.
-> -	*/
-> -	cp->cp_pbdir |= (PB_SPICLK | PB_SPIMOSI);
-> -
-> -	/* Master Input.
-> -	*/
-> -	cp->cp_pbdir &= ~PB_SPIMISO;
-> -
-> -}
-> -
-> -/* Write the CS4218 control word out the SPI port.  While the
-> - * the control word is going out, the status word is arriving.
-> - */
-> -static
-> -uint	cs4218_ctl_write(uint ctlreg)
-> -{
-> -	uint	status;
-> -
-> -	sw_spi_io((u_char *)&ctlreg, (u_char *)&status, 4);
-> -
-> -	/* Shadow the control register.....I guess we could do
-> -	 * the same for the status, but for now we just return it
-> -	 * and let the caller decide.
-> -	 */
-> -	cs4218_control = ctlreg;
-> -	return status;
-> -}
-> -
-> -static
-> -void	sw_spi_io(u_char *obuf, u_char *ibuf, uint bcnt)
-> -{
-> -	int	bits, i;
-> -	u_char	outbyte, inbyte;
-> -	volatile cpm8xx_t	*cp;
-> -	volatile uint		*hcsr4;
-> -
-> -	hcsr4 = (volatile uint *)HIOX_CSR4_ADDR;
-> -	cp = cpmp;	/* Get pointer to Communication Processor */
-> -
-> -	/* The timing on the bus is pretty slow.  Code inefficiency
-> -	 * and eieio() is our friend here :-).
-> -	 */
-> -	cp->cp_pbdat &= ~PB_SPICLK;
-> -	*hcsr4 |= HIOX_CSR4_AUDSPISEL;	/* Enable SPI select */
-> -	eieio();
-> -
-> -	/* Clock in/out the bytes.  Data is valid on the falling edge
-> -	 * of the clock.  Data is MSB first.
-> -	 */
-> -	for (i=0; i<bcnt; i++) {
-> -		outbyte = *obuf++;
-> -		inbyte = 0;
-> -		for (bits=0; bits<8; bits++) {
-> -			eieio();
-> -			cp->cp_pbdat |= PB_SPICLK;
-> -			eieio();
-> -			if (outbyte & 0x80)
-> -				cp->cp_pbdat |= PB_SPIMOSI;
-> -			else
-> -				cp->cp_pbdat &= ~PB_SPIMOSI;
-> -			eieio();
-> -			cp->cp_pbdat &= ~PB_SPICLK;
-> -			eieio();
-> -			outbyte <<= 1;
-> -			inbyte <<= 1;
-> -			if (cp->cp_pbdat & PB_SPIMISO)
-> -				inbyte |= 1;
-> -		}
-> -		*ibuf++ = inbyte;
-> -	}
-> -
-> -	*hcsr4 &= ~HIOX_CSR4_AUDSPISEL;	/* Disable SPI select */
-> -	eieio();
-> -}
-> -
-> -void cleanup_module(void)
-> -{
-> -	if (irq_installed) {
-> -		sound_silence();
-> -#ifdef MODULE
-> -		sound.mach.irqcleanup();
-> -#endif
-> -	}
-> -
-> -	sq_release_read_buffers();
-> -	sq_release_buffers();
-> -
-> -	if (mixer_unit >= 0)
-> -		unregister_sound_mixer(mixer_unit);
-> -	if (state_unit >= 0)
-> -		unregister_sound_special(state_unit);
-> -	if (sq_unit >= 0)
-> -		unregister_sound_dsp(sq_unit);
-> -}
-> -
-> -module_init(tdm8xx_sound_init);
-> -module_exit(cleanup_module);
-> -
-> -
+The patch is also available at
+http://dev.gentoo.org/~robbat2/windfarm-2.6.18-prototyping.diff
+
+Signed-off-by: Robin H. Johnson <robbat2@gentoo.org>
+
+The following patch is the work on the windfarm infrastructure that I did
+between April 2006 and December 2006. I haven't had the time to get back to=
+ it
+since then, so I'm releasing this prototype version so that others can buil=
+d on
+the work.
+
+This is based on 2.6.18, and I haven't found time to update it either.
+
+It works fine on my PowerMac11,2, but I make absolutely no claims that it w=
+ill
+work on other machines. I did start on the PM72 windfarm support, but some
+parts of it below may not even compile, or might eat your hardware etc.
+
+The basic premise of it is:
+1. Identify all chips from the device-tree of the various machines.
+2. If a windfarm driver for the chip already exists, check it for multiple
+   outputs (eg MAX6690, which only had one output available before)
+3. Otherwise write a new windfarm-style driver for it (see DS1631, AD7417).
+4. Hook up the drivers into the windfarm controller, explicitly ignoring the
+   others that are present, but not yet used for speed control.
+5. Notice the new style of Makefile, that allows easier selection of multip=
+le
+   drivers.
+6. Try to come up with a consistent naming scheme based on actual sensor
+   location, rather than any claims the hardware makes as to where the sens=
+or
+   is located.
+
+Here's the full output of my sensors for my PM11,2. There are new sensor
+readings present: DS1631 for Inlet, MAX6690 extra outputs for the heatsink =
+vs.
+die on the northbridge and tunnel chip.
+
+windfarm.0/backside-fan:1109
+windfarm.0/cpu-current-0:15.746
+windfarm.0/cpu-current-1:17.332
+windfarm.0/cpu-current-2:17.453
+windfarm.0/cpu-current-3:16.722
+windfarm.0/cpu-front-fan-0:845
+windfarm.0/cpu-front-fan-1:845
+windfarm.0/cpu-power-0:18.798
+windfarm.0/cpu-power-1:21.241
+windfarm.0/cpu-power-2:21.347
+windfarm.0/cpu-power-3:21.638
+windfarm.0/cpu-pump-0:1250
+windfarm.0/cpu-rear-fan-0:871
+windfarm.0/cpu-rear-fan-1:872
+windfarm.0/cpu-temp-0:48.000
+windfarm.0/cpu-temp-1:51.062
+windfarm.0/cpu-temp-2:50.062
+windfarm.0/cpu-temp-3:50.593
+windfarm.0/cpu-voltage-0:1.193
+windfarm.0/cpu-voltage-1:1.225
+windfarm.0/cpu-voltage-2:1.223
+windfarm.0/cpu-voltage-3:1.293
+windfarm.0/drive-bay-fan:1000
+windfarm.0/hd-temp:38.000
+windfarm.0/ht2000-die-temp:43.000
+windfarm.0/ht2000-heatsink-temp:37.000
+windfarm.0/inlet-ambient-temp:29.625
+windfarm.0/northbridge-die-temp:64.000
+windfarm.0/northbridge-heatsink-temp:48.000
+windfarm.0/slots-fan:1560
+windfarm.0/slots-power:30.429
+
+diff --git a/drivers/macintosh/Kconfig b/drivers/macintosh/Kconfig
+index a9e747c..3b737ba 100644
+--- a/drivers/macintosh/Kconfig
++++ b/drivers/macintosh/Kconfig
+@@ -199,10 +199,30 @@ config WINDFARM
+ 	tristate "New PowerMac thermal control infrastructure"
+ 	depends on PPC
+=20
++config WINDFARM_PM72
++	tristate "Support for thermal management on early PowerMac G5 and Xserve =
+G5 models"
++	depends on WINDFARM && I2C && CPU_FREQ_PMAC64 && ADB_PMU
++	select I2C_POWERMAC
++	select WINDFARM_LM75
++	select WINDFARM_DS1631
++	select WINDFARM_MAX6690
++	select WINDFARM_AD7417
++	select WINDFARM_PCA9556
++	select WINDFARM_PIC16C72A
++	help
++	  This driver provides thermal control for early PowerMac G5 and Xserve
++	  G5 models - PowerMac7,2; PowerMac7,3; RackMac3,1
++
+ config WINDFARM_PM81
+ 	tristate "Support for thermal management on iMac G5"
+ 	depends on WINDFARM && I2C && CPU_FREQ_PMAC64 && PMAC_SMU
+ 	select I2C_POWERMAC
++	select WINDFARM_SMU
++	select WINDFARM_CPUFREQ
++	select WINDFARM_LM75
++# Need to confirm these chips are present
++#	select WINDFARM_DS1631
++#	select WINDFARM_MAX6690
+ 	help
+ 	  This driver provides thermal control for the iMacG5
+=20
+@@ -210,6 +230,12 @@ config WINDFARM_PM91
+ 	tristate "Support for thermal management on PowerMac9,1"
+ 	depends on WINDFARM && I2C && CPU_FREQ_PMAC64 && PMAC_SMU
+ 	select I2C_POWERMAC
++	select WINDFARM_SMU
++	select WINDFARM_CPUFREQ
++	select WINDFARM_LM75
++# Need to confirm these chips are present
++#	select WINDFARM_DS1631
++#	select WINDFARM_MAX6690
+ 	help
+ 	  This driver provides thermal control for the PowerMac9,1
+           which is the recent (SMU based) single CPU desktop G5
+@@ -218,10 +244,51 @@ config WINDFARM_PM112
+ 	tristate "Support for thermal management on PowerMac11,2"
+ 	depends on WINDFARM && I2C && PMAC_SMU
+ 	select I2C_POWERMAC
++	select WINDFARM_SMU
++	select WINDFARM_SMU_SAT
++	select WINDFARM_LM75
++	select WINDFARM_DS1631
++	select WINDFARM_MAX6690
+ 	help
+ 	  This driver provides thermal control for the PowerMac11,2
+ 	  which are the recent dual and quad G5 machines using the
+ 	  970MP dual-core processor.
++=09
++config WINDFARM_LM75
++	tristate "Support for sensor chip - LM75/DS1775"
++	depends on WINDFARM && I2C
++
++config WINDFARM_DS1631
++	tristate "Support for sensor chip - DS1631"
++	depends on WINDFARM && I2C
++
++config WINDFARM_PIC16C72A
++	tristate "Support for sensor chip - PIC16C72A"
++	depends on WINDFARM && I2C
++
++config WINDFARM_MAX6690
++	tristate "Support for sensor chip - MAX6690"
++	depends on WINDFARM && I2C
++
++config WINDFARM_AD7417
++	tristate "Support for sensor chip - AD7417"
++	depends on WINDFARM && I2C
++
++config WINDFARM_PCA9556
++	tristate "Support for sensor chip - PCA9556"
++	depends on WINDFARM && I2C
++
++config WINDFARM_SMU_SAT
++	tristate "Support for SMU based 'satellite' controller sensors found in t=
+he last PowerMacs."
++	depends on WINDFARM && PMAC_SMU
++
++config WINDFARM_SMU
++	tristate "Support for SMU based sensors and controls"
++	depends on WINDFARM && PMAC_SMU
++
++config WINDFARM_CPUFREQ
++	tristate "CPU frequency clamp for PowerMacs thermal control using Windfar=
+m"
++	depends on WINDFARM && PMAC_SMU
+=20
+ config ANSLCD
+ 	tristate "Support for ANS LCD display"
+diff --git a/drivers/macintosh/Makefile b/drivers/macintosh/Makefile
+index 2dfc3f4..a8f914b 100644
+--- a/drivers/macintosh/Makefile
++++ b/drivers/macintosh/Makefile
+@@ -28,18 +28,21 @@ obj-$(CONFIG_ADB_MACIO)		+=3D macio-adb.o
+ obj-$(CONFIG_THERM_PM72)	+=3D therm_pm72.o
+ obj-$(CONFIG_THERM_WINDTUNNEL)	+=3D therm_windtunnel.o
+ obj-$(CONFIG_THERM_ADT746X)	+=3D therm_adt746x.o
+-obj-$(CONFIG_WINDFARM)	        +=3D windfarm_core.o
+-obj-$(CONFIG_WINDFARM_PM81)     +=3D windfarm_smu_controls.o \
+-				   windfarm_smu_sensors.o \
+-				   windfarm_lm75_sensor.o windfarm_pid.o \
+-				   windfarm_cpufreq_clamp.o windfarm_pm81.o
+-obj-$(CONFIG_WINDFARM_PM91)     +=3D windfarm_smu_controls.o \
+-				   windfarm_smu_sensors.o \
+-				   windfarm_lm75_sensor.o windfarm_pid.o \
+-				   windfarm_cpufreq_clamp.o windfarm_pm91.o
+-obj-$(CONFIG_WINDFARM_PM112)	+=3D windfarm_pm112.o windfarm_smu_sat.o \
+-				   windfarm_smu_controls.o \
+-				   windfarm_smu_sensors.o \
+-				   windfarm_max6690_sensor.o \
+-				   windfarm_lm75_sensor.o windfarm_pid.o
++
++obj-$(CONFIG_WINDFARM)	        +=3D windfarm_core.o windfarm_pid.o=20
++
++obj-$(CONFIG_WINDFARM_LM75)	+=3D windfarm_lm75_sensor.o
++obj-$(CONFIG_WINDFARM_DS1631)	+=3D windfarm_ds1631_sensor.o
++obj-$(CONFIG_WINDFARM_MAX6690)	+=3D windfarm_max6690_sensor.o
++obj-$(CONFIG_WINDFARM_PIC16C72A)	+=3D windfarm_pic16c72a_sensor.o
++obj-$(CONFIG_WINDFARM_AD7417)	+=3D windfarm_ad7417_sensor.o
++obj-$(CONFIG_WINDFARM_PCA9556)	+=3D windfarm_pca9556_sensor.o
++obj-$(CONFIG_WINDFARM_SMU) +=3D windfarm_smu_controls.o windfarm_smu_senso=
+rs.o
++obj-$(CONFIG_WINDFARM_SMU_SAT) +=3D windfarm_smu_sat.o
++obj-$(CONFIG_WINDFARM_CPUFREQ) +=3D windfarm_cpufreq_clamp.o
+ obj-$(CONFIG_PMAC_RACKMETER)	+=3D rack-meter.o
++
++obj-$(CONFIG_WINDFARM_PM72)     +=3D windfarm_pm72.o
++obj-$(CONFIG_WINDFARM_PM81)     +=3D windfarm_pm81.o
++obj-$(CONFIG_WINDFARM_PM91)     +=3D windfarm_pm91.o
++obj-$(CONFIG_WINDFARM_PM112)	+=3D windfarm_pm112.o
+diff --git a/drivers/macintosh/windfarm_ad7417_sensor.c b/drivers/macintosh=
+/windfarm_ad7417_sensor.c
+new file mode 100644
+index 0000000..c850747
+--- /dev/null
++++ b/drivers/macintosh/windfarm_ad7417_sensor.c
+@@ -0,0 +1,503 @@
++/*
++ * Windfarm PowerMac thermal control.  AD7417 sensor.
++ *
++ * Copyright (C) 2006 Robin H. Johnson <robbat2@gentoo.org>
++ *
++ * Use and redistribute under the terms of the GNU GPL v2.
++ */
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/slab.h>
++#include <linux/i2c.h>
++#include <linux/delay.h>
++#include <asm/prom.h>
++#include <asm/pmac_low_i2c.h>
++
++#include "windfarm.h"
++
++#define VERSION "0.2"
++
++#define DEBUG
++
++#ifdef DEBUG
++#define DBG(args...)	printk(args)
++#else
++#define DBG(args...)	do { } while(0)
++#endif
++
++// This is how many channels the AD7417 hardware has
++#define AD7417_MAX_CHANNELS 5
++#define AD7417_CHANNEL_AMBIENT 0
++#define AD7417_CHANNEL_CPU_TEMP_DIODE 1
++#define AD7417_CHANNEL_12V_VOLTAGE 2
++#define AD7417_CHANNEL_CPU_VOLTAGE 3
++#define AD7417_CHANNEL_CPU_CURRENT 4
++
++/*
++ * Scaling factors for the AD7417 ADC converters (except
++ * for the CPU diode which is obtained from the EEPROM).
++ * Those values are obtained from the property list of
++ * the Darwin driver.
++ * AppleMacRISC4PE-185.0.0/AppleMacRISC4PE.pbproj/project.pbxproj
++ * Look for the 'scaling-factor' keys.
++ */
++#define ADC_12V_CURRENT_SCALE	0x0320	/* _AD2 */
++#define ADC_CPU_VOLTAGE_SCALE	0x00a0	/* _AD3 */
++#define ADC_CPU_CURRENT_SCALE	0x1f40	/* _AD4 */
++
++struct wf_ad7417_sensor {
++	struct i2c_client	*i2c;
++	struct wf_sensor	sens;
++	u8 	chan; /* channel number */
++	u8 adc_config; /* configuration of the ADC. Duplicate data in some cases,=
+ but not easily avoidable. */
++};
++
++#define wf_to_ad7417(x)	container_of((x), struct wf_ad7417_sensor, sens)
++#define i2c_to_ad7417(x)	container_of((x), struct wf_ad7417_sensor, i2c)
++
++// {{{ AD7417 Fake Power Sensor
++struct ad7417_cpu_power_sensor {
++	struct wf_sensor	*volts;
++	struct wf_sensor	*amps;
++	struct wf_sensor	sens;
++};
++#define wf_to_ad7417_cpu_power(c) container_of((c), struct ad7417_cpu_powe=
+r_sensor, sens)
++#define MAX_POWER_SENSORS 2
++static struct ad7417_cpu_power_sensor *ad7417_cpu_power[MAX_POWER_SENSORS];
++
++static void ad7417_cpu_power_release(struct wf_sensor *sr)
++{
++	struct ad7417_cpu_power_sensor *pow =3D wf_to_ad7417_cpu_power(sr);
++
++	if (pow->volts)
++		wf_put_sensor(pow->volts);
++	if (pow->amps)
++		wf_put_sensor(pow->amps);
++	kfree(pow);
++}
++
++static int ad7417_cpu_power_get(struct wf_sensor *sr, s32 *value)
++{
++	struct ad7417_cpu_power_sensor *pow =3D wf_to_ad7417_cpu_power(sr);
++	s32 volts, amps, power;
++	int rc;
++
++	rc =3D pow->amps->ops->get_value(pow->amps, &amps);
++	if (rc)
++		return rc;
++
++	rc =3D pow->volts->ops->get_value(pow->volts, &volts);
++	if (rc)
++		return rc;
++
++	power =3D (s32)((((u64)volts) * ((u64)amps)) >> 16);
++	*value =3D power;
++	return 0;
++}
++
++static struct wf_sensor_ops ad7417_cpu_power_ops =3D {
++	.get_value	=3D ad7417_cpu_power_get,
++	.release	=3D ad7417_cpu_power_release,
++	.owner		=3D THIS_MODULE,
++};
++
++	static struct ad7417_cpu_power_sensor *
++ad7417_cpu_power_create(struct wf_sensor *volts, struct wf_sensor *amps, c=
+har* name)
++{
++	struct ad7417_cpu_power_sensor *pow;
++
++	pow =3D kmalloc(sizeof(struct ad7417_cpu_power_sensor), GFP_KERNEL);
++	if (pow =3D=3D NULL)
++		return NULL;
++	pow->sens.ops =3D &ad7417_cpu_power_ops;
++	pow->sens.name =3D name;
++
++	wf_get_sensor(volts);
++	pow->volts =3D volts;
++	wf_get_sensor(amps);
++	pow->amps =3D amps;
++
++	if (wf_register_sensor(&pow->sens))
++		goto fail;
++	return pow;
++ fail:
++	kfree(pow);
++	return NULL;
++}
++
++//}}}
++
++static int wf_ad7417_attach(struct i2c_adapter *adapter);
++static int wf_ad7417_detach(struct i2c_client *client);
++
++static struct i2c_driver wf_ad7417_driver =3D {
++	.driver =3D {
++		.name		=3D "wf_ad7417",
++	},
++	.attach_adapter	=3D wf_ad7417_attach,
++	.detach_client	=3D wf_ad7417_detach,
++};
++
++static int ad7417_init(struct i2c_client *i2c, u8 *adc_config) {
++	int rc =3D 0;
++	u8 buf[2];
++
++	/* Clear Config2 */
++	buf[0] =3D 5;
++	buf[1] =3D 0;
++	i2c_master_send(i2c, buf, 2);
++
++	/* Read & cache Config1 */
++	buf[0] =3D 1;
++	rc =3D i2c_master_send(i2c, buf, 1);
++	if (rc > 0) {
++		rc =3D i2c_master_recv(i2c, buf, 1);
++		if (rc > 0) {
++			*adc_config =3D buf[0];
++			DBG("ADC config reg: %02x\n", *adc_config);
++
++			/* Disable shutdown mode */
++			*adc_config &=3D 0xfe;
++			buf[0] =3D 1;
++			buf[1] =3D *adc_config;
++			rc =3D i2c_master_send(i2c, buf, 2);
++		}
++	}
++	if (rc <=3D 0)
++		printk(KERN_ERR "windfarm_ad7417: Error reading ADC config register !\n"=
+);
++	return rc;
++}
++
++static int ad7417_channel_read(struct wf_ad7417_sensor *ad7417) {
++	int rc, data, tries =3D 0;
++	u8 buf[2];
++	for (;;) {
++		/* Set channel */
++		buf[0] =3D 1;
++		buf[1] =3D (ad7417->adc_config & 0x1f) | (ad7417->chan << 5);
++		rc =3D i2c_master_send(ad7417->i2c, buf, 2);
++		if (rc <=3D 0)
++			goto error;
++		/* Wait for convertion */
++		msleep(1);
++		/* Switch to data register */
++		buf[0] =3D 4;
++		rc =3D i2c_master_send(ad7417->i2c, buf, 1);
++		if (rc <=3D 0)
++			goto error;
++		/* Read result */
++		rc =3D i2c_master_recv(ad7417->i2c, buf, 2);
++		if (rc < 0)
++			goto error;
++		data =3D ((u16)buf[0]) << 8 | (u16)buf[1];
++		return data >> 6;
++error:
++		DBG("Error reading ADC, retrying...\n");
++		if (++tries > 10) {
++			printk(KERN_ERR "windfarm_ad7417: Error reading ADC !\n");
++			return -1;
++		}
++		msleep(10);
++	}
++}
++
++static int wf_ad7417_get(struct wf_sensor *sr, s32 *value)
++{
++	struct wf_ad7417_sensor *ad7417 =3D wf_to_ad7417(sr);
++	s32 data;
++
++	if (ad7417->i2c->adapter =3D=3D NULL)
++		return -ENODEV;
++
++	data =3D ad7417_channel_read(ad7417);
++
++	if(ad7417->chan =3D=3D AD7417_CHANNEL_AMBIENT) {
++		// ... TODO
++	} else if(ad7417->chan =3D=3D AD7417_CHANNEL_CPU_TEMP_DIODE) {
++		// ... TODO
++	} else if(ad7417->chan =3D=3D AD7417_CHANNEL_12V_VOLTAGE) {
++		data *=3D ADC_12V_CURRENT_SCALE;
++	} else if(ad7417->chan =3D=3D AD7417_CHANNEL_CPU_VOLTAGE) {
++		data *=3D ADC_CPU_VOLTAGE_SCALE;
++	} else if(ad7417->chan =3D=3D AD7417_CHANNEL_CPU_CURRENT) {
++		data *=3D ADC_CPU_CURRENT_SCALE;
++	}
++
++	// TODO: rewrite this
++
++	/* chip gets initialized by firmware */
++	/*
++	   data =3D i2c_smbus_read_byte_data(ad7417->i2c, ad7417->reg);
++	   if (data < 0)
++	   return data;
++	 *value =3D data << 16;
++	 */
++	return 0;
++}
++
++static void wf_ad7417_release(struct wf_sensor *sr)
++{
++	struct wf_ad7417_sensor *ad7417 =3D wf_to_ad7417(sr);
++
++	wf_unregister_sensor(&ad7417->sens);
++
++	if (ad7417->i2c->adapter) {
++		i2c_detach_client(ad7417->i2c);
++		ad7417->i2c->adapter =3D NULL;
++	}
++	kfree(ad7417);
++}
++
++static struct wf_sensor_ops wf_ad7417_ops =3D {
++	.get_value	=3D wf_ad7417_get,
++	.release	=3D wf_ad7417_release,
++	.owner		=3D THIS_MODULE,
++};
++
++static struct i2c_client * wf_ad7417_create_i2c_client(struct i2c_adapter =
+*adapter, u8 addr) {
++	struct i2c_client *i2c;
++	const char* ad7417str =3D "ad7417";
++	i2c =3D kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
++	if (i2c =3D=3D NULL) {
++		printk(KERN_ERR "windfarm: Couldn't create i2c client no memory\n");
++		return NULL;
++	}
++	DBG(KERN_DEBUG "wf_ad7417: i2c client created %p\n",i2c);
++	i2c->addr =3D addr >> 1;
++	i2c->adapter =3D adapter;
++	i2c->driver =3D &wf_ad7417_driver;
++	/* neither name is correct
++	 * strncpy(i2c->name, name, I2C_NAME_SIZE-1);
++	 */
++	strncpy(i2c->name, ad7417str, I2C_NAME_SIZE-1);
++	return i2c;
++}
++
++static struct wf_ad7417_sensor* wf_ad7417_create_wf_sensor(struct i2c_clie=
+nt *client, char* name, u8 chan, u8 adc_config) { =20
++	struct wf_ad7417_sensor *ad7417;
++	ad7417 =3D kzalloc(sizeof(struct wf_ad7417_sensor), GFP_KERNEL);
++	if (ad7417 =3D=3D NULL) {
++		printk(KERN_ERR "windfarm: Couldn't create ad7417 sensor %s: "
++				"no memory\n", name);
++		return NULL;
++	}
++
++	ad7417->chan =3D chan;
++	ad7417->sens.ops =3D &wf_ad7417_ops;
++	ad7417->sens.name =3D name;
++	ad7417->i2c =3D client;
++	ad7417->adc_config =3D adc_config;
++
++	return ad7417;
++}
++
++static void wf_ad7417_create(struct i2c_adapter *adapter, u8 addr, char* n=
+ames[AD7417_MAX_CHANNELS], u8 chip, char* power_sensor_name)
++{
++	struct wf_ad7417_sensor *ad7417[AD7417_MAX_CHANNELS] =3D {NULL,NULL,NULL,=
+NULL,NULL};
++	struct i2c_client* i2c;
++	u8 chan=3D0, adc_config=3D0;
++	DBG(KERN_DEBUG "wf_ad7417: create i2c client\n");
++	// --- block 1
++	i2c =3D wf_ad7417_create_i2c_client(adapter,addr);
++	if(!i2c) {
++		goto fail_i2c;
++	}
++	// --- block 2
++	/* Configure AD7417 chip */
++	if(!ad7417_init(i2c,&adc_config))
++		goto fail_create_wf_sensor;
++	/* Build sensors */
++	DBG(KERN_DEBUG "wf_ad7417: i2c client is %p\n",i2c);
++	for(chan =3D 0; chan < AD7417_MAX_CHANNELS; chan++) {
++		DBG(KERN_DEBUG "wf_ad7417: create sensor chan=3D%d\n",chan);
++		if(names[chan])  {
++			ad7417[chan] =3D wf_ad7417_create_wf_sensor(i2c, names[chan], chan, adc=
+_config);
++			if(!ad7417[chan])
++				goto fail_create_wf_sensor;
++		}
++	}
++	// --- block 3
++	DBG(KERN_DEBUG "wf_ad7417: i2c attach client\n");
++	if (i2c_attach_client(i2c)) {
++		printk(KERN_ERR "windfarm: failed to attach ad7417 sensor\n");
++		goto fail_i2c_attach_client;
++	}
++	// --- block 4
++	for(chan =3D 0; chan < AD7417_MAX_CHANNELS; chan++) {
++		DBG(KERN_DEBUG "wf_ad7417: wf register chan=3D%d\n");
++		if (names[chan] && wf_register_sensor(&ad7417[chan]->sens)) {
++			goto fail_wf_register_sensor;
++		}
++	}
++	// -- block 5
++	DBG(KERN_DEBUG "wf_ad7417: creating power sensor name=3D%s\n",power_senso=
+r_name);
++	if(ad7417[AD7417_CHANNEL_CPU_VOLTAGE] && ad7417[AD7417_CHANNEL_CPU_CURREN=
+T])
++		ad7417_cpu_power[chip] =3D ad7417_cpu_power_create(
++				&ad7417[AD7417_CHANNEL_CPU_VOLTAGE]->sens,
++				&ad7417[AD7417_CHANNEL_CPU_CURRENT]->sens,
++				power_sensor_name);
++	// --- blocks completed
++	DBG(KERN_DEBUG "wf_ad7417: completed creating all sensors for addr=3D%x\n=
+",addr);
++	return;
++
++	// undo block 4
++fail_wf_register_sensor:
++	for(chan =3D 0; chan < AD7417_MAX_CHANNELS; chan++) {
++		if (names[chan])
++			wf_unregister_sensor(&ad7417[chan]->sens);
++	}
++	// undo block 3
++	i2c_detach_client(i2c);
++	// undo block 2
++fail_i2c_attach_client:
++fail_create_wf_sensor:
++	for(chan =3D 0; chan < AD7417_MAX_CHANNELS; chan++) {
++		if(ad7417[chan])
++			kfree(ad7417[chan]);
++	}
++	// undo block 1
++	kfree(i2c);
++	// completed undo
++fail_i2c:
++	return;
++}
++
++static int wf_ad7417_attach(struct i2c_adapter *adapter)
++{
++	struct device_node *busnode, *dev =3D NULL;
++	struct pmac_i2c_bus *bus;
++	const char *loc; // the entire string
++	const char *loc_middle; // the middle constant portion (after the CPU let=
+ter)
++	const char *loc_tail; // the end portion
++	char *names[AD7417_MAX_CHANNELS];
++	char *power_sensor_name =3D "power-sensor-x";
++
++	bus =3D pmac_i2c_adapter_to_bus(adapter);
++	if (bus =3D=3D NULL)
++		return -ENODEV;
++	busnode =3D pmac_i2c_get_bus_node(bus);
++
++	while ((dev =3D of_get_next_child(busnode, dev)) !=3D NULL) {
++		u8 addr;
++		u8 chan =3D 0;
++		u8 chip =3D -1;
++		int namelen;
++		int lenp;
++		for(chan =3D 0; chan < AD7417_MAX_CHANNELS; chan++) {
++			names[chan] =3D NULL;
++		}
++		chan =3D 0;
++
++		/* We must re-match the adapter in order to properly check
++		 * the channel on multibus setups
++		 */
++		if (!pmac_i2c_match_adapter(dev, adapter))
++			continue;
++		if (!device_is_compatible(dev, "ad7417"))
++			continue;
++		addr =3D pmac_i2c_get_dev_addr(dev);
++		if(addr =3D=3D 0)=20
++			continue;
++		/* At this point we diverge from template code, as ad7417
++		 * provides one temperature value and 4 analog inputs (via adc).
++		 * Channel 0 =3D temp
++		 * Channel 1-4 =3D ADC inputs 1-4
++		 */
++		DBG(KERN_DEBUG "wf_ad7417: looking for registers on chip\n");
++		loc =3D get_property(dev, "hwsensor-location", &lenp);
++		if (loc =3D=3D NULL)
++			continue;
++
++		while (lenp > 0) {
++			int l;
++			DBG(KERN_DEBUG "wf_ad7417: found loc=3D%s addr=3D0x%02x chan=3D0x%02x\n=
+", loc, addr, chan);
++			/* Add more entries here */
++			// Strings:
++			// "CPU x AD7417 yyy"
++			//  0123456789012345
++			//  0+4
++			//      4
++			//       5+8
++			//               13+3
++			loc_middle =3D loc+5;
++			loc_tail =3D loc+13;
++			if(!strncmp(loc,"CPU ", 4) && !strncmp(loc_middle," AD7417 ",8)) {
++				// check CPU A/B
++				chip =3D loc[4] - 'A';
++				// check last 3 chars
++				names[chan] =3D NULL;
++				if(strcmp(loc_tail,"AMB")) {
++					names[chan] =3D "cpu-ambient-temp-x";
++				} else if(strcmp(loc_tail,"AD1")) {
++					names[chan] =3D "cpu-diode-temp-x";
++				} else if(strcmp(loc_tail,"AD2")) {
++					names[chan] =3D "12v-current-x";
++				} else if(strcmp(loc_tail,"AD3")) {
++					names[chan] =3D "cpu-voltage-x";
++				} else if(strcmp(loc_tail,"AD4")) {
++					names[chan] =3D "cpu-current-x";
++				}
++				// always append to the end
++				if(names[chan]) {
++					namelen=3Dstrlen(names[chan]);
++					names[chan][namelen-1] =3D chip+'0';
++				} else {
++					printk(KERN_WARNING "wf_ad7417: unknown sensor addr=3D0x%02x loc=3D%s=
+ chan=3D0x%01x ",addr,loc,chan);
++				}
++			}
++			chan++;
++			/* Push to the next location string */
++			l =3D strlen(loc) + 1;
++			loc +=3D l;
++			lenp -=3D l;
++		}
++		DBG(KERN_DEBUG "wf_ad7417 calling create\n");
++		namelen=3Dstrlen(power_sensor_name);
++		power_sensor_name[namelen-1] =3D chip+'0';
++		wf_ad7417_create(adapter, addr, names, chip, power_sensor_name);
++		DBG(KERN_DEBUG "wf_ad7417 done create\n");
++	}
++
++	return 0;
++}
++
++static int wf_ad7417_detach(struct i2c_client *client)
++{
++	struct wf_ad7417_sensor *ad7417 =3D i2c_to_ad7417(&client);
++
++	// ad7417->i2c->adapter =3D NULL;
++	wf_unregister_sensor(&ad7417->sens);
++
++	if (ad7417->i2c->adapter) {
++		i2c_detach_client(ad7417->i2c);
++		ad7417->i2c->adapter =3D NULL;
++	}
++	kfree(ad7417);
++
++	return 0;
++}
++
++static int __init wf_ad7417_sensor_init(void) {
++	ad7417_cpu_power[0] =3D ad7417_cpu_power[1] =3D NULL;
++	return i2c_add_driver(&wf_ad7417_driver);
++}
++
++static void __exit wf_ad7417_sensor_exit(void) {
++	int i;
++	for(i =3D 0; i < MAX_POWER_SENSORS; i++) {
++		if(ad7417_cpu_power[i])
++			wf_unregister_sensor(&ad7417_cpu_power[i]->sens);
++	}
++	i2c_del_driver(&wf_ad7417_driver);
++}
++
++module_init(wf_ad7417_sensor_init);
++module_exit(wf_ad7417_sensor_exit);
++
++MODULE_AUTHOR("Robin H. Johnson <robbat2@gentoo.org>");
++MODULE_DESCRIPTION("AD7417 sensor objects for PowerMac thermal control");
++MODULE_LICENSE("GPL");
++
++// vim: fdm=3Dmarker:
+diff --git a/drivers/macintosh/windfarm_ds1631_sensor.c b/drivers/macintosh=
+/windfarm_ds1631_sensor.c
+new file mode 100644
+index 0000000..f2733a2
+--- /dev/null
++++ b/drivers/macintosh/windfarm_ds1631_sensor.c
+@@ -0,0 +1,298 @@
++/*
++ * Windfarm PowerMac thermal control. DS1631 sensor.
++ *
++ * The internal workings of this are based solely on the datasheet availab=
+le
++ * from Maxim. We do a more complete job than the Apple driver, just in ca=
+se
++ * OSX changes it's behavior in the future (it doesn't init the chip fully,
++ * just makes a few assumptions).
++ *
++ * (c) Copyright 2006 Robin H. Johnson <robbat2@gentoo.org>
++ *
++ * Released under the term of the GNU GPL v2.
++ */
++
++#include <linux/types.h>
++#include <linux/errno.h>
++#include <linux/kernel.h>
++#include <linux/delay.h>
++#include <linux/slab.h>
++#include <linux/init.h>
++#include <linux/wait.h>
++#include <linux/i2c.h>
++#include <asm/prom.h>
++#include <asm/machdep.h>
++#include <asm/io.h>
++#include <asm/system.h>
++#include <asm/sections.h>
++#include <asm/pmac_low_i2c.h>
++
++#include "windfarm.h"
++
++#define VERSION "0.1"
++
++//#undef DEBUG
++#define DEBUG
++
++#ifdef DEBUG
++#define DBG(args...)	printk(args)
++#else
++#define DBG(args...)	do { } while(0)
++#endif
++
++struct wf_ds1631_sensor {
++	int			inited : 1;
++	struct 	i2c_client	i2c;
++	struct 	wf_sensor	sens;
++};
++#define wf_to_ds1631(c) container_of(c, struct wf_ds1631_sensor, sens)
++#define i2c_to_ds1631(c) container_of(c, struct wf_ds1631_sensor, i2c)
++
++static int wf_ds1631_attach(struct i2c_adapter *adapter);
++static int wf_ds1631_detach(struct i2c_client *client);
++
++static struct i2c_driver wf_ds1631_driver =3D {
++	.driver =3D {
++		.name	=3D "wf_ds1631",
++	},
++	.attach_adapter	=3D wf_ds1631_attach,
++	.detach_client	=3D wf_ds1631_detach,
++};
++
++// registers for DS1631
++#define DS1631_REG_R_TEMP 		0xAA
++#define DS1631_REG_R_LOCAL_HIGH_LIMIT 	0xA1
++#define DS1631_REG_R_LOCAL_LOW_LIMIT 	0xA2
++#define DS1631_REG_RW_CONFIG 		0xAC
++#define DS1631_REG_W_START_CONVERT_T 	0x51
++#define DS1631_REG_W_STOP_CONVERT_T	0x22
++#define DS1631_REG_W_SOFTWARE_RESET	0x54
++
++
++/* Config Register layout (MSB to LSB)
++ * DONE 	- R 	- conversion completed
++ * THF 		- RW 	- Temp high exceeded
++ * TLF 		- RW 	- Temp low exceeded
++ * NVB 		- R 	- EEPROM busy
++ * R1		- RW	- Resolution bit 1
++ * R0		- RW	- Resolution bit 0
++ * POL		- RW	- Tout polarity - don't mess with this!
++ * 1SHOT	- RW	- single-shot / continous mode toggle=20
++ *
++ * Power on state is 100011xx
++ * x bits are stored in EEPROM
++ *
++ * Resolution mapping
++ * Resolution is in bits.
++ * Time is in milliseconds (ms), max.
++ * R1 R0 - Res. - Time
++ * 0  0	 - 9	-  93.75
++ * 0  1	 - 10	- 187.5 (this is similar to the 150ms of LM75/DS1775)
++ * 1  0	 - 11	- 375
++ * 1  1	 - 12	- 750
++ *
++ * Notice that the poweron state is the maximum resolution.
++ * As this takes a worst case of 750ms, we change the resolution to
++ * 10-bit mode (one quarter of a degree C), thus allowing 5 updates a
++ * second.
++ */
++static int wf_ds1631_get(struct wf_sensor *sr, s32 *value)
++{
++	struct wf_ds1631_sensor *sensor =3D wf_to_ds1631(sr);
++	s32 data;
++
++	if (sensor->i2c.adapter =3D=3D NULL)
++		return -ENODEV;
++
++	/* Init chip if necessary */
++	if (!sensor->inited) {
++		u8 cfg =3D (u8)i2c_smbus_read_byte_data(&sensor->i2c, DS1631_REG_RW_CONF=
+IG);
++
++		DBG(KERN_DEBUG "wf_ds1631: Initializing %s, cfg was: %02x\n",
++				sr->name, cfg);
++
++		/*              7654 3210
++		 * target bits: x00x 01x0b
++		 * x bits must be left alone!
++		 * This:
++		 * - clears the high/low warnings,=20
++		 * - sets resolution to 10-bit=20
++		 * - disables one-shot mode
++		 */
++		cfg &=3D 0x96; // 1001 0110b
++		cfg |=3D 0x04; // 0000 0100b
++
++		i2c_smbus_write_byte_data(&sensor->i2c, 1, cfg);
++		sensor->inited =3D 1;
++
++		/* If we just powered it up, let's wait 200 ms */
++		msleep(200);
++	}
++
++	/* Read temperature register */
++	data =3D (s32)le16_to_cpu(i2c_smbus_read_word_data(&sensor->i2c, DS1631_R=
+EG_R_TEMP));
++	data <<=3D 8;
++	*value =3D data;
++
++	return 0;
++}
++
++static void wf_ds1631_release(struct wf_sensor *sr)
++{
++	struct wf_ds1631_sensor *sensor =3D wf_to_ds1631(sr);
++
++	/* check if client is registered and detach from i2c */
++	if (sensor->i2c.adapter) {
++		i2c_detach_client(&sensor->i2c);
++		sensor->i2c.adapter =3D NULL;
++	}
++
++	kfree(sensor);
++}
++
++static struct wf_sensor_ops wf_ds1631_ops =3D {
++	.get_value	=3D wf_ds1631_get,
++	.release	=3D wf_ds1631_release,
++	.owner		=3D THIS_MODULE,
++};
++
++static struct wf_ds1631_sensor *wf_ds1631_create(struct i2c_adapter *adapt=
+er,
++		u8 addr, const char *loc)
++{
++	struct wf_ds1631_sensor *sensor;
++	int rc;
++
++	DBG(KERN_DEBUG "wf_ds1631: creating ds1631 device at address 0x%02x\n", a=
+ddr);
++
++	sensor =3D kmalloc(sizeof(struct wf_ds1631_sensor), GFP_KERNEL);
++	if (sensor =3D=3D NULL)
++		return NULL;
++	memset(sensor, 0, sizeof(struct wf_ds1631_sensor));
++
++	/* Usual rant about sensor names not beeing very consistent in
++	 * the device-tree, oh well ...
++	 * Add more entries below as you deal with more setups
++	 * PowerMac 7,3
++	 * MLB INLET AMB =3D @96-@0
++	 * PowerMac 11,2
++	 * MLB INLET AMB =3D @96-@aa
++	 */
++	if (!strcmp(loc, "MLB INLET AMB")) {
++		sensor->sens.name =3D "inlet-ambient-temp";
++	} else {
++		printk(KERN_WARNING "wf_ds1631: unknown sensor loc=3D%s\n",loc);
++		goto fail;
++	}
++
++	sensor->inited =3D 0;
++	sensor->sens.ops =3D &wf_ds1631_ops;
++	sensor->i2c.addr =3D (addr >> 1) & 0x7f;
++	sensor->i2c.adapter =3D adapter;
++	sensor->i2c.driver =3D &wf_ds1631_driver;
++	strncpy(sensor->i2c.name, sensor->sens.name, I2C_NAME_SIZE-1);
++
++	rc =3D i2c_attach_client(&sensor->i2c);
++	if (rc) {
++		printk(KERN_ERR "windfarm: failed to attach ds1631 %s to i2c,"
++				" err %d\n", sensor->i2c.name, rc);
++		goto fail;
++	}
++
++	if (wf_register_sensor(&sensor->sens)) {
++		i2c_detach_client(&sensor->i2c);
++		goto fail;
++	}
++
++	return sensor;
++fail:
++	kfree(sensor);
++	return NULL;
++}
++
++static int wf_ds1631_attach(struct i2c_adapter *adapter)
++{
++	struct device_node *busnode, *dev;
++	struct pmac_i2c_bus *bus;
++
++	DBG(KERN_DEBUG "wf_ds1631: adapter %s detected\n", adapter->name);
++
++	bus =3D pmac_i2c_adapter_to_bus(adapter);
++	if (bus =3D=3D NULL)
++		return -ENODEV;
++	busnode =3D pmac_i2c_get_bus_node(bus);
++
++	DBG("wf_ds1631: bus found, looking for device...\n");
++
++	/* Now look for ds1631(s) in there */
++	for (dev =3D NULL;
++			(dev =3D of_get_next_child(busnode, dev)) !=3D NULL;) {
++		/* ds1631 has an odd layout. It does NOT have a
++		 * hwsensor-location property, and instead you must decend
++		 * another level and look at the location property.
++		 */
++		u8 addr;
++		/* We must re-match the adapter in order to properly check
++		 * the channel on multibus setups
++		 */
++		if (!pmac_i2c_match_adapter(dev, adapter))
++			continue;
++		addr =3D pmac_i2c_get_dev_addr(dev);
++		if(addr =3D=3D 0)
++			continue;
++
++		if (device_is_compatible(dev, "ds1631")=20
++			|| device_is_compatible(dev, "ds1631a")=20
++			|| device_is_compatible(dev, "ds1731")) {
++			struct device_node *temperature;
++			/* This loop should fire only once */
++			for(temperature =3D NULL;=20
++				(temperature =3D of_get_next_child(dev,temperature)) !=3D NULL;) {
++				const char *loc =3D get_property(temperature, "location", NULL);
++				if (loc =3D=3D NULL)
++					continue;
++				wf_ds1631_create(adapter, addr, loc);
++			}
++		}
++
++
++	}
++	return 0;
++}
++
++static int wf_ds1631_detach(struct i2c_client *client)
++{
++	struct wf_ds1631_sensor *sensor =3D i2c_to_ds1631(client);
++
++	DBG(KERN_DEBUG "wf_ds1631: i2c detatch called for %s\n", sensor->sens.nam=
+e);
++
++	/* Mark client detached */
++	sensor->i2c.adapter =3D NULL;
++
++	/* release sensor */
++	wf_unregister_sensor(&sensor->sens);
++
++	return 0;
++}
++
++static int __init wf_ds1631_sensor_init(void)
++{
++	/* Don't register on old machines that use therm_pm72 for now */
++	if (machine_is_compatible("PowerMac7,2") ||
++			machine_is_compatible("PowerMac7,3") ||
++			machine_is_compatible("RackMac3,1"))
++		return -ENODEV;
++	return i2c_add_driver(&wf_ds1631_driver);
++}
++
++static void __exit wf_ds1631_sensor_exit(void)
++{
++	i2c_del_driver(&wf_ds1631_driver);
++}
++
++
++module_init(wf_ds1631_sensor_init);
++module_exit(wf_ds1631_sensor_exit);
++
++MODULE_AUTHOR("Robin H. Johnson <robbat2@gentoo.org>");
++MODULE_DESCRIPTION("DS1631 sensor objects for PowerMacs thermal control");
++MODULE_LICENSE("GPL");
++
+diff --git a/drivers/macintosh/windfarm_lm75_sensor.c b/drivers/macintosh/w=
+indfarm_lm75_sensor.c
+index 3f7967f..5fa49c4 100644
+--- a/drivers/macintosh/windfarm_lm75_sensor.c
++++ b/drivers/macintosh/windfarm_lm75_sensor.c
+@@ -1,8 +1,9 @@
+ /*
+- * Windfarm PowerMac thermal control. LM75 sensor
++ * Windfarm PowerMac thermal control. LM75/DS1775 sensor
+  *
+  * (c) Copyright 2005 Benjamin Herrenschmidt, IBM Corp.
+  *                    <benh@kernel.crashing.org>
++ * (c) Copyright 2006 Robin H. Johnson <robbat2@gentoo.org>
+  *
+  * Released under the term of the GNU GPL v2.
+  */
+@@ -54,6 +55,10 @@ static struct i2c_driver wf_lm75_driver =3D {
+ 	.detach_client	=3D wf_lm75_detach,
+ };
+=20
++// registers for LM75
++#define LM75_REG_R_TEMP 	0
++#define LM75_REG_RW_CONFIG 	1
++
+ static int wf_lm75_get(struct wf_sensor *sr, s32 *value)
+ {
+ 	struct wf_lm75_sensor *lm =3D wf_to_lm75(sr);
+@@ -64,16 +69,18 @@ static int wf_lm75_get(struct wf_sensor *sr, s32 *value)
+=20
+ 	/* Init chip if necessary */
+ 	if (!lm->inited) {
+-		u8 cfg_new, cfg =3D (u8)i2c_smbus_read_byte_data(&lm->i2c, 1);
++		u8 cfg =3D (u8)i2c_smbus_read_byte_data(&lm->i2c, LM75_REG_RW_CONFIG);
+=20
+-		DBG("wf_lm75: Initializing %s, cfg was: %02x\n",
++		DBG(KERN_DEBUG "wf_lm75: Initializing %s, cfg was: %02x\n",
+ 		    sr->name, cfg);
+=20
+-		/* clear shutdown bit, keep other settings as left by
+-		 * the firmware for now
++		/* clear shutdown bit (bit 0), keep other settings as left by the
++		 * firmware for now. Chip powers up with 9-bit resolution, no fault
++		 * tolerance, polarity active low. 9-bit conversions take 150ms worst
++		 * case.
+ 		 */
+-		cfg_new =3D cfg & ~0x01;
+-		i2c_smbus_write_byte_data(&lm->i2c, 1, cfg_new);
++		cfg &=3D !0x1;
++		i2c_smbus_write_byte_data(&lm->i2c, LM75_REG_RW_CONFIG, cfg);
+ 		lm->inited =3D 1;
+=20
+ 		/* If we just powered it up, let's wait 200 ms */
+@@ -81,7 +88,7 @@ static int wf_lm75_get(struct wf_sensor *sr, s32 *value)
+ 	}
+=20
+ 	/* Read temperature register */
+-	data =3D (s32)le16_to_cpu(i2c_smbus_read_word_data(&lm->i2c, 0));
++	data =3D (s32)le16_to_cpu(i2c_smbus_read_word_data(&lm->i2c, LM75_REG_R_T=
+EMP));
+ 	data <<=3D 8;
+ 	*value =3D data;
+=20
+@@ -114,7 +121,7 @@ static struct wf_lm75_sensor *wf_lm75_create(struct i2c=
+_adapter *adapter,
+ 	struct wf_lm75_sensor *lm;
+ 	int rc;
+=20
+-	DBG("wf_lm75: creating  %s device at address 0x%02x\n",
++	DBG(KERN_DEBUG "wf_lm75: creating  %s device at address 0x%02x\n",
+ 	    ds1775 ? "ds1775" : "lm75", addr);
+=20
+ 	lm =3D kmalloc(sizeof(struct wf_lm75_sensor), GFP_KERNEL);
+@@ -125,11 +132,26 @@ static struct wf_lm75_sensor *wf_lm75_create(struct i=
+2c_adapter *adapter,
+ 	/* Usual rant about sensor names not beeing very consistent in
+ 	 * the device-tree, oh well ...
+ 	 * Add more entries below as you deal with more setups
++	 * PowerMac12,1 - ODD Temp@90, HD Temp@92, Incoming Air Temp@94
++	 * PowerMac11,2 - DRIVE BAY@94
++	 * PowerMac7,2 - DRIVE BAY@94
++	 * PowerMac7,3 - DRIVE BAY@94
++	 * Guesses (need to validate the names):
++	 * RackMac3,1 - PCI SLOTS@90
+ 	 */
+-	if (!strcmp(loc, "Hard drive") || !strcmp(loc, "DRIVE BAY"))
++	if (!strcmp(loc, "Hard drive") || !strcmp(loc, "DRIVE BAY")
++		|| !strcmp(loc,"HD Temp")) {
+ 		lm->sens.name =3D "hd-temp";
+-	else
++	} else if (!strcmp(loc, "ODD Temp")) {
++		lm->sens.name =3D "odd-temp";
++	} else if (!strcmp(loc, "Incoming Air Temp")) {
++		lm->sens.name =3D "inlet-ambient-temp";
++	} else if (!strcmp(loc, "PCI SLOTS")) {
++		lm->sens.name =3D "slots-temp";
++	} else {
++		printk(KERN_WARNING "wf_lm75: unknown sensor loc=3D%s\n",loc);
+ 		goto fail;
++	}
+=20
+ 	lm->inited =3D 0;
+ 	lm->sens.ops =3D &wf_lm75_ops;
+@@ -163,7 +185,7 @@ static int wf_lm75_attach(struct i2c_adapter *adapter)
+ 	struct device_node *busnode, *dev;
+ 	struct pmac_i2c_bus *bus;
+=20
+-	DBG("wf_lm75: adapter %s detected\n", adapter->name);
++	DBG(KERN_DEBUG "wf_lm75: adapter %s detected\n", adapter->name);
+=20
+ 	bus =3D pmac_i2c_adapter_to_bus(adapter);
+ 	if (bus =3D=3D NULL)
+@@ -201,7 +223,7 @@ static int wf_lm75_detach(struct i2c_client *client)
+ {
+ 	struct wf_lm75_sensor *lm =3D i2c_to_lm75(client);
+=20
+-	DBG("wf_lm75: i2c detatch called for %s\n", lm->sens.name);
++	DBG(KERN_DEBUG "wf_lm75: i2c detatch called for %s\n", lm->sens.name);
+=20
+ 	/* Mark client detached */
+ 	lm->i2c.adapter =3D NULL;
+@@ -214,11 +236,6 @@ static int wf_lm75_detach(struct i2c_client *client)
+=20
+ static int __init wf_lm75_sensor_init(void)
+ {
+-	/* Don't register on old machines that use therm_pm72 for now */
+-	if (machine_is_compatible("PowerMac7,2") ||
+-	    machine_is_compatible("PowerMac7,3") ||
+-	    machine_is_compatible("RackMac3,1"))
+-		return -ENODEV;
+ 	return i2c_add_driver(&wf_lm75_driver);
+ }
+=20
+@@ -232,6 +249,7 @@ module_init(wf_lm75_sensor_init);
+ module_exit(wf_lm75_sensor_exit);
+=20
+ MODULE_AUTHOR("Benjamin Herrenschmidt <benh@kernel.crashing.org>");
+-MODULE_DESCRIPTION("LM75 sensor objects for PowerMacs thermal control");
++MODULE_AUTHOR("Robin H. Johnson <robbat2@gentoo.org>");
++MODULE_DESCRIPTION("LM75/DS1775 sensor objects for PowerMacs thermal contr=
+ol");
+ MODULE_LICENSE("GPL");
+=20
+diff --git a/drivers/macintosh/windfarm_max6690_sensor.c b/drivers/macintos=
+h/windfarm_max6690_sensor.c
+index eae1189..d6850af 100644
+--- a/drivers/macintosh/windfarm_max6690_sensor.c
++++ b/drivers/macintosh/windfarm_max6690_sensor.c
+@@ -2,8 +2,17 @@
+  * Windfarm PowerMac thermal control.  MAX6690 sensor.
+  *
+  * Copyright (C) 2005 Paul Mackerras, IBM Corp. <paulus@samba.org>
++ * Copyright (C) 2006 Robin H. Johnson <robbat2@gentoo.org>
+  *
+  * Use and redistribute under the terms of the GNU GPL v2.
++ *
++ * This driver supports BOTH the internal and external readings available =
+=66rom
++ * the MAX6690 chip, if both readings are registered in OpenFirmware. In s=
+ome
++ * systems, only a single reading may be registered in OpenFirmware, and t=
+hat
++ * case is handled here as well.
++ *
++ * TODO:
++ * - Get RackMac3,1 data and incorporate here
+  */
+ #include <linux/types.h>
+ #include <linux/errno.h>
+@@ -16,22 +25,29 @@
+=20
+ #include "windfarm.h"
+=20
+-#define VERSION "0.2"
++//#undef DEBUG
++#define DEBUG 1
++
++#ifdef DEBUG
++#define DBG(args...)	printk(args)
++#else
++#define DBG(args...)	do { } while(0)
++#endif
+=20
+-/* This currently only exports the external temperature sensor,
+-   since that's all the control loops need. */
++#define VERSION "0.4"
+=20
+ /* Some MAX6690 register numbers */
+ #define MAX6690_INTERNAL_TEMP	0
+ #define MAX6690_EXTERNAL_TEMP	1
+=20
+-struct wf_6690_sensor {
+-	struct i2c_client	i2c;
++struct wf_max6690_sensor {
++	struct i2c_client	*i2c;
+ 	struct wf_sensor	sens;
++	u8 			reg; /* register number */
+ };
+=20
+-#define wf_to_6690(x)	container_of((x), struct wf_6690_sensor, sens)
+-#define i2c_to_6690(x)	container_of((x), struct wf_6690_sensor, i2c)
++#define wf_to_max6690(x)	container_of((x), struct wf_max6690_sensor, sens)
++#define i2c_to_max6690(x)	container_of((x), struct wf_max6690_sensor, i2c)
+=20
+ static int wf_max6690_attach(struct i2c_adapter *adapter);
+ static int wf_max6690_detach(struct i2c_client *client);
+@@ -46,14 +62,14 @@ static struct i2c_driver wf_max6690_driver =3D {
+=20
+ static int wf_max6690_get(struct wf_sensor *sr, s32 *value)
+ {
+-	struct wf_6690_sensor *max =3D wf_to_6690(sr);
++	struct wf_max6690_sensor *max =3D wf_to_max6690(sr);
+ 	s32 data;
+=20
+-	if (max->i2c.adapter =3D=3D NULL)
++	if (max->i2c->adapter =3D=3D NULL)
+ 		return -ENODEV;
+=20
+ 	/* chip gets initialized by firmware */
+-	data =3D i2c_smbus_read_byte_data(&max->i2c, MAX6690_EXTERNAL_TEMP);
++	data =3D i2c_smbus_read_byte_data(max->i2c, max->reg);
+ 	if (data < 0)
+ 		return data;
+ 	*value =3D data << 16;
+@@ -62,11 +78,13 @@ static int wf_max6690_get(struct wf_sensor *sr, s32 *va=
+lue)
+=20
+ static void wf_max6690_release(struct wf_sensor *sr)
+ {
+-	struct wf_6690_sensor *max =3D wf_to_6690(sr);
++	struct wf_max6690_sensor *max =3D wf_to_max6690(sr);
++=09
++	wf_unregister_sensor(&max->sens);
+=20
+-	if (max->i2c.adapter) {
+-		i2c_detach_client(&max->i2c);
+-		max->i2c.adapter =3D NULL;
++	if (max->i2c->adapter) {
++		i2c_detach_client(max->i2c);
++		max->i2c->adapter =3D NULL;
+ 	}
+ 	kfree(max);
+ }
+@@ -77,39 +95,101 @@ static struct wf_sensor_ops wf_max6690_ops =3D {
+ 	.owner		=3D THIS_MODULE,
+ };
+=20
+-static void wf_max6690_create(struct i2c_adapter *adapter, u8 addr)
+-{
+-	struct wf_6690_sensor *max;
+-	char *name =3D "backside-temp";
++static struct i2c_client * wf_max6690_create_i2c_client(struct i2c_adapter=
+ *adapter, u8 addr) {
++	struct i2c_client *i2c;
++	const char* max6690str =3D "max6690";
++	i2c =3D kzalloc(sizeof(struct i2c_client), GFP_KERNEL);
++	if (i2c =3D=3D NULL) {
++		printk(KERN_ERR "windfarm: Couldn't create i2c client no memory\n");
++		return NULL;
++	}
++	DBG(KERN_DEBUG "wf_max6690: i2c client created %p\n",i2c);
++	i2c->addr =3D addr >> 1;
++	i2c->adapter =3D adapter;
++	i2c->driver =3D &wf_max6690_driver;
++	/* neither name is correct
++	 * strncpy(i2c->name, name, I2C_NAME_SIZE-1);
++	 */
++	strncpy(i2c->name, max6690str, I2C_NAME_SIZE-1);
++	return i2c;
++}
+=20
+-	max =3D kzalloc(sizeof(struct wf_6690_sensor), GFP_KERNEL);
++static struct wf_max6690_sensor* wf_max6690_create_wf_sensor(struct i2c_cl=
+ient *client, char* name, u8 reg) { =20
++	struct wf_max6690_sensor *max;
++	max =3D kzalloc(sizeof(struct wf_max6690_sensor), GFP_KERNEL);
+ 	if (max =3D=3D NULL) {
+ 		printk(KERN_ERR "windfarm: Couldn't create MAX6690 sensor %s: "
+-		       "no memory\n", name);
+-		return;
++				"no memory\n", name);
++		return NULL;
+ 	}
+=20
++	max->reg =3D reg;
+ 	max->sens.ops =3D &wf_max6690_ops;
+ 	max->sens.name =3D name;
+-	max->i2c.addr =3D addr >> 1;
+-	max->i2c.adapter =3D adapter;
+-	max->i2c.driver =3D &wf_max6690_driver;
+-	strncpy(max->i2c.name, name, I2C_NAME_SIZE-1);
++	max->i2c =3D client;
++
++	return max;
++}
+=20
+-	if (i2c_attach_client(&max->i2c)) {
++static void wf_max6690_create(struct i2c_adapter *adapter, u8 addr, char* =
+names[2])
++{
++	struct wf_max6690_sensor *max[2] =3D {NULL,NULL};
++	struct i2c_client* i2c;
++	DBG(KERN_DEBUG "wf_max6690: create i2c client\n");
++	i2c =3D wf_max6690_create_i2c_client(adapter,addr);
++	if(!i2c) {
++		goto fail_i2c;
++	}
++	DBG(KERN_DEBUG "wf_max6690: i2c client is %p\n",i2c);
++	DBG(KERN_DEBUG "wf_max6690: create internal sensor\n");
++	if(names[MAX6690_INTERNAL_TEMP])  {
++		max[MAX6690_INTERNAL_TEMP] =3D wf_max6690_create_wf_sensor(i2c,
++				names[MAX6690_INTERNAL_TEMP],
++				MAX6690_INTERNAL_TEMP);
++		if(!max[MAX6690_INTERNAL_TEMP])
++			goto fail_internal_temp;
++	}
++	DBG(KERN_DEBUG "wf_max6690: create external sensor\n");
++	if(names[MAX6690_EXTERNAL_TEMP]) {
++		max[MAX6690_EXTERNAL_TEMP] =3D wf_max6690_create_wf_sensor(i2c,
++				names[MAX6690_EXTERNAL_TEMP],
++				MAX6690_EXTERNAL_TEMP);
++		if(!max[MAX6690_EXTERNAL_TEMP])
++			goto fail_external_temp;
++	}
++	DBG(KERN_DEBUG "wf_max6690: i2c attach client\n");
++	if (i2c_attach_client(i2c)) {
+ 		printk(KERN_ERR "windfarm: failed to attach MAX6690 sensor\n");
+-		goto fail;
++		goto fail_attach_client;
+ 	}
+=20
+-	if (wf_register_sensor(&max->sens)) {
+-		i2c_detach_client(&max->i2c);
+-		goto fail;
++	DBG(KERN_DEBUG "wf_max6690: wf register internal\n");
++	if (names[MAX6690_INTERNAL_TEMP] &&=20
++			wf_register_sensor(&max[MAX6690_INTERNAL_TEMP]->sens)) {
++		goto fail_wf_register_internal_temp;
++	}
++	DBG(KERN_DEBUG "wf_max6690: wf register external\n");
++	if (names[MAX6690_EXTERNAL_TEMP] &&=20
++			wf_register_sensor(&max[MAX6690_EXTERNAL_TEMP]->sens)) {
++		goto fail_wf_register_external_temp;
+ 	}
+-
+ 	return;
+=20
+- fail:
+-	kfree(max);
++fail_wf_register_external_temp:
++	if(names[MAX6690_INTERNAL_TEMP])=20
++		wf_unregister_sensor(&max[MAX6690_INTERNAL_TEMP]->sens);
++fail_wf_register_internal_temp:
++	i2c_detach_client(i2c);
++fail_attach_client:
++	if(names[MAX6690_EXTERNAL_TEMP])=20
++		kfree(max[MAX6690_EXTERNAL_TEMP]);
++fail_external_temp:
++	if(names[MAX6690_INTERNAL_TEMP])=20
++		kfree(max[MAX6690_INTERNAL_TEMP]);
++fail_internal_temp:
++	kfree(i2c);
++fail_i2c:
++	return;
+ }
+=20
+ static int wf_max6690_attach(struct i2c_adapter *adapter)
+@@ -117,6 +197,7 @@ static int wf_max6690_attach(struct i2c_adapter *adapte=
+r)
+ 	struct device_node *busnode, *dev =3D NULL;
+ 	struct pmac_i2c_bus *bus;
+ 	const char *loc;
++	char *names[2];
+=20
+ 	bus =3D pmac_i2c_adapter_to_bus(adapter);
+ 	if (bus =3D=3D NULL)
+@@ -125,6 +206,11 @@ static int wf_max6690_attach(struct i2c_adapter *adapt=
+er)
+=20
+ 	while ((dev =3D of_get_next_child(busnode, dev)) !=3D NULL) {
+ 		u8 addr;
++		int count =3D 0;
++		u8 reg =3D 0;
++		int lenp;
++		names[0] =3D NULL;
++		names[1] =3D NULL;
+=20
+ 		/* We must re-match the adapter in order to properly check
+ 		 * the channel on multibus setups
+@@ -134,13 +220,110 @@ static int wf_max6690_attach(struct i2c_adapter *ada=
+pter)
+ 		if (!device_is_compatible(dev, "max6690"))
+ 			continue;
+ 		addr =3D pmac_i2c_get_dev_addr(dev);
+-		loc =3D get_property(dev, "hwsensor-location", NULL);
+-		if (loc =3D=3D NULL || addr =3D=3D 0)
++		if(addr =3D=3D 0)=20
+ 			continue;
+-		printk("found max6690, loc=3D%s addr=3D0x%02x\n", loc, addr);
+-		if (strcmp(loc, "BACKSIDE"))
++		/* At this point we diverge from template code, as max6690
++		 * provides two temperature values, under the
++		 * internal-temperature and external-temperature nodes.
++		 * on the PM112 and PM73 boxes, there are seperate nodes for
++		 * internal/external readings from the chip.
++		 * However, on the PM72, the nodes do NOT exist, and they have
++		 * to be inferred from the master hwsensor-location property,
++		 * which has two null-terminated strings.
++		 * In the PM121, the sub-nodes changed name as well :-(.
++		 *
++		 * Chip mapping data:
++		 *
++		 * PowerMac 12,1 (iMac G5)
++		 * NB Ambient =3D @98, temp-sensor@0
++		 * NB Temp =3D @98, temp-sensor@1
++		 * GPU Ambient =3D @9c, temp-sensor@0
++		 * GPU Temp =3D @9c, temp-sensor@1
++		 *
++		 * PowerMac 11,2 - note the reversal on @98
++		 * BACKSIDE =3D @98, internal@0 - this is attached to the heatsink
++		 * KODIAK DIODE =3D @98, external@1 - this is actually the die temp
++		 * TUNNEL =3D @9c, internal@0
++		 * TUNNEL HEATSINK =3D  @9c, external@1
++		 *
++		 * PowerMac 7,3
++		 * BACKSIDE =3D @98, internal@0
++		 * U3 HEATSINK =3D @98, external@1
++		 *
++		 * PowerMac 7,2 (the subnodes of internal/external do NOT exist)
++		 * BACKSIDE =3D @98, internal@0=20
++		 * U3 HEATSINK =3D @98, external@1
++		 * MLB MAX6690 AMB =3D @9c, internal@0=20
++		 * MLB INLET AMB =3D @9c, external@1
++		 *
++		 * RackMac3,1
++		 * TODO: Unknown!
++		 * Guesses - note the possible reversal
++		 * - SYS CTRLR AMBIENT@98, internal@0
++		 * - SYS CTRLR INTERNAL@98, external@1
++		 */
++		DBG(KERN_DEBUG "wf_max6690: looking for registers on chip\n");
++		loc =3D get_property(dev, "hwsensor-location", &lenp);
++		if (loc =3D=3D NULL)
+ 			continue;
+-		wf_max6690_create(adapter, addr);
++
++		while (lenp > 0) {
++			int l;
++			DBG(KERN_DEBUG "wf_max6690: found loc=3D%s addr=3D0x%02x reg=3D0x%02x\n=
+", loc, addr, reg);
++			/* Add more entries here */
++			if(!strcmp(loc,"KODIAK DIODE") ||=20
++					!strcmp(loc,"NB Temp")) {
++				names[reg] =3D"northbridge-die-temp";
++				count++;
++			} else if(!strcmp(loc,"BACKSIDE") ||=20
++					!strcmp(loc,"U3 HEATSINK") ||=20
++					!strcmp(loc,"NB Ambient")) {
++				names[reg] =3D"northbridge-heatsink-temp";
++				count++;
++			} else if(!strcmp(loc,"TUNNEL")) {
++				/* Tunnel is the code name for the HT-2000 chip=20
++				 * http://www.hypertransport.org/products/productdetail.cfm?RecordID=
+=3D71
++				 */
++				names[reg] =3D"ht2000-die-temp";
++				count++;
++			} else if(!strcmp(loc,"TUNNEL HEATSINK")) {
++				names[reg] =3D"ht2000-heatsink-temp";
++				count++;
++			} else if(!strcmp(loc,"GPU Temp")) {
++				names[reg] =3D"gpu-die-temp";
++				count++;
++			} else if(!strcmp(loc,"GPU Ambient")) {
++				names[reg] =3D"gpu-heatsink-temp";
++				count++;
++			} else if(!strcmp(loc,"MLB MAX6690 AMB") ||
++					!strcmp(loc,"SYS CTRLR AMBIENT")) {
++				/* (TODO: validate) This is the internal channel of a MAX6690
++				 * just sitting on a board.  It's not hugely useful in itself.
++				 */
++				names[reg] =3D"onboard-ambient-temp";
++				count++;
++			} else if(!strcmp(loc,"MLB INLET AMB") ||
++					!strcmp(loc,"SYS CTRLR INTERNAL")) {
++				/* (TODO: validate) This is a the external channel of a
++				 * MAX6690, connected to a temp sensor located immediately
++				 * behind the intake fan.
++				 */
++				names[reg] =3D"inlet-ambient-temp";
++				count++;
++			} else {
++				printk(KERN_WARNING "wf_max6690: unknown sensor addr=3D0x%02x loc=3D%s=
+ reg=3D0x%01x ",addr,loc,reg);
++			}
++			reg++;
++			/* Push to the next location string */
++			l =3D strlen(loc) + 1;
++			loc +=3D l;
++			lenp -=3D l;
++		}
++		if(count > 0) {
++			DBG(KERN_DEBUG "wf_max6690 calling create\n");
++			wf_max6690_create(adapter, addr, names);
++			DBG(KERN_DEBUG "wf_max6690 done create\n");
++		}
+ 	}
+=20
+ 	return 0;
+@@ -148,21 +331,22 @@ static int wf_max6690_attach(struct i2c_adapter *adap=
+ter)
+=20
+ static int wf_max6690_detach(struct i2c_client *client)
+ {
+-	struct wf_6690_sensor *max =3D i2c_to_6690(client);
++	struct wf_max6690_sensor *max =3D i2c_to_max6690(&client);
+=20
+-	max->i2c.adapter =3D NULL;
++	// max->i2c->adapter =3D NULL;
+ 	wf_unregister_sensor(&max->sens);
+=20
++	if (max->i2c->adapter) {
++		i2c_detach_client(max->i2c);
++		max->i2c->adapter =3D NULL;
++	}
++	kfree(max);
++
+ 	return 0;
+ }
+=20
+ static int __init wf_max6690_sensor_init(void)
+ {
+-	/* Don't register on old machines that use therm_pm72 for now */
+-	if (machine_is_compatible("PowerMac7,2") ||
+-	    machine_is_compatible("PowerMac7,3") ||
+-	    machine_is_compatible("RackMac3,1"))
+-		return -ENODEV;
+ 	return i2c_add_driver(&wf_max6690_driver);
+ }
+=20
+@@ -175,5 +359,6 @@ module_init(wf_max6690_sensor_init);
+ module_exit(wf_max6690_sensor_exit);
+=20
+ MODULE_AUTHOR("Paul Mackerras <paulus@samba.org>");
++MODULE_AUTHOR("Robin H. Johnson <robbat2@gentoo.org>");
+ MODULE_DESCRIPTION("MAX6690 sensor objects for PowerMac thermal control");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/macintosh/windfarm_pid.c b/drivers/macintosh/windfarm_=
+pid.c
+index f10efb2..66a6821 100644
+--- a/drivers/macintosh/windfarm_pid.c
++++ b/drivers/macintosh/windfarm_pid.c
+@@ -86,6 +86,15 @@ void wf_cpu_pid_init(struct wf_cpu_pid_state *st,
+ }
+ EXPORT_SYMBOL_GPL(wf_cpu_pid_init);
+=20
++/*
++ *                history_len
++ * Tintegral =3D ( SUMMATION(Power error) ) * interval * Gr
++ *			      i=3D0
++ * Tproportional =3D (Tnew - MIN(Tfixedtarget, Tmax-Tintegral)) * Gp
++ * Tderivative =3D (Tnew - Tlast) * Gd / interval
++ * Ttarget  =3D MIN(MAX(Ttarget + (Tderivative+Tproportional),Tmin),Tmax)
++ *
++ */
+ s32 wf_cpu_pid_run(struct wf_cpu_pid_state *st, s32 new_power, s32 new_tem=
+p)
+ {
+ 	s64	integ, deriv, prop;
+diff --git a/drivers/macintosh/windfarm_pm112.c b/drivers/macintosh/windfar=
+m_pm112.c
+index b3fbb45..69d334f 100644
+--- a/drivers/macintosh/windfarm_pm112.c
++++ b/drivers/macintosh/windfarm_pm112.c
+@@ -4,6 +4,7 @@
+  *
+  * Copyright (C) 2005 Paul Mackerras, IBM Corp. <paulus@samba.org>
+  * Copyright (C) 2006 Benjamin Herrenschmidt, IBM Corp.
++ * Copyright (C) 2006 Robin H. Johnson
+  *
+  * Use and redistribute under the terms of the GNU GPL v2.
+  */
+@@ -19,7 +20,7 @@
+ #include "windfarm.h"
+ #include "windfarm_pid.h"
+=20
+-#define VERSION "0.2"
++#define VERSION "0.3"
+=20
+ #define DEBUG
+ #undef LOTSA_DEBUG
+@@ -604,6 +605,10 @@ static void pm112_new_sensor(struct wf_sensor *sr)
+ 		    sens_cpu_temp[i] =3D=3D NULL && wf_get_sensor(sr) =3D=3D 0)
+ 			sens_cpu_temp[i] =3D sr;
+=20
++	} else if (!strncmp(sr->name, "cpu-current-", 12)) {
++		/* ignore, not used by PID directly */
++	} else if (!strncmp(sr->name, "cpu-voltage-", 12)) {
++		/* ignore, not used by PID directly */
+ 	} else if (!strncmp(sr->name, "cpu-power-", 10)) {
+ 		i =3D sr->name[10] - '0';
+ 		if (sr->name[11] =3D=3D 0 && i < NR_CORES &&
+@@ -615,11 +620,23 @@ static void pm112_new_sensor(struct wf_sensor *sr)
+ 	} else if (!strcmp(sr->name, "slots-power")) {
+ 		if (slots_power =3D=3D NULL && wf_get_sensor(sr) =3D=3D 0)
+ 			slots_power =3D sr;
+-	} else if (!strcmp(sr->name, "backside-temp")) {
++	} else if (!strcmp(sr->name, "northbridge-die-temp")) {
+ 		if (u4_temp =3D=3D NULL && wf_get_sensor(sr) =3D=3D 0)
+ 			u4_temp =3D sr;
+-	} else
++	} else if (!strcmp(sr->name, "northbridge-heatsink-temp")) {
++		/* ignore, not used presently */
++	} else if (!strcmp(sr->name, "ht2000-heatsink-temp")) {
++		/* ignore, not used presently */
++	} else if (!strcmp(sr->name, "ht2000-die-temp")) {
++		/* ignore, not used presently */
++	} else if (!strcmp(sr->name, "onboard-ambient-temp")) {
++		/* ignore, not used presently */
++	} else if (!strcmp(sr->name, "inlet-ambient-temp")) {
++		/* ignore, not used presently */
++	} else {
++		printk(KERN_WARNING "wf_pm112: unknown sensor name=3D%s\n",sr->name);
+ 		return;
++	}
+=20
+ 	/* check if we have all the sensors we need */
+ 	for (i =3D 0; i < nr_cores; ++i)
+@@ -691,6 +708,7 @@ static int __init wf_pm112_init(void)
+ 	request_module("windfarm_smu_sensors");
+ 	request_module("windfarm_smu_sat");
+ 	request_module("windfarm_lm75_sensor");
++	request_module("windfarm_ds1631_sensor");
+ 	request_module("windfarm_max6690_sensor");
+ 	request_module("windfarm_cpufreq_clamp");
+=20
+@@ -709,5 +727,6 @@ module_init(wf_pm112_init);
+ module_exit(wf_pm112_exit);
+=20
+ MODULE_AUTHOR("Paul Mackerras <paulus@samba.org>");
++MODULE_AUTHOR("Robin H. Johnson <robbat2@gentoo.org>");
+ MODULE_DESCRIPTION("Thermal control for PowerMac11,2");
+ MODULE_LICENSE("GPL");
+diff --git a/drivers/macintosh/windfarm_pm72.c b/drivers/macintosh/windfarm=
+_pm72.c
+new file mode 100644
+index 0000000..e8b80d8
+--- /dev/null
++++ b/drivers/macintosh/windfarm_pm72.c
+@@ -0,0 +1,70 @@
++static int pm72_wf_notify(struct notifier_block *self,
++			   unsigned long event, void *data)
++{
++	switch (event) {
++	case WF_EVENT_NEW_SENSOR:
++		pm72_new_sensor(data);
++		break;
++	case WF_EVENT_NEW_CONTROL:
++		pm72_new_control(data);
++		break;
++	case WF_EVENT_TICK:
++		if (have_all_controls && have_all_sensors)
++			pm72_tick();
++	}
++	return 0;
++}
++
++static struct notifier_block pm72_events =3D {
++	.notifier_call =3D pm72_wf_notify,
++};
++
++static int wf_pm72_probe(struct device *dev)
++{
++	wf_register_client(&pm72_events);
++	return 0;
++}
++
++static int wf_pm72_remove(struct device *dev)
++{
++	wf_unregister_client(&pm72_events);
++	/* should release all sensors and controls */
++	return 0;
++}
++
++static struct device_driver wf_pm72_driver =3D {
++	.name =3D "windfarm",
++	.bus =3D &platform_bus_type,
++	.probe =3D wf_pm72_probe,
++	.remove =3D wf_pm72_remove,
++};
++
++static int __init wf_pm72_init(void) {
++	struct device_node *cpu;
++
++	rackmac =3D machine_is_compatible("RackMac3,1");
++
++	if (!machine_is_compatible("PowerMac7,2") &&
++	    !machine_is_compatible("PowerMac7,3") &&
++	    !rackmac)
++	    	return -ENODEV;
++
++	/* Count the number of CPU cores */
++	nr_cores =3D 0;
++	for (cpu =3D NULL; (cpu =3D of_find_node_by_type(cpu, "cpu")) !=3D NULL; )
++		++nr_cores;
++
++	printk(KERN_INFO "windfarm: initializing for dual-core desktop G5\n");
++	driver_register(&wf_pm72_driver);
++	return 0;
++}
++static void __exit wf_pm72_exit(void) {
++	driver_unregister(&wf_pm72_driver);
++}
++
++module_init(wf_pm72_init);
++module_exit(wf_pm72_exit);
++
++MODULE_AUTHOR("Robin H. Johnson <robbat2@gentoo.org>");
++MODULE_DESCRIPTION("Thermal control for PowerMac7,2/7,3 and RackMac3,1");
++MODULE_LICENSE("GPL");
+diff --git a/drivers/macintosh/windfarm_smu_controls.c b/drivers/macintosh/=
+windfarm_smu_controls.c
+index 31b750d..43a3e9c 100644
+--- a/drivers/macintosh/windfarm_smu_controls.c
++++ b/drivers/macintosh/windfarm_smu_controls.c
+@@ -179,49 +179,46 @@ static struct smu_fan_control *smu_fan_create(struct =
+device_node *node,
+ 	 * less consistent here between the iMac and the desktop models, but
+ 	 * that is good enough for our needs for now at least.
+ 	 *
+-	 * One problem though is that Apple seem to be inconsistent with case
+-	 * and the kernel doesn't have strcasecmp =3DP
++	 * We use strcasecmp as Apple is not consistant with names :-(.
+ 	 */
+=20
+ 	fct->ctrl.name =3D NULL;
+=20
+ 	/* Names used on desktop models */
+-	if (!strcmp(l, "Rear Fan 0") || !strcmp(l, "Rear Fan") ||
+-	    !strcmp(l, "Rear fan 0") || !strcmp(l, "Rear fan") ||
+-	    !strcmp(l, "CPU A EXHAUST"))
++	if (!strcasecmp(l, "Rear Fan 0") || !strcasecmp(l, "Rear Fan") ||
++	    !strcasecmp(l, "CPU A EXHAUST"))
+ 		fct->ctrl.name =3D "cpu-rear-fan-0";
+-	else if (!strcmp(l, "Rear Fan 1") || !strcmp(l, "Rear fan 1") ||
+-		 !strcmp(l, "CPU B EXHAUST"))
++	else if (!strcasecmp(l, "Rear Fan 1") || !strcasecmp(l, "CPU B EXHAUST"))
+ 		fct->ctrl.name =3D "cpu-rear-fan-1";
+-	else if (!strcmp(l, "Front Fan 0") || !strcmp(l, "Front Fan") ||
+-		 !strcmp(l, "Front fan 0") || !strcmp(l, "Front fan") ||
+-		 !strcmp(l, "CPU A INTAKE"))
++	else if (!strcasecmp(l, "Front Fan 0") || !strcasecmp(l, "Front Fan") ||
++		 !strcasecmp(l, "CPU A INTAKE"))
+ 		fct->ctrl.name =3D "cpu-front-fan-0";
+-	else if (!strcmp(l, "Front Fan 1") || !strcmp(l, "Front fan 1") ||
+-		 !strcmp(l, "CPU B INTAKE"))
++	else if (!strcasecmp(l, "Front Fan 1") || !strcasecmp(l, "CPU B INTAKE"))
+ 		fct->ctrl.name =3D "cpu-front-fan-1";
+-	else if (!strcmp(l, "CPU A PUMP"))
++	else if (!strcasecmp(l, "CPU A PUMP"))
+ 		fct->ctrl.name =3D "cpu-pump-0";
+-	else if (!strcmp(l, "Slots Fan") || !strcmp(l, "Slots fan") ||
+-		 !strcmp(l, "EXPANSION SLOTS INTAKE"))
++	else if (!strcasecmp(l, "CPU B PUMP"))
++		fct->ctrl.name =3D "cpu-pump-1";
++	else if (!strcasecmp(l, "Slots Fan") || !strcasecmp(l, "EXPANSION SLOTS I=
+NTAKE"))
+ 		fct->ctrl.name =3D "slots-fan";
+-	else if (!strcmp(l, "Drive Bay") || !strcmp(l, "Drive bay") ||
+-		 !strcmp(l, "DRIVE BAY A INTAKE"))
++	else if (!strcasecmp(l, "Drive Bay") || !strcasecmp(l, "DRIVE BAY A INTAK=
+E"))
+ 		fct->ctrl.name =3D "drive-bay-fan";
+-	else if (!strcmp(l, "BACKSIDE"))
++	else if (!strcasecmp(l, "BACKSIDE"))
+ 		fct->ctrl.name =3D "backside-fan";
+=20
+ 	/* Names used on iMac models */
+-	if (!strcmp(l, "System Fan") || !strcmp(l, "System fan"))
++	if (!strcasecmp(l, "System Fan"))
+ 		fct->ctrl.name =3D "system-fan";
+-	else if (!strcmp(l, "CPU Fan") || !strcmp(l, "CPU fan"))
++	else if (!strcasecmp(l, "CPU Fan"))
+ 		fct->ctrl.name =3D "cpu-fan";
+-	else if (!strcmp(l, "Hard Drive") || !strcmp(l, "Hard drive"))
++	else if (!strcasecmp(l, "Hard Drive"))
+ 		fct->ctrl.name =3D "drive-bay-fan";
+=20
+ 	/* Unrecognized fan, bail out */
+-	if (fct->ctrl.name =3D=3D NULL)
++	if (fct->ctrl.name =3D=3D NULL) {
++		printk(KERN_WARNING "windfarm: unknown control loc=3D%s\n",l);
+ 		goto fail;
++	}
+=20
+ 	/* Get min & max values*/
+ 	v =3D get_property(node, "min-value", NULL);
+diff --git a/drivers/macintosh/windfarm_smu_sat.c b/drivers/macintosh/windf=
+arm_smu_sat.c
+index 83f79de..b99d36d 100644
+--- a/drivers/macintosh/windfarm_smu_sat.c
++++ b/drivers/macintosh/windfarm_smu_sat.c
+@@ -22,7 +22,7 @@
+=20
+ #define VERSION "0.2"
+=20
+-#define DEBUG
++#undef DEBUG
+=20
+ #ifdef DEBUG
+ #define DBG(args...)	printk(args)
+diff --git a/drivers/macintosh/windfarm_smu_sensors.c b/drivers/macintosh/w=
+indfarm_smu_sensors.c
+index 01b4c50..3be1e64 100644
+--- a/drivers/macintosh/windfarm_smu_sensors.c
++++ b/drivers/macintosh/windfarm_smu_sensors.c
+@@ -221,7 +221,7 @@ static struct smu_ad_sensor *smu_ads_create(struct devi=
+ce_node *node)
+ 		ads->sens.ops =3D &smu_cputemp_ops;
+ 		ads->sens.name =3D "cpu-temp";
+ 		if (cpudiode =3D=3D NULL) {
+-			DBG("wf: cpudiode partition (%02x) not found\n",
++			DBG(KERN_DEBUG "wf: cpudiode partition (%02x) not found\n",
+ 			    SMU_SDB_CPUDIODE_ID);
+ 			goto fail;
+ 		}
+@@ -230,7 +230,7 @@ static struct smu_ad_sensor *smu_ads_create(struct devi=
+ce_node *node)
+ 		ads->sens.ops =3D &smu_cpuamp_ops;
+ 		ads->sens.name =3D "cpu-current";
+ 		if (cpuvcp =3D=3D NULL) {
+-			DBG("wf: cpuvcp partition (%02x) not found\n",
++			DBG(KERN_DEBUG "wf: cpuvcp partition (%02x) not found\n",
+ 			    SMU_SDB_CPUVCP_ID);
+ 			goto fail;
+ 		}
+@@ -239,7 +239,7 @@ static struct smu_ad_sensor *smu_ads_create(struct devi=
+ce_node *node)
+ 		ads->sens.ops =3D &smu_cpuvolt_ops;
+ 		ads->sens.name =3D "cpu-voltage";
+ 		if (cpuvcp =3D=3D NULL) {
+-			DBG("wf: cpuvcp partition (%02x) not found\n",
++			DBG(KERN_DEBUG "wf: cpuvcp partition (%02x) not found\n",
+ 			    SMU_SDB_CPUVCP_ID);
+ 			goto fail;
+ 		}
+@@ -248,12 +248,14 @@ static struct smu_ad_sensor *smu_ads_create(struct de=
+vice_node *node)
+ 		ads->sens.ops =3D &smu_slotspow_ops;
+ 		ads->sens.name =3D "slots-power";
+ 		if (slotspow =3D=3D NULL) {
+-			DBG("wf: slotspow partition (%02x) not found\n",
++			DBG(KERN_DEBUG "wf: slotspow partition (%02x) not found\n",
+ 			    SMU_SDB_SLOTSPOW_ID);
+ 			goto fail;
+ 		}
+-	} else
++	} else {
++		printk(KERN_WARNING "wf: unknown sensor type=3D%s loc=3D%s\n",c,l);
+ 		goto fail;
++	}
+=20
+ 	v =3D get_property(node, "reg", NULL);
+ 	if (v =3D=3D NULL)
+@@ -368,7 +370,7 @@ smu_cpu_power_create(struct wf_sensor *volts, struct wf=
+_sensor *amps)
+ 	     machine_is_compatible("PowerMac9,1")) &&
+ 	    cpuvcp_version >=3D 2) {
+ 		pow->quadratic =3D 1;
+-		DBG("windfarm: CPU Power using quadratic transform\n");
++		DBG(KERN_DEBUG "windfarm: CPU Power using quadratic transform\n");
+ 	} else
+ 		pow->quadratic =3D 0;
+=20
+
+--=20
+Robin Hugh Johnson
+Gentoo Linux Developer & Council Member
+E-Mail     : robbat2@gentoo.org
+GnuPG FP   : 11AC BA4F 4778 E3F6 E4ED  F38E B27B 944E 3488 4E85
+
+--82I3+IH0IqGh5yIs
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.2 (GNU/Linux)
+Comment: Robbat2 @ Orbis-Terrarum Networks - The text below is a digital signature. If it doesn't make any sense to you, ignore it.
+
+iD8DBQFGCUbbPpIsIjIzwiwRAmjRAJ9KcQCKEikb+05uhx1pt1puJryTiACg32oT
+mMsLDlb48eFHaNiakcCXlsM=
+=OfzG
+-----END PGP SIGNATURE-----
+
+--82I3+IH0IqGh5yIs--
