@@ -1,18 +1,12 @@
-Return-Path: <dan@embeddededge.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 87264DDF28
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 08:19:18 +1000 (EST)
-In-Reply-To: <20070327210102.22195.81287.stgit@localhost.localdomain>
-References: <20070327210046.22195.772.stgit@localhost.localdomain>
-	<20070327210102.22195.81287.stgit@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <BAD18DB7-81D9-43D3-890B-7E79B7C80F03@embeddededge.com>
-From: Dan Malek <dan@embeddededge.com>
-Subject: Re: [PATCH 2/2] POWERPC: Remove global CPM mappings
-Date: Tue, 27 Mar 2007 18:12:38 -0400
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 27 Mar 2007 15:28:40 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: Disable external interrupts in bootwrapper
+Message-ID: <20070327222840.GA1266@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,40 +16,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Disable external interrupts very early in the bootwrapper in case
+the firmware left a device generating interrupts.
 
-On Mar 27, 2007, at 5:01 PM, Vitaly Bordug wrote:
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+---
 
-> --- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-> +++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
-> @@ -52,7 +52,7 @@
->  void cpm_line_cr_cmd(int line, int cmd)
->  {
->  	ushort val;
-> -	volatile cpm8xx_t *cp = cpmp;
-> +	volatile cpm8xx_t *cp = (cpm8xx_t *)immr_map(im_cpm);
+ crt0.S |    6 ++++++
+ 1 file changed, 6 insertions(+)
+---
 
-I'd kind of prefer you didn't place function calls
-or macros up here with the variable declarations.
-Do the initialization down in the code section, please.
-
-> +#ifdef CONFIG_CPM2
->  #define cpm2_map(member)	(&cpm2_immr->member)
->  #define cpm2_map_size(member, size)	(&cpm2_immr->member)
->  #define cpm2_unmap(addr)        do {} while(0)
-> +#endif
-> +
-> +#ifdef CONFIG_8xx
-> +#define immr_map(member)	(&((immap_t *)IMAP_ADDR)->member)
-> +#define immr_map_size(member, size)	(&((immap_t *)IMAP_ADDR)->member)
-> +#define immr_unmap(addr)        do {} while(0)
-> +#endif
-
-Why is 8xx different?  We should be able to
-devine cpm_immr and use it in both cases here,
-and hopefully use the same macro names
-across all drivers, too.
-
-
-Thanks.
-
-	-- Dan
+diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
+index 3dc8d8f..f048a46 100644
+--- a/arch/powerpc/boot/crt0.S
++++ b/arch/powerpc/boot/crt0.S
+@@ -23,6 +23,12 @@ _zimage_start:
+ 	   and the address where we're running. */
+ 	bl	1f
+ 1:	mflr	r0
++	li	r9,(1<<15)@l	/* Disable external intrs (clear MSR[EE]) */
++	mfmsr	r10
++	andc	r10,r10,r9
++	sync
++	mtmsr	r10
++	isync
+ 	lis	r9,1b@ha
+ 	addi	r9,r9,1b@l
+ 	subf.	r0,r9,r0
