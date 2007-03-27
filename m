@@ -1,12 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 27 Mar 2007 15:31:41 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: Routine to find the devtree node of a linux,phandle
-Message-ID: <20070327223141.GC1266@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 82FB5DDF1B
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 09:33:00 +1000 (EST)
+Date: Wed, 28 Mar 2007 03:01:21 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Dan Malek <dan@embeddededge.com>
+Subject: Re: [PATCH 2/2] POWERPC: Remove global CPM mappings
+Message-ID: <20070328030121.2fca0e90@localhost.localdomain>
+In-Reply-To: <BAD18DB7-81D9-43D3-890B-7E79B7C80F03@embeddededge.com>
+References: <20070327210046.22195.772.stgit@localhost.localdomain>
+	<20070327210102.22195.81287.stgit@localhost.localdomain>
+	<BAD18DB7-81D9-43D3-890B-7E79B7C80F03@embeddededge.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,31 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
----
+On Tue, 27 Mar 2007 18:12:38 -0400
+Dan Malek wrote:
 
-This depends on Scott Wood's patch
-	'[PATCH 02/17] bootwrapper: Add dt_ops methods.'
-from March 16 that adds 'find_node_by_prop_value()' and friends.
+> 
+> On Mar 27, 2007, at 5:01 PM, Vitaly Bordug wrote:
+> 
+> > --- a/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+> > +++ b/drivers/serial/cpm_uart/cpm_uart_cpm1.c
+> > @@ -52,7 +52,7 @@
+> >  void cpm_line_cr_cmd(int line, int cmd)
+> >  {
+> >  	ushort val;
+> > -	volatile cpm8xx_t *cp = cpmp;
+> > +	volatile cpm8xx_t *cp = (cpm8xx_t *)immr_map(im_cpm);
+> 
+> I'd kind of prefer you didn't place function calls
+> or macros up here with the variable declarations.
+> Do the initialization down in the code section, please.
+> 
 
- ops.h |    6 ++++++
- 1 file changed, 6 insertions(+)
----
+ok.
+> > +#ifdef CONFIG_CPM2
+> >  #define cpm2_map(member)	(&cpm2_immr->member)
+> >  #define cpm2_map_size(member, size)	(&cpm2_immr->member)
+> >  #define cpm2_unmap(addr)        do {} while(0)
+> > +#endif
+> > +
+> > +#ifdef CONFIG_8xx
+> > +#define immr_map(member)	(&((immap_t *)IMAP_ADDR)->member)
+> > +#define immr_map_size(member, size)	(&((immap_t
+> > *)IMAP_ADDR)->member) +#define immr_unmap(addr)        do {}
+> > while(0) +#endif
+> 
+> Why is 8xx different?  We should be able to
+> devine cpm_immr and use it in both cases here,
+> and hopefully use the same macro names
+> across all drivers, too.
+> 
+> 
+The upper relates to arch/ppc code, which uses different structures and variables (cpm2_immr and immap respectively).  With this, I don't want to unify  cpm and cpm2 immrs, at least, not now. They are separated intentionally: while doing cpm2_map one gets access to one of the cpm2_map_t member, and doing immr_map, to immap_t member. 
 
-diff --git a/arch/powerpc/boot/ops.h b/arch/powerpc/boot/ops.h
-index dae0e3b..ba516a6 100644
---- a/arch/powerpc/boot/ops.h
-+++ b/arch/powerpc/boot/ops.h
-@@ -140,6 +140,12 @@ static inline void *find_node_by_devtype(const void *prev,
- 	return find_node_by_prop_value_str(prev, "device_type", type);
- }
- 
-+static inline void *find_node_by_linuxphandle(const u32 linuxphandle)
-+{
-+	return find_node_by_prop_value(NULL, "linux,phandle",
-+			(char *)&linuxphandle, sizeof(u32));
-+}
-+
- static inline void *malloc(u32 size)
- {
- 	return (platform_ops.malloc) ? platform_ops.malloc(size) : NULL;
+Those 2 as you know better than anyone here are very similar and very different at the same time, and masking the difference is confusion-prone I think.
+
+Thanks for looking into this!
+
+--
+Sincerely, Vitaly
