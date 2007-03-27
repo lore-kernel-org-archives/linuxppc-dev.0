@@ -1,14 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Tue, 27 Mar 2007 09:10:52 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH] DTC: Add support for a C-like #include "file" mechanism.
-Message-ID: <20070326231052.GB24598@localhost.localdomain>
-References: <1174681120.32390.82.camel@ld0161-tx32> <E1HVpSK-0004M3-6D@jdl.com>
+Return-Path: <chuckmeade@mindspring.com>
+Received: from elasmtp-mealy.atl.sa.earthlink.net
+	(elasmtp-mealy.atl.sa.earthlink.net [209.86.89.69])
+	by ozlabs.org (Postfix) with ESMTP id 5ACB4DDF19
+	for <linuxppc-dev@ozlabs.org>; Tue, 27 Mar 2007 10:23:02 +1000 (EST)
+Message-ID: <460863E2.7000406@mindspring.com>
+Date: Mon, 26 Mar 2007 20:22:58 -0400
+From: Chuck Meade <chuckmeade@mindspring.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <E1HVpSK-0004M3-6D@jdl.com>
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: MPC83xx SDMR setup error
+References: <460292FA.8050206@mindspring.com>	<E9D1DC31-9730-4431-9414-0870FDD3EAF6@kernel.crashing.org>	<4602BD39.9020102@mindspring.com>
+	<20070322125712.2229ff99.kim.phillips@freescale.com>
+	<4602C74F.6040402@mindspring.com>
+	<DD2F76DD-4427-4182-B17A-B470CF14E41D@kernel.crashing.org>
+	<2cf7d4ce28b4db08cd9ede0eeded130a@kernel.crashing.org>
+In-Reply-To: <2cf7d4ce28b4db08cd9ede0eeded130a@kernel.crashing.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,26 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Mar 26, 2007 at 08:41:52AM -0500, Jon Loeliger wrote:
-> So, like, the other day Jon Loeliger mumbled:
-> > 
-> > Keeps track of open files in a stack, and assigns
-> > a filenum to source positions for each lexical token.
-> > Modified error reporting to show source file as well.
-> > No policy on file directory basis has been decided.
-> > Still handles stdin.
-> > 
-> > Tested on all arch/powerpc/boot/dts DTS files
-> > 
-> > Signed-off-by: Jon Loeliger <jdl@freescale.com>
-> 
-> Applied.
+> When you resend, please change the line break to
+> something more reasonable too (like, at the | sign) --
+> it might have avoided this bug in the first place.
 
-Erg.  I was going to comment on this, but I've been sick this week.  I
-like the idea, but I'm not real happy with some of the details.
+Hi Segher,
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+I sent the patch to the list already tonight at 6:24 PM EDT with
+new/fixed subject line "[PATCH] Fix MPC83xx SDMA setup errors".
+
+Kumar mentioned making the header/subject more proper.  So due to
+the alignment fix as well as the sdmr fix, the new subject line
+captures the content of the patch better.  Your message came about
+half an hour after I sent the patch, so your line break change
+suggestion is not reflected in it.  If you guys would like, I can
+resubmit with a different line break location.
+
+Thanks for the feedback,
+Chuck
