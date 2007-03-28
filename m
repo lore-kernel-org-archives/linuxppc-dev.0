@@ -1,10 +1,9 @@
 Return-Path: <mgreer@mvista.com>
-Date: Tue, 27 Mar 2007 18:09:03 -0700
+Date: Tue, 27 Mar 2007 18:09:43 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [RFC 1/8] powerpc: Add bootwrapper support for Marvell/mv64x60
-	hostbridge
-Message-ID: <20070328010903.GC302@mag.az.mvista.com>
+Subject: [RFC 2/8] powerpc: Add bootwrapper support for Marvell MPSC
+Message-ID: <20070328010943.GD302@mag.az.mvista.com>
 References: <20070328010444.GB302@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -23,26 +22,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 ---
 
-More will be added in future respins of this patch.
-
- Makefile  |    2 
- mv64x60.c |  252 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- mv64x60.h |   25 ++++++
- 3 files changed, 278 insertions(+), 1 deletion(-)
+ Makefile |    2 
+ mpsc.c   |  170 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ ops.h    |    1 
+ serial.c |    2 
+ 4 files changed, 174 insertions(+), 1 deletion(-)
 ---
 
-diff --git a/arch/powerpc/boot/mv64x60.c b/arch/powerpc/boot/mv64x60.c
-Index: powerpc/arch/powerpc/boot/mv64x60.c
+diff --git a/arch/powerpc/boot/mpsc.c b/arch/powerpc/boot/mpsc.c
+Index: powerpc/arch/powerpc/boot/mpsc.c
 ===================================================================
 --- /dev/null
-+++ powerpc/arch/powerpc/boot/mv64x60.c
-@@ -0,0 +1,252 @@
++++ powerpc/arch/powerpc/boot/mpsc.c
+@@ -0,0 +1,170 @@
 +/*
-+ * Marvell hostbridge routines
++ * MPSC/UART driver for the Marvell mv64360, mv64460, ...
 + *
-+ * Author: Mark A. Greer <source@mvista.com>
++ * Author: Mark A. Greer <mgreer@mvista.com>
 + *
-+ * 2004, 2005, 2007 (c) MontaVista Software, Inc. This file is licensed under
++ * 2007 (c) MontaVista Software, Inc. This file is licensed under
 + * the terms of the GNU General Public License version 2. This program
 + * is licensed "as is" without any warranty of any kind, whether express
 + * or implied.
@@ -51,274 +49,175 @@ Index: powerpc/arch/powerpc/boot/mv64x60.c
 +#include <stdarg.h>
 +#include <stddef.h>
 +#include "types.h"
-+#include "elf.h"
-+#include "page.h"
 +#include "string.h"
 +#include "stdio.h"
 +#include "io.h"
 +#include "ops.h"
-+#include "mv64x60.h"
 +
-+#define	MV64x60_CPU2MEM_WINDOWS			4
-+#define	MV64x60_CPU_BAR_ENABLE			0x0278
-+#define	MV64x60_CPU2MEM_0_BASE			0x0008
-+#define	MV64x60_CPU2MEM_0_SIZE			0x0010
-+#define	MV64x60_CPU2MEM_1_BASE			0x0208
-+#define	MV64x60_CPU2MEM_1_SIZE			0x0210
-+#define	MV64x60_CPU2MEM_2_BASE			0x0018
-+#define	MV64x60_CPU2MEM_2_SIZE			0x0020
-+#define	MV64x60_CPU2MEM_3_BASE			0x0218
-+#define	MV64x60_CPU2MEM_3_SIZE			0x0220
++extern void udelay(long delay);
 +
-+#define	MV64x60_ENET2MEM_BAR_ENABLE		0x2290
-+#define	MV64x60_ENET2MEM_0_BASE			0x2200
-+#define	MV64x60_ENET2MEM_0_SIZE			0x2204
-+#define	MV64x60_ENET2MEM_1_BASE			0x2208
-+#define	MV64x60_ENET2MEM_1_SIZE			0x220c
-+#define	MV64x60_ENET2MEM_2_BASE			0x2210
-+#define	MV64x60_ENET2MEM_2_SIZE			0x2214
-+#define	MV64x60_ENET2MEM_3_BASE			0x2218
-+#define	MV64x60_ENET2MEM_3_SIZE			0x221c
-+#define	MV64x60_ENET2MEM_4_BASE			0x2220
-+#define	MV64x60_ENET2MEM_4_SIZE			0x2224
-+#define	MV64x60_ENET2MEM_5_BASE			0x2228
-+#define	MV64x60_ENET2MEM_5_SIZE			0x222c
-+#define	MV64x60_ENET2MEM_ACC_PROT_0		0x2294
-+#define	MV64x60_ENET2MEM_ACC_PROT_1		0x2298
-+#define	MV64x60_ENET2MEM_ACC_PROT_2		0x229c
++#define	MPSC_CHR_1		0x000c
 +
-+#define	MV64x60_MPSC2MEM_BAR_ENABLE		0xf250
-+#define	MV64x60_MPSC2MEM_0_BASE			0xf200
-+#define	MV64x60_MPSC2MEM_0_SIZE			0xf204
-+#define	MV64x60_MPSC2MEM_1_BASE			0xf208
-+#define	MV64x60_MPSC2MEM_1_SIZE			0xf20c
-+#define	MV64x60_MPSC2MEM_2_BASE			0xf210
-+#define	MV64x60_MPSC2MEM_2_SIZE			0xf214
-+#define	MV64x60_MPSC2MEM_3_BASE			0xf218
-+#define	MV64x60_MPSC2MEM_3_SIZE			0xf21c
-+#define MV64x60_MPSC_0_REMAP			0xf240
-+#define MV64x60_MPSC_1_REMAP			0xf244
-+#define	MV64x60_MPSC2MEM_ACC_PROT_0		0xf254
-+#define	MV64x60_MPSC2MEM_ACC_PROT_1		0xf258
-+#define	MV64x60_MPSC2REGS_BASE			0xf25c
++#define	MPSC_CHR_2		0x0010
++#define	MPSC_CHR_2_TA		(1<<7)
++#define	MPSC_CHR_2_TCS		(1<<9)
++#define	MPSC_CHR_2_RA		(1<<23)
++#define	MPSC_CHR_2_CRD		(1<<25)
++#define	MPSC_CHR_2_EH		(1<<31)
 +
-+#define	MV64x60_IDMA2MEM_BAR_ENABLE		0x0a80
-+#define	MV64x60_IDMA2MEM_0_BASE			0x0a00
-+#define	MV64x60_IDMA2MEM_0_SIZE			0x0a04
-+#define	MV64x60_IDMA2MEM_1_BASE			0x0a08
-+#define	MV64x60_IDMA2MEM_1_SIZE			0x0a0c
-+#define	MV64x60_IDMA2MEM_2_BASE			0x0a10
-+#define	MV64x60_IDMA2MEM_2_SIZE			0x0a14
-+#define	MV64x60_IDMA2MEM_3_BASE			0x0a18
-+#define	MV64x60_IDMA2MEM_3_SIZE			0x0a1c
-+#define	MV64x60_IDMA2MEM_4_BASE			0x0a20
-+#define	MV64x60_IDMA2MEM_4_SIZE			0x0a24
-+#define	MV64x60_IDMA2MEM_5_BASE			0x0a28
-+#define	MV64x60_IDMA2MEM_5_SIZE			0x0a2c
-+#define	MV64x60_IDMA2MEM_6_BASE			0x0a30
-+#define	MV64x60_IDMA2MEM_6_SIZE			0x0a34
-+#define	MV64x60_IDMA2MEM_7_BASE			0x0a38
-+#define	MV64x60_IDMA2MEM_7_SIZE			0x0a3c
-+#define	MV64x60_IDMA2MEM_ACC_PROT_0		0x0a70
-+#define	MV64x60_IDMA2MEM_ACC_PROT_1		0x0a74
-+#define	MV64x60_IDMA2MEM_ACC_PROT_2		0x0a78
-+#define	MV64x60_IDMA2MEM_ACC_PROT_3		0x0a7c
++#define	MPSC_CHR_4		0x0018
++#define	MPSC_CHR_4_Z		(1<<29)
 +
-+static u32 cpu_base_reg[MV64x60_CPU2MEM_WINDOWS] = {
-+	MV64x60_CPU2MEM_0_BASE, MV64x60_CPU2MEM_1_BASE,
-+	MV64x60_CPU2MEM_2_BASE, MV64x60_CPU2MEM_3_BASE
-+};
++#define	MPSC_CHR_5		0x001c
++#define	MPSC_CHR_5_CTL1_INTR	(1<<12)
++#define	MPSC_CHR_5_CTL1_VALID	(1<<15)
 +
-+static u32 cpu_size_reg[MV64x60_CPU2MEM_WINDOWS] = {
-+	MV64x60_CPU2MEM_0_SIZE, MV64x60_CPU2MEM_1_SIZE,
-+	MV64x60_CPU2MEM_2_SIZE, MV64x60_CPU2MEM_3_SIZE
-+};
++#define	MPSC_CHR_10		0x0030
 +
-+static u32 enet_base_reg[MV64x60_CPU2MEM_WINDOWS] = {
-+	MV64x60_ENET2MEM_0_BASE, MV64x60_ENET2MEM_1_BASE,
-+	MV64x60_ENET2MEM_2_BASE, MV64x60_ENET2MEM_3_BASE
-+};
++#define	MPSC_INTR_CAUSE		0x0000
++#define	MPSC_INTR_CAUSE_RCC	(1<<6)
++#define	MPSC_INTR_MASK		0x0080
 +
-+static u32 enet_size_reg[MV64x60_CPU2MEM_WINDOWS] = {
-+	MV64x60_ENET2MEM_0_SIZE, MV64x60_ENET2MEM_1_SIZE,
-+	MV64x60_ENET2MEM_2_SIZE, MV64x60_ENET2MEM_3_SIZE
-+};
++#define	SDMA_SDCM		0x0008
++#define	SDMA_SDCM_AR		(1<<15)
++#define	SDMA_SDCM_AT		(1<<31)
 +
-+static u32 mpsc_base_reg[MV64x60_CPU2MEM_WINDOWS] = {
-+	MV64x60_MPSC2MEM_0_BASE, MV64x60_MPSC2MEM_1_BASE,
-+	MV64x60_MPSC2MEM_2_BASE, MV64x60_MPSC2MEM_3_BASE
-+};
++static volatile char *mpsc_base;
++static volatile char *mpscintr_base;
++static u32 chr1, chr2;
 +
-+static u32 mpsc_size_reg[MV64x60_CPU2MEM_WINDOWS] = {
-+	MV64x60_MPSC2MEM_0_SIZE, MV64x60_MPSC2MEM_1_SIZE,
-+	MV64x60_MPSC2MEM_2_SIZE, MV64x60_MPSC2MEM_3_SIZE
-+};
-+
-+static u32 idma_base_reg[MV64x60_CPU2MEM_WINDOWS] = {
-+	MV64x60_IDMA2MEM_0_BASE, MV64x60_IDMA2MEM_1_BASE,
-+	MV64x60_IDMA2MEM_2_BASE, MV64x60_IDMA2MEM_3_BASE
-+};
-+
-+static u32 idma_size_reg[MV64x60_CPU2MEM_WINDOWS] = {
-+	MV64x60_IDMA2MEM_0_SIZE, MV64x60_IDMA2MEM_1_SIZE,
-+	MV64x60_IDMA2MEM_2_SIZE, MV64x60_IDMA2MEM_3_SIZE
-+};
-+
-+static u32 dram_selects[MV64x60_CPU2MEM_WINDOWS] = { 0xe, 0xd, 0xb, 0x7 };
-+
-+/*
-+ * ENET, MPSC, and IDMA ctlrs on the MV64x60 have separate windows that
-+ * must be set up so that the respective ctlr can access system memory.
-+ * Configure them to be same as cpu->memory windows.
-+ */
-+void mv64x60_config_ctlr_windows(u8 *bridge_base, u8 *bridge_pbase,
-+		u8 cache_coherent)
++static int mpsc_open(void)
 +{
-+	u32 i, base, size, enables, prot = 0, snoop_bits = 0;
-+
-+	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_BAR_ENABLE), 0x3f);
-+	out_le32((u32 *)(bridge_base + MV64x60_MPSC2MEM_BAR_ENABLE), 0xf);
-+	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_BAR_ENABLE), 0xff);
-+
-+	if (cache_coherent)
-+		snoop_bits = 0x2 << 12; /* Writeback */
-+
-+	enables = in_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE)) & 0xf;
-+
-+	for (i=0; i<MV64x60_CPU2MEM_WINDOWS; i++) {
-+		if (enables & (1 << i)) /* Set means disabled */
-+			continue;
-+
-+		base = in_le32((u32 *)(bridge_base + cpu_base_reg[i])) << 16;
-+		base |= snoop_bits | (dram_selects[i] << 8);
-+		size = in_le32((u32 *)(bridge_base + cpu_size_reg[i])) << 16;
-+		prot |= (0x3 << (i << 1)); /* RW access */
-+
-+		out_le32((u32 *)(bridge_base + enet_base_reg[i]), base);
-+		out_le32((u32 *)(bridge_base + enet_size_reg[i]), size);
-+		out_le32((u32 *)(bridge_base + mpsc_base_reg[i]), base);
-+		out_le32((u32 *)(bridge_base + mpsc_size_reg[i]), size);
-+		out_le32((u32 *)(bridge_base + idma_base_reg[i]), base);
-+		out_le32((u32 *)(bridge_base + idma_size_reg[i]), size);
-+	}
-+
-+	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_ACC_PROT_0), prot);
-+	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_ACC_PROT_1), prot);
-+	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_ACC_PROT_2), prot);
-+	out_le32((u32 *)(bridge_base + MV64x60_MPSC2MEM_ACC_PROT_0), prot);
-+	out_le32((u32 *)(bridge_base + MV64x60_MPSC2MEM_ACC_PROT_1), prot);
-+	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_ACC_PROT_0), prot);
-+	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_ACC_PROT_1), prot);
-+	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_ACC_PROT_2), prot);
-+	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_ACC_PROT_3), prot);
-+
-+	/* Set mpsc->bridge's reg window to the bridge's internal registers. */
-+	out_le32((u32 *)(bridge_base + MV64x60_MPSC2REGS_BASE),
-+			(u32)bridge_pbase);
-+
-+	out_le32((u32 *)(bridge_base + MV64x60_ENET2MEM_BAR_ENABLE), enables);
-+	out_le32((u32 *)(bridge_base + MV64x60_MPSC2MEM_BAR_ENABLE), enables);
-+	out_le32((u32 *)(bridge_base + MV64x60_IDMA2MEM_BAR_ENABLE), enables);
-+}
-+
-+/* Read mem ctlr to get the amount of mem in system */
-+u32 mv64x60_get_mem_size(u8 *bridge_base)
-+{
-+	u32 enables, i, v;
-+	u32 mem = 0;
-+
-+	enables = in_le32((u32 *)(bridge_base + MV64x60_CPU_BAR_ENABLE)) & 0xf;
-+
-+	for (i=0; i<MV64x60_CPU2MEM_WINDOWS; i++)
-+		if (!(enables & (1<<i))) {
-+			v = in_le32((u32*)(bridge_base + cpu_size_reg[i]));
-+			v = ((v & 0xffff) + 1) << 16;
-+			mem += v;
-+		}
-+
-+	return mem;
-+}
-+
-+/* Get physical address of bridge's registers */
-+u8 *mv64x60_get_bridge_pbase(void)
-+{
-+	u32 v[2];
-+	void *devp;
-+
-+	devp = finddevice("/mv64x60");
-+	if (devp == NULL)
-+		goto err_out;
-+	if (getprop(devp, "reg", v, sizeof(v)) != sizeof(v))
-+		goto err_out;
-+
-+	return (u8 *)v[0];
-+
-+err_out:
++	chr1 = in_le32((u32 *)(mpsc_base + MPSC_CHR_1)) & 0x00ff0000;
++	chr2 = in_le32((u32 *)(mpsc_base + MPSC_CHR_2)) & ~(MPSC_CHR_2_TA
++			| MPSC_CHR_2_TCS | MPSC_CHR_2_RA | MPSC_CHR_2_CRD
++			| MPSC_CHR_2_EH);
++	out_le32((u32 *)(mpsc_base + MPSC_CHR_4), MPSC_CHR_4_Z);
++	out_le32((u32 *)(mpsc_base + MPSC_CHR_5),
++			MPSC_CHR_5_CTL1_INTR | MPSC_CHR_5_CTL1_VALID);
++	out_le32((u32 *)(mpsc_base + MPSC_CHR_2), chr2 | MPSC_CHR_2_EH);
 +	return 0;
 +}
 +
-+/* Get virtual address of bridge's registers */
-+u8 *mv64x60_get_bridge_base(void)
++static void mpsc_putc(unsigned char c)
 +{
-+	u32 v;
-+	void *devp;
++	while (in_le32((u32 *)(mpsc_base + MPSC_CHR_2)) & MPSC_CHR_2_TCS);
 +
-+	devp = finddevice("/mv64x60");
++	out_le32((u32 *)(mpsc_base + MPSC_CHR_1), chr1 | c);
++	out_le32((u32 *)(mpsc_base + MPSC_CHR_2), chr2 | MPSC_CHR_2_TCS);
++}
++
++static unsigned char mpsc_getc(void)
++{
++	u32 cause = 0;
++	unsigned char c;
++
++	while (!(cause & MPSC_INTR_CAUSE_RCC))
++		cause = in_le32((u32 *)(mpscintr_base + MPSC_INTR_CAUSE));
++
++	c = in_8((u8 *)(mpsc_base + MPSC_CHR_10 + 2));
++	out_8((u8 *)(mpsc_base + MPSC_CHR_10 + 2), c);
++	out_le32((u32 *)(mpscintr_base + MPSC_INTR_CAUSE),
++			cause & ~MPSC_INTR_CAUSE_RCC);
++
++	return c;
++}
++
++static u8 mpsc_tstc(void)
++{
++	return (u8)((in_le32((u32 *)(mpscintr_base + MPSC_INTR_CAUSE))
++				& MPSC_INTR_CAUSE_RCC) != 0);
++}
++
++static void mpsc_stop_dma(volatile char *sdma_base)
++{
++	out_le32((u32 *)(mpsc_base + MPSC_CHR_2),MPSC_CHR_2_TA | MPSC_CHR_2_RA);
++	out_le32((u32 *)(sdma_base + SDMA_SDCM), SDMA_SDCM_AR | SDMA_SDCM_AT);
++
++	while ((in_le32((u32 *)(sdma_base + SDMA_SDCM))
++				& (SDMA_SDCM_AR | SDMA_SDCM_AT)) != 0)
++		udelay(100);
++}
++
++static volatile char *mpsc_get_virtreg_of_phandle(void *devp, char *prop)
++{
++	void *v;
++	int n;
++
++	n = getprop(devp, prop, &v, sizeof(v));
++	if (n != sizeof(v))
++		goto err_out;
++
++	devp = find_node_by_linuxphandle((u32)v);
 +	if (devp == NULL)
 +		goto err_out;
-+	if (getprop(devp, "virtual-reg", &v, sizeof(v)) != sizeof(v))
-+		goto err_out;
 +
-+	return (u8 *)v;
++	n = getprop(devp, "virtual-reg", &v, sizeof(v));
++	if (n == sizeof(v))
++		return v;
 +
 +err_out:
-+	return 0;
++	return NULL;
 +}
 +
-+u8 mv64x60_is_coherency(void)
++int mpsc_console_init(void *devp, struct serial_console_data *scdp)
 +{
-+	u32 v;
-+	void *devp;
++	void *v;
++	int n, reg_set;
++	volatile char *sdma_base;
 +
-+	devp = finddevice("/");
-+	if (devp == NULL)
-+		return 1; /* Assume coherency on */
++	n = getprop(devp, "virtual-reg", &v, sizeof(v));
++	if (n != sizeof(v))
++		goto err_out;
++	mpsc_base = v;
 +
-+	if (getprop(devp, "coherency-off", &v, sizeof(v)) < 0)
-+		return 1; /* Coherency on */
-+	else
-+		return 0;
++	sdma_base = mpsc_get_virtreg_of_phandle(devp, "sdma");
++	if (sdma_base == NULL)
++		goto err_out;
++
++	mpscintr_base = mpsc_get_virtreg_of_phandle(devp, "mpscintr");
++	if (mpscintr_base == NULL)
++		goto err_out;
++
++	n = getprop(devp, "block-index", &v, sizeof(v));
++	if (n != sizeof(v))
++		goto err_out;
++	reg_set = (int)v;
++
++	mpscintr_base += (reg_set == 0) ? 0x4 : 0xc;
++
++	/* Make sure the mpsc ctlrs are shutdown */
++	out_le32((u32 *)(mpscintr_base + MPSC_INTR_CAUSE), 0);
++	out_le32((u32 *)(mpscintr_base + MPSC_INTR_CAUSE), 0);
++	out_le32((u32 *)(mpscintr_base + MPSC_INTR_MASK), 0);
++	out_le32((u32 *)(mpscintr_base + MPSC_INTR_MASK), 0);
++
++	mpsc_stop_dma(sdma_base);
++
++	scdp->open = mpsc_open;
++	scdp->putc = mpsc_putc;
++	scdp->getc = mpsc_getc;
++	scdp->tstc = mpsc_tstc;
++	scdp->close = NULL;
++
++	return 0;
++
++err_out:
++	return -1;
 +}
-Index: powerpc/arch/powerpc/boot/mv64x60.h
+Index: powerpc/arch/powerpc/boot/serial.c
 ===================================================================
---- /dev/null
-+++ powerpc/arch/powerpc/boot/mv64x60.h
-@@ -0,0 +1,25 @@
-+/*
-+ * Author: Mark A. Greer <source@mvista.com>
-+ *
-+ * 2007 (c) MontaVista Software, Inc. This file is licensed under
-+ * the terms of the GNU General Public License version 2. This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ */
-+
-+#ifndef _PPC_BOOT_MV64x60_H_
-+#define _PPC_BOOT_MV64x60_H_
-+
-+void mv64x60_config_ctlr_windows(u8 *bridge_base, u8 *bridge_pbase,
-+		u8 cache_coherent);
-+u32 mv64x60_get_mem_size(u8 *bridge_base);
-+u8 *mv64x60_get_bridge_pbase(void);
-+u8 *mv64x60_get_bridge_base(void);
-+u8 mv64x60_is_coherency(void);
-+
-+int mv64x60_i2c_open(void);
-+int mv64x60_i2c_read(u32 devaddr, u8 *buf, u32 offset, u32 offset_size,
-+		u32 count);
-+void mv64x60_i2c_close(void);
-+
-+#endif /* _PPC_BOOT_MV64x60_H_ */
+--- powerpc.orig/arch/powerpc/boot/serial.c
++++ powerpc/arch/powerpc/boot/serial.c
+@@ -125,6 +125,8 @@ int serial_console_init(void)
+ 
+ 	if (!strcmp(compat, "ns16550"))
+ 		rc = ns16550_console_init(devp, &serial_cd);
++	else if (!strcmp(compat, "mpsc"))
++		rc = mpsc_console_init(devp, &serial_cd);
+ 
+ 	/* Add other serial console driver calls here */
+ 
 Index: powerpc/arch/powerpc/boot/Makefile
 ===================================================================
 --- powerpc.orig/arch/powerpc/boot/Makefile
@@ -327,8 +226,20 @@ Index: powerpc/arch/powerpc/boot/Makefile
  
  src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
  		ns16550.c serial.c simple_alloc.c div64.S util.S \
--		gunzip_util.c devtree.c elf_util.c $(zlib)
-+		gunzip_util.c devtree.c elf_util.c mv64x60.c $(zlib)
+-		gunzip_util.c devtree.c elf_util.c mv64x60.c $(zlib)
++		gunzip_util.c devtree.c elf_util.c mv64x60.c mpsc.c $(zlib)
  cuboot-plats := 83xx
  src-plat := of.c $(cuboot-plats:%=cuboot-%.c)
  src-boot := $(src-wlib) $(src-plat) empty.c
+Index: powerpc/arch/powerpc/boot/ops.h
+===================================================================
+--- powerpc.orig/arch/powerpc/boot/ops.h
++++ powerpc/arch/powerpc/boot/ops.h
+@@ -77,6 +77,7 @@ void start(void *sp);
+ int ft_init(void *dt_blob, unsigned int max_size, unsigned int max_find_device);
+ int serial_console_init(void);
+ int ns16550_console_init(void *devp, struct serial_console_data *scdp);
++int mpsc_console_init(void *devp, struct serial_console_data *scdp);
+ void *simple_alloc_init(char *base, u32 heap_size, u32 granularity,
+ 		u32 max_allocs);
+ int xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
