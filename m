@@ -1,15 +1,16 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 27 Mar 2007 17:12:15 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
 Subject: Re: [PATCH] powerpc: Disable external interrupts in bootwrapper
-Message-ID: <20070328001215.GA25080@mag.az.mvista.com>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: "Mark A. Greer" <mgreer@mvista.com>
+In-Reply-To: <20070328001215.GA25080@mag.az.mvista.com>
 References: <20070327222840.GA1266@mag.az.mvista.com>
 	<17929.44043.728362.712648@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17929.44043.728362.712648@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+	<20070328001215.GA25080@mag.az.mvista.com>
+Content-Type: text/plain
+Date: Wed, 28 Mar 2007 10:28:55 +1000
+Message-Id: <1175041735.14065.37.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,33 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 28, 2007 at 09:43:07AM +1000, Paul Mackerras wrote:
-> Mark A. Greer writes:
+On Tue, 2007-03-27 at 17:12 -0700, Mark A. Greer wrote:
+> On Wed, Mar 28, 2007 at 09:43:07AM +1000, Paul Mackerras wrote:
+> > Mark A. Greer writes:
+> > 
+> > > Disable external interrupts very early in the bootwrapper in case
+> > > the firmware left a device generating interrupts.
+> > 
+> > Sounds reasonable, except that I wonder if systems running under a
+> > real OF want to do this...
 > 
-> > Disable external interrupts very early in the bootwrapper in case
-> > the firmware left a device generating interrupts.
-> 
-> Sounds reasonable, except that I wonder if systems running under a
-> real OF want to do this...
+> I don't know.  Would someone who knows OF speak up?
 
-I don't know.  Would someone who knows OF speak up?
+OF isn't supposed to use external interrupts but I wouldn't bet on what
+Apple's one does... I think it's not safe to do that thus on OF based
+platforms.
 
-> > +	li	r9,(1<<15)@l	/* Disable external intrs (clear MSR[EE]) */
-> 
-> That will actually get us ffff8000 in r9.
-
-Oops.
-
-> > +	mfmsr	r10
-> > +	andc	r10,r10,r9
-> 
-> I suggest this sequence instead:
-> 
-> 	mfmsr	r10
-> 	rlwinm	r10,r10,0,~(1<<15)	/* clear MSR_EE */
-
-That works.  Respin in a bit.
-
-Thanks,
-
-Mark
+Ben.
