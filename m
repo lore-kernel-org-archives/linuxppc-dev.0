@@ -1,21 +1,20 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E8CDDDDEDD
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 06:55:22 +1000 (EST)
-Date: Wed, 28 Mar 2007 13:55:10 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: fix dcr_unmap()
-In-Reply-To: <1175085776.32220.9.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0703281354220.6730@woody.linux-foundation.org>
-References: <200703281207.41425.jdubois@mc.com>
-	<1175085776.32220.9.camel@localhost.localdomain>
+Return-Path: <florian.fainelli@int-evry.fr>
+Received: from smtp2.int-evry.fr (smtp2.int-evry.fr [157.159.10.45])
+	by ozlabs.org (Postfix) with ESMTP id 43601DDEF3
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 07:01:24 +1000 (EST)
+Received: from meteor.minet.net (unknown [157.159.40.101])
+	by smtp2.int-evry.fr (Postfix) with ESMTP id 0CF1D2FF70
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 22:31:25 +0200 (CEST)
+From: Florian Fainelli <florian.fainelli@int-evry.fr>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: Time disparity on Mac Mini
+Date: Wed, 28 Mar 2007 22:31:02 +0200
+References: <200703281951.11561.florian.fainelli@int-evry.fr>
+In-Reply-To: <200703281951.11561.florian.fainelli@int-evry.fr>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <200703282231.02801.florian.fainelli@int-evry.fr>
+Content-Type: text/plain;
+  charset="utf-8"
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,23 +24,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello All,
 
+So as I started writing and sent by mistake. My Mac Mini has a time dispari=
+ty=20
+of 1 minute every 10 (shown) minutes. I do not know if it has something to =
+do=20
+with the heat, or if it is a RTC problem. My iBook G4 which is a very simil=
+ar=20
+hardware does not have this problem.
 
-On Wed, 28 Mar 2007, Benjamin Herrenschmidt wrote:
+If any of you as an idea, I will take it ;)
 
-> On Wed, 2007-03-28 at 11:07 +0100, Jean-Christophe Dubois wrote:
-> > Fix a bug in dcr_unmap(). 
-> > 
-> > At unmap time the DCR offset need to be added instead of substracted.
-> > 
-> > Signed-off-by: Jean-Christophe Dubois <jdubois@mc.com>
-> 
-> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-> ---
-> 
-> If possible that should go in 2.6.21
+Thanks
 
-Can I get an original patch email and/or a git pull request? I didn't see 
-the original email, since I'm not on the linuxppc list..
-
-		Linus
+Le Mercredi 28 Mars 2007 19:51, Florian Fainelli a =C3=A9crit=C2=A0:
+> Hello all,
+>
+> My Mac Mini has serious time problem. From what I could observe it looses=
+ a
+> minute from
