@@ -1,13 +1,14 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 27 Mar 2007 18:04:44 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [RFC 0/8] powerpc: Add initial arch/powerpc support for
-	Marvell/mv64x60
-Message-ID: <20070328010444.GB302@mag.az.mvista.com>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <4609BF47.6030306@am.sony.com>
+Date: Tue, 27 Mar 2007 18:05:11 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Dale Farnsworth <dfarnsworth@mvista.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH] powerpc: Disable external interrupts in bootwrapper
+References: <20070327222840.GA1266@mag.az.mvista.com>
+In-Reply-To: <20070327222840.GA1266@mag.az.mvista.com>
+Content-Type: text/plain; charset=UTF-8
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,20 +18,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Mark A. Greer wrote:
+> Disable external interrupts very early in the bootwrapper in case
+> the firmware left a device generating interrupts.
 
-The following set of patches add initial support for the Marvell
-hostbridge (mv64x60) to the arch/powerpc code.  I did most of the
-bootwrapper code and Dale Farnsworth did most of the kernel code.
+This is just a guess at what is happening, but I think the OF on my
+G5 uses the timer interrupt as a kind of watchdog timer, so that if
+the loaded code hangs, OF will regain control.  If you disable
+interrupts, you may loose this functionality.
 
-Since the bootwrapper is moving so fast, we're sending these out for
-comment but not asking for submission because they're already out of date.
-They are based on Milton Miller's and Scott Woods patches from about a
-week ago.  We'll try to respin on the latest patches every couple weeks
-or so.
-
-There will be another set of patches for the prpmc280/2800 which are
-based on these patches coming shortly.
-
-Mark
---
+-Geoff
