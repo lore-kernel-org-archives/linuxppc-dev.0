@@ -1,14 +1,15 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 28 Mar 2007 18:34:42 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 2/4] bootwrapper: remove unused variable
-Message-ID: <20070328083442.GA19500@localhost.localdomain>
-References: <boot-3-00.miltonm@bga.com> <boot-3-02.miltonm@bga.com>
+Return-Path: <jdubois@mc.com>
+Received: from mc.com (iris-63.mc.com [63.96.239.141])
+	by ozlabs.org (Postfix) with ESMTP id 36AD9DDE3C
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 20:18:21 +1000 (EST)
+From: Jean-Christophe Dubois <jdubois@mc.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] powerpc: fix dcr_unmap()
+Date: Wed, 28 Mar 2007 11:07:41 +0100
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <boot-3-02.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200703281207.41425.jdubois@mc.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,16 +19,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Mar 28, 2007 at 02:21:04AM -0600, Milton Miller wrote:
-> gunzip_util.c has a static variable state, obsured in every function
-> by the first passed parameter.  Looks like this got missed in an API
-> change during development.
+Fix a bug in dcr_unmap(). 
 
-I think you need to do a new pull.  This one got fixed in the same
-patch that added extra doco about the gunzip functions.
+At unmap time the DCR offset need to be added instead of substracted.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Signed-off-by: Jean-Christophe Dubois <jdubois@mc.com>
+
+Index: linux-2.6.20/arch/powerpc/sysdev/dcr.c
+===================================================================
+--- linux-2.6.20.orig/arch/powerpc/sysdev/dcr.c
++++ linux-2.6.20/arch/powerpc/sysdev/dcr.c
+@@ -129,7 +129,7 @@ void dcr_unmap(dcr_host_t host, unsigned
+ 
+ 	if (h.token == NULL)
+ 		return;
+-	h.token -= dcr_n * h.stride;
++	h.token += dcr_n * h.stride;
+ 	iounmap(h.token);
+ 	h.token = NULL;
+ }
