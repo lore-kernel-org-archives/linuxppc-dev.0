@@ -1,9 +1,9 @@
 Return-Path: <mgreer@mvista.com>
-Date: Tue, 27 Mar 2007 18:12:17 -0700
+Date: Tue, 27 Mar 2007 18:12:48 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [RFC 6/8] powerpc: Add arch/powerpc mv64x60_eth platform data setup
-Message-ID: <20070328011217.GH302@mag.az.mvista.com>
+Subject: [RFC 7/8] powerpc: Add arch/powerpc mv64x60 I2C platform data setup
+Message-ID: <20070328011247.GI302@mag.az.mvista.com>
 References: <20070328010444.GB302@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -24,85 +24,41 @@ From: Dale Farnsworth <dale@farnsworth.org>
 Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 ---
 
- arch/powerpc/sysdev/mv64x60.c |  137 ++++++++++++++++++++++++++++++++++++++++++
- drivers/net/Kconfig           |    2 
- 2 files changed, 138 insertions(+), 1 deletion(-)
+ mv64x60.c |   75 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 75 insertions(+)
 ---
 
-Index: linux-2.6-powerpc-df/drivers/net/Kconfig
-===================================================================
---- linux-2.6-powerpc-df.orig/drivers/net/Kconfig
-+++ linux-2.6-powerpc-df/drivers/net/Kconfig
-@@ -2300,7 +2300,7 @@ config UGETH_HAS_GIGA
- 
- config MV643XX_ETH
- 	tristate "MV-643XX Ethernet support"
--	depends on MOMENCO_OCELOT_C || MOMENCO_JAGUAR_ATX || MV64360 || MOMENCO_OCELOT_3 || (PPC_MULTIPLATFORM && PPC32)
-+	depends on MOMENCO_OCELOT_C || MOMENCO_JAGUAR_ATX || MV64360 || MV64X60 || MOMENCO_OCELOT_3 || (PPC_MULTIPLATFORM && PPC32)
- 	select MII
- 	help
- 	  This driver supports the gigabit Ethernet on the Marvell MV643XX
 Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
 ===================================================================
 --- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/mv64x60.c
 +++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
-@@ -618,3 +618,140 @@ ret_node_put:
- arch_initcall(mv64x60_mpsc_platform_device_init);
+@@ -755,3 +755,78 @@ ret_node_put:
+ arch_initcall(mv64x60_eth_platform_device_init);
  
- #endif /* defined(CONFIG_SERIAL_MPSC) || defined(CONFIG_SERIAL_MPSC_MODULE) */
+ #endif /* defined(CONFIG_MV643XX_ETH) || defined(CONFIG_MV643XX_ETH_MODULE) */
 +
-+#if defined(CONFIG_MV643XX_ETH) || defined(CONFIG_MV643XX_ETH_MODULE)
-+static int __init eth_register_shared_pdev(struct device_node *np)
++#if defined(CONFIG_I2C_MV64XXX) || defined(CONFIG_I2C_MV64XXX_MODULE)
++static int __init mv64x60_i2c_platform_device_init(void)
 +{
-+	struct platform_device *pdev;
-+	struct resource res;
-+	int err;
-+
-+	np = of_get_parent(np);
-+	if (!np)
-+		return -ENODEV;
-+
-+	err = of_address_to_resource(np, 0, &res);
-+	of_node_put(np);
-+	if (err)
-+		return err;
-+
-+	pdev = platform_device_register_simple(MV643XX_ETH_SHARED_NAME, 0,
-+					       &res, 1);
-+	if (IS_ERR(pdev))
-+		return PTR_ERR(pdev);
-+
-+	return 0;
-+}
-+
-+static int __init mv64x60_eth_platform_device_init(void)
-+{
-+	struct device_node *np = NULL;
-+	unsigned int i;
++	struct device_node *np;
 +	struct platform_device *pdev;
 +	int err;
 +
-+	for (i = 0;
-+	     (np = of_find_compatible_node(np, "network", "mv64x60-eth"));
-+	     i++) {
-+		struct device_node *phy;
-+		struct mv643xx_eth_platform_data pdata;
-+		const u8 *mac_addr;
-+		const void *prop;
-+		const phandle *ph;
-+		struct resource res;
++	np = of_find_compatible_node(NULL, "i2c", "mv64x60-i2c");
++	if (np) {
++		struct resource r[2];
++		struct mv64xxx_i2c_pdata pdata;
++		const unsigned int *prop;
 +
-+		if (i == 0) {
-+			err = eth_register_shared_pdev(np);
-+			if (err)
-+				goto ret_node_put;
-+		}
++		err = of_address_to_resource(np, 0, &r[0]);
++		if (err)
++			goto ret_node_put;
 +
-+		memset(&res, 0, sizeof(res));
-+		of_irq_to_resource(np, 0, &res);
++		memset(&r[1], 0, sizeof(r[1]));
++		of_irq_to_resource(np, 0, &r[1]);
 +
-+		pdev = platform_device_register_simple(MV643XX_ETH_NAME,
-+						       i, &res, 1);
++		pdev = platform_device_register_simple(MV64XXX_I2C_CTLR_NAME,
++						       0, r, 2);
 +		if (IS_ERR(pdev)) {
 +			err = PTR_ERR(pdev);
 +			goto ret_node_put;
@@ -110,63 +66,31 @@ Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
 +
 +		memset(&pdata, 0, sizeof(pdata));
 +
-+		prop = get_property(np, "block-index", NULL);
++		prop = get_property(np, "freq_m", NULL);
++		if (!prop) {
++			err = -ENODEV;
++			goto ret_unreg;
++		}
++		pdata.freq_m = *prop;
++
++		prop = get_property(np, "freq_n", NULL);
++		if (!prop) {
++			err = -ENODEV;
++			goto ret_unreg;
++		}
++		pdata.freq_n = *prop;
++
++		prop = get_property(np, "timeout", NULL);
 +		if (prop)
-+			pdata.port_number = *(int *)prop;
++			pdata.timeout = *prop;
 +		else
-+			pdata.port_number = i;
++			pdata.timeout = 1000;	/* 1 second */
 +
-+		mac_addr = of_get_mac_address(np);
-+		if (mac_addr)
-+			memcpy(pdata.mac_addr, mac_addr, 6);
-+
-+		prop = get_property(np, "speed", NULL);
++		prop = get_property(np, "retries", NULL);
 +		if (prop)
-+			pdata.speed = *(int *)prop;
-+
-+		prop = get_property(np, "tx_queue_size", NULL);
-+		if (prop)
-+			pdata.tx_queue_size = *(int *)prop;
-+
-+		prop = get_property(np, "rx_queue_size", NULL);
-+		if (prop)
-+			pdata.rx_queue_size = *(int *)prop;
-+
-+		prop = get_property(np, "tx_sram_addr", NULL);
-+		if (prop)
-+			pdata.tx_sram_addr = *(int *)prop;
-+
-+		prop = get_property(np, "tx_sram_size", NULL);
-+		if (prop)
-+			pdata.tx_sram_size = *(int *)prop;
-+
-+		prop = get_property(np, "rx_sram_addr", NULL);
-+		if (prop)
-+			pdata.rx_sram_addr = *(int *)prop;
-+
-+		prop = get_property(np, "rx_sram_size", NULL);
-+		if (prop)
-+			pdata.rx_sram_size = *(int *)prop;
-+
-+		ph = get_property(np, "phy", NULL);
-+		if (!ph) {
-+			err = -ENODEV;
-+			goto ret_unreg;
-+		}
-+
-+		phy = of_find_node_by_phandle(*ph);
-+		if (phy == NULL) {
-+			err = -ENODEV;
-+			goto ret_unreg;
-+		}
-+
-+		prop = get_property(phy, "reg", NULL);
-+		if (prop) {
-+			pdata.force_phy_addr = 1;
-+			pdata.phy_addr = *(int *)prop;
-+		}
-+
-+		of_node_put(phy);
++			pdata.retries = *prop;
++		else
++			pdata.retries = 1;
 +
 +		err = platform_device_add_data(pdev, &pdata, sizeof(pdata));
 +		if (err)
@@ -184,6 +108,6 @@ Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
 +	return err;
 +}
 +
-+arch_initcall(mv64x60_eth_platform_device_init);
++arch_initcall(mv64x60_i2c_platform_device_init);
 +
-+#endif /* defined(CONFIG_MV643XX_ETH) || defined(CONFIG_MV643XX_ETH_MODULE) */
++#endif /* defined(CONFIG_I2C_MV64XXX) || defined(CONFIG_I2C_MV64XXX_MODULE) */
