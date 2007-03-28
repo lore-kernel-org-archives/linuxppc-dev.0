@@ -1,18 +1,18 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id C1753DDE3B
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 04:05:49 +1000 (EST)
-Message-ID: <460AAEA5.40008@ru.mvista.com>
-Date: Wed, 28 Mar 2007 22:06:29 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: bzolnier@gmail.com
-Subject: Re: [PATCH pata-2.6] sl82c105: rework PIO support (take 2)
-References: <200702140101.26639.sshtylyov@ru.mvista.com>
-	<200703282147.41696.sshtylyov@ru.mvista.com>
-In-Reply-To: <200703282147.41696.sshtylyov@ru.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Subject: RE: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
+	platform
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
+References: <20070328011924.GA1586@mag.az.mvista.com>
+	<20070328012206.GD1586@mag.az.mvista.com>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
+Content-Type: text/plain
+Date: Wed, 28 Mar 2007 13:11:19 -0500
+Message-Id: <1175105479.7553.75.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Dale Farnsworth <dfarnsworth@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello, I wrote:
+On Wed, 2007-03-28 at 09:43 -0700, Yoder Stuart-B08248 wrote:
+> Biggest concern is that I see a lot of undocumented device
+> types and properties...
 
-> Index: linux-2.6/include/linux/ide.h
-> ===================================================================
-> --- linux-2.6.orig/include/linux/ide.h
-> +++ linux-2.6/include/linux/ide.h
-> @@ -613,7 +613,6 @@ typedef struct ide_drive_s {
->  
->          u8	quirk_list;	/* considered quirky, set for a specific host */
->          u8	init_speed;	/* transfer rate set at boot */
-> -        u8	pio_speed;      /* unused by core, used by some drivers for fallback from DMA */
->          u8	current_speed;	/* current transfer rate set */
->          u8	dn;		/* now wide spread use */
->          u8	wcache;		/* status of write cache */
+Yes, but that is a problem in general.
 
-    Oops, forgot to pull the recent kernel before sending out, so this part 
-won't apply bacause of the desired_speed nuisance. Do I need to resend?
+> > +		virtual-reg = <f1000000>;
+> 
+> What is virtual-reg for?  I gather it is related to the bootwrapper
+> needed virtual addresses for devices reg blocks.  But, I counted
+> 12 instances of the property in this file.  Are all needed by the
+> bootwrapper??
+> 
+> Does anyone where this property came from historically?  If it's
+> specifically for a Linux bootwrapper the name should reflect 
+> that-- linux,bootwrapper-reg-vaddr -- or something...
 
-MBR, Sergei
+It came from a discussion Mark, I, and a few others had on this list a
+few months ago about the requirement for reusing the virtual address set
+up by the firmware for the bootwrapper.  You cannot assume a 1:1
+physical to virtual mapping for things, so the bootwrapper console code
+looks for virtual-reg first and uses that address for it's operations.
+
+> Based on some offline dicussions I think I know what block-index
+> is, but I'd like to see this property documented in
+> booting-without-of.txt.
+
+As an aside, there's a lot of stuff that needs updating in
+booting-without-of.txt.  The interrupt mapping it suggests is incorrect,
+some of the entry point stuff is invalid, etc.  There's now several
+properties that are being introduced that aren't in there as well.
+
+josh
