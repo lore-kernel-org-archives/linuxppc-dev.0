@@ -1,15 +1,15 @@
 Return-Path: <mgreer@mvista.com>
-Date: Tue, 27 Mar 2007 18:34:36 -0700
+Date: Tue, 27 Mar 2007 18:36:18 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH] powerpc: Disable external interrupts in bootwrapper
-Message-ID: <20070328013436.GB7097@mag.az.mvista.com>
-References: <20070327222840.GA1266@mag.az.mvista.com>
-	<4609BF47.6030306@am.sony.com>
+To: "Mark A. Greer" <mgreer@mvista.com>, Paul Mackerras <paulus@samba.org>,
+	linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: Re: [PATCH] powerpc: Move bootwrapper ELF parsing routines to a file
+Message-ID: <20070328013618.GC7097@mag.az.mvista.com>
+References: <20070327222950.GB1266@mag.az.mvista.com>
+	<20070328012554.GA27401@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4609BF47.6030306@am.sony.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+In-Reply-To: <20070328012554.GA27401@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,14 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2007 at 06:05:11PM -0700, Geoff Levand wrote:
-> Mark A. Greer wrote:
-> > Disable external interrupts very early in the bootwrapper in case
-> > the firmware left a device generating interrupts.
+On Wed, Mar 28, 2007 at 11:25:54AM +1000, David Gibson wrote:
+> On Tue, Mar 27, 2007 at 03:29:50PM -0700, Mark A. Greer wrote:
+> > The ELF parsing routines local to arch/powerpc/boot/main.c are useful
+> > to other callers therefore move them to their own file.
 > 
-> This is just a guess at what is happening, but I think the OF on my
-> G5 uses the timer interrupt as a kind of watchdog timer, so that if
-> the loaded code hangs, OF will regain control.  If you disable
-> interrupts, you may loose this functionality.
+> Which other callers, out of curiosity?
 
-Ah, okay.
+Its in: http://ozlabs.org/pipermail/linuxppc-dev/2007-March/033672.html
+
+Mark
