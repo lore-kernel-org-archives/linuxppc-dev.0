@@ -1,33 +1,21 @@
-Return-Path: <moilanen@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Return-Path: <florian.fainelli@int-evry.fr>
+Received: from smtp-ext.int-evry.fr (smtp-ext.int-evry.fr [157.159.11.17])
+	by ozlabs.org (Postfix) with ESMTP id 3DF99DDF1C
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 04:29:07 +1000 (EST)
+Received: from mini.int.alphacore.net (florian.maisel.int-evry.fr
+	[157.159.41.36])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 76EDDDDEA3
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 04:20:39 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2SIKSG3022559
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 14:20:28 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2SIKS9C193144
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 14:20:28 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2SIKROk001164
-	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 14:20:28 -0400
-Subject: Re: [PATCH] DMA 4GB boundary protection
-From: Jake Moilanen <moilanen@austin.ibm.com>
-To: paulus@samba.org, Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070328155635.GA14356@lixom.net>
-References: <1172872183.5310.145.camel@goblue>
-	<20070303232915.GB8028@lixom.net> <1174511149.5225.135.camel@goblue>
-	<20070322175324.GA21120@lixom.net> <1175026241.1398.23.camel@goblue>
-	<20070328155635.GA14356@lixom.net>
-Content-Type: text/plain
-Date: Wed, 28 Mar 2007 13:17:22 -0500
-Message-Id: <1175105842.1398.43.camel@goblue>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	(No client certificate requested)
+	by smtp-ext.int-evry.fr (Postfix) with ESMTP id 772118D1693
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 19:56:26 +0200 (CEST)
+From: Florian Fainelli <florian.fainelli@int-evry.fr>
+To: linuxppc-dev@ozlabs.org
+Subject: Time disparity on Mac Mini
+Date: Wed, 28 Mar 2007 19:51:11 +0200
+MIME-Version: 1.0
+Content-Type: multipart/signed; boundary="nextPart1372963.qiYDbhNT7s";
+	protocol="application/pgp-signature"; micalg=pgp-sha1
+Message-Id: <200703281951.11561.florian.fainelli@int-evry.fr>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,153 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > +	/*
-> > +	 * DMA cannot cross 4 GB boundary.  Mark last entry of each 4
-> > +	 * GB chunk as reserved.
-> > +	 */
-> > +	if (protect4gb) {
-> > +		entries_per_4g = 0x100000000l >> IOMMU_PAGE_SHIFT;
-> > +
-> > +		/* Mark the last bit before a 4GB boundary as used */
-> > +		start_index = (tbl->it_offset << IOMMU_PAGE_SHIFT) >> 32;
-> > +		start_index |= (entries_per_4g - 1);
-> 
-> This looks broken.
-> 
-> The idea is to make start_index the last page before the first 4GB
-> boundary after it_offset. If that happens to be beyond end_index the
-> for loop below will never run. If it's below that, every last page in
-> the 4GB ranges will be marked in the loop. This will work even if the
-> table starts at i.e. 2GB and goes until 10GB.
-> 
-> With the first line above, your start_index will always be 0xfffff
-> (unless the offset is waay up there in the address space).
-> 
-> The logic I had was:
-> 
-> 	start_index = tbl->it_offset | (entries_per_4g - 1);                                                                                   
-> 
-> This is also broken, since it doesn't consider it_offset in the loop
-> below. That was my bad, and I guess was what you tried to fix above.
-> 
-> What you really want is:
-> 	
-> 	start_index = tbl->it_offset | (entries_per_4g - 1);                                                                                   
-> 	start_index -= tbl->it_offset;
-> 
-> 	end_index = tbl->it_size;
+--nextPart1372963.qiYDbhNT7s
+Content-Type: text/plain;
+  charset="us-ascii"
+Content-Transfer-Encoding: quoted-printable
+Content-Disposition: inline
 
-Yup.
+Hello all,
 
-> Say that it_offset is at 3GB, with 4KB pages that means the value is
-> 0xc0000. entries_per_4g is 0x100000, i.e. the logic becomes: 0xc0000 |
-> 0xfffff = 0xfffff (- 0xc0000 = 0x3ffff), which indeed is the last page
-> before 4GB.
-> 
-> If it_offset is at 9GB, i.e. 0x240000, then we get start_index at 0x2fffff
-> (- 0x240000 = 0xbffff) , i.e. yet again last page before the 12GB wrap.
+My Mac Mini has serious time problem. From what I could observe it looses a=
+=20
+minute from=20
+=2D-=20
+Cordialement, Florian Fainelli
+=2D--------------------------------------------
 
-One more try.
+--nextPart1372963.qiYDbhNT7s
+Content-Type: application/pgp-signature
 
-There are many adapters which can not handle DMAing acrosss any 4 GB
-boundary.  For instance the latest Emulex adapters.  
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v2.0.3 (GNU/Linux)
 
-This normally is not an issue as firmware gives dma-windows under
-4gigs.  However, some of the new System-P boxes have dma-windows above
-4gigs, and this present a problem.
+iD8DBQBGCqsPkwOXMtq9F3IRAiljAKCb9PqgwJcKDBdC88+3hBehOmu8vgCeKmn8
+D53afUxss1X4xijunxu39cY=
+=jzuN
+-----END PGP SIGNATURE-----
 
-During initialization of the IOMMU tables, the last entry at each 4GB
-boundary is marked as used.  Thus no mappings can cross the boundary.
-If a table ends at a 4GB boundary, the entry is not marked as used.
-
-A boot option to remove this 4GB protection is given w/ protect4gb=off.
-This exposes the potential issue for driver and hardware development
-purposes.
-
-Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
----
- arch/powerpc/kernel/iommu.c |   35 ++++++++++++++++++++++++++++++++++-
- 1 files changed, 34 insertions(+), 1 deletion(-)
-
-Index: powerpc/arch/powerpc/kernel/iommu.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/iommu.c
-+++ powerpc/arch/powerpc/kernel/iommu.c
-@@ -47,6 +47,8 @@ static int novmerge = 0;
- static int novmerge = 1;
- #endif
- 
-+static int protect4gb = 1;
-+
- static inline unsigned long iommu_num_pages(unsigned long vaddr,
- 					    unsigned long slen)
- {
-@@ -58,6 +60,16 @@ static inline unsigned long iommu_num_pa
- 	return npages;
- }
- 
-+static int __init setup_protect4gb(char *str)
-+{
-+	if (strcmp(str, "on") == 0)
-+		protect4gb = 1;
-+	else if (strcmp(str, "off") == 0)
-+		protect4gb = 0;
-+
-+	return 1;
-+}
-+
- static int __init setup_iommu(char *str)
- {
- 	if (!strcmp(str, "novmerge"))
-@@ -67,6 +79,7 @@ static int __init setup_iommu(char *str)
- 	return 1;
- }
- 
-+__setup("protect4gb=", setup_protect4gb);
- __setup("iommu=", setup_iommu);
- 
- static unsigned long iommu_range_alloc(struct iommu_table *tbl,
-@@ -429,6 +442,9 @@ void iommu_unmap_sg(struct iommu_table *
- struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
- {
- 	unsigned long sz;
-+	unsigned long start_index, end_index;
-+	unsigned long entries_per_4g;
-+	unsigned long index;
- 	static int welcomed = 0;
- 	struct page *page;
- 
-@@ -450,7 +466,7 @@ struct iommu_table *iommu_init_table(str
- 
- #ifdef CONFIG_CRASH_DUMP
- 	if (ppc_md.tce_get) {
--		unsigned long index, tceval;
-+		unsigned long tceval;
- 		unsigned long tcecount = 0;
- 
- 		/*
-@@ -480,6 +496,23 @@ struct iommu_table *iommu_init_table(str
- 	ppc_md.tce_free(tbl, tbl->it_offset, tbl->it_size);
- #endif
- 
-+	/*
-+	 * DMA cannot cross 4 GB boundary.  Mark last entry of each 4
-+	 * GB chunk as reserved.
-+	 */
-+	if (protect4gb) {
-+		entries_per_4g = 0x100000000l >> IOMMU_PAGE_SHIFT;
-+
-+		/* Mark the last bit before a 4GB boundary as used */
-+		start_index = tbl->it_offset | (entries_per_4g - 1);
-+		start_index -= tbl->it_offset;
-+
-+		end_index = tbl->it_size;
-+
-+		for (index = start_index; index < end_index - 1; index +=
-entries_per_4g)
-+			__set_bit(index, tbl->it_map);
-+	}
-+
- 	if (!welcomed) {
- 		printk(KERN_INFO "IOMMU table initialized, virtual merging %s\n",
- 		       novmerge ? "disabled" : "enabled");
+--nextPart1372963.qiYDbhNT7s--
