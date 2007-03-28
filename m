@@ -1,18 +1,33 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Subject: RE: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
-	platform
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
-References: <20070328011924.GA1586@mag.az.mvista.com>
-	<20070328012206.GD1586@mag.az.mvista.com>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
+Return-Path: <moilanen@austin.ibm.com>
+Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 76EDDDDEA3
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 04:20:39 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2SIKSG3022559
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 14:20:28 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l2SIKS9C193144
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 14:20:28 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2SIKROk001164
+	for <linuxppc-dev@ozlabs.org>; Wed, 28 Mar 2007 14:20:28 -0400
+Subject: Re: [PATCH] DMA 4GB boundary protection
+From: Jake Moilanen <moilanen@austin.ibm.com>
+To: paulus@samba.org, Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070328155635.GA14356@lixom.net>
+References: <1172872183.5310.145.camel@goblue>
+	<20070303232915.GB8028@lixom.net> <1174511149.5225.135.camel@goblue>
+	<20070322175324.GA21120@lixom.net> <1175026241.1398.23.camel@goblue>
+	<20070328155635.GA14356@lixom.net>
 Content-Type: text/plain
-Date: Wed, 28 Mar 2007 13:11:19 -0500
-Message-Id: <1175105479.7553.75.camel@zod.rchland.ibm.com>
+Date: Wed, 28 Mar 2007 13:17:22 -0500
+Message-Id: <1175105842.1398.43.camel@goblue>
 Mime-Version: 1.0
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Dale Farnsworth <dfarnsworth@mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +37,153 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-03-28 at 09:43 -0700, Yoder Stuart-B08248 wrote:
-> Biggest concern is that I see a lot of undocumented device
-> types and properties...
-
-Yes, but that is a problem in general.
-
-> > +		virtual-reg = <f1000000>;
+> > +	/*
+> > +	 * DMA cannot cross 4 GB boundary.  Mark last entry of each 4
+> > +	 * GB chunk as reserved.
+> > +	 */
+> > +	if (protect4gb) {
+> > +		entries_per_4g = 0x100000000l >> IOMMU_PAGE_SHIFT;
+> > +
+> > +		/* Mark the last bit before a 4GB boundary as used */
+> > +		start_index = (tbl->it_offset << IOMMU_PAGE_SHIFT) >> 32;
+> > +		start_index |= (entries_per_4g - 1);
 > 
-> What is virtual-reg for?  I gather it is related to the bootwrapper
-> needed virtual addresses for devices reg blocks.  But, I counted
-> 12 instances of the property in this file.  Are all needed by the
-> bootwrapper??
+> This looks broken.
 > 
-> Does anyone where this property came from historically?  If it's
-> specifically for a Linux bootwrapper the name should reflect 
-> that-- linux,bootwrapper-reg-vaddr -- or something...
+> The idea is to make start_index the last page before the first 4GB
+> boundary after it_offset. If that happens to be beyond end_index the
+> for loop below will never run. If it's below that, every last page in
+> the 4GB ranges will be marked in the loop. This will work even if the
+> table starts at i.e. 2GB and goes until 10GB.
+> 
+> With the first line above, your start_index will always be 0xfffff
+> (unless the offset is waay up there in the address space).
+> 
+> The logic I had was:
+> 
+> 	start_index = tbl->it_offset | (entries_per_4g - 1);                                                                                   
+> 
+> This is also broken, since it doesn't consider it_offset in the loop
+> below. That was my bad, and I guess was what you tried to fix above.
+> 
+> What you really want is:
+> 	
+> 	start_index = tbl->it_offset | (entries_per_4g - 1);                                                                                   
+> 	start_index -= tbl->it_offset;
+> 
+> 	end_index = tbl->it_size;
 
-It came from a discussion Mark, I, and a few others had on this list a
-few months ago about the requirement for reusing the virtual address set
-up by the firmware for the bootwrapper.  You cannot assume a 1:1
-physical to virtual mapping for things, so the bootwrapper console code
-looks for virtual-reg first and uses that address for it's operations.
+Yup.
 
-> Based on some offline dicussions I think I know what block-index
-> is, but I'd like to see this property documented in
-> booting-without-of.txt.
+> Say that it_offset is at 3GB, with 4KB pages that means the value is
+> 0xc0000. entries_per_4g is 0x100000, i.e. the logic becomes: 0xc0000 |
+> 0xfffff = 0xfffff (- 0xc0000 = 0x3ffff), which indeed is the last page
+> before 4GB.
+> 
+> If it_offset is at 9GB, i.e. 0x240000, then we get start_index at 0x2fffff
+> (- 0x240000 = 0xbffff) , i.e. yet again last page before the 12GB wrap.
 
-As an aside, there's a lot of stuff that needs updating in
-booting-without-of.txt.  The interrupt mapping it suggests is incorrect,
-some of the entry point stuff is invalid, etc.  There's now several
-properties that are being introduced that aren't in there as well.
+One more try.
 
-josh
+There are many adapters which can not handle DMAing acrosss any 4 GB
+boundary.  For instance the latest Emulex adapters.  
+
+This normally is not an issue as firmware gives dma-windows under
+4gigs.  However, some of the new System-P boxes have dma-windows above
+4gigs, and this present a problem.
+
+During initialization of the IOMMU tables, the last entry at each 4GB
+boundary is marked as used.  Thus no mappings can cross the boundary.
+If a table ends at a 4GB boundary, the entry is not marked as used.
+
+A boot option to remove this 4GB protection is given w/ protect4gb=off.
+This exposes the potential issue for driver and hardware development
+purposes.
+
+Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
+---
+ arch/powerpc/kernel/iommu.c |   35 ++++++++++++++++++++++++++++++++++-
+ 1 files changed, 34 insertions(+), 1 deletion(-)
+
+Index: powerpc/arch/powerpc/kernel/iommu.c
+===================================================================
+--- powerpc.orig/arch/powerpc/kernel/iommu.c
++++ powerpc/arch/powerpc/kernel/iommu.c
+@@ -47,6 +47,8 @@ static int novmerge = 0;
+ static int novmerge = 1;
+ #endif
+ 
++static int protect4gb = 1;
++
+ static inline unsigned long iommu_num_pages(unsigned long vaddr,
+ 					    unsigned long slen)
+ {
+@@ -58,6 +60,16 @@ static inline unsigned long iommu_num_pa
+ 	return npages;
+ }
+ 
++static int __init setup_protect4gb(char *str)
++{
++	if (strcmp(str, "on") == 0)
++		protect4gb = 1;
++	else if (strcmp(str, "off") == 0)
++		protect4gb = 0;
++
++	return 1;
++}
++
+ static int __init setup_iommu(char *str)
+ {
+ 	if (!strcmp(str, "novmerge"))
+@@ -67,6 +79,7 @@ static int __init setup_iommu(char *str)
+ 	return 1;
+ }
+ 
++__setup("protect4gb=", setup_protect4gb);
+ __setup("iommu=", setup_iommu);
+ 
+ static unsigned long iommu_range_alloc(struct iommu_table *tbl,
+@@ -429,6 +442,9 @@ void iommu_unmap_sg(struct iommu_table *
+ struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
+ {
+ 	unsigned long sz;
++	unsigned long start_index, end_index;
++	unsigned long entries_per_4g;
++	unsigned long index;
+ 	static int welcomed = 0;
+ 	struct page *page;
+ 
+@@ -450,7 +466,7 @@ struct iommu_table *iommu_init_table(str
+ 
+ #ifdef CONFIG_CRASH_DUMP
+ 	if (ppc_md.tce_get) {
+-		unsigned long index, tceval;
++		unsigned long tceval;
+ 		unsigned long tcecount = 0;
+ 
+ 		/*
+@@ -480,6 +496,23 @@ struct iommu_table *iommu_init_table(str
+ 	ppc_md.tce_free(tbl, tbl->it_offset, tbl->it_size);
+ #endif
+ 
++	/*
++	 * DMA cannot cross 4 GB boundary.  Mark last entry of each 4
++	 * GB chunk as reserved.
++	 */
++	if (protect4gb) {
++		entries_per_4g = 0x100000000l >> IOMMU_PAGE_SHIFT;
++
++		/* Mark the last bit before a 4GB boundary as used */
++		start_index = tbl->it_offset | (entries_per_4g - 1);
++		start_index -= tbl->it_offset;
++
++		end_index = tbl->it_size;
++
++		for (index = start_index; index < end_index - 1; index +=
+entries_per_4g)
++			__set_bit(index, tbl->it_map);
++	}
++
+ 	if (!welcomed) {
+ 		printk(KERN_INFO "IOMMU table initialized, virtual merging %s\n",
+ 		       novmerge ? "disabled" : "enabled");
