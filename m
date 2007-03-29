@@ -1,20 +1,32 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 79D40DDE3A
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0198ADDE3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Mar 2007 04:42:27 +1000 (EST)
-In-Reply-To: <175002.60794.qm@web15611.mail.cnb.yahoo.com>
-References: <175002.60794.qm@web15611.mail.cnb.yahoo.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <38067FD3-F201-4373-A067-CFED1589D6C3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
+	Fri, 30 Mar 2007 05:23:23 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2TJNKYl020223
+	for <linuxppc-embedded@ozlabs.org>; Thu, 29 Mar 2007 15:23:20 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l2TJNKVs095418
+	for <linuxppc-embedded@ozlabs.org>; Thu, 29 Mar 2007 13:23:20 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l2TJNK2G016331
+	for <linuxppc-embedded@ozlabs.org>; Thu, 29 Mar 2007 13:23:20 -0600
 Subject: Re: Try to Disable PPC Interrupt
-Date: Thu, 29 Mar 2007 13:41:30 -0500
-To: Zhou Rui <vancasperz@yahoo.com.cn>
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+In-Reply-To: <38067FD3-F201-4373-A067-CFED1589D6C3@kernel.crashing.org>
+References: <175002.60794.qm@web15611.mail.cnb.yahoo.com>
+	<38067FD3-F201-4373-A067-CFED1589D6C3@kernel.crashing.org>
+Content-Type: text/plain
+Date: Thu, 29 Mar 2007 14:23:11 -0500
+Message-Id: <1175196191.7553.140.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -26,67 +38,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-03-29 at 13:41 -0500, Kumar Gala wrote:
+> > It seems the 16th bit (EE) has been set to 0, but what should I do  
+> > to make sure whether the external interrupt is disabled or not?  
+> > Thank you very much.
+> 
+> What exactly are you asking?  If MSR[EE] = 0, interrupts are disabled.
 
-On Mar 28, 2007, at 11:20 PM, Zhou Rui wrote:
+Since you're on a 405, you can actually test this from within your code
+still.  Use the SRS bits in the UICs to generate a spurious interrupt at
+the UIC level for something that is currently enabled in the ER
+register.  If you still get an interrupt at the CPU with MSR[EE] == 0,
+then you've found a very odd bug indeed.
 
-> Hi
-> Sorry for my silly mistake, and I modify it like this:
-> #ifndef MODULE
-> #define MODULE
-> #endif
->
-> #ifndef __KERNEL__
-> #define __KERNEL__
-> #endif
->
-> #include <linux/module.h>
-> #include <linux/kernel.h>
-> #include <linux/types.h>
-> #include <linux/errno.h>
->
-> void hw_disable_irq (void) {
->         int c;
->         __asm__ __volatile__(
->                 "mfmsr %%r0; \
->                 wrteei 0; \
->                 mfmsr %0;":"=r"(c) : );
->
-Why don't use use local_irq_disable() ?
+But as Kumar says, if MSR[EE] == 0, external interrupts are disabled.
+Of course, that doesn't mean that debug, machine check, or critical
+interrupts are.
 
+(How to use the SRS bits in the UICs is an exercise left up to the
+reader.)
 
->         printk("%x\n",c);
-> }
->
-> int init_module(void)
-> {
->           hw_disable_irq();
-> }
->
-> void cleanup_module(void)
-> {
-> }
->
-> MODULE_LICENSE("GPL");
->
->
-> I can get the output is 0x21030. But I also use BDI2000 here and  
-> when I halt the board from BDI2000, I get
-> 405EP>halt
->     Core number            : 0
->     Core state                 : debug mode
->     Debug entry cause : JTAG stop request
->     Current PC               : 0xc00042d8
->     Current CR               : 0x22004082
->     Current MSR           : 0x00029030
->     Current LR               : 0xc00042d8
-> Hope my understanding for big endian is right. It seems 0x00029030  
-> in MSR is
-> 00000000 00000010 10010000 00110000, but 0x21030 is
-> 00000000 00000010 00010000 00110000.
-> It seems the 16th bit (EE) has been set to 0, but what should I do  
-> to make sure whether the external interrupt is disabled or not?  
-> Thank you very much.
-
-What exactly are you asking?  If MSR[EE] = 0, interrupts are disabled.
-
-- k
+josh
