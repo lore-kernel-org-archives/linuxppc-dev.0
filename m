@@ -1,14 +1,15 @@
 Return-Path: <Antonio.DiBacco@technolabs.it>
 Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id 9D39ADDECE
+	by ozlabs.org (Postfix) with ESMTP id AF5EFDDEAB
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 29 Mar 2007 20:39:13 +1000 (EST)
+	Thu, 29 Mar 2007 21:14:36 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C771EE.7D0CBE15"
-Subject: Avoid using libm in rootfs
-Date: Thu, 29 Mar 2007 12:39:11 +0200
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E71CD4A@aquib01a>
+	boundary="----_=_NextPart_001_01C771F3.6E66D718"
+Subject: libgcc_s.so needed when compiling with eldk4.1.0 and not with
+	edlk3.1.1
+Date: Thu, 29 Mar 2007 13:14:34 +0200
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E71CD4C@aquib01a>
 From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -23,19 +24,19 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 This is a multi-part message in MIME format.
 
-------_=_NextPart_001_01C771EE.7D0CBE15
+------_=_NextPart_001_01C771F3.6E66D718
 Content-Type: text/plain;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
 
-Is it possible to avoid using libm in my roofs? Why a simple application
-always need it? Is it needed by libc or libstdc++?
+When I used eldk3.1.1 from denx the applications I compiled didn't need
+libgcc_s.so but now that I'm using eldk4.1.0, applications also require
+libgcc_s.so. Is it normal?
 =20
 Bye,
 Antonio.
-=20
 
-------_=_NextPart_001_01C771EE.7D0CBE15
+------_=_NextPart_001_01C771F3.6E66D718
 Content-Type: text/html;
 	charset="us-ascii"
 Content-Transfer-Encoding: quoted-printable
@@ -46,17 +47,17 @@ Content-Transfer-Encoding: quoted-printable
 charset=3Dus-ascii">
 <META content=3D"MSHTML 6.00.2900.2802" name=3DGENERATOR></HEAD>
 <BODY>
-<DIV><FONT face=3DArial size=3D2><SPAN class=3D081123410-29032007>Is it =
-possible to=20
-avoid using libm in my roofs? Why a simple application always need it? =
-Is it=20
-needed by libc or libstdc++?</SPAN></FONT></DIV>
+<DIV><FONT face=3DArial size=3D2><SPAN class=3D019351211-29032007>When I =
+used=20
+eldk3.1.1 from denx the applications I compiled didn't need libgcc_s.so =
+but now=20
+that I'm using eldk4.1.0, applications also require libgcc_s.so. Is it=20
+normal?</SPAN></FONT></DIV>
 <DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D081123410-29032007></SPAN></FONT>&nbsp;</DIV>
+class=3D019351211-29032007></SPAN></FONT>&nbsp;</DIV>
 <DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D081123410-29032007>Bye,</SPAN></FONT></DIV>
+class=3D019351211-29032007>Bye,</SPAN></FONT></DIV>
 <DIV><FONT face=3DArial size=3D2><SPAN=20
-class=3D081123410-29032007>Antonio.</SPAN></FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV></BODY></HTML>
+class=3D019351211-29032007>Antonio.</SPAN></FONT></DIV></BODY></HTML>
 
-------_=_NextPart_001_01C771EE.7D0CBE15--
+------_=_NextPart_001_01C771F3.6E66D718--
