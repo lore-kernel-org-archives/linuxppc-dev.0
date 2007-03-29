@@ -1,34 +1,25 @@
-Return-Path: <moilanen@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5722BDDECE
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 23:47:26 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2TDlLqp025282
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 09:47:21 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2TDl99B294124
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 09:47:09 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2TDl8nM020720
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 09:47:09 -0400
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id E0FB9DDE1A
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2007 00:37:32 +1000 (EST)
+Date: Thu, 29 Mar 2007 09:52:52 -0500
+To: Jake Moilanen <moilanen@austin.ibm.com>
 Subject: Re: [PATCH] DMA 4GB boundary protection
-From: Jake Moilanen <moilanen@austin.ibm.com>
-To: paulus@samba.org, Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1175124183.32220.17.camel@localhost.localdomain>
+Message-ID: <20070329145252.GA23270@lixom.net>
 References: <1172872183.5310.145.camel@goblue>
-	<20070303232915.GB8028@lixom.net> <1174511149.5225.135.camel@goblue>
-	<20070322175324.GA21120@lixom.net> <1175026241.1398.23.camel@goblue>
-	<20070328155635.GA14356@lixom.net>  <1175105842.1398.43.camel@goblue>
+	<20070303232915.GB8028@lixom.net>
+	<1174511149.5225.135.camel@goblue>
+	<20070322175324.GA21120@lixom.net>
+	<1175026241.1398.23.camel@goblue>
+	<20070328155635.GA14356@lixom.net>
+	<1175105842.1398.43.camel@goblue>
 	<1175124183.32220.17.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 29 Mar 2007 08:44:02 -0500
-Message-Id: <1175175842.1398.54.camel@goblue>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+	<1175175842.1398.54.camel@goblue>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1175175842.1398.54.camel@goblue>
+From: olof@lixom.net (Olof Johansson)
+Cc: paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,118 +29,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-03-29 at 09:23 +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2007-03-28 at 13:17 -0500, Jake Moilanen wrote:
+On Thu, Mar 29, 2007 at 08:44:02AM -0500, Jake Moilanen wrote:
+> On Thu, 2007-03-29 at 09:23 +1000, Benjamin Herrenschmidt wrote:
+> > On Wed, 2007-03-28 at 13:17 -0500, Jake Moilanen wrote:
+> > 
+> > > One more try.
+> > 
+> > And patch is still mangled....
 > 
-> > One more try.
+> Hrm....I should just go back to Sylpheed.  
 > 
-> And patch is still mangled....
+> Unmangled version:
+> 
+> 
+> There are many adapters which can not handle DMAing acrosss any 4 GB
+> boundary.  For instance the latest Emulex adapters.  
+> 
+> This normally is not an issue as firmware gives dma-windows under
+> 4gigs.  However, some of the new System-P boxes have dma-windows above
+> 4gigs, and this present a problem.
+> 
+> During initialization of the IOMMU tables, the last entry at each 4GB
+> boundary is marked as used.  Thus no mappings can cross the boundary.
+> If a table ends at a 4GB boundary, the entry is not marked as used.
+> 
+> A boot option to remove this 4GB protection is given w/ protect4gb=off.
+> This exposes the potential issue for driver and hardware development
+> purposes.
+> 
+> Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
 
-Hrm....I should just go back to Sylpheed.  
-
-Unmangled version:
+Acked-by: Olof Johansson <olof@lixom.net>
 
 
-There are many adapters which can not handle DMAing acrosss any 4 GB
-boundary.  For instance the latest Emulex adapters.  
-
-This normally is not an issue as firmware gives dma-windows under
-4gigs.  However, some of the new System-P boxes have dma-windows above
-4gigs, and this present a problem.
-
-During initialization of the IOMMU tables, the last entry at each 4GB
-boundary is marked as used.  Thus no mappings can cross the boundary.
-If a table ends at a 4GB boundary, the entry is not marked as used.
-
-A boot option to remove this 4GB protection is given w/ protect4gb=off.
-This exposes the potential issue for driver and hardware development
-purposes.
-
-Signed-off-by: Jake Moilanen <moilanen@austin.ibm.com>
-
----
-
- arch/powerpc/kernel/iommu.c |   35 ++++++++++++++++++++++++++++++++++-
- 1 files changed, 34 insertions(+), 1 deletion(-)
-
-Index: powerpc/arch/powerpc/kernel/iommu.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/iommu.c
-+++ powerpc/arch/powerpc/kernel/iommu.c
-@@ -47,6 +47,8 @@ static int novmerge = 0;
- static int novmerge = 1;
- #endif
- 
-+static int protect4gb = 1;
-+
- static inline unsigned long iommu_num_pages(unsigned long vaddr,
- 					    unsigned long slen)
- {
-@@ -58,6 +60,16 @@ static inline unsigned long iommu_num_pa
- 	return npages;
- }
- 
-+static int __init setup_protect4gb(char *str)
-+{
-+	if (strcmp(str, "on") == 0)
-+		protect4gb = 1;
-+	else if (strcmp(str, "off") == 0)
-+		protect4gb = 0;
-+
-+	return 1;
-+}
-+
- static int __init setup_iommu(char *str)
- {
- 	if (!strcmp(str, "novmerge"))
-@@ -67,6 +79,7 @@ static int __init setup_iommu(char *str)
- 	return 1;
- }
- 
-+__setup("protect4gb=", setup_protect4gb);
- __setup("iommu=", setup_iommu);
- 
- static unsigned long iommu_range_alloc(struct iommu_table *tbl,
-@@ -429,6 +442,9 @@ void iommu_unmap_sg(struct iommu_table *
- struct iommu_table *iommu_init_table(struct iommu_table *tbl, int nid)
- {
- 	unsigned long sz;
-+	unsigned long start_index, end_index;
-+	unsigned long entries_per_4g;
-+	unsigned long index;
- 	static int welcomed = 0;
- 	struct page *page;
- 
-@@ -450,7 +466,7 @@ struct iommu_table *iommu_init_table(str
- 
- #ifdef CONFIG_CRASH_DUMP
- 	if (ppc_md.tce_get) {
--		unsigned long index, tceval;
-+		unsigned long tceval;
- 		unsigned long tcecount = 0;
- 
- 		/*
-@@ -480,6 +496,23 @@ struct iommu_table *iommu_init_table(str
- 	ppc_md.tce_free(tbl, tbl->it_offset, tbl->it_size);
- #endif
- 
-+	/*
-+	 * DMA cannot cross 4 GB boundary.  Mark last entry of each 4
-+	 * GB chunk as reserved.
-+	 */
-+	if (protect4gb) {
-+		entries_per_4g = 0x100000000l >> IOMMU_PAGE_SHIFT;
-+
-+		/* Mark the last bit before a 4GB boundary as used */
-+		start_index = tbl->it_offset | (entries_per_4g - 1);
-+		start_index -= tbl->it_offset;
-+
-+		end_index = tbl->it_size;
-+
-+		for (index = start_index; index < end_index - 1; index += entries_per_4g)
-+			__set_bit(index, tbl->it_map);
-+	}
-+
- 	if (!welcomed) {
- 		printk(KERN_INFO "IOMMU table initialized, virtual merging %s\n",
- 		       novmerge ? "disabled" : "enabled");
+-Olof
