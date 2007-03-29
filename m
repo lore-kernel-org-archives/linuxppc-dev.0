@@ -1,16 +1,25 @@
-Return-Path: <jcrigby@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id D5542DDE44
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2007 07:20:21 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id b21so345967ana
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 14:20:19 -0700 (PDT)
-Message-ID: <4b73d43f0703291420v620b871fp97cb34941b1e7a85@mail.gmail.com>
-Date: Thu, 29 Mar 2007 15:20:19 -0600
-From: "John Rigby" <jcrigby@gmail.com>
-To: linuxppc <linuxppc-dev@ozlabs.org>
-Subject: publishing OF platform devices
+Return-Path: <tnt@246tNt.com>
+Received: from outmx020.isp.belgacom.be (outmx020.isp.belgacom.be
+	[195.238.4.201])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5BE92DDE46
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2007 07:27:10 +1000 (EST)
+Received: from outmx020.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx020.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l2TLR0qs025835
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 23:27:00 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <460C2F0F.3050808@246tNt.com>
+Date: Thu, 29 Mar 2007 23:26:39 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: John Rigby <jcrigby@gmail.com>
+Subject: Re: publishing OF platform devices
+References: <4b73d43f0703291420v620b871fp97cb34941b1e7a85@mail.gmail.com>
+In-Reply-To: <4b73d43f0703291420v620b871fp97cb34941b1e7a85@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,24 +29,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-I have a question about the "right" way to publish platform
-devices via of_platform_bus_probe.
+John Rigby wrote:
+> I have a question about the "right" way to publish platform
+> devices via of_platform_bus_probe.
+>
+> On 5200 platforms it gets called from
+> mpc52xx_declare_of_platform_devices which is registered as the
+> machdep_calls init routine.
+>   
+It's called by machdep calls so that it's only called if the platform is
+detected ...
+> On other platforms it is called via a device_initcall
+>   
+That will always be called which is bad.
 
-On 5200 platforms it gets called from
-mpc52xx_declare_of_platform_devices which is registered as the
-machdep_calls init routine.
+Because if you have a kernel will multiple platform support built in, it
+will
+be called everytime, even if it's not running on the good platform.
+> Also I noticed that some 83xx platforms don't call
+> of_platform_bus_probe at all.  Thats ok because most of those devices
+> are register various routines in fsl_soc.c.  The one I have not
+> figured out yet is spi, I don't see anyone registering mpc83xx_spi?
+>   
+On theses I have no idea ...
 
-On other platforms it is called via a device_initcall
-
-I assume the main difference between these two is one would happen
-later than the other?
-
-Also I noticed that some 83xx platforms don't call
-of_platform_bus_probe at all.  Thats ok because most of those devices
-are register various routines in fsl_soc.c.  The one I have not
-figured out yet is spi, I don't see anyone registering mpc83xx_spi?
-
-Any enlightenment would be appreciated
-
-Thanks
-John
+    Sylvain
