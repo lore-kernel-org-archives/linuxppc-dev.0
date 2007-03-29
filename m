@@ -1,22 +1,12 @@
-Return-Path: <dale@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Thu, 29 Mar 2007 15:21:52 -0700
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
-	platform
-Message-ID: <20070329222152.GB22134@xyzzy.farnsworth.org>
-References: <20070328011924.GA1586@mag.az.mvista.com>
-	<20070328012206.GD1586@mag.az.mvista.com>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
-	<20070329003550.GB25652@localhost.localdomain>
-	<2cd6c2dd69700dd162e90f8b7a83a99d@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <2cd6c2dd69700dd162e90f8b7a83a99d@kernel.crashing.org>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
-	Dale Farnsworth <dfarnsworth@mvista.com>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <SRS0+97d39be1a89b1495b2c5+1313+infradead.org+dwmw2@canuck.srs.infradead.org>
+Subject: [PATCH] Ignore memory listed in PS3 device tree
+From: David Woodhouse <dwmw2@infradead.org>
+To: cbe-oss-dev@ozlabs.org
+Content-Type: text/plain
+Date: Thu, 29 Mar 2007 23:43:57 +0100
+Message-Id: <1175208237.3122.78.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,18 +16,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 29, 2007 at 02:48:47AM +0200, Segher Boessenkool wrote:
-> The only valid reason to use "virtual-reg" is as a
-> hack to map some device to get some debug output out.
-> 
-> If for normal usage you can't be bothered to parse
-> the current translations, you probably shouldn't be
-> doing anything as "advanced" as device I/O either --
-> just boot the kernel and let it handle it ;-)
-> 
-> That said, I sure hope the kernel isn't using this
-> property as well...
+The old 2.6.16 kernel handled memory statically and it was shown in the
+device tree. The current kernel deals with the hypervisor and hotplugs
+the memory, so we should just ignore anything that's reported in the
+device-tree. This enables the current kernel to be booted from 2.6.16
+without evil hacks in head_64.S to override the device-tree.
 
-I think we all agree that would be bogus.
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
--Dale
+diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
+index 08bd255..dd38408 100644
+--- a/arch/powerpc/kernel/prom.c
++++ b/arch/powerpc/kernel/prom.c
+@@ -52,6 +52,7 @@
+ #include <asm/pSeries_reconfig.h>
+ #include <asm/pci-bridge.h>
+ #include <asm/kexec.h>
++#include <asm/firmware.h>
+ 
+ #ifdef DEBUG
+ #define DBG(fmt...) printk(KERN_ERR fmt)
+@@ -862,6 +863,9 @@ static int __init early_init_dt_scan_memory(unsigned long node,
+ 	cell_t *reg, *endp;
+ 	unsigned long l;
+ 
++	if (firmware_has_feature(FW_FEATURE_PS3_LV1))
++		return 0;
++
+ 	/* Look for the ibm,dynamic-reconfiguration-memory node */
+ 	if (depth == 1 &&
+ 	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0)
+
+-- 
+dwmw2
