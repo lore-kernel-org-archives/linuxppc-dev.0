@@ -1,24 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 02E8DDDE44
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2007 07:55:48 +1000 (EST)
-Subject: Re: [PATCH] DMA 4GB boundary protection
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Jake Moilanen <moilanen@austin.ibm.com>
-In-Reply-To: <1175175842.1398.54.camel@goblue>
-References: <1172872183.5310.145.camel@goblue>
-	<20070303232915.GB8028@lixom.net> <1174511149.5225.135.camel@goblue>
-	<20070322175324.GA21120@lixom.net> <1175026241.1398.23.camel@goblue>
-	<20070328155635.GA14356@lixom.net>  <1175105842.1398.43.camel@goblue>
-	<1175124183.32220.17.camel@localhost.localdomain>
-	<1175175842.1398.54.camel@goblue>
-Content-Type: text/plain
-Date: Fri, 30 Mar 2007 07:54:21 +1000
-Message-Id: <1175205261.5624.21.camel@localhost.localdomain>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103]) by ozlabs.org (Postfix) with ESMTP id DFF75DDE43
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2007 07:56:23 +1000 (EST)
+Date: Thu, 29 Mar 2007 16:56:14 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Sylvain Munaut <tnt@246tNt.com>
+Subject: Re: publishing OF platform devices
+Message-Id: <20070329165614.3410786a.kim.phillips@freescale.com>
+In-Reply-To: <460C2F0F.3050808@246tNt.com>
+References: <4b73d43f0703291420v620b871fp97cb34941b1e7a85@mail.gmail.com>
+	<460C2F0F.3050808@246tNt.com>
 Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,18 +22,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-03-29 at 08:44 -0500, Jake Moilanen wrote:
-> On Thu, 2007-03-29 at 09:23 +1000, Benjamin Herrenschmidt wrote:
-> > On Wed, 2007-03-28 at 13:17 -0500, Jake Moilanen wrote:
-> > 
-> > > One more try.
-> > 
-> > And patch is still mangled....
+On Thu, 29 Mar 2007 23:26:39 +0200
+Sylvain Munaut <tnt@246tNt.com> wrote:
+
+> John Rigby wrote:
+> > I have a question about the "right" way to publish platform
+> > devices via of_platform_bus_probe.
+> >
+> > On 5200 platforms it gets called from
+> > mpc52xx_declare_of_platform_devices which is registered as the
+> > machdep_calls init routine.
+> >   
+> It's called by machdep calls so that it's only called if the platform
+> is detected ...
+> > On other platforms it is called via a device_initcall
+> >   
+> That will always be called which is bad.
 > 
-> Hrm....I should just go back to Sylpheed.  
+> Because if you have a kernel will multiple platform support built in,
+> it will
+> be called everytime, even if it's not running on the good platform.
+> > Also I noticed that some 83xx platforms don't call
+> > of_platform_bus_probe at all.  Thats ok because most of those
+> > devices are register various routines in fsl_soc.c.  The one I have
+> > not figured out yet is spi, I don't see anyone registering
+> > mpc83xx_spi?
+> >   
+> On theses I have no idea ...
+> 
+spi_mpc83xx is a platform_driver.  You either have to add spi code to
+fsl_soc.c, or, probably better, make it an of_platform_driver (see
+drivers/net/ucc_geth.c).  Hopefully an of_platform_driver patch will
+be accepted now that cuimage is here, and 83xx can be removed from arch/ppc.
 
-Heh, I never have problems with Evolution... just make sure you use
-"Preformat" as a style.
-
-Cheers,
-Ben.
+Kim
