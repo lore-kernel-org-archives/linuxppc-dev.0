@@ -1,18 +1,19 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 511A5DDE3C
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2007 05:22:36 +1000 (EST)
-To: ganesh subramonian <gun_raj@yahoo.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: linuxppc_2_4_devel vs linux-2.6-denx 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Thu, 29 Mar 2007 00:13:34 PDT."
-	<20070329071334.53837.qmail@web52401.mail.re2.yahoo.com>
-Date: Thu, 29 Mar 2007 21:22:33 +0200
-Sender: wd@denx.de
-Message-Id: <20070329192233.C2250353A6C@atlas.denx.de>
-Cc: linuxppc-mailing-list <linuxppc-dev@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BB879DDF06
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2007 05:46:56 +1000 (EST)
+Date: Thu, 29 Mar 2007 14:43:14 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: Linus Torvalds <torvalds@osdl.org>
+Subject: Please pull from 'for_linus' branch
+Message-ID: <Pine.LNX.4.64.0703291434500.23408@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,51 +23,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <20070329071334.53837.qmail@web52401.mail.re2.yahoo.com> you wrote:
-> 
-> can someone tell me what is the difference between the git
-> repositories linux-2.6-denx and linuxppc_2_4_devel ( other than that
-> it is 2.4 vs 2.6 kernel). ...
+Linus,
 
-Well, that's  a  pretty  significant  difference.  The  Linux  kernel
-version  on which linuxppc_2_4_devel is based has been frozen about 3
-years ago (a *very* long time for  Linux),  while  linux-2.6-denx  is
-continuously kept in sync with the kernel.orc tree.
+Please pull from 'for_linus' branch of
+master.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
 
-The linuxppc_2_4_devel contains a number of BSPs that have  not  been
-proted  to  2.6 yet (and some of them never will), and vice versa the
-linux-2.6-denx contains BSPs that are not supported by  the  old  2.4
-kernel.
+These are a few fixes for 2.6.21 related to the quicc engine support.
 
->                       ... Is there any difference in the processor
-> families supported by these repositories? ...
+to receive the following updates:
 
-Yes. Simply put: don't expect to find support for recent hardware  in
-the old kernel tree.
+ arch/powerpc/sysdev/qe_lib/qe.c |    6 +++---
+ include/asm-powerpc/immap_qe.h  |    3 ++-
+ 2 files changed, 5 insertions(+), 4 deletions(-)
 
->                                       ... Is it something like denx
-> does not support 2.4 in the eldk??
+Chuck Meade (1):
+      [POWERPC] qe: Fix QUICC Engine SDMA setup errors
 
-ELDK up to and including version 3.1.1 is based  on  the  2.4  kernel
-tree  in  the  linuxppc_2_4_devel  repository;  ELDK 4.0 and later is
-based on the 2.6 kernel tree in the linux-2.6-denx repository.
+Timur Tabi (1):
+      [POWERPC] qe: ucc_slow.guemr is in the wrong place
 
-> what gcc versions would be required to compile the 2.4 tree?
+diff --git a/arch/powerpc/sysdev/qe_lib/qe.c b/arch/powerpc/sysdev/qe_lib/qe.c
+index e3d71e0..43f6cc9 100644
+--- a/arch/powerpc/sysdev/qe_lib/qe.c
++++ b/arch/powerpc/sysdev/qe_lib/qe.c
+@@ -251,13 +251,13 @@ static int qe_sdma_init(void)
 
-IT should be possible to compile it even with really  old  toolchains
-like  gcc 2.95, altough we officially don't support this. GCC 3.x and
-later should be fine (but avoid gcc 3.4.x  -  I've  seen  it  causing
-problems in too many projects). Although you can use gcc-4.x from our
-latest  ELDK  to  build  a 2.4 kernel, we recommend to use "matching"
-toolchains, i. e. use ELDK 3.1.1 for linuxppc_2_4_devel (= 2.4) based
-work, and use ELDK 4.1 for linux-2.6-denx (= 2.6) based projects.
+ 	/* allocate 2 internal temporary buffers (512 bytes size each) for
+ 	 * the SDMA */
+-	sdma_buf_offset = qe_muram_alloc(512 * 2, 64);
++ 	sdma_buf_offset = qe_muram_alloc(512 * 2, 4096);
+ 	if (IS_MURAM_ERR(sdma_buf_offset))
+ 		return -ENOMEM;
 
-Best regards,
+ 	out_be32(&sdma->sdebcr, sdma_buf_offset & QE_SDEBCR_BA_MASK);
+-	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK | (0x1 >>
+-					QE_SDMR_CEN_SHIFT)));
++ 	out_be32(&sdma->sdmr, (QE_SDMR_GLB_1_MSK |
++ 					(0x1 << QE_SDMR_CEN_SHIFT)));
 
-Wolfgang Denk
+ 	return 0;
+ }
+diff --git a/include/asm-powerpc/immap_qe.h b/include/asm-powerpc/immap_qe.h
+index 9fdd049..1020b7f 100644
+--- a/include/asm-powerpc/immap_qe.h
++++ b/include/asm-powerpc/immap_qe.h
+@@ -258,8 +258,9 @@ struct ucc_slow {
+ 	u8	uccs;		/* UCCx status register */
+ 	u8	res3[0x24];
+ 	__be16	utpt;
++	u8	res4[0x52];
+ 	u8	guemr;		/* UCC general extended mode register */
+-	u8	res4[0x200 - 0x091];
++	u8	res5[0x200 - 0x091];
+ } __attribute__ ((packed));
 
--- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-core error - bus dumped
+ /* QE UCC Fast */
