@@ -1,18 +1,15 @@
-Return-Path: <kryn@in2p3.fr>
-Received: from ccimap.in2p3.fr (ccimap.in2p3.fr [134.158.69.6])
-	by ozlabs.org (Postfix) with ESMTP id 6987ADDE25
+Return-Path: <vancasperz@yahoo.com.cn>
+Received: from web15609.mail.cnb.yahoo.com (web15609.mail.cnb.yahoo.com
+	[202.165.102.63]) by ozlabs.org (Postfix) with SMTP id EC8F3DDEE0
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 28 Mar 2007 19:56:38 +1000 (EST)
-Message-ID: <460A3BBC.5060002@in2p3.fr>
-Date: Wed, 28 Mar 2007 11:56:12 +0200
-From: Didier Kryn <kryn@in2p3.fr>
+	Thu, 29 Mar 2007 12:40:00 +1000 (EST)
+Date: Thu, 29 Mar 2007 10:39:58 +0800 (CST)
+From: Zhou Rui <vancasperz@yahoo.com.cn>
+Subject: Try to Disable PPC Interrupt
+To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-To: Konstantin Boyanov <kkboyanov@gmail.com>
-Subject: Re: Reading and writing from/to VME device
-References: <821B2170E9E7F04FA38DF7EC21DE4871088C81DA@VCAEXCH01.hq.corp.viasat.com>
-In-Reply-To: <821B2170E9E7F04FA38DF7EC21DE4871088C81DA@VCAEXCH01.hq.corp.viasat.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative; boundary="0-1874157068-1175135998=:26206"
+Message-ID: <904550.26206.qm@web15609.mail.cnb.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,27 +20,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    Konstantin, I am a little confused;
+--0-1874157068-1175135998=:26206
+Content-Type: text/plain; charset=gb2312
+Content-Transfer-Encoding: 8bit
 
-    You tell you want to access CR/CSR space but you configure your 
-window for A24. Even if addresses are coded in 24-bit in CR/CSR, this is 
-not the same space as A24. Although I never still used it, I believe 
-that CR/CSR is a geographical address space (base address of the board 
-defined by its location in the crate) while all others are logical 
-address spaces where the base address is set at power up from a 
-switch... and can be changed by writing the proper register in  CR/CSR. 
-CR/CSR has address modifier 2F, while you are configuring your window 
-for A24/data/supervisory which gives address modifier 3D. BTW, most 
-boards don't care about user or supervisory, they would respond as well 
-to address modifier 39
+Hi, all
+    I am trying to disable interrupt on a PPC405EP board. I have checked from the 405 maunual that once the EE bit of MSR is set to 0, the external interrupt will be disabled. So I write a simple test module for that:
 
-    To answer one of your questions, for sure inbound windows are 
-dedicated to configure the response of the module as a slave and 
-outbound windows as a master.
+#ifndef MODULE
+#define MODULE
+#endif
 
-    When you are reading anything else than FF, then you are actually 
-reading something, which means that some slave module has accepted the 
-transaction. You always get all bits set to 1 in case of VMEbus timeout.
+#ifndef __KERNEL__
+#define __KERNEL__
+#endif
 
-    Hope this helps
-    Didier
+#include <linux/module.h>
+#include <linux/kernel.h>
+#include <linux/types.h>
+#include <linux/errno.h>
+
+void hw_disable_irq (void) {
+        int c;
+        __asm__ __volatile__(
+                "mfmsr %%r0; \
+                wrteei 0; \
+                mfmsr %0;":"=r"(c) : );
+
+        printk("%h\n",c);
+}
+
+int init_module(void)
+{
+}
+
+void cleanup_module(void)
+{
+}
+
+MODULE_LICENSE("GPL");
+
+When I insert this module, it seems nothing happens and there is no output of the varible "c". So would you like to tell me what the problem is here? Thank you very much.
+
+
+Best wishes
+
+Zhou Rui
+Distributed & Embedded System Lab
+School of Information Science & Engineering
+Lanzhou University, P. R. China
+http://dslab.lzu.edu.cn/~zr/
+ 		
+---------------------------------
+ Mp3疯狂搜-新歌热歌高速下   
+--0-1874157068-1175135998=:26206
+Content-Type: text/html; charset=gb2312
+Content-Transfer-Encoding: 8bit
+
+Hi, all<br>&nbsp;&nbsp;&nbsp; I am trying to disable interrupt on a PPC405EP board. I have checked from the 405 maunual that once the EE bit of MSR is set to 0, the external interrupt will be disabled. So I write a simple test module for that:<br><br>#ifndef MODULE<br>#define MODULE<br>#endif<br><br>#ifndef __KERNEL__<br>#define __KERNEL__<br>#endif<br><br>#include &lt;linux/module.h&gt;<br>#include &lt;linux/kernel.h&gt;<br>#include &lt;linux/types.h&gt;<br>#include &lt;linux/errno.h&gt;<br><br>void hw_disable_irq (void) {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; int c;<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; __asm__ __volatile__(<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "mfmsr %%r0; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; wrteei 0; \<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; mfmsr %0;":"=r"(c) :
+ );<br><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; printk("%h\n",c);<br>}<br><br>int init_module(void)<br>{<br>}<br><br>void cleanup_module(void)<br>{<br>}<br><br>MODULE_LICENSE("GPL");<br><br>When I insert this module, it seems nothing happens and there is no output of the varible "c". So would you like to tell me what the problem is here? Thank you very much.<br><BR><BR>Best wishes<br><br>Zhou Rui<br>Distributed &amp; Embedded System Lab<br>School of Information Science &amp; Engineering<br>Lanzhou University, P. R. China<br>http://dslab.lzu.edu.cn/~zr/<p>&#32;
+		<hr size=1><a href="http://music.yahoo.com.cn/?source=mail_mailbox_footer" target=blank> 
+Mp3疯狂搜-新歌热歌高速下 
+</a>
+ 
+ 
+
+--0-1874157068-1175135998=:26206--
