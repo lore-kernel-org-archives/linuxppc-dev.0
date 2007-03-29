@@ -1,21 +1,16 @@
-Return-Path: <torvalds@linux-foundation.org>
-Received: from smtp.osdl.org (smtp.osdl.org [65.172.181.24])
-	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
-	(Client CN "smtp.osdl.org",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A1E67DDED8
-	for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2007 06:15:19 +1000 (EST)
-Date: Thu, 29 Mar 2007 13:14:36 -0700 (PDT)
-From: Linus Torvalds <torvalds@linux-foundation.org>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: Please pull from 'for_linus' branch
-In-Reply-To: <Pine.LNX.4.64.0703291434500.23408@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0703291311110.6730@woody.linux-foundation.org>
-References: <Pine.LNX.4.64.0703291434500.23408@localhost.localdomain>
+Return-Path: <jcrigby@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id D5542DDE44
+	for <linuxppc-dev@ozlabs.org>; Fri, 30 Mar 2007 07:20:21 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id b21so345967ana
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 14:20:19 -0700 (PDT)
+Message-ID: <4b73d43f0703291420v620b871fp97cb34941b1e7a85@mail.gmail.com>
+Date: Thu, 29 Mar 2007 15:20:19 -0600
+From: "John Rigby" <jcrigby@gmail.com>
+To: linuxppc <linuxppc-dev@ozlabs.org>
+Subject: publishing OF platform devices
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org, Timur Tabi <timur@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +20,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I have a question about the "right" way to publish platform
+devices via of_platform_bus_probe.
 
+On 5200 platforms it gets called from
+mpc52xx_declare_of_platform_devices which is registered as the
+machdep_calls init routine.
 
-On Thu, 29 Mar 2007, Kumar Gala wrote:
-> 
-> Please pull from 'for_linus' branch of
-> master.kernel.org/pub/scm/linux/kernel/git/galak/powerpc.git
+On other platforms it is called via a device_initcall
 
-Please don't do this to me.
+I assume the main difference between these two is one would happen
+later than the other?
 
- - give a valid URL! 
+Also I noticed that some 83xx platforms don't call
+of_platform_bus_probe at all.  Thats ok because most of those devices
+are register various routines in fsl_soc.c.  The one I have not
+figured out yet is spi, I don't see anyone registering mpc83xx_spi?
 
-   You could have either added a "ssh://" to before that string, or used a 
-   colon between the hostname and the path, but the URL you quoted is 
-   broken.
+Any enlightenment would be appreciated
 
- - put the branch-name after the URL on the same line, so that I can 
-   cut-and-paste them together rather than separately (and so that I don't 
-   miss the fact that it wasn't the default branch)
-
-IOW, it should have said
-
-  Please pull from the 'for_linus' branch at
-
-	master.kernel.org:/pub/scm/linux/kernel/git/galak/powerpc.git for_linus
-
-or something similar.
-
-Thanks from your anal and grumpy kernel maintainer,
-
-		Linus
+Thanks
+John
