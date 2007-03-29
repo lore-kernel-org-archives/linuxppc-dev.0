@@ -1,33 +1,17 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0198ADDE3C
+Return-Path: <tim.martin@viasat.com>
+Received: from VCAEXCH02.hq.corp.viasat.com (kestrel.viasat.com
+	[199.106.52.139]) by ozlabs.org (Postfix) with ESMTP id 0470BDDE45
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 30 Mar 2007 05:23:23 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l2TJNKYl020223
-	for <linuxppc-embedded@ozlabs.org>; Thu, 29 Mar 2007 15:23:20 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l2TJNKVs095418
-	for <linuxppc-embedded@ozlabs.org>; Thu, 29 Mar 2007 13:23:20 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l2TJNK2G016331
-	for <linuxppc-embedded@ozlabs.org>; Thu, 29 Mar 2007 13:23:20 -0600
-Subject: Re: Try to Disable PPC Interrupt
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <38067FD3-F201-4373-A067-CFED1589D6C3@kernel.crashing.org>
-References: <175002.60794.qm@web15611.mail.cnb.yahoo.com>
-	<38067FD3-F201-4373-A067-CFED1589D6C3@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 29 Mar 2007 14:23:11 -0500
-Message-Id: <1175196191.7553.140.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+	Fri, 30 Mar 2007 05:26:17 +1000 (EST)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Reading and writing from/to VME device
+Date: Thu, 29 Mar 2007 12:27:07 -0700
+Message-ID: <821B2170E9E7F04FA38DF7EC21DE4871089691C5@VCAEXCH01.hq.corp.viasat.com>
+In-reply-to: <929bf310703290313o234a47f9gbf9c5083fc23e45e@mail.gmail.com>
+From: "Martin, Tim" <tim.martin@viasat.com>
+To: "Konstantin Boyanov" <kkboyanov@gmail.com>, <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -38,24 +22,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-03-29 at 13:41 -0500, Kumar Gala wrote:
-> > It seems the 16th bit (EE) has been set to 0, but what should I do  
-> > to make sure whether the external interrupt is disabled or not?  
-> > Thank you very much.
-> 
-> What exactly are you asking?  If MSR[EE] = 0, interrupts are disabled.
+>But when I try to configure it with outWinCfgADC.zlatedAddrL =3D =
+0xA000,
+>when I run the programm I get an errno 29 (Invalid argument) from
+ioctl().
+>In fact if I set the xlatedAddrL to some value smaller that 0x10000 I
+get this
+>error. Here's my most recent configuration:=20
 
-Since you're on a 405, you can actually test this from within your code
-still.  Use the SRS bits in the UICs to generate a spurious interrupt at
-the UIC level for something that is currently enabled in the ER
-register.  If you still get an interrupt at the CPU with MSR[EE] == 0,
-then you've found a very odd bug indeed.
+The VME device driver has an (artificial, as far as I can tell) limit
+that rejects window base addresses on an offset less than 0x10000.  You
+could change the driver (in drivers/vme/vmedrv.c or vmelinux.c) to
+accept a smaller base address offset.  I'm not sure of the reason for
+the limit - I don't _think_ the TSI148 has such a limit, but I haven't
+looked into it at all.
 
-But as Kumar says, if MSR[EE] == 0, external interrupts are disabled.
-Of course, that doesn't mean that debug, machine check, or critical
-interrupts are.
-
-(How to use the SRS bits in the UICs is an exercise left up to the
-reader.)
-
-josh
+Tim
