@@ -1,14 +1,23 @@
-Return-Path: <gun_raj@yahoo.com>
-Received: from web52401.mail.re2.yahoo.com (web52401.mail.re2.yahoo.com
-	[206.190.48.164]) by ozlabs.org (Postfix) with SMTP id 1A713DDECD
-	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 17:13:35 +1000 (EST)
-Message-ID: <20070329071334.53837.qmail@web52401.mail.re2.yahoo.com>
-Date: Thu, 29 Mar 2007 00:13:34 -0700 (PDT)
-From: ganesh subramonian <gun_raj@yahoo.com>
-Subject: linuxppc_2_4_devel vs linux-2.6-denx
-To: linuxppc-mailing-list <linuxppc-dev@ozlabs.org>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6965BDDEE3
+	for <linuxppc-dev@ozlabs.org>; Thu, 29 Mar 2007 22:35:17 +1000 (EST)
+Message-ID: <460BB27C.4070006@garzik.org>
+Date: Thu, 29 Mar 2007 08:35:08 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH] ehea: removing unused functionality
+References: <200703231718.53668.ossthema@de.ibm.com>
+In-Reply-To: <200703231718.53668.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,19 +27,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-hi
+Jan-Bernd Themann wrote:
+> This patch includes:
+> - removal of unused fields in structs
+> - ethtool statistics cleanup
+> - removes unsed functionality from send path
+> 
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+> ---
+> 
+> 
+> This patch applies on top of the netdev upstream branch for 2.6.22
+> 
+> 
+>  drivers/net/ehea/ehea.h         |   25 ++-------
+>  drivers/net/ehea/ehea_ethtool.c |  111 ++++++++++++++--------------------------
+>  drivers/net/ehea/ehea_main.c    |   55 +++++++------------
+>  drivers/net/ehea/ehea_qmr.h     |    2
+>  4 files changed, 69 insertions(+), 124 deletions(-)
+> 
 
-can someone tell me what is the difference between the git repositories linux-2.6-denx and linuxppc_2_4_devel  ( other than that it is 2.4 vs 2.6 kernel). Is there any difference in the processor families  supported by these repositories? Is it something like denx does not support 2.4 in the eldk??
-what gcc versions would be required to compile the 2.4 tree?
-
-
-thanks
-Ganesh
-
-
-
- 
-____________________________________________________________________________________
-Don't pick lemons.
-See all the new 2007 cars at Yahoo! Autos.
-http://autos.yahoo.com/new_cars.html 
+applied to #upstream
