@@ -1,14 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1175208237.3122.78.camel@pmac.infradead.org>
-References: <1175208237.3122.78.camel@pmac.infradead.org>
+Return-Path: <SRS0+1020516fb0ec803710a0+1314+infradead.org+dwmw2@canuck.srs.infradead.org>
+Subject: [PATCH] Implement check_legacy_ioport() on PS3
+From: David Woodhouse <dwmw2@infradead.org>
+To: cbe-oss-dev@ozlabs.org
 Content-Type: text/plain
-Date: Fri, 30 Mar 2007 09:23:28 +1000
-Message-Id: <1175210608.5624.42.camel@localhost.localdomain>
+Date: Fri, 30 Mar 2007 01:02:52 +0100
+Message-Id: <1175212972.3122.87.camel@pmac.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,21 +16,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-03-29 at 23:43 +0100, David Woodhouse wrote:
-> The old 2.6.16 kernel handled memory statically and it was shown in the
-> device tree. The current kernel deals with the hypervisor and hotplugs
-> the memory, so we should just ignore anything that's reported in the
-> device-tree. This enables the current kernel to be booted from 2.6.16
-> without evil hacks in head_64.S to override the device-tree.
-> 
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
+It doesn't like it when we poke at legacy I/O ports like the i8042. We
+should probably change the _default_ to return -ENODEV, and let any
+strange platform which wants to allow unfettered access provide its own
+function for that.
 
-How can this work ? Memory is parsed from early_init_devtree() which is
-called before the platform probe() routines which is the one that sets
-FW_FEATURE_PS3_LV1... 
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-It's really annoying that they didn't get their device-tree right in the
-first place. They should put the RMO in there and nothing else I
-suppose.
+--- linux-2.6.20.ppc64/arch/powerpc/platforms/ps3/setup.c.orig	2007-03-30 00:45:59.000000000 +0100
++++ linux-2.6.20.ppc64/arch/powerpc/platforms/ps3/setup.c	2007-03-30 00:48:29.000000000 +0100
+@@ -230,6 +230,11 @@ static void ps3_machine_kexec(struct kim
+ }
+ #endif
+ 
++static int ps3_check_legacy_ioport(unsigned int baseport)
++{
++        return -ENODEV;
++}
++
+ define_machine(ps3) {
+ 	.name				= "PS3",
+ 	.probe				= ps3_probe,
+@@ -240,6 +245,7 @@ define_machine(ps3) {
+ 	.set_rtc_time			= ps3_set_rtc_time,
+ 	.get_rtc_time			= ps3_get_rtc_time,
+ 	.calibrate_decr			= ps3_calibrate_decr,
++	.check_legacy_ioport		= ps3_check_legacy_ioport,
+ 	.progress			= ps3_progress,
+ 	.restart			= ps3_restart,
+ 	.power_off			= ps3_power_off,
 
-Ben.
+-- 
+dwmw2
