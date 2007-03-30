@@ -1,13 +1,14 @@
-Return-Path: <olof@lixom.net>
-Date: Thu, 29 Mar 2007 20:45:42 -0500
-To: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <SRS0+1020516fb0ec803710a0+1314+infradead.org+dwmw2@canuck.srs.infradead.org>
 Subject: Re: [PATCH] Implement check_legacy_ioport() on PS3
-Message-ID: <20070330014542.GA28342@lixom.net>
+From: David Woodhouse <dwmw2@infradead.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070330014542.GA28342@lixom.net>
 References: <1175212972.3122.87.camel@pmac.infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1175212972.3122.87.camel@pmac.infradead.org>
-From: olof@lixom.net (Olof Johansson)
+	<20070330014542.GA28342@lixom.net>
+Content-Type: text/plain
+Date: Fri, 30 Mar 2007 02:43:07 +0100
+Message-Id: <1175218987.3122.106.camel@pmac.infradead.org>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -18,16 +19,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Mar 30, 2007 at 01:02:52AM +0100, David Woodhouse wrote:
-> It doesn't like it when we poke at legacy I/O ports like the i8042. We
-> should probably change the _default_ to return -ENODEV, and let any
-> strange platform which wants to allow unfettered access provide its own
-> function for that.
+On Thu, 2007-03-29 at 20:45 -0500, Olof Johansson wrote:
+> I ran into the very same thing earlier myself and had exactly the same
+> idea. However, it turned out then that it would have meant adding more
+> cases of ioport being allowed than it would have removed the opposite. It
+> might have changed since then. Either way it's annoying. 
 
-I ran into the very same thing earlier myself and had exactly the same
-idea. However, it turned out then that it would have meant adding more
-cases of ioport being allowed than it would have removed the opposite. It
-might have changed since then. Either way it's annoying.
+Perhaps we could set it to (void *)-1 to always return -ENODEV?
 
-
--Olof
+-- 
+dwmw2
