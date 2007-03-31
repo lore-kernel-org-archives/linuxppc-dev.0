@@ -1,14 +1,18 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 2832DDDE07
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Apr 2007 01:08:19 +1000 (EST)
-Date: Sat, 31 Mar 2007 17:08:23 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] autodetect serial console on efika
-Message-ID: <20070331150823.GA25421@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <1175278427.3122.164.camel@pmac.infradead.org>
+References: <1175208237.3122.78.camel@pmac.infradead.org>
+	<460D4BC3.8030805@am.sony.com>
+	<1175276728.3122.161.camel@pmac.infradead.org>
+	<3f028c6d87efaadfadee6894656ff220@kernel.crashing.org>
+	<1175278427.3122.164.camel@pmac.infradead.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <88b09b41faaba7e39189bbaf5b61acc3@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
+Date: Sat, 31 Mar 2007 17:27:12 +0200
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,63 +22,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Efika boards have to be booted with console=ttyPSC0 unless there is a
-graphics card plugged in. Detect if the firmware stdout is the serial
-connector.
+>> Maybe you should use a bootwrapper, instead.
+>>
+>> It doesn't make sense to duplicate lots of firmware
+>> and bootloader/bootwrapper functionality in the kernel
+>> just for kexec.  (Or to do that at all, really).
+>
+> kexec has a --devicetreeblob option, if we need to resort to that.
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+That would seem a good option, yes.
 
----
- arch/powerpc/platforms/52xx/efika.c |   26 ++++++++++++++++++++++++++
- 1 file changed, 26 insertions(+)
+> And we're not talking about "lots of functionality". It's just a case 
+> of
+> ignoring the memory which is mentioned in the device-tree.
 
-Index: b/arch/powerpc/platforms/52xx/efika.c
-===================================================================
---- a/arch/powerpc/platforms/52xx/efika.c
-+++ b/arch/powerpc/platforms/52xx/efika.c
-@@ -21,6 +21,7 @@
- #include <linux/initrd.h>
- #include <linux/timer.h>
- #include <linux/pci.h>
-+#include <linux/console.h>
- 
- #include <asm/io.h>
- #include <asm/irq.h>
-@@ -221,12 +222,37 @@ static int __init efika_probe(void)
- 	return 1;
- }
- 
-+static void __init efika_init_early(void)
-+{
-+#ifdef CONFIG_SERIAL_MPC52xx
-+	struct device_node *stdout_node;
-+	const char *device_type;
-+
-+	if (strstr(cmd_line, "console="))
-+		return;
-+	/* find the boot console from /chosen/stdout */
-+	if (!of_chosen)
-+		return;
-+	device_type = get_property(of_chosen, "linux,stdout-path", NULL);
-+	if (!device_type)
-+		return;
-+	stdout_node = of_find_node_by_path(device_type);
-+	if (stdout_node) {
-+		device_type = get_property(stdout_node, "device_type", NULL);
-+		if (device_type && strcmp(device_type, "serial") == 0)
-+			add_preferred_console("ttyPSC", 0, NULL);
-+		of_node_put(stdout_node);
-+	}
-+#endif
-+}
-+
- define_machine(efika)
- {
- 	.name			= EFIKA_PLATFORM_NAME,
- 	.probe			= efika_probe,
- 	.setup_arch		= efika_setup_arch,
- 	.init			= mpc52xx_declare_of_platform_devices,
-+	.init_early		= efika_init_early,
- 	.show_cpuinfo		= efika_show_cpuinfo,
- 	.init_IRQ		= mpc52xx_init_irq,
- 	.get_irq		= mpc52xx_get_irq,
+Yes, every single little addition isn't very big, sure.
+It all accumulates though and at some point it will be
+too much.  My tolerances are lower than yours I guess ;-)
+
+
+Segher
