@@ -1,109 +1,85 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id F362EDDF37
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Apr 2007 22:42:08 +1000 (EST)
-Subject: Re: [PATCH] powermac: proper sleep management
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17973.32577.253554.707441@cargo.ozlabs.ibm.com>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1177746562.3448.10.camel@johannes.berg>
-	<17971.14223.435220.418649@cargo.ozlabs.ibm.com>
-	<1177767996.5102.9.camel@johannes.berg>
-	<17973.32577.253554.707441@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-+ME8j+zzzE3IB23o18x5"
-Date: Mon, 30 Apr 2007 14:08:07 +0200
-Message-Id: <1177934887.5102.65.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
-List-Post: <mailto:linuxppc-dev@ozlabs.org>
-List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
-	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
+Return-Path: <netstv@gmail.com>
+Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.182])
+	by ozlabs.org (Postfix) with ESMTP id 2541ADDECC
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  1 Apr 2007 02:20:56 +1000 (EST)
+Received: by ik-out-1112.google.com with SMTP id c29so627898ika
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 31 Mar 2007 09:20:54 -0700 (PDT)
+Message-ID: <b4b98b690703310920k63a60835s8d3ba6993d72179d@mail.gmail.com>
+Date: Sat, 31 Mar 2007 09:20:52 -0700
+From: "Steve Iribarne (GMail)" <netstv@gmail.com>
+To: "Charles Krinke" <ckrinke@istor.com>
+Subject: Re: PPC login puzzle
+In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6C@MERCURY.inside.istor.com>
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_Part_89731_4371503.1175358052864"
+References: <20070329192932.98FBD353A6C@atlas.denx.de>
+	<200703291345.35978.tmaenner@aehr.com>
+	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6B@MERCURY.inside.istor.com>
+	<460DDB1F.7020106@billgatliff.com>
+	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6C@MERCURY.inside.istor.com>
+Cc: linuxppc-embedded@ozlabs.org
+List-Id: Linux on Embedded PowerPC Developers Mail List
+	<linuxppc-embedded.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
+List-Post: <mailto:linuxppc-embedded@ozlabs.org>
+List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
+	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+------=_Part_89731_4371503.1175358052864
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+<snip...>
+>
+>
+> Yes, that that is another part of the puzzle as both the /etc/securetty
+> and the /etc/xinetd.d/telnet files are identical in both root filesystems.
+> So, there must be some ither file somewhere keeping me from cooking my toast
+> with a telnet login to the 8541.
 
 
---=-+ME8j+zzzE3IB23o18x5
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2007-04-30 at 15:31 +1000, Paul Mackerras wrote:
+Seems to me thing you can do is find out why the telnet session is being
+rejected.  Have you done an ethernet capture?
 
-> At a quick look, the generic code is calling
-> freeze_processes and shrink_all_memory, and I don't see where it's
-> doing a sync.
+Do you have any firewalling setup?  In that case you need to make sure your
+rules are setup properly.  The ethernet capture should give you a clue.
 
-The sync is done after userspace has been frozen, in freeze_processes. I
-agree that shrink_all_memory is bogus, I'll talk to Rafael about it;
-we're working on splitting out the hibernate and suspend code paths
-anyway so it should be possible to remove this cleanly. It should also
-be easy to invoke it only for suspend to disk for now.
+Are you sure the telnetd can be found on your system that doesn't work?
+What do the logs tell you on the machine that doesn't work?  I think xinetd
+kicks out a log file, what does that tell you?
 
-> Also, you're now calling pbook_alloc_pci_save after interrupts are
-> disabled, and it does a kmalloc(..., GFP_KERNEL).  Oops.
+Have you tried on the 8541,  login to the terminal and then telnet to
+localhost?  If you can do that, then I'd say it's a firewalling problem, if
+not, then it's a telnetd type of problem.
 
-Oops, yes, thanks for pointing that out, it needs to go into the prepare
-callback. I just sent an updated patch that moves it there and verified
-that no other code was misplaced.
 
-> Part of the problem is exactly what Linus pointed out: that the
-> generic code tries to use the same code paths for suspend to RAM and
-> suspend to disk, but they are two totally different things.
+Hope that helps.
 
-Actually, the stuff Linus pointed out in the recent thread was about
-device drivers and the current PMU code uses the same driver/device
-suspend routines that the generic code uses. No difference there.
+-stv
 
-> I have no objection to adding code to enable the generic code to do
-> the (mostly) right thing when you write "mem" into /sys/power/state.
-> I have no objection to code being refactored to eliminate
-> duplication.  All I ask is that the PMU ioctls continue to do
-> essentially the same things in the same order.
+-- 
+/*
+* Steve Iribarne
+* Software Engineer
+* (aka Grunt)
+*/
 
-I disagree with that, it'll get us no closer to keeping the generic code
-working for us. It does in fact work now, I've been using it for a long
-time and a few other people have also tried on older powerbooks. It's
-also very hard to convince anybody that we need changes in the generic
-code if at the same time we do our own stuff because "the generic code
-(you wrote) is not good enough for us anyway."
+------=_Part_89731_4371503.1175358052864
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Considering the options from userspace, there are currently 3 programs
-(that I know of) that actually use the ioctl:
- * hal via some helper or via pm-utils (almost all gnome/kde programs
-   use it)
- * pbbuttonsd
- * pmud (?)
+&lt;snip...&gt;<div><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;"><br>Yes, that that is another part of the puzzle as both the /etc/securetty and the /etc/xinetd.d/telnet files are identical in both root filesystems. So, there must be some ither file somewhere keeping me from cooking my toast with a telnet login to the 8541.
+</blockquote><div><br><br>Seems to me thing you can do is find out why the telnet session is being rejected.&nbsp; Have you done an ethernet capture? <br><br>Do you have any firewalling setup?&nbsp; In that case you need to make sure your rules are setup properly.&nbsp; The ethernet capture should give you a clue.
+<br><br>Are you sure the telnetd can be found on your system that doesn&#39;t work?&nbsp; What do the logs tell you on the machine that doesn&#39;t work?&nbsp; I think xinetd kicks out a log file, what does that tell you?<br><br>Have you tried on the 8541,&nbsp; login to the terminal and then telnet to localhost?&nbsp; If you can do that, then I&#39;d say it&#39;s a firewalling problem, if not, then it&#39;s a telnetd type of problem.&nbsp; 
+<br><br><br>Hope that helps.<br><br>-stv<br></div></div><br>-- <br>/*<br> * Steve Iribarne<br> * Software Engineer<br> * (aka Grunt) <br> */
 
-I know that the hal/pm-utils folks would love to get rid of the pmu
-specific stuff and I think this and the battery (?) are the last things.
-I don't even pretend to know what pbbuttonsd/pmud will do. Regardless of
-that, however, the vast majority of users of modern desktop distros will
-be using hal and hence the new code simply because that is integrated
-into their desktop. If we fragment the user base into these two sets
-we're making life more difficult because suddenly "sleep" or "suspend to
-RAM" no longer identifies uniquely what the user did. Also, if one of
-them breaks people will switch to the other one instead of helping
-identify and fix the problem.
-
-johannes
-
---=-+ME8j+zzzE3IB23o18x5
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGNdwn/ETPhpq3jKURAlrvAJ9jioNLHAoCPn+cFmd2rWSI3FtIHwCdHGKs
-m9p9YsfluGSHIGbJNdghloA=
-=B3ES
------END PGP SIGNATURE-----
-
---=-+ME8j+zzzE3IB23o18x5--
+------=_Part_89731_4371503.1175358052864--
