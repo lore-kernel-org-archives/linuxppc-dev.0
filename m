@@ -1,20 +1,20 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id CD678DDEE4
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Apr 2007 03:06:19 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1057468ugf
-	for <linuxppc-dev@ozlabs.org>; Sat, 31 Mar 2007 10:06:18 -0700 (PDT)
-Message-ID: <528646bc0703311006l6cf684a1o584b9cd6adb29a96@mail.gmail.com>
-Date: Sat, 31 Mar 2007 11:06:17 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Olaf Hering" <olaf@aepfle.de>
-Subject: Re: [PATCH] autodetect serial console on efika
-In-Reply-To: <20070331150823.GA25421@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070331150823.GA25421@aepfle.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Segher Boessenkool <segher@kernel.crashing.org>
+In-Reply-To: <88b09b41faaba7e39189bbaf5b61acc3@kernel.crashing.org>
+References: <1175208237.3122.78.camel@pmac.infradead.org>
+	<460D4BC3.8030805@am.sony.com>
+	<1175276728.3122.161.camel@pmac.infradead.org>
+	<3f028c6d87efaadfadee6894656ff220@kernel.crashing.org>
+	<1175278427.3122.164.camel@pmac.infradead.org>
+	<88b09b41faaba7e39189bbaf5b61acc3@kernel.crashing.org>
+Content-Type: text/plain
+Date: Sun, 01 Apr 2007 08:34:24 +1000
+Message-Id: <1175380464.6805.1.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,10 +24,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 3/31/07, Olaf Hering <olaf@aepfle.de> wrote:
-> Efika boards have to be booted with console=ttyPSC0 unless there is a
-> graphics card plugged in. Detect if the firmware stdout is the serial
-> connector.
->
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
-Acked-by: Grant Likely <grant.likely@secretlab.ca>
+On Sat, 2007-03-31 at 17:27 +0200, Segher Boessenkool wrote:
+
+> Yes, every single little addition isn't very big, sure.
+> It all accumulates though and at some point it will be
+> too much.  My tolerances are lower than yours I guess ;-)
+
+In that specific case, I beleive it's fair enough to do the fixup in the
+kernel for a couple of reasons. One is that can be kept fairly self
+contained in the ps3 code (by resetting the LMB available ranges) and
+the other is that not doing so would make the existing bootloader unable
+to boot new kernels, which is annoying.
+
+Ben.
