@@ -1,34 +1,14 @@
-Return-Path: <bbrv@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B095FDDECF
-	for <linuxppc-dev@ozlabs.org>; Sun,  1 Apr 2007 00:04:39 +1000 (EST)
-In-Reply-To: <1175346945.3122.245.camel@pmac.infradead.org>
-References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
-	<1166528379.19254.69.camel@localhost.localdomain>
-	<4587D338.7060906@246tNt.com>
-	<1166538553.25827.99.camel@pmac.infradead.org>
-	<1166558300.19254.71.camel@localhost.localdomain>
-	<1167773388.22068.443.camel@pmac.infradead.org>
-	<1167773863.6165.82.camel@localhost.localdomain>
-	<1167775493.3660.23.camel@shinybook.infradead.org>
-	<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>
-	<45A01416.6080401@genesi-usa.com>
-	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>
-	<45A0610E.60307@246tNt.com>
-	<44901FD6-0F07-453A-934A-FF95EA1B8906@genesi-usa.com>
-	<1175346945.3122.245.camel@pmac.infradead.org>
-Mime-Version: 1.0 (Apple Message framework v752.3)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <BD8A1731-47B2-46CC-AB60-DF97448CF351@genesi-usa.com>
-From: Raquel Velasco and Bill Buck <bbrv@genesi-usa.com>
-Subject: Re: [PATCH] Probe Efika platform before CHRP.
-Date: Sat, 31 Mar 2007 08:18:52 -0500
-To: David Woodhouse <dwmw2@infradead.org>
-Cc: Sylvain Munaut <tnt@246tNt.com>, Paul Mackerras <paulus@samba.org>,
-	Linux PPC DEV <linuxppc-dev@ozlabs.org>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2832DDDE07
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Apr 2007 01:08:19 +1000 (EST)
+Date: Sat, 31 Mar 2007 17:08:23 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+Subject: [PATCH] autodetect serial console on efika
+Message-ID: <20070331150823.GA25421@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,20 +18,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Absolutely everything will happen in April...
+Efika boards have to be booted with console=ttyPSC0 unless there is a
+graphics card plugged in. Detect if the firmware stdout is the serial
+connector.
 
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-On Mar 31, 2007, at 8:15 AM, David Woodhouse wrote:
+---
+ arch/powerpc/platforms/52xx/efika.c |   26 ++++++++++++++++++++++++++
+ 1 file changed, 26 insertions(+)
 
-> On Sun, 2007-01-07 at 03:11 -0600, Raquel Velasco and Bill Buck wrote:
->> In the next 45-60 days we will offer new firmware for the EFIKA (and
->> the Pegasos/ODW).
->
-> Was hoping to see this before the Fedora 7 release... ?
->
-> -- 
-> dwmw2
->
-
-Raquel and Bill
-http://bbrv.blogspot.com
+Index: b/arch/powerpc/platforms/52xx/efika.c
+===================================================================
+--- a/arch/powerpc/platforms/52xx/efika.c
++++ b/arch/powerpc/platforms/52xx/efika.c
+@@ -21,6 +21,7 @@
+ #include <linux/initrd.h>
+ #include <linux/timer.h>
+ #include <linux/pci.h>
++#include <linux/console.h>
+ 
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -221,12 +222,37 @@ static int __init efika_probe(void)
+ 	return 1;
+ }
+ 
++static void __init efika_init_early(void)
++{
++#ifdef CONFIG_SERIAL_MPC52xx
++	struct device_node *stdout_node;
++	const char *device_type;
++
++	if (strstr(cmd_line, "console="))
++		return;
++	/* find the boot console from /chosen/stdout */
++	if (!of_chosen)
++		return;
++	device_type = get_property(of_chosen, "linux,stdout-path", NULL);
++	if (!device_type)
++		return;
++	stdout_node = of_find_node_by_path(device_type);
++	if (stdout_node) {
++		device_type = get_property(stdout_node, "device_type", NULL);
++		if (device_type && strcmp(device_type, "serial") == 0)
++			add_preferred_console("ttyPSC", 0, NULL);
++		of_node_put(stdout_node);
++	}
++#endif
++}
++
+ define_machine(efika)
+ {
+ 	.name			= EFIKA_PLATFORM_NAME,
+ 	.probe			= efika_probe,
+ 	.setup_arch		= efika_setup_arch,
+ 	.init			= mpc52xx_declare_of_platform_devices,
++	.init_early		= efika_init_early,
+ 	.show_cpuinfo		= efika_show_cpuinfo,
+ 	.init_IRQ		= mpc52xx_init_irq,
+ 	.get_irq		= mpc52xx_get_irq,
