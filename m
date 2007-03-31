@@ -1,51 +1,57 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from smtp2.mtco.com (smtp2.mtco.com [207.179.226.205])
-	by ozlabs.org (Postfix) with ESMTP id 03517DDEEE
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 31 Mar 2007 14:15:21 +1000 (EST)
-Message-ID: <460DDB1F.7020106@billgatliff.com>
-Date: Fri, 30 Mar 2007 22:53:03 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
-MIME-Version: 1.0
-To: Charles Krinke <ckrinke@istor.com>
-Subject: Re: PPC login puzzle
-References: <20070329192932.98FBD353A6C@atlas.denx.de>	<200703291345.35978.tmaenner@aehr.com>
-	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6B@MERCURY.inside.istor.com>
-In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6B@MERCURY.inside.istor.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
-List-Id: Linux on Embedded PowerPC Developers Mail List
-	<linuxppc-embedded.ozlabs.org>
-List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=unsubscribe>
-List-Archive: <http://ozlabs.org/pipermail/linuxppc-embedded>
-List-Post: <mailto:linuxppc-embedded@ozlabs.org>
-List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
-List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
-	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+Return-Path: <bbrv@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B095FDDECF
+	for <linuxppc-dev@ozlabs.org>; Sun,  1 Apr 2007 00:04:39 +1000 (EST)
+In-Reply-To: <1175346945.3122.245.camel@pmac.infradead.org>
+References: <17799.34168.811328.653008@cargo.ozlabs.ibm.com>
+	<1166528379.19254.69.camel@localhost.localdomain>
+	<4587D338.7060906@246tNt.com>
+	<1166538553.25827.99.camel@pmac.infradead.org>
+	<1166558300.19254.71.camel@localhost.localdomain>
+	<1167773388.22068.443.camel@pmac.infradead.org>
+	<1167773863.6165.82.camel@localhost.localdomain>
+	<1167775493.3660.23.camel@shinybook.infradead.org>
+	<528646bc0701021504k88682bl765fad4c100bd40e@mail.gmail.com>
+	<45A01416.6080401@genesi-usa.com>
+	<528646bc0701061423o270df3dfj9d27d5572840ec79@mail.gmail.com>
+	<45A0610E.60307@246tNt.com>
+	<44901FD6-0F07-453A-934A-FF95EA1B8906@genesi-usa.com>
+	<1175346945.3122.245.camel@pmac.infradead.org>
+Mime-Version: 1.0 (Apple Message framework v752.3)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <BD8A1731-47B2-46CC-AB60-DF97448CF351@genesi-usa.com>
+From: Raquel Velasco and Bill Buck <bbrv@genesi-usa.com>
+Subject: Re: [PATCH] Probe Efika platform before CHRP.
+Date: Sat, 31 Mar 2007 08:18:52 -0500
+To: David Woodhouse <dwmw2@infradead.org>
+Cc: Sylvain Munaut <tnt@246tNt.com>, Paul Mackerras <paulus@samba.org>,
+	Linux PPC DEV <linuxppc-dev@ozlabs.org>
+List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
+List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
+List-Archive: <http://ozlabs.org/pipermail/linuxppc-dev>
+List-Post: <mailto:linuxppc-dev@ozlabs.org>
+List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
+List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
+	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Charles:
-
-Charles Krinke wrote:
-> I have 2 targets, both kernel.org linux-2.6.17.11. Both are currently using rootfile systems from montavista's 2.6.10 distribution. One is a PPC8241 and the other is a PPC8541.
->  
-> On the 8241, I can login with a telnet session as root. On the 8541, I cannot. On both, I can login at the serial terminal as root with no passwd.
->  
-> Neither as a password for root in /etc/passwd. That is, the first line in the passwd file says "root::0:0:root:/root/bin/bash".
->  
-> Being toasters, I dont want a password to cook my toast.
->  
-> The question is:
->  
-> "What are the various things that might cause one toaster to be able to login from a telnet session and another, very similar one to not be able to do this?"
->   
-
-
-Are their /etc/securetty files identical?
+Absolutely everything will happen in April...
 
 
-b.g.
+On Mar 31, 2007, at 8:15 AM, David Woodhouse wrote:
 
--- 
-Bill Gatliff
-bgat@billgatliff.com
+> On Sun, 2007-01-07 at 03:11 -0600, Raquel Velasco and Bill Buck wrote:
+>> In the next 45-60 days we will offer new firmware for the EFIKA (and
+>> the Pegasos/ODW).
+>
+> Was hoping to see this before the Fedora 7 release... ?
+>
+> -- 
+> dwmw2
+>
+
+Raquel and Bill
+http://bbrv.blogspot.com
