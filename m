@@ -1,19 +1,19 @@
-Return-Path: <bgat@billgatliff.com>
-Received: from smtp1.mtco.com (smtp1.mtco.com [207.179.226.202])
-	by ozlabs.org (Postfix) with ESMTP id B7F75DDEE4
+Return-Path: <raj@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [62.233.211.107])
+	by ozlabs.org (Postfix) with ESMTP id 34A3BDDEF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  1 Apr 2007 03:35:11 +1000 (EST)
-Message-ID: <460E9B21.80004@billgatliff.com>
-Date: Sat, 31 Mar 2007 12:32:17 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
+	Sun,  1 Apr 2007 03:46:44 +1000 (EST)
+Message-ID: <460E9853.80902@semihalf.com>
+Date: Sat, 31 Mar 2007 19:20:19 +0200
+From: Rafal Jaworowski <raj@semihalf.com>
 MIME-Version: 1.0
-To: Charles Krinke <ckrinke@istor.com>
-Subject: Re: PPC login puzzle
-References: <20070329192932.98FBD353A6C@atlas.denx.de><200703291345.35978.tmaenner@aehr.com><9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6B@MERCURY.inside.istor.com><460DDB1F.7020106@billgatliff.com><9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6C@MERCURY.inside.istor.com>	<b4b98b690703310920k63a60835s8d3ba6993d72179d@mail.gmail.com>
-	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6D@MERCURY.inside.istor.com>
-In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6D@MERCURY.inside.istor.com>
+To: Domen Puncer <domen.puncer@telargo.com>
+Subject: Re: [PATCH] icecube/lite5200b: wakeup from low-power support
+References: <20070315103959.GA22215@moe.telargo.com>
+	<20070315104411.GF22215@moe.telargo.com>
+In-Reply-To: <20070315104411.GF22215@moe.telargo.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +24,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Charles Krinke wrote:
-> Seems to me thing you can do is find out why the telnet session is being rejected.  Have you done an ethernet capture? 
->
-> Do you have any firewalling setup?  In that case you need to make sure your rules are setup properly.  The ethernet capture should give you a clue. 
->
-> Are you sure the telnetd can be found on your system that doesn't work?  What do the logs tell you on the machine that doesn't work?  I think xinetd kicks out a log file, what does that tell you?
->
-> Have you tried on the 8541,  login to the terminal and then telnet to localhost?  If you can do that, then I'd say it's a firewalling problem, if not, then it's a telnetd type of problem.  
->   
+Domen Puncer wrote:
+> U-Boot part of Lite5200b low power mode support.
+> Puts SDRAM out of self-refresh and transfers control to
+> address saved at physical 0x0.
+> 
 
-Isn't there a config file that tells telnetd whether a root login is ok?
+Hi Domen,
 
+As I understand while waking up from the low-power mode the machine is 
+effectively powering on, similarly to the cold reset, so U-Boot runs 
+from the beginning as usual, but after the SDRAM controller has been 
+initialised we detect the wakeup and teleport to the saved DRAM address.
 
-b.g.
+Since in case of a wakeup from the low-power mode we skip everything in 
+U-Boot that is happening past initdram(), please clarify the following:
 
--- 
-Bill Gatliff
-bgat@billgatliff.com
+- are you sure there are no steps beyond init_func_ram()/board_init_f() 
+that should be performed while waking up? For example:
+
+- are all timers settings properly re-stored?
+
+- wouldn't the host/PCI bridge need to be re-initialised and 
+re-configured as part of the wakeup process? Did you happen to test some 
+PCI devices and would they survive after wakeup from the the low-power 
+mode? (A similar question would apply to the USB controller)
+
+Also, a more general question: isn't time base update required after the 
+wakeup, specially if it's been a long sleep?
+
+kind regards,
+Rafal
