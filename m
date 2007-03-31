@@ -1,19 +1,23 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id D2B8CDDEE4
+Return-Path: <robert@stopthespam_remove.staven.no>
+Received: from merke.itea.ntnu.no (merke.itea.ntnu.no [129.241.7.61])
+	by ozlabs.org (Postfix) with ESMTP id 37FD4DDEF0
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun,  1 Apr 2007 09:04:36 +1000 (EST)
-To: "Charles Krinke" <ckrinke@istor.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: PPC login puzzle 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Fri, 30 Mar 2007 20:51:02 PDT."
-	<9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6B@MERCURY.inside.istor.com>
-Date: Sun, 01 Apr 2007 01:04:33 +0200
-Sender: wd@denx.de
-Message-Id: <20070331230433.9241335261B@atlas.denx.de>
-Cc: linuxppc-embedded@ozlabs.org
+	Sun,  1 Apr 2007 08:47:31 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by merke.itea.ntnu.no (Postfix) with ESMTP id EB17A13CF5B
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  1 Apr 2007 00:26:23 +0200 (CEST)
+Received: from [127.0.0.1] (unknown [129.241.154.56])
+	by merke.itea.ntnu.no (Postfix) with ESMTP
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  1 Apr 2007 00:26:22 +0200 (CEST)
+Message-ID: <460EE00B.30007@stopthespam_remove.staven.no>
+Date: Sun, 01 Apr 2007 00:26:19 +0200
+From: Robert Staven <robert@stopthespam_remove.staven.no>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: Allocating (placing) BufferDescriptors in Dual-Port RAM (CPM2)
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,21 +28,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In message <9F3F0A752CAEBE4FA7E906CC2FBFF57C069B6B@MERCURY.inside.istor.com> you wrote:
->
-> The question is:
->  
-> "What are the various things that might cause one toaster to be able to login from a telnet session and another, very similar one to not be able to do this?"
+It's probably basic knowledge, but I still having trouble figure it 
+out.... anyway:
 
-Different settings of "disable = ..." in the /etc/xinetd.d/telnet
-config file?
+Working with a SCC in a CPM (MPC8250 running linux 2.6.13-AM)
 
-Best regards,
+I need to place Buffer Descriptors (BD) in the Dual-Port RAM (DPRAM) 
+somewhere....
+But two FCCs, SMC1 and SCC1 are in use, and they might use some part of 
+the DPRAM.
 
-Wolfgang Denk
+Is there any way to figure out what part of the DPRAM thats free?
+And how to reserve the part I need?
 
--- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-"It is easier to port a shell than a shell script."      - Larry Wall
+Robert
+
+(SCC3 parameter RAM are at 0x8200 in DPRAM so I just place a struct 
+there and assume that linux stays away from this memory area and don't 
+get mad cause I use it without allocating it. Or have I got this wrong to?)
