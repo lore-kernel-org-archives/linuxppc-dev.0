@@ -1,19 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <26babf7b7398794f08e7417377b3facc@kernel.crashing.org>
-References: <1175208237.3122.78.camel@pmac.infradead.org>
-	<26babf7b7398794f08e7417377b3facc@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-kLtUkX8FVRt1WNc2tPN2"
-Date: Mon, 02 Apr 2007 10:20:20 +1000
-Message-Id: <1175473220.3144.1.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	cbe-oss-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <sr@denx.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
+	by ozlabs.org (Postfix) with ESMTP id A84DFDDEFC
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2007 19:06:35 +1000 (EST)
+Received: from ubuntu (achn-4db49c99.pool.einsundeins.de [77.180.156.153])
+	by post.webmailer.de (fruni mo3) (RZmta 5.5)
+	with ESMTP id N00f00j324ElS7 for <linuxppc-dev@ozlabs.org>;
+	Mon, 2 Apr 2007 11:06:31 +0200 (MEST)
+From: Stefan Roese <sr@denx.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 0/3] ppc: Add support for AMCC 440SPe Katmai board
+Date: Mon, 2 Apr 2007 11:07:46 +0200
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="us-ascii"
+Message-Id: <200704021107.46790.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,46 +23,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This series of patches adds support for the AMCC Katmai evaluation board
+based on the 440SPe. It's still arch/ppc, so likely no chance of merging
+upstream. Mainly for completeness. When the 4xx support in arch/powerpc
+has stabilized a little we will try to move this support to arch/powerpc
+too.
 
---=-kLtUkX8FVRt1WNc2tPN2
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Fri, 2007-03-30 at 15:25 +0200, Segher Boessenkool wrote:
-> > The old 2.6.16 kernel handled memory statically and it was shown in the
-> > device tree. The current kernel deals with the hypervisor and hotplugs
-> > the memory, so we should just ignore anything that's reported in the
-> > device-tree. This enables the current kernel to be booted from 2.6.16
-> > without evil hacks in head_64.S to override the device-tree.
->=20
-> Surely when you are booted you already have some
-> memory plugged for you -- shouldn't that memory be
-> in the device tree?
-
-See ps3_mm_init(), called from _probe_.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-kLtUkX8FVRt1WNc2tPN2
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGEExDdSjSd0sB4dIRAuYsAJ9tPZu/ewXxySxD9AgKsIaSDLAy8QCeNejx
-uzLiozJ5vKW/Vh/KJfAja7o=
-=dvQ6
------END PGP SIGNATURE-----
-
---=-kLtUkX8FVRt1WNc2tPN2--
+Best regards,
+Stefan
