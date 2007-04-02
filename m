@@ -1,20 +1,22 @@
 Return-Path: <mgreer@mvista.com>
-Date: Mon, 2 Apr 2007 11:15:53 -0700
+Date: Mon, 2 Apr 2007 11:26:32 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
-To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
-	"Mark A. Greer" <mgreer@mvista.com>,
-	linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Dale Farnsworth <dfarnsworth@mvista.com>
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Subject: Re: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
 	platform
-Message-ID: <20070402181553.GH2132@mag.az.mvista.com>
+Message-ID: <20070402182632.GI2132@mag.az.mvista.com>
 References: <20070328011924.GA1586@mag.az.mvista.com>
 	<20070328012206.GD1586@mag.az.mvista.com>
 	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
 	<20070329003550.GB25652@localhost.localdomain>
+	<2cd6c2dd69700dd162e90f8b7a83a99d@kernel.crashing.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070329003550.GB25652@localhost.localdomain>
+In-Reply-To: <2cd6c2dd69700dd162e90f8b7a83a99d@kernel.crashing.org>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
+	Dale Farnsworth <dfarnsworth@mvista.com>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,61 +26,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Mar 29, 2007 at 10:35:50AM +1000, David Gibson wrote:
-> On Wed, Mar 28, 2007 at 09:43:16AM -0700, Yoder Stuart-B08248 wrote:
-> [snip]
-> > > +
-> > > +	mv64x60@f1000000 { /* Marvell Discovery */
-> > > +		#address-cells = <1>;
-> > > +		#size-cells = <1>;
-> > > +		#interrupt-cells = <1>;
-> > > +		device_type = "mv64360";
-> > > +		compatible = "mv64x60";
-> > > +		clock-frequency = <7f28155>;		/* 
-> > > 133.333333 Mhz */
-> > > +		reg = <f1000000 00010000>;
-> > > +		virtual-reg = <f1000000>;
-> > 
-> > What is virtual-reg for?  I gather it is related to the bootwrapper
-> > needed virtual addresses for devices reg blocks.  But, I counted
-> > 12 instances of the property in this file.  Are all needed by the
-> > bootwrapper??
+On Thu, Mar 29, 2007 at 02:48:47AM +0200, Segher Boessenkool wrote:
+> > That does seem like a lot.  The only thing that should need
+> > virtual-reg properties is serial ports.  In fact, specifically, only
+> > serial ports that the zImage is actually expected to use.
+> >
+> > In fact, with Scott's addition of xlate_reg() to the bootwrapper,
+> > virtual-reg should only be needed on systems that enter the zImage
+> > with MMU on.
 > 
-> That does seem like a lot.
+> Even then, you can just query the MMU structures to
+> find out the currently set up translations for that
+> physical address.  Way more robust.
 
-It is.  They need to be culled.
+Yes, that is the most robust but its also more complicated.
+A higher authority will have to make that call.  In the meantime,
+a patch would be useful to see just what it would take.
 
-> The only thing that should need
-> virtual-reg properties is serial ports.  In fact, specifically, only
-> serial ports that the zImage is actually expected to use.
+> The only valid reason to use "virtual-reg" is as a
+> hack to map some device to get some debug output out.
 
-Not true.  Any reg block you're going to access in the bootwrapper needs
-this or some equivalent method for determining where to access those regs.
-Either that, parse BAT & page/hash tables, or provide ioremap in the
-bootwrapper (which, at the time virtual-reg materialized, was deemed
-overkill for the bootwrapper--presumably the same goes for parsing hash
-tables).
+Not true, its for more than just output.
+See my response to David's email.
 
-> In fact, with Scott's addition of xlate_reg() to the bootwrapper,
-> virtual-reg should only be needed on systems that enter the zImage
-> with MMU on.
+> If for normal usage you can't be bothered to parse
+> the current translations, you probably shouldn't be
+> doing anything as "advanced" as device I/O either --
+> just boot the kernel and let it handle it ;-)
 
-True and that's the whole purpose of 'virtual-reg'.
+Well, the overall idea is that we remove boot/init related code from the
+kernel and leave it to the firmware or the bootwrapper (if the firmware
+doesn't provide the required functionality).  For example, the VPD code
+in .../boot/prpmc2800.c in my patches.  Also, at one time there was code
+to get the MAC addr from i2c prom and stick it in the dt.  I can see
+that being fairly common for non-OF/uboot platforms.
 
-> > Does anyone where this property came from historically?  If it's
-> > specifically for a Linux bootwrapper the name should reflect 
-> > that-- linux,bootwrapper-reg-vaddr -- or something...
-> 
-> > I also wonder if there is a better place to put this information.
-> > The device nodes strictly speaking should be describing the devices
-> > _physical_ characteristics.
-> 
-> Yes, but where else is there?  virtual-reg is a hack, but a very
-> useful one.
+> That said, I sure hope the kernel isn't using this
+> property as well...
 
-Agreed.  Dale Farnsworth suggested a 'ranges' type property at the top
-level that's used for phys->virt mappings.  That is much cleaner IMHO
-and eliminates the need to parse hash tables or add ioremap code to the
-bootwrapper.
+It certainly shouldn't be.  Its a bootwrapper-only hack.
 
 Mark
