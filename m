@@ -1,12 +1,12 @@
 Return-Path: <olaf@aepfle.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 0653BDDF0C
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2007 22:33:18 +1000 (EST)
-Date: Mon, 2 Apr 2007 14:33:27 +0200
+	by ozlabs.org (Postfix) with ESMTP id C44FEDDF1D
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2007 22:45:35 +1000 (EST)
+Date: Mon, 2 Apr 2007 14:45:47 +0200
 From: Olaf Hering <olaf@aepfle.de>
 To: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
-Subject: [PATCH] fix modalias content in sysfs for macio devices
-Message-ID: <20070402123327.GA11394@aepfle.de>
+Subject: [PATCH] add modalias file for of_devices to sysfs
+Message-ID: <20070402124547.GA11415@aepfle.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,33 +19,121 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Currently the buf pointer is advanced too far during each iteration.
-Also terminate the string with a newline.
+modalias files are supposed to be there for every node.
+They allow module autoloading, and it is possible to match required kernel modules.
+Tested on Efika:
+
+	==> /sys/devices/f0000000.builtin/f0003a00.ata/devspec <==
+	/builtin@F0000000/ata@F0003A00
+
+	==> /sys/devices/f0000000.builtin/f0003a00.ata/modalias <==
+	of:NataTataCmpc5200b-ataCmpc5200-ata
+
+Also add a newline to the 'devspec' file output.
 
 Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
 ---
- drivers/macintosh/macio_sysfs.c |    6 ++++--
- 1 file changed, 4 insertions(+), 2 deletions(-)
+ arch/powerpc/kernel/of_device.c   |   47 ++++++++++++++++++++++++++++----------
+ arch/powerpc/kernel/of_platform.c |    3 ++
+ 2 files changed, 38 insertions(+), 12 deletions(-)
 
-Index: b/drivers/macintosh/macio_sysfs.c
+Index: b/arch/powerpc/kernel/of_device.c
 ===================================================================
---- a/drivers/macintosh/macio_sysfs.c
-+++ b/drivers/macintosh/macio_sysfs.c
-@@ -53,12 +53,14 @@ static ssize_t modalias_show (struct dev
- 	buf += length;
- 	while (cplen > 0) {
- 		int l;
--		length += sprintf (buf, "C%s", compat);
--		buf += length;
+--- a/arch/powerpc/kernel/of_device.c
++++ b/arch/powerpc/kernel/of_device.c
+@@ -72,16 +72,47 @@ void of_dev_put(struct of_device *dev)
+ 		put_device(&dev->dev);
+ }
+ 
+-static ssize_t dev_show_devspec(struct device *dev,
++static ssize_t devspec_show(struct device *dev,
+ 				struct device_attribute *attr, char *buf)
+ {
+ 	struct of_device *ofdev;
+ 
+ 	ofdev = to_of_device(dev);
+-	return sprintf(buf, "%s", ofdev->node->full_name);
++	return sprintf(buf, "%s\n", ofdev->node->full_name);
+ }
+ 
+-static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
++static ssize_t modalias_show (struct device *dev, struct device_attribute *attr,
++			      char *buf)
++{
++	struct of_device *ofdev;
++	const char *compat;
++	int cplen;
++	int length;
++
++	ofdev = to_of_device(dev);
++	compat = get_property(ofdev->node, "compatible", &cplen);
++	if (!compat) compat = "", cplen = 1;
++	length = sprintf (buf, "of:N%sT%s", ofdev->node->name, ofdev->node->type);
++	buf += length;
++	while (cplen > 0) {
++		int l;
 +		l = sprintf (buf, "C%s", compat);
 +		length += l;
 +		buf += l;
- 		l = strlen (compat) + 1;
- 		compat += l;
- 		cplen -= l;
- 	}
-+	length += sprintf(buf, "\n");
++		l = strlen (compat) + 1;
++		compat += l;
++		cplen -= l;
++	}
++	length += sprintf (buf, "\n");
++
++	return length;
++}
++
++struct device_attribute of_platform_device_attrs[] = {
++	__ATTR_RO(devspec),
++	__ATTR_RO(modalias),
++	__ATTR_NULL
++};
  
- 	return length;
+ /**
+  * of_release_dev - free an of device structure when all users of it are finished.
+@@ -101,21 +132,13 @@ void of_release_dev(struct device *dev)
+ 
+ int of_device_register(struct of_device *ofdev)
+ {
+-	int rc;
+-
+ 	BUG_ON(ofdev->node == NULL);
+ 
+-	rc = device_register(&ofdev->dev);
+-	if (rc)
+-		return rc;
+-
+-	return device_create_file(&ofdev->dev, &dev_attr_devspec);
++	return device_register(&ofdev->dev);
  }
+ 
+ void of_device_unregister(struct of_device *ofdev)
+ {
+-	device_remove_file(&ofdev->dev, &dev_attr_devspec);
+-
+ 	device_unregister(&ofdev->dev);
+ }
+ 
+Index: b/arch/powerpc/kernel/of_platform.c
+===================================================================
+--- a/arch/powerpc/kernel/of_platform.c
++++ b/arch/powerpc/kernel/of_platform.c
+@@ -130,6 +130,8 @@ static int of_platform_device_resume(str
+ 	return error;
+ }
+ 
++extern struct device_attribute of_platform_device_attrs[];
++
+ struct bus_type of_platform_bus_type = {
+        .name	= "of_platform",
+        .match	= of_platform_bus_match,
+@@ -137,6 +139,7 @@ struct bus_type of_platform_bus_type = {
+        .remove	= of_platform_device_remove,
+        .suspend	= of_platform_device_suspend,
+        .resume	= of_platform_device_resume,
++       .dev_attrs = of_platform_device_attrs,
+ };
+ EXPORT_SYMBOL(of_platform_bus_type);
+ 
