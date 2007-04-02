@@ -1,17 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <1175473220.3144.1.camel@concordia.ozlabs.ibm.com>
-References: <1175208237.3122.78.camel@pmac.infradead.org>
-	<26babf7b7398794f08e7417377b3facc@kernel.crashing.org>
-	<1175473220.3144.1.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <432af8a0f928491e7d376923829f40a0@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
-Date: Mon, 2 Apr 2007 19:36:40 +0200
-To: michael@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <mgreer@mvista.com>
+Date: Mon, 2 Apr 2007 11:06:59 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Subject: Re: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
+	platform
+Message-ID: <20070402180659.GG2132@mag.az.mvista.com>
+References: <20070328011924.GA1586@mag.az.mvista.com>
+	<20070328012206.GD1586@mag.az.mvista.com>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Dale Farnsworth <dfarnsworth@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +22,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> The old 2.6.16 kernel handled memory statically and it was shown in 
->>> the
->>> device tree. The current kernel deals with the hypervisor and 
->>> hotplugs
->>> the memory, so we should just ignore anything that's reported in the
->>> device-tree. This enables the current kernel to be booted from 2.6.16
->>> without evil hacks in head_64.S to override the device-tree.
->>
->> Surely when you are booted you already have some
->> memory plugged for you -- shouldn't that memory be
->> in the device tree?
+On Wed, Mar 28, 2007 at 09:43:16AM -0700, Yoder Stuart-B08248 wrote:
+> 
+> Biggest concern is that I see a lot of undocumented device
+> types and properties...
+> 
+> Device types that I do not recognize include:
+> +			device_type = "brg";
+> +			device_type = "mv64x60-cunit";
+> +			device_type = "mpscrouting";
+> +			device_type = "mpscintr";
+> +			device_type = "mv64x60-pic";
+> +			device_type = "mv64x60-mpp";
+> +			device_type = "mv64x60-gpp";
+> +			device_type = "mv64x60-cpu-error";
+> +			device_type = "mv64x60-sram-error";
+> +			device_type = "mv64x60-pci-error";
+> +			device_type = "mv64x60-memctrl";
+> 
+> These should ideally be documented with required properties
+> and what they mean.
 >
-> See ps3_mm_init(), called from _probe_.
+> I think a document similar to Grant Likely's
+> Documentation/mpc52xx-device-tree-bindings.txt would be
+> very helpful here.  People using this DTS as a starting
+> point are going to have a lot of questions.
 
-Yes sure, the hypervisor has given you some memory
-already, and it tells you about it.
+Yep.
 
-My question remains: shouldn't Linux get that
-information from the device tree, instead?  The
-bootwrapper or bootloader can put it there.
+> comments inline below-- 
 
+Several of your other comments have already been talked about in other
+emails so I'll add on to them and not here.  I'll answer the ones that
+I didn't see a response to below.
 
-Segher
+<snip>
+
+> > +		i2c@c000 {
+> > +			device_type = "i2c";
+> > +			compatible = "mv64x60-i2c";
+> > +			reg = <c000 20>;
+> > +			virtual-reg = <f100c000>;
+> > +			freq_m = <8>;
+> > +			freq_n = <3>;
+> > +			timeout = <3e8>;		/* 1000 
+> 
+> If freq_m and freq_n are Marvell specific should have
+> a "Marvel," prepended to them?
+
+Well, 'mv64x60' means Marvell mv64x60 hostbridge.  If that ctlr exists
+on non-bridge Marvell parts then it should probably be renamed Marvell
+or something like that.
+
+> [snip]
+> > +		pci@80000000 {
+> > +			#address-cells = <3>;
+> > +			#size-cells = <2>;
+> > +			#interrupt-cells = <1>;
+> > +			device_type = "pci";
+> > +			compatible = "mv64x60-pci";
+> > +			reg = <0cf8 8>;
+> > +			ranges = <01000000 0        0 88000000 
+> > 0 01000000
+> > +				  02000000 0 80000000 80000000 
+> > 0 08000000>;
+> > +			bus-range = <0 ff>;
+> > +			clock-frequency = <3EF1480>;
+> > +			interrupt-pci-iack = <0c34>;
+> 
+> I don't think interrupt-pci-iack is standard.  If it's generally
+> applicable add it to booting-without-of.txt.
+
+It can go.
+
+Mark
