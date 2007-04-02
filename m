@@ -1,14 +1,17 @@
-Return-Path: <aish_bhaskaran@yahoo.co.in>
-Received: from web94509.mail.in2.yahoo.com (web94509.mail.in2.yahoo.com
-	[203.104.16.249]) by ozlabs.org (Postfix) with SMTP id 2CA12DDE47
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 03:17:08 +1000 (EST)
-Message-ID: <20070402171026.77652.qmail@web94509.mail.in2.yahoo.com>
-Date: Mon, 2 Apr 2007 18:10:26 +0100 (BST)
-From: aishwarya bhas <aish_bhaskaran@yahoo.co.in>
-Subject: To access the host (x86) memory by the agent (mpc8540)
-To: linuxppc-dev@ozlabs.org
-MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-1788609921-1175533826=:77313"
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <1175473220.3144.1.camel@concordia.ozlabs.ibm.com>
+References: <1175208237.3122.78.camel@pmac.infradead.org>
+	<26babf7b7398794f08e7417377b3facc@kernel.crashing.org>
+	<1175473220.3144.1.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <432af8a0f928491e7d376923829f40a0@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
+Date: Mon, 2 Apr 2007 19:36:40 +0200
+To: michael@ellerman.id.au
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,72 +21,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---0-1788609921-1175533826=:77313
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+>>> The old 2.6.16 kernel handled memory statically and it was shown in 
+>>> the
+>>> device tree. The current kernel deals with the hypervisor and 
+>>> hotplugs
+>>> the memory, so we should just ignore anything that's reported in the
+>>> device-tree. This enables the current kernel to be booted from 2.6.16
+>>> without evil hacks in head_64.S to override the device-tree.
+>>
+>> Surely when you are booted you already have some
+>> memory plugged for you -- shouldn't that memory be
+>> in the device tree?
+>
+> See ps3_mm_init(), called from _probe_.
+
+Yes sure, the hypervisor has given you some memory
+already, and it tells you about it.
+
+My question remains: shouldn't Linux get that
+information from the device tree, instead?  The
+bootwrapper or bootloader can put it there.
 
 
-Hi...
-
-
-We need to design a network driver..We are using linux kernel 2.6.9 and 
-mpc8540 as a network card in the host x86.mpc8540 acts as a agent and runs on u-boot.
-
-The steps that we followed to accomplish the above task is as follows:-
-
-1.)Allocated memory using kmalloc and returned the ptrdata....
-
-  ptrdata = (unsigned long *) kmalloc(sizeof(unsigned long , 
-GFP_KERNEL);
-
-
-2.)We write to pci outbound registers......
-(a)pci translation register (b)pci base register (c) pci attribute 
-register.
-
-// Converting the virtual address got using kmalloc to PCI Bus address
-
-ulTemp  = ( unsigned long  ) virt_to_bus( ( void * ) 
-ptrdata);
-
-ulTemp =  swap(ulTemp >> 12) ;
-
- //Outbound Translatiom Register
-
-writel(ulTemp,(unsigned long)ioaddr+ 0x8C20);    
-//ioaddr is address that we got after remapping  ioaddr = ioremap_nocache((pio_start), 
-pio_len);
-
-//Outbound Base Address Register
-    writel((swap(0xE0000000 >> 12)) ,  (unsigned long)ioaddr+ 0x8C28);
-
- //Outbound Attribute Register
-    writel(swap(0x8004401A),  (unsigned long)ioaddr+ 0x8C30);
-
-3.)We used the minicom to check whether we are able to access the host 
-memory from the agent by doing md 0xe0000000.But we are getting all 
-values as zeroes.
-
-Cud anybody solve our problem. tell us if we are missing anything,any 
-step.Please respond to our request.It is urgent.
-
-Thanks in advance,
-
-Aishwariya
-
-  
- 				
----------------------------------
- Here’s a new way to find what you're looking for - Yahoo! Answers 
---0-1788609921-1175533826=:77313
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-<pre><tt>Hi...<br><br><br></tt><tt></tt><tt>We need to design a network driver..We are using linux kernel 2.6.9 and <br>mpc8540 as a network card in the host x86.mpc8540 acts as a agent and runs on u-boot.<br><br>The steps that we followed to accomplish the above task is as follows:-<br><br>1.)Allocated memory using kmalloc and returned the ptrdata....<br><br>  ptrdata = (unsigned long *) kmalloc(sizeof(unsigned long , <br>GFP_KERNEL);<br><br><br>2.)We write to pci outbound registers......<br>(a)pci translation register (b)pci base register (c) pci attribute <br>register.<br><br>// Converting the virtual address got using kmalloc to PCI Bus address<br><br>ulTemp  = ( unsigned long  ) virt_to_bus( ( void * ) <br>ptrdata);<br><br>ulTemp =  swap(ulTemp &gt;&gt; 12) ;<br><br> //Outbound Translatiom Register<br><br>writel(ulTemp,(unsigned long)ioaddr+ 0x8C20);    <br>//ioaddr is address that we got after remapping  ioaddr = ioremap_nocache((pio_start),
- <br>pio_len);<br><br>//Outbound Base Address Register<br>    writel((swap(0xE0000000 &gt;&gt; 12)) ,  (unsigned long)ioaddr+ 0x8C28);<br><br> //Outbound Attribute Register<br>    writel(swap(0x8004401A),  (unsigned long)ioaddr+ 0x8C30);<br><br>3.)We used the minicom to check whether we are able to access the host <br>memory from the agent by doing md 0xe0000000.But we are getting all <br>values as zeroes.<br><br>Cud anybody solve our problem. tell us if we are missing anything,any <br>step.Please respond to our request.It is urgent.<br><br>Thanks in advance,<br><br>Aishwariya<br></tt></pre>  <p>&#32;
-	
-
-	
-		<hr size=1></hr> 
-Here’s a new way to find what you're looking for - <a href="http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.com/">Yahoo! Answers</a> 
---0-1788609921-1175533826=:77313--
+Segher
