@@ -1,15 +1,15 @@
 Return-Path: <vbordug@ru.mvista.com>
 Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 4DDE8DDEFC
+	by ozlabs.org (Postfix) with ESMTP id 78ACDDDF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 Apr 2007 20:52:04 +1000 (EST)
-Date: Mon, 2 Apr 2007 14:51:55 +0400
+	Mon,  2 Apr 2007 20:57:54 +1000 (EST)
+Date: Mon, 2 Apr 2007 14:57:56 +0400
 From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: matvejchikov@gmail.com
-Subject: Re: MDIO bus description and bitbang property
-Message-ID: <20070402145155.4f4e68ca@vitb.ru.mvista.com>
-In-Reply-To: <8496f91a0703301215r77c8e838pa9cd88ddd639a170@mail.gmail.com>
-References: <8496f91a0703301215r77c8e838pa9cd88ddd639a170@mail.gmail.com>
+To: Robert Staven <robert@stopthespam_remove.staven.no>
+Subject: Re: Allocating (placing) BufferDescriptors in Dual-Port RAM (CPM2)
+Message-ID: <20070402145756.029f5049@vitb.ru.mvista.com>
+In-Reply-To: <460EE00B.30007@stopthespam_remove.staven.no>
+References: <460EE00B.30007@stopthespam_remove.staven.no>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-embedded@ozlabs.org
@@ -23,20 +23,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 30 Mar 2007 23:15:47 +0400
-"Matvejchikov Ilya" <matvejchikov@gmail.com> wrote:
+On Sun, 01 Apr 2007 00:26:19 +0200
+Robert Staven <robert@stopthespam_remove.staven.no> wrote:
 
-> Hi all!
+> It's probably basic knowledge, but I still having trouble figure it 
+> out.... anyway:
 > 
-> As I see it mpc82xx MDIO description given in DTS file contains several
-> inaccuracies concerning 'bitbang' property. Thus, 'bitbang' is the property
-> of MDIO bus, but not a device on the bus (PHY for ex.). I have changed
-> fs_enet_of_init() a little bit. Does anyone require such a patch?
+> Working with a SCC in a CPM (MPC8250 running linux 2.6.13-AM)
+> 
+> I need to place Buffer Descriptors (BD) in the Dual-Port RAM (DPRAM) 
+> somewhere....
+> But two FCCs, SMC1 and SCC1 are in use, and they might use some part of 
+> the DPRAM.
+> 
+... cpm_dpalloc() will work for you I guess.
 
-Sorry but I don't quite follow the logic upper. If you have a patch, pls send it to me CC this list and 
-we'll get it discussed. 
+> Is there any way to figure out what part of the DPRAM thats free?
+> And how to reserve the part I need?
+> 
+> Robert
+> 
+> (SCC3 parameter RAM are at 0x8200 in DPRAM so I just place a struct 
+> there and assume that linux stays away from this memory area and don't 
+> get mad cause I use it without allocating it. Or have I got this wrong to?)
+> 
+
+I'd suggest to look at the implemented 8260-like stuff and platform device approach (syslib/pq2_devices.c). Whole immr including DPRAM are is io_block_mapped early by the platform code so
+you can do stuff in brackets I guess, but that might look weird and be more complex to debug.
 
 Thanks.
+
 -- 
 Sincerely, 
 Vitaly
