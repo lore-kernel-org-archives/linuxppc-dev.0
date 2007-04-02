@@ -1,17 +1,18 @@
 Return-Path: <kryn@in2p3.fr>
 Received: from ccimap.in2p3.fr (ccimap.in2p3.fr [134.158.69.6])
-	by ozlabs.org (Postfix) with ESMTP id 21512DDF1A
+	by ozlabs.org (Postfix) with ESMTP id 09405DDF31
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  2 Apr 2007 19:15:15 +1000 (EST)
-Message-ID: <4610C999.5080405@in2p3.fr>
-Date: Mon, 02 Apr 2007 11:15:05 +0200
+	Mon,  2 Apr 2007 19:21:20 +1000 (EST)
+Message-ID: <4610CB0C.4070406@in2p3.fr>
+Date: Mon, 02 Apr 2007 11:21:16 +0200
 From: Didier Kryn <kryn@in2p3.fr>
 MIME-Version: 1.0
+To: Didier Kryn <kryn@in2p3.fr>
 Subject: Re: Reading and writing from/to VME device
-References: <821B2170E9E7F04FA38DF7EC21DE4871088C81DA@VCAEXCH01.hq.corp.viasat.com>	<460A3BBC.5060002@in2p3.fr>	<929bf310703290313o234a47f9gbf9c5083fc23e45e@mail.gmail.com>
-	<460CD765.2060905@in2p3.fr>
-In-Reply-To: <460CD765.2060905@in2p3.fr>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <821B2170E9E7F04FA38DF7EC21DE4871088C81DA@VCAEXCH01.hq.corp.viasat.com>	<460A3BBC.5060002@in2p3.fr>	<929bf310703290313o234a47f9gbf9c5083fc23e45e@mail.gmail.com>	<460CD765.2060905@in2p3.fr>
+	<4610C999.5080405@in2p3.fr>
+In-Reply-To: <4610C999.5080405@in2p3.fr>
+Content-Type: multipart/mixed; boundary="------------060203020503040900000100"
 Cc: Konstantin Boyanov <kkboyanov@gmail.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,74 +24,90 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-    Konstantin, I reproduced your ioctl() problem with the attached=20
-program. The conclusion is that the only valid size and base parameters=20
-for A16 are windowSizeL=3D0x10000 and xlatedAddrL=3D0. This means the A16=
-=20
-space can only be mapped as a whole. What you observed with =20
-xlatedAddrL=3D0x10100000 is that the ioctl(), gently masks the irrelevant=
-=20
-high order bits.
-
-    Best regards.
-    Didier
+This is a multi-part message in MIME format.
+--------------060203020503040900000100
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: quoted-printable
 
 Didier Kryn a =E9crit :
+>     Konstantin, I reproduced your ioctl() problem with the attached=20
+> program. The conclusion is that the only valid size and base parameters=
+=20
+> for A16 are windowSizeL=3D0x10000 and xlatedAddrL=3D0. This means the A=
+16=20
+> space can only be mapped as a whole. What you observed with =20
+> xlatedAddrL=3D0x10100000 is that the ioctl(), gently masks the irreleva=
+nt=20
+> high order bits.
 >
->
->     Now, for the ioctl problem, Konstantin, did you try to set=20
-> xlatedAddrL to zero. The Tsio148, and therefore the driver, enforce=20
-> alignment on  rather big blocks and maybe misalignment is the cause of =
+>     Best regards.
+>     Didier
+>  =20
+    Oops! I forgot the attachment...
 
-> the "invalid argument" error. I see no reason not to map the entire=20
-> A16, A24 or CR/CSR spaces. For the others, of course, you are limited=20
-> by the size of the cpu's address space.
->
->     I will eventually try to reproduce your ioctl problem next week.=20
-> Hopping you will solve it before :-) .
->
->     Best regards. Didier
->
-> Konstantin Boyanov said:
->> Hi again,
->>
->> Thank you once again for presenting the VME world to me :)
->>
->> >Looks like you're reading something.  Address 0x10100000 is larger th=
-an
->> >a 24 bit address.  Perhaps you should be using A32 transfers instead =
-of
->> >A24?
->>
->> No, no, I need to do A16 access, thats the only way to read the=20
->> control registers. Form here comes also my confusion - I thought that =
+--------------060203020503040900000100
+Content-Type: text/x-csrc;
+ name="test148.c"
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline;
+ filename="test148.c"
 
->> when I'm reading CS/CSR register I need to do it in CSR address=20
->> space. So no algorithms for geographical location of boards are=20
->> needed in my case I guess.
->> Actually the base address of CSR on the board is 0xA000 (10100000 is=20
->> the first byte of the address selection in inary, shame on me :( ).=20
->> But when I try to configure it with outWinCfgADC.zlatedAddrL =3D=20
->> 0xA000, when I run the programm I get an errno 29 (Invalid argument)=20
->> from ioctl(). In fact if I set the xlatedAddrL to some value smaller=20
->> that 0x10000 I get this error. Here's my most recent configuration:
->>
->>     outWinCfgADC.windowNbr           =3D 0;
->>     outWinCfgADC.windowEnable      =3D 1;
->>     outWinCfgADC.wrPostEnable      =3D 0;
->>     outWinCfgADC.userAccessType  =3D VME_SUPER;
->>     outWinCfgADC.dataAccessType  =3D VME_DATA;
->>     outWinCfgADC.windowSizeL       =3D 0x10000;
->>     outWinCfgADC.xferProtocol         =3D VME_SCT;
->>     outWinCfgADC.addrSpace           =3D VME_A16;
->>     outWinCfgADC.maxDataWidth     =3D VME_D16;
->>     outWinCfgADC.xlatedAddrL          =3D 0x10000000;
->>
->> I think that 0x10000 for window size is big enough to encompass the=20
->> whole A16 addressable space. With the 0x10000000 xlatedAddr I get no=20
->> errors and read the desired registers when I increment this address=20
->> to 0x1000A000. But nevertheless it seems strange to me that the=20
->> device does not accept xlatedAddr lower that 0x10000. Maybe its due=20
->> to the configuration of the VME controller?
->>
->
+#include <linux/stddef.h>
+#include <stdio.h>
+#include <errno.h>
+#include <string.h>
+#include <sys/ioctl.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/mman.h>
+#include "vmedrv.h"
+
+#if !defined(offsetof)
+/* maybe defined (if <linux/stddef.h> included indirectly) */
+# define offsetof(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#endif
+
+int main(void)
+{
+   int vmepd, i;
+   char *devname="/dev/vme/vme_out0";
+   vmeOutWindowCfg_t a16d16 = {0,1,0,0,0,0x1000000,0,0,0,0,0,0,VME_SSTNONE,
+                               VME_A16,VME_D16,VME_SCT,VME_SUPER,VME_DATA,0};
+   unsigned size_max=0x10000;
+   unsigned base, size;
+   unsigned short *vmebus;
+
+
+   vmepd = open(devname, O_RDWR);
+   if(vmepd==-1)
+     {
+        perror(devname);
+        return 1;
+     }
+
+   for( base=0 ;   (size = size_max - base) ;   base+=0x100 )
+     {
+        a16d16.xlatedAddrL = base;
+        a16d16.windowSizeL = size;
+        if(ioctl(vmepd, VME_IOCTL_SET_OUTBOUND, &a16d16))
+          printf("ioctl failed for base %x, size %x: %s\n", base, size, strerror(errno));
+        else
+          printf("ioctl OK for base %x, size %x\n", base, size);
+     }
+
+   for( base=0, size=0x100 ;   size <= size_max ;  size+=0x100 )
+     {
+        a16d16.xlatedAddrL = base;
+        a16d16.windowSizeL = size;
+        if(ioctl(vmepd, VME_IOCTL_SET_OUTBOUND, &a16d16))
+          printf("ioctl failed for base %x, size %x: %s\n", base, size, strerror(errno));
+        else
+          printf("ioctl OK for base %x, size %x\n", base, size);
+     }
+
+  close(vmepd);
+}
+
+
+--------------060203020503040900000100--
