@@ -1,19 +1,19 @@
 Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
-	by ozlabs.org (Postfix) with ESMTP id ECD12DDF04
-	for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2007 19:08:35 +1000 (EST)
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.189])
+	by ozlabs.org (Postfix) with ESMTP id CACF5DDF08
+	for <linuxppc-dev@ozlabs.org>; Mon,  2 Apr 2007 19:09:51 +1000 (EST)
 Received: from ubuntu (achn-4db49c99.pool.einsundeins.de [77.180.156.153])
-	by post.webmailer.de (klopstock mo58) (RZmta 5.5)
-	with ESMTP id J05a95j327iId7 for <linuxppc-dev@ozlabs.org>;
-	Mon, 2 Apr 2007 11:08:31 +0200 (MEST)
+	by post.webmailer.de (mrclete mo45) (RZmta 5.5)
+	with ESMTP id F018f2j324vawA for <linuxppc-dev@ozlabs.org>;
+	Mon, 2 Apr 2007 11:09:44 +0200 (MEST)
 From: Stefan Roese <sr@denx.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/3] ppc: Update PPC440SPe support
-Date: Mon, 2 Apr 2007 11:09:46 +0200
+Subject: [PATCH 2/3] ppc: Add support for AMCC Katmai (440SPe) board
+Date: Mon, 2 Apr 2007 11:10:59 +0200
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="us-ascii"
-Message-Id: <200704021109.47183.sr@denx.de>
+Message-Id: <200704021110.59993.sr@denx.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,1253 +23,739 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ppc: Update PPC440SPe support
-
-This patch updates the AMCC 440SPe support in arch/ppc. It's done in
-preparation for the support of the new AMCC 440SPe eval board
-katmai.
+This patch adds initial support for the AMCC 440SPe eval board Katmai.
 
 Signed-off-by: Stefan Roese <sr@denx.de>
 
 ---
-commit c268079210504e5c5a2ae94aa449aa244545ba22
-tree ff46ca68445236f1d359be13e814ea1046acb083
-parent 2e175a90047a2dbc76fde169c990164895b25dfc
-author Stefan Roese <sr@denx.de> Mon, 02 Apr 2007 10:44:13 +0200
-committer Stefan Roese <sr@denx.de> Mon, 02 Apr 2007 10:44:13 +0200
+commit c0a317e96506a56d94c66d361d5488afe2ab17c7
+tree bfc8cfbf8c87009ae859e4356a067da1683caec0
+parent c268079210504e5c5a2ae94aa449aa244545ba22
+author Stefan Roese <sr@denx.de> Mon, 02 Apr 2007 10:45:36 +0200
+committer Stefan Roese <sr@denx.de> Mon, 02 Apr 2007 10:45:36 +0200
 
- arch/ppc/platforms/4xx/ppc440spe.c |  242 ++++++++++++++++
- arch/ppc/platforms/4xx/ppc440spe.h |   29 +-
- arch/ppc/syslib/Makefile           |    6 
- arch/ppc/syslib/ppc440spe_pcie.c   |  549 ++++++++++++++++++++++++++++--------
- arch/ppc/syslib/ppc440spe_pcie.h   |   16 +
- include/asm-ppc/ibm44x.h           |   11 +
- 6 files changed, 709 insertions(+), 144 deletions(-)
+ arch/ppc/platforms/4xx/Kconfig  |   22 +-
+ arch/ppc/platforms/4xx/Makefile |    3 
+ arch/ppc/platforms/4xx/katmai.c |  525 +++++++++++++++++++++++++++++++++++++++
+ arch/ppc/platforms/4xx/katmai.h |   68 +++++
+ include/asm-ppc/ibm4xx.h        |   12 +
+ 5 files changed, 617 insertions(+), 13 deletions(-)
 
-diff --git a/arch/ppc/platforms/4xx/ppc440spe.c b/arch/ppc/platforms/4xx/ppc440spe.c
-index 1be5d1c..9f3954c 100644
---- a/arch/ppc/platforms/4xx/ppc440spe.c
-+++ b/arch/ppc/platforms/4xx/ppc440spe.c
-@@ -22,6 +22,13 @@
- #include <asm/ocp.h>
- #include <asm/ppc4xx_pic.h>
+diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
+index 705ae56..c61c031 100644
+--- a/arch/ppc/platforms/4xx/Kconfig
++++ b/arch/ppc/platforms/4xx/Kconfig
+@@ -80,17 +80,17 @@ config EBONY
+ 	help
+ 	  This option enables support for the IBM PPC440GP evaluation board.
  
-+#if defined(CONFIG_AMCC_PPC440SPE_ADMA)
-+#include <syslib/ppc440spe_pcie.h>
-+#include <linux/async_tx.h>
+-config LUAN
+-	bool "Luan"
++config KATMAI
++	bool "Katmai"
+ 	select WANT_EARLY_SERIAL
+ 	help
+-	  This option enables support for the IBM PPC440SP evaluation board.
++	  This option enables support for the AMCC PPC440SPe evaluation board.
+ 
+-config YUCCA
+-	bool "Yucca"
++config LUAN
++	bool "Luan"
+ 	select WANT_EARLY_SERIAL
+ 	help
+-	  This option enables support for the AMCC PPC440SPe evaluation board.
++	  This option enables support for the IBM PPC440SP evaluation board.
+ 
+ config OCOTEA
+ 	bool "Ocotea"
+@@ -104,6 +104,12 @@ config TAISHAN
+ 	help
+ 	  This option enables support for the AMCC PPC440GX evaluation board.
+ 
++config YUCCA
++	bool "Yucca"
++	select WANT_EARLY_SERIAL
++	help
++	  This option enables support for the AMCC PPC440SPe evaluation board.
++
+ endchoice
+ 
+ config EP405PC
+@@ -142,7 +148,7 @@ config 440SP
+ 
+ config 440SPE
+ 	bool
+-	depends on YUCCA
++	depends on KATMAI || YUCCA
+ 	default y
+ 
+ config 440
+@@ -179,7 +185,7 @@ config BOOKE
+ 
+ config IBM_OCP
+ 	bool
+-	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || YUCCA || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || TAISHAN || WALNUT
++	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || KATMAI || LUAN || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || TAISHAN || WALNUT || YUCCA
+ 	default y
+ 
+ config IBM_EMAC4
+diff --git a/arch/ppc/platforms/4xx/Makefile b/arch/ppc/platforms/4xx/Makefile
+index fa6610b..7e4ebeb 100644
+--- a/arch/ppc/platforms/4xx/Makefile
++++ b/arch/ppc/platforms/4xx/Makefile
+@@ -6,8 +6,8 @@ obj-$(CONFIG_CPCI405)		+= cpci405.o
+ obj-$(CONFIG_EBONY)		+= ebony.o
+ obj-$(CONFIG_EP405)		+= ep405.o
+ obj-$(CONFIG_BUBINGA)		+= bubinga.o
++obj-$(CONFIG_KATMAI)		+= katmai.o
+ obj-$(CONFIG_LUAN)		+= luan.o
+-obj-$(CONFIG_YUCCA)		+= yucca.o
+ obj-$(CONFIG_OCOTEA)		+= ocotea.o
+ obj-$(CONFIG_REDWOOD_5)		+= redwood5.o
+ obj-$(CONFIG_REDWOOD_6)		+= redwood6.o
+@@ -16,6 +16,7 @@ obj-$(CONFIG_TAISHAN)		+= taishan.o
+ obj-$(CONFIG_WALNUT)		+= walnut.o
+ obj-$(CONFIG_XILINX_ML300)	+= xilinx_ml300.o
+ obj-$(CONFIG_XILINX_ML403)	+= xilinx_ml403.o
++obj-$(CONFIG_YUCCA)		+= yucca.o
+ 
+ obj-$(CONFIG_405GP)		+= ibm405gp.o
+ obj-$(CONFIG_REDWOOD_5)		+= ibmstb4.o
+diff --git a/arch/ppc/platforms/4xx/katmai.c b/arch/ppc/platforms/4xx/katmai.c
+new file mode 100644
+index 0000000..8a048e8
+--- /dev/null
++++ b/arch/ppc/platforms/4xx/katmai.c
+@@ -0,0 +1,525 @@
++/*
++ * Katmai board specific routines
++ *
++ * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
++ *
++ * Based on yucca.c by Roland Dreier
++ *
++ * Copyright 2004-2005 MontaVista Software Inc.
++ * Copyright (c) 2005 Cisco Systems.  All rights reserved.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/reboot.h>
++#include <linux/pci.h>
++#include <linux/kdev_t.h>
++#include <linux/types.h>
++#include <linux/major.h>
++#include <linux/blkdev.h>
++#include <linux/console.h>
++#include <linux/delay.h>
++#include <linux/ide.h>
++#include <linux/initrd.h>
++#include <linux/seq_file.h>
++#include <linux/root_dev.h>
++#include <linux/tty.h>
++#include <linux/serial.h>
++#include <linux/serial_core.h>
 +#include <linux/platform_device.h>
-+#include <asm/ppc440spe_adma.h>
-+#endif
++#include <linux/mtd/partitions.h>
++#include <linux/mtd/nand.h>
++#include <linux/mtd/ndfc.h>
++#include <linux/mtd/physmap.h>
 +
- static struct ocp_func_emac_data ppc440spe_emac0_def = {
- 	.rgmii_idx	= -1,		/* No RGMII */
- 	.rgmii_mux	= -1,		/* No RGMII */
-@@ -129,18 +136,247 @@ struct ocp_def core_ocp[] = {
- struct ppc4xx_uic_settings ppc4xx_core_uic_cfg[] __initdata = {
- 	{ .polarity     = 0xffffffff,
- 	  .triggering   = 0x010f0004,
--	  .ext_irq_mask = 0x00000000,
-+	  .ext_irq_mask = 0x00402000,	/* IRQ15, IRQ14 */
- 	},
- 	{ .polarity     = 0xffffffff,
- 	  .triggering   = 0x001f8040,
--	  .ext_irq_mask = 0x00007c30,   /* IRQ6 - IRQ7, IRQ8 - IRQ12 */
-+	  .ext_irq_mask = 0x80007c30,   /* IRQ13, IRQ12 - IRQ8, IRQ7 - IRQ6 */
- 	},
- 	{ .polarity     = 0xffffffff,
- 	  .triggering   = 0x00000000,
--	  .ext_irq_mask = 0x000000fc,   /* IRQ0 - IRQ5 */
-+	  .ext_irq_mask = 0x000000fc,   /* IRQ5 - IRQ0 */
- 	},
- 	{ .polarity     = 0xffffffff,
- 	  .triggering   = 0x00000000,
- 	  .ext_irq_mask = 0x00000000,
- 	},
- };
++#include <asm/system.h>
++#include <asm/pgtable.h>
++#include <asm/page.h>
++#include <asm/dma.h>
++#include <asm/io.h>
++#include <asm/machdep.h>
++#include <asm/ocp.h>
++#include <asm/pci-bridge.h>
++#include <asm/time.h>
++#include <asm/bootinfo.h>
++#include <asm/ppc4xx_pic.h>
++#include <asm/ppcboot.h>
 +
-+#if defined(CONFIG_AMCC_PPC440SPE_ADMA)
++#include <syslib/ibm44x_common.h>
++#include <syslib/ibm440gx_common.h>
++#include <syslib/ibm440sp_common.h>
++#include <syslib/ppc440spe_pcie.h>
 +
-+static u64 ppc440spe_adma_dmamask = DMA_32BIT_MASK;
++extern bd_t __res;
 +
-+/* DMA and XOR platform devices' resources */
-+static struct resource ppc440spe_dma_0_resources[] = {
-+	{
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = DMA0_CS_FIFO_NEED_SERVICE,
-+		.end = DMA0_CS_FIFO_NEED_SERVICE,
-+		.flags = IORESOURCE_IRQ
-+	}
-+};
++static struct ibm44x_clocks clocks __initdata;
 +
-+static struct resource ppc440spe_dma_1_resources[] = {
-+	{
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = DMA1_CS_FIFO_NEED_SERVICE,
-+		.end = DMA1_CS_FIFO_NEED_SERVICE,
-+		.flags = IORESOURCE_IRQ
-+	}
-+};
-+
-+static struct resource ppc440spe_xor_resources[] = {
-+	{
-+		.flags = IORESOURCE_MEM,
-+	},
-+	{
-+		.start = XOR_INTERRUPT,
-+		.end = XOR_INTERRUPT,
-+		.flags = IORESOURCE_IRQ
-+	}
-+};
-+
-+/* DMA and XOR platform devices' data */
-+static struct ppc440spe_adma_platform_data ppc440spe_dma_0_data = {
-+	.hw_id  = PPC440SPE_DMA0_ID,
-+	.capabilities = DMA_CAP_MEMCPY | DMA_CAP_INTERRUPT,
-+	.pool_size = PAGE_SIZE,
-+};
-+
-+static struct ppc440spe_adma_platform_data ppc440spe_dma_1_data = {
-+	.hw_id  = PPC440SPE_DMA1_ID,
-+	.capabilities =  DMA_CAP_MEMCPY | DMA_CAP_INTERRUPT,
-+	.pool_size = PAGE_SIZE,
-+};
-+
-+static struct ppc440spe_adma_platform_data ppc440spe_xor_data = {
-+	.hw_id  = PPC440SPE_XOR_ID,
-+	.capabilities = DMA_CAP_XOR | DMA_CAP_INTERRUPT,
-+	.pool_size = PAGE_SIZE,
-+};
-+
-+/* DMA and XOR platform devices definitions */
-+static struct platform_device ppc440spe_dma_0_channel = {
-+	.name = "PPC440SPE-ADMA",
-+	.id = PPC440SPE_DMA0_ID,
-+	.num_resources = ARRAY_SIZE(ppc440spe_dma_0_resources),
-+	.resource = ppc440spe_dma_0_resources,
-+	.dev = {
-+		.dma_mask = &ppc440spe_adma_dmamask,
-+		.coherent_dma_mask = DMA_64BIT_MASK,
-+		.platform_data = (void *) &ppc440spe_dma_0_data,
-+	},
-+};
-+
-+static struct platform_device ppc440spe_dma_1_channel = {
-+	.name = "PPC440SPE-ADMA",
-+	.id = PPC440SPE_DMA1_ID,
-+	.num_resources = ARRAY_SIZE(ppc440spe_dma_1_resources),
-+	.resource = ppc440spe_dma_1_resources,
-+	.dev = {
-+		.dma_mask = &ppc440spe_adma_dmamask,
-+		.coherent_dma_mask = DMA_64BIT_MASK,
-+		.platform_data = (void *) &ppc440spe_dma_1_data,
-+	},
-+};
-+
-+static struct platform_device ppc440spe_xor_channel = {
-+	.name = "PPC440SPE-ADMA",
-+	.id = PPC440SPE_XOR_ID,
-+	.num_resources = ARRAY_SIZE(ppc440spe_xor_resources),
-+	.resource = ppc440spe_xor_resources,
-+	.dev = {
-+		.dma_mask = &ppc440spe_adma_dmamask,
-+		.coherent_dma_mask = DMA_64BIT_MASK,
-+		.platform_data = (void *) &ppc440spe_xor_data,
-+	},
++unsigned char ppc4xx_uic_ext_irq_cfg[] __initdata = {
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ15: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ14: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ13: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ12: PCI-X slot */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ11: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ10: EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ9:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ8:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ7:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ6:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ5:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_POSITIVE),	/* IRQ4:  Xilinx SysACE */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ3:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ2:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ1:  EXT */
++	(IRQ_SENSE_LEVEL | IRQ_POLARITY_NEGATIVE),	/* IRQ0:  EXT */
 +};
 +
 +/*
-+ *  Init DMA0/1 and XOR engines; allocate memory for DMAx FIFOs; set platform_device
-+ * memory resources addresses
++ * NOR FLASH configuration (using mtd physmap driver)
 + */
-+static void ppc440spe_configure_raid_devices(void)
-+{
-+	void *fifo_buf;
-+	i2o_regs_t *i2o_reg;
-+	dma_regs_t *dma_reg0, *dma_reg1;
-+	xor_regs_t *xor_reg;
-+	u32 mask;
 +
-+	/*
-+	 * Map registers and allocate fifo buffer
-+	 */
-+	if (!(i2o_reg  = ioremap(I2O_MMAP_BASE, I2O_MMAP_SIZE))) {
-+		printk(KERN_ERR "I2O registers mapping failed.\n");
-+		return;
-+	}
-+	if (!(dma_reg0 = ioremap(DMA0_MMAP_BASE, DMA_MMAP_SIZE))) {
-+		printk(KERN_ERR "DMA0 registers mapping failed.\n");
-+		goto err1;
-+	}
-+	if (!(dma_reg1 = ioremap(DMA1_MMAP_BASE, DMA_MMAP_SIZE))) {
-+		printk(KERN_ERR "DMA1 registers mapping failed.\n");
-+		goto err2;
-+	}
-+	if (!(xor_reg  = ioremap(XOR_MMAP_BASE,XOR_MMAP_SIZE))) {
-+		printk(KERN_ERR "XOR registers mapping failed.\n");
-+		goto err3;
-+	}
-+
-+	/*  Provide memory regions for DMA's FIFOs: I2O, DMA0 and DMA1 share
-+	 * the base address of FIFO memory space.
-+	 *  Actually we need twice more physical memory than programmed in the
-+	 * <fsiz> register (because there are two FIFOs foreach DMA: CP and CS)
-+	 */
-+	fifo_buf = kmalloc((DMA0_FIFO_SIZE + DMA1_FIFO_SIZE)<<1, GFP_KERNEL);
-+	if (!fifo_buf) {
-+		printk(KERN_ERR "DMA FIFO buffer allocating failed.\n");
-+		goto err4;
-+	}
-+
-+	/*
-+	 * Configure h/w
-+	 */
-+	/* Reset I2O/DMA */
-+	SDR_WRITE(DCRN_SDR_SRST, DCRN_SDR_SRST_I2ODMA);
-+	SDR_WRITE(DCRN_SDR_SRST, 0);
-+
-+	/* Reset XOR */
-+	out_be32(&xor_reg->crsr, XOR_CRSR_XASR_BIT);
-+	out_be32(&xor_reg->crrr, XOR_CRSR_64BA_BIT);
-+
-+	/* Setup the base address of mmaped registers */
-+	mtdcr(DCRN_I2O0_IBAH, (u32)(I2O_MMAP_BASE >> 32));
-+	mtdcr(DCRN_I2O0_IBAL, (u32)(I2O_MMAP_BASE) | I2O_REG_ENABLE);
-+
-+	/* SetUp FIFO memory space base address */
-+	out_le32(&i2o_reg->ifbah, 0);
-+	out_le32(&i2o_reg->ifbal, ((u32)__pa(fifo_buf)));
-+
-+	/* set zero FIFO size for I2O, so the whole fifo_buf is used by DMAs.
-+	 * DMA0_FIFO_SIZE is defined in bytes, <fsiz> - in number of CDB pointers (8byte).
-+	 * DMA FIFO Length = CSlength + CPlength, where
-+	 *  CSlength = CPlength = (fsiz + 1) * 8.
-+	 */
-+	out_le32(&i2o_reg->ifsiz, 0);
-+	out_le32(&dma_reg0->fsiz, DMA_FIFO_ENABLE | ((DMA0_FIFO_SIZE>>3) - 2));
-+	out_le32(&dma_reg1->fsiz, DMA_FIFO_ENABLE | ((DMA1_FIFO_SIZE>>3) - 2));
-+
-+	/* Configure DMA engine */
-+	out_le32(&dma_reg0->cfg, DMA_CFG_DXEPR_HP | DMA_CFG_DFMPP_HP | DMA_CFG_FALGN);
-+	out_le32(&dma_reg1->cfg, DMA_CFG_DXEPR_HP | DMA_CFG_DFMPP_HP | DMA_CFG_FALGN);
-+
-+	/* Clear Status */
-+	out_le32(&dma_reg0->dsts, ~0);
-+	out_le32(&dma_reg1->dsts, ~0);
-+
-+	/* Unmask 'CS FIFO Attention' interrupts */
-+	mask = in_le32(&i2o_reg->iopim) & ~(I2O_IOPIM_P0SNE | I2O_IOPIM_P1SNE);
-+	out_le32(&i2o_reg->iopim, mask);
-+
-+	/* enable XOR engine interrupt */
-+	out_be32(&xor_reg->ier, XOR_IE_CBCIE_BIT);
-+
-+	/*
-+	 * Unmap I2O registers
-+	 */
-+	iounmap(i2o_reg);
-+
-+	/*
-+	 * Set resource addresses
-+	 */
-+	ppc440spe_dma_0_channel.resource[0].start = (resource_size_t)(dma_reg0);
-+	ppc440spe_dma_0_channel.resource[0].end =
-+		ppc440spe_dma_0_channel.resource[0].start+DMA_MMAP_SIZE;
-+
-+	ppc440spe_dma_1_channel.resource[0].start = (resource_size_t)(dma_reg1);
-+	ppc440spe_dma_1_channel.resource[0].end =
-+		ppc440spe_dma_1_channel.resource[0].start+DMA_MMAP_SIZE;
-+
-+	ppc440spe_xor_channel.resource[0].start = (resource_size_t)(xor_reg);
-+	ppc440spe_xor_channel.resource[0].end =
-+		ppc440spe_xor_channel.resource[0].start+XOR_MMAP_SIZE;
-+
-+	return;
-+err4:
-+	iounmap(xor_reg);
-+err3:
-+	iounmap(dma_reg1);
-+err2:
-+	iounmap(dma_reg0);
-+err1:
-+	iounmap(i2o_reg);
-+	return;
-+}
-+
-+static struct platform_device *ppc440spe_devs[] __initdata = {
-+	&ppc440spe_dma_0_channel,
-+	&ppc440spe_dma_1_channel,
-+	&ppc440spe_xor_channel,
++/* start will be added dynamically, end is always fixed */
++static struct resource katmai_nor_resource = {
++	.flags = IORESOURCE_MEM,
 +};
 +
-+static int __init ppc440spe_register_raid_devices(void)
++#define RW_PART0_OF	0
++#define RW_PART0_SZ	0x180000
++#define RW_PART1_SZ	0x200000
++/* Partition 2 will be autosized dynamically... */
++#define RW_PART3_SZ	0x40000
++#define RW_PART4_SZ	0x40000
++
++static struct mtd_partition katmai_nor_parts[] = {
++	{
++		.name = "kernel",
++		.offset = 0,
++		.size = RW_PART0_SZ
++	},
++	{
++		.name = "root",
++		.offset = MTDPART_OFS_APPEND,
++		.size = RW_PART1_SZ,
++	},
++	{
++		.name = "user",
++		.offset = MTDPART_OFS_APPEND,
++	},
++	{
++		.name = "env",
++		.offset = MTDPART_OFS_APPEND,
++		.size = RW_PART3_SZ,
++	},
++	{
++		.name = "u-boot",
++		.offset = MTDPART_OFS_APPEND,
++		.size = RW_PART4_SZ,
++	}
++};
++
++static struct physmap_flash_data katmai_nor_data = {
++	.width		= 2,
++	.parts		= katmai_nor_parts,
++	.nr_parts	= ARRAY_SIZE(katmai_nor_parts),
++};
++
++static struct platform_device katmai_nor_device = {
++	.name		= "physmap-flash",
++	.id		= 0,
++	.dev = {
++			.platform_data = &katmai_nor_data,
++		},
++	.num_resources	= 1,
++	.resource	= &katmai_nor_resource,
++};
++
++static int katmai_setup_flash(void)
 +{
-+	ppc440spe_configure_raid_devices();
-+	platform_add_devices(ppc440spe_devs, ARRAY_SIZE(ppc440spe_devs));
++	katmai_nor_resource.start = __res.bi_flashstart;
++	katmai_nor_resource.end = __res.bi_flashstart +
++		__res.bi_flashsize - 1;
++
++	/*
++	 * Adjust partition 2 to flash size
++	 */
++	katmai_nor_parts[2].size = __res.bi_flashsize -
++		RW_PART0_SZ - RW_PART1_SZ - RW_PART3_SZ - RW_PART4_SZ;
++
++	platform_device_register(&katmai_nor_device);
 +
 +	return 0;
 +}
++arch_initcall(katmai_setup_flash);
 +
-+arch_initcall(ppc440spe_register_raid_devices);
-+#endif	/* CONFIG_AMCC_PPC440SPE_ADMA */
-diff --git a/arch/ppc/platforms/4xx/ppc440spe.h b/arch/ppc/platforms/4xx/ppc440spe.h
-index f1e867c..408e7c6 100644
---- a/arch/ppc/platforms/4xx/ppc440spe.h
-+++ b/arch/ppc/platforms/4xx/ppc440spe.h
-@@ -17,7 +17,6 @@
- #ifndef __PPC_PLATFORMS_PPC440SPE_H
- #define __PPC_PLATFORMS_PPC440SPE_H
- 
--
- #include <asm/ibm44x.h>
- 
- /* UART */
-@@ -28,23 +27,28 @@
- #define UART1_INT		1
- #define UART2_INT		37
- 
-+/* GPIO macro register defines */
-+#define GPIO_BASE		0x00000004f0000700ULL
-+#define GPIO0_OR_OFFS		0x0
-+#define GPIO0_IR_OFFS		0x1C
-+
- /* Clock and Power Management */
- #define IBM_CPM_IIC0		0x80000000	/* IIC interface */
- #define IBM_CPM_IIC1		0x40000000	/* IIC interface */
- #define IBM_CPM_PCI		0x20000000	/* PCI bridge */
--#define IBM_CPM_CPU		    0x02000000	/* processor core */
--#define IBM_CPM_DMA		    0x01000000	/* DMA controller */
--#define IBM_CPM_BGO		    0x00800000	/* PLB to OPB bus arbiter */
--#define IBM_CPM_BGI		    0x00400000	/* OPB to PLB bridge */
--#define IBM_CPM_EBC		    0x00200000	/* External Bux Controller */
--#define IBM_CPM_EBM		    0x00100000	/* Ext Bus Master Interface */
--#define IBM_CPM_DMC		    0x00080000	/* SDRAM peripheral controller */
--#define IBM_CPM_PLB		    0x00040000	/* PLB bus arbiter */
-+#define IBM_CPM_CPU		0x02000000	/* processor core */
-+#define IBM_CPM_DMA		0x01000000	/* DMA controller */
-+#define IBM_CPM_BGO		0x00800000	/* PLB to OPB bus arbiter */
-+#define IBM_CPM_BGI		0x00400000	/* OPB to PLB bridge */
-+#define IBM_CPM_EBC		0x00200000	/* External Bux Controller */
-+#define IBM_CPM_EBM		0x00100000	/* Ext Bus Master Interface */
-+#define IBM_CPM_DMC		0x00080000	/* SDRAM peripheral controller */
-+#define IBM_CPM_PLB		0x00040000	/* PLB bus arbiter */
- #define IBM_CPM_SRAM		0x00020000	/* SRAM memory controller */
--#define IBM_CPM_PPM		    0x00002000	/* PLB Performance Monitor */
-+#define IBM_CPM_PPM		0x00002000	/* PLB Performance Monitor */
- #define IBM_CPM_UIC1		0x00001000	/* Universal Interrupt Controller */
- #define IBM_CPM_GPIO0		0x00000800	/* General Purpose IO (??) */
--#define IBM_CPM_GPT		    0x00000400	/* General Purpose Timers  */
-+#define IBM_CPM_GPT		0x00000400	/* General Purpose Timers  */
- #define IBM_CPM_UART0		0x00000200	/* serial port 0 */
- #define IBM_CPM_UART1		0x00000100	/* serial port 1 */
- #define IBM_CPM_UART2		0x00000100	/* serial port 1 */
-@@ -59,5 +63,6 @@
- 				| IBM_CPM_TAHOE0 | IBM_CPM_TAHOE1 \
- 				| IBM_CPM_EMAC0 | IBM_CPM_EMAC1 \
- 			  	| IBM_CPM_EMAC2 | IBM_CPM_EMAC3 )
--#endif /* __PPC_PLATFORMS_PPC440SP_H */
-+
-+#endif /* __PPC_PLATFORMS_PPC440SPE_H */
- #endif /* __KERNEL__ */
-diff --git a/arch/ppc/syslib/Makefile b/arch/ppc/syslib/Makefile
-index 0991111..333f51a 100644
---- a/arch/ppc/syslib/Makefile
-+++ b/arch/ppc/syslib/Makefile
-@@ -28,7 +28,6 @@ endif
- endif
- obj-$(CONFIG_44x)		+= ppc4xx_pic.o
- obj-$(CONFIG_40x)		+= ppc4xx_setup.o
--obj-$(CONFIG_GEN_RTC)		+= todc_time.o
- obj-$(CONFIG_PPC4xx_DMA)	+= ppc4xx_dma.o
- obj-$(CONFIG_PPC4xx_EDMA)	+= ppc4xx_sgdma.o
- ifeq ($(CONFIG_40x),y)
-@@ -48,9 +47,9 @@ obj-$(CONFIG_CHESTNUT)		+= mv64360_pic.o pci_auto.o
- obj-$(CONFIG_GT64260)		+= gt64260_pic.o
- obj-$(CONFIG_LOPEC)		+= pci_auto.o todc_time.o
- obj-$(CONFIG_HDPU)		+= pci_auto.o
--obj-$(CONFIG_LUAN)		+= pci_auto.o todc_time.o
--obj-$(CONFIG_YUCCA)		+= pci_auto.o todc_time.o
- obj-$(CONFIG_KATANA)		+= pci_auto.o
-+obj-$(CONFIG_KATMAI)		+= pci_auto.o
-+obj-$(CONFIG_LUAN)		+= pci_auto.o todc_time.o
- obj-$(CONFIG_MV64360)		+= mv64360_pic.o
- obj-$(CONFIG_MV64X60)		+= mv64x60.o mv64x60_win.o
- obj-$(CONFIG_MVME5100)		+= open_pic.o todc_time.o \
-@@ -70,6 +69,7 @@ obj-$(CONFIG_SBC82xx)		+= todc_time.o
- obj-$(CONFIG_SPRUCE)		+= cpc700_pic.o pci_auto.o \
- 				   todc_time.o
- obj-$(CONFIG_TAISHAN)		+= pci_auto.o
-+obj-$(CONFIG_YUCCA)		+= pci_auto.o todc_time.o
- obj-$(CONFIG_8260)		+= m8260_setup.o pq2_devices.o pq2_sys.o \
- 				   ppc_sys.o
- obj-$(CONFIG_PCI_8260)		+= m82xx_pci.o pci_auto.o
-diff --git a/arch/ppc/syslib/ppc440spe_pcie.c b/arch/ppc/syslib/ppc440spe_pcie.c
-index dd5d4b9..2aa0486 100644
---- a/arch/ppc/syslib/ppc440spe_pcie.c
-+++ b/arch/ppc/syslib/ppc440spe_pcie.c
-@@ -24,9 +24,19 @@ pcie_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		     int len, u32 *val)
- {
- 	struct pci_controller *hose = bus->sysdata;
--
--	if (PCI_SLOT(devfn) != 1)
-+#ifdef CONFIG_PCIE_ENDPOINT
-+	/*
-+	 * Endpoint can not generate upstream(remote) config cycles.
-+	 */
-+	return PCIBIOS_DEVICE_NOT_FOUND;
-+#endif
-+	if (!((PCI_SLOT(devfn) == 1) && (PCI_FUNC(devfn) == 0)))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
-+	/*
-+	 * 440SPE rev B implements only one function per port
-+	 */
-+	if (ppc440spe_revB())
-+		devfn = 0;
- 
- 	offset += devfn << 12;
- 
-@@ -45,9 +55,6 @@ pcie_read_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		*val = in_le32(hose->cfg_data + offset);
- 		break;
- 	}
--
--	if (0) printk("%s: read %x(%d) @ %x\n", __func__, *val, len, offset);
--
- 	return PCIBIOS_SUCCESSFUL;
- }
- 
-@@ -56,9 +63,20 @@ pcie_write_config(struct pci_bus *bus, unsigned int devfn, int offset,
- 		      int len, u32 val)
- {
- 	struct pci_controller *hose = bus->sysdata;
-+#ifdef CONFIG_PCIE_ENDPOINT
-+	/*
-+	 * Endpoint can not generate upstream(remote) config cycles.
-+	 */
-+	return PCIBIOS_DEVICE_NOT_FOUND;
-+#endif
- 
--	if (PCI_SLOT(devfn) != 1)
-+	if (!((PCI_SLOT(devfn) == 1) && (PCI_FUNC(devfn) == 0)))
- 		return PCIBIOS_DEVICE_NOT_FOUND;
-+	/*
-+	 * 440SPE rev B implements only one function per port
-+	 */
-+	if (ppc440spe_revB())
-+		devfn = 0;
- 
- 	offset += devfn << 12;
- 
-@@ -92,13 +110,80 @@ enum {
- 	LNKW_X8			= 0x8
- };
- 
--static void check_error(void)
-+int
-+ppc440spe_revB(void)
++static void __init
++katmai_calibrate_decr(void)
 +{
-+	if (mfspr(SPRN_PVR) == 0x53421891)
-+		return 1;
++	unsigned int freq;
++
++	if (mfspr(SPRN_CCR1) & CCR1_TCS)
++		freq = KATMAI_TMR_CLK;
 +	else
-+		return 0;
++		freq = clocks.cpu;
++
++	ibm44x_calibrate_decr(freq);
 +}
 +
-+/*
-+ * Set up UTL registers
-+ */
-+static void
-+ppc440spe_setup_utl(u32 port)
-+{
-+	void __iomem *utl_base;
-+
-+	/*
-+	 * Map UTL at 0xc_1000_n000
-+	 */
-+	switch (port) {
-+	case 0:
-+		mtdcr(DCRN_PEGPL_REGBAH(PCIE0), 0x0000000c);
-+		mtdcr(DCRN_PEGPL_REGBAL(PCIE0), 0x10000000);
-+		mtdcr(DCRN_PEGPL_REGMSK(PCIE0), 0x00007001);
-+		mtdcr(DCRN_PEGPL_SPECIAL(PCIE0), 0x68782800);
-+		break;
-+
-+	case 1:
-+		mtdcr(DCRN_PEGPL_REGBAH(PCIE1), 0x0000000c);
-+		mtdcr(DCRN_PEGPL_REGBAL(PCIE1), 0x10001000);
-+		mtdcr(DCRN_PEGPL_REGMSK(PCIE1), 0x00007001);
-+		mtdcr(DCRN_PEGPL_SPECIAL(PCIE1), 0x68782800);
-+		break;
-+
-+	case 2:
-+		mtdcr(DCRN_PEGPL_REGBAH(PCIE2), 0x0000000c);
-+		mtdcr(DCRN_PEGPL_REGBAL(PCIE2), 0x10002000);
-+		mtdcr(DCRN_PEGPL_REGMSK(PCIE2), 0x00007001);
-+		mtdcr(DCRN_PEGPL_SPECIAL(PCIE2), 0x68782800);
-+		break;
-+	}
-+	utl_base = ioremap64(0xc10000000ull + 0x1000 * port, 0x100);
-+	
-+	/*
-+	 * Set buffer allocations and then assert VRB and TXE.
-+	 */
-+	out_be32(utl_base + PEUTL_OUTTR,   0x08000000);
-+	out_be32(utl_base + PEUTL_INTR,    0x02000000);
-+	out_be32(utl_base + PEUTL_OPDBSZ,  0x10000000);
-+	out_be32(utl_base + PEUTL_PBBSZ,   0x53000000);
-+	out_be32(utl_base + PEUTL_IPHBSZ,  0x08000000);
-+	out_be32(utl_base + PEUTL_IPDBSZ,  0x10000000);
-+	out_be32(utl_base + PEUTL_RCIRQEN, 0x00f00000);
-+	out_be32(utl_base + PEUTL_PCTL,    0x80800066);
-+
-+	iounmap(utl_base);
-+}
-+
-+static int check_error(void)
- {
- 	u32 valPE0, valPE1, valPE2;
-+	int err = 0;
- 
- 	/* SDR0_PEGPLLLCT1 reset */
- 	if (!(valPE0 = SDR_READ(PESDR0_PLLLCT1) & 0x01000000)) {
--		printk(KERN_INFO "PCIE: SDR0_PEGPLLLCT1 reset error 0x%8x\n", valPE0);
-+		/*
-+		 * the PCIe core was probably already initialised
-+		 * by firmware - let's re-reset RCSSET regs
-+		 */
-+		pr_debug("PCIE: SDR0_PLLLCT1 already reset.\n");
-+		SDR_WRITE(PESDR0_RCSSET, 0x01010000);
-+		SDR_WRITE(PESDR1_RCSSET, 0x01010000);
-+		SDR_WRITE(PESDR2_RCSSET, 0x01010000);
- 	}
- 
- 	valPE0 = SDR_READ(PESDR0_RCSSET);
-@@ -110,6 +195,7 @@ static void check_error(void)
- 	     !(valPE1 & 0x01000000) ||
- 	     !(valPE2 & 0x01000000)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rstgu error\n");
-+		err = -1;
- 	}
- 
- 	/* SDR0_PExRCSSET rstdl */
-@@ -117,6 +203,7 @@ static void check_error(void)
- 	     !(valPE1 & 0x00010000) ||
- 	     !(valPE2 & 0x00010000)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rstdl error\n");
-+		err = -1;
- 	}
- 
- 	/* SDR0_PExRCSSET rstpyn */
-@@ -124,6 +211,7 @@ static void check_error(void)
- 	     (valPE1 & 0x00001000) ||
- 	     (valPE2 & 0x00001000)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rstpyn error\n");
-+		err = -1;
- 	}
- 
- 	/* SDR0_PExRCSSET hldplb */
-@@ -131,6 +219,7 @@ static void check_error(void)
- 	     (valPE1 & 0x10000000) ||
- 	     (valPE2 & 0x10000000)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET hldplb error\n");
-+		err = -1;
- 	}
- 
- 	/* SDR0_PExRCSSET rdy */
-@@ -138,6 +227,7 @@ static void check_error(void)
- 	     (valPE1 & 0x00100000) ||
- 	     (valPE2 & 0x00100000)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET rdy error\n");
-+		err = -1;
- 	}
- 
- 	/* SDR0_PExRCSSET shutdown */
-@@ -145,44 +235,93 @@ static void check_error(void)
- 	     (valPE1 & 0x00000100) ||
- 	     (valPE2 & 0x00000100)) {
- 		printk(KERN_INFO "PCIE:  SDR0_PExRCSSET shutdown error\n");
-+		err = -1;
- 	}
-+	return err;
- }
- 
- /*
-- * Initialize PCI Express core as described in User Manual section 27.12.1
-+ * Initialize PCI Express core as described in User Manual
-  */
--int ppc440spe_init_pcie(void)
 +static int
-+ppc440spe_init_pcie(void)
- {
-+	int time_out = 20;
++katmai_show_cpuinfo(struct seq_file *m)
++{
++	seq_printf(m, "vendor\t\t: AMCC\n");
++	seq_printf(m, "machine\t\t: PPC440SPe EVB (Katmai)\n");
 +
- 	/* Set PLL clock receiver to LVPECL */
- 	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) | 1 << 28);
- 
--	check_error();
-+	if (check_error())
-+		return -1;
- 
--	printk(KERN_INFO "PCIE initialization OK\n");
--
--	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000))
--		printk(KERN_INFO "PESDR_PLLCT2 resistance calibration failed (0x%08x)\n",
-+	if (!(SDR_READ(PESDR0_PLLLCT2) & 0x10000)) {
-+		printk(KERN_INFO "PCIE: PESDR_PLLCT2 resistance calibration "
-+				"failed (0x%08x)\n",
- 		       SDR_READ(PESDR0_PLLLCT2));
-+		return -1;
-+	}
- 
- 	/* De-assert reset of PCIe PLL, wait for lock */
- 	SDR_WRITE(PESDR0_PLLLCT1, SDR_READ(PESDR0_PLLLCT1) & ~(1 << 24));
- 	udelay(3);
- 
-+	while(time_out) {
-+		if (!(SDR_READ(PESDR0_PLLLCT3) & 0x10000000)) {
-+			time_out--;
-+			udelay(1);
-+		} else
-+			break;
-+	}
-+	if (!time_out) {
-+		printk(KERN_INFO "PCIE: VCO output not locked\n");
-+		return -1;
-+	}
-+	
-+	pr_debug("PCIE initialization OK\n");
++	return 0;
++}
 +
- 	return 0;
- }
- 
--int ppc440spe_init_pcie_rootport(int port)
-+/*
-+ *  Yucca board as End point and root point setup
-+ *                    and
-+ *    testing inbound and out bound windows
-+ *
-+ *  YUCCA board can be plugged into another yucca board or you can get PCI-E
-+ *  cable which can be used to setup loop back from one port to another port.
-+ *  Please rememeber that unless there is a endpoint plugged in to root port it
-+ *  will not initialize. It is the same in case of endpoint , unless there is
-+ *  root port attached it will not initialize.
-+ *
-+ *  In this release of software all the PCI-E ports are configured as either
-+ *  endpoint or rootpoint.In future we will have support for selective ports
-+ *  setup as endpoint and root point in single board.
-+ *
-+ *  Once your board came up as root point , you can verify by reading
-+ *  /proc/bus/pci/devices. Where you can see the configuration registers
-+ *  of end point device attached to the port.
-+ *
-+ *  Enpoint cofiguration can be verified by connecting Yucca board to any
-+ *  host or another yucca board. Then try to scan the device. In case of
-+ *  linux use "lspci" or appripriate os command.
-+ *  
-+ *  To verify the inbound and outbound windows on yucca to yucca configuration
-+ *  windows already configured for memory region 0. On root point side memory
-+ *  map the 36 bit address value 0x4 0000 0000(SRAM) then do the read write to
-+ *  the memory mapped address. On endpoint board memory map the 0x4 0000 0000
-+ *  read the data to verify if writes happened or not.For inbound window 
-+ *  verificatio do the reverse way of write and read .
-+ */
-+int ppc440spe_init_pcie_root_or_endport(u32 port)
- {
- 	static int core_init;
--	void __iomem *utl_base;
-+	int attempts;
- 	u32 val = 0;
--	int i;
- 
- 	if (!core_init) {
-+		if(ppc440spe_init_pcie())
-+			return -1;
- 		++core_init;
--		i = ppc440spe_init_pcie();
--		if (i)
--			return i;
- 	}
- 
- 	/*
-@@ -193,14 +332,25 @@ int ppc440spe_init_pcie_rootport(int port)
- 	 * - Set up UTL configuration.
- 	 * - Increase SERDES drive strength to levels suggested by AMCC.
- 	 * - De-assert RSTPYN, RSTDL and RSTGU.
-+	 *
-+	 * NOTICE for revB chip: PESDRn_UTLSET2 is not set - we leave it with
-+	 * default setting 0x11310000. The register has new fields,
-+	 * PESDRn_UTLSET2[LKINE] in particular: clearing it leads to PCIE core
-+	 * hang.
- 	 */
++static void __init katmai_set_emacdata(void)
++{
++	struct ocp_def *def;
++	struct ocp_func_emac_data *emacdata;
 +
-+#ifdef CONFIG_PCIE_ENDPOINT
-+#define PTYPE_TYPE PTYPE_LEGACY_ENDPOINT
-+#else
-+#define PTYPE_TYPE PTYPE_ROOT_PORT
-+#endif
- 	switch (port) {
- 	case 0:
--		SDR_WRITE(PESDR0_DLPSET, PTYPE_ROOT_PORT << 20 | LNKW_X8 << 12);
--
--		SDR_WRITE(PESDR0_UTLSET1, 0x21222222);
--		SDR_WRITE(PESDR0_UTLSET2, 0x11000000);
-+		SDR_WRITE(PESDR0_DLPSET, 1 << 24 | PTYPE_TYPE << 20 | LNKW_X8 << 12); 
- 
-+		SDR_WRITE(PESDR0_UTLSET1, 0x20222222);
-+		if (!ppc440spe_revB())
-+			SDR_WRITE(PESDR0_UTLSET2, 0x11000000);
- 		SDR_WRITE(PESDR0_HSSL0SET1, 0x35000000);
- 		SDR_WRITE(PESDR0_HSSL1SET1, 0x35000000);
- 		SDR_WRITE(PESDR0_HSSL2SET1, 0x35000000);
-@@ -215,11 +365,11 @@ int ppc440spe_init_pcie_rootport(int port)
- 		break;
- 
- 	case 1:
--		SDR_WRITE(PESDR1_DLPSET, PTYPE_ROOT_PORT << 20 | LNKW_X4 << 12);
--
--		SDR_WRITE(PESDR1_UTLSET1, 0x21222222);
--		SDR_WRITE(PESDR1_UTLSET2, 0x11000000);
-+		SDR_WRITE(PESDR1_DLPSET, 1 << 24 | PTYPE_TYPE << 20 | LNKW_X4 << 12); 
- 
-+		SDR_WRITE(PESDR1_UTLSET1, 0x20222222);
-+		if (!ppc440spe_revB())
-+			SDR_WRITE(PESDR1_UTLSET2, 0x11000000);
- 		SDR_WRITE(PESDR1_HSSL0SET1, 0x35000000);
- 		SDR_WRITE(PESDR1_HSSL1SET1, 0x35000000);
- 		SDR_WRITE(PESDR1_HSSL2SET1, 0x35000000);
-@@ -230,11 +380,11 @@ int ppc440spe_init_pcie_rootport(int port)
- 		break;
- 
- 	case 2:
--		SDR_WRITE(PESDR2_DLPSET, PTYPE_ROOT_PORT << 20 | LNKW_X4 << 12);
--
--		SDR_WRITE(PESDR2_UTLSET1, 0x21222222);
--		SDR_WRITE(PESDR2_UTLSET2, 0x11000000);
-+		SDR_WRITE(PESDR2_DLPSET, 1 << 24 | PTYPE_TYPE << 20 | LNKW_X4 << 12); 
- 
-+		SDR_WRITE(PESDR2_UTLSET1, 0x20222222);
-+		if (!ppc440spe_revB())
-+			SDR_WRITE(PESDR2_UTLSET2, 0x11000000);
- 		SDR_WRITE(PESDR2_HSSL0SET1, 0x35000000);
- 		SDR_WRITE(PESDR2_HSSL1SET1, 0x35000000);
- 		SDR_WRITE(PESDR2_HSSL2SET1, 0x35000000);
-@@ -244,89 +394,107 @@ int ppc440spe_init_pcie_rootport(int port)
- 			  (SDR_READ(PESDR2_RCSSET) & ~(1 << 24 | 1 << 16)) | 1 << 12);
- 		break;
- 	}
--
- 	mdelay(1000);
- 
- 	switch (port) {
--	case 0: val = SDR_READ(PESDR0_RCSSTS); break;
--	case 1: val = SDR_READ(PESDR1_RCSSTS); break;
--	case 2: val = SDR_READ(PESDR2_RCSSTS); break;
-+	case 0:
-+		val = SDR_READ(PESDR0_RCSSTS);
-+		break;
-+		
-+	case 1:
-+		val = SDR_READ(PESDR1_RCSSTS);
-+		break;
-+		
-+	case 2:
-+		val = SDR_READ(PESDR2_RCSSTS);
-+		break;
- 	}
- 
--	if (!(val & (1 << 20)))
--		printk(KERN_INFO "PCIE%d: PGRST inactive\n", port);
--	else
--		printk(KERN_WARNING "PGRST for PCIE%d failed %08x\n", port, val);
--
--	switch (port) {
--	case 0: printk(KERN_INFO "PCIE0: LOOP %08x\n", SDR_READ(PESDR0_LOOP)); break;
--	case 1: printk(KERN_INFO "PCIE1: LOOP %08x\n", SDR_READ(PESDR1_LOOP)); break;
--	case 2: printk(KERN_INFO "PCIE2: LOOP %08x\n", SDR_READ(PESDR2_LOOP)); break;
-+	if (val & (1 << 20)) {
-+		printk(KERN_WARNING "PGRST for PCIE%d failed %08x\n",
-+				port, val);
-+		return -1;
- 	}
- 
- 	/*
--	 * Map UTL registers at 0xc_1000_0n00
-+	 * Verify link is up
- 	 */
-+	val = 0;
- 	switch (port) {
- 	case 0:
--		mtdcr(DCRN_PEGPL_REGBAH(PCIE0), 0x0000000c);
--		mtdcr(DCRN_PEGPL_REGBAL(PCIE0), 0x10000000);
--		mtdcr(DCRN_PEGPL_REGMSK(PCIE0), 0x00007001);
--		mtdcr(DCRN_PEGPL_SPECIAL(PCIE0), 0x68782800);
-+		val = SDR_READ(PESDR0_LOOP);
- 		break;
--
- 	case 1:
--		mtdcr(DCRN_PEGPL_REGBAH(PCIE1), 0x0000000c);
--		mtdcr(DCRN_PEGPL_REGBAL(PCIE1), 0x10001000);
--		mtdcr(DCRN_PEGPL_REGMSK(PCIE1), 0x00007001);
--		mtdcr(DCRN_PEGPL_SPECIAL(PCIE1), 0x68782800);
-+		val = SDR_READ(PESDR1_LOOP);
- 		break;
--
- 	case 2:
--		mtdcr(DCRN_PEGPL_REGBAH(PCIE2), 0x0000000c);
--		mtdcr(DCRN_PEGPL_REGBAL(PCIE2), 0x10002000);
--		mtdcr(DCRN_PEGPL_REGMSK(PCIE2), 0x00007001);
--		mtdcr(DCRN_PEGPL_SPECIAL(PCIE2), 0x68782800);
-+		val = SDR_READ(PESDR2_LOOP);
-+		break;
-+	}
-+	if (!(val & 0x00001000)) {
-+		printk(KERN_INFO "PCIE: link is not up for port %d.\n", port);
-+		return -1;
- 	}
--
--	utl_base = ioremap64(0xc10000000ull + 0x1000 * port, 0x100);
- 
- 	/*
--	 * Set buffer allocations and then assert VRB and TXE.
-+	 * Setup UTL registers - but only on revA!
-+	 * We use default settings for revB chip.
- 	 */
--	out_be32(utl_base + PEUTL_OUTTR,   0x08000000);
--	out_be32(utl_base + PEUTL_INTR,    0x02000000);
--	out_be32(utl_base + PEUTL_OPDBSZ,  0x10000000);
--	out_be32(utl_base + PEUTL_PBBSZ,   0x53000000);
--	out_be32(utl_base + PEUTL_IPHBSZ,  0x08000000);
--	out_be32(utl_base + PEUTL_IPDBSZ,  0x10000000);
--	out_be32(utl_base + PEUTL_RCIRQEN, 0x00f00000);
--	out_be32(utl_base + PEUTL_PCTL,    0x80800066);
--
--	iounmap(utl_base);
-+	if (!ppc440spe_revB())
-+		ppc440spe_setup_utl(port);
- 
- 	/*
--	 * We map PCI Express configuration access into the 512MB regions
-+	 * We map PCI Express configuration access into the 512MB regions.
-+	 *
-+	 * NOTICE: revB is very strict about PLB real addressess and ranges to
-+	 * be mapped for config space; it seems to only work with d_nnnn_nnnn
-+	 * range (hangs the core upon config transaction attempts when set
-+	 * otherwise) while revA uses c_nnnn_nnnn.
-+	 *
-+	 * For revA:
- 	 *     PCIE0: 0xc_4000_0000
- 	 *     PCIE1: 0xc_8000_0000
- 	 *     PCIE2: 0xc_c000_0000
-+	 *
-+	 * For revB:
-+	 *     PCIE0: 0xd_0000_0000
-+	 *     PCIE1: 0xd_2000_0000
-+	 *     PCIE2: 0xd_4000_0000
- 	 */
- 	switch (port) {
- 	case 0:
--		mtdcr(DCRN_PEGPL_CFGBAH(PCIE0), 0x0000000c);
--		mtdcr(DCRN_PEGPL_CFGBAL(PCIE0), 0x40000000);
-+		if (ppc440spe_revB()) {
-+			mtdcr(DCRN_PEGPL_CFGBAH(PCIE0), 0x0000000d);
-+			mtdcr(DCRN_PEGPL_CFGBAL(PCIE0), 0x00000000);
-+		} else {
-+			/* revA */
-+			mtdcr(DCRN_PEGPL_CFGBAH(PCIE0), 0x0000000c);
-+			mtdcr(DCRN_PEGPL_CFGBAL(PCIE0), 0x40000000);
-+		}
- 		mtdcr(DCRN_PEGPL_CFGMSK(PCIE0), 0xe0000001); /* 512MB region, valid */
- 		break;
- 
- 	case 1:
--		mtdcr(DCRN_PEGPL_CFGBAH(PCIE1), 0x0000000c);
--		mtdcr(DCRN_PEGPL_CFGBAL(PCIE1), 0x80000000);
-+		if (ppc440spe_revB()) {
-+			mtdcr(DCRN_PEGPL_CFGBAH(PCIE1), 0x0000000d);
-+			mtdcr(DCRN_PEGPL_CFGBAL(PCIE1), 0x20000000);
-+		} else {
-+			/* revA */
-+			mtdcr(DCRN_PEGPL_CFGBAH(PCIE1), 0x0000000c);
-+			mtdcr(DCRN_PEGPL_CFGBAL(PCIE1), 0x80000000);
-+		}
- 		mtdcr(DCRN_PEGPL_CFGMSK(PCIE1), 0xe0000001); /* 512MB region, valid */
- 		break;
- 
- 	case 2:
--		mtdcr(DCRN_PEGPL_CFGBAH(PCIE2), 0x0000000c);
--		mtdcr(DCRN_PEGPL_CFGBAL(PCIE2), 0xc0000000);
-+		if (ppc440spe_revB()) {
-+			mtdcr(DCRN_PEGPL_CFGBAH(PCIE2), 0x0000000d);
-+			mtdcr(DCRN_PEGPL_CFGBAL(PCIE2), 0x40000000);
-+		} else {
-+			/* revA */
-+			mtdcr(DCRN_PEGPL_CFGBAH(PCIE2), 0x0000000c);
-+			mtdcr(DCRN_PEGPL_CFGBAL(PCIE2), 0xc0000000);
-+		}
- 		mtdcr(DCRN_PEGPL_CFGMSK(PCIE2), 0xe0000001); /* 512MB region, valid */
- 		break;
- 	}
-@@ -334,69 +502,100 @@ int ppc440spe_init_pcie_rootport(int port)
- 	/*
- 	 * Check for VC0 active and assert RDY.
- 	 */
-+	attempts = 10;
- 	switch (port) {
- 	case 0:
--		if (!(SDR_READ(PESDR0_RCSSTS) & (1 << 16)))
--			printk(KERN_WARNING "PCIE0: VC0 not active\n");
-+		while(!(SDR_READ(PESDR0_RCSSTS) & (1 << 16))) {
-+			if (!(attempts--)) {
-+				printk(KERN_WARNING "PCIE0: VC0 not active\n");
-+				return -1;
-+			}
-+			mdelay(1000);
-+		}
- 		SDR_WRITE(PESDR0_RCSSET, SDR_READ(PESDR0_RCSSET) | 1 << 20);
- 		break;
- 	case 1:
--		if (!(SDR_READ(PESDR1_RCSSTS) & (1 << 16)))
--			printk(KERN_WARNING "PCIE0: VC0 not active\n");
-+		while(!(SDR_READ(PESDR1_RCSSTS) & (1 << 16))) {
-+			if (!(attempts--)) {
-+				printk(KERN_WARNING "PCIE1: VC0 not active\n");
-+				return -1;
-+			}
-+			mdelay(1000);
-+		}
++	/* Set phy_map, phy_mode, and mac_addr for the EMAC */
++	def = ocp_get_one_device(OCP_VENDOR_IBM, OCP_FUNC_EMAC, 0);
++	emacdata = def->additions;
++	emacdata->phy_map = 0x00000001;	/* Skip 0x00 */
++	emacdata->phy_mode = PHY_MODE_GMII;
++	memcpy(emacdata->mac_addr, __res.bi_enetaddr, 6);
++}
 +
- 		SDR_WRITE(PESDR1_RCSSET, SDR_READ(PESDR1_RCSSET) | 1 << 20);
- 		break;
- 	case 2:
--		if (!(SDR_READ(PESDR2_RCSSTS) & (1 << 16)))
--			printk(KERN_WARNING "PCIE0: VC0 not active\n");
-+		while(!(SDR_READ(PESDR2_RCSSTS) & (1 << 16))) {
-+			if (!(attempts--)) {
-+				printk(KERN_WARNING "PCIE2: VC0 not active\n");
-+				return -1;
-+			}
-+			mdelay(1000);
-+		}
++enum katmai_hoses {
++	HOSE_PCIX,
++	HOSE_PCIE0,
++	HOSE_PCIE1,
++	HOSE_PCIE2,
++	HOSE_MAX
++};
 +
- 		SDR_WRITE(PESDR2_RCSSET, SDR_READ(PESDR2_RCSSET) | 1 << 20);
- 		break;
- 	}
- 
--#if 0
--	/* Dump all config regs */
--	for (i = 0x300; i <= 0x320; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--	for (i = 0x340; i <= 0x353; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--	for (i = 0x370; i <= 0x383; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--	for (i = 0x3a0; i <= 0x3a2; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--	for (i = 0x3c0; i <= 0x3c3; ++i)
--		printk("[%04x] 0x%08x\n", i, SDR_READ(i));
--#endif
--
- 	mdelay(100);
- 
- 	return 0;
- }
- 
--void ppc440spe_setup_pcie(struct pci_controller *hose, int port)
-+int ppc440spe_setup_pcie(struct pci_controller *hose, u32 port)
- {
- 	void __iomem *mbase;
-+	int attempts = 0;
++static enum katmai_hoses hose_type[4];
 +
-+	if (ppc440spe_revB()) {
-+		/*
-+		 * NOTICE: revB is very strict about PLB real addressess and
-+		 * sizes to be mapped for config space; it hangs the core upon
-+		 * config transaction attempt if not set to 0xd_0010_0000,
-+		 * 0xd_2010_0000, 0xd_4010_0000 respectively.
-+		 */
-+		hose->cfg_data = ioremap64(0xd00100000ull + port * 0x20000000,
-+					0x400);
++#define is_pcix_hose(_hs_) ((_hs_) == HOSE_PCIX)
++#define is_pcie_hose(_hs_) (((_hs_) >= HOSE_PCIE0) && ((_hs_) <= HOSE_PCIE2))
++#define pcie_hose_num(_hs_) ((_hs_) - HOSE_PCIE0)
 +
-+		/* for accessing Local Config space we need to set A[35] */
-+		mbase = ioremap64(0xd10000000ull + port * 0x20000000, 0x400);
-+	} else {
-+		/* revA */
++#define PCIX_READW(offset)				\
++	(readw((void *)((u32)pcix_reg_base+offset)))
 +
-+		/*
-+		 * Map 16MB, which is enough for 4 bits of bus #
-+		 */
-+		hose->cfg_data = ioremap64(0xc40100000ull + port * 0x40000000,
-+					0x01000000);
-+		mbase = ioremap64(0xc50000000ull + port * 0x40000000, 0x1000);
-+	}
- 
--	/*
--	 * Map 16MB, which is enough for 4 bits of bus #
--	 */
--	hose->cfg_data = ioremap64(0xc40000000ull + port * 0x40000000,
--				   1 << 24);
- 	hose->ops = &pcie_pci_ops;
- 
-+#ifndef CONFIG_PCIE_ENDPOINT
- 	/*
- 	 * Set bus numbers on our root port
- 	 */
--	mbase = ioremap64(0xc50000000ull + port * 0x40000000, 4096);
--	out_8(mbase + PCI_PRIMARY_BUS, 0);
--	out_8(mbase + PCI_SECONDARY_BUS, 0);
--
-+		out_8(mbase + PCI_PRIMARY_BUS, 0);
-+		out_8(mbase + PCI_SECONDARY_BUS, 1);
-+		out_8(mbase + PCI_SUBORDINATE_BUS, 1);
-+#endif
- 	/*
- 	 * Set up outbound translation to hose->mem_space from PLB
- 	 * addresses at an offset of 0xd_0000_0000.  We set the low
- 	 * bits of the mask to 11 to turn off splitting into 8
- 	 * subregions and to enable the outbound translation.
-+	 * POMs are set different for root and endpoints to 
-+	 * different window ranges fron inbound and out bound transactions.
- 	 */
-+#ifdef CONFIG_PCIE_ENDPOINT
-+	out_le32(mbase + PECFG_POM0LAH, 0x0000fff8);
-+	out_le32(mbase + PECFG_POM0LAL, 0x0001fff8);
-+#else
- 	out_le32(mbase + PECFG_POM0LAH, 0);
--	out_le32(mbase + PECFG_POM0LAL, hose->mem_space.start);
-+	out_le32(mbase + PECFG_POM0LAL, hose->mem_space.start );
-+#endif
- 
- 	switch (port) {
- 	case 0:
-@@ -404,38 +603,148 @@ void ppc440spe_setup_pcie(struct pci_controller *hose, int port)
- 		mtdcr(DCRN_PEGPL_OMR1BAL(PCIE0),  hose->mem_space.start);
- 		mtdcr(DCRN_PEGPL_OMR1MSKH(PCIE0), 0x7fffffff);
- 		mtdcr(DCRN_PEGPL_OMR1MSKL(PCIE0),
--		      ~(hose->mem_space.end - hose->mem_space.start) | 3);
-+		      ~(BOARD_PCIE_MEM_SIZE - 1) | 3);
- 		break;
- 	case 1:
- 		mtdcr(DCRN_PEGPL_OMR1BAH(PCIE1),  0x0000000d);
- 		mtdcr(DCRN_PEGPL_OMR1BAL(PCIE1),  hose->mem_space.start);
- 		mtdcr(DCRN_PEGPL_OMR1MSKH(PCIE1), 0x7fffffff);
- 		mtdcr(DCRN_PEGPL_OMR1MSKL(PCIE1),
--		      ~(hose->mem_space.end - hose->mem_space.start) | 3);
--
-+		      ~(BOARD_PCIE_MEM_SIZE - 1) | 3);
- 		break;
- 	case 2:
- 		mtdcr(DCRN_PEGPL_OMR1BAH(PCIE2),  0x0000000d);
- 		mtdcr(DCRN_PEGPL_OMR1BAL(PCIE2),  hose->mem_space.start);
- 		mtdcr(DCRN_PEGPL_OMR1MSKH(PCIE2), 0x7fffffff);
- 		mtdcr(DCRN_PEGPL_OMR1MSKL(PCIE2),
--		      ~(hose->mem_space.end - hose->mem_space.start) | 3);
-+		      ~(BOARD_PCIE_MEM_SIZE - 1) | 3);
- 		break;
- 	}
- 
- 	/* Set up 16GB inbound memory window at 0 */
--	out_le32(mbase + PCI_BASE_ADDRESS_0, 0);
--	out_le32(mbase + PCI_BASE_ADDRESS_1, 0);
-+#ifndef CONFIG_PCIE_ENDPOINT
- 	out_le32(mbase + PECFG_BAR0HMPA, 0x7fffffc);
- 	out_le32(mbase + PECFG_BAR0LMPA, 0);
--	out_le32(mbase + PECFG_PIM0LAL, 0);
--	out_le32(mbase + PECFG_PIM0LAH, 0);
-+#else
-+	out_le32(mbase + PECFG_BAR0HMPA, 0xfffffffc);
-+	out_le32(mbase + PECFG_BAR0LMPA, 0xffff0000);
-+#endif
-+	out_le32(mbase + PCI_BASE_ADDRESS_0, 0);
-+	out_le32(mbase + PCI_BASE_ADDRESS_1, 0);
++#define PCIX_WRITEW(value, offset)				\
++	(writew(value, (void *)((u32)pcix_reg_base+offset)))
++
++#define PCIX_WRITEL(value, offset)				\
++	(writel(value, (void *)((u32)pcix_reg_base+offset)))
++
++static void __init
++ppc440spe_setup_pcix(struct pci_controller *hose)
++{
++	void *pcix_reg_base;
++
++	pcix_reg_base = ioremap64(PCIX0_REG_BASE, PCIX_REG_SIZE);
++
++	/* Disable all windows */
++	PCIX_WRITEL(0, PCIX0_POM0SA);
++	PCIX_WRITEL(0, PCIX0_POM1SA);
++	PCIX_WRITEL(0, PCIX0_POM2SA);
++	PCIX_WRITEL(0, PCIX0_PIM0SA);
++	PCIX_WRITEL(0, PCIX0_PIM0SAH);
++	PCIX_WRITEL(0, PCIX0_PIM1SA);
++	PCIX_WRITEL(0, PCIX0_PIM2SA);
++	PCIX_WRITEL(0, PCIX0_PIM2SAH);
 +
 +	/*
-+	 *  SRAM location 0x4 0000 0000 is target for inbound transefers
-+	 */
-+	out_le32(mbase + PECFG_PIM0LAL, 0x00000000);
-+	out_le32(mbase + PECFG_PIM0LAH, 0x00000004);
-+	out_le32(mbase + PECFG_PIM1LAL, 0x00000000);
-+	out_le32(mbase + PECFG_PIM1LAH, 0x00000004);
-+	out_le32(mbase + PECFG_PIM01SAH, 0xffff0000);
-+	out_le32(mbase + PECFG_PIM01SAL, 0x00000000);
- 	out_le32(mbase + PECFG_PIMEN, 0x1);
- 
- 	/* Enable I/O, Mem, and Busmaster cycles */
- 	out_le16(mbase + PCI_COMMAND,
- 		 in_le16(mbase + PCI_COMMAND) |
- 		 PCI_COMMAND_IO | PCI_COMMAND_MEMORY | PCI_COMMAND_MASTER);
-+	attempts = 10;
-+#ifndef CONFIG_PCIE_ENDPOINT
-+	printk(KERN_INFO"PCIE:%d successfully set as rootpoint\n",port);
-+	switch(port )
-+	{
-+		case 0:
-+			out_le16(mbase + 0x200,0xaaa0);
-+			out_le16(mbase + 0x202,0xbed0);
-+			break;
-+		case 1:
-+			out_le16(mbase + 0x200,0xaaa1);
-+			out_le16(mbase + 0x202,0xbed1);
-+			break;
-+		case 2:
-+			out_le16(mbase + 0x200,0xaaa2);
-+			out_le16(mbase + 0x202,0xbed2);
-+			break;
-+		default:
-+			out_le16(mbase + 0x200,0xaaa3);
-+			out_le16(mbase + 0x202,0xbed3);
++	 * Setup 512MB PLB->PCI outbound mem window
++	 * (a_n000_0000->0_n000_0000)
++	 * */
++	PCIX_WRITEL(0x0000000d, PCIX0_POM0LAH);
++	PCIX_WRITEL(hose->mem_space.start, PCIX0_POM0LAL);
++	PCIX_WRITEL(0x00000000, PCIX0_POM0PCIAH);
++	PCIX_WRITEL(hose->mem_space.start, PCIX0_POM0PCIAL);
++	PCIX_WRITEL(~(hose->mem_space.end - hose->mem_space.start) | 1 ,
++		    PCIX0_POM0SA);
++
++	/* Setup 1GB PCI->PLB inbound memory window at 0, enable MSIs */
++	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAH);
++	PCIX_WRITEL(0x00000000, PCIX0_PIM0LAL);
++	PCIX_WRITEL(0xc0000007, PCIX0_PIM0SA);
++	PCIX_WRITEL(0xffffffff, PCIX0_PIM0SAH);
++
++	/* Enable PCIX0 I/O, Mem, and Busmaster cycles */
++	PCIX_WRITEW(PCIX_READW(PCIX0_COMMAND) | PCI_COMMAND_MEMORY |
++		    PCI_COMMAND_MASTER, PCIX0_COMMAND);
++
++	iounmap(pcix_reg_base);
++	eieio();
++}
++
++static inline int
++katmai_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
++{
++	struct pci_controller *hose = pci_bus_to_hose(dev->bus->number);
++
++	if (hose_type[hose->index] == HOSE_PCIX) {
++		static char pci_irq_table[][4] =
++			/*
++			 *	PCI IDSEL/INTPIN->INTLINE
++			 *	  A   B   C   D
++			 */
++			{
++				{ 52, -1, -1, -1 },	/* IDSEL 1 - PCIX0 Slot 0 */
++			};
++		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
++	} else if (hose_type[hose->index] == HOSE_PCIE0) {
++		static char pci_irq_table[][4] =
++			/*
++			 *	PCI IDSEL/INTPIN->INTLINE
++			 *	  A   B   C   D
++			 */
++			{
++				{ 96, 97, 98, 99 },
++			};
++		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
++	} else if (hose_type[hose->index] == HOSE_PCIE1) {
++		static char pci_irq_table[][4] =
++			/*
++			 *	PCI IDSEL/INTPIN->INTLINE
++			 *	  A   B   C   D
++			 */
++			{
++				{ 100, 101, 102, 103 },
++			};
++		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
++	} else if (hose_type[hose->index] == HOSE_PCIE2) {
++		static char pci_irq_table[][4] =
++			/*
++			 *	PCI IDSEL/INTPIN->INTLINE
++			 *	  A   B   C   D
++			 */
++			{
++				{ 104, 105, 106, 107 },
++			};
++		const long min_idsel = 1, max_idsel = 1, irqs_per_slot = 4;
++		return PCI_IRQ_TABLE_LOOKUP;
 +	}
-+#else
++	return -1;
++}
++
++static int __init katmai_pcie_card_present(int port)
++{
++	u32 val;
++	void __iomem *gpio_base;
++
++	gpio_base = ioremap64(GPIO_BASE, 0x100);
++	val = in_be32(gpio_base + GPIO0_IR_OFFS);
++	iounmap(gpio_base);
++
 +	switch (port) {
 +	case 0:
-+		while(!(SDR_READ(PESDR0_RCSSTS) & (1 << 8))) {
-+			if (!(attempts--)) {
-+				printk(KERN_INFO "PCIE0: BMEN is not active\n");
-+				return -1;
-+			}
-+			mdelay(1000);
-+		}
-+		break;
++		return !(val & GPIO_VAL(CFG_GPIO_PCIE_PRESENT0));
 +	case 1:
-+		while(!(SDR_READ(PESDR1_RCSSTS) & (1 << 8))) {
-+			if (!(attempts--)) {
-+				printk(KERN_WARNING "PCIE1: BEMEN not active\n");
-+				return -1;
-+			}
-+			mdelay(1000);
-+		}
-+		break;
++		return !(val & GPIO_VAL(CFG_GPIO_PCIE_PRESENT1));
 +	case 2:
-+		while(!(SDR_READ(PESDR2_RCSSTS) & (1 << 8))) {
-+			if (!(attempts--)) {
-+				printk(KERN_WARNING "PCIE2: BMEN is not active\n");
-+				return -1;
++		return !(val & GPIO_VAL(CFG_GPIO_PCIE_PRESENT2));
++	default:
++		return 0;
++	}
++}
++
++static void __init
++katmai_setup_hoses(void)
++{
++	struct pci_controller *hose;
++	char name[20];
++ 	enum katmai_hoses hs;
++ 	int bus_no = 0;
++
++	for (hs = HOSE_PCIX; hs < HOSE_MAX; ++hs) {
++		if (is_pcie_hose(hs)) {
++			if (!katmai_pcie_card_present(pcie_hose_num(hs)))
++				continue;
++
++			pr_debug("PCIE%d: card present\n", pcie_hose_num(hs));
++
++			if (ppc440spe_init_pcie_root_or_endport(pcie_hose_num(hs))) {
++				printk(KERN_ERR "PCIE%d: initialization "
++				       "failed\n", pcie_hose_num(hs));
++				continue;
 +			}
-+			mdelay(1000);
 +		}
-+		break;
++
++		hose = pcibios_alloc_controller();
++		if (!hose)
++			return;
++
++		sprintf(name, "PCI%s%d host bridge",
++			is_pcix_hose(hs) ? "X" : "E",
++			is_pcie_hose(hs) ?  pcie_hose_num(hs) : 0
++			);
++
++		pci_init_resource(&hose->io_resource,
++				  KATMAI_PCIX_LOWER_IO, KATMAI_PCIX_UPPER_IO,
++				  IORESOURCE_IO, name);
++
++		if (is_pcix_hose(hs)) {
++			hose->mem_space.start = KATMAI_PCIX_LOWER_MEM;
++			hose->mem_space.end   = hose->mem_space.start +
++				KATMAI_PCIX_MEM_SIZE - 1;
++		} else {
++			hose->mem_space.start = KATMAI_PCIE_LOWER_MEM +
++				pcie_hose_num(hs) * KATMAI_PCIE_MEM_SIZE;
++			hose->mem_space.end   = hose->mem_space.start +
++				KATMAI_PCIE_MEM_SIZE - 1;
++		}
++
++		pci_init_resource(&hose->mem_resources[0],
++				  hose->mem_space.start,
++				  hose->mem_space.end,
++				  IORESOURCE_MEM,
++				  name);
++
++		hose->first_busno = bus_no;
++		hose->last_busno  = 0xFF;
++		hose_type[hose->index] = hs;
++
++		if (is_pcix_hose(hs)) {
++			hose->io_space.start = KATMAI_PCIX_LOWER_IO;
++			hose->io_space.end = KATMAI_PCIX_UPPER_IO;
++			isa_io_base =
++				(unsigned long)
++				ioremap64(PCIX0_IO_BASE, PCIX_IO_SIZE);
++			hose->io_base_virt = (void *)isa_io_base;
++
++			ppc440spe_setup_pcix(hose);
++
++			setup_indirect_pci(hose, PCIX0_CFGA, PCIX0_CFGD);
++			hose->set_cfg_type = 1;
++		} else {
++			if (ppc440spe_setup_pcie(hose, pcie_hose_num(hs)) != 0) {
++				printk(KERN_WARNING
++				       "PCIE setup failed for hose no %d\n",
++				       pcie_hose_num(hs));
++				continue;
++			}
++		}
++
++		hose->last_busno = pciauto_bus_scan(hose, hose->first_busno);
++		bus_no = hose->last_busno + 1;
++		pr_debug("%s: resources allocated\n", name);
 +	}
-+	printk(KERN_INFO"PCIE:%d successfully set as endpoint\n",port);
-+	switch(port)
-+	{
-+		case 0:
-+			out_le16(mbase + 0x200,0xeee0);
-+			out_le16(mbase + 0x202,0xfed0);
-+			break;
-+		case 1:
-+			out_le16(mbase + 0x200,0xeee1);
-+			out_le16(mbase + 0x202,0xfed1);
-+			break;
-+		case 2:
-+			out_le16(mbase + 0x200,0xeee2);
-+			out_le16(mbase + 0x202,0xfed2);
-+			break;
-+		default :
-+			out_le16(mbase + 0x200,0xeee3);
-+			out_le16(mbase + 0x202,0xfed3);
++
++	ppc_md.pci_swizzle = common_swizzle;
++ 	ppc_md.pci_map_irq = katmai_map_irq;
++}
++
++static void __init
++katmai_early_serial_map(void)
++{
++	struct uart_port port;
++
++	/* Setup ioremapped serial port access */
++	memset(&port, 0, sizeof(port));
++	port.membase = ioremap64(PPC440SPE_UART0_ADDR, 8);
++	port.irq = UART0_INT;
++	port.uartclk = clocks.uart0;
++	port.regshift = 0;
++	port.iotype = UPIO_MEM;
++	port.flags = UPF_BOOT_AUTOCONF | UPF_SKIP_TEST;
++	port.line = 0;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 0 failed\n");
 +	}
-+#endif
-+	printk(KERN_INFO"vendor-id 0x%x\n",in_le16(mbase+0x0));
-+	printk(KERN_INFO"device-id 0x%x\n",in_le16(mbase+0x2));
++
++	port.membase = ioremap64(PPC440SPE_UART1_ADDR, 8);
++	port.irq = UART1_INT;
++	port.uartclk = clocks.uart1;
++	port.line = 1;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 1 failed\n");
++	}
++
++	port.membase = ioremap64(PPC440SPE_UART2_ADDR, 8);
++	port.irq = UART2_INT;
++	port.uartclk = BASE_BAUD;
++	port.line = 2;
++
++	if (early_serial_setup(&port) != 0) {
++		printk("Early serial init of port 2 failed\n");
++	}
++}
++
++static void __init
++katmai_setup_arch(void)
++{
++	katmai_set_emacdata();
++
++#if !defined(CONFIG_BDI_SWITCH)
 +	/*
-+	 * This code works as is with yucca plugged in another yucca board or any endpoint device 
-+	 * pugged in yucca board as root point device.
-+	 * If you want to change configuration according to your configuration . Here are few gotch's.
-+	 * There could be hangs due to different reasons
-+	 * 1 -- It could be that endpoint is not initialyzed. So always initialize the endpoint first.
-+	 * 2 -- May be your POM and BARs are not set properly
-+	 * 3 -- careful with masks which decide window sizes
-+	 * Here is the test code which used for testing sram read . This test dumps remote and local sram 
-+	 * locations which help in comparing visually.
-+	 * u32 *rsram,*lsram;
-+	 * int i=0;
-+	 * lsram = ioremap64(0x400000000 ,0x200); 
-+     * #ifndef CONFIG_PCIE_ENDPOINT
-+	 *    rsram = ioremap64(0xd00000000 + hose->mem_space.start,0x200);
-+	 *	 if(port == 1)
-+	 *		 for(i=0;i<20;i+=4) 
-+	 *			 printk(KERN_INFO"endp sram 0x%x root sram 0x%x\n",*(rsram+i),*(lsram+i));
-+     *#else
-+	 *    rsram = ioremap64(0xd00000000 + hose->mem_space.start,0x200);
-+	 *    for(i=0;i<20;i+=4) 
-+	 *		 printk(KERN_INFO"rootp sram 0x%x endp sram 0x%x\n",*(rsram+i),*(lsram+i));
-+     * #endif
-+    */
- 
- 	iounmap(mbase);
-+	return 0;
- }
-diff --git a/arch/ppc/syslib/ppc440spe_pcie.h b/arch/ppc/syslib/ppc440spe_pcie.h
-index 55b765a..e7099a3 100644
---- a/arch/ppc/syslib/ppc440spe_pcie.h
-+++ b/arch/ppc/syslib/ppc440spe_pcie.h
-@@ -13,6 +13,8 @@
- 
- #define DCRN_SDR0_CFGADDR	0x00e
- #define DCRN_SDR0_CFGDATA	0x00f
-+#define DCRN_I2O0_IBAL		0x066
-+#define DCRN_I2O0_IBAH		0x067
- 
- #define DCRN_PCIE0_BASE		0x100
- #define DCRN_PCIE1_BASE		0x120
-@@ -136,14 +138,20 @@
-  */
- #define PECFG_BAR0LMPA		0x210
- #define PECFG_BAR0HMPA		0x214
--#define PECFG_PIMEN		0x33c
-+#define PECFG_BAR1MPA     	0x218
-+#define PECFG_BAR2MPA     	0x220
-+#define PECFG_PIMEN			0x33c
- #define PECFG_PIM0LAL		0x340
- #define PECFG_PIM0LAH		0x344
-+#define PECFG_PIM1LAL       0x348
-+#define PECFG_PIM1LAH       0x34c
-+#define PECFG_PIM01SAL    	0x350
-+#define PECFG_PIM01SAH      0x354
- #define PECFG_POM0LAL		0x380
- #define PECFG_POM0LAH		0x384
- 
--int ppc440spe_init_pcie(void);
--int ppc440spe_init_pcie_rootport(int port);
--void ppc440spe_setup_pcie(struct pci_controller *hose, int port);
-+int ppc440spe_revB(void);
-+int ppc440spe_init_pcie_root_or_endport(u32 port);
-+int ppc440spe_setup_pcie(struct pci_controller *hose, u32 port);
- 
- #endif /* __PPC_SYSLIB_PPC440SPE_PCIE_H */
-diff --git a/include/asm-ppc/ibm44x.h b/include/asm-ppc/ibm44x.h
-index 7818b54..38f5959 100644
---- a/include/asm-ppc/ibm44x.h
-+++ b/include/asm-ppc/ibm44x.h
-@@ -85,7 +85,7 @@
-  */
- #if defined(CONFIG_440SP) || defined(CONFIG_440SPE)
- #define PPC44x_IO_LO		0xf0000000UL
--#define PPC44x_IO_HI		0xf0000fffUL
-+#define PPC44x_IO_HI		0xffffffffUL	/* used not only for PCI-IO but for EBC too */
- #define PPC44x_PCI0CFG_LO	0x0ec00000UL
- #define PPC44x_PCI0CFG_HI	0x0ec00007UL
- #define PPC44x_PCI1CFG_LO	0x1ec00000UL
-@@ -556,12 +556,19 @@
- #define PCIX1_CFGD		0x1ec00004UL
- #define PCIX2_CFGD		0x2ec00004UL
- 
-+#if defined (CONFIG_440SPE)
-+#define PCIX0_IO_BASE		0x0000000C08000000ULL
-+#else
- #define PCIX0_IO_BASE		0x0000000908000000ULL
- #define PCIX1_IO_BASE		0x0000000908000000ULL
- #define PCIX2_IO_BASE		0x0000000908000000ULL
++	 * The Abatron BDI JTAG debugger does not tolerate others
++	 * mucking with the debug registers.
++	 */
++	mtspr(SPRN_DBCR0, (DBCR0_TDE | DBCR0_IDM));
 +#endif
 +
- #define PCIX_IO_SIZE		0x00010000
++	/*
++	 * Determine various clocks.
++	 * To be completely correct we should get SysClk
++	 * from FPGA, because it can be changed by on-board switches
++	 * --ebs
++	 */
++	/* 440GX and 440SPe clocking is the same - rd */
++	ibm440gx_get_clocks(&clocks, 33333333, 6 * 1843200);
++	ocp_sys_info.opb_bus_freq = clocks.opb;
++
++	/* init to some ~sane value until calibrate_delay() runs */
++	loops_per_jiffy = 50000000/HZ;
++
++	/* Setup PCIXn host bridges */
++	katmai_setup_hoses();
++
++#ifdef CONFIG_BLK_DEV_INITRD
++	if (initrd_start)
++		ROOT_DEV = Root_RAM0;
++	else
++#endif
++#ifdef CONFIG_ROOT_NFS
++		ROOT_DEV = Root_NFS;
++#else
++	ROOT_DEV = Root_HDA1;
++#endif
++
++	katmai_early_serial_map();
++
++	/* Identify the system */
++	printk("AMCC PowerPC 440SPe Katmai Platform\n");
++}
++
++static void katmai_restart(char *cmd)
++{
++	local_irq_disable();
++	mtspr(SPRN_DBCR0, DBCR0_RST_CHIP);
++}
++
++void __init platform_init(unsigned long r3, unsigned long r4,
++			  unsigned long r5, unsigned long r6, unsigned long r7)
++{
++	ibm44x_platform_init(r3, r4, r5, r6, r7);
++
++	ppc_md.setup_arch = katmai_setup_arch;
++	ppc_md.show_cpuinfo = katmai_show_cpuinfo;
++	ppc_md.find_end_of_memory = ibm440sp_find_end_of_memory;
++	ppc_md.get_irq = NULL;		/* Set in ppc4xx_pic_init() */
++
++	ppc_md.calibrate_decr = katmai_calibrate_decr;
++#ifdef CONFIG_KGDB
++	ppc_md.early_serial_map = katmai_early_serial_map;
++#endif
++	ppc_md.restart = katmai_restart;
++}
+diff --git a/arch/ppc/platforms/4xx/katmai.h b/arch/ppc/platforms/4xx/katmai.h
+new file mode 100644
+index 0000000..f1ad993
+--- /dev/null
++++ b/arch/ppc/platforms/4xx/katmai.h
+@@ -0,0 +1,68 @@
++/*
++ * Katmai board definitions
++ *
++ * Copyright 2007 DENX Software Engineering, Stefan Roese <sr@denx.de>
++ *
++ * Based on yucca.h by Roland Dreier
++ *
++ * Copyright 2004-2005 MontaVista Software Inc.
++ * Copyright (c) 2005 Cisco Systems.  All rights reserved.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ *
++ */
++
++#ifdef __KERNEL__
++#ifndef __ASM_KATMAI_H__
++#define __ASM_KATMAI_H__
++
++#include <platforms/4xx/ppc440spe.h>
++
++/* External timer clock frequency */
++#define KATMAI_TMR_CLK		25000000
++
++#define GPIO_VAL(gpio)		(0x80000000 >> (gpio))
++#define CFG_GPIO_PCIE_PRESENT0	17
++#define CFG_GPIO_PCIE_PRESENT1	21
++#define CFG_GPIO_PCIE_PRESENT2	23
++
++/*
++ * Serial port defines
++ */
++#define RS_TABLE_SIZE	3
++
++/* PIBS defined UART mappings, used before early_serial_setup */
++#define UART0_IO_BASE	0xa0000200
++#define UART1_IO_BASE	0xa0000300
++#define UART2_IO_BASE	0xa0000600
++
++#define BASE_BAUD	11059200
++#define STD_UART_OP(num)					\
++	{ 0, BASE_BAUD, 0, UART##num##_INT,			\
++		(ASYNC_BOOT_AUTOCONF | ASYNC_SKIP_TEST),	\
++		iomem_base: (void*)UART##num##_IO_BASE,		\
++		io_type: SERIAL_IO_MEM},
++
++#define SERIAL_PORT_DFNS	\
++	STD_UART_OP(0)		\
++	STD_UART_OP(1)		\
++	STD_UART_OP(2)
++
++/* PCI support */
++#define KATMAI_PCIX_LOWER_IO	0x00000000
++#define KATMAI_PCIX_UPPER_IO	0x0000ffff
++#define KATMAI_PCIX_LOWER_MEM	0x80000000
++#define KATMAI_PCIX_UPPER_MEM	0x8fffffff
++#define KATMAI_PCIX_MEM_SIZE	0x10000000
++#define KATMAI_PCIX_MEM_OFFSET	0x00000000
++
++#define KATMAI_PCIE_LOWER_MEM	0x90000000
++#define KATMAI_PCIE_MEM_SIZE	0x10000000
++#define BOARD_PCIE_MEM_SIZE	KATMAI_PCIE_MEM_SIZE	/* used in syslib/ppc440spe_pcie.c */
++#define KATMAI_PCIE_MEM_OFFSET	0x00000000
++
++#endif				/* __ASM_KATMAI_H__ */
++#endif				/* __KERNEL__ */
+diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
+index 92fd02d..4ba6087 100644
+--- a/include/asm-ppc/ibm4xx.h
++++ b/include/asm-ppc/ibm4xx.h
+@@ -97,12 +97,12 @@ void ppc4xx_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ #include <platforms/4xx/ebony.h>
+ #endif
  
--#ifdef CONFIG_440SP
-+#if defined (CONFIG_440SPE)
-+#define PCIX0_REG_BASE		0x0000000c0ec80000ULL
-+#elif defined(CONFIG_440SP)
- #define PCIX0_REG_BASE		0x000000090ec80000ULL
- #else
- #define PCIX0_REG_BASE		0x000000020ec80000ULL
+-#if defined(CONFIG_LUAN)
+-#include <platforms/4xx/luan.h>
++#if defined(CONFIG_KATMAI)
++#include <platforms/4xx/katmai.h>
+ #endif
+ 
+-#if defined(CONFIG_YUCCA)
+-#include <platforms/4xx/yucca.h>
++#if defined(CONFIG_LUAN)
++#include <platforms/4xx/luan.h>
+ #endif
+ 
+ #if defined(CONFIG_OCOTEA)
+@@ -113,6 +113,10 @@ void ppc4xx_init(unsigned long r3, unsigned long r4, unsigned long r5,
+ #include <platforms/4xx/taishan.h>
+ #endif
+ 
++#if defined(CONFIG_YUCCA)
++#include <platforms/4xx/yucca.h>
++#endif
++
+ #ifndef __ASSEMBLY__
+ #ifdef CONFIG_40x
+ /*
