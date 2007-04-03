@@ -1,22 +1,18 @@
-Return-Path: <flar@cynthia.pants.nu>
-Received: from cynthia.pants.nu (adsl-216-102-214-42.dsl.snfc21.pacbell.net
-	[216.102.214.42]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A32C1DDEFB
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 09:44:51 +1000 (EST)
-Date: Tue, 3 Apr 2007 14:29:28 -0700
-From: Brad Boyer <flar@allandria.com>
-To: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id AC5CFDDE9E
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 09:55:26 +1000 (EST)
+Date: Tue, 03 Apr 2007 16:55:18 -0700 (PDT)
+Message-Id: <20070403.165518.55726194.davem@davemloft.net>
+To: paulus@samba.org
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070403212928.GA12951@cynthia.pants.nu>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
 References: <1175610345.2665.15.camel@shinybook.infradead.org>
 	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<1175642916.10567.24.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1175642916.10567.24.camel@shinybook.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +22,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 03, 2007 at 07:28:36PM -0400, David Woodhouse wrote:
-> I agree to a certain extent -- but then again, why should a user know or
-> care about the name /dev/ttyS0 _either_? A GUI PPP dialer should be
-> listing the available serial ports in the system whatever their names
-> are.
+From: Paul Mackerras <paulus@samba.org>
+Date: Wed, 4 Apr 2007 09:14:20 +1000
 
-The moment you do serial console, the user needs to know. I would hate
-having to have console=ttyPZ0 in my kernel command line. Does that even
-work? I didn't see a change to the console setup in your patch. Serial
-is for much more than modems and PDA sync. In fact, I would think that
-many more Linux systems these days use serial for console than for any
-other purpose due to the use of such setups in large data centers and
-the reduction in serial peripherals for desktop computers.
-
-> And nobody _forces_ you to use the name ttyPZ0. If you really want, you
-> can call it ttyS0.... just mknod /dev/ttyS0 204 192
+> David Woodhouse writes:
 > 
-> You could even have udev rules which share the /dev/ttyS$N namespace
-> between _all_ kinds of serial ports, if you really want to.
+> > There are proper device numbers registered for pmac_zilog now. Use them.
 > 
-> Abusing the 8250 device numbers prevents the 8250 module from being
-> loaded at the same time as pmac_zilog, and means you can't have both
-> internal port and PCMCIA or PCI 8250 ports active at the same time.
+> Sigh.  I guess this is inevitable, but IMNSHO this exposes a weakness
+> in our serial subsystem.
+> 
+> The problem is that this means that a user has to know "oh, the serial
+> port on my computer is implemented with a Z85C30 chip, therefore it's
+> /dev/ttyPZ0 not /dev/ttyS0, like it would be if the designers had used
+> a 16C550".
+...
+> Why should a user know or care about that?  It really should be "it's
+> the built-in serial port on my computer therefore it's /dev/ttyS0".
 
-The TTY_MAJOR should have never belonged to 8250.c in the first place.
-I know it's just my opinion, but I think this major device should be
-owned by the serial core, and it shouldn't matter what chip drives each
-individual port. Each hardware driver should just register with the
-core how many ports it has and should be allocated from the same range.
+I totally agree with Paul, the onboard serial device should get
+ttyS0 regardless of what hardare is used to drive it.
 
-This situation is purely a side-effect of the fact that all the
-original Linux supported hardware used the 8250 driver and everyone
-who didn't use 8250 was marginalized enough that they got ignored.
+We dish out the minors sequentially on sparc in order to handle
+the case of multiple onboard serial controllers of different
+types which can happen on sparc.
 
-	Brad Boyer
-	flar@allandria.com
+Generalizing this minor number allocation for ttyS? might be the
+best way to handle this.
