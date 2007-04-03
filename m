@@ -1,31 +1,25 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0AD54DE036
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 03:19:01 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
-	l33HGii5010078
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 13:16:44 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l33HIsdU058688
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:18:54 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l33HIrOL012743
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:18:54 -0600
-To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
-Subject: [PATCH 4/19] PCI: rpaphp: Fix a memleak;
-	slot->location string was never freed
-In-Reply-To: 20070403164850.GP4922@austin.ibm.com>
-Message-Id: <20070403171853.BE1C33A65C@topology.austin.ibm.com>
-Date: Tue,  3 Apr 2007 12:18:53 -0500 (CDT)
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	pcihpd-discuss@lists.sourceforge.net
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 2D08EDE049
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 03:20:24 +1000 (EST)
+Date: Tue, 3 Apr 2007 12:36:31 -0500
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Subject: Re: [PATCH 01/17] [POWERPC] Rename get_property to of_get_property:
+	include
+Message-ID: <20070403173631.GA4844@lixom.net>
+References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
+	<20070403105401.1fcdee27.sfr@canb.auug.org.au>
+	<20070403105539.7222cf2a.sfr@canb.auug.org.au>
+	<20070403105650.204003b6.sfr@canb.auug.org.au>
+	<20070403105748.769f156c.sfr@canb.auug.org.au>
+	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
+	<20070403222406.cf39c459.sfr@canb.auug.org.au>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070403222406.cf39c459.sfr@canb.auug.org.au>
+From: olof@lixom.net (Olof Johansson)
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,51 +29,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Apr 03, 2007 at 10:24:06PM +1000, Stephen Rothwell wrote:
+> 
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> ---
+>  include/asm-powerpc/parport.h |    6 +++---
+>  1 files changed, 3 insertions(+), 3 deletions(-)
+> 
+> This set of patches follows the previous 6.  The whole lot have been
+> built with allmodconfig on PowerPC64.
 
-Fix a memleak; the slot->location string was never freed.
-Fix some whitespace and overlong-line probelms while we're here.
+Why split this up in 17 patches? It's just a search and replace, might
+as well do it as one patch. I don't think there's much use in being able
+to bisect halfway through it.
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-Cc: John Rose <johnrose@austin.ibm.com>
 
-----
- drivers/pci/hotplug/rpaphp_slot.c |    9 ++++-----
- 1 file changed, 4 insertions(+), 5 deletions(-)
-
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_slot.c
-===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_slot.c	2007-04-03 11:04:16.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_slot.c	2007-04-03 11:04:18.000000000 -0500
-@@ -56,7 +56,6 @@ static struct hotplug_slot_attribute php
- static void rpaphp_release_slot(struct hotplug_slot *hotplug_slot)
- {
- 	struct slot *slot = (struct slot *) hotplug_slot->private;
--
- 	dealloc_slot_struct(slot);
- }
- 
-@@ -65,12 +64,12 @@ void dealloc_slot_struct(struct slot *sl
- 	kfree(slot->hotplug_slot->info);
- 	kfree(slot->hotplug_slot->name);
- 	kfree(slot->hotplug_slot);
-+	kfree(slot->location);
- 	kfree(slot);
--	return;
- }
- 
--struct slot *alloc_slot_struct(struct device_node *dn, int drc_index, char *drc_name,
--		  int power_domain)
-+struct slot *alloc_slot_struct(struct device_node *dn,
-+                       int drc_index, char *drc_name, int power_domain)
- {
- 	struct slot *slot;
- 	
-@@ -115,7 +114,7 @@ error_nomem:
- 
- static int is_registered(struct slot *slot)
- {
--	struct slot             *tmp_slot;
-+	struct slot *tmp_slot;
- 
- 	list_for_each_entry(tmp_slot, &rpaphp_slot_head, rpaphp_slot_list) {
- 		if (!strcmp(tmp_slot->name, slot->name))
+-Olof
