@@ -1,27 +1,28 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0B2EDDE01B
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 03:09:58 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l33H9rhp009405
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 13:09:53 -0400
+	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BAB33DE032
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 03:10:56 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l33HAr3P006491
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 13:10:53 -0400
 Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l33H9rFq051382
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:09:53 -0600
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l33HArBK197482
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:10:53 -0600
 Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
 	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l33H9qr8002585
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:09:53 -0600
+	l33HAqEC009630
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:10:53 -0600
 To: Kristen@austin.ibm.com, Carlson@austin.ibm.com,
 	"Accardi <kristen.c.accardi"@intel.com
-Subject: [PATCH 5/19] PCI: rpaphp: Remove un-needed goto
+Subject: [PATCH 6/19] PCI: rpaphp: remove a function that does nothing but
+	wrap debug printk's
 In-Reply-To: 20070403164850.GP4922@austin.ibm.com>
-Message-Id: <20070403170952.2C4A33A65C@topology.austin.ibm.com>
-Date: Tue,  3 Apr 2007 12:09:52 -0500 (CDT)
+Message-Id: <20070403171052.3A0293A65C@topology.austin.ibm.com>
+Date: Tue,  3 Apr 2007 12:10:52 -0500 (CDT)
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
 	pcihpd-discuss@lists.sourceforge.net
@@ -35,41 +36,69 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Remove un-needed goto.
+Remove a stove-pipe-- a function that is called from only one place, 
+does nothing but wraps another function with debug printk's.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: John Rose <johnrose@austin.ibm.com>
 
 ----
- drivers/pci/hotplug/rpaphp_slot.c |    6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ drivers/pci/hotplug/rpaphp_pci.c |   37 +++++++++++++------------------------
+ 1 file changed, 13 insertions(+), 24 deletions(-)
 
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_slot.c
+Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c
 ===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_slot.c	2007-04-03 11:04:18.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_slot.c	2007-04-03 11:04:19.000000000 -0500
-@@ -157,14 +157,13 @@ int rpaphp_register_slot(struct slot *sl
- 	/* should not try to register the same slot twice */
- 	if (is_registered(slot)) {
- 		err("rpaphp_register_slot: slot[%s] is already registered\n", slot->name);
--		retval = -EAGAIN;
--		goto register_fail;
-+		return -EAGAIN;
- 	}	
+--- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_pci.c	2007-04-03 11:04:16.000000000 -0500
++++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c	2007-04-03 11:04:21.000000000 -0500
+@@ -116,23 +116,6 @@ static void print_slot_pci_funcs(struct 
+ 	return;
+ }
  
- 	retval = pci_hp_register(php_slot);
- 	if (retval) {
- 		err("pci_hp_register failed with error %d\n", retval);
--		goto register_fail;
-+		return retval;
- 	}
+-static int setup_pci_hotplug_slot_info(struct slot *slot)
+-{
+-	struct hotplug_slot_info *hotplug_slot_info = slot->hotplug_slot->info;
+-
+-	dbg("%s Initilize the PCI slot's hotplug->info structure ...\n",
+-	    __FUNCTION__);
+-	rpaphp_get_power_status(slot, &hotplug_slot_info->power_status);
+-	rpaphp_get_pci_adapter_status(slot, 1,
+-				      &hotplug_slot_info->adapter_status);
+-	if (hotplug_slot_info->adapter_status == NOT_VALID) {
+-		err("%s: NOT_VALID: skip dn->full_name=%s\n",
+-		    __FUNCTION__, slot->dn->full_name);
+-		return -EINVAL;
+-	}
+-	return 0;
+-}
+-
+ static void set_slot_name(struct slot *slot)
+ {
+ 	struct pci_bus *bus = slot->bus;
+@@ -200,14 +183,20 @@ exit_rc:
  
- 	/* create "phy_location" file */
-@@ -182,7 +181,6 @@ int rpaphp_register_slot(struct slot *sl
+ int rpaphp_register_pci_slot(struct slot *slot)
+ {
+-	int rc = -EINVAL;
++	struct hotplug_slot_info *info = slot->hotplug_slot->info;
++
++	rpaphp_get_power_status(slot, &info->power_status);
++	rpaphp_get_pci_adapter_status(slot, 1, &info->adapter_status);
++
++	if (info->adapter_status == NOT_VALID) {
++		err("%s: NOT_VALID: skip dn->full_name=%s\n",
++		    __FUNCTION__, slot->dn->full_name);
++		return -EINVAL;
++	}
  
- sysfs_fail:
- 	pci_hp_deregister(php_slot);
--register_fail:
- 	return retval;
+-	if (setup_pci_hotplug_slot_info(slot))
+-		goto exit_rc;
+ 	if (setup_pci_slot(slot))
+-		goto exit_rc;
+-	rc = rpaphp_register_slot(slot);
+-exit_rc:
+-	return rc;
++		return -EINVAL;
++
++	return rpaphp_register_slot(slot);
  }
  
