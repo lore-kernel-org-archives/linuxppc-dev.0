@@ -1,21 +1,14 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 97C39DDE3A
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 16:05:03 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so172422ugf
-	for <linuxppc-dev@ozlabs.org>; Mon, 02 Apr 2007 23:05:01 -0700 (PDT)
-Message-ID: <528646bc0704022305s307c299hcdab589fa7e1776b@mail.gmail.com>
-Date: Tue, 3 Apr 2007 00:05:01 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Igor Marnat" <marny@rambler.ru>
-Subject: Re: [PATCH] ppchameleon_early_serial_map hidden under #ifdef
-	CONFIG_SERIAL_8250
-In-Reply-To: <05625250.20070403092134@rambler.ru>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <05625250.20070403092134@rambler.ru>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Date: Tue, 3 Apr 2007 18:20:37 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: ppc-dev <linuxppc-dev@ozlabs.org>
+Subject: cbe_cpufreq.c initialisation
+Message-Id: <20070403182037.93221d65.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Tue__3_Apr_2007_18_20_37_+1000_tB1wvVtuGAxBuwVO"
+Cc: cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,65 +18,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 4/2/07, Igor Marnat <marny@rambler.ru> wrote:
-> Hello List!
->
-> Having selected PPChameleonEVB as a platform and having turned off
-> seral driver (CONFIG_SERIAL_8250 is not set) I got the following error
-> message during kernel compilation:
->
-> arch/ppc/platforms/4xx/built-in.o: In function `board_setup_arch':
-> : undefined reference to `early_serial_setup'
->
->
-> Perhaps the following patch will be ok?
+--Signature=_Tue__3_Apr_2007_18_20_37_+1000_tB1wvVtuGAxBuwVO
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-In general looks okay, but one comment below.  This code is going to
-need to be moved over to arch/powerpc fairly soon.
+Hi all,
 
-> diff --git a/arch/ppc/platforms/4xx/ppchameleon.c b/arch/ppc/platforms/4xx/ppchameleon.c
-> index 6d8b7ad..159d4a6 100644
-> --- a/arch/ppc/platforms/4xx/ppchameleon.c
-> +++ b/arch/ppc/platforms/4xx/ppchameleon.c
-> @@ -45,7 +45,9 @@
->  void *ppchameleon_rtc_base;
->
->  extern void gen550_init(int, struct uart_port *);
-> +#ifdef CONFIG_SERIAL_8250
->  extern int early_serial_setup(struct uart_port *port);
-> +#endif /* CONFIG_SERIAL_8250 */
+In cbe_cpufreq_cpu_init, there is this code:
 
-This is just ugly, but not because of your patch.  External function
-prototypes that aren't pulled from header files can lead to all kinds
-of wierdness.  Since the code is already ugly and dangerous, I
-wouldn't even bother with adding the #ifdef around it.
+	max_freq = (u32*) get_property(cpu, "clock-frequency", NULL);
+        // we need the freq in kHz
+        *max_freq /= 1000;
 
->
->  /* Some IRQs unique to the board
->   * Used by the generic 405 PCI setup functions in ppc4xx_pci.c
-> @@ -75,6 +77,7 @@ ppc405_map_irq(struct pci_dev *dev, unsigned char idsel, unsigned char pin)
->   * Calculate the proper input baud rate and setup the serial driver.
->   */
->
-> +#ifdef CONFIG_SERIAL_8250
->  static void __init
->  ppchameleon_early_serial_map (void)
->  {
-> @@ -105,7 +108,9 @@ ppchameleon_early_serial_map (void)
->                 printk ("Early serial init of port 0 failed\n");
->         }
->  }
-> -
-> +#else /* CONFIG_SERIAL_8250 */
-> +#define ppchameleon_early_serial_map()
-> +#endif /* CONFIG_SERIAL_8250 */
->
->  void __init board_setup_arch (void)
->  {
-> --
+does this really need to modify the property value in place?
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Tue__3_Apr_2007_18_20_37_+1000_tB1wvVtuGAxBuwVO
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGEg5dFdBgD/zoJvwRAluUAJoCWJ7GVraXIjkXPCe5AUwgiLi7YgCffkFx
+zNAIXPQQxc9L20Mtn/xIwtA=
+=ntks
+-----END PGP SIGNATURE-----
+
+--Signature=_Tue__3_Apr_2007_18_20_37_+1000_tB1wvVtuGAxBuwVO--
