@@ -1,28 +1,26 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BAB33DE032
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 03:10:56 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l33HAr3P006491
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 13:10:53 -0400
-Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l33HArBK197482
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:10:53 -0600
-Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l33HAqEC009630
-	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:10:53 -0600
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id ACBB0DE22B
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 03:12:59 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l33HDcrj027815
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 13:13:38 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l33HCrK6275666
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 13:12:53 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l33HCqEg008065
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 13:12:53 -0400
 To: Kristen@austin.ibm.com, Carlson@austin.ibm.com,
 	"Accardi <kristen.c.accardi"@intel.com
-Subject: [PATCH 6/19] PCI: rpaphp: remove a function that does nothing but
-	wrap debug printk's
+Subject: [PATCH 8/19] PCI: rpaphp: Remove another wrappered function
 In-Reply-To: 20070403164850.GP4922@austin.ibm.com>
-Message-Id: <20070403171052.3A0293A65C@topology.austin.ibm.com>
-Date: Tue,  3 Apr 2007 12:10:52 -0500 (CDT)
+Message-Id: <20070403171252.524963A65C@topology.austin.ibm.com>
+Date: Tue,  3 Apr 2007 12:12:52 -0500 (CDT)
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
 	pcihpd-discuss@lists.sourceforge.net
@@ -36,69 +34,143 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Remove a stove-pipe-- a function that is called from only one place, 
-does nothing but wraps another function with debug printk's.
+Remove another stove-pipe; this funcion was called from
+two different places, with a compile-time const that is
+then run-time checked to perform two different things.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: John Rose <johnrose@austin.ibm.com>
 
 ----
- drivers/pci/hotplug/rpaphp_pci.c |   37 +++++++++++++------------------------
- 1 file changed, 13 insertions(+), 24 deletions(-)
+ drivers/pci/hotplug/rpaphp.h      |    1 
+ drivers/pci/hotplug/rpaphp_core.c |   16 ++++++++--
+ drivers/pci/hotplug/rpaphp_pci.c  |   59 ++++++++++----------------------------
+ 3 files changed, 29 insertions(+), 47 deletions(-)
 
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c
+Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c
 ===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_pci.c	2007-04-03 11:04:16.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c	2007-04-03 11:04:21.000000000 -0500
-@@ -116,23 +116,6 @@ static void print_slot_pci_funcs(struct 
- 	return;
+--- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_core.c	2007-04-03 11:04:23.000000000 -0500
++++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c	2007-04-03 11:04:25.000000000 -0500
+@@ -130,12 +130,22 @@ static int get_attention_status(struct h
+ static int get_adapter_status(struct hotplug_slot *hotplug_slot, u8 * value)
+ {
+ 	struct slot *slot = (struct slot *)hotplug_slot->private;
+-	int retval = 0;
++	int rc, state;
+ 
+ 	down(&rpaphp_sem);
+-	retval = rpaphp_get_pci_adapter_status(slot, 0, value);
++	rc = rpaphp_get_sensor_state(slot, &state);
+ 	up(&rpaphp_sem);
+-	return retval;
++
++	*value = NOT_VALID;
++	if (rc)
++		return rc;
++
++	if (state == EMPTY)
++		*value = EMPTY;
++	else if (state == PRESENT)
++		*value = slot->state;
++
++	return 0;
  }
  
--static int setup_pci_hotplug_slot_info(struct slot *slot)
+ static int get_max_bus_speed(struct hotplug_slot *hotplug_slot, enum pci_bus_speed *value)
+Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c
+===================================================================
+--- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_pci.c	2007-04-03 11:04:23.000000000 -0500
++++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c	2007-04-03 11:04:25.000000000 -0500
+@@ -64,43 +64,6 @@ int rpaphp_get_sensor_state(struct slot 
+ 	return rc;
+ }
+ 
+-/**
+- * get_pci_adapter_status - get the status of a slot
+- * 
+- * 0-- slot is empty
+- * 1-- adapter is configured
+- * 2-- adapter is not configured
+- * 3-- not valid
+- */
+-int rpaphp_get_pci_adapter_status(struct slot *slot, int is_init, u8 * value)
 -{
--	struct hotplug_slot_info *hotplug_slot_info = slot->hotplug_slot->info;
+-	struct pci_bus *bus;
+-	int state, rc;
 -
--	dbg("%s Initilize the PCI slot's hotplug->info structure ...\n",
--	    __FUNCTION__);
--	rpaphp_get_power_status(slot, &hotplug_slot_info->power_status);
--	rpaphp_get_pci_adapter_status(slot, 1,
--				      &hotplug_slot_info->adapter_status);
--	if (hotplug_slot_info->adapter_status == NOT_VALID) {
--		err("%s: NOT_VALID: skip dn->full_name=%s\n",
--		    __FUNCTION__, slot->dn->full_name);
--		return -EINVAL;
+-	*value = NOT_VALID;
+-	rc = rpaphp_get_sensor_state(slot, &state);
+-	if (rc)
+-		goto exit;
+-
+- 	if (state == EMPTY)
+- 		*value = EMPTY;
+- 	else if (state == PRESENT) {
+-		if (!is_init) {
+-			/* at run-time slot->state can be changed by */
+-			/* config/unconfig adapter */
+-			*value = slot->state;
+-		} else {
+-			bus = pcibios_find_pci_bus(slot->dn);
+-			if (bus && !list_empty(&bus->devices))
+-				*value = CONFIGURED;
+-			else
+-				*value = NOT_CONFIGURED;
+-		}
 -	}
--	return 0;
+-exit:
+-	return rc;
 -}
 -
- static void set_slot_name(struct slot *slot)
+ static void print_slot_pci_funcs(struct pci_bus *bus)
  {
- 	struct pci_bus *bus = slot->bus;
-@@ -200,14 +183,20 @@ exit_rc:
+ 	struct device_node *dn;
+@@ -183,20 +146,30 @@ exit_rc:
  
  int rpaphp_register_pci_slot(struct slot *slot)
  {
--	int rc = -EINVAL;
-+	struct hotplug_slot_info *info = slot->hotplug_slot->info;
-+
-+	rpaphp_get_power_status(slot, &info->power_status);
-+	rpaphp_get_pci_adapter_status(slot, 1, &info->adapter_status);
-+
-+	if (info->adapter_status == NOT_VALID) {
-+		err("%s: NOT_VALID: skip dn->full_name=%s\n",
-+		    __FUNCTION__, slot->dn->full_name);
-+		return -EINVAL;
-+	}
+-	int rc, level;
++	int rc, level, state;
++	struct pci_bus *bus;
+ 	struct hotplug_slot_info *info = slot->hotplug_slot->info;
  
--	if (setup_pci_hotplug_slot_info(slot))
--		goto exit_rc;
++	/* Find out if the power is turned on for the slot */
+ 	rc = rtas_get_power_level(slot->power_domain, &level);
+ 	if (rc)
+ 		return rc;
+ 	info->power_status = level;
+ 
+-	rpaphp_get_pci_adapter_status(slot, 1, &info->adapter_status);
++	/* Figure out if there is an adapter in the slot */
++	info->adapter_status = NOT_VALID;
++	rc = rpaphp_get_sensor_state(slot, &state);
++	if (rc)
++		return rc;
+ 
+-	if (info->adapter_status == NOT_VALID) {
+-		err("%s: NOT_VALID: skip dn->full_name=%s\n",
+-		    __FUNCTION__, slot->dn->full_name);
+-		return -EINVAL;
++	if (state == EMPTY)
++		info->adapter_status = EMPTY;
++	else if (state == PRESENT) {
++		bus = pcibios_find_pci_bus(slot->dn);
++		if (bus && !list_empty(&bus->devices))
++			info->adapter_status = CONFIGURED;
++		else
++			info->adapter_status = NOT_CONFIGURED;
+ 	}
+ 
  	if (setup_pci_slot(slot))
--		goto exit_rc;
--	rc = rpaphp_register_slot(slot);
--exit_rc:
--	return rc;
-+		return -EINVAL;
-+
-+	return rpaphp_register_slot(slot);
- }
+Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp.h
+===================================================================
+--- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp.h	2007-04-03 11:04:23.000000000 -0500
++++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp.h	2007-04-03 11:04:25.000000000 -0500
+@@ -89,7 +89,6 @@ extern struct list_head rpaphp_slot_head
+ /* rpaphp_pci.c */
+ extern int rpaphp_enable_pci_slot(struct slot *slot);
+ extern int rpaphp_register_pci_slot(struct slot *slot);
+-extern int rpaphp_get_pci_adapter_status(struct slot *slot, int is_init, u8 * value);
+ extern int rpaphp_get_sensor_state(struct slot *slot, int *state);
  
+ /* rpaphp_core.c */
