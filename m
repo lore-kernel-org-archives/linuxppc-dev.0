@@ -1,20 +1,27 @@
-Return-Path: <SRS0+3550a31010a0b33b2856+1318+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
-From: David Woodhouse <dwmw2@infradead.org>
-To: michael@ellerman.id.au
-In-Reply-To: <1175570169.30552.3.camel@shinybook.infradead.org>
-References: <1175208237.3122.78.camel@pmac.infradead.org>
-	<26babf7b7398794f08e7417377b3facc@kernel.crashing.org>
-	<1175473220.3144.1.camel@concordia.ozlabs.ibm.com>
-	<432af8a0f928491e7d376923829f40a0@kernel.crashing.org>
-	<1175568133.16182.15.camel@concordia.ozlabs.ibm.com>
-	<1175570169.30552.3.camel@shinybook.infradead.org>
-Content-Type: text/plain
-Date: Tue, 03 Apr 2007 10:45:38 -0400
-Message-Id: <1175611539.2665.30.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, nhorman@redhat.com,
-	cbe-oss-dev <cbe-oss-dev@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 08DCBDDF2A
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 01:39:59 +1000 (EST)
+In-Reply-To: <20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
+References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
+	<20070403105401.1fcdee27.sfr@canb.auug.org.au>
+	<20070403105539.7222cf2a.sfr@canb.auug.org.au>
+	<20070403105650.204003b6.sfr@canb.auug.org.au>
+	<20070403105748.769f156c.sfr@canb.auug.org.au>
+	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <65f2b2574eca0b34e7986618cfbe7a6d@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 6/6] [POWERPC] make struct property's value a void *
+Date: Tue, 3 Apr 2007 17:39:52 +0200
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,28 +31,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-04-02 at 23:16 -0400, David Woodhouse wrote:
-> > > My question remains: shouldn't Linux get that
-> > > information from the device tree, instead?  The
-> > > bootwrapper or bootloader can put it there.
-> > 
-> > Yes it _should_, but it doesn't.
-> 
-> It _used_ to. The 2.6.16 kernel just used the memory listed in the
-> device tree. That's _why_ we need this hack -- because when we boot
-> from
-> 2.6.16 with the memory listed in the device tree, it ends up getting
-> registered twice by the new kernel. 
+Why?  It should logically be an u8 * (and nothing
+should ever cast it to anything else, accessor
+functions should be used instead to get 32-bit ints
+from it, etc.)
 
-Why _did_ we make this change? It makes /sbin/kexec unhappy too, since
-it doesn't like the apparent lack of _any_ memory.
 
-It's not as if anyone's going to be expanding the amount of memory in
-their PS3, so it really needs to be dynamically detected.
-
-If we were to put the memory back in the device-tree, and start with a
-single region up to 0x07c00000 followed by another region with the rest
-of it, then we wouldn't need the rmo_top hack to /sbin/kexec either.
-
--- 
-dwmw2
+Segher
