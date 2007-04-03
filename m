@@ -1,36 +1,18 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id DCBDADE02E
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 23:23:44 +1000 (EST)
-Date: Tue, 3 Apr 2007 23:24:06 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] [SPARC/64] Make device_node name and type const
-Message-Id: <20070403232406.ab9a3c86.sfr@canb.auug.org.au>
-In-Reply-To: <20070403230505.f96ea210.sfr@canb.auug.org.au>
-References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
-	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
-	<20070403222406.cf39c459.sfr@canb.auug.org.au>
-	<20070403222641.e93cb73b.sfr@canb.auug.org.au>
-	<20070403222841.a2c6af1c.sfr@canb.auug.org.au>
-	<20070403223000.5d44b2f1.sfr@canb.auug.org.au>
-	<20070403223136.6ecdabbd.sfr@canb.auug.org.au>
-	<20070403223257.cb8c4d15.sfr@canb.auug.org.au>
-	<20070403223535.dd6731d6.sfr@canb.auug.org.au>
-	<20070403223738.03386a13.sfr@canb.auug.org.au>
-	<20070403223914.35bf04e1.sfr@canb.auug.org.au>
-	<20070403224039.913af749.sfr@canb.auug.org.au>
-	<20070403224205.807cffe0.sfr@canb.auug.org.au>
-	<20070403224340.5533abc9.sfr@canb.auug.org.au>
-	<20070403224505.5d5a1495.sfr@canb.auug.org.au>
-	<20070403224610.b61c7377.sfr@canb.auug.org.au>
-	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
-	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
-	<20070403225222.88e92221.sfr@canb.auug.org.au>
-	<20070403230505.f96ea210.sfr@canb.auug.org.au>
+Return-Path: <SRS0+3550a31010a0b33b2856+1318+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CE0E5DDE30
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 00:26:28 +1000 (EST)
+Subject: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: paulus@samba.org
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 10:25:45 -0400
+Message-Id: <1175610345.2665.15.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,47 +22,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+There are proper device numbers registered for pmac_zilog now. Use them.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- include/asm-sparc/prom.h   |    4 ++--
- include/asm-sparc64/prom.h |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+Signed-off-by: David Woodhouse <dwmw2@infradead.org>
 
-This produces no new warnings or errors for a sparc64 allmodconfig build.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-
-diff --git a/include/asm-sparc/prom.h b/include/asm-sparc/prom.h
-index 030461d..c239a80 100644
---- a/include/asm-sparc/prom.h
-+++ b/include/asm-sparc/prom.h
-@@ -35,8 +35,8 @@ struct property {
+diff --git a/drivers/serial/pmac_zilog.c b/drivers/serial/pmac_zilog.c
+index 752ef07..579266d 100644
+--- a/drivers/serial/pmac_zilog.c
++++ b/drivers/serial/pmac_zilog.c
+@@ -99,9 +99,10 @@ static DEFINE_MUTEX(pmz_irq_mutex);
+ 
+ static struct uart_driver pmz_uart_reg = {
+ 	.owner		=	THIS_MODULE,
+-	.driver_name	=	"ttyS",
+-	.dev_name	=	"ttyS",
+-	.major		=	TTY_MAJOR,
++	.driver_name	=	"ttyPZ",
++	.dev_name	=	"ttyPZ",
++	.major		=	204,
++	.minor		=	192,
  };
  
- struct device_node {
--	char	*name;
--	char	*type;
-+	const char	*name;
-+	const char	*type;
- 	phandle	node;
- 	char	*path_component_name;
- 	char	*full_name;
-diff --git a/include/asm-sparc64/prom.h b/include/asm-sparc64/prom.h
-index dd0a6cd..88e62cc 100644
---- a/include/asm-sparc64/prom.h
-+++ b/include/asm-sparc64/prom.h
-@@ -36,8 +36,8 @@ struct property {
  
- struct of_irq_controller;
- struct device_node {
--	char	*name;
--	char	*type;
-+	const char	*name;
-+	const char	*type;
- 	phandle	node;
- 	char	*path_component_name;
- 	char	*full_name;
+@@ -1800,7 +1801,6 @@ static int __init pmz_register(void)
+ 	
+ 	pmz_uart_reg.nr = pmz_ports_count;
+ 	pmz_uart_reg.cons = PMACZILOG_CONSOLE;
+-	pmz_uart_reg.minor = 64;
+ 
+ 	/*
+ 	 * Register this driver with the serial core
+
 -- 
-1.5.0.3
+dwmw2
