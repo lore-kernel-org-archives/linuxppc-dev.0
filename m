@@ -1,25 +1,28 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B1CC2DDE38
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 10:35:51 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l330ZlDR029793
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:35:47 -0400
-Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l330ZlPC238016
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:35:47 -0400
-Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
-	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l330Zk7F009822
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:35:47 -0400
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id F153BDDE3B
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 10:36:49 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l330YbZb029811
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:34:37 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l330alhX194638
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 18:36:47 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l330akCo006473
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 18:36:47 -0600
 To: Greg KH <gregkh@suse.de>
-Subject: [PATCH 3/19] PCI: rpaphp: match up alloc and free in same routine
+Subject: [PATCH 4/19] PCI: rpaphp: Fix a memleak;
+	slot->location string was never freed
 In-Reply-To: <20070403002629.GI4922@austin.ibm.com>
-Message-Id: <20070403003546.52EE93A65C@topology.austin.ibm.com>
-Date: Mon,  2 Apr 2007 19:35:46 -0500 (CDT)
+Message-Id: <20070403003646.5F7023A65C@topology.austin.ibm.com>
+Date: Mon,  2 Apr 2007 19:36:46 -0500 (CDT)
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
 	linux-pci@atrey.karlin.mff.cuni.cz
@@ -33,59 +36,50 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-The routine that called an alloc should be the same routine that 
-calles the mathcing free, if anything in the middle failed.
+Fix a memleak; the slot->location string was never freed.
+Fix some whitespace and overlong-line probelms while we're here.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: John Rose <johnrose@austin.ibm.com>
 
 ----
- drivers/pci/hotplug/rpaphp_core.c |    5 +++++
- drivers/pci/hotplug/rpaphp_pci.c  |    1 -
- drivers/pci/hotplug/rpaphp_slot.c |    1 -
- 3 files changed, 5 insertions(+), 2 deletions(-)
+ drivers/pci/hotplug/rpaphp_slot.c |    9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c
-===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_core.c	2007-03-28 17:42:01.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c	2007-03-28 17:42:04.000000000 -0500
-@@ -321,10 +321,15 @@ int rpaphp_add_slot(struct device_node *
- 				indexes[i + 1], name, type);
- 
- 		retval = rpaphp_register_pci_slot(slot);
-+		if (retval)
-+			dealloc_slot_struct(slot);
-+
- 		name += strlen(name) + 1;
- 		type += strlen(type) + 1;
- 	}
- 	dbg("%s - Exit: rc[%d]\n", __FUNCTION__, retval);
-+
-+	/* XXX FIXME: reports a failure only if last entry in loop failed */
- 	return retval;
- }
- 
 Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_slot.c
 ===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_slot.c	2007-03-28 17:42:01.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_slot.c	2007-03-28 17:42:04.000000000 -0500
-@@ -184,7 +184,6 @@ int rpaphp_register_slot(struct slot *sl
- sysfs_fail:
- 	pci_hp_deregister(php_slot);
- register_fail:
--	rpaphp_release_slot(php_slot);
- 	return retval;
+--- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_slot.c	2007-03-28 18:02:42.000000000 -0500
++++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_slot.c	2007-03-28 18:07:28.000000000 -0500
+@@ -56,7 +56,6 @@ static struct hotplug_slot_attribute php
+ static void rpaphp_release_slot(struct hotplug_slot *hotplug_slot)
+ {
+ 	struct slot *slot = (struct slot *) hotplug_slot->private;
+-
+ 	dealloc_slot_struct(slot);
  }
  
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c
-===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_pci.c	2007-03-28 17:42:01.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c	2007-03-28 17:42:04.000000000 -0500
-@@ -195,7 +195,6 @@ static int setup_pci_slot(struct slot *s
- 	}
- 	return 0;
- exit_rc:
--	dealloc_slot_struct(slot);
- 	return -EINVAL;
+@@ -65,12 +64,12 @@ void dealloc_slot_struct(struct slot *sl
+ 	kfree(slot->hotplug_slot->info);
+ 	kfree(slot->hotplug_slot->name);
+ 	kfree(slot->hotplug_slot);
++	kfree(slot->location);
+ 	kfree(slot);
+-	return;
  }
  
+-struct slot *alloc_slot_struct(struct device_node *dn, int drc_index, char *drc_name,
+-		  int power_domain)
++struct slot *alloc_slot_struct(struct device_node *dn,
++                       int drc_index, char *drc_name, int power_domain)
+ {
+ 	struct slot *slot;
+ 	
+@@ -115,7 +114,7 @@ error_nomem:
+ 
+ static int is_registered(struct slot *slot)
+ {
+-	struct slot             *tmp_slot;
++	struct slot *tmp_slot;
+ 
+ 	list_for_each_entry(tmp_slot, &rpaphp_slot_head, rpaphp_slot_list) {
+ 		if (!strcmp(tmp_slot->name, slot->name))
