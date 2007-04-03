@@ -1,19 +1,18 @@
-Return-Path: <flar@cynthia.pants.nu>
-Received: from cynthia.pants.nu (adsl-216-102-214-42.dsl.snfc21.pacbell.net
-	[216.102.214.42]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B23DBDDF00
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 08:53:24 +1000 (EST)
-Date: Tue, 3 Apr 2007 13:37:36 -0700
-From: Brad Boyer <flar@allandria.com>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070403203735.GB12332@cynthia.pants.nu>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1175610345.2665.15.camel@shinybook.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <arnd@arndb.de>
+From: Arnd Bergmann <arnd@arndb.de>
+To: cbe-oss-dev@ozlabs.org
+Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
+Date: Wed, 4 Apr 2007 00:55:35 +0200
+References: <1175208237.3122.78.camel@pmac.infradead.org>
+	<1175636904.10567.8.camel@shinybook.infradead.org>
+	<4612D8FE.1070400@am.sony.com>
+In-Reply-To: <4612D8FE.1070400@am.sony.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704040055.36173.arnd@arndb.de>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, nhorman@redhat.com,
+	David Woodhouse <dwmw2@infradead.org>, Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,41 +22,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 03, 2007 at 10:25:45AM -0400, David Woodhouse wrote:
-> There are proper device numbers registered for pmac_zilog now. Use them.
-> 
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-> 
-> diff --git a/drivers/serial/pmac_zilog.c b/drivers/serial/pmac_zilog.c
-> index 752ef07..579266d 100644
-> --- a/drivers/serial/pmac_zilog.c
-> +++ b/drivers/serial/pmac_zilog.c
-> @@ -99,9 +99,10 @@ static DEFINE_MUTEX(pmz_irq_mutex);
->  
->  static struct uart_driver pmz_uart_reg = {
->  	.owner		=	THIS_MODULE,
-> -	.driver_name	=	"ttyS",
-> -	.dev_name	=	"ttyS",
-> -	.major		=	TTY_MAJOR,
-> +	.driver_name	=	"ttyPZ",
-> +	.dev_name	=	"ttyPZ",
-> +	.major		=	204,
-> +	.minor		=	192,
->  };
->  
->  
-> @@ -1800,7 +1801,6 @@ static int __init pmz_register(void)
->  	
->  	pmz_uart_reg.nr = pmz_ports_count;
->  	pmz_uart_reg.cons = PMACZILOG_CONSOLE;
-> -	pmz_uart_reg.minor = 64;
->  
->  	/*
->  	 * Register this driver with the serial core
-> 
+On Wednesday 04 April 2007, Geoff Levand wrote:
+> So there are really two answers, one is that having the boot memory in the
+> DT hasn't changed, I just haven't finished that part yet. =A0The other is=
+ that
+> we get the amount of memory at runtime because it is a dynamic resource, =
+and
+> cannot be known at DT compile time.
 
-Shouldn't we have defines for these? It doesn't seem good to have more
-magic numbers floating around in the code.
+But the device tree can easily be modified before entering the new kernel,
+when the kboot kernel allocates all the memory it can get, it just needs
+to list it in the device tree in some preallocated device node.
 
-	Brad Boyer
-	flar@allandria.com
+	Arnd <><
