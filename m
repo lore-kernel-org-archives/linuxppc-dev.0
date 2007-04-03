@@ -1,18 +1,21 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
-Date: Wed, 4 Apr 2007 00:55:35 +0200
-References: <1175208237.3122.78.camel@pmac.infradead.org>
-	<1175636904.10567.8.camel@shinybook.infradead.org>
-	<4612D8FE.1070400@am.sony.com>
-In-Reply-To: <4612D8FE.1070400@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704040055.36173.arnd@arndb.de>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, nhorman@redhat.com,
-	David Woodhouse <dwmw2@infradead.org>, Ben Collins <ben.collins@ubuntu.com>
+Return-Path: <SRS0+3550a31010a0b33b2856+1318+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1E4CDDDECB
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 08:59:23 +1000 (EST)
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Brad Boyer <flar@allandria.com>
+In-Reply-To: <20070403203735.GB12332@cynthia.pants.nu>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<20070403203735.GB12332@cynthia.pants.nu>
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 18:58:39 -0400
+Message-Id: <1175641120.10567.15.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,16 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wednesday 04 April 2007, Geoff Levand wrote:
-> So there are really two answers, one is that having the boot memory in the
-> DT hasn't changed, I just haven't finished that part yet. =A0The other is=
- that
-> we get the amount of memory at runtime because it is a dynamic resource, =
-and
-> cannot be known at DT compile time.
+On Tue, 2007-04-03 at 13:37 -0700, Brad Boyer wrote:
+> Shouldn't we have defines for these? It doesn't seem good to have more
+> magic numbers floating around in the code.
 
-But the device tree can easily be modified before entering the new kernel,
-when the kboot kernel allocates all the memory it can get, it just needs
-to list it in the device tree in some preallocated device node.
+I wondered about that, but decided against it. They're only used in one
+place, and it's obvious what they are and where they come from. It's not
+as if '#define PMAC_ZILOG_MAJOR 204' and '.major = PMAC_ZILOG_MAJOR'
+would actually make it any clearer. Quite the opposite, in fact, since
+204 is used for other things too.
 
-	Arnd <><
+-- 
+dwmw2
