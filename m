@@ -1,26 +1,25 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Received: from e1.ny.us.ibm.com (e1.ny.us.ibm.com [32.97.182.141])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 48615DDF72
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 10:46:52 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l330kltr005817
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:46:47 -0400
+	(Client CN "e1.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3AA80DDF96
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 10:47:52 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e1.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l330llOn020760
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:47:47 -0400
 Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l330klKH292688
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:46:47 -0400
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l330llKt265902
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:47:47 -0400
 Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
 	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l330klxf025480
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:46:47 -0400
+	l330llU4026912
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:47:47 -0400
 To: Greg KH <gregkh@suse.de>
-Subject: [PATCH 14/19] PCI: rpaphp: Rename rpaphp_register_pci_slot() to
-	rpaphp_enable_slot()
+Subject: [PATCH 15/19] PCI: rpaphp: Document find_php_slot()
 In-Reply-To: <20070403002629.GI4922@austin.ibm.com>
-Message-Id: <20070403004646.DF2E93A65C@topology.austin.ibm.com>
-Date: Mon,  2 Apr 2007 19:46:46 -0500 (CDT)
+Message-Id: <20070403004746.ECA163A65C@topology.austin.ibm.com>
+Date: Mon,  2 Apr 2007 19:47:46 -0500 (CDT)
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
 	linux-pci@atrey.karlin.mff.cuni.cz
@@ -34,70 +33,58 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Rename rpaphp_register_pci_slot() because its easy to confuse
-with  rpaphp_register_slot() even though it does something 
-completely different. Rename it to rpaphp_enable_slot() because
-its almost identical to enbale_slot().
+Document some of the interaction between dlpar and hotplug.
+viz, the a dlpar remove of a htoplug slot uses hotplug to remove it.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: John Rose <johnrose@austin.ibm.com>
 
 ----
- drivers/pci/hotplug/rpaphp.h      |    4 +---
- drivers/pci/hotplug/rpaphp_core.c |    2 +-
- drivers/pci/hotplug/rpaphp_pci.c  |   10 +++++++++-
- 3 files changed, 11 insertions(+), 5 deletions(-)
+ drivers/pci/hotplug/rpadlpar_core.c |   18 +++++++++++++-----
+ 1 file changed, 13 insertions(+), 5 deletions(-)
 
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp.h
+Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpadlpar_core.c
 ===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp.h	2007-04-02 14:34:46.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp.h	2007-04-02 14:40:07.000000000 -0500
-@@ -87,13 +87,11 @@ extern struct list_head rpaphp_slot_head
- /* function prototypes */
- 
- /* rpaphp_pci.c */
--extern int rpaphp_enable_pci_slot(struct slot *slot);
--extern int rpaphp_register_pci_slot(struct slot *slot);
-+extern int rpaphp_enable_slot(struct slot *slot);
- extern int rpaphp_get_sensor_state(struct slot *slot, int *state);
- 
- /* rpaphp_core.c */
- extern int rpaphp_add_slot(struct device_node *dn);
--extern int rpaphp_remove_slot(struct slot *slot);
- extern int rpaphp_get_drc_props(struct device_node *dn, int *drc_index,
- 		char **drc_name, char **drc_type, int *drc_power_domain);
- 
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c
-===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_core.c	2007-04-02 14:40:00.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c	2007-04-02 14:40:07.000000000 -0500
-@@ -318,7 +318,7 @@ int rpaphp_add_slot(struct device_node *
- 		dbg("Found drc-index:0x%x drc-name:%s drc-type:%s\n",
- 				indexes[i + 1], name, type);
- 
--		retval = rpaphp_register_pci_slot(slot);
-+		retval = rpaphp_enable_slot(slot);
- 		if (!retval)
- 			retval = rpaphp_register_slot(slot);
- 
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c
-===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_pci.c	2007-04-02 14:40:00.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c	2007-04-02 14:40:07.000000000 -0500
-@@ -77,7 +77,15 @@ static void set_slot_name(struct slot *s
- 			bus->number);
+--- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpadlpar_core.c	2007-04-02 14:34:46.000000000 -0500
++++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpadlpar_core.c	2007-04-02 14:40:09.000000000 -0500
+@@ -98,7 +98,15 @@ static struct device_node *find_dlpar_no
+ 	return NULL;
  }
  
--int rpaphp_register_pci_slot(struct slot *slot)
+-static struct slot *find_slot(struct device_node *dn)
 +/**
-+ * rpaphp_enable_slot - record slot state, config pci device
++ * find_php_slot - return hotplug slot structure for device node
 + *
-+ * Initialize values in the slot, and the hotplug_slot info
-+ * structures to indicate if there is a pci card plugged into
-+ * the slot. If the slot is not empty, run the pcibios routine
-+ * to get pcibios stuff correctly set up.
++ * This routine will return the hotplug slot structure
++ * for a given device node. Note that built-in PCI slots
++ * may be dlpar-able, but not hot-pluggable, so this routine
++ * will return NULL for built-in PCI slots.
 + */
-+int rpaphp_enable_slot(struct slot *slot)
++static struct slot *find_php_slot(struct device_node *dn)
  {
- 	int rc, level, state;
- 	struct pci_bus *bus;
+ 	struct list_head *tmp, *n;
+ 	struct slot *slot;
+@@ -224,9 +232,9 @@ static int dlpar_remove_phb(char *drc_na
+ 	if (!pcibios_find_pci_bus(dn))
+ 		return -EINVAL;
+ 
+-	slot = find_slot(dn);
++	/* If pci slot is hotplugable, use hotplug to remove it */
++	slot = find_php_slot(dn);
+ 	if (slot) {
+-		/* Remove hotplug slot */
+ 		if (rpaphp_deregister_slot(slot)) {
+ 			printk(KERN_ERR
+ 				"%s: unable to remove hotplug slot %s\n",
+@@ -370,9 +378,9 @@ int dlpar_remove_pci_slot(char *drc_name
+ 	if (!bus)
+ 		return -EINVAL;
+ 
+-	slot = find_slot(dn);
++	/* If pci slot is hotplugable, use hotplug to remove it */
++	slot = find_php_slot(dn);
+ 	if (slot) {
+-		/* Remove hotplug slot */
+ 		if (rpaphp_deregister_slot(slot)) {
+ 			printk(KERN_ERR
+ 				"%s: unable to remove hotplug slot %s\n",
