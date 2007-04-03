@@ -1,15 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E9F1BDDF4A
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 23:04:43 +1000 (EST)
-Date: Tue, 3 Apr 2007 23:05:05 +1000
+	by ozlabs.org (Postfix) with ESMTP id DCBDADE02E
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 23:23:44 +1000 (EST)
+Date: Tue, 3 Apr 2007 23:24:06 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "David S. Miller" <davem@davemloft.net>
-Subject: [PATCH] [SPARC/64] Remove get_property
-Message-Id: <20070403230505.f96ea210.sfr@canb.auug.org.au>
-In-Reply-To: <20070403225222.88e92221.sfr@canb.auug.org.au>
+Subject: [PATCH] [SPARC/64] Make device_node name and type const
+Message-Id: <20070403232406.ab9a3c86.sfr@canb.auug.org.au>
+In-Reply-To: <20070403230505.f96ea210.sfr@canb.auug.org.au>
 References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
-	<20070403105748.769f156c.sfr@canb.auug.org.au>
 	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
 	<20070403222406.cf39c459.sfr@canb.auug.org.au>
 	<20070403222641.e93cb73b.sfr@canb.auug.org.au>
@@ -28,6 +27,7 @@ References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
 	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
 	<20070403225222.88e92221.sfr@canb.auug.org.au>
+	<20070403230505.f96ea210.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
@@ -40,52 +40,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All the usages have been renamed to of_get_property.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- include/asm-sparc/prom.h   |    1 -
- include/asm-sparc64/prom.h |    1 -
- 2 files changed, 0 insertions(+), 2 deletions(-)
+ include/asm-sparc/prom.h   |    4 ++--
+ include/asm-sparc64/prom.h |    4 ++--
+ 2 files changed, 4 insertions(+), 4 deletions(-)
 
-Hi Dave,
-
-If you take the curent powerpc tree (commit
-1b56c1da9eec35c610fa2168d754ce567615a6ee) and apply all the patches I
-sent today (1-6 then 1-17) then merge that with your current for-2.6.22
-tree (commit ab571e3091f055b0f8648822e11ee6413993f899), then you can
-apply this.  :-)
-
-I did a test sparc64 allmodconfig build (and it get as far as can be
-expected :-))
-
+This produces no new warnings or errors for a sparc64 allmodconfig build.
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
 diff --git a/include/asm-sparc/prom.h b/include/asm-sparc/prom.h
-index 39ad222..030461d 100644
+index 030461d..c239a80 100644
 --- a/include/asm-sparc/prom.h
 +++ b/include/asm-sparc/prom.h
-@@ -93,7 +93,6 @@ extern int of_device_is_compatible(const struct device_node *device,
- extern const void *of_get_property(const struct device_node *node,
- 				   const char *name,
- 				   int *lenp);
--#define get_property(node,name,lenp) of_get_property(node,name,lenp)
- extern int of_set_property(struct device_node *node, const char *name, void *val, int len);
- extern int of_getintprop_default(struct device_node *np,
- 				 const char *name,
+@@ -35,8 +35,8 @@ struct property {
+ };
+ 
+ struct device_node {
+-	char	*name;
+-	char	*type;
++	const char	*name;
++	const char	*type;
+ 	phandle	node;
+ 	char	*path_component_name;
+ 	char	*full_name;
 diff --git a/include/asm-sparc64/prom.h b/include/asm-sparc64/prom.h
-index 6394bd1..dd0a6cd 100644
+index dd0a6cd..88e62cc 100644
 --- a/include/asm-sparc64/prom.h
 +++ b/include/asm-sparc64/prom.h
-@@ -101,7 +101,6 @@ extern int of_device_is_compatible(const struct device_node *device,
- extern const void *of_get_property(const struct device_node *node,
- 			     const char *name,
- 			     int *lenp);
--#define get_property(node,name,lenp) of_get_property(node,name,lenp)
- extern int of_set_property(struct device_node *node, const char *name, void *val, int len);
- extern int of_getintprop_default(struct device_node *np,
- 				 const char *name,
+@@ -36,8 +36,8 @@ struct property {
+ 
+ struct of_irq_controller;
+ struct device_node {
+-	char	*name;
+-	char	*type;
++	const char	*name;
++	const char	*type;
+ 	phandle	node;
+ 	char	*path_component_name;
+ 	char	*full_name;
 -- 
 1.5.0.3
