@@ -1,14 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 93F24DDFEF
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:52:38 +1000 (EST)
-Date: Tue, 3 Apr 2007 22:42:05 +1000
+	by ozlabs.org (Postfix) with ESMTP id 62D4BDE001
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:52:39 +1000 (EST)
+Date: Tue, 3 Apr 2007 22:43:40 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 11/17] [POWERPC] Rename get_property to of_get_property:
-	drivers/char
-Message-Id: <20070403224205.807cffe0.sfr@canb.auug.org.au>
-In-Reply-To: <20070403224039.913af749.sfr@canb.auug.org.au>
+Subject: [PATCH 12/17] [POWERPC] Rename get_property to of_get_property:
+	drivers/net
+Message-Id: <20070403224340.5533abc9.sfr@canb.auug.org.au>
+In-Reply-To: <20070403224205.807cffe0.sfr@canb.auug.org.au>
 References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403105401.1fcdee27.sfr@canb.auug.org.au>
 	<20070403105539.7222cf2a.sfr@canb.auug.org.au>
@@ -25,6 +25,7 @@ References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403223738.03386a13.sfr@canb.auug.org.au>
 	<20070403223914.35bf04e1.sfr@canb.auug.org.au>
 	<20070403224039.913af749.sfr@canb.auug.org.au>
+	<20070403224205.807cffe0.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, "David S. Miller" <davem@davemloft.net>
@@ -40,97 +41,196 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/char/agp/uninorth-agp.c |    2 +-
- drivers/char/briq_panel.c       |    2 +-
- drivers/char/hvc_iseries.c      |    2 +-
- drivers/char/hvc_vio.c          |    2 +-
- drivers/char/hvsi.c             |    4 ++--
- drivers/char/tpm/tpm_atmel.h    |    2 +-
- 6 files changed, 7 insertions(+), 7 deletions(-)
+ drivers/net/bmac.c           |    5 +++--
+ drivers/net/ehea/ehea_main.c |    4 ++--
+ drivers/net/mace.c           |    4 ++--
+ drivers/net/pasemi_mac.c     |    2 +-
+ drivers/net/spider_net.c     |    4 ++--
+ drivers/net/sungem.c         |    2 +-
+ drivers/net/sungem_phy.c     |    2 +-
+ drivers/net/ucc_geth.c       |   16 ++++++++--------
+ 8 files changed, 20 insertions(+), 19 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/drivers/char/agp/uninorth-agp.c b/drivers/char/agp/uninorth-agp.c
-index 91b0621..42c0a60 100644
---- a/drivers/char/agp/uninorth-agp.c
-+++ b/drivers/char/agp/uninorth-agp.c
-@@ -613,7 +613,7 @@ static int __devinit agp_uninorth_probe(struct pci_dev *pdev,
- 		uninorth_node = of_find_node_by_name(NULL, "u3");
+diff --git a/drivers/net/bmac.c b/drivers/net/bmac.c
+index c143304..aa01ba3 100644
+--- a/drivers/net/bmac.c
++++ b/drivers/net/bmac.c
+@@ -1261,9 +1261,10 @@ static int __devinit bmac_probe(struct macio_dev *mdev, const struct of_device_i
+ 		printk(KERN_ERR "BMAC: can't use, need 3 addrs and 3 intrs\n");
+ 		return -ENODEV;
  	}
- 	if (uninorth_node) {
--		const int *revprop = get_property(uninorth_node,
-+		const int *revprop = of_get_property(uninorth_node,
- 				"device-rev", NULL);
- 		if (revprop != NULL)
- 			uninorth_rev = *revprop & 0x3f;
-diff --git a/drivers/char/briq_panel.c b/drivers/char/briq_panel.c
-index 8dcf9d2..669965a 100644
---- a/drivers/char/briq_panel.c
-+++ b/drivers/char/briq_panel.c
-@@ -206,7 +206,7 @@ static int __init briq_panel_init(void)
- 	const char *machine;
- 	int i;
+-	prop_addr = get_property(macio_get_of_node(mdev), "mac-address", NULL);
++	prop_addr = of_get_property(macio_get_of_node(mdev),
++			"mac-address", NULL);
+ 	if (prop_addr == NULL) {
+-		prop_addr = get_property(macio_get_of_node(mdev),
++		prop_addr = of_get_property(macio_get_of_node(mdev),
+ 				"local-mac-address", NULL);
+ 		if (prop_addr == NULL) {
+ 			printk(KERN_ERR "BMAC: Can't get mac-address\n");
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index d1a8134..6d5effd 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -2336,7 +2336,7 @@ static int ehea_setup_single_port(struct ehea_port *port,
+ 	port->of_dev_node = dn;
  
--	machine = get_property(root, "model", NULL);
-+	machine = of_get_property(root, "model", NULL);
- 	if (!machine || strncmp(machine, "TotalImpact,BRIQ-1", 18) != 0)
+ 	/* Determine logical port id */
+-	dn_log_port_id = get_property(dn, "ibm,hea-port-no", NULL);
++	dn_log_port_id = of_get_property(dn, "ibm,hea-port-no", NULL);
+ 
+ 	if (!dn_log_port_id) {
+ 		ehea_error("bad device node: dn_log_port_id=%p",
+@@ -2502,7 +2502,7 @@ static int __devinit ehea_probe(struct ibmebus_dev *dev,
+ 		goto out;
+ 	}
+ 
+-	adapter_handle = get_property(dev->ofdev.node, "ibm,hea-handle",
++	adapter_handle = of_get_property(dev->ofdev.node, "ibm,hea-handle",
+ 					    NULL);
+ 	if (adapter_handle)
+ 		adapter->handle = *adapter_handle;
+diff --git a/drivers/net/mace.c b/drivers/net/mace.c
+index 9ec24f0..7018ba9 100644
+--- a/drivers/net/mace.c
++++ b/drivers/net/mace.c
+@@ -110,9 +110,9 @@ static int __devinit mace_probe(struct macio_dev *mdev, const struct of_device_i
+ 		return -ENODEV;
+ 	}
+ 
+-	addr = get_property(mace, "mac-address", NULL);
++	addr = of_get_property(mace, "mac-address", NULL);
+ 	if (addr == NULL) {
+-		addr = get_property(mace, "local-mac-address", NULL);
++		addr = of_get_property(mace, "local-mac-address", NULL);
+ 		if (addr == NULL) {
+ 			printk(KERN_ERR "Can't get mac-address for MACE %s\n",
+ 			       mace->full_name);
+diff --git a/drivers/net/pasemi_mac.c b/drivers/net/pasemi_mac.c
+index d670ac7..cb7a8e7 100644
+--- a/drivers/net/pasemi_mac.c
++++ b/drivers/net/pasemi_mac.c
+@@ -80,7 +80,7 @@ static int pasemi_get_mac_addr(struct pasemi_mac *mac)
+ 		return -ENOENT;
+ 	}
+ 
+-	maddr = get_property(dn, "mac-address", NULL);
++	maddr = of_get_property(dn, "mac-address", NULL);
+ 	if (maddr == NULL) {
+ 		dev_warn(&pdev->dev,
+ 			 "no mac address in device tree, not configuring\n");
+diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
+index 3b91af8..6984761 100644
+--- a/drivers/net/spider_net.c
++++ b/drivers/net/spider_net.c
+@@ -1831,7 +1831,7 @@ try_host_fw:
+ 	if (!dn)
+ 		goto out_err;
+ 
+-	fw_prop = get_property(dn, "firmware", &fw_size);
++	fw_prop = of_get_property(dn, "firmware", &fw_size);
+ 	if (!fw_prop)
+ 		goto out_err;
+ 
+@@ -2237,7 +2237,7 @@ spider_net_setup_netdev(struct spider_net_card *card)
+ 	if (!dn)
+ 		return -EIO;
+ 
+-	mac = get_property(dn, "local-mac-address", NULL);
++	mac = of_get_property(dn, "local-mac-address", NULL);
+ 	if (!mac)
+ 		return -EIO;
+ 	memcpy(addr.sa_data, mac, ETH_ALEN);
+diff --git a/drivers/net/sungem.c b/drivers/net/sungem.c
+index 616be8d..1d0f5ca 100644
+--- a/drivers/net/sungem.c
++++ b/drivers/net/sungem.c
+@@ -2900,7 +2900,7 @@ static int __devinit gem_get_device_address(struct gem *gp)
+ #elif defined(CONFIG_PPC_PMAC)
+ 	const unsigned char *addr;
+ 
+-	addr = get_property(gp->of_node, "local-mac-address", NULL);
++	addr = of_get_property(gp->of_node, "local-mac-address", NULL);
+ 	if (addr == NULL) {
+ 		printk("\n");
+ 		printk(KERN_ERR "%s: can't get mac-address\n", dev->name);
+diff --git a/drivers/net/sungem_phy.c b/drivers/net/sungem_phy.c
+index 56a110c..61843fd 100644
+--- a/drivers/net/sungem_phy.c
++++ b/drivers/net/sungem_phy.c
+@@ -451,7 +451,7 @@ static int bcm5421_init(struct mii_phy* phy)
+ 	if (phy->platform_data) {
+ 		struct device_node *np = of_get_parent(phy->platform_data);
+ 		int can_low_power = 1;
+-		if (np == NULL || get_property(np, "no-autolowpower", NULL))
++		if (np == NULL || of_get_property(np, "no-autolowpower", NULL))
+ 			can_low_power = 0;
+ 		if (can_low_power) {
+ 			/* Enable automatic low-power */
+diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
+index 639e1e6..12d394f 100644
+--- a/drivers/net/ucc_geth.c
++++ b/drivers/net/ucc_geth.c
+@@ -4080,16 +4080,16 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 
+ 	ugeth_vdbg("%s: IN", __FUNCTION__);
+ 
+-	prop = get_property(np, "device-id", NULL);
++	prop = of_get_property(np, "device-id", NULL);
+ 	ucc_num = *prop - 1;
+ 	if ((ucc_num < 0) || (ucc_num > 7))
  		return -ENODEV;
  
-diff --git a/drivers/char/hvc_iseries.c b/drivers/char/hvc_iseries.c
-index f144a94..ec420fe 100644
---- a/drivers/char/hvc_iseries.c
-+++ b/drivers/char/hvc_iseries.c
-@@ -575,7 +575,7 @@ static int hvc_find_vtys(void)
- 				(num_found >= VTTY_PORTS))
- 			break;
+ 	ug_info = &ugeth_info[ucc_num];
+ 	ug_info->uf_info.ucc_num = ucc_num;
+-	prop = get_property(np, "rx-clock", NULL);
++	prop = of_get_property(np, "rx-clock", NULL);
+ 	ug_info->uf_info.rx_clock = *prop;
+-	prop = get_property(np, "tx-clock", NULL);
++	prop = of_get_property(np, "tx-clock", NULL);
+ 	ug_info->uf_info.tx_clock = *prop;
+ 	err = of_address_to_resource(np, 0, &res);
+ 	if (err)
+@@ -4098,15 +4098,15 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	ug_info->uf_info.regs = res.start;
+ 	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
  
--		vtermno = get_property(vty, "reg", NULL);
-+		vtermno = of_get_property(vty, "reg", NULL);
- 		if (!vtermno)
- 			continue;
+-	ph = get_property(np, "phy-handle", NULL);
++	ph = of_get_property(np, "phy-handle", NULL);
+ 	phy = of_find_node_by_phandle(*ph);
  
-diff --git a/drivers/char/hvc_vio.c b/drivers/char/hvc_vio.c
-index f9c0084..94a542e 100644
---- a/drivers/char/hvc_vio.c
-+++ b/drivers/char/hvc_vio.c
-@@ -153,7 +153,7 @@ static int hvc_find_vtys(void)
- 		if (num_found >= MAX_NR_HVC_CONSOLES)
- 			break;
+ 	if (phy == NULL)
+ 		return -ENODEV;
  
--		vtermno = get_property(vty, "reg", NULL);
-+		vtermno = of_get_property(vty, "reg", NULL);
- 		if (!vtermno)
- 			continue;
- 
-diff --git a/drivers/char/hvsi.c b/drivers/char/hvsi.c
-index 50315d6..d5a752d 100644
---- a/drivers/char/hvsi.c
-+++ b/drivers/char/hvsi.c
-@@ -1279,8 +1279,8 @@ static int __init hvsi_console_init(void)
- 		struct hvsi_struct *hp;
- 		const uint32_t *vtermno, *irq;
- 
--		vtermno = get_property(vty, "reg", NULL);
--		irq = get_property(vty, "interrupts", NULL);
-+		vtermno = of_get_property(vty, "reg", NULL);
-+		irq = of_get_property(vty, "interrupts", NULL);
- 		if (!vtermno || !irq)
- 			continue;
- 
-diff --git a/drivers/char/tpm/tpm_atmel.h b/drivers/char/tpm/tpm_atmel.h
-index 3c85200..377bc60 100644
---- a/drivers/char/tpm/tpm_atmel.h
-+++ b/drivers/char/tpm/tpm_atmel.h
-@@ -52,7 +52,7 @@ static void __iomem * atmel_get_base_addr(unsigned long *base, int *region_size)
- 		return NULL;
- 	}
- 
--	reg = get_property(dn, "reg", &reglen);
-+	reg = of_get_property(dn, "reg", &reglen);
- 	naddrc = of_n_addr_cells(dn);
- 	nsizec = of_n_size_cells(dn);
- 
+-	prop = get_property(phy, "reg", NULL);
++	prop = of_get_property(phy, "reg", NULL);
+ 	ug_info->phy_address = *prop;
+-	prop = get_property(phy, "interface", NULL);
++	prop = of_get_property(phy, "interface", NULL);
+ 	ug_info->enet_interface = *prop;
+ 	ug_info->phy_interrupt = irq_of_parse_and_map(phy, 0);
+ 	ug_info->board_flags = (ug_info->phy_interrupt == NO_IRQ)?
+@@ -4127,7 +4127,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 	/* timing.						*/
+ 	/* The following compensates by writing to the reserved */
+ 	/* QE Port Output Hold Registers (CPOH1?).              */
+-	prop = get_property(phy, "interface", NULL);
++	prop = of_get_property(phy, "interface", NULL);
+ 	phy_interface = *prop;
+ 	if ((phy_interface == ENET_1000_RGMII) ||
+ 			(phy_interface == ENET_100_RGMII) ||
+@@ -4140,7 +4140,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+ 		soc = of_find_node_by_type(NULL, "soc");
+ 		if (soc) {
+ 			unsigned int size;
+-			const void *prop = get_property(soc, "reg", &size);
++			const void *prop = of_get_property(soc, "reg", &size);
+ 			immrbase = of_translate_address(soc, prop);
+ 			of_node_put(soc);
+ 		};
 -- 
 1.5.0.3
