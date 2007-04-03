@@ -1,14 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 62D4BDE001
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:52:39 +1000 (EST)
-Date: Tue, 3 Apr 2007 22:43:40 +1000
+	by ozlabs.org (Postfix) with ESMTP id 437F5DE014
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:52:40 +1000 (EST)
+Date: Tue, 3 Apr 2007 22:45:05 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 12/17] [POWERPC] Rename get_property to of_get_property:
-	drivers/net
-Message-Id: <20070403224340.5533abc9.sfr@canb.auug.org.au>
-In-Reply-To: <20070403224205.807cffe0.sfr@canb.auug.org.au>
+Subject: [PATCH 13/17] [POWERPC] Rename get_property to of_get_property:
+	drivers/video
+Message-Id: <20070403224505.5d5a1495.sfr@canb.auug.org.au>
+In-Reply-To: <20070403224340.5533abc9.sfr@canb.auug.org.au>
 References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403105401.1fcdee27.sfr@canb.auug.org.au>
 	<20070403105539.7222cf2a.sfr@canb.auug.org.au>
@@ -26,6 +26,7 @@ References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403223914.35bf04e1.sfr@canb.auug.org.au>
 	<20070403224039.913af749.sfr@canb.auug.org.au>
 	<20070403224205.807cffe0.sfr@canb.auug.org.au>
+	<20070403224340.5533abc9.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, "David S. Miller" <davem@davemloft.net>
@@ -41,196 +42,238 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/net/bmac.c           |    5 +++--
- drivers/net/ehea/ehea_main.c |    4 ++--
- drivers/net/mace.c           |    4 ++--
- drivers/net/pasemi_mac.c     |    2 +-
- drivers/net/spider_net.c     |    4 ++--
- drivers/net/sungem.c         |    2 +-
- drivers/net/sungem_phy.c     |    2 +-
- drivers/net/ucc_geth.c       |   16 ++++++++--------
- 8 files changed, 20 insertions(+), 19 deletions(-)
+ drivers/video/aty/radeon_base.c    |    6 +++---
+ drivers/video/aty/radeon_monitor.c |   13 +++++++------
+ drivers/video/aty/radeon_pm.c      |    2 +-
+ drivers/video/nvidia/nv_of.c       |    8 ++++----
+ drivers/video/offb.c               |   28 ++++++++++++++--------------
+ drivers/video/riva/fbdev.c         |    4 ++--
+ 6 files changed, 31 insertions(+), 30 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/drivers/net/bmac.c b/drivers/net/bmac.c
-index c143304..aa01ba3 100644
---- a/drivers/net/bmac.c
-+++ b/drivers/net/bmac.c
-@@ -1261,9 +1261,10 @@ static int __devinit bmac_probe(struct macio_dev *mdev, const struct of_device_i
- 		printk(KERN_ERR "BMAC: can't use, need 3 addrs and 3 intrs\n");
+diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
+index 1bf6f42..4972630 100644
+--- a/drivers/video/aty/radeon_base.c
++++ b/drivers/video/aty/radeon_base.c
+@@ -422,7 +422,7 @@ static int __devinit radeon_read_xtal_OF (struct radeonfb_info *rinfo)
+ 
+ 	if (dp == NULL)
  		return -ENODEV;
- 	}
--	prop_addr = get_property(macio_get_of_node(mdev), "mac-address", NULL);
-+	prop_addr = of_get_property(macio_get_of_node(mdev),
-+			"mac-address", NULL);
- 	if (prop_addr == NULL) {
--		prop_addr = get_property(macio_get_of_node(mdev),
-+		prop_addr = of_get_property(macio_get_of_node(mdev),
- 				"local-mac-address", NULL);
- 		if (prop_addr == NULL) {
- 			printk(KERN_ERR "BMAC: Can't get mac-address\n");
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index d1a8134..6d5effd 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -2336,7 +2336,7 @@ static int ehea_setup_single_port(struct ehea_port *port,
- 	port->of_dev_node = dn;
+-	val = get_property(dp, "ATY,RefCLK", NULL);
++	val = of_get_property(dp, "ATY,RefCLK", NULL);
+ 	if (!val || !*val) {
+ 		printk(KERN_WARNING "radeonfb: No ATY,RefCLK property !\n");
+ 		return -EINVAL;
+@@ -430,11 +430,11 @@ static int __devinit radeon_read_xtal_OF (struct radeonfb_info *rinfo)
  
- 	/* Determine logical port id */
--	dn_log_port_id = get_property(dn, "ibm,hea-port-no", NULL);
-+	dn_log_port_id = of_get_property(dn, "ibm,hea-port-no", NULL);
+ 	rinfo->pll.ref_clk = (*val) / 10;
  
- 	if (!dn_log_port_id) {
- 		ehea_error("bad device node: dn_log_port_id=%p",
-@@ -2502,7 +2502,7 @@ static int __devinit ehea_probe(struct ibmebus_dev *dev,
- 		goto out;
- 	}
+-	val = get_property(dp, "ATY,SCLK", NULL);
++	val = of_get_property(dp, "ATY,SCLK", NULL);
+ 	if (val && *val)
+ 		rinfo->pll.sclk = (*val) / 10;
  
--	adapter_handle = get_property(dev->ofdev.node, "ibm,hea-handle",
-+	adapter_handle = of_get_property(dev->ofdev.node, "ibm,hea-handle",
- 					    NULL);
- 	if (adapter_handle)
- 		adapter->handle = *adapter_handle;
-diff --git a/drivers/net/mace.c b/drivers/net/mace.c
-index 9ec24f0..7018ba9 100644
---- a/drivers/net/mace.c
-+++ b/drivers/net/mace.c
-@@ -110,9 +110,9 @@ static int __devinit mace_probe(struct macio_dev *mdev, const struct of_device_i
- 		return -ENODEV;
- 	}
+-	val = get_property(dp, "ATY,MCLK", NULL);
++	val = of_get_property(dp, "ATY,MCLK", NULL);
+ 	if (val && *val)
+ 		rinfo->pll.mclk = (*val) / 10;
  
--	addr = get_property(mace, "mac-address", NULL);
-+	addr = of_get_property(mace, "mac-address", NULL);
- 	if (addr == NULL) {
--		addr = get_property(mace, "local-mac-address", NULL);
-+		addr = of_get_property(mace, "local-mac-address", NULL);
- 		if (addr == NULL) {
- 			printk(KERN_ERR "Can't get mac-address for MACE %s\n",
- 			       mace->full_name);
-diff --git a/drivers/net/pasemi_mac.c b/drivers/net/pasemi_mac.c
-index d670ac7..cb7a8e7 100644
---- a/drivers/net/pasemi_mac.c
-+++ b/drivers/net/pasemi_mac.c
-@@ -80,7 +80,7 @@ static int pasemi_get_mac_addr(struct pasemi_mac *mac)
- 		return -ENOENT;
+diff --git a/drivers/video/aty/radeon_monitor.c b/drivers/video/aty/radeon_monitor.c
+index 38c7dbf..ec7a5d4 100644
+--- a/drivers/video/aty/radeon_monitor.c
++++ b/drivers/video/aty/radeon_monitor.c
+@@ -65,12 +65,12 @@ static int __devinit radeon_parse_montype_prop(struct device_node *dp, u8 **out_
+         static char *propnames[] = { "DFP,EDID", "LCD,EDID", "EDID",
+ 				     "EDID1", "EDID2",  NULL };
+ 	const u8 *pedid = NULL;
+-	const u8 *pmt = NULL;
++	const u8 *pmt;
+ 	u8 *tmp;
+         int i, mt = MT_NONE;  
+ 	
+ 	RTRACE("analyzing OF properties...\n");
+-	pmt = get_property(dp, "display-type", NULL);
++	pmt = of_get_property(dp, "display-type", NULL);
+ 	if (!pmt)
+ 		return MT_NONE;
+ 	RTRACE("display-type: %s\n", pmt);
+@@ -89,7 +89,7 @@ static int __devinit radeon_parse_montype_prop(struct device_node *dp, u8 **out_
  	}
  
--	maddr = get_property(dn, "mac-address", NULL);
-+	maddr = of_get_property(dn, "mac-address", NULL);
- 	if (maddr == NULL) {
- 		dev_warn(&pdev->dev,
- 			 "no mac address in device tree, not configuring\n");
-diff --git a/drivers/net/spider_net.c b/drivers/net/spider_net.c
-index 3b91af8..6984761 100644
---- a/drivers/net/spider_net.c
-+++ b/drivers/net/spider_net.c
-@@ -1831,7 +1831,7 @@ try_host_fw:
- 	if (!dn)
- 		goto out_err;
+ 	for (i = 0; propnames[i] != NULL; ++i) {
+-		pedid = get_property(dp, propnames[i], NULL);
++		pedid = of_get_property(dp, propnames[i], NULL);
+ 		if (pedid != NULL)
+ 			break;
+ 	}
+@@ -98,9 +98,10 @@ static int __devinit radeon_parse_montype_prop(struct device_node *dp, u8 **out_
+ 	 * single-head cards have hdno == -1 and skip this step
+ 	 */
+ 	if (pedid == NULL && dp->parent && (hdno != -1))
+-		pedid = get_property(dp->parent, (hdno == 0) ? "EDID1" : "EDID2", NULL);
++		pedid = of_get_property(dp->parent,
++				(hdno == 0) ? "EDID1" : "EDID2", NULL);
+ 	if (pedid == NULL && dp->parent && (hdno == 0))
+-		pedid = get_property(dp->parent, "EDID", NULL);
++		pedid = of_get_property(dp->parent, "EDID", NULL);
+ 	if (pedid == NULL)
+ 		return mt;
  
--	fw_prop = get_property(dn, "firmware", &fw_size);
-+	fw_prop = of_get_property(dn, "firmware", &fw_size);
- 	if (!fw_prop)
- 		goto out_err;
+@@ -130,7 +131,7 @@ static int __devinit radeon_probe_OF_head(struct radeonfb_info *rinfo, int head_
+ 		do {
+ 			if (!dp)
+ 				return MT_NONE;
+-			pname = get_property(dp, "name", NULL);
++			pname = of_get_property(dp, "name", NULL);
+ 			if (!pname)
+ 				return MT_NONE;
+ 			len = strlen(pname);
+diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
+index c411293..1786ae1 100644
+--- a/drivers/video/aty/radeon_pm.c
++++ b/drivers/video/aty/radeon_pm.c
+@@ -1290,7 +1290,7 @@ static void radeon_pm_full_reset_sdram(struct radeonfb_info *rinfo)
+ 		if (rinfo->of_node != NULL) {
+ 			int size;
  
-@@ -2237,7 +2237,7 @@ spider_net_setup_netdev(struct spider_net_card *card)
- 	if (!dn)
- 		return -EIO;
+-			mrtable = get_property(rinfo->of_node, "ATY,MRT", &size);
++			mrtable = of_get_property(rinfo->of_node, "ATY,MRT", &size);
+ 			if (mrtable)
+ 				mrtable_size = size >> 2;
+ 			else
+diff --git a/drivers/video/nvidia/nv_of.c b/drivers/video/nvidia/nv_of.c
+index 163a774..73afd7e 100644
+--- a/drivers/video/nvidia/nv_of.c
++++ b/drivers/video/nvidia/nv_of.c
+@@ -46,15 +46,15 @@ int nvidia_probe_of_connector(struct fb_info *info, int conn, u8 **out_edid)
  
--	mac = get_property(dn, "local-mac-address", NULL);
-+	mac = of_get_property(dn, "local-mac-address", NULL);
- 	if (!mac)
- 		return -EIO;
- 	memcpy(addr.sa_data, mac, ETH_ALEN);
-diff --git a/drivers/net/sungem.c b/drivers/net/sungem.c
-index 616be8d..1d0f5ca 100644
---- a/drivers/net/sungem.c
-+++ b/drivers/net/sungem.c
-@@ -2900,7 +2900,7 @@ static int __devinit gem_get_device_address(struct gem *gp)
- #elif defined(CONFIG_PPC_PMAC)
- 	const unsigned char *addr;
+ 		for (dp = NULL;
+ 		     (dp = of_get_next_child(parent, dp)) != NULL;) {
+-			pname = get_property(dp, "name", NULL);
++			pname = of_get_property(dp, "name", NULL);
+ 			if (!pname)
+ 				continue;
+ 			len = strlen(pname);
+ 			if ((pname[len-1] == 'A' && conn == 1) ||
+ 			    (pname[len-1] == 'B' && conn == 2)) {
+ 				for (i = 0; propnames[i] != NULL; ++i) {
+-					pedid = get_property(dp, propnames[i],
+-							     NULL);
++					pedid = of_get_property(dp,
++							propnames[i], NULL);
+ 					if (pedid != NULL)
+ 						break;
+ 				}
+@@ -65,7 +65,7 @@ int nvidia_probe_of_connector(struct fb_info *info, int conn, u8 **out_edid)
+ 	}
+ 	if (pedid == NULL) {
+ 		for (i = 0; propnames[i] != NULL; ++i) {
+-			pedid = get_property(parent, propnames[i], NULL);
++			pedid = of_get_property(parent, propnames[i], NULL);
+ 			if (pedid != NULL)
+ 				break;
+ 		}
+diff --git a/drivers/video/offb.c b/drivers/video/offb.c
+index 9576a55..3cf603c 100644
+--- a/drivers/video/offb.c
++++ b/drivers/video/offb.c
+@@ -425,27 +425,27 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
+ 	const u32 *pp, *addrp, *up;
+ 	u64 asize;
  
--	addr = get_property(gp->of_node, "local-mac-address", NULL);
-+	addr = of_get_property(gp->of_node, "local-mac-address", NULL);
- 	if (addr == NULL) {
- 		printk("\n");
- 		printk(KERN_ERR "%s: can't get mac-address\n", dev->name);
-diff --git a/drivers/net/sungem_phy.c b/drivers/net/sungem_phy.c
-index 56a110c..61843fd 100644
---- a/drivers/net/sungem_phy.c
-+++ b/drivers/net/sungem_phy.c
-@@ -451,7 +451,7 @@ static int bcm5421_init(struct mii_phy* phy)
- 	if (phy->platform_data) {
- 		struct device_node *np = of_get_parent(phy->platform_data);
- 		int can_low_power = 1;
--		if (np == NULL || get_property(np, "no-autolowpower", NULL))
-+		if (np == NULL || of_get_property(np, "no-autolowpower", NULL))
- 			can_low_power = 0;
- 		if (can_low_power) {
- 			/* Enable automatic low-power */
-diff --git a/drivers/net/ucc_geth.c b/drivers/net/ucc_geth.c
-index 639e1e6..12d394f 100644
---- a/drivers/net/ucc_geth.c
-+++ b/drivers/net/ucc_geth.c
-@@ -4080,16 +4080,16 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
+-	pp = get_property(dp, "linux,bootx-depth", &len);
++	pp = of_get_property(dp, "linux,bootx-depth", &len);
+ 	if (pp == NULL)
+-		pp = get_property(dp, "depth", &len);
++		pp = of_get_property(dp, "depth", &len);
+ 	if (pp && len == sizeof(u32))
+ 		depth = *pp;
  
- 	ugeth_vdbg("%s: IN", __FUNCTION__);
+-	pp = get_property(dp, "linux,bootx-width", &len);
++	pp = of_get_property(dp, "linux,bootx-width", &len);
+ 	if (pp == NULL)
+-		pp = get_property(dp, "width", &len);
++		pp = of_get_property(dp, "width", &len);
+ 	if (pp && len == sizeof(u32))
+ 		width = *pp;
  
--	prop = get_property(np, "device-id", NULL);
-+	prop = of_get_property(np, "device-id", NULL);
- 	ucc_num = *prop - 1;
- 	if ((ucc_num < 0) || (ucc_num > 7))
+-	pp = get_property(dp, "linux,bootx-height", &len);
++	pp = of_get_property(dp, "linux,bootx-height", &len);
+ 	if (pp == NULL)
+-		pp = get_property(dp, "height", &len);
++		pp = of_get_property(dp, "height", &len);
+ 	if (pp && len == sizeof(u32))
+ 		height = *pp;
+ 
+-	pp = get_property(dp, "linux,bootx-linebytes", &len);
++	pp = of_get_property(dp, "linux,bootx-linebytes", &len);
+ 	if (pp == NULL)
+-		pp = get_property(dp, "linebytes", &len);
++		pp = of_get_property(dp, "linebytes", &len);
+ 	if (pp && len == sizeof(u32) && (*pp != 0xffffffffu))
+ 		pitch = *pp;
+ 	else
+@@ -463,9 +463,9 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
+ 	 * ranges and pick one that is both big enough and if possible encloses
+ 	 * the "address" property. If none match, we pick the biggest
+ 	 */
+-	up = get_property(dp, "linux,bootx-addr", &len);
++	up = of_get_property(dp, "linux,bootx-addr", &len);
+ 	if (up == NULL)
+-		up = get_property(dp, "address", &len);
++		up = of_get_property(dp, "address", &len);
+ 	if (up && len == sizeof(u32))
+ 		addr_prop = *up;
+ 
+@@ -521,7 +521,7 @@ static int __init offb_init(void)
  		return -ENODEV;
  
- 	ug_info = &ugeth_info[ucc_num];
- 	ug_info->uf_info.ucc_num = ucc_num;
--	prop = get_property(np, "rx-clock", NULL);
-+	prop = of_get_property(np, "rx-clock", NULL);
- 	ug_info->uf_info.rx_clock = *prop;
--	prop = get_property(np, "tx-clock", NULL);
-+	prop = of_get_property(np, "tx-clock", NULL);
- 	ug_info->uf_info.tx_clock = *prop;
- 	err = of_address_to_resource(np, 0, &res);
- 	if (err)
-@@ -4098,15 +4098,15 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 	ug_info->uf_info.regs = res.start;
- 	ug_info->uf_info.irq = irq_of_parse_and_map(np, 0);
+ 	/* Check if we have a MacOS display without a node spec */
+-	if (get_property(of_chosen, "linux,bootx-noscreen", NULL) != NULL) {
++	if (of_get_property(of_chosen, "linux,bootx-noscreen", NULL) != NULL) {
+ 		/* The old code tried to work out which node was the MacOS
+ 		 * display based on the address. I'm dropping that since the
+ 		 * lack of a node spec only happens with old BootX versions
+@@ -532,14 +532,14 @@ static int __init offb_init(void)
+ 	}
  
--	ph = get_property(np, "phy-handle", NULL);
-+	ph = of_get_property(np, "phy-handle", NULL);
- 	phy = of_find_node_by_phandle(*ph);
- 
- 	if (phy == NULL)
- 		return -ENODEV;
- 
--	prop = get_property(phy, "reg", NULL);
-+	prop = of_get_property(phy, "reg", NULL);
- 	ug_info->phy_address = *prop;
--	prop = get_property(phy, "interface", NULL);
-+	prop = of_get_property(phy, "interface", NULL);
- 	ug_info->enet_interface = *prop;
- 	ug_info->phy_interrupt = irq_of_parse_and_map(phy, 0);
- 	ug_info->board_flags = (ug_info->phy_interrupt == NO_IRQ)?
-@@ -4127,7 +4127,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 	/* timing.						*/
- 	/* The following compensates by writing to the reserved */
- 	/* QE Port Output Hold Registers (CPOH1?).              */
--	prop = get_property(phy, "interface", NULL);
-+	prop = of_get_property(phy, "interface", NULL);
- 	phy_interface = *prop;
- 	if ((phy_interface == ENET_1000_RGMII) ||
- 			(phy_interface == ENET_100_RGMII) ||
-@@ -4140,7 +4140,7 @@ static int ucc_geth_probe(struct of_device* ofdev, const struct of_device_id *ma
- 		soc = of_find_node_by_type(NULL, "soc");
- 		if (soc) {
- 			unsigned int size;
--			const void *prop = get_property(soc, "reg", &size);
-+			const void *prop = of_get_property(soc, "reg", &size);
- 			immrbase = of_translate_address(soc, prop);
- 			of_node_put(soc);
- 		};
+ 	for (dp = NULL; (dp = of_find_node_by_type(dp, "display"));) {
+-		if (get_property(dp, "linux,opened", NULL) &&
+-		    get_property(dp, "linux,boot-display", NULL)) {
++		if (of_get_property(dp, "linux,opened", NULL) &&
++		    of_get_property(dp, "linux,boot-display", NULL)) {
+ 			boot_disp = dp;
+ 			offb_init_nodriver(dp, 0);
+ 		}
+ 	}
+ 	for (dp = NULL; (dp = of_find_node_by_type(dp, "display"));) {
+-		if (get_property(dp, "linux,opened", NULL) &&
++		if (of_get_property(dp, "linux,opened", NULL) &&
+ 		    dp != boot_disp)
+ 			offb_init_nodriver(dp, 0);
+ 	}
+diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
+index d7ece8d..9c6bd09 100644
+--- a/drivers/video/riva/fbdev.c
++++ b/drivers/video/riva/fbdev.c
+@@ -1760,13 +1760,13 @@ static int __devinit riva_get_EDID_OF(struct fb_info *info, struct pci_dev *pd)
+ 	NVTRACE_ENTER();
+ 	dp = pci_device_to_OF_node(pd);
+ 	for (; dp != NULL; dp = dp->child) {
+-		disptype = get_property(dp, "display-type", NULL);
++		disptype = of_get_property(dp, "display-type", NULL);
+ 		if (disptype == NULL)
+ 			continue;
+ 		if (strncmp(disptype, "LCD", 3) != 0)
+ 			continue;
+ 		for (i = 0; propnames[i] != NULL; ++i) {
+-			pedid = get_property(dp, propnames[i], NULL);
++			pedid = of_get_property(dp, propnames[i], NULL);
+ 			if (pedid != NULL) {
+ 				par->EDID = (unsigned char *)pedid;
+ 				NVTRACE("LCD found.\n");
 -- 
 1.5.0.3
