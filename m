@@ -1,20 +1,20 @@
-Return-Path: <ntl@pobox.com>
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by ozlabs.org (Postfix) with ESMTP id 04579DDE3C
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 00:26:54 +1000 (EST)
-Date: Tue, 3 Apr 2007 09:28:28 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: [PATCH 1/19] PCI: rpaphp: Cleanup flow of control for
-	rpaphp_add_slot
-Message-ID: <20070403142828.GK8423@localdomain>
-References: <20070403002629.GI4922@austin.ibm.com>
-	<20070403003346.3D32D3A65C@topology.austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070403003346.3D32D3A65C@topology.austin.ibm.com>
-Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
-	linux-pci@atrey.karlin.mff.cuni.cz, Greg KH <gregkh@suse.de>
+Return-Path: <SRS0+3550a31010a0b33b2856+1318+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
+From: David Woodhouse <dwmw2@infradead.org>
+To: michael@ellerman.id.au
+In-Reply-To: <1175570169.30552.3.camel@shinybook.infradead.org>
+References: <1175208237.3122.78.camel@pmac.infradead.org>
+	<26babf7b7398794f08e7417377b3facc@kernel.crashing.org>
+	<1175473220.3144.1.camel@concordia.ozlabs.ibm.com>
+	<432af8a0f928491e7d376923829f40a0@kernel.crashing.org>
+	<1175568133.16182.15.camel@concordia.ozlabs.ibm.com>
+	<1175570169.30552.3.camel@shinybook.infradead.org>
+Content-Type: text/plain
+Date: Tue, 03 Apr 2007 10:45:38 -0400
+Message-Id: <1175611539.2665.30.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, nhorman@redhat.com,
+	cbe-oss-dev <cbe-oss-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,19 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linas Vepstas wrote:
+On Mon, 2007-04-02 at 23:16 -0400, David Woodhouse wrote:
+> > > My question remains: shouldn't Linux get that
+> > > information from the device tree, instead?  The
+> > > bootwrapper or bootloader can put it there.
+> > 
+> > Yes it _should_, but it doesn't.
 > 
-> Cleanup the flow of control for rpaphp_add_slot(), so as to
-> make it easier to read. The ext patch will fix a bug in this 
-> same code. 
+> It _used_ to. The 2.6.16 kernel just used the memory listed in the
+> device tree. That's _why_ we need this hack -- because when we boot
+> from
+> 2.6.16 with the memory listed in the device tree, it ends up getting
+> registered twice by the new kernel. 
 
-This:
+Why _did_ we make this change? It makes /sbin/kexec unhappy too, since
+it doesn't like the apparent lack of _any_ memory.
 
-> +	if (!dn || strcmp(dn->name, "pci"))
-> +		return 0;
+It's not as if anyone's going to be expanding the amount of memory in
+their PS3, so it really needs to be dynamically detected.
 
-is not equivalent to the code it's replacing:
+If we were to put the memory back in the device-tree, and start with a
+single region up to 0x07c00000 followed by another region with the rest
+of it, then we wouldn't need the rmo_top hack to /sbin/kexec either.
 
-> -	if (dn->name != 0 && strcmp(dn->name, "pci") == 0) {
-
-With your version we'll oops if dn->name is NULL.
+-- 
+dwmw2
