@@ -1,16 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 7DCE6DE03B
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:52:42 +1000 (EST)
-Date: Tue, 3 Apr 2007 22:50:59 +1000
+	by ozlabs.org (Postfix) with ESMTP id 21764DE045
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:52:43 +1000 (EST)
+Date: Tue, 3 Apr 2007 22:52:22 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 16/17] [POWERPC] Rename get_property to of_get_property: the
-	last one
-Message-Id: <20070403225059.e735b5e4.sfr@canb.auug.org.au>
-In-Reply-To: <20070403224937.f6a07e56.sfr@canb.auug.org.au>
+Subject: [PATCH 17/17] [POWERPC] Remove get_property
+Message-Id: <20070403225222.88e92221.sfr@canb.auug.org.au>
+In-Reply-To: <20070403225059.e735b5e4.sfr@canb.auug.org.au>
 References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
-	<20070403105539.7222cf2a.sfr@canb.auug.org.au>
 	<20070403105650.204003b6.sfr@canb.auug.org.au>
 	<20070403105748.769f156c.sfr@canb.auug.org.au>
 	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
@@ -29,6 +27,7 @@ References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403224505.5d5a1495.sfr@canb.auug.org.au>
 	<20070403224610.b61c7377.sfr@canb.auug.org.au>
 	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
+	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, "David S. Miller" <davem@davemloft.net>
@@ -41,57 +40,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This also fixes a bug where a property value was being modified
-in place.
+All the uses have been renamed.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/platforms/cell/cbe_cpufreq.c |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+ include/asm-powerpc/prom.h |    1 -
+ include/asm-ppc/prom.h     |    1 -
+ 2 files changed, 0 insertions(+), 2 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/platforms/cell/cbe_cpufreq.c b/arch/powerpc/platforms/cell/cbe_cpufreq.c
-index a3850fd..9c5d63b 100644
---- a/arch/powerpc/platforms/cell/cbe_cpufreq.c
-+++ b/arch/powerpc/platforms/cell/cbe_cpufreq.c
-@@ -126,7 +126,8 @@ static int set_pmode(int cpu, unsigned int pmode)
+diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+index e73a2b4..12fa0c4 100644
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -169,7 +169,6 @@ extern int machine_is_compatible(const char *compat);
+ extern const void *of_get_property(const struct device_node *node,
+ 				const char *name,
+ 				int *lenp);
+-#define get_property(a, b, c)	of_get_property((a), (b), (c))
+ extern void print_properties(struct device_node *node);
+ extern int of_n_addr_cells(struct device_node* np);
+ extern int of_n_size_cells(struct device_node* np);
+diff --git a/include/asm-ppc/prom.h b/include/asm-ppc/prom.h
+index 901f7fa..71f4c99 100644
+--- a/include/asm-ppc/prom.h
++++ b/include/asm-ppc/prom.h
+@@ -35,7 +35,6 @@ extern unsigned long sub_reloc_offset(unsigned long);
+ #define machine_is_compatible(x)		0
+ #define of_find_compatible_node(f, t, c)	NULL
+ #define of_get_property(p, n, l)		NULL
+-#define get_property(a, b, c)			of_get_property((a), (b), (c))
  
- static int cbe_cpufreq_cpu_init (struct cpufreq_policy *policy)
- {
--	u32 *max_freq;
-+	const u32 *max_freqp;
-+	u32 max_freq;
- 	int i, cur_pmode;
- 	struct device_node *cpu;
- 
-@@ -137,20 +138,20 @@ static int cbe_cpufreq_cpu_init (struct cpufreq_policy *policy)
- 
- 	pr_debug("init cpufreq on CPU %d\n", policy->cpu);
- 
--	max_freq = (u32*) get_property(cpu, "clock-frequency", NULL);
-+	max_freqp = of_get_property(cpu, "clock-frequency", NULL);
- 
--	if(!max_freq)
-+	if (!max_freqp)
- 		return -EINVAL;
- 
- 	// we need the freq in kHz
--	*max_freq /= 1000;
-+	max_freq = *max_freqp / 1000;
- 
--	pr_debug("max clock-frequency is at %u kHz\n", *max_freq);
-+	pr_debug("max clock-frequency is at %u kHz\n", max_freq);
- 	pr_debug("initializing frequency table\n");
- 
- 	// initialize frequency table
- 	for (i=0; cbe_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
--		cbe_freqs[i].frequency = *max_freq / cbe_freqs[i].index;
-+		cbe_freqs[i].frequency = max_freq / cbe_freqs[i].index;
- 		pr_debug("%d: %d\n", i, cbe_freqs[i].frequency);
- 	}
- 
+ #endif /* _PPC_PROM_H */
+ #endif /* __KERNEL__ */
 -- 
 1.5.0.3
