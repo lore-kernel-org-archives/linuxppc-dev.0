@@ -1,19 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 0DEF3DDF6C
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 04:28:13 +1000 (EST)
-Date: Tue, 03 Apr 2007 11:28:13 -0700 (PDT)
-Message-Id: <20070403.112813.35016105.davem@davemloft.net>
-To: segher@kernel.crashing.org
-Subject: Re: [PATCH 6/6] [POWERPC] make struct property's value a void *
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <65f2b2574eca0b34e7986618cfbe7a6d@kernel.crashing.org>
-References: <20070403105748.769f156c.sfr@canb.auug.org.au>
-	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
-	<65f2b2574eca0b34e7986618cfbe7a6d@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 3 Apr 2007 11:50:00 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: "Mark A. Greer" <mgreer@mvista.com>,
+	Yoder Stuart-B08248 <stuart.yoder@freescale.com>,
+	linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Dale Farnsworth <dfarnsworth@mvista.com>
+Subject: Re: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
+	platform
+Message-ID: <20070403185000.GF16719@mag.az.mvista.com>
+References: <20070328011924.GA1586@mag.az.mvista.com>
+	<20070328012206.GD1586@mag.az.mvista.com>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
+	<20070329003550.GB25652@localhost.localdomain>
+	<20070402181553.GH2132@mag.az.mvista.com>
+	<20070403005502.GA31273@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070403005502.GA31273@localhost.localdomain>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,17 +26,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Tue, 3 Apr 2007 17:39:52 +0200
+On Tue, Apr 03, 2007 at 10:55:02AM +1000, David Gibson wrote:
+> On Mon, Apr 02, 2007 at 11:15:53AM -0700, Mark A. Greer wrote:
+> > On Thu, Mar 29, 2007 at 10:35:50AM +1000, David Gibson wrote:
+> > > On Wed, Mar 28, 2007 at 09:43:16AM -0700, Yoder Stuart-B08248 wrote:
 
-> Why?  It should logically be an u8 * (and nothing
-> should ever cast it to anything else, accessor
-> functions should be used instead to get 32-bit ints
-> from it, etc.)
+<snip>
 
-Ummm, no.
+> > > The only thing that should need
+> > > virtual-reg properties is serial ports.  In fact, specifically, only
+> > > serial ports that the zImage is actually expected to use.
+> > 
+> > Not true.  Any reg block you're going to access in the bootwrapper needs
+> > this or some equivalent method for determining where to access those regs.
+> > Either that, parse BAT & page/hash tables, or provide ioremap in the
+> > bootwrapper (which, at the time virtual-reg materialized, was deemed
+> > overkill for the bootwrapper--presumably the same goes for parsing hash
+> > tables).
+> 
+> And examples of such reg blocks other than serial would be...?
 
-There are structures there, and other types of objects.
+I2C.  Reading the MAC addr and putting into dev tree for kernel.
 
-Look at how some of the sparc64 code does this, it's not a "u8 *" by
-even the largest stretch of the imagination.
+Mark
