@@ -1,14 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 437F5DE014
+	by ozlabs.org (Postfix) with ESMTP id F421ADE020
 	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:52:40 +1000 (EST)
-Date: Tue, 3 Apr 2007 22:45:05 +1000
+Date: Tue, 3 Apr 2007 22:46:10 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: paulus@samba.org
-Subject: [PATCH 13/17] [POWERPC] Rename get_property to of_get_property:
-	drivers/video
-Message-Id: <20070403224505.5d5a1495.sfr@canb.auug.org.au>
-In-Reply-To: <20070403224340.5533abc9.sfr@canb.auug.org.au>
+Subject: [PATCH 14/17] [POWERPC] Rename get_property to of_get_property:
+	drivers/scsi
+Message-Id: <20070403224610.b61c7377.sfr@canb.auug.org.au>
+In-Reply-To: <20070403224505.5d5a1495.sfr@canb.auug.org.au>
 References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403105401.1fcdee27.sfr@canb.auug.org.au>
 	<20070403105539.7222cf2a.sfr@canb.auug.org.au>
@@ -27,6 +27,7 @@ References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403224039.913af749.sfr@canb.auug.org.au>
 	<20070403224205.807cffe0.sfr@canb.auug.org.au>
 	<20070403224340.5533abc9.sfr@canb.auug.org.au>
+	<20070403224505.5d5a1495.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, "David S. Miller" <davem@davemloft.net>
@@ -42,238 +43,84 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/video/aty/radeon_base.c    |    6 +++---
- drivers/video/aty/radeon_monitor.c |   13 +++++++------
- drivers/video/aty/radeon_pm.c      |    2 +-
- drivers/video/nvidia/nv_of.c       |    8 ++++----
- drivers/video/offb.c               |   28 ++++++++++++++--------------
- drivers/video/riva/fbdev.c         |    4 ++--
- 6 files changed, 31 insertions(+), 30 deletions(-)
+ drivers/scsi/ibmvscsi/ibmvstgt.c  |    8 ++++----
+ drivers/scsi/ibmvscsi/rpa_vscsi.c |    4 ++--
+ drivers/scsi/mac53c94.c           |    2 +-
+ drivers/scsi/mesh.c               |    2 +-
+ 4 files changed, 8 insertions(+), 8 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/drivers/video/aty/radeon_base.c b/drivers/video/aty/radeon_base.c
-index 1bf6f42..4972630 100644
---- a/drivers/video/aty/radeon_base.c
-+++ b/drivers/video/aty/radeon_base.c
-@@ -422,7 +422,7 @@ static int __devinit radeon_read_xtal_OF (struct radeonfb_info *rinfo)
+diff --git a/drivers/scsi/ibmvscsi/ibmvstgt.c b/drivers/scsi/ibmvscsi/ibmvstgt.c
+index f65f21d..3fe831c 100644
+--- a/drivers/scsi/ibmvscsi/ibmvstgt.c
++++ b/drivers/scsi/ibmvscsi/ibmvstgt.c
+@@ -903,16 +903,16 @@ static int get_system_info(void)
+ 	if (!rootdn)
+ 		return -ENOENT;
  
- 	if (dp == NULL)
- 		return -ENODEV;
--	val = get_property(dp, "ATY,RefCLK", NULL);
-+	val = of_get_property(dp, "ATY,RefCLK", NULL);
- 	if (!val || !*val) {
- 		printk(KERN_WARNING "radeonfb: No ATY,RefCLK property !\n");
- 		return -EINVAL;
-@@ -430,11 +430,11 @@ static int __devinit radeon_read_xtal_OF (struct radeonfb_info *rinfo)
+-	model = get_property(rootdn, "model", NULL);
+-	id = get_property(rootdn, "system-id", NULL);
++	model = of_get_property(rootdn, "model", NULL);
++	id = of_get_property(rootdn, "system-id", NULL);
+ 	if (model && id)
+ 		snprintf(system_id, sizeof(system_id), "%s-%s", model, id);
  
- 	rinfo->pll.ref_clk = (*val) / 10;
+-	name = get_property(rootdn, "ibm,partition-name", NULL);
++	name = of_get_property(rootdn, "ibm,partition-name", NULL);
+ 	if (name)
+ 		strncpy(partition_name, name, sizeof(partition_name));
  
--	val = get_property(dp, "ATY,SCLK", NULL);
-+	val = of_get_property(dp, "ATY,SCLK", NULL);
- 	if (val && *val)
- 		rinfo->pll.sclk = (*val) / 10;
+-	num = get_property(rootdn, "ibm,partition-no", NULL);
++	num = of_get_property(rootdn, "ibm,partition-no", NULL);
+ 	if (num)
+ 		partition_number = *num;
  
--	val = get_property(dp, "ATY,MCLK", NULL);
-+	val = of_get_property(dp, "ATY,MCLK", NULL);
- 	if (val && *val)
- 		rinfo->pll.mclk = (*val) / 10;
- 
-diff --git a/drivers/video/aty/radeon_monitor.c b/drivers/video/aty/radeon_monitor.c
-index 38c7dbf..ec7a5d4 100644
---- a/drivers/video/aty/radeon_monitor.c
-+++ b/drivers/video/aty/radeon_monitor.c
-@@ -65,12 +65,12 @@ static int __devinit radeon_parse_montype_prop(struct device_node *dp, u8 **out_
-         static char *propnames[] = { "DFP,EDID", "LCD,EDID", "EDID",
- 				     "EDID1", "EDID2",  NULL };
- 	const u8 *pedid = NULL;
--	const u8 *pmt = NULL;
-+	const u8 *pmt;
- 	u8 *tmp;
-         int i, mt = MT_NONE;  
- 	
- 	RTRACE("analyzing OF properties...\n");
--	pmt = get_property(dp, "display-type", NULL);
-+	pmt = of_get_property(dp, "display-type", NULL);
- 	if (!pmt)
- 		return MT_NONE;
- 	RTRACE("display-type: %s\n", pmt);
-@@ -89,7 +89,7 @@ static int __devinit radeon_parse_montype_prop(struct device_node *dp, u8 **out_
+diff --git a/drivers/scsi/ibmvscsi/rpa_vscsi.c b/drivers/scsi/ibmvscsi/rpa_vscsi.c
+index 227c0f2..9bbb69c 100644
+--- a/drivers/scsi/ibmvscsi/rpa_vscsi.c
++++ b/drivers/scsi/ibmvscsi/rpa_vscsi.c
+@@ -162,11 +162,11 @@ static void gather_partition_info(void)
+ 		return;
  	}
  
- 	for (i = 0; propnames[i] != NULL; ++i) {
--		pedid = get_property(dp, propnames[i], NULL);
-+		pedid = of_get_property(dp, propnames[i], NULL);
- 		if (pedid != NULL)
- 			break;
- 	}
-@@ -98,9 +98,10 @@ static int __devinit radeon_parse_montype_prop(struct device_node *dp, u8 **out_
- 	 * single-head cards have hdno == -1 and skip this step
- 	 */
- 	if (pedid == NULL && dp->parent && (hdno != -1))
--		pedid = get_property(dp->parent, (hdno == 0) ? "EDID1" : "EDID2", NULL);
-+		pedid = of_get_property(dp->parent,
-+				(hdno == 0) ? "EDID1" : "EDID2", NULL);
- 	if (pedid == NULL && dp->parent && (hdno == 0))
--		pedid = get_property(dp->parent, "EDID", NULL);
-+		pedid = of_get_property(dp->parent, "EDID", NULL);
- 	if (pedid == NULL)
- 		return mt;
- 
-@@ -130,7 +131,7 @@ static int __devinit radeon_probe_OF_head(struct radeonfb_info *rinfo, int head_
- 		do {
- 			if (!dp)
- 				return MT_NONE;
--			pname = get_property(dp, "name", NULL);
-+			pname = of_get_property(dp, "name", NULL);
- 			if (!pname)
- 				return MT_NONE;
- 			len = strlen(pname);
-diff --git a/drivers/video/aty/radeon_pm.c b/drivers/video/aty/radeon_pm.c
-index c411293..1786ae1 100644
---- a/drivers/video/aty/radeon_pm.c
-+++ b/drivers/video/aty/radeon_pm.c
-@@ -1290,7 +1290,7 @@ static void radeon_pm_full_reset_sdram(struct radeonfb_info *rinfo)
- 		if (rinfo->of_node != NULL) {
- 			int size;
- 
--			mrtable = get_property(rinfo->of_node, "ATY,MRT", &size);
-+			mrtable = of_get_property(rinfo->of_node, "ATY,MRT", &size);
- 			if (mrtable)
- 				mrtable_size = size >> 2;
- 			else
-diff --git a/drivers/video/nvidia/nv_of.c b/drivers/video/nvidia/nv_of.c
-index 163a774..73afd7e 100644
---- a/drivers/video/nvidia/nv_of.c
-+++ b/drivers/video/nvidia/nv_of.c
-@@ -46,15 +46,15 @@ int nvidia_probe_of_connector(struct fb_info *info, int conn, u8 **out_edid)
- 
- 		for (dp = NULL;
- 		     (dp = of_get_next_child(parent, dp)) != NULL;) {
--			pname = get_property(dp, "name", NULL);
-+			pname = of_get_property(dp, "name", NULL);
- 			if (!pname)
- 				continue;
- 			len = strlen(pname);
- 			if ((pname[len-1] == 'A' && conn == 1) ||
- 			    (pname[len-1] == 'B' && conn == 2)) {
- 				for (i = 0; propnames[i] != NULL; ++i) {
--					pedid = get_property(dp, propnames[i],
--							     NULL);
-+					pedid = of_get_property(dp,
-+							propnames[i], NULL);
- 					if (pedid != NULL)
- 						break;
- 				}
-@@ -65,7 +65,7 @@ int nvidia_probe_of_connector(struct fb_info *info, int conn, u8 **out_edid)
- 	}
- 	if (pedid == NULL) {
- 		for (i = 0; propnames[i] != NULL; ++i) {
--			pedid = get_property(parent, propnames[i], NULL);
-+			pedid = of_get_property(parent, propnames[i], NULL);
- 			if (pedid != NULL)
- 				break;
- 		}
-diff --git a/drivers/video/offb.c b/drivers/video/offb.c
-index 9576a55..3cf603c 100644
---- a/drivers/video/offb.c
-+++ b/drivers/video/offb.c
-@@ -425,27 +425,27 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
- 	const u32 *pp, *addrp, *up;
- 	u64 asize;
- 
--	pp = get_property(dp, "linux,bootx-depth", &len);
-+	pp = of_get_property(dp, "linux,bootx-depth", &len);
- 	if (pp == NULL)
--		pp = get_property(dp, "depth", &len);
-+		pp = of_get_property(dp, "depth", &len);
- 	if (pp && len == sizeof(u32))
- 		depth = *pp;
- 
--	pp = get_property(dp, "linux,bootx-width", &len);
-+	pp = of_get_property(dp, "linux,bootx-width", &len);
- 	if (pp == NULL)
--		pp = get_property(dp, "width", &len);
-+		pp = of_get_property(dp, "width", &len);
- 	if (pp && len == sizeof(u32))
- 		width = *pp;
- 
--	pp = get_property(dp, "linux,bootx-height", &len);
-+	pp = of_get_property(dp, "linux,bootx-height", &len);
- 	if (pp == NULL)
--		pp = get_property(dp, "height", &len);
-+		pp = of_get_property(dp, "height", &len);
- 	if (pp && len == sizeof(u32))
- 		height = *pp;
- 
--	pp = get_property(dp, "linux,bootx-linebytes", &len);
-+	pp = of_get_property(dp, "linux,bootx-linebytes", &len);
- 	if (pp == NULL)
--		pp = get_property(dp, "linebytes", &len);
-+		pp = of_get_property(dp, "linebytes", &len);
- 	if (pp && len == sizeof(u32) && (*pp != 0xffffffffu))
- 		pitch = *pp;
- 	else
-@@ -463,9 +463,9 @@ static void __init offb_init_nodriver(struct device_node *dp, int no_real_node)
- 	 * ranges and pick one that is both big enough and if possible encloses
- 	 * the "address" property. If none match, we pick the biggest
- 	 */
--	up = get_property(dp, "linux,bootx-addr", &len);
-+	up = of_get_property(dp, "linux,bootx-addr", &len);
- 	if (up == NULL)
--		up = get_property(dp, "address", &len);
-+		up = of_get_property(dp, "address", &len);
- 	if (up && len == sizeof(u32))
- 		addr_prop = *up;
- 
-@@ -521,7 +521,7 @@ static int __init offb_init(void)
- 		return -ENODEV;
- 
- 	/* Check if we have a MacOS display without a node spec */
--	if (get_property(of_chosen, "linux,bootx-noscreen", NULL) != NULL) {
-+	if (of_get_property(of_chosen, "linux,bootx-noscreen", NULL) != NULL) {
- 		/* The old code tried to work out which node was the MacOS
- 		 * display based on the address. I'm dropping that since the
- 		 * lack of a node spec only happens with old BootX versions
-@@ -532,14 +532,14 @@ static int __init offb_init(void)
+-	ppartition_name = get_property(rootdn, "ibm,partition-name", NULL);
++	ppartition_name = of_get_property(rootdn, "ibm,partition-name", NULL);
+ 	if (ppartition_name)
+ 		strncpy(partition_name, ppartition_name,
+ 				sizeof(partition_name));
+-	p_number_ptr = get_property(rootdn, "ibm,partition-no", NULL);
++	p_number_ptr = of_get_property(rootdn, "ibm,partition-no", NULL);
+ 	if (p_number_ptr)
+ 		partition_number = *p_number_ptr;
+ }
+diff --git a/drivers/scsi/mac53c94.c b/drivers/scsi/mac53c94.c
+index 753d883..5806ede 100644
+--- a/drivers/scsi/mac53c94.c
++++ b/drivers/scsi/mac53c94.c
+@@ -471,7 +471,7 @@ static int mac53c94_probe(struct macio_dev *mdev, const struct of_device_id *mat
+ 		goto out_free;
  	}
  
- 	for (dp = NULL; (dp = of_find_node_by_type(dp, "display"));) {
--		if (get_property(dp, "linux,opened", NULL) &&
--		    get_property(dp, "linux,boot-display", NULL)) {
-+		if (of_get_property(dp, "linux,opened", NULL) &&
-+		    of_get_property(dp, "linux,boot-display", NULL)) {
- 			boot_disp = dp;
- 			offb_init_nodriver(dp, 0);
- 		}
- 	}
- 	for (dp = NULL; (dp = of_find_node_by_type(dp, "display"));) {
--		if (get_property(dp, "linux,opened", NULL) &&
-+		if (of_get_property(dp, "linux,opened", NULL) &&
- 		    dp != boot_disp)
- 			offb_init_nodriver(dp, 0);
- 	}
-diff --git a/drivers/video/riva/fbdev.c b/drivers/video/riva/fbdev.c
-index d7ece8d..9c6bd09 100644
---- a/drivers/video/riva/fbdev.c
-+++ b/drivers/video/riva/fbdev.c
-@@ -1760,13 +1760,13 @@ static int __devinit riva_get_EDID_OF(struct fb_info *info, struct pci_dev *pd)
- 	NVTRACE_ENTER();
- 	dp = pci_device_to_OF_node(pd);
- 	for (; dp != NULL; dp = dp->child) {
--		disptype = get_property(dp, "display-type", NULL);
-+		disptype = of_get_property(dp, "display-type", NULL);
- 		if (disptype == NULL)
- 			continue;
- 		if (strncmp(disptype, "LCD", 3) != 0)
- 			continue;
- 		for (i = 0; propnames[i] != NULL; ++i) {
--			pedid = get_property(dp, propnames[i], NULL);
-+			pedid = of_get_property(dp, propnames[i], NULL);
- 			if (pedid != NULL) {
- 				par->EDID = (unsigned char *)pedid;
- 				NVTRACE("LCD found.\n");
+-       	clkprop = get_property(node, "clock-frequency", &proplen);
++	clkprop = of_get_property(node, "clock-frequency", &proplen);
+        	if (clkprop == NULL || proplen != sizeof(int)) {
+        		printk(KERN_ERR "%s: can't get clock frequency, "
+        		       "assuming 25MHz\n", node->full_name);
+diff --git a/drivers/scsi/mesh.c b/drivers/scsi/mesh.c
+index 1fd3c75..cf3666d 100644
+--- a/drivers/scsi/mesh.c
++++ b/drivers/scsi/mesh.c
+@@ -1947,7 +1947,7 @@ static int mesh_probe(struct macio_dev *mdev, const struct of_device_id *match)
+ 	       	ms->tgts[tgt].current_req = NULL;
+        	}
+ 
+-	if ((cfp = get_property(mesh, "clock-frequency", NULL)))
++	if ((cfp = of_get_property(mesh, "clock-frequency", NULL)))
+        		ms->clk_freq = *cfp;
+ 	else {
+        		printk(KERN_INFO "mesh: assuming 50MHz clock frequency\n");
 -- 
 1.5.0.3
