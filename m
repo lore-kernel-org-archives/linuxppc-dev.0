@@ -1,17 +1,18 @@
-Return-Path: <SRS0+3550a31010a0b33b2856+1318+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Return-Path: <Geoffrey.Levand@am.sony.com>
+Message-ID: <4612D8FE.1070400@am.sony.com>
+Date: Tue, 03 Apr 2007 15:45:18 -0700
+From: Geoff Levand <geoffrey.levand@am.sony.com>
+MIME-Version: 1.0
+To: David Woodhouse <dwmw2@infradead.org>
 Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
-From: David Woodhouse <dwmw2@infradead.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4612C48F.9080805@am.sony.com>
-References: <1175208237.3122.78.camel@pmac.infradead.org>
-	<26babf7b7398794f08e7417377b3facc@kernel.crashing.org>
-	<1175473220.3144.1.camel@concordia.ozlabs.ibm.com>
-	<432af8a0f928491e7d376923829f40a0@kernel.crashing.org>
-	<1175568133.16182.15.camel@concordia  <4612C48F.9080805@am.sony.com>
-Content-Type: text/plain
-Date: Tue, 03 Apr 2007 17:48:24 -0400
-Message-Id: <1175636904.10567.8.camel@shinybook.infradead.org>
-Mime-Version: 1.0
+References: <1175208237.3122.78.camel@pmac.infradead.org>	
+	<26babf7b7398794f08e7417377b3facc@kernel.crashing.org>	
+	<1175473220.3144.1.camel@concordia.ozlabs.ibm.com>	
+	<432af8a0f928491e7d376923829f40a0@kernel.crashing.org>	
+	<1175568133.16182.15.camel@concordia <4612C48F.9080805@am.sony.com>
+	<1175636904.10567.8.camel@shinybook.infradead.org>
+In-Reply-To: <1175636904.10567.8.camel@shinybook.infradead.org>
+Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, nhorman@redhat.com,
 	cbe-oss-dev <cbe-oss-dev@ozlabs.org>, Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,48 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-03 at 14:18 -0700, Geoff Levand wrote:
-> I'm in the middle of implementing the zImage and kexec support for the
-> 2.6.21 kernel, but haven't pushed all of it out to ps3-linux.git yet.
-> Once that is done, there is little need for a 2.6.16 based bootloader,
-> since it would be just as well to use a recent kernel.
+David Woodhouse wrote:
+> On Tue, 2007-04-03 at 14:18 -0700, Geoff Levand wrote:
+>> I'm in the middle of implementing the zImage and kexec support for the
+>> 2.6.21 kernel, but haven't pushed all of it out to ps3-linux.git yet.
+>> Once that is done, there is little need for a 2.6.16 based bootloader,
+>> since it would be just as well to use a recent kernel.
 
-True, but there are people out there who _do_ have a 2.6.16-based
-bootloader, and we don't really want to force them to update the
-bootloader before they can update the kernel.
+> But to go back to the unanswered question.... why _did_ we change from
+> having the memory in the device-tree, to dynamically querying for it?
 
-> diff --git a/arch/powerpc/kernel/head_64.S b/arch/powerpc/kernel/head_64.S
-> --- a/arch/powerpc/kernel/head_64.S
-> +++ b/arch/powerpc/kernel/head_64.S
-> @@ -1642,7 +1642,7 @@ _STATIC(__start_initialization_iSeries)
->  
->  #if defined(CONFIG_PPC_PS3)
->  _STATIC(__start_ps3_kexec)
-> -#if 1 /* override DT passed from bootloader */
-> +#if 0 /* override DT passed from bootloader */
->  	LOAD_REG_IMMEDIATE(r3, dt_blob_start)
->  	clrldi	r3, r3, 2 /* convert to physical */
->  #endif
+There are several points here I feel need explanation.  One is that memory
+is a dynamic resource allocated by the HV, so it needs to be managed as a
+dynamic resource by the guest OS.  Another point is that the HV has two
+types of memory; boot memory, and virtual memory.  Boot memory is what will
+be in is in the DT when I finish the zImage implementation.  Virtual memory
+is what I currently have as hotplug memory.
 
-I've been selective about which patches from ps3-linux-patches I've
-included in the Fedora kernel -- I was after a _minimal_ set which
-allows the machine to be functional. I haven't included the hacks in
-head_64.S -- I'll probably need something like that when I come to build
-the otheros.bld bootloader, but in fact that can probably live in the
-zImage wrapper rather than the kernel itself. The otheros.bld is the
-only time we'll be using a zImage wrapper.
+So there are really two answers, one is that having the boot memory in the
+DT hasn't changed, I just haven't finished that part yet.  The other is that
+we get the amount of memory at runtime because it is a dynamic resource, and
+cannot be known at DT compile time.  It is just by some luck that the 2.6.16
+kernel continues to work correctly on the PS3, but it is not guaranteed to,
+and has a good chance of failing on non-ps3 systems that use the lv1 hypervisor.
 
-> @@ -988,7 +990,15 @@ void __init early_init_devtree(void *params)
-> -	of_scan_flat_dt(early_init_dt_scan_memory, NULL);
-> +	if (!of_flat_dt_is_compatible(dt_root, "PS3"))
-> +		of_scan_flat_dt(early_init_dt_scan_memory, NULL);
-
-Yeah, that'll have much the same effect as my original patch, although
-Ben suggested that I do it differently; hence the second version with
-lmb_reset_available().
-
-But to go back to the unanswered question.... why _did_ we change from
-having the memory in the device-tree, to dynamically querying for it?
-
--- 
-dwmw2
+-Geoff
