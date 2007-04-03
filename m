@@ -1,25 +1,27 @@
 Return-Path: <linas@austin.ibm.com>
-Received: from e2.ny.us.ibm.com (e2.ny.us.ibm.com [32.97.182.142])
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e2.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3BA1CDDF4B
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 10:44:52 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e2.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l330ilwS030526
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:44:47 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l330ilvk270896
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:44:47 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l330ilZr013213
-	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:44:47 -0400
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E1194DDF58
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 10:45:51 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l330jmmW005326
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 20:45:48 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l330jm6L047030
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 18:45:48 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l330jlBJ026484
+	for <linuxppc-dev@ozlabs.org>; Mon, 2 Apr 2007 18:45:47 -0600
 To: Greg KH <gregkh@suse.de>
-Subject: [PATCH 12/19] PCI: rpaphp: remove rpaphp_set_attention_status()
+Subject: [PATCH 13/19] PCI: rpaphp: refactor tail call to
+	rpaphp_register_slot()
 In-Reply-To: <20070403002629.GI4922@austin.ibm.com>
-Message-Id: <20070403004446.C25AA3A65C@topology.austin.ibm.com>
-Date: Mon,  2 Apr 2007 19:44:46 -0500 (CDT)
+Message-Id: <20070403004546.D1CEF3A65C@topology.austin.ibm.com>
+Date: Mon,  2 Apr 2007 19:45:46 -0500 (CDT)
 From: linas@austin.ibm.com (Linas Vepstas)
 Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
 	linux-pci@atrey.karlin.mff.cuni.cz
@@ -33,88 +35,42 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-The rpaphp_set_attention_status() routine seems to be a wrapper
-around a single rtas call. Abolish it.
+Eliminate the tail call to rpaphp_register_slot() 
+by placing it in the caller. This will help later
+dis-entanglement.
 
 Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
 Cc: John Rose <johnrose@austin.ibm.com>
 
 ----
- drivers/pci/hotplug/rpaphp.h      |    1 -
- drivers/pci/hotplug/rpaphp_core.c |   21 ++++++++++-----------
- drivers/pci/hotplug/rpaphp_slot.c |   12 ------------
- 3 files changed, 10 insertions(+), 24 deletions(-)
 
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp.h
-===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp.h	2007-03-28 18:10:22.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp.h	2007-04-02 14:34:46.000000000 -0500
-@@ -102,6 +102,5 @@ extern void dealloc_slot_struct(struct s
- extern struct slot *alloc_slot_struct(struct device_node *dn, int drc_index, char *drc_name, int power_domain);
- extern int rpaphp_register_slot(struct slot *slot);
- extern int rpaphp_deregister_slot(struct slot *slot);
--extern int rpaphp_set_attention_status(struct slot *slot, u8 status);
- 	
- #endif				/* _PPC64PHP_H */
+ drivers/pci/hotplug/rpaphp_core.c |    3 +++
+ drivers/pci/hotplug/rpaphp_pci.c  |    2 +-
+ 2 files changed, 4 insertions(+), 1 deletion(-)
+
 Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c
 ===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_core.c	2007-03-28 18:10:24.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c	2007-04-02 14:38:25.000000000 -0500
-@@ -63,27 +63,26 @@ module_param(debug, bool, 0644);
-  */
- static int set_attention_status(struct hotplug_slot *hotplug_slot, u8 value)
- {
--	int retval = 0;
-+	int rc;
- 	struct slot *slot = (struct slot *)hotplug_slot->private;
+--- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_core.c	2007-04-02 14:38:25.000000000 -0500
++++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_core.c	2007-04-02 14:40:00.000000000 -0500
+@@ -319,6 +319,9 @@ int rpaphp_add_slot(struct device_node *
+ 				indexes[i + 1], name, type);
  
- 	down(&rpaphp_sem);
- 	switch (value) {
- 	case 0:
--		retval = rpaphp_set_attention_status(slot, LED_OFF);
--		hotplug_slot->info->attention_status = 0;
--		break;
- 	case 1:
--	default:
--		retval = rpaphp_set_attention_status(slot, LED_ON);
--		hotplug_slot->info->attention_status = 1;
--		break;
- 	case 2:
--		retval = rpaphp_set_attention_status(slot, LED_ID);
--		hotplug_slot->info->attention_status = 2;
-+		break;
-+	default:
-+		value = 1;
- 		break;
- 	}
- 	up(&rpaphp_sem);
--	return retval;
+ 		retval = rpaphp_register_pci_slot(slot);
++		if (!retval)
++			retval = rpaphp_register_slot(slot);
 +
-+	rc = rtas_set_indicator(DR_INDICATOR, slot->index, value);
-+	if (!rc)
-+		hotplug_slot->info->attention_status = value;
-+
-+	return rc;
- }
+ 		if (retval)
+ 			dealloc_slot_struct(slot);
  
- /**
-Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_slot.c
+Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c
 ===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_slot.c	2007-03-28 18:10:19.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_slot.c	2007-04-02 14:31:00.000000000 -0500
-@@ -184,15 +184,3 @@ sysfs_fail:
- 	return retval;
+--- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_pci.c	2007-04-02 14:34:46.000000000 -0500
++++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c	2007-04-02 14:40:00.000000000 -0500
+@@ -136,6 +136,6 @@ int rpaphp_register_pci_slot(struct slot
+ 		}
+ 	}
+ 
+-	return rpaphp_register_slot(slot);
++	return 0;
  }
  
--int rpaphp_set_attention_status(struct slot *slot, u8 status)
--{
--	int rc;
--
--	/* status: LED_OFF or LED_ON */
--	rc = rtas_set_indicator(DR_INDICATOR, slot->index, status);
--	if (rc < 0)
--		err("slot(name=%s location=%s index=0x%x) set attention-status(%d) failed! rc=0x%x\n",
--		    slot->name, slot->location, slot->index, status, rc);
--
--	return rc;
--}
