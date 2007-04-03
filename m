@@ -1,20 +1,23 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
-	by ozlabs.org (Postfix) with ESMTP id 21740DDE0E
+Return-Path: <petermendham@computing.dundee.ac.uk>
+Received: from uncle.computing.dundee.ac.uk (uncle.computing.dundee.ac.uk
+	[134.36.36.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4EE28DE040
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  3 Apr 2007 18:46:56 +1000 (EST)
-Date: Tue, 3 Apr 2007 10:46:49 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH] icecube/lite5200b: wakeup from low-power support
-Message-ID: <20070403084649.GA9163@nd47.coderock.org>
-References: <20070315103959.GA22215@moe.telargo.com>
-	<20070315104411.GF22215@moe.telargo.com>
-	<528646bc0703260908q7b018060v40db7e66aa81eaee@mail.gmail.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <528646bc0703260908q7b018060v40db7e66aa81eaee@mail.gmail.com>
-Cc: u-boot-users@lists.sourceforge.net, linuxppc-embedded@ozlabs.org
+	Tue,  3 Apr 2007 23:26:04 +1000 (EST)
+Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
+	[134.36.36.15])
+	by uncle.computing.dundee.ac.uk (8.13.1/8.13.1) with ESMTP id
+	l33D9m0T004326
+	for <linuxppc-embedded@ozlabs.org>; Tue, 3 Apr 2007 14:09:49 +0100
+Message-ID: <46125216.2080903@computing.dundee.ac.uk>
+Date: Tue, 03 Apr 2007 14:09:42 +0100
+From: Peter Mendham <petermendham@computing.dundee.ac.uk>
+MIME-Version: 1.0
+To: linuxppc-embedded@ozlabs.org
+Subject: Using Linux 2.6.19 with Xilinx ML405
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,124 +28,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-U-Boot part of Lite5200b low power mode support.
-Puts SDRAM out of self-refresh and transfers control to
-address saved at physical 0x0.
+Dear all,
+
+I am attempting to get a 2.6.19 kernel running on an ML405.  In the 
+spirit of walking before I start to run, I have setup a very simple 
+system with a 10/100 MAC, a UARTlite and the SystemACE controller (other 
+than that, my EDK project has the DDR RAM,  some BRAM, an interrupt 
+controller and the usual gubbins to get a system to work).  I am having 
+some serious issues just getting the thing to compile so I was hoping to 
+pick the brains of this list.  I would appreciate any tips on where I am 
+going wrong.
+
+First thing I did was to patch the kernel with the BSP from my EDK 
+project (maybe this is my first mistake).  Several files #include 
+config.h - I changed this to autoconf.h.  The ocp_def structure 
+definition was being ignored because CONFIG_PPC_OCP was not defined - I 
+altered some Kconfig files to ensure that when and an ML403 is selected 
+XILINX_OCP is defined, and when that is defined PPC_OCP is also 
+defined.  That solved that problem but left me with a missing definition 
+for ppc_sys_platform_devices which was not present in virtex.c.  I added 
+one but am a bit stuck as to what this should contain.  Another one I 
+have seen lists a UART (which xilinx_ml403.c seems to depend upon).  But 
+this is for a 8250-type UART.  How can I configure this for a UARTlite?  
+Do I need to add an entry for the SystemACE?  I have already added an 
+entry for the EMAC.
+
+Any hints/experience would be gratefully received.
+
+TIA,
+-- Peter
 
 
----
-On 26/03/07 10:08 -0600, Grant Likely wrote:
-> On 3/15/07, Domen Puncer <domen.puncer@telargo.com> wrote:
-> >U-Boot part of Lite5200b low power mode support.
-> >Puts SDRAM out of self-refresh and transfers control to
-> >address saved at physical 0x0.
-> 
-> This looks pretty straight forward.
-> 
-> My only comment is that psc2_4 is probably used as GPIO instead of
-> power control by some users (The lite5200 is an eval board after all).
-> Maybe wrap the code with #ifdef CONFIG_LITE5200B_PM (instead of
-> CONFIG_LITE5200B) so that it can be easily compiled out.
-> 
-> Also, '//' style comments should be changed to '/* */'
-> 
-> Otherwise;
-> Acked-by: Grant Likely <grant.likely@secretlab.ca>
-> 
-
-OK. This one should be better:
-
- Makefile                |    5 ++++
- board/icecube/icecube.c |   49 ++++++++++++++++++++++++++++++++++++++++++++++++
- 2 files changed, 54 insertions(+)
-
-Index: u-boot.git/board/icecube/icecube.c
-===================================================================
---- u-boot.git.orig/board/icecube/icecube.c
-+++ u-boot.git/board/icecube/icecube.c
-@@ -42,6 +42,53 @@
- #include "mt48lc16m16a2-75.h"
- # endif
- #endif
-+
-+#ifdef CONFIG_LITE5200B_PM
-+/* u-boot part of low-power mode implementation */
-+#define SAVED_ADDR (*(void **)0x00000000)
-+#define PSC2_4 0x02
-+
-+void lite5200b_wakeup(void)
-+{
-+	unsigned char wakeup_pin;
-+	void (*linux_wakeup)(void);
-+
-+	/* check PSC2_4, if it's down "QT" is signaling we have a wakeup
-+	 * from low power mode */
-+	*(vu_char *)MPC5XXX_WU_GPIO_ENABLE = PSC2_4;
-+	__asm__ volatile ("sync");
-+
-+	wakeup_pin = *(vu_char *)MPC5XXX_WU_GPIO_DATA_I;
-+	if (wakeup_pin & PSC2_4)
-+		return;
-+
-+	/* acknowledge to "QT"
-+	 * by holding pin at 1 for 10 uS */
-+	*(vu_char *)MPC5XXX_WU_GPIO_DIR = PSC2_4;
-+	__asm__ volatile ("sync");
-+	*(vu_char *)MPC5XXX_WU_GPIO_DATA_O = PSC2_4;
-+	__asm__ volatile ("sync");
-+	udelay(10);
-+
-+	/* put ram out of self-refresh */
-+	*(vu_long *)MPC5XXX_SDRAM_CTRL |= 0x80000000;	/* mode_en */
-+	__asm__ volatile ("sync");
-+	*(vu_long *)MPC5XXX_SDRAM_CTRL |= 0x50000000;	/* cke ref_en */
-+	__asm__ volatile ("sync");
-+	*(vu_long *)MPC5XXX_SDRAM_CTRL &= ~0x80000000;	/* !mode_en */
-+	__asm__ volatile ("sync");
-+	udelay(10); /* wait a bit */
-+
-+	/* jump back to linux kernel code */
-+	linux_wakeup = SAVED_ADDR;
-+	printf("\n\nLooks like we just woke, transferring control to 0x%08lx\n",
-+			linux_wakeup);
-+	linux_wakeup();
-+}
-+#else
-+#define lite5200b_wakeup()
-+#endif
-+
- #ifndef CFG_RAMBOOT
- static void sdram_start (int hi_addr)
- {
-@@ -208,6 +255,8 @@ long int initdram (int board_type)
- 		__asm__ volatile ("sync");
- 	}
- 
-+	lite5200b_wakeup();
-+
- 	return dramsize + dramsize2;
- }
- 
-Index: u-boot.git/Makefile
-===================================================================
---- u-boot.git.orig/Makefile
-+++ u-boot.git/Makefile
-@@ -430,6 +430,7 @@ inka4x0_config:	unconfig
- 	@$(MKCONFIG) inka4x0 ppc mpc5xxx inka4x0
- 
- lite5200b_config	\
-+lite5200b_PM_config	\
- lite5200b_LOWBOOT_config:	unconfig
- 	@mkdir -p $(obj)include
- 	@mkdir -p $(obj)board/icecube
-@@ -438,6 +439,10 @@ lite5200b_LOWBOOT_config:	unconfig
- 	@ echo "... DDR memory revision"
- 	@ echo "#define CONFIG_MPC5200"		>>$(obj)include/config.h
- 	@ echo "#define CONFIG_LITE5200B"	>>$(obj)include/config.h
-+	@[ -z "$(findstring _PM_,$@)" ] || \
-+		{ echo "#define CONFIG_LITE5200B_PM"	>>$(obj)include/config.h ; \
-+		  echo "... with power management (low-power mode) support" ; \
-+		}
- 	@[ -z "$(findstring LOWBOOT_,$@)" ] || \
- 		{ echo "TEXT_BASE = 0xFF000000" >$(obj)board/icecube/config.tmp ; \
- 		  echo "... with LOWBOOT configuration" ; \
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+MailScanner thanks transtec Computers for their support.
