@@ -1,25 +1,30 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 2D08EDE049
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 03:20:24 +1000 (EST)
-Date: Tue, 3 Apr 2007 12:36:31 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH 01/17] [POWERPC] Rename get_property to of_get_property:
-	include
-Message-ID: <20070403173631.GA4844@lixom.net>
-References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
-	<20070403105401.1fcdee27.sfr@canb.auug.org.au>
-	<20070403105539.7222cf2a.sfr@canb.auug.org.au>
-	<20070403105650.204003b6.sfr@canb.auug.org.au>
-	<20070403105748.769f156c.sfr@canb.auug.org.au>
-	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
-	<20070403222406.cf39c459.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070403222406.cf39c459.sfr@canb.auug.org.au>
-From: olof@lixom.net (Olof Johansson)
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	"David S. Miller" <davem@davemloft.net>
+Return-Path: <linas@austin.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4EB2DDDFD3
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 03:21:01 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l33HKt5a015038
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 13:20:55 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l33HKsAk066482
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:20:54 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l33HKscY030014
+	for <linuxppc-dev@ozlabs.org>; Tue, 3 Apr 2007 11:20:54 -0600
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: [PATCH 6/19] PCI: rpaphp: remove a function that does nothing but
+	wrap debug printk's
+In-Reply-To: 20070403164850.GP4922@austin.ibm.com>
+Message-Id: <20070403172053.D8F5F3A65C@topology.austin.ibm.com>
+Date: Tue,  3 Apr 2007 12:20:53 -0500 (CDT)
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	pcihpd-discuss@lists.sourceforge.net
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,19 +34,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 03, 2007 at 10:24:06PM +1000, Stephen Rothwell wrote:
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  include/asm-powerpc/parport.h |    6 +++---
->  1 files changed, 3 insertions(+), 3 deletions(-)
-> 
-> This set of patches follows the previous 6.  The whole lot have been
-> built with allmodconfig on PowerPC64.
 
-Why split this up in 17 patches? It's just a search and replace, might
-as well do it as one patch. I don't think there's much use in being able
-to bisect halfway through it.
+Remove a stove-pipe-- a function that is called from only one place, 
+does nothing but wraps another function with debug printk's.
 
+Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Cc: John Rose <johnrose@austin.ibm.com>
 
--Olof
+----
+ drivers/pci/hotplug/rpaphp_pci.c |   37 +++++++++++++------------------------
+ 1 file changed, 13 insertions(+), 24 deletions(-)
+
+Index: linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c
+===================================================================
+--- linux-2.6.21-rc4-git4.orig/drivers/pci/hotplug/rpaphp_pci.c	2007-04-03 11:04:16.000000000 -0500
++++ linux-2.6.21-rc4-git4/drivers/pci/hotplug/rpaphp_pci.c	2007-04-03 11:04:21.000000000 -0500
+@@ -116,23 +116,6 @@ static void print_slot_pci_funcs(struct 
+ 	return;
+ }
+ 
+-static int setup_pci_hotplug_slot_info(struct slot *slot)
+-{
+-	struct hotplug_slot_info *hotplug_slot_info = slot->hotplug_slot->info;
+-
+-	dbg("%s Initilize the PCI slot's hotplug->info structure ...\n",
+-	    __FUNCTION__);
+-	rpaphp_get_power_status(slot, &hotplug_slot_info->power_status);
+-	rpaphp_get_pci_adapter_status(slot, 1,
+-				      &hotplug_slot_info->adapter_status);
+-	if (hotplug_slot_info->adapter_status == NOT_VALID) {
+-		err("%s: NOT_VALID: skip dn->full_name=%s\n",
+-		    __FUNCTION__, slot->dn->full_name);
+-		return -EINVAL;
+-	}
+-	return 0;
+-}
+-
+ static void set_slot_name(struct slot *slot)
+ {
+ 	struct pci_bus *bus = slot->bus;
+@@ -200,14 +183,20 @@ exit_rc:
+ 
+ int rpaphp_register_pci_slot(struct slot *slot)
+ {
+-	int rc = -EINVAL;
++	struct hotplug_slot_info *info = slot->hotplug_slot->info;
++
++	rpaphp_get_power_status(slot, &info->power_status);
++	rpaphp_get_pci_adapter_status(slot, 1, &info->adapter_status);
++
++	if (info->adapter_status == NOT_VALID) {
++		err("%s: NOT_VALID: skip dn->full_name=%s\n",
++		    __FUNCTION__, slot->dn->full_name);
++		return -EINVAL;
++	}
+ 
+-	if (setup_pci_hotplug_slot_info(slot))
+-		goto exit_rc;
+ 	if (setup_pci_slot(slot))
+-		goto exit_rc;
+-	rc = rpaphp_register_slot(slot);
+-exit_rc:
+-	return rc;
++		return -EINVAL;
++
++	return rpaphp_register_slot(slot);
+ }
+ 
