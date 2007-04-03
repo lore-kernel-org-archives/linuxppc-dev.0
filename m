@@ -1,15 +1,14 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 21764DE045
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:52:43 +1000 (EST)
-Date: Tue, 3 Apr 2007 22:52:22 +1000
+	by ozlabs.org (Postfix) with ESMTP id E9F1BDDF4A
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 23:04:43 +1000 (EST)
+Date: Tue, 3 Apr 2007 23:05:05 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH 17/17] [POWERPC] Remove get_property
-Message-Id: <20070403225222.88e92221.sfr@canb.auug.org.au>
-In-Reply-To: <20070403225059.e735b5e4.sfr@canb.auug.org.au>
+To: "David S. Miller" <davem@davemloft.net>
+Subject: [PATCH] [SPARC/64] Remove get_property
+Message-Id: <20070403230505.f96ea210.sfr@canb.auug.org.au>
+In-Reply-To: <20070403225222.88e92221.sfr@canb.auug.org.au>
 References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
-	<20070403105650.204003b6.sfr@canb.auug.org.au>
 	<20070403105748.769f156c.sfr@canb.auug.org.au>
 	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
 	<20070403222406.cf39c459.sfr@canb.auug.org.au>
@@ -28,9 +27,10 @@ References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403224610.b61c7377.sfr@canb.auug.org.au>
 	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
 	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
+	<20070403225222.88e92221.sfr@canb.auug.org.au>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, "David S. Miller" <davem@davemloft.net>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,41 +40,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-All the uses have been renamed.
+All the usages have been renamed to of_get_property.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- include/asm-powerpc/prom.h |    1 -
- include/asm-ppc/prom.h     |    1 -
+ include/asm-sparc/prom.h   |    1 -
+ include/asm-sparc64/prom.h |    1 -
  2 files changed, 0 insertions(+), 2 deletions(-)
+
+Hi Dave,
+
+If you take the curent powerpc tree (commit
+1b56c1da9eec35c610fa2168d754ce567615a6ee) and apply all the patches I
+sent today (1-6 then 1-17) then merge that with your current for-2.6.22
+tree (commit ab571e3091f055b0f8648822e11ee6413993f899), then you can
+apply this.  :-)
+
+I did a test sparc64 allmodconfig build (and it get as far as can be
+expected :-))
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index e73a2b4..12fa0c4 100644
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -169,7 +169,6 @@ extern int machine_is_compatible(const char *compat);
+diff --git a/include/asm-sparc/prom.h b/include/asm-sparc/prom.h
+index 39ad222..030461d 100644
+--- a/include/asm-sparc/prom.h
++++ b/include/asm-sparc/prom.h
+@@ -93,7 +93,6 @@ extern int of_device_is_compatible(const struct device_node *device,
  extern const void *of_get_property(const struct device_node *node,
- 				const char *name,
- 				int *lenp);
--#define get_property(a, b, c)	of_get_property((a), (b), (c))
- extern void print_properties(struct device_node *node);
- extern int of_n_addr_cells(struct device_node* np);
- extern int of_n_size_cells(struct device_node* np);
-diff --git a/include/asm-ppc/prom.h b/include/asm-ppc/prom.h
-index 901f7fa..71f4c99 100644
---- a/include/asm-ppc/prom.h
-+++ b/include/asm-ppc/prom.h
-@@ -35,7 +35,6 @@ extern unsigned long sub_reloc_offset(unsigned long);
- #define machine_is_compatible(x)		0
- #define of_find_compatible_node(f, t, c)	NULL
- #define of_get_property(p, n, l)		NULL
--#define get_property(a, b, c)			of_get_property((a), (b), (c))
- 
- #endif /* _PPC_PROM_H */
- #endif /* __KERNEL__ */
+ 				   const char *name,
+ 				   int *lenp);
+-#define get_property(node,name,lenp) of_get_property(node,name,lenp)
+ extern int of_set_property(struct device_node *node, const char *name, void *val, int len);
+ extern int of_getintprop_default(struct device_node *np,
+ 				 const char *name,
+diff --git a/include/asm-sparc64/prom.h b/include/asm-sparc64/prom.h
+index 6394bd1..dd0a6cd 100644
+--- a/include/asm-sparc64/prom.h
++++ b/include/asm-sparc64/prom.h
+@@ -101,7 +101,6 @@ extern int of_device_is_compatible(const struct device_node *device,
+ extern const void *of_get_property(const struct device_node *node,
+ 			     const char *name,
+ 			     int *lenp);
+-#define get_property(node,name,lenp) of_get_property(node,name,lenp)
+ extern int of_set_property(struct device_node *node, const char *name, void *val, int len);
+ extern int of_getintprop_default(struct device_node *np,
+ 				 const char *name,
 -- 
 1.5.0.3
