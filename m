@@ -1,17 +1,23 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 1EC7EDDE46
-	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:28:49 +1000 (EST)
-Date: Tue, 3 Apr 2007 14:28:59 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Sylvain Munaut <tnt@246tNt.com>
-Subject: Re: [PATCH] add modalias file for of_devices to sysfs
-Message-ID: <20070403122859.GA19547@aepfle.de>
-References: <20070402124547.GA11415@aepfle.de> <461137B8.9000404@246tNt.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <461137B8.9000404@246tNt.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 4BDEEDDE9F
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 22:52:27 +1000 (EST)
+Date: Tue, 3 Apr 2007 22:24:06 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: paulus@samba.org
+Subject: [PATCH 01/17] [POWERPC] Rename get_property to of_get_property:
+	include
+Message-Id: <20070403222406.cf39c459.sfr@canb.auug.org.au>
+In-Reply-To: <20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
+References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
+	<20070403105401.1fcdee27.sfr@canb.auug.org.au>
+	<20070403105539.7222cf2a.sfr@canb.auug.org.au>
+	<20070403105650.204003b6.sfr@canb.auug.org.au>
+	<20070403105748.769f156c.sfr@canb.auug.org.au>
+	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,21 +27,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 02, Sylvain Munaut wrote:
 
-> In my patch to "unify" the uevent generation, I've made a separate
-> function that generate
-> the modalias string especially so that we don't repeat the same piece of
-> code twice.
-> 
-> It's prototype is :
-> 
-> +static ssize_t of_device_get_modalias(struct of_device *ofdev,
-> +					char *str, ssize_t len)
-> 
-> So the modalias_show can be shortened to
-> 
-> return of_device_get_modalias(to_of_device(dev), buf, PAGE_SIZE);
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/parport.h |    6 +++---
+ 1 files changed, 3 insertions(+), 3 deletions(-)
 
-macio_sysfs needs to be adapted as well.
-Your version does not append a newline to the moalias content.
+This set of patches follows the previous 6.  The whole lot have been
+built with allmodconfig on PowerPC64.
+
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+
+diff --git a/include/asm-powerpc/parport.h b/include/asm-powerpc/parport.h
+index 3fca21d..b37b81e 100644
+--- a/include/asm-powerpc/parport.h
++++ b/include/asm-powerpc/parport.h
+@@ -20,18 +20,18 @@ extern struct parport *parport_pc_probe_port (unsigned long int base,
+ static int __devinit parport_pc_find_nonpci_ports (int autoirq, int autodma)
+ {
+ 	struct device_node *np;
+-	u32 *prop;
++	const u32 *prop;
+ 	u32 io1, io2;
+ 	int propsize;
+ 	int count = 0;
+ 	for (np = NULL; (np = of_find_compatible_node(np,
+ 						      "parallel",
+ 						      "pnpPNP,400")) != NULL;) {
+-		prop = (u32 *)get_property(np, "reg", &propsize);
++		prop = of_get_property(np, "reg", &propsize);
+ 		if (!prop || propsize > 6*sizeof(u32))
+ 			continue;
+ 		io1 = prop[1]; io2 = prop[2];
+-		prop = (u32 *)get_property(np, "interrupts", NULL);
++		prop = of_get_property(np, "interrupts", NULL);
+ 		if (!prop)
+ 			continue;
+ 		if (parport_pc_probe_port(io1, io2, prop[0], autodma, NULL) != NULL)
+-- 
+1.5.0.3
