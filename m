@@ -1,17 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Date: Tue, 3 Apr 2007 18:44:45 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] cbe_cpufreq.c initialisation
-Message-Id: <20070403184445.49053b4f.sfr@canb.auug.org.au>
-In-Reply-To: <1175589451.30879.14.camel@localhost.localdomain>
-References: <20070403182037.93221d65.sfr@canb.auug.org.au>
-	<1175589451.30879.14.camel@localhost.localdomain>
+Return-Path: <hch@lst.de>
+Received: from mail.lst.de (verein.lst.de [213.95.11.210])
+	(using TLSv1 with cipher EDH-RSA-DES-CBC3-SHA (168/168 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 610A1DDDEB
+	for <linuxppc-dev@ozlabs.org>; Tue,  3 Apr 2007 20:50:05 +1000 (EST)
+Date: Tue, 3 Apr 2007 12:49:25 +0200
+From: Christoph Hellwig <hch@lst.de>
+To: Linas Vepstas <linas@austin.ibm.com>
+Subject: Re: [PATCH 5/19] PCI: rpaphp: Remove un-needed goto
+Message-ID: <20070403104925.GA14107@lst.de>
+References: <20070403002629.GI4922@austin.ibm.com>
+	<20070403003746.6E9853A65C@topology.austin.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__3_Apr_2007_18_44_45_+1000_=kbcHR4cuDYMg483"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070403003746.6E9853A65C@topology.austin.ibm.com>
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org,
+	linux-pci@atrey.karlin.mff.cuni.cz, Greg KH <gregkh@suse.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,43 +25,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__3_Apr_2007_18_44_45_+1000_=kbcHR4cuDYMg483
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+>  	/* should not try to register the same slot twice */
+>  	if (is_registered(slot)) {
+>  		err("rpaphp_register_slot: slot[%s] is already registered\n", slot->name);
+> -		retval = -EAGAIN;
+> -		goto register_fail;
+> +		return -EAGAIN;
+>  	}	
+>  
+>  	retval = pci_hp_register(php_slot);
+>  	if (retval) {
+>  		err("pci_hp_register failed with error %d\n", retval);
+> -		goto register_fail;
+> +		return retval;
+>  	}
+>  
+>  	/* create "phy_location" file */
+> @@ -182,7 +181,6 @@ int rpaphp_register_slot(struct slot *sl
+>  
+>  sysfs_fail:
+>  	pci_hp_deregister(php_slot);
+> -register_fail:
+>  	return retval;
+>  }
 
-On Tue, 03 Apr 2007 18:37:31 +1000 Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
->
-> On Tue, 2007-04-03 at 18:20 +1000, Stephen Rothwell wrote:
-> > Hi all,
-> >
-> > In cbe_cpufreq_cpu_init, there is this code:
-> >
-> > 	max_freq = (u32*) get_property(cpu, "clock-frequency", NULL);
-> >         // we need the freq in kHz
-> >         *max_freq /= 1000;
-> >
-> > does this really need to modify the property value in place?
->
-> No, that's obviously a bug...
-
-Excellent, because that was the last non-const usage of get_property in
-the whole tree :-)
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__3_Apr_2007_18_44_45_+1000_=kbcHR4cuDYMg483
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGEhQDFdBgD/zoJvwRAhbUAJ91H1btN3JMvondqDB1jJRXQRwyBgCfb4e7
-JQCp7lo1ckQEID9dDWnuRRM=
-=Lgi/
------END PGP SIGNATURE-----
-
---Signature=_Tue__3_Apr_2007_18_44_45_+1000_=kbcHR4cuDYMg483--
+Using a goto for just returning an error is a common idiom if we
+have other failure cases aswell.
