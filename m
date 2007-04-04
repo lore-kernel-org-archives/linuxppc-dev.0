@@ -1,24 +1,23 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from the-village.bc.nu (unknown [81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 12646DDE3C
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D0C4CDDE3C
 	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 21:11:55 +1000 (EST)
-In-Reply-To: <20070403.112813.35016105.davem@davemloft.net>
-References: <20070403105748.769f156c.sfr@canb.auug.org.au>
-	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
-	<65f2b2574eca0b34e7986618cfbe7a6d@kernel.crashing.org>
-	<20070403.112813.35016105.davem@davemloft.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <19e36144f9d496f2a9670ac889435349@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 6/6] [POWERPC] make struct property's value a void *
-Date: Wed, 4 Apr 2007 13:11:43 +0200
+Date: Wed, 4 Apr 2007 12:14:34 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
 To: David Miller <davem@davemloft.net>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sfr@canb.auug.org.au
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070404121434.73d01e7e@the-village.bc.nu>
+In-Reply-To: <20070403.185026.26966290.davem@davemloft.net>
+References: <20070404022828.5c9b97f3@the-village.bc.nu>
+	<Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz>
+	<20070404024400.56d016e1@the-village.bc.nu>
+	<20070403.185026.26966290.davem@davemloft.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: paulus@samba.org, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,35 +27,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Why?  It should logically be an u8 * (and nothing
->> should ever cast it to anything else, accessor
->> functions should be used instead to get 32-bit ints
->> from it, etc.)
->
-> Ummm, no.
->
-> There are structures there, and other types of objects.
+> If you want hierarchy, create it:
+> 
+> /sys/blah/serial/controllerX/portY
+> 
+> and keeping them all under the ttyS? major keeps the simple
+> cases working sanely too.
 
-There are arrays of bytes there, with no guarantee of
-any further alignment.
-
-> Look at how some of the sparc64 code does this, it's not a "u8 *" by
-> even the largest stretch of the imagination.
-
-Maybe sparc64 does have some defined extra alignment;
-on PowerPC, we get that alignment by making a copy of
-the device tree.  That means no further interaction
-with OF after very early boot (even before the kernel
-proper starts); a less than desirable situation, and
-certainly not something that a *generic* Linux OF
-interface can require.  Also, in principle anyway,
-you can have an integer follow a string in the same
-property.
-
-So just do an of_decode_int() and its cousins -- platforms
-that are trying to guarantee alignment, or that can handle
-unaligned memory accesses, can just define these as direct
-accesses; everyone else should use the read-by-byte sequences.
-
-
-Segher
+Currently yes you could do that, but that would break all the back
+compatibility.
