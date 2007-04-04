@@ -1,25 +1,26 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17940.37291.211960.566580@cargo.ozlabs.ibm.com>
-Date: Thu, 5 Apr 2007 16:05:31 +1000
+Message-ID: <17940.14667.503535.507564@cargo.ozlabs.ibm.com>
+Date: Thu, 5 Apr 2007 09:48:27 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <1175716215.2774.52.camel@shinybook.infradead.org>
-References: <1175663999.2932.8.camel@shinybook.infradead.org>
+Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
+	optionally.
+In-Reply-To: <1175696383.2774.24.camel@shinybook.infradead.org>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<1175642916.10567.24.camel@shinybook.infradead.org>
+	<20070403212928.GA12951@cynthia.pants.nu>
+	<20070404022544.59b022a6@the-village.bc.nu>
+	<17939.10130.687893.167511@cargo.ozlabs.ibm.com>
+	<1175663999.2932.8.camel@shinybook.infradead.org>
 	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
 	<1175666635.2932.17.camel@shinybook.infradead.org>
-	<20070404.011208.120446173.davem@davemloft.net>
-	<20070404083803.GA13134@flint.arm.linux.org.uk>
-	<20070404122154.GF31973@thunk.org> <4613CF6A.2090407@zytor.com>
-	<20070404174153.GI31973@thunk.org>
-	<20070404181531.GA9388@flint.arm.linux.org.uk>
-	<1175716215.2774.52.camel@shinybook.infradead.org>
-Cc: Russell King <rmk+lkml@arm.linux.org.uk>, Theodore Tso <tytso@mit.edu>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+	<17939.17962.248566.886449@cargo.ozlabs.ibm.com>
+	<1175696383.2774.24.camel@shinybook.infradead.org>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,12 +32,12 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 David Woodhouse writes:
 
-> And you always will be. The amount of pain involved in implementing
-> this, just so that people can call their serial port 'ttyS0', is _far_
-> more than it's worth. It could be done, but it's a completely pointless
-> waste of time and effort. 
+> OK, how about a config option to preserve the old behaviour...
 
-Avoiding breaking userspace is a completely pointless waste of time
-and effort?  Linux is ready for the desktop?  Suuuure it is...
+Well, that's a start but it doesn't provide a migration path.
+
+Is it possible to have the pmac_zilog ports registered both with the
+new number and with the old number (assuming it's not already taken)?
+That way people can move over gradually.
 
 Paul.
