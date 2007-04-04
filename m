@@ -1,26 +1,27 @@
-Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [192.83.249.54])
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[217.147.92.249])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5D883DDE3E
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 02:09:03 +1000 (EST)
-Message-ID: <4613CD34.8080509@zytor.com>
-Date: Wed, 04 Apr 2007 09:07:16 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-MIME-Version: 1.0
-To: David Lang <david.lang@digitalinsight.com>
+	by ozlabs.org (Postfix) with ESMTP id 9E602DDE29
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 02:10:51 +1000 (EST)
+Date: Wed, 4 Apr 2007 17:10:29 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
+	dwmw2@infradead.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
+	flar@allandria.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210
-	02.GA13210@cynthia.pants.nu><1175648051.10567.61.camel@shinybook.infradead.
-	org><20070403.181645.68159458.davem@davemloft.net><20070404022828.5c9b97f3@
-	the-village.bc.nu><Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz>
-	<20070404024400.56d016e1@the-village.bc.nu>
-	<Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
-In-Reply-To: <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	dwmw2@infradead.org, David Miller <davem@davemloft.net>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Message-ID: <20070404161029.GB18990@flint.arm.linux.org.uk>
+References: <1175663999.2932.8.camel@shinybook.infradead.org>
+	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
+	<1175666635.2932.17.camel@shinybook.infradead.org>
+	<20070404.011208.120446173.davem@davemloft.net>
+	<20070404083803.GA13134@flint.arm.linux.org.uk>
+	<20070404122154.GF31973@thunk.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070404122154.GF31973@thunk.org>
+Sender: Russell King <rmk@arm.linux.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,34 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Lang wrote:
-> On Wed, 4 Apr 2007, Alan Cox wrote:
-> 
->>>> You don't get machines with 64 ethernet ports on add-in cards. There 
->>>> are
->>>> good reasons for the naming schemes in use.
->>>
->>> I've seen machines offering up to 48, what's the magic number that 
->>> makes you
->>> need to chagne nameing schemes?
->>
->> Have you tried working with 48 ports when they are not numbered 0-47 or
->> in some logical fashion ?
-> 
-> no, but that's what we're wanting with serial ports as well. a system 
-> with 50 serial ports should have them numbered 0-49, not typea0-5, 
-> typeb0-39, typec0-5
-> 
+On Wed, Apr 04, 2007 at 08:21:54AM -0400, Theodore Tso wrote:
+> So if we're going to do the "Worse is Better" thing, what I'd suggest
+> doing is that someone simply submit a hack so that pmac_zilog can
+> steal minor numbers and use /dev/ttyS0.  I accepted the patch way back
+> when I was serial maintainer; Russell ripped it out when he became the
+> serial maintainer; but now that he's no longer the serial maintainer,
+> he doesn't get to complain about that any more :-)
 
-I would actually disagree.  I have systems with multiport serial cards 
-installed, and I much prefer those to be named differently.  Not only do 
-I not have to worry about the same problem I *constantly* have with 
-onboard Ethernet cards -- whoops I just installed an expansion card and 
-suddenly my onboard NIC is eth2! -- but the expansion serial ports tend 
-to be *different.*
+The problem with that approach was that it was being extended to more
+and more drivers in the ARM world, creating an #ifdef mess in the
+serial driver.
 
-For example, on my serial server, the Cyclades ports (ttyC*) use RJ-45 
-connections from an external expansion module, whereas of course the 
-builtin ones (ttyS*) use DB-9s.
+Moreover, it provided *no* way to select an 8250-based serial port in
+the presence of a "foreign" port claiming the ttyS console namespace.
+Utterly unacceptable when you have a real environment of mixed serial
+port types.
 
-	-hpa
+IOW, it was utterly broken.  It prevented me from doing the things I
+wanted to do.
+
+The only real answer is to fix the problem *properly*.  Hacks just end
+up breaking peoples setups.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
