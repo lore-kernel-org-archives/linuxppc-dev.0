@@ -1,19 +1,18 @@
-Return-Path: <domen.puncer@telargo.com>
-Received: from out002.atlarge.net (out002.atlarge.net [129.41.63.60])
-	by ozlabs.org (Postfix) with ESMTP id 7878DDDE23
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id B7600DDE30
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Apr 2007 17:38:04 +1000 (EST)
-Date: Wed, 4 Apr 2007 09:37:55 +0200
-From: Domen Puncer <domen.puncer@telargo.com>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [PATCH 4/5] mpc52xx suspend: deep-sleep
-Message-ID: <20070404073755.GE18236@moe.telargo.com>
-References: <20070315103959.GA22215@moe.telargo.com>
-	<20070315104307.GE22215@moe.telargo.com>
-	<528646bc0703230858h237237c2t5b7bedca6e42cddd@mail.gmail.com>
+	Wed,  4 Apr 2007 18:17:34 +1000 (EST)
+Message-ID: <46135FF9.3080200@ru.mvista.com>
+Date: Wed, 04 Apr 2007 12:21:13 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <528646bc0703230858h237237c2t5b7bedca6e42cddd@mail.gmail.com>
+To: Leonid <Leonid@a-k-a.net>
+Subject: Re: Linux w/ML403 PLB TEMAC
+References: <OFA8757C72.4AE0CD07-ON05257280.0056E088-85257280.0059154B@ct.wec.com>
+	<406A31B117F2734987636D6CCC93EE3CB0594B@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <406A31B117F2734987636D6CCC93EE3CB0594B@ehost011-3.exch011.intermedia.net>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -25,638 +24,181 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi!
+Hi Leonid,
 
-How about something like the following.
-Changes:
-- lots of code moved from asm to C
-- add compatible "mpc5200" to lite5200x soc (already is this
-  way on efika). And change Efika's soc device_type to "soc".
-- add wakeup supported with RTC (1 to 24*60-1 minutes)
-- each board now configures it's wakeup mode and possibly
-  board suspend and resume functions it needs to call (USB on lite)
+Please note that the 20060309 patch (i.e. of March 9, 2006)
+is for v2.x of PLB TEMAC; the one using SGDMA version 2 IOW.
+The most recent v3.xx PLB TEMAC IP from EDK 8.2.02 uses SGDMA version 3.
+Guess this is what made the kernel to crash when Glenn tried
+the new design with the PLB TEMAC (step 3 in his email below).
 
-
-This code survived > 70k suspend/resume cycles :-)
-
-
-Comments?
+The step 5 problem was probably due to XC4VFX12 engineering
+samples (all ML403 use the engineering samples AFAIK)
+could not work with HARD TEMAC IP version 3.00.b. For ML403 one need
+to set the HARD TEMAC IP version to 3.00.a in xps. Then
+TEMAC should work OK.
 
 
-
-Implement deep-sleep on MPC52xx.
-SDRAM is put into self-refresh with help of SRAM code
-(alternatives would be code in FLASH, I-cache).
-Interrupt code must also not be in SDRAM, so put it
-in I-cache.
-MPC52xx core is static, so contents will remain intact even
-with clocks turned off.
+Thanks,
+Andrei
 
 
-Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
-
----
- arch/powerpc/boot/dts/lite5200.dts          |    1 
- arch/powerpc/boot/dts/lite5200b.dts         |    1 
- arch/powerpc/kernel/prom_init.c             |    2 
- arch/powerpc/platforms/52xx/Makefile        |    2 
- arch/powerpc/platforms/52xx/efika.c         |    8 
- arch/powerpc/platforms/52xx/lite5200.c      |   28 +++
- arch/powerpc/platforms/52xx/mpc52xx_pm.c    |  230 ++++++++++++++++++++++++++++
- arch/powerpc/platforms/52xx/mpc52xx_sleep.S |  161 +++++++++++++++++++
- include/asm-powerpc/mpc52xx.h               |   63 +++++++
- 9 files changed, 495 insertions(+), 1 deletion(-)
-
-Index: grant.git/arch/powerpc/platforms/52xx/Makefile
-===================================================================
---- grant.git.orig/arch/powerpc/platforms/52xx/Makefile
-+++ grant.git/arch/powerpc/platforms/52xx/Makefile
-@@ -10,3 +10,5 @@ endif
- 
- obj-$(CONFIG_PPC_EFIKA)		+= efika.o
- obj-$(CONFIG_PPC_LITE5200)	+= lite5200.o
-+
-+obj-$(CONFIG_PM)		+= mpc52xx_sleep.o mpc52xx_pm.o
-Index: grant.git/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-===================================================================
---- /dev/null
-+++ grant.git/arch/powerpc/platforms/52xx/mpc52xx_pm.c
-@@ -0,0 +1,230 @@
-+#include <linux/init.h>
-+#include <linux/pm.h>
-+#include <linux/io.h>
-+#include <asm/time.h>
-+#include <asm/cacheflush.h>
-+#include <asm/mpc52xx.h>
-+#include "bestcomm.h"
-+
-+#undef DEBUG /* define for 1s wakeups */
-+extern void mpc52xx_deep_sleep(void *sram, void *, struct mpc52xx_cdm *, struct mpc52xx_intr *);
-+
-+static void __iomem *mbar;
-+static void __iomem *sdram;
-+static struct mpc52xx_cdm __iomem *cdm;
-+static struct mpc52xx_intr __iomem *intr;
-+static struct mpc52xx_rtc __iomem *rtc;
-+static struct mpc52xx_gpio_wkup __iomem *gpiow;
-+
-+struct mpc52xx_wakeup mpc52xx_wakeup;
-+
-+static int mpc52xx_pm_valid(suspend_state_t state)
-+{
-+	switch (state) {
-+	case PM_SUSPEND_STANDBY:
-+		return 1;
-+	default:
-+		return 0;
-+	}
-+}
-+
-+static int mpc52xx_set_wakeup_gpio(u8 pin, u8 level)
-+{
-+	u16 tmp;
-+
-+	/* enable gpio */
-+	out_8(&gpiow->wkup_gpioe, in_8(&gpiow->wkup_gpioe) | (1 << pin));
-+	/* set as input */
-+	out_8(&gpiow->wkup_ddr, in_8(&gpiow->wkup_ddr) & ~(1 << pin));
-+	/* enable deep sleep interrupt */
-+	out_8(&gpiow->wkup_inten, in_8(&gpiow->wkup_inten) | (1 << pin));
-+	/* low/high level creates wakeup interrupt */
-+	tmp = in_be16(&gpiow->wkup_itype);
-+	tmp &= ~(0x3 << (pin * 2));
-+	tmp |= (!level + 1) << (pin * 2);
-+	out_be16(&gpiow->wkup_itype, tmp);
-+	/* master enable */
-+	out_8(&gpiow->wkup_maste, 1);
-+
-+	/* enable wakeup gpio interrupt in PIC */
-+	out_be32(&intr->main_mask, in_be32(&intr->main_mask) & ~(1 << 8));
-+
-+	return 0;
-+}
-+
-+static int mpc52xx_set_wakeup_rtc(int delay)
-+{
-+#ifndef DEBUG
-+	u8 hour;
-+	u8 minute;
-+
-+	if (delay < 0)
-+		return -EINVAL;
-+	else if (delay == 0)
-+		return 0;
-+
-+	hour = in_8(&rtc->hour);
-+	minute = in_8(&rtc->minute);
-+
-+	hour += delay / 60;
-+	hour %= 24;
-+	minute += delay % 60 + 1;
-+	if (minute >= 60) {
-+		minute -= 60;
-+		hour++;
-+	}
-+
-+	out_8(&rtc->alm_hour_set, hour);
-+	out_8(&rtc->alm_min_set, minute);
-+	out_8(&rtc->alm_enable, 1);
-+#else
-+	u8 tmp = in_8(&rtc->int_enable);
-+	out_8(&rtc->int_enable, (tmp & ~0x8) | 0x1); /* every second */
-+#endif
-+
-+	return 0;
-+}
-+
-+int mpc52xx_pm_prepare(suspend_state_t state)
-+{
-+	if (state != PM_SUSPEND_STANDBY)
-+		return -EINVAL;
-+
-+	/* map the whole register space */
-+	mbar = mpc52xx_find_and_map("mpc5200");
-+	if (!mbar) {
-+		printk(KERN_ERR "%s:%i Error mapping registers\n", __func__, __LINE__);
-+		return -ENOSYS;
-+	}
-+	/* these offsets are from mpc5200 users manual */
-+	sdram = mbar + 0x100;
-+	cdm = mbar + 0x200;
-+	intr = mbar + 0x500;
-+	rtc = mbar + 0x800;
-+	gpiow = mbar + 0xc00;
-+
-+
-+#ifdef DEBUG
-+	mpc52xx_wakeup.mask |= WAKEUP_RTC;
-+#endif
-+	if (mpc52xx_wakeup.mask == 0) {
-+		printk(KERN_ALERT "%s: %i don't know how to wake up the board\n",
-+				__func__, __LINE__);
-+		goto out_unmap;
-+	}
-+	if (mpc52xx_wakeup.mask & WAKEUP_GPIO) {
-+		if (mpc52xx_set_wakeup_gpio(mpc52xx_wakeup.pin, mpc52xx_wakeup.level))
-+			goto out_unmap;
-+	}
-+	if (mpc52xx_wakeup.mask & WAKEUP_RTC) {
-+		if (mpc52xx_set_wakeup_rtc(mpc52xx_wakeup.delay))
-+			goto out_unmap;
-+	}
-+	if (mpc52xx_wakeup.mask & WAKEUP_MSCAN) {
-+		/* TODO */
-+	}
-+
-+	/* call board suspend code, if applicable */
-+	if (mpc52xx_wakeup.board_suspend_prepare)
-+		mpc52xx_wakeup.board_suspend_prepare(mbar);
-+
-+	return 0;
-+
-+ out_unmap:
-+	iounmap(mbar);
-+	return -ENOSYS;
-+}
-+
-+extern void mpc52xx_ds_sram(void);
-+extern const long mpc52xx_ds_sram_size;
-+extern void mpc52xx_ds_cached(void);
-+extern const long mpc52xx_ds_cached_size;
-+
-+static char saved_sram[0x4000];
-+
-+int mpc52xx_pm_enter(suspend_state_t state)
-+{
-+	u32 clk_enables;
-+	u32 msr, hid0;
-+	void __iomem * irq_0x500 = (void *)CONFIG_KERNEL_START + 0x500;
-+	unsigned long irq_0x500_stop = (unsigned long)irq_0x500 + mpc52xx_ds_cached_size;
-+	char saved_0x500[mpc52xx_ds_cached_size];
-+
-+	/* don't let DEC expire any time soon */
-+	mtspr(SPRN_DEC, 0x7fffffff);
-+
-+	/* save SRAM */
-+	memcpy(saved_sram, sdma.sram, sdma.sram_size);
-+
-+	/* copy low level suspend code to sram */
-+	memcpy(sdma.sram, mpc52xx_ds_sram, mpc52xx_ds_sram_size);
-+
-+	out_8(&cdm->ccs_sleep_enable, 1);
-+	out_8(&cdm->osc_sleep_enable, 1);
-+	out_8(&cdm->ccs_qreq_test, 1);
-+
-+	/* disable all but SDRAM and bestcomm (SRAM) clocks */
-+	clk_enables = in_be32(&cdm->clk_enables);
-+	out_be32(&cdm->clk_enables, clk_enables & 0x00088000);
-+
-+	/* disable power management */
-+	msr = mfmsr();
-+	mtmsr(msr & ~MSR_POW);
-+
-+	/* enable sleep mode, disable others */
-+	hid0 = mfspr(SPRN_HID0);
-+	mtspr(SPRN_HID0, (hid0 & ~(HID0_DOZE | HID0_NAP | HID0_DPM)) | HID0_SLEEP);
-+
-+	/* save original, copy our irq handler, flush from dcache and invalidate icache */
-+	memcpy(saved_0x500, irq_0x500, mpc52xx_ds_cached_size);
-+	memcpy(irq_0x500, mpc52xx_ds_cached, mpc52xx_ds_cached_size);
-+	flush_icache_range((unsigned long)irq_0x500, irq_0x500_stop);
-+
-+	/* call low-level sleep code */
-+	mpc52xx_deep_sleep(sdma.sram, sdram, cdm, intr);
-+
-+	/* restore original irq handler */
-+	memcpy(irq_0x500, saved_0x500, mpc52xx_ds_cached_size);
-+	flush_icache_range((unsigned long)irq_0x500, irq_0x500_stop);
-+
-+	/* restore old power mode */
-+	mtmsr(msr & ~MSR_POW);
-+	mtspr(SPRN_HID0, hid0);
-+	mtmsr(msr);
-+
-+	out_be32(&cdm->clk_enables, clk_enables);
-+	out_8(&cdm->ccs_sleep_enable, 0);
-+	out_8(&cdm->osc_sleep_enable, 0);
-+
-+	/* restore SRAM */
-+	memcpy(sdma.sram, saved_sram, sdma.sram_size);
-+
-+	/* restart jiffies */
-+	wakeup_decrementer();
-+
-+	return 0;
-+}
-+
-+static int mpc52xx_pm_finish(suspend_state_t state)
-+{
-+	/* call board resume code */
-+	if (mpc52xx_wakeup.board_resume_finish)
-+		mpc52xx_wakeup.board_resume_finish(mbar);
-+
-+	iounmap(mbar);
-+
-+	return 0;
-+}
-+
-+static struct pm_ops mpc52xx_pm_ops = {
-+	.valid		= mpc52xx_pm_valid,
-+	.prepare	= mpc52xx_pm_prepare,
-+	.enter		= mpc52xx_pm_enter,
-+	.finish		= mpc52xx_pm_finish,
-+};
-+
-+int __init mpc52xx_pm_init(void)
-+{
-+	pm_set_ops(&mpc52xx_pm_ops);
-+	return 0;
-+}
-Index: grant.git/arch/powerpc/platforms/52xx/mpc52xx_sleep.S
-===================================================================
---- /dev/null
-+++ grant.git/arch/powerpc/platforms/52xx/mpc52xx_sleep.S
-@@ -0,0 +1,161 @@
-+#include <asm/reg.h>
-+#include <asm/ppc_asm.h>
-+#include <asm/processor.h>
-+
-+
-+#undef DEBUG /* doesn't halt the cpu. useful for bdi2000 debugging  */
-+
-+/* mpc5200b puts sdram automatically in self-refresh, previous versions don't */
-+#define SELF_REFRESH
-+
-+.text
-+	.globl mpc52xx_deep_sleep
-+mpc52xx_deep_sleep: /* args r3-r6: SRAM, SDRAM regs, CDM regs, INTR regs */
-+
-+	/* enable interrupts */
-+	mfmsr	r7
-+	ori	r7, r7, 0x8000 /* EE */
-+	mtmsr	r7
-+	sync; isync;
-+
-+	li	r10, 0 /* flag that irq handler sets */
-+
-+	/* enable tmr7 (or any other) interrupt */
-+	lwz	r8, 0x14(r6) /* intr->main_mask */
-+	ori	r8, r8, 0x1
-+	xori	r8, r8, 0x1
-+	stw	r8, 0x14(r6)
-+	sync
-+
-+	/* emulate tmr7 interrupt */
-+	li	r8, 0x1
-+	stw	r8, 0x40(r6) /* intr->main_emulate */
-+	sync
-+
-+	/* wait for it to happen */
-+1:
-+	cmpi	cr0, r10, 1
-+	bne	cr0, 1b
-+
-+	/* lock icache */
-+	mfspr	r10, SPRN_HID0
-+	ori	r10, r10, 0x2000
-+	sync; isync;
-+	mtspr	SPRN_HID0, r10
-+	sync; isync;
-+
-+
-+	mflr	r9 /* save LR */
-+
-+	/* jump to sram */
-+	mtlr	r3
-+	blrl
-+
-+	mtlr	r9 /* restore LR */
-+
-+	/* unlock icache */
-+	mfspr	r10, SPRN_HID0
-+	ori	r10, r10, 0x2000
-+	xori	r10, r10, 0x2000
-+	sync; isync;
-+	mtspr	SPRN_HID0, r10
-+	sync; isync;
-+
-+
-+	/* return to C code */
-+	blr
-+
-+
-+_GLOBAL(mpc52xx_ds_sram)
-+mpc52xx_ds_sram:
-+#ifdef SELF_REFRESH
-+	lwz	r8, 0x4(r4)	/* sdram->ctrl */
-+
-+	oris	r8, r8, 0x8000 /* mode_en */
-+	stw	r8, 0x4(r4)
-+	sync
-+
-+	ori	r8, r8, 0x0002 /* soft_pre */
-+	stw	r8, 0x4(r4)
-+	sync
-+	xori	r8, r8, 0x0002
-+
-+	xoris	r8, r8, 0x8000 /* mode_en */
-+	stw	r8, 0x4(r4)
-+	sync
-+
-+	oris	r8, r8, 0x5000
-+	xoris	r8, r8, 0x4000 /* ref_en !cke */
-+	stw	r8, 0x4(r4)
-+	sync
-+
-+	/* disable SDRAM clock */
-+	lwz	r8, 0x14(r5) /* cdm->clkenable */
-+	ori	r8, r8, 0x0008
-+	xori	r8, r8, 0x0008
-+	stw	r8, 0x14(r5)
-+	sync
-+#endif
-+
-+#ifndef DEBUG
-+	/* put it to sleep */
-+	mfmsr	r10
-+	oris	r10, r10, 0x0004	/* POW = 1 */
-+	sync; isync;
-+	mtmsr	r10
-+	sync; isync;
-+#endif
-+
-+#ifdef SELF_REFRESH
-+	/* enable clock */
-+	lwz	r8, 0x14(r5)
-+	ori	r8, r8, 0x0008
-+	stw	r8, 0x14(r5)
-+	sync
-+
-+	/* get ram out of self-refresh */
-+	lwz	r8, 0x4(r4)
-+	oris	r8, r8, 0x5000 /* cke ref_en */
-+	stw	r8, 0x4(r4)
-+	sync
-+#endif
-+
-+	blr
-+_GLOBAL(mpc52xx_ds_sram_size)
-+mpc52xx_ds_sram_size:
-+	.long $-mpc52xx_ds_sram
-+
-+
-+/* ### interrupt handler for wakeup from deep-sleep ### */
-+_GLOBAL(mpc52xx_ds_cached)
-+mpc52xx_ds_cached:
-+	mtspr	SPRN_SPRG0, r7
-+	mtspr	SPRN_SPRG1, r8
-+
-+	/* disable emulated interrupt */
-+	mfspr	r7, 311 /* MBAR */
-+	addi	r7, r7, 0x540	/* intr->main_emul */
-+	li	r8, 0
-+	stw	r8, 0(r7)
-+	sync
-+	dcbf	0, r7
-+
-+	/* acknowledge wakeup, so CCS releases power pown */
-+	mfspr	r7, 311	/* MBAR */
-+	addi	r7, r7, 0x524	/* intr->enc_status */
-+	lwz	r8, 0(r7)
-+	ori	r8, r8, 0x0400
-+	stw	r8, 0(r7)
-+	sync
-+	dcbf	0, r7
-+
-+	/* flag - we handled the interrupt */
-+	li	r10, 1
-+
-+	mfspr	r8, SPRN_SPRG1
-+	mfspr	r7, SPRN_SPRG0
-+
-+	rfi
-+_GLOBAL(mpc52xx_ds_cached_size)
-+mpc52xx_ds_cached_size:
-+	.long $-mpc52xx_ds_cached
-Index: grant.git/arch/powerpc/platforms/52xx/efika.c
-===================================================================
---- grant.git.orig/arch/powerpc/platforms/52xx/efika.c
-+++ grant.git/arch/powerpc/platforms/52xx/efika.c
-@@ -200,6 +200,14 @@ static void __init efika_setup_arch(void
- 
- 	efika_pcisetup();
- 
-+#ifdef CONFIG_PM
-+	mpc52xx_wakeup.mask = WAKEUP_GPIO | WAKEUP_RTC;
-+	mpc52xx_wakeup.pin = 4;		/* GPIO_WKUP_4 (GPIO_PSC6_0 - IRDA_RX) */
-+	mpc52xx_wakeup.level = 1;	/* wakeup on high level */
-+	/* IOW. to wake it up, short pins 1 and 3 on IRDA connector */
-+	mpc52xx_pm_init();
-+#endif
-+
- 	if (ppc_md.progress)
- 		ppc_md.progress("Linux/PPC " UTS_RELEASE " running on Efika ;-)\n", 0x0);
- }
-Index: grant.git/arch/powerpc/platforms/52xx/lite5200.c
-===================================================================
---- grant.git.orig/arch/powerpc/platforms/52xx/lite5200.c
-+++ grant.git/arch/powerpc/platforms/52xx/lite5200.c
-@@ -85,6 +85,24 @@ error:
- 	iounmap(gpio);
- }
- 
-+#ifdef CONFIG_PM
-+static u32 descr_a;
-+static void lite5200_suspend_prepare(void __iomem *mbar)
-+{
-+	/*
-+	 * power down usb port
-+	 * this needs to be called before of-ohci suspend code
-+	 */
-+	descr_a = in_be32(mbar + 0x1048);
-+	out_be32(mbar + 0x1048, (descr_a & ~0x200) | 0x100);
-+}
-+
-+static void lite5200_resume_finish(void __iomem *mbar)
-+{
-+	out_be32(mbar + 0x1048, descr_a);
-+}
-+#endif
-+
- static void __init lite5200_setup_arch(void)
- {
- 	struct device_node *np;
-@@ -107,6 +125,16 @@ static void __init lite5200_setup_arch(v
- 	mpc52xx_setup_cpu();	/* Generic */
- 	lite5200_setup_cpu();	/* Platorm specific */
- 
-+#ifdef CONFIG_PM
-+	mpc52xx_wakeup.mask = WAKEUP_GPIO | WAKEUP_RTC;
-+	mpc52xx_wakeup.pin = 1;		/* GPIO_WKUP_1 (GPIO_PSC2_4) */
-+	mpc52xx_wakeup.level = 0;	/* wakeup on low level */
-+	/* mpc52xx_wakeup.delay = 10;	 wake after 10 minutes (RTC) */
-+	mpc52xx_wakeup.board_suspend_prepare = lite5200_suspend_prepare;
-+	mpc52xx_wakeup.board_resume_finish = lite5200_resume_finish;
-+	mpc52xx_pm_init();
-+#endif
-+
- #ifdef CONFIG_PCI
- 	np = of_find_node_by_type(np, "pci");
- 	if (np)
-Index: grant.git/include/asm-powerpc/mpc52xx.h
-===================================================================
---- grant.git.orig/include/asm-powerpc/mpc52xx.h
-+++ grant.git/include/asm-powerpc/mpc52xx.h
-@@ -232,6 +232,51 @@ struct mpc52xx_cdm {
- 	u16 mclken_div_psc6;	/* CDM + 0x36  reg13 byte2,3 */
- };
- 
-+/* RTC */
-+struct mpc52xx_rtc {
-+	u8	set_time;	/* RTC + 0x00 */
-+	u8	hour_set;	/* RTC + 0x01 */
-+	u8	minute_set;	/* RTC + 0x02 */
-+	u8	second_set;	/* RTC + 0x03 */
-+
-+	u8	set_date;	/* RTC + 0x04 */
-+	u8	month_set;	/* RTC + 0x05 */
-+	u8	weekday_set;	/* RTC + 0x06 */
-+	u8	date_set;	/* RTC + 0x07 */
-+
-+	u8	write_sw;	/* RTC + 0x08 */
-+	u8	sw_set;		/* RTC + 0x09 */
-+	u16	year_set;	/* RTC + 0x0a */
-+
-+	u8	alm_enable;	/* RTC + 0x0c */
-+	u8	alm_hour_set;	/* RTC + 0x0d */
-+	u8	alm_min_set;	/* RTC + 0x0e */
-+	u8 	int_enable;	/* RTC + 0x0f */
-+
-+	u8	reserved1;
-+	u8	hour;		/* RTC + 0x11 */
-+	u8	minute;		/* RTC + 0x12 */
-+	u8	second;		/* RTC + 0x13 */
-+
-+	u8	month;		/* RTC + 0x14 */
-+	u8	wday_mday;	/* RTC + 0x15 */
-+	u16	year;		/* RTC + 0x16 */
-+
-+	u8	int_alm;	/* RTC + 0x18 */
-+	u8	int_sw;		/* RTC + 0x19 */
-+	u8	alm_status;	/* RTC + 0x1a */
-+	u8	sw_minute;	/* RTC + 0x1b */
-+
-+	u8	bus_error_1;	/* RTC + 0x1c */
-+	u8	int_day;	/* RTC + 0x1d */
-+	u8	int_min;	/* RTC + 0x1e */
-+	u8	int_sec;	/* RTC + 0x1f */
-+
-+	u8	pterm;		/* RTC + 0x20 */
-+	u8	eterm;		/* RTC + 0x21 */
-+	u16	reserved2;
-+};
-+
- #endif /* __ASSEMBLY__ */
- 
- 
-@@ -253,5 +298,23 @@ extern int __init mpc52xx_add_bridge(str
- 
- #endif /* __ASSEMBLY__ */
- 
-+#ifdef CONFIG_PM
-+#define WAKEUP_GPIO	(1<<1)
-+#define WAKEUP_RTC	(2<<1)
-+#define WAKEUP_MSCAN	(3<<1)
-+struct mpc52xx_wakeup {
-+	u8 mask;
-+	u8 pin;		/* which wakeup GPIO */
-+	u8 level;	/* transition to high or to low level */
-+	u16 delay;	/* after how many minutes (RTC) */
-+
-+	void (*board_suspend_prepare)(void __iomem *mbar);
-+	void (*board_resume_finish)(void __iomem *mbar);
-+};
-+
-+extern struct mpc52xx_wakeup mpc52xx_wakeup;
-+int __init mpc52xx_pm_init(void);
-+#endif /* CONFIG_PM */
-+
- #endif /* __ASM_POWERPC_MPC52xx_H__ */
- 
-Index: grant.git/arch/powerpc/boot/dts/lite5200.dts
-===================================================================
---- grant.git.orig/arch/powerpc/boot/dts/lite5200.dts
-+++ grant.git/arch/powerpc/boot/dts/lite5200.dts
-@@ -49,6 +49,7 @@
- 
- 	soc5200@f0000000 {
- 		model = "fsl,mpc5200";
-+		compatible = "mpc5200";
- 		revision = ""			// from bootloader
- 		#interrupt-cells = <3>;
- 		device_type = "soc";
-Index: grant.git/arch/powerpc/boot/dts/lite5200b.dts
-===================================================================
---- grant.git.orig/arch/powerpc/boot/dts/lite5200b.dts
-+++ grant.git/arch/powerpc/boot/dts/lite5200b.dts
-@@ -49,6 +49,7 @@
- 
- 	soc5200@f0000000 {
- 		model = "fsl,mpc5200b";
-+		compatible = "mpc5200";
- 		revision = "";			// from bootloader
- 		#interrupt-cells = <3>;
- 		device_type = "soc";
-Index: grant.git/arch/powerpc/kernel/prom_init.c
-===================================================================
---- grant.git.orig/arch/powerpc/kernel/prom_init.c
-+++ grant.git/arch/powerpc/kernel/prom_init.c
-@@ -2142,7 +2142,7 @@ static void __init fixup_device_tree_efi
- 	                             3,12,0, 3,13,0, 3,14,0, 3,15,0 };
- 	struct subst_entry efika_subst_table[] = {
- 		{ "/",			"device_type",	prop_cstr("efika") },
--		{ "/builtin",		"compatible",	prop_cstr("soc") },
-+		{ "/builtin",		"device_type",	prop_cstr("soc") },
- 		{ "/builtin/ata",	"compatible",	prop_cstr("mpc5200b-ata\0mpc5200-ata"), },
- 		{ "/builtin/bestcomm",	"compatible",	prop_cstr("mpc5200b-bestcomm\0mpc5200-bestcomm") },
- 		{ "/builtin/bestcomm",	"interrupts",	prop_bcomm_irq, sizeof(prop_bcomm_irq) },
+Leonid wrote:
+> Is Paulus' patch http://source.mvista.com/~ank/paulus-powerpc/20060309/
+> for TEMAC the best one or somebody has better suggestion?
+> 
+> Thanks,
+> 
+> Leonid. 
+> 
+> -----Original Message-----
+> From: linuxppc-embedded-bounces+leonid=a-k-a.net@ozlabs.org
+> [mailto:linuxppc-embedded-bounces+leonid=a-k-a.net@ozlabs.org] On Behalf
+> Of Glenn.G.Hart@us.westinghouse.com
+> Sent: Monday, February 12, 2007 8:13 AM
+> To: linuxppc-embedded@ozlabs.org
+> Subject: Linux w/ML403 PLB TEMAC
+> 
+> I am trying to get Linux up on my ML403 board with the PLB TEMAC with
+> SGDMA.  I am almost there and am not sure where to go now.  I have seen
+> many posts on this from Robert, Ming, and Rick.  Hopefully somebody know
+> the answer.  Since I am going to detail how I got to where I am it can
+> be
+> somewhat of a guide for others (unless I am doing something really
+> wrong).
+> 
+> 1.  I started with Linux 2.6.19 from kernel.org.  I copied over the
+> xparameters_ml40x.h file to xparameters_ml403.h in
+> arch/ppc/platforms/4xx/xparameters.  Setting up my kernel configuration
+> and
+> downloading to the board everything worked OK.  ** I did not have the
+> TEMAC
+> configured or as part of my PPC project.
+> 
+> 2.  Next I created a new PPC with the PLB TEMAC and applied all four
+> kernel
+> patches from PAULUS
+> (http://source.mvista.com/~ank/paulus-powerpc/20060309/).  A couple of
+> the
+> files did not patch completely, so I had to do it by hand.  Recompiling
+> the
+> kernel (with the TEMAC configured to on) I now had network support.
+> 
+> 3.  The speed of the network was very poor.  I wanted to implement DMA
+> for
+> the TEMAC.  I created a new PPC with BSB using DMA on the TEMAC.  Kernel
+> recompilied without a problem, but upon starting the kernel I got:
+> [    3.813223] Oops: machine check, sig: 7 [#1]
+> [    3.864368] NIP: C00E7B08 LR: C00E1640 CTR: 00000000
+> [    3.923854] REGS: c01c4f50 TRAP: 0202   Not tainted  (2.6.19)
+> [    3.992778] MSR: 00029030 <EE,ME,IR,DR>  CR: 88000028  XER: 20000000
+> [    4.069670] TASK = c052ab70[1] 'swapper' THREAD: c052e000
+> [    4.132247] GPR00: C00E1640 C052FE10 C052AB70 00000000 00000068
+> C5002200
+> C04A242C 00000001
+> [    4.233281] GPR08: 00000000 C04A2304 C5002010 11111111 28000028
+> FFFFCD64
+> FFFF0000 FFFF0000
+> [    4.334318] GPR16: 0B6654D8 FFFF0000 FFFF0000 FFFF0000 FFFF0000
+> FFFF0000
+> FFFF0000 FFFF0000
+> [    4.435353] GPR24: C017E890 00000000 C04A22D8 C017EA00 C017E9C8
+> C017E888
+> C04A2260 C04A22D8
+> [    4.538579] NIP [C00E7B08] XPacketFifoV200a_Initialize+0x74/0x7c
+> [    4.610762] LR [C00E1640] XTemac_ConfigureFifoAccess+0x28/0x9c
+> [    4.680752] Call Trace:
+> [    4.710037] [C052FE10] [C000ADD8] __ioremap+0xe8/0x14c (unreliable)
+> [    4.785448] [C052FE20] [C00E1640]
+> XTemac_ConfigureFifoAccess+0x28/0x9c
+> [    4.863880] [C052FE30] [C00DFCF8] Initialize+0x3c/0xd0
+> [    4.925647] [C052FE40] [C00DF354] xtenet_probe+0x14c/0x5fc
+> [    4.991581] [C052FEB0] [C00D6B38] really_probe+0x84/0x154
+> [    5.056472] [C052FED0] [C00D6D04] driver_probe_device+0xdc/0xfc
+> [    5.127613] [C052FEF0] [C00D6E68] __driver_attach+0x88/0xf4
+> [    5.194588] [C052FF10] [C00D5CC0] bus_for_each_dev+0x54/0x94
+> [    5.262604] [C052FF40] [C00D6EF8] driver_attach+0x24/0x34
+> [    5.327496] [C052FF50] [C00D63E8] bus_add_driver+0x68/0x1b8
+> [    5.394471] [C052FF70] [C00D744C] driver_register+0x98/0xac
+> [    5.461446] [C052FF80] [C01BBC00] xtenet_init+0x18/0x28
+> [    5.524358] [C052FF90] [C0002454] init+0xb0/0x288
+> [    5.580917] [C052FFF0] [C0004EA0] kernel_thread+0x44/0x60
+> [    5.645794] Instruction dump:
+> [    5.681427] 38000000 901f3694 91690004 90a90008 91490000 3800000a
+> 7c0004ac 900a0000
+> [    5.775062] 80010014 38600000 83e1000c 7c0803a6 <38210010> 4e800020
+> 2c030000 7c0802a6
+> [    5.875957] Kernel panic - not syncing: Attempted to kill init!
+> 
+> Going back through previous posts I found that I need to upgrade the
+> kernel
+> driver for the DMA and TEMAC to V3.
+> 
+> 4.  From EDK 8.2.02i  SP2.4+0 I copied the files from the BSP to the
+> kernel
+> using the following steps.
+>       a.  Copied the files from linux\drivers\net\xilinx_temac of the
+> BSP
+> to drivers/net/xilinx_temac of the kernel preserving the Makefile from
+> the
+> kernel.
+>       b.  To adapter.c I remove the #include xilinx_devices.h and added
+> #include linux/platform_devices.h and #include platforms/4xx/virtex.h
+>       c.  To adapter.c I changed all instances of CHECKSUM_HW to
+> CHECKSUM_PARTIAL
+>       d.  To the Makefile in linux/drivers/net/xilinux_temac I added
+> xtemac_stats.o
+>       e.  I removed the #include xparameters.h from xtemac.h
+> 
+>       f.  Copied the files from linux\drivers\xilinx_common of the BSP
+> to
+> drivers/xilinx_edk of the kernel.
+>       g.  In the drivers/xililnx_edk Makefile I removed the line
+> containing
+> xdma_channel.o xdma_channel_sg.o
+>       h.  In the drivers/xililnx_edk Makefile I commented out the line
+> with
+> xlinx_syms.o
+> 
+> 5.  Recompiled the kernel I everything was OK.  Starting the kernel
+> everything looked OK:
+> [    3.758994] XTemac: using sgDMA mode.
+> [    3.803211] XTemac: using TxDRE mode
+> [    3.846160] XTemac: using RxDRE mode
+> [    3.889186] XTemac: buffer descriptor size: 32768 (0x8000)
+> [    3.956476] XTemac: (buffer_descriptor_init) phy: 0x4a8000, virt:
+> 0xff100000, size: 0x8000
+> [    4.069678] eth0: Xilinx TEMAC #0 at 0x81200000 mapped to 0xC5000000,
+> irq=0
+> [    4.153560] eth0: XTemac id 1.0f, block id 5, type 8
+> 
+> 6.  I am using busybox 1.2.1 which worked fine previously configuring
+> the
+> network.  Now when I execute ifconfig I get the following problem:
+> [   12.228721] eth0: XTemac: Options: 0xb8f2
+> [   24.197749] eth0: XTemac: Not able to set the speed to 1000 (status:
+> 0x148)
+> [   34.215593] eth0: XTemac: Not able to set the speed to 100 (status:
+> 0x148)
+> [   44.232349] eth0: XTemac: Not able to set the speed to 10 (status:
+> 0x148)
+> [   44.313727] eth0: XTemac: could not negotiate speed
+> [   44.372226] eth0: XTemac: Send Threshold = 16, Receive Threshold = 2
+> [   44.448421] eth0: XTemac: Send Wait bound = 1, Receive Wait bound = 1
+> # [   57.180152] eth0: XTemac: PHY Link carrier lost.
+> 
+> Anybody have an suggestions?
+> 
+> Thanks,
+> Glenn
+> 
+> 
+> 
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
