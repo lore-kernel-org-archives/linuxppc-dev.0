@@ -2,23 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 33FB7DDE9F
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:14:12 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 4A028DDEBD
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:14:55 +1000 (EST)
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1175645568.10567.42.camel@shinybook.infradead.org>
-References: <1175642916.10567.24.camel@shinybook.infradead.org>
-	<20070403212928.GA12951@cynthia.pants.nu>
-	<1175644642.10567.31.camel@shinybook.infradead.org>
-	<20070403.170212.02298297.davem@davemloft.net>
-	<1175645568.10567.42.camel@shinybook.infradead.org>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20070403.165657.34759233.davem@davemloft.net>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<1175642916.10567.24.camel@shinybook.infradead.org>
+	<20070403.165657.34759233.davem@davemloft.net>
 Content-Type: text/plain
-Date: Wed, 04 Apr 2007 11:13:12 +1000
-Message-Id: <1175649192.30879.19.camel@localhost.localdomain>
+Date: Wed, 04 Apr 2007 11:13:58 +1000
+Message-Id: <1175649238.30879.21.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
+Cc: paulus@samba.org, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,27 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-03 at 20:12 -0400, David Woodhouse wrote:
-> On Tue, 2007-04-03 at 17:02 -0700, David Miller wrote:
-> > Sparc does the same thing, it's a common convention and you really
-> > should not break it.
+On Tue, 2007-04-03 at 16:56 -0700, David Miller wrote:
+> From: David Woodhouse <dwmw2@infradead.org>
+> Date: Tue, 03 Apr 2007 19:28:36 -0400
 > 
-> I thought that argument was lost many years ago. It _used_ to be a
-> common convention; we got better.
+> > Abusing the 8250 device numbers prevents the 8250 module from being
+> > loaded at the same time as pmac_zilog, and means you can't have both
+> > internal port and PCMCIA or PCI 8250 ports active at the same time.
 > 
-> > Every powerpc and sparc system out that is using ttyS0 with dynamic
-> > minor numbers being allocated.  I really think this should be
-> > generalized instead of breaking serial on every powerpc machine out
-> > there.
-> 
-> Nobody's breaking anything. The patch _fixes_ serial, and allows powerpc
-> machines to use both z8530 and 8250 ports at the same time; something
-> which has been broken for a long time.
+> Dynamic minor number allocation for ttyS? would allow this
+> just fine, and that's exactly what we do on sparc as I
+> explained in another response.
 
-It worked before the new serial core, we had a "tweak" in the old 8250
-driver to be able to share minors, but that got busted when Russell
-rewrote the whole thing. I remember asking him back when he still was
-the serial maintainer, and he refused to bring back some sharing of
-minors.
+If we can get it past whoever is the current 8250 maintainer, then fine
+with me. Back then, I hit a brick wall.
 
 Ben.
