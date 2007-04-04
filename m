@@ -1,14 +1,14 @@
 Return-Path: <Antonio.DiBacco@technolabs.it>
 Received: from smtp.technolabs.it (unknown [213.82.155.20])
-	by ozlabs.org (Postfix) with ESMTP id D7C32DDE20
+	by ozlabs.org (Postfix) with ESMTP id 34E7CDDE20
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  4 Apr 2007 19:34:08 +1000 (EST)
+	Wed,  4 Apr 2007 19:36:26 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: bootdev undefined
-Date: Wed, 4 Apr 2007 11:34:05 +0200
-Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E71CD5E@aquib01a>
+Subject: MTD concat
+Date: Wed, 4 Apr 2007 11:36:24 +0200
+Message-ID: <F1F6EC0C8B75034F9E3A79FC85122E8E71CD5F@aquib01a>
 From: "DI BACCO ANTONIO - technolabs" <Antonio.DiBacco@technolabs.it>
 To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -21,11 +21,9 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I modify my mtd flash partitions in flash based on information that I
-read from a special sector in flash. The problem is that, then, I don't
-know where the rootfs will be housed in. It could be in /dev/mtdblock2
-or /dev/mtdblock3. Could I instruct the mtd subsystem to create a
-special device beside the normal mtdblockn devices based on the info in
-the partition table?
+I have to flash mtds that are not contiguos. Let us say /dev/mtd2 and
+/dev/mtd5 (representing two different areas in the same flash). Can I
+mount a single jffs2 filesystem using both of them? Or can I create a
+new /dev/mtdx grouping both /dev/mtd2 and /dev/mtd5?
 =20
-Thank you in advance!=20
+Thank you in advance!
