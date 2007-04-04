@@ -1,20 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 1D259DDE9F
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:21:26 +1000 (EST)
-Date: Tue, 03 Apr 2007 18:21:25 -0700 (PDT)
-Message-Id: <20070403.182125.77058566.davem@davemloft.net>
-To: alan@lxorguk.ukuu.org.uk
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from the-village.bc.nu (unknown [81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 7B9D7DDE9F
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:23:02 +1000 (EST)
+Date: Wed, 4 Apr 2007 02:25:44 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Brad Boyer <flar@allandria.com>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070404021924.71e87580@the-village.bc.nu>
-References: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<20070403.165518.55726194.davem@davemloft.net>
-	<20070404021924.71e87580@the-village.bc.nu>
+Message-ID: <20070404022544.59b022a6@the-village.bc.nu>
+In-Reply-To: <20070403212928.GA12951@cynthia.pants.nu>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<1175642916.10567.24.camel@shinybook.infradead.org>
+	<20070403212928.GA12951@cynthia.pants.nu>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: dwmw2@infradead.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: Paul Mackerras <paulus@samba.org>, David Woodhouse <dwmw2@infradead.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +27,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Date: Wed, 4 Apr 2007 02:19:24 +0100
+> The TTY_MAJOR should have never belonged to 8250.c in the first place.
+> I know it's just my opinion, but I think this major device should be
+> owned by the serial core, and it shouldn't matter what chip drives each
+> individual port. Each hardware driver should just register with the
+> core how many ports it has and should be allocated from the same range.
 
-> > I totally agree with Paul, the onboard serial device should get
-> > ttyS0 regardless of what hardare is used to drive it.
-> 
-> Thats between you and udev.
+That would be completely unmanagable on many systems with multiport
+controllers and interfaces where the naming tells you things like which
+cable port off which socket off which multiplexor is the one you are
+talking about.
 
-That might be true when udev exists, but it doesn't for the console
-specification on the kernel command line.
+You can't dynamically identify serial ports, you can't generally speaking
+probe the device the other end and get persistant identifiers.
 
-I don't care about ordering, but the name matters just like "eth%d"
-is the default name for all ethernet devices.
+> This situation is purely a side-effect of the fact that all the
+> original Linux supported hardware used the 8250 driver and everyone
+> who didn't use 8250 was marginalized enough that they got ignored.
 
-Using different majors for different instances of the exact same kind
-of device is really not smart.  It's a serial port, and if you try
-to dress it up to be something else you run into all kinds of problems.
+Nope. The original design used different numbers of each type of port
+quite intentionally. Having handy names for the onboard ports is useful
+as well but not related. One or two people cheated and its finally come
+back to haunt them.
 
-Not the least of which is the user has to scratch his head figuring
-out what kind of chip drives his serial console, he just wants the
-first serial port and he should have a way to say just that even
-on the kernel command line.
+Alan
