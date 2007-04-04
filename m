@@ -1,24 +1,27 @@
-Return-Path: <stuart.yoder@freescale.com>
+Return-Path: <tnt@246tNt.com>
+Received: from outmx035.isp.belgacom.be (outmx035.isp.belgacom.be
+	[195.238.6.172])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0F99DDDF1B
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 04:01:19 +1000 (EST)
+Received: from outmx035.isp.belgacom.be (localhost.localdomain [127.0.0.1])
+	by outmx035.isp.belgacom.be (8.13.4/8.13.4/Debian-3sarge3) with ESMTP
+	id l34I1Bi7001585
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 20:01:14 +0200
+Message-ID: <4613E7CC.1020001@246tNt.com>
+Date: Wed, 04 Apr 2007 20:00:44 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
-	platform
-Date: Wed, 4 Apr 2007 10:51:13 -0700
-Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302C194B9@az33exm25.fsl.freescale.net>
-In-Reply-To: <20070404162905.GD21314@mag.az.mvista.com>
-References: <20070328011924.GA1586@mag.az.mvista.com>
-	<20070328012206.GD1586@mag.az.mvista.com>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
-	<20070329003550.GB25652@localhost.localdomain>
-	<20070402181553.GH2132@mag.az.mvista.com>
-	<f622cb9af058a72fc47521e44ae6672a@kernel.crashing.org>
-	<20070404162905.GD21314@mag.az.mvista.com>
-From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-To: "Mark A. Greer" <mgreer@mvista.com>,
-	"Segher Boessenkool" <segher@kernel.crashing.org>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Dale Farnsworth <dfarnsworth@mvista.com>
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: change rheap functions to use long integers
+	instead of pointers
+References: <11756161753280-git-send-email-timur@freescale.com>
+	<F4B76190-37C3-453C-B4F0-C1CB7CC0532E@kernel.crashing.org>
+	<4613E39A.70606@freescale.com>
+In-Reply-To: <4613E39A.70606@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,39 +31,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Timur Tabi wrote:
+> Kumar Gala wrote:
+>
+>> I'm concerned the error handling isn't correctly.  What happens if 
+>> the rheap I'm managing has addresses at 0xf0000000.  When I compare 
+>> offset to 0, its going to report as an error, even if the offset 
+>> returned is valid.
+>
+> The return value is an offset INTO the actual buffer.  Unless you have
+> buffer larger than 2GB, the return value will never be negative unless
+> it's an error.  So technically, the maximum size of the remote heap is
+> 2GB.  It doesn't matter where it was located.
+That's what I tried to explain yesterday on IRC. Using rheap to manage
+offset into a buffer is one of the usage model. The other one is to use
+rh to manage addresses directly.
+Since the case where you manage offset is more common, it make senses to
+change the types to unsigned long. However the other usage model (manage
+addresses) should still be possible (using type casts only).
 
-> > "existing"
-> > The value of this property defines the regions of virtual address
-> > space managed by the MMU in whose package this property is defined
-> > without regard to whether or not these regions are currently in use.
-> > The encodings of virt and len are MMU-specific.
-> >=20
-> > Have a look at the PowerPC binding to find out about that specific
-> > encoding.
+I agree that _for the moment_, no code make uses of rheap to manage
+addresses but that could happen.
 
-the PowerPC binding defines this--
+> Please keep in mind that I'm not changing the actual numeric values
+> that are being returned.  I'm only changing the types, because they
+> were wrong.  rh_alloc() was returning a void pointer, but it was NEVER
+> a pointer.  It was always a simple offset.
+That's because _currently_ all the code use it like that, but nothing
+prevents them to use it other wise ...
 
- + 5.1.7. Memory Management Unit properties
- +=20
- + To aid a client in taking over the translation mechanism and
- + still interact with Open Firmware (via the client interface),
- + the client needs to know what translations have been established by
- + Open Firmware. The following standard property shall exist within
- + the package to which the mmu property of the /chosen package refers.
- +=20
- + "translations"
- +=20
- +    This property, consisting of sets of translations, defines the
- +    currently active translations that have been established by Open
- +    Firmware (e.g., using map). Each set has the following format:
- +     (virt size phys mode )
- +=20
- + Each value is encoded as with encode-int.
+But you're right, your not changing the actual values returned,
+ERR_PTR(x) == x ....
+So if someone wants to use it with addresses, he still can. He should
+just do cast to (void *). And to detect errors on alloc he should he
+IS_ERR(...)
 
-The "mode" field seems to be undefined.
+>   The first time you call rh_alloc(), you will get back a value of 0,
+> because that's the beginning of the heap.
+No, it doesn't always return 0.
+That depends on what free region you "attached" at initialisation. And
+you could have attached 0xffff0000 -> 0xffffffff ....
 
-So would firmware need to define all phys to virt mappings in=20
-the "translations" property or just the interesting ones-- i.e
-uart/console and i2c?
 
-Stuart
+
+    Sylvain
