@@ -1,20 +1,25 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id EACAADDDFD
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 18:12:10 +1000 (EST)
-Date: Wed, 04 Apr 2007 01:12:08 -0700 (PDT)
-Message-Id: <20070404.011208.120446173.davem@davemloft.net>
-To: dwmw2@infradead.org
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[217.147.92.249])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8C67FDDEA0
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 18:38:18 +1000 (EST)
+Date: Wed, 4 Apr 2007 09:38:03 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: David Miller <davem@davemloft.net>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1175666635.2932.17.camel@shinybook.infradead.org>
+Message-ID: <20070404083803.GA13134@flint.arm.linux.org.uk>
 References: <1175663999.2932.8.camel@shinybook.infradead.org>
 	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
 	<1175666635.2932.17.camel@shinybook.infradead.org>
+	<20070404.011208.120446173.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-	alan@lxorguk.ukuu.org.uk
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070404.011208.120446173.davem@davemloft.net>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,50 +29,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Wed, 04 Apr 2007 02:03:54 -0400
+On Wed, Apr 04, 2007 at 01:12:08AM -0700, David Miller wrote:
+> Your ARM example holds zero water because that platform has all kinds
+> of weird devices so people there are used to all kinds of non-standard
+> conventions and naming.
 
-> On Wed, 2007-04-04 at 15:53 +1000, Paul Mackerras wrote:
-> > It 'should' be the case because that is what is easiest for users and
-> > makes most sense from a user's point of view.
-> 
-> I really don't buy that argument.
+I think your perception is more wrong than you could ever think.
+Montavista would absolutely love all serial ports to be under the
+ttyS* naming, especially on ARM where there is a wide variety of
+different possibilities - ttyAM, ttySA, ttyPXA, ttyAMA, and so
+the list goes on.  It apparantly gives their support department
+real headaches.
 
-I do.
+There are similar feelings from the handhelds.org community.
 
-David, do this.  Fly to Portland, drive over to Linus's house, once he
-lets you in, tell him to walk up to his computer and run 'cat' on the
-primary serial port.  Do all of this before he reads this thread. :-)
+However, despite people pressing for it, there's yet to be a *sane*
+*technical* *solution* to the problem.  All I've seen so far is one
+bad hack.
 
-What device name do you think he will type in?
-
-Will he type a different device name on his PowerPC box than he will
-on his x86 systems?
-
-I think he will type /dev/ttyS0 in both cases, and it won't be because
-he knows what kind of serial port controller is in either machine.
-
-It's that simple.
-
-Your ARM example holds zero water because that platform has all kinds
-of weird devices so people there are used to all kinds of non-standard
-conventions and naming.
-
-Try desktop systems that lots of users actually use.  Ask them what
-the serial device file is.  Ask them if they had to know what
-serial controller they have in their computer in order to figure
-that out.
-
-> That's what you get when you abuse device numbers belonging to
-> another driver.
-
-No, it's what you get whan drivers of the same major number do
-not cooperate with minor number allocations.
-
-Add a notion of onboard serial controllers and a properly coordinated
-minor number allocation system for /dev/ttyS0 if you want to solve this.
-
-As it stands your patch is a non-starter because it breaks a user
-visible API, and people's machines won't bootup or have a console
-any longer.  Or, if the powerpc machine is at Alan's house his
-model trains might stop working :-)
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
