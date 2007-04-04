@@ -2,22 +2,26 @@ Return-Path: <alan@lxorguk.ukuu.org.uk>
 Received: from the-village.bc.nu (unknown [81.2.110.250])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8CE1DDDF34
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:33:45 +1000 (EST)
-Date: Wed, 4 Apr 2007 02:36:37 +0100
+	by ozlabs.org (Postfix) with ESMTP id 545AEDDECF
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:35:24 +1000 (EST)
+Date: Wed, 4 Apr 2007 02:38:22 +0100
 From: Alan Cox <alan@lxorguk.ukuu.org.uk>
-To: David Miller <davem@davemloft.net>
+To: Brad Boyer <flar@allandria.com>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404023637.65c56227@the-village.bc.nu>
-In-Reply-To: <20070403.182125.77058566.davem@davemloft.net>
-References: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<20070403.165518.55726194.davem@davemloft.net>
-	<20070404021924.71e87580@the-village.bc.nu>
-	<20070403.182125.77058566.davem@davemloft.net>
+Message-ID: <20070404023822.53aabc1a@the-village.bc.nu>
+In-Reply-To: <20070403230908.GA13471@cynthia.pants.nu>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<1175642916.10567.24.camel@shinybook.infradead.org>
+	<20070403212928.GA12951@cynthia.pants.nu>
+	<1175644642.10567.31.camel@shinybook.infradead.org>
+	<20070403221002.GA13210@cynthia.pants.nu>
+	<1175648051.10567.61.camel@shinybook.infradead.org>
+	<20070403230908.GA13471@cynthia.pants.nu>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
-Cc: dwmw2@infradead.org, paulus@samba.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Cc: Paul Mackerras <paulus@samba.org>, David Woodhouse <dwmw2@infradead.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,31 +31,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Using different majors for different instances of the exact same kind
-> of device is really not smart.  It's a serial port, and if you try
-> to dress it up to be something else you run into all kinds of problems.
+> my opinion. I do understand that 8250 compatible chips are very common
+> and are the most likely serial chips to be used with Linux. However, I
+> will point out that the define is TTY_MAJOR, not 8250_MAJOR. It seems
+> to me that whoever named it was thinking in more generic terms.
 
-Disagree. There are lots of good reasons you need to know which
-port/which card/which slot/which multiplexor.
-
-There is a world of a difference between a serious serial port
-application and "wtf has my console gone"
-
-> Not the least of which is the user has to scratch his head figuring
-> out what kind of chip drives his serial console, he just wants the
-> first serial port and he should have a way to say just that even
-> on the kernel command line.
-
-Define "first". First by I/O order, by PCI scan order (and which type),
-does ACPI come before or after ISA etc...
-
-At the moment we sort of magic this for the PC by having hardcoded probe
-order hacks by address, on the sparc by having other driver magic, on the
-PPC by hardcoding some rules etc then hack the result to be ttyS0.
-
-I've no fundamental problem with S0->console port 1, S1 -> console port 2
-etc, but the general notion that type and positional information doesn't
-matter is complete and utter bollocks when you try and apply it to any
-serious serial setup.
-
-Alan
+The define goes back the very first days of Linux. I doubt whoever named
+it (Linus I imagine) had even considered that anyone else might be
+running his terminal emulator at that point.
