@@ -1,24 +1,24 @@
-Return-Path: <tytso@thunk.org>
-Received: from thunker.thunk.org (THUNK.ORG [69.25.196.29])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 622EADDE1A
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 22:55:38 +1000 (EST)
-Date: Wed, 4 Apr 2007 08:21:54 -0400
-From: Theodore Tso <tytso@mit.edu>
-To: David Miller <davem@davemloft.net>, dwmw2@infradead.org,
-	paulus@samba.org, alan@lxorguk.ukuu.org.uk, flar@allandria.com,
-	linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Return-Path: <macro@linux-mips.org>
+Received: from pollux.ds.pg.gda.pl (pollux.ds.pg.gda.pl [153.19.208.7])
+	by ozlabs.org (Postfix) with ESMTP id DD099DDE17
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 00:05:24 +1000 (EST)
+Date: Wed, 4 Apr 2007 14:43:19 +0100 (BST)
+From: "Maciej W. Rozycki" <macro@linux-mips.org>
+Sender: macro@blysk.ds.pg.gda.pl
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404122154.GF31973@thunk.org>
-References: <1175663999.2932.8.camel@shinybook.infradead.org>
-	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	<1175666635.2932.17.camel@shinybook.infradead.org>
-	<20070404.011208.120446173.davem@davemloft.net>
-	<20070404083803.GA13134@flint.arm.linux.org.uk>
+In-Reply-To: <Pine.LNX.4.64.0704040903470.20803@anakin>
+Message-ID: <Pine.LNX.4.64N.0704041436130.19559@blysk.ds.pg.gda.pl>
+References: <20070404022544.59b022a6@the-village.bc.nu>
+	<17939.10130.687893.167511@cargo.ozlabs.ibm.com>
+	<1175663999.2932.8.camel@shinybook.infradead.org>
+	<20070403.225006.119275067.davem@davemloft.net>
+	<Pine.LNX.4.64.0704040903470.20803@anakin>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070404083803.GA13134@flint.arm.linux.org.uk>
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	dwmw2@infradead.org, David Miller <davem@davemloft.net>,
+	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,70 +28,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 04, 2007 at 09:38:03AM +0100, Russell King wrote:
-> I think your perception is more wrong than you could ever think.
-> Montavista would absolutely love all serial ports to be under the
-> ttyS* naming, especially on ARM where there is a wide variety of
-> different possibilities - ttyAM, ttySA, ttyPXA, ttyAMA, and so
-> the list goes on.  It apparantly gives their support department
-> real headaches.
+On Wed, 4 Apr 2007, Geert Uytterhoeven wrote:
+
+> > > I don't see why that 'should' be the case. Certainly it _isn't_ the case
+> > > on most supported platforms -- we have separate device numbers, and
+> > > names, for most types of ports. There's only one or two drivers which
+> > > abuse ttySn for anything other than 8250 ports.
+> > 
+> > sunsu, sunzilog, pmac_zilog, sunsab, etc.
 > 
-> There are similar feelings from the handhelds.org community.
+> amiserial.
 > 
-> However, despite people pressing for it, there's yet to be a *sane*
-> *technical* *solution* to the problem.  All I've seen so far is one
-> bad hack.
+> > The list is longer than you think.  In fact the convention is
+> > very well established.
+> 
+> And I guess the recently revived Atari serial driver, too.
 
-It is certainly technically doable.  The problem is that there's a lot
-of hard work between where we are and there, and serial ports have
-never been important enough so that somoene has been able to justify
-the intensive amounts of work to get there.
+ And also DEC hardware, i.e. zs (which drives Zilog ports too) and dz 
+(which handles integrated to the various extent clones of the original 
+PDP-11 serial multiplexer ;-) ).
 
-What I've always wanted to do if I could clone myself and/or had
-unlimited amounts of time/funding to work on the problem, is that a
-huge amount of what is in the "serial layer" needs to be pushed into
-the tty layer (and things like the hangup code needs to be pushed into
-VFS as revoke(2), for which thankfully we're starting to see patches
-that do this).  Essentially, there is a huge amount of *hair* in the
-8250 driver which really should have gone into tty layer, and some of
-the hair (like locked termios, the last remants of callout device
-support, etc.) should just be removed.
-
-The other thing I would probably do if I were to do it all over again
-is allow serial devices to be named independent of /dev/ttySx
-interface, these days probably using /sysfs, so that you could easily
-query to figure out what serial controllers/cards were on the system,
-and assign specific controllers/ports to specific /dev/ttySx devices.
-We could also provide a registration system to allow on-line
-configuration of non-probeable serial cards attached to primitive
-buses that don't alllow probing, such as the ISA bus, although perhaps
-that's much less important in this day and age.
-
-The bottom line is thre's a huge amount of history and legacy in the
-serial driver, but it hasn't been as _important_ for it to get the
-kind of modern rewrite that we've had in our other device subsystems.
-And such a rewrite is something that really evolve, but needs to be a
-big-bang reorganization, and that's something rather painful that we
-don't do as well as the gradual evolution approach.  But it works well
-enough, and hey, my laptop doesn't even have any serial ports (unless
-I plug in a USB serial card or I dock it in my docking station), and
-after all, all right-thinking serial ports are implemented using
-8250-derived UART's, so the current system has been Good Enough for
-the vast majority of Linux users.  (And as Linus will tell you, he's a
-big fan of the Good Enough/"Worse is Better"/New Jersey approach as
-opposed to the equisitely overdesigned MIT/Stanford approach.)
-
-So if we're going to do the "Worse is Better" thing, what I'd suggest
-doing is that someone simply submit a hack so that pmac_zilog can
-steal minor numbers and use /dev/ttyS0.  I accepted the patch way back
-when I was serial maintainer; Russell ripped it out when he became the
-serial maintainer; but now that he's no longer the serial maintainer,
-he doesn't get to complain about that any more :-)
-
-So my suggestion would be to simply submit patch to share minor
-numbers directly to Linus/Andrew (since there is no current serial
-maintainer) and see if they accept it.
-
-Regards,
-
-					- Ted
+  Maciej
