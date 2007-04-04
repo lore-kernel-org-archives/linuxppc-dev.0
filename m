@@ -1,19 +1,20 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 5573BDDE47
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:16:46 +1000 (EST)
-Date: Tue, 03 Apr 2007 18:16:45 -0700 (PDT)
-Message-Id: <20070403.181645.68159458.davem@davemloft.net>
-To: dwmw2@infradead.org
+	by ozlabs.org (Postfix) with ESMTP id E2114DDE47
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:17:34 +1000 (EST)
+Date: Tue, 03 Apr 2007 18:17:33 -0700 (PDT)
+Message-Id: <20070403.181733.27782389.davem@davemloft.net>
+To: benh@kernel.crashing.org
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1175648051.10567.61.camel@shinybook.infradead.org>
-References: <1175644642.10567.31.camel@shinybook.infradead.org>
-	<20070403221002.GA13210@cynthia.pants.nu>
-	<1175648051.10567.61.camel@shinybook.infradead.org>
+In-Reply-To: <1175649192.30879.19.camel@localhost.localdomain>
+References: <20070403.170212.02298297.davem@davemloft.net>
+	<1175645568.10567.42.camel@shinybook.infradead.org>
+	<1175649192.30879.19.camel@localhost.localdomain>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Cc: paulus@samba.org, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,28 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: David Woodhouse <dwmw2@infradead.org>
-Date: Tue, 03 Apr 2007 20:54:10 -0400
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 04 Apr 2007 11:13:12 +1000
 
-> Yes, it would be theoretically possible to come up with a way to share
-> minor numbers so we can use 'ttyS0' for the first serial port regardless
-> of what type of port it is. We could take the arch-specific hack that
-> SPARC has and try to move it to generic code. But what's the point?
+> It worked before the new serial core, we had a "tweak" in the old 8250
+> driver to be able to share minors, but that got busted when Russell
+> rewrote the whole thing. I remember asking him back when he still was
+> the serial maintainer, and he refused to bring back some sharing of
+> minors.
 
-The point is that it will work and the user will not be bothered
-with what kind of serial port they happen to have.  A major number
-per serial chip type is incredibly stupid.
-
-I don't need to know anything about the inanrds of my computer to
-bring up the ethernet interface, me caveman me bringup eth0, me on
-network, caveman happy.  The same should be true for serial ports.
-
-It's a serial port dammit, don't make it something else!
-
-In the case of multiple instances, ordering is a sperate issue from
-naming.  You keep bringing up the ordering issue but it distracts away
-from the more important part which is the user having to know what
-kind of serial port they have.
-
-It's a serial port, and like a scsi disk or and ethernet interface, we
-should give it a consistent name.
+Fork the 8250 driver like I did on Sparc so you can get the
+dynamic minor behavior back :-))))
