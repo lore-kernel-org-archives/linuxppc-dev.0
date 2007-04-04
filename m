@@ -1,19 +1,30 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id D95D0DDF6B
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:21:29 +1000 (EST)
-Date: Wed, 04 Apr 2007 12:21:29 -0700 (PDT)
-Message-Id: <20070404.122129.45875882.davem@davemloft.net>
-To: segher@kernel.crashing.org
-Subject: Re: [PATCH 6/6] [POWERPC] make struct property's value a void *
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <19e36144f9d496f2a9670ac889435349@kernel.crashing.org>
-References: <65f2b2574eca0b34e7986618cfbe7a6d@kernel.crashing.org>
-	<20070403.112813.35016105.davem@davemloft.net>
-	<19e36144f9d496f2a9670ac889435349@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sfr@canb.auug.org.au
+Return-Path: <tnt@246tNt.com>
+Received: from outmx034.isp.belgacom.be (outmx034.isp.belgacom.be
+	[195.238.6.171])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id A09F2DDE2C
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:32:27 +1000 (EST)
+Received: from outmx034.isp.belgacom.be (localhost.localdomain [127.0.0.1])
+	by outmx034.isp.belgacom.be (8.13.4/8.13.4/Debian-3sarge3) with ESMTP
+	id l34JWLol024175
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 21:32:22 +0200
+Message-ID: <4613FD29.6050908@246tNt.com>
+Date: Wed, 04 Apr 2007 21:31:53 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
+MIME-Version: 1.0
+To: Timur Tabi <timur@freescale.com>
+Subject: Re: [PATCH] powerpc: change rheap functions to use long integers
+	instead of pointers
+References: <11756161753280-git-send-email-timur@freescale.com>
+	<F4B76190-37C3-453C-B4F0-C1CB7CC0532E@kernel.crashing.org>
+	<4613E39A.70606@freescale.com> <4613E7CC.1020001@246tNt.com>
+	<4613EAC6.5000203@freescale.com>
+	<5BBB288E-3E8D-4513-B75A-101CC8950F86@embeddedalley.com>
+	<4613FA75.206@freescale.com>
+In-Reply-To: <4613FA75.206@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,42 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Wed, 4 Apr 2007 13:11:43 +0200
+Timur Tabi wrote:
+> Dan Malek wrote:
+>
+>> How about just leaving it alone?  
+>
+> Panto said a while back that using unsigned long instead of void * is
+> better.
+>
+> > A void * is
+>> perfectly valid as rheap could be used to manage
+>> any address space. 
+>
+> And therefore, it shouldn't be a pointer, because that implies that it
+> can be dereferenced.  An unsigned long is a better type to use for a
+> generic value than a void pointer.
+FWIW, I agree that unsigned long is better. If it can hold anything, it
+shouldn't be a pointer. And since currently _all_ users use it to store
+offset, that removes a lot of un-necessary casts.
 
-> >> Why?  It should logically be an u8 * (and nothing
-> >> should ever cast it to anything else, accessor
-> >> functions should be used instead to get 32-bit ints
-> >> from it, etc.)
-> >
-> > Ummm, no.
-> >
-> > There are structures there, and other types of objects.
-> 
-> There are arrays of bytes there, with no guarantee of
-> any further alignment.
+>> you are reducing
+>> it's capability (by taking it's object management
+>> outside of the kernel virtual space), 
+>
+> Sorry, I don't understand that.
+Actually the returned value don't change so all it does is to shed some
+light on some previously present but unseen issues ...
+>
+>> and you are
+>> introducing concerns for error conditions of
+>> current users.
+>
+> I'm fixing those by changing the type from long to ulong and using
+> IS_ERR_VALUE().
+That looks good to me ...
 
-On PowerPC misaligned data doesn't generate exceptions, the chip works
-it out transparently.  It's not very slow at it even, and these paths
-accessing this stuff aren't performance critical anyways.
 
-On sparc everything is aligned.  I know, I've been accessing OFW data
-structures for more than 10 years and I haven't gotten one unaligned
-trap on sparc yet.
-
-> So just do an of_decode_int() and its cousins -- platforms
-> that are trying to guarantee alignment, or that can handle
-> unaligned memory accesses, can just define these as direct
-> accesses; everyone else should use the read-by-byte sequences.
-
-No, that's just stupid.  Peppering simple accesses to properties
-with these wrappers is just going to make the code uglier for
-no tangible gain whatsoever.
-
-There is no reason to make a mountain out of a mole hill wrt. this
-stuff.
-
-And besides what Stephen is doing is just extending existing
-practice, he isn't changing how any of this stuff is already
-used.  So this discussion should not get in the way of his
-patches getting installed.
+    Sylvain
