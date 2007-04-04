@@ -1,23 +1,27 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
-	by ozlabs.org (Postfix) with ESMTP id 046A6DDF3B
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 04:33:22 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so732904ugf
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Apr 2007 11:33:21 -0700 (PDT)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: [PATCH] add correct interrupt property for pegasos ide
-Date: Wed, 4 Apr 2007 20:42:14 +0200
-References: <20070404111635.GA1855@aepfle.de>
-	<200704042010.50088.bzolnier@gmail.com>
-	<20070404181138.GA6050@aepfle.de>
-In-Reply-To: <20070404181138.GA6050@aepfle.de>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5A511DDF40
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 04:34:36 +1000 (EST)
+Message-ID: <4613EFB3.4020104@freescale.com>
+Date: Wed, 04 Apr 2007 13:34:27 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200704042042.15108.bzolnier@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackeras <paulus@samba.org>, linux-ide@vger.kernel.org
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] powerpc: change rheap functions to use long integers
+	instead of pointers
+References: <11756161753280-git-send-email-timur@freescale.com>
+	<F4B76190-37C3-453C-B4F0-C1CB7CC0532E@kernel.crashing.org>
+	<4613E39A.70606@freescale.com> <4613E7CC.1020001@246tNt.com>
+	<20070404181351.GA19855@ld0162-tx32.am.freescale.net>
+	<4613EC2F.80109@freescale.com> <4613ED4F.2030203@freescale.com>
+	<4613EE2C.3070104@freescale.com> <4613EF1F.6000704@freescale.com>
+In-Reply-To: <4613EF1F.6000704@freescale.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Sylvain Munaut <tnt@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,23 +31,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Scott Wood wrote:
 
-On Wednesday 04 April 2007, Olaf Hering wrote:
-> On Wed, Apr 04, Bartlomiej Zolnierkiewicz wrote:
+>> Otherwise, if you pass an unaligned value of 'start', then the buffer 
+>> you get back will be less than 'size'.
 > 
-> > ?
-> 
-> You are right, I did not test the ide driver again. pata_via works with
-> the change. 
-> I will test the ide driver tomorrow.
+> That's better than the buffer you get back being bigger than the region 
+> that's really free...
 
-Thanks.
+True, but I think both cases should be rejected.
 
-There might be also the another issue here - the chipset claims fully native
-mode (prog-if 8f - taken from your previous mail) so driver takes IRQ value
-from dev->irq (which your patch fixes to be 14 instead of 20 if I'm reading
-it correctly) but in reality chipset seems to be still using legacy IRQs
-(14 for the primary port and 15 for the secondary one).  What IRQ value is
-reported by the libata for the secondary port?  Does the second port work?
+> If I attach a region from 0x03 to 0x2d, and the alignment is 4, then the 
+> only sane thing to do is allocate from 0x04 to 0x2b.
 
-Bart
+Or return an error.
+
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
