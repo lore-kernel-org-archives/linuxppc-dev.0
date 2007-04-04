@@ -1,21 +1,20 @@
 Return-Path: <benh@kernel.crashing.org>
 Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1175611539.2665.30.camel@shinybook.infradead.org>
+To: Geoff Levand <geoffrey.levand@am.sony.com>
+In-Reply-To: <4612C48F.9080805@am.sony.com>
 References: <1175208237.3122.78.camel@pmac.infradead.org>
 	<26babf7b7398794f08e7417377b3facc@kernel.crashing.org>
 	<1175473220.3144.1.camel@concordia.ozlabs.ibm.com>
 	<432af8a0f928491e7d376923829f40a0@kernel.crashing.org>
-	<1175568133.16182.15.camel@concordia.ozlabs.ibm.com>
-	<1175570169.30552.3.camel@shinybook.infradead.org>
-	<1175611539.2665.30.camel@shinybook.infradead.org>
+	<1175568133.16182.15.camel@concordia  <4612C48F.9080805@am.sony.com>
 Content-Type: text/plain
-Date: Wed, 04 Apr 2007 11:26:35 +1000
-Message-Id: <1175649996.30879.35.camel@localhost.localdomain>
+Date: Wed, 04 Apr 2007 11:28:42 +1000
+Message-Id: <1175650122.30879.38.camel@localhost.localdomain>
 Mime-Version: 1.0
 Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, nhorman@redhat.com,
-	cbe-oss-dev <cbe-oss-dev@ozlabs.org>
+	David Woodhouse <dwmw2@infradead.org>,
+	cbe-oss-dev <cbe-oss-dev@ozlabs.org>, Ben Collins <ben.collins@ubuntu.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,42 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-03 at 10:45 -0400, David Woodhouse wrote:
-> On Mon, 2007-04-02 at 23:16 -0400, David Woodhouse wrote:
-> > > > My question remains: shouldn't Linux get that
-> > > > information from the device tree, instead?  The
-> > > > bootwrapper or bootloader can put it there.
-> > > 
-> > > Yes it _should_, but it doesn't.
-> > 
-> > It _used_ to. The 2.6.16 kernel just used the memory listed in the
-> > device tree. That's _why_ we need this hack -- because when we boot
-> > from
-> > 2.6.16 with the memory listed in the device tree, it ends up getting
-> > registered twice by the new kernel. 
-> 
-> Why _did_ we make this change? It makes /sbin/kexec unhappy too, since
-> it doesn't like the apparent lack of _any_ memory.
-> 
-> It's not as if anyone's going to be expanding the amount of memory in
-> their PS3, so it really needs to be dynamically detected.
-> 
-> If we were to put the memory back in the device-tree, and start with a
-> single region up to 0x07c00000 followed by another region with the rest
-> of it, then we wouldn't need the rmo_top hack to /sbin/kexec either.
+On Tue, 2007-04-03 at 14:18 -0700, Geoff Levand wrote:
 
-I think the right approach on the PS3 would be to have the RMO in
-the /memory node... and _maybe_ the hotplugged memory in a separate
-range in there, though that is less important.
+> I'm in the middle of implementing the zImage and kexec support for the
+> 2.6.21 kernel, but haven't pushed all of it out to ps3-linux.git yet.
+> Once that is done, there is little need for a 2.6.16 based bootloader,
+> since it would be just as well to use a recent kernel.
+> 
+> In the interim, for compatibility with the legacy 2.6.16 based bootloader,
+> I have the hack ps3-no-bootwrapper-hack.diff.  Ben Collins did his
+> hack for Ubuntu (follows) which tries to use the DT passed from
+> the bootloader.  I planed to add it, or similar hack to ps3-linux.git
+> sometime soon.  As I mentioned in another mail, the proper way is to
+> just grab the command line passed from the bootloader and use it with
+> the built-in DT.  Ben's patch does effectively the same thing.
 
-Would it be possible to modify the 2.6.16 kernel to split the /memory
-range in two (or is it already doing that ?). I have no problem relying
-on an updated 2.6.16 when booting off an old distro.
+I think that "hack" should be done differently and merged because we
+should really support booting off 2.6.16.
 
-As far as 2.6.2x is concerned, I think we should put the RMO at least
-in /memory and that can easily be done by having the ps3 platform code
-overwrite the /memory node content. The other approach would be to fix
-it up from the zImage wrapper, but that would require booting off zImage
-unless you are coming from a sane kernel.
+The way to do so is to reset the LMB's from ps3_mm_init() before
+starting adding to them... or more specifically, reset the LMB's
+available region (NOT the reserved ranages !)
+
+We also want to "Fixup" the device tree memory node to make sure that
+what is exposed to userspace contains only the RMO as the first region
+in there (exposing the rest of memory in a second region or not is
+unimportant).
 
 Ben.
