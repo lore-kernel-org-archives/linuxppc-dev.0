@@ -1,21 +1,22 @@
-Return-Path: <bzolnier@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id 47907DDEBD
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:36:41 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so750344ugf
-	for <linuxppc-dev@ozlabs.org>; Wed, 04 Apr 2007 12:36:36 -0700 (PDT)
-From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: [PATCH pata-2.6] sl82c105: rework PIO support (take 2)
-Date: Wed, 4 Apr 2007 21:24:38 +0200
-References: <200702140101.26639.sshtylyov@ru.mvista.com>
-	<200703282147.41696.sshtylyov@ru.mvista.com>
-In-Reply-To: <200703282147.41696.sshtylyov@ru.mvista.com>
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D7488DDEDF
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:38:18 +1000 (EST)
+Date: Wed, 4 Apr 2007 21:31:33 +0200
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: my powerbook fails to resume if backlight control is disabled
+Message-ID: <20070404193133.GA21755@hansmi.ch>
+References: <1175700040.3600.14.camel@johannes.berg>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704042124.39046.bzolnier@gmail.com>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
+In-Reply-To: <1175700040.3600.14.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +27,41 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Wednesday 28 March 2007, Sergei Shtylyov wrote:
-> Get rid of the 'pio_speed' member of 'ide_drive_t' that was only used by this
-> driver by storing the PIO mode timings in the 'drive_data' instead -- this
-> allows us to greatly  simplify the process of "reloading" of the chip's timing
-> register and do it right in sl82c150_dma_off_quietly() and to get rid of two
-> extra arguments to config_for_pio() -- which got renamed to sl82c105_tune_pio()
-> and now returns a PIO mode selected, with ide_config_drive_speed() call moved
-> into the tuneproc() method, now called sl82c105_tune_drive() with the code to
-> set drive's 'io_32bit' and 'unmask' flags in its turn moved to its proper place
-> in the init_hwif() method.
-> Also, while at it, rename get_timing_sl82c105() into get_pio_timings() and get
-> rid of the code in it clamping cycle counts to 32 which was both incorrect and
-> never executed anyway...
-> 
-> Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-> Signed-off-by: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+--fdj2RfSjLxBAspz7
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-applied
+Hi Johannes
+
+On Wed, Apr 04, 2007 at 05:20:40PM +0200, Johannes Berg wrote:
+> The thing is that I had turned off some options to the point where I
+> had /sys/class/backlight but nothing in it. I don't know for sure what
+> exactly these options were, but I do know that CONFIG_PMAC_BACKLIGHT and
+> CONFIG_PMAC_BACKLIGHT_LEGACY were off, though that alone shouldn't
+> cause /sys/class/backlight/radeonbl0 to disappear.
+
+It can:
+config FB_RADEON_BACKLIGHT
+    bool "Support for backlight control"
+    depends on FB_RADEON && PMAC_BACKLIGHT
+    [=E2=80=A6]
+
+Maybe I can try it during the next weekend.
+
+Greets,
+Michael
+
+--fdj2RfSjLxBAspz7
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGE/0V6J0saEpRu+oRArRoAJ9rh/rm6O+ETtmbs526Kge83tZtGACfZnsv
+jNaSWaHUAnVAUKEKzF/LIPk=
+=T2x+
+-----END PGP SIGNATURE-----
+
+--fdj2RfSjLxBAspz7--
