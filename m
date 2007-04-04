@@ -1,25 +1,17 @@
-Return-Path: <hpa@zytor.com>
-Received: from terminus.zytor.com (terminus.zytor.com [192.83.249.54])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0B6C0DDEBE
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 02:17:24 +1000 (EST)
-Message-ID: <4613CF6A.2090407@zytor.com>
-Date: Wed, 04 Apr 2007 09:16:42 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id AE844DDECC
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 02:19:49 +1000 (EST)
+Date: Wed, 4 Apr 2007 18:20:04 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org, linux-ide@vger.kernel.org,
+	Paul Mackeras <paulus@samba.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH] add correct interrupt property for pegasos ide
+Message-ID: <20070404162004.GA3016@aepfle.de>
+References: <20070404111635.GA1855@aepfle.de>
 MIME-Version: 1.0
-To: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
-	dwmw2@infradead.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
-	flar@allandria.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-References: <1175663999.2932.8.camel@shinybook.infradead.org>
-	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	<1175666635.2932.17.camel@shinybook.infradead.org>
-	<20070404.011208.120446173.davem@davemloft.net>
-	<20070404083803.GA13134@flint.arm.linux.org.uk>
-	<20070404122154.GF31973@thunk.org>
-In-Reply-To: <20070404122154.GF31973@thunk.org>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20070404111635.GA1855@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,32 +21,121 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Theodore Tso wrote:
-> 
-> The other thing I would probably do if I were to do it all over again
-> is allow serial devices to be named independent of /dev/ttySx
-> interface, these days probably using /sysfs, so that you could easily
-> query to figure out what serial controllers/cards were on the system,
-> and assign specific controllers/ports to specific /dev/ttySx devices.
-> We could also provide a registration system to allow on-line
-> configuration of non-probeable serial cards attached to primitive
-> buses that don't alllow probing, such as the ISA bus, although perhaps
-> that's much less important in this day and age.
-> 
 
-One option would be to move the 8250-based serial ports, to, say, 
-/dev/ttyN* (for National Semiconductors -- the best I could come up 
-with) and redefine /dev/ttyS* as a serial port multiplexer which maps in 
-all the types, for the ones that really want dynamic mapping.
+The firmware assigns irq 20/21 to the VIA IDE device on Pegasos.
+But the required interrupt is 14/15.
+Maybe someone confused decimal vs. hexadecimal values.
 
-Then the ones who want static mapping can still have them.  This would 
-presumably work with early remapping in open(), similar to the way ptmx 
-is done.
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-Of course, now you have the potential of aliasing, again, which tends to 
-cause all kinds of headaches w.r.t. locking.  From that perspective, it 
-would be better if udev made symlinks, and we made the kernel use some 
-sort of discovery syntax for console= (say, "console=serial0" to hunt 
-down the "first" serial port for some definition thereof.)
+---
+ arch/powerpc/kernel/prom_init.c |   55 ++++++++++++++++++++++++----------------
+ drivers/ide/pci/via82cxxx.c     |   11 --------
+ 2 files changed, 33 insertions(+), 33 deletions(-)
 
-	-hpa
+Index: b/arch/powerpc/kernel/prom_init.c
+===================================================================
+--- a/arch/powerpc/kernel/prom_init.c
++++ b/arch/powerpc/kernel/prom_init.c
+@@ -2035,39 +2035,50 @@ static void __init fixup_device_tree_map
+ #endif
+ 
+ #ifdef CONFIG_PPC_CHRP
+-/* Pegasos and BriQ lacks the "ranges" property in the isa node */
++/*
++ * Pegasos and BriQ lacks the "ranges" property in the isa node
++ * Pegasos needs decimal IRQ 14/15, not hexadecimal
++ */
+ static void __init fixup_device_tree_chrp(void)
+ {
+-	phandle isa;
+-	u32 isa_ranges[6];
++	phandle ph;
++	u32 prop[6];
+ 	u32 rloc = 0x01006000; /* IO space; PCI device = 12 */
+ 	char *name;
+ 	int rc;
+ 
+ 	name = "/pci@80000000/isa@c";
+-	isa = call_prom("finddevice", 1, 1, ADDR(name));
+-	if (!PHANDLE_VALID(isa)) {
++	ph = call_prom("finddevice", 1, 1, ADDR(name));
++	if (!PHANDLE_VALID(ph)) {
+ 		name = "/pci@ff500000/isa@6";
+-		isa = call_prom("finddevice", 1, 1, ADDR(name));
++		ph = call_prom("finddevice", 1, 1, ADDR(name));
+ 		rloc = 0x01003000; /* IO space; PCI device = 6 */
+ 	}
+-	if (!PHANDLE_VALID(isa))
+-		return;
+-
+-	rc = prom_getproplen(isa, "ranges");
+-	if (rc != 0 && rc != PROM_ERROR)
+-		return;
+-
+-	prom_printf("Fixing up missing ISA range on Pegasos...\n");
++	if (PHANDLE_VALID(ph)) {
++		rc = prom_getproplen(ph, "ranges");
++		if (rc == 0 || rc == PROM_ERROR) {
++			prom_printf("Fixing up missing ISA range on Pegasos...\n");
++
++			prop[0] = 0x1;
++			prop[1] = 0x0;
++			prop[2] = rloc;
++			prop[3] = 0x0;
++			prop[4] = 0x0;
++			prop[5] = 0x00010000;
++			prom_setprop(ph, name, "ranges", prop, sizeof(prop));
++		}
++	}
+ 
+-	isa_ranges[0] = 0x1;
+-	isa_ranges[1] = 0x0;
+-	isa_ranges[2] = rloc;
+-	isa_ranges[3] = 0x0;
+-	isa_ranges[4] = 0x0;
+-	isa_ranges[5] = 0x00010000;
+-	prom_setprop(isa, name, "ranges",
+-			isa_ranges, sizeof(isa_ranges));
++	name = "/pci@80000000/ide@C,1";
++	ph = call_prom("finddevice", 1, 1, ADDR(name));
++	if (PHANDLE_VALID(ph)) {
++		prom_printf("Fixing up IDE interrupt on Pegasos...\n");
++		prop[0] = 14;
++		prop[1] = 0x0;
++		prop[2] = 15;
++		prop[3] = 0x0;
++		prom_setprop(ph, name, "interrupts", prop, 4*sizeof(u32));
++	}
+ }
+ #else
+ #define fixup_device_tree_chrp()
+Index: b/drivers/ide/pci/via82cxxx.c
+===================================================================
+--- a/drivers/ide/pci/via82cxxx.c
++++ b/drivers/ide/pci/via82cxxx.c
+@@ -35,10 +35,6 @@
+ #include <linux/ide.h>
+ #include <asm/io.h>
+ 
+-#ifdef CONFIG_PPC_CHRP
+-#include <asm/processor.h>
+-#endif
+-
+ #include "ide-timing.h"
+ 
+ #define DISPLAY_VIA_TIMINGS
+@@ -436,13 +432,6 @@ static void __devinit init_hwif_via82cxx
+ 	hwif->tuneproc = &via82cxxx_tune_drive;
+ 	hwif->speedproc = &via_set_drive;
+ 
+-
+-#ifdef CONFIG_PPC_CHRP
+-	if(machine_is(chrp) && _chrp_type == _CHRP_Pegasos) {
+-		hwif->irq = hwif->channel ? 15 : 14;
+-	}
+-#endif
+-
+ 	for (i = 0; i < 2; i++) {
+ 		hwif->drives[i].io_32bit = 1;
+ 		hwif->drives[i].unmask = (vdev->via_config->flags & VIA_NO_UNMASK) ? 0 : 1;
