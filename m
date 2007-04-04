@@ -1,41 +1,26 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D5FB2DDF08
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 03:39:00 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l34Hcv48013477
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 13:38:57 -0400
-Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l34HcvKM157890
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 11:38:57 -0600
-Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l34HcuRO030542
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 11:38:57 -0600
-Date: Wed, 4 Apr 2007 12:38:56 -0500
-To: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <tytso@thunk.org>
+Received: from thunker.thunk.org (THUNK.ORG [69.25.196.29])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C6B8CDDF04
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 03:42:42 +1000 (EST)
+Date: Wed, 4 Apr 2007 13:41:53 -0400
+From: Theodore Tso <tytso@mit.edu>
+To: "H. Peter Anvin" <hpa@zytor.com>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404173856.GU4922@austin.ibm.com>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<1175642916.10567.24.camel@shinybook.infradead.org>
-	<20070403212928.GA12951@cynthia.pants.nu>
-	<1175644642.10567.31.camel@shinybook.infradead.org>
-	<20070403221002.GA13210@cynthia.pants.nu>
-	<1175648051.10567.61.camel@shinybook.infradead.org>
-	<20070403230908.GA13471@cynthia.pants.nu>
-	<20070404162234.GS4922@austin.ibm.com>
-	<1175704494.2774.33.camel@shinybook.infradead.org>
+Message-ID: <20070404174153.GI31973@thunk.org>
+References: <1175663999.2932.8.camel@shinybook.infradead.org>
+	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
+	<1175666635.2932.17.camel@shinybook.infradead.org>
+	<20070404.011208.120446173.davem@davemloft.net>
+	<20070404083803.GA13134@flint.arm.linux.org.uk>
+	<20070404122154.GF31973@thunk.org> <4613CF6A.2090407@zytor.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1175704494.2774.33.camel@shinybook.infradead.org>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <4613CF6A.2090407@zytor.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	dwmw2@infradead.org, David Miller <davem@davemloft.net>,
+	alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -45,22 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 04, 2007 at 12:34:53PM -0400, David Woodhouse wrote:
-> On Wed, 2007-04-04 at 11:22 -0500, Linas Vepstas wrote:
-> > The biggest problem would seem to be that the assignment would
-> > depend on the detection order; there don't seem to be unique 
-> > id's that would help udev consistently assign device names in 
-> > consistent order. 
-> 
-> Of course there are. The different types of ports have different device
-> numbers. As long as we don't do anything silly like putting all the
-> serial drivers on the same major number, we can tell them apart
-> relatively well.
+On Wed, Apr 04, 2007 at 09:16:42AM -0700, H. Peter Anvin wrote:
+> One option would be to move the 8250-based serial ports, to, say, 
+> /dev/ttyN* (for National Semiconductors -- the best I could come up 
+> with) and redefine /dev/ttyS* as a serial port multiplexer which maps in 
+> all the types, for the ones that really want dynamic mapping.
 
-Sure, but if two different pci serial cards are moved around  
-to different pci slots, they'll be detected in a different order. 
-Similarly if one has some usb-to-serial converter that might get
-plugged in after boot, or maybe some serial port that shows up
-only when a laptop is docked into a docking station.
+> Of course, now you have the potential of aliasing, again, which tends to 
+> cause all kinds of headaches w.r.t. locking.  
 
---linas
+That would break the 99.9% of the the world using Intel-based systems
+which only have 8250's, for very little gain. 
+
+Like it or not, /dev/ttySx and 8250 UART's are to serial ports what
+the PCI is to system buses....
+
+						- Ted
