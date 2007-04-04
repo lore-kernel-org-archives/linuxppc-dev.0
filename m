@@ -1,20 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A6E31DDE3A
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 18:42:01 +1000 (EST)
-Date: Wed, 04 Apr 2007 01:41:55 -0700 (PDT)
-Message-Id: <20070404.014155.58456511.davem@davemloft.net>
-To: rmk+lkml@arm.linux.org.uk
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070404075244.GB3440@flint.arm.linux.org.uk>
-References: <1175663999.2932.8.camel@shinybook.infradead.org>
-	<20070403.225006.119275067.davem@davemloft.net>
-	<20070404075244.GB3440@flint.arm.linux.org.uk>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E18F5DDE3A
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 18:42:40 +1000 (EST)
+Subject: Re: [PATCH 1/5 v2] adb: replace sleep notifier with class
+	suspend/resume hooks
+From: Johannes Berg <johannes@sipsolutions.net>
+To: linuxppc-dev@ozlabs.org
+In-Reply-To: <1174349717.3660.7.camel@johannes.berg>
+References: <20070319181800.149901000@sipsolutions.net>
+	<20070319183619.051498000@sipsolutions.net>
+	<1174349717.3660.7.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-akAISGAfUd0U3N13tsfr"
+Date: Wed, 04 Apr 2007 10:41:53 +0200
+Message-Id: <1175676113.3556.2.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
+Cc: David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +28,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-Date: Wed, 4 Apr 2007 08:52:44 +0100
 
-> On Tue, Apr 03, 2007 at 10:50:06PM -0700, David Miller wrote:
-> > From: David Woodhouse <dwmw2@infradead.org>
-> > Date: Wed, 04 Apr 2007 01:19:59 -0400
-> > 
-> > > I don't see why that 'should' be the case. Certainly it _isn't_ the case
-> > > on most supported platforms -- we have separate device numbers, and
-> > > names, for most types of ports. There's only one or two drivers which
-> > > abuse ttySn for anything other than 8250 ports.
-> > 
-> > sunsu, sunzilog, pmac_zilog, sunsab, etc.
-> > 
-> > The list is longer than you think.  In fact the convention is
-> > very well established.
-> 
-> ... and has never ever worked along side the existing 8250 (or serial)
-> driver - therefore it can also be viewed as a long standing BUG.
+--=-akAISGAfUd0U3N13tsfr
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I forked the 8250 driver for Sparc, that's what sunsu is, and it works
-along side sunzilog and sunsab, which also use the ttyS0 major, just
-fine.
 
-They also setup the console correctly, and even make sure it matches
-what the user selected in the firmware environment variables.
+> This patch replaces the pmu sleep notifier that adb had with a proper
+> suspend/resume hooks in the adb class.
 
-It can be made to work.
+So class suspend/resume hooks are apparently not called unless you do
+some more magic juju.
+
+I'll work more sysfs foo to fix it. You can probably
+make /sys/power/state work and have adb still work by just applying all
+the patches up to "remove dead code in via-pmu86k".
+
+Then again, which patches do you have applied now? Do you even have this
+one? I only sent you the other ones, and if you only have those applied
+then the problem must be elsewhere...
+
+johannes
+
+--=-akAISGAfUd0U3N13tsfr
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGE2TR/ETPhpq3jKURApw/AKCN2Ldb9AJPOWZ/epx/U6//pbsEqACdHeil
+YIz3khv7vacXjV+tzL4oMF4=
+=E1rR
+-----END PGP SIGNATURE-----
+
+--=-akAISGAfUd0U3N13tsfr--
