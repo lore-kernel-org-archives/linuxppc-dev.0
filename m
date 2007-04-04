@@ -1,23 +1,19 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Wed, 4 Apr 2007 16:38:34 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 6/6] bootwrapper: cuboot for 83xx
+Message-ID: <20070404063834.GA26616@localhost.localdomain>
+References: <20070322194627.GA31926@ld0162-tx32.am.freescale.net>
+	<20070322194930.GF31965@ld0162-tx32.am.freescale.net>
+	<20070323055442.GB27940@localhost.localdomain>
+	<20070323153056.GD6060@ld0162-tx32.am.freescale.net>
+	<20070323233712.GC4459@localhost.localdomain>
+	<20070404020629.GA2453@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17939.17962.248566.886449@cargo.ozlabs.ibm.com>
-Date: Wed, 4 Apr 2007 16:31:06 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <1175666635.2932.17.camel@shinybook.infradead.org>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<1175642916.10567.24.camel@shinybook.infradead.org>
-	<20070403212928.GA12951@cynthia.pants.nu>
-	<20070404022544.59b022a6@the-village.bc.nu>
-	<17939.10130.687893.167511@cargo.ozlabs.ibm.com>
-	<1175663999.2932.8.camel@shinybook.infradead.org>
-	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	<1175666635.2932.17.camel@shinybook.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+In-Reply-To: <20070404020629.GA2453@mag.az.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,51 +23,50 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse writes:
-
-> > It 'should' be the case because that is what is easiest for users and
-> > makes most sense from a user's point of view.
+On Tue, Apr 03, 2007 at 07:06:29PM -0700, Mark A. Greer wrote:
+> On Sat, Mar 24, 2007 at 10:37:12AM +1100, David Gibson wrote:
+> > On Fri, Mar 23, 2007 at 10:30:56AM -0500, Scott Wood wrote:
+> > > On Fri, Mar 23, 2007 at 04:54:42PM +1100, David Gibson wrote:
+> > > > I don't think you should need a vmlinux_alloc for this platform.
+> > > 
+> > > Without it, the kernel has to fit in 4MiB.  As others pointed out, that
+> > > can be too small if an initramfs is used.  Unlike 8xx (which was what
+> > > caused me to stick the kernel at 0 in previous patches), 83xx platforms
+> > > should have plenty of memory above the wrapper.
 > 
-> I really don't buy that argument. People cope perfectly well
-> with /dev/ttySA0 on StrongARM, with /dev/ttySC0 on SH, etc. If it isn't
-
-Those are embedded platforms and therefore don't have users who aren't
-developers interacting with it as a general-purpose computer.
-
-> an 8250, it doesn't usually get called ttyS0. There's certainly nothing
-> _easier_ about ttyS0. Unless it's really an effort to type that extra
-> character :)
+> > Or we could get the wrapper script to base the link/load address on
+> > the vmlinux size.
 > 
-> > You still haven't given any reason why a user should have to know or
-> > care whether the built-in serial ports on his/her computer are
-> > implemented with a 16C550 chip or a Z85C30 chip or something else.
+> That might be handy for some but it won't work for everyone.  Some
+> platforms require a specific link/load address.  We can provide what
+> you said as a default but allow it to be overridden by platform code
+> somehow.
+
+Sure.  The wrapper already does platform dependent things, so I was
+assuming it would only do this for some platforms.
+
+> > > > The more complicated reason is that looking ahead to when we're using
+> > > > libfdt instead of flatdevtree.c, we may need an extra step that
+> > > > prepares the device tree for read/write access (with libfdt, an
+> > > > fdt_open_into()).  That won't happen until after platform_init(), but
+> > > > will be before .fixups().
+> > > 
+> > > OK.
+> > 
+> > Actually, to be clearer here: this reason actually degenerates to the
+> > first; I want the "ft_open" step to go after console_open so we can
+> > get error messages from it.
 > 
-> Because that's the way serial ports are named under Linux.
+> The problem is,  the console device is specified in the dt so you have
+> to ft_open before you console_open.
 
-In other words we're too lame to abstract the hardware properly and
-users just have to deal with it...
+Sorry, I should clarify.  In the context of libfdt, I was thinking
+*read* access to the fdt can happen at any point - right from
+platform_init().  ft_open() would mark the point at which write access
+to the tree can begin.
 
-> > In any case your patch is a user-visible incompatible API change and
-> > will break existing working setups, so it should only be put in after
-> > suitable warning has been given.  Maybe we need a module parameter to
-> > select between the old and new behaviour to ease the transition.
-> 
-> Perhaps that's true; I'd certainly never seen a working setup with
-> pmac_zilog, because I'd never actually seen the module load. It's always
-> failed for me, because I have 8250 support built in to my kernels.
-
-You probably don't have a powermac or powerbook that has usable,
-externally accessible serial ports either.  Plenty of other people do.
-
-It seems Debian has both 8250 and pmac_zilog built in; not sure which
-one wins.  Ubuntu has them both as modules and managed to get the
-right one (pmac_zilog) loaded on a colleague's powerbook.  You'd know
-better than me what FC does.
-
-In any case there definitely are people using pmac_zilog successfully
-on powermacs and we need to come up with a way to avoid breaking their
-setups.  I'm prepared to accept that the Linux way is to be lame about
-serial port naming provided that we avoid breaking existing working
-setups.
-
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
