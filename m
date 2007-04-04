@@ -1,21 +1,20 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 376C0DDEC7
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:52:34 +1000 (EST)
-Message-ID: <4614023F.90809@ru.mvista.com>
-Date: Wed, 04 Apr 2007 23:53:35 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH pata-2.6] sl82c105: add speedproc() method and MWDMA0/1
-	support
-References: <200702140043.25244.sshtylyov@ru.mvista.com>
-	<200702231913.55522.sshtylyov@ru.mvista.com>
-	<200703290024.32035.sshtylyov@ru.mvista.com>
-	<200704042138.25049.bzolnier@gmail.com>
-In-Reply-To: <200704042138.25049.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id E2CEBDDECC
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:58:04 +1000 (EST)
+Date: Wed, 04 Apr 2007 12:58:03 -0700 (PDT)
+Message-Id: <20070404.125803.35507943.davem@davemloft.net>
+To: rmk+lkml@arm.linux.org.uk
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070404090016.GC13134@flint.arm.linux.org.uk>
+References: <20070404083803.GA13134@flint.arm.linux.org.uk>
+	<20070404.014330.91315500.davem@davemloft.net>
+	<20070404090016.GC13134@flint.arm.linux.org.uk>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +24,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Date: Wed, 4 Apr 2007 10:00:16 +0100
 
-Bartlomiej Zolnierkiewicz wrote:
+> On Wed, Apr 04, 2007 at 01:43:30AM -0700, David Miller wrote:
+> > Well the "bad hack" we use on sparc gives usable serial ports,
+> > properly ordered and using /dev/ttyS0, with a proper matching
+> > console selection.
+> 
+> Well yes, but it seems to have code in the architecture's early
+> command line parsing to parse the "console=" argument to set this
+> magical "serial_console" variable.
+> 
+> Is this an approach you recommend for all architectures?
 
->>Add the speedproc() method for setting transfer modes, modify config_for_dma()
->>to call it and use ide_max_dma_mode() to select the best DMA mode.
->>Add support for the multiword DMA modes 0 and 1, using the upper half of the
->>'drive_data' field to store the DMA timings to program into the drive control
->>register when DMA is turned on for real.
+The platform should use whatever is appropriate, and matches
+firmware/bios/whatever conventions, to determine this stuff.
 
->>Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+On Sparc you get an openfirmware environment variable called
+"output-device" that can point to a framebuffer or serial
+console device.
 
-> applied
-
-    I now also have almost complete patch to merge PIO/DMA timings and so get 
-rid of selectproc() there... :-)
-
-MBR, Sergei
+The user can override this on the kernel command line, of course, and
+what they ask for will get translated properly.
