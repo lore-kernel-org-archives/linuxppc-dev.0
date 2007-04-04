@@ -1,20 +1,30 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id D8C95DDE3F
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:47:41 +1000 (EST)
-Message-ID: <4613FF89.8000908@ru.mvista.com>
-Date: Wed, 04 Apr 2007 23:42:01 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
-Subject: Re: [PATCH pata-2.6] sl82c105: rework PIO support (take 2)
-References: <200702140101.26639.sshtylyov@ru.mvista.com>
-	<200703282147.41696.sshtylyov@ru.mvista.com>
-	<460AAEA5.40008@ru.mvista.com>
-	<200704042133.26985.bzolnier@gmail.com>
-In-Reply-To: <200704042133.26985.bzolnier@gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <SRS0+5a975b97460a6157554b+1319+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 2E145DDEBA
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:51:24 +1000 (EST)
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Russell King <rmk+lkml@arm.linux.org.uk>
+In-Reply-To: <20070404181531.GA9388@flint.arm.linux.org.uk>
+References: <1175663999.2932.8.camel@shinybook.infradead.org>
+	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
+	<1175666635.2932.17.camel@shinybook.infradead.org>
+	<20070404.011208.120446173.davem@davemloft.net>
+	<20070404083803.GA13134@flint.arm.linux.org.uk>
+	<20070404122154.GF31973@thunk.org> <4613CF6A.2090407@zytor.com>
+	<20070404174153.GI31973@thunk.org>
+	<20070404181531.GA9388@flint.arm.linux.org.uk>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 15:50:15 -0400
+Message-Id: <1175716215.2774.52.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +34,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+On Wed, 2007-04-04 at 19:15 +0100, Russell King wrote:
+> And the simple answer to this (oh I've been here before) is to leave
+> the existing serial allocations well alone.
+> 
+> Then, you allocate a new major number and device name for the dynamically
+> assigned space and arrange for the serial layer to map these new chardevs
+> to the real serial ports.
+> 
+> *However* you still run into the issue that you do not know how many
+> serial ports you will need to register a tty driver with the tty layer.
+> Solve that technical problem and the idea of having a single namespace
+> for chosen serial ports and 8250 ports suddenly becomes realistic.
+> 
+> Continue ignoring that problem and this thread will just grow with zero
+> real progress.
+>
+> I'm repeating myself though.
 
-Bartlomiej Zolnierkiewicz wrote:
+And you always will be. The amount of pain involved in implementing
+this, just so that people can call their serial port 'ttyS0', is _far_
+more than it's worth. It could be done, but it's a completely pointless
+waste of time and effort. 
 
->>>Index: linux-2.6/include/linux/ide.h
->>>===================================================================
->>>--- linux-2.6.orig/include/linux/ide.h
->>>+++ linux-2.6/include/linux/ide.h
->>>@@ -613,7 +613,6 @@ typedef struct ide_drive_s {
->>> 
->>>         u8	quirk_list;	/* considered quirky, set for a specific host */
->>>         u8	init_speed;	/* transfer rate set at boot */
->>>-        u8	pio_speed;      /* unused by core, used by some drivers for fallback from DMA */
->>>         u8	current_speed;	/* current transfer rate set */
->>>         u8	dn;		/* now wide spread use */
->>>         u8	wcache;		/* status of write cache */
->>
->>    Oops, forgot to pull the recent kernel before sending out, so this part 
->>won't apply bacause of the desired_speed nuisance. Do I need to resend?
+Separate device names work just fine. It's simpler, and for many people
+it's preferable because it gives more repeatability to device names.
+With the current patch I _know_ that ttyPZ0 is the built-in z8530
+controller and ttyS0 is the PCMCIA modem, for example.
 
-> I was mentally prepared to fix it manually to save time on both sides but...
+The argument that people shouldn't need to know what type of port they
+have is a red herring. They're going to have to work out what _number_
+it is anyway, and sharing the major numbers just makes that _harder_.
+ 
+Graphical tools are also a red herring -- if the graphical tools are
+broken and don't show non-8250 ports, then they can be fixed.
 
-> Hunk #1 succeeded at 613 with fuzz 2.
-
-    Probably you're using quilt newer that 0.42 then? :-)
-
-> ;)
-
-MBR, Sergei
+-- 
+dwmw2
