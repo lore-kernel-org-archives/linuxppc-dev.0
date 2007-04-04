@@ -1,25 +1,27 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[217.147.92.249])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 04C27DDE20
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 19:00:30 +1000 (EST)
-Date: Wed, 4 Apr 2007 10:00:16 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: David Miller <davem@davemloft.net>
+Return-Path: <geert@linux-m68k.org>
+Received: from adicia.telenet-ops.be (adicia.telenet-ops.be [195.130.132.56])
+	by ozlabs.org (Postfix) with ESMTP id 5866CDDE28
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 19:48:16 +1000 (EST)
+Date: Wed, 4 Apr 2007 11:48:11 +0200 (CEST)
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Sender: geert@linux-m68k.org
+To: Russell King <rmk+lkml@arm.linux.org.uk>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404090016.GC13134@flint.arm.linux.org.uk>
-References: <1175666635.2932.17.camel@shinybook.infradead.org>
-	<20070404.011208.120446173.davem@davemloft.net>
-	<20070404083803.GA13134@flint.arm.linux.org.uk>
-	<20070404.014330.91315500.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070404.014330.91315500.davem@davemloft.net>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
+In-Reply-To: <20070404085159.GB13134@flint.arm.linux.org.uk>
+Message-ID: <Pine.LNX.4.64.0704041146290.30582@anakin>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<1175642916.10567.24.camel@shinybook.infradead.org>
+	<20070403212928.GA12951@cynthia.pants.nu>
+	<1175644642.10567.31.camel@shinybook.infradead.org>
+	<20070403221002.GA13210@cynthia.pants.nu>
+	<1175648051.10567.61.camel@shinybook.infradead.org>
+	<20070403230908.GA13471@cynthia.pants.nu>
+	<20070404085159.GB13134@flint.arm.linux.org.uk>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: David Woodhouse <dwmw2@infradead.org>, Paul Mackerras <paulus@samba.org>,
+	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,25 +31,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 04, 2007 at 01:43:30AM -0700, David Miller wrote:
-> From: Russell King <rmk+lkml@arm.linux.org.uk>
-> Date: Wed, 4 Apr 2007 09:38:03 +0100
+On Wed, 4 Apr 2007, Russell King wrote:
+> On Tue, Apr 03, 2007 at 04:09:08PM -0700, Brad Boyer wrote:
+> > The availability of the specific chip in question is a red herring in
+> > my opinion. I do understand that 8250 compatible chips are very common
+> > and are the most likely serial chips to be used with Linux. However, I
+> > will point out that the define is TTY_MAJOR, not 8250_MAJOR. It seems
+> > to me that whoever named it was thinking in more generic terms.
 > 
-> > However, despite people pressing for it, there's yet to be a *sane*
-> > *technical* *solution* to the problem.  All I've seen so far is one
-> > bad hack.
+> You're reading too much into the name.  It's historical, and the reason
+> can still be seen in LANANA:
 > 
-> Well the "bad hack" we use on sparc gives usable serial ports,
-> properly ordered and using /dev/ttyS0, with a proper matching
-> console selection.
+>   4 char        TTY devices
+>                   0 = /dev/tty0         Current virtual console
+> 
+>                   1 = /dev/tty1         First virtual console
+>                     ...
+>                  63 = /dev/tty63        63rd virtual console
+>                  64 = /dev/ttyS0        First UART serial port
+>                     ...
+>                 255 = /dev/ttyS191      192nd UART serial port
+> 
+>                 UART serial ports refer to 8250/16450/16550 series devices.
+> 
+> When the drivers/char/serial.c driver was written, it was in the very
+> early days of Linux.  I'd guess that the major/minor numbers were similar
+> to Minix, thereby allowing a minixfs to be used as the initial filesystem
+> type.
+> 
+> Anyway, as you can see, defining chardev major 4 to be "8250_MAJOR" would
+> also be a misnomer because it's used for the virtual consoles, and it's
+> _that_ use for which it (probably) was called TTY_MAJOR.
+> 
+> (Note that in the very early days, this major also got used for PTY
+> devices.  Since then they've moved to major 2/3 and then we got Unix98
+> PTY support.)
 
-Well yes, but it seems to have code in the architecture's early
-command line parsing to parse the "console=" argument to set this
-magical "serial_console" variable.
+Oh, and I always thought PTYs were moved to free up more minors for our
+zillions of serial ports...
 
-Is this an approach you recommend for all architectures?
+Gr{oetje,eeting}s,
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+						Geert
+
+--
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+							    -- Linus Torvalds
