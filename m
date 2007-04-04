@@ -1,26 +1,18 @@
-Return-Path: <david.lang@digitalinsight.com>
-Received: from warden.diginsite.com (warden-p.diginsite.com [208.29.163.248])
-	by ozlabs.org (Postfix) with SMTP id B5DD4DDE3F
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 12:25:52 +1000 (EST)
-Date: Tue, 3 Apr 2007 18:57:22 -0700 (PDT)
-From: David Lang <david.lang@digitalinsight.com>
-To: Valdis.Kletnieks@vt.edu
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <7641.1175652638@turing-police.cc.vt.edu>
-Message-ID: <Pine.LNX.4.63.0704031853020.21680@qynat.qvtvafvgr.pbz>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<1175642916.10567.24.camel@shinybook.infradead.org>
-	<20070403212928.GA12951@cynthia.pants.nu>
-	<1175644642.10567.31.camel@shinybook.infradead.org>
-	<20070403221002.GA13210@cynthia.pants.nu>
-	<1175648051.10567.61.camel@shinybook.infradead.org>           
-	<20070403230908.GA13471@cynthia.pants.nu>
-	<7641.1175652638@turing-police.cc.vt.edu>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-6.cisco.com (sj-iport-6.cisco.com [171.71.176.117])
+	by ozlabs.org (Postfix) with ESMTP id 2EF7ADDDF9
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 12:43:57 +1000 (EST)
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Allow drivers to map individual 4k pages to userspace
+References: <17938.14674.621036.256587@cargo.ozlabs.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 03 Apr 2007 19:34:13 -0700
+In-Reply-To: <17938.14674.621036.256587@cargo.ozlabs.ibm.com> (Paul
+	Mackerras's message of "Tue, 3 Apr 2007 21:24:02 +1000")
+Message-ID: <adar6r0dg0q.fsf@cisco.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Paul Mackerras <paulus@samba.org>, David Woodhouse <dwmw2@infradead.org>,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, Joachim Fenkes <fenkes@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,37 +22,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 3 Apr 2007, Valdis.Kletnieks@vt.edu wrote:
+Warning: I am somewhat of a PowerPC ignoramus, so this reply may not
+make sense.
 
-> On Tue, 03 Apr 2007 16:09:08 PDT, Brad Boyer said:
->
->> an abstraction of "serial port" as far as the user is concerned. On
->> Solaris, I can say "/dev/term/a" and know that I will get the first
->> serial port if it is available without needing to care if it is the
->> zs, se or asy driver talking to the hardware.
->
-> This is fine if you're trying to boot and find your system console.
->
-> It blows complete chunks if the port you're trying to find is the
-> first port on the special serial card that supports speeds above 115kbaud
-> because we have a real-time constraint, and even at 115k you fall short
-> on the timing budget (actual real-life issue we hit on an SGI running IRIX
-> a number of years ago. Blowing the budget often resulted in a 3,000 pound
-> motion base to turn into a 3,000 pound jackhammer:
-> http://www.sv.vt.edu/future/cave/resprj/crane/crane_thor/2001FebReport.html
-> http://www.moog.com/Media/1/6D2000E500-395_1102.pdf
->
+ > Some drivers have resources that they want to be able to map into
+ > userspace that are 4k in size.  On a kernel configured with 64k pages
+ > we currently end up mapping the 4k we want plus another 60k of
+ > physical address space, which could contain anything.  This can
+ > introduce security problems, for example in the case of an infiniband
+ > adaptor where the other 60k could contain registers that some other
+ > program is using for its communications.
 
-but when you are looking for this port, you would lookup which port it is, make 
-something active on that port (if only a getty), and then confirm the port by 
-plugging into it and testing it.
+I assume this is an eHCA-specific problem.  Mellanox adapters (which
+I'm much more familiar with) allow the driver to pass in the system
+page size at initialization time, and make the register pages of size
+equal to the system size.
 
-in other words, if you have a special constraint you will have to pay attention 
-to the hardware to make sure it meets those requriements.
+Another approach is simply not to enable the other 4K pages that are
+exposed when mapping a 64K page into userspace - ie only use 1/16th of
+the available contexts.  Although perhaps eHCA has such a limited # of
+contexts that this is not practical.
 
-this is no different then the fact that many motherboards contain a 100Mb 
-ethernet port as well as a pair of 1Gb ethernet ports. if you need speeds above 
-100Mb you better make sure your useing the right port, but we don't name network 
-ports based on the type of card.
+ > This patch adds a new function, remap_4k_pfn, which drivers can use to
+ > map a single 4k page to userspace regardless of whether the kernel is
+ > using a 4k or a 64k page size.  Like remap_pfn_range, it would
+ > typically be called in a driver's mmap function.  It only maps a
+ > single 4k page, which on a 64k page kernel appears replicated 16 times
+ > throughout a 64k page.  On a 4k page kernel it reduces to a call to
+ > remap_pfn_range.
 
-David Lang
+The problem with this approach is that remap_4k_pfn is
+powerpc-specific, right?  For example, I don't believe that an ia64
+kernel running with 16K pages could implement this.  Which means that
+any driver that calls remap_4k_pfn is now powerpc-specific (or has an
+#ifdef to work around this).
+
+In fact my impression was that the powerpc MMU is not part of the
+architecture, in the sense that a new implementation could come along
+that supported 64K pages without the ability to do this 4K aliasing
+trick.  Which would make multiplatform kernels very painful, since
+remap_4k_pfn might work for some platforms the kernel could boot on.
+Or is this not a problem?
+
+ - R.
