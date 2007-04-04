@@ -1,33 +1,24 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 40297DDE39
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 03:50:31 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l34HoPmm031421
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 13:50:25 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l34HoPbv100486
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 13:50:25 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l34HoOaP026422
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 13:50:24 -0400
-Date: Wed, 4 Apr 2007 12:50:23 -0500
-To: David Lang <david.lang@digitalinsight.com>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404175023.GV4922@austin.ibm.com>
-References: <20070404024400.56d016e1@the-village.bc.nu>
-	<Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
+Return-Path: <stuart.yoder@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	dwmw2@infradead.org, David Miller <davem@davemloft.net>,
-	Alan Cox <alan@lxorguk.ukuu.org.uk>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
+	platform
+Date: Wed, 4 Apr 2007 10:51:13 -0700
+Message-ID: <9696D7A991D0824DBA8DFAC74A9C5FA302C194B9@az33exm25.fsl.freescale.net>
+In-Reply-To: <20070404162905.GD21314@mag.az.mvista.com>
+References: <20070328011924.GA1586@mag.az.mvista.com>
+	<20070328012206.GD1586@mag.az.mvista.com>
+	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
+	<20070329003550.GB25652@localhost.localdomain>
+	<20070402181553.GH2132@mag.az.mvista.com>
+	<f622cb9af058a72fc47521e44ae6672a@kernel.crashing.org>
+	<20070404162905.GD21314@mag.az.mvista.com>
+From: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
+To: "Mark A. Greer" <mgreer@mvista.com>,
+	"Segher Boessenkool" <segher@kernel.crashing.org>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
+	Dale Farnsworth <dfarnsworth@mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,26 +28,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 03, 2007 at 06:23:07PM -0700, David Lang wrote:
-> 
-> people working with ~50 serial ports or ethernet ports aren't useing stock 
-> distros anyway.
 
-???  For "big servers", Suse SLES and RedHat RHEL are the defacto choices, 
-with Ubuntu a rising star. It doesn't get much more stock than that.
+> > "existing"
+> > The value of this property defines the regions of virtual address
+> > space managed by the MMU in whose package this property is defined
+> > without regard to whether or not these regions are currently in use.
+> > The encodings of virt and len are MMU-specific.
+> >=20
+> > Have a look at the PowerPC binding to find out about that specific
+> > encoding.
 
-> > Which is also another reason for building the "all serial devices"
-> > mapping by using udev, as it can provide multiple simultaneous views. The
-> > serial console unfortunately rather breaks that approach as Dave pointed
-> > out
-> 
-> I would reverse this. instead of having a bunch of different names and then 
-> requiring a tool to create sane names from them, start off with a nice nameing 
-> scheme and have a tool that tells you the under-the-covers details.
+the PowerPC binding defines this--
 
-Except that udev already exists, and is widely deployed by most distros
-to handle the "sane naming" problem. In particular, "sane naming"
-becomes hard if devices can be hotplugged, whether they are usb or pci
-(e.g. a usb-to-serial converter).
+ + 5.1.7. Memory Management Unit properties
+ +=20
+ + To aid a client in taking over the translation mechanism and
+ + still interact with Open Firmware (via the client interface),
+ + the client needs to know what translations have been established by
+ + Open Firmware. The following standard property shall exist within
+ + the package to which the mmu property of the /chosen package refers.
+ +=20
+ + "translations"
+ +=20
+ +    This property, consisting of sets of translations, defines the
+ +    currently active translations that have been established by Open
+ +    Firmware (e.g., using map). Each set has the following format:
+ +     (virt size phys mode )
+ +=20
+ + Each value is encoded as with encode-int.
 
---linas
+The "mode" field seems to be undefined.
+
+So would firmware need to define all phys to virt mappings in=20
+the "translations" property or just the interesting ones-- i.e
+uart/console and i2c?
+
+Stuart
