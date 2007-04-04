@@ -1,30 +1,21 @@
-Return-Path: <SRS0+5a975b97460a6157554b+1319+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2E145DDEBA
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:51:24 +1000 (EST)
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-In-Reply-To: <20070404181531.GA9388@flint.arm.linux.org.uk>
-References: <1175663999.2932.8.camel@shinybook.infradead.org>
-	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	<1175666635.2932.17.camel@shinybook.infradead.org>
-	<20070404.011208.120446173.davem@davemloft.net>
-	<20070404083803.GA13134@flint.arm.linux.org.uk>
-	<20070404122154.GF31973@thunk.org> <4613CF6A.2090407@zytor.com>
-	<20070404174153.GI31973@thunk.org>
-	<20070404181531.GA9388@flint.arm.linux.org.uk>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 15:50:15 -0400
-Message-Id: <1175716215.2774.52.camel@shinybook.infradead.org>
-Mime-Version: 1.0
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, paulus@samba.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 376C0DDEC7
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:52:34 +1000 (EST)
+Message-ID: <4614023F.90809@ru.mvista.com>
+Date: Wed, 04 Apr 2007 23:53:35 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+MIME-Version: 1.0
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH pata-2.6] sl82c105: add speedproc() method and MWDMA0/1
+	support
+References: <200702140043.25244.sshtylyov@ru.mvista.com>
+	<200702231913.55522.sshtylyov@ru.mvista.com>
+	<200703290024.32035.sshtylyov@ru.mvista.com>
+	<200704042138.25049.bzolnier@gmail.com>
+In-Reply-To: <200704042138.25049.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,40 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-04-04 at 19:15 +0100, Russell King wrote:
-> And the simple answer to this (oh I've been here before) is to leave
-> the existing serial allocations well alone.
-> 
-> Then, you allocate a new major number and device name for the dynamically
-> assigned space and arrange for the serial layer to map these new chardevs
-> to the real serial ports.
-> 
-> *However* you still run into the issue that you do not know how many
-> serial ports you will need to register a tty driver with the tty layer.
-> Solve that technical problem and the idea of having a single namespace
-> for chosen serial ports and 8250 ports suddenly becomes realistic.
-> 
-> Continue ignoring that problem and this thread will just grow with zero
-> real progress.
->
-> I'm repeating myself though.
+Hello.
 
-And you always will be. The amount of pain involved in implementing
-this, just so that people can call their serial port 'ttyS0', is _far_
-more than it's worth. It could be done, but it's a completely pointless
-waste of time and effort. 
+Bartlomiej Zolnierkiewicz wrote:
 
-Separate device names work just fine. It's simpler, and for many people
-it's preferable because it gives more repeatability to device names.
-With the current patch I _know_ that ttyPZ0 is the built-in z8530
-controller and ttyS0 is the PCMCIA modem, for example.
+>>Add the speedproc() method for setting transfer modes, modify config_for_dma()
+>>to call it and use ide_max_dma_mode() to select the best DMA mode.
+>>Add support for the multiword DMA modes 0 and 1, using the upper half of the
+>>'drive_data' field to store the DMA timings to program into the drive control
+>>register when DMA is turned on for real.
 
-The argument that people shouldn't need to know what type of port they
-have is a red herring. They're going to have to work out what _number_
-it is anyway, and sharing the major numbers just makes that _harder_.
- 
-Graphical tools are also a red herring -- if the graphical tools are
-broken and don't show non-8250 ports, then they can be fixed.
+>>Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 
--- 
-dwmw2
+> applied
+
+    I now also have almost complete patch to merge PIO/DMA timings and so get 
+rid of selectproc() there... :-)
+
+MBR, Sergei
