@@ -1,26 +1,24 @@
-Return-Path: <SRS0+5a975b97460a6157554b+1319+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Received: from pentafluge.infradead.org (pentafluge.infradead.org
-	[213.146.154.40])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 385B8DDE0E
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 10:54:53 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 33FB7DDE9F
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:14:12 +1000 (EST)
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: David Woodhouse <dwmw2@infradead.org>
-To: Brad Boyer <flar@allandria.com>
-In-Reply-To: <20070403221002.GA13210@cynthia.pants.nu>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<1175642916.10567.24.camel@shinybook.infradead.org>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: David Woodhouse <dwmw2@infradead.org>
+In-Reply-To: <1175645568.10567.42.camel@shinybook.infradead.org>
+References: <1175642916.10567.24.camel@shinybook.infradead.org>
 	<20070403212928.GA12951@cynthia.pants.nu>
 	<1175644642.10567.31.camel@shinybook.infradead.org>
-	<20070403221002.GA13210@cynthia.pants.nu>
+	<20070403.170212.02298297.davem@davemloft.net>
+	<1175645568.10567.42.camel@shinybook.infradead.org>
 Content-Type: text/plain
-Date: Tue, 03 Apr 2007 20:54:10 -0400
-Message-Id: <1175648051.10567.61.camel@shinybook.infradead.org>
+Date: Wed, 04 Apr 2007 11:13:12 +1000
+Message-Id: <1175649192.30879.19.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Miller <davem@davemloft.net>, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,36 +28,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-03 at 15:10 -0700, Brad Boyer wrote:
-> I suppose my opinion on this shows that I didn't come from the x86
-> side of Linux.
+On Tue, 2007-04-03 at 20:12 -0400, David Woodhouse wrote:
+> On Tue, 2007-04-03 at 17:02 -0700, David Miller wrote:
+> > Sparc does the same thing, it's a common convention and you really
+> > should not break it.
+> 
+> I thought that argument was lost many years ago. It _used_ to be a
+> common convention; we got better.
+> 
+> > Every powerpc and sparc system out that is using ttyS0 with dynamic
+> > minor numbers being allocated.  I really think this should be
+> > generalized instead of breaking serial on every powerpc machine out
+> > there.
+> 
+> Nobody's breaking anything. The patch _fixes_ serial, and allows powerpc
+> machines to use both z8530 and 8250 ports at the same time; something
+> which has been broken for a long time.
 
-Perhaps, yes -- if you were just an x86 user you'd be unlikely to care
-about the issue at all -- mostly because it's never been a problem
-there. Not for the reason you imply, but just because the additional
-types of serial port you encounter on an x86 machine have always got it
-_right_, and had separate names and device numbers rather than abusing
-major 64 and 'ttyS%d'.
+It worked before the new serial core, we had a "tweak" in the old 8250
+driver to be able to share minors, but that got busted when Russell
+rewrote the whole thing. I remember asking him back when he still was
+the serial maintainer, and he refused to bring back some sharing of
+minors.
 
->  The breakdown on this argument seems to have always
-> been that the x86 people wanted 8250 to own ttyS* and most others
-> wanted it shared.
-
-But why? There's nothing special and magical about the number 64 and the
-letters 't' 't' 'y' and 'S'. And if you have broken software which only
-works with ttyS[0123] then you can still create device nodes or symlinks
-to work around that.
-
-If you're on a platform where 8250 serial ports _cannot_ exist, then
-abusing the 8250 driver's numbers would perhaps be workable, if a little
-strange -- but 8250 ports are ubiquitous. You can attach them to just
-about anything, of any architecture, that Linux runs on. Except perhaps
-S390.
-
-Yes, it would be theoretically possible to come up with a way to share
-minor numbers so we can use 'ttyS0' for the first serial port regardless
-of what type of port it is. We could take the arch-specific hack that
-SPARC has and try to move it to generic code. But what's the point?
-
--- 
-dwmw2
+Ben.
