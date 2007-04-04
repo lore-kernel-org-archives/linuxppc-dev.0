@@ -1,26 +1,23 @@
-Return-Path: <flar@cynthia.pants.nu>
-Received: from cynthia.pants.nu (adsl-216-102-214-42.dsl.snfc21.pacbell.net
-	[216.102.214.42]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from the-village.bc.nu (unknown [81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9BF6BDDEC2
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:24:48 +1000 (EST)
-Date: Tue, 3 Apr 2007 16:09:08 -0700
-From: Brad Boyer <flar@allandria.com>
-To: David Woodhouse <dwmw2@infradead.org>
+	by ozlabs.org (Postfix) with ESMTP id 22FABDDECD
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:25:38 +1000 (EST)
+Date: Wed, 4 Apr 2007 02:28:28 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: David Miller <davem@davemloft.net>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070403230908.GA13471@cynthia.pants.nu>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<1175642916.10567.24.camel@shinybook.infradead.org>
-	<20070403212928.GA12951@cynthia.pants.nu>
-	<1175644642.10567.31.camel@shinybook.infradead.org>
+Message-ID: <20070404022828.5c9b97f3@the-village.bc.nu>
+In-Reply-To: <20070403.181645.68159458.davem@davemloft.net>
+References: <1175644642.10567.31.camel@shinybook.infradead.org>
 	<20070403221002.GA13210@cynthia.pants.nu>
 	<1175648051.10567.61.camel@shinybook.infradead.org>
+	<20070403.181645.68159458.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1175648051.10567.61.camel@shinybook.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: paulus@samba.org, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,50 +27,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 03, 2007 at 08:54:10PM -0400, David Woodhouse wrote:
-> But why? There's nothing special and magical about the number 64 and the
-> letters 't' 't' 'y' and 'S'. And if you have broken software which only
-> works with ttyS[0123] then you can still create device nodes or symlinks
-> to work around that.
+> I don't need to know anything about the inanrds of my computer to
+> bring up the ethernet interface, me caveman me bringup eth0, me on
+> network, caveman happy.  The same should be true for serial ports.
 
-I never claimed there was anything magical about those particular values
-and I don't intend to do that in the future. The issue is one of
-standardization. As an example, Solaris does use the same device names
-for both Zilog 8530 and 8250 ports in spite of naming ethernet devices
-based on the hardware type. I just checked the man pages on a Solaris 9
-system to be sure. The issue is that the naming should be consistent. I
-shouldn't need to know what the hardware is to use what is fundamentally
-an abstraction of "serial port" as far as the user is concerned. On
-Solaris, I can say "/dev/term/a" and know that I will get the first
-serial port if it is available without needing to care if it is the
-zs, se or asy driver talking to the hardware.
+You don't get machines with 64 ethernet ports on add-in cards. There are
+good reasons for the naming schemes in use.
 
-Note that I'm not suggesting we should do what Solaris does because
-Sun decided it was the way to do it. I'm just pointing out an example.
-
-> If you're on a platform where 8250 serial ports _cannot_ exist, then
-> abusing the 8250 driver's numbers would perhaps be workable, if a little
-> strange -- but 8250 ports are ubiquitous. You can attach them to just
-> about anything, of any architecture, that Linux runs on. Except perhaps
-> S390.
-
-The availability of the specific chip in question is a red herring in
-my opinion. I do understand that 8250 compatible chips are very common
-and are the most likely serial chips to be used with Linux. However, I
-will point out that the define is TTY_MAJOR, not 8250_MAJOR. It seems
-to me that whoever named it was thinking in more generic terms.
-
-> Yes, it would be theoretically possible to come up with a way to share
-> minor numbers so we can use 'ttyS0' for the first serial port regardless
-> of what type of port it is. We could take the arch-specific hack that
-> SPARC has and try to move it to generic code. But what's the point?
-
-The point is that people are used to having "ttyS0" mean the first
-onboard serial port. I firmly believe that the user-space programs
-should need to know as little as possible about the hardware, and it
-would be nice to abstract that away from the end user as well. We've
-moved toward commonality and standarization in other areas, and I
-think we should here as well.
-
-	Brad Boyer
-	flar@allandria.com
+Alan
