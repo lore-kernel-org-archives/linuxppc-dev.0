@@ -1,16 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17939.19585.475192.767243@cargo.ozlabs.ibm.com>
-Date: Wed, 4 Apr 2007 16:58:09 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: David Woodhouse <dwmw2@infradead.org>
+Return-Path: <gmack@innerfire.net>
+Received: from mtl.rackplans.net (mtl.rackplans.net [69.90.0.18])
+	by ozlabs.org (Postfix) with ESMTP id 01DB7DDE1F
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 13:40:17 +1000 (EST)
+Date: Tue, 3 Apr 2007 23:07:38 -0400 (EDT)
+From: Gerhard Mack <gmack@innerfire.net>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <1175642916.10567.24.camel@shinybook.infradead.org>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<1175642916.10567.24.camel@shinybook.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20070404022828.5c9b97f3@the-village.bc.nu>
+Message-ID: <Pine.LNX.4.64.0704032307001.7802@mtl.rackplans.net>
+References: <1175644642.10567.31.camel@shinybook.infradead.org>
+	<20070403221002.GA13210@cynthia.pants.nu>
+	<1175648051.10567.61.camel@shinybook.infradead.org>
+	<20070403.181645.68159458.davem@davemloft.net>
+	<20070404022828.5c9b97f3@the-village.bc.nu>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	dwmw2@infradead.org, David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,25 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Woodhouse writes:
+On Wed, 4 Apr 2007, Alan Cox wrote:
+> You don't get machines with 64 ethernet ports on add-in cards. There are
+> good reasons for the naming schemes in use.
 
-> A GUI PPP dialer should be
-> listing the available serial ports in the system whatever their names
-> are.
+If they made them I'd build one.
 
-How do you propose they do that?  Neither kppp nor gnome-ppp seem to
-be able to do that currently.  Gnome-ppp offers just /dev/modem and
-/dev/ttyS[0123].  Kppp offers those plus a whole pile of others, but
-neither found the /dev/ttyPZ[01] that I get with your patch applied.
-Gnome-ppp at least let me type in /dev/ttyPZ0, but kppp didn't seem to
-have that facility.
+http://innerfire.net/pics/projects/21portfirewall_2.jpg
 
-> And nobody _forces_ you to use the name ttyPZ0. If you really want, you
-> can call it ttyS0.... just mknod /dev/ttyS0 204 192
+	Gerhard
 
-Sure I can do that, but that's beyond a non-technical user, who is
-precisely the person who won't know (and shouldn't have to know) that
-their computer has an 85C30 chip rather than a 16C550, or even what
-those numbers refer to.
+--
+Gerhard Mack
 
-Paul.
+gmack@innerfire.net
+
+<>< As a computer I find your faith in technology amusing.
