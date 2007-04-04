@@ -1,15 +1,19 @@
-Return-Path: <aish_bhaskaran@yahoo.co.in>
-Received: from web94510.mail.in2.yahoo.com (web94510.mail.in2.yahoo.com
-	[203.104.16.250]) by ozlabs.org (Postfix) with SMTP id CF7E7DDEDB
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011.exch011.intermedia.net (mis011.exch011.intermedia.net
+	[64.78.21.10]) by ozlabs.org (Postfix) with ESMTP id EBDE2DDF35
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Apr 2007 03:31:09 +1000 (EST)
-Message-ID: <20070404172428.13330.qmail@web94510.mail.in2.yahoo.com>
-Date: Wed, 4 Apr 2007 18:24:28 +0100 (BST)
-From: aishwarya bhas <aish_bhaskaran@yahoo.co.in>
-Subject: Accessing the Host Memory (x86) by the Agent (MPC 8540)
-To: linuxppc-embedded@ozlabs.org
+	Thu,  5 Apr 2007 05:05:39 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-283358712-1175707468=:13050"
+Content-Type: text/plain;
+	charset="gb2312"
+Subject: RE: Linux w/ML403 PLB TEMAC
+Date: Wed, 4 Apr 2007 12:05:34 -0700
+Message-ID: <406A31B117F2734987636D6CCC93EE3C013E1FC5@ehost011-3.exch011.intermedia.net>
+In-Reply-To: <OF229BF134.4671531A-ON85257282.005139A1-85257282.0051498A@ct.wec.com>
+References: <OF229BF134.4671531A-ON85257282.005139A1-85257282.0051498A@ct.wec.com>
+From: "Leonid" <Leonid@a-k-a.net>
+To: <Glenn.G.Hart@us.westinghouse.com>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,112 +24,166 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-283358712-1175707468=:13050
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+I have precisely the same problem you have described:
 
-Hi....
-  
-   We are using linux kernel 2.6.9. x86 acts as the host and MPC8540  is placed in the PCI slot of the host.MPC8540 is configured in agent  mode and it runs on u-boot.The uboot version that we are using is  u-boot-1.1.2.
-  
-  The steps that we followed to accomplish the above task is as follows:-
-  
-  1.)Allocated memory in the host (x86), using kmalloc and returned the ptrdata....
-  
-  //Allocating 20 K of memory in the Host RAM
-  
-    ptrdata = (unsigned volatile long *) kmalloc( 20 * 1024 , GFP_KERNEL);
-  
-  
-  2.)We write to pci outbound registers, so that the MPC8540 could access the
-    
-   host memory......
-  
-  
-  (a)pci translation register (b)pci base register (c) pci attribute register.
-  
-  
-  We converted this virtual address to PCI Bus address... using virt_to_bus() function..     
-  
-    ulTemp  = ( unsigned volatile long  ) virt_to_bus ( void * ) ptrdata);
-   
-  // To Mask the lower 12 bits for translation address
-  
-     ulTemp =  swap(ulTemp >> 12) ;
-  
-   //Outbound Translation Register
-  
-      writel(ulTemp,  (unsigned long)ioaddr+ 0x8C20);
-  
-    //ioaddr is address that we got after remapping  ioaddr = ioremap_nocache((pio_start), pio_len);
-  
-   //Outbound Base Address Register
-   
-     writel((swap(0xE0000000 >> 12)) ,  (unsigned long)ioaddr+ 0x8C28);
-  
-   //Outbound Attribute Register
-  
-      writel(swap(0x8004401A),  (unsigned long)ioaddr+ 0x8C30);
-  
-      We also tried with the Attribute Register value 0x8005501C...
-   
-      We also used the function wmb() after writing to the  outbound registers, since it guarantees ordering in write operations..
-      
-      After this we wrote some value in the ptrdata(i.e in the virtual address),for testing .
-  
-  3.)We used the minicom to check whether we are able to access the host memory from the agent by doing md 0xE000_0000
-  
-   i.e to find whether we were able to get the value which we wrote  in the ptrdata(ie. in the virtual address got from kmalloc) ....( Also  not sure if this is the way we have to do.....) . But we are getting  all values as zeroes.
-  
-  4.) We checked in Bus Command Register, whether the Bus master and Memory is  enabled....
-  
-      This is the Configuration Register value :
-  
-  Algs: bus master, 66Mhz, fast devsel, latency 64
-          Memory at dee00000 (32-bit, non-prefetchable) [size=1M]
-          [virtual] Memory at dedf0000 (32-bit, non-prefetchable) [size=64K]
-          Capabilities: [60] #00 [0000]
-  00: 57 10 08 00 46 01 b0 20 20 01 20 0b 00 40 00 00
-  10: 00 00 e0 de 00 00 00 00 00 00 00 00 00 00 00 00
-  20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  30: 00 00 00 00 60 00 00 00 00 00 00 00 00 00 00 00
-  40: 00 00 00 00 09 00 00 80 00 00 00 00 00 00 00 00
-  50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
-  
-   We aren't sure of whether, we have to write to the physical address or to the
-  Virtual address ofthe host RAM i.e x86 by configuring these outbound
-  Registers......
-  
-  Cud anybody solve our problem. tell us if we are missing anything,any step.Please respond to our request.It is urgent.
-  
-  
-  Thanks 
-  Aishwariya
- 				
----------------------------------
- Here’s a new way to find what you're looking for - Yahoo! Answers 
---0-283358712-1175707468=:13050
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+[    0.430515] XTemac: using FIFO direct interrupt driven mode.
+[    0.437461] eth%d: XTemac: No PHY detected.  Assuming a PHY at =
+address 0
+[    0.445295] eth0: Xilinx TEMAC #0 at 0x02000000 mapped to 0xC3000000, =
+irq=3D0
+[    0.452256] eth0: XTemac id 1.0f, block id 5, type 8
+[    0.458665] tun: Universal TUN/TAP device driver, 1.6
+[    0.463712] tun: (C) 1999-2004 Max Krasnyansky <maxk@qualcomm.com>
+[    0.471106] mice: PS/2 mouse device common for all mice
+[    0.476339] TCP cubic registered
+[    0.479615] NET: Registered protocol family 1
+[    0.484032] NET: Registered protocol family 17
+[    0.992599] eth0: XTemac: Options: 0xb8f2
+[   12.955691] eth0: XTemac: Not able to set the speed to 1000 (status: =
+0x0)
+[   22.928615] eth0: XTemac: Not able to set the speed to 100 (status: =
+0x0)
+[   32.901449] eth0: XTemac: Not able to set the speed to 10 (status: =
+0x0)
+[   32.907976] eth0: XTemac: could not negotiate speed
+[   33.921626] IP-Config: Complete:
+[   33.924635]       device=3Deth0, addr=3D192.168.0.223, =
+mask=3D255.255.255.0, gw=3D192.168.0.1,
+[   33.932418]      host=3DLM200, domain=3D, nis-domain=3D(none),
+[   33.937715]      bootserver=3D192.168.0.141, =
+rootserver=3D192.168.0.141, rootpath=3D
+[   33.946230] Looking up port of RPC 100003/2 on 192.168.0.141
+[   34.916694] eth0: XTemac: PHY Link carrier lost.
 
-Hi....<br>  <br>  &nbsp;We are using linux kernel 2.6.9. x86 acts as the host and MPC8540  is placed in the PCI slot of the host.MPC8540 is configured in agent  mode and it runs on u-boot.The uboot version that we are using is  u-boot-1.1.2.<br>  <br>  The steps that we followed to accomplish the above task is as follows:-<br>  <br>  1.)Allocated memory in the host (x86), using kmalloc and returned the ptrdata....<br>  <br>  //Allocating 20 K of memory in the Host RAM<br>  <br>  &nbsp; ptrdata = (unsigned volatile long *) kmalloc( 20 * 1024 , GFP_KERNEL);<br>  <br>  <br>  2.)We write to pci outbound registers, so that the MPC8540 could access the<br>  &nbsp; <br>  &nbsp;host memory......<br>  <br>  <br>  (a)pci translation register (b)pci base register (c) pci attribute register.<br>  <br>  <br>  We converted this virtual address to PCI Bus address... using virt_to_bus() function..&nbsp;&nbsp; &nbsp; <br>  <br>  &nbsp; ulTemp&nbsp; = ( unsigned volatile long&nbsp; )
- virt_to_bus ( void * ) ptrdata);<br>  &nbsp;<br>  // To Mask the lower 12 bits for translation address<br>  <br>  &nbsp;&nbsp; ulTemp =&nbsp; swap(ulTemp &gt;&gt; 12) ;<br>  <br>  &nbsp;//Outbound Translation Register<br>  <br>  &nbsp;&nbsp;&nbsp; writel(ulTemp,&nbsp; (unsigned long)ioaddr+ 0x8C20);<br>  <br>  &nbsp; //ioaddr is address that we got after remapping&nbsp; ioaddr = ioremap_nocache((pio_start), pio_len);<br>  <br>  &nbsp;//Outbound Base Address Register<br>  &nbsp;<br>  &nbsp;&nbsp; writel((swap(0xE0000000 &gt;&gt; 12)) ,&nbsp; (unsigned long)ioaddr+ 0x8C28);<br>  <br>  &nbsp;//Outbound Attribute Register<br>  <br>  &nbsp;&nbsp;&nbsp; writel(swap(0x8004401A),&nbsp; (unsigned long)ioaddr+ 0x8C30);<br>  <br>  &nbsp;&nbsp;&nbsp; We also tried with the Attribute Register value 0x8005501C...<br>  &nbsp;<br>  &nbsp;&nbsp;&nbsp; We also used the function wmb() after writing to the  outbound registers, since it guarantees ordering in write operations..<br> 
- &nbsp;&nbsp; &nbsp;<br>  &nbsp;&nbsp;&nbsp; After this we wrote some value in the ptrdata(i.e in the virtual address),for testing .<br>  <br>  3.)We used the minicom to check whether we are able to access the host memory from the agent by doing md 0xE000_0000<br>  <br>  &nbsp;i.e to find whether we were able to get the value which we wrote  in the ptrdata(ie. in the virtual address got from kmalloc) ....( Also  not sure if this is the way we have to do.....) . But we are getting  all values as zeroes.<br>  <br>  4.) We checked in Bus Command Register, whether the Bus master and Memory is&nbsp; enabled....<br>  <br>  &nbsp;&nbsp;&nbsp; This is the Configuration Register value :<br>  <br>  Algs: bus master, 66Mhz, fast devsel, latency 64<br>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Memory at dee00000 (32-bit, non-prefetchable) [size=1M]<br>  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; [virtual] Memory at dedf0000 (32-bit, non-prefetchable) [size=64K]<br> 
- &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Capabilities: [60] #00 [0000]<br>  00: 57 10 08 00 46 01 b0 20 20 01 20 0b 00 40 00 00<br>  10: 00 00 e0 de 00 00 00 00 00 00 00 00 00 00 00 00<br>  20: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  30: 00 00 00 00 60 00 00 00 00 00 00 00 00 00 00 00<br>  40: 00 00 00 00 09 00 00 80 00 00 00 00 00 00 00 00<br>  50: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  60: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  70: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  80: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  90: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  a0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  b0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  c0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  d0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  e0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00<br>  f0: 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00
- 00<br>  <br>  &nbsp;We aren't sure of whether, we have to write to the physical address or to the<br>  Virtual address ofthe host RAM i.e x86 by configuring these outbound<br>  Registers......<br>  <br>  Cud anybody solve our problem. tell us if we are missing anything,any step.Please respond to our request.It is urgent.<br>  <br>  <br>  Thanks <br>  Aishwariya<p>&#32;
-	
+My TEMAC core version is 3.00.a and low level code I'm using is working =
+in u-boot without problems. I use Rick's adapter and also tried Ming's =
+trick to set hardcoded speed value but with no success.
 
-	
-		<hr size=1></hr> 
-Here’s a new way to find what you're looking for - <a href="http://us.rd.yahoo.com/mail/in/yanswers/*http://in.answers.yahoo.com/">Yahoo! Answers</a> 
---0-283358712-1175707468=:13050--
+I suspect something is configured wrong - phys is not detected:
+
+[    0.437461] eth%d: XTemac: No PHY detected.  Assuming a PHY at =
+address 0
+
+Leonid.
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org =
+[mailto:linuxppc-embedded-bounces+leonid=3Da-k-a.net@ozlabs.org] On =
+Behalf Of Glenn.G.Hart@us.westinghouse.com
+Sent: Wednesday, February 14, 2007 6:48 AM
+To: linuxppc-embedded@ozlabs.org
+Subject: RE: Linux w/ML403 PLB TEMAC
+
+Ming/Rick,
+
+I tried setting the speed to 1000 as below, but it did not change the
+result.  I also tried Rick's new adapter.c with the same results.  =
+Changing
+the hard_temac_v3_b to hard_temac_v3_a was the change I needed.
+Unfortunately, the speed of the network is much slower now.  I switched =
+to
+DMA and then changed the Linux drivers for the DMA & TEMAC v2 to v3.
+
+I have my own program to test performance.  It seems everything is so =
+slow
+it does not every complete to give me the statistics.  My ping are also
+slower.  I used to be able to ping my computer and get 0.6-0.7 ms times.
+With the DMA and TEMAC v3 I am now getting 1.8 ms times.
+
+I am now not sure if it is my build or my PPC design.  For the PPC =
+design I
+have a minimum PPC with OPB-RS232, PLB-DDR, and PLB-TEMAC.  I use all =
+the
+defaults from BSB except I check use interrupt on the RS232 and TEMAC.
+
+Any suggestions?
+
+Thanks,
+Glenn
+
+
+
+                                                                         =
+                           =20
+ (Embedded     "Ming Liu" <eemingliu@hotmail.com>@ozlabs.org             =
+                           =20
+ image moved   02/12/2007 11:48 AM                                       =
+                           =20
+ to file:                                                                =
+                           =20
+ pic04169.pcx)                                                           =
+                           =20
+                                                                         =
+                           =20
+                                                                         =
+                           =20
+
+
+Sent by:
+       =
+linuxppc-embedded-bounces+glenn.g.hart=3Dus.westinghouse.com@ozlabs.org
+
+
+To:    Glenn.G.Hart@us.westinghouse.com
+cc:    linuxppc-embedded@ozlabs.org
+Subject:    RE: Linux w/ML403 PLB TEMAC
+
+Security Level:?              Internal
+
+
+Dear Glenn,
+
+>3.  The speed of the network was very poor.  I wanted to implement DMA =
+for
+>the TEMAC.  I created a new PPC with BSB using DMA on the TEMAC.  =
+Kernel
+>recompilied without a problem, but upon starting the kernel I got:
+
+In fact, the old cores of TEMAC(plb_temac 2.00 & hard_temac 1.00) also
+support DMA. But of course the 3.00 cores are prefered because of other
+improved features.
+
+>6.  I am using busybox 1.2.1 which worked fine previously configuring =
+the
+>network.  Now when I execute ifconfig I get the following problem:
+>[   12.228721] eth0: XTemac: Options: 0xb8f2
+>[   24.197749] eth0: XTemac: Not able to set the speed to 1000 (status:
+>0x148)
+>[   34.215593] eth0: XTemac: Not able to set the speed to 100 (status:
+>0x148)
+>[   44.232349] eth0: XTemac: Not able to set the speed to 10 (status:
+>0x148)
+>[   44.313727] eth0: XTemac: could not negotiate speed
+>[   44.372226] eth0: XTemac: Send Threshold =3D 16, Receive Threshold =
+=3D 2
+>[   44.448421] eth0: XTemac: Send Wait bound =3D 1, Receive Wait bound =
+=3D 1
+># [   57.180152] eth0: XTemac: PHY Link carrier lost.
+
+I also had such a problem before. To solve such a problem most quickly, =
+you
+can just specify a fixed speed (like 1000Mbps) in adapter.c file. In =
+this
+file, after the line of "/* Get current link speed */ (around L378) and
+"phylinkspeed =3D (RegValue & MARVELL_88E1111_LINKSPEED_MARK)>>
+MARVELL_88E1111_LINKSPEED_SHIFT;", I just add and specify the speed as
+"phylinkspeed =3D MARVELL_88E1111_LINKSPEED_1000M;" Of course with this
+method, the speed cannot be auto-negotiated any more.
+
+Another hints: I remember that there is another post from Rick on the
+updated "adapter.c" a few days ago. Maybe that could solve your problem. =
+I
+didn't try that before. So if you will try, pls let us know the result. =
+:)
+
+BR
+Ming
+
+_________________________________________________________________
+=CF=ED=D3=C3=CA=C0=BD=E7=C9=CF=D7=EE=B4=F3=B5=C4=B5=E7=D7=D3=D3=CA=BC=FE=CF=
+=B5=CD=B3=A1=AA MSN Hotmail=A1=A3  http://www.hotmail.com
+
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
