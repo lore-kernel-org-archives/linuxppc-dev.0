@@ -1,24 +1,20 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E18F5DDE3A
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 18:42:40 +1000 (EST)
-Subject: Re: [PATCH 1/5 v2] adb: replace sleep notifier with class
-	suspend/resume hooks
-From: Johannes Berg <johannes@sipsolutions.net>
-To: linuxppc-dev@ozlabs.org
-In-Reply-To: <1174349717.3660.7.camel@johannes.berg>
-References: <20070319181800.149901000@sipsolutions.net>
-	<20070319183619.051498000@sipsolutions.net>
-	<1174349717.3660.7.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-akAISGAfUd0U3N13tsfr"
-Date: Wed, 04 Apr 2007 10:41:53 +0200
-Message-Id: <1175676113.3556.2.camel@johannes.berg>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 2047FDDE3A
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 18:43:36 +1000 (EST)
+Date: Wed, 04 Apr 2007 01:43:30 -0700 (PDT)
+Message-Id: <20070404.014330.91315500.davem@davemloft.net>
+To: rmk+lkml@arm.linux.org.uk
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070404083803.GA13134@flint.arm.linux.org.uk>
+References: <1175666635.2932.17.camel@shinybook.infradead.org>
+	<20070404.011208.120446173.davem@davemloft.net>
+	<20070404083803.GA13134@flint.arm.linux.org.uk>
 Mime-Version: 1.0
-Cc: David Woodhouse <dwmw2@infradead.org>
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,38 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+Date: Wed, 4 Apr 2007 09:38:03 +0100
 
---=-akAISGAfUd0U3N13tsfr
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> However, despite people pressing for it, there's yet to be a *sane*
+> *technical* *solution* to the problem.  All I've seen so far is one
+> bad hack.
 
-
-> This patch replaces the pmu sleep notifier that adb had with a proper
-> suspend/resume hooks in the adb class.
-
-So class suspend/resume hooks are apparently not called unless you do
-some more magic juju.
-
-I'll work more sysfs foo to fix it. You can probably
-make /sys/power/state work and have adb still work by just applying all
-the patches up to "remove dead code in via-pmu86k".
-
-Then again, which patches do you have applied now? Do you even have this
-one? I only sent you the other ones, and if you only have those applied
-then the problem must be elsewhere...
-
-johannes
-
---=-akAISGAfUd0U3N13tsfr
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGE2TR/ETPhpq3jKURApw/AKCN2Ldb9AJPOWZ/epx/U6//pbsEqACdHeil
-YIz3khv7vacXjV+tzL4oMF4=
-=E1rR
------END PGP SIGNATURE-----
-
---=-akAISGAfUd0U3N13tsfr--
+Well the "bad hack" we use on sparc gives usable serial ports,
+properly ordered and using /dev/ttyS0, with a proper matching
+console selection.
