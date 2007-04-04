@@ -1,23 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4A028DDEBD
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:14:55 +1000 (EST)
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 5573BDDE47
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 11:16:46 +1000 (EST)
+Date: Tue, 03 Apr 2007 18:16:45 -0700 (PDT)
+Message-Id: <20070403.181645.68159458.davem@davemloft.net>
+To: dwmw2@infradead.org
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: David Miller <davem@davemloft.net>
-In-Reply-To: <20070403.165657.34759233.davem@davemloft.net>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
-	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<1175642916.10567.24.camel@shinybook.infradead.org>
-	<20070403.165657.34759233.davem@davemloft.net>
-Content-Type: text/plain
-Date: Wed, 04 Apr 2007 11:13:58 +1000
-Message-Id: <1175649238.30879.21.camel@localhost.localdomain>
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1175648051.10567.61.camel@shinybook.infradead.org>
+References: <1175644642.10567.31.camel@shinybook.infradead.org>
+	<20070403221002.GA13210@cynthia.pants.nu>
+	<1175648051.10567.61.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Cc: paulus@samba.org, dwmw2@infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,19 +23,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-03 at 16:56 -0700, David Miller wrote:
-> From: David Woodhouse <dwmw2@infradead.org>
-> Date: Tue, 03 Apr 2007 19:28:36 -0400
-> 
-> > Abusing the 8250 device numbers prevents the 8250 module from being
-> > loaded at the same time as pmac_zilog, and means you can't have both
-> > internal port and PCMCIA or PCI 8250 ports active at the same time.
-> 
-> Dynamic minor number allocation for ttyS? would allow this
-> just fine, and that's exactly what we do on sparc as I
-> explained in another response.
+From: David Woodhouse <dwmw2@infradead.org>
+Date: Tue, 03 Apr 2007 20:54:10 -0400
 
-If we can get it past whoever is the current 8250 maintainer, then fine
-with me. Back then, I hit a brick wall.
+> Yes, it would be theoretically possible to come up with a way to share
+> minor numbers so we can use 'ttyS0' for the first serial port regardless
+> of what type of port it is. We could take the arch-specific hack that
+> SPARC has and try to move it to generic code. But what's the point?
 
-Ben.
+The point is that it will work and the user will not be bothered
+with what kind of serial port they happen to have.  A major number
+per serial chip type is incredibly stupid.
+
+I don't need to know anything about the inanrds of my computer to
+bring up the ethernet interface, me caveman me bringup eth0, me on
+network, caveman happy.  The same should be true for serial ports.
+
+It's a serial port dammit, don't make it something else!
+
+In the case of multiple instances, ordering is a sperate issue from
+naming.  You keep bringing up the ordering issue but it distracts away
+from the more important part which is the user having to know what
+kind of serial port they have.
+
+It's a serial port, and like a scsi disk or and ethernet interface, we
+should give it a consistent name.
