@@ -1,27 +1,30 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[217.147.92.249])
+Return-Path: <hpa@zytor.com>
+Received: from terminus.zytor.com (terminus.zytor.com [192.83.249.54])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9E602DDE29
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 02:10:51 +1000 (EST)
-Date: Wed, 4 Apr 2007 17:10:29 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Theodore Tso <tytso@mit.edu>, David Miller <davem@davemloft.net>,
-	dwmw2@infradead.org, paulus@samba.org, alan@lxorguk.ukuu.org.uk,
-	flar@allandria.com, linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+	by ozlabs.org (Postfix) with ESMTP id 156F5DDF92
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 02:11:04 +1000 (EST)
+Message-ID: <4613CDB6.30306@zytor.com>
+Date: Wed, 04 Apr 2007 09:09:26 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+MIME-Version: 1.0
+To: Geert Uytterhoeven <geert@linux-m68k.org>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404161029.GB18990@flint.arm.linux.org.uk>
-References: <1175663999.2932.8.camel@shinybook.infradead.org>
-	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	<1175666635.2932.17.camel@shinybook.infradead.org>
-	<20070404.011208.120446173.davem@davemloft.net>
-	<20070404083803.GA13134@flint.arm.linux.org.uk>
-	<20070404122154.GF31973@thunk.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070404122154.GF31973@thunk.org>
-Sender: Russell King <rmk@arm.linux.org.uk>
+References: <1175610345.2665.15.camel@shinybook.infradead.org>
+	<17938.57292.870224.132415@cargo.ozlabs.ibm.com>
+	<1175642916.10567.24.camel@shinybook.infradead.org>
+	<20070403212928.GA12951@cynthia.pants.nu>
+	<1175644642.10567.31.camel@shinybook.infradead.org>
+	<20070403221002.GA13210@cynthia.pants.nu>
+	<1175648051.10567.61.camel@shinybook.infradead.org>
+	<20070403230908.GA13471@cynthia.pants.nu>
+	<20070404085159.GB13134@flint.arm.linux.org.uk>
+	<Pine.LNX.4.64.0704041146290.30582@anakin>
+In-Reply-To: <Pine.LNX.4.64.0704041146290.30582@anakin>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Russell King <rmk+lkml@arm.linux.org.uk>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,30 +34,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 04, 2007 at 08:21:54AM -0400, Theodore Tso wrote:
-> So if we're going to do the "Worse is Better" thing, what I'd suggest
-> doing is that someone simply submit a hack so that pmac_zilog can
-> steal minor numbers and use /dev/ttyS0.  I accepted the patch way back
-> when I was serial maintainer; Russell ripped it out when he became the
-> serial maintainer; but now that he's no longer the serial maintainer,
-> he doesn't get to complain about that any more :-)
+Geert Uytterhoeven wrote:
+> 
+> Oh, and I always thought PTYs were moved to free up more minors for our
+> zillions of serial ports...
+> 
 
-The problem with that approach was that it was being extended to more
-and more drivers in the ARM world, creating an #ifdef mess in the
-serial driver.
+No, PTYs were moved because 64 ptys were woefully inadequate.  256 ptys 
+were enough of a shortage for many users.
 
-Moreover, it provided *no* way to select an 8250-based serial port in
-the presence of a "foreign" port claiming the ttyS console namespace.
-Utterly unacceptable when you have a real environment of mixed serial
-port types.
+The use of 16-bit Minix device numbers was a major headache in Linux for 
+many, many years.  We didn't get past that one until the 2.6 kernel series.
 
-IOW, it was utterly broken.  It prevented me from doing the things I
-wanted to do.
-
-The only real answer is to fix the problem *properly*.  Hacks just end
-up breaking peoples setups.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	-hpa
