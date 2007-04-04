@@ -1,25 +1,33 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070404162718.GC21314@mag.az.mvista.com>
-References: <20070328011924.GA1586@mag.az.mvista.com>
-	<20070328012206.GD1586@mag.az.mvista.com>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
-	<20070329003550.GB25652@localhost.localdomain>
-	<2cd6c2dd69700dd162e90f8b7a83a99d@kernel.crashing.org>
-	<20070402182632.GI2132@mag.az.mvista.com>
-	<2feac74905bf1d4fd11725f430cb4078@kernel.crashing.org>
-	<20070404162718.GC21314@mag.az.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d479ccdeb42d811cfec1d445db9f2bf5@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
-	platform
-Date: Wed, 4 Apr 2007 19:44:15 +0200
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	David Gibson <david@gibson.dropbear.id.au>,
-	Dale Farnsworth <dfarnsworth@mvista.com>,
-	Yoder Stuart-B08248 <stuart.yoder@freescale.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 40297DDE39
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 03:50:31 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l34HoPmm031421
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 13:50:25 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l34HoPbv100486
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 13:50:25 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l34HoOaP026422
+	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 13:50:24 -0400
+Date: Wed, 4 Apr 2007 12:50:23 -0500
+To: David Lang <david.lang@digitalinsight.com>
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070404175023.GV4922@austin.ibm.com>
+References: <20070404024400.56d016e1@the-village.bc.nu>
+	<Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	dwmw2@infradead.org, David Miller <davem@davemloft.net>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,60 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I'm not doing "device" init as in an I/O device.  I'm doing some bridge
-> init (e.g, allowing pci devices to access system mem) plus getting VPD
-> so I know what variant of the board I'm on.  With that info, I can
-> determine the amount of memory, bus freq, etc.  Those properties
-> should be correct in the dt before being passed to the kernel, IMHO.
+On Tue, Apr 03, 2007 at 06:23:07PM -0700, David Lang wrote:
+> 
+> people working with ~50 serial ports or ethernet ports aren't useing stock 
+> distros anyway.
 
-Ah okay.  Yes if your firmware won't do this for you
-this functionality belongs in the bootwrapper, agreed.
+???  For "big servers", Suse SLES and RedHat RHEL are the defacto choices, 
+with Ubuntu a rising star. It doesn't get much more stock than that.
 
-> Regarding "what you want to do is more complicated *anyway*",
-> what I'm doing is in *addition* to however I get access to the regs.
-> So adding page table groking code doesn't eliminate the need for what
-> I'm doing.
+> > Which is also another reason for building the "all serial devices"
+> > mapping by using udev, as it can provide multiple simultaneous views. The
+> > serial console unfortunately rather breaks that approach as Dave pointed
+> > out
+> 
+> I would reverse this. instead of having a bunch of different names and then 
+> requiring a tool to create sane names from them, start off with a nice nameing 
+> scheme and have a tool that tells you the under-the-covers details.
 
-Sure.  I'm just saying that adding memory map parsing code
-wouldn't add much complexity to your case.  It will add some
-code, sure ;-)
+Except that udev already exists, and is widely deployed by most distros
+to handle the "sane naming" problem. In particular, "sane naming"
+becomes hard if devices can be hotplugged, whether they are usb or pci
+(e.g. a usb-to-serial converter).
 
->> misusing the quick evil hack that was meant to get debug output
->> out originally isn't really warranted.
->
-> While virtual-reg may be an evil hack, its also very a simple/small
-> hack that saves us from adding a whole lot of code to the bootwrapper
-> (i.e., either ioremap code or page table groking code).
-
-I think you'll find it really isn't all that much code.
-
->> I said only _valid_ reason.
->
-> And I respectfully disagree.  IMHO, my usage is entirely valid.
->
->> I know you're using it for more
->> things, that's what I'm complaining about :-)
->
-> Understood (but disagreed :).
-
-:-)
-
-> Agreed and that's what I'm doing.  I'm configuring things that the fw
-> really should have but didn't.
-
-Yeah.
-
->>> For example, the VPD code
->>> in .../boot/prpmc2800.c in my patches.
->>
->> I cannot find those patches right now, but in general,
->> that kind of code belongs in the kernel (or in a run-time
->> firmware).
->
-> See '***' BEGIN -> END above.
-
-Right, you use the VPD to set up the device tree correctly.
-That's perfectly fine :-)
-
-
-Segher
+--linas
