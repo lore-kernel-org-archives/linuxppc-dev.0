@@ -1,17 +1,20 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id C7B96DDEBA
-	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 17:55:03 +1000 (EST)
-Date: Wed, 4 Apr 2007 09:55:19 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404075519.GA32333@aepfle.de>
-References: <1175610345.2665.15.camel@shinybook.infradead.org>
+Return-Path: <marny@rambler.ru>
+Received: from ns.tz.ru (ns.tz.ru [194.149.234.1])
+	by ozlabs.org (Postfix) with ESMTP id 9FA39DDEC3
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 17:58:23 +1000 (EST)
+Date: Wed, 4 Apr 2007 11:58:13 +0400
+From: Igor Marnat <marny@rambler.ru>
+Message-ID: <15978422796.20070404115813@rambler.ru>
+To: glikely@gmail.com, "Grant Likely" <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] ppchameleon_early_serial_map hidden under #ifdef
+	CONFIG_SERIAL_8250
+In-Reply-To: <528646bc0704022305s307c299hcdab589fa7e1776b@mail.gmail.com>
+References: <05625250.20070403092134@rambler.ru>
+	<528646bc0704022305s307c299hcdab589fa7e1776b@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <1175610345.2665.15.camel@shinybook.infradead.org>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: Igor Marnat <marny@rambler.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,9 +24,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 03, David Woodhouse wrote:
+Hello Grant and List!
 
-> There are proper device numbers registered for pmac_zilog now. Use them.
+GL> This is just ugly, but not because of your patch.  External function
+GL> prototypes that aren't pulled from header files can lead to all kinds
+GL> of wierdness.  Since the code is already ugly and dangerous, I
+GL> wouldn't even bother with adding the #ifdef around it.
 
-NACK.
-Breaks serial console autodetection.
+Well, should I change the patch or it will be applied as is?
+
+Best regards,
+Igor Marnat                            mailto:marny@rambler.ru
