@@ -1,24 +1,18 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id 3B08BDDE00
+Return-Path: <Leonid@a-k-a.net>
+Received: from mis011-1.exch011.intermedia.net
+	(mis011-1.exch011.intermedia.net [64.78.21.128])
+	by ozlabs.org (Postfix) with ESMTP id E5FEDDDE04
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Apr 2007 00:30:39 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1HZ6VS-0001N8-4k
-	for linuxppc-embedded@ozlabs.org; Wed, 04 Apr 2007 16:30:38 +0200
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: Using Linux 2.6.19 with Xilinx ML405
-References: <46125216.2080903@computing.dundee.ac.uk>
-	<46128E70.50503@ru.mvista.com>
-	<46139148.1080308@computing.dundee.ac.uk>
-	<4613AE3B.2010803@ru.mvista.com>
-Date: Wed, 04 Apr 2007 16:30:38 +0200
-In-Reply-To: <4613AE3B.2010803@ru.mvista.com> (Andrei Konovalov's message of
-	"Wed, 04 Apr 2007 17:55:07 +0400")
-Message-ID: <87wt0sp5yp.fsf@sleipner.barco.com>
+	Thu,  5 Apr 2007 01:14:05 +1000 (EST)
+Message-ID: <3d1001c776cb$e157de85$0a154e40@exch011.intermedia.net>
+Content-Type: text/plain;
+	charset="utf-8"
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+From: "Leonid" <Leonid@a-k-a.net>
+Subject: RE: Using Linux 2.6.19 with Xilinx ML405
+Date: Wed, 4 Apr 2007 08:15:15 -0700
+To: "Peter Korsgaard" <jacmet@sunsite.dk>,
+	<linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,21 +23,80 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "AK" == Andrei Konovalov <akonovalov@ru.mvista.com> writes:
+Take a look in 2.6.20 kernel - it's said to be supporting uartlite - u =
+can port it back to 2.6.19.
+
+-----Original Message-----
+From: "Peter Korsgaard" <jacmet@sunsite.dk>
+To: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Sent: 4/4/07 6:33 AM
+Subject: Re: Using Linux 2.6.19 with Xilinx ML405
+
+>>>>> "PM" =3D=3D Peter Mendham <petermendham@computing.dundee.ac.uk> =
+writes:
 
 Hi,
 
-AK> At the moment there is no uartlite driver accepted into the
-AK> mainline (or whatever community) tree.  There were several
-AK> postings to this list. Can't recall if the final patch has been
-AK> attached to any of them. But at least people were saying they have
-AK> the driver almost ready to go to the community.  MontaVista has
-AK> UARTlite driver in Pro 4.0 release, but it is not platform device
-AK> (yet), and I'd prefer not to publish it until it becomes a
-AK> platform device. And it probably should not use generic_serial.c
-AK> any more (the current one does).
+PM> Brilliant!  Thanks.  The code your patch produces expects there to
+PM> be an 8250 compatible UART around.  What happens if I only have a
+PM> UARTlite?  What do I need to fill in to a platform_device
+PM> structure for a UARTlite?
 
-My uartlite driver is in mainline since 2.6.20.
+Something like:
 
--- 
+static struct resource myboarduartlite_resources[] =3D {
+	[0] =3D {
+		.start  =3D 0xa1000003,
+		.end    =3D 0xa1000012,
+		.flags  =3D IORESOURCE_MEM,
+	},
+	[1] =3D {
+		.start	=3D 2,
+		.end	=3D 2,
+		.flags	=3D IORESOURCE_IRQ,
+	},
+};
+
+static struct platform_device myboard_uartlite =3D {
+	.name			=3D "uartlite",
+	.id			=3D 0,
+	.num_resources		=3D ARRAY_SIZE(myboarduartlite_resources),
+	.resource		=3D myboarduartlite_resources,
+};
+
+static struct platform_device *myboard_devices[] __initdata =3D {
+	..
+	&myboard_uartlite,
+        ..
+};
+
+static int __init
+myboard_platform_add_devices(void)
+{
+	return platform_add_devices(myboard_devices,
+                ARRAY_SIZE(myboard_devices));
+
+}
+arch_initcall(myboard_platform_add_devices);
+
+Notice the +3 for the base address as the registers are accessed using
+8bit I/O.
+
+PM> I have just moved to 2.6.20 kernel in the hope of using the
+PM> mainline uartlite driver - was this a stupid thing to do?
+
+Not if you ask me ;)
+
+PM> Do you know if I can use it for early serial in the same way as an
+PM> 8250?
+
+Unfortunately not. I started working on some patches for this some
+months ago, but got stalled doing other stuff. I doubt it will get
+integrated before the move to arch/powerpc.
+
+--=20
 Bye, Peter Korsgaard
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
