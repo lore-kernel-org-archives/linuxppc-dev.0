@@ -1,20 +1,26 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id E2CEBDDECC
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:58:04 +1000 (EST)
-Date: Wed, 04 Apr 2007 12:58:03 -0700 (PDT)
-Message-Id: <20070404.125803.35507943.davem@davemloft.net>
-To: rmk+lkml@arm.linux.org.uk
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <20070404090016.GC13134@flint.arm.linux.org.uk>
-References: <20070404083803.GA13134@flint.arm.linux.org.uk>
-	<20070404.014330.91315500.davem@davemloft.net>
-	<20070404090016.GC13134@flint.arm.linux.org.uk>
+Return-Path: <SRS0+5a975b97460a6157554b+1319+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DF599DDE2C
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 07:21:33 +1000 (EST)
+Subject: Re: [PATCH 1/5 v2] adb: replace sleep notifier with class
+	suspend/resume hooks
+From: David Woodhouse <dwmw2@infradead.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+In-Reply-To: <1175706447.7388.13.camel@johannes.berg>
+References: <20070319181800.149901000@sipsolutions.net>
+	<20070319183619.051498000@sipsolutions.net>
+	<1174349717.3660.7.camel@johannes.berg>
+	<1175676113.3556.2.camel@johannes.berg>
+	<1175691839.2774.11.camel@shinybook.infradead.org>
+	<1175706447.7388.13.camel@johannes.berg>
+Content-Type: text/plain
+Date: Wed, 04 Apr 2007 17:20:56 -0400
+Message-Id: <1175721656.4640.3.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	dwmw2@infradead.org, alan@lxorguk.ukuu.org.uk
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,26 +30,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-Date: Wed, 4 Apr 2007 10:00:16 +0100
+On Wed, 2007-04-04 at 19:07 +0200, Johannes Berg wrote:
+> Is that the version you have in the fedora CVS? Because that one seems
+> to be an older one that has a bug with set_context.
 
-> On Wed, Apr 04, 2007 at 01:43:30AM -0700, David Miller wrote:
-> > Well the "bad hack" we use on sparc gives usable serial ports,
-> > properly ordered and using /dev/ttyS0, with a proper matching
-> > console selection.
+Yes. I've updated the patch in CVS; thanks for pointing it out.
+
+> > Subject: [PATCH 3/5] powermac: disallow pmu sleep notifiers from aborting
+> > Subject: [PATCH 4/5 v2] powermac: proper sleep management
+> > 
+> > It does re-probe ADB on resume, and it finds the keyboard every time
+> > (thankfully). 
 > 
-> Well yes, but it seems to have code in the architecture's early
-> command line parsing to parse the "console=" argument to set this
-> magical "serial_console" variable.
+> Interesting.
 > 
-> Is this an approach you recommend for all architectures?
+> > It just doesn't find the mouse more than about 1 in 10
+> > times. Could it just be a timing thing? Resume seems to be a lot faster
+> > with the patches applied.
+> 
+> I have to admit that I have no idea, I don't have a machine with ADB in
+> it. I'll poke at the code a bit.
 
-The platform should use whatever is appropriate, and matches
-firmware/bios/whatever conventions, to determine this stuff.
+Not sure if the subsequent patch was expected to change anything or not,
+but it doesn't...
 
-On Sparc you get an openfirmware environment variable called
-"output-device" that can point to a framebuffer or serial
-console device.
+ $ dmesg | grep -i adb
+PM: Adding info for platform:adb.0
+adb: starting probe task...
+adb devices: [2]: 2 c4 [3]: 3 1 [7]: 7 1f
+ADB keyboard at 2, handler 1
+Detected ADB keyboard, type ISO, swapping keys.
+input: ADB keyboard as /class/input/input1
+input: ADB Powerbook buttons as /class/input/input2
+ADB mouse at 3, handler set to 4 (trackpad)
+input: ADB mouse as /class/input/input3
+adb: finished probe task...
+adb adb.0: suspend
+adb adb.0: LATE suspend
+adb adb.0: EARLY resume
+adb adb.0: resuming
+adb: starting probe task...
+adb devices: [2]: 2 c4 [7]: 7 1f
+ADB keyboard at 2, handler 1
+adb: finished probe task...
 
-The user can override this on the kernel command line, of course, and
-what they ask for will get translated properly.
+-- 
+dwmw2
