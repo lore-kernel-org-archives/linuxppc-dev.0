@@ -1,22 +1,20 @@
-Return-Path: <linux-kernel@hansmi.ch>
-Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
-	[213.144.146.165])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "hansmi.home.forkbomb.ch",
-	Issuer "hansmi.home.forkbomb.ch" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id D7488DDEDF
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:38:18 +1000 (EST)
-Date: Wed, 4 Apr 2007 21:31:33 +0200
-From: Michael Hanselmann <linux-kernel@hansmi.ch>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: my powerbook fails to resume if backlight control is disabled
-Message-ID: <20070404193133.GA21755@hansmi.ch>
-References: <1175700040.3600.14.camel@johannes.berg>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id D8C95DDE3F
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 05:47:41 +1000 (EST)
+Message-ID: <4613FF89.8000908@ru.mvista.com>
+Date: Wed, 04 Apr 2007 23:42:01 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="fdj2RfSjLxBAspz7"
-In-Reply-To: <1175700040.3600.14.camel@johannes.berg>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
+To: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+Subject: Re: [PATCH pata-2.6] sl82c105: rework PIO support (take 2)
+References: <200702140101.26639.sshtylyov@ru.mvista.com>
+	<200703282147.41696.sshtylyov@ru.mvista.com>
+	<460AAEA5.40008@ru.mvista.com>
+	<200704042133.26985.bzolnier@gmail.com>
+In-Reply-To: <200704042133.26985.bzolnier@gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,42 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hello.
 
---fdj2RfSjLxBAspz7
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+Bartlomiej Zolnierkiewicz wrote:
 
-Hi Johannes
+>>>Index: linux-2.6/include/linux/ide.h
+>>>===================================================================
+>>>--- linux-2.6.orig/include/linux/ide.h
+>>>+++ linux-2.6/include/linux/ide.h
+>>>@@ -613,7 +613,6 @@ typedef struct ide_drive_s {
+>>> 
+>>>         u8	quirk_list;	/* considered quirky, set for a specific host */
+>>>         u8	init_speed;	/* transfer rate set at boot */
+>>>-        u8	pio_speed;      /* unused by core, used by some drivers for fallback from DMA */
+>>>         u8	current_speed;	/* current transfer rate set */
+>>>         u8	dn;		/* now wide spread use */
+>>>         u8	wcache;		/* status of write cache */
+>>
+>>    Oops, forgot to pull the recent kernel before sending out, so this part 
+>>won't apply bacause of the desired_speed nuisance. Do I need to resend?
 
-On Wed, Apr 04, 2007 at 05:20:40PM +0200, Johannes Berg wrote:
-> The thing is that I had turned off some options to the point where I
-> had /sys/class/backlight but nothing in it. I don't know for sure what
-> exactly these options were, but I do know that CONFIG_PMAC_BACKLIGHT and
-> CONFIG_PMAC_BACKLIGHT_LEGACY were off, though that alone shouldn't
-> cause /sys/class/backlight/radeonbl0 to disappear.
+> I was mentally prepared to fix it manually to save time on both sides but...
 
-It can:
-config FB_RADEON_BACKLIGHT
-    bool "Support for backlight control"
-    depends on FB_RADEON && PMAC_BACKLIGHT
-    [=E2=80=A6]
+> Hunk #1 succeeded at 613 with fuzz 2.
 
-Maybe I can try it during the next weekend.
+    Probably you're using quilt newer that 0.42 then? :-)
 
-Greets,
-Michael
+> ;)
 
---fdj2RfSjLxBAspz7
-Content-Type: application/pgp-signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGE/0V6J0saEpRu+oRArRoAJ9rh/rm6O+ETtmbs526Kge83tZtGACfZnsv
-jNaSWaHUAnVAUKEKzF/LIPk=
-=T2x+
------END PGP SIGNATURE-----
-
---fdj2RfSjLxBAspz7--
+MBR, Sergei
