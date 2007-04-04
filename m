@@ -1,25 +1,22 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 28576DDF08
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 03:09:16 +1000 (EST)
-Subject: Re: [PATCH 1/5 v2] adb: replace sleep notifier with class
-	suspend/resume hooks
-From: Johannes Berg <johannes@sipsolutions.net>
-To: David Woodhouse <dwmw2@infradead.org>
-In-Reply-To: <1175691839.2774.11.camel@shinybook.infradead.org>
-References: <20070319181800.149901000@sipsolutions.net>
-	<20070319183619.051498000@sipsolutions.net>
-	<1174349717.3660.7.camel@johannes.berg>
-	<1175676113.3556.2.camel@johannes.berg>
-	<1175691839.2774.11.camel@shinybook.infradead.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-8X9CFcJj0NX0HVqqoG4h"
-Date: Wed, 04 Apr 2007 19:07:27 +0200
-Message-Id: <1175706447.7388.13.camel@johannes.berg>
-Mime-Version: 1.0
+	by ozlabs.org (Postfix) with ESMTP id 7AA2DDDEED
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 03:13:22 +1000 (EST)
+In-Reply-To: <200704041903.46629.arnd@arndb.de>
+References: <20070404110916.GA9910@localhost.localdomain>
+	<acd2a5930704040451u55ae7619wfa1aaa84aebdf72@mail.gmail.com>
+	<4850DC60-A560-4A38-8416-ADA776B69509@kernel.crashing.org>
+	<200704041903.46629.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <5199678E-7A42-4B91-BBB8-81DF33E92F2A@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: SPI devices and OF
+Date: Wed, 4 Apr 2007 12:12:37 -0500
+To: Arnd Bergmann <arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -31,54 +28,31 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-8X9CFcJj0NX0HVqqoG4h
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Apr 4, 2007, at 12:03 PM, Arnd Bergmann wrote:
 
-On Wed, 2007-04-04 at 09:03 -0400, David Woodhouse wrote:
+> On Wednesday 04 April 2007, Kumar Gala wrote:
+>> I don't think this is a good idea for SPI devices.  The effort vs
+>> reward isn't worth it.  The simple fact that the 'chip select'
+>> mechanism ends up being board specific is too much of a pain to
+>> figure out how to deal with in the device tree.  I think its ok if we
+>> put information about the controller in the tree, but trying to do
+>> the devices as well at this point doesn't seem like its much of a  
+>> win.
+>>
+>
+> I'm not following your argumentation. If the chip select is board  
+> specific,
+> isn't the device tree for that board _exactly_ the place where that
+> information should be? Where else would you get it from?
 
-> I didn't have this set of patches applied. I have these:
+ From explicitly board code like we do today.  I mean the mechanism  
+can very so greatly that trying to decided and come up with all  
+possible cases and somehow encoding that in the device tree isn't  
+worth the effort.  Additionally you'll still need code to handle the  
+actual chip select and I don't see how you make that generic at all.
 
-Ok.
+A board designer could use I2C, GPIO, or something off an FPGA.  I  
+just dont see trying to 'encode' this in the device tree as providing  
+any real value.
 
-> Subject: [PATCH 1/3] rework pm_ops pm_disk_mode, kill misuse
-> Subject: [PATCH 2/3] power management: remove firmware disk mode
-> Subject: [PATCH 3/3] power management: implement pm_ops.valid for everybo=
-dy
->=20
-> Subject: [PATCH 1/5] powerpc: generic time suspend/resume code
-> Subject: [PATCH 2/5] powerpc: fix suspend states again
-
-Is that the version you have in the fedora CVS? Because that one seems
-to be an older one that has a bug with set_context.
-
-> Subject: [PATCH 3/5] powermac: disallow pmu sleep notifiers from aborting
-> Subject: [PATCH 4/5 v2] powermac: proper sleep management
->=20
-> It does re-probe ADB on resume, and it finds the keyboard every time
-> (thankfully).=20
-
-Interesting.
-
-> It just doesn't find the mouse more than about 1 in 10
-> times. Could it just be a timing thing? Resume seems to be a lot faster
-> with the patches applied.
-
-I have to admit that I have no idea, I don't have a machine with ADB in
-it. I'll poke at the code a bit.
-
-johannes
-
---=-8X9CFcJj0NX0HVqqoG4h
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGE9tP/ETPhpq3jKURAi2lAKCIW8t8KIOqq/K9PoWP90MGaMAxuACfYRqe
-t6tmUw/K5dmmDl35GubbQ+8=
-=covO
------END PGP SIGNATURE-----
-
---=-8X9CFcJj0NX0HVqqoG4h--
+- k
