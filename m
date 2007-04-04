@@ -1,19 +1,23 @@
 Return-Path: <SRS0+5a975b97460a6157554b+1319+infradead.org+dwmw2@pentafluge.srs.infradead.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0EDD1DDF0F
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 10:13:34 +1000 (EST)
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
 From: David Woodhouse <dwmw2@infradead.org>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-In-Reply-To: <4612EA16.7070102@am.sony.com>
-References: <1175208237.3122.78.camel@pmac.infradead.org>
-	<1175636904.10567.8.camel@shinybook.infradead.org>
-	<4612D8FE.1070400@am.sony.com> <200704040055.36173.arnd@arndb.de>
-	<4612EA16.7070102@am.sony.com>
+To: David Miller <davem@davemloft.net>
+In-Reply-To: <20070403.170212.02298297.davem@davemloft.net>
+References: <1175642916.10567.24.camel@shinybook.infradead.org>
+	<20070403212928.GA12951@cynthia.pants.nu>
+	<1175644642.10567.31.camel@shinybook.infradead.org>
+	<20070403.170212.02298297.davem@davemloft.net>
 Content-Type: text/plain
-Date: Tue, 03 Apr 2007 20:10:02 -0400
-Message-Id: <1175645402.10567.38.camel@shinybook.infradead.org>
+Date: Tue, 03 Apr 2007 20:12:48 -0400
+Message-Id: <1175645568.10567.42.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, nhorman@redhat.com,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>,
-	Ben Collins <ben.collins@ubuntu.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,15 +27,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-03 at 16:58 -0700, Geoff Levand wrote:
-> But you seem to say we can do something in the first stage kernel and pass
-> some info to the second stage kernel?  The trouble with that is that when
-> the kernel is used as a first stage, where does the info come from? 
+On Tue, 2007-04-03 at 17:02 -0700, David Miller wrote:
+> Sparc does the same thing, it's a common convention and you really
+> should not break it.
 
->From the bootwrapper, surely? If the bootwrapper sets up the initial
-device-tree and passes it to the first stage kernel, then all that
-information will be passed through when you kexec the second stage
-vmlinux.
+I thought that argument was lost many years ago. It _used_ to be a
+common convention; we got better.
+
+> Every powerpc and sparc system out that is using ttyS0 with dynamic
+> minor numbers being allocated.  I really think this should be
+> generalized instead of breaking serial on every powerpc machine out
+> there.
+
+Nobody's breaking anything. The patch _fixes_ serial, and allows powerpc
+machines to use both z8530 and 8250 ports at the same time; something
+which has been broken for a long time.
 
 -- 
 dwmw2
