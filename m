@@ -1,24 +1,16 @@
-Return-Path: <macro@linux-mips.org>
-Received: from pollux.ds.pg.gda.pl (pollux.ds.pg.gda.pl [153.19.208.7])
-	by ozlabs.org (Postfix) with ESMTP id DD099DDE17
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 00:05:24 +1000 (EST)
-Date: Wed, 4 Apr 2007 14:43:19 +0100 (BST)
-From: "Maciej W. Rozycki" <macro@linux-mips.org>
-Sender: macro@blysk.ds.pg.gda.pl
-To: Geert Uytterhoeven <geert@linux-m68k.org>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <Pine.LNX.4.64.0704040903470.20803@anakin>
-Message-ID: <Pine.LNX.4.64N.0704041436130.19559@blysk.ds.pg.gda.pl>
-References: <20070404022544.59b022a6@the-village.bc.nu>
-	<17939.10130.687893.167511@cargo.ozlabs.ibm.com>
-	<1175663999.2932.8.camel@shinybook.infradead.org>
-	<20070403.225006.119275067.davem@davemloft.net>
-	<Pine.LNX.4.64.0704040903470.20803@anakin>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	dwmw2@infradead.org, David Miller <davem@davemloft.net>,
-	alan@lxorguk.ukuu.org.uk
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 60156DDE27
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 01:57:37 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <20070404110916.GA9910@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a84b0389cf9e6730da79750b1afc1973@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: SPI devices and OF
+Date: Wed, 4 Apr 2007 10:57:28 -0500
+To: Sascha Hauer <s.hauer@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,24 +20,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 4 Apr 2007, Geert Uytterhoeven wrote:
+On Wed Apr 4 21:09:16 EST 2007, Sascha Hauer wrote:
 
-> > > I don't see why that 'should' be the case. Certainly it _isn't_ the case
-> > > on most supported platforms -- we have separate device numbers, and
-> > > names, for most types of ports. There's only one or two drivers which
-> > > abuse ttySn for anything other than 8250 ports.
-> > 
-> > sunsu, sunzilog, pmac_zilog, sunsab, etc.
-> 
-> amiserial.
-> 
-> > The list is longer than you think.  In fact the convention is
-> > very well established.
-> 
-> And I guess the recently revived Atari serial driver, too.
+> I'm currently writing a driver for the mpc5200 spi controller (the
+> dedicated one, not the PSC ones).
+>
+> The driver has the form of a of_platform_driver. My problem is that I
+> don't know how to define the spi devices on the spi bus. My current
+> approach is having something like this in the OF tree:
+>
+>
+>         spi at f00 {
+>                 device_type = "spi";
+>                 compatible = "mpc5200b-spi\0mpc5200-spi";
+>                 reg = <f00 20>;
+>                 interrupts = <2 d 0 2 e 0>;
+>                 interrupt-parent = <500>;
+>                 mmc at 0 {
+>                         device_type = "mmc_spi";
+>                         compatible = "mmc_spi";
 
- And also DEC hardware, i.e. zs (which drives Zilog ports too) and dz 
-(which handles integrated to the various extent clones of the original 
-PDP-11 serial multiplexer ;-) ).
+Why is the device_type mmc_spi?   Is this a MMC adapter?
+The type of a network card is "network", not "pci_network".
 
-  Maciej
+
+>                 };
+>         };
+>
+> I can then parse the children in my spi driver with
+>
+>         while( (child = of_get_next_child(odev->node, child))) {
+>                 struct spi_board_info info;
+                 (fill out info) ...
+>                 spi_register_board_info(&info, 1);
+>         }
+>
+> I think it will work this way but I found no way getting the
+> platform_data for the spi devices.
+
+Why do you need platform_data for the devices?  I understand for
+the master.   Actually, spi_device_info has a nice platform_info 
+pointer.
+
+> I could also define the spi devices in a board specific c file but 
+> there
+> I would not know which spi bus is which if there is more than one.
+
+The device tree is definately preferred.
+
+> Any thoughts on this or am I completely on the wrong track?
+>
+> Sascha
+
+First of all, I have no knowledge of SPI.
+
+However, looking at drivers/spi/spi.c, it looks
+spi_register_board_info is for staticly determined tables that are
+known at _init and the spi master busses are enumerated in some
+platform-dtermined way.  Since your proposed binding doesn't have
+an enumeration of the spi master, that does not match.  I guess you
+could register them with sequential numbers as you encounter the
+masters in the device tree.  However, if this is code is in your
+driver, it seems to be the wrong point in time, you need something
+_init_or_module.
+
+Looking through the code, It seems you want to use spi_new_device()
+after calling spi_alloc_master() and spi_register_master().
+
+However
