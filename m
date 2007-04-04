@@ -1,28 +1,26 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[217.147.92.249])
+Return-Path: <hpa@zytor.com>
+Received: from terminus.zytor.com (terminus.zytor.com [192.83.249.54])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EF66ADDE3C
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 02:06:57 +1000 (EST)
-Date: Wed, 4 Apr 2007 17:06:40 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTP id 5D883DDE3E
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 02:09:03 +1000 (EST)
+Message-ID: <4613CD34.8080509@zytor.com>
+Date: Wed, 04 Apr 2007 09:07:16 -0700
+From: "H. Peter Anvin" <hpa@zytor.com>
+MIME-Version: 1.0
+To: David Lang <david.lang@digitalinsight.com>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070404160640.GA18990@flint.arm.linux.org.uk>
-References: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<20070403.165518.55726194.davem@davemloft.net>
-	<20070404021924.71e87580@the-village.bc.nu>
-	<20070403.182125.77058566.davem@davemloft.net>
-	<20070404074736.GA3440@flint.arm.linux.org.uk>
-	<17939.30226.339390.709561@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17939.30226.339390.709561@cargo.ozlabs.ibm.com>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-	linux-kernel@vger.kernel.org
+References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210
+	02.GA13210@cynthia.pants.nu><1175648051.10567.61.camel@shinybook.infradead.
+	org><20070403.181645.68159458.davem@davemloft.net><20070404022828.5c9b97f3@
+	the-village.bc.nu><Pine.LNX.4.63.0704031804350.21680@qynat.qvtvafvgr.pbz>
+	<20070404024400.56d016e1@the-village.bc.nu>
+	<Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
+In-Reply-To: <Pine.LNX.4.63.0704031817020.21680@qynat.qvtvafvgr.pbz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	dwmw2@infradead.org, David Miller <davem@davemloft.net>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,93 +30,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 04, 2007 at 07:55:30PM +1000, Paul Mackerras wrote:
-> Russell King writes:
-> > FACT: there is no way to know at any particular driver registration time
-> >  how many "generic" serial ports will be available - as required for the
-> >  chardev and tty layers.
+David Lang wrote:
+> On Wed, 4 Apr 2007, Alan Cox wrote:
 > 
-> I think the thing that davem and I have in common is that we have a
-> data structure that the firmware gives us that (at least) enumerates
-> all of the on-board serial ports for us, thus we *can* know very early
-> in the boot process how many "generic" serial ports will be available.
-
-Goodo.  However, that's not the case elsewhere, and the lack of that
-information makes it *extremely* hard to provide any generic solution,
-especially with a driver as ubiquous as the 8250 driver.
-
-How do I know how many serial ports are connected to an ARM device?
-What about that expansion pack I might decide to slip onto the back of
-my ARM PDA which wasn't known about when the device was first booted
-some years ago?
-
-> > There are very real issues that need fixing deep within the kernel
-> > before you can even think about the possibility of *PROPERLY* supporting
-> > all serial ports beneath one namespace.
+>>>> You don't get machines with 64 ethernet ports on add-in cards. There 
+>>>> are
+>>>> good reasons for the naming schemes in use.
+>>>
+>>> I've seen machines offering up to 48, what's the magic number that 
+>>> makes you
+>>> need to chagne nameing schemes?
+>>
+>> Have you tried working with 48 ports when they are not numbered 0-47 or
+>> in some logical fashion ?
 > 
-> I don't actually want to do that; I'm perfectly happy for various
-> kinds of plug-in cards to each have their own namespace.  If you're
-> plugging in a Cyclades card for instance I think it's quite reasonable
-> for the ports to be named /dev/ttyCn.
+> no, but that's what we're wanting with serial ports as well. a system 
+> with 50 serial ports should have them numbered 0-49, not typea0-5, 
+> typeb0-39, typec0-5
+> 
 
-Well, Cyclades is irrelevant in this discussion because it has nothing
-to do with serial_core, and therefore nothing to do with the 8250 driver,
-and, therefore, nothing to do with the problem of the major 4 / ttyS
-namespace.  Ergo, it's utterly irrelevant to even mention it.
+I would actually disagree.  I have systems with multiport serial cards 
+installed, and I much prefer those to be named differently.  Not only do 
+I not have to worry about the same problem I *constantly* have with 
+onboard Ethernet cards -- whoops I just installed an expansion card and 
+suddenly my onboard NIC is eth2! -- but the expansion serial ports tend 
+to be *different.*
 
-> It's the built-in serial ports on the motherboard where I think the
-> user should not have to know what sort of chip was used to implement
-> the serial port.  We don't require users to know whether the
-> manufacturer used an 8250 or a 16450 or a 16550, so why should it
-> matter if the manufacturer used an 8530?
+For example, on my serial server, the Cyclades ports (ttyC*) use RJ-45 
+connections from an external expansion module, whereas of course the 
+builtin ones (ttyS*) use DB-9s.
 
-I'm going to answer this *technically*.  It's the *technicalities* that
-are causing this restriction.  Solve those technicalities and the problem
-goes away.
-
-We don't require users to know if it's an 8250, 16450, 16550 because
-they're all compatible with the previous models, and therefore
-*technically* it makes sense for them to be driven by the same driver.
-
-However, an 8530 isn't compatible with an 8250 and requires a separate
-driver.
-
-The restriction on serial namespace isn't *hardware* based, it's *driver*
-based, and that restriction comes from the way the tty and chardev
-subsystems work.  When you register a tty driver, you need to tell the
-tty subsystem how many ttys that driver will *ever* support.  The only
-way to change that number is to unregister all ttys connected with the
-driver, unregister the driver, change the number, reallocate arrays,
-re-register the driver, and re-register the ttys.
-
-If any one of those ttys is in use, there's a problem - you have to
-hangup that user and have them close/reopen the tty.  That's fairly
-disruptive, especially if it happens to be a modem that some user has
-dialed in from (you end up logging them out of the system every time
-you need to increase the number of serial ttys).
-
-So, you see, this is a big problem that needs *technically*
-resolving *with* *patches* before we can think about having a single
-serial namespace.
-
-> BTW, are you still maintaining the serial layer?
-
-That's irrelevant to the discussion at hand.  For the record, because
-others have different opinions to me, and persisted in trying to tell
-me what I should be doing without providing patches, I stepped back
-from the maintainership role, and have only been reviewing the odd
-patch as I see fit.
-
-Maybe it'll be different this time around, but so far all I've seen in
-this thread is lots of people providing opinions and very little code
-to achieve their aims.  Or even technical *discussion* about how to go
-about implementing those opinions.
-
-Therefore, I put it to those arguing for a single serial major that the
-reason it hasn't happened is that no one is *really* that bothered about
-it to solve the underlying issues.
-
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+	-hpa
