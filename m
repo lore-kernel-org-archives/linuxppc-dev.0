@@ -1,20 +1,24 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17939.30226.339390.709561@cargo.ozlabs.ibm.com>
-Date: Wed, 4 Apr 2007 19:55:30 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Russell King <rmk+lkml@arm.linux.org.uk>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <20070404074736.GA3440@flint.arm.linux.org.uk>
-References: <17938.57292.870224.132415@cargo.ozlabs.ibm.com>
-	<20070403.165518.55726194.davem@davemloft.net>
-	<20070404021924.71e87580@the-village.bc.nu>
-	<20070403.182125.77058566.davem@davemloft.net>
-	<20070404074736.GA3440@flint.arm.linux.org.uk>
-Cc: linuxppc-dev@ozlabs.org, dwmw2@infradead.org,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk,
-	linux-kernel@vger.kernel.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 12646DDE3C
+	for <linuxppc-dev@ozlabs.org>; Wed,  4 Apr 2007 21:11:55 +1000 (EST)
+In-Reply-To: <20070403.112813.35016105.davem@davemloft.net>
+References: <20070403105748.769f156c.sfr@canb.auug.org.au>
+	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
+	<65f2b2574eca0b34e7986618cfbe7a6d@kernel.crashing.org>
+	<20070403.112813.35016105.davem@davemloft.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <19e36144f9d496f2a9670ac889435349@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 6/6] [POWERPC] make struct property's value a void *
+Date: Wed, 4 Apr 2007 13:11:43 +0200
+To: David Miller <davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,37 +28,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Russell King writes:
+>> Why?  It should logically be an u8 * (and nothing
+>> should ever cast it to anything else, accessor
+>> functions should be used instead to get 32-bit ints
+>> from it, etc.)
+>
+> Ummm, no.
+>
+> There are structures there, and other types of objects.
 
-> FACT: you can only have one struct console with one name.
+There are arrays of bytes there, with no guarantee of
+any further alignment.
 
-That could be solved by having the struct console at the generic
-serial driver level rather than in the individual port drivers.
+> Look at how some of the sparc64 code does this, it's not a "u8 *" by
+> even the largest stretch of the imagination.
 
-> FACT: there is no way to know at any particular driver registration time
->  how many "generic" serial ports will be available - as required for the
->  chardev and tty layers.
+Maybe sparc64 does have some defined extra alignment;
+on PowerPC, we get that alignment by making a copy of
+the device tree.  That means no further interaction
+with OF after very early boot (even before the kernel
+proper starts); a less than desirable situation, and
+certainly not something that a *generic* Linux OF
+interface can require.  Also, in principle anyway,
+you can have an integer follow a string in the same
+property.
 
-I think the thing that davem and I have in common is that we have a
-data structure that the firmware gives us that (at least) enumerates
-all of the on-board serial ports for us, thus we *can* know very early
-in the boot process how many "generic" serial ports will be available.
+So just do an of_decode_int() and its cousins -- platforms
+that are trying to guarantee alignment, or that can handle
+unaligned memory accesses, can just define these as direct
+accesses; everyone else should use the read-by-byte sequences.
 
-> There are very real issues that need fixing deep within the kernel
-> before you can even think about the possibility of *PROPERLY* supporting
-> all serial ports beneath one namespace.
 
-I don't actually want to do that; I'm perfectly happy for various
-kinds of plug-in cards to each have their own namespace.  If you're
-plugging in a Cyclades card for instance I think it's quite reasonable
-for the ports to be named /dev/ttyCn.
-
-It's the built-in serial ports on the motherboard where I think the
-user should not have to know what sort of chip was used to implement
-the serial port.  We don't require users to know whether the
-manufacturer used an 8250 or a 16450 or a 16550, so why should it
-matter if the manufacturer used an 8530?
-
-BTW, are you still maintaining the serial layer?
-
-Paul.
+Segher
