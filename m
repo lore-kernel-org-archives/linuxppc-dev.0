@@ -1,27 +1,21 @@
-Return-Path: <tnt@246tNt.com>
-Received: from outmx035.isp.belgacom.be (outmx035.isp.belgacom.be
-	[195.238.6.172])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0F99DDDF1B
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 04:01:19 +1000 (EST)
-Received: from outmx035.isp.belgacom.be (localhost.localdomain [127.0.0.1])
-	by outmx035.isp.belgacom.be (8.13.4/8.13.4/Debian-3sarge3) with ESMTP
-	id l34I1Bi7001585
-	for <linuxppc-dev@ozlabs.org>; Wed, 4 Apr 2007 20:01:14 +0200
-Message-ID: <4613E7CC.1020001@246tNt.com>
-Date: Wed, 04 Apr 2007 20:00:44 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
+Return-Path: <bzolnier@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
+	by ozlabs.org (Postfix) with ESMTP id C45FEDDF31
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 04:01:57 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so723761ugf
+	for <linuxppc-dev@ozlabs.org>; Wed, 04 Apr 2007 11:01:55 -0700 (PDT)
+From: Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] add correct interrupt property for pegasos ide
+Date: Wed, 4 Apr 2007 20:10:49 +0200
+References: <20070404111635.GA1855@aepfle.de> <20070404162004.GA3016@aepfle.de>
+In-Reply-To: <20070404162004.GA3016@aepfle.de>
 MIME-Version: 1.0
-To: Timur Tabi <timur@freescale.com>
-Subject: Re: [PATCH] powerpc: change rheap functions to use long integers
-	instead of pointers
-References: <11756161753280-git-send-email-timur@freescale.com>
-	<F4B76190-37C3-453C-B4F0-C1CB7CC0532E@kernel.crashing.org>
-	<4613E39A.70606@freescale.com>
-In-Reply-To: <4613E39A.70606@freescale.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="utf-8"
+Message-Id: <200704042010.50088.bzolnier@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
+	Paul Mackeras <paulus@samba.org>, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,47 +25,144 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Timur Tabi wrote:
-> Kumar Gala wrote:
->
->> I'm concerned the error handling isn't correctly.  What happens if 
->> the rheap I'm managing has addresses at 0xf0000000.  When I compare 
->> offset to 0, its going to report as an error, even if the offset 
->> returned is valid.
->
-> The return value is an offset INTO the actual buffer.  Unless you have
-> buffer larger than 2GB, the return value will never be negative unless
-> it's an error.  So technically, the maximum size of the remote heap is
-> 2GB.  It doesn't matter where it was located.
-That's what I tried to explain yesterday on IRC. Using rheap to manage
-offset into a buffer is one of the usage model. The other one is to use
-rh to manage addresses directly.
-Since the case where you manage offset is more common, it make senses to
-change the types to unsigned long. However the other usage model (manage
-addresses) should still be possible (using type casts only).
 
-I agree that _for the moment_, no code make uses of rheap to manage
-addresses but that could happen.
+Hi,
 
-> Please keep in mind that I'm not changing the actual numeric values
-> that are being returned.  I'm only changing the types, because they
-> were wrong.  rh_alloc() was returning a void pointer, but it was NEVER
-> a pointer.  It was always a simple offset.
-That's because _currently_ all the code use it like that, but nothing
-prevents them to use it other wise ...
+On Wednesday 04 April 2007, Olaf Hering wrote:
+> 
+> The firmware assigns irq 20/21 to the VIA IDE device on Pegasos.
+> But the required interrupt is 14/15.
+> Maybe someone confused decimal vs. hexadecimal values.
 
-But you're right, your not changing the actual values returned,
-ERR_PTR(x) == x ....
-So if someone wants to use it with addresses, he still can. He should
-just do cast to (void *). And to detect errors on alloc he should he
-IS_ERR(...)
+Good to see Pegasos platform being fixed to do the quirk in the proper way.
 
->   The first time you call rh_alloc(), you will get back a value of 0,
-> because that's the beginning of the heap.
-No, it doesn't always return 0.
-That depends on what free region you "attached" at initialisation. And
-you could have attached 0xffff0000 -> 0xffffffff ....
+However I fail to see how via82cxxx will continue to work without some other
+modifications to via82cxxx.c or setup-pci.c, namely how will hwif->irq be
+assigned with correct values?
 
+AFAICS:
+* via82cxxx.c:init_chipset_via82cxxx() returns '0' instead of 'dev->irq'
+  (won't help anyway since chipset is in legacy mode using IRQs 14 and 15)
+* on CHRP platform there is no ppc_ide_md.ide_default_irq
+* IRQ probing (used by ide-probe.c as a last resort) is unsupported on PPC
 
+therefore hwif->irq won't be set et all after removing quirk from via82cxxx.c
 
-    Sylvain
+?
+
+Thanks,
+Bart
+
+> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> 
+> ---
+>  arch/powerpc/kernel/prom_init.c |   55 ++++++++++++++++++++++++----------------
+>  drivers/ide/pci/via82cxxx.c     |   11 --------
+>  2 files changed, 33 insertions(+), 33 deletions(-)
+> 
+> Index: b/arch/powerpc/kernel/prom_init.c
+> ===================================================================
+> --- a/arch/powerpc/kernel/prom_init.c
+> +++ b/arch/powerpc/kernel/prom_init.c
+> @@ -2035,39 +2035,50 @@ static void __init fixup_device_tree_map
+>  #endif
+>  
+>  #ifdef CONFIG_PPC_CHRP
+> -/* Pegasos and BriQ lacks the "ranges" property in the isa node */
+> +/*
+> + * Pegasos and BriQ lacks the "ranges" property in the isa node
+> + * Pegasos needs decimal IRQ 14/15, not hexadecimal
+> + */
+>  static void __init fixup_device_tree_chrp(void)
+>  {
+> -	phandle isa;
+> -	u32 isa_ranges[6];
+> +	phandle ph;
+> +	u32 prop[6];
+>  	u32 rloc = 0x01006000; /* IO space; PCI device = 12 */
+>  	char *name;
+>  	int rc;
+>  
+>  	name = "/pci@80000000/isa@c";
+> -	isa = call_prom("finddevice", 1, 1, ADDR(name));
+> -	if (!PHANDLE_VALID(isa)) {
+> +	ph = call_prom("finddevice", 1, 1, ADDR(name));
+> +	if (!PHANDLE_VALID(ph)) {
+>  		name = "/pci@ff500000/isa@6";
+> -		isa = call_prom("finddevice", 1, 1, ADDR(name));
+> +		ph = call_prom("finddevice", 1, 1, ADDR(name));
+>  		rloc = 0x01003000; /* IO space; PCI device = 6 */
+>  	}
+> -	if (!PHANDLE_VALID(isa))
+> -		return;
+> -
+> -	rc = prom_getproplen(isa, "ranges");
+> -	if (rc != 0 && rc != PROM_ERROR)
+> -		return;
+> -
+> -	prom_printf("Fixing up missing ISA range on Pegasos...\n");
+> +	if (PHANDLE_VALID(ph)) {
+> +		rc = prom_getproplen(ph, "ranges");
+> +		if (rc == 0 || rc == PROM_ERROR) {
+> +			prom_printf("Fixing up missing ISA range on Pegasos...\n");
+> +
+> +			prop[0] = 0x1;
+> +			prop[1] = 0x0;
+> +			prop[2] = rloc;
+> +			prop[3] = 0x0;
+> +			prop[4] = 0x0;
+> +			prop[5] = 0x00010000;
+> +			prom_setprop(ph, name, "ranges", prop, sizeof(prop));
+> +		}
+> +	}
+>  
+> -	isa_ranges[0] = 0x1;
+> -	isa_ranges[1] = 0x0;
+> -	isa_ranges[2] = rloc;
+> -	isa_ranges[3] = 0x0;
+> -	isa_ranges[4] = 0x0;
+> -	isa_ranges[5] = 0x00010000;
+> -	prom_setprop(isa, name, "ranges",
+> -			isa_ranges, sizeof(isa_ranges));
+> +	name = "/pci@80000000/ide@C,1";
+> +	ph = call_prom("finddevice", 1, 1, ADDR(name));
+> +	if (PHANDLE_VALID(ph)) {
+> +		prom_printf("Fixing up IDE interrupt on Pegasos...\n");
+> +		prop[0] = 14;
+> +		prop[1] = 0x0;
+> +		prop[2] = 15;
+> +		prop[3] = 0x0;
+> +		prom_setprop(ph, name, "interrupts", prop, 4*sizeof(u32));
+> +	}
+>  }
+>  #else
+>  #define fixup_device_tree_chrp()
+> Index: b/drivers/ide/pci/via82cxxx.c
+> ===================================================================
+> --- a/drivers/ide/pci/via82cxxx.c
+> +++ b/drivers/ide/pci/via82cxxx.c
+> @@ -35,10 +35,6 @@
+>  #include <linux/ide.h>
+>  #include <asm/io.h>
+>  
+> -#ifdef CONFIG_PPC_CHRP
+> -#include <asm/processor.h>
+> -#endif
+> -
+>  #include "ide-timing.h"
+>  
+>  #define DISPLAY_VIA_TIMINGS
+> @@ -436,13 +432,6 @@ static void __devinit init_hwif_via82cxx
+>  	hwif->tuneproc = &via82cxxx_tune_drive;
+>  	hwif->speedproc = &via_set_drive;
+>  
+> -
+> -#ifdef CONFIG_PPC_CHRP
+> -	if(machine_is(chrp) && _chrp_type == _CHRP_Pegasos) {
+> -		hwif->irq = hwif->channel ? 15 : 14;
+> -	}
+> -#endif
+> -
+>  	for (i = 0; i < 2; i++) {
+>  		hwif->drives[i].io_32bit = 1;
+>  		hwif->drives[i].unmask = (vdev->via_config->flags & VIA_NO_UNMASK) ? 0 : 1;
