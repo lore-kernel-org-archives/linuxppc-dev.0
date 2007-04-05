@@ -1,20 +1,30 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 5EC49DDEB6
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2007 05:52:33 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
+Return-Path: <kevcorry@us.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 6E10DDDEC2
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2007 05:55:50 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l35JtlgF022222
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Apr 2007 15:55:47 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l35JtkpS083932
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Apr 2007 13:55:46 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l35JtkJB006114
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Apr 2007 13:55:46 -0600
+From: Kevin Corry <kevcorry@us.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: SPI devices and OF
-Date: Thu, 5 Apr 2007 21:52:20 +0200
-References: <20070404110916.GA9910@localhost.localdomain>
-	<030212e9acd638e71b2f50aa39fb90ed@bga.com>
-	<20070405191145.GA20139@himalia.labnet.pengutronix.de>
-In-Reply-To: <20070405191145.GA20139@himalia.labnet.pengutronix.de>
+Subject: Questions about porting perfmon2 to powerpc
+Date: Thu, 5 Apr 2007 14:55:33 -0500
 MIME-Version: 1.0
 Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704052152.21082.arnd@arndb.de>
-Cc: Milton Miller <miltonm@bga.com>
+  charset="us-ascii"
+Message-Id: <200704051455.34600.kevcorry@us.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>, Carl Love <carll@us.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,91 +34,158 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 05 April 2007, Sascha Hauer wrote:
-> Not a problem of programming technique but a problem of where to
-> actually get the information in the platform from. device tree or
-> board setup code?
+Hello,
 
-There should not need to be board specific setup code in many cases,
-so it should be in the device tree.
+Carl Love and I have been working on getting the latest perfmon2 patches 
+(http://perfmon2.sourceforge.net/) working on Cell, and on powerpc in 
+general. We've come up with some powerpc-specific questions and we're hoping 
+to get some opinions from the powerpc kernel developers.
 
-> > You kzalloc the
-> > data structure that the device needs, fill it in, and fill out
-> > the pointer in the auto _info variable that gets copied by
-> > register_new_device.
->=20
-> My point is that we have two possibilities to handle spi devices. a) We
-> put the information about all devices connected to a spi bus into the
-> device tree in which case we must also put the data described in the
-> platform_data (e.g. the mentioned page_size for at25 eeproms) into the
-> tree. b) would be to put only the spi masters into the tree (well they
-> already are).
+First, the stock 2.6.20 kernel has a prototype in include/linux/smp.h for a 
+function called smp_call_function_single(). However, this routine is only 
+implemented on i386, x86_64, ia64, and mips. Perfmon2 apparently needs to 
+call this to run a function on a specific CPU. Powerpc provides an 
+smp_call_function() routine to run a function on all active CPUs, so I used 
+that as a basis to add an smp_call_function_single() routine. I've included 
+the patch below and was wondering if it looked like a sane approach.
 
-If all the information you need can be probed through SPI commands, you
-don't need to have a device tree layout for it. That is how we deal
-with PCI devices as well. However, if there are things you need to know
-in the specific driver for an SPI attached device, it should be in
-the tree.
+Next, we ran into a problem related to Perfmon2 initialization and sysfs. The 
+problem turned out to be that the powerpc version of topology_init() is 
+defined as an __initcall() routine, but Perfmon2's initialization is done as 
+a subsys_initcall() routine. Thus, Perfmon2 tries to initialize its sysfs 
+information before some of the powerpc cpu information has been initialized. 
+However, on all other architectures, topology_init() is defined as a 
+subsys_initcall() routine, so this problem was not seen on any other 
+platforms. Changing the powerpc version of topology_init() to a 
+subsys_initcall() seems to have fixed the bug. However, I'm not sure if that 
+is going to cause problems elsewhere in the powerpc code. I've included the 
+patch below (after the smp-call-function-single patch). Does anyone know if 
+this change is safe, or if there was a specific reason that topology_init() 
+was left as an __initcall() on powerpc?
 
-> It seems b) is the prefered way. If I understand Ben correctly I can
-> then put some proprietary tag into the tree to differentiate between
-> different spi controllers so that the board code knows which spi
-> controller is which. So my tree could look like:
->=20
-> spi@f00 {
-> =A0=A0=A0=A0=A0=A0=A0=A0device_type =3D "spi";
-> =A0=A0=A0=A0=A0=A0=A0=A0compatible =3D "mpc5200b-spi\0mpc5200-spi";
-> =A0=A0=A0=A0=A0=A0=A0=A0reg =3D <f00 20>;
-> =A0=A0=A0=A0=A0=A0=A0=A0interrupts =3D <2 d 0 2 e 0>;
-> =A0=A0=A0=A0=A0=A0=A0=A0interrupt-parent =3D <500>;
-> =A0=A0=A0=A0=A0=A0=A0=A0identifier =3D <0>;
-> }
->=20
-> spi@xxx {
-> =A0=A0=A0=A0=A0=A0=A0=A0device_type =3D "spi";
-> =A0=A0=A0=A0=A0=A0=A0=A0...
-> =A0=A0=A0=A0=A0=A0=A0=A0identifier =3D <1>;
-> }
->=20
-> I can then use the board code to populate the spi devices depending on
-> the identifier. Perhaps there is a better name instead of 'identifier'?
+Thanks for your help!
+-- 
+Kevin Corry
+kevcorry@us.ibm.com
+http://www.ibm.com/linux/
 
-I think this is backwards. The board code should not need to know
-about it, but you identify the chip select based on the "compatible"
-property. Your of_platform_driver probe will then look more or less like
-this:
 
-struct of_device_id of_spi_ids[] =3D {
-	{ .type =3D "spi", .compatible =3D "mpc5200b-spi",
-			 .data =3D SPI_PROBE_MPC5200b },
-	{ .type =3D "spi", .compatible =3D "mpc52foo-spi",
-			 .data =3D SPI_PROBE_MPC52FOO },
-	...
-};
+===================================================================
+Add an smp_call_function_single() to the powerpc architecture. This is mostly
+a copy of smp_call_function(), but with minor modifications to call only the
+specified CPU.
 
-static int of_spi_probe(struct of_device* dev,
-	const struct of_device_id *match)
-{
-	int ret;
+Index: linux-2.6.20-perfmon/arch/powerpc/kernel/smp.c
+===================================================================
+--- linux-2.6.20-perfmon.orig/arch/powerpc/kernel/smp.c
++++ linux-2.6.20-perfmon/arch/powerpc/kernel/smp.c
+@@ -287,6 +287,92 @@ int smp_call_function (void (*func) (voi
+ 
+ EXPORT_SYMBOL(smp_call_function);
+ 
++/*
++ * This function sends a 'generic call function' IPI to the specified CPU.
++ *
++ * [SUMMARY] Run a function on the specified CPUs.
++ * <func> The function to run. This must be fast and non-blocking.
++ * <info> An arbitrary pointer to pass to the function.
++ * <nonatomic> currently unused.
++ * <wait> If true, wait (atomically) until function has completed on the
++ * other CPU.
++ * [RETURNS] 0 on success, else a negative status code. Does not return until
++ * remote CPU is nearly ready to execute <<func>> or are or has executed.
++ *
++ * You must not call this function with disabled interrupts or from a
++ * hardware interrupt handler or from a bottom half handler.
++ */
++int smp_call_function_single(int cpuid, void (*func)(void *info), void *info,
++			     int nonatomic, int wait)
++{
++	struct call_data_struct data;
++	int ret = -1, cpus = 1, me;
++	u64 timeout;
++
++	/* Can deadlock when called with interrupts disabled */
++	WARN_ON(irqs_disabled());
++
++	if (unlikely(smp_ops == NULL))
++		return -1;
++
++	me = get_cpu(); /* prevent preemption and reschedule on another processor */
++	if (cpuid == me) {
++		printk(KERN_INFO "%s: trying to call self\n", __FUNCTION__);
++		put_cpu();
++		return -EBUSY;
++	}
++
++	data.func = func;
++	data.info = info;
++	atomic_set(&data.started, 0);
++	data.wait = wait;
++	if (wait)
++		atomic_set(&data.finished, 0);
++
++	spin_lock(&call_lock);
++
++	call_data = &data;
++	smp_wmb();
++	/* Send a message to the specified CPU and wait for it to respond */
++	smp_ops->message_pass(cpuid, PPC_MSG_CALL_FUNCTION);
++
++	timeout = get_tb() + (u64) SMP_CALL_TIMEOUT * tb_ticks_per_sec;
++
++	/* Wait for response */
++	while (atomic_read(&data.started) != cpus) {
++		HMT_low();
++		if (get_tb() >= timeout) {
++			printk("%s on cpu %d: cpu %d not responding\n",
++			       __FUNCTION__, smp_processor_id(), cpuid);
++			debugger(NULL);
++			goto out;
++		}
++	}
++
++	if (wait) {
++		while (atomic_read(&data.finished) != cpus) {
++			HMT_low();
++			if (get_tb() >= timeout) {
++				printk("%s on cpu %d: cpu %d not finishing\n",
++				       __FUNCTION__, smp_processor_id(), cpuid);
++				debugger(NULL);
++				goto out;
++			}
++		}
++	}
++
++	ret = 0;
++
++ out:
++	call_data = NULL;
++	HMT_medium();
++	spin_unlock(&call_lock);
++	put_cpu();
++	return ret;
++}
++
++EXPORT_SYMBOL(smp_call_function_single);
++
+ void smp_call_function_interrupt(void)
+ {
+ 	void (*func) (void *info);
 
-	/* common initialization */
-	...
+===================================================================
+Change the powerpc version of topology_init() from an __initcall to
+a subsys_initcall to match all other architectures.
+ 
+Index: linux-2.6.20-perfmon/arch/powerpc/kernel/sysfs.c
+===================================================================
+--- linux-2.6.20-perfmon.orig/arch/powerpc/kernel/sysfs.c
++++ linux-2.6.20-perfmon/arch/powerpc/kernel/sysfs.c
+@@ -455,4 +455,4 @@ static int __init topology_init(void)
+ 
+ 	return 0;
+ }
+-__initcall(topology_init);
++subsys_initcall(topology_init);
 
-	/* board specific initialition */
-	switch (match->data) {
-	case SPI_PROBE_MPC5200b:
-		ret =3D of_spi_probe_mpc5200b(dev);
-		break;
-	case SPI_PROBE_MPC5200b:
-		ret =3D of_spi_probe_mpc5200b(dev);
-		break;
-	...
-	}
-=09
-	/* register with spi layer */
-	...
-
-	return ret;
-}
-
-	Arnd <><
+===================================================================
