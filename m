@@ -1,17 +1,12 @@
 Return-Path: <vanbaren@cideas.com>
-Received: from alnrmhc16.comcast.net (alnrmhc16.comcast.net [204.127.225.96])
-	by ozlabs.org (Postfix) with ESMTP id 18D26DDE19
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 12:29:54 +1000 (EST)
-Received: from vanbaren by dellserver.lan with local (Exim 4.63)
-	(envelope-from <vanbaren@dellserver.lan>) id 1HZHjV-0003sY-FQ
-	for linuxppc-dev@ozlabs.org; Wed, 04 Apr 2007 22:29:53 -0400
-Date: Wed, 4 Apr 2007 22:29:53 -0400
-From: Jerry Van Baren <gvb.linuxppc.dev@gmail.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH: dtc] Implement the -R option and add a -S option.
-Message-ID: <20070405022953.GA14887@dellserver.lan>
+Date: Wed, 4 Apr 2007 22:04:33 -0400
+From: Jerry Van Baren <gvb.uboot@gmail.com>
+To: jdl@jdl.com
+Subject: [PATCH dtc] Implement the -R option and add a -S option.
+Message-ID: <20070405020433.GA13891@dellserver.lan>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+Cc: Linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
