@@ -1,20 +1,23 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id BB1AEDDE46
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 10:54:53 +1000 (EST)
-Date: Thu, 5 Apr 2007 10:55:10 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Olaf Hering <olaf@aepfle.de>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1C20EDDE0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 11:46:46 +1000 (EST)
 Subject: Re: [PATCH] add correct interrupt property for pegasos ide
-Message-Id: <20070405105510.4376e9ec.sfr@canb.auug.org.au>
-In-Reply-To: <20070404162004.GA3016@aepfle.de>
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olaf Hering <olaf@aepfle.de>
+In-Reply-To: <20070404181138.GA6050@aepfle.de>
 References: <20070404111635.GA1855@aepfle.de> <20070404162004.GA3016@aepfle.de>
+	<200704042010.50088.bzolnier@gmail.com>
+	<20070404181138.GA6050@aepfle.de>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 11:46:29 +1000
+Message-Id: <1175737590.30879.105.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__5_Apr_2007_10_55_10_+1000_.M2Aw/SCkC0kq=gy"
 Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Paul Mackeras <paulus@samba.org>, linux-ide@vger.kernel.org
+	Paul Mackeras <paulus@samba.org>,
+	Bartlomiej Zolnierkiewicz <bzolnier@gmail.com>, linux-ide@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +27,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__5_Apr_2007_10_55_10_+1000_.M2Aw/SCkC0kq=gy
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Wed, 2007-04-04 at 20:11 +0200, Olaf Hering wrote:
+> On Wed, Apr 04, Bartlomiej Zolnierkiewicz wrote:
+> 
+> > ?
+> 
+> You are right, I did not test the ide driver again. pata_via works with
+> the change. 
 
-Hi Olaf,
+Probably only the first channel works...
 
-On Wed, 4 Apr 2007 18:20:04 +0200 Olaf Hering <olaf@aepfle.de> wrote:
->
-> -	phandle isa;
-> -	u32 isa_ranges[6];
-> +	phandle ph;
-> +	u32 prop[6];
-
-Juat a small nit:  If you want to rename vairables, please do it in a
-separate patch - doing it here just clutters the patch and makes it
-harder to see what the real purpose is.
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__5_Apr_2007_10_55_10_+1000_.M2Aw/SCkC0kq=gy
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGFEjzFdBgD/zoJvwRApDtAJ4+ROT0mxIRGESJARFASESBf2Z48gCePjiV
-IedvtAx+hRfI6ovqT1tJvcQ=
-=sGbL
------END PGP SIGNATURE-----
-
---Signature=_Thu__5_Apr_2007_10_55_10_+1000_.M2Aw/SCkC0kq=gy--
+Ben.
