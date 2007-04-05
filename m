@@ -1,27 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 82E8EDDE0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 11:49:47 +1000 (EST)
-Subject: Re: [PATCH 01/17] [POWERPC] Rename get_property to
-	of_get_property: include
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-In-Reply-To: <20070403222406.cf39c459.sfr@canb.auug.org.au>
-References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
-	<20070403105401.1fcdee27.sfr@canb.auug.org.au>
-	<20070403105539.7222cf2a.sfr@canb.auug.org.au>
-	<20070403105650.204003b6.sfr@canb.auug.org.au>
-	<20070403105748.769f156c.sfr@canb.auug.org.au>
-	<20070403105852.7c7bfaa0.sfr@canb.auug.org.au>
-	<20070403222406.cf39c459.sfr@canb.auug.org.au>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 11:49:35 +1000
-Message-Id: <1175737775.30879.111.camel@localhost.localdomain>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id D9D75DDE42
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 12:02:40 +1000 (EST)
+Date: Thu, 5 Apr 2007 12:02:53 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Don Zickus <dzickus@redhat.com>
+Subject: Re: [PATCH] allow vmsplice to work in 32-bit mode on ppc64
+Message-Id: <20070405120253.0b0ee501.sfr@canb.auug.org.au>
+In-Reply-To: <20070404172519.GZ11029@redhat.com>
+References: <20070404172519.GZ11029@redhat.com>
 Mime-Version: 1.0
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	"David S. Miller" <davem@davemloft.net>
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Thu__5_Apr_2007_12_02_53_+1000_9LKyofxMlXZB_VUX"
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,11 +23,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-03 at 22:24 +1000, Stephen Rothwell wrote:
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+--Signature=_Thu__5_Apr_2007_12_02_53_+1000_9LKyofxMlXZB_VUX
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+On Wed, 4 Apr 2007 13:25:19 -0400 Don Zickus <dzickus@redhat.com> wrote:
+>
+> Trivial change to pass vmsplice arguments through the compat layer on
+> pp64.
+>
+> Signed-off-by: Don Zickus <dzickus@redhat.com>
+Acked-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
-(to all of the patches in this serie)
+Obviously noone uses vmsplice from 32bit processes on ppc64 :-)
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
 
-Ben.
+--Signature=_Thu__5_Apr_2007_12_02_53_+1000_9LKyofxMlXZB_VUX
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGFFjYFdBgD/zoJvwRAkR7AJ4+YRV8R+JXuE6lBZKPBa1rcXlI2ACdGOqK
+4vFm79w+F6OPHElIdAVYuS4=
+=l4Bp
+-----END PGP SIGNATURE-----
+
+--Signature=_Thu__5_Apr_2007_12_02_53_+1000_9LKyofxMlXZB_VUX--
