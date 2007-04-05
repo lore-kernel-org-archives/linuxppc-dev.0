@@ -1,32 +1,18 @@
-Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
-Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
-	[217.147.92.249])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 08961DDE0C
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 18:50:27 +1000 (EST)
-Date: Thu, 5 Apr 2007 09:50:03 +0100
-From: Russell King <rmk+lkml@arm.linux.org.uk>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070405085003.GA22362@flint.arm.linux.org.uk>
-References: <17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	<1175666635.2932.17.camel@shinybook.infradead.org>
-	<20070404.011208.120446173.davem@davemloft.net>
-	<20070404083803.GA13134@flint.arm.linux.org.uk>
-	<20070404122154.GF31973@thunk.org> <4613CF6A.2090407@zytor.com>
-	<20070404174153.GI31973@thunk.org>
-	<20070404181531.GA9388@flint.arm.linux.org.uk>
-	<1175716215.2774.52.camel@shinybook.infradead.org>
-	<17940.37291.211960.566580@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id EA69DDDE0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 18:51:09 +1000 (EST)
+Date: Thu, 5 Apr 2007 10:50:57 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: SPI devices and OF
+Message-ID: <20070405085057.GC9910@localhost.localdomain>
+References: <20070404110916.GA9910@localhost.localdomain>
+	<a84b0389cf9e6730da79750b1afc1973@bga.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17940.37291.211960.566580@cargo.ozlabs.ibm.com>
-Sender: Russell King <rmk@arm.linux.org.uk>
-Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
-	linuxppc-dev@ozlabs.org, "H. Peter Anvin" <hpa@zytor.com>,
-	David Woodhouse <dwmw2@infradead.org>,
-	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
+In-Reply-To: <a84b0389cf9e6730da79750b1afc1973@bga.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,34 +22,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 05, 2007 at 04:05:31PM +1000, Paul Mackerras wrote:
-> David Woodhouse writes:
+On Wed, Apr 04, 2007 at 10:57:28AM -0500, Milton Miller wrote:
+> On Wed Apr 4 21:09:16 EST 2007, Sascha Hauer wrote:
 > 
-> > And you always will be. The amount of pain involved in implementing
-> > this, just so that people can call their serial port 'ttyS0', is _far_
-> > more than it's worth. It could be done, but it's a completely pointless
-> > waste of time and effort. 
+> >I'm currently writing a driver for the mpc5200 spi controller (the
+> >dedicated one, not the PSC ones).
+> >
+> >The driver has the form of a of_platform_driver. My problem is that I
+> >don't know how to define the spi devices on the spi bus. My current
+> >approach is having something like this in the OF tree:
+> >
+> >
+> >        spi at f00 {
+> >                device_type = "spi";
+> >                compatible = "mpc5200b-spi\0mpc5200-spi";
+> >                reg = <f00 20>;
+> >                interrupts = <2 d 0 2 e 0>;
+> >                interrupt-parent = <500>;
+> >                mmc at 0 {
+> >                        device_type = "mmc_spi";
+> >                        compatible = "mmc_spi";
 > 
-> Avoiding breaking userspace is a completely pointless waste of time
-> and effort?  Linux is ready for the desktop?  Suuuure it is...
+> Why is the device_type mmc_spi?   Is this a MMC adapter?
+> The type of a network card is "network", not "pci_network".
 
-And what contribution to achieving the goal of having a single namespace
-does the above comment provide?
+MMC cards have a SPI mode, so mmc_spi ist meant as "MMC over SPI". This
+is the name the linux mmc over spi driver matches on.
 
-Look, this is what I'm complaining about.  There's lots of talk on this
-issue.  There's been lots and lots of talk on this issue in the past as
-well.  I've raised the technical issues in this thread several times and
-so far been ignored every time.
+> 
+> 
+> >                };
+> >        };
+> >
+> >I can then parse the children in my spi driver with
+> >
+> >        while( (child = of_get_next_child(odev->node, child))) {
+> >                struct spi_board_info info;
+>                 (fill out info) ...
+> >                spi_register_board_info(&info, 1);
+> >        }
+> >
+> >I think it will work this way but I found no way getting the
+> >platform_data for the spi devices.
+> 
+> Why do you need platform_data for the devices?  I understand for
+> the master.   Actually, spi_device_info has a nice platform_info 
+> pointer.
 
-If as much effort went into trying to resolve the technical problems as
-has gone into whinging about it in this thread, maybe the goal would be
-a little closer?
+For example the AT25 eeprom driver needs the page_size and some other bits in
+the platform_data.
 
-I'm sorry if you find this message offensive.  I find filling my mailbox
-with 80ish messages of whinging utterly unproductive and equally offensive
-especially given my past input on serial issues.
+> 
+> However, looking at drivers/spi/spi.c, it looks
+> spi_register_board_info is for staticly determined tables that are
+> known at _init and the spi master busses are enumerated in some
+> platform-dtermined way.  Since your proposed binding doesn't have
+> an enumeration of the spi master, that does not match.  I guess you
+> could register them with sequential numbers as you encounter the
+> masters in the device tree.  However, if this is code is in your
+> driver, it seems to be the wrong point in time, you need something
+> _init_or_module.
+> 
+> Looking through the code, It seems you want to use spi_new_device()
+> after calling spi_alloc_master() and spi_register_master().
 
--- 
-Russell King
- Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
- maintainer of:
+Yes, you're right. I mixed that up. Anyway, it was only meant as pseudo
+code to show what I'm trying to do.
+
+Sascha
