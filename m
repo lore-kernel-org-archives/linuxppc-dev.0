@@ -1,23 +1,21 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <9696D7A991D0824DBA8DFAC74A9C5FA302C194B9@az33exm25.fsl.freescale.net>
-References: <20070328011924.GA1586@mag.az.mvista.com>
-	<20070328012206.GD1586@mag.az.mvista.com>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302BDAB3E@az33exm25.fsl.freescale.net>
-	<20070329003550.GB25652@localhost.localdomain>
-	<20070402181553.GH2132@mag.az.mvista.com>
-	<f622cb9af058a72fc47521e44ae6672a@kernel.crashing.org>
-	<20070404162905.GD21314@mag.az.mvista.com>
-	<9696D7A991D0824DBA8DFAC74A9C5FA302C194B9@az33exm25.fsl.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3b592979f429a363f3b681eccb271522@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [RFC 3/3] powerpc: Add DTS file for the Motorola PrPMC2800
-	platform
-Date: Thu, 5 Apr 2007 19:48:53 +0200
-To: "Yoder Stuart-B08248" <stuart.yoder@freescale.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>,
-	Dale Farnsworth <dfarnsworth@mvista.com>
+Return-Path: <anemo@mba.ocn.ne.jp>
+Received: from smtp.mba.ocn.ne.jp (mba.ocn.ne.jp [122.1.175.29])
+	by ozlabs.org (Postfix) with ESMTP id CC0A1DDEE2
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2007 01:09:19 +1000 (EST)
+Date: Fri, 06 Apr 2007 00:09:13 +0900 (JST)
+Message-Id: <20070406.000913.28784231.anemo@mba.ocn.ne.jp>
+To: dwmw2@infradead.org
+Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
+	optionally.
+From: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <1175784435.2719.18.camel@shinybook.infradead.org>
+References: <1175696383.2774.24.camel@shinybook.infradead.org>
+	<20070405.233101.106261123.anemo@mba.ocn.ne.jp>
+	<1175784435.2719.18.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	torben@kernel.org, device@lanana.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,26 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> the PowerPC binding defines this--
->
->  + 5.1.7. Memory Management Unit properties
+On Thu, 05 Apr 2007 10:47:15 -0400, David Woodhouse <dwmw2@infradead.org> wrote:
+> > Is major 204 minor 192 already allocated?
+> 
+> Of course. The reason it took so long to provide this patch after the
+> 'pmac_zilog doesn't load' bug got reported was because I was waiting for
+> the new allocation.
+> 
+> > Few weeks ago, I sent a patch to allocate 192...199 for other serial
+> > driver 
+> 
+> Were those numbers assigned to you or did you just make them up?
 
-<snip>
+What I did is just send a patch includeing devices.txt changes to
+lkml, device@lanana.org, and some others.
 
-> The "mode" field seems to be undefined.
+Maybe I should have sent "request" (not patch) mail to
+device@lanana.org first?
 
-It's defined in 6.1 in the same doc -- briefly, it's
-a bitfield WIMGxPP.
-
-> So would firmware need to define all phys to virt mappings in
-> the "translations" property or just the interesting ones-- i.e
-> uart/console and i2c?
-
-In principle, all.  But since you won't invoke any
-client interface services ever (you don't _have_ a
-real OF after all ;-) ) you might be able to get
-away with describing only the ones you are going
-to use.
-
-
-Segher
+---
+Atsushi Nemoto
