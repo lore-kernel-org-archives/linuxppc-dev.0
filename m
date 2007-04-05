@@ -1,21 +1,21 @@
-Return-Path: <Leonid@a-k-a.net>
-Received: from mis011-1.exch011.intermedia.net
-	(mis011-1.exch011.intermedia.net [64.78.21.128])
-	by ozlabs.org (Postfix) with ESMTP id 64E1ADDE30
+Return-Path: <Rick.Moleres@xilinx.com>
+Received: from outbound4-dub-R.bigfish.com (outbound-dub.frontbridge.com
+	[213.199.154.16])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 16277DDE2A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  5 Apr 2007 08:13:35 +1000 (EST)
+	Thu,  5 Apr 2007 10:01:31 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
-	charset="gb2312"
+	charset="GB2312"
 Subject: RE: Linux w/ML403 PLB TEMAC
-Date: Wed, 4 Apr 2007 15:13:41 -0700
-Message-ID: <406A31B117F2734987636D6CCC93EE3C013E2084@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <406A31B117F2734987636D6CCC93EE3C013E1FC5@ehost011-3.exch011.intermedia.net>
-References: <OF229BF134.4671531A-ON85257282.005139A1-85257282.0051498A@ct.wec.com>
-	<406A31B117F2734987636D6CCC93EE3C013E1FC5@ehost011-3.exch011.intermedia.net>
-From: "Leonid" <Leonid@a-k-a.net>
-To: <Glenn.G.Hart@us.westinghouse.com>,
+Date: Wed, 4 Apr 2007 18:00:24 -0600
+In-Reply-To: <406A31B117F2734987636D6CCC93EE3C013E20B0@ehost011-3.exch011.intermedia.net>
+From: "Rick Moleres" <Rick.Moleres@xilinx.com>
+To: "Leonid" <Leonid@a-k-a.net>,
 	<linuxppc-embedded@ozlabs.org>
+Message-Id: <20070405000126.880201A48059@mail69-dub.bigfish.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,6 +25,69 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+
+Leonid,
+
+If it's not the ML403 board and the FX part is CES4 or later (read this =
+at the bottom of the FX chip), then you will need hard_temac_v3_00_b to =
+get the MDIO access working properly.
+
+If this is pre-CES4 silicon, then hard_temac_v3_00_a is the right =
+version and there may be an issue with the MDIO signal connectivity in =
+your design (? just guessing).  You can also try to hardcode the PHY =
+address (gmii_addr) and see if the speed detection works at that point - =
+but my guess is it won't.
+
+-Rick
+
+-----Original Message-----
+From: Leonid [mailto:Leonid@a-k-a.net]=20
+Sent: Wednesday, April 04, 2007 5:50 PM
+To: Rick Moleres; linuxppc-embedded@ozlabs.org
+Subject: RE: Linux w/ML403 PLB TEMAC
+
+Hi, Rick:
+
+We have both in our design and both are 3.00a. I'm not sure why - I'll =
+ask our HW folks.=20
+
+I have actually managed (just 30 minutes ago) to bring up network =
+interface but I have commented out all accesses to PHY in your adapter.c =
+and I set speed to 1000 always (see my adapter.c attached). Without =
+these changes packets are not transmitted out of board.
+
+This is probably some issue in my EDK project.
+
+I'm not using ML403 actually but another proprietary board, based on =
+Virtex
+4 (69FX) FPGA.
+
+Thanks,
+
+Leonid.
+
+-----Original Message-----
+From: Rick Moleres [mailto:Rick.Moleres@xilinx.com]=20
+Sent: Wednesday, April 04, 2007 4:41 PM
+To: Leonid; Glenn.G.Hart@us.westinghouse.com; =
+linuxppc-embedded@ozlabs.org
+Subject: RE: Linux w/ML403 PLB TEMAC
+
+Leonid,
+
+You mentioned that the TEMAC version if v3.00a.  Is this the plb_temac =
+version or the hard_temac version, or both?
+
+-Rick
+
+-----Original Message-----
+From: linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org =
+[mailto:linuxppc-embedded-bounces+moleres=3Dxilinx.com@ozlabs.org] On =
+Behalf Of Leonid
+Sent: Wednesday, April 04, 2007 4:14 PM
+To: Glenn.G.Hart@us.westinghouse.com; linuxppc-embedded@ozlabs.org
+Subject: RE: Linux w/ML403 PLB TEMAC
 
 I have investigated little bit more. Receive is working actually, but =
 transmit doesn't. What can it be?
@@ -210,6 +273,10 @@ https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 
 
 
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
 _______________________________________________
 Linuxppc-embedded mailing list
 Linuxppc-embedded@ozlabs.org
