@@ -1,17 +1,25 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 9F46BDDE4A
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2007 01:17:44 +1000 (EST)
-Message-ID: <461512F3.3010704@smiths-aerospace.com>
-Date: Thu, 05 Apr 2007 11:17:07 -0400
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-MIME-Version: 1.0
-To: Jon Loeliger <jdl@jdl.com>
-Subject: Re: [PATCH dtc] Implement the -R option and add a -S option.
-References: <20070405020433.GA13891@dellserver.lan> <E1HZTUe-0006WY-UH@jdl.com>
-In-Reply-To: <E1HZTUe-0006WY-UH@jdl.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, u-boot-users@lists.sourceforge.net
+Return-Path: <SRS0+dbfa744e487eb5695f7d+1320+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CC365DDE4A
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2007 01:18:54 +1000 (EST)
+Subject: Re: [PATCH v3] Stop pmac_zilog from abusing 8250's device numbers;
+	optionally.
+From: David Woodhouse <dwmw2@infradead.org>
+To: Atsushi Nemoto <anemo@mba.ocn.ne.jp>
+In-Reply-To: <20070406.000913.28784231.anemo@mba.ocn.ne.jp>
+References: <1175696383.2774.24.camel@shinybook.infradead.org>
+	<20070405.233101.106261123.anemo@mba.ocn.ne.jp>
+	<1175784435.2719.18.camel@shinybook.infradead.org>
+	<20070406.000913.28784231.anemo@mba.ocn.ne.jp>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 11:18:12 -0400
+Message-Id: <1175786292.2719.23.camel@shinybook.infradead.org>
+Mime-Version: 1.0
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	torben@kernel.org, device@lanana.org, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,35 +29,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jon Loeliger wrote:
-> So, like, the other day Jerry Van Baren mumbled:
->> Implement the -R <number> option to add memory reserve slots.
->> Add a -S <size> option makes the blob at least this number of bytes.
->>
->> Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
+On Fri, 2007-04-06 at 00:09 +0900, Atsushi Nemoto wrote:
 > 
-> Applied.
+> What I did is just send a patch includeing devices.txt changes to
+> lkml, device@lanana.org, and some others.
 > 
-> Thanks,
-> jdl
+> Maybe I should have sent "request" (not patch) mail to
+> device@lanana.org first?
 
-Thanks, Jon.  That makes the new u-boot "fdt" command tremendously 
-easier to use because you can now allocate extra space in the blob at 
-compile time rather than having to reallocate space using the u-boot 
-"fdt" command.
+Well, that's what it says right underneath the line in devices.txt which
+says:
+	**** DEVICE DRIVERS AUTHORS PLEASE READ THIS ****
 
-Note to u-boot "fdt" command users:
-* Pull the latest dtc source from Jon's repo
-     <http://www.jdl.com/git_repos/>
-* When you compile your dts, use the new -S parameter to create some
-     extra space (e.g. -S 0x2000).  If you don't want to guess how big
-     your current blob is, run a test compile with -S 1 - you will get
-     a warning (don't use -q ;-) that will tell you how big your
-     blob is.  Re-run with a reasonable -S.
-* The -R to make extra mem reserve slots may be useful too.
-* Make sure you *don't* specify version 16 (some legacy recipes do
-     that).  The latest version is 17 and dtc now Does The Right Thing
-     without needing the version specified.  Do *not* use -V.
+It goes on to say...
 
-Best regards,
-gvb
+"Third, please don't assume that the distributed version of the list is
+up to date.  Due to the number of registrations I have to maintain it
+in "batch mode", so there is likely additional registrations that
+haven't been listed yet."
+
+-- 
+dwmw2
