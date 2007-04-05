@@ -1,12 +1,15 @@
-Return-Path: <vanbaren@cideas.com>
-Date: Wed, 4 Apr 2007 22:04:33 -0400
-From: Jerry Van Baren <gvb.uboot@gmail.com>
-To: jdl@jdl.com
-Subject: [PATCH dtc] Implement the -R option and add a -S option.
-Message-ID: <20070405020433.GA13891@dellserver.lan>
-MIME-Version: 1.0
+Return-Path: <tony@bakeyournoodle.com>
+Received: from pythia.bakeyournoodle.com (pythia.bakeyournoodle.com
+	[203.82.209.197]) by ozlabs.org (Postfix) with ESMTP id 46067DDE34
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 14:04:45 +1000 (EST)
+Date: Thu, 5 Apr 2007 14:04:44 +1000
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC/PATCH] [POWERPC] Forcefully select at least one platform in
+	MULIT_PLATFORM builds.
+Message-ID: <20070405040444.GV12768@bakeyournoodle.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Linuxppc-dev@ozlabs.org, david@gibson.dropbear.id.au
+From: tony@bakeyournoodle.com (Tony Breeds)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,131 +19,140 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Implement the -R <number> option to add memory reserve slots.
-Add a -S <size> option makes the blob at least this number of bytes.
 
-Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
+This was discovered by Rob Landley with 2.6.20.4 and reported on lkml
+(http://marc.info/?l=linux-kernel&m=117529162824010).  This patch forces
+the selection of at least one platform.
+
+It does have the side effect that in order to turn off pSeries (or CHRP
+for ppc32) you need to select at least one other platform, which I admit
+might be a little strange.
+
+From: Tony Breeds <tony@bakeyournoodle.com>
+
+[PATCH] [POWERPC] Forcefully select at least one platform in MULIT_PLATFORM builds.
+
+Currently it is possible to select PPC_MULTI_PLATFORM, and then select no
+platforms, this is unlikely to create a working kernel.  Introduce a couple
+of new Kconfig variables to forcefully select at least one platform.
+
+Signed-off-by: Tony Breeds <tony@bakeyournoodle.com>
 ---
- dtc.c      |   19 ++++++++++++++++---
- dtc.h      |    6 ++++--
- flattree.c |   22 ++++++++++++++++++++--
- 3 files changed, 40 insertions(+), 7 deletions(-)
+ arch/powerpc/Kconfig |   21 +++++++++++++++++++++
+ 1 files changed, 21 insertions(+), 0 deletions(-)
 
-diff --git a/dtc.c b/dtc.c
-index a009605..a94a402 100644
---- a/dtc.c
-+++ b/dtc.c
-@@ -21,6 +21,13 @@
- #include "dtc.h"
- #include "srcpos.h"
+diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+index 0855d55..27d53b6 100644
+--- a/arch/powerpc/Kconfig
++++ b/arch/powerpc/Kconfig
+@@ -360,6 +360,14 @@ endmenu
  
-+/*
-+ * Command line options
-+ */
-+int quiet;		/* Level of quietness */
-+int reservenum;		/* Number of memory reservation slots */
-+int minsize;		/* Minimum blob size */
+ source "init/Kconfig"
+ 
++config PPC_PLATFORM_CHOSEN
++	def_bool n
 +
- char *join_path(char *path, char *name)
- {
- 	int lenp = strlen(path);
-@@ -85,6 +92,8 @@ static void usage(void)
- 	fprintf(stderr, "\t\tBlob version to produce, defaults to %d (relevant for dtb\n\t\tand asm output only)\n", OF_DEFAULT_VERSION);
- 	fprintf(stderr, "\t-R <number>\n");
- 	fprintf(stderr, "\t\tMake space for <number> reserve map entries (relevant for \n\t\tdtb and asm output only)\n");
-+	fprintf(stderr, "\t-S <bytes>\n");
-+	fprintf(stderr, "\t\tMake the blob at least <bytes> long (extra space)\n");
- 	fprintf(stderr, "\t-b <number>\n");
- 	fprintf(stderr, "\t\tSet the physical boot cpu\n");
- 	fprintf(stderr, "\t-f\n");
-@@ -104,12 +113,13 @@ int main(int argc, char *argv[])
- 	FILE *inf = NULL;
- 	FILE *outf = NULL;
- 	int outversion = OF_DEFAULT_VERSION;
--	int reservenum = 1;
- 	int boot_cpuid_phys = 0xfeedbeef;
- 
--	quiet = 0;
-+	quiet      = 0;
-+	reservenum = 0;
-+	minsize    = 0;
- 
--	while ((opt = getopt(argc, argv, "hI:O:o:V:R:fqb:")) != EOF) {
-+	while ((opt = getopt(argc, argv, "hI:O:o:V:R:S:fqb:")) != EOF) {
- 		switch (opt) {
- 		case 'I':
- 			inform = optarg;
-@@ -126,6 +136,9 @@ int main(int argc, char *argv[])
- 		case 'R':
- 			reservenum = strtol(optarg, NULL, 0);
- 			break;
-+		case 'S':
-+			minsize = strtol(optarg, NULL, 0);
-+			break;
- 		case 'f':
- 			force = 1;
- 			break;
-diff --git a/dtc.h b/dtc.h
-index 7ed3df2..8cfe1a1 100644
---- a/dtc.h
-+++ b/dtc.h
-@@ -37,9 +37,11 @@
- #include "flat_dt.h"
- 
- /*
-- * Level of quietness
-+ * Command line options
-  */
--int quiet;
-+extern int quiet;		/* Level of quietness */
-+extern int reservenum;		/* Number of memory reservation slots */
-+extern int minsize;		/* Minimum blob size */
- 
- static inline void die(char * str, ...)
- {
-diff --git a/flattree.c b/flattree.c
-index 780142f..151d16e 100644
---- a/flattree.c
-+++ b/flattree.c
-@@ -295,10 +295,18 @@ static struct data flatten_reserve_list(struct reserve_info *reservelist,
- {
- 	struct reserve_info *re;
- 	struct data d = empty_data;
-+	static struct reserve_entry null_re = {0,0};
-+	int    j;
- 
- 	for (re = reservelist; re; re = re->next) {
- 		d = data_append_re(d, &re->re);
- 	}
-+	/*
-+	 * Add additional reserved slots if the user asked for them.
-+	 */
-+	for (j = 0; j < reservenum; j++) {
-+		d = data_append_re(d, &null_re);
-+	}
- 	
- 	return d;
- }
-@@ -324,8 +332,18 @@ static void make_bph(struct boot_param_header *bph,
- 	bph->off_dt_struct = cpu_to_be32(reserve_off + reservesize);
- 	bph->off_dt_strings = cpu_to_be32(reserve_off + reservesize
- 					  + dtsize);
--	bph->totalsize = cpu_to_be32(reserve_off + reservesize
--				     + dtsize + strsize);
-+	bph->totalsize = reserve_off + reservesize + dtsize + strsize;
-+	if (minsize > 0) {
-+		if (bph->totalsize >= minsize) {
-+			if (quiet < 1)
-+				fprintf(stderr,
-+					"Warning: blob size %d >= minimum size %d\n",
-+					bph->totalsize, minsize);
++config PPC_DEFAULT_PLATFORM
++	def_bool PPC_MULTIPLATFORM && !PPC_PLATFORM_CHOSEN
++	select PPC_CHRP    if PPC32
++	select PPC_PSERIES if PPC64
 +
-+		} else
-+			bph->totalsize = minsize;
-+	}
-+	bph->totalsize = cpu_to_be32(bph->totalsize);
- 		
- 	if (vi->flags & FTF_BOOTCPUID)
- 		bph->boot_cpuid_phys = cpu_to_be32(boot_cpuid_phys);
+ menu "Platform support"
+ 	depends on PPC64 || CLASSIC32
+ 
+@@ -406,12 +414,15 @@ config PPC_PSERIES
+ 	select RTAS_ERROR_LOGGING
+ 	select PPC_UDBG_16550
+ 	select PPC_NATIVE
++# No need to "select PPC_PLATFORM_CHOSEN" for pSeries, as it is the default
++# platform for PPC64, see PPC_DEFAULT_PLATFORM
+ 	default y
+ 
+ config PPC_ISERIES
+ 	bool "IBM Legacy iSeries"
+ 	depends on PPC_MULTIPLATFORM && PPC64
+ 	select PPC_INDIRECT_IO
++	select PPC_PLATFORM_CHOSEN
+ 
+ config PPC_CHRP
+ 	bool "Common Hardware Reference Platform (CHRP) based machines"
+@@ -423,6 +434,8 @@ config PPC_CHRP
+ 	select PPC_MPC106
+ 	select PPC_UDBG_16550
+ 	select PPC_NATIVE
++# No need to "select PPC_PLATFORM_CHOSEN" here, as it is the default platform 
++# for PPC32, see PPC_DEFAULT_PLATFORM
+ 	default y
+ 
+ config PPC_MPC52xx
+@@ -436,6 +449,7 @@ config PPC_EFIKA
+ 	select RTAS_PROC
+ 	select PPC_MPC52xx
+ 	select PPC_NATIVE
++	select PPC_PLATFORM_CHOSEN
+ 	default n
+ 
+ config PPC_LITE5200
+@@ -451,6 +465,7 @@ config PPC_PMAC
+ 	select PPC_INDIRECT_PCI if PPC32
+ 	select PPC_MPC106 if PPC32
+ 	select PPC_NATIVE
++	select PPC_PLATFORM_CHOSEN
+ 	default y
+ 
+ config PPC_PMAC64
+@@ -461,6 +476,7 @@ config PPC_PMAC64
+ 	select MPIC_BROKEN_U3
+ 	select GENERIC_TBSYNC
+ 	select PPC_970_NAP
++	select PPC_PLATFORM_CHOSEN
+ 	default y
+ 
+ config PPC_PREP
+@@ -471,6 +487,7 @@ config PPC_PREP
+ 	select PPC_INDIRECT_PCI
+ 	select PPC_UDBG_16550
+ 	select PPC_NATIVE
++	select PPC_PLATFORM_CHOSEN
+ 	default n
+ 
+ config PPC_MAPLE
+@@ -484,6 +501,7 @@ config PPC_MAPLE
+ 	select PPC_970_NAP
+ 	select PPC_NATIVE
+ 	select PPC_RTAS
++	select PPC_PLATFORM_CHOSEN
+ 	default n
+ 	help
+           This option enables support for the Maple 970FX Evaluation Board.
+@@ -497,6 +515,7 @@ config PPC_PASEMI
+ 	select PPC_UDBG_16550
+ 	select GENERIC_TBSYNC
+ 	select PPC_NATIVE
++	select PPC_PLATFORM_CHOSEN
+ 	help
+ 	  This option enables support for PA Semi's PWRficient line
+ 	  of SoC processors, including PA6T-1682M
+@@ -523,11 +542,13 @@ config PPC_IBM_CELL_BLADE
+ 	select MMIO_NVRAM
+ 	select PPC_UDBG_16550
+ 	select UDBG_RTAS_CONSOLE
++	select PPC_PLATFORM_CHOSEN
+ 
+ config PPC_PS3
+ 	bool "Sony PS3"
+ 	depends on PPC_MULTIPLATFORM && PPC64
+ 	select PPC_CELL
++	select PPC_PLATFORM_CHOSEN
+ 	help
+ 	  This option enables support for the Sony PS3 game console
+ 	  and other platforms using the PS3 hypervisor.
 -- 
-1.4.4.4
+1.5.0.6
+
+
+
+Yours Tony
+
+  linux.conf.au        http://linux.conf.au/ || http://lca2008.linux.org.au/
+  Jan 28 - Feb 02 2008 The Australian Linux Technical Conference!
