@@ -1,23 +1,14 @@
-Return-Path: <galibert@dspnet.fr.eu.org>
-Received: from dspnet.fr.eu.org (dspnet.fr.eu.org [213.186.44.138])
-	by ozlabs.org (Postfix) with ESMTP id 9840CDDE49
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2007 02:15:23 +1000 (EST)
-Date: Thu, 5 Apr 2007 18:15:13 +0200
-From: Olivier Galibert <galibert@pobox.com>
-To: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Message-ID: <20070405161513.GA40360@dspnet.fr.eu.org>
-References: <1175663999.2932.8.camel@shinybook.infradead.org>
-	<17939.15726.114059.679277@cargo.ozlabs.ibm.com>
-	<1175666635.2932.17.camel@shinybook.infradead.org>
-	<20070404.011208.120446173.davem@davemloft.net>
-	<20070404083803.GA13134@flint.arm.linux.org.uk>
-	<20070404122154.GF31973@thunk.org> <4613CF6A.2090407@zytor.com>
-	<20070404174153.GI31973@thunk.org>
-	<20070404181531.GA9388@flint.arm.linux.org.uk>
+Return-Path: <SRS0+dbfa744e487eb5695f7d+1320+infradead.org+dwmw2@pentafluge.srs.infradead.org>
+Subject: Re: [Cbe-oss-dev] [ANNOUNCE] petitboot v0.0.1
+From: David Woodhouse <dwmw2@infradead.org>
+To: Jeremy Kerr <jk@ozlabs.org>
+In-Reply-To: <200704052342.23662.jk@ozlabs.org>
+References: <200704052342.23662.jk@ozlabs.org>
+Content-Type: text/plain
+Date: Thu, 05 Apr 2007 12:29:24 -0400
+Message-Id: <1175790565.2719.27.camel@shinybook.infradead.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070404181531.GA9388@flint.arm.linux.org.uk>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,18 +18,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 04, 2007 at 07:15:32PM +0100, Russell King wrote:
-> *However* you still run into the issue that you do not know how many
-> serial ports you will need to register a tty driver with the tty layer.
-> Solve that technical problem and the idea of having a single namespace
-> for chosen serial ports and 8250 ports suddenly becomes realistic.
+On Thu, 2007-04-05 at 23:42 +1000, Jeremy Kerr wrote:
+> Benjamin Herrenschmidt and I are proud to announce the first release of 
+> petitboot - a graphical bootloader for the PS3, based on twin and 
+> kboot.
 
-Ok, so that I understand correctly, your problem is with the
-tty_register_driver interface as used in
-serial_core:uart_register_driver, correct?
+Fedora packages at http://david.woodhou.se/petitboot/
 
-Looking at the function, I understand why.
-{alloc,register}_chrdev_region is very, very not designed to be
-fully dynamic it seems.
+When I get home next week I'll work on a separate tool which can make a
+zImage.ps3.rom given a kernel binary and an initrd -- much like the
+existing 'mkzimage' script which does it for OF machines. Then we can
+build the otheros.img without having to rebuild the kernel just to get a
+zImage out of it.
 
-  OG.
+Hopefully we'll have kexec working in 2.6.21 by then :)
+
+-- 
+dwmw2
