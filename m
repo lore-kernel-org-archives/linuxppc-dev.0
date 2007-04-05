@@ -1,21 +1,33 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 2B940DDE39
-	for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2007 06:37:16 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: Questions about porting perfmon2 to powerpc
-Date: Thu, 5 Apr 2007 22:37:01 +0200
-References: <200704051455.34600.kevcorry@us.ibm.com>
-	<200704052208.01753.arnd@arndb.de>
-	<200704051532.08775.kevcorry@us.ibm.com>
-In-Reply-To: <200704051532.08775.kevcorry@us.ibm.com>
+Return-Path: <linas@austin.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 764D6DDDEB
+	for <linuxppc-dev@ozlabs.org>; Fri,  6 Apr 2007 08:42:03 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l35MghQn025818
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Apr 2007 18:42:43 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l35Mfw5c315194
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Apr 2007 18:41:58 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l35MfvN2019867
+	for <linuxppc-dev@ozlabs.org>; Thu, 5 Apr 2007 18:41:58 -0400
+Date: Thu, 5 Apr 2007 17:41:26 -0500
+To: Kristen Carlson Accardi <kristen.c.accardi@intel.com>
+Subject: Re: [PATCH 0/19]: RPAPHP pci hotplug cleanup patchbomb
+Message-ID: <20070405224126.GC4922@austin.ibm.com>
+References: <20070403002629.GI4922@austin.ibm.com>
+	<20070403163414.GN4922@austin.ibm.com>
+	<20070405083348.36c8e38b.kristen.c.accardi@intel.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704052237.02547.arnd@arndb.de>
-Cc: Carl Love <carll@us.ibm.com>, Kevin Corry <kevcorry@us.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070405083348.36c8e38b.kristen.c.accardi@intel.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Andrew Morton <akpm@osdl.org>, linuxppc-dev@ozlabs.org, gregkh@suse.de,
+	linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,19 +37,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 05 April 2007, Kevin Corry wrote:
-> For the moment, I made the change to topology_init() since it was the simplest 
-> fix to get things working. I have considered switching the perfmon2 
-> initialization to __initcall(), but there are apparently some timing issues 
-> with ensuring that the perfmon2 core code is initialized before any of its 
-> sub-modules. Since they could all be compiled statically in the kernel, I'm 
-> not sure if there's a way to ensure the ordering of calls within a single 
-> initcall level. I'll need to ask Stephane if there were any other reasons why 
-> subsys_initcall() was used for perfmon2.
+On Thu, Apr 05, 2007 at 08:33:48AM -0700, Kristen Carlson Accardi wrote:
+> On Tue, 3 Apr 2007 11:34:14 -0500
+> linas@austin.ibm.com (Linas Vepstas) wrote:
+> 
+> > Please queue these cleanup patches for 2.6.22.
+> 
+> Ok - will do.
 
-If they all come from the same directory, you can simply order them in
-the Makefile. If a module in arch/ needs to be initialized after one in
-drivers/, that's not possible though, and changing topology_init() should
-be the best option.
+Thanks,
 
-	Arnd <><
+> Thanks for the cleanups - 
+
+I needed to do that to isolate a bug in some older distro kernels.
+
+> most of the drivers in the hotplug tree badly
+> need cleaning up, but... 
+
+Hmm. Trying to get me to volunteer? I have no hardware to test 
+any of the others.
+
+--linas
