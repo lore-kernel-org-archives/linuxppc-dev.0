@@ -1,19 +1,32 @@
-Return-Path: <sha@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 43958DDDFA
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 18:33:43 +1000 (EST)
-Date: Thu, 5 Apr 2007 10:33:37 +0200
-From: Sascha Hauer <s.hauer@pengutronix.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: SPI devices and OF
-Message-ID: <20070405083337.GB9910@localhost.localdomain>
-References: <20070404110916.GA9910@localhost.localdomain>
-	<acd2a5930704040451u55ae7619wfa1aaa84aebdf72@mail.gmail.com>
-	<4850DC60-A560-4A38-8416-ADA776B69509@kernel.crashing.org>
-MIME-Version: 1.0
+Return-Path: <rmk+linuxppc-dev=ozlabs.org@arm.linux.org.uk>
+Received: from caramon.arm.linux.org.uk (caramon.arm.linux.org.uk
+	[217.147.92.249])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 08961DDE0C
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 18:50:27 +1000 (EST)
+Date: Thu, 5 Apr 2007 09:50:03 +0100
+From: Russell King <rmk+lkml@arm.linux.org.uk>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Message-ID: <20070405085003.GA22362@flint.arm.linux.org.uk>
+References: <17939.15726.114059.679277@cargo.ozlabs.ibm.com>
+	<1175666635.2932.17.camel@shinybook.infradead.org>
+	<20070404.011208.120446173.davem@davemloft.net>
+	<20070404083803.GA13134@flint.arm.linux.org.uk>
+	<20070404122154.GF31973@thunk.org> <4613CF6A.2090407@zytor.com>
+	<20070404174153.GI31973@thunk.org>
+	<20070404181531.GA9388@flint.arm.linux.org.uk>
+	<1175716215.2774.52.camel@shinybook.infradead.org>
+	<17940.37291.211960.566580@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <4850DC60-A560-4A38-8416-ADA776B69509@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <17940.37291.211960.566580@cargo.ozlabs.ibm.com>
+Sender: Russell King <rmk@arm.linux.org.uk>
+Cc: Theodore Tso <tytso@mit.edu>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, "H. Peter Anvin" <hpa@zytor.com>,
+	David Woodhouse <dwmw2@infradead.org>,
+	David Miller <davem@davemloft.net>, alan@lxorguk.ukuu.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 04, 2007 at 11:34:11AM -0500, Kumar Gala wrote:
+On Thu, Apr 05, 2007 at 04:05:31PM +1000, Paul Mackerras wrote:
+> David Woodhouse writes:
 > 
-> On Apr 4, 2007, at 6:51 AM, Vitaly Wool wrote:
+> > And you always will be. The amount of pain involved in implementing
+> > this, just so that people can call their serial port 'ttyS0', is _far_
+> > more than it's worth. It could be done, but it's a completely pointless
+> > waste of time and effort. 
 > 
-> 
-> I don't think this is a good idea for SPI devices.  The effort vs  
-> reward isn't worth it.  The simple fact that the 'chip select'  
-> mechanism ends up being board specific is too much of a pain to  
-> figure out how to deal with in the device tree.  I think its ok if we  
-> put information about the controller in the tree, but trying to do  
-> the devices as well at this point doesn't seem like its much of a win.
+> Avoiding breaking userspace is a completely pointless waste of time
+> and effort?  Linux is ready for the desktop?  Suuuure it is...
 
-It would be much easier to provide some board specific functions which
-registers the spi devices instead of doing it in the device tree.
-But there is one problem with that: If there is more than one spi
-controller in the tree, how do you differentiate them?
+And what contribution to achieving the goal of having a single namespace
+does the above comment provide?
 
+Look, this is what I'm complaining about.  There's lots of talk on this
+issue.  There's been lots and lots of talk on this issue in the past as
+well.  I've raised the technical issues in this thread several times and
+so far been ignored every time.
 
-Sascha
+If as much effort went into trying to resolve the technical problems as
+has gone into whinging about it in this thread, maybe the goal would be
+a little closer?
+
+I'm sorry if you find this message offensive.  I find filling my mailbox
+with 80ish messages of whinging utterly unproductive and equally offensive
+especially given my past input on serial issues.
+
+-- 
+Russell King
+ Linux kernel    2.6 ARM Linux   - http://www.arm.linux.org.uk/
+ maintainer of:
