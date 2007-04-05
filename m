@@ -1,23 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 5383EDDE3A
-	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 17:32:29 +1000 (EST)
-Subject: Re: SPI devices and OF
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Return-Path: <sha@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 43958DDDFA
+	for <linuxppc-dev@ozlabs.org>; Thu,  5 Apr 2007 18:33:43 +1000 (EST)
+Date: Thu, 5 Apr 2007 10:33:37 +0200
+From: Sascha Hauer <s.hauer@pengutronix.de>
 To: Kumar Gala <galak@kernel.crashing.org>
-In-Reply-To: <5199678E-7A42-4B91-BBB8-81DF33E92F2A@kernel.crashing.org>
+Subject: Re: SPI devices and OF
+Message-ID: <20070405083337.GB9910@localhost.localdomain>
 References: <20070404110916.GA9910@localhost.localdomain>
 	<acd2a5930704040451u55ae7619wfa1aaa84aebdf72@mail.gmail.com>
 	<4850DC60-A560-4A38-8416-ADA776B69509@kernel.crashing.org>
-	<200704041903.46629.arnd@arndb.de>
-	<5199678E-7A42-4B91-BBB8-81DF33E92F2A@kernel.crashing.org>
-Content-Type: text/plain
-Date: Thu, 05 Apr 2007 17:32:18 +1000
-Message-Id: <1175758338.30879.123.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <4850DC60-A560-4A38-8416-ADA776B69509@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
->  From explicitly board code like we do today.  I mean the mechanism  
-> can very so greatly that trying to decided and come up with all  
-> possible cases and somehow encoding that in the device tree isn't  
-> worth the effort.  Additionally you'll still need code to handle the  
-> actual chip select and I don't see how you make that generic at all.
+On Wed, Apr 04, 2007 at 11:34:11AM -0500, Kumar Gala wrote:
 > 
-> A board designer could use I2C, GPIO, or something off an FPGA.  I  
-> just dont see trying to 'encode' this in the device tree as providing  
-> any real value.
+> On Apr 4, 2007, at 6:51 AM, Vitaly Wool wrote:
+> 
+> 
+> I don't think this is a good idea for SPI devices.  The effort vs  
+> reward isn't worth it.  The simple fact that the 'chip select'  
+> mechanism ends up being board specific is too much of a pain to  
+> figure out how to deal with in the device tree.  I think its ok if we  
+> put information about the controller in the tree, but trying to do  
+> the devices as well at this point doesn't seem like its much of a win.
 
-Or board designers can use board specific device-tree bits and board
-specific code to udnerstand them :-) That works too and can be handy if
-you have for example several versions of a board with small differences
-that you want to expose that way in the device-tree.
+It would be much easier to provide some board specific functions which
+registers the spi devices instead of doing it in the device tree.
+But there is one problem with that: If there is more than one spi
+controller in the tree, how do you differentiate them?
 
-That is, the devive-tree -can- be used to put proprietary stuff, though
-if you do so, you should try to use prefixes on your properties, like
-mycompany,xxxx
 
-Ben.
+Sascha
