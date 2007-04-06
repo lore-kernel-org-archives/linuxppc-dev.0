@@ -1,22 +1,18 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B18F7DDEAB
+Return-Path: <vbordug@ru.mvista.com>
+Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
+	by ozlabs.org (Postfix) with ESMTP id 7FEF4DDEC1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat,  7 Apr 2007 01:33:29 +1000 (EST)
-Subject: Re: Powerpc newbie help
-From: Jon Loeliger <jdl@freescale.com>
-To: Gary Schumacher <gschumac@brocade.com>
-In-Reply-To: <E1FC5EDA57236147B397280C5E6C130032FDBA@MC4EXCH04.mcdata.com>
-References: <E1FC5EDA57236147B397280C5E6C130032FDBA@MC4EXCH04.mcdata.com>
-Content-Type: text/plain
-Message-Id: <1175873601.20336.35.camel@ld0161-tx32>
+	Sat,  7 Apr 2007 01:42:54 +1000 (EST)
+Date: Fri, 6 Apr 2007 19:42:52 +0400
+From: Vitaly Bordug <vbordug@ru.mvista.com>
+To: Bruce_Leonard@selinc.com
+Subject: Re: Unable to boot kernel on MPC8349ITX eval board
+Message-ID: <20070406194252.2a647d9f@vitb.ru.mvista.com>
+In-Reply-To: <OFCBEB6783.BEA8A149-ON882572B4.0065E63D-882572B4.0065ED92@selinc.com>
+References: <OFCBEB6783.BEA8A149-ON882572B4.0065E63D-882572B4.0065ED92@selinc.com>
 Mime-Version: 1.0
-Date: Fri, 06 Apr 2007 10:33:21 -0500
-Cc: "linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,49 +23,31 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-04-06 at 08:33, Gary Schumacher wrote:
->  
-> 
-> I am in the process of upgrading a Linux kernel from 2.4,20 to 2.6.20 on
-> a proprietary board that uses the PPC 750Fx (without Open Firmware) and
-> am having the following problems:
+On Thu, 5 Apr 2007 11:33:19 -0700
+Bruce_Leonard@selinc.com wrote:
 
-I'm afraid I can't speak to the 750.
+> Modules linked in:
+> NIP: 0FE741B0 LR: 0FE76464 CTR: 00000000
+> REGS: c0001f50 TRAP: 0301   Not tainted  (2.6.20.4)
+> MSR: 0000D032 <EE,PR,ME,IR,DR>  CR: 00000000  XER: 00000000
+> DAR: 7F9A26C8, DSISR: 20000000
+> TASK = c0656030[865] 'udevd' THREAD: cfb00000
+> GPR00: 00000019 7F99E6A0 30023290 100155F8 000028D8 0FE76464 00000019 
+> 0FF521C0
+> GPR08: 100155F8 3D407265 FFFFFFD0 00000000 22004442
+> NIP [0FE741B0] 0xfe741b0
+> LR [0FE76464] 0xfe76464
+> Call Trace:
+>  <0>Kernel panic - not syncing: Fatal exception in interrupt
+>  <0>Rebooting in 180 seconds..
+You should build the kernel with debugging enabled - to extract what
+kernel module caused the oops.
+Try to disable that "[ ok ]rting kernel event manager..." service, look up what script says 
+"* Loading hardware drivers..." 
+and make it tell what exactly it tries to insmod.
 
-> 1.  Is there more information on Device Trees so I can construct one
-> myself?
+Also, you can use any other ppc root (eldk, freescale, buildroot etc...)
 
-Use emacs. :-)
-
->   I have been reading "Device trees everywhere" and
-> "booting-without-of".  Also, there are a number of *.dts files in
-> /arch/powerpc/boot/dts that I have been looking at but more
-> examples/HowTo information would be helpful.
-
-This is really about the extent of the documentation that
-is available without going to the official Open Firmware
-spec as well.  I recommend a large Cabernet Franc if you
-go that route. :-)  It is a known deficiency and it is being
-worked on, just not fast enough for some.  Please feel free
-to post proposals or questions to the linuxppc-dev list too!
-
-> 2.  I have downloaded dtc-2006419.tar and was wondering if there is a
-> newer version or do I need patches for this and if so where would I
-> look?
-
-Please use git to obtain a current repository from jdl.com:
-
-    http://www.jdl.com/git_repos
-
-    git clone git://www.jdl.com/software/dtc.git
-
-There is a newer tar file (dtc-20070216.tgz) in www.jdl.com/software
-if you are unable to git clone the repo directly.
-
-> 3.  Where do I find glr_parser which is required to build dtc?
-
-Please update your flex and bison in particular.  If you do
-not have a glr parser, your version is, like, years old now.
-
-HTH,
-jdl
+-- 
+Sincerely, 
+Vitaly
