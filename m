@@ -1,12 +1,12 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Message-ID: <4616BA1A.3090309@am.sony.com>
-Date: Fri, 06 Apr 2007 14:22:34 -0700
+Message-ID: <4616BABC.9040802@am.sony.com>
+Date: Fri, 06 Apr 2007 14:25:16 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: David Woodhouse <dwmw2@infradead.org>
-Subject: Re: [Cbe-oss-dev] [PATCH] Ignore memory listed in PS3 device tree
-References: <1175208237.3122.78.camel@pmac.infradead.org>
-In-Reply-To: <1175208237.3122.78.camel@pmac.infradead.org>
+Subject: Re: [Cbe-oss-dev] [PATCH] Sync PS3 framebuffer on panic.
+References: <1175208387.3122.82.camel@pmac.infradead.org>
+In-Reply-To: <1175208387.3122.82.camel@pmac.infradead.org>
 Content-Type: text/plain; charset=UTF-8
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -19,41 +19,7 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 David Woodhouse wrote:
-> The old 2.6.16 kernel handled memory statically and it was shown in the
-> device tree. The current kernel deals with the hypervisor and hotplugs
-> the memory, so we should just ignore anything that's reported in the
-> device-tree. This enables the current kernel to be booted from 2.6.16
-> without evil hacks in head_64.S to override the device-tree.
-> 
-> Signed-off-by: David Woodhouse <dwmw2@infradead.org>
-> 
-> diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-> index 08bd255..dd38408 100644
-> --- a/arch/powerpc/kernel/prom.c
-> +++ b/arch/powerpc/kernel/prom.c
-> @@ -52,6 +52,7 @@
->  #include <asm/pSeries_reconfig.h>
->  #include <asm/pci-bridge.h>
->  #include <asm/kexec.h>
-> +#include <asm/firmware.h>
->  
->  #ifdef DEBUG
->  #define DBG(fmt...) printk(KERN_ERR fmt)
-> @@ -862,6 +863,9 @@ static int __init early_init_dt_scan_memory(unsigned long node,
->  	cell_t *reg, *endp;
->  	unsigned long l;
->  
-> +	if (firmware_has_feature(FW_FEATURE_PS3_LV1))
-> +		return 0;
-> +
->  	/* Look for the ibm,dynamic-reconfiguration-memory node */
->  	if (depth == 1 &&
->  	    strcmp(uname, "ibm,dynamic-reconfiguration-memory") == 0)
-> 
+> There's not a lot of point in printing a nice message about the panic
+> unless we then ask the hypervisor to update the screen for us.
 
-I committed a change that pulls the command line out of the incompatible DT and
-merges it with the built-in DT.
-
-  http://git.kernel.org/?p=linux/kernel/git/geoff/ps3-linux-patches.git;a=blob;f=ps3-hacks/ps3-no-bootwrapper-hack.diff
-
--Geoff
+I added this one to ps3-linux.git.
