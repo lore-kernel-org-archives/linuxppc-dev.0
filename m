@@ -1,14 +1,25 @@
-Return-Path: <tnt@246tNt.com>
-Message-ID: <4617E176.6040607@246tNt.com>
-Date: Sat, 07 Apr 2007 20:22:46 +0200
-From: Sylvain Munaut <tnt@246tNt.com>
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 5B7D0DDECF
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  8 Apr 2007 21:35:44 +1000 (EST)
+Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 22CFA98467
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  8 Apr 2007 13:35:42 +0200 (CEST)
+Received: from [10.0.30.2] (p5497DFDC.dip.t-dialin.net [84.151.223.220])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(No client certificate requested)
+	by smtp-auth.mnet-online.de (Postfix) with ESMTP id 05B5A90131
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun,  8 Apr 2007 13:35:41 +0200 (CEST)
+Message-ID: <4618D400.8050003@grandegger.com>
+Date: Sun, 08 Apr 2007 13:37:36 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-To: John Rigby <jcrigby@gmail.com>
-Subject: Re: [PATCH] Avoid putting cpu node twice
-References: <4b73d43f0704061557v2f38991ep54bc66706672075d@mail.gmail.com>
-In-Reply-To: <4b73d43f0704061557v2f38991ep54bc66706672075d@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: Flat device tree definitions for FLASH and MTD partitioning
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,37 +30,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-John Rigby wrote:
-> Call of_find_node_by_type with NULL instead of np
-> so the cpu node does not get put twice.
-> This was causing kref_put warnings.
->
-> Signed-off-by: John Rigby <jrigby@freescale.com>
-Acked-by: Sylvain Munaut <tnt@246tNt.com>
+Hello,
 
-> ---
-> arch/powerpc/platforms/52xx/lite5200.c |    6 ++++--
-> 1 files changed, 4 insertions(+), 2 deletions(-)
->
-> diff --git a/arch/powerpc/platforms/52xx/lite5200.c
-> b/arch/powerpc/platforms/52xx/lite5200.c
-> index cc3b40d..d2f90eb 100644
-> --- a/arch/powerpc/platforms/52xx/lite5200.c
-> +++ b/arch/powerpc/platforms/52xx/lite5200.c
-> @@ -108,9 +108,11 @@ static void __init lite5200_setup_arch(void)
->        lite5200_setup_cpu();   /* Platorm specific */
->
-> #ifdef CONFIG_PCI
-> -       np = of_find_node_by_type(np, "pci");
-> -       if (np)
-> +       np = of_find_node_by_type(NULL, "pci");
-> +       if (np) {
->                mpc52xx_add_bridge(np);
-> +               of_node_put(np);
-> +       }
-> #endif
->
-> #ifdef CONFIG_BLK_DEV_INITRD
-> -- 
-> 1.5.0.6
->
+are there already some thought or even example code on how to define 
+Flash memory and MTD partitions in the DTS. This would avoid the ackward 
+MTD partitioning via static structure or boot line argument and could be 
+done in a generic way.
+
+Thanks.
+
+Wolfgang.
