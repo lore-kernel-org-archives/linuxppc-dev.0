@@ -1,18 +1,18 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc3-s21.bay0.hotmail.com (bay0-omc3-s21.bay0.hotmail.com
-	[65.54.246.221]) by ozlabs.org (Postfix) with ESMTP id 2F129DDF26
+Return-Path: <psmith@netezza.com>
+Received: from mail2.netezza.com (mr1.netezza.com [12.148.248.137])
+	by ozlabs.org (Postfix) with SMTP id B66ABDDF1C
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 10 Apr 2007 03:45:40 +1000 (EST)
-Message-ID: <BAY115-W6F965CAAC5215961F494FB2590@phx.gbl>
-Content-Type: multipart/mixed;
-	boundary="_0964b1d7-93a1-4e6a-a3d9-130fe7f218a0_"
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: Peter Mendham <petermendham@computing.dundee.ac.uk>
-Subject: RE: Simple experiment with, ML403, running 2.6 kernel , kernel.org
-	source
-Date: Mon, 9 Apr 2007 17:33:35 +0000
+	Tue, 10 Apr 2007 03:05:31 +1000 (EST)
 MIME-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C77AC7.95ACDE53"
+Subject: NET_POLL missing in the new ibm_emac driver?
+Date: Mon, 9 Apr 2007 12:53:22 -0400
+Message-ID: <1176137602.30046.191.camel@psmithub>
+From: "Paul Smith" <psmith@netezza.com>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: netdev@vger.kernel.org
+Reply-To: Paul Smith <psmith@netezza.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,81 +23,100 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---_0964b1d7-93a1-4e6a-a3d9-130fe7f218a0_
-Content-Type: text/plain; charset="iso-8859-1"
+This is a multi-part message in MIME format.
+
+------_=_NextPart_001_01C77AC7.95ACDE53
+Content-Type: text/plain;
+	charset="iso-8859-1"
 Content-Transfer-Encoding: quoted-printable
 
+I was having so many problems with the 2.6.14 (old) emac driver that I
+backported the new one from 2.6.15.  It works great... until I tried to
+use KGDBOE with it.  Then I got:
 
-Peter This is my config file hope help. ... let me know if i can do any thi=
-ng more for you.
+    kgdboe: eth1 doesn't support polling, aborting.
 
-_________________________________________________________________
-Connect to the next generation of MSN Messenger=A0
-http://imagine-msn.com/messenger/launch80/default.aspx?locale=3Den-us&sourc=
-e=3Dwlmailtagline=
+Looking around I see that I need the driver to support the
+poll_controller method in the net device, and the new driver doesn't
+seem to do that.
 
---_0964b1d7-93a1-4e6a-a3d9-130fe7f218a0_
-Content-Type: application/x-gzip
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="mvista-config.gz"
+I see the old implementation of this method, but of course it uses
+interfaces that no longer exist so I can't use that directly.  It seems
+like a small change but I'm not really familiar with the implementation
+of the ibm_emac driver; does anyone have a patch for the new driver to
+provide this feature?
 
-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
 
---_0964b1d7-93a1-4e6a-a3d9-130fe7f218a0_--
+Thanks!
+
+--=20
+-------------------------------------------------------------------------=
+----
+ Paul D. Smith <psmith@netezza.com>                       =
+http://netezza.com
+ "Please remain calm--I may be mad, but I am a professional."--Mad =
+Scientist
+-------------------------------------------------------------------------=
+----
+      These are my opinions--Netezza takes no responsibility for them.
+
+------_=_NextPart_001_01C77AC7.95ACDE53
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 3.2//EN">
+<HTML>
+<HEAD>
+<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
+charset=3Diso-8859-1">
+<META NAME=3D"Generator" CONTENT=3D"MS Exchange Server version =
+6.5.7651.59">
+<TITLE>NET_POLL missing in the new ibm_emac driver?</TITLE>
+</HEAD>
+<BODY>
+<!-- Converted from text/plain format -->
+
+<P><FONT SIZE=3D2>I was having so many problems with the 2.6.14 (old) =
+emac driver that I<BR>
+backported the new one from 2.6.15.&nbsp; It works great... until I =
+tried to<BR>
+use KGDBOE with it.&nbsp; Then I got:<BR>
+<BR>
+&nbsp;&nbsp;&nbsp; kgdboe: eth1 doesn't support polling, aborting.<BR>
+<BR>
+Looking around I see that I need the driver to support the<BR>
+poll_controller method in the net device, and the new driver doesn't<BR>
+seem to do that.<BR>
+<BR>
+I see the old implementation of this method, but of course it uses<BR>
+interfaces that no longer exist so I can't use that directly.&nbsp; It =
+seems<BR>
+like a small change but I'm not really familiar with the =
+implementation<BR>
+of the ibm_emac driver; does anyone have a patch for the new driver =
+to<BR>
+provide this feature?<BR>
+<BR>
+<BR>
+Thanks!<BR>
+<BR>
+--<BR>
+-------------------------------------------------------------------------=
+----<BR>
+&nbsp;Paul D. Smith =
+&lt;psmith@netezza.com&gt;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp=
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+&nbsp;&nbsp; <A HREF=3D"http://netezza.com">http://netezza.com</A><BR>
+&nbsp;&quot;Please remain calm--I may be mad, but I am a =
+professional.&quot;--Mad Scientist<BR>
+-------------------------------------------------------------------------=
+----<BR>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; These are my opinions--Netezza takes no =
+responsibility for them.<BR>
+</FONT>
+</P>
+
+</BODY>
+</HTML>
+------_=_NextPart_001_01C77AC7.95ACDE53--
