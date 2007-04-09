@@ -1,31 +1,18 @@
-Return-Path: <vijamann@in.ibm.com>
-Received: from ausmtp05.au.ibm.com (ausmtp05.au.ibm.com [202.81.18.154])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp05.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BE53ADDF05
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 01:35:57 +1000 (EST)
-Received: from sd0208e0.au.ibm.com (d23rh904.au.ibm.com [202.81.18.202])
-	by ausmtp05.au.ibm.com (8.13.8/8.13.8) with ESMTP id l39FbpBa7831602
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 01:37:51 +1000
-Received: from d23av03.au.ibm.com (d23av03.au.ibm.com [9.190.250.244])
-	by sd0208e0.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l39Fc6VV154926
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 01:38:06 +1000
-Received: from d23av03.au.ibm.com (loopback [127.0.0.1])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l39FYZEp014931
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 01:34:35 +1000
-Received: from d23m0061.in.ibm.com (d23m0061.in.ibm.com [9.126.109.99])
-	by d23av03.au.ibm.com (8.12.11.20060308/8.12.11) with ESMTP id
-	l39FYY67014878
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 01:34:34 +1000
-Subject: Memory allocation problem in a module  with fedora core 6 on ppc
-To: linuxppc-dev@ozlabs.org
-Message-ID: <OF46C39FA8.C2E4F007-ON652572B8.0054EC33-652572B8.00557FBD@in.ibm.com>
-From: Vijay Mann <vijamann@in.ibm.com>
-Date: Mon, 9 Apr 2007 21:13:44 +0530
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17946.5029.162940.708672@cargo.ozlabs.ibm.com>
+Date: Mon, 9 Apr 2007 20:21:25 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: [patch 06/10] Add notify die hooks and remove some redundant
+	debugger hooks
+In-Reply-To: <20070323140929.GA17198@kryten>
+References: <20070321013810.404636000@samba.org>
+	<20070321013825.283024000@samba.org>
+	<17923.46762.363994.307295@cargo.ozlabs.ibm.com>
+	<20070323140929.GA17198@kryten>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,24 +22,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
+Anton Blanchard writes:
 
-I'm running fedora core 6 (2.6.17.7)  ppc64 and I'm trying out a module
-that works perfectly OK on the same kernel version on intel.
-Here's the module:
-http://www.captain.at/howto-linux-device-driver-mmap.php
+> True and we are removing a set of indirect branches that exist already
+> (debugger). Id prefer not to have 2 sets of duplicate hooks for all this
+> stuff.
 
-It fails in skeleton_init_module itself in while allocating memory (if i
-comment out the memory allocation and corresponding deallocation, insmod
-works ok). It throws up a message during insmod:
-unable to handle paging request  at addresss xxxxxxxx
-and the machine is no longer usable and I've to do a hard reboot.
+There are two concerns I have here.  First, using notifiers tends to
+obscure what's going on since the notify call goes off and calls some
+random set of functions somewhere, and it's not obvious when reading
+the code what that set of functions is.  That's fine when there is a
+reason why the set of kernel code modules that want to know about the
+event needs to be able to be extended at will without impacting the
+generator of the event, but that isn't the case with single-step,
+breakpoint or page fault.  If there are only two functions to be
+called, I'd rather have a couple of explicit calls than use a
+notifier.
 
-I'm trying it out on a Power 5  server with nearly I GB RAM and a single
-            1.5 GHz processor with SMT enabled.
+The other thing is that we seem to be throwing all sorts of unrelated
+events into the die_notifier.  The symptom of that is that you have
+one set of handlers that are only interested in the debug events, and
+another set that are only interested in the events where the machine
+really is dying (oops, etc.).  That is, you have two sets of handlers
+that are interested in disjoint sets of events.  That says to me that
+we shouldn't be using a single notifier for all the events.
+Particularly for page faults I really don't see the point of calling
+handlers that are only interested in oopses.
 
-Am i missing something obvious here?
-
-Thanks in advance for any help,
-
-Vijay
+Paul.
