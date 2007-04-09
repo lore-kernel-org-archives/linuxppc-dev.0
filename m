@@ -1,15 +1,16 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc2-s35.bay0.hotmail.com (bay0-omc2-s35.bay0.hotmail.com
-	[65.54.246.171]) by ozlabs.org (Postfix) with ESMTP id 6C416DDF0B
+Return-Path: <ADash@alphion.com>
+Received: from mail.alphion.com (unknown [66.147.184.82])
+	by ozlabs.org (Postfix) with ESMTP id 4AA23DDF07
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon,  9 Apr 2007 19:04:18 +1000 (EST)
-Message-ID: <BAY115-W7520824785D458FBA67FEB2590@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-Subject: Simple experiment with, ML403, running 2.6 kernel , kernel.org source 
-Date: Mon, 9 Apr 2007 09:04:17 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+	Mon,  9 Apr 2007 21:59:01 +1000 (EST)
 MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----_=_NextPart_001_01C77A9C.C680F83A"
+Subject: MPC8245 Broadcom BMW board
+Date: Mon, 9 Apr 2007 07:46:56 -0400
+Message-ID: <8584FDC94AFF7640B17B8A89B23B19B388F176@sbsserver.AlphionCorp.local>
+From: "Ashish Ranjan Dash" <ADash@alphion.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,50 +21,56 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+This is a multi-part message in MIME format.
 
-Hi all,
+------_=_NextPart_001_01C77A9C.C680F83A
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-well, this post is mainly for beginners, may be useful for some one
+Hi,
+=20
+I need some help in booting linux on broadcom bmw( MPC8245 - =
+KAHLUA2)board.
+The board has the vxWork boot loader, can i boot linux with this boot =
+loader?
+=20
+Should I go for CFE provided by Broacom. or
+Should I go for u-boot as it supports my board.
+Please tell me about shadow flasing so that I can have a headstart.
+=20
+Thanks and Regards,
+=20
+Aashis
+=20
+=20
+=20
 
-at the begining I was trying to bring up the 2.6 kernel on ml403, I tested =
-many different methods with almost no success
-the kernel did not come up at all,
+------_=_NextPart_001_01C77A9C.C680F83A
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-so, I decided to first bring up the simplest possible kernel, without any s=
-pecial features or any drivers,=20
-even this time I could'nt get succeed, the kernel always stopped at "now bo=
-oting the kernel"
-
-So, at the first step, I decided to make sure that the fpga bit file does n=
-ot have any problems, I was not sure if I'm creating the edk project correc=
-tly, so, I decided to use xilinx's reference design for ml403 as my bit fil=
-e=20
-for elf, at the first step, I used the provided elf by reference design, I =
-mixed the elf and bit file to make the ace file, copied the ace file instea=
-d of the ace file on ml403 card , every thing was ok, so I was making the a=
-ce file correctly
-
-now, I had to use my own elf, at the first step I used the kernel source co=
-de, downloaded from source.mvista.com , making a simple config and building=
- the kernel I got the elf, I made the new ace file, and again the board cam=
-e up successfully.
-
-but for the kernel downloaded from kernel.org I had the same problem as bef=
-ore, kernel did not go more than "now booting the kernel"
-
-downloaded 2.6.20.4 kernel from kernel.org, I applied the .config file obta=
-ined from mvista kernel to it. at the begining phase of make process it ask=
-ed me about some additional configurations which where not present in mvist=
-a source, answered no to all of them. I got the 2.6.20.4 elf and made the n=
-ew ace file
-
-kernel was now able to boot completely on ml403, using 2.6.20.4 kernel
-
-and finally a simple question : so, there was some thing in the mvista .con=
-fig file, which was not available in .config file of the original kerenl, a=
-ny body knows what it is?=20
-
-thanks.
-_________________________________________________________________
-News, entertainment and everything you care about at Live.com. Get it now!
-http://www.live.com/getstarted.aspx=
+<HTML dir=3Dltr><HEAD>=0A=
+<META http-equiv=3DContent-Type content=3D"text/html; charset=3Dunicode">=0A=
+<META content=3D"MSHTML 6.00.2900.3059" name=3DGENERATOR></HEAD>=0A=
+<BODY>=0A=
+<DIV><FONT color=3D#000000>Hi,</FONT></DIV>=0A=
+<DIV><FONT color=3D#000000></FONT>&nbsp;</DIV>=0A=
+<DIV><FONT color=3D#000000>I need some help in booting linux on broadcom =
+bmw( MPC8245 - KAHLUA2)board.</FONT></DIV>=0A=
+<DIV><FONT color=3D#000000>The board has the vxWork boot loader, can i =
+boot linux with this boot loader?</FONT></DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>Should&nbsp;I go for CFE provided by Broacom. or</DIV>=0A=
+<DIV>Should&nbsp;I go for u-boot as it supports my board.</DIV>=0A=
+<DIV>Please tell me about shadow flasing so that&nbsp;I can have a =
+headstart.</DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>Thanks and Regards,</DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>Aashis</DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>&nbsp;</DIV>=0A=
+<DIV>&nbsp;</DIV></BODY></HTML>
+------_=_NextPart_001_01C77A9C.C680F83A--
