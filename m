@@ -1,17 +1,23 @@
-Return-Path: <psmith@netezza.com>
-Received: from mail2.netezza.com (mr1.netezza.com [12.148.248.137])
-	by ozlabs.org (Postfix) with SMTP id DA655DDF78
+Return-Path: <pjmaiya@signal-networks.com>
+Received: from smtp.net4india.com (smtp.net4india.com [202.71.129.66])
+	by ozlabs.org (Postfix) with ESMTP id 234B1DDE29
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Apr 2007 08:04:05 +1000 (EST)
-Subject: Re: NET_POLL missing in the new ibm_emac driver?
-From: Paul Smith <psmith@netezza.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Tue, 10 Apr 2007 18:04:00 -0400
-Message-Id: <1176242640.13662.124.camel@psmithub>
-Mime-Version: 1.0
-Cc: netdev@vger.kernel.org
-Reply-To: psmith@netezza.com
+	Wed, 11 Apr 2007 08:51:48 +1000 (EST)
+Received: from [61.95.204.104] (helo=signal-networks.com)
+	by smtp.net4india.com with esmtp (Exim 4.54) id 1HbCK2-0007Nx-3L
+	for linuxppc-embedded@ozlabs.org; Tue, 10 Apr 2007 14:37:30 +0530
+Received: from pjmaiya ([192.168.1.70])
+	by signal-networks.com (mail.signal-networks.com [192.168.1.1])
+	(MDaemon Standard v9.0.1) with ESMTP id md50000088462.msg
+	for <linuxppc-embedded@ozlabs.org>; Tue, 10 Apr 2007 14:43:10 +0530
+Message-ID: <002a01c77b50$736f90c0$4601a8c0@signet>
+From: "pjmaiya" <pjmaiya@signal-networks.com>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Problem in adding user and group
+Date: Tue, 10 Apr 2007 14:43:06 +0530
+MIME-Version: 1.0
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_0027_01C77B7E.8D199BF0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,38 +28,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all; any love here?  Maybe a pointer or two (e.g., what's the
-equivalent, in the new emac driver, of these lines in the old driver:
+This is a multi-part message in MIME format.
 
-	emac_rxeob_dev((void *)ndev, 0);
-	emac_txeob_dev((void *)ndev, 0);
+------=_NextPart_000_0027_01C77B7E.8D199BF0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-?)
+Hi,
+  Can anyone tell me how to add user and group in hard hat =
+linux(montavista distribution). Whenever I type the command adduser on =
+the target prompt, I get a error saying "unable to find =
+/usr/sbin/groupadd". I tried to find this file in the package given by =
+montavista, but unable to find it. (Used TCT tool package option, but =
+still unable to find it)
 
----------------
+rgds,
+pjmaiya
+ 
+------=_NextPart_000_0027_01C77B7E.8D199BF0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-I was having so many problems with the 2.6.14 (old) emac driver that I
-backported the new one from 2.6.15.  It works great... until I tried to
-use KGDBOE with it.  Then I got:
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2800.1589" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Hi,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>&nbsp; Can anyone tell me how to add =
+user and group=20
+in hard hat linux(montavista distribution). Whenever I type the command =
+adduser=20
+on the target prompt, I get a error saying "unable to find =
+/usr/sbin/groupadd".=20
+I tried to find this file in the package given by montavista, but unable =
+to find=20
+it. (Used TCT tool package option, but still unable to find =
+it)</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>rgds,</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>pjmaiya</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2>&nbsp;</FONT></DIV></BODY></HTML>
 
-    kgdboe: eth1 doesn't support polling, aborting.
-
-Looking around I see that I need the driver to support the
-poll_controller method in the net device, and the new driver doesn't
-seem to do that.
-
-I see the old implementation of this method, but of course it uses
-interfaces that no longer exist so I can't use that directly.  It seems
-like a small change but I'm not really familiar with the implementation
-of the ibm_emac driver; does anyone have a patch for the new driver to
-provide this feature?
-
-
-Thanks!
-
--- 
------------------------------------------------------------------------------
- Paul D. Smith <psmith@netezza.com>                       http://netezza.com
- "Please remain calm--I may be mad, but I am a professional."--Mad Scientist
------------------------------------------------------------------------------
-      These are my opinions--Netezza takes no responsibility for them.
+------=_NextPart_000_0027_01C77B7E.8D199BF0--
