@@ -1,22 +1,21 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id CE052DDF0C
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6C81DDDF0D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Apr 2007 02:13:43 +1000 (EST)
-Message-ID: <461BB78D.5080401@ovro.caltech.edu>
-Date: Tue, 10 Apr 2007 09:13:01 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Wed, 11 Apr 2007 02:18:24 +1000 (EST)
+Message-ID: <461BB8C7.9050900@garzik.org>
+Date: Tue, 10 Apr 2007 12:18:15 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-To: Gary Kenaley <gkenaley@echelon.com>
-Subject: Re: Unable to Boot 2.6.19.2 from ELDK 4.1 on MPC8349E MDS
-References: <BAY115-W6F965CAAC5215961F494FB2590@phx.gbl>
-	<DDBD7B17DB2ECE48BCD94C593F7255B4046E9F23@monk.echelon.echcorp.com>
-In-Reply-To: <DDBD7B17DB2ECE48BCD94C593F7255B4046E9F23@monk.echelon.echcorp.com>
+To: Alan Cox <alan@lxorguk.ukuu.org.uk>
+Subject: Re: IDE driver in polling mode
+References: <1ea6be8e0704100635ydbf1538i782e796c99891e5d@mail.gmail.com>	<461B9D04.2000109@ru.mvista.com>
+	<20070410171125.3aeed29d@the-village.bc.nu>
+In-Reply-To: <20070410171125.3aeed29d@the-village.bc.nu>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Cc: linux-ide@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,29 +26,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Gary Kenaley wrote:
-> I have been evaluating Freescale 2.6.11, Wind River 2.6.14, and am now
-> attempting Denx 2.6.19 (from ELDK 4.1) - running on the Rev 1.0 MPC8349E
-> MDS (V1.1 CPU). I boot 2.6.19.2 using the factory u-boot 1.1.3 and the
-> kernel immediately hangs:
+Alan Cox wrote:
+>>     Ah, no interrupts at all...
+>>     The old IDE core in drivers/ide/ certainly doesn't support polling mode 
+>> and IRQ-less devices. AFAICS, libata also doesn't support the latter...
+> 
+> libata has much of the framework to do this as it originally did all of
+> its PIO work much this way. That is probably the most productive place to
+> start hacking.
 
-Hey Gary,
+Yep.
 
-I'm working with the same board (and have a rev 3.0 EA board too).
-Here are my notes for the ELDK 4.0;
+The only real restriction in libata is in ata_device_add(), which 
+unconditionally registers an irq handler.  Make a few changes there, add 
+a few flags, and the existing polling code will kick in.
 
-http://www.ovro.caltech.edu/~dwh/powerpc_mpc8349e.pdf
+Once we have higher priority stuff sorted, I would like to look into 
+things like activating the polling code when it becomes obvious that the 
+system is not delivering interrupts.
 
-I setup the board so the software developers could start working
-with it, so haven't touched it for a while ... (the instructions
-use the arch/ppc version) ...
-
-So, try repeating via the arch/ppc method, and follow Ben's
-arch/powerpc advice and let us know how things went.
-
-If you're having trouble, then I hope to get back to working
-with the board soon, so I can also take a crack at repeating
-Ben's arch/powerpc method.
-
-Cheers,
-Dave
+	Jeff
