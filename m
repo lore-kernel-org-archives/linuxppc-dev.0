@@ -1,19 +1,37 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A5BAEDDF20
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 09:17:22 +1000 (EST)
-Date: Mon, 09 Apr 2007 16:17:22 -0700 (PDT)
-Message-Id: <20070409.161722.59655367.davem@davemloft.net>
-To: paulus@samba.org
-Subject: Re: [PATCH 6/6] [POWERPC] make struct property's value a void *
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <17946.33766.593173.670008@cargo.ozlabs.ibm.com>
-References: <1175814107.30879.143.camel@localhost.localdomain>
-	<1e26dd33aaeae9c55962be681b85e75e@kernel.crashing.org>
-	<17946.33766.593173.670008@cargo.ozlabs.ibm.com>
+Return-Path: <ananth@in.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D9106DDE3F
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 14:45:50 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3A4jjlT024549
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 00:45:45 -0400
+Received: from d03av02.boulder.ibm.com (d03av02.boulder.ibm.com [9.17.195.168])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3A4ji1i204386
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Apr 2007 22:45:44 -0600
+Received: from d03av02.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av02.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3A4jime000383
+	for <linuxppc-dev@ozlabs.org>; Mon, 9 Apr 2007 22:45:44 -0600
+Date: Tue, 10 Apr 2007 10:19:22 +0530
+From: Ananth N Mavinakayanahalli <ananth@in.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [patch 06/10] Add notify die hooks and remove some redundant
+	debugger hooks
+Message-ID: <20070410044922.GB15332@in.ibm.com>
+References: <20070321013810.404636000@samba.org>
+	<20070321013825.283024000@samba.org>
+	<17923.46762.363994.307295@cargo.ozlabs.ibm.com>
+	<20070323140929.GA17198@kryten>
+	<17946.5029.162940.708672@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17946.5029.162940.708672@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Anton Blanchard <anton@samba.org>
+Reply-To: ananth@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +41,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Paul Mackerras <paulus@samba.org>
-Date: Tue, 10 Apr 2007 04:20:22 +1000
+On Mon, Apr 09, 2007 at 08:21:25PM +1000, Paul Mackerras wrote:
+> 
+> The other thing is that we seem to be throwing all sorts of unrelated
+> events into the die_notifier.  The symptom of that is that you have
+> one set of handlers that are only interested in the debug events, and
+> another set that are only interested in the events where the machine
+> really is dying (oops, etc.).  That is, you have two sets of handlers
+> that are interested in disjoint sets of events.  That says to me that
+> we shouldn't be using a single notifier for all the events.
+> Particularly for page faults I really don't see the point of calling
+> handlers that are only interested in oopses.
 
-> This is true according to the standard (as I understand it), and also
-> a classic example of the C standards committee stuffing up the C
-> language by trying to turn it into a "high-level" language.  From the
-> earliest days of C on the PDP-11 it was understood that memory was an
-> array of bytes which could be addressed and interpreted in any way the
-> programmer chose.  For systems programming tasks that is a very useful
-> facility, and one which the kernel code generally assumes.  It's a
-> pity IMHO that the committee chose to throw that away (and yes I
-> understand that throwing it away makes more optimization opportunities
-> available).
+The page fault no longer uses the die_notifier. In recent kernels, we
+have done away with registering the page fault notifier unconditionally.
+In the kprobe case, its active only if there are any active probes.
 
-To be honest I think they did the right thing.
+As to the debug events vs. dying events both using the die_notifier, we
+did it that way just to maintain consistency across platforms. i386,
+x86_64 and sparc64 were using similar stuff before we put in the powerpc
+portions.
 
-99,999,999,999 times out of 100,000,000,000 independant pointers do
-not alias each other at all.
+Aside, I was told that some folks use the page fault notifiers to
+determine application behaviour or somesuch and have used it effectively
+to solve some of their performance issues. I don't have the details
+though.
 
-But regardless of what one thinks, we don't enable strict aliasing in
-the kernel build anyways, so none of this even matters for us.
+Ananth
