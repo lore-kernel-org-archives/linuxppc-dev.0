@@ -1,14 +1,23 @@
-Return-Path: <mgreer@mvista.com>
-Date: Tue, 10 Apr 2007 15:37:12 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: "Mark A. Greer" <mgreer@mvista.com>
-Subject: Re: [PATCH] powerpc: Disable external interrupts in bootwrapper
-Message-ID: <20070410223712.GA7835@mag.az.mvista.com>
-References: <20070327222840.GA1266@mag.az.mvista.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070327222840.GA1266@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 39421DDE24
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 09:19:56 +1000 (EST)
+Date: Tue, 10 Apr 2007 18:19:49 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: olof@lixom.net (Olof Johansson)
+Subject: Re: [PATCH 1/4] powerpc: document max-speed and interface-type
+	properties
+Message-Id: <20070410181949.2a26d646.kim.phillips@freescale.com>
+In-Reply-To: <20070410224809.GA20848@lixom.net>
+References: <20070410165639.1b619c34.kim.phillips@freescale.com>
+	<20070410224809.GA20848@lixom.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,38 +27,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Mar 27, 2007 at 03:28:40PM -0700, Mark A. Greer wrote:
-> Disable external interrupts very early in the bootwrapper in case
-> the firmware left a device generating interrupts.
-> 
-> Signed-off-by: Mark A. Greer <mgreer@mvista.com>
-> ---
-> 
->  crt0.S |    6 ++++++
->  1 file changed, 6 insertions(+)
-> ---
-> 
-> diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
-> index 3dc8d8f..f048a46 100644
-> --- a/arch/powerpc/boot/crt0.S
-> +++ b/arch/powerpc/boot/crt0.S
-> @@ -23,6 +23,12 @@ _zimage_start:
->  	   and the address where we're running. */
->  	bl	1f
->  1:	mflr	r0
-> +	li	r9,(1<<15)@l	/* Disable external intrs (clear MSR[EE]) */
-> +	mfmsr	r10
-> +	andc	r10,r10,r9
-> +	sync
-> +	mtmsr	r10
-> +	isync
->  	lis	r9,1b@ha
->  	addi	r9,r9,1b@l
->  	subf.	r0,r9,r0
+On Tue, 10 Apr 2007 17:48:09 -0500
+olof@lixom.net (Olof Johansson) wrote:
 
-Paul,
+> 
+> Do you really need to set max speed for devices that are at the default
+> max speed for the interface type? Seems redundant.
+> 
+> If for example there's an rgmii interface that for some reason only can
+> handle 100Mbit, that'd be different.
 
-Just in case there is any doubt, please ignore this patch.
-I can do what I need to do from my platform file.
+rgmii@100/10Mbit are supported interface/speed combinations for our MDS boards; see pdf p. 72 in:
 
-Mark
+http://www.freescale.com/files/32bit/doc/user_guide/MPC8360EAMDSUM.pdf
+
+Kim
