@@ -1,29 +1,26 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
+Return-Path: <tnt@246tNt.com>
+Received: from outmx021.isp.belgacom.be (outmx021.isp.belgacom.be
+	[195.238.4.202])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id D7000DDF51
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 06:11:26 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3AKBNZl001164
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 16:11:23 -0400
-Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3AKBNnH204430
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 14:11:23 -0600
-Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3AKBNQT010930
-	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 14:11:23 -0600
-Date: Tue, 10 Apr 2007 15:11:23 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH]: ppc64/pseries: null iommu dma-window property.
-Message-ID: <20070410201122.GJ4747@austin.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C828CDDED4
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 06:26:22 +1000 (EST)
+Received: from outmx021.isp.belgacom.be (localhost [127.0.0.1])
+	by outmx021.isp.belgacom.be (8.12.11.20060308/8.12.11/Skynet-OUT-2.22)
+	with ESMTP id l3AKQDph027006
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 22:26:16 +0200
+	(envelope-from <tnt@246tNt.com>)
+Message-ID: <461BF2CC.7090502@246tNt.com>
+Date: Tue, 10 Apr 2007 22:25:48 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] autodetect serial console on efika
+References: <20070331150823.GA25421@aepfle.de>	<461A3817.8080303@genesi-usa.com>
+	<20070410165246.GC508@aepfle.de>
+In-Reply-To: <20070410165246.GC508@aepfle.de>
+Content-Type: text/plain; charset=ISO-8859-1
+Cc: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -33,45 +30,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Olaf Hering wrote:
+> On Mon, Apr 09, Matt Sealey wrote:
+>
+>   
+>> It is entirely possible that a user may redirect the OF console output to
+>> the PSC6 controller or another internal or external serial device (PCI
+>> serial controller or so). In this case, the boot console will simply switch
+>> to the UART on the back, which may be some other custom device and not a
+>> valid console.
+>>     
+>
+> How many serial drivers are enabled in the public Efika firmware?
+> With my change, both /failsafe and the /builtin/serial work.
+> Both have device_type == "serial"
+>   
+If I follow the logic of the patch correctly, as soon as there is no
+"console=" in the command line and that the linux,stdout-path has a
+device_type "serial", you add ttyPSC0 as console ?
 
-Paul,
-Plese apply.
+The user could have plugged a console on the IRDA PSC and used a
+bootscript to change the OF tree appropriately.
+Or he could have put a PCI multi IO card and set the stdout to it ...
 
---linas
+In all those cases, the ttyPSC0 is bogus ...
+
+But in those "special cases", I guess it's not too much to ask the user
+to provide a "console=" in the command line.
 
 
-Some versions of pSeries firmware fail to set up a 
-dma-window property for PCI slots that are unoccupied.
-As a result, the loop searching for this propery, in
-pci_dma_dev_setup_pSeriesLP(), can run to the end, resulting
-in a NULL pointer dereference later in the routine. This
-patch prevents the crash, and prints a warning message.
-
-This is theoretically a rare error, as it occurs on what
-is hopefully just beta levels of firmware. But just in case
-this firmware escapes into the wild, this patch will avoid
-the crash.
-
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
-
-----
- arch/powerpc/platforms/pseries/iommu.c |    6 ++++++
- 1 file changed, 6 insertions(+)
-
-Index: linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/iommu.c
-===================================================================
---- linux-2.6.21-rc4-git4.orig/arch/powerpc/platforms/pseries/iommu.c	2007-02-04 12:44:54.000000000 -0600
-+++ linux-2.6.21-rc4-git4/arch/powerpc/platforms/pseries/iommu.c	2007-04-10 15:05:30.000000000 -0500
-@@ -526,6 +526,12 @@ static void pci_dma_dev_setup_pSeriesLP(
- 			break;
- 	}
- 
-+	if (!pdn || !PCI_DN(pdn)) {
-+		printk(KERN_WARNING "pci_dma_dev_setup_pSeriesLP: "
-+		       "no DMA window found for pci dev=%s dn=%s\n",
-+				 pci_name(dev), dn? dn->full_name : "<null>");
-+		return;
-+	}
- 	DBG("  parent is %s\n", pdn->full_name);
- 
- 	/* Check for parent == NULL so we don't try to setup the empty EADS
+    Sylvain
