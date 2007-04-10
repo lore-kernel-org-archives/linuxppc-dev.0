@@ -1,17 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <16327e0d9602022d7ee57670ac23c383@kernel.crashing.org>
-References: <20070410111324.GA2957@localhost.localdomain>
-	<16327e0d9602022d7ee57670ac23c383@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <4FDD7344-D9AD-4DCF-8C10-E65B6CEC7762@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [patch 1/3] powerpc: delete -mstring option
-Date: Tue, 10 Apr 2007 13:42:15 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Akinobu Mita <mita@fixstars.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CD872DDE23
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 04:46:12 +1000 (EST)
+Message-ID: <461BDB69.4050405@freescale.com>
+Date: Tue, 10 Apr 2007 13:46:01 -0500
+From: Timur Tabi <timur@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: change rheap functions to use ulongs instead
+	of pointers
+References: <11757244213581-git-send-email-timur@freescale.com>	<461AAF2F.2020608@freescale.com>
+	<DEB47A44-7FBF-40AD-B409-12A9BFA35976@kernel.crashing.org>
+In-Reply-To: <DEB47A44-7FBF-40AD-B409-12A9BFA35976@kernel.crashing.org>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
 
-On Apr 10, 2007, at 7:47 AM, Segher Boessenkool wrote:
+> If we are "cleaning up" rheap I would suggest we think about moving  
+> it to the generic lib directory and have it available for wider use  
+> beyond powerpc.
 
->> There is no reason to force -mstring option.
->> (Kumar, please see patch 2/3 for FSL_BOOKE temporary fix)
->
->> -ifndef CONFIG_FSL_BOOKE
->> -CFLAGS		+= -mstring
->> -endif
->
-> [and from 2/3]
->
->> +ifeq ($(CONFIG_FSL_BOOKE),y)
->> +CFLAGS         += -mno-string
->> +endif
->
-> This is the right solution, thank you for the patch.
-> But please fold these two together so that you're not
-> introducing a regression halfway the patch series.
+I'm not saying that's a bad idea, but that really is outside the scope of my intentions. 
+I'm not really cleaning up rheap as I am fixing one specific problem.
 
-I agree this looks good and merge patches 1/3 and 2/3 into a single  
-patch.
+I don't think there's any disagreement here that an integer type (in this case, unsigned 
+long) is better than a void * for storing a generic value.  I was really hoping I could 
+get a consensus on whether or not *this* patch is good for *our* rheap implementation.
 
-- k
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
