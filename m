@@ -1,18 +1,22 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from vitb.dev.rtsoft.ru (unknown [85.21.88.2])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D40FADDE24
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 03:52:13 +1000 (EST)
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 3/3] [PPC32] Address compilation and linking errors of
-	mpc86xads build.
-Date: Tue, 10 Apr 2007 21:52:04 +0400
-Message-Id: <20070410175204.8806.93242.stgit@vitb.ru.mvista.com>
-In-Reply-To: <20070410175153.8806.90306.stgit@vitb.ru.mvista.com>
-References: <20070410175153.8806.90306.stgit@vitb.ru.mvista.com>
-Cc: linuxppc <linuxppc-dev@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id A94F0DDF1D
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 04:32:24 +1000 (EST)
+In-Reply-To: <461AAF2F.2020608@freescale.com>
+References: <11757244213581-git-send-email-timur@freescale.com>
+	<461AAF2F.2020608@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <DEB47A44-7FBF-40AD-B409-12A9BFA35976@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: change rheap functions to use ulongs instead
+	of pointers
+Date: Tue, 10 Apr 2007 13:31:52 -0500
+To: Timur Tabi <timur@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,128 +27,25 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
+On Apr 9, 2007, at 4:25 PM, Timur Tabi wrote:
 
+> Timur Tabi wrote:
+>> The rheap allocation functions return a pointer, but the actual  
+>> value is based
+>> on how the heap was initialized, and so it can be anything, e.g.  
+>> an offset
+>> into a buffer.  A ulong is a better representation of the value  
+>> returned by
+>> the allocation functions.
+>
+> No comments on this patch?  Does this mean that you all think it's  
+> okay for 2.6.22?
 
-Signed-off-by: Vitaly Bordug <vbordug@ru.mvista.com>
----
+If we are "cleaning up" rheap I would suggest we think about moving  
+it to the generic lib directory and have it available for wider use  
+beyond powerpc.
 
- arch/ppc/8xx_io/commproc.c           |   26 ++++++++++++++++++++++++++
- arch/ppc/platforms/mpc866ads_setup.c |   17 +++++++++--------
- 2 files changed, 35 insertions(+), 8 deletions(-)
+This would also mean getting a wide review by lkml and seeing what  
+people think about it returning a ulong vs void *.
 
-diff --git a/arch/ppc/8xx_io/commproc.c b/arch/ppc/8xx_io/commproc.c
-index 3b23bcb..7a8722b 100644
---- a/arch/ppc/8xx_io/commproc.c
-+++ b/arch/ppc/8xx_io/commproc.c
-@@ -39,6 +39,21 @@
- #include <asm/tlbflush.h>
- #include <asm/rheap.h>
- 
-+#define immr_map(member)						\
-+({									\
-+	u32 offset = offsetof(immap_t, member);				\
-+	void *addr = ioremap (IMAP_ADDR + offset,			\
-+			      sizeof( ((immap_t*)0)->member));		\
-+	addr;								\
-+})
-+
-+#define immr_map_size(member, size)					\
-+({									\
-+	u32 offset = offsetof(immap_t, member);				\
-+	void *addr = ioremap (IMAP_ADDR + offset, size);		\
-+	addr;								\
-+})
-+
- static void m8xx_cpm_dpinit(void);
- static	uint	host_buffer;	/* One page of host buffer */
- static	uint	host_end;	/* end + 1 */
-@@ -364,11 +379,16 @@ static rh_block_t cpm_boot_dpmem_rh_bloc
- static rh_info_t cpm_dpmem_info;
- 
- #define CPM_DPMEM_ALIGNMENT	8
-+static u8* dpram_vbase;
-+static uint dpram_pbase;
- 
- void m8xx_cpm_dpinit(void)
- {
- 	spin_lock_init(&cpm_dpmem_lock);
- 
-+	dpram_vbase = immr_map_size(im_cpm.cp_dpmem, CPM_DATAONLY_BASE + CPM_DATAONLY_SIZE);
-+	dpram_pbase = (uint)&((immap_t *)IMAP_ADDR)->im_cpm.cp_dpmem;
-+
- 	/* Initialize the info header */
- 	rh_init(&cpm_dpmem_info, CPM_DPMEM_ALIGNMENT,
- 			sizeof(cpm_boot_dpmem_rh_block) /
-@@ -442,3 +462,9 @@ void *cpm_dpram_addr(uint offset)
- 	return ((immap_t *)IMAP_ADDR)->im_cpm.cp_dpmem + offset;
- }
- EXPORT_SYMBOL(cpm_dpram_addr);
-+
-+uint cpm_dpram_phys(u8* addr)
-+{
-+	return (dpram_pbase + (uint)(addr - dpram_vbase));
-+}
-+EXPORT_SYMBOL(cpm_dpram_phys);
-diff --git a/arch/ppc/platforms/mpc866ads_setup.c b/arch/ppc/platforms/mpc866ads_setup.c
-index 5b05d4b..7ce5364 100644
---- a/arch/ppc/platforms/mpc866ads_setup.c
-+++ b/arch/ppc/platforms/mpc866ads_setup.c
-@@ -21,6 +21,7 @@
- #include <linux/fs_enet_pd.h>
- #include <linux/fs_uart_pd.h>
- #include <linux/mii.h>
-+#include <linux/phy.h>
- 
- #include <asm/delay.h>
- #include <asm/io.h>
-@@ -37,10 +38,10 @@
- 
- extern unsigned char __res[];
- 
--static void setup_fec1_ioports(void);
--static void setup_scc1_ioports(void);
--static void setup_smc1_ioports(void);
--static void setup_smc2_ioports(void);
-+static void setup_fec1_ioports(struct fs_platform_info*);
-+static void setup_scc1_ioports(struct fs_platform_info*);
-+static void setup_smc1_ioports(struct fs_uart_platform_info*);
-+static void setup_smc2_ioports(struct fs_uart_platform_info*);
- 
- static struct fs_mii_fec_platform_info	mpc8xx_mdio_fec_pdata;
- 
-@@ -137,7 +138,7 @@ void __init board_init(void)
- 	iounmap(bcsr_io);
- }
- 
--static void setup_fec1_ioports(struct fs_platform_info*)
-+static void setup_fec1_ioports(struct fs_platform_info* pdata)
- {
- 	immap_t *immap = (immap_t *) IMAP_ADDR;
- 
-@@ -145,7 +146,7 @@ static void setup_fec1_ioports(struct fs
- 	setbits16(&immap->im_ioport.iop_pddir, 0x1fff);
- }
- 
--static void setup_scc1_ioports(struct fs_platform_info*)
-+static void setup_scc1_ioports(struct fs_platform_info* pdata)
- {
- 	immap_t *immap = (immap_t *) IMAP_ADDR;
- 	unsigned *bcsr_io;
-@@ -194,7 +195,7 @@ static void setup_scc1_ioports(struct fs
- 
- }
- 
--static void setup_smc1_ioports(struct fs_uart_platform_info*)
-+static void setup_smc1_ioports(struct fs_uart_platform_info* pdata)
- {
- 	immap_t *immap = (immap_t *) IMAP_ADDR;
- 	unsigned *bcsr_io;
-@@ -216,7 +217,7 @@ static void setup_smc1_ioports(struct fs
- 
- }
- 
--static void setup_smc2_ioports(struct fs_uart_platform_info*)
-+static void setup_smc2_ioports(struct fs_uart_platform_info* pdata)
- {
- 	immap_t *immap = (immap_t *) IMAP_ADDR;
- 	unsigned *bcsr_io;
+- k
