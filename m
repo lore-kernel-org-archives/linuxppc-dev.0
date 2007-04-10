@@ -1,13 +1,14 @@
-Return-Path: <mita@fixstars.com>
-Date: Tue, 10 Apr 2007 20:15:08 +0900
-From: Akinobu Mita <mita@fixstars.com>
+Return-Path: <miroslaw.dach@psi.ch>
+Received: from MAILSEND01.psi.ch (mailsend01.psi.ch [129.129.191.53])
+	by ozlabs.org (Postfix) with ESMTP id 5BC52DDEC9
+	for <linuxppc-dev@ozlabs.org>; Tue, 10 Apr 2007 22:04:07 +1000 (EST)
+Date: Tue, 10 Apr 2007 13:51:53 +0200 (CEST)
+From: Miroslaw Dach <miroslaw.dach@psi.ch>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 3/3] cell: prevent alignment interrupt on local store
-Message-ID: <20070410111508.GA2969@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: Arnd Bergmann <arnd@arndb.de>, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org
+Subject: linux 2.6 on xilinx ml403 
+Message-ID: <Pine.LNX.4.44.0704101337030.26940-100000@slslc02.psi.ch>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,27 +18,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-An Alignment interrupt occurs when the instruction is lmw, stmw, lswi, lswx,
-stswi, or stswx, and the operand is in local store.
+Hi All,
 
-GCC generated such instructions to handle memcpy() instead of kernel
-defined memcpy() without -mno-string option.
+	I am new in the linux powerpc linux. I have the Avnet evaluation
+board which contains xilinx ml403 (Virtex-4 FX family). The challenge I 
+have is to build linux (most preferable 2.6) with suitable drivers.
 
-Signed-off-by: Akinobu Mita <mita@fixstars.com>
+On the net I have found much information how to build linuxppc 2.4 for 
+xilinx ml300/ml301. I did not found however any good reference which 
+refers to kernel 2.6 and suitable patches for powerpc 405 which is 
+included in the ml403.
 
-Index: 2.6-git-ps3/arch/powerpc/platforms/cell/spufs/Makefile
-===================================================================
---- 2.6-git-ps3.orig/arch/powerpc/platforms/cell/spufs/Makefile
-+++ 2.6-git-ps3/arch/powerpc/platforms/cell/spufs/Makefile
-@@ -4,6 +4,11 @@ obj-$(CONFIG_SPU_FS) += spufs.o
- spufs-y += inode.o file.o context.o syscalls.o coredump.o
- spufs-y += sched.o backing_ops.o hw_ops.o run.o gang.o
- 
-+# An Alignment interrupt occurs when the instruction is lmw, stmw, lswi, lswx,
-+# stswi, or stswx, and the operand is in local store.
-+CFLAGS_run.o := -mno-string
-+CFLAGS_file.o := -mno-string
-+
- # Rules to build switch.o with the help of SPU tool chain
- SPU_CROSS	:= spu-
- SPU_CC		:= $(SPU_CROSS)gcc
+I would appreciate very much if someone could provide me with some good 
+reference links referring kernel 2.6 for PPC 405 on xilinx ml403.
+I have found the place to download the linuxppc_2_4_devel on BitKeper page 
+but there is no equivalent like linuxppc_2_6_devel.
+
+
+Best Regards
+
+Mirek 
+
+
+=============================================================================
+          Miroslaw Dach (Miroslaw.Dach@psi.ch) - SLS/Controls Group 
+                PSI - Paul Scherrer Institut CH-5232 Villigen
+=============================================================================
