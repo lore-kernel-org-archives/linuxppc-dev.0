@@ -1,18 +1,18 @@
 Return-Path: <olaf@aepfle.de>
 Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E70C1DDF0D
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 02:21:52 +1000 (EST)
-Date: Tue, 10 Apr 2007 18:22:29 +0200
+	by ozlabs.org (Postfix) with ESMTP id C141CDDF56
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 02:52:09 +1000 (EST)
+Date: Tue, 10 Apr 2007 18:52:46 +0200
 From: Olaf Hering <olaf@aepfle.de>
-To: Alan Cox <alan@lxorguk.ukuu.org.uk>
-Subject: Re: adding Pegasus IDE quirk for pata_via
-Message-ID: <20070410162229.GA508@aepfle.de>
-References: <20070404111635.GA1855@aepfle.de> <461A3C10.3050104@genesi-usa.com>
-	<20070409154026.4d8a0774@the-village.bc.nu>
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: [PATCH] autodetect serial console on efika
+Message-ID: <20070410165246.GC508@aepfle.de>
+References: <20070331150823.GA25421@aepfle.de>
+	<461A3817.8080303@genesi-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070409154026.4d8a0774@the-village.bc.nu>
-Cc: linux-ide@vger.kernel.org, linuxppc-dev@ozlabs.org
+In-Reply-To: <461A3817.8080303@genesi-usa.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +22,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 09, Alan Cox wrote:
+On Mon, Apr 09, Matt Sealey wrote:
 
-> > Again some comments would be appreciated from anyone who has a better idea on how this controller
-> > works. This simple code addition came out of 2 or 3 days of discussion with the Pegasos designer
-> > based on his experiences with the chip and is so simple there cannot be much wrong with it
-> > apart from coding style and a distinct lack of testing.
-> 
-> Seems sane to me - as you said the x86 world relies on the BIOS for this
-> and in fact pretty much never uses native mode anyway.
+> It is entirely possible that a user may redirect the OF console output to
+> the PSC6 controller or another internal or external serial device (PCI
+> serial controller or so). In this case, the boot console will simply switch
+> to the UART on the back, which may be some other custom device and not a
+> valid console.
 
-The snipped is appearently for drivers/ide.
-Where is the correct place for drivers/ata?
+How many serial drivers are enabled in the public Efika firmware?
+With my change, both /failsafe and the /builtin/serial work.
+Both have device_type == "serial"
