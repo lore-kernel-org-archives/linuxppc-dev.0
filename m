@@ -1,15 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 3/3] cell: prevent alignment interrupt on local store
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Akinobu Mita <mita@fixstars.com>
-In-Reply-To: <20070410111508.GA2969@localhost.localdomain>
-References: <20070410111508.GA2969@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 11 Apr 2007 07:22:48 +1000
-Message-Id: <1176240168.8061.51.camel@localhost.localdomain>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 845CFDDF07
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 07:56:47 +1000 (EST)
+Date: Tue, 10 Apr 2007 16:56:39 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/4] powerpc: document max-speed and interface-type properties
+Message-Id: <20070410165639.1b619c34.kim.phillips@freescale.com>
 Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,16 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-10 at 20:15 +0900, Akinobu Mita wrote:
-> An Alignment interrupt occurs when the instruction is lmw, stmw, lswi, lswx,
-> stswi, or stswx, and the operand is in local store.
-> 
-> GCC generated such instructions to handle memcpy() instead of kernel
-> defined memcpy() without -mno-string option.
-> 
-> Signed-off-by: Akinobu Mita <mita@fixstars.com>
+Since ucc_geth is being migrated to use the phylib, the existing
+(undocumented) 'interface' property is being deprecated in favour
+of unconjoined variations 'max-speed' and 'interface-type'.
 
-I would personally prefer building the entire kernel with -mno-string
-when cell support is enabled...
+max-speed is necessary for QE UEC devices that do not make that
+information available through their programming model.
 
-Ben.
+interface-type is now maintained one-to-one with definitions
+in include/linux/phy.h.
+
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+please consider for 2.6.22
+
+ Documentation/powerpc/booting-without-of.txt |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 88cdb59..92fa74c 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1556,6 +1556,9 @@ platforms are moved over to use the flattened-device-tree model.
+    Required properties for network device_type:
+    - mac-address : list of bytes representing the ethernet address.
+    - phy-handle : The phandle for the PHY connected to this controller.
++   - max-speed : The maximum speed supported by the controller (in Mbit/s)
++   - interface-type : a string naming the controller/PHY interface type,
++     i.e., one of "mii", "gmii", "sgmii", "tbi", "rmii", "rgmii", or "rtbi".
+ 
+    Recommended properties:
+    - linux,network-index : This is the intended "index" of this
+@@ -1573,6 +1576,8 @@ platforms are moved over to use the flattened-device-tree model.
+ 		interrupts = <a0 0>;
+ 		interrupt-parent = <700>;
+ 		mac-address = [ 00 04 9f 00 23 23 ];
++		interface-type = "rgmii";
++		max-speed = <d#1000>;
+ 		rx-clock = "none";
+ 		tx-clock = "clk9";
+ 		phy-handle = <212000>;
+-- 
+1.5.0.1
