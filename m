@@ -1,22 +1,22 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <linux-kernel@hansmi.ch>
+Received: from hansmi.home.forkbomb.ch (hansmi.home.forkbomb.ch
+	[213.144.146.165])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A94F0DDF1D
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 04:32:24 +1000 (EST)
-In-Reply-To: <461AAF2F.2020608@freescale.com>
-References: <11757244213581-git-send-email-timur@freescale.com>
-	<461AAF2F.2020608@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <DEB47A44-7FBF-40AD-B409-12A9BFA35976@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: change rheap functions to use ulongs instead
-	of pointers
-Date: Tue, 10 Apr 2007 13:31:52 -0500
-To: Timur Tabi <timur@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, tnt@246tNt.com
+	(Client CN "hansmi.home.forkbomb.ch",
+	Issuer "hansmi.home.forkbomb.ch" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id D4BFBDDECF
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 04:42:09 +1000 (EST)
+Date: Tue, 10 Apr 2007 20:41:58 +0200
+From: Michael Hanselmann <linux-kernel@hansmi.ch>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: my powerbook fails to resume if backlight control is disabled
+Message-ID: <20070410184158.GB22734@hansmi.ch>
+References: <1175700040.3600.14.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature"; boundary="7iMSBzlTiPOCCT2k"
+In-Reply-To: <1175700040.3600.14.camel@johannes.berg>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +27,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 9, 2007, at 4:25 PM, Timur Tabi wrote:
+--7iMSBzlTiPOCCT2k
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-> Timur Tabi wrote:
->> The rheap allocation functions return a pointer, but the actual  
->> value is based
->> on how the heap was initialized, and so it can be anything, e.g.  
->> an offset
->> into a buffer.  A ulong is a better representation of the value  
->> returned by
->> the allocation functions.
->
-> No comments on this patch?  Does this mean that you all think it's  
-> okay for 2.6.22?
+Hello Johannes
 
-If we are "cleaning up" rheap I would suggest we think about moving  
-it to the generic lib directory and have it available for wider use  
-beyond powerpc.
+On Wed, Apr 04, 2007 at 05:20:40PM +0200, Johannes Berg wrote:
+> The thing is that I had turned off some options to the point where I
+> had /sys/class/backlight but nothing in it. I don't know for sure what
+> exactly these options were, but I do know that CONFIG_PMAC_BACKLIGHT and
+> CONFIG_PMAC_BACKLIGHT_LEGACY were off, though that alone shouldn't
+> cause /sys/class/backlight/radeonbl0 to disappear.
 
-This would also mean getting a wide review by lkml and seeing what  
-people think about it returning a ulong vs void *.
+I tried a configuration like that and can't reproduce it. Maybe it's
+because of some other driver.
 
-- k
+Greets,
+Michael
+
+--7iMSBzlTiPOCCT2k
+Content-Type: application/pgp-signature
+Content-Disposition: inline
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGG9p26J0saEpRu+oRAv2CAKCOV5iEI/IBL7xDBlEFY93wtzYIOACfUYXI
+tpQqjbM2WpCqcOMuBSt1AxY=
+=18hD
+-----END PGP SIGNATURE-----
+
+--7iMSBzlTiPOCCT2k--
