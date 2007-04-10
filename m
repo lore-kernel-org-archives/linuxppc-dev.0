@@ -1,21 +1,20 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <dwh@ovro.caltech.edu>
+Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1D4B2DDF12
+	(Client CN "mail.ovro.caltech.edu",
+	Issuer "mail.ovro.caltech.edu" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id CE052DDF0C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Apr 2007 01:48:50 +1000 (EST)
-Message-ID: <461BB1DB.9050503@freescale.com>
-Date: Tue, 10 Apr 2007 10:48:43 -0500
-From: Timur Tabi <timur@freescale.com>
+	Wed, 11 Apr 2007 02:13:43 +1000 (EST)
+Message-ID: <461BB78D.5080401@ovro.caltech.edu>
+Date: Tue, 10 Apr 2007 09:13:01 -0700
+From: David Hawkins <dwh@ovro.caltech.edu>
 MIME-Version: 1.0
-To: "Benedict, Michael" <MBenedict@twacs.com>
-Subject: Re: MPC 8349e-mITX and MTD/Flash
-References: <CF7E46FCFF66AD478BB72724345289EC2795D1@twx-exch01.twacs.local>	<572211.38645.qm@web306.biz.mail.mud.yahoo.com>
-	<CF7E46FCFF66AD478BB72724345289EC2795D2@twx-exch01.twacs.local>
-In-Reply-To: <CF7E46FCFF66AD478BB72724345289EC2795D2@twx-exch01.twacs.local>
+To: Gary Kenaley <gkenaley@echelon.com>
+Subject: Re: Unable to Boot 2.6.19.2 from ELDK 4.1 on MPC8349E MDS
+References: <BAY115-W6F965CAAC5215961F494FB2590@phx.gbl>
+	<DDBD7B17DB2ECE48BCD94C593F7255B4046E9F23@monk.echelon.echcorp.com>
+In-Reply-To: <DDBD7B17DB2ECE48BCD94C593F7255B4046E9F23@monk.echelon.echcorp.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -28,42 +27,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Benedict, Michael wrote:
+Gary Kenaley wrote:
+> I have been evaluating Freescale 2.6.11, Wind River 2.6.14, and am now
+> attempting Denx 2.6.19 (from ELDK 4.1) - running on the Rev 1.0 MPC8349E
+> MDS (V1.1 CPU). I boot 2.6.19.2 using the factory u-boot 1.1.3 and the
+> kernel immediately hangs:
 
-> # CONFIG_MTD_COMPLEX_MAPPINGS is not set
-> CONFIG_MTD_PHYSMAP=y
-> CONFIG_MTD_PHYSMAP_START=0x8000000
-> CONFIG_MTD_PHYSMAP_LEN=0x0
-> CONFIG_MTD_PHYSMAP_BANKWIDTH=2
-> # CONFIG_MTD_PHYSMAP_OF is not set
-> CONFIG_MTD_PLATRAM=y
+Hey Gary,
 
-This what the latest defconfig for the 8349ITX has:
+I'm working with the same board (and have a rev 3.0 EA board too).
+Here are my notes for the ELDK 4.0;
 
-CONFIG_MTD=y
-CONFIG_MTD_CHAR=y
-CONFIG_MTD_CFI=y
-CONFIG_MTD_GEN_PROBE=y
-CONFIG_MTD_MAP_BANK_WIDTH_1=y
-CONFIG_MTD_MAP_BANK_WIDTH_2=y
-CONFIG_MTD_MAP_BANK_WIDTH_4=y
-CONFIG_MTD_CFI_I1=y
-CONFIG_MTD_CFI_I2=y
-CONFIG_MTD_CFI_AMDSTD=y
-CONFIG_MTD_CFI_UTIL=y
-CONFIG_MTD_PHYSMAP=y
-CONFIG_MTD_PHYSMAP_START=0xfe000000
-CONFIG_MTD_PHYSMAP_LEN=0x1000000
-CONFIG_MTD_PHYSMAP_BANKWIDTH=2
+http://www.ovro.caltech.edu/~dwh/powerpc_mpc8349e.pdf
 
-Your settings for CONFIG_MTD_PHYSMAP_START and CONFIG_MTD_PHYSMAP_LEN are wrong.  And 
-frankly, I can't understand where you got those values from, unless you created your 
-.config from scratch.  The defconfig that's in the kernel is specifically intended for the 
-Freescale MPC8349E-mITX.  I should know, because I wrote the code and the defconfig.
+I setup the board so the software developers could start working
+with it, so haven't touched it for a while ... (the instructions
+use the arch/ppc version) ...
 
-Having said that, it seems that the kernel now supports defining the physmap via the OF 
-tree.  Is that true?
+So, try repeating via the arch/ppc method, and follow Ben's
+arch/powerpc advice and let us know how things went.
 
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+If you're having trouble, then I hope to get back to working
+with the board soon, so I can also take a crack at repeating
+Ben's arch/powerpc method.
+
+Cheers,
+Dave
