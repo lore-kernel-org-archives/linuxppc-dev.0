@@ -1,25 +1,17 @@
-Return-Path: <cdumoulin@ics-ltd.com>
-Received: from mx4.magma.ca (mx4-3.spamtrap.magma.ca [209.217.78.178])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4721FDDEDC
+Return-Path: <psmith@netezza.com>
+Received: from mail2.netezza.com (mr1.netezza.com [12.148.248.137])
+	by ozlabs.org (Postfix) with SMTP id DA655DDF78
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Apr 2007 06:31:00 +1000 (EST)
-Received: from mail3.magma.ca (mail3.internal.magma.ca [10.0.10.13])
-	by mx4-3.spamtrap.magma.ca (8.13.1/8.13.1) with ESMTP id l3AK263n023463
-	for <linuxppc-embedded@ozlabs.org>; Tue, 10 Apr 2007 16:02:06 -0400
-Received: from randa ([64.26.174.130])
-	by mail3.magma.ca (Magma's Mail Server) with ESMTP id l3AK240R008519
-	for <linuxppc-embedded@ozlabs.org>; Tue, 10 Apr 2007 16:02:05 -0400
-Message-Id: <200704102002.l3AK240R008519@mail3.magma.ca>
-From: "Christopher Dumoulin" <cdumoulin@ics-ltd.com>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: RE: Multiple Boards with same MAC addresses - problem.
-Date: Tue, 10 Apr 2007 16:02:12 -0400
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-In-Reply-To: <mailman.536.1176223651.26657.linuxppc-embedded@ozlabs.org>
+	Wed, 11 Apr 2007 08:04:05 +1000 (EST)
+Subject: Re: NET_POLL missing in the new ibm_emac driver?
+From: Paul Smith <psmith@netezza.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 10 Apr 2007 18:04:00 -0400
+Message-Id: <1176242640.13662.124.camel@psmithub>
+Mime-Version: 1.0
+Cc: netdev@vger.kernel.org
+Reply-To: psmith@netezza.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -30,35 +22,38 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Do you have some non-volatile memory to work with? You could store MAC
-addresses for each individual board in non-volatile memory, then read the
-MAC address from there each time U-Boot runs, and program your Ethernet
-ports accordingly.
+Hi all; any love here?  Maybe a pointer or two (e.g., what's the
+equivalent, in the new emac driver, of these lines in the old driver:
 
-----------------------------------------------------------------------
+	emac_rxeob_dev((void *)ndev, 0);
+	emac_txeob_dev((void *)ndev, 0);
 
-Message: 1
-Date: Tue, 10 Apr 2007 16:51:04 +0200
-From: powerpc440 <powerpc440@googlemail.com>
-Subject: Multiple Boards with same MAC addresses - problem.
-To: linuxppc-embedded@ozlabs.org
-Message-ID: <461BA458.2010605@googlemail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+?)
 
-Hello all,
+---------------
 
-I have multiple boards, based on ppc405ep (which include on-chip two
-ethernet ports). I'm configure the MAC address in u-boot and all works
-great. The problem appears when I use two or more boards in one network,
-because the MAC addresses are the same. Now I'm making a own u-boots for
-each board, but this solution is not very comfortable.
-My question is, which is the standard way to resolve such problem? I
-would have only one generic u-boot. Is this possible?
+I was having so many problems with the 2.6.14 (old) emac driver that I
+backported the new one from 2.6.15.  It works great... until I tried to
+use KGDBOE with it.  Then I got:
 
+    kgdboe: eth1 doesn't support polling, aborting.
 
-Best regards,
+Looking around I see that I need the driver to support the
+poll_controller method in the net device, and the new driver doesn't
+seem to do that.
 
-Zhivko Yordanov
+I see the old implementation of this method, but of course it uses
+interfaces that no longer exist so I can't use that directly.  It seems
+like a small change but I'm not really familiar with the implementation
+of the ibm_emac driver; does anyone have a patch for the new driver to
+provide this feature?
 
 
-------------------------------
+Thanks!
+
+-- 
+-----------------------------------------------------------------------------
+ Paul D. Smith <psmith@netezza.com>                       http://netezza.com
+ "Please remain calm--I may be mad, but I am a professional."--Mad Scientist
+-----------------------------------------------------------------------------
+      These are my opinions--Netezza takes no responsibility for them.
