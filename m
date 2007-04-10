@@ -1,17 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 3BB50DDF58
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 08:30:57 +1000 (EST)
-Date: Tue, 10 Apr 2007 17:48:09 -0500
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 1/4] powerpc: document max-speed and interface-type
-	properties
-Message-ID: <20070410224809.GA20848@lixom.net>
-References: <20070410165639.1b619c34.kim.phillips@freescale.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070410165639.1b619c34.kim.phillips@freescale.com>
-From: olof@lixom.net (Olof Johansson)
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 06621DDF58
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 08:34:49 +1000 (EST)
+Subject: Re: Cannot open ramdisk
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Chris West <chrisw@cristie.com>
+In-Reply-To: <E1AF14BEE9B355499E146B179F69E9AF152EB6@exchangesrv.cristie.co.uk>
+References: <E1AF14BEE9B355499E146B179F69E9AF152EB6@exchangesrv.cristie.co.uk>
+Content-Type: text/plain
+Date: Wed, 11 Apr 2007 08:34:38 +1000
+Message-Id: <1176244478.8061.55.camel@localhost.localdomain>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -22,19 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 10, 2007 at 04:56:39PM -0500, Kim Phillips wrote:
-> Since ucc_geth is being migrated to use the phylib, the existing
-> (undocumented) 'interface' property is being deprecated in favour
-> of unconjoined variations 'max-speed' and 'interface-type'.
+
+> My ramdisk is a compressed 64MB ext3 filesystem in /ppc/chrp/system
 > 
-> max-speed is necessary for QE UEC devices that do not make that
-> information available through their programming model.
+> After the kernel has booted I get the following message:
+> 
+> VFS: Cannot open root device "ram0" or unknown-block(1,0)
+> Please append a correct "root=" boot option
+> 
+> I've read that only uncompressed kernels can load a ramdisk, is this still the case?
+> I have tried using an uncompressed kernel with the same results.
+> 
+> Can anyone tell me why my ramdisk isn't being loaded?
 
-Do you really need to set max speed for devices that are at the default
-max speed for the interface type? Seems redundant.
+Not sure... what is the full kernel log and the messages from yaboot ?
+It's possible that your ramdisk is just too big for either yaboot or the
+kernel to cope...
 
-If for example there's an rgmii interface that for some reason only can
-handle 100Mbit, that'd be different.
+Also, the ramdisk should be compressed, is it ?
 
-
--Olof
+Ben.
