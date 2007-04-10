@@ -1,19 +1,14 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 06621DDF58
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 08:34:49 +1000 (EST)
-Subject: Re: Cannot open ramdisk
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Chris West <chrisw@cristie.com>
-In-Reply-To: <E1AF14BEE9B355499E146B179F69E9AF152EB6@exchangesrv.cristie.co.uk>
-References: <E1AF14BEE9B355499E146B179F69E9AF152EB6@exchangesrv.cristie.co.uk>
-Content-Type: text/plain
-Date: Wed, 11 Apr 2007 08:34:38 +1000
-Message-Id: <1176244478.8061.55.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mgreer@mvista.com>
+Date: Tue, 10 Apr 2007 15:37:12 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH] powerpc: Disable external interrupts in bootwrapper
+Message-ID: <20070410223712.GA7835@mag.az.mvista.com>
+References: <20070327222840.GA1266@mag.az.mvista.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070327222840.GA1266@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,23 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> My ramdisk is a compressed 64MB ext3 filesystem in /ppc/chrp/system
+On Tue, Mar 27, 2007 at 03:28:40PM -0700, Mark A. Greer wrote:
+> Disable external interrupts very early in the bootwrapper in case
+> the firmware left a device generating interrupts.
 > 
-> After the kernel has booted I get the following message:
+> Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+> ---
 > 
-> VFS: Cannot open root device "ram0" or unknown-block(1,0)
-> Please append a correct "root=" boot option
+>  crt0.S |    6 ++++++
+>  1 file changed, 6 insertions(+)
+> ---
 > 
-> I've read that only uncompressed kernels can load a ramdisk, is this still the case?
-> I have tried using an uncompressed kernel with the same results.
-> 
-> Can anyone tell me why my ramdisk isn't being loaded?
+> diff --git a/arch/powerpc/boot/crt0.S b/arch/powerpc/boot/crt0.S
+> index 3dc8d8f..f048a46 100644
+> --- a/arch/powerpc/boot/crt0.S
+> +++ b/arch/powerpc/boot/crt0.S
+> @@ -23,6 +23,12 @@ _zimage_start:
+>  	   and the address where we're running. */
+>  	bl	1f
+>  1:	mflr	r0
+> +	li	r9,(1<<15)@l	/* Disable external intrs (clear MSR[EE]) */
+> +	mfmsr	r10
+> +	andc	r10,r10,r9
+> +	sync
+> +	mtmsr	r10
+> +	isync
+>  	lis	r9,1b@ha
+>  	addi	r9,r9,1b@l
+>  	subf.	r0,r9,r0
 
-Not sure... what is the full kernel log and the messages from yaboot ?
-It's possible that your ramdisk is just too big for either yaboot or the
-kernel to cope...
+Paul,
 
-Also, the ramdisk should be compressed, is it ?
+Just in case there is any doubt, please ignore this patch.
+I can do what I need to do from my platform file.
 
-Ben.
+Mark
