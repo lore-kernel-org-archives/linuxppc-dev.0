@@ -1,19 +1,19 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp103.biz.mail.re2.yahoo.com (smtp103.biz.mail.re2.yahoo.com
-	[68.142.229.217]) by ozlabs.org (Postfix) with SMTP id 3D955DDE42
+Return-Path: <liml@rtr.ca>
+Received: from mail.rtr.ca (ottawa-hs-64-26-128-89.s-ip.magma.ca
+	[64.26.128.89]) by ozlabs.org (Postfix) with ESMTP id 72283DDF0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Apr 2007 01:12:18 +1000 (EST)
-Subject: Re: Multiple Boards with same MAC addresses - problem.
-From: Ben Warren <bwarren@qstreams.com>
-To: powerpc440 <powerpc440@googlemail.com>
-In-Reply-To: <461BA458.2010605@googlemail.com>
-References: <461BA458.2010605@googlemail.com>
-Content-Type: text/plain
-Date: Tue, 10 Apr 2007 11:12:14 -0400
-Message-Id: <1176217934.14027.31.camel@saruman.qstreams.net>
-Mime-Version: 1.0
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: bwarren@qstreams.com
+	Wed, 11 Apr 2007 01:15:38 +1000 (EST)
+Message-ID: <461BA2BB.6040101@rtr.ca>
+Date: Tue, 10 Apr 2007 10:44:11 -0400
+From: Mark Lord <liml@rtr.ca>
+MIME-Version: 1.0
+To: Michael <michaelzwrk@gmail.com>
+Subject: Re: IDE driver in polling mode
+References: <1ea6be8e0704100635ydbf1538i782e796c99891e5d@mail.gmail.com>
+	<461B9D04.2000109@ru.mvista.com>
+In-Reply-To: <461B9D04.2000109@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linux-ide@vger.kernel.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,31 +24,16 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Zhivko,
-
-On Tue, 2007-04-10 at 16:51 +0200, powerpc440 wrote:
-> Hello all,
+> Michael wrote:
 > 
-> I have multiple boards, based on ppc405ep (which include on-chip two
-> ethernet ports). I'm configure the MAC address in u-boot and all works
-> great. The problem appears when I use two or more boards in one network,
-> because the MAC addresses are the same. Now I'm making a own u-boots for
-> each board, but this solution is not very comfortable.
-> My question is, which is the standard way to resolve such problem? I
-> would have only one generic u-boot. Is this possible?
-> 
-> 
-> Best regards,
-> 
-> Zhivko Yordanov
+>> I'd like to know whether it is possible to use IDE driver (ide-disk)
+>> in polling mode, instead of using IRQ.
 
-Please post to the U-boot mailing list.  There's no reason why you
-should need to custom build for each board.  
+This should be doable, with a small amount of hacking.
+Mostly, you just need to use add_timer() to set up a polling
+function that simply calls ide_intr() and then does add_timer()
+again for the next poll.
 
-You need to create some kind of board calibration procedure where each
-board is assigned a unique MAC address, and then save it in U-boot.  If
-your problem is that your unique U-boot MAC addresses don't make it to
-Linux, the people on the U-boot list can give you direction.
+For your purposes, it could be as simple as five lines of C.
 
-regards,
-Ben
+Cheers
