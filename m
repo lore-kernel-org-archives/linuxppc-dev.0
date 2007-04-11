@@ -1,19 +1,11 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 08BEDDDF1B
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 08:22:16 +1000 (EST)
-Subject: Re: [RFC 1/3] cryptoapi: AES with AltiVec support
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sebastian Siewior <bigeasy@linux.vnet.ibm.com>
-In-Reply-To: <20070411165702.256910000@linux.vnet.ibm.com>>
-References: <20070411164910.657151000@linux.vnet.ibm.com> >
-	<20070411165702.256910000@linux.vnet.ibm.com>>
-Content-Type: text/plain
-Date: Thu, 12 Apr 2007 08:22:06 +1000
-Message-Id: <1176330126.8061.110.camel@localhost.localdomain>
-Mime-Version: 1.0
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17949.24903.413495.149252@cargo.ozlabs.ibm.com>
+Date: Thu, 12 Apr 2007 08:29:27 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: torvalds@linux-foundation.org
+Subject: Please pull powerpc.git merge branch
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,25 +16,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> ==================================================================
-> --- ps3-linux.orig/crypto/Makefile
-> +++ ps3-linux/crypto/Makefile
-> @@ -48,3 +48,7 @@ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += mich
->  obj-$(CONFIG_CRYPTO_CRC32C) += crc32c.o
->  
->  obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
-> +
-> +CFLAGS_aes-altivec.o += -O3  -maltivec -mcpu=cell
-> +aes_altivec-objs := aes-alti.o aes-altivec.o
-> +obj-$(CONFIG_CRYPTO_AES_ALTIVEC) += aes_altivec.o
+Linus,
 
-Ideally (and I know the RAID6 code isnt doing it), the
-code that contains enable_kernel_altivec/disable_kernel_altivec should
--not- itself be compiled with -malitvec. You don't want the compiler to
-"inadvertently" generate altivec instructions outside of those calls (in
-the function prolog for example).
+Please do:
 
-I noticed quite a bit of memcpy's around too... see if you can limit
-usage of these.
+git pull \
+git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
 
-Ben.
+to get a bugfix from Domen Puncer (via Sylvain Munaut) that should go
+in 2.6.21 if possible.
+
+Thanks,
+Paul.
+
+ arch/powerpc/platforms/52xx/mpc52xx_pic.c |    4 ++--
+ 1 files changed, 2 insertions(+), 2 deletions(-)
+
+commit 22132178b26c907d19f661a4ae7fd265962d417e
+Author: Domen Puncer <domen.puncer@telargo.com>
+Date:   Wed Apr 11 00:27:49 2007 +0200
+
+    [POWERPC] mpc52xx_pic: fix main interrupt masking
+    
+    The bit setting was off by one.
+    Tested with RTC and GPIO_WKUP interrupts.
+    
+    Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
+    Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
+    Signed-off-by: Paul Mackerras <paulus@samba.org>
