@@ -1,17 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [patch 3/3] cell: prevent alignment interrupt on local store
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Akinobu Mita <mita@fixstars.com>
-In-Reply-To: <20070411025605.GB2197@localhost.localdomain>
-References: <20070410111508.GA2969@localhost.localdomain>
-	<1176240168.8061.51.camel@localhost.localdomain>
-	<20070411025605.GB2197@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 11 Apr 2007 13:30:53 +1000
-Message-Id: <1176262253.8061.60.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 94B59DDF14
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 16:16:52 +1000 (EST)
+Date: Wed, 11 Apr 2007 08:17:30 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Sylvain Munaut <tnt@246tNt.com>
+Subject: Re: [PATCH] autodetect serial console on efika
+Message-ID: <20070411061730.GA9091@aepfle.de>
+References: <20070331150823.GA25421@aepfle.de>
+	<461A3817.8080303@genesi-usa.com>
+	<20070410165246.GC508@aepfle.de> <461BF2CC.7090502@246tNt.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <461BF2CC.7090502@246tNt.com>
+Cc: Paul Mackeras <paulus@samba.org>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,26 +23,10 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-04-11 at 11:56 +0900, Akinobu Mita wrote:
-> On Wed, Apr 11, 2007 at 07:22:48AM +1000, Benjamin Herrenschmidt wrote:
-> > On Tue, 2007-04-10 at 20:15 +0900, Akinobu Mita wrote:
-> > > An Alignment interrupt occurs when the instruction is lmw, stmw, lswi, lswx,
-> > > stswi, or stswx, and the operand is in local store.
-> > > 
-> > > GCC generated such instructions to handle memcpy() instead of kernel
-> > > defined memcpy() without -mno-string option.
-> > > 
-> > > Signed-off-by: Akinobu Mita <mita@fixstars.com>
-> > 
-> > I would personally prefer building the entire kernel with -mno-string
-> > when cell support is enabled...
-> 
-> I'm about to resend the patch which prevent alignment interrupts on LS
-> by using memcpy_fromio() rather than putting a collection of -mno-* options
-> in Makefile. (only -mno-string is not enough to prevent that as Segher said)
+On Tue, Apr 10, Sylvain Munaut wrote:
 
-Sure, however we also know for sure that string instructions will suck a
-LOT on a cell ... so for a multi platforms kernel that has cell support
-built-in, it makes some sense to not use them.
+> In all those cases, the ttyPSC0 is bogus ...
 
-Ben.
+Thats why I asked for the number of enabled serial console drivers in
+the firmware. I suspect there is just a single one for the onboard
+connector.
