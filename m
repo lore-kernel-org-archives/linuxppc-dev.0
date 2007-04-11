@@ -1,11 +1,22 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17949.24903.413495.149252@cargo.ozlabs.ibm.com>
-Date: Thu, 12 Apr 2007 08:29:27 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: torvalds@linux-foundation.org
-Subject: Please pull powerpc.git merge branch
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 765C2DDE21
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 08:56:14 +1000 (EST)
+Date: Wed, 11 Apr 2007 17:56:07 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
+Subject: Re: [PATCH 1/4] powerpc: document max-speed and interface-type
+	properties
+Message-Id: <20070411175607.5ef11341.kim.phillips@freescale.com>
+In-Reply-To: <006a01c77c82$bd304b40$6667a8c0@Jocke>
+References: <20070410165639.1b619c34.kim.phillips@freescale.com>
+	<006a01c77c82$bd304b40$6667a8c0@Jocke>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,31 +27,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Linus,
+On Wed, 11 Apr 2007 23:45:36 +0200
+"Joakim Tjernlund" <joakim.tjernlund@transmode.se> wrote:
 
-Please do:
+> 
+> > +   - interface-type : a string naming the controller/PHY 
+> > interface type,
+> > +     i.e., one of "mii", "gmii", "sgmii", "tbi", "rmii", 
+> > "rgmii", or "rtbi".
+> 
+> Hmm, what if I have a direct MII to MII connection without a PHY in between?
 
-git pull \
-git://git.kernel.org/pub/scm/linux/kernel/git/paulus/powerpc.git merge
+that would depend on the connection itself (and how you wanted your UCC configured).  It would still be one of the above, since those are what the UCC supports.
 
-to get a bugfix from Domen Puncer (via Sylvain Munaut) that should go
-in 2.6.21 if possible.
+> Will this support such a "fixed" connection?
 
-Thanks,
-Paul.
+I don't see why not.
 
- arch/powerpc/platforms/52xx/mpc52xx_pic.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+> How do I express that in OF speak?
 
-commit 22132178b26c907d19f661a4ae7fd265962d417e
-Author: Domen Puncer <domen.puncer@telargo.com>
-Date:   Wed Apr 11 00:27:49 2007 +0200
+omit the PHY node?
 
-    [POWERPC] mpc52xx_pic: fix main interrupt masking
-    
-    The bit setting was off by one.
-    Tested with RTC and GPIO_WKUP interrupts.
-    
-    Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
-    Signed-off-by: Sylvain Munaut <tnt@246tNt.com>
-    Signed-off-by: Paul Mackerras <paulus@samba.org>
+Kim
