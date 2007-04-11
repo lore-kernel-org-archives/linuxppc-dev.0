@@ -2,16 +2,17 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EBD3CDDDF4
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 18:29:57 +1000 (EST)
-Date: Wed, 11 Apr 2007 03:29:21 -0500 (CDT)
-Subject: [PATCH HACK kexec-tools-testing] malloc corruption hack
+	by ozlabs.org (Postfix) with ESMTP id 81EA1DDF0F
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 18:30:34 +1000 (EST)
+Date: Wed, 11 Apr 2007 03:30:00 -0500 (CDT)
+Subject: [PATCH kexec-tools] ppc64: correct @ha relocation
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
 To: <fastboot@lists.osdl.org>, Sachin Sant <sachinp@in.ibm.com>
-Message-Id: <boot-4-kexec-01.miltonm@bga.com>
+Message-Id: <boot-4-kexec-02.miltonm@bga.com>
 In-Reply-To: <boot-4-00.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Vivek Goyal <vgoyal@in.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Vivek Goyal <vgoyal@in.ibm.com>,
+	Simon Horman <horms@verge.net.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,38 +23,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On a system with rtas, a hash table, no pci, and one memory node I
-got the following error:
+The @ha relocation is supposed to account for the @l relocation being
+a signed quantity by adding 1 if the msb of @l is set.
 
-*** glibc detected *** double free or corruption (out): 0x0000000010115800 ***
-kexec-reboot: line 9:  2366 Aborted                 \
-  ./kexec --mem-max=0x20000000 -l /root/vmlinux --devicetreeblob=dtall.dtb
+The trick of adding 0x8000 stolen from the linux kernel file
+arch/powerpc/kernel/module_64.c which credits binutils.
 
-
-The problem is count_memory_ranges doesn't count what get_devtree_details
-will be adding to the exlcude list.
-
-This is a very gross hack to get around the problem, I post it so others
-might benifit until the real problem is fixed.
-
-However, I would also like to point out that the code is deficent, as it
-is only looking for the properties in specific directories.  It should
-be looking in all directories for the properties, like the reserve code
-building the device tree.   TCE (iommu) tables can be attached to any
-pci bus.  Also, it allows other ranges to be reserved by just changing
-the device tree, instead of adding new searches to kexec-tools.
+Signed-off-by: Milton Miller <miltonm@bga.com>
 
 --- 
-Thanks to Sonny for getting a debug envrionment laoded to debug this failure.
+This relocation is used in v2wrap.S to hold and release the slave cpus.
+Without this fix the memory location may be 64k off the initialized variable
+which is checked against 0.
 
---- kexec-tools-testing/kexec/arch/ppc64/kexec-ppc64.c.orig	2007-04-10 22:29:59.000000000 -0500
-+++ kexec-tools-testing/kexec/arch/ppc64/kexec-ppc64.c	2007-04-10 22:30:21.000000000 -0500
-@@ -124,6 +124,8 @@ static int count_memory_ranges()
- 	}
- 	closedir(dir);
+
+--- kexec-tools-testing/kexec/arch/ppc64/kexec-elf-rel-ppc64.c.orig	2007-04-10 22:29:59.000000000 -0500
++++ kexec-tools-testing/kexec/arch/ppc64/kexec-elf-rel-ppc64.c	2007-04-10 22:29:59.000000000 -0500
+@@ -97,7 +97,7 @@ void machine_apply_elf_rel(struct mem_eh
+ 		break;
  
-+	max_memory_ranges += 5;	/* base exclude ranges - kernel, rtas, etc */
-+
- 	return 0;
- }
+ 	case R_PPC64_ADDR16_HA:
+-		*(uint16_t *)location = ((value>>16)  & 0xffff);
++		*(uint16_t *)location = (((value+0x8000)>>16)  & 0xffff);
+ 		break;
  
+ 	case R_PPC64_ADDR16_HIGHEST:
