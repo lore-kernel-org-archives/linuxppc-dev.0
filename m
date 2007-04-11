@@ -1,24 +1,24 @@
-Return-Path: <michaelzwrk@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 2DEDDDDFB6
+Return-Path: <alan@lxorguk.ukuu.org.uk>
+Received: from the-village.bc.nu (unknown [81.2.110.250])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 246FBDDFEA
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Apr 2007 18:40:00 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id b21so141435ana
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Apr 2007 01:39:59 -0700 (PDT)
-Message-ID: <1ea6be8e0704110139i140b40b3qb8408fec2e4ff2a7@mail.gmail.com>
-Date: Wed, 11 Apr 2007 10:39:58 +0200
-From: Michael <michaelzwrk@gmail.com>
-To: "Alan Cox" <alan@lxorguk.ukuu.org.uk>
+	Wed, 11 Apr 2007 18:43:59 +1000 (EST)
+Date: Wed, 11 Apr 2007 09:47:02 +0100
+From: Alan Cox <alan@lxorguk.ukuu.org.uk>
+To: Michael <michaelzwrk@gmail.com>
 Subject: Re: IDE driver in polling mode
-In-Reply-To: <20070410172942.7f63d49c@the-village.bc.nu>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-ID: <20070411094702.74774d25@the-village.bc.nu>
+In-Reply-To: <1ea6be8e0704110139i140b40b3qb8408fec2e4ff2a7@mail.gmail.com>
 References: <1ea6be8e0704100635ydbf1538i782e796c99891e5d@mail.gmail.com>
 	<461B9D04.2000109@ru.mvista.com>
 	<20070410171125.3aeed29d@the-village.bc.nu>
 	<461BB8C7.9050900@garzik.org>
 	<20070410172942.7f63d49c@the-village.bc.nu>
+	<1ea6be8e0704110139i140b40b3qb8408fec2e4ff2a7@mail.gmail.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 Cc: linux-ide@vger.kernel.org, Jeff Garzik <jeff@garzik.org>,
 	linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -31,22 +31,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Doesn't libata have to do with SCSI devices? I'm afraid it wouldn't
-work with CF, which is P-ATA compatible.
+On Wed, 11 Apr 2007 10:39:58 +0200
+Michael <michaelzwrk@gmail.com> wrote:
 
-Wouldn't it work just to call ide_intr() explicitly from some polling
-function, as Mark suggested?
+> Doesn't libata have to do with SCSI devices? I'm afraid it wouldn't
+> work with CF, which is P-ATA compatible.
 
-Michael
+libata drives PATA and SATA devices, including CF.
 
-On 4/10/07, Alan Cox <alan@lxorguk.ukuu.org.uk> wrote:
-> > The only real restriction in libata is in ata_device_add(), which
-> > unconditionally registers an irq handler.  Make a few changes there, add
-> > a few flags, and the existing polling code will kick in.
->
-> Obvious thing to do would be to do this if the IRQ number passed in is 0
-> rather than aborting as we do now. In theory ISAPnP devices may be
-> IRQless too.
->
-> Alan
->
+> Wouldn't it work just to call ide_intr() explicitly from some polling
+> function, as Mark suggested?
+
+No. See the ATA spec - polling command issue is subtly different.
+
+Alan
