@@ -1,14 +1,16 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17948.32242.401443.930716@cargo.ozlabs.ibm.com>
-Date: Wed, 11 Apr 2007 16:19:30 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Subject: Re: [PATCH] POWERPC: CPU15 workaround for mpc8xx
-In-Reply-To: <20070402221110.4255.74986.stgit@localhost.localdomain>
-References: <20070402221110.4255.74986.stgit@localhost.localdomain>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <miltonm@sullivan.realtime.net>
+Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 23E40DDF0C
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 18:29:16 +1000 (EST)
+Date: Wed, 11 Apr 2007 03:28:38 -0500 (CDT)
+Subject: [PATCH 0/3+2+8] powerpc zImage kexec
+From: Milton Miller <miltonm@bga.com>
+Sender: Milton Miller <miltonm@realtime.net>
+To: <linuxppc-dev@ozlabs.org>, <fastboot@lists.osdl.org>
+Message-Id: <boot-4-00.miltonm@bga.com>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,93 +20,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Vitaly Bordug writes:
+The patches following this message implement support for creating a
+compressed zImage that can be used where a vmlinux image with a
+flat device-tree would be.  It has been tested with kexec-tools
+on 64 bit platforms with upto 8 threads, and with an external
+bootloader. that supplies a device tree and initrd.
 
-> Implements workaround for CPU15 Silicon Errata on MPC8xx processors.
-> Based on the DENX workaround patches.
+The patches are:
 
-> +config 8xx_CPU15_SYSCTL
-> +	bool "CPU15 Silicon Errata Sysctl"
-> +	depends on 8xx_CPU15
-> +	default y
+(1) a series of 3 patches for kexec-tools
+	(a) a hack to fix memory corruption in the testing tree
+	(b) a fix for @ha relocations
+	(c) a major change to the handling of SMP slaves during purgatory
+(2) a related patch for increasing the times for slaves to transiton
+(3) a convinence patch to expose a retained initrd for testing kexec-reboot
+(4) and a series of 8 patches for the zImage wrapper
+	(a) a debug message
+	(b) smp handling code
+	(c) coarse memory allocation for finding malloc pool, vmlinux, etc.
+	(d) 64 bit support
+	(e) kexec entrypoint base support
+		-- or any environment that can supply a flat tree that
+		fully describes the machine, and wishes to use it to
+		find memory for the machine.
+	(f) support for converting older versions of the flat device tree
+	(g) support for writing to an rtas put-term-char console
+	(h) alternative example code for using a-f on another palatform.
 
-No help text for this one?
 
-> --- a/include/linux/sysctl.h
-> +++ b/include/linux/sysctl.h
-> @@ -165,6 +165,7 @@ enum
->  	KERN_MAX_LOCK_DEPTH=74,
->  	KERN_NMI_WATCHDOG=75, /* int: enable/disable nmi watchdog */
->  	KERN_PANIC_ON_NMI=76, /* int: whether we will panic on an unrecovered */
-> +	KERN_8XX_CPU15=77, /* boolean: patch cpu15 errata on mpc8xx cpu */
+The kernel series is based on the patches I extracted from the
+for-2.6.22 branch of powerpc.git as well as 1, 3, and 4 from my
+last series.
 
-I believe that adding new sysctls is frowned upon these days, isn't
-it?
+I did not include my external payload patch at this point because
+I still have to debug the initramfs search code, but the plan
+is to allow the base code to find the vmlinux in a compressed cpio.gz
+in the initrd area, with the file to decompress being selected by
+a property in the device-tree.
 
-> --- a/kernel/sysctl.c
-> +++ b/kernel/sysctl.c
-> @@ -158,6 +158,63 @@ extern ctl_table inotify_table[];
->  int sysctl_legacy_va_layout;
->  #endif
->  
-> +static void *get_uts(ctl_table *table, int write)
-> +{
-> +	char *which = table->data;
-> +#ifdef CONFIG_UTS_NS
-> +	struct uts_namespace *uts_ns = current->nsproxy->uts_ns;
-> +	which = (which - (char *)&init_uts_ns) + (char *)uts_ns;
-> +#endif
-> +	if (!write)
-> +		down_read(&uts_sem);
-> +	else
-> +		down_write(&uts_sem);
-> +	return which;
-> +}
-> +
-> +static void put_uts(ctl_table *table, int write, void *which)
-> +{
-> +	if (!write)
-> +		up_read(&uts_sem);
-> +	else
-> +		up_write(&uts_sem);
-> +}
-> +
-> +#ifdef CONFIG_SYSVIPC
-> +static void *get_ipc(ctl_table *table, int write)
-> +{
-> +	char *which = table->data;
-> +	struct ipc_namespace *ipc_ns = current->nsproxy->ipc_ns;
-> +	which = (which - (char *)&init_ipc_ns) + (char *)ipc_ns;
-> +	return which;
-> +}
-> +#else
-> +#define get_ipc(T,W) ((T)->data)
-> +#endif
-> +
-> +/* /proc declarations: */
-> +
-> +#ifdef CONFIG_PROC_SYSCTL
-> +
-> +static ssize_t proc_readsys(struct file *, char __user *, size_t, loff_t *);
-> +static ssize_t proc_writesys(struct file *, const char __user *, size_t, loff_t *);
-> +static int proc_opensys(struct inode *, struct file *);
-> +
-> +const struct file_operations proc_sys_file_operations = {
-> +	.open		= proc_opensys,
-> +	.read		= proc_readsys,
-> +	.write		= proc_writesys,
-> +};
-> +
-> +extern struct proc_dir_entry *proc_sys_root;
-> +
-> +static void register_proc_table(ctl_table *, struct proc_dir_entry *, void *);
-> +static void unregister_proc_table(ctl_table *, struct proc_dir_entry *);
-> +#endif
-> +
-> +#ifdef CONFIG_8xx_CPU15_SYSCTL
-> +int cpu15_fix = 0;      /* disabled by default */
-> +#endif
+Because of the vaired nature of the patches, each has its own CC list.
 
-Why is all that being added back?
+I ask that the non-bootwrapper patchs and the debug message be queued
+now.   I expect the last one be discussion only, and the others to
+provoke discussion.
 
-Paul.
+I have been running a loop on 4 and 8 thread pSeries boxes of continous
+kexecs for several thousand interations now.
+
+Thanks,
+milton
+
+kexec-tools:
+	ppc64-miscount-exlude-hack
+	ppc64-reloc-ha
+	ppc64-steal-kernel-slaves
+
+misc:
+	initrd-debugfs
+	kexec-slaves-earlier
+
+Patch: [PATCH 1/4] bootwrapper: missing relocation in crt0.S
+http://patchwork.ozlabs.org/linuxppc/patch?id=10219
+Message ID	<boot-3-01.miltonm@bga.com>
+
+Patch: Re: Patch: [PATCH 3/4] bootwrapper: no gzip fixes
+http://patchwork.ozlabs.org/linuxppc/patch?id=10223
+Message ID	<boot-3-03.miltonm@bga.com>
+
+Patch: Re: [PATCH 4/4] bootwrapper: decompress less, check more
+http://patchwork.ozlabs.org/linuxppc/patch?id=10232
+Message ID	<boot-3-04-a.miltonm@bga.com>
+
+boot-exact-debug
+boot-marshal-smp
+boot-memranges
+boot-64
+boot-kexec
+boot-flat-conv-2-16
+boot-rtas
+boot-bml.patch
+
+Patch: [RFC] bootwrapper: allow vmlinuz to be an external payload
+Submitter	Milton Miller
+Date	2007-03-28 18:21:03
+Message ID	<boot-3-05.miltonm@bga.com>
