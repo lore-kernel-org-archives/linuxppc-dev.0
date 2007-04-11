@@ -1,14 +1,19 @@
-Return-Path: <tmorrison@empirix.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: i2c-tools
-Date: Wed, 11 Apr 2007 16:06:54 -0400
-Message-ID: <BD261180E6D35F4D9D32F3E44FD3D901074A8E63@EMPBEDEX.empirix.com>
-References: <EMPBEDEX14Ogddu5qE8000107c3@empbedex1.empirix.com> 
-From: "Morrison, Tom" <tmorrison@empirix.com>
-To: <linuxppc-dev@ozlabs.org>,
-	<linuxppc-embedded@ozlabs.org>
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <1176262253.8061.60.camel@localhost.localdomain>
+References: <20070410111508.GA2969@localhost.localdomain>
+	<1176240168.8061.51.camel@localhost.localdomain>
+	<20070411025605.GB2197@localhost.localdomain>
+	<1176262253.8061.60.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <ffb78cbadfea8d104c8e5d495e9651ca@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 3/3] cell: prevent alignment interrupt on local store
+Date: Wed, 11 Apr 2007 23:03:28 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, Akinobu Mita <mita@fixstars.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,34 +23,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+>>> I would personally prefer building the entire kernel with -mno-string
+>>> when cell support is enabled...
+>>
+>> I'm about to resend the patch which prevent alignment interrupts on LS
+>> by using memcpy_fromio() rather than putting a collection of -mno-* 
+>> options
+>> in Makefile. (only -mno-string is not enough to prevent that as 
+>> Segher said)
+>
+> Sure, however we also know for sure that string instructions will suck 
+> a
+> LOT on a cell ... so for a multi platforms kernel that has cell support
+> built-in, it makes some sense to not use them.
 
-I am looking for a new i2c-tools package=20
-that is newer than what is being distributed=20
-with most rootfs for ppc (I am running=20
-a 2.6.11 kernel):
-=20
-   <i2c_tools-2jun05.tar.gz>=20
+[That's a separate issue and should be handled as a
+separate patch series.]
 
-It does not have i2cget in this package=20
-(and I am finding that i2cdump overkill
-for reading just one byte or word.
+Not only string insns are slow on the current Cell core,
+many more insns are, including all dot insns; and those
+are way more expensive in comparison.  Turning off
+generation of string insns only won't help Cell much.
 
-Any advice would be greatly appreciated.
+Building a multiplatform kernel with all the insns that
+are expensive on Cell turned off will hurt a lot on most
+other CPUs.
 
-Tom
-
-ps: I did try to get lm-sensors 2.9 - but there
-were some compile problems (specifically it was=20
-complaining about not finding 'sys/io.h' (when=20
-in my kernel (2.6.11) the proper file is found=20
-somewhere else (include/asm-ppc/io.h)). I have=20
-tried multiple hacks, but I still get compiler
-errors...:-(
+This isn't just a kernel issue either; the same holds
+for all of userspace.  It seems to me the only way to
+get good performance on both Cell and all other platforms
+is to have a separate binary distribution for Cell.
 
 
-Thanks in advance
-
-Tom Morrison
-Principal S/W Engineer
-Empirix, Inc (www.empirix.com)
-tmorrison@empirix.com
+Segher
