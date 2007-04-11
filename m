@@ -2,9 +2,8 @@ Return-Path: <benh@ozlabs.org>
 To: Paul Mackerras <paulus@samba.org>
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 Date: Wed, 11 Apr 2007 16:13:19 +1000
-Subject: [PATCH 1/2] powerpc: Add inatomic versions of __get_user and
-	__put_user
-Message-Id: <20070411061755.5F48DDDF15@ozlabs.org>
+Subject: [PATCH 2/2] powerpc: Alignment exception uses __get/put_user_inatomic
+Message-Id: <20070411061756.3DD1CDDF16@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,75 +14,134 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Those are needed by things like alignment exception fixup handlers
-since those can now be triggered by copy_tofrom_user_inatomic.
+Make the alignment exception handler use the new _inatomic variants
+of __get/put_user. This fixes erroneous warnings in the very rare
+cases where we manage to have copy_tofrom_user_inatomic() trigger
+an alignment exception.
 
 Signed-off-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
----
 
-Might be possible to simplify things in this file a bit more by having
-only one version of the __get/put_user_xxxx() with if's and relying more
-on the compiler to do the right thing, what do you think ?
+ arch/powerpc/kernel/align.c |   56 ++++++++++++++++++++++++--------------------
+ 1 file changed, 31 insertions(+), 25 deletions(-)
 
- include/asm-powerpc/uaccess.h |   28 ++++++++++++++++++++++++++++
- 1 file changed, 28 insertions(+)
-
-Index: linux-work/include/asm-powerpc/uaccess.h
+Index: linux-work/arch/powerpc/kernel/align.c
 ===================================================================
---- linux-work.orig/include/asm-powerpc/uaccess.h	2007-04-11 10:17:44.000000000 +1000
-+++ linux-work/include/asm-powerpc/uaccess.h	2007-04-11 10:24:38.000000000 +1000
-@@ -110,12 +110,18 @@
- 	__get_user_nocheck((x), (ptr), sizeof(*(ptr)))
- #define __put_user(x, ptr) \
- 	__put_user_nocheck((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
-+
- #ifndef __powerpc64__
- #define __get_user64(x, ptr) \
- 	__get_user64_nocheck((x), (ptr), sizeof(*(ptr)))
- #define __put_user64(x, ptr) __put_user(x, ptr)
- #endif
+--- linux-work.orig/arch/powerpc/kernel/align.c	2007-04-11 10:23:41.000000000 +1000
++++ linux-work/arch/powerpc/kernel/align.c	2007-04-11 10:24:43.000000000 +1000
+@@ -241,7 +241,7 @@
+ 	if (user_mode(regs) && !access_ok(VERIFY_WRITE, p, size))
+ 		return -EFAULT;
+ 	for (i = 0; i < size / sizeof(long); ++i)
+-		if (__put_user(0, p+i))
++		if (__put_user_inatomic(0, p+i))
+ 			return -EFAULT;
+ 	return 1;
+ }
+@@ -288,7 +288,8 @@
+ 		} else {
+ 			unsigned long pc = regs->nip ^ (swiz & 4);
  
-+#define __get_user_inatomic(x, ptr) \
-+	__get_user_nosleep((x), (ptr), sizeof(*(ptr)))
-+#define __put_user_inatomic(x, ptr) \
-+	__put_user_nosleep((__typeof__(*(ptr)))(x), (ptr), sizeof(*(ptr)))
-+
- #define __get_user_unaligned __get_user
- #define __put_user_unaligned __put_user
+-			if (__get_user(instr, (unsigned int __user *)pc))
++			if (__get_user_inatomic(instr,
++						(unsigned int __user *)pc))
+ 				return -EFAULT;
+ 			if (swiz == 0 && (flags & SW))
+ 				instr = cpu_to_le32(instr);
+@@ -324,27 +325,31 @@
+ 			       ((nb0 + 3) / 4) * sizeof(unsigned long));
  
-@@ -198,6 +204,16 @@
- 	__pu_err;							\
- })
+ 		for (i = 0; i < nb; ++i, ++p)
+-			if (__get_user(REG_BYTE(rptr, i ^ bswiz), SWIZ_PTR(p)))
++			if (__get_user_inatomic(REG_BYTE(rptr, i ^ bswiz),
++						SWIZ_PTR(p)))
+ 				return -EFAULT;
+ 		if (nb0 > 0) {
+ 			rptr = &regs->gpr[0];
+ 			addr += nb;
+ 			for (i = 0; i < nb0; ++i, ++p)
+-				if (__get_user(REG_BYTE(rptr, i ^ bswiz),
+-					       SWIZ_PTR(p)))
++				if (__get_user_inatomic(REG_BYTE(rptr,
++								 i ^ bswiz),
++							SWIZ_PTR(p)))
+ 					return -EFAULT;
+ 		}
  
-+#define __put_user_nosleep(x, ptr, size)			\
-+({								\
-+	long __pu_err;						\
-+	__typeof__(*(ptr)) __user *__pu_addr = (ptr);		\
-+	__chk_user_ptr(ptr);					\
-+	__put_user_size((x), __pu_addr, (size), __pu_err);	\
-+	__pu_err;						\
-+})
-+
-+
- extern long __get_user_bad(void);
+ 	} else {
+ 		for (i = 0; i < nb; ++i, ++p)
+-			if (__put_user(REG_BYTE(rptr, i ^ bswiz), SWIZ_PTR(p)))
++			if (__put_user_inatomic(REG_BYTE(rptr, i ^ bswiz),
++						SWIZ_PTR(p)))
+ 				return -EFAULT;
+ 		if (nb0 > 0) {
+ 			rptr = &regs->gpr[0];
+ 			addr += nb;
+ 			for (i = 0; i < nb0; ++i, ++p)
+-				if (__put_user(REG_BYTE(rptr, i ^ bswiz),
+-					       SWIZ_PTR(p)))
++				if (__put_user_inatomic(REG_BYTE(rptr,
++								 i ^ bswiz),
++							SWIZ_PTR(p)))
+ 					return -EFAULT;
+ 		}
+ 	}
+@@ -398,7 +403,8 @@
  
- #define __get_user_asm(x, addr, err, op)		\
-@@ -297,6 +313,18 @@
- 	__gu_err;							\
- })
- 
-+#define __get_user_nosleep(x, ptr, size)			\
-+({								\
-+	long __gu_err;						\
-+	unsigned long __gu_val;					\
-+	const __typeof__(*(ptr)) __user *__gu_addr = (ptr);	\
-+	__chk_user_ptr(ptr);					\
-+	__get_user_size(__gu_val, __gu_addr, (size), __gu_err);	\
-+	(x) = (__typeof__(*(ptr)))__gu_val;			\
-+	__gu_err;						\
-+})
-+
-+
- /* more complex routines */
- 
- extern unsigned long __copy_tofrom_user(void __user *to,
+ 		if (cpu_has_feature(CPU_FTR_PPC_LE) && (regs->msr & MSR_LE))
+ 			pc ^= 4;
+-		if (unlikely(__get_user(instr, (unsigned int __user *)pc)))
++		if (unlikely(__get_user_inatomic(instr,
++						 (unsigned int __user *)pc)))
+ 			return -EFAULT;
+ 		if (cpu_has_feature(CPU_FTR_REAL_LE) && (regs->msr & MSR_LE))
+ 			instr = cpu_to_le32(instr);
+@@ -474,16 +480,16 @@
+ 		p = (unsigned long) addr;
+ 		switch (nb) {
+ 		case 8:
+-			ret |= __get_user(data.v[0], SWIZ_PTR(p++));
+-			ret |= __get_user(data.v[1], SWIZ_PTR(p++));
+-			ret |= __get_user(data.v[2], SWIZ_PTR(p++));
+-			ret |= __get_user(data.v[3], SWIZ_PTR(p++));
++			ret |= __get_user_inatomic(data.v[0], SWIZ_PTR(p++));
++			ret |= __get_user_inatomic(data.v[1], SWIZ_PTR(p++));
++			ret |= __get_user_inatomic(data.v[2], SWIZ_PTR(p++));
++			ret |= __get_user_inatomic(data.v[3], SWIZ_PTR(p++));
+ 		case 4:
+-			ret |= __get_user(data.v[4], SWIZ_PTR(p++));
+-			ret |= __get_user(data.v[5], SWIZ_PTR(p++));
++			ret |= __get_user_inatomic(data.v[4], SWIZ_PTR(p++));
++			ret |= __get_user_inatomic(data.v[5], SWIZ_PTR(p++));
+ 		case 2:
+-			ret |= __get_user(data.v[6], SWIZ_PTR(p++));
+-			ret |= __get_user(data.v[7], SWIZ_PTR(p++));
++			ret |= __get_user_inatomic(data.v[6], SWIZ_PTR(p++));
++			ret |= __get_user_inatomic(data.v[7], SWIZ_PTR(p++));
+ 			if (unlikely(ret))
+ 				return -EFAULT;
+ 		}
+@@ -551,16 +557,16 @@
+ 		p = (unsigned long) addr;
+ 		switch (nb) {
+ 		case 8:
+-			ret |= __put_user(data.v[0], SWIZ_PTR(p++));
+-			ret |= __put_user(data.v[1], SWIZ_PTR(p++));
+-			ret |= __put_user(data.v[2], SWIZ_PTR(p++));
+-			ret |= __put_user(data.v[3], SWIZ_PTR(p++));
++			ret |= __put_user_inatomic(data.v[0], SWIZ_PTR(p++));
++			ret |= __put_user_inatomic(data.v[1], SWIZ_PTR(p++));
++			ret |= __put_user_inatomic(data.v[2], SWIZ_PTR(p++));
++			ret |= __put_user_inatomic(data.v[3], SWIZ_PTR(p++));
+ 		case 4:
+-			ret |= __put_user(data.v[4], SWIZ_PTR(p++));
+-			ret |= __put_user(data.v[5], SWIZ_PTR(p++));
++			ret |= __put_user_inatomic(data.v[4], SWIZ_PTR(p++));
++			ret |= __put_user_inatomic(data.v[5], SWIZ_PTR(p++));
+ 		case 2:
+-			ret |= __put_user(data.v[6], SWIZ_PTR(p++));
+-			ret |= __put_user(data.v[7], SWIZ_PTR(p++));
++			ret |= __put_user_inatomic(data.v[6], SWIZ_PTR(p++));
++			ret |= __put_user_inatomic(data.v[7], SWIZ_PTR(p++));
+ 		}
+ 		if (unlikely(ret))
+ 			return -EFAULT;
