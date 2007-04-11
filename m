@@ -1,20 +1,17 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 31D03DDF19
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 11:32:44 +1000 (EST)
-Date: Tue, 10 Apr 2007 20:49:58 -0500
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: [PATCH 1/4] powerpc: document max-speed and interface-type
-	properties
-Message-ID: <20070411014958.GB20848@lixom.net>
-References: <20070410165639.1b619c34.kim.phillips@freescale.com>
-	<20070410224809.GA20848@lixom.net>
-	<20070410181949.2a26d646.kim.phillips@freescale.com>
-MIME-Version: 1.0
+Return-Path: <mita@fixstars.com>
+Date: Wed, 11 Apr 2007 11:35:08 +0900
+From: Akinobu Mita <mita@fixstars.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [patch 1/3] powerpc: delete -mstring option
+Message-ID: <20070411023508.GA2197@localhost.localdomain>
+References: <20070410111324.GA2957@localhost.localdomain>
+	<16327e0d9602022d7ee57670ac23c383@kernel.crashing.org>
+	<4FDD7344-D9AD-4DCF-8C10-E65B6CEC7762@kernel.crashing.org>
+Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070410181949.2a26d646.kim.phillips@freescale.com>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <4FDD7344-D9AD-4DCF-8C10-E65B6CEC7762@kernel.crashing.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,24 +21,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 10, 2007 at 06:19:49PM -0500, Kim Phillips wrote:
-> On Tue, 10 Apr 2007 17:48:09 -0500
-> olof@lixom.net (Olof Johansson) wrote:
+On Tue, Apr 10, 2007 at 01:42:15PM -0500, Kumar Gala wrote:
+> >This is the right solution, thank you for the patch.
+> >But please fold these two together so that you're not
+> >introducing a regression halfway the patch series.
 > 
-> > 
-> > Do you really need to set max speed for devices that are at the default
-> > max speed for the interface type? Seems redundant.
-> > 
-> > If for example there's an rgmii interface that for some reason only can
-> > handle 100Mbit, that'd be different.
-> 
-> rgmii@100/10Mbit are supported interface/speed combinations for our MDS boards; see pdf p. 72 in:
-> 
-> http://www.freescale.com/files/32bit/doc/user_guide/MPC8360EAMDSUM.pdf
+> I agree this looks good and merge patches 1/3 and 2/3 into a single  
+> patch.
 
-Right, my bad. Sorry for the confusion -- That comment was meant for the
-next patch in the series where you specify the speed even for interfaces
-that support the full max.
+Thansk, this is updated patch.
 
+From: Akinobu Mita <mita@fixstars.com>
+Subject: powerpc: delete -mstring option
 
--Olof
+There is no reason to force -mstring option.
+
+This patch removes -mstring option, and adds -mno-string option
+for FLS_BOOKE (Because GCC is now putting string instructions
+even if you don't specify -mstring).
+
+Signed-off-by: Akinobu Mita <mita@fixstars.com>
+
+---
+ arch/powerpc/Makefile |    4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+Index: 2.6-git-ps3/arch/powerpc/Makefile
+===================================================================
+--- 2.6-git-ps3.orig/arch/powerpc/Makefile
++++ 2.6-git-ps3/arch/powerpc/Makefile
+@@ -102,8 +102,8 @@ CFLAGS += $(call cc-option,-mno-altivec)
+ # kernel considerably.
+ CFLAGS += $(call cc-option,-funit-at-a-time)
+ 
+-ifndef CONFIG_FSL_BOOKE
+-CFLAGS		+= -mstring
++ifeq ($(CONFIG_FSL_BOOKE),y)
++CFLAGS         += -mno-string
+ endif
+ 
+ ifeq ($(CONFIG_6xx),y)
