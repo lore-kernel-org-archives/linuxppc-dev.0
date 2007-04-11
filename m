@@ -2,17 +2,15 @@ Return-Path: <miltonm@sullivan.realtime.net>
 Received: from sullivan.realtime.net (sullivan.realtime.net [205.238.132.226])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 78A28DDF10
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 18:31:03 +1000 (EST)
-Date: Wed, 11 Apr 2007 03:30:38 -0500 (CDT)
-Subject: [PATCH kexec-tools] ppc64: use kernels slave loop for purgatory
+	by ozlabs.org (Postfix) with ESMTP id 7B502DDF27
+	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 18:31:13 +1000 (EST)
+Date: Wed, 11 Apr 2007 03:31:07 -0500 (CDT)
+Subject: [PATCH] export retained initrd in debugfs
 From: Milton Miller <miltonm@bga.com>
 Sender: Milton Miller <miltonm@realtime.net>
-To: <fastboot@lists.osdl.org>, Sachin Sant <sachinp@in.ibm.com>
-Message-Id: <boot-4-kexec-03.miltonm@bga.com>
+To: <fastboot@lists.osdl.org>, <klibc@zytor.com>, <linuxppc-dev@ozlabs.org>
+Message-Id: <boot-4-misc-01.miltonm@bga.com>
 In-Reply-To: <boot-4-00.miltonm@bga.com>
-Cc: linuxppc-dev@ozlabs.org, Vivek Goyal <vgoyal@in.ibm.com>,
-	Simon Horman <horms@verge.net.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,143 +20,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Export initrd in debugfs when retained.
 
-Purgatory doesn't really care about the SMP cpus.  But if we leave them
-behind, they end up getting lost when the kernel overwrites purgatory or
-the previous kernel.  The current slave handling in purgatory doesn't
-have any handshaking to make sure the cpus have moved on before leaving.
+As a side effect, initrd_start and initrd_end are not cleared when the
+initrd is retained.
 
-Instead of moving the slave cpus up to purgatory and then back down to
-the kernel, just copy bytes 4-255 from the kernel and use it as the
-purgatory start / slave hold block.
-
+After this patch, one can then copy the initrd space from debugfs and
+pass it to kexec as the initrd, or do something else with it (maybe it
+was an initrd not an initramfs).
 
 Signed-off-by: Milton Miller <miltonm@bga.com>
-
 --- 
-I wrote this while debugging a problem in my zImage.kexec smp code.
-Since the first instruction is the branch for the master, changing it
-to another branch should be safe.
+This is a lot more reliable than extracting it via dd from /dev/mem.
 
-We could copy the kernels original branch to 0 before jumping to the
-kernel for completeness.
+Currently debugfs doesn't have a getattr even for blobs, so one has
+to cp elsewhere before using kexec from kexec-tools.
 
-We could also just compute the branch for the master instead of reading
-the code in the original symbol.
-
---- kexec-tools-testing/purgatory/arch/ppc64/v2wrap.S.orig	2007-04-10 22:29:59.000000000 -0500
-+++ kexec-tools-testing/purgatory/arch/ppc64/v2wrap.S	2007-04-10 23:46:11.000000000 -0500
-@@ -45,13 +45,22 @@
- 	oris    rn,rn,name##@h;         \
- 	ori     rn,rn,name##@l
+Index: kernel/init/initramfs.c
+===================================================================
+--- kernel.orig/init/initramfs.c	2007-03-28 00:12:15.000000000 -0500
++++ kernel/init/initramfs.c	2007-03-28 00:35:56.000000000 -0500
+@@ -6,6 +6,7 @@
+ #include <linux/delay.h>
+ #include <linux/string.h>
+ #include <linux/syscalls.h>
++#include <linux/debugfs.h>
  
--# look a bit like a Linux kernel here ...
+ static __initdata char *message;
+ static void __init error(char *x)
+@@ -519,7 +520,7 @@ static void __init free_initrd(void)
+ 	unsigned long crashk_end   = (unsigned long)__va(crashk_res.end);
+ #endif
+ 	if (do_retain_initrd)
+-		goto skip;
++		return;
+ 
+ #ifdef CONFIG_KEXEC
+ 	/*
+@@ -588,3 +589,29 @@ static int __init populate_rootfs(void)
+ 	return 0;
+ }
+ rootfs_initcall(populate_rootfs);
 +
- 	.machine ppc64
- 	.globl purgatory_start
- purgatory_start:	b	master
--	tweq	0,0
-+	.org purgatory_start + 0x60     # ABI: slaves start at 60 with r3=phys
-+slave:	b $
-+	.org purgatory_start + 0x100    # ABI: end of copied region
-+	.size purgatory_start, . - purgatory_start
++#ifdef CONFIG_BLK_DEV_INITRD
++static struct debugfs_blob_wrapper initrd_blob;
 +
-+#
-+# The above 0x100 bytes at purgatory_start are replaced with the
-+# code from the kernel (or next stage) by kexec/arch/ppc64/kexec-ppc64.c
-+#
++static int __init export_initrd(void)
++{
++	struct dentry *d;
++	initrd_blob.data = (char *)initrd_start;
++	initrd_blob.size = initrd_end - initrd_start;
 +
- master:
--	or	1,1,1		# low priority to let other thread catchup
-+	or	1,1,1		# low priority to let other threads catchup
- 	isync
- 	mr      17,3            # save cpu id to r17
- 	mr      15,4            # save physical address in reg15
-@@ -66,25 +75,7 @@ master:
- 	bl      .purgatory
- 	nop
- 
--	b       81f
--	.org purgatory_start + 0x60     # ABI: slaves start at 60 with r3=phys
--slave:
--	# load slave spin code address and branch into that
--	LOADADDR(6,slave_spin)
--	ld      4,0(6)
--	mtctr 4
--	bctr
--
--spin: .long 1
--slave_spin_code:
--	lis     5,spin@ha
--	lwz     5,spin@l(5)
--	cmpwi   0,5,0
--	bne     slave_spin_code
--	ba 0x60
--
--81:				# master continues here
--	or	3,3,3		# ok back to high, lets boot
-+	or	3,3,3		# ok now to high priority, lets boot
- 	lis	6,0x1
- 	mtctr	6		# delay a bit for slaves to catch up
- 83:	bdnz	83b		# before we overwrite 0-100 again
-@@ -99,30 +90,12 @@ slave_spin_code:
- 80:
- 	LOADADDR(6,kernel)
- 	ld      4,0(6)          # load the kernel address
--
--	addi	5,4,-8		# prepare copy with update form instructions
--	li	6,0x100/8
--	mtctr	6
--	li	6,-8
--85:	ldu	7,8(5)
--	stdu	7,8(6)
--	bdnz	85b
--
- 	li	5,0		# r5 will be 0 for kernel
--	dcbst	0,5		# store dcache, flush icache
--	dcbst	0,6		# 0 and 0xf8 covers us with 128 byte lines
- 	mtctr	4		# prepare branch too
--	sync
--	icbi	0,5
--	icbi	0,6
--	sync
--	isync
--	lis     6,spin@ha
--	li      0,0
--	stw     0,spin@l(6)
- 	mr      3,16            # restore dt address
- 
--	bctr			# start kernel
--
--slave_spin: .llong  slave_spin_code
-+	lwz	7,0(4)		# get the first instruction that we stole
-+	stw	7,0(0)		# and put it in the slave loop at 0
-+				# skip cache flush, do we care?
- 
-+	bctr			# start kernel
---- kexec-tools-testing/kexec/arch/ppc64/kexec-elf-ppc64.c.orig	2007-04-10 22:29:59.000000000 -0500
-+++ kexec-tools-testing/kexec/arch/ppc64/kexec-elf-ppc64.c	2007-04-10 22:29:59.000000000 -0500
-@@ -89,6 +89,7 @@ int elf_ppc64_load(int argc, char **argv
- 	unsigned int my_panic_kernel;
- 	unsigned long my_stack, my_backup_start;
- 	unsigned long toc_addr;
-+	unsigned int slave_code[256/sizeof (unsigned int)], master_entry;
- 
- #define OPT_APPEND     (OPT_ARCH_MAX+0)
- #define OPT_RAMDISK     (OPT_ARCH_MAX+1)
-@@ -281,6 +282,15 @@ int elf_ppc64_load(int argc, char **argv
- 	elf_rel_set_symbol(&info->rhdr, "dt_offset", &my_dt_offset,
- 				sizeof(my_dt_offset));
- 
-+	/* get slave code from new kernel, put in purgatory */
-+	elf_rel_get_symbol(&info->rhdr, "purgatory_start", slave_code, 
-+			sizeof(slave_code));
-+	master_entry = slave_code[0];
-+	memcpy(slave_code, info->segment[0].buf, sizeof(slave_code));
-+	slave_code[0] = master_entry;
-+	elf_rel_set_symbol(&info->rhdr, "purgatory_start", slave_code,
-+				sizeof(slave_code));
++	if (!do_retain_initrd)
++		return 0;
 +
- 	if (info->kexec_flags & KEXEC_ON_CRASH) {
- 		my_panic_kernel = 1;
- 		/* Set panic flag */
++	if (!initrd_start)
++		return 0;
++
++	d = debugfs_create_blob("initrd", S_IFREG, NULL, &initrd_blob);
++
++	if (!d)
++		return 1;
++
++	return 0;
++}
++
++__initcall(export_initrd);
++#endif
