@@ -1,17 +1,19 @@
-Return-Path: <milindchoudhary@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.228])
-	by ozlabs.org (Postfix) with ESMTP id B10EEDDF05
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 04:22:12 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id i31so268278wxd
-	for <linuxppc-dev@ozlabs.org>; Wed, 11 Apr 2007 11:22:11 -0700 (PDT)
-Date: Wed, 11 Apr 2007 23:54:03 +0530
-From: Milind Arun Choudhary <milindchoudhary@gmail.com>
-To: kernel-janitors@lists.osdl.org, linuxppc-dev@ozlabs.org
-Subject: [KJ][PATCH]SPIN_LOCK_UNLOCKED cleanup in arch/powerpc
-Message-ID: <20070411182403.GA10121@arun.site>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: akpm@linux-foundation.org, paulus@samba.org, linux-kernel@vger.kernel.org
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 7C59DDDF05
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 04:25:20 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC 1/3] cryptoapi: AES with AltiVec support
+Date: Wed, 11 Apr 2007 20:24:50 +0200
+References: <20070411164910.657151000@linux.vnet.ibm.com>
+	<20070411164910.657151000@linux.vnet.ibm.com>>
+	<20070411165702.256910000@linux.vnet.ibm.com>>
+In-Reply-To: <20070411165702.256910000@linux.vnet.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704112024.51124.arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,87 +23,110 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-SPIN_LOCK_UNLOCKED cleanup,use DEFINE_SPINLOCK or 
-__SPIN_LOCK_UNLOCKED where ever appropriate. 
+Just a few things I noticed in this version:
 
-Signed-off-by: Milind Arun Choudhary <milindchoudhary@gmail.com>
+On Wednesday 11 April 2007, Sebastian Siewior wrote:
+> +#ifdef CONFIG_CRYPTO_AES_ALTIVEC_TABLE
+> +
+> +	/* 19 operations, 1x 8 memory loads */
+> +	imm_04h = vec_splat_u8(0x04);
+> +	imm_0fh = vec_splat_u8(0x0f);
+> +
+> +	state_high = vec_sr(state, imm_04h);
+> +	state_low  = vec_and(state, imm_0fh);
 
---
+Why do you need to and with 0x0f here? I thought vec_perm simply ignored
+the high bits anyway.
 
- kernel/irq.c              |    2 +-
- kernel/rtas.c             |    2 +-
- oprofile/op_model_cell.c  |    2 +-
- platforms/cell/spu_base.c |    2 +-
- platforms/ps3/htab.c      |    2 +-
- 5 files changed, 5 insertions(+), 5 deletions(-)
+> +	mul_08_hi = vec_perm(gf_mul_8_high, gf_mul_8_high, state_high);
+> +	mul_0a_hi = vec_perm(gf_mul_a_high, gf_mul_a_high, state_high);
+> +	mul_0c_hi = vec_perm(gf_mul_c_high, gf_mul_c_high, state_high);
+> +	mul_0e_hi = vec_perm(gf_mul_e_high, gf_mul_e_high, state_high);
+> +
+> +	mul_08_lo = vec_perm(gf_mul_8_low, gf_mul_8_low, state_low);
+> +	mul_0a_lo = vec_perm(gf_mul_a_low, gf_mul_a_low, state_low);
+> +	mul_0c_lo = vec_perm(gf_mul_c_low, gf_mul_c_low, state_low);
+> +	mul_0e_lo = vec_perm(gf_mul_e_low, gf_mul_e_low, state_low);
+> +
+> +	mul_08 = vec_xor(mul_08_hi, mul_08_lo);
+> +	mul_0a = vec_xor(mul_0a_hi, mul_0a_lo);
+> +	mul_0c = vec_xor(mul_0c_hi, mul_0c_lo);
+> +	mul_0e = vec_xor(mul_0e_hi, mul_0e_lo);
+> +
+> +	mul_09 = vec_xor(mul_08, state);
+> +	mul_0b = vec_xor(mul_0a, state);
+> +	mul_0d = vec_xor(mul_0c, state);
 
-
-diff --git a/arch/powerpc/kernel/irq.c b/arch/powerpc/kernel/irq.c
-index 1009308..6c83fe2 100644
---- a/arch/powerpc/kernel/irq.c
-+++ b/arch/powerpc/kernel/irq.c
-@@ -394,7 +394,7 @@ EXPORT_SYMBOL(do_softirq);
- #ifdef CONFIG_PPC_MERGE
- 
- static LIST_HEAD(irq_hosts);
--static spinlock_t irq_big_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_SPINLOCK(irq_big_lock);
- static DEFINE_PER_CPU(unsigned int, irq_radix_reader);
- static unsigned int irq_radix_writer;
- struct irq_map_entry irq_map[NR_IRQS];
-diff --git a/arch/powerpc/kernel/rtas.c b/arch/powerpc/kernel/rtas.c
-index 9d0735a..8746cb3 100644
---- a/arch/powerpc/kernel/rtas.c
-+++ b/arch/powerpc/kernel/rtas.c
-@@ -36,7 +36,7 @@
- #include <asm/syscalls.h>
- 
- struct rtas_t rtas = {
--	.lock = SPIN_LOCK_UNLOCKED
-+	.lock = __SPIN_LOCK_UNLOCKED(rtas.lock)
- };
- EXPORT_SYMBOL(rtas);
- 
-diff --git a/arch/powerpc/oprofile/op_model_cell.c b/arch/powerpc/oprofile/op_model_cell.c
-index e08e1d7..c9d734b 100644
---- a/arch/powerpc/oprofile/op_model_cell.c
-+++ b/arch/powerpc/oprofile/op_model_cell.c
-@@ -130,7 +130,7 @@ static int pm_rtas_token;
- static u32 reset_value[NR_PHYS_CTRS];
- static int num_counters;
- static int oprofile_running;
--static spinlock_t virt_cntr_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_SPINLOCK(virt_cntr_lock);
- 
- static u32 ctr_enabled;
- 
-diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platforms/cell/spu_base.c
-index eba7a26..dc433f0 100644
---- a/arch/powerpc/platforms/cell/spu_base.c
-+++ b/arch/powerpc/platforms/cell/spu_base.c
-@@ -41,7 +41,7 @@ const struct spu_priv1_ops *spu_priv1_ops;
- static struct list_head spu_list[MAX_NUMNODES];
- static LIST_HEAD(spu_full_list);
- static DEFINE_MUTEX(spu_mutex);
--static spinlock_t spu_list_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_SPINLOCK(spu_list_lock);
- 
- EXPORT_SYMBOL_GPL(spu_priv1_ops);
- 
-diff --git a/arch/powerpc/platforms/ps3/htab.c b/arch/powerpc/platforms/ps3/htab.c
-index e12e59f..ea60c45 100644
---- a/arch/powerpc/platforms/ps3/htab.c
-+++ b/arch/powerpc/platforms/ps3/htab.c
-@@ -39,7 +39,7 @@ static unsigned long htab_addr;
- static unsigned char *bolttab;
- static unsigned char *inusetab;
- 
--static spinlock_t ps3_bolttab_lock = SPIN_LOCK_UNLOCKED;
-+static DEFINE_SPINLOCK(ps3_bolttab_lock);
- 
- #define debug_dump_hpte(_a, _b, _c, _d, _e, _f, _g) \
- 	_debug_dump_hpte(_a, _b, _c, _d, _e, _f, _g, __func__, __LINE__)
+What are the last three xor used for? I'd think you can have the values
+for 0x9, 0xb and 0xd in the table directly.
 
 
--- 
-Milind Arun Choudhary
+> +int aes_decrypt_altivec(const unsigned char *in, unsigned char *out,
+> +		const unsigned char *kp, unsigned char key_len)
+> +{
+> +	unsigned char i;
+> +	vector unsigned char pstate;
+> +	const vector unsigned char *key;
+> +	unsigned char tmpbuf[16]  __attribute__ ((aligned (16)));
+
+My understanding is that gcc will not align the latter on the stack
+now does it warn about the fact that the attribute gets ignored.
+Have you checked that the variable is really put into a 16 byte
+aligned stack slot? Does it even make a difference?
+
+> +	memcpy(tmpbuf, in, sizeof(tmpbuf));
+> +	pstate = vec_ld(0, tmpbuf);
+> +
+> +	key = (const vector unsigned char*) kp;
+> +
+> +	pstate = vec_xor(pstate, *key++);
+> +
+> +	switch (key_len) {
+> +		case 32: /* 14 rounds */
+> +			pstate = InvNormalRound(pstate, *key++);
+> +			pstate = InvNormalRound(pstate, *key++);
+> +
+> +		case 24: /* 12 rounds */
+> +			pstate = InvNormalRound(pstate, *key++);
+> +			pstate = InvNormalRound(pstate, *key++);
+> +
+> +		case 16: /* 10 rounds */
+> +			for (i=0; i<9; i++)
+> +				pstate = InvNormalRound(pstate, *key++);
+> +
+> +			break;
+> +
+> +		default:
+> +			BUG();
+> +	}
+
+Did this manual partial unrolling actually make a difference compared
+this?
+
+	for (i=0; i<(5 + key_len / 8); i++)
+		pstate = InvNormalRound(pstate, *key++);
+
+If they are the same speed, there should probably be no unrolling,
+because the larger object code will be bad for the instruction
+cache.
+
+
+> ===================================================================
+> --- ps3-linux.orig/crypto/Makefile
+> +++ ps3-linux/crypto/Makefile
+> @@ -48,3 +48,7 @@ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += mich
+>  obj-$(CONFIG_CRYPTO_CRC32C) += crc32c.o
+>  
+>  obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
+> +
+> +CFLAGS_aes-altivec.o += -O3  -maltivec -mcpu=cell
+
+mcpu=cell probably breaks on most compilers. This needs some
+experiments, but most systems should either leave this out
+or specify the cpu they are actually compiling for.
+
+Some time ago, I did a patch to extend the CPU selection in
+Kconfig so you can choose sensible mcpu= and mtune= flags
+semi-automatically.
+
+	Arnd <><
