@@ -1,21 +1,15 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EDAFBDDF0D
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 00:16:43 +1000 (EST)
-Date: Wed, 11 Apr 2007 09:16:33 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Benjamin Zores <benjamin.zores@alcatel-lucent.fr>
-Subject: Re: Strange behavior when booting MPC8349E-mITX card.
-Message-Id: <20070411091633.7f12d86e.kim.phillips@freescale.com>
-In-Reply-To: <20070411110935.1161908f.benjamin.zores@alcatel-lucent.fr>
-References: <20070411110935.1161908f.benjamin.zores@alcatel-lucent.fr>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <tmorrison@empirix.com>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: i2c-tools
+Date: Wed, 11 Apr 2007 11:18:55 -0400
+Message-ID: <BD261180E6D35F4D9D32F3E44FD3D9010745DE68@EMPBEDEX.empirix.com>
+In-Reply-To: <EMPBEDEX14Ogddu5qE8000107c3@empbedex1.empirix.com>
+References: <EMPBEDEX14Ogddu5qE8000107c3@empbedex1.empirix.com>
+From: "Morrison, Tom" <tmorrison@empirix.com>
+To: <ltib@nongnu.org>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,26 +19,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 11 Apr 2007 11:09:35 +0200
-Benjamin Zores <benjamin.zores@alcatel-lucent.fr> wrote:
+I am looking for a new i2c-tools package=20
+that is newer than what is being distributed=20
+with ltib:
+=20
+   <i2c_tools-2jun05.tar.gz>=20
 
-> Hi,
-> 
-> I've noticed a strange behavior when booting an MPC8349E-mITX card
-> in PowerPC architecture (not ppc) on Linux 2.6.19.2.
-> 
-> It seems like early parts of the kernel featuring platform configuration are executed twice ? I don't know if it's intended or not but at least the card
-> works pretty well. I boots completely and there's no problem with that.
-> I just want to understand why it does such a thing.
-> 
-> I'm running a vanilla 2.6.19.2 kernel, ARCH=powerpc make mpc834x_itx_defconfig
-> and the vanilla DTS file for this card.
-> 
-> I don't have other platform to test this behavior.
-> Does anyone else noticed the same thing ?
-> 
-see:
+It does not have i2cget in this package (and
+I am finding i2cdump a little bit of overkill
+for wanting to read just one byte/word.
 
-http://ozlabs.org/pipermail/linuxppc-dev/2007-January/030734.html
+Any advice would be greatly appreciated.
 
-Kim
+Tom
+
+ps: I did try to get lm-sensors 2.9 - but there
+were some compile problems (specifically it was=20
+complaining about not finding 'sys/io.h' (when in=20
+my kernel (2.6.11) the proper file is found=20
+somewhere else (include/asm-ppc/io.h).
+
+
+Thanks in advance
+
+Tom Morrison
+Principal S/W Engineer
+Empirix, Inc (www.empirix.com)
+tmorrison@empirix.com
