@@ -1,19 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id 7C59DDDF05
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 04:25:20 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC 1/3] cryptoapi: AES with AltiVec support
-Date: Wed, 11 Apr 2007 20:24:50 +0200
-References: <20070411164910.657151000@linux.vnet.ibm.com>
-	<20070411164910.657151000@linux.vnet.ibm.com>>
-	<20070411165702.256910000@linux.vnet.ibm.com>>
-In-Reply-To: <20070411165702.256910000@linux.vnet.ibm.com>
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C13DCDDF0C
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 04:42:26 +1000 (EST)
+Message-ID: <461D2C26.1000209@genesi-usa.com>
+Date: Wed, 11 Apr 2007 19:42:46 +0100
+From: Matt Sealey <matt@genesi-usa.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704112024.51124.arnd@arndb.de>
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] autodetect serial console on efika
+References: <20070331150823.GA25421@aepfle.de>
+	<461A3817.8080303@genesi-usa.com> <20070410165246.GC508@aepfle.de>
+In-Reply-To: <20070410165246.GC508@aepfle.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,110 +25,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Just a few things I noticed in this version:
 
-On Wednesday 11 April 2007, Sebastian Siewior wrote:
-> +#ifdef CONFIG_CRYPTO_AES_ALTIVEC_TABLE
-> +
-> +	/* 19 operations, 1x 8 memory loads */
-> +	imm_04h = vec_splat_u8(0x04);
-> +	imm_0fh = vec_splat_u8(0x0f);
-> +
-> +	state_high = vec_sr(state, imm_04h);
-> +	state_low  = vec_and(state, imm_0fh);
+There are 5 pins on the motherboard for PSC6, which if a driver is enabled for it
+(and it's put into UART mode) would become a two-wire serial port (it is intended
+for IrDA though in the current board revision).
 
-Why do you need to and with 0x0f here? I thought vec_perm simply ignored
-the high bits anyway.
+In this case, you set the firmware console to this and the early init will redirect
+the Linux console back to the serial port on the back of the case, just because it
+shares a serial device type.
 
-> +	mul_08_hi = vec_perm(gf_mul_8_high, gf_mul_8_high, state_high);
-> +	mul_0a_hi = vec_perm(gf_mul_a_high, gf_mul_a_high, state_high);
-> +	mul_0c_hi = vec_perm(gf_mul_c_high, gf_mul_c_high, state_high);
-> +	mul_0e_hi = vec_perm(gf_mul_e_high, gf_mul_e_high, state_high);
-> +
-> +	mul_08_lo = vec_perm(gf_mul_8_low, gf_mul_8_low, state_low);
-> +	mul_0a_lo = vec_perm(gf_mul_a_low, gf_mul_a_low, state_low);
-> +	mul_0c_lo = vec_perm(gf_mul_c_low, gf_mul_c_low, state_low);
-> +	mul_0e_lo = vec_perm(gf_mul_e_low, gf_mul_e_low, state_low);
-> +
-> +	mul_08 = vec_xor(mul_08_hi, mul_08_lo);
-> +	mul_0a = vec_xor(mul_0a_hi, mul_0a_lo);
-> +	mul_0c = vec_xor(mul_0c_hi, mul_0c_lo);
-> +	mul_0e = vec_xor(mul_0e_hi, mul_0e_lo);
-> +
-> +	mul_09 = vec_xor(mul_08, state);
-> +	mul_0b = vec_xor(mul_0a, state);
-> +	mul_0d = vec_xor(mul_0c, state);
+There is a big chance that USB serial drivers will be in a later firmware revision,
+at which point this will redirect any USB serial output desired to the serial port
+on the back of the system.
 
-What are the last three xor used for? I'd think you can have the values
-for 0x9, 0xb and 0xd in the table directly.
+Both of these are *wrong* and counter-intuitive.
 
+The only safe serial ports to force "ttyPSC" unit 0 onto are /failsafe (although
+this may change!) and /builtin/serial. Otherwise you are second-guessing the user's
+preferences in the firmware.
 
-> +int aes_decrypt_altivec(const unsigned char *in, unsigned char *out,
-> +		const unsigned char *kp, unsigned char key_len)
-> +{
-> +	unsigned char i;
-> +	vector unsigned char pstate;
-> +	const vector unsigned char *key;
-> +	unsigned char tmpbuf[16]  __attribute__ ((aligned (16)));
+I would in theory recommend against doing it on /failsafe as it is NOT a predictable
+device. It simply throws output there in the case of a gross exception and lack of
+preferred devices, it just happens that this is and always has been the serial port
+on the Pegasos and Efika. It could be an nvram buffer, a PCI card, a special OLED
+display, or anything we want it to be depending on the configuration of the Efika
+and the revision of the firmware. The intention of /failsafe is that the output
+goes SOMEWHERE, rather than to the Open Firmware equivalent of /dev/null, and there
+is no special significance to the fact that it is marked as a serial device (i.e.
+it may not be connected to a serial port, it is just presented as a serial
+interface).
 
-My understanding is that gcc will not align the latter on the stack
-now does it warn about the fact that the attribute gets ignored.
-Have you checked that the variable is really put into a 16 byte
-aligned stack slot? Does it even make a difference?
+However, on the current Efikas, it does go to the back serial port, so in this case
+I would set it to ttyPSC0 anyway. But only in the case of /failsafe and /builtin/serial,
+any other port present (remember our device tree is dynamically generated on boot,
+and it maps *ALL* present devices capable of detection - not just the ones in the
+SoC. Get out of the FDT mindset) should not be redirected using this heuristic
+unless it gets vastly more intelligent.
 
-> +	memcpy(tmpbuf, in, sizeof(tmpbuf));
-> +	pstate = vec_ld(0, tmpbuf);
-> +
-> +	key = (const vector unsigned char*) kp;
-> +
-> +	pstate = vec_xor(pstate, *key++);
-> +
-> +	switch (key_len) {
-> +		case 32: /* 14 rounds */
-> +			pstate = InvNormalRound(pstate, *key++);
-> +			pstate = InvNormalRound(pstate, *key++);
-> +
-> +		case 24: /* 12 rounds */
-> +			pstate = InvNormalRound(pstate, *key++);
-> +			pstate = InvNormalRound(pstate, *key++);
-> +
-> +		case 16: /* 10 rounds */
-> +			for (i=0; i<9; i++)
-> +				pstate = InvNormalRound(pstate, *key++);
-> +
-> +			break;
-> +
-> +		default:
-> +			BUG();
-> +	}
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
 
-Did this manual partial unrolling actually make a difference compared
-this?
-
-	for (i=0; i<(5 + key_len / 8); i++)
-		pstate = InvNormalRound(pstate, *key++);
-
-If they are the same speed, there should probably be no unrolling,
-because the larger object code will be bad for the instruction
-cache.
-
-
-> ===================================================================
-> --- ps3-linux.orig/crypto/Makefile
-> +++ ps3-linux/crypto/Makefile
-> @@ -48,3 +48,7 @@ obj-$(CONFIG_CRYPTO_MICHAEL_MIC) += mich
->  obj-$(CONFIG_CRYPTO_CRC32C) += crc32c.o
->  
->  obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
-> +
-> +CFLAGS_aes-altivec.o += -O3  -maltivec -mcpu=cell
-
-mcpu=cell probably breaks on most compilers. This needs some
-experiments, but most systems should either leave this out
-or specify the cpu they are actually compiling for.
-
-Some time ago, I did a patch to extend the CPU selection in
-Kconfig so you can choose sensible mcpu= and mtune= flags
-semi-automatically.
-
-	Arnd <><
+Olaf Hering wrote:
+> On Mon, Apr 09, Matt Sealey wrote:
+> 
+>> It is entirely possible that a user may redirect the OF console output to
+>> the PSC6 controller or another internal or external serial device (PCI
+>> serial controller or so). In this case, the boot console will simply switch
+>> to the UART on the back, which may be some other custom device and not a
+>> valid console.
+> 
+> How many serial drivers are enabled in the public Efika firmware?
+> With my change, both /failsafe and the /builtin/serial work.
+> Both have device_type == "serial"
