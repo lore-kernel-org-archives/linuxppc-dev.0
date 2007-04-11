@@ -1,31 +1,35 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 08F38DDF8F
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 23:54:28 +1000 (EST)
-Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
-	[9.17.195.106])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3CDsQKY009926
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 09:54:26 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3CDsPYv175340
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 07:54:25 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3CDsPBC011676
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 07:54:25 -0600
-Subject: Re: [PATCH] powerpc: Fix PowerPC 750CL CPU features
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <89c4d64a1c2e654c8f339f008bbeddeb@bga.com>
-References: <89c4d64a1c2e654c8f339f008bbeddeb@bga.com>
-Content-Type: text/plain
-Date: Thu, 12 Apr 2007 08:53:22 -0500
-Message-Id: <1176386002.6379.31.camel@zod.rchland.ibm.com>
+Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
+Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6E1C6DDF24
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 01:05:06 +1000 (EST)
+Received: from root by ciao.gmane.org with local (Exim 4.43)
+	id 1HbzqE-0004Yu-3L
+	for linuxppc-dev@ozlabs.org; Thu, 12 Apr 2007 16:00:03 +0200
+Received: from 10.8.185.213.dk-amb.res.sta.perspektivbredband.net
+	([213.185.8.10]) by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
+	id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 16:00:02 +0200
+Received: from benny+usenet by
+	10.8.185.213.dk-amb.res.sta.perspektivbredband.net with local
+	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 16:00:02 +0200
+To: linuxppc-dev@ozlabs.org
+From: Benny Amorsen <benny+usenet@amorsen.dk>
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+Date: 11 Apr 2007 18:30:39 +0200
+Message-ID: <m3tzvm6fgw.fsf@ursa.amorsen.dk>
+References: <1175644642.10567.31.camel@shinybook.infradead.org>
+	<20070403221002.GA13210@cynthia.pants.nu>
+	<1175648051.10567.61.camel@shinybook.infradead.org>
+	<20070403.181645.68159458.davem@davemloft.net>
+	<20070404022828.5c9b97f3@the-village.bc.nu>
+	<Pine.LNX.4.64.0704032307001.7802@mtl.rackplans.net>
 Mime-Version: 1.0
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+Sender: news <news@sea.gmane.org>
+Cc: linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,18 +39,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-04-12 at 08:49 -0500, Milton Miller wrote:
-> On Thu Apr 12 22:49:06 EST 2007, Josh Boyer wrote:
-> > PowerPC 750CL has high BATs.  The patch below sets cpu_features to 
-> > match that.
-> > Without it, the original firmware mappings in the high BATs aren't 
-> > cleared
-> > which can cause "odd" address translations to occur.
-> 
-> Lets say what it does:  which continue to override the linux 
-> translations.
+>>>>> "GM" == Gerhard Mack <gmack@innerfire.net> writes:
 
-Sure, that's exactly what it does since without the HIGH_BATS feature
-Linux doesn't know about them and therefore can't clear them.
+GM> On Wed, 4 Apr 2007, Alan Cox wrote:
+>> You don't get machines with 64 ethernet ports on add-in cards.
+>> There are good reasons for the naming schemes in use.
 
-josh
+GM> If they made them I'd build one.
+
+Indeed, port density is disappointingly poor in modern servers. Do you
+know any with more than 14 ports per U? (That's an MBX 1U server with
+8 on-board and a 6-port expansion).
+
+
+/Benny
