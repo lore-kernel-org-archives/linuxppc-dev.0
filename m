@@ -1,25 +1,42 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [Cbe-oss-dev] [patch 3/3] cell: prevent alignment interrupt on
-	local store
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <6ffa9deb122ae953e58a88103fcfc8b9@kernel.crashing.org>
-References: <20070410111508.GA2969@localhost.localdomain>
-	<1176240168.8061.51.camel@localhost.localdomain>
-	<20070411025605.GB2197@localhost.localdomain>
-	<1176262253.8061.60.camel@localhost.localdomain>
-	<ffb78cbadfea8d104c8e5d495e9651ca@kernel.crashing.org>
-	<20070412042337.GA21832@aepfle.de>
-	<6ffa9deb122ae953e58a88103fcfc8b9@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-zQ2qhATSOommADfy1Nty"
-Date: Thu, 12 Apr 2007 16:57:04 +1000
-Message-Id: <1176361024.14208.1.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
-Reply-To: michael@ellerman.id.au
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0ECF2DDF4F
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 16:58:57 +1000 (EST)
+In-Reply-To: <20070412141905.6f30efd3.sfr@canb.auug.org.au>
+References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
+	<20070403222406.cf39c459.sfr@canb.auug.org.au>
+	<20070403222641.e93cb73b.sfr@canb.auug.org.au>
+	<20070403222841.a2c6af1c.sfr@canb.auug.org.au>
+	<20070403223000.5d44b2f1.sfr@canb.auug.org.au>
+	<20070403223136.6ecdabbd.sfr@canb.auug.org.au>
+	<20070403223257.cb8c4d15.sfr@canb.auug.org.au>
+	<20070403223535.dd6731d6.sfr@canb.auug.org.au>
+	<20070403223738.03386a13.sfr@canb.auug.org.au>
+	<20070403223914.35bf04e1.sfr@canb.auug.org.au>
+	<20070403224039.913af749.sfr@canb.auug.org.au>
+	<20070403224205.807cffe0.sfr@canb.auug.org.au>
+	<20070403224340.5533abc9.sfr@canb.auug.org.au>
+	<20070403224505.5d5a1495.sfr@canb.auug.org.au>
+	<20070403224610.b61c7377.sfr@canb.auug.org.au>
+	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
+	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
+	<20070403225222.88e92221.sfr@canb.auug.org.au>
+	<20070403230505.f96ea210.sfr@canb.auug.org.au>
+	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>
+	<20070412141905.6f30efd3.sfr@canb.auug .org.au>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c10b4132b62a3469946251b355d5c877@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH,RFC] Split out common parts of prom.h
+Date: Thu, 12 Apr 2007 08:58:52 +0200
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	"David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,40 +46,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+> This creates linux/openfw.h and includes asm/prom.h from it.
 
---=-zQ2qhATSOommADfy1Nty
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Nice stuff.  Can we please name it openfirmware.h though?
+Or of.h if shorter names are preferred.  "openfw" is an
+abbreviation I've never seen before though :-)
 
-On Thu, 2007-04-12 at 08:50 +0200, Segher Boessenkool wrote:
-> ...
 
-> [Yes I have no benchmark data to back this up].
-
-Which is the problem with this whole thread ...
-
-:)
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-zQ2qhATSOommADfy1Nty
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGHdg/dSjSd0sB4dIRAsV/AJ0csc+z5dFXTa4j4ZvFwIuQH4qbpwCgwTct
-N6iLAvQUXUMky/iyFpuzdiQ=
-=F9Os
------END PGP SIGNATURE-----
-
---=-zQ2qhATSOommADfy1Nty--
+Segher
