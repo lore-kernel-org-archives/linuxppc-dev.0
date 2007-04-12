@@ -1,38 +1,20 @@
-Return-Path: <MBenedict@twacs.com>
-Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 001D3DDFEC
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc3-s14.bay0.hotmail.com (bay0-omc3-s14.bay0.hotmail.com
+	[65.54.246.214]) by ozlabs.org (Postfix) with ESMTP id 5E33DDDF93
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Apr 2007 02:07:21 +1000 (EST)
-Received: from outbound2-sin.bigfish.com (localhost.localdomain [127.0.0.1])
-	by outbound2-sin-R.bigfish.com (Postfix) with ESMTP id 788B913F90F0
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Apr 2007 16:07:17 +0000 (UTC)
-Received: from mail26-sin-R.bigfish.com (unknown [10.3.252.3])
-	by outbound2-sin.bigfish.com (Postfix) with ESMTP id 67BBA52805E
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Apr 2007 16:07:17 +0000 (UTC)
-Received: from mail26-sin (localhost.localdomain [127.0.0.1])
-	by mail26-sin-R.bigfish.com (Postfix) with ESMTP id 19AE3E70189
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Apr 2007 16:07:17 +0000 (UTC)
-Received: from mail.twacs.com (unknown [68.89.149.4])
-	by mail26-sin.bigfish.com (Postfix) with ESMTP id 3F4BED0007B
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Apr 2007 16:07:14 +0000 (UTC)
+	Fri, 13 Apr 2007 02:08:32 +1000 (EST)
+Message-ID: <BAY115-DAV135BF9CBE35CF183DD0AF3B25E0@phx.gbl>
+From: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
+Date: Thu, 12 Apr 2007 09:08:29 -0700
 MIME-Version: 1.0
+To: "Andrei Konovalov" <akonovalov@ru.mvista.com>
+Subject: RE: HOTO start with linux 2.6.* and ML403
+References: <BAY115-W21FFB4DA2861035BC20B77B25F0@phx.gbl>
+In-Reply-To: <BAY115-W21FFB4DA2861035BC20B77B25F0@phx.gbl>
 Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Still trying to get a stable 2.6.20.4 running on 8349ITX evalboard
-Date: Thu, 12 Apr 2007 11:06:55 -0500
-Message-ID: <CF7E46FCFF66AD478BB72724345289EC2795E3@twx-exch01.twacs.local>
-In-Reply-To: <20070412193658.06a958be@vitb.ru.mvista.com>
-References: <OFA3732C99.56D7C409-ON882572BA.00702C6D-882572BA.00724020@selinc.com>
-	<20070412193658.06a958be@vitb.ru.mvista.com>
-From: "Benedict, Michael" <MBenedict@twacs.com>
-To: <linuxppc-embedded@ozlabs.org>
+	format=flowed;
+	charset="iso-8859-15"
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>, miroslaw.dach@psi.ch
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -43,24 +25,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->
->Your problem looks very much like odd DDR or memctl=20
->misconfiguration early in u-boot.
->Please try upgrading your firmware with the latest u-boot from=20
->git tree at denx.de. Kernel from Paul Mackerras (powerpc.git)=20
->is also a good thing to give a try.
->
-I can verify this bug exists with the latest Denx git u-boot.  Thank
-you, I will try Paul Mackerras kernel.
+oh yes
+completely correct andrei
+i should have mention that , but i forgot.
+thanks
 
->Also, there is Vitesse switch on this target, which should be=20
->initialized(Normally with vendor-shipped image you'll figure=20
->out how by print thirdp_init. Starting kernel without that may=20
->result in some instability too.
->
 
-I have to admit, this is over my head.  What do you mean by "print
-thirdp_init"? =20
+-----Original Message-----
+From:	"Andrei Konovalov" <akonovalov@ru.mvista.com>
+Sent:	April 12, 2007 3:30 PM
+To:	"Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
+Cc:	"miroslaw.dach@psi.ch" <miroslaw.dach@psi.ch>, "Linux PPC Linux PPC" =
+<linuxppc-embedded@ozlabs.org>
+Subject:	Re: HOTO start with linux 2.6.* and ML403
 
-Thank you Vitaly!
-	-Michael
+Mohammad Sadegh Sadri wrote:
+<snip>
+> from all of the files generated there you will need just xparameters.h =
+and xparameters_ml403.h and nothing more
+> if using mvista source, you will not even need these two files the =
+files available in the source are ok themselves
+
+- they are OK if you use ML403 and the EDK reference design for this =
+board.
+   For custom FPGA configuration you should use the EDK generated =
+xparameters_ml403.h (if you
+   use EDK to build the bitstream).
+
+Thanks,
+Andrei
