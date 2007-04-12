@@ -1,18 +1,21 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 329BADDFD9
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 02:57:10 +1000 (EST)
-In-Reply-To: <461D0D2E.5030300@freescale.com>
-References: <boot-4-06.miltonm@bga.com> <461D0D2E.5030300@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <4cdc5e5fe65ea69a45289f0fdd8915b9@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 6/8] bootwrapper: convert flatdevtree to version 16
-Date: Thu, 12 Apr 2007 11:56:52 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Fastboot <fastboot@lists.osdl.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5B052DDF37
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 03:06:27 +1000 (EST)
+In-Reply-To: <aeef7937e978aec33074251c48dca389@kernel.crashing.org>
+References: <1176382146.6379.28.camel@zod.rchland.ibm.com>
+	<aeef7937e978aec33074251c48dca389@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <2830816F-F1C5-450C-BA68-287D8C312561@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: Fix PowerPC 750CL CPU features
+Date: Thu, 12 Apr 2007 12:06:02 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,61 +26,28 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 11, 2007, at 11:30 AM, Scott Wood wrote:
+On Apr 12, 2007, at 11:41 AM, Segher Boessenkool wrote:
 
-> Milton Miller wrote:
->> kexec-tools still produces a version 2 device tree, while the
->> libraries in the wrapper only support version 16 and later.
->> Add a routine to convert a v2 flat device tree to a v16 one inplace
->> by inserting OF_DT_NOP and chomping full path.  Make space for new
->> headers by moving and then chomping the OF_DT_NOPs.
+>> PowerPC 750CL has high BATs.  The patch below sets cpu_features to
+>> match that.
+>> Without it, the original firmware mappings in the high BATs aren't
+>> cleared
+>> which can cause "odd" address translations to occur.
 >
-> Why not fix kexec-tools to generate a version 17 device tree?
+>> -		.cpu_features		= CPU_FTRS_750,
+>> +		.cpu_features		= CPU_FTRS_750GX,
 >
+> The difference between these two is
+>
+> #define CPU_FTRS_750GX  (CPU_FTR_DUAL_PLL_750FX |  
+> CPU_FTR_HAS_HIGH_BATS)
+> #define CPU_FTRS_750    (CPU_FTR_COMMON)
+>
+> 750GX excludes COMMON, which seems like a bug.  With
+> your change, 750CL uses DUAL_PLL_750FX; does it actually
+> have that feature?
 
-Because that would prevent kexec-tools from starting a kernel
-between
+I agree the 750GX should include COMMON, we probably don't notice  
+since its never in a SMP system.
 
-[PATCH] ppc64: Make early processor spinup based on physical ids
-author	olof <olof>
-Thu, 25 Nov 2004 23:59:21 +0000 (23:59 +0000)
-commit	e1b47549d1588ccea1fa5726eb430aae4e80f8ed
-
-(linux-bkcvs, 2.6.9 or so) and
-
-[PATCH] flattened device tree changes
-author	Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Tue, 9 Aug 2005 08:36:34 +0000 (10:36 +0200)
-committer	Paul Mackerras <paulus@samba.org>
-Mon, 29 Aug 2005 00:53:31 +0000 (10:53 +1000)
-commit	34153fa3af45d84f3221d9b67ba2ab7e8a220d28
-
-(2.6.14)
-
-Admittedly they don't all support kexec from them, but they
-can be kexeced into.   ppc64 kexec support was merged
-here:
-
-[PATCH] ppc64: kexec support for ppc64
-author	R Sharada <sharada@in.ibm.com>
-Sat, 25 Jun 2005 21:58:10 +0000 (14:58 -0700)
-committer	Linus Torvalds <torvalds@ppc970.osdl.org>
-Sat, 25 Jun 2005 23:24:51 +0000 (16:24 -0700)
-commit	fce0d5740322b98b863f9e609f5a9bd4c06703af
-
-(2.6.13)
-
-
-That, and I didn't want to make changes to the code that
-may be replaced with some other library later.
-
-
-We could move this from kexec_platform_init to  crt0_kexec.S
-platform_init so it becomes platform dependent if you want
-to support them.
-
-
-Are there embedded firmwares that hove old device trees?
-
-
-milton
+- k
