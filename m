@@ -1,15 +1,12 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17949.47307.827348.233684@cargo.ozlabs.ibm.com>
-Date: Thu, 12 Apr 2007 14:42:51 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Scott Wood <scottwood@freescale.com>
-Subject: Re: [PATCH 2/5] bootwrapper: Add CONFIG_DEVICE_TREE
-In-Reply-To: <20070326205226.GB2931@ld0162-tx32.am.freescale.net>
-References: <20070326205145.GA2868@ld0162-tx32.am.freescale.net>
-	<20070326205226.GB2931@ld0162-tx32.am.freescale.net>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <mikey@neuling.org>
+To: Milton Miller <miltonm@bga.com>
+From: Michael Neuling <mikey@neuling.org>
+Subject: Re: [PATCH] export retained initrd in debugfs 
+In-reply-to: <boot-4-misc-01.miltonm@bga.com> 
+References: <boot-4-misc-01.miltonm@bga.com>
+Date: Thu, 12 Apr 2007 16:17:19 +1000
+Message-ID: <26066.1176358639@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, klibc@zytor.com, fastboot@lists.osdl.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,31 +16,78 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Scott Wood writes:
+This needs to goto lkml
 
-> This provides a way to tell the bootwrapper makefile which device tree to
-> include by default.  The wrapper can still be invoked standalone to wrap
-> with a different device tree without reconfiguring the kernel, if that is
-> desired.
-...
-> +config DEVICE_TREE
-> +	string "Static device tree source file"
-> +	help
-> +	  This specifies the device tree source (.dts) file to be
-> +	  compiled and included when building the bootwrapper.
-> +	  If a relative filename is given, then it will be relative
-> +	  to arch/powerpc/boot/dts.
+In message <boot-4-misc-01.miltonm@bga.com> you wrote:
+> Export initrd in debugfs when retained.
+> 
+> As a side effect, initrd_start and initrd_end are not cleared when the
+> initrd is retained.
+> 
+> After this patch, one can then copy the initrd space from debugfs and
+> pass it to kexec as the initrd, or do something else with it (maybe it
+> was an initrd not an initramfs).
+> 
+> Signed-off-by: Milton Miller <miltonm@bga.com>
+> --- 
+> This is a lot more reliable than extracting it via dd from /dev/mem.
+> 
+> Currently debugfs doesn't have a getattr even for blobs, so one has
+> to cp elsewhere before using kexec from kexec-tools.
+> 
+> Index: kernel/init/initramfs.c
+> ===================================================================
+> --- kernel.orig/init/initramfs.c	2007-03-28 00:12:15.000000000 -0500
+> +++ kernel/init/initramfs.c	2007-03-28 00:35:56.000000000 -0500
+> @@ -6,6 +6,7 @@
+>  #include <linux/delay.h>
+>  #include <linux/string.h>
+>  #include <linux/syscalls.h>
+> +#include <linux/debugfs.h>
+>  
+>  static __initdata char *message;
+>  static void __init error(char *x)
+> @@ -519,7 +520,7 @@ static void __init free_initrd(void)
+>  	unsigned long crashk_end   = (unsigned long)__va(crashk_res.end);
+>  #endif
+>  	if (do_retain_initrd)
+> -		goto skip;
+> +		return;
+>  
+>  #ifdef CONFIG_KEXEC
+>  	/*
+> @@ -588,3 +589,29 @@ static int __init populate_rootfs(void)
+>  	return 0;
+>  }
+>  rootfs_initcall(populate_rootfs);
 > +
-> +	  This is required when building a cuImage target for an
-> +	  older U-Boot, which cannot pass a device tree itself.
-> +	  Such a kernel will not work with a newer U-Boot that
-> +	  tries to pass a device tree (unless you tell it not to).
-> +	  If your U-Boot does not mention a device tree in
-> +	  "help bootm", then use the cuImage target and specify
-> +	  a device tree here.  Otherwise, use the uImage target.
-
-Hmmm, I'm not sure that I want to be asked about CONFIG_DEVICE_TREE on
-*all* powerpc platforms...  Surely this option should depend on
-something that says we're including support for a uBoot-able platform?
-
-Paul.
+> +#ifdef CONFIG_BLK_DEV_INITRD
+> +static struct debugfs_blob_wrapper initrd_blob;
+> +
+> +static int __init export_initrd(void)
+> +{
+> +	struct dentry *d;
+> +	initrd_blob.data = (char *)initrd_start;
+> +	initrd_blob.size = initrd_end - initrd_start;
+> +
+> +	if (!do_retain_initrd)
+> +		return 0;
+> +
+> +	if (!initrd_start)
+> +		return 0;
+> +
+> +	d = debugfs_create_blob("initrd", S_IFREG, NULL, &initrd_blob);
+> +
+> +	if (!d)
+> +		return 1;
+> +
+> +	return 0;
+> +}
+> +
+> +__initcall(export_initrd);
+> +#endif
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+> 
