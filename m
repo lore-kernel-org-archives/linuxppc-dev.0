@@ -1,20 +1,18 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 68D90DDF19
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 11:35:35 +1000 (EST)
-Subject: Re: [RFC/PATCH] powerpc: tlb flush batch use lazy MMU mode
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1176188977.8061.48.camel@localhost.localdomain>
-References: <1176188977.8061.48.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Thu, 12 Apr 2007 11:35:26 +1000
-Message-Id: <1176341727.8061.112.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Anton Blanchard <anton@samba.org>, linux-mm@kvack.org
+Return-Path: <horms@koto.vergenet.net>
+Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
+	by ozlabs.org (Postfix) with ESMTP id 0FA84DDF23
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 13:25:03 +1000 (EST)
+Date: Thu, 12 Apr 2007 12:24:47 +0900
+From: Simon Horman <horms@verge.net.au>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH kexec-tools] ppc64: correct @ha relocation
+Message-ID: <20070412032446.GA5184@verge.net.au>
+References: <boot-4-00.miltonm@bga.com> <boot-4-kexec-02.miltonm@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <boot-4-kexec-02.miltonm@bga.com>
+Cc: Vivek Goyal <vgoyal@in.ibm.com>, fastboot@lists.osdl.org,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +22,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-10 at 17:09 +1000, Benjamin Herrenschmidt wrote:
-> The current tlb flush code on powerpc 64 bits has a subtle race since we
-> lost the page table lock due to the possible faulting in of new PTEs
-> after a previous one has been removed but before the corresponding hash
-> entry has been evicted, which can leads to all sort of fatal problems.
+On Wed, Apr 11, 2007 at 03:30:00AM -0500, Milton Miller wrote:
 > 
-> This patch reworks the batch code completely. It doesn't use the mmu_gather
-> stuff anymore. Instead, we use the lazy mmu hooks that were added by the
-> paravirt code. They have the nice property that the enter/leave lazy mmu
-> mode pair is always fully contained by the PTE lock for a given range
-> of PTEs. Thus we can guarantee that all batches are flushed on a given
-> CPU before it drops that lock.
+> The @ha relocation is supposed to account for the @l relocation being
+> a signed quantity by adding 1 if the msb of @l is set.
+> 
+> The trick of adding 0x8000 stolen from the linux kernel file
+> arch/powerpc/kernel/module_64.c which credits binutils.
 
- .../...
+This and the following patch seem fine to me.
+But I would appreciate a review from someone 
+a little more ppc savy than I.
 
-Ran for a little while on a P5 partition with a few sdet runs and it
-seems to be fine. You can apply :-)
-
-Despite the bug being present in 2.6.21 (and earlier), I still think
-however that this is .22 material, at least for now.
-
-Ben.
+-- 
+Horms
+  H: http://www.vergenet.net/~horms/
+  W: http://www.valinux.co.jp/en/
