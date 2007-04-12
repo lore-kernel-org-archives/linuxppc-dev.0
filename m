@@ -1,18 +1,21 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] selection of CPU optimization
-Date: Thu, 12 Apr 2007 21:25:57 +0200
-References: <20070410111508.GA2969@localhost.localdomain>
-	<200704121926.03723.arnd@arndb.de>
-	<04335E0C-3963-4849-BEC7-DC9DF3E3280F@kernel.crashing.org>
-In-Reply-To: <04335E0C-3963-4849-BEC7-DC9DF3E3280F@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704122125.57484.arnd@arndb.de>
-Cc: Olof Johansson <olof@lixom.net>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 625D4DDF93
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 05:28:33 +1000 (EST)
+In-Reply-To: <1176402805.6379.84.camel@zod.rchland.ibm.com>
+References: <1176402805.6379.84.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <3d8deaa26ab67ccd0aeb4b827dc175a8@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v2] powerpc: Fix PowerPC 750CL and 750GX CPU features
+Date: Thu, 12 Apr 2007 21:28:30 +0200
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,15 +25,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 12 April 2007, Kumar Gala wrote:
-> > What would be the right options to pass on e200 and on
-> > pa6t?
-> 
-> I think leaving it blank is the right thing for e200.
+> PowerPC 750CL has high BATs.  The patch below adds a CPU_FTRS_750CL 
+> that
+> includes that.  Without it, the original firmware mappings in the high 
+> BATs
+> aren't cleared which continue to override the linux translations.
+>
+> It also adds CPU_FTR_COMMON to CPU_FTRS_750GX for completeness.
 
-Leaving it blank means it will use the compiler's default
-target, which can be anything. My guess is that '-mcpu=powerpc'
-would be right, i.e. no 64 bit, no POWER, but most PowerPC
-instructions are allowed.
+Looks good to me, thanks Josh.  It would be nice to define
+the 750XX features as plain 750 + a few options, but that's
+a separate cleanup.
 
-	Arnd <><
+
+Segher
