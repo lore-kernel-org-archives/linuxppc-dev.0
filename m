@@ -1,12 +1,19 @@
-Return-Path: <mikey@neuling.org>
-To: Milton Miller <miltonm@bga.com>
-From: Michael Neuling <mikey@neuling.org>
-Subject: Re: [PATCH] export retained initrd in debugfs 
-In-reply-to: <boot-4-misc-01.miltonm@bga.com> 
-References: <boot-4-misc-01.miltonm@bga.com>
-Date: Thu, 12 Apr 2007 16:17:19 +1000
-Message-ID: <26066.1176358639@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, klibc@zytor.com, fastboot@lists.osdl.org
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 2F6B0DDF41
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 16:25:51 +1000 (EST)
+Date: Wed, 11 Apr 2007 23:25:45 -0700 (PDT)
+Message-Id: <20070411.232545.45203999.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH] Start split out of common open firmware code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1176357020.8061.123.camel@localhost.localdomain>
+References: <20070412141905.6f30efd3.sfr@canb.auug.org.au>
+	<20070412153424.bf3957f4.sfr@canb.auug.org.au>
+	<1176357020.8061.123.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,78 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This needs to goto lkml
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Thu, 12 Apr 2007 15:50:20 +1000
 
-In message <boot-4-misc-01.miltonm@bga.com> you wrote:
-> Export initrd in debugfs when retained.
+> On Thu, 2007-04-12 at 15:34 +1000, Stephen Rothwell wrote:
+> > This creates kernel/openfw.c (depending on CONFIG_OPENFW) and puts the
+> > first trivially common bits from the prom.c files into it.
 > 
-> As a side effect, initrd_start and initrd_end are not cleared when the
-> initrd is retained.
+> Is this the right place ?
 > 
-> After this patch, one can then copy the initrd space from debugfs and
-> pass it to kexec as the initrd, or do something else with it (maybe it
-> was an initrd not an initramfs).
-> 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
-> --- 
-> This is a lot more reliable than extracting it via dd from /dev/mem.
-> 
-> Currently debugfs doesn't have a getattr even for blobs, so one has
-> to cp elsewhere before using kexec from kexec-tools.
-> 
-> Index: kernel/init/initramfs.c
-> ===================================================================
-> --- kernel.orig/init/initramfs.c	2007-03-28 00:12:15.000000000 -0500
-> +++ kernel/init/initramfs.c	2007-03-28 00:35:56.000000000 -0500
-> @@ -6,6 +6,7 @@
->  #include <linux/delay.h>
->  #include <linux/string.h>
->  #include <linux/syscalls.h>
-> +#include <linux/debugfs.h>
->  
->  static __initdata char *message;
->  static void __init error(char *x)
-> @@ -519,7 +520,7 @@ static void __init free_initrd(void)
->  	unsigned long crashk_end   = (unsigned long)__va(crashk_res.end);
->  #endif
->  	if (do_retain_initrd)
-> -		goto skip;
-> +		return;
->  
->  #ifdef CONFIG_KEXEC
->  	/*
-> @@ -588,3 +589,29 @@ static int __init populate_rootfs(void)
->  	return 0;
->  }
->  rootfs_initcall(populate_rootfs);
-> +
-> +#ifdef CONFIG_BLK_DEV_INITRD
-> +static struct debugfs_blob_wrapper initrd_blob;
-> +
-> +static int __init export_initrd(void)
-> +{
-> +	struct dentry *d;
-> +	initrd_blob.data = (char *)initrd_start;
-> +	initrd_blob.size = initrd_end - initrd_start;
-> +
-> +	if (!do_retain_initrd)
-> +		return 0;
-> +
-> +	if (!initrd_start)
-> +		return 0;
-> +
-> +	d = debugfs_create_blob("initrd", S_IFREG, NULL, &initrd_blob);
-> +
-> +	if (!d)
-> +		return 1;
-> +
-> +	return 0;
-> +}
-> +
-> +__initcall(export_initrd);
-> +#endif
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
-> 
+> I want to split flat DT from live DT in separate files, then we have
+> of_device.c and of_platform.c that will need merging too, and possibly
+> the filesystem... that's a lot to put in kernel/
+
+We could make drivers/openfw/{device,platform}.c, maybe that would
+work best?
