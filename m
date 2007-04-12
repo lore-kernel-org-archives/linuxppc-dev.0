@@ -1,18 +1,29 @@
-Return-Path: <galak@kernel.crashing.org>
-In-Reply-To: <200704121926.03723.arnd@arndb.de>
-References: <20070410111508.GA2969@localhost.localdomain>
-	<200704121501.34311.arnd@arndb.de>
-	<981B07C8-D35B-4581-8FC7-DCA58430A081@kernel.crashing.org>
-	<200704121926.03723.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <04335E0C-3963-4849-BEC7-DC9DF3E3280F@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] selection of CPU optimization
-Date: Thu, 12 Apr 2007 13:17:25 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Olof Johansson <olof@lixom.net>,
-	linuxppc-dev list <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9B88FDDF64
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 04:34:35 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3CIYWO5030082
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 14:34:32 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3CIYWHJ188198
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 12:34:32 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3CIYVrR011967
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 12:34:31 -0600
+Subject: [PATCH v2] powerpc: Fix PowerPC 750CL and 750GX CPU features
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Content-Type: text/plain
+Date: Thu, 12 Apr 2007 13:33:25 -0500
+Message-Id: <1176402805.6379.84.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,110 +33,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+PowerPC 750CL has high BATs.  The patch below adds a CPU_FTRS_750CL that
+includes that.  Without it, the original firmware mappings in the high BATs
+aren't cleared which continue to override the linux translations.
 
-On Apr 12, 2007, at 12:26 PM, Arnd Bergmann wrote:
+It also adds CPU_FTR_COMMON to CPU_FTRS_750GX for completeness.
 
-> On Thursday 12 April 2007, Kumar Gala wrote:
->
->>> +config PPC_CPU_ANY32
->>> +	bool "Generic 32 bit PowerPC"
->>> +	depends on PPC_6xx || PPC_8xx || 4xx || E200 || E500
->>> +	select PPC_ENABLE_ALTIVEC
->>
->> What is PPC_ENABLE_ALTIVEC used for?
->
-> The idea was that PPC_ENABLE_ALTIVEC is selected when PPC_ALTIVEC
-> _can_ be enabled, while PPC_ALTIVEC is selected by some CPUs
-> directly.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+---
+ arch/powerpc/kernel/cputable.c |    4 ++--
+ include/asm-powerpc/cputable.h |   10 +++++++---
+ 2 files changed, 9 insertions(+), 5 deletions(-)
 
-Ok, seems like 8xx/4xx/e200/e500 its clear will NEVER have Altivec.   
-I think we should put the PPC_ENABLE_ALTIVEC on PPC_6xx which should  
-cover all the reasonable possible cases (603, 604, 7xx).
-
-> I now remember that I had not done this part right in the patch
-> I posted. The correct behavior should be something like
->
-> choice
-> 	prompt "Processor level"
->
-> config PPC_CPU_740
-> 	bool "G3 or higher"
-> 	select PPC_ENABLE_ALTIVEC
-> 	# altivec is possible
->
-> config PPC_CPU_86xx
-> 	bool "86xx"
-> 	select PPC_ALTIVEC
-> 	# altivec is required
->
-> config PPC_CPU_4xx
-> 	bool "4xx"
-> 	# altivec is not possible
->
-> endchoice
->
-> config PPC_ENABLE_ALTIVEC
-> 	bool
->
-> config PPC_ALTIVEC
-> 	bool "Enable the use of Altivec"
-> 	depends on PPC_ENABLE_ALTIVEC
->
-> I'll fix this up in the next version, which should also
-> be split into simpler patches.
->
->>> +config PPC_CPU_FLAG
->>> +	string
->>> +	default "" if PPC_CPU_UNSPECIFIED
->>> +	default "-mcpu=powerpc64" if PPC_CPU_ANY64
->>> +	default "-mcpu=rs64" if PPC_CPU_RS64
->>> +	default "-mcpu=power3" if PPC_CPU_POWER3
->>> +	default "-mcpu=power4" if PPC_CPU_POWER4
->>> +	default "-mcpu=power5" if PPC_CPU_POWER5
->>> +	default "-mcpu=power5+" if PPC_CPU_POWER5PLUS
->>> +	default "-mcpu=power6" if PPC_CPU_POWER6
->>> +	default "-mcpu=970" if PPC_CPU_970
->>> +	default "" if PPC_CPU_CELLBE
->>> +	default "" if PPC_CPU_PA6T
->>> +	default "-mcpu=powerpc" if PPC_CPU_ANY32
->>> +	default "-mcpu=601" if PPC_CPU_601
->>> +	default "-mcpu=603" if PPC_CPU_603
->>> +	default "-mcpu=604" if PPC_CPU_604
->>> +	default "-mcpu=750" if PPC_CPU_750
->>> +	default "-mcpu=7400" if PPC_CPU_7400
->>> +	default "-mcpu=7450" if PPC_CPU_7450
->>> +	default "-mcpu=801" if PPC_CPU_801
->>> +	default "-mcpu=821" if PPC_CPU_821
->>> +	default "-mcpu=823" if PPC_CPU_823
->>> +	default "-mcpu=860" if PPC_CPU_860
->>> +	default "-mcpu=403" if PPC_CPU_403
->>> +	default "-mcpu=405" if PPC_CPU_405
->>> +	default "-mcpu=440" if PPC_CPU_440
->>> +	default "" if PPC_CPU_E200
->>> +	default "" if PPC_CPU_E500
->>
->> I think -mcpu=8540 will work for e500 (same for tune)
->
-> Interestingly, -mcpu=8540 is known to gcc, according to
-> gcc-4.0.3 -dumpspecs, but is not listed in the documentation.
-> There is also -me500, while -me200 seems to be known only
-> to gas but not gcc.
->
-> What would be the right options to pass on e200 and on
-> pa6t?
-
-I think leaving it blank is the right thing for e200.
-
-Olof should know what pa6t needs or what makes sense for it.
-
->>> +config PPC_OF_PLATFORM_PCI
->>> +	bool
->>> +	depends on PPC64 # not supported on 32 bits yet
->>> +	default n
->>
->> Should this really be in here? I don't see how OF PCI has anything to
->> do with CPU/core.
->
-> Right.
->
-> 	Arnd <><
+--- linux-2.6.orig/arch/powerpc/kernel/cputable.c
++++ linux-2.6/arch/powerpc/kernel/cputable.c
+@@ -562,12 +562,12 @@ static struct cpu_spec cpu_specs[] = {
+ 		.pvr_mask		= 0xfffff0f0,
+ 		.pvr_value		= 0x00087010,
+ 		.cpu_name		= "750CL",
+-		.cpu_features		= CPU_FTRS_750,
++		.cpu_features		= CPU_FTRS_750CL,
+ 		.cpu_user_features	= COMMON_USER | PPC_FEATURE_PPC_LE,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+ 		.num_pmcs		= 4,
+-		.cpu_setup		= __setup_cpu_750cx,
++		.cpu_setup		= __setup_cpu_750,
+ 		.platform		= "ppc750",
+ 	},
+ 	{	/* 745/755 */
+--- linux-2.6.orig/include/asm-powerpc/cputable.h
++++ linux-2.6/include/asm-powerpc/cputable.h
+@@ -223,6 +223,10 @@ extern void do_feature_fixups(unsigned l
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_PPC_LE)
++#define CPU_FTRS_750CL	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
++	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
++	    CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
+ #define CPU_FTRS_750FX1	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+@@ -235,9 +239,9 @@ extern void do_feature_fixups(unsigned l
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
+ 	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
+-#define CPU_FTRS_750GX	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
+-	    CPU_FTR_USE_TB | CPU_FTR_L2CR | CPU_FTR_TAU | \
+-	    CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
++#define CPU_FTRS_750GX	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
++	    CPU_FTR_TAU | CPU_FTR_HPTE_TABLE | CPU_FTR_MAYBE_CAN_NAP | \
+ 	    CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS | CPU_FTR_PPC_LE)
+ #define CPU_FTRS_7400_NOTAU	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB | CPU_FTR_L2CR | \
