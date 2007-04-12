@@ -3,19 +3,20 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 04181DDE2F
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 09:16:20 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id 602D9DDF72
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 09:16:47 +1000 (EST)
 Received: from [72.183.106.80] (helo=[192.168.1.2])
 	by nommos.sslcatacombnetworking.com with esmtpsa (TLSv1:AES256-SHA:256)
 	(Exim 4.63) (envelope-from <galak@kernel.crashing.org>)
-	id 1Hc8WW-0002to-Oi
-	for linuxppc-dev@ozlabs.org; Thu, 12 Apr 2007 18:16:16 -0500
-Date: Thu, 12 Apr 2007 18:12:23 -0500 (CDT)
+	id 1Hc8Wx-0002uR-U2
+	for linuxppc-dev@ozlabs.org; Thu, 12 Apr 2007 18:16:44 -0500
+Date: Thu, 12 Apr 2007 18:12:50 -0500 (CDT)
 From: Kumar Gala <galak@kernel.crashing.org>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 6/7] Convert 85xx platform to unified platform Kconfig
+Subject: [PATCH 7/7] Miscellaneous arch/powerpc Kconfig and platform/Kconfig
+	cleanup
 In-Reply-To: <Pine.LNX.4.64.0704121806330.28324@localhost.localdomain>
-Message-ID: <Pine.LNX.4.64.0704121811500.28324@localhost.localdomain>
+Message-ID: <Pine.LNX.4.64.0704121812280.28324@localhost.localdomain>
 References: <Pine.LNX.4.64.0704121806330.28324@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: TEXT/PLAIN; charset=US-ASCII
@@ -28,98 +29,192 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Moved 85xx platform Kconfig over to being sourced by the unified
-arch/powerpc/platforms/Kconfig.
+* Cleaned up some whitespace in arch/powerpc/Kconfig
+* Moved sourcing of platforms/embedded6xx/Kconfig into platform/Kconfig
+* Moved sourcing of platforms/4xx/Kconfig into platform/Kconfig and disabled it
+* Removed EMBEDDEDBOOT since its not supported in arch/powerpc
+* Removed PC_KEYBOARD since its not used anywhere
+* Moved a few CONFIG options around in platform/Kconfig
+* Moved interrupt controllers into platform/Kconfig out of bus section
 
 Signed-off-by: Kumar Gala <galak@kernel.crashing.org>
 ---
- arch/powerpc/Kconfig                |    1 -
- arch/powerpc/platforms/85xx/Kconfig |   29 ++++-------------------------
- arch/powerpc/platforms/Kconfig      |    3 ++-
- 3 files changed, 6 insertions(+), 27 deletions(-)
+ arch/powerpc/Kconfig           |   37 +++++--------------------------------
+ arch/powerpc/platforms/Kconfig |   38 +++++++++++++++++++++++++-------------
+ 2 files changed, 30 insertions(+), 45 deletions(-)
 
 diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 89e9c85..033666c 100644
+index 033666c..26713da 100644
 --- a/arch/powerpc/Kconfig
 +++ b/arch/powerpc/Kconfig
-@@ -377,7 +377,6 @@ source "arch/powerpc/platforms/Kconfig"
+@@ -192,7 +192,6 @@ config 44x
+ 	bool "AMCC 44x"
+ 	select PPC_DCR_NATIVE
 
- source arch/powerpc/platforms/embedded6xx/Kconfig
- source arch/powerpc/platforms/4xx/Kconfig
--source arch/powerpc/platforms/85xx/Kconfig
+-
+ config E200
+ 	bool "Freescale e200"
 
+@@ -375,9 +374,6 @@ source "init/Kconfig"
+
+ source "arch/powerpc/platforms/Kconfig"
+
+-source arch/powerpc/platforms/embedded6xx/Kconfig
+-source arch/powerpc/platforms/4xx/Kconfig
+-
  menu "Kernel options"
 
-diff --git a/arch/powerpc/platforms/85xx/Kconfig b/arch/powerpc/platforms/85xx/Kconfig
-index 124e2c5..c79ae86 100644
---- a/arch/powerpc/platforms/85xx/Kconfig
-+++ b/arch/powerpc/platforms/85xx/Kconfig
-@@ -1,8 +1,6 @@
--menu "Platform support"
--	depends on PPC_85xx
--
- choice
- 	prompt "Machine Type"
-+	depends on PPC_85xx
- 	default MPC8540_ADS
+ config HIGHMEM
+@@ -459,15 +455,6 @@ config CRASH_DUMP
 
- config MPC8540_ADS
-@@ -46,33 +44,14 @@ config MPC8540
+ 	  Don't change this unless you know what you are doing.
 
- config MPC8560
- 	bool
--	select PPC_INDIRECT_PCI
-+	select CPM2
- 	default y if MPC8560_ADS
-
- config MPC85xx
- 	bool
- 	select PPC_UDBG_16550
- 	select PPC_INDIRECT_PCI
-+	select PPC_INDIRECT_PCI_BE
-+	select MPIC
- 	default y if MPC8540_ADS || MPC85xx_CDS || MPC8560_ADS \
- 		|| MPC85xx_MDS || MPC8544_DS
--
--config PPC_INDIRECT_PCI_BE
+-config EMBEDDEDBOOT
 -	bool
--	depends on PPC_85xx
+-	depends on 8xx || 8260
 -	default y
 -
+-config PC_KEYBOARD
+-	bool "PC PS/2 style Keyboard"
+-	depends on 4xx || CPM2
+-
+ config PPCBUG_NVRAM
+ 	bool "Enable reading PPCBUG NVRAM during boot" if PPLUS || LOPEC
+ 	default y if PPC_PREP
+@@ -481,7 +468,6 @@ config IRQ_ALL_CPUS
+ 	  CPU.  Generally saying Y is safe, although some problems have been
+ 	  reported with SMP Power Macintoshes with this option enabled.
+
+-
+ config NUMA
+ 	bool "NUMA support"
+ 	depends on PPC64
+@@ -531,10 +517,10 @@ config PPC_64K_PAGES
+ 	depends on PPC64
+ 	help
+ 	  This option changes the kernel logical page size to 64k. On machines
+-          without processor support for 64k pages, the kernel will simulate
+-          them by loading each individual 4k page on demand transparently,
+-          while on hardware with such support, it will be used to map
+-          normal application pages.
++	  without processor support for 64k pages, the kernel will simulate
++	  them by loading each individual 4k page on demand transparently,
++	  while on hardware with such support, it will be used to map
++	  normal application pages.
+
+ config SCHED_SMT
+ 	bool "SMT (Hyperthreading) scheduler support"
+@@ -614,18 +600,6 @@ config GENERIC_ISA_DMA
+ 	depends on PPC64 || POWER4 || 6xx && !CPM2
+ 	default y
+
 -config MPIC
 -	bool
--	default y
+-	default n
 -
--config CPM2
+-config MPIC_WEIRD
 -	bool
--	depends on MPC8560
--	default y
--	help
--	  The CPM2 (Communications Processor Module) is a coprocessor on
--	  embedded CPUs made by Motorola.  Selecting this option means that
--	  you wish to build a kernel for a machine with a CPM2 coprocessor
--	  on it.
+-	default n
 -
--endmenu
+-config PPC_I8259
+-	bool
+-	default n
+-
+ config PPC_INDIRECT_PCI
+ 	bool
+ 	depends on PCI
+@@ -857,11 +831,10 @@ source "fs/Kconfig"
+
+ source "arch/powerpc/sysdev/qe_lib/Kconfig"
+
+-
+ source "lib/Kconfig"
+
+ menu "Instrumentation Support"
+-        depends on EXPERIMENTAL
++	depends on EXPERIMENTAL
+
+ source "arch/powerpc/oprofile/Kconfig"
+
 diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index eb69e72..e173fd4 100644
+index e173fd4..86be82a 100644
 --- a/arch/powerpc/platforms/Kconfig
 +++ b/arch/powerpc/platforms/Kconfig
-@@ -1,6 +1,6 @@
+@@ -1,6 +1,4 @@
  menu "Platform support"
- 	depends on PPC64 || CLASSIC32 || PPC_8xx || PPC_82xx || PPC_83xx || \
--			PPC_86xx
-+			PPC_85xx || PPC_86xx
+-	depends on PPC64 || CLASSIC32 || PPC_8xx || PPC_82xx || PPC_83xx || \
+-			PPC_85xx || PPC_86xx
 
  choice
  	prompt "Machine type"
-@@ -49,6 +49,7 @@ source arch/powerpc/platforms/cell/Kconfig
+@@ -27,14 +25,6 @@ config APUS
+ 	  <http://linux-apus.sourceforge.net/>.
+ endchoice
+
+-config QUICC_ENGINE
+-	bool
+-	help
+-	  The QUICC Engine (QE) is a new generation of communications
+-	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
+-	  Selecting this option means that you wish to build a kernel
+-	  for a machine with a QE coprocessor.
+-
+ source "arch/powerpc/platforms/pseries/Kconfig"
+ source "arch/powerpc/platforms/iseries/Kconfig"
+ source "arch/powerpc/platforms/chrp/Kconfig"
+@@ -43,14 +33,16 @@ source "arch/powerpc/platforms/powermac/Kconfig"
+ source "arch/powerpc/platforms/prep/Kconfig"
+ source "arch/powerpc/platforms/maple/Kconfig"
+ source "arch/powerpc/platforms/pasemi/Kconfig"
+-source arch/powerpc/platforms/celleb/Kconfig
+-source arch/powerpc/platforms/ps3/Kconfig
+-source arch/powerpc/platforms/cell/Kconfig
++source "arch/powerpc/platforms/celleb/Kconfig"
++source "arch/powerpc/platforms/ps3/Kconfig"
++source "arch/powerpc/platforms/cell/Kconfig"
  source "arch/powerpc/platforms/8xx/Kconfig"
  source "arch/powerpc/platforms/82xx/Kconfig"
  source "arch/powerpc/platforms/83xx/Kconfig"
-+source "arch/powerpc/platforms/85xx/Kconfig"
+ source "arch/powerpc/platforms/85xx/Kconfig"
  source "arch/powerpc/platforms/86xx/Kconfig"
++source "arch/powerpc/platforms/embedded6xx/Kconfig"
++#source "arch/powerpc/platforms/4xx/Kconfig
 
  config PPC_NATIVE
+ 	bool
+@@ -75,6 +67,18 @@ config XICS
+ 	bool
+ 	default y
+
++config MPIC
++	bool
++	default n
++
++config MPIC_WEIRD
++	bool
++	default n
++
++config PPC_I8259
++	bool
++	default n
++
+ config U3_DART
+ 	bool
+ 	depends on PPC_MULTIPLATFORM && PPC64
+@@ -225,6 +229,14 @@ config TAU_AVERAGE
+
+ 	  If in doubt, say N here.
+
++config QUICC_ENGINE
++	bool
++	help
++	  The QUICC Engine (QE) is a new generation of communications
++	  coprocessors on Freescale embedded CPUs (akin to CPM in older chips).
++	  Selecting this option means that you wish to build a kernel
++	  for a machine with a QE coprocessor.
++
+ config CPM2
+ 	bool
+ 	default n
 -- 
 1.5.0.6
