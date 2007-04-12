@@ -1,23 +1,22 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <1176361024.14208.1.camel@concordia.ozlabs.ibm.com>
-References: <20070410111508.GA2969@localhost.localdomain>
-	<1176240168.8061.51.camel@localhost.localdomain>
-	<20070411025605.GB2197@localhost.localdomain>
-	<1176262253.8061.60.camel@localhost.localdomain>
-	<ffb78cbadfea8d104c8e5d495e9651ca@kernel.crashing.org>
-	<20070412042337.GA21832@aepfle.de>
-	<6ffa9deb122ae953e58a88103fcfc8b9@kernel.crashing.org>
-	<1176361024.14208.1.camel@concordia.ozlabs.ibm.com>
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 52E50DDF38
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 17:43:14 +1000 (EST)
+In-Reply-To: <boot-4-04.miltonm@bga.com>
+References: <boot-4-04.miltonm@bga.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <acdfa687352f4ecb0ed18c85d27776e7@kernel.crashing.org>
+Message-Id: <a965688ebce046ac66fe18168e0d24e1@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [patch 3/3] cell: prevent alignment interrupt on
-	local store
-Date: Thu, 12 Apr 2007 09:07:51 +0200
-To: michael@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 4/8] bootwrapper: help for 64 bit cpus
+Date: Thu, 12 Apr 2007 09:43:09 +0200
+To: Milton Miller <miltonm@bga.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,11 +26,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> [Yes I have no benchmark data to back this up].
->
-> Which is the problem with this whole thread ...
+> +	/* We are in 64-bit mode.  This program must run in 32 bit
+> +	 * mode.  Assume we are actually running somewhere in the
+> +	 * low 32 bits of the address space, so we can just turn
+> +	 * off MSR[SF] which is bit 0.
+> +	 */
+> +	.machine push
+> +	.machine "ppc64"
+> +	rldicl	r0,r0,0,1
+> +	sync
+> +	mtmsrd	r0
+> +	isync
+> +	.machine pop
 
-Indeed.  It's not just me though :-)
+I'm not sure this actually works on all CPUs --
+aren't you supposed to use rfid for this?
 
 
 Segher
