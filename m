@@ -1,18 +1,19 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <200704122055.05048.arnd@arndb.de>
+In-Reply-To: <20070412200431.GA9067@lixom.net>
 References: <20070410111508.GA2969@localhost.localdomain>
-	<20070412042337.GA21832@aepfle.de>
-	<200704122043.38679.arnd@arndb.de>
-	<200704122055.05048.arnd@arndb.de>
+	<200704121501.34311.arnd@arndb.de>
+	<981B07C8-D35B-4581-8FC7-DCA58430A081@kernel.crashing.org>
+	<200704121926.03723.arnd@arndb.de>
+	<04335E0C-3963-4849-BEC7-DC9DF3E3280F@kernel.crashing.org>
+	<20070412200431.GA9067@lixom.net>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <117b47cdd5a232f9cb57f421e285558d@kernel.crashing.org>
+Message-Id: <b57c243b6ec8978136c7d29233d0994b@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [patch 3/3] cell: prevent alignment interrupt on
-	local store
-Date: Thu, 12 Apr 2007 21:57:45 +0200
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] selection of CPU optimization
+Date: Thu, 12 Apr 2007 22:01:11 +0200
+To: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
 	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -23,24 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> I don't know how many versions of libc you are currently building, but 
-> it
-> probably makes sense to have at least one that uses altivec, and one 
-> for
-> in-order (e.g. cell) and out-of-order (e.g. power5) pipelines each.
+>> Olof should know what pa6t needs or what makes sense for it.
+>
+> Thanks for the heads up, I didn't notice the email go by on the list.
+>
+> -m{cpu,tune}=pa6t should do it.
 
-Something compiled for one in-order CPU will not run
-very well on any other in-order CPU; each has specific
-hazards (like any CPU core, but on in-order it tends
-to _hurt_ if you hit any).
+Except that's not in any public GCC version yet.  Well,
+two weeks ago it wasn't...
 
-(Almost) all "generic" optimisations for in-order cores
-(schedule dependent insns far apart, ...) help even
-*more* on OoOE cores since those tend to be wider.
-
-The big issue on the Cell PPU is that it simply cannot
-execute half of the insns in the PowerPC architecture
-at a reasonable speed.
+Note that specifying an unknown -mcpu/tune= is an error,
+not a warning or totally ignored.
 
 
 Segher
