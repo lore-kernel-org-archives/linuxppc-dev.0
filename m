@@ -1,24 +1,30 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3A8FEDDF52
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 02:17:28 +1000 (EST)
-Message-ID: <461E5B91.5080101@freescale.com>
-Date: Thu, 12 Apr 2007 11:17:21 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/5] bootwrapper: Add CONFIG_DEVICE_TREE
-References: <20070326205145.GA2868@ld0162-tx32.am.freescale.net>	<20070326205226.GB2931@ld0162-tx32.am.freescale.net>
-	<17949.47307.827348.233684@cargo.ozlabs.ibm.com>
-	<461E51EA.90600@freescale.com>
-	<5925EF50-5323-4CF3-A145-251068AD9AA0@kernel.crashing.org>
-In-Reply-To: <5925EF50-5323-4CF3-A145-251068AD9AA0@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 31C08DDF5B
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 02:18:12 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3CGIqnx011925
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 12:18:52 -0400
+Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3CGI9vO164248
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 12:18:09 -0400
+Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
+	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3CGHxHD029437
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 12:17:59 -0400
+Subject: Re: [PATCH] hvc_console typo corrections
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+In-Reply-To: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
+References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
+Content-Type: text/plain
+Date: Thu, 12 Apr 2007 11:17:50 -0500
+Message-Id: <1176394671.28514.35.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,26 +34,95 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> On Apr 12, 2007, at 10:36 AM, Scott Wood wrote:
-> 
->> Paul Mackerras wrote:
->>
->>> Hmmm, I'm not sure that I want to be asked about  CONFIG_DEVICE_TREE on
->>> *all* powerpc platforms...  Surely this option should depend on
->>> something that says we're including support for a uBoot-able  platform?
->>
->>
->> That's how I originally had it, but I was asked to make it more  general.
->>   One non-uboot usage is Mark Greer's "Add Makefile rule to wrap dts
->> file in zImage" patch.
->>
->> What about a CONFIG_WANT_DEVICE_TREE that platforms can select if they
->> want to ask the user for a device tree?
-> 
-> Wouldn't we want this for all systems that don't have true OF?
 
-Not if there's a non-OF firmware that doesn't need to go through the 
-bootwrapper (such as modern u-boot).
+Fix some typos in hvc_console code.   Comments only, no code changes.
 
--Scott
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+
+---
+
+ drivers/char/hvc_console.c |   18 +++++++++---------
+ 1 files changed, 9 insertions(+), 9 deletions(-)
+
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index 8ac8066..b6403db 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -102,12 +102,12 @@ static DEFINE_SPINLOCK(hvc_structs_lock)
+ /*
+  * This value is used to assign a tty->index value to a hvc_struct based
+  * upon order of exposure via hvc_probe(), when we can not match it to
+- * a console canidate registered with hvc_instantiate().
++ * a console candidate registered with hvc_instantiate().
+  */
+ static int last_hvc = -1;
+ 
+ /*
+- * Do not call this function with either the hvc_strucst_lock or the hvc_struct
++ * Do not call this function with either the hvc_structs_lock or the hvc_struct
+  * lock held.  If successful, this function increments the kobject reference
+  * count against the target hvc_struct so it should be released when finished.
+  */
+@@ -160,7 +160,7 @@ void hvc_console_print(struct console *c
+ 	if (index >= MAX_NR_HVC_CONSOLES)
+ 		return;
+ 
+-	/* This console adapter was removed so it is not useable. */
++	/* This console adapter was removed so it is not usable. */
+ 	if (vtermnos[index] < 0)
+ 		return;
+ 
+@@ -218,7 +218,7 @@ struct console hvc_con_driver = {
+ };
+ 
+ /*
+- * Early console initialization.  Preceeds driver initialization.
++ * Early console initialization.  Precedes driver initialization.
+  *
+  * (1) we are first, and the user specified another driver
+  * -- index will remain -1
+@@ -255,7 +255,7 @@ int hvc_instantiate(uint32_t vtermno, in
+ 	if (vtermnos[index] != -1)
+ 		return -1;
+ 
+-	/* make sure no no tty has been registerd in this index */
++	/* make sure no no tty has been registered in this index */
+ 	hp = hvc_get_by_index(index);
+ 	if (hp) {
+ 		kobject_put(&hp->kobj);
+@@ -265,7 +265,7 @@ int hvc_instantiate(uint32_t vtermno, in
+ 	vtermnos[index] = vtermno;
+ 	cons_ops[index] = ops;
+ 
+-	/* reserve all indices upto and including this index */
++	/* reserve all indices up to and including this index */
+ 	if (last_hvc < index)
+ 		last_hvc = index;
+ 
+@@ -526,7 +526,7 @@ static int hvc_write(struct tty_struct *
+ 
+ /*
+  * This is actually a contract between the driver and the tty layer outlining
+- * how much write room the driver can guarentee will be sent OR BUFFERED.  This
++ * how much write room the driver can guarantee will be sent OR BUFFERED.  This
+  * driver MUST honor the return value.
+  */
+ static int hvc_write_room(struct tty_struct *tty)
+@@ -813,7 +813,7 @@ int __devexit hvc_remove(struct hvc_stru
+ 
+ 	/*
+ 	 * We 'put' the instance that was grabbed when the kobject instance
+-	 * was intialized using kobject_init().  Let the last holder of this
++	 * was initialized using kobject_init().  Let the last holder of this
+ 	 * kobject cause it to be removed, which will probably be the tty_hangup
+ 	 * below.
+ 	 */
+@@ -869,7 +869,7 @@ int __init hvc_init(void)
+ }
+ module_init(hvc_init);
+ 
+-/* This isn't particularily necessary due to this being a console driver
++/* This isn't particularly necessary due to this being a console driver
+  * but it is nice to be thorough.
+  */
+ static void __exit hvc_exit(void)
