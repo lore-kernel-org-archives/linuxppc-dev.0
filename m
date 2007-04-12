@@ -1,28 +1,24 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e4.ny.us.ibm.com (e4.ny.us.ibm.com [32.97.182.144])
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e4.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id DA0EDDE013
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 02:14:48 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e4.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3CGEjlK031472
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 12:14:45 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3CGEjaB236736
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 12:14:45 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3CGEj6R032081
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 12:14:45 -0400
-Subject: [PATCH] hvc_console polling mode timer backoff
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Content-Type: text/plain
-Date: Thu, 12 Apr 2007 11:14:36 -0500
-Message-Id: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Reply-To: will_schmidt@vnet.ibm.com
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3A8FEDDF52
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 02:17:28 +1000 (EST)
+Message-ID: <461E5B91.5080101@freescale.com>
+Date: Thu, 12 Apr 2007 11:17:21 -0500
+From: Scott Wood <scottwood@freescale.com>
+MIME-Version: 1.0
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/5] bootwrapper: Add CONFIG_DEVICE_TREE
+References: <20070326205145.GA2868@ld0162-tx32.am.freescale.net>	<20070326205226.GB2931@ld0162-tx32.am.freescale.net>
+	<17949.47307.827348.233684@cargo.ozlabs.ibm.com>
+	<461E51EA.90600@freescale.com>
+	<5925EF50-5323-4CF3-A145-251068AD9AA0@kernel.crashing.org>
+In-Reply-To: <5925EF50-5323-4CF3-A145-251068AD9AA0@kernel.crashing.org>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,85 +28,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Kumar Gala wrote:
+> On Apr 12, 2007, at 10:36 AM, Scott Wood wrote:
+> 
+>> Paul Mackerras wrote:
+>>
+>>> Hmmm, I'm not sure that I want to be asked about  CONFIG_DEVICE_TREE on
+>>> *all* powerpc platforms...  Surely this option should depend on
+>>> something that says we're including support for a uBoot-able  platform?
+>>
+>>
+>> That's how I originally had it, but I was asked to make it more  general.
+>>   One non-uboot usage is Mark Greer's "Add Makefile rule to wrap dts
+>> file in zImage" patch.
+>>
+>> What about a CONFIG_WANT_DEVICE_TREE that platforms can select if they
+>> want to ask the user for a device tree?
+> 
+> Wouldn't we want this for all systems that don't have true OF?
 
-Add a backoff mechanism to hvc_console's polling logic.   This change
-drops the timers/second ratio from ~90 to ~1 while the console is idle.
-This is very noticable when watching /proc/timer_stats output.
+Not if there's a non-OF firmware that doesn't need to go through the 
+bootwrapper (such as modern u-boot).
 
-This only affects when the hvc_console is running in poll mode, i.e. power4
-and cell systems.
-
-I've tested on Power4, Michael Ellerman has tested on cell.
-
-Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
-cc: Michael Ellerman <michael@ellerman.id.au>
-
----
-
- drivers/char/hvc_console.c |   31 +++++++++++++++++++++++++------
- 1 files changed, 25 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index a0a88aa..8ac8066 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -47,8 +47,6 @@ #include "hvc_console.h"
- #define HVC_MAJOR	229
- #define HVC_MINOR	0
- 
--#define TIMEOUT		(10)
--
- /*
-  * Wait this long per iteration while trying to push buffered data to the
-  * hypervisor before allowing the tty to complete a close operation.
-@@ -550,6 +548,19 @@ static int hvc_chars_in_buffer(struct tt
- 	return hp->n_outbuf;
- }
- 
-+/*
-+ * timeout will vary between the MIN and MAX values defined here.  By default
-+ * and during console activity we will use a default MIN_TIMEOUT of 10.  When
-+ * the console is idle, we increase the timeout value on each pass through
-+ * msleep until we reach the max.  This may be noticeable as a brief (average
-+ * one second) delay on the console before the console responds to input when
-+ * there has been no input for some time.
-+ */
-+#define MIN_TIMEOUT		(10)
-+#define MAX_TIMEOUT		(2000)
-+static u32 timeout = MIN_TIMEOUT;
-+
-+
- #define HVC_POLL_READ	0x00000001
- #define HVC_POLL_WRITE	0x00000002
- 
-@@ -642,9 +653,14 @@ #endif /* CONFIG_MAGIC_SYSRQ */
-  bail:
- 	spin_unlock_irqrestore(&hp->lock, flags);
- 
--	if (read_total)
-+	if (read_total) {
-+		/* Activity is occurring, so reset the polling backoff value to
-+		   a minimum for performance. */
-+		timeout = MIN_TIMEOUT;
-+
- 		tty_flip_buffer_push(tty);
--	
-+	}
-+
- 	return poll_mask;
- }
- 
-@@ -688,8 +704,11 @@ int khvcd(void *unused)
- 		if (!hvc_kicked) {
- 			if (poll_mask == 0)
- 				schedule();
--			else
--				msleep_interruptible(TIMEOUT);
-+			else {
-+				if (timeout < MAX_TIMEOUT)
-+					timeout++;
-+				msleep_interruptible(timeout);
-+			}
- 		}
- 		__set_current_state(TASK_RUNNING);
- 	} while (!kthread_should_stop());
+-Scott
