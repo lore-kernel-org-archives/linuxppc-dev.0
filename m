@@ -1,14 +1,19 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 05634DDF89
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 06:57:31 +1000 (EST)
-Date: Thu, 12 Apr 2007 13:34:55 -0700
-From: Dave Jiang <djiang@mvista.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org
-Subject: [PATCH] powerpc: fix comment in booke_wdt
-Message-ID: <20070412203455.GA2008@blade.az.mvista.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 87B98DDF66
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 07:41:39 +1000 (EST)
+Date: Thu, 12 Apr 2007 14:41:39 -0700 (PDT)
+Message-Id: <20070412.144139.98882666.davem@davemloft.net>
+To: sfr@canb.auug.org.au
+Subject: Re: [PATCH] [SPARC/64] Make device_node name and type const
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <20070403232406.ab9a3c86.sfr@canb.auug.org.au>
+References: <20070403225222.88e92221.sfr@canb.auug.org.au>
+	<20070403230505.f96ea210.sfr@canb.auug.org.au>
+	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: Text/Plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,27 +23,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The early kernel parameter is wdt and not wdt_enable. according to
-arch/powerpc/kernel/setup_32.c:149.
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+Date: Tue, 3 Apr 2007 23:24:06 +1000
 
-Signed-off-by: Dave Jiang <djiang@mvista.com>
+> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
---
-
- drivers/char/watchdog/booke_wdt.c |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
---
-
-diff --git a/drivers/char/watchdog/booke_wdt.c b/drivers/char/watchdog/booke_wdt.c
-index 4889022..46e04ae 100644
---- a/drivers/char/watchdog/booke_wdt.c
-+++ b/drivers/char/watchdog/booke_wdt.c
-@@ -24,7 +24,7 @@
- #include <asm/uaccess.h>
- #include <asm/system.h>
- 
--/* If the kernel parameter wdt_enable=1, the watchdog will be enabled at boot.
-+/* If the kernel parameter wdt=1, the watchdog will be enabled at boot.
-  * Also, the wdt_period sets the watchdog timer period timeout.
-  * For E500 cpus the wdt_period sets which bit changing from 0->1 will
-  * trigger a watchog timeout. This watchdog timeout will occur 3 times, the
+Applied, thanks Stephen.
