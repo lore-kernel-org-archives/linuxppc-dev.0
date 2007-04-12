@@ -1,21 +1,20 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from duster.selinc.com (duster.selinc.com [12.110.71.38])
-	by ozlabs.org (Postfix) with ESMTP id C61E9DDF92
+Return-Path: <eswierk@arastra.com>
+Received: from zimbra1.mindcentric.com (zimbra.mindcentric.com
+	[216.98.159.230]) by ozlabs.org (Postfix) with ESMTP id A9232DDF14
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 12 Apr 2007 08:56:21 +1000 (EST)
-Received: from edison2.selinc.com (edison2.selinc.com [12.110.71.57])
-	by duster.selinc.com (Spam Firewall) with ESMTP id C90014D8C74
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 11 Apr 2007 15:56:20 -0700 (PDT)
-In-Reply-To: <CF7E46FCFF66AD478BB72724345289EC2795DD@twx-exch01.twacs.local>
+	Thu, 12 Apr 2007 10:59:33 +1000 (EST)
+From: Ed Swierk <eswierk@arastra.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: RE: Still trying to get a stable 2.6.20.4 running on 8349ITX
-	eval	board
+Subject: Re: Still trying to get a stable 2.6.20.4 running on 8349ITX eval
+	board
+Date: Wed, 11 Apr 2007 17:35:59 -0700
+References: <OFA3732C99.56D7C409-ON882572BA.00702C6D-882572BA.00724020@selinc.com>
+In-Reply-To: <OFA3732C99.56D7C409-ON882572BA.00702C6D-882572BA.00724020@selinc.com>
 MIME-Version: 1.0
-Message-ID: <OF209229BB.1AF7E208-ON882572BA.007D48D9-882572BA.007E0163@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Wed, 11 Apr 2007 15:56:18 -0700
-Content-Type: text/plain; charset="US-ASCII"
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704111735.59170.eswierk@arastra.com>
+Cc: Bruce_Leonard@selinc.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,42 +25,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Michael,
+On Wednesday 11 April 2007 13:47:55 Bruce_Leonard@selinc.com wrote:
+> Posted a cry for help a few days ago on this issue ;)> .  Got a couple of
+> answers that didn't get me any farther so I'm on another fishing
+> expedition.  Basic set up is as follows; MPC8349ITX eval board; 2.6.20.4
+> kernel; a ubuntu/dapper FS via NFS.  The problem seems to be a random
+> lock-up in either a DSI exception (0x300), a program exception (0x700) or
+> a DTLB miss on store exception (0x1200).  I'm sure it's not truly random
+> (I'm sure there's probably only a single underlying problem), but it's
+> random in how it manifests.  When trying to mount the root FS via NFS, it
+> always successfully reaches the point where it runs "/sbin/init" in
+> main.c, but which script it fails in varies and it never gets to a login.
 
-linuxppc-embedded-bounces+brucle=selinc.com@ozlabs.org wrote on 04/11/2007 
-01:59:11 PM:
+I spent about 8 hours yesterday tracking down a problem on a similar board 
+(Embedded Planet 8343M) booting Fedora 6 via NFS. Linux was getting a bit 
+farther along than it is for you--I got a shell and could run python--but the 
+CPU kept locking up somewhere near 0x600 or 0x1200, without a peep from the 
+kernel. It usually occurred after a lot of memory allocation activity, so I 
+tried tracing the out-of-memory code in the kernel, but then found I could 
+reproduce the problem with the mtest command in U-Boot.
 
-> 
-> >2) I assume someone (Kumar?) has gotten some combination of 
-> >kernel/FS to 
-> >boot and run on this box.  What combination is that?
-> 
-> I am thinking that these issues are closely coupled to root NFS.  I know
-> this isn't good news, but I think the combo is running the root
-> filesystem on the hard drive or ramdisk.
->    Good luck,
->       Michael
-> 
-For the heck of it, we tried formatting the hard drive, put ubuntu/dapper 
-on a ext3 partition, and used that as the root FS.  Same results.  We 
-booted with init=/bin/sh but when we run debootstrap --second-stage it got 
-just a few seconds into it and locked up in a program exception.
+The problem turned out to be an incorrect DDR SDRAM configuration setting in 
+U-Boot for my board (which has no SPD EEPROM, so it's U-Boot's job to 
+configure the memory controller). I was using CSCONFIG_ROW_BIT_12 rather than 
+CSCONFIG_ROW_BIT_13 in CFG_DDR_CONFIG, which apparently affected the way the 
+CPU accesses and refreshes the DRAM. I was pretty shocked that Linux was able 
+to boot at all with a configuration bug like this.
 
-Thanks for the input though.  I'll keep poking and let you know what I 
-figure out.  I keep hoping some guru out there will go "ahhhh......" 
-'cause I ain't no guru!  :)
+Anyway, it might be worth double-checking the DDR SDRAM code in U-Boot to make 
+sure it's doing the right thing for the parts on your board.
 
-Bruce
-
-
-------------------------------------------------
-
-This e-mail may contain SEL confidential information.  The opinions
-expressed are not necessarily those of SEL.  Any unauthorized disclosure,
-distribution or other use is prohibited.  If you received this e-mail in
-error, please notify the sender, permanently delete it, and destroy any
-printout.
-
-Thank you.
-
-------------------------------------------------
+--Ed
