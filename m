@@ -1,22 +1,26 @@
-Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <20070412202226.GA9388@lixom.net>
-References: <20070410111508.GA2969@localhost.localdomain>
-	<200704121501.34311.arnd@arndb.de>
-	<981B07C8-D35B-4581-8FC7-DCA58430A081@kernel.crashing.org>
-	<200704121926.03723.arnd@arndb.de>
-	<04335E0C-3963-4849-BEC7-DC9DF3E3280F@kernel.crashing.org>
-	<20070412200431.GA9067@lixom.net>
-	<b57c243b6ec8978136c7d29233d0994b@kernel.crashing.org>
-	<20070412202226.GA9388@lixom.net>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5152cb179d32c343cfff81c414dc3bd1@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] selection of CPU optimization
-Date: Thu, 12 Apr 2007 22:22:30 +0200
-To: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, Arnd Bergmann <arnd@arndb.de>,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <willy@parisc-linux.org>
+Received: from mail.parisc-linux.org (palinux.external.hp.com [192.25.206.14])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mail.parisc-linux.org",
+	Issuer "CAcert Class 3 Root" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 552F2DDF7C
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 06:29:35 +1000 (EST)
+Date: Thu, 12 Apr 2007 14:04:38 -0600
+From: Matthew Wilcox <matthew@wil.cx>
+To: Andrew Vasquez <andrew.vasquez@qlogic.com>
+Subject: Re: qla_wxyz pci_set_mwi question
+Message-ID: <20070412200438.GM26692@parisc-linux.org>
+References: <20070411221507.69c97257.randy.dunlap@oracle.com>
+	<20070412172038.GG10124@andrew-vasquezs-computer.local>
+	<20070412185347.GL26692@parisc-linux.org>
+	<20070412193713.GB14510@andrew-vasquezs-computer.local>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070412193713.GB14510@andrew-vasquezs-computer.local>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
+	gregkh <greg@kroah.com>, David Somayajulu <david.somayajulu@qlogic.com>,
+	linuxppc-dev@ozlabs.org, linux-driver@qlogic.com,
+	PCI <linux-pci@atrey.karlin.mff.cuni.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,25 +30,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Except that's not in any public GCC version yet.  Well,
->> two weeks ago it wasn't...
->>
->> Note that specifying an unknown -mcpu/tune= is an error,
->> not a warning or totally ignored.
->
-> Correct, it's not upstream yet. It will be at some point, and in 
-> general
-> people who have access to hardware also have access to a toolchain that
-> has it.
->
-> So, leave it open, or use 970 settings for now to keep Segher happy.
+On Thu, Apr 12, 2007 at 12:37:13PM -0700, Andrew Vasquez wrote:
+> On Thu, 12 Apr 2007, Matthew Wilcox wrote:
+> > Why should it fail?  If there's a platform which can't support a
+> > cacheline size that the qla2xyz card can handle, it should be able to
+> > happily fall back to doing plain writes instead of MWIs.  IMO, it should
+> > just call pci_set_mwi() and ignore the result.
+> 
+> I believe there were some erratas on some ISP2xxx chips where MWI
+> needed to be set for proper operation.  I'll go back, verify and
+> update the patch accordingly.
 
--mcpu=970 would be wrong (although it should work in this
-specific case).  -mcpu=powerpc64 is better.  -mtune=970
-wouldn't make any sense.
-
-It's not about "keeping me happy", it's about doing the
-Right Thing(tm).  Don't fight the toolchain, work with it.
-
-
-Segher
+Hmm.  The thing is that pci_set_mwi() returns success on machines where
+MWI is disabled (currently only PPC64).  Perhaps it needs to fail
+instead.
