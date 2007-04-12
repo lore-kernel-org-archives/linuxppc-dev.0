@@ -1,35 +1,24 @@
-Return-Path: <glppd-linuxppc64-dev@m.gmane.org>
-Received: from ciao.gmane.org (main.gmane.org [80.91.229.2])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E1C6DDF24
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 01:05:06 +1000 (EST)
-Received: from root by ciao.gmane.org with local (Exim 4.43)
-	id 1HbzqE-0004Yu-3L
-	for linuxppc-dev@ozlabs.org; Thu, 12 Apr 2007 16:00:03 +0200
-Received: from 10.8.185.213.dk-amb.res.sta.perspektivbredband.net
-	([213.185.8.10]) by main.gmane.org with esmtp (Gmexim 0.1 (Debian))
-	id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 16:00:02 +0200
-Received: from benny+usenet by
-	10.8.185.213.dk-amb.res.sta.perspektivbredband.net with local
-	(Gmexim 0.1 (Debian)) id 1AlnuQ-0007hv-00
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 16:00:02 +0200
-To: linuxppc-dev@ozlabs.org
-From: Benny Amorsen <benny+usenet@amorsen.dk>
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
+	by ozlabs.org (Postfix) with ESMTP id 074B9DDF5E
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 01:34:49 +1000 (EST)
+To: Benny Amorsen <benny+usenet@amorsen.dk>
 Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-Date: 11 Apr 2007 18:30:39 +0200
-Message-ID: <m3tzvm6fgw.fsf@ursa.amorsen.dk>
 References: <1175644642.10567.31.camel@shinybook.infradead.org>
 	<20070403221002.GA13210@cynthia.pants.nu>
 	<1175648051.10567.61.camel@shinybook.infradead.org>
 	<20070403.181645.68159458.davem@davemloft.net>
 	<20070404022828.5c9b97f3@the-village.bc.nu>
 	<Pine.LNX.4.64.0704032307001.7802@mtl.rackplans.net>
-Mime-Version: 1.0
+	<m3tzvm6fgw.fsf@ursa.amorsen.dk>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Thu, 12 Apr 2007 08:34:40 -0700
+In-Reply-To: <m3tzvm6fgw.fsf@ursa.amorsen.dk> (Benny Amorsen's message of "11
+	Apr 2007 18:30:39 +0200")
+Message-ID: <adabqhtip2n.fsf@cisco.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Sender: news <news@sea.gmane.org>
-Cc: linux-kernel@vger.kernel.org
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -39,17 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>>> "GM" == Gerhard Mack <gmack@innerfire.net> writes:
+ > Indeed, port density is disappointingly poor in modern servers. Do you
+ > know any with more than 14 ports per U? (That's an MBX 1U server with
+ > 8 on-board and a 6-port expansion).
 
-GM> On Wed, 4 Apr 2007, Alan Cox wrote:
->> You don't get machines with 64 ethernet ports on add-in cards.
->> There are good reasons for the naming schemes in use.
+If you really need a ton of ports you could probably build a 1U server
+with 2 * 2-port 10gig NICs, and use VLAN-capable switches with 10gig
+and 1gig ports to fan out each 10gig link from your server to 10 1-gig
+ports.  That would get you 40 ports of 1-gig from each server (plus
+whatever the server has on board).
 
-GM> If they made them I'd build one.
-
-Indeed, port density is disappointingly poor in modern servers. Do you
-know any with more than 14 ports per U? (That's an MBX 1U server with
-8 on-board and a 6-port expansion).
-
-
-/Benny
+ - R.
