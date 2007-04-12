@@ -1,22 +1,25 @@
 Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A8594DDF59
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 18:39:24 +1000 (EST)
-Subject: Re: [RFC 1/3] cryptoapi: AES with AltiVec support
+Subject: Re: [patch 3/3] cell: prevent alignment interrupt on local store
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Sebastian Siewior <bigeasy@linux.vnet.ibm.com>
-In-Reply-To: <461DE3B6.8010503@linux.vnet.ibm.com>
-References: <20070411164910.657151000@linux.vnet.ibm.com> >
-	<20070411165702.256910000@linux.vnet.ibm.com> >
-	<1176330126.8061.110.camel@localhost.localdomain>
-	<461DE3B6.8010503@linux.vnet.ibm.com>
+To: Gabriel Paubert <paubert@iram.es>
+In-Reply-To: <20070412083135.GA3104@iram.es>
+References: <20070410111508.GA2969@localhost.localdomain>
+	<1176240168.8061.51.camel@localhost.localdomain>
+	<20070411025605.GB2197@localhost.localdomain>
+	<1176262253.8061.60.camel@localhost.localdomain>
+	<ffb78cbadfea8d104c8e5d495e9651ca@kernel.crashing.org>
+	<20070412042337.GA21832@aepfle.de>
+	<1176355566.8061.121.camel@localhost.localdomain>
+	<20070412063321.GA23118@aepfle.de>
+	<1176359890.8061.131.camel@localhost.localdomain>
+	<20070412083135.GA3104@iram.es>
 Content-Type: text/plain
-Date: Thu, 12 Apr 2007 18:39:14 +1000
-Message-Id: <1176367154.5764.0.camel@localhost.localdomain>
+Date: Thu, 12 Apr 2007 18:48:11 +1000
+Message-Id: <1176367692.5764.7.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: Olaf Hering <olaf@aepfle.de>, Arnd Bergmann <arnd@arndb.de>,
+	Akinobu Mita <mita@fixstars.com>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,16 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, 2007-04-12 at 10:31 +0200, Gabriel Paubert wrote:
+> On Thu, Apr 12, 2007 at 04:38:10PM +1000, Benjamin Herrenschmidt wrote:
+> > On Thu, 2007-04-12 at 08:33 +0200, Olaf Hering wrote:
+> > > On Thu, Apr 12, Benjamin Herrenschmidt wrote:
+> > > 
+> > > > Gets altivec and stops working on POWER5 ? no deal :-)
+> > > 
+> > > If there is a significant performance gain (not only 9%) and if
+> > > -mcpu=$cell does not generate instructions that wont work on other
+> > > altivec capable cpus and if rpm gets a target ppcaltivec.rpm (or
+> > > similar), as separate binary tree can be done.
+> > 
+> > -mcpu=cell can possibly generate things that won't run on 970 and 74xx.
+> > There are some new altivec instructions among others...
+> 
+> Any pointer to a document describing the differences?
 
+I'm not sure where this is documented. There are a few new ops for
+doing load/save of partial vectors (to help handle edge cases),
+there are some more precise implementation of some fp osp (though
+that should be backward compatible), and maybe a few other things.
 
-> Yes. aes-altivec.o contains the -maltivec flag and is the only module 
-> using AltiVec. aes-alti.o uses enable_kernel_altivec & 
-> disable_kernel_altivec and calls then the AltiVec module.
-> The raid6 code compiles the raid[1,2,4,8].c files with -maltivec flag 
-> and uses the noinline keyword in the function that uses AltiVec.
-> Should I prefer the latter or were you confused with with the - _ in the 
-> filename and you recommend renaming them?
+I think most public cell docs can be found at
 
-Nah, your stuff looks fine, I got confused.
+http://www-306.ibm.com/chips/techlib/techlib.nsf/products/Cell_Broadband_Engine
 
+Though I have no idea where those specifics are described.
+
+Cheers,
 Ben.
