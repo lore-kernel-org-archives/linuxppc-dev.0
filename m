@@ -1,21 +1,21 @@
-Return-Path: <joakim.tjernlund@transmode.se>
-Received: from tmnt04.transmode.se (147.175.241.83.in-addr.dgcsystems.net
-	[83.241.175.147]) by ozlabs.org (Postfix) with ESMTP id E33F5DDED0
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 16:49:15 +1000 (EST)
-Subject: Re: [PATCH 1/4] powerpc: document max-speed and interface-type
-	properties
-From: Joakim Tjernlund <joakim.tjernlund@transmode.se>
-To: Kim Phillips <kim.phillips@freescale.com>
-In-Reply-To: <20070411175607.5ef11341.kim.phillips@freescale.com>
-References: <20070410165639.1b619c34.kim.phillips@freescale.com>
-	<006a01c77c82$bd304b40$6667a8c0@Jocke>
-	<20070411175607.5ef11341.kim.phillips@freescale.com>
-Content-Type: text/plain
-Date: Thu, 12 Apr 2007 08:49:13 +0200
-Message-Id: <1176360553.12080.92.camel@gentoo-jocke.transmode.se>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: joakim.tjernlund@transmode.se
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <20070412042337.GA21832@aepfle.de>
+References: <20070410111508.GA2969@localhost.localdomain>
+	<1176240168.8061.51.camel@localhost.localdomain>
+	<20070411025605.GB2197@localhost.localdomain>
+	<1176262253.8061.60.camel@localhost.localdomain>
+	<ffb78cbadfea8d104c8e5d495e9651ca@kernel.crashing.org>
+	<20070412042337.GA21832@aepfle.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <6ffa9deb122ae953e58a88103fcfc8b9@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [patch 3/3] cell: prevent alignment interrupt on local store
+Date: Thu, 12 Apr 2007 08:50:27 +0200
+To: Olaf Hering <olaf@aepfle.de>
+Cc: Arnd Bergmann <arnd@arndb.de>, Akinobu Mita <mita@fixstars.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +25,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-04-11 at 17:56 -0500, Kim Phillips wrote:
-> On Wed, 11 Apr 2007 23:45:36 +0200
-> "Joakim Tjernlund" <joakim.tjernlund@transmode.se> wrote:
-> 
-> > 
-> > > +   - interface-type : a string naming the controller/PHY 
-> > > interface type,
-> > > +     i.e., one of "mii", "gmii", "sgmii", "tbi", "rmii", 
-> > > "rgmii", or "rtbi".
-> > 
-> > Hmm, what if I have a direct MII to MII connection without a PHY in between?
-> 
-> that would depend on the connection itself (and how you wanted your UCC configured).  It would still be one of the above, since those are what the UCC supports.
-> 
-Right, should be mii then.
+>> This isn't just a kernel issue either; the same holds
+>> for all of userspace.  It seems to me the only way to
+>> get good performance on both Cell and all other platforms
+>> is to have a separate binary distribution for Cell.
+>
+> How much will this impact performance on a 970, 74xx or POWER6 if
+> everything gets compiled with '--mcpu=$cell', compared to what is used
+> today? One gets at least altivec that way.
 
-> > Will this support such a "fixed" connection?
-> 
-> I don't see why not.
-Great.
-> 
-> > How do I express that in OF speak?
-> 
-> omit the PHY node?
-> 
-hmm, don't think so. I need to define a pseudo PHY of sorts but I
-don't know how yet.
+Can't comment on POWER6; but on 74xx or 970 it will
+hurt.  A lot.  Say 20-%30% or so?  [Yes I have no
+benchmark data to back this up].
 
- Jocke
 
-> Kim
-> 
-> 
+Segher
