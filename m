@@ -1,24 +1,22 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id 074B9DDF5E
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 01:34:49 +1000 (EST)
-To: Benny Amorsen <benny+usenet@amorsen.dk>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-References: <1175644642.10567.31.camel@shinybook.infradead.org>
-	<20070403221002.GA13210@cynthia.pants.nu>
-	<1175648051.10567.61.camel@shinybook.infradead.org>
-	<20070403.181645.68159458.davem@davemloft.net>
-	<20070404022828.5c9b97f3@the-village.bc.nu>
-	<Pine.LNX.4.64.0704032307001.7802@mtl.rackplans.net>
-	<m3tzvm6fgw.fsf@ursa.amorsen.dk>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Thu, 12 Apr 2007 08:34:40 -0700
-In-Reply-To: <m3tzvm6fgw.fsf@ursa.amorsen.dk> (Benny Amorsen's message of "11
-	Apr 2007 18:30:39 +0200")
-Message-ID: <adabqhtip2n.fsf@cisco.com>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 52C03DDF6B
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 01:36:17 +1000 (EST)
+Message-ID: <461E51EA.90600@freescale.com>
+Date: Thu, 12 Apr 2007 10:36:10 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 2/5] bootwrapper: Add CONFIG_DEVICE_TREE
+References: <20070326205145.GA2868@ld0162-tx32.am.freescale.net>	<20070326205226.GB2931@ld0162-tx32.am.freescale.net>
+	<17949.47307.827348.233684@cargo.ozlabs.ibm.com>
+In-Reply-To: <17949.47307.827348.233684@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,14 +26,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > Indeed, port density is disappointingly poor in modern servers. Do you
- > know any with more than 14 ports per U? (That's an MBX 1U server with
- > 8 on-board and a 6-port expansion).
+Paul Mackerras wrote:
+> Hmmm, I'm not sure that I want to be asked about CONFIG_DEVICE_TREE on
+> *all* powerpc platforms...  Surely this option should depend on
+> something that says we're including support for a uBoot-able platform?
 
-If you really need a ton of ports you could probably build a 1U server
-with 2 * 2-port 10gig NICs, and use VLAN-capable switches with 10gig
-and 1gig ports to fan out each 10gig link from your server to 10 1-gig
-ports.  That would get you 40 ports of 1-gig from each server (plus
-whatever the server has on board).
+That's how I originally had it, but I was asked to make it more general. 
+  One non-uboot usage is Mark Greer's "Add Makefile rule to wrap dts 
+file in zImage" patch.
 
- - R.
+What about a CONFIG_WANT_DEVICE_TREE that platforms can select if they 
+want to ask the user for a device tree?
+
+-Scott
