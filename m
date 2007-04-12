@@ -1,18 +1,26 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: cbe-oss-dev@ozlabs.org
-Subject: Re: [Cbe-oss-dev] [patch 3/3] cell: prevent alignment interrupt on
-	local store
-Date: Thu, 12 Apr 2007 20:55:04 +0200
-References: <20070410111508.GA2969@localhost.localdomain>
-	<20070412042337.GA21832@aepfle.de>
-	<200704122043.38679.arnd@arndb.de>
-In-Reply-To: <200704122043.38679.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704122055.05048.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E7D50DDF65
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 05:19:28 +1000 (EST)
+In-Reply-To: <3F3BE390-906F-4B14-92DB-BA6BB191D022@kernel.crashing.org>
+References: <20070403230505.f96ea210.sfr@canb.auug.org.au>
+	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>
+	<20070412141905.6f30efd3.sfr@canb.auug.org.au>
+	<20070411.212548.95037188.davem@davemloft.net>
+	<3F3BE390-906F-4B14-92DB-BA6BB191D022@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <988b41318b455a295da4284d24680377@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH,RFC] Split out common parts of prom.h
+Date: Thu, 12 Apr 2007 21:19:13 +0200
+To: Kumar Gala <galak@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Miller <davem@davemloft.net>, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,22 +30,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 12 April 2007, Arnd Bergmann wrote:
-> On Thursday 12 April 2007, Olaf Hering wrote:
-> > How much will this impact performance on a 970, 74xx or POWER6 if
-> > everything gets compiled with '--mcpu=$cell', compared to what is used
-> > today? One gets at least altivec that way.
-> 
-> Building with -mcpu=cell won't work on 970 or g4, because that enables
-> a few extra instructions that were not present in the older cpus.
-> 
-> If you know you want to build with altivec (i.e. not run on power4 or
-> older), then '-m32 -mcpu=7450 -mtune=cell' or '-m64 -mcpu=970 -mtune=cell'
-> would be a reasonable thing to try.
+> Should we drop prom.h all together.
 
-Ok, ignore my comment, as benh pointed out even power5 doesn't have altivec.
-I don't know how many versions of libc you are currently building, but it
-probably makes sense to have at least one that uses altivec, and one for
-in-order (e.g. cell) and out-of-order (e.g. power5) pipelines each.
+That presumably is the final goal.  It'll take a
+while to get there, though, and in the meantime
+prom.h is there for backward compatibility.
 
-	Arnd <><
+> I haven't looked but I would
+> think OLPC would need (or use) some of this as well since its using OF.
+
+The OLPC kernel currently doesn't use OF; it guesses
+a lot instead, just like on any other x86 machine.
+This can change though, but it's not a priority for
+the OLPC project right now (since things "work" anyway).
+
+
+Segher
