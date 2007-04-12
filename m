@@ -1,21 +1,19 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 625D4DDF93
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 05:28:33 +1000 (EST)
-In-Reply-To: <1176402805.6379.84.camel@zod.rchland.ibm.com>
-References: <1176402805.6379.84.camel@zod.rchland.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <3d8deaa26ab67ccd0aeb4b827dc175a8@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH v2] powerpc: Fix PowerPC 750CL and 750GX CPU features
-Date: Thu, 12 Apr 2007 21:28:30 +0200
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <olof@lixom.net>
+Date: Thu, 12 Apr 2007 15:04:31 -0500
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] selection of CPU optimization
+Message-ID: <20070412200431.GA9067@lixom.net>
+References: <20070410111508.GA2969@localhost.localdomain>
+	<200704121501.34311.arnd@arndb.de>
+	<981B07C8-D35B-4581-8FC7-DCA58430A081@kernel.crashing.org>
+	<200704121926.03723.arnd@arndb.de>
+	<04335E0C-3963-4849-BEC7-DC9DF3E3280F@kernel.crashing.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <04335E0C-3963-4849-BEC7-DC9DF3E3280F@kernel.crashing.org>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,17 +23,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> PowerPC 750CL has high BATs.  The patch below adds a CPU_FTRS_750CL 
-> that
-> includes that.  Without it, the original firmware mappings in the high 
-> BATs
-> aren't cleared which continue to override the linux translations.
->
-> It also adds CPU_FTR_COMMON to CPU_FTRS_750GX for completeness.
+On Thu, Apr 12, 2007 at 01:17:25PM -0500, Kumar Gala wrote:
+> On Apr 12, 2007, at 12:26 PM, Arnd Bergmann wrote:
+> >Interestingly, -mcpu=8540 is known to gcc, according to
+> >gcc-4.0.3 -dumpspecs, but is not listed in the documentation.
+> >There is also -me500, while -me200 seems to be known only
+> >to gas but not gcc.
+> >
+> >What would be the right options to pass on e200 and on
+> >pa6t?
+> 
+> I think leaving it blank is the right thing for e200.
+> 
+> Olof should know what pa6t needs or what makes sense for it.
 
-Looks good to me, thanks Josh.  It would be nice to define
-the 750XX features as plain 750 + a few options, but that's
-a separate cleanup.
+Thanks for the heads up, I didn't notice the email go by on the list.
+
+-m{cpu,tune}=pa6t should do it.
 
 
-Segher
+-Olof
