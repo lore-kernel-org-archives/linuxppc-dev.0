@@ -1,19 +1,22 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 2F6B0DDF41
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 16:25:51 +1000 (EST)
-Date: Wed, 11 Apr 2007 23:25:45 -0700 (PDT)
-Message-Id: <20070411.232545.45203999.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH] Start split out of common open firmware code
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1176357020.8061.123.camel@localhost.localdomain>
-References: <20070412141905.6f30efd3.sfr@canb.auug.org.au>
-	<20070412153424.bf3957f4.sfr@canb.auug.org.au>
-	<1176357020.8061.123.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Date: Thu, 12 Apr 2007 08:33:21 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [patch 3/3] cell: prevent alignment interrupt on local store
+Message-ID: <20070412063321.GA23118@aepfle.de>
+References: <20070410111508.GA2969@localhost.localdomain>
+	<1176240168.8061.51.camel@localhost.localdomain>
+	<20070411025605.GB2197@localhost.localdomain>
+	<1176262253.8061.60.camel@localhost.localdomain>
+	<ffb78cbadfea8d104c8e5d495e9651ca@kernel.crashing.org>
+	<20070412042337.GA21832@aepfle.de>
+	<1176355566.8061.121.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <1176355566.8061.121.camel@localhost.localdomain>
+Cc: Arnd Bergmann <arnd@arndb.de>, Akinobu Mita <mita@fixstars.com>,
+	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,18 +26,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 12 Apr 2007 15:50:20 +1000
+On Thu, Apr 12, Benjamin Herrenschmidt wrote:
 
-> On Thu, 2007-04-12 at 15:34 +1000, Stephen Rothwell wrote:
-> > This creates kernel/openfw.c (depending on CONFIG_OPENFW) and puts the
-> > first trivially common bits from the prom.c files into it.
-> 
-> Is this the right place ?
-> 
-> I want to split flat DT from live DT in separate files, then we have
-> of_device.c and of_platform.c that will need merging too, and possibly
-> the filesystem... that's a lot to put in kernel/
+> Gets altivec and stops working on POWER5 ? no deal :-)
 
-We could make drivers/openfw/{device,platform}.c, maybe that would
-work best?
+If there is a significant performance gain (not only 9%) and if
+-mcpu=$cell does not generate instructions that wont work on other
+altivec capable cpus and if rpm gets a target ppcaltivec.rpm (or
+similar), as separate binary tree can be done.
