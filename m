@@ -1,17 +1,21 @@
-Return-Path: <Bruce_Leonard@selinc.com>
-Received: from duster.selinc.com (duster.selinc.com [12.110.71.38])
-	by ozlabs.org (Postfix) with ESMTP id E75BCDDECB
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6E8FCDDF79
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Apr 2007 07:58:22 +1000 (EST)
-In-Reply-To: <CF7E46FCFF66AD478BB72724345289EC2795E6@twx-exch01.twacs.local>
-To: "Benedict, Michael" <MBenedict@twacs.com>
-Subject: RE: Still trying to get a stable 2.6.20.4 running on 8349ITX evalboard
+	Fri, 13 Apr 2007 09:23:03 +1000 (EST)
 MIME-Version: 1.0
-Message-ID: <OF2330A747.4AF0C4FD-ON882572BB.0077B95A-882572BB.0078B180@selinc.com>
-From: Bruce_Leonard@selinc.com
-Date: Thu, 12 Apr 2007 14:58:17 -0700
-Content-Type: text/plain; charset="US-ASCII"
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: DMA Puzzle
+Date: Thu, 12 Apr 2007 16:23:00 -0700
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1D2@MERCURY.inside.istor.com>
+In-Reply-To: <OF2330A747.4AF0C4FD-ON882572BB.0077B95A-882572BB.0078B180@selinc.com>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: <linuxppc-embedded@ozlabs.org>
+Cc: Randy Brown <rbrown@istor.com>, Vahid Fereydounkolahi <vahidf@istor.com>,
+	Chris Carlson <ccarlson@istor.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,60 +26,57 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+My apologies for the complexity of this e-mail but DMA seems to be a
+complex subject. Thanks to Ed.S a while back, I have DMA working fine
+from U-Boot, but I am having a problem in Linux with the 8541 processor
+using the 2.6.17.11 kernel. I need to DMA through an outbound address
+translation window setup at 0x8800_0000 and the chip I am DMA'ing to is
+responding to 64bit DAC (Dual Address Cycles) and its memory is setup
+beginning at 0x1_0000_0000.
 
-"Benedict, Michael" <MBenedict@twacs.com> wrote on 04/12/2007 12:27:35 PM:
+It seems, that the MR0/SR0 indicate the DMA has stalled and I have not
+figured out why yet. Here is the progression in the DMA driver in Linux
 
-> >Your problem looks very much like odd DDR or memctl 
-> >misconfiguration early in u-boot.
-> >Please try upgrading your firmware with the latest u-boot from 
-> >git tree at denx.de. Kernel from Paul Mackerras (powerpc.git) 
-> >is also a good thing to give a try.
-> 
-> This is definetly something related to u-boot.  I was using a new Denx
-> git u-boot for flat device tree support.  If I boot a kernel with
-> hardcoded ethernet-phy registers on the shipping u-boot the system is
-> much more stable.  Now I am trying to track down the differences between
-> the u-boot the freescale shipped on the device verse the newest git
-> sources.  Hopefully some initialization is missing that will be very
-> obvious.
->    Cheers,
->       Michael
-> 
+First obtain a pointer to my RAM buffer using pci_map_single. This
+returns the buffer in kernel space at 0xC768_0000 (or thereabouts) to
+0x07680000 and prepare to transfer 0x10000 (64K bytes) from 0x0_c7680000
+to 0x1_0000_0000.
 
-SUCCESS!!!  (Or at least a HUGE step forward.)  Once I got to thinking 
-about memory timing I remembered that the 8349itx u-boot port allows the 
-choice of using SPD for detecting the DDR RAM or using hard coded defaults 
-in the memory controller.  I figured what the heck, I'll give the hard 
-coded values a try even though they were probably wrong for the particular 
-part I've got installed.  And the bloody thing ran!  I had it executing a 
-forever loop for 35 minutes, which is about 34 and a half minutes longer 
-than it's ever run before!
+This is the first of several printk's in the DMA driver where the POTAR2
+is being used to hold the hi part of the 64bit address.
 
-It still augured in on me, but the processor was so locked up/confused 
-that I couldn't even get the BDI to reset it, I had to cycle power.  I'm 
-inclined to think it was probably an ESD event, since I've got the cover 
-off the box.
+a src_low_addr:07680000 winBase:00000000 POTAR2:00100000
+newLowAddr:07680000 dir:1 size:00010000  =20
 
-Thanks to everyone who offered suggestions, especially Ed and Vitaly for 
-suggesting looking at the RAM.  I was in no way, shape, or form thinking 
-along those lines.  Now I've got something I can actually dig on.  I'll 
-post a followup here and on the u-boot mailing list if I find anything 
-wrong in "public" code.
+Next we write all f's to SR0 to clear it and here is the next printk.
 
-Thanks again.
+z MR0:00000000 SR0:00000000 begin
 
-Bruce
+Now we write the low part of the source address to LSAR0.=20
+A constant value of 0x50000 to DATR0.
+The size in bytes to the BCR (Byte Count Register) is next
 
+Then set the MR0 to 0x0f03c404 indicating a)disable bandwidth sharing,
+DAHTS & SAHTS both 8 bytes, SRW set & CDSM/SWSM cleared to indicate
+start the DMA by writing the destination.
 
-------------------------------------------------
+Lastly, we write the destination to the DAR0 register.
 
-This e-mail may contain SEL confidential information.  The opinions
-expressed are not necessarily those of SEL.  Any unauthorized disclosure,
-distribution or other use is prohibited.  If you received this e-mail in
-error, please notify the sender, permanently delete it, and destroy any
-printout.
+At this point, the next printk has a problem. The MR0 register has its
+CS bit set and the SR0 register has its CB bit set. This indicates to me
+that the channel is busy, it stalled and cannot continue.
 
-Thank you.
+ c MR0:0F03C405 SR0:00000004 SATR:00050000 DATR:00050000 dst_low_addr:0
 
-------------------------------------------------
+Just for reference, here are two final printk's with some of the other
+pertinent registers.
+
+ d POTAR2:00100000 LSAR0:07690000 DAR0:88010000 BCR:0 DGSR:00000000
+ e POTEAR2:00000000 POWBAR2:00088000 POWAR 0:80044019 1:8004401A
+2:8004401B
+
+So, the question becomes, "What is going awry here and where should I be
+looking in order to understand how to close the DMA loop back to
+Linux?".
+
+Charles Krinke
