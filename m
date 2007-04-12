@@ -1,23 +1,20 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 765C2DDE21
-	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 08:56:14 +1000 (EST)
-Date: Wed, 11 Apr 2007 17:56:07 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: "Joakim Tjernlund" <joakim.tjernlund@transmode.se>
-Subject: Re: [PATCH 1/4] powerpc: document max-speed and interface-type
-	properties
-Message-Id: <20070411175607.5ef11341.kim.phillips@freescale.com>
-In-Reply-To: <006a01c77c82$bd304b40$6667a8c0@Jocke>
-References: <20070410165639.1b619c34.kim.phillips@freescale.com>
-	<006a01c77c82$bd304b40$6667a8c0@Jocke>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 68D90DDF19
+	for <linuxppc-dev@ozlabs.org>; Thu, 12 Apr 2007 11:35:35 +1000 (EST)
+Subject: Re: [RFC/PATCH] powerpc: tlb flush batch use lazy MMU mode
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1176188977.8061.48.camel@localhost.localdomain>
+References: <1176188977.8061.48.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Thu, 12 Apr 2007 11:35:26 +1000
+Message-Id: <1176341727.8061.112.camel@localhost.localdomain>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Anton Blanchard <anton@samba.org>, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +24,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 11 Apr 2007 23:45:36 +0200
-"Joakim Tjernlund" <joakim.tjernlund@transmode.se> wrote:
-
+On Tue, 2007-04-10 at 17:09 +1000, Benjamin Herrenschmidt wrote:
+> The current tlb flush code on powerpc 64 bits has a subtle race since we
+> lost the page table lock due to the possible faulting in of new PTEs
+> after a previous one has been removed but before the corresponding hash
+> entry has been evicted, which can leads to all sort of fatal problems.
 > 
-> > +   - interface-type : a string naming the controller/PHY 
-> > interface type,
-> > +     i.e., one of "mii", "gmii", "sgmii", "tbi", "rmii", 
-> > "rgmii", or "rtbi".
-> 
-> Hmm, what if I have a direct MII to MII connection without a PHY in between?
+> This patch reworks the batch code completely. It doesn't use the mmu_gather
+> stuff anymore. Instead, we use the lazy mmu hooks that were added by the
+> paravirt code. They have the nice property that the enter/leave lazy mmu
+> mode pair is always fully contained by the PTE lock for a given range
+> of PTEs. Thus we can guarantee that all batches are flushed on a given
+> CPU before it drops that lock.
 
-that would depend on the connection itself (and how you wanted your UCC configured).  It would still be one of the above, since those are what the UCC supports.
+ .../...
 
-> Will this support such a "fixed" connection?
+Ran for a little while on a P5 partition with a few sdet runs and it
+seems to be fine. You can apply :-)
 
-I don't see why not.
+Despite the bug being present in 2.6.21 (and earlier), I still think
+however that this is .22 material, at least for now.
 
-> How do I express that in OF speak?
-
-omit the PHY node?
-
-Kim
+Ben.
