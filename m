@@ -1,19 +1,38 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 4898EDDF6D
+Return-Path: <MBenedict@twacs.com>
+Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
+	[207.46.51.80])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 001D3DDFEC
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Apr 2007 01:37:02 +1000 (EST)
-Date: Thu, 12 Apr 2007 19:36:58 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Bruce_Leonard@selinc.com
-Subject: Re: Still trying to get a stable 2.6.20.4 running on 8349ITX eval
-	board
-Message-ID: <20070412193658.06a958be@vitb.ru.mvista.com>
-In-Reply-To: <OFA3732C99.56D7C409-ON882572BA.00702C6D-882572BA.00724020@selinc.com>
+	Fri, 13 Apr 2007 02:07:21 +1000 (EST)
+Received: from outbound2-sin.bigfish.com (localhost.localdomain [127.0.0.1])
+	by outbound2-sin-R.bigfish.com (Postfix) with ESMTP id 788B913F90F0
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 12 Apr 2007 16:07:17 +0000 (UTC)
+Received: from mail26-sin-R.bigfish.com (unknown [10.3.252.3])
+	by outbound2-sin.bigfish.com (Postfix) with ESMTP id 67BBA52805E
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 12 Apr 2007 16:07:17 +0000 (UTC)
+Received: from mail26-sin (localhost.localdomain [127.0.0.1])
+	by mail26-sin-R.bigfish.com (Postfix) with ESMTP id 19AE3E70189
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 12 Apr 2007 16:07:17 +0000 (UTC)
+Received: from mail.twacs.com (unknown [68.89.149.4])
+	by mail26-sin.bigfish.com (Postfix) with ESMTP id 3F4BED0007B
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 12 Apr 2007 16:07:14 +0000 (UTC)
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Still trying to get a stable 2.6.20.4 running on 8349ITX evalboard
+Date: Thu, 12 Apr 2007 11:06:55 -0500
+Message-ID: <CF7E46FCFF66AD478BB72724345289EC2795E3@twx-exch01.twacs.local>
+In-Reply-To: <20070412193658.06a958be@vitb.ru.mvista.com>
 References: <OFA3732C99.56D7C409-ON882572BA.00702C6D-882572BA.00724020@selinc.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+	<20070412193658.06a958be@vitb.ru.mvista.com>
+From: "Benedict, Michael" <MBenedict@twacs.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,52 +43,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Wed, 11 Apr 2007 13:47:55 -0700
-Bruce_Leonard@selinc.com wrote:
+>
+>Your problem looks very much like odd DDR or memctl=20
+>misconfiguration early in u-boot.
+>Please try upgrading your firmware with the latest u-boot from=20
+>git tree at denx.de. Kernel from Paul Mackerras (powerpc.git)=20
+>is also a good thing to give a try.
+>
+I can verify this bug exists with the latest Denx git u-boot.  Thank
+you, I will try Paul Mackerras kernel.
 
-> Hi,
-> 
-> Posted a cry for help a few days ago on this issue ;)> .  Got a couple of 
-> answers that didn't get me any farther so I'm on another fishing 
-> expedition.  Basic set up is as follows; MPC8349ITX eval board; 2.6.20.4 
-> kernel; a ubuntu/dapper FS via NFS.  The problem seems to be a random 
-> lock-up in either a DSI exception (0x300), a program exception (0x700) or 
-> a DTLB miss on store exception (0x1200).  I'm sure it's not truly random 
-> (I'm sure there's probably only a single underlying problem), but it's 
-> random in how it manifests.  When trying to mount the root FS via NFS, it 
-> always successfully reaches the point where it runs "/sbin/init" in 
-> main.c, but which script it fails in varies and it never gets to a login.
-> 
-> I've tried passing "init=/bin/sh" on the command line and I can reach a sh 
-> prompt, but it doesn't take long before it locks up.  I can do a "find . 
-> -name '*gcc*'" about four times before it stops.  I have a BDI2K hooked up 
-> so I know where it's stopping (most commonly in the DTLB miss mentioned 
-> above), but backtrace from GDB gets me nothing, and SRR0 and SRR1 don't 
-> contain any useful information (frequently they're both zero).  I expect 
-> it may be an interaction with the BDI, tho I'm not sure.
-> 
-> I've also tried a couple of other file systems (one right off the CD that 
-> ships with the eval board and the latest from ELDK) as well as pulling 
-> Kumar's powerpc kernel tree.  All possible combinations of these kernels 
-> and file systems fail to run for any period of time.
-> 
-> Long winded way to get around to my questions (sorry :(  ):
-> 1) Can any one point me to good references in using the BDI2K to find my 
-> way back from exceptions?
-> 2) I assume someone (Kumar?) has gotten some combination of kernel/FS to 
-> boot and run on this box.  What combination is that?
-> 
-> 
+>Also, there is Vitesse switch on this target, which should be=20
+>initialized(Normally with vendor-shipped image you'll figure=20
+>out how by print thirdp_init. Starting kernel without that may=20
+>result in some instability too.
+>
 
-It worked for me with both MontaVista and ELDK rfs for 6xx.
+I have to admit, this is over my head.  What do you mean by "print
+thirdp_init"? =20
 
-Your problem looks very much like odd DDR or memctl misconfiguration early in u-boot.
-Please try upgrading your firmware with the latest u-boot from git tree at denx.de. Kernel from Paul Mackerras (powerpc.git) is also a good thing to give a try.
-
-Also, there is Vitesse switch on this target, which should be initialized(Normally with vendor-shipped image you'll figure out how by print thirdp_init. Starting kernel without that may result in some instability too.
-
-Hope it helps.
-
--- 
-Sincerely, 
-Vitaly
+Thank you Vitaly!
+	-Michael
