@@ -1,16 +1,21 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [ANNOUNCE] petitboot v0.0.1
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Hiroaki Fuse <Hiroaki_Fuse@hq.scei.sony.co.jp>
-In-Reply-To: <OFA72EABF2.7008AEF7-ON492572BC.00220AA6-492572BC.00226043@hq.scei.sony.co.jp>
-References: <OFA72EABF2.7008AEF7-ON492572BC.00220AA6-492572BC.00226043@hq.scei.sony.co.jp>
-Content-Type: text/plain
-Date: Fri, 13 Apr 2007 18:54:38 +1000
-Message-Id: <1176454479.5764.72.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org,
-	cbe-oss-dev-bounces+hiroaki_fuse=hq.scei.sony.co.jp@ozlabs.org,
-	cbe-oss-dev@ozlabs.org
+Return-Path: <matt@genesi-usa.com>
+Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
+	[66.98.186.96])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id CD838DDE43
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 19:50:32 +1000 (EST)
+Message-ID: <461F5275.4060607@genesi-usa.com>
+Date: Fri, 13 Apr 2007 10:50:45 +0100
+From: Matt Sealey <matt@genesi-usa.com>
+MIME-Version: 1.0
+To: Olaf Hering <olaf@aepfle.de>
+Subject: Re: [PATCH] autodetect serial console on efika
+References: <20070331150823.GA25421@aepfle.de>
+	<20070412155929.GA28123@aepfle.de>
+In-Reply-To: <20070412155929.GA28123@aepfle.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Cc: linuxppc-dev@ozlabs.org, Paul Mackeras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,39 +25,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-04-13 at 15:20 +0900, Hiroaki Fuse wrote:
-> 
-> Jeremy-san, 
-> 
-> I tried to use petitboot v0.0.1 and found a problem. 
-> 
-> I use a following kboot.conf. 
-> 
-> --- 
-> default=linux 
-> timeout=10 
-> root=LABEL=/ 
-> linux='/boot/vmlinux-2.6.16 initrd=/boot/initrd.img-2.6.16 ' 
-> linux21='/boot/vmlinux-2.6.21 initrd=/boot/initrd.img-2.6.21 ' 
-> --- 
-> 
-> I saw three entries(root, linux and linux21) and I can not boot any
-> kernel. 
-> 
-> So I changed my kboot.conf as follows. 
-> 
-> --- 
-> default=linux 
-> timeout=10 
-> linux='/boot/vmlinux-2.6.16 root=LABEL=/
-> initrd=/boot/initrd.img-2.6.16 ' 
-> linux21='/boot/vmlinux-2.6.21 root=LABEL=/
-> initrd=/boot/initrd.img-2.6.21 ' 
-> --- 
-> 
-> And I can boot both kernel. 
+That too :D
 
-Ok, looks like the kboot parser isn't quite dealing with the root=
-stance outside of a kernel spec. We'll fix asap
+-- 
+Matt Sealey <matt@genesi-usa.com>
+Genesi, Manager, Developer Relations
 
-Ben.
+Olaf Hering wrote:
+> On Sat, Mar 31, Olaf Hering wrote:
+> 
+>> Efika boards have to be booted with console=ttyPSC0 unless there is a
+>> graphics card plugged in. Detect if the firmware stdout is the serial
+>> connector.
+> 
+> Paul, please discard this patch. The optional graphics card may have
+> also device_type 'serial' if it is in VGA mode.
+> I will send an updated patch later.
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
