@@ -1,17 +1,10 @@
-Return-Path: <olof@lixom.net>
-Date: Thu, 12 Apr 2007 21:03:09 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] selection of CPU optimization
-Message-ID: <20070413020309.GB11134@lixom.net>
-References: <20070410111508.GA2969@localhost.localdomain>
-	<200704121926.03723.arnd@arndb.de>
-	<e5b10849669a764f002d1926838edc76@kernel.crashing.org>
-	<200704130210.48508.arnd@arndb.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200704130210.48508.arnd@arndb.de>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <jk@ozlabs.org>
+To: <cbe-oss-dev@ozlabs.org>,
+	<linuxppc-dev@ozlabs.org>
+From: Jeremy Kerr <jk@ozlabs.org>
+Date: Fri, 13 Apr 2007 11:48:59 +1000
+Subject: [PATCH 2/4] spufs: Minor cleanup of spu_wait
+Message-Id: <1176428939.306624.199053139724.qpush@pokey>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +14,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 13, 2007 at 02:10:47AM +0200, Arnd Bergmann wrote:
-> On Thursday 12 April 2007, Segher Boessenkool wrote:
-> > > What would be the right options to pass on e200 and on
-> > > pa6t?
-> > 
-> > The best thing would be to add GCC -mcpu= options. ?For
-> > now, you're probably best of with -mcpu=powerpc and
-> > -mcpu=powerpc64 resp., i.e. the "blended models". ?This
-> > is a good option for multiplatform kernels too; add -mtune=
-> > to optimise for a specific core, but it will *work* on
-> > the whole family.
-> 
-> 970 -> -mcpu=970 >> -mcpu=power4
-> cell -> -mcpu=cell >> -mcpu=970
-> power5 -> -mcpu=power5 >> -mcpu=power4
-> power5+ -> -mcpu=power5+ >> -mcpu=power5
-> power6 -> -mcpu=power6 >> -mcpu=power5+
-> power6x -> -mcpu=power6x >> -mcpu=power6
-> pa6t -> -mcpu=pa6t >> (???)
-> 
-> So if we select e.g. power6 and cell, it needs to fall back to power4,
-> which is the common subset. Selecting both 403 and 405 would result
-> in falling back to -mcpu=powerpc, because they don't have any larger
-> subset.
-> 
-> I'm not sure what the right fallback fo pa6t should be. I would guess
-> that it's a superset of power6x and 970 when considering the kernel,
-> but it's not entirely clear what the fallback should be.
+Change the loop in spu_wait to be a little more straightforward.
 
-On the kernel side, power6 should be closest. We likely lack some of the
-optional features they implemented, but none are used in the kernel.
+Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
-If we find problems down the road, we'll revise.
+ arch/powerpc/platforms/cell/spufs/spufs.h |   13 ++++++-------
+ 1 file changed, 6 insertions(+), 7 deletions(-)
 
-
--Olof
+Index: linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/spufs.h
+===================================================================
+--- linux-2.6-spufs.orig/arch/powerpc/platforms/cell/spufs/spufs.h
++++ linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/spufs.h
+@@ -218,14 +218,13 @@ extern char *isolated_loader;
+ 		prepare_to_wait(&(wq), &__wait, TASK_INTERRUPTIBLE);	\
+ 		if (condition)						\
+ 			break;						\
+-		if (!signal_pending(current)) {				\
+-			spu_release(ctx);				\
+-			schedule();					\
+-			spu_acquire(ctx);				\
+-			continue;					\
++		if (signal_pending(current)) {				\
++			__ret = -ERESTARTSYS;				\
++			break;						\
+ 		}							\
+-		__ret = -ERESTARTSYS;					\
+-		break;							\
++		spu_release(ctx);					\
++		schedule();						\
++		spu_acquire(ctx);					\
+ 	}								\
+ 	finish_wait(&(wq), &__wait);					\
+ 	__ret;								\
