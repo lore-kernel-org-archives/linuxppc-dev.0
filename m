@@ -1,17 +1,23 @@
 Return-Path: <segher@kernel.crashing.org>
-In-Reply-To: <200704130210.48508.arnd@arndb.de>
-References: <20070410111508.GA2969@localhost.localdomain>
-	<200704121926.03723.arnd@arndb.de>
-	<e5b10849669a764f002d1926838edc76@kernel.crashing.org>
-	<200704130210.48508.arnd@arndb.de>
+Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
+	[151.189.21.48])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A635DDE9F
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 04:45:25 +1000 (EST)
+In-Reply-To: <1176431001.5764.51.camel@localhost.localdomain>
+References: <91308d2b933e4fe8a9618aef8748b878@bga.com>
+	<1176431001.5764.51.camel@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <00df01c80b8b5153a04a7cbe0bc727f2@kernel.crashing.org>
+Message-Id: <a6845fee0c7e5d306f93d0ed71d46b5a@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] selection of CPU optimization
-Date: Fri, 13 Apr 2007 20:43:02 +0200
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Subject: Re: Re:
+Date: Fri, 13 Apr 2007 20:45:17 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Olaf Hering <olaf@aepfle.de>,
+	Alan Cox <alan@lxorguk.ukuu.org.uk>, Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +27,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> My understanding at this point is that we can always fall back
-> to -mcpu=powerpc or -mcpu=powerpc64,
+>> +               if (cb & 0x5) { /* if controller is configured for
+>> pci-native mode for both channels */
+>>
+>> The above expression allows 1, 4, or 5 for the masked bits.  I'm
+>> guessing you
+>> wanted to test that equal to either 5 or 0.
+>
+> I think the proper test is ((cb & 5) == 5) but I can't remember for
+> sure..
 
-Yes.  With perhaps and added -mno-string or similar if
-some supported CPU really needs it.
-
-
->  and also
-
-[SNIP]
-
-> So if we select e.g. power6 and cell, it needs to fall back to power4,
-> which is the common subset. Selecting both 403 and 405 would result
-> in falling back to -mcpu=powerpc, because they don't have any larger
-> subset.
-
-This is way complicated.  Also, it is not unique to the
-kernel; you'd be better off adding this logic to the
-compiler itself.  OTOH, it's such a niche market, maybe
-the distros that want it (if any do) should do this in
-their RPM build scripts or similar.
+That is correct if you know for sure the controller
+actually supports native mode, and doesn't have that
+support turned off by some configuration setting;
+otherwise, the test should be ((cb & 0xf) == 0xf).
 
 
 Segher
