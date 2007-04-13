@@ -1,15 +1,14 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 0E8BDDDE42
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 08:23:13 +1000 (EST)
-Date: Fri, 13 Apr 2007 15:25:24 -0700
-From: Dave Jiang <djiang@mvista.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	galak@kernel.crashing.org
-Subject: [PATCH] remove kernel module option for booke wdt
-Message-ID: <20070413222524.GA24158@blade.az.mvista.com>
+Return-Path: <b07421@freescale.com>
+Date: Fri, 13 Apr 2007 17:25:51 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH] powerpc: Add dt_xlate_addr() to bootwrapper
+Message-ID: <20070413222551.GA8258@ld0162-tx32.am.freescale.net>
+References: <20070413202343.GA552@mag.az.mvista.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070413202343.GA552@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,27 +18,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Apr 13, 2007 at 01:23:43PM -0700, Mark A. Greer wrote:
+> +int dt_xlate(void *node, u32 *buf, int buflen, int res, unsigned long *addr,
+> +		unsigned long *size)
+>  {
+> -	u32 last_addr[MAX_ADDR_CELLS];
+> -	u32 this_addr[MAX_ADDR_CELLS];
+> -	u32 buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
+> +	u32 last_addr[DT_MAX_ADDR_CELLS];
+> +	u32 this_addr[DT_MAX_ADDR_CELLS];
+>  	void *parent;
 
-Remove option of making booke_wdt into a kernel module. This watchdog
-cannot be disabled. No point being a kernel module.
+This causes it to use the caller-provided buffer to read the ranges
+property, which may not be large enough in the case of dt_xlate_addr().
+Plus, buf being a pointer rather than an array will cause the sizeof(buf)
+that gets passed to getprop() to be only sizeof(u32 *).
 
-Signed-off-by: Dave Jiang <djiang@mvista.com>
+Instead, I'd declare "rangebuf" as a static array, and accept "regbuf" as
+a parameter (with a comment that regbuf can alias rangebuf).  Then,
+dt_xlate_reg() can use rangebuf as regbuf, dt_xlate_addr()'s caller
+doesn't have to worry about its buffer being big enough to hold ranges,
+and we don't have to allocate two 384-byte buffers on the stack.
 
----
-
- drivers/char/watchdog/Kconfig |    2 +-
- 1 files changed, 1 insertions(+), 1 deletions(-)
-
-diff --git a/drivers/char/watchdog/Kconfig b/drivers/char/watchdog/Kconfig
-index e812aa1..60198a7 100644
---- a/drivers/char/watchdog/Kconfig
-+++ b/drivers/char/watchdog/Kconfig
-@@ -548,7 +548,7 @@ config MV64X60_WDT
- 	depends on WATCHDOG && MV64X60
- 
- config BOOKE_WDT
--	tristate "PowerPC Book-E Watchdog Timer"
-+	bool "PowerPC Book-E Watchdog Timer"
- 	depends on WATCHDOG && (BOOKE || 4xx)
- 	---help---
- 	  Please see Documentation/watchdog/watchdog-api.txt for
+-Scott
