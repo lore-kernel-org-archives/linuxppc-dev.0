@@ -1,18 +1,21 @@
-Return-Path: <horms@koto.vergenet.net>
-Received: from koto.vergenet.net (koto.vergenet.net [210.128.90.7])
-	by ozlabs.org (Postfix) with ESMTP id C2D82DDF1C
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 11:38:35 +1000 (EST)
-Date: Fri, 13 Apr 2007 10:34:20 +0900
-From: Simon Horman <horms@verge.net.au>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH kexec-tools] ppc64: use kernels slave loop for purgatory
-Message-ID: <20070413013418.GB24097@verge.net.au>
-References: <boot-4-00.miltonm@bga.com> <boot-4-kexec-03.miltonm@bga.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 59256DE21C
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 11:38:59 +1000 (EST)
+Date: Thu, 12 Apr 2007 20:56:31 -0500
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] hvc_console polling mode timer backoff
+Message-ID: <20070413015631.GA11134@lixom.net>
+References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
+	<20070412173334.GP4747@austin.ibm.com>
+	<1176403411.28514.55.camel@farscape.rchland.ibm.com>
+	<20070412190902.GA8158@lixom.net>
+	<1176425143.4734.8.camel@concordia.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <boot-4-kexec-03.miltonm@bga.com>
-Cc: Vivek Goyal <vgoyal@in.ibm.com>, fastboot@lists.osdl.org,
-	linuxppc-dev@ozlabs.org
+In-Reply-To: <1176425143.4734.8.camel@concordia.ozlabs.ibm.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,23 +25,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 11, 2007 at 03:30:38AM -0500, Milton Miller wrote:
+On Fri, Apr 13, 2007 at 10:45:43AM +1000, Michael Ellerman wrote:
+> On Thu, 2007-04-12 at 14:09 -0500, Olof Johansson wrote:
+> > I wasn't going to bring it up since I think it's a good approach as is,
+> > but another thing that could be worth considering is to not just go
+> > from whatever value to min on every actual input, instead go down in
+> > delay a bit (say half the delay). Likewise you might be able to back off
+> > more aggressively than just one millisecond per iteration.   Of course,
+> > both of these should take min/max values into consideration.
 > 
-> Purgatory doesn't really care about the SMP cpus.  But if we leave them
-> behind, they end up getting lost when the kernel overwrites purgatory or
-> the previous kernel.  The current slave handling in purgatory doesn't
-> have any handshaking to make sure the cpus have moved on before leaving.
-> 
-> Instead of moving the slave cpus up to purgatory and then back down to
-> the kernel, just copy bytes 4-255 from the kernel and use it as the
-> purgatory start / slave hold block.
-> 
-> 
-> Signed-off-by: Milton Miller <miltonm@bga.com>
+> I experimented with increasing the delay faster (100ms per iteration)
+> and found it effected the feel of the console too much when you're
+> actually typing. Though perhaps increasing by 10%-20% of the current
+> delay every iteration might work OK.
 
-Thanks, applied.
+Ok, no need to do it differently then really. I mostly wondered if
+someone had already experimented.
 
--- 
-Horms
-  H: http://www.vergenet.net/~horms/
-  W: http://www.valinux.co.jp/en/
+
+-Olof
