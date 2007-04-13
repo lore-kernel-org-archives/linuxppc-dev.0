@@ -1,23 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 68FF2DDEBB
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 03:42:53 +1000 (EST)
-In-Reply-To: <20070413123639.6485797b.kim.phillips@freescale.com>
-References: <20070413012542.343eb848.kim.phillips@freescale.com>
-	<B273DC06-E4DF-4FF5-88E8-2E6C634C98DA@kernel.crashing.org>
-	<20070413123639.6485797b.kim.phillips@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C04B1BEB-02F9-441A-9039-CE0E01E1F4B4@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
-	properties
-Date: Fri, 13 Apr 2007 12:42:31 -0500
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id E2DDDDDE3A
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 03:45:45 +1000 (EST)
+Date: Fri, 13 Apr 2007 10:47:13 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	galak@kernel.crashing.org
+Subject: Re: oops, forgot to sign off
+Message-ID: <20070413174713.GA18110@blade.az.mvista.com>
+References: <20070413173524.GA17890@blade.az.mvista.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <20070413173524.GA17890@blade.az.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,28 +21,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Have the booke watchdog dump some useful information when triggered. Hopefully
+that'll give the user some hint of what happened rather than just a mysterious
+reboot.
 
-On Apr 13, 2007, at 12:36 PM, Kim Phillips wrote:
+Signed-off-by: Dave Jiang <djiang@mvista.com>
 
-> On Fri, 13 Apr 2007 12:00:32 -0500
-> Kumar Gala <galak@kernel.crashing.org> wrote:
->
->>
->> On Apr 13, 2007, at 1:25 AM, Kim Phillips wrote:
->>>> ---
->>> moved to recommended section (from required), removed sgmii, added
->>> rgmii-id.
->>
->> any reason to remove sgmii?  What is rgmii-id?
->>
-> UCC doesn't support sgmii.
+--
 
-ahh.
+ arch/powerpc/kernel/traps.c |   35 ++++++++++++++++++++++++++++++++++-
+ 1 files changed, 34 insertions(+), 1 deletions(-)
 
-> rgmii-id == RGMII with Internal Delay, see RGMII spec, or http:// 
-> www.spinics.net/lists/netdev/msg28876.html
-
-can we call this something like rgmii-internal-delay or something a  
-bit more descriptive than -id (which makes one think identifier).
-
-- k
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index f786222..1af83b7 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -1108,9 +1108,42 @@ void unrecoverable_exception(struct pt_regs *regs)
+  */
+ void __attribute__ ((weak)) WatchdogHandler(struct pt_regs *regs)
+ {
++	unsigned long flags;
++
+ 	/* Generic WatchdogHandler, implement your own */
+ 	mtspr(SPRN_TCR, mfspr(SPRN_TCR)&(~TCR_WIE));
+-	return;
++	oops_enter();
++
++	console_verbose();
++	bust_spinlocks(1);
++	local_save_flags(flags);
++
++	printk(KERN_ERR "PowerPC Book-E Watchdog detected LOCKUP\n");
++	printk(KERN_ERR "Watchdog exception at PC=%lx MSR=%lx\n",
++			regs->nip, regs->msr);
++#ifdef CONFIG_PREEMPT
++	printk(KERN_ERR "PREEMPT ");
++#endif
++#ifdef CONFIG_SMP
++	printk(KERN_ERR "SMP NR_CPUS=%d ", NR_CPUS);
++#endif
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	printk(KERN_ERR "DEBUG_PAGEALLOC ");
++#endif
++#ifdef CONFIG_NUMA
++	printk(KERN_ERR "NUMA ");
++#endif
++	printk(KERN_ERR "%s\n", ppc_md.name ? ppc_md.name : "");
++
++	print_modules();
++	show_regs(regs);
++
++	bust_spinlocks(0);
++
++	printk(KERN_ERR "Wating for hardware watchdog reset...\n");
++	/* spin until hardware reset */
++	while(1)
++		cpu_relax();
+ }
+ 
+ void WatchdogException(struct pt_regs *regs)
