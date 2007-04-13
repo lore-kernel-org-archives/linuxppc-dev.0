@@ -1,31 +1,16 @@
-Return-Path: <geert@linux-m68k.org>
-Received: from hoefnix.telenet-ops.be (hoefnix.telenet-ops.be [195.130.132.54])
-	by ozlabs.org (Postfix) with ESMTP id 415C1DDE0D
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 18:09:53 +1000 (EST)
-Received: from assei1bl6.telenet-ops.be (assei1bl6.telenet-ops.be
-	[195.130.133.68])
-	by hoefnix.telenet-ops.be (Postfix) with ESMTP id 2DF529DCFB
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 10:09:51 +0200 (CEST)
-Date: Fri, 13 Apr 2007 10:09:47 +0200 (CEST)
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Sender: geert@linux-m68k.org
-To: David Lang <david.lang@digitalinsight.com>
-Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
-In-Reply-To: <Pine.LNX.4.63.0704121917260.29621@qynat.qvtvafvgr.pbz>
-Message-ID: <Pine.LNX.4.64.0704131009190.16292@anakin>
-References: <1175644642.10567.31.camel@shinybook.infradead.org><200704032210
-	02.GA13210@cynthia.pants.nu>
-	<1175648051.10567.61.camel@shinybook.infradead.org><20070403.181645.6815945
-	8.davem@davemloft.net>
-	<20070404022828.5c9b97f3@the-village.bc.nu><Pine.LNX.4.64.0704032307001.780
-	2@mtl.rackplans.net>
-	<m3tzvm6fgw.fsf@ursa.amorsen.dk><adabqhtip2n.fsf@cisco.com>
-	<Pine.LNX.4.64.0704122243280.9866@mtl.rackplans.net>
-	<Pine.LNX.4.63.0704121917260.29621@qynat.qvtvafvgr.pbz>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Gerhard Mack <gmack@innerfire.net>,
-	linux-kernel@vger.kernel.org, Benny Amorsen <benny+usenet@amorsen.dk>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [ANNOUNCE] petitboot v0.0.1
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Hiroaki Fuse <Hiroaki_Fuse@hq.scei.sony.co.jp>
+In-Reply-To: <OFA72EABF2.7008AEF7-ON492572BC.00220AA6-492572BC.00226043@hq.scei.sony.co.jp>
+References: <OFA72EABF2.7008AEF7-ON492572BC.00220AA6-492572BC.00226043@hq.scei.sony.co.jp>
+Content-Type: text/plain
+Date: Fri, 13 Apr 2007 18:54:38 +1000
+Message-Id: <1176454479.5764.72.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org,
+	cbe-oss-dev-bounces+hiroaki_fuse=hq.scei.sony.co.jp@ozlabs.org,
+	cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,28 +20,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 12 Apr 2007, David Lang wrote:
-> On Thu, 12 Apr 2007, Gerhard Mack wrote:
-> > Sometimes it's not the speed it's the cost.. The best I've ever done is
-> > 5.5 interfaces per u/ Although with a better motherboard and case it might
-> > have been different.
+On Fri, 2007-04-13 at 15:20 +0900, Hiroaki Fuse wrote:
 > 
-> I have a bunch of servers from rackable, dual core cpu, 2G ram 2xgigE on the 
-> motherboard (1x100M on motherboard), 4x Intel E1000 quad port cards, 120G SATA 
-> drive, DVD burner, floppy
+> Jeremy-san, 
 > 
-> 3u, 18 gig ports, just under $5k
+> I tried to use petitboot v0.0.1 and found a problem. 
+> 
+> I use a following kboot.conf. 
+> 
+> --- 
+> default=linux 
+> timeout=10 
+> root=LABEL=/ 
+> linux='/boot/vmlinux-2.6.16 initrd=/boot/initrd.img-2.6.16 ' 
+> linux21='/boot/vmlinux-2.6.21 initrd=/boot/initrd.img-2.6.21 ' 
+> --- 
+> 
+> I saw three entries(root, linux and linux21) and I can not boot any
+> kernel. 
+> 
+> So I changed my kboot.conf as follows. 
+> 
+> --- 
+> default=linux 
+> timeout=10 
+> linux='/boot/vmlinux-2.6.16 root=LABEL=/
+> initrd=/boot/initrd.img-2.6.16 ' 
+> linux21='/boot/vmlinux-2.6.21 root=LABEL=/
+> initrd=/boot/initrd.img-2.6.21 ' 
+> --- 
+> 
+> And I can boot both kernel. 
 
-I don't think we're still talking about _serial_ ports?
+Ok, looks like the kboot parser isn't quite dealing with the root=
+stance outside of a kernel spec. We'll fix asap
 
-Gr{oetje,eeting}s,
-
-						Geert
-
-P.S. Yes, Ethernet is serial ;-)
---
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-							    -- Linus Torvalds
+Ben.
