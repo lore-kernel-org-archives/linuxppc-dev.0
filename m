@@ -1,19 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: xmon debugger doc?
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070413034850.GA12654@lixom.net>
-References: <1176410647.27519.6.camel@stevo-desktop>
-	<20070413034850.GA12654@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-A8OM2OulcIobFejKOQEo"
-Date: Fri, 13 Apr 2007 13:58:29 +1000
-Message-Id: <1176436709.4734.19.camel@concordia.ozlabs.ibm.com>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B7461DDEDC
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 16:25:51 +1000 (EST)
+Date: Fri, 13 Apr 2007 01:25:42 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
+	properties
+Message-Id: <20070413012542.343eb848.kim.phillips@freescale.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Steve Wise <swise@opengridcomputing.com>,
-	linux-kernel <linux-kernel@vger.kernel.org>
-Reply-To: michael@ellerman.id.au
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,63 +23,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Since ucc_geth is being migrated to use the phylib, the existing
+(undocumented) 'interface' property is being deprecated in favour
+of unconjoined variations 'max-speed' and 'interface-type'.
 
---=-A8OM2OulcIobFejKOQEo
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+interface-type is now maintained one-to-one with definitions
+in include/linux/phy.h.  If not specified, "mii" is assumed.
 
-On Thu, 2007-04-12 at 22:48 -0500, Olof Johansson wrote:
-> On Thu, Apr 12, 2007 at 03:44:07PM -0500, Steve Wise wrote:
-> > Can someone please point me at ppc64 xmon debugger usage /
-> > documentation? I've had little luck finding info on-line.
->=20
-> The help output from it is pretty much all there is.
->=20
-> You might have better luck asking on linuxppc-dev@ozlabs.org though
-> (adding as Cc).
->=20
-> There's also an old writeup at
-> http://mbligh.org/linuxdocs/Kernel/DebuggingPPC64 for the very basics
-> of digging through a crash. Some of it is likely out of date by now.
+max-speed is available for users to override the interface-derived
+speed, e.g. rgmii at 100Mbit/s.
 
-A good trick which the help output doesn't mention is that % and $ are
-special in input, so you can do:
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+moved to recommended section (from required), removed sgmii, added rgmii-id.
 
-0:mon> di %pc
+please consider for 2.6.22
 
-disassemble instructions at address pointed to by register PC
+ Documentation/powerpc/booting-without-of.txt |    5 +++++
+ 1 files changed, 5 insertions(+), 0 deletions(-)
 
-Other regs are eg: %lr, %r1, %r12.
-And it works with di, d and other commands.
-
-Also:
-
-0:mon> di $.xmon_register_spus
-
-disassemble instructions at address of symbol .xmon_register_spus.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-A8OM2OulcIobFejKOQEo
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGHv/ldSjSd0sB4dIRAk7JAJ9NY+aKw3VhQus0jAUd2ei1LiLUpwCfe+5t
-dG3ZFDrI15ADUOjwkYJ73Xc=
-=XXGf
------END PGP SIGNATURE-----
-
---=-A8OM2OulcIobFejKOQEo--
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 88cdb59..cb8c6fb 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1562,6 +1562,10 @@ platforms are moved over to use the flattened-device-tree model.
+      network device.  This is used by the bootwrapper to interpret
+      MAC addresses passed by the firmware when no information other
+      than indices is available to associate an address with a device.
++   - interface-type : a string naming the controller/PHY interface type,
++     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id", "tbi", or "rtbi".
++   - max-speed : The maximum speed supported by the controller (in Mbit/s)
++     this is used if the user wants to override the interface-derived speed.
+ 
+    Example:
+ 	ucc@2000 {
+@@ -1573,6 +1577,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 		interrupts = <a0 0>;
+ 		interrupt-parent = <700>;
+ 		mac-address = [ 00 04 9f 00 23 23 ];
++		interface-type = "rgmii";
+ 		rx-clock = "none";
+ 		tx-clock = "clk9";
+ 		phy-handle = <212000>;
+-- 
+1.5.0.1
