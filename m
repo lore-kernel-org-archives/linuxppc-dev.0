@@ -1,32 +1,18 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e34.co.us.ibm.com (e34.co.us.ibm.com [32.97.110.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e34.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 21C8CDDF28
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 05:25:39 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e34.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3DJPaGm003856
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 15:25:36 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3DJFo3e273882
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 15:17:59 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3DJC2pC022453
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 15:12:03 -0400
-Subject: Re: [PATCH] hvc_console polling mode timer backoff
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: michael@ellerman.id.au
-In-Reply-To: <1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
-References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
-	<1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Fri, 13 Apr 2007 14:11:52 -0500
-Message-Id: <1176491513.28514.66.camel@farscape.rchland.ibm.com>
+Return-Path: <djiang@mvista.com>
+Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
+	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id B45C9DDE43
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 06:04:48 +1000 (EST)
+Date: Fri, 13 Apr 2007 13:06:59 -0700
+From: Dave Jiang <djiang@mvista.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: [PATCH] add reg and stack dump to booke WD handler
+Message-ID: <20070413200659.GA21588@blade.az.mvista.com>
+References: <20070413173524.GA17890@blade.az.mvista.com>
+	<461FCB6F.7010504@ru.mvista.com>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: will_schmidt@vnet.ibm.com
+Content-Type: text/plain; charset=iso-8859-1
+In-Reply-To: <461FCB6F.7010504@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,33 +22,69 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, 2007-13-04 at 17:47 +1000, Michael Ellerman wrote:
-> Because this is a super tight performance critical inner loop I've
-> changed it to use a shift instead of divide. So now it's more like 1.5%,
-> but still the point is it increases faster as time passes.
+Have the booke watchdog dump some useful information when triggered. Hopefully
+that'll give the user some hint of what happened rather than just a mysterious
+reboot.
 
-Using a shift here is a good idea.  I had considered accelerating the
-backoff value, but it got more complex than I wanted quickly.. I didnt
-consider a shift. :-) 
+--
 
-> It'd be good if some more people can bang on this and see what they
-> think of the interactivity.
+ Ok here's try 2. Modified the watchdog driver instead per Sergei's suggestion.
 
-Still works OK on my power4.   I can see the delay on my console, but
-I'm specifically looking for it, I don't think it's an issue. 
+ drivers/char/watchdog/booke_wdt.c |   37 +++++++++++++++++++++++++++++++++++++
+ 1 files changed, 37 insertions(+), 0 deletions(-)
 
-> +#include <linux/debugfs.h>
-> +static int hvc_debug_init(void)
-> +{
-> +	debugfs_create_u32("hvc_timeout", 0400, NULL, &timeout);
-> +	return 0;
-> +}
-> +__initcall(hvc_debug_init);
-> +
-
-Is this part temporary for your graphing, or think it's something that
-should go in? 
-I used /proc/timer_stats output for my graphing, just dont have a good
-public spot to upload the pics.. 
-
--will
+diff --git a/drivers/char/watchdog/booke_wdt.c b/drivers/char/watchdog/booke_wdt.c
+index 0e23f29..90e5301 100644
+--- a/drivers/char/watchdog/booke_wdt.c
++++ b/drivers/char/watchdog/booke_wdt.c
+@@ -23,6 +23,7 @@
+ #include <asm/reg_booke.h>
+ #include <asm/uaccess.h>
+ #include <asm/system.h>
++#include <asm/machdep.h>
+ 
+ /* If the kernel parameter wdt_enable=1, the watchdog will be enabled at boot.
+  * Also, the wdt_period sets the watchdog timer period timeout.
+@@ -47,6 +48,42 @@ u32 booke_wdt_period = WDT_PERIOD_DEFAULT;
+ #define WDTP(x)		(TCR_WP(x))
+ #endif
+ 
++void WatchdogHandler(struct pt_regs *regs)
++{
++	unsigned long flags;
++
++	mtspr(SPRN_TCR, mfspr(SPRN_TCR) & ~TCR_WIE);
++	oops_enter();
++
++	console_verbose();
++	bust_spinlocks(1);
++	local_save_flags(flags);
++
++#ifdef CONFIG_PREEMPT
++	printk("PREEMPT ");
++#endif
++#ifdef CONFIG_SMP
++	printk("SMP NR_CPUS=%d ", NR_CPUS);
++#endif
++#ifdef CONFIG_DEBUG_PAGEALLOC
++	printk("DEBUG_PAGEALLOC ");
++#endif
++#ifdef CONFIG_NUMA
++	printk("NUMA ");
++#endif
++	printk("%s\n", ppc_md.name ? ppc_md.name : "");
++
++	print_modules();
++	show_regs(regs);
++
++	bust_spinlocks(0);
++
++	printk(KERN_EMERG "Waiting for hardware watchdog reset...\n");
++	/* spin until hardware reset */
++	while(1)
++		cpu_relax();
++}
++
+ /*
+  * booke_wdt_ping:
+  */
