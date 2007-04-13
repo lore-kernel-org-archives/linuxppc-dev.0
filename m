@@ -2,19 +2,25 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 75917DDF53
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:28:43 +1000 (EST)
-Subject: Re: [PATCH] powerpc: Fix PowerPC 750CL CPU features
+	by ozlabs.org (Postfix) with ESMTP id 9AC0DDDF42
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:34:39 +1000 (EST)
+Subject: Re: qla_wxyz pci_set_mwi question
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <aeef7937e978aec33074251c48dca389@kernel.crashing.org>
-References: <1176382146.6379.28.camel@zod.rchland.ibm.com>
-	<aeef7937e978aec33074251c48dca389@kernel.crashing.org>
+To: Matthew Wilcox <matthew@wil.cx>
+In-Reply-To: <20070412200438.GM26692@parisc-linux.org>
+References: <20070411221507.69c97257.randy.dunlap@oracle.com>
+	<20070412172038.GG10124@andrew-vasquezs-computer.local>
+	<20070412185347.GL26692@parisc-linux.org>
+	<20070412193713.GB14510@andrew-vasquezs-computer.local>
+	<20070412200438.GM26692@parisc-linux.org>
 Content-Type: text/plain
-Date: Fri, 13 Apr 2007 12:28:30 +1000
-Message-Id: <1176431310.5764.54.camel@localhost.localdomain>
+Date: Fri, 13 Apr 2007 12:34:22 +1000
+Message-Id: <1176431662.5764.56.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: Randy Dunlap <randy.dunlap@oracle.com>, scsi <linux-scsi@vger.kernel.org>,
+	gregkh <greg@kroah.com>, David Somayajulu <david.somayajulu@qlogic.com>,
+	linuxppc-dev@ozlabs.org, Andrew Vasquez <andrew.vasquez@qlogic.com>,
+	linux-driver@qlogic.com, PCI <linux-pci@atrey.karlin.mff.cuni.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +30,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> The difference between these two is
+On Thu, 2007-04-12 at 14:04 -0600, Matthew Wilcox wrote:
+> On Thu, Apr 12, 2007 at 12:37:13PM -0700, Andrew Vasquez wrote:
+> > On Thu, 12 Apr 2007, Matthew Wilcox wrote:
+> > > Why should it fail?  If there's a platform which can't support a
+> > > cacheline size that the qla2xyz card can handle, it should be able to
+> > > happily fall back to doing plain writes instead of MWIs.  IMO, it should
+> > > just call pci_set_mwi() and ignore the result.
+> > 
+> > I believe there were some erratas on some ISP2xxx chips where MWI
+> > needed to be set for proper operation.  I'll go back, verify and
+> > update the patch accordingly.
 > 
-> #define CPU_FTRS_750GX  (CPU_FTR_DUAL_PLL_750FX | CPU_FTR_HAS_HIGH_BATS)
-> #define CPU_FTRS_750    (CPU_FTR_COMMON)
-> 
-> 750GX excludes COMMON, which seems like a bug.  With
-> your change, 750CL uses DUAL_PLL_750FX; does it actually
-> have that feature?
+> Hmm.  The thing is that pci_set_mwi() returns success on machines where
+> MWI is disabled (currently only PPC64).  Perhaps it needs to fail
+> instead.
 
-Looks indeed like that lack of COMMON in the GX entry is a bug...
-
-Josh, care to fix that too while at it ? :-)
-
-> Either way, it seems a good idea to create a CPU_FTRS_750CL,
-> the CL is an evolution of the CX, not the FX/GX (in name
-> at least, dunno about the gory details).
-
-Agreed.
-
-> > -		.cpu_setup		= __setup_cpu_750cx,
-> > +		.cpu_setup		= __setup_cpu_750fx,
-> 
-> Same thing here.  Are you sure 750CL doesn't need
-> the NAP workaround?  [Is anyone sure the 750CX
-> actually needs it -- the comment in cpu_setup_6xx.S
-> doesn't instill much confidence.]
-
-Agreed too.
+MWI isn't diabled on ppc64... or did I miss something ?
 
 Ben.
