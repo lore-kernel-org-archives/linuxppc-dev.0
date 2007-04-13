@@ -1,17 +1,17 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 4D420DDE0E
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 04:25:57 +1000 (EST)
-Message-ID: <461FCB6F.7010504@ru.mvista.com>
-Date: Fri, 13 Apr 2007 22:26:55 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-MIME-Version: 1.0
-To: Dave Jiang <djiang@mvista.com>
-Subject: Re: [PATCH] add reg and stack dump to booke WD handler
-References: <20070413173524.GA17890@blade.az.mvista.com>
-In-Reply-To: <20070413173524.GA17890@blade.az.mvista.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+In-Reply-To: <200704130210.48508.arnd@arndb.de>
+References: <20070410111508.GA2969@localhost.localdomain>
+	<200704121926.03723.arnd@arndb.de>
+	<e5b10849669a764f002d1926838edc76@kernel.crashing.org>
+	<200704130210.48508.arnd@arndb.de>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <00df01c80b8b5153a04a7cbe0bc727f2@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [Cbe-oss-dev] [RFC, PATCH] selection of CPU optimization
+Date: Fri, 13 Apr 2007 20:43:02 +0200
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,72 +21,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dave Jiang wrote:
-> Have the booke watchdog dump some useful information when triggered. Hopefully
-> that'll give the user some hint of what happened rather than just a mysterious
-> reboot. 
+> My understanding at this point is that we can always fall back
+> to -mcpu=powerpc or -mcpu=powerpc64,
 
-   Why not do this in drivers/watchdog/booke_wdt.c -- WatchdogHandler() is a weak symbol?
- 
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index f786222..1af83b7 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -1108,9 +1108,42 @@ void unrecoverable_exception(struct pt_regs *regs)
->   */
->  void __attribute__ ((weak)) WatchdogHandler(struct pt_regs *regs)
->  {
-> +	unsigned long flags;
-> +
->  	/* Generic WatchdogHandler, implement your own */
->  	mtspr(SPRN_TCR, mfspr(SPRN_TCR)&(~TCR_WIE));
-> -	return;
-> +	oops_enter();
-> +
-> +	console_verbose();
-> +	bust_spinlocks(1);
-> +	local_save_flags(flags);
-> +
-> +	printk(KERN_ERR "PowerPC Book-E Watchdog detected LOCKUP\n");
-> +	printk(KERN_ERR "Watchdog exception at PC=%lx MSR=%lx\n",
+Yes.  With perhaps and added -mno-string or similar if
+some supported CPU really needs it.
 
-   This partly duplicates printk() in WatchdogException().
 
-> +			regs->nip, regs->msr);
+>  and also
 
-  These regs are later dumped by show_regs() anyway.
+[SNIP]
 
-> +#ifdef CONFIG_PREEMPT
-> +	printk(KERN_ERR "PREEMPT ");
+> So if we select e.g. power6 and cell, it needs to fall back to power4,
+> which is the common subset. Selecting both 403 and 405 would result
+> in falling back to -mcpu=powerpc, because they don't have any larger
+> subset.
 
-   Does specifying loglevel on non '\n' terminated lines really make sense?  I suspect all what you'll get will be ugly output with <3> insterted here and there.
+This is way complicated.  Also, it is not unique to the
+kernel; you'd be better off adding this logic to the
+compiler itself.  OTOH, it's such a niche market, maybe
+the distros that want it (if any do) should do this in
+their RPM build scripts or similar.
 
-> +#endif
-> +#ifdef CONFIG_SMP
-> +	printk(KERN_ERR "SMP NR_CPUS=%d ", NR_CPUS);
-> +#endif
-> +#ifdef CONFIG_DEBUG_PAGEALLOC
-> +	printk(KERN_ERR "DEBUG_PAGEALLOC ");
-> +#endif
-> +#ifdef CONFIG_NUMA
-> +	printk(KERN_ERR "NUMA ");
-> +#endif
-> +	printk(KERN_ERR "%s\n", ppc_md.name ? ppc_md.name : "");
-> +
-> +	print_modules();
-> +	show_regs(regs);
-> +
-> +	bust_spinlocks(0);
-> +
-> +	printk(KERN_ERR "Wating for hardware watchdog reset...\n");
 
-   A typo here.
-
-> +	/* spin until hardware reset */
-> +	while(1)
-> +		cpu_relax();
-
-   Not even giving it a chance? That's cruel. :-)
-   Seriously, this seems too specific watchdog behavior to be here.
-
-WBR, Sergei
+Segher
