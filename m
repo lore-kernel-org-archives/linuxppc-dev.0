@@ -3,8 +3,8 @@ To: <cbe-oss-dev@ozlabs.org>,
 	<linuxppc-dev@ozlabs.org>
 From: Jeremy Kerr <jk@ozlabs.org>
 Date: Fri, 13 Apr 2007 11:48:59 +1000
-Subject: [PATCH 3/4] cell: fix initialisation on systems with no SPEs
-Message-Id: <1176428939.367182.371199141244.qpush@pokey>
+Subject: [PATCH 4/4] spufs: add mode= mount option
+Message-Id: <1176428939.430693.221781450134.qpush@pokey>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,68 +14,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This change fixes the case where spu_base and spufs are initialised on a
-system with no SPEs - unconditionally create the spu_lists so spu_alloc
-doesn't explode, and check for spu_management ops before starting spufs.
+Add a 'mode=' option to spufs mount arguments. This allows more
+control over access to the top-level spufs directory.
+
+Tested on Cell.
 
 Signed-off-by: Jeremy Kerr <jk@ozlabs.org>
 
- arch/powerpc/platforms/cell/spu_base.c    |    7 ++++---
- arch/powerpc/platforms/cell/spufs/inode.c |    5 +++++
- 2 files changed, 9 insertions(+), 3 deletions(-)
+ arch/powerpc/platforms/cell/spufs/inode.c |   14 ++++++++++----
+ 1 file changed, 10 insertions(+), 4 deletions(-)
 
-Index: linux-2.6-spufs/arch/powerpc/platforms/cell/spu_base.c
-===================================================================
---- linux-2.6-spufs.orig/arch/powerpc/platforms/cell/spu_base.c
-+++ linux-2.6-spufs/arch/powerpc/platforms/cell/spu_base.c
-@@ -43,6 +43,7 @@ static LIST_HEAD(spu_full_list);
- static DEFINE_MUTEX(spu_mutex);
- static spinlock_t spu_list_lock = SPIN_LOCK_UNLOCKED;
- 
-+EXPORT_SYMBOL_GPL(spu_management_ops);
- EXPORT_SYMBOL_GPL(spu_priv1_ops);
- 
- void spu_invalidate_slbs(struct spu *spu)
-@@ -723,6 +724,9 @@ static int __init init_spu_base(void)
- {
- 	int i, ret;
- 
-+	for (i = 0; i < MAX_NUMNODES; i++)
-+		INIT_LIST_HEAD(&spu_list[i]);
-+
- 	if (!spu_management_ops)
- 		return 0;
- 
-@@ -731,9 +735,6 @@ static int __init init_spu_base(void)
- 	if (ret)
- 		return ret;
- 
--	for (i = 0; i < MAX_NUMNODES; i++)
--		INIT_LIST_HEAD(&spu_list[i]);
--
- 	ret = spu_enumerate_spus(create_spu);
- 
- 	if (ret) {
 Index: linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/inode.c
 ===================================================================
 --- linux-2.6-spufs.orig/arch/powerpc/platforms/cell/spufs/inode.c
 +++ linux-2.6-spufs/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -36,6 +36,7 @@
- #include <asm/prom.h>
- #include <asm/semaphore.h>
- #include <asm/spu.h>
-+#include <asm/spu_priv1.h>
- #include <asm/uaccess.h>
+@@ -521,13 +521,14 @@ out:
  
- #include "spufs.h"
-@@ -653,6 +654,10 @@ static int __init spufs_init(void)
- {
- 	int ret;
+ /* File system initialization */
+ enum {
+-	Opt_uid, Opt_gid, Opt_err,
++	Opt_uid, Opt_gid, Opt_mode, Opt_err,
+ };
  
-+	ret = -ENODEV;
-+	if (!spu_management_ops)
-+		goto out;
-+
- 	ret = -ENOMEM;
- 	spufs_inode_cache = kmem_cache_create("spufs_inode_cache",
- 			sizeof(struct spufs_inode_info), 0,
+ static match_table_t spufs_tokens = {
+-	{ Opt_uid, "uid=%d" },
+-	{ Opt_gid, "gid=%d" },
+-	{ Opt_err, NULL  },
++	{ Opt_uid,  "uid=%d" },
++	{ Opt_gid,  "gid=%d" },
++	{ Opt_mode, "mode=%o" },
++	{ Opt_err,   NULL  },
+ };
+ 
+ static int
+@@ -554,6 +555,11 @@ spufs_parse_options(char *options, struc
+ 				return 0;
+ 			root->i_gid = option;
+ 			break;
++		case Opt_mode:
++			if (match_octal(&args[0], &option))
++				return 0;
++			root->i_mode = option | S_IFDIR;
++			break;
+ 		default:
+ 			return 0;
+ 		}
