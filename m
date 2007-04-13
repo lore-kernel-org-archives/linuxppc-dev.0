@@ -1,23 +1,20 @@
-Return-Path: <dwh@ovro.caltech.edu>
-Received: from ovro.ovro.caltech.edu (ovro.ovro.caltech.edu [192.100.16.2])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mail.ovro.caltech.edu",
-	Issuer "mail.ovro.caltech.edu" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id ACD5CDDF52
+Return-Path: <alfred.yo@Math.net>
+Received: from omta08.mta.everyone.net (sitemail3.everyone.net
+	[216.200.145.37]) by ozlabs.org (Postfix) with ESMTP id AB606DDF39
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 13 Apr 2007 12:40:25 +1000 (EST)
-Received: from [192.100.16.36] (kiwi.ovro.caltech.edu [192.100.16.36])
-	by ovro.ovro.caltech.edu (8.13.6/8.13.6) with ESMTP id l3D2eLVl012299
-	for <linuxppc-embedded@ozlabs.org>; Thu, 12 Apr 2007 19:40:21 -0700
-Message-ID: <461EED77.9090804@ovro.caltech.edu>
-Date: Thu, 12 Apr 2007 19:39:51 -0700
-From: David Hawkins <dwh@ovro.caltech.edu>
+	Fri, 13 Apr 2007 16:28:57 +1000 (EST)
+Received: from dm25.mta.everyone.net (bigiplb-dsnat [172.16.0.19])
+	by omta08.mta.everyone.net (Postfix) with ESMTP id D75E240326
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 12 Apr 2007 23:00:58 -0700 (PDT)
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Anyone using the MPC8313E-RDB?
-References: <OF2330A747.4AF0C4FD-ON882572BB.0077B95A-882572BB.0078B180@selinc.com>
-In-Reply-To: <OF2330A747.4AF0C4FD-ON882572BB.0077B95A-882572BB.0078B180@selinc.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: text/html; charset="UTF-8"
+Message-Id: <20070412230058.E3E714C2@resin17.mta.everyone.net>
+Date: Thu, 12 Apr 2007 23:00:58 -0700
+From: "alfred ss" <alfred.yo@Math.net>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: linux SPI driver for MPC852T 
+Reply-To: alfred.yo@Math.net
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,19 +25,4 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-
-Hi all,
-
-Is anyone using the MPC8313E-RDB?
-
-I see Freescale is having a series of PowerQUICC seminars
-for $99, and you get one of the MPC8313E-RDB boards
-(which according to the fact sheet goes for $299).
-
-http://www.freescale.com/quiccseminars
-
-I'm using the 8349E ... but I love collecting and playing
-with evaluation boards ;)
-
-Cheers
-Dave
+<DIV style="font-family:Arial, sans-serif; font-size:10pt;"><FONT size="2"><SPAN style="font-family: Arial,sans-serif;">Hi, all<BR><BR>I am entirely new to the PPC platform. I wish  to know whether there is a existing port/code for SPI driver on MPC852T. Otherwise do we have any reference code.<BR><BR>Also required is the help on the understanding document on SPI. <BR><BR>Please let me know asap. ANy inputs will be highly appreciated.<BR><BR>Cheers,<BR>Alfred.<BR></SPAN></FONT><BR>&nbsp;<BR><HR>Get your free web-based e-mail account from http://www.Math.net<BR>Your online tourguide of Mathematics, with books, links, news,<BR>message boards, and much more!</DIV>
