@@ -1,15 +1,23 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id AD01CDDE2C
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 03:33:16 +1000 (EST)
-Date: Fri, 13 Apr 2007 10:35:24 -0700
-From: Dave Jiang <djiang@mvista.com>
-To: linuxppc-dev@ozlabs.org, paulus@samba.org,
-	galak@kernel.crashing.org
-Subject: [PATCH] add reg and stack dump to booke WD handler
-Message-ID: <20070413173524.GA17890@blade.az.mvista.com>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2E1E0DDE42
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 03:36:48 +1000 (EST)
+Date: Fri, 13 Apr 2007 12:36:39 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
+	properties
+Message-Id: <20070413123639.6485797b.kim.phillips@freescale.com>
+In-Reply-To: <B273DC06-E4DF-4FF5-88E8-2E6C634C98DA@kernel.crashing.org>
+References: <20070413012542.343eb848.kim.phillips@freescale.com>
+	<B273DC06-E4DF-4FF5-88E8-2E6C634C98DA@kernel.crashing.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,60 +27,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Have the booke watchdog dump some useful information when triggered. Hopefully
-that'll give the user some hint of what happened rather than just a mysterious
-reboot. 
+On Fri, 13 Apr 2007 12:00:32 -0500
+Kumar Gala <galak@kernel.crashing.org> wrote:
 
---
+> 
+> On Apr 13, 2007, at 1:25 AM, Kim Phillips wrote:
+> > > ---
+> > moved to recommended section (from required), removed sgmii, added  
+> > rgmii-id.
+> 
+> any reason to remove sgmii?  What is rgmii-id?
+> 
+UCC doesn't support sgmii.
 
- arch/powerpc/kernel/traps.c |   35 ++++++++++++++++++++++++++++++++++-
- 1 files changed, 34 insertions(+), 1 deletions(-)
+rgmii-id == RGMII with Internal Delay, see RGMII spec, or http://www.spinics.net/lists/netdev/msg28876.html
 
-diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-index f786222..1af83b7 100644
---- a/arch/powerpc/kernel/traps.c
-+++ b/arch/powerpc/kernel/traps.c
-@@ -1108,9 +1108,42 @@ void unrecoverable_exception(struct pt_regs *regs)
-  */
- void __attribute__ ((weak)) WatchdogHandler(struct pt_regs *regs)
- {
-+	unsigned long flags;
-+
- 	/* Generic WatchdogHandler, implement your own */
- 	mtspr(SPRN_TCR, mfspr(SPRN_TCR)&(~TCR_WIE));
--	return;
-+	oops_enter();
-+
-+	console_verbose();
-+	bust_spinlocks(1);
-+	local_save_flags(flags);
-+
-+	printk(KERN_ERR "PowerPC Book-E Watchdog detected LOCKUP\n");
-+	printk(KERN_ERR "Watchdog exception at PC=%lx MSR=%lx\n",
-+			regs->nip, regs->msr);
-+#ifdef CONFIG_PREEMPT
-+	printk(KERN_ERR "PREEMPT ");
-+#endif
-+#ifdef CONFIG_SMP
-+	printk(KERN_ERR "SMP NR_CPUS=%d ", NR_CPUS);
-+#endif
-+#ifdef CONFIG_DEBUG_PAGEALLOC
-+	printk(KERN_ERR "DEBUG_PAGEALLOC ");
-+#endif
-+#ifdef CONFIG_NUMA
-+	printk(KERN_ERR "NUMA ");
-+#endif
-+	printk(KERN_ERR "%s\n", ppc_md.name ? ppc_md.name : "");
-+
-+	print_modules();
-+	show_regs(regs);
-+
-+	bust_spinlocks(0);
-+
-+	printk(KERN_ERR "Wating for hardware watchdog reset...\n");
-+	/* spin until hardware reset */
-+	while(1)
-+		cpu_relax();
- }
- 
- void WatchdogException(struct pt_regs *regs)
+Kim
