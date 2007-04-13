@@ -4,14 +4,14 @@ Received: from de01egw02.freescale.net (de01egw02.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B7461DDEDC
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 16:25:51 +1000 (EST)
-Date: Fri, 13 Apr 2007 01:25:42 -0500
+	by ozlabs.org (Postfix) with ESMTP id EC193DDF48
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 16:25:55 +1000 (EST)
+Date: Fri, 13 Apr 2007 01:25:49 -0500
 From: Kim Phillips <kim.phillips@freescale.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
-	properties
-Message-Id: <20070413012542.343eb848.kim.phillips@freescale.com>
+Subject: [PATCH 2/4 v2] powerpc: replace undocumented interface properties
+	in dts files
+Message-Id: <20070413012549.76f919bf.kim.phillips@freescale.com>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,47 +23,142 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since ucc_geth is being migrated to use the phylib, the existing
-(undocumented) 'interface' property is being deprecated in favour
-of unconjoined variations 'max-speed' and 'interface-type'.
-
-interface-type is now maintained one-to-one with definitions
-in include/linux/phy.h.  If not specified, "mii" is assumed.
-
-max-speed is available for users to override the interface-derived
-speed, e.g. rgmii at 100Mbit/s.
+interface-type now supercedes the interface property (max-speed need not
+be explicitly set for these boards).
 
 Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
 ---
-moved to recommended section (from required), removed sgmii, added rgmii-id.
+removed max-speed properties
 
 please consider for 2.6.22
 
- Documentation/powerpc/booting-without-of.txt |    5 +++++
- 1 files changed, 5 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc832x_mds.dts |    2 --
+ arch/powerpc/boot/dts/mpc832x_rdb.dts |    2 --
+ arch/powerpc/boot/dts/mpc836x_mds.dts |    4 ++--
+ arch/powerpc/boot/dts/mpc8568mds.dts  |    6 ++----
+ 4 files changed, 4 insertions(+), 10 deletions(-)
 
-diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
-index 88cdb59..cb8c6fb 100644
---- a/Documentation/powerpc/booting-without-of.txt
-+++ b/Documentation/powerpc/booting-without-of.txt
-@@ -1562,6 +1562,10 @@ platforms are moved over to use the flattened-device-tree model.
-      network device.  This is used by the bootwrapper to interpret
-      MAC addresses passed by the firmware when no information other
-      than indices is available to associate an address with a device.
-+   - interface-type : a string naming the controller/PHY interface type,
-+     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id", "tbi", or "rtbi".
-+   - max-speed : The maximum speed supported by the controller (in Mbit/s)
-+     this is used if the user wants to override the interface-derived speed.
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index c798491..93b7606 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -306,14 +306,12 @@
+ 				interrupts = <11 8>;
+ 				reg = <3>;
+ 				device_type = "ethernet-phy";
+-				interface = <3>; //ENET_100_MII
+ 			};
+ 			phy4: ethernet-phy@04 {
+ 				interrupt-parent = < &ipic >;
+ 				interrupts = <12 8>;
+ 				reg = <4>;
+ 				device_type = "ethernet-phy";
+-				interface = <3>;
+ 			};
+ 		};
  
-    Example:
- 	ucc@2000 {
-@@ -1573,6 +1577,7 @@ platforms are moved over to use the flattened-device-tree model.
- 		interrupts = <a0 0>;
- 		interrupt-parent = <700>;
- 		mac-address = [ 00 04 9f 00 23 23 ];
-+		interface-type = "rgmii";
- 		rx-clock = "none";
- 		tx-clock = "clk9";
- 		phy-handle = <212000>;
+diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+index b55bced..be4c357 100644
+--- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
++++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
+@@ -265,14 +265,12 @@
+ 				interrupts = <0>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+-				interface = <3>; //ENET_100_MII
+ 			};
+ 			phy04:ethernet-phy@04 {
+ 				interrupt-parent = <&pic>;
+ 				interrupts = <0>;
+ 				reg = <4>;
+ 				device_type = "ethernet-phy";
+-				interface = <3>;
+ 			};
+ 		};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc836x_mds.dts b/arch/powerpc/boot/dts/mpc836x_mds.dts
+index 7f578eb..8406466 100644
+--- a/arch/powerpc/boot/dts/mpc836x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc836x_mds.dts
+@@ -302,6 +302,7 @@
+ 			interrupts = <20>;
+ 			interrupt-parent = < &qeic >;
+ 			mac-address = [ 00 04 9f 00 23 23 ];
++			interface-type = "rgmii-id";
+ 			rx-clock = <0>;
+ 			tx-clock = <19>;
+ 			phy-handle = < &phy0 >;
+@@ -317,6 +318,7 @@
+ 			interrupts = <21>;
+ 			interrupt-parent = < &qeic >;
+ 			mac-address = [ 00 11 22 33 44 55 ];
++			interface-type = "rgmii-id";
+ 			rx-clock = <0>;
+ 			tx-clock = <14>;
+ 			phy-handle = < &phy1 >;
+@@ -335,14 +337,12 @@
+ 				interrupts = <11 8>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+-				interface = <6>; //ENET_1000_GMII
+ 			};
+ 			phy1: ethernet-phy@01 {
+ 				interrupt-parent = < &ipic >;
+ 				interrupts = <12 8>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+-				interface = <6>;
+ 			};
+ 		};
+ 
+diff --git a/arch/powerpc/boot/dts/mpc8568mds.dts b/arch/powerpc/boot/dts/mpc8568mds.dts
+index 7361b36..4cb018d 100644
+--- a/arch/powerpc/boot/dts/mpc8568mds.dts
++++ b/arch/powerpc/boot/dts/mpc8568mds.dts
+@@ -285,6 +285,7 @@
+ 			interrupts = <20>;
+ 			interrupt-parent = <&qeic>;
+ 			mac-address = [ 00 04 9f 00 23 23 ];
++			interface-type = "gmii";
+ 			rx-clock = <0>;
+ 			tx-clock = <19>;
+ 			phy-handle = <&qe_phy0>;
+@@ -300,6 +301,7 @@
+ 			interrupts = <21>;
+ 			interrupt-parent = <&qeic>;
+ 			mac-address = [ 00 11 22 33 44 55 ];
++			interface-type = "gmii";
+ 			rx-clock = <0>;
+ 			tx-clock = <14>;
+ 			phy-handle = <&qe_phy1>;
+@@ -320,28 +322,24 @@
+ 				interrupts = <31 1>;
+ 				reg = <0>;
+ 				device_type = "ethernet-phy";
+-				interface = <6>; //ENET_1000_GMII
+ 			};
+ 			qe_phy1: ethernet-phy@01 {
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <32 1>;
+ 				reg = <1>;
+ 				device_type = "ethernet-phy";
+-				interface = <6>;
+ 			};
+ 			qe_phy2: ethernet-phy@02 {
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <31 1>;
+ 				reg = <2>;
+ 				device_type = "ethernet-phy";
+-				interface = <6>; //ENET_1000_GMII
+ 			};
+ 			qe_phy3: ethernet-phy@03 {
+ 				interrupt-parent = <&mpic>;
+ 				interrupts = <32 1>;
+ 				reg = <3>;
+ 				device_type = "ethernet-phy";
+-				interface = <6>; //ENET_1000_GMII
+ 			};
+ 		};
+ 
 -- 
 1.5.0.1
