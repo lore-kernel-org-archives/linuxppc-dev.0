@@ -1,20 +1,30 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <linas@austin.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EDF96DDDE6
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 01:02:23 +1000 (EST)
-In-Reply-To: <200704131337.08029.arnd@arndb.de>
-References: <Pine.LNX.4.64.0704121806330.28324@localhost.localdomain>
-	<200704131337.08029.arnd@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <A465F93F-3260-4B2E-B9FD-2D57623C61F2@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 0/7] Kconfig cleanup part II
-Date: Fri, 13 Apr 2007 10:02:01 -0500
-To: Arnd Bergmann <arnd@arndb.de>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 4D51ADDE43
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 02:47:04 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3DGkxqP006291
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:46:59 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3DGkxmV298962
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:46:59 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3DGkxHj017460
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:46:59 -0400
+Date: Fri, 13 Apr 2007 11:46:59 -0500
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] hvc_console polling mode timer backoff
+Message-ID: <20070413164659.GY4747@austin.ibm.com>
+References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
+	<1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,48 +35,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Apr 13, 2007 at 05:47:39PM +1000, Michael Ellerman wrote:
+> 
+> I played with this a bit more, and a ~2% increment seems to work nicely.
+> It stays low for the first 10-20 seconds, but then approaches the max
+> much faster once there's no activity for a while.
+> 
+> A few examples:
+> http://michael.ellerman.id.au/files/cell-backoff.svg
 
-On Apr 13, 2007, at 6:37 AM, Arnd Bergmann wrote:
+Looks good to me. 
 
-> On Friday 13 April 2007, Kumar Gala wrote:
->> Here the second part of the Kconfig cleanup to move all the
->> platform/*/Kconfig to be sourced by platform/Kconfig.  Plus some  
->> other
->> minor cleanups.
->
-> Nice patches, I had thought about doing these as well after
-> I have cleaned up the CPU selection.
->
-> Two questions though:
-> - Is there a technical reason why we want to disallow building
->   a kernel that contains a combination of 6xx, 83xx, 86xx and
->   embedded6xx platforms, or are there only bugs that make it
->   impossible?
+> changed it to use a shift instead of divide. So now it's more like 1.5%,
+> but still the point is it increases faster as time passes.
 
-I don't believe there's anything technical just a matter of effort.   
-There are a few things that need to happen before we get there.  For  
-now, I figured we'd leave things as they are.
+Looks god to me. I suppose
 
-> - I'm still not sure whether platform selection or cpu selection
->   should come first, three options I can think of are:
->   1. CPU first, then platform:
->      you might choose to build a kernel for 970 exclusively, which
->      would allow you to select powermac, pseries and maple but no
->      other platforms.
->   2. Platform first, the CPU:
->      You might select pseries as the only platform, and then get
->      presented with the choice between power3 to power6, rs64
->      and 970, but not cell or pa6t.
->   3. platform and CPU depend on instruction set, but not on each  
-> other,
->      You only choose between powerpc64, 4xx, 6xx, e200, e500 or 8xx.
->      This would allow nonworking setups though, like a 83xx platform
->      with a 601 cpu or a ps3 with power5 cpu.
+Acked-by: Linas Vepstas <linas@austin.ibm.com> 
 
-I think the way we do it now with processor family makes the most  
-sense.  I have to believe that most people using a kernel on pseries,  
-iseries, pmac, etc aren't doing much kernel configuration.  However  
-if your on the embedded side you most like know what processor you  
-have and go from there.
+is the right thing to say here.
 
-- k
+--linas
