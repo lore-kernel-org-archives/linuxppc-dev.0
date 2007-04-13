@@ -1,17 +1,20 @@
-Return-Path: <arnd@arndb.de>
-From: Arnd Bergmann <arnd@arndb.de>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [Cbe-oss-dev] [RFC, PATCH] selection of CPU optimization
-Date: Fri, 13 Apr 2007 02:10:47 +0200
-References: <20070410111508.GA2969@localhost.localdomain>
-	<200704121926.03723.arnd@arndb.de>
-	<e5b10849669a764f002d1926838edc76@kernel.crashing.org>
-In-Reply-To: <e5b10849669a764f002d1926838edc76@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704130210.48508.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] hvc_console polling mode timer backoff
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070412190902.GA8158@lixom.net>
+References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
+	<20070412173334.GP4747@austin.ibm.com>
+	<1176403411.28514.55.camel@farscape.rchland.ibm.com>
+	<20070412190902.GA8158@lixom.net>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-0zmnwjl0xSo0TyuuuuSJ"
+Date: Fri, 13 Apr 2007 10:45:43 +1000
+Message-Id: <1176425143.4734.8.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,54 +24,92 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 12 April 2007, Segher Boessenkool wrote:
-> > What would be the right options to pass on e200 and on
-> > pa6t?
->=20
-> The best thing would be to add GCC -mcpu=3D options. =A0For
-> now, you're probably best of with -mcpu=3Dpowerpc and
-> -mcpu=3Dpowerpc64 resp., i.e. the "blended models". =A0This
-> is a good option for multiplatform kernels too; add -mtune=3D
-> to optimise for a specific core, but it will *work* on
-> the whole family.
 
-We already have makefile magic to test if gcc supports a flag
-and fall back to some other one if not.
+--=-0zmnwjl0xSo0TyuuuuSJ
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-After looking at rs6000.c, I found that we can probably
-reduce the number of different -mcpu=3D options to 16 and only
-have separate -mtune=3D options for each specific cpu.
+On Thu, 2007-04-12 at 14:09 -0500, Olof Johansson wrote:
+> On Thu, Apr 12, 2007 at 01:43:30PM -0500, Will Schmidt wrote:
+> > On Thu, 2007-12-04 at 12:33 -0500, Linas Vepstas wrote:
+> > > On Thu, Apr 12, 2007 at 11:14:36AM -0500, Will Schmidt wrote:
+> > > > +/*
+> > > > + * timeout will vary between the MIN and MAX values defined here. =
+ By default
+> > > > + * and during console activity we will use a default MIN_TIMEOUT o=
+f 10.  When
+> > > > + * the console is idle, we increase the timeout value on each pass=
+ through
+> > > > + * msleep until we reach the max.  This may be noticeable as a bri=
+ef (average
+> > > > + * one second) delay on the console before the console responds to=
+ input when
+> > > > + * there has been no input for some time.
+> > > > + */
+> > > > +#define MIN_TIMEOUT		(10)
+> > > > +#define MAX_TIMEOUT		(2000)
+> > >=20
+> > > [...]
+> > > > +				msleep_interruptible(timeout);
+> > >=20
+> > >=20
+> > > These values are milliseconds (that's what the m in msleep stands for
+> > > or at least it did last time I looked). This 10 is 1/100 of a second,
+> > > which makes a responsive keyboard for even a very very fast typist.
+> > > That's fine.  But 2000 is two seconds, which is longer than the amoun=
+t=20
+> > > of time that I wait before I start panicking that something is broken=
+.=20
+> >=20
+> > Well, I usually give my systems at least ten seconds before I start to
+> > worry. :-)=20
+> >=20
+> > I did ponder the max value to use.   Though when I sit down at &random&
+> > console in the lab, It often takes a moment for the terminal to warm up=
+,
+> > or for the screen to unblank.   With that in mind, a couple seconds max
+> > for the console does not seem unreasonable to me.
+> >=20
+> > Will see if other folks have an opinion either way..=20
 
-My understanding at this point is that we can always fall back
-to -mcpu=3Dpowerpc or -mcpu=3Dpowerpc64, and also
+I found the 2 second value was fine. If you're really paying attention
+you might notice the lag, but if you're not expecting it I don't think
+it's enough to really scare you.
 
-(401, 505, power, power2, rsc) -> not supported
+> I wasn't going to bring it up since I think it's a good approach as is,
+> but another thing that could be worth considering is to not just go
+> from whatever value to min on every actual input, instead go down in
+> delay a bit (say half the delay). Likewise you might be able to back off
+> more aggressively than just one millisecond per iteration.   Of course,
+> both of these should take min/max values into consideration.
 
-403 -> -mcpu=3D403
-(405, 440) -> -mcpu=3D405
-(e500, 85xx) -> -mcpu=3D8540
-601 -> -mcpu=3D601
-(6xx, g3, g4, e300, e600) -> -mcpu=3D603
-(ec603e, e200, 82xx) -> -mcpu=3Dec603e
-(8xx) -> -mcpu=3D860
+I experimented with increasing the delay faster (100ms per iteration)
+and found it effected the feel of the console too much when you're
+actually typing. Though perhaps increasing by 10%-20% of the current
+delay every iteration might work OK.
 
-(power3, rs64) -> -mcpu=3Dpower3
-power4 -> -mcpu=3Dpower4 >> -mcpu=3Dpower3
-970 -> -mcpu=3D970 >> -mcpu=3Dpower4
-cell -> -mcpu=3Dcell >> -mcpu=3D970
-power5 -> -mcpu=3Dpower5 >> -mcpu=3Dpower4
-power5+ -> -mcpu=3Dpower5+ >> -mcpu=3Dpower5
-power6 -> -mcpu=3Dpower6 >> -mcpu=3Dpower5+
-power6x -> -mcpu=3Dpower6x >> -mcpu=3Dpower6
-pa6t -> -mcpu=3Dpa6t >> (???)
+cheers
 
-So if we select e.g. power6 and cell, it needs to fall back to power4,
-which is the common subset. Selecting both 403 and 405 would result
-in falling back to -mcpu=3Dpowerpc, because they don't have any larger
-subset.
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-I'm not sure what the right fallback fo pa6t should be. I would guess
-that it's a superset of power6x and 970 when considering the kernel,
-but it's not entirely clear what the fallback should be.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-	Arnd <><
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-0zmnwjl0xSo0TyuuuuSJ
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBGHtK3dSjSd0sB4dIRAhpNAJ0WxoyQ0aauM+u1i+jH1sl4qKgHwwCgluxF
+2Svn5v8UjtnHSUjoV2YcEFE=
+=A1+T
+-----END PGP SIGNATURE-----
+
+--=-0zmnwjl0xSo0TyuuuuSJ--
