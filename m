@@ -1,21 +1,16 @@
-Return-Path: <Leonid@a-k-a.net>
-Received: from mis011-1.exch011.intermedia.net
-	(mis011-1.exch011.intermedia.net [64.78.21.128])
-	by ozlabs.org (Postfix) with ESMTP id E87ECDDEBF
+Return-Path: <cthomas@Soneticom.com>
+Received: from Soneticom.com (soneticom.com [209.114.210.150])
+	by ozlabs.org (Postfix) with ESMTP id D1410DDE07
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Apr 2007 03:05:30 +1000 (EST)
+	Sat, 14 Apr 2007 05:55:16 +1000 (EST)
 MIME-Version: 1.0
 Content-Type: text/plain;
 	charset="us-ascii"
-Subject: RE: HOTO start with linux 2.6.* and ML403
-Date: Fri, 13 Apr 2007 10:04:17 -0700
-Message-ID: <406A31B117F2734987636D6CCC93EE3C0149F16A@ehost011-3.exch011.intermedia.net>
-In-Reply-To: <9979404.post@talk.nabble.com>
-References: <9939239.post@talk.nabble.com><BAY115-W21FFB4DA2861035BC20B77B25F0@phx.gbl><461E50B3.6060105@ru.mvista.com>
-	<9979404.post@talk.nabble.com>
-From: "Leonid" <Leonid@a-k-a.net>
-To: "Mirek23" <miroslaw.dach@psi.ch>,
-	<linuxppc-embedded@ozlabs.org>
+Subject: Linux 2.6 and uboot
+Date: Fri, 13 Apr 2007 15:55:46 -0400
+Message-ID: <3C02138692C13C4BB675FE7EA24095293284D7@bluefin.Soneticom.local>
+From: "Clint Thomas" <cthomas@Soneticom.com>
+To: <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,15 +21,11 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday, April 13, 2007 6:53 AM Mirek wrote:
-> In the Kernel xparameters_ml403.h I did not find any reference to the
-> XILINX_TEMAC network interface.=20
-
-It is not there since patch I've sent you (provided by Lorentz Kolb) is
-designed to work with standard ML403 EDK design which has EMAC, not
-TEMAC. I didn't try to use TEMAC on ML403 though I'm using it on my
-proprietary Virtex4 based board.=20
-
-Answers on your other questions see in my personal e-mail.
-
-Leonid.
+Is there any correlation between the version of U-boot to use on a board
+and the version of the Linux kernel you plan to use? Current I'm running
+U-boot 1.1.2 with kernel 2.4.26 on my MPC85xx board, but i'm trying to
+migrate to the latest 2.6 kernel. I am getting a kernel hang at boot
+when it registers socket family 17, so I was wondering if it might have
+to do with u-boot before exploring the debug route.
+=20
+Clinton Thomas
