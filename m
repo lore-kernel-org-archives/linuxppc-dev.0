@@ -1,30 +1,20 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 4D51ADDE43
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 02:47:04 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3DGkxqP006291
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:46:59 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3DGkxmV298962
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:46:59 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3DGkxHj017460
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:46:59 -0400
-Date: Fri, 13 Apr 2007 11:46:59 -0500
-To: Michael Ellerman <michael@ellerman.id.au>
-Subject: Re: [PATCH] hvc_console polling mode timer backoff
-Message-ID: <20070413164659.GY4747@austin.ibm.com>
-References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
-	<1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 42F44DDDE9
+	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 03:00:58 +1000 (EST)
+In-Reply-To: <20070413012542.343eb848.kim.phillips@freescale.com>
+References: <20070413012542.343eb848.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B273DC06-E4DF-4FF5-88E8-2E6C634C98DA@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
+	properties
+Date: Fri, 13 Apr 2007 12:00:32 -0500
+To: Kim Phillips <kim.phillips@freescale.com>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -35,24 +25,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 13, 2007 at 05:47:39PM +1000, Michael Ellerman wrote:
-> 
-> I played with this a bit more, and a ~2% increment seems to work nicely.
-> It stays low for the first 10-20 seconds, but then approaches the max
-> much faster once there's no activity for a while.
-> 
-> A few examples:
-> http://michael.ellerman.id.au/files/cell-backoff.svg
 
-Looks good to me. 
+On Apr 13, 2007, at 1:25 AM, Kim Phillips wrote:
 
-> changed it to use a shift instead of divide. So now it's more like 1.5%,
-> but still the point is it increases faster as time passes.
+> Since ucc_geth is being migrated to use the phylib, the existing
+> (undocumented) 'interface' property is being deprecated in favour
+> of unconjoined variations 'max-speed' and 'interface-type'.
+>
+> interface-type is now maintained one-to-one with definitions
+> in include/linux/phy.h.  If not specified, "mii" is assumed.
+>
+> max-speed is available for users to override the interface-derived
+> speed, e.g. rgmii at 100Mbit/s.
+>
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ---
+> moved to recommended section (from required), removed sgmii, added  
+> rgmii-id.
 
-Looks god to me. I suppose
+any reason to remove sgmii?  What is rgmii-id?
 
-Acked-by: Linas Vepstas <linas@austin.ibm.com> 
+- k
 
-is the right thing to say here.
-
---linas
+>
+> please consider for 2.6.22
+>
+>  Documentation/powerpc/booting-without-of.txt |    5 +++++
+>  1 files changed, 5 insertions(+), 0 deletions(-)
+>
+> diff --git a/Documentation/powerpc/booting-without-of.txt b/ 
+> Documentation/powerpc/booting-without-of.txt
+> index 88cdb59..cb8c6fb 100644
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -1562,6 +1562,10 @@ platforms are moved over to use the  
+> flattened-device-tree model.
+>       network device.  This is used by the bootwrapper to interpret
+>       MAC addresses passed by the firmware when no information other
+>       than indices is available to associate an address with a device.
+> +   - interface-type : a string naming the controller/PHY interface  
+> type,
+> +     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id",  
+> "tbi", or "rtbi".
+> +   - max-speed : The maximum speed supported by the controller (in  
+> Mbit/s)
+> +     this is used if the user wants to override the interface- 
+> derived speed.
+>
+>     Example:
+>  	ucc@2000 {
+> @@ -1573,6 +1577,7 @@ platforms are moved over to use the flattened- 
+> device-tree model.
+>  		interrupts = <a0 0>;
+>  		interrupt-parent = <700>;
+>  		mac-address = [ 00 04 9f 00 23 23 ];
+> +		interface-type = "rgmii";
+>  		rx-clock = "none";
+>  		tx-clock = "clk9";
+>  		phy-handle = <212000>;
+> -- 
+> 1.5.0.1
