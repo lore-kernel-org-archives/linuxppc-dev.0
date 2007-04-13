@@ -1,28 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BF907DDF58
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:43:57 +1000 (EST)
-Subject: Re: qla_wxyz pci_set_mwi question
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Randy Dunlap <randy.dunlap@oracle.com>
-In-Reply-To: <461EEDAA.7090503@oracle.com>
-References: <20070411221507.69c97257.randy.dunlap@oracle.com>
-	<20070412172038.GG10124@andrew-vasquezs-computer.local>
-	<20070412185347.GL26692@parisc-linux.org>
-	<20070412193713.GB14510@andrew-vasquezs-computer.local>
-	<20070412200438.GM26692@parisc-linux.org>
-	<1176431662.5764.56.camel@localhost.localdomain>
-	<461EEDAA.7090503@oracle.com>
-Content-Type: text/plain
-Date: Fri, 13 Apr 2007 12:43:43 +1000
-Message-Id: <1176432224.5764.59.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: scsi <linux-scsi@vger.kernel.org>, Matthew Wilcox <matthew@wil.cx>,
-	gregkh <greg@kroah.com>, David Somayajulu <david.somayajulu@qlogic.com>,
-	linuxppc-dev@ozlabs.org, Andrew Vasquez <andrew.vasquez@qlogic.com>,
-	linux-driver@qlogic.com, PCI <linux-pci@atrey.karlin.mff.cuni.cz>
+Return-Path: <gmack@innerfire.net>
+Received: from mtl.rackplans.net (unknown [69.90.0.18])
+	by ozlabs.org (Postfix) with ESMTP id 6865DDDF5C
+	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 12:45:49 +1000 (EST)
+Date: Thu, 12 Apr 2007 22:45:44 -0400 (EDT)
+From: Gerhard Mack <gmack@innerfire.net>
+To: Roland Dreier <rdreier@cisco.com>
+Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
+In-Reply-To: <adabqhtip2n.fsf@cisco.com>
+Message-ID: <Pine.LNX.4.64.0704122243280.9866@mtl.rackplans.net>
+References: <1175644642.10567.31.camel@shinybook.infradead.org>
+	<20070403221002.GA13210@cynthia.pants.nu>
+	<1175648051.10567.61.camel@shinybook.infradead.org>
+	<20070403.181645.68159458.davem@davemloft.net>
+	<20070404022828.5c9b97f3@the-village.bc.nu>
+	<Pine.LNX.4.64.0704032307001.7802@mtl.rackplans.net>
+	<m3tzvm6fgw.fsf@ursa.amorsen.dk> <adabqhtip2n.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org,
+	Benny Amorsen <benny+usenet@amorsen.dk>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,28 +28,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Sometimes it's not the speed it's the cost.. The best I've ever done is 
+5.5 interfaces per u/ Although with a better motherboard and case it might 
+have been different.
 
-> Willy was referring to this from include/asm-powerpc/pci.h:
+http://innerfire.net/pics/projects/21portfirewall_2.jpg
+(assigns each port it's ip range and blocks any address not assigned to 
+that port)
+
+
+On Thu, 12 Apr 2007, Roland Dreier wrote:
+
+> Date: Thu, 12 Apr 2007 08:34:40 -0700
+> From: Roland Dreier <rdreier@cisco.com>
+> To: Benny Amorsen <benny+usenet@amorsen.dk>
+> Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+> Subject: Re: [PATCH] Stop pmac_zilog from abusing 8250's device numbers.
 > 
-> #ifdef CONFIG_PPC64
+>  > Indeed, port density is disappointingly poor in modern servers. Do you
+>  > know any with more than 14 ports per U? (That's an MBX 1U server with
+>  > 8 on-board and a 6-port expansion).
 > 
-> /*
->  * We want to avoid touching the cacheline size or MWI bit.
->  * pSeries firmware sets the cacheline size (which is not the cpu cacheline
->  * size in all cases) and hardware treats MWI the same as memory write.
->  */
-> #define PCI_DISABLE_MWI
+> If you really need a ton of ports you could probably build a 1U server
+> with 2 * 2-port 10gig NICs, and use VLAN-capable switches with 10gig
+> and 1gig ports to fan out each 10gig link from your server to 10 1-gig
+> ports.  That would get you 40 ports of 1-gig from each server (plus
+> whatever the server has on board).
 > 
+>  - R.
+> -
+> To unsubscribe from this list: send the line "unsubscribe linux-kernel" in
+> the body of a message to majordomo@vger.kernel.org
+> More majordomo info at  http://vger.kernel.org/majordomo-info.html
+> Please read the FAQ at  http://www.tux.org/lkml/
 > 
-> which makes pci_set_mwi() do nothing other than return 0;
 
-Interesting... I think I missed that we had that bit for some time :-)
+--
+Gerhard Mack
 
-Well, I suppose that on pSeries and probably pmac too, the firmware will
-set the MWI bit for us anyway, but that's a bit dodgy to apply that to
-all ppc64... they aren't all pSeries.
+gmack@innerfire.net
 
-I'll have to look into that again one of these days.
-
-Cheers,
-Ben.
+<>< As a computer I find your faith in technology amusing.
