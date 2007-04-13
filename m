@@ -1,15 +1,15 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 89064DDF61
-	for <linuxppc-dev@ozlabs.org>; Fri, 13 Apr 2007 17:14:10 +1000 (EST)
-Date: Fri, 13 Apr 2007 17:14:22 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: paulus@samba.org
-Subject: [PATCH] [POWERPC] Rename last get_property calls
-Message-Id: <20070413171422.c19353e2.sfr@canb.auug.org.au>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] hvc_console polling mode timer backoff
+From: Michael Ellerman <michael@ellerman.id.au>
+To: will_schmidt@vnet.ibm.com
+In-Reply-To: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
+References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
+Content-Type: text/plain
+Date: Fri, 13 Apr 2007 17:47:39 +1000
+Message-Id: <1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,59 +19,102 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-These got added recently.
+On Thu, 2007-04-12 at 11:14 -0500, Will Schmidt wrote:
+> Add a backoff mechanism to hvc_console's polling logic.   This change
+> drops the timers/second ratio from ~90 to ~1 while the console is idle.
+> This is very noticable when watching /proc/timer_stats output.
+> 
+> This only affects when the hvc_console is running in poll mode, i.e. power4
+> and cell systems.
+> 
+> I've tested on Power4, Michael Ellerman has tested on cell.
 
-Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
----
- arch/powerpc/kernel/of_device.c     |    4 ++--
- arch/powerpc/platforms/52xx/efika.c |    4 ++--
- 2 files changed, 4 insertions(+), 4 deletions(-)
+I played with this a bit more, and a ~2% increment seems to work nicely.
+It stays low for the first 10-20 seconds, but then approaches the max
+much faster once there's no activity for a while.
 
-This is relative to the current powerpc for-2.6.22 tree.
--- 
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
+A few examples:
+http://michael.ellerman.id.au/files/cell-backoff.svg
 
-diff --git a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
-index e8aa1f3..0c8ea76 100644
---- a/arch/powerpc/kernel/of_device.c
-+++ b/arch/powerpc/kernel/of_device.c
-@@ -132,7 +132,7 @@ static ssize_t of_device_get_modalias(struct of_device *ofdev,
- 				ofdev->node->name, ofdev->node->type);
+As you can (sort of) see on the graph, after 30 seconds the delay is
+still around 1/2 a second which is basically unnoticable IMHO.
+
+Because this is a super tight performance critical inner loop I've
+changed it to use a shift instead of divide. So now it's more like 1.5%,
+but still the point is it increases faster as time passes.
+
+It'd be good if some more people can bang on this and see what they
+think of the interactivity.
+
+Index: cell/drivers/char/hvc_console.c
+===================================================================
+--- cell.orig/drivers/char/hvc_console.c
++++ cell/drivers/char/hvc_console.c
+@@ -47,8 +47,6 @@
+ #define HVC_MAJOR	229
+ #define HVC_MINOR	0
  
- 	/* Get compatible property if any */
--	compat = get_property(ofdev->node, "compatible", &cplen);
-+	compat = of_get_property(ofdev->node, "compatible", &cplen);
- 	if (!compat)
- 		return csize;
+-#define TIMEOUT		(10)
+-
+ /*
+  * Wait this long per iteration while trying to push buffered data to the
+  * hypervisor before allowing the tty to complete a close operation.
+@@ -550,6 +548,26 @@ static int hvc_chars_in_buffer(struct tt
+ 	return hp->n_outbuf;
+ }
  
-@@ -194,7 +194,7 @@ int of_device_uevent(struct device *dev,
-          * it's not really legal to split it out with commas. We split it
-          * up using a number of environment variables instead. */
++/*
++ * timeout will vary between the MIN and MAX values defined here.  By default
++ * and during console activity we will use a default MIN_TIMEOUT of 10.  When
++ * the console is idle, we increase the timeout value on each pass through
++ * msleep until we reach the max.  This may be noticable as a brief (average
++ * one second) delay on the console before the console responds to input when
++ * there has been no input for sometime.
++ */
++#define MIN_TIMEOUT		(10)
++#define MAX_TIMEOUT		(2000)
++static u32 timeout = MIN_TIMEOUT;
++
++#include <linux/debugfs.h>
++static int hvc_debug_init(void)
++{
++	debugfs_create_u32("hvc_timeout", 0400, NULL, &timeout);
++	return 0;
++}
++__initcall(hvc_debug_init);
++
+ #define HVC_POLL_READ	0x00000001
+ #define HVC_POLL_WRITE	0x00000002
  
--	compat = get_property(ofdev->node, "compatible", &cplen);
-+	compat = of_get_property(ofdev->node, "compatible", &cplen);
- 	while (compat && *compat && cplen > 0) {
- 		if (add_uevent_var(envp, num_envp, &i,
- 				   buffer, buffer_size, &length,
-diff --git a/arch/powerpc/platforms/52xx/efika.c b/arch/powerpc/platforms/52xx/efika.c
-index 0420084..0eceb1f 100644
---- a/arch/powerpc/platforms/52xx/efika.c
-+++ b/arch/powerpc/platforms/52xx/efika.c
-@@ -232,12 +232,12 @@ static void __init efika_init_early(void)
- 	/* find the boot console from /chosen/stdout */
- 	if (!of_chosen)
- 		return;
--	device_type = get_property(of_chosen, "linux,stdout-path", NULL);
-+	device_type = of_get_property(of_chosen, "linux,stdout-path", NULL);
- 	if (!device_type)
- 		return;
- 	stdout_node = of_find_node_by_path(device_type);
- 	if (stdout_node) {
--		device_type = get_property(stdout_node, "device_type", NULL);
-+		device_type = of_get_property(stdout_node, "device_type", NULL);
- 		if (device_type && strcmp(device_type, "serial") == 0)
- 			add_preferred_console("ttyPSC", 0, NULL);
- 		of_node_put(stdout_node);
--- 
-1.5.1.1
+@@ -642,9 +660,14 @@ static int hvc_poll(struct hvc_struct *h
+  bail:
+ 	spin_unlock_irqrestore(&hp->lock, flags);
+ 
+-	if (read_total)
++	if (read_total) {
++		/* Activity is occurring, so reset the polling backoff value to
++		   a minimum for performance. */
++		timeout = MIN_TIMEOUT;
++
+ 		tty_flip_buffer_push(tty);
+-	
++	}
++
+ 	return poll_mask;
+ }
+ 
+@@ -688,8 +711,12 @@ int khvcd(void *unused)
+ 		if (!hvc_kicked) {
+ 			if (poll_mask == 0)
+ 				schedule();
+-			else
+-				msleep_interruptible(TIMEOUT);
++			else {
++				if (timeout < MAX_TIMEOUT)
++					timeout += (timeout >> 6) + 1;
++
++				msleep_interruptible(timeout);
++			}
+ 		}
+ 		__set_current_state(TASK_RUNNING);
+ 	} while (!kthread_should_stop());
