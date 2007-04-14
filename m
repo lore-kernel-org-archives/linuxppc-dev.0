@@ -1,14 +1,18 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id F41C8DDE3D
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 7329BDDE1A
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 14 Apr 2007 09:31:05 +1000 (EST)
-Date: 13 Apr 2007 16:24:22 -0700
-Message-ID: <20070413232422.11827.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: tur@semihalf.com, linuxppc-embedded@ozlabs.org
-Subject: Re: RFC: MPC52xx serial port configuration from DT blob
-In-Reply-To: <461FF442.8090807@semihalf.com>
+	Sun, 15 Apr 2007 05:01:52 +1000 (EST)
+Date: Sat, 14 Apr 2007 21:01:49 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Clint Thomas <cthomas@Soneticom.com>
+Subject: RE: Linux 2.6 and uboot
+In-Reply-To: <3C02138692C13C4BB675FE7EA24095293284E0@bluefin.Soneticom.local>
+Message-ID: <Pine.LNX.4.60.0704142053560.5114@poirot.grange>
+References: <3C02138692C13C4BB675FE7EA24095293284E0@bluefin.Soneticom.local>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,44 +23,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Bartlomiej wrote:
-> We have a MPC5200B-based board running an arch/powerpc kernel and we
-> need the ability to configure a non-console serial port for a particular
-> baud rate during system start-up. It seems that the UART driver in
-> drivers/serial/mpc52xx_uart.c does not support this. It only allows to
-> set parameters for a port that is used as a console, and for which those
-> parameters are passed in the kernel command line. We would like to
-> extend the mpc52xx_uart.c driver to be able to retrieve port options
-> from the DT blob and configure a given port accordingly. A new
-> port-specific property called "options" would be used for this. It would
-> have syntax following its namesake in "console" kernel parameter, as
-> described in Documentation/kernel-parameters.txt.
-> 
-> For example, the following settings in the .dts file would make UART5 to 
-> be configured at 115200 baud, no parity, 8 bits.
-> 
-> serial@2800 {           // PSC5
->          device_type = "serial";
->          compatible = "mpc5200b-psc-uart\0mpc5200-psc-uart";
->          port-number = <4>;  // Logical port assignment
->          options = "115200n8"
->          cell-index = <4>;
->          reg = <2800 100>;
->          interrupts = <2 c 0>;
->          interrupt-parent = <500>;
-> };
-> 
-> 
-> In case a console port has conflicting options given in the kernel 
-> command line and in the DT blob, the command line values would be used.
-> 
-> Any comments on the above will be appreciated.
+On Fri, 13 Apr 2007, Clint Thomas wrote:
 
-The device tree is intended to be an OS-independent description of the
-state of the platform hardware as left by firmware (or bootwrapper).
-It is not intended to contain kernel configuration parameters or options,
-though there are a few exceptions.
+> mice: PS/2 mouse device common for all mice
+> i2c /dev entries driver
+> TCP cubic registered
+> NET: Registered protocol family 1
+> NET: Registered protocol family 17
+> 
+> This is the point where it stops booting.
 
-So, this kind of change is unlikely to be accepted.
+It might be just the point before root is mounted... That's what I'd check 
+anyway... I see it has 2 eth interfaces. Can it be that their order has 
+changed and it's trying the wrong one?
 
--Dale
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
