@@ -1,17 +1,16 @@
-Return-Path: <ntl@pobox.com>
-Received: from sceptre.pobox.com (sceptre.pobox.com [207.106.133.20])
-	by ozlabs.org (Postfix) with ESMTP id 71596DDE2F
-	for <linuxppc-dev@ozlabs.org>; Sat, 14 Apr 2007 14:45:39 +1000 (EST)
-Date: Fri, 13 Apr 2007 23:45:30 -0500
-From: Nathan Lynch <ntl@pobox.com>
-To: David Huffman <dhuffman@storix.com>
-Subject: Re: Kernel Panic booting cdrom
-Message-ID: <20070414044529.GE6062@localdomain>
-References: <46202254.1090606@storix.com>
+Return-Path: <gvb.uboot@gmail.com>
+Message-ID: <4620D009.1000800@gmail.com>
+Date: Sat, 14 Apr 2007 08:58:49 -0400
+From: Jerry Van Baren <gvb.uboot@gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <46202254.1090606@storix.com>
-Cc: linuxppc-dev@ozlabs.org
+To: Linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH dtc] Implement the -R option and add a -S option.
+References: <20070405020433.GA13891@dellserver.lan>
+	<20070405161113.GA28063@ld0162-tx32.am.freescale.net>
+	<46152D90.5070209@smiths-aerospace.com>
+	<20070412065152.GA26210@localhost.localdomain>
+In-Reply-To: <20070412065152.GA26210@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,58 +20,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi David-
+David Gibson wrote:
+> On Thu, Apr 05, 2007 at 01:10:40PM -0400, Jerry Van Baren wrote:
+>> Scott Wood wrote:
+>>> On Wed, Apr 04, 2007 at 10:04:33PM -0400, Jerry Van Baren wrote:
+>>>> Implement the -R <number> option to add memory reserve slots.
+>>>> Add a -S <size> option makes the blob at least this number of bytes.
+>>> Wouldn't it be better to just specify the amount of extra space, instead
+>>> of the minimum total space?  That way, you only need to know what you
+>>> intend to add, not how much is already there.
+>>>
+>>> -Scott
+>> I thought briefly about this, but decided to implement a fixed size so 
+>> that someone could allocate, say, 8K of memory in their memory map 
+>> (likely flash) and know their blob would fit.
+>>
+>> Maybe we need a little -s option to say "add -s bytes".
+> 
+> I think having both options would be a good idea.  It would also be
+> nice to have options to do this from the dts file (something similar
+> to /memreserve/).
+> 
+>> Jon suggested a --stats option to print out the important statistics. 
+>> That would also be a good enhancement.
+> 
+> Ok.  How would you envisage this working?
+> 
+> I've thought for some time that it would be a good idea to add an
+> "info" output mode.  In that mode instead of outputting a converted
+> device tree, it would give various bits of info on the input tree.
+> This would include things like the header field debugging information
+> that's currently output as pseudo-error messages when using dtb input.
+> 
+> I'm not sure to what extent your "--stats" idea would overlap with
+> that.
 
-David Huffman wrote:
-> I created a cdrom (using the same procedure that has been working for 
-> years), and received a kernel panic when booting a linux system on a 
-> System i p5 lpar. Here is a section of the boot messages, plus I added 
-> the output of .registers from OF. Anyone have an idea what could be the 
-> cause?
+Hi David,
 
-> Oops: Kernel access of bad area, sig: 11 [#1]
-> SMP NR_CPUS=128 NUMA PSERIES LPAR
-> NIP: C00000000012F210 XER: 0000000020000010 LR: C000000000476024
-> REGS: c00000007ff5fab0 TRAP: 0380   Not tainted  (2.6.5-7.244-pseries64 
-> SLES9_SP3_BRANCH-200512121832250000)
-> MSR: 8000000000009032 EE: 1 PR: 0 FP: 0 ME: 1 IR/DR: 11
-> DAR: 0000000000000010, DSISR: 0000000000200000
-> TASK: c00000007ff5b440[1] 'swapper' THREAD: c00000007ff5c000 CPU: 0
-> GPR00: C000000000476024 C00000007FF5FD30 C00000000071DCC8 C000000000723338
-> GPR04: C0000000028CC080 C0000000028CC088 C000000000954C98 C000000002692888
-> GPR08: 0000000000000002 0000000000000001 C000000000643160 0000000000000001
-> GPR12: 0000000024000042 C000000000491000 0000000000000000 0000000000000000
-> GPR16: 0000000000000000 0000000000000000 0000000000000000 0000000000000000
-> GPR20: 0000000000000000 0000000000000010 00000000001BB591 0000000001C00000
-> GPR24: C000000000491000 C00000000071D008 C00000000048B5F0 C0000000028CC080
-> GPR28: 0000000000000000 C000000000723338 C0000000006316D0 C0000000028CC088
-> NIP [c00000000012f210] .sysfs_create_link+0x30/0x134
-> LR [c000000000476024] .register_cpu+0xc8/0x104
-> Call Trace:
-> [c00000007ff5fd30] [c0000000002753cc] .sysdev_register+0x98/0x250 
-> (unreliable)
-> [c00000007ff5fdd0] [c000000000476024] .register_cpu+0xc8/0x104
-> [c00000007ff5fe70] [c0000000004621dc] .topology_init+0x1b4/0x290
-> [c00000007ff5ff00] [c00000000000c654] .init+0x1a0/0x360
-> [c00000007ff5ff90] [c000000000017d24] .kernel_thread+0x4c/0x68
->  <0>Fatal exception: panic in 5 seconds
+Well, that was Jon's suggestion/idea so I have not thought about it 
+much.  It would probably overlap 100% with your --info idea, with the 
+exception that Jon's suggestion would also put out the blob.
 
+Since the dtc puts out the blob to sdtout, this actually is problematic. 
+  I presume that is why you suggest inhibiting output.  Using stderr 
+would sorta bypass that problem, but is not ideal (IMHO).
 
->From the full version at http://www.storix.com/p5panic.txt:
+Is there any reason we don't have a -o option to direct the compiled 
+blob output to a file?  Since the usual use is to write to a file, it 
+would free up stdout for (info/stats) outputs.
 
-Linux version 2.6.5-7.244-pseries64 (geeko@buildhost) (gcc version 3.3.3 (SuSE Linux)) #1 SMP Mon Dec 12 18:32:25 UTC 2005
-[boot]0012 Setup Arch
-NUMA associativity depth for CPU/Memory: 3
-cpu 0 maps to domain 5
-cpu 1 maps to domain 5
-memory region 0 to 8000000 maps to domain 5
-memory region 8000000 to 9000000 maps to domain 5
-memory region 9000000 to a000000 maps to domain 5
-....
+On an unrelated related note, I don't believe my -R additions are 
+actually putting out additional reserve map slots (easiest to see using 
+the asm format output).  I'm still trying to understand why not, it 
+seemed pretty straight-forward.  When I implemented it, I was looking at 
+hexdumps of the dtb binary format and looking at the header and thought 
+I had it working... using it with my u-boot mods shows no extra reserved 
+slots.  I'm looking into where I went wrong.
 
-Could you see whether adding numa=off on the kernel command line
-helps?
-
-I think it's crashing because kernels this old assume that numa node
-numbering as given by firmware begins with 0.  This partition has a
-single node numbered 5.
+Best regards,
+gvb
