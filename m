@@ -1,17 +1,14 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 7FBB4DDE28
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Apr 2007 05:42:15 +1000 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <97762565fcdccbf85d1d04cd055b1197@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] hvc_console polling mode timer backoff
-Date: Sat, 14 Apr 2007 14:42:02 -0500
-To: Michael Ellerman <michael@ellerman.id.au>,
-	Will Schmidt <will_schmidt@vnet.ibm.com>
-Cc: Olof Johansson <olof@lixom.net>, ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <vanbaren@cideas.com>
+Received: from alnrmhc13.comcast.net (alnrmhc13.comcast.net [204.127.225.93])
+	by ozlabs.org (Postfix) with ESMTP id E4E9DDDE29
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Apr 2007 08:20:33 +1000 (EST)
+Date: Sat, 14 Apr 2007 18:15:27 -0400
+From: Jerry Van Baren <gvb.uboot@gmail.com>
+To: linuxppc-dev@ozlabs.org, jdl@jdl.com
+Subject: [PATCH dtc] Fix reserve map output for asm format.
+Message-ID: <20070414221526.GA23870@dellserver.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,30 +18,82 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Michael Ellerman wrote:
+Add extra reserve map slots output for asm format (previously done for dtb
+  output).
+Use cmalloc to pre-zero memory (for dtb input) and handle dtb (binary)
+  input being shorter than the total blob length (result of putting
+  extra space in the blob).
 
-> + * msleep until we reach the max.  This may be noticable as a brief 
-> (average
-> + * one second) delay on the console before the console responds to 
-> input when
-> + * there has been no input for sometime.
-> + */
-> +#define MIN_TIMEOUT            (10)
-> +#define MAX_TIMEOUT            (2000)
-> +static u32 timeout = MIN_TIMEOUT;
+Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
+---
 
-Did you consider making MAX_TIMEOUT a module parameter?   It could then
-be changed at runtime through /sys/modules/.
+Hi Jon:
 
-> +
-> +                               if (timeout < MAX_TIMEOUT)
-> +                                       timeout += (timeout >> 6) + 1;
+Some simple fixes for handling extra reserve slots and extra space in
+the blob.
 
-Keeping MIN_TIMEOUT a define is okay with me, and the code will
-naturally ignore max < MIN.  It may overshoot timeout by 1/64th.
+Best regards,
+gvb
 
-I doubt we would worry about the overflow case, because by then
-the timeout would have been quite long, and the user would like
-it to be short again.
+ dtc.h      |    4 ++--
+ flattree.c |   14 +++++++++++---
+ 2 files changed, 13 insertions(+), 5 deletions(-)
 
-milton
+diff --git a/dtc.h b/dtc.h
+index 8cfe1a1..e77f9d1 100644
+--- a/dtc.h
++++ b/dtc.h
+@@ -55,10 +55,10 @@ static inline void die(char * str, ...)
+ 
+ static inline void *xmalloc(size_t len)
+ {
+-	void *new = malloc(len);
++	void *new = calloc(len, 1);
+ 
+ 	if (! new)
+-		die("malloc() failed\n");
++		die("calloc() failed\n");
+ 
+ 	return new;
+ }
+diff --git a/flattree.c b/flattree.c
+index 151d16e..6f0c9b7 100644
+--- a/flattree.c
++++ b/flattree.c
+@@ -21,6 +21,9 @@
+ #include "dtc.h"
+ #include "flat_dt.h"
+ 
++#define WARNMSG(...) if (quiet < 1) fprintf(stderr, "Warning: " __VA_ARGS__)
++
++
+ #define FTF_FULLPATH	0x1
+ #define FTF_VARALIGN	0x2
+ #define FTF_NAMEPROPS	0x4
+@@ -490,6 +493,9 @@ void dt_to_asm(FILE *f, struct boot_info *bi, int version, int boot_cpuid_phys)
+ 			(unsigned int)(re->re.size >> 32),
+ 			(unsigned int)(re->re.size & 0xffffffff));
+ 	}
++	for (i = 0; i < reservenum; i++) {
++		fprintf(f, "\t.long\t0, 0\n\t.long\t0, 0\n");
++	}
+ 
+ 	fprintf(f, "\t.long\t0, 0\n\t.long\t0, 0\n");
+ 
+@@ -818,9 +824,11 @@ struct boot_info *dt_from_blob(FILE *f)
+ 	p = blob + sizeof(magic)  + sizeof(totalsize);
+ 
+ 	while (sizeleft) {
+-		if (feof(f))
+-			die("EOF before reading %d bytes of DT blob\n",
+-			    totalsize);
++		if (feof(f)) {
++			WARNMSG("EOF after reading %d of %d bytes of DT blob, assuming there is extra space in the blob.\n",
++			    totalsize - sizeleft, totalsize);
++			break;
++		}
+ 
+ 		rc = fread(p, 1, sizeleft, f);
+ 		if (ferror(f))
+-- 
+1.4.4.4
