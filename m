@@ -1,18 +1,15 @@
 Return-Path: <grant.likely@secretlab.ca>
 Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.67.118]) by ozlabs.org (Postfix) with ESMTP id B58A9DDDD5
+	[68.147.67.118]) by ozlabs.org (Postfix) with ESMTP id CECADDDE30
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 15 Apr 2007 17:28:00 +1000 (EST)
+	Sun, 15 Apr 2007 17:28:01 +1000 (EST)
 From: Grant Likely <grant.likely@secretlab.ca>
 To: linuxppc-embedded@ozlabs.org, Andrei Konovalov <akonovalov@ru.mvista.com>,
 	Peter Korsgaard <jacmet@sunsite.dk>,
 	Rick Moleres <Rick.Moleres@xilinx.com>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/5] [PPC] Rework Kconfig dependancies for Xilinx Virtex
-	ppc405 platform
-Date: Sun, 15 Apr 2007 01:27:38 -0600
-Message-Id: <11766220692537-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <1176622062492-git-send-email-grant.likely@secretlab.ca>
-References: <1176622062492-git-send-email-grant.likely@secretlab.ca>
+Subject: Patchset to establish sanity in Xilinx Virtex support
+Date: Sun, 15 Apr 2007 01:27:37 -0600
+Message-Id: <1176622062492-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,57 +20,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Reverse dependency order for Xilinx Virtex parts.  For these parts, It
-makes more sense for boards/chips to specify which features they
-provide instead of the features listing the parts they are implemented
-in.  I think it also makes adding new board ports simpler.
+The Virtex support in Linus' tree is a mess.  When I ported the common
+devices over to using the platform bus I tried the use the ppc_sys
+infrastructure.  ppc_sys is intended for SoCs that have a fixed set of
+devices.  It is the *wrong* approach for FPGA support, and I made a
+royal mess of things.  This patch set fixes that problem and makes
+a number of other changes that make supporting Virtex boards easier.
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
- arch/ppc/platforms/4xx/Kconfig |   13 +++++++------
- 1 files changed, 7 insertions(+), 6 deletions(-)
+I do know that changes to arch/ppc are frowned upon at the moment.  However,
+4xx support in arch/powerpc is not merged yet, and Virtex support needs
+additional work beyond that.  I suspect that arch/ppc support for the
+4xx parts is going to need to stay alive for the next 2-3 kernel releases
+anyway while arch/powerpc support stablizes.  Getting these patches in
+will make it easier to support the Virtex ports while I hack on getting
+arch/powerpc stuff figured out.
 
-diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
-index 705ae56..f74e25b 100644
---- a/arch/ppc/platforms/4xx/Kconfig
-+++ b/arch/ppc/platforms/4xx/Kconfig
-@@ -54,11 +54,13 @@ config WALNUT
- 
- config XILINX_ML300
- 	bool "Xilinx-ML300"
-+	select XILINX_VIRTEX_II_PRO
- 	help
- 	  This option enables support for the Xilinx ML300 evaluation board.
- 
- config XILINX_ML403
- 	bool "Xilinx-ML403"
-+	select XILINX_VIRTEX_4_FX
- 	help
- 	  This option enables support for the Xilinx ML403 evaluation board.
- endchoice
-@@ -215,18 +217,17 @@ config 405GPR
- 
- config XILINX_VIRTEX_II_PRO
- 	bool
--	depends on XILINX_ML300
--	default y
-+	select XILINX_VIRTEX
-+	default n
- 
- config XILINX_VIRTEX_4_FX
- 	bool
--	depends on XILINX_ML403
--	default y
-+	select XILINX_VIRTEX
-+	default n
- 
- config XILINX_VIRTEX
- 	bool
--	depends on XILINX_VIRTEX_II_PRO || XILINX_VIRTEX_4_FX
--	default y
-+	default n
- 
- config STB03xxx
- 	bool
--- 
-1.5.1
+ arch/ppc/boot/common/misc-common.c    |   15 ++-
+ arch/ppc/boot/simple/Makefile         |    1 +
+ arch/ppc/boot/simple/uartlite_tty.c   |   37 ++++++
+ arch/ppc/platforms/4xx/Kconfig        |   13 +-
+ arch/ppc/platforms/4xx/Makefile       |    1 -
+ arch/ppc/platforms/4xx/virtex.c       |   56 ---------
+ arch/ppc/platforms/4xx/virtex.h       |   47 +++++---
+ arch/ppc/platforms/4xx/xilinx_ml300.c |   65 +----------
+ arch/ppc/platforms/4xx/xilinx_ml300.h |   45 -------
+ arch/ppc/platforms/4xx/xilinx_ml403.c |   66 +----------
+ arch/ppc/platforms/4xx/xilinx_ml403.h |   49 --------
+ arch/ppc/syslib/Makefile              |    3 +-
+ arch/ppc/syslib/virtex_devices.c      |  209 +++++++++++++++++++++++++++++++++
+ arch/ppc/syslib/virtex_devices.h      |   27 +++++
+ include/asm-ppc/ibm4xx.h              |    8 +-
+ include/asm-ppc/ppc_sys.h             |    2 -
+ 16 files changed, 335 insertions(+), 309 deletions(-)
