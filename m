@@ -1,20 +1,19 @@
-Return-Path: <gvb.uboot@gmail.com>
-Message-ID: <462190EC.5010302@gmail.com>
-Date: Sat, 14 Apr 2007 22:41:48 -0400
-From: Jerry Van Baren <gvb.uboot@gmail.com>
-MIME-Version: 1.0
-To: Linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH dtc] Implement the -R option and add a -S option.
-References: <20070405020433.GA13891@dellserver.lan>
-	<20070405161113.GA28063@ld0162-tx32.am.freescale.net>
-	<46152D90.5070209@smiths-aerospace.com>
-	<20070412065152.GA26210@localhost.localdomain>
-	<4620D009.1000800@gmail.com>
-	<20070415004229.GD9104@localhost.localdomain>
-	<46218A5D.80805@gmail.com>
-	<20070415022244.GA12016@localhost.localdomain>
-In-Reply-To: <20070415022244.GA12016@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] hvc_console polling mode timer backoff
+From: Michael Ellerman <michael@ellerman.id.au>
+To: will_schmidt@vnet.ibm.com
+In-Reply-To: <1176491513.28514.66.camel@farscape.rchland.ibm.com>
+References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
+	<1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
+	<1176491513.28514.66.camel@farscape.rchland.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-MEgbk1dEHFK4UtPh0jkG"
+Date: Sun, 15 Apr 2007 23:33:32 +1000
+Message-Id: <1176644012.5422.3.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,53 +23,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Sat, Apr 14, 2007 at 10:13:49PM -0400, Jerry Van Baren wrote:
->> David Gibson wrote:
->>> On Sat, Apr 14, 2007 at 08:58:49AM -0400, Jerry Van Baren wrote:
->> [snip]
->>
->>>> On an unrelated related note, I don't believe my -R additions are 
->>>> actually putting out additional reserve map slots (easiest to see using 
->>>> the asm format output).  I'm still trying to understand why not, it 
->>>> seemed pretty straight-forward.  When I implemented it, I was looking at 
->>>> hexdumps of the dtb binary format and looking at the header and thought 
->>>> I had it working... using it with my u-boot mods shows no extra reserved 
->>>> slots.  I'm looking into where I went wrong.
->>> Be careful to check the actual offsets.  Bear in mind that objdump may
->>> elide zero words.  Also bear in mind that the only way a reader of the
->>> device tree has of counting the number of reserve entries is stepping
->>> through until it hits the terminating (0,0), so the extra entries will
->>> just look like an early termination of the list.  In this sense -R
->>> doesn't add "extra slots", but just ensures that there is space after
->>> the reserve map to add more entries.
->> Hi David,
->>
->> It actually is OK, went back and verified it.  I needed to modify the 
->> asm output to implement the -R extra slots which was confusing me (patch 
->> that you didn't like the calloc in ;-).
->>
->> The calloc change was actually window dressing, I was just being 
->> paranoid about a binary blob that is bigger than its contents (has extra 
->> space).  The unused space is unused, so it doen't really matter if it is 
->> non-zero.  I'll roll a new version.
-> 
-> Oh, I think zeroing it is correct, I'd just prefer it was done at the
-> callsite, rather than within xmalloc().  Strictly speaking you're
-> right, what's in the extra area shouldn't matter, but I don't like the
-> idea of potentially leaking random memory contents to file, which I
-> think could happen without a memset().  Because dtc is unpriveleged it
-> shouldn't actually matter, but it's ugly and a bad habit to establish.
 
-Where I got concerned was a conversion of a .dtb input into a .dts or 
-.asm output (or even a .dtb output).  I've run it and verified that the 
-extra space (which is potentially random garbage) is not copied to the 
-output - the size in the header is what it is and the data output is 
-only the actual data (no major surprise there).
+--=-MEgbk1dEHFK4UtPh0jkG
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Generating a text output format actually strips the extra size/data 
-because dtc turns it back into a symbolic form and padding is outside of 
-the symbolic form, if you follow my drift (there isn't a way to 
-represent extra blob padding in a dts format).
+On Fri, 2007-04-13 at 14:11 -0500, Will Schmidt wrote:
+> On Fri, 2007-13-04 at 17:47 +1000, Michael Ellerman wrote:
+> > Because this is a super tight performance critical inner loop I've
+> > changed it to use a shift instead of divide. So now it's more like 1.5%=
+,
+> > but still the point is it increases faster as time passes.
+>=20
+> Using a shift here is a good idea.  I had considered accelerating the
+> backoff value, but it got more complex than I wanted quickly.. I didnt
+> consider a shift. :-)=20
+>=20
+> > It'd be good if some more people can bang on this and see what they
+> > think of the interactivity.
+>=20
+> Still works OK on my power4.   I can see the delay on my console, but
+> I'm specifically looking for it, I don't think it's an issue.=20
 
-gvb
+Cool. Yeah I think people will hardly notice it unless they're trying to
+t notice it.
+
+> > +#include <linux/debugfs.h>
+> > +static int hvc_debug_init(void)
+> > +{
+> > +	debugfs_create_u32("hvc_timeout", 0400, NULL, &timeout);
+> > +	return 0;
+> > +}
+> > +__initcall(hvc_debug_init);
+> > +
+>=20
+> Is this part temporary for your graphing, or think it's something that
+> should go in?=20
+
+No that's just debug foobar I used for the graphs, I'll send a cleaned
+up version during the week if you don't beat me to it.
+
+> I used /proc/timer_stats output for my graphing, just dont have a good
+> public spot to upload the pics..=20
+
+Time to get a blag! ;)
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-MEgbk1dEHFK4UtPh0jkG
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBGIimsdSjSd0sB4dIRAmebAJ9ATVilZlwEwkkTweDrPQ7iW9CykQCeLRGa
+IfmQrdocHCIM2NneSze41IE=
+=c014
+-----END PGP SIGNATURE-----
+
+--=-MEgbk1dEHFK4UtPh0jkG--
