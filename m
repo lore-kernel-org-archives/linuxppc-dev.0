@@ -1,14 +1,20 @@
-Return-Path: <vanbaren@cideas.com>
-Received: from rwcrmhc12.comcast.net (rwcrmhc12.comcast.net [204.127.192.82])
-	by ozlabs.org (Postfix) with ESMTP id D75D3DDE02
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Apr 2007 12:38:53 +1000 (EST)
-Date: Sat, 14 Apr 2007 22:29:14 -0400
+Return-Path: <gvb.uboot@gmail.com>
+Message-ID: <462190EC.5010302@gmail.com>
+Date: Sat, 14 Apr 2007 22:41:48 -0400
 From: Jerry Van Baren <gvb.uboot@gmail.com>
-To: linuxppc-dev@ozlabs.org, jdl@jdl.com
-Subject: [PATCH dtc take 2] Fix reserve map output for asm format.
-Message-ID: <20070415022914.GA5628@dellserver.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH dtc] Implement the -R option and add a -S option.
+References: <20070405020433.GA13891@dellserver.lan>
+	<20070405161113.GA28063@ld0162-tx32.am.freescale.net>
+	<46152D90.5070209@smiths-aerospace.com>
+	<20070412065152.GA26210@localhost.localdomain>
+	<4620D009.1000800@gmail.com>
+	<20070415004229.GD9104@localhost.localdomain>
+	<46218A5D.80805@gmail.com>
+	<20070415022244.GA12016@localhost.localdomain>
+In-Reply-To: <20070415022244.GA12016@localhost.localdomain>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,61 +24,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add extra reserve map slots output for asm format (previously done for dtb
-  output).
+David Gibson wrote:
+> On Sat, Apr 14, 2007 at 10:13:49PM -0400, Jerry Van Baren wrote:
+>> David Gibson wrote:
+>>> On Sat, Apr 14, 2007 at 08:58:49AM -0400, Jerry Van Baren wrote:
+>> [snip]
+>>
+>>>> On an unrelated related note, I don't believe my -R additions are 
+>>>> actually putting out additional reserve map slots (easiest to see using 
+>>>> the asm format output).  I'm still trying to understand why not, it 
+>>>> seemed pretty straight-forward.  When I implemented it, I was looking at 
+>>>> hexdumps of the dtb binary format and looking at the header and thought 
+>>>> I had it working... using it with my u-boot mods shows no extra reserved 
+>>>> slots.  I'm looking into where I went wrong.
+>>> Be careful to check the actual offsets.  Bear in mind that objdump may
+>>> elide zero words.  Also bear in mind that the only way a reader of the
+>>> device tree has of counting the number of reserve entries is stepping
+>>> through until it hits the terminating (0,0), so the extra entries will
+>>> just look like an early termination of the list.  In this sense -R
+>>> doesn't add "extra slots", but just ensures that there is space after
+>>> the reserve map to add more entries.
+>> Hi David,
+>>
+>> It actually is OK, went back and verified it.  I needed to modify the 
+>> asm output to implement the -R extra slots which was confusing me (patch 
+>> that you didn't like the calloc in ;-).
+>>
+>> The calloc change was actually window dressing, I was just being 
+>> paranoid about a binary blob that is bigger than its contents (has extra 
+>> space).  The unused space is unused, so it doen't really matter if it is 
+>> non-zero.  I'll roll a new version.
+> 
+> Oh, I think zeroing it is correct, I'd just prefer it was done at the
+> callsite, rather than within xmalloc().  Strictly speaking you're
+> right, what's in the extra area shouldn't matter, but I don't like the
+> idea of potentially leaking random memory contents to file, which I
+> think could happen without a memset().  Because dtc is unpriveleged it
+> shouldn't actually matter, but it's ugly and a bad habit to establish.
 
-Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
----
+Where I got concerned was a conversion of a .dtb input into a .dts or 
+.asm output (or even a .dtb output).  I've run it and verified that the 
+extra space (which is potentially random garbage) is not copied to the 
+output - the size in the header is what it is and the data output is 
+only the actual data (no major surprise there).
 
-Hi Jon, David,
+Generating a text output format actually strips the extra size/data 
+because dtc turns it back into a symbolic form and padding is outside of 
+the symbolic form, if you follow my drift (there isn't a way to 
+represent extra blob padding in a dts format).
 
-Here is a patch that fixes the asm output without the (unnecessary)
-calloc change.
-
-Best regards,
 gvb
-
- flattree.c |   14 +++++++++++---
- 1 files changed, 11 insertions(+), 3 deletions(-)
-
-diff --git a/flattree.c b/flattree.c
-index 151d16e..6f0c9b7 100644
---- a/flattree.c
-+++ b/flattree.c
-@@ -21,6 +21,9 @@
- #include "dtc.h"
- #include "flat_dt.h"
- 
-+#define WARNMSG(...) if (quiet < 1) fprintf(stderr, "Warning: " __VA_ARGS__)
-+
-+
- #define FTF_FULLPATH	0x1
- #define FTF_VARALIGN	0x2
- #define FTF_NAMEPROPS	0x4
-@@ -490,6 +493,9 @@ void dt_to_asm(FILE *f, struct boot_info *bi, int version, int boot_cpuid_phys)
- 			(unsigned int)(re->re.size >> 32),
- 			(unsigned int)(re->re.size & 0xffffffff));
- 	}
-+	for (i = 0; i < reservenum; i++) {
-+		fprintf(f, "\t.long\t0, 0\n\t.long\t0, 0\n");
-+	}
- 
- 	fprintf(f, "\t.long\t0, 0\n\t.long\t0, 0\n");
- 
-@@ -818,9 +824,11 @@ struct boot_info *dt_from_blob(FILE *f)
- 	p = blob + sizeof(magic)  + sizeof(totalsize);
- 
- 	while (sizeleft) {
--		if (feof(f))
--			die("EOF before reading %d bytes of DT blob\n",
--			    totalsize);
-+		if (feof(f)) {
-+			WARNMSG("EOF after reading %d of %d bytes of DT blob, assuming there is extra space in the blob.\n",
-+			    totalsize - sizeleft, totalsize);
-+			break;
-+		}
- 
- 		rc = fread(p, 1, sizeleft, f);
- 		if (ferror(f))
--- 
-1.4.4.4
