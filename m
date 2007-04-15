@@ -1,16 +1,12 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc2-s12.bay0.hotmail.com (bay0-omc2-s12.bay0.hotmail.com
-	[65.54.246.148]) by ozlabs.org (Postfix) with ESMTP id AB591DDE34
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 15 Apr 2007 20:42:50 +1000 (EST)
-Message-ID: <BAY115-W1269AFE45FDEDFDEB86A99B2530@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-Subject: Mr Grant Likely's New Patches for 2.6 Kernel and Xilinx FPGA (
-	Virtex-4 & Virtex-2 )
-Date: Sun, 15 Apr 2007 10:42:49 +0000
-Content-Type: text/plain; charset="iso-8859-1"
-MIME-Version: 1.0
+Return-Path: <dale@farnsworth.org>
+Date: 15 Apr 2007 03:48:19 -0700
+Message-ID: <20070415104819.6709.qmail@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+To: grant.likely@secretlab.ca, Linuxppc-embedded@ozlabs.org
+Subject: Re: [PATCH 1/5] [PPC] Rework Kconfig dependancies for Xilinx Virtex
+	ppc405 platform
+In-Reply-To: <11766220692537-git-send-email-grant.likely@secretlab.ca>
+References: <1176622062492-git-send-email-grant.likely@secretlab.ca>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,26 +17,63 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+In article <11766220692537-git-send-email-grant.likely@secretlab.ca> you write:
+> Reverse dependency order for Xilinx Virtex parts.  For these parts, It
+> makes more sense for boards/chips to specify which features they
+> provide instead of the features listing the parts they are implemented
+> in.  I think it also makes adding new board ports simpler.
+> 
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+>  arch/ppc/platforms/4xx/Kconfig |   13 +++++++------
+>  1 files changed, 7 insertions(+), 6 deletions(-)
+> 
+> diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
+> index 705ae56..f74e25b 100644
+> --- a/arch/ppc/platforms/4xx/Kconfig
+> +++ b/arch/ppc/platforms/4xx/Kconfig
+> @@ -54,11 +54,13 @@ config WALNUT
+>  
+>  config XILINX_ML300
+>  	bool "Xilinx-ML300"
+> +	select XILINX_VIRTEX_II_PRO
+>  	help
+>  	  This option enables support for the Xilinx ML300 evaluation board.
+>  
+>  config XILINX_ML403
+>  	bool "Xilinx-ML403"
+> +	select XILINX_VIRTEX_4_FX
+>  	help
+>  	  This option enables support for the Xilinx ML403 evaluation board.
+>  endchoice
+> @@ -215,18 +217,17 @@ config 405GPR
+>  
+>  config XILINX_VIRTEX_II_PRO
+>  	bool
+> -	depends on XILINX_ML300
+> -	default y
+> +	select XILINX_VIRTEX
+> +	default n
 
-Hi
+Since these variables are not user selectable, it's better to
+remove the "default n", so they don't show up when not selected.
 
-I'm seeing mr grant likely releasing new patches to the 2.6 kernel, one of =
-them was for system ace and the others ... as a beginner, I do really know =
-what are them ...
-now some simple questions about these new patches:
+>  config XILINX_VIRTEX_4_FX
+>  	bool
+> -	depends on XILINX_ML403
+> -	default y
+> +	select XILINX_VIRTEX
+> +	default n
+>  
+>  config XILINX_VIRTEX
+>  	bool
+> -	depends on XILINX_VIRTEX_II_PRO || XILINX_VIRTEX_4_FX
+> -	default y
+> +	default n
+>  
+>  config STB03xxx
+>  	bool
+> -- 
+> 1.5.1
 
-- Are these patches going to be part of 2.6.22 kernel? so we should wait a =
-little and then using 2.6.22 we will have builtin support for sys ace witho=
-ut applying any new patches?
-- Do we still new to apply the paulus patch to the main kernel so that we c=
-an have hard TEMAC support? Or you have a same program as sys ace for it?=20
-- Actually As a beginner I could not understand what are the rest of the pa=
-tches released by Grant, I understood that one is for sys ace , but the oth=
-ers? Do I really need to apply them to for example , my 2.6.20.4 kernel?=20
-
-Thanks.
-_________________________________________________________________
-Invite your mail contacts to join your friends list with Windows Live Space=
-s. It's easy!
-http://spaces.live.com/spacesapi.aspx?wx_action=3Dcreate&wx_url=3D/friends.=
-aspx&mkt=3Den-us=
+-Dale
