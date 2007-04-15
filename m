@@ -1,12 +1,18 @@
-Return-Path: <dale@farnsworth.org>
-Date: 15 Apr 2007 03:48:19 -0700
-Message-ID: <20070415104819.6709.qmail@farnsworth.org>
-From: "Dale Farnsworth" <dale@farnsworth.org>
-To: grant.likely@secretlab.ca, Linuxppc-embedded@ozlabs.org
+Return-Path: <glikely@gmail.com>
+Message-ID: <528646bc0704150720s790218a9od41c91bb623d2f95@mail.gmail.com>
+Date: Sun, 15 Apr 2007 08:20:31 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Dale Farnsworth" <dale@farnsworth.org>
 Subject: Re: [PATCH 1/5] [PPC] Rework Kconfig dependancies for Xilinx Virtex
 	ppc405 platform
-In-Reply-To: <11766220692537-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <20070415104819.6709.qmail@farnsworth.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <1176622062492-git-send-email-grant.likely@secretlab.ca>
+	<11766220692537-git-send-email-grant.likely@secretlab.ca>
+	<20070415104819.6709.qmail@farnsworth.org>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,63 +23,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-In article <11766220692537-git-send-email-grant.likely@secretlab.ca> you write:
-> Reverse dependency order for Xilinx Virtex parts.  For these parts, It
-> makes more sense for boards/chips to specify which features they
-> provide instead of the features listing the parts they are implemented
-> in.  I think it also makes adding new board ports simpler.
-> 
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
->  arch/ppc/platforms/4xx/Kconfig |   13 +++++++------
->  1 files changed, 7 insertions(+), 6 deletions(-)
-> 
-> diff --git a/arch/ppc/platforms/4xx/Kconfig b/arch/ppc/platforms/4xx/Kconfig
-> index 705ae56..f74e25b 100644
-> --- a/arch/ppc/platforms/4xx/Kconfig
-> +++ b/arch/ppc/platforms/4xx/Kconfig
-> @@ -54,11 +54,13 @@ config WALNUT
->  
->  config XILINX_ML300
->  	bool "Xilinx-ML300"
-> +	select XILINX_VIRTEX_II_PRO
->  	help
->  	  This option enables support for the Xilinx ML300 evaluation board.
->  
->  config XILINX_ML403
->  	bool "Xilinx-ML403"
-> +	select XILINX_VIRTEX_4_FX
->  	help
->  	  This option enables support for the Xilinx ML403 evaluation board.
->  endchoice
-> @@ -215,18 +217,17 @@ config 405GPR
->  
->  config XILINX_VIRTEX_II_PRO
->  	bool
-> -	depends on XILINX_ML300
-> -	default y
-> +	select XILINX_VIRTEX
-> +	default n
+On 15 Apr 2007 03:48:19 -0700, Dale Farnsworth <dale@farnsworth.org> wrote:
+> In article <11766220692537-git-send-email-grant.likely@secretlab.ca> you write:
+> >  config XILINX_VIRTEX_II_PRO
+> >       bool
+> > -     depends on XILINX_ML300
+> > -     default y
+> > +     select XILINX_VIRTEX
+> > +     default n
+>
+> Since these variables are not user selectable, it's better to
+> remove the "default n", so they don't show up when not selected.
 
-Since these variables are not user selectable, it's better to
-remove the "default n", so they don't show up when not selected.
+Ah, okay.  I didn't know that.  Thanks.  I'll make that change.
+g.
 
->  config XILINX_VIRTEX_4_FX
->  	bool
-> -	depends on XILINX_ML403
-> -	default y
-> +	select XILINX_VIRTEX
-> +	default n
->  
->  config XILINX_VIRTEX
->  	bool
-> -	depends on XILINX_VIRTEX_II_PRO || XILINX_VIRTEX_4_FX
-> -	default y
-> +	default n
->  
->  config STB03xxx
->  	bool
-> -- 
-> 1.5.1
-
--Dale
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
