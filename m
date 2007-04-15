@@ -1,19 +1,17 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] hvc_console polling mode timer backoff
-From: Michael Ellerman <michael@ellerman.id.au>
-To: will_schmidt@vnet.ibm.com
-In-Reply-To: <1176491513.28514.66.camel@farscape.rchland.ibm.com>
-References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
-	<1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
-	<1176491513.28514.66.camel@farscape.rchland.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-MEgbk1dEHFK4UtPh0jkG"
-Date: Sun, 15 Apr 2007 23:33:32 +1000
-Message-Id: <1176644012.5422.3.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id B75D6DDE39
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 06:00:23 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <20070415022914.GA5628@dellserver.lan>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <aa6a7bd73be20ea11e3e98f87a66e478@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH dtc take 2] Fix reserve map output for asm format.
+Date: Sun, 15 Apr 2007 14:59:44 -0500
+To: Jerry Van Baren <gvb.uboot@gmail.com>,
+ Jon Loeliger <jdl@jdl.com>
+Cc: linuxppc-dev@ozlabs.org, David Gibson <david@gibson.dropbear.id.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,73 +21,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Sometime around Sun Apr 15 12:29:14 EST 2007, Jerry Van Baren wrote:
+> Add extra reserve map slots output for asm format (previously done for 
+> dtb
+>   output).
+>
+> Signed-off-by: Gerald Van Baren <vanbaren at cideas.com>
+> ---
+>
+> Hi Jon, David,
+>
+> Here is a patch that fixes the asm output without the (unnecessary)
+> calloc change.
+>
+> Best regards,
+> gvb
 
---=-MEgbk1dEHFK4UtPh0jkG
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
 
-On Fri, 2007-04-13 at 14:11 -0500, Will Schmidt wrote:
-> On Fri, 2007-13-04 at 17:47 +1000, Michael Ellerman wrote:
-> > Because this is a super tight performance critical inner loop I've
-> > changed it to use a shift instead of divide. So now it's more like 1.5%=
-,
-> > but still the point is it increases faster as time passes.
->=20
-> Using a shift here is a good idea.  I had considered accelerating the
-> backoff value, but it got more complex than I wanted quickly.. I didnt
-> consider a shift. :-)=20
->=20
-> > It'd be good if some more people can bang on this and see what they
-> > think of the interactivity.
->=20
-> Still works OK on my power4.   I can see the delay on my console, but
-> I'm specifically looking for it, I don't think it's an issue.=20
+The previous description had
+> Use cmalloc to pre-zero memory (for dtb input) and handle dtb (binary)
+>   input being shorter than the total blob length (result of putting
+>   extra space in the blob).
 
-Cool. Yeah I think people will hardly notice it unless they're trying to
-t notice it.
 
-> > +#include <linux/debugfs.h>
-> > +static int hvc_debug_init(void)
-> > +{
-> > +	debugfs_create_u32("hvc_timeout", 0400, NULL, &timeout);
-> > +	return 0;
-> > +}
-> > +__initcall(hvc_debug_init);
-> > +
->=20
-> Is this part temporary for your graphing, or think it's something that
-> should go in?=20
+Which at least said in the description the unrelated things it was 
+doing.
 
-No that's just debug foobar I used for the graphs, I'll send a cleaned
-up version during the week if you don't beat me to it.
+>         while (sizeleft) {
+> -               if (feof(f))
+> -                       die("EOF before reading %d bytes of DT blob\n",
+> -                           totalsize);
+> +               if (feof(f)) {
+> +                       WARNMSG("EOF after reading %d of %d bytes of 
+> DT blob, assuming there is extra space in the blob.\n",
+> +                           totalsize - sizeleft, totalsize);
+> +                       break;
+> +               }
 
-> I used /proc/timer_stats output for my graphing, just dont have a good
-> public spot to upload the pics..=20
+I thnk the above should be an ERROR and cause failure without
+the -f (force) option.
 
-Time to get a blag! ;)
+The total_size says how much data should be copied.  Anything
+less and there is data missing.   Assuming zeros is wrong for
+most sections (the exception being the memory reserve list
+that had a terminating 0 entry within the read portion).
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-MEgbk1dEHFK4UtPh0jkG
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGIimsdSjSd0sB4dIRAmebAJ9ATVilZlwEwkkTweDrPQ7iW9CykQCeLRGa
-IfmQrdocHCIM2NneSze41IE=
-=c014
------END PGP SIGNATURE-----
-
---=-MEgbk1dEHFK4UtPh0jkG--
+milton
