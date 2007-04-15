@@ -1,22 +1,16 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.67.118]) by ozlabs.org (Postfix) with ESMTP id 56172DDEC9
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc2-s12.bay0.hotmail.com (bay0-omc2-s12.bay0.hotmail.com
+	[65.54.246.148]) by ozlabs.org (Postfix) with ESMTP id AB591DDE34
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 15 Apr 2007 17:28:17 +1000 (EST)
-From: Grant Likely <grant.likely@secretlab.ca>
-To: linuxppc-embedded@ozlabs.org, Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Peter Korsgaard <jacmet@sunsite.dk>,
-	Rick Moleres <Rick.Moleres@xilinx.com>, Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 5/5] [PPC] Add uartlite boot console driver for the zImage
-	wrapper
-Date: Sun, 15 Apr 2007 01:27:42 -0600
-Message-Id: <11766220713124-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <11766220702647-git-send-email-grant.likely@secretlab.ca>
-References: <1176622062492-git-send-email-grant.likely@secretlab.ca>
-	<11766220692537-git-send-email-grant.likely@secretlab.ca>
-	<11766220693636-git-send-email-grant.likely@secretlab.ca>
-	<1176622070387-git-send-email-grant.likely@secretlab.ca>
-	<11766220702647-git-send-email-grant.likely@secretlab.ca>
+	Sun, 15 Apr 2007 20:42:50 +1000 (EST)
+Message-ID: <BAY115-W1269AFE45FDEDFDEB86A99B2530@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
+Subject: Mr Grant Likely's New Patches for 2.6 Kernel and Xilinx FPGA (
+	Virtex-4 & Virtex-2 )
+Date: Sun, 15 Apr 2007 10:42:49 +0000
+Content-Type: text/plain; charset="iso-8859-1"
+MIME-Version: 1.0
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,122 +21,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
- arch/ppc/boot/common/misc-common.c  |   15 +++++++++----
- arch/ppc/boot/simple/Makefile       |    1 +
- arch/ppc/boot/simple/uartlite_tty.c |   37 +++++++++++++++++++++++++++++++++++
- 3 files changed, 48 insertions(+), 5 deletions(-)
- create mode 100644 arch/ppc/boot/simple/uartlite_tty.c
 
-diff --git a/arch/ppc/boot/common/misc-common.c b/arch/ppc/boot/common/misc-common.c
-index 8e1fccd..9589969 100644
---- a/arch/ppc/boot/common/misc-common.c
-+++ b/arch/ppc/boot/common/misc-common.c
-@@ -57,7 +57,8 @@ unsigned char *ISA_io = NULL;
- 
- #if defined(CONFIG_SERIAL_CPM_CONSOLE) || defined(CONFIG_SERIAL_8250_CONSOLE) \
- 	|| defined(CONFIG_SERIAL_MPC52xx_CONSOLE) \
--	|| defined(CONFIG_SERIAL_MPSC_CONSOLE)
-+	|| defined(CONFIG_SERIAL_MPSC_CONSOLE) \
-+	|| defined(CONFIG_SERIAL_UARTLITE_CONSOLE)
- extern unsigned long com_port;
- 
- extern int serial_tstc(unsigned long com_port);
-@@ -80,7 +81,8 @@ int tstc(void)
- {
- #if defined(CONFIG_SERIAL_CPM_CONSOLE) || defined(CONFIG_SERIAL_8250_CONSOLE) \
- 	|| defined(CONFIG_SERIAL_MPC52xx_CONSOLE) \
--	|| defined(CONFIG_SERIAL_MPSC_CONSOLE)
-+	|| defined(CONFIG_SERIAL_MPSC_CONSOLE) \
-+	|| defined(CONFIG_SERIAL_UARTLITE_CONSOLE)
- 	if(keyb_present)
- 		return (CRT_tstc() || serial_tstc(com_port));
- 	else
-@@ -95,7 +97,8 @@ int getc(void)
- 	while (1) {
- #if defined(CONFIG_SERIAL_CPM_CONSOLE) || defined(CONFIG_SERIAL_8250_CONSOLE) \
- 	|| defined(CONFIG_SERIAL_MPC52xx_CONSOLE) \
--	|| defined(CONFIG_SERIAL_MPSC_CONSOLE)
-+	|| defined(CONFIG_SERIAL_MPSC_CONSOLE) \
-+	|| defined(CONFIG_SERIAL_UARTLITE_CONSOLE)
- 		if (serial_tstc(com_port))
- 			return (serial_getc(com_port));
- #endif /* serial console */
-@@ -112,7 +115,8 @@ putc(const char c)
- 
- #if defined(CONFIG_SERIAL_CPM_CONSOLE) || defined(CONFIG_SERIAL_8250_CONSOLE) \
- 	|| defined(CONFIG_SERIAL_MPC52xx_CONSOLE) \
--	|| defined(CONFIG_SERIAL_MPSC_CONSOLE)
-+	|| defined(CONFIG_SERIAL_MPSC_CONSOLE) \
-+	|| defined(CONFIG_SERIAL_UARTLITE_CONSOLE)
- 	serial_putc(com_port, c);
- 	if ( c == '\n' )
- 		serial_putc(com_port, '\r');
-@@ -161,7 +165,8 @@ void puts(const char *s)
- 	while ( ( c = *s++ ) != '\0' ) {
- #if defined(CONFIG_SERIAL_CPM_CONSOLE) || defined(CONFIG_SERIAL_8250_CONSOLE) \
- 	|| defined(CONFIG_SERIAL_MPC52xx_CONSOLE) \
--	|| defined(CONFIG_SERIAL_MPSC_CONSOLE)
-+	|| defined(CONFIG_SERIAL_MPSC_CONSOLE) \
-+	|| defined(CONFIG_SERIAL_UARTLITE_CONSOLE)
- 	        serial_putc(com_port, c);
- 	        if ( c == '\n' ) serial_putc(com_port, '\r');
- #endif /* serial console */
-diff --git a/arch/ppc/boot/simple/Makefile b/arch/ppc/boot/simple/Makefile
-index bcfb6cd..5b87779 100644
---- a/arch/ppc/boot/simple/Makefile
-+++ b/arch/ppc/boot/simple/Makefile
-@@ -201,6 +201,7 @@ boot-$(CONFIG_8260)		+= m8260_tty.o
- endif
- boot-$(CONFIG_SERIAL_MPC52xx_CONSOLE)	+= mpc52xx_tty.o
- boot-$(CONFIG_SERIAL_MPSC_CONSOLE)	+= mv64x60_tty.o
-+boot-$(CONFIG_SERIAL_UARTLITE_CONSOLE)	+= uartlite_tty.o
- 
- LIBS				:= $(common)/lib.a $(bootlib)/lib.a
- ifeq ($(CONFIG_PPC_PREP),y)
-diff --git a/arch/ppc/boot/simple/uartlite_tty.c b/arch/ppc/boot/simple/uartlite_tty.c
-new file mode 100644
-index 0000000..0eae1ea
---- /dev/null
-+++ b/arch/ppc/boot/simple/uartlite_tty.c
-@@ -0,0 +1,37 @@
-+/*
-+ * Xilinx UARTLITE bootloader driver
-+ *
-+ * Copyright (c) 2007 Secret Lab Technologies Ltd.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+
-+#include <linux/types.h>
-+#include <asm/serial.h>
-+#include <asm/io.h>
-+#include <platforms/4xx/xparameters/xparameters.h>
-+
-+#define UARTLITE_BASEADDR ((void*)(XPAR_UARTLITE_0_BASEADDR))
-+
-+void
-+serial_putc(unsigned long com_port, unsigned char c)
-+{
-+	while ((in_be32(UARTLITE_BASEADDR + 0x8) & 0x08) != 0); /* spin */
-+	out_be32(UARTLITE_BASEADDR + 0x4, c);
-+}
-+
-+unsigned char
-+serial_getc(unsigned long com_port)
-+{
-+	while ((in_be32(UARTLITE_BASEADDR + 0x8) & 0x01) == 0); /* spin */
-+	return in_be32(UARTLITE_BASEADDR);
-+}
-+
-+int
-+serial_tstc(unsigned long com_port)
-+{
-+	return ((in_be32(UARTLITE_BASEADDR + 0x8) & 0x01) != 0);
-+}
--- 
-1.5.1
+Hi
+
+I'm seeing mr grant likely releasing new patches to the 2.6 kernel, one of =
+them was for system ace and the others ... as a beginner, I do really know =
+what are them ...
+now some simple questions about these new patches:
+
+- Are these patches going to be part of 2.6.22 kernel? so we should wait a =
+little and then using 2.6.22 we will have builtin support for sys ace witho=
+ut applying any new patches?
+- Do we still new to apply the paulus patch to the main kernel so that we c=
+an have hard TEMAC support? Or you have a same program as sys ace for it?=20
+- Actually As a beginner I could not understand what are the rest of the pa=
+tches released by Grant, I understood that one is for sys ace , but the oth=
+ers? Do I really need to apply them to for example , my 2.6.20.4 kernel?=20
+
+Thanks.
+_________________________________________________________________
+Invite your mail contacts to join your friends list with Windows Live Space=
+s. It's easy!
+http://spaces.live.com/spacesapi.aspx?wx_action=3Dcreate&wx_url=3D/friends.=
+aspx&mkt=3Den-us=
