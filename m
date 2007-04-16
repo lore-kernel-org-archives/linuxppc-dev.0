@@ -1,17 +1,20 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 980C2DDEBF
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 15:59:31 +1000 (EST)
-Date: Mon, 16 Apr 2007 01:17:33 -0500
-To: jgarzik@pobox.com
-Subject: [PATCH] [1/4] pasemi_mac: minor bugfixes
-Message-ID: <20070416061733.GC19783@lixom.net>
-References: <20070416061654.GB19783@lixom.net>
+Return-Path: <glikely@gmail.com>
+Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.236])
+	by ozlabs.org (Postfix) with ESMTP id B2F17DDEC0
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 15:59:58 +1000 (EST)
+Received: by wx-out-0506.google.com with SMTP id i31so1388725wxd
+	for <linuxppc-dev@ozlabs.org>; Sun, 15 Apr 2007 22:59:57 -0700 (PDT)
+Message-ID: <528646bc0704152259o337f77ebme999d2d7ad880227@mail.gmail.com>
+Date: Sun, 15 Apr 2007 23:59:56 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Miroslaw Dach" <miroslaw.dach@psi.ch>
+Subject: Re: linux 2.6 on xilinx ml403
+In-Reply-To: <Pine.LNX.4.44.0704101337030.26940-100000@slslc02.psi.ch>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070416061654.GB19783@lixom.net>
-From: olof@lixom.net (Olof Johansson)
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <Pine.LNX.4.44.0704101337030.26940-100000@slslc02.psi.ch>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,106 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Ethernet bugfixes:
+On 4/10/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
+> Hi All,
+>
+>         I am new in the linux powerpc linux. I have the Avnet evaluation
+> board which contains xilinx ml403 (Virtex-4 FX family). The challenge I
+> have is to build linux (most preferable 2.6) with suitable drivers.
+>
+> On the net I have found much information how to build linuxppc 2.4 for
+> xilinx ml300/ml301. I did not found however any good reference which
+> refers to kernel 2.6 and suitable patches for powerpc 405 which is
+> included in the ml403.
+>
+> I would appreciate very much if someone could provide me with some good
+> reference links referring kernel 2.6 for PPC 405 on xilinx ml403.
+> I have found the place to download the linuxppc_2_4_devel on BitKeper page
+> but there is no equivalent like linuxppc_2_6_devel.
 
-* Move the was_full/wake_queue logic from tx_intr to clean_tx
-* Fix polarity in checks in pasemi_mac_close
+The mainline tree has ml403 support, but it's not complete.  I just
+posted a set of patches that clean up a bunch of stuff and add some
+support.  Also, if you look through the mailing list archive, you can
+find a copy of the adapter.c file needed to make the Xilinx TEMAC
+driver work with Linux.
 
+I'm also planing to publish my git tree tomorrow where I've integrated
+all the patches I need to get Linux in a useful state for the ml403.
+The git tree will show up on http://git.secretlab.ca.  You might find
+it easier to grab my tree and use that as your starting point.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Cheers,
+g.
 
-
-Index: linux-2.6/drivers/net/pasemi_mac.c
-===================================================================
---- linux-2.6.orig/drivers/net/pasemi_mac.c
-+++ linux-2.6/drivers/net/pasemi_mac.c
-@@ -451,9 +451,12 @@ static int pasemi_mac_clean_tx(struct pa
- 	struct pas_dma_xct_descr *dp;
- 	int start, count;
- 	int flags;
-+	int was_full;
- 
- 	spin_lock_irqsave(&mac->tx->lock, flags);
- 
-+	was_full = mac->tx->next_to_clean - mac->tx->next_to_use == TX_RING_SIZE;
-+
- 	start = mac->tx->next_to_clean;
- 	count = 0;
- 
-@@ -478,6 +481,9 @@ static int pasemi_mac_clean_tx(struct pa
- 	mac->tx->next_to_clean += count;
- 	spin_unlock_irqrestore(&mac->tx->lock, flags);
- 
-+	if (was_full)
-+		netif_wake_queue(mac->netdev);
-+
- 	return count;
- }
- 
-@@ -512,9 +518,6 @@ static irqreturn_t pasemi_mac_tx_intr(in
- 	struct net_device *dev = data;
- 	struct pasemi_mac *mac = netdev_priv(dev);
- 	unsigned int reg;
--	int was_full;
--
--	was_full = mac->tx->next_to_clean - mac->tx->next_to_use == TX_RING_SIZE;
- 
- 	if (!(*mac->tx_status & PAS_STATUS_INT))
- 		return IRQ_NONE;
-@@ -528,9 +531,6 @@ static irqreturn_t pasemi_mac_tx_intr(in
- 	pci_write_config_dword(mac->iob_pdev, PAS_IOB_DMA_TXCH_RESET(mac->dma_txch),
- 			       reg);
- 
--	if (was_full)
--		netif_wake_queue(dev);
--
- 	return IRQ_HANDLED;
- }
- 
-@@ -662,40 +665,37 @@ static int pasemi_mac_close(struct net_d
- 		pci_read_config_dword(mac->dma_pdev,
- 				      PAS_DMA_TXCHAN_TCMDSTA(mac->dma_txch),
- 				      &stat);
--		if (stat & PAS_DMA_TXCHAN_TCMDSTA_ACT)
-+		if (!(stat & PAS_DMA_TXCHAN_TCMDSTA_ACT))
- 			break;
- 		cond_resched();
- 	}
- 
--	if (!(stat & PAS_DMA_TXCHAN_TCMDSTA_ACT)) {
-+	if (stat & PAS_DMA_TXCHAN_TCMDSTA_ACT)
- 		dev_err(&mac->dma_pdev->dev, "Failed to stop tx channel\n");
--	}
- 
- 	for (retries = 0; retries < MAX_RETRIES; retries++) {
- 		pci_read_config_dword(mac->dma_pdev,
- 				      PAS_DMA_RXCHAN_CCMDSTA(mac->dma_rxch),
- 				      &stat);
--		if (stat & PAS_DMA_RXCHAN_CCMDSTA_ACT)
-+		if (!(stat & PAS_DMA_RXCHAN_CCMDSTA_ACT))
- 			break;
- 		cond_resched();
- 	}
- 
--	if (!(stat & PAS_DMA_RXCHAN_CCMDSTA_ACT)) {
-+	if (stat & PAS_DMA_RXCHAN_CCMDSTA_ACT)
- 		dev_err(&mac->dma_pdev->dev, "Failed to stop rx channel\n");
--	}
- 
- 	for (retries = 0; retries < MAX_RETRIES; retries++) {
- 		pci_read_config_dword(mac->dma_pdev,
- 				      PAS_DMA_RXINT_RCMDSTA(mac->dma_if),
- 				      &stat);
--		if (stat & PAS_DMA_RXINT_RCMDSTA_ACT)
-+		if (!(stat & PAS_DMA_RXINT_RCMDSTA_ACT))
- 			break;
- 		cond_resched();
- 	}
- 
--	if (!(stat & PAS_DMA_RXINT_RCMDSTA_ACT)) {
-+	if (stat & PAS_DMA_RXINT_RCMDSTA_ACT)
- 		dev_err(&mac->dma_pdev->dev, "Failed to stop rx interface\n");
--	}
- 
- 	/* Then, disable the channel. This must be done separately from
- 	 * stopping, since you can't disable when active.
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
