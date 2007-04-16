@@ -1,18 +1,21 @@
-Return-Path: <cthomas@Soneticom.com>
-Received: from Soneticom.com (soneticom.com [209.114.210.150])
-	by ozlabs.org (Postfix) with ESMTP id 59489DDE3C
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 0A7A9DDE44
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Apr 2007 01:26:03 +1000 (EST)
+	Tue, 17 Apr 2007 02:06:25 +1000 (EST)
+Message-ID: <4623A002.7080509@ru.mvista.com>
+Date: Mon, 16 Apr 2007 20:10:42 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Linux 2.6 and uboot
-Date: Mon, 16 Apr 2007 11:27:00 -0400
-Message-ID: <3C02138692C13C4BB675FE7EA2409529328549@bluefin.Soneticom.local>
-In-Reply-To: <Pine.LNX.4.60.0704142053560.5114@poirot.grange>
-From: "Clint Thomas" <cthomas@Soneticom.com>
-To: "Guennadi Liakhovetski" <g.liakhovetski@gmx.de>
-Cc: linuxppc-embedded@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: Mr Grant Likely's New Patches for 2.6 Kernel and Xilinx FPGA
+	(	Virtex-4 & Virtex-2
+References: <BAY115-W1269AFE45FDEDFDEB86A99B2530@phx.gbl>
+	<528646bc0704150727p1583132ck5455a36782e4dbcc@mail.gmail.com>
+In-Reply-To: <528646bc0704150727p1583132ck5455a36782e4dbcc@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Linux PPC <linuxppc-embedded@ozlabs.org>,
+	Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,37 +26,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-I tried combining the root file system and kernel images so that I could
-just load a single image in u-boot, and I disabled networking in the
-kernel config. When I do this, the kernel boots and loads into the shell
-no problem. The problem seems to be related to the Marvell PHY, so my
-plan is to investigate the IRQs and make sure it isn't getting the same
-as another device. Not sure what I'll look for after that, can KGDB step
-through the enet drivers on boot?
+Hi Grant,
 
-Clint=20
+Grant Likely wrote:
+> On 4/15/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
+>> - Do we still new to apply the paulus patch to the main kernel so that we can have hard TEMAC support? Or you have a same program as sys ace for it?
+> 
+> No, I did not include TEMAC support.  However, I will publish my git
+> tree tomorrow which will include the TEMAC driver.
 
------Original Message-----
-From: Guennadi Liakhovetski [mailto:g.liakhovetski@gmx.de]=20
-Sent: Saturday, April 14, 2007 3:02 PM
-To: Clint Thomas
-Cc: Kumar Gala; linuxppc-embedded@ozlabs.org
-Subject: RE: Linux 2.6 and uboot
 
-On Fri, 13 Apr 2007, Clint Thomas wrote:
+Seems the TEMAC driver is not on your git server yet. Hence the questions.
 
-> mice: PS/2 mouse device common for all mice i2c /dev entries driver=20
-> TCP cubic registered
-> NET: Registered protocol family 1
-> NET: Registered protocol family 17
->=20
-> This is the point where it stops booting.
+What IP versions is your TEMAC driver for?
+Guess this is PLB TEMAC version 3.00a as you wrote auto negotiation is supported.
 
-It might be just the point before root is mounted... That's what I'd
-check anyway... I see it has 2 eth interfaces. Can it be that their
-order has changed and it's trying the wrong one?
+Is your driver based on the one by Xilinx (the one from EDK 8.2.02 and the update posted by Rick Moleres)?
+Or is it something written from scratch?
+Does it use the "level 1" (OS independent) code from EDK?
 
-Thanks
-Guennadi
----
-Guennadi Liakhovetski
+Does it support SGDMA, or FIFO mode, or both?
+Checksum offloading?
+
+
+Thanks,
+Andrei
