@@ -1,22 +1,24 @@
 Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id B4F02DDEB8
+Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.177])
+	by ozlabs.org (Postfix) with ESMTP id 490F9DDED4
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Apr 2007 02:32:43 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so883031ugf
+	Tue, 17 Apr 2007 02:33:37 +1000 (EST)
+Received: by ik-out-1112.google.com with SMTP id c29so1619958ika
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 16 Apr 2007 09:32:41 -0700 (PDT)
-Message-ID: <528646bc0704160932k2038090al8c0b8e5420422545@mail.gmail.com>
-Date: Mon, 16 Apr 2007 10:32:40 -0600
+	Mon, 16 Apr 2007 09:33:36 -0700 (PDT)
+Message-ID: <528646bc0704160933o76861f6cqaeac768415f8adb8@mail.gmail.com>
+Date: Mon, 16 Apr 2007 10:33:34 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@gmail.com
-To: "Peter Mendham" <petermendham@computing.dundee.ac.uk>
-Subject: Re: Using Cypress EZ-Host on ML403/5
-In-Reply-To: <4623A197.6000104@computing.dundee.ac.uk>
+To: "Andrei Konovalov" <akonovalov@ru.mvista.com>
+Subject: Re: [RFC] Xilinx SystemACE device driver
+In-Reply-To: <4623A523.3040705@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <4623A197.6000104@computing.dundee.ac.uk>
-Cc: linuxppc-embedded@ozlabs.org
+References: <1176600194262-git-send-email-grant.likely@secretlab.ca>
+	<4623A523.3040705@ru.mvista.com>
+Cc: Peter Korsgaard <jacmet@sunsite.dk>, Stefan Roese <sr@denx.de>,
+	Rick Moleres <Rick.Moleres@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,24 +29,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/16/07, Peter Mendham <petermendham@computing.dundee.ac.uk> wrote:
-> Dear all,
+On 4/16/07, Andrei Konovalov <akonovalov@ru.mvista.com> wrote:
+> Hi Grant,
 >
-> Has anyone had the Cypress EZ-Host chip working as a USB host under
-> Linux?  It's the one that comes fitted as standard to ML403 and ML405
-> boards (probably other Xilinx boards too).  If not, can anyone tell me
-> where I should start?  Any advice at all?  Our own embedded device needs
-> to have USB host support and we are using an ML40x for development so
-> the EZ-Host is the preferred solution as we can prototype it.
+> Grant Likely wrote:
+> > Add support for block device access to the Xilinx SystemACE Compact
+> > flash interface
 >
-> Thanks in advance,
-> --Peter
+> Does the driver support 8-bit bus_width?
+>
+> Just gave the driver a try on ML300, and my first attempt failed.
+> Wonder if it's me having done something wrong, or something the driver doesn't
+> handle yet.
 
-It's on my task list to get working.  I could certainly use some help.
-
-Xilinx did distrubute some driver code for that host controller a
-while back.  I've got a copy of it somewhere.  I'll try to dig it up
-today and let you know where you can get it.
+Doesn't handle it yet, you'll need to add 8-bit access macros to the
+top of the file.
 
 Cheers,
 g.
