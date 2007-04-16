@@ -1,21 +1,25 @@
-Return-Path: <sr@denx.de>
-Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
-	by ozlabs.org (Postfix) with ESMTP id 3DEAEDDEB8
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
+	by ozlabs.org (Postfix) with ESMTP id 94B69DDE0F
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 16 Apr 2007 15:25:55 +1000 (EST)
-From: Stefan Roese <sr@denx.de>
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] Xilinx SystemACE device driver
-Date: Mon, 16 Apr 2007 07:28:15 +0200
-References: <1176600194262-git-send-email-grant.likely@secretlab.ca>
-In-Reply-To: <1176600194262-git-send-email-grant.likely@secretlab.ca>
+	Mon, 16 Apr 2007 15:40:55 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so781194ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Sun, 15 Apr 2007 22:40:53 -0700 (PDT)
+Message-ID: <528646bc0704152240u60bf24dbx6a1ca8dd15aaaf53@mail.gmail.com>
+Date: Sun, 15 Apr 2007 23:40:53 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Domen Puncer" <domen.puncer@telargo.com>
+Subject: Re: [PATCH 4/5] mpc52xx suspend: deep-sleep
+In-Reply-To: <20070404073755.GE18236@moe.telargo.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200704160728.16608.sr@denx.de>
-Cc: Peter Korsgaard <jacmet@sunsite.dk>,
-	Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Rick Moleres <Rick.Moleres@xilinx.com>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <20070315103959.GA22215@moe.telargo.com>
+	<20070315104307.GE22215@moe.telargo.com>
+	<528646bc0703230858h237237c2t5b7bedca6e42cddd@mail.gmail.com>
+	<20070404073755.GE18236@moe.telargo.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,77 +30,105 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
-
-On Sunday 15 April 2007 03:23, Grant Likely wrote:
-> Add support for block device access to the Xilinx SystemACE Compact
-> flash interface
+On 4/4/07, Domen Puncer <domen.puncer@telargo.com> wrote:
+> Hi!
 >
-> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
-> ---
-> I think this driver is in pretty good shape.  I've got a few things to
-> clean up a bit.  Specifically, I'm still working on error handling and
-> making sure that the state machine is sane at all times.
+> How about something like the following.
+> Changes:
+> - lots of code moved from asm to C
+> - add compatible "mpc5200" to lite5200x soc (already is this
+>   way on efika). And change Efika's soc device_type to "soc".
+> - add wakeup supported with RTC (1 to 24*60-1 minutes)
+> - each board now configures it's wakeup mode and possibly
+>   board suspend and resume functions it needs to call (USB on lite)
 
-I tested the driver on my system (Katmai 440SPe). Both CF's work correctly 
-regarding reading and writing. No problems so far.
+Sorry it took so long for me to review and get back to you on this
+patch.  I got wrapped up in other tasks.
 
-> I would appreciate any review/comments.  One area where I am undecided is
-> the format of the state machine.  The current code uses one big function
-> with a large switch() statment for each state.  I'm considering breaking
-> this up into a seperate function for each state, and adding a static
-> state table with pointers to each state function.
+I mostly like the approach that you're taking here to allow each board
+to select it's own wakeup method, but I think it should be taken a
+step farther.  Instead of providing a set of stock
+mpc52xx_set_wakeup_*() functions, I think it would make for simpler
+and more flexible code if each board takes care of its own wakeup
+configuration in the board_suspend_prepare hook.  In fact, the
+mpc52xx_set_wakeup_*() functions themselves make a lot of sense, and
+are useful utility functions.  But rather than trying to codify which
+pins/rtc to configure for wakeup via the .mask, .level, .pin and
+.delay items, those functions should be called directly by
+lite5200_suspend_prepare() and efika_suspend_prepare().  Doing this
+will drop 19 lines of common code in exchange for adding 2 lines to
+each board port.
 
-I have no real preference here. I don't mind if the code stays in this large 
-switch statement. It's not that much code.
+As an added bonus, doing it this way allows multiple pins to be used
+for wakeup.  :-)
 
-Two small issues though:
+> This code survived > 70k suspend/resume cycles :-)
 
-> +config XILINX_SYSACE
-> +     tristate "Xilinx SystemACE support"
-> +     depends on XILINX_VIRTEX
-> +     help
-> +       Include support for the Xilinx SystemACE CompactFlash interface
+That's pretty good evidence.  :-)
 
-Please remove the XILINX_VIRTEX dependency here. It makes it impossible to use 
-the driver on my 440SPe system.
+> Comments?
 
-> +/* register access macros */
-> +#if 1 /* Little endian 16-bit regs */
-> +#define ace_reg_read8(ace, reg) in_8(ace->baseaddr + reg)
-> +#define ace_reg_read16(ace, reg) in_le16(ace->baseaddr + reg)
-> +#define ace_reg_readdata(ace, reg) in_be16(ace->baseaddr + reg)
-> +#define ace_reg_read32(ace, reg) ((in_le16(ace->baseaddr + reg+2) << 16) |
-> \ +                                  (in_le16(ace->baseaddr + reg)))
-> +#define ace_reg_write16(ace, reg, val) out_le16(ace->baseaddr + reg, val)
-> +#define ace_reg_writedata(ace, reg, val) out_be16(ace->baseaddr + reg,
-> val) +#define ace_reg_write32(ace, reg, val) { \
-> +                           out_le16(ace->baseaddr + reg+2, (val) >> 16); \
-> +                           out_le16(ace->baseaddr + reg, val); \
-> +                       }
-> +#else /* Big endian 16-bit regs */
-> +#define ace_reg_read8(ace, reg) in_8(ace->baseaddr + reg)
-> +#define ace_reg_read16(ace, reg) in_be16(ace->baseaddr + reg)
-> +#define ace_reg_readdata(ace, reg) in_le16(ace->baseaddr + reg)
-> +#define ace_reg_read32(ace, reg) ((in_be16(ace->baseaddr + reg+2) << 16) |
-> \ +                                  (in_be16(ace->baseaddr + reg)))
-> +#define ace_reg_write16(ace, reg, val) out_be16(ace->baseaddr + reg, val)
-> +#define ace_reg_writedata(ace, reg, val) out_le16(ace->baseaddr + reg,
-> val) +#define ace_reg_write32(ace, reg, val) { \
-> +                           out_be16(ace->baseaddr + reg+2, (val) >> 16); \
-> +                           out_be16(ace->baseaddr + reg, val); \
-> +                       }
-> +#endif
+A few more comments below
 
-We should make the endianess selectable (I need big endian). You talked about 
-autodetecting the endianess once, but that would add extra code on every 
-register access. So I suggest to just add a configuration option for the 
-endianess selection.
+> --- /dev/null
+> +++ grant.git/arch/powerpc/platforms/52xx/mpc52xx_pm.c
+<snip>
+> +extern void mpc52xx_ds_sram(void);
+> +extern const long mpc52xx_ds_sram_size;
+> +extern void mpc52xx_ds_cached(void);
+> +extern const long mpc52xx_ds_cached_size;
 
-> I feel this driver is pretty close to done, and I'd like to get it into
-> mainline for the 2.6.22 timeframe.
+This *looks* like dangerous code (function prototypes not in a shared
+header).  You should add a big comment here to the fact that these are
+assembly functions that are only ever referenced in this file.
 
-Yes, please.
+===================================================================
+> --- grant.git.orig/arch/powerpc/boot/dts/lite5200.dts
+> +++ grant.git/arch/powerpc/boot/dts/lite5200.dts
+> @@ -49,6 +49,7 @@
+>
+>         soc5200@f0000000 {
+>                 model = "fsl,mpc5200";
+> +               compatible = "mpc5200";
+>                 revision = ""                   // from bootloader
+>                 #interrupt-cells = <3>;
+>                 device_type = "soc";
+> Index: grant.git/arch/powerpc/boot/dts/lite5200b.dts
+> ===================================================================
+> --- grant.git.orig/arch/powerpc/boot/dts/lite5200b.dts
+> +++ grant.git/arch/powerpc/boot/dts/lite5200b.dts
+> @@ -49,6 +49,7 @@
+>
+>         soc5200@f0000000 {
+>                 model = "fsl,mpc5200b";
+> +               compatible = "mpc5200";
+>                 revision = "";                  // from bootloader
+>                 #interrupt-cells = <3>;
+>                 device_type = "soc";
 
-Best regards,
-Stefan
+Put these two changes in a seperate patch, and I'll ACK them right away
+
+===================================================================
+> --- grant.git.orig/arch/powerpc/kernel/prom_init.c
+> +++ grant.git/arch/powerpc/kernel/prom_init.c
+> @@ -2142,7 +2142,7 @@ static void __init fixup_device_tree_efi
+>                                      3,12,0, 3,13,0, 3,14,0, 3,15,0 };
+>         struct subst_entry efika_subst_table[] = {
+>                 { "/",                  "device_type",  prop_cstr("efika") },
+> -               { "/builtin",           "compatible",   prop_cstr("soc") },
+> +               { "/builtin",           "device_type",  prop_cstr("soc") },
+>                 { "/builtin/ata",       "compatible",   prop_cstr("mpc5200b-ata\0mpc5200-ata"), },
+>                 { "/builtin/bestcomm",  "compatible",   prop_cstr("mpc5200b-bestcomm\0mpc5200-bestcomm") },
+>                 { "/builtin/bestcomm",  "interrupts",   prop_bcomm_irq, sizeof(prop_bcomm_irq) },
+>
+
+This should also be a seperate patch.
+
+Cheers,
+g.
+
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
