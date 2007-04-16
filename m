@@ -1,26 +1,33 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <linas@austin.ibm.com>
+Received: from e32.co.us.ibm.com (e32.co.us.ibm.com [32.97.110.150])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 671DADDEC8
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 02:57:38 +1000 (EST)
-Date: Mon, 16 Apr 2007 11:57:29 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
-	properties
-Message-Id: <20070416115729.292c10b1.kim.phillips@freescale.com>
-In-Reply-To: <ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
-References: <20070413012542.343eb848.kim.phillips@freescale.com>
-	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
-	<20070416102533.0f87396f.kim.phillips@freescale.com>
-	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
-	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e32.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id C5D17DDED6
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 03:04:06 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e32.co.us.ibm.com (8.12.11.20060308/8.13.8) with ESMTP id
+	l3GH1Oop030786
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 13:01:24 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3GH414g111152
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 11:04:01 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3GH3iuX025125
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 11:03:45 -0600
+Date: Mon, 16 Apr 2007 12:03:28 -0500
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] hvc_console polling mode timer backoff
+Message-ID: <20070416170328.GD8281@austin.ibm.com>
+References: <1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
+	<97762565fcdccbf85d1d04cd055b1197@bga.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <97762565fcdccbf85d1d04cd055b1197@bga.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Olof Johansson <olof@lixom.net>, ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,58 +37,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 16 Apr 2007 17:47:18 +0200
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
+On Sat, Apr 14, 2007 at 02:42:02PM -0500, Milton Miller wrote:
+> 
+> Did you consider making MAX_TIMEOUT a module parameter?   It could then
+> be changed at runtime through /sys/modules/.
 
-> >>>> Since ucc_geth is being migrated to use the phylib, the existing
-> >>>> (undocumented) 'interface' property is being deprecated in favour
-> >>>> of unconjoined variations 'max-speed' and 'interface-type'.
-> >>>
-> >>> Again, please explain why this information shouldn't
-> >>> be in the PHY node instead?
-> >>>
-> >>
-> >> Strictly speaking, it should be neither in the UCC node nor the PHY
-> >> node, as it describes the connection between the two, but..
-> 
-> Connections are never described with separate nodes in
-> the device tree.
-> 
-> >> the UCC driver utilizes the data itself; the UCC, unlike other network
-> >> controllers, does not provide interface data in its programming model.
-> 
-> I have no idea what this means?
+There's a philosophy (that I have warmed up to over time) that 
+says that too much kernel configurability is a bad thing.  
+Less configurability makes problems easier to debug: you don't
+have to worry about:
 
-The UCC is a direct consumer of the values of the properties.
+-- bugs that occur for only certain parameter settings
+-- some dang-fool user/sysadmin setting the timout to 
+   1000 seconds (mistaking seconds for milliseconds) and
+   then reporting a bug.
+-- the latest fedora core having some udev script that
+   finds the hvc console and slaps some crazy values into it.
 
-> >> the phy drivers are not of_ drivers.  Porting phylib drivers to be of_
-> >> drivers would break phylib for non-OF arches, e.g. x86.
-> >
-> > Nothing stops the code in the UCC driver from grabbing the phy device 
-> > node and pulling the information out if it.
-> 
-> Quite so.  This isn't "bad style" either, it is a perfectly
-> normal thing to do.
-> 
-> > I believe the question is about where the information should truly 
-> > live.
-> 
-> Yeah.
-> 
-> > It would seem to be more of a property of the phy than of the enet 
-> > controller.
-> Yep.  The whole reason why any property is wanted here is
-> to say what type the PHY is, as the enet controller can
-> be attached to several kinds.  And what type the PHY is
-> belongs in the PHY node, obviously.  In its "compatible"
-> property to be exact.
-> 
+Surely, we have all known that bright-eyed, bushy-tailed 
+developer who, when they ask you for help with a bug, 
+your first questions are "did you mess with it?" and 
+"which part did you mess with?"
 
-I don't need to know what type the PHY is, e.g. whether it's m88e11x1
-compatible or not, the phylib handles that.
-
-If I were to put the properties in the PHY node, I wouldn't be able to
-describe a 1000Mbit/s capable UCC connected to a 100Mbit/s capable PHY,
-or vice versa.
-
-Kim
+--linas
