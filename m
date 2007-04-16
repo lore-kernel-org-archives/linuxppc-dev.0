@@ -1,21 +1,20 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id C2E7CDDEC0
+Return-Path: <kelsey@codemonkey.net>
+Received: from z.codemonkey.net (z.codemonkey.net [64.142.120.45])
+	by ozlabs.org (Postfix) with ESMTP id 91131DDE4A
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Apr 2007 02:49:24 +1000 (EST)
-Message-ID: <4623AA1A.8050407@ru.mvista.com>
-Date: Mon, 16 Apr 2007 20:53:46 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Tue, 17 Apr 2007 06:07:36 +1000 (EST)
+Date: Mon, 16 Apr 2007 13:35:29 -0600
+From: Kelsey Dawes <kelsey@codemonkey.net>
+To: Charles Krinke <ckrinke@istor.com>
+Subject: Re: DMA Puzzle
+Message-ID: <20070416193529.GE31265@nimrod.unx.ca>
+References: <OF2330A747.4AF0C4FD-ON882572BB.0077B95A-882572BB.0078B180@selinc.com>
+	<9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1D2@MERCURY.inside.istor.com>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] Xilinx SystemACE device driver
-References: <1176600194262-git-send-email-grant.likely@secretlab.ca>	
-	<4623A523.3040705@ru.mvista.com>
-	<528646bc0704160933o76861f6cqaeac768415f8adb8@mail.gmail.com>
-In-Reply-To: <528646bc0704160933o76861f6cqaeac768415f8adb8@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, Stefan Roese <sr@denx.de>,
-	Rick Moleres <Rick.Moleres@xilinx.com>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1D2@MERCURY.inside.istor.com>
+Cc: Randy Brown <rbrown@istor.com>, Vahid Fereydounkolahi <vahidf@istor.com>,
+	Chris Carlson <ccarlson@istor.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,30 +25,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 4/16/07, Andrei Konovalov <akonovalov@ru.mvista.com> wrote:
->> Hi Grant,
->>
->> Grant Likely wrote:
->> > Add support for block device access to the Xilinx SystemACE Compact
->> > flash interface
->>
->> Does the driver support 8-bit bus_width?
->>
->> Just gave the driver a try on ML300, and my first attempt failed.
->> Wonder if it's me having done something wrong, or something the driver 
->> doesn't
->> handle yet.
-> 
-> Doesn't handle it yet, you'll need to add 8-bit access macros to the
-> top of the file.
+On Thu, Apr 12, 2007 at 04:23:00PM -0700, Charles Krinke wrote:
+> My apologies for the complexity of this e-mail but DMA seems to be a
+> complex subject. Thanks to Ed.S a while back, I have DMA working fine
+> from U-Boot, but I am having a problem in Linux with the 8541 processor
+> using the 2.6.17.11 kernel. I need to DMA through an outbound address
+> translation window setup at 0x8800_0000 and the chip I am DMA'ing to is
+> responding to 64bit DAC (Dual Address Cycles) and its memory is setup
 
-OK. Thanks!
-Will try that.
+<SNIP>
 
-Thanks,
-Andrei
+Hi Charles - have you checked the device errata for 8541?  I do not have the details in front of me, but do recall several items specific to DMA  signal to complete DMA transaction.  
 
-> Cheers,
-> g.
-> 
+
+Worth a look anyway - 
+
+Kelsey
