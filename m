@@ -1,13 +1,33 @@
-Return-Path: <sprasad@bivio.net>
+Return-Path: <linas@austin.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 33A76DDE9F
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 08:00:11 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3GM01Vw008481
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 18:00:01 -0400
+Received: from d03av03.boulder.ibm.com (d03av03.boulder.ibm.com [9.17.195.169])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3GM01Ek168536
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 16:00:01 -0600
+Received: from d03av03.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av03.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3GLxjhO015179
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 15:59:45 -0600
+Date: Mon, 16 Apr 2007 16:59:28 -0500
+To: Will Schmidt <will_schmidt@vnet.ibm.com>
+Subject: Re: [PATCH] hvc_console polling mode timer backoff
+Message-ID: <20070416215928.GN8281@austin.ibm.com>
+References: <97762565fcdccbf85d1d04cd055b1197@bga.com>
+	<1176754943.28514.133.camel@farscape.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----_=_NextPart_001_01C78072.0FCB2628"
-Subject: Variable "current" in Linux kernel...
-Date: Mon, 16 Apr 2007 14:56:17 -0700
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D75A76F1@corpexc01.corp.networkrobots.com>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: <linuxppc-dev@ozlabs.org>,
-	<linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1176754943.28514.133.camel@farscape.rchland.ibm.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: Olof Johansson <olof@lixom.net>, Milton Miller <miltonm@bga.com>,
+	ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,165 +37,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+On Mon, Apr 16, 2007 at 03:22:23PM -0500, Will Schmidt wrote:
+> 
+> (Not sure I prefer this over the other one, but will see what other
+> commentary this generates...)
 
-------_=_NextPart_001_01C78072.0FCB2628
-Content-Type: text/plain;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+Its making me think about the color of the bicycle shed.
 
-Hi,
-
-=20
-
-I would like to know where exactly the value of variable "current" gets
-changed.
-
-=20
-
-Background:
-
-I am trying to get Linux running on 32-bit PowerPC. However, I want to
-get that running from address 1GB (0x40000000) as the starting memory,
-and not the regular 0x00000000. When I am making this change, I found
-that the value of "current" is getting messed up some where. I tried to
-search unsuccessfully where it gets set. Appreciate any help.
-
-=20
-
-BTW... did any one tried before to run from a different location of
-memory than the usual 0x00000000? What are the main problems you faced?
-I know this is open ended question, but wanted to see if any one ever
-did that.
-
-=20
-
-Thanks
-
-Siva
-
-=20
-
-=20
-
-
-------_=_NextPart_001_01C78072.0FCB2628
-Content-Type: text/html;
-	charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-
-<html xmlns:o=3D"urn:schemas-microsoft-com:office:office" =
-xmlns:w=3D"urn:schemas-microsoft-com:office:word" =
-xmlns=3D"http://www.w3.org/TR/REC-html40">
-
-<head>
-<META HTTP-EQUIV=3D"Content-Type" CONTENT=3D"text/html; =
-charset=3Dus-ascii">
-<meta name=3DGenerator content=3D"Microsoft Word 11 (filtered medium)">
-<style>
-<!--
- /* Style Definitions */
- p.MsoNormal, li.MsoNormal, div.MsoNormal
-	{margin:0in;
-	margin-bottom:.0001pt;
-	font-size:12.0pt;
-	font-family:"Times New Roman";}
-a:link, span.MsoHyperlink
-	{color:blue;
-	text-decoration:underline;}
-a:visited, span.MsoHyperlinkFollowed
-	{color:purple;
-	text-decoration:underline;}
-span.EmailStyle17
-	{mso-style-type:personal-compose;
-	font-family:Arial;
-	color:windowtext;}
-@page Section1
-	{size:8.5in 11.0in;
-	margin:1.0in 1.25in 1.0in 1.25in;}
-div.Section1
-	{page:Section1;}
--->
-</style>
-
-</head>
-
-<body lang=3DEN-US link=3Dblue vlink=3Dpurple>
-
-<div class=3DSection1>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Hi,<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I would like to know where exactly the value of =
-variable &#8220;current&#8221;
-gets changed.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Background:<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>I am trying to get Linux running on 32-bit PowerPC. =
-However,
-I want to get that running from address 1GB (0x40000000) as the starting
-memory, and not the regular 0x00000000. When I am making this change, I =
-found
-that the value of &#8220;current&#8221; is getting messed up some where. =
-I
-tried to search unsuccessfully where it gets set. Appreciate any =
-help.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>BTW&#8230; did any one tried before to run from a =
-different
-location of memory than the usual 0x00000000? What are the main problems =
-you
-faced? I know this is open ended question, but wanted to see if any one =
-ever
-did that.<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Thanks<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'>Siva<o:p></o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-<p class=3DMsoNormal><font size=3D2 face=3DArial><span =
-style=3D'font-size:10.0pt;
-font-family:Arial'><o:p>&nbsp;</o:p></span></font></p>
-
-</div>
-
-</body>
-
-</html>
-
-------_=_NextPart_001_01C78072.0FCB2628--
+--linas
