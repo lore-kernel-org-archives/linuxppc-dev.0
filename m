@@ -1,17 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 662F8DDF54
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 16:13:37 +1000 (EST)
-Date: Mon, 16 Apr 2007 01:31:39 -0500
-To: paulus@samba.org
-Subject: [PATCH] [5/5] pasemi: GPIO MDIO of_platform driver
-Message-ID: <20070416063139.GC20319@lixom.net>
-References: <20070416062634.GB20196@lixom.net>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 16 Apr 2007 16:30:34 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH dtc take 2] Fix reserve map output for asm format.
+Message-ID: <20070416063034.GB20363@localhost.localdomain>
+References: <aa6a7bd73be20ea11e3e98f87a66e478@bga.com>
+	<4622C226.1070304@gmail.com>
+	<20070416005145.GA19270@localhost.localdomain>
+	<ae5a6dc4dd96c8459b58b4916e35f7f7@bga.com>
+	<20070416041651.GA20274@localhost.localdomain>
+	<9979571f0828369de99700eb80c91bee@bga.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070416062634.GB20196@lixom.net>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <9979571f0828369de99700eb80c91bee@bga.com>
+Cc: linuxppc-dev@ozlabs.org, Jon Loeliger <jdl@jdl.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,372 +23,128 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-MDIO driver for PHY's connected via GPIO as on the PA Semi Electra
-eval board.
+On Mon, Apr 16, 2007 at 12:08:37AM -0500, Milton Miller wrote:
+> On Apr 15, 2007, at 11:16 PM, David Gibson wrote:
+> > On Sun, Apr 15, 2007 at 10:49:57PM -0500, Milton Miller wrote:
+> >> On Apr 15, 2007, at 7:51 PM, David Gibson wrote:
+> >>> On Sun, Apr 15, 2007 at 08:24:06PM -0400, Jerry Van Baren wrote:
+> >>>> Milton Miller wrote:
+> >>>>> Sometime around Sun Apr 15 12:29:14 EST 2007, Jerry Van Baren 
+> >>>>> wrote:
+> >>>>>> Add extra reserve map slots output for asm format (previously done
+> >>>>>> for
+> >>>>>> dtb
+> >>>>>>   output).
+> 
+> >>>>>> and handle dtb (binary)
+> >>>>>>   input being shorter than the total blob length (result of 
+> >>>>>> putting
+> >>>>>>   extra space in the blob).
+> >>
+> >> That part is still in this patch.
+> >>
+> >> And I think it should be a separate patch.  Its unrelated to filling
+> >> in .long 0 for the memory reserve map.
+> >
+> > Yes.
+> 
+> 
+> >> That said, one could use .space there I suppose.  Its fine the way it
+> >> is.
+> >
+> > I think .space would be the preferred method for adding the padding
+> > space at the end in asm format.
+> 
+> For the space at the end, I agree.  Or use .org 99b+size with 99: at the
+> begining of the struct.   The .long 0 was more for memory reserve, where
+> the entries might be replaced before assembly.
+> 
+> >>>>> The total_size says how much data should be copied.  Anything
+> >>>>> less and there is data missing.   Assuming zeros is wrong for
+> >>>>> most sections (the exception being the memory reserve list
+> >>>>> that had a terminating 0 entry within the read portion).
+> >>>>>
+> >>>>> milton
+> >>>>
+> >>>> The reason total_size is bigger than the actual size is because I
+> >>>> created the blob with extra space using the -S parameter.  It is
+> >>>> intentionally bigger.  The extra space is ignored by dtc when
+> >>>> creating a
+> >>>> dts/asm format output which is why cmalloc() is unnecessary.
+> >>
+> >> If this is a case of reading in the files it creates, then its wrong
+> >> to have the size created less than total_size.  The space needs to be
+> >> in the output file.  To have it not be in the output is wrong. For
+> >> instance it will not be allocated by objcopy nor the linker when its
+> >> inserted into the dtb section of the zImage wrapper, which would lead 
+> >> to
+> >> scribbling on memory belonging to something else, or at least
+> >> unallocated.
+> >> Similar for a firmware that treats the dt_struct as binary data.  It
+> >> might be loaded just before the initrd for instance.
+> >
+> > Well, I can see specialized case uses for totalsize greater than
+> > stored size: where you know the blob is going to be copied into
+> > another staging area with more space, for example.
+> 
+> That can either be done with your embedding script processing and 
+> noticing
+> the zeros at the end or by a special option I guess.
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Such a possible future special option was all I had in mind when I
+said emitting the zeroes should be default rather than only behaviour.
 
+> >>>> I suppose we could require a -f force but I'm not wild about 
+> >>>> creating
+> >>>> a
+> >>>> nanny program.  There is nothing wrong with the blob - it parses 
+> >>>> just
+> >>>> fine.  If there were problems with the blob contents, other errors
+> >>>> would
+> >>>> be raised.
+> 
+> You mean like not creating output for -I fs -O dts when there are
+> expected properties (files) missing?  :-)  The kernel booted just
+> fine, it was processing /proc/device-tree after all.
 
-Index: powerpc/arch/powerpc/platforms/pasemi/gpio_mdio.c
-===================================================================
---- /dev/null
-+++ powerpc/arch/powerpc/platforms/pasemi/gpio_mdio.c
-@@ -0,0 +1,349 @@
-+/*
-+ * Copyright (C) 2006-2007 PA Semi, Inc
-+ *
-+ * Author: Olof Johansson, PA Semi
-+ *
-+ * Maintained by: Olof Johansson <olof@lixom.net>
-+ *
-+ * Based on drivers/net/fs_enet/mii-bitbang.c.
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <linux/io.h>
-+#include <linux/module.h>
-+#include <linux/types.h>
-+#include <linux/sched.h>
-+#include <linux/errno.h>
-+#include <linux/ioport.h>
-+#include <linux/interrupt.h>
-+#include <linux/phy.h>
-+#include <linux/platform_device.h>
-+#include <asm/of_platform.h>
-+
-+#define DELAY 1
-+
-+static void __iomem *gpio_regs;
-+
-+struct gpio_priv {
-+	int mdc_pin;
-+	int mdio_pin;
-+};
-+
-+#define MDC_PIN(bus)	(((struct gpio_priv *)bus->priv)->mdc_pin)
-+#define MDIO_PIN(bus)	(((struct gpio_priv *)bus->priv)->mdio_pin)
-+
-+static inline void mdio_lo(struct mii_bus *bus)
-+{
-+	out_le32(gpio_regs+0x10, 1 << MDIO_PIN(bus));
-+}
-+
-+static inline void mdio_hi(struct mii_bus *bus)
-+{
-+	out_le32(gpio_regs, 1 << MDIO_PIN(bus));
-+}
-+
-+static inline void mdc_lo(struct mii_bus *bus)
-+{
-+	out_le32(gpio_regs+0x10, 1 << MDC_PIN(bus));
-+}
-+
-+static inline void mdc_hi(struct mii_bus *bus)
-+{
-+	out_le32(gpio_regs, 1 << MDC_PIN(bus));
-+}
-+
-+static inline void mdio_active(struct mii_bus *bus)
-+{
-+	out_le32(gpio_regs+0x20, (1 << MDC_PIN(bus)) | (1 << MDIO_PIN(bus)));
-+}
-+
-+static inline void mdio_tristate(struct mii_bus *bus)
-+{
-+	out_le32(gpio_regs+0x30, (1 << MDIO_PIN(bus)));
-+}
-+
-+static inline int mdio_read(struct mii_bus *bus)
-+{
-+	return !!(in_le32(gpio_regs+0x40) & (1 << MDIO_PIN(bus)));
-+}
-+
-+static void clock_out(struct mii_bus *bus, int bit)
-+{
-+	if (bit)
-+		mdio_hi(bus);
-+	else
-+		mdio_lo(bus);
-+	udelay(DELAY);
-+	mdc_hi(bus);
-+	udelay(DELAY);
-+	mdc_lo(bus);
-+}
-+
-+/* Utility to send the preamble, address, and register (common to read and write). */
-+static void bitbang_pre(struct mii_bus *bus, int read, u8 addr, u8 reg)
-+{
-+	int i;
-+
-+	/* CFE uses a really long preamble (40 bits). We'll do the same. */
-+	mdio_active(bus);
-+	for (i = 0; i < 40; i++) {
-+		clock_out(bus, 1);
-+	}
-+
-+	/* send the start bit (01) and the read opcode (10) or write (10) */
-+	clock_out(bus, 0);
-+	clock_out(bus, 1);
-+
-+	clock_out(bus, read);
-+	clock_out(bus, !read);
-+
-+	/* send the PHY address */
-+	for (i = 0; i < 5; i++) {
-+		clock_out(bus, (addr & 0x10) != 0);
-+		addr <<= 1;
-+	}
-+
-+	/* send the register address */
-+	for (i = 0; i < 5; i++) {
-+		clock_out(bus, (reg & 0x10) != 0);
-+		reg <<= 1;
-+	}
-+}
-+
-+static int gpio_mdio_read(struct mii_bus *bus, int phy_id, int location)
-+{
-+	u16 rdreg;
-+	int ret, i;
-+	u8 addr = phy_id & 0xff;
-+	u8 reg = location & 0xff;
-+
-+	bitbang_pre(bus, 1, addr, reg);
-+
-+	/* tri-state our MDIO I/O pin so we can read */
-+	mdio_tristate(bus);
-+	udelay(DELAY);
-+	mdc_hi(bus);
-+	udelay(DELAY);
-+	mdc_lo(bus);
-+
-+	/* read 16 bits of register data, MSB first */
-+	rdreg = 0;
-+	for (i = 0; i < 16; i++) {
-+		mdc_lo(bus);
-+		udelay(DELAY);
-+		mdc_hi(bus);
-+		udelay(DELAY);
-+		mdc_lo(bus);
-+		udelay(DELAY);
-+		rdreg <<= 1;
-+		rdreg |= mdio_read(bus);
-+	}
-+
-+	mdc_hi(bus);
-+	udelay(DELAY);
-+	mdc_lo(bus);
-+	udelay(DELAY);
-+
-+	ret = rdreg;
-+
-+	return ret;
-+}
-+
-+static int gpio_mdio_write(struct mii_bus *bus, int phy_id, int location, u16 val)
-+{
-+	int i;
-+
-+	u8 addr = phy_id & 0xff;
-+	u8 reg = location & 0xff;
-+	u16 value = val & 0xffff;
-+
-+	bitbang_pre(bus, 0, addr, reg);
-+
-+	/* send the turnaround (10) */
-+	mdc_lo(bus);
-+	mdio_hi(bus);
-+	udelay(DELAY);
-+	mdc_hi(bus);
-+	udelay(DELAY);
-+	mdc_lo(bus);
-+	mdio_lo(bus);
-+	udelay(DELAY);
-+	mdc_hi(bus);
-+	udelay(DELAY);
-+
-+	/* write 16 bits of register data, MSB first */
-+	for (i = 0; i < 16; i++) {
-+		mdc_lo(bus);
-+		if (value & 0x8000)
-+			mdio_hi(bus);
-+		else
-+			mdio_lo(bus);
-+		udelay(DELAY);
-+		mdc_hi(bus);
-+		udelay(DELAY);
-+		value <<= 1;
-+	}
-+
-+	/*
-+	 * Tri-state the MDIO line.
-+	 */
-+	mdio_tristate(bus);
-+	mdc_lo(bus);
-+	udelay(DELAY);
-+	mdc_hi(bus);
-+	udelay(DELAY);
-+	return 0;
-+}
-+
-+static int gpio_mdio_reset(struct mii_bus *bus)
-+{
-+	/*nothing here - dunno how to reset it*/
-+	return 0;
-+}
-+
-+
-+static int __devinit gpio_mdio_probe(struct of_device *ofdev,
-+				     const struct of_device_id *match)
-+{
-+	struct device *dev = &ofdev->dev;
-+	struct device_node *np = ofdev->node;
-+	struct device_node *gpio_np;
-+	struct mii_bus *new_bus;
-+	struct resource res;
-+	struct gpio_priv *priv;
-+	const unsigned int *prop;
-+	int err = 0;
-+	int i;
-+
-+	gpio_np = of_find_compatible_node(NULL, "gpio", "1682m-gpio");
-+
-+	if (!gpio_np)
-+		return -ENODEV;
-+
-+	err = of_address_to_resource(gpio_np, 0, &res);
-+	of_node_put(gpio_np);
-+
-+	if (err)
-+		return -EINVAL;
-+
-+	if (!gpio_regs)
-+		gpio_regs = ioremap(res.start, 0x100);
-+
-+	if (!gpio_regs)
-+		return -EPERM;
-+
-+	priv = kzalloc(sizeof(struct gpio_priv), GFP_KERNEL);
-+	if (priv == NULL)
-+		return -ENOMEM;
-+
-+	new_bus = kzalloc(sizeof(struct mii_bus), GFP_KERNEL);
-+
-+	if (new_bus == NULL)
-+		return -ENOMEM;
-+
-+	new_bus->name = "pasemi gpio mdio bus",
-+	new_bus->read = &gpio_mdio_read,
-+	new_bus->write = &gpio_mdio_write,
-+	new_bus->reset = &gpio_mdio_reset,
-+
-+	prop = get_property(np, "reg", NULL);
-+	new_bus->id = *prop;
-+	new_bus->priv = priv;
-+
-+	new_bus->phy_mask = 0;
-+
-+	new_bus->irq = kmalloc(sizeof(int)*PHY_MAX_ADDR, GFP_KERNEL);
-+	for(i = 0; i < PHY_MAX_ADDR; ++i)
-+		new_bus->irq[i] = irq_create_mapping(NULL, 10);
-+
-+
-+	prop = get_property(np, "mdc-pin", NULL);
-+	priv->mdc_pin = *prop;
-+
-+	prop = get_property(np, "mdio-pin", NULL);
-+	priv->mdio_pin = *prop;
-+
-+	new_bus->dev = dev;
-+	dev_set_drvdata(dev, new_bus);
-+
-+	err = mdiobus_register(new_bus);
-+
-+	if (0 != err) {
-+		printk(KERN_ERR "%s: Cannot register as MDIO bus, err %d\n",
-+				new_bus->name, err);
-+		goto bus_register_fail;
-+	}
-+
-+	return 0;
-+
-+bus_register_fail:
-+	kfree(new_bus);
-+
-+	return err;
-+}
-+
-+
-+static int gpio_mdio_remove(struct of_device *dev)
-+{
-+	struct mii_bus *bus = dev_get_drvdata(&dev->dev);
-+
-+	mdiobus_unregister(bus);
-+
-+	dev_set_drvdata(&dev->dev, NULL);
-+
-+	kfree(bus->priv);
-+	bus->priv = NULL;
-+	kfree(bus);
-+
-+	return 0;
-+}
-+
-+static struct of_device_id gpio_mdio_match[] =
-+{
-+	{
-+		.compatible      = "gpio-mdio",
-+	},
-+	{},
-+};
-+
-+static struct of_platform_driver gpio_mdio_driver =
-+{
-+	.name		= "gpio-mdio-bitbang",
-+	.match_table	= gpio_mdio_match,
-+	.probe		= gpio_mdio_probe,
-+	.remove		= gpio_mdio_remove,
-+};
-+
-+int gpio_mdio_init(void)
-+{
-+	return of_register_platform_driver(&gpio_mdio_driver);
-+}
-+
-+void gpio_mdio_exit(void)
-+{
-+	of_unregister_platform_driver(&gpio_mdio_driver);
-+}
-+
-+device_initcall(gpio_mdio_init);
-+
-+static int __devinit hack_init(void)
-+{
-+	struct platform_device *pdev;
-+
-+	pdev = platform_device_register_simple("gpio-mdio-bitbang", 0, NULL, 0);
-+
-+	return 0;
-+}
-+late_initcall(hack_init);
-Index: powerpc/arch/powerpc/platforms/pasemi/Makefile
-===================================================================
---- powerpc.orig/arch/powerpc/platforms/pasemi/Makefile
-+++ powerpc/arch/powerpc/platforms/pasemi/Makefile
-@@ -1,3 +1,3 @@
--obj-y	+= setup.o pci.o time.o idle.o powersave.o iommu.o
-+obj-y	+= setup.o pci.o time.o idle.o powersave.o iommu.o gpio_mdio.o
- obj-$(CONFIG_PPC_PASEMI_CPUFREQ) += cpufreq.o
- 
+> Its probably wrong to check for expected properties when the output
+> is dts.  At least the checks should not be more than a warning (that
+> you may have selected a subtree).
+
+Yes, yes, I know.  This all comes back to the need for a substantially
+reworked warning/error system.
+
+> >>> I think the warning is fine, but not for exactly the reasons you
+> >>> state.  Several points:
+> >>>
+> >>> - At least with v17 input, where it's possible, we probably *should*
+> >>> check that an input blob isn't truncated in the middle of the strings
+> >>> or structure sections.  That should be more than a warning.
+> >>
+> >> Or check that (1) the memory reserve list is terminated before this
+> >> point, (2) the dt_struct has matching node begin and end count and
+> >> ends with tree end, and (3) all strings referenced by dt_struct are
+> >> before the read size.
+> >
+> > I think just checking the header lengths of the sub-blocks should be
+> > sufficient at this point.  Checking that the begin/end count matches
+> > in the structure block and that all the string references are valid
+> > can, I think, be correctly delayed until we actually parse the
+> > structure block.
+> 
+> Checking the sublock lengths is sufficient, but actually more
+> restrictive that what I said.   And mine works on older formats
+> without the size fields.  But yes, yours is simpler when the fields
+> exist.
+> 
+> Or just leave it an error, fix the output, and make the user fix the
+> input.   If you took off the zeros, you can add padding from /dev/zero
+> or /dev/random or /etc/motd, as you said the data should not be used.
+> 
+> milton
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
