@@ -1,26 +1,34 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 3567FDDEA2
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 04:40:12 +1000 (EST)
-In-Reply-To: <ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
-References: <20070413012542.343eb848.kim.phillips@freescale.com>
-	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
-	<20070416102533.0f87396f.kim.phillips@freescale.com>
-	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
-	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <98DB6E05-1869-47E9-882E-17B4F574581F@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
-	properties
-Date: Mon, 16 Apr 2007 13:40:09 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BE56DDDE1E
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 05:35:17 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3GJZEkP015680
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 15:35:14 -0400
+Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3GJZEII521226
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 15:35:14 -0400
+Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
+	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3GJYviA003588
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 15:34:58 -0400
+Subject: Re: [PATCH] hvc_console polling mode timer backoff
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: michael@ellerman.id.au
+In-Reply-To: <1176644012.5422.3.camel@concordia.ozlabs.ibm.com>
+References: <1176394477.28514.32.camel@farscape.rchland.ibm.com>
+	<1176450459.4734.32.camel@concordia.ozlabs.ibm.com>
+	<1176491513.28514.66.camel@farscape.rchland.ibm.com>
+	<1176644012.5422.3.camel@concordia.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Mon, 16 Apr 2007 14:34:31 -0500
+Message-Id: <1176752071.28514.100.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,62 +38,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 2007-15-04 at 23:33 +1000, Michael Ellerman wrote:
+> On Fri, 2007-04-13 at 14:11 -0500, Will Schmidt wrote:
+> > On Fri, 2007-13-04 at 17:47 +1000, Michael Ellerman wrote:
+> > 
+> > Is this part temporary for your graphing, or think it's something that
+> > should go in? 
+> 
+> No that's just debug foobar I used for the graphs, I'll send a cleaned
+> up version during the week if you don't beat me to it.
 
-On Apr 16, 2007, at 10:47, Segher Boessenkool wrote:
+I'll do it, just waiting to see if I should rework it to include a sys
+interface or not..
 
->
->> I believe the question is about where the information should truly
->> live.
->
-> Yeah.
+> Time to get a blag! ;)
 
-Agreed
+yup. 
 
->
->> It would seem to be more of a property of the phy than of the enet
->> controller.
->
-> Yep.  The whole reason why any property is wanted here is
-> to say what type the PHY is, as the enet controller can
-> be attached to several kinds.  And what type the PHY is
-> belongs in the PHY node, obviously.  In its "compatible"
-> property to be exact.
-
-
-It's not saying what type the PHY is, though.  It's describing the  
-connection.  The PHY is just as flexible wrt connection type as the  
-ethernet controller.  This is actually a property of the board.  In  
-some cases its a fixed property of the board.  In some cases it's  
-changeable through dip switches, or even through software.
-
-Ethernet controllers need to know what the connection is so they can  
-establish a data connection with the PHYs
-
-PHYs need to know what the connection is so they can establish a data  
-connection with the ethernet controllers.
-
-There is equal flexibility on both sides, and I think the choice of  
-where to put this information is fairly arbitrary.  The reason for  
-choosing the ethernet controller in this case has to do with the flow  
-of information.
-
-1) The driver tells the PHY what interface to use
-2) The ethernet controller is the endpoint of this connection which  
-is accessible by everyone else.  IE data is not sent through PHYs by  
-any means but through the ethernet controller, and data is not  
-received from PHYs by any means but through the ethernet controller.
-3) The UCC needs to be told the connection type, because it does not  
-have logic to detect it on its own.
-
-The truth is, this is a somewhat intractable problem because of the  
-myriad possibilities for how board designers can hook up ethernet  
-controllers to PHYs.  One can envision scenarios where controllers  
-can hook up to multiple PHYs, each of one fixed type.  One can  
-envision scenarios where multiple controllers are hooked up to one  
-PHY, and each of the controllers can use different connections.  If  
-we put the information in the PHY node, we allow for the first  
-scenario, but not the second.  If we put it in the ethernet node, we  
-reverse that situation.  In either case, we'd currently have to  
-modify our dts to specify which PHY we want to use.
-
-Andy
+> cheers
+> 
+-Will
