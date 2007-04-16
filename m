@@ -1,15 +1,15 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 00929DDEBB
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 16:05:45 +1000 (EST)
-Date: Mon, 16 Apr 2007 01:23:47 -0500
-To: paulus@samba.org
-Subject: [PATCH] powerpc: save trap number in bad_stack
-Message-ID: <20070416062347.GA20196@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id F2430DDEC9
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 16:08:32 +1000 (EST)
+Date: Mon, 16 Apr 2007 01:26:34 -0500
+To: paulus@sambaorg
+Subject: [PATCH] [1/5] pasemi: allow 8KB config space for I/O bridge
+Message-ID: <20070416062634.GB20196@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,63 +19,51 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Save the trap number in the case of getting a bad stack in an exception
-handler. It is sometimes useful to know what exception it was that caused
-this to happen. Without this, no trap is reported.
-
+Device 0 function 0 on the root bus is really a two-function bus agent,
+but only the first function is visible. Because of this, we need to
+allow config accesses into the second range. Modify the check for valid
+offsets accordingly.
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Index: linux-2.6/arch/powerpc/kernel/asm-offsets.c
+Index: linux-2.6/arch/powerpc/platforms/pasemi/pci.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/asm-offsets.c
-+++ linux-2.6/arch/powerpc/kernel/asm-offsets.c
-@@ -139,6 +139,7 @@ int main(void)
- 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
- 	DEFINE(PACA_SLBSHADOWPTR, offsetof(struct paca_struct, slb_shadow_ptr));
- 	DEFINE(PACA_DATA_OFFSET, offsetof(struct paca_struct, data_offset));
-+	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
+--- linux-2.6.orig/arch/powerpc/platforms/pasemi/pci.c
++++ linux-2.6/arch/powerpc/platforms/pasemi/pci.c
+@@ -33,7 +33,17 @@
  
- 	DEFINE(SLBSHADOW_STACKVSID,
- 	       offsetof(struct slb_shadow, save_area[SLB_NUM_BOLTED - 1].vsid));
-Index: linux-2.6/include/asm-powerpc/paca.h
-===================================================================
---- linux-2.6.orig/include/asm-powerpc/paca.h
-+++ linux-2.6/include/asm-powerpc/paca.h
-@@ -81,6 +81,8 @@ struct paca_struct {
- 	u64 exslb[10];		/* used for SLB/segment table misses
-  				 * on the linear mapping */
+ #define PA_PXP_CFA(bus, devfn, off) (((bus) << 20) | ((devfn) << 12) | (off))
  
-+	u64 trap_save;			/* Used when bad stack is encountered */
-+
- 	mm_context_t context;
- 	u16 vmalloc_sllp;
- 	u16 slb_cache[SLB_CACHE_ENTRIES];
-Index: linux-2.6/arch/powerpc/kernel/head_64.S
-===================================================================
---- linux-2.6.orig/arch/powerpc/kernel/head_64.S
-+++ linux-2.6/arch/powerpc/kernel/head_64.S
-@@ -278,8 +278,12 @@ exception_marker:
- 	beq-	1f;							   \
- 	ld	r1,PACAKSAVE(r13);	/* kernel stack to use		*/ \
- 1:	cmpdi	cr1,r1,0;		/* check if r1 is in userspace	*/ \
--	bge-	cr1,bad_stack;		/* abort if it is		*/ \
--	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
-+	bge-	cr1,2f;			/* abort if it is		*/ \
-+	b	3f;							   \
-+2:	li	r1,(n);			/* will be reloaded later	*/ \
-+	std	r1,PACA_TRAP_SAVE(r13);					   \
-+	b	bad_stack;						   \
-+3:	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
- 	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
- 	std	r12,_MSR(r1);		/* save SRR1 in stackframe	*/ \
- 	std	r10,0(r1);		/* make stack chain pointer	*/ \
-@@ -940,6 +944,8 @@ bad_stack:
- 	SAVE_2GPRS(7,r1)
- 	SAVE_10GPRS(12,r1)
- 	SAVE_10GPRS(22,r1)
-+	ld	r12,PACA_TRAP_SAVE(r13)
-+	std	r12,_TRAP(r1)
- 	addi	r11,r1,INT_FRAME_SIZE
- 	std	r11,0(r1)
- 	li	r12,0
+-#define CONFIG_OFFSET_VALID(off) ((off) < 4096)
++static inline int pa_pxp_offset_valid(u8 bus, u8 devfn, int offset)
++{
++	/* Device 0 Function 0 is special: It's config space spans function 1 as
++	 * well, so allow larger offset. It's really a two-function device but the
++	 * second function does not probe.
++	 */
++	if (bus == 0 && devfn == 0)
++		return offset < 8192;
++	else
++		return offset < 4096;
++}
+ 
+ static void volatile __iomem *pa_pxp_cfg_addr(struct pci_controller *hose,
+ 				       u8 bus, u8 devfn, int offset)
+@@ -51,7 +61,7 @@ static int pa_pxp_read_config(struct pci
+ 	if (!hose)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	if (!CONFIG_OFFSET_VALID(offset))
++	if (!pa_pxp_offset_valid(bus->number, devfn, offset))
+ 		return PCIBIOS_BAD_REGISTER_NUMBER;
+ 
+ 	addr = pa_pxp_cfg_addr(hose, bus->number, devfn, offset);
+@@ -85,7 +95,7 @@ static int pa_pxp_write_config(struct pc
+ 	if (!hose)
+ 		return PCIBIOS_DEVICE_NOT_FOUND;
+ 
+-	if (!CONFIG_OFFSET_VALID(offset))
++	if (!pa_pxp_offset_valid(bus->number, devfn, offset))
+ 		return PCIBIOS_BAD_REGISTER_NUMBER;
+ 
+ 	addr = pa_pxp_cfg_addr(hose, bus->number, devfn, offset);
