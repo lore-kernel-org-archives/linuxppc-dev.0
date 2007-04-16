@@ -1,19 +1,21 @@
-Return-Path: <wangbj@lzu.edu.cn>
-Received: from lzu.edu.cn (mail.lzu.edu.cn [202.201.0.136])
-	by ozlabs.org (Postfix) with SMTP id DFA08DDE3C
+Return-Path: <sr@denx.de>
+Received: from mo-p07-ob.rzone.de (mo-p07-ob.rzone.de [81.169.146.188])
+	by ozlabs.org (Postfix) with ESMTP id 3DEAEDDEB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 16 Apr 2007 15:19:51 +1000 (EST)
-Message-ID: <376700739.05606@lzu.edu.cn>
-From: "Wang, Baojun" <wangbj@lzu.edu.cn>
-To: linux-kernel@vger.kernel.org
-Subject: PROBLEM: kernel 2.6.20.6 build failed for ppc board chestnut(ibm ppc
-	750GX/FX)
-Date: Mon, 16 Apr 2007 13:13:01 +0800
+	Mon, 16 Apr 2007 15:25:55 +1000 (EST)
+From: Stefan Roese <sr@denx.de>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] Xilinx SystemACE device driver
+Date: Mon, 16 Apr 2007 07:28:15 +0200
+References: <1176600194262-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <1176600194262-git-send-email-grant.likely@secretlab.ca>
 MIME-Version: 1.0
-Content-Type: multipart/signed; boundary="nextPart13853269.86UVt1nuoB";
-	protocol="application/pgp-signature"; micalg=pgp-sha1
-Message-Id: <200704161313.04359.wangbj@lzu.edu.cn>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200704160728.16608.sr@denx.de>
+Cc: Peter Korsgaard <jacmet@sunsite.dk>,
+	Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Rick Moleres <Rick.Moleres@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,102 +26,77 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---nextPart13853269.86UVt1nuoB
-Content-Type: text/plain;
-  charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
-Content-Disposition: inline
+Hi Grant,
 
-PROBLEM: linux kernel 2.6.20.6 build failed for ppc board chestnut(ibm ppc=
-=20
-750GX/FX)
+On Sunday 15 April 2007 03:23, Grant Likely wrote:
+> Add support for block device access to the Xilinx SystemACE Compact
+> flash interface
+>
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
+> I think this driver is in pretty good shape.  I've got a few things to
+> clean up a bit.  Specifically, I'm still working on error handling and
+> making sure that the state machine is sane at all times.
 
-STEPS I followed:
-1) make ARCH=3Dppc CROSS_COMPILE=3Dppc_4xx- chestnut_defconfig # toolchain =
-from=20
-eldk 4.1
+I tested the driver on my system (Katmai 440SPe). Both CF's work correctly 
+regarding reading and writing. No problems so far.
 
-2) make ARCH=3Dppc CROSS_COMPILE=3Dppc_4xx- V=3D1
+> I would appreciate any review/comments.  One area where I am undecided is
+> the format of the state machine.  The current code uses one big function
+> with a large switch() statment for each state.  I'm considering breaking
+> this up into a seperate function for each state, and adding a static
+> state table with pointers to each state function.
 
-=2E..
+I have no real preference here. I don't mind if the code stays in this large 
+switch statement. It's not that much code.
 
-make -f scripts/Makefile.build obj=3Darch/ppc/platforms
- =20
-ppc_4xx-gcc -m32 -Wp,-MD,arch/ppc/platforms/.chestnut.o.d  -nostdinc -isyst=
-em /opt/eldk/usr/bin/../lib/gcc/powerpc-linux/4.0.0/include -D__KERNEL__ -I=
-include  -include=20
-include/linux/autoconf.h -Iarch/ppc -Iarch/ppc/include -Wall -Wundef -Wstri=
-ct-prototypes -Wno-trigraphs -fno-strict-aliasing -fno-common -O2 -Iarch/pp=
-c -msoft-float -pipe -ffixed-r2 -mmultiple  -mno-altivec -mstring -Wa,-malt=
-ivec -fomit-frame-pointer  -Wdeclaration-after-statement -Wno-pointer-sign =
-   -D"KBUILD_STR(s)=3D#s" -D"KBUILD_BASENAME=3DKBUILD_STR(chestnut)"  -D"KB=
-UILD_MODNAME=3DKBUILD_STR(chestnut)" -c -o=20
-arch/ppc/platforms/chestnut.o arch/ppc/platforms/chestnut.c
-arch/ppc/platforms/chestnut.c: In function 'chestnut_setup_mtd':
-arch/ppc/platforms/chestnut.c:435: error: 'physmap_map' undeclared (first u=
-se=20
-in this function)
-arch/ppc/platforms/chestnut.c:435: error: (Each undeclared identifier is=20
-reported only once
-arch/ppc/platforms/chestnut.c:435: error: for each function it appears in.)
-make[1]: *** [arch/ppc/platforms/chestnut.o] Error 1
-make: *** [arch/ppc/platforms] Error 2
+Two small issues though:
 
+> +config XILINX_SYSACE
+> +     tristate "Xilinx SystemACE support"
+> +     depends on XILINX_VIRTEX
+> +     help
+> +       Include support for the Xilinx SystemACE CompactFlash interface
 
-This PROBLEM should also affect these boards:
-find -name '*.[chS]' -exec grep physmap_map {} \; -print
-        physmap_map.size =3D CHESTNUT_32BIT_SIZE;
-=2E/arch/ppc/platforms/chestnut.c
-        physmap_map.size =3D size;
-=2E/arch/ppc/platforms/ev64360.c
-        physmap_map.size =3D size;
-=2E/arch/ppc/platforms/katana.c
+Please remove the XILINX_VIRTEX dependency here. It makes it impossible to use 
+the driver on my 440SPe system.
 
-I've veryfied 2.6.15, 2.6.19.2 2.6.20.1 2.6.20.6
+> +/* register access macros */
+> +#if 1 /* Little endian 16-bit regs */
+> +#define ace_reg_read8(ace, reg) in_8(ace->baseaddr + reg)
+> +#define ace_reg_read16(ace, reg) in_le16(ace->baseaddr + reg)
+> +#define ace_reg_readdata(ace, reg) in_be16(ace->baseaddr + reg)
+> +#define ace_reg_read32(ace, reg) ((in_le16(ace->baseaddr + reg+2) << 16) |
+> \ +                                  (in_le16(ace->baseaddr + reg)))
+> +#define ace_reg_write16(ace, reg, val) out_le16(ace->baseaddr + reg, val)
+> +#define ace_reg_writedata(ace, reg, val) out_be16(ace->baseaddr + reg,
+> val) +#define ace_reg_write32(ace, reg, val) { \
+> +                           out_le16(ace->baseaddr + reg+2, (val) >> 16); \
+> +                           out_le16(ace->baseaddr + reg, val); \
+> +                       }
+> +#else /* Big endian 16-bit regs */
+> +#define ace_reg_read8(ace, reg) in_8(ace->baseaddr + reg)
+> +#define ace_reg_read16(ace, reg) in_be16(ace->baseaddr + reg)
+> +#define ace_reg_readdata(ace, reg) in_le16(ace->baseaddr + reg)
+> +#define ace_reg_read32(ace, reg) ((in_be16(ace->baseaddr + reg+2) << 16) |
+> \ +                                  (in_be16(ace->baseaddr + reg)))
+> +#define ace_reg_write16(ace, reg, val) out_be16(ace->baseaddr + reg, val)
+> +#define ace_reg_writedata(ace, reg, val) out_le16(ace->baseaddr + reg,
+> val) +#define ace_reg_write32(ace, reg, val) { \
+> +                           out_be16(ace->baseaddr + reg+2, (val) >> 16); \
+> +                           out_be16(ace->baseaddr + reg, val); \
+> +                       }
+> +#endif
 
-ONLY 2.6.15 can build successfully. sounds like the problem is caused by th=
-e=20
-interface change of mtd.
+We should make the endianess selectable (I need big endian). You talked about 
+autodetecting the endianess once, but that would add extra code on every 
+register access. So I suggest to just add a configuration option for the 
+endianess selection.
 
+> I feel this driver is pretty close to done, and I'd like to get it into
+> mainline for the 2.6.22 timeframe.
 
-this brute force patch sould solve the problem:
+Yes, please.
 
-diff -Nru /tmp/linux-2.6.20.6/arch/ppc/platforms/chestnut.c \ =20
-linux-2.6.20.6/arch/ppc/platforms/chestnut.c
-
-=2D-- /tmp/linux-2.6.20.6/arch/ppc/platforms/chestnut.c   2007-04-07=20
-04:02:48.000000000 +0800
-+++ linux-2.6.20.6/arch/ppc/platforms/chestnut.c        2007-04-13=20
-17:09:03.000000000 +0800
-@@ -432,7 +432,9 @@
-        ptbl.name =3D "User FS";
-        ptbl.size =3D CHESTNUT_32BIT_SIZE;
-
-=2D       physmap_map.size =3D CHESTNUT_32BIT_SIZE;
-+       // physmap_map.size =3D CHESTNUT_32BIT_SIZE;
-+       physmap_configure(CHESTNUT_32BIT_BASE, CHESTNUT_32BIT_SIZE,=20
-CONFIG_MTD_PHYSMAP_BANKWIDTH, NULL);
-+
-        physmap_set_partitions(&ptbl, 1);
-        return 0;
- }
-
-=2D-=20
-Wang, Baojun                                        Lanzhou University
-Distributed & Embedded System Lab              http://dslab.lzu.edu.cn
-School of Information Science and Engeneering        wangbj@lzu.edu.cn
-Tianshui South Road 222. Lanzhou 730000                     .P.R.China
-Tel:+86-931-8912025                                Fax:+86-931-8912022
-
---nextPart13853269.86UVt1nuoB
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQBGIwXgIuIOr7tpgg0RAkuGAKCteU6aea5bRgJsi5NQx7cDDNrtKQCePddU
-ySeKP0O9tginWZW+fY5G9Xg=
-=Xfst
------END PGP SIGNATURE-----
-
---nextPart13853269.86UVt1nuoB--
+Best regards,
+Stefan
