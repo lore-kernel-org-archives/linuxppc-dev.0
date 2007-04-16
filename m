@@ -1,22 +1,25 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <afleming@freescale.com>
+Received: from az33egw01.freescale.net (az33egw01.freescale.net
+	[192.88.158.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 83FCFDDE3A
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 04:19:22 +1000 (EST)
-In-Reply-To: <2C4757AA-5302-4832-91BB-9B102A60FA5C@freescale.com>
-References: <20070410165639.1b619c34.kim.phillips@freescale.com>
-	<377816979b46808cd11a12640ceabb14@kernel.crashing.org>
-	<2C4757AA-5302-4832-91BB-9B102A60FA5C@freescale.com>
+	(Client CN "az33egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 3567FDDEA2
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 04:40:12 +1000 (EST)
+In-Reply-To: <ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
+References: <20070413012542.343eb848.kim.phillips@freescale.com>
+	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
+	<20070416102533.0f87396f.kim.phillips@freescale.com>
+	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
+	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <C0F5A5DE-9D43-47D3-BB62-1CB0BF602BF8@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 1/4] powerpc: document max-speed and interface-type
+Message-Id: <98DB6E05-1869-47E9-882E-17B4F574581F@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
 	properties
-Date: Mon, 16 Apr 2007 13:19:08 -0500
-To: Andy Fleming <afleming@freescale.com>
+Date: Mon, 16 Apr 2007 13:40:09 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -28,34 +31,61 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 16, 2007, at 12:28 PM, Andy Fleming wrote:
+On Apr 16, 2007, at 10:47, Segher Boessenkool wrote:
 
 >
-> On Apr 12, 2007, at 02:06, Segher Boessenkool wrote:
+>> I believe the question is about where the information should truly
+>> live.
 >
->>> +   - max-speed : The maximum speed supported by the controller (in
->>> Mbit/s)
->>> +   - interface-type : a string naming the controller/PHY interface
->>> type,
->>> +     i.e., one of "mii", "gmii", "sgmii", "tbi", "rmii",  
->>> "rgmii", or
->>> "rtbi".
->>
->> This information should be in the PHY node, instead.
->> Both property values would normally be implied by
->> "compatible" in that node (and this node, for the
->> max speed).
->
->
-> Why should it be in the PHY node?  It's not a property of the PHY.
-> It's a property of the connection between the PHY and the ethernet
-> controller.  The PHY Lib API has the ethernet provide the connection
-> type as an argument in the phy_connect() call, so it makes sense for
-> this property to reside in the ethernet node.  I think ethernet
-> drivers typically have the most power in this situation, and so it's
-> best (IMHO) to let the ethernet node provide this information.
+> Yeah.
 
-The interface type should be a property of the phy because its a  
-property of the physical 'phy' device on the board.
+Agreed
 
-- k
+>
+>> It would seem to be more of a property of the phy than of the enet
+>> controller.
+>
+> Yep.  The whole reason why any property is wanted here is
+> to say what type the PHY is, as the enet controller can
+> be attached to several kinds.  And what type the PHY is
+> belongs in the PHY node, obviously.  In its "compatible"
+> property to be exact.
+
+
+It's not saying what type the PHY is, though.  It's describing the  
+connection.  The PHY is just as flexible wrt connection type as the  
+ethernet controller.  This is actually a property of the board.  In  
+some cases its a fixed property of the board.  In some cases it's  
+changeable through dip switches, or even through software.
+
+Ethernet controllers need to know what the connection is so they can  
+establish a data connection with the PHYs
+
+PHYs need to know what the connection is so they can establish a data  
+connection with the ethernet controllers.
+
+There is equal flexibility on both sides, and I think the choice of  
+where to put this information is fairly arbitrary.  The reason for  
+choosing the ethernet controller in this case has to do with the flow  
+of information.
+
+1) The driver tells the PHY what interface to use
+2) The ethernet controller is the endpoint of this connection which  
+is accessible by everyone else.  IE data is not sent through PHYs by  
+any means but through the ethernet controller, and data is not  
+received from PHYs by any means but through the ethernet controller.
+3) The UCC needs to be told the connection type, because it does not  
+have logic to detect it on its own.
+
+The truth is, this is a somewhat intractable problem because of the  
+myriad possibilities for how board designers can hook up ethernet  
+controllers to PHYs.  One can envision scenarios where controllers  
+can hook up to multiple PHYs, each of one fixed type.  One can  
+envision scenarios where multiple controllers are hooked up to one  
+PHY, and each of the controllers can use different connections.  If  
+we put the information in the PHY node, we allow for the first  
+scenario, but not the second.  If we put it in the ethernet node, we  
+reverse that situation.  In either case, we'd currently have to  
+modify our dts to specify which PHY we want to use.
+
+Andy
