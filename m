@@ -1,20 +1,17 @@
-Return-Path: <glikely@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.236])
-	by ozlabs.org (Postfix) with ESMTP id B2F17DDEC0
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 15:59:58 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id i31so1388725wxd
-	for <linuxppc-dev@ozlabs.org>; Sun, 15 Apr 2007 22:59:57 -0700 (PDT)
-Message-ID: <528646bc0704152259o337f77ebme999d2d7ad880227@mail.gmail.com>
-Date: Sun, 15 Apr 2007 23:59:56 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Miroslaw Dach" <miroslaw.dach@psi.ch>
-Subject: Re: linux 2.6 on xilinx ml403
-In-Reply-To: <Pine.LNX.4.44.0704101337030.26940-100000@slslc02.psi.ch>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 98778DE067
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 16:00:16 +1000 (EST)
+Date: Mon, 16 Apr 2007 01:18:18 -0500
+To: jgarzik@pobox.com
+Subject: [PATCH] [2/4] pasemi_mac: irq mapping changes
+Message-ID: <20070416061818.GD19783@lixom.net>
+References: <20070416061654.GB19783@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <Pine.LNX.4.44.0704101337030.26940-100000@slslc02.psi.ch>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070416061654.GB19783@lixom.net>
+From: olof@lixom.net (Olof Johansson)
+Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,39 +21,127 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 4/10/07, Miroslaw Dach <miroslaw.dach@psi.ch> wrote:
-> Hi All,
->
->         I am new in the linux powerpc linux. I have the Avnet evaluation
-> board which contains xilinx ml403 (Virtex-4 FX family). The challenge I
-> have is to build linux (most preferable 2.6) with suitable drivers.
->
-> On the net I have found much information how to build linuxppc 2.4 for
-> xilinx ml300/ml301. I did not found however any good reference which
-> refers to kernel 2.6 and suitable patches for powerpc 405 which is
-> included in the ml403.
->
-> I would appreciate very much if someone could provide me with some good
-> reference links referring kernel 2.6 for PPC 405 on xilinx ml403.
-> I have found the place to download the linuxppc_2_4_devel on BitKeper page
-> but there is no equivalent like linuxppc_2_6_devel.
+Fixes for ethernet IRQ mapping, to move it to the driver instead of in
+the platform setup code.
 
-The mainline tree has ml403 support, but it's not complete.  I just
-posted a set of patches that clean up a bunch of stuff and add some
-support.  Also, if you look through the mailing list archive, you can
-find a copy of the adapter.c file needed to make the Xilinx TEMAC
-driver work with Linux.
 
-I'm also planing to publish my git tree tomorrow where I've integrated
-all the patches I need to get Linux in a useful state for the ml403.
-The git tree will show up on http://git.secretlab.ca.  You might find
-it easier to grab my tree and use that as your starting point.
+Signed-off-by: Olof Johansson <olof@lixom.net>
 
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Index: powerpc/arch/powerpc/platforms/pasemi/pci.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pasemi/pci.c
++++ powerpc/arch/powerpc/platforms/pasemi/pci.c
+@@ -163,19 +163,6 @@ static void __init pas_fixup_phb_resourc
+ }
+ 
+ 
+-void __devinit pas_pci_irq_fixup(struct pci_dev *dev)
+-{
+-	/* DMA is special, 84 interrupts (128 -> 211), all but 128
+-	 * need to be mapped by hand here.
+-	 */
+-	if (dev->vendor == 0x1959 && dev->device == 0xa007) {
+-		int i;
+-		for (i = 129; i < 212; i++)
+-			irq_create_mapping(NULL, i);
+-	}
+-}
+-
+-
+ void __init pas_pci_init(void)
+ {
+ 	struct device_node *np, *root;
+Index: powerpc/arch/powerpc/platforms/pasemi/setup.c
+===================================================================
+--- powerpc.orig/arch/powerpc/platforms/pasemi/setup.c
++++ powerpc/arch/powerpc/platforms/pasemi/setup.c
+@@ -240,5 +240,4 @@ define_machine(pas) {
+ 	.check_legacy_ioport    = pas_check_legacy_ioport,
+ 	.progress		= pas_progress,
+ 	.machine_check_exception = pas_machine_check_handler,
+-	.pci_irq_fixup		= pas_pci_irq_fixup,
+ };
+Index: powerpc/drivers/net/pasemi_mac.c
+===================================================================
+--- powerpc.orig/drivers/net/pasemi_mac.c
++++ powerpc/drivers/net/pasemi_mac.c
+@@ -537,6 +537,9 @@ static irqreturn_t pasemi_mac_tx_intr(in
+ static int pasemi_mac_open(struct net_device *dev)
+ {
+ 	struct pasemi_mac *mac = netdev_priv(dev);
++	struct device_node *dma_dn = pci_device_to_OF_node(mac->dma_pdev);
++	const unsigned int *prop;
++	int base_irq;
+ 	unsigned int flags;
+ 	int ret;
+ 
+@@ -600,8 +603,24 @@ static int pasemi_mac_open(struct net_de
+ 	netif_start_queue(dev);
+ 	netif_poll_enable(dev);
+ 
+-	ret = request_irq(mac->dma_pdev->irq + mac->dma_txch,
+-			  &pasemi_mac_tx_intr, IRQF_DISABLED,
++	/* Interrupts are a bit different for our DMA controller: While
++	 * it's got one a regular PCI device header, the interrupt there
++	 * is really the base of the range it's using. Each tx and rx
++	 * channel has it's own interrupt source.
++	 *
++	 * The only way to get to the actual hardware interrupt is by
++	 * getting it from the device tree, since the kernel has done
++	 * virtual remapping of the sources by the time we can get them
++	 * from the PCI device.
++	 */
++
++	prop = of_get_property(dma_dn, "interrupts", NULL);
++	base_irq = *prop;
++
++	mac->tx_irq = irq_create_mapping(NULL, base_irq + mac->dma_txch);
++	mac->rx_irq = irq_create_mapping(NULL, base_irq + 20 + mac->dma_txch);
++
++	ret = request_irq(mac->tx_irq, &pasemi_mac_tx_intr, IRQF_DISABLED,
+ 			  mac->tx->irq_name, dev);
+ 	if (ret) {
+ 		dev_err(&mac->pdev->dev, "request_irq of irq %d failed: %d\n",
+@@ -609,8 +628,7 @@ static int pasemi_mac_open(struct net_de
+ 		goto out_tx_int;
+ 	}
+ 
+-	ret = request_irq(mac->dma_pdev->irq + 20 + mac->dma_rxch,
+-			  &pasemi_mac_rx_intr, IRQF_DISABLED,
++	ret = request_irq(mac->rx_irq, &pasemi_mac_rx_intr, IRQF_DISABLED,
+ 			  mac->rx->irq_name, dev);
+ 	if (ret) {
+ 		dev_err(&mac->pdev->dev, "request_irq of irq %d failed: %d\n",
+@@ -621,7 +639,7 @@ static int pasemi_mac_open(struct net_de
+ 	return 0;
+ 
+ out_rx_int:
+-	free_irq(mac->dma_pdev->irq + mac->dma_txch, dev);
++	free_irq(mac->tx_irq, dev);
+ out_tx_int:
+ 	netif_poll_disable(dev);
+ 	netif_stop_queue(dev);
+@@ -705,8 +723,8 @@ static int pasemi_mac_close(struct net_d
+ 	pci_write_config_dword(mac->dma_pdev,
+ 			       PAS_DMA_RXINT_RCMDSTA(mac->dma_if), 0);
+ 
+-	free_irq(mac->dma_pdev->irq + mac->dma_txch, dev);
+-	free_irq(mac->dma_pdev->irq + 20 + mac->dma_rxch, dev);
++	free_irq(mac->tx_irq, dev);
++	free_irq(mac->rx_irq, dev);
+ 
+ 	/* Free resources */
+ 	pasemi_mac_free_rx_resources(dev);
+Index: powerpc/drivers/net/pasemi_mac.h
+===================================================================
+--- powerpc.orig/drivers/net/pasemi_mac.h
++++ powerpc/drivers/net/pasemi_mac.h
+@@ -73,6 +73,8 @@ struct pasemi_mac {
+ 
+ 	struct pasemi_mac_txring *tx;
+ 	struct pasemi_mac_rxring *rx;
++	unsigned long	tx_irq;
++	unsigned long	rx_irq;
+ };
+ 
+ /* Software status descriptor (desc_info) */
