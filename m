@@ -1,15 +1,19 @@
-Return-Path: <schwab@suse.de>
-From: Andreas Schwab <schwab@suse.de>
-To: "Siva Prasad" <sprasad@bivio.net>
-Subject: Re: Variable "current" in Linux kernel...
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D75A76F1@corpexc01.corp.networkrobots.com>
-Date: Tue, 17 Apr 2007 00:53:38 +0200
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D75A76F1@corpexc01.corp.networkrobots.com>
-	(Siva Prasad's message of "Mon, 16 Apr 2007 14:56:17 -0700")
-Message-ID: <jeabx8exsd.fsf@sykes.suse.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 1E9C7DDE4A
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 09:07:18 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] [5/5] pasemi: GPIO MDIO of_platform driver
+Date: Tue, 17 Apr 2007 01:07:12 +0200
+References: <20070416062634.GB20196@lixom.net>
+	<20070416063139.GC20319@lixom.net>
+In-Reply-To: <20070416063139.GC20319@lixom.net>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704170107.12709.arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,18 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-"Siva Prasad" <sprasad@bivio.net> writes:
+On Monday 16 April 2007, Olof Johansson wrote:
+> +static int __devinit hack_init(void)
+> +{
+> +=A0=A0=A0=A0=A0=A0=A0struct platform_device *pdev;
+> +
+> +=A0=A0=A0=A0=A0=A0=A0pdev =3D platform_device_register_simple("gpio-mdio=
+=2Dbitbang", 0, NULL, 0);
+> +
+> +=A0=A0=A0=A0=A0=A0=A0return 0;
+> +}
+> +late_initcall(hack_init);
 
-> I would like to know where exactly the value of variable "current" gets
-> changed.
+Why do you need this? The name already suggests that you are aware that this
+should be autoprobed, but it would be good to have a comment explaining
+why you did it this way.
 
-In _switch (see arch/powerpc/kernel/entry_{32,64}.S).  For ppc32, current
-is always in r2.
-
-Andreas.
-
--- 
-Andreas Schwab, SuSE Labs, schwab@suse.de
-SuSE Linux Products GmbH, Maxfeldstraße 5, 90409 Nürnberg, Germany
-PGP key fingerprint = 58CA 54C7 6D53 942B 1756  01D3 44D5 214B 8276 4ED5
-"And now for something completely different."
+	Arnd <><
