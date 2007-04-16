@@ -1,21 +1,26 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 0A7A9DDE44
+Return-Path: <petermendham@computing.dundee.ac.uk>
+Received: from uncle.computing.dundee.ac.uk (unknown [134.36.36.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1A021DDEB7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Apr 2007 02:06:25 +1000 (EST)
-Message-ID: <4623A002.7080509@ru.mvista.com>
-Date: Mon, 16 Apr 2007 20:10:42 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Tue, 17 Apr 2007 02:11:34 +1000 (EST)
+Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
+	[134.36.36.15])
+	by uncle.computing.dundee.ac.uk (8.13.1/8.13.1) with ESMTP id
+	l3GGBL9b024663
+	for <linuxppc-embedded@ozlabs.org>; Mon, 16 Apr 2007 17:11:21 +0100
+Message-ID: <4623A029.9040204@computing.dundee.ac.uk>
+Date: Mon, 16 Apr 2007 17:11:21 +0100
+From: Peter Mendham <petermendham@computing.dundee.ac.uk>
 MIME-Version: 1.0
 To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: Mr Grant Likely's New Patches for 2.6 Kernel and Xilinx FPGA
-	(	Virtex-4 & Virtex-2
-References: <BAY115-W1269AFE45FDEDFDEB86A99B2530@phx.gbl>
-	<528646bc0704150727p1583132ck5455a36782e4dbcc@mail.gmail.com>
-In-Reply-To: <528646bc0704150727p1583132ck5455a36782e4dbcc@mail.gmail.com>
+Subject: Re: Patchset to establish sanity in Xilinx Virtex support
+References: <462337AB.5000507@computing.dundee.ac.uk>
+	<528646bc0704160748o5c8ae604ma9ae70afcc649058@mail.gmail.com>
+In-Reply-To: <528646bc0704160748o5c8ae604ma9ae70afcc649058@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linux PPC <linuxppc-embedded@ozlabs.org>,
-	Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,28 +31,13 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Grant,
-
 Grant Likely wrote:
-> On 4/15/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
->> - Do we still new to apply the paulus patch to the main kernel so that we can have hard TEMAC support? Or you have a same program as sys ace for it?
-> 
-> No, I did not include TEMAC support.  However, I will publish my git
-> tree tomorrow which will include the TEMAC driver.
+> So, I assume that your rootfs is mounted from the CF card, correct?
+It is indeed - no problems yet :)
+-- Peter
 
-
-Seems the TEMAC driver is not on your git server yet. Hence the questions.
-
-What IP versions is your TEMAC driver for?
-Guess this is PLB TEMAC version 3.00a as you wrote auto negotiation is supported.
-
-Is your driver based on the one by Xilinx (the one from EDK 8.2.02 and the update posted by Rick Moleres)?
-Or is it something written from scratch?
-Does it use the "level 1" (OS independent) code from EDK?
-
-Does it support SGDMA, or FIFO mode, or both?
-Checksum offloading?
-
-
-Thanks,
-Andrei
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+MailScanner thanks transtec Computers for their support.
