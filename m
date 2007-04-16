@@ -1,10 +1,19 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Tue, 17 Apr 2007 11:43:12 +1000
-Subject: [PATCH] Initialise spinlock in the DEBUG_PAGEALLOC code
-Message-Id: <20070417014331.85276DDEBC@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <phillip.lougher@gmail.com>
+Received: from nz-out-0506.google.com (nz-out-0506.google.com [64.233.162.239])
+	by ozlabs.org (Postfix) with ESMTP id BA8D8DDE41
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 08:52:42 +1000 (EST)
+Received: by nz-out-0506.google.com with SMTP id l1so1608900nzf
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 15:52:41 -0700 (PDT)
+Message-ID: <bffbecbb0704161552p7f62c800kd774809a41f177f0@mail.gmail.com>
+Date: Mon, 16 Apr 2007 23:52:41 +0100
+From: "Phillip Lougher" <phillip.lougher@gmail.com>
+To: "Siva Prasad" <sprasad@bivio.net>
+Subject: Re: Variable "current" in Linux kernel...
+In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D75A76F1@corpexc01.corp.networkrobots.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=WINDOWS-1252; format=flowed
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D75A76F1@corpexc01.corp.networkrobots.com>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,39 +23,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fixes:
+On 4/16/07, Siva Prasad <sprasad@bivio.net> wrote:
+>
+> I would like to know where exactly the value of variable "current" gets
+> changed.
 
-BUG: spinlock bad magic on CPU#0, swapper/0
- lock: c00000000064ec30, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
-Call Trace:
-[c00000000062b980] [c00000000000f920] .show_stack+0x6c/0x1a0 (unreliable)
-[c00000000062ba20] [c0000000001c2b40] .spin_bug+0xb0/0xd4
-[c00000000062bab0] [c0000000001c2ed0] ._raw_spin_lock+0x44/0x184
-[c00000000062bb50] [c0000000003a42b4] ._spin_lock+0x10/0x24
-[c00000000062bbd0] [c00000000002b4dc] .kernel_map_pages+0x198/0x278
-[c00000000062bc90] [c000000000079720] .free_hot_cold_page+0x124/0x418
-[c00000000062bd70] [c000000000530278] .free_all_bootmem_core+0x14c/0x224
-[c00000000062be50] [c00000000052a178] .mem_init+0x68/0x170
-[c00000000062bee0] [c00000000051d874] .start_kernel+0x2a0/0x37c
-[c00000000062bf90] [c0000000000084c8] .start_here_common+0x54/0x8c
+current points to the task_struct structure of the currently running
+process.  It, obviously, changes each time the scheduler schedules
+another process.
 
+>
+>
+> BTW=85 did any one tried before to run from a different location of memor=
+y
+> than the usual 0x00000000? What are the main problems you faced? I know t=
+his
+> is open ended question, but wanted to see if any one ever did that.
+>
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
----
+I changed the 2.4 PPC kernel to do this about 5 years ago (for
+Zarlink).  Most of the issues relate to the PPC specific code, all
+functions which map from a va->pa, from a pte->va, and vice-versa have
+to be changed.  The early start up assembly code has to be aware the
+kernel is not running at zero, specifically the code which creates the
+initial TLB entries.  As far as I can recall, only one line of non-PPC
+specific code needed to be changed.  It is, however, a difficult task
+which requires careful auditing of the code, and obviously  knowledge
+of the vm and memory allocator systems.
 
- arch/powerpc/mm/hash_utils_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-Index: powerpc/arch/powerpc/mm/hash_utils_64.c
-===================================================================
---- powerpc.orig/arch/powerpc/mm/hash_utils_64.c
-+++ powerpc/arch/powerpc/mm/hash_utils_64.c
-@@ -103,7 +103,7 @@ int mmu_ci_restrictions;
- #ifdef CONFIG_DEBUG_PAGEALLOC
- static u8 *linear_map_hash_slots;
- static unsigned long linear_map_hash_count;
--static spinlock_t linear_map_hash_lock;
-+static spinlock_t linear_map_hash_lock = SPIN_LOCK_UNLOCKED;
- #endif /* CONFIG_DEBUG_PAGEALLOC */
- 
- /* There are definitions of page sizes arrays to be used when none
+Phillip
