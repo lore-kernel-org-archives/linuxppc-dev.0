@@ -1,17 +1,15 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id E4D6DDDEE9
-	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 16:02:10 +1000 (EST)
-Date: Mon, 16 Apr 2007 01:20:12 -0500
-To: jgarzik@pobox.com
-Subject: [PATCH] [4/4] pasemi_mac: phy support
-Message-ID: <20070416062012.GF19783@lixom.net>
-References: <20070416061654.GB19783@lixom.net>
+	by ozlabs.org (Postfix) with ESMTP id 00929DDEBB
+	for <linuxppc-dev@ozlabs.org>; Mon, 16 Apr 2007 16:05:45 +1000 (EST)
+Date: Mon, 16 Apr 2007 01:23:47 -0500
+To: paulus@samba.org
+Subject: [PATCH] powerpc: save trap number in bad_stack
+Message-ID: <20070416062347.GA20196@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070416061654.GB19783@lixom.net>
 From: olof@lixom.net (Olof Johansson)
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,229 +19,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-PHY support for pasemi_mac. Also add msg_enable flags for future
-disablement of the link messages.
+Save the trap number in the case of getting a bad stack in an exception
+handler. It is sometimes useful to know what exception it was that caused
+this to happen. Without this, no trap is reported.
+
 
 Signed-off-by: Olof Johansson <olof@lixom.net>
 
-
-Index: powerpc/drivers/net/pasemi_mac.c
+Index: linux-2.6/arch/powerpc/kernel/asm-offsets.c
 ===================================================================
---- powerpc.orig/drivers/net/pasemi_mac.c
-+++ powerpc/drivers/net/pasemi_mac.c
-@@ -40,13 +40,11 @@
-  *
-  * - Get rid of pci_{read,write}_config(), map registers with ioremap
-  *   for performance
-- * - PHY support
-  * - Multicast support
-  * - Large MTU support
-  * - Other performance improvements
-  */
+--- linux-2.6.orig/arch/powerpc/kernel/asm-offsets.c
++++ linux-2.6/arch/powerpc/kernel/asm-offsets.c
+@@ -139,6 +139,7 @@ int main(void)
+ 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
+ 	DEFINE(PACA_SLBSHADOWPTR, offsetof(struct paca_struct, slb_shadow_ptr));
+ 	DEFINE(PACA_DATA_OFFSET, offsetof(struct paca_struct, data_offset));
++	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
  
--
- /* Must be a power of two */
- #define RX_RING_SIZE 512
- #define TX_RING_SIZE 512
-@@ -592,6 +590,110 @@ static irqreturn_t pasemi_mac_tx_intr(in
- 	return IRQ_HANDLED;
- }
- 
-+static void pasemi_adjust_link(struct net_device *dev)
-+{
-+	struct pasemi_mac *mac = netdev_priv(dev);
-+	int msg;
-+	unsigned int flags;
-+	unsigned int new_flags;
-+
-+	if (!mac->phydev->link) {
-+		/* If no link, MAC speed settings don't matter. Just report
-+		 * link down and return.
-+		 */
-+		if (mac->link && netif_msg_link(mac))
-+			printk(KERN_INFO "%s: Link is down.\n", dev->name);
-+
-+		netif_carrier_off(dev);
-+		mac->link = 0;
-+
-+		return;
-+	} else
-+		netif_carrier_on(dev);
-+
-+	pci_read_config_dword(mac->pdev, PAS_MAC_CFG_PCFG, &flags);
-+	new_flags = flags & ~(PAS_MAC_CFG_PCFG_HD | PAS_MAC_CFG_PCFG_SPD_M);
-+
-+	if (!mac->phydev->duplex)
-+		new_flags |= PAS_MAC_CFG_PCFG_HD;
-+
-+	switch (mac->phydev->speed) {
-+	case 1000:
-+		new_flags |= PAS_MAC_CFG_PCFG_SPD_1G;
-+		break;
-+	case 100:
-+		new_flags |= PAS_MAC_CFG_PCFG_SPD_100M;
-+		break;
-+	case 10:
-+		new_flags |= PAS_MAC_CFG_PCFG_SPD_10M;
-+		break;
-+	default:
-+		printk("Unsupported speed %d\n", mac->phydev->speed);
-+	}
-+
-+	/* Print on link or speed/duplex change */
-+	msg = mac->link != mac->phydev->link || flags != new_flags;
-+
-+	mac->duplex = mac->phydev->duplex;
-+	mac->speed = mac->phydev->speed;
-+	mac->link = mac->phydev->link;
-+
-+	if (new_flags != flags)
-+		pci_write_config_dword(mac->pdev, PAS_MAC_CFG_PCFG, new_flags);
-+
-+	if (msg && netif_msg_link(mac))
-+		printk(KERN_INFO "%s: Link is up at %d Mbps, %s duplex.\n",
-+		       dev->name, mac->speed, mac->duplex ? "full" : "half");
-+}
-+
-+static int pasemi_mac_phy_init(struct net_device *dev)
-+{
-+	struct pasemi_mac *mac = netdev_priv(dev);
-+	struct device_node *dn, *phy_dn;
-+	struct phy_device *phydev;
-+	unsigned int phy_id;
-+	const phandle *ph;
-+	const unsigned int *prop;
-+	struct resource r;
-+	int ret;
-+
-+	dn = pci_device_to_OF_node(mac->pdev);
-+	ph = get_property(dn, "phy-handle", NULL);
-+	if (!ph)
-+		return -ENODEV;
-+	phy_dn = of_find_node_by_phandle(*ph);
-+
-+	prop = get_property(phy_dn, "reg", NULL);
-+	ret = of_address_to_resource(phy_dn->parent, 0, &r);
-+	if (ret)
-+		goto err;
-+
-+	phy_id = *prop;
-+	snprintf(mac->phy_id, BUS_ID_SIZE, PHY_ID_FMT, (int)r.start, phy_id);
-+
-+	of_node_put(phy_dn);
-+
-+	mac->link = 0;
-+	mac->speed = 0;
-+	mac->duplex = -1;
-+
-+	phydev = phy_connect(dev, mac->phy_id, &pasemi_adjust_link, 0, PHY_INTERFACE_MODE_SGMII);
-+
-+	if (IS_ERR(phydev)) {
-+		printk(KERN_ERR "%s: Could not attach to phy\n", dev->name);
-+		return PTR_ERR(phydev);
-+	}
-+
-+	mac->phydev = phydev;
-+
-+	return 0;
-+
-+err:
-+	of_node_put(phy_dn);
-+	return -ENODEV;
-+}
-+
-+
- static int pasemi_mac_open(struct net_device *dev)
- {
- 	struct pasemi_mac *mac = netdev_priv(dev);
-@@ -666,6 +768,13 @@ static int pasemi_mac_open(struct net_de
- 
- 	pasemi_mac_replenish_rx_ring(dev);
- 
-+	ret = pasemi_mac_phy_init(dev);
-+	/* Some configs don't have PHYs (XAUI etc), so don't complain about
-+	 * failed init due to -ENODEV.
-+	 */
-+	if (ret && ret != -ENODEV)
-+		dev_warn(&mac->pdev->dev, "phy init failed: %d\n", ret);
-+
- 	netif_start_queue(dev);
- 	netif_poll_enable(dev);
- 
-@@ -699,6 +808,9 @@ static int pasemi_mac_open(struct net_de
- 		goto out_rx_int;
- 	}
- 
-+	if (mac->phydev)
-+		phy_start(mac->phydev);
-+
- 	return 0;
- 
- out_rx_int:
-@@ -722,6 +834,11 @@ static int pasemi_mac_close(struct net_d
- 	unsigned int stat;
- 	int retries;
- 
-+	if (mac->phydev) {
-+		phy_stop(mac->phydev);
-+		phy_disconnect(mac->phydev);
-+	}
-+
- 	netif_stop_queue(dev);
- 
- 	/* Clean out any pending buffers */
-@@ -1015,6 +1132,9 @@ pasemi_mac_probe(struct pci_dev *pdev, c
- 	mac->rx_status = &dma_status->rx_sta[mac->dma_rxch];
- 	mac->tx_status = &dma_status->tx_sta[mac->dma_txch];
- 
-+	/* Enable most messages by default */
-+	mac->msg_enable = (NETIF_MSG_IFUP << 1 ) - 1;
-+
- 	err = register_netdev(dev);
- 
- 	if (err) {
-Index: powerpc/drivers/net/pasemi_mac.h
+ 	DEFINE(SLBSHADOW_STACKVSID,
+ 	       offsetof(struct slb_shadow, save_area[SLB_NUM_BOLTED - 1].vsid));
+Index: linux-2.6/include/asm-powerpc/paca.h
 ===================================================================
---- powerpc.orig/drivers/net/pasemi_mac.h
-+++ powerpc/drivers/net/pasemi_mac.h
-@@ -24,6 +24,7 @@
- #include <linux/ethtool.h>
- #include <linux/netdevice.h>
- #include <linux/spinlock.h>
-+#include <linux/phy.h>
+--- linux-2.6.orig/include/asm-powerpc/paca.h
++++ linux-2.6/include/asm-powerpc/paca.h
+@@ -81,6 +81,8 @@ struct paca_struct {
+ 	u64 exslb[10];		/* used for SLB/segment table misses
+  				 * on the linear mapping */
  
- struct pasemi_mac_txring {
- 	spinlock_t	 lock;
-@@ -54,6 +55,7 @@ struct pasemi_mac {
- 	struct pci_dev *pdev;
- 	struct pci_dev *dma_pdev;
- 	struct pci_dev *iob_pdev;
-+	struct phy_device *phydev;
- 	struct net_device_stats stats;
- 
- 	/* Pointer to the cacheable per-channel status registers */
-@@ -75,6 +77,12 @@ struct pasemi_mac {
- 	struct pasemi_mac_rxring *rx;
- 	unsigned long	tx_irq;
- 	unsigned long	rx_irq;
-+	int	link;
-+	int	speed;
-+	int	duplex;
++	u64 trap_save;			/* Used when bad stack is encountered */
 +
-+	unsigned int	msg_enable;
-+	char	phy_id[BUS_ID_SIZE];
- };
- 
- /* Software status descriptor (desc_info) */
-Index: powerpc/drivers/net/Kconfig
+ 	mm_context_t context;
+ 	u16 vmalloc_sllp;
+ 	u16 slb_cache[SLB_CACHE_ENTRIES];
+Index: linux-2.6/arch/powerpc/kernel/head_64.S
 ===================================================================
---- powerpc.orig/drivers/net/Kconfig
-+++ powerpc/drivers/net/Kconfig
-@@ -2490,6 +2490,7 @@ config NETXEN_NIC
- config PASEMI_MAC
- 	tristate "PA Semi 1/10Gbit MAC"
- 	depends on PPC64 && PCI
-+	select PHYLIB
- 	help
- 	  This driver supports the on-chip 1/10Gbit Ethernet controller on
- 	  PA Semi's PWRficient line of chips.
+--- linux-2.6.orig/arch/powerpc/kernel/head_64.S
++++ linux-2.6/arch/powerpc/kernel/head_64.S
+@@ -278,8 +278,12 @@ exception_marker:
+ 	beq-	1f;							   \
+ 	ld	r1,PACAKSAVE(r13);	/* kernel stack to use		*/ \
+ 1:	cmpdi	cr1,r1,0;		/* check if r1 is in userspace	*/ \
+-	bge-	cr1,bad_stack;		/* abort if it is		*/ \
+-	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
++	bge-	cr1,2f;			/* abort if it is		*/ \
++	b	3f;							   \
++2:	li	r1,(n);			/* will be reloaded later	*/ \
++	std	r1,PACA_TRAP_SAVE(r13);					   \
++	b	bad_stack;						   \
++3:	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
+ 	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
+ 	std	r12,_MSR(r1);		/* save SRR1 in stackframe	*/ \
+ 	std	r10,0(r1);		/* make stack chain pointer	*/ \
+@@ -940,6 +944,8 @@ bad_stack:
+ 	SAVE_2GPRS(7,r1)
+ 	SAVE_10GPRS(12,r1)
+ 	SAVE_10GPRS(22,r1)
++	ld	r12,PACA_TRAP_SAVE(r13)
++	std	r12,_TRAP(r1)
+ 	addi	r11,r1,INT_FRAME_SIZE
+ 	std	r11,0(r1)
+ 	li	r12,0
