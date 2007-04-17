@@ -1,19 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] hvc_console polling mode timer backoff
-From: Michael Ellerman <michael@ellerman.id.au>
-To: will_schmidt@vnet.ibm.com
-In-Reply-To: <1176754943.28514.133.camel@farscape.rchland.ibm.com>
-References: <97762565fcdccbf85d1d04cd055b1197@bga.com>
-	<1176754943.28514.133.camel@farscape.rchland.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-Bd0svYhrpHTlDiX8y619"
-Date: Tue, 17 Apr 2007 10:13:19 +1000
-Message-Id: <1176768799.5810.4.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, ppcdev <linuxppc-dev@ozlabs.org>,
-	Milton Miller <miltonm@bga.com>
-Reply-To: michael@ellerman.id.au
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id F0A78DDEB7
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 10:29:30 +1000 (EST)
+Date: Mon, 16 Apr 2007 19:47:38 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] [5/5] pasemi: GPIO MDIO of_platform driver
+Message-ID: <20070417004738.GA31053@lixom.net>
+References: <20070416062634.GB20196@lixom.net>
+	<20070416063139.GC20319@lixom.net>
+	<200704170107.12709.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200704170107.12709.arnd@arndb.de>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,57 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, Apr 17, 2007 at 01:07:12AM +0200, Arnd Bergmann wrote:
+> On Monday 16 April 2007, Olof Johansson wrote:
+> > +static int __devinit hack_init(void)
+> > +{
+> > +???????struct platform_device *pdev;
+> > +
+> > +???????pdev = platform_device_register_simple("gpio-mdio-bitbang", 0, NULL, 0);
+> > +
+> > +???????return 0;
+> > +}
+> > +late_initcall(hack_init);
+> 
+> Why do you need this? The name already suggests that you are aware that this
+> should be autoprobed, but it would be good to have a comment explaining
+> why you did it this way.
 
---=-Bd0svYhrpHTlDiX8y619
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Because I'm an idiot and forgot to take it away before posting. :-)
+Thanks, will clean it up.
 
-On Mon, 2007-04-16 at 15:22 -0500, Will Schmidt wrote:
-> On Sat, 2007-14-04 at 14:42 -0500, Milton Miller wrote:
-> > Michael Ellerman wrote:
->=20
-> > Did you consider making MAX_TIMEOUT a module parameter?   It could then
-> > be changed at runtime through /sys/modules/.
->=20
-> Yup, considered that.
->=20
-> Decided against it, for no reason other than "keeping it simple".  Not
-> sure that extra function does more good or bad.=20
->=20
-> Who really wants the ability to tune their console timeout value
-> anyway? :-)    hrm, maybe thats a silly question.
 
-Patch looks good. But I think it's overkill to have a parameter.
-
-The range of useful values for MAX_TIMEOUT is 0 to perhaps 5000, it's
-not like there's a vast array of possible values that people might
-sensibly want to use. This is one of those places where we should just
-pick a good value and stick with it.
-
-If people really think we've got the wrong value, patches welcome.
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-Bd0svYhrpHTlDiX8y619
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGJBEedSjSd0sB4dIRAut2AJ9fyPzQbwnaQXHRD0SI4zbAdaEy0wCfYRQ3
-Us3+IJf7NcfS4qAvDfpVI/A=
-=n1+n
------END PGP SIGNATURE-----
-
---=-Bd0svYhrpHTlDiX8y619--
+-Olof
