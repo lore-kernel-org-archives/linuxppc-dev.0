@@ -1,18 +1,29 @@
-Return-Path: <wd@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 4806CDDDF4
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 19:03:50 +1000 (EST)
-To: Scott Wood <scottwood@freescale.com>
-From: Wolfgang Denk <wd@denx.de>
-Subject: Re: [PATCH 3/4] bootwrapper: Add ppcboot.h. 
-Mime-version: 1.0
-Content-type: text/plain; charset=ISO-8859-1
-In-reply-to: Your message of "Mon, 16 Apr 2007 18:25:53 CDT."
-	<20070416232553.GB26693@ld0162-tx32.am.freescale.net>
-Date: Tue, 17 Apr 2007 11:03:42 +0200
-Sender: wd@denx.de
-Message-Id: <20070417090342.3E736352658@atlas.denx.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-13.arcor-online.net (mail-in-13.arcor-online.net
+	[151.189.21.53])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 1D7A6DDEC9
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 20:26:06 +1000 (EST)
+In-Reply-To: <20070416193110.77b63e4b.kim.phillips@freescale.com>
+References: <20070413012542.343eb848.kim.phillips@freescale.com>
+	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
+	<20070416102533.0f87396f.kim.phillips@freescale.com>
+	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
+	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
+	<20070416115729.292c10b1.kim.phillips@freescale.com>
+	<53810df560c7af272cd1c71c9d5fa1ab@kernel.crashing.org>
+	<20070416193110.77b63e4b.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <788e650fbb3f95eaf1bfb6955f9cef17@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
+	properties
+Date: Tue, 17 Apr 2007 12:25:51 +0200
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,37 +33,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In message <20070416232553.GB26693@ld0162-tx32.am.freescale.net> you wrote:
-> This file describes the bd_t struct, which is used by old versions of
-> U-boot to pass information to the kernel.  Platform code that needs to
-> interoperate with such firmware can use this; it should not be used for
-> anything new.
-> 
-> Signed-off-by: Scott Wood <scottwood@freescale.com>
-> ---
->  arch/powerpc/boot/ppcboot.h |  108 +++++++++++++++++++++++++++++++++++++++++++
->  1 files changed, 108 insertions(+), 0 deletions(-)
->  create mode 100644 arch/powerpc/boot/ppcboot.h
-> 
-> diff --git a/arch/powerpc/boot/ppcboot.h b/arch/powerpc/boot/ppcboot.h
-> new file mode 100644
-> index 0000000..5290ff2
-> --- /dev/null
-> +++ b/arch/powerpc/boot/ppcboot.h
+>> You can put "rgmii" or whatever in the "compatible" property
+>> as well.
+>>
+> I don't understand how intermixing PHY device compatibility with the
+> UCC connection to the PHY would be a good thing.
 
-Shouldn't we finally get this straight and call the file "u-boot.h" as
-it is called in U-Boot?
+"compatible" means "what kind of device is this", for the
+purposes of a client program (i.e., Linux) matching a
+driver to it (i.e., it should say what kind of PHY it
+is, and phylib should use that info -- in most cases,
+it won't need more than the least specific entry in
+"compatible", i.e. "rgmii" or whatever.
 
-The PPCBoot projects has been discontinued for many years by now...
+>>> If I were to put the properties in the PHY node, I wouldn't be able 
+>>> to
+>>> describe a 1000Mbit/s capable UCC connected to a 100Mbit/s capable 
+>>> PHY,
+>>> or vice versa.
+>>
+>> Of course you can.  The "compatible" in the enet node
+>> implies it can do 1000Mbps; the "compatible" in the
+>> PHY node implies it does 100Mbps.
+>
+> compatible in the UCC node is currently set to "ucc_geth", which does
+> not necessarily imply that that UCC can do 1000Mbit/s.  Some UCCs can
+> only do 100Mbit/s.
+
+So those UCCs should have a different "compatible" entry.
+It's not rocket science.
+
+> We currently do not have hardware that connects UCC with max-speed x
+> with a PHY with max. speed capability of y, where x != y, so there is
+> currently no need to specify the speed of the PHY.  Not that that would
+> be needed; the phylib would call ucc_geth's adjust_link with the new
+> speed.  Note that the max-speed property is used to set registers in 
+> the
+> UCC only.
+
+max-speed of connection = min(max-speed of enet, max-speed
+of PHY) -- and both of those are implied by their respective
+"compatible" properties.
 
 
-Best regards,
-
-Wolfgang Denk
-
--- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
-Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
-The man on tops walks a lonely street;  the  "chain"  of  command  is
-often a noose.
+Segher
