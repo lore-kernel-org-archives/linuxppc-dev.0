@@ -1,14 +1,18 @@
-Return-Path: <bgat@billgatliff.com>
-Message-ID: <46250034.7000202@billgatliff.com>
-Date: Tue, 17 Apr 2007 12:13:24 -0500
-From: Bill Gatliff <bgat@billgatliff.com>
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc3-s9.bay0.hotmail.com (bay0-omc3-s9.bay0.hotmail.com
+	[65.54.246.209]) by ozlabs.org (Postfix) with ESMTP id 56CACDDEAB
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 18 Apr 2007 03:38:42 +1000 (EST)
+Message-ID: <BAY115-W21A26421AC818933E85766B2510@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>, Duane Snider
+	<dsnider@rgbnetworks.com>, Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Miroslaw Dach <miroslaw.dach@psi.ch>, Peter Mendham
+	<petermendham@computing.dundee.ac.uk>, <linuxppc-embedded@ozlabs.org>
+Subject: RE: Xilinx Virtex git tree
+Date: Tue, 17 Apr 2007 17:38:40 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-To: Laurent Pinchart <laurent.pinchart@technotrade.biz>
-Subject: Re: Compiling interrupt controller code as a module
-References: <200704171731.43608.laurent.pinchart@technotrade.biz>
-In-Reply-To: <200704171731.43608.laurent.pinchart@technotrade.biz>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -19,24 +23,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Laurent Pinchart wrote:
-> Hi everybody.
->
-> I wrote a kernel driver for a custom bus (using arch/ppc). The hardware has a 
-> cascaded interrupt controller wired to one of the CPU interrupts. The 
-> interrupt controller IRQ handler calls __do_IRQ() to dispatch interrupts.
->
-> Everything worked fine until I tried to compile the code as a module because 
-> __do_IRQ() is not exported. Is there a way to compile an interrupt controller 
-> as a module, or must it be included in the kernel ?
->   
+
+Great work Grant
+
+Really thanks for your efforts
+
+specially helping beginners and making the development process much more ea=
+sier for them
+
+by the way, montavista's git tree is too old, ( more 10 months ) why they d=
+o not update their git tree? ( may be andrei can answer this? )
 
 
-Could you just export __do_IRQ()?
 
 
-b.g.
+----------------------------------------
+> Date: Tue, 17 Apr 2007 10:05:20 -0600
+> From: grant.likely@secretlab.ca
+> To: dsnider@rgbnetworks.com; mamsadegh@hotmail.com; akonovalov@ru.mvista.=
+com; miroslaw.dach@psi.ch; petermendham@computing.dundee.ac.uk; linuxppc-em=
+bedded@ozlabs.org
+> Subject: Xilinx Virtex git tree
+>=20
+> For those of you who are interested, I've published my linux-2.6 git
+> tree with patches for Xilinx Virtex support including the TEMAC and
+> SystemACE drivers.
+>=20
+> You can find it at http://git.secretlab.ca
+>=20
+> Cheers,
+> g.
+>=20
+> --=20
+> Grant Likely, B.Sc. P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
 
--- 
-Bill Gatliff
-bgat@billgatliff.com
+_________________________________________________________________
+Connect to the next generation of MSN Messenger=A0
+http://imagine-msn.com/messenger/launch80/default.aspx?locale=3Den-us&sourc=
+e=3Dwlmailtagline=
