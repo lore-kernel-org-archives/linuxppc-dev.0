@@ -1,27 +1,9 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 32FD5DDE3A
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 10:31:18 +1000 (EST)
-Date: Mon, 16 Apr 2007 19:31:10 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
-	properties
-Message-Id: <20070416193110.77b63e4b.kim.phillips@freescale.com>
-In-Reply-To: <53810df560c7af272cd1c71c9d5fa1ab@kernel.crashing.org>
-References: <20070413012542.343eb848.kim.phillips@freescale.com>
-	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
-	<20070416102533.0f87396f.kim.phillips@freescale.com>
-	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
-	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
-	<20070416115729.292c10b1.kim.phillips@freescale.com>
-	<53810df560c7af272cd1c71c9d5fa1ab@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
+From: Michael Ellerman <michael@ellerman.id.au>
+Date: Tue, 17 Apr 2007 11:43:12 +1000
+Subject: [PATCH] Initialise spinlock in the DEBUG_PAGEALLOC code
+Message-Id: <20070417014331.85276DDEBC@ozlabs.org>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -32,40 +14,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 17 Apr 2007 01:18:56 +0200
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
+Fixes:
 
-> > I don't need to know what type the PHY is, e.g. whether it's m88e11x1
-> > compatible or not, the phylib handles that.
-> 
-> You need to tell the phylib what kind of bus the PHY uses.
+BUG: spinlock bad magic on CPU#0, swapper/0
+ lock: c00000000064ec30, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
+Call Trace:
+[c00000000062b980] [c00000000000f920] .show_stack+0x6c/0x1a0 (unreliable)
+[c00000000062ba20] [c0000000001c2b40] .spin_bug+0xb0/0xd4
+[c00000000062bab0] [c0000000001c2ed0] ._raw_spin_lock+0x44/0x184
+[c00000000062bb50] [c0000000003a42b4] ._spin_lock+0x10/0x24
+[c00000000062bbd0] [c00000000002b4dc] .kernel_map_pages+0x198/0x278
+[c00000000062bc90] [c000000000079720] .free_hot_cold_page+0x124/0x418
+[c00000000062bd70] [c000000000530278] .free_all_bootmem_core+0x14c/0x224
+[c00000000062be50] [c00000000052a178] .mem_init+0x68/0x170
+[c00000000062bee0] [c00000000051d874] .start_kernel+0x2a0/0x37c
+[c00000000062bf90] [c0000000000084c8] .start_here_common+0x54/0x8c
 
-sure, and ucc_geth does just that based on the interface-type property,
-in addition to correspondingly programming the UCC.
 
-> You can put "rgmii" or whatever in the "compatible" property
-> as well.
-> 
-I don't understand how intermixing PHY device compatibility with the
-UCC connection to the PHY would be a good thing.
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-> > If I were to put the properties in the PHY node, I wouldn't be able to
-> > describe a 1000Mbit/s capable UCC connected to a 100Mbit/s capable PHY,
-> > or vice versa.
-> 
-> Of course you can.  The "compatible" in the enet node
-> implies it can do 1000Mbps; the "compatible" in the
-> PHY node implies it does 100Mbps.
+ arch/powerpc/mm/hash_utils_64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-compatible in the UCC node is currently set to "ucc_geth", which does
-not necessarily imply that that UCC can do 1000Mbit/s.  Some UCCs can
-only do 100Mbit/s.
-
-We currently do not have hardware that connects UCC with max-speed x
-with a PHY with max. speed capability of y, where x != y, so there is
-currently no need to specify the speed of the PHY.  Not that that would
-be needed; the phylib would call ucc_geth's adjust_link with the new
-speed.  Note that the max-speed property is used to set registers in the
-UCC only.
-
-Kim
+Index: powerpc/arch/powerpc/mm/hash_utils_64.c
+===================================================================
+--- powerpc.orig/arch/powerpc/mm/hash_utils_64.c
++++ powerpc/arch/powerpc/mm/hash_utils_64.c
+@@ -103,7 +103,7 @@ int mmu_ci_restrictions;
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+ static u8 *linear_map_hash_slots;
+ static unsigned long linear_map_hash_count;
+-static spinlock_t linear_map_hash_lock;
++static spinlock_t linear_map_hash_lock = SPIN_LOCK_UNLOCKED;
+ #endif /* CONFIG_DEBUG_PAGEALLOC */
+ 
+ /* There are definitions of page sizes arrays to be used when none
