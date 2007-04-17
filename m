@@ -1,12 +1,24 @@
-Return-Path: <laurent.pinchart@technotrade.biz>
-From: Laurent Pinchart <laurent.pinchart@technotrade.biz>
-To: Linuxppc-embedded@ozlabs.org
-Subject: Compiling interrupt controller code as a module
-Date: Tue, 17 Apr 2007 17:31:43 +0200
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id A50F1DDE3B
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 18 Apr 2007 02:05:23 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so160949ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 17 Apr 2007 09:05:21 -0700 (PDT)
+Message-ID: <528646bc0704170905i65b19694vc070da01df903149@mail.gmail.com>
+Date: Tue, 17 Apr 2007 10:05:20 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Duane Snider" <dsnider@rgbnetworks.com>,
+	"Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>,
+	"Andrei Konovalov" <akonovalov@ru.mvista.com>,
+	"Miroslaw Dach" <miroslaw.dach@psi.ch>,
+	"Peter Mendham" <petermendham@computing.dundee.ac.uk>,
+	linuxppc-embedded@ozlabs.org
+Subject: Xilinx Virtex git tree
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200704171731.43608.laurent.pinchart@technotrade.biz>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -17,16 +29,17 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi everybody.
+For those of you who are interested, I've published my linux-2.6 git
+tree with patches for Xilinx Virtex support including the TEMAC and
+SystemACE drivers.
 
-I wrote a kernel driver for a custom bus (using arch/ppc). The hardware has a 
-cascaded interrupt controller wired to one of the CPU interrupts. The 
-interrupt controller IRQ handler calls __do_IRQ() to dispatch interrupts.
+You can find it at http://git.secretlab.ca
 
-Everything worked fine until I tried to compile the code as a module because 
-__do_IRQ() is not exported. Is there a way to compile an interrupt controller 
-as a module, or must it be included in the kernel ?
+Cheers,
+g.
 
-Best regards,
-
-Laurent Pinchart
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
