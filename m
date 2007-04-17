@@ -1,22 +1,24 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id 19377DDE3F
+Return-Path: <tnt@246tNt.com>
+Received: from outmx037.isp.belgacom.be (outmx037.isp.belgacom.be
+	[195.238.6.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BEBC0DDEB7
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Apr 2007 15:34:16 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so63053ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 16 Apr 2007 22:34:14 -0700 (PDT)
-Message-ID: <528646bc0704162234o48efc330w98bf933e3c4a7533@mail.gmail.com>
-Date: Mon, 16 Apr 2007 23:34:14 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Dale Farnsworth" <dale@farnsworth.org>
-Subject: Re: RFC: MPC52xx serial port configuration from DT blob
-In-Reply-To: <20070413232422.11827.qmail@farnsworth.org>
+	Tue, 17 Apr 2007 16:08:07 +1000 (EST)
+Received: from outmx037.isp.belgacom.be (localhost.localdomain [127.0.0.1])
+	by outmx037.isp.belgacom.be (8.13.4/8.13.4/Debian-3sarge3) with ESMTP
+	id l3H681n0002404
+	for <linuxppc-embedded@ozlabs.org>; Tue, 17 Apr 2007 08:08:02 +0200
+Message-ID: <46246420.8050800@246tNt.com>
+Date: Tue, 17 Apr 2007 08:07:28 +0200
+From: Sylvain Munaut <tnt@246tNt.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+To: Bartlomiej Sieka <tur@semihalf.com>
+Subject: Re: RFC: MPC52xx serial port configuration from DT blob
 References: <461FF442.8090807@semihalf.com>
-	<20070413232422.11827.qmail@farnsworth.org>
+In-Reply-To: <461FF442.8090807@semihalf.com>
+Content-Type: text/plain; charset=ISO-8859-1
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,55 +30,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 13 Apr 2007 16:24:22 -0700, Dale Farnsworth <dale@farnsworth.org> wrote:
-> Bartlomiej wrote:
-> > We have a MPC5200B-based board running an arch/powerpc kernel and we
-> > need the ability to configure a non-console serial port for a particular
-> > baud rate during system start-up. It seems that the UART driver in
-> > drivers/serial/mpc52xx_uart.c does not support this. It only allows to
-> > set parameters for a port that is used as a console, and for which those
-> > parameters are passed in the kernel command line. We would like to
-> > extend the mpc52xx_uart.c driver to be able to retrieve port options
-> > from the DT blob and configure a given port accordingly. A new
-> > port-specific property called "options" would be used for this. It would
-> > have syntax following its namesake in "console" kernel parameter, as
-> > described in Documentation/kernel-parameters.txt.
-> >
-> > For example, the following settings in the .dts file would make UART5 to
-> > be configured at 115200 baud, no parity, 8 bits.
-> >
-> > serial@2800 {           // PSC5
-> >          device_type = "serial";
-> >          compatible = "mpc5200b-psc-uart\0mpc5200-psc-uart";
-> >          port-number = <4>;  // Logical port assignment
-> >          options = "115200n8"
-> >          cell-index = <4>;
-> >          reg = <2800 100>;
-> >          interrupts = <2 c 0>;
-> >          interrupt-parent = <500>;
-> > };
-> >
-> >
-> > In case a console port has conflicting options given in the kernel
-> > command line and in the DT blob, the command line values would be used.
-> >
-> > Any comments on the above will be appreciated.
+Bartlomiej Sieka wrote:
+> Hi All,
 >
-> The device tree is intended to be an OS-independent description of the
-> state of the platform hardware as left by firmware (or bootwrapper).
-> It is not intended to contain kernel configuration parameters or options,
-> though there are a few exceptions.
+> We have a MPC5200B-based board running an arch/powerpc kernel and we
+> need the ability to configure a non-console serial port for a particular
+> baud rate during system start-up. It seems that the UART driver in
+> drivers/serial/mpc52xx_uart.c does not support this. It only allows to
+> set parameters for a port that is used as a console, and for which those
+> parameters are passed in the kernel command line. We would like to
+> extend the mpc52xx_uart.c driver to be able to retrieve port options
+> from the DT blob and configure a given port accordingly. A new
+> port-specific property called "options" would be used for this. It would
+> have syntax following its namesake in "console" kernel parameter, as
+> described in Documentation/kernel-parameters.txt.
 >
-> So, this kind of change is unlikely to be accepted.
+> For example, the following settings in the .dts file would make UART5 to 
+> be configured at 115200 baud, no parity, 8 bits.
+>
+> serial@2800 {           // PSC5
+>          device_type = "serial";
+>          compatible = "mpc5200b-psc-uart\0mpc5200-psc-uart";
+>          port-number = <4>;  // Logical port assignment
+>          options = "115200n8"
+>          cell-index = <4>;
+>          reg = <2800 100>;
+>          interrupts = <2 c 0>;
+>          interrupt-parent = <500>;
+> };
+>
+>
+> In case a console port has conflicting options given in the kernel 
+> command line and in the DT blob, the command line values would be used.
+>
+> Any comments on the above will be appreciated.
+>   
+The kernel only "use" the serial for console. If it's not a console,
+then it's used
+by userspace and it's userspace job to configure it as it sees fit imho ...
 
-Isn't the /chosen node intended for this kind of data?  Although I
-must admit that I'm not at all familiar with the conventions used in
-/chosen.
 
-g.
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Sylvain
