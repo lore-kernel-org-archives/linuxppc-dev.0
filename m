@@ -1,30 +1,21 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 558F3DDE1E
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 06:27:21 +1000 (EST)
-Date: Tue, 17 Apr 2007 15:27:12 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
-	properties
-Message-Id: <20070417152712.51c7348f.kim.phillips@freescale.com>
-In-Reply-To: <788e650fbb3f95eaf1bfb6955f9cef17@kernel.crashing.org>
-References: <20070413012542.343eb848.kim.phillips@freescale.com>
-	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
-	<20070416102533.0f87396f.kim.phillips@freescale.com>
-	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
-	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
-	<20070416115729.292c10b1.kim.phillips@freescale.com>
-	<53810df560c7af272cd1c71c9d5fa1ab@kernel.crashing.org>
-	<20070416193110.77b63e4b.kim.phillips@freescale.com>
-	<788e650fbb3f95eaf1bfb6955f9cef17@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 96BB5DDE3B
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 07:07:48 +1000 (EST)
+Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id AFB8B98420
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 23:07:46 +0200 (CEST)
+Received: from ibook.aepfle.de (DSL01.83.171.145.224.ip-pool.NEFkom.net
+	[83.171.145.224])
+	by mail.mnet-online.de (Postfix) with ESMTP id 9899FB80A9
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 23:07:46 +0200 (CEST)
+Date: Tue, 17 Apr 2007 23:07:45 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] generic check_legacy_ioport
+Message-ID: <20070417210745.GA3567@aepfle.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,66 +25,201 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 17 Apr 2007 12:25:51 +0200
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
-> >> You can put "rgmii" or whatever in the "compatible" property
-> >> as well.
-> >>
-> > I don't understand how intermixing PHY device compatibility with the
-> > UCC connection to the PHY would be a good thing.
-> 
-> "compatible" means "what kind of device is this", for the
-> purposes of a client program (i.e., Linux) matching a
-> driver to it (i.e., it should say what kind of PHY it
-> is, and phylib should use that info -- in most cases,
-> it won't need more than the least specific entry in
-> "compatible", i.e. "rgmii" or whatever.
-> 
+Reject access to legacy ioports unless an isa node exists
+check_legacy_ioport makes only sense on PREP, CHRP and pSeries.
+They may have an isa node with PS/2, parport, floppy and serial ports.
 
-sorry, I disagree; for me, a compatible entry in the PHY node would look
-something like "marvell" or "m88e11x1".  "rgmii" might indeed be
-something that PHY supports, but it tells the driver nothing about how
-to enable it (whereas "m88e11x1" would).  The rgmii designation in
-question in this thread is not a property of the PHY, but of the board.
+ipmi calls check_legacy_ioport.
+Only cell_defconfig has ipmi enabled.
+cell returns -ENODEV per default.
+Conclusion: nothing uses ipmi.
 
-> >>> If I were to put the properties in the PHY node, I wouldn't be able 
-> >>> to
-> >>> describe a 1000Mbit/s capable UCC connected to a 100Mbit/s capable 
-> >>> PHY,
-> >>> or vice versa.
-> >>
-> >> Of course you can.  The "compatible" in the enet node
-> >> implies it can do 1000Mbps; the "compatible" in the
-> >> PHY node implies it does 100Mbps.
-> >
-> > compatible in the UCC node is currently set to "ucc_geth", which does
-> > not necessarily imply that that UCC can do 1000Mbit/s.  Some UCCs can
-> > only do 100Mbit/s.
-> 
-> So those UCCs should have a different "compatible" entry.
-> It's not rocket science.
-> 
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
-It's referring to the name of the driver, as is compatible "gianfar".
-other values could be "fsl_atm" or "ucc_uart", or whatever other
-communications protocol a UCC can manage (to which, btw, max-speed would
-be easily extensible).
+---
+ arch/powerpc/kernel/setup-common.c      |    8 +++++++-
+ arch/powerpc/platforms/cell/setup.c     |   10 ----------
+ arch/powerpc/platforms/celleb/setup.c   |   10 ----------
+ arch/powerpc/platforms/iseries/setup.c  |   10 ----------
+ arch/powerpc/platforms/pasemi/setup.c   |    7 -------
+ arch/powerpc/platforms/powermac/setup.c |   10 ----------
+ arch/powerpc/platforms/pseries/setup.c  |    4 ++++
+ 7 files changed, 11 insertions(+), 48 deletions(-)
 
-> > We currently do not have hardware that connects UCC with max-speed x
-> > with a PHY with max. speed capability of y, where x != y, so there is
-> > currently no need to specify the speed of the PHY.  Not that that would
-> > be needed; the phylib would call ucc_geth's adjust_link with the new
-> > speed.  Note that the max-speed property is used to set registers in 
-> > the
-> > UCC only.
-> 
-> max-speed of connection = min(max-speed of enet, max-speed
-> of PHY) -- and both of those are implied by their respective
-> "compatible" properties.
-> 
 
-Again, max-speed is exclusively for configuring the UCC itself,
-regardless of the connection speed.
+compile tested.
 
-Kim
+
+Index: b/arch/powerpc/kernel/setup-common.c
+===================================================================
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -498,8 +498,14 @@ void probe_machine(void)
+ 
+ int check_legacy_ioport(unsigned long base_port)
+ {
+-	if (ppc_md.check_legacy_ioport == NULL)
++	struct device_node *np;
++	if (ppc_md.check_legacy_ioport == NULL) {
++		np = of_find_node_by_type(NULL, "isa");
++		if (np == NULL)
++			return -ENODEV;
++		of_node_put(np);
+ 		return 0;
++	}
+ 	return ppc_md.check_legacy_ioport(base_port);
+ }
+ EXPORT_SYMBOL(check_legacy_ioport);
+Index: b/arch/powerpc/platforms/cell/setup.c
+===================================================================
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -190,15 +190,6 @@ static int __init cell_probe(void)
+ 	return 1;
+ }
+ 
+-/*
+- * Cell has no legacy IO; anything calling this function has to
+- * fail or bad things will happen
+- */
+-static int cell_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ define_machine(cell) {
+ 	.name			= "Cell",
+ 	.probe			= cell_probe,
+@@ -211,7 +202,6 @@ define_machine(cell) {
+ 	.get_rtc_time		= rtas_get_rtc_time,
+ 	.set_rtc_time		= rtas_set_rtc_time,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-	.check_legacy_ioport	= cell_check_legacy_ioport,
+ 	.progress		= cell_progress,
+ 	.init_IRQ       	= cell_init_irq,
+ 	.pci_setup_phb		= rtas_setup_phb,
+Index: b/arch/powerpc/platforms/celleb/setup.c
+===================================================================
+--- a/arch/powerpc/platforms/celleb/setup.c
++++ b/arch/powerpc/platforms/celleb/setup.c
+@@ -128,15 +128,6 @@ static int __init celleb_probe(void)
+ 	return 1;
+ }
+ 
+-/*
+- * Cell has no legacy IO; anything calling this function has to
+- * fail or bad things will happen
+- */
+-static int celleb_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ #ifdef CONFIG_KEXEC
+ static void celleb_kexec_cpu_down(int crash, int secondary)
+ {
+@@ -173,7 +164,6 @@ define_machine(celleb) {
+ 	.get_rtc_time		= beat_get_rtc_time,
+ 	.set_rtc_time		= beat_set_rtc_time,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-	.check_legacy_ioport	= celleb_check_legacy_ioport,
+ 	.progress		= celleb_progress,
+ 	.power_save		= beat_power_save,
+ 	.nvram_size		= beat_nvram_get_size,
+Index: b/arch/powerpc/platforms/iseries/setup.c
+===================================================================
+--- a/arch/powerpc/platforms/iseries/setup.c
++++ b/arch/powerpc/platforms/iseries/setup.c
+@@ -628,15 +628,6 @@ static void iseries_iounmap(volatile voi
+ {
+ }
+ 
+-/*
+- * iSeries has no legacy IO, anything calling this function has to
+- * fail or bad things will happen
+- */
+-static int iseries_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ static int __init iseries_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+@@ -667,7 +658,6 @@ define_machine(iseries) {
+ 	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= iSeries_progress,
+ 	.probe		= iseries_probe,
+-	.check_legacy_ioport	= iseries_check_legacy_ioport,
+ 	.ioremap	= iseries_ioremap,
+ 	.iounmap	= iseries_iounmap,
+ 	/* XXX Implement enable_pmcs for iSeries */
+Index: b/arch/powerpc/platforms/pasemi/setup.c
+===================================================================
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -101,12 +101,6 @@ void __init pas_setup_arch(void)
+ 	pasemi_idle_init();
+ }
+ 
+-/* No legacy IO on our parts */
+-static int pas_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ static __init void pas_init_IRQ(void)
+ {
+ 	struct device_node *np;
+@@ -237,7 +231,6 @@ define_machine(pas) {
+ 	.restart		= pas_restart,
+ 	.get_boot_time		= pas_get_boot_time,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-	.check_legacy_ioport    = pas_check_legacy_ioport,
+ 	.progress		= pas_progress,
+ 	.machine_check_exception = pas_machine_check_handler,
+ 	.pci_irq_fixup		= pas_pci_irq_fixup,
+Index: b/arch/powerpc/platforms/powermac/setup.c
+===================================================================
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -616,15 +616,6 @@ static void __init pmac_init_early(void)
+ #endif
+ }
+ 
+-/*
+- * pmac has no legacy IO, anything calling this function has to
+- * fail or bad things will happen
+- */
+-static int pmac_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ static int __init pmac_declare_of_platform_devices(void)
+ {
+ 	struct device_node *np;
+@@ -736,7 +727,6 @@ define_machine(powermac) {
+ 	.get_rtc_time		= pmac_get_rtc_time,
+ 	.calibrate_decr		= pmac_calibrate_decr,
+ 	.feature_call		= pmac_do_feature_call,
+-	.check_legacy_ioport	= pmac_check_legacy_ioport,
+ 	.progress		= udbg_progress,
+ #ifdef CONFIG_PPC64
+ 	.pci_probe_mode		= pmac_pci_probe_mode,
+Index: b/arch/powerpc/platforms/pseries/setup.c
+===================================================================
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -356,6 +356,10 @@ static int pSeries_check_legacy_ioport(u
+ 			return -ENODEV;
+ 		of_node_put(np);
+ 		break;
++	default:
++		printk("%s rejected access to port %u\n", __FUNCTION__, baseport);
++		WARN_ON(baseport);
++		return -ENODEV;
+ 	}
+ 	return 0;
+ }
