@@ -1,33 +1,28 @@
-Return-Path: <bigeasy@linux.vnet.ibm.com>
-Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+Return-Path: <will_schmidt@vnet.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 29B8CDDEC6
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 22:24:06 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l3HCO1ZN320462
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 12:24:01 GMT
-Received: from d06av03.portsmouth.uk.ibm.com (d06av03.portsmouth.uk.ibm.com
-	[9.149.37.213])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l3HCO1WG2551966
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 13:24:01 +0100
-Received: from d06av03.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l3HCO1R9025754
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 13:24:01 +0100
-Received: from [9.152.237.70] (dyn-9-152-237-70.boeblingen.de.ibm.com
-	[9.152.237.70])
-	by d06av03.portsmouth.uk.ibm.com (8.12.11.20060308/8.12.11) with ESMTP
-	id l3HCO1Yo025751
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 13:24:01 +0100
-Message-Id: <20070417120925.673710000@linux.vnet.ibm.com>>
-References: <20070417115206.709701000@linux.vnet.ibm.com>>
-Date: Tue, 17 Apr 2007 13:52:09 +0200
-From: Sebastian Siewior <bigeasy@linux.vnet.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [RFC 3/3] cryptoapi: speed test
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id BEEA5DDE09
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 00:45:17 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3HEjDJU009208
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 10:45:13 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3HEjDgC493590
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 10:45:13 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3HEj7bf008496
+	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 10:45:07 -0400
+Subject: [PATCH 1/2] hvc_console polling mode timer backoff
+From: Will Schmidt <will_schmidt@vnet.ibm.com>
+To: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Tue, 17 Apr 2007 09:44:46 -0500
+Message-Id: <1176821087.28514.145.camel@farscape.rchland.ibm.com>
+Mime-Version: 1.0
+Reply-To: will_schmidt@vnet.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,179 +32,87 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This has been used for performance testing of my aes altivec code.
+Paulus, I think this is ready to go, please apply, thanks. 
 
-Signed-off-by: Sebastian Siewior <bigeasy@linux.vnet.ibm.com>
-Index: linux/crypto/limi-speed.c
-===================================================================
---- /dev/null
-+++ linux/crypto/limi-speed.c
-@@ -0,0 +1,140 @@
+
+
+Add a back-off mechanism to hvc_console's polling logic.   This change
+drops the timers/second ratio from ~90 to ~1/2 while the console is
+idle.
+This change is most noticeable when watching /proc/timer_stats output.
+
+This only affects when the hvc_console is running in poll mode, i.e.
+power4 and cell systems.
+
+I've tested on Power4, Michael Ellerman has both contributed to the
+patch and tested on cell.   
+
+Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
+cc: Michael Ellerman <michael@ellerman.id.au>
+
+
+---
+diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
+index a0a88aa..fc9bc77 100644
+--- a/drivers/char/hvc_console.c
++++ b/drivers/char/hvc_console.c
+@@ -47,8 +47,6 @@ #include "hvc_console.h"
+ #define HVC_MAJOR	229
+ #define HVC_MINOR	0
+ 
+-#define TIMEOUT		(10)
+-
+ /*
+  * Wait this long per iteration while trying to push buffered data to the
+  * hypervisor before allowing the tty to complete a close operation.
+@@ -550,6 +548,18 @@ static int hvc_chars_in_buffer(struct tt
+ 	return hp->n_outbuf;
+ }
+ 
 +/*
-+ * Code derived von crypt/tcrypt.h
-+ *
-+ * Small speed test with time resolution in msec.
-+ * Author: Sebastian Siewior (bigeasy _at_ breakpoint.cc)
-+ * License: GPL v2
++ * timeout will vary between the MIN and MAX values defined here.  By default
++ * and during console activity we will use a default MIN_TIMEOUT of 10.  When
++ * the console is idle, we increase the timeout value on each pass through
++ * msleep until we reach the max.  This may be noticeable as a brief (average
++ * one second) delay on the console before the console responds to input when
++ * there has been no input for some time.
 + */
++#define MIN_TIMEOUT		(10)
++#define MAX_TIMEOUT		(2000)
++static u32 timeout = MIN_TIMEOUT;
 +
-+#include <linux/module.h>
-+#include <linux/moduleparam.h>
-+#include <linux/scatterlist.h>
-+#include <linux/crypto.h>
-+#include <linux/jiffies.h>
-+#include <linux/types.h>
-+
-+static char *in;
-+
-+static unsigned int buff_size = 16 * 1024;
-+module_param(buff_size, uint, 0444);
-+MODULE_PARM_DESC(buff_size, "Buffer allocated by kmalloc()");
-+
-+static unsigned int keylen = 16;
-+module_param(keylen, uint, 0444);
-+MODULE_PARM_DESC(keylen, "Length of the key (16,24 or 32 bits");
-+
-+static unsigned int mode = 0;
-+module_param(mode, uint, 0444);
-+MODULE_PARM_DESC(mode, "0 -> encryption else decryption");
-+
-+static unsigned int big_loops = 10;
-+module_param(big_loops, uint, 0444);
-+MODULE_PARM_DESC(big_loops, "Number of mensurations.");
-+
-+static unsigned int small_loops = 10000;
-+module_param(small_loops, uint, 0444);
-+MODULE_PARM_DESC(small_loops, "loops within one mesurement.");
-+
-+static unsigned int alg = 1;
-+module_param(alg, uint, 0444);
-+MODULE_PARM_DESC(alg, "0 -> ecb(aes), else -> cbc(aes)");
-+
-+static int __init init(void)
-+{
-+	struct scatterlist sg[1];
-+	struct crypto_blkcipher *tfm;
-+	struct blkcipher_desc desc;
-+	unsigned int i;
-+	unsigned int ret;
-+	unsigned int iv_len;
-+	unsigned long start, end;
-+	unsigned long total = 0;
-+	unsigned long size_kb;
-+    unsigned char key[32] = { 1, 2, 3, 4, 5, 6 };
-+	const unsigned char *algname;
-+
-+	algname = alg ? "cbc(aes)" : "ecb(aes)";
-+	printk("Limi-speed: %s buff_size: %u, keylen: %d, mode: %s\n", algname, buff_size, keylen,
-+			mode ? "decryption" : "encryption");
-+	printk("loops: %d, iterations: %d, ", big_loops, small_loops);
-+	size_kb = small_loops * buff_size / 1024;
-+	printk("=> %lu kb or %lu mb a loop\n", size_kb, size_kb/1024);
-+
-+	if (keylen != 16 && keylen != 24 && keylen != 32) {
-+		printk("Invalid keysize\n");
-+		return -EINVAL;
-+	}
-+
-+	in = kmalloc(buff_size, GFP_KERNEL);
-+	if (in == NULL) {
-+		printk("Failed to allocate memory.\n");
-+		return -ENOMEM;
-+	}
-+
-+	memset(in, 0x24, buff_size);
-+
-+	sg_set_buf(sg, in, buff_size);
-+
-+	tfm = crypto_alloc_blkcipher(algname, 0, CRYPTO_ALG_ASYNC);
-+
-+	if (IS_ERR(tfm)) {
-+		printk("failed to load transform for %s: %ld\n", algname, PTR_ERR(tfm));
-+		goto leave;
-+	}
-+
-+	crypto_blkcipher_setkey(tfm, key, keylen);
-+
-+	iv_len = crypto_blkcipher_ivsize(tfm);
-+	if (iv_len)
-+		crypto_blkcipher_set_iv(tfm, in, iv_len);
-+
-+	desc.tfm = tfm;
-+	desc.flags = 0;
-+
-+	for (i=0 ; i<big_loops; i++) {
-+		int j;
-+		start = jiffies;
-+		ret = 0;
-+
-+		for (j=0; j < small_loops && !ret; j++) {
-+
-+			if (!mode)
-+				ret = crypto_blkcipher_encrypt(&desc, sg, sg, buff_size);
-+			else
-+				ret = crypto_blkcipher_decrypt(&desc, sg, sg, buff_size);
-+		}
-+
-+		if (ret) {
-+			printk("encryption failed: %d after (i,j) (%u,%u) iterations\n", ret, i, j);
-+			goto leave_loop;
-+		}
-+		end = jiffies;
-+		if ( !time_after(start, end)) {
-+			printk("Run: %u msec\n", jiffies_to_msecs(end - start));
-+			total += jiffies_to_msecs(end - start);
-+		} else {
-+			printk("Run: %u msec\n", jiffies_to_msecs(start - end));
-+			total += jiffies_to_msecs(start - end);
-+		}
-+	}
-+
-+	total /= big_loops;
-+	size_kb *= 1000;
-+	size_kb /= total;
-+	printk("Average: %lu msec, approx. %lu kb/sec || %lu mb/sec  \n", total,
-+			size_kb, size_kb/1024);
-+
-+leave_loop:
-+	crypto_free_blkcipher(tfm);
-+
-+leave:
-+	kfree(in);
-+	return -ENODEV;
-+}
-+
-+static void __exit fini(void) { }
-+
-+module_init(init);
-+module_exit(fini);
-+
-+MODULE_LICENSE("GPL");
-Index: linux/crypto/Kconfig
-===================================================================
---- linux.orig/crypto/Kconfig
-+++ linux/crypto/Kconfig
-@@ -462,6 +462,12 @@ config CRYPTO_TEST
- 	help
- 	  Quick & dirty crypto test module.
+ #define HVC_POLL_READ	0x00000001
+ #define HVC_POLL_WRITE	0x00000002
  
-+config CRYPTO_LIMI_SPEED
-+	tristate "Crypto algorithm speed test with msec resolution"
-+	help
-+	  insmod/modprobe the module, and watch dmesg for results.
-+	  Test is for aes only, see modinfo for options
-+
- source "drivers/crypto/Kconfig"
+@@ -642,9 +652,14 @@ #endif /* CONFIG_MAGIC_SYSRQ */
+  bail:
+ 	spin_unlock_irqrestore(&hp->lock, flags);
  
- endif	# if CRYPTO
-Index: linux/crypto/Makefile
-===================================================================
---- linux.orig/crypto/Makefile
-+++ linux/crypto/Makefile
-@@ -52,3 +52,4 @@ obj-$(CONFIG_CRYPTO_TEST) += tcrypt.o
- CFLAGS_aes-altivec.o += -O3  -maltivec
- aes_altivec-objs := aes-alti.o aes-altivec.o
- obj-$(CONFIG_CRYPTO_AES_ALTIVEC) += aes_altivec.o
-+obj-$(CONFIG_CRYPTO_LIMI_SPEED) += limi-speed.o
-
---
+-	if (read_total)
++	if (read_total) {
++		/* Activity is occurring, so reset the polling backoff value to
++		   a minimum for performance. */
++		timeout = MIN_TIMEOUT;
++
+ 		tty_flip_buffer_push(tty);
+-	
++	}
++
+ 	return poll_mask;
+ }
+ 
+@@ -688,8 +703,12 @@ int khvcd(void *unused)
+ 		if (!hvc_kicked) {
+ 			if (poll_mask == 0)
+ 				schedule();
+-			else
+-				msleep_interruptible(TIMEOUT);
++			else {
++				if (timeout < MAX_TIMEOUT)
++					timeout += (timeout >> 6) + 1;
++
++				msleep_interruptible(timeout);
++			}
+ 		}
+ 		__set_current_state(TASK_RUNNING);
+ 	} while (!kthread_should_stop());
