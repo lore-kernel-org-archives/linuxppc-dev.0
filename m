@@ -1,16 +1,21 @@
-Return-Path: <sprasad@bivio.net>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AB49DDDE47
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 02:35:49 +1000 (EST)
+Message-ID: <4624F75C.8060606@freescale.com>
+Date: Tue, 17 Apr 2007 11:35:40 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: Variable "current" in Linux kernel...
-Date: Tue, 17 Apr 2007 08:12:02 -0700
-Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D75A778E@corpexc01.corp.networkrobots.com>
-In-Reply-To: <bffbecbb0704161552p7f62c800kd774809a41f177f0@mail.gmail.com>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D75A76F1@corpexc01.corp.networkrobots.com>
-	<bffbecbb0704161552p7f62c800kd774809a41f177f0@mail.gmail.com>
-From: "Siva Prasad" <sprasad@bivio.net>
-To: "Phillip Lougher" <phillip.lougher@gmail.com>
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 3/4] bootwrapper: Add ppcboot.h.
+References: <20070417090342.3E736352658@atlas.denx.de>
+In-Reply-To: <20070417090342.3E736352658@atlas.denx.de>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,58 +25,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-One question for the community:
-Why are we storing the physical address of a task. Why can't we store
-the virtual address, and convert it as and when required by using
-tophys(). By storing the physical address, are we not loosing this code
-portability. May be I am wrong, but would like to understand.
+Wolfgang Denk wrote:
+> In message <20070416232553.GB26693@ld0162-tx32.am.freescale.net> you wrote:
+>>diff --git a/arch/powerpc/boot/ppcboot.h b/arch/powerpc/boot/ppcboot.h
+>>new file mode 100644
+>>index 0000000..5290ff2
+>>--- /dev/null
+>>+++ b/arch/powerpc/boot/ppcboot.h
+> 
+> 
+> Shouldn't we finally get this straight and call the file "u-boot.h" as
+> it is called in U-Boot?
 
-Thanks Phillip.
-Now even the bootmem code needs update, as that considers 0x00000000 as
-default lower address and does the computations for free memory based on
-that.
+Probably...  though the ppcboot.h name does reinforce the legacy nature 
+of the interface.  Maybe old-u-boot.h?
 
-Thanks every one for the help.
+Paul, feel free to change the name of the file in the patch if you want.
 
-Thanks
-Siva
-
-
-
------Original Message-----
-From: Phillip Lougher [mailto:phillip.lougher@gmail.com]=20
-Sent: Monday, April 16, 2007 3:53 PM
-To: Siva Prasad
-Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
-Subject: Re: Variable "current" in Linux kernel...
-
-On 4/16/07, Siva Prasad <sprasad@bivio.net> wrote:
->
-> I would like to know where exactly the value of variable "current"
-gets
-> changed.
-
-current points to the task_struct structure of the currently running
-process.  It, obviously, changes each time the scheduler schedules
-another process.
-
->
->
-> BTW... did any one tried before to run from a different location of
-memory
-> than the usual 0x00000000? What are the main problems you faced? I
-know this
-> is open ended question, but wanted to see if any one ever did that.
->
-
-I changed the 2.4 PPC kernel to do this about 5 years ago (for
-Zarlink).  Most of the issues relate to the PPC specific code, all
-functions which map from a va->pa, from a pte->va, and vice-versa have
-to be changed.  The early start up assembly code has to be aware the
-kernel is not running at zero, specifically the code which creates the
-initial TLB entries.  As far as I can recall, only one line of non-PPC
-specific code needed to be changed.  It is, however, a difficult task
-which requires careful auditing of the code, and obviously  knowledge
-of the vm and memory allocator systems.
-
-Phillip
+-Scott
