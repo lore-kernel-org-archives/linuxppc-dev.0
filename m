@@ -1,31 +1,16 @@
-Return-Path: <will_schmidt@vnet.ibm.com>
-Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AE709DDE3B
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 00:55:41 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3HEtcB2004762
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 10:55:38 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3HEtcp3551582
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 10:55:38 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3HEtLCD019047
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 10:55:22 -0400
-Subject: [PATCH 2/2] hvc_console typo fixes
-From: Will Schmidt <will_schmidt@vnet.ibm.com>
-To: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
-In-Reply-To: <1176821087.28514.145.camel@farscape.rchland.ibm.com>
-References: <1176821087.28514.145.camel@farscape.rchland.ibm.com>
-Content-Type: text/plain
-Date: Tue, 17 Apr 2007 09:54:51 -0500
-Message-Id: <1176821691.28514.152.camel@farscape.rchland.ibm.com>
-Mime-Version: 1.0
-Cc: willschm@linux.vnet.ibm.com
-Reply-To: will_schmidt@vnet.ibm.com
+Return-Path: <sprasad@bivio.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: Variable "current" in Linux kernel...
+Date: Tue, 17 Apr 2007 08:12:02 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D75A778E@corpexc01.corp.networkrobots.com>
+In-Reply-To: <bffbecbb0704161552p7f62c800kd774809a41f177f0@mail.gmail.com>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D75A76F1@corpexc01.corp.networkrobots.com>
+	<bffbecbb0704161552p7f62c800kd774809a41f177f0@mail.gmail.com>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: "Phillip Lougher" <phillip.lougher@gmail.com>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,93 +20,58 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+One question for the community:
+Why are we storing the physical address of a task. Why can't we store
+the virtual address, and convert it as and when required by using
+tophys(). By storing the physical address, are we not loosing this code
+portability. May be I am wrong, but would like to understand.
 
-Fix a handful of comment typos for hvc_console.
+Thanks Phillip.
+Now even the bootmem code needs update, as that considers 0x00000000 as
+default lower address and does the computations for free memory based on
+that.
+
+Thanks every one for the help.
+
+Thanks
+Siva
 
 
-Signed-off-by: Will Schmidt <will_schmidt@vnet.ibm.com>
 
----
+-----Original Message-----
+From: Phillip Lougher [mailto:phillip.lougher@gmail.com]=20
+Sent: Monday, April 16, 2007 3:53 PM
+To: Siva Prasad
+Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
+Subject: Re: Variable "current" in Linux kernel...
 
-diff --git a/drivers/char/hvc_console.c b/drivers/char/hvc_console.c
-index fc9bc77..0f9ed7b 100644
---- a/drivers/char/hvc_console.c
-+++ b/drivers/char/hvc_console.c
-@@ -102,12 +102,12 @@ static DEFINE_SPINLOCK(hvc_structs_lock)
- /*
-  * This value is used to assign a tty->index value to a hvc_struct based
-  * upon order of exposure via hvc_probe(), when we can not match it to
-- * a console canidate registered with hvc_instantiate().
-+ * a console candidate registered with hvc_instantiate().
-  */
- static int last_hvc = -1;
- 
- /*
-- * Do not call this function with either the hvc_strucst_lock or the hvc_struct
-+ * Do not call this function with either the hvc_structs_lock or the hvc_struct
-  * lock held.  If successful, this function increments the kobject reference
-  * count against the target hvc_struct so it should be released when finished.
-  */
-@@ -160,7 +160,7 @@ void hvc_console_print(struct console *c
- 	if (index >= MAX_NR_HVC_CONSOLES)
- 		return;
- 
--	/* This console adapter was removed so it is not useable. */
-+	/* This console adapter was removed so it is not usable. */
- 	if (vtermnos[index] < 0)
- 		return;
- 
-@@ -218,7 +218,7 @@ struct console hvc_con_driver = {
- };
- 
- /*
-- * Early console initialization.  Preceeds driver initialization.
-+ * Early console initialization.  Precedes driver initialization.
-  *
-  * (1) we are first, and the user specified another driver
-  * -- index will remain -1
-@@ -255,7 +255,7 @@ int hvc_instantiate(uint32_t vtermno, in
- 	if (vtermnos[index] != -1)
- 		return -1;
- 
--	/* make sure no no tty has been registerd in this index */
-+	/* make sure no no tty has been registered in this index */
- 	hp = hvc_get_by_index(index);
- 	if (hp) {
- 		kobject_put(&hp->kobj);
-@@ -265,7 +265,7 @@ int hvc_instantiate(uint32_t vtermno, in
- 	vtermnos[index] = vtermno;
- 	cons_ops[index] = ops;
- 
--	/* reserve all indices upto and including this index */
-+	/* reserve all indices up to and including this index */
- 	if (last_hvc < index)
- 		last_hvc = index;
- 
-@@ -526,7 +526,7 @@ static int hvc_write(struct tty_struct *
- 
- /*
-  * This is actually a contract between the driver and the tty layer outlining
-- * how much write room the driver can guarentee will be sent OR BUFFERED.  This
-+ * how much write room the driver can guarantee will be sent OR BUFFERED.  This
-  * driver MUST honor the return value.
-  */
- static int hvc_write_room(struct tty_struct *tty)
-@@ -813,7 +813,7 @@ int __devexit hvc_remove(struct hvc_stru
- 
- 	/*
- 	 * We 'put' the instance that was grabbed when the kobject instance
--	 * was intialized using kobject_init().  Let the last holder of this
-+	 * was initialized using kobject_init().  Let the last holder of this
- 	 * kobject cause it to be removed, which will probably be the tty_hangup
- 	 * below.
- 	 */
-@@ -869,7 +869,7 @@ int __init hvc_init(void)
- }
- module_init(hvc_init);
- 
--/* This isn't particularily necessary due to this being a console driver
-+/* This isn't particularly necessary due to this being a console driver
-  * but it is nice to be thorough.
-  */
- static void __exit hvc_exit(void)
+On 4/16/07, Siva Prasad <sprasad@bivio.net> wrote:
+>
+> I would like to know where exactly the value of variable "current"
+gets
+> changed.
+
+current points to the task_struct structure of the currently running
+process.  It, obviously, changes each time the scheduler schedules
+another process.
+
+>
+>
+> BTW... did any one tried before to run from a different location of
+memory
+> than the usual 0x00000000? What are the main problems you faced? I
+know this
+> is open ended question, but wanted to see if any one ever did that.
+>
+
+I changed the 2.4 PPC kernel to do this about 5 years ago (for
+Zarlink).  Most of the issues relate to the PPC specific code, all
+functions which map from a va->pa, from a pte->va, and vice-versa have
+to be changed.  The early start up assembly code has to be aware the
+kernel is not running at zero, specifically the code which creates the
+initial TLB entries.  As far as I can recall, only one line of non-PPC
+specific code needed to be changed.  It is, however, a difficult task
+which requires careful auditing of the code, and obviously  knowledge
+of the vm and memory allocator systems.
+
+Phillip
