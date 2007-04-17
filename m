@@ -1,21 +1,18 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 96BB5DDE3B
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 07:07:48 +1000 (EST)
-Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id AFB8B98420
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 23:07:46 +0200 (CEST)
-Received: from ibook.aepfle.de (DSL01.83.171.145.224.ip-pool.NEFkom.net
-	[83.171.145.224])
-	by mail.mnet-online.de (Postfix) with ESMTP id 9899FB80A9
-	for <linuxppc-dev@ozlabs.org>; Tue, 17 Apr 2007 23:07:46 +0200 (CEST)
-Date: Tue, 17 Apr 2007 23:07:45 +0200
-From: Olaf Hering <olaf@aepfle.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 12E09DDEBA
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 07:22:30 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] generic check_legacy_ioport
-Message-ID: <20070417210745.GA3567@aepfle.de>
+Subject: Re: [PATCH] generic check_legacy_ioport
+Date: Tue, 17 Apr 2007 23:22:22 +0200
+References: <20070417210745.GA3567@aepfle.de>
+In-Reply-To: <20070417210745.GA3567@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704172322.23362.arnd@arndb.de>
+Cc: Olaf Hering <olaf@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,201 +22,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 17 April 2007, Olaf Hering wrote:
+>=20
+> =A0int check_legacy_ioport(unsigned long base_port)
+> =A0{
+> -=A0=A0=A0=A0=A0=A0=A0if (ppc_md.check_legacy_ioport =3D=3D NULL)
+> +=A0=A0=A0=A0=A0=A0=A0struct device_node *np;
+> +=A0=A0=A0=A0=A0=A0=A0if (ppc_md.check_legacy_ioport =3D=3D NULL) {
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0np =3D of_find_node_by_type=
+(NULL, "isa");
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (np =3D=3D NULL)
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0ret=
+urn -ENODEV;
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0of_node_put(np);
+> =A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0return 0;
+> +=A0=A0=A0=A0=A0=A0=A0}
+> =A0=A0=A0=A0=A0=A0=A0=A0return ppc_md.check_legacy_ioport(base_port);
+> =A0}
 
-Reject access to legacy ioports unless an isa node exists
-check_legacy_ioport makes only sense on PREP, CHRP and pSeries.
-They may have an isa node with PS/2, parport, floppy and serial ports.
+I could be wrong, but I think I've seen fake 'isa' bus nodes in the device =
+tree
+for machines that don't actually have isa. I probably saw this on very early
+cell blades (not the ones currently shipping), but perhaps others have
+made the same mistake.
 
-ipmi calls check_legacy_ioport.
-Only cell_defconfig has ipmi enabled.
-cell returns -ENODEV per default.
-Conclusion: nothing uses ipmi.
+How about simply defining a new common function like
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+int generic_deny_legacy_ioport(unsigned long base_port)
+{
+	return -EINVAL;
+}
 
----
- arch/powerpc/kernel/setup-common.c      |    8 +++++++-
- arch/powerpc/platforms/cell/setup.c     |   10 ----------
- arch/powerpc/platforms/celleb/setup.c   |   10 ----------
- arch/powerpc/platforms/iseries/setup.c  |   10 ----------
- arch/powerpc/platforms/pasemi/setup.c   |    7 -------
- arch/powerpc/platforms/powermac/setup.c |   10 ----------
- arch/powerpc/platforms/pseries/setup.c  |    4 ++++
- 7 files changed, 11 insertions(+), 48 deletions(-)
+so that not every platform has to define their own but can either
+set ppc_md.check_legacy_ioport to NULL, to generic_deny_legacy_ioport
+or their own function if they do something fancy?
 
-
-compile tested.
-
-
-Index: b/arch/powerpc/kernel/setup-common.c
-===================================================================
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -498,8 +498,14 @@ void probe_machine(void)
- 
- int check_legacy_ioport(unsigned long base_port)
- {
--	if (ppc_md.check_legacy_ioport == NULL)
-+	struct device_node *np;
-+	if (ppc_md.check_legacy_ioport == NULL) {
-+		np = of_find_node_by_type(NULL, "isa");
-+		if (np == NULL)
-+			return -ENODEV;
-+		of_node_put(np);
- 		return 0;
-+	}
- 	return ppc_md.check_legacy_ioport(base_port);
- }
- EXPORT_SYMBOL(check_legacy_ioport);
-Index: b/arch/powerpc/platforms/cell/setup.c
-===================================================================
---- a/arch/powerpc/platforms/cell/setup.c
-+++ b/arch/powerpc/platforms/cell/setup.c
-@@ -190,15 +190,6 @@ static int __init cell_probe(void)
- 	return 1;
- }
- 
--/*
-- * Cell has no legacy IO; anything calling this function has to
-- * fail or bad things will happen
-- */
--static int cell_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- define_machine(cell) {
- 	.name			= "Cell",
- 	.probe			= cell_probe,
-@@ -211,7 +202,6 @@ define_machine(cell) {
- 	.get_rtc_time		= rtas_get_rtc_time,
- 	.set_rtc_time		= rtas_set_rtc_time,
- 	.calibrate_decr		= generic_calibrate_decr,
--	.check_legacy_ioport	= cell_check_legacy_ioport,
- 	.progress		= cell_progress,
- 	.init_IRQ       	= cell_init_irq,
- 	.pci_setup_phb		= rtas_setup_phb,
-Index: b/arch/powerpc/platforms/celleb/setup.c
-===================================================================
---- a/arch/powerpc/platforms/celleb/setup.c
-+++ b/arch/powerpc/platforms/celleb/setup.c
-@@ -128,15 +128,6 @@ static int __init celleb_probe(void)
- 	return 1;
- }
- 
--/*
-- * Cell has no legacy IO; anything calling this function has to
-- * fail or bad things will happen
-- */
--static int celleb_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- #ifdef CONFIG_KEXEC
- static void celleb_kexec_cpu_down(int crash, int secondary)
- {
-@@ -173,7 +164,6 @@ define_machine(celleb) {
- 	.get_rtc_time		= beat_get_rtc_time,
- 	.set_rtc_time		= beat_set_rtc_time,
- 	.calibrate_decr		= generic_calibrate_decr,
--	.check_legacy_ioport	= celleb_check_legacy_ioport,
- 	.progress		= celleb_progress,
- 	.power_save		= beat_power_save,
- 	.nvram_size		= beat_nvram_get_size,
-Index: b/arch/powerpc/platforms/iseries/setup.c
-===================================================================
---- a/arch/powerpc/platforms/iseries/setup.c
-+++ b/arch/powerpc/platforms/iseries/setup.c
-@@ -628,15 +628,6 @@ static void iseries_iounmap(volatile voi
- {
- }
- 
--/*
-- * iSeries has no legacy IO, anything calling this function has to
-- * fail or bad things will happen
-- */
--static int iseries_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- static int __init iseries_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
-@@ -667,7 +658,6 @@ define_machine(iseries) {
- 	.calibrate_decr	= generic_calibrate_decr,
- 	.progress	= iSeries_progress,
- 	.probe		= iseries_probe,
--	.check_legacy_ioport	= iseries_check_legacy_ioport,
- 	.ioremap	= iseries_ioremap,
- 	.iounmap	= iseries_iounmap,
- 	/* XXX Implement enable_pmcs for iSeries */
-Index: b/arch/powerpc/platforms/pasemi/setup.c
-===================================================================
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -101,12 +101,6 @@ void __init pas_setup_arch(void)
- 	pasemi_idle_init();
- }
- 
--/* No legacy IO on our parts */
--static int pas_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- static __init void pas_init_IRQ(void)
- {
- 	struct device_node *np;
-@@ -237,7 +231,6 @@ define_machine(pas) {
- 	.restart		= pas_restart,
- 	.get_boot_time		= pas_get_boot_time,
- 	.calibrate_decr		= generic_calibrate_decr,
--	.check_legacy_ioport    = pas_check_legacy_ioport,
- 	.progress		= pas_progress,
- 	.machine_check_exception = pas_machine_check_handler,
- 	.pci_irq_fixup		= pas_pci_irq_fixup,
-Index: b/arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -616,15 +616,6 @@ static void __init pmac_init_early(void)
- #endif
- }
- 
--/*
-- * pmac has no legacy IO, anything calling this function has to
-- * fail or bad things will happen
-- */
--static int pmac_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- static int __init pmac_declare_of_platform_devices(void)
- {
- 	struct device_node *np;
-@@ -736,7 +727,6 @@ define_machine(powermac) {
- 	.get_rtc_time		= pmac_get_rtc_time,
- 	.calibrate_decr		= pmac_calibrate_decr,
- 	.feature_call		= pmac_do_feature_call,
--	.check_legacy_ioport	= pmac_check_legacy_ioport,
- 	.progress		= udbg_progress,
- #ifdef CONFIG_PPC64
- 	.pci_probe_mode		= pmac_pci_probe_mode,
-Index: b/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -356,6 +356,10 @@ static int pSeries_check_legacy_ioport(u
- 			return -ENODEV;
- 		of_node_put(np);
- 		break;
-+	default:
-+		printk("%s rejected access to port %u\n", __FUNCTION__, baseport);
-+		WARN_ON(baseport);
-+		return -ENODEV;
- 	}
- 	return 0;
- }
+	Arnd <><
