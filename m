@@ -1,18 +1,24 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc3-s9.bay0.hotmail.com (bay0-omc3-s9.bay0.hotmail.com
-	[65.54.246.209]) by ozlabs.org (Postfix) with ESMTP id 56CACDDEAB
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
+	by ozlabs.org (Postfix) with ESMTP id E5524DDE16
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Apr 2007 03:38:42 +1000 (EST)
-Message-ID: <BAY115-W21A26421AC818933E85766B2510@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: Grant Likely <grant.likely@secretlab.ca>, Duane Snider
-	<dsnider@rgbnetworks.com>, Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Miroslaw Dach <miroslaw.dach@psi.ch>, Peter Mendham
-	<petermendham@computing.dundee.ac.uk>, <linuxppc-embedded@ozlabs.org>
-Subject: RE: Xilinx Virtex git tree
-Date: Tue, 17 Apr 2007 17:38:40 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+	Wed, 18 Apr 2007 04:32:39 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so186226ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 17 Apr 2007 11:32:37 -0700 (PDT)
+Message-ID: <528646bc0704171132p24254a0av167c3db72c34eaf7@mail.gmail.com>
+Date: Tue, 17 Apr 2007 12:32:37 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
+Subject: Re: Xilinx Virtex git tree
+In-Reply-To: <BAY115-W21A26421AC818933E85766B2510@phx.gbl>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <BAY115-W21A26421AC818933E85766B2510@phx.gbl>
+Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Miroslaw Dach <miroslaw.dach@psi.ch>, linuxppc-embedded@ozlabs.org,
+	Duane Snider <dsnider@rgbnetworks.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,44 +29,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On 4/17/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
+>
+> Great work Grant
+>
+> Really thanks for your efforts
+>
+> specially helping beginners and making the development process much more easier for them
+>
+> by the way, montavista's git tree is too old, ( more 10 months ) why they do not update their git tree? ( may be andrei can answer this? )
 
-Great work Grant
+You could also ask me why it took 2 years to clean up the mess I made
+out of virtex support in mainline.  :-) This stuff takes time to sort
+out, and when there is more work than time to do it in, things are
+bound to get dropped on the floor.
 
-Really thanks for your efforts
+Cheers,
+g.
 
-specially helping beginners and making the development process much more ea=
-sier for them
-
-by the way, montavista's git tree is too old, ( more 10 months ) why they d=
-o not update their git tree? ( may be andrei can answer this? )
-
-
-
-
-----------------------------------------
-> Date: Tue, 17 Apr 2007 10:05:20 -0600
-> From: grant.likely@secretlab.ca
-> To: dsnider@rgbnetworks.com; mamsadegh@hotmail.com; akonovalov@ru.mvista.=
-com; miroslaw.dach@psi.ch; petermendham@computing.dundee.ac.uk; linuxppc-em=
-bedded@ozlabs.org
-> Subject: Xilinx Virtex git tree
->=20
-> For those of you who are interested, I've published my linux-2.6 git
-> tree with patches for Xilinx Virtex support including the TEMAC and
-> SystemACE drivers.
->=20
-> You can find it at http://git.secretlab.ca
->=20
-> Cheers,
-> g.
->=20
-> --=20
-> Grant Likely, B.Sc. P.Eng.
-> Secret Lab Technologies Ltd.
-> grant.likely@secretlab.ca
-> (403) 399-0195
-
-_________________________________________________________________
-Connect to the next generation of MSN Messenger=A0
-http://imagine-msn.com/messenger/launch80/default.aspx?locale=3Den-us&sourc=
-e=3Dwlmailtagline=
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
