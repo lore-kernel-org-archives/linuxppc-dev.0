@@ -1,18 +1,15 @@
-Return-Path: <gerald.vanbaren@smiths-aerospace.com>
-Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
-	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 1A8B1DDEBC
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 22:27:36 +1000 (EST)
-Message-ID: <46260EB6.6010506@smiths-aerospace.com>
-Date: Wed, 18 Apr 2007 08:27:34 -0400
-From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
-MIME-Version: 1.0
-To: Jerry Van Baren <gvb.uboot@gmail.com>,  linuxppc-dev@ozlabs.org,
-	jdl@jdl.com, David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH: dtc] Improve -S handling
-References: <20070418020535.GA16224@dellserver.lan>	<20070418030528.GA27758@localhost.localdomain>
-	<20070418064508.GC29312@localhost.localdomain>
-In-Reply-To: <20070418064508.GC29312@localhost.localdomain>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Return-Path: <b07421@freescale.com>
+Date: Wed, 18 Apr 2007 11:14:41 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 10/10] zImage wrapper for Ebony
+Message-ID: <20070418161441.GA8129@ld0162-tx32.am.freescale.net>
+References: <20070418063517.GB29312@localhost.localdomain>
+	<20070418063626.E6AADDDE3B@ozlabs.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070418063626.E6AADDDE3B@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,53 +19,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-David Gibson wrote:
-> On Wed, Apr 18, 2007 at 01:05:28PM +1000, David Gibson wrote:
->> On Tue, Apr 17, 2007 at 10:05:35PM -0400, Jerry Van Baren wrote:
->>> If the user requests extra space, pad out the blob (previously the unused
->>>   data was undefined).
->>>
->>> Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
->>> ---
->>>
->>> Hi Jon, David, Milton,
->>>
->>> This improves the -S option to pad out the blob with zeros when the user
->>> asks for extra space.
->> Comment below
->>> diff --git a/flattree.c b/flattree.c
->>> index 151d16e..d2ee0dc 100644
->>> --- a/flattree.c
->>> +++ b/flattree.c
->>> @@ -310,6 +310,7 @@ static struct data flatten_reserve_list(struct reserve_info *reservelist,
->>>  	
->>>  	return d;
->>>  }
->>> +
->>>  static void make_bph(struct boot_param_header *bph,
->>>  		     struct version_info *vi,
->>>  		     int reservesize, int dtsize, int strsize,
->>> @@ -358,12 +359,15 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
->>>  {
->>>  	struct version_info *vi = NULL;
->>>  	int i;
->>> +	int size;
->>>  	struct data dtbuf = empty_data;
->>>  	struct data strbuf = empty_data;
->>>  	struct data reservebuf;
->>>  	struct boot_param_header bph;
->>>  	struct reserve_entry termre = {.address = 0, .size = 0};
->>>  
->>> +	size = 0;
->>> +
-> 
-> Oh, also, you shouldn't need this new variable to track the size.
-> Just use whatever expression we used to use for totalsize before we
-> forced it out to the minimum size.
+On Wed, Apr 18, 2007 at 04:36:26PM +1000, David Gibson wrote:
+> Index: working-2.6/arch/powerpc/boot/wrapper
+> ===================================================================
+> --- working-2.6.orig/arch/powerpc/boot/wrapper	2007-04-18 14:40:39.000000000 +1000
+> +++ working-2.6/arch/powerpc/boot/wrapper	2007-04-18 14:42:58.000000000 +1000
+> @@ -141,6 +141,12 @@ miboot|uboot)
+>      ksection=image
+>      isection=initrd
+>      ;;
+> +*-tree)
+> +    platformo=$object/"${platform%%-tree}".o
+> +    ;;
+> +*-uboot)
+> +    platformo=$object/"${platform%%-uboot}".o
+> +    ;;
+>  esac
 
-It was simpler that way.  Much simpler.  With the calculated version, I 
-had to know the header size and re-calculate all the alignment gaps. 
-Ugly and nasty (respectively and collectively).
+Perhaps we should have separate platform file and image type arguments,
+so the wrapper doesn't have to do this sort of manipulation?
 
-Best regards,
-gvb
+> +*-uboot)
+> +    mv "$ofile" "$ofile.elf"
+> +    version=`${CROSS}strings "$kernel" | grep '^Linux version [-0-9.]' | \
+> +	cut -d' ' -f3`
+> +    if [ -n "$version" ]; then
+> +	version="-n Linux-$version"
+> +    fi
+> +    entry=`objdump -f "$ofile.elf" | grep '^start address ' | \
+> +	cut -d' ' -f3`
+
+Should be ${CROSS}objdump.  Plus, it'd be nice to factor out the version
+and entry determination so that it isn't repeated for each image type
+(the cuImage patch does this for version).
+
+-Scott
