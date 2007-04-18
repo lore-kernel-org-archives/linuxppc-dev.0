@@ -1,15 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 18 Apr 2007 18:04:16 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id A5890DDE27
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 18:58:41 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <20070322030114.D5B9FDDF2B@ozlabs.org>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <daf73c54d92c0be4096aa40b4ae00fcd@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 2/4] powerpc: Fix 32 bits mm operations when not using BATs
+Date: Wed, 18 Apr 2007 03:58:16 -0500
 To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: Fix breakage caused by tlb flush batch changes
-Message-ID: <20070418080416.GA31443@localhost.localdomain>
-References: <20070418061948.GA29312@localhost.localdomain>
-	<1176881992.7639.2.camel@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1176881992.7639.2.camel@localhost.localdomain>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,32 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 18, 2007 at 05:39:52PM +1000, Benjamin Herrenschmidt wrote:
-> On Wed, 2007-04-18 at 16:19 +1000, David Gibson wrote:
-> > BenH's commit a741e67969577163a4cfc78d7fd2753219087ef1 in powerpc.git,
-> > although (AFAICT) only intended to affect ppc64, also has side-effects
-> > which break 44x.  I think 40x, 8xx and Freescale Book E are also
-> > affected, though I haven't tested them.
-> > 
-> > The problem lies in unconditionally removing flush_tlb_pending() from
-> > the versions of flush_tlb_mm(), flush_tlb_range() and
-> > flush_tlb_kernel_range() used on ppc64 - which are also used the
-> > embedded platforms mentioned above.
-> > 
-> > The patch below restores the necessary flushes and fixes the breakage
-> > for 44x.  They should also fix any breakage for the other platforms,
-> > but again I haven't tested those.
-> 
-> Damn, do these things use a batch at all ? If not, they should defkine
-> the whole set a functions separately rather than ifdef's like that...
-> flush_tlb_pending is a bad name for that.
+In commit ee4f2ea48674b6c9d91bc854edc51a3e6a7168c4 Ben patched:
 
-No they don't and yes they should.  I was planning to do such a
-redefinition along with other cleanups related to splitting the MMU
-related .h files up by CPU/MMU family.
+> diff --git a/arch/powerpc/mm/pgtable_32.c 
+> b/arch/powerpc/mm/pgtable_32.c
+> index 95d3afe..f75f2fc 100644
+> --- a/arch/powerpc/mm/pgtable_32.c
+> +++ b/arch/powerpc/mm/pgtable_32.c
+> @@ -282,16 +282,19 @@ int map_page(unsigned long va, phys_addr_t pa, 
+> int flags)
+...
+> +               ktext = ((char *) v >= _stext && (char *) v < etext);
+> +               f = ktext ?_PAGE_RAM_TEXT : _PAGE_RAM;
+>                 map_page(v, p, f);
+> +#ifdef CONFIG_PPC_STD_MMU_32
+> +               if (ktext)
+> +                       hash_preload(&init_mm, v, 0, 0x300);
+> +#endif
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+
+We should preload text pages with trap 0x400, ISI, aka an
+instruction storage miss, not 0x300, data storage miss, to
+avoid any confusion with looking at the trap vs PAGE_EXEC.
+
+Sorry for not catching this until it was applied.
+
+milton
