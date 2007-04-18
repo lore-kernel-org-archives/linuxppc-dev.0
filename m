@@ -1,9 +1,10 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 4/10] Re-organize Kconfig code for 4xx in arch/powerpc
+Subject: [PATCH 5/10] Add arch/powerpc driver for UIC,
+	PPC4xx interrupt controller
 In-Reply-To: <20070418063517.GB29312@localhost.localdomain>
-Message-Id: <20070418063626.4E05CDDE3B@ozlabs.org>
+Message-Id: <20070418063626.7994ADDE3C@ozlabs.org>
 Date: Wed, 18 Apr 2007 16:36:26 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,459 +15,402 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Now that we always take a device tree in arch/powerpc, there's no good
-reason not to allow a single kernel to support multiple embedded 4xx
-boards - the correct platform code can be selected based on the device
-tree information.
-
-Therefore, this patch re-arranges the 4xx Kconfig code to allow this.
-In addition we:
-	- use "select" instead of depends to configure the correct
-	  config options for specific 4xx CPUs and workarounds, which
-	  makes the information about specific boards and CPUs less
-	  scattered.
-	- Some old, unused (in arch/powerpc) config options are
-	  removed: WANT_EARLY_SERIAL, IBM_OCP, etc.
+This patch adds a driver to arch/powerpc/sysdev for the UIC, the
+on-chip interrupt controller from IBM/AMCC 4xx chips.  It uses the new
+irq host mapping infrastructure.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/platforms/4xx/Kconfig |  378 ++++++++++++++-----------------------
- 1 file changed, 153 insertions(+), 225 deletions(-)
+ arch/powerpc/sysdev/Makefile |    1 
+ arch/powerpc/sysdev/uic.c    |  342 +++++++++++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/uic.h    |   23 ++
+ 3 files changed, 366 insertions(+)
 
-Index: working-2.6/arch/powerpc/platforms/4xx/Kconfig
+Index: working-2.6/arch/powerpc/sysdev/uic.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/platforms/4xx/Kconfig	2007-02-21 11:20:50.000000000 +1100
-+++ working-2.6/arch/powerpc/platforms/4xx/Kconfig	2007-02-21 11:25:43.000000000 +1100
-@@ -3,278 +3,206 @@ config 4xx
- 	depends on 40x || 44x
- 	default y
- 
--config WANT_EARLY_SERIAL
-+config BOOKE
- 	bool
--	select SERIAL_8250
--	default n
--
--menu "AMCC 4xx options"
--	depends on 4xx
--
--choice
--	prompt "Machine Type"
--	depends on 40x
--	default WALNUT
--
--config BUBINGA
--	bool "Bubinga"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM 405EP evaluation board.
--
--config CPCI405
--	bool "CPCI405"
--	help
--	  This option enables support for the CPCI405 board.
--
--config EP405
--	bool "EP405/EP405PC"
--	help
--	  This option enables support for the EP405/EP405PC boards.
--
--config REDWOOD_5
--	bool "Redwood-5"
--	help
--	  This option enables support for the IBM STB04 evaluation board.
--
--config REDWOOD_6
--	bool "Redwood-6"
--	help
--	  This option enables support for the IBM STBx25xx evaluation board.
--
--config SYCAMORE
--	bool "Sycamore"
--	help
--	  This option enables support for the IBM PPC405GPr evaluation board.
--
--config WALNUT
--	bool "Walnut"
--	help
--	  This option enables support for the IBM PPC405GP evaluation board.
--
--config XILINX_ML300
--	bool "Xilinx-ML300"
--	help
--	  This option enables support for the Xilinx ML300 evaluation board.
--
--endchoice
--
--choice
--	prompt "Machine Type"
- 	depends on 44x
--	default EBONY
--
--config BAMBOO
--	bool "Bamboo"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440EP evaluation board.
--
--config EBONY
--	bool "Ebony"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440GP evaluation board.
--
--config LUAN
--	bool "Luan"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440SP evaluation board.
--
--config OCOTEA
--	bool "Ocotea"
--	select WANT_EARLY_SERIAL
--	help
--	  This option enables support for the IBM PPC440GX evaluation board.
-+	default y
- 
--endchoice
-+menu "AMCC 40x options"
-+	depends on 40x
- 
--config EP405PC
--	bool "EP405PC Support"
--	depends on EP405
-+#config BUBINGA
-+#	bool "Bubinga"
-+#	depends on 40x
-+#	default n
-+#	select 405EP
-+#	help
-+#	  This option enables support for the IBM 405EP evaluation board.
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/sysdev/uic.c	2007-04-18 14:11:16.000000000 +1000
+@@ -0,0 +1,342 @@
++/*
++ * arch/powerpc/sysdev/uic.c
++ *
++ * IBM PowerPC 4xx Universal Interrupt Controller
++ *
++ * Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/errno.h>
++#include <linux/reboot.h>
++#include <linux/slab.h>
++#include <linux/stddef.h>
++#include <linux/sched.h>
++#include <linux/signal.h>
++#include <linux/sysdev.h>
++#include <linux/device.h>
++#include <linux/bootmem.h>
++#include <linux/spinlock.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <asm/irq.h>
++#include <asm/io.h>
++#include <asm/prom.h>
++#include <asm/dcr.h>
 +
-+#config CPCI405
-+#	bool "CPCI405"
-+#	depends on 40x
-+#	default n
-+#	select 405GP
-+#	help
-+#	  This option enables support for the CPCI405 board.
++#define NR_UIC_INTS	32
 +
-+#config EP405
-+#	bool "EP405/EP405PC"
-+#	depends on 40x
-+#	default n
-+#	select 405GP
-+#	help
-+#	  This option enables support for the EP405/EP405PC boards.
++#define UIC_SR		0x0
++#define UIC_ER		0x2
++#define UIC_CR		0x3
++#define UIC_PR		0x4
++#define UIC_TR		0x5
++#define UIC_MSR		0x6
++#define UIC_VR		0x7
++#define UIC_VCR		0x8
 +
-+#config EP405PC
-+#	bool "EP405PC Support"
-+#	depends on EP405
-+#	default y
-+#	help
-+#	  This option enables support for the extra features of the EP405PC board.
++#define uic_irq_to_hw(virq)	(irq_map[virq].hwirq)
 +
-+#config REDWOOD_5
-+#	bool "Redwood-5"
-+#	depends on 40x
-+#	default n
-+#	select STB03xxx
-+#	help
-+#	  This option enables support for the IBM STB04 evaluation board.
++struct uic *primary_uic;
 +
-+#config REDWOOD_6
-+#	bool "Redwood-6"
-+#	depends on 40x
-+#	default n
-+#	select STB03xxx
-+#	help
-+#	  This option enables support for the IBM STBx25xx evaluation board.
++struct uic {
++	int index;
++	int dcrbase;
 +
-+#config SYCAMORE
-+#	bool "Sycamore"
-+#	depends on 40x
-+#	default n
-+#	select 405GPR
-+#	help
-+#	  This option enables support for the IBM PPC405GPr evaluation board.
++	spinlock_t lock;
 +
-+#config WALNUT
-+#	bool "Walnut"
-+#	depends on 40x
-+#	default y
-+#	select 405GP
-+#	help
-+#	  This option enables support for the IBM PPC405GP evaluation board.
++	/* The remapper for this UIC */
++	struct irq_host	*irqhost;
 +
-+#config XILINX_ML300
-+#	bool "Xilinx-ML300"
-+#	depends on 40x
-+#	default y
-+#	select VIRTEX_II_PRO
-+#	help
-+#	  This option enables support for the Xilinx ML300 evaluation board.
- 
-+endmenu
- 
--# It's often necessary to know the specific 4xx processor type.
--# Fortunately, it is impled (so far) from the board type, so we
--# don't need to ask more redundant questions.
-+# 40x specific CPU modules, selected based on the board above.
- config NP405H
- 	bool
--	depends on ASH
--	default y
-+	#depends on ASH
- 
--config 440EP
-+# OAK doesn't exist but wanted to keep this around for any future 403GCX boards
-+config 403GCX
- 	bool
--	depends on BAMBOO
--	select PPC_FPU
--	default y
-+	#depends on OAK
-+	select IBM405_ERR51
- 
--config 440GP
-+config 405GP
- 	bool
--	depends on EBONY
--	default y
-+	select IBM405_ERR77
-+	select IBM405_ERR51
- 
--config 440GX
-+config 405EP
- 	bool
--	depends on OCOTEA
--	default y
- 
--config 440SP
-+config 405GPR
- 	bool
--	depends on LUAN
--	default y
- 
--config 440
-+config VIRTEX_II_PRO
- 	bool
--	depends on 440GP || 440SP || 440EP
--	default y
-+	select IBM405_ERR77
-+	select IBM405_ERR51
- 
--config 440A
-+config STB03xxx
- 	bool
--	depends on 440GX
--	default y
-+	select IBM405_ERR77
-+	select IBM405_ERR51
- 
--config IBM440EP_ERR42
--	bool
--	depends on 440EP
--	default y
-+# 40x errata/workaround config symbols, selected by the CPU models above
- 
- # All 405-based cores up until the 405GPR and 405EP have this errata.
- config IBM405_ERR77
- 	bool
--	depends on 40x && !403GCX && !405GPR && !405EP
--	default y
- 
- # All 40x-based cores, up until the 405GPR and 405EP have this errata.
- config IBM405_ERR51
- 	bool
--	depends on 40x && !405GPR && !405EP
--	default y
- 
--config BOOKE
--	bool
-+menu "AMCC 44x options"
- 	depends on 44x
--	default y
- 
--config IBM_OCP
--	bool
--	depends on ASH || BAMBOO || BUBINGA || CPCI405 || EBONY || EP405 || LUAN || OCOTEA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
--	default y
-+#config BAMBOO
-+#	bool "Bamboo"
-+#	depends on 44x
-+#	default n
-+#	select 440EP
-+#	help
-+#	  This option enables support for the IBM PPC440EP evaluation board.
- 
--config XILINX_OCP
--	bool
--	depends on XILINX_ML300
--	default y
--
--config IBM_EMAC4
--	bool
--	depends on 440GX || 440SP
--	default y
--
--config BIOS_FIXUP
--	bool
--	depends on BUBINGA || EP405 || SYCAMORE || WALNUT
--	default y
--
--# OAK doesn't exist but wanted to keep this around for any future 403GCX boards
--config 403GCX
--	bool
--	depends on OAK
--	default y
--
--config 405EP
--	bool
--	depends on BUBINGA
--	default y
--
--config 405GP
--	bool
--	depends on CPCI405 || EP405 || WALNUT
--	default y
--
--config 405GPR
--	bool
--	depends on SYCAMORE
--	default y
--
--config VIRTEX_II_PRO
--	bool
--	depends on XILINX_ML300
--	default y
--
--config STB03xxx
--	bool
--	depends on REDWOOD_5 || REDWOOD_6
--	default y
--
--config EMBEDDEDBOOT
--	bool
--	depends on EP405 || XILINX_ML300
-+config EBONY
-+	bool "Ebony"
-+	depends on 44x
- 	default y
-+	select 440GP
-+	help
-+	  This option enables support for the IBM PPC440GP evaluation board.
- 
--config IBM_OPENBIOS
--	bool
--	depends on ASH || BUBINGA || REDWOOD_5 || REDWOOD_6 || SYCAMORE || WALNUT
--	default y
-+#config LUAN
-+#	bool "Luan"
-+#	depends on 44x
-+#	default n
-+#	select 440SP
-+#	help
-+#	  This option enables support for the IBM PPC440SP evaluation board.
++	/* For secondary UICs, the cascade interrupt's irqaction */
++	struct irqaction cascade;
 +
-+#config OCOTEA
-+#	bool "Ocotea"
-+#	depends on 44x
-+#	default n
-+#	select 440GX
-+#	help
-+#	  This option enables support for the IBM PPC440GX evaluation board.
- 
--config PPC4xx_DMA
--	bool "PPC4xx DMA controller support"
--	depends on 4xx
-+endmenu
- 
--config PPC4xx_EDMA
-+# 44x specific CPU modules, selected based on the board above.
-+config 440EP
- 	bool
--	depends on !STB03xxx && PPC4xx_DMA
--	default y
-+	select PPC_FPU
-+	select IBM440EP_ERR42
- 
--config PPC_GEN550
-+config 440GP
- 	bool
--	depends on 4xx
--	default y
--
--choice
--	prompt "TTYS0 device and default console"
--	depends on 40x
--	default UART0_TTYS0
--
--config UART0_TTYS0
--	bool "UART0"
--
--config UART0_TTYS1
--	bool "UART1"
-+	select IBM_NEW_EMAC_ZMII
- 
--endchoice
--
--config SERIAL_SICC
--	bool "SICC Serial port support"
--	depends on STB03xxx
--
--config UART1_DFLT_CONSOLE
-+config 440GX
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
--	default y
- 
--config SERIAL_SICC_CONSOLE
-+config 440SP
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
--	default y
--endmenu
--
- 
--menu "IBM 40x options"
--	depends on 40x
--
--config SERIAL_SICC
--	bool "SICC Serial port"
--	depends on STB03xxx
--
--config UART1_DFLT_CONSOLE
-+config 440A
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
-+	depends on 440GX
- 	default y
- 
--config SERIAL_SICC_CONSOLE
-+# 44x errata/workaround config symbols, selected by the CPU models above
-+config IBM440EP_ERR42
- 	bool
--	depends on SERIAL_SICC && UART0_TTYS1
--	default y
- 
--endmenu
-+#config XILINX_OCP
-+#	bool
-+#	depends on XILINX_ML300
-+#	default y
++	/* The device node of the interrupt controller */
++	struct device_node *of_node;
++};
 +
-+#config BIOS_FIXUP
-+#	bool
-+#	depends on BUBINGA || EP405 || SYCAMORE || WALNUT
-+#	default y
++static void uic_unmask_irq(unsigned int virq)
++{
++	struct uic *uic = get_irq_chip_data(virq);
++	unsigned int src = uic_irq_to_hw(virq);
++	unsigned long flags;
++	u32 er;
 +
-+#config PPC4xx_DMA
-+#	bool "PPC4xx DMA controller support"
-+#	depends on 4xx
++	spin_lock_irqsave(&uic->lock, flags);
++	er = mfdcr(uic->dcrbase + UIC_ER);
++	er |= 1 << (31 - src);
++	mtdcr(uic->dcrbase + UIC_ER, er);
++	spin_unlock_irqrestore(&uic->lock, flags);
++}
 +
-+#config PPC4xx_EDMA
-+#	bool
-+#	depends on !STB03xxx && PPC4xx_DMA
-+#	default y
++static void uic_mask_irq(unsigned int virq)
++{
++	struct uic *uic = get_irq_chip_data(virq);
++	unsigned int src = uic_irq_to_hw(virq);
++	unsigned long flags;
++	u32 er;
++
++	spin_lock_irqsave(&uic->lock, flags);
++	er = mfdcr(uic->dcrbase + UIC_ER);
++	er &= ~(1 << (31 - src));
++	mtdcr(uic->dcrbase + UIC_ER, er);
++	spin_unlock_irqrestore(&uic->lock, flags);
++}
++
++static void uic_ack_irq(unsigned int virq)
++{
++	struct uic *uic = get_irq_chip_data(virq);
++	unsigned int src = uic_irq_to_hw(virq);
++	unsigned long flags;
++
++	spin_lock_irqsave(&uic->lock, flags);
++	mtdcr(uic->dcrbase + UIC_SR, 1 << (31-src));
++	spin_unlock_irqrestore(&uic->lock, flags);
++}
++
++static int uic_set_irq_type(unsigned int virq, unsigned int flow_type)
++{
++	struct uic *uic = get_irq_chip_data(virq);
++	unsigned int src = uic_irq_to_hw(virq);
++	struct irq_desc *desc = get_irq_desc(virq);
++	unsigned long flags;
++	int trigger, polarity;
++	u32 tr, pr, mask;
++
++	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
++	case IRQ_TYPE_NONE:
++		uic_mask_irq(virq);
++		return 0;
++
++	case IRQ_TYPE_EDGE_RISING:
++		trigger = 1; polarity = 1;
++		break;
++	case IRQ_TYPE_EDGE_FALLING:
++		trigger = 1; polarity = 0;
++		break;
++	case IRQ_TYPE_LEVEL_HIGH:
++		trigger = 0; polarity = 1;
++		break;
++	case IRQ_TYPE_LEVEL_LOW:
++		trigger = 0; polarity = 0;
++		break;
++	default:
++		return -EINVAL;
++	}
++
++	mask = ~(1 << (31 - src));
++
++	spin_lock_irqsave(&uic->lock, flags);
++	tr = mfdcr(uic->dcrbase + UIC_TR);
++	pr = mfdcr(uic->dcrbase + UIC_PR);
++	tr = (tr & mask) | (trigger << (31-src));
++	pr = (pr & mask) | (polarity << (31-src));
++
++	mtdcr(uic->dcrbase + UIC_PR, pr);
++	mtdcr(uic->dcrbase + UIC_TR, tr);
++
++	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
++	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
++	if (trigger)
++		desc->status |= IRQ_LEVEL;
++
++	spin_unlock_irqrestore(&uic->lock, flags);
++
++	return 0;
++}
++
++static struct irq_chip uic_irq_chip = {
++	.typename	= " UIC  ",
++	.unmask		= uic_unmask_irq,
++	.mask		= uic_mask_irq,
++/* 	.mask_ack	= uic_mask_irq_and_ack, */
++	.ack		= uic_ack_irq,
++	.set_type	= uic_set_irq_type,
++};
++
++static int uic_host_match(struct irq_host *h, struct device_node *node)
++{
++	struct uic *uic = h->host_data;
++	return uic->of_node == node;
++}
++
++static int uic_host_map(struct irq_host *h, unsigned int virq,
++			irq_hw_number_t hw)
++{
++	struct uic *uic = h->host_data;
++
++	set_irq_chip_data(virq, uic);
++	/* Despite the name, handle_level_irq() works for both level
++	 * and edge irqs on UIC.  FIXME: check this is correct */
++	set_irq_chip_and_handler(virq, &uic_irq_chip, handle_level_irq);
++
++	/* Set default irq type */
++	set_irq_type(virq, IRQ_TYPE_NONE);
++
++	return 0;
++}
++
++static int uic_host_xlate(struct irq_host *h, struct device_node *ct,
++			  u32 *intspec, unsigned int intsize,
++			  irq_hw_number_t *out_hwirq, unsigned int *out_type)
++
++{
++	/* UIC intspecs must have 2 cells */
++	BUG_ON(intsize != 2);
++	*out_hwirq = intspec[0];
++	*out_type = intspec[1];
++	return 0;
++}
++
++static struct irq_host_ops uic_host_ops = {
++	.match	= uic_host_match,
++	.map	= uic_host_map,
++	.xlate	= uic_host_xlate,
++};
++
++irqreturn_t uic_cascade(int virq, void *data)
++{
++	struct uic *uic = data;
++	u32 msr;
++	int src;
++	int subvirq;
++
++	msr = mfdcr(uic->dcrbase + UIC_MSR);
++	src = 32 - ffs(msr);
++
++	subvirq = irq_linear_revmap(uic->irqhost, src);
++	generic_handle_irq(subvirq);
++
++	return IRQ_HANDLED;
++}
++
++static struct uic * __init uic_init_one(struct device_node *node)
++{
++	struct uic *uic;
++	const u32 *indexp, *dcrreg;
++	int len;
++
++	BUG_ON(! device_is_compatible(node, "ibm,uic"));
++
++	uic = alloc_bootmem(sizeof(*uic));
++	if (! uic)
++		return NULL; /* FIXME: panic? */
++
++	memset(uic, 0, sizeof(*uic));
++	spin_lock_init(&uic->lock);
++	uic->of_node = of_node_get(node);
++	indexp = get_property(node, "cell-index", &len);
++	if (!indexp || (len != sizeof(u32))) {
++		printk(KERN_ERR "uic: Device node %s has missing or invalid "
++		       "cell-index property\n", node->full_name);
++		return NULL;
++	}
++	uic->index = *indexp;
++
++	dcrreg = get_property(node, "dcr-reg", &len);
++	if (!dcrreg || (len != 2*sizeof(u32))) {
++		printk(KERN_ERR "uic: Device node %s has missing or invalid "
++		       "dcr-reg property\n", node->full_name);
++		return NULL;
++	}
++	uic->dcrbase = *dcrreg;
++
++	uic->irqhost = irq_alloc_host(IRQ_HOST_MAP_LINEAR, NR_UIC_INTS,
++				      &uic_host_ops, -1);
++	if (! uic->irqhost) {
++		of_node_put(node);
++		return NULL; /* FIXME: panic? */
++	}
++
++	uic->irqhost->host_data = uic;
++
++	/* Start with all interrupts disabled, level and non-critical */
++	mtdcr(uic->dcrbase + UIC_ER, 0);
++	mtdcr(uic->dcrbase + UIC_CR, 0);
++	mtdcr(uic->dcrbase + UIC_TR, 0);
++	/* Clear any pending interrupts, in case the firmware left some */
++	mtdcr(uic->dcrbase + UIC_SR, 0xffffffff);
++
++	printk ("UIC%d (%d IRQ sources) at DCR 0x%x\n", uic->index,
++		NR_UIC_INTS, uic->dcrbase);
++
++	return uic;
++}
++
++void __init uic_init_tree(void)
++{
++	struct device_node *np;
++	struct uic *uic;
++	const u32 *interrupts;
++
++	/* First locate and initialize the top-level UIC */
++
++	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
++	while (np) {
++		interrupts = get_property(np, "interrupts", NULL);
++		if (! interrupts)
++			break;
++
++		np = of_find_compatible_node(np, NULL, "ibm,uic");
++	}
++
++	BUG_ON(!np); /* uic_init_tree() assumes there's a UIC as the
++		      * top-level interrupt controller */
++	primary_uic = uic_init_one(np);
++	if (! primary_uic)
++		panic("Unable to initialize primary UIC %s\n", np->full_name);
++
++	irq_set_default_host(primary_uic->irqhost);
++	of_node_put(np);
++
++	/* The scan again for cascaded UICs */
++	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
++	while (np) {
++		interrupts = get_property(np, "interrupts", NULL);
++		if (interrupts) {
++			/* Secondary UIC */
++			int cascade_virq;
++			int ret;
++
++			uic = uic_init_one(np);
++			if (! uic)
++				panic("Unable to initialize a secondary UIC %s\n",
++				      np->full_name);
++
++			cascade_virq = irq_of_parse_and_map(np, 0);
++
++			uic->cascade.handler = uic_cascade;
++			uic->cascade.name = "UIC cascade";
++			uic->cascade.dev_id = uic;
++
++			ret = setup_irq(cascade_virq, &uic->cascade);
++			if (ret)
++				printk(KERN_ERR "Failed to setup_irq(%d) for "
++				       "UIC%d cascade\n", cascade_virq,
++				       uic->index);
++
++			/* FIXME: setup critical cascade?? */
++		}
++
++		np = of_find_compatible_node(np, NULL, "ibm,uic");
++	}
++}
++
++/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
++unsigned int uic_get_irq(void)
++{
++	u32 msr;
++	int src;
++
++	BUG_ON(! primary_uic);
++
++	msr = mfdcr(primary_uic->dcrbase + UIC_MSR);
++	src = 32 - ffs(msr);
++
++	return irq_linear_revmap(primary_uic->irqhost, src);
++}
+Index: working-2.6/arch/powerpc/sysdev/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/sysdev/Makefile	2007-04-16 10:04:20.000000000 +1000
++++ working-2.6/arch/powerpc/sysdev/Makefile	2007-04-18 12:06:33.000000000 +1000
+@@ -21,6 +21,7 @@ obj-$(CONFIG_PM)		+= timer.o
+ ifeq ($(CONFIG_PPC_MERGE),y)
+ obj-$(CONFIG_PPC_I8259)		+= i8259.o
+ obj-$(CONFIG_PPC_83xx)		+= ipic.o
++obj-$(CONFIG_4xx)		+= uic.o
+ endif
+ 
+ # Temporary hack until we have migrated to asm-powerpc
+Index: working-2.6/include/asm-powerpc/uic.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/include/asm-powerpc/uic.h	2007-04-18 12:06:33.000000000 +1000
+@@ -0,0 +1,23 @@
++/*
++ * include/asm-powerpc/uic.h
++ *
++ * IBM PPC4xx UIC external definitions and structure.
++ *
++ * Maintainer: David Gibson <dwg@au1.ibm.com>
++ * Copyright 2007 IBM Corporation.
++ *
++ * This program is free software; you can redistribute  it and/or modify it
++ * under  the terms of  the GNU General  Public License as published by the
++ * Free Software Foundation;  either version 2 of the  License, or (at your
++ * option) any later version.
++ */
++#ifndef _ASM_POWERPC_UIC_H
++#define _ASM_POWERPC_UIC_H
++
++#ifdef __KERNEL__
++
++extern void __init uic_init_tree(void);
++extern unsigned int uic_get_irq(void);
++
++#endif /* __KERNEL__ */
++#endif /* _ASM_POWERPC_UIC_H */
