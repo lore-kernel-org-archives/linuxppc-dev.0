@@ -1,24 +1,16 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.172])
-	by ozlabs.org (Postfix) with ESMTP id E5524DDE16
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 18 Apr 2007 04:32:39 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so186226ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 17 Apr 2007 11:32:37 -0700 (PDT)
-Message-ID: <528646bc0704171132p24254a0av167c3db72c34eaf7@mail.gmail.com>
-Date: Tue, 17 Apr 2007 12:32:37 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
-Subject: Re: Xilinx Virtex git tree
-In-Reply-To: <BAY115-W21A26421AC818933E85766B2510@phx.gbl>
+Return-Path: <laurent.pinchart@technotrade.biz>
+From: Laurent Pinchart <laurent.pinchart@technotrade.biz>
+To: Bill Gatliff <bgat@billgatliff.com>
+Subject: Re: Compiling interrupt controller code as a module
+Date: Wed, 18 Apr 2007 11:39:55 +0200
+References: <200704171731.43608.laurent.pinchart@technotrade.biz>
+	<46250034.7000202@billgatliff.com>
+In-Reply-To: <46250034.7000202@billgatliff.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <BAY115-W21A26421AC818933E85766B2510@phx.gbl>
-Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Miroslaw Dach <miroslaw.dach@psi.ch>, linuxppc-embedded@ozlabs.org,
-	Duane Snider <dsnider@rgbnetworks.com>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704181139.56819.laurent.pinchart@technotrade.biz>
+Cc: Linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,26 +21,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/17/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
->
-> Great work Grant
->
-> Really thanks for your efforts
->
-> specially helping beginners and making the development process much more easier for them
->
-> by the way, montavista's git tree is too old, ( more 10 months ) why they do not update their git tree? ( may be andrei can answer this? )
+Hi Bill,
 
-You could also ask me why it took 2 years to clean up the mess I made
-out of virtex support in mainline.  :-) This stuff takes time to sort
-out, and when there is more work than time to do it in, things are
-bound to get dropped on the floor.
+> > I wrote a kernel driver for a custom bus (using arch/ppc). The hardware
+> > has a cascaded interrupt controller wired to one of the CPU interrupts.
+> > The interrupt controller IRQ handler calls __do_IRQ() to dispatch
+> > interrupts.
+> >
+> > Everything worked fine until I tried to compile the code as a module
+> > because __do_IRQ() is not exported. Is there a way to compile an
+> > interrupt controller as a module, or must it be included in the kernel ?
+>
+> Could you just export __do_IRQ()?
 
-Cheers,
-g.
+That's obviously the easiest solution. As __do_IRQ() is not exported by 
+default, and as the function name starts with two underscores, I got the 
+feeling it was somehow meant to be private.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+I also had a look at the genirq code. It misses a few exports as well 
+(irq_set_chip_and_handler for instance).
+
+Laurent Pinchart
