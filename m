@@ -1,32 +1,17 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 36CA7DDE1C
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 11:13:59 +1000 (EST)
-Date: Tue, 17 Apr 2007 20:13:50 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
-	properties
-Message-Id: <20070417201350.12727df7.kim.phillips@freescale.com>
-In-Reply-To: <f170b2c44ae8a76dd4d35ceb94a624b0@kernel.crashing.org>
-References: <20070413012542.343eb848.kim.phillips@freescale.com>
-	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
-	<20070416102533.0f87396f.kim.phillips@freescale.com>
-	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
-	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
-	<20070416115729.292c10b1.kim.phillips@freescale.com>
-	<53810df560c7af272cd1c71c9d5fa1ab@kernel.crashing.org>
-	<20070416193110.77b63e4b.kim.phillips@freescale.com>
-	<788e650fbb3f95eaf1bfb6955f9cef17@kernel.crashing.org>
-	<20070417152712.51c7348f.kim.phillips@freescale.com>
-	<f170b2c44ae8a76dd4d35ceb94a624b0@kernel.crashing.org>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] Initialise spinlock in the DEBUG_PAGEALLOC code
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Milton Miller <miltonm@bga.com>
+In-Reply-To: <076a5a3adc4b5b29a3fd2ade48d52184@bga.com>
+References: <076a5a3adc4b5b29a3fd2ade48d52184@bga.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-1pk4eDVlpOYMY33CagQb"
+Date: Wed, 18 Apr 2007 11:38:48 +1000
+Message-Id: <1176860328.4987.15.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,72 +21,53 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 18 Apr 2007 01:18:24 +0200
-Segher Boessenkool <segher@kernel.crashing.org> wrote:
 
-> >> "compatible" means "what kind of device is this", for the
-> >> purposes of a client program (i.e., Linux) matching a
-> >> driver to it (i.e., it should say what kind of PHY it
-> >> is, and phylib should use that info -- in most cases,
-> >> it won't need more than the least specific entry in
-> >> "compatible", i.e. "rgmii" or whatever.
-> >>
-> >
-> > sorry, I disagree; for me, a compatible entry in the PHY node would 
-> > look
-> > something like "marvell"
-> 
-> which would be completely wrong
-> 
-that depends on what degree the manufacturer's PHYs are compatible.
+--=-1pk4eDVlpOYMY33CagQb
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-> > or "m88e11x1".
-> 
-> It should be something like "m88e11x1\0m88e1xxx\0rgmii" instead.
+On Tue, 2007-04-17 at 02:57 -0500, Milton Miller wrote:
+> On Tue Apr 17 11:43:12 EST 2007, Michael Ellerman wrote:
+> > -static spinlock_t linear_map_hash_lock;
+> > +static spinlock_t linear_map_hash_lock =3D SPIN_LOCK_UNLOCKED;
+>=20
+> I think the people in this thread
+>=20
+> [KJ][PATCH]SPIN_LOCK_UNLOCKED cleanup in arch/powerpc
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034210.html
+>=20
+> SPIN_LOCK_UNLOCKED cleanup,use DEFINE_SPINLOCK or
+> __SPIN_LOCK_UNLOCKED where ever appropriate.
+>=20
+> would like you to initialize it differently.  (I think it has
+> to do with the lock dependancy stuff).
 
-m88e11x1 implies rgmii, including all the other interfaces the PHY
-supports (gmii, mii, tbi, etc.).
+And it's documented where .. ?
 
-..but I'm not interested in specifying what interfaces the PHY supports.
+I'll send a new patch.
 
-> A "compatible" property can contain many values, ordered from
-> most exact to least exact.
-> 
-> > "rgmii" might indeed be
-> > something that PHY supports, but it tells the driver nothing about how
-> > to enable it (whereas "m88e11x1" would).  The rgmii designation in
-> > question in this thread is not a property of the PHY, but of the board.
-> 
-> It certainly is a property of the PHY as well.
-> 
-sure.
+cheers
 
-> >> So those UCCs should have a different "compatible" entry.
-> >> It's not rocket science.
-> >
-> > It's referring to the name of the driver,
-> 
-> No, not at all.  No device tree entry name/value has any
-> direct correspondence with Linux device driver names
-> (in principle; things can "accidentally" have the same
-> name, of course).
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
 
-well that may be the case here then.
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
 
-> >> max-speed of connection = min(max-speed of enet, max-speed
-> >> of PHY) -- and both of those are implied by their respective
-> >> "compatible" properties.
-> >>
-> >
-> > Again, max-speed is exclusively for configuring the UCC itself,
-> > regardless of the connection speed.
-> 
-> If that is really true, and the value of that property
-> has nothing to do with the MAC<->PHY data channel, it should
-> have a different (not that generic) name.
-> 
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
 
-can you elaborate on why, including an example of what you'd think would
-be a better one?
+--=-1pk4eDVlpOYMY33CagQb
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
-Kim
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBGJXaodSjSd0sB4dIRAlabAJ9Dk8gYyketUEv8yIEEbna95RKQoQCcDagJ
+D21I9ZN1oP/Ot4oKpWciVEQ=
+=6nrm
+-----END PGP SIGNATURE-----
+
+--=-1pk4eDVlpOYMY33CagQb--
