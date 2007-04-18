@@ -1,10 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 5/10] Add arch/powerpc driver for UIC,
-	PPC4xx interrupt controller
+Subject: [PATCH 6/10] Port 44x MMU definitions to ARCH=powerpc
 In-Reply-To: <20070418063517.GB29312@localhost.localdomain>
-Message-Id: <20070418063626.7994ADDE3C@ozlabs.org>
+Message-Id: <20070418063626.80A69DDEBA@ozlabs.org>
 Date: Wed, 18 Apr 2007 16:36:26 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -15,402 +14,269 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch adds a driver to arch/powerpc/sysdev for the UIC, the
-on-chip interrupt controller from IBM/AMCC 4xx chips.  It uses the new
-irq host mapping infrastructure.
+This patch moves the mmu.h definitions which are still relevant for
+ARCH=powerpc from include/asm-ppc/mmu.h to their own file,
+include/asm-powerpc/mmu_44x.h.  The new file is included from
+asm-powerpc/mmu.h, and a couple of other tweaks to correct mmu
+definitions for 44x are made.
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/sysdev/Makefile |    1 
- arch/powerpc/sysdev/uic.c    |  342 +++++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/uic.h    |   23 ++
- 3 files changed, 366 insertions(+)
+ arch/powerpc/kernel/head_44x.S    |    4 -
+ arch/powerpc/mm/44x_mmu.c         |   81 +++++++-------------------------------
+ arch/powerpc/mm/mmu_decl.h        |    2 
+ include/asm-powerpc/mmu-44x/mmu.h |   75 +++++++++++++++++++++++++++++++++++
+ include/asm-powerpc/mmu.h         |   11 ++++-
+ 5 files changed, 105 insertions(+), 68 deletions(-)
 
-Index: working-2.6/arch/powerpc/sysdev/uic.c
+Index: working-2.6/include/asm-powerpc/mmu.h
 ===================================================================
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/sysdev/uic.c	2007-04-18 14:11:16.000000000 +1000
-@@ -0,0 +1,342 @@
-+/*
-+ * arch/powerpc/sysdev/uic.c
-+ *
-+ * IBM PowerPC 4xx Universal Interrupt Controller
-+ *
-+ * Copyright 2007 David Gibson <dwg@au1.ibm.com>, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
-+ */
-+#include <linux/kernel.h>
-+#include <linux/init.h>
-+#include <linux/errno.h>
-+#include <linux/reboot.h>
-+#include <linux/slab.h>
-+#include <linux/stddef.h>
-+#include <linux/sched.h>
-+#include <linux/signal.h>
-+#include <linux/sysdev.h>
-+#include <linux/device.h>
-+#include <linux/bootmem.h>
-+#include <linux/spinlock.h>
-+#include <linux/irq.h>
-+#include <linux/interrupt.h>
-+#include <asm/irq.h>
-+#include <asm/io.h>
-+#include <asm/prom.h>
-+#include <asm/dcr.h>
-+
-+#define NR_UIC_INTS	32
-+
-+#define UIC_SR		0x0
-+#define UIC_ER		0x2
-+#define UIC_CR		0x3
-+#define UIC_PR		0x4
-+#define UIC_TR		0x5
-+#define UIC_MSR		0x6
-+#define UIC_VR		0x7
-+#define UIC_VCR		0x8
-+
-+#define uic_irq_to_hw(virq)	(irq_map[virq].hwirq)
-+
-+struct uic *primary_uic;
-+
-+struct uic {
-+	int index;
-+	int dcrbase;
-+
-+	spinlock_t lock;
-+
-+	/* The remapper for this UIC */
-+	struct irq_host	*irqhost;
-+
-+	/* For secondary UICs, the cascade interrupt's irqaction */
-+	struct irqaction cascade;
-+
-+	/* The device node of the interrupt controller */
-+	struct device_node *of_node;
-+};
-+
-+static void uic_unmask_irq(unsigned int virq)
-+{
-+	struct uic *uic = get_irq_chip_data(virq);
-+	unsigned int src = uic_irq_to_hw(virq);
-+	unsigned long flags;
-+	u32 er;
-+
-+	spin_lock_irqsave(&uic->lock, flags);
-+	er = mfdcr(uic->dcrbase + UIC_ER);
-+	er |= 1 << (31 - src);
-+	mtdcr(uic->dcrbase + UIC_ER, er);
-+	spin_unlock_irqrestore(&uic->lock, flags);
-+}
-+
-+static void uic_mask_irq(unsigned int virq)
-+{
-+	struct uic *uic = get_irq_chip_data(virq);
-+	unsigned int src = uic_irq_to_hw(virq);
-+	unsigned long flags;
-+	u32 er;
-+
-+	spin_lock_irqsave(&uic->lock, flags);
-+	er = mfdcr(uic->dcrbase + UIC_ER);
-+	er &= ~(1 << (31 - src));
-+	mtdcr(uic->dcrbase + UIC_ER, er);
-+	spin_unlock_irqrestore(&uic->lock, flags);
-+}
-+
-+static void uic_ack_irq(unsigned int virq)
-+{
-+	struct uic *uic = get_irq_chip_data(virq);
-+	unsigned int src = uic_irq_to_hw(virq);
-+	unsigned long flags;
-+
-+	spin_lock_irqsave(&uic->lock, flags);
-+	mtdcr(uic->dcrbase + UIC_SR, 1 << (31-src));
-+	spin_unlock_irqrestore(&uic->lock, flags);
-+}
-+
-+static int uic_set_irq_type(unsigned int virq, unsigned int flow_type)
-+{
-+	struct uic *uic = get_irq_chip_data(virq);
-+	unsigned int src = uic_irq_to_hw(virq);
-+	struct irq_desc *desc = get_irq_desc(virq);
-+	unsigned long flags;
-+	int trigger, polarity;
-+	u32 tr, pr, mask;
-+
-+	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
-+	case IRQ_TYPE_NONE:
-+		uic_mask_irq(virq);
-+		return 0;
-+
-+	case IRQ_TYPE_EDGE_RISING:
-+		trigger = 1; polarity = 1;
-+		break;
-+	case IRQ_TYPE_EDGE_FALLING:
-+		trigger = 1; polarity = 0;
-+		break;
-+	case IRQ_TYPE_LEVEL_HIGH:
-+		trigger = 0; polarity = 1;
-+		break;
-+	case IRQ_TYPE_LEVEL_LOW:
-+		trigger = 0; polarity = 0;
-+		break;
-+	default:
-+		return -EINVAL;
-+	}
-+
-+	mask = ~(1 << (31 - src));
-+
-+	spin_lock_irqsave(&uic->lock, flags);
-+	tr = mfdcr(uic->dcrbase + UIC_TR);
-+	pr = mfdcr(uic->dcrbase + UIC_PR);
-+	tr = (tr & mask) | (trigger << (31-src));
-+	pr = (pr & mask) | (polarity << (31-src));
-+
-+	mtdcr(uic->dcrbase + UIC_PR, pr);
-+	mtdcr(uic->dcrbase + UIC_TR, tr);
-+
-+	desc->status &= ~(IRQ_TYPE_SENSE_MASK | IRQ_LEVEL);
-+	desc->status |= flow_type & IRQ_TYPE_SENSE_MASK;
-+	if (trigger)
-+		desc->status |= IRQ_LEVEL;
-+
-+	spin_unlock_irqrestore(&uic->lock, flags);
-+
-+	return 0;
-+}
-+
-+static struct irq_chip uic_irq_chip = {
-+	.typename	= " UIC  ",
-+	.unmask		= uic_unmask_irq,
-+	.mask		= uic_mask_irq,
-+/* 	.mask_ack	= uic_mask_irq_and_ack, */
-+	.ack		= uic_ack_irq,
-+	.set_type	= uic_set_irq_type,
-+};
-+
-+static int uic_host_match(struct irq_host *h, struct device_node *node)
-+{
-+	struct uic *uic = h->host_data;
-+	return uic->of_node == node;
-+}
-+
-+static int uic_host_map(struct irq_host *h, unsigned int virq,
-+			irq_hw_number_t hw)
-+{
-+	struct uic *uic = h->host_data;
-+
-+	set_irq_chip_data(virq, uic);
-+	/* Despite the name, handle_level_irq() works for both level
-+	 * and edge irqs on UIC.  FIXME: check this is correct */
-+	set_irq_chip_and_handler(virq, &uic_irq_chip, handle_level_irq);
-+
-+	/* Set default irq type */
-+	set_irq_type(virq, IRQ_TYPE_NONE);
-+
-+	return 0;
-+}
-+
-+static int uic_host_xlate(struct irq_host *h, struct device_node *ct,
-+			  u32 *intspec, unsigned int intsize,
-+			  irq_hw_number_t *out_hwirq, unsigned int *out_type)
-+
-+{
-+	/* UIC intspecs must have 2 cells */
-+	BUG_ON(intsize != 2);
-+	*out_hwirq = intspec[0];
-+	*out_type = intspec[1];
-+	return 0;
-+}
-+
-+static struct irq_host_ops uic_host_ops = {
-+	.match	= uic_host_match,
-+	.map	= uic_host_map,
-+	.xlate	= uic_host_xlate,
-+};
-+
-+irqreturn_t uic_cascade(int virq, void *data)
-+{
-+	struct uic *uic = data;
-+	u32 msr;
-+	int src;
-+	int subvirq;
-+
-+	msr = mfdcr(uic->dcrbase + UIC_MSR);
-+	src = 32 - ffs(msr);
-+
-+	subvirq = irq_linear_revmap(uic->irqhost, src);
-+	generic_handle_irq(subvirq);
-+
-+	return IRQ_HANDLED;
-+}
-+
-+static struct uic * __init uic_init_one(struct device_node *node)
-+{
-+	struct uic *uic;
-+	const u32 *indexp, *dcrreg;
-+	int len;
-+
-+	BUG_ON(! device_is_compatible(node, "ibm,uic"));
-+
-+	uic = alloc_bootmem(sizeof(*uic));
-+	if (! uic)
-+		return NULL; /* FIXME: panic? */
-+
-+	memset(uic, 0, sizeof(*uic));
-+	spin_lock_init(&uic->lock);
-+	uic->of_node = of_node_get(node);
-+	indexp = get_property(node, "cell-index", &len);
-+	if (!indexp || (len != sizeof(u32))) {
-+		printk(KERN_ERR "uic: Device node %s has missing or invalid "
-+		       "cell-index property\n", node->full_name);
-+		return NULL;
-+	}
-+	uic->index = *indexp;
-+
-+	dcrreg = get_property(node, "dcr-reg", &len);
-+	if (!dcrreg || (len != 2*sizeof(u32))) {
-+		printk(KERN_ERR "uic: Device node %s has missing or invalid "
-+		       "dcr-reg property\n", node->full_name);
-+		return NULL;
-+	}
-+	uic->dcrbase = *dcrreg;
-+
-+	uic->irqhost = irq_alloc_host(IRQ_HOST_MAP_LINEAR, NR_UIC_INTS,
-+				      &uic_host_ops, -1);
-+	if (! uic->irqhost) {
-+		of_node_put(node);
-+		return NULL; /* FIXME: panic? */
-+	}
-+
-+	uic->irqhost->host_data = uic;
-+
-+	/* Start with all interrupts disabled, level and non-critical */
-+	mtdcr(uic->dcrbase + UIC_ER, 0);
-+	mtdcr(uic->dcrbase + UIC_CR, 0);
-+	mtdcr(uic->dcrbase + UIC_TR, 0);
-+	/* Clear any pending interrupts, in case the firmware left some */
-+	mtdcr(uic->dcrbase + UIC_SR, 0xffffffff);
-+
-+	printk ("UIC%d (%d IRQ sources) at DCR 0x%x\n", uic->index,
-+		NR_UIC_INTS, uic->dcrbase);
-+
-+	return uic;
-+}
-+
-+void __init uic_init_tree(void)
-+{
-+	struct device_node *np;
-+	struct uic *uic;
-+	const u32 *interrupts;
-+
-+	/* First locate and initialize the top-level UIC */
-+
-+	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
-+	while (np) {
-+		interrupts = get_property(np, "interrupts", NULL);
-+		if (! interrupts)
-+			break;
-+
-+		np = of_find_compatible_node(np, NULL, "ibm,uic");
-+	}
-+
-+	BUG_ON(!np); /* uic_init_tree() assumes there's a UIC as the
-+		      * top-level interrupt controller */
-+	primary_uic = uic_init_one(np);
-+	if (! primary_uic)
-+		panic("Unable to initialize primary UIC %s\n", np->full_name);
-+
-+	irq_set_default_host(primary_uic->irqhost);
-+	of_node_put(np);
-+
-+	/* The scan again for cascaded UICs */
-+	np = of_find_compatible_node(NULL, NULL, "ibm,uic");
-+	while (np) {
-+		interrupts = get_property(np, "interrupts", NULL);
-+		if (interrupts) {
-+			/* Secondary UIC */
-+			int cascade_virq;
-+			int ret;
-+
-+			uic = uic_init_one(np);
-+			if (! uic)
-+				panic("Unable to initialize a secondary UIC %s\n",
-+				      np->full_name);
-+
-+			cascade_virq = irq_of_parse_and_map(np, 0);
-+
-+			uic->cascade.handler = uic_cascade;
-+			uic->cascade.name = "UIC cascade";
-+			uic->cascade.dev_id = uic;
-+
-+			ret = setup_irq(cascade_virq, &uic->cascade);
-+			if (ret)
-+				printk(KERN_ERR "Failed to setup_irq(%d) for "
-+				       "UIC%d cascade\n", cascade_virq,
-+				       uic->index);
-+
-+			/* FIXME: setup critical cascade?? */
-+		}
-+
-+		np = of_find_compatible_node(np, NULL, "ibm,uic");
-+	}
-+}
-+
-+/* Return an interrupt vector or NO_IRQ if no interrupt is pending. */
-+unsigned int uic_get_irq(void)
-+{
-+	u32 msr;
-+	int src;
-+
-+	BUG_ON(! primary_uic);
-+
-+	msr = mfdcr(primary_uic->dcrbase + UIC_MSR);
-+	src = 32 - ffs(msr);
-+
-+	return irq_linear_revmap(primary_uic->irqhost, src);
-+}
-Index: working-2.6/arch/powerpc/sysdev/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/sysdev/Makefile	2007-04-16 10:04:20.000000000 +1000
-+++ working-2.6/arch/powerpc/sysdev/Makefile	2007-04-18 12:06:33.000000000 +1000
-@@ -21,6 +21,7 @@ obj-$(CONFIG_PM)		+= timer.o
- ifeq ($(CONFIG_PPC_MERGE),y)
- obj-$(CONFIG_PPC_I8259)		+= i8259.o
- obj-$(CONFIG_PPC_83xx)		+= ipic.o
-+obj-$(CONFIG_4xx)		+= uic.o
- endif
+--- working-2.6.orig/include/asm-powerpc/mmu.h	2007-02-09 09:57:55.000000000 +1100
++++ working-2.6/include/asm-powerpc/mmu.h	2007-04-16 10:32:48.000000000 +1000
+@@ -2,8 +2,15 @@
+ #define _ASM_POWERPC_MMU_H_
+ #ifdef __KERNEL__
  
- # Temporary hack until we have migrated to asm-powerpc
-Index: working-2.6/include/asm-powerpc/uic.h
+-#ifndef CONFIG_PPC64
+-#include <asm-ppc/mmu.h>
++#if defined(CONFIG_44x)
++/* 44x-style software loaded TLB */
++#  include <asm/mmu-44x/mmu.h>
++#elif !defined(CONFIG_PPC64)
++/* Other 32-bit.
++ *
++ * FIXME: split up the other 32-bit MMU types, and revise for
++ * arch/powerpc */
++#  include <asm-ppc/mmu.h>
+ #else
+ 
+ /*
+Index: working-2.6/arch/powerpc/mm/44x_mmu.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/44x_mmu.c	2006-12-08 10:42:48.000000000 +1100
++++ working-2.6/arch/powerpc/mm/44x_mmu.c	2007-04-16 10:32:48.000000000 +1000
+@@ -24,73 +24,35 @@
+  *
+  */
+ 
+-#include <linux/signal.h>
+-#include <linux/sched.h>
+-#include <linux/kernel.h>
+-#include <linux/errno.h>
+-#include <linux/string.h>
+-#include <linux/types.h>
+-#include <linux/ptrace.h>
+-#include <linux/mman.h>
+-#include <linux/mm.h>
+-#include <linux/swap.h>
+-#include <linux/stddef.h>
+-#include <linux/vmalloc.h>
+-#include <linux/init.h>
+-#include <linux/delay.h>
+-#include <linux/highmem.h>
+-
+-#include <asm/pgalloc.h>
+-#include <asm/prom.h>
+-#include <asm/io.h>
+-#include <asm/mmu_context.h>
+-#include <asm/pgtable.h>
+ #include <asm/mmu.h>
+-#include <asm/uaccess.h>
+-#include <asm/smp.h>
+-#include <asm/bootx.h>
+-#include <asm/machdep.h>
+-#include <asm/setup.h>
+ 
+ #include "mmu_decl.h"
+ 
+-extern char etext[], _stext[];
+-
+ /* Used by the 44x TLB replacement exception handler.
+  * Just needed it declared someplace.
+  */
+-unsigned int tlb_44x_index = 0;
+-unsigned int tlb_44x_hwater = 62;
++unsigned int tlb_44x_index; /* = 0 */
++unsigned int tlb_44x_hwater = PPC44x_TLB_SIZE - 1 - PPC44x_EARLY_TLBS;
+ 
+ /*
+  * "Pins" a 256MB TLB entry in AS0 for kernel lowmem
+  */
+-static void __init
+-ppc44x_pin_tlb(int slot, unsigned int virt, unsigned int phys)
++static void __init ppc44x_pin_tlb(unsigned int virt, unsigned int phys)
+ {
+-	unsigned long attrib = 0;
+-
+-	__asm__ __volatile__("\
+-	clrrwi	%2,%2,10\n\
+-	ori	%2,%2,%4\n\
+-	clrrwi	%1,%1,10\n\
+-	li	%0,0\n\
+-	ori	%0,%0,%5\n\
+-	tlbwe	%2,%3,%6\n\
+-	tlbwe	%1,%3,%7\n\
+-	tlbwe	%0,%3,%8"
++	__asm__ __volatile__(
++		"tlbwe	%2,%3,%4\n"
++		"tlbwe	%1,%3,%5\n"
++		"tlbwe	%0,%3,%6\n"
+ 	:
+-	: "r" (attrib), "r" (phys), "r" (virt), "r" (slot),
+-	  "i" (PPC44x_TLB_VALID | PPC44x_TLB_256M),
+-	  "i" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
++	: "r" (PPC44x_TLB_SW | PPC44x_TLB_SR | PPC44x_TLB_SX | PPC44x_TLB_G),
++	  "r" (phys),
++	  "r" (virt | PPC44x_TLB_VALID | PPC44x_TLB_256M),
++	  "r" (tlb_44x_hwater--), /* slot for this TLB entry */
+ 	  "i" (PPC44x_TLB_PAGEID),
+ 	  "i" (PPC44x_TLB_XLAT),
+ 	  "i" (PPC44x_TLB_ATTRIB));
+ }
+ 
+-/*
+- * MMU_init_hw does the chip-specific initialization of the MMU hardware.
+- */
+ void __init MMU_init_hw(void)
+ {
+ 	flush_instruction_cache();
+@@ -98,22 +60,13 @@ void __init MMU_init_hw(void)
+ 
+ unsigned long __init mmu_mapin_ram(void)
+ {
+-	unsigned int pinned_tlbs = 1;
+-	int i;
++	unsigned long addr;
+ 
+-	/* Determine number of entries necessary to cover lowmem */
+-	pinned_tlbs = (unsigned int)
+-		(_ALIGN(total_lowmem, PPC_PIN_SIZE) >> PPC44x_PIN_SHIFT);
+-
+-	/* Write upper watermark to save location */
+-	tlb_44x_hwater = PPC44x_LOW_SLOT - pinned_tlbs;
+-
+-	/* If necessary, set additional pinned TLBs */
+-	if (pinned_tlbs > 1)
+-		for (i = (PPC44x_LOW_SLOT-(pinned_tlbs-1)); i < PPC44x_LOW_SLOT; i++) {
+-			unsigned int phys_addr = (PPC44x_LOW_SLOT-i) * PPC_PIN_SIZE;
+-			ppc44x_pin_tlb(i, phys_addr+PAGE_OFFSET, phys_addr);
+-		}
++	/* Pin in enough TLBs to cover any lowmem not covered by the
++	 * initial 256M mapping established in head_44x.S */
++	for (addr = PPC_PIN_SIZE; addr < total_lowmem;
++	     addr += PPC_PIN_SIZE)
++		ppc44x_pin_tlb(addr + PAGE_OFFSET, addr);
+ 
+ 	return total_lowmem;
+ }
+Index: working-2.6/arch/powerpc/mm/mmu_decl.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/mmu_decl.h	2007-04-16 10:04:20.000000000 +1000
++++ working-2.6/arch/powerpc/mm/mmu_decl.h	2007-04-16 10:32:48.000000000 +1000
+@@ -39,8 +39,10 @@ extern int __map_without_bats;
+ extern unsigned long ioremap_base;
+ extern unsigned int rtas_data, rtas_size;
+ 
++#ifdef CONFIG_CLASSIC32
+ extern PTE *Hash, *Hash_end;
+ extern unsigned long Hash_size, Hash_mask;
++#endif /* CONFIG_CLASSIC32 */
+ 
+ extern unsigned int num_tlbcam_entries;
+ #endif
+Index: working-2.6/arch/powerpc/kernel/head_44x.S
+===================================================================
+--- working-2.6.orig/arch/powerpc/kernel/head_44x.S	2007-02-14 10:58:22.000000000 +1100
++++ working-2.6/arch/powerpc/kernel/head_44x.S	2007-04-16 10:32:48.000000000 +1000
+@@ -120,8 +120,8 @@ skpinv:	addi	r4,r4,1				/* Increment */
+  * Configure and load pinned entry into TLB slot 63.
+  */
+ 
+-	lis	r3,KERNELBASE@h		/* Load the kernel virtual address */
+-	ori	r3,r3,KERNELBASE@l
++	lis	r3,PAGE_OFFSET@h
++	ori	r3,r3,PAGE_OFFSET@l
+ 
+ 	/* Kernel is at the base of RAM */
+ 	li r4, 0			/* Load the kernel physical address */
+Index: working-2.6/include/asm-powerpc/mmu-44x/mmu.h
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/include/asm-powerpc/uic.h	2007-04-18 12:06:33.000000000 +1000
-@@ -0,0 +1,23 @@
++++ working-2.6/include/asm-powerpc/mmu-44x/mmu.h	2007-04-16 10:32:48.000000000 +1000
+@@ -0,0 +1,75 @@
++#ifndef _ASM_POWERPC_MMU_44X_MMU_H_
++#define _ASM_POWERPC_MMU_44X_MMU_H_
++
 +/*
-+ * include/asm-powerpc/uic.h
-+ *
-+ * IBM PPC4xx UIC external definitions and structure.
-+ *
-+ * Maintainer: David Gibson <dwg@au1.ibm.com>
-+ * Copyright 2007 IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute  it and/or modify it
-+ * under  the terms of  the GNU General  Public License as published by the
-+ * Free Software Foundation;  either version 2 of the  License, or (at your
-+ * option) any later version.
++ * PPC440 support
 + */
-+#ifndef _ASM_POWERPC_UIC_H
-+#define _ASM_POWERPC_UIC_H
++#define PPC44x_MMUCR_TID	0x000000ff
++#define PPC44x_MMUCR_STS	0x00010000
 +
-+#ifdef __KERNEL__
++#define	PPC44x_TLB_PAGEID	0
++#define	PPC44x_TLB_XLAT		1
++#define	PPC44x_TLB_ATTRIB	2
 +
-+extern void __init uic_init_tree(void);
-+extern unsigned int uic_get_irq(void);
++/* Page identification fields */
++#define PPC44x_TLB_EPN_MASK	0xfffffc00      /* Effective Page Number */
++#define	PPC44x_TLB_VALID	0x00000200      /* Valid flag */
++#define PPC44x_TLB_TS		0x00000100	/* Translation address space */
++#define PPC44x_TLB_1K		0x00000000	/* Page sizes */
++#define PPC44x_TLB_4K		0x00000010
++#define PPC44x_TLB_16K		0x00000020
++#define PPC44x_TLB_64K		0x00000030
++#define PPC44x_TLB_256K		0x00000040
++#define PPC44x_TLB_1M		0x00000050
++#define PPC44x_TLB_16M		0x00000070
++#define	PPC44x_TLB_256M		0x00000090
 +
-+#endif /* __KERNEL__ */
-+#endif /* _ASM_POWERPC_UIC_H */
++/* Translation fields */
++#define PPC44x_TLB_RPN_MASK	0xfffffc00      /* Real Page Number */
++#define	PPC44x_TLB_ERPN_MASK	0x0000000f
++
++/* Storage attribute and access control fields */
++#define PPC44x_TLB_ATTR_MASK	0x0000ff80
++#define PPC44x_TLB_U0		0x00008000      /* User 0 */
++#define PPC44x_TLB_U1		0x00004000      /* User 1 */
++#define PPC44x_TLB_U2		0x00002000      /* User 2 */
++#define PPC44x_TLB_U3		0x00001000      /* User 3 */
++#define PPC44x_TLB_W		0x00000800      /* Caching is write-through */
++#define PPC44x_TLB_I		0x00000400      /* Caching is inhibited */
++#define PPC44x_TLB_M		0x00000200      /* Memory is coherent */
++#define PPC44x_TLB_G		0x00000100      /* Memory is guarded */
++#define PPC44x_TLB_E		0x00000080      /* Memory is guarded */
++
++#define PPC44x_TLB_PERM_MASK	0x0000003f
++#define PPC44x_TLB_UX		0x00000020      /* User execution */
++#define PPC44x_TLB_UW		0x00000010      /* User write */
++#define PPC44x_TLB_UR		0x00000008      /* User read */
++#define PPC44x_TLB_SX		0x00000004      /* Super execution */
++#define PPC44x_TLB_SW		0x00000002      /* Super write */
++#define PPC44x_TLB_SR		0x00000001      /* Super read */
++
++/* Number of TLB entries */
++#define PPC44x_TLB_SIZE		64
++
++#ifndef __ASSEMBLY__
++
++typedef unsigned long long phys_addr_t;
++
++extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
++#define PHYS_FMT	"%16Lx"
++
++typedef struct {
++	unsigned long id;
++	unsigned long vdso_base;
++} mm_context_t;
++
++#endif /* !__ASSEMBLY__ */
++
++/* TLB entry offset/size used for pinning kernel lowmem */
++#define PPC44x_PIN_SHIFT	28
++#define PPC_PIN_SIZE		(1 << PPC44x_PIN_SHIFT)
++
++#define PPC44x_EARLY_TLBS	1
++
++#endif /* _ASM_POWERPC_MMU_44X_MMU_H_ */
++
