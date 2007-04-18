@@ -1,22 +1,18 @@
-Return-Path: <Geert.Uytterhoeven@eu.sony.com>
-Received: from mgw3.sony.co.jp (MGW3.Sony.CO.JP [137.153.0.15])
-	by ozlabs.org (Postfix) with ESMTP id B8CFBDDDF5
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 21:48:20 +1000 (EST)
-Received: from mail7.sony.co.jp (localhost [127.0.0.1])
-	by mail7.sony.co.jp (R8/Sony) with ESMTP id l3IBmIW5005239
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 20:48:18 +0900 (JST)
-Received: from jptkyxim02.jp.sony.com (jptkyxim02.jp.sony.com [43.15.17.88])
-	by mail7.sony.co.jp (R8/Sony) with ESMTP id l3IBmIVR005227
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 20:48:18 +0900 (JST)
+Return-Path: <gerald.vanbaren@smiths-aerospace.com>
+Received: from AGRXSUSMAILB.smiths.aero (host241-chi.smiths-group.com
+	[65.216.75.241]) by ozlabs.org (Postfix) with ESMTP id 20541DDDF5
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 22:19:52 +1000 (EST)
+Message-ID: <46260CE3.7030503@smiths-aerospace.com>
+Date: Wed, 18 Apr 2007 08:19:47 -0400
+From: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Subject: RE: [PATCH 2/15] Automatically lmb_reserve() initrd
-Date: Wed, 18 Apr 2007 12:43:04 +0100
-Message-ID: <CA6404BA52C51146981195CF9A147C1C01A9A010@GBISE0BASMSX01.eu.sony.com>
-References: <20070305032450.44F57DDF1B@ozlabs.org>
-From: "Uytterhoeven, Geert" <Geert.Uytterhoeven@eu.sony.com>
-To: "David Gibson" <david@gibson.dropbear.id.au>, <linuxppc-dev@ozlabs.org>
+To: Jerry Van Baren <gvb.uboot@gmail.com>,  linuxppc-dev@ozlabs.org,
+	jdl@jdl.com,  david@gibson.dropbear.id.au
+Subject: Re: [PATCH: dtc] Improve -S handling
+References: <20070418020535.GA16224@dellserver.lan>
+	<20070418030528.GA27758@localhost.localdomain>
+In-Reply-To: <20070418030528.GA27758@localhost.localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,78 +22,126 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On March 5, 2007, David Gibson wrote:
-> At present, when an initrd is passed to the kernel used flat device
-> tree properties, the memory the initrd occupies must also be reserved
-> in the flat tree's reserve map, or the kernel may overwrite it.  That
-> makes life more complicated than it could be for the bootwrapper.
->=20
-> This patch makes the kernel automatically reserve the initrd's space.
-> That in turn requires parsing the initrd parameters earlier than they
-> are currently, in early_init_dt_scan_chosen() instead of
-> check_for_initrd().
->=20
-> Signed-off-by: David Gibson <dwg@au1.ibm.com>
-> ---
->=20
->  arch/powerpc/kernel/prom.c         |   23 +++++++++++++++++++++++
->  arch/powerpc/kernel/setup-common.c |   22 ++--------------------
->  2 files changed, 25 insertions(+), 20 deletions(-)
->=20
-> Index: working-2.6/arch/powerpc/kernel/prom.c
-> =
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> --- working-2.6.orig/arch/powerpc/kernel/prom.c=09
-> 2007-02-09 15:12:00.000000000 +1100
-> +++ working-2.6/arch/powerpc/kernel/prom.c	2007-02-09=20
-> 15:14:27.000000000 +1100
-> @@ -719,6 +719,7 @@ static int __init early_init_dt_scan_cho
->  					    const char *uname,=20
-> int depth, void *data)
->  {
->  	unsigned long *lprop;
-> +	u32 *prop;
+David Gibson wrote:
+> On Tue, Apr 17, 2007 at 10:05:35PM -0400, Jerry Van Baren wrote:
+>> If the user requests extra space, pad out the blob (previously the unused
+>>   data was undefined).
+>>
+>> Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
+>> ---
+>>
+>> Hi Jon, David, Milton,
+>>
+>> This improves the -S option to pad out the blob with zeros when the user
+>> asks for extra space.
+> 
+> Comment below
+>> diff --git a/flattree.c b/flattree.c
+>> index 151d16e..d2ee0dc 100644
+>> --- a/flattree.c
+>> +++ b/flattree.c
+>> @@ -310,6 +310,7 @@ static struct data flatten_reserve_list(struct reserve_info *reservelist,
+>>  	
+>>  	return d;
+>>  }
+>> +
+>>  static void make_bph(struct boot_param_header *bph,
+>>  		     struct version_info *vi,
+>>  		     int reservesize, int dtsize, int strsize,
+>> @@ -358,12 +359,15 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
+>>  {
+>>  	struct version_info *vi = NULL;
+>>  	int i;
+>> +	int size;
+>>  	struct data dtbuf = empty_data;
+>>  	struct data strbuf = empty_data;
+>>  	struct data reservebuf;
+>>  	struct boot_param_header bph;
+>>  	struct reserve_entry termre = {.address = 0, .size = 0};
+>>  
+>> +	size = 0;
+>> +
+>>  	for (i = 0; i < ARRAY_SIZE(version_table); i++) {
+>>  		if (version_table[i].version == version)
+>>  			vi = &version_table[i];
+>> @@ -384,10 +388,13 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
+>>  		 boot_cpuid_phys);
+>>  
+>>  	fwrite(&bph, vi->hdr_size, 1, f);
+>> +	size += vi->hdr_size;
+>>  
+>>  	/* Align the reserve map to an 8 byte boundary */
+>> -	for (i = vi->hdr_size; i < be32_to_cpu(bph.off_mem_rsvmap); i++)
+>> +	for (i = vi->hdr_size; i < be32_to_cpu(bph.off_mem_rsvmap); i++) {
+>>  		fputc(0, f);
+>> +		size += 1;
+>> +	}
+>>  
+>>  	/*
+>>  	 * Reserve map entries.
+>> @@ -396,9 +403,27 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
+>>  	 */
+>>  	fwrite(reservebuf.val, reservebuf.len, 1, f);
+>>  	fwrite(&termre, sizeof(termre), 1, f);
+>> +	size += reservebuf.len + sizeof(termre);
+>>  
+>>  	fwrite(dtbuf.val, dtbuf.len, 1, f);
+>>  	fwrite(strbuf.val, strbuf.len, 1, f);
+>> +	size += dtbuf.len + strbuf.len;
+>> +
+>> +	/*
+>> +	 * If the user asked for more space than is used, pad it out.
+>> +	 */
+>> +	if (minsize > 0) {
+>> +		int padlen = minsize - size;
+>> +
+>> +		if (padlen > 0) {
+>> +			char *zeroes = calloc(padlen, 1);
+>> +
+>> +			if (zeroes != NULL) {
+>> +				fwrite(zeroes, padlen, 1, f);
+>> +				free(zeroes);
+>> +			}
+>> +		}
+>> +	}
+> 
+> Hrm, rather than all this explicit calloc() mangling, I'd prefer we
+> use our existing struct data stuff.  Use data_append_zeroes() on
+> empty_data to generate your buffer of padding.
+> 
+>>  	if (ferror(f))
+>>  		die("Error writing device tree blob: %s\n", strerror(errno));
+>> @@ -504,6 +529,14 @@ void dt_to_asm(FILE *f, struct boot_info *bi, int version, int boot_cpuid_phys)
+>>  
+>>  	emit_label(f, symprefix, "blob_end");
+>>  
+>> +	/*
+>> +	 * If the user asked for more space than is used, pad it out.
+>> +	 */
+>> +	if (minsize > 0) {
+>> +		fprintf(f, "\t.space\t%d - (%s_blob_end - %s_blob_start), 0\n", 
+>> +			minsize, symprefix, symprefix);
+>> +	}
+>> +
+>>  	data_free(strbuf);
+>>  }
 
-This causes a compiler warning if CONFIG_BLK_DEV_INITRD is not set.
+Hi David,
 
->  	unsigned long l;
->  	char *p;
-> =20
-> @@ -760,6 +761,22 @@ static int __init early_init_dt_scan_cho
->                 crashk_res.end =3D crashk_res.start + *lprop - 1;
->  #endif
-> =20
-> +#ifdef CONFIG_BLK_DEV_INITRD
-> +	DBG("Looking for initrd properties... ");
-> +	prop =3D of_get_flat_dt_prop(node, "linux,initrd-start", &l);
-> +	if (prop) {
-> +		initrd_start =3D (unsigned long)__va(of_read_ulong(prop, l/4));
-> +		prop =3D of_get_flat_dt_prop(node, "linux,initrd-end", &l);
-> +		if (prop) {
-> +			initrd_end =3D (unsigned long)__va(of_read_ulong(prop, l/4));
-> +			initrd_below_start_ok =3D 1;
-> +		} else {
-> +			initrd_start =3D 0;
-> +		}
-> +	}
-> +	DBG("initrd_start=3D0x%lx  initrd_end=3D0x%lx\n", initrd_start, =
-initrd_end);
-> +#endif /* CONFIG_BLK_DEV_INITRD */
-> +
->  	/* Retreive command line */
->   	p =3D of_get_flat_dt_prop(node, "bootargs", &l);
->  	if (p !=3D NULL && l > 0)
+I started down the data_append_zeroes() path and had to back up and take 
+the branch less traveled ;-).  The problem is that data_append_zeros() 
+appends the data to a "struct data" and I don't want to add zeros 
+internally to any of the existing pieces parts since the extra space is 
+external, not internal to the existing parts.
 
-Gr{oetje,eeting}s,
+I suppose I could create a new "struct data zeroes" and use 
+data_append_zeroes() to create zeros in it, write that out, and then 
+free it, but I fail to see how that is better than simply calloc()ing a 
+bunch of zeros and writing _that_ out.
 
-						Geert
+Best regards,
+gvb
 
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe =
-(NSCE)
-Geert.Uytterhoeven@eu.sony.com ------- The Corporate Village, Da =
-Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, =
-Belgium
+P.S. David: I cannot send email to your dropbear.id.au address from 
+home, one of our ISPs apparently has the other blackballed.  I mention 
+this just so you know I'm not intentionally cutting you out of the To: list.
