@@ -1,17 +1,10 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH] Initialise spinlock in the DEBUG_PAGEALLOC code
+Return-Path: <michael@ozlabs.org>
+To: Paul Mackerras <paulus@samba.org>
 From: Michael Ellerman <michael@ellerman.id.au>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <076a5a3adc4b5b29a3fd2ade48d52184@bga.com>
-References: <076a5a3adc4b5b29a3fd2ade48d52184@bga.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-1pk4eDVlpOYMY33CagQb"
-Date: Wed, 18 Apr 2007 11:38:48 +1000
-Message-Id: <1176860328.4987.15.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
-Reply-To: michael@ellerman.id.au
+Date: Wed, 18 Apr 2007 11:50:09 +1000
+Subject: [PATCH] Initialise spinlock in the DEBUG_PAGEALLOC code
+Message-Id: <20070418015031.A8973DDE33@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,53 +14,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Fixes:
 
---=-1pk4eDVlpOYMY33CagQb
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+BUG: spinlock bad magic on CPU#0, swapper/0
+ lock: c00000000064ec30, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
+Call Trace:
+[c00000000062b980] [c00000000000f920] .show_stack+0x6c/0x1a0 (unreliable)
+[c00000000062ba20] [c0000000001c2b40] .spin_bug+0xb0/0xd4
+[c00000000062bab0] [c0000000001c2ed0] ._raw_spin_lock+0x44/0x184
+[c00000000062bb50] [c0000000003a42b4] ._spin_lock+0x10/0x24
+[c00000000062bbd0] [c00000000002b4dc] .kernel_map_pages+0x198/0x278
+[c00000000062bc90] [c000000000079720] .free_hot_cold_page+0x124/0x418
+[c00000000062bd70] [c000000000530278] .free_all_bootmem_core+0x14c/0x224
+[c00000000062be50] [c00000000052a178] .mem_init+0x68/0x170
+[c00000000062bee0] [c00000000051d874] .start_kernel+0x2a0/0x37c
+[c00000000062bf90] [c0000000000084c8] .start_here_common+0x54/0x8c
 
-On Tue, 2007-04-17 at 02:57 -0500, Milton Miller wrote:
-> On Tue Apr 17 11:43:12 EST 2007, Michael Ellerman wrote:
-> > -static spinlock_t linear_map_hash_lock;
-> > +static spinlock_t linear_map_hash_lock =3D SPIN_LOCK_UNLOCKED;
->=20
-> I think the people in this thread
->=20
-> [KJ][PATCH]SPIN_LOCK_UNLOCKED cleanup in arch/powerpc
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034210.html
->=20
-> SPIN_LOCK_UNLOCKED cleanup,use DEFINE_SPINLOCK or
-> __SPIN_LOCK_UNLOCKED where ever appropriate.
->=20
-> would like you to initialize it differently.  (I think it has
-> to do with the lock dependancy stuff).
 
-And it's documented where .. ?
+Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+---
 
-I'll send a new patch.
+ arch/powerpc/mm/hash_utils_64.c |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-1pk4eDVlpOYMY33CagQb
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGJXaodSjSd0sB4dIRAlabAJ9Dk8gYyketUEv8yIEEbna95RKQoQCcDagJ
-D21I9ZN1oP/Ot4oKpWciVEQ=
-=6nrm
------END PGP SIGNATURE-----
-
---=-1pk4eDVlpOYMY33CagQb--
+Index: powerpc/arch/powerpc/mm/hash_utils_64.c
+===================================================================
+--- powerpc.orig/arch/powerpc/mm/hash_utils_64.c
++++ powerpc/arch/powerpc/mm/hash_utils_64.c
+@@ -103,7 +103,7 @@ int mmu_ci_restrictions;
+ #ifdef CONFIG_DEBUG_PAGEALLOC
+ static u8 *linear_map_hash_slots;
+ static unsigned long linear_map_hash_count;
+-static spinlock_t linear_map_hash_lock;
++static DEFINE_SPINLOCK(linear_map_hash_lock);
+ #endif /* CONFIG_DEBUG_PAGEALLOC */
+ 
+ /* There are definitions of page sizes arrays to be used when none
