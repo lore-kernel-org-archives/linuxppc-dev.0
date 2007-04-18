@@ -1,10 +1,14 @@
-Return-Path: <michael@ozlabs.org>
-To: Paul Mackerras <paulus@samba.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Wed, 18 Apr 2007 11:50:09 +1000
-Subject: [PATCH] Initialise spinlock in the DEBUG_PAGEALLOC code
-Message-Id: <20070418015031.A8973DDE33@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <vanbaren@cideas.com>
+Received: from sccrmhc13.comcast.net (sccrmhc13.comcast.net [63.240.77.83])
+	by ozlabs.org (Postfix) with ESMTP id CDDE2DDE3D
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 12:05:40 +1000 (EST)
+Date: Tue, 17 Apr 2007 22:05:35 -0400
+From: Jerry Van Baren <gvb.uboot@gmail.com>
+To: linuxppc-dev@ozlabs.org, jdl@jdl.com
+Subject: [PATCH: dtc] Improve -S handling
+Message-ID: <20070418020535.GA16224@dellserver.lan>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -14,39 +18,108 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fixes:
+If the user requests extra space, pad out the blob (previously the unused
+  data was undefined).
 
-BUG: spinlock bad magic on CPU#0, swapper/0
- lock: c00000000064ec30, .magic: 00000000, .owner: <none>/-1, .owner_cpu: 0
-Call Trace:
-[c00000000062b980] [c00000000000f920] .show_stack+0x6c/0x1a0 (unreliable)
-[c00000000062ba20] [c0000000001c2b40] .spin_bug+0xb0/0xd4
-[c00000000062bab0] [c0000000001c2ed0] ._raw_spin_lock+0x44/0x184
-[c00000000062bb50] [c0000000003a42b4] ._spin_lock+0x10/0x24
-[c00000000062bbd0] [c00000000002b4dc] .kernel_map_pages+0x198/0x278
-[c00000000062bc90] [c000000000079720] .free_hot_cold_page+0x124/0x418
-[c00000000062bd70] [c000000000530278] .free_all_bootmem_core+0x14c/0x224
-[c00000000062be50] [c00000000052a178] .mem_init+0x68/0x170
-[c00000000062bee0] [c00000000051d874] .start_kernel+0x2a0/0x37c
-[c00000000062bf90] [c0000000000084c8] .start_here_common+0x54/0x8c
-
-
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
 ---
 
- arch/powerpc/mm/hash_utils_64.c |    2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Hi Jon, David, Milton,
 
-Index: powerpc/arch/powerpc/mm/hash_utils_64.c
-===================================================================
---- powerpc.orig/arch/powerpc/mm/hash_utils_64.c
-+++ powerpc/arch/powerpc/mm/hash_utils_64.c
-@@ -103,7 +103,7 @@ int mmu_ci_restrictions;
- #ifdef CONFIG_DEBUG_PAGEALLOC
- static u8 *linear_map_hash_slots;
- static unsigned long linear_map_hash_count;
--static spinlock_t linear_map_hash_lock;
-+static DEFINE_SPINLOCK(linear_map_hash_lock);
- #endif /* CONFIG_DEBUG_PAGEALLOC */
+This improves the -S option to pad out the blob with zeros when the user
+asks for extra space.
+
+Best regards,
+gvb
+
+ flattree.c |   35 ++++++++++++++++++++++++++++++++++-
+ 1 files changed, 34 insertions(+), 1 deletions(-)
+
+diff --git a/flattree.c b/flattree.c
+index 151d16e..d2ee0dc 100644
+--- a/flattree.c
++++ b/flattree.c
+@@ -310,6 +310,7 @@ static struct data flatten_reserve_list(struct reserve_info *reservelist,
+ 	
+ 	return d;
+ }
++
+ static void make_bph(struct boot_param_header *bph,
+ 		     struct version_info *vi,
+ 		     int reservesize, int dtsize, int strsize,
+@@ -358,12 +359,15 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
+ {
+ 	struct version_info *vi = NULL;
+ 	int i;
++	int size;
+ 	struct data dtbuf = empty_data;
+ 	struct data strbuf = empty_data;
+ 	struct data reservebuf;
+ 	struct boot_param_header bph;
+ 	struct reserve_entry termre = {.address = 0, .size = 0};
  
- /* There are definitions of page sizes arrays to be used when none
++	size = 0;
++
+ 	for (i = 0; i < ARRAY_SIZE(version_table); i++) {
+ 		if (version_table[i].version == version)
+ 			vi = &version_table[i];
+@@ -384,10 +388,13 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
+ 		 boot_cpuid_phys);
+ 
+ 	fwrite(&bph, vi->hdr_size, 1, f);
++	size += vi->hdr_size;
+ 
+ 	/* Align the reserve map to an 8 byte boundary */
+-	for (i = vi->hdr_size; i < be32_to_cpu(bph.off_mem_rsvmap); i++)
++	for (i = vi->hdr_size; i < be32_to_cpu(bph.off_mem_rsvmap); i++) {
+ 		fputc(0, f);
++		size += 1;
++	}
+ 
+ 	/*
+ 	 * Reserve map entries.
+@@ -396,9 +403,27 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
+ 	 */
+ 	fwrite(reservebuf.val, reservebuf.len, 1, f);
+ 	fwrite(&termre, sizeof(termre), 1, f);
++	size += reservebuf.len + sizeof(termre);
+ 
+ 	fwrite(dtbuf.val, dtbuf.len, 1, f);
+ 	fwrite(strbuf.val, strbuf.len, 1, f);
++	size += dtbuf.len + strbuf.len;
++
++	/*
++	 * If the user asked for more space than is used, pad it out.
++	 */
++	if (minsize > 0) {
++		int padlen = minsize - size;
++
++		if (padlen > 0) {
++			char *zeroes = calloc(padlen, 1);
++
++			if (zeroes != NULL) {
++				fwrite(zeroes, padlen, 1, f);
++				free(zeroes);
++			}
++		}
++	}
+ 
+ 	if (ferror(f))
+ 		die("Error writing device tree blob: %s\n", strerror(errno));
+@@ -504,6 +529,14 @@ void dt_to_asm(FILE *f, struct boot_info *bi, int version, int boot_cpuid_phys)
+ 
+ 	emit_label(f, symprefix, "blob_end");
+ 
++	/*
++	 * If the user asked for more space than is used, pad it out.
++	 */
++	if (minsize > 0) {
++		fprintf(f, "\t.space\t%d - (%s_blob_end - %s_blob_start), 0\n", 
++			minsize, symprefix, symprefix);
++	}
++
+ 	data_free(strbuf);
+ }
+ 
+-- 
+1.4.4.4
