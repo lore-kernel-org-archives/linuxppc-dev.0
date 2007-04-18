@@ -1,14 +1,11 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Wed, 18 Apr 2007 16:45:08 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Jerry Van Baren <gvb.uboot@gmail.com>, linuxppc-dev@ozlabs.org, jdl@jdl.com
-Subject: Re: [PATCH: dtc] Improve -S handling
-Message-ID: <20070418064508.GC29312@localhost.localdomain>
-References: <20070418020535.GA16224@dellserver.lan>
-	<20070418030528.GA27758@localhost.localdomain>
+Return-Path: <mikey@neuling.org>
+From: Michael Neuling <mikey@neuling.org>
+To: Fastboot mailing list <fastboot@lists.osdl.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070418030528.GA27758@localhost.localdomain>
+Subject: [PATCH] kexec-tools: remove initrd_found
+Date: Wed, 18 Apr 2007 17:02:01 +1000
+Message-ID: <24736.1176879721@neuling.org>
+Cc: linuxppc-dev@ozlabs.org, horms@verge.net.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,52 +15,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 18, 2007 at 01:05:28PM +1000, David Gibson wrote:
-> On Tue, Apr 17, 2007 at 10:05:35PM -0400, Jerry Van Baren wrote:
-> > If the user requests extra space, pad out the blob (previously the unused
-> >   data was undefined).
-> > 
-> > Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
-> > ---
-> > 
-> > Hi Jon, David, Milton,
-> > 
-> > This improves the -S option to pad out the blob with zeros when the user
-> > asks for extra space.
-> 
-> Comment below
-> > diff --git a/flattree.c b/flattree.c
-> > index 151d16e..d2ee0dc 100644
-> > --- a/flattree.c
-> > +++ b/flattree.c
-> > @@ -310,6 +310,7 @@ static struct data flatten_reserve_list(struct reserve_info *reservelist,
-> >  	
-> >  	return d;
-> >  }
-> > +
-> >  static void make_bph(struct boot_param_header *bph,
-> >  		     struct version_info *vi,
-> >  		     int reservesize, int dtsize, int strsize,
-> > @@ -358,12 +359,15 @@ void dt_to_blob(FILE *f, struct boot_info *bi, int version,
-> >  {
-> >  	struct version_info *vi = NULL;
-> >  	int i;
-> > +	int size;
-> >  	struct data dtbuf = empty_data;
-> >  	struct data strbuf = empty_data;
-> >  	struct data reservebuf;
-> >  	struct boot_param_header bph;
-> >  	struct reserve_entry termre = {.address = 0, .size = 0};
-> >  
-> > +	size = 0;
-> > +
+initrd_found is not used, so remove it.  Minor cleanup. 
 
-Oh, also, you shouldn't need this new variable to track the size.
-Just use whatever expression we used to use for totalsize before we
-forced it out to the minimum size.
+Signed-off-by: Michael Neuling <mikey@neuling.org>
+---
+Horms: this applies to your testing tree.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ kexec/arch/ppc64/fs2dt.c |    7 ++-----
+ 1 file changed, 2 insertions(+), 5 deletions(-)
+
+Index: kexec-tools-testing/kexec/arch/ppc64/fs2dt.c
+===================================================================
+--- kexec-tools-testing.orig/kexec/arch/ppc64/fs2dt.c
++++ kexec-tools-testing/kexec/arch/ppc64/fs2dt.c
+@@ -43,7 +43,6 @@ static char propnames[NAMESPACE] = { 0 }
+ static unsigned dtstruct[TREEWORDS], *dt;
+ static unsigned long long mem_rsrv[2*MEMRESERVE] = { 0, 0 };
+ 
+-static int initrd_found = 0;
+ static int crash_param = 0;
+ static char local_cmdline[COMMAND_LINE_SIZE] = { "" };
+ static unsigned *dt_len; /* changed len of modified cmdline
+@@ -343,10 +342,8 @@ static void putnode(void)
+ 
+ 	putprops(dn, namelist, numlist);
+ 
+-	/* Add initrd entries to the second kernel if first kernel does not
+-	 * have and second kernel needs.
+-	 */
+-	if (initrd_base && !initrd_found && !strcmp(basename,"/chosen/")) {
++	/* Add initrd entries to the second kernel */
++	if (initrd_base && !strcmp(basename,"/chosen/")) {
+ 		int len = 8;
+ 		unsigned long long initrd_end;
+ 		*dt++ = 3;
