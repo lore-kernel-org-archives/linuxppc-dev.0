@@ -1,9 +1,9 @@
 Return-Path: <dgibson@ozlabs.org>
 To: <linuxppc-dev@ozlabs.org>
 From: David Gibson <david@gibson.dropbear.id.au>
-Subject: [PATCH 9/10] Add device tree for Ebony
+Subject: [PATCH 10/10] zImage wrapper for Ebony
 In-Reply-To: <20070418063517.GB29312@localhost.localdomain>
-Message-Id: <20070418063626.D5DCCDDEBA@ozlabs.org>
+Message-Id: <20070418063626.E6AADDDE3B@ozlabs.org>
 Date: Wed, 18 Apr 2007 16:36:26 +1000 (EST)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -14,313 +14,404 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add a device tree for the Ebony evaluation board (440GP based).  This
-tree is not complete or finalized.  This tree needs a very recent
-version of dtc to process.
+This patch adds support for building a zImage wrapper suitable for the
+Ebony (440GP) evaluation board.  This supports booting both from uboot
+(old versions which don't supply a flattened device tree) and IBM
+Openbios (aka "treeboot").
 
 Signed-off-by: David Gibson <dwg@au1.ibm.com>
 ---
 
- arch/powerpc/boot/dts/ebony.dts |  295 ++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 295 insertions(+)
+ arch/powerpc/boot/Makefile |   26 +++++++
+ arch/powerpc/boot/dcr.h    |   85 +++++++++++++++++++++++++
+ arch/powerpc/boot/ebony.c  |  149 +++++++++++++++++++++++++++++++++++++++++++++
+ arch/powerpc/boot/mktree.c |   10 +--
+ arch/powerpc/boot/wrapper  |   33 +++++++++
+ 5 files changed, 296 insertions(+), 7 deletions(-)
 
-Index: working-2.6/arch/powerpc/boot/dts/ebony.dts
+Index: working-2.6/arch/powerpc/boot/Makefile
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/Makefile	2007-04-18 14:42:52.000000000 +1000
++++ working-2.6/arch/powerpc/boot/Makefile	2007-04-18 14:43:14.000000000 +1000
+@@ -43,7 +43,7 @@ $(addprefix $(obj)/,$(zlib) main.o): $(a
+ src-wlib := string.S crt0.S stdio.c main.c flatdevtree.c flatdevtree_misc.c \
+ 		ns16550.c serial.c simple_alloc.c div64.S util.S \
+ 		gunzip_util.c elf_util.c $(zlib) devtree.c
+-src-plat := of.c
++src-plat := of.c ebony.c
+ src-boot := $(src-wlib) $(src-plat) empty.c
+ 
+ src-boot := $(addprefix $(obj)/, $(src-boot))
+@@ -95,6 +95,12 @@ $(patsubst %.S,%.o, $(filter %.S, $(src-
+ $(obj)/wrapper.a: $(obj-wlib) FORCE
+ 	$(call if_changed,bootar)
+ 
++quiet_cmd_dtc = DTC     $@
++      cmd_dtc = $(dtc) -O dtb -o $@ -b 0 -V 16 $<
++
++$(obj)/%.dtb: $(srctree)/$(src)/dts/%.dts
++	$(call if_changed,dtc)
++
+ hostprogs-y	:= addnote addRamDisk hack-coff mktree
+ 
+ targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a)
+@@ -105,6 +111,8 @@ wrapper		:=$(srctree)/$(src)/wrapper
+ wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
+ 			$(wrapper) FORCE
+ 
++dtc		:= dtc
++
+ #############
+ # Bits for building various flavours of zImage
+ 
+@@ -129,6 +137,7 @@ image-$(CONFIG_PPC_CELLEB)		+= zImage.ps
+ image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
+ image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
+ image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
++image-$(CONFIG_EBONY)			+= zImage.ebony-elf zImage.ebony uImage.ebony
+ image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+ 
+ # For 32-bit powermacs, build the COFF and miboot images
+@@ -159,6 +168,21 @@ $(obj)/zImage.ps3: vmlinux
+ $(obj)/zImage.initrd.ps3: vmlinux
+ 	@echo "  WARNING zImage.initrd.ps3 not supported (yet)"
+ 
++$(obj)/zImage.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb
++	$(call if_changed,wrap,ebony,,$(obj)/ebony.dtb)
++
++$(obj)/zImage.initrd.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/ramdisk.image.gz
++	$(call if_changed,wrap,ebony,,$(obj)/ebony.dtb,$(obj)/ramdisk.img.gz)
++
++$(obj)/zImage.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
++	$(call if_changed,wrap,ebony-tree,,$(obj)/ebony.dtb)
++
++$(obj)/zImage.initrd.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
++	$(call if_changed,wrap,ebony-tree,,$(obj)/ebony.dtb,$(obj)/ramdisk.img.gz)
++
++$(obj)/uImage.ebony: vmlinux $(wrapperbits)  $(obj)/ebony.dtb
++	$(call if_changed,wrap,ebony-uboot,,$(obj)/ebony.dtb)
++
+ $(obj)/uImage: vmlinux $(wrapperbits)
+ 	$(call if_changed,wrap,uboot)
+ 
+Index: working-2.6/arch/powerpc/boot/ebony.c
 ===================================================================
 --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-03-21 13:23:48.000000000 +1100
-@@ -0,0 +1,295 @@
++++ working-2.6/arch/powerpc/boot/ebony.c	2007-04-18 14:42:58.000000000 +1000
+@@ -0,0 +1,149 @@
 +/*
-+ * Device Tree Source for IBM Ebony
++ * Copyright 2007 David Gibson, IBM Corporation.
 + *
-+ * Copyright (c) 2006, 2007 IBM Corp.
-+ * Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
-+ *
-+ * FIXME: Draft only!
-+ *
-+ * This file is licensed under the terms of the GNU General Public
-+ * License version 2.  This program is licensed "as is" without
-+ * any warranty of any kind, whether express or implied.
-+ *
-+ * To build:
-+ *   dtc -I dts -O asm -o ebony.S -b 0 -V 16 ebony.dts
-+ *   dtc -I dts -O dtb -o ebony.dtb -b 0 -V 16 ebony.dts
++ * Based on earlier code:
++ * Copyright (C) Paul Mackerras 1997.
++ * Copyright 2002-2005 MontaVista Software Inc.
++ * Copyright (c) 2003, 2004 Zultys Technologies
++
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
 + */
++#include <stdarg.h>
++#include <stddef.h>
++#include "types.h"
++#include "elf.h"
++#include "string.h"
++#include "stdio.h"
++#include "page.h"
++#include "ops.h"
++#include "reg.h"
++#include "dcr.h"
 +
-+/ {
-+	#address-cells = <2>;
-+	#size-cells = <1>;
-+	model = "Ebony";
-+	compatible = "Ebony";
-+	dcr-parent = <&/cpus/PowerPC,440GP@0>;
++extern char _start[];
++extern char _end[];
++extern char _dtb_start[];
++extern char _dtb_end[];
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++BSS_STACK(4096);
 +
-+		PowerPC,440GP@0 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			clock-frequency = <0>; // Filled in by zImage
-+			timebase-frequency = <0>; // Filled in by zImage
-+			i-cache-line-size = <32>;
-+			d-cache-line-size = <32>;
-+			i-cache-size = <0>;
-+			d-cache-size = <0>;
-+			dcr-controller;
-+			dcr-access-method = "native";
-+		};
-+	};
++#define OPENBIOS_MAC_BASE	0xfffffe0c
++#define OPENBIOS_MAC_OFFSET	0xc
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <0 0 0>; // Filled in by zImage
-+	};
++/* Read the 44x memory controller to get size of system memory. */
++static void ibm44x_fixup_memsize(void)
++{
++	int i;
++	unsigned long memsize, bank_config;
 +
-+	UIC0: interrupt-controller0 {
-+		device_type = "ibm,uic";
-+		compatible = "ibm,uic-440gp", "ibm,uic";
-+		interrupt-controller;
-+		cell-index = <0>;
-+		dcr-reg = <0c0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
++	memsize = 0;
++	for (i = 0; i < ARRAY_SIZE(sdram_bxcr); i++) {
++		mtdcr(DCRN_SDRAM0_CFGADDR, sdram_bxcr[i]);
++		bank_config = mfdcr(DCRN_SDRAM0_CFGDATA);
 +
-+	};
++		if (bank_config & SDRAM_CONFIG_BANK_ENABLE)
++			memsize += SDRAM_CONFIG_BANK_SIZE(bank_config);
++	}
 +
-+	UIC1: interrupt-controller1 {
-+		device_type = "ibm,uic";
-+		compatible = "ibm,uic-440gp", "ibm,uic";
-+		interrupt-controller;
-+		cell-index = <1>;
-+		dcr-reg = <0d0 009>;
-+		#address-cells = <0>;
-+		#size-cells = <0>;
-+		#interrupt-cells = <2>;
-+		interrupts = <1e 4 1f 4>; /* cascade */
-+		interrupt-parent = <&UIC0>;
-+	};
++	dt_fixup_memory(0, memsize);
++}
 +
-+	CPC0: cpc {
-+		device_type = "ibm,cpc";
-+		compatible = "ibm,cpc-440gp";
-+		dcr-reg = <0b0 003 0e0 010>;
-+		// FIXME: anything else?
-+	};
++/* Calculate 440GP clocks */
++void ibm440gp_fixup_clocks(unsigned int sysclk, unsigned int ser_clk)
++{
++	u32 sys0 = mfdcr(DCRN_CPC0_SYS0);
++	u32 cr0 = mfdcr(DCRN_CPC0_CR0);
++	u32 cpu, plb, opb, ebc, tb, uart0, uart1, m;
++	u32 opdv = CPC0_SYS0_OPDV(sys0);
++	u32 epdv = CPC0_SYS0_EPDV(sys0);
 +
-+	plb {
-+		device_type = "ibm,plb";
-+		compatible = "ibm,plb-440gp", "ibm,plb4";
-+		#address-cells = <2>;
-+		#size-cells = <1>;
-+		ranges;
-+		clock-frequency = <0>; // Filled in by zImage
++	if (sys0 & CPC0_SYS0_BYPASS) {
++		/* Bypass system PLL */
++		cpu = plb = sysclk;
++	} else {
++		if (sys0 & CPC0_SYS0_EXTSL)
++			/* PerClk */
++			m = CPC0_SYS0_FWDVB(sys0) * opdv * epdv;
++		else
++			/* CPU clock */
++			m = CPC0_SYS0_FBDV(sys0) * CPC0_SYS0_FWDVA(sys0);
++		cpu = sysclk * m / CPC0_SYS0_FWDVA(sys0);
++		plb = sysclk * m / CPC0_SYS0_FWDVB(sys0);
++	}
 +
-+		SDRAM0: sdram {
-+			device_type = "memory-controller";
-+			compatible = "ibm,sdram-440gp", "ibm,sdram";
-+			dcr-reg = <010 2>;
-+			// FIXME: anything else?
-+		};
++	opb = plb / opdv;
++	ebc = opb / epdv;
 +
-+		DMA0: dma {
-+			// FIXME: ???
-+			device_type = "ibm,dma-4xx";
-+			compatible = "ibm,dma-440gp", "ibm,dma-4xx";
-+			dcr-reg = <100 027>;
-+		};
++	/* FIXME: Check if this is for all 440GP, or just Ebony */
++	if ((mfpvr() & 0xf0000fff) == 0x40000440)
++		/* Rev. B 440GP, use external system clock */
++		tb = sysclk;
++	else
++		/* Rev. C 440GP, errata force us to use internal clock */
++		tb = cpu;
 +
-+		MAL0: mcmal {
-+			device_type = "mcmal-dma";
-+			compatible = "ibm,mcmal-440gp", "ibm,mcmal";
-+			dcr-reg = <180 62>;
-+			num-tx-chans = <4>;
-+			num-rx-chans = <4>;
-+			interrupt-parent = <&MAL0>;
-+			interrupts = <0 1 2 3 4>;
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			#size-cells = <0>;
-+			interrupt-map = </*TXEOB*/ 0 &UIC0 a 4
-+					 /*RXEOB*/ 1 &UIC0 b 4
-+					 /*SERR*/  2 &UIC1 0 4
-+					 /*TXDE*/  3 &UIC1 1 4
-+					 /*RXDE*/  4 &UIC1 2 4>;
-+			interrupt-map-mask = <ffffffff>;
-+		};
++	if (cr0 & CPC0_CR0_U0EC)
++		/* External UART clock */
++		uart0 = ser_clk;
++	else
++		/* Internal UART clock */
++		uart0 = plb / CPC0_CR0_UDIV(cr0);
 +
-+		POB0: opb {
-+			device_type = "ibm,opb";
-+			compatible = "ibm,opb-440gp", "ibm,opb";
-+			#address-cells = <1>;
-+			#size-cells = <1>;
-+			/* Wish there was a nicer way of specifying a full 32-bit
-+			   range */
-+			ranges = <00000000 1 00000000 80000000
-+				  80000000 1 80000000 80000000>;
-+			dcr-reg = <090 00b>;
-+			interrupt-parent = <&UIC1>;
-+			interrupts = <7 4>;
-+			clock-frequency = <0>; // Filled in by zImage
++	if (cr0 & CPC0_CR0_U1EC)
++		/* External UART clock */
++		uart1 = ser_clk;
++	else
++		/* Internal UART clock */
++		uart1 = plb / CPC0_CR0_UDIV(cr0);
 +
-+			EBC0: ebc {
-+				device_type = "ibm,ebc";
-+				compatible = "ibm,ebc-440gp";
-+				dcr-reg = <012 2>;
-+				#address-cells = <2>;
-+				#size-cells = <1>;
-+				clock-frequency = <0>; // Filled in by zImage
-+				ranges = <0 00000000 fff00000 100000
-+					  1 00000000 48000000 100000
-+					  2 00000000 ff800000 400000
-+					  3 00000000 48200000 100000
-+					  7 00000000 48300000 100000>;
-+				interrupts = <5 4>;
-+				interrupt-parent = <&UIC1>;
++	printf("PPC440GP: SysClk = %dMHz (%x)\n\r",
++	       (sysclk + 500000) / 1000000, sysclk);
 +
-+				flash@0,0 {
-+					device_type = "flash";
-+					reg = <0 0 80000>;
-+				};
++	dt_fixup_cpu_clocks(cpu, tb, 0);
 +
-+				ds1743@1,0 {
-+					/* NVRAM & RTC */
-+					device_type = "nvram";
-+					compatible = "ds1743";
-+					reg = <1 0 2000>;
-+				};
-+				flash@2,0 {
-+					device_type = "flash";
-+					reg = <2 0 400000>;
-+				};
++	dt_fixup_clock("/plb", plb);
++	dt_fixup_clock("/plb/opb", opb);
++	dt_fixup_clock("/plb/opb/ebc", ebc);
++	dt_fixup_clock("/plb/opb/serial@40000200", uart0);
++	dt_fixup_clock("/plb/opb/serial@40000300", uart1);
++}
 +
-+				ir@3,0 {
-+					reg = <3 0 10>;
-+				};
++static void ebony_fixups(void)
++{
++	// FIXME: sysclk should be derived by reading the FPGA registers
++	unsigned long sysclk = 33000000;
 +
-+				fpga@7,0 {
-+					compatible = "Ebony-FPGA";
-+					reg = <7 0 10>;
-+				};
-+			};
++	ibm440gp_fixup_clocks(sysclk, 6 * 1843200);
++	ibm44x_fixup_memsize();
++	dt_fixup_mac_addresses((u8 *)OPENBIOS_MAC_BASE,
++			       (u8 *)(OPENBIOS_MAC_BASE + OPENBIOS_MAC_OFFSET));
++}
 +
-+			UART0: serial@40000200 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <40000200 8>;
-+				virtual-reg = <e0000200>;
-+				clock-frequency = <A8C000>;
-+				current-speed = <2580>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <0 4>;
-+			};
++#define SPRN_DBCR0		0x134
++#define   DBCR0_RST_SYSTEM	0x30000000
 +
-+			UART1: serial@40000300 {
-+				device_type = "serial";
-+				compatible = "ns16550";
-+				reg = <40000300 8>;
-+				virtual-reg = <e0000300>;
-+				clock-frequency = <A8C000>;
-+				current-speed = <2580>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <1 4>;
-+			};
++static void ebony_exit(void)
++{
++	unsigned long tmp;
 +
-+			IIC0: i2c@40000400 {
-+				/* FIXME */
-+				device_type = "i2c";
-+				compatible = "ibm,iic-440gp", "ibm,iic";
-+				reg = <40000400 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <2 4>;
-+			};
-+			IIC1: i2c@40000500 {
-+				/* FIXME */
-+				device_type = "i2c";
-+				compatible = "ibm,iic-440gp", "ibm,iic";
-+				reg = <40000500 14>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <3 4>;
-+			};
++	asm volatile (
++		"mfspr	%0,%1\n"
++		"oris	%0,%0,%2@h\n"
++		"mtspr	%1,%0"
++		: "=&r"(tmp) : "i"(SPRN_DBCR0), "i"(DBCR0_RST_SYSTEM)
++		);
 +
-+			GPIO0: gpio@40000700 {
-+				/* FIXME */
-+				device_type = "gpio";
-+				compatible = "ibm,gpio-440gp";
-+				reg = <40000700 20>;
-+			};
++}
 +
-+			ZMII0: emac-zmii@40000780 {
-+				device_type = "emac-zmii";
-+				compatible = "ibm,zmii-440gp", "ibm,zmii";
-+				reg = <40000780 c>;
-+			};
++void platform_init(unsigned long r3, unsigned long r4, unsigned long r5)
++{
++	u32 heapsize = 0x8000000 - (u32)_end; /* 128M */
 +
-+			EMAC0: ethernet@40000800 {
-+				linux,network-index = <0>;
-+				device_type = "network";
-+				compatible = "ibm,emac-440gp", "ibm,emac";
-+				interrupt-parent = <&UIC1>;
-+				interrupts = <1c 4 1d 4>;
-+				reg = <40000800 70>;
-+				local-mac-address = [000000000000]; // Filled in by zImage
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <0 1>;
-+				mal-rx-channel = <0>;
-+				cell-index = <0>;
-+				max-frame-size = <5dc>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rmii";
-+				phy-map = <00000001>;
-+				zmii-device = <&ZMII0>;
-+				zmii-channel = <0>;
-+			};
-+			EMAC1: ethernet@40000900 {
-+				linux,network-index = <1>;
-+				device_type = "network";
-+				compatible = "ibm,emac-440gp", "ibm,emac";
-+				interrupt-parent = <&UIC1>;
-+				interrupts = <1e 4 1f 4>;
-+				reg = <40000900 70>;
-+				local-mac-address = [000000000000]; // Filled in by zImage
-+				mal-device = <&MAL0>;
-+				mal-tx-channel = <2 3>;
-+				mal-rx-channel = <1>;
-+				cell-index = <1>;
-+				max-frame-size = <5dc>;
-+				rx-fifo-size = <1000>;
-+				tx-fifo-size = <800>;
-+				phy-mode = "rmii";
-+				phy-map = <00000001>;
-+				zmii-device = <&ZMII0>;
-+				zmii-channel = <1>;
-+			};
++	platform_ops.fixups = ebony_fixups;
++	platform_ops.exit = ebony_exit;
++	simple_alloc_init(_end, heapsize, 32, 64);
++	ft_init(_dtb_start, 0, 32);
++	serial_console_init();
++}
+Index: working-2.6/arch/powerpc/boot/wrapper
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/wrapper	2007-04-18 14:40:39.000000000 +1000
++++ working-2.6/arch/powerpc/boot/wrapper	2007-04-18 14:42:58.000000000 +1000
+@@ -141,6 +141,12 @@ miboot|uboot)
+     ksection=image
+     isection=initrd
+     ;;
++*-tree)
++    platformo=$object/"${platform%%-tree}".o
++    ;;
++*-uboot)
++    platformo=$object/"${platform%%-uboot}".o
++    ;;
+ esac
+ 
+ vmz="$tmpdir/`basename \"$kernel\"`.$ext"
+@@ -216,4 +222,31 @@ pmaccoff)
+     ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
+     $object/hack-coff "$ofile"
+     ;;
++*-tree)
++    mv "$ofile" "$ofile.elf"
++    entry=`objdump -f "$ofile.elf" | grep '^start address ' | \
++	cut -d' ' -f3`
++    $object/mktree "$ofile.elf" "$ofile" 0x00400000 "$entry"
++    if [ -z "$cacheit" ]; then
++	rm -f "$ofile.elf"
++    fi
++    exit 0
++    ;;
++*-uboot)
++    mv "$ofile" "$ofile.elf"
++    version=`${CROSS}strings "$kernel" | grep '^Linux version [-0-9.]' | \
++	cut -d' ' -f3`
++    if [ -n "$version" ]; then
++	version="-n Linux-$version"
++    fi
++    entry=`objdump -f "$ofile.elf" | grep '^start address ' | \
++	cut -d' ' -f3`
++    ${CROSS}objcopy -O binary "$ofile.elf" "$ofile.bin"
++    mkimage -A ppc -O linux -T kernel -C none -a 0x00400000 -e $entry \
++	$version -d "$ofile.bin" "$ofile"
++    if [ -z "$cacheit" ]; then
++	rm -f "$ofile.elf" "$ofile.bin"
++    fi
++    exit 0
++    ;;
+ esac
+Index: working-2.6/arch/powerpc/boot/mktree.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/boot/mktree.c	2007-01-24 12:01:17.000000000 +1100
++++ working-2.6/arch/powerpc/boot/mktree.c	2007-04-18 14:42:58.000000000 +1000
+@@ -46,8 +46,8 @@ int main(int argc, char *argv[])
+ 	struct	stat	st;
+ 	boot_block_t	bt;
+ 
+-	if (argc < 3) {
+-		fprintf(stderr, "usage: %s <zImage-file> <boot-image> [entry-point]\n",argv[0]);
++	if (argc < 5) {
++		fprintf(stderr, "usage: %s <zImage-file> <boot-image> <load address> <entry point>\n",argv[0]);
+ 		exit(1);
+ 	}
+ 
+@@ -61,10 +61,8 @@ int main(int argc, char *argv[])
+ 	bt.bb_magic = htonl(0x0052504F);
+ 
+ 	/* If we have the optional entry point parameter, use it */
+-	if (argc == 4)
+-		bt.bb_dest = bt.bb_entry_point = htonl(strtoul(argv[3], NULL, 0));
+-	else
+-		bt.bb_dest = bt.bb_entry_point = htonl(0x500000);
++	bt.bb_dest = htonl(strtoul(argv[3], NULL, 0));
++	bt.bb_entry_point = htonl(strtoul(argv[4], NULL, 0));
+ 
+ 	/* We know these from the linker command.
+ 	 * ...and then move it up into memory a little more so the
+Index: working-2.6/arch/powerpc/boot/dcr.h
+===================================================================
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ working-2.6/arch/powerpc/boot/dcr.h	2007-04-18 14:42:58.000000000 +1000
+@@ -0,0 +1,85 @@
++#ifndef _PPC_BOOT_DCR_H_
++#define _PPC_BOOT_DCR_H_
 +
++#define mfdcr(rn) \
++	({	\
++		unsigned long rval; \
++		asm volatile("mfdcr %0,%1" : "=r"(rval) : "i"(rn)); \
++		rval; \
++	})
++#define mtdcr(rn, val) \
++	asm volatile("mtdcr %0,%1" : : "i"(rn), "r"(val))
 +
-+			GPT0: gpt@40000a00 {
-+				/* FIXME */
-+				reg = <40000a00 d4>;
-+				interrupt-parent = <&UIC0>;
-+				interrupts = <12 4 13 4 14 4 15 4 16 4>;
-+			};
++/* 440GP/440GX SDRAM controller DCRs */
++#define DCRN_SDRAM0_CFGADDR				0x010
++#define DCRN_SDRAM0_CFGDATA				0x011
 +
-+		};
++#define 	SDRAM0_B0CR				0x40
++#define 	SDRAM0_B1CR				0x44
++#define 	SDRAM0_B2CR				0x48
++#define 	SDRAM0_B3CR				0x4c
 +
-+		PCIX0: pci@1234 {
-+			device_type = "pci";
-+			/* FIXME */
-+			reg = <2 0ec00000 8
-+			       2 0ec80000 f0
-+			       2 0ec80100 fc>;
-+		};
-+	};
++static const unsigned long sdram_bxcr[] = { SDRAM0_B0CR, SDRAM0_B1CR, SDRAM0_B2CR, SDRAM0_B3CR };
 +
-+	chosen {
-+		linux,stdout-path = "/plb/opb/serial@40000200";
-+		linux,initrd-start = <0>; /* FIXME */
-+		linux,initrd-end = <0>;
-+		bootargs = "";
-+	};
-+};
++#define			SDRAM_CONFIG_BANK_ENABLE        0x00000001
++#define			SDRAM_CONFIG_SIZE_MASK          0x000e0000
++#define			SDRAM_CONFIG_BANK_SIZE(reg)	\
++	(0x00400000 << ((reg & SDRAM_CONFIG_SIZE_MASK) >> 17))
 +
++/* 440GP Clock, PM, chip control */
++#define DCRN_CPC0_SR					0x0b0
++#define DCRN_CPC0_ER					0x0b1
++#define DCRN_CPC0_FR					0x0b2
++#define DCRN_CPC0_SYS0					0x0e0
++#define		CPC0_SYS0_TUNE				0xffc00000
++#define		CPC0_SYS0_FBDV_MASK			0x003c0000
++#define		CPC0_SYS0_FBDV(reg)			\
++	((((((reg) & CPC0_SYS0_FBDV_MASK) >> 18) - 1) & 0xf) + 1)
++#define		CPC0_SYS0_FWDVA_MASK			0x00038000
++#define		CPC0_SYS0_FWDVA(reg)			\
++	(8 - (((reg) & CPC0_SYS0_FWDVA_MASK) >> 15))
++#define		CPC0_SYS0_FWDVB_MASK			0x00007000
++#define		CPC0_SYS0_FWDVB(reg)			\
++	(8 - (((reg) & CPC0_SYS0_FWDVB_MASK) >> 12))
++#define		CPC0_SYS0_OPDV_MASK			0x00000c00
++#define		CPC0_SYS0_OPDV(reg)			\
++	((((reg) & CPC0_SYS0_OPDV_MASK) >> 10) + 1)
++#define		CPC0_SYS0_EPDV_MASK			0x00000300
++#define		CPC0_SYS0_EPDV(reg)			\
++	((((reg) & CPC0_SYS0_EPDV_MASK) >> 8) + 1)
++#define		CPC0_SYS0_EXTSL				0x00000080
++#define		CPC0_SYS0_RW_MASK			0x00000060
++#define		CPC0_SYS0_RL				0x00000010
++#define		CPC0_SYS0_ZMIISL_MASK			0x0000000c
++#define		CPC0_SYS0_BYPASS			0x00000002
++#define		CPC0_SYS0_NTO1				0x00000001
++#define DCRN_CPC0_SYS1					0x0e1
++#define DCRN_CPC0_CUST0					0x0e2
++#define DCRN_CPC0_CUST1					0x0e3
++#define DCRN_CPC0_STRP0					0x0e4
++#define DCRN_CPC0_STRP1					0x0e5
++#define DCRN_CPC0_STRP2					0x0e6
++#define DCRN_CPC0_STRP3					0x0e7
++#define DCRN_CPC0_GPIO					0x0e8
++#define DCRN_CPC0_PLB					0x0e9
++#define DCRN_CPC0_CR1					0x0ea
++#define DCRN_CPC0_CR0					0x0eb
++#define		CPC0_CR0_SWE				0x80000000
++#define		CPC0_CR0_CETE				0x40000000
++#define		CPC0_CR0_U1FCS				0x20000000
++#define		CPC0_CR0_U0DTE				0x10000000
++#define		CPC0_CR0_U0DRE				0x08000000
++#define		CPC0_CR0_U0DC				0x04000000
++#define		CPC0_CR0_U1DTE				0x02000000
++#define		CPC0_CR0_U1DRE				0x01000000
++#define		CPC0_CR0_U1DC				0x00800000
++#define		CPC0_CR0_U0EC				0x00400000
++#define		CPC0_CR0_U1EC				0x00200000
++#define		CPC0_CR0_UDIV_MASK			0x001f0000
++#define		CPC0_CR0_UDIV(reg)			\
++	((((reg) & CPC0_CR0_UDIV_MASK) >> 16) + 1)
++#define DCRN_CPC0_MIRQ0					0x0ec
++#define DCRN_CPC0_MIRQ1					0x0ed
++#define DCRN_CPC0_JTAGID				0x0ef
++
++#endif	/* _PPC_BOOT_DCR_H_ */
