@@ -1,16 +1,22 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id A5890DDE27
-	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 18:58:41 +1000 (EST)
-Mime-Version: 1.0 (Apple Message framework v624)
-In-Reply-To: <20070322030114.D5B9FDDF2B@ozlabs.org>
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <daf73c54d92c0be4096aa40b4ae00fcd@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 2/4] powerpc: Fix 32 bits mm operations when not using BATs
-Date: Wed, 18 Apr 2007 03:58:16 -0500
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <Geert.Uytterhoeven@eu.sony.com>
+Received: from mail72.messagelabs.com (mail72.messagelabs.com
+	[193.109.255.147]) by ozlabs.org (Postfix) with SMTP id 3AF8DDDE06
+	for <linuxppc-dev@ozlabs.org>; Wed, 18 Apr 2007 19:24:38 +1000 (EST)
+Received: from [43.194.30.232] ([43.194.30.232]:11667 "EHLO wymx1.eu.sony.com")
+	by mx1.eu.sony.com with ESMTP id S1877395AbXDRJYX (ORCPT
+	<rfc822;linuxppc-dev@ozlabs.org>); Wed, 18 Apr 2007 10:24:23 +0100
+Received: from vmx.eu.sony.com ([43.194.30.230]:17269 "EHLO
+	gbise0weymsx02.eu.sony.com") by wymx1.eu.sony.com with ESMTP
+	id S680600AbXDRJYN (ORCPT <rfc822;linuxppc-dev@ozlabs.org>);
+	Wed, 18 Apr 2007 10:24:13 +0100
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="UTF-8"
+Subject: [PATCH/RFC] bootwrapper: Use `unsigned long' for malloc sizes
+Date: Wed, 18 Apr 2007 10:24:12 +0100
+Message-ID: <CA6404BA52C51146981195CF9A147C1C01A9A00D@GBISE0BASMSX01.eu.sony.com>
+From: "Uytterhoeven, Geert" <Geert.Uytterhoeven@eu.sony.com>
+To: "Linux/PPC Development" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,29 +26,94 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In commit ee4f2ea48674b6c9d91bc854edc51a3e6a7168c4 Ben patched:
-
-> diff --git a/arch/powerpc/mm/pgtable_32.c 
-> b/arch/powerpc/mm/pgtable_32.c
-> index 95d3afe..f75f2fc 100644
-> --- a/arch/powerpc/mm/pgtable_32.c
-> +++ b/arch/powerpc/mm/pgtable_32.c
-> @@ -282,16 +282,19 @@ int map_page(unsigned long va, phys_addr_t pa, 
-> int flags)
-...
-> +               ktext = ((char *) v >= _stext && (char *) v < etext);
-> +               f = ktext ?_PAGE_RAM_TEXT : _PAGE_RAM;
->                 map_page(v, p, f);
-> +#ifdef CONFIG_PPC_STD_MMU_32
-> +               if (ktext)
-> +                       hash_preload(&init_mm, v, 0, 0x300);
-> +#endif
-
-
-We should preload text pages with trap 0x400, ISI, aka an
-instruction storage miss, not 0x300, data storage miss, to
-avoid any confusion with looking at the trap vs PAGE_EXEC.
-
-Sorry for not catching this until it was applied.
-
-milton
+VXNlIGB1bnNpZ25lZCBsb25nJyBmb3IgbWFsbG9jIHNpemVzLCB0byBtYXRjaCBjb21tb24gcHJh
+Y3RpY2UgYW5kIHR5cGVzIHVzZWQKYnkgbW9zdCBjYWxsZXJzIGFuZCBjYWxsZWVzLgpBbHNvIHVz
+ZSBgdW5zaWduZWQgbG9uZycgZm9yIGludGVnZXJzIHJlcHJlc2VudGluZyBwb2ludGVycyBpbiBz
+aW1wbGVfYWxsb2MuCgpTaWduZWQtb2ZmLWJ5OiBHZWVydCBVeXR0ZXJob2V2ZW4gPEdlZXJ0LlV5
+dHRlcmhvZXZlbkBldS5zb255LmNvbT4KLS0tCiBhcmNoL3Bvd2VycGMvYm9vdC9vZi5jICAgICAg
+ICAgICB8ICAgIDIgKy0KIGFyY2gvcG93ZXJwYy9ib290L29wcy5oICAgICAgICAgIHwgICAgOCAr
+KysrLS0tLQogYXJjaC9wb3dlcnBjL2Jvb3Qvc2ltcGxlX2FsbG9jLmMgfCAgIDMxICsrKysrKysr
+KysrKysrKystLS0tLS0tLS0tLS0tLS0KIDMgZmlsZXMgY2hhbmdlZCwgMjEgaW5zZXJ0aW9ucygr
+KSwgMjAgZGVsZXRpb25zKC0pCgotLS0gcHMzLWxpbnV4LTIuNi4yMS1yYzcub3JpZy9hcmNoL3Bv
+d2VycGMvYm9vdC9vZi5jCisrKyBwczMtbGludXgtMi42LjIxLXJjNy9hcmNoL3Bvd2VycGMvYm9v
+dC9vZi5jCkBAIC0xNzMsNyArMTczLDcgQEAgc3RhdGljIHZvaWQgKmNsYWltKHVuc2lnbmVkIGxv
+bmcgdmlydCwgdQogCXJldHVybiAodm9pZCAqKSB2aXJ0OwogfQogCi1zdGF0aWMgdm9pZCAqb2Zf
+dHJ5X2NsYWltKHUzMiBzaXplKQorc3RhdGljIHZvaWQgKm9mX3RyeV9jbGFpbSh1bnNpZ25lZCBs
+b25nIHNpemUpCiB7CiAJdW5zaWduZWQgbG9uZyBhZGRyID0gMDsKIAotLS0gcHMzLWxpbnV4LTIu
+Ni4yMS1yYzcub3JpZy9hcmNoL3Bvd2VycGMvYm9vdC9vcHMuaAorKysgcHMzLWxpbnV4LTIuNi4y
+MS1yYzcvYXJjaC9wb3dlcnBjL2Jvb3Qvb3BzLmgKQEAgLTIxLDcgKzIxLDcgQEAKIHN0cnVjdCBw
+bGF0Zm9ybV9vcHMgewogCXZvaWQJKCpmaXh1cHMpKHZvaWQpOwogCXZvaWQJKCppbWFnZV9oZHIp
+KGNvbnN0IHZvaWQgKik7Ci0Jdm9pZCAqCSgqbWFsbG9jKSh1MzIgc2l6ZSk7CisJdm9pZCAqCSgq
+bWFsbG9jKSh1bnNpZ25lZCBsb25nIHNpemUpOwogCXZvaWQJKCpmcmVlKSh2b2lkICpwdHIpOwog
+CXZvaWQgKgkoKnJlYWxsb2MpKHZvaWQgKnB0ciwgdW5zaWduZWQgbG9uZyBzaXplKTsKIAl2b2lk
+CSgqZXhpdCkodm9pZCk7CkBAIC02Miw4ICs2Miw4IEBAIGludCBwbGF0Zm9ybV9pbml0KHZvaWQg
+KnByb21wdHIsIGNoYXIgKmQKIGludCBmdF9pbml0KHZvaWQgKmR0X2Jsb2IsIHVuc2lnbmVkIGlu
+dCBtYXhfc2l6ZSwgdW5zaWduZWQgaW50IG1heF9maW5kX2RldmljZSk7CiBpbnQgc2VyaWFsX2Nv
+bnNvbGVfaW5pdCh2b2lkKTsKIGludCBuczE2NTUwX2NvbnNvbGVfaW5pdCh2b2lkICpkZXZwLCBz
+dHJ1Y3Qgc2VyaWFsX2NvbnNvbGVfZGF0YSAqc2NkcCk7Ci12b2lkICpzaW1wbGVfYWxsb2NfaW5p
+dChjaGFyICpiYXNlLCB1MzIgaGVhcF9zaXplLCB1MzIgZ3JhbnVsYXJpdHksCi0JCXUzMiBtYXhf
+YWxsb2NzKTsKK3ZvaWQgKnNpbXBsZV9hbGxvY19pbml0KGNoYXIgKmJhc2UsIHVuc2lnbmVkIGxv
+bmcgaGVhcF9zaXplLAorCQkJdW5zaWduZWQgbG9uZyBncmFudWxhcml0eSwgdW5zaWduZWQgbG9u
+ZyBtYXhfYWxsb2NzKTsKIAogCiBzdGF0aWMgaW5saW5lIHZvaWQgKmZpbmRkZXZpY2UoY29uc3Qg
+Y2hhciAqbmFtZSkKQEAgLTgxLDcgKzgxLDcgQEAgc3RhdGljIGlubGluZSBpbnQgc2V0cHJvcCh2
+b2lkICpkZXZwLCBjbwogCXJldHVybiAoZHRfb3BzLnNldHByb3ApID8gZHRfb3BzLnNldHByb3Ao
+ZGV2cCwgbmFtZSwgYnVmLCBidWZsZW4pIDogLTE7CiB9CiAKLXN0YXRpYyBpbmxpbmUgdm9pZCAq
+bWFsbG9jKHUzMiBzaXplKQorc3RhdGljIGlubGluZSB2b2lkICptYWxsb2ModW5zaWduZWQgbG9u
+ZyBzaXplKQogewogCXJldHVybiAocGxhdGZvcm1fb3BzLm1hbGxvYykgPyBwbGF0Zm9ybV9vcHMu
+bWFsbG9jKHNpemUpIDogTlVMTDsKIH0KLS0tIHBzMy1saW51eC0yLjYuMjEtcmM3Lm9yaWcvYXJj
+aC9wb3dlcnBjL2Jvb3Qvc2ltcGxlX2FsbG9jLmMKKysrIHBzMy1saW51eC0yLjYuMjEtcmM3L2Fy
+Y2gvcG93ZXJwYy9ib290L3NpbXBsZV9hbGxvYy5jCkBAIC0xOSwyNCArMTksMjQgQEAKICNkZWZp
+bmUJRU5UUllfSU5fVVNFCTB4MDIKIAogc3RhdGljIHN0cnVjdCBhbGxvY19pbmZvIHsKLQl1MzIJ
+ZmxhZ3M7Ci0JdTMyCWJhc2U7Ci0JdTMyCXNpemU7CisJdW5zaWduZWQgbG9uZwlmbGFnczsKKwl1
+bnNpZ25lZCBsb25nCWJhc2U7CisJdW5zaWduZWQgbG9uZwlzaXplOwogfSAqYWxsb2NfdGJsOwog
+Ci1zdGF0aWMgdTMyIHRibF9lbnRyaWVzOwotc3RhdGljIHUzMiBhbGxvY19taW47Ci1zdGF0aWMg
+dTMyIG5leHRfYmFzZTsKLXN0YXRpYyB1MzIgc3BhY2VfbGVmdDsKK3N0YXRpYyB1bnNpZ25lZCBs
+b25nIHRibF9lbnRyaWVzOworc3RhdGljIHVuc2lnbmVkIGxvbmcgYWxsb2NfbWluOworc3RhdGlj
+IHVuc2lnbmVkIGxvbmcgbmV4dF9iYXNlOworc3RhdGljIHVuc2lnbmVkIGxvbmcgc3BhY2VfbGVm
+dDsKIAogLyoKICAqIEZpcnN0IHRpbWUgYW4gZW50cnkgaXMgdXNlZCwgaXRzIGJhc2UgYW5kIHNp
+emUgYXJlIHNldC4KICAqIEFuIGVudHJ5IGNhbiBiZSBmcmVlZCBhbmQgcmUtbWFsbG9jJ2QgYnV0
+IGl0cyBiYXNlICYgc2l6ZSBkb24ndCBjaGFuZ2UuCiAgKiBTaG91bGQgYmUgc21hcnQgZW5vdWdo
+IGZvciBuZWVkcyBvZiBib290d3JhcHBlci4KICAqLwotc3RhdGljIHZvaWQgKnNpbXBsZV9tYWxs
+b2ModTMyIHNpemUpCitzdGF0aWMgdm9pZCAqc2ltcGxlX21hbGxvYyh1bnNpZ25lZCBsb25nIHNp
+emUpCiB7Ci0JdTMyIGk7CisJdW5zaWduZWQgbG9uZyBpOwogCXN0cnVjdCBhbGxvY19pbmZvICpw
+ID0gYWxsb2NfdGJsOwogCiAJaWYgKHNpemUgPT0gMCkKQEAgLTY3LDEzICs2NywxNCBAQCBlcnJf
+b3V0OgogCiBzdGF0aWMgc3RydWN0IGFsbG9jX2luZm8gKnNpbXBsZV9maW5kX2VudHJ5KHZvaWQg
+KnB0cikKIHsKLQl1MzIgaTsKKwl1bnNpZ25lZCBsb25nIGk7CiAJc3RydWN0IGFsbG9jX2luZm8g
+KnAgPSBhbGxvY190Ymw7CiAKIAlmb3IgKGk9MDsgaTx0YmxfZW50cmllczsgaSsrLHArKykgewog
+CQlpZiAoIShwLT5mbGFncyAmIEVOVFJZX0JFRU5fVVNFRCkpCiAJCQlicmVhazsKLQkJaWYgKChw
+LT5mbGFncyAmIEVOVFJZX0lOX1VTRSkgJiYgKHAtPmJhc2UgPT0gKHUzMilwdHIpKQorCQlpZiAo
+KHAtPmZsYWdzICYgRU5UUllfSU5fVVNFKSAmJgorCQkgICAgKHAtPmJhc2UgPT0gKHVuc2lnbmVk
+IGxvbmcpcHRyKSkKIAkJCXJldHVybiBwOwogCX0KIAlyZXR1cm4gTlVMTDsKQEAgLTEyMiwxMCAr
+MTIzLDEwIEBAIHN0YXRpYyB2b2lkICpzaW1wbGVfcmVhbGxvYyh2b2lkICpwdHIsIHUKICAqIFJl
+dHVybnMgYWRkciBvZiBmaXJzdCBieXRlIGFmdGVyIGhlYXAgc28gY2FsbGVyIGNhbiBzZWUgaWYg
+aXQgdG9vawogICogdG9vIG11Y2ggc3BhY2UuICBJZiBzbywgY2hhbmdlIGFyZ3MgJiB0cnkgYWdh
+aW4uCiAgKi8KLXZvaWQgKnNpbXBsZV9hbGxvY19pbml0KGNoYXIgKmJhc2UsIHUzMiBoZWFwX3Np
+emUsIHUzMiBncmFudWxhcml0eSwKLQkJdTMyIG1heF9hbGxvY3MpCit2b2lkICpzaW1wbGVfYWxs
+b2NfaW5pdChjaGFyICpiYXNlLCB1bnNpZ25lZCBsb25nIGhlYXBfc2l6ZSwKKwkJCXVuc2lnbmVk
+IGxvbmcgZ3JhbnVsYXJpdHksIHVuc2lnbmVkIGxvbmcgbWF4X2FsbG9jcykKIHsKLQl1MzIgaGVh
+cF9iYXNlLCB0Ymxfc2l6ZTsKKwl1bnNpZ25lZCBsb25nIGhlYXBfYmFzZSwgdGJsX3NpemU7CiAK
+IAloZWFwX3NpemUgPSBfQUxJR05fVVAoaGVhcF9zaXplLCBncmFudWxhcml0eSk7CiAJYWxsb2Nf
+bWluID0gZ3JhbnVsYXJpdHk7CkBAIC0xMzYsNyArMTM3LDcgQEAgdm9pZCAqc2ltcGxlX2FsbG9j
+X2luaXQoY2hhciAqYmFzZSwgdTMyIAogCWFsbG9jX3RibCA9IChzdHJ1Y3QgYWxsb2NfaW5mbyAq
+KV9BTElHTl9VUCgodW5zaWduZWQgbG9uZyliYXNlLCA4KTsKIAltZW1zZXQoYWxsb2NfdGJsLCAw
+LCB0Ymxfc2l6ZSk7CiAKLQloZWFwX2Jhc2UgPSBfQUxJR05fVVAoKHUzMilhbGxvY190YmwgKyB0
+Ymxfc2l6ZSwgYWxsb2NfbWluKTsKKwloZWFwX2Jhc2UgPSBfQUxJR05fVVAoKHVuc2lnbmVkIGxv
+bmcpYWxsb2NfdGJsICsgdGJsX3NpemUsIGFsbG9jX21pbik7CiAKIAluZXh0X2Jhc2UgPSBoZWFw
+X2Jhc2U7CiAJc3BhY2VfbGVmdCA9IGhlYXBfc2l6ZTsKCkdye29ldGplLGVldGluZ31zLAoKCQkJ
+CQkJR2VlcnQKCi0tCkdlZXJ0IFV5dHRlcmhvZXZlbiAtLSBTb255IE5ldHdvcmsgYW5kIFNvZnR3
+YXJlIFRlY2hub2xvZ3kgQ2VudGVyIEV1cm9wZSAoTlNDRSkKR2VlcnQuVXl0dGVyaG9ldmVuQGV1
+LnNvbnkuY29tIC0tLS0tLS0gVGhlIENvcnBvcmF0ZSBWaWxsYWdlLCBEYSBWaW5jaWxhYW4gNy1E
+MQpWb2ljZSArMzItMi03MDA4NDUzIEZheCArMzItMi03MDA4NjIyIC0tLS0tLS0tLS0tLS0tLS0g
+Qi0xOTM1IFphdmVudGVtLCBCZWxnaXVtCgoqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioq
+KioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioqKioKVGhlIGluZm9ybWF0aW9u
+IGNvbnRhaW5lZCBpbiB0aGlzIG1lc3NhZ2Ugb3IgYW55IG9mIGl0cyBhdHRhY2htZW50cyBtYXkg
+YmUgY29uZmlkZW50aWFsIGFuZCBpcyBpbnRlbmRlZCBmb3IgdGhlIGV4Y2x1c2l2ZSB1c2Ugb2Yg
+dGhlIGFkZHJlc3NlZShzKS4gIEFueSBkaXNjbG9zdXJlLCByZXByb2R1Y3Rpb24sIGRpc3RyaWJ1
+dGlvbiBvciBvdGhlciBkaXNzZW1pbmF0aW9uIG9yIHVzZSBvZiB0aGlzIGNvbW11bmljYXRpb24g
+aXMgc3RyaWN0bHkgcHJvaGliaXRlZCB3aXRob3V0IHRoZSBleHByZXNzIHBlcm1pc3Npb24gb2Yg
+dGhlIHNlbmRlci4gIFRoZSB2aWV3cyBleHByZXNzZWQgaW4gdGhpcyBlbWFpbCBhcmUgdGhvc2Ug
+b2YgdGhlIGluZGl2aWR1YWwgYW5kIG5vdCBuZWNlc3NhcmlseSB0aG9zZSBvZiBTb255IG9yIFNv
+bnkgYWZmaWxpYXRlZCBjb21wYW5pZXMuICBTb255IGVtYWlsIGlzIGZvciBidXNpbmVzcyB1c2Ug
+b25seS4KClRoaXMgZW1haWwgYW5kIGFueSByZXNwb25zZSBtYXkgYmUgbW9uaXRvcmVkIGJ5IFNv
+bnkgdG8gYmUgaW4gY29tcGxpYW5jZSB3aXRoIFNvbnmScyBnbG9iYWwgcG9saWNpZXMgYW5kIHN0
+YW5kYXJkcwo=
