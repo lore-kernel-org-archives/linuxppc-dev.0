@@ -1,14 +1,24 @@
 Return-Path: <jdl@freescale.com>
-Subject: Re: [PATCH 9/10] Add device tree for Ebony
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D8727DE082
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 04:28:09 +1000 (EST)
+Subject: Re: [PATCH: dtc take 2] Assemble the blob in memory before writing
+	it out.
 From: Jon Loeliger <jdl@freescale.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-In-Reply-To: <20070418063626.D5DCCDDEBA@ozlabs.org>
-References: <20070418063626.D5DCCDDEBA@ozlabs.org>
+To: Jerry Van Baren <gvb.uboot@gmail.com>
+In-Reply-To: <20070419015951.GA9339@dellserver.lan>
+References: <20070419015951.GA9339@dellserver.lan>
 Content-Type: text/plain
-Message-Id: <1177006172.14328.13.camel@ld0161-tx32>
+Message-Id: <1177007241.14328.21.camel@ld0161-tx32>
 Mime-Version: 1.0
-Date: Thu, 19 Apr 2007 13:09:32 -0500
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Date: Thu, 19 Apr 2007 13:27:22 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Jon Loeliger <jdl@jdl.com>,
+	u-boot-users <u-boot-users@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,38 +28,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-04-18 at 01:36, David Gibson wrote:
-> Add a device tree for the Ebony evaluation board (440GP based).  This
-> tree is not complete or finalized.  This tree needs a very recent
-> version of dtc to process.
+On Wed, 2007-04-18 at 20:59, Jerry Van Baren wrote:
+> This makes padding out the blob if the user requested extra size much
+> easer.  The assembly and writing to the file is more straight forward too.
+> 
+> Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
+> ---
+> 
+> Hi David, Jon,
+> 
+> I wasn't happy with David's suggestion on the -S handling.  I also wasn't
+> all that wild about how the blob was assembled and then written to the
+> file piecemeal with "ad-hoc" alignment padding.  I realized I could fix
+> both by assembling the blob in memory as a "struct data" and then write
+> the whole thing out in one fell swoop.
+> 
+> Makes it a lot simpler and cleaner to my eyes.
+> 
+> Hope y'all agree,
+> gvb
 
-"recent" will get stale without absolute reference here.
-In fact,  -V 16 is "old" now even. :-)
+Jerry and David,
 
+Sorry.  I've been out sick for a couple days here and am
+just now catching up.  I've read through the last week's
+worth of mail here now, so let me see if I have properly
+summarized where things stand and what's needed for the DTC:
 
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-03-21 13:23:48.000000000 +1100
-> @@ -0,0 +1,295 @@
-> +/*
-> + * Device Tree Source for IBM Ebony
-> + *
-> + * Copyright (c) 2006, 2007 IBM Corp.
-> + * Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
-> + *
-> + * FIXME: Draft only!
+These patches need to be applied:
 
-Hrm.
+    [PATCH dtc] Add -o <output file> to the usage message.
+    Sat, 14 Apr 2007 18:16:47 -0400
 
-> + * This file is licensed under the terms of the GNU General Public
-> + * License version 2.  This program is licensed "as is" without
-> + * any warranty of any kind, whether express or implied.
-> + *
-> + * To build:
-> + *   dtc -I dts -O asm -o ebony.S -b 0 -V 16 ebony.dts
-> + *   dtc -I dts -O dtb -o ebony.dtb -b 0 -V 16 ebony.dts
+    [PATCH dtc take 3] Fix reserve map output for asm format.
+    Tue, 17 Apr 2007 18:14:41 -0400
 
-Really Version 16?  Can we just default to latest version
-by not specifying the -V arg at all?
+    [PATCH: dtc take 2] Assemble the blob in memory before writing it out.
+    Wed, 18 Apr 2007 21:59:51 -0400
+
+The last patch there replaces the "Improve -S handling" patches.
+But does the last patch replace or depend on the second one?
+
+And I agree with David that last patch is a better approach.
 
 Thanks,
 jdl
