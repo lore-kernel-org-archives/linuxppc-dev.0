@@ -1,14 +1,15 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.67.118]) by ozlabs.org (Postfix) with ESMTP id ADE03DDE3D
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 05:43:12 +1000 (EST)
-From: Grant Likely <grant.likely@secretlab.ca>
-To: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org,
-	Sylvain Munaut <tnt@246tnt.com>, Wolfgang Denk <wd@denx.de>,
-	Bartlomiej Sieka <tur@semihalf.com>
-Subject: [PATCH] Don't shutdown TX on mpc5200 serial port if it is a console
-Date: Thu, 19 Apr 2007 13:42:54 -0600
-Message-Id: <11770117743675-git-send-email-grant.likely@secretlab.ca>
+Return-Path: <mgreer@mvista.com>
+Date: Thu, 19 Apr 2007 13:03:25 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: David Gibson <david@gibson.dropbear.id.au>
+Subject: Re: [PATCH 10/10] zImage wrapper for Ebony
+Message-ID: <20070419200325.GA11628@mag.az.mvista.com>
+References: <20070418063517.GB29312@localhost.localdomain>
+	<20070418063626.E6AADDDE3B@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070418063626.E6AADDDE3B@ozlabs.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,38 +19,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-If the serial port gets shut down, then console output stalls.  9 out
-of 10 kernel hackers agree, this is a bad thing.
+On Wed, Apr 18, 2007 at 04:36:26PM +1000, David Gibson wrote:
+> This patch adds support for building a zImage wrapper suitable for the
+> Ebony (440GP) evaluation board.  This supports booting both from uboot
+> (old versions which don't supply a flattened device tree) and IBM
+> Openbios (aka "treeboot").
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
+<snip>
 
-Wolfgang, please verify this new patch.  Sylvain rightly pointed out that
-RX and interrupts should be turned off regardless.  If it works for you,
-please reply with a Signed-of-by line.
+> Index: working-2.6/arch/powerpc/boot/Makefile
+> ===================================================================
+> --- working-2.6.orig/arch/powerpc/boot/Makefile	2007-04-18 14:42:52.000000000 +1000
+> +++ working-2.6/arch/powerpc/boot/Makefile	2007-04-18 14:43:14.000000000 +1000
 
-Thanks,
-g.
+<snip>
 
- drivers/serial/mpc52xx_uart.c |    5 +++--
- 1 files changed, 3 insertions(+), 2 deletions(-)
+> @@ -159,6 +168,21 @@ $(obj)/zImage.ps3: vmlinux
+>  $(obj)/zImage.initrd.ps3: vmlinux
+>  	@echo "  WARNING zImage.initrd.ps3 not supported (yet)"
+>  
+> +$(obj)/zImage.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb
+> +	$(call if_changed,wrap,ebony,,$(obj)/ebony.dtb)
+> +
+> +$(obj)/zImage.initrd.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/ramdisk.image.gz
+> +	$(call if_changed,wrap,ebony,,$(obj)/ebony.dtb,$(obj)/ramdisk.img.gz)
+> +
+> +$(obj)/zImage.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
+> +	$(call if_changed,wrap,ebony-tree,,$(obj)/ebony.dtb)
+> +
+> +$(obj)/zImage.initrd.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
+> +	$(call if_changed,wrap,ebony-tree,,$(obj)/ebony.dtb,$(obj)/ramdisk.img.gz)
+> +
+> +$(obj)/uImage.ebony: vmlinux $(wrapperbits)  $(obj)/ebony.dtb
+> +	$(call if_changed,wrap,ebony-uboot,,$(obj)/ebony.dtb)
+> +
+>  $(obj)/uImage: vmlinux $(wrapperbits)
+>  	$(call if_changed,wrap,uboot)
 
-diff --git a/drivers/serial/mpc52xx_uart.c b/drivers/serial/mpc52xx_uart.c
-index f8c1761..35f8b86 100644
---- a/drivers/serial/mpc52xx_uart.c
-+++ b/drivers/serial/mpc52xx_uart.c
-@@ -257,9 +257,10 @@ mpc52xx_uart_shutdown(struct uart_port *port)
- {
- 	struct mpc52xx_psc __iomem *psc = PSC(port);
- 
--	/* Shut down the port, interrupt and all */
-+	/* Shut down the port.  Leave TX active if on a console port */
- 	out_8(&psc->command,MPC52xx_PSC_RST_RX);
--	out_8(&psc->command,MPC52xx_PSC_RST_TX);
-+	if (!uart_console(port))
-+		out_8(&psc->command,MPC52xx_PSC_RST_TX);
- 
- 	port->read_status_mask = 0;
- 	out_be16(&psc->mpc52xx_psc_imr,port->read_status_mask);
--- 
-1.5.1
+Hi David,
+
+It would be better to write generic rules for dtb sort of thing like
+what Milton did (and what I did in "[PATCH] powerpc: Add Makefile rule
+to wrap dts file in zImage")?  It'll keep our Makefile much cleaner
+over the long run.
+
+Mark
