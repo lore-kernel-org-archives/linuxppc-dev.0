@@ -1,20 +1,14 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D3C5EDDE41
-	for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2007 22:11:15 +1000 (EST)
-In-Reply-To: <20070419065430.GA5862@localhost.localdomain>
-References: <20070419065430.GA5862@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CE8B1295-3D26-4495-99B9-3448E3CE69D9@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: RFC: powerpc: Start splitting up mmu.h by MMU type
-Date: Thu, 19 Apr 2007 07:11:07 -0500
+Return-Path: <jdl@freescale.com>
+Subject: Re: [PATCH 9/10] Add device tree for Ebony
+From: Jon Loeliger <jdl@freescale.com>
 To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070418063626.D5DCCDDEBA@ozlabs.org>
+References: <20070418063626.D5DCCDDEBA@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1177006172.14328.13.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Thu, 19 Apr 2007 13:09:32 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,23 +18,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2007-04-18 at 01:36, David Gibson wrote:
+> Add a device tree for the Ebony evaluation board (440GP based).  This
+> tree is not complete or finalized.  This tree needs a very recent
+> version of dtc to process.
 
-On Apr 19, 2007, at 1:54 AM, David Gibson wrote:
+"recent" will get stale without absolute reference here.
+In fact,  -V 16 is "old" now even. :-)
 
-> This patch makes a start to sorting out the tangled mess of MMU
-> related header files in asm-powerpc, and weaning arch/powerpc off the
-> remaining asm-ppc headers it uses.
->
-> Specifically it splits the ppc64 specific (or more strictly, the
-> 64-bit hash table specific) parts of asm-powerpc/mmu.h into its own
-> file, asm-powerpc/mmu-hash64/mmu.h.  Similarly, PowerPC 44x
-> definitions are taken from asm-ppc/mmu.h, trimmed down for use in
-> arch/powerpc and place in their own file, asm-powerpc/mmu-44x/mmu.h.
->
-> mmu.h definitions for other 32-bit MMU types remain in asm-ppc/mmu.h
-> for now, but should be likewise split into their own files.
 
-I asked this before, but why the need for a separate directory per  
-mmu type?  why not just include/asm-powerpc/mmu-44x.h?
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-03-21 13:23:48.000000000 +1100
+> @@ -0,0 +1,295 @@
+> +/*
+> + * Device Tree Source for IBM Ebony
+> + *
+> + * Copyright (c) 2006, 2007 IBM Corp.
+> + * Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
+> + *
+> + * FIXME: Draft only!
 
-- k
+Hrm.
+
+> + * This file is licensed under the terms of the GNU General Public
+> + * License version 2.  This program is licensed "as is" without
+> + * any warranty of any kind, whether express or implied.
+> + *
+> + * To build:
+> + *   dtc -I dts -O asm -o ebony.S -b 0 -V 16 ebony.dts
+> + *   dtc -I dts -O dtb -o ebony.dtb -b 0 -V 16 ebony.dts
+
+Really Version 16?  Can we just default to latest version
+by not specifying the -V arg at all?
+
+Thanks,
+jdl
