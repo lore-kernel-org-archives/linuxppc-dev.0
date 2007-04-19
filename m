@@ -1,15 +1,23 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 19 Apr 2007 13:03:25 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: [PATCH 10/10] zImage wrapper for Ebony
-Message-ID: <20070419200325.GA11628@mag.az.mvista.com>
-References: <20070418063517.GB29312@localhost.localdomain>
-	<20070418063626.E6AADDDE3B@ozlabs.org>
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 29D6CDDE0D
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 07:20:56 +1000 (EST)
+Received: from cpe-66-69-204-88.austin.res.rr.com ([66.69.204.88]
+	helo=[192.168.1.2])
+	by nommos.sslcatacombnetworking.com with esmtpsa (TLSv1:AES256-SHA:256)
+	(Exim 4.63) (envelope-from <galak@kernel.crashing.org>)
+	id 1Hee3h-0000qr-9b
+	for linuxppc-dev@ozlabs.org; Thu, 19 Apr 2007 16:20:53 -0500
+Date: Thu, 19 Apr 2007 16:16:52 -0500 (CDT)
+From: Kumar Gala <galak@kernel.crashing.org>
+To: linuxppc-dev@ozlabs.org
+Subject: [RFC/PATCH] Change 440GP platform to ppc440
+Message-ID: <Pine.LNX.4.64.0704191615040.25069@localhost.localdomain>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070418063626.E6AADDDE3B@ozlabs.org>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: TEXT/PLAIN; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,48 +27,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 18, 2007 at 04:36:26PM +1000, David Gibson wrote:
-> This patch adds support for building a zImage wrapper suitable for the
-> Ebony (440GP) evaluation board.  This supports booting both from uboot
-> (old versions which don't supply a flattened device tree) and IBM
-> Openbios (aka "treeboot").
+I don't see any reason the 440GP should its own platform.  Posting this to
+see if anyone thinks otherwise.
 
-<snip>
+- k
 
-> Index: working-2.6/arch/powerpc/boot/Makefile
-> ===================================================================
-> --- working-2.6.orig/arch/powerpc/boot/Makefile	2007-04-18 14:42:52.000000000 +1000
-> +++ working-2.6/arch/powerpc/boot/Makefile	2007-04-18 14:43:14.000000000 +1000
-
-<snip>
-
-> @@ -159,6 +168,21 @@ $(obj)/zImage.ps3: vmlinux
->  $(obj)/zImage.initrd.ps3: vmlinux
->  	@echo "  WARNING zImage.initrd.ps3 not supported (yet)"
->  
-> +$(obj)/zImage.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb
-> +	$(call if_changed,wrap,ebony,,$(obj)/ebony.dtb)
-> +
-> +$(obj)/zImage.initrd.ebony-elf: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/ramdisk.image.gz
-> +	$(call if_changed,wrap,ebony,,$(obj)/ebony.dtb,$(obj)/ramdisk.img.gz)
-> +
-> +$(obj)/zImage.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
-> +	$(call if_changed,wrap,ebony-tree,,$(obj)/ebony.dtb)
-> +
-> +$(obj)/zImage.initrd.ebony: vmlinux $(wrapperbits) $(obj)/ebony.dtb $(obj)/mktree
-> +	$(call if_changed,wrap,ebony-tree,,$(obj)/ebony.dtb,$(obj)/ramdisk.img.gz)
-> +
-> +$(obj)/uImage.ebony: vmlinux $(wrapperbits)  $(obj)/ebony.dtb
-> +	$(call if_changed,wrap,ebony-uboot,,$(obj)/ebony.dtb)
-> +
->  $(obj)/uImage: vmlinux $(wrapperbits)
->  	$(call if_changed,wrap,uboot)
-
-Hi David,
-
-It would be better to write generic rules for dtb sort of thing like
-what Milton did (and what I did in "[PATCH] powerpc: Add Makefile rule
-to wrap dts file in zImage")?  It'll keep our Makefile much cleaner
-over the long run.
-
-Mark
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 6b59e40..4237aea 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -1119,7 +1119,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.cpu_user_features	= COMMON_USER_BOOKE,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+-		.platform		= "ppc440gp",
++		.platform		= "ppc440",
+ 	},
+ 	{	/* 440GP Rev. C */
+ 		.pvr_mask		= 0xf0000fff,
+@@ -1129,7 +1129,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.cpu_user_features	= COMMON_USER_BOOKE,
+ 		.icache_bsize		= 32,
+ 		.dcache_bsize		= 32,
+-		.platform		= "ppc440gp",
++		.platform		= "ppc440",
+ 	},
+ 	{ /* 440GX Rev. A */
+ 		.pvr_mask		= 0xf0000fff,
