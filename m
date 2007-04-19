@@ -1,11 +1,42 @@
-Return-Path: <michael@ozlabs.org>
-To: <linuxppc-dev@ozlabs.org>
-From: Michael Ellerman <michael@ellerman.id.au>
-Date: Thu, 19 Apr 2007 17:35:29 +1000
-Subject: [PATCH 7/7] MPIC MSI backend
-In-Reply-To: <1176968125.531108.326168797246.qpush@cradle>
-Message-Id: <20070419073556.73A6BDDE4A@ozlabs.org>
-Cc: linux-pci@atrey.karlin.mff.cuni.cz
+Return-Path: <mohan@in.ibm.com>
+Received: from e5.ny.us.ibm.com (e5.ny.us.ibm.com [32.97.182.145])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e5.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8A068DDE30
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2007 21:52:42 +1000 (EST)
+Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
+	by e5.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3JBqdun008981
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2007 07:52:39 -0400
+Received: from d01av02.pok.ibm.com (d01av02.pok.ibm.com [9.56.224.216])
+	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3JBqdjg510408
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2007 07:52:39 -0400
+Received: from d01av02.pok.ibm.com (loopback [127.0.0.1])
+	by d01av02.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3JBqccM024596
+	for <linuxppc-dev@ozlabs.org>; Thu, 19 Apr 2007 07:52:38 -0400
+Date: Thu, 19 Apr 2007 17:22:33 +0530
+From: Mohan Kumar M <mohan@in.ibm.com>
+To: Michael Ellerman <michael@ellerman.id.au>
+Subject: Re: [PATCH] Fix interrupt distribution in ppc970
+Message-ID: <20070419115233.GA4172@in.ibm.com>
+References: <20070306135754.GB7476@in.ibm.com>
+	<1173190615.4675.30.camel@concordia.ozlabs.ibm.com>
+	<20070306165529.GD7476@in.ibm.com>
+	<1173202634.4675.37.camel@concordia.ozlabs.ibm.com>
+	<20070307045341.GG7476@in.ibm.com>
+	<1173264752.5101.49.camel@concordia.ozlabs.ibm.com>
+	<20070409085732.GC4281@in.ibm.com>
+	<1176188763.9836.16.camel@concordia.ozlabs.ibm.com>
+	<eeb3b19029c753682f476e97dcfaa820@bga.com>
+	<1176254201.4815.14.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1176254201.4815.14.camel@concordia.ozlabs.ibm.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	Anton Blanchard <anton@samba.org>,
+	Milton Miller <miltonm@bga.com>, fastboot@lists.osdl.org
+Reply-To: mohan@in.ibm.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,302 +46,125 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-MPIC MSI backend. Based on code from Segher, heavily hacked by me.
-Renamed to mpic_htmsi, as it only deals with MSI over Hypertransport.
+On Wed, Apr 11, 2007 at 11:16:41AM +1000, Michael Ellerman wrote:
+> On Tue, 2007-04-10 at 11:59 -0500, Milton Miller wrote:
+> > 
+> > This means we are doing population counts of two masks, when we really
+> > just care that they are the same.   How about using
+> > cpus_equal(cpu_online_mask, cpu_present_mask)?
+> 
+> Yep that's sensible.
+> 
+> > This shows how close these two functions are.  The difference is
+> > what happens when cpus_empty is true -- we default in one and
+> > ignore in the other.
+> > 
+> > How about adding another arg to get_server, that says to fail
+> > or default for the empty case, with failure being -1?
+> > 
+> > I'll try to code this up, but it might be a day or two until i get
+> > the time.
 
-We need our own irq_chip so that we can do MSI masking/unmasking on
-the device itself. We also need to mask explicitly on shutdown to make
-sure we don't get bitten by lazy-disable semantics.
+I modified the patch based on suggestions given by Milton and Mike.
+Milton is this patch okay?
 
-Signed-off-by: Michael Ellerman <michael@ellerman.id.au>
+Tested on 2.6.21-rc7.
+
+=====
+It is observed that in some PPC970 based machines, When the kernel is
+booted with maxcpus=1, interrupts were distributed to non online cpus
+also. So a condition is included to check whether the cpu online
+map and cpu present map are equal or not. If they are equal
+default_distrib_server is used as the interrupt server otherwise
+default_server(ie boot cpu) is used as the interrupt server.
+
+In addition to this, if an interrupt is assigned to a specific cpu (ie
+smp affinity) and if that cpu is not online, the earlier code used to
+return the default_distrib_server as interrupt server. This patch
+introduces an additional parameter to the get_irq function ie
+strict_check, based on this parameter, if the cpu is not online either
+default_distrib_server or -1 is returned.
+
+Cc: Milton Miller <miltonm@bga.com>,
+    Michael Ellerman <michael@ellerman.id.au>
+Signed-off-by: Mohan Kumar M <mohan@in.ibm.com>
 ---
+ arch/powerpc/platforms/pseries/xics.c |   25 ++++++++++++++++---------
+ 1 file changed, 16 insertions(+), 9 deletions(-)
 
- arch/powerpc/sysdev/Makefile     |    1 
- arch/powerpc/sysdev/mpic.c       |   14 +-
- arch/powerpc/sysdev/mpic.h       |    9 +
- arch/powerpc/sysdev/mpic_htmsi.c |  185 +++++++++++++++++++++++++++++++++++++++
- 4 files changed, 203 insertions(+), 6 deletions(-)
-
-Index: msi-new/arch/powerpc/sysdev/Makefile
+Index: linux-2.6.21-rc4/arch/powerpc/platforms/pseries/xics.c
 ===================================================================
---- msi-new.orig/arch/powerpc/sysdev/Makefile
-+++ msi-new/arch/powerpc/sysdev/Makefile
-@@ -4,6 +4,7 @@ endif
- 
- mpic-obj-y			:= mpic.o
- mpic-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o
-+mpic-obj-$(CONFIG_PCI_MSI)	+= mpic_htmsi.o
- obj-$(CONFIG_MPIC)		+= $(mpic-obj-y)
- 
- obj-$(CONFIG_PPC_INDIRECT_PCI)	+= indirect_pci.o
-Index: msi-new/arch/powerpc/sysdev/mpic.c
-===================================================================
---- msi-new.orig/arch/powerpc/sysdev/mpic.c
-+++ msi-new/arch/powerpc/sysdev/mpic.c
-@@ -606,7 +606,7 @@ static irqreturn_t mpic_ipi_action(int i
-  */
+--- linux-2.6.21-rc4.orig/arch/powerpc/platforms/pseries/xics.c
++++ linux-2.6.21-rc4/arch/powerpc/platforms/pseries/xics.c
+@@ -156,9 +156,9 @@ static inline void lpar_qirr_info(int n_
  
  
--static void mpic_unmask_irq(unsigned int irq)
-+void mpic_unmask_irq(unsigned int irq)
+ #ifdef CONFIG_SMP
+-static int get_irq_server(unsigned int virq)
++static int get_irq_server(unsigned int virq, unsigned int strict_check)
  {
- 	unsigned int loops = 100000;
- 	struct mpic *mpic = mpic_from_irq(irq);
-@@ -626,7 +626,7 @@ static void mpic_unmask_irq(unsigned int
- 	} while(mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI)) & MPIC_VECPRI_MASK);
- }
+-	unsigned int server;
++	int server;
+ 	/* For the moment only implement delivery to all cpus or one cpu */
+ 	cpumask_t cpumask = irq_desc[virq].affinity;
+ 	cpumask_t tmp = CPU_MASK_NONE;
+@@ -167,21 +167,25 @@ static int get_irq_server(unsigned int v
+ 		return default_server;
  
--static void mpic_mask_irq(unsigned int irq)
-+void mpic_mask_irq(unsigned int irq)
- {
- 	unsigned int loops = 100000;
- 	struct mpic *mpic = mpic_from_irq(irq);
-@@ -647,7 +647,7 @@ static void mpic_mask_irq(unsigned int i
- 	} while(!(mpic_irq_read(src, MPIC_INFO(IRQ_VECTOR_PRI)) & MPIC_VECPRI_MASK));
- }
+ 	if (cpus_equal(cpumask, CPU_MASK_ALL)) {
+-		server = default_distrib_server;
++		if (cpus_equal(cpu_online_map, cpu_present_map))
++			server = default_distrib_server;
++		else
++			server = default_server;
+ 	} else {
+ 		cpus_and(tmp, cpu_online_map, cpumask);
  
--static void mpic_end_irq(unsigned int irq)
-+void mpic_end_irq(unsigned int irq)
- {
- 	struct mpic *mpic = mpic_from_irq(irq);
- 
-@@ -780,7 +780,7 @@ static unsigned int mpic_type_to_vecpri(
+-		if (cpus_empty(tmp))
++		if (cpus_empty(tmp) && !strict_check)
+ 			server = default_distrib_server;
++		else if(cpus_empty(tmp) && strict_check)
++			server = -1;
+ 		else
+ 			server = get_hard_smp_processor_id(first_cpu(tmp));
  	}
+ 
+ 	return server;
+-
  }
- 
--static int mpic_set_irq_type(unsigned int virq, unsigned int flow_type)
-+int mpic_set_irq_type(unsigned int virq, unsigned int flow_type)
- {
- 	struct mpic *mpic = mpic_from_irq(virq);
- 	unsigned int src = mpic_irq_to_hw(virq);
-@@ -1191,8 +1191,10 @@ void __init mpic_init(struct mpic *mpic)
- 
- 	/* Do the HT PIC fixups on U3 broken mpic */
- 	DBG("MPIC flags: %x\n", mpic->flags);
--	if ((mpic->flags & MPIC_BROKEN_U3) && (mpic->flags & MPIC_PRIMARY))
-- 		mpic_scan_ht_pics(mpic);
-+	if ((mpic->flags & MPIC_BROKEN_U3) && (mpic->flags & MPIC_PRIMARY)) {
-+		mpic_scan_ht_pics(mpic);
-+		mpic_htmsi_init(mpic);
-+	}
- 
- 	for (i = 0; i < mpic->num_sources; i++) {
- 		/* start with vector = source number, and masked */
-Index: msi-new/arch/powerpc/sysdev/mpic.h
-===================================================================
---- msi-new.orig/arch/powerpc/sysdev/mpic.h
-+++ msi-new/arch/powerpc/sysdev/mpic.h
-@@ -11,14 +11,23 @@
-  *
-  */
- 
-+#include <linux/irq.h>
-+
- #ifdef CONFIG_PCI_MSI
- extern void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t hwirq);
-+extern int mpic_htmsi_init(struct mpic *mpic);
  #else
- static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
- 					  irq_hw_number_t hwirq)
+-static int get_irq_server(unsigned int virq)
++static int get_irq_server(unsigned int virq, unsigned int strict_check)
  {
- 	return;
+ 	return default_server;
  }
-+static inline int mpic_htmsi_init(struct mpic *mpic) { return -1; }
- #endif
+@@ -192,7 +196,7 @@ static void xics_unmask_irq(unsigned int
+ {
+ 	unsigned int irq;
+ 	int call_status;
+-	unsigned int server;
++	int server;
  
-+extern int mpic_set_irq_type(unsigned int virq, unsigned int flow_type);
-+extern void mpic_end_irq(unsigned int irq);
-+extern void mpic_mask_irq(unsigned int irq);
-+extern void mpic_unmask_irq(unsigned int irq);
-+
- #endif /* _POWERPC_SYSDEV_MPIC_H */
-Index: msi-new/arch/powerpc/sysdev/mpic_htmsi.c
-===================================================================
---- /dev/null
-+++ msi-new/arch/powerpc/sysdev/mpic_htmsi.c
-@@ -0,0 +1,185 @@
-+/*
-+ * Copyright 2006, Segher Boessenkool, IBM Corporation.
-+ * Copyright 2006-2007, Michael Ellerman, IBM Corporation.
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; version 2 of the
-+ * License.
-+ *
-+ */
-+
-+#include <linux/irq.h>
-+#include <linux/bootmem.h>
-+#include <linux/msi.h>
-+#include <asm/mpic.h>
-+#include <asm/prom.h>
-+#include <asm/hw_irq.h>
-+#include <asm/ppc-pci.h>
-+
-+#include "mpic.h"
-+
-+/* A bit ugly, can we get this from the pci_dev somehow? */
-+static struct mpic *msi_mpic;
-+
-+static void mpic_htmsi_mask_irq(unsigned int irq)
-+{
-+	mask_msi_irq(irq);
-+	mpic_mask_irq(irq);
-+}
-+
-+static void mpic_htmsi_unmask_irq(unsigned int irq)
-+{
-+	mpic_unmask_irq(irq);
-+	unmask_msi_irq(irq);
-+}
-+
-+static struct irq_chip mpic_htmsi_chip = {
-+	.shutdown	= mpic_htmsi_mask_irq,
-+	.mask		= mpic_htmsi_mask_irq,
-+	.unmask		= mpic_htmsi_unmask_irq,
-+	.eoi		= mpic_end_irq,
-+	.set_type	= mpic_set_irq_type,
-+	.typename	= "MPIC-HTMSI",
-+};
-+
-+static u64 read_ht_magic_addr(struct pci_dev *pdev, unsigned int pos)
-+{
-+	u8 flags;
-+	u32 tmp;
-+	u64 addr;
-+
-+	pci_read_config_byte(pdev, pos + HT_MSI_FLAGS, &flags);
-+
-+	if (flags & HT_MSI_FLAGS_FIXED)
-+		return HT_MSI_FIXED_ADDR;
-+
-+	pci_read_config_dword(pdev, pos + HT_MSI_ADDR_LO, &tmp);
-+	addr = tmp & HT_MSI_ADDR_LO_MASK;
-+	pci_read_config_dword(pdev, pos + HT_MSI_ADDR_HI, &tmp);
-+	addr = addr | ((u64)tmp << 32);
-+
-+	return addr;
-+}
-+
-+static u64 find_ht_magic_addr(struct pci_dev *pdev)
-+{
-+	struct pci_bus *bus;
-+	unsigned int pos;
-+
-+	for (bus = pdev->bus; bus; bus = bus->parent) {
-+		pos = pci_find_ht_capability(bus->self, HT_CAPTYPE_MSI_MAPPING);
-+		if (pos)
-+			return read_ht_magic_addr(bus->self, pos);
-+	}
-+
-+	return 0;
-+}
-+
-+static int htmsi_msi_check_device(struct pci_dev *pdev, int nvec, int type)
-+{
-+	if (type == PCI_CAP_ID_MSIX)
-+		pr_debug("htmsi: MSI-X untested, trying anyway.\n");
-+
-+	/* If we can't find a magic address then MSI ain't gonna work */
-+	if (find_ht_magic_addr(pdev) == 0) {
-+		pr_debug("htmsi: no magic address found for %s\n",
-+			 pci_name(pdev));
-+		return -ENXIO;
-+	}
-+
-+	return 0;
-+}
-+
-+static void htmsi_teardown_msi_irqs(struct pci_dev *pdev)
-+{
-+	struct msi_desc *entry;
-+
-+        list_for_each_entry(entry, &pdev->msi_list, list) {
-+		if (entry->irq == NO_IRQ)
-+			continue;
-+
-+		set_irq_msi(entry->irq, NULL);
-+		mpic_msi_free_hwirqs(msi_mpic, virq_to_hw(entry->irq), 1);
-+		irq_dispose_mapping(entry->irq);
-+	}
-+
-+	return;
-+}
-+
-+static void htmsi_compose_msi_msg(struct pci_dev *pdev, int virq,
-+				  struct msi_msg *msg)
-+{
-+	u64 addr;
-+
-+	addr = find_ht_magic_addr(pdev);
-+	msg->address_lo = addr & 0xFFFFFFFF;
-+	msg->address_hi = addr >> 32;
-+	msg->data = virq_to_hw(virq);
-+
-+	pr_debug("htmsi: allocated virq 0x%x (hw 0x%lx) at address 0x%lx\n",
-+		 virq, virq_to_hw(virq), addr);
-+}
-+
-+static int htmsi_setup_msi_irqs(struct pci_dev *pdev, int nvec, int type)
-+{
-+	irq_hw_number_t hwirq;
-+	int rc;
-+	unsigned int virq;
-+	struct msi_desc *entry;
-+	struct msi_msg msg;
-+
-+	list_for_each_entry(entry, &pdev->msi_list, list) {
-+		hwirq = mpic_msi_alloc_hwirqs(msi_mpic, 1);
-+		if (hwirq < 0) {
-+			rc = hwirq;
-+			pr_debug("htmsi: failed allocating hwirq\n");
-+			goto out_free;
-+		}
-+
-+		virq = irq_create_mapping(msi_mpic->irqhost, hwirq);
-+		if (virq == NO_IRQ) {
-+			pr_debug("htmsi: failed mapping hwirq 0x%lx\n", hwirq);
-+			mpic_msi_free_hwirqs(msi_mpic, hwirq, 1);
-+			rc = -ENOSPC;
-+			goto out_free;
-+		}
-+
-+		set_irq_msi(virq, entry);
-+		set_irq_chip(virq, &mpic_htmsi_chip);
-+		set_irq_type(virq, IRQ_TYPE_EDGE_RISING);
-+
-+		htmsi_compose_msi_msg(pdev, virq, &msg);
-+		write_msi_msg(virq, &msg);
-+
-+		hwirq++;
-+	}
-+
-+	return 0;
-+
-+ out_free:
-+	htmsi_teardown_msi_irqs(pdev);
-+	return rc;
-+}
-+
-+int mpic_htmsi_init(struct mpic *mpic)
-+{
-+	int rc;
-+
-+	rc = mpic_msi_init_allocator(mpic);
-+	if (rc) {
-+		pr_debug("htmsi: Error allocating bitmap!\n");
-+		return rc;
-+	}
-+
-+	pr_debug("htmsi: Registering MPIC MSI callbacks.\n");
-+
-+	BUG_ON(msi_mpic);
-+	msi_mpic = mpic;
-+
-+	ppc_md.setup_msi_irqs = htmsi_setup_msi_irqs;
-+	ppc_md.teardown_msi_irqs = htmsi_teardown_msi_irqs;
-+	ppc_md.msi_check_device = htmsi_msi_check_device;
-+
-+	return 0;
-+}
+ 	pr_debug("xics: unmask virq %d\n", virq);
+ 
+@@ -201,7 +205,7 @@ static void xics_unmask_irq(unsigned int
+ 	if (irq == XICS_IPI || irq == XICS_IRQ_SPURIOUS)
+ 		return;
+ 
+-	server = get_irq_server(virq);
++	server = get_irq_server(virq, 0);
+ 
+ 	call_status = rtas_call(ibm_set_xive, 3, 1, NULL, irq, server,
+ 				DEFAULT_PRIORITY);
+@@ -415,7 +419,10 @@ static void xics_set_affinity(unsigned i
+ 
+ 	/* For the moment only implement delivery to all cpus or one cpu */
+ 	if (cpus_equal(cpumask, CPU_MASK_ALL)) {
+-		newmask = default_distrib_server;
++		if (cpus_equal(cpu_online_map, cpu_present_map))
++			newmask = default_distrib_server;
++		else
++			newmask = default_server;
+ 	} else {
+ 		cpus_and(tmp, cpu_online_map, cpumask);
+ 		if (cpus_empty(tmp))
