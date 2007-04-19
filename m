@@ -2,17 +2,21 @@ Return-Path: <jdl@jdl.com>
 Received: from jdl.com (jdl.com [208.123.74.7])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0BF50DDEC0
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 08:28:47 +1000 (EST)
-To: Jerry Van Baren <gvb.uboot@gmail.com>
-Subject: Re: [PATCH dtc] Add -o <output file> to the usage message. 
-In-Reply-To: Your message of "Sat, 14 Apr 2007 18:16:47 EDT."
-	<20070414221647.GB23870@dellserver.lan>
-References: <20070414221647.GB23870@dellserver.lan> 
-Date: Thu, 19 Apr 2007 17:28:41 -0500
+	by ozlabs.org (Postfix) with ESMTP id D9996DDEC1
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 08:31:42 +1000 (EST)
+To: Jerry Van Baren <gerald.vanbaren@smiths-aerospace.com>
+Subject: Re: [U-Boot-Users] [PATCH: dtc take 2] Assemble the blob in memory
+	before writing it out.
+In-Reply-To: Your message of "Thu, 19 Apr 2007 14:49:43 EDT."
+	<4627B9C7.8010800@smiths-aerospace.com>
+References: <20070419015951.GA9339@dellserver.lan>
+	<1177007241.14328.21.camel@ld0161-tx32>
+	<4627B9C7.8010800@smiths-aerospace.com>
+Date: Thu, 19 Apr 2007 17:31:36 -0500
 From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1Hef7J-0008Sx-Rt@jdl.com>
-Cc: linuxppc-dev@ozlabs.org
+Message-Id: <E1HefA8-0008Tl-VA@jdl.com>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	u-boot-users <u-boot-users@lists.sourceforge.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,12 +28,23 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 So, like, the other day Jerry Van Baren mumbled:
 > 
-> Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
-> ---
-> 
-> It turns out -o <file> was there all along, just not in the usage. :-)
+> Patch #2 and #3...
+>    [PATCH dtc take 3] Fix reserve map output for asm format.
+>    Tue, 17 Apr 2007 18:14:41 -0400
+>    [PATCH: dtc take 2] Assemble the blob in memory before writing it out.
+>    Wed, 18 Apr 2007 21:59:51 -0400
 
-Applied.
+[snip]
+
+> AAAARGH!  Sorry, I see I left a debug statement in flattree.c around 
+> line 390:
+
+> Your option:
+> 1) Take the last two patches as is and remove the fprintf yourself
+
+
+Applied #2 and #3 listed above.
+Cleaned out the debug fprintf().
 
 Thanks,
 jdl
