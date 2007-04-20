@@ -1,16 +1,15 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id EC98CDDE48
+Return-Path: <indianirav@yahoo.com>
+Received: from web43131.mail.sp1.yahoo.com (web43131.mail.sp1.yahoo.com
+	[216.252.121.61]) by ozlabs.org (Postfix) with SMTP id DFFE7DDE41
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Apr 2007 04:02:08 +1000 (EST)
-Subject: POSIX semaphores on ppc_6xx
-From: Ben Warren <bwarren@qstreams.com>
-To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Fri, 20 Apr 2007 13:55:26 -0400
-Message-Id: <1177091726.3904.21.camel@saruman.qstreams.net>
-Mime-Version: 1.0
-Reply-To: bwarren@qstreams.com
+	Sat, 21 Apr 2007 05:08:20 +1000 (EST)
+Date: Fri, 20 Apr 2007 12:01:40 -0700 (PDT)
+From: patel nirav <indianirav@yahoo.com>
+Subject: how to cross compile assembly file for powerpc
+To: linux ppc <linuxppc-embedded@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: multipart/alternative; boundary="0-2080384610-1177095700=:56258"
+Message-ID: <290919.56258.qm@web43131.mail.sp1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,21 +20,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+--0-2080384610-1177095700=:56258
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-The cross-compiled glibc that is included in ELDK 4.0 doesn't seem to
-have support for POSIX semaphores.  I get the following runtime errors:
+hello all,
+  I have installed croostool for power pc.
+  Now I created assembly file (.s) with the help of cross compiler.
+  ./powerpc-gcc -S hello.c
+  Now We have hello.s with us. 
+  Now I make changes in the hello.s
+  Now I want to create binary executable of hello.s for PowerPC.
+  So what can I do?
+  Any help will be appreciated.
+   
+  Thanks & Regards
+   
+  Nirav
+  Institute for Plasma Research,
+  India.
 
-   sem_open: Function not implemented
+       
+---------------------------------
+Ahhh...imagining that irresistible "new car" smell?
+ Check outnew cars at Yahoo! Autos.
+--0-2080384610-1177095700=:56258
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-when trying to implement a named semaphore, and 
+<div>hello all,</div>  <div>I have installed croostool for power pc.</div>  <div>Now I created assembly file (.s) with the help of cross compiler.</div>  <div>./powerpc-gcc -S hello.c</div>  <div>Now We have hello.s with us. </div>  <div>Now I make changes in the hello.s</div>  <div>Now I want to create binary executable of hello.s for PowerPC.</div>  <div>So what can I do?</div>  <div>Any help will be appreciated.</div>  <div>&nbsp;</div>  <div>Thanks &amp; Regards</div>  <div>&nbsp;</div>  <div>Nirav</div>  <div>Institute for Plasma Research,</div>  <div>India.</div><p>&#32;
 
-   sem_init: Function not implemented
 
-when trying to implement an unnamed semaphore.
 
-Does anybody know if POSIX semaphores have been ported to ppc_6xx, and
-if so, where I could find a binary copy?
+      <hr size=1>Ahhh...imagining that irresistible "new car" smell?<br> Check out
+<a href="http://us.rd.yahoo.com/evt=48245/*http://autos.yahoo.com/new_cars.html;_ylc=X3oDMTE1YW1jcXJ2BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDbmV3LWNhcnM-">new cars at Yahoo! Autos.</a>
 
-thanks,
-Ben
+--0-2080384610-1177095700=:56258--
