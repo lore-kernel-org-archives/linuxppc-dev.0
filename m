@@ -1,31 +1,20 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e6.ny.us.ibm.com (e6.ny.us.ibm.com [32.97.182.146])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e6.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 1E747DDEDF
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Apr 2007 06:47:24 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e6.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3KKmEk6024100
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 16:48:14 -0400
-Received: from d01av04.pok.ibm.com (d01av04.pok.ibm.com [9.56.224.64])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3KKlLRU523284
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 16:47:21 -0400
-Received: from d01av04.pok.ibm.com (loopback [127.0.0.1])
-	by d01av04.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3KKlLTr006578
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 16:47:21 -0400
-Date: Fri, 20 Apr 2007 15:47:20 -0500
-To: matthew@wil.cx
-Subject: [PATCH 2/2]: PCI Error Recovery: Symbios SCSI First Failure
-Message-ID: <20070420204720.GM31947@austin.ibm.com>
-References: <20070420204114.GL31947@austin.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070420204114.GL31947@austin.ibm.com>
-From: linas@austin.ibm.com (Linas Vepstas)
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz,
-	linux-kernel@vger.kernel.org, linux-scsi@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 33BD5DDEE1
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Apr 2007 06:57:40 +1000 (EST)
+In-Reply-To: <20070420151136.3fdb160f.kim.phillips@freescale.com>
+References: <20070420151136.3fdb160f.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <B0B16FB3-62D7-434B-9135-E87D2AFFFF07@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 1/4 v3] powerpc: document interface-type property
+Date: Fri, 20 Apr 2007 15:57:36 -0500
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,99 +25,21 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Implement the so-called "first failure data capture" (FFDC) for the
-symbios PCI error recovery.  After a PCI error event is reported,
-the driver requests that MMIO be enabled. Once enabled, it 
-then reads and dumps assorted status registers, and concludes
-by requesting the usual reset sequence.
+On Apr 20, 2007, at 3:11 PM, Kim Phillips wrote:
 
-(includes a whitespace fix for bad indentation).
+> Since ucc_geth is being migrated to use the phylib, the existing
+> (undocumented) 'interface' property is being deprecated in favour
+> of a stringified version, 'interface-type'.
+>
+> interface-type is maintained one-to-one with definitions
+> in include/linux/phy.h.  If not specified, "mii" is assumed.
+>
+> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+> ---
+> removed max-speed property, since the name is apparently too generic
+> (it's derived from the interface-type anyway)
 
-Signed-off-by: Linas Vepstas <linas@austin.ibm.com>
+Are you sure?  Is not possible to use a gmii phy on a 8323 and limit  
+it to 10/100?
 
-----
- drivers/scsi/sym53c8xx_2/sym_glue.c |   15 +++++++++++++++
- drivers/scsi/sym53c8xx_2/sym_glue.h |    1 +
- drivers/scsi/sym53c8xx_2/sym_hipd.c |   18 ++++++++++++++----
- 3 files changed, 30 insertions(+), 4 deletions(-)
-
-Index: linux-2.6.21-rc4-git4/drivers/scsi/sym53c8xx_2/sym_glue.c
-===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/scsi/sym53c8xx_2/sym_glue.c	2007-04-20 12:52:01.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/scsi/sym53c8xx_2/sym_glue.c	2007-04-20 15:25:35.000000000 -0500
-@@ -1987,6 +1987,20 @@ static pci_ers_result_t sym2_io_error_de
- 	disable_irq(pdev->irq);
- 	pci_disable_device(pdev);
- 
-+	/* Request that MMIO be enabled, so register dump can be taken. */
-+	return PCI_ERS_RESULT_CAN_RECOVER;
-+}
-+
-+/**
-+ * sym2_io_slot_dump -- Enable MMIO and dump debug registers
-+ * @pdev: pointer to PCI device
-+ */
-+static pci_ers_result_t sym2_io_slot_dump (struct pci_dev *pdev)
-+{
-+	struct sym_hcb *np = pci_get_drvdata(pdev);
-+
-+	sym_dump_registers(np);
-+
- 	/* Request a slot reset. */
- 	return PCI_ERS_RESULT_NEED_RESET;
- }
-@@ -2241,6 +2255,7 @@ MODULE_DEVICE_TABLE(pci, sym2_id_table);
- 
- static struct pci_error_handlers sym2_err_handler = {
- 	.error_detected = sym2_io_error_detected,
-+	.mmio_enabled = sym2_io_slot_dump,
- 	.slot_reset = sym2_io_slot_reset,
- 	.resume = sym2_io_resume,
- };
-Index: linux-2.6.21-rc4-git4/drivers/scsi/sym53c8xx_2/sym_glue.h
-===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/scsi/sym53c8xx_2/sym_glue.h	2007-04-20 12:15:07.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/scsi/sym53c8xx_2/sym_glue.h	2007-04-20 15:21:31.000000000 -0500
-@@ -270,5 +270,6 @@ void sym_xpt_async_bus_reset(struct sym_
- void sym_xpt_async_sent_bdr(struct sym_hcb *np, int target);
- int  sym_setup_data_and_start (struct sym_hcb *np, struct scsi_cmnd *csio, struct sym_ccb *cp);
- void sym_log_bus_error(struct sym_hcb *np);
-+void sym_dump_registers(struct sym_hcb *np);
- 
- #endif /* SYM_GLUE_H */
-Index: linux-2.6.21-rc4-git4/drivers/scsi/sym53c8xx_2/sym_hipd.c
-===================================================================
---- linux-2.6.21-rc4-git4.orig/drivers/scsi/sym53c8xx_2/sym_hipd.c	2007-04-20 12:18:59.000000000 -0500
-+++ linux-2.6.21-rc4-git4/drivers/scsi/sym53c8xx_2/sym_hipd.c	2007-04-20 15:18:01.000000000 -0500
-@@ -1180,10 +1180,10 @@ static void sym_log_hard_error(struct sy
- 			scr_to_cpu((int) *(u32 *)(script_base + script_ofs)));
- 	}
- 
--        printf ("%s: regdump:", sym_name(np));
--        for (i=0; i<24;i++)
--            printf (" %02x", (unsigned)INB_OFF(np, i));
--        printf (".\n");
-+	printf ("%s: regdump:", sym_name(np));
-+	for (i=0; i<24;i++)
-+	    printf (" %02x", (unsigned)INB_OFF(np, i));
-+	printf (".\n");
- 
- 	/*
- 	 *  PCI BUS error.
-@@ -1192,6 +1192,16 @@ static void sym_log_hard_error(struct sy
- 		sym_log_bus_error(np);
- }
- 
-+void sym_dump_registers(struct sym_hcb *np)
-+{
-+	u_short sist;
-+	u_char dstat;
-+
-+	sist = INW(np, nc_sist);
-+	dstat = INB(np, nc_dstat);
-+	sym_log_hard_error(np, sist, dstat);
-+}
-+
- static struct sym_chip sym_dev_table[] = {
-  {PCI_DEVICE_ID_NCR_53C810, 0x0f, "810", 4, 8, 4, 64,
-  FE_ERL}
+- k
