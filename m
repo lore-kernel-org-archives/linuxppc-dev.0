@@ -1,24 +1,23 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-08.arcor-online.net (mail-in-08.arcor-online.net
-	[151.189.21.48])
+Received: from mail-in-05.arcor-online.net (mail-in-05.arcor-online.net
+	[151.189.21.45])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 2125DDDE2D
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 18:51:12 +1000 (EST)
-In-Reply-To: <1177035524.6890.7.camel@concordia.ozlabs.ibm.com>
-References: <20070416062347.GA20196@lixom.net>
-	<1177024678.7286.23.camel@localhost.localdomain>
-	<1177035524.6890.7.camel@concordia.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 4431BDDE39
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 18:57:15 +1000 (EST)
+In-Reply-To: <20070420082714.4f10f186@localhost.localdomain>
+References: <20070420082714.4f10f186@localhost.localdomain>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <a3519d3b3474ab6530e6e1092e3d60d0@kernel.crashing.org>
+Message-Id: <8ecb814f5d309b596d2a52cde33b16d3@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: save trap number in bad_stack
-Date: Fri, 20 Apr 2007 10:51:06 +0200
-To: michael@ellerman.id.au
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	anton@samba.org
+Subject: Re: [PATCH][RFC][POWERPC] i2c: adds support for i2c bus on 8xx
+Date: Fri, 20 Apr 2007 10:57:04 +0200
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: Jean Delvare <khali@linux-fr.org>,
+	"linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +27,9 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>> +	u64 trap_save;			/* Used when bad stack is encountered */
->>
->> Can you put it elsewhere in the PACA (around less frequently used
->> bits) ? This is a pretty hot area of the PACA...
->
-> It's only set in the bad_stack case though.
->
-> You should put it after cpu_start, there's a bit hole there, and
-> trap_save is readonly during normal operation, so it shouldn't be a
-> performance hit.
+> +				compatible = "fsl-i2c-cpm";
 
-That's not a performance hit compared to the current
-state of the code, sure; but that "hot slot" could
-be used for a hotter variable, instead.
+"fsl,i2c-cpm" instead.
 
 
 Segher
