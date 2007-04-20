@@ -1,31 +1,15 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp06.au.ibm.com (ausmtp06.au.ibm.com [202.81.18.155])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp06.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 0B0BEDDE3E
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 10:03:21 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp06.au.ibm.com (8.13.8/8.13.8) with ESMTP id l3K0565W3793118
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 10:05:06 +1000
-Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3K06UD2120418
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 10:06:30 +1000
-Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
-	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3K02wMc005118
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 10:02:59 +1000
-Date: Fri, 20 Apr 2007 10:02:53 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH] Change 440GP platform to ppc440
-Message-ID: <20070420000253.GA13671@localhost.localdomain>
-References: <Pine.LNX.4.64.0704191615040.25069@localhost.localdomain>
-	<1177019006.3877.36.camel@zod.rchland.ibm.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 20 Apr 2007 10:08:58 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Jon Loeliger <jdl@freescale.com>
+Subject: Re: [PATCH 9/10] Add device tree for Ebony
+Message-ID: <20070420000858.GC13671@localhost.localdomain>
+References: <20070418063626.D5DCCDDEBA@ozlabs.org>
+	<1177006172.14328.13.camel@ld0161-tx32>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1177019006.3877.36.camel@zod.rchland.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <1177006172.14328.13.camel@ld0161-tx32>
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,14 +19,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 19, 2007 at 04:43:26PM -0500, Josh Boyer wrote:
-> On Thu, 2007-04-19 at 16:16 -0500, Kumar Gala wrote:
-> > I don't see any reason the 440GP should its own platform.  Posting this to
-> > see if anyone thinks otherwise.
+On Thu, Apr 19, 2007 at 01:09:32PM -0500, Jon Loeliger wrote:
+> On Wed, 2007-04-18 at 01:36, David Gibson wrote:
+> > Add a device tree for the Ebony evaluation board (440GP based).  This
+> > tree is not complete or finalized.  This tree needs a very recent
+> > version of dtc to process.
 > 
-> Seems fine to me.
+> "recent" will get stale without absolute reference here.
+> In fact,  -V 16 is "old" now even. :-)
 
-Likewise to me.
+Heh, yes..  Comment adjusted.
+
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ working-2.6/arch/powerpc/boot/dts/ebony.dts	2007-03-21 13:23:48.000000000 +1100
+> > @@ -0,0 +1,295 @@
+> > +/*
+> > + * Device Tree Source for IBM Ebony
+> > + *
+> > + * Copyright (c) 2006, 2007 IBM Corp.
+> > + * Josh Boyer <jwboyer@linux.vnet.ibm.com>, David Gibson <dwg@au1.ibm.com>
+> > + *
+> > + * FIXME: Draft only!
+> 
+> Hrm.
+
+Yes..?
+
+> > + * This file is licensed under the terms of the GNU General Public
+> > + * License version 2.  This program is licensed "as is" without
+> > + * any warranty of any kind, whether express or implied.
+> > + *
+> > + * To build:
+> > + *   dtc -I dts -O asm -o ebony.S -b 0 -V 16 ebony.dts
+> > + *   dtc -I dts -O dtb -o ebony.dtb -b 0 -V 16 ebony.dts
+> 
+> Really Version 16?  Can we just default to latest version
+> by not specifying the -V arg at all?
+
+Ah, yes, version reference removed.
 
 -- 
 David Gibson			| I'll have my music baroque, and my code
