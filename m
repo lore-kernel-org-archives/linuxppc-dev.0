@@ -1,18 +1,18 @@
-Return-Path: <jdl@jdl.com>
-Received: from jdl.com (jdl.com [208.123.74.7])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 137ACDDDFF
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 23:46:42 +1000 (EST)
-To: Jerry Van Baren <gvb.uboot@gmail.com>
-Subject: Re: [PATCH] Fix the -S to modify the totalsize properly. 
-In-Reply-To: Your message of "Thu, 19 Apr 2007 22:22:35 EDT."
-	<20070420022235.GA1703@dellserver.lan>
-References: <20070420022235.GA1703@dellserver.lan> 
-Date: Fri, 20 Apr 2007 08:46:37 -0500
-From: Jon Loeliger <jdl@jdl.com>
-Message-Id: <E1HetRd-0003Y8-F2@jdl.com>
-Cc: linuxppc-dev@ozlabs.org, u-boot-users@lists.sourceforge.net
+Return-Path: <tur@semihalf.com>
+Received: from mail.semihalf.com (mail.semihalf.com [62.233.211.107])
+	by ozlabs.org (Postfix) with ESMTP id 83434DDE41
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 23:53:39 +1000 (EST)
+Message-ID: <4628BFE4.2090801@semihalf.com>
+Date: Fri, 20 Apr 2007 15:28:04 +0200
+From: Bartlomiej Sieka <tur@semihalf.com>
+MIME-Version: 1.0
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [PATCH] Don't shutdown TX on mpc5200 serial port if it is a
+	console
+References: <11770117743675-git-send-email-grant.likely@secretlab.ca>
+In-Reply-To: <11770117743675-git-send-email-grant.likely@secretlab.ca>
+Content-Type: text/plain; charset=ISO-8859-2; format=flowed
+Cc: linuxppc-dev@ozlabs.org, linux-serial@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,25 +22,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-So, like, the other day Jerry Van Baren mumbled:
-> With the last improvement to pad out the blob, I broke the blob
-> header totalsize adjustment.  The adjustment was moved up in the
-> code before the memory image of the blob is created.
+Grant Likely wrote:
+> If the serial port gets shut down, then console output stalls.  9 out
+> of 10 kernel hackers agree, this is a bad thing.
 > 
-> Signed-off-by: Gerald Van Baren <vanbaren@cideas.com>
-
-Applied!
-
-> Hi Jon,
+> Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
+> ---
 > 
-> This fixes my header totalsize screwup.  Until this is applied, the -S
-> adds padding but is not effective.
-> 
-> My apologies,
+> Wolfgang, please verify this new patch.  Sylvain rightly pointed out that
+> RX and interrupts should be turned off regardless.  If it works for you,
+> please reply with a Signed-of-by line.
 
-[Vader Voice]
-    Apology... accepted.
-[/Vader Voice]
+Patch verified on a MPC5200B-based board.
 
-Thanks,
-jdl
+Signed-off-by: Bartlomiej Sieka <tur@semihalf.com>
+
+
+Regards,
+Bartlomiej
