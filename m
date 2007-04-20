@@ -1,15 +1,19 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Fri, 20 Apr 2007 10:56:16 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: RFC: powerpc: Start splitting up mmu.h by MMU type
-Message-ID: <20070420005616.GA14382@localhost.localdomain>
-References: <20070419065430.GA5862@localhost.localdomain>
-	<CE8B1295-3D26-4495-99B9-3448E3CE69D9@kernel.crashing.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <CE8B1295-3D26-4495-99B9-3448E3CE69D9@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH] powerpc: save trap number in bad_stack
+From: Michael Ellerman <michael@ellerman.id.au>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1177024678.7286.23.camel@localhost.localdomain>
+References: <20070416062347.GA20196@lixom.net>
+	<1177024678.7286.23.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-wA6z+nAQx78R3ArWQED3"
+Date: Fri, 20 Apr 2007 12:18:44 +1000
+Message-Id: <1177035524.6890.7.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org,
+	anton@samba.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,35 +23,80 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 19, 2007 at 07:11:07AM -0500, Kumar Gala wrote:
-> 
-> On Apr 19, 2007, at 1:54 AM, David Gibson wrote:
-> 
-> > This patch makes a start to sorting out the tangled mess of MMU
-> > related header files in asm-powerpc, and weaning arch/powerpc off the
-> > remaining asm-ppc headers it uses.
-> >
-> > Specifically it splits the ppc64 specific (or more strictly, the
-> > 64-bit hash table specific) parts of asm-powerpc/mmu.h into its own
-> > file, asm-powerpc/mmu-hash64/mmu.h.  Similarly, PowerPC 44x
-> > definitions are taken from asm-ppc/mmu.h, trimmed down for use in
-> > arch/powerpc and place in their own file, asm-powerpc/mmu-44x/mmu.h.
-> >
-> > mmu.h definitions for other 32-bit MMU types remain in asm-ppc/mmu.h
-> > for now, but should be likewise split into their own files.
-> 
-> I asked this before, but why the need for a separate directory per  
-> mmu type?  why not just include/asm-powerpc/mmu-44x.h?
 
-Because I have further patches in the works that add MMU specific
-versions of tlbflush.h, pgtable.h and so forth to the same
-directories.
+--=-wA6z+nAQx78R3ArWQED3
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I'm not wedded to the idea, but it seemed like a reasonable way to
-organize things.
+On Fri, 2007-04-20 at 09:17 +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2007-04-16 at 01:23 -0500, Olof Johansson wrote:
+> > Save the trap number in the case of getting a bad stack in an exception
+> > handler. It is sometimes useful to know what exception it was that caus=
+ed
+> > this to happen. Without this, no trap is reported.
+> >=20
+> >=20
+> > Signed-off-by: Olof Johansson <olof@lixom.net>
+> >=20
+> > Index: linux-2.6/arch/powerpc/kernel/asm-offsets.c
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux-2.6.orig/arch/powerpc/kernel/asm-offsets.c
+> > +++ linux-2.6/arch/powerpc/kernel/asm-offsets.c
+> > @@ -139,6 +139,7 @@ int main(void)
+> >  	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
+> >  	DEFINE(PACA_SLBSHADOWPTR, offsetof(struct paca_struct, slb_shadow_ptr=
+));
+> >  	DEFINE(PACA_DATA_OFFSET, offsetof(struct paca_struct, data_offset));
+> > +	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
+> > =20
+> >  	DEFINE(SLBSHADOW_STACKVSID,
+> >  	       offsetof(struct slb_shadow, save_area[SLB_NUM_BOLTED - 1].vsid=
+));
+> > Index: linux-2.6/include/asm-powerpc/paca.h
+> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> > --- linux-2.6.orig/include/asm-powerpc/paca.h
+> > +++ linux-2.6/include/asm-powerpc/paca.h
+> > @@ -81,6 +81,8 @@ struct paca_struct {
+> >  	u64 exslb[10];		/* used for SLB/segment table misses
+> >   				 * on the linear mapping */
+> > =20
+> > +	u64 trap_save;			/* Used when bad stack is encountered */
+>=20
+> Can you put it elsewhere in the PACA (around less frequently used
+> bits) ? This is a pretty hot area of the PACA...
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+It's only set in the bad_stack case though.
+
+You should put it after cpu_start, there's a bit hole there, and
+trap_save is readonly during normal operation, so it shouldn't be a
+performance hit.
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-wA6z+nAQx78R3ArWQED3
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.3 (GNU/Linux)
+
+iD8DBQBGKCMDdSjSd0sB4dIRAijAAJ9PtORoAw0YXhPBU624ZAcH6BQk/wCbBMW2
+sikaOjBUlt71LbWl/+Vgqr0=
+=cYYz
+-----END PGP SIGNATURE-----
+
+--=-wA6z+nAQx78R3ArWQED3--
