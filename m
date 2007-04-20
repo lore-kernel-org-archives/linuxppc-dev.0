@@ -3,20 +3,18 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 20D5BDDECE
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Apr 2007 05:26:07 +1000 (EST)
-In-Reply-To: <20070420005616.GA14382@localhost.localdomain>
-References: <20070419065430.GA5862@localhost.localdomain>
-	<CE8B1295-3D26-4495-99B9-3448E3CE69D9@kernel.crashing.org>
-	<20070420005616.GA14382@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id 116DADDECF
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Apr 2007 05:33:46 +1000 (EST)
+In-Reply-To: <e38bf5391d991.4628b0f3@vsnl.net>
+References: <e38bf5391d991.4628b0f3@vsnl.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <AF8B20FF-04EA-4656-8CF6-EAB28932D424@kernel.crashing.org>
+Message-Id: <382B116B-1892-441F-9F4D-9E0F3F01FC92@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: RFC: powerpc: Start splitting up mmu.h by MMU type
-Date: Fri, 20 Apr 2007 14:26:02 -0500
-To: David Gibson <david@gibson.dropbear.id.au>
-Cc: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC][PATCH]Kprobes for PPC32(BOOKE)
+Date: Fri, 20 Apr 2007 14:33:41 -0500
+To: rsmadhvesh@vsnl.net
+Cc: linuxppc-dev@ozlabs.org, madhvesh.s@ap.sony.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,39 +25,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 19, 2007, at 7:56 PM, David Gibson wrote:
+On Apr 20, 2007, at 2:24 AM, rsmadhvesh@vsnl.net wrote:
 
-> On Thu, Apr 19, 2007 at 07:11:07AM -0500, Kumar Gala wrote:
->>
->> On Apr 19, 2007, at 1:54 AM, David Gibson wrote:
->>
->>> This patch makes a start to sorting out the tangled mess of MMU
->>> related header files in asm-powerpc, and weaning arch/powerpc off  
->>> the
->>> remaining asm-ppc headers it uses.
->>>
->>> Specifically it splits the ppc64 specific (or more strictly, the
->>> 64-bit hash table specific) parts of asm-powerpc/mmu.h into its own
->>> file, asm-powerpc/mmu-hash64/mmu.h.  Similarly, PowerPC 44x
->>> definitions are taken from asm-ppc/mmu.h, trimmed down for use in
->>> arch/powerpc and place in their own file, asm-powerpc/mmu-44x/mmu.h.
->>>
->>> mmu.h definitions for other 32-bit MMU types remain in asm-ppc/mmu.h
->>> for now, but should be likewise split into their own files.
->>
->> I asked this before, but why the need for a separate directory per
->> mmu type?  why not just include/asm-powerpc/mmu-44x.h?
+> Hi Kumar,
 >
-> Because I have further patches in the works that add MMU specific
-> versions of tlbflush.h, pgtable.h and so forth to the same
-> directories.
+> This is regarding the kprobes patches for
+> PPC32 BOOKE version. The attached patches
+> contain the implementation for this version.
+>
+> I saw your earlier postings and commits to 2.6.21
+> regarding kprobes for PPC32. Since the single
+> step mechanism in BookE is quite different, I
+> thought i can share some of the issues faced
+> in this implementation and get your review
+> feedback for those patches.
 
-Well I agree pgtable.h getting split wouldn't be a bad idea.  But  
-tlbflush.h is only 146 lines, splitting it doesn't seem worth the  
-trouble.  So having a mmu-44x, mmu-hash32, mmu-hash64, mmu-8xx, mmu- 
-fsl_booke, mmu-40x for just two files seems a bit much.
+I'd love to review these patches.  Is there any possibility that I  
+could get you to build them for arch/powerpc on top of David Gibson's  
+port of ebony to arch/powerpc.
 
-> I'm not wedded to the idea, but it seemed like a reasonable way to
-> organize things.
+http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034483.html
+
+I dont see much value in adding kprobes into arch/ppc and have been  
+trying to push any 'new' functionality get added to arch/powerpc and  
+only bug fixes to arch/ppc.
 
 - k
