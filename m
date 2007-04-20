@@ -1,19 +1,16 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id AB0E3DDE39
+Return-Path: <bwarren@qstreams.com>
+Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
+	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id EC98CDDE48
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Apr 2007 02:08:57 +1000 (EST)
-Message-ID: <4628E642.1050702@grandegger.com>
-Date: Fri, 20 Apr 2007 18:11:46 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: FDT for MPC5200, CPU revision, MSCAN
-References: <462864CA.7050601@grandegger.com> <46286A0F.9080608@grandegger.com>
-	<528646bc0704200702i328ba9dbvc62473e5a634d5ac@mail.gmail.com>
-In-Reply-To: <528646bc0704200702i328ba9dbvc62473e5a634d5ac@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+	Sat, 21 Apr 2007 04:02:08 +1000 (EST)
+Subject: POSIX semaphores on ppc_6xx
+From: Ben Warren <bwarren@qstreams.com>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Fri, 20 Apr 2007 13:55:26 -0400
+Message-Id: <1177091726.3904.21.camel@saruman.qstreams.net>
+Mime-Version: 1.0
+Reply-To: bwarren@qstreams.com
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,43 +21,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 4/20/07, Wolfgang Grandegger <wg@grandegger.com> wrote:
->> Wolfgang Grandegger wrote:
->> > Hello,
->> >
->> > is there a way to distinguish the CPU revision (Rev.A vs. Rev.B) of the
->> > MPC5200, preferably at run time? Or should this be defined in the FDT?
->> > I ask, because some settings depend on the CPU revision due to hardware
->> > bugs, like the clock source used for MSCAN.
-> 
-> This stuff is defined in the device tree.  If you need to detect the
-> version at runtime, then ideally your bootloader will read the PVR/SVR
-> to determine the chip version and then pass the correct FDT to the
-> kernel.
+Hello,
 
-OK, I already realized the revision field in the DTS.
+The cross-compiled glibc that is included in ELDK 4.0 doesn't seem to
+have support for POSIX semaphores.  I get the following runtime errors:
 
->> I found the information here:
->>
->> $ cat Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-> <snip>
->> Sorry for the noise.
-> 
-> Not noise; good question.
+   sem_open: Function not implemented
 
-OK, then more questions for MSCAN related properties. The clock source 
-for MSCAN is either derived from IPB or directly from the oscillator 
-clock via CLKSRC bit. I guess that the property "system-clock" should 
-provide that frequency:
+when trying to implement a named semaphore, and 
 
-$ cat Documentation/powerpc/mpc52xx-device-tree-bindings.txt
-...
-system-frequency        int             Fsystem frequency; source of all
-                                         other clocks.
+   sem_init: Function not implemented
 
-It needs also to be defined by the boot loader.
+when trying to implement an unnamed semaphore.
 
-Thanks.
+Does anybody know if POSIX semaphores have been ported to ppc_6xx, and
+if so, where I could find a binary copy?
 
-Wolfgang.
+thanks,
+Ben
