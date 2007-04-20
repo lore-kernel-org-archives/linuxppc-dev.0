@@ -1,18 +1,19 @@
-Return-Path: <lombardo@mdivac.com>
-Received: from mail.mdivac.com (mail.mdivac.com [68.253.104.89])
-	by ozlabs.org (Postfix) with ESMTP id 98ECFDDEBF
+Return-Path: <hunter.cobbs@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.244])
+	by ozlabs.org (Postfix) with ESMTP id 234EADDE3B
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 20 Apr 2007 08:23:45 +1000 (EST)
-Message-ID: <4627EBEF.2090104@mdivac.com>
-Date: Thu, 19 Apr 2007 18:23:43 -0400
-From: Frank D Lombardo <lombardo@mdivac.com>
+	Fri, 20 Apr 2007 12:15:29 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id b21so884559ana
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 19 Apr 2007 19:15:28 -0700 (PDT)
+Message-ID: <ad84a70a0704191915p3b17af9wef3c7b6af2f96383@mail.gmail.com>
+Date: Thu, 19 Apr 2007 21:15:27 -0500
+From: "Hunter Cobbs" <hunter.cobbs@gmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Guide to porting to an MPC82xx or any PPC for that mater
 MIME-Version: 1.0
-To: Clint Thomas <cthomas@Soneticom.com>
-Subject: Re: Kernel crash on mem= argument
-References: <3C02138692C13C4BB675FE7EA2409529328770@bluefin.Soneticom.local>
-In-Reply-To: <3C02138692C13C4BB675FE7EA2409529328770@bluefin.Soneticom.local>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: multipart/alternative;
+	boundary="----=_Part_77605_23989140.1177035327311"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,32 +24,44 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Clint Thomas wrote:
-> My u-boot config does not currently have a CONFIG_PRAM variable defined.
-> Is doing this as easy as dropping in a #define in my board config? Or do
-> I need to address this in another part of the code? Up until now, I just
-> assumed that if I passed mem=200M to the kernel, it would allocate as
-> necessary, then I could use the remaining RAM as I saw fit, but since
-> this is not working I need to deal with it appropriately.
->
-> Clint
->
-> -----Original Message-----
-> From: Frank D Lombardo [mailto:lombardo@mdivac.com] 
-> Sent: Thursday, April 19, 2007 2:39 PM
-> To: Clint Thomas
-> Cc: linuxppc-embedded@ozlabs.org
-> Subject: Re: Kernel crash on mem= argument
->
-> Clint Thomas wrote:
->   
-Clint,
+------=_Part_77605_23989140.1177035327311
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-I believe whats happening is that u-boot is loading the initrd in the 
-region of RAM above 200M.  Then you pass mem=200M to the kernel, and it 
-can't access the initrd.  By adding the appropriate CONFIG_PRAM define 
-to your board config file, you let u-boot know not to use the memory 
-above 200M either.  That way u-boot will load the initrd in memory that 
-is usable by the kernel.
+Is there anywhere I can turn to help me figure out how to at least get a
+serial console running on SCC1 from an MPC8247 in Linux 2.6.(14+) ?
 
-Frank
+
+Our current version of uboot puts data out on SCC1 quite well and I can
+compile and load a 2.6 kernel.  I run into a problem following boot where no
+more data comes over the SCC1.
+
+I have used the jtag port to get a register dump during uboot and one as
+soon as it's obvious no data is coming from scc1.  None of the registers
+pertaining to the serial configuration are different.
+
+I've been digging around in the kernel and the default SCC1 hookup bitmasks
+are exactly the same as our working 2.4 kernel.  I just can't seem to make
+linux use SCC1 as a serial console.  I even tried consoel=ttyCPM[0..5] to
+attempt to force it out a SCC1.
+
+Since this is my first attempt at porting (or creating a BSP for that
+matter), I'm sure I'm overlooking something exceedingly easy.  I just need
+something other than raw kernel code to help me out.
+
+-- 
+Hunter Cobbs
+
+------=_Part_77605_23989140.1177035327311
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
+Is there anywhere I can turn to help me figure out how to at least get
+a serial console running on SCC1 from an MPC8247 in Linux 2.6.(14+) ?<br><br><br>Our current version of uboot puts data out on SCC1 quite well and I can compile and load a 2.6 kernel.&nbsp; I run into a problem following boot where no more data comes over the SCC1.
+<br><br>I have used the jtag port to get a register dump during uboot and one as soon as it&#39;s obvious no data is coming from scc1.&nbsp; None of the registers pertaining to the serial configuration are different.<br><br>I&#39;ve been digging around in the kernel and the default SCC1 hookup bitmasks are exactly the same as our working 
+2.4 kernel.&nbsp; I just can&#39;t seem to make linux use SCC1 as a serial console.&nbsp; I even tried consoel=ttyCPM[0..5] to attempt to force it out a SCC1.&nbsp; <br><br>Since this is my first attempt at porting (or creating a BSP for that matter), I&#39;m sure I&#39;m overlooking something exceedingly easy.&nbsp; I just need something other than raw kernel code to help me out.
+<br clear="all"><br>-- <br>Hunter Cobbs
+
+------=_Part_77605_23989140.1177035327311--
