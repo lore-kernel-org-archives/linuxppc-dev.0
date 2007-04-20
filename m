@@ -1,18 +1,16 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 7/7] MPIC MSI backend
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-In-Reply-To: <11965613d9e0cec72d210466d8ec7f6e@kernel.crashing.org>
-References: <20070419073556.73A6BDDE4A@ozlabs.org>
-	<11965613d9e0cec72d210466d8ec7f6e@kernel.crashing.org>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-8RothVbzvEmueH0Ii9oZ"
-Date: Sat, 21 Apr 2007 00:39:55 +1000
-Message-Id: <1177079995.13722.2.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz
-Reply-To: michael@ellerman.id.au
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id B0A68DDE2D
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Apr 2007 01:15:41 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+In-Reply-To: <20070420082714.4f10f186@localhost.localdomain>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <85b6cd5d8e44d174bdcef9fbdd9e7947@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH][RFC][POWERPC] i2c: adds support for i2c bus on 8xx
+Date: Fri, 20 Apr 2007 10:15:32 -0500
+To: Vitaly Bordug <vitb@kernel.crashing.org>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,45 +20,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+At Fri Apr 20 14:27:14 EST 2007, Vitaly Bordug wrote:
+> +               i2c_dev = 
+> platform_device_register_simple("fsl-i2c-cpm", i, &r[0], 3);
+> +               if (IS_ERR(i2c_dev)) {
+> +                       ret = PTR_ERR(i2c_dev);
+> +                       goto err;
+> +               }
+> +
+> +               ret =
+> +                   platform_device_add_data(i2c_dev, &i2c_data,
+> +                                            sizeof(struct
+> +                                                   
+> fsl_i2c_platform_data));
+>
 
---=-8RothVbzvEmueH0Ii9oZ
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This exposes a period of time where the device is registerd, but
+the platform data is not available.  It might work for the
+everything-in-the kernel model where the device is added before
+the driver is registered, but is inherently racy.
 
-On Fri, 2007-04-20 at 10:40 +0200, Segher Boessenkool wrote:
-> > MPIC MSI backend. Based on code from Segher, heavily hacked by me.
->=20
-> I guess I'll have to do
->=20
-> Signed-off-by: Segher Boessenkool <segher@kernel.crashing.org>
->=20
-> again, you keep losing it :-)
+You need to do alloc / add_resources / add_data / add.
 
-Oh sorry, I do keep losing it. Actually looking at it closer there isn't
-any of your code left, except in spirit I guess :)
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-8RothVbzvEmueH0Ii9oZ
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.3 (GNU/Linux)
-
-iD8DBQBGKNC6dSjSd0sB4dIRAq7PAJ9W7SJvEjnkNbrLJeiO9UioNhqiiQCdE635
-91OKsfvCNEz5hOjP8GEAJdY=
-=PAfB
------END PGP SIGNATURE-----
-
---=-8RothVbzvEmueH0Ii9oZ--
+milton
