@@ -1,22 +1,17 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id A4681DDE46
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Apr 2007 07:34:25 +1000 (EST)
-In-Reply-To: <B0B16FB3-62D7-434B-9135-E87D2AFFFF07@kernel.crashing.org>
-References: <20070420151136.3fdb160f.kim.phillips@freescale.com>
-	<B0B16FB3-62D7-434B-9135-E87D2AFFFF07@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <41FB4785-E97E-4E47-A6BD-25E47931C9B8@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 1/4 v3] powerpc: document interface-type property
-Date: Fri, 20 Apr 2007 16:34:21 -0500
-To: Kumar Gala <galak@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <dhuffman@storix.com>
+Received: from storix.com (unknown [206.71.178.18])
+	by ozlabs.org (Postfix) with ESMTP id E0885DDEE2
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Apr 2007 07:05:15 +1000 (EST)
+Message-ID: <46292B07.3030907@storix.com>
+Date: Fri, 20 Apr 2007 14:05:11 -0700
+From: David Huffman <dhuffman@storix.com>
+MIME-Version: 1.0
+To: Nathan Lynch <ntl@pobox.com>,  linuxppc-dev@ozlabs.org
+Subject: Re: Kernel Panic booting cdrom
+References: <46202254.1090606@storix.com> <20070414044529.GE6062@localdomain>
+	<4623F574.1030804@storix.com> <20070417054537.GF6062@localdomain>
+In-Reply-To: <20070417054537.GF6062@localdomain>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,39 +21,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Nathan,
 
-On Apr 20, 2007, at 15:57, Kumar Gala wrote:
+I think I determined why I received a kernel panic and the numa=off 
+argument fixed the problem. When we boot from cdrom we specify maxcpus=1 
+as a kernel argument. A system with numa enabled fails.  I plan on 
+adding numa=off whenever I use maxcpus=1, but I wonder if you could 
+answer a question for me.
 
->
-> On Apr 20, 2007, at 3:11 PM, Kim Phillips wrote:
->
->> Since ucc_geth is being migrated to use the phylib, the existing
->> (undocumented) 'interface' property is being deprecated in favour
->> of a stringified version, 'interface-type'.
+I originally was told that in the case where I am booting a basic system 
+into an initrd instead of in normal mode, I should use maxcpus=1 because 
+there may be power and cooling daemons that are not running and try to 
+limit the system resources by limiting the number of cpus. Does this 
+sound right? I can successfully boot a cdrom without the maxcpus flag on 
+an SMP system but maybe it is typically not a good idea?
+
+I can prevent the kernel panics by removing maxcpus=1 and not adding 
+numa=off. I am a little more informed about numa (now), but I am fuzzy 
+as to all the implications with allowing more cpus for cdrom install 
+media. The maxcpus=1 argument was something we added to our install boot 
+media years ago and few here remember why it was such a great idea. The 
+power/resource management was the only thing we could come up with.
+
+David Huffman
+Storix, Inc
+
+
+Nathan Lynch wrote:
+> David Huffman wrote:
+>   
+>> Nathan,
 >>
->> interface-type is maintained one-to-one with definitions
->> in include/linux/phy.h.  If not specified, "mii" is assumed.
->>
->> Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
->> ---
->> removed max-speed property, since the name is apparently too generic
->> (it's derived from the interface-type anyway)
+>> Thank you very much for the info. This worked to get the system booted 
+>> from cdrom. However, in normal mode, the numa=off argument is not in the 
+>> yaboo.conf file. Any idea why it works without it in normal mode, but 
+>> requires numa=off when using the same kernel and booting from cdrom?
+>>     
 >
-> Are you sure?  Is not possible to use a gmii phy on a 8323 and limit
-> it to 10/100?
-
-
-Ahem.  Just to maintain this point: It's not a GMII PHY.  It would be  
-a PHY that supports the GMII interface.  In this case, we would  
-specify that the controller is connecting to its PHY over interface- 
-type "mii".  The real issue (right now) would be an RGMII or SGMII  
-connection for a non-gigabit controller.
-
-However, the UCC doesn't currently support SGMII, and there aren't  
-any implementations that have non-gigabit RGMII connections.
-
-In other words, this could become an issue in the future, but we're  
-punting on pushing through a specifier for that situation until it  
-comes up.
-
-Andy
+> No, that doesn't make sense to me.  If you'd like to dig deeper into
+> it, diff -u the output of dmesg from both boots.  (and please copy the
+> list next time, thanks :)
+>   
