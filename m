@@ -1,20 +1,35 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 320C2DDE25
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 17:43:12 +1000 (EST)
-In-Reply-To: <14852.1177053830@neuling.org>
-References: <12001.1176881167@neuling.org> <5129.1176956949@neuling.org>
-	<46b0d1603ea2ab82b37daaa1888e8793@bga.com>
-	<14852.1177053830@neuling.org>
-Mime-Version: 1.0 (Apple Message framework v624)
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-04.arcor-online.net (mail-in-04.arcor-online.net
+	[151.189.21.44])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id AF266DDE05
+	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 18:34:49 +1000 (EST)
+In-Reply-To: <20070418164849.6f0fd817.kim.phillips@freescale.com>
+References: <20070413012542.343eb848.kim.phillips@freescale.com>
+	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
+	<20070416102533.0f87396f.kim.phillips@freescale.com>
+	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
+	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
+	<20070416115729.292c10b1.kim.phillips@freescale.com>
+	<53810df560c7af272cd1c71c9d5fa1ab@kernel.crashing.org>
+	<20070416193110.77b63e4b.kim.phillips@freescale.com>
+	<788e650fbb3f95eaf1bfb6955f9cef17@kernel.crashing.org>
+	<20070417152712.51c7348f.kim.phillips@freescale.com>
+	<f170b2c44ae8a76dd4d35ceb94a624b0@kernel.crashing.org>
+	<20070417201350.12727df7.kim.phillips@freescale.com>
+	<524e7cf7aec7be8289ab2f99df8a0776@kernel.crashing.org>
+	<20070418164849.6f0fd817.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <1b37836af7a3cbc22d6b9bf8cef5851b@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH] kexec-tools ppc64: add --reuseinitrd option 
-Date: Fri, 20 Apr 2007 02:42:44 -0500
-To: Michael Neuling <mikey@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, horms@verge.net.au, kexec@lists.infradead.org,
-	Fastboot mailing list <fastboot@lists.osdl.org>
+Message-Id: <d16d2a0d1742a32e45597baabfc3735a@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
+	properties
+Date: Fri, 20 Apr 2007 10:34:41 +0200
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,62 +39,77 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Apr 20, 2007, at 2:23 AM, Michael Neuling wrote:
-> In message <46b0d1603ea2ab82b37daaa1888e8793@bga.com> you wrote:
->> On Apr 18, 2007, at 11:29 PM, Michael Neuling wrote:
->>> Add a --reuseinitrd option so that initrds saved using the
->>> retain_initrd kernel option can be reused on the kexec boot.
+>>> ..but I'm not interested in specifying what interfaces the PHY
+>>> supports.
 >>
->> Although this seems efficent to look at what was in the device tree,
->> I'd prefer we actually looked at /proc/cmdline when we parse the
->> arg, so that we are sure to find what the kernel is actually
->> using for the command line.
->>
->> Besides it will be eaiser for other archs to copy the check.
+>> But you *have* to.  The device tree describes the hardware,
+>> it is not a configuration file for Linux to use as it sees fit.
 >
-> Looks like we should make it a generic option.  If we do, this should
-> probably be two patches.  One to introduce the option, and one for the
-> ppc64 specific parts.
->
-> Do any of the other architectures allow you to see where the initrd is
-> located for the current boot from user space?  If not, the option will
-> need to take two parameters saying where the retained initrd is.  This
-> will make the option less generic (if not, we'll need to change the
-> other archs to export these values to user space).
+> not for the purposes of this patch; ucc_geth passes interface_type,
 
-Since we just added the option to the kernel, I'm guessing not.
-Most of them use /proc/iomem with resources for finding system ram,
-the kernel text and crash kernel region, so they should probably
-add a resource there when the initrd is retained.  We (powerpc) export
-our bootloader data aka device tree instead, and make kexec-tools
-parse it.  I don't know how sparc passes an initrd to the kernel.
+It doesn't matter what the Linux code does.  The device tree
+describes the hardware, it is not a configuration file for
+Linux to use as it sees fit.
 
->>> @@ -148,6 +154,9 @@ int elf_ppc64_load(int argc, char **argv
->>>  	else
->>>  		fprintf(stdout, "Warning: append= option is not passed. Using t
-> he
->>> first kernel root partition\n");
+> a
+> property of the board describing the connection between the MAC and PHY
+> (not a list of what connection types the PHY is capable of) to the
+> phylib, and the phylib is left to probe, identify, and configure the 
+> PHY
+> appropriately.
+
+Sure there's an argument for describing what type of
+interface the PHY is connected on, if it supports more
+than one -- but that should be a property in the PHY
+node, not the controller node, since you can have multiple
+PHYs connected to the same controller, possibly on
+different interfaces each.
+
+The m88e11x1 phylib code seems to ignore the "interface"
+parameter completely btw.
+
+>>>>> Again, max-speed is exclusively for configuring the UCC itself,
+>>>>> regardless of the connection speed.
+>>>>
+>>>> If that is really true, and the value of that property
+>>>> has nothing to do with the MAC<->PHY data channel, it should
+>>>> have a different (not that generic) name.
 >>>
->>> +	if (ramdisk && reuse_initrd)
->>> +		die("Can't specify --ramdisk or --initrd with --reuseinitrd\n")
-> ;
->>> +
+>>> can you elaborate on why, including an example of what you'd think
+>>> would
+>>> be a better one?
 >>
->> This check is generic, not elf specific, so it should be where
->> we pass the args.  Hmm, maybe this is that place and it just
->> wants abstracting, I don't have the tree in front of me.
+>> Very generic names should only be used by very generic bindings.
 >
-> I put it here so the error's caught independent of the arg parsing
-> order.  Otherwise, we'd need to duplicate the check.
+> it's intentionally generic; UCCs are Universal Communications
+> Controllers and implement many communications protocols.
+
+So?  That doesn't put the UCC device binding on the same
+level as, say, PCI or the base OF definition.
+
+>> If a very specific device binding (like yours) uses a property
+>> name like that, there is a high chance it will clash with a more
+>> generic binding it uses (PCI, ethernet, network, ...) -- perhaps
+>> with a *future* version of such a binding.
+>>
+> I'm sure future versions will be able to adjust accordingly :)
+
+Do you really think that when future changes are made to
+base OF, or the PCI binding, or similar, that people will
+even stop to consider what you did in your (unofficial)
+binding and try to stay compatible to it?  Can I have
+some of those pills?
+
+>> Also, it isn't a great name /an sich/: "max-speed" -- maximum
+>> speed of what?
 >
-> I think it's the right place, unless we move it to an arch generic
-> option.
+> ?  it's fine - it's in the context of a communications device.
+> Can you come up with something better?
 
-I didn't mean as we parse the option, but is there not something
-that gets called after we parse all the options?   Maybe that is
-just the load function.   I was just thinking it should be in a
-sanity_check_args() function that looks for exclusive options like
-these rather than in "load a kernel like elf file", although that
-is the only current option for ppc64, so it might be ok here.
+Sure.  "ucc,max-speed" solves one problem; "max-comm-speed"
+solves another.  I'm sure there are better names possible,
+so please find one.  Giving good names to things is hard,
+so good luck.
 
-milton
+
+Segher
