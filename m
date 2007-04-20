@@ -1,23 +1,36 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 8D0B8DDE48
-	for <linuxppc-dev@ozlabs.org>; Sat, 21 Apr 2007 04:51:10 +1000 (EST)
-Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
-	by mail-out.m-online.net (Postfix) with ESMTP id AC4D2985F8
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 20:51:08 +0200 (CEST)
-Received: from ibook.aepfle.de (DSL01.83.171.145.224.ip-pool.NEFkom.net
-	[83.171.145.224])
-	by mail.mnet-online.de (Postfix) with ESMTP id 8CF0F90299
-	for <linuxppc-dev@ozlabs.org>; Fri, 20 Apr 2007 20:51:08 +0200 (CEST)
-Date: Fri, 20 Apr 2007 20:51:07 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: linuxppc-dev@ozlabs.org
-Subject: [PATCH] generic check_legacy_ioport
-Message-ID: <20070420185107.GA4972@aepfle.de>
-References: <20070417210745.GA3567@aepfle.de>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <20070417210745.GA3567@aepfle.de>
+Return-Path: <afleming@freescale.com>
+Received: from az33egw02.freescale.net (az33egw02.freescale.net
+	[192.88.158.103])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "az33egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 23F36DDEC8
+	for <linuxppc-dev@ozlabs.org>; Sat, 21 Apr 2007 05:13:29 +1000 (EST)
+In-Reply-To: <d16d2a0d1742a32e45597baabfc3735a@kernel.crashing.org>
+References: <20070413012542.343eb848.kim.phillips@freescale.com>
+	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
+	<20070416102533.0f87396f.kim.phillips@freescale.com>
+	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
+	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
+	<20070416115729.292c10b1.kim.phillips@freescale.com>
+	<53810df560c7af272cd1c71c9d5fa1ab@kernel.crashing.org>
+	<20070416193110.77b63e4b.kim.phillips@freescale.com>
+	<788e650fbb3f95eaf1bfb6955f9cef17@kernel.crashing.org>
+	<20070417152712.51c7348f.kim.phillips@freescale.com>
+	<f170b2c44ae8a76dd4d35ceb94a624b0@kernel.crashing.org>
+	<20070417201350.12727df7.kim.phillips@freescale.com>
+	<524e7cf7aec7be8289ab2f99df8a0776@kernel.crashing.org>
+	<20070418164849.6f0fd817.kim.phillips@freescale.com>
+	<d16d2a0d1742a32e45597baabfc3735a@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <6358CE18-B118-4BC1-B46A-D485449273D5@freescale.com>
+From: Andy Fleming <afleming@freescale.com>
+Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
+	properties
+Date: Fri, 20 Apr 2007 14:13:26 -0500
+To: Segher Boessenkool <segher@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,293 +41,57 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-check_legacy_ioport makes only sense on PREP, CHRP and pSeries.
-They may have an isa node with PS/2, parport, floppy and serial ports.
-Cell has IPMI, check for that too.
+On Apr 20, 2007, at 03:34, Segher Boessenkool wrote:
 
-Remove the check_legacy_ioport call from ppc_md, its not needed anymore.
-Hardware capabilities come from the device-tree.
+>>>> ..but I'm not interested in specifying what interfaces the PHY
+>>>> supports.
+>>>
+>>> But you *have* to.  The device tree describes the hardware,
+>>> it is not a configuration file for Linux to use as it sees fit.
+>>
+>> not for the purposes of this patch; ucc_geth passes interface_type,
+>
+> It doesn't matter what the Linux code does.  The device tree
+> describes the hardware, it is not a configuration file for
+> Linux to use as it sees fit.
+
+Agreed.
+
+>
+>> a
+>> property of the board describing the connection between the MAC  
+>> and PHY
+>> (not a list of what connection types the PHY is capable of) to the
+>> phylib, and the phylib is left to probe, identify, and configure the
+>> PHY
+>> appropriately.
+>
+> Sure there's an argument for describing what type of
+> interface the PHY is connected on, if it supports more
+> than one -- but that should be a property in the PHY
+> node, not the controller node, since you can have multiple
+> PHYs connected to the same controller, possibly on
+> different interfaces each.
 
 
-Signed-off-by: Olaf Hering <olaf@aepfle.de>
+I just want to reiterate that I disagree strongly with this  
+statement.  If you have multiple PHYs hooked up to one ethernet  
+controller, you're going to need to change the device tree to use a  
+different PHY, anyway.  That, or have Linux ignore the phandle that  
+points to the connected PHY.
 
----
- arch/powerpc/kernel/setup-common.c      |   42 ++++++++++++++++++++++++++++++--
- arch/powerpc/platforms/cell/setup.c     |   10 -------
- arch/powerpc/platforms/celleb/setup.c   |   10 -------
- arch/powerpc/platforms/iseries/setup.c  |   10 -------
- arch/powerpc/platforms/pasemi/setup.c   |    7 -----
- arch/powerpc/platforms/powermac/setup.c |   10 -------
- arch/powerpc/platforms/pseries/setup.c  |   27 --------------------
- include/asm-powerpc/io.h                |    7 ++++-
- include/asm-powerpc/machdep.h           |    3 --
- 9 files changed, 46 insertions(+), 80 deletions(-)
+Also, you'd need to do something to the hardware, since the different  
+interfaces are not, typically, on different pins.  Just in different  
+combinations.
 
-Index: b/arch/powerpc/kernel/setup-common.c
-===================================================================
---- a/arch/powerpc/kernel/setup-common.c
-+++ b/arch/powerpc/kernel/setup-common.c
-@@ -498,9 +498,47 @@ void probe_machine(void)
- 
- int check_legacy_ioport(unsigned long base_port)
- {
--	if (ppc_md.check_legacy_ioport == NULL)
-+	struct device_node *np;
-+
-+	switch(base_port) {
-+#ifdef CONFIG_SERIO_I8042
-+	case I8042_DATA_REG:
-+		np = of_find_node_by_type(NULL, "8042");
-+		if (np == NULL)
-+			return -ENODEV;
-+		of_node_put(np);
-+		return 0;
-+#endif
-+#ifdef CONFIG_BLK_DEV_FD
-+	case FDC_BASE: /* FDC1 */
-+		np = of_find_node_by_type(NULL, "fdc");
-+		if (np == NULL)
-+			return -ENODEV;
-+		of_node_put(np);
-+		return 0;
-+#endif
-+#ifdef CONFIG_IPMI_HANDLER
-+	/* IPMI */
-+	case 0xca2:
-+	case 0xca9:
-+	case 0xe4:
-+		np = of_find_node_by_type(NULL, "ipmi");
-+		if (np == NULL)
-+			return -ENODEV;
-+		of_node_put(np);
- 		return 0;
--	return ppc_md.check_legacy_ioport(base_port);
-+#endif
-+#ifdef CONFIG_PPC_PREP
-+	case _PIDXR:
-+	case _PNPWRP:
-+	case PNPBIOS_BASE:
-+		/* implement me for PReP */
-+#endif
-+	default:
-+		printk(KERN_DEBUG "%s rejected access to port %u\n", __FUNCTION__, base_port);
-+		WARN_ON(base_port);
-+	}
-+	return -ENODEV;
- }
- EXPORT_SYMBOL(check_legacy_ioport);
- 
-Index: b/arch/powerpc/platforms/cell/setup.c
-===================================================================
---- a/arch/powerpc/platforms/cell/setup.c
-+++ b/arch/powerpc/platforms/cell/setup.c
-@@ -190,15 +190,6 @@ static int __init cell_probe(void)
- 	return 1;
- }
- 
--/*
-- * Cell has no legacy IO; anything calling this function has to
-- * fail or bad things will happen
-- */
--static int cell_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- define_machine(cell) {
- 	.name			= "Cell",
- 	.probe			= cell_probe,
-@@ -211,7 +202,6 @@ define_machine(cell) {
- 	.get_rtc_time		= rtas_get_rtc_time,
- 	.set_rtc_time		= rtas_set_rtc_time,
- 	.calibrate_decr		= generic_calibrate_decr,
--	.check_legacy_ioport	= cell_check_legacy_ioport,
- 	.progress		= cell_progress,
- 	.init_IRQ       	= cell_init_irq,
- 	.pci_setup_phb		= rtas_setup_phb,
-Index: b/arch/powerpc/platforms/celleb/setup.c
-===================================================================
---- a/arch/powerpc/platforms/celleb/setup.c
-+++ b/arch/powerpc/platforms/celleb/setup.c
-@@ -128,15 +128,6 @@ static int __init celleb_probe(void)
- 	return 1;
- }
- 
--/*
-- * Cell has no legacy IO; anything calling this function has to
-- * fail or bad things will happen
-- */
--static int celleb_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- #ifdef CONFIG_KEXEC
- static void celleb_kexec_cpu_down(int crash, int secondary)
- {
-@@ -173,7 +164,6 @@ define_machine(celleb) {
- 	.get_rtc_time		= beat_get_rtc_time,
- 	.set_rtc_time		= beat_set_rtc_time,
- 	.calibrate_decr		= generic_calibrate_decr,
--	.check_legacy_ioport	= celleb_check_legacy_ioport,
- 	.progress		= celleb_progress,
- 	.power_save		= beat_power_save,
- 	.nvram_size		= beat_nvram_get_size,
-Index: b/arch/powerpc/platforms/iseries/setup.c
-===================================================================
---- a/arch/powerpc/platforms/iseries/setup.c
-+++ b/arch/powerpc/platforms/iseries/setup.c
-@@ -628,15 +628,6 @@ static void iseries_iounmap(volatile voi
- {
- }
- 
--/*
-- * iSeries has no legacy IO, anything calling this function has to
-- * fail or bad things will happen
-- */
--static int iseries_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- static int __init iseries_probe(void)
- {
- 	unsigned long root = of_get_flat_dt_root();
-@@ -667,7 +658,6 @@ define_machine(iseries) {
- 	.calibrate_decr	= generic_calibrate_decr,
- 	.progress	= iSeries_progress,
- 	.probe		= iseries_probe,
--	.check_legacy_ioport	= iseries_check_legacy_ioport,
- 	.ioremap	= iseries_ioremap,
- 	.iounmap	= iseries_iounmap,
- 	/* XXX Implement enable_pmcs for iSeries */
-Index: b/arch/powerpc/platforms/pasemi/setup.c
-===================================================================
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -101,12 +101,6 @@ void __init pas_setup_arch(void)
- 	pasemi_idle_init();
- }
- 
--/* No legacy IO on our parts */
--static int pas_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- static __init void pas_init_IRQ(void)
- {
- 	struct device_node *np;
-@@ -237,7 +231,6 @@ define_machine(pas) {
- 	.restart		= pas_restart,
- 	.get_boot_time		= pas_get_boot_time,
- 	.calibrate_decr		= generic_calibrate_decr,
--	.check_legacy_ioport    = pas_check_legacy_ioport,
- 	.progress		= pas_progress,
- 	.machine_check_exception = pas_machine_check_handler,
- 	.pci_irq_fixup		= pas_pci_irq_fixup,
-Index: b/arch/powerpc/platforms/powermac/setup.c
-===================================================================
---- a/arch/powerpc/platforms/powermac/setup.c
-+++ b/arch/powerpc/platforms/powermac/setup.c
-@@ -616,15 +616,6 @@ static void __init pmac_init_early(void)
- #endif
- }
- 
--/*
-- * pmac has no legacy IO, anything calling this function has to
-- * fail or bad things will happen
-- */
--static int pmac_check_legacy_ioport(unsigned int baseport)
--{
--	return -ENODEV;
--}
--
- static int __init pmac_declare_of_platform_devices(void)
- {
- 	struct device_node *np;
-@@ -736,7 +727,6 @@ define_machine(powermac) {
- 	.get_rtc_time		= pmac_get_rtc_time,
- 	.calibrate_decr		= pmac_calibrate_decr,
- 	.feature_call		= pmac_do_feature_call,
--	.check_legacy_ioport	= pmac_check_legacy_ioport,
- 	.progress		= udbg_progress,
- #ifdef CONFIG_PPC64
- 	.pci_probe_mode		= pmac_pci_probe_mode,
-Index: b/arch/powerpc/platforms/pseries/setup.c
-===================================================================
---- a/arch/powerpc/platforms/pseries/setup.c
-+++ b/arch/powerpc/platforms/pseries/setup.c
-@@ -334,32 +334,6 @@ static void __init pSeries_init_early(vo
- 	DBG(" <- pSeries_init_early()\n");
- }
- 
--
--static int pSeries_check_legacy_ioport(unsigned int baseport)
--{
--	struct device_node *np;
--
--#define I8042_DATA_REG	0x60
--#define FDC_BASE	0x3f0
--
--
--	switch(baseport) {
--	case I8042_DATA_REG:
--		np = of_find_node_by_type(NULL, "8042");
--		if (np == NULL)
--			return -ENODEV;
--		of_node_put(np);
--		break;
--	case FDC_BASE:
--		np = of_find_node_by_type(NULL, "fdc");
--		if (np == NULL)
--			return -ENODEV;
--		of_node_put(np);
--		break;
--	}
--	return 0;
--}
--
- /*
-  * Called very early, MMU is off, device-tree isn't unflattened
-  */
-@@ -532,7 +506,6 @@ define_machine(pseries) {
- 	.set_rtc_time		= rtas_set_rtc_time,
- 	.calibrate_decr		= generic_calibrate_decr,
- 	.progress		= rtas_progress,
--	.check_legacy_ioport	= pSeries_check_legacy_ioport,
- 	.system_reset_exception = pSeries_system_reset_exception,
- 	.machine_check_exception = pSeries_machine_check_exception,
- };
-Index: b/include/asm-powerpc/io.h
-===================================================================
---- a/include/asm-powerpc/io.h
-+++ b/include/asm-powerpc/io.h
-@@ -11,7 +11,12 @@
- 
- /* Check of existence of legacy devices */
- extern int check_legacy_ioport(unsigned long base_port);
--#define PNPBIOS_BASE	0xf000	/* only relevant for PReP */
-+#define I8042_DATA_REG	0x60
-+#define FDC_BASE	0x3f0
-+/* only relevant for PReP */
-+#define _PIDXR		0x279
-+#define _PNPWRP		0xa79
-+#define PNPBIOS_BASE	0xf000
- 
- #include <linux/compiler.h>
- #include <asm/page.h>
-Index: b/include/asm-powerpc/machdep.h
-===================================================================
---- a/include/asm-powerpc/machdep.h
-+++ b/include/asm-powerpc/machdep.h
-@@ -153,9 +153,6 @@ struct machdep_calls {
- 	 */
- 	long	 	(*feature_call)(unsigned int feature, ...);
- 
--	/* Check availability of legacy devices like i8042 */
--	int 		(*check_legacy_ioport)(unsigned int baseport);
--
- 	/* Get legacy PCI/IDE interrupt mapping */ 
- 	int		(*pci_get_legacy_ide_irq)(struct pci_dev *dev, int channel);
- 	
+And if you put it in the PHY node, you haven't really helped out the  
+people who can change the interface type by flipping a dip switch.  I  
+can think of two or three boards off the top of my head that do that  
+(though I know of very few people who actually use this functionality).
+
+My point, again, is that the interface type is not strongly tied to  
+the PHY.  It is strongly tied to the board configuration.  We *could*  
+put the interface type in the PHY node, but I want to disabuse you of  
+the notion that it would be any better there.
+
+Andy
