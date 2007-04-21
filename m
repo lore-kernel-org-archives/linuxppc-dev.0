@@ -1,19 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id F3245DDE3D
+Return-Path: <SRS0+3d12a902f91e03596c36+1336+infradead.org+dwmw2@canuck.srs.infradead.org>
+Received: from canuck.infradead.org (canuck.infradead.org [209.217.80.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 00B16DDE9E
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 Apr 2007 01:38:29 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org,
- bwarren@qstreams.com
-Subject: Re: POSIX semaphores on ppc_6xx
-Date: Sat, 21 Apr 2007 17:33:12 +0200
-References: <1177091726.3904.21.camel@saruman.qstreams.net>
-In-Reply-To: <1177091726.3904.21.camel@saruman.qstreams.net>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704211733.13354.arnd@arndb.de>
+	Sun, 22 Apr 2007 05:23:16 +1000 (EST)
+Subject: Re: Problem cloning Linus' GIT tree!
+From: David Woodhouse <dwmw2@infradead.org>
+To: Laurent Pinchart <laurent.pinchart@technotrade.biz>
+In-Reply-To: <200704171532.00215.laurent.pinchart@technotrade.biz>
+References: <18A49CF3586FC14290887ECC63C9141F0104D047@exchange2003.dspace.de>
+	<200704171532.00215.laurent.pinchart@technotrade.biz>
+Content-Type: text/plain
+Date: Sat, 21 Apr 2007 20:23:05 +0100
+Message-Id: <1177183385.2854.39.camel@pmac.infradead.org>
+Mime-Version: 1.0
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,24 +26,12 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Friday 20 April 2007, Ben Warren wrote:
-> The cross-compiled glibc that is included in ELDK 4.0 doesn't seem to
-> have support for POSIX semaphores. =A0I get the following runtime errors:
->=20
-> =A0 =A0sem_open: Function not implemented
->=20
-> when trying to implement a named semaphore, and=20
->=20
-> =A0 =A0sem_init: Function not implemented
->=20
-> when trying to implement an unnamed semaphore.
->=20
-> Does anybody know if POSIX semaphores have been ported to ppc_6xx, and
-> if so, where I could find a binary copy?
+On Tue, 2007-04-17 at 15:31 +0200, Laurent Pinchart wrote:
+> I'm not sure about that. The http repository is not broken, it's just 
+> stripped. The http:// protocol handler in git might need to be fixed. 
 
-This normally works in every modern glibc. Maybe you were using an
-set of kernel headers that is too old. Make sure that you have
-up-to-date version of both kernel and glibc and that you use the
-kernel header files you get from 'make headers_install' in the kernel.
+The http:// protocol handler is rarely going to work properly. If your
+firewall is broken, I would suggest just fixing it.
 
-	Arnd <><
+-- 
+dwmw2
