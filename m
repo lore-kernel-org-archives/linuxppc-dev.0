@@ -1,15 +1,15 @@
 Return-Path: <miltonm@bga.com>
 Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 61085DDEC2
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Apr 2007 09:17:07 +1000 (EST)
-In-Reply-To: <20070419073555.01990DDECB@ozlabs.org>
-References: <20070419073555.01990DDECB@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id 85D10DDEEF
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Apr 2007 09:17:21 +1000 (EST)
+In-Reply-To: <20070419073555.D2C3EDDEFD@ozlabs.org>
+References: <20070419073555.D2C3EDDEFD@ozlabs.org>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <0846c0d8efafe7258075826b9c869fea@bga.com>
+Message-Id: <5f69d29368a24aad95648b40e0dfc07e@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 5/7] Enable MSI mappings for MPIC
-Date: Sat, 21 Apr 2007 18:16:55 -0500
+Subject: Re: [PATCH 6/7] MPIC MSI allocator
+Date: Sat, 21 Apr 2007 18:17:13 -0500
 To: Michael Ellerman <michael@ellerman.id.au>
 Cc: linuxppc-dev@ozlabs.org, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,34 +22,79 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Apr 19, 2007, Michael Ellerman wrote:
-> On some Apple machines the HT MSI mappings are not enabled by 
-> firmware, so
-> we need to do it by hand.
->
+> To support MSI on MPIC we need a way to reserve and allocate hardware 
+> irq
+> numbers, this patch implements an allocator for that.
 
-> +#ifdef CONFIG_PCI_MSI
-> +static void __init mpic_scan_ht_msi(struct mpic *mpic, u8 __iomem 
-> *devbase,
-> +				    unsigned int devfn)
+> Index: msi-new/arch/powerpc/sysdev/mpic_msi.c
+> ===================================================================
+> --- /dev/null
+> +++ msi-new/arch/powerpc/sysdev/mpic_msi.c
+...
+> +irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num)
 > +{
-> +	u8 __iomem *base;
-> +	u8 pos, flags;
-> +	u64 addr = 0;
-> +
-> +	for (pos = readb(devbase + PCI_CAPABILITY_LIST); pos != 0;
-> +	     pos = readb(devbase + pos + PCI_CAP_LIST_NEXT)) {
-> +		u8 id = readb(devbase + pos + PCI_CAP_LIST_ID);
-> +		if (id == PCI_CAP_ID_HT) {
-> +			id = readb(devbase + pos + 3);
-> +			if ((id & HT_5BIT_CAP_MASK) == HT_CAPTYPE_MSI_MAPPING)
->
+> +	unsigned long flags;
+> +	int offset, order = fls(num) - 1;
 
-This is just begging to be written in terms of 
-pci_bus_find_ht_capability.  Well,
-we have pci_bus_find_capability, and pci_find_ht_capability, I'm sure 
-we could
-create that.   It also means this and the other nearby functions want 
-to be
-written in terms of a struct pci_bus and config accessors.
+get_count_order would be more clear.  Also it has
+a correction factor.  (Applies several places).
+
+> +#ifdef CONFIG_MPIC_BROKEN_U3
+> +static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic)
+> +{
+> +	irq_hw_number_t hwirq;
+> +	struct irq_host_ops *ops = mpic->irqhost->ops;
+> +	struct device_node *np;
+> +	int flags, index, i;
+> +	struct of_irq oirq;
+> +
+> +	pr_debug("mpic: found U3, guessing msi allocator setup\n");
+> +
+> +	/* Reserve source numbers we know are reserved in the HW */
+> +	for (i = 0;   i < 8;   i++) __mpic_msi_reserve_hwirq(mpic, i);
+> +	for (i = 42;  i < 46;  i++) __mpic_msi_reserve_hwirq(mpic, i);
+> +	for (i = 100; i < 105; i++) __mpic_msi_reserve_hwirq(mpic, i);
+
+More lines please.
+
+> +#else
+> +static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic) { return -1; 
+> }
+
+and here.
+
+> +	if (len % 8 != 0) {
+> +		printk(KERN_WARNING "mpic: Malformed msi-available-ranges "
+> +		       "property on %s\n", mpic->of_node->full_name);
+> +		return -EINVAL;
+> +	}
+> +
+> +	bitmap_allocate_region(mpic->hwirq_bitmap, 0,
+> +			       fls(mpic->irq_count) - 1);
+> +
+> +	/* Format is: (<u32 start> <u32 count>)+ */
+> +	len /= sizeof(u32);
+> +	for (i = 0; i < len / 2; i++, p += 2)
+
+how about just dividing by the calculated 8 above?  or use
+count = len / 8.
+
+> +		mpic_msi_free_hwirqs(mpic, *p, *(p + 1));
+> +
+> +	return 0;
+> +}
+> +
+> +int mpic_msi_init_allocator(struct mpic *mpic)
+> +{
+> +	int rc, size;
+> +
+> +	BUG_ON(mpic->hwirq_bitmap);
+> +	spin_lock_init(&mpic->bitmap_lock);
+> +
+> +	size = mpic->irq_count / 8;
+> +	pr_debug("mpic: allocator bitmap size is 0x%x bytes\n", size);
+
+BITS_TO_LONGS() * sizeof(long).   We need to round up to longs to
+use bitmask_*, especially being a big endian architecture.
 
 milton
