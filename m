@@ -1,15 +1,15 @@
 Return-Path: <miltonm@bga.com>
 Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 85D10DDEEF
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Apr 2007 09:17:21 +1000 (EST)
-In-Reply-To: <20070419073555.D2C3EDDEFD@ozlabs.org>
-References: <20070419073555.D2C3EDDEFD@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id DDED5DDEC2
+	for <linuxppc-dev@ozlabs.org>; Sun, 22 Apr 2007 09:17:56 +1000 (EST)
+In-Reply-To: <20070419073556.73A6BDDE4A@ozlabs.org>
+References: <20070419073556.73A6BDDE4A@ozlabs.org>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5f69d29368a24aad95648b40e0dfc07e@bga.com>
+Message-Id: <e4520bd4be50f2884003a9421863627c@bga.com>
 From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 6/7] MPIC MSI allocator
-Date: Sat, 21 Apr 2007 18:17:13 -0500
+Subject: Re: [PATCH 7/7] MPIC MSI backend
+Date: Sat, 21 Apr 2007 18:17:45 -0500
 To: Michael Ellerman <michael@ellerman.id.au>
 Cc: linuxppc-dev@ozlabs.org, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -22,79 +22,97 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Apr 19, 2007, Michael Ellerman wrote:
-> To support MSI on MPIC we need a way to reserve and allocate hardware 
-> irq
-> numbers, this patch implements an allocator for that.
-
-> Index: msi-new/arch/powerpc/sysdev/mpic_msi.c
-> ===================================================================
-> --- /dev/null
-> +++ msi-new/arch/powerpc/sysdev/mpic_msi.c
+> MPIC MSI backend. Based on code from Segher, heavily hacked by me.
+> Renamed to mpic_htmsi, as it only deals with MSI over Hypertransport.
 ...
-> +irq_hw_number_t mpic_msi_alloc_hwirqs(struct mpic *mpic, int num)
-> +{
-> +	unsigned long flags;
-> +	int offset, order = fls(num) - 1;
+> Index: msi-new/arch/powerpc/sysdev/Makefile
+> ===================================================================
+> --- msi-new.orig/arch/powerpc/sysdev/Makefile
+> +++ msi-new/arch/powerpc/sysdev/Makefile
+> @@ -4,6 +4,7 @@ endif
+>
+>  mpic-obj-y			:= mpic.o
+>  mpic-obj-$(CONFIG_PCI_MSI)	+= mpic_msi.o
+> +mpic-obj-$(CONFIG_PCI_MSI)	+= mpic_htmsi.o
+>  obj-$(CONFIG_MPIC)		+= $(mpic-obj-y)
 
-get_count_order would be more clear.  Also it has
-a correction factor.  (Applies several places).
+This is overly complicated.  You aren't going to be making this
+a seperate link object anyways.   It should end up somehting like
 
-> +#ifdef CONFIG_MPIC_BROKEN_U3
-> +static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic)
-> +{
-> +	irq_hw_number_t hwirq;
-> +	struct irq_host_ops *ops = mpic->irqhost->ops;
-> +	struct device_node *np;
-> +	int flags, index, i;
-> +	struct of_irq oirq;
+mpic-msi-$(CONFIG_PCI_MSI)	:= mpic_msi.o mpic_htmsi.o
+obj-$(CONFIG_MPIC)		+= mpic.o $(mpic-msi-y)
+
+> -static void mpic_unmask_irq(unsigned int irq)
+> +void mpic_unmask_irq(unsigned int irq)
+...
+> -static void mpic_mask_irq(unsigned int irq)
+> +void mpic_mask_irq(unsigned int irq)
+...
+Ok mpic.c is big enough already.
+
+> Index: msi-new/arch/powerpc/sysdev/mpic.h
+> ===================================================================
+> --- msi-new.orig/arch/powerpc/sysdev/mpic.h
+> +++ msi-new/arch/powerpc/sysdev/mpic.h
+> @@ -11,14 +11,23 @@
+>   *
+>   */
+>
+> +#include <linux/irq.h>
 > +
-> +	pr_debug("mpic: found U3, guessing msi allocator setup\n");
+
+Why do you need this now?   You already had uses of irq_ht_umber_t
+and struct mpic.  Unless this should be in the earlier patch?
+
+>  #ifdef CONFIG_PCI_MSI
+>  extern void mpic_msi_reserve_hwirq(struct mpic *mpic, irq_hw_number_t 
+> hwirq);
+> +extern int mpic_htmsi_init(struct mpic *mpic);
+>  #else
+>  static inline void mpic_msi_reserve_hwirq(struct mpic *mpic,
+>  					  irq_hw_number_t hwirq)
+>  {
+>  	return;
+>  }
+> +static inline int mpic_htmsi_init(struct mpic *mpic) { return -1; }
+
+more lines please
+
+>  #endif
+>
+> +extern int mpic_set_irq_type(unsigned int virq, unsigned int 
+> flow_type);
+> +extern void mpic_end_irq(unsigned int irq);
+> +extern void mpic_mask_irq(unsigned int irq);
+> +extern void mpic_unmask_irq(unsigned int irq);
 > +
-> +	/* Reserve source numbers we know are reserved in the HW */
-> +	for (i = 0;   i < 8;   i++) __mpic_msi_reserve_hwirq(mpic, i);
-> +	for (i = 42;  i < 46;  i++) __mpic_msi_reserve_hwirq(mpic, i);
-> +	for (i = 100; i < 105; i++) __mpic_msi_reserve_hwirq(mpic, i);
+>  #endif /* _POWERPC_SYSDEV_MPIC_H */
+> Index: msi-new/arch/powerpc/sysdev/mpic_htmsi.c
 
-More lines please.
+I just stumbled across drivers/pci/htirq.c, is that of any use?
 
-> +#else
-> +static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic) { return -1; 
-> }
 
-and here.
-
-> +	if (len % 8 != 0) {
-> +		printk(KERN_WARNING "mpic: Malformed msi-available-ranges "
-> +		       "property on %s\n", mpic->of_node->full_name);
-> +		return -EINVAL;
+> +
+> +int mpic_htmsi_init(struct mpic *mpic)
+> +{
+> +	int rc;
+> +
+> +	rc = mpic_msi_init_allocator(mpic);
+> +	if (rc) {
+> +		pr_debug("htmsi: Error allocating bitmap!\n");
+> +		return rc;
 > +	}
 > +
-> +	bitmap_allocate_region(mpic->hwirq_bitmap, 0,
-> +			       fls(mpic->irq_count) - 1);
+> +	pr_debug("htmsi: Registering MPIC MSI callbacks.\n");
 > +
-> +	/* Format is: (<u32 start> <u32 count>)+ */
-> +	len /= sizeof(u32);
-> +	for (i = 0; i < len / 2; i++, p += 2)
+> +	BUG_ON(msi_mpic);
+> +	msi_mpic = mpic;
+> +
+> +	ppc_md.setup_msi_irqs = htmsi_setup_msi_irqs;
+> +	ppc_md.teardown_msi_irqs = htmsi_teardown_msi_irqs;
+> +	ppc_md.msi_check_device = htmsi_msi_check_device;
 
-how about just dividing by the calculated 8 above?  or use
-count = len / 8.
-
-> +		mpic_msi_free_hwirqs(mpic, *p, *(p + 1));
-> +
-> +	return 0;
-> +}
-> +
-> +int mpic_msi_init_allocator(struct mpic *mpic)
-> +{
-> +	int rc, size;
-> +
-> +	BUG_ON(mpic->hwirq_bitmap);
-> +	spin_lock_init(&mpic->bitmap_lock);
-> +
-> +	size = mpic->irq_count / 8;
-> +	pr_debug("mpic: allocator bitmap size is 0x%x bytes\n", size);
-
-BITS_TO_LONGS() * sizeof(long).   We need to round up to longs to
-use bitmask_*, especially being a big endian architecture.
+Unlike the rtas patch, this one didn't advertise it was
+going to set the arch hooks unconditionally.
 
 milton
