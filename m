@@ -1,13 +1,16 @@
-Return-Path: <grant.likely@secretlab.ca>
-Received: from sandbox.secretlab.ca (S01060016b61d1226.cg.shawcable.net
-	[68.147.67.118]) by ozlabs.org (Postfix) with ESMTP id 5ECB5DDE45
-	for <linuxppc-dev@ozlabs.org>; Sun, 22 Apr 2007 07:24:30 +1000 (EST)
-From: Grant Likely <grant.likely@secretlab.ca>
-To: linuxppc-dev@ozlabs.org, G. Liakhovetski <g.liakhovetski@gmx.de>,
-	paulus@samba.org
-Subject: [POWERPC] Fix comment typo in Kurobox device tree
-Date: Sat, 21 Apr 2007 15:24:04 -0600
-Message-Id: <1177190644776-git-send-email-grant.likely@secretlab.ca>
+Return-Path: <benh@kernel.crashing.org>
+Subject: Re: [PATCH 0/5] Support 64K pages mapping of SPE local stores on
+	4K kernel
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+In-Reply-To: <200704212233.34521.arnd.bergmann@de.ibm.com>
+References: <1172835163.743765.616483133775.qpush@grosgo>
+	<200704212233.34521.arnd.bergmann@de.ibm.com>
+Content-Type: text/plain
+Date: Sun, 22 Apr 2007 08:44:28 +1000
+Message-Id: <1177195469.6080.19.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,61 +20,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Signed-off-by: Grant Likely <grant.likely@secretlab.ca>
----
- arch/powerpc/boot/dts/kuroboxHD.dts |    6 +++---
- arch/powerpc/boot/dts/kuroboxHG.dts |    6 +++---
- 2 files changed, 6 insertions(+), 6 deletions(-)
+On Sat, 2007-04-21 at 22:33 +0200, Arnd Bergmann wrote:
+> On Friday 02 March 2007, Benjamin Herrenschmidt wrote:
+> > This serie of patches supports userland mappings of SPE local stores
+> > using 64K hardware pages rather than 4K on a kernel using 4K pages to
+> > improve performances.
+> 
+> Ben, I have problems porting these patches to powerpc.git#for-2.6.22.
+> Could you port them yourself and submit them to Paul? What is the
+> status of the second patch, do you have a version suitable for upstream?
 
-diff --git a/arch/powerpc/boot/dts/kuroboxHD.dts b/arch/powerpc/boot/dts/kuroboxHD.dts
-index 373110d..157dc98 100644
---- a/arch/powerpc/boot/dts/kuroboxHD.dts
-+++ b/arch/powerpc/boot/dts/kuroboxHD.dts
-@@ -125,17 +125,17 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHD.dtb -V 16 kuroboxHD.dts"
- 			interrupt-parent = <4400>;
- 			interrupt-map-mask = <f800 0 0 7>;
- 			interrupt-map = <
--				/* IDSEL 0x11 - IRQ0 ETH */
-+				/* IDSEL 11 - IRQ0 ETH */
- 				5800 0 0 1 4400 0 1
- 				5800 0 0 2 4400 1 1
- 				5800 0 0 3 4400 2 1
- 				5800 0 0 4 4400 3 1
--				/* IDSEL 0x12 - IRQ1 IDE0 */
-+				/* IDSEL 12 - IRQ1 IDE0 */
- 				6000 0 0 1 4400 1 1
- 				6000 0 0 2 4400 2 1
- 				6000 0 0 3 4400 3 1
- 				6000 0 0 4 4400 0 1
--				/* IDSEL 0x14 - IRQ3 USB2.0 */
-+				/* IDSEL 14 - IRQ3 USB2.0 */
- 				7000 0 0 1 4400 3 1
- 				7000 0 0 2 4400 3 1
- 				7000 0 0 3 4400 3 1
-diff --git a/arch/powerpc/boot/dts/kuroboxHG.dts b/arch/powerpc/boot/dts/kuroboxHG.dts
-index f3542dc..919eb29 100644
---- a/arch/powerpc/boot/dts/kuroboxHG.dts
-+++ b/arch/powerpc/boot/dts/kuroboxHG.dts
-@@ -125,17 +125,17 @@ build with: "dtc -f -I dts -O dtb -o kuroboxHG.dtb -V 16 kuroboxHG.dts"
- 			interrupt-parent = <4400>;
- 			interrupt-map-mask = <f800 0 0 7>;
- 			interrupt-map = <
--				/* IDSEL 0x11 - IRQ0 ETH */
-+				/* IDSEL 11 - IRQ0 ETH */
- 				5800 0 0 1 4400 0 1
- 				5800 0 0 2 4400 1 1
- 				5800 0 0 3 4400 2 1
- 				5800 0 0 4 4400 3 1
--				/* IDSEL 0x12 - IRQ1 IDE0 */
-+				/* IDSEL 12 - IRQ1 IDE0 */
- 				6000 0 0 1 4400 1 1
- 				6000 0 0 2 4400 2 1
- 				6000 0 0 3 4400 3 1
- 				6000 0 0 4 4400 0 1
--				/* IDSEL 0x14 - IRQ3 USB2.0 */
-+				/* IDSEL 14 - IRQ3 USB2.0 */
- 				7000 0 0 1 4400 3 1
- 				7000 0 0 2 4400 3 1
- 				7000 0 0 3 4400 3 1
--- 
-1.5.1
+I have more up to date versions of these, I'll do the port. The generic
+change needs to be done differently for upstream. I've been posting
+regulary a serie of patches that change get_unmapped_area() for that
+which I hope will get upstream but I yet to have some feedback from
+akpm...
+
+Ben.
