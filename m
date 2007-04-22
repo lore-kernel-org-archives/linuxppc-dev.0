@@ -1,23 +1,15 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
-	by ozlabs.org (Postfix) with ESMTP id BE3DEDDE05
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc2-s29.bay0.hotmail.com (bay0-omc2-s29.bay0.hotmail.com
+	[65.54.246.165]) by ozlabs.org (Postfix) with ESMTP id B32B6DDEF6
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 Apr 2007 15:43:43 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so955897ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 21 Apr 2007 22:43:41 -0700 (PDT)
-Message-ID: <528646bc0704212243x209ad132mb0a2338fa79783a4@mail.gmail.com>
-Date: Sat, 21 Apr 2007 23:43:40 -0600
-From: "Grant Likely" <glikely@gmail.com>
-To: "David H. Lynch Jr" <dhlii@comcast.net>
-Subject: Re: git tree
-In-Reply-To: <462AB3AF.2050509@comcast.net>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <20070417022050.26A645C0062@mail41-blu.bigfish.com>
-	<528646bc0704170048u25cd535ar783c737bb47d9fdf@mail.gmail.com>
-	<462AB3AF.2050509@comcast.net>
-Cc: Linux PPC <linuxppc-embedded@ozlabs.org>
+	Mon, 23 Apr 2007 04:14:22 +1000 (EST)
+Message-ID: <BAY138-F10BA8CB23D5BDA5802D8F3B2540@phx.gbl>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: where is the sk_buff allocation
+Date: Sun, 22 Apr 2007 18:14:18 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,22 +20,19 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/21/07, David H. Lynch Jr <dhlii@comcast.net> wrote:
->     I am looking for something more like how to manage development with
-> possibly multiple
->     devices/projects.
->     Not necescarily what is possible, but what Standard Operating
-> Procedure for most developers.
+Dear all,
+I am reading and understanding the Xilinx Temac device driver. I know that 
+hard_start_xmit() is used to transmit the packets. In this function, a 
+pointer skb which points to a sk_buff needs to be passed to show the 
+location of the socket buffer. But where is that sk_buff allocation 
+sentence, and how its address (skb) is passed to the hard_start_xmit() 
+function? I want to change the address of the sk_buff in my system and try 
+to fit this socket buffer in a pre-defined location.
 
-The papers on http://www.jdl.com are very good at covering
-collaboration with git.  Take a look at them, and then feel free to
-ask more questions.
+Thanks for your telling.
 
-Cheers,
-g.
+BR
+Ming
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+_________________________________________________________________
+享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
