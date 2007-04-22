@@ -1,13 +1,13 @@
 Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s29.bay0.hotmail.com (bay0-omc2-s29.bay0.hotmail.com
-	[65.54.246.165]) by ozlabs.org (Postfix) with ESMTP id B32B6DDEF6
+Received: from bay0-omc3-s33.bay0.hotmail.com (bay0-omc3-s33.bay0.hotmail.com
+	[65.54.246.233]) by ozlabs.org (Postfix) with ESMTP id 82008DDF05
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Apr 2007 04:14:22 +1000 (EST)
-Message-ID: <BAY138-F10BA8CB23D5BDA5802D8F3B2540@phx.gbl>
+	Mon, 23 Apr 2007 04:18:45 +1000 (EST)
+Message-ID: <BAY138-F22BA3703EF02D975AC59BDB2540@phx.gbl>
 From: "Ming Liu" <eemingliu@hotmail.com>
 To: linuxppc-embedded@ozlabs.org
 Subject: where is the sk_buff allocation
-Date: Sun, 22 Apr 2007 18:14:18 +0000
+Date: Sun, 22 Apr 2007 18:06:35 +0000
 Mime-Version: 1.0
 Content-Type: text/plain; charset=gb2312; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
