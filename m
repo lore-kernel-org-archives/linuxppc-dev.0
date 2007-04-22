@@ -1,18 +1,22 @@
-Return-Path: <dhlii@comcast.net>
-Received: from sccrmhc13.comcast.net (sccrmhc13.comcast.net [204.127.200.83])
-	by ozlabs.org (Postfix) with ESMTP id 1C872DDE03
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.170])
+	by ozlabs.org (Postfix) with ESMTP id BE3DEDDE05
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 22 Apr 2007 11:10:46 +1000 (EST)
-Message-ID: <462AB3AF.2050509@comcast.net>
-Date: Sat, 21 Apr 2007 21:00:31 -0400
-From: "David H. Lynch Jr" <dhlii@comcast.net>
-MIME-Version: 1.0
-To: Grant Likely <glikely@gmail.com>
+	Sun, 22 Apr 2007 15:43:43 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so955897ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 21 Apr 2007 22:43:41 -0700 (PDT)
+Message-ID: <528646bc0704212243x209ad132mb0a2338fa79783a4@mail.gmail.com>
+Date: Sat, 21 Apr 2007 23:43:40 -0600
+From: "Grant Likely" <glikely@gmail.com>
+To: "David H. Lynch Jr" <dhlii@comcast.net>
 Subject: Re: git tree
+In-Reply-To: <462AB3AF.2050509@comcast.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <20070417022050.26A645C0062@mail41-blu.bigfish.com>
 	<528646bc0704170048u25cd535ar783c737bb47d9fdf@mail.gmail.com>
-In-Reply-To: <528646bc0704170048u25cd535ar783c737bb47d9fdf@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1
+	<462AB3AF.2050509@comcast.net>
 Cc: Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -24,38 +28,22 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> I haven't quite decided yet.  The -temac and -sysace branches are a
-> bit of an experiment.  I thought it might be a good idea to maintain
-> the drivers in seperate branches so it is easy to get a diff on just
-> that driver; but the individual drivers are pretty seperate anyway (in
-> different directories).  I think I'll probably drop the -temac and
-> -sysace branches, and just maintain all my changes in the -dev branch.
->  The -forupstream branch is specifically for patches that are due to
-> go upstream.  I'll add patches there when I think they are suitable
-> for mainline, and post them to the list.
-    I would greatly appreciate pointers to so reference for using git
-for kernel development.
-    I have looked through most of the howto's and have a basic
-competence with git.
+On 4/21/07, David H. Lynch Jr <dhlii@comcast.net> wrote:
+>     I am looking for something more like how to manage development with
+> possibly multiple
+>     devices/projects.
+>     Not necescarily what is possible, but what Standard Operating
+> Procedure for most developers.
 
-    I am looking for something more like how to manage development with
-possibly multiple
-    devices/projects.
-    Not necescarily what is possible, but what Standard Operating
-Procedure for most developers.
+The papers on http://www.jdl.com are very good at covering
+collaboration with git.  Take a look at them, and then feel free to
+ask more questions.
 
-
-   
-
-
+Cheers,
+g.
 
 -- 
-Dave Lynch 					  	    DLA Systems
-Software Development:  				         Embedded Linux
-717.627.3770 	       dhlii@dlasys.net 	  http://www.dlasys.net
-fax: 1.253.369.9244 			           Cell: 1.717.587.7774
-Over 25 years' experience in platforms, languages, and technologies too numerous to list.
-
-"Any intelligent fool can make things bigger and more complex... It takes a touch of genius - and a lot of courage to move in the opposite direction."
-Albert Einstein
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
