@@ -1,19 +1,18 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
-	by ozlabs.org (Postfix) with ESMTP id 6B28DDDF07
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 05:20:20 +1000 (EST)
-To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH] eHCA: Add "Modify Port" verb
-References: <200704231823.48723.fenkes@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 23 Apr 2007 12:20:14 -0700
-In-Reply-To: <200704231823.48723.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Mon, 23 Apr 2007 18:23:48 +0200")
-Message-ID: <ada3b2q7v9t.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
-	OF-General <general@lists.openfabrics.org>
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B1BE2DDFD2
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 05:41:00 +1000 (EST)
+Date: Mon, 23 Apr 2007 14:40:52 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/4 v4] powerpc: document phy-connection-type property
+Message-Id: <20070423144052.261f68ad.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,24 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > +	if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != H_SUCCESS) {
- > +		ehca_err(&shca->ib_device, "Can't query port properties");
- > +		ret = -EINVAL;
- > +		goto modify_port1;
- > +	}
- > +
- > +	cap = (rblock->capability_mask | props->set_port_cap_mask)
- > +		& ~props->clr_port_cap_mask;
- > +
- > +	hret = hipz_h_modify_port(shca->ipz_hca_handle, port,
- > +				  cap, props->init_type, port_modify_mask);
+Since ucc_geth is being migrated to use the phylib, the existing
+(undocumented) 'interface' property is being deprecated in favour
+of 'phy-connection-type'.
 
-Is this thread-safe?  What if two different bits are set at the same
-time from two different threads?  It seems that both calls could get
-the same result from hipz_h_query_port(), and then the second call to
-hipz_h_modify_port() would overwrite the first call.
+phy-connection-type is now maintained one-to-one with definitions
+in include/linux/phy.h, albeit in the form of a string.
+If not specified, "mii" is assumed.
 
-You could look at the implementation in mthca to see the locking I
-used there.
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+name change since [patch 1/4 v3]: s/interface-type/phy-connection-type/g
 
- - R.
+ Documentation/powerpc/booting-without-of.txt |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
+
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 88cdb59..f9111cc 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1562,6 +1562,9 @@ platforms are moved over to use the flattened-device-tree model.
+      network device.  This is used by the bootwrapper to interpret
+      MAC addresses passed by the firmware when no information other
+      than indices is available to associate an address with a device.
++   - phy-connection-type : a string naming the controller/PHY interface type,
++     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id", "tbi",
++     or "rtbi".
+ 
+    Example:
+ 	ucc@2000 {
+@@ -1573,6 +1576,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 		interrupts = <a0 0>;
+ 		interrupt-parent = <700>;
+ 		mac-address = [ 00 04 9f 00 23 23 ];
++		phy-connection-type = "gmii";
+ 		rx-clock = "none";
+ 		tx-clock = "clk9";
+ 		phy-handle = <212000>;
+-- 
+1.5.0.3
