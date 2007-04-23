@@ -1,36 +1,21 @@
-Return-Path: <linas@austin.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EFF82DDEFD
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 06:50:33 +1000 (EST)
-Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3NJnFfO016538
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 15:49:15 -0400
-Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
-	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3NKoL5N497820
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 16:50:21 -0400
-Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
-	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3NKoLbv022636
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 16:50:21 -0400
-Date: Mon, 23 Apr 2007 15:50:20 -0500
-To: Christoph Hellwig <hch@infradead.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	"<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
-	Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
-	Paul Mackerras <paulus@samba.org>, linux-s390@vger.kernel.org,
-	linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
-Message-ID: <20070423205020.GR31947@austin.ibm.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769695763104-git-send-email-ebiederm@xmission.com>
-	<20070422123155.GF20763@infradead.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070422123155.GF20763@infradead.org>
-From: linas@austin.ibm.com (Linas Vepstas)
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EE1C6DDF05
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 06:59:52 +1000 (EST)
+In-Reply-To: <20070423144052.261f68ad.kim.phillips@freescale.com>
+References: <20070423144052.261f68ad.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <5c96dd623e3a6737db48ab17c3550610@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/4 v4] powerpc: document phy-connection-type property
+Date: Mon, 23 Apr 2007 22:59:43 +0200
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,43 +25,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Apr 22, 2007 at 01:31:55PM +0100, Christoph Hellwig wrote:
-> On Thu, Apr 19, 2007 at 01:58:45AM -0600, Eric W. Biederman wrote:
-> > From: Eric W. Biederman <ebiederm@xmission.com>
-> > 
-> > This patch modifies the startup of eehd to use kthread_run
-> > not a combination of kernel_thread and daemonize.  Making
-> > the code slightly simpler and more maintainable.
-> 
-> This one has the same scheme as the various s390 drivers where a thread
-> is spawned using a workqueue on demand.  I think we should not blindly
-> convert it but think a litte more about it.
-> 
-> The first question is obviously, is this really something we want?
-> spawning kernel thread on demand without reaping them properly seems
-> quite dangerous.
+> Since ucc_geth is being migrated to use the phylib, the existing
+> (undocumented) 'interface' property is being deprecated in favour
+> of 'phy-connection-type'.
 
-I'm not quite sure what the intent of this patch really is, being
-at most a somewhat passing and casual user of kernel threads.
+Okay.
 
-Some background may be useful: (this in reply to some comments from
-Andrew Morton)
+> phy-connection-type is now maintained one-to-one with definitions
+> in include/linux/phy.h, albeit in the form of a string.
 
-EEH events are supposed to be very rare, as they correspond to 
-hardware failures, typically PCI bus parity errors, but also 
-things like wild DMA's.  The code that generates these will limit
-them to no more than 6 per hour per pci device. Any more than that,
-and the PCI device is permanently disabled (the sysadmin would 
-need to do something to recover).
+That's sort-of accidental though :-)
 
-The only reason for using threads here is to get the error recovery
-out of an interrupt context (where errors may be detected), and then,
-an hour later, decrement a counter (which is how we limit these to 
-6 per hour). Thread reaping is "trivial", the thread just exits
-after an hour.
+> --- a/Documentation/powerpc/booting-without-of.txt
+> +++ b/Documentation/powerpc/booting-without-of.txt
+> @@ -1562,6 +1562,9 @@ platforms are moved over to use the 
+> flattened-device-tree model.
+>       network device.  This is used by the bootwrapper to interpret
+>       MAC addresses passed by the firmware when no information other
+>       than indices is available to associate an address with a device.
+> +   - phy-connection-type : a string naming the controller/PHY 
+> interface type,
+> +     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id", 
+> "tbi",
+> +     or "rtbi".
 
-Since these are events rare, I've no particular concern about
-performance or resource consumption. The current code seems 
-to work just fine. :-)
+Could you put this right after the "phy-handle" definition
+please?
 
---linas
+> @@ -1573,6 +1576,7 @@ platforms are moved over to use the 
+> flattened-device-tree model.
+>  		interrupts = <a0 0>;
+>  		interrupt-parent = <700>;
+>  		mac-address = [ 00 04 9f 00 23 23 ];
+> +		phy-connection-type = "gmii";
+>  		rx-clock = "none";
+>  		tx-clock = "clk9";
+>  		phy-handle = <212000>;
+
+Same here.  It's nice to keep things grouped, it
+improves understanding ;-)
+
+
+Segher
