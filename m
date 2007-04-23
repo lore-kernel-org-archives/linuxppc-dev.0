@@ -1,22 +1,27 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
-	[151.189.21.46])
+Received: from mail-in-09.arcor-online.net (mail-in-09.arcor-online.net
+	[151.189.21.49])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5C35ADDF47
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 03:39:34 +1000 (EST)
-In-Reply-To: <20070423084710.10570DDF14@ozlabs.org>
-References: <20070423084710.10570DDF14@ozlabs.org>
+	by ozlabs.org (Postfix) with ESMTP id F30A8DDEFB
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 04:30:35 +1000 (EST)
+In-Reply-To: <20070423174339.20308ac3.sfr@canb.auug.org.au>
+References: <20070412141905.6f30efd3.sfr@canb.auug.org.au>
+	<20070412153424.bf3957f4.sfr@canb.auug.org.au>
+	<1176357020.8061.123.camel@localhost.localdomain>
+	<20070411.232545.45203999.davem@davemloft.net>
+	<17cfcd2e089f7154354fe6c4c1cadf3c@kernel.crashing.org>
+	<20070423174339.20308ac3.sfr@canb.auug.org.au>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <64f77a2f874650aae9980e37eea66b9c@kernel.crashing.org>
+Message-Id: <23772b4d399b331b25459fc3c0f56fd4@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] Rename MPIC_BROKEN_U3 to MPIC_U3_HT_IRQS
-Date: Mon, 23 Apr 2007 19:39:23 +0200
-To: Michael Ellerman <michael@ellerman.id.au>
-Cc: Olof Johannsson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] Start split out of common open firmware code
+Date: Mon, 23 Apr 2007 20:30:29 +0200
+To: Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: paulus@samba.org, David Miller <davem@davemloft.net>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,19 +31,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Rename MPIC_BROKEN_U3 to something a little more descriptive. Its
-> effect is to enable support for HT irqs behind the PCI-X/HT bridge on
-> U3/U4 (aka. CPC9x5) parts.
+>> drivers/ is the wrong place to put this IMHO.  Why not
+>> use kernel/openfirmware/*.[ch] ?
+>
+> We have drivers/acpi as a precedent ...
 
-Not quite.  It's a workaround for the problem that
-the U3/U4 HT interrupt interface doesn't send ACKs
-for interrupts that require them ("level" interrupts).
-It does this by setting the ACK bit in HT APIC config
-space every time an interrupt from such a source happens.
-
-This doesn't affect PCI bridges only.
-
-The name change looks good though :-)
+That doesn't mean it's a good place for firmware interface
+code, it just means that the ACPI code currently lives
+there :-)
 
 
 Segher
