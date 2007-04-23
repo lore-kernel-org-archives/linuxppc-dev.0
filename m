@@ -1,22 +1,20 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17964.42216.839568.476369@cargo.ozlabs.ibm.com>
-Date: Mon, 23 Apr 2007 22:22:00 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Jake Moilanen <moilanen@austin.ibm.com>
-Subject: Re: [PATCH] DMA 4GB boundary protection
-In-Reply-To: <1175175842.1398.54.camel@goblue>
-References: <1172872183.5310.145.camel@goblue>
-	<20070303232915.GB8028@lixom.net>
-	<1174511149.5225.135.camel@goblue>
-	<20070322175324.GA21120@lixom.net>
-	<1175026241.1398.23.camel@goblue>
-	<20070328155635.GA14356@lixom.net>
-	<1175105842.1398.43.camel@goblue>
-	<1175124183.32220.17.camel@localhost.localdomain>
-	<1175175842.1398.54.camel@goblue>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id A9394DDE42
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 23:22:00 +1000 (EST)
+Date: Mon, 23 Apr 2007 23:22:17 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: olof@lixom.net (Olof Johansson)
+Subject: Re: [PATCH] [v2] powerpc: save trap number in bad_stack
+Message-Id: <20070423232217.08e420a6.sfr@canb.auug.org.au>
+In-Reply-To: <20070422233821.GB28479@lixom.net>
+References: <20070416062347.GA20196@lixom.net>
+	<20070422233821.GB28479@lixom.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Mon__23_Apr_2007_23_22_17_+1000_RnN1J6ir=Q/rA/ng"
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,13 +24,46 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jake,
+--Signature=_Mon__23_Apr_2007_23_22_17_+1000_RnN1J6ir=Q/rA/ng
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-It looks like I have applied both the final version of this patch
-(569975591c5530fdc9c7a3c45122e5e46f075a74) and the original version
-(618d3adc351a24c4c48437c767befb88ca2d199d) that modified
-iommu_range_alloc().
+On Sun, 22 Apr 2007 18:38:21 -0500 olof@lixom.net (Olof Johansson) wrote:
+>
+> --- powerpc.orig/include/asm-powerpc/paca.h
+> +++ powerpc/include/asm-powerpc/paca.h
+> @@ -68,6 +68,7 @@ struct paca_struct {
+>  	void *emergency_sp;		/* pointer to emergency stack */
+>  	u64 data_offset;		/* per cpu data offset */
+>  	s16 hw_cpu_id;			/* Physical processor number */
+> +	u16 trap_save;			/* Used when bad stack is encountered */
 
-Should I revert the original version?
+Please read the comment at the top of the struct:
 
-Paul.
+        /*
+         * Because hw_cpu_id, unlike other paca fields, is accessed
+         * routinely from other CPUs (from the IRQ code), we stick to
+         * read-only (after boot) fields in the first cacheline to
+         * avoid cacheline bouncing.
+         */
+
+So please move this out of the first cache line.
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Mon__23_Apr_2007_23_22_17_+1000_RnN1J6ir=Q/rA/ng
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGLLMOFdBgD/zoJvwRAoN1AJ98gDGN5BHct/X5LwXn6A6S661tqgCfWlIT
+GSRKJWh9dWa/Sbg8alEUS/E=
+=m3xD
+-----END PGP SIGNATURE-----
+
+--Signature=_Mon__23_Apr_2007_23_22_17_+1000_RnN1J6ir=Q/rA/ng--
