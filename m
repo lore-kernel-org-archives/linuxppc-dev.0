@@ -1,38 +1,18 @@
-Return-Path: <afleming@freescale.com>
-Received: from az33egw01.freescale.net (az33egw01.freescale.net
-	[192.88.158.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 6414ADDF06
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 02:58:43 +1000 (EST)
-In-Reply-To: <19b21e979d2b23eba0073dadc7c65620@kernel.crashing.org>
-References: <20070413012542.343eb848.kim.phillips@freescale.com>
-	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
-	<20070416102533.0f87396f.kim.phillips@freescale.com>
-	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
-	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
-	<20070416115729.292c10b1.kim.phillips@freescale.com>
-	<53810df560c7af272cd1c71c9d5fa1ab@kernel.crashing.org>
-	<20070416193110.77b63e4b.kim.phillips@freescale.com>
-	<788e650fbb3f95eaf1bfb6955f9cef17@kernel.crashing.org>
-	<20070417152712.51c7348f.kim.phillips@freescale.com>
-	<f170b2c44ae8a76dd4d35ceb94a624b0@kernel.crashing.org>
-	<20070417201350.12727df7.kim.phillips@freescale.com>
-	<524e7cf7aec7be8289ab2f99df8a0776@kernel.crashing.org>
-	<20070418164849.6f0fd817.kim.phillips@freescale.com>
-	<d16d2a0d1742a32e45597baabfc3735a@kernel.crashing.org>
-	<6358CE18-B118-4BC1-B46A-D485449273D5@freescale.com>
-	<19b21e979d2b23eba0073dadc7c65620@kernel.crashing.org>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <3C290CCE-1B71-448A-8454-0C08BCF93279@freescale.com>
-From: Andy Fleming <afleming@freescale.com>
-Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
-	properties
-Date: Mon, 23 Apr 2007 11:58:31 -0500
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <halr@voltaire.com>
+Received: from mailgw.voltaire.com (mailgw.voltaire.com [193.47.165.252])
+	by ozlabs.org (Postfix) with ESMTP id 6E9EDDDED3
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 03:21:07 +1000 (EST)
+Subject: Re: [ofa-general] [PATCH] eHCA: Add "Modify Port" verb
+From: Hal Rosenstock <halr@voltaire.com>
+To: Joachim Fenkes <fenkes@de.ibm.com>
+In-Reply-To: <200704231823.48723.fenkes@de.ibm.com>
+References: <200704231823.48723.fenkes@de.ibm.com>
+Content-Type: text/plain
+Message-Id: <1177347358.28021.24294.camel@hal.voltaire.com>
+Mime-Version: 1.0
+Date: 23 Apr 2007 12:55:59 -0400
+Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+	OF-General <general@lists.openfabrics.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -42,40 +22,153 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Hi Joachim,
 
-On Apr 21, 2007, at 12:22, Segher Boessenkool wrote:
+On Mon, 2007-04-23 at 12:23, Joachim Fenkes wrote:
+> Add "Modify Port" verb support to eHCA driver.
+> ib_cm needs this to initialize properly.
+> 
+> 
+> Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+> ---
+> 
+>  ehca_hca.c |   48 ++++++++++++++++++++++++++++++++++++++++++++++--
+>  hcp_if.c   |   24 ++++++++++++++++++++++++
+>  hcp_if.h   |    4 ++++
+>  3 files changed, 74 insertions(+), 2 deletions(-)
+> 
+> diff -urp a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
+> --- a/drivers/infiniband/hw/ehca/ehca_hca.c	2007-02-04 19:44:54.000000000 +0100
+> +++ b/drivers/infiniband/hw/ehca/ehca_hca.c	2007-04-23 18:09:38.000000000 +0200
+> @@ -147,6 +147,7 @@ int ehca_query_port(struct ib_device *ib
+>  		break;
+>  	}
+>  
+> +	props->port_cap_flags  = rblock->capability_mask;
+>  	props->gid_tbl_len     = rblock->gid_tbl_len;
+>  	props->max_msg_sz      = rblock->max_msg_sz;
+>  	props->bad_pkey_cntr   = rblock->bad_pkey_cntr;
+> @@ -233,10 +234,53 @@ query_gid1:
+>  	return ret;
+>  }
+>  
+> +const u32 allowed_port_caps = (
+> +	IB_PORT_SM | IB_PORT_LED_INFO_SUP | IB_PORT_CM_SUP |
+> +	IB_PORT_SNMP_TUNNEL_SUP | IB_PORT_DEVICE_MGMT_SUP |
+> +	IB_PORT_VENDOR_CLASS_SUP);
 
->>> Sure there's an argument for describing what type of
->>> interface the PHY is connected on, if it supports more
->>> than one -- but that should be a property in the PHY
->>> node, not the controller node, since you can have multiple
->>> PHYs connected to the same controller, possibly on
->>> different interfaces each.
->>
->> I just want to reiterate that I disagree strongly with this  
->> statement.  If you have multiple PHYs hooked up to one ethernet  
->> controller, you're going to need to change the device tree to use  
->> a different PHY, anyway.  That, or have Linux ignore the phandle  
->> that points to the connected PHY.
->
-> On some configurations, what PHY to use is a runtime
-> decision, not a static thing.  No device tree change
-> is necessary then.
+I didn't think IB_PORT_SM was allowed (as QP0 is not exposed) or does
+this just fail later when it is attempted to be actually set ?
 
+-- Hal
 
-1) Could you give me an example?
-
-2) So you'd be having Linux ignore the phandle, then?
-
-
->> My point, again, is that the interface type is not strongly tied  
->> to the PHY.  It is strongly tied to the board configuration.  We  
->> *could* put the interface type in the PHY node, but I want to  
->> disabuse you of the notion that it would be any better there.
->
-> I still think it's the best place for this information.
-
-
-I still disagree.  :)
-
-Andy
+> +
+>  int ehca_modify_port(struct ib_device *ibdev,
+>  		     u8 port, int port_modify_mask,
+>  		     struct ib_port_modify *props)
+>  {
+> -	/* Not implemented yet */
+> -	return -EFAULT;
+> +	int ret = 0;
+> +	struct ehca_shca *shca = container_of(ibdev, struct ehca_shca, ib_device);
+> +	struct hipz_query_port *rblock;
+> +	u32 cap;
+> +	u64 hret;
+> +
+> +	if ((props->set_port_cap_mask | props->clr_port_cap_mask)
+> +	    & ~allowed_port_caps) {
+> +		ehca_err(&shca->ib_device, "Non-changeable bits set in masks  "
+> +			 "set=%x  clr=%x  allowed=%x", props->set_port_cap_mask,
+> +			 props->clr_port_cap_mask, allowed_port_caps);
+> +		return -EINVAL;
+> +	}
+> +
+> +	rblock = ehca_alloc_fw_ctrlblock(GFP_KERNEL);
+> +	if (!rblock) {
+> +		ehca_err(&shca->ib_device,  "Can't allocate rblock memory.");
+> +		return -ENOMEM;
+> +	}
+> +
+> +	if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != H_SUCCESS) {
+> +		ehca_err(&shca->ib_device, "Can't query port properties");
+> +		ret = -EINVAL;
+> +		goto modify_port1;
+> +	}
+> +
+> +	cap = (rblock->capability_mask | props->set_port_cap_mask)
+> +		& ~props->clr_port_cap_mask;
+> +
+> +	hret = hipz_h_modify_port(shca->ipz_hca_handle, port,
+> +				  cap, props->init_type, port_modify_mask);
+> +	if (hret != H_SUCCESS) {
+> +		ehca_err(&shca->ib_device, "Modify port failed  hret=%lx", hret);
+> +		ret = -EINVAL;
+> +	}
+> +
+> +modify_port1:
+> +	ehca_free_fw_ctrlblock(rblock);
+> +
+> +	return ret;
+>  }
+> diff -urp a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+> --- a/drivers/infiniband/hw/ehca/hcp_if.c	2007-02-04 19:44:54.000000000 +0100
+> +++ b/drivers/infiniband/hw/ehca/hcp_if.c	2007-04-23 18:06:09.000000000 +0200
+> @@ -70,6 +70,10 @@
+>  #define H_ALL_RES_QP_SQUEUE_SIZE_PAGES  EHCA_BMASK_IBM(0, 31)
+>  #define H_ALL_RES_QP_RQUEUE_SIZE_PAGES  EHCA_BMASK_IBM(32, 63)
+>  
+> +#define H_MP_INIT_TYPE                  EHCA_BMASK_IBM(44, 47)
+> +#define H_MP_SHUTDOWN                   EHCA_BMASK_IBM(48, 48)
+> +#define H_MP_RESET_QKEY_CTR             EHCA_BMASK_IBM(49, 49)
+> +
+>  /* direct access qp controls */
+>  #define DAQP_CTRL_ENABLE    0x01
+>  #define DAQP_CTRL_SEND_COMP 0x20
+> @@ -364,6 +368,26 @@ u64 hipz_h_query_port(const struct ipz_a
+>  	return ret;
+>  }
+>  
+> +u64 hipz_h_modify_port(const struct ipz_adapter_handle adapter_handle,
+> +		       const u8 port_id, const u32 port_cap,
+> +		       const u8 init_type, const int modify_mask)
+> +{
+> +	u64 port_attributes = port_cap;
+> +
+> +	if (modify_mask & IB_PORT_SHUTDOWN)
+> +		port_attributes |= EHCA_BMASK_SET(H_MP_SHUTDOWN, 1);
+> +	if (modify_mask & IB_PORT_INIT_TYPE)
+> +		port_attributes |= EHCA_BMASK_SET(H_MP_INIT_TYPE, init_type);
+> +	if (modify_mask & IB_PORT_RESET_QKEY_CNTR)
+> +		port_attributes |= EHCA_BMASK_SET(H_MP_RESET_QKEY_CTR, 1);
+> +
+> +	return ehca_plpar_hcall_norets(H_MODIFY_PORT,
+> +				       adapter_handle.handle, /* r4 */
+> +				       port_id,               /* r5 */
+> +				       port_attributes,       /* r6 */
+> +				       0, 0, 0, 0);
+> +}
+> +
+>  u64 hipz_h_query_hca(const struct ipz_adapter_handle adapter_handle,
+>  		     struct hipz_query_hca *query_hca_rblock)
+>  {
+> diff -urp a/drivers/infiniband/hw/ehca/hcp_if.h b/drivers/infiniband/hw/ehca/hcp_if.h
+> --- a/drivers/infiniband/hw/ehca/hcp_if.h	2007-02-04 19:44:54.000000000 +0100
+> +++ b/drivers/infiniband/hw/ehca/hcp_if.h	2007-04-23 18:06:09.000000000 +0200
+> @@ -85,6 +85,10 @@ u64 hipz_h_query_port(const struct ipz_a
+>  		      const u8 port_id,
+>  		      struct hipz_query_port *query_port_response_block);
+>  
+> +u64 hipz_h_modify_port(const struct ipz_adapter_handle adapter_handle,
+> +		       const u8 port_id, const u32 port_cap,
+> +		       const u8 init_type, const int modify_mask);
+> +
+>  u64 hipz_h_query_hca(const struct ipz_adapter_handle adapter_handle,
+>  		     struct hipz_query_hca *query_hca_rblock);
+>  
+> 
+> _______________________________________________
+> general mailing list
+> general@lists.openfabrics.org
+> http://lists.openfabrics.org/cgi-bin/mailman/listinfo/general
+> 
+> To unsubscribe, please visit http://openib.org/mailman/listinfo/openib-general
