@@ -1,12 +1,11 @@
 Return-Path: <krafft@de.ibm.com>
-Date: Mon, 23 Apr 2007 20:22:23 +0200
+Date: Mon, 23 Apr 2007 20:22:37 +0200
 From: Christian Krafft <krafft@de.ibm.com>
 To: linuxppc-dev@ozlabs.org
-Subject: [patch 1/2] powerpc: add check for initialized driver data to pmi
-	driver
-Message-ID: <20070423202223.549bf53a@localhost>
+Subject: [patch 2/2] powerpc: pmi probe device by device-type
+Message-ID: <20070423202237.0725075a@localhost>
 Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_.jDnS61Vy+I1tLWddR+0toJ;
+Content-Type: multipart/signed; boundary=Sig_Ia2Wf+Sc.Pg1bOKqfHh.h4T;
 	protocol="application/pgp-signature"; micalg=PGP-SHA1
 Cc: krafft@de.ibm.com, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -18,16 +17,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_.jDnS61Vy+I1tLWddR+0toJ
+--Sig_Ia2Wf+Sc.Pg1bOKqfHh.h4T
 Content-Type: text/plain; charset=US-ASCII
 Content-Transfer-Encoding: quoted-printable
 
 From: Christian Krafft <krafft@de.ibm.com>
-This patch adds a check for the private driver data to be initialized.
-The bug showed up, as the caller found a pmi device by it's type.
-Whereas the pmi driver probes for the type and the name.
-Since the name was not as the driver expected, it did not initialize.
-A more relaxed probing will be supplied with an extra patch, too.
+At the moment the pmi device driver is probing for devices with
+a given type and a given name. As there may be devices of
+the same type but with a different name, probing should be
+done also for device type only.
 
 Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
@@ -38,31 +36,14 @@ Index: sdk3/arch/powerpc/sysdev/pmi.c
 =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
 --- sdk3.orig/arch/powerpc/sysdev/pmi.c
 +++ sdk3/arch/powerpc/sysdev/pmi.c
-@@ -264,6 +264,9 @@ void pmi_register_handler(struct of_devi
- 	struct pmi_data *data;
- 	data =3D device->dev.driver_data;
+@@ -103,6 +103,7 @@ out:
 =20
-+	if (!data)
-+		return;
-+
- 	spin_lock(&data->handler_spinlock);
- 	list_add_tail(&handler->node, &data->handler);
- 	spin_unlock(&data->handler_spinlock);
-@@ -274,10 +277,12 @@ void pmi_unregister_handler(struct of_de
- 			    struct pmi_handler *handler)
- {
- 	struct pmi_data *data;
-+	data =3D device->dev.driver_data;
+ static struct of_device_id pmi_match[] =3D {
+ 	{ .type =3D "ibm,pmi", .name =3D "ibm,pmi" },
++	{ .type =3D "ibm,pmi" },
+ 	{},
+ };
 =20
--	pr_debug("pmi: unregistering handler %p\n", handler);
-+	if (!data)
-+		return;
-=20
--	data =3D device->dev.driver_data;
-+	pr_debug("pmi: unregistering handler %p\n", handler);
-=20
- 	spin_lock(&data->handler_spinlock);
- 	list_del(&handler->node);
 
 
 --=20
@@ -81,16 +62,16 @@ Sitz der Gesellschaft:		Boeblingen
 Registriergericht:		Amtsgericht Stuttgart, HRB 243294
 
 
---Sig_.jDnS61Vy+I1tLWddR+0toJ
+--Sig_Ia2Wf+Sc.Pg1bOKqfHh.h4T
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Disposition: attachment; filename=signature.asc
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGLPlr6rqK4qDx+dcRAim2AJ4iMPhyji82XwjyIj9nWK4QnwpaGACgsboC
-hWQAV2+iN3jHTLUGynI7Isk=
-=Eou8
+iD8DBQFGLPlt6rqK4qDx+dcRAg7JAJ91FUf/EF6W5tRZd6eclDbYkiK4sQCg3eLE
+kQa1toly1P6g3K/NUG45nfs=
+=AqvC
 -----END PGP SIGNATURE-----
 
---Sig_.jDnS61Vy+I1tLWddR+0toJ--
+--Sig_Ia2Wf+Sc.Pg1bOKqfHh.h4T--
