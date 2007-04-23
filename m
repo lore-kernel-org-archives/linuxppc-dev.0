@@ -1,18 +1,22 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 23 Apr 2007 23:39:13 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: Re: [PATCH] [v2] powerpc: save trap number in bad_stack
-Message-ID: <20070423133913.GA12965@localhost.localdomain>
-References: <20070416062347.GA20196@lixom.net>
-	<20070422233821.GB28479@lixom.net>
-	<20070423232217.08e420a6.sfr@canb.auug.org.au>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 0938BDDF64
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 23:54:18 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH/RESEND] ehea: fix for dlpar and sysfs entries
+Date: Mon, 23 Apr 2007 15:54:04 +0200
+References: <200704231358.53479.ossthema@de.ibm.com>
+In-Reply-To: <200704231358.53479.ossthema@de.ibm.com>
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature"; boundary="EVF5PPMfhYS0aIcm"
-In-Reply-To: <20070423232217.08e420a6.sfr@canb.auug.org.au>
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org, paulus@samba.org,
-	anton@samba.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704231554.06110.arnd@arndb.de>
+Cc: Thomas Klein <tklein@de.ibm.com>, Jeff Garzik <jeff@garzik.org>,
+	Jan-Bernd Themann <themann@de.ibm.com>, netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	Christoph Raisch <raisch@de.ibm.com>, Marcus Eder <meder@de.ibm.com>,
+	Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,55 +26,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---EVF5PPMfhYS0aIcm
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-
-On Mon, Apr 23, 2007 at 11:22:17PM +1000, Stephen Rothwell wrote:
-> On Sun, 22 Apr 2007 18:38:21 -0500 olof@lixom.net (Olof Johansson) wrote:
-> >
-> > --- powerpc.orig/include/asm-powerpc/paca.h
-> > +++ powerpc/include/asm-powerpc/paca.h
-> > @@ -68,6 +68,7 @@ struct paca_struct {
-> >  	void *emergency_sp;		/* pointer to emergency stack */
-> >  	u64 data_offset;		/* per cpu data offset */
-> >  	s16 hw_cpu_id;			/* Physical processor number */
-> > +	u16 trap_save;			/* Used when bad stack is encountered */
+On Monday 23 April 2007, Jan-Bernd Themann wrote:
+> - dlpar fix:=20
+> =A0=A0=A0=A0=A0=A0=A0=A0certain resources may only be allocated when first
+> =A0=A0=A0=A0=A0=A0=A0=A0logical port is available, and must be removed wh=
+en
+> =A0=A0=A0=A0=A0=A0=A0=A0last logical port has been removed
 >=20
-> Please read the comment at the top of the struct:
+> - sysfs entries:
+> =A0=A0=A0=A0=A0=A0=A0=A0create symbolic link from each logical port to eh=
+ea driver
 >=20
->         /*
->          * Because hw_cpu_id, unlike other paca fields, is accessed
->          * routinely from other CPUs (from the IRQ code), we stick to
->          * read-only (after boot) fields in the first cacheline to
->          * avoid cacheline bouncing.
->          */
->=20
-> So please move this out of the first cache line.
 
-Afaict, Olof's patch only writes to that field when we're about to
-enter the bad_stack path.  In that case we're sufficiently screwed
-that I don't think some extra cacheline bouncing matters.
+I can't see anything wrong with the patch contents, but if you know that th=
+ere
+are two changes, you really should make it two separate patches.
 
---=20
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
-
---EVF5PPMfhYS0aIcm
-Content-Type: application/pgp-signature; name="signature.asc"
-Content-Description: Digital signature
-Content-Disposition: inline
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGLLcBaILKxv3ab8YRAupDAJ4iDtvaBqfCSBLt6F2xQMlMOFJSTgCeNCbr
-bZdE5nbgzz8DMLe/ZYTG8Do=
-=GoFw
------END PGP SIGNATURE-----
-
---EVF5PPMfhYS0aIcm--
+	Arnd <><
