@@ -1,14 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 32779DDFF1
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 9E533DDFFA
 	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 05:46:54 +1000 (EST)
-Message-Id: <20070423193912.578031620@arndb.de>
+Message-Id: <20070423193913.253050755@arndb.de>
 References: <20070423193538.576702568@arndb.de>
-Date: Mon, 23 Apr 2007 21:35:41 +0200
+Date: Mon, 23 Apr 2007 21:35:46 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 03/10] cbe_thermal: add throttling attributes to cpu and spu
-	nodes
+Subject: [PATCH 08/10] cell: add support for proper device-tree
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
 	Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,219 +20,202 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Christian Krafft <krafft@de.ibm.com>
-This patch adds some attributes the cpu and spu nodes:
-/sys/devices/system/[c|s]pu/[c|s]pu*/thermal/throttle_begin
-/sys/devices/system/[c|s]pu/[c|s]pu*/thermal/throttle_end
-/sys/devices/system/[c|s]pu/[c|s]pu*/thermal/throttle_full_stop
+
+This patch adds support for a proper device-tree.
+A porper device-tree on cell contains be nodes
+for each CBE containg nodes for SPEs and all the
+other special devices on it.
+Ofcourse oldschool devicetree is still supported.
 
 Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 
-Index: linux-2.6/arch/powerpc/platforms/cell/cbe_thermal.c
+Index: linux-2.6/arch/powerpc/platforms/cell/cbe_regs.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_thermal.c
-+++ linux-2.6/arch/powerpc/platforms/cell/cbe_thermal.c
-@@ -1,6 +1,31 @@
- /*
-  * thermal support for the cell processor
-  *
-+ * This module adds some sysfs attributes to cpu and spu nodes.
-+ * Base for measurements are the digital thermal sensors (DTS)
-+ * located on the chip.
-+ * The accuracy is 2 degrees, starting from 65 up to 125 degrees celsius
-+ * The attributes can be found under
-+ * /sys/devices/system/cpu/cpuX/thermal
-+ * /sys/devices/system/spu/spuX/thermal
-+ *
-+ * The following attributes are added for each node:
-+ * temperature:
-+ *	contains the current temperature measured by the DTS
-+ * throttle_begin:
-+ *	throttling begins when temperature is greater or equal to
-+ *	throttle_begin. Setting this value to 125 prevents throttling.
-+ * throttle_end:
-+ *	throttling is being ceased, if the temperature is lower than
-+ *	throttle_end. Due to a delay between applying throttling and
-+ *	a reduced temperature this value should be less than throttle_begin.
-+ *	A value equal to throttle_begin provides only a very little hysteresis.
-+ * throttle_full_stop:
-+ *	If the temperatrue is greater or equal to throttle_full_stop,
-+ *	full throttling is applied to the cpu or spu. This value should be
-+ *	greater than throttle_begin and throttle_end. Setting this value to
-+ *	65 prevents the unit from running code at all.
-+ *
-  * (C) Copyright IBM Deutschland Entwicklung GmbH 2005
-  *
-  * Author: Christian Krafft <krafft@de.ibm.com>
-@@ -31,9 +56,24 @@
+--- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_regs.c
++++ linux-2.6/arch/powerpc/platforms/cell/cbe_regs.c
+@@ -14,6 +14,8 @@
+ #include <asm/pgtable.h>
+ #include <asm/prom.h>
+ #include <asm/ptrace.h>
++#include <asm/of_device.h>
++#include <asm/of_platform.h>
+ 
  #include "cbe_regs.h"
- #include "spu_priv1_mmio.h"
  
-+#define TEMP_MIN 65
-+#define TEMP_MAX 125
-+
-+#define SYSDEV_PREFIX_ATTR(_prefix,_name,_mode)			\
-+struct sysdev_attribute attr_ ## _prefix ## _ ## _name = {	\
-+	.attr = { .name = __stringify(_name), .mode = _mode },	\
-+	.show	= _prefix ## _show_ ## _name,			\
-+	.store	= _prefix ## _store_ ## _name,			\
-+};
-+
- static inline u8 reg_to_temp(u8 reg_value)
+@@ -27,6 +29,7 @@
+ static struct cbe_regs_map
  {
--       return ((reg_value & 0x3f) << 1) + 65;
-+	return ((reg_value & 0x3f) << 1) + TEMP_MIN;
-+}
-+
-+static inline u8 temp_to_reg(u8 temp)
-+{
-+	return ((temp - TEMP_MIN) >> 1) & 0x3f;
- }
- 
- static struct cbe_pmd_regs __iomem *get_pmd_regs(struct sys_device *sysdev)
-@@ -73,6 +113,73 @@ static ssize_t spu_show_temp(struct sys_
- 	return sprintf(buf, "%d\n", reg_to_temp(value));
- }
- 
-+static ssize_t show_throttle(struct cbe_pmd_regs __iomem *pmd_regs, char *buf, int pos)
-+{
-+	u64 value;
-+
-+	value = in_be64(&pmd_regs->tm_tpr.val);
-+	/* access the corresponding byte */
-+	value >>= pos;
-+	value &= 0x3F;
-+
-+	return sprintf(buf, "%d\n", reg_to_temp(value));
-+}
-+
-+static ssize_t store_throttle(struct cbe_pmd_regs __iomem *pmd_regs, const char *buf, size_t size, int pos)
-+{
-+	u64 reg_value;
-+	int temp;
-+	u64 new_value;
-+	int ret;
-+
-+	ret = sscanf(buf, "%u", &temp);
-+
-+	if (ret != 1 || temp < TEMP_MIN || temp > TEMP_MAX)
-+		return -EINVAL;
-+
-+	new_value = temp_to_reg(temp);
-+
-+	reg_value = in_be64(&pmd_regs->tm_tpr.val);
-+
-+	/* zero out bits for new value */
-+	reg_value &= ~(0xffull << pos);
-+	/* set bits to new value */
-+	reg_value |= new_value << pos;
-+
-+	out_be64(&pmd_regs->tm_tpr.val, reg_value);
-+	return size;
-+}
-+
-+static ssize_t spu_show_throttle_end(struct sys_device *sysdev, char *buf)
-+{
-+	return show_throttle(get_pmd_regs(sysdev), buf, 0);
-+}
-+
-+static ssize_t spu_show_throttle_begin(struct sys_device *sysdev, char *buf)
-+{
-+	return show_throttle(get_pmd_regs(sysdev), buf, 8);
-+}
-+
-+static ssize_t spu_show_throttle_full_stop(struct sys_device *sysdev, char *buf)
-+{
-+	return show_throttle(get_pmd_regs(sysdev), buf, 16);
-+}
-+
-+static ssize_t spu_store_throttle_end(struct sys_device *sysdev, const char *buf, size_t size)
-+{
-+	return store_throttle(get_pmd_regs(sysdev), buf, size, 0);
-+}
-+
-+static ssize_t spu_store_throttle_begin(struct sys_device *sysdev, const char *buf, size_t size)
-+{
-+	return store_throttle(get_pmd_regs(sysdev), buf, size, 8);
-+}
-+
-+static ssize_t spu_store_throttle_full_stop(struct sys_device *sysdev, const char *buf, size_t size)
-+{
-+	return store_throttle(get_pmd_regs(sysdev), buf, size, 16);
-+}
-+
- static ssize_t ppe_show_temp(struct sys_device *sysdev, char *buf, int pos)
- {
+ 	struct device_node *cpu_node;
++	struct device_node *be_node;
  	struct cbe_pmd_regs __iomem *pmd_regs;
-@@ -100,13 +207,52 @@ static ssize_t ppe_show_temp1(struct sys
- 	return ppe_show_temp(sysdev, buf, 0);
+ 	struct cbe_iic_regs __iomem *iic_regs;
+ 	struct cbe_mic_tm_regs __iomem *mic_tm_regs;
+@@ -37,6 +40,7 @@ static int cbe_regs_map_count;
+ static struct cbe_thread_map
+ {
+ 	struct device_node *cpu_node;
++	struct device_node *be_node;
+ 	struct cbe_regs_map *regs;
+ 	unsigned int thread_id;
+ 	unsigned int cbe_id;
+@@ -50,22 +54,29 @@ static struct cbe_regs_map *cbe_find_map
+ 	int i;
+ 	struct device_node *tmp_np;
+ 
+-	if (strcasecmp(np->type, "spe") == 0) {
+-		if (np->data == NULL) {
+-			/* walk up path until cpu node was found */
+-			tmp_np = np->parent;
+-			while (tmp_np != NULL && strcasecmp(tmp_np->type, "cpu") != 0)
+-				tmp_np = tmp_np->parent;
++	if (strcasecmp(np->type, "spe")) {
++		for (i = 0; i < cbe_regs_map_count; i++)
++			if (cbe_regs_maps[i].cpu_node == np ||
++			    cbe_regs_maps[i].be_node == np)
++				return &cbe_regs_maps[i];
++		return NULL;
++	}
+ 
+-			np->data = cbe_find_map(tmp_np);
+-		}
++	if (np->data)
+ 		return np->data;
+-	}
+ 
+-	for (i = 0; i < cbe_regs_map_count; i++)
+-		if (cbe_regs_maps[i].cpu_node == np)
+-			return &cbe_regs_maps[i];
+-	return NULL;
++	/* walk up path until cpu or be node was found */
++	tmp_np = np;
++	do {
++		tmp_np = tmp_np->parent;
++		/* on a correct devicetree we wont get up to root */
++		BUG_ON(!tmp_np);
++	} while (strcasecmp(tmp_np->type, "cpu") &&
++		 strcasecmp(tmp_np->type, "be"));
++
++	np->data = cbe_find_map(tmp_np);
++
++	return np->data;
  }
  
-+static ssize_t ppe_show_throttle_end(struct sys_device *sysdev, char *buf)
-+{
-+	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 32);
-+}
-+
-+static ssize_t ppe_show_throttle_begin(struct sys_device *sysdev, char *buf)
-+{
-+	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 40);
-+}
-+
-+static ssize_t ppe_show_throttle_full_stop(struct sys_device *sysdev, char *buf)
-+{
-+	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 48);
-+}
-+
-+static ssize_t ppe_store_throttle_end(struct sys_device *sysdev, const char *buf, size_t size)
-+{
-+	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 32);
-+}
-+
-+static ssize_t ppe_store_throttle_begin(struct sys_device *sysdev, const char *buf, size_t size)
-+{
-+	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 40);
-+}
-+
-+static ssize_t ppe_store_throttle_full_stop(struct sys_device *sysdev, const char *buf, size_t size)
-+{
-+	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 48);
-+}
-+
-+
- static struct sysdev_attribute attr_spu_temperature = {
- 	.attr = {.name = "temperature", .mode = 0400 },
- 	.show = spu_show_temp,
- };
+ struct cbe_pmd_regs __iomem *cbe_get_pmd_regs(struct device_node *np)
+@@ -153,6 +164,67 @@ u32 cbe_node_to_cpu(int node)
+ }
+ EXPORT_SYMBOL_GPL(cbe_node_to_cpu);
  
-+static SYSDEV_PREFIX_ATTR(spu, throttle_end, 0600);
-+static SYSDEV_PREFIX_ATTR(spu, throttle_begin, 0600);
-+static SYSDEV_PREFIX_ATTR(spu, throttle_full_stop, 0600);
++static struct device_node *cbe_get_be_node(int cpu_id)
++{
++	struct device_node *np;
++
++	for_each_node_by_type (np, "be") {
++		int len,i;
++		const phandle *cpu_handle;
++
++		cpu_handle = of_get_property(np, "cpus", &len);
++
++		for (i=0; i<len; i++)
++			if (of_find_node_by_phandle(cpu_handle[i]) == of_get_cpu_node(cpu_id, NULL))
++				return np;
++	}
++
++	return NULL;
++}
++
++void __init cbe_fill_regs_map(struct cbe_regs_map *map)
++{
++	if(map->be_node) {
++		struct device_node *be, *np;
++
++		be = map->be_node;
++
++		for_each_node_by_type(np, "pervasive")
++			if (of_get_parent(np) == be)
++				map->pmd_regs = of_iomap(np, 0);
++
++		for_each_node_by_type(np, "CBEA-Internal-Interrupt-Controller")
++			if (of_get_parent(np) == be)
++				map->iic_regs = of_iomap(np, 2);
++
++		for_each_node_by_type(np, "mic-tm")
++			if (of_get_parent(np) == be)
++				map->mic_tm_regs = of_iomap(np, 0);
++	} else {
++		struct device_node *cpu;
++		/* That hack must die die die ! */
++		const struct address_prop {
++			unsigned long address;
++			unsigned int len;
++		} __attribute__((packed)) *prop;
++
++		cpu = map->cpu_node;
++
++		prop = of_get_property(cpu, "pervasive", NULL);
++		if (prop != NULL)
++			map->pmd_regs = ioremap(prop->address, prop->len);
++
++		prop = of_get_property(cpu, "iic", NULL);
++		if (prop != NULL)
++			map->iic_regs = ioremap(prop->address, prop->len);
++
++		prop = of_get_property(cpu, "mic-tm", NULL);
++		if (prop != NULL)
++			map->mic_tm_regs = ioremap(prop->address, prop->len);
++	}
++}
 +
 +
- static struct attribute *spu_attributes[] = {
- 	&attr_spu_temperature.attr,
-+	&attr_spu_throttle_end.attr,
-+	&attr_spu_throttle_begin.attr,
-+	&attr_spu_throttle_full_stop.attr,
- 	NULL,
- };
+ void __init cbe_regs_init(void)
+ {
+ 	int i;
+@@ -162,6 +234,7 @@ void __init cbe_regs_init(void)
+ 	/* Build local fast map of CPUs */
+ 	for_each_possible_cpu(i) {
+ 		cbe_thread_map[i].cpu_node = of_get_cpu_node(i, &thread_id);
++		cbe_thread_map[i].be_node = cbe_get_be_node(i);
+ 		cbe_thread_map[i].thread_id = thread_id;
+ 	}
  
-@@ -125,9 +271,16 @@ static struct sysdev_attribute attr_ppe_
- 	.show = ppe_show_temp1,
- };
+@@ -170,12 +243,6 @@ void __init cbe_regs_init(void)
+ 		struct cbe_regs_map *map;
+ 		unsigned int cbe_id;
  
-+static SYSDEV_PREFIX_ATTR(ppe, throttle_end, 0600);
-+static SYSDEV_PREFIX_ATTR(ppe, throttle_begin, 0600);
-+static SYSDEV_PREFIX_ATTR(ppe, throttle_full_stop, 0600);
-+
- static struct attribute *ppe_attributes[] = {
- 	&attr_ppe_temperature0.attr,
- 	&attr_ppe_temperature1.attr,
-+	&attr_ppe_throttle_end.attr,
-+	&attr_ppe_throttle_begin.attr,
-+	&attr_ppe_throttle_full_stop.attr,
- 	NULL,
- };
+-		/* That hack must die die die ! */
+-		const struct address_prop {
+-			unsigned long address;
+-			unsigned int len;
+-		} __attribute__((packed)) *prop;
+-
+ 		cbe_id = cbe_regs_map_count++;
+ 		map = &cbe_regs_maps[cbe_id];
+ 
+@@ -193,23 +260,14 @@ void __init cbe_regs_init(void)
+ 			if (thread->cpu_node == cpu) {
+ 				thread->regs = map;
+ 				thread->cbe_id = cbe_id;
++				map->be_node = thread->be_node;
+ 				cpu_set(i, cbe_local_mask[cbe_id]);
+ 				if(thread->thread_id == 0)
+ 					cpu_set(i, cbe_first_online_cpu);
+ 			}
+ 		}
+ 
+-		prop = of_get_property(cpu, "pervasive", NULL);
+-		if (prop != NULL)
+-			map->pmd_regs = ioremap(prop->address, prop->len);
+-
+-		prop = of_get_property(cpu, "iic", NULL);
+-		if (prop != NULL)
+-			map->iic_regs = ioremap(prop->address, prop->len);
+-
+-		prop = of_get_property(cpu, "mic-tm", NULL);
+-		if (prop != NULL)
+-			map->mic_tm_regs = ioremap(prop->address, prop->len);
++		cbe_fill_regs_map(map);
+ 	}
+ }
  
 
 --
