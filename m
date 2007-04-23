@@ -1,21 +1,33 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <linas@austin.ibm.com>
+Received: from e31.co.us.ibm.com (e31.co.us.ibm.com [32.97.110.149])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 18EACDDED3
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 08:00:00 +1000 (EST)
-In-Reply-To: <17961.22721.462194.785356@cargo.ozlabs.ibm.com>
-References: <Pine.LNX.4.64.0704191615040.25069@localhost.localdomain>
-	<17961.22721.462194.785356@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <CE31BB28-E702-4425-A266-9D5D143A53DC@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] Change 440GP platform to ppc440
-Date: Mon, 23 Apr 2007 16:58:57 -0500
-To: Paul Mackerras <paulus@samba.org>
-Cc: linuxppc-dev@ozlabs.org
+	(Client CN "e31.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 413E6DDF01
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 08:36:14 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e31.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3NMa1fc018789
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 18:36:01 -0400
+Received: from d03av04.boulder.ibm.com (d03av04.boulder.ibm.com [9.17.195.170])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3NMa0hF073882
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 16:36:00 -0600
+Received: from d03av04.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av04.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3NMa07M024169
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 16:36:00 -0600
+Date: Mon, 23 Apr 2007 17:35:59 -0500
+To: David Huffman <dhuffman@storix.com>
+Subject: Re: Kernel Panic booting cdrom
+Message-ID: <20070423223559.GT31947@austin.ibm.com>
+References: <46202254.1090606@storix.com> <20070414044529.GE6062@localdomain>
+	<4623F574.1030804@storix.com> <20070417054537.GF6062@localdomain>
+	<46292B07.3030907@storix.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <46292B07.3030907@storix.com>
+From: linas@austin.ibm.com (Linas Vepstas)
+Cc: linuxppc-dev@ozlabs.org, Nathan Lynch <ntl@pobox.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,21 +37,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Fri, Apr 20, 2007 at 02:05:11PM -0700, David Huffman wrote:
+> there may be power and cooling daemons that are not running and try to 
+> limit the system resources by limiting the number of cpus. Does this 
+> sound right? 
 
-On Apr 20, 2007, at 7:20 PM, Paul Mackerras wrote:
+As Michael Ellerman points out, the answer is no.
+The idle loop specifically uses instructions that put the
+cpu into low-power mode. If you don't call the idle loop, the 
+cpu probably won't go into low-power mode!
 
-> Kumar Gala writes:
->
->> I don't see any reason the 440GP should its own platform.  Posting  
->> this to
->> see if anyone thinks otherwise.
->
-> I recall dimly that there was some user-visible difference between the
-> 440GP and the other 440 processors, and that's why we made the
-> platform string different.  I don't recall what the difference was.
+> The maxcpus=1 argument was something we added to our install boot 
+> media years ago and few here remember why it was such a great idea. The 
+> power/resource management was the only thing we could come up with.
 
-The 440GP seems to be a book-e userspace w/o FP.  Not sure how it  
-differs from other 440's.  It seems like the 440EP are the only ones  
-with FPUs.
+Ooh, this is worthy of tatooing onto a cluestick.
 
-- k
+--linas
