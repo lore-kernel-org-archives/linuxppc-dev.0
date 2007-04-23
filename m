@@ -1,18 +1,28 @@
-Return-Path: <florisla@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.229])
-	by ozlabs.org (Postfix) with ESMTP id A9C29DDF2A
+Return-Path: <petermendham@computing.dundee.ac.uk>
+Received: from uncle.computing.dundee.ac.uk (unknown [134.36.36.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1E3F7DDEFC
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Apr 2007 21:38:28 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id s19so1677472wxc
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Apr 2007 04:38:26 -0700 (PDT)
-Message-ID: <576210b90704230438h168e15a7q5fc309d791db52b6@mail.gmail.com>
-Date: Mon, 23 Apr 2007 13:38:26 +0200
-From: "Floris Lambrechts" <florisla@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: PCF8563 realtime clock does not initialize
+	Mon, 23 Apr 2007 23:56:11 +1000 (EST)
+Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
+	[134.36.36.15])
+	by uncle.computing.dundee.ac.uk (8.13.1/8.13.1) with ESMTP id
+	l3NClu8D025726
+	for <linuxppc-embedded@ozlabs.org>; Mon, 23 Apr 2007 13:47:56 +0100
+Message-ID: <462CAB38.8040506@computing.dundee.ac.uk>
+Date: Mon, 23 Apr 2007 13:48:56 +0100
+From: Peter Mendham <petermendham@computing.dundee.ac.uk>
 MIME-Version: 1.0
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+Subject: Re: Tri-mode auto-negotiation on ML405
+References: <461F65E3.1050004@computing.dundee.ac.uk>
+	<461FAF0D.3070803@ru.mvista.com>
+	<46278F3A.4070007@computing.dundee.ac.uk>
+	<462B6EB2.70109@ru.mvista.com>
+In-Reply-To: <462B6EB2.70109@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -23,38 +33,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+Andrei Konovalov wrote:
+> Has the ethernet device been registered on the platform bus?
+> There should be a call to platform_device_register()
+> in arch/ppc/syslib/virtex_devices.c or arch/ppc/platforms/4xx/virtex.c 
+> depending
+> on the kernel tree used and the patches appiled.
+Hi Andrei,
 
-I have a custom board with an ppc8540 cpu.  I'm using a vanilla Linux
-kernel 2.6.20.3.
+Drat.  I forgot to put that back in when I went to Grant Likely's latest 
+patchset.  The errors I am getting now are (when I try and bring the 
+network up):
+eth0: XTemac Options: 
+0xbcf0                                                   
+eth0: XTemac could not start 
+device.                                           
+SIOCSIFFLAGeth0: XTemac Options: 
+0xbcf0                                        
+eth0: XTemac could not start 
+device.                                           
+S: Device or resource 
+busy                                                     
+SIOCSIFFLAGS: Device or resource 
+busy                                          
+route: SIOC[ADD|DEL]RT: Network is unreachable
 
-The RTC chip is a PCF8563, connected to 8540's i2c controller at
-address 0x51. In u-boot the clock works fine ('date' command) so the
-hardware is alright.
+During boot it said:
+eth%d: XTemac using fifo direct interrupt driven 
+mode.                         
+mdiobus_reset on 
+eth%d                                                         
+temac_mii: 
+probed                                                              
+eth%d: attached PHY driver [Generic PHY] (mii_bus:phy_addr=0:00, 
+irq=-1)       
+eth0: Xilinx TEMAC #0 at 0x80000000 mapped to 0xC5020000, 
+irq=0                
+eth0: XTemac id 1.0f, block id 5, type 8
 
-In Linux however, I get this at boot:
+It seems like it's finding the MAC and PHY OK, what else have I done wrong?
 
-(...)
-i2c /dev entries driver
-TCP cubic registered
-NET: Registered protocol family 1
-NET: Registered protocol family 17
-drivers/rtc/hctosys.c: unable to open rtc device (rtc0)
-(...)
+Thanks,
+-- Peter
 
-I have compiled in the PCF8563 rtc driver (not as module), and have
-support for RTC class, /dev, /proc and /sys. However, the entries in
-/proc and /sys relevant to the RTC remain empty.
-
-I have created a device node /dev/rtc0 with major/minor 254, 0 (254
-being what is listed as rtc in /proc/devices).
-
-For some reason, PCF8563 driver does not initialize correctly. I'm
-looking for a hint where to look for finding the cause of this...
-
-Some further info:
-ARCH=ppc, CROSS_COMPILE=ppc_85xx- (from ELDK 4), boot loader is u-boot 1.2.0.
-
-Thansk for any help.
-Regards
-Floris
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+MailScanner thanks transtec Computers for their support.
