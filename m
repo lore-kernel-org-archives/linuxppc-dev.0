@@ -1,13 +1,28 @@
-Return-Path: <krafft@de.ibm.com>
-Date: Mon, 23 Apr 2007 20:22:37 +0200
-From: Christian Krafft <krafft@de.ibm.com>
-To: linuxppc-dev@ozlabs.org
-Subject: [patch 2/2] powerpc: pmi probe device by device-type
-Message-ID: <20070423202237.0725075a@localhost>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_Ia2Wf+Sc.Pg1bOKqfHh.h4T;
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: krafft@de.ibm.com, cbe-oss-dev@ozlabs.org
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7B897DDEC5
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 03:34:20 +1000 (EST)
+In-Reply-To: <1177317115.3889.39.camel@concordia.ozlabs.ibm.com>
+References: <20070419073556.73A6BDDE4A@ozlabs.org>
+	<e4520bd4be50f2884003a9421863627c@bga.com>
+	<ca8197808a747b83c14461f6fec375db@kernel.crashing.org>
+	<20070422193017.GA27048@lixom.net>
+	<829d8b36a3c78c662f29437c59290609@kernel.crashing.org>
+	<1177317115.3889.39.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <7928ad59f5dd4429dcb0c22792c210f7@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 7/7] MPIC MSI backend
+Date: Mon, 23 Apr 2007 19:33:54 +0200
+To: michael@ellerman.id.au
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
+	Milton Miller <miltonm@bga.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -17,61 +32,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_Ia2Wf+Sc.Pg1bOKqfHh.h4T
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+>>>> mpic_htmsi deals with MSIs that come in over hypertransport
+>>>> to the MPIC on CPC925/CPC945; this has nothing to
+>>>> do with HT APICs.
+>>>
+>>> Maybe it should be named mpic_cpc9x5msi instead?
+>>
+>> Yeah probably, esp. since there are more MSI sources
+>> on those chips, not just HT; and if support for those
+>> sources gets added later, it should go to this file :-)
+>
+> Actually I think I'll call it mpic_u3_msi.c, which although not quite 
+> as
+> accurate as cpc9x5, is more inline with the rest of the code that 
+> refers
+> to U3 - which really means U3/U4.
 
-From: Christian Krafft <krafft@de.ibm.com>
-At the moment the pmi device driver is probing for devices with
-a given type and a given name. As there may be devices of
-the same type but with a different name, probing should be
-done also for device type only.
-
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-
-Index: sdk3/arch/powerpc/sysdev/pmi.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- sdk3.orig/arch/powerpc/sysdev/pmi.c
-+++ sdk3/arch/powerpc/sysdev/pmi.c
-@@ -103,6 +103,7 @@ out:
-=20
- static struct of_device_id pmi_match[] =3D {
- 	{ .type =3D "ibm,pmi", .name =3D "ibm,pmi" },
-+	{ .type =3D "ibm,pmi" },
- 	{},
- };
-=20
+Yeah, good plan.  It's a nicer name anyway :-)
 
 
---=20
-Mit freundlichen Gruessen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group,
-Linux Kernel Development
-IT Specialist
-
-
-Vorsitzender des Aufsichtsrats:	Johann Weihen
-Geschaeftsfuehrung:		Herbert Kircher
-Sitz der Gesellschaft:		Boeblingen
-Registriergericht:		Amtsgericht Stuttgart, HRB 243294
-
-
---Sig_Ia2Wf+Sc.Pg1bOKqfHh.h4T
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGLPlt6rqK4qDx+dcRAg7JAJ91FUf/EF6W5tRZd6eclDbYkiK4sQCg3eLE
-kQa1toly1P6g3K/NUG45nfs=
-=AqvC
------END PGP SIGNATURE-----
-
---Sig_Ia2Wf+Sc.Pg1bOKqfHh.h4T--
+Segher
