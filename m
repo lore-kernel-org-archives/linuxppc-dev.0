@@ -1,23 +1,18 @@
-Return-Path: <khali@linux-fr.org>
-Received: from kellthuzad.dmz.nerim.net (smtp-dmz-231-monday.dmz.nerim.net
-	[195.5.254.231]) by ozlabs.org (Postfix) with ESMTP id A459DDDF12
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 19:19:38 +1000 (EST)
-Received: from kraid.nerim.net (smtp-101-monday.nerim.net [62.4.16.101])
-	by kellthuzad.dmz.nerim.net (Postfix) with ESMTP id 8A506157BC
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 11:19:31 +0200 (CEST)
-Date: Mon, 23 Apr 2007 11:19:50 +0200
-From: Jean Delvare <khali@linux-fr.org>
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Subject: Re: [PATCH][RFC] i2c: adds support for i2c bus on 8xx
-Message-ID: <20070423111950.129856eb@hyperion.delvare>
-In-Reply-To: <20070422152937.7332fc31@localhost.localdomain>
-References: <20070420082714.4f10f186@localhost.localdomain>
-	<20070421095707.6b42a312@hyperion.delvare>
-	<20070422152937.7332fc31@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	lkml <linux-kernel@vger.kernel.org>
+Return-Path: <paubert@iram.es>
+Received: from gra-lx1.iram.es (gra-lx1.iram.es [150.214.224.41])
+	by ozlabs.org (Postfix) with ESMTP id 78FC3DDEF8
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 19:29:26 +1000 (EST)
+From: Gabriel Paubert <paubert@iram.es>
+Date: Mon, 23 Apr 2007 11:29:19 +0200
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH] [v2] powerpc: save trap number in bad_stack
+Message-ID: <20070423092919.GA25145@iram.es>
+References: <20070416062347.GA20196@lixom.net>
+	<20070422233821.GB28479@lixom.net>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070422233821.GB28479@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,102 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi Vitaly,
+On Sun, Apr 22, 2007 at 06:38:21PM -0500, Olof Johansson wrote:
+> Save the trap number in the case of getting a bad stack in an exception
+> handler. It is sometimes useful to know what exception it was that caused
+> this to happen. Without this, no trap is reported.
+> 
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> ---
+> 
+> Changes since last time: Reduce to a u16 and move it.
+> 
+> Index: powerpc/arch/powerpc/kernel/asm-offsets.c
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/kernel/asm-offsets.c
+> +++ powerpc/arch/powerpc/kernel/asm-offsets.c
+> @@ -139,6 +139,7 @@ int main(void)
+>  	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
+>  	DEFINE(PACA_SLBSHADOWPTR, offsetof(struct paca_struct, slb_shadow_ptr));
+>  	DEFINE(PACA_DATA_OFFSET, offsetof(struct paca_struct, data_offset));
+> +	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
+>  
+>  	DEFINE(SLBSHADOW_STACKVSID,
+>  	       offsetof(struct slb_shadow, save_area[SLB_NUM_BOLTED - 1].vsid));
+> Index: powerpc/include/asm-powerpc/paca.h
+> ===================================================================
+> --- powerpc.orig/include/asm-powerpc/paca.h
+> +++ powerpc/include/asm-powerpc/paca.h
+> @@ -68,6 +68,7 @@ struct paca_struct {
+>  	void *emergency_sp;		/* pointer to emergency stack */
+>  	u64 data_offset;		/* per cpu data offset */
+>  	s16 hw_cpu_id;			/* Physical processor number */
+> +	u16 trap_save;			/* Used when bad stack is encountered */
+>  	u8 cpu_start;			/* At startup, processor spins until */
+>  					/* this becomes non-zero. */
+>  	struct slb_shadow *slb_shadow_ptr;
+> Index: powerpc/arch/powerpc/kernel/head_64.S
+> ===================================================================
+> --- powerpc.orig/arch/powerpc/kernel/head_64.S
+> +++ powerpc/arch/powerpc/kernel/head_64.S
+> @@ -278,8 +278,12 @@ exception_marker:
+>  	beq-	1f;							   \
+>  	ld	r1,PACAKSAVE(r13);	/* kernel stack to use		*/ \
+>  1:	cmpdi	cr1,r1,0;		/* check if r1 is in userspace	*/ \
+> -	bge-	cr1,bad_stack;		/* abort if it is		*/ \
+> -	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
+> +	bge-	cr1,2f;			/* abort if it is		*/ \
+> +	b	3f;							   \
+> +2:	li	r1,(n);			/* will be reloaded later	*/ \
+> +	stw	r1,PACA_TRAP_SAVE(r13);					   \
 
-On Sun, 22 Apr 2007 15:29:37 +0400, Vitaly Bordug wrote:
-> On Sat, 21 Apr 2007 09:57:07 +0200 Jean Delvare wrote:
-> > I wonder what's the point of having a separate i2c algorithm driver.
-> > We don't expect any other driver than i2c-rpx to ever use it, do we?
-> > In that case, all the code should be added to i2c-rpx directly, this
-> > will makes things more simple and more efficient.
->
-> That is how it was back in 2.4 - if you see combine is a good move,
-> I'm OK with it. But what shouldn't be rpc then - basically rpx(lite) is
-> 8xx-based target, so let's call it all mpc8xx then.
+stW to an u16? stH seems safer!
 
-Sure, I'm fine with a name change. If it makes more sense to name that
-driver i2c-mpc8xx, that's OK with me.
+> +	b	bad_stack;						   \
+> +3:	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
+>  	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
+>  	std	r12,_MSR(r1);		/* save SRR1 in stackframe	*/ \
+>  	std	r10,0(r1);		/* make stack chain pointer	*/ \
+> @@ -940,6 +944,8 @@ bad_stack:
+>  	SAVE_2GPRS(7,r1)
+>  	SAVE_10GPRS(12,r1)
+>  	SAVE_10GPRS(22,r1)
+> +	lwz	r12,PACA_TRAP_SAVE(r13)
 
-> > > +		tmo = jiffies + 1 * HZ;
-> > > +		while (!(in_8(&i2c->i2c_i2cer) & 0x11 || time_after(jiffies, tmo))) ;/* Busy wait, with a timeout */
-> > 
-> > This could result in a one-second busy loop, not very friendly for
-> > other drivers. It should sleep while waiting. Line too long, please
-> > fold.
->
-> Can you please elaborate a little here (or just point to the
-> similar code)? I assume we should not block here, handling timeout
-> in a waitqueue...
+Same, well actually lwz->lhz.
 
-Blocking is not a problem. The problem is that you are keeping the CPU
-for yourself while waiting, for up to one full second. That's not
-acceptable. You should at least call schedule() or cond_resced() (I
-don't know the difference, I admit) and/or cpu_relax() as is done in
-i2c-mpc, i2c-ibm_iic and scx200_acb, or even sleep, as is done in
-i2c-omap. Search for "time_after" in these 4 drivers for examples. I
-believe that sleeping is more friendly.
+> +	std	r12,_TRAP(r1)
+>  	addi	r11,r1,INT_FRAME_SIZE
+>  	std	r11,0(r1)
+>  	li	r12,0
 
-> > You do not appear to handle repeated start. I can tell because the
-> > code handles all messages the exact same way, be they the first,
-> > second or last message of a group. This means that you don't really
-> > implement the I2C protocol, but an approximation of it. It might be
-> > sufficient for some I2C chips, but others will break. Look in the
-> > specifications of your device for how this could be fixed.
->
-> I doubt 8xx has a full-fledged i2c protocol stuff onboard, and basic
-> code that were residing in 2.4 repo suite my needs quite well (afaict
-> many others just don't care :)).
-> I just think it is silly to drop the code already implemented and working
-> even if it requires some efforts to bring it up to shape.
 
-Well as far as I can see, only the repeated start is missing, so it's
-not that far from a complete implementation. If the hardware can do it,
-you simply have to add it to the driver. If the hardware really doesn't
-do it (which would surprise me, but you never know), of course you
-cannot implement it in the driver and we'll have to live with (well,
-without) it. But that's definitely an issue to keep in mind if I2C chip
-drivers start failing when used together with this bus driver.
-
-> > > +static struct i2c_adapter rpx_ops = {
-> > 
-> > Could be const?
-> > 
-> prolly yes.
-> > > +	.owner		= THIS_MODULE,
-> > > +	.name		= "m8xx",
-> > 
-> > Find a better name (e.g. "i2c-rpx").
-> > 
-> What about mpc8xx?
-
-i2c-mpc8xx then, OK.
-
-> > > +/* Structure for a device driver */
-> > > +static struct device_driver i2c_rpx_driver = {
-> > > +	.name = "fsl-i2c-cpm",
-> > > +	.bus = &platform_bus_type,
-> > > +	.probe = i2c_rpx_probe,
-> > > +	.remove = i2c_rpx_remove,
-> > > +};
-> > 
-> > Why don't you declare it as a struct platform_driver, register it with
-> > platform_driver_register() and unregister it with
-> > platform_driver_unregister()?
->
-> Well. This stuff belongs to CPM1, of the mpc8xx family, but the
-> target boards are different, and they may/should provide board
-> specific inits and filling of platform data. With
-> platform_driver_register we may end up with ifdef stuff here
-> (which is evil).
-
-I don't follow you here, sorry. Platform devices are declared by
-board-specific code which can include all the needed initialization.
-And device-specific data can be carried to the platform driver for
-further use. The platform device/driver infrastructure is meant to
-handle that kind of situation, so there really is no excuse that I can
-see not to use it. i2c-omap and i2c-mpc use it. As a matter of fact you
-_are_ declaring a platform driver (.bus = &platform_bus_type), just not
-using the standard way.
-
--- 
-Jean Delvare
+	Gabriel
