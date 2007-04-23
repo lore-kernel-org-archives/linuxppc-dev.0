@@ -1,28 +1,22 @@
-Return-Path: <petermendham@computing.dundee.ac.uk>
-Received: from uncle.computing.dundee.ac.uk (unknown [134.36.36.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1E3F7DDEFC
+	by ozlabs.org (Postfix) with ESMTP id 86307DDFA0
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Apr 2007 23:56:11 +1000 (EST)
-Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
-	[134.36.36.15])
-	by uncle.computing.dundee.ac.uk (8.13.1/8.13.1) with ESMTP id
-	l3NClu8D025726
-	for <linuxppc-embedded@ozlabs.org>; Mon, 23 Apr 2007 13:47:56 +0100
-Message-ID: <462CAB38.8040506@computing.dundee.ac.uk>
-Date: Mon, 23 Apr 2007 13:48:56 +0100
-From: Peter Mendham <petermendham@computing.dundee.ac.uk>
+	Tue, 24 Apr 2007 01:12:04 +1000 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1Hg0Cu-0003Nb-H2
+	for linuxppc-embedded@ozlabs.org; Mon, 23 Apr 2007 08:12:00 -0700
+Message-ID: <10142161.post@talk.nabble.com>
+Date: Mon, 23 Apr 2007 08:12:00 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: zImage.elf loads but does not start
+In-Reply-To: <10079346.post@talk.nabble.com>
 MIME-Version: 1.0
-To: Andrei Konovalov <akonovalov@ru.mvista.com>
-Subject: Re: Tri-mode auto-negotiation on ML405
-References: <461F65E3.1050004@computing.dundee.ac.uk>
-	<461FAF0D.3070803@ru.mvista.com>
-	<46278F3A.4070007@computing.dundee.ac.uk>
-	<462B6EB2.70109@ru.mvista.com>
-In-Reply-To: <462B6EB2.70109@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+References: <10079346.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,51 +27,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andrei Konovalov wrote:
-> Has the ethernet device been registered on the platform bus?
-> There should be a call to platform_device_register()
-> in arch/ppc/syslib/virtex_devices.c or arch/ppc/platforms/4xx/virtex.c 
-> depending
-> on the kernel tree used and the patches appiled.
-Hi Andrei,
 
-Drat.  I forgot to put that back in when I went to Grant Likely's latest 
-patchset.  The errors I am getting now are (when I try and bring the 
-network up):
-eth0: XTemac Options: 
-0xbcf0                                                   
-eth0: XTemac could not start 
-device.                                           
-SIOCSIFFLAGeth0: XTemac Options: 
-0xbcf0                                        
-eth0: XTemac could not start 
-device.                                           
-S: Device or resource 
-busy                                                     
-SIOCSIFFLAGS: Device or resource 
-busy                                          
-route: SIOC[ADD|DEL]RT: Network is unreachable
+I have revised the xparameters_ml403.h and the setup of the FPGA part. I have
+found that the interrupt for the RS232 was not configured. Right now I was
+able to come to the point when the kernel was uncompressed but it did not
+start:
 
-During boot it said:
-eth%d: XTemac using fifo direct interrupt driven 
-mode.                         
-mdiobus_reset on 
-eth%d                                                         
-temac_mii: 
-probed                                                              
-eth%d: attached PHY driver [Generic PHY] (mii_bus:phy_addr=0:00, 
-irq=-1)       
-eth0: Xilinx TEMAC #0 at 0x80000000 mapped to 0xC5020000, 
-irq=0                
-eth0: XTemac id 1.0f, block id 5, type 8
 
-It seems like it's finding the MAC and PHY OK, what else have I done wrong?
+loaded at:     00400000 004F9138
 
-Thanks,
--- Peter
+board data at: 004F7120 004F7138
 
+relocated to:  00404064 0040407C
+
+zimage at:     00404DF1 004F6BBB
+
+avail ram:     004FA000 04000000
+
+
+
+Linux/PPC load: console=ttl0,9600 ip=129.129.129.29 root=/dev/ram rw
+
+Uncompressing Linux...done.
+
+Now booting the kernel
+
+
+
+
+Does anybody has an idea what could be wrong?
+
+Best Regards
+
+Mirek
 -- 
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
-MailScanner thanks transtec Computers for their support.
+View this message in context: http://www.nabble.com/zImage.elf-loads-but-not-starts-tf3607582.html#a10142161
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
