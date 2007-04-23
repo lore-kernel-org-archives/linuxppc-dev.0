@@ -1,15 +1,15 @@
 Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id 5672DDDF04
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 05:17:52 +1000 (EST)
+Received: from sj-iport-3.cisco.com (sj-iport-3-in.cisco.com [171.71.176.72])
+	by ozlabs.org (Postfix) with ESMTP id 6B28DDDF07
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 05:20:20 +1000 (EST)
 To: Joachim Fenkes <fenkes@de.ibm.com>
-Subject: Re: [PATCH] ib_core: Add missing device link to class device
-References: <200704231820.27752.fenkes@de.ibm.com>
+Subject: Re: [PATCH] eHCA: Add "Modify Port" verb
+References: <200704231823.48723.fenkes@de.ibm.com>
 From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 23 Apr 2007 12:17:48 -0700
-In-Reply-To: <200704231820.27752.fenkes@de.ibm.com> (Joachim Fenkes's message
-	of "Mon, 23 Apr 2007 18:20:27 +0200")
-Message-ID: <ada7is27vdv.fsf@cisco.com>
+Date: Mon, 23 Apr 2007 12:20:14 -0700
+In-Reply-To: <200704231823.48723.fenkes@de.ibm.com> (Joachim Fenkes's message
+	of "Mon, 23 Apr 2007 18:23:48 +0200")
+Message-ID: <ada3b2q7v9t.fsf@cisco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
@@ -23,10 +23,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hmm, I have links like this on my system already:
+ > +	if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != H_SUCCESS) {
+ > +		ehca_err(&shca->ib_device, "Can't query port properties");
+ > +		ret = -EINVAL;
+ > +		goto modify_port1;
+ > +	}
+ > +
+ > +	cap = (rblock->capability_mask | props->set_port_cap_mask)
+ > +		& ~props->clr_port_cap_mask;
+ > +
+ > +	hret = hipz_h_modify_port(shca->ipz_hca_handle, port,
+ > +				  cap, props->init_type, port_modify_mask);
 
-    $ ls -l /sys/class/infiniband/mlx4_0/device
-    lrwxrwxrwx 1 root root 0 2007-04-23 12:14 /sys/class/infiniband/mlx4_0/device -> ../../../devices/pci0000:00/0000:00:06.0/0000:0d:00.0
+Is this thread-safe?  What if two different bits are set at the same
+time from two different threads?  It seems that both calls could get
+the same result from hipz_h_query_port(), and then the second call to
+hipz_h_modify_port() would overwrite the first call.
 
-the patch actually looks sane but I don't understand why it's needed.
-Could you explain?
+You could look at the implementation in mthca to see the locking I
+used there.
+
+ - R.
