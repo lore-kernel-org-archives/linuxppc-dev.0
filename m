@@ -1,18 +1,35 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 52247DDF23
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 22:00:23 +1000 (EST)
-Date: Mon, 23 Apr 2007 07:19:31 -0500
-To: paulus@samba.org
-Subject: [PATCH] [v3] powerpc: save trap number in bad_stack
-Message-ID: <20070423121931.GA683@lixom.net>
-References: <20070416062347.GA20196@lixom.net>
-	<20070422233821.GB28479@lixom.net>
+Return-Path: <ossthema@de.ibm.com>
+Received: from mtagate3.uk.ibm.com (mtagate3.uk.ibm.com [195.212.29.136])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate3.uk.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 513F7DDF38
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 22:13:24 +1000 (EST)
+Received: from d06nrmr1407.portsmouth.uk.ibm.com
+	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
+	by mtagate3.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l3NCDJ98041856
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 12:13:19 GMT
+Received: from d06av02.portsmouth.uk.ibm.com (d06av02.portsmouth.uk.ibm.com
+	[9.149.37.228])
+	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l3NCDJk92568306
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 13:13:19 +0100
+Received: from d06av02.portsmouth.uk.ibm.com (loopback [127.0.0.1])
+	by d06av02.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l3NCDIaP028243
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 13:13:19 +0100
+From: Jan-Bernd Themann <ossthema@de.ibm.com>
+To: Jeff Garzik <jeff@garzik.org>
+Subject: [PATCH/RESEND] ehea: fix for dlpar and sysfs entries
+Date: Mon, 23 Apr 2007 13:58:53 +0200
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070422233821.GB28479@lixom.net>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, anton@samba.org
+Message-Id: <200704231358.53479.ossthema@de.ibm.com>
+Content-Type: text/plain;
+  charset="us-ascii"
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,63 +39,313 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Save the trap number in the case of getting a bad stack in an exception
-handler. It is sometimes useful to know what exception it was that caused
-this to happen. Without this, no trap is reported.
+This patch includes:
+- dlpar fix: 
+	certain resources may only be allocated when first
+	logical port is available, and must be removed when
+	last logical port has been removed
+
+- sysfs entries:
+	create symbolic link from each logical port to ehea driver
+
+Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+---
 
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
+This patch applies on top of the netdev upstream branch for 2.6.22
 
 
-Index: powerpc/arch/powerpc/kernel/asm-offsets.c
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/asm-offsets.c
-+++ powerpc/arch/powerpc/kernel/asm-offsets.c
-@@ -139,6 +139,7 @@ int main(void)
- 	DEFINE(PACA_SYSTEM_TIME, offsetof(struct paca_struct, system_time));
- 	DEFINE(PACA_SLBSHADOWPTR, offsetof(struct paca_struct, slb_shadow_ptr));
- 	DEFINE(PACA_DATA_OFFSET, offsetof(struct paca_struct, data_offset));
-+	DEFINE(PACA_TRAP_SAVE, offsetof(struct paca_struct, trap_save));
+
+diff --git a/drivers/net/ehea/ehea.h b/drivers/net/ehea/ehea.h
+index 1405d0b..173994d 100644
+--- a/drivers/net/ehea/ehea.h
++++ b/drivers/net/ehea/ehea.h
+@@ -39,7 +39,7 @@ #include <asm/abs_addr.h>
+ #include <asm/io.h>
  
- 	DEFINE(SLBSHADOW_STACKVSID,
- 	       offsetof(struct slb_shadow, save_area[SLB_NUM_BOLTED - 1].vsid));
-Index: powerpc/include/asm-powerpc/paca.h
-===================================================================
---- powerpc.orig/include/asm-powerpc/paca.h
-+++ powerpc/include/asm-powerpc/paca.h
-@@ -68,6 +68,7 @@ struct paca_struct {
- 	void *emergency_sp;		/* pointer to emergency stack */
- 	u64 data_offset;		/* per cpu data offset */
- 	s16 hw_cpu_id;			/* Physical processor number */
-+	u16 trap_save;			/* Used when bad stack is encountered */
- 	u8 cpu_start;			/* At startup, processor spins until */
- 					/* this becomes non-zero. */
- 	struct slb_shadow *slb_shadow_ptr;
-Index: powerpc/arch/powerpc/kernel/head_64.S
-===================================================================
---- powerpc.orig/arch/powerpc/kernel/head_64.S
-+++ powerpc/arch/powerpc/kernel/head_64.S
-@@ -278,8 +278,12 @@ exception_marker:
- 	beq-	1f;							   \
- 	ld	r1,PACAKSAVE(r13);	/* kernel stack to use		*/ \
- 1:	cmpdi	cr1,r1,0;		/* check if r1 is in userspace	*/ \
--	bge-	cr1,bad_stack;		/* abort if it is		*/ \
--	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
-+	bge-	cr1,2f;			/* abort if it is		*/ \
-+	b	3f;							   \
-+2:	li	r1,(n);			/* will be reloaded later	*/ \
-+	sth	r1,PACA_TRAP_SAVE(r13);					   \
-+	b	bad_stack;						   \
-+3:	std	r9,_CCR(r1);		/* save CR in stackframe	*/ \
- 	std	r11,_NIP(r1);		/* save SRR0 in stackframe	*/ \
- 	std	r12,_MSR(r1);		/* save SRR1 in stackframe	*/ \
- 	std	r10,0(r1);		/* make stack chain pointer	*/ \
-@@ -940,6 +944,8 @@ bad_stack:
- 	SAVE_2GPRS(7,r1)
- 	SAVE_10GPRS(12,r1)
- 	SAVE_10GPRS(22,r1)
-+	lhz	r12,PACA_TRAP_SAVE(r13)
-+	std	r12,_TRAP(r1)
- 	addi	r11,r1,INT_FRAME_SIZE
- 	std	r11,0(r1)
- 	li	r12,0
+ #define DRV_NAME	"ehea"
+-#define DRV_VERSION	"EHEA_0055"
++#define DRV_VERSION	"EHEA_0056"
+ 
+ #define EHEA_MSG_DEFAULT (NETIF_MSG_LINK | NETIF_MSG_TIMER \
+ 	| NETIF_MSG_RX_ERR | NETIF_MSG_TX_ERR)
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index a36a023..f9f3133 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -78,6 +78,28 @@ MODULE_PARM_DESC(sq_entries, " Number of
+ 		 __MODULE_STRING(EHEA_DEF_ENTRIES_SQ) ")");
+ MODULE_PARM_DESC(use_mcs, " 0:NAPI, 1:Multiple receive queues, Default = 1 ");
+ 
++static int port_name_cnt = 0;
++
++static int __devinit ehea_probe_adapter(struct ibmebus_dev *dev,
++                                        const struct of_device_id *id);
++
++static int __devexit ehea_remove(struct ibmebus_dev *dev);
++
++static struct of_device_id ehea_device_table[] = {
++	{
++		.name = "lhea",
++		.compatible = "IBM,lhea",
++	},
++	{},
++};
++
++static struct ibmebus_driver ehea_driver = {
++	.name = "ehea",
++	.id_table = ehea_device_table,
++	.probe = ehea_probe_adapter,
++	.remove = ehea_remove,
++};
++
+ void ehea_dump(void *adr, int len, char *msg) {
+ 	int x;
+ 	unsigned char *deb = adr;
+@@ -2108,6 +2130,28 @@ static int ehea_clean_all_portres(struct
+ 	return ret;
+ }
+ 
++static void ehea_remove_adapter_mr (struct ehea_adapter *adapter)
++{
++	int i;
++
++	for (i=0; i < EHEA_MAX_PORTS; i++)
++		if (adapter->port[i])
++			return;
++
++	ehea_rem_mr(&adapter->mr);
++}
++
++static int ehea_add_adapter_mr (struct ehea_adapter *adapter)
++{
++	int i;
++
++	for (i=0; i < EHEA_MAX_PORTS; i++)
++		if (adapter->port[i])
++			return 0;
++
++	return ehea_reg_kernel_mr(adapter, &adapter->mr);
++}
++
+ static int ehea_up(struct net_device *dev)
+ {
+ 	int ret, i;
+@@ -2361,6 +2405,34 @@ static void __devinit logical_port_relea
+ 	of_node_put(port->ofdev.node);
+ }
+ 
++static int ehea_driver_sysfs_add(struct device *dev,
++                                 struct device_driver *driver)
++{
++	int ret;
++
++	ret = sysfs_create_link(&driver->kobj, &dev->kobj,
++				kobject_name(&dev->kobj));
++	if (ret == 0) {
++		ret = sysfs_create_link(&dev->kobj, &driver->kobj,
++					"driver");
++		if (ret)
++			sysfs_remove_link(&driver->kobj,
++					  kobject_name(&dev->kobj));
++	}
++	return ret;
++}
++
++static void ehea_driver_sysfs_remove(struct device *dev,
++                                     struct device_driver *driver)
++{
++	struct device_driver *drv = driver;
++
++	if (drv) {
++		sysfs_remove_link(&drv->kobj, kobject_name(&dev->kobj));
++		sysfs_remove_link(&dev->kobj, "driver");
++	}
++}
++
+ static struct device *ehea_register_port(struct ehea_port *port,
+ 					 struct device_node *dn)
+ {
+@@ -2368,8 +2440,9 @@ static struct device *ehea_register_port
+ 
+ 	port->ofdev.node = of_node_get(dn);
+ 	port->ofdev.dev.parent = &port->adapter->ebus_dev->ofdev.dev;
++	port->ofdev.dev.bus = &ibmebus_bus_type;
+ 
+-	sprintf(port->ofdev.dev.bus_id, "port%d", port->logical_port_id);
++	sprintf(port->ofdev.dev.bus_id, "port%d", port_name_cnt++);
+ 	port->ofdev.dev.release = logical_port_release;
+ 
+ 	ret = of_device_register(&port->ofdev);
+@@ -2384,8 +2457,16 @@ static struct device *ehea_register_port
+ 		goto out_unreg_of_dev;
+ 	}
+ 
++	ret = ehea_driver_sysfs_add(&port->ofdev.dev, &ehea_driver.driver);
++	if (ret) {
++		ehea_error("failed to register sysfs driver link");
++		goto out_rem_dev_file;
++	}
++
+ 	return &port->ofdev.dev;
+ 
++out_rem_dev_file:
++	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
+ out_unreg_of_dev:
+ 	of_device_unregister(&port->ofdev);
+ out:
+@@ -2394,6 +2475,7 @@ out:
+ 
+ static void ehea_unregister_port(struct ehea_port *port)
+ {
++	ehea_driver_sysfs_remove(&port->ofdev.dev, &ehea_driver.driver);
+ 	device_remove_file(&port->ofdev.dev, &dev_attr_log_port_id);
+ 	of_device_unregister(&port->ofdev);
+ }
+@@ -2520,7 +2602,6 @@ static int ehea_setup_ports(struct ehea_
+ 	struct device_node *eth_dn = NULL;
+ 
+ 	u32 *dn_log_port_id;
+-	int port_setup_ok = 0;
+ 	int i = 0;
+ 
+ 	lhea_dn = adapter->ebus_dev->ofdev.node;
+@@ -2534,6 +2615,12 @@ static int ehea_setup_ports(struct ehea_
+ 			continue;
+ 		}
+ 
++		if (ehea_add_adapter_mr(adapter)) {
++			ehea_error("creating MR failed");
++			of_node_put(eth_dn);
++			return -EIO;
++		}
++
+ 		adapter->port[i] = ehea_setup_single_port(adapter,
+ 							  *dn_log_port_id,
+ 							  eth_dn);
+@@ -2541,18 +2628,13 @@ static int ehea_setup_ports(struct ehea_
+ 			ehea_info("%s -> logical port id #%d",
+ 				  adapter->port[i]->netdev->name,
+ 				  *dn_log_port_id);
++		else
++			ehea_remove_adapter_mr(adapter);
++
+ 		i++;
+ 	};
+ 
+-	/* Check for succesfully set up ports */
+-	for (i = 0; i < EHEA_MAX_PORTS; i++)
+-		if (adapter->port[i])
+-			port_setup_ok++;
+-
+-	if (port_setup_ok)
+-		return 0;	/* At least some ports are setup correctly */
+-
+-	return -EINVAL;
++	return 0;
+ }
+ 
+ static struct device_node *ehea_get_eth_dn(struct ehea_adapter *adapter,
+@@ -2604,6 +2686,11 @@ static ssize_t ehea_probe_port(struct de
+ 		return -EINVAL;
+ 	}
+ 
++	if (ehea_add_adapter_mr(adapter)) {
++		ehea_error("creating MR failed");
++		return -EIO;
++	}
++
+ 	port = ehea_setup_single_port(adapter, logical_port_id, eth_dn);
+ 
+ 	of_node_put(eth_dn);
+@@ -2617,8 +2704,10 @@ static ssize_t ehea_probe_port(struct de
+ 
+ 		ehea_info("added %s (logical port id=%d)", port->netdev->name,
+ 			  logical_port_id);
+-	} else
++	} else {
++		ehea_remove_adapter_mr(adapter);
+ 		return -EIO;
++	}
+ 
+ 	return (ssize_t) count;
+ }
+@@ -2653,6 +2742,8 @@ static ssize_t ehea_remove_port(struct d
+ 		return -EINVAL;
+ 	}
+ 
++	ehea_remove_adapter_mr(adapter);
++
+ 	return (ssize_t) count;
+ }
+ 
+@@ -2713,18 +2804,13 @@ static int __devinit ehea_probe_adapter(
+ 
+ 	dev->ofdev.dev.driver_data = adapter;
+ 
+-	ret = ehea_reg_kernel_mr(adapter, &adapter->mr);
+-	if (ret) {
+-		dev_err(&dev->ofdev.dev, "reg_mr_adapter failed\n");
+-		goto out_free_ad;
+-	}
+ 
+ 	/* initialize adapter and ports */
+ 	/* get adapter properties */
+ 	ret = ehea_sense_adapter_attr(adapter);
+ 	if (ret) {
+ 		dev_err(&dev->ofdev.dev, "sense_adapter_attr failed: %d", ret);
+-		goto out_free_res;
++		goto out_free_ad;
+ 	}
+ 
+ 	adapter->neq = ehea_create_eq(adapter,
+@@ -2732,7 +2818,7 @@ static int __devinit ehea_probe_adapter(
+ 	if (!adapter->neq) {
+ 		ret = -EIO;
+ 		dev_err(&dev->ofdev.dev, "NEQ creation failed");
+-		goto out_free_res;
++		goto out_free_ad;
+ 	}
+ 
+ 	tasklet_init(&adapter->neq_tasklet, ehea_neq_tasklet,
+@@ -2777,9 +2863,6 @@ out_free_irq:
+ out_kill_eq:
+ 	ehea_destroy_eq(adapter->neq);
+ 
+-out_free_res:
+-	ehea_rem_mr(&adapter->mr);
+-
+ out_free_ad:
+ 	kfree(adapter);
+ out:
+@@ -2805,7 +2888,7 @@ static int __devexit ehea_remove(struct 
+ 	tasklet_kill(&adapter->neq_tasklet);
+ 
+ 	ehea_destroy_eq(adapter->neq);
+-	ehea_rem_mr(&adapter->mr);
++	ehea_remove_adapter_mr(adapter);
+ 	kfree(adapter);
+ 	return 0;
+ }
+@@ -2838,21 +2921,6 @@ static int check_module_parm(void)
+ 	return ret;
+ }
+ 
+-static struct of_device_id ehea_device_table[] = {
+-	{
+-		.name = "lhea",
+-		.compatible = "IBM,lhea",
+-	},
+-	{},
+-};
+-
+-static struct ibmebus_driver ehea_driver = {
+-	.name = "ehea",
+-	.id_table = ehea_device_table,
+-	.probe = ehea_probe_adapter,
+-	.remove = ehea_remove,
+-};
+-
+ int __init ehea_module_init(void)
+ {
+ 	int ret;
