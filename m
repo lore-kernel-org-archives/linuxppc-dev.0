@@ -1,17 +1,17 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 2FBF9DDEF2
+Return-Path: <domen.puncer@telargo.com>
+Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
+	by ozlabs.org (Postfix) with ESMTP id EA38BDDF00
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Apr 2007 12:43:00 +1000 (EST)
-Date: Sun, 22 Apr 2007 22:02:04 -0500
-To: Ming Liu <eemingliu@hotmail.com>
-Subject: Re: where is the sk_buff allocation
-Message-ID: <20070423030204.GB28805@lixom.net>
-References: <BAY138-F10BA8CB23D5BDA5802D8F3B2540@phx.gbl>
+	Mon, 23 Apr 2007 16:27:11 +1000 (EST)
+Date: Mon, 23 Apr 2007 08:27:06 +0200
+From: Domen Puncer <domen.puncer@telargo.com>
+To: RonLee <rlee@osii.com>
+Subject: Re: mpc5200 linux 2.4 wakeup interrupt problem
+Message-ID: <20070423062706.GW18236@moe.telargo.com>
+References: <10111122.post@talk.nabble.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <BAY138-F10BA8CB23D5BDA5802D8F3B2540@phx.gbl>
-From: olof@lixom.net (Olof Johansson)
+In-Reply-To: <10111122.post@talk.nabble.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,19 +23,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Sun, Apr 22, 2007 at 06:14:18PM +0000, Ming Liu wrote:
-> Dear all,
-> I am reading and understanding the Xilinx Temac device driver. I know that 
-> hard_start_xmit() is used to transmit the packets. In this function, a 
-> pointer skb which points to a sk_buff needs to be passed to show the 
-> location of the socket buffer. But where is that sk_buff allocation 
-> sentence, and how its address (skb) is passed to the hard_start_xmit() 
-> function? I want to change the address of the sk_buff in my system and try 
-> to fit this socket buffer in a pre-defined location.
+On 20/04/07 15:07 -0700, RonLee wrote:
+> 
+> Hello,
+>  
+> I am running linux on a mpc5200 chip and Im having problems with the
+> mpc5200's simple and wakeup interrupts.  The version of Linux I am starting
+> with is linuxppc_2_4_devel_1_0_0 from Denx.  Modifications have been made to
+> the kernel, but none for enabling the wakeup register set and/or the wakeup
+> interrupts.
+>  
+> Does a patch exist to enable this behavior?  Can anyone point me in the
+> right direction if I would like to enable the wakeup interrupts myself?
+>  
+> I noticed the behavior when attempting to write a device driver to interface
+> with the psc1_4 pin on the mpc5200 chip.  I am able to get the chip to
+> generate interrupts, but when the interrupts occur I get the following error
+> message in /proc/kmsg "Unhandled interrupt c, disabled".  After getting this
+> error, I installed an interrupt handler on IRQ 12 (hex c).  This caused the
+> kernel to lock up.
 
-The sk_buff is allocated by the network stack and passed down to the
-driver.  If you need the buffer to be located in a specific location
-before transmitting it, then you'll have to copy it there by hand.
+Maybe you forgot to acknowledge the IRQ (and so it always reenters your
+handler). For gpio wakeup interrupts see wkup_istat (MBAR+0xc24).
 
+HTH
 
--Olof
+	Domen
+>  
+> Thanks for any help,
+> -Ron
