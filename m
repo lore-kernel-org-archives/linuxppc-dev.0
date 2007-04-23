@@ -1,13 +1,14 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 83003DDFF9
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 32779DDFF1
 	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 05:46:54 +1000 (EST)
-Message-Id: <20070423193912.714569082@arndb.de>
+Message-Id: <20070423193912.578031620@arndb.de>
 References: <20070423193538.576702568@arndb.de>
-Date: Mon, 23 Apr 2007 21:35:42 +0200
+Date: Mon, 23 Apr 2007 21:35:41 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 04/10] cell: use pmi in cpufreq driver
+Subject: [PATCH 03/10] cbe_thermal: add throttling attributes to cpu and spu
+	nodes
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
 	Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -20,140 +21,219 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Christian Krafft <krafft@de.ibm.com>
-
-The new PMI driver was added in order to support
-cpufreq on blades that require the frequency to
-be controlled by the service processor, so use it
-on those.
+This patch adds some attributes the cpu and spu nodes:
+/sys/devices/system/[c|s]pu/[c|s]pu*/thermal/throttle_begin
+/sys/devices/system/[c|s]pu/[c|s]pu*/thermal/throttle_end
+/sys/devices/system/[c|s]pu/[c|s]pu*/thermal/throttle_full_stop
 
 Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
----
 
-Index: linux-2.6/arch/powerpc/platforms/cell/cbe_cpufreq.c
+Index: linux-2.6/arch/powerpc/platforms/cell/cbe_thermal.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_cpufreq.c
-+++ linux-2.6/arch/powerpc/platforms/cell/cbe_cpufreq.c
-@@ -28,6 +28,8 @@
- #include <asm/processor.h>
- #include <asm/prom.h>
- #include <asm/time.h>
-+#include <asm/pmi.h>
-+#include <asm/of_platform.h>
- 
+--- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_thermal.c
++++ linux-2.6/arch/powerpc/platforms/cell/cbe_thermal.c
+@@ -1,6 +1,31 @@
+ /*
+  * thermal support for the cell processor
+  *
++ * This module adds some sysfs attributes to cpu and spu nodes.
++ * Base for measurements are the digital thermal sensors (DTS)
++ * located on the chip.
++ * The accuracy is 2 degrees, starting from 65 up to 125 degrees celsius
++ * The attributes can be found under
++ * /sys/devices/system/cpu/cpuX/thermal
++ * /sys/devices/system/spu/spuX/thermal
++ *
++ * The following attributes are added for each node:
++ * temperature:
++ *	contains the current temperature measured by the DTS
++ * throttle_begin:
++ *	throttling begins when temperature is greater or equal to
++ *	throttle_begin. Setting this value to 125 prevents throttling.
++ * throttle_end:
++ *	throttling is being ceased, if the temperature is lower than
++ *	throttle_end. Due to a delay between applying throttling and
++ *	a reduced temperature this value should be less than throttle_begin.
++ *	A value equal to throttle_begin provides only a very little hysteresis.
++ * throttle_full_stop:
++ *	If the temperatrue is greater or equal to throttle_full_stop,
++ *	full throttling is applied to the cpu or spu. This value should be
++ *	greater than throttle_begin and throttle_end. Setting this value to
++ *	65 prevents the unit from running code at all.
++ *
+  * (C) Copyright IBM Deutschland Entwicklung GmbH 2005
+  *
+  * Author: Christian Krafft <krafft@de.ibm.com>
+@@ -31,9 +56,24 @@
  #include "cbe_regs.h"
+ #include "spu_priv1_mmio.h"
  
-@@ -68,6 +70,38 @@ static u64 MIC_Slow_Next_Timer_table[] =
-  * hardware specific functions
-  */
- 
-+static struct of_device *pmi_dev;
++#define TEMP_MIN 65
++#define TEMP_MAX 125
 +
-+static int set_pmode_pmi(int cpu, unsigned int pmode)
-+{
-+	int ret;
-+	pmi_message_t pmi_msg;
-+#ifdef DEBUG
-+	u64 time;
-+#endif
-+
-+	pmi_msg.type = PMI_TYPE_FREQ_CHANGE;
-+	pmi_msg.data1 =	cbe_cpu_to_node(cpu);
-+	pmi_msg.data2 = pmode;
-+
-+#ifdef DEBUG
-+	time = (u64) get_cycles();
-+#endif
-+
-+	pmi_send_message(pmi_dev, pmi_msg);
-+	ret = pmi_msg.data2;
-+
-+	pr_debug("PMI returned slow mode %d\n", ret);
-+
-+#ifdef DEBUG
-+	time = (u64) get_cycles() - time; /* actual cycles (not cpu cycles!) */
-+	time = 1000000000 * time / CLOCK_TICK_RATE; /* time in ns (10^-9) */
-+	pr_debug("had to wait %lu ns for a transition\n", time);
-+#endif
-+	return ret;
-+}
-+
-+
- static int get_pmode(int cpu)
- {
- 	int ret;
-@@ -79,7 +113,7 @@ static int get_pmode(int cpu)
- 	return ret;
- }
- 
--static int set_pmode(int cpu, unsigned int pmode)
-+static int set_pmode_reg(int cpu, unsigned int pmode)
- {
- 	struct cbe_pmd_regs __iomem *pmd_regs;
- 	struct cbe_mic_tm_regs __iomem *mic_tm_regs;
-@@ -120,6 +154,39 @@ static int set_pmode(int cpu, unsigned i
- 	return 0;
- }
- 
-+static int set_pmode(int cpu, unsigned int slow_mode) {
-+	if(pmi_dev)
-+		return set_pmode_pmi(cpu, slow_mode);
-+	else
-+		return set_pmode_reg(cpu, slow_mode);
-+}
-+
-+static void cbe_cpufreq_handle_pmi(struct of_device *dev, pmi_message_t pmi_msg)
-+{
-+	struct cpufreq_policy policy;
-+	u8 cpu;
-+	u8 cbe_pmode_new;
-+
-+	BUG_ON (pmi_msg.type != PMI_TYPE_FREQ_CHANGE);
-+
-+	cpu = cbe_node_to_cpu(pmi_msg.data1);
-+	cbe_pmode_new = pmi_msg.data2;
-+
-+	cpufreq_get_policy(&policy, cpu);
-+
-+	policy.max = min(policy.max, cbe_freqs[cbe_pmode_new].frequency);
-+	policy.min = min(policy.min, policy.max);
-+
-+	pr_debug("cbe_handle_pmi: new policy.min=%d policy.max=%d\n", policy.min, policy.max);
-+	cpufreq_set_policy(&policy);
-+}
-+
-+static struct pmi_handler cbe_pmi_handler = {
-+	.type			= PMI_TYPE_FREQ_CHANGE,
-+	.handle_pmi_message	= cbe_cpufreq_handle_pmi,
++#define SYSDEV_PREFIX_ATTR(_prefix,_name,_mode)			\
++struct sysdev_attribute attr_ ## _prefix ## _ ## _name = {	\
++	.attr = { .name = __stringify(_name), .mode = _mode },	\
++	.show	= _prefix ## _show_ ## _name,			\
++	.store	= _prefix ## _store_ ## _name,			\
 +};
 +
-+
- /*
-  * cpufreq functions
-  */
-@@ -234,11 +301,23 @@ static struct cpufreq_driver cbe_cpufreq
- 
- static int __init cbe_cpufreq_init(void)
+ static inline u8 reg_to_temp(u8 reg_value)
  {
-+	struct device_node *np;
+-       return ((reg_value & 0x3f) << 1) + 65;
++	return ((reg_value & 0x3f) << 1) + TEMP_MIN;
++}
 +
-+	np = of_find_node_by_type(NULL, "ibm,pmi");
-+
-+	pmi_dev = of_find_device_by_node(np);
-+
-+	if (pmi_dev)
-+		pmi_register_handler(pmi_dev, &cbe_pmi_handler);
-+
- 	return cpufreq_register_driver(&cbe_cpufreq_driver);
++static inline u8 temp_to_reg(u8 temp)
++{
++	return ((temp - TEMP_MIN) >> 1) & 0x3f;
  }
  
- static void __exit cbe_cpufreq_exit(void)
- {
-+	if(pmi_dev)
-+		pmi_unregister_handler(pmi_dev, &cbe_pmi_handler);
-+
- 	cpufreq_unregister_driver(&cbe_cpufreq_driver);
+ static struct cbe_pmd_regs __iomem *get_pmd_regs(struct sys_device *sysdev)
+@@ -73,6 +113,73 @@ static ssize_t spu_show_temp(struct sys_
+ 	return sprintf(buf, "%d\n", reg_to_temp(value));
  }
+ 
++static ssize_t show_throttle(struct cbe_pmd_regs __iomem *pmd_regs, char *buf, int pos)
++{
++	u64 value;
++
++	value = in_be64(&pmd_regs->tm_tpr.val);
++	/* access the corresponding byte */
++	value >>= pos;
++	value &= 0x3F;
++
++	return sprintf(buf, "%d\n", reg_to_temp(value));
++}
++
++static ssize_t store_throttle(struct cbe_pmd_regs __iomem *pmd_regs, const char *buf, size_t size, int pos)
++{
++	u64 reg_value;
++	int temp;
++	u64 new_value;
++	int ret;
++
++	ret = sscanf(buf, "%u", &temp);
++
++	if (ret != 1 || temp < TEMP_MIN || temp > TEMP_MAX)
++		return -EINVAL;
++
++	new_value = temp_to_reg(temp);
++
++	reg_value = in_be64(&pmd_regs->tm_tpr.val);
++
++	/* zero out bits for new value */
++	reg_value &= ~(0xffull << pos);
++	/* set bits to new value */
++	reg_value |= new_value << pos;
++
++	out_be64(&pmd_regs->tm_tpr.val, reg_value);
++	return size;
++}
++
++static ssize_t spu_show_throttle_end(struct sys_device *sysdev, char *buf)
++{
++	return show_throttle(get_pmd_regs(sysdev), buf, 0);
++}
++
++static ssize_t spu_show_throttle_begin(struct sys_device *sysdev, char *buf)
++{
++	return show_throttle(get_pmd_regs(sysdev), buf, 8);
++}
++
++static ssize_t spu_show_throttle_full_stop(struct sys_device *sysdev, char *buf)
++{
++	return show_throttle(get_pmd_regs(sysdev), buf, 16);
++}
++
++static ssize_t spu_store_throttle_end(struct sys_device *sysdev, const char *buf, size_t size)
++{
++	return store_throttle(get_pmd_regs(sysdev), buf, size, 0);
++}
++
++static ssize_t spu_store_throttle_begin(struct sys_device *sysdev, const char *buf, size_t size)
++{
++	return store_throttle(get_pmd_regs(sysdev), buf, size, 8);
++}
++
++static ssize_t spu_store_throttle_full_stop(struct sys_device *sysdev, const char *buf, size_t size)
++{
++	return store_throttle(get_pmd_regs(sysdev), buf, size, 16);
++}
++
+ static ssize_t ppe_show_temp(struct sys_device *sysdev, char *buf, int pos)
+ {
+ 	struct cbe_pmd_regs __iomem *pmd_regs;
+@@ -100,13 +207,52 @@ static ssize_t ppe_show_temp1(struct sys
+ 	return ppe_show_temp(sysdev, buf, 0);
+ }
+ 
++static ssize_t ppe_show_throttle_end(struct sys_device *sysdev, char *buf)
++{
++	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 32);
++}
++
++static ssize_t ppe_show_throttle_begin(struct sys_device *sysdev, char *buf)
++{
++	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 40);
++}
++
++static ssize_t ppe_show_throttle_full_stop(struct sys_device *sysdev, char *buf)
++{
++	return show_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, 48);
++}
++
++static ssize_t ppe_store_throttle_end(struct sys_device *sysdev, const char *buf, size_t size)
++{
++	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 32);
++}
++
++static ssize_t ppe_store_throttle_begin(struct sys_device *sysdev, const char *buf, size_t size)
++{
++	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 40);
++}
++
++static ssize_t ppe_store_throttle_full_stop(struct sys_device *sysdev, const char *buf, size_t size)
++{
++	return store_throttle(cbe_get_cpu_pmd_regs(sysdev->id), buf, size, 48);
++}
++
++
+ static struct sysdev_attribute attr_spu_temperature = {
+ 	.attr = {.name = "temperature", .mode = 0400 },
+ 	.show = spu_show_temp,
+ };
+ 
++static SYSDEV_PREFIX_ATTR(spu, throttle_end, 0600);
++static SYSDEV_PREFIX_ATTR(spu, throttle_begin, 0600);
++static SYSDEV_PREFIX_ATTR(spu, throttle_full_stop, 0600);
++
++
+ static struct attribute *spu_attributes[] = {
+ 	&attr_spu_temperature.attr,
++	&attr_spu_throttle_end.attr,
++	&attr_spu_throttle_begin.attr,
++	&attr_spu_throttle_full_stop.attr,
+ 	NULL,
+ };
+ 
+@@ -125,9 +271,16 @@ static struct sysdev_attribute attr_ppe_
+ 	.show = ppe_show_temp1,
+ };
+ 
++static SYSDEV_PREFIX_ATTR(ppe, throttle_end, 0600);
++static SYSDEV_PREFIX_ATTR(ppe, throttle_begin, 0600);
++static SYSDEV_PREFIX_ATTR(ppe, throttle_full_stop, 0600);
++
+ static struct attribute *ppe_attributes[] = {
+ 	&attr_ppe_temperature0.attr,
+ 	&attr_ppe_temperature1.attr,
++	&attr_ppe_throttle_end.attr,
++	&attr_ppe_throttle_begin.attr,
++	&attr_ppe_throttle_full_stop.attr,
+ 	NULL,
+ };
  
 
 --
