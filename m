@@ -1,28 +1,22 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Received: from mail-in-06.arcor-online.net (mail-in-06.arcor-online.net
+	[151.189.21.46])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 7B897DDEC5
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 03:34:20 +1000 (EST)
-In-Reply-To: <1177317115.3889.39.camel@concordia.ozlabs.ibm.com>
-References: <20070419073556.73A6BDDE4A@ozlabs.org>
-	<e4520bd4be50f2884003a9421863627c@bga.com>
-	<ca8197808a747b83c14461f6fec375db@kernel.crashing.org>
-	<20070422193017.GA27048@lixom.net>
-	<829d8b36a3c78c662f29437c59290609@kernel.crashing.org>
-	<1177317115.3889.39.camel@concordia.ozlabs.ibm.com>
+	by ozlabs.org (Postfix) with ESMTP id 5C35ADDF47
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 03:39:34 +1000 (EST)
+In-Reply-To: <20070423084710.10570DDF14@ozlabs.org>
+References: <20070423084710.10570DDF14@ozlabs.org>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <7928ad59f5dd4429dcb0c22792c210f7@kernel.crashing.org>
+Message-Id: <64f77a2f874650aae9980e37eea66b9c@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 7/7] MPIC MSI backend
-Date: Mon, 23 Apr 2007 19:33:54 +0200
-To: michael@ellerman.id.au
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>,
-	Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH] Rename MPIC_BROKEN_U3 to MPIC_U3_HT_IRQS
+Date: Mon, 23 Apr 2007 19:39:23 +0200
+To: Michael Ellerman <michael@ellerman.id.au>
+Cc: Olof Johannsson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,23 +26,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->>>> mpic_htmsi deals with MSIs that come in over hypertransport
->>>> to the MPIC on CPC925/CPC945; this has nothing to
->>>> do with HT APICs.
->>>
->>> Maybe it should be named mpic_cpc9x5msi instead?
->>
->> Yeah probably, esp. since there are more MSI sources
->> on those chips, not just HT; and if support for those
->> sources gets added later, it should go to this file :-)
->
-> Actually I think I'll call it mpic_u3_msi.c, which although not quite 
-> as
-> accurate as cpc9x5, is more inline with the rest of the code that 
-> refers
-> to U3 - which really means U3/U4.
+> Rename MPIC_BROKEN_U3 to something a little more descriptive. Its
+> effect is to enable support for HT irqs behind the PCI-X/HT bridge on
+> U3/U4 (aka. CPC9x5) parts.
 
-Yeah, good plan.  It's a nicer name anyway :-)
+Not quite.  It's a workaround for the problem that
+the U3/U4 HT interrupt interface doesn't send ACKs
+for interrupts that require them ("level" interrupts).
+It does this by setting the ACK bit in HT APIC config
+space every time an interrupt from such a source happens.
+
+This doesn't affect PCI bridges only.
+
+The name change looks good though :-)
 
 
 Segher
