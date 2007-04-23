@@ -1,27 +1,23 @@
 Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-10.arcor-online.net (mail-in-10.arcor-online.net
-	[151.189.21.50])
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B5203DDF13
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 07:13:05 +1000 (EST)
-In-Reply-To: <20070423235502.734e6e67@localhost.localdomain>
-References: <20070422232658.5f427fd3@localhost.localdomain>
-	<200704222349.42368.arnd@arndb.de>
-	<20070423101427.3a1d4983@localhost.localdomain>
-	<20070423075957.GA22811@infradead.org>
-	<20070423235502.734e6e67@localhost.localdomain>
+	by ozlabs.org (Postfix) with ESMTP id A1571DDF13
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 07:16:08 +1000 (EST)
+In-Reply-To: <20070423160621.329d1a08.kim.phillips@freescale.com>
+References: <20070423144052.261f68ad.kim.phillips@freescale.com>
+	<5c96dd623e3a6737db48ab17c3550610@kernel.crashing.org>
+	<20070423160621.329d1a08.kim.phillips@freescale.com>
 Mime-Version: 1.0 (Apple Message framework v623)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <44c9a2b88950e3848d2c4e457641eb9b@kernel.crashing.org>
+Message-Id: <295ef00589e07afc89ebeb13027936a3@kernel.crashing.org>
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH][RFC] PCMCIA support for 8xx using platform devices
-Date: Mon, 23 Apr 2007 23:12:58 +0200
-To: Vitaly Bordug <vitb@kernel.crashing.org>
-Cc: Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	linux-pcmcia@lists.infradead.org, lkml <linux-kernel@vger.kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/4 v4] powerpc: document phy-connection-type property
+Date: Mon, 23 Apr 2007 23:16:02 +0200
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,22 +27,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> That's a horrible argument.  Please do it properly, and let arch/ppc
->> die as it should.  We shouldn't be adding anything to it anymore
->> anyway.
+>>> +   - phy-connection-type : a string naming the controller/PHY
+>>> interface type,
+>>> +     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id",
+>>> "tbi",
+>>> +     or "rtbi".
 >>
-> I understand your point, but we shouldn't trash existing bits either.
+>> Could you put this right after the "phy-handle" definition
+>> please?
+>
+> phy-handle is a required property, whereas phy-connection-type is not
+> (it's recommended). Are you suggesting phy-connection-type be a 
+> required
+> property?
 
-Why not?  The things that haven't been ported over yet
-obviously are unmaintained.  If we can make the few
-remaining board ports in there utterly broken, we
-can finally remove arch/ppc/ completely :-)
-
-Since nothing new gets added to arch/ppc/ anymore,
-anyone who wants it can get it from an older kernel
-tree, no?
-
-[Yes, I'm half joking.  No, not fully.]
+Oh okay, I didn't see that from context -- no, it
+shouldn't be required, most controllers / PHYs don't
+need that information.
 
 
 Segher
