@@ -1,13 +1,13 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.187]) by ozlabs.org (Postfix) with ESMTP id 229EEDDFFC
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 83003DDFF9
 	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 05:46:54 +1000 (EST)
-Message-Id: <20070423193913.119032752@arndb.de>
+Message-Id: <20070423193912.714569082@arndb.de>
 References: <20070423193538.576702568@arndb.de>
-Date: Mon, 23 Apr 2007 21:35:45 +0200
+Date: Mon, 23 Apr 2007 21:35:42 +0200
 From: Arnd Bergmann <arnd@arndb.de>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 07/10] add of_iomap function
+Subject: [PATCH 04/10] cell: use pmi in cpufreq driver
 Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>,
 	Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -21,86 +21,139 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 From: Christian Krafft <krafft@de.ibm.com>
 
-The of_iomap function maps memory for a given
-device_node and returns a pointer to that memory.
-This is used at some places, so it makes sense to
-a seperate function.
+The new PMI driver was added in order to support
+cpufreq on blades that require the frequency to
+be controlled by the service processor, so use it
+on those.
 
 Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+---
 
-Index: linux-2.6/arch/powerpc/sysdev/pmi.c
+Index: linux-2.6/arch/powerpc/platforms/cell/cbe_cpufreq.c
 ===================================================================
---- linux-2.6.orig/arch/powerpc/sysdev/pmi.c
-+++ linux-2.6/arch/powerpc/sysdev/pmi.c
-@@ -33,7 +33,7 @@
- #include <asm/of_platform.h>
- #include <asm/io.h>
- #include <asm/pmi.h>
--
-+#include <asm/prom.h>
+--- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_cpufreq.c
++++ linux-2.6/arch/powerpc/platforms/cell/cbe_cpufreq.c
+@@ -28,6 +28,8 @@
+ #include <asm/processor.h>
+ #include <asm/prom.h>
+ #include <asm/time.h>
++#include <asm/pmi.h>
++#include <asm/of_platform.h>
  
- struct pmi_data {
- 	struct list_head	handler;
-@@ -49,21 +49,6 @@ struct pmi_data {
- };
+ #include "cbe_regs.h"
  
+@@ -68,6 +70,38 @@ static u64 MIC_Slow_Next_Timer_table[] =
+  * hardware specific functions
+  */
  
--
--static void __iomem *of_iomap(struct device_node *np)
--{
--	struct resource res;
--
--	if (of_address_to_resource(np, 0, &res))
--		return NULL;
--
--	pr_debug("Resource start: 0x%lx\n", res.start);
--	pr_debug("Resource end: 0x%lx\n", res.end);
--
--	return ioremap(res.start, 1 + res.end - res.start);
--}
--
--
- static int pmi_irq_handler(int irq, void *dev_id)
- {
- 	struct pmi_data *data;
-@@ -154,7 +139,7 @@ static int pmi_of_probe(struct of_device
- 		goto out;
- 	}
- 
--	data->pmi_reg = of_iomap(np);
-+	data->pmi_reg = of_iomap(np, 0);
- 	if (!data->pmi_reg) {
- 		printk(KERN_ERR "pmi: invalid register address.\n");
- 		rc = -EFAULT;
-Index: linux-2.6/include/asm-powerpc/prom.h
-===================================================================
---- linux-2.6.orig/include/asm-powerpc/prom.h
-+++ linux-2.6/include/asm-powerpc/prom.h
-@@ -20,6 +20,7 @@
- #include <linux/platform_device.h>
- #include <asm/irq.h>
- #include <asm/atomic.h>
-+#include <asm/io.h>
- 
- /* Definitions used by the flattened device tree */
- #define OF_DT_HEADER		0xd00dfeed	/* marker */
-@@ -355,6 +356,16 @@ static inline int of_irq_to_resource(str
- 	return irq;
- }
- 
-+static inline void __iomem *of_iomap(struct device_node *np, int index)
++static struct of_device *pmi_dev;
++
++static int set_pmode_pmi(int cpu, unsigned int pmode)
 +{
-+	struct resource res;
++	int ret;
++	pmi_message_t pmi_msg;
++#ifdef DEBUG
++	u64 time;
++#endif
 +
-+	if (of_address_to_resource(np, index, &res))
-+		return NULL;
++	pmi_msg.type = PMI_TYPE_FREQ_CHANGE;
++	pmi_msg.data1 =	cbe_cpu_to_node(cpu);
++	pmi_msg.data2 = pmode;
 +
-+	return ioremap(res.start, 1 + res.end - res.start);
++#ifdef DEBUG
++	time = (u64) get_cycles();
++#endif
++
++	pmi_send_message(pmi_dev, pmi_msg);
++	ret = pmi_msg.data2;
++
++	pr_debug("PMI returned slow mode %d\n", ret);
++
++#ifdef DEBUG
++	time = (u64) get_cycles() - time; /* actual cycles (not cpu cycles!) */
++	time = 1000000000 * time / CLOCK_TICK_RATE; /* time in ns (10^-9) */
++	pr_debug("had to wait %lu ns for a transition\n", time);
++#endif
++	return ret;
 +}
 +
++
+ static int get_pmode(int cpu)
+ {
+ 	int ret;
+@@ -79,7 +113,7 @@ static int get_pmode(int cpu)
+ 	return ret;
+ }
  
- #endif /* __KERNEL__ */
- #endif /* _POWERPC_PROM_H */
+-static int set_pmode(int cpu, unsigned int pmode)
++static int set_pmode_reg(int cpu, unsigned int pmode)
+ {
+ 	struct cbe_pmd_regs __iomem *pmd_regs;
+ 	struct cbe_mic_tm_regs __iomem *mic_tm_regs;
+@@ -120,6 +154,39 @@ static int set_pmode(int cpu, unsigned i
+ 	return 0;
+ }
+ 
++static int set_pmode(int cpu, unsigned int slow_mode) {
++	if(pmi_dev)
++		return set_pmode_pmi(cpu, slow_mode);
++	else
++		return set_pmode_reg(cpu, slow_mode);
++}
++
++static void cbe_cpufreq_handle_pmi(struct of_device *dev, pmi_message_t pmi_msg)
++{
++	struct cpufreq_policy policy;
++	u8 cpu;
++	u8 cbe_pmode_new;
++
++	BUG_ON (pmi_msg.type != PMI_TYPE_FREQ_CHANGE);
++
++	cpu = cbe_node_to_cpu(pmi_msg.data1);
++	cbe_pmode_new = pmi_msg.data2;
++
++	cpufreq_get_policy(&policy, cpu);
++
++	policy.max = min(policy.max, cbe_freqs[cbe_pmode_new].frequency);
++	policy.min = min(policy.min, policy.max);
++
++	pr_debug("cbe_handle_pmi: new policy.min=%d policy.max=%d\n", policy.min, policy.max);
++	cpufreq_set_policy(&policy);
++}
++
++static struct pmi_handler cbe_pmi_handler = {
++	.type			= PMI_TYPE_FREQ_CHANGE,
++	.handle_pmi_message	= cbe_cpufreq_handle_pmi,
++};
++
++
+ /*
+  * cpufreq functions
+  */
+@@ -234,11 +301,23 @@ static struct cpufreq_driver cbe_cpufreq
+ 
+ static int __init cbe_cpufreq_init(void)
+ {
++	struct device_node *np;
++
++	np = of_find_node_by_type(NULL, "ibm,pmi");
++
++	pmi_dev = of_find_device_by_node(np);
++
++	if (pmi_dev)
++		pmi_register_handler(pmi_dev, &cbe_pmi_handler);
++
+ 	return cpufreq_register_driver(&cbe_cpufreq_driver);
+ }
+ 
+ static void __exit cbe_cpufreq_exit(void)
+ {
++	if(pmi_dev)
++		pmi_unregister_handler(pmi_dev, &cbe_pmi_handler);
++
+ 	cpufreq_unregister_driver(&cbe_cpufreq_driver);
+ }
+ 
 
 --
