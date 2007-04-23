@@ -1,39 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-11.arcor-online.net (mail-in-11.arcor-online.net
-	[151.189.21.51])
+Return-Path: <kim.phillips@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 87374DDF13
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 07:25:12 +1000 (EST)
-In-Reply-To: <3C290CCE-1B71-448A-8454-0C08BCF93279@freescale.com>
-References: <20070413012542.343eb848.kim.phillips@freescale.com>
-	<95a9680c565aa196a4ef78964ef9dee1@kernel.crashing.org>
-	<20070416102533.0f87396f.kim.phillips@freescale.com>
-	<C793D7D1-CA26-4DCB-B513-56E927BF6BA9@kernel.crashing.org>
-	<ba8618e3bd28389b66262e549387ac8d@kernel.crashing.org>
-	<20070416115729.292c10b1.kim.phillips@freescale.com>
-	<53810df560c7af272cd1c71c9d5fa1ab@kernel.crashing.org>
-	<20070416193110.77b63e4b.kim.phillips@freescale.com>
-	<788e650fbb3f95eaf1bfb6955f9cef17@kernel.crashing.org>
-	<20070417152712.51c7348f.kim.phillips@freescale.com>
-	<f170b2c44ae8a76dd4d35ceb94a624b0@kernel.crashing.org>
-	<20070417201350.12727df7.kim.phillips@freescale.com>
-	<524e7cf7aec7be8289ab2f99df8a0776@kernel.crashing.org>
-	<20070418164849.6f0fd817.kim.phillips@freescale.com>
-	<d16d2a0d1742a32e45597baabfc3735a@kernel.crashing.org>
-	<6358CE18-B118-4BC1-B46A-D485449273D5@freescale.com>
-	<19b21e979d2b23eba0073dadc7c65620@kernel.crashing.org>
-	<3C290CCE-1B71-448A-8454-0C08BCF93279@freescale.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <e58f755b0bf5535c99dd1ef2f603d5f7@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/4 v2] powerpc: document max-speed and interface-type
-	properties
-Date: Mon, 23 Apr 2007 23:24:04 +0200
-To: Andy Fleming <afleming@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 3B684DDF78
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 07:26:16 +1000 (EST)
+Date: Mon, 23 Apr 2007 16:26:10 -0500
+From: Kim Phillips <kim.phillips@freescale.com>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 1/4 v5] powerpc: document phy-connection-type property
+Message-Id: <20070423162610.5cbf0e4e.kim.phillips@freescale.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -43,19 +22,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> On some configurations, what PHY to use is a runtime
->> decision, not a static thing.  No device tree change
->> is necessary then.
->
-> 1) Could you give me an example?
+Since ucc_geth is being migrated to use the phylib, the existing
+(undocumented) 'interface' property is being deprecated in favour
+of 'phy-connection-type'.
 
-Some older (plugin) cards are like that.  I don't have
-model numbers handy, sorry.
+phy-connection-type is now maintained one-to-one with definitions
+in include/linux/phy.h, albeit in the form of a string.
+If not specified, "mii" is assumed.
 
-> 2) So you'd be having Linux ignore the phandle, then?
+Signed-off-by: Kim Phillips <kim.phillips@freescale.com>
+---
+moved phy-connection-type below phy-handle
 
-No, Linux would find all the PHYs connected, via the
-device tree, and handle them all within the driver.
+ Documentation/powerpc/booting-without-of.txt |    4 ++++
+ 1 files changed, 4 insertions(+), 0 deletions(-)
 
-
-Segher
+diff --git a/Documentation/powerpc/booting-without-of.txt b/Documentation/powerpc/booting-without-of.txt
+index 88cdb59..76b4fa0 100644
+--- a/Documentation/powerpc/booting-without-of.txt
++++ b/Documentation/powerpc/booting-without-of.txt
+@@ -1562,6 +1562,9 @@ platforms are moved over to use the flattened-device-tree model.
+      network device.  This is used by the bootwrapper to interpret
+      MAC addresses passed by the firmware when no information other
+      than indices is available to associate an address with a device.
++   - phy-connection-type : a string naming the controller/PHY interface type,
++     i.e., "mii" (default), "rmii", "gmii", "rgmii", "rgmii-id", "tbi",
++     or "rtbi".
+ 
+    Example:
+ 	ucc@2000 {
+@@ -1576,6 +1579,7 @@ platforms are moved over to use the flattened-device-tree model.
+ 		rx-clock = "none";
+ 		tx-clock = "clk9";
+ 		phy-handle = <212000>;
++		phy-connection-type = "gmii";
+ 		pio-handle = <140001>;
+ 	};
+ 
+-- 
+1.5.0.3
