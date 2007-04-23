@@ -1,18 +1,19 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 2/7] Powerpc MSI infrastructure
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Milton Miller <miltonm@bga.com>
-In-Reply-To: <5978bcffcf3b9348ebd4349ba8c2730a@bga.com>
-References: <20070419073553.5F2ABDDE3C@ozlabs.org>
-	<5978bcffcf3b9348ebd4349ba8c2730a@bga.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-uPtll8TONIgwd2CEDz2A"
-Date: Mon, 23 Apr 2007 14:28:26 +1000
-Message-Id: <1177302506.3889.38.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 25668DDEFD
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 16:20:25 +1000 (EST)
+In-Reply-To: <1177301062.3889.27.camel@concordia.ozlabs.ibm.com>
+References: <20070419073555.D2C3EDDEFD@ozlabs.org>
+	<5f69d29368a24aad95648b40e0dfc07e@bga.com>
+	<1177301062.3889.27.camel@concordia.ozlabs.ibm.com>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <63dd3d59fb8f043738b30026139feff6@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 6/7] MPIC MSI allocator
+Date: Mon, 23 Apr 2007 01:20:11 -0500
+To: michael@ellerman.id.au
 Cc: linuxppc-dev@ozlabs.org, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>
-Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,116 +24,65 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-uPtll8TONIgwd2CEDz2A
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Apr 22, 2007, at 11:04 PM, Michael Ellerman wrote:
 
-On Sat, 2007-04-21 at 18:15 -0500, Milton Miller wrote:
-> On Apr 19, 2007, Michael Ellerman wrote:
-> > This patch provides the architecture specific hooks to support MSI on
-> > powerpc. We implement the newly added arch_setup_msi_irqs() and
-> > arch_teardown_msi_irqs(), and then delegate to ppc_md routines.
-> >
->=20
-> > Index: msi-new/arch/powerpc/kernel/msi.c
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- /dev/null
-> > +++ msi-new/arch/powerpc/kernel/msi.c
-> > @@ -0,0 +1,38 @@
-> > +/*
-> > + * Copyright 2006-2007, Michael Ellerman, IBM Corporation.
-> > + *
-> > + * This program is free software; you can redistribute it and/or
-> > + * modify it under the terms of the GNU General Public License
-> > + * as published by the Free Software Foundation; either version
-> > + * 2 of the License, or (at your option) any later version.
-> > + */
-> > +
-> > +#include <linux/kernel.h>
-> > +#include <linux/msi.h>
-> > +
-> > +#include <asm/machdep.h>
-> > +
-> > +int arch_msi_check_device(struct pci_dev* dev, int nvec, int type)
-> > +{
-> > +	if (ppc_md.msi_check_device) {
-> > +		pr_debug("msi: Using platform check routine.\n");
-> > +		return ppc_md.msi_check_device(dev, nvec, type);
-> > +	}
-> > +
-> > +	if (!ppc_md.setup_msi_irqs || !ppc_md.teardown_msi_irqs) {
-> > +		pr_debug("msi: Platform doesn't provide MSI callbacks.\n");
-> > +		return -ENOSYS;
-> > +	}
->=20
-> Should we not do this check first?  Or do you expect some platform
-> to fill out these hooks in the check call above?  Othewise we will
-> branch to function pointer NULL.
+> On Sat, 2007-04-21 at 18:17 -0500, Milton Miller wrote:
+>> On Apr 19, 2007, Michael Ellerman wrote:
+>>> To support MSI on MPIC we need a way to reserve and allocate hardware
+>>> irq
+>>> numbers, this patch implements an allocator for that.
 
-Not really. More a case of if you provide check then you'd better get
-your act together and provide the others. I'll rearrange it to be safer.
+>>> +	/* Reserve source numbers we know are reserved in the HW */
+>>> +	for (i = 0;   i < 8;   i++) __mpic_msi_reserve_hwirq(mpic, i);
+>>> +	for (i = 42;  i < 46;  i++) __mpic_msi_reserve_hwirq(mpic, i);
+>>> +	for (i = 100; i < 105; i++) __mpic_msi_reserve_hwirq(mpic, i);
+>>
+>> More lines please.
+>>
+>>> +#else
+>>> +static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic) { return 
+>>> -1;
+>>> }
+>>
+>> and here.
+>
+> Blank lines aren't free you know!
 
->=20
-> > +
-> > +        return 0;
-> > +}
-> > +
-> > +int arch_setup_msi_irqs(struct pci_dev *dev, int nvec, int type)
-> > +{
-> > +	return ppc_md.setup_msi_irqs(dev, nvec, type);
-> > +}
-> > +
-> > +void arch_teardown_msi_irqs(struct pci_dev *dev)
-> > +{
-> > +	return ppc_md.teardown_msi_irqs(dev);
-> > +}
->=20
->=20
-> > Index: msi-new/arch/powerpc/kernel/Makefile
-> > =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-> > --- msi-new.orig/arch/powerpc/kernel/Makefile
-> > +++ msi-new/arch/powerpc/kernel/Makefile
->=20
-> > +obj-$(CONFIG_PCI_MSI)		+=3D msi.o
->=20
->=20
-> Do we really need a new file for these simple hooks?  It doesn't look
-> like anthing else is going to be added to it either.   I'd prefer to
-> just do an ifdef in pci.c.   Hmmm, we don't seem to have that, but
-> these are soo small I'd include machdep.h and put them inline in
-> asm-powerpc/pci.h.
+I didn't ask for any blank ones, so you can keep the bill. :-)
 
-I'd rather leave it as is. We can't have them inline, because they're
-already defined in drivers/pci/msi.c. And having the CONFIG logic in the
-Makefile is cleaner than #ifdef goo. Also it might grow one day, if we
-make the hooks per pci_dev or per bus rather than in ppc_md.
+>>
+>>> +	if (len % 8 != 0) {
 
-cheers
+Here you use 8 as the size of the element to process.
 
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
+>>> +		printk(KERN_WARNING "mpic: Malformed msi-available-ranges "
+>>> +		       "property on %s\n", mpic->of_node->full_name);
+>>> +		return -EINVAL;
+>>> +	}
+>>> +
+>>> +	bitmap_allocate_region(mpic->hwirq_bitmap, 0,
+>>> +			       fls(mpic->irq_count) - 1);
+>>> +
+>>> +	/* Format is: (<u32 start> <u32 count>)+ */
+>>> +	len /= sizeof(u32);
 
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
+Here you hide a divide by 4 and follow with divide by 2.
 
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
+>>> +	for (i = 0; i < len / 2; i++, p += 2)
+>>
+>> how about just dividing by the calculated 8 above?  or use
+>> count = len / 8.
+>
+> I'm not sure I follow. If you can think of a clearer way I'm all ears,
+> or are you just trying to save a divide :)
 
---=-uPtll8TONIgwd2CEDz2A
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+I'm saying that it doesn't make sense to do both of the above.
+I'd move the comment on being pairs of cells to before the
+if () EINVAL then follow immediately with the divide.  If you
+think that hides length being adjusted then I was optionally
+suggesting making a new variable count to use in the for loop.
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Actually, since i isn't used in the loop you could just
+increment i by 8 while < len, and save both divides.
 
-iD8DBQBGLDXqdSjSd0sB4dIRAqsJAJ9o54NikRPsVdF6gjLZkSyqJ0gaYgCeIwWK
-GGRhoDwRHgDWOSBkosYS43s=
-=Wehj
------END PGP SIGNATURE-----
-
---=-uPtll8TONIgwd2CEDz2A--
+milton
