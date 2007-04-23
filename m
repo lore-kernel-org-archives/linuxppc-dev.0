@@ -1,17 +1,21 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id 81ED0DDED6
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 44B9DDDEB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 02:20:04 +1000 (EST)
-Message-ID: <462CDDC4.7060701@ru.mvista.com>
-Date: Mon, 23 Apr 2007 20:24:36 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
-MIME-Version: 1.0
+	Tue, 24 Apr 2007 03:35:11 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so1175662ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 23 Apr 2007 10:35:10 -0700 (PDT)
+Message-ID: <528646bc0704231035g6a1ac904wc6b9b7b77afd1037@mail.gmail.com>
+Date: Mon, 23 Apr 2007 11:35:10 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
 To: Mirek23 <miroslaw.dach@psi.ch>
 Subject: Re: zImage.elf loads but does not start
-References: <10079346.post@talk.nabble.com> <10142161.post@talk.nabble.com>
 In-Reply-To: <10142161.post@talk.nabble.com>
+MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <10079346.post@talk.nabble.com> <10142161.post@talk.nabble.com>
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -23,44 +27,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Mirek,
-
-Mirek23 wrote:
+On 4/23/07, Mirek23 <miroslaw.dach@psi.ch> wrote:
+>
 > I have revised the xparameters_ml403.h and the setup of the FPGA part. I have
 > found that the interrupt for the RS232 was not configured. Right now I was
 > able to come to the point when the kernel was uncompressed but it did not
 > start:
-> 
-> 
-> loaded at:     00400000 004F9138
-> 
-> board data at: 004F7120 004F7138
-> 
-> relocated to:  00404064 0040407C
-> 
-> zimage at:     00404DF1 004F6BBB
-> 
-> avail ram:     004FA000 04000000
-> 
-> 
-> 
+>
 > Linux/PPC load: console=ttl0,9600 ip=129.129.129.29 root=/dev/ram rw
 
-If you use the UART Lite driver by Peter Korsgaard it sould be
-"console=ttyUL0", not "console=ttl0".
+This doesn't look right.  It should be either 'console=ttyS0,<speed>'
+for a full UART, or 'console=ttyUL0' for a uartlite.
 
-Thanks,
-Andrei
+BTW, serial console output is polled, not interrupt driven (but
+regular serial I/O does use IRQs), so the unconfigured interrupt line
+was probably not your immediate problem.
 
-> Uncompressing Linux...done.
-> 
-> Now booting the kernel
-> 
-> 
-> 
-> 
-> Does anybody has an idea what could be wrong?
-> 
-> Best Regards
-> 
-> Mirek
+g.
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
