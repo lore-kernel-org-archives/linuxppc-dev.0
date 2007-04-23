@@ -1,23 +1,36 @@
-Return-Path: <vitb@kernel.crashing.org>
-Received: from localhost.localdomain (unknown [85.94.3.83])
+Return-Path: <linas@austin.ibm.com>
+Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 78C26DE05F
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 05:55:45 +1000 (EST)
-Date: Mon, 23 Apr 2007 23:55:02 +0400
-From: Vitaly Bordug <vitb@kernel.crashing.org>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH][RFC] PCMCIA support for 8xx using platform devices
-Message-ID: <20070423235502.734e6e67@localhost.localdomain>
-In-Reply-To: <20070423075957.GA22811@infradead.org>
-References: <20070422232658.5f427fd3@localhost.localdomain>
-	<200704222349.42368.arnd@arndb.de>
-	<20070423101427.3a1d4983@localhost.localdomain>
-	<20070423075957.GA22811@infradead.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
-	lkml <linux-kernel@vger.kernel.org>, Arnd Bergmann <arnd@arndb.de>
+	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EFF82DDEFD
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 06:50:33 +1000 (EST)
+Received: from d01relay04.pok.ibm.com (d01relay04.pok.ibm.com [9.56.227.236])
+	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3NJnFfO016538
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 15:49:15 -0400
+Received: from d01av03.pok.ibm.com (d01av03.pok.ibm.com [9.56.224.217])
+	by d01relay04.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3NKoL5N497820
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 16:50:21 -0400
+Received: from d01av03.pok.ibm.com (loopback [127.0.0.1])
+	by d01av03.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3NKoLbv022636
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 16:50:21 -0400
+Date: Mon, 23 Apr 2007 15:50:20 -0500
+To: Christoph Hellwig <hch@infradead.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	"<Andrew Morton" <akpm@osdl.org>, containers@lists.osdl.org,
+	Oleg Nesterov <oleg@tv-sign.ru>, linux-kernel@vger.kernel.org,
+	Paul Mackerras <paulus@samba.org>, linux-s390@vger.kernel.org,
+	linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+Message-ID: <20070423205020.GR31947@austin.ibm.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695763104-git-send-email-ebiederm@xmission.com>
+	<20070422123155.GF20763@infradead.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070422123155.GF20763@infradead.org>
+From: linas@austin.ibm.com (Linas Vepstas)
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,46 +40,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 23 Apr 2007 08:59:57 +0100
-Christoph Hellwig wrote:
-
-> On Mon, Apr 23, 2007 at 10:14:27AM +0400, Vitaly Bordug wrote:
-> > On Sun, 22 Apr 2007 23:49:41 +0200
-> > Arnd Bergmann wrote:
+On Sun, Apr 22, 2007 at 01:31:55PM +0100, Christoph Hellwig wrote:
+> On Thu, Apr 19, 2007 at 01:58:45AM -0600, Eric W. Biederman wrote:
+> > From: Eric W. Biederman <ebiederm@xmission.com>
 > > 
-> > > On Sunday 22 April 2007, Vitaly Bordug wrote:
-> > > > This utilizes PCMCIA on mpc885ads and mpc866ads from
-> > > > arch/powerpc. In the new approach, direct IMMR accesses from
-> > > > within drivers/ were totally eliminated, that requires
-> > > > hardware_enable, hardware_disable, voltage_set board-specific
-> > > > functions to be moved over to BSP code section
-> > > > (arch/powerpc/platforms/8xx in 885 case). There is just no way
-> > > > to have both arch/ppc and arch/powerpc approaches to work
-> > > > simultaneously because of that.  
-> > > 
-> > > Maybe I'm missing a key issue here, but what's the point of adding
-> > > more platform_devices for stuff that is already in the device
-> > > tree? Shouldn't this be made an of_platform_driver instead so you
-> > > can use the existing of_device directly?
-> > > 
-> > Was thinking of it but platform_device is better for migration
-> > purposes. Hence, assuming somebody would want to have pcmcia
-> > working not bothering to add whole arch/powerpc support, it can be
-> > accomplished quickly.
+> > This patch modifies the startup of eehd to use kthread_run
+> > not a combination of kernel_thread and daemonize.  Making
+> > the code slightly simpler and more maintainable.
 > 
-> That's a horrible argument.  Please do it properly, and let arch/ppc
-> die as it should.  We shouldn't be adding anything to it anymore
-> anyway.
+> This one has the same scheme as the various s390 drivers where a thread
+> is spawned using a workqueue on demand.  I think we should not blindly
+> convert it but think a litte more about it.
 > 
-I understand your point, but we shouldn't trash existing bits either. Things are a bit different with embedded
-stuff, and especially in case of 8xx, there are targets without OF-powered uboot. Bootwrapper thing might be helpful in resolving it, but not a holy tablet after all.
+> The first question is obviously, is this really something we want?
+> spawning kernel thread on demand without reaping them properly seems
+> quite dangerous.
 
-The main point is: current 8xx pcmcia code is a holy mess of ifdefs, direct immr accesses (assuming it is io_block_mapped 1:1) etc. And limiting pcmcia to 885ads only (the only 8xx that supports OF so far) is not good.
-We have to admit, that many 8xx boards will remain in ppc/ for a while, and instead of just dropping BSP bits
-I'm going to let them be refactored via pdevs (with announcement in feature removal reference) as it would take couple of hrs only. If nobody will care, then the whole 8xx pcmcia driver will be cleaned up and switched 
-to of_device.
+I'm not quite sure what the intent of this patch really is, being
+at most a somewhat passing and casual user of kernel threads.
 
-Does that make sense?
+Some background may be useful: (this in reply to some comments from
+Andrew Morton)
 
--- 
-Sincerely, Vitaly
+EEH events are supposed to be very rare, as they correspond to 
+hardware failures, typically PCI bus parity errors, but also 
+things like wild DMA's.  The code that generates these will limit
+them to no more than 6 per hour per pci device. Any more than that,
+and the PCI device is permanently disabled (the sysadmin would 
+need to do something to recover).
+
+The only reason for using threads here is to get the error recovery
+out of an interrupt context (where errors may be detected), and then,
+an hour later, decrement a counter (which is how we limit these to 
+6 per hour). Thread reaping is "trivial", the thread just exits
+after an hour.
+
+Since these are events rare, I've no particular concern about
+performance or resource consumption. The current code seems 
+to work just fine. :-)
+
+--linas
