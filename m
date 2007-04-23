@@ -1,21 +1,33 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 91AACDDECE
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 01:34:18 +1000 (EST)
-Date: Tue, 24 Apr 2007 01:34:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: olof@lixom.net (Olof Johansson)
-Subject: Re: [PATCH] [v4] powerpc: save trap number in bad_stack
-Message-Id: <20070424013431.25d632db.sfr@canb.auug.org.au>
-In-Reply-To: <20070423151155.GA2530@lixom.net>
-References: <20070416062347.GA20196@lixom.net>
-	<20070422233821.GB28479@lixom.net> <20070423121931.GA683@lixom.net>
-	<20070423151155.GA2530@lixom.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__24_Apr_2007_01_34_31_+1000_WzI5bmHmIjo6WvuS"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, anton@samba.org
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 7F6DADDED3
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 02:20:33 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id l3NGKSMa050820
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 16:20:28 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l3NGKSl32261096
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 18:20:28 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l3NGKRkZ022221
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 18:20:28 +0200
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>
+Date: Mon, 23 Apr 2007 18:20:27 +0200
+MIME-Version: 1.0
+Subject: [PATCH] ib_core: Add missing device link to class device
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704231820.27752.fenkes@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +37,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__24_Apr_2007_01_34_31_+1000_WzI5bmHmIjo6WvuS
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Add the missing device link from /sys/class/infiniband/* to the actual devi=
+ce.
 
-On Mon, 23 Apr 2007 10:11:55 -0500 olof@lixom.net (Olof Johansson) wrote:
->
-> Save the trap number in the case of getting a bad stack in an exception
-> handler. It is sometimes useful to know what exception it was that caused
-> this to happen. Without this, no trap is reported.
->
->
-> Signed-off-by: Olof Johansson <olof@lixom.net>
 
-I'm happy this time :-)
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+=2D--
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+ sysfs.c |    1 +
+ 1 file changed, 1 insertion(+)
 
---Signature=_Tue__24_Apr_2007_01_34_31_+1000_WzI5bmHmIjo6WvuS
-Content-Type: application/pgp-signature
+=2D-- linux-2.6.20/drivers/infiniband/core/sysfs.c.old    2007-04-23 15:37:=
+37.000000000 +0200
++++ linux-2.6.20/drivers/infiniband/core/sysfs.c        2007-04-23 15:38:22=
+=2E000000000 +0200
+@@ -683,6 +683,7 @@ int ib_device_register_sysfs(struct ib_d
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+        class_dev->class      =3D &ib_class;
+        class_dev->class_data =3D device;
++       class_dev->dev        =3D device->dma_device;
+        strlcpy(class_dev->class_id, device->name, BUS_ID_SIZE);
 
-iD8DBQFGLNIPFdBgD/zoJvwRAhJgAJsEfAyjSciXn4mPewjFteL3rqTy+ACfZ6eR
-g+l1+DyXI03uCSMEQbZCJH4=
-=yWVa
------END PGP SIGNATURE-----
+        INIT_LIST_HEAD(&device->port_list);
 
---Signature=_Tue__24_Apr_2007_01_34_31_+1000_WzI5bmHmIjo6WvuS--
+=2D-=20
+Joachim Fenkes =A0-- =A0eHCA Linux Driver Developer and Hardware Tamer
+IBM Deutschland Entwicklung GmbH =A0-- =A0Dept. 3627 (I/O Firmware Dev. 2)
+Schoenaicher Strasse 220 =A0-- =A071032 Boeblingen =A0-- =A0Germany
+eMail: fenkes@de.ibm.com =A0-- =A0Phone: +49 7031 16 1239
