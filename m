@@ -1,19 +1,21 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 25668DDEFD
-	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 16:20:25 +1000 (EST)
-In-Reply-To: <1177301062.3889.27.camel@concordia.ozlabs.ibm.com>
-References: <20070419073555.D2C3EDDEFD@ozlabs.org>
-	<5f69d29368a24aad95648b40e0dfc07e@bga.com>
-	<1177301062.3889.27.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <63dd3d59fb8f043738b30026139feff6@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 6/7] MPIC MSI allocator
-Date: Mon, 23 Apr 2007 01:20:11 -0500
-To: michael@ellerman.id.au
-Cc: linuxppc-dev@ozlabs.org, linux-pci <linux-pci@atrey.karlin.mff.cuni.cz>
+Return-Path: <vitb@kernel.crashing.org>
+Received: from localhost.localdomain (cdma-61-61.msk.skylink.ru [83.217.61.61])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 934A4DDEF5
+	for <linuxppc-dev@ozlabs.org>; Mon, 23 Apr 2007 17:12:43 +1000 (EST)
+Date: Mon, 23 Apr 2007 10:14:27 +0400
+From: Vitaly Bordug <vitb@kernel.crashing.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH][RFC] PCMCIA support for 8xx using platform devices
+Message-ID: <20070423101427.3a1d4983@localhost.localdomain>
+In-Reply-To: <200704222349.42368.arnd@arndb.de>
+References: <20070422232658.5f427fd3@localhost.localdomain>
+	<200704222349.42368.arnd@arndb.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-pcmcia@lists.infradead.org,
+	lkml <linux-kernel@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,66 +25,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 22 Apr 2007 23:49:41 +0200
+Arnd Bergmann wrote:
 
-On Apr 22, 2007, at 11:04 PM, Michael Ellerman wrote:
+> On Sunday 22 April 2007, Vitaly Bordug wrote:
+> > This utilizes PCMCIA on mpc885ads and mpc866ads from arch/powerpc.
+> > In the new approach, direct IMMR accesses from within drivers/ were
+> > totally eliminated, that requires hardware_enable,
+> > hardware_disable, voltage_set board-specific functions to be moved
+> > over to BSP code section (arch/powerpc/platforms/8xx in 885 case).
+> > There is just no way to have both arch/ppc and arch/powerpc
+> > approaches to work simultaneously because of that.  
+> 
+> Maybe I'm missing a key issue here, but what's the point of adding
+> more platform_devices for stuff that is already in the device tree?
+> Shouldn't this be made an of_platform_driver instead so you can
+> use the existing of_device directly?
+> 
+Was thinking of it but platform_device is better for migration purposes. Hence,
+assuming somebody would want to have pcmcia working not bothering to add whole arch/powerpc support,
+it can be accomplished quickly. OTOH, further change from pd to of_device is not hard as well. So far, most ppc stuff (if not all) still existing both in ppc/ and powerpc/ paths, and to keep consistency platform_devices are used here and there. So, with pd approach arch/ppc/ boards are encouraged to get source device/driver bus ready, hereby simplifying transition to of_device later.
 
-> On Sat, 2007-04-21 at 18:17 -0500, Milton Miller wrote:
->> On Apr 19, 2007, Michael Ellerman wrote:
->>> To support MSI on MPIC we need a way to reserve and allocate hardware
->>> irq
->>> numbers, this patch implements an allocator for that.
+With current bootwrapper activities it may happen sooner, but there are many places in kernel nobody want to move for almost zero value..
 
->>> +	/* Reserve source numbers we know are reserved in the HW */
->>> +	for (i = 0;   i < 8;   i++) __mpic_msi_reserve_hwirq(mpic, i);
->>> +	for (i = 42;  i < 46;  i++) __mpic_msi_reserve_hwirq(mpic, i);
->>> +	for (i = 100; i < 105; i++) __mpic_msi_reserve_hwirq(mpic, i);
->>
->> More lines please.
->>
->>> +#else
->>> +static int mpic_msi_reserve_u3_hwirqs(struct mpic *mpic) { return 
->>> -1;
->>> }
->>
->> and here.
->
-> Blank lines aren't free you know!
 
-I didn't ask for any blank ones, so you can keep the bill. :-)
 
->>
->>> +	if (len % 8 != 0) {
-
-Here you use 8 as the size of the element to process.
-
->>> +		printk(KERN_WARNING "mpic: Malformed msi-available-ranges "
->>> +		       "property on %s\n", mpic->of_node->full_name);
->>> +		return -EINVAL;
->>> +	}
->>> +
->>> +	bitmap_allocate_region(mpic->hwirq_bitmap, 0,
->>> +			       fls(mpic->irq_count) - 1);
->>> +
->>> +	/* Format is: (<u32 start> <u32 count>)+ */
->>> +	len /= sizeof(u32);
-
-Here you hide a divide by 4 and follow with divide by 2.
-
->>> +	for (i = 0; i < len / 2; i++, p += 2)
->>
->> how about just dividing by the calculated 8 above?  or use
->> count = len / 8.
->
-> I'm not sure I follow. If you can think of a clearer way I'm all ears,
-> or are you just trying to save a divide :)
-
-I'm saying that it doesn't make sense to do both of the above.
-I'd move the comment on being pairs of cells to before the
-if () EINVAL then follow immediately with the divide.  If you
-think that hides length being adjusted then I was optionally
-suggesting making a new variable count to use in the for loop.
-
-Actually, since i isn't used in the loop you could just
-increment i by 8 while < len, and save both divides.
-
-milton
+-- 
+Sincerely, Vitaly
