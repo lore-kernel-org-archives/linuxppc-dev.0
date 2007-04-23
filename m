@@ -1,21 +1,16 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 44B9DDDEB8
+Return-Path: <eemingliu@hotmail.com>
+Received: from bay0-omc2-s1.bay0.hotmail.com (bay0-omc2-s1.bay0.hotmail.com
+	[65.54.246.137]) by ozlabs.org (Postfix) with ESMTP id 405C1DDF09
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 03:35:11 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so1175662ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 23 Apr 2007 10:35:10 -0700 (PDT)
-Message-ID: <528646bc0704231035g6a1ac904wc6b9b7b77afd1037@mail.gmail.com>
-Date: Mon, 23 Apr 2007 11:35:10 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: Mirek23 <miroslaw.dach@psi.ch>
-Subject: Re: zImage.elf loads but does not start
-In-Reply-To: <10142161.post@talk.nabble.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <10079346.post@talk.nabble.com> <10142161.post@talk.nabble.com>
+	Tue, 24 Apr 2007 03:54:57 +1000 (EST)
+Message-ID: <BAY138-F20D541A0AE13B29D4FD145B24B0@phx.gbl>
+In-Reply-To: <20070423030204.GB28805@lixom.net>
+From: "Ming Liu" <eemingliu@hotmail.com>
+To: olof@lixom.net
+Subject: Re: where is the sk_buff allocation
+Date: Mon, 23 Apr 2007 17:54:50 +0000
+Mime-Version: 1.0
+Content-Type: text/plain; charset=gb2312; format=flowed
 Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -27,25 +22,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/23/07, Mirek23 <miroslaw.dach@psi.ch> wrote:
+Dear Olof,
+Thanks for your information first.
+
+In fact, my aim is to avoid frequent copying between socket_buffer and my 
+reserved memory block. So my idea is to just modify the protocal stack and 
+allocate the socket buffer into my reserved memory space which is also 
+accessible accessible for user application program, although perhaps it is 
+not safe to do that. 
+
+BTW, do you know in which specific file is the socket buffer allocated? 
+
+BR
+Ming
+
+
+>From: olof@lixom.net (Olof Johansson)
+>To: Ming Liu <eemingliu@hotmail.com>
+>CC: linuxppc-embedded@ozlabs.org
+>Subject: Re: where is the sk_buff allocation
+>Date: Sun, 22 Apr 2007 22:02:04 -0500
 >
-> I have revised the xparameters_ml403.h and the setup of the FPGA part. I have
-> found that the interrupt for the RS232 was not configured. Right now I was
-> able to come to the point when the kernel was uncompressed but it did not
-> start:
+>On Sun, Apr 22, 2007 at 06:14:18PM +0000, Ming Liu wrote:
+> > Dear all,
+> > I am reading and understanding the Xilinx Temac device driver. I know 
+that
+> > hard_start_xmit() is used to transmit the packets. In this function, a
+> > pointer skb which points to a sk_buff needs to be passed to show the
+> > location of the socket buffer. But where is that sk_buff allocation
+> > sentence, and how its address (skb) is passed to the hard_start_xmit()
+> > function? I want to change the address of the sk_buff in my system and 
+try
+> > to fit this socket buffer in a pre-defined location.
 >
-> Linux/PPC load: console=ttl0,9600 ip=129.129.129.29 root=/dev/ram rw
+>The sk_buff is allocated by the network stack and passed down to the
+>driver.  If you need the buffer to be located in a specific location
+>before transmitting it, then you'll have to copy it there by hand.
+>
+>
+>-Olof
 
-This doesn't look right.  It should be either 'console=ttyS0,<speed>'
-for a full UART, or 'console=ttyUL0' for a uartlite.
-
-BTW, serial console output is polled, not interrupt driven (but
-regular serial I/O does use IRQs), so the unconfigured interrupt line
-was probably not your immediate problem.
-
-g.
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+_________________________________________________________________
+享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
