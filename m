@@ -1,17 +1,16 @@
-Return-Path: <eemingliu@hotmail.com>
-Received: from bay0-omc2-s1.bay0.hotmail.com (bay0-omc2-s1.bay0.hotmail.com
-	[65.54.246.137]) by ozlabs.org (Postfix) with ESMTP id 405C1DDF09
+Return-Path: <hs@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 29C9CDDD06
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 03:54:57 +1000 (EST)
-Message-ID: <BAY138-F20D541A0AE13B29D4FD145B24B0@phx.gbl>
-In-Reply-To: <20070423030204.GB28805@lixom.net>
-From: "Ming Liu" <eemingliu@hotmail.com>
-To: olof@lixom.net
-Subject: Re: where is the sk_buff allocation
-Date: Mon, 23 Apr 2007 17:54:50 +0000
+	Tue, 24 Apr 2007 15:54:54 +1000 (EST)
+Subject: MPC885 hang in a lwarx/stwcx insn crossing a page boundary
+From: Heiko Schocher <hs@denx.de>
+To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain
+Date: Tue, 24 Apr 2007 07:55:47 +0200
+Message-Id: <1177394147.6353.30.camel@Zeus.EmbLux>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=gb2312; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Reply-To: hs@denx.de
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -22,45 +21,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear Olof,
-Thanks for your information first.
+Hello,
 
-In fact, my aim is to avoid frequent copying between socket_buffer and my 
-reserved memory block. So my idea is to just modify the protocal stack and 
-allocate the socket buffer into my reserved memory space which is also 
-accessible accessible for user application program, although perhaps it is 
-not safe to do that. 
+I have a MPC885 and a running 2.6.16 kernel on it. I use the CPU15
+Errata Patch from
+(http://ozlabs.org/pipermail/linuxppc-dev/2007-April/033789.html)
 
-BTW, do you know in which specific file is the socket buffer allocated? 
+Now if a lwarx/stwcx insn crossing a page boundary, the CPU hangs in
+an endless loop, because the reservation allocated from the lwarx gets
+cleared in the case of a tlb miss. And the CPU15 workaround invalidates
+the tlbs around the page we're faulting in, so we cause a nasty infinite
+loop. I started a service request at Freescale, and they are searching
+why a tlbie clears the reservation or under which circumstances this
+appears.
 
-BR
-Ming
+Without the CPU15 Errata patch it runs fine, but i can reproduce the
+CPU15 Bug, so I need the or some CPU15 Errata patch ...
 
+I also have a running 2.4.24-pre2 Kernel on this board, with the same
+CPU15 Errata patch, and there the hang doesnt occur!! Some ideas where
+the differences between 2.4.24-pre2 and 2.6.16 are?
 
->From: olof@lixom.net (Olof Johansson)
->To: Ming Liu <eemingliu@hotmail.com>
->CC: linuxppc-embedded@ozlabs.org
->Subject: Re: where is the sk_buff allocation
->Date: Sun, 22 Apr 2007 22:02:04 -0500
->
->On Sun, Apr 22, 2007 at 06:14:18PM +0000, Ming Liu wrote:
-> > Dear all,
-> > I am reading and understanding the Xilinx Temac device driver. I know 
-that
-> > hard_start_xmit() is used to transmit the packets. In this function, a
-> > pointer skb which points to a sk_buff needs to be passed to show the
-> > location of the socket buffer. But where is that sk_buff allocation
-> > sentence, and how its address (skb) is passed to the hard_start_xmit()
-> > function? I want to change the address of the sk_buff in my system and 
-try
-> > to fit this socket buffer in a pre-defined location.
->
->The sk_buff is allocated by the network stack and passed down to the
->driver.  If you need the buffer to be located in a specific location
->before transmitting it, then you'll have to copy it there by hand.
->
->
->-Olof
+I also didnt get this hang in userspace with the 2.6.16er Kernel.
 
-_________________________________________________________________
-享用世界上最大的电子邮件系统— MSN Hotmail。  http://www.hotmail.com  
+So I see at the moment the following possibilities:
+
+a) patching the gcc, so that the CPU15 Errata is no more necessary
+   My favorit.
+
+b) upgrade the CPU15 Bug like in the MPC885 Errata Sheet from Freescale
+   (I think this is to much code for in an Exceptionhandler ...)
+
+c) I made before every lwarcx a ".align" so that the insn is on one
+   page. This is actually running without seeing problems on the board.
+   But it is a "errata" for the "errata" ...
+
+d) ...
+
+Some suggestions, ideas? Especially, why the hang doesnt occur with a
+2.4.24-pre2 kernel?
+
+thanks
+Heiko
+-- 
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
