@@ -1,25 +1,11 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id B7E9FDDE48
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 13:07:46 +1000 (EST)
-Date: Mon, 23 Apr 2007 22:07:48 -0500
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 24 Apr 2007 13:09:12 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] DMA 4GB boundary protection
-Message-ID: <20070424030748.GA29492@lixom.net>
-References: <1172872183.5310.145.camel@goblue>
-	<20070303232915.GB8028@lixom.net>
-	<1174511149.5225.135.camel@goblue>
-	<20070322175324.GA21120@lixom.net>
-	<1175026241.1398.23.camel@goblue>
-	<20070328155635.GA14356@lixom.net>
-	<1175105842.1398.43.camel@goblue>
-	<1175124183.32220.17.camel@localhost.localdomain>
-	<1175175842.1398.54.camel@goblue>
-	<17964.42216.839568.476369@cargo.ozlabs.ibm.com>
+Subject: powerpc: Cleanup and fix breakage in tlbflush.h
+Message-ID: <20070424030912.GA30007@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17964.42216.839568.476369@cargo.ozlabs.ibm.com>
-From: olof@lixom.net (Olof Johansson)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -30,21 +16,260 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 23, 2007 at 10:22:00PM +1000, Paul Mackerras wrote:
-> Jake,
-> 
-> It looks like I have applied both the final version of this patch
-> (569975591c5530fdc9c7a3c45122e5e46f075a74) and the original version
-> (618d3adc351a24c4c48437c767befb88ca2d199d) that modified
-> iommu_range_alloc().
-> 
-> Should I revert the original version?
+BenH's commit a741e67969577163a4cfc78d7fd2753219087ef1 in powerpc.git,
+although (AFAICT) only intended to affect ppc64, also has side-effects
+which break 44x.  I think 40x, 8xx and Freescale Book E are also
+affected, though I haven't tested them.
 
-(Since I didn't see a reply from Jake today):
-
-Yes, please do. It's redundant given the better patch that went in later.
+The problem lies in unconditionally removing flush_tlb_pending() from
+the versions of flush_tlb_mm(), flush_tlb_range() and
+flush_tlb_kernel_range() used on ppc64 - which are also used the
+embedded platforms mentioned above.
 
 
-Thanks,
+The patch below cleans up the convoluted #ifdef logic in tlbflush.h,
+in the process restoring the necessary flushes for the software TLB
+platforms.  There are three sets of definitions for the flushing
+hooks: the software TLB versions (revised to avoid using names which
+appear to related to TLB batching), the 32-bit hash based versions
+(external functions) amd the 64-bit hash based versions (which
+implement batching).
 
--Olof
+It also moves the declaration of update_mmu_cache() to always be in
+tlbflush.h (previously it was in tlbflush.h except for PPC64, where it
+was in pgtable.h).
+
+Booted on Ebony (440GP) and compiled for 64-bit and 32-bit
+multiplatform.
+
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+
+---
+
+Paul, I think this is ok to apply.  This obsoletes my earlier hackier
+patch for restoring the necessary TLB flushes on 44x et al.
+
+Index: working-2.6/include/asm-powerpc/pgtable.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/pgtable.h	2007-04-24 12:47:01.000000000 +1000
++++ working-2.6/include/asm-powerpc/pgtable.h	2007-04-24 12:47:04.000000000 +1000
+@@ -448,16 +448,6 @@ extern pgd_t swapper_pg_dir[];
+ 
+ extern void paging_init(void);
+ 
+-/*
+- * This gets called at the end of handling a page fault, when
+- * the kernel has put a new PTE into the page table for the process.
+- * We use it to put a corresponding HPTE into the hash table
+- * ahead of time, instead of waiting for the inevitable extra
+- * hash-table miss exception.
+- */
+-struct vm_area_struct;
+-extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t);
+-
+ /* Encode and de-code a swap entry */
+ #define __swp_type(entry)	(((entry).val >> 1) & 0x3f)
+ #define __swp_offset(entry)	((entry).val >> 8)
+Index: working-2.6/include/asm-powerpc/tlbflush.h
+===================================================================
+--- working-2.6.orig/include/asm-powerpc/tlbflush.h	2007-04-24 12:47:01.000000000 +1000
++++ working-2.6/include/asm-powerpc/tlbflush.h	2007-04-24 12:53:31.000000000 +1000
+@@ -17,10 +17,73 @@
+  */
+ #ifdef __KERNEL__
+ 
+-
+ struct mm_struct;
++struct vm_area_struct;
++
++#if defined(CONFIG_4xx) || defined(CONFIG_8xx) || defined(CONFIG_FSL_BOOKE)
++/*
++ * TLB flushing for software loaded TLB chips
++ *
++ * TODO: (CONFIG_FSL_BOOKE) determine if flush_tlb_range &
++ * flush_tlb_kernel_range are best implemented as tlbia vs
++ * specific tlbie's
++ */
+ 
+-#ifdef CONFIG_PPC64
++extern void _tlbie(unsigned long address);
++
++#if defined(CONFIG_40x) || defined(CONFIG_8xx)
++#define _tlbia()	asm volatile ("tlbia; sync" : : : "memory")
++#else /* CONFIG_44x || CONFIG_FSL_BOOKE */
++extern void _tlbia(void);
++#endif
++
++static inline void flush_tlb_mm(struct mm_struct *mm)
++{
++	_tlbia();
++}
++
++static inline void flush_tlb_page(struct vm_area_struct *vma,
++				  unsigned long vmaddr)
++{
++	_tlbie(vmaddr);
++}
++
++static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
++					 unsigned long vmaddr)
++{
++	_tlbie(vmaddr);
++}
++
++static inline void flush_tlb_range(struct vm_area_struct *vma,
++				   unsigned long start, unsigned long end)
++{
++	_tlbia();
++}
++
++static inline void flush_tlb_kernel_range(unsigned long start,
++					  unsigned long end)
++{
++	_tlbia();
++}
++
++#elif defined(CONFIG_PPC32)
++/*
++ * TLB flushing for "classic" hash-MMMU 32-bit CPUs, 6xx, 7xx, 7xxx
++ */
++extern void _tlbie(unsigned long address);
++extern void _tlbia(void);
++
++extern void flush_tlb_mm(struct mm_struct *mm);
++extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
++extern void flush_tlb_page_nohash(struct vm_area_struct *vma, unsigned long addr);
++extern void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
++			    unsigned long end);
++extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
++
++#else
++/*
++ * TLB flushing for 64-bit has-MMU CPUs
++ */
+ 
+ #include <linux/percpu.h>
+ #include <asm/page.h>
+@@ -67,89 +130,51 @@ extern void flush_hash_page(unsigned lon
+ 			    int local);
+ extern void flush_hash_range(unsigned long number, int local);
+ 
+-#else /* CONFIG_PPC64 */
+-
+-#include <linux/mm.h>
+-
+-extern void _tlbie(unsigned long address);
+-extern void _tlbia(void);
+-
+-/*
+- * TODO: (CONFIG_FSL_BOOKE) determine if flush_tlb_range &
+- * flush_tlb_kernel_range are best implemented as tlbia vs
+- * specific tlbie's
+- */
+-
+-#if (defined(CONFIG_4xx) && !defined(CONFIG_44x)) || defined(CONFIG_8xx)
+-#define flush_tlb_pending()	asm volatile ("tlbia; sync" : : : "memory")
+-#elif defined(CONFIG_4xx) || defined(CONFIG_FSL_BOOKE)
+-#define flush_tlb_pending()	_tlbia()
+-#endif
+-
+-/*
+- * This gets called at the end of handling a page fault, when
+- * the kernel has put a new PTE into the page table for the process.
+- * We use it to ensure coherency between the i-cache and d-cache
+- * for the page which has just been mapped in.
+- * On machines which use an MMU hash table, we use this to put a
+- * corresponding HPTE into the hash table ahead of time, instead of
+- * waiting for the inevitable extra hash-table miss exception.
+- */
+-extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t);
+-
+-#endif /* CONFIG_PPC64 */
+-
+-#if defined(CONFIG_PPC64) || defined(CONFIG_4xx) || \
+-	defined(CONFIG_FSL_BOOKE) || defined(CONFIG_8xx)
+ 
+ static inline void flush_tlb_mm(struct mm_struct *mm)
+ {
+ }
+ 
+ static inline void flush_tlb_page(struct vm_area_struct *vma,
+-				unsigned long vmaddr)
++				  unsigned long vmaddr)
+ {
+-#ifndef CONFIG_PPC64
+-	_tlbie(vmaddr);
+-#endif
+ }
+ 
+ static inline void flush_tlb_page_nohash(struct vm_area_struct *vma,
+ 					 unsigned long vmaddr)
+ {
+-#ifndef CONFIG_PPC64
+-	_tlbie(vmaddr);
+-#endif
+ }
+ 
+ static inline void flush_tlb_range(struct vm_area_struct *vma,
+-		unsigned long start, unsigned long end)
++				   unsigned long start, unsigned long end)
+ {
+ }
+ 
+ static inline void flush_tlb_kernel_range(unsigned long start,
+-		unsigned long end)
++					  unsigned long end)
+ {
+ }
+ 
+-#else	/* 6xx, 7xx, 7xxx cpus */
+-
+-extern void flush_tlb_mm(struct mm_struct *mm);
+-extern void flush_tlb_page(struct vm_area_struct *vma, unsigned long vmaddr);
+-extern void flush_tlb_page_nohash(struct vm_area_struct *vma, unsigned long addr);
+-extern void flush_tlb_range(struct vm_area_struct *vma, unsigned long start,
+-			    unsigned long end);
+-extern void flush_tlb_kernel_range(unsigned long start, unsigned long end);
+-
+ #endif
+ 
+ /*
++ * This gets called at the end of handling a page fault, when
++ * the kernel has put a new PTE into the page table for the process.
++ * We use it to ensure coherency between the i-cache and d-cache
++ * for the page which has just been mapped in.
++ * On machines which use an MMU hash table, we use this to put a
++ * corresponding HPTE into the hash table ahead of time, instead of
++ * waiting for the inevitable extra hash-table miss exception.
++ */
++extern void update_mmu_cache(struct vm_area_struct *, unsigned long, pte_t);
++
++/*
+  * This is called in munmap when we have freed up some page-table
+  * pages.  We don't need to do anything here, there's nothing special
+  * about our page-table pages.  -- paulus
+  */
+ static inline void flush_tlb_pgtables(struct mm_struct *mm,
+-		unsigned long start, unsigned long end)
++				      unsigned long start, unsigned long end)
+ {
+ }
+ 
+Index: working-2.6/arch/powerpc/mm/mmu_decl.h
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/mmu_decl.h	2007-04-24 12:54:50.000000000 +1000
++++ working-2.6/arch/powerpc/mm/mmu_decl.h	2007-04-24 12:54:59.000000000 +1000
+@@ -19,6 +19,7 @@
+  *  2 of the License, or (at your option) any later version.
+  *
+  */
++#include <linux/mm.h>
+ #include <asm/tlbflush.h>
+ #include <asm/mmu.h>
+ 
+
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
