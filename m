@@ -1,19 +1,14 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
-	by ozlabs.org (Postfix) with ESMTP id 282D7DDF7E
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 04:27:22 +1000 (EST)
-To: Joachim Fenkes <FENKES@de.ibm.com>
-Subject: Re: [PATCH] ib_core: Add missing device link to class device
-References: <OF8C8AA8EC.A66DAC49-ONC12572C7.00416B4B-C12572C7.00428AF7@de.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Tue, 24 Apr 2007 11:27:18 -0700
-In-Reply-To: <OF8C8AA8EC.A66DAC49-ONC12572C7.00416B4B-C12572C7.00428AF7@de.ibm.com>
-	(Joachim Fenkes's message of "Tue, 24 Apr 2007 14:06:59 +0200")
-Message-ID: <adazm4x39x5.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
-	OF-General <general@lists.openfabrics.org>
+Return-Path: <lukebr@linux.vnet.ibm.com>
+Subject: [PATCH] 64K page support for kexec
+From: Luke Browning <lukebr@linux.vnet.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain
+Date: Tue, 24 Apr 2007 15:31:53 -0300
+Message-Id: <1177439513.24866.5.camel@luke-laptop>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,89 +18,145 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
- > I had a look at the kernel code -- currently, all device drivers except
- > ehca do this by themselves:
+This patch fixes a couple of kexec problems related to 64K page 
+support in the kernel.  kexec issues a tlbie for each pte.  The 
+parameters for the tlbie are the page size and the virtual address.
+Support was missing for the computation of these two parameters
+for 64K pages.  This patch adds that support.  
 
- > So I think it makes a lot of sense to put the class_dev.dev assignment
- > into generic ib_core code instead of repeating it in all the drivers.
- > The respective lines could move out of the drivers in the future but
- > won't hurt anyone until then.
+Patch is updated from previous version to address Ben's comments
+and to make it easier to add 16G page support in the future.
 
-Actually I think we should delete the duplicate code now while merging
-this.  So I queued this up for 2.6.22:
+Signed-off-by: Luke Browning <lukebrowning@us.ibm.com>
 
-commit f19c8d7cbe3153d68f0a559afd02f66655310238
-Author: Joachim Fenkes <fenkes@de.ibm.com>
-Date:   Mon Apr 23 18:20:27 2007 +0200
-
-IB: Set class_dev->dev in core for nice device symlink
-
-All RDMA drivers except ehca set class_dev->dev to their dma_device
-value (ehca leaves this unset).  dma_device is the only value that
-makes any sense, so move this assignment to core/sysfs.c.  This reduce
-the duplicated code in the rest of the drivers and gives ehca a nice
-/sys/class/infiniband/ehcaX/device symlink.
-
-Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
-Signed-off-by: Roland Dreier <rolandd@cisco.com>
-
-diff --git a/drivers/infiniband/core/sysfs.c b/drivers/infiniband/core/sysfs.c
-index 000c086..08c299e 100644
---- a/drivers/infiniband/core/sysfs.c
-+++ b/drivers/infiniband/core/sysfs.c
-@@ -683,6 +683,7 @@ int ib_device_register_sysfs(struct ib_device *device)
+Index: linux-2.6.21-rc4/arch/powerpc/mm/hash_native_64.c
+===================================================================
+--- linux-2.6.21-rc4.orig/arch/powerpc/mm/hash_native_64.c
++++ linux-2.6.21-rc4/arch/powerpc/mm/hash_native_64.c
+@@ -340,31 +340,77 @@ static void native_hpte_invalidate(unsig
+ 	local_irq_restore(flags);
+ }
  
- 	class_dev->class      = &ib_class;
- 	class_dev->class_data = device;
-+	class_dev->dev	      = device->dma_device;
- 	strlcpy(class_dev->class_id, device->name, BUS_ID_SIZE);
+-/*
+- * XXX This need fixing based on page size. It's only used by
+- * native_hpte_clear() for now which needs fixing too so they
+- * make a good pair...
+- */
+-static unsigned long slot2va(unsigned long hpte_v, unsigned long slot)
+-{
+-	unsigned long avpn = HPTE_V_AVPN_VAL(hpte_v);
+-	unsigned long va;
+-
+-	va = avpn << 23;
+-
+-	if (! (hpte_v & HPTE_V_LARGE)) {
+-		unsigned long vpi, pteg;
+-
+-		pteg = slot / HPTES_PER_GROUP;
+-		if (hpte_v & HPTE_V_SECONDARY)
+-			pteg = ~pteg;
++#define LP_SHIFT	12
++#define LP_BITS		8
++#define LP_MASK(i)	((((1 << LP_BITS) - 1) >> (i)) << LP_SHIFT)
++
++static void hpte_decode(hpte_t *hpte, unsigned long slot, 
++			int *psize, unsigned long *va)
++{
++	unsigned long hpte_r = hpte->r;
++	unsigned long hpte_v = hpte->v;
++	unsigned long avpn;
++	int i, size, shift, penc, avpnm_bits;
++		
++	if (!(hpte_v & HPTE_V_LARGE))
++		size = MMU_PAGE_4K;
++#if 0
++	else if (hpte_v & 0x4000000000000000UL)
++		size = MMU_PAGE_16G;
++#endif
++	else if (!(hpte_r & LP_MASK(0)))
++		size = MMU_PAGE_16M;
++	else {
++		for (i = 0; i < LP_BITS; i++) {
++			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
++				break;
++		}
++		penc = LP_MASK(i+1) >> LP_SHIFT;
++		for (size = MMU_PAGE_64K; size < MMU_PAGE_16M; size++) {
++			if (!mmu_psize_defs[size].shift)
++				continue;
++			if (penc == mmu_psize_defs[size].penc)
++				break;
++		}
++	}
  
- 	INIT_LIST_HEAD(&device->port_list);
-diff --git a/drivers/infiniband/hw/amso1100/c2_provider.c b/drivers/infiniband/hw/amso1100/c2_provider.c
-index fef9727..607c09b 100644
---- a/drivers/infiniband/hw/amso1100/c2_provider.c
-+++ b/drivers/infiniband/hw/amso1100/c2_provider.c
-@@ -796,7 +796,6 @@ int c2_register_device(struct c2_dev *dev)
- 	memcpy(&dev->ibdev.node_guid, dev->pseudo_netdev->dev_addr, 6);
- 	dev->ibdev.phys_port_cnt = 1;
- 	dev->ibdev.dma_device = &dev->pcidev->dev;
--	dev->ibdev.class_dev.dev = &dev->pcidev->dev;
- 	dev->ibdev.query_device = c2_query_device;
- 	dev->ibdev.query_port = c2_query_port;
- 	dev->ibdev.modify_port = c2_modify_port;
-diff --git a/drivers/infiniband/hw/cxgb3/iwch_provider.c b/drivers/infiniband/hw/cxgb3/iwch_provider.c
-index 24e0df0..af28a31 100644
---- a/drivers/infiniband/hw/cxgb3/iwch_provider.c
-+++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c
-@@ -1108,7 +1108,6 @@ int iwch_register_device(struct iwch_dev *dev)
- 	memcpy(dev->ibdev.node_desc, IWCH_NODE_DESC, sizeof(IWCH_NODE_DESC));
- 	dev->ibdev.phys_port_cnt = dev->rdev.port_info.nports;
- 	dev->ibdev.dma_device = &(dev->rdev.rnic_info.pdev->dev);
--	dev->ibdev.class_dev.dev = &(dev->rdev.rnic_info.pdev->dev);
- 	dev->ibdev.query_device = iwch_query_device;
- 	dev->ibdev.query_port = iwch_query_port;
- 	dev->ibdev.modify_port = iwch_modify_port;
-diff --git a/drivers/infiniband/hw/ipath/ipath_verbs.c b/drivers/infiniband/hw/ipath/ipath_verbs.c
-index f5604b8..18c6df2 100644
---- a/drivers/infiniband/hw/ipath/ipath_verbs.c
-+++ b/drivers/infiniband/hw/ipath/ipath_verbs.c
-@@ -1559,7 +1559,6 @@ int ipath_register_ib_device(struct ipath_devdata *dd)
- 	dev->node_type = RDMA_NODE_IB_CA;
- 	dev->phys_port_cnt = 1;
- 	dev->dma_device = &dd->pcidev->dev;
--	dev->class_dev.dev = dev->dma_device;
- 	dev->query_device = ipath_query_device;
- 	dev->modify_device = ipath_modify_device;
- 	dev->query_port = ipath_query_port;
-diff --git a/drivers/infiniband/hw/mthca/mthca_provider.c b/drivers/infiniband/hw/mthca/mthca_provider.c
-index 0725ad7..47e6fd4 100644
---- a/drivers/infiniband/hw/mthca/mthca_provider.c
-+++ b/drivers/infiniband/hw/mthca/mthca_provider.c
-@@ -1293,7 +1293,6 @@ int mthca_register_device(struct mthca_dev *dev)
- 	dev->ib_dev.node_type            = RDMA_NODE_IB_CA;
- 	dev->ib_dev.phys_port_cnt        = dev->limits.num_ports;
- 	dev->ib_dev.dma_device           = &dev->pdev->dev;
--	dev->ib_dev.class_dev.dev        = &dev->pdev->dev;
- 	dev->ib_dev.query_device         = mthca_query_device;
- 	dev->ib_dev.query_port           = mthca_query_port;
- 	dev->ib_dev.modify_device        = mthca_modify_device;
+-		vpi = ((va >> 28) ^ pteg) & htab_hash_mask;
++	/*
++	 * FIXME, this could be made more efficient by storing the type 
++	 * of hash algorithm in mmu_psize_defs[].  The code below assumes 
++	 * the number of bits in the va representing the offset in the
++	 * page is less than 23. This affects the hash algorithm that is
++	 * used. When 16G pages are supported, a new hash algorithm
++	 * needs to be provided.  See POWER ISA Book III.
++	 *
++	 * The code below works for 16M, 64K, and 4K pages.
++	 */
++	shift = mmu_psize_defs[size].shift;
++	if (mmu_psize_defs[size].avpnm)
++		avpnm_bits = __ilog2_u64(mmu_psize_defs[size].avpnm) + 1;
++	else
++		avpnm_bits = 0;
++	if (shift - avpnm_bits <= 23) {
++		avpn = HPTE_V_AVPN_VAL(hpte_v) << 23;
++
++		if (shift < 23) {
++			unsigned long vpi, pteg;
++
++			pteg = slot / HPTES_PER_GROUP;
++			if (hpte_v & HPTE_V_SECONDARY)
++				pteg = ~pteg;
++			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
++			avpn |= (vpi << mmu_psize_defs[size].shift);
++		}
++	}
++#if 0
++	/* 16GB page hash, p > 23 */
++	else {
+ 
+-		va |= vpi << PAGE_SHIFT;
+ 	}
++#endif
+ 
+-	return va;
++	*va = avpn;
++	*psize = size;
+ }
+ 
+ /*
+@@ -374,8 +420,6 @@ static unsigned long slot2va(unsigned lo
+  *
+  * TODO: add batching support when enabled.  remember, no dynamic memory here,
+  * athough there is the control page available...
+- *
+- * XXX FIXME: 4k only for now !
+  */
+ static void native_hpte_clear(void)
+ {
+@@ -383,6 +427,7 @@ static void native_hpte_clear(void)
+ 	hpte_t *hptep = htab_address;
+ 	unsigned long hpte_v;
+ 	unsigned long pteg_count;
++	int psize;
+ 
+ 	pteg_count = htab_hash_mask + 1;
+ 
+@@ -408,8 +453,9 @@ static void native_hpte_clear(void)
+ 		 * already hold the native_tlbie_lock.
+ 		 */
+ 		if (hpte_v & HPTE_V_VALID) {
++			hpte_decode(hptep, slot, &psize, &hpte_v);
+ 			hptep->v = 0;
+-			__tlbie(slot2va(hpte_v, slot), MMU_PAGE_4K);
++			__tlbie(hpte_v, psize);
+ 		}
+ 	}
+ 
