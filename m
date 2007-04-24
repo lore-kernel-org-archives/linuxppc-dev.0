@@ -1,24 +1,22 @@
 Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id 143BADDF54
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
+	by ozlabs.org (Postfix) with ESMTP id 0AE1ADDEF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Apr 2007 03:43:27 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so189235ugf
+	Wed, 25 Apr 2007 08:17:40 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so236547ugf
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 10:43:26 -0700 (PDT)
-Message-ID: <528646bc0704241043u5d0c397cnee16a343b90fdf09@mail.gmail.com>
-Date: Tue, 24 Apr 2007 11:43:26 -0600
+	Tue, 24 Apr 2007 15:17:39 -0700 (PDT)
+Message-ID: <528646bc0704241517g595bf7bfqe54e40b05f74e933@mail.gmail.com>
+Date: Tue, 24 Apr 2007 16:17:38 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@gmail.com
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
-Subject: Re: 2.6 Kernel ,
-	Xilinx Virtex and PPC 405 On chip memory controllers ( DSOCM and
-	ISOCM )
-In-Reply-To: <BAY115-W14E65268F6A301B98090EEB24A0@phx.gbl>
+To: "Andrei Konovalov" <akonovalov@ru.mvista.com>
+Subject: Re: [PATCH] Xilinx framebuffer device driver
+In-Reply-To: <462E0D5C.1090105@ru.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <BAY115-W14E65268F6A301B98090EEB24A0@phx.gbl>
-Cc: linuxppc-embedded@ozlabs.org
+References: <462E0D5C.1090105@ru.mvista.com>
+Cc: Rick Moleres <rick.moleres@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,20 +27,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/24/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
+On 4/24/07, Andrei Konovalov <akonovalov@ru.mvista.com> wrote:
+> Add support for the video controller IP block included into Xilinx ML300 and
+> ML403 reference designs.
 >
-> Then in mailing list I saw some where that AVNET mini-modules are using a version of FX12 FPGA which has problem with PPC caches and as the solution the caches should be off.
+> Signed-off-by: Andrei Konovalov <akonovalov@ru.mvista.com>
+> ---
 >
-> Does the kernel always turns on the caches? Or If I choose in the base system builder to not to use caches, the kernel will not use them?
-
-I'm pretty sure that specific issue was due to a certain version of
-silicon.  You'll need to check the Xilinx errata sheets.
-
+> This patch relies on the "Patchset to establish sanity in Xilinx Virtex support" by Gran Likely to have
+> the frame buffer device registered on the platform bus. Without this patchset one needs to fill in
+> the struct platform_device and make sure platform_device_register() is called elsewhere.
 >
-> Any special config parameter for this in xparameters.h?
+> Reviews and comments are welcome.
+>
+> Would be nice to get this driver into mainline for the 2.6.22.
 
-No.  You need to hack the startup code to turn off caches.
+Quick comment on first perusal:  The driver uses the out_be32 macro
+directly for accessing registers, which doesn't work if the FB block
+is configured for DCR access (like the ML403 reference design).  There
+will need to be a property in the platform device binding to determine
+how to access registers.
 
+Cheers,
 g.
 
 -- 
