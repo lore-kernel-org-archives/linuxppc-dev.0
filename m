@@ -1,19 +1,19 @@
-Return-Path: <mike@cogcomp.com>
-Received: from dukecmmtai01.coxmail.com (dukecmmtai01.coxmail.com
-	[68.99.120.71]) by ozlabs.org (Postfix) with ESMTP id D0D4FDDF46
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 04:20:26 +1000 (EST)
-Received: from mike_desktop.cogcomp.com ([70.167.19.187])
-	by dukecmmtar02.coxmail.com
-	(InterMail vM.6.01.06.01 201-2131-130-101-20060113) with ESMTP id
-	<20070424180701.TDUX17407.dukecmmtar02.coxmail.com@mike_desktop.cogcomp.com>
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 14:07:01 -0400
-Message-Id: <6.2.5.6.2.20070424140702.04517ef0@cogcomp.com>
-Date: Tue, 24 Apr 2007 14:07:11 -0400
-To: linuxppc-dev@ozlabs.org
-From: "mike@cogcomp.com" <mike@cogcomp.com>
-Subject: unsubscribe
-Mime-Version: 1.0
-Content-Type: text/plain; charset="us-ascii"; format=flowed
+Return-Path: <rdreier@cisco.com>
+Received: from sj-iport-5.cisco.com (sj-iport-5.cisco.com [171.68.10.87])
+	by ozlabs.org (Postfix) with ESMTP id 282D7DDF7E
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 04:27:22 +1000 (EST)
+To: Joachim Fenkes <FENKES@de.ibm.com>
+Subject: Re: [PATCH] ib_core: Add missing device link to class device
+References: <OF8C8AA8EC.A66DAC49-ONC12572C7.00416B4B-C12572C7.00428AF7@de.ibm.com>
+From: Roland Dreier <rdreier@cisco.com>
+Date: Tue, 24 Apr 2007 11:27:18 -0700
+In-Reply-To: <OF8C8AA8EC.A66DAC49-ONC12572C7.00416B4B-C12572C7.00428AF7@de.ibm.com>
+	(Joachim Fenkes's message of "Tue, 24 Apr 2007 14:06:59 +0200")
+Message-ID: <adazm4x39x5.fsf@cisco.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
+	OF-General <general@lists.openfabrics.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,13 +23,89 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+ > I had a look at the kernel code -- currently, all device drivers except
+ > ehca do this by themselves:
 
+ > So I think it makes a lot of sense to put the class_dev.dev assignment
+ > into generic ib_core code instead of repeating it in all the drivers.
+ > The respective lines could move out of the drivers in the future but
+ > won't hurt anyone until then.
 
-Michael J. Kelly
-VP Engineering
-Cogent Computer Systems, Inc.
-17 Industrial Dr.
-Smithfield, RI 02917
-tel:401-223-3441 fax:401-223-3442
-www.cogcomp.com
-alternate email: mkelly6505@hotmail.com
+Actually I think we should delete the duplicate code now while merging
+this.  So I queued this up for 2.6.22:
+
+commit f19c8d7cbe3153d68f0a559afd02f66655310238
+Author: Joachim Fenkes <fenkes@de.ibm.com>
+Date:   Mon Apr 23 18:20:27 2007 +0200
+
+IB: Set class_dev->dev in core for nice device symlink
+
+All RDMA drivers except ehca set class_dev->dev to their dma_device
+value (ehca leaves this unset).  dma_device is the only value that
+makes any sense, so move this assignment to core/sysfs.c.  This reduce
+the duplicated code in the rest of the drivers and gives ehca a nice
+/sys/class/infiniband/ehcaX/device symlink.
+
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+Signed-off-by: Roland Dreier <rolandd@cisco.com>
+
+diff --git a/drivers/infiniband/core/sysfs.c b/drivers/infiniband/core/sysfs.c
+index 000c086..08c299e 100644
+--- a/drivers/infiniband/core/sysfs.c
++++ b/drivers/infiniband/core/sysfs.c
+@@ -683,6 +683,7 @@ int ib_device_register_sysfs(struct ib_device *device)
+ 
+ 	class_dev->class      = &ib_class;
+ 	class_dev->class_data = device;
++	class_dev->dev	      = device->dma_device;
+ 	strlcpy(class_dev->class_id, device->name, BUS_ID_SIZE);
+ 
+ 	INIT_LIST_HEAD(&device->port_list);
+diff --git a/drivers/infiniband/hw/amso1100/c2_provider.c b/drivers/infiniband/hw/amso1100/c2_provider.c
+index fef9727..607c09b 100644
+--- a/drivers/infiniband/hw/amso1100/c2_provider.c
++++ b/drivers/infiniband/hw/amso1100/c2_provider.c
+@@ -796,7 +796,6 @@ int c2_register_device(struct c2_dev *dev)
+ 	memcpy(&dev->ibdev.node_guid, dev->pseudo_netdev->dev_addr, 6);
+ 	dev->ibdev.phys_port_cnt = 1;
+ 	dev->ibdev.dma_device = &dev->pcidev->dev;
+-	dev->ibdev.class_dev.dev = &dev->pcidev->dev;
+ 	dev->ibdev.query_device = c2_query_device;
+ 	dev->ibdev.query_port = c2_query_port;
+ 	dev->ibdev.modify_port = c2_modify_port;
+diff --git a/drivers/infiniband/hw/cxgb3/iwch_provider.c b/drivers/infiniband/hw/cxgb3/iwch_provider.c
+index 24e0df0..af28a31 100644
+--- a/drivers/infiniband/hw/cxgb3/iwch_provider.c
++++ b/drivers/infiniband/hw/cxgb3/iwch_provider.c
+@@ -1108,7 +1108,6 @@ int iwch_register_device(struct iwch_dev *dev)
+ 	memcpy(dev->ibdev.node_desc, IWCH_NODE_DESC, sizeof(IWCH_NODE_DESC));
+ 	dev->ibdev.phys_port_cnt = dev->rdev.port_info.nports;
+ 	dev->ibdev.dma_device = &(dev->rdev.rnic_info.pdev->dev);
+-	dev->ibdev.class_dev.dev = &(dev->rdev.rnic_info.pdev->dev);
+ 	dev->ibdev.query_device = iwch_query_device;
+ 	dev->ibdev.query_port = iwch_query_port;
+ 	dev->ibdev.modify_port = iwch_modify_port;
+diff --git a/drivers/infiniband/hw/ipath/ipath_verbs.c b/drivers/infiniband/hw/ipath/ipath_verbs.c
+index f5604b8..18c6df2 100644
+--- a/drivers/infiniband/hw/ipath/ipath_verbs.c
++++ b/drivers/infiniband/hw/ipath/ipath_verbs.c
+@@ -1559,7 +1559,6 @@ int ipath_register_ib_device(struct ipath_devdata *dd)
+ 	dev->node_type = RDMA_NODE_IB_CA;
+ 	dev->phys_port_cnt = 1;
+ 	dev->dma_device = &dd->pcidev->dev;
+-	dev->class_dev.dev = dev->dma_device;
+ 	dev->query_device = ipath_query_device;
+ 	dev->modify_device = ipath_modify_device;
+ 	dev->query_port = ipath_query_port;
+diff --git a/drivers/infiniband/hw/mthca/mthca_provider.c b/drivers/infiniband/hw/mthca/mthca_provider.c
+index 0725ad7..47e6fd4 100644
+--- a/drivers/infiniband/hw/mthca/mthca_provider.c
++++ b/drivers/infiniband/hw/mthca/mthca_provider.c
+@@ -1293,7 +1293,6 @@ int mthca_register_device(struct mthca_dev *dev)
+ 	dev->ib_dev.node_type            = RDMA_NODE_IB_CA;
+ 	dev->ib_dev.phys_port_cnt        = dev->limits.num_ports;
+ 	dev->ib_dev.dma_device           = &dev->pdev->dev;
+-	dev->ib_dev.class_dev.dev        = &dev->pdev->dev;
+ 	dev->ib_dev.query_device         = mthca_query_device;
+ 	dev->ib_dev.query_port           = mthca_query_port;
+ 	dev->ib_dev.modify_device        = mthca_modify_device;
