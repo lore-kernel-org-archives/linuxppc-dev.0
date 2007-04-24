@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id F1509DDF4B
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 22:43:41 +1000 (EST)
-Date: Tue, 24 Apr 2007 22:39:30 +1000
+	by ozlabs.org (Postfix) with ESMTP id C60A6DDF69
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 22:43:42 +1000 (EST)
+Date: Tue, 24 Apr 2007 22:40:40 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "David S. Miller" <davem@davemloft.net>, paulus@samba.org
-Subject: [PATCH 3/6] Consolidate of_find_property
-Message-Id: <20070424223930.1dab0e28.sfr@canb.auug.org.au>
+Subject: [PATCH 4/6] Consolidate of_get_parent
+Message-Id: <20070424224040.6f0fe143.sfr@canb.auug.org.au>
 In-Reply-To: <20070424223245.78f4fdfb.sfr@canb.auug.org.au>
 References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
 	<20070403223000.5d44b2f1.sfr@canb.auug.org.au>
@@ -40,228 +40,171 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The only change here is that a readlock is taken while the property list
-is being traversed on Sparc where it was not taken previously.
-
-Also, Sparc uses strcasecmp to compare property names while PowerPC
-uses strcmp.
+This requires creating dummy of_node_{get,put} routines for sparc and
+sparc64.  It also adds a readlocal around the parent accesses.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/prom.c |   24 +-----------------------
- arch/sparc/kernel/prom.c   |   22 +---------------------
- arch/sparc64/kernel/prom.c |   22 +---------------------
- drivers/openfw/base.c      |   26 ++++++++++++++++++++++++++
- include/asm-powerpc/prom.h |    1 +
- include/asm-sparc/prom.h   |    1 +
- include/asm-sparc64/prom.h |    1 +
- 7 files changed, 32 insertions(+), 65 deletions(-)
+ arch/powerpc/kernel/prom.c |   21 ---------------------
+ arch/sparc/kernel/prom.c   |   13 -------------
+ arch/sparc64/kernel/prom.c |   13 -------------
+ drivers/openfw/base.c      |   21 +++++++++++++++++++++
+ include/asm-sparc/prom.h   |    9 +++++++++
+ include/asm-sparc64/prom.h |    9 +++++++++
+ 6 files changed, 39 insertions(+), 47 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 723df55..939d5e4 100644
+index 939d5e4..55e67ca 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -79,10 +79,7 @@ struct boot_param_header *initial_boot_params;
+@@ -1225,27 +1225,6 @@ struct device_node *of_find_all_nodes(struct device_node *prev)
+ EXPORT_SYMBOL(of_find_all_nodes);
  
- static struct device_node *allnodes = NULL;
- 
--/* use when traversing tree through the allnext, child, sibling,
-- * or parent members of struct device_node.
+ /**
+- *	of_get_parent - Get a node's parent if any
+- *	@node:	Node to get parent
+- *
+- *	Returns a node pointer with refcount incremented, use
+- *	of_node_put() on it when done.
 - */
--static DEFINE_RWLOCK(devtree_lock);
-+extern rwlock_t devtree_lock;	/* temporary while merging */
- 
- /* export that to outside world */
- struct device_node *of_chosen;
-@@ -1454,25 +1451,6 @@ static int __init prom_reconfig_setup(void)
- __initcall(prom_reconfig_setup);
- #endif
- 
--struct property *of_find_property(const struct device_node *np,
--				  const char *name,
--				  int *lenp)
+-struct device_node *of_get_parent(const struct device_node *node)
 -{
--	struct property *pp;
+-	struct device_node *np;
+-
+-	if (!node)
+-		return NULL;
 -
 -	read_lock(&devtree_lock);
--	for (pp = np->properties; pp != 0; pp = pp->next)
--		if (strcmp(pp->name, name) == 0) {
--			if (lenp != 0)
--				*lenp = pp->length;
--			break;
--		}
+-	np = of_node_get(node->parent);
 -	read_unlock(&devtree_lock);
--
--	return pp;
+-	return np;
 -}
--EXPORT_SYMBOL(of_find_property);
+-EXPORT_SYMBOL(of_get_parent);
 -
- /*
-  * Add a property to a node
-  */
+-/**
+  *	of_get_next_child - Iterate a node childs
+  *	@node:	parent node
+  *	@prev:	previous child of the parent node, or NULL to get first
 diff --git a/arch/sparc/kernel/prom.c b/arch/sparc/kernel/prom.c
-index f2ce0d4..0f5aab4 100644
+index 0f5aab4..b378715 100644
 --- a/arch/sparc/kernel/prom.c
 +++ b/arch/sparc/kernel/prom.c
-@@ -27,10 +27,7 @@
+@@ -29,19 +29,6 @@ static struct device_node *allnodes;
  
- static struct device_node *allnodes;
+ extern rwlock_t devtree_lock;	/* temporary while merging */
  
--/* use when traversing tree through the allnext, child, sibling,
-- * or parent members of struct device_node.
-- */
--static DEFINE_RWLOCK(devtree_lock);
-+extern rwlock_t devtree_lock;	/* temporary while merging */
- 
- struct device_node *of_get_parent(const struct device_node *node)
- {
-@@ -130,23 +127,6 @@ struct device_node *of_find_compatible_node(struct device_node *from,
- }
- EXPORT_SYMBOL(of_find_compatible_node);
- 
--struct property *of_find_property(const struct device_node *np,
--				  const char *name,
--				  int *lenp)
+-struct device_node *of_get_parent(const struct device_node *node)
 -{
--	struct property *pp;
+-	struct device_node *np;
 -
--	for (pp = np->properties; pp != 0; pp = pp->next) {
--		if (strcasecmp(pp->name, name) == 0) {
--			if (lenp != 0)
--				*lenp = pp->length;
--			break;
--		}
--	}
--	return pp;
+-	if (!node)
+-		return NULL;
+-
+-	np = node->parent;
+-
+-	return np;
 -}
--EXPORT_SYMBOL(of_find_property);
+-EXPORT_SYMBOL(of_get_parent);
 -
- int of_getintprop_default(struct device_node *np, const char *name, int def)
+ struct device_node *of_get_next_child(const struct device_node *node,
+ 	struct device_node *prev)
  {
- 	struct property *prop;
 diff --git a/arch/sparc64/kernel/prom.c b/arch/sparc64/kernel/prom.c
-index d6dd972..c759660 100644
+index c759660..f876079 100644
 --- a/arch/sparc64/kernel/prom.c
 +++ b/arch/sparc64/kernel/prom.c
-@@ -31,10 +31,7 @@
+@@ -33,19 +33,6 @@ static struct device_node *allnodes;
  
- static struct device_node *allnodes;
+ extern rwlock_t devtree_lock;	/* temporary while merging */
  
--/* use when traversing tree through the allnext, child, sibling,
-- * or parent members of struct device_node.
-- */
--static DEFINE_RWLOCK(devtree_lock);
-+extern rwlock_t devtree_lock;	/* temporary while merging */
- 
- struct device_node *of_get_parent(const struct device_node *node)
- {
-@@ -134,23 +131,6 @@ struct device_node *of_find_compatible_node(struct device_node *from,
- }
- EXPORT_SYMBOL(of_find_compatible_node);
- 
--struct property *of_find_property(const struct device_node *np,
--				  const char *name,
--				  int *lenp)
+-struct device_node *of_get_parent(const struct device_node *node)
 -{
--	struct property *pp;
+-	struct device_node *np;
 -
--	for (pp = np->properties; pp != 0; pp = pp->next) {
--		if (strcasecmp(pp->name, name) == 0) {
--			if (lenp != 0)
--				*lenp = pp->length;
--			break;
--		}
--	}
--	return pp;
+-	if (!node)
+-		return NULL;
+-
+-	np = node->parent;
+-
+-	return np;
 -}
--EXPORT_SYMBOL(of_find_property);
+-EXPORT_SYMBOL(of_get_parent);
 -
- int of_getintprop_default(struct device_node *np, const char *name, int def)
+ struct device_node *of_get_next_child(const struct device_node *node,
+ 	struct device_node *prev)
  {
- 	struct property *prop;
 diff --git a/drivers/openfw/base.c b/drivers/openfw/base.c
-index 0751313..2597d29 100644
+index 2597d29..3fc02de 100644
 --- a/drivers/openfw/base.c
 +++ b/drivers/openfw/base.c
-@@ -18,6 +18,12 @@
-  */
- #include <linux/module.h>
- #include <linux/openfw.h>
-+#include <linux/spinlock.h>
-+
-+/* use when traversing tree through the allnext, child, sibling,
-+ * or parent members of struct device_node.
-+ */
-+DEFINE_RWLOCK(devtree_lock);
- 
- int of_n_addr_cells(struct device_node *np)
- {
-@@ -51,6 +57,26 @@ int of_n_size_cells(struct device_node *np)
+@@ -113,3 +113,24 @@ int of_device_is_compatible(const struct device_node *device,
+ 	return 0;
  }
- EXPORT_SYMBOL(of_n_size_cells);
- 
-+struct property *of_find_property(const struct device_node *np,
-+				  const char *name,
-+				  int *lenp)
+ EXPORT_SYMBOL(of_device_is_compatible);
++
++/**
++ *	of_get_parent - Get a node's parent if any
++ *	@node:	Node to get parent
++ *
++ *	Returns a node pointer with refcount incremented, use
++ *	of_node_put() on it when done.
++ */
++struct device_node *of_get_parent(const struct device_node *node)
 +{
-+	struct property *pp;
++	struct device_node *np;
++
++	if (!node)
++		return NULL;
 +
 +	read_lock(&devtree_lock);
-+	for (pp = np->properties; pp != 0; pp = pp->next) {
-+		if (of_prop_cmp(pp->name, name) == 0) {
-+			if (lenp != 0)
-+				*lenp = pp->length;
-+			break;
-+		}
-+	}
++	np = of_node_get(node->parent);
 +	read_unlock(&devtree_lock);
-+
-+	return pp;
++	return np;
 +}
-+EXPORT_SYMBOL(of_find_property);
-+
- /*
-  * Find a property with a given name for a given node
-  * and return the value.
-diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index 1f3e8cd..a0679be 100644
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -25,6 +25,7 @@
- #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
- 
- #define of_compat_cmp(s1, s2, l)	strncasecmp((s1), (s2), (l))
-+#define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
- 
- /* Definitions used by the flattened device tree */
- #define OF_DT_HEADER		0xd00dfeed	/* marker */
++EXPORT_SYMBOL(of_get_parent);
 diff --git a/include/asm-sparc/prom.h b/include/asm-sparc/prom.h
-index cc049fd..d3dc05b 100644
+index d3dc05b..4621af6 100644
 --- a/include/asm-sparc/prom.h
 +++ b/include/asm-sparc/prom.h
-@@ -24,6 +24,7 @@
- #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
+@@ -66,6 +66,15 @@ extern int of_getintprop_default(struct device_node *np,
  
- #define of_compat_cmp(s1, s2, l)	strncmp((s1), (s2), (l))
-+#define of_prop_cmp(s1, s2)		strcasecmp((s1), (s2))
+ extern void prom_build_devicetree(void);
  
- typedef u32 phandle;
- typedef u32 ihandle;
++/* Dummy ref counting routines - to be implemented later */
++static inline struct device_node *of_node_get(struct device_node *node)
++{
++	return node;
++}
++static inline void of_node_put(struct device_node *node)
++{
++}
++
+ /*
+  * NB:  This is here while we transition from using asm/prom.h
+  * to linux/openfw.h
 diff --git a/include/asm-sparc64/prom.h b/include/asm-sparc64/prom.h
-index 843f9e8..a1b64e7 100644
+index a1b64e7..c36b884 100644
 --- a/include/asm-sparc64/prom.h
 +++ b/include/asm-sparc64/prom.h
-@@ -24,6 +24,7 @@
- #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
+@@ -74,6 +74,15 @@ extern int of_getintprop_default(struct device_node *np,
  
- #define of_compat_cmp(s1, s2, l)	strncmp((s1), (s2), (l))
-+#define of_prop_cmp(s1, s2)		strcasecmp((s1), (s2))
+ extern void prom_build_devicetree(void);
  
- typedef u32 phandle;
- typedef u32 ihandle;
++/* Dummy ref counting routines - to be implemented later */
++static inline struct device_node *of_node_get(struct device_node *node)
++{
++	return node;
++}
++static inline void of_node_put(struct device_node *node)
++{
++}
++
+ /*
+  * NB:  This is here while we transition from using asm/prom.h
+  * to linux/openfw.h
 -- 
 1.5.1.2
