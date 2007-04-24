@@ -1,28 +1,26 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 49BA4DDE31
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 12:43:38 +1000 (EST)
-Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769695763104-git-send-email-ebiederm@xmission.com>
-	<20070422123155.GF20763@infradead.org>
-	<20070423205020.GR31947@austin.ibm.com>
-	<1177378733.14873.52.camel@localhost.localdomain>
-	<m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 12:42:24 +1000
-Message-Id: <1177382544.14873.57.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, containers@lists.osdl.org,
-	Oleg Nesterov <oleg@tv-sign.ru>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id B7E9FDDE48
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 13:07:46 +1000 (EST)
+Date: Mon, 23 Apr 2007 22:07:48 -0500
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] DMA 4GB boundary protection
+Message-ID: <20070424030748.GA29492@lixom.net>
+References: <1172872183.5310.145.camel@goblue>
+	<20070303232915.GB8028@lixom.net>
+	<1174511149.5225.135.camel@goblue>
+	<20070322175324.GA21120@lixom.net>
+	<1175026241.1398.23.camel@goblue>
+	<20070328155635.GA14356@lixom.net>
+	<1175105842.1398.43.camel@goblue>
+	<1175124183.32220.17.camel@localhost.localdomain>
+	<1175175842.1398.54.camel@goblue>
+	<17964.42216.839568.476369@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17964.42216.839568.476369@cargo.ozlabs.ibm.com>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -32,46 +30,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-04-23 at 20:08 -0600, Eric W. Biederman wrote:
-> Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
+On Mon, Apr 23, 2007 at 10:22:00PM +1000, Paul Mackerras wrote:
+> Jake,
 > 
-> >> The only reason for using threads here is to get the error recovery
-> >> out of an interrupt context (where errors may be detected), and then,
-> >> an hour later, decrement a counter (which is how we limit these to 
-> >> 6 per hour). Thread reaping is "trivial", the thread just exits
-> >> after an hour.
-> >
-> > In addition, it should be a thread and not done from within keventd
-> > because :
-> >
-> >  - It can take a long time (well, relatively but still too long for a
-> > work queue)
-> >
-> >  - The driver callbacks might need to use keventd or do flush_workqueue
-> > to synchronize with their own workqueues when doing an internal
-> > recovery.
-> >
-> >> Since these are events rare, I've no particular concern about
-> >> performance or resource consumption. The current code seems 
-> >> to work just fine. :-)
-> >
-> > I think moving to kthread's is cleaner (just a wrapper around kernel
-> > threads that simplify dealing with reaping them out mostly) and I agree
-> > with Christoph that it would be nice to be able to "fire off" kthreads
-> > from interrupt context.. in many cases, we abuse work queues for things
-> > that should really done from kthreads instead (basically anything that
-> > takes more than a couple hundred microsecs or so).
+> It looks like I have applied both the final version of this patch
+> (569975591c5530fdc9c7a3c45122e5e46f075a74) and the original version
+> (618d3adc351a24c4c48437c767befb88ca2d199d) that modified
+> iommu_range_alloc().
 > 
-> On that note does anyone have a problem is we manage the irq spawning
-> safe kthreads the same way that we manage the work queue entries.
-> 
-> i.e. by a structure allocated by the caller?
+> Should I revert the original version?
 
-Not sure... I can see places where I might want to spawn an arbitrary
-number of these without having to preallocate structures... and if I
-allocate on the fly, then I need a way to free that structure when the
-kthread is reaped which I don't think we have currently, do we ? (In
-fact, I could use that for other things too now that I'm thinking of
-it ... I might have a go at providing optional kthread destructors).
+(Since I didn't see a reply from Jake today):
 
-Ben.
+Yes, please do. It's redundant given the better patch that went in later.
+
+
+Thanks,
+
+-Olof
