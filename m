@@ -1,29 +1,29 @@
 Return-Path: <FENKES@de.ibm.com>
-Received: from mtagate7.de.ibm.com (mtagate7.de.ibm.com [195.212.29.156])
+Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate7.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id BB867DDF1B
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 22:07:12 +1000 (EST)
+	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 05513DDE20
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 22:25:42 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate7.de.ibm.com (8.13.8/8.13.8) with ESMTP id l3OC72GH264216
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 12:07:02 GMT
-Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
-	[9.149.165.228])
+	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l3OCPZw6164460
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 12:25:35 GMT
+Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
+	[9.149.165.229])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l3OC72I53776670
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 14:07:02 +0200
-Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l3OC71Pe032310
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 14:07:01 +0200
-In-Reply-To: <ada7is27vdv.fsf@cisco.com>
+	ESMTP id l3OCPaRi3965004
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 14:25:36 +0200
+Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l3OCPZ6e025074
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 14:25:35 +0200
+In-Reply-To: <ada3b2q7v9t.fsf@cisco.com>
 To: Roland Dreier <rdreier@cisco.com>
 MIME-Version: 1.0
-Subject: Re: [PATCH] ib_core: Add missing device link to class device
+Subject: Re: [PATCH] eHCA: Add "Modify Port" verb
 From: Joachim Fenkes <FENKES@de.ibm.com>
-Message-ID: <OF8C8AA8EC.A66DAC49-ONC12572C7.00416B4B-C12572C7.00428AF7@de.ibm.com>
-Date: Tue, 24 Apr 2007 14:06:59 +0200
+Message-ID: <OF9075E217.B145AD0F-ONC12572C7.0042D705-C12572C7.00443EC9@de.ibm.com>
+Date: Tue, 24 Apr 2007 14:25:34 +0200
 Content-Type: text/plain; charset="US-ASCII"
 Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>, LKML <linux-kernel@vger.kernel.org>,
 	OF-General <general@lists.openfabrics.org>
@@ -36,41 +36,34 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Roland Dreier <rdreier@cisco.com> wrote on 23.04.2007 21:17:48:
+Roland Dreier <rdreier@cisco.com> wrote on 23.04.2007 21:20:14:
 
-> Hmm, I have links like this on my system already:
+>  > +   if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != 
+H_SUCCESS) {
+>  > +      ehca_err(&shca->ib_device, "Can't query port properties");
+>  > +      ret = -EINVAL;
+>  > +      goto modify_port1;
+>  > +   }
+>  > +
+>  > +   cap = (rblock->capability_mask | props->set_port_cap_mask)
+>  > +      & ~props->clr_port_cap_mask;
+>  > +
+>  > +   hret = hipz_h_modify_port(shca->ipz_hca_handle, port,
+>  > +              cap, props->init_type, port_modify_mask);
 > 
-> the patch actually looks sane but I don't understand why it's needed.
-> Could you explain?
+> Is this thread-safe?  What if two different bits are set at the same
+> time from two different threads?  It seems that both calls could get
+> the same result from hipz_h_query_port(), and then the second call to
+> hipz_h_modify_port() would overwrite the first call.
 
-I had a look at the kernel code -- currently, all device drivers except
-ehca do this by themselves:
+Yes, you're so right.
+ 
+> You could look at the implementation in mthca to see the locking I
+> used there.
 
-cxgb3:
-1110         dev->ibdev.dma_device = &(dev->rdev.rnic_info.pdev->dev);
-1111         dev->ibdev.class_dev.dev = &(dev->rdev.rnic_info.pdev->dev);
+I'll do that, thanks for the hint!
 
-amso1100:
-798         dev->ibdev.dma_device = &dev->pcidev->dev;
-799         dev->ibdev.class_dev.dev = &dev->pcidev->dev;
-
-ipath:
-1559         dev->dma_device = &dd->pcidev->dev;
-1560         dev->class_dev.dev = dev->dma_device;
-
-mthca:
-1295         dev->ib_dev.dma_device           = &dev->pdev->dev;
-1296         dev->ib_dev.class_dev.dev        = &dev->pdev->dev;
-
-So I think it makes a lot of sense to put the class_dev.dev assignment
-into generic ib_core code instead of repeating it in all the drivers.
-The respective lines could move out of the drivers in the future but
-won't hurt anyone until then.
-
-What's your take on this?
-
-Cheers,
-  Joachim
+Joachim
 
 ---
 Joachim Fenkes  --  eHCA Linux Driver Developer and Hardware Tamer
