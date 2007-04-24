@@ -1,16 +1,28 @@
-Return-Path: <akonovalov@ru.mvista.com>
-Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
-	by ozlabs.org (Postfix) with SMTP id DEAF4DDF52
+Return-Path: <petermendham@computing.dundee.ac.uk>
+Received: from uncle.computing.dundee.ac.uk (uncle.computing.dundee.ac.uk
+	[134.36.36.11])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 514E3DE1C5
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 23:55:11 +1000 (EST)
-Message-ID: <462E0D5C.1090105@ru.mvista.com>
-Date: Tue, 24 Apr 2007 17:59:56 +0400
-From: Andrei Konovalov <akonovalov@ru.mvista.com>
+	Tue, 24 Apr 2007 23:55:28 +1000 (EST)
+Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
+	[134.36.36.15])
+	by uncle.computing.dundee.ac.uk (8.13.1/8.13.1) with ESMTP id
+	l3ODsu8L006766
+	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Apr 2007 14:54:56 +0100
+Message-ID: <462E0C2F.2020106@computing.dundee.ac.uk>
+Date: Tue, 24 Apr 2007 14:54:55 +0100
+From: Peter Mendham <petermendham@computing.dundee.ac.uk>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] Xilinx framebuffer device driver
-Content-Type: multipart/mixed; boundary="------------060104020706030201020106"
-Cc: Rick Moleres <rick.moleres@xilinx.com>
+To: Andrei Konovalov <akonovalov@ru.mvista.com>
+Subject: Re: Using Xilinx Framebuffer on ML405 and 2.6.20.4
+References: <462DCA31.4060009@computing.dundee.ac.uk>
+	<528646bc0704240638m4c9dd04dlaaef0e8cdb57af53@mail.gmail.com>
+	<462E0CF5.4060402@ru.mvista.com>
+In-Reply-To: <462E0CF5.4060402@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,444 +33,52 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
---------------060104020706030201020106
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-
-Add support for the video controller IP block included into Xilinx ML300 and
-ML403 reference designs.
-
-Signed-off-by: Andrei Konovalov <akonovalov@ru.mvista.com>
----
-
-This patch relies on the "Patchset to establish sanity in Xilinx Virtex support" by Gran Likely to have
-the frame buffer device registered on the platform bus. Without this patchset one needs to fill in
-the struct platform_device and make sure platform_device_register() is called elsewhere.
-
-Reviews and comments are welcome.
-
-Would be nice to get this driver into mainline for the 2.6.22.
+Andrei Konovalov wrote:
+> Grant Likely wrote:
+>> On 4/24/07, Peter Mendham <petermendham@computing.dundee.ac.uk> wrote:
+>>> Dear all,
+>>>
+>>> I am wanting to use the Xilinx TFT controller from the ML403/5 
+>>> reference
+>>> project (probably from ML300 as well) under a 2.6.20.4 kernel.  I have
+>>> Grant Likely's patchset applied in which there is a platform device
+>>> entry for the framebuffer.  Does anyone know if there is mainline
+>>> support for the Xilinx-style framebuffer?  If so, how do I enable 
+>>> it?  I
+>>> have included framebuffer support in my kernel build, but I assume I
+>>> need a driver also? Any tips greatly appreciated.
+>>
+>> Heh, I've got a driver.  I just haven't published it yet.  Give me a 
+>> few days...
+>>
+>> g.
+>>
+>
+> We have one too :)
+>
+Do you have a patch that I can apply to a mainline kernel to include the 
+driver?
 
 Thanks,
-Andrei
+-- Peter
 
 
---------------060104020706030201020106
-Content-Type: text/x-patch;
- name="ppc32-xilinx_fb.patch"
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline;
- filename="ppc32-xilinx_fb.patch"
+-- 
+------------------------------------------
+Dr Peter Mendham
+------------------------------------------
+Space Systems Research Group
+School of Computing, University of Dundee
+Dundee, Scotland, DD1 1HN, UK
+------------------------------------------
+e: petermendham@computing.dundee.ac.uk
+t: +44 (0)1382 386729
+f: +44 (0)1382 388838
+------------------------------------------
 
-Add support for the video controller IP block included into Xilinx ML300 and
-ML403 reference designs.
 
- drivers/video/Kconfig    |   15 +
- drivers/video/Makefile   |    1 
- drivers/video/xilinxfb.c |  358 +++++++++++++++++++++++++++++++++++++++++++++++
- 3 files changed, 374 insertions(+)
-
-Index: linux-2.6.20/drivers/video/Kconfig
-===================================================================
---- linux-2.6.20.orig/drivers/video/Kconfig
-+++ linux-2.6.20/drivers/video/Kconfig
-@@ -1633,6 +1633,21 @@ config FB_PS3_DEFAULT_SIZE_M
- 	  The default value can be overridden on the kernel command line
- 	  using the "ps3fb" option (e.g. "ps3fb=9M");
- 
-+config FB_XILINX
-+	tristate "Xilinx frame buffer support"
-+	depends on FB && XILINX_VIRTEX
-+	select FB_CFB_FILLRECT
-+	select FB_CFB_COPYAREA
-+	select FB_CFB_IMAGEBLIT
-+	---help---
-+	  Include support for the Xilinx ML300/ML403 reference design
-+	  framebuffer. ML300 carries a 640*480 LCD display on the board,
-+	  ML403 uses a standard DB15 VGA connector.
-+
-+config FB_XILINX_ROTATE
-+	bool "Rotate display"
-+	depends on FB_XILINX
-+
- config FB_VIRTUAL
- 	tristate "Virtual Frame Buffer support (ONLY FOR TESTING!)"
- 	depends on FB
-Index: linux-2.6.20/drivers/video/Makefile
-===================================================================
---- linux-2.6.20.orig/drivers/video/Makefile
-+++ linux-2.6.20/drivers/video/Makefile
-@@ -99,6 +99,7 @@ obj-$(CONFIG_FB_PNX4008_DUM_RGB)  += pnx
- obj-$(CONFIG_FB_IBM_GXT4500)	  += gxt4500.o
- obj-$(CONFIG_FB_PS3)		  += ps3fb.o
- obj-$(CONFIG_FB_SM501)            += sm501fb.o
-+obj-$(CONFIG_FB_XILINX)           += xilinxfb.o
- 
- # Platform or fallback drivers go here
- obj-$(CONFIG_FB_VESA)             += vesafb.o
-Index: linux-2.6.20/drivers/video/xilinxfb.c
-===================================================================
---- /dev/null
-+++ linux-2.6.20/drivers/video/xilinxfb.c
-@@ -0,0 +1,358 @@
-+/*
-+ * xilinxfb.c
-+ *
-+ * Xilinx TFT LCD frame buffer driver
-+ *
-+ * Author: MontaVista Software, Inc.
-+ *         source@mvista.com
-+ *
-+ * 2002-2007 (c) MontaVista Software, Inc.  This file is licensed under the
-+ * terms of the GNU General Public License version 2.  This program is licensed
-+ * "as is" without any warranty of any kind, whether express or implied.
-+ */
-+
-+/*
-+ * This driver was based on au1100fb.c by MontaVista rewritten for 2.6
-+ * by Embedded Alley Solutions <source@embeddedalley.com>, which in turn
-+ * was based on skeletonfb.c, Skeleton for a frame buffer device by
-+ * Geert Uytterhoeven.
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/version.h>
-+#include <linux/errno.h>
-+#include <linux/string.h>
-+#include <linux/mm.h>
-+#include <linux/fb.h>
-+#include <linux/init.h>
-+#include <linux/dma-mapping.h>
-+#include <linux/platform_device.h>
-+
-+#include <asm/io.h>
-+
-+#define DRIVER_NAME		"xilinxfb"
-+#define DRIVER_DESCRIPTION	"Xilinx TFT LCD frame buffer driver"
-+
-+/*
-+ * The interface to the framebuffer is nice and simple.  There are two
-+ * control registers.  The first tells the LCD interface where in memory
-+ * the frame buffer is (only the 11 most significant bits are used, so
-+ * don't start thinking about scrolling).  The second allows the LCD to
-+ * be turned on or off as well as rotated 180 degrees.
-+ */
-+#define NUM_REGS	2
-+#define REG_FB_ADDR	0
-+#define REG_CTRL	1
-+#define REG_CTRL_ENABLE	 0x0001
-+#define REG_CTRL_ROTATE	 0x0002
-+#if defined(CONFIG_FB_XILINX_ROTATE)
-+#define REG_CTRL_DEFAULT (REG_CTRL_ENABLE | REG_CTRL_ROTATE)
-+#else
-+#define REG_CTRL_DEFAULT (REG_CTRL_ENABLE)
-+#endif				/* CONFIG_FB_XILINX_ROTATE */
-+
-+/*
-+ * The hardware only handles a single mode: 640x480 24 bit true
-+ * color. Each pixel gets a word (32 bits) of memory.  Within each word,
-+ * the 8 most significant bits are ignored, the next 8 bits are the red
-+ * level, the next 8 bits are the green level and the 8 least
-+ * significant bits are the blue level.  Each row of the LCD uses 1024
-+ * words, but only the first 640 pixels are displayed with the other 384
-+ * words being ignored.  There are 480 rows.
-+ */
-+#define BYTES_PER_PIXEL	4
-+#define BITS_PER_PIXEL	(BYTES_PER_PIXEL * 8)
-+#define XRES		640
-+#define YRES		480
-+#define XRES_VIRTUAL	1024
-+#define YRES_VIRTUAL	YRES
-+#define LINE_LENGTH	(XRES_VIRTUAL * BYTES_PER_PIXEL)
-+#define FB_SIZE		(YRES_VIRTUAL * LINE_LENGTH)
-+
-+#define PALETTE_ENTRIES_NO	16	/* passed to fb_alloc_cmap() */
-+
-+/*
-+ * Here are the default fb_fix_screeninfo and fb_var_screeninfo structures
-+ */
-+static struct fb_fix_screeninfo xilinx_fb_fix __initdata = {
-+	.id =		"Xilinx",
-+	.type =		FB_TYPE_PACKED_PIXELS,
-+	.visual =	FB_VISUAL_TRUECOLOR,
-+	.smem_len =	FB_SIZE,
-+	.line_length =	LINE_LENGTH,
-+	.accel =	FB_ACCEL_NONE
-+};
-+
-+static struct fb_var_screeninfo xilinx_fb_var __initdata = {
-+	.xres =			XRES,
-+	.yres =			YRES,
-+	.xres_virtual =		XRES_VIRTUAL,
-+	.yres_virtual =		YRES_VIRTUAL,
-+
-+	.bits_per_pixel =	BITS_PER_PIXEL,
-+
-+	.red =		{ 16, 8, 0 },
-+	.green =	{ 8, 8, 0 },
-+	.blue =		{ 0, 8, 0 },
-+	.transp =	{ 0, 0, 0 },
-+
-+	.activate =	FB_ACTIVATE_NOW,
-+	.height = 	99,	/* in mm of NEC NL6448BC20-08 on ML300 */
-+	.width =	132	/* in mm of NEC NL6448BC20-08 on ML300 */
-+};
-+
-+struct xilinxfb_drvdata {
-+
-+	struct fb_info	info;		/* FB driver info record */
-+
-+	unsigned long	regs_phys;	/* phys. address of the control registers */
-+	u32 		*regs;		/* virt. address of the control registers */
-+
-+	unsigned char	*fb_virt;	/* virt. address of the frame buffer */
-+	dma_addr_t	fb_phys;	/* phys. address of the frame buffer */
-+
-+	u32		pseudo_palette[16];	/* Fake palette of 16 colors */
-+};
-+
-+#define to_xilinxfb_drvdata(_info) \
-+	container_of(_info, struct xilinxfb_drvdata, info)
-+
-+static int
-+xilinx_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
-+	unsigned transp, struct fb_info *fbi)
-+{
-+	u32 *palette = fbi->pseudo_palette;
-+
-+	if (regno >= PALETTE_ENTRIES_NO)
-+		return -EINVAL;
-+
-+	if (fbi->var.grayscale) {
-+		/* Convert color to grayscale.
-+		 * grayscale = 0.30*R + 0.59*G + 0.11*B */
-+		red = green = blue =
-+			(red * 77 + green * 151 + blue * 28 + 127) >> 8;
-+	}
-+
-+	/* fbi->fix.visual is always FB_VISUAL_TRUECOLOR */
-+
-+	/* We only handle 8 bits of each color. */
-+	red >>= 8;
-+	green >>= 8;
-+	blue >>= 8;
-+	palette[regno] = (red << 16) | (green << 8) | blue;
-+
-+	return 0;
-+}
-+
-+static int
-+xilinx_fb_blank(int blank_mode, struct fb_info *fbi)
-+{
-+	struct xilinxfb_drvdata *drvdata = to_xilinxfb_drvdata(fbi);
-+
-+	switch (blank_mode) {
-+	case VESA_NO_BLANKING:
-+		/* turn on panel */
-+		out_be32(drvdata->regs + REG_CTRL, REG_CTRL_DEFAULT);
-+		break;
-+
-+	case VESA_VSYNC_SUSPEND:
-+	case VESA_HSYNC_SUSPEND:
-+	case VESA_POWERDOWN:
-+		/* turn off panel */
-+		out_be32(drvdata->regs + REG_CTRL, 0);
-+	default:
-+		break;
-+
-+	}
-+	return 0; /* success */
-+}
-+
-+static int
-+xilinx_fb_pan_display(struct fb_var_screeninfo *var, struct fb_info *fbi)
-+{
-+	if (var->xoffset != 0 || var->yoffset != 0)
-+		return -EINVAL;
-+
-+	return 0;
-+}
-+
-+static struct fb_ops xilinxfb_ops =
-+{
-+	.owner			= THIS_MODULE,
-+	.fb_setcolreg		= xilinx_fb_setcolreg,
-+	.fb_blank		= xilinx_fb_blank,
-+	.fb_pan_display		= xilinx_fb_pan_display,
-+	.fb_fillrect		= cfb_fillrect,
-+	.fb_copyarea		= cfb_copyarea,
-+	.fb_imageblit		= cfb_imageblit,
-+};
-+
-+/* === The device driver === */
-+
-+static int
-+xilinxfb_drv_probe(struct device *dev)
-+{
-+	struct xilinxfb_drvdata *drvdata;
-+	struct resource *regs_res;
-+	int retval;
-+
-+	if (!dev)
-+		return -EINVAL;
-+
-+	drvdata = kmalloc(sizeof(struct xilinxfb_drvdata), GFP_KERNEL);
-+	if (!drvdata) {
-+		printk(KERN_ERR "Couldn't allocate device private record\n");
-+		return -ENOMEM;
-+	}
-+	memset((void*)drvdata, 0, sizeof(struct xilinxfb_drvdata));
-+	dev_set_drvdata(dev, (void *)drvdata);
-+
-+	/* Map the control registers in */
-+	regs_res = platform_get_resource(to_platform_device(dev),
-+			IORESOURCE_IO, 0);
-+	if (!regs_res || (regs_res->end - regs_res->start + 1 < 8)) {
-+		printk(KERN_ERR "Couldn't get registers resource\n");
-+		retval = -EFAULT;
-+		goto failed1;
-+	}
-+
-+	if (!request_mem_region(regs_res->start, 8, DRIVER_NAME)) {
-+		printk(KERN_ERR "Couldn't lock memory region at 0x%08lX\n",
-+			regs_res->start);
-+		retval = -EBUSY;
-+		goto failed1;
-+	}
-+
-+	drvdata->regs_phys = regs_res->start;
-+	drvdata->regs = (u32 *) ioremap(regs_res->start, 8);
-+
-+	/* Allocate the framebuffer memory */
-+	drvdata->fb_virt = dma_alloc_coherent(dev, PAGE_ALIGN(FB_SIZE),
-+				&drvdata->fb_phys, GFP_KERNEL);
-+	if (!drvdata->fb_virt) {
-+		printk(KERN_ERR "Could not allocate frame buffer memory\n");
-+		retval = -ENOMEM;
-+		goto failed2;
-+	}
-+
-+	/* Clear (turn to black) the framebuffer */
-+	memset((void *) drvdata->fb_virt, 0, FB_SIZE);
-+
-+	/* Tell the hardware where the frame buffer is */
-+	out_be32(drvdata->regs + REG_FB_ADDR, drvdata->fb_phys);
-+
-+	/* Turn on the display */
-+	out_be32(drvdata->regs + REG_CTRL, REG_CTRL_DEFAULT);
-+
-+	/* Fill struct fb_info */
-+	drvdata->info.screen_base = drvdata->fb_virt;
-+	drvdata->info.fbops = &xilinxfb_ops;
-+	drvdata->info.fix = xilinx_fb_fix;
-+	drvdata->info.fix.smem_start = drvdata->fb_phys;
-+	drvdata->info.pseudo_palette = drvdata->pseudo_palette;
-+
-+	if (fb_alloc_cmap(&drvdata->info.cmap, PALETTE_ENTRIES_NO, 0) < 0) {
-+		printk(KERN_ERR "Fail to allocate colormap (%d entries)\n",
-+			PALETTE_ENTRIES_NO);
-+		retval = -EFAULT;
-+		goto failed3;
-+	}
-+
-+	drvdata->info.flags = FBINFO_DEFAULT;
-+	drvdata->info.var = xilinx_fb_var;
-+
-+	/* Register new frame buffer */
-+	if (register_framebuffer(&drvdata->info) < 0) {
-+		printk(KERN_ERR "Could not register frame buffer\n");
-+		retval = -EINVAL;
-+		goto failed4;
-+	}
-+
-+	return 0;	/* success */
-+
-+failed4:
-+	fb_dealloc_cmap(&drvdata->info.cmap);
-+
-+failed3:
-+	dma_free_coherent(dev, PAGE_ALIGN(FB_SIZE), drvdata->fb_virt,
-+		drvdata->fb_phys);
-+
-+	/* Turn off the display */
-+	out_be32(drvdata->regs + REG_CTRL, 0);
-+	iounmap(drvdata->regs);
-+
-+failed2:
-+	release_mem_region(regs_res->start, 8);
-+
-+failed1:
-+	kfree(drvdata);
-+	dev_set_drvdata(dev, NULL);
-+
-+	return retval;
-+}
-+
-+static int
-+xilinxfb_drv_remove(struct device *dev)
-+{
-+	struct xilinxfb_drvdata *drvdata;
-+
-+	if (!dev)
-+		return -ENODEV;
-+
-+	drvdata = (struct xilinxfb_drvdata *) dev_get_drvdata(dev);
-+
-+#if !defined(CONFIG_FRAMEBUFFER_CONSOLE) && defined(CONFIG_LOGO)
-+	xilinx_fb_blank(VESA_POWERDOWN, &drvdata->info);
-+#endif
-+
-+	unregister_framebuffer(&drvdata->info);
-+
-+	fb_dealloc_cmap(&drvdata->info.cmap);
-+
-+	dma_free_coherent(dev, PAGE_ALIGN(FB_SIZE), drvdata->fb_virt,
-+		drvdata->fb_phys);
-+
-+	/* Turn off the display */
-+	out_be32(drvdata->regs + REG_CTRL, 0);
-+	iounmap(drvdata->regs);
-+
-+	release_mem_region(drvdata->regs_phys, 8);
-+
-+	kfree(drvdata);
-+	dev_set_drvdata(dev, NULL);
-+
-+	return 0;
-+}
-+
-+
-+static struct device_driver xilinxfb_driver = {
-+	.name		= DRIVER_NAME,
-+	.bus		= &platform_bus_type,
-+
-+	.probe		= xilinxfb_drv_probe,
-+	.remove		= xilinxfb_drv_remove
-+};
-+
-+static int __init
-+xilinxfb_init(void)
-+{
-+	/*
-+	 * No kernel boot options used,
-+	 * so we just need to register the driver
-+	 */
-+	return driver_register(&xilinxfb_driver);
-+}
-+
-+static void __exit
-+xilinxfb_cleanup(void)
-+{
-+	driver_unregister(&xilinxfb_driver);
-+}
-+
-+module_init(xilinxfb_init);
-+module_exit(xilinxfb_cleanup);
-+
-+MODULE_AUTHOR("MontaVista Software, Inc. <source@mvista.com>");
-+MODULE_DESCRIPTION(DRIVER_DESCRIPTION);
-+MODULE_LICENSE("GPL");
-
---------------060104020706030201020106--
+-- 
+This message has been scanned for viruses and
+dangerous content by MailScanner, and is
+believed to be clean.
+MailScanner thanks transtec Computers for their support.
