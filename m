@@ -2,26 +2,20 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9F3D6DDE03
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 11:40:45 +1000 (EST)
-Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+	by ozlabs.org (Postfix) with ESMTP id E4D41DDEE3
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 11:49:24 +1000 (EST)
+Subject: Re: [PATCH 08/10] cell: add support for proper device-tree
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Linas Vepstas <linas@austin.ibm.com>
-In-Reply-To: <20070423205020.GR31947@austin.ibm.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769695763104-git-send-email-ebiederm@xmission.com>
-	<20070422123155.GF20763@infradead.org>
-	<20070423205020.GR31947@austin.ibm.com>
+To: Arnd Bergmann <arnd@arndb.de>
+In-Reply-To: <200704240116.58364.arnd@arndb.de>
+References: <20070423193538.576702568@arndb.de>
+	<20070423193913.253050755@arndb.de> <200704240116.58364.arnd@arndb.de>
 Content-Type: text/plain
-Date: Tue, 24 Apr 2007 11:38:53 +1000
-Message-Id: <1177378733.14873.52.camel@localhost.localdomain>
+Date: Tue, 24 Apr 2007 11:48:25 +1000
+Message-Id: <1177379305.14873.54.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org,
+	David Woodhouse <dwmw2@infradead.org>, Christian Krafft <krafft@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,32 +25,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tue, 2007-04-24 at 01:16 +0200, Arnd Bergmann wrote:
+> On Monday 23 April 2007, Arnd Bergmann wrote:
+> > From: Christian Krafft <krafft@de.ibm.com>
+> > 
+> > This patch adds support for a proper device-tree.
+> > A porper device-tree on cell contains be nodes
+> > for each CBE containg nodes for SPEs and all the
+> > other special devices on it.
+> > Ofcourse oldschool devicetree is still supported.
+> > 
+> > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> > Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+> 
+> Christian, I only now saw that there is this rather important
+> patch left, it never stood out as something for 2.6.21 and now
+> it's too late for that.
+> This might explain why people could not boot some hardware
+> with Fedora 7.
+> 
+> Should we try to get this in as a hotfix?
 
-> The only reason for using threads here is to get the error recovery
-> out of an interrupt context (where errors may be detected), and then,
-> an hour later, decrement a counter (which is how we limit these to 
-> 6 per hour). Thread reaping is "trivial", the thread just exits
-> after an hour.
-
-In addition, it should be a thread and not done from within keventd
-because :
-
- - It can take a long time (well, relatively but still too long for a
-work queue)
-
- - The driver callbacks might need to use keventd or do flush_workqueue
-to synchronize with their own workqueues when doing an internal
-recovery.
-
-> Since these are events rare, I've no particular concern about
-> performance or resource consumption. The current code seems 
-> to work just fine. :-)
-
-I think moving to kthread's is cleaner (just a wrapper around kernel
-threads that simplify dealing with reaping them out mostly) and I agree
-with Christoph that it would be nice to be able to "fire off" kthreads
-from interrupt context.. in many cases, we abuse work queues for things
-that should really done from kthreads instead (basically anything that
-takes more than a couple hundred microsecs or so).
+Please do.
 
 Ben.
