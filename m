@@ -1,32 +1,15 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 88A82DDE2F
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 16:00:08 +1000 (EST)
-Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769695763104-git-send-email-ebiederm@xmission.com>
-	<20070422123155.GF20763@infradead.org>
-	<20070423205020.GR31947@austin.ibm.com>
-	<1177378733.14873.52.camel@localhost.localdomain>
-	<m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-	<1177382544.14873.57.camel@localhost.localdomain>
-	<m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
-	<1177390842.14873.94.camel@localhost.localdomain>
-	<m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 15:58:22 +1000
-Message-Id: <1177394302.14873.97.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, containers@lists.osdl.org,
-	Oleg Nesterov <oleg@tv-sign.ru>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17965.37623.561459.64174@cargo.ozlabs.ibm.com>
+Date: Tue, 24 Apr 2007 15:17:43 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Wolfgang Denk <wd@denx.de>
+Subject: Re: [PATCH 3/4] bootwrapper: Add ppcboot.h. 
+In-Reply-To: <20070417090342.3E736352658@atlas.denx.de>
+References: <20070416232553.GB26693@ld0162-tx32.am.freescale.net>
+	<20070417090342.3E736352658@atlas.denx.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -36,14 +19,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Since we need to have some way to track them having an explicit data
-> structure that the callers manage seems to make sense.
+Wolfgang Denk writes:
 
-Oh sure, I wasn't arguing against that at all...
+> Shouldn't we finally get this straight and call the file "u-boot.h" as
+> it is called in U-Boot?
 
-It might be handy to have a release() callback (optional) that gets
-called after the kthread stops/exits, once we know the data structure
-isn't going to be used anymore (if practical to implement, depends on
-your approach).
+Is it identical to the one in U-Boot?
 
-Ben.
+Paul.
