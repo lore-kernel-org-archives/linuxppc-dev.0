@@ -1,12 +1,13 @@
 Return-Path: <info@schihei.de>
-In-Reply-To: <20070423202237.0725075a@localhost>
-References: <20070423202237.0725075a@localhost>
+In-Reply-To: <20070423202223.549bf53a@localhost>
+References: <20070423202223.549bf53a@localhost>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <257C8A50-17BA-4EE2-B10F-7F95359E8EB5@schihei.de>
+Message-Id: <F0EE9F3B-8504-4F73-A8CD-E5713206699B@schihei.de>
 From: Heiko J Schick <info@schihei.de>
-Subject: Re: [patch 2/2] powerpc: pmi probe device by device-type
-Date: Tue, 24 Apr 2007 07:53:58 +0200
+Subject: Re: [patch 1/2] powerpc: add check for initialized driver data to pmi
+	driver
+Date: Tue, 24 Apr 2007 07:53:49 +0200
 To: Christian Krafft <krafft@de.ibm.com>
 Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -23,10 +24,11 @@ Acked-by: Heiko J Schick <schickhj@de.ibm.com>
 On 23.04.2007, at 20:22, Christian Krafft wrote:
 
 > From: Christian Krafft <krafft@de.ibm.com>
-> At the moment the pmi device driver is probing for devices with
-> a given type and a given name. As there may be devices of
-> the same type but with a different name, probing should be
-> done also for device type only.
+> This patch adds a check for the private driver data to be initialized.
+> The bug showed up, as the caller found a pmi device by it's type.
+> Whereas the pmi driver probes for the type and the name.
+> Since the name was not as the driver expected, it did not initialize.
+> A more relaxed probing will be supplied with an extra patch, too.
 >
 > Signed-off-by: Christian Krafft <krafft@de.ibm.com>
 > Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
@@ -35,14 +37,31 @@ On 23.04.2007, at 20:22, Christian Krafft wrote:
 > ===================================================================
 > --- sdk3.orig/arch/powerpc/sysdev/pmi.c
 > +++ sdk3/arch/powerpc/sysdev/pmi.c
-> @@ -103,6 +103,7 @@ out:
+> @@ -264,6 +264,9 @@ void pmi_register_handler(struct of_devi
+>  	struct pmi_data *data;
+>  	data = device->dev.driver_data;
 >
->  static struct of_device_id pmi_match[] = {
->  	{ .type = "ibm,pmi", .name = "ibm,pmi" },
-> +	{ .type = "ibm,pmi" },
->  	{},
->  };
+> +	if (!data)
+> +		return;
+> +
+>  	spin_lock(&data->handler_spinlock);
+>  	list_add_tail(&handler->node, &data->handler);
+>  	spin_unlock(&data->handler_spinlock);
+> @@ -274,10 +277,12 @@ void pmi_unregister_handler(struct of_de
+>  			    struct pmi_handler *handler)
+>  {
+>  	struct pmi_data *data;
+> +	data = device->dev.driver_data;
 >
+> -	pr_debug("pmi: unregistering handler %p\n", handler);
+> +	if (!data)
+> +		return;
+>
+> -	data = device->dev.driver_data;
+> +	pr_debug("pmi: unregistering handler %p\n", handler);
+>
+>  	spin_lock(&data->handler_spinlock);
+>  	list_del(&handler->node);
 >
 >
 > -- 
