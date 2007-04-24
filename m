@@ -1,16 +1,20 @@
-Return-Path: <hs@denx.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 29C9CDDD06
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 9649BDDEB8
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 15:54:54 +1000 (EST)
-Subject: MPC885 hang in a lwarx/stwcx insn crossing a page boundary
-From: Heiko Schocher <hs@denx.de>
+	Tue, 24 Apr 2007 16:16:13 +1000 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1HgEJu-00029y-3t
+	for linuxppc-embedded@ozlabs.org; Mon, 23 Apr 2007 23:16:10 -0700
+Message-ID: <10155023.post@talk.nabble.com>
+Date: Mon, 23 Apr 2007 23:16:10 -0700 (PDT)
+From: Nethra <nethra_gmit@yahoo.co.in>
 To: linuxppc-embedded@ozlabs.org
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 07:55:47 +0200
-Message-Id: <1177394147.6353.30.camel@Zeus.EmbLux>
-Mime-Version: 1.0
-Reply-To: hs@denx.de
+Subject: prob on 2 ethrnet working
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,48 +25,32 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+
 Hello,
 
-I have a MPC885 and a running 2.6.16 kernel on it. I use the CPU15
-Errata Patch from
-(http://ozlabs.org/pipermail/linuxppc-dev/2007-April/033789.html)
+In my board(MPC8248) i have u-boot-1.1.2 configured with FCC1 as configured
+ethernet port.
+i m able to download the kernel and ramdisk image from tftpboot.
+and after that i usually configure the ethernet port by assiging ips
+eth0:192.168.33.64 and 
+eth1:192.168.174.231 ,subnet mask:255.255.255.0 and default gateway
+:192.168.32.47 eth0 and 192.168.174.47 eth1.
 
-Now if a lwarx/stwcx insn crossing a page boundary, the CPU hangs in
-an endless loop, because the reservation allocated from the lwarx gets
-cleared in the case of a tlb miss. And the CPU15 workaround invalidates
-the tlbs around the page we're faulting in, so we cause a nasty infinite
-loop. I started a service request at Freescale, and they are searching
-why a tlbie clears the reservation or under which circumstances this
-appears.
+an after that i enable lo (ifconfig lo 127.0.0.1) option in kernel.
 
-Without the CPU15 Errata patch it runs fine, but i can reproduce the
-CPU15 Bug, so I need the or some CPU15 Errata patch ...
+Now My requiremnt is to have both the ethernet port to be working
+physically.
+so i ping to both board ips(192.168.33.64 & 192.168.33.66).
+But what i found out is if FCC1 is configured as eth port at u-boot time
+then pinging will work untill FCC1 eth cabel
+is connected to RJ45 port.ie. cable connected at FCC2 port doesnot have any
+effect.
+and it seems to be both the port is dependent on the FCC1 port only.
 
-I also have a running 2.4.24-pre2 Kernel on this board, with the same
-CPU15 Errata patch, and there the hang doesnt occur!! Some ideas where
-the differences between 2.4.24-pre2 and 2.6.16 are?
 
-I also didnt get this hang in userspace with the 2.6.16er Kernel.
+Can anybody suggest what might be the issue?
 
-So I see at the moment the following possibilities:
 
-a) patching the gcc, so that the CPU15 Errata is no more necessary
-   My favorit.
-
-b) upgrade the CPU15 Bug like in the MPC885 Errata Sheet from Freescale
-   (I think this is to much code for in an Exceptionhandler ...)
-
-c) I made before every lwarcx a ".align" so that the insn is on one
-   page. This is actually running without seeing problems on the board.
-   But it is a "errata" for the "errata" ...
-
-d) ...
-
-Some suggestions, ideas? Especially, why the hang doesnt occur with a
-2.4.24-pre2 kernel?
-
-thanks
-Heiko
 -- 
-DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
-Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
+View this message in context: http://www.nabble.com/prob-on-2-ethrnet-working-tf3636663.html#a10155023
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
