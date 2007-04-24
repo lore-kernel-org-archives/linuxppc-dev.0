@@ -1,15 +1,20 @@
-Return-Path: <olof@lixom.net>
-Date: Tue, 24 Apr 2007 14:43:48 -0500
-To: Luke Browning <lukebr@linux.vnet.ibm.com>
-Subject: Re: [PATCH] 64K page support for kexec
-Message-ID: <20070424194348.GA8371@lixom.net>
-References: <1177439513.24866.5.camel@luke-laptop>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1177439513.24866.5.camel@luke-laptop>
-From: olof@lixom.net (Olof Johansson)
-Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
+Return-Path: <dan@embeddedalley.com>
+Received: from smtp109.biz.mail.re2.yahoo.com (smtp109.biz.mail.re2.yahoo.com
+	[206.190.53.8]) by ozlabs.org (Postfix) with SMTP id 33C10DDEDA
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 06:31:04 +1000 (EST)
+In-Reply-To: <20070424091831.1793fa26@localhost.localdomain>
+References: <20070423223649.4955.77579.stgit@localhost.localdomain>
+	<20070423223910.4955.18106.stgit@localhost.localdomain>
+	<5AC8BD28-125C-4552-97E9-D35E85D0E555@embeddedalley.com>
+	<20070424091831.1793fa26@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <3AC6566B-FCB5-4B45-B282-B737F51545ED@embeddedalley.com>
+From: Dan Malek <dan@embeddedalley.com>
+Subject: Re: [PATCH 2/2] POWERPC: Remove global CPM mappings
+Date: Tue, 24 Apr 2007 16:24:42 -0400
+To: Vitaly Bordug <vbordug@ru.mvista.com>
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,146 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi,
 
-Didn't see this posted before, but see some comments below.
+On Apr 24, 2007, at 1:18 AM, Vitaly Bordug wrote:
 
+> At first I was thinking of make_everybody_happy solution,
 
-Thanks,
-
-Olof
-On Tue, Apr 24, 2007 at 03:31:53PM -0300, Luke Browning wrote:
-
-> +#define LP_SHIFT	12
-> +#define LP_BITS		8
-> +#define LP_MASK(i)	((((1 << LP_BITS) - 1) >> (i)) << LP_SHIFT)
-
-Seems to me that something like:
-#define LP_MASK(i)	((0xff >> (i)) << LP_SHIFT)
-
-is considerably easier to read.
-
-> +static void hpte_decode(hpte_t *hpte, unsigned long slot, 
-> +			int *psize, unsigned long *va)
-> +{
-> +	unsigned long hpte_r = hpte->r;
-> +	unsigned long hpte_v = hpte->v;
-> +	unsigned long avpn;
-> +	int i, size, shift, penc, avpnm_bits;
-> +		
-> +	if (!(hpte_v & HPTE_V_LARGE))
-> +		size = MMU_PAGE_4K;
-> +#if 0
-> +	else if (hpte_v & 0x4000000000000000UL)
-> +		size = MMU_PAGE_16G;
-> +#endif
-
-No ifdefs please. Just take it out if it's not needed.
-
-> +	else if (!(hpte_r & LP_MASK(0)))
-> +		size = MMU_PAGE_16M;
-> +	else {
-> +		for (i = 0; i < LP_BITS; i++) {
-> +			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
-> +				break;
-> +		}
-> +		penc = LP_MASK(i+1) >> LP_SHIFT;
-
-No need for braces. Also, why iterate from 0 to LP_BITS if you're doing i+1 everywhere?
-
-> +		for (size = MMU_PAGE_64K; size < MMU_PAGE_16M; size++) {
-
-This assumes that the page sizes are ordered. Why not just iterate from
-0 to MMU_PAGE_COUNT?
-
-> +			if (!mmu_psize_defs[size].shift)
-> +				continue;
-
-A comment to the effect of "unused entries have a shift value of 0" could be
-useful.
-
-> +			if (penc == mmu_psize_defs[size].penc)
-> +				break;
-> +		}
-> +	}
->  
-> -		vpi = ((va >> 28) ^ pteg) & htab_hash_mask;
-> +	/*
-> +	 * FIXME, this could be made more efficient by storing the type 
-> +	 * of hash algorithm in mmu_psize_defs[].  The code below assumes 
-> +	 * the number of bits in the va representing the offset in the
-> +	 * page is less than 23. This affects the hash algorithm that is
-> +	 * used. When 16G pages are supported, a new hash algorithm
-> +	 * needs to be provided.  See POWER ISA Book III.
-> +	 *
-> +	 * The code below works for 16M, 64K, and 4K pages.
-> +	 */
-
-A BUG_ON() when other sizes are hit could be a good idea?
-
-> +	shift = mmu_psize_defs[size].shift;
-> +	if (mmu_psize_defs[size].avpnm)
-> +		avpnm_bits = __ilog2_u64(mmu_psize_defs[size].avpnm) + 1;
-> +	else
-> +		avpnm_bits = 0;
-> +	if (shift - avpnm_bits <= 23) {
-> +		avpn = HPTE_V_AVPN_VAL(hpte_v) << 23;
-> +
-> +		if (shift < 23) {
-> +			unsigned long vpi, pteg;
-> +
-> +			pteg = slot / HPTES_PER_GROUP;
-> +			if (hpte_v & HPTE_V_SECONDARY)
-> +				pteg = ~pteg;
-> +			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
-> +			avpn |= (vpi << mmu_psize_defs[size].shift);
-> +		}
-> +	}
-> +#if 0
-> +	/* 16GB page hash, p > 23 */
-> +	else {
-
-Same thing here w.r.t. ifdefs
-
->  
-> -		va |= vpi << PAGE_SHIFT;
->  	}
-> +#endif
->  
-> -	return va;
-> +	*va = avpn;
-> +	*psize = size;
->  }
->  
->  /*
-> @@ -374,8 +420,6 @@ static unsigned long slot2va(unsigned lo
->   *
->   * TODO: add batching support when enabled.  remember, no dynamic memory here,
->   * athough there is the control page available...
-> - *
-> - * XXX FIXME: 4k only for now !
->   */
->  static void native_hpte_clear(void)
->  {
-> @@ -383,6 +427,7 @@ static void native_hpte_clear(void)
->  	hpte_t *hptep = htab_address;
->  	unsigned long hpte_v;
->  	unsigned long pteg_count;
-> +	int psize;
->  
->  	pteg_count = htab_hash_mask + 1;
->  
-> @@ -408,8 +453,9 @@ static void native_hpte_clear(void)
->  		 * already hold the native_tlbie_lock.
->  		 */
->  		if (hpte_v & HPTE_V_VALID) {
-> +			hpte_decode(hptep, slot, &psize, &hpte_v);
->  			hptep->v = 0;
-> -			__tlbie(slot2va(hpte_v, slot), MMU_PAGE_4K);
-> +			__tlbie(hpte_v, psize);
-
-Using hpte_v as variable name is a bit misleading.  avpn or va would be
-a better variable name.
+Just make me happy :-)  The problem with these
+"works in progress" submissions is no one ever
+goes back to properly finish them, so I suspect
+this code you are checking in, which I don't
+like at all, is going to just stay there and bug
+me until _I_ fix it.
 
 
--Olof
+> I know it can be more efficient. And I am looking at this way, but  
+> it just cannot
+> be achieved via single step.
+
+Why?  Because it's more work than you want to do?
+
+> TODO list includes rehaul of GPIO (with long-time-grown
+> feature_call + device tree bindings that were implemented for 8360  
+> but looks reasonable), muxing, etc.
+
+Nothing you have done so far affects any of this.
+The things you are changing are the very basic
+support functions.  You'll never go back and
+fix these because then the excuse will be
+"all of the drivers now use it."
+
+> This patch just fixes what already exist in kernel, removing the  
+> global IMMR pointer
+
+It doesn't "fix" anything, it just changes the model to make it
+more heavyweight.
+
+> and bringing all remaining code paths to the same need_stuff- 
+> >immr_map->use_it->immr_unmap model.
+
+That's not the model.  The model is:  driver init maps IMMR,
+driver uses it's local mapping, driver unloaded unmaps IMMR.
+We don't map/unmap on every use.  The macros should be
+given this mapped immr as a parameter, not always
+map and unmap because it takes more than five minutes
+to properly change all of the APIs.
+
+> Current code is messy at some parts, and this what I am trying to  
+> address (with current patch and upcomings).
+
+IMHO this does nothing to clean it up.  I don't understand
+the big deal about needing to remove the IMMR as a global
+pointer.  The kernel has lots of other global variables that
+no one seems concerned about and admit they must be
+present.  These crappy macros and hacks in the name of
+removing a global IMMR just isn't right.
+
+> Thanks for looking at it!
+
+I'm not in any agreement this is correct nor do I want to
+see the crap checked in.  You're turning a simple,
+couple of clock cycle memory access into huge overhead,
+probably context switchable operation.  Someone is
+going to grab a spin lock, and end up crashing on
+what appears to be a trivial memory access.....
+
+This is not progress.
+
+
+Thanks.
+
+	-- Dan
