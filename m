@@ -2,21 +2,22 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 37914DDEE7
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 08:34:44 +1000 (EST)
-Subject: Re: [PATCH] generic check_legacy_ioport
+	by ozlabs.org (Postfix) with ESMTP id 482F3DDF09
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 08:36:02 +1000 (EST)
+Subject: Re: [PATCH] powerpc: uninline of_iomap function
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olaf@aepfle.de>
-In-Reply-To: <20070424112530.GA11489@aepfle.de>
-References: <20070417210745.GA3567@aepfle.de>
-	<20070423081540.GA28244@aepfle.de>
-	<1177376000.14873.38.camel@localhost.localdomain>
-	<20070424112530.GA11489@aepfle.de>
+To: Christian Krafft <krafft@de.ibm.com>
+In-Reply-To: <20070424173202.15e5ce42@localhost>
+References: <20070423193538.576702568@arndb.de>
+	<20070423193913.119032752@arndb.de>
+	<1177378533.14873.48.camel@localhost.localdomain>
+	<20070424173202.15e5ce42@localhost>
 Content-Type: text/plain
-Date: Wed, 25 Apr 2007 08:34:36 +1000
-Message-Id: <1177454076.14873.128.camel@localhost.localdomain>
+Date: Wed, 25 Apr 2007 08:35:48 +1000
+Message-Id: <1177454148.14873.130.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,74 +27,70 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
-> Do you think a device_type fdc, i8042 or ipmi will appear outside an isa
-> node?
-
-Well, if they do, I don't want that code to recognize them... I'm pretty
-sure for example we have IPMI on QS21 blades and it's not on an ISA bus
-and shouldn't match the legacy IO ports for example.
-
-> > To be totally correct, we should -also- check if the port number fits in
-> > the the actual "reg" property but I'm not sure I can be bothered :-)
+On Tue, 2007-04-24 at 17:32 +0200, Christian Krafft wrote:
+> From: Christian Krafft <krafft@de.ibm.com>
+> There is no big reason to have that function inlined.
 > 
-> Why all this complexity? Its there mainly to match a class of boards,
-> not to match a specific device configuration.
+> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
+> Index: linux-2.6.21-rc4/arch/powerpc/kernel/prom_parse.c
+> ===================================================================
+> --- linux-2.6.21-rc4.orig/arch/powerpc/kernel/prom_parse.c
+> +++ linux-2.6.21-rc4/arch/powerpc/kernel/prom_parse.c
+> @@ -1042,3 +1042,15 @@ const void *of_get_mac_address(struct de
+>  }
+>  EXPORT_SYMBOL(of_get_mac_address);
+>  
+> +void __iomem *of_iomap(struct device_node *np, int index)
+> +{
+> +	struct resource res;
+> +
+> +	if (of_address_to_resource(np, index, &res))
+> +		return NULL;
+> +
+> +	return ioremap(res.start, 1 + res.end - res.start);
+> +}
+> +EXPORT_SYMBOL(of_iomap);
+> +
+> +
+> Index: linux-2.6.21-rc4/include/asm-powerpc/prom.h
+> ===================================================================
+> --- linux-2.6.21-rc4.orig/include/asm-powerpc/prom.h
+> +++ linux-2.6.21-rc4/include/asm-powerpc/prom.h
+> @@ -19,7 +19,6 @@
+>  #include <linux/proc_fs.h>
+>  #include <linux/platform_device.h>
+>  #include <asm/atomic.h>
+> -#include <asm/io.h>
+>  
+>  /* Definitions used by the flattened device tree */
+>  #define OF_DT_HEADER		0xd00dfeed	/* marker */
+> @@ -352,16 +351,14 @@ static inline int of_irq_to_resource(str
+>  	return irq;
+>  }
+>  
+> -static inline void __iomem *of_iomap(struct device_node *np, int index)
+> -{
+> -	struct resource res;
+> -
+> -	if (of_address_to_resource(np, index, &res))
+> -		return NULL;
+> -
+> -	return ioremap(res.start, 1 + res.end - res.start);
+> -}
+> -
+> +/**
+> + * of_iomap - Maps the memory mapped IO for a given device_node
+> + * @device:	the device whose io range will be mapped
+> + * @index:	index of the io range
+> + *
+> + * Returns a pointer to the mapped memory
+> + */
+> +extern void __iomem *of_iomap(struct device_node *device, int index);
+>  
+>  #endif /* __KERNEL__ */
+>  #endif /* _POWERPC_PROM_H */
 > 
-> Thats how it may look finally, currently only compile tested.
 > 
-> int check_legacy_ioport(unsigned long base_port)
-> {
->         struct device_node *parent, *np = NULL;
->         int ret = -ENODEV;
-> 
->         switch(base_port) {
->         case I8042_DATA_REG:
->                 np = of_find_node_by_type(NULL, "8042");
->                 break;
->         case FDC_BASE: /* FDC1 */
->                 np = of_find_node_by_type(NULL, "fdc");
->                 break;
->         case 0xca2:
->         case 0xca9:
->         case 0xe4:
->                 np = of_find_node_by_type(NULL, "ipmi");
->                 break;
-> #ifdef CONFIG_PPC_PREP
->         case _PIDXR:
->         case _PNPWRP:
->         case PNPBIOS_BASE:
->                 /* implement me */
-> #endif
->         default:
->                 break;
->         }
->         if (np) {
-
-Why not just
-
-	if (np == NULL)
-		return -ENODEV;
-
-And save some tabs ? :-)
-
->                 parent = of_get_parent(np);
->                 if (parent) {
->                         ret = strcmp(parent->type, "isa");
->                         of_node_put(parent);
->                 }
->                 of_node_put(np);
->         }
->         return ret;
-> }
-
-Looks good except maybe
-
-	ret = strcmp(parent->type, "isa");
-
-should probably be
-
-	ret = strcmp(parent->type, "isa") ? -ENODEV : 0;
-
-Cheers,
-Ben.
