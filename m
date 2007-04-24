@@ -1,15 +1,23 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 4BCDDDDE3E
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 04:01:35 +1000 (EST)
-Date: Tue, 24 Apr 2007 13:01:34 -0500
-To: paulus@samba.org
-Subject: [PATCH] pasemi: remove build warning
-Message-ID: <20070424180134.GB7985@lixom.net>
+Return-Path: <jeff@garzik.org>
+Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E207DDDF2C
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 04:01:51 +1000 (EST)
+Message-ID: <462E4605.7070706@garzik.org>
+Date: Tue, 24 Apr 2007 14:01:41 -0400
+From: Jeff Garzik <jeff@garzik.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org
+To: Jan-Bernd Themann <ossthema@de.ibm.com>
+Subject: Re: [PATCH] ehea: fix for dlpar and sysfs entries
+References: <200704051122.28428.ossthema@de.ibm.com>
+In-Reply-To: <200704051122.28428.ossthema@de.ibm.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
+	netdev <netdev@vger.kernel.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
+	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,20 +27,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-arch/powerpc/platforms/pasemi/setup.c: In function 'pasemi_publish_devices':
-arch/powerpc/platforms/pasemi/setup.c:220: warning: implicit declaration of function 'of_platform_bus_probe'
+Jan-Bernd Themann wrote:
+> This patch includes:
+> - dlpar fix: 
+> 	certain resources may only be allocated when first
+> 	logical port is available, and must be removed when
+> 	last logical port has been removed
+> 
+> - sysfs entries:
+> 	create symbolic link from each logical port to ehea driver
+> 
+> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
 
-Signed-off-by: Olof Johansson <olof@lixom.net>
-
-diff --git a/arch/powerpc/platforms/pasemi/setup.c b/arch/powerpc/platforms/pasemi/setup.c
-index 9944ffc..a7bf88e 100644
---- a/arch/powerpc/platforms/pasemi/setup.c
-+++ b/arch/powerpc/platforms/pasemi/setup.c
-@@ -35,6 +35,7 @@
- #include <asm/mpic.h>
- #include <asm/smp.h>
- #include <asm/time.h>
-+#include <asm/of_platform.h>
- 
- #include "pasemi.h"
- 
+What Arnd said... this should be two patches
