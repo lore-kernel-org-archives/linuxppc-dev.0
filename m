@@ -1,23 +1,19 @@
-Return-Path: <jeff@garzik.org>
-Received: from mail.dvmed.net (srv5.dvmed.net [207.36.208.214])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E207DDDF2C
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 04:01:51 +1000 (EST)
-Message-ID: <462E4605.7070706@garzik.org>
-Date: Tue, 24 Apr 2007 14:01:41 -0400
-From: Jeff Garzik <jeff@garzik.org>
-MIME-Version: 1.0
-To: Jan-Bernd Themann <ossthema@de.ibm.com>
-Subject: Re: [PATCH] ehea: fix for dlpar and sysfs entries
-References: <200704051122.28428.ossthema@de.ibm.com>
-In-Reply-To: <200704051122.28428.ossthema@de.ibm.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Christoph Raisch <raisch@de.ibm.com>,
-	Marcus Eder <meder@de.ibm.com>, Stefan Roscher <stefan.roscher@de.ibm.com>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 7B424DDF2B
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 04:04:51 +1000 (EST)
+Date: Tue, 24 Apr 2007 11:04:56 -0700 (PDT)
+Message-Id: <20070424.110456.124867547.davem@davemloft.net>
+To: jdl@freescale.com
+Subject: Re: [PATCH 1/6] Start split out of common open firmware code
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <AF0367BA48C55940A43CCF08DF35553C011ECCD1@az33exm24.fsl.freescale.net>
+References: <20070424223245.78f4fdfb.sfr@canb.auug_.org.au>
+	<f64705c9250a93dcb7a4015b9a0d5667@kernel.crashing.org>
+	<AF0367BA48C55940A43CCF08DF35553C011ECCD1@az33exm24.fsl.freescale.net>
+Mime-Version: 1.0
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,16 +23,57 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Jan-Bernd Themann wrote:
-> This patch includes:
-> - dlpar fix: 
-> 	certain resources may only be allocated when first
-> 	logical port is available, and must be removed when
-> 	last logical port has been removed
-> 
-> - sysfs entries:
-> 	create symbolic link from each logical port to ehea driver
-> 
-> Signed-off-by: Jan-Bernd Themann <themann@de.ibm.com>
+From: "Loeliger Jon-LOELIGER" <jdl@freescale.com>
+Date: Tue, 24 Apr 2007 07:47:10 -0700
 
-What Arnd said... this should be two patches
+>  
+> > > +int of_n_addr_cells(struct device_node *np)
+> > > +{
+> > > +	const int *ip;
+> > > +
+> > > +	do {
+> > > +		if (np->parent)
+> > > +			np = np->parent;
+> > > +		ip = of_get_property(np, "#address-cells", NULL);
+> > > +		if (ip)
+> > > +			return *ip;
+> > > +	} while (np->parent);
+> > > +	/* No #address-cells property for the root node */
+> > > +	return OF_ROOT_NODE_ADDR_CELLS_DEFAULT;
+> > > +}
+> > > +EXPORT_SYMBOL(of_n_addr_cells);
+> > 
+> > While I realise your patch is just moving stuff around,
+> > can this be fixed please?  A missing "#address-cells"
+> > property means "two cells", not "inherit from parent".
+> > The few platforms with a broken tree should just be
+> > fixed (patch the tree in the bootwrapper, or perhaps
+> > _do_ use this workaround, but only on the affected
+> > platforms).
+> > 
+> > > +int of_n_size_cells(struct device_node *np)
+> > 
+> > Same here (the default is one cell though).
+> 
+> Agreed.  We actually discussed this quite some time ago.
+
+I totally disagree that you should be changing anything
+during these consolidations.
+
+Move the code around in one pass where you can _VERIFY_
+that things are precisely the same and won't break.
+
+Then later you can get fancy and change things however you
+wish.
+
+You people giving comments like this have your priorities totally
+screwed up and you are doing nothing but unnecessarily slowing down
+this wonderful consolidation.  Even worse you might even be giving
+Stephen a disincentive to keep working actively on this.
+
+So please STOP THIS CRAP now, thanks.
+
+Everything so far is pure whining, and has nothing to do with
+the substance of what Stephen is trying to accomplish, a
+_CODE CONSOLIDATION_.  So please don't get in the way of that
+effort.
