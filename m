@@ -1,22 +1,20 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id 0AE1ADDEF4
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id BECFEDDEE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Apr 2007 08:17:40 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so236547ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 15:17:39 -0700 (PDT)
-Message-ID: <528646bc0704241517g595bf7bfqe54e40b05f74e933@mail.gmail.com>
-Date: Tue, 24 Apr 2007 16:17:38 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Andrei Konovalov" <akonovalov@ru.mvista.com>
+	Wed, 25 Apr 2007 08:35:26 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-embedded@ozlabs.org
 Subject: Re: [PATCH] Xilinx framebuffer device driver
+Date: Wed, 25 Apr 2007 00:35:18 +0200
+References: <462E0D5C.1090105@ru.mvista.com>
 In-Reply-To: <462E0D5C.1090105@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <462E0D5C.1090105@ru.mvista.com>
-Cc: Rick Moleres <rick.moleres@xilinx.com>, linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-15"
+Message-Id: <200704250035.18673.arnd@arndb.de>
+Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
+	Rick Moleres <rick.moleres@xilinx.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,32 +25,30 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/24/07, Andrei Konovalov <akonovalov@ru.mvista.com> wrote:
-> Add support for the video controller IP block included into Xilinx ML300 and
-> ML403 reference designs.
->
-> Signed-off-by: Andrei Konovalov <akonovalov@ru.mvista.com>
-> ---
->
-> This patch relies on the "Patchset to establish sanity in Xilinx Virtex support" by Gran Likely to have
-> the frame buffer device registered on the platform bus. Without this patchset one needs to fill in
-> the struct platform_device and make sure platform_device_register() is called elsewhere.
->
-> Reviews and comments are welcome.
->
-> Would be nice to get this driver into mainline for the 2.6.22.
-
-Quick comment on first perusal:  The driver uses the out_be32 macro
-directly for accessing registers, which doesn't work if the FB block
-is configured for DCR access (like the ML403 reference design).  There
-will need to be a property in the platform device binding to determine
-how to access registers.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+PiAroKCgoKCgoC5hY3RpdmF0ZSA9oKCgoKBGQl9BQ1RJVkFURV9OT1csCj4gK6CgoKCgoKAuaGVp
+Z2h0ID0goKCgoKCgOTksoKCgoKAvKiBpbiBtbSBvZiBORUMgTkw2NDQ4QkMyMC0wOCBvbiBNTDMw
+MCAqLwo+ICugoKCgoKCgLndpZHRoID2goKCgoKCgoDEzMqCgoKCgLyogaW4gbW0gb2YgTkVDIE5M
+NjQ0OEJDMjAtMDggb24gTUwzMDAgKi8KPiArfTsKClRoZSBzaXplIGxvb2tzIHZlcnkgc3BlY2lm
+aWMgdG8gYSBwYXJ0aWN1bGFyIGRpc3BsYXkgaGFyZHdhcmUuIEkgZ3Vlc3MKd2hlbiB0aGUgZHJp
+dmVyIGdldHMgY29udmVydGVkIHRvIGFuIG9mX3BsYXRmb3JtX2RyaXZlciwgdGhpcyBzaG91bGQg
+Y29tZQpmcm9tIHRoZSBkZXZpY2UgdHJlZS4KClVudGlsIHRoZW4sIG1heWJlIGEgY29uZmlnIG9w
+dGlvbiwgd2l0aCBhIHJlYXNvbmFibGUgZGVmYXVsdCB3b3VsZCBiZQpyaWdodC4KCj4gKwo+ICtz
+dHJ1Y3QgeGlsaW54ZmJfZHJ2ZGF0YSB7Cj4gKwo+ICugoKCgoKCgc3RydWN0IGZiX2luZm+goGlu
+Zm87oKCgoKCgoKCgoKAvKiBGQiBkcml2ZXIgaW5mbyByZWNvcmQgKi8KPiArCj4gK6CgoKCgoKB1
+bnNpZ25lZCBsb25noKCgcmVnc19waHlzO6CgoKCgoC8qIHBoeXMuIGFkZHJlc3Mgb2YgdGhlIGNv
+bnRyb2wgcmVnaXN0ZXJzICovCj4gK6CgoKCgoKB1MzIgoKCgoKCgoKCgoKCgKnJlZ3M7oKCgoKCg
+oKCgoC8qIHZpcnQuIGFkZHJlc3Mgb2YgdGhlIGNvbnRyb2wgcmVnaXN0ZXJzICovCj4gKwo+ICug
+oKCgoKCgdW5zaWduZWQgY2hhcqCgoCpmYl92aXJ0O6CgoKCgoKAvKiB2aXJ0LiBhZGRyZXNzIG9m
+IHRoZSBmcmFtZSBidWZmZXIgKi8KClRoZSB2aXJ0dWFsIGFkZHJlc3NlcyBzaG91bGQgYmUgbWFy
+a2VkIGFzIF9faW9tZW0sIHNvIHlvdSBjYW4gY2hlY2sgdGhlIGNvcnJlY3QKdXNhZ2Ugd2l0aCBz
+cGFyc2UuCgpOb3Qgc3VyZSBhYm91dCByZWdzX3BoeXMuIENhbiB0aGlzIGJlIGJleW9uZCB0aGUg
+MzIgYml0IGxpbWl0IG9uIGFueSBtYWNoaW5lPwoKPiArCj4gK6CgoKCgoKBkcnZkYXRhID0ga21h
+bGxvYyhzaXplb2Yoc3RydWN0IHhpbGlueGZiX2RydmRhdGEpLCBHRlBfS0VSTkVMKTsKPiAroKCg
+oKCgoGlmICghZHJ2ZGF0YSkgewo+ICugoKCgoKCgoKCgoKCgoKBwcmludGsoS0VSTl9FUlIgIkNv
+dWxkbid0IGFsbG9jYXRlIGRldmljZSBwcml2YXRlIHJlY29yZFxuIik7Cj4gK6CgoKCgoKCgoKCg
+oKCgoHJldHVybiAtRU5PTUVNOwo+ICugoKCgoKCgfQo+ICugoKCgoKCgbWVtc2V0KCh2b2lkKilk
+cnZkYXRhLCAwLCBzaXplb2Yoc3RydWN0IHhpbGlueGZiX2RydmRhdGEpKTsKClVzZQoJZHJ2ZGF0
+YSA9IGt6YWxsb2Moc2l6ZW9mICgqZHJ2ZGF0YSksIEdGUF9LRVJORUwpOwoKPiAroKCgoKCgoGRy
+dmRhdGEtPnJlZ3NfcGh5cyA9IHJlZ3NfcmVzLT5zdGFydDsKPiAroKCgoKCgoGRydmRhdGEtPnJl
+Z3MgPSAodTMyICopIGlvcmVtYXAocmVnc19yZXMtPnN0YXJ0LCA4KTsKCnUzMiBfX2lvbWVtKgoK
+CglBcm5kIDw+PAo=
