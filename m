@@ -1,30 +1,12 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A1015DDEA3
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 15:01:54 +1000 (EST)
-Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: "Eric W. Biederman" <ebiederm@xmission.com>
-In-Reply-To: <m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769695763104-git-send-email-ebiederm@xmission.com>
-	<20070422123155.GF20763@infradead.org>
-	<20070423205020.GR31947@austin.ibm.com>
-	<1177378733.14873.52.camel@localhost.localdomain>
-	<m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-	<1177382544.14873.57.camel@localhost.localdomain>
-	<m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 15:00:42 +1000
-Message-Id: <1177390842.14873.94.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, containers@lists.osdl.org,
-	Oleg Nesterov <oleg@tv-sign.ru>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 24 Apr 2007 15:05:18 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Paul Mackerras <paulus@samba.org>
+Subject: powerpc: Abolish PHYS_FMT macro from arch/powerpc
+Message-ID: <20070424050518.GC30007@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,30 +16,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+32-bit powerpc systems define a macro, PHYS_FMT, giving a printf
+format string fragment for displaying physical addresses, since most
+32-bit powerpc platforms use 32-bit physical addresses but a few use
+64-bit physical addresses.
 
-> Further in general it doesn't make sense to grab a module reference
-> and call that sufficient because we would like to request that the
-> module exits.
+This macro is used in exactly one place, a rare error message, where
+we can solve the problem more simply by just unconditionally casting
+the address up to 64-bit quantity before formatting it.
 
-Which is, btw, I think a total misdesign of our module stuff, but heh, I
-remember that lead to some flamewars back then...
+This patch does so, meaning that as we bring MMU definitions from
+asm-ppc over to asm-powerpc, cleaning them up in the process, we don't
+need to implement this ugly macro (which additionally has a very bad
+name for something global).
 
-Like anything else, modules should have separated the entrypoints for
+Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
 
- - Initiating a removal request
- - Releasing the module
+Index: working-2.6/arch/powerpc/mm/pgtable_32.c
+===================================================================
+--- working-2.6.orig/arch/powerpc/mm/pgtable_32.c	2007-04-24 14:58:10.000000000 +1000
++++ working-2.6/arch/powerpc/mm/pgtable_32.c	2007-04-24 14:58:46.000000000 +1000
+@@ -183,8 +183,8 @@ __ioremap(phys_addr_t addr, unsigned lon
+ 	 * mem_init() sets high_memory so only do the check after that.
+ 	 */
+ 	if (mem_init_done && (p < virt_to_phys(high_memory))) {
+-		printk("__ioremap(): phys addr "PHYS_FMT" is RAM lr %p\n", p,
+-		       __builtin_return_address(0));
++		printk("__ioremap(): phys addr 0x%llx is RAM lr %p\n",
++		       (unsigned long long)p, __builtin_return_address(0));
+ 		return NULL;
+ 	}
+ 
 
-The former is use did "rmmod", can unregister things from subsystems,
-etc... (and can file if the driver decides to refuse removal requests
-when it's busy doing things or whatever policy that module wants to
-implement).
-
-The later is called when all references to the modules have been
-dropped, it's a bit like the kref "release" (and could be implemented as
-one).
-
-If we had done that (simple) thing back then, module refcounting would
-have been much less of a problem... I remember some reasons why that was
-veto'ed but I didn't and still don't agree.
-
-Ben.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
