@@ -1,33 +1,36 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <krafft@de.ibm.com>
+Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 66CB5DDF54
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 00:47:19 +1000 (EST)
-Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
-	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
-	l3OElDcp027519
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 07:47:13 -0700 (MST)
-Received: from az33exm24.fsl.freescale.net (az33exm24.am.freescale.net
-	[10.64.32.14])
-	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l3OElBtv011518
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 09:47:11 -0500 (CDT)
-MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: RE: [PATCH 1/6] Start split out of common open firmware code
-Date: Tue, 24 Apr 2007 07:47:10 -0700
-Message-ID: <AF0367BA48C55940A43CCF08DF35553C011ECCD1@az33exm24.fsl.freescale.net>
-In-Reply-To: <f64705c9250a93dcb7a4015b9a0d5667@kernel.crashing.org>
-References: <20070403105217.7b9fea08.sfr@canb.auug.org.au><20070403222841.a2c6af1c.sfr@canb.auug.org.au><20070403223000.5d44b2f1.sfr@canb.auug.org.au><20070403223136.6ecdabbd.sfr@canb.auug.org.au><20070403223257.cb8c4d15.sfr@canb.auug.org.au><20070403223535.dd6731d6.sfr@canb.auug.org.au><20070403223738.03386a13.sfr@canb.auug.org.au><20070403223914.35bf04e1.sfr@canb.auug.org.au><20070403224039.913af749.sfr@canb.auug.org.au><20070403224205.807cffe0.sfr@canb.auug.org.au><20070403224340.5533abc9.sfr@canb.auug.org.au><20070403224505.5d5a1495.sfr@canb.auug.org.au><20070403224610.b61c7377.sfr@canb.auug.org.au><20070403224937.f6a07e56.sfr@canb.auug.org.au><20070403225059.e735b5e4.sfr@canb.auug.org.au><20070403225222.88e92221.sfr@canb.auug.org.au><20070403230505.f96ea210.sfr@canb.auug.org.au><20070403232406.ab9a3c86.sfr@canb.auug.org.au><20070412141905.6f30efd3.sfr@canb.auug.org.au><20070412153424.bf3957f4.sfr@canb.auug.org.au><20070424223245.78f4fdfb.sfr@canb.auug
-	.org.au> <f64705c9! 250a93dcb 7a4015b9a0d5667@kernel.crashing.org>
-From: "Loeliger Jon-LOELIGER" <jdl@freescale.com>
-To: "Segher Boessenkool" <segher@kernel.crashing.org>,
-	"Stephen Rothwell" <sfr@canb.auug.org.au>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
-	"David S. Miller" <davem@davemloft.net>
+	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 8631DDDF4A
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 01:32:46 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l3OFWefL048316
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 15:32:40 GMT
+Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
+	[9.149.165.228])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l3OFWev23592396
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 17:32:40 +0200
+Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l3OFWdUo007940
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 17:32:40 +0200
+Date: Tue, 24 Apr 2007 17:32:02 +0200
+From: Christian Krafft <krafft@de.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc: uninline of_iomap function
+Message-ID: <20070424173202.15e5ce42@localhost>
+In-Reply-To: <1177378533.14873.48.camel@localhost.localdomain>
+References: <20070423193538.576702568@arndb.de>
+	<20070423193913.119032752@arndb.de>
+	<1177378533.14873.48.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: multipart/signed; boundary=Sig_X.Oc+Y7.gA6.0UP_Qn55wkd;
+	protocol="application/pgp-signature"; micalg=PGP-SHA1
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -37,38 +40,104 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+--Sig_X.Oc+Y7.gA6.0UP_Qn55wkd
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
+
+From: Christian Krafft <krafft@de.ibm.com>
+There is no big reason to have that function inlined.
+
+Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+
+Index: linux-2.6.21-rc4/arch/powerpc/kernel/prom_parse.c
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.21-rc4.orig/arch/powerpc/kernel/prom_parse.c
++++ linux-2.6.21-rc4/arch/powerpc/kernel/prom_parse.c
+@@ -1042,3 +1042,15 @@ const void *of_get_mac_address(struct de
+ }
+ EXPORT_SYMBOL(of_get_mac_address);
 =20
-> > +int of_n_addr_cells(struct device_node *np)
-> > +{
-> > +	const int *ip;
-> > +
-> > +	do {
-> > +		if (np->parent)
-> > +			np =3D np->parent;
-> > +		ip =3D of_get_property(np, "#address-cells", NULL);
-> > +		if (ip)
-> > +			return *ip;
-> > +	} while (np->parent);
-> > +	/* No #address-cells property for the root node */
-> > +	return OF_ROOT_NODE_ADDR_CELLS_DEFAULT;
-> > +}
-> > +EXPORT_SYMBOL(of_n_addr_cells);
->=20
-> While I realise your patch is just moving stuff around,
-> can this be fixed please?  A missing "#address-cells"
-> property means "two cells", not "inherit from parent".
-> The few platforms with a broken tree should just be
-> fixed (patch the tree in the bootwrapper, or perhaps
-> _do_ use this workaround, but only on the affected
-> platforms).
->=20
-> > +int of_n_size_cells(struct device_node *np)
->=20
-> Same here (the default is one cell though).
++void __iomem *of_iomap(struct device_node *np, int index)
++{
++	struct resource res;
++
++	if (of_address_to_resource(np, index, &res))
++		return NULL;
++
++	return ioremap(res.start, 1 + res.end - res.start);
++}
++EXPORT_SYMBOL(of_iomap);
++
++
+Index: linux-2.6.21-rc4/include/asm-powerpc/prom.h
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+--- linux-2.6.21-rc4.orig/include/asm-powerpc/prom.h
++++ linux-2.6.21-rc4/include/asm-powerpc/prom.h
+@@ -19,7 +19,6 @@
+ #include <linux/proc_fs.h>
+ #include <linux/platform_device.h>
+ #include <asm/atomic.h>
+-#include <asm/io.h>
+=20
+ /* Definitions used by the flattened device tree */
+ #define OF_DT_HEADER		0xd00dfeed	/* marker */
+@@ -352,16 +351,14 @@ static inline int of_irq_to_resource(str
+ 	return irq;
+ }
+=20
+-static inline void __iomem *of_iomap(struct device_node *np, int index)
+-{
+-	struct resource res;
+-
+-	if (of_address_to_resource(np, index, &res))
+-		return NULL;
+-
+-	return ioremap(res.start, 1 + res.end - res.start);
+-}
+-
++/**
++ * of_iomap - Maps the memory mapped IO for a given device_node
++ * @device:	the device whose io range will be mapped
++ * @index:	index of the io range
++ *
++ * Returns a pointer to the mapped memory
++ */
++extern void __iomem *of_iomap(struct device_node *device, int index);
+=20
+ #endif /* __KERNEL__ */
+ #endif /* _POWERPC_PROM_H */
 
-Agreed.  We actually discussed this quite some time ago.
 
-Thanks,
-jdl
+--=20
+Mit freundlichen Gruessen,
+kind regards,
 
-PS -- Any fixes for the DTC would be welcomed patches too! :-)
+Christian Krafft
+IBM Systems & Technology Group,
+Linux Kernel Development
+IT Specialist
+
+
+Vorsitzender des Aufsichtsrats:	Johann Weihen
+Geschaeftsfuehrung:		Herbert Kircher
+Sitz der Gesellschaft:		Boeblingen
+Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+
+
+--Sig_X.Oc+Y7.gA6.0UP_Qn55wkd
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Disposition: attachment; filename=signature.asc
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGLiMS6rqK4qDx+dcRAhm8AJ464H/5VaoYIGXoHDQp/3SsKLPylwCfQviV
+EpGjN3AF9+H55S8NYx9sHLs=
+=lJYO
+-----END PGP SIGNATURE-----
+
+--Sig_X.Oc+Y7.gA6.0UP_Qn55wkd--
