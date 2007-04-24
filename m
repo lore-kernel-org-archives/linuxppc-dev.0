@@ -1,21 +1,17 @@
-Return-Path: <linuxppcemb@lkmail.de>
-Received: from pm1.terions.de (pm1.terions.de [83.137.96.25])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.s-s-l.net",
-	Issuer "Equifax Secure Global eBusiness CA-1" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id EA935DDF37
+Return-Path: <mamsadegh@hotmail.com>
+Received: from bay0-omc3-s16.bay0.hotmail.com (bay0-omc3-s16.bay0.hotmail.com
+	[65.54.246.216]) by ozlabs.org (Postfix) with ESMTP id B734FDDF4D
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Apr 2007 01:15:08 +1000 (EST)
-From: "Lorenz Kolb" <linuxppcemb@lkmail.de>
-To: <linuxppc-embedded@ozlabs.org>
-References: <mailman.1028.1177426735.26657.linuxppc-embedded@ozlabs.org>
-In-Reply-To: <mailman.1028.1177426735.26657.linuxppc-embedded@ozlabs.org>
-Subject: Re: Using Xilinx Framebuffer on ML405 and 2.6.20.4
-Date: Tue, 24 Apr 2007 17:07:57 +0200
-Message-ID: <000001c78682$5e6a3e40$1b3ebac0$@de>
+	Wed, 25 Apr 2007 01:37:15 +1000 (EST)
+Message-ID: <BAY115-W14E65268F6A301B98090EEB24A0@phx.gbl>
+From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+To: <grant.likely@secretlab.ca>
+Subject: RE: 2.6 Kernel , Xilinx Virtex and PPC 405 On chip memory
+	controllers ( DSOCM and ISOCM )
+Date: Tue, 24 Apr 2007 15:37:14 +0000
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,39 +22,45 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-> Message: 1
-> Date: Tue, 24 Apr 2007 17:58:13 +0400
-> From: Andrei Konovalov <akonovalov@ru.mvista.com>
-> Subject: Re: Using Xilinx Framebuffer on ML405 and 2.6.20.4
-> To: Grant Likely <grant.likely@secretlab.ca>
-> Cc: linuxppc-embedded@ozlabs.org
-> Message-ID: <462E0CF5.4060402@ru.mvista.com>
-> Content-Type: text/plain; charset=ISO-8859-1; format=flowed
->
-> Grant Likely wrote:
->> On 4/24/07, Peter Mendham <petermendham@computing.dundee.ac.uk> wrote:
->>> Dear all,
->>>
->>> I am wanting to use the Xilinx TFT controller from the ML403/5 reference
->>> project (probably from ML300 as well) under a 2.6.20.4 kernel.  I have
->>> Grant Likely's patchset applied in which there is a platform device
->>> entry for the framebuffer.  Does anyone know if there is mainline
->>> support for the Xilinx-style framebuffer?  If so, how do I enable it?  I
->>> have included framebuffer support in my kernel build, but I assume I
->>> need a driver also? Any tips greatly appreciated.
->> 
->> Heh, I've got a driver.  I just haven't published it yet.  Give me a few
-days...
->> 
->> g.
->> 
->
-> We have one too :)
 
-To be continued: we have one too :)
-I guess fb support is too simple, as too many people have wrote that driver
-...
 
-Greetings,
+Then in mailing list I saw some where that AVNET mini-modules are using a v=
+ersion of FX12 FPGA which has problem with PPC caches and as the solution t=
+he caches should be off.
 
-Lorenz
+Does the kernel always turns on the caches? Or If I choose in the base syst=
+em builder to not to use caches, the kernel will not use them?=20
+
+Any special config parameter for this in xparameters.h?
+
+thanks
+
+
+
+----------------------------------------
+> Date: Tue, 24 Apr 2007 08:59:37 -0600
+> From: grant.likely@secretlab.ca
+> To: mamsadegh@hotmail.com
+> Subject: Re: 2.6 Kernel , Xilinx Virtex and PPC 405 On chip memory contro=
+llers ( DSOCM and ISOCM )
+> CC: linuxppc-embedded@ozlabs.org
+>=20
+> On 4/24/07, Mohammad Sadegh Sadri  wrote:
+> >
+> >
+> > what about the cache?
+> > Does the current kernel use the cache efficiently?
+>=20
+> Yes, the caches work and are turned on by the kernel.
+>=20
+> g.
+>=20
+> --=20
+> Grant Likely, B.Sc. P.Eng.
+> Secret Lab Technologies Ltd.
+> grant.likely@secretlab.ca
+> (403) 399-0195
+
+_________________________________________________________________
+News, entertainment and everything you care about at Live.com. Get it now!
+http://www.live.com/getstarted.aspx=
