@@ -1,21 +1,20 @@
-Return-Path: <rdreier@cisco.com>
-Received: from sj-iport-4.cisco.com (sj-iport-4.cisco.com [171.68.10.86])
-	by ozlabs.org (Postfix) with ESMTP id 2B755DDEA2
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 10:13:00 +1000 (EST)
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-Subject: Re: [RFC/PATCH] Change 440GP platform to ppc440
-References: <Pine.LNX.4.64.0704191615040.25069@localhost.localdomain>
-	<17961.22721.462194.785356@cargo.ozlabs.ibm.com>
-	<CE31BB28-E702-4425-A266-9D5D143A53DC@kernel.crashing.org>
-	<20070424000153.GD23995@crusty.rchland.ibm.com>
-From: Roland Dreier <rdreier@cisco.com>
-Date: Mon, 23 Apr 2007 17:12:58 -0700
-In-Reply-To: <20070424000153.GD23995@crusty.rchland.ibm.com> (Josh Boyer's
-	message of "Mon, 23 Apr 2007 19:01:54 -0500")
-Message-ID: <ada647m635h.fsf@cisco.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 75D58DDF0E
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 10:27:30 +1000 (EST)
+Subject: Re: [PATCH] [2/5] pasemi: enable one more hid bit
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070416062745.GD20196@lixom.net>
+References: <20070416062634.GB20196@lixom.net>
+	<20070416062745.GD20196@lixom.net>
+Content-Type: text/plain
+Date: Tue, 24 Apr 2007 10:27:20 +1000
+Message-Id: <1177374440.14873.33.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,12 +24,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> > I recall dimly that there was some user-visible difference between the
-> > 440GP and the other 440 processors, and that's why we made the
-> > platform string different.  I don't recall what the difference was.
+On Mon, 2007-04-16 at 01:27 -0500, Olof Johansson wrote:
+> Minor HID change. Firmware can't know that we want this set so we have
+> to set it in the kernel.
 
-FWIW, I've run the same userspace (binaries) on 405GPr, 440GP and
-440SPe without any problems.  Not that I'm a 4xx expert by any
-stretch, but I don't know of anything special about the 440GP.
-
- - R.
+Care to document/name these bits ?
+> 
+> Signed-off-by: Olof Johansson <olof@lixom.net>
+> 
+> Index: linux-2.6/arch/powerpc/kernel/cpu_setup_pa6t.S
+> ===================================================================
+> --- linux-2.6.orig/arch/powerpc/kernel/cpu_setup_pa6t.S
+> +++ linux-2.6/arch/powerpc/kernel/cpu_setup_pa6t.S
+> @@ -34,7 +34,7 @@ _GLOBAL(__setup_cpu_pa6t)
+>  	beqlr
+>  
+>  	mfspr	r0,SPRN_HID5
+> -	ori	r0,r0,0x30
+> +	ori	r0,r0,0x38
+>  	mtspr	SPRN_HID5,r0
+>  
+>  	mfspr	r0,SPRN_LPCR
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
