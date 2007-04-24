@@ -1,36 +1,33 @@
-Return-Path: <krafft@de.ibm.com>
-Received: from mtagate8.de.ibm.com (mtagate8.de.ibm.com [195.212.29.157])
+Return-Path: <fenkes@de.ibm.com>
+Received: from mtagate6.de.ibm.com (mtagate6.de.ibm.com [195.212.29.155])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate8.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 8631DDDF4A
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 01:32:46 +1000 (EST)
+	(Client CN "mtagate6.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id E4E0DDDF61
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 01:44:37 +1000 (EST)
 Received: from d12nrmr1607.megacenter.de.ibm.com
 	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate8.de.ibm.com (8.13.8/8.13.8) with ESMTP id l3OFWefL048316
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 15:32:40 GMT
+	by mtagate6.de.ibm.com (8.13.8/8.13.8) with ESMTP id l3OFiWC6150214
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 15:44:32 GMT
 Received: from d12av02.megacenter.de.ibm.com (d12av02.megacenter.de.ibm.com
 	[9.149.165.228])
 	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l3OFWev23592396
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 17:32:40 +0200
+	ESMTP id l3OFiWAT3395622
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 17:44:32 +0200
 Received: from d12av02.megacenter.de.ibm.com (loopback [127.0.0.1])
 	by d12av02.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l3OFWdUo007940
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 17:32:40 +0200
-Date: Tue, 24 Apr 2007 17:32:02 +0200
-From: Christian Krafft <krafft@de.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: Re: [PATCH] powerpc: uninline of_iomap function
-Message-ID: <20070424173202.15e5ce42@localhost>
-In-Reply-To: <1177378533.14873.48.camel@localhost.localdomain>
-References: <20070423193538.576702568@arndb.de>
-	<20070423193913.119032752@arndb.de>
-	<1177378533.14873.48.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: multipart/signed; boundary=Sig_X.Oc+Y7.gA6.0UP_Qn55wkd;
-	protocol="application/pgp-signature"; micalg=PGP-SHA1
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>
+	id l3OFiWlU023732
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 17:44:32 +0200
+From: Joachim Fenkes <fenkes@de.ibm.com>
+To: "LinuxPPC-Dev" <linuxppc-dev@ozlabs.org>,
+	LKML <linux-kernel@vger.kernel.org>,
+	"OF-General" <general@lists.openfabrics.org>,
+	Roland Dreier <rolandd@cisco.com>
+Subject: [PATCH] eHCA: Add "Modify Port" verb
+MIME-Version: 1.0
+Date: Tue, 24 Apr 2007 17:44:31 +0200
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704241744.31691.fenkes@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,104 +37,171 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Sig_X.Oc+Y7.gA6.0UP_Qn55wkd
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: quoted-printable
+Add "Modify Port" verb support to eHCA driver.
+ib_cm needs this to initialize properly.
 
-From: Christian Krafft <krafft@de.ibm.com>
-There is no big reason to have that function inlined.
 
-Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+Signed-off-by: Joachim Fenkes <fenkes@de.ibm.com>
+---
 
-Index: linux-2.6.21-rc4/arch/powerpc/kernel/prom_parse.c
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.21-rc4.orig/arch/powerpc/kernel/prom_parse.c
-+++ linux-2.6.21-rc4/arch/powerpc/kernel/prom_parse.c
-@@ -1042,3 +1042,15 @@ const void *of_get_mac_address(struct de
+This is the shiny new version of this patch with proper locking.
+Tested and works.
+
+ ehca_classes.h |    1 +
+ ehca_hca.c     |   55 +++++++++++++++++++++++++++++++++++++++++++++++++++++--
+ ehca_main.c    |    1 +
+ hcp_if.c       |   24 ++++++++++++++++++++++++
+ hcp_if.h       |    4 ++++
+ 5 files changed, 83 insertions(+), 2 deletions(-)
+
+diff -urp a/drivers/infiniband/hw/ehca/ehca_classes.h b/drivers/infiniband/hw/ehca/ehca_classes.h
+--- a/drivers/infiniband/hw/ehca/ehca_classes.h	2007-02-04 19:44:54.000000000 +0100
++++ b/drivers/infiniband/hw/ehca/ehca_classes.h	2007-04-24 14:51:38.000000000 +0200
+@@ -96,6 +96,7 @@ struct ehca_shca {
+ 	struct ehca_mr *maxmr;
+ 	struct ehca_pd *pd;
+ 	struct h_galpas galpas;
++	struct mutex modify_mutex;
+ };
+ 
+ struct ehca_pd {
+diff -urp a/drivers/infiniband/hw/ehca/ehca_hca.c b/drivers/infiniband/hw/ehca/ehca_hca.c
+--- a/drivers/infiniband/hw/ehca/ehca_hca.c	2007-02-04 19:44:54.000000000 +0100
++++ b/drivers/infiniband/hw/ehca/ehca_hca.c	2007-04-24 14:50:43.000000000 +0200
+@@ -147,6 +147,7 @@ int ehca_query_port(struct ib_device *ib
+ 		break;
+ 	}
+ 
++	props->port_cap_flags  = rblock->capability_mask;
+ 	props->gid_tbl_len     = rblock->gid_tbl_len;
+ 	props->max_msg_sz      = rblock->max_msg_sz;
+ 	props->bad_pkey_cntr   = rblock->bad_pkey_cntr;
+@@ -233,10 +234,60 @@ query_gid1:
+ 	return ret;
  }
- EXPORT_SYMBOL(of_get_mac_address);
-=20
-+void __iomem *of_iomap(struct device_node *np, int index)
+ 
++const u32 allowed_port_caps = (
++	IB_PORT_SM | IB_PORT_LED_INFO_SUP | IB_PORT_CM_SUP |
++	IB_PORT_SNMP_TUNNEL_SUP | IB_PORT_DEVICE_MGMT_SUP |
++	IB_PORT_VENDOR_CLASS_SUP);
++
+ int ehca_modify_port(struct ib_device *ibdev,
+ 		     u8 port, int port_modify_mask,
+ 		     struct ib_port_modify *props)
+ {
+-	/* Not implemented yet */
+-	return -EFAULT;
++	int ret = 0;
++	struct ehca_shca *shca = container_of(ibdev, struct ehca_shca, ib_device);
++	struct hipz_query_port *rblock;
++	u32 cap;
++	u64 hret;
++
++	if ((props->set_port_cap_mask | props->clr_port_cap_mask)
++	    & ~allowed_port_caps) {
++		ehca_err(&shca->ib_device, "Non-changeable bits set in masks  "
++			 "set=%x  clr=%x  allowed=%x", props->set_port_cap_mask,
++			 props->clr_port_cap_mask, allowed_port_caps);
++		return -EINVAL;
++	}
++
++	if (mutex_lock_interruptible(&shca->modify_mutex))
++                return -ERESTARTSYS;
++
++	rblock = ehca_alloc_fw_ctrlblock(GFP_KERNEL);
++	if (!rblock) {
++		ehca_err(&shca->ib_device,  "Can't allocate rblock memory.");
++		ret = -ENOMEM;
++		goto modify_port1;
++	}
++
++	if (hipz_h_query_port(shca->ipz_hca_handle, port, rblock) != H_SUCCESS) {
++		ehca_err(&shca->ib_device, "Can't query port properties");
++		ret = -EINVAL;
++		goto modify_port2;
++	}
++
++	cap = (rblock->capability_mask | props->set_port_cap_mask)
++		& ~props->clr_port_cap_mask;
++
++	hret = hipz_h_modify_port(shca->ipz_hca_handle, port,
++				  cap, props->init_type, port_modify_mask);
++	if (hret != H_SUCCESS) {
++		ehca_err(&shca->ib_device, "Modify port failed  hret=%lx", hret);
++		ret = -EINVAL;
++	}
++
++modify_port2:
++	ehca_free_fw_ctrlblock(rblock);
++
++modify_port1:
++        mutex_unlock(&shca->modify_mutex);
++
++	return ret;
+ }
+diff -urp a/drivers/infiniband/hw/ehca/ehca_main.c b/drivers/infiniband/hw/ehca/ehca_main.c
+--- a/drivers/infiniband/hw/ehca/ehca_main.c	2007-02-04 19:44:54.000000000 +0100
++++ b/drivers/infiniband/hw/ehca/ehca_main.c	2007-04-24 14:50:43.000000000 +0200
+@@ -583,6 +583,7 @@ static int __devinit ehca_probe(struct i
+ 		ehca_gen_err("Cannot allocate shca memory.");
+ 		return -ENOMEM;
+ 	}
++	mutex_init(&shca->modify_mutex);
+ 
+ 	shca->ibmebus_dev = dev;
+ 	shca->ipz_hca_handle.handle = *handle;
+diff -urp a/drivers/infiniband/hw/ehca/hcp_if.c b/drivers/infiniband/hw/ehca/hcp_if.c
+--- a/drivers/infiniband/hw/ehca/hcp_if.c	2007-02-04 19:44:54.000000000 +0100
++++ b/drivers/infiniband/hw/ehca/hcp_if.c	2007-04-23 18:06:09.000000000 +0200
+@@ -70,6 +70,10 @@
+ #define H_ALL_RES_QP_SQUEUE_SIZE_PAGES  EHCA_BMASK_IBM(0, 31)
+ #define H_ALL_RES_QP_RQUEUE_SIZE_PAGES  EHCA_BMASK_IBM(32, 63)
+ 
++#define H_MP_INIT_TYPE                  EHCA_BMASK_IBM(44, 47)
++#define H_MP_SHUTDOWN                   EHCA_BMASK_IBM(48, 48)
++#define H_MP_RESET_QKEY_CTR             EHCA_BMASK_IBM(49, 49)
++
+ /* direct access qp controls */
+ #define DAQP_CTRL_ENABLE    0x01
+ #define DAQP_CTRL_SEND_COMP 0x20
+@@ -364,6 +368,26 @@ u64 hipz_h_query_port(const struct ipz_a
+ 	return ret;
+ }
+ 
++u64 hipz_h_modify_port(const struct ipz_adapter_handle adapter_handle,
++		       const u8 port_id, const u32 port_cap,
++		       const u8 init_type, const int modify_mask)
 +{
-+	struct resource res;
++	u64 port_attributes = port_cap;
 +
-+	if (of_address_to_resource(np, index, &res))
-+		return NULL;
++	if (modify_mask & IB_PORT_SHUTDOWN)
++		port_attributes |= EHCA_BMASK_SET(H_MP_SHUTDOWN, 1);
++	if (modify_mask & IB_PORT_INIT_TYPE)
++		port_attributes |= EHCA_BMASK_SET(H_MP_INIT_TYPE, init_type);
++	if (modify_mask & IB_PORT_RESET_QKEY_CNTR)
++		port_attributes |= EHCA_BMASK_SET(H_MP_RESET_QKEY_CTR, 1);
 +
-+	return ioremap(res.start, 1 + res.end - res.start);
++	return ehca_plpar_hcall_norets(H_MODIFY_PORT,
++				       adapter_handle.handle, /* r4 */
++				       port_id,               /* r5 */
++				       port_attributes,       /* r6 */
++				       0, 0, 0, 0);
 +}
-+EXPORT_SYMBOL(of_iomap);
 +
+ u64 hipz_h_query_hca(const struct ipz_adapter_handle adapter_handle,
+ 		     struct hipz_query_hca *query_hca_rblock)
+ {
+diff -urp a/drivers/infiniband/hw/ehca/hcp_if.h b/drivers/infiniband/hw/ehca/hcp_if.h
+--- a/drivers/infiniband/hw/ehca/hcp_if.h	2007-02-04 19:44:54.000000000 +0100
++++ b/drivers/infiniband/hw/ehca/hcp_if.h	2007-04-23 18:06:09.000000000 +0200
+@@ -85,6 +85,10 @@ u64 hipz_h_query_port(const struct ipz_a
+ 		      const u8 port_id,
+ 		      struct hipz_query_port *query_port_response_block);
+ 
++u64 hipz_h_modify_port(const struct ipz_adapter_handle adapter_handle,
++		       const u8 port_id, const u32 port_cap,
++		       const u8 init_type, const int modify_mask);
 +
-Index: linux-2.6.21-rc4/include/asm-powerpc/prom.h
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
---- linux-2.6.21-rc4.orig/include/asm-powerpc/prom.h
-+++ linux-2.6.21-rc4/include/asm-powerpc/prom.h
-@@ -19,7 +19,6 @@
- #include <linux/proc_fs.h>
- #include <linux/platform_device.h>
- #include <asm/atomic.h>
--#include <asm/io.h>
-=20
- /* Definitions used by the flattened device tree */
- #define OF_DT_HEADER		0xd00dfeed	/* marker */
-@@ -352,16 +351,14 @@ static inline int of_irq_to_resource(str
- 	return irq;
- }
-=20
--static inline void __iomem *of_iomap(struct device_node *np, int index)
--{
--	struct resource res;
--
--	if (of_address_to_resource(np, index, &res))
--		return NULL;
--
--	return ioremap(res.start, 1 + res.end - res.start);
--}
--
-+/**
-+ * of_iomap - Maps the memory mapped IO for a given device_node
-+ * @device:	the device whose io range will be mapped
-+ * @index:	index of the io range
-+ *
-+ * Returns a pointer to the mapped memory
-+ */
-+extern void __iomem *of_iomap(struct device_node *device, int index);
-=20
- #endif /* __KERNEL__ */
- #endif /* _POWERPC_PROM_H */
-
-
---=20
-Mit freundlichen Gruessen,
-kind regards,
-
-Christian Krafft
-IBM Systems & Technology Group,
-Linux Kernel Development
-IT Specialist
-
-
-Vorsitzender des Aufsichtsrats:	Johann Weihen
-Geschaeftsfuehrung:		Herbert Kircher
-Sitz der Gesellschaft:		Boeblingen
-Registriergericht:		Amtsgericht Stuttgart, HRB 243294
-
-
---Sig_X.Oc+Y7.gA6.0UP_Qn55wkd
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Disposition: attachment; filename=signature.asc
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGLiMS6rqK4qDx+dcRAhm8AJ464H/5VaoYIGXoHDQp/3SsKLPylwCfQviV
-EpGjN3AF9+H55S8NYx9sHLs=
-=lJYO
------END PGP SIGNATURE-----
-
---Sig_X.Oc+Y7.gA6.0UP_Qn55wkd--
+ u64 hipz_h_query_hca(const struct ipz_adapter_handle adapter_handle,
+ 		     struct hipz_query_hca *query_hca_rblock);
+ 
