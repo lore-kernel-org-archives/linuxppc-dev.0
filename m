@@ -1,19 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 7B424DDF2B
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 04:04:51 +1000 (EST)
-Date: Tue, 24 Apr 2007 11:04:56 -0700 (PDT)
-Message-Id: <20070424.110456.124867547.davem@davemloft.net>
-To: jdl@freescale.com
-Subject: Re: [PATCH 1/6] Start split out of common open firmware code
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <AF0367BA48C55940A43CCF08DF35553C011ECCD1@az33exm24.fsl.freescale.net>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id A721CDDF25
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 04:18:28 +1000 (EST)
+In-Reply-To: <20070424.110456.124867547.davem@davemloft.net>
 References: <20070424223245.78f4fdfb.sfr@canb.auug_.org.au>
 	<f64705c9250a93dcb7a4015b9a0d5667@kernel.crashing.org>
 	<AF0367BA48C55940A43CCF08DF35553C011ECCD1@az33exm24.fsl.freescale.net>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
+	<20070424.110456.124867547.davem@davemloft.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c84b9df8fbe6f6a423cab8c3a4493409@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 1/6] Start split out of common open firmware code
+Date: Tue, 24 Apr 2007 20:18:21 +0200
+To: David Miller <davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, sfr@canb.auug.org.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,57 +28,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: "Loeliger Jon-LOELIGER" <jdl@freescale.com>
-Date: Tue, 24 Apr 2007 07:47:10 -0700
+> I totally disagree that you should be changing anything
+> during these consolidations.
 
->  
-> > > +int of_n_addr_cells(struct device_node *np)
-> > > +{
-> > > +	const int *ip;
-> > > +
-> > > +	do {
-> > > +		if (np->parent)
-> > > +			np = np->parent;
-> > > +		ip = of_get_property(np, "#address-cells", NULL);
-> > > +		if (ip)
-> > > +			return *ip;
-> > > +	} while (np->parent);
-> > > +	/* No #address-cells property for the root node */
-> > > +	return OF_ROOT_NODE_ADDR_CELLS_DEFAULT;
-> > > +}
-> > > +EXPORT_SYMBOL(of_n_addr_cells);
-> > 
-> > While I realise your patch is just moving stuff around,
-> > can this be fixed please?  A missing "#address-cells"
-> > property means "two cells", not "inherit from parent".
-> > The few platforms with a broken tree should just be
-> > fixed (patch the tree in the bootwrapper, or perhaps
-> > _do_ use this workaround, but only on the affected
-> > platforms).
-> > 
-> > > +int of_n_size_cells(struct device_node *np)
-> > 
-> > Same here (the default is one cell though).
-> 
-> Agreed.  We actually discussed this quite some time ago.
+And I didn't say so, I actually *said* I don't think
+that should be done.
 
-I totally disagree that you should be changing anything
-during these consolidations.
+I was just remarking some really bad workarounds end
+up in more generic code now, and as such need to be
+fixed.  Not now, but *later*.
 
-Move the code around in one pass where you can _VERIFY_
-that things are precisely the same and won't break.
+> Move the code around in one pass where you can _VERIFY_
+> that things are precisely the same and won't break.
+>
+> Then later you can get fancy and change things however you
+> wish.
 
-Then later you can get fancy and change things however you
-wish.
+Yes exactly.
 
-You people giving comments like this have your priorities totally
-screwed up and you are doing nothing but unnecessarily slowing down
-this wonderful consolidation.  Even worse you might even be giving
-Stephen a disincentive to keep working actively on this.
+> Everything so far is pure whining, and has nothing to do with
+> the substance of what Stephen is trying to accomplish, a
+> _CODE CONSOLIDATION_.  So please don't get in the way of that
+> effort.
 
-So please STOP THIS CRAP now, thanks.
+I'm not standing in the way here, I'm quite happy with
+what Stephen is doing, great job.
 
-Everything so far is pure whining, and has nothing to do with
-the substance of what Stephen is trying to accomplish, a
-_CODE CONSOLIDATION_.  So please don't get in the way of that
-effort.
+I'm just pointing out some bugs/workarounds in the
+merged code (that were there before, sure) -- it would
+be lovely if they at least could be commented as being
+not-quite-right in the new code so no one reading the
+code will assume it is doing the "right thing".
+
+
+Segher
