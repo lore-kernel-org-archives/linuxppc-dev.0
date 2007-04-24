@@ -1,16 +1,22 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc2-s37.bay0.hotmail.com (bay0-omc2-s37.bay0.hotmail.com
-	[65.54.246.173]) by ozlabs.org (Postfix) with ESMTP id CFA2ADDF3A
+Return-Path: <glikely@gmail.com>
+Received: from ik-out-1112.google.com (ik-out-1112.google.com [66.249.90.180])
+	by ozlabs.org (Postfix) with ESMTP id 81601DDEFF
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 22:53:00 +1000 (EST)
-Message-ID: <BAY115-W4BC24E5FE6C3B6EB88C72B24A0@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-Subject: 2.6 Kernel , Xilinx Virtex and PPC 405 On chip memory controllers (
-	DSOCM and ISOCM )
-Date: Tue, 24 Apr 2007 12:52:59 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+	Tue, 24 Apr 2007 23:38:55 +1000 (EST)
+Received: by ik-out-1112.google.com with SMTP id c29so2153505ika
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 24 Apr 2007 06:38:53 -0700 (PDT)
+Message-ID: <528646bc0704240638m4c9dd04dlaaef0e8cdb57af53@mail.gmail.com>
+Date: Tue, 24 Apr 2007 07:38:52 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Peter Mendham" <petermendham@computing.dundee.ac.uk>
+Subject: Re: Using Xilinx Framebuffer on ML405 and 2.6.20.4
+In-Reply-To: <462DCA31.4060009@computing.dundee.ac.uk>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <462DCA31.4060009@computing.dundee.ac.uk>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,22 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On 4/24/07, Peter Mendham <petermendham@computing.dundee.ac.uk> wrote:
+> Dear all,
+>
+> I am wanting to use the Xilinx TFT controller from the ML403/5 reference
+> project (probably from ML300 as well) under a 2.6.20.4 kernel.  I have
+> Grant Likely's patchset applied in which there is a platform device
+> entry for the framebuffer.  Does anyone know if there is mainline
+> support for the Xilinx-style framebuffer?  If so, how do I enable it?  I
+> have included framebuffer support in my kernel build, but I assume I
+> need a driver also? Any tips greatly appreciated.
 
-Hi all,
+Heh, I've got a driver.  I just haven't published it yet.  Give me a few days...
 
-Just a very simple question about the 2.6 kerenl,
+g.
 
-suppose that in my base system I have included 8kbytes of memory for DS OCM=
- and 8K for IS OCM,
-I have generated the proper xparameters.h and copied it into kernel
-
-Now I want to know if kernel will use this portion of memory during it's op=
-eration?
-Does this increase performance?
-
-thanks
-
-_________________________________________________________________
-Explore the seven wonders of the world
-http://search.msn.com/results.aspx?q=3D7+wonders+world&mkt=3Den-US&form=3DQ=
-BRE=
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
