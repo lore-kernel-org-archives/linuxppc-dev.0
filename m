@@ -2,21 +2,26 @@ Return-Path: <benh@kernel.crashing.org>
 Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 8BCB5DDECF
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 11:35:48 +1000 (EST)
-Subject: Re: [PATCH 07/10] add of_iomap function
+	by ozlabs.org (Postfix) with ESMTP id 9F3D6DDE03
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 11:40:45 +1000 (EST)
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Arnd Bergmann <arnd@arndb.de>
-In-Reply-To: <20070423193913.119032752@arndb.de>
-References: <20070423193538.576702568@arndb.de>
-	<20070423193913.119032752@arndb.de>
+To: Linas Vepstas <linas@austin.ibm.com>
+In-Reply-To: <20070423205020.GR31947@austin.ibm.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695763104-git-send-email-ebiederm@xmission.com>
+	<20070422123155.GF20763@infradead.org>
+	<20070423205020.GR31947@austin.ibm.com>
 Content-Type: text/plain
-Date: Tue, 24 Apr 2007 11:35:33 +1000
-Message-Id: <1177378533.14873.48.camel@localhost.localdomain>
+Date: Tue, 24 Apr 2007 11:38:53 +1000
+Message-Id: <1177378733.14873.52.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Arnd Bergmann <arnd.bergmann@de.ibm.com>,
-	Christian Krafft <krafft@de.ibm.com>
+Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,99 +31,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-04-23 at 21:35 +0200, Arnd Bergmann wrote:
-> plain text document attachment (powerpc-add-of_remap.diff)
-> From: Christian Krafft <krafft@de.ibm.com>
-> 
-> The of_iomap function maps memory for a given
-> device_node and returns a pointer to that memory.
-> This is used at some places, so it makes sense to
-> a seperate function.
 
-No point in inlining it imho.
+> The only reason for using threads here is to get the error recovery
+> out of an interrupt context (where errors may be detected), and then,
+> an hour later, decrement a counter (which is how we limit these to 
+> 6 per hour). Thread reaping is "trivial", the thread just exits
+> after an hour.
+
+In addition, it should be a thread and not done from within keventd
+because :
+
+ - It can take a long time (well, relatively but still too long for a
+work queue)
+
+ - The driver callbacks might need to use keventd or do flush_workqueue
+to synchronize with their own workqueues when doing an internal
+recovery.
+
+> Since these are events rare, I've no particular concern about
+> performance or resource consumption. The current code seems 
+> to work just fine. :-)
+
+I think moving to kthread's is cleaner (just a wrapper around kernel
+threads that simplify dealing with reaping them out mostly) and I agree
+with Christoph that it would be nice to be able to "fire off" kthreads
+from interrupt context.. in many cases, we abuse work queues for things
+that should really done from kthreads instead (basically anything that
+takes more than a couple hundred microsecs or so).
 
 Ben.
-
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
-> 
-> Index: linux-2.6/arch/powerpc/sysdev/pmi.c
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/sysdev/pmi.c
-> +++ linux-2.6/arch/powerpc/sysdev/pmi.c
-> @@ -33,7 +33,7 @@
->  #include <asm/of_platform.h>
->  #include <asm/io.h>
->  #include <asm/pmi.h>
-> -
-> +#include <asm/prom.h>
->  
->  struct pmi_data {
->  	struct list_head	handler;
-> @@ -49,21 +49,6 @@ struct pmi_data {
->  };
->  
-> 
-> -
-> -static void __iomem *of_iomap(struct device_node *np)
-> -{
-> -	struct resource res;
-> -
-> -	if (of_address_to_resource(np, 0, &res))
-> -		return NULL;
-> -
-> -	pr_debug("Resource start: 0x%lx\n", res.start);
-> -	pr_debug("Resource end: 0x%lx\n", res.end);
-> -
-> -	return ioremap(res.start, 1 + res.end - res.start);
-> -}
-> -
-> -
->  static int pmi_irq_handler(int irq, void *dev_id)
->  {
->  	struct pmi_data *data;
-> @@ -154,7 +139,7 @@ static int pmi_of_probe(struct of_device
->  		goto out;
->  	}
->  
-> -	data->pmi_reg = of_iomap(np);
-> +	data->pmi_reg = of_iomap(np, 0);
->  	if (!data->pmi_reg) {
->  		printk(KERN_ERR "pmi: invalid register address.\n");
->  		rc = -EFAULT;
-> Index: linux-2.6/include/asm-powerpc/prom.h
-> ===================================================================
-> --- linux-2.6.orig/include/asm-powerpc/prom.h
-> +++ linux-2.6/include/asm-powerpc/prom.h
-> @@ -20,6 +20,7 @@
->  #include <linux/platform_device.h>
->  #include <asm/irq.h>
->  #include <asm/atomic.h>
-> +#include <asm/io.h>
->  
->  /* Definitions used by the flattened device tree */
->  #define OF_DT_HEADER		0xd00dfeed	/* marker */
-> @@ -355,6 +356,16 @@ static inline int of_irq_to_resource(str
->  	return irq;
->  }
->  
-> +static inline void __iomem *of_iomap(struct device_node *np, int index)
-> +{
-> +	struct resource res;
-> +
-> +	if (of_address_to_resource(np, index, &res))
-> +		return NULL;
-> +
-> +	return ioremap(res.start, 1 + res.end - res.start);
-> +}
-> +
->  
->  #endif /* __KERNEL__ */
->  #endif /* _POWERPC_PROM_H */
-> 
-> --
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
