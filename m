@@ -1,28 +1,24 @@
-Return-Path: <petermendham@computing.dundee.ac.uk>
-Received: from uncle.computing.dundee.ac.uk (uncle.computing.dundee.ac.uk
-	[134.36.36.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 514E3DE1C5
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id 92CDADDF60
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 23:55:28 +1000 (EST)
-Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
-	[134.36.36.15])
-	by uncle.computing.dundee.ac.uk (8.13.1/8.13.1) with ESMTP id
-	l3ODsu8L006766
-	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Apr 2007 14:54:56 +0100
-Message-ID: <462E0C2F.2020106@computing.dundee.ac.uk>
-Date: Tue, 24 Apr 2007 14:54:55 +0100
-From: Peter Mendham <petermendham@computing.dundee.ac.uk>
+	Tue, 24 Apr 2007 23:55:51 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so145672ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue, 24 Apr 2007 06:55:49 -0700 (PDT)
+Message-ID: <528646bc0704240655n6c80f2ffnc8f0c328149b3c15@mail.gmail.com>
+Date: Tue, 24 Apr 2007 07:55:48 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
+Subject: Re: 2.6 Kernel ,
+	Xilinx Virtex and PPC 405 On chip memory controllers ( DSOCM and
+	ISOCM )
+In-Reply-To: <BAY115-W4BC24E5FE6C3B6EB88C72B24A0@phx.gbl>
 MIME-Version: 1.0
-To: Andrei Konovalov <akonovalov@ru.mvista.com>
-Subject: Re: Using Xilinx Framebuffer on ML405 and 2.6.20.4
-References: <462DCA31.4060009@computing.dundee.ac.uk>
-	<528646bc0704240638m4c9dd04dlaaef0e8cdb57af53@mail.gmail.com>
-	<462E0CF5.4060402@ru.mvista.com>
-In-Reply-To: <462E0CF5.4060402@ru.mvista.com>
 Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+References: <BAY115-W4BC24E5FE6C3B6EB88C72B24A0@phx.gbl>
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -33,52 +29,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Andrei Konovalov wrote:
-> Grant Likely wrote:
->> On 4/24/07, Peter Mendham <petermendham@computing.dundee.ac.uk> wrote:
->>> Dear all,
->>>
->>> I am wanting to use the Xilinx TFT controller from the ML403/5 
->>> reference
->>> project (probably from ML300 as well) under a 2.6.20.4 kernel.  I have
->>> Grant Likely's patchset applied in which there is a platform device
->>> entry for the framebuffer.  Does anyone know if there is mainline
->>> support for the Xilinx-style framebuffer?  If so, how do I enable 
->>> it?  I
->>> have included framebuffer support in my kernel build, but I assume I
->>> need a driver also? Any tips greatly appreciated.
->>
->> Heh, I've got a driver.  I just haven't published it yet.  Give me a 
->> few days...
->>
->> g.
->>
+On 4/24/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
 >
-> We have one too :)
+> suppose that in my base system I have included 8kbytes of memory for DS OCM and 8K for IS OCM,
+> I have generated the proper xparameters.h and copied it into kernel
 >
-Do you have a patch that I can apply to a mainline kernel to include the 
-driver?
+> Now I want to know if kernel will use this portion of memory during it's operation?
+> Does this increase performance?
 
-Thanks,
--- Peter
+No, it won't use that memory as general purpose RAM.  You can make use
+of it in device drivers (ie. for DMA space), but you'll need to write
+the code to support it.
 
+Cheers,
+g.
 
 -- 
-------------------------------------------
-Dr Peter Mendham
-------------------------------------------
-Space Systems Research Group
-School of Computing, University of Dundee
-Dundee, Scotland, DD1 1HN, UK
-------------------------------------------
-e: petermendham@computing.dundee.ac.uk
-t: +44 (0)1382 386729
-f: +44 (0)1382 388838
-------------------------------------------
-
-
--- 
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
-MailScanner thanks transtec Computers for their support.
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
