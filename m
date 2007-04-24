@@ -1,19 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17965.39866.351929.349735@cargo.ozlabs.ibm.com>
-Date: Tue, 24 Apr 2007 15:55:06 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Christoph Hellwig <hch@infradead.org>
-Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
-In-Reply-To: <20070422123155.GF20763@infradead.org>
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769695763104-git-send-email-ebiederm@xmission.com>
-	<20070422123155.GF20763@infradead.org>
-Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linuxppc-dev@ozlabs.org,
-	"Eric W. Biederman" <ebiederm@xmission.com>,
-	containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>
+Return-Path: <info@schihei.de>
+In-Reply-To: <20070423202237.0725075a@localhost>
+References: <20070423202237.0725075a@localhost>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <257C8A50-17BA-4EE2-B10F-7F95359E8EB5@schihei.de>
+From: Heiko J Schick <info@schihei.de>
+Subject: Re: [patch 2/2] powerpc: pmi probe device by device-type
+Date: Tue, 24 Apr 2007 07:53:58 +0200
+To: Christian Krafft <krafft@de.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,14 +18,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Christoph Hellwig writes:
+Acked-by: Heiko J Schick <schickhj@de.ibm.com>
 
-> The first question is obviously, is this really something we want?
-> spawning kernel thread on demand without reaping them properly seems
-> quite dangerous.
+On 23.04.2007, at 20:22, Christian Krafft wrote:
 
-What specifically has to be done to reap a kernel thread?  Are you
-concerned about the number of threads, or about having zombies hanging
-around?
-
-Paul.
+> From: Christian Krafft <krafft@de.ibm.com>
+> At the moment the pmi device driver is probing for devices with
+> a given type and a given name. As there may be devices of
+> the same type but with a different name, probing should be
+> done also for device type only.
+>
+> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+>
+> Index: sdk3/arch/powerpc/sysdev/pmi.c
+> ===================================================================
+> --- sdk3.orig/arch/powerpc/sysdev/pmi.c
+> +++ sdk3/arch/powerpc/sysdev/pmi.c
+> @@ -103,6 +103,7 @@ out:
+>
+>  static struct of_device_id pmi_match[] = {
+>  	{ .type = "ibm,pmi", .name = "ibm,pmi" },
+> +	{ .type = "ibm,pmi" },
+>  	{},
+>  };
+>
+>
+>
+> -- 
+> Mit freundlichen Gruessen,
+> kind regards,
+>
+> Christian Krafft
+> IBM Systems & Technology Group,
+> Linux Kernel Development
+> IT Specialist
+>
+>
+> Vorsitzender des Aufsichtsrats:	Johann Weihen
+> Geschaeftsfuehrung:		Herbert Kircher
+> Sitz der Gesellschaft:		Boeblingen
+> Registriergericht:		Amtsgericht Stuttgart, HRB 243294
+>
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
