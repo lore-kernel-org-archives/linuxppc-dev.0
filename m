@@ -1,18 +1,15 @@
-Return-Path: <dan@embeddedalley.com>
-Received: from smtp106.biz.mail.re2.yahoo.com (smtp106.biz.mail.re2.yahoo.com
-	[206.190.52.175]) by ozlabs.org (Postfix) with SMTP id 3BBDFDDF36
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 11:26:53 +1000 (EST)
-In-Reply-To: <20070423223910.4955.18106.stgit@localhost.localdomain>
-References: <20070423223649.4955.77579.stgit@localhost.localdomain>
-	<20070423223910.4955.18106.stgit@localhost.localdomain>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <5AC8BD28-125C-4552-97E9-D35E85D0E555@embeddedalley.com>
-From: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 2/2] POWERPC: Remove global CPM mappings
-Date: Mon, 23 Apr 2007 21:26:59 -0400
-To: Vitaly Bordug <vbordug@ru.mvista.com>
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17965.21687.567012.175024@cargo.ozlabs.ibm.com>
+Date: Tue, 24 Apr 2007 10:52:07 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Sebastian Siewior <bigeasy@linux.vnet.ibm.com>
+Subject: Re: [RFC 2/3] PowerPC: lazy altivec enabling in kernel
+In-Reply-To: <20070417120925.263638000@linux.vnet.ibm.com>
+References: <20070417115206.709701000@linux.vnet.ibm.com>
+	<20070417120925.263638000@linux.vnet.ibm.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,36 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Sebastian Siewior writes:
 
-On Apr 23, 2007, at 6:39 PM, Vitaly Bordug wrote:
+>  void enable_kernel_altivec(void)
+>  {
+> -	WARN_ON(preemptible());
+> +	BUG_ON(preemptible());
+> +	/*
+> +	 * enable_kernel_altivec() will just save current AltiVec registers (if needed) and
+> +	 * return to caller (with MSR_VEC unchanged (probably not set)). The first AltiVec
+> +	 * instruction will raise an exception and the exception will enable the AltiVec for
+> +	 * the kernel. This is done to avoid the expensive "enable altivec" operation if it
+> +	 * is allready enabled. However, you have to disable preemtion while you are using
+> +	 * AltiVec.
+> +	 */
 
->
-> Gets rid or direct IMMR accesses/dereferences for PQ SoC targets and
-> relevant drivers.
+It would be better to put a test and conditional branch in
+giveup_altivec to skip the mtmsrd if MSR_VEC is already set.  That
+would avoid adding the overhead of the trap in the case when MSR_VEC
+isn't already set, besides being much less code.
 
-Can we find a way to do this without the constant
-ioremapping and unmapping?  It's a quick and
-dirty hack, but it would be nice if we could map once
-during an initialization, keep the pointer around
-and at least use it within the file context.  I know it
-doesn't cost much, but all of these cycles add up,
-and someday ioremap could grow into something
-more complex.  Please?
-
-The whole of the CPM supporting functions need this,
-it could be mapped once and shared at least among
-them.  Any drivers that use the IMMR should also be
-cleaner about managing this space as they would
-any other mapped resource that is typically done
-only once for the life of the driver.
-
-There are also many different methods used that
-I don't understand the reason.  Sometimes the
-mappings are hidden in macros, sometimes done
-in a function that is called, other times ioremap()
-is called explicitly.  It just looks, well....  icky.  :-)
-
-
-Thanks.
-
-	-- Dan
+Paul.
