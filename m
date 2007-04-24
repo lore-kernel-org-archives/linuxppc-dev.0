@@ -1,15 +1,45 @@
-Return-Path: <info@schihei.de>
-In-Reply-To: <20070423202223.549bf53a@localhost>
-References: <20070423202223.549bf53a@localhost>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <F0EE9F3B-8504-4F73-A8CD-E5713206699B@schihei.de>
-From: Heiko J Schick <info@schihei.de>
-Subject: Re: [patch 1/2] powerpc: add check for initialized driver data to pmi
-	driver
-Date: Tue, 24 Apr 2007 07:53:49 +0200
-To: Christian Krafft <krafft@de.ibm.com>
-Cc: linuxppc-dev@ozlabs.org, cbe-oss-dev@ozlabs.org
+Return-Path: <cornelia.huck@de.ibm.com>
+Received: from mtagate1.de.ibm.com (mtagate1.de.ibm.com [195.212.29.150])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mtagate1.de.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 015D8DDF00
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 17:44:05 +1000 (EST)
+Received: from d12nrmr1607.megacenter.de.ibm.com
+	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
+	by mtagate1.de.ibm.com (8.13.8/8.13.8) with ESMTP id l3O7i18m028974
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 07:44:01 GMT
+Received: from d12av01.megacenter.de.ibm.com (d12av01.megacenter.de.ibm.com
+	[9.149.165.212])
+	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
+	ESMTP id l3O7i1kb3539056
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 09:44:01 +0200
+Received: from d12av01.megacenter.de.ibm.com (loopback [127.0.0.1])
+	by d12av01.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
+	id l3O7i0Nb009252
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 09:44:01 +0200
+Date: Tue, 24 Apr 2007 09:46:48 +0200
+From: Cornelia Huck <cornelia.huck@de.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+Message-ID: <20070424094648.43d2b9b4@gondolin.boeblingen.de.ibm.com>
+In-Reply-To: <1177390842.14873.94.camel@localhost.localdomain>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695763104-git-send-email-ebiederm@xmission.com>
+	<20070422123155.GF20763@infradead.org>
+	<20070423205020.GR31947@austin.ibm.com>
+	<1177378733.14873.52.camel@localhost.localdomain>
+	<m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
+	<1177382544.14873.57.camel@localhost.localdomain>
+	<m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
+	<1177390842.14873.94.camel@localhost.localdomain>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,67 +49,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Acked-by: Heiko J Schick <schickhj@de.ibm.com>
+On Tue, 24 Apr 2007 15:00:42 +1000,
+Benjamin Herrenschmidt <benh@kernel.crashing.org> wrote:
 
-On 23.04.2007, at 20:22, Christian Krafft wrote:
+> Like anything else, modules should have separated the entrypoints for
+> 
+>  - Initiating a removal request
+>  - Releasing the module
+> 
+> The former is use did "rmmod", can unregister things from subsystems,
+> etc... (and can file if the driver decides to refuse removal requests
+> when it's busy doing things or whatever policy that module wants to
+> implement).
+> 
+> The later is called when all references to the modules have been
+> dropped, it's a bit like the kref "release" (and could be implemented as
+> one).
 
-> From: Christian Krafft <krafft@de.ibm.com>
-> This patch adds a check for the private driver data to be initialized.
-> The bug showed up, as the caller found a pmi device by it's type.
-> Whereas the pmi driver probes for the type and the name.
-> Since the name was not as the driver expected, it did not initialize.
-> A more relaxed probing will be supplied with an extra patch, too.
->
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
-> Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
->
-> Index: sdk3/arch/powerpc/sysdev/pmi.c
-> ===================================================================
-> --- sdk3.orig/arch/powerpc/sysdev/pmi.c
-> +++ sdk3/arch/powerpc/sysdev/pmi.c
-> @@ -264,6 +264,9 @@ void pmi_register_handler(struct of_devi
->  	struct pmi_data *data;
->  	data = device->dev.driver_data;
->
-> +	if (!data)
-> +		return;
-> +
->  	spin_lock(&data->handler_spinlock);
->  	list_add_tail(&handler->node, &data->handler);
->  	spin_unlock(&data->handler_spinlock);
-> @@ -274,10 +277,12 @@ void pmi_unregister_handler(struct of_de
->  			    struct pmi_handler *handler)
->  {
->  	struct pmi_data *data;
-> +	data = device->dev.driver_data;
->
-> -	pr_debug("pmi: unregistering handler %p\n", handler);
-> +	if (!data)
-> +		return;
->
-> -	data = device->dev.driver_data;
-> +	pr_debug("pmi: unregistering handler %p\n", handler);
->
->  	spin_lock(&data->handler_spinlock);
->  	list_del(&handler->node);
->
->
-> -- 
-> Mit freundlichen Gruessen,
-> kind regards,
->
-> Christian Krafft
-> IBM Systems & Technology Group,
-> Linux Kernel Development
-> IT Specialist
->
->
-> Vorsitzender des Aufsichtsrats:	Johann Weihen
-> Geschaeftsfuehrung:		Herbert Kircher
-> Sitz der Gesellschaft:		Boeblingen
-> Registriergericht:		Amtsgericht Stuttgart, HRB 243294
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+That sounds quite similar to the problems we have with kobject
+refcounting vs. module unloading. The patchset I posted at
+http://marc.info/?l=linux-kernel&m=117679014404994&w=2 exposes the
+refcount of the kobject embedded in the module. Maybe the kthread code
+could use that reference as well?
