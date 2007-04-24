@@ -1,20 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 9E0B9DDD05
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 10:53:28 +1000 (EST)
-Subject: Re: [PATCH] generic check_legacy_ioport
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Olaf Hering <olaf@aepfle.de>
-In-Reply-To: <20070423081540.GA28244@aepfle.de>
-References: <20070417210745.GA3567@aepfle.de>
-	<20070423081540.GA28244@aepfle.de>
-Content-Type: text/plain
-Date: Tue, 24 Apr 2007 10:53:20 +1000
-Message-Id: <1177376000.14873.38.camel@localhost.localdomain>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id CCFC4DDF2B
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 11:04:55 +1000 (EST)
+Date: Mon, 23 Apr 2007 20:04:57 -0500
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] [2/5] pasemi: enable one more hid bit
+Message-ID: <20070424010457.GA28554@lixom.net>
+References: <20070416062634.GB20196@lixom.net>
+	<20070416062745.GD20196@lixom.net>
+	<1177374440.14873.33.camel@localhost.localdomain>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1177374440.14873.33.camel@localhost.localdomain>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,33 +23,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-04-23 at 10:15 +0200, Olaf Hering wrote:
-> check_legacy_ioport makes only sense on PREP, CHRP and pSeries.
-> They may have an isa node with PS/2, parport, floppy and serial ports.
-> Cell has IPMI, check for that too.
+On Tue, Apr 24, 2007 at 10:27:20AM +1000, Benjamin Herrenschmidt wrote:
+> On Mon, 2007-04-16 at 01:27 -0500, Olof Johansson wrote:
+> > Minor HID change. Firmware can't know that we want this set so we have
+> > to set it in the kernel.
 > 
-> Remove the check_legacy_ioport call from ppc_md, its not needed anymore.
-> Hardware capabilities come from the device-tree.
-> 
-> Signed-off-by: Olaf Hering <olaf@aepfle.de>
+> Care to document/name these bits ?
 
-Ok, I like the aproach, but why the heck those ifdef's ? Can't you just
-remove them ?
+Not at this time, sorry.
 
-Also, doing ifdef on xxxx_MODULE is always BAD because that means the
-module can't be built afterward.
 
-> +	if (np) {
-> +		of_node_put(np);
->  		return 0;
-
-And also check now if the parent is "isa". Just to be sure. If a
-platform won't match that, then it will need it's own
-check_legacy_ioport which is fine with me.
-
-To be totally correct, we should -also- check if the port number fits in
-the the actual "reg" property but I'm not sure I can be bothered :-)
-It's legacy stuff after all...
-
-Cheers,
-Ben.
+-Olof
