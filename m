@@ -1,34 +1,30 @@
-Return-Path: <RAISCH@de.ibm.com>
-Received: from mtagate2.de.ibm.com (mtagate2.de.ibm.com [195.212.29.151])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate2.de.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id C32C3DDF01
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 17:49:14 +1000 (EST)
-Received: from d12nrmr1607.megacenter.de.ibm.com
-	(d12nrmr1607.megacenter.de.ibm.com [9.149.167.49])
-	by mtagate2.de.ibm.com (8.13.8/8.13.8) with ESMTP id l3O7n8Pl028210
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 07:49:08 GMT
-Received: from d12av04.megacenter.de.ibm.com (d12av04.megacenter.de.ibm.com
-	[9.149.165.229])
-	by d12nrmr1607.megacenter.de.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l3O7n8Uw3686538
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 09:49:08 +0200
-Received: from d12av04.megacenter.de.ibm.com (loopback [127.0.0.1])
-	by d12av04.megacenter.de.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l3O7n7lJ026456
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 09:49:07 +0200
-In-Reply-To: <1177347358.28021.24294.camel@hal.voltaire.com>
-Subject: Re: [ofa-general] [PATCH] eHCA: Add "Modify Port" verb
-To: Hal Rosenstock <halr@voltaire.com>
-Message-ID: <OFD6A63EF5.4BF41EFD-ONC12572C7.002ACA29-C12572C7.002AF268@de.ibm.com>
-From: Christoph Raisch <RAISCH@de.ibm.com>
-Date: Tue, 24 Apr 2007 23:48:48 +0200
+Return-Path: <lkml777@123mail.org>
+Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
+	[66.111.4.28]) by ozlabs.org (Postfix) with ESMTP id 45A70DDE2A
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 16:23:06 +1000 (EST)
+Message-Id: <1177395453.29737.1186216313@webmail.messagingengine.com>
+From: lkml777@123mail.org
+To: "Eric Hopper" <hopper@omnifarious.org>
+Content-Type: text/plain; charset="iso-8859-1"
 MIME-Version: 1.0
-Content-type: text/plain; charset=US-ASCII
-Cc: LinuxPPC-Dev <linuxppc-dev@ozlabs.org>,
-	general-bounces@lists.openfabrics.org, Joachim Fenkes <fenkes@de.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	OF-General <general@lists.openfabrics.org>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695763104-git-send-email-ebiederm@xmission.com>
+	<20070422123155.GF20763@infradead.org>
+	<20070423205020.GR31947@austin.ibm.com>
+	<1177378733.14873.52.camel@localhost.localdomain>
+	<m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
+	<1177382544.14873.57.camel@localhost.localdomain>
+	<m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
+	<1177390842.14873.94.camel@localhost.localdomain>
+	<m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
+Subject: SOME STUFF ABOUT REISER4
+In-Reply-To: <m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
+Date: Mon, 23 Apr 2007 23:17:33 -0700
+Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, containers@lists.osdl.org,
+	Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -38,22 +34,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
+<hopper@omnifarious.org> said:
 
-Hi Hal,
-you are correct,
-with the current firmware version it will fail later.
+> I know that this whole effort has been put in disarray by the
+> prosecution of Hans Reiser, but I'm curious as to its status. Is
+> Reiser4 going to be going into the Linus kernel anytime soon? Is there
+> somewhere I should be looking to find this out without wasting bandwidth
+> here?
 
-Christoph R.
+There was a thread the other day, that talked about Reiser4.
 
-general-bounces@lists.openfabrics.org wrote on 23.04.2007 18:55:59:
+It took a while but I have found it (actually two)
 
-> Hi Joachim,
->
-> On Mon, 2007-04-23 at 12:23, Joachim Fenkes wrote:
-> > Add "Modify Port" verb support to eHCA driver.
-> > ib_cm needs this to initialize properly.
->
-> I didn't think IB_PORT_SM was allowed (as QP0 is not exposed) or does
-> this just fail later when it is attempted to be actually set ?
->
-> -- Hal
+http://lkml.org/lkml/2007/4/5/360
+http://lkml.org/lkml/2007/4/9/4
+
+You may want to check them out.
+-- 
+  
+  lkml777@123mail.org
+
+-- 
+http://www.fastmail.fm - Access your email from home and the web
