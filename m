@@ -1,20 +1,27 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 04562DDF04
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 18:32:47 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [RFC 2/3] PowerPC: lazy altivec enabling in kernel
-Date: Tue, 24 Apr 2007 10:32:02 +0200
-References: <20070417115206.709701000@linux.vnet.ibm.com>
-	<20070417120925.263638000@linux.vnet.ibm.com>
-	<17965.21687.567012.175024@cargo.ozlabs.ibm.com>
-In-Reply-To: <17965.21687.567012.175024@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704241032.02856.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>
+Return-Path: <SRS0+0d542715679c15f37660+1339+infradead.org+hch@pentafluge.srs.infradead.org>
+Received: from pentafluge.infradead.org (pentafluge.infradead.org
+	[213.146.154.40])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 8F6C1DDF12
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 18:38:02 +1000 (EST)
+Date: Tue, 24 Apr 2007 09:37:37 +0100
+From: Christoph Hellwig <hch@infradead.org>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+Message-ID: <20070424083737.GA26814@infradead.org>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695763104-git-send-email-ebiederm@xmission.com>
+	<20070422123155.GF20763@infradead.org>
+	<17965.39866.351929.349735@cargo.ozlabs.ibm.com>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17965.39866.351929.349735@cargo.ozlabs.ibm.com>
+Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	"Eric W. Biederman" <ebiederm@xmission.com>,
+	containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,17 +31,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 24 April 2007, Paul Mackerras wrote:
-> It would be better to put a test and conditional branch in
-> giveup_altivec to skip the mtmsrd if MSR_VEC is already set. =A0That
-> would avoid adding the overhead of the trap in the case when MSR_VEC
-> isn't already set, besides being much less code.
+On Tue, Apr 24, 2007 at 03:55:06PM +1000, Paul Mackerras wrote:
+> Christoph Hellwig writes:
+> 
+> > The first question is obviously, is this really something we want?
+> > spawning kernel thread on demand without reaping them properly seems
+> > quite dangerous.
+> 
+> What specifically has to be done to reap a kernel thread?  Are you
+> concerned about the number of threads, or about having zombies hanging
+> around?
 
-When I discussed this with Sebastian, my assumption was that even
-the mfmsr is rather expensive by itself, but I may have interpreted
-the profile data incorrectly.
-
-Do you think it's safe to assume that by skipping mtmsr we can avoid
-the bulk of the overhead on most CPUs?
-
-	Arnd <><
+I'm mostly concerned about number of threads and possible leakage of
+threads.  Linas already explained it's not a problem in this case,
+so it's covered.
