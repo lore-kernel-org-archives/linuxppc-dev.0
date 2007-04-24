@@ -1,24 +1,21 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.171])
-	by ozlabs.org (Postfix) with ESMTP id D66FCDDF4D
+Return-Path: <linuxppcemb@lkmail.de>
+Received: from pm1.terions.de (pm1.terions.de [83.137.96.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.s-s-l.net",
+	Issuer "Equifax Secure Global eBusiness CA-1" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id EA935DDF37
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Apr 2007 00:59:39 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so157312ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 07:59:38 -0700 (PDT)
-Message-ID: <528646bc0704240759g1dd30c68qd518c0fd3aa9ea9f@mail.gmail.com>
-Date: Tue, 24 Apr 2007 08:59:37 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
-Subject: Re: 2.6 Kernel ,
-	Xilinx Virtex and PPC 405 On chip memory controllers ( DSOCM and
-	ISOCM )
-In-Reply-To: <BAY115-W63BB55D8630825D7BBEAFB24A0@phx.gbl>
+	Wed, 25 Apr 2007 01:15:08 +1000 (EST)
+From: "Lorenz Kolb" <linuxppcemb@lkmail.de>
+To: <linuxppc-embedded@ozlabs.org>
+References: <mailman.1028.1177426735.26657.linuxppc-embedded@ozlabs.org>
+In-Reply-To: <mailman.1028.1177426735.26657.linuxppc-embedded@ozlabs.org>
+Subject: Re: Using Xilinx Framebuffer on ML405 and 2.6.20.4
+Date: Tue, 24 Apr 2007 17:07:57 +0200
+Message-ID: <000001c78682$5e6a3e40$1b3ebac0$@de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <BAY115-W63BB55D8630825D7BBEAFB24A0@phx.gbl>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain;
+	charset="us-ascii"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,18 +26,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/24/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
+> Message: 1
+> Date: Tue, 24 Apr 2007 17:58:13 +0400
+> From: Andrei Konovalov <akonovalov@ru.mvista.com>
+> Subject: Re: Using Xilinx Framebuffer on ML405 and 2.6.20.4
+> To: Grant Likely <grant.likely@secretlab.ca>
+> Cc: linuxppc-embedded@ozlabs.org
+> Message-ID: <462E0CF5.4060402@ru.mvista.com>
+> Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 >
+> Grant Likely wrote:
+>> On 4/24/07, Peter Mendham <petermendham@computing.dundee.ac.uk> wrote:
+>>> Dear all,
+>>>
+>>> I am wanting to use the Xilinx TFT controller from the ML403/5 reference
+>>> project (probably from ML300 as well) under a 2.6.20.4 kernel.  I have
+>>> Grant Likely's patchset applied in which there is a platform device
+>>> entry for the framebuffer.  Does anyone know if there is mainline
+>>> support for the Xilinx-style framebuffer?  If so, how do I enable it?  I
+>>> have included framebuffer support in my kernel build, but I assume I
+>>> need a driver also? Any tips greatly appreciated.
+>> 
+>> Heh, I've got a driver.  I just haven't published it yet.  Give me a few
+days...
+>> 
+>> g.
+>> 
 >
-> what about the cache?
-> Does the current kernel use the cache efficiently?
+> We have one too :)
 
-Yes, the caches work and are turned on by the kernel.
+To be continued: we have one too :)
+I guess fb support is too simple, as too many people have wrote that driver
+...
 
-g.
+Greetings,
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Lorenz
