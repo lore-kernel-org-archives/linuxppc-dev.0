@@ -1,20 +1,22 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id DB34DDDDFB
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 03:27:13 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: Christian Krafft <krafft@de.ibm.com>
-Subject: Re: [PATCH] powerpc: uninline of_iomap function
-Date: Tue, 24 Apr 2007 19:27:02 +0200
-References: <20070423193538.576702568@arndb.de>
-	<1177378533.14873.48.camel@localhost.localdomain>
-	<20070424173202.15e5ce42@localhost>
-In-Reply-To: <20070424173202.15e5ce42@localhost>
+Return-Path: <scottwood@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id D9C22DDED5
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 03:33:53 +1000 (EST)
+Message-ID: <462E3F79.6050101@freescale.com>
+Date: Tue, 24 Apr 2007 12:33:45 -0500
+From: Scott Wood <scottwood@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200704241927.03141.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 3/4] bootwrapper: Add ppcboot.h.
+References: <20070416232553.GB26693@ld0162-tx32.am.freescale.net>	<20070417090342.3E736352658@atlas.denx.de>
+	<17965.37623.561459.64174@cargo.ozlabs.ibm.com>
+In-Reply-To: <17965.37623.561459.64174@cargo.ozlabs.ibm.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,10 +26,23 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 24 April 2007, Christian Krafft wrote:
->   From: Christian Krafft <krafft@de.ibm.com>
-> There is no big reason to have that function inlined.
+Paul Mackerras wrote:
+> Wolfgang Denk writes:
 > 
-> Signed-off-by: Christian Krafft <krafft@de.ibm.com>
+> 
+>>Shouldn't we finally get this straight and call the file "u-boot.h" as
+>>it is called in U-Boot?
+> 
+> 
+> Is it identical to the one in U-Boot?
 
-Acked-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+It's missing the MPC8220 and NX823 bits and the phynum/mode bits for 4xx 
+other than 440GP (which I guess were added after the kernel's ppcboot.h 
+forked), and u-boot's has been changed to have CONFIG_HAS_ETH1/2/etc. 
+rather than a list of targets, but otherwise it appears to be 
+functionally identical.
+
+Do you want me to resubmit using the current u-boot file (as well as an 
+updated 83xx platform file to define CONFIG_HAS_ETH1)?
+
+-Scott
