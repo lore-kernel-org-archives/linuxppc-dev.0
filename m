@@ -1,19 +1,33 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id 8CCBCDDEFF
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 15:18:38 +1000 (EST)
-Date: Tue, 24 Apr 2007 09:18:31 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 2/2] POWERPC: Remove global CPM mappings
-Message-ID: <20070424091831.1793fa26@localhost.localdomain>
-In-Reply-To: <5AC8BD28-125C-4552-97E9-D35E85D0E555@embeddedalley.com>
-References: <20070423223649.4955.77579.stgit@localhost.localdomain>
-	<20070423223910.4955.18106.stgit@localhost.localdomain>
-	<5AC8BD28-125C-4552-97E9-D35E85D0E555@embeddedalley.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <ebiederm@xmission.com>
+Received: from ebiederm.dsl.xmission.com (ebiederm.dsl.xmission.com
+	[166.70.28.69])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C42F2DDEFC
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 15:45:25 +1000 (EST)
+From: ebiederm@xmission.com (Eric W. Biederman)
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695763104-git-send-email-ebiederm@xmission.com>
+	<20070422123155.GF20763@infradead.org>
+	<20070423205020.GR31947@austin.ibm.com>
+	<1177378733.14873.52.camel@localhost.localdomain>
+	<m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
+	<1177382544.14873.57.camel@localhost.localdomain>
+	<m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
+	<1177390842.14873.94.camel@localhost.localdomain>
+Date: Mon, 23 Apr 2007 23:43:55 -0600
+In-Reply-To: <1177390842.14873.94.camel@localhost.localdomain> (Benjamin
+	Herrenschmidt's message of "Tue, 24 Apr 2007 15:00:42 +1000")
+Message-ID: <m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, containers@lists.osdl.org,
+	Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,59 +37,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 23 Apr 2007 21:26:59 -0400
-Dan Malek wrote:
+Benjamin Herrenschmidt <benh@kernel.crashing.org> writes:
 
-> 
-> On Apr 23, 2007, at 6:39 PM, Vitaly Bordug wrote:
-> 
-> >
-> > Gets rid or direct IMMR accesses/dereferences for PQ SoC targets and
-> > relevant drivers.
-> 
-> Can we find a way to do this without the constant
-> ioremapping and unmapping?  It's a quick and
-> dirty hack, but it would be nice if we could map once
-> during an initialization, keep the pointer around
-> and at least use it within the file context.  I know it
-> doesn't cost much, but all of these cycles add up,
-> and someday ioremap could grow into something
-> more complex.  Please?
+>> Further in general it doesn't make sense to grab a module reference
+>> and call that sufficient because we would like to request that the
+>> module exits.
+>
+> Which is, btw, I think a total misdesign of our module stuff, but heh, I
+> remember that lead to some flamewars back then...
+>
+> Like anything else, modules should have separated the entrypoints for
+>
+>  - Initiating a removal request
+>  - Releasing the module
+>
+> The former is use did "rmmod", can unregister things from subsystems,
+> etc... (and can file if the driver decides to refuse removal requests
+> when it's busy doing things or whatever policy that module wants to
+> implement).
+>
+> The later is called when all references to the modules have been
+> dropped, it's a bit like the kref "release" (and could be implemented as
+> one).
+>
+> If we had done that (simple) thing back then, module refcounting would
+> have been much less of a problem... I remember some reasons why that was
+> veto'ed but I didn't and still don't agree.
 
-Well, I know the solution is not ideal, neither it is final,
-but it is a step forward in cleaning up CPM-related stuff.
-In many drivers it used to be just modifications of immr->foo, 
-which fills driver with pleasant board-specific ifdefs and gives hard time 
-to figure out with something's not working as expected.
+The basic point is because a thread can terminate sooner if we have an
+explicit request to stop, we need that in the design.
 
-At first I was thinking of make_everybody_happy solution, 
-but with the whole kernel moving forward even brilliant ideas tend to 
-stay at draft stage (well, you know that much better than me:) )
-> 
-> The whole of the CPM supporting functions need this,
-> it could be mapped once and shared at least among
-> them.  Any drivers that use the IMMR should also be
-> cleaner about managing this space as they would
-> any other mapped resource that is typically done
-> only once for the life of the driver.
-> 
+Because we need to find the threads to request that they stop we need to
+have some way to track them.
 
-I know it can be more efficient. And I am looking at this way, but it just cannot
-be achieved via single step. TODO list includes rehaul of GPIO (with long-time-grown 
-feature_call + device tree bindings that were implemented for 8360 but looks reasonable), muxing, etc.
+Since we need to have some way to track them having an explicit data
+structure that the callers manage seems to make sense.
 
-Also I had to take care of arch/ppc since most affected cpm-related drivers (as well as targets) exist and 
-work both at ppc/ and powerpc/. 
-> There are also many different methods used that
-> I don't understand the reason.  Sometimes the
-> mappings are hidden in macros, sometimes done
-> in a function that is called, other times ioremap()
-> is called explicitly.  It just looks, well....  icky.  :-)
-> 
-
-This patch just fixes what already exist in kernel, removing the global IMMR pointer and bringing all remaining code paths to the same need_stuff->immr_map->use_it->immr_unmap model. IOW , wraps up what has began before. This ppc/powerpc scatter makes it pretty tricky to move drivers forward without ugly code to handle both 
-or leaving one of the ways aside, and this approach gives sane code that works in both cases. Current code is messy at some parts, and this what I am trying to address (with current patch and upcomings).
-
-Thanks for looking at it!
-
--Vitaly
+Eric
