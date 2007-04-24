@@ -1,18 +1,11 @@
-Return-Path: <petermendham@computing.dundee.ac.uk>
-Received: from uncle.computing.dundee.ac.uk (unknown [134.36.36.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 89786DDF30
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id DB1C4DDF51
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 24 Apr 2007 23:46:38 +1000 (EST)
-Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
-	[134.36.36.15])
-	by uncle.computing.dundee.ac.uk (8.13.1/8.13.1) with ESMTP id
-	l3ODkJUF006002
-	for <linuxppc-embedded@ozlabs.org>; Tue, 24 Apr 2007 14:46:19 +0100
-Message-ID: <462E0A29.5080601@computing.dundee.ac.uk>
-Date: Tue, 24 Apr 2007 14:46:17 +0100
-From: Peter Mendham <petermendham@computing.dundee.ac.uk>
+	Tue, 24 Apr 2007 23:53:30 +1000 (EST)
+Message-ID: <462E0CF5.4060402@ru.mvista.com>
+Date: Tue, 24 Apr 2007 17:58:13 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
 To: Grant Likely <grant.likely@secretlab.ca>
 Subject: Re: Using Xilinx Framebuffer on ML405 and 2.6.20.4
@@ -32,24 +25,20 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 Grant Likely wrote:
-> Heh, I've got a driver.  I just haven't published it yet.  Give me a 
-> few days...
-Fantastic.  I'm happy to be on the front line of alpha testing if that's 
-any help.
+> On 4/24/07, Peter Mendham <petermendham@computing.dundee.ac.uk> wrote:
+>> Dear all,
+>>
+>> I am wanting to use the Xilinx TFT controller from the ML403/5 reference
+>> project (probably from ML300 as well) under a 2.6.20.4 kernel.  I have
+>> Grant Likely's patchset applied in which there is a platform device
+>> entry for the framebuffer.  Does anyone know if there is mainline
+>> support for the Xilinx-style framebuffer?  If so, how do I enable it?  I
+>> have included framebuffer support in my kernel build, but I assume I
+>> need a driver also? Any tips greatly appreciated.
+> 
+> Heh, I've got a driver.  I just haven't published it yet.  Give me a few days...
+> 
+> g.
+> 
 
-No worries with a few day's delay though, I'm trying to fit the TFT 
-controller into with my design with a TEMAC in it and I'm having some 
-serious issues meeting timing requirements.  The SystemACE controller 
-just gives up the ghost loading the kernel image.  If you or anyone else 
-has any tips on how to get designs that fail timing to work I'd love to 
-hear them.  The other thing is a sanity check: I've assumed the reason 
-the SystemACE controller is giving up is a bus mess-up caused by 
-timing.  Any better ideas?
-
--- Peter
-
--- 
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
-MailScanner thanks transtec Computers for their support.
+We have one too :)
