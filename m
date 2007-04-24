@@ -1,30 +1,20 @@
-Return-Path: <lkml777@123mail.org>
-Received: from out4.smtp.messagingengine.com (out4.smtp.messagingengine.com
-	[66.111.4.28]) by ozlabs.org (Postfix) with ESMTP id 45A70DDE2A
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 16:23:06 +1000 (EST)
-Message-Id: <1177395453.29737.1186216313@webmail.messagingengine.com>
-From: lkml777@123mail.org
-To: "Eric Hopper" <hopper@omnifarious.org>
-Content-Type: text/plain; charset="iso-8859-1"
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.174]) by ozlabs.org (Postfix) with ESMTP id 04562DDF04
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 18:32:47 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [RFC 2/3] PowerPC: lazy altivec enabling in kernel
+Date: Tue, 24 Apr 2007 10:32:02 +0200
+References: <20070417115206.709701000@linux.vnet.ibm.com>
+	<20070417120925.263638000@linux.vnet.ibm.com>
+	<17965.21687.567012.175024@cargo.ozlabs.ibm.com>
+In-Reply-To: <17965.21687.567012.175024@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
-	<11769695763104-git-send-email-ebiederm@xmission.com>
-	<20070422123155.GF20763@infradead.org>
-	<20070423205020.GR31947@austin.ibm.com>
-	<1177378733.14873.52.camel@localhost.localdomain>
-	<m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
-	<1177382544.14873.57.camel@localhost.localdomain>
-	<m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
-	<1177390842.14873.94.camel@localhost.localdomain>
-	<m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
-Subject: SOME STUFF ABOUT REISER4
-In-Reply-To: <m1zm4ytjhg.fsf@ebiederm.dsl.xmission.com>
-Date: Mon, 23 Apr 2007 23:17:33 -0700
-Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, containers@lists.osdl.org,
-	Oleg Nesterov <oleg@tv-sign.ru>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704241032.02856.arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -34,26 +24,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 22 Apr 2007 19:00:46 -0700, "Eric Hopper"
-<hopper@omnifarious.org> said:
+On Tuesday 24 April 2007, Paul Mackerras wrote:
+> It would be better to put a test and conditional branch in
+> giveup_altivec to skip the mtmsrd if MSR_VEC is already set. =A0That
+> would avoid adding the overhead of the trap in the case when MSR_VEC
+> isn't already set, besides being much less code.
 
-> I know that this whole effort has been put in disarray by the
-> prosecution of Hans Reiser, but I'm curious as to its status. Is
-> Reiser4 going to be going into the Linus kernel anytime soon? Is there
-> somewhere I should be looking to find this out without wasting bandwidth
-> here?
+When I discussed this with Sebastian, my assumption was that even
+the mfmsr is rather expensive by itself, but I may have interpreted
+the profile data incorrectly.
 
-There was a thread the other day, that talked about Reiser4.
+Do you think it's safe to assume that by skipping mtmsr we can avoid
+the bulk of the overhead on most CPUs?
 
-It took a while but I have found it (actually two)
-
-http://lkml.org/lkml/2007/4/5/360
-http://lkml.org/lkml/2007/4/9/4
-
-You may want to check them out.
--- 
-  
-  lkml777@123mail.org
-
--- 
-http://www.fastmail.fm - Access your email from home and the web
+	Arnd <><
