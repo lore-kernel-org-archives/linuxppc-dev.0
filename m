@@ -1,15 +1,21 @@
-Return-Path: <paulus@ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Message-ID: <17965.21687.567012.175024@cargo.ozlabs.ibm.com>
-Date: Tue, 24 Apr 2007 10:52:07 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Sebastian Siewior <bigeasy@linux.vnet.ibm.com>
-Subject: Re: [RFC 2/3] PowerPC: lazy altivec enabling in kernel
-In-Reply-To: <20070417120925.263638000@linux.vnet.ibm.com>
-References: <20070417115206.709701000@linux.vnet.ibm.com>
-	<20070417120925.263638000@linux.vnet.ibm.com>
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <benh@kernel.crashing.org>
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id B7513DDF94
+	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 11:29:45 +1000 (EST)
+Subject: Re: [PATCH 6/7] MPIC MSI allocator
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+To: Olof Johansson <olof@lixom.net>
+In-Reply-To: <20070423035025.GA29839@lixom.net>
+References: <1176968125.531108.326168797246.qpush@cradle>
+	<20070419073555.D2C3EDDEFD@ozlabs.org>
+	<20070423035025.GA29839@lixom.net>
+Content-Type: text/plain
+Date: Tue, 24 Apr 2007 11:29:29 +1000
+Message-Id: <1177378169.14873.46.camel@localhost.localdomain>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org, linux-pci@atrey.karlin.mff.cuni.cz
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,24 +25,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Sebastian Siewior writes:
 
->  void enable_kernel_altivec(void)
->  {
-> -	WARN_ON(preemptible());
-> +	BUG_ON(preemptible());
-> +	/*
-> +	 * enable_kernel_altivec() will just save current AltiVec registers (if needed) and
-> +	 * return to caller (with MSR_VEC unchanged (probably not set)). The first AltiVec
-> +	 * instruction will raise an exception and the exception will enable the AltiVec for
-> +	 * the kernel. This is done to avoid the expensive "enable altivec" operation if it
-> +	 * is allready enabled. However, you have to disable preemtion while you are using
-> +	 * AltiVec.
-> +	 */
+> It's time to rename BROKEN_U3. It used to be the config option to enable
+> a few workarounds, but now it's used to select whenever there's a U3 in
+> the system. Care to do it in the scope of this patch set?
 
-It would be better to put a test and conditional branch in
-giveup_altivec to skip the mtmsrd if MSR_VEC is already set.  That
-would avoid adding the overhead of the trap in the case when MSR_VEC
-isn't already set, besides being much less code.
+Not really.... first gen G5s don't use that :-) It's wether the MPIC is
+part of U3/U4 -and- is used as a primary HT PIC.
 
-Paul.
+Ben.
