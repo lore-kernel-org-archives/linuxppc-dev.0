@@ -1,18 +1,24 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17965.33063.766403.836286@cargo.ozlabs.ibm.com>
-Date: Tue, 24 Apr 2007 14:01:43 +1000
+Message-ID: <17965.35054.835790.275270@cargo.ozlabs.ibm.com>
+Date: Tue, 24 Apr 2007 14:34:54 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Dave Jiang <djiang@mvista.com>
-Subject: Re: [PATCH] add reg and stack dump to booke WD handler
-In-Reply-To: <20070413221657.GA23624@blade.az.mvista.com>
-References: <20070413173524.GA17890@blade.az.mvista.com>
-	<461FCB6F.7010504@ru.mvista.com>
-	<20070413200659.GA21588@blade.az.mvista.com>
-	<B8CF9F53-9F51-4DD5-9CB6-16C69502A1CA@kernel.crashing.org>
-	<20070413221657.GA23624@blade.az.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+To: ebiederm@xmission.com (Eric W. Biederman)
+Subject: Re: [PATCH] powerpc pseries eeh: Convert to kthread API
+In-Reply-To: <m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
+References: <m1slawn9eb.fsf@ebiederm.dsl.xmission.com>
+	<11769695763104-git-send-email-ebiederm@xmission.com>
+	<20070422123155.GF20763@infradead.org>
+	<20070423205020.GR31947@austin.ibm.com>
+	<1177378733.14873.52.camel@localhost.localdomain>
+	<m1ejmav80l.fsf@ebiederm.dsl.xmission.com>
+	<1177382544.14873.57.camel@localhost.localdomain>
+	<m1abwyv4oq.fsf@ebiederm.dsl.xmission.com>
+Cc: "<Andrew Morton" <akpm@osdl.org>, linux-s390@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Christoph Hellwig <hch@infradead.org>, linuxppc-dev@ozlabs.org,
+	containers@lists.osdl.org, Oleg Nesterov <oleg@tv-sign.ru>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,12 +28,14 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Dave Jiang writes:
+Eric W. Biederman writes:
 
-> Have the booke watchdog dump some useful information when triggered.
-> Hopefully that'll give the user some hint of what happened rather than just a
-> mysterious reboot.
+> Well the basic problem is that for any piece of code that can be modular
+> we need a way to ensure all threads it has running are shutdown when we
+> remove the module.
 
-Why not call either die() or panic()?  Won't they do what you want?
+The EEH code can't be modular, and wouldn't make any sense to be
+modular, since it's part of the infrastructure for accessing PCI
+devices.
 
 Paul.
