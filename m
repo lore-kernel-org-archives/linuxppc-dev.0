@@ -1,27 +1,19 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id 661A0DDF3D
+Return-Path: <wg@grandegger.com>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 719EBDDE11
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Apr 2007 22:13:38 +1000 (EST)
-Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1HggNJ-0004d8-NG
-	for linuxppc-embedded@ozlabs.org; Wed, 25 Apr 2007 14:13:33 +0200
-From: Peter Korsgaard <peter.korsgaard@barco.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 5/5] [PPC] Add uartlite boot console driver for the zImage
-	wrapper
-References: <1176622062492-git-send-email-grant.likely@secretlab.ca>
-	<11766220692537-git-send-email-grant.likely@secretlab.ca>
-	<11766220693636-git-send-email-grant.likely@secretlab.ca>
-	<1176622070387-git-send-email-grant.likely@secretlab.ca>
-	<11766220702647-git-send-email-grant.likely@secretlab.ca>
-	<11766220713124-git-send-email-grant.likely@secretlab.ca>
-Date: Wed, 25 Apr 2007 14:13:33 +0200
-In-Reply-To: <11766220713124-git-send-email-grant.likely@secretlab.ca> (Grant
-	Likely's message of "Sun, 15 Apr 2007 01:27:42 -0600")
-Message-ID: <87zm4w8xea.fsf@sleipner.barco.com>
+	Wed, 25 Apr 2007 22:52:37 +1000 (EST)
+Message-ID: <462F4FD1.6080900@grandegger.com>
+Date: Wed, 25 Apr 2007 14:55:45 +0200
+From: Wolfgang Grandegger <wg@grandegger.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Subject: Re: Flat device tree definitions for FLASH and MTD partitioning
+References: <4618D400.8050003@grandegger.com> <4618DBEF.30307@ru.mvista.com>
+	<4618DE4A.4020404@ru.mvista.com>
+In-Reply-To: <4618DE4A.4020404@ru.mvista.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,13 +24,21 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "GL" == Grant Likely <grant.likely@secretlab.ca> writes:
+Sergei Shtylyov wrote:
+> Hello, I wrote:
+> 
+>>> are there already some thought or even example code on how to define 
+>>> Flash memory and MTD partitions in the DTS. This would avoid the 
+>>> ackward MTD partitioning via static structure or boot line argument 
+>>> and could be done in a generic way.
+> 
+>>     See Documentation/powerpc/booting-without-of.txt and 
+>> drivers/mtd/physmap_of.c for what's been already done.
+> 
+>    I meant drivers/mtd/maps/physmap_of.c
 
-Hi,
+I had a closer look to this driver. Unfortunately, it can not handle yet 
+  multiple FLASH banks. This could be achieved with an additional 
+property "bank_count". What do you think?
 
-GL> Signed-off-by: Grant Likely <grant.likely@secretlab.ca> ---
-
-Acked-by: Peter Korsgaard <jacmet@sunsite.dk>
-
--- 
-Bye, Peter Korsgaard
+Wolfgang.
