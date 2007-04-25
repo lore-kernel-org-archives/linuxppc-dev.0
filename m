@@ -1,21 +1,44 @@
-Return-Path: <vbordug@ru.mvista.com>
-Received: from buildserver.ru.mvista.com (unknown [85.21.88.6])
-	by ozlabs.org (Postfix) with ESMTP id E2EAFDDEDD
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 10:27:26 +1000 (EST)
-Date: Wed, 25 Apr 2007 03:57:04 +0400
-From: Vitaly Bordug <vbordug@ru.mvista.com>
-To: Dan Malek <dan@embeddedalley.com>
-Subject: Re: [PATCH 2/2] POWERPC: Remove global CPM mappings
-Message-ID: <20070425035704.19794dde@localhost.localdomain>
-In-Reply-To: <3AC6566B-FCB5-4B45-B282-B737F51545ED@embeddedalley.com>
-References: <20070423223649.4955.77579.stgit@localhost.localdomain>
-	<20070423223910.4955.18106.stgit@localhost.localdomain>
-	<5AC8BD28-125C-4552-97E9-D35E85D0E555@embeddedalley.com>
-	<20070424091831.1793fa26@localhost.localdomain>
-	<3AC6566B-FCB5-4B45-B282-B737F51545ED@embeddedalley.com>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 2A3E1DDEE0
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 10:43:59 +1000 (EST)
+In-Reply-To: <1177459235.14873.155.camel@localhost.localdomain>
+References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
+	<20070403223000.5d44b2f1.sfr@canb.auug.org.au>
+	<20070403223136.6ecdabbd.sfr@canb.auug.org.au>
+	<20070403223257.cb8c4d15.sfr@canb.auug.org.au>
+	<20070403223535.dd6731d6.sfr@canb.auug.org.au>
+	<20070403223738.03386a13.sfr@canb.auug.org.au>
+	<20070403223914.35bf04e1.sfr@canb.auug.org.au>
+	<20070403224039.913af749.sfr@canb.auug.org.au>
+	<20070403224205.807cffe0.sfr@canb.auug.org.au>
+	<20070403224340.5533abc9.sfr@canb.auug.org.au>
+	<20070403224505.5d5a1495.sfr@canb.auug.org.au>
+	<20070403224610.b61c7377.sfr@canb.auug.org.au>
+	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
+	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
+	<20070403225222.88e92221.sfr@canb.auug.org.au>
+	<20070403230505.f96ea210.sfr@canb.auug.org.au>
+	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>
+	<20070412141905.6f30efd3.sfr@canb.auug.org.au>
+	<20070412153424.bf3957f4.sfr@canb.auug.org.au>
+	<20070424223245.78f4fdfb.sfr@canb.auug.org.au>
+	<20070424223930.1dab0e28.sfr@canb.auug
+	.org.au> <1177459235.14873.155.camel@localhost.localdomain>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <a8ef1d22d218c74620bc38ed9d35830e@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 3/6] Consolidate of_find_property
+Date: Wed, 25 Apr 2007 02:43:44 +0200
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	"David S. Miller" <davem@davemloft.net>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,98 +48,28 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 24 Apr 2007 16:24:42 -0400
-Dan Malek wrote:
+>> The only change here is that a readlock is taken while the property 
+>> list
+>> is being traversed on Sparc where it was not taken previously.
+>>
+>> Also, Sparc uses strcasecmp to compare property names while PowerPC
+>> uses strcmp.
+>
+> Ok, so that's the opposite as the previous one... property names are
+> supposed to be case sensitive though, no ?
 
-> 
-> On Apr 24, 2007, at 1:18 AM, Vitaly Bordug wrote:
-> 
-> > At first I was thinking of make_everybody_happy solution,
-> 
-> Just make me happy :-)  The problem with these
-> "works in progress" submissions is no one ever
-> goes back to properly finish them, so I suspect
-> this code you are checking in, which I don't
-> like at all, is going to just stay there and bug
-> me until _I_ fix it.
-> 
-Hmm - it seems I want to check stuff in and forget about it? That's just not right, and there is zero value in it.
-> 
-> > I know it can be more efficient. And I am looking at this way, but  
-> > it just cannot
-> > be achieved via single step.
-> 
-> Why?  Because it's more work than you want to do?
-> 
-Because one_step_for_all is breakage-prone; and small changes are easier to debug. I want to make CPM layer
-stuff better while keeping it working, and definitely not just to do some specific amount of work/code, sorry.
+The OF standard doesn't allow upper case in property
+names at all.
 
-> > TODO list includes rehaul of GPIO (with long-time-grown
-> > feature_call + device tree bindings that were implemented for 8360  
-> > but looks reasonable), muxing, etc.
-> 
-> Nothing you have done so far affects any of this.
-> The things you are changing are the very basic
-> support functions.  You'll never go back and
-> fix these because then the excuse will be
-> "all of the drivers now use it."
-> 
-It does not matter what "all of the drivers now use". I just dumped long-term plan.
+> I don't think we would take much risk on ppc by
+> using strncasecmp but it shouldn't be necessary...
 
-Anyway let's refrain from predicting future - this is kinda off topic here ;).
+There are some examples where upper case is actually
+used in property names, unfortunately.  These can
+be solved by renaming/copying those properties to
+all lower case in a bootwrapper, or by strcmp() to
+the "cased" string, or by strcasecmp().  I for one
+don't like either option, you figure it out ;-)
 
 
-
-> > This patch just fixes what already exist in kernel, removing the  
-> > global IMMR pointer
-> 
-> It doesn't "fix" anything, it just changes the model to make it
-> more heavyweight.
-> 
-This approach assumes keeping whole mapped immr just to toggle a bit in mux or issue cpm_cr_cmd
-is not a good thing. If the driver needs to initialize values in mux(once), it makes sense to remap that part of immr and do just that. 
-
-for "It doesn't "fix" anything", this particular patch wraps up the cleanup and does not actually introduce new
-model. The only critial path I can admit is CPM command stuff inside fs_enet and uart drivers, I'll fix it if that is the point.
-
-> > and bringing all remaining code paths to the same need_stuff- 
-> > >immr_map->use_it->immr_unmap model.
-> 
-> That's not the model.  The model is:  driver init maps IMMR,
-> driver uses it's local mapping, driver unloaded unmaps IMMR.
-> We don't map/unmap on every use.  The macros should be
-> given this mapped immr as a parameter, not always
-> map and unmap because it takes more than five minutes
-> to properly change all of the APIs.
-> 
-
-So you see good in each CPM-related driver keeping its own remapped immr? It's up to driver/implementation how to handle stuff: it can remap needed things upon init and keep offsets around in internal struct, or have it ioremapped and modified in case of single-shot init/reconfigure thing. Macro is just a tool to access only necessary part of immr, and is kind of hacky just to keep arch/ppc in the loop.
-
-> > Current code is messy at some parts, and this what I am trying to  
-> > address (with current patch and upcomings).
-> 
-> IMHO this does nothing to clean it up.  I don't understand
-> the big deal about needing to remove the IMMR as a global
-> pointer.  The kernel has lots of other global variables that
-> no one seems concerned about and admit they must be
-> present.  These crappy macros and hacks in the name of
-> removing a global IMMR just isn't right.
-> 
-
-Again, macros is used to keep arch/ppc/ working. direct immr usage may be efficient but pretty hacky too.
-The patch is changing only arch/powerpc stuff and is sort of formal because does not really affect anything(in arch/powerpc of course) except cpm_reset and brg setting.
-
-> > Thanks for looking at it!
-> 
-> I'm not in any agreement this is correct nor do I want to
-> see the crap checked in.  You're turning a simple,
-> couple of clock cycle memory access into huge overhead,
-> probably context switchable operation.  Someone is
-> going to grab a spin lock, and end up crashing on
-> what appears to be a trivial memory access.....
-> 
-> This is not progress.
-
-Erm.. Where exactly in this patch - cr_cmd stuff in drivers/? Overhead relies on implementation - nobody would be happy of the incremental ioremapping. 
-
--V
+Segher
