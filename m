@@ -1,17 +1,41 @@
 Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH] 64K page support for kexec
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6E153DDF2C
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 08:17:02 +1000 (EST)
+Subject: Re: [PATCH 3/6] Consolidate of_find_property
 From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Luke Browning <lukebr@linux.vnet.ibm.com>
-In-Reply-To: <1177506360.24866.29.camel@luke-laptop>
-References: <1177439513.24866.5.camel@luke-laptop>
-	<1177454894.14873.142.camel@localhost.localdomain>
-	<1177506360.24866.29.camel@luke-laptop>
+To: Matt Sealey <matt@genesi-usa.com>
+In-Reply-To: <462F93F0.5090608@genesi-usa.com>
+References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
+	<20070403223914.35bf04e1.sfr@canb.auug.org.au>
+	<20070403224039.913af749.sfr@canb.auug.org.au>
+	<20070403224205.807cffe0.sfr@canb.auug.org.au>
+	<20070403224340.5533abc9.sfr@canb.auug.org.au>
+	<20070403224505.5d5a1495.sfr@canb.auug.org.au>
+	<20070403224610.b61c7377.sfr@canb.auug.org.au>
+	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
+	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
+	<20070403225222.88e92221.sfr@canb.auug.org.au>
+	<20070403230505.f96ea210.sfr@canb.auug.org.au>
+	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>
+	<20070412141905.6f30efd3.sfr@canb.auug.org.au>
+	<20070412153424.bf3957f4.sfr@canb.auug.org.au>
+	<20070424223245.78f4fdfb.sfr@canb.auug.org.au>
+	<20070424223930.1dab0e28.sfr@canb.auug	.org.au>
+	<06c51eb59847d80d9225cd6454f1957e@kernel.crashing.org>
+	<17966.45645.902486.793443@cargo.ozlabs.ibm.com>
+	<1177477630.14873.185.camel@localhost.localdomain>
+	<c249005137aa3e50c25221f6849a70ea@kernel.crashing.org>
+	<462F93F0.5090608@genesi-usa.com>
 Content-Type: text/plain
-Date: Thu, 26 Apr 2007 08:11:34 +1000
-Message-Id: <1177539094.14873.191.camel@localhost.localdomain>
+Date: Thu, 26 Apr 2007 08:16:44 +1000
+Message-Id: <1177539404.14873.199.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	cbe-oss-dev@ozlabs.org, Arnd Bergmann <arnd@arndb.de>
+Cc: ppc-dev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Stephen Rothwell <sfr@canb.auug.org.au>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,29 +45,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2007-04-25 at 18:46 +0100, Matt Sealey wrote:
 
-> OK.  I put it there mainly as a place holder.  How many page sizes do
-> you expect to support in a 1TB segment? 
+> Can't the ata/ATA thing be fixed by simply fixing device trees where it
+> happens? strncmp seems the standards-compliant route to take.. why clutter
+> the common parsing routines with fixes for deviant platforms?
 
-Not quite sure yet.. at least 16M and possibly 4K and 64K.
+In that specific case, it's even fixed by having the driver have both
+spellings in it's match list.
 
- .../...
+> The Mac obviously has a few of_platform things where you can add a
+> compatible search for ata then ATA, keeping it all in the drivers (where
+> relevant) and in the platform setup (where necessary)
 
-> right.  The encoding is implementation dependent.  There is a minimum
-> size requirement that comes into play, but that works the other way.
-> penc of zero has a minimum page size requirement of 8K.
-> 
-> I will remove the test and use the array for the comparison.
+The main problem with dropping case insensitive comparison is finding
+all the other cases of broken device-trees and make sure we have
+appropriate workarounds. I don't have access to all of the old apple
+machines (though I have access to a quite nice sample of them) and I
+generally dislike breaking something that works :-)
 
-Ok.
+But I agree that in the long run, it's a better approach
 
-> yes. what you said is correct.  I was thinking that you might want to
-> double the number of array elements so that you could apply a different
-> hash algorithm based on the type of segments. 
-
-The way our WIP patches for 1T segments do is we have separate psize and
-ssize at every level where it matters. Anyway, let's leave that alone
-for now. It will be easy enough to fixup.
-
-Cheers,
 Ben.
