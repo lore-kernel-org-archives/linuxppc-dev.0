@@ -1,20 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+Return-Path: <imrek@atomki.hu>
+Received: from imrek.org (strawberry.diszk.unideb.hu [193.6.143.139])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C9895DDFAE
+	by ozlabs.org (Postfix) with ESMTP id E132EDDF3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Apr 2007 05:12:00 +1000 (EST)
-Received: from [72.21.53.38] (helo=jubjub.nabble.com)
-	by talk.nabble.com with esmtp (Exim 4.50) id 1HgmuC-0004ke-Ud
-	for linuxppc-embedded@ozlabs.org; Wed, 25 Apr 2007 12:11:57 -0700
-Message-ID: <10184448.post@talk.nabble.com>
-Date: Wed, 25 Apr 2007 09:27:35 -0700 (PDT)
-From: rvk <rvkisley@yahoo.com>
+	Thu, 26 Apr 2007 06:03:09 +1000 (EST)
+Date: Wed, 25 Apr 2007 21:37:15 +0200 (CEST)
+From: jozsef imrek <imrek@atomki.hu>
 To: linuxppc-embedded@ozlabs.org
-Subject: ppc 405 (xilinx) physical RAM not at 0
+Subject: RE: 2.6 Kernel , Xilinx Virtex and PPC 405 On chip memory controllers
+	( DSOCM and ISOCM )
+In-Reply-To: <BAY115-W14E65268F6A301B98090EEB24A0@phx.gbl>
+Message-ID: <Pine.LNX.4.61.0704252120270.24746@imrek.org>
+References: <BAY115-W14E65268F6A301B98090EEB24A0@phx.gbl>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,24 +26,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+On Tue, 24 Apr 2007, Mohammad Sadegh Sadri wrote:
 
-Wise folks, I apologize if this is a dupe, if so please send a link either in
-forum or external to educate me.
+> Then in mailing list I saw some where that AVNET mini-modules are using 
+> a version of FX12 FPGA which has problem with PPC caches and as the 
+> solution the caches should be off.
 
-I have a port coming up to a ppc 405 Xilinx board. The port-from board has
-RAM at 0x0000_0000, but the new board will not have that. I have read Dave
-Lynch's external article here: (http://www.linuxjournal.com/article/9362),
-there is a paragraph where he describes asking forums for help and being
-told NO! NO! don't do that..., I don't have a choice. The
-include/asm-powerpc/ppc_asm.h header includes the tophys() and tovirt()
-macros used in arch/ppc/kernel/head_4xx.S to set up the initial mapping of
-KERNELBASE, and they seem hardcoded to a phys address for RAM of 0 (tophys
-in the final BOOKE/else case converts by subtracting KERNELBASE from itself
-basically, giving a base phys of 0).  I'm worried this is the tip of the
-iceberg.
+i think the relevant errata is this:
+http://www.xilinx.com/xlnx/xil_ans_display.jsp?getPagePath=20658
+see solution 13.
 
-Can anyone point me to patches or advice on how to get the 405 source using
-a different phys RAM base? 
+
+as far as i understand the problem was caused by the plb2opb bridge
+used in the design. the bridge was necessary because the plb_ddr
+controller in earlier EDKs did not support the 16bit DDR memory
+present on the avnet (earlier memec) minimodule, therefore you had to
+use an opb_ddr controller.
+
+however, the plb_ddr present in recent EDKs (ie plb_ddr v2.00.a)
+_does_ support 16bit wide memory, therefore you do not need the
+plb2opb bridge.
+
+so as long as you are using the plb_ddr controller, and you are
+disabling cache for other devices on the opb bus you should be
+safe.
+
+
+
+could someone with more authentic knowledge confirm this? anyone
+from xilinx/avnet?
+
+
+
 -- 
-View this message in context: http://www.nabble.com/ppc-405-%28xilinx%29-physical-RAM-not-at-0-tf3646549.html#a10184448
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+mazsi
+
+----------------------------------------------------------------
+strawberry fields forever!                       imrek@atomki.hu
+----------------------------------------------------------------
