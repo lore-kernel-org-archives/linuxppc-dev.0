@@ -1,9 +1,9 @@
 Return-Path: <mgreer@mvista.com>
-Date: Wed, 25 Apr 2007 16:55:04 -0700
+Date: Wed, 25 Apr 2007 16:55:43 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 1/13] powerpc: Add Makefile rule to wrap dts file in zImage
-Message-ID: <20070425235504.GC4046@mag.az.mvista.com>
+Subject: [PATCH 2/13] powerpc: Add dt_xlate_addr() to bootwrapper
+Message-ID: <20070425235543.GD4046@mag.az.mvista.com>
 References: <20070425234630.GA4046@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -18,80 +18,126 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Add 'zImage.dts' and 'zImage.dts_initrd' build rules that automatically
-compile and wrap a dts file into the zImage file.  The rules are similar
-to the initrd rules.
-
-The dts file is expected to be arch/powerpc/boot/dts/$(CONFIG_DEVICE_TREE)
+dt_xlate_reg() looks up the 'reg' property in the specified node
+to get the address and size to translate.  Add dt_xlate_addr()
+which is passed in the address and size to translate.
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 ---
 
- Makefile      |    2 +-
- boot/Makefile |   24 +++++++++++++++++++++++-
- 2 files changed, 24 insertions(+), 2 deletions(-)
+ devtree.c |   45 ++++++++++++++++++++++++++++++++-------------
+ ops.h     |    4 ++--
+ 2 files changed, 34 insertions(+), 15 deletions(-)
 
-Index: powerpc/arch/powerpc/boot/Makefile
+Index: powerpc/arch/powerpc/boot/devtree.c
 ===================================================================
---- powerpc.orig/arch/powerpc/boot/Makefile
-+++ powerpc/arch/powerpc/boot/Makefile
-@@ -144,9 +144,27 @@ targets	+= $(image-y) $(initrd-y)
- 
- $(addprefix $(obj)/, $(initrd-y)): $(obj)/ramdisk.image.gz
- 
-+dts-  := $(patsubst zImage%, zImage.dts%, $(image-n) $(image-))
-+dts-y := $(patsubst zImage%, zImage.dts%, $(image-y))
-+dts-y := $(filter-out $(image-y), $(dts-y))
-+targets	+= $(image-y) $(dts-y)
+--- powerpc.orig/arch/powerpc/boot/devtree.c
++++ powerpc/arch/powerpc/boot/devtree.c
+@@ -205,12 +205,13 @@ static int find_range(u32 *reg, u32 *ran
+  * In particular, PCI is not supported.  Also, only the beginning of the
+  * reg block is tracked; size is ignored except in ranges.
+  */
+-int dt_xlate_reg(void *node, int res, unsigned long *addr,
+-                 unsigned long *size)
++static u32 dt_xlate_buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
 +
-+dts_initrd-  := $(patsubst zImage%, zImage.dts_initrd%, $(image-n) $(image-))
-+dts_initrd-y := $(patsubst zImage%, zImage.dts_initrd%, $(image-y))
-+dts_initrd-y := $(filter-out $(image-y), $(dts_initrd-y))
-+targets	+= $(image-y) $(dts_initrd-y)
-+
-+$(addprefix $(obj)/, $(dts_initrd-y)): $(obj)/ramdisk.image.gz
-+
- # Don't put the ramdisk on the pattern rule; when its missing make will try
- # the pattern rule with less dependencies that also matches (even with the
- # hard dependency listed).
-+$(obj)/zImage.dts_initrd.%: vmlinux $(wrapperbits)
-+	$(call if_changed,wrap,$*,$(dts),,$(obj)/ramdisk.image.gz)
-+
-+$(obj)/zImage.dts.%: vmlinux $(wrapperbits)
-+	$(call if_changed,wrap,$*,$(dts))
-+
- $(obj)/zImage.initrd.%: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,$*,,,$(obj)/ramdisk.image.gz)
++static int dt_xlate(void *node, int res, int reglen, unsigned long *addr,
++		unsigned long *size)
+ {
+ 	u32 last_addr[MAX_ADDR_CELLS];
+ 	u32 this_addr[MAX_ADDR_CELLS];
+-	u32 buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
+ 	void *parent;
+ 	u64 ret_addr, ret_size;
+ 	u32 naddr, nsize, prev_naddr;
+@@ -225,18 +226,17 @@ int dt_xlate_reg(void *node, int res, un
+ 	if (nsize > 2)
+ 		return 0;
  
-@@ -175,13 +193,17 @@ $(obj)/zImage:		$(addprefix $(obj)/, $(i
- 	@rm -f $@; ln $< $@
- $(obj)/zImage.initrd:	$(addprefix $(obj)/, $(initrd-y))
- 	@rm -f $@; ln $< $@
-+$(obj)/zImage.dts:	$(addprefix $(obj)/, $(dts-y))
-+	@rm -f $@; ln $< $@
-+$(obj)/zImage.dts_initrd:	$(addprefix $(obj)/, $(dts_initrd-y))
-+	@rm -f $@; ln $< $@
+-	buflen = getprop(node, "reg", buf, sizeof(buf)) / 4;
+ 	offset = (naddr + nsize) * res;
  
- install: $(CONFIGURE) $(image-y)
- 	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $<
+-	if (buflen < offset + naddr + nsize)
++	if (reglen < offset + naddr + nsize)
+ 		return 0;
  
- # anything not in $(targets)
- clean-files += $(image-) $(initrd-) zImage zImage.initrd \
--               cuImage.elf cuImage.bin.gz
-+               cuImage.elf cuImage.bin.gz zImage.dts zImage.dts_initrd
+-	copy_val(last_addr, buf + offset, naddr);
++	copy_val(last_addr, dt_xlate_buf + offset, naddr);
  
- # clean up files cached by wrapper
- clean-kernel := vmlinux.strip vmlinux.bin
-Index: powerpc/arch/powerpc/Makefile
+-	ret_size = buf[offset + naddr];
++	ret_size = dt_xlate_buf[offset + naddr];
+ 	if (nsize == 2) {
+ 		ret_size <<= 32;
+-		ret_size |= buf[offset + naddr + 1];
++		ret_size |= dt_xlate_buf[offset + naddr + 1];
+ 	}
+ 
+ 	while ((node = get_parent(node))) {
+@@ -244,24 +244,25 @@ int dt_xlate_reg(void *node, int res, un
+ 
+ 		get_reg_format(node, &naddr, &nsize);
+ 
+-		buflen = getprop(node, "ranges", buf, sizeof(buf));
++		buflen = getprop(node, "ranges", dt_xlate_buf,
++				sizeof(dt_xlate_buf));
+ 		if (buflen < 0)
+ 			continue;
+-		if (buflen > sizeof(buf))
++		if (buflen > sizeof(dt_xlate_buf))
+ 			return 0;
+ 
+-		offset = find_range(last_addr, buf, prev_naddr,
++		offset = find_range(last_addr, dt_xlate_buf, prev_naddr,
+ 		                    naddr, nsize, buflen / 4);
+ 
+ 		if (offset < 0)
+ 			return 0;
+ 
+-		copy_val(this_addr, buf + offset, prev_naddr);
++		copy_val(this_addr, dt_xlate_buf + offset, prev_naddr);
+ 
+ 		if (!sub_reg(last_addr, this_addr))
+ 			return 0;
+ 
+-		copy_val(this_addr, buf + offset + prev_naddr, naddr);
++		copy_val(this_addr, dt_xlate_buf + offset + prev_naddr, naddr);
+ 
+ 		if (!add_reg(last_addr, this_addr))
+ 			return 0;
+@@ -287,3 +288,21 @@ int dt_xlate_reg(void *node, int res, un
+ 
+ 	return 1;
+ }
++
++int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size)
++{
++	int reglen;
++
++	reglen = getprop(node, "reg", dt_xlate_buf, sizeof(dt_xlate_buf)) / 4;
++	return dt_xlate(node, res, reglen, addr, size);
++}
++
++int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr)
++{
++
++	if (buflen > sizeof(dt_xlate_buf))
++		return 0;
++
++	memcpy(dt_xlate_buf, buf, buflen);
++	return dt_xlate(node, 0, buflen / 4, xlated_addr, NULL);
++}
+Index: powerpc/arch/powerpc/boot/ops.h
 ===================================================================
---- powerpc.orig/arch/powerpc/Makefile
-+++ powerpc/arch/powerpc/Makefile
-@@ -148,7 +148,7 @@ all: $(KBUILD_IMAGE)
+--- powerpc.orig/arch/powerpc/boot/ops.h
++++ powerpc/arch/powerpc/boot/ops.h
+@@ -82,8 +82,8 @@ int ns16550_console_init(void *devp, str
+ void *simple_alloc_init(char *base, unsigned long heap_size,
+ 			unsigned long granularity, unsigned long max_allocs);
+ extern void flush_cache(void *, unsigned long);
+-int dt_xlate_reg(void *node, int res, unsigned long *addr,
+-                 unsigned long *size);
++int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
++int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr);
  
- CPPFLAGS_vmlinux.lds	:= -Upowerpc
- 
--BOOT_TARGETS = zImage zImage.initrd uImage cuImage
-+BOOT_TARGETS = zImage zImage.initrd zImage.dts zImage.dts_initrd uImage cuImage
- 
- PHONY += $(BOOT_TARGETS)
- 
+ static inline void *finddevice(const char *name)
+ {
