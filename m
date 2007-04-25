@@ -1,20 +1,18 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.186]) by ozlabs.org (Postfix) with ESMTP id BECFEDDEE7
+Return-Path: <domen.puncer@telargo.com>
+Received: from out001.atlarge.net (out001.atlarge.net [129.41.63.69])
+	by ozlabs.org (Postfix) with ESMTP id 6013DDDEF7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Apr 2007 08:35:26 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH] Xilinx framebuffer device driver
-Date: Wed, 25 Apr 2007 00:35:18 +0200
-References: <462E0D5C.1090105@ru.mvista.com>
-In-Reply-To: <462E0D5C.1090105@ru.mvista.com>
+	Wed, 25 Apr 2007 15:30:08 +1000 (EST)
+Date: Wed, 25 Apr 2007 07:29:59 +0200
+From: Domen Puncer <domen.puncer@telargo.com>
+To: Pradyumna Sampath <pradyumna.sampath@gmail.com>
+Subject: Re: arch/powerpc for lite5200b
+Message-ID: <20070425052959.GX18236@moe.telargo.com>
+References: <f87351060704240431m2218910cs65510472218459b0@mail.gmail.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-15"
-Message-Id: <200704250035.18673.arnd@arndb.de>
-Cc: Andrei Konovalov <akonovalov@ru.mvista.com>,
-	Rick Moleres <rick.moleres@xilinx.com>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <f87351060704240431m2218910cs65510472218459b0@mail.gmail.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,30 +23,42 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-PiAroKCgoKCgoC5hY3RpdmF0ZSA9oKCgoKBGQl9BQ1RJVkFURV9OT1csCj4gK6CgoKCgoKAuaGVp
-Z2h0ID0goKCgoKCgOTksoKCgoKAvKiBpbiBtbSBvZiBORUMgTkw2NDQ4QkMyMC0wOCBvbiBNTDMw
-MCAqLwo+ICugoKCgoKCgLndpZHRoID2goKCgoKCgoDEzMqCgoKCgLyogaW4gbW0gb2YgTkVDIE5M
-NjQ0OEJDMjAtMDggb24gTUwzMDAgKi8KPiArfTsKClRoZSBzaXplIGxvb2tzIHZlcnkgc3BlY2lm
-aWMgdG8gYSBwYXJ0aWN1bGFyIGRpc3BsYXkgaGFyZHdhcmUuIEkgZ3Vlc3MKd2hlbiB0aGUgZHJp
-dmVyIGdldHMgY29udmVydGVkIHRvIGFuIG9mX3BsYXRmb3JtX2RyaXZlciwgdGhpcyBzaG91bGQg
-Y29tZQpmcm9tIHRoZSBkZXZpY2UgdHJlZS4KClVudGlsIHRoZW4sIG1heWJlIGEgY29uZmlnIG9w
-dGlvbiwgd2l0aCBhIHJlYXNvbmFibGUgZGVmYXVsdCB3b3VsZCBiZQpyaWdodC4KCj4gKwo+ICtz
-dHJ1Y3QgeGlsaW54ZmJfZHJ2ZGF0YSB7Cj4gKwo+ICugoKCgoKCgc3RydWN0IGZiX2luZm+goGlu
-Zm87oKCgoKCgoKCgoKAvKiBGQiBkcml2ZXIgaW5mbyByZWNvcmQgKi8KPiArCj4gK6CgoKCgoKB1
-bnNpZ25lZCBsb25noKCgcmVnc19waHlzO6CgoKCgoC8qIHBoeXMuIGFkZHJlc3Mgb2YgdGhlIGNv
-bnRyb2wgcmVnaXN0ZXJzICovCj4gK6CgoKCgoKB1MzIgoKCgoKCgoKCgoKCgKnJlZ3M7oKCgoKCg
-oKCgoC8qIHZpcnQuIGFkZHJlc3Mgb2YgdGhlIGNvbnRyb2wgcmVnaXN0ZXJzICovCj4gKwo+ICug
-oKCgoKCgdW5zaWduZWQgY2hhcqCgoCpmYl92aXJ0O6CgoKCgoKAvKiB2aXJ0LiBhZGRyZXNzIG9m
-IHRoZSBmcmFtZSBidWZmZXIgKi8KClRoZSB2aXJ0dWFsIGFkZHJlc3NlcyBzaG91bGQgYmUgbWFy
-a2VkIGFzIF9faW9tZW0sIHNvIHlvdSBjYW4gY2hlY2sgdGhlIGNvcnJlY3QKdXNhZ2Ugd2l0aCBz
-cGFyc2UuCgpOb3Qgc3VyZSBhYm91dCByZWdzX3BoeXMuIENhbiB0aGlzIGJlIGJleW9uZCB0aGUg
-MzIgYml0IGxpbWl0IG9uIGFueSBtYWNoaW5lPwoKPiArCj4gK6CgoKCgoKBkcnZkYXRhID0ga21h
-bGxvYyhzaXplb2Yoc3RydWN0IHhpbGlueGZiX2RydmRhdGEpLCBHRlBfS0VSTkVMKTsKPiAroKCg
-oKCgoGlmICghZHJ2ZGF0YSkgewo+ICugoKCgoKCgoKCgoKCgoKBwcmludGsoS0VSTl9FUlIgIkNv
-dWxkbid0IGFsbG9jYXRlIGRldmljZSBwcml2YXRlIHJlY29yZFxuIik7Cj4gK6CgoKCgoKCgoKCg
-oKCgoHJldHVybiAtRU5PTUVNOwo+ICugoKCgoKCgfQo+ICugoKCgoKCgbWVtc2V0KCh2b2lkKilk
-cnZkYXRhLCAwLCBzaXplb2Yoc3RydWN0IHhpbGlueGZiX2RydmRhdGEpKTsKClVzZQoJZHJ2ZGF0
-YSA9IGt6YWxsb2Moc2l6ZW9mICgqZHJ2ZGF0YSksIEdGUF9LRVJORUwpOwoKPiAroKCgoKCgoGRy
-dmRhdGEtPnJlZ3NfcGh5cyA9IHJlZ3NfcmVzLT5zdGFydDsKPiAroKCgoKCgoGRydmRhdGEtPnJl
-Z3MgPSAodTMyICopIGlvcmVtYXAocmVnc19yZXMtPnN0YXJ0LCA4KTsKCnUzMiBfX2lvbWVtKgoK
-CglBcm5kIDw+PAo=
+On 24/04/07 17:01 +0530, Pradyumna Sampath wrote:
+> Hi Everyone,
+> 
+> I have been trying to get the linux-2.6.20-rt3 for arch/powerpc to
+> boot on my lite5200b. Here are the things that I have tried so far. I
+> have a custom board based on the lite5200b and then the evaluation
+> board too.
+> 
+> - I have a working 2.6.16-rt29 kernel compiled using ARCH=ppc for both
+> these boards.
+> 
+> - I tried the default configs for lite5200 for both the custom board
+> and the EVB. Both hang at "Transferring control to Linux (at address
+> 00000000) ..."
+
+Device tree missing?
+You need to compile it with dtc, then in u-boot use something like:
+bootp; tftp 0x400000 uImage.ppc; tftp 0x600000 lite5200b.dtb
+set your bootargs
+bootm 0x400000 - 0x600000
+
+> 
+> - I downloaded roberts
+> http://www.pengutronix.de/oselas/bsp/phytec/index_en.html#phyCORE-MPC5200B-tiny
+> patches, but still ended up with the same result.
+> 
+> I read ( http://www.nabble.com/Re%3A-MPC52xx-support-rework-for-2.6.20-p7568655.html
+> )  that the arch/powerpc port for lite5200 works right out of the box.
+> Am I doing something wrong ?
+> 
+> The one thing I am yet to try is to do a git checkout from
+> git.secretlabs.ca. Unfortunately thanks to some internal firewalling
+> policies I still have not been able to do that.
+
+kernel.org tree will also work with lite5200b, if you need ethernet
+download fec/bestcomm patches from Grant's tree.
+
+
+	Domen
