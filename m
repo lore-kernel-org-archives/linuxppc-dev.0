@@ -1,44 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
-	[151.189.21.47])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 77074DDF3C
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 12:11:32 +1000 (EST)
-In-Reply-To: <17966.45645.902486.793443@cargo.ozlabs.ibm.com>
-References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
-	<20070403223000.5d44b2f1.sfr@canb.auug.org.au>
-	<20070403223136.6ecdabbd.sfr@canb.auug.org.au>
-	<20070403223257.cb8c4d15.sfr@canb.auug.org.au>
-	<20070403223535.dd6731d6.sfr@canb.auug.org.au>
-	<20070403223738.03386a13.sfr@canb.auug.org.au>
-	<20070403223914.35bf04e1.sfr@canb.auug.org.au>
-	<20070403224039.913af749.sfr@canb.auug.org.au>
-	<20070403224205.807cffe0.sfr@canb.auug.org.au>
-	<20070403224340.5533abc9.sfr@canb.auug.org.au>
-	<20070403224505.5d5a1495.sfr@canb.auug.org.au>
-	<20070403224610.b61c7377.sfr@canb.auug.org.au>
-	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
-	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
-	<20070403225222.88e92221.sfr@canb.auug.org.au>
-	<20070403230505.f96ea210.sfr@canb.auug.org.au>
-	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>
-	<20070412141905.6f30efd3.sfr@canb.auug.org.au>
-	<20070412153424.bf3957f4.sfr@canb.auug.org.au>
-	<20070424223245.78f4fdfb.sfr@canb.auug.org.au>
-	<20070424223930.1dab0e28.sfr@canb.auug
-	.org.au> <06c51eb59847d80d9225cd6454f1957e@kernel.crashing.org>
-	<17966.45645.902486.793443@cargo.ozlabs.ibm.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <21814cd2b9f526c6a1d09720e875bd81@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/6] Consolidate of_find_property
-Date: Wed, 25 Apr 2007 04:10:40 +0200
-To: Paul Mackerras <paulus@samba.org>
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, "David S. Miller" <davem@davemloft.net>,
-	Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17966.47547.516237.334293@cargo.ozlabs.ibm.com>
+Date: Wed, 25 Apr 2007 12:15:23 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Christian Krafft <krafft@de.ibm.com>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Arnd Bergmann <arnd.bergmann@de.ibm.com>
+Subject: Re: [PATCH] powerpc: uninline of_iomap function
+In-Reply-To: <17966.41335.429268.945199@cargo.ozlabs.ibm.com>
+References: <20070423193538.576702568@arndb.de>
+	<20070423193913.119032752@arndb.de>
+	<1177378533.14873.48.camel@localhost.localdomain>
+	<20070424173202.15e5ce42@localhost>
+	<17966.41335.429268.945199@cargo.ozlabs.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -48,29 +24,11 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Property names aren't supposed to contain uppercase
->> characters.
->
-> Somebody forgot to tell Apple:
+I wrote:
 
-Yes I know.  Sigh.
+> Looks like your mailer mangled the patch - could you resend it with a
+> different mailer or with different settings of your mailer?
 
->> I can swing both ways on which of strcmp()
->> or strcasecmp() is better, but there seems no reason
->> to do this differently on each platform.
->
-> The question is, what ppc drivers would break if we used strcmp
-> instead of strcasecmp?  I have a dim memory that some Apple machines
-> had "ata" and others had "ATA" for the hard disk, for instance.
+Never mind, looks like the problem is on my end.
 
-Hrm I don't remember that one, but yeah something
-similar is bound to prop up.
-
-The question is, should we use strcasecmp(), or adjust
-those drivers to probe for the upper case version
-in addition to the lower case version?  That option
-at least has the advantage that you can document
-the workaround right where the actual problem is met :-)
-
-
-Segher
+Paul.
