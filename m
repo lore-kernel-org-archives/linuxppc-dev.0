@@ -1,23 +1,22 @@
-Return-Path: <matt@genesi-usa.com>
-Received: from mail.genesi-usa.com (mithrandir.softwarenexus.net
-	[66.98.186.96])
+Return-Path: <yur@emcraft.com>
+Received: from ocean.emcraft.com (ocean.emcraft.com [213.221.7.182])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id B898ADDF10
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 03:46:09 +1000 (EST)
-Message-ID: <462F93F0.5090608@genesi-usa.com>
-Date: Wed, 25 Apr 2007 18:46:24 +0100
-From: Matt Sealey <matt@genesi-usa.com>
+	by ozlabs.org (Postfix) with ESMTP id 114B4DDF0E
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 04:33:53 +1000 (EST)
+From: Yuri Tikhonov <yur@emcraft.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH] ppc: Add support for bigger page sizes than 4KB on PPC44x
+Date: Wed, 25 Apr 2007 21:37:06 +0400
+References: <200703161634.58444.yur@emcraft.com>
+	<200703171441.51276.yur@emcraft.com>
+	<17921.3150.242081.66071@cargo.ozlabs.ibm.com>
+In-Reply-To: <17921.3150.242081.66071@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/6] Consolidate of_find_property
-References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>	<20070403223914.35bf04e1.sfr@canb.auug.org.au>	<20070403224039.913af749.sfr@canb.auug.org.au>	<20070403224205.807cffe0.sfr@canb.auug.org.au>	<20070403224340.5533abc9.sfr@canb.auug.org.au>	<20070403224505.5d5a1495.sfr@canb.auug.org.au>	<20070403224610.b61c7377.sfr@canb.auug.org.au>	<20070403224937.f6a07e56.sfr@canb.auug.org.au>	<20070403225059.e735b5e4.sfr@canb.auug.org.au>	<20070403225222.88e92221.sfr@canb.auug.org.au>	<20070403230505.f96ea210.sfr@canb.auug.org.au>	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>	<20070412141905.6f30efd3.sfr@canb.auug.org.au>	<20070412153424.bf3957f4.sfr@canb.auug.org.au>	<20070424223245.78f4fdfb.sfr@canb.auug.org.au>	<20070424223930.1dab0e28.sfr@canb.auug	.org.au>
-	<06c51eb59847d80d9225cd6454f1957e@kernel.crashing.org>	<17966.45645.902486.793443@cargo.ozlabs.ibm.com>	<1177477630.14873.185.camel@localhost.localdomain>
-	<c249005137aa3e50c25221f6849a70ea@kernel.crashing.org>
-In-Reply-To: <c249005137aa3e50c25221f6849a70ea@kernel.crashing.org>
-Content-Type: text/plain; charset=UTF-8
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	"David S. Miller" <davem@davemloft.net>, ppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704252137.06340.yur@emcraft.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,38 +26,64 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Can't the ata/ATA thing be fixed by simply fixing device trees where it
-happens? strncmp seems the standards-compliant route to take.. why clutter
-the common parsing routines with fixes for deviant platforms?
 
-The Mac obviously has a few of_platform things where you can add a
-compatible search for ata then ATA, keeping it all in the drivers (where
-relevant) and in the platform setup (where necessary)
+ The patch replaces the CONFIG_PPC_PAGE_SHIFT integer option with choice of
+three boolean options
 
--- 
-Matt Sealey <matt@genesi-usa.com>
-Genesi, Manager, Developer Relations
+ Signed-off-by: Yuri Tikhonov <yur@emcraft.com>
+--
 
-Segher Boessenkool wrote:
->>> The question is, what ppc drivers would break if we used strcmp
->>> instead of strcasecmp?  I have a dim memory that some Apple machines
->>> had "ata" and others had "ATA" for the hard disk, for instance.
->> ata/ATA and ide/IDE is the main one that comes to mind, but I wouldn't
->> exclude something like Powermac vs. PowerMac or that sort of thing... I
->> remember a case related bug about 2 years ago but can't find what it
->> was ...
->>
->> I think it's safe to settle on strcasecmp for most things for now
-> 
-> Yes, it's hard to imagine any case where strcasecmp(),
-> although technically incorrect, would break anything.
-> Please document in the code that is _is_ wrong and _why_
-> it is done though.
-> 
-> 
-> Segher
-> 
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
+diff --git a/arch/ppc/Kconfig b/arch/ppc/Kconfig
+index 72af523..5eb58dc 100644
+--- a/arch/ppc/Kconfig
++++ b/arch/ppc/Kconfig
+@@ -1201,15 +1201,24 @@ config SECCOMP
+
+          If unsure, say Y. Only embedded should say N here.
+
+-config PPC_PAGE_SHIFT
+-       int "Page size (12=>4KB; 14=>16KB; 16=>64KB)" if 44x
+-       default "12"
+-       range 12 16
+-       help
++choice
++       prompt "Page size"
++       default PPC_PAGE_4K
++       ---help---
+          The PAGE_SIZE definition. Increasing the page size may
+          improve the system performance in some dedicated cases.
+
+-         If unsure, set it to 12 (4KB).
++         If unsure, set it to 4 KB.
++
++config PPC_PAGE_4K
++       bool "4 KB"
++
++config PPC_PAGE_16K
++       bool "16 KB" if 44x
++
++config PPC_PAGE_64K
++       bool "64 KB" if 44x
++endchoice
+
+ endmenu
+
+diff --git a/include/asm-ppc/page.h b/include/asm-ppc/page.h
+index 0b8f354..f46712e 100644
+--- a/include/asm-ppc/page.h
++++ b/include/asm-ppc/page.h
+@@ -4,7 +4,13 @@
+ #include <asm/asm-compat.h>
+
+ /* PAGE_SHIFT determines the page size */
+-#define PAGE_SHIFT     CONFIG_PPC_PAGE_SHIFT
++#if defined(CONFIG_PPC_PAGE_4K)
++#define PAGE_SHIFT     12
++#elif defined(CONFIG_PPC_PAGE_16K)
++#define PAGE_SHIFT     14
++#elif defined(CONFIG_PPC_PAGE_64K)
++#define PAGE_SHIFT     16
++#endif
+ #define PAGE_SIZE      (ASM_CONST(1) << PAGE_SHIFT)
+
+ /*
