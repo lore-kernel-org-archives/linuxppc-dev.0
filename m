@@ -1,19 +1,24 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 83198DDF33
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 09:13:05 +1000 (EST)
-Date: Wed, 25 Apr 2007 16:13:09 -0700 (PDT)
-Message-Id: <20070425.161309.02297897.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 3/6] Consolidate of_find_property
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <1177541265.14873.222.camel@localhost.localdomain>
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
+	[151.189.21.41])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "mx.arcor.de",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id B5904DDF35
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 09:19:10 +1000 (EST)
+In-Reply-To: <20070425.161309.02297897.davem@davemloft.net>
 References: <1177539404.14873.199.camel@localhost.localdomain>
 	<20070425.152419.110959714.davem@davemloft.net>
 	<1177541265.14873.222.camel@localhost.localdomain>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
+	<20070425.161309.02297897.davem@davemloft.net>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <86094f4e887d90dbff1be6d20e5fdd5c@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH 3/6] Consolidate of_find_property
+Date: Thu, 26 Apr 2007 01:18:59 +0200
+To: David Miller <davem@davemloft.net>
+Cc: linuxppc-dev@ozlabs.org, sfr@canb.auug.org.au, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,29 +28,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Thu, 26 Apr 2007 08:47:45 +1000
+> Meanwhile any feedback on the idea of pushing all of this
+> consolidation and cleanup work through one of our trees
+> instead of having all of these difficult dependencies
+> between the two?
 
->  - property names. That's what you had to deal with for Sparc. I think
-> it's fair enough to use strcasecmp for these. They are supposed to not
-> have case, while they happen to do here or there, there is almost no
-> chance of conflict (several properties with a name differring only by
-> the case).
-> 
->  - property content. (That include node names which are really only the
-> content of the "name" property of that node). The ATA/ata case was for
-> property content in fact (name property and type property iirc) which is
-> a different thing and must be kept case sensitive I beleive. That covers
-> the case of of_device_is_compatible() which should use strcmp (or the
-> -n- version of it of course).
-> 
-> Do we agree on that ?
+Set up a branch in one of the Git repos that is for
+this consolidation work only, that both the arch trees
+can pull from?  The beauty with Git is that this won't
+lead to merge problems :-)
 
-Ok, I think so.
 
-Meanwhile any feedback on the idea of pushing all of this
-consolidation and cleanup work through one of our trees
-instead of having all of these difficult dependencies
-between the two?
-
-Thanks.
+Segher
