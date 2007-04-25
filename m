@@ -1,18 +1,17 @@
-Return-Path: <lukebr@linux.vnet.ibm.com>
-Subject: Re: [PATCH v2] powerpc: 64K page support for kexec
-From: Luke Browning <lukebr@linux.vnet.ibm.com>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-In-Reply-To: <1177455014.14873.144.camel@localhost.localdomain>
-References: <1177439513.24866.5.camel@luke-laptop>
-	<20070424194348.GA8371@lixom.net>
-	<1177455014.14873.144.camel@localhost.localdomain>
-Content-Type: text/plain
-Date: Wed, 25 Apr 2007 16:35:39 -0300
-Message-Id: <1177529739.24866.34.camel@luke-laptop>
-Mime-Version: 1.0
-Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
-	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
-	Arnd Bergmann <arnd@arndb.de>
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id B19FCDDE19
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 05:52:41 +1000 (EST)
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+To: mingo@elte.hu
+Subject: [PATCH 2.6.21-rc6-rt0] ns2cyc() result fix
+Date: Wed, 25 Apr 2007 22:54:17 +0300
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704252354.17404.sshtylyov@ru.mvista.com>
+Cc: linuxppc-dev@ozlabs.org, johnstul@us.ibm.com, linux-kernel@vger.kernel.org,
+	dwalker@mvista.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,140 +21,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Fix the dubious use of cycles_t where cycle_t was appropriate.  On the machines
+with 32-bit cycles_t (like ARM/PPC) it caused these warnings:
 
-This patch fixes a couple of kexec problems related to 64K page 
-support in the kernel.  kexec issues a tlbie for each pte.  The 
-parameters for the tlbie are the page size and the virtual address.
-Support was missing for the computation of these two parameters
-for 64K pages.  This patch adds that support.  
+In file included from arch/powerpc/kernel/time.c:1045:
+include/linux/clocksource.h: In function `ns2cyc':
+include/linux/clocksource.h:213: warning: comparison of distinct pointer types lacks a cast
+include/linux/clocksource.h:213: warning: right shift count >= width of type
+include/linux/clocksource.h:213: warning: passing argument 1 of `__div64_32' from incompatible pointer type
 
-Signed-off-by: Luke Browning <lukebrowning@us.ibm.com>
+This function and therefore usecs_to_cycles() was unlikely to return a correct
+result on such machines because of the shift result truncation.
 
-Index: linux-2.6.21-rc4/arch/powerpc/mm/hash_native_64.c
+Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+
+---
+I'm also uncertain about 'preempt_max_latency' and 'preempt_thresh' variables
+being declared as 'unsigned long' -- however, looks like those are unlikely to
+overflow... yet it's unclear why there's casts to 'cycle_t' (which is always
+64-bit) when initializing/comparing them...
+
+Index: linux-2.6/include/linux/clocksource.h
 ===================================================================
---- linux-2.6.21-rc4.orig/arch/powerpc/mm/hash_native_64.c
-+++ linux-2.6.21-rc4/arch/powerpc/mm/hash_native_64.c
-@@ -340,31 +340,74 @@ static void native_hpte_invalidate(unsig
- 	local_irq_restore(flags);
- }
- 
--/*
-- * XXX This need fixing based on page size. It's only used by
-- * native_hpte_clear() for now which needs fixing too so they
-- * make a good pair...
-- */
--static unsigned long slot2va(unsigned long hpte_v, unsigned long slot)
--{
--	unsigned long avpn = HPTE_V_AVPN_VAL(hpte_v);
--	unsigned long va;
--
--	va = avpn << 23;
--
--	if (! (hpte_v & HPTE_V_LARGE)) {
--		unsigned long vpi, pteg;
-+#define LP_SHIFT	12
-+#define LP_BITS		8
-+#define LP_MASK(i)	((0xFF >> (i)) << LP_SHIFT)
-+
-+static void hpte_decode(hpte_t *hpte, unsigned long slot, 
-+			int *psize, unsigned long *va)
-+{
-+	unsigned long hpte_r = hpte->r;
-+	unsigned long hpte_v = hpte->v;
-+	unsigned long avpn;
-+	int i, size, shift, penc, avpnm_bits;
-+		
-+	if (!(hpte_v & HPTE_V_LARGE))
-+		size = MMU_PAGE_4K;
-+	else {
-+		for (i = 0; i < LP_BITS; i++) {
-+			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
-+				break;
-+		}
-+		penc = LP_MASK(i+1) >> LP_SHIFT;
-+		for (size = 0; size < MMU_PAGE_COUNT - 1; size++) {
- 
--		pteg = slot / HPTES_PER_GROUP;
--		if (hpte_v & HPTE_V_SECONDARY)
--			pteg = ~pteg;
-+			/* 4K pages are not represented by LP */
-+			if (size == MMU_PAGE_4K)
-+				continue;
-+
-+			/* valid entries have a shift value */
-+			if (!mmu_psize_defs[size].shift)
-+				continue;
- 
--		vpi = ((va >> 28) ^ pteg) & htab_hash_mask;
-+			if (penc == mmu_psize_defs[size].penc)
-+				break;
-+		}
-+	}
- 
--		va |= vpi << PAGE_SHIFT;
-+	/*
-+	 * FIXME, the code below works for 16M, 64K, and 4K pages as these
-+	 * fall under the p<=23 rules for calculating the virtual address.
-+	 * In the case of 16M pages, an extra bit is stolen from the AVPN
-+	 * field to achieve the requisite 24 bits. 
-+	 *
-+	 * 16G pages are not supported by the code below.
-+	 */
-+	BUG_ON(hpte_v & 0x4000000000000000UL);		/* 1T segment */
-+	BUG_ON(size == MMU_PAGE_16G);
-+	BUG_ON(size == MMU_PAGE_64K_AP);
-+
-+	shift = mmu_psize_defs[size].shift;
-+	if (mmu_psize_defs[size].avpnm)
-+		avpnm_bits = __ilog2_u64(mmu_psize_defs[size].avpnm) + 1;
-+	else
-+		avpnm_bits = 0;
-+	if (shift - avpnm_bits <= 23) {
-+		avpn = HPTE_V_AVPN_VAL(hpte_v) << 23;
-+
-+		if (shift < 23) {
-+			unsigned long vpi, pteg;
-+
-+			pteg = slot / HPTES_PER_GROUP;
-+			if (hpte_v & HPTE_V_SECONDARY)
-+				pteg = ~pteg;
-+			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
-+			avpn |= (vpi << mmu_psize_defs[size].shift);
-+		}
- 	}
- 
--	return va;
-+	*va = avpn;
-+	*psize = size;
- }
- 
- /*
-@@ -374,15 +417,14 @@ static unsigned long slot2va(unsigned lo
-  *
-  * TODO: add batching support when enabled.  remember, no dynamic memory here,
-  * athough there is the control page available...
-- *
-- * XXX FIXME: 4k only for now !
+--- linux-2.6.orig/include/linux/clocksource.h
++++ linux-2.6/include/linux/clocksource.h
+@@ -206,9 +206,9 @@ static inline s64 cyc2ns(struct clocksou
+  * @cs:		Pointer to clocksource
+  * @nsecs:	Nanoseconds
   */
- static void native_hpte_clear(void)
+-static inline cycles_t ns2cyc(struct clocksource *cs, u64 nsecs)
++static inline cycle_t ns2cyc(struct clocksource *cs, u64 nsecs)
  {
- 	unsigned long slot, slots, flags;
- 	hpte_t *hptep = htab_address;
--	unsigned long hpte_v;
-+	unsigned long hpte_v, va;
- 	unsigned long pteg_count;
-+	int psize;
+-	cycles_t ret = nsecs << cs->shift;
++	cycle_t ret = nsecs << cs->shift;
  
- 	pteg_count = htab_hash_mask + 1;
- 
-@@ -408,8 +450,9 @@ static void native_hpte_clear(void)
- 		 * already hold the native_tlbie_lock.
- 		 */
- 		if (hpte_v & HPTE_V_VALID) {
-+			hpte_decode(hptep, slot, &psize, &va);
- 			hptep->v = 0;
--			__tlbie(slot2va(hpte_v, slot), MMU_PAGE_4K);
-+			__tlbie(va, psize);
- 		}
- 	}
+ 	do_div(ret, cs->mult + 1);
  
