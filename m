@@ -1,21 +1,24 @@
-Return-Path: <imrek@atomki.hu>
-Received: from imrek.org (strawberry.diszk.unideb.hu [193.6.143.139])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E132EDDF3C
+Return-Path: <hsr_jsl@mail.tele.dk>
+Received: from pqueueb.post.tele.dk (pqueueb.post.tele.dk [193.162.153.10])
+	by ozlabs.org (Postfix) with ESMTP id 7AF28DDF5D
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Apr 2007 06:03:09 +1000 (EST)
-Date: Wed, 25 Apr 2007 21:37:15 +0200 (CEST)
-From: jozsef imrek <imrek@atomki.hu>
-To: linuxppc-embedded@ozlabs.org
-Subject: RE: 2.6 Kernel , Xilinx Virtex and PPC 405 On chip memory controllers
-	( DSOCM and ISOCM )
-In-Reply-To: <BAY115-W14E65268F6A301B98090EEB24A0@phx.gbl>
-Message-ID: <Pine.LNX.4.61.0704252120270.24746@imrek.org>
-References: <BAY115-W14E65268F6A301B98090EEB24A0@phx.gbl>
+	Thu, 26 Apr 2007 05:39:37 +1000 (EST)
+Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
+	by pqueueb.post.tele.dk (Postfix) with ESMTP id 64AF299C4
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 25 Apr 2007 21:15:52 +0200 (CEST)
+Received: from KontorPC (0x5731f716.abnxx12.adsl-dhcp.tele.dk [87.49.247.22])
+	by pfepa.post.tele.dk (Postfix) with SMTP id 0059CFAC006
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed, 25 Apr 2007 21:15:47 +0200 (CEST)
+Message-ID: <00bc01c7876e$57a60980$6501a8c0@KontorPC>
+From: "JSL" <hsr_jsl@mail.tele.dk>
+To: <linuxppc-embedded@ozlabs.org>
+Subject: Serial console via SCC2 on Mpc8xx
+Date: Wed, 25 Apr 2007 21:17:18 +0200
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
+Content-Type: multipart/alternative;
+	boundary="----=_NextPart_000_00B9_01C7877F.1B1229C0"
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,41 +29,37 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 24 Apr 2007, Mohammad Sadegh Sadri wrote:
+This is a multi-part message in MIME format.
 
-> Then in mailing list I saw some where that AVNET mini-modules are using 
-> a version of FX12 FPGA which has problem with PPC caches and as the 
-> solution the caches should be off.
+------=_NextPart_000_00B9_01C7877F.1B1229C0
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-i think the relevant errata is this:
-http://www.xilinx.com/xlnx/xil_ans_display.jsp?getPagePath=20658
-see solution 13.
+Has anyone had success with SCC2 as serial console instead of SMC1/2 =
+uart. Has not yet found any Linux that have support for that when =
+lokking at Linux 2.6 or 2.4 for MPC860P
 
+Jorgen
+------=_NextPart_000_00B9_01C7877F.1B1229C0
+Content-Type: text/html;
+	charset="iso-8859-1"
+Content-Transfer-Encoding: quoted-printable
 
-as far as i understand the problem was caused by the plb2opb bridge
-used in the design. the bridge was necessary because the plb_ddr
-controller in earlier EDKs did not support the 16bit DDR memory
-present on the avnet (earlier memec) minimodule, therefore you had to
-use an opb_ddr controller.
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML><HEAD>
+<META http-equiv=3DContent-Type content=3D"text/html; =
+charset=3Diso-8859-1">
+<META content=3D"MSHTML 6.00.2900.3059" name=3DGENERATOR>
+<STYLE></STYLE>
+</HEAD>
+<BODY bgColor=3D#ffffff>
+<DIV><FONT face=3DArial size=3D2>Has anyone had success with SCC2 as =
+serial console=20
+instead of&nbsp;SMC1/2 uart. Has not yet found any Linux that have =
+support for=20
+that when lokking at Linux 2.6 or 2.4 for MPC860P</FONT></DIV>
+<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
+<DIV><FONT face=3DArial size=3D2>Jorgen</FONT></DIV></BODY></HTML>
 
-however, the plb_ddr present in recent EDKs (ie plb_ddr v2.00.a)
-_does_ support 16bit wide memory, therefore you do not need the
-plb2opb bridge.
-
-so as long as you are using the plb_ddr controller, and you are
-disabling cache for other devices on the opb bus you should be
-safe.
-
-
-
-could someone with more authentic knowledge confirm this? anyone
-from xilinx/avnet?
-
-
-
--- 
-mazsi
-
-----------------------------------------------------------------
-strawberry fields forever!                       imrek@atomki.hu
-----------------------------------------------------------------
+------=_NextPart_000_00B9_01C7877F.1B1229C0--
