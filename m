@@ -1,16 +1,16 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 91893DDEDF
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 14:24:21 +1000 (EST)
-Date: Tue, 24 Apr 2007 21:24:28 -0700 (PDT)
-Message-Id: <20070424.212428.35800490.davem@davemloft.net>
-To: benh@kernel.crashing.org
-Subject: Re: [PATCH 3/6] Consolidate of_find_property
+	by ozlabs.org (Postfix) with ESMTP id A305EDDEDF
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 14:27:29 +1000 (EST)
+Date: Tue, 24 Apr 2007 21:27:36 -0700 (PDT)
+Message-Id: <20070424.212736.115930755.davem@davemloft.net>
+To: segher@kernel.crashing.org
+Subject: Re: [PATCH 1/6] Start split out of common open firmware code
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <1177459235.14873.155.camel@localhost.localdomain>
-References: <20070424223245.78f4fdfb.sfr@canb.auug.org.au>
-	<20070424223930.1dab0e28.sfr@canb.auug.org.au>
-	<1177459235.14873.155.camel@localhost.localdomain>
+In-Reply-To: <baa646899e4d0f3f1111f62709a2c66b@kernel.crashing.org>
+References: <f64705c9250a93dcb7a4015b9a0d5667@kernel.crashing.org>
+	<1177459397.14873.160.camel@localhost.localdomain>
+	<baa646899e4d0f3f1111f62709a2c66b@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
@@ -23,24 +23,18 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Date: Wed, 25 Apr 2007 10:00:35 +1000
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Date: Wed, 25 Apr 2007 02:50:13 +0200
 
-> On Tue, 2007-04-24 at 22:39 +1000, Stephen Rothwell wrote:
-> > The only change here is that a readlock is taken while the property list
-> > is being traversed on Sparc where it was not taken previously.
-> > 
-> > Also, Sparc uses strcasecmp to compare property names while PowerPC
-> > uses strcmp.
-> 
-> Ok, so that's the opposite as the previous one... property names are
-> supposed to be case sensitive though, no ? Dave, how do you think we
-> should converge here ? I don't think we would take much risk on ppc by
-> using strncasecmp but it shouldn't be necessary...
+> The SPARC tree carries the same broken code -- is
+> this just a case of code copying, or are there
+> actual SPARC machines with such broken trees?
 
-The difference is that some properties are all-caps on powerpc
-when they are lowecase on sparc, the Radeon properties are a
-good example.
+There have been many cases of missed or even erroneous
+properties on sparc tree, but I am not too sure about
+the cell counting cases.
 
-I think if we use strncasecmp across the board, nothing will
-break.
+Let's do this, once the consolidation is done keeping
+behavior as-is, give me a patch to review that changing
+the cell counting bits and I'll verify it against
+all the machines I have here plus some OFW tree dumps.
