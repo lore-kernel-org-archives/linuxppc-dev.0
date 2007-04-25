@@ -1,21 +1,23 @@
 Return-Path: <jacmet@sunsite.dk>
 Received: from kuuvir01.barco.com (kuu212123311.barco.com [212.123.3.11])
-	by ozlabs.org (Postfix) with SMTP id DC732DDEF6
+	by ozlabs.org (Postfix) with SMTP id D5E9FDDF15
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Apr 2007 22:07:40 +1000 (EST)
+	Wed, 25 Apr 2007 22:11:16 +1000 (EST)
 Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1HggHa-0004Xl-DM
-	for linuxppc-embedded@ozlabs.org; Wed, 25 Apr 2007 14:07:38 +0200
+	(envelope-from <jacmet@sunsite.dk>) id 1HggKz-0004cg-3C
+	for linuxppc-embedded@ozlabs.org; Wed, 25 Apr 2007 14:11:09 +0200
 From: Peter Korsgaard <peter.korsgaard@barco.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: [PATCH 2/5] [PPC] Merge common virtex header files
+Subject: Re: [PATCH 3/5] [PPC] New registration for common Xilinx Virtex
+	ppc405 platform devices
 References: <1176622062492-git-send-email-grant.likely@secretlab.ca>
 	<11766220692537-git-send-email-grant.likely@secretlab.ca>
 	<11766220693636-git-send-email-grant.likely@secretlab.ca>
-Date: Wed, 25 Apr 2007 14:07:38 +0200
-In-Reply-To: <11766220693636-git-send-email-grant.likely@secretlab.ca> (Grant
-	Likely's message of "Sun, 15 Apr 2007 01:27:39 -0600")
-Message-ID: <87d51sac8l.fsf@sleipner.barco.com>
+	<1176622070387-git-send-email-grant.likely@secretlab.ca>
+Date: Wed, 25 Apr 2007 14:11:09 +0200
+In-Reply-To: <1176622070387-git-send-email-grant.likely@secretlab.ca> (Grant
+	Likely's message of "Sun, 15 Apr 2007 01:27:40 -0600")
+Message-ID: <878xcgac2q.fsf@sleipner.barco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -32,33 +34,33 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
-GL> The header files for the ml403 and ml300 are virtually identical,
-GL> merge them into a single file.
+GL> Currently virtex support in mainline make use of the
+GL> infrastructure in arch/ppc/syslib/ppc_sys.c for registering common
+GL> devices on virtex ppc405 platforms.  The ppc_sys.c code is not
+GL> well suited to the dynamic nature of FPGA designs and makes adding
+GL> new board ports more complex.  This patch adds a new listing of
+GL> common devices which does not depend on the ppc_sys.c
+GL> infrastructure.
 
-GL> diff --git a/include/asm-ppc/ibm4xx.h b/include/asm-ppc/ibm4xx.h
-GL> index 92fd02d..ed6891a 100644
-GL> --- a/include/asm-ppc/ibm4xx.h
-GL> +++ b/include/asm-ppc/ibm4xx.h
-GL> @@ -47,12 +47,8 @@
-GL>  #include <platforms/4xx/walnut.h>
-GL>  #endif
-GL>  
-GL> -#if defined(CONFIG_XILINX_ML300)
-GL> -#include <platforms/4xx/xilinx_ml300.h>
-GL> -#endif
-GL> -
-GL> -#if defined(CONFIG_XILINX_ML403)
-GL> -#include <platforms/4xx/xilinx_ml403.h>
-GL> +#if defined(CONFIG_XILINX_VIRTEX)
-GL> +#include <platforms/4xx/virtex.h>
-GL>  #endif
+GL> +/* UART 8250 driver platform data table */
+GL> +struct plat_serial8250_port virtex_serial_platform_data[] = {
+GL> +#if defined(XPAR_UARTNS550_0_BASEADDR)
+GL> +	XPAR_UART(0),
+GL> +#endif
+GL> +#if defined(XPAR_UARTNS550_1_BASEADDR)
+GL> +	XPAR_UART(1),
+GL> +#endif
+GL> +#if defined(XPAR_UARTNS550_2_BASEADDR)
+GL> +	XPAR_UART(2),
+GL> +#endif
+GL> +#if defined(XPAR_UARTNS550_3_BASEADDR)
+GL> +	XPAR_UART(3),
+GL> +#endif
+GL> +	{ }, /* terminated by empty record */
+GL> +};
 
-Could we make that
-
-#if defined(CONFIG_XILINX_ML300) || defined(CONFIG_XILINX_ML403)
-
-instead? I'm using RedBoot on a virtex platform, and hence another
-struct bd_info than the ML300/ML403.
+Could we at the same time increase the amount of UARTs supported? We
+have designs with 5 16550s.
 
 Other than that,
 
