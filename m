@@ -1,21 +1,20 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id E9AEEDDF7B
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id C9895DDFAE
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Apr 2007 04:53:58 +1000 (EST)
-Message-ID: <462FA489.1050508@grandegger.com>
-Date: Wed, 25 Apr 2007 20:57:13 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+	Thu, 26 Apr 2007 05:12:00 +1000 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1HgmuC-0004ke-Ud
+	for linuxppc-embedded@ozlabs.org; Wed, 25 Apr 2007 12:11:57 -0700
+Message-ID: <10184448.post@talk.nabble.com>
+Date: Wed, 25 Apr 2007 09:27:35 -0700 (PDT)
+From: rvk <rvkisley@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: ppc 405 (xilinx) physical RAM not at 0
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: Flat device tree definitions for FLASH and MTD partitioning
-References: <4618D400.8050003@grandegger.com> <4618DBEF.30307@ru.mvista.com>
-	<4618DE4A.4020404@ru.mvista.com> <462F4FD1.6080900@grandegger.com>
-	<462F592F.7000409@ru.mvista.com> <462F5F86.3060309@grandegger.com>
-	<462F6707.80502@ru.mvista.com>
-In-Reply-To: <462F6707.80502@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,42 +25,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov wrote:
-> Hello.
-> 
-> Wolfgang Grandegger wrote:
-> 
->>>>>>> are there already some thought or even example code on how to 
->>>>>>> define Flash memory and MTD partitions in the DTS. This would 
->>>>>>> avoid the ackward MTD partitioning via static structure or boot 
->>>>>>> line argument and could be done in a generic way.
-> 
->>>>>>     See Documentation/powerpc/booting-without-of.txt and 
->>>>>> drivers/mtd/physmap_of.c for what's been already done.
-> 
->>>>>    I meant drivers/mtd/maps/physmap_of.c
-> 
->>>> I had a closer look to this driver. Unfortunately, it can not handle 
->>>> yet  multiple FLASH banks. This could be achieved with an additional 
->>>> property "bank_count". What do you think?
-> 
->   Please use hyphen, not underscore in property names ("device_type" 
-> seems an only exception from this rule).
-> 
->>>  I'm not sure what banks you're talking about -- note that this 
->>> driver is equivalen in functionality to the plain 'physmap' driver 
->>> and there's inherited "bank-width" property that handles flash banking.
-> 
->> Yes, I know. Nevertheless the driver cannot handle flash regions 
->> composed of more than on FLASH bank because we need to probe every 
->> bank. Search for "BANK" in drivers/mtd/maps" to understand what I mean.
-> 
->   Hm, from what I could see, those banks are separate maps registered to 
-> MTD subsys separately.
-> What's the point of adding a count property when we simply can define 
-> multiple "rom" devices?
 
-Well, I was wrong. In the meantime I realized that physmap can handle 
-flash region compiosed of multiple banks. Sorry for the noise.
+Wise folks, I apologize if this is a dupe, if so please send a link either in
+forum or external to educate me.
 
-Wolfgang.
+I have a port coming up to a ppc 405 Xilinx board. The port-from board has
+RAM at 0x0000_0000, but the new board will not have that. I have read Dave
+Lynch's external article here: (http://www.linuxjournal.com/article/9362),
+there is a paragraph where he describes asking forums for help and being
+told NO! NO! don't do that..., I don't have a choice. The
+include/asm-powerpc/ppc_asm.h header includes the tophys() and tovirt()
+macros used in arch/ppc/kernel/head_4xx.S to set up the initial mapping of
+KERNELBASE, and they seem hardcoded to a phys address for RAM of 0 (tophys
+in the final BOOKE/else case converts by subtracting KERNELBASE from itself
+basically, giving a base phys of 0).  I'm worried this is the tip of the
+iceberg.
+
+Can anyone point me to patches or advice on how to get the 405 source using
+a different phys RAM base? 
+-- 
+View this message in context: http://www.nabble.com/ppc-405-%28xilinx%29-physical-RAM-not-at-0-tf3646549.html#a10184448
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
