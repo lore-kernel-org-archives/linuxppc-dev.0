@@ -1,15 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Date: Wed, 25 Apr 2007 16:59:39 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 7/13] powerpc: Add arch/powerpc mv64x60 MPSC platform data
-	setup
-Message-ID: <20070425235939.GI4046@mag.az.mvista.com>
-References: <20070425234630.GA4046@mag.az.mvista.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 642A2DE1E6
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 09:57:47 +1000 (EST)
+Date: Wed, 25 Apr 2007 18:57:57 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] [2.6.22] pasemi: cpufreq driver
+Message-ID: <20070425235757.GA20905@lixom.net>
+References: <20070425204633.GC19781@lixom.net>
+	<200704260147.35878.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070425234630.GA4046@mag.az.mvista.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <200704260147.35878.arnd@arndb.de>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org,
+	cpufreq@lists.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,197 +23,85 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Thu, Apr 26, 2007 at 01:47:35AM +0200, Arnd Bergmann wrote:
+> On Wednesday 25 April 2007, Olof Johansson wrote:
+> 
+> > +/* This should eventually come out of the device tree */
+> > +#define SDCPWR_BASE		0xfc104000
+> > +#define SDCPWR_SIZE		0x1000
+> > +
+> > +#define SDCASR_BASE		0xfc120000
+> > +#define SDCASR_SIZE		0x2000
+> 
+> the comment is right. Why don't you do it then? ;-)
 
-From: Dale Farnsworth <dale@farnsworth.org>
+Leftovers from when it was a regular platform driver.
 
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
----
+> > +static int pas_cpufreq_cpu_init (struct cpufreq_policy *policy)
+> > +{
+> > +	u32 *max_freq;
+> > +	int i, cur_astate;
+> > +	struct device_node *cpu;
+> > +
+> > +	cpu = of_get_cpu_node(policy->cpu, NULL);
+> > +
+> > +	if(!cpu)
+> > +		return -ENODEV;
+> > +
+> > +	sdcpwr_mapbase = ioremap(SDCPWR_BASE, SDCPWR_SIZE);
+> > +	sdcasr_mapbase = ioremap(SDCASR_BASE, SDCASR_SIZE);
+> > +	if (!sdcpwr_mapbase || !sdcasr_mapbase)
+> > +		panic("SDCMAP: Cannot map registers!");
+> 
+> I can't see any check in here that finds out if you are actually running on
+> the right hardware. 
+> The proper way to implement this driver would be to register an
+> of_platform_driver for the cpufreq device and then get the register
+> addresses from there,
 
- mv64x60.c |  170 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 170 insertions(+)
+Yup.
 
-Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/mv64x60.c
-+++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
-@@ -15,6 +15,9 @@
- #include <linux/irq.h>
- #include <linux/interrupt.h>
- #include <linux/spinlock.h>
-+#include <linux/string.h>
-+#include <linux/mv643xx.h>
-+#include <linux/platform_device.h>
- 
- #include <asm/byteorder.h>
- #include <asm/io.h>
-@@ -341,3 +344,170 @@ int __init mv64x60_verify_cache_coherenc
- }
- 
- late_initcall(mv64x60_verify_cache_coherency);
-+
-+/*
-+ * Create MPSC platform device
-+ */
-+static int __init mv64x60_mpsc_register_shared_pdev(struct device_node *np)
-+{
-+	struct platform_device *pdev;
-+	struct resource r[2];
-+	struct mpsc_shared_pdata pdata;
-+	const phandle *ph;
-+	struct device_node *mpscrouting, *mpscintr;
-+	int err;
-+
-+	ph = of_get_property(np, "mpscrouting", NULL);
-+	mpscrouting = of_find_node_by_phandle(*ph);
-+	if (!mpscrouting)
-+		return -ENODEV;
-+
-+	err = of_address_to_resource(mpscrouting, 0, &r[0]);
-+	of_node_put(mpscrouting);
-+	if (err)
-+		return err;
-+
-+	ph = of_get_property(np, "mpscintr", NULL);
-+	mpscintr = of_find_node_by_phandle(*ph);
-+	if (!mpscintr)
-+		return -ENODEV;
-+
-+	err = of_address_to_resource(mpscintr, 0, &r[1]);
-+	of_node_put(mpscintr);
-+	if (err)
-+		return err;
-+
-+	pdev = platform_device_register_simple(MPSC_SHARED_NAME, 0, r, 2);
-+	if (IS_ERR(pdev))
-+		return PTR_ERR(pdev);
-+
-+	memset(&pdata, 0, sizeof(pdata));
-+
-+	err = platform_device_add_data(pdev, &pdata, sizeof(pdata));
-+	if (err)
-+		platform_device_unregister(pdev);
-+
-+	return 0;
-+}
-+
-+static int __init mv64x60_mpsc_platform_device_init(void)
-+{
-+	struct device_node *np = NULL;
-+	unsigned int i;
-+	struct platform_device *pdev;
-+	int err;
-+
-+	for (i = 0; (np = of_find_compatible_node(np, "serial", "mpsc")); i++) {
-+		struct resource r[5];
-+		struct mpsc_pdata pdata;
-+		const unsigned int *prop;
-+		const phandle *ph;
-+		struct device_node *sdma, *brg;
-+
-+		memset(&r, 0, sizeof(r));
-+
-+		if (i == 0) {
-+			err = mv64x60_mpsc_register_shared_pdev(np);
-+			if (err)
-+				goto ret_node_put;
-+		}
-+
-+		err = of_address_to_resource(np, 0, &r[0]);
-+		if (err)
-+			goto ret_node_put;
-+
-+		of_irq_to_resource(np, 0, &r[4]);
-+
-+		ph = of_get_property(np, "sdma", NULL);
-+		sdma = of_find_node_by_phandle(*ph);
-+		if (!sdma) {
-+			err = -ENODEV;
-+			goto ret_node_put;
-+		}
-+		of_irq_to_resource(sdma, 0, &r[3]);
-+		err = of_address_to_resource(sdma, 0, &r[1]);
-+		of_node_put(sdma);
-+		if (err)
-+			goto ret_node_put;
-+
-+		ph = of_get_property(np, "brg", NULL);
-+		brg = of_find_node_by_phandle(*ph);
-+		if (!brg) {
-+			err = -ENODEV;
-+			goto ret_node_put;
-+		}
-+
-+		err = of_address_to_resource(brg, 0, &r[2]);
-+		of_node_put(brg);
-+		if (err)
-+			goto ret_node_put;
-+
-+		pdev = platform_device_register_simple(MPSC_CTLR_NAME, i, r, 5);
-+		if (IS_ERR(pdev)) {
-+			err = PTR_ERR(pdev);
-+			goto ret_node_put;
-+		}
-+
-+		memset(&pdata, 0, sizeof(pdata));
-+
-+		pdata.cache_mgmt = 1; /* All current revs need this set */
-+
-+		prop = of_get_property(np, "max_idle", NULL);
-+		if (prop)
-+			pdata.max_idle = *prop;
-+
-+		prop = of_get_property(brg, "current-speed", NULL);
-+		if (prop)
-+			pdata.default_baud = *prop;
-+
-+		/* Default is 8 bits, no parity, no flow control */
-+		pdata.default_bits = 8;
-+		pdata.default_parity = 'n';
-+		pdata.default_flow = 'n';
-+
-+		prop = of_get_property(np, "chr_1", NULL);
-+		if (prop)
-+			pdata.chr_1_val = *prop;
-+
-+		prop = of_get_property(np, "chr_2", NULL);
-+		if (prop)
-+			pdata.chr_2_val = *prop;
-+
-+		prop = of_get_property(np, "chr_10", NULL);
-+		if (prop)
-+			pdata.chr_10_val = *prop;
-+
-+		prop = of_get_property(np, "mpcr", NULL);
-+		if (prop)
-+			pdata.mpcr_val = *prop;
-+
-+		prop = of_get_property(brg, "bcr", NULL);
-+		if (prop)
-+			pdata.bcr_val = *prop;
-+
-+		pdata.brg_can_tune = 1; /* All current revs need this set */
-+
-+		prop = of_get_property(brg, "clock-src", NULL);
-+		if (prop)
-+			pdata.brg_clk_src = *prop;
-+
-+		prop = of_get_property(brg, "clock-frequency", NULL);
-+		if (prop)
-+			pdata.brg_clk_freq = *prop;
-+
-+		err = platform_device_add_data(pdev, &pdata, sizeof(pdata));
-+		if (err)
-+			goto ret_unreg;
-+		of_node_put(np);
-+	}
-+
-+	return 0;
-+
-+ret_unreg:
-+	platform_device_unregister(pdev);
-+ret_node_put:
-+	of_node_put(np);
-+	return err;
-+}
-+
-+arch_initcall(mv64x60_mpsc_platform_device_init);
+> > @@ -155,7 +155,7 @@ source "drivers/cpufreq/Kconfig"
+> >  
+> >  config CPU_FREQ_PMAC
+> >  	bool "Support for Apple PowerBooks"
+> > -	depends on CPU_FREQ && ADB_PMU && PPC32
+> > +	depends on ADB_PMU && PPC32
+> >  	select CPU_FREQ_TABLE
+> >  	help
+> >  	  This adds support for frequency switching on Apple PowerBooks,
+> > @@ -164,11 +164,21 @@ config CPU_FREQ_PMAC
+> >  
+> >  config CPU_FREQ_PMAC64
+> >  	bool "Support for some Apple G5s"
+> > -	depends on CPU_FREQ && PPC64
+> > +	depends on PPC64
+> >  	select CPU_FREQ_TABLE
+> >  	help
+> >  	  This adds support for frequency switching on Apple iMac G5,
+> >  	  and some of the more recent desktop G5 machines as well.
+> 
+> Why this change?
+
+They're redundant, but they should have been in a separate patch. I
+forgot to revert them before rediffing.
+
+> > +config PPC_PASEMI_CPUFREQ
+> > +	bool "Support for PA Semi PWRficient"
+> > +	depends on PPC_PASEMI
+> > +	default y
+> > +	select CPU_FREQ_TABLE
+> > +	help
+> > +	  This adds the support for frequency switching on PA Semi
+> > +	  PWRficient processors.
+> > +
+> >  endmenu
+> 
+> Why bool and not tristate?
+
+1) The other cpufreq drivers are bool
+2) See the idle loop interaction: It can go tristate once we have runtime
+selection of idle loop, but until then we need it for idle=doze.
+
+
+-Olof
