@@ -1,20 +1,18 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id A81A5DDE47
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from mail.dev.rtsoft.ru (unknown [85.21.88.2])
+	by ozlabs.org (Postfix) with SMTP id 35030DDF17
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Apr 2007 00:33:09 +1000 (EST)
-Message-ID: <462F6707.80502@ru.mvista.com>
-Date: Wed, 25 Apr 2007 18:34:47 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+	Thu, 26 Apr 2007 04:01:57 +1000 (EST)
+Message-ID: <462F98B4.2000108@ru.mvista.com>
+Date: Wed, 25 Apr 2007 22:06:44 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-To: Wolfgang Grandegger <wg@grandegger.com>
-Subject: Re: Flat device tree definitions for FLASH and MTD partitioning
-References: <4618D400.8050003@grandegger.com> <4618DBEF.30307@ru.mvista.com>
-	<4618DE4A.4020404@ru.mvista.com> <462F4FD1.6080900@grandegger.com>
-	<462F592F.7000409@ru.mvista.com> <462F5F86.3060309@grandegger.com>
-In-Reply-To: <462F5F86.3060309@grandegger.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] Xilinx framebuffer device driver
+References: <462E0D5C.1090105@ru.mvista.com> <200704250035.18673.arnd@arndb.de>
+In-Reply-To: <200704250035.18673.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: Rick Moleres <rick.moleres@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,37 +23,124 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Hi Arnd,
 
-Wolfgang Grandegger wrote:
+Arnd Bergmann wrote:
+>> +       .activate =     FB_ACTIVATE_NOW,
+>> +       .height =       99,     /* in mm of NEC NL6448BC20-08 on ML300 */
+>> +       .width =        132     /* in mm of NEC NL6448BC20-08 on ML300 */
+>> +};
+> 
+> The size looks very specific to a particular display hardware. I guess
+> when the driver gets converted to an of_platform_driver, this should come
+> from the device tree.
+> 
+> Until then, maybe a config option, with a reasonable default would be
+> right.
 
->>>>>> are there already some thought or even example code on how to 
->>>>>> define Flash memory and MTD partitions in the DTS. This would 
->>>>>> avoid the ackward MTD partitioning via static structure or boot 
->>>>>> line argument and could be done in a generic way.
+I could add these to platform data.
+Together with the "use DCR access" option.
+Say,
 
->>>>>     See Documentation/powerpc/booting-without-of.txt and 
->>>>> drivers/mtd/physmap_of.c for what's been already done.
+--------------------------------------------------------
+struct xilinxfb_platform_data {
+	u32 use_dcr;
+	u32 screen_height_mm;
+	u32 screen_width_mm;
+};
 
->>>>    I meant drivers/mtd/maps/physmap_of.c
+static struct xilinxfb_platform_data xilinxfb_pdata = {
+#if defined(XPAR_TFT_0_USE_DCR) && (XPAR_TFT_0_USE_DCR != 0)
+	.use_dcr = 1;
+#else
+	.use_dcr = 0;
+#endif
+	.screen_height_mm = CONFIG_FB_XILINX_SCR_HEIGHT;
+	.screen_width_mm = CONFIG_FB_XILINX_SCR_WIDTH;
+};
 
->>> I had a closer look to this driver. Unfortunately, it can not handle 
->>> yet  multiple FLASH banks. This could be achieved with an additional 
->>> property "bank_count". What do you think?
+...
 
-   Please use hyphen, not underscore in property names ("device_type" seems an only exception from this rule).
+/* ML300/403 reference design framebuffer */
+#if defined(XPAR_TFT_0_BASEADDR)
+	{
+		.name		= "xilinxfb",
+		.id		= 0,
+		.dev.platform_data = &xilinxfb_pdata,
+		.num_resources	= 1,
+		.resource = (struct resource[]) {
+			{
+				.start	= XPAR_TFT_0_BASEADDR,
+				.end	= XPAR_TFT_0_BASEADDR+7,
+				.flags	= IORESOURCE_IO,
+			},
+		},
+	},
+#endif
+--------------------------------------------------------
 
->>  I'm not sure what banks you're talking about -- note that this driver 
->> is equivalen in functionality to the plain 'physmap' driver and 
->> there's inherited "bank-width" property that handles flash banking.
- 
-> Yes, I know. Nevertheless the driver cannot handle flash regions 
-> composed of more than on FLASH bank because we need to probe every bank. 
-> Search for "BANK" in drivers/mtd/maps" to understand what I mean.
+Does it look OK?
 
-   Hm, from what I could see, those banks are separate maps registered to MTD subsys separately.
-What's the point of adding a count property when we simply can define multiple "rom" devices?
+>> +
+>> +struct xilinxfb_drvdata {
+>> +
+>> +       struct fb_info  info;           /* FB driver info record */
+>> +
+>> +       unsigned long   regs_phys;      /* phys. address of the control registers */
+>> +       u32             *regs;          /* virt. address of the control registers */
+>> +
+>> +       unsigned char   *fb_virt;       /* virt. address of the frame buffer */
+> 
+> The virtual addresses should be marked as __iomem, so you can check the correct
+> usage with sparse.
 
-> Wolfgang.
+OK. Thanks.
 
-MBR, Sergei
+> Not sure about regs_phys. Can this be beyond the 32 bit limit on any machine?
+
+The driver is for Xilinx FPGAs only (the video controller is the "soft core" IP
+block).
+My personal feeling is that someday in the future Virtex FPGAs would carry ppc440 "hard" cores.
+But all current FPGAs have only ppc405 "hard core" CPU blocks inside (0, 1 or several per chip).
+Another option is to use Microblaze "soft core" CPU which is 32-bit too.
+I doubt someone would connect a Virtex FPGA to a "standalone" CPU to use
+the FPGA as video controller (this is not impossible though).
+
+I.e. for the moment
+   u32	regs_phys;
+should be OK.
+
+Other options could be
+   dma_addr_t	regs_phys;
+or
+   resource_size_t	regs_phys;
+which are u32 or u64 depending on the architecture.
+But both don't sound like intended specifically for phys. addresses
+(not necessary DMA-able).
+
+What would you recommend?
+
+>> +
+>> +       drvdata = kmalloc(sizeof(struct xilinxfb_drvdata), GFP_KERNEL);
+>> +       if (!drvdata) {
+>> +               printk(KERN_ERR "Couldn't allocate device private record\n");
+>> +               return -ENOMEM;
+>> +       }
+>> +       memset((void*)drvdata, 0, sizeof(struct xilinxfb_drvdata));
+> 
+> Use
+> 	drvdata = kzalloc(sizeof (*drvdata), GFP_KERNEL);
+
+Oops.. Sure I will.
+
+>> +       drvdata->regs_phys = regs_res->start;
+>> +       drvdata->regs = (u32 *) ioremap(regs_res->start, 8);
+> 
+> u32 __iomem*
+
+OK
+
+> 	Arnd <><
+
+Thanks,
+Andrei
