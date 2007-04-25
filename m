@@ -1,36 +1,18 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17966.45645.902486.793443@cargo.ozlabs.ibm.com>
-Date: Wed, 25 Apr 2007 11:43:41 +1000
+Message-ID: <17966.41335.429268.945199@cargo.ozlabs.ibm.com>
+Date: Wed, 25 Apr 2007 10:31:51 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/6] Consolidate of_find_property
-In-Reply-To: <06c51eb59847d80d9225cd6454f1957e@kernel.crashing.org>
-References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
-	<20070403223000.5d44b2f1.sfr@canb.auug.org.au>
-	<20070403223136.6ecdabbd.sfr@canb.auug.org.au>
-	<20070403223257.cb8c4d15.sfr@canb.auug.org.au>
-	<20070403223535.dd6731d6.sfr@canb.auug.org.au>
-	<20070403223738.03386a13.sfr@canb.auug.org.au>
-	<20070403223914.35bf04e1.sfr@canb.auug.org.au>
-	<20070403224039.913af749.sfr@canb.auug.org.au>
-	<20070403224205.807cffe0.sfr@canb.auug.org.au>
-	<20070403224340.5533abc9.sfr@canb.auug.org.au>
-	<20070403224505.5d5a1495.sfr@canb.auug.org.au>
-	<20070403224610.b61c7377.sfr@canb.auug.org.au>
-	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
-	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
-	<20070403225222.88e92221.sfr@canb.auug.org.au>
-	<20070403230505.f96ea210.sfr@canb.auug.org.au>
-	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>
-	<20070412141905.6f30efd3.sfr@canb.auug.org.au>
-	<20070412153424.bf3957f4.sfr@canb.auug.org.au>
-	<20070424223245.78f4fdfb.sfr@canb.auug.org.au>
-	<20070424223930.1dab0e28.sfr@canb.auug .org.au>
-	<06c51eb59847d80d9225cd6454f1957e@kernel.crashing.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
-	"David S. Miller" <davem@davemloft.net>, ppc-dev <linuxppc-dev@ozlabs.org>
+To: Christian Krafft <krafft@de.ibm.com>
+Subject: Re: [PATCH] powerpc: uninline of_iomap function
+In-Reply-To: <20070424173202.15e5ce42@localhost>
+References: <20070423193538.576702568@arndb.de>
+	<20070423193913.119032752@arndb.de>
+	<1177378533.14873.48.camel@localhost.localdomain>
+	<20070424173202.15e5ce42@localhost>
+Cc: Arnd Bergmann <arnd.bergmann@de.ibm.com>, Arnd Bergmann <arnd@arndb.de>,
+	linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,29 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Segher Boessenkool writes:
+Christian Krafft writes:
 
-> Property names aren't supposed to contain uppercase
-> characters. 
+> @@ -1042,3 +1042,15 @@ const void *of_get_mac_address(struct de
+>  }
+>  EXPORT_SYMBOL(of_get_mac_address);
+>  
+> +void __iomem *of_iomap(struct device_node *np, int index)
+> +{
+> +	struct resource res;
+> 
+> +	if (of_address_to_resource(np, index, &res))
+> +		return NULL;
+> 
+> +	return ioremap(res.start, 1 + res.end - res.start);
+> +}
+> +EXPORT_SYMBOL(of_iomap);
 
-Somebody forgot to tell Apple:
-
-$ ls /proc/device-tree/ht@0,f2000000/pci@9/ata-6@d
-total 23
-1 #address-cells             1 cable-type    1 interrupt-parent  1 name
-1 #size-cells                1 class-code    1 interrupts        1 reg
-1 AAPL,bus-id                1 compatible    0 lba-48            1 revision-id
-1 AAPL,connector             1 device-id     1 linux,phandle     1 vendor-id
-1 AAPL,pio-timing            1 device_type   1 max-latency
-1 AAPL,requested-priorities  1 devsel-speed  1 min-grant
-1 assigned-addresses         0 disk/         1 model
-
-> I can swing both ways on which of strcmp()
-> or strcasecmp() is better, but there seems no reason
-> to do this differently on each platform.
-
-The question is, what ppc drivers would break if we used strcmp
-instead of strcasecmp?  I have a dim memory that some Apple machines
-had "ata" and others had "ATA" for the hard disk, for instance.
+Looks like your mailer mangled the patch - could you resend it with a
+different mailer or with different settings of your mailer?
 
 Paul.
