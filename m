@@ -1,16 +1,19 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: RE: PTE entries
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Siva Prasad <sprasad@bivio.net>
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D762CA85@corpexc01.corp.networkrobots.com>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D762C6C3@corpexc01.corp.networkrobots.com>
-	<1177376700.14873.40.camel@localhost.localdomain>
-	<D83235F0F3C86D4D889D8B9A0DA8C6D762CA85@corpexc01.corp.networkrobots.com>
-Content-Type: text/plain
-Date: Wed, 25 Apr 2007 13:50:08 +1000
-Message-Id: <1177473008.14873.181.camel@localhost.localdomain>
+Return-Path: <davem@davemloft.net>
+Received: from sunset.davemloft.net (unknown [74.93.104.97])
+	by ozlabs.org (Postfix) with ESMTP id 4A6B1DDEE3
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 14:23:29 +1000 (EST)
+Date: Tue, 24 Apr 2007 21:23:30 -0700 (PDT)
+Message-Id: <20070424.212330.82514412.davem@davemloft.net>
+To: benh@kernel.crashing.org
+Subject: Re: [PATCH 2/6] Consolidate of_device_is_compatible
+From: David Miller <davem@davemloft.net>
+In-Reply-To: <1177459165.14873.153.camel@localhost.localdomain>
+References: <20070424223245.78f4fdfb.sfr@canb.auug.org.au>
+	<20070424223812.2842f3f2.sfr@canb.auug.org.au>
+	<1177459165.14873.153.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
+Content-Type: Text/Plain; charset=us-ascii
+Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,18 +23,19 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, 2007-04-24 at 20:34 -0700, Siva Prasad wrote:
-> Thanks Ben.
+From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+Date: Wed, 25 Apr 2007 09:59:24 +1000
+
+> On Tue, 2007-04-24 at 22:38 +1000, Stephen Rothwell wrote:
+> > The only difference here is that Sparc uses strncmp to match compatibility
+> > names while PowerPC uses strncasecmp.
 > 
-> I managed to fix this. I am working on how best we can rewrite the self
-> modifying code we have for create_hpte routine. I would prefer to read
-> from SDR1, than to hardcode (or self modify the code) the way it is done
-> now.
+> We should settle for a single implementation. In theory, strncmp would
+> be the way to go but there have been "bugs" here or there, especially in
+> Apple DTs, that made me use strncasecmp instead in the past.
 > 
-> Feel free to let me know what you think.
+> Dave, what do you reckon ? I should try to find out the bogus machines
+> and add workarounds in the various drivers etc... instead or we can just
+> go common on strncasecmp ?
 
-Self-modifying allows better performances in that very critical code path...
-
-Why would you need to change that code anyway ?
-
-Ben.
+I think strncasecmp is the safest thing to start with.
