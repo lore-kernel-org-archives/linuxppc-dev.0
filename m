@@ -1,19 +1,19 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id B07DFDDEF6
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 14:29:04 +1000 (EST)
-Date: Tue, 24 Apr 2007 21:29:02 -0700 (PDT)
-Message-Id: <20070424.212902.00454541.davem@davemloft.net>
-To: segher@kernel.crashing.org
-Subject: Re: [PATCH 1/6] Start split out of common open firmware code
+	by ozlabs.org (Postfix) with ESMTP id 4B246DDEFB
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 14:31:47 +1000 (EST)
+Date: Tue, 24 Apr 2007 21:31:53 -0700 (PDT)
+Message-Id: <20070424.213153.89127563.davem@davemloft.net>
+To: paulus@samba.org
+Subject: Re: [PATCH 3/6] Consolidate of_find_property
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <c65c2fcf295f9b4a40292156b5258012@kernel.crashing.org>
-References: <20070424.110456.124867547.davem@davemloft.net>
-	<1177459651.14873.164.camel@localhost.localdomain>
-	<c65c2fcf295f9b4a40292156b5258012@kernel.crashing.org>
+In-Reply-To: <17966.45645.902486.793443@cargo.ozlabs.ibm.com>
+References: <20070424223245.78f4fdfb.sfr@canb.auug.org.au>
+	<06c51eb59847d80d9225cd6454f1957e@kernel.crashing.org>
+	<17966.45645.902486.793443@cargo.ozlabs.ibm.com>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
-Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
+Cc: sfr@canb.auug.org.au, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,12 +23,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Wed, 25 Apr 2007 03:03:31 +0200
+From: Paul Mackerras <paulus@samba.org>
+Date: Wed, 25 Apr 2007 11:43:41 +1000
 
-> end up with the OF analogue to an MSI layer that only
-> ever can work on intel compatible platforms.
+> The question is, what ppc drivers would break if we used strcmp
+> instead of strcasecmp?  I have a dim memory that some Apple machines
+> had "ata" and others had "ATA" for the hard disk, for instance.
 
-Please don't use this straw-man.
-
-These days it works perfectly fine on sparc64.
+To be honest, I am sure there are a lot more examples of this
+on Apple machines.
