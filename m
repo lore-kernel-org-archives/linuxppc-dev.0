@@ -1,39 +1,35 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e3.ny.us.ibm.com (e3.ny.us.ibm.com [32.97.182.143])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e3.ny.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 64EF9DDF1A
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 11:43:32 +1000 (EST)
-Received: from d01relay02.pok.ibm.com (d01relay02.pok.ibm.com [9.56.227.234])
-	by e3.ny.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3P0gGkU021435
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 20:42:16 -0400
-Received: from d01av01.pok.ibm.com (d01av01.pok.ibm.com [9.56.224.215])
-	by d01relay02.pok.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3P1hPZf514968
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 21:43:25 -0400
-Received: from d01av01.pok.ibm.com (loopback [127.0.0.1])
-	by d01av01.pok.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3P1hOaE001175
-	for <linuxppc-dev@ozlabs.org>; Tue, 24 Apr 2007 21:43:25 -0400
-Date: Tue, 24 Apr 2007 20:51:23 -0500
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17966.45645.902486.793443@cargo.ozlabs.ibm.com>
+Date: Wed, 25 Apr 2007 11:43:41 +1000
+From: Paul Mackerras <paulus@samba.org>
 To: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 1/6] Start split out of common open firmware code
-Message-ID: <20070425015123.GE23995@crusty.rchland.ibm.com>
-References: <20070403225059.e735b5e4.sfr@canb.auug.org.au>
+Subject: Re: [PATCH 3/6] Consolidate of_find_property
+In-Reply-To: <06c51eb59847d80d9225cd6454f1957e@kernel.crashing.org>
+References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>
+	<20070403223000.5d44b2f1.sfr@canb.auug.org.au>
+	<20070403223136.6ecdabbd.sfr@canb.auug.org.au>
+	<20070403223257.cb8c4d15.sfr@canb.auug.org.au>
+	<20070403223535.dd6731d6.sfr@canb.auug.org.au>
+	<20070403223738.03386a13.sfr@canb.auug.org.au>
+	<20070403223914.35bf04e1.sfr@canb.auug.org.au>
+	<20070403224039.913af749.sfr@canb.auug.org.au>
+	<20070403224205.807cffe0.sfr@canb.auug.org.au>
+	<20070403224340.5533abc9.sfr@canb.auug.org.au>
+	<20070403224505.5d5a1495.sfr@canb.auug.org.au>
+	<20070403224610.b61c7377.sfr@canb.auug.org.au>
+	<20070403224937.f6a07e56.sfr@canb.auug.org.au>
+	<20070403225059.e735b5e4.sfr@canb.auug.org.au>
 	<20070403225222.88e92221.sfr@canb.auug.org.au>
 	<20070403230505.f96ea210.sfr@canb.auug.org.au>
 	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>
 	<20070412141905.6f30efd3.sfr@canb.auug.org.au>
 	<20070412153424.bf3957f4.sfr@canb.auug.org.au>
 	<20070424223245.78f4fdfb.sfr@canb.auug.org.au>
-	<f64705c9250a93dcb7a4015b9a0d5667@kernel.crashing.org>
-	<1177459397.14873.160.camel@localhost.localdomain>
-	<baa646899e4d0f3f1111f62709a2c66b@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <baa646899e4d0f3f1111f62709a2c66b@kernel.crashing.org>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, paulus@samba.org,
+	<20070424223930.1dab0e28.sfr@canb.auug .org.au>
+	<06c51eb59847d80d9225cd6454f1957e@kernel.crashing.org>
+Cc: Stephen Rothwell <sfr@canb.auug.org.au>,
 	"David S. Miller" <davem@davemloft.net>, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -44,26 +40,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 25, 2007 at 02:50:13AM +0200, Segher Boessenkool wrote:
-> >> While I realise your patch is just moving stuff around,
-> >> can this be fixed please?  A missing "#address-cells"
-> >> property means "two cells", not "inherit from parent".
-> >> The few platforms with a broken tree should just be
-> >> fixed (patch the tree in the bootwrapper, or perhaps
-> >> _do_ use this workaround, but only on the affected
-> >> platforms).
-> >
-> > If you can get me access to all of the old PowerMac or CHRP crap with
-> > broken device-tree's ...
-> 
-> No I can't, which is exactly why I cannot fix it myself.
-> 
-> > Note that I don't think there's much cases of such breakage on the
-> > field,
-> 
-> For PowerPC it is mostly the G3 PowerMacs I believe.
+Segher Boessenkool writes:
 
-I have one of those.  What exactly do you need from it?  I can probably do
-some testing with it if needs be.
+> Property names aren't supposed to contain uppercase
+> characters. 
 
-josh
+Somebody forgot to tell Apple:
+
+$ ls /proc/device-tree/ht@0,f2000000/pci@9/ata-6@d
+total 23
+1 #address-cells             1 cable-type    1 interrupt-parent  1 name
+1 #size-cells                1 class-code    1 interrupts        1 reg
+1 AAPL,bus-id                1 compatible    0 lba-48            1 revision-id
+1 AAPL,connector             1 device-id     1 linux,phandle     1 vendor-id
+1 AAPL,pio-timing            1 device_type   1 max-latency
+1 AAPL,requested-priorities  1 devsel-speed  1 min-grant
+1 assigned-addresses         0 disk/         1 model
+
+> I can swing both ways on which of strcmp()
+> or strcasecmp() is better, but there seems no reason
+> to do this differently on each platform.
+
+The question is, what ppc drivers would break if we used strcmp
+instead of strcasecmp?  I have a dim memory that some Apple machines
+had "ata" and others had "ATA" for the hard disk, for instance.
+
+Paul.
