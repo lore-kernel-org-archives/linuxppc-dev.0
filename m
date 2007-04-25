@@ -1,25 +1,18 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-01.arcor-online.net (mail-in-01.arcor-online.net
-	[151.189.21.41])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 20BE9DDF24
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 05:03:13 +1000 (EST)
-In-Reply-To: <462F93F0.5090608@genesi-usa.com>
-References: <20070403105217.7b9fea08.sfr@canb.auug.org.au>	<20070403223914.35bf04e1.sfr@canb.auug.org.au>	<20070403224039.913af749.sfr@canb.auug.org.au>	<20070403224205.807cffe0.sfr@canb.auug.org.au>	<20070403224340.5533abc9.sfr@canb.auug.org.au>	<20070403224505.5d5a1495.sfr@canb.auug.org.au>	<20070403224610.b61c7377.sfr@canb.auug.org.au>	<20070403224937.f6a07e56.sfr@canb.auug.org.au>	<20070403225059.e735b5e4.sfr@canb.auug.org.au>	<20070403225222.88e92221.sfr@canb.auug.org.au>	<20070403230505.f96ea210.sfr@canb.auug.org.au>	<20070403232406.ab9a3c86.sfr@canb.auug.org.au>	<20070412141905.6f30efd3.sfr@canb.auug.org.au>	<20070412153424.bf3957f4.sfr@canb.auug.org.au>	<20070424223245.78f4fdfb.sfr@canb.auug.org.au>	<20070424223930.1dab0e28.sfr@canb.auug	.org.au>
-	<06c51eb59847d80d9225cd6454f1957e@kernel.crashing.org>	<17966.45645.902486.793443@cargo.ozlabs.ibm.com>	<1177477630.14873.185.camel@localhost.localdomain>
-	<c249005137aa3e50c25221f6849a70ea@kernel.crashing.org>
-	<462F93F0.50906 08@genesi-usa.com>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <033031ecd45c3b94bd3d7a73609abe3c@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH 3/6] Consolidate of_find_property
-Date: Wed, 25 Apr 2007 21:02:09 +0200
-To: Matt Sealey <matt@genesi-usa.com>
-Cc: Stephen Rothwell <sfr@canb.auug.org.au>, Paul Mackerras <paulus@samba.org>,
-	"David S. Miller" <davem@davemloft.net>, ppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <lukebr@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc: 64K page support for kexec
+From: Luke Browning <lukebr@linux.vnet.ibm.com>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1177455014.14873.144.camel@localhost.localdomain>
+References: <1177439513.24866.5.camel@luke-laptop>
+	<20070424194348.GA8371@lixom.net>
+	<1177455014.14873.144.camel@localhost.localdomain>
+Content-Type: text/plain
+Date: Wed, 25 Apr 2007 16:35:39 -0300
+Message-Id: <1177529739.24866.34.camel@luke-laptop>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,17 +22,140 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Don't top-post.  Thank you.
 
-> Can't the ata/ATA thing be fixed by simply fixing device trees where it
-> happens? strncmp seems the standards-compliant route to take..
+This patch fixes a couple of kexec problems related to 64K page 
+support in the kernel.  kexec issues a tlbie for each pte.  The 
+parameters for the tlbie are the page size and the virtual address.
+Support was missing for the computation of these two parameters
+for 64K pages.  This patch adds that support.  
 
-Sure it can.  But for now, strcasecmp() is the
-best route to take, at least for powerpc (it
-preserves the existing behaviour).  Can't change
-everything at once, every single change can
-potentially break some platforms.  One step at a
-time.
+Signed-off-by: Luke Browning <lukebrowning@us.ibm.com>
 
-
-Segher
+Index: linux-2.6.21-rc4/arch/powerpc/mm/hash_native_64.c
+===================================================================
+--- linux-2.6.21-rc4.orig/arch/powerpc/mm/hash_native_64.c
++++ linux-2.6.21-rc4/arch/powerpc/mm/hash_native_64.c
+@@ -340,31 +340,74 @@ static void native_hpte_invalidate(unsig
+ 	local_irq_restore(flags);
+ }
+ 
+-/*
+- * XXX This need fixing based on page size. It's only used by
+- * native_hpte_clear() for now which needs fixing too so they
+- * make a good pair...
+- */
+-static unsigned long slot2va(unsigned long hpte_v, unsigned long slot)
+-{
+-	unsigned long avpn = HPTE_V_AVPN_VAL(hpte_v);
+-	unsigned long va;
+-
+-	va = avpn << 23;
+-
+-	if (! (hpte_v & HPTE_V_LARGE)) {
+-		unsigned long vpi, pteg;
++#define LP_SHIFT	12
++#define LP_BITS		8
++#define LP_MASK(i)	((0xFF >> (i)) << LP_SHIFT)
++
++static void hpte_decode(hpte_t *hpte, unsigned long slot, 
++			int *psize, unsigned long *va)
++{
++	unsigned long hpte_r = hpte->r;
++	unsigned long hpte_v = hpte->v;
++	unsigned long avpn;
++	int i, size, shift, penc, avpnm_bits;
++		
++	if (!(hpte_v & HPTE_V_LARGE))
++		size = MMU_PAGE_4K;
++	else {
++		for (i = 0; i < LP_BITS; i++) {
++			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
++				break;
++		}
++		penc = LP_MASK(i+1) >> LP_SHIFT;
++		for (size = 0; size < MMU_PAGE_COUNT - 1; size++) {
+ 
+-		pteg = slot / HPTES_PER_GROUP;
+-		if (hpte_v & HPTE_V_SECONDARY)
+-			pteg = ~pteg;
++			/* 4K pages are not represented by LP */
++			if (size == MMU_PAGE_4K)
++				continue;
++
++			/* valid entries have a shift value */
++			if (!mmu_psize_defs[size].shift)
++				continue;
+ 
+-		vpi = ((va >> 28) ^ pteg) & htab_hash_mask;
++			if (penc == mmu_psize_defs[size].penc)
++				break;
++		}
++	}
+ 
+-		va |= vpi << PAGE_SHIFT;
++	/*
++	 * FIXME, the code below works for 16M, 64K, and 4K pages as these
++	 * fall under the p<=23 rules for calculating the virtual address.
++	 * In the case of 16M pages, an extra bit is stolen from the AVPN
++	 * field to achieve the requisite 24 bits. 
++	 *
++	 * 16G pages are not supported by the code below.
++	 */
++	BUG_ON(hpte_v & 0x4000000000000000UL);		/* 1T segment */
++	BUG_ON(size == MMU_PAGE_16G);
++	BUG_ON(size == MMU_PAGE_64K_AP);
++
++	shift = mmu_psize_defs[size].shift;
++	if (mmu_psize_defs[size].avpnm)
++		avpnm_bits = __ilog2_u64(mmu_psize_defs[size].avpnm) + 1;
++	else
++		avpnm_bits = 0;
++	if (shift - avpnm_bits <= 23) {
++		avpn = HPTE_V_AVPN_VAL(hpte_v) << 23;
++
++		if (shift < 23) {
++			unsigned long vpi, pteg;
++
++			pteg = slot / HPTES_PER_GROUP;
++			if (hpte_v & HPTE_V_SECONDARY)
++				pteg = ~pteg;
++			vpi = ((avpn >> 28) ^ pteg) & htab_hash_mask;
++			avpn |= (vpi << mmu_psize_defs[size].shift);
++		}
+ 	}
+ 
+-	return va;
++	*va = avpn;
++	*psize = size;
+ }
+ 
+ /*
+@@ -374,15 +417,14 @@ static unsigned long slot2va(unsigned lo
+  *
+  * TODO: add batching support when enabled.  remember, no dynamic memory here,
+  * athough there is the control page available...
+- *
+- * XXX FIXME: 4k only for now !
+  */
+ static void native_hpte_clear(void)
+ {
+ 	unsigned long slot, slots, flags;
+ 	hpte_t *hptep = htab_address;
+-	unsigned long hpte_v;
++	unsigned long hpte_v, va;
+ 	unsigned long pteg_count;
++	int psize;
+ 
+ 	pteg_count = htab_hash_mask + 1;
+ 
+@@ -408,8 +450,9 @@ static void native_hpte_clear(void)
+ 		 * already hold the native_tlbie_lock.
+ 		 */
+ 		if (hpte_v & HPTE_V_VALID) {
++			hpte_decode(hptep, slot, &psize, &va);
+ 			hptep->v = 0;
+-			__tlbie(slot2va(hpte_v, slot), MMU_PAGE_4K);
++			__tlbie(va, psize);
+ 		}
+ 	}
+ 
