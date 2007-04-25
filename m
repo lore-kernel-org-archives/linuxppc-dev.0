@@ -1,16 +1,16 @@
 Return-Path: <davem@davemloft.net>
 Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id A305EDDEDF
-	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 14:27:29 +1000 (EST)
-Date: Tue, 24 Apr 2007 21:27:36 -0700 (PDT)
-Message-Id: <20070424.212736.115930755.davem@davemloft.net>
+	by ozlabs.org (Postfix) with ESMTP id B07DFDDEF6
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 14:29:04 +1000 (EST)
+Date: Tue, 24 Apr 2007 21:29:02 -0700 (PDT)
+Message-Id: <20070424.212902.00454541.davem@davemloft.net>
 To: segher@kernel.crashing.org
 Subject: Re: [PATCH 1/6] Start split out of common open firmware code
 From: David Miller <davem@davemloft.net>
-In-Reply-To: <baa646899e4d0f3f1111f62709a2c66b@kernel.crashing.org>
-References: <f64705c9250a93dcb7a4015b9a0d5667@kernel.crashing.org>
-	<1177459397.14873.160.camel@localhost.localdomain>
-	<baa646899e4d0f3f1111f62709a2c66b@kernel.crashing.org>
+In-Reply-To: <c65c2fcf295f9b4a40292156b5258012@kernel.crashing.org>
+References: <20070424.110456.124867547.davem@davemloft.net>
+	<1177459651.14873.164.camel@localhost.localdomain>
+	<c65c2fcf295f9b4a40292156b5258012@kernel.crashing.org>
 Mime-Version: 1.0
 Content-Type: Text/Plain; charset=us-ascii
 Cc: sfr@canb.auug.org.au, paulus@samba.org, linuxppc-dev@ozlabs.org
@@ -24,17 +24,11 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 From: Segher Boessenkool <segher@kernel.crashing.org>
-Date: Wed, 25 Apr 2007 02:50:13 +0200
+Date: Wed, 25 Apr 2007 03:03:31 +0200
 
-> The SPARC tree carries the same broken code -- is
-> this just a case of code copying, or are there
-> actual SPARC machines with such broken trees?
+> end up with the OF analogue to an MSI layer that only
+> ever can work on intel compatible platforms.
 
-There have been many cases of missed or even erroneous
-properties on sparc tree, but I am not too sure about
-the cell counting cases.
+Please don't use this straw-man.
 
-Let's do this, once the consolidation is done keeping
-behavior as-is, give me a patch to review that changing
-the cell counting bits and I'll verify it against
-all the machines I have here plus some OFW tree dumps.
+These days it works perfectly fine on sparc64.
