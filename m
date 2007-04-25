@@ -1,17 +1,24 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id B19FCDDE19
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 05:52:41 +1000 (EST)
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-To: mingo@elte.hu
-Subject: [PATCH 2.6.21-rc6-rt0] ns2cyc() result fix
-Date: Wed, 25 Apr 2007 22:54:17 +0300
+Return-Path: <olaf@aepfle.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 2BEFBDDF1B
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 06:36:59 +1000 (EST)
+Received: from mail01.m-online.net (svr21.m-online.net [192.168.3.149])
+	by mail-out.m-online.net (Postfix) with ESMTP id 31A7898676
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 22:36:58 +0200 (CEST)
+Received: from ibook.aepfle.de (DSL01.83.171.145.224.ip-pool.NEFkom.net
+	[83.171.145.224])
+	by mail.mnet-online.de (Postfix) with ESMTP id 1A0E89083E
+	for <linuxppc-dev@ozlabs.org>; Wed, 25 Apr 2007 22:36:58 +0200 (CEST)
+Date: Wed, 25 Apr 2007 22:36:56 +0200
+From: Olaf Hering <olaf@aepfle.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] generic check_legacy_ioport
+Message-ID: <20070425203656.GA29344@aepfle.de>
+References: <20070417210745.GA3567@aepfle.de>
+	<20070423081540.GA28244@aepfle.de>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704252354.17404.sshtylyov@ru.mvista.com>
-Cc: linuxppc-dev@ozlabs.org, johnstul@us.ibm.com, linux-kernel@vger.kernel.org,
-	dwalker@mvista.com
+Content-Type: text/plain; charset=utf-8
+In-Reply-To: <20070423081540.GA28244@aepfle.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,39 +28,267 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Fix the dubious use of cycles_t where cycle_t was appropriate.  On the machines
-with 32-bit cycles_t (like ARM/PPC) it caused these warnings:
 
-In file included from arch/powerpc/kernel/time.c:1045:
-include/linux/clocksource.h: In function `ns2cyc':
-include/linux/clocksource.h:213: warning: comparison of distinct pointer types lacks a cast
-include/linux/clocksource.h:213: warning: right shift count >= width of type
-include/linux/clocksource.h:213: warning: passing argument 1 of `__div64_32' from incompatible pointer type
+check_legacy_ioport makes only sense on PREP, CHRP and pSeries.
+They may have an isa node with PS/2, parport, floppy and serial ports.
 
-This function and therefore usecs_to_cycles() was unlikely to return a correct
-result on such machines because of the shift result truncation.
+Remove the check_legacy_ioport call from ppc_md, its not needed anymore.
+Hardware capabilities come from the device-tree.
 
-Signed-off-by: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Signed-off-by: Olaf Hering <olaf@aepfle.de>
 
 ---
-I'm also uncertain about 'preempt_max_latency' and 'preempt_thresh' variables
-being declared as 'unsigned long' -- however, looks like those are unlikely to
-overflow... yet it's unclear why there's casts to 'cycle_t' (which is always
-64-bit) when initializing/comparing them...
+ arch/powerpc/kernel/setup-common.c      |   34 +++++++++++++++++++++++++++++---
+ arch/powerpc/platforms/cell/setup.c     |   10 ---------
+ arch/powerpc/platforms/celleb/setup.c   |   10 ---------
+ arch/powerpc/platforms/iseries/setup.c  |   10 ---------
+ arch/powerpc/platforms/pasemi/setup.c   |    7 ------
+ arch/powerpc/platforms/powermac/setup.c |   10 ---------
+ arch/powerpc/platforms/pseries/setup.c  |   27 -------------------------
+ include/asm-powerpc/io.h                |    7 +++++-
+ include/asm-powerpc/machdep.h           |    3 --
+ 9 files changed, 37 insertions(+), 81 deletions(-)
 
-Index: linux-2.6/include/linux/clocksource.h
-===================================================================
---- linux-2.6.orig/include/linux/clocksource.h
-+++ linux-2.6/include/linux/clocksource.h
-@@ -206,9 +206,9 @@ static inline s64 cyc2ns(struct clocksou
-  * @cs:		Pointer to clocksource
-  * @nsecs:	Nanoseconds
-  */
--static inline cycles_t ns2cyc(struct clocksource *cs, u64 nsecs)
-+static inline cycle_t ns2cyc(struct clocksource *cs, u64 nsecs)
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -496,11 +496,39 @@ void probe_machine(void)
+ 	printk(KERN_INFO "Using %s machine description\n", ppc_md.name);
+ }
+ 
++/* Match a class of boards, not a specific device configuration. */
+ int check_legacy_ioport(unsigned long base_port)
  {
--	cycles_t ret = nsecs << cs->shift;
-+	cycle_t ret = nsecs << cs->shift;
+-	if (ppc_md.check_legacy_ioport == NULL)
+-		return 0;
+-	return ppc_md.check_legacy_ioport(base_port);
++	struct device_node *parent, *np = NULL;
++	int ret = -ENODEV;
++
++	switch(base_port) {
++	case I8042_DATA_REG:
++		np = of_find_node_by_type(NULL, "8042");
++		break;
++	case FDC_BASE: /* FDC1 */
++		np = of_find_node_by_type(NULL, "fdc");
++		break;
++#ifdef CONFIG_PPC_PREP
++	case _PIDXR:
++	case _PNPWRP:
++	case PNPBIOS_BASE:
++		/* implement me */
++#endif
++	default:
++		/* ipmi is supposed to fail here */
++		break;
++	}
++	if (!np)
++		return ret;
++	parent = of_get_parent(np);
++	if (parent) {
++		if (strcmp(parent->type, "isa") == 0)
++			ret = 0;
++		of_node_put(parent);
++	}
++	of_node_put(np);
++	return ret;
+ }
+ EXPORT_SYMBOL(check_legacy_ioport);
  
- 	do_div(ret, cs->mult + 1);
+--- a/arch/powerpc/platforms/cell/setup.c
++++ b/arch/powerpc/platforms/cell/setup.c
+@@ -190,15 +190,6 @@ static int __init cell_probe(void)
+ 	return 1;
+ }
  
+-/*
+- * Cell has no legacy IO; anything calling this function has to
+- * fail or bad things will happen
+- */
+-static int cell_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ define_machine(cell) {
+ 	.name			= "Cell",
+ 	.probe			= cell_probe,
+@@ -211,7 +202,6 @@ define_machine(cell) {
+ 	.get_rtc_time		= rtas_get_rtc_time,
+ 	.set_rtc_time		= rtas_set_rtc_time,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-	.check_legacy_ioport	= cell_check_legacy_ioport,
+ 	.progress		= cell_progress,
+ 	.init_IRQ       	= cell_init_irq,
+ 	.pci_setup_phb		= rtas_setup_phb,
+--- a/arch/powerpc/platforms/celleb/setup.c
++++ b/arch/powerpc/platforms/celleb/setup.c
+@@ -128,15 +128,6 @@ static int __init celleb_probe(void)
+ 	return 1;
+ }
+ 
+-/*
+- * Cell has no legacy IO; anything calling this function has to
+- * fail or bad things will happen
+- */
+-static int celleb_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ #ifdef CONFIG_KEXEC
+ static void celleb_kexec_cpu_down(int crash, int secondary)
+ {
+@@ -173,7 +164,6 @@ define_machine(celleb) {
+ 	.get_rtc_time		= beat_get_rtc_time,
+ 	.set_rtc_time		= beat_set_rtc_time,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-	.check_legacy_ioport	= celleb_check_legacy_ioport,
+ 	.progress		= celleb_progress,
+ 	.power_save		= beat_power_save,
+ 	.nvram_size		= beat_nvram_get_size,
+--- a/arch/powerpc/platforms/iseries/setup.c
++++ b/arch/powerpc/platforms/iseries/setup.c
+@@ -628,15 +628,6 @@ static void iseries_iounmap(volatile voi
+ {
+ }
+ 
+-/*
+- * iSeries has no legacy IO, anything calling this function has to
+- * fail or bad things will happen
+- */
+-static int iseries_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ static int __init iseries_probe(void)
+ {
+ 	unsigned long root = of_get_flat_dt_root();
+@@ -667,7 +658,6 @@ define_machine(iseries) {
+ 	.calibrate_decr	= generic_calibrate_decr,
+ 	.progress	= iSeries_progress,
+ 	.probe		= iseries_probe,
+-	.check_legacy_ioport	= iseries_check_legacy_ioport,
+ 	.ioremap	= iseries_ioremap,
+ 	.iounmap	= iseries_iounmap,
+ 	/* XXX Implement enable_pmcs for iSeries */
+--- a/arch/powerpc/platforms/pasemi/setup.c
++++ b/arch/powerpc/platforms/pasemi/setup.c
+@@ -101,12 +101,6 @@ void __init pas_setup_arch(void)
+ 	pasemi_idle_init();
+ }
+ 
+-/* No legacy IO on our parts */
+-static int pas_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ static __init void pas_init_IRQ(void)
+ {
+ 	struct device_node *np;
+@@ -237,7 +231,6 @@ define_machine(pas) {
+ 	.restart		= pas_restart,
+ 	.get_boot_time		= pas_get_boot_time,
+ 	.calibrate_decr		= generic_calibrate_decr,
+-	.check_legacy_ioport    = pas_check_legacy_ioport,
+ 	.progress		= pas_progress,
+ 	.machine_check_exception = pas_machine_check_handler,
+ 	.pci_irq_fixup		= pas_pci_irq_fixup,
+--- a/arch/powerpc/platforms/powermac/setup.c
++++ b/arch/powerpc/platforms/powermac/setup.c
+@@ -616,15 +616,6 @@ static void __init pmac_init_early(void)
+ #endif
+ }
+ 
+-/*
+- * pmac has no legacy IO, anything calling this function has to
+- * fail or bad things will happen
+- */
+-static int pmac_check_legacy_ioport(unsigned int baseport)
+-{
+-	return -ENODEV;
+-}
+-
+ static int __init pmac_declare_of_platform_devices(void)
+ {
+ 	struct device_node *np;
+@@ -736,7 +727,6 @@ define_machine(powermac) {
+ 	.get_rtc_time		= pmac_get_rtc_time,
+ 	.calibrate_decr		= pmac_calibrate_decr,
+ 	.feature_call		= pmac_do_feature_call,
+-	.check_legacy_ioport	= pmac_check_legacy_ioport,
+ 	.progress		= udbg_progress,
+ #ifdef CONFIG_PPC64
+ 	.pci_probe_mode		= pmac_pci_probe_mode,
+--- a/arch/powerpc/platforms/pseries/setup.c
++++ b/arch/powerpc/platforms/pseries/setup.c
+@@ -334,32 +334,6 @@ static void __init pSeries_init_early(vo
+ 	DBG(" <- pSeries_init_early()\n");
+ }
+ 
+-
+-static int pSeries_check_legacy_ioport(unsigned int baseport)
+-{
+-	struct device_node *np;
+-
+-#define I8042_DATA_REG	0x60
+-#define FDC_BASE	0x3f0
+-
+-
+-	switch(baseport) {
+-	case I8042_DATA_REG:
+-		np = of_find_node_by_type(NULL, "8042");
+-		if (np == NULL)
+-			return -ENODEV;
+-		of_node_put(np);
+-		break;
+-	case FDC_BASE:
+-		np = of_find_node_by_type(NULL, "fdc");
+-		if (np == NULL)
+-			return -ENODEV;
+-		of_node_put(np);
+-		break;
+-	}
+-	return 0;
+-}
+-
+ /*
+  * Called very early, MMU is off, device-tree isn't unflattened
+  */
+@@ -532,7 +506,6 @@ define_machine(pseries) {
+ 	.set_rtc_time		= rtas_set_rtc_time,
+ 	.calibrate_decr		= generic_calibrate_decr,
+ 	.progress		= rtas_progress,
+-	.check_legacy_ioport	= pSeries_check_legacy_ioport,
+ 	.system_reset_exception = pSeries_system_reset_exception,
+ 	.machine_check_exception = pSeries_machine_check_exception,
+ };
+--- a/include/asm-powerpc/io.h
++++ b/include/asm-powerpc/io.h
+@@ -11,7 +11,12 @@
+ 
+ /* Check of existence of legacy devices */
+ extern int check_legacy_ioport(unsigned long base_port);
+-#define PNPBIOS_BASE	0xf000	/* only relevant for PReP */
++#define I8042_DATA_REG	0x60
++#define FDC_BASE	0x3f0
++/* only relevant for PReP */
++#define _PIDXR		0x279
++#define _PNPWRP		0xa79
++#define PNPBIOS_BASE	0xf000
+ 
+ #include <linux/compiler.h>
+ #include <asm/page.h>
+--- a/include/asm-powerpc/machdep.h
++++ b/include/asm-powerpc/machdep.h
+@@ -153,9 +153,6 @@ struct machdep_calls {
+ 	 */
+ 	long	 	(*feature_call)(unsigned int feature, ...);
+ 
+-	/* Check availability of legacy devices like i8042 */
+-	int 		(*check_legacy_ioport)(unsigned int baseport);
+-
+ 	/* Get legacy PCI/IDE interrupt mapping */ 
+ 	int		(*pci_get_legacy_ide_irq)(struct pci_dev *dev, int channel);
+ 	
