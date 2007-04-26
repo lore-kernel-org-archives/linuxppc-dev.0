@@ -1,20 +1,19 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 4680BDDF89
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Apr 2007 06:26:14 +1000 (EST)
-Date: Thu, 26 Apr 2007 15:26:32 -0500
-To: Arnd Bergmann <arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id C4B7FDE085
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Apr 2007 06:36:51 +1000 (EST)
+Date: Thu, 26 Apr 2007 15:37:10 -0500
+To: Johannes Berg <johannes@sipsolutions.net>
 Subject: Re: [PATCH v2] [2.6.22] pasemi: cpufreq driver
-Message-ID: <20070426202632.GA17302@lixom.net>
+Message-ID: <20070426203710.GB17302@lixom.net>
 References: <20070425204633.GC19781@lixom.net>
-	<200704261055.33739.arnd@arndb.de>
-	<20070426164835.GA14149@lixom.net>
-	<200704261911.22553.arnd@arndb.de>
+	<20070426053700.GA23922@lixom.net>
+	<1177583160.6814.37.camel@johannes.berg>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200704261911.22553.arnd@arndb.de>
+In-Reply-To: <1177583160.6814.37.camel@johannes.berg>
 From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org,
+Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, arnd@arndb.de,
 	cpufreq@lists.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,39 +24,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 26, 2007 at 07:11:21PM +0200, Arnd Bergmann wrote:
-> On Thursday 26 April 2007, Olof Johansson wrote:
-> > SDC is the system and debug controller, it contains a number of smaller
-> > devices such as the PIC, the PMU (Gizmo), RNG, and various debug
-> > features. Some already have drivers submitted, others will later on.
+On Thu, Apr 26, 2007 at 12:26:00PM +0200, Johannes Berg wrote:
+> On Thu, 2007-04-26 at 00:37 -0500, Olof Johansson wrote:
+> > 
+> > +       policy->cur = pas_freqs[cur_astate].frequency;
+> > +       policy->cpus = cpu_possible_map; 
 > 
-> Oh well, these chips all seem to be the same. On cell, we have solved
-> the problem by introducing the 'cbe_regs' helper library that gives
-> access to all those miscellaneous registers to the individual device
-> drivers, so that not all of them need to scan the device tree for
-> the same registers and map them individually.
+> That doesn't seem right.
+> 
+> Either, all your processors scale along each other in which case you
+> should use cpu_online_map here, or they scale each on their own in which
+> case you just set a single bit here.
 
-Not a bad idea, I'll consider it for the future. Most of our devices are
-on a pseudo-PCI bus, so it's only a handful that need special register
-access. The stuff in the SDC is the biggest exception.
+You can set the requested speed per-processor, but the actual speed
+will be the max of them. Because of this, it's less surprising to set
+it on both at the same time since then you'll at least know what you're
+running at.
 
-> The problem with an of_platform_driver for this would be that you
-> can only have _one_ driver attached to the registers.
+So yes, I'll change it to online_map instead of possible_map.
+
+> The generic code works like this:
+> CPU 0 is brought online and cpufreq initialised for it
+> CPU 1 is brought online and cpufreq initialised for it. if cpus includes
+> more than a single bit, cpufreq is linked to the first other CPU in
+> policy->cpus and then cpufreq for CPU1 is deinitialised again.
 >
-> > Unfortunately the setting of the current active state is done to an SDC
-> > register, while information of the states is in the PMU, so access to
-> > both is needed in the driver.
-> 
-> One thing that you could do is to list only this one register of the
-> SDC in the reg property, not all of the SDC. 
+> We have the same bug on powermac but for some reason the patch to fix it
+> that I posted a long time ago (look for "powermac: fix G5-cpufreq for
+> cpu on/offline") wasn't applied yet. Look at it though, it includes a
+> comment on what needs to be done.
 
-That doesn't make much sense in this case. The register isn't in the
-Gizmo.
+Hmm, I just tried adding debugging to the cpu_init code, and I'm not
+seeing it called more than once (i.e. only for cpu 0). Mind you, I don't
+have cpu hotplug support at this time.
 
-Having a driver/library for the SDC that the gizmo driver can use is a
-good idea, similar to what you've done on cell. I'll try to have that
-ready for 2.6.23, but that shouldn't stop this base driver from going
-in now.
+
+
+
 
 
 -Olof
