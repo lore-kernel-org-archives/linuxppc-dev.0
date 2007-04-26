@@ -1,23 +1,21 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A7532DDEEF
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 20:22:59 +1000 (EST)
-Subject: Re: [PATCH v2] [2.6.22] pasemi: cpufreq driver
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <20070426053700.GA23922@lixom.net>
-References: <20070425204633.GC19781@lixom.net>
-	<20070426053700.GA23922@lixom.net>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-xjJKaMAnWVCuD66V6FnN"
-Date: Thu, 26 Apr 2007 12:26:00 +0200
-Message-Id: <1177583160.6814.37.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, arnd@arndb.de,
-	cpufreq@lists.linux.org.uk
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id 4FE8DDDEBE
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 21:24:30 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 7/13] powerpc: Add arch/powerpc mv64x60 MPSC platform data
+	setup
+Date: Thu, 26 Apr 2007 13:24:19 +0200
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<200704260214.08329.arnd@arndb.de>
+	<20070426055716.GB2030@xyzzy.farnsworth.org>
+In-Reply-To: <20070426055716.GB2030@xyzzy.farnsworth.org>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704261324.20226.arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,45 +25,49 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
---=-xjJKaMAnWVCuD66V6FnN
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
-
-On Thu, 2007-04-26 at 00:37 -0500, Olof Johansson wrote:
+On Thursday 26 April 2007, Dale Farnsworth wrote:
+> > This looks wrong to me. See drivers/serial/of_serial.c to find how we d=
+o it for
+> > 8250 compatible serial ports. You should probably just add your serial =
+port
+> > stuff in there as well, instead of doing your own scanning of the devic=
+e tree.
 >=20
-> +       policy->cur =3D pas_freqs[cur_astate].frequency;
-> +       policy->cpus =3D cpu_possible_map;=20
+> Unfortunately, this hardware is very much non-8250 compatible.
 
-That doesn't seem right.
+That shouldn't matter much. The driver is not 8250 specific by itself, it's=
+ just
+that right now it doesn't know about any other chips.
 
-Either, all your processors scale along each other in which case you
-should use cpu_online_map here, or they scale each on their own in which
-case you just set a single bit here.
+If you find that there is more code that needs to be added than what is alr=
+eady
+in there, you could also create a new one based on of_serial for your port.
 
-The generic code works like this:
-CPU 0 is brought online and cpufreq initialised for it
-CPU 1 is brought online and cpufreq initialised for it. if cpus includes
-more than a single bit, cpufreq is linked to the first other CPU in
-policy->cpus and then cpufreq for CPU1 is deinitialised again.
+I can understand why you want to keep using the platform_device here, and i=
+n the
+other places, but if you do then please use platform_device_register from an
+of_platform_driver probe function instead of platform_device_register_simple
+so you can set the parent to the of_device.
 
-We have the same bug on powermac but for some reason the patch to fix it
-that I posted a long time ago (look for "powermac: fix G5-cpufreq for
-cpu on/offline") wasn't applied yet. Look at it though, it includes a
-comment on what needs to be done.
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0pdev =3D platform_device_register_s=
+imple(MPSC_CTLR_NAME, i, r, 5);
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0if (IS_ERR(pdev)) {
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0err =3D PTR=
+_ERR(pdev);
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0goto ret_no=
+de_put;
+> > > +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0}
+> >=20
+> > Now this really needs some explanation.
+> >=20
+> > Why the heck do you have a platform device that gets its resources from
+> > nonstandard properties of a serial port?
+>=20
+> There is an existing mpsc driver usable on both MIPS and powerpc platforms
+> that requires these non-standard properties.
 
-johannes
+Ok, I see where some of the limitations come from. However, instead of
+introducing the new "sdma" and "brg" properties, why not just add the
+register ranges to the "reg" property, like other drivers do?
 
---=-xjJKaMAnWVCuD66V6FnN
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGMH44/ETPhpq3jKURAlU+AJ9d/LDRDKOppdnvVSqq12PC9NhAIACeL4cp
-XMKnXESIr5HWBvG3mNmaV98=
-=S0c+
------END PGP SIGNATURE-----
-
---=-xjJKaMAnWVCuD66V6FnN--
+	Arnd <><
