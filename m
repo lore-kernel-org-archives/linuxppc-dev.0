@@ -1,22 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 663BADDF00
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 15:54:41 +1000 (EST)
-Date: Thu, 26 Apr 2007 15:54:49 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 3/6] Consolidate of_find_property
-Message-Id: <20070426155449.187f3252.sfr@canb.auug.org.au>
-In-Reply-To: <20070425.161309.02297897.davem@davemloft.net>
-References: <1177539404.14873.199.camel@localhost.localdomain>
-	<20070425.152419.110959714.davem@davemloft.net>
-	<1177541265.14873.222.camel@localhost.localdomain>
-	<20070425.161309.02297897.davem@davemloft.net>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Thu__26_Apr_2007_15_54_49_+1000_U4GW/fBTLlQIsHIh"
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	by ozlabs.org (Postfix) with SMTP id CA1CEDDEE2
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 15:57:17 +1000 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Wed, 25 Apr 2007 22:57:16 -0700
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 7/13] powerpc: Add arch/powerpc mv64x60 MPSC platform data
+	setup
+Message-ID: <20070426055716.GB2030@xyzzy.farnsworth.org>
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<20070425235939.GI4046@mag.az.mvista.com>
+	<200704260214.08329.arnd@arndb.de>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <200704260214.08329.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,40 +24,40 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Thu__26_Apr_2007_15_54_49_+1000_U4GW/fBTLlQIsHIh
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Thu, Apr 26, 2007 at 12:14:07AM +0000, Arnd Bergmann wrote:
+> On Thursday 26 April 2007, Mark A. Greer wrote:
+> > +static int __init mv64x60_mpsc_platform_device_init(void)
+> > +{
+> > +	struct device_node *np = NULL;
+> > +	unsigned int i;
+> > +	struct platform_device *pdev;
+> > +	int err;
+> > +
+> > +	for (i = 0; (np = of_find_compatible_node(np, "serial", "mpsc")); i++) {
+> > +		struct resource r[5];
+> > +		struct mpsc_pdata pdata;
+> > +		const unsigned int *prop;
+> > +		const phandle *ph;
+> > +		struct device_node *sdma, *brg;
+> 
+> This looks wrong to me. See drivers/serial/of_serial.c to find how we do it for
+> 8250 compatible serial ports. You should probably just add your serial port
+> stuff in there as well, instead of doing your own scanning of the device tree.
 
-Hi Dave,
+Unfortunately, this hardware is very much non-8250 compatible.
 
-On Wed, 25 Apr 2007 16:13:09 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
->
-> Meanwhile any feedback on the idea of pushing all of this
-> consolidation and cleanup work through one of our trees
-> instead of having all of these difficult dependencies
-> between the two?
+> > +		pdev = platform_device_register_simple(MPSC_CTLR_NAME, i, r, 5);
+> > +		if (IS_ERR(pdev)) {
+> > +			err = PTR_ERR(pdev);
+> > +			goto ret_node_put;
+> > +		}
+> 
+> Now this really needs some explanation.
+> 
+> Why the heck do you have a platform device that gets its resources from
+> nonstandard properties of a serial port?
 
-Seems the Linus has fixed this problem for us :-)
+There is an existing mpsc driver usable on both MIPS and powerpc platforms
+that requires these non-standard properties.
 
-If you and Paul can get your for-2.6.22 trees pulled by Linus, I can
-submit the remaining patches to Linus (with your and Paul's blessing, of
-course).
-
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Thu__26_Apr_2007_15_54_49_+1000_U4GW/fBTLlQIsHIh
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGMD66FdBgD/zoJvwRAtIKAJ9qfHhb4rdvgv8v7d65WUiFqgqQnQCeJzvC
-NGZq4+vmn0jXSi20MgPzUag=
-=EAhs
------END PGP SIGNATURE-----
-
---Signature=_Thu__26_Apr_2007_15_54_49_+1000_U4GW/fBTLlQIsHIh--
+-Dale
