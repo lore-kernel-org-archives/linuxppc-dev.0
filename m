@@ -1,20 +1,21 @@
-Return-Path: <bounces@nabble.com>
-Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 7DDE4DDF0E
+	by ozlabs.org (Postfix) with ESMTP id 85335DDF62
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Apr 2007 00:25:45 +1000 (EST)
-Received: from [72.21.53.38] (helo=jubjub.nabble.com)
-	by talk.nabble.com with esmtp (Exim 4.50) id 1Hh4uk-0000Xh-5E
-	for linuxppc-embedded@ozlabs.org; Thu, 26 Apr 2007 07:25:42 -0700
-Message-ID: <10201070.post@talk.nabble.com>
-Date: Thu, 26 Apr 2007 07:25:42 -0700 (PDT)
-From: Guillaume Berthelom <guillaume.berthelom@cleode.fr>
-To: linuxppc-embedded@ozlabs.org
-Subject: U-boot + Linux 2.6 + Avnet FX12 MM (based on ML403 config)
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+	Fri, 27 Apr 2007 00:36:25 +1000 (EST)
+In-Reply-To: <571811.46559.qm@web8406.mail.in.yahoo.com>
+References: <571811.46559.qm@web8406.mail.in.yahoo.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <62586E6D-6D9F-4D65-9BCC-772BC35599F1@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: MPC8544 Watchdog Timer
+Date: Thu, 26 Apr 2007 09:35:28 -0500
+To: vinay hegde <thisismevinay@yahoo.co.in>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -26,34 +27,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
 
-Hi,
+On Apr 26, 2007, at 3:43 AM, vinay hegde wrote:
 
-I'm trying to port Linux 2.6 on Avnet FX12 MM board with U-Boot and the help
-of xilinx ML403 config.
+> Hi,
+>
+> I am working with Freescale MPC8544E board. I need an
+> information related to the functionality of hardware
+> watchdog provided by MPC8544 processor.
+>
+> Here is the question:
+>
+> On watchdog timeout, whether the CPU can reset itself
+> _or_ does it assert a hardware HRESET_REQ signal to
+> some external hardware requesting for reset?
+>
+> Please let me know the inputs.
 
-I have generate my costum xparameters.h file with EDK 8.2i.
-I use ELDK 4.1 and Linux 2.6.20.x.
-I have modified ml403.h u-boot's config file to adapt it for my board and I
-have no problem to boot u-boot.
-I use the right board_info structure from <asm/ppcboot.h> and not the one in
-xilinx_ml403.h.
+This a question best asked to Freescale support. However, I believe  
+the processor will end up asserting HRESET_REQ and expects external  
+board logic to reset things.
 
-When I load the zImage directly with xilinx xmd debugger, the kernel start
-without problem (if I don't have KGDB or SERIAL_TEXT_DEBUG option in my
-kernel config). But when I try to load the uImage with u-boot, the kernel
-start but crach befor I can see something on output.
+The processor core will reset itself as part of this process.
 
-The kernel start because I debug it and the platform_init is ok, setup_arch
-too and it crach after ppc4xx_setup_arch at  printk(KERN_INFO "Xilinx ML403
-Reference System (Virtex-4 FX)\n") line  when the kernel access in printk.c.
-
-I suppose the serial init have problem but I have no idea what is the cause
-of the problem. I use the opb_uart16550 IP in my Xilinx design and the
-associat drivers in u-boot and linux.
-
-Thanks,
-Guillaume Berthelom
-
--- 
-View this message in context: http://www.nabble.com/U-boot-%2B-Linux-2.6-%2B-Avnet-FX12-MM-%28based-on-ML403-config%29-tf3651846.html#a10201070
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+- k
