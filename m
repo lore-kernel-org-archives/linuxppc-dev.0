@@ -1,18 +1,18 @@
 Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 32387DDE48
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 16:56:31 +1000 (EST)
-Date: Thu, 26 Apr 2007 01:56:44 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: cbe_cpufreq crashes my machine
-Message-ID: <20070426065644.GA24799@lixom.net>
-References: <20070425204633.GC19781@lixom.net>
-	<200704260147.35878.arnd@arndb.de>
+Date: Thu, 26 Apr 2007 02:15:32 -0500
+To: Luke Browning <lukebr@linux.vnet.ibm.com>
+Subject: Re: [PATCH v2] powerpc: 64K page support for kexec
+Message-ID: <20070426071532.GA24937@lixom.net>
+References: <1177439513.24866.5.camel@luke-laptop>
+	<20070424194348.GA8371@lixom.net>
+	<1177455014.14873.144.camel@localhost.localdomain>
+	<1177529739.24866.34.camel@luke-laptop>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200704260147.35878.arnd@arndb.de>
+In-Reply-To: <1177529739.24866.34.camel@luke-laptop>
 From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, Christian Krafft <krafft@de.ibm.com>
+Cc: Paul Mackerras <paulus@samba.org>, cbe-oss-dev@ozlabs.org,
+	Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,51 +22,75 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 26, 2007 at 01:47:35AM +0200, Arnd Bergmann wrote:
-> I can't see any check in here that finds out if you are actually running on
-> the right hardware. 
+Hi,
+                                                                                                                                             
+Two comments below, besides that it looks good!
+                                                                                                                                             
+On Wed, Apr 25, 2007 at 04:35:39PM -0300, Luke Browning wrote:
 
-Seems like this came along with our use of cbe_cpufreq.c as a basis. You
-don't do it either! :-)
+> +#define LP_SHIFT	12
+> +#define LP_BITS		8
+> +#define LP_MASK(i)	((0xFF >> (i)) << LP_SHIFT)
+> +
+> +static void hpte_decode(hpte_t *hpte, unsigned long slot, 
+> +			int *psize, unsigned long *va)
+> +{
+> +	unsigned long hpte_r = hpte->r;
+> +	unsigned long hpte_v = hpte->v;
+> +	unsigned long avpn;
+> +	int i, size, shift, penc, avpnm_bits;
+> +		
+> +	if (!(hpte_v & HPTE_V_LARGE))
+> +		size = MMU_PAGE_4K;
+> +	else {
+> +		for (i = 0; i < LP_BITS; i++) {
+> +			if ((hpte_r & LP_MASK(i+1)) == LP_MASK(i+1))
+> +				break;
+> +		}
+> +		penc = LP_MASK(i+1) >> LP_SHIFT;
+> +		for (size = 0; size < MMU_PAGE_COUNT - 1; size++) {
 
-Enabling CONFIG_CBE_CPUFREQ makes my machine die a horrible death,
-see below. I'd post a patch if I knew what machine compatible fields to
-compare with, but I have no clue what's considered approprate to check
-for on cell.
+This will never consider the last page size. Either <= MMU_PAGE_COUNT-1
+or < MMU_PAGE_COUNT. The latter would be more natural.
+
+> -		pteg = slot / HPTES_PER_GROUP;
+> -		if (hpte_v & HPTE_V_SECONDARY)
+> -			pteg = ~pteg;
+> +			/* 4K pages are not represented by LP */
+> +			if (size == MMU_PAGE_4K)
+> +				continue;
+> +
+> +			/* valid entries have a shift value */
+> +			if (!mmu_psize_defs[size].shift)
+> +				continue;
+>  
+> -		vpi = ((va >> 28) ^ pteg) & htab_hash_mask;
+> +			if (penc == mmu_psize_defs[size].penc)
+> +				break;
+> +		}
+> +	}
+>  
+> -		va |= vpi << PAGE_SHIFT;
+> +	/*
+> +	 * FIXME, the code below works for 16M, 64K, and 4K pages as these
+> +	 * fall under the p<=23 rules for calculating the virtual address.
+> +	 * In the case of 16M pages, an extra bit is stolen from the AVPN
+> +	 * field to achieve the requisite 24 bits. 
+> +	 *
+> +	 * 16G pages are not supported by the code below.
+> +	 */
+> +	BUG_ON(hpte_v & 0x4000000000000000UL);		/* 1T segment */
+> +	BUG_ON(size == MMU_PAGE_16G);
+> +	BUG_ON(size == MMU_PAGE_64K_AP);
+
+Milton didn't like BUG_ON() here, and I think I agree after hearing his
+motivations. I know I was the one suggesting them, but they're better
+to keep out at the moment.
+
+[...]
 
 
-Unable to handle kernel paging request for data at address 0x00000888
-Faulting instruction address: 0xc000000000036b14
-Oops: Kernel access of bad area, sig: 11 [#1]
-SMP NR_CPUS=2
-Modules linked in:
-NIP: C000000000036B14 LR: C000000000036B08 CTR: C000000000036A60
-REGS: c00000007fd83830 TRAP: 0300   Not tainted  (2.6.20)
-MSR: 9000000000009032 <EE,ME,IR,DR>  CR: 82000022  XER: 20000000
-DAR: 0000000000000888, DSISR: 0000000040000000
-TASK = c00000000ffc5820[1] 'swapper' THREAD: c00000007fd80000 CPU: 0
-GPR00: C00000000093F940 C00000007FD83AB0 C000000000916EC0 0000000000000000
-GPR04: C00000000068343F C0000000009C1208 C00000007F8FAE00 0000000000000000
-GPR08: C000000000859720 0000000000000888 C0000000009C3DE0 0000000000000000
-GPR12: 0000000000000000 C000000000779600 0000000000000000 C000000000684808
-GPR16: 4000000000000000 C0000000006834E0 0000000000000000 0000000000000000
-GPR20: 0000000000764880 C000000000764880 C000000000764AF0 0000000000764AF0
-GPR24: C000000000684308 C00000000085FAE8 C0000000025DD028 0000000000000000
-GPR28: FFFFFFFFFFFFFFF4 C00000007F8FAC38 C000000000784B58 C00000007F8FAC00
-NIP [C000000000036B14] .cbe_cpufreq_cpu_init+0xb4/0x12c
-LR [C000000000036B08] .cbe_cpufreq_cpu_init+0xa8/0x12c
-Call Trace:
-[C00000007FD83AB0] [C000000000036AA8] .cbe_cpufreq_cpu_init+0x48/0x12c (unreliable)
-[C00000007FD83B40] [C0000000004831FC] .cpufreq_add_dev+0x158/0x4f4
-[C00000007FD83D00] [C00000000033A5E4] .sysdev_driver_register+0xbc/0x158
-[C00000007FD83D90] [C000000000482FF0] .cpufreq_register_driver+0xd0/0x184
-[C00000007FD83E40] [C0000000007421B4] .cbe_cpufreq_init+0x1c/0x34
-[C00000007FD83EC0] [C0000000000093B4] .init+0x1c4/0x39c
-[C00000007FD83F90] [C000000000022E10] .kernel_thread+0x4c/0x68
-Instruction dump:
-800b0000 2f80fffe 409effe4 e93e8038 380061a8 e87f000e 901f0018 f93f0030
-4bffe239 60000000 39230888 7c0004ac <e9230888> 0c090000 4c00012c ebbe8008
 
-
+Thanks,
 
 -Olof
