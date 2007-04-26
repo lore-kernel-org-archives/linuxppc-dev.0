@@ -1,17 +1,20 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id ADD42DDF0B
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 15:37:12 +1000 (EST)
-Date: Thu, 26 Apr 2007 00:37:25 -0500
-To: mb@bu3sch.de
-Subject: [PATCH v2] [2.6.22] pasemi: hardware rng driver
-Message-ID: <20070426053725.GB23922@lixom.net>
-References: <20070425204512.GB19781@lixom.net>
+Return-Path: <dale@farnsworth.org>
+Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
+	by ozlabs.org (Postfix) with SMTP id 03578DDE26
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 15:49:16 +1000 (EST)
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Wed, 25 Apr 2007 22:49:14 -0700
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 6/13] powerpc: Add arch/powerpc support for
+	Marvell/mv64x60 hostbridge
+Message-ID: <20070426054913.GA2030@xyzzy.farnsworth.org>
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<20070425235858.GH4046@mag.az.mvista.com>
+	<200704260242.39993.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070425204512.GB19781@lixom.net>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, arnd@arndb.de
+In-Reply-To: <200704260242.39993.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,201 +24,73 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Driver for the on-chip hardware random number generator on PA Semi
-PA6T-1682M.
+On Thu, Apr 26, 2007 at 12:42:39AM +0000, Arnd Bergmann wrote:
+> > Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
+> > ===================================================================
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c	2007-04-17 12:48:22.000000000 -0700
+> > @@ -0,0 +1,343 @@
+> > +/*
+> > + * Common routines for the Marvell mv64360/mv64460 host bridges (Discovery)
+> > + *
+> > +/* Interrupt Controller Interface Registers */
+> 
+> I'd make this a file that _only_ deals with the interrupt controller
+> code, and has a respective name, e.g. mv64x60_irq.c
 
-Signed-off-by: Egor Martovetsky <egor@pasemi.com>
-Signed-off-by: Olof Johansson <olof@lixom.net>
+Does anyone else feel strongly about this?  I can go either way.
+On the one hand, separating out the irq handling might make it
+marginally easier to understand.  On the other hand, it's nice
+to keep all of the mv64x60 support together. I see examples
+doing it both ways currently in arch/powerpc/sysdev.
 
----
+> > +/*
+> > + * The bootwrapper sets the coherency of the DMA windows according to
+> > + * the setting in the device tree.  For the kernel, coherency is a
+> > + * compile-time configuration option.  Fail if there is a mismatch.
+> > + */
+> > +
+> > +#ifdef CONFIG_NOT_COHERENT_CACHE
+> > +#define KERNEL_COHERENCY	0
+> > +#else
+> > +#define KERNEL_COHERENCY	1
+> > +#endif
+> > +
+> > +int __init mv64x60_verify_cache_coherency(void)
+> > +{
+> > +	struct device_node *np;
+> > +	const void *prop;
+> > +	int devtree_coherency;
+> > +
+> > +	np = of_find_node_by_path("/");
+> > +	prop = of_get_property(np, "coherency-off", NULL);
+> > +	of_node_put(np);
+> > +
+> > +	devtree_coherency = prop ? 0 : 1;
+> > +
+> > +	if (devtree_coherency != KERNEL_COHERENCY) {
+> > +		printk(KERN_ERR
+> > +			"kernel coherency:%s != device tree_coherency:%s\n",
+> > +			KERNEL_COHERENCY ? "on" : "off",
+> > +			devtree_coherency ? "on" : "off");
+> > +		BUG();
+> > +	}
+> > +
+> > +	return 0;
+> > +
+> > +late_initcall(mv64x60_verify_cache_coherency);
+> 
+> Not sure where to best put this function, but probably not in the same file as
+> your interrupt handling code.
+> 
+> Note that the way your function is written, there is nothing specific to
+> mv64x60 in it, and it will actually get called on other machines when the
+> file is built-in.
+> 
+> Maybe just rename it to verify_cache_coherency() and put it into
+> arch/powerpc/kernel/setup-common.c.
 
-Changes since last version:
-* Moved register pointer to hwrng->priv
-* Cleanups (__init/__exit, module_init/exit)
+Good point.  I'll break it out and submit it separately.
 
-Index: powerpc/drivers/char/hw_random/Kconfig
-===================================================================
---- powerpc.orig/drivers/char/hw_random/Kconfig
-+++ powerpc/drivers/char/hw_random/Kconfig
-@@ -91,3 +91,17 @@ config HW_RANDOM_OMAP
- 	  module will be called omap-rng.
- 
-  	  If unsure, say Y.
-+
-+config HW_RANDOM_PASEMI
-+	tristate "PA Semi HW Random Number Generator support"
-+	depends on HW_RANDOM && PPC_PASEMI
-+	default HW_RANDOM
-+	---help---
-+	  This driver provides kernel-side support for the Random Number
-+	  Generator hardware found on PA6T-1682M processor.
-+
-+	  To compile this driver as a module, choose M here: the
-+	  module will be called pasemi-rng.
-+
-+	  If unsure, say Y.
-+
-Index: powerpc/drivers/char/hw_random/Makefile
-===================================================================
---- powerpc.orig/drivers/char/hw_random/Makefile
-+++ powerpc/drivers/char/hw_random/Makefile
-@@ -10,3 +10,4 @@ obj-$(CONFIG_HW_RANDOM_GEODE) += geode-r
- obj-$(CONFIG_HW_RANDOM_VIA) += via-rng.o
- obj-$(CONFIG_HW_RANDOM_IXP4XX) += ixp4xx-rng.o
- obj-$(CONFIG_HW_RANDOM_OMAP) += omap-rng.o
-+obj-$(CONFIG_HW_RANDOM_PASEMI) += pasemi-rng.o
-Index: powerpc/drivers/char/hw_random/pasemi-rng.c
-===================================================================
---- /dev/null
-+++ powerpc/drivers/char/hw_random/pasemi-rng.c
-@@ -0,0 +1,150 @@
-+/*
-+ * Copyright (C) 2006-2007 PA Semi, Inc
-+ *
-+ * Maintained by: Olof Johansson <olof@lixom.net>
-+ *
-+ * Driver for the PWRficient onchip rng
-+ *
-+ * This program is free software; you can redistribute it and/or modify
-+ * it under the terms of the GNU General Public License version 2 as
-+ * published by the Free Software Foundation.
-+ *
-+ * This program is distributed in the hope that it will be useful,
-+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
-+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-+ * GNU General Public License for more details.
-+ *
-+ * You should have received a copy of the GNU General Public License
-+ * along with this program; if not, write to the Free Software
-+ * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307 USA
-+ */
-+
-+#include <linux/module.h>
-+#include <linux/kernel.h>
-+#include <linux/platform_device.h>
-+#include <linux/hw_random.h>
-+#include <asm/of_platform.h>
-+#include <asm/io.h>
-+
-+#define SDCRNG_CTL_REG			0x00
-+#define   SDCRNG_CTL_FVLD_M		0x0000f000
-+#define   SDCRNG_CTL_FVLD_S		12
-+#define   SDCRNG_CTL_KSZ		0x00000800
-+#define   SDCRNG_CTL_RSRC_CRG		0x00000010
-+#define   SDCRNG_CTL_RSRC_RRG		0x00000000
-+#define   SDCRNG_CTL_CE			0x00000004
-+#define   SDCRNG_CTL_RE			0x00000002
-+#define   SDCRNG_CTL_DR			0x00000001
-+#define   SDCRNG_CTL_SELECT_RRG_RNG	(SDCRNG_CTL_RE | SDCRNG_CTL_RSRC_RRG)
-+#define   SDCRNG_CTL_SELECT_CRG_RNG	(SDCRNG_CTL_CE | SDCRNG_CTL_RSRC_CRG)
-+#define SDCRNG_VAL_REG			0x20
-+
-+#define MODULE_NAME "pasemi_rng"
-+
-+static int pasemi_rng_data_present(struct hwrng *rng)
-+{
-+	void __iomem *rng_regs = (void __iomem *)rng->priv;
-+
-+	return (in_le32(rng_regs + SDCRNG_CTL_REG)
-+		& SDCRNG_CTL_FVLD_M) ? 1 : 0;
-+}
-+
-+static int pasemi_rng_data_read(struct hwrng *rng, u32 *data)
-+{
-+	void __iomem *rng_regs = (void __iomem *)rng->priv;
-+	*data = in_le32(rng_regs + SDCRNG_VAL_REG);
-+	return 4;
-+}
-+
-+static int pasemi_rng_init(struct hwrng *rng)
-+{
-+	void __iomem *rng_regs = (void __iomem *)rng->priv;
-+	u32 ctl;
-+
-+	ctl = SDCRNG_CTL_DR | SDCRNG_CTL_SELECT_RRG_RNG | SDCRNG_CTL_KSZ;
-+	out_le32(rng_regs + SDCRNG_CTL_REG, ctl);
-+	out_le32(rng_regs + SDCRNG_CTL_REG, ctl & ~SDCRNG_CTL_DR);
-+
-+	return 0;
-+}
-+
-+static void pasemi_rng_cleanup(struct hwrng *rng)
-+{
-+	void __iomem *rng_regs = (void __iomem *)rng->priv;
-+	u32 ctl;
-+
-+	ctl = SDCRNG_CTL_RE | SDCRNG_CTL_CE;
-+	out_le32(rng_regs + SDCRNG_CTL_REG,
-+		 in_le32(rng_regs + SDCRNG_CTL_REG) & ~ctl);
-+}
-+
-+static struct hwrng pasemi_rng = {
-+	.name		= MODULE_NAME,
-+	.init		= pasemi_rng_init,
-+	.cleanup	= pasemi_rng_cleanup,
-+	.data_present	= pasemi_rng_data_present,
-+	.data_read	= pasemi_rng_data_read,
-+};
-+
-+static int __devinit rng_probe(struct of_device *ofdev,
-+			       const struct of_device_id *match)
-+{
-+	struct device_node *rng_np = ofdev->node;
-+	struct resource res;
-+	int err = 0;
-+
-+	err = of_address_to_resource(rng_np, 0, &res);
-+	if (err)
-+		return -EINVAL;
-+
-+	pasemi_rng.priv = (unsigned long)ioremap(res.start, 0x100);
-+
-+	if (pasemi_rng.priv == 0)
-+		return -EPERM;
-+
-+	printk(KERN_INFO "Registering PA Semi RNG\n");
-+
-+	return hwrng_register(&pasemi_rng);
-+}
-+
-+static int __devexit rng_remove(struct of_device *dev)
-+{
-+	void __iomem *rng_regs = (void __iomem *)pasemi_rng.priv;
-+
-+	iounmap(rng_regs);
-+	hwrng_unregister(&pasemi_rng);
-+
-+	return 0;
-+}
-+
-+static struct of_device_id rng_match[] =
-+{
-+	{
-+		.compatible      = "1682m-rng",
-+	},
-+	{},
-+};
-+
-+static struct of_platform_driver rng_driver =
-+{
-+	.name		= "pasemi-rng",
-+	.match_table	= rng_match,
-+	.probe		= rng_probe,
-+	.remove		= rng_remove,
-+};
-+
-+static int __init rng_init(void)
-+{
-+	return of_register_platform_driver(&rng_driver);
-+}
-+module_init(rng_init);
-+
-+static void __exit rng_exit(void)
-+{
-+	of_unregister_platform_driver(&rng_driver);
-+}
-+module_exit(rng_exit);
-+
-+MODULE_LICENSE("GPL");
-+MODULE_AUTHOR("Egor Martovetsky <egor@pasemi.com>");
-+MODULE_DESCRIPTION("H/W RNG driver for PA Semi processor");
+Thanks,
+-Dale
