@@ -1,9 +1,10 @@
 Return-Path: <mgreer@mvista.com>
-Date: Wed, 25 Apr 2007 17:01:07 -0700
+Date: Wed, 25 Apr 2007 17:01:51 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH 10/13] powerpc: Add arch/powerpc mv64x60 PCI setup
-Message-ID: <20070426000107.GL4046@mag.az.mvista.com>
+Subject: [PATCH 11/13] powerpc: Add DTS file for the Motorola PrPMC2800
+	platform
+Message-ID: <20070426000151.GM4046@mag.az.mvista.com>
 References: <20070425234630.GA4046@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
@@ -19,220 +20,336 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-From: Dale Farnsworth <dale@farnsworth.org>
-
-Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
+Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 ---
 
- mv64x60.c |  176 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- mv64x60.h |    2 
- 2 files changed, 178 insertions(+)
+ prpmc2800.dts |  322 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 322 insertions(+)
 
-Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
+Index: powerpc/arch/powerpc/boot/dts/prpmc2800.dts
 ===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/mv64x60.c
-+++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
-@@ -18,12 +18,14 @@
- #include <linux/string.h>
- #include <linux/mv643xx.h>
- #include <linux/platform_device.h>
-+#include <linux/pci.h>
- 
- #include <asm/byteorder.h>
- #include <asm/io.h>
- #include <asm/prom.h>
- #include <asm/irq.h>
- #include <asm/machdep.h>
-+#include <asm/pci-bridge.h>
- 
- #include "mv64x60.h"
- 
-@@ -721,3 +723,177 @@ ret_node_put:
- }
- 
- arch_initcall(mv64x60_i2c_platform_device_init);
+--- /dev/null
++++ powerpc/arch/powerpc/boot/dts/prpmc2800.dts
+@@ -0,0 +1,322 @@
++/* Device Tree Source for Motorola PrPMC2800
++ *
++ * Author: Mark A. Greer <mgreer@mvista.com>
++ *
++ * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
++ *
++ * To build:
++ *   dtc -I dts -O asm -o prpmc2800.S -V 16 -b 0 prpmc2800.dts
++ *   dtc -I dts -O dtb -o prpmc2800.dtb -V 16 -b 0 prpmc2800.dts
++ */
 +
-+#ifdef CONFIG_PCI
-+static int mv64x60_pci_exclude_bridge = 1;
-+static struct pci_controller *mv64x60_primary_hose;
-+static int mv64x60_pci2_busno;
++/ {
++	#address-cells = <1>;
++	#size-cells = <1>;
++	model = "PrPMC280/PrPMC2800"; /* Updated by bootwrapper */
++	compatible = "PrPMC2800";
++	coherency-off;
 +
-+#ifdef CONFIG_SYSFS
-+/* 32-bit hex or dec stringified number + '\n' */
-+#define MV64X60_VAL_LEN_MAX		11
-+#define MV64X60_PCICFG_CPCI_HOTSWAP	0x68
++	cpus {
++		#address-cells = <1>;
++		#size-cells = <0>;
 +
-+DECLARE_MUTEX(mv64x60_hs_lock);
++		PowerPC,7447 {
++			device_type = "cpu";
++			reg = <0>;
++			clock-frequency = <0>;		/* Set by bootwrapper */
++			bus-frequency = <7f28155>;	/* 133.333333 MHz */
++			timebase-frequency = <1fca055>;	/* 33.333333 MHz */
++			/* Following required by dtc but not used */
++			i-cache-line-size = <0>;
++			d-cache-line-size = <0>;
++			i-cache-size = <0>;
++			d-cache-size = <0>;
++		};
++	};
 +
-+static ssize_t mv64x60_hs_reg_read(struct kobject *kobj, char *buf, loff_t off,
-+				   size_t count)
-+{
-+	u32 v;
-+	int save_exclude;
++	memory {
++		device_type = "memory";
++		reg = <00000000 00000000>;	/* Set by bootwrapper */
++	};
 +
-+	if (off > 0)
-+		return 0;
-+	if (count < MV64X60_VAL_LEN_MAX)
-+		return -EINVAL;
++	mv64x60@f1000000 { /* Marvell Discovery */
++		#address-cells = <1>;
++		#size-cells = <1>;
++		#interrupt-cells = <1>;
++		device_type = "mv64360";
++		compatible = "mv64x60";
++		clock-frequency = <7f28155>;		/* 133.333333 Mhz */
++		reg = <f1000000 00010000>;
++		virtual-reg = <f1000000>;
++		ranges = <88000000 88000000 01000000	/* PCI 0 I/O Space */
++			  80000000 80000000 08000000	/* PCI 0 MEM Space */
++			  a0000000 a0000000 04000000	/* User FLASH */
++			  00000000 f1000000 00010000	/* Bridge's regs */
++			  f2000000 f2000000 00040000>;	/* Integrated SRAM */
 +
-+	if (down_interruptible(&mv64x60_hs_lock))
-+		return -ERESTARTSYS;
-+	save_exclude = mv64x60_pci_exclude_bridge;
-+	mv64x60_pci_exclude_bridge = 0;
-+	early_read_config_dword(mv64x60_primary_hose, 0, PCI_DEVFN(0, 0),
-+				MV64X60_PCICFG_CPCI_HOTSWAP, &v);
-+	mv64x60_pci_exclude_bridge = save_exclude;
-+	up(&mv64x60_hs_lock);
++		flash@a0000000 {
++			device_type = "rom";
++			compatible = "direct-mapped";
++			reg = <a0000000 0>; /* Size set by bootwrapper */
++			probe-type = "CFI";
++			bank-width = <4>;
++			partitions = <00000000 00100000 /* RO */
++				      00100000 00040001 /* RW */
++				      00140000 00400000 /* RO */
++				      00540000 039c0000 /* RO */
++				      03f00000 00100000>; /* RO */
++			partition-names = "FW Image A\0FW Config Data\0Kernel Image\0Filesystem\0FW Image B";
++		};
 +
-+	return sprintf(buf, "0x%08x\n", v);
-+}
++		mdio {
++			#address-cells = <1>;
++			#size-cells = <0>;
++			device_type = "mdio";
++			compatible = "mv64x60-mdio";
++			ethernet-phy@1 {
++				device_type = "ethernet-phy";
++				compatible = "bcm5421";
++				interrupts = <4c>;	/* GPP 12 */
++				interrupt-parent = <&/mv64x60/pic>;
++				reg = <1>;
++			};
++			ethernet-phy@3 {
++				device_type = "ethernet-phy";
++				compatible = "bcm5421";
++				interrupts = <4c>;	/* GPP 12 */
++				interrupt-parent = <&/mv64x60/pic>;
++				reg = <3>;
++			};
++		};
 +
-+static ssize_t mv64x60_hs_reg_write(struct kobject *kobj, char *buf,
-+				    loff_t off, size_t count)
-+{
-+	u32 v;
-+	int save_exclude;
++		ethernet@2000 {		/* mac-address set by bootwrapper */
++			reg = <2000 2000>;
++			eth0 {
++				device_type = "network";
++				compatible = "mv64x60-eth";
++				block-index = <0>;
++				interrupts = <20>;
++				interrupt-parent = <&/mv64x60/pic>;
++				phy = <&/mv64x60/mdio/ethernet-phy@1>;
++				local-mac-address = [ 00 00 00 00 00 00 ];
++			};
++			eth1 {
++				device_type = "network";
++				compatible = "mv64x60-eth";
++				block-index = <1>;
++				interrupts = <21>;
++				interrupt-parent = <&/mv64x60/pic>;
++				phy = <&/mv64x60/mdio/ethernet-phy@3>;
++				local-mac-address = [ 00 00 00 00 00 00 ];
++			};
++		};
 +
-+	if (off > 0)
-+		return 0;
-+	if (count <= 0)
-+		return -EINVAL;
++		sdma@4000 {
++			device_type = "dma";
++			compatible = "mv64x60-sdma";
++			reg = <4000 c18>;
++			virtual-reg = <f1004000>;
++			interrupt-base = <0>;
++			interrupts = <24>;
++			interrupt-parent = <&/mv64x60/pic>;
++		};
 +
-+	if (sscanf(buf, "%i", &v) == 1) {
-+		if (down_interruptible(&mv64x60_hs_lock))
-+			return -ERESTARTSYS;
-+		save_exclude = mv64x60_pci_exclude_bridge;
-+		mv64x60_pci_exclude_bridge = 0;
-+		early_write_config_dword(mv64x60_primary_hose, 0,
-+					 PCI_DEVFN(0, 0),
-+					 MV64X60_PCICFG_CPCI_HOTSWAP, v);
-+		mv64x60_pci_exclude_bridge = save_exclude;
-+		up(&mv64x60_hs_lock);
-+	}
-+	else
-+		count = -EINVAL;
++		sdma@6000 {
++			device_type = "dma";
++			compatible = "mv64x60-sdma";
++			reg = <6000 c18>;
++			virtual-reg = <f1006000>;
++			interrupt-base = <0>;
++			interrupts = <26>;
++			interrupt-parent = <&/mv64x60/pic>;
++		};
 +
-+	return count;
-+}
++		brg@b200 {
++			device_type = "brg";
++			compatible = "mv64x60-brg";
++			reg = <b200 8>;
++			clock-src = <8>;
++			clock-frequency = <7ed6b40>;
++			current-speed = <2580>;
++			bcr = <0>;
++		};
 +
-+static struct bin_attribute mv64x60_hs_reg_attr = { /* Hotswap register */
-+	.attr = {
-+		.name = "hs_reg",
-+		.mode = S_IRUGO | S_IWUSR,
-+		.owner = THIS_MODULE,
-+	},
-+	.size  = MV64X60_VAL_LEN_MAX,
-+	.read  = mv64x60_hs_reg_read,
-+	.write = mv64x60_hs_reg_write,
++		brg@b208 {
++			device_type = "brg";
++			compatible = "mv64x60-brg";
++			reg = <b208 8>;
++			clock-src = <8>;
++			clock-frequency = <7ed6b40>;
++			current-speed = <2580>;
++			bcr = <0>;
++		};
++
++		cunit@f200 {
++			device_type = "mv64x60-cunit";
++			reg = <f200 200>;
++		};
++
++		mpscrouting@b400 {
++			device_type = "mpscrouting";
++			reg = <b400 c>;
++		};
++
++		mpscintr@b800 {
++			device_type = "mpscintr";
++			reg = <b800 100>;
++			virtual-reg = <f100b800>;
++		};
++
++		mpsc@8000 {
++			device_type = "serial";
++			compatible = "mpsc";
++			reg = <8000 38>;
++			virtual-reg = <f1008000>;
++			sdma = <&/mv64x60/sdma@4000>;
++			brg = <&/mv64x60/brg@b200>;
++			cunit = <&/mv64x60/cunit@f200>;
++			mpscrouting = <&/mv64x60/mpscrouting@b400>;
++			mpscintr = <&/mv64x60/mpscintr@b800>;
++			block-index = <0>;
++			max_idle = <28>;
++			chr_1 = <0>;
++			chr_2 = <0>;
++			chr_10 = <3>;
++			mpcr = <0>;
++			interrupts = <28>;
++			interrupt-parent = <&/mv64x60/pic>;
++		};
++
++		mpsc@9000 {
++			device_type = "serial";
++			compatible = "mpsc";
++			reg = <9000 38>;
++			virtual-reg = <f1009000>;
++			sdma = <&/mv64x60/sdma@6000>;
++			brg = <&/mv64x60/brg@b208>;
++			cunit = <&/mv64x60/cunit@f200>;
++			mpscrouting = <&/mv64x60/mpscrouting@b400>;
++			mpscintr = <&/mv64x60/mpscintr@b800>;
++			block-index = <1>;
++			max_idle = <28>;
++			chr_1 = <0>;
++			chr_2 = <0>;
++			chr_10 = <3>;
++			mpcr = <0>;
++			interrupts = <2a>;
++			interrupt-parent = <&/mv64x60/pic>;
++		};
++
++		i2c@c000 {
++			device_type = "i2c";
++			compatible = "mv64x60-i2c";
++			reg = <c000 20>;
++			virtual-reg = <f100c000>;
++			freq_m = <8>;
++			freq_n = <3>;
++			timeout = <3e8>;		/* 1000 = 1 second */
++			retries = <1>;
++			interrupts = <25>;
++			interrupt-parent = <&/mv64x60/pic>;
++		};
++
++		pic {
++			#interrupt-cells = <1>;
++			#address-cells = <0>;
++			device_type = "mv64x60-pic";
++			compatible = "mv64x60-pic";
++			reg = <0000 88>;
++			interrupt-controller;
++		};
++
++		mpp@f000 {
++			device_type = "mv64x60-mpp";
++			compatible = "mv64x60-mpp";
++			reg = <f000 10>;
++		};
++
++		gpp@f100 {
++			device_type = "mv64x60-gpp";
++			compatible = "mv64x60-gpp";
++			reg = <f100 20>;
++		};
++
++		pci@80000000 {
++			#address-cells = <3>;
++			#size-cells = <2>;
++			#interrupt-cells = <1>;
++			device_type = "pci";
++			compatible = "mv64x60-pci";
++			reg = <0cf8 8>;
++			ranges = <01000000 0        0 88000000 0 01000000
++				  02000000 0 80000000 80000000 0 08000000>;
++			bus-range = <0 ff>;
++			clock-frequency = <3EF1480>;
++			interrupt-pci-iack = <0c34>;
++			interrupt-parent = <&/mv64x60/pic>;
++			interrupt-map-mask = <f800 0 0 7>;
++			interrupt-map = <
++				/* IDSEL 0x0a */
++				5000 0 0 1 &/mv64x60/pic 50
++				5000 0 0 2 &/mv64x60/pic 51
++				5000 0 0 3 &/mv64x60/pic 5b
++				5000 0 0 4 &/mv64x60/pic 5d
++
++				/* IDSEL 0x0b */
++				5800 0 0 1 &/mv64x60/pic 5b
++				5800 0 0 2 &/mv64x60/pic 5d
++				5800 0 0 3 &/mv64x60/pic 50
++				5800 0 0 4 &/mv64x60/pic 51
++
++				/* IDSEL 0x0c */
++				6000 0 0 1 &/mv64x60/pic 5b
++				6000 0 0 2 &/mv64x60/pic 5d
++				6000 0 0 3 &/mv64x60/pic 50
++				6000 0 0 4 &/mv64x60/pic 51
++
++				/* IDSEL 0x0d */
++				6800 0 0 1 &/mv64x60/pic 5d
++				6800 0 0 2 &/mv64x60/pic 50
++				6800 0 0 3 &/mv64x60/pic 51
++				6800 0 0 4 &/mv64x60/pic 5b
++			>;
++		};
++
++		cpu-error@0070 {
++			device_type = "mv64x60-cpu-error";
++			reg = <0070 10 0128 28>;
++			interrupts = <03>;
++			interrupt-parent = <&/mv64x60/pic>;
++		};
++
++		sram-error@0380 {
++			device_type = "mv64x60-sram-error";
++			reg = <0380 80>;
++			interrupts = <0d>;
++			interrupt-parent = <&/mv64x60/pic>;
++		};
++
++		pci-error@1dc0 {
++			device_type = "mv64x60-pci-error";
++			reg = <1d40 40 0c28 4>;
++			interrupts = <0c>;
++			interrupt-parent = <&/mv64x60/pic>;
++		};
++
++		memctrl@1400 {
++			device_type = "mv64x60-memctrl";
++			reg = <1400 60>;
++			interrupts = <11>;
++			interrupt-parent = <&/mv64x60/pic>;
++		};
++	};
++
++	chosen {
++		linux,platform = <1>;
++		bootargs = "ip=on console=ttyMM0";
++		linux,stdout-path = "/mv64x60/mpsc@8000";
++	};
 +};
-+
-+static int __init mv64x60_sysfs_init(void)
-+{
-+	struct device_node *np;
-+	struct platform_device *pdev;
-+	const unsigned int *prop;
-+
-+	np = of_find_compatible_node(NULL, NULL, "mv64x60");
-+	if (!np)
-+		return 0;
-+
-+	pdev = platform_device_register_simple("mv64x60", 0, NULL, 0);
-+	if (IS_ERR(pdev))
-+		return PTR_ERR(pdev);
-+
-+	prop = of_get_property(np, "hs_reg_valid", NULL);
-+	of_node_put(np);
-+	if (!prop)
-+		return 0;
-+
-+	return sysfs_create_bin_file(&pdev->dev.kobj, &mv64x60_hs_reg_attr);
-+}
-+
-+subsys_initcall(mv64x60_sysfs_init);
-+
-+#endif /* CONFIG_SYSFS */
-+
-+static int mv64x60_exclude_device(u_char bus, u_char devfn)
-+{
-+	if ((bus == 0 || bus == mv64x60_pci2_busno) &&
-+	    PCI_SLOT(devfn) == 0 && mv64x60_pci_exclude_bridge)
-+		return PCIBIOS_DEVICE_NOT_FOUND;
-+
-+	return PCIBIOS_SUCCESSFUL;
-+}
-+
-+static int __init mv64x60_add_bridge(struct device_node *dev)
-+{
-+	int len;
-+	struct pci_controller *hose;
-+	struct resource rsrc;
-+	const int *bus_range;
-+	int primary;
-+
-+	memset(&rsrc, 0, sizeof(rsrc));
-+
-+	/* Fetch host bridge registers address */
-+	if (of_address_to_resource(dev, 0, &rsrc)) {
-+		printk(KERN_ERR "No PCI reg property in device tree\n");
-+		return -ENODEV;
-+	}
-+
-+	/* Get bus range if any */
-+	bus_range = of_get_property(dev, "bus-range", &len);
-+	if (bus_range == NULL || len < 2 * sizeof(int))
-+		printk(KERN_WARNING "Can't get bus-range for %s, assume"
-+		       " bus 0\n", dev->full_name);
-+
-+	hose = pcibios_alloc_controller();
-+	if (!hose)
-+		return -ENOMEM;
-+
-+	hose->arch_data = dev;
-+	hose->set_cfg_type = 1;
-+
-+	hose->first_busno = bus_range ? bus_range[0] : 0;
-+	hose->last_busno = bus_range ? bus_range[1] : 0xff;
-+	primary = hose->first_busno == 0;
-+
-+	setup_indirect_pci(hose, rsrc.start, rsrc.start + 4);
-+
-+	if (primary)
-+		mv64x60_primary_hose = hose;
-+	else {
-+		hose->bus_offset = hose->first_busno;
-+		mv64x60_pci2_busno = hose->first_busno;
-+	}
-+
-+	printk(KERN_INFO "Found MV64x60 PCI host bridge at 0x%016llx. "
-+	       "Firmware bus number: %d->%d\n",
-+	       (unsigned long long)rsrc.start, hose->first_busno,
-+	       hose->last_busno);
-+
-+	/* Interpret the "ranges" property */
-+	/* This also maps the I/O region and sets isa_io/mem_base */
-+	pci_process_bridge_OF_ranges(hose, dev, primary);
-+
-+	return 0;
-+}
-+
-+void __init mv64x60_pci_init(void)
-+{
-+	struct device_node *np = NULL;
-+
-+	ppc_md.pci_exclude_device = mv64x60_exclude_device;
-+
-+	while ((np = of_find_compatible_node(np, "pci", "mv64x60-pci")))
-+		mv64x60_add_bridge(np);
-+}
-+#endif /* CONFIG_PCI */
-Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.h
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/mv64x60.h
-+++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.h
-@@ -6,4 +6,6 @@
- extern void __init mv64x60_init_irq(void);
- extern unsigned int mv64x60_get_irq(void);
- 
-+extern void __init mv64x60_pci_init(void);
-+
- #endif /* __MV64X60_H__ */
