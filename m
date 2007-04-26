@@ -1,22 +1,22 @@
-Return-Path: <matvejchikov@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.177])
-	by ozlabs.org (Postfix) with ESMTP id 9984CDDF61
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 1DBB3DDF6D
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Apr 2007 05:04:38 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id p76so615066pyb
-	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Apr 2007 12:04:36 -0700 (PDT)
-Message-ID: <8496f91a0704261204t3896a388g7718c2213cf90895@mail.gmail.com>
-Date: Thu, 26 Apr 2007 23:04:36 +0400
-From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
-To: "Clemens Koller" <clemens.koller@anagramm.de>
-Subject: Re: BUG: NETDEV WATCHDOG -> Badness in gianfar driver?
-In-Reply-To: <4630E0F3.10100@anagramm.de>
+	Fri, 27 Apr 2007 05:51:35 +1000 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1HhA03-0006ks-1D
+	for linuxppc-embedded@ozlabs.org; Thu, 26 Apr 2007 12:51:31 -0700
+Message-ID: <10207511.post@talk.nabble.com>
+Date: Thu, 26 Apr 2007 12:51:30 -0700 (PDT)
+From: rvk <rvkisley@yahoo.com>
+To: linuxppc-embedded@ozlabs.org
+Subject: Re: ML403 and PPC4xx_DMA ?
+In-Reply-To: <1177603586.5532.20.camel@localhost>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <4630E0F3.10100@anagramm.de>
-Cc: linuxppc-embedded@ozlabs.org
-Reply-To: matvejchikov@gmail.com
+Content-Type: text/plain; charset=UTF-8
+References: <1177603586.5532.20.camel@localhost>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,53 +27,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Good Day!
 
-> The system was running fine for many days and weeks without any problems.
-> However, just a few minutes ago I noticed a single clicking sound of the harddisk
-> (like a head recalibration), so I checked the system.
-> I couldn't connect to it via ssh anymore, but via a serial console I got
-> at least endless messages as shown below...
-> After a reboot, everything looks fine again but the kernel log grew up
-> to several MBytes. I pasted the hopefully interesting part below.
->
-> Any ideas of what could be wrong there? I think there could be a problem
-> in the gianfar network driver. Or is there a physical problem with the PHY
-> (a Marvell MV88E1111)?
->
-> Any recommendations of how to debug that thingy?
->
-> Jan  1 03:43:23 ecam kernel: ------------[ cut here ]------------
-> Jan  1 03:43:23 ecam kernel: Badness at c003d3d8 [verbose debug info unavailable]
-> Jan  1 03:43:23 ecam kernel: Call Trace:
-> Jan  1 03:43:23 ecam kernel: [C0355C70] [C0008FE0] show_stack+0x3c/0x194 (unreliable)
-> Jan  1 03:43:23 ecam kernel: [C0355CA0] [C0135594] report_bug+0xa4/0xac
-> Jan  1 03:43:23 ecam kernel: [C0355CB0] [C0003784] program_check_exception+0x2b8/0x460
-> Jan  1 03:43:23 ecam kernel: [C0355CD0] [C0002908] ret_from_except_full+0x0/0x4c
-> Jan  1 03:43:23 ecam kernel: [C0355D90] [C017B3CC] marvell_ack_interrupt+0x14/0x38
-> Jan  1 03:43:23 ecam kernel: [C0355DB0] [C01764A8] stop_gfar+0x54/0xd0
-> Jan  1 03:43:23 ecam kernel: [C0355DD0] [C01773D0] gfar_timeout+0x5c/0x68
-> Jan  1 03:43:23 ecam kernel: [C0355DE0] [C020A060] dev_watchdog+0x110/0x118
-> Jan  1 03:43:23 ecam kernel: [C0355E00] [C0024228] run_timer_softirq+0x148/0x1a8
-> Jan  1 03:43:23 ecam kernel: [C0355E40] [C002006C] __do_softirq+0x78/0xe4
-> Jan  1 03:43:23 ecam kernel: [C0355E70] [C0007054] do_softirq+0x54/0x58
-> Jan  1 03:43:23 ecam kernel: [C0355E80] [C001FE4C] irq_exit+0x48/0x58
-> Jan  1 03:43:23 ecam kernel: [C0355E90] [C0004000] timer_interrupt+0x17c/0x224
-> Jan  1 03:43:23 ecam kernel: [C0355ED0] [C0002954] ret_from_except+0x0/0x18
-> Jan  1 03:43:23 ecam kernel: [C0355F90] [C0009FB8] cpu_idle+0xc0/0xd0
-> Jan  1 03:43:23 ecam kernel: [C0355FB0] [C0001A7C] rest_init+0x28/0x38
-> Jan  1 03:43:23 ecam kernel: [C0355FC0] [C03568E4] start_kernel+0x220/0x29c
-> Jan  1 03:43:23 ecam kernel: [C0355FF0] [C0000388] skpinv+0x2b8/0x2f4
-> Jan  1 03:43:23 ecam kernel: ------------[ cut here ]------------
-> Jan  1 03:43:23 ecam kernel: Badness at c003d3d8 [verbose debug info unavailable]
-> Jan  1 03:43:23 ecam kernel: Call Trace:
-> Jan  1 03:43:23 ecam kernel: [C0355C70] [C0008FE0] show_stack+0x3c/0x194 (unreliable)
-> [...repeating forever...]
-> ----- 8< ----- cut here
+The core itself for 405 will not have DCR: Device control registers - becau=
+se
+no device control bus. Have to look at board spec for whether there is a
+replacement and what that is. Based on other comments you are on uncertain
+ground, likely defining a few things yourself. Interesting that the base
+header has a dep for DCRN based on that config.  I assume you have UG011 do=
+c
+from the Xilinx website.=20
 
-This is because gfar_timeout() calls stop_gfar() that calls
-phy_write() that must not be called from interrupt context. See
-comments to this function.
+Joachim F=C3=B6rster wrote:
+>=20
+> Hi all,
+>=20
+> PS: I tried to compile a kernel image with CONFIG_PPC4xx_DMA enabled,
+> but gcc complains about missing definitions in ppc4xx_dma.c ... e.g.
+> DCRN_DMASR (defined in ibm405.h). Well I guess I have to have
+> DCRN_MASR_BASE defined in xparameters_ml403.h .... but defined to what?
+>=20
+>=20
+> _______________________________________________
+> Linuxppc-embedded mailing list
+> Linuxppc-embedded@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+>=20
+>=20
 
-Best regards,
-Matvejchikov Ilya.
+--=20
+View this message in context: http://www.nabble.com/ML403-and-PPC4xx_DMA---=
+tf3652591.html#a10207511
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
