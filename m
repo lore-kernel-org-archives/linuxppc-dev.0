@@ -1,14 +1,20 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Thu, 26 Apr 2007 10:08:52 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Dave Jiang <djiang@mvista.com>
-Subject: Re: [PATCH] powerpc: Add EDAC platform devices for 85xx
-Message-ID: <20070426000852.GA2193@localhost.localdomain>
-References: <20070425213700.GA8814@blade.az.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 58C31DDF44
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:16:23 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 7/13] powerpc: Add arch/powerpc mv64x60 MPSC platform data
+	setup
+Date: Thu, 26 Apr 2007 02:14:07 +0200
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<20070425235939.GI4046@mag.az.mvista.com>
+In-Reply-To: <20070425235939.GI4046@mag.az.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070425213700.GA8814@blade.az.mvista.com>
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704260214.08329.arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,41 +24,39 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, Apr 25, 2007 at 02:37:00PM -0700, Dave Jiang wrote:
-> Add memory controller and l2-cache controller entries in the dts files for 85xx
-> platforms. Also adding code to create the platform devices used by EDAC drivers
-> to claim the resources in order to access the error registers and interrupts. 
-> 
-> Signed-off-by: Dave Jiang <djiang@mvista.com>
-> 
-> ---
-> 
->  arch/powerpc/boot/dts/mpc8540ads.dts |   21 ++++++
->  arch/powerpc/boot/dts/mpc8548cds.dts |   21 ++++++
->  arch/powerpc/boot/dts/mpc8560ads.dts |   23 +++++++-
->  arch/powerpc/sysdev/fsl_soc.c        |  115 ++++++++++++++++++++++++++++++++++
->  4 files changed, 179 insertions(+), 1 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
-> index f261d64..8bb7593 100644
-> --- a/arch/powerpc/boot/dts/mpc8540ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc8540ads.dts
-> @@ -48,6 +48,27 @@
->  		reg = <e0000000 00100000>;	// CCSRBAR 1M
->  		bus-frequency = <0>;
->  
-> +		mem-ctrl@2000 {
-> +			device_type = "mem-ctrl";
-> +			compatible = "85xx";
-> +			reg = <2000 1000>;
-> +			linux,phandle = <2000>;
-> +			interrupt-parent = <40000>;
+On Thursday 26 April 2007, Mark A. Greer wrote:
+> +static int __init mv64x60_mpsc_platform_device_init(void)
+> +{
+> +=A0=A0=A0=A0=A0=A0=A0struct device_node *np =3D NULL;
+> +=A0=A0=A0=A0=A0=A0=A0unsigned int i;
+> +=A0=A0=A0=A0=A0=A0=A0struct platform_device *pdev;
+> +=A0=A0=A0=A0=A0=A0=A0int err;
+> +
+> +=A0=A0=A0=A0=A0=A0=A0for (i =3D 0; (np =3D of_find_compatible_node(np, "=
+serial", "mpsc")); i++) {
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0struct resource r[5];
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0struct mpsc_pdata pdata;
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0const unsigned int *prop;
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0const phandle *ph;
+> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0struct device_node *sdma, *=
+brg;
 
-Please don't use explicit phandles.  Use dtc's label feature where you
-need to put phandles into properties.
+This looks wrong to me. See drivers/serial/of_serial.c to find how we do it=
+ for
+8250 compatible serial ports. You should probably just add your serial port
+stuff in there as well, instead of doing your own scanning of the device tr=
+ee.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> +               pdev =3D platform_device_register_simple(MPSC_CTLR_NAME, =
+i, r, 5);
+> +               if (IS_ERR(pdev)) {
+> +                       err =3D PTR_ERR(pdev);
+> +                       goto ret_node_put;
+> +               }
+
+Now this really needs some explanation.
+
+Why the heck do you have a platform device that gets its resources from
+nonstandard properties of a serial port?
+
+	Arnd <><
