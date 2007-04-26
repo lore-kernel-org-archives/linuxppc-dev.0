@@ -1,24 +1,19 @@
-Return-Path: <hsr_jsl@mail.tele.dk>
-Received: from pqueueb.post.tele.dk (pqueueb.post.tele.dk [193.162.153.10])
-	by ozlabs.org (Postfix) with ESMTP id 7AF28DDF5D
+Return-Path: <wd@denx.de>
+Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
+	by ozlabs.org (Postfix) with ESMTP id 42D7ADDF4F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Apr 2007 05:39:37 +1000 (EST)
-Received: from pfepa.post.tele.dk (pfepa.post.tele.dk [195.41.46.235])
-	by pqueueb.post.tele.dk (Postfix) with ESMTP id 64AF299C4
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Apr 2007 21:15:52 +0200 (CEST)
-Received: from KontorPC (0x5731f716.abnxx12.adsl-dhcp.tele.dk [87.49.247.22])
-	by pfepa.post.tele.dk (Postfix) with SMTP id 0059CFAC006
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 25 Apr 2007 21:15:47 +0200 (CEST)
-Message-ID: <00bc01c7876e$57a60980$6501a8c0@KontorPC>
-From: "JSL" <hsr_jsl@mail.tele.dk>
-To: <linuxppc-embedded@ozlabs.org>
-Subject: Serial console via SCC2 on Mpc8xx
-Date: Wed, 25 Apr 2007 21:17:18 +0200
-MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_NextPart_000_00B9_01C7877F.1B1229C0"
+	Thu, 26 Apr 2007 10:14:03 +1000 (EST)
+To: "JSL" <hsr_jsl@mail.tele.dk>
+From: Wolfgang Denk <wd@denx.de>
+Subject: Re: Serial console via SCC2 on Mpc8xx 
+Mime-version: 1.0
+Content-type: text/plain; charset=ISO-8859-1
+In-reply-to: Your message of "Wed, 25 Apr 2007 21:17:18 +0200."
+	<00bc01c7876e$57a60980$6501a8c0@KontorPC>
+Date: Thu, 26 Apr 2007 02:14:03 +0200
+Sender: wd@denx.de
+Message-Id: <20070426001403.82124352676@atlas.denx.de>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -29,37 +24,25 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-This is a multi-part message in MIME format.
+In message <00bc01c7876e$57a60980$6501a8c0@KontorPC> you wrote:
+> 
+> Has anyone had success with SCC2 as serial console instead of SMC1/2
 
-------=_NextPart_000_00B9_01C7877F.1B1229C0
-Content-Type: text/plain;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Yes.
 
-Has anyone had success with SCC2 as serial console instead of SMC1/2 =
-uart. Has not yet found any Linux that have support for that when =
-lokking at Linux 2.6 or 2.4 for MPC860P
+> uart. Has not yet found any Linux that have support for that when
+> lokking at Linux 2.6 or 2.4 for MPC860P
 
-Jorgen
-------=_NextPart_000_00B9_01C7877F.1B1229C0
-Content-Type: text/html;
-	charset="iso-8859-1"
-Content-Transfer-Encoding: quoted-printable
+Our 2.4.25 kernel tree supports serial console on any of the SMC1...2
+and SCC1...4 ports (at least on the boards that support that).
 
-<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<HTML><HEAD>
-<META http-equiv=3DContent-Type content=3D"text/html; =
-charset=3Diso-8859-1">
-<META content=3D"MSHTML 6.00.2900.3059" name=3DGENERATOR>
-<STYLE></STYLE>
-</HEAD>
-<BODY bgColor=3D#ffffff>
-<DIV><FONT face=3DArial size=3D2>Has anyone had success with SCC2 as =
-serial console=20
-instead of&nbsp;SMC1/2 uart. Has not yet found any Linux that have =
-support for=20
-that when lokking at Linux 2.6 or 2.4 for MPC860P</FONT></DIV>
-<DIV><FONT face=3DArial size=3D2></FONT>&nbsp;</DIV>
-<DIV><FONT face=3DArial size=3D2>Jorgen</FONT></DIV></BODY></HTML>
+Best regards,
 
-------=_NextPart_000_00B9_01C7877F.1B1229C0--
+Wolfgang Denk
+
+-- 
+DENX Software Engineering GmbH, HRB 165235 Munich, CEO: Wolfgang Denk
+Office:  Kirchenstr. 5,       D-82194 Groebenzell,            Germany
+Phone: (+49)-8142-66989-10 Fax: (+49)-8142-66989-80 Email: wd@denx.de
+Accident: A condition in which presence of mind is good, but  absence
+of body is better.
