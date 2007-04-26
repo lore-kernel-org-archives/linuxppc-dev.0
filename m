@@ -1,16 +1,21 @@
-Return-Path: <cthomas@Soneticom.com>
-Received: from Soneticom.com (soneticom.com [209.114.210.150])
-	by ozlabs.org (Postfix) with ESMTP id 033FCDDFC5
+Return-Path: <akonovalov@ru.mvista.com>
+Received: from localhost.localdomain (89-178-69-49.broadband.corbina.ru
+	[89.178.69.49])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 23DABDDFBE
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Apr 2007 07:52:35 +1000 (EST)
+	Fri, 27 Apr 2007 08:10:06 +1000 (EST)
+Message-ID: <46311FC8.9020906@ru.mvista.com>
+Date: Fri, 27 Apr 2007 01:55:20 +0400
+From: Andrei Konovalov <akonovalov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-	charset="us-ascii"
-Subject: PHY link up/down looping
-Date: Thu, 26 Apr 2007 17:53:18 -0400
-Message-ID: <3C02138692C13C4BB675FE7EA2409529328A9D@bluefin.Soneticom.local>
-From: "Clint Thomas" <cthomas@Soneticom.com>
-To: <linuxppc-embedded@ozlabs.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] Xilinx framebuffer device driver - 2nd version
+References: <4630F018.3010200@ru.mvista.com> <200704262235.22048.arnd@arndb.de>
+In-Reply-To: <200704262235.22048.arnd@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-15; format=flowed
+Cc: rick.moleres@xilinx.com, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,12 +26,34 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hello,
+Arnd Bergmann wrote:
+>>@@ -118,6 +118,12 @@ struct xilinxfb_drvdata {
+>>  #define to_xilinxfb_drvdata(_info) \
+>>  	container_of(_info, struct xilinxfb_drvdata, info)
+>>
+>>+#define xilinx_fb_out_be32(driverdata, offset, val) \
+>>+	if (driverdata->use_dcr) \
+>>+		mtdcr(driverdata->regs_phys + offset, val); \
+>>+	else \
+>>+		out_be32(driverdata->regs + offset, val)
+>>+
+>>  static int
+>>  xilinx_fb_setcolreg(unsigned regno, unsigned red, unsigned green, unsigned blue,
+>>  	unsigned transp, struct fb_info *fbi)
+> 
+> 
+> This should probably be an inline function, or use do { ... } while (0) 
+> instead, to make it less error-prone, see
+> http://kernelnewbies.org/FAQ/DoWhile0 for an explanation.
+> 
+> 	Arnd <><
 
-Has anybody here had the problem where upon the linux 2.6 kernel
-booting, the PHY link seems to be in some kind of auto-negotiating loop
-of going up and down? This has been hapenning in my 2.6.19 kernel with a
-Marvell PHY (88E1011S). The board i'm working with is similar to the
-MPC8555CDS, so i'm using that kernel config for this environment.
-=20
-Clinton Thomas
+xilinx_fb_out_be32 macro doesn't declare local variables, and is a single "line of code"
+in terms of the web page you've referenced. IOW I can't get an example where this macro
+would do wrong off the top of my head. Anyway, the do { ... } while (0) is safe and
+common, so I'll regenerate the patch to use it.
+
+Thanks a lot for reviewing that stuff!
+
+Best regards,
+Andrei
