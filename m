@@ -1,22 +1,18 @@
-Return-Path: <wg@grandegger.com>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 84A40DDF2F
+Return-Path: <a.llano@usyscom.com>
+Received: from correo.ziv.es (eu31-237.clientes.euskaltel.es [212.55.31.237])
+	by ozlabs.org (Postfix) with ESMTP id E3863DDF2F
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Apr 2007 22:56:29 +1000 (EST)
-Message-ID: <4630A243.8020404@grandegger.com>
-Date: Thu, 26 Apr 2007 14:59:47 +0200
-From: Wolfgang Grandegger <wg@grandegger.com>
+	Fri, 27 Apr 2007 00:01:06 +1000 (EST)
+Subject: mpc5200 and spi bus
+From: "Asier Llano Palacios" <a.llano@usyscom.com>
+To: <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Thu, 26 Apr 2007 15:50:21 +0200
+Message-ID: <1177595421.9950.4.camel@a.llano.llano>
 MIME-Version: 1.0
-To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
-Subject: Re: Flat device tree definitions for FLASH and MTD partitioning
-References: <4618D400.8050003@grandegger.com> <4618DBEF.30307@ru.mvista.com>
-	<4618DE4A.4020404@ru.mvista.com> <462F4FD1.6080900@grandegger.com>
-	<462F592F.7000409@ru.mvista.com> <462F5F86.3060309@grandegger.com>
-	<462F6707.80502@ru.mvista.com> <4630611C.4060902@grandegger.com>
-	<46309CD9.1050403@ru.mvista.com>
-In-Reply-To: <46309CD9.1050403@ru.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-embedded@ozlabs.org
+Cc: tlopez@aotek.es, Sylvain Munaut <tnt@246tNt.com>,
+	Aitor Arzuaga <a.arzuaga@usyscom.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,63 +23,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Sergei Shtylyov wrote:
-> Hello.
-> 
-> Wolfgang Grandegger wrote:
-> 
->>>>>>>>> are there already some thought or even example code on how to 
->>>>>>>>> define Flash memory and MTD partitions in the DTS. This would 
->>>>>>>>> avoid the ackward MTD partitioning via static structure or boot 
->>>>>>>>> line argument and could be done in a generic way.
-> 
->>>>>>>>     See Documentation/powerpc/booting-without-of.txt and 
->>>>>>>> drivers/mtd/physmap_of.c for what's been already done.
-> 
->>>>>>>    I meant drivers/mtd/maps/physmap_of.c
-> 
->>>>>> I had a closer look to this driver. Unfortunately, it can not 
->>>>>> handle yet  multiple FLASH banks. This could be achieved with an 
->>>>>> additional property "bank_count". What do you think?
-> 
->>>   Please use hyphen, not underscore in property names ("device_type" 
->>> seems an only exception from this rule).
-> 
->> Yes, I know and I also wondered why an "_" is used for the device type.
-> 
->   Ask the OF spec. developers. :-)
-> 
->>>>>  I'm not sure what banks you're talking about -- note that this 
->>>>> driver is equivalen in functionality to the plain 'physmap' driver 
->>>>> and there's inherited "bank-width" property that handles flash 
->>>>> banking.
-> 
->>>> Yes, I know. Nevertheless the driver cannot handle flash regions 
->>>> composed of more than on FLASH bank because we need to probe every 
->>>> bank. Search for "BANK" in drivers/mtd/maps" to understand what I mean.
-> 
->>>   Hm, from what I could see, those banks are separate maps registered 
->>> to MTD subsys separately.
->>> What's the point of adding a count property when we simply can define 
->>> multiple "rom" devices?
-> 
->> To complete this thread, physmap_of can map _one_ FLASH region 
->> composed of one or more FLASH banks. But it currently cannot map more 
->> than _one_ FLASH region.
-> 
->   I wodner why?! :-O
+I've seen some comments about drivers for SPI of the MPC5200. I'm not
+sure about it, but is there anything functional about it?. I want to
+know if there is anything already done, in order to use it or improve
+it. I need a driver of the SPI bus, so if it is not implemented at all
+we should contribute it.
 
-I know as well ;-).
-
->> It would be nice to extend it for multiple FLASH definitions (could 
->> code it when time permits).
-> 
->   I'm seeing nothing that prevents it from working now -- it should 
-> register as much "rom" devices as you supply via the device tree.
-
-OK, I see, for each registered direct-mapped flash resource, 
-of_physmap_probe() will be called.
-
-Thanks.
-
-Wolfgang.
+Thank you,
+Asier Llano=20
+=20
+----------------------------------------- PLEASE NOTE =
+-------------------------------------------
+This message, along with any attachments, may be confidential or legally =
+privileged.=20
+It is intended only for the named person(s), who is/are the only =
+authorized recipients.
+If this message has reached you in error, kindly destroy it without =
+review and notify the sender immediately.
+Thank you for your help.
+=B5SysCom uses virus scanning software but excludes any liability for =
+viruses contained in any attachment.
+=20
+------------------------------------ ROGAMOS LEA ESTE TEXTO =
+-------------------------------
+Este mensaje y sus anexos pueden contener informaci=F3n confidencial y/o =
+con derecho legal.=20
+Est=E1 dirigido =FAnicamente a la/s persona/s o entidad/es rese=F1adas =
+como =FAnico destinatario autorizado.
+Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
+revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
+Gracias por su colaboraci=F3n. =20
+=B5SysCom utiliza software antivirus, pero no se hace responsable de los =
+virus contenidos en los ficheros anexos.
