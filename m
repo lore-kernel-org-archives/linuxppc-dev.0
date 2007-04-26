@@ -1,18 +1,14 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 9767CDDF2E
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:09:45 +1000 (EST)
-Date: Wed, 25 Apr 2007 19:09:56 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH] [2.6.22] pasemi: hardware rng driver
-Message-ID: <20070426000956.GB20905@lixom.net>
-References: <20070425204512.GB19781@lixom.net>
-	<200704260138.32220.arnd@arndb.de>
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 26 Apr 2007 10:08:52 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Dave Jiang <djiang@mvista.com>
+Subject: Re: [PATCH] powerpc: Add EDAC platform devices for 85xx
+Message-ID: <20070426000852.GA2193@localhost.localdomain>
+References: <20070425213700.GA8814@blade.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200704260138.32220.arnd@arndb.de>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, mb@bu3sch.de
+In-Reply-To: <20070425213700.GA8814@blade.az.mvista.com>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,62 +18,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 26, 2007 at 01:38:31AM +0200, Arnd Bergmann wrote:
-> On Wednesday 25 April 2007, Olof Johansson wrote:
+On Wed, Apr 25, 2007 at 02:37:00PM -0700, Dave Jiang wrote:
+> Add memory controller and l2-cache controller entries in the dts files for 85xx
+> platforms. Also adding code to create the platform devices used by EDAC drivers
+> to claim the resources in order to access the error registers and interrupts. 
 > 
-> > +static void __iomem *rng_regs;
-> > +
-> > +static int pasemi_rng_data_present(struct hwrng *rng)
-> > +{
-> > +	return (in_le32(rng_regs + SDCRNG_CTL_REG)
-> > +		& SDCRNG_CTL_FVLD_M) ? 1 : 0;
-> > +}
+> Signed-off-by: Dave Jiang <djiang@mvista.com>
 > 
-> It would be nicer to get rid of the global rng_regs variable by sticking
-> it into rng->priv.
-
-Good point.
-
-> > +static int __devinit rng_probe(struct of_device *ofdev,
-> > +				     const struct of_device_id *match)
-> > +{
-> > +	struct device_node *rng_np;
-> > +	struct resource res;
-> > +	int err = 0;
-> > +
-> > +	rng_np = of_find_compatible_node(NULL, "rng", "1682m-rng");
-> > +	if (!rng_np)
-> > +		return -ENODEV;
+> ---
 > 
-> I would guess that the call to of_find_compatible_node is entirely bogus
-> here, because the device is already passed in as ofdev in to the probe
-> function.
-
-Yup. Leftover from pre-of_platform
-
-> > +int rng_init(void)
-> > +{
-> > +       return of_register_platform_driver(&rng_driver);
-> > +}
-> > +
-> > +void rng_exit(void)
-> > +{
-> > +       of_unregister_platform_driver(&rng_driver);
-> > +}
-> > +
-> > +device_initcall(rng_init);
+>  arch/powerpc/boot/dts/mpc8540ads.dts |   21 ++++++
+>  arch/powerpc/boot/dts/mpc8548cds.dts |   21 ++++++
+>  arch/powerpc/boot/dts/mpc8560ads.dts |   23 +++++++-
+>  arch/powerpc/sysdev/fsl_soc.c        |  115 ++++++++++++++++++++++++++++++++++
+>  4 files changed, 179 insertions(+), 1 deletions(-)
 > 
-> rng_init and rng_exit should be static
-> rng_init should be __init
-> rng_exit should be __exit
-> Since the driver is tristate in Kconfig, it would be more conventional to
-> use module_init() instead of device_initcall().
-> rng_exit needs to be marked as module_exit() to allow unloading the driver.
+> diff --git a/arch/powerpc/boot/dts/mpc8540ads.dts b/arch/powerpc/boot/dts/mpc8540ads.dts
+> index f261d64..8bb7593 100644
+> --- a/arch/powerpc/boot/dts/mpc8540ads.dts
+> +++ b/arch/powerpc/boot/dts/mpc8540ads.dts
+> @@ -48,6 +48,27 @@
+>  		reg = <e0000000 00100000>;	// CCSRBAR 1M
+>  		bus-frequency = <0>;
+>  
+> +		mem-ctrl@2000 {
+> +			device_type = "mem-ctrl";
+> +			compatible = "85xx";
+> +			reg = <2000 1000>;
+> +			linux,phandle = <2000>;
+> +			interrupt-parent = <40000>;
 
-Yup, will fix.
+Please don't use explicit phandles.  Use dtc's label feature where you
+need to put phandles into properties.
 
-
-Thanks.
-
-
--Olof
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
