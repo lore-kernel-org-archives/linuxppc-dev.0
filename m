@@ -1,19 +1,19 @@
 Return-Path: <arnd@arndb.de>
 Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 58C31DDF44
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:16:23 +1000 (EST)
+	[212.227.126.183]) by ozlabs.org (Postfix) with ESMTP id CA6A4DDF6F
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:18:54 +1000 (EST)
 From: Arnd Bergmann <arnd@arndb.de>
 To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 7/13] powerpc: Add arch/powerpc mv64x60 MPSC platform data
+Subject: Re: [PATCH 8/13] powerpc: Add arch/powerpc mv64x60_eth platform data
 	setup
-Date: Thu, 26 Apr 2007 02:14:07 +0200
+Date: Thu, 26 Apr 2007 02:18:45 +0200
 References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070425235939.GI4046@mag.az.mvista.com>
-In-Reply-To: <20070425235939.GI4046@mag.az.mvista.com>
+	<20070426000009.GJ4046@mag.az.mvista.com>
+In-Reply-To: <20070426000009.GJ4046@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain;
   charset="iso-8859-1"
-Message-Id: <200704260214.08329.arnd@arndb.de>
+Message-Id: <200704260218.45503.arnd@arndb.de>
 Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -25,38 +25,29 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 On Thursday 26 April 2007, Mark A. Greer wrote:
-> +static int __init mv64x60_mpsc_platform_device_init(void)
-> +{
-> +=A0=A0=A0=A0=A0=A0=A0struct device_node *np =3D NULL;
-> +=A0=A0=A0=A0=A0=A0=A0unsigned int i;
-> +=A0=A0=A0=A0=A0=A0=A0struct platform_device *pdev;
-> +=A0=A0=A0=A0=A0=A0=A0int err;
+> Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
+> =3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
+=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
+> --- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/mv64x60.c
+> +++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
+> @@ -511,3 +511,138 @@ ret_node_put:
+> =A0}
+> =A0
+> =A0arch_initcall(mv64x60_mpsc_platform_device_init);
 > +
-> +=A0=A0=A0=A0=A0=A0=A0for (i =3D 0; (np =3D of_find_compatible_node(np, "=
-serial", "mpsc")); i++) {
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0struct resource r[5];
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0struct mpsc_pdata pdata;
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0const unsigned int *prop;
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0const phandle *ph;
-> +=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0=A0struct device_node *sdma, *=
-brg;
+> +/*
+> + * Create mv64x60_eth platform device
+> + */
+> +static int __init eth_register_shared_pdev(struct device_node *np)
+> +{
+> +=A0=A0=A0=A0=A0=A0=A0struct platform_device *pdev;
 
-This looks wrong to me. See drivers/serial/of_serial.c to find how we do it=
- for
-8250 compatible serial ports. You should probably just add your serial port
-stuff in there as well, instead of doing your own scanning of the device tr=
-ee.
+No need to put this into architecture specific code, just register
+the of_platform_driver from mv643xx_init_module and use the device
+you get passed in there.
 
-> +               pdev =3D platform_device_register_simple(MPSC_CTLR_NAME, =
-i, r, 5);
-> +               if (IS_ERR(pdev)) {
-> +                       err =3D PTR_ERR(pdev);
-> +                       goto ret_node_put;
-> +               }
-
-Now this really needs some explanation.
-
-Why the heck do you have a platform device that gets its resources from
-nonstandard properties of a serial port?
+Once arch/ppc is dead, you can remove the platform_driver from mv643xx
+entirely.
 
 	Arnd <><
