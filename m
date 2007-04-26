@@ -1,20 +1,20 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 70059DDFC3
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:41:29 +1000 (EST)
-Date: Wed, 25 Apr 2007 17:43:02 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 9/13] powerpc: Add arch/powerpc mv64x60 I2C platform data
-	setup
-Message-ID: <20070426004302.GP4046@mag.az.mvista.com>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 29F7EDDFC1
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:42:51 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [PATCH 6/13] powerpc: Add arch/powerpc support for
+	Marvell/mv64x60 hostbridge
+Date: Thu, 26 Apr 2007 02:42:39 +0200
 References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070426000043.GK4046@mag.az.mvista.com>
-	<200704260221.20150.arnd@arndb.de>
+	<20070425235858.GH4046@mag.az.mvista.com>
+In-Reply-To: <20070425235858.GH4046@mag.az.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-In-Reply-To: <200704260221.20150.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704260242.39993.arnd@arndb.de>
+Cc: Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +24,63 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, Apr 26, 2007 at 02:21:19AM +0200, Arnd Bergmann wrote:
-> On Thursday 26 April 2007, Mark A. Greer wrote:
-> > +static int __init mv64x60_i2c_platform_device_init(void)
-> > +{
-> > +       struct device_node *np = NULL;
-> > +       int i;
-> > +       struct platform_device *pdev;
-> > +       int err;
-> > +
-> > +       for (i = 0;
-> > +            (np = of_find_compatible_node(np, "i2c", "mv64x60-i2c"));
-> 
-> Same comment as about the ethernet driver: You should register an
-> of_platform_driver from drivers/i2c/busses/i2c-mv64xxx.c.
-> 
-> Repeat after me: 
-> 
-> I will not call of_find_compatible_node() from device drivers.
-> I will not call of_find_compatible_node() from device drivers.
-> I will not call of_find_compatible_node() from device drivers.
+> Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
+> ===================================================================
+> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> +++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c	2007-04-17 12:48:22.000000000 -0700
+> @@ -0,0 +1,343 @@
+> +/*
+> + * Common routines for the Marvell mv64360/mv64460 host bridges (Discovery)
+> + *
+> +/* Interrupt Controller Interface Registers */
 
-Well, your comments are for Dale's patches so I'll leave it to him to
-answer your questions in detail but...
+I'd make this a file that _only_ deals with the interrupt controller
+code, and has a respective name, e.g. mv64x60_irq.c
 
-of_find_compatible_node() is not being called from a driver, its being
-called from platform code.  Its extracting info from the device tree and
-setting up the platform_data required by the driver.
+> +/*
+> + * The bootwrapper sets the coherency of the DMA windows according to
+> + * the setting in the device tree.  For the kernel, coherency is a
+> + * compile-time configuration option.  Fail if there is a mismatch.
+> + */
+> +
+> +#ifdef CONFIG_NOT_COHERENT_CACHE
+> +#define KERNEL_COHERENCY	0
+> +#else
+> +#define KERNEL_COHERENCY	1
+> +#endif
+> +
+> +int __init mv64x60_verify_cache_coherency(void)
+> +{
+> +	struct device_node *np;
+> +	const void *prop;
+> +	int devtree_coherency;
+> +
+> +	np = of_find_node_by_path("/");
+> +	prop = of_get_property(np, "coherency-off", NULL);
+> +	of_node_put(np);
+> +
+> +	devtree_coherency = prop ? 0 : 1;
+> +
+> +	if (devtree_coherency != KERNEL_COHERENCY) {
+> +		printk(KERN_ERR
+> +			"kernel coherency:%s != device tree_coherency:%s\n",
+> +			KERNEL_COHERENCY ? "on" : "off",
+> +			devtree_coherency ? "on" : "off");
+> +		BUG();
+> +	}
+> +
+> +	return 0;
+> +
+> +late_initcall(mv64x60_verify_cache_coherency);
 
-Mark
+Not sure where to best put this function, but probably not in the same file as
+your interrupt handling code.
+
+Note that the way your function is written, there is nothing specific to
+mv64x60 in it, and it will actually get called on other machines when the
+file is built-in.
+
+Maybe just rename it to verify_cache_coherency() and put it into
+arch/powerpc/kernel/setup-common.c.
+
+	Arnd <><
