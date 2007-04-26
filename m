@@ -1,20 +1,15 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.179]) by ozlabs.org (Postfix) with ESMTP id 29F7EDDFC1
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:42:51 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH 6/13] powerpc: Add arch/powerpc support for
-	Marvell/mv64x60 hostbridge
-Date: Thu, 26 Apr 2007 02:42:39 +0200
+Return-Path: <dgibson@ozlabs.org>
+Date: Thu, 26 Apr 2007 10:45:14 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 0/13] powerpc: Add support for Marvell/mv64x60 and
+	prpmc2800
+Message-ID: <20070426004514.GC2193@localhost.localdomain>
 References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070425235858.GH4046@mag.az.mvista.com>
-In-Reply-To: <20070425235858.GH4046@mag.az.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200704260242.39993.arnd@arndb.de>
-Cc: Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070425234630.GA4046@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,63 +19,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-> Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c
-> ===================================================================
-> --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> +++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.c	2007-04-17 12:48:22.000000000 -0700
-> @@ -0,0 +1,343 @@
-> +/*
-> + * Common routines for the Marvell mv64360/mv64460 host bridges (Discovery)
-> + *
-> +/* Interrupt Controller Interface Registers */
+On Wed, Apr 25, 2007 at 04:46:30PM -0700, Mark A. Greer wrote:
+> The following set of patches add support for the Motorola prpmc2800/f101e platform.
+> To support that platform, several other patches are required that can be grouped as
+> follows:
+> 
+> 	- 1 patch to add Makefile rules that automatically compile & wrap a dts into
+> 	  a zImage
+> 	- 1 patch to add a new interface to the dt_xlate code.
+> 	- 3 mv64x60 bootwrapper patches
+> 	- 5 mv64x60 kernel patches
+> 	- 3 prpmc2800 patches
 
-I'd make this a file that _only_ deals with the interrupt controller
-code, and has a respective name, e.g. mv64x60_irq.c
+Hrm.  This series adds an awful lot of code to the bootwrapper.  Is
+there really no reasonable way to trim it, perhaps moving some of the
+initialization to the kernel driver proper?  I can see that memory
+controller setup and serial might need to be in the wrapper, but PCI
+and I2C initialization?
 
-> +/*
-> + * The bootwrapper sets the coherency of the DMA windows according to
-> + * the setting in the device tree.  For the kernel, coherency is a
-> + * compile-time configuration option.  Fail if there is a mismatch.
-> + */
-> +
-> +#ifdef CONFIG_NOT_COHERENT_CACHE
-> +#define KERNEL_COHERENCY	0
-> +#else
-> +#define KERNEL_COHERENCY	1
-> +#endif
-> +
-> +int __init mv64x60_verify_cache_coherency(void)
-> +{
-> +	struct device_node *np;
-> +	const void *prop;
-> +	int devtree_coherency;
-> +
-> +	np = of_find_node_by_path("/");
-> +	prop = of_get_property(np, "coherency-off", NULL);
-> +	of_node_put(np);
-> +
-> +	devtree_coherency = prop ? 0 : 1;
-> +
-> +	if (devtree_coherency != KERNEL_COHERENCY) {
-> +		printk(KERN_ERR
-> +			"kernel coherency:%s != device tree_coherency:%s\n",
-> +			KERNEL_COHERENCY ? "on" : "off",
-> +			devtree_coherency ? "on" : "off");
-> +		BUG();
-> +	}
-> +
-> +	return 0;
-> +
-> +late_initcall(mv64x60_verify_cache_coherency);
-
-Not sure where to best put this function, but probably not in the same file as
-your interrupt handling code.
-
-Note that the way your function is written, there is nothing specific to
-mv64x60 in it, and it will actually get called on other machines when the
-file is built-in.
-
-Maybe just rename it to verify_cache_coherency() and put it into
-arch/powerpc/kernel/setup-common.c.
-
-	Arnd <><
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
