@@ -1,10 +1,10 @@
-Return-Path: <mgreer@mvista.com>
-Date: Thu, 26 Apr 2007 16:34:51 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Return-Path: <dgibson@ozlabs.org>
+Date: Fri, 27 Apr 2007 09:37:51 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
 To: Scott Wood <scottwood@freescale.com>
 Subject: Re: [PATCH 11/13] powerpc: Add DTS file for the Motorola PrPMC2800
 	platform
-Message-ID: <20070426233451.GC20072@mag.az.mvista.com>
+Message-ID: <20070426233751.GA19824@localhost.localdomain>
 References: <20070425234630.GA4046@mag.az.mvista.com>
 	<20070426000151.GM4046@mag.az.mvista.com>
 	<20070426164226.GA13018@ld0162-tx32.am.freescale.net>
@@ -31,6 +31,10 @@ On Thu, Apr 26, 2007 at 11:42:26AM -0500, Scott Wood wrote:
 > 
 > Isn't linux,platform obsolete?
 
-Hmm, yeah, think so.  Good catch.  Will remove.
+Well and truly.  Please get rid of it.
 
-Mark
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
