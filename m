@@ -1,31 +1,18 @@
-Return-Path: <dwg@au1.ibm.com>
-Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F1B9CDE029
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:03:01 +1000 (EST)
-Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
-	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l3Q0M2lQ298738
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:22:02 +1000
-Received: from d23av01.au.ibm.com (d23av01.au.ibm.com [9.190.250.242])
-	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l3Q06VLO105950
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:06:31 +1000
-Received: from d23av01.au.ibm.com (loopback [127.0.0.1])
-	by d23av01.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l3Q02xwv007524
-	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:02:59 +1000
-Date: Wed, 25 Apr 2007 10:51:36 +1000
-From: David Gibson <dwg@au1.ibm.com>
-To: Linas Vepstas <linas@austin.ibm.com>
-Subject: Re: powerpc: Abolish PHYS_FMT macro from arch/powerpc
-Message-ID: <20070425005136.GA12893@localhost.localdomain>
-References: <20070424050518.GC30007@localhost.localdomain>
-	<20070424170052.GW31947@austin.ibm.com>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 9767CDDF2E
+	for <linuxppc-dev@ozlabs.org>; Thu, 26 Apr 2007 10:09:45 +1000 (EST)
+Date: Wed, 25 Apr 2007 19:09:56 -0500
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH] [2.6.22] pasemi: hardware rng driver
+Message-ID: <20070426000956.GB20905@lixom.net>
+References: <20070425204512.GB19781@lixom.net>
+	<200704260138.32220.arnd@arndb.de>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070424170052.GW31947@austin.ibm.com>
-Cc: Paul Mackerras <paulus@samba.org>, linuxppc-dev@ozlabs.org
+In-Reply-To: <200704260138.32220.arnd@arndb.de>
+From: olof@lixom.net (Olof Johansson)
+Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, mb@bu3sch.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -35,19 +22,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, Apr 24, 2007 at 12:00:52PM -0500, Linas Vepstas wrote:
-> On Tue, Apr 24, 2007 at 03:05:18PM +1000, David Gibson wrote:
-> > 32-bit powerpc systems define a macro, PHYS_FMT, giving a printf
+On Thu, Apr 26, 2007 at 01:38:31AM +0200, Arnd Bergmann wrote:
+> On Wednesday 25 April 2007, Olof Johansson wrote:
 > 
-> Your patch removed the use of the macro, but does not remove the definition
-> of the macro.
+> > +static void __iomem *rng_regs;
+> > +
+> > +static int pasemi_rng_data_present(struct hwrng *rng)
+> > +{
+> > +	return (in_le32(rng_regs + SDCRNG_CTL_REG)
+> > +		& SDCRNG_CTL_FVLD_M) ? 1 : 0;
+> > +}
+> 
+> It would be nicer to get rid of the global rng_regs variable by sticking
+> it into rng->priv.
 
-Yes, that's because the definition is in asm-ppc, and it's still used
-in asm-ppc.  My upcoming patches which start to remove arch/powerpc's
-final dependencies on asm-ppc won't be moving PHYS_FMT across.
+Good point.
 
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+> > +static int __devinit rng_probe(struct of_device *ofdev,
+> > +				     const struct of_device_id *match)
+> > +{
+> > +	struct device_node *rng_np;
+> > +	struct resource res;
+> > +	int err = 0;
+> > +
+> > +	rng_np = of_find_compatible_node(NULL, "rng", "1682m-rng");
+> > +	if (!rng_np)
+> > +		return -ENODEV;
+> 
+> I would guess that the call to of_find_compatible_node is entirely bogus
+> here, because the device is already passed in as ofdev in to the probe
+> function.
+
+Yup. Leftover from pre-of_platform
+
+> > +int rng_init(void)
+> > +{
+> > +       return of_register_platform_driver(&rng_driver);
+> > +}
+> > +
+> > +void rng_exit(void)
+> > +{
+> > +       of_unregister_platform_driver(&rng_driver);
+> > +}
+> > +
+> > +device_initcall(rng_init);
+> 
+> rng_init and rng_exit should be static
+> rng_init should be __init
+> rng_exit should be __exit
+> Since the driver is tristate in Kconfig, it would be more conventional to
+> use module_init() instead of device_initcall().
+> rng_exit needs to be marked as module_exit() to allow unloading the driver.
+
+Yup, will fix.
+
+
+Thanks.
+
+
+-Olof
