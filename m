@@ -1,21 +1,19 @@
-Return-Path: <haren@linux.vnet.ibm.com>
-Message-ID: <46323F9F.2050205@linux.vnet.ibm.com>
-Date: Fri, 27 Apr 2007 11:23:27 -0700
-From: Haren Myneni <haren@linux.vnet.ibm.com>
-MIME-Version: 1.0
-To: Luke Browning <lukebr@linux.vnet.ibm.com>
-Subject: Re: [PATCH v4] powerpc: 64K page support for kexec
-References: <1177626236.24866.99.camel@luke-laptop> ,
-	<1177601310.24866.94.camel@luke-laptop>
-	<772e4d4c76807769449cf1bf874d2ce1@bga.com>
-	<1177690940.24866.124.camel@luke-laptop>
-	<c21def285f4ad2e13914af73f7610c0b@bga.com>
-	<1177695045.24866.135.camel@luke-laptop>
-In-Reply-To: <1177695045.24866.135.camel@luke-laptop>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: Arnd Bergmann <arnd@arndb.de>, Milton Miller <miltonm@bga.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Olof Johansson <olof@lixom.net>, cbe-oss-dev@ozlabs.org
+Return-Path: <b07421@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 15340DE084
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 06:32:24 +1000 (EST)
+Date: Fri, 27 Apr 2007 15:32:15 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH] bootwrapper: CONFIG_ -> CONFIG_DEVICE_TREE
+Message-ID: <20070427203215.GA12814@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,41 +23,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Luke Browning wrote:
-> On Fri, 2007-04-27 at 11:59 -0500, Milton Miller wrote:
->
->   
->> I see I've achived my nefarious goal of making these bugs never happen.
->>
->> (panic is a function, so you are checking that the staticly linked
->> non-weak function is available.   If you want to check on when
->> if its a panic kdump or not, you need to decode the flag and pass
->> it to kexec_sequence, pass it back here, and update all platforms
->> for the new parameter).
->>
->> But I still say the check while clearing the table is too late,
->> it should be a debug scan before clearing any mappings.
->>     
->
-> How about the following as an alternative. 
->
->   BUG_ON((hpte_v & 0x4000000000000000UL) && (crashing_cpus == -1));
->   BUG_ON((size == MMU_PAGE_16G) && (crashing_cpus == -1));
->   BUG_ON((size == MMU_PAGE_64K_AP) && (crashing_cpus == -1));
->   
-should be crashing_cpu -  contains the panic cpu ID
+A usage of CONFIG_DEVICE_TREE got accidentally truncated; this
+fix allows out-of-tree dts files to work.
 
-> I don't have time to work on a multi-platform solution.
->
-> Regards,
-> Luke
->
->
->
->
->
-> _______________________________________________
-> Linuxppc-dev mailing list
-> Linuxppc-dev@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-dev
->   
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/Makefile |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 9d7b877..3716594 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -166,7 +166,7 @@ cuboot-plat-$(CONFIG_83xx) += 83xx
+ cuboot-plat-$(CONFIG_85xx) += 85xx
+ cuboot-plat-y += unknown-platform
+ 
+-dts = $(if $(shell echo $(CONFIG_) | grep '^/'),\
++dts = $(if $(shell echo $(CONFIG_DEVICE_TREE) | grep '^/'),\
+        ,$(srctree)/$(src)/dts/)$(CONFIG_DEVICE_TREE)
+ 
+ $(obj)/cuImage: vmlinux $(wrapperbits)
+-- 
+1.5.0.3
