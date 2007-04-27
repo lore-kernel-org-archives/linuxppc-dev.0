@@ -1,19 +1,19 @@
-Return-Path: <jcrigby@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
-	by ozlabs.org (Postfix) with ESMTP id 64124DDFA7
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 02:40:02 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id b21so813065ana
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Apr 2007 09:40:00 -0700 (PDT)
-Message-ID: <4b73d43f0704270939g53ecc41cw740163a2b937fe2f@mail.gmail.com>
-Date: Fri, 27 Apr 2007 10:39:57 -0600
-From: "John Rigby" <jcrigby@gmail.com>
-To: "Paul Mackerras" <paulus@samba.org>, linuxppc <linuxppc-dev@ozlabs.org>
-Subject: Fwd: [PATCH] Avoid putting cpu node twice
-In-Reply-To: <4617E176.6040607@246tNt.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <4b73d43f0704061557v2f38991ep54bc66706672075d@mail.gmail.com>
-	<4617E176.6040607@246tNt.com>
+Return-Path: <miltonm@bga.com>
+In-Reply-To: <1177684950.24866.121.camel@luke-laptop>
+References: <1177626236.24866.99.camel@luke-laptop> ,
+	<1177601310.24866.94.camel@luke-laptop>
+	<772e4d4c76807769449cf1bf874d2ce1@bga.com>
+	<1177684950.24866.121.camel@luke-laptop>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <cac5fb599f53a436995c6ca37b46605e@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH v3] powerpc: 64K page support for kexec
+Date: Fri, 27 Apr 2007 11:51:36 -0500
+To: Luke Browning <lukebr@linux.vnet.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Olof Johansson <olof@lixom.net>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,48 +23,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This was originally sent to linuxppc-embedded.
-
----------- Forwarded message ----------
-From: Sylvain Munaut <tnt@246tnt.com>
-Date: Apr 7, 2007 12:22 PM
-Subject: Re: [PATCH] Avoid putting cpu node twice
-To: John Rigby <jcrigby@gmail.com>
-Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>, Grant Likely
-<grant.likely@secretlab.ca>
-
-
-John Rigby wrote:
-> Call of_find_node_by_type with NULL instead of np
-> so the cpu node does not get put twice.
-> This was causing kref_put warnings.
+On Apr 27, 2007, at 9:42 AM, Luke Browning wrote:
+> On Thu, 2007-04-26 at 23:36 -0500, Milton Miller wrote:
+>> It appears the distros want to use a similar kernel for
+>> their dump kernel.  The would prefer it be the same binary;
+>> I'm trying to influence people that it is a softer requirement
+>> than not slowing down the primary kernel.
 >
-> Signed-off-by: John Rigby <jrigby@freescale.com>
-Acked-by: Sylvain Munaut <tnt@246tNt.com>
+> Here's anon-related question.  What is the pSeries strategy for
+> automating the capture of the dump image and rebooting to a usable
+> kernel.  Has anybody provided a customized initrd for this purpose that
+> ultimately reboots the system to the default kernel. Seems like that is
+> more important in terms of minimizing downtime than inlining a 
+> function.
 
-> ---
-> arch/powerpc/platforms/52xx/lite5200.c |    6 ++++--
-> 1 files changed, 4 insertions(+), 2 deletions(-)
+I'm not involved directly, but my understanding is the distros are
+planning to use kdump and makedumpfile or similar, save it to
+disk or network, then call the platform reboot (for pSeries, that
+would be RTAS).  The platform would then be responsible for all
+cleanup and reinitializing the new kernel.
+
+So the page-table clear is part of the path to capture the dump.
+
+>> I think a better way to debug this code is to call it from a
+>> debugfs hook or xmon dump command to scan the table and do
+>> the computation.  That code would have the full debugger to
+>> notice and print the assert.
 >
-> diff --git a/arch/powerpc/platforms/52xx/lite5200.c
-> b/arch/powerpc/platforms/52xx/lite5200.c
-> index cc3b40d..d2f90eb 100644
-> --- a/arch/powerpc/platforms/52xx/lite5200.c
-> +++ b/arch/powerpc/platforms/52xx/lite5200.c
-> @@ -108,9 +108,11 @@ static void __init lite5200_setup_arch(void)
->        lite5200_setup_cpu();   /* Platorm specific */
+> I am not familiar with debugfs but I suspect that wasn't an option,
+> because the system hung immediately.  xmon was not invoked either.
+
+Referring to when you put the trap after the table?   Yes I would
+expect it to hang, the 700 program check will bounce to 400,
+which will then bounce repeatedly against instruction miss.
+
+The point was to check if you could take down the table before
+actually taking it down.  xmon uses the kernel virtual mappings.
+
+>> Having a xmon function to dump the hash table or a slot
+>> might be useful for other purposes.
+>>
 >
-> #ifdef CONFIG_PCI
-> -       np = of_find_node_by_type(np, "pci");
-> -       if (np)
-> +       np = of_find_node_by_type(NULL, "pci");
-> +       if (np) {
->                mpc52xx_add_bridge(np);
-> +               of_node_put(np);
-> +       }
-> #endif
+> agreed.
 >
-> #ifdef CONFIG_BLK_DEV_INITRD
-> --
-> 1.5.0.6
+>> If you think you need the assert, then I ask it be put under
+>> an ifdef or it not be triggered when kexec is called with
+>> panic=1  (ie BUG_ON(x && !panic).  Alternatively you could
+>> run the table with dry-run sometime between cpu_down and the
+>> kernel copy.
+>
+> That is a good idea.  That way, people can use kexec -l to debug.
+>
+>>>> Appart from that,
+>>>>
+>>>> Acked-by: Benjamin Herrenschmidt <benh at kernel.crashing.org>
+>>>>
+>>
+>> milton
+>>
 >
