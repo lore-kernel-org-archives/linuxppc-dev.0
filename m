@@ -1,22 +1,19 @@
-Return-Path: <petermendham@computing.dundee.ac.uk>
-Received: from uncle.computing.dundee.ac.uk (unknown [134.36.36.11])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1F7FDDF05
+Return-Path: <a.llano@usyscom.com>
+Received: from correo.ziv.es (eu31-237.clientes.euskaltel.es [212.55.31.237])
+	by ozlabs.org (Postfix) with ESMTP id 73E77DDF05
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Apr 2007 18:48:59 +1000 (EST)
-Received: from mailex.computing.dundee.ac.uk (mailex.computing.dundee.ac.uk
-	[134.36.36.15])
-	by uncle.computing.dundee.ac.uk (8.13.1/8.13.1) with ESMTP id
-	l3R8mmgD031761
-	for <linuxppc-embedded@ozlabs.org>; Fri, 27 Apr 2007 09:48:49 +0100
-Message-ID: <4631B8EE.10903@computing.dundee.ac.uk>
-Date: Fri, 27 Apr 2007 09:48:46 +0100
-From: Peter Mendham <petermendham@computing.dundee.ac.uk>
+	Fri, 27 Apr 2007 20:35:08 +1000 (EST)
+Subject: Re: mpc5200 and spi bus
+From: "Asier Llano Palacios" <a.llano@usyscom.com>
+To: "Txema Lopez" <tlopez@aotek.es>
+In-Reply-To: <4630BBF9.7000305@aotek.es>
+References: <1177595421.9950.4.camel@a.llano.llano> <4630BBF9.7000305@aotek.es>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Fri, 27 Apr 2007 12:36:33 +0200
+Message-ID: <1177670193.9950.9.camel@a.llano.llano>
 MIME-Version: 1.0
-To: linuxppc-embedded@ozlabs.org
-Subject: Some advice needed with Xilinx Framebuffer
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,41 +24,55 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Dear all,
+I'm working with the a linux 2.6.20.9 with patches from Sylvain's tree.
+I've been looking the Den'x 2.5.xx SPI support and it seems that it is
+done through GPIOs. I'd like a native SPI implementation, using the
+hardware of the MPC5200, because of the performance issue of using a
+GPIO, because I'd like to use it at full speed.
 
-Thanks to Andrei, and others, I have a working framebuffer on my device, 
-nicely driving a standard VGA screen.  I have just discovered that my 
-*actual* target display is rotated VGA, i.e. 480x640.  I would like to 
-use it as a 640x480 display.  I would love some advice from you 
-knowledgeable people as to how best to go about this.  I have had some 
-(rather naive) thoughts:
-1. Modify the hardware to read pixels from non-contiguous locations thus 
-leaving the framebuffer structure (as far as software is concerned) 
-completely intact.  The major problem with this is that the hardware is 
-no longer doing burst reads (because locations are not contiguous) so 
-will be using the bus a lot less efficiently.
-2. Modify the hardware to expect the framebuffer memory to be arranged 
-column-wise, rather than row-wise (i.e. as a 480x640 rotated display in 
-memory).  Is there a way to get the framebuffer to still present this as 
-a 640x480 display?
-3. Be honest about the whole thing and make the framebuffer report a 
-480x640 display and hope that I can rotate everything else.  I believe 
-the console can be rotated(?) I'd also really like to run the Links 
-browser in direct framebuffer mode, and/or maybe X.  Don't know if 
-that's possible but it certainly sounds like a minefield...
-4. Some other secret magic hidden fourth option I don't know about.  
-Maybe there's a standard way of doing this?
+Is it done really with GPIOs? If so, is there any other implementation?
+If it is possible I'd like it to be for 2.6.x.
 
-My feeling is that I should keep the whole nasty rotated business as low 
-level as possible without affecting performance too much, but maybe I'm 
-wrong.  Anything you can suggest would be greatly appreciated.
+Thank you,
+Asier
 
-Thanks in advance,
--- Peter
-
-
--- 
-This message has been scanned for viruses and
-dangerous content by MailScanner, and is
-believed to be clean.
-MailScanner thanks transtec Computers for their support.
+El jue, 26-04-2007 a las 16:49 +0200, Txema Lopez escribi=F3:
+> Asier Llano Palacios wrote:
+>=20
+> >I've seen some comments about drivers for SPI of the MPC5200. I'm not
+> >sure about it, but is there anything functional about it?. I want to
+> >know if there is anything already done, in order to use it or improve
+> >it. I need a driver of the SPI bus, so if it is not implemented at =
+all
+> >we should contribute it.
+> >
+> > =20
+> >
+> The Denx's 2.4.xx top of tree kernel has MPC5200 SPI support. We are=20
+> using the SPI dev interface from a user aplication and it works fine.
+>=20
+>=20
+=20
+----------------------------------------- PLEASE NOTE =
+-------------------------------------------
+This message, along with any attachments, may be confidential or legally =
+privileged.=20
+It is intended only for the named person(s), who is/are the only =
+authorized recipients.
+If this message has reached you in error, kindly destroy it without =
+review and notify the sender immediately.
+Thank you for your help.
+=B5SysCom uses virus scanning software but excludes any liability for =
+viruses contained in any attachment.
+=20
+------------------------------------ ROGAMOS LEA ESTE TEXTO =
+-------------------------------
+Este mensaje y sus anexos pueden contener informaci=F3n confidencial y/o =
+con derecho legal.=20
+Est=E1 dirigido =FAnicamente a la/s persona/s o entidad/es rese=F1adas =
+como =FAnico destinatario autorizado.
+Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
+revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
+Gracias por su colaboraci=F3n. =20
+=B5SysCom utiliza software antivirus, pero no se hace responsable de los =
+virus contenidos en los ficheros anexos.
