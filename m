@@ -1,22 +1,24 @@
 Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id 75E6ADDF43
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id 97395DDF54
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Apr 2007 16:48:18 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so603541ugf
+	Fri, 27 Apr 2007 17:31:39 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so607219ugf
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu, 26 Apr 2007 23:48:16 -0700 (PDT)
-Message-ID: <528646bc0704262348s7830c59fx383fb8fad8822ef8@mail.gmail.com>
-Date: Fri, 27 Apr 2007 00:48:16 -0600
+	Fri, 27 Apr 2007 00:31:38 -0700 (PDT)
+Message-ID: <528646bc0704270031w5c9966f8tc3a5e5292df10a35@mail.gmail.com>
+Date: Fri, 27 Apr 2007 01:31:37 -0600
 From: "Grant Likely" <grant.likely@secretlab.ca>
 Sender: glikely@gmail.com
 To: "John Williams" <jwilliams@itee.uq.edu.au>
 Subject: Re: [RFC] SystemACE driver - abstract register ops
 In-Reply-To: <463199EF.3090900@itee.uq.edu.au>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Type: multipart/mixed;
+	boundary="----=_Part_6457_26160216.1177659097688"
 References: <463199EF.3090900@itee.uq.edu.au>
-Cc: linuxppc-embedded@ozlabs.org
+Cc: Andrei Konovalov <akonovalov@ru.mvista.com>, Stefan Roese <sr@denx.de>,
+	Rick Moleres <rick.moleres@xilinx.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,25 +29,26 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_6457_26160216.1177659097688
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
+
 On 4/27/07, John Williams <jwilliams@itee.uq.edu.au> wrote:
 > Grant,
 >
 > Thanks for your work on the SystemACE driver - I'll be porting/merging
 > this across to MicroBlaze very shortly.
->
+
+Very cool; I hope it works well.
+
 > Given that SysACE can be hooked up in any number of ways, bit widths,
 > endians, PPC/Microblaze, can you please offer your comments on the
 > attached patch?
 
-HAHAHAHAHAHAHA!  Guess what I just finished writing before receiving your email.
-
-I've got something very similar that I'm testing now, but thanks for
-the patch.  I feel better that someone else has the same opinion on
-how to hook up the bus.
-
-Cheers,
-g.
-
+Okay, after getting over my initial mirth about working on the *exact*
+same thing and finishing it at the *exact* time that you sent me your
+patch, I think I'm ready to make useful comments.  :-)
 >
 > It introduce a private ace_reg_ops structure, with various member
 > functions for the different kinds of accesses to the HW.
@@ -56,200 +59,220 @@ g.
 > I recognise that it adds indirection into the various access paths, and
 > potentially a little bloat.  Whether this is better than #if
 > 1...#else...#endif is debatable.
->
+
+I'm not to concerned with the added redirection.  On my 405 designs, I
+find that bus overhead has a far greater impact than any of the
+processing paths in the driver, so this shouldn't be a problem.
+Besides, when we finally move to arch/powerpc, it will become very
+feasable to have a single kernel image that will boot on multiple
+ppc405 FPGA configurations; just change the device tree passed in.
+
 > Similar issues will arise for most (all?) of the Xilinx drivers that we
 > will share between PPC and MicroBlaze.  Hopefully we can converge on a
 > nice consistent and clean way of handling these dual arch drivers.
->
-> Cheers,
->
-> John
->
-> Index: linux-2.6.x-petalogix/drivers/block/xsysace.c
-> ===================================================================
-> --- linux-2.6.x-petalogix/drivers/block/xsysace.c       (revision 2628)
-> +++ linux-2.6.x-petalogix/drivers/block/xsysace.c       (working copy)
-> @@ -73,6 +73,11 @@
->   *    interrupt, then the kernel timer will expire and the driver can
->   *    continue where it left off.
->   *
-> + *  SystemACE can be wired up in different endian orders and data widths.
-> + *  It works on both PPC and MicroBlaze architectures.  For this reason,
-> + *  an ace_reg_ops structure is used that abstracts away low level
-> + *  endian/width/arch access to the HW registers.
-> +
->   * To Do:
->   *    - Add FPGA configuration control interface.
->   *    - Request major number from lanana
-> @@ -161,32 +166,120 @@
->  /* ---------------------------------------------------------------------
->   * Low level register access
->   */
-> +struct reg_ops {
-> +       u8 (*read8)(void *addr);
-> +       u16 (*read16)(void *addr);
-> +       u32 (*read32)(void *addr);
-> +       u32 (*readdata)(void *addr);
->
-> -/* register access macros */
-> +       void (*write16)(void *addr, u16 val);
-> +       void (*write32)(void *addr, u32 val);
-> +       void (*writedata)(void *addr, u32 val);
-> +};
-> +
-> +#define ace_reg_read8(ace, reg) (ace->ops->read8(ace->baseaddr + reg))
-> +#define ace_reg_read16(ace, reg) (ace->ops->read16(ace->baseaddr + reg))
-> +#define ace_reg_readdata(ace, reg) (ace->ops->readdata(ace->baseaddr + reg))
-> +#define ace_reg_read32(ace, reg) (ace->ops->read32(ace->baseaddr+reg))
-> +#define ace_reg_write16(ace, reg, val) (ace->ops->write16(ace->baseaddr+reg, val))
-> +#define ace_reg_writedata(ace, reg, val) (ace->ops->writedata(ace->baseaddr + reg, val))
-> +#define ace_reg_write32(ace, reg, val) (ace->ops->write32(ace->baseaddr+reg, val))
-> +
-> +/* register access functions */
->  #if 1 /* Little endian 16-bit regs */
-> -#define ace_reg_read8(ace, reg) in_8(ace->baseaddr + reg)
-> -#define ace_reg_read16(ace, reg) in_le16(ace->baseaddr + reg)
-> -#define ace_reg_readdata(ace, reg) in_be16(ace->baseaddr + reg)
-> -#define ace_reg_read32(ace, reg) ((in_le16(ace->baseaddr + reg+2) << 16) | \
-> -                                  (in_le16(ace->baseaddr + reg)))
-> -#define ace_reg_write16(ace, reg, val) out_le16(ace->baseaddr + reg, val)
-> -#define ace_reg_writedata(ace, reg, val) out_be16(ace->baseaddr + reg, val)
-> -#define ace_reg_write32(ace, reg, val) { \
-> -                           out_le16(ace->baseaddr + reg+2, (val) >> 16); \
-> -                           out_le16(ace->baseaddr + reg, val); \
-> -                       }
-> +static u8 ace_le16_read8(void *addr)
-> +{
-> +       return in_8(addr);
-> +}
-> +
-> +static u16 ace_le16_read16(void *addr)
-> +{
-> +       return in_le16(addr);
-> +}
-> +
-> +static u32 ace_le16_read32(void *addr)
-> +{
-> +       return ((in_le16(addr+2) << 16) | (in_le16(addr)));
-> +}
-> +
-> +static u32 ace_le16_readdata(void *addr)
-> +{
-> +       return in_be16(addr);
-> +}
-> +
-> +static void ace_le16_write16(void *addr, u16 val)
-> +{
-> +       out_le16(addr, val);
-> +}
-> +
-> +static void ace_le16_write32(void *addr, u32 val)
-> +{
-> +       out_le16(addr+2,(val) >> 16); \
-> +       out_le16(addr, val);
-> +}
-> +
-> +static void ace_le16_writedata(void *addr, u32 val)
-> +{
-> +       out_be16(addr, val);
-> +}
-> +
-> +static struct reg_ops ace_ops = {
-> +       .read8  =       ace_le16_read8,
-> +       .read16 =       ace_le16_read16,
-> +       .read32 =       ace_le16_read32,
-> +       .readdata =     ace_le16_readdata,
-> +       .write16 =      ace_le16_write16,
-> +       .write32 =      ace_le16_write32,
-> +       .writedata =    ace_le16_writedata
-> +} ;
-> +
->  #else /* Big endian 16-bit regs */
-> -#define ace_reg_read8(ace, reg) in_8(ace->baseaddr + reg)
-> -#define ace_reg_read16(ace, reg) in_be16(ace->baseaddr + reg)
-> -#define ace_reg_readdata(ace, reg) in_le16(ace->baseaddr + reg)
-> -#define ace_reg_read32(ace, reg) ((in_be16(ace->baseaddr + reg+2) << 16) | \
-> -                                  (in_be16(ace->baseaddr + reg)))
-> -#define ace_reg_write16(ace, reg, val) out_be16(ace->baseaddr + reg, val)
-> -#define ace_reg_writedata(ace, reg, val) out_le16(ace->baseaddr + reg, val)
-> -#define ace_reg_write32(ace, reg, val) { \
-> -                           out_be16(ace->baseaddr + reg+2, (val) >> 16); \
-> -                           out_be16(ace->baseaddr + reg, val); \
-> -                       }
-> +static u8 ace_be16_read8(void *addr)
-> +{
-> +       return in_8(addr);
-> +}
-> +
-> +static u16 ace_be16_read16(void *addr)
-> +{
-> +       return in_be16(addr);
-> +}
-> +
-> +static u32 ace_be16_read32(void *addr)
-> +{
-> +       return ((in_be16(addr+2) << 16) | (in_be16(addr)));
-> +}
-> +
-> +static u32 ace_be16_readdata(void *addr)
-> +{
-> +       return in_le16(addr);
-> +}
-> +
-> +static void ace_be16_write16(void *addr, u16 val)
-> +{
-> +       out_be16(addr, val);
-> +}
-> +
-> +static void ace_be16_write32(void *addr, u32 val)
-> +{
-> +       out_be16(addr+2,(val) >> 16); \
-> +       out_be16(addr, val);
-> +}
-> +
-> +static void ace_be16_writedata(void *addr, u32 val)
-> +{
-> +       out_le16(addr, val);
-> +}
-> +
-> +static struct reg_ops ace_ops = {
-> +       .read8  =       ace_be16_read8,
-> +       .read16 =       ace_be16_read16,
-> +       .read32 =       ace_be16_read32,
-> +       .readdata =     ace_be16_readdata,
-> +       .write16 =      ace_be16_write16,
-> +       .write32 =      ace_be16_write32,
-> +       .writedata =    ace_be16_writedata
-> +} ;
-> +
->  #endif
->
->  struct ace_device {
-> @@ -222,6 +315,9 @@
->         int bus_width;  /* 0 := 8 bit; 1 := 16 bit */
->         int lock_count;
->
-> +       /* Register access ops */
-> +       struct reg_ops *ops;
-> +
->         /* Block device data structures */
->         spinlock_t lock;
->         struct device *dev;
-> @@ -995,6 +1091,8 @@
->         ace->id = dev->id;
->         ace->irq = NO_IRQ;
->
-> +       ace->ops=&ace_ops;
-> +
->         for (i = 0; i < dev->num_resources; i++) {
->                 if (dev->resource[i].flags & IORESOURCE_MEM)
->                         ace->physaddr = dev->resource[i].start;
->
->
 
+I agree 100%
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+For your reading pleasure, I've attached the bus attachment changes
+that I've made in my tree.  I hope to get this driver accepted into
+mainline during the 2.6.22 merge window; so please get any comments
+you have back to me ASAP.
+
+Cheers,
+g.
+
+------=_Part_6457_26160216.1177659097688
+Content-Type: application/x-patch;
+	name=0001-SYSACE-Make-bus-binding-selectable-at-runtime.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f10br3pj
+Content-Disposition: attachment; filename="0001-SYSACE-Make-bus-binding-selectable-at-runtime.patch"
+
+RnJvbSAxMDIxMWEyY2IyM2Y5YzdjYzQ0N2Y4MDBhMWYzODI4NjMwY2VhODE5IE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBHcmFudCBMaWtlbHkgPGdyYW50Lmxpa2VseUBzZWNyZXRsYWIu
+Y2E+CkRhdGU6IEZyaSwgMjcgQXByIDIwMDcgMDA6MTk6MDkgLTA2MDAKU3ViamVjdDogW1BBVENI
+XSBbU1lTQUNFXSBNYWtlIGJ1cyBiaW5kaW5nIHNlbGVjdGFibGUgYXQgcnVudGltZQoKVGhlIFN5
+c3RlbUFDRSBjYW4gYmUgd2lyZWQgdXAgdG8gbWFueSBkaWZmZXJlbnQgYnVzIGFyYW5nZW1lbnRz
+LiAgVGhpcyBwYXRjaApkZWZpbmVzIDgsIGJlMTYgYW5kIGxlMTYgYnVzIGF0dGFjaG1lbnRzIGFu
+ZCBhZGRzIHRoZSBjb2RlIHRvIHNlbGVjdCB0aGVtCmF0IHJ1bnRpbWUuCgpTaWduZWQtb2ZmLWJ5
+OiBHcmFudCBMaWtlbHkgPGdyYW50Lmxpa2VseUBzZWNyZXRsYWIuY2E+Ci0tLQogZHJpdmVycy9i
+bG9jay94c3lzYWNlLmMgfCAgMjU2ICsrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKyst
+LS0tLS0tLS0tLS0KIDEgZmlsZXMgY2hhbmdlZCwgMTg5IGluc2VydGlvbnMoKyksIDY3IGRlbGV0
+aW9ucygtKQoKZGlmZiAtLWdpdCBhL2RyaXZlcnMvYmxvY2sveHN5c2FjZS5jIGIvZHJpdmVycy9i
+bG9jay94c3lzYWNlLmMKaW5kZXggZThiNGNkNC4uNTA4NTc3MCAxMDA2NDQKLS0tIGEvZHJpdmVy
+cy9ibG9jay94c3lzYWNlLmMKKysrIGIvZHJpdmVycy9ibG9jay94c3lzYWNlLmMKQEAgLTgwLDcg
+KzgwLDYgQEAKICAqLwogCiAjdW5kZWYgREVCVUcKLSN1bmRlZiBERUJVR19FTkRJQU4gIC8qIFVu
+Y29tbWVudCB0byBkZWJ1ZyByZWdpc3RlciBlbmRpbmFuZXNzICovCiAKICNpbmNsdWRlIDxsaW51
+eC9tb2R1bGUuaD4KICNpbmNsdWRlIDxsaW51eC9jdHlwZS5oPgpAQCAtMTU2LDM4ICsxNTUsMTEg
+QEAgTU9EVUxFX0xJQ0VOU0UoIkdQTCIpOwogI2RlZmluZSBBQ0VfRkFUU1RBVCAoMHgxYykKIAog
+I2RlZmluZSBBQ0VfTlVNX01JTk9SUyAxNgotI2RlZmluZSBBQ0VfQlVGX1BFUl9TRUNUT1IgKDUx
+MiAvIDMyKSAvKiA1MTJfYnl0ZV9zZWN0b3IgLyAzMl9ieXRlX2ZpZm8gKi8KKyNkZWZpbmUgQUNF
+X1NFQ1RPUl9TSVpFICg1MTIpCisjZGVmaW5lIEFDRV9GSUZPX1NJWkUgKDMyKQorI2RlZmluZSBB
+Q0VfQlVGX1BFUl9TRUNUT1IgKEFDRV9TRUNUT1JfU0laRSAvIEFDRV9GSUZPX1NJWkUpCiAKLS8q
+IC0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLQotICogTG93IGxldmVsIHJlZ2lzdGVyIGFjY2VzcwotICovCi0KLS8qIHJl
+Z2lzdGVyIGFjY2VzcyBtYWNyb3MgKi8KLSNpZiAxIC8qIExpdHRsZSBlbmRpYW4gMTYtYml0IHJl
+Z3MgKi8KLSNkZWZpbmUgYWNlX3JlZ19yZWFkOChhY2UsIHJlZykgaW5fOChhY2UtPmJhc2VhZGRy
+ICsgcmVnKQotI2RlZmluZSBhY2VfcmVnX3JlYWQxNihhY2UsIHJlZykgaW5fbGUxNihhY2UtPmJh
+c2VhZGRyICsgcmVnKQotI2RlZmluZSBhY2VfcmVnX3JlYWRkYXRhKGFjZSwgcmVnKSBpbl9iZTE2
+KGFjZS0+YmFzZWFkZHIgKyByZWcpCi0jZGVmaW5lIGFjZV9yZWdfcmVhZDMyKGFjZSwgcmVnKSAo
+KGluX2xlMTYoYWNlLT5iYXNlYWRkciArIHJlZysyKSA8PCAxNikgfCBcCi0gICAgICAgICAgICAg
+ICAgICAgICAgICAgICAgICAgICAgKGluX2xlMTYoYWNlLT5iYXNlYWRkciArIHJlZykpKQotI2Rl
+ZmluZSBhY2VfcmVnX3dyaXRlMTYoYWNlLCByZWcsIHZhbCkgb3V0X2xlMTYoYWNlLT5iYXNlYWRk
+ciArIHJlZywgdmFsKQotI2RlZmluZSBhY2VfcmVnX3dyaXRlZGF0YShhY2UsIHJlZywgdmFsKSBv
+dXRfYmUxNihhY2UtPmJhc2VhZGRyICsgcmVnLCB2YWwpCi0jZGVmaW5lIGFjZV9yZWdfd3JpdGUz
+MihhY2UsIHJlZywgdmFsKSB7IFwKLSAgICAgICAgICAgICAgICAgICAgICAgICAgIG91dF9sZTE2
+KGFjZS0+YmFzZWFkZHIgKyByZWcrMiwgKHZhbCkgPj4gMTYpOyBcCi0gICAgICAgICAgICAgICAg
+ICAgICAgICAgICBvdXRfbGUxNihhY2UtPmJhc2VhZGRyICsgcmVnLCB2YWwpOyBcCi0gICAgICAg
+ICAgICAgICAgICAgICAgIH0KLSNlbHNlIC8qIEJpZyBlbmRpYW4gMTYtYml0IHJlZ3MgKi8KLSNk
+ZWZpbmUgYWNlX3JlZ19yZWFkOChhY2UsIHJlZykgaW5fOChhY2UtPmJhc2VhZGRyICsgcmVnKQot
+I2RlZmluZSBhY2VfcmVnX3JlYWQxNihhY2UsIHJlZykgaW5fYmUxNihhY2UtPmJhc2VhZGRyICsg
+cmVnKQotI2RlZmluZSBhY2VfcmVnX3JlYWRkYXRhKGFjZSwgcmVnKSBpbl9sZTE2KGFjZS0+YmFz
+ZWFkZHIgKyByZWcpCi0jZGVmaW5lIGFjZV9yZWdfcmVhZDMyKGFjZSwgcmVnKSAoKGluX2JlMTYo
+YWNlLT5iYXNlYWRkciArIHJlZysyKSA8PCAxNikgfCBcCi0gICAgICAgICAgICAgICAgICAgICAg
+ICAgICAgICAgICAgKGluX2JlMTYoYWNlLT5iYXNlYWRkciArIHJlZykpKQotI2RlZmluZSBhY2Vf
+cmVnX3dyaXRlMTYoYWNlLCByZWcsIHZhbCkgb3V0X2JlMTYoYWNlLT5iYXNlYWRkciArIHJlZywg
+dmFsKQotI2RlZmluZSBhY2VfcmVnX3dyaXRlZGF0YShhY2UsIHJlZywgdmFsKSBvdXRfbGUxNihh
+Y2UtPmJhc2VhZGRyICsgcmVnLCB2YWwpCi0jZGVmaW5lIGFjZV9yZWdfd3JpdGUzMihhY2UsIHJl
+ZywgdmFsKSB7IFwKLSAgICAgICAgICAgICAgICAgICAgICAgICAgIG91dF9iZTE2KGFjZS0+YmFz
+ZWFkZHIgKyByZWcrMiwgKHZhbCkgPj4gMTYpOyBcCi0gICAgICAgICAgICAgICAgICAgICAgICAg
+ICBvdXRfYmUxNihhY2UtPmJhc2VhZGRyICsgcmVnLCB2YWwpOyBcCi0gICAgICAgICAgICAgICAg
+ICAgICAgIH0KLSNlbmRpZgorc3RydWN0IGFjZV9yZWdfb3BzOwogCiBzdHJ1Y3QgYWNlX2Rldmlj
+ZSB7CiAJLyogZHJpdmVyIHN0YXRlIGRhdGEgKi8KQEAgLTIyMCw2ICsxOTIsNyBAQCBzdHJ1Y3Qg
+YWNlX2RldmljZSB7CiAJdm9pZCogYmFzZWFkZHI7CiAJaW50IGlycTsKIAlpbnQgYnVzX3dpZHRo
+OyAgLyogMCA6PSA4IGJpdDsgMSA6PSAxNiBiaXQgKi8KKwlzdHJ1Y3QgYWNlX3JlZ19vcHMgKnJl
+Z19vcHM7CiAJaW50IGxvY2tfY291bnQ7CiAKIAkvKiBCbG9jayBkZXZpY2UgZGF0YSBzdHJ1Y3R1
+cmVzICovCkBAIC0yMzYsNiArMjA5LDE2OCBAQCBzdGF0aWMgTElTVF9IRUFEKGFjZV9pbnN0YW5j
+ZXMpOwogc3RhdGljIGludCBhY2VfbWFqb3IgPSAwOwogCiAvKiAtLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0KKyAqIExv
+dyBsZXZlbCByZWdpc3RlciBhY2Nlc3MKKyAqLworCitzdHJ1Y3QgYWNlX3JlZ19vcHMgeworCXVp
+bnQxNl90ICgqaW4pKHN0cnVjdCBhY2VfZGV2aWNlICphY2UsIHVsb25nIHJlZyk7CisJdm9pZCAo
+Km91dCkoc3RydWN0IGFjZV9kZXZpY2UgKmFjZSwgdWxvbmcgcmVnLCB1aW50MTZfdCB2YWwpOwor
+CXZvaWQgKCppZGVudGluKShzdHJ1Y3QgYWNlX2RldmljZSAqYWNlKTsKKwl2b2lkICgqZGF0YWlu
+KShzdHJ1Y3QgYWNlX2RldmljZSAqYWNlKTsKKwl2b2lkICgqZGF0YW91dCkoc3RydWN0IGFjZV9k
+ZXZpY2UgKmFjZSk7Cit9OworCisvKiA4IEJpdCBidXMgd2lkdGggKi8KK3N0YXRpYyB1aW50MTZf
+dCBhY2VfaW5fOChzdHJ1Y3QgYWNlX2RldmljZSAqYWNlLCB1bG9uZyByZWcpCit7CisJdm9pZCog
+ciA9IGFjZS0+YmFzZWFkZHIgKyByZWc7CisJcmV0dXJuIGluXzgocikgfCAoaW5fOChyKzEpIDw8
+IDgpOworfQorCitzdGF0aWMgdm9pZCBhY2Vfb3V0Xzgoc3RydWN0IGFjZV9kZXZpY2UgKmFjZSwg
+dWxvbmcgcmVnLCB1aW50MTZfdCB2YWwpCit7CisJdm9pZCogciA9IGFjZS0+YmFzZWFkZHIgKyBy
+ZWc7CisJb3V0XzgociwgdmFsKTsKKwlvdXRfOChyKzEsIHZhbCA+PiA4KTsKK30KKworc3RhdGlj
+IHZvaWQgYWNlX2lkZW50aW5fOChzdHJ1Y3QgYWNlX2RldmljZSAqYWNlKQoreworCXZvaWQqIHIg
+PSBhY2UtPmJhc2VhZGRyICsgMHg0MDsKKwlpbnQgaSA9IEFDRV9GSUZPX1NJWkUvMjsKKwl3aGls
+ZSAoaS0tKQorI2lmIGRlZmluZWQoX19CSUdfRU5ESUFOKQorCQkqYWNlLT5kYXRhX3B0ciA9IChp
+bl84KHIpKSB8IChpbl84KHIrMSk8PDgpOworI2Vsc2UKKwkJKmFjZS0+ZGF0YV9wdHIgPSAoaW5f
+OChyKTw8OCkgfCAoaW5fOChyKzEpKTsKKyNlbmRpZgorCWFjZS0+ZGF0YV9jb3VudC0tOworfQor
+CitzdGF0aWMgdm9pZCBhY2VfZGF0YWluXzgoc3RydWN0IGFjZV9kZXZpY2UgKmFjZSkKK3sKKwl2
+b2lkKiByID0gYWNlLT5iYXNlYWRkciArIDB4NDA7CisJaW50IGkgPSBBQ0VfRklGT19TSVpFLzI7
+CisJd2hpbGUgKGktLSkKKyNpZiBkZWZpbmVkKF9fQklHX0VORElBTikKKwkJKmFjZS0+ZGF0YV9w
+dHIgPSAoaW5fOChyKTw8OCkgfCAoaW5fOChyKzEpKTsKKyNlbHNlCisJCSphY2UtPmRhdGFfcHRy
+ID0gKGluXzgocikpIHwgKGluXzgocisxKTw8OCk7CisjZW5kaWYKK30KKworc3RhdGljIHZvaWQg
+YWNlX2RhdGFvdXRfOChzdHJ1Y3QgYWNlX2RldmljZSAqYWNlKQoreworCXZvaWQqIHIgPSBhY2Ut
+PmJhc2VhZGRyICsgMHg0MDsKKwlpbnQgaSA9IEFDRV9GSUZPX1NJWkUvMjsKKwl3aGlsZSAoaS0t
+KSB7CisjaWYgZGVmaW5lZChfX0JJR19FTkRJQU4pCisJCW91dF84KHIsICphY2UtPmRhdGFfcHRy
+ID4+IDgpOworCQlvdXRfOChyKzEsICphY2UtPmRhdGFfcHRyKTsKKyNlbHNlCisJCW91dF84KHIs
+ICphY2UtPmRhdGFfcHRyKTsKKwkJb3V0XzgocisxLCAqYWNlLT5kYXRhX3B0ciA+PiA4KTsKKyNl
+bmRpZgorCQlhY2UtPmRhdGFfcHRyKys7CisJfQorfQorCitzdGF0aWMgc3RydWN0IGFjZV9yZWdf
+b3BzIGFjZV9yZWdfOF9vcHMgPSB7CisJLmluID0gYWNlX2luXzgsCisJLm91dCA9IGFjZV9vdXRf
+OCwKKwkuaWRlbnRpbiA9IGFjZV9pZGVudGluXzgsCisJLmRhdGFpbiA9IGFjZV9kYXRhaW5fOCwK
+KwkuZGF0YW91dCA9IGFjZV9kYXRhb3V0XzgsCit9OworCisvKiAxNiBiaXQgYmlnIGVuZGlhbiBi
+dXMgYXR0YWNobWVudCAqLworc3RhdGljIHVpbnQxNl90IGFjZV9pbl9iZTE2KHN0cnVjdCBhY2Vf
+ZGV2aWNlICphY2UsIHVsb25nIHJlZykKK3sKKwlyZXR1cm4gaW5fYmUxNihhY2UtPmJhc2VhZGRy
+K3JlZyk7Cit9CisKK3N0YXRpYyB2b2lkIGFjZV9vdXRfYmUxNihzdHJ1Y3QgYWNlX2RldmljZSAq
+YWNlLCB1bG9uZyByZWcsIHVpbnQxNl90IHZhbCkKK3sKKwlvdXRfYmUxNihhY2UtPmJhc2VhZGRy
+K3JlZywgdmFsKTsKK30KKworc3RhdGljIHZvaWQgYWNlX2ZpZm9pbl9iZTE2KHN0cnVjdCBhY2Vf
+ZGV2aWNlICphY2UpCit7CisJaW50IGkgPSBBQ0VfRklGT19TSVpFLzI7CisJd2hpbGUgKGktLSkK
+KwkJKmFjZS0+ZGF0YV9wdHIrKyA9IGluX2JlMTYoYWNlLT5iYXNlYWRkciArIDB4NDApOworfQor
+CitzdGF0aWMgdm9pZCBhY2VfZmlmb291dF9iZTE2KHN0cnVjdCBhY2VfZGV2aWNlICphY2UpCit7
+CisJaW50IGkgPSBBQ0VfRklGT19TSVpFLzI7CisJd2hpbGUgKGktLSkKKwkJb3V0X2JlMTYoYWNl
+LT5iYXNlYWRkciArIDB4NDAsICphY2UtPmRhdGFfcHRyKyspOworfQorCisvKiAxNiBiaXQgbGl0
+dGxlIGVuZGlhbiBidXMgYXR0YWNobWVudCAqLworc3RhdGljIHVpbnQxNl90IGFjZV9pbl9sZTE2
+KHN0cnVjdCBhY2VfZGV2aWNlICphY2UsIHVsb25nIHJlZykKK3sKKwlyZXR1cm4gaW5fbGUxNihh
+Y2UtPmJhc2VhZGRyK3JlZyk7Cit9CisKK3N0YXRpYyB2b2lkIGFjZV9vdXRfbGUxNihzdHJ1Y3Qg
+YWNlX2RldmljZSAqYWNlLCB1bG9uZyByZWcsIHVpbnQxNl90IHZhbCkKK3sKKwlvdXRfbGUxNihh
+Y2UtPmJhc2VhZGRyK3JlZywgdmFsKTsKK30KKworc3RhdGljIHZvaWQgYWNlX2ZpZm9pbl9sZTE2
+KHN0cnVjdCBhY2VfZGV2aWNlICphY2UpCit7CisJaW50IGkgPSBBQ0VfRklGT19TSVpFLzI7CisJ
+d2hpbGUgKGktLSkKKwkJKmFjZS0+ZGF0YV9wdHIrKyA9IGluX2xlMTYoYWNlLT5iYXNlYWRkciAr
+IDB4NDApOworfQorCitzdGF0aWMgdm9pZCBhY2VfZmlmb291dF9sZTE2KHN0cnVjdCBhY2VfZGV2
+aWNlICphY2UpCit7CisJaW50IGkgPSBBQ0VfRklGT19TSVpFLzI7CisJd2hpbGUgKGktLSkKKwkJ
+b3V0X2xlMTYoYWNlLT5iYXNlYWRkciArIDB4NDAsICphY2UtPmRhdGFfcHRyKyspOworfQorCitz
+dGF0aWMgc3RydWN0IGFjZV9yZWdfb3BzIGFjZV9yZWdfYmUxNl9vcHMgPSB7CisJLmluID0gYWNl
+X2luX2JlMTYsCisJLm91dCA9IGFjZV9vdXRfYmUxNiwKKwkuaWRlbnRpbiA9IGFjZV9maWZvaW5f
+YmUxNiwKKwkuZGF0YWluID0gYWNlX2ZpZm9pbl9sZTE2LCAvKiBsaXR0bGUgZW5kaWFuISAqLwor
+CS5kYXRhb3V0ID0gYWNlX2ZpZm9vdXRfbGUxNiwgLyogbGl0dGxlIGVuZGlhbiEgKi8KK307CisK
+K3N0YXRpYyBzdHJ1Y3QgYWNlX3JlZ19vcHMgYWNlX3JlZ19sZTE2X29wcyA9IHsKKwkuaW4gPSBh
+Y2VfaW5fbGUxNiwKKwkub3V0ID0gYWNlX291dF9sZTE2LAorCS5pZGVudGluID0gYWNlX2ZpZm9p
+bl9sZTE2LAorCS5kYXRhaW4gPSBhY2VfZmlmb2luX2JlMTYsIC8qIGJpZyBlbmRpYW4hICovCisJ
+LmRhdGFvdXQgPSBhY2VfZmlmb291dF9iZTE2LCAvKiBiaWcgZW5kaWFuISAqLworfTsKKworI2Rl
+ZmluZSBhY2VfaW4oYWNlLCByZWcpCQlhY2UtPnJlZ19vcHMtPmluKGFjZSwgcmVnKQorc3RhdGlj
+IGlubGluZSB1aW50MzJfdCBhY2VfaW4zMihzdHJ1Y3QgYWNlX2RldmljZSAqYWNlLCB1bG9uZyBy
+ZWcpCit7CisJcmV0dXJuIGFjZV9pbihhY2UsIHJlZykgfCAoYWNlX2luKGFjZSwgcmVnKzIpIDw8
+IDE2KTsKK30KKyNkZWZpbmUgYWNlX291dChhY2UsIHJlZywgdmFsKQkJYWNlLT5yZWdfb3BzLT5v
+dXQoYWNlLCByZWcsIHZhbCkKK3N0YXRpYyBpbmxpbmUgdm9pZCBhY2Vfb3V0MzIoc3RydWN0IGFj
+ZV9kZXZpY2UgKmFjZSwgdWxvbmcgcmVnLCB1aW50MzJfdCB2YWwpCit7CisJYWNlX291dChhY2Us
+IHJlZywgdmFsKTsKKwlhY2Vfb3V0KGFjZSwgcmVnKzIsIHZhbCA+PiAxNik7Cit9CisjZGVmaW5l
+IGFjZV9pZGVudGluKGFjZSkJCWFjZS0+cmVnX29wcy0+aWRlbnRpbihhY2UpCisjZGVmaW5lIGFj
+ZV9kYXRhaW4oYWNlKQkJCWFjZS0+cmVnX29wcy0+ZGF0YWluKGFjZSkKKyNkZWZpbmUgYWNlX2Rh
+dGFvdXQoYWNlKQkJYWNlLT5yZWdfb3BzLT5kYXRhb3V0KGFjZSkKKworLyogbGVnYWN5IG1hY3Jv
+cywgdG8gYmUgcmVtb3ZlZCAqLworI2RlZmluZSBhY2VfcmVnX3JlYWQxNihhY2UsIHJlZykJYWNl
+X2luKGFjZSwgcmVnKQorI2RlZmluZSBhY2VfcmVnX3JlYWQzMihhY2UsIHJlZykJYWNlX2luMzIo
+YWNlLCByZWcpCisjZGVmaW5lIGFjZV9yZWdfd3JpdGUxNihhY2UsIHJlZywgdmFsKQlhY2Vfb3V0
+KGFjZSwgcmVnLCB2YWwpCisjZGVmaW5lIGFjZV9yZWdfd3JpdGUzMihhY2UsIHJlZywgdmFsKQlh
+Y2Vfb3V0MzIoYWNlLCByZWcsIHZhbCkKKworLyogLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0t
+LS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tLS0tCiAgKiBEZWJ1ZyBzdXBw
+b3J0IGZ1bmN0aW9ucwogICovCiAKQEAgLTI3MCwzMSArNDA1LDYgQEAgc3RhdGljIGlubGluZSB2
+b2lkIGFjZV9kdW1wX21lbSh2b2lkKiBiYXNlLCBpbnQgbGVuKSB7fQogCiBzdGF0aWMgdm9pZCBh
+Y2VfZHVtcF9yZWdzKHN0cnVjdCBhY2VfZGV2aWNlICphY2UpCiB7Ci0KLSNpZiBkZWZpbmVkKERF
+QlVHX0VORElBTikKLQkvKiBzb21lIHRlc3Qgcm91dGluZXMgdG8gc2VlIGlmIDggMTYgYW5kIDMy
+IGJpdCBhY2Nlc3MgaXMgd29ya2luZyAqLwotCWFjZV9pbmZvKGFjZSwgInJlZ2lzdGVyIGR1bXA6
+Iik7IC8qIE5vICdcbicgbmVlZGVkISAqLwotCXsKLQkJaW50IGk7Ci0JCWZvciAoaSA9IDA7IGkg
+PCAweDIwOyBpKyspIHsKLQkJCWlmICghKGkgJSAxNikpCi0JCQkJcHJpbnRrKCJcbiIgS0VSTl9J
+TkZPICIgICAgJS4yeDoiLCBpKTsKLQkJCXByaW50aygiICUuMngiLCBhY2VfcmVnX3JlYWQ4KGFj
+ZSwgaSkpOwotCQl9Ci0JCWZvciAoaSA9IDA7IGkgPCAweDIwOyBpKz0yKSB7Ci0JCQlpZiAoIShp
+ICUgMTYpKQotCQkJCXByaW50aygiXG4iIEtFUk5fSU5GTyAiICAgICUuMng6IiwgaSk7Ci0JCQlw
+cmludGsoIiAlLjR4ICIsIGFjZV9yZWdfcmVhZDE2KGFjZSwgaSkpOwotCQl9Ci0JCWZvciAoaSA9
+IDA7IGkgPCAweDIwOyBpKz00KSB7Ci0JCQlpZiAoIShpICUgMTYpKQotCQkJCXByaW50aygiXG4i
+IEtFUk5fSU5GTyAiICAgICUuMng6IiwgaSk7Ci0JCQlwcmludGsoIiAlLjh4ICAgIiwgYWNlX3Jl
+Z19yZWFkMzIoYWNlLCBpKSk7Ci0JCX0KLQl9Ci0JcHJpbnRrKCJcbiIpOwotI2VuZGlmCi0KIAlh
+Y2VfaW5mbyhhY2UsICIgICAgY3RybDogICUuOHggIHNlY2NudC9jbWQ6ICUuNHggICAgICB2ZXI6
+JS40eFxuIgogCSAgICAgICAgICAgICAgIiAgICBzdGF0dXM6JS44eCAgbXB1X2xiYTolLjh4ICBi
+dXNtb2RlOiU0eFxuIgogCSAgICAgICAgICAgICAgIiAgICBlcnJvcjogJS44eCAgY2ZnX2xiYTol
+Ljh4ICBmYXRzdGF0OiUuNHhcbiIsCkBAIC0zNDgsNyArNDU4LDggQEAgdm9pZCBhY2VfZml4X2Ry
+aXZlaWQgKHN0cnVjdCBoZF9kcml2ZWlkICppZCkKICNkZWZpbmUgQUNFX0ZTTV9TVEFURV9SRVFf
+UFJFUEFSRSAgICAgICAgNwogI2RlZmluZSBBQ0VfRlNNX1NUQVRFX1JFUV9UUkFOU0ZFUiAgICAg
+ICA4CiAjZGVmaW5lIEFDRV9GU01fU1RBVEVfUkVRX0NPTVBMRVRFICAgICAgIDkKLSNkZWZpbmUg
+QUNFX0ZTTV9OVU1fU1RBVEVTICAgICAgICAgICAgICAxMAorI2RlZmluZSBBQ0VfRlNNX1NUQVRF
+X0VSUk9SICAgICAgICAgICAgIDEwCisjZGVmaW5lIEFDRV9GU01fTlVNX1NUQVRFUyAgICAgICAg
+ICAgICAgMTEKIAogI2lmIGRlZmluZWQoREVCVUcpCiBjb25zdCBjaGFyKiBhY2Vfc3RhdGVuYW1l
+c1tBQ0VfRlNNX05VTV9TVEFURVNdID0gewpAQCAtNDk3LDkgKzYwOCw3IEBAIHN0YXRpYyB2b2lk
+IGFjZV9mc21fZG9zdGF0ZShzdHJ1Y3QgYWNlX2RldmljZSAqYWNlKQogCQl9CiAKIAkJLyogVHJh
+bnNmZXIgdGhlIG5leHQgYnVmZmVyICovCi0JCWkgPSAxNjsKLQkJd2hpbGUgKGktLSkKLQkJCSph
+Y2UtPmRhdGFfcHRyKysgPSBhY2VfcmVnX3JlYWQxNihhY2UsIDB4NDApOworCQlhY2VfaWRlbnRp
+bihhY2UpOwogCQlhY2UtPmRhdGFfY291bnQtLTsKIAogCQkvKiBJZiB0aGVyZSBhcmUgc3RpbGwg
+YnVmZmVycyB0byBiZSB0cmFuc2ZlcnM7IGp1bXAgb3V0IGhlcmUgKi8KQEAgLTYwOCwxMSArNzE3
+LDkgQEAgc3RhdGljIHZvaWQgYWNlX2ZzbV9kb3N0YXRlKHN0cnVjdCBhY2VfZGV2aWNlICphY2Up
+CiAJCS8qIFRyYW5zZmVyIHRoZSBuZXh0IGJ1ZmZlciAqLwogCQlpID0gMTY7CiAJCWlmIChhY2Ut
+PmZzbV90YXNrID09IEFDRV9UQVNLX1dSSVRFKQotCQkJd2hpbGUgKGktLSkKLQkJCQlhY2VfcmVn
+X3dyaXRlZGF0YShhY2UsIDB4NDAsICphY2UtPmRhdGFfcHRyKyspOworCQkJYWNlX2RhdGFvdXQo
+YWNlKTsKIAkJZWxzZQotCQkJd2hpbGUgKGktLSkKLQkJCQkqYWNlLT5kYXRhX3B0cisrID0gYWNl
+X3JlZ19yZWFkZGF0YShhY2UsIDB4NDApOworCQkJYWNlX2RhdGFpbihhY2UpOwogCQlhY2UtPmRh
+dGFfY291bnQtLTsKIAogCQkvKiBJZiB0aGVyZSBhcmUgc3RpbGwgYnVmZmVycyB0byBiZSB0cmFu
+c2ZlcnM7IGp1bXAgb3V0IGhlcmUgKi8KQEAgLTkwNiw4ICsxMDEzLDIwIEBAIHN0YXRpYyBpbnQg
+YWNlX3NldHVwKHN0cnVjdCBhY2VfZGV2aWNlICphY2UpCiAJc25wcmludGYoYWNlLT5nZC0+ZGlz
+a19uYW1lLCAzMiwgInhzJWMiLCBhY2UtPmlkICsgJ2EnKTsKIAlkZXZpY2VfcmVuYW1lKGFjZS0+
+ZGV2LCBhY2UtPmdkLT5kaXNrX25hbWUpOwogCi0JLyogc2V0IDE2LWJpdCBidXMgd2lkdGggKi8K
+LQlhY2VfcmVnX3dyaXRlMTYoYWNlLCBBQ0VfQlVTTU9ERSwgMHgwMDAxKTsKKwkvKiBzZXQgYnVz
+IHdpZHRoICovCisJaWYgKGFjZS0+YnVzX3dpZHRoID09IDEpIHsKKwkJLyogMHgwMTAxIHNob3Vs
+ZCB3b3JrIHJlZ2FyZGxlc3Mgb2YgZW5kaWFuZXNzICovCisJCWFjZV9vdXRfbGUxNihhY2UsIEFD
+RV9CVVNNT0RFLCAweDAxMDEpOworCisJCS8qIHJlYWQgaXQgYmFjayB0byBkZXRlcm1pbmUgZW5k
+aWFuZXNzICovCisJCWlmIChhY2VfaW5fbGUxNihhY2UsIEFDRV9CVVNNT0RFKSA9PSAweDAwMDEp
+CisJCQlhY2UtPnJlZ19vcHMgPSAmYWNlX3JlZ19sZTE2X29wczsKKwkJZWxzZQorCQkJYWNlLT5y
+ZWdfb3BzID0gJmFjZV9yZWdfYmUxNl9vcHM7CisJfSBlbHNlIHsKKwkJYWNlX291dF84KGFjZSwg
+QUNFX0JVU01PREUsIDB4MDApOworCQlhY2UtPnJlZ19vcHMgPSAmYWNlX3JlZ184X29wczsKKwl9
+CiAKIAkvKiBNYWtlIHN1cmUgdmVyc2lvbiByZWdpc3RlciBpcyBzYW5lICovCiAJdmVyc2lvbiA9
+IGFjZV9yZWdfcmVhZDE2KGFjZSwgQUNFX1ZFUlNJT04pOwpAQCAtMTAwMSw2ICsxMTIwLDkgQEAg
+c3RhdGljIGludCBhY2VfcHJvYmUoc3RydWN0IGRldmljZSAqZGV2aWNlKQogCQlpZiAoZGV2LT5y
+ZXNvdXJjZVtpXS5mbGFncyAmIElPUkVTT1VSQ0VfSVJRKQogCQkJYWNlLT5pcnEgPSBkZXYtPnJl
+c291cmNlW2ldLnN0YXJ0OwogCX0KKwkKKwkvKiBGSVhNRTogU2hvdWxkIGdldCBidXNfd2lkdGgg
+ZnJvbSB0aGUgcGxhdGZvcm1fZGV2aWNlIHN0cnVjdCAqLworCWFjZS0+YnVzX3dpZHRoID0gMTsK
+IAogCWRldl9zZXRfZHJ2ZGF0YSgmZGV2LT5kZXYsIGFjZSk7CiAKLS0gCjEuNS4xCgo=
+------=_Part_6457_26160216.1177659097688--
