@@ -1,23 +1,23 @@
-Return-Path: <david.kanceruk@gmail.com>
-Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.241])
-	by ozlabs.org (Postfix) with ESMTP id 99A16DDF77
+Return-Path: <wolfgang.reissnegger@xilinx.com>
+Received: from outbound4-fra-R.bigfish.com (outbound-fra.frontbridge.com
+	[62.209.45.174])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
+	by ozlabs.org (Postfix) with ESMTP id 3466BDDF9F
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Apr 2007 03:22:30 +1000 (EST)
-Received: by an-out-0708.google.com with SMTP id b21so827721ana
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Apr 2007 10:22:29 -0700 (PDT)
-Message-ID: <5b525e390704271022x599e5504g4f31df9c01965010@mail.gmail.com>
-Date: Fri, 27 Apr 2007 12:22:28 -0500
-From: "David Kanceruk" <david.kanceruk@gmail.com>
-To: "Eberhard Stoll" <eberhard.stoll@berghof.com>
-Subject: Re: MPC5200 ethernet communication stops unexpected
-In-Reply-To: <46322E3F.8050508@berghof.com>
+	Sat, 28 Apr 2007 03:30:16 +1000 (EST)
+Date: Fri, 27 Apr 2007 10:30:08 -0700
+From: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative;
-	boundary="----=_Part_368042_7277862.1177694548794"
-References: <462912AC.8090102@berghof.com> <10220160.post@talk.nabble.com>
-	<46322E3F.8050508@berghof.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] SystemACE driver - abstract register ops
+References: <463199EF.3090900@itee.uq.edu.au>
+	<528646bc0704270031w5c9966f8tc3a5e5292df10a35@mail.gmail.com>
+In-Reply-To: <528646bc0704270031w5c9966f8tc3a5e5292df10a35@mail.gmail.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Message-Id: <20070427173010.620DE4B8073@mail25-fra.bigfish.com>
+Cc: Andrei Konovalov <akonovalov@ru.mvista.com>, Stefan Roese <sr@denx.de>,
+	linuxppc-embedded@ozlabs.org, Rick Moleres <rick.moleres@xilinx.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,111 +28,101 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_368042_7277862.1177694548794
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Hi All,
 
-Hi,
+I wanted to say that I am VERY excited about all the great work that is 
+happening here. As some of you know I am currently working on setting up 
+a Linux kernel git tree that contains a multitude of Xilinx drivers such 
+as IIC, SPI, GPIO, SYSACE, EMAC, EMACLITE, UARTLITE versions, FLASH as 
+well support for the MicroBlaze processor.
+In addition I pulled Grant's virtex-dev branch (with TEMAC and SYSACE). 
+I will integrate those as soon as I'm done with the other work. I am 
+already eying the FrameBuffer driver from Andrei.
 
-     Do your boards use the MPC5200B or MPC5200? Also, do you ever see any
-corrupted data? (I'm guessing you would have mentioned it if you did see
-corrupted data)
+The end goal is to have a kernel tree that contains ALL Xilinx drivers 
+and the multitude of drivers that are being created/updated and 
+contributed here. Having such a kernel available will simplify the 
+process of bringing up a new system. The hope is that contributors will 
+adopt the idea of having a "Xilinx" kernel and will start using that 
+tree as a "base reference".
 
-Regards,
+At this point the Xilinx kernel branch is based on version v2.6.20 with 
+the uc0 patch applied, as well as the various LynuxWorks patches that 
+support MicroBlaze and add the mentioned drivers. The LynuxWorks code 
+has been cleaned up to not contain the proprietary hardcoded sections to 
+make it more acceptable to the Open Source community. I'm sure there's 
+more work to be done, but it's a start.
 
-Dave
+Once the git server is up and running we will be adding new drivers they 
+become available and integrate patches and updates along the way.
 
-On 4/27/07, Eberhard Stoll <eberhard.stoll@berghof.com> wrote:
->
-> Hi,
-> > I've the same problem by running MPC5200B, but under MQX ...
-> >
-> Did you check/compare already some registers with mine?
-> Maybe it could be a hint for a hardware problem in the (RevB) processor
-> - or a hint for two different drivers which have the same problem :-)
-> >> This situation is very rare - only a constellation with 6 Controllers
-> >> and a special ethernet communication load leads to this fault - in
-> about
-> >> one day!
-> >>
-> No more! Now i can reproduce the fault in between 10 to 30 minutes in my
-> office!
->
-> Try this:
-> 1) Use two mpc5200 boards and a pc which can telnet into the
-> controllers. I use 100M
->      FullDuplex settings for the link.
-> 2) Now telnet into the controllers and start on all controllers a flood
-> ping. E.g:
->         # ping -f 10.255.226.70
->     on 10.255.226.71 and a
->         # ping -f 10.255.226.71
->     on 10.255.226.70. So both controllers ping each others. You can
-> watch the
->     dots in your telnet session.
-> 3) After some minutes (about 10 to 30 minutes) one of the two
-> controllers doesn't
->      respond any more. It shows a slow blinking rx led, the link is
-> still ok, but the
->     controller doesn't respond any more. In the telnet session you can see
->     running points on the other controller mixed with some 'E's. In the
-> telnet
->     session on the other controller you see Ethernet is dead.
->     =====================================================
->     Congretulations, now you have reproduced the fault!
->     =====================================================
->
-> It seems that this fault only occurs if the ping is done thru a telnet
-> session. Logging into the controller on the serial console and doing the
-> pings won't trigger the fault (at least not so fast). This might be a
-> timing issue or has to do with Ethernet utilisation. ping -f prints some
-> points for transmitted ethernet frames. In case of a telnet session ping
-> produces 2 packets at the same time. One for the ping and another for
-> the dot in telnet!
-> If i do a 'ping -f 10.255.226.71 > /dev/null', which suppresses the
-> output now run for hours ...
->
-> Eberhard
->
-> ______________________________________________________________________
-> This email has been scanned by the MessageLabs Email Security System.
-> For more information please visit http://www.messagelabs.com/email
-> ______________________________________________________________________
+Unfortunately, I spend a lot of my time now working the politics of 
+getting a git server up and running and convincing management that this 
+actually _is_ a good idea. It's slow going and there's a lot of meetings 
+and discussions going on. But I'm still hopeful. As a backup I'm trying 
+to get a kernel.org/git account so I can publish the tree there.
+
+I will post news here as they unfold. In the meantime it would be very 
+interesting to hear ideas and suggestions from you. Concerns that people 
+have. Pitfalls to look out for etc.
+
+Thanks,
+    Wolfgang
+
+
+
+Grant Likely wrote:
+> On 4/27/07, John Williams <jwilliams@itee.uq.edu.au> wrote:
+>> Grant,
+>>
+>> Thanks for your work on the SystemACE driver - I'll be porting/merging
+>> this across to MicroBlaze very shortly.
+> 
+> Very cool; I hope it works well.
+> 
+>> Given that SysACE can be hooked up in any number of ways, bit widths,
+>> endians, PPC/Microblaze, can you please offer your comments on the
+>> attached patch?
+> 
+> Okay, after getting over my initial mirth about working on the *exact*
+> same thing and finishing it at the *exact* time that you sent me your
+> patch, I think I'm ready to make useful comments.  :-)
+>>
+>> It introduce a private ace_reg_ops structure, with various member
+>> functions for the different kinds of accesses to the HW.
+>>
+>> This patch should not change the functionality of your original driver
+>> at all, it's just groundwork for what's to come.
+>>
+>> I recognise that it adds indirection into the various access paths, and
+>> potentially a little bloat.  Whether this is better than #if
+>> 1...#else...#endif is debatable.
+> 
+> I'm not to concerned with the added redirection.  On my 405 designs, I
+> find that bus overhead has a far greater impact than any of the
+> processing paths in the driver, so this shouldn't be a problem.
+> Besides, when we finally move to arch/powerpc, it will become very
+> feasable to have a single kernel image that will boot on multiple
+> ppc405 FPGA configurations; just change the device tree passed in.
+> 
+>> Similar issues will arise for most (all?) of the Xilinx drivers that we
+>> will share between PPC and MicroBlaze.  Hopefully we can converge on a
+>> nice consistent and clean way of handling these dual arch drivers.
+> 
+> I agree 100%
+> 
+> For your reading pleasure, I've attached the bus attachment changes
+> that I've made in my tree.  I hope to get this driver accepted into
+> mainline during the 2.6.22 merge window; so please get any comments
+> you have back to me ASAP.
+> 
+> Cheers,
+> g.
+> 
+> 
+> ------------------------------------------------------------------------
+> 
 > _______________________________________________
 > Linuxppc-embedded mailing list
 > Linuxppc-embedded@ozlabs.org
 > https://ozlabs.org/mailman/listinfo/linuxppc-embedded
->
-
-
-
--- 
-David Kanceruk
-
-"The generation of random numbers is far too important to be left to
-chance."
-
-------=_Part_368042_7277862.1177694548794
-Content-Type: text/html; charset=ISO-8859-1
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
-
-Hi,<br><br>&nbsp;&nbsp;&nbsp;&nbsp; Do your boards use the MPC5200B or MPC5200? Also, do you ever see any corrupted data? (I&#39;m guessing you would have mentioned it if you did see corrupted data)<br><br>Regards,<br><br>Dave<br><br><div><span class="gmail_quote">
-On 4/27/07, <b class="gmail_sendername">Eberhard Stoll</b> &lt;<a href="mailto:eberhard.stoll@berghof.com">eberhard.stoll@berghof.com</a>&gt; wrote:</span><blockquote class="gmail_quote" style="border-left: 1px solid rgb(204, 204, 204); margin: 0pt 0pt 0pt 0.8ex; padding-left: 1ex;">
-Hi,<br>&gt; I&#39;ve the same problem by running MPC5200B, but under MQX ...<br>&gt;<br>Did you check/compare already some registers with mine?<br>Maybe it could be a hint for a hardware problem in the (RevB) processor<br>
-- or a hint for two different drivers which have the same problem :-)<br>&gt;&gt; This situation is very rare - only a constellation with 6 Controllers<br>&gt;&gt; and a special ethernet communication load leads to this fault - in about
-<br>&gt;&gt; one day!<br>&gt;&gt;<br>No more! Now i can reproduce the fault in between 10 to 30 minutes in my<br>office!<br><br>Try this:<br>1) Use two mpc5200 boards and a pc which can telnet into the<br>controllers. I use 100M
-<br>&nbsp;&nbsp;&nbsp;&nbsp; FullDuplex settings for the link.<br>2) Now telnet into the controllers and start on all controllers a flood<br>ping. E.g:<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# ping -f <a href="http://10.255.226.70">10.255.226.70</a><br>&nbsp;&nbsp;&nbsp;&nbsp;on <a href="http://10.255.226.71">
-10.255.226.71</a> and a<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;# ping -f <a href="http://10.255.226.71">10.255.226.71</a><br>&nbsp;&nbsp;&nbsp;&nbsp;on <a href="http://10.255.226.70">10.255.226.70</a>. So both controllers ping each others. You can<br>watch the<br>&nbsp;&nbsp;&nbsp;&nbsp;dots in your telnet session.
-<br>3) After some minutes (about 10 to 30 minutes) one of the two<br>controllers doesn&#39;t<br>&nbsp;&nbsp;&nbsp;&nbsp; respond any more. It shows a slow blinking rx led, the link is<br>still ok, but the<br>&nbsp;&nbsp;&nbsp;&nbsp;controller doesn&#39;t respond any more. In the telnet session you can see
-<br>&nbsp;&nbsp;&nbsp;&nbsp;running points on the other controller mixed with some &#39;E&#39;s. In the<br>telnet<br>&nbsp;&nbsp;&nbsp;&nbsp;session on the other controller you see Ethernet is dead.<br>&nbsp;&nbsp;&nbsp;&nbsp;=====================================================<br>
-&nbsp;&nbsp;&nbsp;&nbsp;Congretulations, now you have reproduced the fault!<br>&nbsp;&nbsp;&nbsp;&nbsp;=====================================================<br><br>It seems that this fault only occurs if the ping is done thru a telnet<br>session. Logging into the controller on the serial console and doing the
-<br>pings won&#39;t trigger the fault (at least not so fast). This might be a<br>timing issue or has to do with Ethernet utilisation. ping -f prints some<br>points for transmitted ethernet frames. In case of a telnet session ping
-<br>produces 2 packets at the same time. One for the ping and another for<br>the dot in telnet!<br>If i do a &#39;ping -f <a href="http://10.255.226.71">10.255.226.71</a> &gt; /dev/null&#39;, which suppresses the<br>output now run for hours ...
-<br><br>Eberhard<br><br>______________________________________________________________________<br>This email has been scanned by the MessageLabs Email Security System.<br>For more information please visit <a href="http://www.messagelabs.com/email">
-http://www.messagelabs.com/email</a><br>______________________________________________________________________<br>_______________________________________________<br>Linuxppc-embedded mailing list<br><a href="mailto:Linuxppc-embedded@ozlabs.org">
-Linuxppc-embedded@ozlabs.org</a><br><a href="https://ozlabs.org/mailman/listinfo/linuxppc-embedded">https://ozlabs.org/mailman/listinfo/linuxppc-embedded</a><br></blockquote></div><br><br clear="all"><br>-- <br>David Kanceruk
-<br><br>&quot;The generation of random numbers is far too important to be left to chance.&quot;
-
-------=_Part_368042_7277862.1177694548794--
