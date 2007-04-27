@@ -1,18 +1,19 @@
-Return-Path: <djiang@mvista.com>
-Received: from gateway-1237.mvista.com (gateway-1237.mvista.com
-	[63.81.120.158]) by ozlabs.org (Postfix) with ESMTP id 4230DDDFC0
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 02:58:52 +1000 (EST)
-Message-ID: <46322C76.3060903@mvista.com>
-Date: Fri, 27 Apr 2007 10:01:42 -0700
-From: Dave Jiang <djiang@mvista.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>, paulus@samba.org
-Subject: Re: [PATCH] add reg and stack dump to booke WD handler
-References: <20070413173524.GA17890@blade.az.mvista.com>	<461FCB6F.7010504@ru.mvista.com>	<20070413200659.GA21588@blade.az.mvista.com>	<B8CF9F53-9F51-4DD5-9CB6-16C69502A1CA@kernel.crashing.org>
-	<20070413221657.GA23624@blade.az.mvista.com>
-In-Reply-To: <20070413221657.GA23624@blade.az.mvista.com>
-Content-Type: text/plain; charset=ISO-8859-1
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <miltonm@bga.com>
+In-Reply-To: <1177690940.24866.124.camel@luke-laptop>
+References: <1177626236.24866.99.camel@luke-laptop> ,
+	<1177601310.24866.94.camel@luke-laptop>
+	<772e4d4c76807769449cf1bf874d2ce1@bga.com>
+	<1177690940.24866.124.camel@luke-laptop>
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c21def285f4ad2e13914af73f7610c0b@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH v4] powerpc: 64K page support for kexec
+Date: Fri, 27 Apr 2007 11:59:07 -0500
+To: Luke Browning <lukebr@linux.vnet.ibm.com>
+Cc: Arnd Bergmann <arnd@arndb.de>, linuxppc-dev@ozlabs.org,
+	Paul Mackerras <paulus@samba.org>,
+	Olof Johansson <olof@lixom.net>, cbe-oss-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,31 +23,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Paul Mackerras wrote:
-> Dave Jiang wrote:
-> > Have the booke watchdog dump some useful information when triggered.
-> > Hopefully that'll give the user some hint of what happened rather than just a
-> > mysterious reboot.
->
-> Why not call either die() or panic()?  Won't they do what you want?
 
-I think the main thing I'm worried about is kexec. Both panic and die handler
-can potentially call kexec. The watchdog cannot be killed unless a hardware
-reset happens. So it is possible that during the boot of the kexec'd kernel the
-watchdog forces a hardware reset. In fact, the watchdog can actually make kdump
-rather tricky since the current implementation makes it being kept alive via
-userland.
+On Apr 27, 2007, at 11:22 AM, Luke Browni+	/*
+> +	 * FIXME, the code below works for 16M, 64K, and 4K pages as these
+> +	 * fall under the p<=23 rules for calculating the virtual address.
+> +	 * In the case of 16M pages, an extra bit is stolen from the AVPN
+> +	 * field to achieve the requisite 24 bits.
+> +	 *
+> +	 * You can use kexec -l to debug new page support!
+> +	 */
+> +	BUG_ON(hpte_v & 0x4000000000000000UL && !panic);   /* 1T segment */
+> +	BUG_ON(size == MMU_PAGE_16G && !panic);
+> +	BUG_ON(size == MMU_PAGE_64K_AP && !panic);
+> +
 
-I'm thinking that the only way to get around that is to ping the watchdog
-consistently in something such as the timer interrupt. But then we probably
-have to move the initialization of the driver into core kernel code and not a
-char driver. Do we want to do that?
+I see I've achived my nefarious goal of making these bugs never happen.
 
--- 
+(panic is a function, so you are checking that the staticly linked
+non-weak function is available.   If you want to check on when
+if its a panic kdump or not, you need to decode the flag and pass
+it to kexec_sequence, pass it back here, and update all platforms
+for the new parameter).
 
-------------------------------------------------------
-Dave Jiang
-Software Engineer
-MontaVista Software, Inc.
-http://www.mvista.com
-------------------------------------------------------
+But I still say the check while clearing the table is too late,
+it should be a debug scan before clearing any mappings.
+
+milton
