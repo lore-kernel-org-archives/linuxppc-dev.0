@@ -1,22 +1,17 @@
 Return-Path: <olof@lixom.net>
 Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id C8316DDFC8
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 04:09:07 +1000 (EST)
-Date: Fri, 27 Apr 2007 13:09:33 -0500
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH v2] [2.6.22] pasemi: cpufreq driver
-Message-ID: <20070427180933.GB15582@lixom.net>
-References: <20070425204633.GC19781@lixom.net>
-	<20070426053700.GA23922@lixom.net>
-	<1177583160.6814.37.camel@johannes.berg>
-	<20070426203710.GB17302@lixom.net>
-	<1177666803.7828.30.camel@johannes.berg>
+	by ozlabs.org (Postfix) with ESMTP id 9B8DCDDF87
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 04:13:44 +1000 (EST)
+Date: Fri, 27 Apr 2007 13:14:10 -0500
+To: Matt Sealey <matt@genesi-usa.com>
+Subject: Re: [PATCH] powerpc: Show current speed in /proc/cpuinfo
+Message-ID: <20070427181410.GC15582@lixom.net>
+References: <20070427084118.GA8842@lixom.net> <4631BBB1.9010705@genesi-usa.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <1177666803.7828.30.camel@johannes.berg>
+In-Reply-To: <4631BBB1.9010705@genesi-usa.com>
 From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, arnd@arndb.de,
-	cpufreq@lists.linux.org.uk
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,20 +21,36 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Fri, Apr 27, 2007 at 11:40:03AM +0200, Johannes Berg wrote:
+On Fri, Apr 27, 2007 at 10:00:33AM +0100, Matt Sealey wrote:
 
-> > Hmm, I just tried adding debugging to the cpu_init code, and I'm not
-> > seeing it called more than once (i.e. only for cpu 0). Mind you, I don't
-> > have cpu hotplug support at this time.
+> Would it not be relevant to keep listing the maximum CPU speed as well
+> as the real, current CPU speed?
 > 
-> Oh right, you need cpu hotplug support for the bug to show up. What
-> happens then is you unplug and replug a CPU and the sysfs cpufreq stuff
-> for the CPU you just replugged is gone.
+> Intel encode this into their CPUID string and when I bring up Windows' System
+> Properties dialog I get this;
+> 
+> Intel(R) Pentium(R) M processor 1.70GHz
+> 593MHz, 512MB of RAM
+> 
+> So you can always, always find out very easily what spec your processor
+> is, and not just what cpufreq has done with it?
 
-Ok. Nothing for me to worry about right now then, but it's good to keep
-in mind for when the time comes.
+On a system running cpufreq, you might not even have booted
+the system at full speed, so the only way to know for sure
+what the max speed is, is to look at the one in cpufreq
+(/sys/devices/system/cpu/cpu<x>/cpufreq/scaling_max_freq).
 
+For non-cpufreq platforms, the speed reported will be the same as before,
+which on most platforms is whatever firmware tells us the speed of the
+cpu is.
 
-Thanks,
+> > +	/* cpufreq_speed_get() is in kHz */
+> > +	freq = cpufreq_quick_get(cpu_id);
+> 
+> Is it speed or quick? This and the comment below confused me, KHz or Hz? :D
+
+It's quick, I'll fix that. ppc_proc_freq is in Hz, freq in kHz, so you
+need to divide.
+
 
 -Olof
