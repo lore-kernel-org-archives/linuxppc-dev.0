@@ -1,21 +1,20 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 923C7DE05E
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 08:02:53 +1000 (EST)
-Subject: [PATCH v2] powerpc: fix suspend states again
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <1177710883.3565.66.camel@johannes.berg>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id 752D2DDEDD
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 09:13:23 +1000 (EST)
+Date: Fri, 27 Apr 2007 18:13:52 -0500
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH v2] powerpc: fix suspend states again
+Message-ID: <20070427231352.GA19524@lixom.net>
 References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
 	<1177710095.3565.64.camel@johannes.berg>
 	<20070427215338.GB17224@lixom.net>
 	<1177710883.3565.66.camel@johannes.berg>
-Content-Type: text/plain
-Date: Sat, 28 Apr 2007 00:02:52 +0200
-Message-Id: <1177711372.3565.73.camel@johannes.berg>
-Mime-Version: 1.0
+	<1177711372.3565.73.camel@johannes.berg>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <1177711372.3565.73.camel@johannes.berg>
+From: olof@lixom.net (Olof Johansson)
 Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -26,187 +25,8 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-In commit 0fba3a1f39f8b0a50b56c8b068fa52131cbc84c2 (a very long time ago,
-May 2006), I fixed a bug that caused powermacs to crash when you tried
-entering standby/mem suspend states.
+On Sat, Apr 28, 2007 at 12:02:52AM +0200, Johannes Berg wrote:
+> Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+> Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-As I'm now getting more familiar with the suspend code I notice a few
-more things:
- 1. we previously misunderstood what pm_ops is for, it isn't supposed to be
-    for doing platform dependent suspend/resume stuff that needs to be done
-    for suspend to disk (as we currently try to use it!), it is instead for
-    entering platform dependent suspend states ("standby", "mem").
- 2. due to the first point, we never properly save FPU and altivec states
-    when suspending to disk. It probably hasn't hurt yet because the process
-    that writes the "disk" to /sys/power/state uses neither and its context
-    is used.
-
-This patch addresses these points as follows:
- 1. remove all pm_ops from powermac, powermac suspend to ram isn't currently
-    usable via /sys/power/state but is done via the PMU instead.
- 2. move the code responsible for storing FPU/altivec state into
-    save_processor_state and the set_context() call to restore_processor_state.
- 3. add a call to kernel_enable_spe()
-
-It may look like there is some code removal missing but that is actually because
-the new suspend.h file overrides the ppc/suspend.h one which was previously used.
-
-A follow-on patch will create new pm_ops for via-pmu.
-
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
-Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-
----
-This time without the extern declaration and four new lines of license text ;)
-
- arch/powerpc/kernel/Makefile            |    1 
- arch/powerpc/kernel/swsusp.c            |   41 ++++++++++++++++++++
- arch/powerpc/platforms/powermac/setup.c |   65 --------------------------------
- include/asm-powerpc/suspend.h           |    9 ++++
- 4 files changed, 51 insertions(+), 65 deletions(-)
-
---- linux-2.6.orig/arch/powerpc/platforms/powermac/setup.c	2007-04-27 23:56:21.466021121 +0200
-+++ linux-2.6/arch/powerpc/platforms/powermac/setup.c	2007-04-28 00:00:08.986021121 +0200
-@@ -420,76 +420,11 @@ static void __init find_boot_device(void
- #endif
- }
- 
--/* TODO: Merge the suspend-to-ram with the common code !!!
-- * currently, this is a stub implementation for suspend-to-disk
-- * only
-- */
--
--#ifdef CONFIG_SOFTWARE_SUSPEND
--
--static int pmac_pm_prepare(suspend_state_t state)
--{
--	printk(KERN_DEBUG "%s(%d)\n", __FUNCTION__, state);
--
--	return 0;
--}
--
--static int pmac_pm_enter(suspend_state_t state)
--{
--	printk(KERN_DEBUG "%s(%d)\n", __FUNCTION__, state);
--
--	/* Giveup the lazy FPU & vec so we don't have to back them
--	 * up from the low level code
--	 */
--	enable_kernel_fp();
--
--#ifdef CONFIG_ALTIVEC
--	if (cur_cpu_spec->cpu_features & CPU_FTR_ALTIVEC)
--		enable_kernel_altivec();
--#endif /* CONFIG_ALTIVEC */
--
--	return 0;
--}
--
--static int pmac_pm_finish(suspend_state_t state)
--{
--	printk(KERN_DEBUG "%s(%d)\n", __FUNCTION__, state);
--
--	/* Restore userland MMU context */
--	set_context(current->active_mm->context.id, current->active_mm->pgd);
--
--	return 0;
--}
--
--static int pmac_pm_valid(suspend_state_t state)
--{
--	switch (state) {
--	case PM_SUSPEND_DISK:
--		return 1;
--	/* can't do any other states via generic mechanism yet */
--	default:
--		return 0;
--	}
--}
--
--static struct pm_ops pmac_pm_ops = {
--	.pm_disk_mode	= PM_DISK_SHUTDOWN,
--	.prepare	= pmac_pm_prepare,
--	.enter		= pmac_pm_enter,
--	.finish		= pmac_pm_finish,
--	.valid		= pmac_pm_valid,
--};
--
--#endif /* CONFIG_SOFTWARE_SUSPEND */
--
- static int initializing = 1;
- 
- static int pmac_late_init(void)
- {
- 	initializing = 0;
--#ifdef CONFIG_SOFTWARE_SUSPEND
--	pm_set_ops(&pmac_pm_ops);
--#endif /* CONFIG_SOFTWARE_SUSPEND */
- 	return 0;
- }
- 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/include/asm-powerpc/suspend.h	2007-04-28 00:00:08.986021121 +0200
-@@ -0,0 +1,9 @@
-+#ifndef __ASM_POWERPC_SUSPEND_H
-+#define __ASM_POWERPC_SUSPEND_H
-+
-+static inline int arch_prepare_suspend(void) { return 0; }
-+
-+void save_processor_state(void);
-+void restore_processor_state(void);
-+
-+#endif /* __ASM_POWERPC_SUSPEND_H */
---- linux-2.6.orig/arch/powerpc/kernel/Makefile	2007-04-27 23:56:21.526021121 +0200
-+++ linux-2.6/arch/powerpc/kernel/Makefile	2007-04-28 00:00:08.996021121 +0200
-@@ -36,6 +36,7 @@ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsy
- obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
- obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
- obj-$(CONFIG_TAU)		+= tau_6xx.o
-+obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o
- obj32-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_32.o
- obj32-$(CONFIG_MODULES)		+= module_32.o
- 
---- /dev/null	1970-01-01 00:00:00.000000000 +0000
-+++ linux-2.6/arch/powerpc/kernel/swsusp.c	2007-04-28 00:02:06.186021121 +0200
-@@ -0,0 +1,41 @@
-+/*
-+ * Common powerpc suspend code for 32 and 64 bits
-+ *
-+ * Copyright 2007	Johannes Berg <johannes@sipsolutions.net>
-+ *
-+ * This program is free software; you can redistribute it and/or
-+ * modify it under the terms of the GNU General Public License
-+ * as published by the Free Software Foundation; either version
-+ * 2 of the License, or (at your option) any later version.
-+ */
-+
-+#include <linux/sched.h>
-+#include <asm/suspend.h>
-+#include <asm/cputable.h>
-+#include <asm/system.h>
-+#include <asm/current.h>
-+#include <asm/mmu_context.h>
-+
-+void save_processor_state(void)
-+{
-+	/* Giveup the lazy FPU & vec so we don't have to back them
-+	 * up from the low level code
-+	 */
-+	enable_kernel_fp();
-+
-+#ifdef CONFIG_ALTIVEC
-+	if (cur_cpu_spec->cpu_features & CPU_FTR_ALTIVEC)
-+		enable_kernel_altivec();
-+#endif /* CONFIG_ALTIVEC */
-+
-+#ifdef CONFIG_SPE
-+	enable_kernel_spe();
-+#endif
-+}
-+
-+void restore_processor_state(void)
-+{
-+#ifdef CONFIG_PPC32
-+	set_context(current->active_mm->context.id, current->active_mm->pgd);
-+#endif
-+}
+Acked-by: Olof Johansson <olof@lixom.net>
