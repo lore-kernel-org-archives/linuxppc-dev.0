@@ -1,22 +1,17 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 2F46FDE067
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 08:00:03 +1000 (EST)
-Subject: [PATCH] powerpc: put enable_kernel_spe into a header
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Olof Johansson <olof@lixom.net>
-In-Reply-To: <1177710883.3565.66.camel@johannes.berg>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1177710095.3565.64.camel@johannes.berg>
-	<20070427215338.GB17224@lixom.net>
-	<1177710883.3565.66.camel@johannes.berg>
-Content-Type: text/plain
-Date: Sat, 28 Apr 2007 00:00:03 +0200
-Message-Id: <1177711203.3565.70.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <mgreer@mvista.com>
+Date: Fri, 27 Apr 2007 15:02:45 -0700
+From: "Mark A. Greer" <mgreer@mvista.com>
+To: Paul Mackerras <paulus@samba.org>
+Subject: Re: [PATCH 3/13] powerpc: Add bootwrapper support for Marvell/mv64x60
+	hostbridge
+Message-ID: <20070427220245.GC14490@mag.az.mvista.com>
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<20070425235619.GE4046@mag.az.mvista.com>
+	<17969.37331.228482.225919@cargo.ozlabs.ibm.com>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <17969.37331.228482.225919@cargo.ozlabs.ibm.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,22 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch puts enable_kernel_spe into <asm-powerpc/system.h> along with
-enable_kernel_altivec etc.
+On Fri, Apr 27, 2007 at 04:01:55PM +1000, Paul Mackerras wrote:
+> Mark A. Greer writes:
+> 
+> >  Makefile  |    2 
+> >  mv64x60.c |  581 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+> >  mv64x60.h |   70 +++++++
+> >  3 files changed, 652 insertions(+), 1 deletion(-)
+> 
+> 650 lines just to set up a hostbridge - that seems like rather a lot.
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Yes, it is.  This probably won't make you feel any better but most of
+the lines are #define's or table init lines.  There's only a couple
+hundred or so that are actual code.
 
----
- include/asm-powerpc/system.h |    1 +
- 1 file changed, 1 insertion(+)
+> Why do we have to do this here?  Isn't there some firmware that should
+> do this for us?
 
---- linux-2.6.orig/include/asm-powerpc/system.h	2007-04-27 23:56:42.976021121 +0200
-+++ linux-2.6/include/asm-powerpc/system.h	2007-04-27 23:59:50.826021121 +0200
-@@ -131,6 +131,7 @@ extern void enable_kernel_altivec(void);
- extern void giveup_altivec(struct task_struct *);
- extern void load_up_altivec(struct task_struct *);
- extern int emulate_altivec(struct pt_regs *);
-+extern void enable_kernel_spe(void);
- extern void giveup_spe(struct task_struct *);
- extern void load_up_spe(struct task_struct *);
- extern int fix_alignment(struct pt_regs *);
+Well, the firmware just doesn't do all the init that's required.  And,
+some of the init that it does do is wrong.  For example, the window for
+the MPSC (serial ctlr) to access main memory isn't set up so the kernel
+mpsc driver can't dma.  There are several other examles.
+
+All of this init should be in the firmware but its Motorola/ECC's
+firmware and I/we have no control over it.  Given that, I/we have to do
+the init somewhere.  Either in the kernel or the bootwrapper.
+I vote for the bootwrapper but then your vote is the only one that actually
+counts.  :)
+
+Mark
