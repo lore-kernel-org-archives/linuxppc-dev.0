@@ -1,16 +1,19 @@
-Return-Path: <mgreer@mvista.com>
-Date: Fri, 27 Apr 2007 13:48:24 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 6B62EDE074
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 07:41:37 +1000 (EST)
+Subject: [PATCH] powerpc: fix suspend states again
+From: Johannes Berg <johannes@sipsolutions.net>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 2/13] powerpc: Add dt_xlate_addr() to bootwrapper
-Message-ID: <20070427204824.GB14490@mag.az.mvista.com>
-References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070425235543.GD4046@mag.az.mvista.com>
-	<17969.36930.988443.16462@cargo.ozlabs.ibm.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17969.36930.988443.16462@cargo.ozlabs.ibm.com>
-Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+In-Reply-To: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Fri, 27 Apr 2007 23:41:35 +0200
+Message-Id: <1177710095.3565.64.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -20,131 +23,190 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+In commit 0fba3a1f39f8b0a50b56c8b068fa52131cbc84c2 (a very long time ago,
+May 2006), I fixed a bug that caused powermacs to crash when you tried
+entering standby/mem suspend states.
 
-dt_xlate_reg() looks up the 'reg' property in the specified node
-to get the address and size to translate.  Add dt_xlate_addr()
-which is passed in the address and size to translate.
+As I'm now getting more familiar with the suspend code I notice a few
+more things:
+ 1. we previously misunderstood what pm_ops is for, it isn't supposed to be
+    for doing platform dependent suspend/resume stuff that needs to be done
+    for suspend to disk (as we currently try to use it!), it is instead for
+    entering platform dependent suspend states ("standby", "mem").
+ 2. due to the first point, we never properly save FPU and altivec states
+    when suspending to disk. It probably hasn't hurt yet because the process
+    that writes the "disk" to /sys/power/state uses neither and its context
+    is used.
 
-Signed-off-by: Mark A. Greer <mgreer@mvista.com>
+This patch addresses these points as follows:
+ 1. remove all pm_ops from powermac, powermac suspend to ram isn't currently
+    usable via /sys/power/state but is done via the PMU instead.
+ 2. move the code responsible for storing FPU/altivec state into
+    save_processor_state and the set_context() call to restore_processor_state.
+ 3. add a call to kernel_enable_spe()
+
+It may look like there is some code removal missing but that is actually because
+the new suspend.h file overrides the ppc/suspend.h one which was previously used.
+
+A follow-on patch will create new pm_ops for via-pmu.
+
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Acked-by: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+
 ---
+Ben's acked-by can be found at
+http://thread.gmane.org/gmane.linux.ports.ppc64.devel/17441/focus=17467,
+I just reworded the description slightly since then.
 
-Paul, this should apply on top of Scott's patch.
+ arch/powerpc/kernel/Makefile            |    1 
+ arch/powerpc/kernel/swsusp.c            |   42 ++++++++++++++++++++
+ arch/powerpc/platforms/powermac/setup.c |   65 --------------------------------
+ include/asm-powerpc/suspend.h           |    9 ++++
+ 4 files changed, 52 insertions(+), 65 deletions(-)
 
- devtree.c |   47 +++++++++++++++++++++++++++++++++--------------
- ops.h     |    4 ++--
- 2 files changed, 35 insertions(+), 16 deletions(-)
-
-Index: powerpc/arch/powerpc/boot/devtree.c
-===================================================================
---- powerpc.orig/arch/powerpc/boot/devtree.c
-+++ powerpc/arch/powerpc/boot/devtree.c
-@@ -207,12 +207,13 @@ static int find_range(u32 *reg, u32 *ran
-  * In particular, PCI is not supported.  Also, only the beginning of the
-  * reg block is tracked; size is ignored except in ranges.
-  */
--int dt_xlate_reg(void *node, int res, unsigned long *addr,
--                 unsigned long *size)
-+static u32 dt_xlate_buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
-+
-+static int dt_xlate(void *node, int res, int reglen, unsigned long *addr,
-+		unsigned long *size)
- {
- 	u32 last_addr[MAX_ADDR_CELLS];
- 	u32 this_addr[MAX_ADDR_CELLS];
--	u32 buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
- 	void *parent;
- 	u64 ret_addr, ret_size;
- 	u32 naddr, nsize, prev_naddr;
-@@ -227,19 +228,18 @@ int dt_xlate_reg(void *node, int res, un
- 	if (nsize > 2)
- 		return 0;
- 
--	buflen = getprop(node, "reg", buf, sizeof(buf)) / 4;
- 	offset = (naddr + nsize) * res;
- 
--	if (buflen < offset + naddr + nsize ||
--	    sizeof(buf) < offset + naddr + nsize)
-+	if (reglen < offset + naddr + nsize ||
-+	    sizeof(dt_xlate_buf) < offset + naddr + nsize)
- 		return 0;
- 
--	copy_val(last_addr, buf + offset, naddr);
-+	copy_val(last_addr, dt_xlate_buf + offset, naddr);
- 
--	ret_size = buf[offset + naddr];
-+	ret_size = dt_xlate_buf[offset + naddr];
- 	if (nsize == 2) {
- 		ret_size <<= 32;
--		ret_size |= buf[offset + naddr + 1];
-+		ret_size |= dt_xlate_buf[offset + naddr + 1];
- 	}
- 
- 	while ((node = get_parent(node))) {
-@@ -247,24 +247,25 @@ int dt_xlate_reg(void *node, int res, un
- 
- 		get_reg_format(node, &naddr, &nsize);
- 
--		buflen = getprop(node, "ranges", buf, sizeof(buf));
-+		buflen = getprop(node, "ranges", dt_xlate_buf,
-+				sizeof(dt_xlate_buf));
- 		if (buflen < 0)
- 			continue;
--		if (buflen > sizeof(buf))
-+		if (buflen > sizeof(dt_xlate_buf))
- 			return 0;
- 
--		offset = find_range(last_addr, buf, prev_naddr,
-+		offset = find_range(last_addr, dt_xlate_buf, prev_naddr,
- 		                    naddr, nsize, buflen / 4);
- 
- 		if (offset < 0)
- 			return 0;
- 
--		copy_val(this_addr, buf + offset, prev_naddr);
-+		copy_val(this_addr, dt_xlate_buf + offset, prev_naddr);
- 
- 		if (!sub_reg(last_addr, this_addr))
- 			return 0;
- 
--		copy_val(this_addr, buf + offset + prev_naddr, naddr);
-+		copy_val(this_addr, dt_xlate_buf + offset + prev_naddr, naddr);
- 
- 		if (!add_reg(last_addr, this_addr, naddr))
- 			return 0;
-@@ -286,3 +287,21 @@ int dt_xlate_reg(void *node, int res, un
- 
- 	return 1;
+--- linux-2.6.orig/arch/powerpc/platforms/powermac/setup.c	2007-04-27 23:24:57.576021121 +0200
++++ linux-2.6/arch/powerpc/platforms/powermac/setup.c	2007-04-27 23:25:20.396021121 +0200
+@@ -420,76 +420,11 @@ static void __init find_boot_device(void
+ #endif
  }
-+
-+int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size)
-+{
-+	int reglen;
-+
-+	reglen = getprop(node, "reg", dt_xlate_buf, sizeof(dt_xlate_buf)) / 4;
-+	return dt_xlate(node, res, reglen, addr, size);
-+}
-+
-+int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr)
-+{
-+
-+	if (buflen > sizeof(dt_xlate_buf))
-+		return 0;
-+
-+	memcpy(dt_xlate_buf, buf, buflen);
-+	return dt_xlate(node, 0, buflen / 4, xlated_addr, NULL);
-+}
-Index: powerpc/arch/powerpc/boot/ops.h
-===================================================================
---- powerpc.orig/arch/powerpc/boot/ops.h
-+++ powerpc/arch/powerpc/boot/ops.h
-@@ -82,8 +82,8 @@ int ns16550_console_init(void *devp, str
- void *simple_alloc_init(char *base, unsigned long heap_size,
- 			unsigned long granularity, unsigned long max_allocs);
- extern void flush_cache(void *, unsigned long);
--int dt_xlate_reg(void *node, int res, unsigned long *addr,
--                 unsigned long *size);
-+int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
-+int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr);
  
- static inline void *finddevice(const char *name)
+-/* TODO: Merge the suspend-to-ram with the common code !!!
+- * currently, this is a stub implementation for suspend-to-disk
+- * only
+- */
+-
+-#ifdef CONFIG_SOFTWARE_SUSPEND
+-
+-static int pmac_pm_prepare(suspend_state_t state)
+-{
+-	printk(KERN_DEBUG "%s(%d)\n", __FUNCTION__, state);
+-
+-	return 0;
+-}
+-
+-static int pmac_pm_enter(suspend_state_t state)
+-{
+-	printk(KERN_DEBUG "%s(%d)\n", __FUNCTION__, state);
+-
+-	/* Giveup the lazy FPU & vec so we don't have to back them
+-	 * up from the low level code
+-	 */
+-	enable_kernel_fp();
+-
+-#ifdef CONFIG_ALTIVEC
+-	if (cur_cpu_spec->cpu_features & CPU_FTR_ALTIVEC)
+-		enable_kernel_altivec();
+-#endif /* CONFIG_ALTIVEC */
+-
+-	return 0;
+-}
+-
+-static int pmac_pm_finish(suspend_state_t state)
+-{
+-	printk(KERN_DEBUG "%s(%d)\n", __FUNCTION__, state);
+-
+-	/* Restore userland MMU context */
+-	set_context(current->active_mm->context.id, current->active_mm->pgd);
+-
+-	return 0;
+-}
+-
+-static int pmac_pm_valid(suspend_state_t state)
+-{
+-	switch (state) {
+-	case PM_SUSPEND_DISK:
+-		return 1;
+-	/* can't do any other states via generic mechanism yet */
+-	default:
+-		return 0;
+-	}
+-}
+-
+-static struct pm_ops pmac_pm_ops = {
+-	.pm_disk_mode	= PM_DISK_SHUTDOWN,
+-	.prepare	= pmac_pm_prepare,
+-	.enter		= pmac_pm_enter,
+-	.finish		= pmac_pm_finish,
+-	.valid		= pmac_pm_valid,
+-};
+-
+-#endif /* CONFIG_SOFTWARE_SUSPEND */
+-
+ static int initializing = 1;
+ 
+ static int pmac_late_init(void)
  {
+ 	initializing = 0;
+-#ifdef CONFIG_SOFTWARE_SUSPEND
+-	pm_set_ops(&pmac_pm_ops);
+-#endif /* CONFIG_SOFTWARE_SUSPEND */
+ 	return 0;
+ }
+ 
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/include/asm-powerpc/suspend.h	2007-04-27 23:25:20.396021121 +0200
+@@ -0,0 +1,9 @@
++#ifndef __ASM_POWERPC_SUSPEND_H
++#define __ASM_POWERPC_SUSPEND_H
++
++static inline int arch_prepare_suspend(void) { return 0; }
++
++void save_processor_state(void);
++void restore_processor_state(void);
++
++#endif /* __ASM_POWERPC_SUSPEND_H */
+--- linux-2.6.orig/arch/powerpc/kernel/Makefile	2007-04-27 23:24:57.616021121 +0200
++++ linux-2.6/arch/powerpc/kernel/Makefile	2007-04-27 23:25:20.406021121 +0200
+@@ -36,6 +36,7 @@ obj-$(CONFIG_GENERIC_TBSYNC)	+= smp-tbsy
+ obj-$(CONFIG_CRASH_DUMP)	+= crash_dump.o
+ obj-$(CONFIG_6xx)		+= idle_6xx.o l2cr_6xx.o cpu_setup_6xx.o
+ obj-$(CONFIG_TAU)		+= tau_6xx.o
++obj-$(CONFIG_SOFTWARE_SUSPEND)	+= swsusp.o
+ obj32-$(CONFIG_SOFTWARE_SUSPEND) += swsusp_32.o
+ obj32-$(CONFIG_MODULES)		+= module_32.o
+ 
+--- /dev/null	1970-01-01 00:00:00.000000000 +0000
++++ linux-2.6/arch/powerpc/kernel/swsusp.c	2007-04-27 23:25:20.406021121 +0200
+@@ -0,0 +1,42 @@
++/*
++ * Common powerpc suspend code for 32 and 64 bits
++ *
++ * Copyright 2007	Johannes Berg <johannes@sipsolutions.net>
++ *
++ * GPLv2
++ */
++
++#include <linux/sched.h>
++#include <asm/suspend.h>
++#include <asm/cputable.h>
++#include <asm/system.h>
++#include <asm/current.h>
++#include <asm/mmu_context.h>
++
++#ifdef CONFIG_SPE
++extern void enable_kernel_spe(void);
++#endif
++
++void save_processor_state(void)
++{
++	/* Giveup the lazy FPU & vec so we don't have to back them
++	 * up from the low level code
++	 */
++	enable_kernel_fp();
++
++#ifdef CONFIG_ALTIVEC
++	if (cur_cpu_spec->cpu_features & CPU_FTR_ALTIVEC)
++		enable_kernel_altivec();
++#endif /* CONFIG_ALTIVEC */
++
++#ifdef CONFIG_SPE
++	enable_kernel_spe();
++#endif
++}
++
++void restore_processor_state(void)
++{
++#ifdef CONFIG_PPC32
++	set_context(current->active_mm->context.id, current->active_mm->pgd);
++#endif
++}
