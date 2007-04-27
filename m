@@ -1,23 +1,25 @@
-Return-Path: <wolfgang.reissnegger@xilinx.com>
-Received: from outbound4-fra-R.bigfish.com (outbound-fra.frontbridge.com
-	[62.209.45.174])
+Return-Path: <jdl@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3466BDDF9F
+	(Client CN "de01egw02.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id DF999DDFC3
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Apr 2007 03:30:16 +1000 (EST)
-Date: Fri, 27 Apr 2007 10:30:08 -0700
-From: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
-MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] SystemACE driver - abstract register ops
-References: <463199EF.3090900@itee.uq.edu.au>
-	<528646bc0704270031w5c9966f8tc3a5e5292df10a35@mail.gmail.com>
-In-Reply-To: <528646bc0704270031w5c9966f8tc3a5e5292df10a35@mail.gmail.com>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Message-Id: <20070427173010.620DE4B8073@mail25-fra.bigfish.com>
-Cc: Andrei Konovalov <akonovalov@ru.mvista.com>, Stefan Roese <sr@denx.de>,
-	linuxppc-embedded@ozlabs.org, Rick Moleres <rick.moleres@xilinx.com>
+	Sat, 28 Apr 2007 03:35:42 +1000 (EST)
+Subject: Re: How do external irq's get mapped?
+From: Jon Loeliger <jdl@freescale.com>
+To: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+In-Reply-To: <46322CE4.1060004@ru.mvista.com>
+References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1EE@MERCURY.inside.istor.com>
+	<46322CE4.1060004@ru.mvista.com>
+Content-Type: text/plain
+Message-Id: <1177695334.8797.30.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Fri, 27 Apr 2007 12:35:34 -0500
+Cc: Randy Brown <rbrown@istor.com>, Chris Carlson <ccarlson@istor.com>,
+	Kevin Smith <ksmith@istor.com>,
+	"linuxppc-embedded@ozlabs.org" <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,101 +30,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi All,
+On Fri, 2007-04-27 at 12:03, Sergei Shtylyov wrote:
+> Hello.
+> 
+> Charles Krinke wrote:
+> 
+> > Let me try a more simplified IRQ question a different way by only
+> > referring to the 8541.
+> 
+> > There are 12 external interrupt sources, irq[0..11] and as I understand
+> > it, they all go through one vector, ExternalInput set in
+> > head_fsl_booke.S and this vector resolves to "do_IRQ()", which I believe
+> > is in arch/powerpc/kernel/irq.c (not arch/ppc/kernel/...).
+> 
+> > I am striving to understand how mapping of these external pins
+> > irq[0..11] gets to IRQ numbers as shown with "cat /proc/interrupts".
+> 
+>     IIUC, the external IRQ #'s should follow those occupied by 32 internal IRQs.
+>     But those shown in that file are "virtual" numbers, i.e. they got re-mapped by the kernel as it sees fit (basically, it tries to assign the same # to IRQs above 15 and remaps those below)
 
-I wanted to say that I am VERY excited about all the great work that is 
-happening here. As some of you know I am currently working on setting up 
-a Linux kernel git tree that contains a multitude of Xilinx drivers such 
-as IIC, SPI, GPIO, SYSACE, EMAC, EMACLITE, UARTLITE versions, FLASH as 
-well support for the MicroBlaze processor.
-In addition I pulled Grant's virtex-dev branch (with TEMAC and SYSACE). 
-I will integrate those as soon as I'm done with the other work. I am 
-already eying the FrameBuffer driver from Andrei.
+And remember, Ben distorted the IRQ World right about
+somewhere in that time frame too.
 
-The end goal is to have a kernel tree that contains ALL Xilinx drivers 
-and the multitude of drivers that are being created/updated and 
-contributed here. Having such a kernel available will simplify the 
-process of bringing up a new system. The hope is that contributors will 
-adopt the idea of having a "Xilinx" kernel and will start using that 
-tree as a "base reference".
+Kumar, can you remind us?
 
-At this point the Xilinx kernel branch is based on version v2.6.20 with 
-the uc0 patch applied, as well as the various LynuxWorks patches that 
-support MicroBlaze and add the mentioned drivers. The LynuxWorks code 
-has been cleaned up to not contain the proprietary hardcoded sections to 
-make it more acceptable to the Open Source community. I'm sure there's 
-more work to be done, but it's a start.
+> > Could someone point me at some references I can read to understand this
+> > nuance of the 8541 in a linux-2.6.17.11 kernel, please.
+> 
+>    I'm not sure arch/powerpc/ in 2.6.17 had the complete MPC8541 support...
 
-Once the git server is up and running we will be adding new drivers they 
-become available and integrate patches and updates along the way.
+Which might be a different way of saying "You should try the
+current top of git or 2.6.21." :-)
 
-Unfortunately, I spend a lot of my time now working the politics of 
-getting a git server up and running and convincing management that this 
-actually _is_ a good idea. It's slow going and there's a lot of meetings 
-and discussions going on. But I'm still hopeful. As a backup I'm trying 
-to get a kernel.org/git account so I can publish the tree there.
-
-I will post news here as they unfold. In the meantime it would be very 
-interesting to hear ideas and suggestions from you. Concerns that people 
-have. Pitfalls to look out for etc.
-
-Thanks,
-    Wolfgang
-
-
-
-Grant Likely wrote:
-> On 4/27/07, John Williams <jwilliams@itee.uq.edu.au> wrote:
->> Grant,
->>
->> Thanks for your work on the SystemACE driver - I'll be porting/merging
->> this across to MicroBlaze very shortly.
-> 
-> Very cool; I hope it works well.
-> 
->> Given that SysACE can be hooked up in any number of ways, bit widths,
->> endians, PPC/Microblaze, can you please offer your comments on the
->> attached patch?
-> 
-> Okay, after getting over my initial mirth about working on the *exact*
-> same thing and finishing it at the *exact* time that you sent me your
-> patch, I think I'm ready to make useful comments.  :-)
->>
->> It introduce a private ace_reg_ops structure, with various member
->> functions for the different kinds of accesses to the HW.
->>
->> This patch should not change the functionality of your original driver
->> at all, it's just groundwork for what's to come.
->>
->> I recognise that it adds indirection into the various access paths, and
->> potentially a little bloat.  Whether this is better than #if
->> 1...#else...#endif is debatable.
-> 
-> I'm not to concerned with the added redirection.  On my 405 designs, I
-> find that bus overhead has a far greater impact than any of the
-> processing paths in the driver, so this shouldn't be a problem.
-> Besides, when we finally move to arch/powerpc, it will become very
-> feasable to have a single kernel image that will boot on multiple
-> ppc405 FPGA configurations; just change the device tree passed in.
-> 
->> Similar issues will arise for most (all?) of the Xilinx drivers that we
->> will share between PPC and MicroBlaze.  Hopefully we can converge on a
->> nice consistent and clean way of handling these dual arch drivers.
-> 
-> I agree 100%
-> 
-> For your reading pleasure, I've attached the bus attachment changes
-> that I've made in my tree.  I hope to get this driver accepted into
-> mainline during the 2.6.22 merge window; so please get any comments
-> you have back to me ASAP.
-> 
-> Cheers,
-> g.
-> 
-> 
-> ------------------------------------------------------------------------
-> 
-> _______________________________________________
-> Linuxppc-embedded mailing list
-> Linuxppc-embedded@ozlabs.org
-> https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+jdl
