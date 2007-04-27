@@ -1,22 +1,19 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 36C38DDF46
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 02:38:44 +1000 (EST)
-Message-ID: <4632270D.6010907@freescale.com>
-Date: Fri, 27 Apr 2007 11:38:37 -0500
-From: Scott Wood <scottwood@freescale.com>
+Return-Path: <jcrigby@gmail.com>
+Received: from an-out-0708.google.com (an-out-0708.google.com [209.85.132.240])
+	by ozlabs.org (Postfix) with ESMTP id 64124DDFA7
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 02:40:02 +1000 (EST)
+Received: by an-out-0708.google.com with SMTP id b21so813065ana
+	for <linuxppc-dev@ozlabs.org>; Fri, 27 Apr 2007 09:40:00 -0700 (PDT)
+Message-ID: <4b73d43f0704270939g53ecc41cw740163a2b937fe2f@mail.gmail.com>
+Date: Fri, 27 Apr 2007 10:39:57 -0600
+From: "John Rigby" <jcrigby@gmail.com>
+To: "Paul Mackerras" <paulus@samba.org>, linuxppc <linuxppc-dev@ozlabs.org>
+Subject: Fwd: [PATCH] Avoid putting cpu node twice
+In-Reply-To: <4617E176.6040607@246tNt.com>
 MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] bootwrapper: cuboot-83xx: Exclude upper 1MB from heap.
-References: <20070426171931.GA13647@ld0162-tx32.am.freescale.net>
-	<22D52AA1-3719-4532-B1CD-D45BB6834843@kernel.crashing.org>
-In-Reply-To: <22D52AA1-3719-4532-B1CD-D45BB6834843@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <4b73d43f0704061557v2f38991ep54bc66706672075d@mail.gmail.com>
+	<4617E176.6040607@246tNt.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,21 +23,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> 
-> On Apr 26, 2007, at 12:19 PM, Scott Wood wrote:
-> 
->> The uppermost part of memory is where u-boot puts the stack, so don't
->> include that in the heap.  It's not currently causing problems, as the
->> current code allocates from the bottom of the heap, but this will keep
->> things from potentially breaking if a future implementation were to
->> allocate from the top.
-> 
-> 
-> Why does it matter where u-boot puts it stack?  Once control is  handed 
-> over I'd expect it not to matter.
+This was originally sent to linuxppc-embedded.
 
-The bootwrapper uses the stack provided by u-boot (unless the platform 
-requests otherwise).
+---------- Forwarded message ----------
+From: Sylvain Munaut <tnt@246tnt.com>
+Date: Apr 7, 2007 12:22 PM
+Subject: Re: [PATCH] Avoid putting cpu node twice
+To: John Rigby <jcrigby@gmail.com>
+Cc: Linuxppc-embedded <Linuxppc-embedded@ozlabs.org>, Grant Likely
+<grant.likely@secretlab.ca>
 
--Scott
+
+John Rigby wrote:
+> Call of_find_node_by_type with NULL instead of np
+> so the cpu node does not get put twice.
+> This was causing kref_put warnings.
+>
+> Signed-off-by: John Rigby <jrigby@freescale.com>
+Acked-by: Sylvain Munaut <tnt@246tNt.com>
+
+> ---
+> arch/powerpc/platforms/52xx/lite5200.c |    6 ++++--
+> 1 files changed, 4 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/52xx/lite5200.c
+> b/arch/powerpc/platforms/52xx/lite5200.c
+> index cc3b40d..d2f90eb 100644
+> --- a/arch/powerpc/platforms/52xx/lite5200.c
+> +++ b/arch/powerpc/platforms/52xx/lite5200.c
+> @@ -108,9 +108,11 @@ static void __init lite5200_setup_arch(void)
+>        lite5200_setup_cpu();   /* Platorm specific */
+>
+> #ifdef CONFIG_PCI
+> -       np = of_find_node_by_type(np, "pci");
+> -       if (np)
+> +       np = of_find_node_by_type(NULL, "pci");
+> +       if (np) {
+>                mpc52xx_add_bridge(np);
+> +               of_node_put(np);
+> +       }
+> #endif
+>
+> #ifdef CONFIG_BLK_DEV_INITRD
+> --
+> 1.5.0.6
+>
