@@ -1,19 +1,19 @@
-Return-Path: <matvejchikov@gmail.com>
-Received: from py-out-1112.google.com (py-out-1112.google.com [64.233.166.182])
-	by ozlabs.org (Postfix) with ESMTP id 1A10EDE246
+Return-Path: <sshtylyov@ru.mvista.com>
+Received: from imap.sh.mvista.com (unknown [63.81.120.155])
+	by ozlabs.org (Postfix) with ESMTP id F05D4DDFD1
 	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Apr 2007 04:34:30 +1000 (EST)
-Received: by py-out-1112.google.com with SMTP id p76so899183pyb
-	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Apr 2007 11:34:29 -0700 (PDT)
-Message-ID: <8496f91a0704271134r48a4855mc79d2e38fae3c041@mail.gmail.com>
-Date: Fri, 27 Apr 2007 22:34:28 +0400
-From: "Matvejchikov Ilya" <matvejchikov@gmail.com>
-To: linuxppc-embedded@ozlabs.org
-Subject: [PATCH] fs_enet & multicasting
+	Sat, 28 Apr 2007 04:41:12 +1000 (EST)
+Message-ID: <46324428.7070401@ru.mvista.com>
+Date: Fri, 27 Apr 2007 22:42:48 +0400
+From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Reply-To: matvejchikov@gmail.com
+To: Charles Krinke <ckrinke@istor.com>
+Subject: Re: How do external irq's get mapped?
+References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1F0@MERCURY.inside.istor.com>
+In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1F0@MERCURY.inside.istor.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Randy Brown <rbrown@istor.com>, Chris Carlson <ccarlson@istor.com>,
+	Kevin Smith <ksmith@istor.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,22 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Good Day!
+Hello.
 
-There is a problem in fs_enet driver. When TX times out or when PHY
-transceiver adjusts the link the restart() function is called. But it
-doesn't take into account the existing device multicast settings (and
-IFF_PROMISC too). This little patch fixes the problem.
+Charles Krinke wrote:
+> As I understand it, the 8541 and 8555 have 12 external IRQ[0..11], 21
+> internal interrupts, and 4 messaging interrupts.
 
-Signed-off-by: Matvejchikov Ilya <matvejchikov <at> gmail.com>
-===================================================================
---- linux-2.6.21.orig/drivers/net/fs_enet/mac-fcc.c
-+++ linux-2.6.21/drivers/net/fs_enet/mac-fcc.c
-@@ -433,6 +433,8 @@
- 	else
-  		C32(fccp, fcc_fpsmr, FCC_PSMR_FDE | FCC_PSMR_LPB);
+> In looking at the MPC8555ERM.pdf file, which is my main resource, it
+> looks like the internal interrupt numbers for the 1st TSEC are 19 for
+> transmit and 20 for receive.
 
-+	set_multicast_list(dev);
-+
-  	S32(fccp, fcc_gfmr, FCC_GFMR_ENR | FCC_GFMR_ENT);
- }
+> A 'cat /proc/interrupts' shows the 1st TSEC transmit as 93 and the
+> receive as 94, so I am puzzled how we get from 19 to 93 for the transmit
+> and from 20 to 94 for the receive. Perhaps understanding this will help
+
+   I'd suspect you also have CPM on this SoC (or have CONFIG_CPM* wrongly enabled?).
+
+> me figure out what number to put into the pci_dev structure for external
+> IRQ0.
+
+   Could you post your /proc/interrupts?
+
+ > Charles Krinke
+
+WBR, Sergei
