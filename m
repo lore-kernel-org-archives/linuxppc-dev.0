@@ -1,21 +1,20 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BC900DDF70
-	for <linuxppc-dev@ozlabs.org>; Fri, 27 Apr 2007 22:00:12 +1000 (EST)
-Subject: Re: patches for 2.6.22
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-/SlWR0LSMK0YUT6V6ogP"
-Date: Fri, 27 Apr 2007 14:00:14 +0200
-Message-Id: <1177675214.6024.3.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id C44A3DDED1
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 00:23:36 +1000 (EST)
+In-Reply-To: <20070426171931.GA13647@ld0162-tx32.am.freescale.net>
+References: <20070426171931.GA13647@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <22D52AA1-3719-4532-B1CD-D45BB6834843@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] bootwrapper: cuboot-83xx: Exclude upper 1MB from heap.
+Date: Fri, 27 Apr 2007 09:22:38 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,35 +25,43 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-/SlWR0LSMK0YUT6V6ogP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On Apr 26, 2007, at 12:19 PM, Scott Wood wrote:
 
-On Fri, 2007-04-27 at 21:25 +1000, Paul Mackerras wrote:
+> The uppermost part of memory is where u-boot puts the stack, so don't
+> include that in the heap.  It's not currently causing problems, as the
+> current code allocates from the bottom of the heap, but this will keep
+> things from potentially breaking if a future implementation were to
+> allocate from the top.
 
-> If anyone has patches that I haven't picked up yet which they think
-> should go into 2.6.22, please send me either a pointer to the
-> patches if previously posted to linuxppc-dev, or post them to
-> linuxppc-dev.
+Why does it matter where u-boot puts it stack?  Once control is  
+handed over I'd expect it not to matter.
 
-I'd love to have a bunch of the suspend work in 2.6.22, and even if it's
-not the suspend to disk implementation for my G5 but just the suspend to
-ram with /sys/power/state for pmu-based machines. However, that depends
-on some patches that are still in -mm, what's the way forward with that?
-Should I poke akpm to send them out?
+- k
 
-johannes
-
---=-/SlWR0LSMK0YUT6V6ogP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGMeXO/ETPhpq3jKURAnZ5AJ0e5fENg8z/fT1nUgaNT6s2Igl0/wCeMR6m
-y7yLMpfWVf21+d4LGlakHPA=
-=rkz1
------END PGP SIGNATURE-----
-
---=-/SlWR0LSMK0YUT6V6ogP--
+>
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
+> ---
+>  arch/powerpc/boot/cuboot-83xx.c |    2 +-
+>  1 files changed, 1 insertions(+), 1 deletions(-)
+>
+> diff --git a/arch/powerpc/boot/cuboot-83xx.c b/arch/powerpc/boot/ 
+> cuboot-83xx.c
+> index 8f11d1e..6cbc20a 100644
+> --- a/arch/powerpc/boot/cuboot-83xx.c
+> +++ b/arch/powerpc/boot/cuboot-83xx.c
+> @@ -61,7 +61,7 @@ void platform_init(unsigned long r3, unsigned  
+> long r4, unsigned long r5,
+>  	loader_info.cmdline = (char *)r6;
+>  	loader_info.cmdline_len = r7 - r6;
+>
+> -	simple_alloc_init(_end, avail_ram, 32, 64);
+> +	simple_alloc_init(_end, avail_ram - 1024*1024, 32, 64);
+>  	ft_init(_dtb_start, _dtb_end - _dtb_start, 32);
+>  	serial_console_init();
+>  	platform_ops.fixups = platform_fixups;
+> -- 
+> 1.5.0.3
+> _______________________________________________
+> Linuxppc-dev mailing list
+> Linuxppc-dev@ozlabs.org
+> https://ozlabs.org/mailman/listinfo/linuxppc-dev
