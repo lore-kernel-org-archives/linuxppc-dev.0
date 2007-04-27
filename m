@@ -1,16 +1,24 @@
-Return-Path: <bwarren@qstreams.com>
-Received: from web306.biz.mail.mud.yahoo.com (web306.biz.mail.mud.yahoo.com
-	[68.142.199.182]) by ozlabs.org (Postfix) with SMTP id 77B66DE0AE
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
+	by ozlabs.org (Postfix) with ESMTP id D41E0DDF77
 	for <linuxppc-embedded@ozlabs.org>;
-	Fri, 27 Apr 2007 10:10:40 +1000 (EST)
-Date: Thu, 26 Apr 2007 17:10:39 -0700 (PDT)
-From: Ben Warren <bwarren@qstreams.com>
-Subject: Re: POSIX semaphores on ppc_6xx
-To: Arnd Bergmann <arnd@arndb.de>, linuxppc-embedded@ozlabs.org
-In-Reply-To: <200704211733.13354.arnd@arndb.de>
+	Fri, 27 Apr 2007 16:28:24 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so601726ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Thu, 26 Apr 2007 23:28:23 -0700 (PDT)
+Message-ID: <528646bc0704262328n8e653dfya55dd3c5ad3dd67c@mail.gmail.com>
+Date: Fri, 27 Apr 2007 00:28:22 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Andrei Konovalov" <akonovalov@ru.mvista.com>
+Subject: Re: [RFC] add 8-bit bus support to the Xilinx SystemACE device driver
+	+ minor clean-ups
+In-Reply-To: <4627B5AE.5060109@ru.mvista.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Message-ID: <212894.34907.qm@web306.biz.mail.mud.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <1176600194262-git-send-email-grant.likely@secretlab.ca>
+	<4627B5AE.5060109@ru.mvista.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,35 +29,24 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Thanks Arnd,
+On 4/19/07, Andrei Konovalov <akonovalov@ru.mvista.com> wrote:
+> Hello,
+>
+> The attached patch should be applied on top of the SystemACE device
+> driver patch by Grant.
 
+I just realized I never replyed to you on this one.  Sorry!
 
---- Arnd Bergmann <arnd@arndb.de> wrote:
+Thanks for the patch.  I'm getting the driver ready for mainline
+submission now and I'll make sure 8 bit support is included.  I'll
+also need your help with some more testing as I'm doing a fair bit of
+rework on the bus attachment and error handling.
 
-> On Friday 20 April 2007, Ben Warren wrote:
-> > The cross-compiled glibc that is included in ELDK 4.0 doesn't seem to
-> > have support for POSIX semaphores.  I get the following runtime errors:
-> > 
-> >    sem_open: Function not implemented
-> > 
-> > when trying to implement a named semaphore, and 
-> > 
-> >    sem_init: Function not implemented
-> > 
-> > when trying to implement an unnamed semaphore.
-> > 
-> > Does anybody know if POSIX semaphores have been ported to ppc_6xx, and
-> > if so, where I could find a binary copy?
-> 
-> This normally works in every modern glibc. Maybe you were using an
-> set of kernel headers that is too old. Make sure that you have
-> up-to-date version of both kernel and glibc and that you use the
-> kernel header files you get from 'make headers_install' in the kernel.
-> 
-> 	Arnd <><
-> 
+Thanks again,
+g.
 
-I haven't had a chance to try this out yet, but appreciate your tip!
-
-regards,
-Ben
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
