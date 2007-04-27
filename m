@@ -1,15 +1,15 @@
 Return-Path: <mgreer@mvista.com>
-Date: Fri, 27 Apr 2007 13:41:48 -0700
+Date: Fri, 27 Apr 2007 13:48:24 -0700
 From: "Mark A. Greer" <mgreer@mvista.com>
 To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH 11/13] powerpc: Add DTS file for the Motorola PrPMC2800
-	platform
-Message-ID: <20070427204148.GA14490@mag.az.mvista.com>
+Subject: Re: [PATCH 2/13] powerpc: Add dt_xlate_addr() to bootwrapper
+Message-ID: <20070427204824.GB14490@mag.az.mvista.com>
 References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070426000151.GM4046@mag.az.mvista.com>
+	<20070425235543.GD4046@mag.az.mvista.com>
+	<17969.36930.988443.16462@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070426000151.GM4046@mag.az.mvista.com>
+In-Reply-To: <17969.36930.988443.16462@cargo.ozlabs.ibm.com>
 Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -20,337 +20,131 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-[PATCH 11/13] powerpc: Add DTS file for the Motorola PrPMC2800 platform
+
+dt_xlate_reg() looks up the 'reg' property in the specified node
+to get the address and size to translate.  Add dt_xlate_addr()
+which is passed in the address and size to translate.
 
 Signed-off-by: Mark A. Greer <mgreer@mvista.com>
 ---
 
- prpmc2800.dts |  321 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 321 insertions(+)
+Paul, this should apply on top of Scott's patch.
 
-Index: powerpc/arch/powerpc/boot/dts/prpmc2800.dts
+ devtree.c |   47 +++++++++++++++++++++++++++++++++--------------
+ ops.h     |    4 ++--
+ 2 files changed, 35 insertions(+), 16 deletions(-)
+
+Index: powerpc/arch/powerpc/boot/devtree.c
 ===================================================================
---- /dev/null
-+++ powerpc/arch/powerpc/boot/dts/prpmc2800.dts
-@@ -0,0 +1,321 @@
-+/* Device Tree Source for Motorola PrPMC2800
-+ *
-+ * Author: Mark A. Greer <mgreer@mvista.com>
-+ *
-+ * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
-+ * the terms of the GNU General Public License version 2.  This program
-+ * is licensed "as is" without any warranty of any kind, whether express
-+ * or implied.
-+ *
-+ * To build:
-+ *   dtc -I dts -O asm -o prpmc2800.S -V 16 -b 0 prpmc2800.dts
-+ *   dtc -I dts -O dtb -o prpmc2800.dtb -V 16 -b 0 prpmc2800.dts
-+ */
+--- powerpc.orig/arch/powerpc/boot/devtree.c
++++ powerpc/arch/powerpc/boot/devtree.c
+@@ -207,12 +207,13 @@ static int find_range(u32 *reg, u32 *ran
+  * In particular, PCI is not supported.  Also, only the beginning of the
+  * reg block is tracked; size is ignored except in ranges.
+  */
+-int dt_xlate_reg(void *node, int res, unsigned long *addr,
+-                 unsigned long *size)
++static u32 dt_xlate_buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
 +
-+/ {
-+	#address-cells = <1>;
-+	#size-cells = <1>;
-+	model = "PrPMC280/PrPMC2800"; /* Updated by bootwrapper */
-+	compatible = "PrPMC2800";
-+	coherency-off;
++static int dt_xlate(void *node, int res, int reglen, unsigned long *addr,
++		unsigned long *size)
+ {
+ 	u32 last_addr[MAX_ADDR_CELLS];
+ 	u32 this_addr[MAX_ADDR_CELLS];
+-	u32 buf[MAX_ADDR_CELLS * MAX_RANGES * 3];
+ 	void *parent;
+ 	u64 ret_addr, ret_size;
+ 	u32 naddr, nsize, prev_naddr;
+@@ -227,19 +228,18 @@ int dt_xlate_reg(void *node, int res, un
+ 	if (nsize > 2)
+ 		return 0;
+ 
+-	buflen = getprop(node, "reg", buf, sizeof(buf)) / 4;
+ 	offset = (naddr + nsize) * res;
+ 
+-	if (buflen < offset + naddr + nsize ||
+-	    sizeof(buf) < offset + naddr + nsize)
++	if (reglen < offset + naddr + nsize ||
++	    sizeof(dt_xlate_buf) < offset + naddr + nsize)
+ 		return 0;
+ 
+-	copy_val(last_addr, buf + offset, naddr);
++	copy_val(last_addr, dt_xlate_buf + offset, naddr);
+ 
+-	ret_size = buf[offset + naddr];
++	ret_size = dt_xlate_buf[offset + naddr];
+ 	if (nsize == 2) {
+ 		ret_size <<= 32;
+-		ret_size |= buf[offset + naddr + 1];
++		ret_size |= dt_xlate_buf[offset + naddr + 1];
+ 	}
+ 
+ 	while ((node = get_parent(node))) {
+@@ -247,24 +247,25 @@ int dt_xlate_reg(void *node, int res, un
+ 
+ 		get_reg_format(node, &naddr, &nsize);
+ 
+-		buflen = getprop(node, "ranges", buf, sizeof(buf));
++		buflen = getprop(node, "ranges", dt_xlate_buf,
++				sizeof(dt_xlate_buf));
+ 		if (buflen < 0)
+ 			continue;
+-		if (buflen > sizeof(buf))
++		if (buflen > sizeof(dt_xlate_buf))
+ 			return 0;
+ 
+-		offset = find_range(last_addr, buf, prev_naddr,
++		offset = find_range(last_addr, dt_xlate_buf, prev_naddr,
+ 		                    naddr, nsize, buflen / 4);
+ 
+ 		if (offset < 0)
+ 			return 0;
+ 
+-		copy_val(this_addr, buf + offset, prev_naddr);
++		copy_val(this_addr, dt_xlate_buf + offset, prev_naddr);
+ 
+ 		if (!sub_reg(last_addr, this_addr))
+ 			return 0;
+ 
+-		copy_val(this_addr, buf + offset + prev_naddr, naddr);
++		copy_val(this_addr, dt_xlate_buf + offset + prev_naddr, naddr);
+ 
+ 		if (!add_reg(last_addr, this_addr, naddr))
+ 			return 0;
+@@ -286,3 +287,21 @@ int dt_xlate_reg(void *node, int res, un
+ 
+ 	return 1;
+ }
 +
-+	cpus {
-+		#address-cells = <1>;
-+		#size-cells = <0>;
++int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size)
++{
++	int reglen;
 +
-+		PowerPC,7447 {
-+			device_type = "cpu";
-+			reg = <0>;
-+			clock-frequency = <0>;		/* Set by bootwrapper */
-+			bus-frequency = <7f28155>;	/* 133.333333 MHz */
-+			timebase-frequency = <1fca055>;	/* 33.333333 MHz */
-+			/* Following required by dtc but not used */
-+			i-cache-line-size = <0>;
-+			d-cache-line-size = <0>;
-+			i-cache-size = <0>;
-+			d-cache-size = <0>;
-+		};
-+	};
++	reglen = getprop(node, "reg", dt_xlate_buf, sizeof(dt_xlate_buf)) / 4;
++	return dt_xlate(node, res, reglen, addr, size);
++}
 +
-+	memory {
-+		device_type = "memory";
-+		reg = <00000000 00000000>;	/* Set by bootwrapper */
-+	};
++int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr)
++{
 +
-+	mv64x60@f1000000 { /* Marvell Discovery */
-+		#address-cells = <1>;
-+		#size-cells = <1>;
-+		#interrupt-cells = <1>;
-+		device_type = "mv64360";
-+		compatible = "mv64x60";
-+		clock-frequency = <7f28155>;		/* 133.333333 Mhz */
-+		reg = <f1000000 00010000>;
-+		virtual-reg = <f1000000>;
-+		ranges = <88000000 88000000 01000000	/* PCI 0 I/O Space */
-+			  80000000 80000000 08000000	/* PCI 0 MEM Space */
-+			  a0000000 a0000000 04000000	/* User FLASH */
-+			  00000000 f1000000 00010000	/* Bridge's regs */
-+			  f2000000 f2000000 00040000>;	/* Integrated SRAM */
++	if (buflen > sizeof(dt_xlate_buf))
++		return 0;
 +
-+		flash@a0000000 {
-+			device_type = "rom";
-+			compatible = "direct-mapped";
-+			reg = <a0000000 0>; /* Size set by bootwrapper */
-+			probe-type = "CFI";
-+			bank-width = <4>;
-+			partitions = <00000000 00100000 /* RO */
-+				      00100000 00040001 /* RW */
-+				      00140000 00400000 /* RO */
-+				      00540000 039c0000 /* RO */
-+				      03f00000 00100000>; /* RO */
-+			partition-names = "FW Image A\0FW Config Data\0Kernel Image\0Filesystem\0FW Image B";
-+		};
-+
-+		mdio {
-+			#address-cells = <1>;
-+			#size-cells = <0>;
-+			device_type = "mdio";
-+			compatible = "mv64x60-mdio";
-+			ethernet-phy@1 {
-+				device_type = "ethernet-phy";
-+				compatible = "bcm5421";
-+				interrupts = <4c>;	/* GPP 12 */
-+				interrupt-parent = <&/mv64x60/pic>;
-+				reg = <1>;
-+			};
-+			ethernet-phy@3 {
-+				device_type = "ethernet-phy";
-+				compatible = "bcm5421";
-+				interrupts = <4c>;	/* GPP 12 */
-+				interrupt-parent = <&/mv64x60/pic>;
-+				reg = <3>;
-+			};
-+		};
-+
-+		ethernet@2000 {		/* mac-address set by bootwrapper */
-+			reg = <2000 2000>;
-+			eth0 {
-+				device_type = "network";
-+				compatible = "mv64x60-eth";
-+				block-index = <0>;
-+				interrupts = <20>;
-+				interrupt-parent = <&/mv64x60/pic>;
-+				phy = <&/mv64x60/mdio/ethernet-phy@1>;
-+				local-mac-address = [ 00 00 00 00 00 00 ];
-+			};
-+			eth1 {
-+				device_type = "network";
-+				compatible = "mv64x60-eth";
-+				block-index = <1>;
-+				interrupts = <21>;
-+				interrupt-parent = <&/mv64x60/pic>;
-+				phy = <&/mv64x60/mdio/ethernet-phy@3>;
-+				local-mac-address = [ 00 00 00 00 00 00 ];
-+			};
-+		};
-+
-+		sdma@4000 {
-+			device_type = "dma";
-+			compatible = "mv64x60-sdma";
-+			reg = <4000 c18>;
-+			virtual-reg = <f1004000>;
-+			interrupt-base = <0>;
-+			interrupts = <24>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+		};
-+
-+		sdma@6000 {
-+			device_type = "dma";
-+			compatible = "mv64x60-sdma";
-+			reg = <6000 c18>;
-+			virtual-reg = <f1006000>;
-+			interrupt-base = <0>;
-+			interrupts = <26>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+		};
-+
-+		brg@b200 {
-+			device_type = "brg";
-+			compatible = "mv64x60-brg";
-+			reg = <b200 8>;
-+			clock-src = <8>;
-+			clock-frequency = <7ed6b40>;
-+			current-speed = <2580>;
-+			bcr = <0>;
-+		};
-+
-+		brg@b208 {
-+			device_type = "brg";
-+			compatible = "mv64x60-brg";
-+			reg = <b208 8>;
-+			clock-src = <8>;
-+			clock-frequency = <7ed6b40>;
-+			current-speed = <2580>;
-+			bcr = <0>;
-+		};
-+
-+		cunit@f200 {
-+			device_type = "mv64x60-cunit";
-+			reg = <f200 200>;
-+		};
-+
-+		mpscrouting@b400 {
-+			device_type = "mpscrouting";
-+			reg = <b400 c>;
-+		};
-+
-+		mpscintr@b800 {
-+			device_type = "mpscintr";
-+			reg = <b800 100>;
-+			virtual-reg = <f100b800>;
-+		};
-+
-+		mpsc@8000 {
-+			device_type = "serial";
-+			compatible = "mpsc";
-+			reg = <8000 38>;
-+			virtual-reg = <f1008000>;
-+			sdma = <&/mv64x60/sdma@4000>;
-+			brg = <&/mv64x60/brg@b200>;
-+			cunit = <&/mv64x60/cunit@f200>;
-+			mpscrouting = <&/mv64x60/mpscrouting@b400>;
-+			mpscintr = <&/mv64x60/mpscintr@b800>;
-+			block-index = <0>;
-+			max_idle = <28>;
-+			chr_1 = <0>;
-+			chr_2 = <0>;
-+			chr_10 = <3>;
-+			mpcr = <0>;
-+			interrupts = <28>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+		};
-+
-+		mpsc@9000 {
-+			device_type = "serial";
-+			compatible = "mpsc";
-+			reg = <9000 38>;
-+			virtual-reg = <f1009000>;
-+			sdma = <&/mv64x60/sdma@6000>;
-+			brg = <&/mv64x60/brg@b208>;
-+			cunit = <&/mv64x60/cunit@f200>;
-+			mpscrouting = <&/mv64x60/mpscrouting@b400>;
-+			mpscintr = <&/mv64x60/mpscintr@b800>;
-+			block-index = <1>;
-+			max_idle = <28>;
-+			chr_1 = <0>;
-+			chr_2 = <0>;
-+			chr_10 = <3>;
-+			mpcr = <0>;
-+			interrupts = <2a>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+		};
-+
-+		i2c@c000 {
-+			device_type = "i2c";
-+			compatible = "mv64x60-i2c";
-+			reg = <c000 20>;
-+			virtual-reg = <f100c000>;
-+			freq_m = <8>;
-+			freq_n = <3>;
-+			timeout = <3e8>;		/* 1000 = 1 second */
-+			retries = <1>;
-+			interrupts = <25>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+		};
-+
-+		pic {
-+			#interrupt-cells = <1>;
-+			#address-cells = <0>;
-+			device_type = "mv64x60-pic";
-+			compatible = "mv64x60-pic";
-+			reg = <0000 88>;
-+			interrupt-controller;
-+		};
-+
-+		mpp@f000 {
-+			device_type = "mv64x60-mpp";
-+			compatible = "mv64x60-mpp";
-+			reg = <f000 10>;
-+		};
-+
-+		gpp@f100 {
-+			device_type = "mv64x60-gpp";
-+			compatible = "mv64x60-gpp";
-+			reg = <f100 20>;
-+		};
-+
-+		pci@80000000 {
-+			#address-cells = <3>;
-+			#size-cells = <2>;
-+			#interrupt-cells = <1>;
-+			device_type = "pci";
-+			compatible = "mv64x60-pci";
-+			reg = <0cf8 8>;
-+			ranges = <01000000 0        0 88000000 0 01000000
-+				  02000000 0 80000000 80000000 0 08000000>;
-+			bus-range = <0 ff>;
-+			clock-frequency = <3EF1480>;
-+			interrupt-pci-iack = <0c34>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+			interrupt-map-mask = <f800 0 0 7>;
-+			interrupt-map = <
-+				/* IDSEL 0x0a */
-+				5000 0 0 1 &/mv64x60/pic 50
-+				5000 0 0 2 &/mv64x60/pic 51
-+				5000 0 0 3 &/mv64x60/pic 5b
-+				5000 0 0 4 &/mv64x60/pic 5d
-+
-+				/* IDSEL 0x0b */
-+				5800 0 0 1 &/mv64x60/pic 5b
-+				5800 0 0 2 &/mv64x60/pic 5d
-+				5800 0 0 3 &/mv64x60/pic 50
-+				5800 0 0 4 &/mv64x60/pic 51
-+
-+				/* IDSEL 0x0c */
-+				6000 0 0 1 &/mv64x60/pic 5b
-+				6000 0 0 2 &/mv64x60/pic 5d
-+				6000 0 0 3 &/mv64x60/pic 50
-+				6000 0 0 4 &/mv64x60/pic 51
-+
-+				/* IDSEL 0x0d */
-+				6800 0 0 1 &/mv64x60/pic 5d
-+				6800 0 0 2 &/mv64x60/pic 50
-+				6800 0 0 3 &/mv64x60/pic 51
-+				6800 0 0 4 &/mv64x60/pic 5b
-+			>;
-+		};
-+
-+		cpu-error@0070 {
-+			device_type = "mv64x60-cpu-error";
-+			reg = <0070 10 0128 28>;
-+			interrupts = <03>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+		};
-+
-+		sram-error@0380 {
-+			device_type = "mv64x60-sram-error";
-+			reg = <0380 80>;
-+			interrupts = <0d>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+		};
-+
-+		pci-error@1dc0 {
-+			device_type = "mv64x60-pci-error";
-+			reg = <1d40 40 0c28 4>;
-+			interrupts = <0c>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+		};
-+
-+		memctrl@1400 {
-+			device_type = "mv64x60-memctrl";
-+			reg = <1400 60>;
-+			interrupts = <11>;
-+			interrupt-parent = <&/mv64x60/pic>;
-+		};
-+	};
-+
-+	chosen {
-+		bootargs = "ip=on console=ttyMM0";
-+		linux,stdout-path = "/mv64x60/mpsc@8000";
-+	};
-+};
++	memcpy(dt_xlate_buf, buf, buflen);
++	return dt_xlate(node, 0, buflen / 4, xlated_addr, NULL);
++}
+Index: powerpc/arch/powerpc/boot/ops.h
+===================================================================
+--- powerpc.orig/arch/powerpc/boot/ops.h
++++ powerpc/arch/powerpc/boot/ops.h
+@@ -82,8 +82,8 @@ int ns16550_console_init(void *devp, str
+ void *simple_alloc_init(char *base, unsigned long heap_size,
+ 			unsigned long granularity, unsigned long max_allocs);
+ extern void flush_cache(void *, unsigned long);
+-int dt_xlate_reg(void *node, int res, unsigned long *addr,
+-                 unsigned long *size);
++int dt_xlate_reg(void *node, int res, unsigned long *addr, unsigned long *size);
++int dt_xlate_addr(void *node, u32 *buf, int buflen, unsigned long *xlated_addr);
+ 
+ static inline void *finddevice(const char *name)
+ {
