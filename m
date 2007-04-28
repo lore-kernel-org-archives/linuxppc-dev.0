@@ -1,31 +1,15 @@
-Return-Path: <idefix@fechner.net>
-Received: from michelle.lostinspace.de (michelle.lostinspace.de
-	[62.146.248.226])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "michelle.lostinspace.de",
-	Issuer "michelle.lostinspace.de" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 3F573DDF2F
+Return-Path: <blofeldus@yahoo.com>
+Received: from web53501.mail.re2.yahoo.com (web53501.mail.re2.yahoo.com
+	[206.190.37.62]) by ozlabs.org (Postfix) with SMTP id 45D36DDF27
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 29 Apr 2007 02:44:36 +1000 (EST)
-Received: from server.idefix.lan (cl-70.muc-02.de.sixxs.net
-	[IPv6:2001:a60:f000:45::2]) (authenticated bits=0)
-	by michelle.lostinspace.de (8.13.8/8.13.8) with ESMTP id l3SGiMAJ034146
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-SHA bits=256 verify=NO)
-	for <linuxppc-embedded@ozlabs.org>;
-	Sat, 28 Apr 2007 18:44:28 +0200 (CEST)
-	(envelope-from idefix@fechner.net)
-Received: from idefix by server.idefix.lan with local (Exim 4.66 (FreeBSD))
-	(envelope-from <idefix@fechner.net>) id 1Hhq22-0006QN-70
-	for linuxppc-embedded@ozlabs.org; Sat, 28 Apr 2007 18:44:22 +0200
-Date: Sat, 28 Apr 2007 18:44:22 +0200
-From: Matthias Fechner <idefix@fechner.net>
+	Sun, 29 Apr 2007 04:04:47 +1000 (EST)
+Date: Sat, 28 Apr 2007 10:58:06 -0700 (PDT)
+From: roger blofeld <blofeldus@yahoo.com>
+Subject: Re: Current kernel with all patches for MPC5200
 To: linuxppc-embedded@ozlabs.org
-Subject: Current kernel with all patches for MPC5200
-Message-ID: <20070428164421.GA24278@server.idefix.lan>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Sender: Matthias Fechner <idefix@fechner.net>
-Reply-To: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=ascii
+Message-ID: <196297.82202.qm@web53501.mail.re2.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -35,6 +19,20 @@ List-Post: <mailto:linuxppc-embedded@ozlabs.org>
 List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
+
+Matthias,
+ I would suggest http://git.secretlab.ca/cgi-bin/gitweb.cgi or http://gitbits.246tnt.com/gitweb/gitweb.cgi?p=linux-2.6-mpc52xx.git;a=summary or www.denx.de as starting points.
+
+ Does anyone know if patches from these repositories are destined to be in the mainline kernel any time soon? Last I heard 2.6.22 was the target to get things like Bestcomm support in Linus' kernel.
+
+-roger
+
+
+----- Original Message ----
+From: Matthias Fechner <idefix@fechner.net>
+To: linuxppc-embedded@ozlabs.org
+Sent: Saturday, April 28, 2007 11:44:22 AM
+Subject: Current kernel with all patches for MPC5200
 
 Hi,
 
@@ -52,3 +50,15 @@ Matthias
 build bigger and better idiot-proof programs, and the universe trying to
 produce bigger and better idiots. So far, the universe is winning." --
 Rich Cook
+_______________________________________________
+Linuxppc-embedded mailing list
+Linuxppc-embedded@ozlabs.org
+https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+
+
+
+
+__________________________________________________
+Do You Yahoo!?
+Tired of spam?  Yahoo! Mail has the best spam protection around 
+http://mail.yahoo.com 
