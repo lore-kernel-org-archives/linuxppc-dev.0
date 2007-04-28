@@ -1,21 +1,19 @@
-Return-Path: <dale@farnsworth.org>
-Received: from farnsworth.org (xyzzy.farnsworth.org [65.39.95.219])
-	by ozlabs.org (Postfix) with SMTP id 70F21DE0AB
-	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 12:40:30 +1000 (EST)
-From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Fri, 27 Apr 2007 19:40:27 -0700
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 9/13] powerpc: Add arch/powerpc mv64x60 I2C platform data
-	setup
-Message-ID: <20070428024027.GA4133@xyzzy.farnsworth.org>
-References: <20070425234630.GA4046@mag.az.mvista.com>
-	<200704261704.06790.arnd@arndb.de>
-	<20070427235040.GA29498@xyzzy.farnsworth.org>
-	<200704280305.26312.arnd@arndb.de>
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.177]) by ozlabs.org (Postfix) with ESMTP id 63CF4DE1BC
+	for <linuxppc-dev@ozlabs.org>; Sat, 28 Apr 2007 12:49:11 +1000 (EST)
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH] cell: cbe_cpufreq cleanup and crash fix
+Date: Sat, 28 Apr 2007 04:49:03 +0200
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+In-Reply-To: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <200704280305.26312.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200704280449.04126.arnd@arndb.de>
+Cc: Olof Johansson <olof@lixom.net>, Christian Krafft <krafft@de.ibm.com>,
+	Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,73 +23,119 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sat, Apr 28, 2007 at 03:05:25AM +0200, Arnd Bergmann wrote:
-> > This is a very OF-centric proposal.  IMHO it's a mistake for drivers
-> > to call of_get_property().  There should be a firmware-independent
-> > way of passing parameters to drivers.  I'm not a big fan of the
-> > details of platform_device, but at least it's firmware independent.
-> > I think it's a layering violation even when ppc-only drivers
-> > query for parameters via of_get_property().
-> 
-> Calling of_* functions is the natural thing to do for an 
-> of_platform_driver, just like a PCI driver calls pci_* functions.
+From: Olof Johansson <olof@lixom.net>
+cbe_cpufreq cleanups:
 
-It may be customary, and seem natural to you, but to me it includes
-an unnaturally close coupling between the driver and the firmware.
-Of course, I see many drivers have adopted it.  I also like the
-interface better than platform_device.  However, I would like
-it better if it were more decoupled from Open Firmware.
+* comment format
+* whitespace
+* don't init on non-cell platforms
 
-> Note that what I'm suggestiong here is that you have one file
-> that encapsulates all the calls to OF functions (of_iomap,
-> irq_of_parse_and_map, ...) and passes the raw information down
-> to the main low-level driver.
-
-I thought that's what I submitted.  The main difference is that
-what you suggest requires me to also allocate a superfluous
-of_device for each platform device, or to rewrite the driver
-interface to handle an of_device and to do its own calls to
-retrieve data from the device tree.
-
-In the short term, since the of_ routines don't support the
-platform_device interface, there's going to be ugliness.  We're
-just discussing where to put that ugliness.  Do we keep the of_
-functions clean and push the ugliness into the drivers, or
-do we keep the driver interfaces clean and create platform_devices
-rather than of_devices from the device tree info?  You want to
-keep the of_ functions clean; I don't want to uglify the drivers
-and am concerned about getting those ugly bits accepted into
-the kernel.
-
-> I think the main difference between your view and mine is that
-> you see the OF model as an _architecture_ property, while in my
-> view it is a _bus_type_ that devices are attached to.
-
-Heh.  I see it as a firmware-specific bus type.  Of course, now
-it's actually device-tree-specific, since we don't require OF
-anymore, just some of its interfaces.
-
-> It's like the OHCI driver, which has low-level driver for the
-> a common register interface, but comes with a number of bus
-> interfaces that it can attach to (PCI, PS3, OF, ...).
-> [ don't look at the OHCI implementation, the way they did
->   the code is not a good example, but it can be done properly. ]
-> 
-> > Since you now recognize our need for platform_devices, I'd like to
-> > understand your primary objection to our not creating of_devices.
-> > Is it because it violates the assumption that of_devices be created
-> > for all devices on the platform?
-> 
-> That, and the missing ability to do module autoloading.
-> 
-> > Is that a hard requirement? 
-> 
-> Not yet, but I'd like to get there, as I mention above.
-
-Understood.  I still think it's an OF-centric view.  That wouldn't
-be a problem if all architectures replaced platform_device with
-of_device, a place that I think you'd also like to get to, which
-I wouldn't mind at all.  We're just not going to get there any
-time soon.
-
--Dale
+Signed-off-by: Olof Johansson <olof@lixom.net>
+Acked-by: Christian Krafft <krafft@de.ibm.com>
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
+---
+Index: linux-2.6/arch/powerpc/platforms/cell/cbe_cpufreq.c
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/cell/cbe_cpufreq.c
++++ linux-2.6/arch/powerpc/platforms/cell/cbe_cpufreq.c
+@@ -25,6 +25,7 @@
+ 
+ #include <asm/hw_irq.h>
+ #include <asm/io.h>
++#include <asm/machdep.h>
+ #include <asm/processor.h>
+ #include <asm/prom.h>
+ #include <asm/time.h>
+@@ -155,7 +156,7 @@ static int set_pmode_reg(int cpu, unsign
+ }
+ 
+ static int set_pmode(int cpu, unsigned int slow_mode) {
+-	if(pmi_dev)
++	if (pmi_dev)
+ 		return set_pmode_pmi(cpu, slow_mode);
+ 	else
+ 		return set_pmode_reg(cpu, slow_mode);
+@@ -167,7 +168,7 @@ static void cbe_cpufreq_handle_pmi(struc
+ 	u8 cpu;
+ 	u8 cbe_pmode_new;
+ 
+-	BUG_ON (pmi_msg.type != PMI_TYPE_FREQ_CHANGE);
++	BUG_ON(pmi_msg.type != PMI_TYPE_FREQ_CHANGE);
+ 
+ 	cpu = cbe_node_to_cpu(pmi_msg.data1);
+ 	cbe_pmode_new = pmi_msg.data2;
+@@ -191,7 +192,7 @@ static struct pmi_handler cbe_pmi_handle
+  * cpufreq functions
+  */
+ 
+-static int cbe_cpufreq_cpu_init (struct cpufreq_policy *policy)
++static int cbe_cpufreq_cpu_init(struct cpufreq_policy *policy)
+ {
+ 	const u32 *max_freqp;
+ 	u32 max_freq;
+@@ -200,7 +201,7 @@ static int cbe_cpufreq_cpu_init (struct 
+ 
+ 	cpu = of_get_cpu_node(policy->cpu, NULL);
+ 
+-	if(!cpu)
++	if (!cpu)
+ 		return -ENODEV;
+ 
+ 	pr_debug("init cpufreq on CPU %d\n", policy->cpu);
+@@ -210,13 +211,13 @@ static int cbe_cpufreq_cpu_init (struct 
+ 	if (!max_freqp)
+ 		return -EINVAL;
+ 
+-	// we need the freq in kHz
++	/* we need the freq in kHz */
+ 	max_freq = *max_freqp / 1000;
+ 
+ 	pr_debug("max clock-frequency is at %u kHz\n", max_freq);
+ 	pr_debug("initializing frequency table\n");
+ 
+-	// initialize frequency table
++	/* initialize frequency table */
+ 	for (i=0; cbe_freqs[i].frequency!=CPUFREQ_TABLE_END; i++) {
+ 		cbe_freqs[i].frequency = max_freq / cbe_freqs[i].index;
+ 		pr_debug("%d: %d\n", i, cbe_freqs[i].frequency);
+@@ -235,10 +236,10 @@ static int cbe_cpufreq_cpu_init (struct 
+ 	policy->cpus = cpu_sibling_map[policy->cpu];
+ #endif
+ 
+-	cpufreq_frequency_table_get_attr (cbe_freqs, policy->cpu);
++	cpufreq_frequency_table_get_attr(cbe_freqs, policy->cpu);
+ 
+ 	/* this ensures that policy->cpuinfo_min and policy->cpuinfo_max are set correctly */
+-	return cpufreq_frequency_table_cpuinfo (policy, cbe_freqs);
++	return cpufreq_frequency_table_cpuinfo(policy, cbe_freqs);
+ }
+ 
+ static int cbe_cpufreq_cpu_exit(struct cpufreq_policy *policy)
+@@ -270,7 +271,7 @@ static int cbe_cpufreq_target(struct cpu
+ 	freqs.new = cbe_freqs[cbe_pmode_new].frequency;
+ 	freqs.cpu = policy->cpu;
+ 
+-	mutex_lock (&cbe_switch_mutex);
++	mutex_lock(&cbe_switch_mutex);
+ 	cpufreq_notify_transition(&freqs, CPUFREQ_PRECHANGE);
+ 
+ 	pr_debug("setting frequency for cpu %d to %d kHz, 1/%d of max frequency\n",
+@@ -303,6 +304,9 @@ static int __init cbe_cpufreq_init(void)
+ {
+ 	struct device_node *np;
+ 
++	if (!machine_is(cell))
++		return -ENODEV;
++
+ 	np = of_find_node_by_type(NULL, "ibm,pmi");
+ 
+ 	pmi_dev = of_find_device_by_node(np);
+@@ -315,7 +319,7 @@ static int __init cbe_cpufreq_init(void)
+ 
+ static void __exit cbe_cpufreq_exit(void)
+ {
+-	if(pmi_dev)
++	if (pmi_dev)
+ 		pmi_unregister_handler(pmi_dev, &cbe_pmi_handler);
+ 
+ 	cpufreq_unregister_driver(&cbe_cpufreq_driver);
