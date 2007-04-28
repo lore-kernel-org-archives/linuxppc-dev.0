@@ -1,15 +1,15 @@
-Return-Path: <blofeldus@yahoo.com>
-Received: from web53501.mail.re2.yahoo.com (web53501.mail.re2.yahoo.com
-	[206.190.37.62]) by ozlabs.org (Postfix) with SMTP id 45D36DDF27
+Return-Path: <melinda.develey70@yahoo.com>
+Received: from web63904.mail.re1.yahoo.com (web63904.mail.re1.yahoo.com
+	[69.147.97.119]) by ozlabs.org (Postfix) with SMTP id 3DC2DDDE33
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 29 Apr 2007 04:04:47 +1000 (EST)
-Date: Sat, 28 Apr 2007 10:58:06 -0700 (PDT)
-From: roger blofeld <blofeldus@yahoo.com>
-Subject: Re: Current kernel with all patches for MPC5200
+	Sun, 29 Apr 2007 07:29:15 +1000 (EST)
+Date: Sat, 28 Apr 2007 14:22:34 -0700 (PDT)
+From: melinda develey <melinda.develey70@yahoo.com>
+Subject: Claiming back serial console
 To: linuxppc-embedded@ozlabs.org
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ascii
-Message-ID: <196297.82202.qm@web53501.mail.re2.yahoo.com>
+Content-Type: multipart/alternative; boundary="0-1677814658-1177795354=:158"
+Message-ID: <552079.158.qm@web63904.mail.re1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,45 +20,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Matthias,
- I would suggest http://git.secretlab.ca/cgi-bin/gitweb.cgi or http://gitbits.246tnt.com/gitweb/gitweb.cgi?p=linux-2.6-mpc52xx.git;a=summary or www.denx.de as starting points.
+--0-1677814658-1177795354=:158
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
- Does anyone know if patches from these repositories are destined to be in the mainline kernel any time soon? Last I heard 2.6.22 was the target to get things like Bestcomm support in Linus' kernel.
+My kernel outputs on the ttyS0. Now I need this serial for a SLIP link and I don't want the kernel to use it as console. How can a user mode process tell the kernel to stop using ttyS0 ? 
 
--roger
+Bye,
+Melinda.
 
+       
+---------------------------------
+Ahhh...imagining that irresistible "new car" smell?
+ Check outnew cars at Yahoo! Autos.
+--0-1677814658-1177795354=:158
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
------ Original Message ----
-From: Matthias Fechner <idefix@fechner.net>
-To: linuxppc-embedded@ozlabs.org
-Sent: Saturday, April 28, 2007 11:44:22 AM
-Subject: Current kernel with all patches for MPC5200
-
-Hi,
-
-is there a repository available with all the patches postet the last
-days/weeks on this mailinglist included?
-
-If yes how could I access that repository?
-
-Best regards,
-Matthias
-
--- 
-
-"Programming today is a race between software engineers striving to
-build bigger and better idiot-proof programs, and the universe trying to
-produce bigger and better idiots. So far, the universe is winning." --
-Rich Cook
-_______________________________________________
-Linuxppc-embedded mailing list
-Linuxppc-embedded@ozlabs.org
-https://ozlabs.org/mailman/listinfo/linuxppc-embedded
+My kernel outputs on the ttyS0. Now I need this serial for a SLIP link and I don't want the kernel to use it as console. How can a user mode process tell the kernel to stop using ttyS0 ? <br><br>Bye,<br>Melinda.<br><p>&#32;
 
 
 
+      <hr size=1>Ahhh...imagining that irresistible "new car" smell?<br> Check out
+<a href="http://us.rd.yahoo.com/evt=48245/*http://autos.yahoo.com/new_cars.html;_ylc=X3oDMTE1YW1jcXJ2BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDbmV3LWNhcnM-">new cars at Yahoo! Autos.</a>
 
-__________________________________________________
-Do You Yahoo!?
-Tired of spam?  Yahoo! Mail has the best spam protection around 
-http://mail.yahoo.com 
+--0-1677814658-1177795354=:158--
