@@ -1,19 +1,15 @@
-Return-Path: <henka@henka.dyndns.org>
-Received: from henka.dyndns.org (h81172200187.kund.kommunicera.umea.se
-	[81.172.200.187]) by ozlabs.org (Postfix) with ESMTP id 08F6BDDEF3
+Return-Path: <melinda.develey70@yahoo.com>
+Received: from web63903.mail.re1.yahoo.com (web63903.mail.re1.yahoo.com
+	[69.147.97.118]) by ozlabs.org (Postfix) with SMTP id 24A76DDF68
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 Apr 2007 03:43:00 +1000 (EST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by henka.dyndns.org (Postfix) with ESMTP id 83EFEA4A59
-	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 29 Apr 2007 19:19:09 +0200 (CEST)
-Date: Sun, 29 Apr 2007 19:19:09 +0200 (CEST)
-From: Henrik Larson <henka@henka.dyndns.org>
+	Mon, 30 Apr 2007 05:50:51 +1000 (EST)
+Date: Sun, 29 Apr 2007 12:50:50 -0700 (PDT)
+From: melinda develey <melinda.develey70@yahoo.com>
+Subject: problems with slip and slattach
 To: linuxppc-embedded@ozlabs.org
-Subject: USB Host Controller MPC875 Linux 2.6
-Message-ID: <Pine.LNX.4.62.0704291844350.8880@henka.dyndns.org>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Content-Type: multipart/alternative; boundary="0-851169859-1177876250=:6120"
+Message-ID: <670778.6120.qm@web63903.mail.re1.yahoo.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -24,19 +20,29 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+--0-851169859-1177876250=:6120
+Content-Type: text/plain; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Hi,
+I'm trying to setup a slip link, I enabled the slip kernel support, I launched slattach -p slip /dev/ttyS0 & but sl0 interface is not created.
+Any help would be appreciated.
 
-I have a board with a MPC875 processor with a Linux 2.6.16 kernel and 
-looking for USB support.
+Bye,
+Melinda.
 
-Previous, for the 2.4 kernel, I've used used Brad Parker's 
-m8xxhci driver (with success).
+       
+---------------------------------
+Ahhh...imagining that irresistible "new car" smell?
+ Check outnew cars at Yahoo! Autos.
+--0-851169859-1177876250=:6120
+Content-Type: text/html; charset=iso-8859-1
+Content-Transfer-Encoding: 8bit
 
-Does anyone know if there is a Linux 2.6.x USB Host Controller driver
-for MPC875 (or MPC8xx) somewhere ?
+I'm trying to setup a slip link, I enabled the slip kernel support, I launched slattach -p slip /dev/ttyS0 &amp; but sl0 interface is not created.<br>Any help would be appreciated.<br><br>Bye,<br>Melinda.<br><p>&#32;
 
 
-Thanks.
 
-/Henrik
+      <hr size=1>Ahhh...imagining that irresistible "new car" smell?<br> Check out
+<a href="http://us.rd.yahoo.com/evt=48245/*http://autos.yahoo.com/new_cars.html;_ylc=X3oDMTE1YW1jcXJ2BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDbmV3LWNhcnM-">new cars at Yahoo! Autos.</a>
+
+--0-851169859-1177876250=:6120--
