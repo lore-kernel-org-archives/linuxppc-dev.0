@@ -1,20 +1,25 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 48F96DDF2E
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Apr 2007 17:35:09 +1000 (EST)
-Date: Sun, 29 Apr 2007 17:35:31 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: olof@lixom.net (Olof Johansson)
-Subject: Re: [PATCH] [POWERPC] get_property cleanups
-Message-Id: <20070429173531.dcc33d43.sfr@canb.auug.org.au>
-In-Reply-To: <20070429065533.GA8241@lixom.net>
-References: <20070429162908.c8bffbec.sfr@canb.auug.org.au>
-	<20070429065533.GA8241@lixom.net>
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[65.172.181.25])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "smtp.osdl.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 36C28DDF7D
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Apr 2007 17:49:58 +1000 (EST)
+Date: Sun, 29 Apr 2007 00:43:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: David Miller <davem@davemloft.net>
+Subject: Re: [PATCH 2/2] Rename get_property to of_get_property: drivers/net
+Message-Id: <20070429004348.ea30f3fc.akpm@linux-foundation.org>
+In-Reply-To: <20070428.204754.62343452.davem@davemloft.net>
+References: <20070427145508.9c5641a2.sfr@canb.auug.org.au>
+	<4633689E.50900@garzik.org>
+	<20070429114446.31f40a30.sfr@canb.auug.org.au>
+	<20070428.204754.62343452.davem@davemloft.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__29_Apr_2007_17_35_31_+1000_3WaS_SttE+W0Si0Z"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
+Content-Type: text/plain; charset=US-ASCII
+Cc: sfr@canb.auug.org.au, netdev@vger.kernel.org, paulus@samba.org,
+	jeff@garzik.org, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,31 +29,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__29_Apr_2007_17_35_31_+1000_3WaS_SttE+W0Si0Z
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+On Sat, 28 Apr 2007 20:47:54 -0700 (PDT) David Miller <davem@davemloft.net> wrote:
 
-On Sun, 29 Apr 2007 01:55:33 -0500 olof@lixom.net (Olof Johansson) wrote:
->
-> arch/powerpc/platforms/cell/cbe-cpufreq.c needs the same changes as paseemi/cpufreq.c.
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Sun, 29 Apr 2007 11:44:46 +1000
+> 
+> > So can I take this as a future OK for architecture specific network
+> > drivers changes to go through the architecture trees (cc'd to you)?
+> 
+> It's been my experience that if I'm just working through some
+> platform or bus specific API changes, people like Jeff tend to
+> not mind if it goes via ARCH trees and the like.
 
-Already done.
+This all started with me having a dummyspit over yet another huge reject
+because of intersections between subsystem trees.
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Sun__29_Apr_2007_17_35_31_+1000_3WaS_SttE+W0Si0Z
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGNErKFdBgD/zoJvwRAqsEAJ9+KwMiOa4bd3tY+61jW9dVmufOxwCeOH7h
-DV/qjz+LnJqoO+jvaPihHT8=
-=DHFT
------END PGP SIGNATURE-----
-
---Signature=_Sun__29_Apr_2007_17_35_31_+1000_3WaS_SttE+W0Si0Z--
+Normally we get away with it but when there's so much material pending,
+things deteriorate.
