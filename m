@@ -1,15 +1,22 @@
-Return-Path: <melinda.develey70@yahoo.com>
-Received: from web63903.mail.re1.yahoo.com (web63903.mail.re1.yahoo.com
-	[69.147.97.118]) by ozlabs.org (Postfix) with SMTP id 50F9BDDF41
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.168])
+	by ozlabs.org (Postfix) with ESMTP id 28E58DDF36
 	for <linuxppc-embedded@ozlabs.org>;
-	Sun, 29 Apr 2007 07:46:05 +1000 (EST)
-Date: Sat, 28 Apr 2007 14:46:04 -0700 (PDT)
-From: melinda develey <melinda.develey70@yahoo.com>
-Subject: Using /dev/rtc causes message "system delaying clock ticks?"
-To: linuxppc-embedded@ozlabs.org
+	Sun, 29 Apr 2007 15:24:06 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so828092ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Sat, 28 Apr 2007 22:24:05 -0700 (PDT)
+Message-ID: <528646bc0704282224r26d9d19cu35fffa736e9f9432@mail.gmail.com>
+Date: Sat, 28 Apr 2007 23:24:03 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "roger blofeld" <blofeldus@yahoo.com>
+Subject: Re: Current kernel with all patches for MPC5200
+In-Reply-To: <196297.82202.qm@web53501.mail.re2.yahoo.com>
 MIME-Version: 1.0
-Content-Type: multipart/alternative; boundary="0-944088738-1177796764=:5915"
-Message-ID: <652572.5915.qm@web63903.mail.re1.yahoo.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+References: <196297.82202.qm@web53501.mail.re2.yahoo.com>
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -20,54 +27,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
---0-944088738-1177796764=:5915
-Content-Type: text/plain; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
+On 4/28/07, roger blofeld <blofeldus@yahoo.com> wrote:
+> Matthias,
+>  I would suggest http://git.secretlab.ca/cgi-bin/gitweb.cgi or http://gitbits.246tnt.com/gitweb/gitweb.cgi?p=linux-2.6-mpc52xx.git;a=summary or www.denx.de as starting points.
+>
+>  Does anyone know if patches from these repositories are destined to be in the mainline kernel any time soon? Last I heard 2.6.22 was the target to get things like Bestcomm support in Linus' kernel.
 
-I'm using an MPC885 with the linux kernel rtc emulator driver. Because I need to wake a process every second, exactly synchronized with the rtc, I'm using the following code snippet:
+It probably won't hit 2.6.22.  :-(  Neither Sylvain or I have had time
+to get the latest bestcom/eth code suitable for submission, and it is
+unlikely that we will get it done before the merge window closes.
+Best bet is to use the working (but ugly) eth driver in the above git
+trees.
 
-____________________________________________
-/* Turn on update interrupts (one per second) */
-retval = ioctl(fd, RTC_UIE_ON, 0);
-if (retval == -1) {
-        perror("ioctl");
-        exit(errno);
-}
+Cheers,
+g.
 
-while (1)
-{
-        /* This read will block */
-        retval = read(fd, &data, sizeof(unsigned long));
-        if (retval == -1) {
-                perror("read");
-                exit(errno);
-        }
-       /* Do something exactly synchronized with RTC */
-       /* ...... */
-}
-
-_________________________________________
-
-
->From time to time I receive the message on the subject. What's happening?
-
-
-Bye,
-Melinda.
-
-
-       
----------------------------------
-Ahhh...imagining that irresistible "new car" smell?
- Check outnew cars at Yahoo! Autos.
---0-944088738-1177796764=:5915
-Content-Type: text/html; charset=iso-8859-1
-Content-Transfer-Encoding: 8bit
-
-I'm using an MPC885 with the linux kernel rtc emulator driver. Because I need to wake a process every second, exactly synchronized with the rtc, I'm using the following code snippet:<br><br>____________________________________________<br>/* Turn on update interrupts (one per second) */<br>retval = ioctl(fd, RTC_UIE_ON, 0);<br>if (retval == -1) {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; perror("ioctl");<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; exit(errno);<br>}<br><br>while (1)<br>{<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* This read will block */<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; retval = read(fd, &amp;data, sizeof(unsigned long));<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; if (retval == -1) {<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; perror("read");<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
- exit(errno);<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; }<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* Do something exactly synchronized with RTC */<br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; /* ...... */<br>}<br><br>_________________________________________<br><br><br>From time to time I receive the message on the subject. What's happening?<br><br><br>Bye,<br>Melinda.<br><br><p>&#32;
-
-      <hr size=1>Ahhh...imagining that irresistible "new car" smell?<br> Check out
-<a href="http://us.rd.yahoo.com/evt=48245/*http://autos.yahoo.com/new_cars.html;_ylc=X3oDMTE1YW1jcXJ2BF9TAzk3MTA3MDc2BHNlYwNtYWlsdGFncwRzbGsDbmV3LWNhcnM-">new cars at Yahoo! Autos.</a>
-
---0-944088738-1177796764=:5915--
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
