@@ -1,16 +1,19 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id B458CDDF14
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Apr 2007 16:54:53 +1000 (EST)
-Date: Sun, 29 Apr 2007 01:55:33 -0500
-To: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id 48F96DDF2E
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Apr 2007 17:35:09 +1000 (EST)
+Date: Sun, 29 Apr 2007 17:35:31 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: olof@lixom.net (Olof Johansson)
 Subject: Re: [PATCH] [POWERPC] get_property cleanups
-Message-ID: <20070429065533.GA8241@lixom.net>
+Message-Id: <20070429173531.dcc33d43.sfr@canb.auug.org.au>
+In-Reply-To: <20070429065533.GA8241@lixom.net>
 References: <20070429162908.c8bffbec.sfr@canb.auug.org.au>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070429162908.c8bffbec.sfr@canb.auug.org.au>
-From: olof@lixom.net (Olof Johansson)
+	<20070429065533.GA8241@lixom.net>
+Mime-Version: 1.0
+Content-Type: multipart/signed; protocol="application/pgp-signature";
+	micalg="PGP-SHA1";
+	boundary="Signature=_Sun__29_Apr_2007_17_35_31_+1000_3WaS_SttE+W0Si0Z"
 Cc: ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,16 +24,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, Apr 29, 2007 at 04:29:08PM +1000, Stephen Rothwell wrote:
-> Just another pass through arch/powerpc for old usages.
-> 
-> Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
-> ---
->  arch/powerpc/platforms/cell/ras.c         |    4 ++--
->  arch/powerpc/platforms/pasemi/cpufreq.c   |   11 ++++++-----
->  arch/powerpc/platforms/pasemi/gpio_mdio.c |    6 +++---
->  arch/powerpc/sysdev/uic.c                 |    8 ++++----
+--Signature=_Sun__29_Apr_2007_17_35_31_+1000_3WaS_SttE+W0Si0Z
+Content-Type: text/plain; charset=US-ASCII
+Content-Disposition: inline
+Content-Transfer-Encoding: 7bit
 
-arch/powerpc/platforms/cell/cbe-cpufreq.c needs the same changes as paseemi/cpufreq.c.
+On Sun, 29 Apr 2007 01:55:33 -0500 olof@lixom.net (Olof Johansson) wrote:
+>
+> arch/powerpc/platforms/cell/cbe-cpufreq.c needs the same changes as paseemi/cpufreq.c.
 
--Olof
+Already done.
+
+--
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
+http://www.canb.auug.org.au/~sfr/
+
+--Signature=_Sun__29_Apr_2007_17_35_31_+1000_3WaS_SttE+W0Si0Z
+Content-Type: application/pgp-signature
+
+-----BEGIN PGP SIGNATURE-----
+Version: GnuPG v1.4.6 (GNU/Linux)
+
+iD8DBQFGNErKFdBgD/zoJvwRAqsEAJ9+KwMiOa4bd3tY+61jW9dVmufOxwCeOH7h
+DV/qjz+LnJqoO+jvaPihHT8=
+=DHFT
+-----END PGP SIGNATURE-----
+
+--Signature=_Sun__29_Apr_2007_17_35_31_+1000_3WaS_SttE+W0Si0Z--
