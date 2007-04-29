@@ -1,22 +1,22 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 57DE0DDEA0
-	for <linuxppc-dev@ozlabs.org>; Sun, 29 Apr 2007 11:44:41 +1000 (EST)
-Date: Sun, 29 Apr 2007 11:44:46 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: Re: [PATCH 2/2] Rename get_property to of_get_property: drivers/net
-Message-Id: <20070429114446.31f40a30.sfr@canb.auug.org.au>
-In-Reply-To: <4633689E.50900@garzik.org>
-References: <20070427145107.4f73e436.sfr@canb.auug.org.au>
-	<20070427145508.9c5641a2.sfr@canb.auug.org.au>
-	<4633689E.50900@garzik.org>
+Return-Path: <linux@dominikbrodowski.net>
+Received: from linta.de (isilmar.linta.de [213.239.214.66])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 5CF22DDF52
+	for <linuxppc-dev@ozlabs.org>; Sun, 29 Apr 2007 12:57:07 +1000 (EST)
+Date: Sat, 28 Apr 2007 22:50:21 -0400
+From: Dominik Brodowski <linux@dominikbrodowski.net>
+To: Olof Johansson <olof@lixom.net>
+Subject: Re: [PATCH v3] [2.6.22] pasemi: cpufreq driver
+Message-ID: <20070429025021.GC2781@isilmar.linta.de>
+References: <20070425204633.GC19781@lixom.net>
+	<20070426053700.GA23922@lixom.net>
+	<20070427054601.GB7755@lixom.net>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Sun__29_Apr_2007_11_44_46_+1000_6HKc2Bugqnm4Gh1C"
-Cc: ppc-dev <linuxppc-dev@ozlabs.org>, akpm@linux-foundation.org,
-	paulus@samba.org, netdev@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070427054601.GB7755@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, egor@pasemi.com, paulus@samba.org, arnd@arndb.de,
+	cpufreq@lists.linux.org.uk
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,49 +26,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Sun__29_Apr_2007_11_44_46_+1000_6HKc2Bugqnm4Gh1C
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+Hi,
 
-On Sat, 28 Apr 2007 11:30:38 -0400 Jeff Garzik <jeff@garzik.org> wrote:
->
-> Sorry for your being a football here.
+On Fri, Apr 27, 2007 at 12:46:01AM -0500, Olof Johansson wrote:
+> +	max_freq = (u32*) get_property(cpu, "clock-frequency", NULL);
 
-That's OK.
+(u32) or (32*) ?
 
-> AFAICS, looking at the two patches, it seems clear they should go in via
-> Paulus's tree.  There are clear dependencies, and it is clearly
-> arch-specific code.
+> +	cur_astate = get_cur_astate(policy->cpu);
 
-So can I take this as a future OK for architecture specific network
-drivers changes to go through the architecture trees (cc'd to you)?
+May the different cores have different settings at initalization? e.g.
 
-> If anything, it sounds like I should drop a ucc_geth patch or two from
-> my tree.  Is that the case?
+core 0:		freq A
+core 1:		freq B
 
-No, my patches can wait (there are backward compatibility hacks in place)
-so once you have merged your changes with Linus (I am assuming it won't
-be to long), we will put these through Paulus' tree.
+with (freq B > freq A)? If so, cur_astate is set wrongly, as the _effective_
+frequency would be freq B, right?
 
-(The ucc_geth stuff was a pain, but the real kicker (as far as I was
-concered) was the ehea changes - parts of that driver have been
-completely rewritten in your tree.)
+> +#ifndef CONFIG_PPC_PASEMI_CPUFREQ
+> +	printk(KERN_WARNING "No cpufreq driver, powersavings modes disabled\n");
+> +	current_mode = 0;
+> +#endif
+> +
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+This confuses me a bit -- does something else than cpufreq not work if
+cpufreq is disabled?
 
---Signature=_Sun__29_Apr_2007_11_44_46_+1000_6HKc2Bugqnm4Gh1C
-Content-Type: application/pgp-signature
 
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
+Overall, the patch looks good to me.
 
-iD8DBQFGM/imFdBgD/zoJvwRAnI2AJ0SJKscy3o/eaE2P7hY7r9hav6wGwCgjuXJ
-EmjHIeulhAWyHY3cl7HG7h4=
-=VIzU
------END PGP SIGNATURE-----
-
---Signature=_Sun__29_Apr_2007_11_44_46_+1000_6HKc2Bugqnm4Gh1C--
+	Dominik
