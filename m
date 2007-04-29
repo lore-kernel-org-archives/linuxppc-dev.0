@@ -1,7 +1,4 @@
-Return-Path: <benh@kernel.crashing.org>
-Subject: Re: [PATCH v4] powerpc: 64K page support for kexec
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Paul Mackerras <paulus@samba.org>
+Return-Path: <segher@kernel.crashing.org>
 In-Reply-To: <17972.22463.103425.51542@cargo.ozlabs.ibm.com>
 References: <1177626236.24866.99.camel@luke-laptop>
 	<1177601310.24866.94.camel@luke-laptop>
@@ -10,10 +7,13 @@ References: <1177626236.24866.99.camel@luke-laptop>
 	<c21def285f4ad2e13914af73f7610c0b@bga.com>
 	<1177695045.24866.135.camel@luke-laptop>
 	<17972.22463.103425.51542@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Sun, 29 Apr 2007 19:31:01 +1000
-Message-Id: <1177839061.14873.352.camel@localhost.localdomain>
-Mime-Version: 1.0
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <c08e2dc179070866364d96a7b5ade65b@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH v4] powerpc: 64K page support for kexec
+Date: Sun, 29 Apr 2007 15:27:55 +0200
+To: Paul Mackerras <paulus@samba.org>
 Cc: Arnd Bergmann <arnd@arndb.de>, Milton Miller <miltonm@bga.com>,
 	linuxppc-dev@ozlabs.org, Olof Johansson <olof@lixom.net>,
 	cbe-oss-dev@ozlabs.org
@@ -26,22 +26,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Sun, 2007-04-29 at 18:30 +1000, Paul Mackerras wrote:
-> Luke Browning writes:
-> 
-> > How about the following as an alternative. 
-> > 
-> >   BUG_ON((hpte_v & 0x4000000000000000UL) && (crashing_cpus == -1));
-> >   BUG_ON((size == MMU_PAGE_16G) && (crashing_cpus == -1));
-> >   BUG_ON((size == MMU_PAGE_64K_AP) && (crashing_cpus == -1));
-> 
+>>   BUG_ON((hpte_v & 0x4000000000000000UL) && (crashing_cpus == -1));
+>>   BUG_ON((size == MMU_PAGE_16G) && (crashing_cpus == -1));
+>>   BUG_ON((size == MMU_PAGE_64K_AP) && (crashing_cpus == -1));
+>
 > How much effort would it be to add the code to cope with those
 > conditions and give the correct answers?  I'd much prefer that to
 > these BUG_ONs.
 
-hrm...
+The test "& 0x400..." should be "& 0xc00..." since the
+"B" filed in a page table entry is the top _two_ bits.
 
-1T segments shouldn't be too hard... 16G pages goes with it pretty much,
-and AP ... well... do they work on any implementation anyway ?
+Not sure what that tells us about the work involved in
+making this code do the right thing under all conditions,
+but it would seem to indicate trouble ahead.  Also, the
+encodings with bit 0 = 1 are reserved (says arch v2.03),
+so there would probably still be a BUG_ON() here.
 
-Ben.
+
+Segher
