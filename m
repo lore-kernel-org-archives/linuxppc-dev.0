@@ -1,16 +1,24 @@
-Return-Path: <mamsadegh@hotmail.com>
-Received: from bay0-omc2-s35.bay0.hotmail.com (bay0-omc2-s35.bay0.hotmail.com
-	[65.54.246.171]) by ozlabs.org (Postfix) with ESMTP id C10E2DDF6C
+Return-Path: <glikely@gmail.com>
+Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
+	by ozlabs.org (Postfix) with ESMTP id C45A3DDF7D
 	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 Apr 2007 16:43:53 +1000 (EST)
-Message-ID: <BAY115-W11DBD14D233C8E1FE8CAD3B24C0@phx.gbl>
-From: Mohammad Sadegh Sadri <mamsadegh@hotmail.com>
-To: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
-Subject: I always encouter this simple error message compiling 2.6 for ML403
-	UART 16550
-Date: Mon, 30 Apr 2007 06:43:49 +0000
-Content-Type: text/plain; charset="iso-8859-1"
+	Mon, 30 Apr 2007 17:32:38 +1000 (EST)
+Received: by ug-out-1314.google.com with SMTP id k3so924804ugf
+	for <linuxppc-embedded@ozlabs.org>;
+	Mon, 30 Apr 2007 00:32:36 -0700 (PDT)
+Message-ID: <528646bc0704300032r394d6510mfb0ba38fa0be791b@mail.gmail.com>
+Date: Mon, 30 Apr 2007 01:32:36 -0600
+From: "Grant Likely" <grant.likely@secretlab.ca>
+Sender: glikely@gmail.com
+To: "Mohammad Sadegh Sadri" <mamsadegh@hotmail.com>
+Subject: Re: I always encouter this simple error message compiling 2.6 for
+	ML403 UART 16550
+In-Reply-To: <BAY115-W11DBD14D233C8E1FE8CAD3B24C0@phx.gbl>
 MIME-Version: 1.0
+Content-Type: multipart/mixed;
+	boundary="----=_Part_48869_22160547.1177918356196"
+References: <BAY115-W11DBD14D233C8E1FE8CAD3B24C0@phx.gbl>
+Cc: Linux PPC Linux PPC <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -21,36 +29,81 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+------=_Part_48869_22160547.1177918356196
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Content-Transfer-Encoding: 7bit
+Content-Disposition: inline
 
-Well
+On 4/30/07, Mohammad Sadegh Sadri <mamsadegh@hotmail.com> wrote:
+>
+> Well
+>
+> Don't know if any change should occure in the source files but when I compile any version of 2.6 kernel for ml403/405 with UART 16550 support , I encounter this error message :
 
-Don't know if any change should occure in the source files but when I compi=
-le any version of 2.6 kernel for ml403/405 with UART 16550 support , I enco=
-unter this error message :
+Hmm, yes.  That looks busted.  Try the attached patch and see if it
+works for you.
 
-arch/ppc/syslib/virtex_devices.c: In function 'virtex_early_serial_init':
-arch/ppc/syslib/virtex_devices.c:309: warning: implicit declaration of func=
-tion 'gen550_init'
-  CC      arch/ppc/syslib/ppc4xx_setup.o
-  CC      arch/ppc/syslib/gen550_dbg.o
-arch/ppc/syslib/gen550_dbg.c:34: error: 'RS_TABLE_SIZE' undeclared here (no=
-t in a function)
-arch/ppc/syslib/gen550_dbg.c:36: error: empty scalar initializer
-arch/ppc/syslib/gen550_dbg.c:36: error: (near initialization for 'rs_table'=
-)
-make[1]: *** [arch/ppc/syslib/gen550_dbg.o] Error 1
-make: *** [arch/ppc/syslib] Error 2
+Cheers,
+g.
 
-And for the solution I simply add the following line to the header of gen55=
-0_dbg.c :
 
-#include=20
+-- 
+Grant Likely, B.Sc. P.Eng.
+Secret Lab Technologies Ltd.
+grant.likely@secretlab.ca
+(403) 399-0195
 
-Is there any thing I have missed? or this include line should be added to t=
-he source codes?
+------=_Part_48869_22160547.1177918356196
+Content-Type: application/x-patch;
+	name=0001-POWERPC-Enable-Virtex-support-for-early-serial.patch
+Content-Transfer-Encoding: base64
+X-Attachment-Id: f_f14m4lrf
+Content-Disposition: attachment; filename="0001-POWERPC-Enable-Virtex-support-for-early-serial.patch"
 
-thanks.
-_________________________________________________________________
-Connect to the next generation of MSN Messenger=A0
-http://imagine-msn.com/messenger/launch80/default.aspx?locale=3Den-us&sourc=
-e=3Dwlmailtagline=
+RnJvbSA5OTk3MDA2ZmFhMmIxODdmZDY5NzY2MTM5ZGMxMTliZGIxMzMxOTQxIE1vbiBTZXAgMTcg
+MDA6MDA6MDAgMjAwMQpGcm9tOiBHcmFudCBMaWtlbHkgPGdyYW50Lmxpa2VseUBzZWNyZXRsYWIu
+Y2E+CkRhdGU6IE1vbiwgMzAgQXByIDIwMDcgMDE6MzA6MzUgLTA2MDAKU3ViamVjdDogW1BBVENI
+XSBbUE9XRVJQQ10gRW5hYmxlIFZpcnRleCBzdXBwb3J0IGZvciBlYXJseSBzZXJpYWwKClNpZ25l
+ZC1vZmYtYnk6IEdyYW50IExpa2VseSA8Z3JhbnQubGlrZWx5QHNlY3JldGxhYi5jYT4KLS0tCiBh
+cmNoL3BwYy9ib290L2NvbW1vbi9uczE2NTUwLmMgICAgICAgICAgICAgICAgICAgfCAgICAzIC0t
+LQogYXJjaC9wcGMvcGxhdGZvcm1zLzR4eC94cGFyYW1ldGVycy94cGFyYW1ldGVycy5oIHwgICAg
+NyArKysrKystCiBhcmNoL3BwYy9zeXNsaWIvZ2VuNTUwX2RiZy5jICAgICAgICAgICAgICAgICAg
+ICAgfCAgICAzICsrKwogaW5jbHVkZS9hc20tcHBjL3NlcmlhbC5oICAgICAgICAgICAgICAgICAg
+ICAgICAgIHwgICAgMiArKwogNCBmaWxlcyBjaGFuZ2VkLCAxMSBpbnNlcnRpb25zKCspLCA0IGRl
+bGV0aW9ucygtKQoKZGlmZiAtLWdpdCBhL2FyY2gvcHBjL2Jvb3QvY29tbW9uL25zMTY1NTAuYyBi
+L2FyY2gvcHBjL2Jvb3QvY29tbW9uL25zMTY1NTAuYwppbmRleCBjMDM3YTJkLi4yYjM5ZGU5IDEw
+MDY0NAotLS0gYS9hcmNoL3BwYy9ib290L2NvbW1vbi9uczE2NTUwLmMKKysrIGIvYXJjaC9wcGMv
+Ym9vdC9jb21tb24vbnMxNjU1MC5jCkBAIC03LDkgKzcsNiBAQAogI2luY2x1ZGUgPGxpbnV4L3Nl
+cmlhbF9yZWcuaD4KICNpbmNsdWRlIDxhc20vc2VyaWFsLmg+CiAKLSNpZiBkZWZpbmVkKENPTkZJ
+R19YSUxJTlhfVklSVEVYKQotI2luY2x1ZGUgPHBsYXRmb3Jtcy80eHgveHBhcmFtZXRlcnMveHBh
+cmFtZXRlcnMuaD4KLSNlbmRpZgogI2luY2x1ZGUgIm5vbnN0ZGlvLmgiCiAjaW5jbHVkZSAic2Vy
+aWFsLmgiCiAKZGlmZiAtLWdpdCBhL2FyY2gvcHBjL3BsYXRmb3Jtcy80eHgveHBhcmFtZXRlcnMv
+eHBhcmFtZXRlcnMuaCBiL2FyY2gvcHBjL3BsYXRmb3Jtcy80eHgveHBhcmFtZXRlcnMveHBhcmFt
+ZXRlcnMuaAppbmRleCAwYWY5NGIwLi45MTdjYzgxIDEwMDY0NAotLS0gYS9hcmNoL3BwYy9wbGF0
+Zm9ybXMvNHh4L3hwYXJhbWV0ZXJzL3hwYXJhbWV0ZXJzLmgKKysrIGIvYXJjaC9wcGMvcGxhdGZv
+cm1zLzR4eC94cGFyYW1ldGVycy94cGFyYW1ldGVycy5oCkBAIC0yNyw3ICsyNyw4IEBACiAjZW5k
+aWYKIAogI2lmbmRlZiBTRVJJQUxfUE9SVF9ERk5TCi0gIC8qIHpJbWFnZSBzZXJpYWwgcG9ydCBk
+ZWZpbml0aW9ucyAqLworI2lmIGRlZmluZWQoWFBBUl9VQVJUTlM1NTBfMF9CQVNFQUREUikKKyAg
+LyogekltYWdlL2dlbjU1MCBzZXJpYWwgcG9ydCBkZWZpbml0aW9uczsgb25seSBwb3J0IDEgc3Vw
+cG9ydGVkIEFUTSAqLwogICAjZGVmaW5lIFJTX1RBQkxFX1NJWkUgMQogICAjZGVmaW5lIFNFUklB
+TF9QT1JUX0RGTlMgewkJCQkJCVwKIAkuYmF1ZF9iYXNlCSA9IFhQQVJfVUFSVE5TNTUwXzBfQ0xP
+Q0tfRlJFUV9IWi8xNiwJCVwKQEAgLTM3LDYgKzM4LDEwIEBACiAJLmlvbWVtX3JlZ19zaGlmdCA9
+IDIsCQkJCQkJXAogCS5pb190eXBlCSA9IFNFUklBTF9JT19NRU0sCQkJCVwKICAgfSwKKyNlbHNl
+CisgICNkZWZpbmUgUlNfVEFCTEVfU0laRSAwCisgICNkZWZpbmUgU0VSSUFMX1BPUlRfREZOUwor
+I2VuZGlmCiAjZW5kaWYKIAogLyoKZGlmZiAtLWdpdCBhL2FyY2gvcHBjL3N5c2xpYi9nZW41NTBf
+ZGJnLmMgYi9hcmNoL3BwYy9zeXNsaWIvZ2VuNTUwX2RiZy5jCmluZGV4IDkyOTNmNWMuLjI2N2Q2
+ZGIgMTAwNjQ0Ci0tLSBhL2FyY2gvcHBjL3N5c2xpYi9nZW41NTBfZGJnLmMKKysrIGIvYXJjaC9w
+cGMvc3lzbGliL2dlbjU1MF9kYmcuYwpAQCAtMjMsNiArMjMsOSBAQAogI2luY2x1ZGUgPGFzbS9t
+YWNoZGVwLmg+CiAjaW5jbHVkZSA8YXNtL3NlcmlhbC5oPgogI2luY2x1ZGUgPGFzbS9pby5oPgor
+I2lmIGRlZmluZWQoQ09ORklHX1hJTElOWF9WSVJURVgpCisjaW5jbHVkZSA8cGxhdGZvcm1zLzR4
+eC94cGFyYW1ldGVycy94cGFyYW1ldGVycy5oPgorI2VuZGlmCiAKICNkZWZpbmUgU0VSSUFMX0JB
+VUQJOTYwMAogCmRpZmYgLS1naXQgYS9pbmNsdWRlL2FzbS1wcGMvc2VyaWFsLmggYi9pbmNsdWRl
+L2FzbS1wcGMvc2VyaWFsLmgKaW5kZXggOGZjMWI1NC4uMmZmODBiNCAxMDA2NDQKLS0tIGEvaW5j
+bHVkZS9hc20tcHBjL3NlcmlhbC5oCisrKyBiL2luY2x1ZGUvYXNtLXBwYy9zZXJpYWwuaApAQCAt
+MjcsNiArMjcsOCBAQAogI2luY2x1ZGUgPHBsYXRmb3Jtcy9zYW5kcG9pbnQuaD4KICNlbGlmIGRl
+ZmluZWQoQ09ORklHX1NQUlVDRSkKICNpbmNsdWRlIDxwbGF0Zm9ybXMvc3BydWNlLmg+CisjZWxp
+ZiBkZWZpbmVkKENPTkZJR19YSUxJTlhfVklSVEVYKQorI2luY2x1ZGUgPHBsYXRmb3Jtcy80eHgv
+eHBhcmFtZXRlcnMveHBhcmFtZXRlcnMuaD4gLyogbXVzdCBiZSBiZWZvcmUgNHh4ICovCiAjZWxp
+ZiBkZWZpbmVkKENPTkZJR180eHgpCiAjaW5jbHVkZSA8YXNtL2libTR4eC5oPgogI2VsaWYgZGVm
+aW5lZChDT05GSUdfODN4eCkKLS0gCjEuNS4xCgo=
+------=_Part_48869_22160547.1177918356196--
