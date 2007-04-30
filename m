@@ -1,17 +1,14 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 30 Apr 2007 15:35:35 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: Scott Wood <scottwood@freescale.com>
+Subject: Re: [PATCH] bootwrapper: CONFIG_ -> CONFIG_DEVICE_TREE
+Message-ID: <20070430053535.GE6436@localhost.localdomain>
+References: <20070427203215.GA12814@ld0162-tx32.am.freescale.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17973.32577.253554.707441@cargo.ozlabs.ibm.com>
-Date: Mon, 30 Apr 2007 15:31:45 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] powermac: proper sleep management
-In-Reply-To: <1177767996.5102.9.camel@johannes.berg>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1177746562.3448.10.camel@johannes.berg>
-	<17971.14223.435220.418649@cargo.ozlabs.ibm.com>
-	<1177767996.5102.9.camel@johannes.berg>
-Cc: linuxppc-dev@ozlabs.org
+In-Reply-To: <20070427203215.GA12814@ld0162-tx32.am.freescale.net>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -21,27 +18,16 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Johannes Berg writes:
+On Fri, Apr 27, 2007 at 03:32:15PM -0500, Scott Wood wrote:
+> A usage of CONFIG_DEVICE_TREE got accidentally truncated; this
+> fix allows out-of-tree dts files to work.
+> 
+> Signed-off-by: Scott Wood <scottwood@freescale.com>
 
-> Are you serious? The only thing the generic code does here is invoke our
-> stuff in the right order. That shouldn't be too much of a constraint. We
+Acked-by: David Gibson <david@gibson.dropbear.id.au>
 
-Yes I'm serious.  At a quick look, the generic code is calling
-freeze_processes and shrink_all_memory, and I don't see where it's
-doing a sync.  I really don't like the process freezer; as Linus
-pointed out, it has caused more deadlocks than it solved.
-
-Also, you're now calling pbook_alloc_pci_save after interrupts are
-disabled, and it does a kmalloc(..., GFP_KERNEL).  Oops.
-
-Part of the problem is exactly what Linus pointed out: that the
-generic code tries to use the same code paths for suspend to RAM and
-suspend to disk, but they are two totally different things.
-
-I have no objection to adding code to enable the generic code to do
-the (mostly) right thing when you write "mem" into /sys/power/state.
-I have no objection to code being refactored to eliminate
-duplication.  All I ask is that the PMU ioctls continue to do
-essentially the same things in the same order.
-
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
