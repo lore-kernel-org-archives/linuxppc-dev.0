@@ -1,18 +1,15 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Mon, 30 Apr 2007 16:06:14 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: "Mark A. Greer" <mgreer@mvista.com>
+Subject: Re: [PATCH 1/13] powerpc: Add Makefile rule to wrap dts file in zImage
+Message-ID: <20070430060614.GA4683@localhost.localdomain>
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<20070425235504.GC4046@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17973.33249.852991.342860@cargo.ozlabs.ibm.com>
-Date: Mon, 30 Apr 2007 15:42:57 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Anton Blanchard <anton@samba.org>
-Subject: Re: Incorrect order of last two arguments of ptrace for requests
-	PPC_PTRACE_GETREGS, SETREGS, GETFPREGS, SETFPREGS
-In-Reply-To: <20061204215825.GB22514@krispykreme>
-References: <453F421A.6070507@in.ibm.com>
-	<1164220580.12365.8.camel@hades.cambridge.redhat.com>
-	<20061204215825.GB22514@krispykreme>
-Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
-	linux-kernel@vger.kernel.org
+In-Reply-To: <20070425235504.GC4046@mag.az.mvista.com>
+Cc: linuxppc-dev <Linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,24 +19,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Anton Blanchard writes:
-
-> I looked at this a while ago and my decision at the time was to keep the
-> old implementation around for a while and create two new ones that match
-> the x86 numbering:
+On Wed, Apr 25, 2007 at 04:55:04PM -0700, Mark A. Greer wrote:
+> Add 'zImage.dts' and 'zImage.dts_initrd' build rules that automatically
+> compile and wrap a dts file into the zImage file.  The rules are similar
+> to the initrd rules.
 > 
-> #define PTRACE_GETREGS            12
-> #define PTRACE_SETREGS            13
-> #define PTRACE_GETFPREGS          14
-> #define PTRACE_SETFPREGS          15
-> 
-> I hate gratuitous differences, each ptrace app ends up with a sea of
-> ifdefs.
-> 
-> Also I think it would be worth changing getregs/setregs to grab the
-> entire pt_regs structure. Otherwise most ops (gdb, strace etc) will just
-> have to make multiple ptrace calls to get the nia etc.
+> The dts file is expected to be arch/powerpc/boot/dts/$(CONFIG_DEVICE_TREE)
 
-Did you do a patch to do that?
+Hrm.  It would make more sense to extend the existing zImage.% rule to
+pass in the dts (making sure it still works with no dts, obviously).
+We shouldn't need this two-level indirection of make targets, either
+through dts-y, see my recent patch of cuboot cleanups to see how I
+removed that for Scott Wood's cuboot stuff.
 
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
