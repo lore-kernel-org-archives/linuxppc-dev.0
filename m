@@ -1,18 +1,18 @@
-Return-Path: <mgreer@mvista.com>
-Received: from zipcode.az.mvista.com (unknown [65.200.49.156])
-	by ozlabs.org (Postfix) with ESMTP id 15788DDF56
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 04:18:40 +1000 (EST)
-Date: Mon, 30 Apr 2007 11:19:55 -0700
-From: "Mark A. Greer" <mgreer@mvista.com>
-To: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 12/13] powerpc: Add bootwrapper support for Motorola
-	PrPMC2800 platform
-Message-ID: <20070430181954.GB7673@mag.az.mvista.com>
-References: <35d250938c0c5d7dae6a8735343059b7@bga.com>
+Return-Path: <simon@fire.lp0.eu>
+Received: from proxima.lp0.eu (proxima.lp0.eu [85.158.45.36])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "proxima.lp0.eu",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 40C5FDE0D8
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 04:07:18 +1000 (EST)
+Message-ID: <46362B14.6090106@simon.arlott.org.uk>
+Date: Mon, 30 Apr 2007 18:44:52 +0100
+From: Simon Arlott <simon@fire.lp0.eu>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <35d250938c0c5d7dae6a8735343059b7@bga.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	linuxppc-dev@ozlabs.org
+Subject: Revert "[POWERPC] <various>"
+Content-Type: text/plain; charset=UTF-8; format=flowed
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,69 +22,7 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 30, 2007 at 11:15:23AM -0500, Milton Miller wrote:
-> On Thu Apr 26 10:02:27 EST 2007, Mark A. Greer wrote:
-> >Add support for Motorola ECC PrPMC280/PrPMC2800 Platform.
-> >The PrPMC280 sits on an F101 baseboard and the PrPMC2800 sits on a
-> >F101e baseboard.  Logic has been added to determine which board
-> >(and variant thereof) the code is being run on.
-> 
-> >
-> >+       /* Update /mv64x60/device_type, if this is a mv64362 */
-> >+       if (bip->bridge_type == BRIDGE_TYPE_MV64362) {
-> >+               devp = finddevice("/mv64x60");
-> >+               if (devp == NULL)
-> >+                       fatal("Error: Missing /mv64x60 device tree 
-> >node\n\r");
-> >+               setprop(devp, "device_type", "mv64362", 
-> >strlen("mv64362") + 1);
-> >+       }
-> >+
-> 
-> That is not a device_type.   It might be a model,   Or even a 
-> compatable.
-> but not a type.
+There are a few powerpc patches plus reverts in the recent push to torvalds/linux-2.6 - shouldn't this be avoided whenever possible because it could cause problems for people trying to use git bisect?
 
-How about "host-bridge" or is that too generic?
-
-> >+       platform_ops.exit = prpmc2800_reset;
-> 
-> No delay to let the user know see what is wrong?
-
-I'll add a delay.
-
-> >+
-> >+/* Following code is put at very beginning of zImage (64KB into ELF 
-> >file) */
-> >+asm (" .globl _zimage_start\n\
-> >+       _zimage_start:\n\
-> >+               mfmsr   10\n\
-> >+               rlwinm  10,10,0,~(1<<15)        /* Clear MSR_EE */\n\
-> >+               sync\n\
-> >+               mtmsr   10\n\
-> >+               isync\n\
-> >+               b _zimage_start_lib\n\
-> >+");
-> >
-> 
-> That comment is very wrong.   This object might be the first to be 
-> linked,
-> and the text will be near the top.  But there is nothing in that 
-> fragment
-> to make it be the beginning of the image.  Not even in the text section.
-> 
-> That label will be the entrypoiint, so make the comment to that effect.
-
-Yes, its a poorly worded comment.
-
-> Also, the 1<<15 seems magic.  I would like to see it as a constant in
-> reg.h,
-
-It probably makes sense to add some MSR definitions to reg.h.
-
-> but to use that you would have to pass it as an i parameter, so
-
-I don't follow.  What's wrong with '#define MSR_EE (1<<15)'
-in reg.h and 'rlwinm  10,10,0,~MSR_EE'?
-
-Mark
+-- 
+Simon Arlott
