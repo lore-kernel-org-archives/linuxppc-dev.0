@@ -1,24 +1,31 @@
-Return-Path: <mark@mtfhpc.demon.co.uk>
-Received: from anchor-fallback-96.mail.demon.net
-	(anchor-fallback-96.mail.demon.net [194.217.242.83])
-	by ozlabs.org (Postfix) with ESMTP id 533DDDDF32
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 08:44:49 +1000 (EST)
-Received: from anchor-post-33.mail.demon.net ([194.217.242.91]:4024 "EHLO
-	anchor-post-33.mail.demon.net") by anchor-fallback-96.mail.demon.net
-	with ESMTP id S460067AbXD3VhG (ORCPT
-	<rfc822;linuxppc-dev@ozlabs.org>); Mon, 30 Apr 2007 21:37:06 +0000
-Date: Mon, 30 Apr 2007 22:36:27 +0100 (BST)
-From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
-To: Andrea Arcangeli <andrea@suse.de>, wli@holomorphy.com,
-	akpm@osdl.org
-Subject: Re: vm changes from linux-2.6.14 to linux-2.6.15
-In-Reply-To: <1177852457.4390.26.camel@localhost.localdomain>
-Message-ID: <Pine.LNX.4.61.0704302159140.3178@mtfhpc.demon.co.uk>
-References: <Pine.LNX.4.61.0704291345480.690@mtfhpc.demon.co.uk>
-	<1177852457.4390.26.camel@localhost.localdomain>
+Return-Path: <dwg@au1.ibm.com>
+Received: from ausmtp04.au.ibm.com (ausmtp04.au.ibm.com [202.81.18.152])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "ausmtp04.au.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 9816DDDF39
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 10:07:30 +1000 (EST)
+Received: from sd0109e.au.ibm.com (d23rh905.au.ibm.com [202.81.18.225])
+	by ausmtp04.au.ibm.com (8.13.8/8.13.8) with ESMTP id l410Qjp5329108
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 May 2007 10:26:45 +1000
+Received: from d23av04.au.ibm.com (d23av04.au.ibm.com [9.190.250.237])
+	by sd0109e.au.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l410Ax87170390
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 May 2007 10:10:59 +1000
+Received: from d23av04.au.ibm.com (loopback [127.0.0.1])
+	by d23av04.au.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l4107SUQ001625
+	for <linuxppc-dev@ozlabs.org>; Tue, 1 May 2007 10:07:28 +1000
+Date: Mon, 30 Apr 2007 21:15:51 +1000
+From: David Gibson <dwg@au1.ibm.com>
+To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+Subject: Re: powerpc: Revise PPC44x MMU code for arch/powerpc
+Message-ID: <20070430111551.GC8725@localhost.localdomain>
+References: <20070430040625.GD6436@localhost.localdomain>
+	<20070430110107.GH23995@crusty.rchland.ibm.com>
 MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
-Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070430110107.GH23995@crusty.rchland.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,47 +35,31 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi all,
+On Mon, Apr 30, 2007 at 06:01:08AM -0500, Josh Boyer wrote:
+> On Mon, Apr 30, 2007 at 02:06:25PM +1000, David Gibson wrote:
+> > Index: working-2.6/include/asm-powerpc/mmu-44x.h
+> > ===================================================================
+> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
+> > +++ working-2.6/include/asm-powerpc/mmu-44x.h	2007-04-30 14:05:35.000000000 +1000
+> 
+> <snip>
+> 
+> > +#ifndef __ASSEMBLY__
+> > +
+> > +typedef unsigned long long phys_addr_t;
+> > +
+> > +extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
+> 
+> This function can likely get removed entirely in arch/powerpc.  ioremap can
+> already take a 64 bit address and do the correct thing, so I'm not sure it's
+> even needed anymore.
 
-I have tracked down a failure to successfully load/run the init task on my 
-Sparcstation 1 clone (SS1) and Sparcstation 2 (SS2), sparc32 sun4c 
-systems, to a patch:
+Right now it's invoked from common code in the 32-bit pgtable.h
+though.  It'll need some cleanup and factorization in other places to
+get rid of this; one thing at a time.
 
-   commit 1a44e149084d772a1bcf4cdbdde8a013a8a1cfde.
-   [PATCH] .text page fault SMP scalability optimization
-
-Removing this patch fixes the issue and allows me to use kernels later 
-than v2.5.14. (tested using linux-2.6.20.9).
-
-Given the comment provided by the git bisect, backing out this patch will 
-probably have undesirable conseqnences for other platforms (especially 
-powerpc64) so, if an architecture independent solution is not available, 
-some/all of the code in handle_pte_fault() in mm/memory.c will need be to 
-made architecture dependent.
-
-I am not sufficiently familear with the how the SS1/SS2 mmu works and how 
-the linux memory management system works to understand why this patch 
-prevents my sun4c SS1/SS2 systems from working.
-
-Advice and help on the approch to take and any code changes regarding this 
-issue would be most welcome.
-
-Regards
- 	Mark Fortescue.
-
-On Sun, 29 Apr 2007, Tom "spot" Callaway wrote:
-
-> On Sun, 2007-04-29 at 14:02 +0100, Mark Fortescue wrote:
->> Hi,
->>
->> Does any one have or know of a good reference that would help me in
->> identifing the cause of a CPU soft lockup that apears to be related to
->> changes in the vertual memory handling between these two versions of the
->> kernel?
->
-> Have you tried git bisecting between the two kernels to find the
-> specific patch that breaks?
->
-> ~spot
->
->
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
