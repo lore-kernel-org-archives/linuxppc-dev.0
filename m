@@ -1,12 +1,18 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 30 Apr 2007 15:37:06 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: powerpc: Fix STRICT_MM_TYPECHECKS
-Message-ID: <20070430053705.GF6436@localhost.localdomain>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+Message-ID: <17973.33249.852991.342860@cargo.ozlabs.ibm.com>
+Date: Mon, 30 Apr 2007 15:42:57 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Anton Blanchard <anton@samba.org>
+Subject: Re: Incorrect order of last two arguments of ptrace for requests
+	PPC_PTRACE_GETREGS, SETREGS, GETFPREGS, SETFPREGS
+In-Reply-To: <20061204215825.GB22514@krispykreme>
+References: <453F421A.6070507@in.ibm.com>
+	<1164220580.12365.8.camel@hades.cambridge.redhat.com>
+	<20061204215825.GB22514@krispykreme>
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,80 +22,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Since we don't have it active by default, the STRICT_MM_TYPECHECKS
-option has bitrotted again.  This patch fixes a couple of simple build
-fixes if the option is selected.  First, pud_t mustn't be defined in
-page.h on 32-bit systems, because it conflicts with the version in the
-generic pud-folding code.  Second, pci_32.c is missing a __pgprot()
-wrapper call.  Third, a couple of PS3 files use constants of type
-pgprot_t when they need the raw values, we add pgprot_val() calls to
-fix this.
+Anton Blanchard writes:
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+> I looked at this a while ago and my decision at the time was to keep the
+> old implementation around for a while and create two new ones that match
+> the x86 numbering:
+> 
+> #define PTRACE_GETREGS            12
+> #define PTRACE_SETREGS            13
+> #define PTRACE_GETFPREGS          14
+> #define PTRACE_SETFPREGS          15
+> 
+> I hate gratuitous differences, each ptrace app ends up with a sea of
+> ifdefs.
+> 
+> Also I think it would be worth changing getregs/setregs to grab the
+> entire pt_regs structure. Otherwise most ops (gdb, strace etc) will just
+> have to make multiple ptrace calls to get the nia etc.
 
----
- arch/powerpc/kernel/pci_32.c      |    2 +-
- arch/powerpc/platforms/ps3/htab.c |    3 ++-
- arch/powerpc/platforms/ps3/spu.c  |    2 +-
- include/asm-powerpc/page.h        |    2 +-
- 4 files changed, 5 insertions(+), 4 deletions(-)
+Did you do a patch to do that?
 
-Index: working-2.6/include/asm-powerpc/page.h
-===================================================================
---- working-2.6.orig/include/asm-powerpc/page.h	2007-04-30 15:33:05.000000000 +1000
-+++ working-2.6/include/asm-powerpc/page.h	2007-04-30 15:36:20.000000000 +1000
-@@ -126,7 +126,7 @@ typedef struct { unsigned long pmd; } pm
- #define __pmd(x)	((pmd_t) { (x) })
- 
- /* PUD level exusts only on 4k pages */
--#ifndef CONFIG_PPC_64K_PAGES
-+#if defined(CONFIG_PPC64) && !defined(CONFIG_PPC_64K_PAGES)
- typedef struct { unsigned long pud; } pud_t;
- #define pud_val(x)	((x).pud)
- #define __pud(x)	((pud_t) { (x) })
-Index: working-2.6/arch/powerpc/kernel/pci_32.c
-===================================================================
---- working-2.6.orig/arch/powerpc/kernel/pci_32.c	2007-04-30 15:33:00.000000000 +1000
-+++ working-2.6/arch/powerpc/kernel/pci_32.c	2007-04-30 15:33:11.000000000 +1000
-@@ -1658,7 +1658,7 @@ pgprot_t pci_phys_mem_access_prot(struct
- 	int i;
- 
- 	if (page_is_ram(pfn))
--		return prot;
-+		return __pgprot(prot);
- 
- 	prot |= _PAGE_NO_CACHE | _PAGE_GUARDED;
- 
-Index: working-2.6/arch/powerpc/platforms/ps3/spu.c
-===================================================================
---- working-2.6.orig/arch/powerpc/platforms/ps3/spu.c	2007-04-30 15:33:00.000000000 +1000
-+++ working-2.6/arch/powerpc/platforms/ps3/spu.c	2007-04-30 15:33:11.000000000 +1000
-@@ -184,7 +184,7 @@ static int __init setup_areas(struct spu
- 
- 	spu_pdata(spu)->shadow = __ioremap(
- 		spu_pdata(spu)->shadow_addr, sizeof(struct spe_shadow),
--		PAGE_READONLY | _PAGE_NO_CACHE | _PAGE_GUARDED);
-+		pgprot_val(PAGE_READONLY) | _PAGE_NO_CACHE | _PAGE_GUARDED);
- 	if (!spu_pdata(spu)->shadow) {
- 		pr_debug("%s:%d: ioremap shadow failed\n", __func__, __LINE__);
- 		goto fail_ioremap;
-Index: working-2.6/arch/powerpc/platforms/ps3/htab.c
-===================================================================
---- working-2.6.orig/arch/powerpc/platforms/ps3/htab.c	2007-04-30 15:33:01.000000000 +1000
-+++ working-2.6/arch/powerpc/platforms/ps3/htab.c	2007-04-30 15:33:11.000000000 +1000
-@@ -273,7 +273,8 @@ void __init ps3_map_htab(void)
- 
- 	result = lv1_map_htab(0, &htab_addr);
- 
--	htab = (hpte_t *)__ioremap(htab_addr, htab_size, PAGE_READONLY_X);
-+	htab = (hpte_t *)__ioremap(htab_addr, htab_size,
-+				   pgprot_val(PAGE_READONLY_X));
- 
- 	DBG("%s:%d: lpar %016lxh, virt %016lxh\n", __func__, __LINE__,
- 		htab_addr, (unsigned long)htab);
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+Paul.
