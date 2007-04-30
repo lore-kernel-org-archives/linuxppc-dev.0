@@ -1,22 +1,20 @@
-Return-Path: <glikely@gmail.com>
-Received: from wx-out-0506.google.com (wx-out-0506.google.com [66.249.82.224])
-	by ozlabs.org (Postfix) with ESMTP id 2BE90DDF0A
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id BB255DDF68
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 May 2007 00:57:32 +1000 (EST)
-Received: by wx-out-0506.google.com with SMTP id s19so1441676wxc
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 Apr 2007 07:57:30 -0700 (PDT)
-Message-ID: <528646bc0704300757k66807211na34f6b1c852461e@mail.gmail.com>
-Date: Mon, 30 Apr 2007 08:57:30 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Andrei Konovalov" <akonovalov@ru.mvista.com>,
-	"Linux PPC" <linuxppc-embedded@ozlabs.org>
-Subject: Re: Xilinx framebuffer platform bus binding
-In-Reply-To: <528646bc0704300203p2b7afb22we23fa0da66c80a80@mail.gmail.com>
+	Tue,  1 May 2007 01:01:25 +1000 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1HiXNQ-0004zM-A0
+	for linuxppc-embedded@ozlabs.org; Mon, 30 Apr 2007 08:01:20 -0700
+Message-ID: <10254948.post@talk.nabble.com>
+Date: Mon, 30 Apr 2007 08:01:20 -0700 (PDT)
+From: Mirek23 <miroslaw.dach@psi.ch>
+To: linuxppc-embedded@ozlabs.org
+Subject: xilinx gpio in kernel 2.6
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <528646bc0704300203p2b7afb22we23fa0da66c80a80@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,28 +25,51 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/30/07, Grant Likely <grant.likely@secretlab.ca> wrote:
-> Andrei; FWIW, here is the code that I'm using to register the Xilinx
-> FB to the platform bus.
->
 
-Oh, and in keeping with the other devices, I use this snippet in xparams:
+Hi All,
 
-Cheers,
-g.
+           I am trying to build the kernel 2.6 for my ml403 board. I use the
+kernel 2.6 by Grant.
+The ethernet (Temac) and serial drivers work fine. It is however no support
+for xilinx gpio in the kernel tree.
 
-diff --git a/arch/ppc/platforms/4xx/xparameters/xparameters.h
-b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-index 917cc81..8675511 100644
---- a/arch/ppc/platforms/4xx/xparameters/xparameters.h
-+++ b/arch/ppc/platforms/4xx/xparameters/xparameters.h
-@@ -103,3 +103,9 @@
- #define XPAR_GPIO_4_IS_DUAL 0
- #endif
+To satisfy that I have generated the xilinx_gpio driver by means of the EDK
+8.2 .
 
-+#ifndef XPAR_TFT_0_USE_DCR
-+#define XPAR_TFT_0_USE_DCR 0
-+#endif
-+#ifndef XPAR_TFT_1_USE_DCR
-+#define XPAR_TFT_1_USE_DCR 0
-+#endif
+I have tried to place the xilinx_gpio to the kernel 2.6 tree under
+drivers/char/xilinx_gpio.
+
+I have done the suitable configuration on the Makefile and Kconfig level.
+When I build the kernel, the crosscompiler complaines about the
+xgpio_ioctl.h which comes
+from the adapter.c file.
+
+It seems to be that xgpio_ioctl.h conatins the missing macros:
+XGPIO_IN
+XGPIO_OUT
+XGPIO_TRISTATE
+XGPIO_OPEN_DRAIN
+.
+.
+.
+
+Does sombody of you faced the same problem? 
+The second thing is that I did not find any documentation how to use GPIO on
+the user level to access things like LEDS and Swiches on my xilinx board. Do
+you have an idea how to do that (ie. which function calls to use).
+
+Many thanks in advance for any hint.
+
+Best Regards
+
+Mirek
+
+
+
+
+
+ 
+
+-- 
+View this message in context: http://www.nabble.com/xilinx-gpio-in-kernel-2.6-tf3670122.html#a10254948
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
