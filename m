@@ -1,22 +1,29 @@
-Return-Path: <simon@fire.lp0.eu>
-Received: from proxima.lp0.eu (proxima.lp0.eu [85.158.45.36])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e36.co.us.ibm.com (e36.co.us.ibm.com [32.97.110.154])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "proxima.lp0.eu",
-	Issuer "CA Cert Signing Authority" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 22BD6DDEB8
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 05:56:13 +1000 (EST)
-Message-ID: <463649D5.9000406@simon.arlott.org.uk>
-Date: Mon, 30 Apr 2007 20:56:05 +0100
-From: Simon Arlott <simon@fire.lp0.eu>
-MIME-Version: 1.0
-To: Olaf Hering <olaf@aepfle.de>
-Subject: Re: Revert "[POWERPC] <various>"
-References: <46362B14.6090106@simon.arlott.org.uk>
-	<20070430194911.GA1156@aepfle.de>
-In-Reply-To: <20070430194911.GA1156@aepfle.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Cc: linuxppc-dev@ozlabs.org,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	(Client CN "e36.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 09ACFDDEFD
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 06:42:17 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e36.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l3UKgFPR027130
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Apr 2007 16:42:15 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l3UKgFJ9169154
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Apr 2007 14:42:15 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l3UKgEdQ027071
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Apr 2007 14:42:15 -0600
+Subject: [PATCH] powerpc: fix spurious vectors on weird MPIC
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+Content-Type: text/plain
+Date: Mon, 30 Apr 2007 15:38:11 -0500
+Message-Id: <1177965491.3026.47.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,26 +33,26 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On 30/04/07 20:49, Olaf Hering wrote:
-> On Mon, Apr 30, Simon Arlott wrote:
-> 
->> There are a few powerpc patches plus reverts in the recent push to 
->> torvalds/linux-2.6 - shouldn't this be avoided whenever possible because it 
->> could cause problems for people trying to use git bisect?
-> 
-> The reverts do not cause compile failures (I hope).
-> You may lose IDE if you happen to debug something on Pegasos.
-> I'm sure the real bisect breakers are elsewhere.
+The weird TSI 10x MPIC needs an EOI after getting a spurious vector.  This
+patch uses the existing MPIC_SPV_EOI flag to fix this issue.
 
-The reverts themselves are not the real problem, a git bisect could occur 
-between the commit adding it and the one that reverts it. If that commit 
-introduced a bug then surely it would be better to avoid releasing it 
-elsewhere even if it will be reverted in the same batch.
+Signed-off-by: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+---
+ arch/powerpc/sysdev/mpic.c |    5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-Of course, this is probably difficult to do with git and impossible if 
-someone has cloned the bad commit already and tries to pull :/
-
-Is it possible to mass copy all the good commits to create a clean branch?
-
--- 
-Simon Arlott
+--- linux-2.6.orig/arch/powerpc/sysdev/mpic.c
++++ linux-2.6/arch/powerpc/sysdev/mpic.c
+@@ -1333,8 +1333,11 @@ unsigned int mpic_get_one_irq(struct mpi
+ #ifdef DEBUG_LOW
+ 	DBG("%s: get_one_irq(): %d\n", mpic->name, src);
+ #endif
+-	if (unlikely(src == mpic->spurious_vec))
++	if (unlikely(src == mpic->spurious_vec)) {
++		if (mpic->flags & MPIC_SPV_EOI)
++			mpic_eoi(mpic);
+ 		return NO_IRQ;
++	}
+ 	return irq_linear_revmap(mpic->irqhost, src);
+ }
+ 
