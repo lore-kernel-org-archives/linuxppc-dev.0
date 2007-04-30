@@ -1,21 +1,24 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+Return-Path: <akpm@linux-foundation.org>
+Received: from smtp1.linux-foundation.org (smtp1.linux-foundation.org
+	[65.172.181.25])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id C1C95DDF46
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 07:20:39 +1000 (EST)
-Subject: Re: powerpc: Revise PPC44x MMU code for arch/powerpc
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-In-Reply-To: <20070430110107.GH23995@crusty.rchland.ibm.com>
-References: <20070430040625.GD6436@localhost.localdomain>
-	<20070430110107.GH23995@crusty.rchland.ibm.com>
-Content-Type: text/plain
-Date: Tue, 01 May 2007 07:20:24 +1000
-Message-Id: <1177968025.14873.377.camel@localhost.localdomain>
+	(Client CN "smtp.osdl.org",
+	Issuer "CA Cert Signing Authority" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 0E87DDDF2D
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 07:54:55 +1000 (EST)
+Date: Mon, 30 Apr 2007 14:54:14 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+Subject: Re: vm changes from linux-2.6.14 to linux-2.6.15
+Message-Id: <20070430145414.88fda272.akpm@linux-foundation.org>
+In-Reply-To: <Pine.LNX.4.61.0704302159140.3178@mtfhpc.demon.co.uk>
+References: <Pine.LNX.4.61.0704291345480.690@mtfhpc.demon.co.uk>
+	<1177852457.4390.26.camel@localhost.localdomain>
+	<Pine.LNX.4.61.0704302159140.3178@mtfhpc.demon.co.uk>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	David Gibson <david@gibson.dropbear.id.au>
+Content-Type: text/plain; charset=US-ASCII
+Cc: sparclinux@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	Andrea Arcangeli <andrea@suse.de>, wli@holomorphy.com, linux-mm@kvack.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +28,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-04-30 at 06:01 -0500, Josh Boyer wrote:
-> On Mon, Apr 30, 2007 at 02:06:25PM +1000, David Gibson wrote:
-> > Index: working-2.6/include/asm-powerpc/mmu-44x.h
-> > ===================================================================
-> > --- /dev/null	1970-01-01 00:00:00.000000000 +0000
-> > +++ working-2.6/include/asm-powerpc/mmu-44x.h	2007-04-30 14:05:35.000000000 +1000
-> 
-> <snip>
-> 
-> > +#ifndef __ASSEMBLY__
-> > +
-> > +typedef unsigned long long phys_addr_t;
-> > +
-> > +extern phys_addr_t fixup_bigphys_addr(phys_addr_t, phys_addr_t);
-> 
-> This function can likely get removed entirely in arch/powerpc.  ioremap can
-> already take a 64 bit address and do the correct thing, so I'm not sure it's
-> even needed anymore.
+On Mon, 30 Apr 2007 22:36:27 +0100 (BST)
+Mark Fortescue <mark@mtfhpc.demon.co.uk> wrote:
 
-Yeah, the bigphys fixup should'nt be necessary now that resources can be
-64 bits. There is -one- thing for which that remapping could still
-potentially be useful is... the X server. That bloody POS currently
-doesn't deal with PCI very well and will do horrible things to your
-system if you try to make it grok 64 bits resources (when it's 32 bits
-binary). But then, if you want that working, you need both the above
-sort of remapping, but you also need to fix /dev/mem to take it into
-account (which the current arch/ppc code doesn't do).
+> Hi all,
+> 
+> I have tracked down a failure to successfully load/run the init task on my 
+> Sparcstation 1 clone (SS1) and Sparcstation 2 (SS2), sparc32 sun4c 
+> systems, to a patch:
+> 
+>    commit 1a44e149084d772a1bcf4cdbdde8a013a8a1cfde.
+>    [PATCH] .text page fault SMP scalability optimization
+> 
+> Removing this patch fixes the issue and allows me to use kernels later 
+> than v2.5.14. (tested using linux-2.6.20.9).
+> 
+> Given the comment provided by the git bisect, backing out this patch will 
+> probably have undesirable conseqnences for other platforms (especially 
+> powerpc64) so, if an architecture independent solution is not available, 
+> some/all of the code in handle_pte_fault() in mm/memory.c will need be to 
+> made architecture dependent.
+> 
+> I am not sufficiently familear with the how the SS1/SS2 mmu works and how 
+> the linux memory management system works to understand why this patch 
+> prevents my sun4c SS1/SS2 systems from working.
+> 
+> Advice and help on the approch to take and any code changes regarding this 
+> issue would be most welcome.
+> 
 
-Cheers,
-Ben.
+Interesting - thanks for working that out.  Let's keep linux-mm on cc please.
