@@ -1,18 +1,16 @@
-Return-Path: <olaf@aepfle.de>
-Received: from mail-out.m-online.net (mail-out.m-online.net [212.18.0.9])
-	by ozlabs.org (Postfix) with ESMTP id 8C16ADDF7A
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 01:58:29 +1000 (EST)
-Date: Mon, 30 Apr 2007 17:58:23 +0200
-From: Olaf Hering <olaf@aepfle.de>
-To: Geoff Levand <geoffrey.levand@am.sony.com>
-Subject: Re: [PATCH 13/14] powerpc: add ps3 platform system bus support
-Message-ID: <20070430155823.GA30344@aepfle.de>
-References: <4563D02F.9010307@am.sony.com> <20070430104714.GA25815@aepfle.de>
-	<4636100C.7020006@am.sony.com>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-In-Reply-To: <4636100C.7020006@am.sony.com>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Return-Path: <miltonm@bga.com>
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id BEC6CDDF7F
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 02:16:04 +1000 (EST)
+Mime-Version: 1.0 (Apple Message framework v624)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <35d250938c0c5d7dae6a8735343059b7@bga.com>
+From: Milton Miller <miltonm@bga.com>
+Subject: Re: [PATCH 12/13] powerpc: Add bootwrapper support for Motorola
+	PrPMC2800 platform
+Date: Mon, 30 Apr 2007 11:15:23 -0500
+To: Mark A. Greer <mgreer@mvista.com>
+Cc: ppcdev <linuxppc-dev@ozlabs.org>, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,74 +20,56 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 30, Geoff Levand wrote:
+On Thu Apr 26 10:02:27 EST 2007, Mark A. Greer wrote:
+> Add support for Motorola ECC PrPMC280/PrPMC2800 Platform.
+> The PrPMC280 sits on an F101 baseboard and the PrPMC2800 sits on a
+> F101e baseboard.  Logic has been added to determine which board
+> (and variant thereof) the code is being run on.
 
-> > The generated modalias files do not match anything.
->  
-> Module support is still todo.  I am just now started on it.  David
-> Woodhouse sent a few patches, but I just merged them in without
-> testing.
+>
+> +       /* Update /mv64x60/device_type, if this is a mv64362 */
+> +       if (bip->bridge_type == BRIDGE_TYPE_MV64362) {
+> +               devp = finddevice("/mv64x60");
+> +               if (devp == NULL)
+> +                       fatal("Error: Missing /mv64x60 device tree 
+> node\n\r");
+> +               setprop(devp, "device_type", "mv64362", 
+> strlen("mv64362") + 1);
+> +       }
+> +
 
-This is my version, compile tested.
+That is not a device_type.   It might be a model,   Or even a 
+compatable.
+but not a type.
 
-ps3fb calls into ps3av.
-ps3av can be a module, but it does not force ps3fb to be a module as
-well. Maybe this can be enforced via some Kconfig tweaks.
+> +       platform_ops.exit = prpmc2800_reset;
 
----
- arch/powerpc/platforms/ps3/system-bus.c |   30 +++++++++++++++++++++++++++---
- 1 file changed, 27 insertions(+), 3 deletions(-)
+No delay to let the user know see what is wrong?
 
---- a/arch/powerpc/platforms/ps3/system-bus.c
-+++ b/arch/powerpc/platforms/ps3/system-bus.c
-@@ -167,6 +167,30 @@ static int ps3_system_bus_remove(struct 
- 	return 0;
- }
- 
-+static const char *ps3_system_bus_modalias(enum ps3_match_id match_id)
-+{
-+	const char *p;
-+	switch (match_id) {
-+		case PS3_MATCH_ID_EHCI:
-+			p = "ps3-ehci";
-+			break;
-+		case PS3_MATCH_ID_OHCI:
-+			p = "ps3-ohci";
-+			break;
-+		case PS3_MATCH_ID_GELIC:
-+			p = "gelic_net";
-+			break;
-+		case PS3_MATCH_ID_AV_SETTINGS:
-+			p = "ps3av";
-+			break;
-+		case PS3_MATCH_ID_SYSTEM_MANAGER:
-+		default:
-+			p = "unknown";
-+			break;
-+	}
-+	return p;
-+}
-+
- static int ps3_system_bus_uevent(struct device *_dev, char **envp,
- 				 int num_envp, char *buffer, int buffer_size)
- {
-@@ -174,8 +198,8 @@ static int ps3_system_bus_uevent(struct 
- 	int i=0, length = 0;
- 
- 	if (add_uevent_var(envp, num_envp, &i, buffer, buffer_size,
--			   &length, "MODALIAS=ps3:%d",
--			   dev->match_id))
-+			   &length, "MODALIAS=%s",
-+			   ps3_system_bus_modalias(dev->match_id)))
- 		return -ENOMEM;
- 
- 	envp[i] = NULL;
-@@ -186,7 +210,7 @@ static ssize_t modalias_show(struct devi
- 			     char *buf)
- {
- 	struct ps3_system_bus_device *dev = to_ps3_system_bus_device(_dev);
--        int len = snprintf(buf, PAGE_SIZE, "ps3:%d\n", dev->match_id);
-+        int len = snprintf(buf, PAGE_SIZE, "%s\n", ps3_system_bus_modalias(dev->match_id));
- 
-         return (len >= PAGE_SIZE) ? (PAGE_SIZE - 1) : len;
- }
+> +
+> +/* Following code is put at very beginning of zImage (64KB into ELF 
+> file) */
+> +asm (" .globl _zimage_start\n\
+> +       _zimage_start:\n\
+> +               mfmsr   10\n\
+> +               rlwinm  10,10,0,~(1<<15)        /* Clear MSR_EE */\n\
+> +               sync\n\
+> +               mtmsr   10\n\
+> +               isync\n\
+> +               b _zimage_start_lib\n\
+> +");
+>
+
+That comment is very wrong.   This object might be the first to be 
+linked,
+and the text will be near the top.  But there is nothing in that 
+fragment
+to make it be the beginning of the image.  Not even in the text section.
+
+That label will be the entrypoiint, so make the comment to that effect.
+
+Also, the 1<<15 seems magic.  I would like to see it as a constant in
+reg.h, but to use that you would have to pass it as an i parameter, so
+I'm not sure it would improve.
+
+milton
