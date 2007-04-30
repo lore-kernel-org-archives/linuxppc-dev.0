@@ -1,11 +1,16 @@
-Return-Path: <dgibson@ozlabs.org>
-Date: Mon, 30 Apr 2007 13:42:02 +1000
-From: David Gibson <david@gibson.dropbear.id.au>
-To: Paul Mackerras <paulus@samba.org>
-Subject: Small cleanups to the cuboot bootwrapper code
-Message-ID: <20070430034202.GB6436@localhost.localdomain>
+Return-Path: <olof@lixom.net>
+Received: from mail.lixom.net (lixom.net [66.141.50.11])
+	by ozlabs.org (Postfix) with ESMTP id AB34CDDEEC
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Apr 2007 13:52:52 +1000 (EST)
+Date: Sun, 29 Apr 2007 22:53:39 -0500
+To: paulus@samba.org
+Subject: [PATCH v2] powerpc: Show current speed in /proc/cpuinfo
+Message-ID: <20070430035339.GA15771@lixom.net>
+References: <20070427084118.GA8842@lixom.net>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
+In-Reply-To: <20070427084118.GA8842@lixom.net>
+From: olof@lixom.net (Olof Johansson)
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -16,145 +21,62 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch makes a few small cleanups to the cuboot code.
-	- It removes the double layered selection of images, via
-cuboot-plat-y, instead having the cuboot platforms directly select a
-suitable image-y (this changes the name of the final cuboot image from
-plain cuImage to cuImage.<platform>).
-	- Factors out some code in the wrapper that's potentially
-useful to platforms other than uboot.
+On other architectures, the frequency in /proc/cpuinfo moves with cpufreq
+changes. It makes sense to do the same on powerpc to keep users from
+getting confused.
 
-Signed-off-by: David Gibson <david@gibson.dropbear.id.au>
+Change the format to three decimals, having full Hz granularity is silly
+these days. Also specify in output if it's cpufreq or firmware-reported:
 
----
- arch/powerpc/Makefile      |    2 +-
- arch/powerpc/boot/Makefile |   15 ++++++---------
- arch/powerpc/boot/wrapper  |   28 +++++++++++++---------------
- 3 files changed, 20 insertions(+), 25 deletions(-)
+clock           : 1250.000MHz (from firmware)
+or:
+clock           : 2500.000MHz (actual speed)
 
-Index: working-2.6/arch/powerpc/boot/Makefile
+
+Signed-off-by: Olof Johansson <olof@lixom.net>
+
+
+Index: powerpc/arch/powerpc/kernel/setup-common.c
 ===================================================================
---- working-2.6.orig/arch/powerpc/boot/Makefile	2007-04-30 13:37:31.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/Makefile	2007-04-30 13:41:00.000000000 +1000
-@@ -129,7 +129,9 @@ image-$(CONFIG_PPC_CELLEB)		+= zImage.ps
- image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
- image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
--image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage cuImage
-+image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
-+image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
-+image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
+--- powerpc.orig/arch/powerpc/kernel/setup-common.c
++++ powerpc/arch/powerpc/kernel/setup-common.c
+@@ -29,6 +29,7 @@
+ #include <linux/root_dev.h>
+ #include <linux/notifier.h>
+ #include <linux/cpu.h>
++#include <linux/cpufreq.h>
+ #include <linux/unistd.h>
+ #include <linux/serial.h>
+ #include <linux/serial_8250.h>
+@@ -160,6 +161,7 @@ static int show_cpuinfo(struct seq_file 
+ 	unsigned int pvr;
+ 	unsigned short maj;
+ 	unsigned short min;
++	unsigned int freq;
  
- # For 32-bit powermacs, build the COFF and miboot images
- # as well as the ELF images.
-@@ -162,15 +164,11 @@ $(obj)/zImage.initrd.ps3: vmlinux
- $(obj)/uImage: vmlinux $(wrapperbits)
- 	$(call if_changed,wrap,uboot)
+ 	if (cpu_id == NR_CPUS) {
+ #if defined(CONFIG_SMP) && defined(CONFIG_PPC32)
+@@ -226,13 +228,16 @@ static int show_cpuinfo(struct seq_file 
+ 	}
+ #endif /* CONFIG_TAU */
  
--cuboot-plat-$(CONFIG_83xx) += 83xx
--cuboot-plat-$(CONFIG_85xx) += 85xx
--cuboot-plat-y += unknown-platform
--
- dts = $(if $(shell echo $(CONFIG_) | grep '^/'),\
-        ,$(srctree)/$(src)/dts/)$(CONFIG_DEVICE_TREE)
- 
--$(obj)/cuImage: vmlinux $(wrapperbits)
--	$(call if_changed,wrap,cuboot-$(word 1,$(cuboot-plat-y)),$(dts))
-+$(obj)/cuImage.%: vmlinux $(wrapperbits)
-+	$(call if_changed,wrap,cuboot-$*,$(dts))
- 
- $(obj)/zImage:		$(addprefix $(obj)/, $(image-y))
- 	@rm -f $@; ln $< $@
-@@ -181,8 +179,7 @@ install: $(CONFIGURE) $(addprefix $(obj)
- 	sh -x $(srctree)/$(src)/install.sh "$(KERNELRELEASE)" vmlinux System.map "$(INSTALL_PATH)" $<
- 
- # anything not in $(targets)
--clean-files += $(image-) $(initrd-) zImage zImage.initrd \
--               cuImage.elf cuImage.bin.gz
-+clean-files += $(image-) $(initrd-) zImage zImage.initrd cuImage.*
- 
- # clean up files cached by wrapper
- clean-kernel := vmlinux.strip vmlinux.bin
-Index: working-2.6/arch/powerpc/boot/wrapper
-===================================================================
---- working-2.6.orig/arch/powerpc/boot/wrapper	2007-04-30 13:37:31.000000000 +1000
-+++ working-2.6/arch/powerpc/boot/wrapper	2007-04-30 13:41:00.000000000 +1000
-@@ -163,20 +163,19 @@ fi
- 
- vmz="$vmz$gzip"
- 
--case "$platform" in
--uboot|cuboot*)
--    version=`${CROSS}strings "$kernel" | grep '^Linux version [-0-9.]' | \
--	cut -d' ' -f3`
--    if [ -n "$version" ]; then
--	version="-n Linux-$version"
--    fi
--esac
-+# Extract kernel version information, some platforms want to include
-+# it in the image header
-+version=`${CROSS}strings "$kernel" | grep '^Linux version [-0-9.]' | \
-+    cut -d' ' -f3`
-+if [ -n "$version" ]; then
-+    uboot_version="-n Linux-$version"
-+fi
- 
- case "$platform" in
- uboot)
-     rm -f "$ofile"
-     mkimage -A ppc -O linux -T kernel -C gzip -a 00000000 -e 00000000 \
--	$version -d "$vmz" "$ofile"
-+	$uboot_version -d "$vmz" "$ofile"
-     if [ -z "$cacheit" ]; then
- 	rm -f "$vmz"
-     fi
-@@ -212,25 +211,24 @@ if [ "$platform" != "miboot" ]; then
-     rm $tmp
- fi
- 
-+# Some platforms need the zImage's entry point and base address
-+base=0x`${CROSS}nm "$ofile" | grep ' _start$' | cut -d' ' -f1`
-+entry=`${CROSS}objdump -f "$ofile" | grep '^start address ' | cut -d' ' -f3`
+-	/*
+-	 * Assume here that all clock rates are the same in a
+-	 * smp system.  -- Cort
+-	 */
+-	if (ppc_proc_freq)
+-		seq_printf(m, "clock\t\t: %lu.%06luMHz\n",
+-			   ppc_proc_freq / 1000000, ppc_proc_freq % 1000000);
++	/* cpufreq_quick_get() is in kHz */
++	freq = cpufreq_quick_get(cpu_id);
 +
- # post-processing needed for some platforms
- case "$platform" in
- pseries|chrp)
-     $object/addnote "$ofile"
-     ;;
- pmaccoff)
--    entry=`objdump -f "$ofile" | grep '^start address ' | \
--	cut -d' ' -f3`
-     ${CROSS}objcopy -O aixcoff-rs6000 --set-start "$entry" "$ofile"
-     $object/hack-coff "$ofile"
-     ;;
- cuboot*)
--    base=`${CROSS}nm "$ofile" | grep ' _start$' | cut -d' ' -f1`
--    entry=`${CROSS}objdump -f "$ofile" | grep '^start address ' | \
--           cut -d' ' -f3`
-     mv "$ofile" "$ofile".elf
-     ${CROSS}objcopy -O binary "$ofile".elf "$ofile".bin
-     gzip -f -9 "$ofile".bin
-     mkimage -A ppc -O linux -T kernel -C gzip -a "$base" -e "$entry" \
--            $version -d "$ofile".bin.gz "$ofile"
-+            $uboot_version -d "$ofile".bin.gz "$ofile"
-     ;;
- esac
-Index: working-2.6/arch/powerpc/Makefile
-===================================================================
---- working-2.6.orig/arch/powerpc/Makefile	2007-04-30 13:37:55.000000000 +1000
-+++ working-2.6/arch/powerpc/Makefile	2007-04-30 13:38:13.000000000 +1000
-@@ -148,7 +148,7 @@ all: $(KBUILD_IMAGE)
++	if (freq)
++		seq_printf(m, "clock\t\t: %u.%03uMHz (actual speed)\n",
++			   freq / 1000, freq % 1000);
++	else if (ppc_proc_freq)
++		seq_printf(m, "clock\t\t: %lu.%03luMHz (from firmware)\n",
++			   ppc_proc_freq / 1000000,
++			   (ppc_proc_freq / 1000) % 1000);
  
- CPPFLAGS_vmlinux.lds	:= -Upowerpc
- 
--BOOT_TARGETS = zImage zImage.initrd uImage cuImage
-+BOOT_TARGETS = zImage zImage.initrd uImage
- 
- PHONY += $(BOOT_TARGETS)
- 
-
--- 
-David Gibson			| I'll have my music baroque, and my code
-david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
-				| _way_ _around_!
-http://www.ozlabs.org/~dgibson
+ 	if (ppc_md.show_percpuinfo != NULL)
+ 		ppc_md.show_percpuinfo(m, cpu_id);
