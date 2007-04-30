@@ -1,20 +1,26 @@
-Return-Path: <jengelh@linux01.gwdg.de>
-Received: from mailer.gwdg.de (mailer.gwdg.de [134.76.10.26])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 0CF6FDDF04
-	for <linuxppc-dev@ozlabs.org>; Mon, 30 Apr 2007 22:39:26 +1000 (EST)
-Date: Mon, 30 Apr 2007 13:37:55 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-Subject: [PATCH 15/36] Use menuconfig objects II - Macintosh
-In-Reply-To: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
-Message-ID: <Pine.LNX.4.61.0704301336200.29151@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0704301225060.29151@yvahk01.tjqt.qr>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, Andrew Morton <akpm@linux-foundation.org>,
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>
+	by ozlabs.org (Postfix) with ESMTP id B193CDDF33
+	for <linuxppc-dev@ozlabs.org>; Mon, 30 Apr 2007 22:40:53 +1000 (EST)
+Subject: Re: [PATCH v2] powerpc: fix suspend states again
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17973.13523.57567.352585@cargo.ozlabs.ibm.com>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<1177710095.3565.64.camel@johannes.berg>
+	<20070427215338.GB17224@lixom.net>
+	<1177710883.3565.66.camel@johannes.berg>
+	<1177711372.3565.73.camel@johannes.berg>
+	<17973.13523.57567.352585@cargo.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-r/otn/428mgF2/4HzkPj"
+Date: Mon, 30 Apr 2007 13:35:41 +0200
+Message-Id: <1177932942.5102.30.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,33 +31,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-Make a "menuconfig" out of the Kconfig objects "menu, ..., endmenu",
-so that the user can disable all the options in that menu at once
-instead of having to disable each option separately.
+--=-r/otn/428mgF2/4HzkPj
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Jan Engelhardt <jengelh@gmx.de>
 
----
- drivers/macintosh/Kconfig |    8 ++++++--
- 1 file changed, 6 insertions(+), 2 deletions(-)
+> It would be good to avoid this duplication, or at least to use the
+> flush_* calls instead of the enable_kernel_* calls.
 
---- linux-2.6.21-mm_20070428.orig/drivers/macintosh/Kconfig
-+++ linux-2.6.21-mm_20070428/drivers/macintosh/Kconfig
-@@ -1,6 +1,10 @@
- 
--menu "Macintosh device drivers"
-+menuconfig MACINTOSH_DRIVERS
-+	bool "Macintosh device drivers"
- 	depends on PPC || MAC || X86
-+	default y
-+
-+if MACINTOSH_DRIVERS
- 
- config ADB
- 	bool "Apple Desktop Bus (ADB) support"
-@@ -234,4 +238,4 @@ config PMAC_RACKMETER
- 	  This driver procides some support to control the front panel
-           blue LEDs "vu-meter" of the XServer macs.
- 
--endmenu
-+endif # MACINTOSH_DRIVERS
+I don't like calling prepare_to_copy() since I doubt somebody changing
+prepare_to_copy will be aware that it is called there, but using the
+flush calls seems appropriate. I had it this way because the original
+code used enable_kernel_* and I was mostly copying around the code,
+should have looked closer.
+
+johannes
+
+--=-r/otn/428mgF2/4HzkPj
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGNdSN/ETPhpq3jKURAhAuAJsHCyVlInaPtdG89tOxEFHeD8HbhwCeMywC
+LfxKNrxNKdtWUY/xiwAx4cw=
+=M/uN
+-----END PGP SIGNATURE-----
+
+--=-r/otn/428mgF2/4HzkPj--
