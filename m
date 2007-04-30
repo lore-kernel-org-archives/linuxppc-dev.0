@@ -1,21 +1,20 @@
 Return-Path: <Geoffrey.Levand@am.sony.com>
-Received: from outbound2-sin-R.bigfish.com (outbound-sin.frontbridge.com
-	[207.46.51.80])
+Received: from outbound2-blu-R.bigfish.com (outbound-blu.frontbridge.com
+	[65.55.251.16])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 50B52DDFB3
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 07:00:57 +1000 (EST)
-Message-ID: <463658FE.8050700@am.sony.com>
-Date: Mon, 30 Apr 2007 14:00:46 -0700
+	by ozlabs.org (Postfix) with ESMTP id 1801CDDFC4
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 07:00:58 +1000 (EST)
+Message-ID: <46365902.5030400@am.sony.com>
+Date: Mon, 30 Apr 2007 14:00:50 -0700
 From: Geoff Levand <geoffrey.levand@am.sony.com>
 MIME-Version: 1.0
 To: Paul Mackerras <paulus@samba.org>
-Subject: [patch 1/6] PS3: Remove dev_dbg redefinition in ehci-ps3.c and
-	ohci-ps3.c
+Subject: [patch 2/6] PS3: Add DABR support
 References: <20070430202420.872228544@am.sony.com>
 In-Reply-To: <20070430202420.872228544@am.sony.com>
 Content-Type: text/plain; charset=UTF-8
-Cc: linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, Arnd Bergmann <arnd.bergmann@de.ibm.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,51 +24,38 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Commit 404d5b185b4eb56d6fa2f7bd27833f8df1c38ce4 changed the definition
-of dev_dbg in the !DEBUG case from being a #define to being a static
-inline.  There was code in usb/host/ehci-ps3.c and ohci-ps3.c to do
-exactly that, which fails to compile now.  This fixes it by removing
-the redefinition, as the redefinition is now superfluous.
+Add PS3 support for the PowerPC processor's Data Address Breakpoint Register
+(DABR).
 
+Signed-off-by: Arnd Bergmann <arnd.bergmann@de.ibm.com>
 Signed-off-by: Geoff Levand <geoffrey.levand@am.sony.com>
 
 ---
- drivers/usb/host/ehci-ps3.c |    7 -------
- drivers/usb/host/ohci-ps3.c |    8 --------
- 2 files changed, 15 deletions(-)
+ arch/powerpc/platforms/ps3/setup.c |    7 +++++++
+ 1 files changed, 7 insertions(+)
 
---- ps3-linux-dev.orig/drivers/usb/host/ehci-ps3.c
-+++ ps3-linux-dev/drivers/usb/host/ehci-ps3.c
-@@ -73,13 +73,6 @@ static const struct hc_driver ps3_ehci_h
+--- ps3-linux-dev.orig/arch/powerpc/platforms/ps3/setup.c
++++ ps3-linux-dev/arch/powerpc/platforms/ps3/setup.c
+@@ -137,6 +137,12 @@ early_param("ps3fb", early_parse_ps3fb);
+ #define prealloc_ps3fb_videomemory()	do { } while (0)
  #endif
- };
  
--#if !defined(DEBUG)
--#undef dev_dbg
--static inline int __attribute__ ((format (printf, 2, 3))) dev_dbg(
--	const struct device *_dev, const char *fmt, ...) {return 0;}
--#endif
--
--
- static int ps3_ehci_sb_probe(struct ps3_system_bus_device *dev)
- {
- 	int result;
---- ps3-linux-dev.orig/drivers/usb/host/ohci-ps3.c
-+++ ps3-linux-dev/drivers/usb/host/ohci-ps3.c
-@@ -75,14 +75,6 @@ static const struct hc_driver ps3_ohci_h
- #endif
- };
++static int ps3_set_dabr(u64 dabr)
++{
++	enum {DABR_USER = 1, DABR_KERNEL = 2,};
++
++	return lv1_set_dabr(dabr, DABR_KERNEL | DABR_USER) ? -1 : 0;
++}
  
--/* redefine dev_dbg to do a syntax check */
--
--#if !defined(DEBUG)
--#undef dev_dbg
--static inline int __attribute__ ((format (printf, 2, 3))) dev_dbg(
--	const struct device *_dev, const char *fmt, ...) {return 0;}
--#endif
--
- static int ps3_ohci_sb_probe(struct ps3_system_bus_device *dev)
+ static void __init ps3_setup_arch(void)
  {
- 	int result;
+@@ -234,6 +240,7 @@ define_machine(ps3) {
+ 	.get_boot_time			= ps3_get_boot_time,
+ 	.set_rtc_time			= ps3_set_rtc_time,
+ 	.get_rtc_time			= ps3_get_rtc_time,
++	.set_dabr			= ps3_set_dabr,
+ 	.calibrate_decr			= ps3_calibrate_decr,
+ 	.progress			= ps3_progress,
+ 	.restart			= ps3_restart,
 
 -- 
