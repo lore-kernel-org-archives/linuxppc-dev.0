@@ -1,16 +1,16 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 826BADDE9F
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 17:35:44 +1000 (EST)
-Date: Tue, 1 May 2007 17:22:50 +1000
+	by ozlabs.org (Postfix) with ESMTP id 48797DDE9F
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 17:35:45 +1000 (EST)
+Date: Tue, 1 May 2007 17:24:35 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "David S. Miller" <davem@davemloft.net>, paulus@samba.org
-Subject: [PATCH 0/11] Consolidation of Open Firmware routines
-Message-Id: <20070501172250.80707fb8.sfr@canb.auug.org.au>
+Subject: [PATCH 01/11] Split out common parts of prom.h
+Message-Id: <20070501172435.3360ea6b.sfr@canb.auug.org.au>
+In-Reply-To: <20070501172250.80707fb8.sfr@canb.auug.org.au>
+References: <20070501172250.80707fb8.sfr@canb.auug.org.au>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__1_May_2007_17_22_50_+1000_2FNZMhIkHjgaNk_P"
+Content-Type: text/plain; charset=US-ASCII
 Cc: sparclinux@vger.kernel.org, ppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -21,67 +21,331 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__1_May_2007_17_22_50_+1000_2FNZMhIkHjgaNk_P
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
+This creates linux/of.h and includes asm/prom.h from it.
 
-Hi all,
+We also include linux/of.h from asm/prom.h while we transition.
 
-Just thought I would show you all where I am up to.  I have moved from
-openfw.h, drivers/openf and CONFIG_OPENFW to of.h, drivers/of and
-CONFIG_OF - if this offends anyone please scream soon so I can change
-that back.
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
+---
+ include/asm-powerpc/prom.h |   40 +++-------------------------
+ include/asm-sparc/prom.h   |   49 ++++-------------------------------
+ include/asm-sparc64/prom.h |   49 ++++-------------------------------
+ include/linux/of.h         |   60 ++++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 77 insertions(+), 121 deletions(-)
+ create mode 100644 include/linux/of.h
 
-The current diffstat looks like below, so some progress has been made:
-
- arch/powerpc/Kconfig              |    3 +
- arch/powerpc/kernel/of_device.c   |  122 +----------------
- arch/powerpc/kernel/prom.c        |  249 +---------------------------------
- arch/sparc/Kconfig                |    3 +
- arch/sparc/kernel/of_device.c     |  151 +++-----------------
- arch/sparc/kernel/prom.c          |  173 +-----------------------
- arch/sparc/kernel/time.c          |    2 +-
- arch/sparc64/Kconfig              |    3 +
- arch/sparc64/kernel/auxio.c       |    2 +-
- arch/sparc64/kernel/of_device.c   |  164 ++++------------------
- arch/sparc64/kernel/power.c       |    2 +-
- arch/sparc64/kernel/prom.c        |  173 +-----------------------
- arch/sparc64/kernel/time.c        |    2 +-
- drivers/Kconfig                   |    2 +
- drivers/Makefile                  |    1 +
- drivers/of/Kconfig                |    3 +
- drivers/of/Makefile               |    2 +
- drivers/of/base.c                 |  274 +++++++++++++++++++++++++++++++++++++
- drivers/of/device.c               |  131 ++++++++++++++++++
- include/asm-powerpc/of_device.h   |   22 +---
- include/asm-powerpc/of_platform.h |   38 +-----
- include/asm-powerpc/prom.h        |   47 ++-----
- include/asm-sparc/of_device.h     |   49 +------
- include/asm-sparc/of_platform.h   |   32 +++++
- include/asm-sparc/prom.h          |   65 +++------
- include/asm-sparc64/of_device.h   |   50 +------
- include/asm-sparc64/of_platform.h |   33 +++++
- include/asm-sparc64/prom.h        |   65 +++------
- include/linux/of.h                |   60 ++++++++
- include/linux/of_device.h         |   26 ++++
- include/linux/of_platform.h       |   55 ++++++++
-
-The battle continues :-)
---
+-- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
 
---Signature=_Tue__1_May_2007_17_22_50_+1000_2FNZMhIkHjgaNk_P
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGNurPFdBgD/zoJvwRAlQHAJ4gsKsKO1dh+bmQt/9v6k5FKCk7pACgkuGw
-aL8CeDRcy04KoaP566XMMhE=
-=kdf/
------END PGP SIGNATURE-----
-
---Signature=_Tue__1_May_2007_17_22_50_+1000_2FNZMhIkHjgaNk_P--
+diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
+index ec400f6..7c77ef1 100644
+--- a/include/asm-powerpc/prom.h
++++ b/include/asm-powerpc/prom.h
+@@ -98,12 +98,6 @@ struct device_node {
+ 
+ extern struct device_node *of_chosen;
+ 
+-/* flag descriptions */
+-#define OF_DYNAMIC 1 /* node and properties were allocated via kmalloc */
+-
+-#define OF_IS_DYNAMIC(x) test_bit(OF_DYNAMIC, &x->_flags)
+-#define OF_MARK_DYNAMIC(x) set_bit(OF_DYNAMIC, &x->_flags)
+-
+ #define HAVE_ARCH_DEVTREE_FIXUPS
+ 
+ static inline void set_node_proc_entry(struct device_node *dn, struct proc_dir_entry *de)
+@@ -113,27 +107,7 @@ static inline void set_node_proc_entry(struct device_node *dn, struct proc_dir_e
+ 
+ 
+ /* New style node lookup */
+-extern struct device_node *of_find_node_by_name(struct device_node *from,
+-	const char *name);
+-#define for_each_node_by_name(dn, name) \
+-	for (dn = of_find_node_by_name(NULL, name); dn; \
+-	     dn = of_find_node_by_name(dn, name))
+-extern struct device_node *of_find_node_by_type(struct device_node *from,
+-	const char *type);
+-#define for_each_node_by_type(dn, type) \
+-	for (dn = of_find_node_by_type(NULL, type); dn; \
+-	     dn = of_find_node_by_type(dn, type))
+-extern struct device_node *of_find_compatible_node(struct device_node *from,
+-	const char *type, const char *compat);
+-extern struct device_node *of_find_node_by_path(const char *path);
+-extern struct device_node *of_find_node_by_phandle(phandle handle);
+ extern struct device_node *of_find_all_nodes(struct device_node *prev);
+-extern struct device_node *of_get_parent(const struct device_node *node);
+-extern struct device_node *of_get_next_child(const struct device_node *node,
+-					     struct device_node *prev);
+-extern struct property *of_find_property(const struct device_node *np,
+-					 const char *name,
+-					 int *lenp);
+ extern struct device_node *of_node_get(struct device_node *node);
+ extern void of_node_put(struct device_node *node);
+ 
+@@ -155,17 +129,9 @@ extern void of_detach_node(const struct device_node *);
+ extern void finish_device_tree(void);
+ extern void unflatten_device_tree(void);
+ extern void early_init_devtree(void *);
+-extern int of_device_is_compatible(const struct device_node *device,
+-				const char *);
+ #define device_is_compatible(d, c)	of_device_is_compatible((d), (c))
+ extern int machine_is_compatible(const char *compat);
+-extern const void *of_get_property(const struct device_node *node,
+-				const char *name,
+-				int *lenp);
+-#define get_property(a, b, c)	of_get_property((a), (b), (c))
+ extern void print_properties(struct device_node *node);
+-extern int of_n_addr_cells(struct device_node* np);
+-extern int of_n_size_cells(struct device_node* np);
+ extern int prom_n_intr_cells(struct device_node* np);
+ extern void prom_get_irq_senses(unsigned char *senses, int off, int max);
+ extern int prom_add_property(struct device_node* np, struct property* prop);
+@@ -219,7 +185,6 @@ static inline unsigned long of_read_ulong(const u32 *cell, int size)
+ 
+ /* Translate an OF address block into a CPU physical address
+  */
+-#define OF_BAD_ADDR	((u64)-1)
+ extern u64 of_translate_address(struct device_node *np, const u32 *addr);
+ 
+ /* Extract an address from a device, returns the region size and
+@@ -358,6 +323,11 @@ static inline void __iomem *of_iomap(struct device_node *np, int index)
+ 	return ioremap(res.start, 1 + res.end - res.start);
+ }
+ 
++/*
++ * NB:  This is here while we transition from using asm/prom.h
++ * to linux/of.h
++ */
++#include <linux/of.h>
+ 
+ #endif /* __KERNEL__ */
+ #endif /* _POWERPC_PROM_H */
+diff --git a/include/asm-sparc/prom.h b/include/asm-sparc/prom.h
+index 9ea105e..1e0e9da 100644
+--- a/include/asm-sparc/prom.h
++++ b/include/asm-sparc/prom.h
+@@ -2,7 +2,6 @@
+ #define _SPARC_PROM_H
+ #ifdef __KERNEL__
+ 
+-
+ /*
+  * Definitions for talking to the Open Firmware PROM on
+  * Power Macintosh computers.
+@@ -17,7 +16,6 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  */
+-
+ #include <linux/types.h>
+ #include <linux/proc_fs.h>
+ #include <asm/atomic.h>
+@@ -55,53 +53,18 @@ struct device_node {
+ 	unsigned int unique_id;
+ };
+ 
+-/* flag descriptions */
+-#define OF_DYNAMIC 1 /* node and properties were allocated via kmalloc */
+-
+-#define OF_IS_DYNAMIC(x) test_bit(OF_DYNAMIC, &x->_flags)
+-#define OF_MARK_DYNAMIC(x) set_bit(OF_DYNAMIC, &x->_flags)
+-
+-#define OF_BAD_ADDR	((u64)-1)
+-
+-static inline void set_node_proc_entry(struct device_node *dn, struct proc_dir_entry *de)
+-{
+-	dn->pde = de;
+-}
+-
+-extern struct device_node *of_find_node_by_name(struct device_node *from,
+-	const char *name);
+-#define for_each_node_by_name(dn, name) \
+-	for (dn = of_find_node_by_name(NULL, name); dn; \
+-	     dn = of_find_node_by_name(dn, name))
+-extern struct device_node *of_find_node_by_type(struct device_node *from,
+-	const char *type);
+-#define for_each_node_by_type(dn, type) \
+-	for (dn = of_find_node_by_type(NULL, type); dn; \
+-	     dn = of_find_node_by_type(dn, type))
+-extern struct device_node *of_find_compatible_node(struct device_node *from,
+-	const char *type, const char *compat);
+-extern struct device_node *of_find_node_by_path(const char *path);
+-extern struct device_node *of_find_node_by_phandle(phandle handle);
+-extern struct device_node *of_get_parent(const struct device_node *node);
+-extern struct device_node *of_get_next_child(const struct device_node *node,
+-					     struct device_node *prev);
+-extern struct property *of_find_property(const struct device_node *np,
+-					 const char *name,
+-					 int *lenp);
+-extern int of_device_is_compatible(const struct device_node *device,
+-				   const char *);
+-extern const void *of_get_property(const struct device_node *node,
+-				   const char *name,
+-				   int *lenp);
+-#define get_property(node,name,lenp) of_get_property(node,name,lenp)
+ extern int of_set_property(struct device_node *node, const char *name, void *val, int len);
+ extern int of_getintprop_default(struct device_node *np,
+ 				 const char *name,
+ 				 int def);
+-extern int of_n_addr_cells(struct device_node *np);
+-extern int of_n_size_cells(struct device_node *np);
+ 
+ extern void prom_build_devicetree(void);
+ 
++/*
++ * NB:  This is here while we transition from using asm/prom.h
++ * to linux/of.h
++ */
++#include <linux/of.h>
++
+ #endif /* __KERNEL__ */
+ #endif /* _SPARC_PROM_H */
+diff --git a/include/asm-sparc64/prom.h b/include/asm-sparc64/prom.h
+index ddad5f9..288d78d 100644
+--- a/include/asm-sparc64/prom.h
++++ b/include/asm-sparc64/prom.h
+@@ -2,7 +2,6 @@
+ #define _SPARC64_PROM_H
+ #ifdef __KERNEL__
+ 
+-
+ /*
+  * Definitions for talking to the Open Firmware PROM on
+  * Power Macintosh computers.
+@@ -17,7 +16,6 @@
+  * as published by the Free Software Foundation; either version
+  * 2 of the License, or (at your option) any later version.
+  */
+-
+ #include <linux/types.h>
+ #include <linux/proc_fs.h>
+ #include <asm/atomic.h>
+@@ -63,53 +61,18 @@ struct of_irq_controller {
+ 	void		*data;
+ };
+ 
+-/* flag descriptions */
+-#define OF_DYNAMIC 1 /* node and properties were allocated via kmalloc */
+-
+-#define OF_IS_DYNAMIC(x) test_bit(OF_DYNAMIC, &x->_flags)
+-#define OF_MARK_DYNAMIC(x) set_bit(OF_DYNAMIC, &x->_flags)
+-
+-#define OF_BAD_ADDR	((u64)-1)
+-
+-static inline void set_node_proc_entry(struct device_node *dn, struct proc_dir_entry *de)
+-{
+-	dn->pde = de;
+-}
+-
+-extern struct device_node *of_find_node_by_name(struct device_node *from,
+-	const char *name);
+-#define for_each_node_by_name(dn, name) \
+-	for (dn = of_find_node_by_name(NULL, name); dn; \
+-	     dn = of_find_node_by_name(dn, name))
+-extern struct device_node *of_find_node_by_type(struct device_node *from,
+-	const char *type);
+-#define for_each_node_by_type(dn, type) \
+-	for (dn = of_find_node_by_type(NULL, type); dn; \
+-	     dn = of_find_node_by_type(dn, type))
+-extern struct device_node *of_find_compatible_node(struct device_node *from,
+-	const char *type, const char *compat);
+-extern struct device_node *of_find_node_by_path(const char *path);
+-extern struct device_node *of_find_node_by_phandle(phandle handle);
+-extern struct device_node *of_get_parent(const struct device_node *node);
+-extern struct device_node *of_get_next_child(const struct device_node *node,
+-					     struct device_node *prev);
+-extern struct property *of_find_property(const struct device_node *np,
+-					 const char *name,
+-					 int *lenp);
+-extern int of_device_is_compatible(const struct device_node *device,
+-				   const char *);
+-extern const void *of_get_property(const struct device_node *node,
+-			     const char *name,
+-			     int *lenp);
+-#define get_property(node,name,lenp) of_get_property(node,name,lenp)
+ extern int of_set_property(struct device_node *node, const char *name, void *val, int len);
+ extern int of_getintprop_default(struct device_node *np,
+ 				 const char *name,
+ 				 int def);
+-extern int of_n_addr_cells(struct device_node *np);
+-extern int of_n_size_cells(struct device_node *np);
+ 
+ extern void prom_build_devicetree(void);
+ 
++/*
++ * NB:  This is here while we transition from using asm/prom.h
++ * to linux/of.h
++ */
++#include <linux/of.h>
++
+ #endif /* __KERNEL__ */
+ #endif /* _SPARC64_PROM_H */
+diff --git a/include/linux/of.h b/include/linux/of.h
+new file mode 100644
+index 0000000..f32fbc7
+--- /dev/null
++++ b/include/linux/of.h
+@@ -0,0 +1,60 @@
++#ifndef _LINUX_OPENFW_H
++#define _LINUX_OPENFW_H
++/*
++ * Definitions for talking to the Open Firmware PROM on
++ * Power Macintosh and other computers.
++ *
++ * Copyright (C) 1996-2005 Paul Mackerras.
++ *
++ * Updates for PPC64 by Peter Bergner & David Engebretsen, IBM Corp.
++ * Updates for SPARC64 by David S. Miller
++ * Derived from PowerPC and Sparc prom.h files by Stephen Rothwell, IBM Corp.
++ *
++ * This program is free software; you can redistribute it and/or
++ * modify it under the terms of the GNU General Public License
++ * as published by the Free Software Foundation; either version
++ * 2 of the License, or (at your option) any later version.
++ */
++#include <linux/types.h>
++
++#include <asm/bitops.h>
++#include <asm/prom.h>
++
++/* flag descriptions */
++#define OF_DYNAMIC 1 /* node and properties were allocated via kmalloc */
++
++#define OF_IS_DYNAMIC(x) test_bit(OF_DYNAMIC, &x->_flags)
++#define OF_MARK_DYNAMIC(x) set_bit(OF_DYNAMIC, &x->_flags)
++
++#define OF_BAD_ADDR	((u64)-1)
++
++extern struct device_node *of_find_node_by_name(struct device_node *from,
++	const char *name);
++#define for_each_node_by_name(dn, name) \
++	for (dn = of_find_node_by_name(NULL, name); dn; \
++	     dn = of_find_node_by_name(dn, name))
++extern struct device_node *of_find_node_by_type(struct device_node *from,
++	const char *type);
++#define for_each_node_by_type(dn, type) \
++	for (dn = of_find_node_by_type(NULL, type); dn; \
++	     dn = of_find_node_by_type(dn, type))
++extern struct device_node *of_find_compatible_node(struct device_node *from,
++	const char *type, const char *compat);
++extern struct device_node *of_find_node_by_path(const char *path);
++extern struct device_node *of_find_node_by_phandle(phandle handle);
++extern struct device_node *of_get_parent(const struct device_node *node);
++extern struct device_node *of_get_next_child(const struct device_node *node,
++					     struct device_node *prev);
++extern struct property *of_find_property(const struct device_node *np,
++					 const char *name,
++					 int *lenp);
++extern int of_device_is_compatible(const struct device_node *device,
++				   const char *);
++extern const void *of_get_property(const struct device_node *node,
++				const char *name,
++				int *lenp);
++#define get_property(a, b, c)	of_get_property((a), (b), (c))
++extern int of_n_addr_cells(struct device_node *np);
++extern int of_n_size_cells(struct device_node *np);
++
++#endif /* _LINUX_OPENFW_H */
+-- 
+1.5.1.2
