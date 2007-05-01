@@ -1,17 +1,17 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17974.50661.270389.178023@cargo.ozlabs.ibm.com>
-Date: Tue, 1 May 2007 14:45:25 +1000
+Message-ID: <17974.51466.726817.973235@cargo.ozlabs.ibm.com>
+Date: Tue, 1 May 2007 14:58:50 +1000
 From: Paul Mackerras <paulus@samba.org>
 To: Arnd Bergmann <arnd@arndb.de>
 Subject: Re: [PATCH 9/13] powerpc: Add arch/powerpc mv64x60 I2C platform data
 	setup
-In-Reply-To: <200704261704.06790.arnd@arndb.de>
+In-Reply-To: <200704280305.26312.arnd@arndb.de>
 References: <20070425234630.GA4046@mag.az.mvista.com>
-	<200704261100.25650.arnd@arndb.de>
-	<20070426141902.GB29241@xyzzy.farnsworth.org>
 	<200704261704.06790.arnd@arndb.de>
+	<20070427235040.GA29498@xyzzy.farnsworth.org>
+	<200704280305.26312.arnd@arndb.de>
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -24,23 +24,24 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 
 Arnd Bergmann writes:
 
-> What your glue code does is to find a backdoor into the device tree
-> (through of_find_compatible_node) and create a second struct device
-> for the same hardware, in an unrelated location in the linux device tree.
+> We've had discussions about of_platform_bus_probe() on the mailing
+> lists and on IRC before. My idea of the long-term goal is that we
+> should not call it from the platform specific code, but instead
+> globally and add all the devices we find, with exceptions for
+> stuff that works differently, like PCI.
 
-I disagree that of_find_compatible_node is a "backdoor".
+I really don't think that is a good idea.
 
-He won't have an of_device already unless he has arranged for the
-mv64x60 node to be scanned by of_platform_bus_probe.  Which he hasn't
-AFAICS.
+> I think it would be bad to have to add another exception for
+> mv64x60 just because the drivers work different from the others.
 
-> This is very confusing if you look at sysfs, e.g. trying to find out
-> which driver is attached to a given of_device.
-> It also makes you lose the ability to autoload the driver module,
-> because autoloading is not supported for a platform_driver (there
-> is no MODULE_DEVICE_TABLE()).
+I don't think it's fair to require extra work now for the sake of
+something that will probably never happen.  Creating a platform_device
+seems reasonable to me given that the driver is shared between mips
+and powerpc.
 
-There's nothing preventing autoloading of modules for platform
-devices, if desired.
+More generally, the fact that we require a device tree shouldn't be
+taken to imply that every device driver should be an
+of_platform_driver.
 
 Paul.
