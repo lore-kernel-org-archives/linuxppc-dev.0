@@ -1,15 +1,16 @@
 Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17974.46657.857947.807015@cargo.ozlabs.ibm.com>
-Date: Tue, 1 May 2007 13:38:41 +1000
+Message-ID: <17974.50094.70055.169529@cargo.ozlabs.ibm.com>
+Date: Tue, 1 May 2007 14:35:58 +1000
 From: Paul Mackerras <paulus@samba.org>
-To: Kim Phillips <kim.phillips@freescale.com>
-Subject: Re: patches for 2.6.22
-In-Reply-To: <20070430145119.6713490e.kim.phillips@freescale.com>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<20070430145119.6713490e.kim.phillips@freescale.com>
-Cc: linuxppc-dev@ozlabs.org
+To: olof@lixom.net (Olof Johansson)
+Subject: Re: [PATCH] [5/5] [v2] pasemi: GPIO MDIO of_platform driver
+In-Reply-To: <20070418063954.GB11480@lixom.net>
+References: <20070416062634.GB20196@lixom.net>
+	<20070416063139.GC20319@lixom.net>
+	<20070418063954.GB11480@lixom.net>
+Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -19,27 +20,29 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kim Phillips writes:
+I just noticed this in arch/powerpc/platforms/pasemi/setup.c:
 
-> these were missed:
-> 
-> [PATCH 1/4 v5] powerpc: document phy-connection-type property
-> Tue Apr 24 07:26:10 EST 2007
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034669.html
-> 
-> [PATCH 2/4 v4] powerpc: replace undocumented interface properties in dts files
-> Tue Apr 24 07:26:14 EST 2007
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034670.html
-> 
-> [PATCH 3/4] powerpc: Add 'mdio' to bus scan id list for platforms with QE UEC
-> Wed Apr 11 07:56:49 EST 2007
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034163.html
-> 
-> [PATCH 4/4] powerpc: turn on corresponding PHY drivers in QE UEC platforms defconfigs
-> Wed Apr 11 07:56:53 EST 2007
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034164.html
+> --- powerpc.orig/arch/powerpc/platforms/pasemi/setup.c
+> +++ powerpc/arch/powerpc/platforms/pasemi/setup.c
+> @@ -209,6 +209,20 @@ static void __init pas_init_early(void)
+>  	iommu_init_early_pasemi();
+>  }
+>  
+> +static struct of_device_id pasemi_bus_ids[] = {
+> +	{ .type = "sdc", },
+> +	{},
+> +};
+> +
+> +static int __init pasemi_publish_devices(void)
+> +{
+> +	/* Publish OF platform devices for southbridge IOs */
+> +	of_platform_bus_probe(NULL, pasemi_bus_ids, NULL);
+> +
+> +	return 0;
+> +}
+> +device_initcall(pasemi_publish_devices);
 
-I was waiting for an ack for those, but they look pretty
-straightforward, so I'll put them in unless I hear a nak...
+Oof.  Please make sure you only call of_platform_bus_probe if you are
+actually on a pasemi platform... :)
 
 Paul.
