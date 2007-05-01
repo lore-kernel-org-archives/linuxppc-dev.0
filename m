@@ -1,19 +1,27 @@
-Return-Path: <rsc@pengutronix.de>
-Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
-	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id 30B19DDFAC
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 00:08:46 +1000 (EST)
-Date: Tue, 1 May 2007 15:45:31 +0200
-From: Robert Schwebel <r.schwebel@pengutronix.de>
-To: Stefan Roese <sr@denx.de>
-Subject: Re: IEEE1588 Precision Time Protocol (PTP) driver for AMCC 405EZ
-Message-ID: <20070501134531.GX22585@pengutronix.de>
-References: <200704301641.32686.sr@denx.de>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 46D32DDEB9
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 00:15:55 +1000 (EST)
+Subject: Re: [PATCH v3] powerpc: fix suspend states again
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1177933035.5102.33.camel@johannes.berg>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<1177710095.3565.64.camel@johannes.berg>
+	<20070427215338.GB17224@lixom.net>
+	<1177710883.3565.66.camel@johannes.berg>
+	<1177711372.3565.73.camel@johannes.berg>
+	<17973.13523.57567.352585@cargo.ozlabs.ibm.com>
+	<1177933035.5102.33.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-LdHUEEEdQb7FLd03JhyC"
+Date: Tue, 01 May 2007 16:16:30 +0200
+Message-Id: <1178028990.4157.9.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-15
-In-Reply-To: <200704301641.32686.sr@denx.de>
-Sender: Robert Schwebel <rsc@pengutronix.de>
-Cc: netdev@vger.kernel.org, Jan Kiszka <kiszka@rts.uni-hannover.de>,
-	linuxppc-dev@ozlabs.org
+Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,35 +31,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, Apr 30, 2007 at 04:41:32PM +0200, Stefan Roese wrote:
-> I'm in the stage of integrating an IEEE1588 PTP driver for the AMCC 405EZ PPC 
-> and looking for the correct location to place this driver in the Linux source 
-> tree. The driver is a character-driver that enables the user space 
-> applications to configure the time stamping unit and to read/write the 
-> timestamps.
 
-Could you elaborate your overall concept for this class of drivers? I
-assume it makes no sense to write an IEEE1588 driver especially for the
-AMCC chip, because there will probably be a need to support it on any
-capable hardware; for example the netX has 1588 support for precise
-timestamping as well and so do others.
+--=-LdHUEEEdQb7FLd03JhyC
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-I'd prefer to discuss the needed functionality first, then find a common
-set of lowlevel APIs and move most of the IEEE1588 related stuff into
-userspace. It might also be a good idea to involve the RTnet in this
-discusson.
+On Mon, 2007-04-30 at 13:37 +0200, Johannes Berg wrote:
+> In commit 0fba3a1f39f8b0a50b56c8b068fa52131cbc84c2 (a very long time ago,
+> May 2006), I fixed a bug that caused powermacs to crash when you tried
+> entering standby/mem suspend states.
+>=20
+> As I'm now getting more familiar with the suspend code I notice a few
+> more things:
+[...]
 
-> Is "drivers/net/ptp" or "drivers/net/ieee1588" a good solution? Or
-> should it go to "drivers/char/ptp" because of the chrdev nature of the
-> driver?
+Regardless of the follow-up pmu pm_ops patch you should really merge
+this patch since I changed the generic pm_ops infrastructure to be less
+broken, and the current code in .21 may sometimes work due to the
+breakage that is now no longer there; pm_ops will now not be invoked for
+suspend to disk unless
+ (1) the user has 'platform' in /sys/power/disk
+ (2) pm_ops.pm_disk_mode is set to PM_DISK_PLATFORM
 
-Please start with discussing the concept, not the names. It might end
-being a part of the network drivers, without any special directory.
+(1) can be changed by the user so even the old code was just correct in
+case the user didn't change anything, and (2) isn't true in the current
+tree.
 
-Robert
--- 
- Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
- Pengutronix - Linux Solutions for Science and Industry
-   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
-     Hannoversche Str. 2, 31134 Hildesheim, Germany
-   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
+johannes
+
+--=-LdHUEEEdQb7FLd03JhyC
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGN0u9/ETPhpq3jKURAli+AKCjKybGTle7htlfY9HJWRWpaVDQcACfTUFt
+ci0EMSgIXD1tBxiE3+KEfi8=
+=CvSr
+-----END PGP SIGNATURE-----
+
+--=-LdHUEEEdQb7FLd03JhyC--
