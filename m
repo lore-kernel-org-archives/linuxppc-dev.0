@@ -1,18 +1,11 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dgibson@ozlabs.org>
+Date: Tue, 1 May 2007 15:18:04 +1000
+From: David Gibson <david@gibson.dropbear.id.au>
+To: linuxppc-dev@ozlabs.org
+Subject: powerpc_flash_init(), wtf!?
+Message-ID: <20070501051804.GB3881@localhost.localdomain>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17974.51466.726817.973235@cargo.ozlabs.ibm.com>
-Date: Tue, 1 May 2007 14:58:50 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 9/13] powerpc: Add arch/powerpc mv64x60 I2C platform data
-	setup
-In-Reply-To: <200704280305.26312.arnd@arndb.de>
-References: <20070425234630.GA4046@mag.az.mvista.com>
-	<200704261704.06790.arnd@arndb.de>
-	<20070427235040.GA29498@xyzzy.farnsworth.org>
-	<200704280305.26312.arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,26 +15,42 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann writes:
+powerpc_flash_init(), the only function in arch/powerpc/sysdev/rom.c,
+goes through the device tree finding anything with device_type=="rom"
+and creating of_platform devices for them, which will be picked up by
+the physmap_of mtd driver.  This has two serious conceptual errors and
+one bad implementation error which is quite an accomplishment for 15
+lines of code.
 
-> We've had discussions about of_platform_bus_probe() on the mailing
-> lists and on IRC before. My idea of the long-term goal is that we
-> should not call it from the platform specific code, but instead
-> globally and add all the devices we find, with exceptions for
-> stuff that works differently, like PCI.
+Most seriously, this "find all roms" approach to probing is
+fundamentally incompatible with the normal way of probing for
+of_platform devices, to wit, using of_platform_bus_probe().  If a
+flash is on a bus probed with of_platform_bus_probe()
+powerpc_flash_init() will create a duplicate of_platform device for
+it.  powerpc_flash_init() could also mistakenly probe roms which
+appear on other random busses which should use their own probe logic
+instead of going straight off the device tree (admittedly flash is
+unlikely to appear on such a bus).
 
-I really don't think that is a good idea.
+Also, it uses the device node's name without unit address as the
+of_platform device's name.  So if a bus somewhere has two flash
+devices named, say "flash@0" and "flash@800000", the device code will
+give a stack dump during boot as powerpc_flash_init() attempts to
+register them both under the name "flash".
 
-> I think it would be bad to have to add another exception for
-> mv64x60 just because the drivers work different from the others.
 
-I don't think it's fair to require extra work now for the sake of
-something that will probably never happen.  Creating a platform_device
-seems reasonable to me given that the driver is shared between mips
-and powerpc.
+I observe that none of the dts files actually present in the kernel
+tree use physmap_of's format for describing flash devices (and
+therefore don't use this code).  I'm therefore rather tempted to
+simply blow arch/powerpc/sysdev/rom.c away, and anyone out-of-tree
+relying on this code will have to fix their platform probing code to
+create the flash of_platform devices properly.
 
-More generally, the fact that we require a device tree shouldn't be
-taken to imply that every device driver should be an
-of_platform_driver.
+Unless someone who actually knows how this code was intended to be
+used can suggest a more polite way of fixing it.
 
-Paul.
+-- 
+David Gibson			| I'll have my music baroque, and my code
+david AT gibson.dropbear.id.au	| minimalist, thank you.  NOT _the_ _other_
+				| _way_ _around_!
+http://www.ozlabs.org/~dgibson
