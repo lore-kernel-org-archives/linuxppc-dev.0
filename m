@@ -1,21 +1,20 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id BB0F7DDFAC
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 19:05:50 +1000 (EST)
-Subject: Re: patches for 2.6.22
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-k2GIPybmZMO7WoAIyyLP"
-Date: Tue, 01 May 2007 11:06:28 +0200
-Message-Id: <1178010389.3483.9.camel@johannes.berg>
+Return-Path: <anders.gudmundsson@telia.com>
+Received: from pne-smtpout2-sn2.hy.skanova.net
+	(pne-smtpout2-sn2.hy.skanova.net [81.228.8.164])
+	by ozlabs.org (Postfix) with ESMTP id 78941DDFD2
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 21:04:31 +1000 (EST)
+Received: from [192.168.5.102] (213.66.47.229) by
+	pne-smtpout2-sn2.hy.skanova.net (7.2.075)
+	id 46245DE100397CF4 for linuxppc-dev@ozlabs.org;
+	Tue, 1 May 2007 11:54:57 +0200
+Subject: Status of snd-powermac?
+From: Anders Gudmundsson <anders.gudmundsson@telia.com>
+To: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Date: Tue, 01 May 2007 11:51:26 +0200
+Message-Id: <1178013086.7194.24.camel@localhost.localdomain>
 Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Reply-To: anders.gudmundsson@telia.com
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,35 +24,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+I hope this is the right forum for this question...
+A number of TiBook/iBook users running post 2.6.20 kernels has been
+affected by a bug related to the snd-powermac driver for Pmac Snapper
+cards:
+Ubuntu bug:
+https://bugs.launchpad.net/ubuntu/+source/linux-source-2.6.20/+bug/87652
+Thread on ubuntuforums:
+http://ubuntuforums.org/showthread.php?t=412151
 
---=-k2GIPybmZMO7WoAIyyLP
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Short summary:
+snd-powermac loads (specified in /etc/modules)
+Sound is produced for a randomly short period never exceeding 5 seconds,
+then stops. No errors are given (even if the drivers are configured with
+debug), the application hangs and blocks the sound device.
+No matter what versions of alsa-libs or alsa-drivers used, the bug
+persists. (Only booting a pre 2.6.20 kernel helps - or using the old oss
+dmasound_pmac driver) 
 
-On Fri, 2007-04-27 at 21:25 +1000, Paul Mackerras wrote:
+My question:
+Is the snd-powermac driver to be phased out for the snd-aoa, and is
+support planned for older cards (PB IV, G3 iBooks etc.) in snd-aoa?
 
-> If anyone has patches that I haven't picked up yet which they think
-> should go into 2.6.22
-
-Oh another thing is my suspend-to-disk work. Most of the patches to
-drivers have been reviewed by various people around, but afaik nobody
-has given the core code much of a look. It's a new feature and could be
-marked EXPERIMENTAL or such, so it can't introduce regressions. I can
-repost for consideration but since I never received much comments I
-never bothered.
-
-johannes
-
---=-k2GIPybmZMO7WoAIyyLP
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGNwMU/ETPhpq3jKURAtjSAKCZusRRPdkA1OOKenJnuorugO7hvgCghjPa
-rNqf9Fc17ukWa3BeQGkucIA=
-=tJ/h
------END PGP SIGNATURE-----
-
---=-k2GIPybmZMO7WoAIyyLP--
+Regards!
+Anders
