@@ -1,22 +1,20 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id A479CDDF18
+Return-Path: <jwilliams@itee.uq.edu.au>
+Received: from gum.itee.uq.edu.au (gum.itee.uq.edu.au [130.102.66.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3A814DDE18
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 May 2007 15:55:54 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so4130ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Mon, 30 Apr 2007 22:55:52 -0700 (PDT)
-Message-ID: <528646bc0704302255j3a825f10vbffd4bac961b28d7@mail.gmail.com>
-Date: Mon, 30 Apr 2007 23:55:52 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "John Williams" <jwilliams@itee.uq.edu.au>
-Subject: Re: [RFC] uartlite driver MicroBlaze compatability
-In-Reply-To: <4636C836.4050502@itee.uq.edu.au>
+	Tue,  1 May 2007 16:42:13 +1000 (EST)
+Message-ID: <4636E142.8010104@itee.uq.edu.au>
+Date: Tue, 01 May 2007 16:42:10 +1000
+From: John Williams <jwilliams@itee.uq.edu.au>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_68257_9249870.1177998952657"
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] uartlite driver MicroBlaze compatability
 References: <4636C836.4050502@itee.uq.edu.au>
+	<528646bc0704302255j3a825f10vbffd4bac961b28d7@mail.gmail.com>
+In-Reply-To: <528646bc0704302255j3a825f10vbffd4bac961b28d7@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
 Cc: jacmet@sunsite.dk, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -28,180 +26,48 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_68257_9249870.1177998952657
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Grant Likely wrote:
+> On 4/30/07, John Williams <jwilliams@itee.uq.edu.au> wrote:
+> 
+>> All readb/writeb ops are converted to ioread32/iowrite32.
+>>
+>> On MicroBlaze readb/writeb are picking up the MSB, instead of LSB, and
+>> thus reading all zeros instead of the 8-bit control/status/FIFO
+>> registers that you intended.
+>>
+>> Can you please confirm if this works on PPC?
+> 
+> Yes, I've confirmed this does work on PPC; but I don't think it's
+> quite the correct fix.
+> 
+> ioread/write32 is mapped to in/out_le32, yet the bootloader driver
+> must use in/out_be32.  This is because the uartlite driver follows the
+> lead of 8250 and requires an offset of 3 from the base address in
+> order to find the relevant byte wise address.  In fact, I believe the
+> driver should work as-is on microblaze if the offset-by-3 is not used
+> when registering it to the platform bus.
 
-On 4/30/07, John Williams <jwilliams@itee.uq.edu.au> wrote:
-> Hi Peter,
->
-> The attached patch gets your uartlite driver going on MicroBlaze.
->
-> All readb/writeb ops are converted to ioread32/iowrite32.
->
-> On MicroBlaze readb/writeb are picking up the MSB, instead of LSB, and
-> thus reading all zeros instead of the 8-bit control/status/FIFO
-> registers that you intended.
->
-> Can you please confirm if this works on PPC?
+ugh.  I missed the off-by-3 stuff in the PPC platform setup.  Smells bad!
 
-Yes, I've confirmed this does work on PPC; but I don't think it's
-quite the correct fix.
+> However, the uartlite is *not* an 8250.  The 8250 turns up all over
+> the place and it's registers are defined as 8 bit wide.  The
+> offset-by-3 stuff is part of the plat_serial8250_port structure which
+> is also used to specify .regshift (increment between registers).
+> Whereas the UARTLITE is defined as a 32 bit device and it doesn't show
+> up in anywhere near as many designs.  Registers are always 4 bytes
+> wide and are always located at multiples of 4 bytes off the base
+> address.
 
-ioread/write32 is mapped to in/out_le32, yet the bootloader driver
-must use in/out_be32.  This is because the uartlite driver follows the
-lead of 8250 and requires an offset of 3 from the base address in
-order to find the relevant byte wise address.  In fact, I believe the
-driver should work as-is on microblaze if the offset-by-3 is not used
-when registering it to the platform bus.
+Agreed.
 
-However, the uartlite is *not* an 8250.  The 8250 turns up all over
-the place and it's registers are defined as 8 bit wide.  The
-offset-by-3 stuff is part of the plat_serial8250_port structure which
-is also used to specify .regshift (increment between registers).
-Whereas the UARTLITE is defined as a 32 bit device and it doesn't show
-up in anywhere near as many designs.  Registers are always 4 bytes
-wide and are always located at multiples of 4 bytes off the base
-address.
+> So; starting with your patch and modifying it, I've attached I think
+> the change should be.  It should work for microblaze, but I've only
+> tested w/ ppc.  Unfortunately the (void*) casts are ugly; there might
+> be a way around that, but it's due to the type used for the (struct
+> uart_port)->membase variable.
 
-The biggest problem with keeping the 3 byte offset and using
-ioread/write32 on it makes every register access straddle a 32-bit
-boundary.  This means 2 bus transactions for every register access.
-Absolutely not what we want.
+Looks good - boot tested on MicroBlaze 2.6.20
 
-The problem with keeping the byte-wise access as it is now is that it
-means the platform bus binding needs to explicitly know what the host
-access width is and add the 3 byte offset accordingly (rather than
-using the base address as specified in xparameters unmodified and
-using the in/out_be32 macro take care of reading it correctly &
-efficiently).
+acked-by: John Williams <jwilliams@itee.uq.edu.au>
 
-(There are also annoyances that will come up when we move to
-arch/powerpc and hook it up to the of_platform_bus)
-
->
-> I note that Grant's recent bootloader driver uses in_be32/out_be32 -
-> would you prefer that instead of ioread32/iowrite32?
-
-I certainly think so.  The device is documented as using 32 bit BE
-registers; so the driver should access them as 32bit BE registers
-IMHO.  Or at least, if there is a good reason to continue the bytewise
-access, then the driver should contain the smarts to translate from
-documented base address to the appropriate offset.
-
-So; starting with your patch and modifying it, I've attached I think
-the change should be.  It should work for microblaze, but I've only
-tested w/ ppc.  Unfortunately the (void*) casts are ugly; there might
-be a way around that, but it's due to the type used for the (struct
-uart_port)->membase variable.
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
-
-------=_Part_68257_9249870.1177998952657
-Content-Type: application/x-patch;
-	name=0001-PPC-Fix-UARTLITE-register-access-for-little-endian.patch
-Content-Transfer-Encoding: base64
-X-Attachment-Id: f_f15y2hsm
-Content-Disposition: attachment; filename="0001-PPC-Fix-UARTLITE-register-access-for-little-endian.patch"
-
-RnJvbSBjYWZhYzE3ZDk5NWZiMmNlZDcxMDJlOGZiYWFkMWY5YmYzMzA2YjhiIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBHcmFudCBMaWtlbHkgPGdyYW50Lmxpa2VseUBzZWNyZXRsYWIu
-Y2E+CkRhdGU6IE1vbiwgMzAgQXByIDIwMDcgMjM6NTM6MDMgLTA2MDAKU3ViamVjdDogW1BBVENI
-XSBbUFBDXSBGaXggVUFSVExJVEUgcmVnaXN0ZXIgYWNjZXNzIGZvciBsaXR0bGUtZW5kaWFuICht
-aWNyb2JsYXplKSBhcmNoaXRlY3R1cmVzCgpTaWduZWQtb2ZmLWJ5OiBHcmFudCBMaWtlbHkgPGdy
-YW50Lmxpa2VseUBzZWNyZXRsYWIuY2E+Ci0tLQogYXJjaC9wcGMvc3lzbGliL3ZpcnRleF9kZXZp
-Y2VzLmMgfCAgICAyICstCiBkcml2ZXJzL3NlcmlhbC91YXJ0bGl0ZS5jICAgICAgICB8ICAgMzIg
-KysrKysrKysrKysrKysrKy0tLS0tLS0tLS0tLS0tLS0KIDIgZmlsZXMgY2hhbmdlZCwgMTcgaW5z
-ZXJ0aW9ucygrKSwgMTcgZGVsZXRpb25zKC0pCgpkaWZmIC0tZ2l0IGEvYXJjaC9wcGMvc3lzbGli
-L3ZpcnRleF9kZXZpY2VzLmMgYi9hcmNoL3BwYy9zeXNsaWIvdmlydGV4X2RldmljZXMuYwppbmRl
-eCA1MmUyZWJiLi42YzNlMzFiIDEwMDY0NAotLS0gYS9hcmNoL3BwYy9zeXNsaWIvdmlydGV4X2Rl
-dmljZXMuYworKysgYi9hcmNoL3BwYy9zeXNsaWIvdmlydGV4X2RldmljZXMuYwpAQCAtMzEsNyAr
-MzEsNyBAQAogCS5udW1fcmVzb3VyY2VzID0gMiwgXAogCS5yZXNvdXJjZSA9IChzdHJ1Y3QgcmVz
-b3VyY2VbXSkgeyBcCiAJCXsgXAotCQkJLnN0YXJ0ID0gWFBBUl9VQVJUTElURV8jI251bSMjX0JB
-U0VBRERSICsgMywgXAorCQkJLnN0YXJ0ID0gWFBBUl9VQVJUTElURV8jI251bSMjX0JBU0VBRERS
-LCBcCiAJCQkuZW5kID0gWFBBUl9VQVJUTElURV8jI251bSMjX0hJR0hBRERSLCBcCiAJCQkuZmxh
-Z3MgPSBJT1JFU09VUkNFX01FTSwgXAogCQl9LCBcCmRpZmYgLS1naXQgYS9kcml2ZXJzL3Nlcmlh
-bC91YXJ0bGl0ZS5jIGIvZHJpdmVycy9zZXJpYWwvdWFydGxpdGUuYwppbmRleCBmNTA1MWNmLi41
-OWI2NzRhIDEwMDY0NAotLS0gYS9kcml2ZXJzL3NlcmlhbC91YXJ0bGl0ZS5jCisrKyBiL2RyaXZl
-cnMvc2VyaWFsL3VhcnRsaXRlLmMKQEAgLTYxLDcgKzYxLDcgQEAgc3RhdGljIGludCB1bGl0ZV9y
-ZWNlaXZlKHN0cnVjdCB1YXJ0X3BvcnQgKnBvcnQsIGludCBzdGF0KQogCS8qIHN0YXRzICovCiAJ
-aWYgKHN0YXQgJiBVTElURV9TVEFUVVNfUlhWQUxJRCkgewogCQlwb3J0LT5pY291bnQucngrKzsK
-LQkJY2ggPSByZWFkYihwb3J0LT5tZW1iYXNlICsgVUxJVEVfUlgpOworCQljaCA9IGluX2JlMzIo
-KHZvaWQqKXBvcnQtPm1lbWJhc2UgKyBVTElURV9SWCk7CiAKIAkJaWYgKHN0YXQgJiBVTElURV9T
-VEFUVVNfUEFSSVRZKQogCQkJcG9ydC0+aWNvdW50LnBhcml0eSsrOwpAQCAtMTA2LDcgKzEwNiw3
-IEBAIHN0YXRpYyBpbnQgdWxpdGVfdHJhbnNtaXQoc3RydWN0IHVhcnRfcG9ydCAqcG9ydCwgaW50
-IHN0YXQpCiAJCXJldHVybiAwOwogCiAJaWYgKHBvcnQtPnhfY2hhcikgewotCQl3cml0ZWIocG9y
-dC0+eF9jaGFyLCBwb3J0LT5tZW1iYXNlICsgVUxJVEVfVFgpOworCQlvdXRfYmUzMigodm9pZCop
-cG9ydC0+bWVtYmFzZSArIFVMSVRFX1RYLCBwb3J0LT54X2NoYXIpOwogCQlwb3J0LT54X2NoYXIg
-PSAwOwogCQlwb3J0LT5pY291bnQudHgrKzsKIAkJcmV0dXJuIDE7CkBAIC0xMTUsNyArMTE1LDcg
-QEAgc3RhdGljIGludCB1bGl0ZV90cmFuc21pdChzdHJ1Y3QgdWFydF9wb3J0ICpwb3J0LCBpbnQg
-c3RhdCkKIAlpZiAodWFydF9jaXJjX2VtcHR5KHhtaXQpIHx8IHVhcnRfdHhfc3RvcHBlZChwb3J0
-KSkKIAkJcmV0dXJuIDA7CiAKLQl3cml0ZWIoeG1pdC0+YnVmW3htaXQtPnRhaWxdLCBwb3J0LT5t
-ZW1iYXNlICsgVUxJVEVfVFgpOworCW91dF9iZTMyKCh2b2lkKilwb3J0LT5tZW1iYXNlICsgVUxJ
-VEVfVFgsIHhtaXQtPmJ1Zlt4bWl0LT50YWlsXSk7CiAJeG1pdC0+dGFpbCA9ICh4bWl0LT50YWls
-ICsgMSkgJiAoVUFSVF9YTUlUX1NJWkUtMSk7CiAJcG9ydC0+aWNvdW50LnR4Kys7CiAKQEAgLTEz
-Miw3ICsxMzIsNyBAQCBzdGF0aWMgaXJxcmV0dXJuX3QgdWxpdGVfaXNyKGludCBpcnEsIHZvaWQg
-KmRldl9pZCkKIAlpbnQgYnVzeTsKIAogCWRvIHsKLQkJaW50IHN0YXQgPSByZWFkYihwb3J0LT5t
-ZW1iYXNlICsgVUxJVEVfU1RBVFVTKTsKKwkJaW50IHN0YXQgPSBpbl9iZTMyKCh2b2lkKilwb3J0
-LT5tZW1iYXNlICsgVUxJVEVfU1RBVFVTKTsKIAkJYnVzeSAgPSB1bGl0ZV9yZWNlaXZlKHBvcnQs
-IHN0YXQpOwogCQlidXN5IHw9IHVsaXRlX3RyYW5zbWl0KHBvcnQsIHN0YXQpOwogCX0gd2hpbGUg
-KGJ1c3kpOwpAQCAtMTQ4LDcgKzE0OCw3IEBAIHN0YXRpYyB1bnNpZ25lZCBpbnQgdWxpdGVfdHhf
-ZW1wdHkoc3RydWN0IHVhcnRfcG9ydCAqcG9ydCkKIAl1bnNpZ25lZCBpbnQgcmV0OwogCiAJc3Bp
-bl9sb2NrX2lycXNhdmUoJnBvcnQtPmxvY2ssIGZsYWdzKTsKLQlyZXQgPSByZWFkYihwb3J0LT5t
-ZW1iYXNlICsgVUxJVEVfU1RBVFVTKTsKKwlyZXQgPSBpbl9iZTMyKCh2b2lkKilwb3J0LT5tZW1i
-YXNlICsgVUxJVEVfU1RBVFVTKTsKIAlzcGluX3VubG9ja19pcnFyZXN0b3JlKCZwb3J0LT5sb2Nr
-LCBmbGFncyk7CiAKIAlyZXR1cm4gcmV0ICYgVUxJVEVfU1RBVFVTX1RYRU1QVFkgPyBUSU9DU0VS
-X1RFTVQgOiAwOwpAQCAtMTcxLDcgKzE3MSw3IEBAIHN0YXRpYyB2b2lkIHVsaXRlX3N0b3BfdHgo
-c3RydWN0IHVhcnRfcG9ydCAqcG9ydCkKIAogc3RhdGljIHZvaWQgdWxpdGVfc3RhcnRfdHgoc3Ry
-dWN0IHVhcnRfcG9ydCAqcG9ydCkKIHsKLQl1bGl0ZV90cmFuc21pdChwb3J0LCByZWFkYihwb3J0
-LT5tZW1iYXNlICsgVUxJVEVfU1RBVFVTKSk7CisJdWxpdGVfdHJhbnNtaXQocG9ydCwgaW5fYmUz
-Migodm9pZCopcG9ydC0+bWVtYmFzZSArIFVMSVRFX1NUQVRVUykpOwogfQogCiBzdGF0aWMgdm9p
-ZCB1bGl0ZV9zdG9wX3J4KHN0cnVjdCB1YXJ0X3BvcnQgKnBvcnQpCkBAIC0yMDAsMTcgKzIwMCwx
-NyBAQCBzdGF0aWMgaW50IHVsaXRlX3N0YXJ0dXAoc3RydWN0IHVhcnRfcG9ydCAqcG9ydCkKIAlp
-ZiAocmV0KQogCQlyZXR1cm4gcmV0OwogCi0Jd3JpdGViKFVMSVRFX0NPTlRST0xfUlNUX1JYIHwg
-VUxJVEVfQ09OVFJPTF9SU1RfVFgsCi0JICAgICAgIHBvcnQtPm1lbWJhc2UgKyBVTElURV9DT05U
-Uk9MKTsKLQl3cml0ZWIoVUxJVEVfQ09OVFJPTF9JRSwgcG9ydC0+bWVtYmFzZSArIFVMSVRFX0NP
-TlRST0wpOworCW91dF9iZTMyKCh2b2lkKilwb3J0LT5tZW1iYXNlICsgVUxJVEVfQ09OVFJPTCwK
-KwkgICAgICAgICBVTElURV9DT05UUk9MX1JTVF9SWCB8IFVMSVRFX0NPTlRST0xfUlNUX1RYKTsK
-KwlvdXRfYmUzMigodm9pZCopcG9ydC0+bWVtYmFzZSArIFVMSVRFX0NPTlRST0wsIFVMSVRFX0NP
-TlRST0xfSUUpOwogCiAJcmV0dXJuIDA7CiB9CiAKIHN0YXRpYyB2b2lkIHVsaXRlX3NodXRkb3du
-KHN0cnVjdCB1YXJ0X3BvcnQgKnBvcnQpCiB7Ci0Jd3JpdGViKDAsIHBvcnQtPm1lbWJhc2UgKyBV
-TElURV9DT05UUk9MKTsKLQlyZWFkYihwb3J0LT5tZW1iYXNlICsgVUxJVEVfQ09OVFJPTCk7IC8q
-IGR1bW15ICovCisJb3V0X2JlMzIoKHZvaWQqKXBvcnQtPm1lbWJhc2UgKyBVTElURV9DT05UUk9M
-LCAwKTsKKwlpbl9iZTMyKCh2b2lkKilwb3J0LT5tZW1iYXNlICsgVUxJVEVfQ09OVFJPTCk7IC8q
-IGR1bW15ICovCiAJZnJlZV9pcnEocG9ydC0+aXJxLCBwb3J0KTsKIH0KIApAQCAtMzE0LDcgKzMx
-NCw3IEBAIHN0YXRpYyB2b2lkIHVsaXRlX2NvbnNvbGVfd2FpdF90eChzdHJ1Y3QgdWFydF9wb3J0
-ICpwb3J0KQogCiAJLyogd2FpdCB1cCB0byAxMG1zIGZvciB0aGUgY2hhcmFjdGVyKHMpIHRvIGJl
-IHNlbnQgKi8KIAlmb3IgKGkgPSAwOyBpIDwgMTAwMDA7IGkrKykgewotCQlpZiAocmVhZGIocG9y
-dC0+bWVtYmFzZSArIFVMSVRFX1NUQVRVUykgJiBVTElURV9TVEFUVVNfVFhFTVBUWSkKKwkJaWYg
-KGluX2JlMzIoKHZvaWQqKXBvcnQtPm1lbWJhc2UgKyBVTElURV9TVEFUVVMpICYgVUxJVEVfU1RB
-VFVTX1RYRU1QVFkpCiAJCQlicmVhazsKIAkJdWRlbGF5KDEpOwogCX0KQEAgLTMyMyw3ICszMjMs
-NyBAQCBzdGF0aWMgdm9pZCB1bGl0ZV9jb25zb2xlX3dhaXRfdHgoc3RydWN0IHVhcnRfcG9ydCAq
-cG9ydCkKIHN0YXRpYyB2b2lkIHVsaXRlX2NvbnNvbGVfcHV0Y2hhcihzdHJ1Y3QgdWFydF9wb3J0
-ICpwb3J0LCBpbnQgY2gpCiB7CiAJdWxpdGVfY29uc29sZV93YWl0X3R4KHBvcnQpOwotCXdyaXRl
-YihjaCwgcG9ydC0+bWVtYmFzZSArIFVMSVRFX1RYKTsKKwlvdXRfYmUzMigodm9pZCopcG9ydC0+
-bWVtYmFzZSArIFVMSVRFX1RYLCBjaCk7CiB9CiAKIHN0YXRpYyB2b2lkIHVsaXRlX2NvbnNvbGVf
-d3JpdGUoc3RydWN0IGNvbnNvbGUgKmNvLCBjb25zdCBjaGFyICpzLApAQCAtMzQwLDggKzM0MCw4
-IEBAIHN0YXRpYyB2b2lkIHVsaXRlX2NvbnNvbGVfd3JpdGUoc3RydWN0IGNvbnNvbGUgKmNvLCBj
-b25zdCBjaGFyICpzLAogCQlzcGluX2xvY2tfaXJxc2F2ZSgmcG9ydC0+bG9jaywgZmxhZ3MpOwog
-CiAJLyogc2F2ZSBhbmQgZGlzYWJsZSBpbnRlcnJ1cHQgKi8KLQlpZXIgPSByZWFkYihwb3J0LT5t
-ZW1iYXNlICsgVUxJVEVfU1RBVFVTKSAmIFVMSVRFX1NUQVRVU19JRTsKLQl3cml0ZWIoMCwgcG9y
-dC0+bWVtYmFzZSArIFVMSVRFX0NPTlRST0wpOworCWllciA9IGluX2JlMzIoKHZvaWQqKXBvcnQt
-Pm1lbWJhc2UgKyBVTElURV9TVEFUVVMpICYgVUxJVEVfU1RBVFVTX0lFOworCW91dF9iZTMyKCh2
-b2lkKilwb3J0LT5tZW1iYXNlICsgVUxJVEVfQ09OVFJPTCwgMCk7CiAKIAl1YXJ0X2NvbnNvbGVf
-d3JpdGUocG9ydCwgcywgY291bnQsIHVsaXRlX2NvbnNvbGVfcHV0Y2hhcik7CiAKQEAgLTM0OSw3
-ICszNDksNyBAQCBzdGF0aWMgdm9pZCB1bGl0ZV9jb25zb2xlX3dyaXRlKHN0cnVjdCBjb25zb2xl
-ICpjbywgY29uc3QgY2hhciAqcywKIAogCS8qIHJlc3RvcmUgaW50ZXJydXB0IHN0YXRlICovCiAJ
-aWYgKGllcikKLQkJd3JpdGViKFVMSVRFX0NPTlRST0xfSUUsIHBvcnQtPm1lbWJhc2UgKyBVTElU
-RV9DT05UUk9MKTsKKwkJb3V0X2JlMzIoKHZvaWQqKXBvcnQtPm1lbWJhc2UgKyBVTElURV9DT05U
-Uk9MLCBVTElURV9DT05UUk9MX0lFKTsKIAogCWlmIChsb2NrZWQpCiAJCXNwaW5fdW5sb2NrX2ly
-cXJlc3RvcmUoJnBvcnQtPmxvY2ssIGZsYWdzKTsKLS0gCjEuNS4xCgo=
-------=_Part_68257_9249870.1177998952657--
+John
