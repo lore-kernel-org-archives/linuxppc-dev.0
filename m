@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id E3F20DE030
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 17:35:49 +1000 (EST)
-Date: Tue, 1 May 2007 17:30:39 +1000
+	by ozlabs.org (Postfix) with ESMTP id 88797DE03D
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 17:35:50 +1000 (EST)
+Date: Tue, 1 May 2007 17:31:43 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "David S. Miller" <davem@davemloft.net>, paulus@samba.org
-Subject: [PATCH 07/11] Consolidate of_find_node_by routines
-Message-Id: <20070501173039.29b1ff93.sfr@canb.auug.org.au>
+Subject: [PATCH 08/11] Begin to consolidate of_device.c
+Message-Id: <20070501173143.9d514ea4.sfr@canb.auug.org.au>
 In-Reply-To: <20070501172250.80707fb8.sfr@canb.auug.org.au>
 References: <20070501172250.80707fb8.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -21,485 +21,641 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This consolidates the routines of_find_node_by_path, of_find_node_by_name,
-of_find_node_by_type and of_find_compatible_device.  Again, the comparison
-of strings are done differently by Sparc and PowerPC and also these add
-read_locks around the iterations.
+This moves all the common parts for the Sparc, Sparc64 and PowerPC
+of_device.c files into drivers/openfw/device.c.
+
+Apart from the simple move, Sparc gains of_match_node() and a call to
+of_node_put in of_release_dev().  PowerPC gains better recovery if
+device_create_file() fails in of_device_register().
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/kernel/prom.c |  113 +-------------------------------------------
- arch/sparc/kernel/prom.c   |   61 +-----------------------
- arch/sparc64/kernel/prom.c |   61 +-----------------------
- drivers/of/base.c          |  114 ++++++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/prom.h |    1 +
- include/asm-sparc/prom.h   |    1 +
- include/asm-sparc64/prom.h |    1 +
- 7 files changed, 120 insertions(+), 232 deletions(-)
+ arch/powerpc/kernel/of_device.c |  122 +------------------------------------
+ arch/sparc/kernel/of_device.c   |  109 +--------------------------------
+ arch/sparc64/kernel/of_device.c |  114 +---------------------------------
+ drivers/Kconfig                 |    2 +
+ drivers/of/Kconfig              |    3 +
+ drivers/of/Makefile             |    1 +
+ drivers/of/device.c             |  131 +++++++++++++++++++++++++++++++++++++++
+ 7 files changed, 142 insertions(+), 340 deletions(-)
+ create mode 100644 drivers/of/Kconfig
+ create mode 100644 drivers/of/device.c
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index 90901e4..fc64bcb 100644
---- a/arch/powerpc/kernel/prom.c
-+++ b/arch/powerpc/kernel/prom.c
-@@ -77,7 +77,7 @@ static struct boot_param_header *initial_boot_params __initdata;
- struct boot_param_header *initial_boot_params;
- #endif
- 
--static struct device_node *allnodes = NULL;
-+extern struct device_node *allnodes;	/* temporary while merging */
- 
- extern rwlock_t devtree_lock;	/* temporary while merging */
- 
-@@ -1068,117 +1068,6 @@ EXPORT_SYMBOL(machine_is_compatible);
-  *
-  *******/
+diff --git a/arch/powerpc/kernel/of_device.c b/arch/powerpc/kernel/of_device.c
+index 0c8ea76..e5ba264 100644
+--- a/arch/powerpc/kernel/of_device.c
++++ b/arch/powerpc/kernel/of_device.c
+@@ -1,5 +1,6 @@
+ #include <linux/string.h>
+ #include <linux/kernel.h>
++#include <linux/of.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/mod_devicetable.h>
+@@ -8,118 +9,6 @@
+ #include <asm/errno.h>
+ #include <asm/of_device.h>
  
 -/**
-- *	of_find_node_by_name - Find a node by its "name" property
-- *	@from:	The node to start searching from or NULL, the node
-- *		you pass will not be searched, only the next one
-- *		will; typically, you pass what the previous call
-- *		returned. of_node_put() will be called on it
-- *	@name:	The name string to match against
+- * of_match_node - Tell if an device_node has a matching of_match structure
+- * @ids: array of of device match structures to search in
+- * @node: the of device structure to match against
 - *
-- *	Returns a node pointer with refcount incremented, use
-- *	of_node_put() on it when done.
+- * Low level utility function used by device matching.
 - */
--struct device_node *of_find_node_by_name(struct device_node *from,
--	const char *name)
+-const struct of_device_id *of_match_node(const struct of_device_id *matches,
+-					 const struct device_node *node)
 -{
--	struct device_node *np;
--
--	read_lock(&devtree_lock);
--	np = from ? from->allnext : allnodes;
--	for (; np != NULL; np = np->allnext)
--		if (np->name != NULL && strcasecmp(np->name, name) == 0
--		    && of_node_get(np))
--			break;
--	of_node_put(from);
--	read_unlock(&devtree_lock);
--	return np;
--}
--EXPORT_SYMBOL(of_find_node_by_name);
--
--/**
-- *	of_find_node_by_type - Find a node by its "device_type" property
-- *	@from:	The node to start searching from or NULL, the node
-- *		you pass will not be searched, only the next one
-- *		will; typically, you pass what the previous call
-- *		returned. of_node_put() will be called on it
-- *	@name:	The type string to match against
-- *
-- *	Returns a node pointer with refcount incremented, use
-- *	of_node_put() on it when done.
-- */
--struct device_node *of_find_node_by_type(struct device_node *from,
--	const char *type)
--{
--	struct device_node *np;
--
--	read_lock(&devtree_lock);
--	np = from ? from->allnext : allnodes;
--	for (; np != 0; np = np->allnext)
--		if (np->type != 0 && strcasecmp(np->type, type) == 0
--		    && of_node_get(np))
--			break;
--	of_node_put(from);
--	read_unlock(&devtree_lock);
--	return np;
--}
--EXPORT_SYMBOL(of_find_node_by_type);
--
--/**
-- *	of_find_compatible_node - Find a node based on type and one of the
-- *                                tokens in its "compatible" property
-- *	@from:		The node to start searching from or NULL, the node
-- *			you pass will not be searched, only the next one
-- *			will; typically, you pass what the previous call
-- *			returned. of_node_put() will be called on it
-- *	@type:		The type string to match "device_type" or NULL to ignore
-- *	@compatible:	The string to match to one of the tokens in the device
-- *			"compatible" list.
-- *
-- *	Returns a node pointer with refcount incremented, use
-- *	of_node_put() on it when done.
-- */
--struct device_node *of_find_compatible_node(struct device_node *from,
--	const char *type, const char *compatible)
--{
--	struct device_node *np;
--
--	read_lock(&devtree_lock);
--	np = from ? from->allnext : allnodes;
--	for (; np != 0; np = np->allnext) {
--		if (type != NULL
--		    && !(np->type != 0 && strcasecmp(np->type, type) == 0))
--			continue;
--		if (of_device_is_compatible(np, compatible) && of_node_get(np))
--			break;
+-	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
+-		int match = 1;
+-		if (matches->name[0])
+-			match &= node->name
+-				&& !strcmp(matches->name, node->name);
+-		if (matches->type[0])
+-			match &= node->type
+-				&& !strcmp(matches->type, node->type);
+-		if (matches->compatible[0])
+-			match &= device_is_compatible(node,
+-						      matches->compatible);
+-		if (match)
+-			return matches;
+-		matches++;
 -	}
--	of_node_put(from);
--	read_unlock(&devtree_lock);
--	return np;
+-	return NULL;
 -}
--EXPORT_SYMBOL(of_find_compatible_node);
 -
 -/**
-- *	of_find_node_by_path - Find a node matching a full OF path
-- *	@path:	The full path to match
+- * of_match_device - Tell if an of_device structure has a matching
+- * of_match structure
+- * @ids: array of of device match structures to search in
+- * @dev: the of device structure to match against
 - *
-- *	Returns a node pointer with refcount incremented, use
-- *	of_node_put() on it when done.
+- * Used by a driver to check whether an of_device present in the
+- * system is in its list of supported devices.
 - */
--struct device_node *of_find_node_by_path(const char *path)
+-const struct of_device_id *of_match_device(const struct of_device_id *matches,
+-					const struct of_device *dev)
 -{
--	struct device_node *np = allnodes;
--
--	read_lock(&devtree_lock);
--	for (; np != 0; np = np->allnext) {
--		if (np->full_name != 0 && strcasecmp(np->full_name, path) == 0
--		    && of_node_get(np))
--			break;
--	}
--	read_unlock(&devtree_lock);
--	return np;
+-	if (!dev->node)
+-		return NULL;
+-	return of_match_node(matches, dev->node);
 -}
--EXPORT_SYMBOL(of_find_node_by_path);
- 
- /**
-  *	of_find_node_by_phandle - Find a node given a phandle
-diff --git a/arch/sparc/kernel/prom.c b/arch/sparc/kernel/prom.c
-index 3f8ccfa..012f983 100644
---- a/arch/sparc/kernel/prom.c
-+++ b/arch/sparc/kernel/prom.c
-@@ -25,23 +25,10 @@
- #include <asm/prom.h>
- #include <asm/oplib.h>
- 
--static struct device_node *allnodes;
-+extern struct device_node *allnodes;	/* temporary while merging */
- 
- extern rwlock_t devtree_lock;	/* temporary while merging */
- 
--struct device_node *of_find_node_by_path(const char *path)
+-
+-struct of_device *of_dev_get(struct of_device *dev)
 -{
--	struct device_node *np = allnodes;
+-	struct device *tmp;
 -
--	for (; np != 0; np = np->allnext) {
--		if (np->full_name != 0 && strcmp(np->full_name, path) == 0)
--			break;
--	}
--
--	return np;
+-	if (!dev)
+-		return NULL;
+-	tmp = get_device(&dev->dev);
+-	if (tmp)
+-		return to_of_device(tmp);
+-	else
+-		return NULL;
 -}
--EXPORT_SYMBOL(of_find_node_by_path);
 -
- struct device_node *of_find_node_by_phandle(phandle handle)
+-void of_dev_put(struct of_device *dev)
+-{
+-	if (dev)
+-		put_device(&dev->dev);
+-}
+-
+-static ssize_t dev_show_devspec(struct device *dev,
+-				struct device_attribute *attr, char *buf)
+-{
+-	struct of_device *ofdev;
+-
+-	ofdev = to_of_device(dev);
+-	return sprintf(buf, "%s", ofdev->node->full_name);
+-}
+-
+-static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
+-
+-/**
+- * of_release_dev - free an of device structure when all users of it are finished.
+- * @dev: device that's been disconnected
+- *
+- * Will be called only by the device core when all users of this of device are
+- * done.
+- */
+-void of_release_dev(struct device *dev)
+-{
+-	struct of_device *ofdev;
+-
+-        ofdev = to_of_device(dev);
+-	of_node_put(ofdev->node);
+-	kfree(ofdev);
+-}
+-
+-int of_device_register(struct of_device *ofdev)
+-{
+-	int rc;
+-
+-	BUG_ON(ofdev->node == NULL);
+-
+-	rc = device_register(&ofdev->dev);
+-	if (rc)
+-		return rc;
+-
+-	return device_create_file(&ofdev->dev, &dev_attr_devspec);
+-}
+-
+-void of_device_unregister(struct of_device *ofdev)
+-{
+-	device_remove_file(&ofdev->dev, &dev_attr_devspec);
+-
+-	device_unregister(&ofdev->dev);
+-}
+-
+-
+ static ssize_t of_device_get_modalias(struct of_device *ofdev,
+ 					char *str, ssize_t len)
  {
- 	struct device_node *np;
-@@ -54,52 +41,6 @@ struct device_node *of_find_node_by_phandle(phandle handle)
+@@ -229,13 +118,4 @@ int of_device_uevent(struct device *dev,
+ 
+ 	return 0;
  }
- EXPORT_SYMBOL(of_find_node_by_phandle);
+-
+-
+-EXPORT_SYMBOL(of_match_node);
+-EXPORT_SYMBOL(of_match_device);
+-EXPORT_SYMBOL(of_device_register);
+-EXPORT_SYMBOL(of_device_unregister);
+-EXPORT_SYMBOL(of_dev_get);
+-EXPORT_SYMBOL(of_dev_put);
+-EXPORT_SYMBOL(of_release_dev);
+ EXPORT_SYMBOL(of_device_uevent);
+diff --git a/arch/sparc/kernel/of_device.c b/arch/sparc/kernel/of_device.c
+index fd7f8cb..0760b81 100644
+--- a/arch/sparc/kernel/of_device.c
++++ b/arch/sparc/kernel/of_device.c
+@@ -1,5 +1,6 @@
+ #include <linux/string.h>
+ #include <linux/kernel.h>
++#include <linux/of.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/mod_devicetable.h>
+@@ -8,38 +9,6 @@
+ #include <asm/errno.h>
+ #include <asm/of_device.h>
  
--struct device_node *of_find_node_by_name(struct device_node *from,
--	const char *name)
+-/**
+- * of_match_device - Tell if an of_device structure has a matching
+- * of_match structure
+- * @ids: array of of device match structures to search in
+- * @dev: the of device structure to match against
+- *
+- * Used by a driver to check whether an of_device present in the
+- * system is in its list of supported devices.
+- */
+-const struct of_device_id *of_match_device(const struct of_device_id *matches,
+-					const struct of_device *dev)
 -{
--	struct device_node *np;
--
--	np = from ? from->allnext : allnodes;
--	for (; np != NULL; np = np->allnext)
--		if (np->name != NULL && strcmp(np->name, name) == 0)
--			break;
--
--	return np;
--}
--EXPORT_SYMBOL(of_find_node_by_name);
--
--struct device_node *of_find_node_by_type(struct device_node *from,
--	const char *type)
--{
--	struct device_node *np;
--
--	np = from ? from->allnext : allnodes;
--	for (; np != 0; np = np->allnext)
--		if (np->type != 0 && strcmp(np->type, type) == 0)
--			break;
--
--	return np;
--}
--EXPORT_SYMBOL(of_find_node_by_type);
--
--struct device_node *of_find_compatible_node(struct device_node *from,
--	const char *type, const char *compatible)
--{
--	struct device_node *np;
--
--	np = from ? from->allnext : allnodes;
--	for (; np != 0; np = np->allnext) {
--		if (type != NULL
--		    && !(np->type != 0 && strcmp(np->type, type) == 0))
--			continue;
--		if (of_device_is_compatible(np, compatible))
--			break;
+-	if (!dev->node)
+-		return NULL;
+-	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
+-		int match = 1;
+-		if (matches->name[0])
+-			match &= dev->node->name
+-				&& !strcmp(matches->name, dev->node->name);
+-		if (matches->type[0])
+-			match &= dev->node->type
+-				&& !strcmp(matches->type, dev->node->type);
+-		if (matches->compatible[0])
+-			match &= of_device_is_compatible(dev->node,
+-							 matches->compatible);
+-		if (match)
+-			return matches;
+-		matches++;
 -	}
--
--	return np;
+-	return NULL;
 -}
--EXPORT_SYMBOL(of_find_compatible_node);
 -
- int of_getintprop_default(struct device_node *np, const char *name, int def)
+ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
  {
- 	struct property *prop;
-diff --git a/arch/sparc64/kernel/prom.c b/arch/sparc64/kernel/prom.c
-index be3b958..ae2065c 100644
---- a/arch/sparc64/kernel/prom.c
-+++ b/arch/sparc64/kernel/prom.c
-@@ -29,23 +29,10 @@
- #include <asm/asi.h>
- #include <asm/upa.h>
- 
--static struct device_node *allnodes;
-+extern struct device_node *allnodes;	/* temporary while merging */
- 
- extern rwlock_t devtree_lock;	/* temporary while merging */
- 
--struct device_node *of_find_node_by_path(const char *path)
--{
--	struct device_node *np = allnodes;
--
--	for (; np != 0; np = np->allnext) {
--		if (np->full_name != 0 && strcmp(np->full_name, path) == 0)
--			break;
--	}
--
--	return np;
--}
--EXPORT_SYMBOL(of_find_node_by_path);
--
- struct device_node *of_find_node_by_phandle(phandle handle)
- {
- 	struct device_node *np;
-@@ -58,52 +45,6 @@ struct device_node *of_find_node_by_phandle(phandle handle)
+ 	struct of_device * of_dev = to_of_device(dev);
+@@ -52,26 +21,6 @@ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+ 	return of_match_device(matches, of_dev) != NULL;
  }
- EXPORT_SYMBOL(of_find_node_by_phandle);
  
--struct device_node *of_find_node_by_name(struct device_node *from,
--	const char *name)
+-struct of_device *of_dev_get(struct of_device *dev)
 -{
--	struct device_node *np;
+-	struct device *tmp;
 -
--	np = from ? from->allnext : allnodes;
--	for (; np != NULL; np = np->allnext)
--		if (np->name != NULL && strcmp(np->name, name) == 0)
--			break;
--
--	return np;
+-	if (!dev)
+-		return NULL;
+-	tmp = get_device(&dev->dev);
+-	if (tmp)
+-		return to_of_device(tmp);
+-	else
+-		return NULL;
 -}
--EXPORT_SYMBOL(of_find_node_by_name);
 -
--struct device_node *of_find_node_by_type(struct device_node *from,
--	const char *type)
+-void of_dev_put(struct of_device *dev)
 -{
--	struct device_node *np;
--
--	np = from ? from->allnext : allnodes;
--	for (; np != 0; np = np->allnext)
--		if (np->type != 0 && strcmp(np->type, type) == 0)
--			break;
--
--	return np;
+-	if (dev)
+-		put_device(&dev->dev);
 -}
--EXPORT_SYMBOL(of_find_node_by_type);
 -
--struct device_node *of_find_compatible_node(struct device_node *from,
--	const char *type, const char *compatible)
--{
--	struct device_node *np;
 -
--	np = from ? from->allnext : allnodes;
--	for (; np != 0; np = np->allnext) {
--		if (type != NULL
--		    && !(np->type != 0 && strcmp(np->type, type) == 0))
--			continue;
--		if (of_device_is_compatible(np, compatible))
--			break;
--	}
--
--	return np;
--}
--EXPORT_SYMBOL(of_find_compatible_node);
--
- int of_getintprop_default(struct device_node *np, const char *name, int def)
+ static int of_device_probe(struct device *dev)
  {
- 	struct property *prop;
-diff --git a/drivers/of/base.c b/drivers/of/base.c
-index 6b6dfcc..589488c 100644
---- a/drivers/of/base.c
-+++ b/drivers/of/base.c
-@@ -20,6 +20,8 @@
- #include <linux/of.h>
- #include <linux/spinlock.h>
+ 	int error = -ENODEV;
+@@ -735,56 +684,6 @@ void of_unregister_driver(struct of_platform_driver *drv)
+ 	driver_unregister(&drv->driver);
+ }
  
-+struct device_node *allnodes;
+-
+-static ssize_t dev_show_devspec(struct device *dev, struct device_attribute *attr, char *buf)
+-{
+-	struct of_device *ofdev;
+-
+-	ofdev = to_of_device(dev);
+-	return sprintf(buf, "%s", ofdev->node->full_name);
+-}
+-
+-static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
+-
+-/**
+- * of_release_dev - free an of device structure when all users of it are finished.
+- * @dev: device that's been disconnected
+- *
+- * Will be called only by the device core when all users of this of device are
+- * done.
+- */
+-void of_release_dev(struct device *dev)
+-{
+-	struct of_device *ofdev;
+-
+-        ofdev = to_of_device(dev);
+-
+-	kfree(ofdev);
+-}
+-
+-int of_device_register(struct of_device *ofdev)
+-{
+-	int rc;
+-
+-	BUG_ON(ofdev->node == NULL);
+-
+-	rc = device_register(&ofdev->dev);
+-	if (rc)
+-		return rc;
+-
+-	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
+-	if (rc)
+-		device_unregister(&ofdev->dev);
+-
+-	return rc;
+-}
+-
+-void of_device_unregister(struct of_device *ofdev)
+-{
+-	device_remove_file(&ofdev->dev, &dev_attr_devspec);
+-	device_unregister(&ofdev->dev);
+-}
+-
+ struct of_device* of_platform_device_create(struct device_node *np,
+ 					    const char *bus_id,
+ 					    struct device *parent,
+@@ -810,12 +709,6 @@ struct of_device* of_platform_device_create(struct device_node *np,
+ 	return dev;
+ }
+ 
+-EXPORT_SYMBOL(of_match_device);
+ EXPORT_SYMBOL(of_register_driver);
+ EXPORT_SYMBOL(of_unregister_driver);
+-EXPORT_SYMBOL(of_device_register);
+-EXPORT_SYMBOL(of_device_unregister);
+-EXPORT_SYMBOL(of_dev_get);
+-EXPORT_SYMBOL(of_dev_put);
+ EXPORT_SYMBOL(of_platform_device_create);
+-EXPORT_SYMBOL(of_release_dev);
+diff --git a/arch/sparc64/kernel/of_device.c b/arch/sparc64/kernel/of_device.c
+index 9ac9a30..f22ef58 100644
+--- a/arch/sparc64/kernel/of_device.c
++++ b/arch/sparc64/kernel/of_device.c
+@@ -1,5 +1,6 @@
+ #include <linux/string.h>
+ #include <linux/kernel.h>
++#include <linux/of.h>
+ #include <linux/init.h>
+ #include <linux/module.h>
+ #include <linux/mod_devicetable.h>
+@@ -8,38 +9,6 @@
+ #include <asm/errno.h>
+ #include <asm/of_device.h>
+ 
+-/**
+- * of_match_device - Tell if an of_device structure has a matching
+- * of_match structure
+- * @ids: array of of device match structures to search in
+- * @dev: the of device structure to match against
+- *
+- * Used by a driver to check whether an of_device present in the
+- * system is in its list of supported devices.
+- */
+-const struct of_device_id *of_match_device(const struct of_device_id *matches,
+-					const struct of_device *dev)
+-{
+-	if (!dev->node)
+-		return NULL;
+-	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
+-		int match = 1;
+-		if (matches->name[0])
+-			match &= dev->node->name
+-				&& !strcmp(matches->name, dev->node->name);
+-		if (matches->type[0])
+-			match &= dev->node->type
+-				&& !strcmp(matches->type, dev->node->type);
+-		if (matches->compatible[0])
+-			match &= of_device_is_compatible(dev->node,
+-							 matches->compatible);
+-		if (match)
+-			return matches;
+-		matches++;
+-	}
+-	return NULL;
+-}
+-
+ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+ {
+ 	struct of_device * of_dev = to_of_device(dev);
+@@ -52,26 +21,6 @@ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+ 	return of_match_device(matches, of_dev) != NULL;
+ }
+ 
+-struct of_device *of_dev_get(struct of_device *dev)
+-{
+-	struct device *tmp;
+-
+-	if (!dev)
+-		return NULL;
+-	tmp = get_device(&dev->dev);
+-	if (tmp)
+-		return to_of_device(tmp);
+-	else
+-		return NULL;
+-}
+-
+-void of_dev_put(struct of_device *dev)
+-{
+-	if (dev)
+-		put_device(&dev->dev);
+-}
+-
+-
+ static int of_device_probe(struct device *dev)
+ {
+ 	int error = -ENODEV;
+@@ -1004,61 +953,13 @@ int of_register_driver(struct of_platform_driver *drv, struct bus_type *bus)
+ 	/* register with core */
+ 	return driver_register(&drv->driver);
+ }
++EXPORT_SYMBOL(of_register_driver);
+ 
+ void of_unregister_driver(struct of_platform_driver *drv)
+ {
+ 	driver_unregister(&drv->driver);
+ }
+-
+-
+-static ssize_t dev_show_devspec(struct device *dev, struct device_attribute *attr, char *buf)
+-{
+-	struct of_device *ofdev;
+-
+-	ofdev = to_of_device(dev);
+-	return sprintf(buf, "%s", ofdev->node->full_name);
+-}
+-
+-static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
+-
+-/**
+- * of_release_dev - free an of device structure when all users of it are finished.
+- * @dev: device that's been disconnected
+- *
+- * Will be called only by the device core when all users of this of device are
+- * done.
+- */
+-void of_release_dev(struct device *dev)
+-{
+-	struct of_device *ofdev;
+-
+-        ofdev = to_of_device(dev);
+-
+-	kfree(ofdev);
+-}
+-
+-int of_device_register(struct of_device *ofdev)
+-{
+-	int rc;
+-
+-	BUG_ON(ofdev->node == NULL);
+-
+-	rc = device_register(&ofdev->dev);
+-	if (rc)
+-		return rc;
+-
+-	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
+-	if (rc)
+-		device_unregister(&ofdev->dev);
+-
+-	return rc;
+-}
+-
+-void of_device_unregister(struct of_device *ofdev)
+-{
+-	device_remove_file(&ofdev->dev, &dev_attr_devspec);
+-	device_unregister(&ofdev->dev);
+-}
++EXPORT_SYMBOL(of_unregister_driver);
+ 
+ struct of_device* of_platform_device_create(struct device_node *np,
+ 					    const char *bus_id,
+@@ -1084,13 +985,4 @@ struct of_device* of_platform_device_create(struct device_node *np,
+ 
+ 	return dev;
+ }
+-
+-EXPORT_SYMBOL(of_match_device);
+-EXPORT_SYMBOL(of_register_driver);
+-EXPORT_SYMBOL(of_unregister_driver);
+-EXPORT_SYMBOL(of_device_register);
+-EXPORT_SYMBOL(of_device_unregister);
+-EXPORT_SYMBOL(of_dev_get);
+-EXPORT_SYMBOL(of_dev_put);
+ EXPORT_SYMBOL(of_platform_device_create);
+-EXPORT_SYMBOL(of_release_dev);
+diff --git a/drivers/Kconfig b/drivers/Kconfig
+index 050323f..1608f52 100644
+--- a/drivers/Kconfig
++++ b/drivers/Kconfig
+@@ -8,6 +8,8 @@ source "drivers/connector/Kconfig"
+ 
+ source "drivers/mtd/Kconfig"
+ 
++source "drivers/of/Kconfig"
 +
- /* use when traversing tree through the allnext, child, sibling,
-  * or parent members of struct device_node.
-  */
-@@ -158,3 +160,115 @@ struct device_node *of_get_next_child(const struct device_node *node,
- 	return next;
- }
- EXPORT_SYMBOL(of_get_next_child);
+ source "drivers/parport/Kconfig"
+ 
+ source "drivers/pnp/Kconfig"
+diff --git a/drivers/of/Kconfig b/drivers/of/Kconfig
+new file mode 100644
+index 0000000..c03072b
+--- /dev/null
++++ b/drivers/of/Kconfig
+@@ -0,0 +1,3 @@
++config OF_DEVICE
++	def_bool y
++	depends on OF && (SPARC || PPC_OF)
+diff --git a/drivers/of/Makefile b/drivers/of/Makefile
+index cddbe84..c46d998 100644
+--- a/drivers/of/Makefile
++++ b/drivers/of/Makefile
+@@ -1 +1,2 @@
+ obj-y = base.o
++obj-$(CONFIG_OF_DEVICE) += device.o
+diff --git a/drivers/of/device.c b/drivers/of/device.c
+new file mode 100644
+index 0000000..7f233d7
+--- /dev/null
++++ b/drivers/of/device.c
+@@ -0,0 +1,131 @@
++#include <linux/string.h>
++#include <linux/kernel.h>
++#include <linux/of.h>
++#include <linux/init.h>
++#include <linux/module.h>
++#include <linux/mod_devicetable.h>
++#include <linux/slab.h>
++
++#include <asm/errno.h>
++#include <asm/of_device.h>
 +
 +/**
-+ *	of_find_node_by_path - Find a node matching a full OF path
-+ *	@path:	The full path to match
++ * of_match_node - Tell if an device_node has a matching of_match structure
++ * @ids: array of of device match structures to search in
++ * @node: the of device structure to match against
 + *
-+ *	Returns a node pointer with refcount incremented, use
-+ *	of_node_put() on it when done.
++ * Low level utility function used by device matching.
 + */
-+struct device_node *of_find_node_by_path(const char *path)
++const struct of_device_id *of_match_node(const struct of_device_id *matches,
++					 const struct device_node *node)
 +{
-+	struct device_node *np = allnodes;
-+
-+	read_lock(&devtree_lock);
-+	for (; np; np = np->allnext) {
-+		if (np->full_name && (of_node_cmp(np->full_name, path) == 0)
-+		    && of_node_get(np))
-+			break;
++	while (matches->name[0] || matches->type[0] || matches->compatible[0]) {
++		int match = 1;
++		if (matches->name[0])
++			match &= node->name
++				&& !strcmp(matches->name, node->name);
++		if (matches->type[0])
++			match &= node->type
++				&& !strcmp(matches->type, node->type);
++		if (matches->compatible[0])
++			match &= of_device_is_compatible(node,
++						matches->compatible);
++		if (match)
++			return matches;
++		matches++;
 +	}
-+	read_unlock(&devtree_lock);
-+	return np;
++	return NULL;
 +}
-+EXPORT_SYMBOL(of_find_node_by_path);
++EXPORT_SYMBOL(of_match_node);
 +
 +/**
-+ *	of_find_node_by_name - Find a node by its "name" property
-+ *	@from:	The node to start searching from or NULL, the node
-+ *		you pass will not be searched, only the next one
-+ *		will; typically, you pass what the previous call
-+ *		returned. of_node_put() will be called on it
-+ *	@name:	The name string to match against
++ * of_match_device - Tell if an of_device structure has a matching
++ * of_match structure
++ * @ids: array of of device match structures to search in
++ * @dev: the of device structure to match against
 + *
-+ *	Returns a node pointer with refcount incremented, use
-+ *	of_node_put() on it when done.
++ * Used by a driver to check whether an of_device present in the
++ * system is in its list of supported devices.
 + */
-+struct device_node *of_find_node_by_name(struct device_node *from,
-+	const char *name)
++const struct of_device_id *of_match_device(const struct of_device_id *matches,
++					const struct of_device *dev)
 +{
-+	struct device_node *np;
-+
-+	read_lock(&devtree_lock);
-+	np = from ? from->allnext : allnodes;
-+	for (; np; np = np->allnext)
-+		if (np->name && (of_node_cmp(np->name, name) == 0)
-+		    && of_node_get(np))
-+			break;
-+	of_node_put(from);
-+	read_unlock(&devtree_lock);
-+	return np;
++	if (!dev->node)
++		return NULL;
++	return of_match_node(matches, dev->node);
 +}
-+EXPORT_SYMBOL(of_find_node_by_name);
++EXPORT_SYMBOL(of_match_device);
++
++struct of_device *of_dev_get(struct of_device *dev)
++{
++	struct device *tmp;
++
++	if (!dev)
++		return NULL;
++	tmp = get_device(&dev->dev);
++	if (tmp)
++		return to_of_device(tmp);
++	else
++		return NULL;
++}
++EXPORT_SYMBOL(of_dev_get);
++
++void of_dev_put(struct of_device *dev)
++{
++	if (dev)
++		put_device(&dev->dev);
++}
++EXPORT_SYMBOL(of_dev_put);
++
++static ssize_t dev_show_devspec(struct device *dev,
++				struct device_attribute *attr, char *buf)
++{
++	struct of_device *ofdev;
++
++	ofdev = to_of_device(dev);
++	return sprintf(buf, "%s", ofdev->node->full_name);
++}
++
++static DEVICE_ATTR(devspec, S_IRUGO, dev_show_devspec, NULL);
 +
 +/**
-+ *	of_find_node_by_type - Find a node by its "device_type" property
-+ *	@from:	The node to start searching from or NULL, the node
-+ *		you pass will not be searched, only the next one
-+ *		will; typically, you pass what the previous call
-+ *		returned. of_node_put() will be called on it
-+ *	@name:	The type string to match against
++ * of_release_dev - free an of device structure when all users of it are finished.
++ * @dev: device that's been disconnected
 + *
-+ *	Returns a node pointer with refcount incremented, use
-+ *	of_node_put() on it when done.
++ * Will be called only by the device core when all users of this of device are
++ * done.
 + */
-+struct device_node *of_find_node_by_type(struct device_node *from,
-+	const char *type)
++void of_release_dev(struct device *dev)
 +{
-+	struct device_node *np;
++	struct of_device *ofdev;
 +
-+	read_lock(&devtree_lock);
-+	np = from ? from->allnext : allnodes;
-+	for (; np; np = np->allnext)
-+		if (np->type && (of_node_cmp(np->type, type) == 0)
-+		    && of_node_get(np))
-+			break;
-+	of_node_put(from);
-+	read_unlock(&devtree_lock);
-+	return np;
++	ofdev = to_of_device(dev);
++	of_node_put(ofdev->node);
++	kfree(ofdev);
 +}
-+EXPORT_SYMBOL(of_find_node_by_type);
++EXPORT_SYMBOL(of_release_dev);
 +
-+/**
-+ *	of_find_compatible_node - Find a node based on type and one of the
-+ *                                tokens in its "compatible" property
-+ *	@from:		The node to start searching from or NULL, the node
-+ *			you pass will not be searched, only the next one
-+ *			will; typically, you pass what the previous call
-+ *			returned. of_node_put() will be called on it
-+ *	@type:		The type string to match "device_type" or NULL to ignore
-+ *	@compatible:	The string to match to one of the tokens in the device
-+ *			"compatible" list.
-+ *
-+ *	Returns a node pointer with refcount incremented, use
-+ *	of_node_put() on it when done.
-+ */
-+struct device_node *of_find_compatible_node(struct device_node *from,
-+	const char *type, const char *compatible)
++int of_device_register(struct of_device *ofdev)
 +{
-+	struct device_node *np;
++	int rc;
 +
-+	read_lock(&devtree_lock);
-+	np = from ? from->allnext : allnodes;
-+	for (; np; np = np->allnext) {
-+		if (type
-+		    && !(np->type && (of_node_cmp(np->type, type) == 0)))
-+			continue;
-+		if (of_device_is_compatible(np, compatible) && of_node_get(np))
-+			break;
-+	}
-+	of_node_put(from);
-+	read_unlock(&devtree_lock);
-+	return np;
++	BUG_ON(ofdev->node == NULL);
++
++	rc = device_register(&ofdev->dev);
++	if (rc)
++		return rc;
++
++	rc = device_create_file(&ofdev->dev, &dev_attr_devspec);
++	if (rc)
++		device_unregister(&ofdev->dev);
++
++	return rc;
 +}
-+EXPORT_SYMBOL(of_find_compatible_node);
-diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index f15c760..55d4bbb 100644
---- a/include/asm-powerpc/prom.h
-+++ b/include/asm-powerpc/prom.h
-@@ -27,6 +27,7 @@
- 
- #define of_compat_cmp(s1, s2, l)	strncasecmp((s1), (s2), (l))
- #define of_prop_cmp(s1, s2)		strcmp((s1), (s2))
-+#define of_node_cmp(s1, s2)		strcasecmp((s1), (s2))
- 
- /* Definitions used by the flattened device tree */
- #define OF_DT_HEADER		0xd00dfeed	/* marker */
-diff --git a/include/asm-sparc/prom.h b/include/asm-sparc/prom.h
-index 5dc4c0e..fa92e30 100644
---- a/include/asm-sparc/prom.h
-+++ b/include/asm-sparc/prom.h
-@@ -25,6 +25,7 @@
- 
- #define of_compat_cmp(s1, s2, l)	strncmp((s1), (s2), (l))
- #define of_prop_cmp(s1, s2)		strcasecmp((s1), (s2))
-+#define of_node_cmp(s1, s2)		strcmp((s1), (s2))
- 
- typedef u32 phandle;
- typedef u32 ihandle;
-diff --git a/include/asm-sparc64/prom.h b/include/asm-sparc64/prom.h
-index afd707a..9b0c618 100644
---- a/include/asm-sparc64/prom.h
-+++ b/include/asm-sparc64/prom.h
-@@ -25,6 +25,7 @@
- 
- #define of_compat_cmp(s1, s2, l)	strncmp((s1), (s2), (l))
- #define of_prop_cmp(s1, s2)		strcasecmp((s1), (s2))
-+#define of_node_cmp(s1, s2)		strcmp((s1), (s2))
- 
- typedef u32 phandle;
- typedef u32 ihandle;
++EXPORT_SYMBOL(of_device_register);
++
++void of_device_unregister(struct of_device *ofdev)
++{
++	device_remove_file(&ofdev->dev, &dev_attr_devspec);
++	device_unregister(&ofdev->dev);
++}
++EXPORT_SYMBOL(of_device_unregister);
 -- 
 1.5.1.2
