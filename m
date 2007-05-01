@@ -1,29 +1,22 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.173])
-	by ozlabs.org (Postfix) with ESMTP id C39D6DDFD0
+Return-Path: <ajz@cambridgebroadband.com>
+Received: from cambridgebroadband.com (mailhost.cambridgebroadband.com
+	[217.204.121.83])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id DEB62DDFB1
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 May 2007 17:16:35 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so8917ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 01 May 2007 00:16:33 -0700 (PDT)
-Message-ID: <528646bc0705010016i75b8c48fr5368d07b7ffcbe1b@mail.gmail.com>
-Date: Tue, 1 May 2007 01:16:33 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "David H. Lynch Jr." <dhlii@dlasys.net>
-Subject: Re: [PATCH 2/5] [PPC] Merge common virtex header files
-In-Reply-To: <4636C377.4070101@dlasys.net>
+	Tue,  1 May 2007 19:34:25 +1000 (EST)
+Message-ID: <46370991.3010802@cambridgebroadband.com>
+Date: Tue, 01 May 2007 10:34:09 +0100
+From: Alex Zeffertt <ajz@cambridgebroadband.com>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <1176622062492-git-send-email-grant.likely@secretlab.ca>
-	<11766220692537-git-send-email-grant.likely@secretlab.ca>
-	<11766220693636-git-send-email-grant.likely@secretlab.ca>
-	<87d51sac8l.fsf@sleipner.barco.com>
-	<528646bc0704271149w211bd5cbscb467123ab962703@mail.gmail.com>
-	<87slai5vz3.fsf@sleipner.barco.com>
-	<528646bc0704292141n322c145cmc3d2606b13b0b053@mail.gmail.com>
-	<4636C377.4070101@dlasys.net>
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+To: Kim Phillips <kim.phillips@freescale.com>
+Subject: Re: Anyone using mpc832x_mds & freescale's GIT repo?
+References: <4636081D.2000507@cambridgebroadband.com>
+	<20070430135200.23bb6bbf.kim.phillips@freescale.com>
+In-Reply-To: <20070430135200.23bb6bbf.kim.phillips@freescale.com>
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,39 +27,41 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 4/30/07, David H. Lynch Jr. <dhlii@dlasys.net> wrote:
-> There are a plethora of bd_info's in the kernel tree. I think that
-> u-boot is probably the most common,
-> but the u-boot one is huge and full of cruft.
+Kim Phillips wrote:
+> On Mon, 30 Apr 2007 16:15:41 +0100
+> Alex Zeffertt <ajz@cambridgebroadband.com> wrote:
+> 
+>> Hi list,
+>>
+>> I've got an MPC8323E-MDS-PB development board, which is
+>> running a year-old BSP from freescale.  I wanted to track
+>> the most current developments so I cloned
+>>
+>> 	http://opensource.freescale.com/pub/scm/linux-2.6-83xx.git
+>>
+> that tree is obsolete; I'll label it so to avoid confusion.
+> 
+>> and rebuilt with ARCH=powerpc and using the mpc832x_mds_defconfig.
+>>
+>> I now don't get any serial console output after u-boot has
+>> started the kernel.
+>>
+>> My questions are:
+>>
+>> 1.	Is anyone else using this GIT repo with this board?
+>>
+> please use the mpc83xx custodian tree on denx.de:
+> 
+> {git-,cg-}{clone,pull} git://www.denx.de/git/u-boot-mpc83xx.git
+> 
 
-Be realistic; we're talking about 124 bytes (vs 64 bytes for the pico
-bd_t).  If memory consumption is a concern, there are far more
-interesting targets.  ppcboot.h is butt-ugly, but at least it's
-somewhat common.
 
-> There are also likely to be any number for board/loader combinations
-> that are not in the kernel.
+Hi Kim,
 
-If its not in mainline, then I'm not concerned about it because then
-you're patching anyway.  I made sure it is easy to patch in a new bd_t
-so nobody is screwed.
+Thanks for your reply.  I am already using the *u-boot* repo you
+mention above.  Do you know which *linux* repository is the most
+current for the MPC8323E-MDS-PB board?
 
-When those board ports are pushed for mainline inclusion, then we can
-add the appropriate conditionals to virtex.h, but in the mean time
-it's a moot point.
+Best regards,
 
-> But I would prefer that if there is a bd_info struct that it be defined
-> by the board not virtex.h or virtex.c.
-
-Understood, but  I do not want to encourage that approach between now
-and when we jump to arch/powerpc (legacy bootloader support, yadda,
-yadda).
-
-Cheers,
-g.
-
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Alex
