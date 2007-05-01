@@ -1,11 +1,17 @@
-Return-Path: <mikey@neuling.org>
-From: Michael Neuling <mikey@neuling.org>
-To: horms@verge.net.au
-MIME-Version: 1.0
-Subject: [PATCH] kexec ppc64: cleanup get_devtree_details
-Date: Tue, 01 May 2007 13:47:14 +1000
-Message-ID: <10869.1177991234@neuling.org>
-Cc: linuxppc-dev@ozlabs.org, kexec@lists.infradead.org
+Return-Path: <sfr@canb.auug.org.au>
+Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
+	by ozlabs.org (Postfix) with ESMTP id D1922DDE29
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 14:12:14 +1000 (EST)
+Date: Tue, 1 May 2007 13:51:32 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH 1/2] get_property returns const
+Message-Id: <20070501135132.f6546878.sfr@canb.auug.org.au>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Cc: netdev@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
+	ppc-dev <linuxppc-dev@ozlabs.org>, paulus@samba.org,
+	jgarzik@pobox.com, "David S. Miller" <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -15,300 +21,71 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Cleanup error paths in get_devtree_details.  Also convert fstat from a
-pointer to avoid malloc.
+This is the last place that needs changing since get_property was changed
+to return "const void *".
 
-Signed-off-by: Michael Neuling <mikey@neuling.org>
+Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
-It's error paths, so if I screwed something up, I won't have picked it
-up with the simple testing I did. 
+ drivers/net/ehea/ehea_main.c |   13 ++++++-------
+ 1 files changed, 6 insertions(+), 7 deletions(-)
 
- kexec/arch/ppc64/kexec-ppc64.c |  136 ++++++++++++-----------------------------
- 1 file changed, 40 insertions(+), 96 deletions(-)
+-- 
+Cheers,
+Stephen Rothwell                    sfr@canb.auug.org.au
 
-Index: kexec-tools-testing/kexec/arch/ppc64/kexec-ppc64.c
-===================================================================
---- kexec-tools-testing.orig/kexec/arch/ppc64/kexec-ppc64.c
-+++ kexec-tools-testing/kexec/arch/ppc64/kexec-ppc64.c
-@@ -265,7 +265,7 @@ static int get_devtree_details(unsigned 
- 	DIR *dir, *cdir;
- 	FILE *file;
- 	struct dirent *dentry;
--	struct stat *fstat = malloc(sizeof(struct stat));
-+	struct stat fstat;
- 	int n, i = 0;
+diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
+index c7a5614..519bb9f 100644
+--- a/drivers/net/ehea/ehea_main.c
++++ b/drivers/net/ehea/ehea_main.c
+@@ -2603,14 +2603,13 @@ static int ehea_setup_ports(struct ehea_adapter *adapter)
+ {
+ 	struct device_node *lhea_dn;
+ 	struct device_node *eth_dn = NULL;
+-
+-	u32 *dn_log_port_id;
++	const u32 *dn_log_port_id;
+ 	int i = 0;
  
- 	if ((dir = opendir(device_tree)) == NULL) {
-@@ -283,24 +283,18 @@ static int get_devtree_details(unsigned 
- 		strcat(fname, dentry->d_name);
- 		if ((cdir = opendir(fname)) == NULL) {
- 			perror(fname);
--			closedir(dir);
--			return -1;
-+			goto error_opendir;
- 		}
+ 	lhea_dn = adapter->ebus_dev->ofdev.node;
+ 	while ((eth_dn = of_get_next_child(lhea_dn, eth_dn))) {
  
- 		if (strncmp(dentry->d_name, "chosen", 6) == 0) {
- 			strcat(fname, "/linux,kernel-end");
- 			if ((file = fopen(fname, "r")) == NULL) {
- 				perror(fname);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_opencdir;
- 			}
- 			if (fread(&kernel_end, sizeof(unsigned long), 1, file) != 1) {
- 				perror(fname);
--				fclose(file);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_openfile;
- 			}
- 			fclose(file);
+-		dn_log_port_id = (u32*)get_property(eth_dn, "ibm,hea-port-no",
++		dn_log_port_id = get_property(eth_dn, "ibm,hea-port-no",
+ 						    NULL);
+ 		if (!dn_log_port_id) {
+ 			ehea_error("bad device node: eth_dn name=%s",
+@@ -2645,12 +2644,12 @@ static struct device_node *ehea_get_eth_dn(struct ehea_adapter *adapter,
+ {
+ 	struct device_node *lhea_dn;
+ 	struct device_node *eth_dn = NULL;
+-	u32 *dn_log_port_id;
++	const u32 *dn_log_port_id;
  
-@@ -316,17 +310,12 @@ static int get_devtree_details(unsigned 
- 				strcat(fname, "/linux,crashkernel-base");
- 				if ((file = fopen(fname, "r")) == NULL) {
- 					perror(fname);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_opencdir;
- 				}
- 				if (fread(&crash_base, sizeof(unsigned long), 1,
- 						file) != 1) {
- 					perror(fname);
--					fclose(file);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_openfile;
- 				}
- 				fclose(file);
+ 	lhea_dn = adapter->ebus_dev->ofdev.node;
+ 	while ((eth_dn = of_get_next_child(lhea_dn, eth_dn))) {
  
-@@ -336,17 +325,12 @@ static int get_devtree_details(unsigned 
- 				strcat(fname, "/linux,crashkernel-size");
- 				if ((file = fopen(fname, "r")) == NULL) {
- 					perror(fname);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_opencdir;
- 				}
- 				if (fread(&crash_size, sizeof(unsigned long), 1,
- 						file) != 1) {
- 					perror(fname);
--					fclose(file);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_openfile;
- 				}
+-		dn_log_port_id = (u32*)get_property(eth_dn, "ibm,hea-port-no",
++		dn_log_port_id = get_property(eth_dn, "ibm,hea-port-no",
+ 						    NULL);
+ 		if (dn_log_port_id)
+ 			if (*dn_log_port_id == logical_port_id)
+@@ -2774,7 +2773,7 @@ static int __devinit ehea_probe_adapter(struct ibmebus_dev *dev,
+ 					const struct of_device_id *id)
+ {
+ 	struct ehea_adapter *adapter;
+-	u64 *adapter_handle;
++	const u64 *adapter_handle;
+ 	int ret;
  
- 				if (crash_base > mem_min)
-@@ -370,15 +354,11 @@ static int get_devtree_details(unsigned 
- 					continue;
-                                 }
- 				perror(fname);
--				closedir(dir);
--				return -1;
-+				goto error_opendir;
- 			}
- 			if (fread(&htab_base, sizeof(unsigned long), 1, file) != 1) {
- 				perror(fname);
--				fclose(file);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_openfile;
- 			}
- 			memset(fname, 0, sizeof(fname));
- 			strcpy(fname, device_tree);
-@@ -386,16 +366,11 @@ static int get_devtree_details(unsigned 
- 			strcat(fname, "/linux,htab-size");
- 			if ((file = fopen(fname, "r")) == NULL) {
- 				perror(fname);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_opencdir;
- 			}
- 			if (fread(&htab_size, sizeof(unsigned long), 1, file) != 1) {
- 				perror(fname);
--				fclose(file);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_openfile;
- 			}
- 			/* Add htab address to exclude_range - NON-LPAR only */
- 			exclude_range[i].start = htab_base;
-@@ -410,24 +385,16 @@ static int get_devtree_details(unsigned 
- 				strcat(fname, "/linux,initrd-start");
- 				if ((file = fopen(fname, "r")) == NULL) {
- 					perror(fname);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_opencdir;
- 				}
- 				/* check for 4 and 8 byte initrd offset sizes */
--				if (stat(fname, fstat) != 0) {
-+				if (stat(fname, &fstat) != 0) {
- 					perror(fname);
--					fclose(file);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_openfile;
- 				}
-- 				if (fread(&initrd_start, fstat->st_size, 1, file) != 1) {
-+ 				if (fread(&initrd_start, fstat.st_size, 1, file) != 1) {
- 					perror(fname);
--					fclose(file);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_openfile;
- 				}
- 				fclose(file);
+ 	if (!dev || !dev->ofdev.node) {
+@@ -2791,7 +2790,7 @@ static int __devinit ehea_probe_adapter(struct ibmebus_dev *dev,
  
-@@ -437,24 +404,16 @@ static int get_devtree_details(unsigned 
- 				strcat(fname, "/linux,initrd-end");
- 				if ((file = fopen(fname, "r")) == NULL) {
- 					perror(fname);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_opencdir;
- 				}
- 				/* check for 4 and 8 byte initrd offset sizes */
--				if (stat(fname, fstat) != 0) {
-+				if (stat(fname, &fstat) != 0) {
- 					perror(fname);
--					fclose(file);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_openfile;
- 				}
-- 				if (fread(&initrd_end, fstat->st_size, 1, file) != 1) {
-+ 				if (fread(&initrd_end, fstat.st_size, 1, file) != 1) {
- 					perror(fname);
--					fclose(file);
--					closedir(cdir);
--					closedir(dir);
--					return -1;
-+					goto error_openfile;
- 				}
- 				fclose(file);
+ 	adapter->ebus_dev = dev;
  
-@@ -469,16 +428,11 @@ static int get_devtree_details(unsigned 
- 			strcat(fname, "/linux,rtas-base");
- 			if ((file = fopen(fname, "r")) == NULL) {
- 				perror(fname);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_opencdir;
- 			}
- 			if (fread(&rtas_base, sizeof(unsigned int), 1, file) != 1) {
- 				perror(fname);
--				fclose(file);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_openfile;
- 			}
- 			memset(fname, 0, sizeof(fname));
- 			strcpy(fname, device_tree);
-@@ -486,16 +440,11 @@ static int get_devtree_details(unsigned 
- 			strcat(fname, "/rtas-size");
- 			if ((file = fopen(fname, "r")) == NULL) {
- 				perror(fname);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_opencdir;
- 			}
- 			if (fread(&rtas_size, sizeof(unsigned int), 1, file) != 1) {
- 				perror(fname);
--				fclose(file);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_openfile;
- 			}
- 			closedir(cdir);
- 			/* Add rtas to exclude_range */
-@@ -510,16 +459,11 @@ static int get_devtree_details(unsigned 
- 			strcat(fname, "/reg");
- 			if ((file = fopen(fname, "r")) == NULL) {
- 				perror(fname);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_opencdir;
- 			}
- 			if ((n = fread(buf, 1, MAXBYTES, file)) < 0) {
- 				perror(fname);
--				fclose(file);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_openfile;
- 			}
- 			rmo_base = ((unsigned long long *)buf)[0];
- 			rmo_top = rmo_base + ((unsigned long long *)buf)[1];
-@@ -540,14 +484,11 @@ static int get_devtree_details(unsigned 
- 					continue;
- 				}
- 				perror(fname);
--				closedir(dir);
--				return -1;
-+				goto error_opendir;
- 			}
- 			if (fread(&tce_base, sizeof(unsigned long), 1, file) != 1) {
- 				perror(fname);
--				fclose(file);
--				closedir(cdir);
--				closedir(dir);
-+				goto error_openfile;
- 				return -1;
- 			}
- 			memset(fname, 0, sizeof(fname));
-@@ -556,16 +497,11 @@ static int get_devtree_details(unsigned 
- 			strcat(fname, "/linux,tce-size");
- 			if ((file = fopen(fname, "r")) == NULL) {
- 				perror(fname);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_opencdir;
- 			}
- 			if (fread(&tce_size, sizeof(unsigned int), 1, file) != 1) {
- 				perror(fname);
--				fclose(file);
--				closedir(cdir);
--				closedir(dir);
--				return -1;
-+				goto error_openfile;
- 			}
- 			/* Add tce to exclude_range - NON-LPAR only */
- 			exclude_range[i].start = tce_base;
-@@ -590,6 +526,14 @@ static int get_devtree_details(unsigned 
- 			exclude_range[k].end);
- #endif
- 	return 0;
-+
-+error_openfile:
-+	fclose(file);
-+error_opencdir:
-+	closedir(cdir);
-+error_opendir:
-+	closedir(dir);
-+	return -1;
- }
- 
- /* Setup a sorted list of memory ranges. */
+-	adapter_handle = (u64*)get_property(dev->ofdev.node, "ibm,hea-handle",
++	adapter_handle = get_property(dev->ofdev.node, "ibm,hea-handle",
+ 					    NULL);
+ 	if (adapter_handle)
+ 		adapter->handle = *adapter_handle;
+-- 
+1.5.1.2
