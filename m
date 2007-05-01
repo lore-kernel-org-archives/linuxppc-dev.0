@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 3CA71DE043
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 17:35:51 +1000 (EST)
-Date: Tue, 1 May 2007 17:32:42 +1000
+	by ozlabs.org (Postfix) with ESMTP id 353B5DE052
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 17:35:52 +1000 (EST)
+Date: Tue, 1 May 2007 17:33:50 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "David S. Miller" <davem@davemloft.net>, paulus@samba.org
-Subject: [PATCH 09/11] Begin consolidation of of_device.h
-Message-Id: <20070501173242.78c133b1.sfr@canb.auug.org.au>
+Subject: [PATCH 10/11] [SPARC/64] Rename some functions like PowerPC
+Message-Id: <20070501173350.f2efacff.sfr@canb.auug.org.au>
 In-Reply-To: <20070501172250.80707fb8.sfr@canb.auug.org.au>
 References: <20070501172250.80707fb8.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -21,224 +21,349 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This just moves the common stuff from the arch of_device.h files to
-linux/of_device.h.
+This is to make the of merge easier.  Also rename of_bus_type.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- drivers/of/device.c             |    2 +-
- include/asm-powerpc/of_device.h |   22 +++++-----------------
- include/asm-sparc/of_device.h   |   15 ++++-----------
- include/asm-sparc64/of_device.h |   15 ++++-----------
- include/linux/of_device.h       |   26 ++++++++++++++++++++++++++
- 5 files changed, 40 insertions(+), 40 deletions(-)
- create mode 100644 include/linux/of_device.h
+ arch/sparc/kernel/of_device.c   |   42 ++++++++++++++++----------------
+ arch/sparc/kernel/time.c        |    2 +-
+ arch/sparc64/kernel/auxio.c     |    2 +-
+ arch/sparc64/kernel/of_device.c |   50 +++++++++++++++++++-------------------
+ arch/sparc64/kernel/power.c     |    2 +-
+ arch/sparc64/kernel/time.c      |    2 +-
+ include/asm-sparc/of_device.h   |    3 +-
+ include/asm-sparc64/of_device.h |    3 +-
+ 8 files changed, 54 insertions(+), 52 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/drivers/of/device.c b/drivers/of/device.c
-index 7f233d7..6245f06 100644
---- a/drivers/of/device.c
-+++ b/drivers/of/device.c
-@@ -1,13 +1,13 @@
- #include <linux/string.h>
- #include <linux/kernel.h>
- #include <linux/of.h>
-+#include <linux/of_device.h>
- #include <linux/init.h>
- #include <linux/module.h>
- #include <linux/mod_devicetable.h>
- #include <linux/slab.h>
+diff --git a/arch/sparc/kernel/of_device.c b/arch/sparc/kernel/of_device.c
+index 0760b81..cb21983 100644
+--- a/arch/sparc/kernel/of_device.c
++++ b/arch/sparc/kernel/of_device.c
+@@ -21,7 +21,7 @@ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+ 	return of_match_device(matches, of_dev) != NULL;
+ }
  
- #include <asm/errno.h>
--#include <asm/of_device.h>
- 
- /**
-  * of_match_node - Tell if an device_node has a matching of_match structure
-diff --git a/include/asm-powerpc/of_device.h b/include/asm-powerpc/of_device.h
-index 4f1aabe..1d88275 100644
---- a/include/asm-powerpc/of_device.h
-+++ b/include/asm-powerpc/of_device.h
-@@ -3,14 +3,12 @@
- #ifdef __KERNEL__
- 
- #include <linux/device.h>
--#include <linux/mod_devicetable.h>
--#include <asm/prom.h>
--
-+#include <linux/of.h>
- 
- /*
-  * The of_device is a kind of "base class" that is a superset of
-  * struct device for use by devices attached to an OF node and
-- * probed using OF properties
-+ * probed using OF properties.
-  */
- struct of_device
+-static int of_device_probe(struct device *dev)
++static int of_platform_device_probe(struct device *dev)
  {
-@@ -18,22 +16,12 @@ struct of_device
- 	u64			dma_mask;	/* DMA mask */
- 	struct device		dev;		/* Generic device interface */
+ 	int error = -ENODEV;
+ 	struct of_platform_driver *drv;
+@@ -45,7 +45,7 @@ static int of_device_probe(struct device *dev)
+ 	return error;
+ }
+ 
+-static int of_device_remove(struct device *dev)
++static int of_platform_device_remove(struct device *dev)
+ {
+ 	struct of_device * of_dev = to_of_device(dev);
+ 	struct of_platform_driver * drv = to_of_platform_driver(dev->driver);
+@@ -55,7 +55,7 @@ static int of_device_remove(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int of_device_suspend(struct device *dev, pm_message_t state)
++static int of_platform_device_suspend(struct device *dev, pm_message_t state)
+ {
+ 	struct of_device * of_dev = to_of_device(dev);
+ 	struct of_platform_driver * drv = to_of_platform_driver(dev->driver);
+@@ -66,7 +66,7 @@ static int of_device_suspend(struct device *dev, pm_message_t state)
+ 	return error;
+ }
+ 
+-static int of_device_resume(struct device * dev)
++static int of_platform_device_resume(struct device * dev)
+ {
+ 	struct of_device * of_dev = to_of_device(dev);
+ 	struct of_platform_driver * drv = to_of_platform_driver(dev->driver);
+@@ -87,7 +87,7 @@ static int node_match(struct device *dev, void *data)
+ 
+ struct of_device *of_find_device_by_node(struct device_node *dp)
+ {
+-	struct device *dev = bus_find_device(&of_bus_type, NULL,
++	struct device *dev = bus_find_device(&of_platform_bus_type, NULL,
+ 					     dp, node_match);
+ 
+ 	if (dev)
+@@ -101,10 +101,10 @@ EXPORT_SYMBOL(of_find_device_by_node);
+ struct bus_type ebus_bus_type = {
+        .name	= "ebus",
+        .match	= of_platform_bus_match,
+-       .probe	= of_device_probe,
+-       .remove	= of_device_remove,
+-       .suspend	= of_device_suspend,
+-       .resume	= of_device_resume,
++       .probe	= of_platform_device_probe,
++       .remove	= of_platform_device_remove,
++       .suspend	= of_platform_device_suspend,
++       .resume	= of_platform_device_resume,
  };
--#define	to_of_device(d) container_of(d, struct of_device, dev)
--
--extern const struct of_device_id *of_match_node(
--	const struct of_device_id *matches, const struct device_node *node);
--extern const struct of_device_id *of_match_device(
--	const struct of_device_id *matches, const struct of_device *dev);
--
--extern struct of_device *of_dev_get(struct of_device *dev);
--extern void of_dev_put(struct of_device *dev);
--
--extern int of_device_register(struct of_device *ofdev);
--extern void of_device_unregister(struct of_device *ofdev);
--extern void of_release_dev(struct device *dev);
+ EXPORT_SYMBOL(ebus_bus_type);
+ #endif
+@@ -113,23 +113,23 @@ EXPORT_SYMBOL(ebus_bus_type);
+ struct bus_type sbus_bus_type = {
+        .name	= "sbus",
+        .match	= of_platform_bus_match,
+-       .probe	= of_device_probe,
+-       .remove	= of_device_remove,
+-       .suspend	= of_device_suspend,
+-       .resume	= of_device_resume,
++       .probe	= of_platform_device_probe,
++       .remove	= of_platform_device_remove,
++       .suspend	= of_platform_device_suspend,
++       .resume	= of_platform_device_resume,
+ };
+ EXPORT_SYMBOL(sbus_bus_type);
+ #endif
  
- extern int of_device_uevent(struct device *dev,
- 	char **envp, int num_envp, char *buffer, int buffer_size);
+-struct bus_type of_bus_type = {
++struct bus_type of_platform_bus_type = {
+        .name	= "of",
+        .match	= of_platform_bus_match,
+-       .probe	= of_device_probe,
+-       .remove	= of_device_remove,
+-       .suspend	= of_device_suspend,
+-       .resume	= of_device_resume,
++       .probe	= of_platform_device_probe,
++       .remove	= of_platform_device_remove,
++       .suspend	= of_platform_device_suspend,
++       .resume	= of_platform_device_resume,
+ };
+-EXPORT_SYMBOL(of_bus_type);
++EXPORT_SYMBOL(of_platform_bus_type);
  
-+/* This is just here during the transition */
-+#include <linux/of_device.h>
-+
- #endif /* __KERNEL__ */
- #endif /* _ASM_POWERPC_OF_DEVICE_H */
+ static inline u64 of_read_addr(const u32 *cell, int size)
+ {
+@@ -595,7 +595,7 @@ build_resources:
+ 	build_device_resources(op, parent);
+ 
+ 	op->dev.parent = parent;
+-	op->dev.bus = &of_bus_type;
++	op->dev.bus = &of_platform_bus_type;
+ 	if (!parent)
+ 		strcpy(op->dev.bus_id, "root");
+ 	else
+@@ -639,7 +639,7 @@ static int __init of_bus_driver_init(void)
+ {
+ 	int err;
+ 
+-	err = bus_register(&of_bus_type);
++	err = bus_register(&of_platform_bus_type);
+ #ifdef CONFIG_PCI
+ 	if (!err)
+ 		err = bus_register(&ebus_bus_type);
+diff --git a/arch/sparc/kernel/time.c b/arch/sparc/kernel/time.c
+index f1401b5..c44eb70 100644
+--- a/arch/sparc/kernel/time.c
++++ b/arch/sparc/kernel/time.c
+@@ -354,7 +354,7 @@ static struct of_platform_driver clock_driver = {
+ /* Probe for the mostek real time clock chip. */
+ static int __init clock_init(void)
+ {
+-	return of_register_driver(&clock_driver, &of_bus_type);
++	return of_register_driver(&clock_driver, &of_platform_bus_type);
+ }
+ 
+ /* Must be after subsys_initcall() so that busses are probed.  Must
+diff --git a/arch/sparc64/kernel/auxio.c b/arch/sparc64/kernel/auxio.c
+index 826118e..7b37976 100644
+--- a/arch/sparc64/kernel/auxio.c
++++ b/arch/sparc64/kernel/auxio.c
+@@ -155,7 +155,7 @@ static struct of_platform_driver auxio_driver = {
+ 
+ static int __init auxio_init(void)
+ {
+-	return of_register_driver(&auxio_driver, &of_bus_type);
++	return of_register_driver(&auxio_driver, &of_platform_bus_type);
+ }
+ 
+ /* Must be after subsys_initcall() so that busses are probed.  Must
+diff --git a/arch/sparc64/kernel/of_device.c b/arch/sparc64/kernel/of_device.c
+index f22ef58..95b167a 100644
+--- a/arch/sparc64/kernel/of_device.c
++++ b/arch/sparc64/kernel/of_device.c
+@@ -21,7 +21,7 @@ static int of_platform_bus_match(struct device *dev, struct device_driver *drv)
+ 	return of_match_device(matches, of_dev) != NULL;
+ }
+ 
+-static int of_device_probe(struct device *dev)
++static int of_platform_device_probe(struct device *dev)
+ {
+ 	int error = -ENODEV;
+ 	struct of_platform_driver *drv;
+@@ -45,7 +45,7 @@ static int of_device_probe(struct device *dev)
+ 	return error;
+ }
+ 
+-static int of_device_remove(struct device *dev)
++static int of_platform_device_remove(struct device *dev)
+ {
+ 	struct of_device * of_dev = to_of_device(dev);
+ 	struct of_platform_driver * drv = to_of_platform_driver(dev->driver);
+@@ -55,7 +55,7 @@ static int of_device_remove(struct device *dev)
+ 	return 0;
+ }
+ 
+-static int of_device_suspend(struct device *dev, pm_message_t state)
++static int of_platform_device_suspend(struct device *dev, pm_message_t state)
+ {
+ 	struct of_device * of_dev = to_of_device(dev);
+ 	struct of_platform_driver * drv = to_of_platform_driver(dev->driver);
+@@ -66,7 +66,7 @@ static int of_device_suspend(struct device *dev, pm_message_t state)
+ 	return error;
+ }
+ 
+-static int of_device_resume(struct device * dev)
++static int of_platform_device_resume(struct device * dev)
+ {
+ 	struct of_device * of_dev = to_of_device(dev);
+ 	struct of_platform_driver * drv = to_of_platform_driver(dev->driver);
+@@ -112,7 +112,7 @@ static int node_match(struct device *dev, void *data)
+ 
+ struct of_device *of_find_device_by_node(struct device_node *dp)
+ {
+-	struct device *dev = bus_find_device(&of_bus_type, NULL,
++	struct device *dev = bus_find_device(&of_platform_bus_type, NULL,
+ 					     dp, node_match);
+ 
+ 	if (dev)
+@@ -126,20 +126,20 @@ EXPORT_SYMBOL(of_find_device_by_node);
+ struct bus_type isa_bus_type = {
+        .name	= "isa",
+        .match	= of_platform_bus_match,
+-       .probe	= of_device_probe,
+-       .remove	= of_device_remove,
+-       .suspend	= of_device_suspend,
+-       .resume	= of_device_resume,
++       .probe	= of_platform_device_probe,
++       .remove	= of_platform_device_remove,
++       .suspend	= of_platform_device_suspend,
++       .resume	= of_platform_device_resume,
+ };
+ EXPORT_SYMBOL(isa_bus_type);
+ 
+ struct bus_type ebus_bus_type = {
+        .name	= "ebus",
+        .match	= of_platform_bus_match,
+-       .probe	= of_device_probe,
+-       .remove	= of_device_remove,
+-       .suspend	= of_device_suspend,
+-       .resume	= of_device_resume,
++       .probe	= of_platform_device_probe,
++       .remove	= of_platform_device_remove,
++       .suspend	= of_platform_device_suspend,
++       .resume	= of_platform_device_resume,
+ };
+ EXPORT_SYMBOL(ebus_bus_type);
+ #endif
+@@ -148,23 +148,23 @@ EXPORT_SYMBOL(ebus_bus_type);
+ struct bus_type sbus_bus_type = {
+        .name	= "sbus",
+        .match	= of_platform_bus_match,
+-       .probe	= of_device_probe,
+-       .remove	= of_device_remove,
+-       .suspend	= of_device_suspend,
+-       .resume	= of_device_resume,
++       .probe	= of_platform_device_probe,
++       .remove	= of_platform_device_remove,
++       .suspend	= of_platform_device_suspend,
++       .resume	= of_platform_device_resume,
+ };
+ EXPORT_SYMBOL(sbus_bus_type);
+ #endif
+ 
+-struct bus_type of_bus_type = {
++struct bus_type of_platform_bus_type = {
+        .name	= "of",
+        .match	= of_platform_bus_match,
+-       .probe	= of_device_probe,
+-       .remove	= of_device_remove,
+-       .suspend	= of_device_suspend,
+-       .resume	= of_device_resume,
++       .probe	= of_platform_device_probe,
++       .remove	= of_platform_device_remove,
++       .suspend	= of_platform_device_suspend,
++       .resume	= of_platform_device_resume,
+ };
+-EXPORT_SYMBOL(of_bus_type);
++EXPORT_SYMBOL(of_platform_bus_type);
+ 
+ static inline u64 of_read_addr(const u32 *cell, int size)
+ {
+@@ -866,7 +866,7 @@ static struct of_device * __init scan_one_device(struct device_node *dp,
+ 		op->irqs[i] = build_one_device_irq(op, parent, op->irqs[i]);
+ 
+ 	op->dev.parent = parent;
+-	op->dev.bus = &of_bus_type;
++	op->dev.bus = &of_platform_bus_type;
+ 	if (!parent)
+ 		strcpy(op->dev.bus_id, "root");
+ 	else
+@@ -910,7 +910,7 @@ static int __init of_bus_driver_init(void)
+ {
+ 	int err;
+ 
+-	err = bus_register(&of_bus_type);
++	err = bus_register(&of_platform_bus_type);
+ #ifdef CONFIG_PCI
+ 	if (!err)
+ 		err = bus_register(&isa_bus_type);
+diff --git a/arch/sparc64/kernel/power.c b/arch/sparc64/kernel/power.c
+index 699b24b..a90e989 100644
+--- a/arch/sparc64/kernel/power.c
++++ b/arch/sparc64/kernel/power.c
+@@ -159,7 +159,7 @@ static struct of_platform_driver power_driver = {
+ 
+ void __init power_init(void)
+ {
+-	of_register_driver(&power_driver, &of_bus_type);
++	of_register_driver(&power_driver, &of_platform_bus_type);
+ 	return;
+ }
+ #endif /* CONFIG_PCI */
+diff --git a/arch/sparc64/kernel/time.c b/arch/sparc64/kernel/time.c
+index 259063f..b8cb636 100644
+--- a/arch/sparc64/kernel/time.c
++++ b/arch/sparc64/kernel/time.c
+@@ -812,7 +812,7 @@ static int __init clock_init(void)
+ 		return 0;
+ 	}
+ 
+-	return of_register_driver(&clock_driver, &of_bus_type);
++	return of_register_driver(&clock_driver, &of_platform_bus_type);
+ }
+ 
+ /* Must be after subsys_initcall() so that busses are probed.  Must
 diff --git a/include/asm-sparc/of_device.h b/include/asm-sparc/of_device.h
-index 7cb00c1..b625261 100644
+index b625261..fd8e957 100644
 --- a/include/asm-sparc/of_device.h
 +++ b/include/asm-sparc/of_device.h
-@@ -3,9 +3,9 @@
- #ifdef __KERNEL__
- 
- #include <linux/device.h>
-+#include <linux/of.h>
- #include <linux/mod_devicetable.h>
- #include <asm/openprom.h>
--#include <asm/prom.h>
+@@ -9,7 +9,8 @@
  
  extern struct bus_type ebus_bus_type;
  extern struct bus_type sbus_bus_type;
-@@ -30,19 +30,12 @@ struct of_device
- 	int				portid;
- 	int				clock_freq;
- };
--#define	to_of_device(d) container_of(d, struct of_device, dev)
+-extern struct bus_type of_bus_type;
++extern struct bus_type of_platform_bus_type;
++#define of_bus_type	of_platform_bus_type	/* for compatibility */
  
- extern void __iomem *of_ioremap(struct resource *res, unsigned long offset, unsigned long size, char *name);
- extern void of_iounmap(struct resource *res, void __iomem *base, unsigned long size);
- 
- extern struct of_device *of_find_device_by_node(struct device_node *);
- 
--extern const struct of_device_id *of_match_device(
--	const struct of_device_id *matches, const struct of_device *dev);
--
--extern struct of_device *of_dev_get(struct of_device *dev);
--extern void of_dev_put(struct of_device *dev);
--
  /*
-  * An of_platform_driver driver is attached to a basic of_device on
-  * the ISA, EBUS, and SBUS busses on sparc64.
-@@ -67,13 +60,13 @@ struct of_platform_driver
- extern int of_register_driver(struct of_platform_driver *drv,
- 			      struct bus_type *bus);
- extern void of_unregister_driver(struct of_platform_driver *drv);
--extern int of_device_register(struct of_device *ofdev);
--extern void of_device_unregister(struct of_device *ofdev);
- extern struct of_device *of_platform_device_create(struct device_node *np,
- 						   const char *bus_id,
- 						   struct device *parent,
- 						   struct bus_type *bus);
--extern void of_release_dev(struct device *dev);
-+
-+/* This is just here during the transition */
-+#include <linux/of_device.h>
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_SPARC_OF_DEVICE_H */
+  * The of_device is a kind of "base class" that is a superset of
 diff --git a/include/asm-sparc64/of_device.h b/include/asm-sparc64/of_device.h
-index 60e9173..68048cb 100644
+index 68048cb..daf36eb 100644
 --- a/include/asm-sparc64/of_device.h
 +++ b/include/asm-sparc64/of_device.h
-@@ -3,9 +3,9 @@
- #ifdef __KERNEL__
- 
- #include <linux/device.h>
-+#include <linux/of.h>
- #include <linux/mod_devicetable.h>
- #include <asm/openprom.h>
--#include <asm/prom.h>
- 
+@@ -10,7 +10,8 @@
  extern struct bus_type isa_bus_type;
  extern struct bus_type ebus_bus_type;
-@@ -31,19 +31,12 @@ struct of_device
- 	int				portid;
- 	int				clock_freq;
- };
--#define	to_of_device(d) container_of(d, struct of_device, dev)
+ extern struct bus_type sbus_bus_type;
+-extern struct bus_type of_bus_type;
++extern struct bus_type of_platform_bus_type;
++#define of_bus_type	of_platform_bus_type	/* for compatibility */
  
- extern void __iomem *of_ioremap(struct resource *res, unsigned long offset, unsigned long size, char *name);
- extern void of_iounmap(struct resource *res, void __iomem *base, unsigned long size);
- 
- extern struct of_device *of_find_device_by_node(struct device_node *);
- 
--extern const struct of_device_id *of_match_device(
--	const struct of_device_id *matches, const struct of_device *dev);
--
--extern struct of_device *of_dev_get(struct of_device *dev);
--extern void of_dev_put(struct of_device *dev);
--
  /*
-  * An of_platform_driver driver is attached to a basic of_device on
-  * the ISA, EBUS, and SBUS busses on sparc64.
-@@ -68,13 +61,13 @@ struct of_platform_driver
- extern int of_register_driver(struct of_platform_driver *drv,
- 			      struct bus_type *bus);
- extern void of_unregister_driver(struct of_platform_driver *drv);
--extern int of_device_register(struct of_device *ofdev);
--extern void of_device_unregister(struct of_device *ofdev);
- extern struct of_device *of_platform_device_create(struct device_node *np,
- 						   const char *bus_id,
- 						   struct device *parent,
- 						   struct bus_type *bus);
--extern void of_release_dev(struct device *dev);
-+
-+/* This is just here during the transition */
-+#include <linux/of_device.h>
- 
- #endif /* __KERNEL__ */
- #endif /* _ASM_SPARC64_OF_DEVICE_H */
-diff --git a/include/linux/of_device.h b/include/linux/of_device.h
-new file mode 100644
-index 0000000..91bf84b
---- /dev/null
-+++ b/include/linux/of_device.h
-@@ -0,0 +1,26 @@
-+#ifndef _LINUX_OF_DEVICE_H
-+#define _LINUX_OF_DEVICE_H
-+#ifdef __KERNEL__
-+
-+#include <linux/device.h>
-+#include <linux/of.h>
-+#include <linux/mod_devicetable.h>
-+
-+#include <asm/of_device.h>
-+
-+#define	to_of_device(d) container_of(d, struct of_device, dev)
-+
-+extern const struct of_device_id *of_match_node(
-+	const struct of_device_id *matches, const struct device_node *node);
-+extern const struct of_device_id *of_match_device(
-+	const struct of_device_id *matches, const struct of_device *dev);
-+
-+extern struct of_device *of_dev_get(struct of_device *dev);
-+extern void of_dev_put(struct of_device *dev);
-+
-+extern int of_device_register(struct of_device *ofdev);
-+extern void of_device_unregister(struct of_device *ofdev);
-+extern void of_release_dev(struct device *dev);
-+
-+#endif /* __KERNEL__ */
-+#endif /* _LINUX_OF_DEVICE_H */
+  * The of_device is a kind of "base class" that is a superset of
 -- 
 1.5.1.2
