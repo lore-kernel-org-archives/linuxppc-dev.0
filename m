@@ -1,22 +1,21 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 9926CDDF52
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 10:57:47 +1000 (EST)
-Date: Tue, 1 May 2007 10:58:05 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
-To: Simon Arlott <simon@fire.lp0.eu>
-Subject: Re: Revert "[POWERPC] <various>"
-Message-Id: <20070501105805.a27984d8.sfr@canb.auug.org.au>
-In-Reply-To: <463649D5.9000406@simon.arlott.org.uk>
-References: <46362B14.6090106@simon.arlott.org.uk>
-	<20070430194911.GA1156@aepfle.de>
-	<463649D5.9000406@simon.arlott.org.uk>
-Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Tue__1_May_2007_10_58_05_+1000_l/Q4OEUZ6OcTxTbm"
-Cc: linuxppc-dev@ozlabs.org, Olaf Hering <olaf@aepfle.de>,
-	Mailing List <linux-kernel@vger.kernel.org>, Linux
+Return-Path: <mark@mtfhpc.demon.co.uk>
+Received: from anchor-post-32.mail.demon.net (anchor-post-32.mail.demon.net
+	[194.217.242.90]) by ozlabs.org (Postfix) with ESMTP id 2D2E2DDEF5
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 11:45:23 +1000 (EST)
+Date: Tue, 1 May 2007 02:45:15 +0100 (BST)
+From: Mark Fortescue <mark@mtfhpc.demon.co.uk>
+To: David Miller <davem@davemloft.net>
+Subject: Re: vm changes from linux-2.6.14 to linux-2.6.15
+In-Reply-To: <20070430.173806.112621225.davem@davemloft.net>
+Message-ID: <Pine.LNX.4.61.0705010223040.3556@mtfhpc.demon.co.uk>
+References: <20070430145414.88fda272.akpm@linux-foundation.org>
+	<20070430.150407.07642146.davem@davemloft.net>
+	<1177977619.24962.6.camel@localhost.localdomain>
+	<20070430.173806.112621225.davem@davemloft.net>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII; format=flowed
+Cc: linuxppc-dev@ozlabs.org, wli@holomorphy.com, linux-mm@kvack.org,
+	andrea@suse.de, sparclinux@vger.kernel.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -26,46 +25,65 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Tue__1_May_2007_10_58_05_+1000_l/Q4OEUZ6OcTxTbm
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
 
-On Mon, 30 Apr 2007 20:56:05 +0100 Simon Arlott <simon@fire.lp0.eu> wrote:
+
+On Mon, 30 Apr 2007, David Miller wrote:
+
+> From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+> Date: Tue, 01 May 2007 10:00:19 +1000
 >
-> The reverts themselves are not the real problem, a git bisect could occur
-> between the commit adding it and the one that reverts it. If that commit
-> introduced a bug then surely it would be better to avoid releasing it
-> elsewhere even if it will be reverted in the same batch.
+>>
+>>>> Interesting - thanks for working that out.  Let's keep linux-mm on cc please.
+>>>
+>>> You can't elide the update_mmu_cache() call on sun4c because that will
+>>> miss some critical TLB setups which are performed there.
+>>>
+>>> The sun4c TLB has two tiers of entries:
+>>>
+>>> 1) segment maps, these hold ptes for a range of addresses
+>>> 2) ptes, mapped into segment maps
+>>>
+>>> update_mmu_cache() on sun4c take care of allocating and setting
+>>> up the segment maps, so if you elide the call this never happens
+>>> and we fault forever.
+>>
+>> Maybe we can move that logic to ptep_set_access_flags()... in fact, the
+>> tlb flush logic should be done there too imho.
+>>
+>> There would still be the update_mmu_cache() that we don't want on
+>> powerpc in all cases I suppose. That can be done by having
+>> ptep_set_access_flags() return a boolean indicating wether
+>> update_mmu_cache() shall be called or not ...
+>
+> Always doing ptep_set_access_flags() and returning a boolean like
+> that might be a good idea.
 
-At least one of the reverts was just because the original commit clashed
-with a commit in a different tree (netdev) so that will not cause and
-build or runtime problems.
+At present, update_mmu_cache() and lazy_mmu_prot_update() are always 
+called when ptep_set_access_flags() is called so why not move them into 
+ptep_set_access_flags() and change ptep_set_access_flags() to have an 
+additional boolean parameter (__update) that would when set, cause 
+update_mmu_cache() and lazy_mmu_prot_update() to be called.
 
-> Of course, this is probably difficult to do with git and impossible if
-> someone has cloned the bad commit already and tries to pull :/
+On sun4c, an architecture specific function would be installed that 
+always treats the __update parameter as set at all times.
 
-Not impossible, but it rebases the tree which means that people who have
-pulled the tree need to force their next updates.
+The generic function would change to somthing along the lines:
 
-> Is it possible to mass copy all the good commits to create a clean branch?
+#define ptep_set_access_flags(__vma, __address, \
+                               __ptep, __entry, __dirty, __update)
+do { \
+    if (__update) { \
+        set_pte_at((__vma)->vm_mm, (__address), __ptep, __entry); \
+        flush_tlb_page(__vma, __address); \
+        update_mmu_cache(__vma, __address, __entry); \
+        lazy_mmu_prot_update(__entry); \
+    } else if (__dirty) {
+        flush_tlb_page(__vma, __address); \
+    } \
+} while (0)
 
-It is, but in this case was probably not worth it.
+The code in mm/memory.c and mm/hugetlb.c and the architecture specific 
+versions of ptep_set_access_flags would then be changed acordingly.
 
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
-
---Signature=_Tue__1_May_2007_10_58_05_+1000_l/Q4OEUZ6OcTxTbm
-Content-Type: application/pgp-signature
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD8DBQFGNpCqFdBgD/zoJvwRAlfZAKCVCSIIOzxBuAD+qCnaF2I5s7SfmQCgne8T
-qRlkaUsh6lObaacODN3bDF8=
-=zj1U
------END PGP SIGNATURE-----
-
---Signature=_Tue__1_May_2007_10_58_05_+1000_l/Q4OEUZ6OcTxTbm--
+Regards
+ 	Mark Fortescue.
