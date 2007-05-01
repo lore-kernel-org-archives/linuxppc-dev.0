@@ -1,17 +1,17 @@
 Return-Path: <miltonm@bga.com>
-Received: from kcout01.prserv.net (kcout01.prserv.net [12.154.55.31])
-	by ozlabs.org (Postfix) with ESMTP id 3DB30DDE20
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 03:42:25 +1000 (EST)
+Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
+	by ozlabs.org (Postfix) with ESMTP id 56CA9DDF2A
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 03:44:11 +1000 (EST)
 In-Reply-To: <20070430181954.GB7673@mag.az.mvista.com>
 References: <35d250938c0c5d7dae6a8735343059b7@bga.com>
 	<20070430181954.GB7673@mag.az.mvista.com>
 Mime-Version: 1.0 (Apple Message framework v624)
 Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <b4f15895a468ee9a617acd319a51c328@bga.com>
+Message-Id: <d47bc8a8db1e8b703595cd7dca25b33a@bga.com>
 From: Milton Miller <miltonm@bga.com>
 Subject: Re: [PATCH 12/13] powerpc: Add bootwrapper support for Motorola
 	PrPMC2800 platform
-Date: Tue, 1 May 2007 12:06:48 -0500
+Date: Mon, 30 Apr 2007 23:10:08 -0500
 To: "Mark A. Greer" <mgreer@mvista.com>
 Cc: ppcdev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
