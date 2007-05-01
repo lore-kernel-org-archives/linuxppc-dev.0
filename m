@@ -4,17 +4,16 @@ Received: from az33egw01.freescale.net (az33egw01.freescale.net
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client CN "az33egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F0305DDF4A
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 02:55:50 +1000 (EST)
-Date: Tue, 1 May 2007 11:55:42 -0500
+	by ozlabs.org (Postfix) with ESMTP id 0E49EDDF68
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 03:48:58 +1000 (EST)
+Date: Tue, 1 May 2007 12:48:47 -0500
 From: Scott Wood <scottwood@freescale.com>
-To: jgarzik@pobox.com
-Subject: [PATCH] gianfar: Add I/O barriers when touching buffer descriptor
-	ownership.
-Message-ID: <20070501165542.GA31285@ld0162-tx32.am.freescale.net>
+To: galak@kernel.crashing.org
+Subject: [PATCH 1/2] Fix the PCI ranges in the MPC832x_MDS device tree.
+Message-ID: <20070501174847.GA31612@ld0162-tx32.am.freescale.net>
 Mime-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,46 +23,27 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The hardware must not see that is given ownership of a buffer until it is
-completely written, and when the driver receives ownership of a buffer,
-it must ensure that any other reads to the buffer reflect its final
-state.  Thus, I/O barriers are added where required.
-
-Without this patch, I have observed GCC reordering the setting of
-bdp->length and bdp->status in gfar_new_skb.
+The MPC832x_MDS device tree's PCI non-prefetchable MMIO range was
+specified incorrectly.  Both the local and bus addresses start at
+0x90000000.
 
 Signed-off-by: Scott Wood <scottwood@freescale.com>
 ---
- drivers/net/gianfar.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+ arch/powerpc/boot/dts/mpc832x_mds.dts |    2 +-
+ 1 files changed, 1 insertions(+), 1 deletions(-)
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index b666a0c..f187dc3 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -1025,6 +1025,7 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 
- 	dev->trans_start = jiffies;
- 
-+	iobarrier_w();
- 	txbdp->status = status;
- 
- 	/* If this was the last BD in the ring, the next one */
-@@ -1301,6 +1302,7 @@ struct sk_buff * gfar_new_skb(struct net_device *dev, struct rxbd8 *bdp)
- 	bdp->length = 0;
- 
- 	/* Mark the buffer empty */
-+	iobarrier_w();
- 	bdp->status |= (RXBD_EMPTY | RXBD_INTERRUPT);
- 
- 	return skb;
-@@ -1484,6 +1486,7 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
- 	bdp = priv->cur_rx;
- 
- 	while (!((bdp->status & RXBD_EMPTY) || (--rx_work_limit < 0))) {
-+		iobarrier_r();
- 		skb = priv->rx_skbuff[priv->skb_currx];
- 
- 		if (!(bdp->status &
+diff --git a/arch/powerpc/boot/dts/mpc832x_mds.dts b/arch/powerpc/boot/dts/mpc832x_mds.dts
+index c798491..3c0eeb7 100644
+--- a/arch/powerpc/boot/dts/mpc832x_mds.dts
++++ b/arch/powerpc/boot/dts/mpc832x_mds.dts
+@@ -146,7 +146,7 @@
+ 			interrupt-parent = < &ipic >;
+ 			interrupts = <42 8>;
+ 			bus-range = <0 0>;
+-			ranges = <02000000 0 a0000000 90000000 0 10000000
++			ranges = <02000000 0 90000000 90000000 0 10000000
+ 			          42000000 0 80000000 80000000 0 10000000
+ 			          01000000 0 00000000 d0000000 0 00100000>;
+ 			clock-frequency = <0>;
 -- 
 1.5.0.3
