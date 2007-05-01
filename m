@@ -1,21 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6E59BDDFDC
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 21:34:30 +1000 (EST)
-Subject: Re: Status of snd-powermac?
-From: Johannes Berg <johannes@sipsolutions.net>
-To: anders.gudmundsson@telia.com
-In-Reply-To: <1178013086.7194.24.camel@localhost.localdomain>
-References: <1178013086.7194.24.camel@localhost.localdomain>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-6MqYifvNEOWFNkz6PDRw"
-Date: Tue, 01 May 2007 13:35:06 +0200
-Message-Id: <1178019306.3483.27.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17975.12087.73762.795635@cargo.ozlabs.ibm.com>
+Date: Tue, 1 May 2007 22:14:47 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] powermac: proper sleep management
+In-Reply-To: <1177934887.5102.65.camel@johannes.berg>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<1177746562.3448.10.camel@johannes.berg>
+	<17971.14223.435220.418649@cargo.ozlabs.ibm.com>
+	<1177767996.5102.9.camel@johannes.berg>
+	<17973.32577.253554.707441@cargo.ozlabs.ibm.com>
+	<1177934887.5102.65.camel@johannes.berg>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,36 +23,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Johannes Berg writes:
 
---=-6MqYifvNEOWFNkz6PDRw
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+> I disagree with that, it'll get us no closer to keeping the generic code
+> working for us. It does in fact work now, I've been using it for a long
+> time and a few other people have also tried on older powerbooks. It's
+> also very hard to convince anybody that we need changes in the generic
+> code if at the same time we do our own stuff because "the generic code
+> (you wrote) is not good enough for us anyway."
 
-On Tue, 2007-05-01 at 11:51 +0200, Anders Gudmundsson wrote:
+I think that once we have /sys/power/state working the distros will
+start using it.  I want the old way to keep doing what it was doing
+while the new way is tested and the bugs are shaken out.
 
-> Is the snd-powermac driver to be phased out for the snd-aoa, and is
-> support planned for older cards (PB IV, G3 iBooks etc.) in snd-aoa?
+Bottom line is I'm not going to apply a patch that makes pmu_ioctl
+call pm_suspend.
 
-The structure in snd-aoa allows you to define additional fabrics and
-additional sound busses. Hence, it ought to be fairly simple to write
-support for older cards if you have the hardware and a bit of know-how.
-
-However, I have neither the hardware nor time to do that. Hence, while
-support for those old cards should be possible without much problem, it
-is not planned at the moment.
-
-johannes
-
---=-6MqYifvNEOWFNkz6PDRw
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGNyXp/ETPhpq3jKURAksvAJ4sGtSe5stuGdfuZkRB6eL6ERf0VwCgiDNU
-mzSX3a3Qrw5Q4w0XmDmTYWs=
-=hRsz
------END PGP SIGNATURE-----
-
---=-6MqYifvNEOWFNkz6PDRw--
+Paul.
