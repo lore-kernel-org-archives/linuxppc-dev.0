@@ -1,22 +1,21 @@
-Return-Path: <jengelh@linux01.gwdg.de>
-Received: from mailer.gwdg.de (mailer.gwdg.de [134.76.10.26])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 18CCEDDF36
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 21:20:34 +1000 (EST)
-Date: Tue, 1 May 2007 13:17:42 +0200 (MEST)
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-To: David Miller <davem@davemloft.net>
-Subject: Re: [PATCH 0/11] Consolidation of Open Firmware routines
-In-Reply-To: <20070501.015125.93211061.davem@davemloft.net>
-Message-ID: <Pine.LNX.4.61.0705011311470.18504@yvahk01.tjqt.qr>
-References: <20070501172250.80707fb8.sfr@canb.auug.org.au>
-	<Pine.LNX.4.61.0705011028090.18504@yvahk01.tjqt.qr>
-	<20070501.015125.93211061.davem@davemloft.net>
-MIME-Version: 1.0
-Content-Type: TEXT/PLAIN; charset=US-ASCII
-Cc: sparclinux@vger.kernel.org, sfr@canb.auug.org.au, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 6E59BDDFDC
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 21:34:30 +1000 (EST)
+Subject: Re: Status of snd-powermac?
+From: Johannes Berg <johannes@sipsolutions.net>
+To: anders.gudmundsson@telia.com
+In-Reply-To: <1178013086.7194.24.camel@localhost.localdomain>
+References: <1178013086.7194.24.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-6MqYifvNEOWFNkz6PDRw"
+Date: Tue, 01 May 2007 13:35:06 +0200
+Message-Id: <1178019306.3483.27.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,25 +26,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On May 1 2007 01:51, David Miller wrote:
->From: Jan Engelhardt <jengelh@linux01.gwdg.de>
->Date: Tue, 1 May 2007 10:30:02 +0200 (MEST)
->
->> but i'd kinda want drivers/openfirmware, even if it's a bit longer.
->
->So much for the unix sense of elegance in short names.
->I think there is zero confusion about what "of" is.
+--=-6MqYifvNEOWFNkz6PDRw
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-A prepositional word in the English language, as
-http://en.wiktionary.org/wiki/of tells me. And it's used quite often placed
-2nd.
-Just see http://ask.slashdot.org/article.pl?sid=07/03/03/028258
-If it ___really___ ought to be short worded, at least have it OFW.
-(Or make it drivers/ieee1275 so it can make friends with ieee1394)
-But I still discourage of. The next thing people want for their
-not-so-open firmware is drivers/f.
+On Tue, 2007-05-01 at 11:51 +0200, Anders Gudmundsson wrote:
 
+> Is the snd-powermac driver to be phased out for the snd-aoa, and is
+> support planned for older cards (PB IV, G3 iBooks etc.) in snd-aoa?
 
+The structure in snd-aoa allows you to define additional fabrics and
+additional sound busses. Hence, it ought to be fairly simple to write
+support for older cards if you have the hardware and a bit of know-how.
 
-Jan
--- 
+However, I have neither the hardware nor time to do that. Hence, while
+support for those old cards should be possible without much problem, it
+is not planned at the moment.
+
+johannes
+
+--=-6MqYifvNEOWFNkz6PDRw
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGNyXp/ETPhpq3jKURAksvAJ4sGtSe5stuGdfuZkRB6eL6ERf0VwCgiDNU
+mzSX3a3Qrw5Q4w0XmDmTYWs=
+=hRsz
+-----END PGP SIGNATURE-----
+
+--=-6MqYifvNEOWFNkz6PDRw--
