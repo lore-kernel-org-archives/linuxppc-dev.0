@@ -2,15 +2,15 @@ Return-Path: <dhlii@dlasys.net>
 Received: from mx.dlasys.net (24.152.213.223.res-cmts.eph.ptd.net
 	[24.152.213.223]) (using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 31C8DDDF5C
+	by ozlabs.org (Postfix) with ESMTP id 9B385DDFA2
 	for <linuxppc-embedded@ozlabs.org>;
-	Tue,  1 May 2007 14:29:34 +1000 (EST)
+	Tue,  1 May 2007 14:35:39 +1000 (EST)
 Received: from [206.223.20.140]
 	by mx.dlasys.net with esmtp (Exim 4.63 #1 (Debian))
-	id 1Hijx0-0008JH-2T
-	for <linuxppc-embedded@ozlabs.org>; Tue, 01 May 2007 00:26:54 -0400
-Message-ID: <4636C1D7.9090309@dlasys.net>
-Date: Tue, 01 May 2007 00:28:07 -0400
+	id 1Hik3i-0000Al-5t
+	for <linuxppc-embedded@ozlabs.org>; Tue, 01 May 2007 00:33:50 -0400
+Message-ID: <4636C377.4070101@dlasys.net>
+Date: Tue, 01 May 2007 00:35:03 -0400
 From: "David H. Lynch Jr." <dhlii@dlasys.net>
 MIME-Version: 1.0
 To: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
@@ -21,7 +21,8 @@ References: <1176622062492-git-send-email-grant.likely@secretlab.ca>
 	<87d51sac8l.fsf@sleipner.barco.com>
 	<528646bc0704271149w211bd5cbscb467123ab962703@mail.gmail.com>
 	<87slai5vz3.fsf@sleipner.barco.com>
-In-Reply-To: <87slai5vz3.fsf@sleipner.barco.com>
+	<528646bc0704292141n322c145cmc3d2606b13b0b053@mail.gmail.com>
+In-Reply-To: <528646bc0704292141n322c145cmc3d2606b13b0b053@mail.gmail.com>
 Content-Type: text/plain; charset=ISO-8859-1
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -33,51 +34,46 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Peter Korsgaard wrote:
-> GL> Alternate suggestion: Can we change virtex support to use the
-> GL> structure defined in ppcboot.h instead?  (I've actually got that
-> GL> change in my tree and was planning on posting it for review today
-> GL> or tomorrow).  bd_t is a stinking ugly mess, but things would be
-> GL> better if we standardize all virtex platforms on the stinking ugly
-> GL> mess shared by almost all the other ppc embedded board ports.
+Grant Likely wrote:
 >
-> That's where the ugly mess pops up - RedBoot uses another
-> (incompatible) bd_t definition than U-boot, E.G:
+> Is the redboot bd_info structure already in the kernel tree?  We could
+> use a config option to select between the u-boot and redboot
+> structures for all virtex platforms.  That would keep the uglyness
+> down to a minimum.
 >
-> typedef struct bd_info {
-> 	unsigned int   bi_tag;        /* Should be 0x42444944 "BDID" */
+> g.
 >   
-snip
-> 	
-> 	int            bi_flashwidth; /* Width (8,16,32,64) */
-> 	unsigned char *bi_cmdline;    /* Pointer to command line */
-> } bd_t;
->
-> I should probably migrate to U-boot anyway, but still ..
->   
+There are a plethora of bd_info's in the kernel tree. I think that
+u-boot is probably the most common,
+but the u-boot one is huge and full of cruft.
+There are also likely to be any number for board/loader combinations
+that are not in the kernel.
+I have cut an pasted ours below - not that I am trying to sell it.
 
-    Can we please not standardize on some specific implimentation of
-bd_info ?
-   
-    We have our own bootloader - actually a monitor. It does alot of
-things besides boot Linux.
-    and it does so in less than 16K.
-    our bd_info struct is used to pass info to OS's besides Linux.
-    It does not have all the crap the u-boot bd_info has in it that has
-no meaning for us.
-    But it does have some things that are very specific to our
-hardware/firmware.
+But I would prefer that if there is a bd_info struct that it be defined
+by the board not virtex.h or virtex.c.
 
-    It took a quick look at Grant's virtex patches, and will try to test
-them with our cards,
-    as soon as I can, but the inclusion of a specific virtex bd_info
-leapt out instantly as something
-    I would have to patch.
-
-    Besides, I am not current on the powerpc tree but isn't this kind of
-thing what device trees are
-    supposed to be about and don't we have to do that anyway to migrate
-to the powerpc tree ?
+ //Information passed to program when it is executed.
+ typedef struct _BOARD_INFO
+   {uint32_t  bi_signature;       // 0x00 valid bi signature
+    uint32_t  bi_memMax;          // 0x04 DRAM installed, maximum byte
+address
+    uint32_t  bi_intfreq;         // 0x08 Processor speed, in Hz
+    uint32_t  bi_busfreq;         // 0x0C PLB Bus speed, in Hz
+    uint32_t  bi_version;         // 0x10 local pico number format #.##,
+eg 3.09
+    uint8_t  *bi_cmdline;         // 0x14
+    uint32_t  bi_capabilities;    // 0x18 Pico capabilities mask
+    uint32_t  bi_debug;           // 0x1C Pico flags mask
+    uint32_t  bi_flashstart;      // 0x20 start of FLASH memory
+    uint32_t  bi_flashsize;       // 0x24 size  of FLASH memory
+    uint32_t  bi_envSize;         // 0x28 environment size
+    uint8_t   bi_enetaddr[6];     // 0x2C Local Ethernet MAC address
+    uint16_t  bi_cflags;          // 0x32 console flags
+    char     *bi_envP;            // 0x34 pointer to environment string
+    uint32_t  bi_model;           // 0x38 0x0E16'FX', (ie 0x0E164658) etc 
+    uint32_t  bi_resv;            // 0x38 reserved
+   } BOARD_INFO;                  // 0x40
 
 
 
