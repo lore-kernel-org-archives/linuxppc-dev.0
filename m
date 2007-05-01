@@ -1,20 +1,17 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 54E28DDF29
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 06:04:20 +1000 (EST)
-Date: Tue, 01 May 2007 12:36:01 -0700 (PDT)
-Message-Id: <20070501.123601.115907128.davem@davemloft.net>
-To: jengelh@linux01.gwdg.de
-Subject: Re: [PATCH 0/11] Consolidation of Open Firmware routines
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.61.0705011311470.18504@yvahk01.tjqt.qr>
-References: <Pine.LNX.4.61.0705011028090.18504@yvahk01.tjqt.qr>
-	<20070501.015125.93211061.davem@davemloft.net>
-	<Pine.LNX.4.61.0705011311470.18504@yvahk01.tjqt.qr>
-Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sparclinux@vger.kernel.org, sfr@canb.auug.org.au, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
+Return-Path: <g.liakhovetski@gmx.de>
+Received: from mail.gmx.net (mail.gmx.net [213.165.64.20])
+	by ozlabs.org (Postfix) with SMTP id 15477DDF33
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 07:03:01 +1000 (EST)
+Date: Tue, 1 May 2007 23:03:01 +0200 (CEST)
+From: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+To: Stefan Roese <ml@stefan-roese.de>
+Subject: Re: Correct location for ADC/DAC drivers
+In-Reply-To: <200705011435.45046.ml@stefan-roese.de>
+Message-ID: <Pine.LNX.4.60.0705012301500.4972@poirot.grange>
+References: <200705011435.45046.ml@stefan-roese.de>
+MIME-Version: 1.0
+Content-Type: TEXT/PLAIN; charset=US-ASCII
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,25 +21,17 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Date: Tue, 1 May 2007 13:17:42 +0200 (MEST)
+On Tue, 1 May 2007, Stefan Roese wrote:
 
-> 
-> On May 1 2007 01:51, David Miller wrote:
-> >From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-> >Date: Tue, 1 May 2007 10:30:02 +0200 (MEST)
-> >
-> >> but i'd kinda want drivers/openfirmware, even if it's a bit longer.
-> >
-> >So much for the unix sense of elegance in short names.
-> >I think there is zero confusion about what "of" is.
-> 
-> A prepositional word in the English language, as
-> http://en.wiktionary.org/wiki/of tells me. And it's used quite often placed
-> 2nd.
-> Just see http://ask.slashdot.org/article.pl?sid=07/03/03/028258
+> I'm in the stage of integrating some ADC and DAC drivers for the AMCC 405EZ 
+> PPC and looking for the correct location to place these drivers in the Linux 
+> source tree. The drivers are basically character-drivers, so my first thought 
+> is to put them in "drivers/char/adc/foo.c" or "drivers/char/adc_foo.c". Is 
+> this a good solution?
 
-Stop this sillyness.
+drivers/mfd following ucb1x00?
 
-If it feels out of context, which "of" will here, people know
-to consider it's probably an acronym of some kind.
+Thanks
+Guennadi
+---
+Guennadi Liakhovetski
