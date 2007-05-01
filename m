@@ -1,19 +1,23 @@
-Return-Path: <davem@davemloft.net>
-Received: from sunset.davemloft.net (unknown [74.93.104.97])
-	by ozlabs.org (Postfix) with ESMTP id 44576DDF8F
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 18:51:26 +1000 (EST)
-Date: Tue, 01 May 2007 01:51:25 -0700 (PDT)
-Message-Id: <20070501.015125.93211061.davem@davemloft.net>
-To: jengelh@linux01.gwdg.de
-Subject: Re: [PATCH 0/11] Consolidation of Open Firmware routines
-From: David Miller <davem@davemloft.net>
-In-Reply-To: <Pine.LNX.4.61.0705011028090.18504@yvahk01.tjqt.qr>
-References: <20070501172250.80707fb8.sfr@canb.auug.org.au>
-	<Pine.LNX.4.61.0705011028090.18504@yvahk01.tjqt.qr>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 96CA2DDFAC
+	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 18:54:24 +1000 (EST)
+Subject: Re: [PATCH v3] powermac: proper sleep management
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <1177933488.5102.41.camel@johannes.berg>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<1177746562.3448.10.camel@johannes.berg>
+	<1177933488.5102.41.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-E+COgnFiJxjI2ctX8uQr"
+Date: Tue, 01 May 2007 10:55:01 +0200
+Message-Id: <1178009702.3483.6.camel@johannes.berg>
 Mime-Version: 1.0
-Content-Type: Text/Plain; charset=us-ascii
-Cc: sparclinux@vger.kernel.org, sfr@canb.auug.org.au, paulus@samba.org,
-	linuxppc-dev@ozlabs.org
+Cc: linuxppc-dev@ozlabs.org, David Woodhouse <dwmw2@infradead.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,11 +27,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-From: Jan Engelhardt <jengelh@linux01.gwdg.de>
-Date: Tue, 1 May 2007 10:30:02 +0200 (MEST)
 
-> but i'd kinda want drivers/openfirmware, even if it's a bit longer.
+--=-E+COgnFiJxjI2ctX8uQr
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-So much for the unix sense of elegance in short names.
+On Mon, 2007-04-30 at 13:44 +0200, Johannes Berg wrote:
 
-I think there is zero confusion about what "of" is.
+>  and will break suspend to disk until
+> "rework-pm_ops-pm_disk_mode-kill-misuse.patch" from -mm is merged
+> (which
+> should be soon, I asked akpm to send it early if possible.)
+
+This has now happened, commit fe0c935a6cbf25d72a27c7a345df8a2151de0b74
+
+johannes
+
+--=-E+COgnFiJxjI2ctX8uQr
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGNwBl/ETPhpq3jKURAi7pAJ4jx2XYj4a8BsL1ZrbcDjgEzYh03ACcC2f4
+M5M12iKcMBlnycNDg68g5Pg=
+=nKrR
+-----END PGP SIGNATURE-----
+
+--=-E+COgnFiJxjI2ctX8uQr--
