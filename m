@@ -1,26 +1,27 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 564DDDDEF0
+Return-Path: <domen@coderock.org>
+Received: from kukmak.uni-mb.si (kukmak.uni-mb.si [164.8.100.3])
+	by ozlabs.org (Postfix) with ESMTP id 5C20EDDDE7
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 May 2007 00:26:36 +1000 (EST)
-Date: Tue, 1 May 2007 09:26:24 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Alex Zeffertt <ajz@cambridgebroadband.com>
-Subject: Re: Anyone using mpc832x_mds & freescale's GIT repo?
-Message-Id: <20070501092624.679c080b.kim.phillips@freescale.com>
-In-Reply-To: <46374938.6090707@cambridgebroadband.com>
-References: <4636081D.2000507@cambridgebroadband.com>
-	<20070430135200.23bb6bbf.kim.phillips@freescale.com>
-	<46370991.3010802@cambridgebroadband.com>
-	<20070501090006.4c9f5723.kim.phillips@freescale.com>
-	<46374938.6090707@cambridgebroadband.com>
+	Wed,  2 May 2007 05:55:18 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by kukmak.uni-mb.si (Postfix) with ESMTP id B3D45BEE6C
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  1 May 2007 21:37:36 +0200 (CEST)
+Received: from localhost ([127.0.0.1])
+	by localhost (kukmak.uni-mb.si [127.0.0.1]) (amavisd-new, port 10024)
+	with LMTP id 16557-02 for <linuxppc-embedded@ozlabs.org>;
+	Tue,  1 May 2007 21:37:27 +0200 (CEST)
+Received: from localhost (um-sd06-229-2.uni-mb.si [164.8.213.91])
+	by kukmak.uni-mb.si (Postfix) with ESMTP id 5326FBEE65
+	for <linuxppc-embedded@ozlabs.org>;
+	Tue,  1 May 2007 21:37:27 +0200 (CEST)
+Date: Tue, 1 May 2007 21:37:27 +0200
+From: Domen Puncer <domen@coderock.org>
+To: linuxppc-embedded@ozlabs.org
+Subject: [PATCH] enable compile on !CONFIG_PCI and CONFIG_PPC_EFIKA
+Message-ID: <20070501193727.GA2822@nd47.coderock.org>
 Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,14 +32,35 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On Tue, 01 May 2007 15:05:44 +0100
-Alex Zeffertt <ajz@cambridgebroadband.com> wrote:
+Trivial fix to enable compile on !CONFIG_PCI and CONFIG_PPC_EFIKA
 
-> 
-> Would you recommend using powerpc.git v2.6.21 in preference to the 2.6.11
-> kernel that comes with the latest Freescale BSP (MPC832xE_MDS_K26_20070130-LTIB.iso)?
 
-personally, and in general, yes.  But it really depends on your
-application, device driver requirements, etc..
+Signed-off-by: Domen Puncer <domen.puncer@telargo.com>
 
-Kim
+---
+Used in arch/powerpc/platforms/52xx/efika.c by
+define_machine(efika) { .phys_mem_access_prot = }
+
+
+ include/asm-powerpc/pci.h |    4 ++++
+ 1 file changed, 4 insertions(+)
+
+Index: grant.git/include/asm-powerpc/pci.h
+===================================================================
+--- grant.git.orig/include/asm-powerpc/pci.h
++++ grant.git/include/asm-powerpc/pci.h
+@@ -240,10 +240,14 @@ extern int pci_read_irq_line(struct pci_
+ extern void pcibios_add_platform_entries(struct pci_dev *dev);
+ 
+ struct file;
++#ifdef CONFIG_PCI
+ extern pgprot_t	pci_phys_mem_access_prot(struct file *file,
+ 					 unsigned long pfn,
+ 					 unsigned long size,
+ 					 pgprot_t prot);
++#else
++#define pci_phys_mem_access_prot NULL
++#endif
+ 
+ #define HAVE_ARCH_PCI_RESOURCE_TO_USER
+ extern void pci_resource_to_user(const struct pci_dev *dev, int bar,
