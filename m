@@ -1,12 +1,12 @@
 Return-Path: <sfr@canb.auug.org.au>
 Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 03896DDFEB
+	by ozlabs.org (Postfix) with ESMTP id B67EFDE00A
 	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 17:35:46 +1000 (EST)
-Date: Tue, 1 May 2007 17:25:37 +1000
+Date: Tue, 1 May 2007 17:26:29 +1000
 From: Stephen Rothwell <sfr@canb.auug.org.au>
 To: "David S. Miller" <davem@davemloft.net>, paulus@samba.org
-Subject: [PATCH 02/11] Start split out of common open firmware code
-Message-Id: <20070501172537.3bea0c1a.sfr@canb.auug.org.au>
+Subject: [PATCH 03/11] Consolidate of_device_is_compatible
+Message-Id: <20070501172629.13229dc5.sfr@canb.auug.org.au>
 In-Reply-To: <20070501172250.80707fb8.sfr@canb.auug.org.au>
 References: <20070501172250.80707fb8.sfr@canb.auug.org.au>
 Mime-Version: 1.0
@@ -21,378 +21,191 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This creates drivers/of/base.c (depending on CONFIG_OF) and puts
-the first trivially common bits from the prom.c files into it.
+The only difference here is that Sparc uses strncmp to match compatibility
+names while PowerPC uses strncasecmp.
 
 Signed-off-by: Stephen Rothwell <sfr@canb.auug.org.au>
 ---
- arch/powerpc/Kconfig       |    3 ++
- arch/powerpc/kernel/prom.c |   42 ----------------------------
- arch/sparc/Kconfig         |    3 ++
- arch/sparc/kernel/prom.c   |   42 ----------------------------
- arch/sparc64/Kconfig       |    3 ++
- arch/sparc64/kernel/prom.c |   42 ----------------------------
- drivers/Makefile           |    1 +
- drivers/of/Makefile        |    1 +
- drivers/of/base.c          |   65 ++++++++++++++++++++++++++++++++++++++++++++
- include/asm-powerpc/prom.h |    3 ++
- include/asm-sparc/prom.h   |    3 ++
- include/asm-sparc64/prom.h |    3 ++
- 12 files changed, 85 insertions(+), 126 deletions(-)
- create mode 100644 drivers/of/Makefile
- create mode 100644 drivers/of/base.c
+ arch/powerpc/kernel/prom.c |   25 -------------------------
+ arch/sparc/kernel/prom.c   |   21 ---------------------
+ arch/sparc64/kernel/prom.c |   21 ---------------------
+ drivers/of/base.c          |   24 ++++++++++++++++++++++++
+ include/asm-powerpc/prom.h |    2 ++
+ include/asm-sparc/prom.h   |    2 ++
+ include/asm-sparc64/prom.h |    2 ++
+ 7 files changed, 30 insertions(+), 67 deletions(-)
 
 -- 
 Cheers,
 Stephen Rothwell                    sfr@canb.auug.org.au
 
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index a54a9a2..1a78c01 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -99,6 +99,9 @@ config ARCH_MAY_HAVE_PC_FDC
- config PPC_OF
- 	def_bool y
- 
-+config OF
-+	def_bool y
-+
- config PPC_UDBG_16550
- 	bool
- 	default n
 diff --git a/arch/powerpc/kernel/prom.c b/arch/powerpc/kernel/prom.c
-index caef555..d701e89 100644
+index d701e89..723df55 100644
 --- a/arch/powerpc/kernel/prom.c
 +++ b/arch/powerpc/kernel/prom.c
-@@ -1042,36 +1042,6 @@ void __init early_init_devtree(void *params)
+@@ -1042,31 +1042,6 @@ void __init early_init_devtree(void *params)
  
  #undef printk
  
--int of_n_addr_cells(struct device_node* np)
--{
--	const int *ip;
--	do {
--		if (np->parent)
--			np = np->parent;
--		ip = of_get_property(np, "#address-cells", NULL);
--		if (ip != NULL)
--			return *ip;
--	} while (np->parent);
--	/* No #address-cells property for the root node, default to 1 */
--	return 1;
--}
--EXPORT_SYMBOL(of_n_addr_cells);
--
--int of_n_size_cells(struct device_node* np)
--{
--	const int* ip;
--	do {
--		if (np->parent)
--			np = np->parent;
--		ip = of_get_property(np, "#size-cells", NULL);
--		if (ip != NULL)
--			return *ip;
--	} while (np->parent);
--	/* No #size-cells property for the root node, default to 1 */
--	return 1;
--}
--EXPORT_SYMBOL(of_n_size_cells);
--
- /** Checks if the given "compat" string matches one of the strings in
-  * the device's "compatible" property
-  */
-@@ -1529,18 +1499,6 @@ struct property *of_find_property(const struct device_node *np,
- EXPORT_SYMBOL(of_find_property);
- 
- /*
-- * Find a property with a given name for a given node
-- * and return the value.
+-/** Checks if the given "compat" string matches one of the strings in
+- * the device's "compatible" property
 - */
--const void *of_get_property(const struct device_node *np, const char *name,
--			 int *lenp)
+-int of_device_is_compatible(const struct device_node *device,
+-		const char *compat)
 -{
--	struct property *pp = of_find_property(np,name,lenp);
--	return pp ? pp->value : NULL;
--}
--EXPORT_SYMBOL(of_get_property);
+-	const char* cp;
+-	int cplen, l;
 -
--/*
-  * Add a property to a node
-  */
- int prom_add_property(struct device_node* np, struct property* prop)
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index bd992c0..23bcc7e 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -21,6 +21,9 @@ config GENERIC_ISA_DMA
- 	bool
- 	default y
- 
-+config OF
-+	def_bool y
-+
- source "init/Kconfig"
- 
- menu "General machine setup"
+-	cp = of_get_property(device, "compatible", &cplen);
+-	if (cp == NULL)
+-		return 0;
+-	while (cplen > 0) {
+-		if (strncasecmp(cp, compat, strlen(compat)) == 0)
+-			return 1;
+-		l = strlen(cp) + 1;
+-		cp += l;
+-		cplen -= l;
+-	}
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(of_device_is_compatible);
+-
+-
+ /**
+  * Indicates whether the root node has a given value in its
+  * compatible property.
 diff --git a/arch/sparc/kernel/prom.c b/arch/sparc/kernel/prom.c
-index eed140b..ac3f3c2 100644
+index ac3f3c2..f2ce0d4 100644
 --- a/arch/sparc/kernel/prom.c
 +++ b/arch/sparc/kernel/prom.c
-@@ -168,18 +168,6 @@ struct property *of_find_property(const struct device_node *np,
- }
- EXPORT_SYMBOL(of_find_property);
+@@ -32,27 +32,6 @@ static struct device_node *allnodes;
+  */
+ static DEFINE_RWLOCK(devtree_lock);
  
--/*
-- * Find a property with a given name for a given node
-- * and return the value.
-- */
--const void *of_get_property(const struct device_node *np, const char *name,
--			    int *lenp)
+-int of_device_is_compatible(const struct device_node *device,
+-			    const char *compat)
 -{
--	struct property *pp = of_find_property(np,name,lenp);
--	return pp ? pp->value : NULL;
--}
--EXPORT_SYMBOL(of_get_property);
+-	const char* cp;
+-	int cplen, l;
 -
- int of_getintprop_default(struct device_node *np, const char *name, int def)
+-	cp = of_get_property(device, "compatible", &cplen);
+-	if (cp == NULL)
+-		return 0;
+-	while (cplen > 0) {
+-		if (strncmp(cp, compat, strlen(compat)) == 0)
+-			return 1;
+-		l = strlen(cp) + 1;
+-		cp += l;
+-		cplen -= l;
+-	}
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(of_device_is_compatible);
+-
+ struct device_node *of_get_parent(const struct device_node *node)
  {
- 	struct property *prop;
-@@ -193,36 +181,6 @@ int of_getintprop_default(struct device_node *np, const char *name, int def)
- }
- EXPORT_SYMBOL(of_getintprop_default);
- 
--int of_n_addr_cells(struct device_node *np)
--{
--	const int* ip;
--	do {
--		if (np->parent)
--			np = np->parent;
--		ip = of_get_property(np, "#address-cells", NULL);
--		if (ip != NULL)
--			return *ip;
--	} while (np->parent);
--	/* No #address-cells property for the root node, default to 2 */
--	return 2;
--}
--EXPORT_SYMBOL(of_n_addr_cells);
--
--int of_n_size_cells(struct device_node *np)
--{
--	const int* ip;
--	do {
--		if (np->parent)
--			np = np->parent;
--		ip = of_get_property(np, "#size-cells", NULL);
--		if (ip != NULL)
--			return *ip;
--	} while (np->parent);
--	/* No #size-cells property for the root node, default to 1 */
--	return 1;
--}
--EXPORT_SYMBOL(of_n_size_cells);
--
- int of_set_property(struct device_node *dp, const char *name, void *val, int len)
- {
- 	struct property **prevp;
-diff --git a/arch/sparc64/Kconfig b/arch/sparc64/Kconfig
-index 590a41b..45a7bec 100644
---- a/arch/sparc64/Kconfig
-+++ b/arch/sparc64/Kconfig
-@@ -58,6 +58,9 @@ config AUDIT_ARCH
- 	bool
- 	default y
- 
-+config OF
-+	def_bool y
-+
- choice
- 	prompt "Kernel page size"
- 	default SPARC64_PAGE_SIZE_8KB
+ 	struct device_node *np;
 diff --git a/arch/sparc64/kernel/prom.c b/arch/sparc64/kernel/prom.c
-index 5e1fcd0..7ef5488 100644
+index 7ef5488..d6dd972 100644
 --- a/arch/sparc64/kernel/prom.c
 +++ b/arch/sparc64/kernel/prom.c
-@@ -172,18 +172,6 @@ struct property *of_find_property(const struct device_node *np,
- }
- EXPORT_SYMBOL(of_find_property);
+@@ -36,27 +36,6 @@ static struct device_node *allnodes;
+  */
+ static DEFINE_RWLOCK(devtree_lock);
  
--/*
-- * Find a property with a given name for a given node
-- * and return the value.
-- */
--const void *of_get_property(const struct device_node *np, const char *name,
--		      int *lenp)
+-int of_device_is_compatible(const struct device_node *device,
+-			    const char *compat)
 -{
--	struct property *pp = of_find_property(np,name,lenp);
--	return pp ? pp->value : NULL;
--}
--EXPORT_SYMBOL(of_get_property);
+-	const char* cp;
+-	int cplen, l;
 -
- int of_getintprop_default(struct device_node *np, const char *name, int def)
+-	cp = of_get_property(device, "compatible", &cplen);
+-	if (cp == NULL)
+-		return 0;
+-	while (cplen > 0) {
+-		if (strncmp(cp, compat, strlen(compat)) == 0)
+-			return 1;
+-		l = strlen(cp) + 1;
+-		cp += l;
+-		cplen -= l;
+-	}
+-
+-	return 0;
+-}
+-EXPORT_SYMBOL(of_device_is_compatible);
+-
+ struct device_node *of_get_parent(const struct device_node *node)
  {
- 	struct property *prop;
-@@ -197,36 +185,6 @@ int of_getintprop_default(struct device_node *np, const char *name, int def)
- }
- EXPORT_SYMBOL(of_getintprop_default);
- 
--int of_n_addr_cells(struct device_node *np)
--{
--	const int* ip;
--	do {
--		if (np->parent)
--			np = np->parent;
--		ip = of_get_property(np, "#address-cells", NULL);
--		if (ip != NULL)
--			return *ip;
--	} while (np->parent);
--	/* No #address-cells property for the root node, default to 2 */
--	return 2;
--}
--EXPORT_SYMBOL(of_n_addr_cells);
--
--int of_n_size_cells(struct device_node *np)
--{
--	const int* ip;
--	do {
--		if (np->parent)
--			np = np->parent;
--		ip = of_get_property(np, "#size-cells", NULL);
--		if (ip != NULL)
--			return *ip;
--	} while (np->parent);
--	/* No #size-cells property for the root node, default to 1 */
--	return 1;
--}
--EXPORT_SYMBOL(of_n_size_cells);
--
- int of_set_property(struct device_node *dp, const char *name, void *val, int len)
- {
- 	struct property **prevp;
-diff --git a/drivers/Makefile b/drivers/Makefile
-index 920c975..2065b99 100644
---- a/drivers/Makefile
-+++ b/drivers/Makefile
-@@ -80,3 +80,4 @@ obj-$(CONFIG_GENERIC_TIME)	+= clocksource/
- obj-$(CONFIG_DMA_ENGINE)	+= dma/
- obj-$(CONFIG_HID)		+= hid/
- obj-$(CONFIG_PPC_PS3)		+= ps3/
-+obj-$(CONFIG_OF)		+= of/
-diff --git a/drivers/of/Makefile b/drivers/of/Makefile
-new file mode 100644
-index 0000000..cddbe84
---- /dev/null
-+++ b/drivers/of/Makefile
-@@ -0,0 +1 @@
-+obj-y = base.o
+ 	struct device_node *np;
 diff --git a/drivers/of/base.c b/drivers/of/base.c
-new file mode 100644
-index 0000000..723d80d
---- /dev/null
+index 723d80d..d6dc5e7 100644
+--- a/drivers/of/base.c
 +++ b/drivers/of/base.c
-@@ -0,0 +1,65 @@
-+/*
-+ * Procedures for creating, accessing and interpreting the device tree.
-+ *
-+ * Paul Mackerras	August 1996.
-+ * Copyright (C) 1996-2005 Paul Mackerras.
-+ *
-+ *  Adapted for 64bit PowerPC by Dave Engebretsen and Peter Bergner.
-+ *    {engebret|bergner}@us.ibm.com
-+ *
-+ *  Adapted for sparc and sparc64 by David S. Miller davem@davemloft.net
-+ *
-+ *  Reconsolidated from arch/x/kernel/prom.c by Stephen Rothwell.
-+ *
-+ *      This program is free software; you can redistribute it and/or
-+ *      modify it under the terms of the GNU General Public License
-+ *      as published by the Free Software Foundation; either version
-+ *      2 of the License, or (at your option) any later version.
+@@ -63,3 +63,27 @@ const void *of_get_property(const struct device_node *np, const char *name,
+ 	return pp ? pp->value : NULL;
+ }
+ EXPORT_SYMBOL(of_get_property);
++
++/** Checks if the given "compat" string matches one of the strings in
++ * the device's "compatible" property
 + */
-+#include <linux/module.h>
-+#include <linux/of.h>
-+
-+int of_n_addr_cells(struct device_node *np)
++int of_device_is_compatible(const struct device_node *device,
++		const char *compat)
 +{
-+	const int *ip;
++	const char* cp;
++	int cplen, l;
 +
-+	do {
-+		if (np->parent)
-+			np = np->parent;
-+		ip = of_get_property(np, "#address-cells", NULL);
-+		if (ip)
-+			return *ip;
-+	} while (np->parent);
-+	/* No #address-cells property for the root node */
-+	return OF_ROOT_NODE_ADDR_CELLS_DEFAULT;
++	cp = of_get_property(device, "compatible", &cplen);
++	if (cp == NULL)
++		return 0;
++	while (cplen > 0) {
++		if (of_compat_cmp(cp, compat, strlen(compat)) == 0)
++			return 1;
++		l = strlen(cp) + 1;
++		cp += l;
++		cplen -= l;
++	}
++
++	return 0;
 +}
-+EXPORT_SYMBOL(of_n_addr_cells);
-+
-+int of_n_size_cells(struct device_node *np)
-+{
-+	const int *ip;
-+
-+	do {
-+		if (np->parent)
-+			np = np->parent;
-+		ip = of_get_property(np, "#size-cells", NULL);
-+		if (ip)
-+			return *ip;
-+	} while (np->parent);
-+	/* No #size-cells property for the root node */
-+	return OF_ROOT_NODE_SIZE_CELLS_DEFAULT;
-+}
-+EXPORT_SYMBOL(of_n_size_cells);
-+
-+/*
-+ * Find a property with a given name for a given node
-+ * and return the value.
-+ */
-+const void *of_get_property(const struct device_node *np, const char *name,
-+			 int *lenp)
-+{
-+	struct property *pp = of_find_property(np, name, lenp);
-+
-+	return pp ? pp->value : NULL;
-+}
-+EXPORT_SYMBOL(of_get_property);
++EXPORT_SYMBOL(of_device_is_compatible);
 diff --git a/include/asm-powerpc/prom.h b/include/asm-powerpc/prom.h
-index 7c77ef1..4c28c2c 100644
+index 4c28c2c..1417dce 100644
 --- a/include/asm-powerpc/prom.h
 +++ b/include/asm-powerpc/prom.h
-@@ -22,6 +22,9 @@
- #include <asm/atomic.h>
- #include <asm/io.h>
+@@ -25,6 +25,8 @@
+ #define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	1
+ #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
  
-+#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	1
-+#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
++#define of_compat_cmp(s1, s2, l)	strncasecmp((s1), (s2), (l))
 +
  /* Definitions used by the flattened device tree */
  #define OF_DT_HEADER		0xd00dfeed	/* marker */
  #define OF_DT_BEGIN_NODE	0x1		/* Start of node, full name */
 diff --git a/include/asm-sparc/prom.h b/include/asm-sparc/prom.h
-index 1e0e9da..b307471 100644
+index b307471..f314ec6 100644
 --- a/include/asm-sparc/prom.h
 +++ b/include/asm-sparc/prom.h
-@@ -20,6 +20,9 @@
- #include <linux/proc_fs.h>
- #include <asm/atomic.h>
+@@ -23,6 +23,8 @@
+ #define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	2
+ #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
  
-+#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	2
-+#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
++#define of_compat_cmp(s1, s2, l)	strncmp((s1), (s2), (l))
 +
  typedef u32 phandle;
  typedef u32 ihandle;
  
 diff --git a/include/asm-sparc64/prom.h b/include/asm-sparc64/prom.h
-index 288d78d..12bb084 100644
+index 12bb084..06edb32 100644
 --- a/include/asm-sparc64/prom.h
 +++ b/include/asm-sparc64/prom.h
-@@ -20,6 +20,9 @@
- #include <linux/proc_fs.h>
- #include <asm/atomic.h>
+@@ -23,6 +23,8 @@
+ #define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	2
+ #define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
  
-+#define OF_ROOT_NODE_ADDR_CELLS_DEFAULT	2
-+#define OF_ROOT_NODE_SIZE_CELLS_DEFAULT	1
++#define of_compat_cmp(s1, s2, l)	strncmp((s1), (s2), (l))
 +
  typedef u32 phandle;
  typedef u32 ihandle;
