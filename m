@@ -1,20 +1,18 @@
-Return-Path: <olof@lixom.net>
-Received: from mail.lixom.net (lixom.net [66.141.50.11])
-	by ozlabs.org (Postfix) with ESMTP id 990A7DDF7F
-	for <linuxppc-dev@ozlabs.org>; Tue,  1 May 2007 14:44:27 +1000 (EST)
-Date: Mon, 30 Apr 2007 23:45:25 -0500
-To: Paul Mackerras <paulus@samba.org>
-Subject: Re: [PATCH] [5/5] [v2] pasemi: GPIO MDIO of_platform driver
-Message-ID: <20070501044525.GA5230@lixom.net>
-References: <20070416062634.GB20196@lixom.net>
-	<20070416063139.GC20319@lixom.net>
-	<20070418063954.GB11480@lixom.net>
-	<17974.50094.70055.169529@cargo.ozlabs.ibm.com>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <17974.50094.70055.169529@cargo.ozlabs.ibm.com>
-From: olof@lixom.net (Olof Johansson)
-Cc: linuxppc-dev@ozlabs.org, arnd@arndb.de
+Message-ID: <17974.50661.270389.178023@cargo.ozlabs.ibm.com>
+Date: Tue, 1 May 2007 14:45:25 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 9/13] powerpc: Add arch/powerpc mv64x60 I2C platform data
+	setup
+In-Reply-To: <200704261704.06790.arnd@arndb.de>
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<200704261100.25650.arnd@arndb.de>
+	<20070426141902.GB29241@xyzzy.farnsworth.org>
+	<200704261704.06790.arnd@arndb.de>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +22,25 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tue, May 01, 2007 at 02:35:58PM +1000, Paul Mackerras wrote:
-> I just noticed this in arch/powerpc/platforms/pasemi/setup.c:
->
-> Oof.  Please make sure you only call of_platform_bus_probe if you are
-> actually on a pasemi platform... :)
+Arnd Bergmann writes:
 
-Check your inbox. :-)   Benh just pinged me about it on IRC as well.
+> What your glue code does is to find a backdoor into the device tree
+> (through of_find_compatible_node) and create a second struct device
+> for the same hardware, in an unrelated location in the linux device tree.
 
+I disagree that of_find_compatible_node is a "backdoor".
 
--Olof
+He won't have an of_device already unless he has arranged for the
+mv64x60 node to be scanned by of_platform_bus_probe.  Which he hasn't
+AFAICS.
+
+> This is very confusing if you look at sysfs, e.g. trying to find out
+> which driver is attached to a given of_device.
+> It also makes you lose the ability to autoload the driver module,
+> because autoloading is not supported for a platform_driver (there
+> is no MODULE_DEVICE_TABLE()).
+
+There's nothing preventing autoloading of modules for platform
+devices, if desired.
+
+Paul.
