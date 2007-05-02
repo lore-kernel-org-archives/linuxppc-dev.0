@@ -1,22 +1,21 @@
 Return-Path: <jacmet@sunsite.dk>
 Received: from kuuvir01.barco.com (kuumail.barco.com [32.58.34.195])
-	by ozlabs.org (Postfix) with SMTP id 44098DDF76
+	by ozlabs.org (Postfix) with SMTP id EEFFEDDED3
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 May 2007 23:04:24 +1000 (EST)
+	Wed,  2 May 2007 23:23:18 +1000 (EST)
 Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1HjEVI-0001vb-VR
-	for linuxppc-embedded@ozlabs.org; Wed, 02 May 2007 15:04:21 +0200
+	(envelope-from <jacmet@sunsite.dk>) id 1HjEnc-0001SV-JB
+	for linuxppc-embedded@ozlabs.org; Wed, 02 May 2007 15:23:16 +0200
 From: Peter Korsgaard <peter.korsgaard@barco.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: Using Cypress EZ-Host on ML403/5
-References: <4623A197.6000104@computing.dundee.ac.uk>
-	<528646bc0704160932k2038090al8c0b8e5420422545@mail.gmail.com>
-	<87zm54mt3j.fsf@sleipner.barco.com>
-	<46385444.5060407@computing.dundee.ac.uk>
-Date: Wed, 02 May 2007 15:04:20 +0200
-In-Reply-To: <46385444.5060407@computing.dundee.ac.uk> (Peter Mendham's
-	message of "Wed, 02 May 2007 10:05:08 +0100")
-Message-ID: <87hcqv5qcr.fsf@sleipner.barco.com>
+Subject: Re: [RFC] SystemACE driver - abstract register ops
+References: <463199EF.3090900@itee.uq.edu.au>
+	<528646bc0704270031w5c9966f8tc3a5e5292df10a35@mail.gmail.com>
+	<20070427173010.620DE4B8073@mail25-fra.bigfish.com>
+Date: Wed, 02 May 2007 15:23:16 +0200
+In-Reply-To: <20070427173010.620DE4B8073@mail25-fra.bigfish.com> (Wolfgang
+	Reissnegger's message of "Fri, 27 Apr 2007 10:30:08 -0700")
+Message-ID: <87d51j5ph7.fsf@sleipner.barco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -29,23 +28,28 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "PM" == Peter Mendham <petermendham@computing.dundee.ac.uk> writes:
+>>>>> "WR" == Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com> writes:
 
 Hi,
 
->> I have written a 2.6 USB host driver for the Cypress
->> EZ-Host/EZ-Otg. It's basically working, but needs a bit more
->> cleanup. I hope to be able to submit it next week.
+WR> The end goal is to have a kernel tree that contains ALL Xilinx
+WR> drivers and the multitude of drivers that are being
+WR> created/updated and contributed here. Having such a kernel
+WR> available will simplify the process of bringing up a new
+WR> system. The hope is that contributors will adopt the idea of
+WR> having a "Xilinx" kernel and will start using that tree as a "base
+WR> reference".
 
-PM> Are you any further forward with this?  Is there anything I could
-PM> see (however pre-release)?  Is there anything I can do to help?
+But there already is such a tree - It's called 'mainline'. I can see
+some advantage in having a Xilinx tree as a staging area, but it
+really HAS to be a temporary thing and stuff needs to be pushed to
+mainline.
 
-I posted the driver to the usb list last week:
+WR> I will post news here as they unfold. In the meantime it would be
+WR> very interesting to hear ideas and suggestions from you. Concerns
+WR> that people have. Pitfalls to look out for etc.
 
-http://thread.gmane.org/gmane.linux.usb.devel/53285
-
-It would be nice if you could give it a try and tell me if it works
-for you.
+Hereby my 2 cents.
 
 -- 
 Bye, Peter Korsgaard
