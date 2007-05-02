@@ -3,21 +3,22 @@ Received: from nommos.sslcatacombnetworking.com
 	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id E4C1CDDF8D
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:13:21 +1000 (EST)
-In-Reply-To: <20070430145119.6713490e.kim.phillips@freescale.com>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<20070430145119.6713490e.kim.phillips@freescale.com>
+	by ozlabs.org (Postfix) with ESMTP id 45FDADDFB5
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:16:28 +1000 (EST)
+In-Reply-To: <20070428.204754.62343452.davem@davemloft.net>
+References: <20070427145508.9c5641a2.sfr@canb.auug.org.au>
+	<4633689E.50900@garzik.org>
+	<20070429114446.31f40a30.sfr@canb.auug.org.au>
+	<20070428.204754.62343452.davem@davemloft.net>
 Mime-Version: 1.0 (Apple Message framework v752.2)
 Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <42664CF1-75AF-4343-BC50-870D3614C683@kernel.crashing.org>
+Message-Id: <3802D7AD-67EC-4FA2-B361-A388AFCB0B94@kernel.crashing.org>
 From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: patches for 2.6.22
-Date: Wed, 2 May 2007 09:12:36 -0500
-To: Kim Phillips <kim.phillips@freescale.com>
-Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, jeff Garzik <jeff@garzik.org>,
-	netdev <netdev@vger.kernel.org>
+Subject: Re: [PATCH 2/2] Rename get_property to of_get_property: drivers/net
+Date: Wed, 2 May 2007 09:15:36 -0500
+To: David Miller <davem@davemloft.net>
+Cc: sfr@canb.auug.org.au, jeff@garzik.org, netdev@vger.kernel.org,
+	linuxppc-dev@ozlabs.org, paulus@samba.org, akpm@linux-foundation.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,47 +29,26 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
-On Apr 30, 2007, at 2:51 PM, Kim Phillips wrote:
+On Apr 28, 2007, at 10:47 PM, David Miller wrote:
 
-> On Fri, 27 Apr 2007 21:25:19 +1000
-> Paul Mackerras <paulus@samba.org> wrote:
+> From: Stephen Rothwell <sfr@canb.auug.org.au>
+> Date: Sun, 29 Apr 2007 11:44:46 +1000
 >
->> If anyone has patches that I haven't picked up yet which they think
->> should go into 2.6.22, please send me either a pointer to the
+>> So can I take this as a future OK for architecture specific network
+>> drivers changes to go through the architecture trees (cc'd to you)?
 >
-> these were missed:
->
-> [PATCH 1/4 v5] powerpc: document phy-connection-type property
-> Tue Apr 24 07:26:10 EST 2007
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034669.html
+> It's been my experience that if I'm just working through some
+> platform or bus specific API changes, people like Jeff tend to
+> not mind if it goes via ARCH trees and the like.
 
-ok.
+Is this acceptable?   Just want to make sure before I ask Paul to  
+pull some changes that touches the following drivers:
 
-> [PATCH 2/4 v4] powerpc: replace undocumented interface properties  
-> in dts files
-> Tue Apr 24 07:26:14 EST 2007
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034670.html
+drivers/net/fs_enet/mac-scc.c           |    2 +-
+drivers/net/ucc_geth.c                  |   30 ++++----
+drivers/serial/cpm_uart/cpm_uart_cpm1.c |    4 +-
+drivers/serial/cpm_uart/cpm_uart_cpm2.c |    4 +-
 
-I have issues with this since it looks like the current ucc driver in  
-linus's tree is using a previous rev of your patch and thus using  
-interface-type and max-speed still.
-
-> [PATCH 3/4] powerpc: Add 'mdio' to bus scan id list for platforms  
-> with QE UEC
-> Wed Apr 11 07:56:49 EST 2007
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034163.html
-
-ok
-
->
-> [PATCH 4/4] powerpc: turn on corresponding PHY drivers in QE UEC  
-> platforms defconfigs
-> Wed Apr 11 07:56:53 EST 2007
-> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034164.html
-
-ok
-
-I'll pull patches 1, 3, 4 and wait on the dts changes until you sort  
-of the ucc driver issues with Jeff.
+But is related to an arch API cleanup.
 
 - k
