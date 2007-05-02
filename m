@@ -1,29 +1,21 @@
-Return-Path: <jacmet@sunsite.dk>
-Received: from smtp40.mobistarmail.be (smtp40.mobistarmail.be [193.252.23.61])
-	by ozlabs.org (Postfix) with ESMTP id DBE48DDD0A
+Return-Path: <ckrinke@istor.com>
+Received: from stork.inside.istor.com (stork.istor.com [12.170.66.34])
+	(using TLSv1 with cipher RC4-SHA (128/128 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 16B19DDEF4
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 May 2007 07:59:30 +1000 (EST)
-From: Peter Korsgaard <jacmet@sunsite.dk>
-To: "Grant Likely" <grant.likely@secretlab.ca>
-Subject: Re: Using Cypress EZ-Host on ML403/5
-References: <4623A197.6000104@computing.dundee.ac.uk>
-	<528646bc0704160932k2038090al8c0b8e5420422545@mail.gmail.com>
-	<87zm54mt3j.fsf@sleipner.barco.com>
-	<528646bc0704190717o14da4b58r5ef69a8e77ade198@mail.gmail.com>
-	<87vefsmoaj.fsf@sleipner.barco.com>
-	<528646bc0704190750r4b6d76y72a862c249fa0520@mail.gmail.com>
-	<9305ca410704240042w7f8b12fau331a6407f45be74c@mail.gmail.com>
-	<528646bc0704240637sd3797a2q5ae48db19155ba61@mail.gmail.com>
-	<9305ca410704270141y66928deyab59300b8c5ccb95@mail.gmail.com>
-	<528646bc0704301223q2024505ah5308147ba6eead0a@mail.gmail.com>
-	<528646bc0705021408o1e1f25d7pa81905081d06ed8e@mail.gmail.com>
-Date: Wed, 02 May 2007 23:39:44 +0200
-In-Reply-To: <528646bc0705021408o1e1f25d7pa81905081d06ed8e@mail.gmail.com>
-	(Grant Likely's message of "Wed, 2 May 2007 15:08:33 -0600")
-Message-ID: <87wszqucpr.fsf@p4.be.48ers.dk>
+	Thu,  3 May 2007 08:11:29 +1000 (EST)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: How do external irq's get mapped?
+Date: Wed, 2 May 2007 15:11:27 -0700
+Message-ID: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A201@MERCURY.inside.istor.com>
+In-Reply-To: <762644B1-26D0-4D16-BA36-55364CACB0D4@freescale.com>
+From: "Charles Krinke" <ckrinke@istor.com>
+To: "Andy Fleming" <afleming@freescale.com>
+Cc: Randy Brown <rbrown@istor.com>, Chris Carlson <ccarlson@istor.com>,
+	Kevin Smith <ksmith@istor.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -34,39 +26,50 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
->>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
+> The new problem is that if I set the irq to 112, when it is =20
+> insmodded, I
+> get an error from open_pic.c of the form:
+>
+> Open_pic.c:720 invalid irq 112
+>
+> This seems to be coming from the macro at line 144 in open_pic.c
+>
+> #define check_arg_irq(irq) \
+>     if (irq < open_pic_irq_offset || irq >=3D
+> NumSources+open_pic_irq_offset \
+> 	|| ISR[irq - open_pic_irq_offset] =3D=3D 0) { \
+>       printk("open_pic.c:%d: invalid irq %d\n", __LINE__, irq); \
+>       dump_stack(); }
 
-Hi,
 
- >> > Did you have a chance to try it out yet?
+Any  chance you can identify:
 
- Grant> Hey Peter,
+1) Where this macro is being called from when it fails
 
- Grant> I've got it running on my board now after figuring out how to wire up
- Grant> external interrupts in EDK.  :-)
+2) Which of the 3 conditions above are actually true
 
- Grant> Good success with keyboards and mice.  Events come through no problem.
+Andy
 
-Great!
+Dear Andy:
 
- Grant> Some block devices seem to be giving me grief.  I have no problem with
- Grant> my SanDisk ImageMate CF reader.  However, I've got a SanDisk Curzer
- Grant> Micro that gets reset during transfers.  Is this something you've seen
- Grant> before?  Log output is below.
+In our system, open_pic_irq_offset=3D80, numSources=3D60, *but* ISR[irq =
+-
+open_pic_irq_offset]=3DNULL when irq 112 is enabled.
 
-Yeah, I've also had quite varied success with USB sticks - Some work
-just fine, others not at all. I'm still trying to figure out what goes
-wrong..
+It looks to me like each call to openpic_set_sources inits ISR[]
+elements according to the first two arguments. We have two calls to
+openpic_set_sources.=20
 
- Grant> I've also got a QuickCam Messinger that I'm going to test isochronos
- Grant> transfers with as well.
+Internal irqs 00..31, 1st openpic_set_sources(0, 32) -- ISR[0..32]
+External irqs 48..60, 2nd openpic_set_sources(48, 12) -- ISR[48..60]=20
 
-Ok. I've had a webcam and USB audio devices working OK. Isochronos
-transfers are the most tricky ones to implement though, so don't
-expect wonders (E.G. I get audio stutter if I do a lot of bulk
-tranfers at the same time).
+But ISR[112] is never initialized in the source base.
 
-Thanks for the feedback!
+I tried the cheap shot of adding a third openpic_set_sources(112, 12),
+but I suspect the real answer is a bit more complicated then that.
 
--- 
-Bye, Peter Korsgaard
+Again, I thank you for your kind words while I struggle through this
+external interrupt initalization for the PPC8541 in the Linux-2.6.17.11
+kernel.
+
+Charles Krinke
