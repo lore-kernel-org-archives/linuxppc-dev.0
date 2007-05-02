@@ -1,20 +1,19 @@
-Return-Path: <bounces@nabble.com>
-Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4483FDDF08
+Return-Path: <clemens.koller@anagramm.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id E46FADDE38
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 May 2007 19:21:20 +1000 (EST)
-Received: from [72.21.53.38] (helo=jubjub.nabble.com)
-	by talk.nabble.com with esmtp (Exim 4.50) id 1HjATf-000663-18
-	for linuxppc-embedded@ozlabs.org; Wed, 02 May 2007 01:46:23 -0700
-Message-ID: <10282154.post@talk.nabble.com>
-Date: Wed, 2 May 2007 01:46:23 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
-To: linuxppc-embedded@ozlabs.org
-Subject: Where to find the Montavista Linux kernel
+	Wed,  2 May 2007 20:43:19 +1000 (EST)
+Message-ID: <46386B36.6040903@anagramm.de>
+Date: Wed, 02 May 2007 12:43:02 +0200
+From: Clemens Koller <clemens.koller@anagramm.de>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+To: Charles Krinke <ckrinke@istor.com>
+Subject: Re: I2C support for 8541
+References: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1F9@MERCURY.inside.istor.com>
+In-Reply-To: <9F3F0A752CAEBE4FA7E906CC2FBFF57C06A1F9@MERCURY.inside.istor.com>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: Randy Brown <rbrown@istor.com>, Chris Carlson <ccarlson@istor.com>,
+	Kevin Smith <ksmith@istor.com>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -25,25 +24,27 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+Hi, Charles!
 
-Hi All.
+Charles Krinke schrieb:
+> Assuming I have the external IRQ's understood, the next issue is the
+> hardware clock on our board with the linux-2.6.17.11 kernel. We are
+> using a "DS1338U", which is an I2C RTC.
 
-        I have read some posts about the Montavista kernel and I wanted to
-give it a try.
-Unfortunately all links poiniting to the montavista server download area
-lead to
-nowhere.
+The I2C RTC drivers have changed in the latest kernels. You might
+consider to update to some current 2.6.20+ kernel. On one of my
+mpc8540's I get my RTC working right out of the box with an unpatched
+vanilla kernel! :-)
 
-Would sombody suggest where to find the montavista kernel suitable for
-xilinx ml403.
-
-Thanks in advnace
-
-Mirek
-
-
-
- 
+Greets,
 -- 
-View this message in context: http://www.nabble.com/Where-to-find-the-Montavista-Linux-kernel-tf3679346.html#a10282154
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Clemens Koller
+__________________________________
+R&D Imaging Devices
+Anagramm GmbH
+Rupert-Mayer-Straße 45/1
+Linhof Werksgelände
+D-81379 München
+Tel.089-741518-50
+Fax 089-741518-19
+http://www.anagramm-technology.com
