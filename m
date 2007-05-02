@@ -1,21 +1,31 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
+Return-Path: <jwboyer@linux.vnet.ibm.com>
+Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 1BAA2DDF7F
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 23:36:33 +1000 (EST)
-In-Reply-To: <20070502115644.764580297@arndb.de>
-References: <20070502114709.074174446@arndb.de>
-	<20070502115644.764580297@arndb.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <6F25998F-1F2B-448B-A2CD-AF6EC97EF150@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH 2/6] powerpc: Move CONFIG_PPC64 into CPU selection
-Date: Wed, 2 May 2007 08:35:43 -0500
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 478F2DDF8E
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 23:49:44 +1000 (EST)
+Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
+	[9.17.195.227])
+	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l42Dnfmr004077
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 09:49:41 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l42DnfRN176718
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 07:49:41 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l42DneTG019466
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 07:49:40 -0600
+Subject: Re: [PATCH] powerpc: fix spurious vectors on weird MPIC
+From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
+To: paulus@samba.org
+In-Reply-To: <1177965491.3026.47.camel@zod.rchland.ibm.com>
+References: <1177965491.3026.47.camel@zod.rchland.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 08:45:15 -0500
+Message-Id: <1178113515.3026.89.camel@zod.rchland.ibm.com>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -25,87 +35,12 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Mon, 2007-04-30 at 15:38 -0500, Josh Boyer wrote:
+> The weird TSI 10x MPIC needs an EOI after getting a spurious vector.  This
+> patch uses the existing MPIC_SPV_EOI flag to fix this issue.
 
-On May 2, 2007, at 6:47 AM, Arnd Bergmann wrote:
+Paul, I'd like to get this into 2.6.22 if possible.  It's needed for a
+round of patches I'll be sending out soon.
 
-> Currently, PPC64 is a top level configuration option in
-> arch/powerpc/Kconfig, which is somewhat unconventional.
->
-> Moving it into the CPU selection menu is a natural choice,
-> and is transparent to the rest of the configuration logic.
->
-> Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-
-I know Paul made a very conscious decisions to make the 64-bit choice  
-a top level config option when we moved to arch/powerpc.  This is  
-patch effective reverts back to how we did things in arch/ppc.
-
-I'll let it up to him to remind us why he wanted that since I dont  
-remember.
-
-- k
-
-> Index: linux-2.6/arch/powerpc/platforms/Kconfig.cputype
-> ===================================================================
-> --- linux-2.6.orig/arch/powerpc/platforms/Kconfig.cputype
-> +++ linux-2.6/arch/powerpc/platforms/Kconfig.cputype
-> @@ -1,37 +1,24 @@
-> -config PPC64
-> -	bool "64-bit kernel"
-> -	default n
-> -	help
-> -	  This option selects whether a 32-bit or a 64-bit kernel
-> -	  will be built.
-> -
->  menu "Processor support"
->  choice
->  	prompt "Processor Type"
-> -	depends on PPC32
->  	default 6xx
-> -
-> -config CLASSIC32
-> -	bool "52xx/6xx/7xx/74xx"
-> -	select PPC_FPU
-> -	select 6xx
->  	help
->  	  There are four families of PowerPC chips supported.  The more  
-> common
->  	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
-> -	  versions (821, 823, 850, 855, 860, 52xx, 82xx, 83xx), the AMCC
-> -	  embedded versions (403 and 405) and the high end 64 bit Power
-> -	  processors (POWER 3, POWER4, and IBM PPC970 also known as G5).
-> -
-> -	  This option is the catch-all for 6xx types, including some of the
-> -	  embedded versions.  Unless there is see an option for the specific
-> -	  chip family you are using, you want this option.
-> +	  versions (8xx, 55xx, 85xx), the AMCC embedded version (403, 405,
-> +	  440, 460) and the 64 bit processors (POWER 3, POWER4, POWER5,
-> +	  POWER6, PowerPC 970, Cell/B.E., PA6T).
->
-> -	  You do not want this if you are building a kernel for a 64 bit
-> -	  IBM RS/6000 or an Apple G5, choose 6xx.
-> +	  If unsure, select 52xx/6xx/7xx/74xx.
->
-> -	  If unsure, select this option
-> +config PPC64
-> +	bool "any 64 bit PowerPC"
-> +	select PPC_FPU
->
-> -	  Note that the kernel runs in 32-bit mode even on 64-bit chips.
-> +config CLASSIC32
-> +	bool "52xx/6xx/7xx/74xx"
-> +	select PPC_FPU
-> +	select 6xx
->
->  config PPC_82xx
->  	bool "Freescale 82xx"
-> @@ -119,7 +106,6 @@ config E500
->
->  config PPC_FPU
->  	bool
-> -	default y if PPC64
->
->  config BOOKE
->  	bool
->
-> --
+thx,
+josh
