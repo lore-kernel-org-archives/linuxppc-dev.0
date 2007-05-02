@@ -1,19 +1,21 @@
-Return-Path: <geert@sonycom.com>
-Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 31C1CDDEF2
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 22:49:45 +1000 (EST)
-Message-Id: <20070502124840.839504000@pademelon.sonytel.be>
-References: <20070502124830.911142000@pademelon.sonytel.be>
-Date: Wed, 02 May 2007 14:48:38 +0200
-From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-To: Linus Torvalds <torvalds@linux-foundation.org>,
-	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 8/8] ps3av: Use __func__ instead of __FUNCTION__
-Sender: Geert Uytterhoeven <geert@sonycom.com>
-Cc: James Simmons <jsimmons@infradead.org>, Antonino Daplas <adaplas@gmail.com>,
-	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
-	Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>,
-	linux-fbdev-devel@lists.sourceforge.net
+Return-Path: <rsc@pengutronix.de>
+Received: from metis.extern.pengutronix.de (metis.extern.pengutronix.de
+	[83.236.181.26]) by ozlabs.org (Postfix) with ESMTP id A8B0CDDF66
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 23:35:15 +1000 (EST)
+Date: Wed, 2 May 2007 15:35:12 +0200
+From: Robert Schwebel <r.schwebel@pengutronix.de>
+To: Stefan Roese <ml@stefan-roese.de>
+Subject: Re: Correct location for ADC/DAC drivers
+Message-ID: <20070502133512.GK22585@pengutronix.de>
+References: <200705011435.45046.ml@stefan-roese.de>
+	<Pine.LNX.4.60.0705012301500.4972@poirot.grange>
+	<200705021225.54417.ml@stefan-roese.de>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=iso-8859-15
+In-Reply-To: <200705021225.54417.ml@stefan-roese.de>
+Sender: Robert Schwebel <rsc@pengutronix.de>
+Cc: linuxppc-dev@ozlabs.org, Guennadi Liakhovetski <g.liakhovetski@gmx.de>,
+	linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,285 +25,15 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ps3av: Replace GNU extension `__FUNCTION__' by C99 `__func__'
+On Wed, May 02, 2007 at 12:25:53PM +0200, Stefan Roese wrote:
+> Is there a maintainer for this "drivers/mfd" directory?
 
-Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
----
- drivers/ps3/ps3av.c     |   42 ++++++++++++++++++++----------------------
- drivers/ps3/ps3av_cmd.c |   20 +++++++++-----------
- 2 files changed, 29 insertions(+), 33 deletions(-)
+rmk
 
---- ps3-linux-2.6.21.orig/drivers/ps3/ps3av.c
-+++ ps3-linux-2.6.21/drivers/ps3/ps3av.c
-@@ -176,7 +176,7 @@ static int ps3av_parse_event_packet(cons
- 		else
- 			printk(KERN_ERR
- 			       "%s: failed event packet, cid:%08x size:%d\n",
--			       __FUNCTION__, hdr->cid, hdr->size);
-+			       __func__, hdr->cid, hdr->size);
- 		return 1;	/* receive event packet */
- 	}
- 	return 0;
-@@ -198,7 +198,7 @@ static int ps3av_send_cmd_pkt(const stru
- 	if (res < 0) {
- 		dev_dbg(&ps3av_dev.core,
- 			"%s: ps3av_vuart_write() failed (result=%d)\n",
--			__FUNCTION__, res);
-+			__func__, res);
- 		return res;
- 	}
- 
-@@ -211,7 +211,7 @@ static int ps3av_send_cmd_pkt(const stru
- 		if (res != PS3AV_HDR_SIZE) {
- 			dev_dbg(&ps3av_dev.core,
- 				"%s: ps3av_vuart_read() failed (result=%d)\n",
--				__FUNCTION__, res);
-+				__func__, res);
- 			return res;
- 		}
- 
-@@ -221,7 +221,7 @@ static int ps3av_send_cmd_pkt(const stru
- 		if (res < 0) {
- 			dev_dbg(&ps3av_dev.core,
- 				"%s: ps3av_vuart_read() failed (result=%d)\n",
--				__FUNCTION__, res);
-+				__func__, res);
- 			return res;
- 		}
- 		res += PS3AV_HDR_SIZE;	/* total len */
-@@ -231,7 +231,7 @@ static int ps3av_send_cmd_pkt(const stru
- 
- 	if ((cmd | PS3AV_REPLY_BIT) != recv_buf->cid) {
- 		dev_dbg(&ps3av_dev.core, "%s: reply err (result=%x)\n",
--			__FUNCTION__, recv_buf->cid);
-+			__func__, recv_buf->cid);
- 		return -EINVAL;
- 	}
- 
-@@ -293,7 +293,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
- 	if (res < 0) {
- 		printk(KERN_ERR
- 		       "%s: ps3av_send_cmd_pkt() failed (result=%d)\n",
--		       __FUNCTION__, res);
-+		       __func__, res);
- 		goto err;
- 	}
- 
-@@ -302,7 +302,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
- 					 usr_buf_size);
- 	if (res < 0) {
- 		printk(KERN_ERR "%s: put_return_status() failed (result=%d)\n",
--		       __FUNCTION__, res);
-+		       __func__, res);
- 		goto err;
- 	}
- 
-@@ -311,7 +311,7 @@ int ps3av_do_pkt(u32 cid, u16 send_len, 
- 
-       err:
- 	mutex_unlock(&ps3av.mutex);
--	printk(KERN_ERR "%s: failed cid:%x res:%d\n", __FUNCTION__, cid, res);
-+	printk(KERN_ERR "%s: failed cid:%x res:%d\n", __func__, cid, res);
- 	return res;
- }
- 
-@@ -522,7 +522,7 @@ static void ps3av_set_videomode_cont(u32
- 	if (res == PS3AV_STATUS_NO_SYNC_HEAD)
- 		printk(KERN_WARNING
- 		       "%s: Command failed. Please try your request again. \n",
--		       __FUNCTION__);
-+		       __func__);
- 	else if (res)
- 		dev_dbg(&ps3av_dev.core, "ps3av_cmd_avb_param failed\n");
- 
-@@ -715,8 +715,7 @@ int ps3av_set_video_mode(u32 id, int boo
- 
- 	size = ARRAY_SIZE(video_mode_table);
- 	if ((id & PS3AV_MODE_MASK) > size - 1 || id < 0) {
--		dev_dbg(&ps3av_dev.core, "%s: error id :%d\n", __FUNCTION__,
--			id);
-+		dev_dbg(&ps3av_dev.core, "%s: error id :%d\n", __func__, id);
- 		return -EINVAL;
- 	}
- 
-@@ -725,8 +724,7 @@ int ps3av_set_video_mode(u32 id, int boo
- 	if ((id & PS3AV_MODE_MASK) == 0) {
- 		id = ps3av_auto_videomode(&ps3av.av_hw_conf, boot);
- 		if (id < 1) {
--			printk(KERN_ERR "%s: invalid id :%d\n", __FUNCTION__,
--			       id);
-+			printk(KERN_ERR "%s: invalid id :%d\n", __func__, id);
- 			return -EINVAL;
- 		}
- 		id |= option;
-@@ -786,7 +784,7 @@ int ps3av_get_scanmode(int id)
- 	id = id & PS3AV_MODE_MASK;
- 	size = ARRAY_SIZE(video_mode_table);
- 	if (id > size - 1 || id < 0) {
--		printk(KERN_ERR "%s: invalid mode %d\n", __FUNCTION__, id);
-+		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
- 		return -EINVAL;
- 	}
- 	return video_mode_table[id].interlace;
-@@ -801,7 +799,7 @@ int ps3av_get_refresh_rate(int id)
- 	id = id & PS3AV_MODE_MASK;
- 	size = ARRAY_SIZE(video_mode_table);
- 	if (id > size - 1 || id < 0) {
--		printk(KERN_ERR "%s: invalid mode %d\n", __FUNCTION__, id);
-+		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
- 		return -EINVAL;
- 	}
- 	return video_mode_table[id].freq;
-@@ -817,7 +815,7 @@ int ps3av_video_mode2res(u32 id, u32 *xr
- 	id = id & PS3AV_MODE_MASK;
- 	size = ARRAY_SIZE(video_mode_table);
- 	if (id > size - 1 || id < 0) {
--		printk(KERN_ERR "%s: invalid mode %d\n", __FUNCTION__, id);
-+		printk(KERN_ERR "%s: invalid mode %d\n", __func__, id);
- 		return -EINVAL;
- 	}
- 	*xres = video_mode_table[id].x;
-@@ -853,7 +851,7 @@ int ps3av_dev_open(void)
- 		status = lv1_gpu_open(0);
- 		if (status) {
- 			printk(KERN_ERR "%s: lv1_gpu_open failed %d\n",
--			       __FUNCTION__, status);
-+			       __func__, status);
- 			ps3av.open_count--;
- 		}
- 	}
-@@ -870,13 +868,13 @@ int ps3av_dev_close(void)
- 
- 	mutex_lock(&ps3av.mutex);
- 	if (ps3av.open_count <= 0) {
--		printk(KERN_ERR "%s: GPU already closed\n", __FUNCTION__);
-+		printk(KERN_ERR "%s: GPU already closed\n", __func__);
- 		status = -1;
- 	} else if (!--ps3av.open_count) {
- 		status = lv1_gpu_close();
- 		if (status)
- 			printk(KERN_WARNING "%s: lv1_gpu_close failed %d\n",
--			       __FUNCTION__, status);
-+			       __func__, status);
- 	}
- 	mutex_unlock(&ps3av.mutex);
- 
-@@ -926,7 +924,7 @@ static int ps3av_probe(struct ps3_vuart_
- 	/* init avsetting modules */
- 	res = ps3av_cmd_init();
- 	if (res < 0)
--		printk(KERN_ERR "%s: ps3av_cmd_init failed %d\n", __FUNCTION__,
-+		printk(KERN_ERR "%s: ps3av_cmd_init failed %d\n", __func__,
- 		       res);
- 
- 	ps3av_get_hw_conf(&ps3av);
-@@ -978,7 +976,7 @@ static int ps3av_module_init(void)
- 	if (error) {
- 		printk(KERN_ERR
- 		       "%s: ps3_vuart_port_driver_register failed %d\n",
--		       __FUNCTION__, error);
-+		       __func__, error);
- 		return error;
- 	}
- 
-@@ -986,7 +984,7 @@ static int ps3av_module_init(void)
- 	if (error)
- 		printk(KERN_ERR
- 		       "%s: ps3_vuart_port_device_register failed %d\n",
--		       __FUNCTION__, error);
-+		       __func__, error);
- 
- 	return error;
- }
---- ps3-linux-2.6.21.orig/drivers/ps3/ps3av_cmd.c
-+++ ps3-linux-2.6.21/drivers/ps3/ps3av_cmd.c
-@@ -395,7 +395,7 @@ u32 ps3av_cmd_set_video_mode(void *p, u3
- 	video_mode->video_order = ps3av_video_fmt_table[video_fmt].order;
- 
- 	pr_debug("%s: video_mode:vid:%x width:%d height:%d pitch:%d out_format:%d format:%x order:%x\n",
--		__FUNCTION__, video_vid, video_mode->width, video_mode->height,
-+		__func__, video_vid, video_mode->width, video_mode->height,
- 		video_mode->pitch, video_mode->video_out_format,
- 		video_mode->video_format, video_mode->video_order);
- 	return sizeof(*video_mode);
-@@ -477,7 +477,7 @@ static u8 ps3av_cnv_mclk(u32 fs)
- 		if (ps3av_cnv_mclk_table[i].fs == fs)
- 			return ps3av_cnv_mclk_table[i].mclk;
- 
--	printk(KERN_ERR "%s failed, fs:%x\n", __FUNCTION__, fs);
-+	printk(KERN_ERR "%s failed, fs:%x\n", __func__, fs);
- 	return 0;
- }
- 
-@@ -526,13 +526,12 @@ static void ps3av_cnv_ns(u8 *ns, u32 fs,
- 		d = 4;
- 		break;
- 	default:
--		printk(KERN_ERR "%s failed, vid:%x\n", __FUNCTION__,
--		       video_vid);
-+		printk(KERN_ERR "%s failed, vid:%x\n", __func__, video_vid);
- 		break;
- 	}
- 
- 	if (fs < PS3AV_CMD_AUDIO_FS_44K || fs > PS3AV_CMD_AUDIO_FS_192K)
--		printk(KERN_ERR "%s failed, fs:%x\n", __FUNCTION__, fs);
-+		printk(KERN_ERR "%s failed, fs:%x\n", __func__, fs);
- 	else
- 		ns_val = ps3av_ns_table[PS3AV_CMD_AUDIO_FS_44K-BASE][d];
- 
-@@ -555,8 +554,7 @@ static u8 ps3av_cnv_enable(u32 source, c
- 		ret = ((p[0] << 4) + (p[1] << 5) + (p[2] << 6) + (p[3] << 7)) |
- 		      0x01;
- 	} else
--		printk(KERN_ERR "%s failed, source:%x\n", __FUNCTION__,
--		       source);
-+		printk(KERN_ERR "%s failed, source:%x\n", __func__, source);
- 	return ret;
- }
- 
-@@ -585,7 +583,7 @@ static u8 ps3av_cnv_inputlen(u32 word_bi
- 		ret = PS3AV_CMD_AV_INPUTLEN_24;
- 		break;
- 	default:
--		printk(KERN_ERR "%s failed, word_bits:%x\n", __FUNCTION__,
-+		printk(KERN_ERR "%s failed, word_bits:%x\n", __func__,
- 		       word_bits);
- 		break;
- 	}
-@@ -595,7 +593,7 @@ static u8 ps3av_cnv_inputlen(u32 word_bi
- static u8 ps3av_cnv_layout(u32 num_of_ch)
- {
- 	if (num_of_ch > PS3AV_CMD_AUDIO_NUM_OF_CH_8) {
--		printk(KERN_ERR "%s failed, num_of_ch:%x\n", __FUNCTION__,
-+		printk(KERN_ERR "%s failed, num_of_ch:%x\n", __func__,
- 		       num_of_ch);
- 		return 0;
- 	}
-@@ -864,7 +862,7 @@ int ps3av_cmd_avb_param(struct ps3av_pkt
- 
- 	res = get_status(avb);
- 	if (res)
--		pr_debug("%s: PS3AV_CID_AVB_PARAM: failed %x\n", __FUNCTION__,
-+		pr_debug("%s: PS3AV_CID_AVB_PARAM: failed %x\n", __func__,
- 			 res);
- 
-       out:
-@@ -1013,7 +1011,7 @@ int ps3av_vuart_read(struct ps3_vuart_po
- 			return size;
- 		if (error != -EAGAIN) {
- 			printk(KERN_ERR "%s: ps3_vuart_read failed %d\n",
--			       __FUNCTION__, error);
-+			       __func__, error);
- 			return error;
- 		}
- 		msleep(POLLING_INTERVAL);
-
---
-Gr{oetje,eeting}s,
-
-						Geert
-
---
-Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
-Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
-Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+Robert 
+-- 
+ Dipl.-Ing. Robert Schwebel | http://www.pengutronix.de
+ Pengutronix - Linux Solutions for Science and Industry
+   Handelsregister:  Amtsgericht Hildesheim, HRA 2686
+     Hannoversche Str. 2, 31134 Hildesheim, Germany
+   Phone: +49-5121-206917-0 |  Fax: +49-5121-206917-9
