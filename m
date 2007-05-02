@@ -1,19 +1,24 @@
-Return-Path: <miltonm@bga.com>
-Received: from ruth.realtime.net (mercury.realtime.net [205.238.132.86])
-	by ozlabs.org (Postfix) with ESMTP id 56CA9DDF2A
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 03:44:11 +1000 (EST)
-In-Reply-To: <20070430181954.GB7673@mag.az.mvista.com>
-References: <35d250938c0c5d7dae6a8735343059b7@bga.com>
-	<20070430181954.GB7673@mag.az.mvista.com>
-Mime-Version: 1.0 (Apple Message framework v624)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <d47bc8a8db1e8b703595cd7dca25b33a@bga.com>
-From: Milton Miller <miltonm@bga.com>
-Subject: Re: [PATCH 12/13] powerpc: Add bootwrapper support for Motorola
-	PrPMC2800 platform
-Date: Mon, 30 Apr 2007 23:10:08 -0500
-To: "Mark A. Greer" <mgreer@mvista.com>
-Cc: ppcdev <linuxppc-dev@ozlabs.org>
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5E480DDF59
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 03:51:33 +1000 (EST)
+Subject: Re: [PATCH 1/6] powerpc: split out CPU specific options into a new
+	Kconfig file
+From: Jon Loeliger <jdl@freescale.com>
+To: Timur Tabi <timur@freescale.com>
+In-Reply-To: <4638B42B.7040208@freescale.com>
+References: <20070502114709.074174446@arndb.de>
+	<20070502115644.638734471@arndb.de>  <4638B42B.7040208@freescale.com>
+Content-Type: text/plain
+Message-Id: <1178128283.32136.13.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Wed, 02 May 2007 12:51:24 -0500
+Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,55 +28,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Wed, 2007-05-02 at 10:54, Timur Tabi wrote:
+> Arnd Bergmann wrote:
+> 
+> > +config CLASSIC32
+> > +	bool "52xx/6xx/7xx/74xx"
+> > +	select PPC_FPU
+> > +	select 6xx
+> > +	help
+> > +	  There are four families of PowerPC chips supported.  The more common
+> > +	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
+> > +	  versions (821, 823, 850, 855, 860, 52xx, 82xx, 83xx), the AMCC
+> > +	  embedded versions (403 and 405) and the high end 64 bit Power
+> > +	  processors (POWER 3, POWER4, and IBM PPC970 also known as G5).
+> 
+> Is this help text still accurate?  The bool line says "52xx/6xx/7xx/74xx", but you talk 
+> about many more processors in the help text.  You mention the 83xx, but not the 85xx or 
+> 86xx, nor do you mention Freescale.  Not only that, but the help text implies that 8xx, 
+> 52xx, 82xx, and 83xx are part of the same family, but the bool text implies that 52xx is 
+> part of a different family.
 
-On Apr 30, 2007, at 1:19 PM, Mark A. Greer wrote:
+Timur,
 
-> On Mon, Apr 30, 2007 at 11:15:23AM -0500, Milton Miller wrote:
->> On Thu Apr 26 10:02:27 EST 2007, Mark A. Greer wrote:
->>> Add support for Motorola ECC PrPMC280/PrPMC2800 Platform.
->>> The PrPMC280 sits on an F101 baseboard and the PrPMC2800 sits on a
->>> F101e baseboard.  Logic has been added to determine which board
->>> (and variant thereof) the code is being run on.
+Please read through the rest of the patch sequence.
+This patch was just the "first step", moving things
+around without additional changes.
 
->>> +               setprop(devp, "device_type", "mv64362",
->>> strlen("mv64362") + 1);
->> That is not a device_type.   It might be a model,   Or even a
->> compatable.  but not a type.
-> How about "host-bridge" or is that too generic?
-That would be ok but that could be precompiled, vs set in code.
-
-I was thinking you wanted to expose the vpd determined specific
-bridge to the kernel / user.
-
->>> +/* Following code is put at very beginning of zImage (64KB into ELF
->>> file) */
->>> +asm (" .globl _zimage_start\n\
->>> +       _zimage_start:\n\
->>> +               mfmsr   10\n\
->>> +               rlwinm  10,10,0,~(1<<15)        /* Clear MSR_EE */\n\
->>> +               sync\n\
->>> +               mtmsr   10\n\
->>> +               isync\n\
->>> +               b _zimage_start_lib\n\
->>> +");
->>>
->
-> Yes, its a poorly worded comment.
->
->> Also, the 1<<15 seems magic.  I would like to see it as a constant in
->> reg.h,
->
-> It probably makes sense to add some MSR definitions to reg.h.
->
->> but to use that you would have to pass it as an i parameter, so
->
-> I don't follow.  What's wrong with '#define MSR_EE (1<<15)'
-> in reg.h and 'rlwinm  10,10,0,~MSR_EE'?
-
-I think you will find that cpp doesn't replace the define inside
-the string.   And by the time you stop the string, stringify the
-define, and restart the string, you might as well pass it as a
-parameter.  Also, in C we sometimes add things like ULL that
-aren't valid in assembler, although that's more of a 64 bit issue.
-
-milton
+jdl
