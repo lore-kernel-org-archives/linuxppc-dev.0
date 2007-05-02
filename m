@@ -1,14 +1,14 @@
 Return-Path: <geert@sonycom.com>
 Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
-	by ozlabs.org (Postfix) with ESMTP id 612C4DDEEF
+	by ozlabs.org (Postfix) with ESMTP id 6479CDDEF2
 	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 22:49:43 +1000 (EST)
-Message-Id: <20070502124840.447618000@pademelon.sonytel.be>
+Message-Id: <20070502124840.253744000@pademelon.sonytel.be>
 References: <20070502124830.911142000@pademelon.sonytel.be>
-Date: Wed, 02 May 2007 14:48:34 +0200
+Date: Wed, 02 May 2007 14:48:32 +0200
 From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 To: Linus Torvalds <torvalds@linux-foundation.org>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [patch 4/8] ps3fb: kill superfluous zero initializations
+Subject: [patch 2/8] ps3fb: atomic fixes
 Sender: Geert Uytterhoeven <geert@sonycom.com>
 Cc: James Simmons <jsimmons@infradead.org>, Antonino Daplas <adaplas@gmail.com>,
 	linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>,
@@ -23,28 +23,43 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-ps3fb: kill superfluous zero initializations
+ps3fb: Use atomic_dec_if_positive() instead of bogus atomic_read()/atomic_dec()
+combinations
 
 Signed-off-by: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 ---
- drivers/video/ps3fb.c |    4 ++--
- 1 files changed, 2 insertions(+), 2 deletions(-)
+ drivers/video/ps3fb.c |   12 ++++--------
+ 1 files changed, 4 insertions(+), 8 deletions(-)
 
 --- ps3-linux-2.6.21.orig/drivers/video/ps3fb.c
 +++ ps3-linux-2.6.21/drivers/video/ps3fb.c
-@@ -297,10 +297,10 @@ static const struct fb_videomode ps3fb_m
- #define VP_OFF(i)	(WIDTH(i) * Y_OFF(i) * BPP + X_OFF(i) * BPP)
- #define FB_OFF(i)	(GPU_OFFSET - VP_OFF(i) % GPU_OFFSET)
+@@ -680,13 +680,10 @@ EXPORT_SYMBOL_GPL(ps3fb_wait_for_vsync);
  
--static int ps3fb_mode = 0;
-+static int ps3fb_mode;
- module_param(ps3fb_mode, bool, 0);
+ void ps3fb_flip_ctl(int on)
+ {
+-	if (on) {
+-		if (atomic_read(&ps3fb.ext_flip) > 0) {
+-			atomic_dec(&ps3fb.ext_flip);
+-		}
+-	} else {
++	if (on)
++		atomic_dec_if_positive(&ps3fb.ext_flip);
++	else
+ 		atomic_inc(&ps3fb.ext_flip);
+-	}
+ }
  
--static char *mode_option __initdata = NULL;
-+static char *mode_option __initdata;
+ EXPORT_SYMBOL_GPL(ps3fb_flip_ctl);
+@@ -786,8 +783,7 @@ static int ps3fb_ioctl(struct fb_info *i
  
+ 	case PS3FB_IOCTL_OFF:
+ 		DPRINTK("PS3FB_IOCTL_OFF:\n");
+-		if (atomic_read(&ps3fb.ext_flip) > 0)
+-			atomic_dec(&ps3fb.ext_flip);
++		atomic_dec_if_positive(&ps3fb.ext_flip);
+ 		retval = 0;
+ 		break;
  
- static int ps3fb_get_res_table(u32 xres, u32 yres)
 
 --
 Gr{oetje,eeting}s,
