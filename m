@@ -1,20 +1,22 @@
 Return-Path: <jacmet@sunsite.dk>
 Received: from kuuvir01.barco.com (kuumail.barco.com [32.58.34.195])
-	by ozlabs.org (Postfix) with SMTP id 6212FDDF91
+	by ozlabs.org (Postfix) with SMTP id 69264DDFB1
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 May 2007 23:59:35 +1000 (EST)
+	Thu,  3 May 2007 00:09:10 +1000 (EST)
 Received: from peko by sleipner.barco.com with local (Exim 4.60)
-	(envelope-from <jacmet@sunsite.dk>) id 1HjFMj-00054b-7X
-	for linuxppc-embedded@ozlabs.org; Wed, 02 May 2007 15:59:33 +0200
+	(envelope-from <jacmet@sunsite.dk>) id 1HjFVz-0005MO-Dk
+	for linuxppc-embedded@ozlabs.org; Wed, 02 May 2007 16:09:07 +0200
 From: Peter Korsgaard <peter.korsgaard@barco.com>
 To: linuxppc-embedded@ozlabs.org
 Subject: Re: [RFC] uartlite driver MicroBlaze compatability
 References: <4636C836.4050502@itee.uq.edu.au>
 	<528646bc0704302255j3a825f10vbffd4bac961b28d7@mail.gmail.com>
-Date: Wed, 02 May 2007 15:59:33 +0200
-In-Reply-To: <528646bc0704302255j3a825f10vbffd4bac961b28d7@mail.gmail.com>
-	(Grant Likely's message of "Mon, 30 Apr 2007 23:55:52 -0600")
-Message-ID: <871whz5nsq.fsf@sleipner.barco.com>
+	<4636E142.8010104@itee.uq.edu.au>
+	<528646bc0705012247p4a0fff63oa8d98364d5f639b0@mail.gmail.com>
+Date: Wed, 02 May 2007 16:09:07 +0200
+In-Reply-To: <528646bc0705012247p4a0fff63oa8d98364d5f639b0@mail.gmail.com>
+	(Grant Likely's message of "Tue, 1 May 2007 23:47:43 -0600")
+Message-ID: <87wszr48sc.fsf@sleipner.barco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
@@ -31,83 +33,32 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 
 Hi,
 
->> Can you please confirm if this works on PPC?
+GL> Hmm, I think I was smoking something last night.
 
-GL> Yes, I've confirmed this does work on PPC; but I don't think it's
-GL> quite the correct fix.
+;)
 
-GL> ioread/write32 is mapped to in/out_le32, yet the bootloader driver
-GL> must use in/out_be32.  This is because the uartlite driver follows
-GL> the lead of 8250 and requires an offset of 3 from the base address
-GL> in order to find the relevant byte wise address.  In fact, I
-GL> believe the driver should work as-is on microblaze if the
-GL> offset-by-3 is not used when registering it to the platform bus.
+GL>  Address used for 8 bit access should not be affected by CPU
+GL> endianess.  After David's comments, I reread the uartlite
+GL> documentation.  The current design is definately for 32bit OPB bus
+GL> connections, but it looks like there is a posibility for xilinx to
+GL> add a 16 or 8 bit attachment.  Since the uartlite design
+GL> explicitly supports 8, 16 and 32 bit access, sticking with 8 bit
+GL> io may be the safest.  However, I still think the application of
+GL> the 3 byte offset should be done in the driver, and not in the
+GL> platform bus registration.
 
-Not used? Isn't the microblaze big endian as well?
+That would effectively make the driver big endian only. What if Xilinx
+would come out with a FPGA with a ARM core in it?
 
-GL> However, the uartlite is *not* an 8250.  The 8250 turns up all
-GL> over the place and it's registers are defined as 8 bit wide.  The
-GL> offset-by-3 stuff is part of the plat_serial8250_port structure
-GL> which is also used to specify .regshift (increment between
-GL> registers).  Whereas the UARTLITE is defined as a 32 bit device
-GL> and it doesn't show up in anywhere near as many designs.
-GL> Registers are always 4 bytes wide and are always located at
-GL> multiples of 4 bytes off the base address.
+GL> I've reworked the patch with the following changes - remove 3 byte
+GL> offset from platform bus registration.  - added ulite_in/ulite_out
+GL> macros to make changing bus attachment details simpler if xilinx
+GL> changes the uartlite design.  - stick with 8 bit IO.
 
-Well, yes and no - The registers physically contains 8 bit of
-information, but are commonly located on the 32bit opb bus.
+Russell didn't like those accessor macros back when it was submitted
+last year:
 
-GL> The biggest problem with keeping the 3 byte offset and using
-GL> ioread/write32 on it makes every register access straddle a 32-bit
-GL> boundary.  This means 2 bus transactions for every register
-GL> access.  Absolutely not what we want.
-
-Exactly.
-
-GL> The problem with keeping the byte-wise access as it is now is that
-GL> it means the platform bus binding needs to explicitly know what
-GL> the host access width is and add the 3 byte offset accordingly
-GL> (rather than using the base address as specified in xparameters
-GL> unmodified and using the in/out_be32 macro take care of reading it
-GL> correctly & efficiently).
-
-I don't think that's a big problem. Other reasons for using 8bit I/O
-are:
-
-- No endianness problems (besides setting the proper base
-  address). "There's no read/write register in native endianness"
-  interface in the kernel. readl is always little endian, and _be32
-  would be wrong/not available on all archs. The uartlite interface is
-  nice and simple - Who knows if someone would add a FPGA with a bunch
-  of uartlite's to an ARM/MIPS/whatever design?
-
-- No bus width problems. We have designs which needed extra uarts late
-  in the design, and have implemented uartlite compatible firmware in
-  a SP3e FPGA connected over a 16bit bus (EMC). The uartlite driver
-  works nicely with that as it is. With 32bit access you would double
-  the bus transactions.
-
-- It matches 8250.c
-
-GL> (There are also annoyances that will come up when we move to
-GL> arch/powerpc and hook it up to the of_platform_bus)
-
-Ohh, like what?
-
->> I note that Grant's recent bootloader driver uses in_be32/out_be32
->> - would you prefer that instead of ioread32/iowrite32?
-
-GL> I certainly think so.  The device is documented as using 32 bit BE
-GL> registers; so the driver should access them as 32bit BE registers
-GL> IMHO.  Or at least, if there is a good reason to continue the
-GL> bytewise access, then the driver should contain the smarts to
-GL> translate from documented base address to the appropriate offset.
-
-How should it be able to do that? Using some magic #ifdef to know if
-it's compiled for a big endian arch and do a +3? That seems ugly to
-me.
-
-In other words - I disagree.
+http://thread.gmane.org/gmane.linux.serial/1237/focus=1251
 
 -- 
 Bye, Peter Korsgaard
