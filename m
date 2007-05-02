@@ -1,23 +1,18 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 05837DDF9B
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:25:28 +1000 (EST)
-Subject: [PATCH] powerpc timer sysdev: use mktime
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17976.5964.593278.752595@cargo.ozlabs.ibm.com>
-References: <20061213123819.403286000@sipsolutions.net>
-	<20061213123945.386891000@sipsolutions.net>
-	<1169620444.18754.66.camel@localhost.localdomain>
-	<1170357390.4036.9.camel@johannes.berg>
-	<17976.5964.593278.752595@cargo.ozlabs.ibm.com>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 16:25:42 +0200
-Message-Id: <1178115942.13233.61.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <rene@exactcode.de>
+Received: from mx01.qsc.de (mx01.qsc.de [213.148.129.14])
+	by ozlabs.org (Postfix) with ESMTP id E84B7DDF9C
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:29:43 +1000 (EST)
+From: =?iso-8859-1?q?Ren=E9_Rebe?= <rene@exactcode.de>
+To: linuxppc-dev@ozlabs.org
+Subject: Re: [patch 0/8] PS3 AV/FB patches
+Date: Wed, 2 May 2007 16:03:34 +0200
+References: <20070502124830.911142000@pademelon.sonytel.be>
+In-Reply-To: <20070502124830.911142000@pademelon.sonytel.be>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705021603.34637.rene@exactcode.de>
+Cc: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,52 +22,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This patch makes the timer sysdev use mktime instead of rtc_tm_to_time
-by simply copying the function to avoid using rtc-lib.
+Hi Geert,
 
-Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+On Wednesday 02 May 2007 14:48:30 Geert Uytterhoeven wrote:
+>         Hi Linus, Andrew,
+>=20
+> Here are our patches for the PS3 Audio Video Settings and Virtual Frame
+> Buffer
+> drivers for 2.6.22:
+>=20
+> [1/8] ps3fb: thread updates
+> [2/8] ps3fb: atomic fixes
+> [3/8] ps3av: thread updates
+> [4/8] ps3fb: kill superfluous zero initializations
+> [5/8] ps3av: misc updates
+> [6/8] [PATCH] ps3: Make `ps3videomode -v 0' (auto mode) work again
+> [7/8] ps3fb: Use __func__ instead of __FUNCTION__
+> [8/8] ps3av: Use __func__ instead of __FUNCTION__
+>=20
+> The last 3 are new, but they are quite simple/trivial.
 
---- wireless-dev.orig/arch/powerpc/sysdev/timer.c	2007-05-02 16:16:52.639177080 +0200
-+++ wireless-dev/arch/powerpc/sysdev/timer.c	2007-05-02 16:21:56.429177080 +0200
-@@ -24,7 +24,12 @@ static int timer_resume(struct sys_devic
- 
- 	/* get current RTC time and convert to seconds */
- 	get_rtc_time(&cur_rtc_tm);
--	rtc_tm_to_time(&cur_rtc_tm, &cur_rtc_time);
-+	cur_rtc_time = mktime(cur_rtc_tm.tm_year + 1900,
-+			      cur_rtc_tm.tm_mon + 1,
-+			      cur_rtc_tm.tm_mday,
-+			      cur_rtc_tm.tm_hour,
-+			      cur_rtc_tm.tm_min,
-+			      cur_rtc_tm.tm_sec);
- 
- 	diff = cur_rtc_time - suspend_rtc_time;
- 
-@@ -44,7 +49,12 @@ static int timer_suspend(struct sys_devi
- 	WARN_ON(!ppc_md.get_rtc_time);
- 
- 	get_rtc_time(&suspend_rtc_tm);
--	rtc_tm_to_time(&suspend_rtc_tm, &suspend_rtc_time);
-+	suspend_rtc_time = mktime(suspend_rtc_tm.tm_year + 1900,
-+				  suspend_rtc_tm.tm_mon + 1,
-+				  suspend_rtc_tm.tm_mday,
-+				  suspend_rtc_tm.tm_hour,
-+				  suspend_rtc_tm.tm_min,
-+				  suspend_rtc_tm.tm_sec);
- 
- 	return 0;
- }
---- wireless-dev.orig/arch/powerpc/Kconfig	2007-05-02 16:22:07.619177080 +0200
-+++ wireless-dev/arch/powerpc/Kconfig	2007-05-02 16:22:12.759177080 +0200
-@@ -11,11 +11,6 @@ config PPC64
- 	  This option selects whether a 32-bit or a 64-bit kernel
- 	  will be built.
- 
--config PPC_PM_NEEDS_RTC_LIB
--	bool
--	select RTC_LIB
--	default y if PM
--
- config PPC32
- 	bool
- 	default y if !PPC64
+while at the ps3fb code I wonder if the initiator of the RSX petition ever =
+spoke
+with some Sony related kernel hackers regarding allowing any kind of
+acceleration:
+
+  http://www.petitiononline.com/RSX/petition.html
+
+While 3d acceleration is not that important for me on the PS3, just specifi=
+ng
+a exact resolution, to e.g. drive non-TV display, does also not appear to be
+possible with the current ps3fb code and the hypervisor, only TV resolutions
+are support, right?
+
+Is there any chance we can get at least modesetting and basic 2D accelerati=
+on
+(best some alpha-bitblt & colorspace conversion + scaling)?
+
+Yours,
+
+=2D-=20
+  Ren=E9 Rebe - ExactCODE GmbH - Europe, Germany, Berlin
+  http://exactcode.de | http://t2-project.org | http://rene.rebe.name
