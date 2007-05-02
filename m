@@ -1,25 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id A92A8DDF39
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 18:26:13 +1000 (EST)
-Subject: Re: [PATCH] powermac: proper time of day after resume
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17976.5964.593278.752595@cargo.ozlabs.ibm.com>
-References: <20061213123819.403286000@sipsolutions.net>
-	<20061213123945.386891000@sipsolutions.net>
-	<1169620444.18754.66.camel@localhost.localdomain>
-	<1170357390.4036.9.camel@johannes.berg>
-	<17976.5964.593278.752595@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-4rKYgrOSF9HBkfi9VjD3"
-Date: Wed, 02 May 2007 10:26:53 +0200
-Message-Id: <1178094413.13233.45.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+Return-Path: <ml@stefan-roese.de>
+Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.160])
+	by ozlabs.org (Postfix) with ESMTP id 18319DDF04
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 20:25:41 +1000 (EST)
+From: Stefan Roese <ml@stefan-roese.de>
+To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
+Subject: Re: Correct location for ADC/DAC drivers
+Date: Wed, 2 May 2007 12:25:53 +0200
+References: <200705011435.45046.ml@stefan-roese.de>
+	<Pine.LNX.4.60.0705012301500.4972@poirot.grange>
+In-Reply-To: <Pine.LNX.4.60.0705012301500.4972@poirot.grange>
+MIME-Version: 1.0
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705021225.54417.ml@stefan-roese.de>
+Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -29,41 +23,22 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+On Tuesday 01 May 2007 23:03, Guennadi Liakhovetski wrote:
+> On Tue, 1 May 2007, Stefan Roese wrote:
+> > I'm in the stage of integrating some ADC and DAC drivers for the AMCC
+> > 405EZ PPC and looking for the correct location to place these drivers in
+> > the Linux source tree. The drivers are basically character-drivers, so my
+> > first thought is to put them in "drivers/char/adc/foo.c" or
+> > "drivers/char/adc_foo.c". Is this a good solution?
+>
+> drivers/mfd following ucb1x00?
 
---=-4rKYgrOSF9HBkfi9VjD3
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+Perhaps. Not sure though. I just checked again and I still think the drivers 
+will better fit for "our" drivers because of the chrdev nature.
 
-On Wed, 2007-05-02 at 14:45 +1000, Paul Mackerras wrote:
+Is there a maintainer for this "drivers/mfd" directory?
 
-> > +	/* get current RTC time and convert to seconds */
-> > +	get_rtc_time(&cur_rtc_tm);
-> > +	rtc_tm_to_time(&cur_rtc_tm, &cur_rtc_time);
->=20
-> Why not just use get_boot_time() here?
+Thanks.
 
-Hm, I don't quite remember. I think I originally had it that way and Ben
-asked me to do this, but I may be wrong. Ben, can you remember anything
-of that? If not I'll dig through my old mail.
-
->   Or if not that, then use
-> mktime() instead of rtc_tm_to_time().  Either way we don't need to
-> select RTC_LIB.
-
-Hm, I'll have to look into mktime() and see if I can change that.
-
-johannes
-
---=-4rKYgrOSF9HBkfi9VjD3
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGOEtN/ETPhpq3jKURAjm6AJ4k2TvMC9zKI3vXwQMmvNCBqOYz+gCgsv7U
-Pccwy+f0hktC/Z3C+JgWZAQ=
-=We6p
------END PGP SIGNATURE-----
-
---=-4rKYgrOSF9HBkfi9VjD3--
+Best regards,
+Stefan
