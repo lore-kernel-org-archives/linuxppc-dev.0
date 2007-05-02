@@ -1,19 +1,15 @@
-Return-Path: <ml@stefan-roese.de>
-Received: from mo-p00-ob.rzone.de (mo-p00-ob.rzone.de [81.169.146.160])
-	by ozlabs.org (Postfix) with ESMTP id 18319DDF04
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 20:25:41 +1000 (EST)
-From: Stefan Roese <ml@stefan-roese.de>
-To: Guennadi Liakhovetski <g.liakhovetski@gmx.de>
-Subject: Re: Correct location for ADC/DAC drivers
-Date: Wed, 2 May 2007 12:25:53 +0200
-References: <200705011435.45046.ml@stefan-roese.de>
-	<Pine.LNX.4.60.0705012301500.4972@poirot.grange>
-In-Reply-To: <Pine.LNX.4.60.0705012301500.4972@poirot.grange>
+Return-Path: <paulus@ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705021225.54417.ml@stefan-roese.de>
-Cc: linuxppc-dev@ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17976.28170.695715.416339@cargo.ozlabs.ibm.com>
+Date: Wed, 2 May 2007 20:55:06 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] powermac: support G5 CPU hotplug
+In-Reply-To: <1178086872.13233.27.camel@johannes.berg>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<1178086872.13233.27.camel@johannes.berg>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,22 +19,24 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Tuesday 01 May 2007 23:03, Guennadi Liakhovetski wrote:
-> On Tue, 1 May 2007, Stefan Roese wrote:
-> > I'm in the stage of integrating some ADC and DAC drivers for the AMCC
-> > 405EZ PPC and looking for the correct location to place these drivers in
-> > the Linux source tree. The drivers are basically character-drivers, so my
-> > first thought is to put them in "drivers/char/adc/foo.c" or
-> > "drivers/char/adc_foo.c". Is this a good solution?
->
-> drivers/mfd following ucb1x00?
+Johannes Berg writes:
 
-Perhaps. Not sure though. I just checked again and I still think the drivers 
-will better fit for "our" drivers because of the chrdev nature.
+> This patch allows "hotplugging" of CPUs on G5 machines. CPUs that are
+> disabled are put into an idle loop with the decrementer frequency set
+> to minimum. To wake them up again we kick them just like when bringing
+> them up. To stop those CPUs from messing with any global state we stop
+> them from entering the timer interrupt.
 
-Is there a maintainer for this "drivers/mfd" directory?
+Ultimately we want to put the disabled cpus in sleep mode, but that
+will require a suitable cache flush routine.
 
-Thanks.
+For now, the patch mostly looks OK, except that I would prefer that
+you make power4_idle_irqs_softdisabled a separate function from
+power4_idle (and choose a better name while you're there :).  There
+are enough differences between power4_idle and your new routine that
+it would be clearer if they're separate.  For one thing your new
+routine wouldn't need to set _TLF_NAPPING, for another, it wouldn't
+need the conditional branch at the end.  Also you could do the test
+for the nap capability in the caller.
 
-Best regards,
-Stefan
+Paul.
