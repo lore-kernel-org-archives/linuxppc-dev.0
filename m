@@ -1,20 +1,18 @@
-Return-Path: <b07421@freescale.com>
-Received: from az33egw02.freescale.net (az33egw02.freescale.net
-	[192.88.158.103])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "az33egw02.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 195B0DDF74
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 05:57:22 +1000 (EST)
-Date: Wed, 2 May 2007 14:57:12 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: jgarzik@pobox.com
-Subject: [PATCH v2] gianfar: Add I/O barriers when touching buffer descriptor
-	ownership.
-Message-ID: <20070502195712.GA16541@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: netdev@vger.kernel.org, linuxppc-dev@ozlabs.org
+Return-Path: <sprasad@bivio.net>
+MIME-Version: 1.0
+Content-Type: text/plain;
+	charset="us-ascii"
+Subject: RE: PTE entries
+Date: Wed, 2 May 2007 12:58:20 -0700
+Message-ID: <D83235F0F3C86D4D889D8B9A0DA8C6D762D0F8@corpexc01.corp.networkrobots.com>
+In-Reply-To: <1177473008.14873.181.camel@localhost.localdomain>
+References: <D83235F0F3C86D4D889D8B9A0DA8C6D762C6C3@corpexc01.corp.networkrobots.com>
+	<1177376700.14873.40.camel@localhost.localdomain>
+	<D83235F0F3C86D4D889D8B9A0DA8C6D762CA85@corpexc01.corp.networkrobots.com>
+	<1177473008.14873.181.camel@localhost.localdomain>
+From: "Siva Prasad" <sprasad@bivio.net>
+To: "Benjamin Herrenschmidt" <benh@kernel.crashing.org>
+Cc: linuxppc-dev@ozlabs.org, linuxppc-embedded@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,51 +22,44 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-The hardware must not see that is given ownership of a buffer until it is
-completely written, and when the driver receives ownership of a buffer,
-it must ensure that any other reads to the buffer reflect its final
-state.  Thus, I/O barriers are added where required.
+Hi Ben,
 
-Without this patch, I have observed GCC reordering the setting of
-bdp->length and bdp->status in gfar_new_skb.
+First,=20
+Are there any other places where we have self modifying code in Linux
+kernel, other than in arch/powerpc/mm/ppc_mmu_32.c:MMU_init_hw()
+(basically modified create_hpte and flush_hash_page)
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
-This is version 2 of this patch.  I was told that eieio doesn't order
-loads from main memory, so a sync is used instead.  Also, due to
-objectons that iobarrier_* shouldn't be used for main memory, I used
-eieio() instead (a wmb() would be unnecessarily heavy).
+Second,
+Instead of using addis, why can't we move it from SDR1 register and mask
+the second half. SDR1 has the required value. Right?
+May be I am missing something here.
 
- drivers/net/gianfar.c |    3 +++
- 1 files changed, 3 insertions(+), 0 deletions(-)
+Thanks
+- Siva
 
-diff --git a/drivers/net/gianfar.c b/drivers/net/gianfar.c
-index b666a0c..b014d27 100644
---- a/drivers/net/gianfar.c
-+++ b/drivers/net/gianfar.c
-@@ -1025,6 +1025,7 @@ static int gfar_start_xmit(struct sk_buff *skb, struct net_device *dev)
- 
- 	dev->trans_start = jiffies;
- 
-+	eieio();
- 	txbdp->status = status;
- 
- 	/* If this was the last BD in the ring, the next one */
-@@ -1301,6 +1302,7 @@ struct sk_buff * gfar_new_skb(struct net_device *dev, struct rxbd8 *bdp)
- 	bdp->length = 0;
- 
- 	/* Mark the buffer empty */
-+	eieio();
- 	bdp->status |= (RXBD_EMPTY | RXBD_INTERRUPT);
- 
- 	return skb;
-@@ -1484,6 +1486,7 @@ int gfar_clean_rx_ring(struct net_device *dev, int rx_work_limit)
- 	bdp = priv->cur_rx;
- 
- 	while (!((bdp->status & RXBD_EMPTY) || (--rx_work_limit < 0))) {
-+		rmb();
- 		skb = priv->rx_skbuff[priv->skb_currx];
- 
- 		if (!(bdp->status &
--- 
-1.5.0.3
+
+-----Original Message-----
+From: Benjamin Herrenschmidt [mailto:benh@kernel.crashing.org]=20
+Sent: Tuesday, April 24, 2007 8:50 PM
+To: Siva Prasad
+Cc: linuxppc-dev@ozlabs.org; linuxppc-embedded@ozlabs.org
+Subject: RE: PTE entries
+
+On Tue, 2007-04-24 at 20:34 -0700, Siva Prasad wrote:
+> Thanks Ben.
+>=20
+> I managed to fix this. I am working on how best we can rewrite the
+self
+> modifying code we have for create_hpte routine. I would prefer to read
+> from SDR1, than to hardcode (or self modify the code) the way it is
+done
+> now.
+>=20
+> Feel free to let me know what you think.
+
+Self-modifying allows better performances in that very critical code
+path...
+
+Why would you need to change that code anyway ?
+
+Ben.
