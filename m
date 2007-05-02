@@ -1,18 +1,21 @@
-Return-Path: <arnd@arndb.de>
-Received: from moutng.kundenserver.de (moutng.kundenserver.de
-	[212.227.126.171]) by ozlabs.org (Postfix) with ESMTP id 1EAD6DDFBF
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 17:48:13 +1000 (EST)
-From: Arnd Bergmann <arnd@arndb.de>
-To: linuxppc-dev@ozlabs.org
-Subject: Re: [PATCH] [POWERPC] 8xx: mpc885ads pcmcia support
-Date: Thu, 3 May 2007 09:48:03 +0200
-References: <20070503065435.4533.64938.stgit@localhost.localdomain>
-In-Reply-To: <20070503065435.4533.64938.stgit@localhost.localdomain>
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="iso-8859-1"
-Message-Id: <200705030948.03984.arnd@arndb.de>
-Cc: linux-pcmcia@lists.infradead.org, linux-kernel@vger.kernel.org
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 988D2DE00F
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 18:40:32 +1000 (EST)
+Subject: [PATCH v2] powermac: support G5 CPU hotplug
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17976.28170.695715.416339@cargo.ozlabs.ibm.com>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<1178086872.13233.27.camel@johannes.berg>
+	<17976.28170.695715.416339@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 22:33:51 +0200
+Message-Id: <1178138031.13233.69.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,85 +25,159 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thursday 03 May 2007, Vitaly Bordug wrote:
+This patch allows "hotplugging" of CPUs on G5 machines. CPUs that are
+disabled are put into an idle loop with the decrementer frequency set
+to minimum. To wake them up again we kick them just like when bringing
+them up. To stop those CPUs from messing with any global state we stop
+them from entering the timer interrupt.
 
-> Adds support for PowerQuicc on-chip PCMCIA. The driver is implemented as
-> of_device, so only arch/powerpc stuff is capable to use it, which now
-> implies only mpc885ads reference board.
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
+Cc: Benjamin Herrenschmidt <benh@kernel.crashing.org>
 
-Very nice, looks much better now than the previous version.
+---
+ arch/powerpc/kernel/idle_power4.S       |   21 ++++++++++++
+ arch/powerpc/platforms/powermac/setup.c |   52 ++++++++++++++++++++++++++++++--
+ arch/powerpc/platforms/powermac/smp.c   |   12 ++++++-
+ include/asm-powerpc/machdep.h           |    1 
+ 4 files changed, 82 insertions(+), 4 deletions(-)
 
-> diff --git a/arch/powerpc/boot/dts/mpc885ads.dts b/arch/powerpc/boot/dts/mpc885ads.dts
-> index 110bf61..89d585f 100644
-> --- a/arch/powerpc/boot/dts/mpc885ads.dts
-> +++ b/arch/powerpc/boot/dts/mpc885ads.dts
-> @@ -112,6 +112,18 @@
->  			compatible = "CPM";
->  		};
->  
-> +               pcmcia@0080 {
-> +                       linux,phandle = <0080>;
-> +                       #interrupt-cells = <1>;
-> +                       #size-cells = <2>;
-> +                       compatible = "8xx";
-> +                       device_type = "pcmcia";
-> +                       reg = <80 80>;
-> +                       clock-frequency = <2faf080>;
-> +                       interrupt-parent = <ff000000>;
-> +                       interrupts = <d 1>;
-> +		};
-> +
->  		cpm@ff000000 {
->  			linux,phandle = <ff000000>;
->  			#address-cells = <1>;
-
-The compatible property should be a little more specific, imho. Since there
-are differences in how things are done depending on the board, it would be
-good to tell the exact method from the pcmcia node itself.
-
-For example, you could make this
-
-	compatible = "8xx\0mpc885ads";
-
-Your code doesn't currently use this, I like to have the option.
-
-> +#ifdef CONFIG_PCMCIA_M8XX
-> +static void pcmcia_hw_setup(int slot, int enable);
-> +static int pcmcia_set_voltage(int slot, int vcc, int vpp);
-> +
-> +struct mpc8xx_pcmcia_ops m8xx_pcmcia_ops = {
-> +	.hw_ctrl = pcmcia_hw_setup,
-> +	.voltage_set = pcmcia_set_voltage,
-> +};
-> +#endif
-> +
->  void __init mpc885ads_board_setup(void)
->  {
->  	cpm8xx_t *cp;
-
-If you define the global variable in the board code, you can not have multiple
-board implementations in a multiplatform kernel.
-In order to make that work, you'd need to have the definition of m8xx_pcmcia_ops
-in 8xx common code, and then assign the two function pointers dynamically in the
-board initialization.
-
-> +	if (of_address_to_resource(np, 0, &r))
-> +		return -EINVAL;
-> +
-> +	pcmcia = ioremap(r.start, r.end - r.start + 1);
-> +	if(pcmcia == NULL)
-> +		return -EINVAL;
-
-A new of_iomap() function was recently added that allows you
-to do these two steps in one.
-
-> -/* connect interrupt and disable CxOE */
-> +	out_be32(M8XX_PGCRX(0), M8XX_PGCRX_CXOE | (mk_int_int_mask(hwirq) << 16));
-> +	out_be32(M8XX_PGCRX(1), M8XX_PGCRX_CXOE | (mk_int_int_mask(hwirq) << 16));
-
-I'm not sure why you need to use the hwirq here, it should not be visible to
-device drivers normally.
-
-Is this the same as enable_irq(pcmcia_schlvl) ?
-
-	Arnd <><
+--- wireless-dev.orig/arch/powerpc/platforms/powermac/smp.c	2007-05-02 16:30:42.149177080 +0200
++++ wireless-dev/arch/powerpc/platforms/powermac/smp.c	2007-05-02 16:32:07.629177080 +0200
+@@ -900,7 +900,7 @@ void smp_core99_cpu_die(unsigned int cpu
+ 	cpu_dead[cpu] = 0;
+ }
+ 
+-#endif
++#endif /* CONFIG_HOTPLUG_CPU && CONFIG_PP32 */
+ 
+ /* Core99 Macs (dual G4s and G5s) */
+ struct smp_ops_t core99_smp_ops = {
+@@ -910,8 +910,16 @@ struct smp_ops_t core99_smp_ops = {
+ 	.setup_cpu	= smp_core99_setup_cpu,
+ 	.give_timebase	= smp_core99_give_timebase,
+ 	.take_timebase	= smp_core99_take_timebase,
+-#if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC32)
++#if defined(CONFIG_HOTPLUG_CPU)
++# if defined(CONFIG_PPC32)
+ 	.cpu_disable	= smp_core99_cpu_disable,
+ 	.cpu_die	= smp_core99_cpu_die,
++# endif
++# if defined(CONFIG_PPC64)
++	.cpu_disable	= generic_cpu_disable,
++	.cpu_die	= generic_cpu_die,
++	/* intentionally do *NOT* assign cpu_enable,
++	 * the generic code will use kick_cpu then! */
++# endif
+ #endif
+ };
+--- wireless-dev.orig/arch/powerpc/platforms/powermac/setup.c	2007-05-02 16:30:42.199177080 +0200
++++ wireless-dev/arch/powerpc/platforms/powermac/setup.c	2007-05-02 21:20:43.239175543 +0200
+@@ -444,6 +444,9 @@ static int initializing = 1;
+ static int pmac_late_init(void)
+ {
+ 	initializing = 0;
++	/* this is udbg (which is __init) and we can later use it during
++	 * cpu hotplug (in smp_core99_kick_cpu) */
++	ppc_md.progress = NULL;
+ 	return 0;
+ }
+ 
+@@ -661,7 +664,52 @@ static int pmac_pci_probe_mode(struct pc
+ 		return PCI_PROBE_NORMAL;
+ 	return PCI_PROBE_DEVTREE;
+ }
+-#endif
++
++#ifdef CONFIG_HOTPLUG_CPU
++/* access per cpu vars from generic smp.c */
++DECLARE_PER_CPU(int, cpu_state);
++
++static void pmac_cpu_die(void)
++{
++	/*
++	 * turn off as much as possible, we'll be
++	 * kicked out as this will only be invoked
++	 * on core99 platforms for now ...
++	 */
++
++	printk(KERN_INFO "CPU#%d offline\n", smp_processor_id());
++	__get_cpu_var(cpu_state) = CPU_DEAD;
++	smp_wmb();
++
++	/*
++	 * during the path that leads here preemption is disabled,
++	 * reenable it now so that when coming up preempt count is
++	 * zero correctly
++	 */
++	preempt_enable();
++
++	/*
++	 * hard-disable interrupts for the non-NAP case, the NAP code
++	 * needs to re-enable interrupts (but soft-disables them)
++	 */
++	hard_irq_disable();
++
++	while (1) {
++		/* let's not take timer interrupts too often ... */
++		set_dec(0x7fffffff);
++
++		/* should always be true at this point */
++		if (cpu_has_feature(CPU_FTR_CAN_NAP))
++			power4_cpu_offline_powersave();
++		else {
++			HMT_low();
++			HMT_very_low();
++		}
++	}
++}
++#endif /* CONFIG_HOTPLUG_CPU */
++
++#endif /* CONFIG_PPC64 */
+ 
+ define_machine(powermac) {
+ 	.name			= "PowerMac",
+@@ -698,6 +746,6 @@ define_machine(powermac) {
+ 	.phys_mem_access_prot	= pci_phys_mem_access_prot,
+ #endif
+ #if defined(CONFIG_HOTPLUG_CPU) && defined(CONFIG_PPC64)
+-	.cpu_die		= generic_mach_cpu_die,
++	.cpu_die		= pmac_cpu_die,
+ #endif
+ };
+--- wireless-dev.orig/arch/powerpc/kernel/idle_power4.S	2007-05-02 16:30:42.229177080 +0200
++++ wireless-dev/arch/powerpc/kernel/idle_power4.S	2007-05-02 16:47:02.219177080 +0200
+@@ -53,3 +53,24 @@ END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
+ 	isync
+ 	b	1b
+ 
++_GLOBAL(power4_cpu_offline_powersave)
++	/* Go to NAP now */
++	mfmsr	r7
++	rldicl	r0,r7,48,1
++	rotldi	r0,r0,16
++	mtmsrd	r0,1			/* hard-disable interrupts */
++	li	r0,1
++	li	r6,0
++	stb	r0,PACAHARDIRQEN(r13)	/* we'll hard-enable shortly */
++	stb	r6,PACASOFTIRQEN(r13)	/* soft-disable irqs */
++BEGIN_FTR_SECTION
++	DSSALL
++	sync
++END_FTR_SECTION_IFSET(CPU_FTR_ALTIVEC)
++	ori	r7,r7,MSR_EE
++	oris	r7,r7,MSR_POW@h
++	sync
++	isync
++	mtmsrd	r7
++	isync
++	blr
+--- wireless-dev.orig/include/asm-powerpc/machdep.h	2007-05-02 16:30:42.299177080 +0200
++++ wireless-dev/include/asm-powerpc/machdep.h	2007-05-02 21:20:10.449175543 +0200
+@@ -248,6 +248,7 @@ struct machdep_calls {
+ };
+ 
+ extern void power4_idle(void);
++extern void power4_cpu_offline_powersave(void);
+ extern void ppc6xx_idle(void);
+ 
+ /*
