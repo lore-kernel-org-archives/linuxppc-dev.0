@@ -1,24 +1,20 @@
-Return-Path: <kim.phillips@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id AB3ADDDF2F
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:19:14 +1000 (EST)
-Date: Wed, 2 May 2007 09:19:01 -0500
-From: Kim Phillips <kim.phillips@freescale.com>
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: patches for 2.6.22
-Message-Id: <20070502091901.4c37ecbb.kim.phillips@freescale.com>
-In-Reply-To: <42664CF1-75AF-4343-BC50-870D3614C683@kernel.crashing.org>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<20070430145119.6713490e.kim.phillips@freescale.com>
-	<42664CF1-75AF-4343-BC50-870D3614C683@kernel.crashing.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org, jeff@garzik.org,
-	netdev@vger.kernel.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 4D5F2DDF8D
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:21:40 +1000 (EST)
+In-Reply-To: <20070501160538.GA24292@ld0162-tx32.am.freescale.net>
+References: <20070501160538.GA24292@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <E8649267-DE22-4700-BF33-A9EB744B11DC@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH] Remove duplicate export of __div64_32.
+Date: Wed, 2 May 2007 09:20:54 -0500
+To: Scott Wood <scottwood@freescale.com>
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,15 +24,13 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2 May 2007 09:12:36 -0500
-Kumar Gala <galak@kernel.crashing.org> wrote:
 
-> 
-> I'll pull patches 1, 3, 4 and wait on the dts changes until you sort  
-> of the ucc driver issues with Jeff.
+On May 1, 2007, at 11:05 AM, Scott Wood wrote:
 
-sounds good.  I was waiting for the get_property -> of_get_propery
-patches for ucc_geth before I submitted the follow-on patch to change
-interface-type and remove max-speed.  It's out now, so I can proceed.
+> Change 3927f2e8f9afa3424bb51ca81f7abac01ffd0005 moved lib/lib64.c from
+> lib-y to obj-y, preventing the export in ppc_ksyms.c from overriding
+> the one in lib, and thus causing a duplicate-export warning.
 
-Kim
+I assume you mean lib/div64.c?
+
+- k
