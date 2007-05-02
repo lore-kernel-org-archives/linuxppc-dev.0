@@ -1,23 +1,20 @@
-Return-Path: <jwilliams@itee.uq.edu.au>
-Received: from gum.itee.uq.edu.au (gum.itee.uq.edu.au [130.102.66.1])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D15BCDDF3C
+Return-Path: <a.llano@usyscom.com>
+Received: from correo.ziv.es (eu31-237.clientes.euskaltel.es [212.55.31.237])
+	by ozlabs.org (Postfix) with ESMTP id 22B27DDF11
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 May 2007 16:18:59 +1000 (EST)
-Message-ID: <46382D47.1090109@itee.uq.edu.au>
-Date: Wed, 02 May 2007 16:18:47 +1000
-From: John Williams <jwilliams@itee.uq.edu.au>
+	Wed,  2 May 2007 18:01:17 +1000 (EST)
+Subject: Re: mpc5200 and spi bus
+From: "Asier Llano Palacios" <a.llano@usyscom.com>
+To: "Txema Lopez" <tlopez@aotek.es>
+In-Reply-To: <4631EF88.3060808@aotek.es>
+References: <1177595421.9950.4.camel@a.llano.llano> <4630BBF9.7000305@aotek.es>
+	<1177670193.9950.9.camel@a.llano.llano> <4631EF88.3060808@aotek.es>
+Content-Type: text/plain;
+	charset="iso-8859-1"
+Date: Wed, 02 May 2007 10:02:44 +0200
+Message-ID: <1178092964.25579.7.camel@a.llano.llano>
 MIME-Version: 1.0
-To: Grant Likely <grant.likely@secretlab.ca>
-Subject: Re: [RFC] uartlite driver MicroBlaze compatability
-References: <4636C836.4050502@itee.uq.edu.au>	
-	<528646bc0704302255j3a825f10vbffd4bac961b28d7@mail.gmail.com>	
-	<4636E142.8010104@itee.uq.edu.au>
-	<528646bc0705012247p4a0fff63oa8d98364d5f639b0@mail.gmail.com>
-In-Reply-To: <528646bc0705012247p4a0fff63oa8d98364d5f639b0@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: Peter Korsgaard <jacmet@sunsite.dk>, linuxppc-embedded@ozlabs.org
+Cc: linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -28,58 +25,69 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Grant Likely wrote:
-> On 5/1/07, John Williams <jwilliams@itee.uq.edu.au> wrote:
-> 
->> Grant Likely wrote:
->> > However, the uartlite is *not* an 8250.  The 8250 turns up all over
->> > the place and it's registers are defined as 8 bit wide.  The
->> > offset-by-3 stuff is part of the plat_serial8250_port structure which
->> > is also used to specify .regshift (increment between registers).
->> > Whereas the UARTLITE is defined as a 32 bit device and it doesn't show
->> > up in anywhere near as many designs.  Registers are always 4 bytes
->> > wide and are always located at multiples of 4 bytes off the base
-> 
-> Hmm, I think I was smoking something last night.  Address used for 8
-> bit access should not be affected by CPU endianess.  After David's
-> comments, I reread the uartlite documentation.  The current design is
-> definately for 32bit OPB bus connections, but it looks like there is a
-> posibility for xilinx to add a 16 or 8 bit attachment.  Since the
-> uartlite design explicitly supports 8, 16 and 32 bit access, sticking
-> with 8 bit io may be the safest.  
+El vie, 27-04-2007 a las 14:41 +0200, Txema Lopez escribi=F3:
+> Asier Llano Palacios wrote:
+>=20
+> >I'm working with the a linux 2.6.20.9 with patches from Sylvain's =
+tree.
+> >I've been looking the Den'x 2.5.xx SPI support and it seems that it =
+is
+> >done through GPIOs.=20
+> >
+> =BF2.5.xx?. I talked about a 2.4.xx version.
+>=20
+Sorry this was a mistyping. I was pretending to say 2.4.xx.
 
-To be honest I don't think that will ever happen - just because the OPB 
-bus data width is parameterisable, doesn't mean that it actually *works* 
-or has been tested on anything other than 32-bits wide.  I've certainly 
-never heard of anyone doing so, on either MicroBlaze or PPC.
+> >I'd like a native SPI implementation, using the
+> >hardware of the MPC5200, because of the performance issue of using a
+> >GPIO, because I'd like to use it at full speed.
+> >
+> >Is it done really with GPIOs? If so, is there any other =
+implementation?
+> > =20
+> >
+> Yes, you can use the MPC5200's dedicated SPI (spi-algo-mpc5xxx.c) or =
+use=20
+> a PSC in SPI codec mode (spi-algo-mpc5xxx-psc.c).
 
-but, I won't fight over it :)
+Thank you very much. I don't know where I was looking. I've seen the
+code and it seems interesting and easy to port.
 
-Either way, it will still require a code change if/when someone does a 
-16/8 bit wide OPB bus.  Whether they change the IO access operation, or 
-a hardcoded constant, it's still not perfect.
+> >If it is possible I'd like it to be for 2.6.x.
+> > =20
+> >
+> I don't know nothing about the MPC5200 SPI implementation in the 2.6.x =
 
-Of course the real solution here is to create an OPB bus driver, with  a 
-'width' field that you can pull out of XPAR, and so on... Use that 
-instead of platform bus, and all this rubbish can be dealt with cleanly.
+> kernel.
+>=20
 
-> However, I still think the
-> application of the 3 byte offset should be done in the driver, and not
-> in the platform bus registration.
+I'll have a look. If don't see anything the code from 2.4.x is good
+starting point to port it.
 
-If it has to be done, I agree the driver is the place to put it.
+> Best regards,
 
-> I've reworked the patch with the following changes
-> - remove 3 byte offset from platform bus registration.
-> - added ulite_in/ulite_out macros to make changing bus attachment
-> details simpler if xilinx changes the uartlite design.
-> - stick with 8 bit IO.
-
-It works fine, however perhaps a comment explaining the +3 offset might 
-be appreciated by those who follow.
-
-  > Tested on PPC.  John, can you please test on microblaze?
-
-Acked-by: John Williams <jwilliams@itee.uq.edu.au>
-
-John
+Thank you very much for the information.=20
+=20
+----------------------------------------- PLEASE NOTE =
+-------------------------------------------
+This message, along with any attachments, may be confidential or legally =
+privileged.=20
+It is intended only for the named person(s), who is/are the only =
+authorized recipients.
+If this message has reached you in error, kindly destroy it without =
+review and notify the sender immediately.
+Thank you for your help.
+=B5SysCom uses virus scanning software but excludes any liability for =
+viruses contained in any attachment.
+=20
+------------------------------------ ROGAMOS LEA ESTE TEXTO =
+-------------------------------
+Este mensaje y sus anexos pueden contener informaci=F3n confidencial y/o =
+con derecho legal.=20
+Est=E1 dirigido =FAnicamente a la/s persona/s o entidad/es rese=F1adas =
+como =FAnico destinatario autorizado.
+Si este mensaje le hubiera llegado por error, por favor elim=EDnelo sin =
+revisarlo ni reenviarlo y notif=EDquelo inmediatamente al remitente. =
+Gracias por su colaboraci=F3n. =20
+=B5SysCom utiliza software antivirus, pero no se hace responsable de los =
+virus contenidos en los ficheros anexos.
