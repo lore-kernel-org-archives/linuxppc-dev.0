@@ -1,24 +1,24 @@
-Return-Path: <jdl@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
+	[151.189.21.43])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
+	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 5E480DDF59
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 03:51:33 +1000 (EST)
-Subject: Re: [PATCH 1/6] powerpc: split out CPU specific options into a new
-	Kconfig file
-From: Jon Loeliger <jdl@freescale.com>
-To: Timur Tabi <timur@freescale.com>
-In-Reply-To: <4638B42B.7040208@freescale.com>
-References: <20070502114709.074174446@arndb.de>
-	<20070502115644.638734471@arndb.de>  <4638B42B.7040208@freescale.com>
-Content-Type: text/plain
-Message-Id: <1178128283.32136.13.camel@ld0161-tx32>
-Mime-Version: 1.0
-Date: Wed, 02 May 2007 12:51:24 -0500
-Cc: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>,
-	Paul Mackerras <paulus@samba.org>, Arnd Bergmann <arnd@arndb.de>
+	by ozlabs.org (Postfix) with ESMTP id F28D1DDF92
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 03:58:31 +1000 (EST)
+In-Reply-To: <1178116438.13233.65.camel@johannes.berg>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<1178086872.13233.27.camel@johannes.berg>
+	<17976.28170.695715.416339@cargo.ozlabs.ibm.com>
+	<1178116438.13233.65.camel@johannes.berg>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9e6a5a396bff2c6bc4728c9fa0b1a0c8@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] powermac: support G5 CPU hotplug
+Date: Wed, 2 May 2007 19:57:47 +0200
+To: Johannes Berg <johannes@sipsolutions.net>
+Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,30 +28,20 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Wed, 2007-05-02 at 10:54, Timur Tabi wrote:
-> Arnd Bergmann wrote:
-> 
-> > +config CLASSIC32
-> > +	bool "52xx/6xx/7xx/74xx"
-> > +	select PPC_FPU
-> > +	select 6xx
-> > +	help
-> > +	  There are four families of PowerPC chips supported.  The more common
-> > +	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
-> > +	  versions (821, 823, 850, 855, 860, 52xx, 82xx, 83xx), the AMCC
-> > +	  embedded versions (403 and 405) and the high end 64 bit Power
-> > +	  processors (POWER 3, POWER4, and IBM PPC970 also known as G5).
-> 
-> Is this help text still accurate?  The bool line says "52xx/6xx/7xx/74xx", but you talk 
-> about many more processors in the help text.  You mention the 83xx, but not the 85xx or 
-> 86xx, nor do you mention Freescale.  Not only that, but the help text implies that 8xx, 
-> 52xx, 82xx, and 83xx are part of the same family, but the bool text implies that 52xx is 
-> part of a different family.
+>> Ultimately we want to put the disabled cpus in sleep mode, but that
+>> will require a suitable cache flush routine.
+>
+> I don't have any docs for the particular processors the G5s have, do
+> they have a sleep mode?
 
-Timur,
+Yes; they have many different power saving modes
+(doze, nap, deep nap, sleep), and the clock can
+be scaled down, too.  The details are different
+for each of 970, 970FX, 970MP.
 
-Please read through the rest of the patch sequence.
-This patch was just the "first step", moving things
-around without additional changes.
+Documentation for 970FX and 970MP is here:
+<http://www-306.ibm.com/chips/techlib/techlib.nsf/products/ 
+PowerPC_9XX_Microprocessors>
 
-jdl
+
+Segher
