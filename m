@@ -1,14 +1,15 @@
 Return-Path: <dale@farnsworth.org>
 From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 2 May 2007 14:43:12 -0700
+Date: Wed, 2 May 2007 14:41:04 -0700
 To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
-Subject: [PATCH 8/13] powerpc: Add arch/powerpc mv64x60_eth platform data setup
-Message-ID: <20070502214312.GC27253@xyzzy.farnsworth.org>
+Subject: [PATCH 7/13] powerpc: Add arch/powerpc mv64x60 MPSC platform data
+	setup
+Message-ID: <20070502214104.GB27253@xyzzy.farnsworth.org>
 References: <20070425234630.GA4046@mag.az.mvista.com>
-	<20070426000009.GJ4046@mag.az.mvista.com>
+	<20070425235939.GI4046@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-In-Reply-To: <20070426000009.GJ4046@mag.az.mvista.com>
+In-Reply-To: <20070425235939.GI4046@mag.az.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -18,121 +19,190 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-
 Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
----
-I rearranged some of the property setting code.
 
- arch/powerpc/sysdev/mv64x60_dev.c |  123 +++++++++++++++++++++++++++-
- drivers/net/Kconfig               |    2 
- 2 files changed, 123 insertions(+), 2 deletions(-)
+---
+
+I added a comment describing using platform_device rather than
+of_platform_device.  I also rearranged some of the property
+setting code.
+
+ arch/powerpc/platforms/embedded6xx/Kconfig |    3 
+ arch/powerpc/sysdev/Makefile               |    2 
+ arch/powerpc/sysdev/mv64x60_dev.c          |  201 +++++++++++++++++++
+ 3 files changed, 205 insertions(+), 1 deletion(-)
 
 Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_dev.c
 ===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/mv64x60_dev.c
+--- /dev/null
 +++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_dev.c
-@@ -182,6 +182,123 @@ unreg:
- 	return err;
- }
- 
+@@ -0,0 +1,201 @@
 +/*
-+ * Create mv64x60_eth platform devices
++ * Platform device setup for Marvell mv64360/mv64460 host bridges (Discovery)
++ *
++ * Author: Dale Farnsworth <dale@farnsworth.org>
++ *
++ * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
 + */
-+static int __init eth_register_shared_pdev(struct device_node *np)
++
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/mv643xx.h>
++#include <linux/platform_device.h>
++
++#include <asm/prom.h>
++
++/*
++ * These functions provide the necessary setup for the mv64x60 drivers.
++ * These drivers are unusual in that they work on both the MIPS and PowerPC
++ * architectures.  Because of that, the drivers do not support the normal
++ * PowerPC of_platform_bus_type.  They support platform_bus_type instead.
++ */
++
++/*
++ * Create MPSC platform device
++ */
++static int __init mv64x60_mpsc_register_shared_pdev(struct device_node *np)
 +{
 +	struct platform_device *pdev;
-+	struct resource res;
++	struct resource r[2];
++	struct mpsc_shared_pdata pdata;
++	const phandle *ph;
++	struct device_node *mpscrouting, *mpscintr;
 +	int err;
 +
-+	np = of_get_parent(np);
-+	if (!np)
++	ph = of_get_property(np, "mpscrouting", NULL);
++	mpscrouting = of_find_node_by_phandle(*ph);
++	if (!mpscrouting)
 +		return -ENODEV;
 +
-+	err = of_address_to_resource(np, 0, &res);
-+	of_node_put(np);
++	err = of_address_to_resource(mpscrouting, 0, &r[0]);
++	of_node_put(mpscrouting);
 +	if (err)
 +		return err;
 +
-+	pdev = platform_device_register_simple(MV643XX_ETH_SHARED_NAME, 0,
-+					       &res, 1);
++	ph = of_get_property(np, "mpscintr", NULL);
++	mpscintr = of_find_node_by_phandle(*ph);
++	if (!mpscintr)
++		return -ENODEV;
++
++	err = of_address_to_resource(mpscintr, 0, &r[1]);
++	of_node_put(mpscintr);
++	if (err)
++		return err;
++
++	pdev = platform_device_register_simple(MPSC_SHARED_NAME, 0, r, 2);
 +	if (IS_ERR(pdev))
 +		return PTR_ERR(pdev);
++
++	memset(&pdata, 0, sizeof(pdata));
++
++	err = platform_device_add_data(pdev, &pdata, sizeof(pdata));
++	if (err)
++		platform_device_unregister(pdev);
 +
 +	return 0;
 +}
 +
-+static int __init mv64x60_eth_device_setup(struct device_node *np)
++static int __init mv64x60_mpsc_device_setup(struct device_node *np)
 +{
-+	struct resource res;
-+	struct mv643xx_eth_platform_data pdata;
++	struct resource r[5];
++	struct mpsc_pdata pdata;
 +	struct platform_device *pdev;
-+	struct device_node *phy;
-+	const u8 *mac_addr;
-+	const void *prop;
++	const unsigned int *prop;
 +	const phandle *ph;
++	struct device_node *sdma, *brg;
 +	int err;
++	int port_number;
 +	static int called_count;
 +
-+	memset(&res, 0, sizeof(res));
-+	of_irq_to_resource(np, 0, &res);
++	memset(&r, 0, sizeof(r));
++
++	err = of_address_to_resource(np, 0, &r[0]);
++	if (err)
++		return err;
++
++	of_irq_to_resource(np, 0, &r[4]);
++
++	ph = of_get_property(np, "sdma", NULL);
++	sdma = of_find_node_by_phandle(*ph);
++	if (!sdma)
++		return -ENODEV;
++
++	of_irq_to_resource(sdma, 0, &r[3]);
++	err = of_address_to_resource(sdma, 0, &r[1]);
++	of_node_put(sdma);
++	if (err)
++		return err;
++
++	ph = of_get_property(np, "brg", NULL);
++	brg = of_find_node_by_phandle(*ph);
++	if (!brg)
++		return -ENODEV;
++
++	err = of_address_to_resource(brg, 0, &r[2]);
++	of_node_put(brg);
++	if (err)
++		return err;
 +
 +	memset(&pdata, 0, sizeof(pdata));
++
++	pdata.cache_mgmt = 1; /* All current revs need this set */
 +
 +	prop = of_get_property(np, "block-index", NULL);
 +	if (!prop)
 +		return -ENODEV;
-+	pdata.port_number = *(int *)prop;
++	port_number = *(int *)prop;
 +
-+	mac_addr = of_get_mac_address(np);
-+	if (mac_addr)
-+		memcpy(pdata.mac_addr, mac_addr, 6);
-+
-+	prop = of_get_property(np, "speed", NULL);
++	prop = of_get_property(np, "max_idle", NULL);
 +	if (prop)
-+		pdata.speed = *(int *)prop;
++		pdata.max_idle = *prop;
 +
-+	prop = of_get_property(np, "tx_queue_size", NULL);
++	prop = of_get_property(brg, "current-speed", NULL);
 +	if (prop)
-+		pdata.tx_queue_size = *(int *)prop;
++		pdata.default_baud = *prop;
 +
-+	prop = of_get_property(np, "rx_queue_size", NULL);
++	/* Default is 8 bits, no parity, no flow control */
++	pdata.default_bits = 8;
++	pdata.default_parity = 'n';
++	pdata.default_flow = 'n';
++
++	prop = of_get_property(np, "chr_1", NULL);
 +	if (prop)
-+		pdata.rx_queue_size = *(int *)prop;
++		pdata.chr_1_val = *prop;
 +
-+	prop = of_get_property(np, "tx_sram_addr", NULL);
++	prop = of_get_property(np, "chr_2", NULL);
 +	if (prop)
-+		pdata.tx_sram_addr = *(int *)prop;
++		pdata.chr_2_val = *prop;
 +
-+	prop = of_get_property(np, "tx_sram_size", NULL);
++	prop = of_get_property(np, "chr_10", NULL);
 +	if (prop)
-+		pdata.tx_sram_size = *(int *)prop;
++		pdata.chr_10_val = *prop;
 +
-+	prop = of_get_property(np, "rx_sram_addr", NULL);
++	prop = of_get_property(np, "mpcr", NULL);
 +	if (prop)
-+		pdata.rx_sram_addr = *(int *)prop;
++		pdata.mpcr_val = *prop;
 +
-+	prop = of_get_property(np, "rx_sram_size", NULL);
++	prop = of_get_property(brg, "bcr", NULL);
 +	if (prop)
-+		pdata.rx_sram_size = *(int *)prop;
++		pdata.bcr_val = *prop;
 +
-+	ph = of_get_property(np, "phy", NULL);
-+	if (!ph)
-+		return -ENODEV;
++	pdata.brg_can_tune = 1; /* All current revs need this set */
 +
-+	phy = of_find_node_by_phandle(*ph);
-+	if (phy == NULL)
-+		return -ENODEV;
++	prop = of_get_property(brg, "clock-src", NULL);
++	if (prop)
++		pdata.brg_clk_src = *prop;
 +
-+	prop = of_get_property(phy, "reg", NULL);
-+	if (prop) {
-+		pdata.force_phy_addr = 1;
-+		pdata.phy_addr = *(int *)prop;
-+	}
++	prop = of_get_property(brg, "clock-frequency", NULL);
++	if (prop)
++		pdata.brg_clk_freq = *prop;
 +
-+	of_node_put(phy);
-+
-+	pdev = platform_device_register_simple(MV643XX_ETH_NAME,
-+					       pdata.port_number, &res, 1);
++	pdev = platform_device_register_simple(MPSC_CTLR_NAME,
++					       port_number, r, 5);
 +	if (IS_ERR(pdev))
 +		return PTR_ERR(pdev);
 +
@@ -142,7 +212,7 @@ Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_dev.c
 +
 +	/* only register the shared platform device the first time through */
 +	if (called_count++ == 0)
-+		if ((err = eth_register_shared_pdev(np)))
++		if ((err = mv64x60_mpsc_register_shared_pdev(np)))
 +			goto unreg;
 +
 +	return 0;
@@ -152,30 +222,46 @@ Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_dev.c
 +	return err;
 +}
 +
- static int __init mv64x60_device_setup(void)
- {
- 	struct device_node *np = NULL;
-@@ -191,6 +308,10 @@ static int __init mv64x60_device_setup(v
- 		if ((err = mv64x60_mpsc_device_setup(np)))
- 			goto err_ret;
- 
-+	while ((np = of_find_compatible_node(np, "network", "mv64x60-eth")))
-+		if ((err = mv64x60_eth_device_setup(np)))
++static int __init mv64x60_device_setup(void)
++{
++	struct device_node *np = NULL;
++	int err;
++
++	while ((np = of_find_compatible_node(np, "serial", "mpsc")))
++		if ((err = mv64x60_mpsc_device_setup(np)))
 +			goto err_ret;
 +
- 	return 0;
- 
- err_ret:
-Index: linux-2.6-powerpc-df/drivers/net/Kconfig
++	return 0;
++
++err_ret:
++	of_node_put(np);
++	return err;
++}
++arch_initcall(mv64x60_device_setup);
+Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/Makefile
 ===================================================================
---- linux-2.6-powerpc-df.orig/drivers/net/Kconfig
-+++ linux-2.6-powerpc-df/drivers/net/Kconfig
-@@ -2302,7 +2302,7 @@ config UGETH_HAS_GIGA
+--- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/Makefile
++++ linux-2.6-powerpc-df/arch/powerpc/sysdev/Makefile
+@@ -14,7 +14,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
+-obj-$(CONFIG_MV64X60)		+= mv64x60_pic.o
++obj-$(CONFIG_MV64X60)		+= mv64x60_pic.o mv64x60_dev.o
  
- config MV643XX_ETH
- 	tristate "MV-643XX Ethernet support"
--	depends on MOMENCO_OCELOT_C || MOMENCO_JAGUAR_ATX || MV64360 || MOMENCO_OCELOT_3 || (PPC_MULTIPLATFORM && PPC32)
-+	depends on MOMENCO_OCELOT_C || MOMENCO_JAGUAR_ATX || MV64360 || MV64X60 || MOMENCO_OCELOT_3 || (PPC_MULTIPLATFORM && PPC32)
- 	select MII
- 	help
- 	  This driver supports the gigabit Ethernet on the Marvell MV643XX
+ # contains only the suspend handler for time
+ obj-$(CONFIG_PM)		+= timer.o
+Index: linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
+===================================================================
+--- linux-2.6-powerpc-df.orig/arch/powerpc/platforms/embedded6xx/Kconfig
++++ linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -38,6 +38,9 @@ config MPC10X_BRIDGE
+ 	select PPC_INDIRECT_PCI
+ 	default y
+ 
++config MV64X60
++	bool
++
+ config MPC10X_OPENPIC
+ 	bool
+ 	depends on LINKSTATION
