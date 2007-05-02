@@ -1,23 +1,27 @@
-Return-Path: <timur@freescale.com>
-Received: from de01egw01.freescale.net (de01egw01.freescale.net
-	[192.88.165.102])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw01.freescale.net",
-	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id CA568DDF58
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 01:54:29 +1000 (EST)
-Message-ID: <4638B42B.7040208@freescale.com>
-Date: Wed, 02 May 2007 10:54:19 -0500
-From: Timur Tabi <timur@freescale.com>
-MIME-Version: 1.0
-To: Arnd Bergmann <arnd@arndb.de>
-Subject: Re: [PATCH 1/6] powerpc: split out CPU specific options into a new
-	Kconfig file
-References: <20070502114709.074174446@arndb.de>
-	<20070502115644.638734471@arndb.de>
-In-Reply-To: <20070502115644.638734471@arndb.de>
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 3FA51DE050
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 01:54:42 +1000 (EST)
+In-Reply-To: <46389D85.7000301@garzik.org>
+References: <20070427145508.9c5641a2.sfr@canb.auug.org.au>
+	<4633689E.50900@garzik.org>
+	<20070429114446.31f40a30.sfr@canb.auug.org.au>
+	<20070428.204754.62343452.davem@davemloft.net>
+	<3802D7AD-67EC-4FA2-B361-A388AFCB0B94@kernel.crashing.org>
+	<46389D85.7000301@garzik.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <9B877BC8-C064-4CD1-9325-5C3EA925346E@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: [PATCH 2/2] Rename get_property to of_get_property: drivers/net
+Date: Wed, 2 May 2007 10:53:35 -0500
+To: Jeff Garzik <jeff@garzik.org>
+Cc: sfr@canb.auug.org.au, netdev@vger.kernel.org, linuxppc-dev@ozlabs.org,
+	paulus@samba.org, akpm@linux-foundation.org,
+	David Miller <davem@davemloft.net>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,37 +31,30 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Arnd Bergmann wrote:
 
-> +config CLASSIC32
-> +	bool "52xx/6xx/7xx/74xx"
-> +	select PPC_FPU
-> +	select 6xx
-> +	help
-> +	  There are four families of PowerPC chips supported.  The more common
-> +	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
-> +	  versions (821, 823, 850, 855, 860, 52xx, 82xx, 83xx), the AMCC
-> +	  embedded versions (403 and 405) and the high end 64 bit Power
-> +	  processors (POWER 3, POWER4, and IBM PPC970 also known as G5).
+On May 2, 2007, at 9:17 AM, Jeff Garzik wrote:
 
-Is this help text still accurate?  The bool line says "52xx/6xx/7xx/74xx", but you talk 
-about many more processors in the help text.  You mention the 83xx, but not the 85xx or 
-86xx, nor do you mention Freescale.  Not only that, but the help text implies that 8xx, 
-52xx, 82xx, and 83xx are part of the same family, but the bool text implies that 52xx is 
-part of a different family.
+> Kumar Gala wrote:
+>> On Apr 28, 2007, at 10:47 PM, David Miller wrote:
+>>> From: Stephen Rothwell <sfr@canb.auug.org.au>
+>>> Date: Sun, 29 Apr 2007 11:44:46 +1000
+>>>
+>>>> So can I take this as a future OK for architecture specific network
+>>>> drivers changes to go through the architecture trees (cc'd to you)?
+>>>
+>>> It's been my experience that if I'm just working through some
+>>> platform or bus specific API changes, people like Jeff tend to
+>>> not mind if it goes via ARCH trees and the like.
+>> Is this acceptable?   Just want to make sure before I ask Paul to  
+>> pull some changes that touches the following drivers:
+>> drivers/net/fs_enet/mac-scc.c           |    2 +-
+>> drivers/net/ucc_geth.c                  |   30 ++++----
+>> drivers/serial/cpm_uart/cpm_uart_cpm1.c |    4 +-
+>> drivers/serial/cpm_uart/cpm_uart_cpm2.c |    4 +-
+>
+> I don't see a patch, just a diffstat.
 
-> +	  This option is the catch-all for 6xx types, including some of the
-> +	  embedded versions.  Unless there is see an option for the specific
-> +	  chip family you are using, you want this option.
+I haven't sent a patch, just asking the question if I need to break  
+it up or not.
 
-So CLASSIC32 is only for 6xx families, not any of the others?  Then what's the "select 
-6xx" for?  Isn't that redundant?
-
-> +	  You do not want this if you are building a kernel for a 64 bit
-> +	  IBM RS/6000 or an Apple G5, choose 6xx.
-
-This needs to be reworded, as the English doesn't make sense.
-
--- 
-Timur Tabi
-Linux Kernel Developer @ Freescale
+- k
