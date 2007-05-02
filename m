@@ -1,25 +1,24 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 971D8DDF9F
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:03:26 +1000 (EST)
-Subject: Re: [PATCH 1/5] powerpc: generic time suspend/resume code
-From: Johannes Berg <johannes@sipsolutions.net>
-To: michael@ellerman.id.au
-In-Reply-To: <1178103995.14649.3.camel@concordia.ozlabs.ibm.com>
-References: <20070319105352.771599000@sipsolutions.net>
-	<20070319105357.964696000@sipsolutions.net>
-	<1178082143.5296.9.camel@concordia.ozlabs.ibm.com>
-	<1178094317.13233.42.camel@johannes.berg>
-	<1178103995.14649.3.camel@concordia.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-eGvbZCTMbG6yLQJ/4z6J"
-Date: Wed, 02 May 2007 16:04:14 +0200
-Message-Id: <1178114654.13233.58.camel@johannes.berg>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 11DA0DDFA3
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:06:47 +1000 (EST)
+In-Reply-To: <E98E4E57-2322-412F-A58E-A0CCC39DDCE3@kernel.crashing.org>
+References: <Pine.LNX.4.64.0704191615040.25069@localhost.localdomain>
+	<20070424000153.GD23995@crusty.rchland.ibm.com>
+	<ada647m635h.fsf@cisco.com> <200704240746.05129.sr@denx.de>
+	<E98E4E57-2322-412F-A58E-A0CCC39DDCE3@kernel.crashing.org>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <E6D49EC6-F644-4666-BE78-76D7BABE4466@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: What defines a cpu table platform? (was Re: Change 440GP platform to
+	ppc440)
+Date: Wed, 2 May 2007 09:06:00 -0500
+To: Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -30,44 +29,35 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-eGvbZCTMbG6yLQJ/4z6J
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+On May 1, 2007, at 10:38 PM, Kumar Gala wrote:
 
-On Wed, 2007-05-02 at 21:06 +1000, Michael Ellerman wrote:
+>
+> On Apr 24, 2007, at 12:46 AM, Stefan Roese wrote:
+>
+>> On Tuesday 24 April 2007 02:12, Roland Dreier wrote:
+>>>>> I recall dimly that there was some user-visible difference
+>>>>> between the
+>>>>> 440GP and the other 440 processors, and that's why we made the
+>>>>> platform string different.  I don't recall what the difference  
+>>>>> was.
+>>>
+>>> FWIW, I've run the same userspace (binaries) on 405GPr, 440GP and
+>>> 440SPe without any problems.  Not that I'm a 4xx expert by any
+>>> stretch, but I don't know of anything special about the 440GP.
+>>
+>> I don't know of any differences either. So I'm voting to change the
+>> platform
+>> to ppc440 too.
+>
+> After some discussion with Paul we think we figured out why 440GP was
+> marked differently.  I doesn't implement 'isel', and all other  
+> 440's do.
 
-> Ah sorry, I didn't mention prep_defconfig is arch/__ppc__.=20
+This whole discussion makes me wondering what defines a new cpu table  
+platform?  I know one application of this value is for being able to  
+pick "platform" specific/tuned libraries.  Are there other uses?
 
-Ahh, ok.
+If its just for libraries wouldn't the existence of FPUs and SPE/ 
+Altivec warrant different platform types?
 
-> See arch/ppc/Makefile:
->=20
-> core-y                          +=3D arch/ppc/kernel/ arch/powerpc/kernel=
-/ \
->                                    arch/ppc/platforms/ \
->                                    arch/ppc/mm/ arch/ppc/lib/ \
->                                    arch/ppc/syslib/ arch/powerpc/sysdev/ =
-\
->                                    arch/powerpc/lib/
->=20
->=20
-> So I guess we need to add the Kconfig fragment on arch/ppc also?
-
-Yeah, but let me first see later today if I can go without rtc lib as
-Paul has suggested.
-
-johannes
-
---=-eGvbZCTMbG6yLQJ/4z6J
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
-
-iD8DBQBGOJpe/ETPhpq3jKURAjYtAJ0ZQghBWKMSuG0B+0SpDjckA6TRhACfaANk
-6s/8WVY7yetNpaDjm7EnILk=
-=PFMb
------END PGP SIGNATURE-----
-
---=-eGvbZCTMbG6yLQJ/4z6J--
+- k
