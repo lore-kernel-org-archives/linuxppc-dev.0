@@ -1,20 +1,23 @@
-Return-Path: <rene@exactcode.de>
-Received: from mx01.qsc.de (mx01.qsc.de [213.148.129.14])
-	by ozlabs.org (Postfix) with ESMTP id F1EFDDDF1B
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 01:06:07 +1000 (EST)
-From: =?utf-8?q?Ren=C3=A9_Rebe?= <rene@exactcode.de>
-To: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
-Subject: Re: [patch 0/8] PS3 AV/FB patches
-Date: Wed, 2 May 2007 17:05:56 +0200
-References: <20070502124830.911142000@pademelon.sonytel.be>
-	<200705021603.34637.rene@exactcode.de>
-	<Pine.LNX.4.62.0705021650290.3706@pademelon.sonytel.be>
-In-Reply-To: <Pine.LNX.4.62.0705021650290.3706@pademelon.sonytel.be>
+Return-Path: <timur@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "de01egw01.freescale.net",
+	Issuer "Thawte Premium Server CA" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id CA568DDF58
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 01:54:29 +1000 (EST)
+Message-ID: <4638B42B.7040208@freescale.com>
+Date: Wed, 02 May 2007 10:54:19 -0500
+From: Timur Tabi <timur@freescale.com>
 MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="utf-8"
-Message-Id: <200705021705.57402.rene@exactcode.de>
-Cc: linuxppc-dev@ozlabs.org
+To: Arnd Bergmann <arnd@arndb.de>
+Subject: Re: [PATCH 1/6] powerpc: split out CPU specific options into a new
+	Kconfig file
+References: <20070502114709.074174446@arndb.de>
+	<20070502115644.638734471@arndb.de>
+In-Reply-To: <20070502115644.638734471@arndb.de>
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
+Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,41 +27,37 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hi again,
+Arnd Bergmann wrote:
 
-On Wednesday 02 May 2007 16:53:49 Geert Uytterhoeven wrote:
-> 	Hi Ren=E9,
->=20
-> On Wed, 2 May 2007, [iso-8859-1] Ren=E9 Rebe wrote:
-> > While 3d acceleration is not that important for me on the PS3, just spe=
-cifing
-> > a exact resolution, to e.g. drive non-TV display, does also not appear =
-to be
-> > possible with the current ps3fb code and the hypervisor, only TV resolu=
-tions
-> > are support, right?
->=20
-> In addition to the TV resolutions 480i/480p/720p/1080i/1080p in 50/60 Hz,
-> ps3fb supports 1280x768 (WXGA), 1280x1024 (SXGA), and 1920x1200 (WUXGA).
+> +config CLASSIC32
+> +	bool "52xx/6xx/7xx/74xx"
+> +	select PPC_FPU
+> +	select 6xx
+> +	help
+> +	  There are four families of PowerPC chips supported.  The more common
+> +	  types (601, 603, 604, 740, 750, 7400), the Motorola embedded
+> +	  versions (821, 823, 850, 855, 860, 52xx, 82xx, 83xx), the AMCC
+> +	  embedded versions (403 and 405) and the high end 64 bit Power
+> +	  processors (POWER 3, POWER4, and IBM PPC970 also known as G5).
 
-Ok fair enough I forgot to mention the {W,S}XGA ones - actually after the s=
-tatic list
-of the user-land helper I read the kernel side code already to see if there=
- is something
-else that can be passed to the hypervisor.
+Is this help text still accurate?  The bool line says "52xx/6xx/7xx/74xx", but you talk 
+about many more processors in the help text.  You mention the 83xx, but not the 85xx or 
+86xx, nor do you mention Freescale.  Not only that, but the help text implies that 8xx, 
+52xx, 82xx, and 83xx are part of the same family, but the bool text implies that 52xx is 
+part of a different family.
 
-I mean more the currently also common modes such as: 1680x1050 and co.
+> +	  This option is the catch-all for 6xx types, including some of the
+> +	  embedded versions.  Unless there is see an option for the specific
+> +	  chip family you are using, you want this option.
 
-> > Is there any chance we can get at least modesetting and basic 2D accele=
-ration
-> > (best some alpha-bitblt & colorspace conversion + scaling)?
->=20
-> These requests are definitely considered.
+So CLASSIC32 is only for 6xx families, not any of the others?  Then what's the "select 
+6xx" for?  Isn't that redundant?
 
-Nice to hear. I keep pressing my thumbs.
+> +	  You do not want this if you are building a kernel for a 64 bit
+> +	  IBM RS/6000 or an Apple G5, choose 6xx.
 
-Yours,
+This needs to be reworded, as the English doesn't make sense.
 
-=2D-=20
-  Ren=C3=A9 Rebe - ExactCODE GmbH - Europe, Germany, Berlin
-  http://exactcode.de | http://t2-project.org | http://rene.rebe.name
+-- 
+Timur Tabi
+Linux Kernel Developer @ Freescale
