@@ -1,29 +1,23 @@
-Return-Path: <jwboyer@linux.vnet.ibm.com>
-Received: from e35.co.us.ibm.com (e35.co.us.ibm.com [32.97.110.153])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "e35.co.us.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id 478F2DDF8E
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 23:49:44 +1000 (EST)
-Received: from d03relay02.boulder.ibm.com (d03relay02.boulder.ibm.com
-	[9.17.195.227])
-	by e35.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l42Dnfmr004077
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 09:49:41 -0400
-Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
-	by d03relay02.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
-	l42DnfRN176718
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 07:49:41 -0600
-Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
-	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
-	l42DneTG019466
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 07:49:40 -0600
-Subject: Re: [PATCH] powerpc: fix spurious vectors on weird MPIC
-From: Josh Boyer <jwboyer@linux.vnet.ibm.com>
-To: paulus@samba.org
-In-Reply-To: <1177965491.3026.47.camel@zod.rchland.ibm.com>
-References: <1177965491.3026.47.camel@zod.rchland.ibm.com>
-Content-Type: text/plain
-Date: Wed, 02 May 2007 08:45:15 -0500
-Message-Id: <1178113515.3026.89.camel@zod.rchland.ibm.com>
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 971D8DDF9F
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:03:26 +1000 (EST)
+Subject: Re: [PATCH 1/5] powerpc: generic time suspend/resume code
+From: Johannes Berg <johannes@sipsolutions.net>
+To: michael@ellerman.id.au
+In-Reply-To: <1178103995.14649.3.camel@concordia.ozlabs.ibm.com>
+References: <20070319105352.771599000@sipsolutions.net>
+	<20070319105357.964696000@sipsolutions.net>
+	<1178082143.5296.9.camel@concordia.ozlabs.ibm.com>
+	<1178094317.13233.42.camel@johannes.berg>
+	<1178103995.14649.3.camel@concordia.ozlabs.ibm.com>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-eGvbZCTMbG6yLQJ/4z6J"
+Date: Wed, 02 May 2007 16:04:14 +0200
+Message-Id: <1178114654.13233.58.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -35,12 +29,45 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Mon, 2007-04-30 at 15:38 -0500, Josh Boyer wrote:
-> The weird TSI 10x MPIC needs an EOI after getting a spurious vector.  This
-> patch uses the existing MPIC_SPV_EOI flag to fix this issue.
 
-Paul, I'd like to get this into 2.6.22 if possible.  It's needed for a
-round of patches I'll be sending out soon.
+--=-eGvbZCTMbG6yLQJ/4z6J
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-thx,
-josh
+On Wed, 2007-05-02 at 21:06 +1000, Michael Ellerman wrote:
+
+> Ah sorry, I didn't mention prep_defconfig is arch/__ppc__.=20
+
+Ahh, ok.
+
+> See arch/ppc/Makefile:
+>=20
+> core-y                          +=3D arch/ppc/kernel/ arch/powerpc/kernel=
+/ \
+>                                    arch/ppc/platforms/ \
+>                                    arch/ppc/mm/ arch/ppc/lib/ \
+>                                    arch/ppc/syslib/ arch/powerpc/sysdev/ =
+\
+>                                    arch/powerpc/lib/
+>=20
+>=20
+> So I guess we need to add the Kconfig fragment on arch/ppc also?
+
+Yeah, but let me first see later today if I can go without rtc lib as
+Paul has suggested.
+
+johannes
+
+--=-eGvbZCTMbG6yLQJ/4z6J
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGOJpe/ETPhpq3jKURAjYtAJ0ZQghBWKMSuG0B+0SpDjckA6TRhACfaANk
+6s/8WVY7yetNpaDjm7EnILk=
+=PFMb
+-----END PGP SIGNATURE-----
+
+--=-eGvbZCTMbG6yLQJ/4z6J--
