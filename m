@@ -1,22 +1,19 @@
-Return-Path: <johannes@sipsolutions.net>
-Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 6EB00DDE3D
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:33:10 +1000 (EST)
-Subject: Re: [PATCH] powermac: support G5 CPU hotplug
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Paul Mackerras <paulus@samba.org>
-In-Reply-To: <17976.28170.695715.416339@cargo.ozlabs.ibm.com>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1178086872.13233.27.camel@johannes.berg>
-	<17976.28170.695715.416339@cargo.ozlabs.ibm.com>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-FdpCIbuxZoPDn/MbF4rp"
-Date: Wed, 02 May 2007 16:33:58 +0200
-Message-Id: <1178116438.13233.65.camel@johannes.berg>
-Mime-Version: 1.0
+Return-Path: <Geert.Uytterhoeven@sonycom.com>
+Received: from vervifontaine.sonycom.com (unknown [80.88.33.193])
+	by ozlabs.org (Postfix) with ESMTP id 1795EDDE9E
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:53:51 +1000 (EST)
+Date: Wed, 2 May 2007 16:53:49 +0200 (CEST)
+From: Geert Uytterhoeven <Geert.Uytterhoeven@sonycom.com>
+Sender: geert@sonytel.be
+To: =?iso-8859-1?q?Ren=E9_Rebe?= <rene@exactcode.de>
+Subject: Re: [patch 0/8] PS3 AV/FB patches
+In-Reply-To: <200705021603.34637.rene@exactcode.de>
+Message-ID: <Pine.LNX.4.62.0705021650290.3706@pademelon.sonytel.be>
+References: <20070502124830.911142000@pademelon.sonytel.be>
+	<200705021603.34637.rene@exactcode.de>
+MIME-Version: 1.0
+Content-Type: MULTIPART/MIXED;
+	BOUNDARY="-584337861-1494114468-1178117629=:3706"
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
@@ -27,31 +24,35 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
---=-FdpCIbuxZoPDn/MbF4rp
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+---584337861-1494114468-1178117629=:3706
+Content-Type: TEXT/PLAIN; charset=UTF-8
+Content-Transfer-Encoding: 8BIT
 
-On Wed, 2007-05-02 at 20:55 +1000, Paul Mackerras wrote:
+	Hi René,
 
-> Ultimately we want to put the disabled cpus in sleep mode, but that
-> will require a suitable cache flush routine.
+On Wed, 2 May 2007, [iso-8859-1] René Rebe wrote:
+> While 3d acceleration is not that important for me on the PS3, just specifing
+> a exact resolution, to e.g. drive non-TV display, does also not appear to be
+> possible with the current ps3fb code and the hypervisor, only TV resolutions
+> are support, right?
 
-I don't have any docs for the particular processors the G5s have, do
-they have a sleep mode?
+In addition to the TV resolutions 480i/480p/720p/1080i/1080p in 50/60 Hz,
+ps3fb supports 1280x768 (WXGA), 1280x1024 (SXGA), and 1920x1200 (WUXGA).
 
-johannes
+> Is there any chance we can get at least modesetting and basic 2D acceleration
+> (best some alpha-bitblt & colorspace conversion + scaling)?
 
---=-FdpCIbuxZoPDn/MbF4rp
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
+These requests are definitely considered.
 
------BEGIN PGP SIGNATURE-----
-Comment: Johannes Berg (powerbook)
+Gr{oetje,eeting}s,
 
-iD8DBQBGOKFW/ETPhpq3jKURAnphAJ91KfA073Y4rZvY7+7xUkvqbTEOzQCfX1GZ
-g5mtDxDnqik10aHQEibgPhM=
-=iEy+
------END PGP SIGNATURE-----
+						Geert
 
---=-FdpCIbuxZoPDn/MbF4rp--
+--
+Geert Uytterhoeven -- Sony Network and Software Technology Center Europe (NSCE)
+Geert.Uytterhoeven@sonycom.com ------- The Corporate Village, Da Vincilaan 7-D1
+Voice +32-2-7008453 Fax +32-2-7008622 ---------------- B-1935 Zaventem, Belgium
+---584337861-1494114468-1178117629=:3706--
