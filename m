@@ -1,20 +1,23 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 4D5F2DDF8D
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:21:40 +1000 (EST)
-In-Reply-To: <20070501160538.GA24292@ld0162-tx32.am.freescale.net>
-References: <20070501160538.GA24292@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; format=flowed
-Message-Id: <E8649267-DE22-4700-BF33-A9EB744B11DC@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH] Remove duplicate export of __div64_32.
-Date: Wed, 2 May 2007 09:20:54 -0500
-To: Scott Wood <scottwood@freescale.com>
-Cc: linuxppc-dev@ozlabs.org, paulus@samba.org
+	by ozlabs.org (Postfix) with ESMTP id 05837DDF9B
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:25:28 +1000 (EST)
+Subject: [PATCH] powerpc timer sysdev: use mktime
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17976.5964.593278.752595@cargo.ozlabs.ibm.com>
+References: <20061213123819.403286000@sipsolutions.net>
+	<20061213123945.386891000@sipsolutions.net>
+	<1169620444.18754.66.camel@localhost.localdomain>
+	<1170357390.4036.9.camel@johannes.berg>
+	<17976.5964.593278.752595@cargo.ozlabs.ibm.com>
+Content-Type: text/plain
+Date: Wed, 02 May 2007 16:25:42 +0200
+Message-Id: <1178115942.13233.61.camel@johannes.berg>
+Mime-Version: 1.0
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,13 +27,52 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+This patch makes the timer sysdev use mktime instead of rtc_tm_to_time
+by simply copying the function to avoid using rtc-lib.
 
-On May 1, 2007, at 11:05 AM, Scott Wood wrote:
+Signed-off-by: Johannes Berg <johannes@sipsolutions.net>
 
-> Change 3927f2e8f9afa3424bb51ca81f7abac01ffd0005 moved lib/lib64.c from
-> lib-y to obj-y, preventing the export in ppc_ksyms.c from overriding
-> the one in lib, and thus causing a duplicate-export warning.
-
-I assume you mean lib/div64.c?
-
-- k
+--- wireless-dev.orig/arch/powerpc/sysdev/timer.c	2007-05-02 16:16:52.639177080 +0200
++++ wireless-dev/arch/powerpc/sysdev/timer.c	2007-05-02 16:21:56.429177080 +0200
+@@ -24,7 +24,12 @@ static int timer_resume(struct sys_devic
+ 
+ 	/* get current RTC time and convert to seconds */
+ 	get_rtc_time(&cur_rtc_tm);
+-	rtc_tm_to_time(&cur_rtc_tm, &cur_rtc_time);
++	cur_rtc_time = mktime(cur_rtc_tm.tm_year + 1900,
++			      cur_rtc_tm.tm_mon + 1,
++			      cur_rtc_tm.tm_mday,
++			      cur_rtc_tm.tm_hour,
++			      cur_rtc_tm.tm_min,
++			      cur_rtc_tm.tm_sec);
+ 
+ 	diff = cur_rtc_time - suspend_rtc_time;
+ 
+@@ -44,7 +49,12 @@ static int timer_suspend(struct sys_devi
+ 	WARN_ON(!ppc_md.get_rtc_time);
+ 
+ 	get_rtc_time(&suspend_rtc_tm);
+-	rtc_tm_to_time(&suspend_rtc_tm, &suspend_rtc_time);
++	suspend_rtc_time = mktime(suspend_rtc_tm.tm_year + 1900,
++				  suspend_rtc_tm.tm_mon + 1,
++				  suspend_rtc_tm.tm_mday,
++				  suspend_rtc_tm.tm_hour,
++				  suspend_rtc_tm.tm_min,
++				  suspend_rtc_tm.tm_sec);
+ 
+ 	return 0;
+ }
+--- wireless-dev.orig/arch/powerpc/Kconfig	2007-05-02 16:22:07.619177080 +0200
++++ wireless-dev/arch/powerpc/Kconfig	2007-05-02 16:22:12.759177080 +0200
+@@ -11,11 +11,6 @@ config PPC64
+ 	  This option selects whether a 32-bit or a 64-bit kernel
+ 	  will be built.
+ 
+-config PPC_PM_NEEDS_RTC_LIB
+-	bool
+-	select RTC_LIB
+-	default y if PM
+-
+ config PPC32
+ 	bool
+ 	default y if !PPC64
