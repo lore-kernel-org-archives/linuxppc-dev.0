@@ -1,22 +1,24 @@
-Return-Path: <bounces@nabble.com>
-Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
-	(using TLSv1 with cipher AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id D8461DDF29
+Return-Path: <jacmet@sunsite.dk>
+Received: from kuuvir01.barco.com (kuumail.barco.com [32.58.34.195])
+	by ozlabs.org (Postfix) with SMTP id 44098DDF76
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 May 2007 22:33:19 +1000 (EST)
-Received: from [72.21.53.38] (helo=jubjub.nabble.com)
-	by talk.nabble.com with esmtp (Exim 4.50) id 1HjE1E-00050j-Pf
-	for linuxppc-embedded@ozlabs.org; Wed, 02 May 2007 05:33:16 -0700
-Message-ID: <10285090.post@talk.nabble.com>
-Date: Wed, 2 May 2007 05:33:16 -0700 (PDT)
-From: Mirek23 <miroslaw.dach@psi.ch>
+	Wed,  2 May 2007 23:04:24 +1000 (EST)
+Received: from peko by sleipner.barco.com with local (Exim 4.60)
+	(envelope-from <jacmet@sunsite.dk>) id 1HjEVI-0001vb-VR
+	for linuxppc-embedded@ozlabs.org; Wed, 02 May 2007 15:04:21 +0200
+From: Peter Korsgaard <peter.korsgaard@barco.com>
 To: linuxppc-embedded@ozlabs.org
-Subject: Re: xilinx gpio in kernel 2.6
-In-Reply-To: <10254948.post@talk.nabble.com>
+Subject: Re: Using Cypress EZ-Host on ML403/5
+References: <4623A197.6000104@computing.dundee.ac.uk>
+	<528646bc0704160932k2038090al8c0b8e5420422545@mail.gmail.com>
+	<87zm54mt3j.fsf@sleipner.barco.com>
+	<46385444.5060407@computing.dundee.ac.uk>
+Date: Wed, 02 May 2007 15:04:20 +0200
+In-Reply-To: <46385444.5060407@computing.dundee.ac.uk> (Peter Mendham's
+	message of "Wed, 02 May 2007 10:05:08 +0100")
+Message-ID: <87hcqv5qcr.fsf@sleipner.barco.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-References: <10254948.post@talk.nabble.com>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,85 +29,23 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
+>>>>> "PM" == Peter Mendham <petermendham@computing.dundee.ac.uk> writes:
 
-Finally I was able to incorporate the xilinx_gpio driver to the kernel 2.6
-tree.
-To do so I have created the file xgpio_ioctl.h which is basically identical
-to  
-the file include/linux/ibm_ocp_gpio.h in the kernel linuxppc_2_4. The
-differences are 
-the macro names (I have replaced IBM with X and ibm_ with x).
+Hi,
 
-I have modified also arch/ppc/syslib/virtex_devices.c. I have added into
-this file the entries which refer to GPIO definitions.
+>> I have written a 2.6 USB host driver for the Cypress
+>> EZ-Host/EZ-Otg. It's basically working, but needs a bit more
+>> cleanup. I hope to be able to submit it next week.
 
-At the end I have modified the drivers/char/Kconfig and the
-drivers/char/xilinx_gpio/Makefile.
+PM> Are you any further forward with this?  Is there anything I could
+PM> see (however pre-release)?  Is there anything I can do to help?
 
-After all I was able to compile the kernel.
+I posted the driver to the usb list last week:
 
-I did not find however how to deal with the GPIO driver on the user's level.
-I am sure that I have to use: open and ioctl function calls but I do not
-know how to distinguish between 
-two differenet GPIO interfaces to control respectively (LEDs and DIP
-switches).
+http://thread.gmane.org/gmane.linux.usb.devel/53285
 
-I would appreciate very much any hint on that
-
-Best Regards
-
-Mierk
-
-
-Mirek23 wrote:
-> 
-> Hi All,
-> 
->            I am trying to build the kernel 2.6 for my ml403 board. I use
-> the kernel 2.6 by Grant.
-> The ethernet (Temac) and serial drivers work fine. It is however no
-> support for xilinx gpio in the kernel tree.
-> 
-> To satisfy that I have generated the xilinx_gpio driver by means of the
-> EDK 8.2 .
-> 
-> I have tried to place the xilinx_gpio to the kernel 2.6 tree under
-> drivers/char/xilinx_gpio.
-> 
-> I have done the suitable configuration on the Makefile and Kconfig level.
-> When I build the kernel, the crosscompiler complaines about the
-> xgpio_ioctl.h which comes
-> from the adapter.c file.
-> 
-> It seems to be that xgpio_ioctl.h conatins the missing macros:
-> XGPIO_IN
-> XGPIO_OUT
-> XGPIO_TRISTATE
-> XGPIO_OPEN_DRAIN
-> .
-> .
-> .
-> 
-> Does sombody of you faced the same problem? 
-> The second thing is that I did not find any documentation how to use GPIO
-> on the user level to access things like LEDS and Swiches on my xilinx
-> board. Do you have an idea how to do that (ie. which function calls to
-> use).
-> 
-> Many thanks in advance for any hint.
-> 
-> Best Regards
-> 
-> Mirek
-> 
-> 
-> 
-> 
-> 
->  
-> 
-> 
+It would be nice if you could give it a try and tell me if it works
+for you.
 
 -- 
-View this message in context: http://www.nabble.com/xilinx-gpio-in-kernel-2.6-tf3670122.html#a10285090
-Sent from the linuxppc-embedded mailing list archive at Nabble.com.
+Bye, Peter Korsgaard
