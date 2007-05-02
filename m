@@ -1,20 +1,24 @@
-Return-Path: <b07421@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <segher@kernel.crashing.org>
+Received: from mail-in-07.arcor-online.net (mail-in-07.arcor-online.net
+	[151.189.21.47])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "mx.arcor.de",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F2759DDE33
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 04:00:14 +1000 (EST)
-Date: Wed, 2 May 2007 13:00:00 -0500
-From: Scott Wood <scottwood@freescale.com>
-To: paulus@samba.org
-Subject: [PATCH] bootwrapper: Only build cuImage if CONFIG_DEVICE_TREE is
-	non-empty.
-Message-ID: <20070502180000.GA15154@ld0162-tx32.am.freescale.net>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Cc: linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id ECA15DDF63
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 04:05:53 +1000 (EST)
+In-Reply-To: <4638B673.4090504@freescale.com>
+References: <20070501165542.GA31285@ld0162-tx32.am.freescale.net>
+	<65f0b79871a670eb595cca7d78e2f4e9@kernel.crashing.org>
+	<4638B673.4090504@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v623)
+Content-Type: text/plain; charset=US-ASCII; format=flowed
+Message-Id: <4334c860f893dbc537a51999cea25532@kernel.crashing.org>
+From: Segher Boessenkool <segher@kernel.crashing.org>
+Subject: Re: [PATCH] gianfar: Add I/O barriers when touching buffer descriptor
+	ownership.
+Date: Wed, 2 May 2007 20:05:43 +0200
+To: Scott Wood <scottwood@freescale.com>
+Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,32 +28,21 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This allows the zImage target to once again be used to build
-all supported image types, rather than requiring an explicit
-"make uImage" to avoid failing to create an unneeded cuImage.
+>> AFAICS you need stronger barriers though; {w,r,}mb(),
+>> to prevent _any_ reordering of those memory accesses,
+>> not just the compiler-generated ones.
+>
+> My impression was that the eieio used by iobarrier would be sufficient 
+> for that, as we're not trying to synchronize between accesses to 
+> different types of memory.  Is sync really required here?
 
-Signed-off-by: Scott Wood <scottwood@freescale.com>
----
- arch/powerpc/boot/Makefile |    5 ++++-
- 1 files changed, 4 insertions(+), 1 deletions(-)
+For accesses to main system memory, eieio only orders
+writes, not reads, so iobarrier_r() doesn't do what
+you want; and iobarrier_w() isn't meant to be used for
+main memory access ordering either.
 
-diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
-index 326ee92..f2d850c 100644
---- a/arch/powerpc/boot/Makefile
-+++ b/arch/powerpc/boot/Makefile
-@@ -129,9 +129,12 @@ image-$(CONFIG_PPC_CELLEB)		+= zImage.pseries
- image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
- image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
- image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
-+image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
-+
-+ifneq ($(CONFIG_DEVICE_TREE),"")
- image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
- image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
--image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
-+endif
- 
- # For 32-bit powermacs, build the COFF and miboot images
- # as well as the ELF images.
--- 
-1.5.0.3
+Also, it is better to not use powerpc-specific interfaces
+in a device driver if you don't have a strong reason to.
+
+
+Segher
