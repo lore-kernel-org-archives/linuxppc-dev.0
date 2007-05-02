@@ -1,20 +1,14 @@
-Return-Path: <michael@ellerman.id.au>
-Subject: Re: [PATCH 1/5] powerpc: generic time suspend/resume code
-From: Michael Ellerman <michael@ellerman.id.au>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1178094317.13233.42.camel@johannes.berg>
-References: <20070319105352.771599000@sipsolutions.net>
-	<20070319105357.964696000@sipsolutions.net>
-	<1178082143.5296.9.camel@concordia.ozlabs.ibm.com>
-	<1178094317.13233.42.camel@johannes.berg>
-Content-Type: multipart/signed; micalg=pgp-sha1;
-	protocol="application/pgp-signature";
-	boundary="=-Ut6Y+RdHXseKGUIzhbV7"
-Date: Wed, 02 May 2007 21:06:35 +1000
-Message-Id: <1178103995.14649.3.camel@concordia.ozlabs.ibm.com>
-Mime-Version: 1.0
-Cc: linuxppc-dev@ozlabs.org
-Reply-To: michael@ellerman.id.au
+Return-Path: <arnd@arndb.de>
+Received: from moutng.kundenserver.de (moutng.kundenserver.de
+	[212.227.126.188]) by ozlabs.org (Postfix) with ESMTP id D7764DDF17
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 22:14:14 +1000 (EST)
+Message-Id: <20070502115645.143642636@arndb.de>
+References: <20070502114709.074174446@arndb.de>
+Date: Wed, 02 May 2007 13:47:14 +0200
+From: Arnd Bergmann <arnd@arndb.de>
+To: linuxppc-dev@ozlabs.org
+Subject: [PATCH 5/6] powerpc: Multiplatformize 8{2,3,6}xx configuration
+Cc: paulus@samba.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,66 +18,170 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+All platforms based on 6xx compatible cores should be able to
+coexisting in a single kernel image and do all necessary configuration
+based on the device tree.
 
---=-Ut6Y+RdHXseKGUIzhbV7
-Content-Type: text/plain
-Content-Transfer-Encoding: quoted-printable
+This moves the missing 8{2,3,6}xx platforms under
+CONFIG_PPC_MULTIPLATFORM to make that possible to configure.
 
-On Wed, 2007-05-02 at 10:25 +0200, Johannes Berg wrote:
-> On Wed, 2007-05-02 at 15:02 +1000, Michael Ellerman wrote:
->=20
-> > This seems to break prep_defconfig:
-> >=20
-> > timer.c:(.text+0x28c): undefined reference to `rtc_tm_to_time'
-> > timer.c:(.text+0x38c): undefined reference to `rtc_tm_to_time'
-> > make[1]: *** [.tmp_vmlinux1] Error 1
->=20
-> Odd. I put this into Kconfig:
-> config PPC_PM_NEEDS_RTC_LIB
->         bool
->         select RTC_LIB
->         default y if PM
->=20
-> and that should cause the rtc lib that contains the rtc_tm_to_time
-> function to be compiled in if you have PM enabled (and otherwise timer.c
-> isn't compiled). Or maybe defconfig doesn't invoke oldconfig?
+Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Index: linux-2.6/arch/powerpc/platforms/82xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/82xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/82xx/Kconfig
+@@ -1,10 +1,10 @@
+-choice
+-	prompt "Machine Type"
+-	depends on PPC_82xx
+-	default MPC82xx_ADS
++config PPC_82xx
++	bool "Freescale 82xx"
++	depends on PPC_MULTIPLATFORM && 6xx
+ 
+ config MPC82xx_ADS
+ 	bool "Freescale MPC82xx ADS"
++	depends on PPC_82xx
+ 	select DEFAULT_UIMAGE
+ 	select PQ2ADS
+ 	select 8272
+@@ -13,8 +13,6 @@ config MPC82xx_ADS
+ 	help
+ 	This option enables support for the MPC8272 ADS board
+ 
+-endchoice
+-
+ config PQ2ADS
+ 	bool
+ 	default n
+Index: linux-2.6/arch/powerpc/platforms/83xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/83xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/83xx/Kconfig
+@@ -1,16 +1,20 @@
+-choice
+-	prompt "Machine Type"
+-	depends on PPC_83xx
+-	default MPC834x_MDS
++config PPC_83xx
++	bool "Freescale 83xx"
++	depends on PPC_MULTIPLATFORM && 6xx
++	select FSL_SOC
++	select 83xx
++	select WANT_DEVICE_TREE
+ 
+ config MPC8313_RDB
+ 	bool "Freescale MPC8313 RDB"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC8313 RDB board.
+ 
+ config MPC832x_MDS
+ 	bool "Freescale MPC832x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	help
+@@ -18,6 +22,7 @@ config MPC832x_MDS
+ 
+ config MPC832x_RDB
+ 	bool "Freescale MPC832x RDB"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	help
+@@ -25,6 +30,7 @@ config MPC832x_RDB
+ 
+ config MPC834x_MDS
+ 	bool "Freescale MPC834x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC 834x MDS evaluation board.
+@@ -36,6 +42,7 @@ config MPC834x_MDS
+ 
+ config MPC834x_ITX
+ 	bool "Freescale MPC834x ITX"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC 834x ITX evaluation board.
+@@ -45,13 +52,12 @@ config MPC834x_ITX
+ 
+ config MPC836x_MDS
+ 	bool "Freescale MPC836x MDS"
++	depends on PPC_83xx
+ 	select DEFAULT_UIMAGE
+ 	select QUICC_ENGINE
+ 	help
+ 	  This option enables support for the MPC836x MDS Processor Board.
+ 
+-endchoice
+-
+ config PPC_MPC831x
+ 	bool
+ 	select PPC_UDBG_16550
+Index: linux-2.6/arch/powerpc/platforms/86xx/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/86xx/Kconfig
++++ linux-2.6/arch/powerpc/platforms/86xx/Kconfig
+@@ -1,17 +1,20 @@
+-choice
+-	prompt "Machine Type"
+-	depends on PPC_86xx
+-	default MPC8641_HPCN
++config PPC_86xx
++	bool "Freescale 86xx"
++	depends on PPC_MULTIPLATFORM && 6xx
++	select FSL_SOC
++	select FSL_PCIE
++	select ALTIVEC
++	help
++	  The Freescale E600 SoCs have 74xx cores.
+ 
+ config MPC8641_HPCN
+ 	bool "Freescale MPC8641 HPCN"
++	depends on PPC_86xx
+ 	select PPC_I8259
+ 	select DEFAULT_UIMAGE
+ 	help
+ 	  This option enables support for the MPC8641 HPCN board.
+ 
+-endchoice
+-
+ config MPC8641
+ 	bool
+ 	select PPC_INDIRECT_PCI
+Index: linux-2.6/arch/powerpc/platforms/Kconfig
+===================================================================
+--- linux-2.6.orig/arch/powerpc/platforms/Kconfig
++++ linux-2.6/arch/powerpc/platforms/Kconfig
+@@ -24,25 +24,6 @@ config APUS
+ 	  More information is available at:
+ 	  <http://linux-apus.sourceforge.net/>.
+ 
+-config PPC_82xx
+-	bool "Freescale 82xx"
+-	depends on 6xx
+-
+-config PPC_83xx
+-	bool "Freescale 83xx"
+-	depends on 6xx
+-	select FSL_SOC
+-	select 83xx
+-	select WANT_DEVICE_TREE
+-
+-config PPC_86xx
+-	bool "Freescale 86xx"
+-	depends on 6xx
+-	select FSL_SOC
+-	select FSL_PCIE
+-	select ALTIVEC
+-	help
+-	  The Freescale E600 SoCs have 74xx cores.
+ endchoice
+ 
+ config CLASSIC32
 
-Ah sorry, I didn't mention prep_defconfig is arch/__ppc__.=20
-
-See arch/ppc/Makefile:
-
-core-y                          +=3D arch/ppc/kernel/ arch/powerpc/kernel/ =
-\
-                                   arch/ppc/platforms/ \
-                                   arch/ppc/mm/ arch/ppc/lib/ \
-                                   arch/ppc/syslib/ arch/powerpc/sysdev/ \
-                                   arch/powerpc/lib/
-
-
-So I guess we need to add the Kconfig fragment on arch/ppc also?
-
-cheers
-
---=20
-Michael Ellerman
-OzLabs, IBM Australia Development Lab
-
-wwweb: http://michael.ellerman.id.au
-phone: +61 2 6212 1183 (tie line 70 21183)
-
-We do not inherit the earth from our ancestors,
-we borrow it from our children. - S.M.A.R.T Person
-
---=-Ut6Y+RdHXseKGUIzhbV7
-Content-Type: application/pgp-signature; name=signature.asc
-Content-Description: This is a digitally signed message part
-
------BEGIN PGP SIGNATURE-----
-Version: GnuPG v1.4.6 (GNU/Linux)
-
-iD4DBQBGOHC7dSjSd0sB4dIRAt/QAKCXXHhCOSqvVtwDvjlyk+xEblYP5QCYqyqH
-7t3rMbe3rFl3A2kG+2Rlig==
-=eqoB
------END PGP SIGNATURE-----
-
---=-Ut6Y+RdHXseKGUIzhbV7--
+--
