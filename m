@@ -1,20 +1,20 @@
-Return-Path: <sfr@canb.auug.org.au>
-Received: from smtps.tip.net.au (chilli.pcug.org.au [203.10.76.44])
-	by ozlabs.org (Postfix) with ESMTP id 973EDDDEAB
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 20:57:52 +1000 (EST)
-Date: Wed, 2 May 2007 20:57:41 +1000
-From: Stephen Rothwell <sfr@canb.auug.org.au>
+Return-Path: <michael@ellerman.id.au>
+Subject: Re: [PATCH 1/5] powerpc: generic time suspend/resume code
+From: Michael Ellerman <michael@ellerman.id.au>
 To: Johannes Berg <johannes@sipsolutions.net>
-Subject: Re: [PATCH] via-pmu: remove LED sleep notifier
-Message-Id: <20070502205741.72dc191b.sfr@canb.auug.org.au>
-In-Reply-To: <1178084161.13233.16.camel@johannes.berg>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1178084161.13233.16.camel@johannes.berg>
+In-Reply-To: <1178094317.13233.42.camel@johannes.berg>
+References: <20070319105352.771599000@sipsolutions.net>
+	<20070319105357.964696000@sipsolutions.net>
+	<1178082143.5296.9.camel@concordia.ozlabs.ibm.com>
+	<1178094317.13233.42.camel@johannes.berg>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-Ut6Y+RdHXseKGUIzhbV7"
+Date: Wed, 02 May 2007 21:06:35 +1000
+Message-Id: <1178103995.14649.3.camel@concordia.ozlabs.ibm.com>
 Mime-Version: 1.0
-Content-Type: multipart/signed; protocol="application/pgp-signature";
-	micalg="PGP-SHA1";
-	boundary="Signature=_Wed__2_May_2007_20_57_41_+1000_t8bk18F6mOqV.E5m"
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+Cc: linuxppc-dev@ozlabs.org
+Reply-To: michael@ellerman.id.au
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -24,38 +24,66 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
---Signature=_Wed__2_May_2007_20_57_41_+1000_t8bk18F6mOqV.E5m
-Content-Type: text/plain; charset=US-ASCII
-Content-Disposition: inline
-Content-Transfer-Encoding: 7bit
 
-On Wed, 02 May 2007 07:36:01 +0200 Johannes Berg <johannes@sipsolutions.net> wrote:
->
-> --- wireless-dev.orig/drivers/macintosh/via-pmu-led.c	2007-05-01 11:35:45.354734191 +0200
-> +++ wireless-dev/drivers/macintosh/via-pmu-led.c	2007-05-01 11:36:25.454734191 +0200
-> @@ -31,7 +31,8 @@ static spinlock_t pmu_blink_lock;
->  static struct adb_request pmu_blink_req;
->  /* -1: no change, 0: request off, 1: request on */
->  static int requested_change;
-> -static int sleeping;
-> +
-> +extern int pmu_sys_suspended;
+--=-Ut6Y+RdHXseKGUIzhbV7
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-Extern declarations should be in include files.
---
-Cheers,
-Stephen Rothwell                    sfr@canb.auug.org.au
-http://www.canb.auug.org.au/~sfr/
+On Wed, 2007-05-02 at 10:25 +0200, Johannes Berg wrote:
+> On Wed, 2007-05-02 at 15:02 +1000, Michael Ellerman wrote:
+>=20
+> > This seems to break prep_defconfig:
+> >=20
+> > timer.c:(.text+0x28c): undefined reference to `rtc_tm_to_time'
+> > timer.c:(.text+0x38c): undefined reference to `rtc_tm_to_time'
+> > make[1]: *** [.tmp_vmlinux1] Error 1
+>=20
+> Odd. I put this into Kconfig:
+> config PPC_PM_NEEDS_RTC_LIB
+>         bool
+>         select RTC_LIB
+>         default y if PM
+>=20
+> and that should cause the rtc lib that contains the rtc_tm_to_time
+> function to be compiled in if you have PM enabled (and otherwise timer.c
+> isn't compiled). Or maybe defconfig doesn't invoke oldconfig?
 
---Signature=_Wed__2_May_2007_20_57_41_+1000_t8bk18F6mOqV.E5m
-Content-Type: application/pgp-signature
+Ah sorry, I didn't mention prep_defconfig is arch/__ppc__.=20
+
+See arch/ppc/Makefile:
+
+core-y                          +=3D arch/ppc/kernel/ arch/powerpc/kernel/ =
+\
+                                   arch/ppc/platforms/ \
+                                   arch/ppc/mm/ arch/ppc/lib/ \
+                                   arch/ppc/syslib/ arch/powerpc/sysdev/ \
+                                   arch/powerpc/lib/
+
+
+So I guess we need to add the Kconfig fragment on arch/ppc also?
+
+cheers
+
+--=20
+Michael Ellerman
+OzLabs, IBM Australia Development Lab
+
+wwweb: http://michael.ellerman.id.au
+phone: +61 2 6212 1183 (tie line 70 21183)
+
+We do not inherit the earth from our ancestors,
+we borrow it from our children. - S.M.A.R.T Person
+
+--=-Ut6Y+RdHXseKGUIzhbV7
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Version: GnuPG v1.4.6 (GNU/Linux)
 
-iD8DBQFGOG6vFdBgD/zoJvwRAleuAJ9YaIxsZZIlBE3DDgCOar65ghhn1ACdHsZz
-48OP76rQop379FNPa5hVEn4=
-=/sEt
+iD4DBQBGOHC7dSjSd0sB4dIRAt/QAKCXXHhCOSqvVtwDvjlyk+xEblYP5QCYqyqH
+7t3rMbe3rFl3A2kG+2Rlig==
+=eqoB
 -----END PGP SIGNATURE-----
 
---Signature=_Wed__2_May_2007_20_57_41_+1000_t8bk18F6mOqV.E5m--
+--=-Ut6Y+RdHXseKGUIzhbV7--
