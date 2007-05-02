@@ -1,23 +1,17 @@
-Return-Path: <galak@kernel.crashing.org>
-Received: from nommos.sslcatacombnetworking.com
-	(nommos.sslcatacombnetworking.com [67.18.224.114])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id EBE0EDDE45
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 13:39:17 +1000 (EST)
-In-Reply-To: <200704240746.05129.sr@denx.de>
-References: <Pine.LNX.4.64.0704191615040.25069@localhost.localdomain>
-	<20070424000153.GD23995@crusty.rchland.ibm.com>
-	<ada647m635h.fsf@cisco.com> <200704240746.05129.sr@denx.de>
-Mime-Version: 1.0 (Apple Message framework v752.2)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <E98E4E57-2322-412F-A58E-A0CCC39DDCE3@kernel.crashing.org>
-From: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [RFC/PATCH] Change 440GP platform to ppc440
-Date: Tue, 1 May 2007 22:38:29 -0500
-To: Stefan Roese <sr@denx.de>
-Cc: linuxppc-dev@ozlabs.org, Roland Dreier <rdreier@cisco.com>,
-	Paul Mackerras <paulus@samba.org>
+Return-Path: <paulus@ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Message-ID: <17976.5964.593278.752595@cargo.ozlabs.ibm.com>
+Date: Wed, 2 May 2007 14:45:00 +1000
+From: Paul Mackerras <paulus@samba.org>
+To: Johannes Berg <johannes@sipsolutions.net>
+Subject: Re: [PATCH] powermac: proper time of day after resume
+In-Reply-To: <1170357390.4036.9.camel@johannes.berg>
+References: <20061213123819.403286000@sipsolutions.net>
+	<20061213123945.386891000@sipsolutions.net>
+	<1169620444.18754.66.camel@localhost.localdomain>
+	<1170357390.4036.9.camel@johannes.berg>
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -27,24 +21,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
+Johannes Berg writes:
 
-On Apr 24, 2007, at 12:46 AM, Stefan Roese wrote:
+> +static int timer_resume(struct sys_device *dev)
+> +{
+> +	struct timeval tv;
+> +	struct timespec ts;
+> +	struct rtc_time cur_rtc_tm;
+> +	unsigned long cur_rtc_time, diff;
+> +
+> +	/* get current RTC time and convert to seconds */
+> +	get_rtc_time(&cur_rtc_tm);
+> +	rtc_tm_to_time(&cur_rtc_tm, &cur_rtc_time);
 
-> On Tuesday 24 April 2007 02:12, Roland Dreier wrote:
->>>> I recall dimly that there was some user-visible difference  
->>>> between the
->>>> 440GP and the other 440 processors, and that's why we made the
->>>> platform string different.  I don't recall what the difference was.
->>
->> FWIW, I've run the same userspace (binaries) on 405GPr, 440GP and
->> 440SPe without any problems.  Not that I'm a 4xx expert by any
->> stretch, but I don't know of anything special about the 440GP.
->
-> I don't know of any differences either. So I'm voting to change the  
-> platform
-> to ppc440 too.
+Why not just use get_boot_time() here?  Or if not that, then use
+mktime() instead of rtc_tm_to_time().  Either way we don't need to
+select RTC_LIB.
 
-After some discussion with Paul we think we figured out why 440GP was  
-marked differently.  I doesn't implement 'isel', and all other 440's do.
+> +	diff = cur_rtc_time - suspend_rtc_time;
+> +
+> +	/* adjust time of day by seconds that elapsed while
+> +	 * we were suspended */
+> +	do_gettimeofday(&tv);
+> +	ts.tv_sec = tv.tv_sec + diff;
+> +	ts.tv_nsec = tv.tv_usec * NSEC_PER_USEC;
+> +	do_settimeofday(&ts);
 
-- k
+This will fail if ts.tv_nsec ends up being >= NSEC_PER_SEC.
+
+Paul.
