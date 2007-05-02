@@ -1,36 +1,23 @@
-Return-Path: <osstklei@de.ibm.com>
-Received: from mtagate6.uk.ibm.com (mtagate6.uk.ibm.com [195.212.29.139])
+Return-Path: <galak@kernel.crashing.org>
+Received: from nommos.sslcatacombnetworking.com
+	(nommos.sslcatacombnetworking.com [67.18.224.114])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mtagate6.uk.ibm.com", Issuer "Equifax" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id E2FADDDFA4
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:07:11 +1000 (EST)
-Received: from d06nrmr1407.portsmouth.uk.ibm.com
-	(d06nrmr1407.portsmouth.uk.ibm.com [9.149.38.185])
-	by mtagate6.uk.ibm.com (8.13.8/8.13.8) with ESMTP id l42E76HT239276
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 14:07:06 GMT
-Received: from d06av04.portsmouth.uk.ibm.com (d06av04.portsmouth.uk.ibm.com
-	[9.149.37.216])
-	by d06nrmr1407.portsmouth.uk.ibm.com (8.13.8/8.13.8/NCO v8.3) with
-	ESMTP id l42E760q2711698
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 15:07:06 +0100
-Received: from d06av04.portsmouth.uk.ibm.com (loopback [127.0.0.1])
-	by d06av04.portsmouth.uk.ibm.com (8.12.11.20060308/8.13.3) with ESMTP
-	id l42E75I7023949
-	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 15:07:06 +0100
-From: Thomas Klein <osstklei@de.ibm.com>
-To: Jeff Garzik <jeff@garzik.org>
-Subject: [PATCH] ehea: Fix skb header access
-Date: Wed, 2 May 2007 16:07:05 +0200
-MIME-Version: 1.0
-Content-Type: text/plain;
-  charset="us-ascii"
-Message-Id: <200705021607.05338.osstklei@de.ibm.com>
-Cc: Thomas Klein <tklein@de.ibm.com>, Jan-Bernd Themann <themann@de.ibm.com>,
-	netdev <netdev@vger.kernel.org>,
-	linux-kernel <linux-kernel@vger.kernel.org>,
-	Christoph Raisch <raisch@de.ibm.com>,
-	Stefan Roscher <ossrosch@linux.vnet.ibm.com>,
-	linux-ppc <linuxppc-dev@ozlabs.org>, Marcus Eder <meder@de.ibm.com>
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id E4C1CDDF8D
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 00:13:21 +1000 (EST)
+In-Reply-To: <20070430145119.6713490e.kim.phillips@freescale.com>
+References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
+	<20070430145119.6713490e.kim.phillips@freescale.com>
+Mime-Version: 1.0 (Apple Message framework v752.2)
+Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
+Message-Id: <42664CF1-75AF-4343-BC50-870D3614C683@kernel.crashing.org>
+From: Kumar Gala <galak@kernel.crashing.org>
+Subject: Re: patches for 2.6.22
+Date: Wed, 2 May 2007 09:12:36 -0500
+To: Kim Phillips <kim.phillips@freescale.com>
+Cc: linuxppc-dev list <linuxppc-dev@ozlabs.org>,
+	Paul Mackerras <paulus@samba.org>, jeff Garzik <jeff@garzik.org>,
+	netdev <netdev@vger.kernel.org>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -40,27 +27,48 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Adapt to new skb header access functions.
 
-Signed-off-by: Thomas Klein <tklein@de.ibm.com>
----
+On Apr 30, 2007, at 2:51 PM, Kim Phillips wrote:
 
+> On Fri, 27 Apr 2007 21:25:19 +1000
+> Paul Mackerras <paulus@samba.org> wrote:
+>
+>> If anyone has patches that I haven't picked up yet which they think
+>> should go into 2.6.22, please send me either a pointer to the
+>
+> these were missed:
+>
+> [PATCH 1/4 v5] powerpc: document phy-connection-type property
+> Tue Apr 24 07:26:10 EST 2007
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034669.html
 
-diff --git a/drivers/net/ehea/ehea_main.c b/drivers/net/ehea/ehea_main.c
-index c7a5614..7211648 100644
---- a/drivers/net/ehea/ehea_main.c
-+++ b/drivers/net/ehea/ehea_main.c
-@@ -1803,10 +1803,10 @@ static inline int ehea_hash_skb(struct s
- 	u32 tmp;
- 
- 	if ((skb->protocol == htons(ETH_P_IP)) &&
--	    (skb->nh.iph->protocol == IPPROTO_TCP)) {
--		tcp = (struct tcphdr*)(skb->nh.raw + (skb->nh.iph->ihl * 4));
-+	    (ip_hdr(skb)->protocol == IPPROTO_TCP)) {
-+		tcp = (struct tcphdr*)(skb_network_header(skb) + (ip_hdr(skb)->ihl * 4));
- 		tmp = (tcp->source + (tcp->dest << 16)) % 31;
--		tmp += skb->nh.iph->daddr % 31;
-+		tmp += ip_hdr(skb)->daddr % 31;
- 		return tmp % num_qps;
- 	}
- 	else
+ok.
+
+> [PATCH 2/4 v4] powerpc: replace undocumented interface properties  
+> in dts files
+> Tue Apr 24 07:26:14 EST 2007
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034670.html
+
+I have issues with this since it looks like the current ucc driver in  
+linus's tree is using a previous rev of your patch and thus using  
+interface-type and max-speed still.
+
+> [PATCH 3/4] powerpc: Add 'mdio' to bus scan id list for platforms  
+> with QE UEC
+> Wed Apr 11 07:56:49 EST 2007
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034163.html
+
+ok
+
+>
+> [PATCH 4/4] powerpc: turn on corresponding PHY drivers in QE UEC  
+> platforms defconfigs
+> Wed Apr 11 07:56:53 EST 2007
+> http://ozlabs.org/pipermail/linuxppc-dev/2007-April/034164.html
+
+ok
+
+I'll pull patches 1, 3, 4 and wait on the dts changes until you sort  
+of the ucc driver issues with Jeff.
+
+- k
