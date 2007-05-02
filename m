@@ -1,22 +1,23 @@
-Return-Path: <wolfgang.reissnegger@xilinx.com>
-Received: from outbound1-blu-R.bigfish.com (outbound-blu.frontbridge.com
-	[65.55.251.16])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "*.bigfish.com", Issuer "*.bigfish.com" (not verified))
-	by ozlabs.org (Postfix) with ESMTP id 1AF50DDF82
+Return-Path: <robert@stopthespam_remove.staven.no>
+Received: from fri.itea.ntnu.no (fri.itea.ntnu.no [129.241.7.60])
+	by ozlabs.org (Postfix) with ESMTP id AA798DDF93
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 May 2007 02:50:41 +1000 (EST)
-Date: Wed, 02 May 2007 09:50:34 -0700
-From: Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com>
+	Thu,  3 May 2007 03:46:13 +1000 (EST)
+Received: from localhost (localhost [127.0.0.1])
+	by fri.itea.ntnu.no (Postfix) with ESMTP id 5B4F69622
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  2 May 2007 19:46:08 +0200 (CEST)
+Received: from [127.0.0.1] (unknown [129.241.154.56])
+	by fri.itea.ntnu.no (Postfix) with ESMTP
+	for <linuxppc-embedded@ozlabs.org>;
+	Wed,  2 May 2007 19:46:07 +0200 (CEST)
+Message-ID: <4638CE5B.2090803@stopthespam_remove.staven.no>
+Date: Wed, 02 May 2007 19:46:03 +0200
+From: Robert Staven <robert@stopthespam_remove.staven.no>
 MIME-Version: 1.0
-To: Peter Korsgaard <peter.korsgaard@barco.com>
-Subject: Re: [RFC] SystemACE driver - abstract register ops
-References: <463199EF.3090900@itee.uq.edu.au>	<528646bc0704270031w5c9966f8tc3a5e5292df10a35@mail.gmail.com>	<20070427173010.620DE4B8073@mail25-fra.bigfish.com>
-	<87d51j5ph7.fsf@sleipner.barco.com>
-In-Reply-To: <87d51j5ph7.fsf@sleipner.barco.com>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Message-Id: <20070502165037.A1ECF1790061@mail49-blu.bigfish.com>
-Cc: linuxppc-embedded@ozlabs.org
+To: linuxppc-embedded@ozlabs.org
+Subject: Problem inkluding *.h files when compiling module
+Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -27,49 +28,43 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-Hi Peter,
+I suspect this is slightly 'off topic' but have seen similar threads in 
+the lists archive so I go for it.
 
-thanks for the feedback.
+Testing some code (UDP by sockets example), and it compiles and works 
+great on both host(i386) and target (mpc8250)
 
-Yes, I agree. Having the code in mainline would be most preferable. 
-However, there is always a delay between when people submit patches and 
-when code actually does get into mainline. Also, it's not always 
-guaranteed that the code is actually accepted into mainline. In the 
-meantime there are a multitude of patches floating around which IMHO can 
-be quite confusing.
+I move the code to a module I'm working on and when I compile (for the 
+embedded platform) some of the needed header files is not found.
 
-The purpose of the "Xilinx git tree" is to provide a central place where 
-those patches can be accumulated, including PPC and MicroBlaze. Also, as 
-Xilinx is creating new IP cores, drivers for those cores will be 
-directly added to that tree, eliminating the EDK->Linux horrors.
+I suspect this is cause I'm missing some basic understanding of how 
+gcc/makefile/compiling modules works. But can't find any useful info.
 
-So, yes, I think it's partly a staging area for code that should make it 
-into mainline, but it's also a repository for code that is not accepted 
-into mainline (yet), or new, or otherwise useful to the community.
+Snip from my makefile:
 
-Wolfgang
+KDIR    := /home/mykernel/linuxppc-2.6
+SDIR     := /home/prog/sdlc
+default:
+	$(MAKE) -C $(KDIR) SUBDIRS=$(SDIR) modules
 
-Peter Korsgaard wrote:
->>>>>> "WR" == Wolfgang Reissnegger <wolfgang.reissnegger@xilinx.com> writes:
-> 
-> Hi,
-> 
-> WR> The end goal is to have a kernel tree that contains ALL Xilinx
-> WR> drivers and the multitude of drivers that are being
-> WR> created/updated and contributed here. Having such a kernel
-> WR> available will simplify the process of bringing up a new
-> WR> system. The hope is that contributors will adopt the idea of
-> WR> having a "Xilinx" kernel and will start using that tree as a "base
-> WR> reference".
-> 
-> But there already is such a tree - It's called 'mainline'. I can see
-> some advantage in having a Xilinx tree as a staging area, but it
-> really HAS to be a temporary thing and stuff needs to be pushed to
-> mainline.
-> 
-> WR> I will post news here as they unfold. In the meantime it would be
-> WR> very interesting to hear ideas and suggestions from you. Concerns
-> WR> that people have. Pitfalls to look out for etc.
-> 
-> Hereby my 2 cents.
-> 
+The KDIR is the problem, header files not found is under this dir (or 
+sub dirs).
+But KDIR is supposed to point to my kernel source, isn't it?
+
+Checking with gcc I find the places to look for my header files:
+# powerpc-linux-gcc -print-search-dirs
+<snip>
+libraries: =
+/opt/amltd/powerpc-linux/gcc-3.4.3-glibc-2.3.5/lib/gcc/powerpc-linux/3.4.3/:
+/usr/lib/gcc/powerpc-linux/3.4.3/:
+/opt/amltd/powerpc-linux/gcc-3.4.3-glibc-2.3.5/lib/gcc/powerpc-linux/3.4.3/../../../../powerpc-linux/lib/powerpc-linux/3.4.3/:
+/opt/amltd/powerpc-linux/gcc-3.4.3-glibc-2.3.5/lib/gcc/powerpc-linux/3.4.3/../../../../powerpc-linux/lib/
+
+But these dirs dosn't have my kernel source (as needed by KDIR)?
+
+Any way to give the makefile several paths to search for files needed?
+
+Grateful for any tips, places to find info or more relevant mail-lists!
+
+br
+Robert Staven
