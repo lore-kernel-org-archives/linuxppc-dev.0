@@ -1,18 +1,12 @@
-Return-Path: <paulus@ozlabs.org>
+Return-Path: <dale@farnsworth.org>
+From: "Dale Farnsworth" <dale@farnsworth.org>
+Date: Wed, 2 May 2007 14:59:38 -0700
+To: Paul Mackerras <paulus@samba.org>
+Subject: [PATCH] powerpc: check cache coherency of kernel vs firmware
+Message-ID: <20070502215938.GF27253@xyzzy.farnsworth.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Message-ID: <17977.2733.78406.322755@cargo.ozlabs.ibm.com>
-Date: Thu, 3 May 2007 08:03:25 +1000
-From: Paul Mackerras <paulus@samba.org>
-To: "Siva Prasad" <sprasad@bivio.net>
-Subject: RE: PTE entries
-In-Reply-To: <D83235F0F3C86D4D889D8B9A0DA8C6D762D0F8@corpexc01.corp.networkrobots.com>
-References: <D83235F0F3C86D4D889D8B9A0DA8C6D762C6C3@corpexc01.corp.networkrobots.com>
-	<1177376700.14873.40.camel@localhost.localdomain>
-	<D83235F0F3C86D4D889D8B9A0DA8C6D762CA85@corpexc01.corp.networkrobots.com>
-	<1177473008.14873.181.camel@localhost.localdomain>
-	<D83235F0F3C86D4D889D8B9A0DA8C6D762D0F8@corpexc01.corp.networkrobots.com>
-Cc: linuxppc-embedded@ozlabs.org, linuxppc-dev@ozlabs.org
+Cc: Linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -22,20 +16,93 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Siva Prasad writes:
+This function verifies that the cache coherency setting of the kernel
+(CONFIG_NOT_COHERENT_CACHE) matches that left by the firmware, as
+indicated by coherency-off device tree property.
 
-> Are there any other places where we have self modifying code in Linux
-> kernel, other than in arch/powerpc/mm/ppc_mmu_32.c:MMU_init_hw()
-> (basically modified create_hpte and flush_hash_page)
+It's only needed on platforms where cache-coherency can be enabled or
+disabled by firmware, e.g. mv64x60-based platforms.
 
-Yes, the cpu feature stuff writes nops over various bits of code
-depending on what cpu you're running on.  See do_feature_fixups() in
-arch/powerpc/kernel/cputable.c.
+Signed-of-by: Dale Farnsworth <dale@farnsworth.org>
 
-> Instead of using addis, why can't we move it from SDR1 register and mask
-> the second half. SDR1 has the required value. Right?
-> May be I am missing something here.
+---
+ arch/powerpc/Kconfig                       |    3 +
+ arch/powerpc/kernel/setup-common.c         |   41 +++++++++++++++++++
+ arch/powerpc/platforms/embedded6xx/Kconfig |    1 
+ 3 files changed, 45 insertions(+)
 
-mtspr is slow on most processors, certainly slower than addis.
-
-Paul.
+Index: linux-2.6-powerpc-df/arch/powerpc/kernel/setup-common.c
+===================================================================
+--- linux-2.6-powerpc-df.orig/arch/powerpc/kernel/setup-common.c
++++ linux-2.6-powerpc-df/arch/powerpc/kernel/setup-common.c
+@@ -530,3 +530,44 @@ void __init setup_panic(void)
+ {
+ 	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
+ }
++
++#ifdef CONFIG_CHECK_CACHE_COHERENCY
++/*
++ * For platforms that have configurable cache-coherency.  This function
++ * checks that the cache coherency setting of the kernel matches the setting
++ * left by the firmware, as indicated in the device tree.  Since a mismatch
++ * will eventually result in DMA failures, we print * and error and call
++ * BUG() in that case.
++ */
++
++#ifdef CONFIG_NOT_COHERENT_CACHE
++#define KERNEL_COHERENCY	0
++#else
++#define KERNEL_COHERENCY	1
++#endif
++
++static int __init check_cache_coherency(void)
++{
++	struct device_node *np;
++	const void *prop;
++	int devtree_coherency;
++
++	np = of_find_node_by_path("/");
++	prop = of_get_property(np, "coherency-off", NULL);
++	of_node_put(np);
++
++	devtree_coherency = prop ? 0 : 1;
++
++	if (devtree_coherency != KERNEL_COHERENCY) {
++		printk(KERN_ERR
++			"kernel coherency:%s != device tree_coherency:%s\n",
++			KERNEL_COHERENCY ? "on" : "off",
++			devtree_coherency ? "on" : "off");
++		BUG();
++	}
++
++	return 0;
++}
++
++late_initcall(check_cache_coherency);
++#endif /* CONFIG_CHECK_CACHE_COHERENCY */
+Index: linux-2.6-powerpc-df/arch/powerpc/Kconfig
+===================================================================
+--- linux-2.6-powerpc-df.orig/arch/powerpc/Kconfig
++++ linux-2.6-powerpc-df/arch/powerpc/Kconfig
+@@ -373,6 +373,9 @@ config NOT_COHERENT_CACHE
+ 	bool
+ 	depends on 4xx || 8xx || E200
+ 	default y
++
++config CHECK_COHERENT_CACHE
++	bool
+ endmenu
+ 
+ source "init/Kconfig"
+Index: linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
+===================================================================
+--- linux-2.6-powerpc-df.orig/arch/powerpc/platforms/embedded6xx/Kconfig
++++ linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
+@@ -41,6 +41,7 @@ config MPC10X_BRIDGE
+ config MV64X60
+ 	bool
+ 	select PPC_INDIRECT_PCI
++	select CHECK_COHERENT_CACHE
+ 
+ config MPC10X_OPENPIC
+ 	bool
