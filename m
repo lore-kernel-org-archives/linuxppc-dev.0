@@ -1,27 +1,23 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.174])
-	by ozlabs.org (Postfix) with ESMTP id 805D6DDF34
+Return-Path: <jwilliams@itee.uq.edu.au>
+Received: from gum.itee.uq.edu.au (gum.itee.uq.edu.au [130.102.66.1])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id D15BCDDF3C
 	for <linuxppc-embedded@ozlabs.org>;
-	Wed,  2 May 2007 15:47:45 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so136452ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Tue, 01 May 2007 22:47:43 -0700 (PDT)
-Message-ID: <528646bc0705012247p4a0fff63oa8d98364d5f639b0@mail.gmail.com>
-Date: Tue, 1 May 2007 23:47:43 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "John Williams" <jwilliams@itee.uq.edu.au>,
-	"David H. Lynch Jr." <dhlii@dlasys.net>,
-	"Peter Korsgaard" <jacmet@sunsite.dk>
-Subject: Re: [RFC] uartlite driver MicroBlaze compatability
-In-Reply-To: <4636E142.8010104@itee.uq.edu.au>
+	Wed,  2 May 2007 16:18:59 +1000 (EST)
+Message-ID: <46382D47.1090109@itee.uq.edu.au>
+Date: Wed, 02 May 2007 16:18:47 +1000
+From: John Williams <jwilliams@itee.uq.edu.au>
 MIME-Version: 1.0
-Content-Type: multipart/mixed;
-	boundary="----=_Part_2621_16687281.1178084863518"
-References: <4636C836.4050502@itee.uq.edu.au>
-	<528646bc0704302255j3a825f10vbffd4bac961b28d7@mail.gmail.com>
+To: Grant Likely <grant.likely@secretlab.ca>
+Subject: Re: [RFC] uartlite driver MicroBlaze compatability
+References: <4636C836.4050502@itee.uq.edu.au>	
+	<528646bc0704302255j3a825f10vbffd4bac961b28d7@mail.gmail.com>	
 	<4636E142.8010104@itee.uq.edu.au>
-Cc: linuxppc-embedded@ozlabs.org
+	<528646bc0705012247p4a0fff63oa8d98364d5f639b0@mail.gmail.com>
+In-Reply-To: <528646bc0705012247p4a0fff63oa8d98364d5f639b0@mail.gmail.com>
+Content-Type: text/plain; charset=us-ascii; format=flowed
+Cc: Peter Korsgaard <jacmet@sunsite.dk>, linuxppc-embedded@ozlabs.org
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -32,147 +28,58 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-------=_Part_2621_16687281.1178084863518
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-Content-Transfer-Encoding: 7bit
-Content-Disposition: inline
+Grant Likely wrote:
+> On 5/1/07, John Williams <jwilliams@itee.uq.edu.au> wrote:
+> 
+>> Grant Likely wrote:
+>> > However, the uartlite is *not* an 8250.  The 8250 turns up all over
+>> > the place and it's registers are defined as 8 bit wide.  The
+>> > offset-by-3 stuff is part of the plat_serial8250_port structure which
+>> > is also used to specify .regshift (increment between registers).
+>> > Whereas the UARTLITE is defined as a 32 bit device and it doesn't show
+>> > up in anywhere near as many designs.  Registers are always 4 bytes
+>> > wide and are always located at multiples of 4 bytes off the base
+> 
+> Hmm, I think I was smoking something last night.  Address used for 8
+> bit access should not be affected by CPU endianess.  After David's
+> comments, I reread the uartlite documentation.  The current design is
+> definately for 32bit OPB bus connections, but it looks like there is a
+> posibility for xilinx to add a 16 or 8 bit attachment.  Since the
+> uartlite design explicitly supports 8, 16 and 32 bit access, sticking
+> with 8 bit io may be the safest.  
 
-On 5/1/07, John Williams <jwilliams@itee.uq.edu.au> wrote:
-> Grant Likely wrote:
-> > However, the uartlite is *not* an 8250.  The 8250 turns up all over
-> > the place and it's registers are defined as 8 bit wide.  The
-> > offset-by-3 stuff is part of the plat_serial8250_port structure which
-> > is also used to specify .regshift (increment between registers).
-> > Whereas the UARTLITE is defined as a 32 bit device and it doesn't show
-> > up in anywhere near as many designs.  Registers are always 4 bytes
-> > wide and are always located at multiples of 4 bytes off the base
+To be honest I don't think that will ever happen - just because the OPB 
+bus data width is parameterisable, doesn't mean that it actually *works* 
+or has been tested on anything other than 32-bits wide.  I've certainly 
+never heard of anyone doing so, on either MicroBlaze or PPC.
 
-Hmm, I think I was smoking something last night.  Address used for 8
-bit access should not be affected by CPU endianess.  After David's
-comments, I reread the uartlite documentation.  The current design is
-definately for 32bit OPB bus connections, but it looks like there is a
-posibility for xilinx to add a 16 or 8 bit attachment.  Since the
-uartlite design explicitly supports 8, 16 and 32 bit access, sticking
-with 8 bit io may be the safest.  However, I still think the
-application of the 3 byte offset should be done in the driver, and not
-in the platform bus registration.
+but, I won't fight over it :)
 
-I've reworked the patch with the following changes
-- remove 3 byte offset from platform bus registration.
-- added ulite_in/ulite_out macros to make changing bus attachment
-details simpler if xilinx changes the uartlite design.
-- stick with 8 bit IO.
+Either way, it will still require a code change if/when someone does a 
+16/8 bit wide OPB bus.  Whether they change the IO access operation, or 
+a hardcoded constant, it's still not perfect.
 
-Tested on PPC.  John, can you please test on microblaze?
+Of course the real solution here is to create an OPB bus driver, with  a 
+'width' field that you can pull out of XPAR, and so on... Use that 
+instead of platform bus, and all this rubbish can be dealt with cleanly.
 
-Cheers,
-g.
+> However, I still think the
+> application of the 3 byte offset should be done in the driver, and not
+> in the platform bus registration.
 
--- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+If it has to be done, I agree the driver is the place to put it.
 
-------=_Part_2621_16687281.1178084863518
-Content-Type: application/x-patch; name="0001-POWERPC-Fix-UARTLITE-driver-to-add-a-3-byte-offset.patch"
-Content-Transfer-Encoding: base64
-Content-Disposition: attachment; filename="0001-POWERPC-Fix-UARTLITE-driver-to-add-a-3-byte-offset.patch"
-X-Attachment-Id: f_f17dapsz
+> I've reworked the patch with the following changes
+> - remove 3 byte offset from platform bus registration.
+> - added ulite_in/ulite_out macros to make changing bus attachment
+> details simpler if xilinx changes the uartlite design.
+> - stick with 8 bit IO.
 
-RnJvbSBmZDE0OTM5YjU3MDUxMWNkNTdkYzVkM2VmYTExNDU5NzY3MDZjNmFkIE1vbiBTZXAgMTcg
-MDA6MDA6MDAgMjAwMQpGcm9tOiBHcmFudCBMaWtlbHkgPGdyYW50Lmxpa2VseUBzZWNyZXRsYWIu
-Y2E+CkRhdGU6IE1vbiwgMzAgQXByIDIwMDcgMjM6NTM6MDMgLTA2MDAKU3ViamVjdDogW1BBVENI
-XSBbUE9XRVJQQ10gRml4IFVBUlRMSVRFIGRyaXZlciB0byBhZGQgYSAzIGJ5dGUgb2Zmc2V0IHdo
-ZW4gYWNjZXNzaW5nIHJlZ2lzdGVycwoKQWxzbywgcmVwbGFjZSBkaXJlY3QgY2FsbHMgdG8gcmVh
-ZGIvd3JpdGViIHdpdGggdWxpdGVfaW4vdWxpdGVfb3V0IG1hY3JvcwpzbyBhbnkgZnV0dXJlIHJl
-Z2lzdGVyIGFjY2VzcyBjaGFuZ2VzIGFyZSBzaW1wbGVyIHRvIGFwcGx5LgoKU2lnbmVkLW9mZi1i
-eTogR3JhbnQgTGlrZWx5IDxncmFudC5saWtlbHlAc2VjcmV0bGFiLmNhPgotLS0KIGFyY2gvcHBj
-L3N5c2xpYi92aXJ0ZXhfZGV2aWNlcy5jIHwgICAgMiArLQogZHJpdmVycy9zZXJpYWwvdWFydGxp
-dGUuYyAgICAgICAgfCAgIDM1ICsrKysrKysrKysrKysrKysrKystLS0tLS0tLS0tLS0tLS0tCiAy
-IGZpbGVzIGNoYW5nZWQsIDIwIGluc2VydGlvbnMoKyksIDE3IGRlbGV0aW9ucygtKQoKZGlmZiAt
-LWdpdCBhL2FyY2gvcHBjL3N5c2xpYi92aXJ0ZXhfZGV2aWNlcy5jIGIvYXJjaC9wcGMvc3lzbGli
-L3ZpcnRleF9kZXZpY2VzLmMKaW5kZXggNTJlMmViYi4uNmMzZTMxYiAxMDA2NDQKLS0tIGEvYXJj
-aC9wcGMvc3lzbGliL3ZpcnRleF9kZXZpY2VzLmMKKysrIGIvYXJjaC9wcGMvc3lzbGliL3ZpcnRl
-eF9kZXZpY2VzLmMKQEAgLTMxLDcgKzMxLDcgQEAKIAkubnVtX3Jlc291cmNlcyA9IDIsIFwKIAku
-cmVzb3VyY2UgPSAoc3RydWN0IHJlc291cmNlW10pIHsgXAogCQl7IFwKLQkJCS5zdGFydCA9IFhQ
-QVJfVUFSVExJVEVfIyNudW0jI19CQVNFQUREUiArIDMsIFwKKwkJCS5zdGFydCA9IFhQQVJfVUFS
-VExJVEVfIyNudW0jI19CQVNFQUREUiwgXAogCQkJLmVuZCA9IFhQQVJfVUFSVExJVEVfIyNudW0j
-I19ISUdIQUREUiwgXAogCQkJLmZsYWdzID0gSU9SRVNPVVJDRV9NRU0sIFwKIAkJfSwgXApkaWZm
-IC0tZ2l0IGEvZHJpdmVycy9zZXJpYWwvdWFydGxpdGUuYyBiL2RyaXZlcnMvc2VyaWFsL3VhcnRs
-aXRlLmMKaW5kZXggZjUwNTFjZi4uNjdhOGJjNyAxMDA2NDQKLS0tIGEvZHJpdmVycy9zZXJpYWwv
-dWFydGxpdGUuYworKysgYi9kcml2ZXJzL3NlcmlhbC91YXJ0bGl0ZS5jCkBAIC00OCw2ICs0OCw5
-IEBACiAKIHN0YXRpYyBzdHJ1Y3QgdWFydF9wb3J0IHBvcnRzW1VMSVRFX05SX1VBUlRTXTsKIAor
-I2RlZmluZSB1bGl0ZV9pbihwLHIpCQlpbl84KHAtPm1lbWJhc2UgKyAocikgKyAzKQorI2RlZmlu
-ZSB1bGl0ZV9vdXQocCxyLHYpCW91dF84KHAtPm1lbWJhc2UgKyAocikgKyAzLCB2KQorCiBzdGF0
-aWMgaW50IHVsaXRlX3JlY2VpdmUoc3RydWN0IHVhcnRfcG9ydCAqcG9ydCwgaW50IHN0YXQpCiB7
-CiAJc3RydWN0IHR0eV9zdHJ1Y3QgKnR0eSA9IHBvcnQtPmluZm8tPnR0eTsKQEAgLTYxLDcgKzY0
-LDcgQEAgc3RhdGljIGludCB1bGl0ZV9yZWNlaXZlKHN0cnVjdCB1YXJ0X3BvcnQgKnBvcnQsIGlu
-dCBzdGF0KQogCS8qIHN0YXRzICovCiAJaWYgKHN0YXQgJiBVTElURV9TVEFUVVNfUlhWQUxJRCkg
-ewogCQlwb3J0LT5pY291bnQucngrKzsKLQkJY2ggPSByZWFkYihwb3J0LT5tZW1iYXNlICsgVUxJ
-VEVfUlgpOworCQljaCA9IHVsaXRlX2luKHBvcnQsIFVMSVRFX1JYKTsKIAogCQlpZiAoc3RhdCAm
-IFVMSVRFX1NUQVRVU19QQVJJVFkpCiAJCQlwb3J0LT5pY291bnQucGFyaXR5Kys7CkBAIC0xMDYs
-NyArMTA5LDcgQEAgc3RhdGljIGludCB1bGl0ZV90cmFuc21pdChzdHJ1Y3QgdWFydF9wb3J0ICpw
-b3J0LCBpbnQgc3RhdCkKIAkJcmV0dXJuIDA7CiAKIAlpZiAocG9ydC0+eF9jaGFyKSB7Ci0JCXdy
-aXRlYihwb3J0LT54X2NoYXIsIHBvcnQtPm1lbWJhc2UgKyBVTElURV9UWCk7CisJCXVsaXRlX291
-dChwb3J0LCBVTElURV9UWCwgcG9ydC0+eF9jaGFyKTsKIAkJcG9ydC0+eF9jaGFyID0gMDsKIAkJ
-cG9ydC0+aWNvdW50LnR4Kys7CiAJCXJldHVybiAxOwpAQCAtMTE1LDcgKzExOCw3IEBAIHN0YXRp
-YyBpbnQgdWxpdGVfdHJhbnNtaXQoc3RydWN0IHVhcnRfcG9ydCAqcG9ydCwgaW50IHN0YXQpCiAJ
-aWYgKHVhcnRfY2lyY19lbXB0eSh4bWl0KSB8fCB1YXJ0X3R4X3N0b3BwZWQocG9ydCkpCiAJCXJl
-dHVybiAwOwogCi0Jd3JpdGViKHhtaXQtPmJ1Zlt4bWl0LT50YWlsXSwgcG9ydC0+bWVtYmFzZSAr
-IFVMSVRFX1RYKTsKKwl1bGl0ZV9vdXQocG9ydCwgVUxJVEVfVFgsIHhtaXQtPmJ1Zlt4bWl0LT50
-YWlsXSk7CiAJeG1pdC0+dGFpbCA9ICh4bWl0LT50YWlsICsgMSkgJiAoVUFSVF9YTUlUX1NJWkUt
-MSk7CiAJcG9ydC0+aWNvdW50LnR4Kys7CiAKQEAgLTEzMiw3ICsxMzUsNyBAQCBzdGF0aWMgaXJx
-cmV0dXJuX3QgdWxpdGVfaXNyKGludCBpcnEsIHZvaWQgKmRldl9pZCkKIAlpbnQgYnVzeTsKIAog
-CWRvIHsKLQkJaW50IHN0YXQgPSByZWFkYihwb3J0LT5tZW1iYXNlICsgVUxJVEVfU1RBVFVTKTsK
-KwkJaW50IHN0YXQgPSB1bGl0ZV9pbihwb3J0LCBVTElURV9TVEFUVVMpOwogCQlidXN5ICA9IHVs
-aXRlX3JlY2VpdmUocG9ydCwgc3RhdCk7CiAJCWJ1c3kgfD0gdWxpdGVfdHJhbnNtaXQocG9ydCwg
-c3RhdCk7CiAJfSB3aGlsZSAoYnVzeSk7CkBAIC0xNDgsNyArMTUxLDcgQEAgc3RhdGljIHVuc2ln
-bmVkIGludCB1bGl0ZV90eF9lbXB0eShzdHJ1Y3QgdWFydF9wb3J0ICpwb3J0KQogCXVuc2lnbmVk
-IGludCByZXQ7CiAKIAlzcGluX2xvY2tfaXJxc2F2ZSgmcG9ydC0+bG9jaywgZmxhZ3MpOwotCXJl
-dCA9IHJlYWRiKHBvcnQtPm1lbWJhc2UgKyBVTElURV9TVEFUVVMpOworCXJldCA9IHVsaXRlX2lu
-KHBvcnQsIFVMSVRFX1NUQVRVUyk7CiAJc3Bpbl91bmxvY2tfaXJxcmVzdG9yZSgmcG9ydC0+bG9j
-aywgZmxhZ3MpOwogCiAJcmV0dXJuIHJldCAmIFVMSVRFX1NUQVRVU19UWEVNUFRZID8gVElPQ1NF
-Ul9URU1UIDogMDsKQEAgLTE3MSw3ICsxNzQsNyBAQCBzdGF0aWMgdm9pZCB1bGl0ZV9zdG9wX3R4
-KHN0cnVjdCB1YXJ0X3BvcnQgKnBvcnQpCiAKIHN0YXRpYyB2b2lkIHVsaXRlX3N0YXJ0X3R4KHN0
-cnVjdCB1YXJ0X3BvcnQgKnBvcnQpCiB7Ci0JdWxpdGVfdHJhbnNtaXQocG9ydCwgcmVhZGIocG9y
-dC0+bWVtYmFzZSArIFVMSVRFX1NUQVRVUykpOworCXVsaXRlX3RyYW5zbWl0KHBvcnQsIHVsaXRl
-X2luKHBvcnQsIFVMSVRFX1NUQVRVUykpOwogfQogCiBzdGF0aWMgdm9pZCB1bGl0ZV9zdG9wX3J4
-KHN0cnVjdCB1YXJ0X3BvcnQgKnBvcnQpCkBAIC0yMDAsMTcgKzIwMywxNyBAQCBzdGF0aWMgaW50
-IHVsaXRlX3N0YXJ0dXAoc3RydWN0IHVhcnRfcG9ydCAqcG9ydCkKIAlpZiAocmV0KQogCQlyZXR1
-cm4gcmV0OwogCi0Jd3JpdGViKFVMSVRFX0NPTlRST0xfUlNUX1JYIHwgVUxJVEVfQ09OVFJPTF9S
-U1RfVFgsCi0JICAgICAgIHBvcnQtPm1lbWJhc2UgKyBVTElURV9DT05UUk9MKTsKLQl3cml0ZWIo
-VUxJVEVfQ09OVFJPTF9JRSwgcG9ydC0+bWVtYmFzZSArIFVMSVRFX0NPTlRST0wpOworCXVsaXRl
-X291dChwb3J0LCBVTElURV9DT05UUk9MLAorCSAgICAgICAgICBVTElURV9DT05UUk9MX1JTVF9S
-WCB8IFVMSVRFX0NPTlRST0xfUlNUX1RYKTsKKwl1bGl0ZV9vdXQocG9ydCwgVUxJVEVfQ09OVFJP
-TCwgVUxJVEVfQ09OVFJPTF9JRSk7CiAKIAlyZXR1cm4gMDsKIH0KIAogc3RhdGljIHZvaWQgdWxp
-dGVfc2h1dGRvd24oc3RydWN0IHVhcnRfcG9ydCAqcG9ydCkKIHsKLQl3cml0ZWIoMCwgcG9ydC0+
-bWVtYmFzZSArIFVMSVRFX0NPTlRST0wpOwotCXJlYWRiKHBvcnQtPm1lbWJhc2UgKyBVTElURV9D
-T05UUk9MKTsgLyogZHVtbXkgKi8KKwl1bGl0ZV9vdXQocG9ydCwgVUxJVEVfQ09OVFJPTCwgMCk7
-CisJdWxpdGVfaW4ocG9ydCwgVUxJVEVfQ09OVFJPTCk7IC8qIGR1bW15ICovCiAJZnJlZV9pcnEo
-cG9ydC0+aXJxLCBwb3J0KTsKIH0KIApAQCAtMzE0LDcgKzMxNyw3IEBAIHN0YXRpYyB2b2lkIHVs
-aXRlX2NvbnNvbGVfd2FpdF90eChzdHJ1Y3QgdWFydF9wb3J0ICpwb3J0KQogCiAJLyogd2FpdCB1
-cCB0byAxMG1zIGZvciB0aGUgY2hhcmFjdGVyKHMpIHRvIGJlIHNlbnQgKi8KIAlmb3IgKGkgPSAw
-OyBpIDwgMTAwMDA7IGkrKykgewotCQlpZiAocmVhZGIocG9ydC0+bWVtYmFzZSArIFVMSVRFX1NU
-QVRVUykgJiBVTElURV9TVEFUVVNfVFhFTVBUWSkKKwkJaWYgKHVsaXRlX2luKHBvcnQsIFVMSVRF
-X1NUQVRVUykgJiBVTElURV9TVEFUVVNfVFhFTVBUWSkKIAkJCWJyZWFrOwogCQl1ZGVsYXkoMSk7
-CiAJfQpAQCAtMzIzLDcgKzMyNiw3IEBAIHN0YXRpYyB2b2lkIHVsaXRlX2NvbnNvbGVfd2FpdF90
-eChzdHJ1Y3QgdWFydF9wb3J0ICpwb3J0KQogc3RhdGljIHZvaWQgdWxpdGVfY29uc29sZV9wdXRj
-aGFyKHN0cnVjdCB1YXJ0X3BvcnQgKnBvcnQsIGludCBjaCkKIHsKIAl1bGl0ZV9jb25zb2xlX3dh
-aXRfdHgocG9ydCk7Ci0Jd3JpdGViKGNoLCBwb3J0LT5tZW1iYXNlICsgVUxJVEVfVFgpOworCXVs
-aXRlX291dChwb3J0LCBVTElURV9UWCwgY2gpOwogfQogCiBzdGF0aWMgdm9pZCB1bGl0ZV9jb25z
-b2xlX3dyaXRlKHN0cnVjdCBjb25zb2xlICpjbywgY29uc3QgY2hhciAqcywKQEAgLTM0MCw4ICsz
-NDMsOCBAQCBzdGF0aWMgdm9pZCB1bGl0ZV9jb25zb2xlX3dyaXRlKHN0cnVjdCBjb25zb2xlICpj
-bywgY29uc3QgY2hhciAqcywKIAkJc3Bpbl9sb2NrX2lycXNhdmUoJnBvcnQtPmxvY2ssIGZsYWdz
-KTsKIAogCS8qIHNhdmUgYW5kIGRpc2FibGUgaW50ZXJydXB0ICovCi0JaWVyID0gcmVhZGIocG9y
-dC0+bWVtYmFzZSArIFVMSVRFX1NUQVRVUykgJiBVTElURV9TVEFUVVNfSUU7Ci0Jd3JpdGViKDAs
-IHBvcnQtPm1lbWJhc2UgKyBVTElURV9DT05UUk9MKTsKKwlpZXIgPSB1bGl0ZV9pbihwb3J0LCBV
-TElURV9TVEFUVVMpICYgVUxJVEVfU1RBVFVTX0lFOworCXVsaXRlX291dChwb3J0LCBVTElURV9D
-T05UUk9MLCAwKTsKIAogCXVhcnRfY29uc29sZV93cml0ZShwb3J0LCBzLCBjb3VudCwgdWxpdGVf
-Y29uc29sZV9wdXRjaGFyKTsKIApAQCAtMzQ5LDcgKzM1Miw3IEBAIHN0YXRpYyB2b2lkIHVsaXRl
-X2NvbnNvbGVfd3JpdGUoc3RydWN0IGNvbnNvbGUgKmNvLCBjb25zdCBjaGFyICpzLAogCiAJLyog
-cmVzdG9yZSBpbnRlcnJ1cHQgc3RhdGUgKi8KIAlpZiAoaWVyKQotCQl3cml0ZWIoVUxJVEVfQ09O
-VFJPTF9JRSwgcG9ydC0+bWVtYmFzZSArIFVMSVRFX0NPTlRST0wpOworCQl1bGl0ZV9vdXQocG9y
-dCwgVUxJVEVfQ09OVFJPTCwgVUxJVEVfQ09OVFJPTF9JRSk7CiAKIAlpZiAobG9ja2VkKQogCQlz
-cGluX3VubG9ja19pcnFyZXN0b3JlKCZwb3J0LT5sb2NrLCBmbGFncyk7Ci0tIAoxLjUuMQoK
-------=_Part_2621_16687281.1178084863518--
+It works fine, however perhaps a comment explaining the +3 offset might 
+be appreciated by those who follow.
+
+  > Tested on PPC.  John, can you please test on microblaze?
+
+Acked-by: John Williams <jwilliams@itee.uq.edu.au>
+
+John
