@@ -1,24 +1,20 @@
-Return-Path: <segher@kernel.crashing.org>
-Received: from mail-in-03.arcor-online.net (mail-in-03.arcor-online.net
-	[151.189.21.43])
+Return-Path: <b07421@freescale.com>
+Received: from de01egw02.freescale.net (de01egw02.freescale.net
+	[192.88.165.103])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "mx.arcor.de",
+	(Client CN "de01egw02.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id F28D1DDF92
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 03:58:31 +1000 (EST)
-In-Reply-To: <1178116438.13233.65.camel@johannes.berg>
-References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
-	<1178086872.13233.27.camel@johannes.berg>
-	<17976.28170.695715.416339@cargo.ozlabs.ibm.com>
-	<1178116438.13233.65.camel@johannes.berg>
-Mime-Version: 1.0 (Apple Message framework v623)
-Content-Type: text/plain; charset=US-ASCII; delsp=yes; format=flowed
-Message-Id: <9e6a5a396bff2c6bc4728c9fa0b1a0c8@kernel.crashing.org>
-From: Segher Boessenkool <segher@kernel.crashing.org>
-Subject: Re: [PATCH] powermac: support G5 CPU hotplug
-Date: Wed, 2 May 2007 19:57:47 +0200
-To: Johannes Berg <johannes@sipsolutions.net>
-Cc: linuxppc-dev@ozlabs.org, Paul Mackerras <paulus@samba.org>
+	by ozlabs.org (Postfix) with ESMTP id F2759DDE33
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 04:00:14 +1000 (EST)
+Date: Wed, 2 May 2007 13:00:00 -0500
+From: Scott Wood <scottwood@freescale.com>
+To: paulus@samba.org
+Subject: [PATCH] bootwrapper: Only build cuImage if CONFIG_DEVICE_TREE is
+	non-empty.
+Message-ID: <20070502180000.GA15154@ld0162-tx32.am.freescale.net>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -28,20 +24,32 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
->> Ultimately we want to put the disabled cpus in sleep mode, but that
->> will require a suitable cache flush routine.
->
-> I don't have any docs for the particular processors the G5s have, do
-> they have a sleep mode?
+This allows the zImage target to once again be used to build
+all supported image types, rather than requiring an explicit
+"make uImage" to avoid failing to create an unneeded cuImage.
 
-Yes; they have many different power saving modes
-(doze, nap, deep nap, sleep), and the clock can
-be scaled down, too.  The details are different
-for each of 970, 970FX, 970MP.
+Signed-off-by: Scott Wood <scottwood@freescale.com>
+---
+ arch/powerpc/boot/Makefile |    5 ++++-
+ 1 files changed, 4 insertions(+), 1 deletions(-)
 
-Documentation for 970FX and 970MP is here:
-<http://www-306.ibm.com/chips/techlib/techlib.nsf/products/ 
-PowerPC_9XX_Microprocessors>
-
-
-Segher
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 326ee92..f2d850c 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -129,9 +129,12 @@ image-$(CONFIG_PPC_CELLEB)		+= zImage.pseries
+ image-$(CONFIG_PPC_CHRP)		+= zImage.chrp
+ image-$(CONFIG_PPC_EFIKA)		+= zImage.chrp
+ image-$(CONFIG_PPC_PMAC)		+= zImage.pmac
++image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
++
++ifneq ($(CONFIG_DEVICE_TREE),"")
+ image-$(CONFIG_PPC_83xx)		+= cuImage.83xx
+ image-$(CONFIG_PPC_85xx)		+= cuImage.85xx
+-image-$(CONFIG_DEFAULT_UIMAGE)		+= uImage
++endif
+ 
+ # For 32-bit powermacs, build the COFF and miboot images
+ # as well as the ELF images.
+-- 
+1.5.0.3
