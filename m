@@ -1,21 +1,14 @@
-Return-Path: <glikely@gmail.com>
-Received: from ug-out-1314.google.com (ug-out-1314.google.com [66.249.92.169])
-	by ozlabs.org (Postfix) with ESMTP id 249EEDDE0E
+Return-Path: <jacmet@sunsite.dk>
+Received: from smtp40.mobistarmail.be (smtp40.mobistarmail.be [193.252.23.61])
+	by ozlabs.org (Postfix) with ESMTP id DBE48DDD0A
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 May 2007 07:48:43 +1000 (EST)
-Received: by ug-out-1314.google.com with SMTP id k3so256720ugf
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 02 May 2007 14:48:42 -0700 (PDT)
-Message-ID: <528646bc0705021448x33d42ce5k84c4b9fffc2d14d0@mail.gmail.com>
-Date: Wed, 2 May 2007 15:48:42 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Peter Korsgaard" <jacmet@sunsite.dk>
+	Thu,  3 May 2007 07:59:30 +1000 (EST)
+From: Peter Korsgaard <jacmet@sunsite.dk>
+To: "Grant Likely" <grant.likely@secretlab.ca>
 Subject: Re: Using Cypress EZ-Host on ML403/5
-In-Reply-To: <87wszqucpr.fsf@p4.be.48ers.dk>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
 References: <4623A197.6000104@computing.dundee.ac.uk>
+	<528646bc0704160932k2038090al8c0b8e5420422545@mail.gmail.com>
+	<87zm54mt3j.fsf@sleipner.barco.com>
 	<528646bc0704190717o14da4b58r5ef69a8e77ade198@mail.gmail.com>
 	<87vefsmoaj.fsf@sleipner.barco.com>
 	<528646bc0704190750r4b6d76y72a862c249fa0520@mail.gmail.com>
@@ -24,7 +17,12 @@ References: <4623A197.6000104@computing.dundee.ac.uk>
 	<9305ca410704270141y66928deyab59300b8c5ccb95@mail.gmail.com>
 	<528646bc0704301223q2024505ah5308147ba6eead0a@mail.gmail.com>
 	<528646bc0705021408o1e1f25d7pa81905081d06ed8e@mail.gmail.com>
-	<87wszqucpr.fsf@p4.be.48ers.dk>
+Date: Wed, 02 May 2007 23:39:44 +0200
+In-Reply-To: <528646bc0705021408o1e1f25d7pa81905081d06ed8e@mail.gmail.com>
+	(Grant Likely's message of "Wed, 2 May 2007 15:08:33 -0600")
+Message-ID: <87wszqucpr.fsf@p4.be.48ers.dk>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Cc: linuxppc-embedded <linuxppc-embedded@ozlabs.org>
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
@@ -36,17 +34,39 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/2/07, Peter Korsgaard <jacmet@sunsite.dk> wrote:
-> Thanks for the feedback!
+>>>>> "Grant" == Grant Likely <grant.likely@secretlab.ca> writes:
 
-No problem.  I'll keep hacking on it here and keep you up-to-date on
-my progress.
+Hi,
 
-Cheers,
-g.
+ >> > Did you have a chance to try it out yet?
+
+ Grant> Hey Peter,
+
+ Grant> I've got it running on my board now after figuring out how to wire up
+ Grant> external interrupts in EDK.  :-)
+
+ Grant> Good success with keyboards and mice.  Events come through no problem.
+
+Great!
+
+ Grant> Some block devices seem to be giving me grief.  I have no problem with
+ Grant> my SanDisk ImageMate CF reader.  However, I've got a SanDisk Curzer
+ Grant> Micro that gets reset during transfers.  Is this something you've seen
+ Grant> before?  Log output is below.
+
+Yeah, I've also had quite varied success with USB sticks - Some work
+just fine, others not at all. I'm still trying to figure out what goes
+wrong..
+
+ Grant> I've also got a QuickCam Messinger that I'm going to test isochronos
+ Grant> transfers with as well.
+
+Ok. I've had a webcam and USB audio devices working OK. Isochronos
+transfers are the most tricky ones to implement though, so don't
+expect wonders (E.G. I get audio stutter if I do a lot of bulk
+tranfers at the same time).
+
+Thanks for the feedback!
 
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+Bye, Peter Korsgaard
