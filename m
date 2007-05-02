@@ -1,27 +1,25 @@
-Return-Path: <scottwood@freescale.com>
-Received: from de01egw02.freescale.net (de01egw02.freescale.net
-	[192.88.165.103])
+Return-Path: <jdl@freescale.com>
+Received: from de01egw01.freescale.net (de01egw01.freescale.net
+	[192.88.165.102])
 	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
-	(Client CN "de01egw02.freescale.net",
+	(Client CN "de01egw01.freescale.net",
 	Issuer "Thawte Premium Server CA" (verified OK))
-	by ozlabs.org (Postfix) with ESMTP id B0B67DDF82
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 07:30:26 +1000 (EST)
-Message-ID: <463902EB.8070401@freescale.com>
-Date: Wed, 02 May 2007 16:30:19 -0500
-From: Scott Wood <scottwood@freescale.com>
-MIME-Version: 1.0
-To: Kumar Gala <galak@kernel.crashing.org>
-Subject: Re: [PATCH v2] gianfar: Add I/O barriers when touching buffer
-	descriptor ownership.
-References: <20070502195712.GA16541@ld0162-tx32.am.freescale.net>
-	<F1B250DD-A472-470F-B3D0-EBB2F042E454@kernel.crashing.org>
-	<4638F0C4.2000406@freescale.com>
-	<FA9554A4-5A7D-4E03-BE28-C4B6B80D9DB9@kernel.crashing.org>
-	<4638F734.2040809@freescale.com>
-	<41B347BE-06AA-4346-BEFB-19DFB52AC533@kernel.crashing.org>
-In-Reply-To: <41B347BE-06AA-4346-BEFB-19DFB52AC533@kernel.crashing.org>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: netdev@vger.kernel.org, jgarzik@pobox.com, linuxppc-dev@ozlabs.org
+	by ozlabs.org (Postfix) with ESMTP id 246F5DDF78
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 07:34:48 +1000 (EST)
+Received: from de01smr02.am.mot.com (de01smr02.freescale.net [10.208.0.151])
+	by de01egw01.freescale.net (8.12.11/de01egw01) with ESMTP id
+	l42LYipZ012657
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 14:34:44 -0700 (MST)
+Received: from ld0161-tx32 (ld0161-tx32.am.freescale.net [10.82.19.111])
+	by de01smr02.am.mot.com (8.13.1/8.13.0) with ESMTP id l42LYhfp015253
+	for <linuxppc-dev@ozlabs.org>; Wed, 2 May 2007 16:34:44 -0500 (CDT)
+Subject: [PATCH] Remove CPU_FTR_NEED_COHERENT for 7448.
+From: Jon Loeliger <jdl@freescale.com>
+To: "linuxppc-dev@ozlabs.org" <linuxppc-dev@ozlabs.org>
+Content-Type: text/plain
+Message-Id: <1178141683.32136.46.camel@ld0161-tx32>
+Mime-Version: 1.0
+Date: Wed, 02 May 2007 16:34:43 -0500
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -31,12 +29,47 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Kumar Gala wrote:
-> Why doesn't marking the bdp pointer volatile resolve the issue in  
-> gfar_clean_rx_ring() to ensure load ordering?
+From: James.Yang <James.Yang@freescale.com>
 
-Because that only addresses compiler reordering (and does so in a rather 
-clumsy way -- not all accesses need to be strongly ordered), not 
-hardware reordering.
+Remove CPU_FTR_NEED_COHERENT for MPC7448 (and single-core MPC86xx).
+This prevents needlessly setting M=1 when not SMP.
 
--Scott
+Signed-off-by: James.Yang <James.Yang@freescale.com>
+Acked-by: Jon Loeliger <jdl@freescale.com>
+---
+ arch/powerpc/kernel/cputable.c |    2 +-
+ include/asm-powerpc/cputable.h |    6 ++++++
+ 2 files changed, 7 insertions(+), 1 deletions(-)
+
+diff --git a/arch/powerpc/kernel/cputable.c b/arch/powerpc/kernel/cputable.c
+index 9cb24d2..6ef87fb 100644
+--- a/arch/powerpc/kernel/cputable.c
++++ b/arch/powerpc/kernel/cputable.c
+@@ -836,7 +836,7 @@ static struct cpu_spec cpu_specs[] = {
+ 		.pvr_mask		= 0xffff0000,
+ 		.pvr_value		= 0x80040000,
+ 		.cpu_name		= "7448",
+-		.cpu_features		= CPU_FTRS_7447A,
++		.cpu_features		= CPU_FTRS_7448,
+ 		.cpu_user_features	= COMMON_USER |
+ 			PPC_FEATURE_HAS_ALTIVEC_COMP | PPC_FEATURE_PPC_LE,
+ 		.icache_bsize		= 32,
+diff --git a/include/asm-powerpc/cputable.h b/include/asm-powerpc/cputable.h
+index 4345249..82d595a 100644
+--- a/include/asm-powerpc/cputable.h
++++ b/include/asm-powerpc/cputable.h
+@@ -302,6 +302,12 @@ extern void do_feature_fixups(unsigned long value, void *fixup_start,
+ 	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
+ 	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
+ 	    CPU_FTR_NEED_COHERENT | CPU_FTR_PPC_LE)
++#define CPU_FTRS_7448	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
++	    CPU_FTR_USE_TB | \
++	    CPU_FTR_MAYBE_CAN_NAP | CPU_FTR_L2CR | CPU_FTR_ALTIVEC_COMP | \
++	    CPU_FTR_HPTE_TABLE | CPU_FTR_SPEC7450 | \
++	    CPU_FTR_NAP_DISABLE_L2_PR | CPU_FTR_HAS_HIGH_BATS | \
++	    CPU_FTR_PPC_LE)
+ #define CPU_FTRS_82XX	(CPU_FTR_COMMON | CPU_FTR_SPLIT_ID_CACHE | \
+ 	    CPU_FTR_MAYBE_CAN_DOZE | CPU_FTR_USE_TB)
+ #define CPU_FTRS_G2_LE	(CPU_FTR_SPLIT_ID_CACHE | CPU_FTR_MAYBE_CAN_DOZE | \
+-- 
+1.5.0.3
