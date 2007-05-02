@@ -2,20 +2,22 @@ Return-Path: <johannes@sipsolutions.net>
 Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
 	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id CFAB4DDF39
-	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 18:24:40 +1000 (EST)
-Subject: Re: [PATCH 1/5] powerpc: generic time suspend/resume code
+	by ozlabs.org (Postfix) with ESMTP id A92A8DDF39
+	for <linuxppc-dev@ozlabs.org>; Wed,  2 May 2007 18:26:13 +1000 (EST)
+Subject: Re: [PATCH] powermac: proper time of day after resume
 From: Johannes Berg <johannes@sipsolutions.net>
-To: michael@ellerman.id.au
-In-Reply-To: <1178082143.5296.9.camel@concordia.ozlabs.ibm.com>
-References: <20070319105352.771599000@sipsolutions.net>
-	<20070319105357.964696000@sipsolutions.net>
-	<1178082143.5296.9.camel@concordia.ozlabs.ibm.com>
+To: Paul Mackerras <paulus@samba.org>
+In-Reply-To: <17976.5964.593278.752595@cargo.ozlabs.ibm.com>
+References: <20061213123819.403286000@sipsolutions.net>
+	<20061213123945.386891000@sipsolutions.net>
+	<1169620444.18754.66.camel@localhost.localdomain>
+	<1170357390.4036.9.camel@johannes.berg>
+	<17976.5964.593278.752595@cargo.ozlabs.ibm.com>
 Content-Type: multipart/signed; micalg=pgp-sha1;
 	protocol="application/pgp-signature";
-	boundary="=-5GX61+25rL9ddDHt+DQu"
-Date: Wed, 02 May 2007 10:25:17 +0200
-Message-Id: <1178094317.13233.42.camel@johannes.berg>
+	boundary="=-4rKYgrOSF9HBkfi9VjD3"
+Date: Wed, 02 May 2007 10:26:53 +0200
+Message-Id: <1178094413.13233.45.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: linuxppc-dev@ozlabs.org
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
@@ -28,40 +30,40 @@ List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
 
---=-5GX61+25rL9ddDHt+DQu
+--=-4rKYgrOSF9HBkfi9VjD3
 Content-Type: text/plain
 Content-Transfer-Encoding: quoted-printable
 
-On Wed, 2007-05-02 at 15:02 +1000, Michael Ellerman wrote:
+On Wed, 2007-05-02 at 14:45 +1000, Paul Mackerras wrote:
 
-> This seems to break prep_defconfig:
+> > +	/* get current RTC time and convert to seconds */
+> > +	get_rtc_time(&cur_rtc_tm);
+> > +	rtc_tm_to_time(&cur_rtc_tm, &cur_rtc_time);
 >=20
-> timer.c:(.text+0x28c): undefined reference to `rtc_tm_to_time'
-> timer.c:(.text+0x38c): undefined reference to `rtc_tm_to_time'
-> make[1]: *** [.tmp_vmlinux1] Error 1
+> Why not just use get_boot_time() here?
 
-Odd. I put this into Kconfig:
-config PPC_PM_NEEDS_RTC_LIB
-        bool
-        select RTC_LIB
-        default y if PM
+Hm, I don't quite remember. I think I originally had it that way and Ben
+asked me to do this, but I may be wrong. Ben, can you remember anything
+of that? If not I'll dig through my old mail.
 
-and that should cause the rtc lib that contains the rtc_tm_to_time
-function to be compiled in if you have PM enabled (and otherwise timer.c
-isn't compiled). Or maybe defconfig doesn't invoke oldconfig?
+>   Or if not that, then use
+> mktime() instead of rtc_tm_to_time().  Either way we don't need to
+> select RTC_LIB.
+
+Hm, I'll have to look into mktime() and see if I can change that.
 
 johannes
 
---=-5GX61+25rL9ddDHt+DQu
+--=-4rKYgrOSF9HBkfi9VjD3
 Content-Type: application/pgp-signature; name=signature.asc
 Content-Description: This is a digitally signed message part
 
 -----BEGIN PGP SIGNATURE-----
 Comment: Johannes Berg (powerbook)
 
-iD8DBQBGOErt/ETPhpq3jKURApr2AKCDoNII/OmI/ICQLI+gLFp3pdi/TQCdHZzK
-f9IlGAjmO2Ao50HuhqqjVB0=
-=4+uG
+iD8DBQBGOEtN/ETPhpq3jKURAjm6AJ4k2TvMC9zKI3vXwQMmvNCBqOYz+gCgsv7U
+Pccwy+f0hktC/Z3C+JgWZAQ=
+=We6p
 -----END PGP SIGNATURE-----
 
---=-5GX61+25rL9ddDHt+DQu--
+--=-4rKYgrOSF9HBkfi9VjD3--
