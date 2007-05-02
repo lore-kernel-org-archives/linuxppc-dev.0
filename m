@@ -1,26 +1,20 @@
-Return-Path: <glikely@gmail.com>
-Received: from wr-out-0506.google.com (wr-out-0506.google.com [64.233.184.235])
-	by ozlabs.org (Postfix) with ESMTP id A88EEDDF7A
+Return-Path: <bounces@nabble.com>
+Received: from talk.nabble.com (www.nabble.com [72.21.53.35])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
+	(Client did not present a certificate)
+	by ozlabs.org (Postfix) with ESMTP id 0C3F5DDFCE
 	for <linuxppc-embedded@ozlabs.org>;
-	Thu,  3 May 2007 01:59:39 +1000 (EST)
-Received: by wr-out-0506.google.com with SMTP id 50so187863wra
-	for <linuxppc-embedded@ozlabs.org>;
-	Wed, 02 May 2007 08:59:38 -0700 (PDT)
-Message-ID: <528646bc0705020859u3f15315v907759d4ea8c71a5@mail.gmail.com>
-Date: Wed, 2 May 2007 09:59:37 -0600
-From: "Grant Likely" <grant.likely@secretlab.ca>
-Sender: glikely@gmail.com
-To: "Peter Korsgaard" <peter.korsgaard@barco.com>
-Subject: Re: [RFC] uartlite driver MicroBlaze compatability
-In-Reply-To: <87wszr48sc.fsf@sleipner.barco.com>
+	Thu,  3 May 2007 02:12:17 +1000 (EST)
+Received: from [72.21.53.38] (helo=jubjub.nabble.com)
+	by talk.nabble.com with esmtp (Exim 4.50) id 1HjHR7-0002yq-45
+	for linuxppc-embedded@ozlabs.org; Wed, 02 May 2007 09:12:13 -0700
+Message-ID: <10289144.post@talk.nabble.com>
+Date: Wed, 2 May 2007 09:12:13 -0700 (PDT)
+From: Guillaume Berthelom <guillaume.berthelom@cleode.fr>
+To: linuxppc-embedded@ozlabs.org
+Subject: problem to load uImage but not zImage (on virtex-4 base board)
 MIME-Version: 1.0
-Content-Type: text/plain; charset=ISO-8859-1; format=flowed
-References: <4636C836.4050502@itee.uq.edu.au>
-	<528646bc0704302255j3a825f10vbffd4bac961b28d7@mail.gmail.com>
-	<4636E142.8010104@itee.uq.edu.au>
-	<528646bc0705012247p4a0fff63oa8d98364d5f639b0@mail.gmail.com>
-	<87wszr48sc.fsf@sleipner.barco.com>
-Cc: linuxppc-embedded@ozlabs.org
+Content-Type: text/plain; charset=us-ascii
 List-Id: Linux on Embedded PowerPC Developers Mail List
 	<linuxppc-embedded.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
@@ -31,62 +25,36 @@ List-Help: <mailto:linuxppc-embedded-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-embedded>,
 	<mailto:linuxppc-embedded-request@ozlabs.org?subject=subscribe>
 
-On 5/2/07, Peter Korsgaard <peter.korsgaard@barco.com> wrote:
-> >>>>> "GL" == Grant Likely <grant.likely@secretlab.ca> writes:
->
-> Hi,
->
-> GL> Hmm, I think I was smoking something last night.
->
-> ;)
->
-> GL>  Address used for 8 bit access should not be affected by CPU
-> GL> endianess.  After David's comments, I reread the uartlite
-> GL> documentation.  The current design is definately for 32bit OPB bus
-> GL> connections, but it looks like there is a posibility for xilinx to
-> GL> add a 16 or 8 bit attachment.  Since the uartlite design
-> GL> explicitly supports 8, 16 and 32 bit access, sticking with 8 bit
-> GL> io may be the safest.  However, I still think the application of
-> GL> the 3 byte offset should be done in the driver, and not in the
-> GL> platform bus registration.
->
-> That would effectively make the driver big endian only. What if Xilinx
-> would come out with a FPGA with a ARM core in it?
 
-It shouldn't.  When doing byte-wise access, byte 3 is *always* byte 3;
-regardless of the endianess of the processor.  It's the endianess of
-the device that determines where the individual bytes show up.  The
-opb_uartlite documentation defines the registers as big endian,
-therefore if you do a bytewise access to address 0x3, you'll always
-get the least significant byte of the first register.
+hi,
 
-Since the 3 byte offset does not change between little endian and big
-endian processors then I think the knowledge of the offset should be
-kept in the driver, not the device registration.
+I'm trying to port Linux 2.6 on Avnet FX12 MM board with U-Boot and the help
+of xilinx ML403 config.
 
->
-> GL> I've reworked the patch with the following changes - remove 3 byte
-> GL> offset from platform bus registration.  - added ulite_in/ulite_out
-> GL> macros to make changing bus attachment details simpler if xilinx
-> GL> changes the uartlite design.  - stick with 8 bit IO.
->
-> Russell didn't like those accessor macros back when it was submitted
-> last year:
+I have generate my costum xparameters.h file with EDK 8.2i.
+I use ELDK 4.1 and Linux 2.6.20.x.
+I have modified ml403.h u-boot's config file to adapt it for my board and I
+have no problem to boot u-boot.
+I use the right board_info structure from <asm/ppcboot.h> and not the one in
+xilinx_ml403.h.
 
- >> +static inline void serial_out(struct uart_port *port, int offset, int
- Russell> Since there's no additional complication here, do you need separate
- Russell> serial_in/serial_out inline functions?
+When I load the zImage directly with xilinx xmd debugger, the kernel start
+without problem (if I don't have KGDB or SERIAL_TEXT_DEBUG option in my
+kernel config). But when I try to load the uImage with u-boot, the kernel
+start but crach befor I can see something on output.
+The kernel start because I debug it and the platform_init is ok, setup_arch
+too and it crach after ppc4xx_setup_arch at  printk(KERN_INFO "Xilinx ML403
+Reference System (Virtex-4 FX)\n") line  when the kernel access in printk.c. 
 
-As I think the driver should know about the 3 byte offset; the
-accessor macro makes sense again.  Plus if Xilinx ever adds a uartlite
-varient w/ bytewise or halfword wise registers it becomes much easier
-to taylor in the future.
+I use the opb_uart16550 IP in my Xilinx design and the associat drivers in
+u-boot and linux.
 
-Cheers,
-g.
+I'm new in linux embedded and I'm in internship...I have any idea where and
+what is the problem, certanly in the serial int I guest but I'm not sure.
+
+Thanks and sorry for my english I'm fench.
+Guillaume Berthelom
 
 -- 
-Grant Likely, B.Sc. P.Eng.
-Secret Lab Technologies Ltd.
-grant.likely@secretlab.ca
-(403) 399-0195
+View this message in context: http://www.nabble.com/problem-to-load-uImage-but-not-zImage-%28on-virtex-4-base-board%29-tf3681533.html#a10289144
+Sent from the linuxppc-embedded mailing list archive at Nabble.com.
