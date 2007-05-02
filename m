@@ -1,12 +1,14 @@
 Return-Path: <dale@farnsworth.org>
 From: "Dale Farnsworth" <dale@farnsworth.org>
-Date: Wed, 2 May 2007 14:59:38 -0700
-To: Paul Mackerras <paulus@samba.org>
-Subject: [PATCH] powerpc: check cache coherency of kernel vs firmware
-Message-ID: <20070502215938.GF27253@xyzzy.farnsworth.org>
+Date: Wed, 2 May 2007 14:38:30 -0700
+To: linuxppc-dev <Linuxppc-dev@ozlabs.org>
+Subject: [PATCH 6/13] powerpc: Add arch/powerpc interrupt handler for mv64x60
+Message-ID: <20070502213830.GA27253@xyzzy.farnsworth.org>
+References: <20070425234630.GA4046@mag.az.mvista.com>
+	<20070425235858.GH4046@mag.az.mvista.com>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
-Cc: Linuxppc-dev@ozlabs.org
+In-Reply-To: <20070425235858.GH4046@mag.az.mvista.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -16,93 +18,351 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-This function verifies that the cache coherency setting of the kernel
-(CONFIG_NOT_COHERENT_CACHE) matches that left by the firmware, as
-indicated by coherency-off device tree property.
 
-It's only needed on platforms where cache-coherency can be enabled or
-disabled by firmware, e.g. mv64x60-based platforms.
-
-Signed-of-by: Dale Farnsworth <dale@farnsworth.org>
+Signed-off-by: Dale Farnsworth <dale@farnsworth.org>
 
 ---
- arch/powerpc/Kconfig                       |    3 +
- arch/powerpc/kernel/setup-common.c         |   41 +++++++++++++++++++
- arch/powerpc/platforms/embedded6xx/Kconfig |    1 
- 3 files changed, 45 insertions(+)
+I took Arnd Bergmann's advice and created a separate file for
+the Marvell mv64x60 interrupt handler code.
 
-Index: linux-2.6-powerpc-df/arch/powerpc/kernel/setup-common.c
+ arch/powerpc/sysdev/Makefile      |    1 
+ arch/powerpc/sysdev/mv64x60.h     |    9 
+ arch/powerpc/sysdev/mv64x60_pic.c |  305 ++++++++++++++++++++++++++++
+ 3 files changed, 315 insertions(+)
+
+Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_pic.c
 ===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/kernel/setup-common.c
-+++ linux-2.6-powerpc-df/arch/powerpc/kernel/setup-common.c
-@@ -530,3 +530,44 @@ void __init setup_panic(void)
- {
- 	atomic_notifier_chain_register(&panic_notifier_list, &ppc_panic_block);
- }
-+
-+#ifdef CONFIG_CHECK_CACHE_COHERENCY
+--- /dev/null
++++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60_pic.c
+@@ -0,0 +1,305 @@
 +/*
-+ * For platforms that have configurable cache-coherency.  This function
-+ * checks that the cache coherency setting of the kernel matches the setting
-+ * left by the firmware, as indicated in the device tree.  Since a mismatch
-+ * will eventually result in DMA failures, we print * and error and call
-+ * BUG() in that case.
++ * Interrupt handling for Marvell mv64360/mv64460 host bridges (Discovery)
++ *
++ * Author: Dale Farnsworth <dale@farnsworth.org>
++ *
++ * 2007 (c) MontaVista, Software, Inc.  This file is licensed under
++ * the terms of the GNU General Public License version 2.  This program
++ * is licensed "as is" without any warranty of any kind, whether express
++ * or implied.
 + */
 +
-+#ifdef CONFIG_NOT_COHERENT_CACHE
-+#define KERNEL_COHERENCY	0
-+#else
-+#define KERNEL_COHERENCY	1
-+#endif
++#include <linux/stddef.h>
++#include <linux/kernel.h>
++#include <linux/init.h>
++#include <linux/irq.h>
++#include <linux/interrupt.h>
++#include <linux/spinlock.h>
 +
-+static int __init check_cache_coherency(void)
++#include <asm/byteorder.h>
++#include <asm/io.h>
++#include <asm/prom.h>
++#include <asm/irq.h>
++
++#include "mv64x60.h"
++
++/* Interrupt Controller Interface Registers */
++#define MV64X60_IC_MAIN_CAUSE_LO	0x0004
++#define MV64X60_IC_MAIN_CAUSE_HI	0x000c
++#define MV64X60_IC_CPU0_INTR_MASK_LO	0x0014
++#define MV64X60_IC_CPU0_INTR_MASK_HI	0x001c
++#define MV64X60_IC_CPU0_SELECT_CAUSE	0x0024
++
++#define MV64X60_HIGH_GPP_GROUPS		0x0f000000
++#define MV64X60_SELECT_CAUSE_HIGH	0x40000000
++
++/* General Purpose Pins Controller Interface Registers */
++#define MV64x60_GPP_INTR_CAUSE		0x0008
++#define MV64x60_GPP_INTR_MASK		0x000c
++
++#define MV64x60_LEVEL1_LOW		0
++#define MV64x60_LEVEL1_HIGH		1
++#define MV64x60_LEVEL1_GPP		2
++
++#define MV64x60_LEVEL1_MASK		0x00000060
++#define MV64x60_LEVEL1_OFFSET		5
++
++#define MV64x60_LEVEL2_MASK		0x0000001f
++
++#define MV64x60_NUM_IRQS		96
++
++DEFINE_SPINLOCK(mv64x60_lock);
++
++static void __iomem *mv64x60_irq_reg_base;
++static void __iomem *mv64x60_gpp_reg_base;
++
++/*
++ * Interrupt Controller Handling
++ *
++ * The interrupt controller handles three groups of interrupts:
++ *   main low:	IRQ0-IRQ31
++ *   main high:	IRQ32-IRQ63
++ *   gpp:	IRQ64-IRQ95
++ *
++ * This code handles interrupts in two levels.  Level 1 selects the
++ * interrupt group, and level 2 selects an IRQ within that group.
++ * Each group has its own irq_chip structure.
++ */
++
++static u32 mv64x60_cached_low_mask  = 0;
++static u32 mv64x60_cached_high_mask = MV64X60_HIGH_GPP_GROUPS;
++static u32 mv64x60_cached_gpp_mask  = 0;
++
++static struct irq_host *mv64x60_irq_host;
++
++/*
++ * mv64x60_chip_low functions
++ */
++
++static void mv64x60_mask_low(unsigned int virq)
 +{
-+	struct device_node *np;
-+	const void *prop;
-+	int devtree_coherency;
++	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
++	unsigned long flags;
 +
-+	np = of_find_node_by_path("/");
-+	prop = of_get_property(np, "coherency-off", NULL);
-+	of_node_put(np);
++	spin_lock_irqsave(&mv64x60_lock, flags);
++	mv64x60_cached_low_mask &= ~(1 << level2);
++	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO,
++		 mv64x60_cached_low_mask);
++	spin_unlock_irqrestore(&mv64x60_lock, flags);
++	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO);
++}
 +
-+	devtree_coherency = prop ? 0 : 1;
++static void mv64x60_unmask_low(unsigned int virq)
++{
++	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
++	unsigned long flags;
 +
-+	if (devtree_coherency != KERNEL_COHERENCY) {
-+		printk(KERN_ERR
-+			"kernel coherency:%s != device tree_coherency:%s\n",
-+			KERNEL_COHERENCY ? "on" : "off",
-+			devtree_coherency ? "on" : "off");
-+		BUG();
-+	}
++	spin_lock_irqsave(&mv64x60_lock, flags);
++	mv64x60_cached_low_mask |= 1 << level2;
++	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO,
++		 mv64x60_cached_low_mask);
++	spin_unlock_irqrestore(&mv64x60_lock, flags);
++	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO);
++}
++
++static struct irq_chip mv64x60_chip_low = {
++	.name		= "mv64x60_low",
++	.mask		= mv64x60_mask_low,
++	.mask_ack	= mv64x60_mask_low,
++	.unmask		= mv64x60_unmask_low,
++};
++
++/*
++ * mv64x60_chip_high functions
++ */
++
++static void mv64x60_mask_high(unsigned int virq)
++{
++	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
++	unsigned long flags;
++
++	spin_lock_irqsave(&mv64x60_lock, flags);
++	mv64x60_cached_high_mask &= ~(1 << level2);
++	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI,
++		 mv64x60_cached_high_mask);
++	spin_unlock_irqrestore(&mv64x60_lock, flags);
++	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI);
++}
++
++static void mv64x60_unmask_high(unsigned int virq)
++{
++	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
++	unsigned long flags;
++
++	spin_lock_irqsave(&mv64x60_lock, flags);
++	mv64x60_cached_high_mask |= 1 << level2;
++	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI,
++		 mv64x60_cached_high_mask);
++	spin_unlock_irqrestore(&mv64x60_lock, flags);
++	(void)in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI);
++}
++
++static struct irq_chip mv64x60_chip_high = {
++	.name		= "mv64x60_high",
++	.mask		= mv64x60_mask_high,
++	.mask_ack	= mv64x60_mask_high,
++	.unmask		= mv64x60_unmask_high,
++};
++
++/*
++ * mv64x60_chip_gpp functions
++ */
++
++static void mv64x60_mask_gpp(unsigned int virq)
++{
++	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
++	unsigned long flags;
++
++	spin_lock_irqsave(&mv64x60_lock, flags);
++	mv64x60_cached_gpp_mask &= ~(1 << level2);
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK,
++		 mv64x60_cached_gpp_mask);
++	spin_unlock_irqrestore(&mv64x60_lock, flags);
++	(void)in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK);
++}
++
++static void mv64x60_mask_ack_gpp(unsigned int virq)
++{
++	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
++	unsigned long flags;
++
++	spin_lock_irqsave(&mv64x60_lock, flags);
++	mv64x60_cached_gpp_mask &= ~(1 << level2);
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK,
++		 mv64x60_cached_gpp_mask);
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_CAUSE,
++		 ~(1 << level2));
++	spin_unlock_irqrestore(&mv64x60_lock, flags);
++	(void)in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_CAUSE);
++}
++
++static void mv64x60_unmask_gpp(unsigned int virq)
++{
++	int level2 = irq_map[virq].hwirq & MV64x60_LEVEL2_MASK;
++	unsigned long flags;
++
++	spin_lock_irqsave(&mv64x60_lock, flags);
++	mv64x60_cached_gpp_mask |= 1 << level2;
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK,
++		 mv64x60_cached_gpp_mask);
++	spin_unlock_irqrestore(&mv64x60_lock, flags);
++	(void)in_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK);
++}
++
++static struct irq_chip mv64x60_chip_gpp = {
++	.name		= "mv64x60_gpp",
++	.mask		= mv64x60_mask_gpp,
++	.mask_ack	= mv64x60_mask_ack_gpp,
++	.unmask		= mv64x60_unmask_gpp,
++};
++
++/*
++ * mv64x60_host_ops functions
++ */
++
++static int mv64x60_host_match(struct irq_host *h, struct device_node *np)
++{
++	return mv64x60_irq_host->host_data == np;
++}
++
++static struct irq_chip *mv64x60_chips[] = {
++	[MV64x60_LEVEL1_LOW]  = &mv64x60_chip_low,
++	[MV64x60_LEVEL1_HIGH] = &mv64x60_chip_high,
++	[MV64x60_LEVEL1_GPP]  = &mv64x60_chip_gpp,
++};
++
++static int mv64x60_host_map(struct irq_host *h, unsigned int virq,
++			  irq_hw_number_t hwirq)
++{
++	int level1;
++
++	get_irq_desc(virq)->status |= IRQ_LEVEL;
++
++	level1 = (hwirq & MV64x60_LEVEL1_MASK) >> MV64x60_LEVEL1_OFFSET;
++	BUG_ON(level1 > MV64x60_LEVEL1_GPP);
++	set_irq_chip_and_handler(virq, mv64x60_chips[level1], handle_level_irq);
 +
 +	return 0;
 +}
 +
-+late_initcall(check_cache_coherency);
-+#endif /* CONFIG_CHECK_CACHE_COHERENCY */
-Index: linux-2.6-powerpc-df/arch/powerpc/Kconfig
-===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/Kconfig
-+++ linux-2.6-powerpc-df/arch/powerpc/Kconfig
-@@ -373,6 +373,9 @@ config NOT_COHERENT_CACHE
- 	bool
- 	depends on 4xx || 8xx || E200
- 	default y
++static struct irq_host_ops mv64x60_host_ops = {
++	.match = mv64x60_host_match,
++	.map   = mv64x60_host_map,
++};
 +
-+config CHECK_COHERENT_CACHE
-+	bool
- endmenu
- 
- source "init/Kconfig"
-Index: linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
++/*
++ * Global functions
++ */
++
++void __init mv64x60_init_irq(void)
++{
++	struct device_node *np;
++	phys_addr_t paddr;
++	unsigned int size;
++	const unsigned int *reg;
++	unsigned long flags;
++
++	np = of_find_compatible_node(NULL, "mv64x60-gpp", "mv64x60-gpp");
++	reg = of_get_property(np, "reg", &size);
++	paddr = of_translate_address(np, reg);
++	mv64x60_gpp_reg_base = ioremap(paddr, reg[1]);
++	of_node_put(np);
++
++	np = of_find_compatible_node(NULL, "mv64x60-pic", "mv64x60-pic");
++	reg = of_get_property(np, "reg", &size);
++	paddr = of_translate_address(np, reg);
++	of_node_put(np);
++	mv64x60_irq_reg_base = ioremap(paddr, reg[1]);
++
++	mv64x60_irq_host = irq_alloc_host(IRQ_HOST_MAP_LINEAR, MV64x60_NUM_IRQS,
++					  &mv64x60_host_ops, MV64x60_NUM_IRQS);
++
++	mv64x60_irq_host->host_data = np;
++
++	spin_lock_irqsave(&mv64x60_lock, flags);
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_MASK,
++		 mv64x60_cached_gpp_mask);
++	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_LO,
++		 mv64x60_cached_low_mask);
++	out_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_INTR_MASK_HI,
++		 mv64x60_cached_high_mask);
++
++	out_le32(mv64x60_gpp_reg_base + MV64x60_GPP_INTR_CAUSE, 0);
++	out_le32(mv64x60_irq_reg_base + MV64X60_IC_MAIN_CAUSE_LO, 0);
++	out_le32(mv64x60_irq_reg_base + MV64X60_IC_MAIN_CAUSE_HI, 0);
++	spin_unlock_irqrestore(&mv64x60_lock, flags);
++}
++
++unsigned int mv64x60_get_irq(void)
++{
++	u32 cause;
++	int level1;
++	irq_hw_number_t hwirq;
++	int virq = NO_IRQ;
++
++	cause = in_le32(mv64x60_irq_reg_base + MV64X60_IC_CPU0_SELECT_CAUSE);
++	if (cause & MV64X60_SELECT_CAUSE_HIGH) {
++		cause &= mv64x60_cached_high_mask;
++		level1 = MV64x60_LEVEL1_HIGH;
++		if (cause & MV64X60_HIGH_GPP_GROUPS) {
++			cause = in_le32(mv64x60_gpp_reg_base +
++					MV64x60_GPP_INTR_CAUSE);
++			cause &= mv64x60_cached_gpp_mask;
++			level1 = MV64x60_LEVEL1_GPP;
++		}
++	} else {
++		cause &= mv64x60_cached_low_mask;
++		level1 = MV64x60_LEVEL1_LOW;
++	}
++	if (cause) {
++		hwirq = (level1 << MV64x60_LEVEL1_OFFSET) | __ilog2(cause);
++		virq = irq_linear_revmap(mv64x60_irq_host, hwirq);
++	}
++
++	return virq;
++}
+Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.h
 ===================================================================
---- linux-2.6-powerpc-df.orig/arch/powerpc/platforms/embedded6xx/Kconfig
-+++ linux-2.6-powerpc-df/arch/powerpc/platforms/embedded6xx/Kconfig
-@@ -41,6 +41,7 @@ config MPC10X_BRIDGE
- config MV64X60
- 	bool
- 	select PPC_INDIRECT_PCI
-+	select CHECK_COHERENT_CACHE
+--- /dev/null
++++ linux-2.6-powerpc-df/arch/powerpc/sysdev/mv64x60.h
+@@ -0,0 +1,9 @@
++#ifndef __MV64X60_H__
++#define __MV64X60_H__
++
++#include <linux/init.h>
++
++extern void __init mv64x60_init_irq(void);
++extern unsigned int mv64x60_get_irq(void);
++
++#endif /* __MV64X60_H__ */
+Index: linux-2.6-powerpc-df/arch/powerpc/sysdev/Makefile
+===================================================================
+--- linux-2.6-powerpc-df.orig/arch/powerpc/sysdev/Makefile
++++ linux-2.6-powerpc-df/arch/powerpc/sysdev/Makefile
+@@ -14,6 +14,7 @@ obj-$(CONFIG_FSL_SOC)		+= fsl_soc.o
+ obj-$(CONFIG_FSL_PCIE)		+= fsl_pcie.o
+ obj-$(CONFIG_TSI108_BRIDGE)	+= tsi108_pci.o tsi108_dev.o
+ obj-$(CONFIG_QUICC_ENGINE)	+= qe_lib/
++obj-$(CONFIG_MV64X60)		+= mv64x60_pic.o
  
- config MPC10X_OPENPIC
- 	bool
+ # contains only the suspend handler for time
+ obj-$(CONFIG_PM)		+= timer.o
