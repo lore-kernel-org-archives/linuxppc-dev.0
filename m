@@ -1,19 +1,35 @@
-Return-Path: <sshtylyov@ru.mvista.com>
-Received: from imap.sh.mvista.com (unknown [63.81.120.155])
-	by ozlabs.org (Postfix) with ESMTP id 2246CDDFC3
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 23:02:58 +1000 (EST)
-Message-ID: <4639DDE1.40904@ru.mvista.com>
-Date: Thu, 03 May 2007 17:04:33 +0400
-From: Sergei Shtylyov <sshtylyov@ru.mvista.com>
+Return-Path: <kevcorry@us.ibm.com>
+Received: from e33.co.us.ibm.com (e33.co.us.ibm.com [32.97.110.151])
+	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+	(Client CN "e33.co.us.ibm.com", Issuer "Equifax" (verified OK))
+	by ozlabs.org (Postfix) with ESMTP id 5D222DDFB5
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 23:27:01 +1000 (EST)
+Received: from d03relay04.boulder.ibm.com (d03relay04.boulder.ibm.com
+	[9.17.195.106])
+	by e33.co.us.ibm.com (8.13.8/8.13.8) with ESMTP id l43DQvw4018445
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 May 2007 09:26:57 -0400
+Received: from d03av01.boulder.ibm.com (d03av01.boulder.ibm.com [9.17.195.167])
+	by d03relay04.boulder.ibm.com (8.13.8/8.13.8/NCO v8.3) with ESMTP id
+	l43DQuQG205882
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 May 2007 07:26:56 -0600
+Received: from d03av01.boulder.ibm.com (loopback [127.0.0.1])
+	by d03av01.boulder.ibm.com (8.12.11.20060308/8.13.3) with ESMTP id
+	l43DQutR016379
+	for <linuxppc-dev@ozlabs.org>; Thu, 3 May 2007 07:26:56 -0600
+From: Kevin Corry <kevcorry@us.ibm.com>
+To: michael@ellerman.id.au
+Subject: Re: [PATCH 2/2] powerpc: change topology_init() to a subsys_initcall
+Date: Thu, 3 May 2007 08:26:54 -0500
+References: <200705021208.59068.kevcorry@us.ibm.com>
+	<200705021211.49331.kevcorry@us.ibm.com>
+	<1178154707.5338.11.camel@concordia.ozlabs.ibm.com>
+In-Reply-To: <1178154707.5338.11.camel@concordia.ozlabs.ibm.com>
 MIME-Version: 1.0
-To: David Gibson <david@gibson.dropbear.id.au>
-Subject: Re: powerpc_flash_init(), wtf!?
-References: <20070501051804.GB3881@localhost.localdomain>
-	<4639CBD8.6010205@ru.mvista.com>
-	<20070503123055.GE26659@localhost.localdomain>
-In-Reply-To: <20070503123055.GE26659@localhost.localdomain>
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Cc: linuxppc-dev@ozlabs.org
+Content-Type: text/plain;
+  charset="iso-8859-1"
+Message-Id: <200705030826.55427.kevcorry@us.ibm.com>
+Cc: linuxppc-dev@ozlabs.org, Carl Love <carll@us.ibm.com>,
+	linux-kernel@vger.kernel.org, Stephane Eranian <eranian@hpl.hp.com>
 List-Id: Linux on PowerPC Developers Mail List <linuxppc-dev.ozlabs.org>
 List-Unsubscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=unsubscribe>
@@ -23,99 +39,41 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-Hello.
+Hi Michael,
 
-David Gibson wrote:
+On Wed May 2 2007 8:11 pm, Michael Ellerman wrote:
+> On Wed, 2007-05-02 at 12:11 -0500, Kevin Corry wrote:
+> > Change the powerpc version of topology_init() from an __initcall to
+> > a subsys_initcall to match all other architectures.
+> >
+> > Signed-off-by: Kevin Corry <kevcorry@us.ibm.com>
+> >
+> > Index: linux-2.6.21/arch/powerpc/kernel/sysfs.c
+> > ===================================================================
+> > --- linux-2.6.21.orig/arch/powerpc/kernel/sysfs.c
+> > +++ linux-2.6.21/arch/powerpc/kernel/sysfs.c
+> > @@ -498,4 +498,4 @@ static int __init topology_init(void)
+> >
+> >  	return 0;
+> >  }
+> > -__initcall(topology_init);
+> > +subsys_initcall(topology_init);
+>
+> topology_init() depends on the register_one_node() stuff being
+> available, which relies on register_node_type() being called AFAICT -
+> which is a postcore_initcall(). So that's OK.
+>
+> It also creates sysfs files, which is OK because long before initcalls
+> run vfs_caches_init() called mnt_init() which called sysfs_init().
+>
+> Just to be super safe it'd be good to diff your sysfs before and after
+> the change. But assuming that show's nothing this looks fine to me.
 
->>>powerpc_flash_init(), the only function in arch/powerpc/sysdev/rom.c,
->>>goes through the device tree finding anything with device_type=="rom"
->>>and creating of_platform devices for them, which will be picked up by
->>>the physmap_of mtd driver.  This has two serious conceptual errors and
->>>one bad implementation error which is quite an accomplishment for 15
->>>lines of code.
+I booted with and without this patch applied, and the file listings of /sys on 
+both kernels show no differences (other than timestamps).
 
->>>Most seriously, this "find all roms" approach to probing is
->>>fundamentally incompatible with the normal way of probing for
->>>of_platform devices, to wit, using of_platform_bus_probe().  If a
-
->>   We weren't aware of the of_platform.c work when writing the MTD support.
->>   Note that this function usually probes only the specified set of (SoC) 
->>busses, none of which usully contains NOR flash (which is located at the 
->>root level).
-
-> The root level?  Um... I don't think so...
-
-    "Trust me". :-)
-    NOR flashes are at the same level as the "memory" node (where else you 
-expect them to appear I wonder?).
-
->>>flash is on a bus probed with of_platform_bus_probe()
->>>powerpc_flash_init() will create a duplicate of_platform device for it.
-
->>   Flash on a SoC bus?  Well, that's more likely to happen for NAND.
->>But generally, I'd agree with you.
-
-> Well, on Ebony, the (NOR) flash is on the bus controlled by the
-> 440gp's external bus controller (EBC).  So it's not an SoC bus as
-> such, but it's still a "dumb bus" (to use BenH's terminology) which
-> can be suitably probed by of_platform_bus_probe().
-
-   Interesting...
-
-> I believe the arrangement is similar for most other 4xx systems.  More
-> PC or desktop like systems sometimes have boot flash connected to the
-> south bridge, which I believe puts it on the ISA bus, topologically
-> speaking.
-
-    Not exactly. Boot flash is mapped beyond ISA address space on 386+ -- at 
-the top of 4GB (where the "reset vector" is). Although it may be dual mapped 
-below 1MB as well (I'm starting to forget x86 :-).
-
->>>powerpc_flash_init() could also mistakenly probe roms which
->>>appear on other random busses which should use their own probe logic
->>>instead of going straight off the device tree (admittedly flash is
->>>unlikely to appear on such a bus).
-
->>   Well, if you consider NAND...
-
->>>Also, it uses the device node's name without unit address as the
->>>of_platform device's name.  So if a bus somewhere has two flash
->>>devices named, say "flash@0" and "flash@800000", the device code will
->>>give a stack dump during boot as powerpc_flash_init() attempts to
->>>register them both under the name "flash".
-
->>   Well, we didn't think about 2 flashes named the same way. :-/
-
->>>I observe that none of the dts files actually present in the kernel
->>>tree use physmap_of's format for describing flash devices (and
->>>therefore don't use this code).  I'm therefore rather tempted to
-
->>   Which means I still haven't submitted the patch. :-<
-
-    I hope to post a patch soon.
-
->>>simply blow arch/powerpc/sysdev/rom.c away, and anyone out-of-tree
->>>relying on this code will have to fix their platform probing code to
->>>create the flash of_platform devices properly.
-
->>   You mean creating the "rom" devices from the platform-specific code?
->>I doubt that it's really a flexible approach...
-
-> Since it's handled on a per-platform basis, it's more-or-less by
-> definition more flexible than the current broken approach.
-
-    I'm worried about the code duplication.
-
->>>Unless someone who actually knows how this code was intended to be
->>>used can suggest a more polite way of fixing it.
-
->>   Well, probably it needs to only look up the root bus...
-
-> Really, truly on the root bus?  Even so I don't think such a probe
-> should be conducted as an initcall whenever CONFIG_MTD is set.  A
-> helper function invoked from the platform code might be reasonable.
-
-    Yeah, I agree.  Probably doesn't even worth a function since for most 
-cases there's only one flash.
-
-WBR, Sergei
+Thanks for the feedback.
+-- 
+Kevin Corry
+kevcorry@us.ibm.com
+http://www.ibm.com/linux/
