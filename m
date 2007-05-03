@@ -1,21 +1,22 @@
-Return-Path: <benh@kernel.crashing.org>
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	(using TLSv1 with cipher DHE-RSA-AES256-SHA (256/256 bits))
+Return-Path: <johannes@sipsolutions.net>
+Received: from sipsolutions.net (crystal.sipsolutions.net [195.210.38.204])
+	(using TLSv1 with cipher AES256-SHA (256/256 bits))
 	(Client did not present a certificate)
-	by ozlabs.org (Postfix) with ESMTP id 87E3BDDF9B
-	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 22:34:53 +1000 (EST)
+	by ozlabs.org (Postfix) with ESMTP id CDA07DE077
+	for <linuxppc-dev@ozlabs.org>; Thu,  3 May 2007 22:47:16 +1000 (EST)
 Subject: Re: [PATCH] powerpc: dart iommu suspend
-From: Benjamin Herrenschmidt <benh@kernel.crashing.org>
-To: Johannes Berg <johannes@sipsolutions.net>
-In-Reply-To: <1178195662.13233.118.camel@johannes.berg>
+From: Johannes Berg <johannes@sipsolutions.net>
+To: Benjamin Herrenschmidt <benh@kernel.crashing.org>
+In-Reply-To: <1178195447.6353.40.camel@localhost.localdomain>
 References: <17969.56735.644629.328360@cargo.ozlabs.ibm.com>
 	<1178195106.13233.108.camel@johannes.berg>
 	<1178195312.13233.111.camel@johannes.berg>
 	<1178195447.6353.40.camel@localhost.localdomain>
-	<1178195662.13233.118.camel@johannes.berg>
-Content-Type: text/plain
-Date: Thu, 03 May 2007 22:34:45 +1000
-Message-Id: <1178195686.6353.43.camel@localhost.localdomain>
+Content-Type: multipart/signed; micalg=pgp-sha1;
+	protocol="application/pgp-signature";
+	boundary="=-cczf5sC6HSlPwFa8CpJP"
+Date: Thu, 03 May 2007 14:48:11 +0200
+Message-Id: <1178196492.8233.1.camel@johannes.berg>
 Mime-Version: 1.0
 Cc: Olof Johansson <olof@lixom.net>, linuxppc-dev@ozlabs.org,
 	Paul Mackerras <paulus@samba.org>
@@ -28,21 +29,33 @@ List-Help: <mailto:linuxppc-dev-request@ozlabs.org?subject=help>
 List-Subscribe: <https://ozlabs.org/mailman/listinfo/linuxppc-dev>,
 	<mailto:linuxppc-dev-request@ozlabs.org?subject=subscribe>
 
-On Thu, 2007-05-03 at 14:34 +0200, Johannes Berg wrote:
-> On Thu, 2007-05-03 at 22:30 +1000, Benjamin Herrenschmidt wrote:
-> 
-> > We could just make the DART pages CI in the linear mapping rather than
-> > not mapping it. That would make it "just work" with the normal code
-> > path.
-> 
-> I didn't think that was even possible because it's mapped in larger
-> blocks than that. If it is then all this hackery can go, I'm not
-> attached to it...
 
-Well.. the linear mapping is mapped with 16M pages. The DART only uses a
-couple of MB but we blast an entire 16M page for it because of that ...
+--=-cczf5sC6HSlPwFa8CpJP
+Content-Type: text/plain
+Content-Transfer-Encoding: quoted-printable
 
-We could probably just map that 16MB page CI rather than not mapping it
-and later on ioremapping the DART.
+On Thu, 2007-05-03 at 22:30 +1000, Benjamin Herrenschmidt wrote:
+> That would make it "just work" with the normal code path.
 
-Ben.
+We still need the iommu restore hook to invalidate the entries, so that
+API I add there is needed anyway. Who actually saves the code doesn't
+really matter at that point. The save hook isn't strictly necessary then
+but I guess it should be there for symmetry anyway.
+
+Maybe somebody can offer opinions on other iommus?
+
+johannes
+
+--=-cczf5sC6HSlPwFa8CpJP
+Content-Type: application/pgp-signature; name=signature.asc
+Content-Description: This is a digitally signed message part
+
+-----BEGIN PGP SIGNATURE-----
+Comment: Johannes Berg (powerbook)
+
+iD8DBQBGOdoL/ETPhpq3jKURAs/9AKCMxfYJGIyeKdcCUQ05zJC8SsRHTQCglrf7
+/SnZudKkRLA2LLaLtuMkvT0=
+=8RBR
+-----END PGP SIGNATURE-----
+
+--=-cczf5sC6HSlPwFa8CpJP--
